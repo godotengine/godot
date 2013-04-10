@@ -73,4 +73,5 @@ public:
 	Quad();
 };
 
+
 #endif // QUAD_H

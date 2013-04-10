@@ -33,7 +33,7 @@
 #include "core/globals.h"
 #include "main/main.h"
 
-#ifdef FACEBOOK_ENABLED
+#ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 #include "modules/FacebookScorer_ios/FacebookScorer.h"
 #endif
 
@@ -250,7 +250,7 @@ static int frame_count = 0;
 }
 
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url {
-#ifdef FACEBOOK_ENABLED
+#ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 	return [[[FacebookScorer sharedInstance] facebook] handleOpenURL:url];
 #else
 	return false;
@@ -259,7 +259,7 @@ static int frame_count = 0;
 
 // For 4.2+ support
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-#ifdef FACEBOOK_ENABLED
+#ifdef MODULE_FACEBOOKSCORER_IOS_ENABLED
 	return [[[FacebookScorer sharedInstance] facebook] handleOpenURL:url];
 #else
 	return false;

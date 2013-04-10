@@ -346,7 +346,7 @@ void Control::_notification(int p_notification) {
 			if (data.window==this) {
 
 				window = memnew( Window );
-				add_to_group("_gui_input");
+				add_to_group("_vp_gui_input"+itos(get_viewport()->get_instance_ID()));
 				add_to_group("windows");
 
 				window->tooltip_timer = memnew( Timer );
@@ -401,7 +401,7 @@ void Control::_notification(int p_notification) {
 
 			if (window) {
 
-				remove_from_group("_gui_input");
+				remove_from_group("_vp_gui_input"+itos(get_viewport()->get_instance_ID()));
 				remove_from_group("windows");
 				if (window->tooltip_timer)
 					memdelete(window->tooltip_timer);

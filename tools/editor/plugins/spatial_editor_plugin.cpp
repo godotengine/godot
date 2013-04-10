@@ -3334,7 +3334,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	scenario_debug=VisualServer::SCENARIO_DEBUG_DISABLED;
 
 
-	add_to_group("unhandled_key_input");
+	set_process_unhandled_key_input(true);
 	add_to_group("_spatial_editor_group");
 }
 

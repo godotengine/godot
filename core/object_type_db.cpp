@@ -408,7 +408,7 @@ void ObjectTypeDB::add_signal(StringName p_type,const MethodInfo& p_signal) {
 
 	while(check) {
 		if (check->signal_map.has(sname)) {
-			ERR_EXPLAIN("Type already has signal");
+			ERR_EXPLAIN("Type "+String(p_type)+" already has signal: "+String(sname));
 			ERR_FAIL();
 		}
 		check=check->inherits_ptr;

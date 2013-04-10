@@ -105,4 +105,44 @@ public:
 	Sprite();
 };
 
+class ViewportSprite : public Node2D {
+
+	OBJ_TYPE( ViewportSprite, Node2D );
+
+	Ref<Texture> texture;
+	NodePath viewport_path;
+
+	bool centered;
+	Point2 offset;
+	Color modulate;
+
+protected:
+
+	void _notification(int p_what);
+
+	static void _bind_methods();;
+
+public:
+
+	virtual void edit_set_pivot(const Point2& p_pivot);
+	virtual Point2 edit_get_pivot() const;
+	virtual bool edit_has_pivot() const;
+
+	void set_viewport_path(const NodePath& p_viewport);
+	NodePath get_viewport_path() const;
+
+	void set_centered(bool p_center);
+	bool is_centered() const;
+
+	void set_offset(const Point2& p_offset);
+	Point2 get_offset() const;
+
+	void set_modulate(const Color& p_color);
+	Color get_modulate() const;
+
+	virtual Rect2 get_item_rect() const;
+
+	ViewportSprite();
+};
+
 #endif // SPRITE_H

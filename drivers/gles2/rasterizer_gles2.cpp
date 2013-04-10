@@ -3350,6 +3350,7 @@ void RasterizerGLES2::render_target_set_size(RID p_render_target,int p_width,int
 	if (p_width==0 || p_height==0)
 		return;
 
+
 	rt->width=p_width;
 	rt->height=p_height;
 
@@ -3590,11 +3591,14 @@ void RasterizerGLES2::clear_viewport(const Color& p_color) {
 };
 
 
-void RasterizerGLES2::set_render_target(RID p_render_target) {
+void RasterizerGLES2::set_render_target(RID p_render_target, bool p_transparent_bg, bool p_vflip) {
+
+
 
 	if (!p_render_target.is_valid()) {
 		glBindFramebuffer(GL_FRAMEBUFFER,base_framebuffer);
 		current_rt=NULL;
+		current_rt_vflip=false;
 
 	} else {
 		RenderTarget *rt = render_target_owner.get(p_render_target);
@@ -3602,6 +3606,8 @@ void RasterizerGLES2::set_render_target(RID p_render_target) {
 		ERR_FAIL_COND(rt->fbo==0);
 		glBindFramebuffer(GL_FRAMEBUFFER,rt->fbo);
 		current_rt=rt;
+		current_rt_transparent=p_transparent_bg;
+		current_rt_vflip=!p_vflip;
 	}
 
 }
@@ -3667,6 +3673,9 @@ void RasterizerGLES2::begin_shadow_map( RID p_light_instance, int p_shadow_pass 
 void RasterizerGLES2::set_camera(const Transform& p_world,const CameraMatrix& p_projection) {
 
 	camera_transform=p_world;
+	if (current_rt && current_rt_vflip) {
+		camera_transform.basis.set_axis(1,-camera_transform.basis.get_axis(1));
+	}
 	camera_transform_inverse=camera_transform.inverse();
 	camera_projection=p_projection;
 	camera_plane = Plane( camera_transform.origin, camera_transform.basis.get_axis(2) );
@@ -3771,7 +3780,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	}
 
 	//print_line("compiled fragment: "+fragment_code);
-	//print_line("compiled fragment globals: "+fragment_globals);
+	//	("compiled fragment globals: "+fragment_globals);
 
 	//print_line("UCF: "+itos(p_shader->uniforms.size()));
 
@@ -5129,6 +5138,12 @@ void RasterizerGLES2::_setup_skeleton(const Skeleton *p_skeleton) {
 
 void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Transform& p_view_transform, const Transform& p_view_transform_inverse,const CameraMatrix& p_projection,bool p_reverse_cull,bool p_fragment_light,bool p_alpha_pass) {
 
+	if (current_rt && current_rt_vflip) {
+		p_reverse_cull=!p_reverse_cull;
+		glFrontFace(GL_CCW);
+
+	}
+
 	const Material *prev_material=NULL;
 	uint16_t prev_light=0x777E;
 	const Geometry *prev_geometry_cmp=NULL;
@@ -5388,6 +5403,9 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	//print_line("shaderchanges: "+itos(p_alpha_pass)+": "+itos(_rinfo.shader_change_count));
 
 
+	if (current_rt && current_rt_vflip) {
+		glFrontFace(GL_CW);
+	}
 
 };
 
@@ -5793,6 +5811,10 @@ void RasterizerGLES2::end_scene() {
 	if (current_debug==VS::SCENARIO_DEBUG_OVERDRAW) {
 
 		glClearColor(0,0,0,1);
+		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	} else if (current_rt && current_rt_transparent) {
+
+		glClearColor(0,0,0,0);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	} else if (current_env) {
@@ -6305,13 +6327,16 @@ void RasterizerGLES2::canvas_begin() {
 	_set_color_attrib(Color(1,1,1));
 	Transform canvas_transform;
 	canvas_transform.translate(-(viewport.width / 2.0f), -(viewport.height / 2.0f), 0.0f);
-	canvas_transform.scale( Vector3( 2.0f / viewport.width, -2.0f / viewport.height, 1.0f ) );
+	float csy = 1.0;
+	if (current_rt && current_rt_vflip)
+		csy = -1.0;
+
+	canvas_transform.scale( Vector3( 2.0f / viewport.width, csy * -2.0f / viewport.height, 1.0f ) );
 	canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
 	canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,Matrix32());
 	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
 
 	canvas_opacity=1.0;
-
 	canvas_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 
 

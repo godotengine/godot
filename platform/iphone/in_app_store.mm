@@ -168,6 +168,9 @@ Error InAppStore::request_product_info(Variant p_params) {
 			ret["result"] = "ok";
 			ret["product_id"] = pid;
             
+            NSData* receipt = nil;
+            int sdk_version = 6;
+            
             if([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0){
                 
                 NSURL *receiptFileURL = nil;
@@ -178,19 +181,30 @@ Error InAppStore::request_product_info(Variant p_params) {
                     receiptFileURL = [bundle appStoreReceiptURL];
                     
                     // Read in the contents of the transaction file.
-                    ret["receipt"] = receiptFileURL;
+                    receipt = [NSData dataWithContentsOfURL:receiptFileURL];
+                    sdk_version = 7;
                     
                 } else {
                     // Fall back to deprecated transaction receipt,
                     // which is still available in iOS 7.
                     
                     // Use SKPaymentTransaction's transactionReceipt.
-                    ret["receipt"] = transaction.transactionReceipt;
+                    receipt = transaction.transactionReceipt;
                 }
                 
             }else{
-                ret["receipt"] = transaction.transactionReceipt;
+                receipt = transaction.transactionReceipt;
             }
+            
+            NSString* receipt_to_send = nil;
+            if (receipt != nil)
+            {
+                receipt_to_send = [receipt description];
+            }
+            Dictionary receipt_ret;
+            receipt_ret["receipt"] = String::utf8([receipt_to_send UTF8String]);
+            receipt_ret["sdk"] = sdk_version;
+            ret["receipt"] = receipt_ret;
             
 			InAppStore::get_singleton()->_post_event(ret);
 			[[SKPaymentQueue defaultQueue] finishTransaction:transaction];

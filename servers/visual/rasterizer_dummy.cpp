@@ -1384,7 +1384,7 @@ void RasterizerDummy::set_viewport(const VS::ViewportRect& p_viewport) {
 
 }
 
-void RasterizerDummy::set_render_target(RID p_render_target) {
+void RasterizerDummy::set_render_target(RID p_render_target,bool p_transparent_bg) {
 
 
 }

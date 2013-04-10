@@ -129,6 +129,8 @@ friend class Node;
 //optimization
 friend class CanvasItem;
 friend class Spatial;
+friend class Viewport;
+
 	SelfList<Node>::List xform_change_list;
 
 protected:

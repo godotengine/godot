@@ -141,7 +141,7 @@ MenuButton::MenuButton() {
 	popup->hide();
 	add_child(popup);
 	popup->set_as_toplevel(true);
-	add_to_group("unhandled_key_input");
+	set_process_unhandled_key_input(true);
 	set_click_on_press(true);
 }
 

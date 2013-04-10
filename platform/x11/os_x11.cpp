@@ -1227,8 +1227,6 @@ void OS_X11::set_icon(const Image& p_icon) {
 
 		pd.resize(2+w*h);
 
-		print_line("***** SET ICON ***** "+itos(w)+"  "+itos(h));
-
 		pd[0]=w;
 		pd[1]=h;
 

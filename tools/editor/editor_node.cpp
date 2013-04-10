@@ -2708,8 +2708,6 @@ Error EditorNode::load_scene(const String& p_scene) {
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	print_line("OPEN FILENAME: "+new_scene->get_filename());
-
 	/*
 	Node *old_scene = edited_scene;
 	_hide_top_editors();
