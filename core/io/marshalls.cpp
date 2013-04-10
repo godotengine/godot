@@ -141,6 +141,23 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 				(*r_len)+=4*3;
 
 		} break;
+		case Variant::MATRIX32: {
+
+			ERR_FAIL_COND_V(len<(int)4*6,ERR_INVALID_DATA);
+			Matrix32 val;
+			for(int i=0;i<3;i++) {
+				for(int j=0;j<2;j++) {
+
+					val.elements[i][j]=decode_float(&buf[(i*2+j)*4]);
+				}
+			}
+
+			r_variant=val;
+
+			if (r_len)
+				(*r_len)+=4*6;
+
+		} break;
 		case Variant::PLANE: {
 
 			ERR_FAIL_COND_V(len<(int)4*4,ERR_INVALID_DATA);
@@ -649,6 +666,45 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 
 		} break;
+		case Variant::VECTOR2_ARRAY: {
+
+			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
+			uint32_t count = decode_uint32(buf);
+			ERR_FAIL_COND_V(count<0,ERR_INVALID_DATA);
+			buf+=4;
+			len-=4;
+
+			ERR_FAIL_COND_V((int)count*4*2>len,ERR_INVALID_DATA);
+			DVector<Vector2> varray;
+
+			if (r_len) {
+				(*r_len)+=4;
+			}
+
+			if (count) {
+				varray.resize(count);
+				DVector<Vector2>::Write w = varray.write();
+				const float *r = (const float*)buf;
+
+				for(int i=0;i<(int)count;i++) {
+
+					w[i].x=decode_float(buf+i*4*2+4*0);
+					w[i].y=decode_float(buf+i*4*2+4*1);
+
+				}
+
+				int adv = 4*2*count;
+
+				if (r_len)
+					(*r_len)+=adv;
+				len-=adv;
+				buf+=adv;
+
+			}
+
+			r_variant=varray;
+
+		} break;
 		case Variant::VECTOR3_ARRAY: {
 
 			ERR_FAIL_COND_V(len<4,ERR_INVALID_DATA);
@@ -886,6 +942,22 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 			}
 
 			r_len+=3*4;
+
+		} break;
+		case Variant::MATRIX32: {
+
+			if (buf) {
+				Matrix32 val=p_variant;
+				for(int i=0;i<3;i++) {
+					for(int j=0;j<2;j++) {
+
+						copymem(&buf[(i*2+j)*4],&val.elements[i][j],sizeof(float));
+					}
+				}
+			}
+
+
+			r_len+=6*4;
 
 		} break;
 		case Variant::PLANE: {
@@ -1248,6 +1320,34 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 						buf++;
 				}
 			}
+
+		} break;
+		case Variant::VECTOR2_ARRAY: {
+
+			DVector<Vector2> data = p_variant;
+			int len=data.size();
+
+			if (buf) {
+				encode_uint32(len,buf);
+				buf+=4;
+			}
+
+			r_len+=4;
+
+			if (buf) {
+
+				for(int i=0;i<len;i++) {
+
+					Vector2 v = data.get(i);
+
+					encode_float(v.x,&buf[0]);
+					encode_float(v.y,&buf[4]);
+					buf+=4*2;
+
+				}
+			}
+
+			r_len+=4*2*len;
 
 		} break;
 		case Variant::VECTOR3_ARRAY: {
