@@ -1,0 +1,22 @@
+Import('env')
+
+if (env["tools"]=="yes"):
+
+	reg_exporters_inc='#include "register_exporters.h"\n'
+	reg_exporters='void register_exporters() {\n'
+	for e in env.platform_exporters:
+		env.tool_sources.append("#platform/"+e+"/export/export.cpp")
+		reg_exporters+='\tregister_'+e+'_exporter();\n'
+		reg_exporters_inc+='#include "platform/'+e+'/export/export.h"\n'
+	reg_exporters+='}\n'
+	f = open("register_exporters.cpp","wb")
+	f.write(reg_exporters_inc)
+	f.write(reg_exporters)
+
+	env.add_source_files(env.tool_sources,"*.cpp")
+
+	Export('env')
+	SConscript('plugins/SCsub');
+	SConscript('fileserver/SCsub');
+	SConscript('io_plugins/SCsub');
+

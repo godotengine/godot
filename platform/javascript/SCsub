@@ -1,0 +1,25 @@
+Import('env')
+
+javascript_files = [
+	"os_javascript.cpp",
+	"audio_driver_javascript.cpp",
+	"javascript_main.cpp"
+]
+
+#env.Depends('#core/math/vector3.h', 'vector3_psp.h')
+
+#obj = env.SharedObject('godot_javascript.cpp')
+
+env_javascript = env.Clone()
+if env['target'] == "profile":
+	env_javascript.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
+
+javascript_objects=[]
+for x in javascript_files:
+	javascript_objects.append( env_javascript.Object( x ) )
+
+prog = None
+
+#env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
+
+env.Program('#bin/godot.html', javascript_objects)

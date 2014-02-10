@@ -1,0 +1,38 @@
+Import('env')
+
+
+png_sources = [
+	"png/example.c",
+	"png/png.c",
+	"png/pngerror.c",
+	"png/pngget.c",
+	"png/pngmem.c",
+	"png/pngpread.c",
+	"png/pngread.c",
+	"png/pngrio.c",
+	"png/pngrtran.c",
+	"png/pngrutil.c",
+	"png/pngset.c",
+	"png/pngtrans.c",
+	"png/pngwio.c",
+	"png/pngwrite.c",
+	"png/pngwtran.c",
+	"png/pngwutil.c",
+	"png/resource_saver_png.cpp",
+	"png/image_loader_png.cpp"
+]
+
+if ("neon_enabled" in env and env["neon_enabled"]):
+	env_neon = env.Clone();
+	if "S_compiler" in env:
+		env_neon['CC'] = env['S_compiler']
+	env_neon.Append(CPPFLAGS=["-DPNG_ARM_NEON"])
+	png_sources.append(env_neon.Object("#drivers/png/filter_neon.S"))
+
+
+env.drivers_sources+=png_sources
+
+#env.add_source_files(env.drivers_sources, png_sources)
+
+Export('env')
+

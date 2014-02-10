@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="godot_project_name_string">godot-project-name</string>
+    <string name="testuf8">元気です</string>
+    <string name="testuf2">元気です元気です元気です</string>
+    
+</resources>

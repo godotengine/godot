@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	  package="com.godot.game"
+      android:versionCode="1"
+      android:versionName="1.0"
+      android:installLocation="preferExternal"
+      >
+    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon">
+        <activity android:name="com.android.godot.Godot"
+                  android:label="@string/godot_project_name_string"
+                  android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
+                  android:launchMode="singleTask"
+                  android:screenOrientation="landscape"
+                  android:configChanges="orientation|keyboardHidden">
+                                                                                                  
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
+  
+
+$$ADD_APPLICATION_CHUNKS$$
+
+    </application>
+    <uses-feature android:glEsVersion="0x00020000"/>
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>    
+	<uses-permission android:name="android.permission.READ_CONTACTS"/>
+	<uses-permission android:name="com.android.vending.BILLING" />
+	<uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+	<uses-permission android:name="android.permission.RECEIVE_SMS"/>
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+	
+    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="11"/>
+         
+</manifest> 

@@ -1,0 +1,706 @@
+/*************************************************************************/
+/*  material.cpp                                                         */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+#include "material.h"
+#include "scene/scene_string_names.h"
+
+
+static const char*_flag_names[Material::FLAG_MAX]={
+	"visible",
+	"double_sided",
+	"invert_faces",
+	"unshaded",
+	"on_top",
+	"wireframe",
+	"billboard_sw",
+};
+
+static const char*_hint_names[Material::HINT_MAX]={
+	"decal",
+	"opaque_pre_zpass",
+	"no_shadow",
+	"no_depth_draw",
+};
+
+static const Material::Flag _flag_indices[Material::FLAG_MAX]={
+	Material::FLAG_VISIBLE,
+	Material::FLAG_DOUBLE_SIDED,
+	Material::FLAG_INVERT_FACES,
+	Material::FLAG_UNSHADED,
+	Material::FLAG_ONTOP,
+	Material::FLAG_WIREFRAME,
+	Material::FLAG_BILLBOARD_TOGGLE
+};
+
+static const Material::Hint _hint_indices[Material::HINT_MAX]={
+	Material::HINT_DECAL,
+	Material::HINT_OPAQUE_PRE_PASS,
+	Material::HINT_NO_SHADOW,
+	Material::HINT_NO_DEPTH_DRAW,
+};
+
+
+RID Material::get_rid() const {
+
+	return material;
+}
+
+void Material::set_flag(Flag p_flag,bool p_enabled) {
+
+	ERR_FAIL_INDEX(p_flag,FLAG_MAX);
+	flags[p_flag]=p_enabled;
+	VisualServer::get_singleton()->material_set_flag(material,(VS::MaterialFlag)p_flag,p_enabled);
+	_change_notify();
+}
+
+
+void Material::set_hint(Hint p_hint,bool p_enabled) {
+
+	ERR_FAIL_INDEX(p_hint,HINT_MAX);
+	hints[p_hint]=p_enabled;
+	VisualServer::get_singleton()->material_set_hint(material,(VS::MaterialHint)p_hint,p_enabled);
+	_change_notify();
+}
+
+bool Material::get_hint(Hint p_hint) const {
+
+	ERR_FAIL_INDEX_V(p_hint,HINT_MAX,false);
+	return hints[p_hint];
+}
+
+void Material::set_blend_mode(BlendMode p_blend_mode) {
+
+	ERR_FAIL_INDEX(p_blend_mode,3);
+	blend_mode=p_blend_mode;
+	VisualServer::get_singleton()->material_set_blend_mode(material,(VS::MaterialBlendMode)p_blend_mode);
+	_change_notify();
+}
+
+Material::BlendMode Material::get_blend_mode() const {
+
+	return blend_mode;
+}
+
+
+void Material::set_shade_model(ShadeModel p_model) {
+
+	ERR_FAIL_INDEX(p_model,8);
+	shade_model=p_model;
+	VisualServer::get_singleton()->material_set_shade_model(material,(VS::MaterialShadeModel)p_model);
+
+}
+
+Material::ShadeModel Material::get_shade_model() const {
+
+	return shade_model;
+}
+
+bool Material::get_flag(Flag p_flag) const {
+
+	ERR_FAIL_INDEX_V(p_flag,FLAG_MAX,false);
+	return flags[p_flag];
+}
+
+void Material::set_line_width(float p_width) {
+
+	line_width=p_width;
+	VisualServer::get_singleton()->material_set_line_width(material,p_width);
+	_change_notify("line_width");
+}
+
+float Material::get_line_width() const {
+
+	return line_width;
+}
+
+
+void Material::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_flag","flag","enable"),&Material::set_flag);
+	ObjectTypeDB::bind_method(_MD("get_flag","flag"),&Material::get_flag);
+	ObjectTypeDB::bind_method(_MD("set_hint","hint","enable"),&Material::set_hint);
+	ObjectTypeDB::bind_method(_MD("get_hint","hint"),&Material::get_hint);
+	ObjectTypeDB::bind_method(_MD("set_blend_mode","mode"),&Material::set_blend_mode);
+	ObjectTypeDB::bind_method(_MD("get_blend_mode"),&Material::get_blend_mode);
+	ObjectTypeDB::bind_method(_MD("set_shade_model","model"),&Material::set_shade_model);
+	ObjectTypeDB::bind_method(_MD("get_shade_model"),&Material::get_shade_model);
+	ObjectTypeDB::bind_method(_MD("set_line_width","width"),&Material::set_line_width);
+	ObjectTypeDB::bind_method(_MD("get_line_width"),&Material::get_line_width);
+
+
+	for(int i=0;i<FLAG_MAX;i++)
+		ADD_PROPERTYI( PropertyInfo( Variant::BOOL, String()+"flags/"+_flag_names[i] ),_SCS("set_flag"),_SCS("get_flag"),_flag_indices[i]);
+	for(int i=0;i<HINT_MAX;i++)
+		ADD_PROPERTYI( PropertyInfo( Variant::BOOL, String()+"hints/"+_hint_names[i] ),_SCS("set_hint"),_SCS("get_hint"),_hint_indices[i]);
+
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub" ), _SCS("set_blend_mode"),_SCS("get_blend_mode"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "params/line_width",PROPERTY_HINT_RANGE,"0.1,32.0,0.1" ), _SCS("set_line_width"),_SCS("get_line_width"));
+
+
+	BIND_CONSTANT( FLAG_VISIBLE );
+	BIND_CONSTANT( FLAG_DOUBLE_SIDED );
+	BIND_CONSTANT( FLAG_INVERT_FACES );
+	BIND_CONSTANT( FLAG_UNSHADED );
+	BIND_CONSTANT( FLAG_ONTOP );
+	BIND_CONSTANT( FLAG_WIREFRAME );
+	BIND_CONSTANT( FLAG_BILLBOARD_TOGGLE );
+	BIND_CONSTANT( FLAG_MAX );
+
+	BIND_CONSTANT( HINT_DECAL );
+	BIND_CONSTANT( HINT_OPAQUE_PRE_PASS );
+	BIND_CONSTANT( HINT_NO_SHADOW );
+	BIND_CONSTANT( HINT_NO_DEPTH_DRAW );
+	BIND_CONSTANT( HINT_MAX );
+
+	BIND_CONSTANT( SHADE_MODEL_LAMBERT );
+	BIND_CONSTANT( SHADE_MODEL_LAMBERT_WRAP );
+	BIND_CONSTANT( SHADE_MODEL_FRESNEL );
+	BIND_CONSTANT( SHADE_MODEL_TOON );
+	BIND_CONSTANT( SHADE_MODEL_CUSTOM_0 );
+	BIND_CONSTANT( SHADE_MODEL_CUSTOM_1 );
+	BIND_CONSTANT( SHADE_MODEL_CUSTOM_2 );
+	BIND_CONSTANT( SHADE_MODEL_CUSTOM_3 );
+
+	BIND_CONSTANT( BLEND_MODE_MIX );
+	BIND_CONSTANT( BLEND_MODE_ADD );
+	BIND_CONSTANT( BLEND_MODE_SUB );
+
+}
+
+Material::Material(const RID& p_material) {
+
+	material=p_material;
+
+	flags[FLAG_VISIBLE]=true;
+	flags[FLAG_DOUBLE_SIDED]=false;
+	flags[FLAG_INVERT_FACES]=false;
+	flags[FLAG_UNSHADED]=false;
+	flags[FLAG_ONTOP]=false;
+	flags[FLAG_WIREFRAME]=false;
+	flags[FLAG_BILLBOARD_TOGGLE]=false;
+
+	for(int i=0;i<HINT_MAX;i++)
+		hints[i]=false;
+
+	blend_mode=BLEND_MODE_MIX;
+	shade_model = SHADE_MODEL_LAMBERT;
+}
+
+Material::~Material() {
+
+	VisualServer::get_singleton()->free(material);
+}
+
+static const char*_param_names[FixedMaterial::PARAM_MAX]={
+	"diffuse",
+	"detail",
+	"specular",
+	"emission",
+	"specular_exp",
+	"glow",
+	"normal",
+	"shade_param"
+};
+
+static const char*_full_param_names[FixedMaterial::PARAM_MAX]={
+	"params/diffuse",
+	"params/detail",
+	"params/specular",
+	"params/emission",
+	"params/specular_exp",
+	"params/glow",
+	"params/normal",
+	"params/shade_param"
+};
+
+/*
+static const char*_texture_param_names[FixedMaterial::PARAM_MAX]={
+	"tex_diffuse",
+	"tex_detail",
+	"tex_specular",
+	"tex_emission",
+	"tex_specular_exp",
+	"tex_glow",
+	"tex_detail_mix",
+	"tex_normal",
+	"tex_shade_param"
+};
+*/
+static const FixedMaterial::Parameter _param_indices[FixedMaterial::PARAM_MAX]={
+	FixedMaterial::PARAM_DIFFUSE,
+	FixedMaterial::PARAM_DETAIL,
+	FixedMaterial::PARAM_SPECULAR,
+	FixedMaterial::PARAM_EMISSION,
+	FixedMaterial::PARAM_SPECULAR_EXP,
+	FixedMaterial::PARAM_GLOW,
+	FixedMaterial::PARAM_NORMAL,
+	FixedMaterial::PARAM_SHADE_PARAM,
+};
+
+
+
+
+void FixedMaterial::set_parameter(Parameter p_parameter, const Variant& p_value) {
+
+	ERR_FAIL_INDEX(p_parameter,PARAM_MAX);
+	if ((p_parameter==PARAM_DIFFUSE || p_parameter==PARAM_SPECULAR || p_parameter==PARAM_EMISSION)) {
+
+		if (p_value.get_type()!=Variant::COLOR) {
+			ERR_EXPLAIN(String(_param_names[p_parameter])+" expects Color");
+			ERR_FAIL();
+		}
+	} else {
+
+		if (!p_value.is_num()) {
+			ERR_EXPLAIN(String(_param_names[p_parameter])+" expects scalar");
+			ERR_FAIL();
+		}
+	}
+
+	ERR_FAIL_COND( (p_parameter==PARAM_DIFFUSE || p_parameter==PARAM_SPECULAR || p_parameter==PARAM_EMISSION) && p_value.get_type()!=Variant::COLOR );
+	ERR_FAIL_COND( p_parameter!=PARAM_SHADE_PARAM && p_parameter!=PARAM_DIFFUSE && p_parameter!=PARAM_DETAIL && p_parameter!=PARAM_SPECULAR && p_parameter!=PARAM_EMISSION && p_value.get_type()!=Variant::REAL && p_value.get_type()!=Variant::INT );
+
+	param[p_parameter]=p_value;
+
+	VisualServer::get_singleton()->fixed_material_set_param(material,(VS::FixedMaterialParam)p_parameter,p_value);
+
+	_change_notify(_full_param_names[p_parameter]);
+}
+
+Variant FixedMaterial::get_parameter(Parameter p_parameter) const {
+	ERR_FAIL_INDEX_V(p_parameter,PARAM_MAX,Variant());
+	return param[p_parameter];
+}
+
+
+
+void FixedMaterial::set_texture(Parameter p_parameter, Ref<Texture> p_texture) {
+
+	ERR_FAIL_INDEX(p_parameter,PARAM_MAX);
+
+	texture_param[p_parameter]=p_texture;
+	VisualServer::get_singleton()->fixed_material_set_texture(material,(VS::FixedMaterialParam)p_parameter,p_texture.is_null()?RID():p_texture->get_rid());
+
+	_change_notify();
+}
+Ref<Texture> FixedMaterial::get_texture(Parameter p_parameter) const {
+
+	ERR_FAIL_INDEX_V(p_parameter,PARAM_MAX,Ref<Texture>());
+	return texture_param[p_parameter];
+}
+
+void FixedMaterial::set_texcoord_mode(Parameter p_parameter, TexCoordMode p_mode) {
+
+	ERR_FAIL_INDEX(p_parameter,PARAM_MAX);
+	ERR_FAIL_INDEX(p_mode,4);
+
+	if (p_mode==texture_texcoord[p_parameter])
+		return;
+
+	texture_texcoord[p_parameter]=p_mode;
+
+	VisualServer::get_singleton()->fixed_material_set_texcoord_mode(material,(VS::FixedMaterialParam)p_parameter,(VS::FixedMaterialTexCoordMode)p_mode);
+
+	_change_notify();
+}
+
+FixedMaterial::TexCoordMode FixedMaterial::get_texcoord_mode(Parameter p_parameter) const {
+
+	ERR_FAIL_INDEX_V(p_parameter,PARAM_MAX,TEXCOORD_UV);
+	return texture_texcoord[p_parameter];
+}
+
+
+void FixedMaterial::set_uv_transform(const Transform& p_transform) {
+
+	uv_transform=p_transform;
+	VisualServer::get_singleton()->fixed_material_set_uv_transform(material, p_transform );
+	_change_notify();
+}
+
+Transform FixedMaterial::get_uv_transform() const {
+
+	return uv_transform;
+}
+
+
+
+
+void FixedMaterial::set_detail_blend_mode(BlendMode p_mode) {
+
+	detail_blend_mode=p_mode;
+	VS::get_singleton()->fixed_material_set_detail_blend_mode(material,(VS::MaterialBlendMode)p_mode);
+}
+
+Material::BlendMode FixedMaterial::get_detail_blend_mode() const {
+
+	return detail_blend_mode;
+}
+
+void FixedMaterial::set_fixed_flag(FixedFlag p_flag, bool p_value) {
+	ERR_FAIL_INDEX(p_flag,3);
+	fixed_flags[p_flag]=p_value;
+	VisualServer::get_singleton()->fixed_material_set_flag(material,(VS::FixedMaterialFlags)p_flag,p_value);
+
+}
+
+bool FixedMaterial::get_fixed_flag(FixedFlag p_flag) const {
+	ERR_FAIL_INDEX_V(p_flag,3,false);
+	return fixed_flags[p_flag];
+}
+
+void FixedMaterial::set_point_size(float p_size) {
+
+	ERR_FAIL_COND(p_size<0);
+	point_size=p_size;
+	VisualServer::get_singleton()->fixed_material_set_point_size(material,p_size);
+}
+
+float FixedMaterial::get_point_size() const{
+
+
+	return point_size;
+}
+
+
+void FixedMaterial::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method(_MD("set_parameter","param","value"),&FixedMaterial::set_parameter);
+	ObjectTypeDB::bind_method(_MD("get_parameter","param"),&FixedMaterial::get_parameter);
+
+	ObjectTypeDB::bind_method(_MD("set_texture","param","texture:Texture"),&FixedMaterial::set_texture);
+	ObjectTypeDB::bind_method(_MD("get_texture:Texture","param"),&FixedMaterial::get_texture);
+
+
+	ObjectTypeDB::bind_method(_MD("set_texcoord_mode","param","mode"),&FixedMaterial::set_texcoord_mode);
+	ObjectTypeDB::bind_method(_MD("get_texcoord_mode","param"),&FixedMaterial::get_texcoord_mode);
+
+	ObjectTypeDB::bind_method(_MD("set_fixed_flag","flag","value"),&FixedMaterial::set_fixed_flag);
+	ObjectTypeDB::bind_method(_MD("get_fixed_flag","flag"),&FixedMaterial::get_fixed_flag);
+
+	ObjectTypeDB::bind_method(_MD("set_uv_transform","transform"),&FixedMaterial::set_uv_transform);
+	ObjectTypeDB::bind_method(_MD("get_uv_transform"),&FixedMaterial::get_uv_transform);
+
+
+	ObjectTypeDB::bind_method(_MD("set_point_size","size"),&FixedMaterial::set_point_size);
+	ObjectTypeDB::bind_method(_MD("get_point_size"),&FixedMaterial::get_point_size);
+
+	ObjectTypeDB::bind_method(_MD("set_detail_blend_mode","mode"),&FixedMaterial::set_detail_blend_mode);
+	ObjectTypeDB::bind_method(_MD("get_detail_blend_mode"),&FixedMaterial::get_detail_blend_mode);
+
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_alpha" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_ALPHA);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_color_array" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_COLOR_ARRAY);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_point_size" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_POINT_SIZE);
+	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/diffuse" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_DIFFUSE);
+	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/specular", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPECULAR );
+	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/emission", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_EMISSION );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/specular_exp", PROPERTY_HINT_RANGE,"1,64,0.01" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPECULAR_EXP );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "params/detail_blend", PROPERTY_HINT_ENUM,"Mix,Add,Sub,Mul" ), _SCS("set_detail_blend_mode"), _SCS("get_detail_blend_mode") );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/detail_mix", PROPERTY_HINT_RANGE,"0,1,0.01" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_DETAIL );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/normal_depth", PROPERTY_HINT_RANGE,"-4,4,0.01" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_NORMAL );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/shade_param", PROPERTY_HINT_RANGE,"0,1,0.01" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADE_PARAM );
+
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/glow", PROPERTY_HINT_RANGE,"0,8,0.01" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_GLOW );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "params/point_size", PROPERTY_HINT_RANGE,"0,1024,1" ), _SCS("set_point_size"), _SCS("get_point_size"));
+	ADD_PROPERTY( PropertyInfo( Variant::TRANSFORM, "uv_xform"), _SCS("set_uv_transform"), _SCS("get_uv_transform") );
+
+	for(int i=0;i<PARAM_MAX;i++) {
+		ADD_PROPERTYI( PropertyInfo( Variant::OBJECT, String()+"textures/"+_param_names[i],PROPERTY_HINT_RESOURCE_TYPE,"Texture" ), _SCS("set_texture"), _SCS("get_texture"), _param_indices[i]);
+		ADD_PROPERTYI( PropertyInfo( Variant::INT, String()+"textures/"+_param_names[i]+"_tc",PROPERTY_HINT_ENUM,"UV,UV Xform,UV2,Sphere" ), _SCS("set_texcoord_mode"), _SCS("get_texcoord_mode"), _param_indices[i] );
+	}
+
+
+	BIND_CONSTANT( PARAM_DIFFUSE );
+	BIND_CONSTANT( PARAM_DETAIL );
+	BIND_CONSTANT( PARAM_SPECULAR );
+	BIND_CONSTANT( PARAM_EMISSION );
+	BIND_CONSTANT( PARAM_SPECULAR_EXP );
+	BIND_CONSTANT( PARAM_GLOW );
+	BIND_CONSTANT( PARAM_NORMAL );
+	BIND_CONSTANT( PARAM_SHADE_PARAM );
+	BIND_CONSTANT( PARAM_MAX );
+
+
+	BIND_CONSTANT( TEXCOORD_SPHERE );
+	BIND_CONSTANT( TEXCOORD_UV );
+	BIND_CONSTANT( TEXCOORD_UV_TRANSFORM );
+	BIND_CONSTANT( TEXCOORD_UV2 );
+
+	BIND_CONSTANT( FLAG_USE_ALPHA );
+	BIND_CONSTANT( FLAG_USE_COLOR_ARRAY );
+	BIND_CONSTANT( FLAG_USE_POINT_SIZE );
+
+}
+
+
+FixedMaterial::FixedMaterial() : Material(VS::get_singleton()->fixed_material_create()) {
+
+
+
+	param[PARAM_DIFFUSE]=Color(1,1,1);
+	param[PARAM_SPECULAR]=Color(0.0,0.0,0.0);
+	param[PARAM_EMISSION]=Color(0.0,0.0,0.0);
+	param[PARAM_SPECULAR_EXP]=40;
+	param[PARAM_GLOW]=0;
+	param[PARAM_NORMAL]=1;
+	param[PARAM_SHADE_PARAM]=0.5;
+	param[PARAM_DETAIL]=1.0;
+
+	detail_blend_mode=BLEND_MODE_MIX;
+
+	fixed_flags[FLAG_USE_ALPHA]=false;
+	fixed_flags[FLAG_USE_COLOR_ARRAY]=false;
+	fixed_flags[FLAG_USE_POINT_SIZE]=false;
+
+	for(int i=0;i<PARAM_MAX;i++) {
+
+		texture_texcoord[i]=TEXCOORD_UV;
+	}
+
+	point_size=1.0;
+}
+
+
+FixedMaterial::~FixedMaterial() {
+
+}
+
+
+bool ShaderMaterial::_set(const StringName& p_name, const Variant& p_value) {
+
+	if (p_name==SceneStringNames::get_singleton()->shader_shader) {
+		set_shader(p_value);
+		return true;
+	} else {
+
+		String n = p_name;
+		if (n.begins_with("param/")) {
+			VisualServer::get_singleton()->material_set_param(material,String(n.ptr()+6),p_value);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ShaderMaterial::_get(const StringName& p_name,Variant &r_ret) const {
+
+
+	if (p_name==SceneStringNames::get_singleton()->shader_shader) {
+
+		r_ret=get_shader();
+		return true;
+	} else {
+
+		String n = p_name;
+		if (n.begins_with("param/")) {
+			r_ret=VisualServer::get_singleton()->material_get_param(material,String(n.ptr()+6));
+			return true;
+		}
+
+	}
+
+
+	return false;
+}
+
+
+void ShaderMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
+
+	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"Shader" ) );
+
+	if (!shader.is_null()) {
+
+		shader->get_param_list(p_list);
+	}
+
+}
+
+
+void ShaderMaterial::_shader_changed() {
+
+	_change_notify(); //also all may have changed then
+}
+
+void ShaderMaterial::set_shader(const Ref<Shader>& p_shader) {
+
+	if (shader.is_valid())
+		shader->disconnect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
+	shader=p_shader;
+	VS::get_singleton()->material_set_shader(material,shader->get_rid());
+	if (shader.is_valid()) {
+		shader->connect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
+	}
+	_change_notify();
+
+}
+
+Ref<Shader> ShaderMaterial::get_shader() const {
+
+	return shader;
+}
+
+
+void ShaderMaterial::set_shader_param(const StringName& p_param,const Variant& p_value) {
+
+	VisualServer::get_singleton()->material_set_param(material,p_param,p_value);
+
+}
+
+Variant ShaderMaterial::get_shader_param(const StringName& p_param) const{
+
+	return VisualServer::get_singleton()->material_get_param(material,p_param);
+}
+
+
+
+void ShaderMaterial::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_shader","shader:Shader"), &ShaderMaterial::set_shader );
+	ObjectTypeDB::bind_method(_MD("get_shader:Shader"), &ShaderMaterial::get_shader );
+	ObjectTypeDB::bind_method(_MD("_shader_changed"), &ShaderMaterial::_shader_changed );
+}
+
+
+
+
+ShaderMaterial::ShaderMaterial() :Material(VisualServer::get_singleton()->material_create()){
+
+
+}
+
+
+/////////////////////////////////
+
+void ParticleSystemMaterial::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&ParticleSystemMaterial::set_texture);
+	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&ParticleSystemMaterial::get_texture);
+
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture" ), _SCS("set_texture"), _SCS("get_texture"));
+
+}
+
+void ParticleSystemMaterial::set_texture(const Ref<Texture>& p_texture) {
+	texture=p_texture;
+	RID rid;
+	if (texture.is_valid())
+		rid=texture->get_rid();
+
+	VS::get_singleton()->fixed_material_set_texture(material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,rid);
+}
+
+Ref<Texture> ParticleSystemMaterial::get_texture() const {
+
+	return texture;
+}
+
+
+ParticleSystemMaterial::ParticleSystemMaterial() :Material(VisualServer::get_singleton()->fixed_material_create()){
+
+	set_flag(FLAG_DOUBLE_SIDED,true);
+	set_flag(FLAG_UNSHADED,true);
+	set_hint(HINT_NO_DEPTH_DRAW,true);
+	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
+	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+}
+
+ParticleSystemMaterial::~ParticleSystemMaterial() {
+
+
+}
+
+//////////////////////////////
+
+
+
+void UnshadedMaterial::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&UnshadedMaterial::set_texture);
+	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&UnshadedMaterial::get_texture);
+
+	ObjectTypeDB::bind_method(_MD("set_use_alpha","enable"),&UnshadedMaterial::set_use_alpha);
+	ObjectTypeDB::bind_method(_MD("is_using_alpha"),&UnshadedMaterial::is_using_alpha);
+
+	ObjectTypeDB::bind_method(_MD("set_use_color_array","enable"),&UnshadedMaterial::set_use_color_array);
+	ObjectTypeDB::bind_method(_MD("is_using_color_array"),&UnshadedMaterial::is_using_color_array);
+
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture" ), _SCS("set_texture"), _SCS("get_texture"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "alpha" ), _SCS("set_use_alpha"), _SCS("is_using_alpha"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "color_array" ), _SCS("set_use_color_array"), _SCS("is_using_color_array"));
+
+}
+
+void UnshadedMaterial::set_texture(const Ref<Texture>& p_texture) {
+	RID rid;
+	if (texture.is_valid())
+		rid=texture->get_rid();
+
+	VS::get_singleton()->fixed_material_set_texture(material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,rid);
+}
+Ref<Texture> UnshadedMaterial::get_texture() const {
+
+	return texture;
+}
+
+void UnshadedMaterial::set_use_alpha(bool p_use_alpha) {
+
+	alpha=p_use_alpha;
+	VS::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_ALPHA,p_use_alpha);
+	set_hint(HINT_NO_DEPTH_DRAW,p_use_alpha);
+
+}
+
+bool UnshadedMaterial::is_using_alpha() const{
+
+	return alpha;
+}
+
+void UnshadedMaterial::set_use_color_array(bool p_use_color_array){
+
+	color_array=p_use_color_array;
+	VS::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,p_use_color_array);
+
+}
+
+bool UnshadedMaterial::is_using_color_array() const{
+
+	return color_array;
+}
+
+UnshadedMaterial::UnshadedMaterial() :Material(VisualServer::get_singleton()->fixed_material_create()){
+
+	set_flag(FLAG_UNSHADED,true);
+	set_use_alpha(true);
+}
+
+UnshadedMaterial::~UnshadedMaterial() {
+
+
+}

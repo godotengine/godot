@@ -1,0 +1,3 @@
+set solib-search-path .
+directory ../..
+file app_process

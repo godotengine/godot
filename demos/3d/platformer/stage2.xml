@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="4" version="0.99" version_name="Godot Engine v0.99.3735-pre-beta">
+	<ext_resource path="res://tiles.*" type="MeshLibrary"></ext_resource>
+	<ext_resource path="res://player.*" type="PackedScene"></ext_resource>
+	<resource type="Environment" path="local://1">
+		<int name="background/mode"> 1 </int>
+		<color name="background/color"> 0, 0, 0, 1 </color>
+		<real name="background/energy"> 1 </real>
+		<real name="background/scale"> 1 </real>
+		<bool name="glow/enabled"> False </bool>
+		<int name="glow/blur_passes"> 4 </int>
+		<real name="glow/bloom"> 8 </real>
+		<real name="glow/bloom_treshold"> 0.5 </real>
+		<bool name="dof_blur/enabled"> False </bool>
+		<int name="dof_blur/blur_passes"> 1 </int>
+		<real name="dof_blur/begin"> 100 </real>
+		<real name="dof_blur/range"> 10 </real>
+		<bool name="hdr/enabled"> False </bool>
+		<real name="hdr/exposure"> 0.4 </real>
+		<real name="hdr/scalar"> 1 </real>
+		<real name="hdr/glow_treshold"> 0.95 </real>
+		<real name="hdr/glow_scale"> 0.2 </real>
+		<real name="hdr/min_luminance"> 0.4 </real>
+		<real name="hdr/max_luminance"> 8 </real>
+		<real name="hdr/exposure_adj_speed"> 0.5 </real>
+		<bool name="fog/enabled"> True </bool>
+		<real name="fog/begin"> 10 </real>
+		<color name="fog/begin_color"> 0, 0.773632, 0.985852, 1 </color>
+		<color name="fog/end_color"> 0, 0, 0, 1 </color>
+		<real name="fog/attenuation"> 0.965936 </real>
+		<bool name="fog/bg"> True </bool>
+		<bool name="bcs/enabled"> False </bool>
+		<real name="bcs/brightness"> 1 </real>
+		<real name="bcs/contrast"> 1 </real>
+		<real name="bcs/saturation"> 1.608 </real>
+		<bool name="gamma/enabled"> False </bool>
+		<real name="gamma/gamma"> 1.414214 </real>
+
+	</resource>
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="33">
+				<string> "world" </string>
+				<string> "Spatial" </string>
+				<string> "__meta__" </string>
+				<string> "DirectionalLight" </string>
+				<string> "transform/local" </string>
+				<string> "layers" </string>
+				<string> "params/energy" </string>
+				<string> "colors/ambient" </string>
+				<string> "colors/diffuse" </string>
+				<string> "colors/specular" </string>
+				<string> "shadow/shadow" </string>
+				<string> "shadow/darkening" </string>
+				<string> "shadow/z_offset" </string>
+				<string> "shadow/z_slope_scale" </string>
+				<string> "projector" </string>
+				<string> "operator" </string>
+				<string> "shadow/mode" </string>
+				<string> "shadow/max_distance" </string>
+				<string> "shadow/split_weight" </string>
+				<string> "shadow/zoffset_scale" </string>
+				<string> "environment" </string>
+				<string> "WorldEnvironment" </string>
+				<string> "player" </string>
+				<string> "RigidBody" </string>
+				<string> "GridMap" </string>
+				<string> "theme/theme" </string>
+				<string> "theme/bake" </string>
+				<string> "cell/size" </string>
+				<string> "cell/octant_size" </string>
+				<string> "cell/center_x" </string>
+				<string> "cell/center_y" </string>
+				<string> "cell/center_z" </string>
+				<string> "data" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 0 </int>
+			<string> "node_count" </string>
+			<int> 5 </int>
+			<string> "variants" </string>
+			<array  len="24" shared="false">
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "zoom" </string>
+							<real> 1 </real>
+							<string> "ofs" </string>
+							<vector2> 1, 1 </vector2>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 400 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 19.451796 </real>
+									<string> "x_rot" </string>
+									<real> 1.045796 </real>
+									<string> "y_rot" </string>
+									<real> 0.45 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 12.0226, -12.9226, 7.77626 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> False </bool>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "3D" </string>
+				</dictionary>
+				<transform> 0.522923, 0.663002, -0.535706, -0.24539, 0.718971, 0.650281, 0.816294, -0.20859, 0.53866, 0, 0, 0 </transform>
+				<int> 1 </int>
+				<real> 1 </real>
+				<color> 0.266667, 0.31305, 0.617921, 1 </color>
+				<color> 1, 1, 1, 1 </color>
+				<bool> True </bool>
+				<real> 0 </real>
+				<real> 0.05 </real>
+				<real> 0.5 </real>
+				<resource name=""></resource>				<int> 0 </int>
+				<int> 2 </int>
+				<real> 40 </real>
+				<real> 0.410558 </real>
+				<real> 2 </real>
+				<resource  resource_type="Environment" path="local://1">  </resource>
+				<resource  resource_type="PackedScene" path="res://player.*">  </resource>
+				<transform> -4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, 8.28316, 1.39278, 15.3332 </transform>
+				<resource  resource_type="MeshLibrary" path="res://tiles.*">  </resource>
+				<bool> False </bool>
+				<int> 4 </int>
+				<dictionary  shared="false">
+					<string> "cells" </string>
+					<int_array  len="6"> 						4, 7, 7, 5, 7, -1073741817 </int_array>
+				</dictionary>
+				<dictionary  shared="false">
+					<string> "_editor_clip_" </string>
+					<int> 0 </int>
+				</dictionary>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="91"> 				-1, -1, 1, 0, -1, 1, 2, 0, 0, 0, 0, 3, 3, -1, 16, 4, 1, 5, 2, 6, 3, 7, 4, 8, 5, 9, 5, 10, 6, 11, 7, 12, 8, 13, 9, 14, 10, 15, 11, 16, 12, 17, 13, 18, 14, 19, 15, 0, 0, 0, 21, 20, -1, 1, 20, 16, 0, 0, 0, 23, 22, 17, 1, 4, 18, 0, 0, 0, 24, 24, -1, 9, 25, 19, 26, 20, 27, 15, 28, 21, 29, 6, 30, 6, 31, 6, 32, 22, 2, 23, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="0"> 				 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

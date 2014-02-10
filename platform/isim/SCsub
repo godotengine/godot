@@ -1,0 +1,30 @@
+Import('env')
+
+iphone_lib = [
+
+	'#platform/iphone/os_iphone.cpp',
+	#'#platform/iphone/rasterizer_iphone.cpp',
+	'#platform/iphone/audio_driver_iphone.cpp',
+	'#platform/iphone/gl_view.mm',
+	'#platform/iphone/main.m',
+	'#platform/iphone/app_delegate.mm',
+	'#platform/iphone/view_controller.mm',
+	'#platform/iphone/scoreloop_ios.mm',
+]
+
+
+#env.Depends('#core/math/vector3.h', 'vector3_psp.h')
+
+#iphone_lib = env.Library('iphone', iphone_lib)
+
+obj = env.Object('#platform/iphone/godot_iphone.cpp')
+
+prog = None
+if env["target"]=="release":
+	prog = env.Program('#bin/godot_iphone_opt', [obj] + iphone_lib)
+	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
+	#env.AddPostAction(prog, action)
+else:
+	prog = env.Program('#bin/godot', [obj] + iphone_lib)
+	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
+	#env.AddPostAction(prog, action)
