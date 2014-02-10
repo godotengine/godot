@@ -21,6 +21,10 @@ Binary downloads, documentation, community, etc. can be found in Godot homepage:
 
 http://www.godotengine.org
 
+### Compiling from Source
+
+Compilation instructions for every platform can be found in the Wiki:
+http://www.godotengine.org/wiki/doku.php?id=advanced
 
 
 
