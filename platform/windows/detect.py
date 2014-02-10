@@ -109,9 +109,8 @@ def configure(env):
 		env.Append(CCFLAGS=['/DWIN32'])
 		env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
 
-		#env.Append(CCFLAGS=['/DLEGACYGL_ENABLED'])
-		env.Append(CCFLAGS=['/DGLES_ENABLED'])
-		#env.Append(CCFLAGS=['/DGLES1_ENABLED'])
+		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
+		env.Append(CCFLAGS=['/DGLES1_ENABLED'])
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
 		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32','wsock32'])
 		env.Append(LINKFLAGS=['/DEBUG'])
