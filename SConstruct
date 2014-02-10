@@ -217,6 +217,10 @@ for p in platform_list:
 
 	if (env['vorbis']=='yes'):
 		env.Append(CPPFLAGS=['-DVORBIS_ENABLED']);
+	
+	if (env['opengl']=='yes'):
+		env.Append(CPPFLAGS=['-DOPENGL_ENABLED']);
+		env.Append(CPPFLAGS=['-DGLES2_ENABLED']);
 
 	if (env['theora']=='yes'):
 		env.Append(CPPFLAGS=['-DTHEORA_ENABLED']);
