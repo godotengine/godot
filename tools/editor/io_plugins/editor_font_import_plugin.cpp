@@ -439,7 +439,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		}
 
 		if (dest->get_line_edit()->get_text()=="") {
-			error_dialog->set_text("No tatget font resource!");
+			error_dialog->set_text("No target font resource!");
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
