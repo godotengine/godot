@@ -1575,7 +1575,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 					}  else {
 
 						editor_text=String::num( p_item->cells[col].val, Math::decimals( p_item->cells[col].step ) );
-						bring_up_value_editor=true;
+						bring_up_value_editor=false;
 						if (select_mode==SELECT_MULTI && get_scene()->get_last_event_id() == focus_in_id)
 							bring_up_editor=false;
 
