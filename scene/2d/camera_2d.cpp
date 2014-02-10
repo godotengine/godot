@@ -131,7 +131,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 	}
 
 
-    Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());;
+	Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());;
 	screen_offset+=offset;
 
 	float angle = get_global_transform().get_rotation();
