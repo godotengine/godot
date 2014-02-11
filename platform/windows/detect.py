@@ -84,6 +84,7 @@ def configure(env):
 
 			env.Append(CCFLAGS=['/O2'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
+			env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
 		elif (env["target"]=="test"):
 
@@ -92,8 +93,9 @@ def configure(env):
 
 		elif (env["target"]=="debug"):
 
-                        env.Append(CCFLAGS=['/Zi','/DDEBUG_ENABLED','/DD3D_DEBUG_INFO','/O1'])
+			env.Append(CCFLAGS=['/Zi','/DDEBUG_ENABLED','/DD3D_DEBUG_INFO','/O1'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+			env.Append(LINKFLAGS=['/DEBUG'])
 
 		elif (env["target"]=="profile"):
 
@@ -113,8 +115,7 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLES1_ENABLED'])
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
 		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32','wsock32'])
-		env.Append(LINKFLAGS=['/DEBUG'])
-
+		
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
                 if (os.getenv("DXSDK_DIR")):
                         DIRECTX_PATH=os.getenv("DXSDK_DIR")
