@@ -1459,7 +1459,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			current_option=-1;
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text("I see..");
-			accept->set_text("No main scene has ever been defined.\nSelect one from \"Project Settings\" under the 'run' category.");
+			accept->set_text("No main scene has ever been defined.\nSelect one from \"Project Settings\" under the 'application' category.");
 			accept->popup_centered(Size2(300,100));;
 			return;
 		}
