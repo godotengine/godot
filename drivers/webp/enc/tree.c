@@ -1,17 +1,19 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
-// Coding of token probabilities, intra modes and segments.
+// Token probabilities
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
 #include "./vp8enci.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // Default probabilities
@@ -19,6 +21,7 @@
 // Paragraph 13.5
 const uint8_t
   VP8CoeffsProba0[NUM_TYPES][NUM_BANDS][NUM_CTX][NUM_PROBAS] = {
+  // genereated using vp8_default_coef_probs() in entropy.c:129
   { { { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 },
       { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 },
       { 128, 128, 128, 128, 128, 128, 128, 128, 128, 128, 128 }
@@ -315,7 +318,7 @@ void VP8CodeIntraModes(VP8Encoder* const enc) {
   VP8EncIterator it;
   VP8IteratorInit(enc, &it);
   do {
-    const VP8MBInfo* const mb = it.mb_;
+    const VP8MBInfo* mb = it.mb_;
     const uint8_t* preds = it.preds_;
     if (enc->segment_hdr_.update_map_) {
       PutSegment(bw, mb->segment_, enc->proba_.segments_);
@@ -340,7 +343,7 @@ void VP8CodeIntraModes(VP8Encoder* const enc) {
       }
     }
     PutUVMode(bw, mb->uv_mode_);
-  } while (VP8IteratorNext(&it));
+  } while (VP8IteratorNext(&it, 0));
 }
 
 //------------------------------------------------------------------------------
@@ -502,3 +505,6 @@ void VP8WriteProbas(VP8BitWriter* const bw, const VP8Proba* const probas) {
   }
 }
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

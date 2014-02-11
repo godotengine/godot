@@ -1,10 +1,8 @@
 // Copyright 2012 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 //  Internal header for constants related to WebP file format.
@@ -13,9 +11,6 @@
 
 #ifndef WEBP_WEBP_FORMAT_CONSTANTS_H_
 #define WEBP_WEBP_FORMAT_CONSTANTS_H_
-
-// Create fourcc of the chunk from the chunk tag characters.
-#define MKFOURCC(a, b, c, d) ((uint32_t)(a) | (b) << 8 | (c) << 16 | (d) << 24)
 
 // VP8 related constants.
 #define VP8_SIGNATURE 0x9d012a              // Signature in VP8 data.
@@ -70,16 +65,23 @@ typedef enum {
 #define CHUNK_SIZE_BYTES   4     // Size needed to store chunk's size.
 #define CHUNK_HEADER_SIZE  8     // Size of a chunk header.
 #define RIFF_HEADER_SIZE   12    // Size of the RIFF header ("RIFFnnnnWEBP").
-#define ANMF_CHUNK_SIZE    16    // Size of an ANMF chunk.
-#define ANIM_CHUNK_SIZE    6     // Size of an ANIM chunk.
-#define FRGM_CHUNK_SIZE    6     // Size of a FRGM chunk.
+#define FRAME_CHUNK_SIZE   15    // Size of a FRM chunk.
+#define LOOP_CHUNK_SIZE    2     // Size of a LOOP chunk.
+#define TILE_CHUNK_SIZE    6     // Size of a TILE chunk.
 #define VP8X_CHUNK_SIZE    10    // Size of a VP8X chunk.
 
-#define MAX_CANVAS_SIZE     (1 << 24)     // 24-bit max for VP8X width/height.
-#define MAX_IMAGE_AREA      (1ULL << 32)  // 32-bit max for width x height.
-#define MAX_LOOP_COUNT      (1 << 16)     // maximum value for loop-count
-#define MAX_DURATION        (1 << 24)     // maximum duration
-#define MAX_POSITION_OFFSET (1 << 24)     // maximum frame/fragment x/y offset
+#define TILING_FLAG_BIT    0x01  // Set if tiles are possibly used.
+#define ANIMATION_FLAG_BIT 0x02  // Set if some animation is expected
+#define ICC_FLAG_BIT       0x04  // Whether ICC is present or not.
+#define METADATA_FLAG_BIT  0x08  // Set if some META chunk is possibly present.
+#define ALPHA_FLAG_BIT     0x10  // Should be same as the ALPHA_FLAG in mux.h
+#define ROTATION_FLAG_BITS 0xe0  // all 3 bits for rotation + symmetry
+
+#define MAX_CANVAS_SIZE     (1 << 24)    // 24-bit max for VP8X width/height.
+#define MAX_IMAGE_AREA      (1ULL << 32) // 32-bit max for width x height.
+#define MAX_LOOP_COUNT      (1 << 16)    // maximum value for loop-count
+#define MAX_DURATION        (1 << 24)    // maximum duration
+#define MAX_POSITION_OFFSET (1 << 24)    // maximum frame/tile x/y offset
 
 // Maximum chunk payload is such that adding the header and padding won't
 // overflow a uint32_t.

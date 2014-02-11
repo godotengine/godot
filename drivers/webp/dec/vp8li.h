@@ -1,10 +1,8 @@
 // Copyright 2012 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Lossless decoder: internal header.
@@ -22,7 +20,7 @@
 #include "../utils/huffman.h"
 #include "../webp/format_constants.h"
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
@@ -57,8 +55,7 @@ typedef struct {
   HTreeGroup     *htree_groups_;
 } VP8LMetadata;
 
-typedef struct VP8LDecoder VP8LDecoder;
-struct VP8LDecoder {
+typedef struct {
   VP8StatusCode    status_;
   VP8LDecodeState  action_;
   VP8LDecodeState  state_;
@@ -66,8 +63,7 @@ struct VP8LDecoder {
 
   const WebPDecBuffer *output_;    // shortcut to io->opaque->output
 
-  uint32_t        *pixels_;        // Internal data: either uint8_t* for alpha
-                                   // or uint32_t* for BGRA.
+  uint32_t        *argb_;          // Internal data: always in BGRA color mode.
   uint32_t        *argb_cache_;    // Scratch buffer for temporary BGRA storage.
 
   VP8LBitReader    br_;
@@ -75,9 +71,6 @@ struct VP8LDecoder {
   int              width_;
   int              height_;
   int              last_row_;      // last input row decoded so far.
-  int              last_pixel_;    // last pixel decoded so far. However, it may
-                                   // not be transformed, scaled and
-                                   // color-converted yet.
   int              last_out_row_;  // last row output so far.
 
   VP8LMetadata     hdr_;
@@ -89,27 +82,18 @@ struct VP8LDecoder {
 
   uint8_t         *rescaler_memory;  // Working memory for rescaling work.
   WebPRescaler    *rescaler;         // Common rescaler for all channels.
-};
+} VP8LDecoder;
 
 //------------------------------------------------------------------------------
 // internal functions. Not public.
 
-struct ALPHDecoder;  // Defined in dec/alphai.h.
-
 // in vp8l.c
 
-// Decodes image header for alpha data stored using lossless compression.
-// Returns false in case of error.
-int VP8LDecodeAlphaHeader(struct ALPHDecoder* const alph_dec,
-                          const uint8_t* const data, size_t data_size,
-                          uint8_t* const output);
-
-// Decodes *at least* 'last_row' rows of alpha. If some of the initial rows are
-// already decoded in previous call(s), it will resume decoding from where it
-// was paused.
-// Returns false in case of bitstream error.
-int VP8LDecodeAlphaImageStream(struct ALPHDecoder* const alph_dec,
-                               int last_row);
+// Decodes a raw image stream (without header) and store the alpha data
+// into *output, which must be of size width x height. Returns false in case
+// of error.
+int VP8LDecodeAlphaImageStream(int width, int height, const uint8_t* const data,
+                               size_t data_size, uint8_t* const output);
 
 // Allocates and initialize a new lossless decoder instance.
 VP8LDecoder* VP8LNew(void);
@@ -130,7 +114,7 @@ void VP8LDelete(VP8LDecoder* const dec);
 
 //------------------------------------------------------------------------------
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 }    // extern "C"
 #endif
 

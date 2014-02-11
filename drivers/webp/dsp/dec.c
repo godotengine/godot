@@ -1,10 +1,8 @@
 // Copyright 2010 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Speed-critical decoding functions.
@@ -13,6 +11,10 @@
 
 #include "./dsp.h"
 #include "../dec/vp8i.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // run-time tables (~4k)
@@ -57,14 +59,6 @@ static WEBP_INLINE uint8_t clip_8b(int v) {
 #define STORE(x, y, v) \
   dst[x + y * BPS] = clip_8b(dst[x + y * BPS] + ((v) >> 3))
 
-#define STORE2(y, dc, d, c) do {    \
-  const int DC = (dc);              \
-  STORE(0, y, DC + (d));            \
-  STORE(1, y, DC + (c));            \
-  STORE(2, y, DC - (c));            \
-  STORE(3, y, DC - (d));            \
-} while (0)
-
 static const int kC1 = 20091 + (1 << 16);
 static const int kC2 = 35468;
 #define MUL(a, b) (((a) * (b)) >> 16)
@@ -107,21 +101,7 @@ static void TransformOne(const int16_t* in, uint8_t* dst) {
     dst += BPS;
   }
 }
-
-// Simplified transform when only in[0], in[1] and in[4] are non-zero
-static void TransformAC3(const int16_t* in, uint8_t* dst) {
-  const int a = in[0] + 4;
-  const int c4 = MUL(in[4], kC2);
-  const int d4 = MUL(in[4], kC1);
-  const int c1 = MUL(in[1], kC2);
-  const int d1 = MUL(in[1], kC1);
-  STORE2(0, a + d4, d1, c1);
-  STORE2(1, a + c4, d1, c1);
-  STORE2(2, a - c4, d1, c1);
-  STORE2(3, a - d4, d1, c1);
-}
 #undef MUL
-#undef STORE2
 
 static void TransformTwo(const int16_t* in, uint8_t* dst, int do_two) {
   TransformOne(in, dst);
@@ -446,16 +426,11 @@ static void HE8uv(uint8_t *dst) {    // horizontal
 }
 
 // helper for chroma-DC predictions
-static WEBP_INLINE void Put8x8uv(uint8_t value, uint8_t* dst) {
+static WEBP_INLINE void Put8x8uv(uint64_t v, uint8_t* dst) {
   int j;
-#ifndef WEBP_REFERENCE_IMPLEMENTATION
-  const uint64_t v = (uint64_t)value * 0x0101010101010101ULL;
   for (j = 0; j < 8; ++j) {
     *(uint64_t*)(dst + j * BPS) = v;
   }
-#else
-  for (j = 0; j < 8; ++j) memset(dst + j * BPS, value, 8);
-#endif
 }
 
 static void DC8uv(uint8_t *dst) {     // DC
@@ -464,7 +439,7 @@ static void DC8uv(uint8_t *dst) {     // DC
   for (i = 0; i < 8; ++i) {
     dc0 += dst[i - BPS] + dst[-1 + i * BPS];
   }
-  Put8x8uv(dc0 >> 4, dst);
+  Put8x8uv((uint64_t)((dc0 >> 4) * 0x0101010101010101ULL), dst);
 }
 
 static void DC8uvNoLeft(uint8_t *dst) {   // DC with no left samples
@@ -473,7 +448,7 @@ static void DC8uvNoLeft(uint8_t *dst) {   // DC with no left samples
   for (i = 0; i < 8; ++i) {
     dc0 += dst[i - BPS];
   }
-  Put8x8uv(dc0 >> 3, dst);
+  Put8x8uv((uint64_t)((dc0 >> 3) * 0x0101010101010101ULL), dst);
 }
 
 static void DC8uvNoTop(uint8_t *dst) {  // DC with no top samples
@@ -482,11 +457,11 @@ static void DC8uvNoTop(uint8_t *dst) {  // DC with no top samples
   for (i = 0; i < 8; ++i) {
     dc0 += dst[-1 + i * BPS];
   }
-  Put8x8uv(dc0 >> 3, dst);
+  Put8x8uv((uint64_t)((dc0 >> 3) * 0x0101010101010101ULL), dst);
 }
 
 static void DC8uvNoTopLeft(uint8_t *dst) {    // DC with nothing
-  Put8x8uv(0x80, dst);
+  Put8x8uv(0x8080808080808080ULL, dst);
 }
 
 //------------------------------------------------------------------------------
@@ -697,7 +672,6 @@ static void HFilter8i(uint8_t* u, uint8_t* v, int stride,
 //------------------------------------------------------------------------------
 
 VP8DecIdct2 VP8Transform;
-VP8DecIdct VP8TransformAC3;
 VP8DecIdct VP8TransformUV;
 VP8DecIdct VP8TransformDC;
 VP8DecIdct VP8TransformDCUV;
@@ -725,7 +699,6 @@ void VP8DspInit(void) {
   VP8TransformUV = TransformUV;
   VP8TransformDC = TransformDC;
   VP8TransformDCUV = TransformDCUV;
-  VP8TransformAC3 = TransformAC3;
 
   VP8VFilter16 = VFilter16;
   VP8HFilter16 = HFilter16;
@@ -754,3 +727,6 @@ void VP8DspInit(void) {
   }
 }
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

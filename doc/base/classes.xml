@@ -4743,13 +4743,20 @@
 	</brief_description>
 	<description>
 	Camera node for 2D scenes. It forces the screen (current layer) to scroll following this node. This makes it easier (and faster) to program scrollable scenes than manually changing the position of [CanvasItem] based nodes.
+	This node is intended to be a simple helper get get things going quickly
+	and it may happen often that more functionality is desired to change
+	how the camera works. To make your own custom camera node, simply
+	inherit from [Node2D] and change the transform of the canvas by
+	calling get_viewport().set_canvas_transform(m) in [Viewport].
+	
 	</description>
 	<methods>
 		<method name="set_offset"  >
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
-			Set the scroll offset.
+			Set the scroll offset. Useful for looking around or
+			camera shake animations.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const" >

@@ -1,10 +1,8 @@
 // Copyright 2012 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // main entry for the decoder
@@ -14,13 +12,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "./alphai.h"
 #include "./vp8li.h"
 #include "../dsp/lossless.h"
 #include "../dsp/yuv.h"
-#include "../utils/alpha_processing.h"
 #include "../utils/huffman.h"
 #include "../utils/utils.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 #define NUM_ARGB_CACHE_ROWS          16
 
@@ -57,19 +57,19 @@ static const uint8_t kCodeLengthCodeOrder[NUM_CODE_LENGTH_CODES] = {
 };
 
 #define CODE_TO_PLANE_CODES        120
-static const uint8_t kCodeToPlane[CODE_TO_PLANE_CODES] = {
-  0x18, 0x07, 0x17, 0x19, 0x28, 0x06, 0x27, 0x29, 0x16, 0x1a,
-  0x26, 0x2a, 0x38, 0x05, 0x37, 0x39, 0x15, 0x1b, 0x36, 0x3a,
-  0x25, 0x2b, 0x48, 0x04, 0x47, 0x49, 0x14, 0x1c, 0x35, 0x3b,
-  0x46, 0x4a, 0x24, 0x2c, 0x58, 0x45, 0x4b, 0x34, 0x3c, 0x03,
-  0x57, 0x59, 0x13, 0x1d, 0x56, 0x5a, 0x23, 0x2d, 0x44, 0x4c,
-  0x55, 0x5b, 0x33, 0x3d, 0x68, 0x02, 0x67, 0x69, 0x12, 0x1e,
-  0x66, 0x6a, 0x22, 0x2e, 0x54, 0x5c, 0x43, 0x4d, 0x65, 0x6b,
-  0x32, 0x3e, 0x78, 0x01, 0x77, 0x79, 0x53, 0x5d, 0x11, 0x1f,
-  0x64, 0x6c, 0x42, 0x4e, 0x76, 0x7a, 0x21, 0x2f, 0x75, 0x7b,
-  0x31, 0x3f, 0x63, 0x6d, 0x52, 0x5e, 0x00, 0x74, 0x7c, 0x41,
-  0x4f, 0x10, 0x20, 0x62, 0x6e, 0x30, 0x73, 0x7d, 0x51, 0x5f,
-  0x40, 0x72, 0x7e, 0x61, 0x6f, 0x50, 0x71, 0x7f, 0x60, 0x70
+static const uint8_t code_to_plane_lut[CODE_TO_PLANE_CODES] = {
+   0x18, 0x07, 0x17, 0x19, 0x28, 0x06, 0x27, 0x29, 0x16, 0x1a,
+   0x26, 0x2a, 0x38, 0x05, 0x37, 0x39, 0x15, 0x1b, 0x36, 0x3a,
+   0x25, 0x2b, 0x48, 0x04, 0x47, 0x49, 0x14, 0x1c, 0x35, 0x3b,
+   0x46, 0x4a, 0x24, 0x2c, 0x58, 0x45, 0x4b, 0x34, 0x3c, 0x03,
+   0x57, 0x59, 0x13, 0x1d, 0x56, 0x5a, 0x23, 0x2d, 0x44, 0x4c,
+   0x55, 0x5b, 0x33, 0x3d, 0x68, 0x02, 0x67, 0x69, 0x12, 0x1e,
+   0x66, 0x6a, 0x22, 0x2e, 0x54, 0x5c, 0x43, 0x4d, 0x65, 0x6b,
+   0x32, 0x3e, 0x78, 0x01, 0x77, 0x79, 0x53, 0x5d, 0x11, 0x1f,
+   0x64, 0x6c, 0x42, 0x4e, 0x76, 0x7a, 0x21, 0x2f, 0x75, 0x7b,
+   0x31, 0x3f, 0x63, 0x6d, 0x52, 0x5e, 0x00, 0x74, 0x7c, 0x41,
+   0x4f, 0x10, 0x20, 0x62, 0x6e, 0x30, 0x73, 0x7d, 0x51, 0x5f,
+   0x40, 0x72, 0x7e, 0x61, 0x6f, 0x50, 0x71, 0x7f, 0x60, 0x70
 };
 
 static int DecodeImageStream(int xsize, int ysize,
@@ -80,19 +80,20 @@ static int DecodeImageStream(int xsize, int ysize,
 //------------------------------------------------------------------------------
 
 int VP8LCheckSignature(const uint8_t* const data, size_t size) {
-  return (size >= VP8L_FRAME_HEADER_SIZE &&
-          data[0] == VP8L_MAGIC_BYTE &&
-          (data[4] >> 5) == 0);  // version
+  return (size >= 1) && (data[0] == VP8L_MAGIC_BYTE);
 }
 
 static int ReadImageInfo(VP8LBitReader* const br,
                          int* const width, int* const height,
                          int* const has_alpha) {
-  if (VP8LReadBits(br, 8) != VP8L_MAGIC_BYTE) return 0;
+  const uint8_t signature = VP8LReadBits(br, 8);
+  if (!VP8LCheckSignature(&signature, 1)) {
+    return 0;
+  }
   *width = VP8LReadBits(br, VP8L_IMAGE_SIZE_BITS) + 1;
   *height = VP8LReadBits(br, VP8L_IMAGE_SIZE_BITS) + 1;
   *has_alpha = VP8LReadBits(br, 1);
-  if (VP8LReadBits(br, VP8L_VERSION_BITS) != 0) return 0;
+  VP8LReadBits(br, VP8L_VERSION_BITS);  // Read/ignore the version number.
   return 1;
 }
 
@@ -100,8 +101,6 @@ int VP8LGetInfo(const uint8_t* data, size_t data_size,
                 int* const width, int* const height, int* const has_alpha) {
   if (data == NULL || data_size < VP8L_FRAME_HEADER_SIZE) {
     return 0;         // not enough data
-  } else if (!VP8LCheckSignature(data, data_size)) {
-    return 0;         // bad signature
   } else {
     int w, h, a;
     VP8LBitReader br;
@@ -139,43 +138,40 @@ static WEBP_INLINE int PlaneCodeToDistance(int xsize, int plane_code) {
   if (plane_code > CODE_TO_PLANE_CODES) {
     return plane_code - CODE_TO_PLANE_CODES;
   } else {
-    const int dist_code = kCodeToPlane[plane_code - 1];
+    const int dist_code = code_to_plane_lut[plane_code - 1];
     const int yoffset = dist_code >> 4;
     const int xoffset = 8 - (dist_code & 0xf);
     const int dist = yoffset * xsize + xoffset;
-    return (dist >= 1) ? dist : 1;  // dist<1 can happen if xsize is very small
+    return (dist >= 1) ? dist : 1;
   }
 }
 
 //------------------------------------------------------------------------------
 // Decodes the next Huffman code from bit-stream.
 // FillBitWindow(br) needs to be called at minimum every second call
-// to ReadSymbol, in order to pre-fetch enough bits.
+// to ReadSymbolUnsafe.
+static int ReadSymbolUnsafe(const HuffmanTree* tree, VP8LBitReader* const br) {
+  const HuffmanTreeNode* node = tree->root_;
+  assert(node != NULL);
+  while (!HuffmanTreeNodeIsLeaf(node)) {
+    node = HuffmanTreeNextNode(node, VP8LReadOneBitUnsafe(br));
+  }
+  return node->symbol_;
+}
+
 static WEBP_INLINE int ReadSymbol(const HuffmanTree* tree,
                                   VP8LBitReader* const br) {
-  const HuffmanTreeNode* node = tree->root_;
-  uint32_t bits = VP8LPrefetchBits(br);
-  int bitpos = br->bit_pos_;
-  // Check if we find the bit combination from the Huffman lookup table.
-  const int lut_ix = bits & (HUFF_LUT - 1);
-  const int lut_bits = tree->lut_bits_[lut_ix];
-  if (lut_bits <= HUFF_LUT_BITS) {
-    VP8LSetBitPos(br, bitpos + lut_bits);
-    return tree->lut_symbol_[lut_ix];
+  const int read_safe = (br->pos_ + 8 > br->len_);
+  if (!read_safe) {
+    return ReadSymbolUnsafe(tree, br);
+  } else {
+    const HuffmanTreeNode* node = tree->root_;
+    assert(node != NULL);
+    while (!HuffmanTreeNodeIsLeaf(node)) {
+      node = HuffmanTreeNextNode(node, VP8LReadOneBit(br));
+    }
+    return node->symbol_;
   }
-  node += tree->lut_jump_[lut_ix];
-  bitpos += HUFF_LUT_BITS;
-  bits >>= HUFF_LUT_BITS;
-
-  // Decode the value from a binary tree.
-  assert(node != NULL);
-  do {
-    node = HuffmanTreeNextNode(node, bits & 1);
-    bits >>= 1;
-    ++bitpos;
-  } while (HuffmanTreeNodeIsNotLeaf(node));
-  VP8LSetBitPos(br, bitpos);
-  return node->symbol_;
 }
 
 static int ReadHuffmanCodeLengths(
@@ -331,10 +327,10 @@ static int ReadHuffmanCodes(VP8LDecoder* const dec, int xsize, int ysize,
     hdr->huffman_subsample_bits_ = huffman_precision;
     for (i = 0; i < huffman_pixs; ++i) {
       // The huffman data is stored in red and green bytes.
-      const int group = (huffman_image[i] >> 8) & 0xffff;
-      huffman_image[i] = group;
-      if (group >= num_htree_groups) {
-        num_htree_groups = group + 1;
+      const int index = (huffman_image[i] >> 8) & 0xffff;
+      huffman_image[i] = index;
+      if (index >= num_htree_groups) {
+        num_htree_groups = index + 1;
       }
     }
   }
@@ -415,13 +411,12 @@ static int AllocateAndInitRescaler(VP8LDecoder* const dec, VP8Io* const io) {
 // We have special "export" function since we need to convert from BGRA
 static int Export(WebPRescaler* const rescaler, WEBP_CSP_MODE colorspace,
                   int rgba_stride, uint8_t* const rgba) {
-  uint32_t* const src = (uint32_t*)rescaler->dst;
+  const uint32_t* const src = (const uint32_t*)rescaler->dst;
   const int dst_width = rescaler->dst_width;
   int num_lines_out = 0;
   while (WebPRescalerHasPendingOutput(rescaler)) {
     uint8_t* const dst = rgba + num_lines_out * rgba_stride;
     WebPRescalerExportRow(rescaler);
-    WebPMultARGBRow(src, dst_width, 1);
     VP8LConvertFromBGRA(src, dst_width, colorspace, dst);
     ++num_lines_out;
   }
@@ -429,22 +424,18 @@ static int Export(WebPRescaler* const rescaler, WEBP_CSP_MODE colorspace,
 }
 
 // Emit scaled rows.
-static int EmitRescaledRowsRGBA(const VP8LDecoder* const dec,
-                                uint8_t* in, int in_stride, int mb_h,
-                                uint8_t* const out, int out_stride) {
+static int EmitRescaledRows(const VP8LDecoder* const dec,
+                            const uint32_t* const data, int in_stride, int mb_h,
+                            uint8_t* const out, int out_stride) {
   const WEBP_CSP_MODE colorspace = dec->output_->colorspace;
+  const uint8_t* const in = (const uint8_t*)data;
   int num_lines_in = 0;
   int num_lines_out = 0;
   while (num_lines_in < mb_h) {
-    uint8_t* const row_in = in + num_lines_in * in_stride;
+    const uint8_t* const row_in = in + num_lines_in * in_stride;
     uint8_t* const row_out = out + num_lines_out * out_stride;
-    const int lines_left = mb_h - num_lines_in;
-    const int needed_lines = WebPRescaleNeededLines(dec->rescaler, lines_left);
-    assert(needed_lines > 0 && needed_lines <= lines_left);
-    WebPMultARGBRows(row_in, in_stride,
-                     dec->rescaler->src_width, needed_lines, 0);
-    WebPRescalerImport(dec->rescaler, lines_left, row_in, in_stride);
-    num_lines_in += needed_lines;
+    num_lines_in += WebPRescalerImport(dec->rescaler, mb_h - num_lines_in,
+                                       row_in, in_stride);
     num_lines_out += Export(dec->rescaler, colorspace, out_stride, row_out);
   }
   return num_lines_out;
@@ -452,10 +443,11 @@ static int EmitRescaledRowsRGBA(const VP8LDecoder* const dec,
 
 // Emit rows without any scaling.
 static int EmitRows(WEBP_CSP_MODE colorspace,
-                    const uint8_t* row_in, int in_stride,
+                    const uint32_t* const data, int in_stride,
                     int mb_w, int mb_h,
                     uint8_t* const out, int out_stride) {
   int lines = mb_h;
+  const uint8_t* row_in = (const uint8_t*)data;
   uint8_t* row_out = out;
   while (lines-- > 0) {
     VP8LConvertFromBGRA((const uint32_t*)row_in, mb_w, colorspace, row_out);
@@ -477,8 +469,7 @@ static void ConvertToYUVA(const uint32_t* const src, int width, int y_pos,
     uint8_t* const y = buf->y + y_pos * buf->y_stride;
     for (i = 0; i < width; ++i) {
       const uint32_t p = src[i];
-      y[i] = VP8RGBToY((p >> 16) & 0xff, (p >> 8) & 0xff, (p >> 0) & 0xff,
-                       YUV_HALF);
+      y[i] = VP8RGBToY((p >> 16) & 0xff, (p >> 8) & 0xff, (p >> 0) & 0xff);
     }
   }
 
@@ -497,11 +488,11 @@ static void ConvertToYUVA(const uint32_t* const src, int width, int y_pos,
       const int g = ((v0 >>  7) & 0x1fe) + ((v1 >>  7) & 0x1fe);
       const int b = ((v0 <<  1) & 0x1fe) + ((v1 <<  1) & 0x1fe);
       if (!(y_pos & 1)) {  // even lines: store values
-        u[i] = VP8RGBToU(r, g, b, YUV_HALF << 2);
-        v[i] = VP8RGBToV(r, g, b, YUV_HALF << 2);
+        u[i] = VP8RGBToU(r, g, b);
+        v[i] = VP8RGBToV(r, g, b);
       } else {             // odd lines: average with previous values
-        const int tmp_u = VP8RGBToU(r, g, b, YUV_HALF << 2);
-        const int tmp_v = VP8RGBToV(r, g, b, YUV_HALF << 2);
+        const int tmp_u = VP8RGBToU(r, g, b);
+        const int tmp_v = VP8RGBToV(r, g, b);
         // Approximated average-of-four. But it's an acceptable diff.
         u[i] = (u[i] + tmp_u + 1) >> 1;
         v[i] = (v[i] + tmp_v + 1) >> 1;
@@ -513,11 +504,11 @@ static void ConvertToYUVA(const uint32_t* const src, int width, int y_pos,
       const int g = (v0 >>  6) & 0x3fc;
       const int b = (v0 <<  2) & 0x3fc;
       if (!(y_pos & 1)) {  // even lines
-        u[i] = VP8RGBToU(r, g, b, YUV_HALF << 2);
-        v[i] = VP8RGBToV(r, g, b, YUV_HALF << 2);
+        u[i] = VP8RGBToU(r, g, b);
+        v[i] = VP8RGBToV(r, g, b);
       } else {             // odd lines (note: we could just skip this)
-        const int tmp_u = VP8RGBToU(r, g, b, YUV_HALF << 2);
-        const int tmp_v = VP8RGBToV(r, g, b, YUV_HALF << 2);
+        const int tmp_u = VP8RGBToU(r, g, b);
+        const int tmp_v = VP8RGBToV(r, g, b);
         u[i] = (u[i] + tmp_u + 1) >> 1;
         v[i] = (v[i] + tmp_v + 1) >> 1;
       }
@@ -533,12 +524,11 @@ static void ConvertToYUVA(const uint32_t* const src, int width, int y_pos,
 
 static int ExportYUVA(const VP8LDecoder* const dec, int y_pos) {
   WebPRescaler* const rescaler = dec->rescaler;
-  uint32_t* const src = (uint32_t*)rescaler->dst;
+  const uint32_t* const src = (const uint32_t*)rescaler->dst;
   const int dst_width = rescaler->dst_width;
   int num_lines_out = 0;
   while (WebPRescalerHasPendingOutput(rescaler)) {
     WebPRescalerExportRow(rescaler);
-    WebPMultARGBRow(src, dst_width, 1);
     ConvertToYUVA(src, dst_width, y_pos, dec->output_);
     ++y_pos;
     ++num_lines_out;
@@ -547,28 +537,28 @@ static int ExportYUVA(const VP8LDecoder* const dec, int y_pos) {
 }
 
 static int EmitRescaledRowsYUVA(const VP8LDecoder* const dec,
-                                uint8_t* in, int in_stride, int mb_h) {
+                                const uint32_t* const data,
+                                int in_stride, int mb_h) {
+  const uint8_t* const in = (const uint8_t*)data;
   int num_lines_in = 0;
   int y_pos = dec->last_out_row_;
   while (num_lines_in < mb_h) {
-    const int lines_left = mb_h - num_lines_in;
-    const int needed_lines = WebPRescaleNeededLines(dec->rescaler, lines_left);
-    WebPMultARGBRows(in, in_stride, dec->rescaler->src_width, needed_lines, 0);
-    WebPRescalerImport(dec->rescaler, lines_left, in, in_stride);
-    num_lines_in += needed_lines;
-    in += needed_lines * in_stride;
+    const uint8_t* const row_in = in + num_lines_in * in_stride;
+    num_lines_in += WebPRescalerImport(dec->rescaler, mb_h - num_lines_in,
+                                       row_in, in_stride);
     y_pos += ExportYUVA(dec, y_pos);
   }
   return y_pos;
 }
 
 static int EmitRowsYUVA(const VP8LDecoder* const dec,
-                        const uint8_t* in, int in_stride,
+                        const uint32_t* const data, int in_stride,
                         int mb_w, int num_rows) {
   int y_pos = dec->last_out_row_;
+  const uint8_t* row_in = (const uint8_t*)data;
   while (num_rows-- > 0) {
-    ConvertToYUVA((const uint32_t*)in, mb_w, y_pos, dec->output_);
-    in += in_stride;
+    ConvertToYUVA((const uint32_t*)row_in, mb_w, y_pos, dec->output_);
+    row_in += in_stride;
     ++y_pos;
   }
   return y_pos;
@@ -579,11 +569,11 @@ static int EmitRowsYUVA(const VP8LDecoder* const dec,
 
 // Sets io->mb_y, io->mb_h & io->mb_w according to start row, end row and
 // crop options. Also updates the input data pointer, so that it points to the
-// start of the cropped window. Note that pixels are in ARGB format even if
-// 'in_data' is uint8_t*.
+// start of the cropped window.
+// Note that 'pixel_stride' is in units of 'uint32_t' (and not 'bytes).
 // Returns true if the crop window is not empty.
 static int SetCropWindow(VP8Io* const io, int y_start, int y_end,
-                         uint8_t** const in_data, int pixel_stride) {
+                         const uint32_t** const in_data, int pixel_stride) {
   assert(y_start < y_end);
   assert(io->crop_left < io->crop_right);
   if (y_end > io->crop_bottom) {
@@ -592,11 +582,11 @@ static int SetCropWindow(VP8Io* const io, int y_start, int y_end,
   if (y_start < io->crop_top) {
     const int delta = io->crop_top - y_start;
     y_start = io->crop_top;
-    *in_data += delta * pixel_stride;
+    *in_data += pixel_stride * delta;
   }
   if (y_start >= y_end) return 0;  // Crop window is empty.
 
-  *in_data += io->crop_left * sizeof(uint32_t);
+  *in_data += io->crop_left;
 
   io->mb_y = y_start - io->crop_top;
   io->mb_w = io->crop_right - io->crop_left;
@@ -644,24 +634,10 @@ static void ApplyInverseTransforms(VP8LDecoder* const dec, int num_rows,
   }
 }
 
-// Special method for paletted alpha data.
-static void ApplyInverseTransformsAlpha(VP8LDecoder* const dec, int num_rows,
-                                        const uint8_t* const rows) {
-  const int start_row = dec->last_row_;
-  const int end_row = start_row + num_rows;
-  const uint8_t* rows_in = rows;
-  uint8_t* rows_out = (uint8_t*)dec->io_->opaque + dec->io_->width * start_row;
-  VP8LTransform* const transform = &dec->transforms_[0];
-  assert(dec->next_transform_ == 1);
-  assert(transform->type_ == COLOR_INDEXING_TRANSFORM);
-  VP8LColorIndexInverseTransformAlpha(transform, start_row, end_row, rows_in,
-                                      rows_out);
-}
-
 // Processes (transforms, scales & color-converts) the rows decoded after the
 // last call.
 static void ProcessRows(VP8LDecoder* const dec, int row) {
-  const uint32_t* const rows = dec->pixels_ + dec->width_ * dec->last_row_;
+  const uint32_t* const rows = dec->argb_ + dec->width_ * dec->last_row_;
   const int num_rows = row - dec->last_row_;
 
   if (num_rows <= 0) return;  // Nothing to be done.
@@ -670,18 +646,18 @@ static void ProcessRows(VP8LDecoder* const dec, int row) {
   // Emit output.
   {
     VP8Io* const io = dec->io_;
-    uint8_t* rows_data = (uint8_t*)dec->argb_cache_;
-    const int in_stride = io->width * sizeof(uint32_t);  // in unit of RGBA
-    if (!SetCropWindow(io, dec->last_row_, row, &rows_data, in_stride)) {
+    const uint32_t* rows_data = dec->argb_cache_;
+    if (!SetCropWindow(io, dec->last_row_, row, &rows_data, io->width)) {
       // Nothing to output (this time).
     } else {
       const WebPDecBuffer* const output = dec->output_;
+      const int in_stride = io->width * sizeof(*rows_data);
       if (output->colorspace < MODE_YUV) {  // convert to RGBA
         const WebPRGBABuffer* const buf = &output->u.RGBA;
         uint8_t* const rgba = buf->rgba + dec->last_out_row_ * buf->stride;
         const int num_rows_out = io->use_scaling ?
-            EmitRescaledRowsRGBA(dec, rows_data, in_stride, io->mb_h,
-                                 rgba, buf->stride) :
+            EmitRescaledRows(dec, rows_data, in_stride, io->mb_h,
+                             rgba, buf->stride) :
             EmitRows(output->colorspace, rows_data, in_stride,
                      io->mb_w, io->mb_h, rgba, buf->stride);
         // Update 'last_out_row_'.
@@ -700,163 +676,50 @@ static void ProcessRows(VP8LDecoder* const dec, int row) {
   assert(dec->last_row_ <= dec->height_);
 }
 
-// Row-processing for the special case when alpha data contains only one
-// transform (color indexing), and trivial non-green literals.
-static int Is8bOptimizable(const VP8LMetadata* const hdr) {
-  int i;
-  if (hdr->color_cache_size_ > 0) return 0;
-  // When the Huffman tree contains only one symbol, we can skip the
-  // call to ReadSymbol() for red/blue/alpha channels.
-  for (i = 0; i < hdr->num_htree_groups_; ++i) {
-    const HuffmanTree* const htrees = hdr->htree_groups_[i].htrees_;
-    if (htrees[RED].num_nodes_ > 1) return 0;
-    if (htrees[BLUE].num_nodes_ > 1) return 0;
-    if (htrees[ALPHA].num_nodes_ > 1) return 0;
-  }
-  return 1;
-}
-
-static void ExtractPalettedAlphaRows(VP8LDecoder* const dec, int row) {
-  const int num_rows = row - dec->last_row_;
-  const uint8_t* const in =
-      (uint8_t*)dec->pixels_ + dec->width_ * dec->last_row_;
-  if (num_rows > 0) {
-    ApplyInverseTransformsAlpha(dec, num_rows, in);
-  }
-  dec->last_row_ = dec->last_out_row_ = row;
-}
-
-static int DecodeAlphaData(VP8LDecoder* const dec, uint8_t* const data,
-                           int width, int height, int last_row) {
-  int ok = 1;
-  int row = dec->last_pixel_ / width;
-  int col = dec->last_pixel_ % width;
-  VP8LBitReader* const br = &dec->br_;
-  VP8LMetadata* const hdr = &dec->hdr_;
-  const HTreeGroup* htree_group = GetHtreeGroupForPos(hdr, col, row);
-  int pos = dec->last_pixel_;         // current position
-  const int end = width * height;     // End of data
-  const int last = width * last_row;  // Last pixel to decode
-  const int len_code_limit = NUM_LITERAL_CODES + NUM_LENGTH_CODES;
-  const int mask = hdr->huffman_mask_;
-  assert(htree_group != NULL);
-  assert(last_row <= height);
-  assert(Is8bOptimizable(hdr));
-
-  while (!br->eos_ && pos < last) {
-    int code;
-    // Only update when changing tile.
-    if ((col & mask) == 0) {
-      htree_group = GetHtreeGroupForPos(hdr, col, row);
-    }
-    VP8LFillBitWindow(br);
-    code = ReadSymbol(&htree_group->htrees_[GREEN], br);
-    if (code < NUM_LITERAL_CODES) {  // Literal
-      data[pos] = code;
-      ++pos;
-      ++col;
-      if (col >= width) {
-        col = 0;
-        ++row;
-        if (row % NUM_ARGB_CACHE_ROWS == 0) {
-          ExtractPalettedAlphaRows(dec, row);
-        }
-      }
-    } else if (code < len_code_limit) {  // Backward reference
-      int dist_code, dist;
-      const int length_sym = code - NUM_LITERAL_CODES;
-      const int length = GetCopyLength(length_sym, br);
-      const int dist_symbol = ReadSymbol(&htree_group->htrees_[DIST], br);
-      VP8LFillBitWindow(br);
-      dist_code = GetCopyDistance(dist_symbol, br);
-      dist = PlaneCodeToDistance(width, dist_code);
-      if (pos >= dist && end - pos >= length) {
-        int i;
-        for (i = 0; i < length; ++i) data[pos + i] = data[pos + i - dist];
-      } else {
-        ok = 0;
-        goto End;
-      }
-      pos += length;
-      col += length;
-      while (col >= width) {
-        col -= width;
-        ++row;
-        if (row % NUM_ARGB_CACHE_ROWS == 0) {
-          ExtractPalettedAlphaRows(dec, row);
-        }
-      }
-      if (pos < last && (col & mask)) {
-        htree_group = GetHtreeGroupForPos(hdr, col, row);
-      }
-    } else {  // Not reached
-      ok = 0;
-      goto End;
-    }
-    ok = !br->error_;
-    if (!ok) goto End;
-  }
-  // Process the remaining rows corresponding to last row-block.
-  ExtractPalettedAlphaRows(dec, row);
-
- End:
-  if (br->error_ || !ok || (br->eos_ && pos < end)) {
-    ok = 0;
-    dec->status_ = br->eos_ ? VP8_STATUS_SUSPENDED
-                            : VP8_STATUS_BITSTREAM_ERROR;
-  } else {
-    dec->last_pixel_ = (int)pos;
-    if (pos == end) dec->state_ = READ_DATA;
-  }
-  return ok;
-}
-
-static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
-                           int width, int height, int last_row,
+static int DecodeImageData(VP8LDecoder* const dec,
+                           uint32_t* const data, int width, int height,
                            ProcessRowsFunc process_func) {
   int ok = 1;
-  int row = dec->last_pixel_ / width;
-  int col = dec->last_pixel_ % width;
+  int col = 0, row = 0;
   VP8LBitReader* const br = &dec->br_;
   VP8LMetadata* const hdr = &dec->hdr_;
-  HTreeGroup* htree_group = GetHtreeGroupForPos(hdr, col, row);
-  uint32_t* src = data + dec->last_pixel_;
-  uint32_t* last_cached = src;
-  uint32_t* const src_end = data + width * height;     // End of data
-  uint32_t* const src_last = data + width * last_row;  // Last pixel to decode
+  HTreeGroup* htree_group = hdr->htree_groups_;
+  uint32_t* src = data;
+  uint32_t* last_cached = data;
+  uint32_t* const src_end = data + width * height;
   const int len_code_limit = NUM_LITERAL_CODES + NUM_LENGTH_CODES;
   const int color_cache_limit = len_code_limit + hdr->color_cache_size_;
   VP8LColorCache* const color_cache =
       (hdr->color_cache_size_ > 0) ? &hdr->color_cache_ : NULL;
   const int mask = hdr->huffman_mask_;
-  assert(htree_group != NULL);
-  assert(src_last <= src_end);
 
-  while (!br->eos_ && src < src_last) {
+  assert(htree_group != NULL);
+
+  while (!br->eos_ && src < src_end) {
     int code;
-    // Only update when changing tile. Note we could use this test:
-    // if "((((prev_col ^ col) | prev_row ^ row)) > mask)" -> tile changed
-    // but that's actually slower and needs storing the previous col/row.
+    // Only update when changing tile. Note we could use the following test:
+    //   if "((((prev_col ^ col) | prev_row ^ row)) > mask)" -> tile changed
+    // but that's actually slower and requires storing the previous col/row
     if ((col & mask) == 0) {
       htree_group = GetHtreeGroupForPos(hdr, col, row);
     }
     VP8LFillBitWindow(br);
     code = ReadSymbol(&htree_group->htrees_[GREEN], br);
-    if (code < NUM_LITERAL_CODES) {  // Literal
+    if (code < NUM_LITERAL_CODES) {   // Literal.
       int red, green, blue, alpha;
       red = ReadSymbol(&htree_group->htrees_[RED], br);
       green = code;
       VP8LFillBitWindow(br);
       blue = ReadSymbol(&htree_group->htrees_[BLUE], br);
       alpha = ReadSymbol(&htree_group->htrees_[ALPHA], br);
-      *src = (alpha << 24) | (red << 16) | (green << 8) | blue;
-    AdvanceByOne:
+      *src = (alpha << 24) + (red << 16) + (green << 8) + blue;
+ AdvanceByOne:
       ++src;
       ++col;
       if (col >= width) {
         col = 0;
         ++row;
-        if ((row % NUM_ARGB_CACHE_ROWS == 0) && (process_func != NULL)) {
+        if ((process_func != NULL) && (row % NUM_ARGB_CACHE_ROWS == 0)) {
           process_func(dec, row);
         }
         if (color_cache != NULL) {
@@ -865,7 +728,7 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
           }
         }
       }
-    } else if (code < len_code_limit) {  // Backward reference
+    } else if (code < len_code_limit) {           // Backward reference
       int dist_code, dist;
       const int length_sym = code - NUM_LITERAL_CODES;
       const int length = GetCopyLength(length_sym, br);
@@ -873,10 +736,11 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
       VP8LFillBitWindow(br);
       dist_code = GetCopyDistance(dist_symbol, br);
       dist = PlaneCodeToDistance(width, dist_code);
-      if (src - data < (ptrdiff_t)dist || src_end - src < (ptrdiff_t)length) {
+      if (src - data < dist || src_end - src < length) {
         ok = 0;
         goto End;
-      } else {
+      }
+      {
         int i;
         for (i = 0; i < length; ++i) src[i] = src[i - dist];
         src += length;
@@ -885,19 +749,19 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
       while (col >= width) {
         col -= width;
         ++row;
-        if ((row % NUM_ARGB_CACHE_ROWS == 0) && (process_func != NULL)) {
+        if ((process_func != NULL) && (row % NUM_ARGB_CACHE_ROWS == 0)) {
           process_func(dec, row);
         }
       }
-      if (src < src_last) {
-        if (col & mask) htree_group = GetHtreeGroupForPos(hdr, col, row);
+      if (src < src_end) {
+        htree_group = GetHtreeGroupForPos(hdr, col, row);
         if (color_cache != NULL) {
           while (last_cached < src) {
             VP8LColorCacheInsert(color_cache, *last_cached++);
           }
         }
       }
-    } else if (code < color_cache_limit) {  // Color cache
+    } else if (code < color_cache_limit) {    // Color cache.
       const int key = code - len_code_limit;
       assert(color_cache != NULL);
       while (last_cached < src) {
@@ -905,7 +769,7 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
       }
       *src = VP8LColorCacheLookup(color_cache, key);
       goto AdvanceByOne;
-    } else {  // Not reached
+    } else {    // Not reached.
       ok = 0;
       goto End;
     }
@@ -918,12 +782,12 @@ static int DecodeImageData(VP8LDecoder* const dec, uint32_t* const data,
  End:
   if (br->error_ || !ok || (br->eos_ && src < src_end)) {
     ok = 0;
-    dec->status_ = br->eos_ ? VP8_STATUS_SUSPENDED
-                            : VP8_STATUS_BITSTREAM_ERROR;
-  } else {
-    dec->last_pixel_ = (int)(src - data);
-    if (src == src_end) dec->state_ = READ_DATA;
+    dec->status_ = (!br->eos_) ?
+        VP8_STATUS_BITSTREAM_ERROR : VP8_STATUS_SUSPENDED;
+  } else if (src == src_end) {
+    dec->state_ = READ_DATA;
   }
+
   return ok;
 }
 
@@ -1040,9 +904,6 @@ VP8LDecoder* VP8LNew(void) {
   dec->status_ = VP8_STATUS_OK;
   dec->action_ = READ_DIM;
   dec->state_ = READ_DIM;
-
-  VP8LDspInit();  // Init critical function pointers.
-
   return dec;
 }
 
@@ -1051,8 +912,8 @@ void VP8LClear(VP8LDecoder* const dec) {
   if (dec == NULL) return;
   ClearMetadata(&dec->hdr_);
 
-  free(dec->pixels_);
-  dec->pixels_ = NULL;
+  free(dec->argb_);
+  dec->argb_ = NULL;
   for (i = 0; i < dec->next_transform_; ++i) {
     ClearTransform(&dec->transforms_[i]);
   }
@@ -1148,8 +1009,7 @@ static int DecodeImageStream(int xsize, int ysize,
   }
 
   // Use the Huffman trees to decode the LZ77 encoded data.
-  ok = DecodeImageData(dec, data, transform_xsize, transform_ysize,
-                       transform_ysize, NULL);
+  ok = DecodeImageData(dec, data, transform_xsize, transform_ysize, NULL);
   ok = ok && !br->error_;
 
  End:
@@ -1171,52 +1031,41 @@ static int DecodeImageStream(int xsize, int ysize,
       assert(data == NULL);
       assert(is_level0);
     }
-    dec->last_pixel_ = 0;  // Reset for future DECODE_DATA_FUNC() calls.
     if (!is_level0) ClearMetadata(hdr);  // Clean up temporary data behind.
   }
   return ok;
 }
 
 //------------------------------------------------------------------------------
-// Allocate internal buffers dec->pixels_ and dec->argb_cache_.
-static int AllocateInternalBuffers32b(VP8LDecoder* const dec, int final_width) {
+// Allocate dec->argb_ and dec->argb_cache_ using dec->width_ and dec->height_
+
+static int AllocateARGBBuffers(VP8LDecoder* const dec, int final_width) {
   const uint64_t num_pixels = (uint64_t)dec->width_ * dec->height_;
   // Scratch buffer corresponding to top-prediction row for transforming the
-  // first row in the row-blocks. Not needed for paletted alpha.
-  const uint64_t cache_top_pixels = (uint16_t)final_width;
-  // Scratch buffer for temporary BGRA storage. Not needed for paletted alpha.
+  // first row in the row-blocks.
+  const uint64_t cache_top_pixels = final_width;
+  // Scratch buffer for temporary BGRA storage.
   const uint64_t cache_pixels = (uint64_t)final_width * NUM_ARGB_CACHE_ROWS;
   const uint64_t total_num_pixels =
       num_pixels + cache_top_pixels + cache_pixels;
 
   assert(dec->width_ <= final_width);
-  dec->pixels_ = (uint32_t*)WebPSafeMalloc(total_num_pixels, sizeof(uint32_t));
-  if (dec->pixels_ == NULL) {
+  dec->argb_ = (uint32_t*)WebPSafeMalloc(total_num_pixels, sizeof(*dec->argb_));
+  if (dec->argb_ == NULL) {
     dec->argb_cache_ = NULL;    // for sanity check
     dec->status_ = VP8_STATUS_OUT_OF_MEMORY;
     return 0;
   }
-  dec->argb_cache_ = dec->pixels_ + num_pixels + cache_top_pixels;
-  return 1;
-}
-
-static int AllocateInternalBuffers8b(VP8LDecoder* const dec) {
-  const uint64_t total_num_pixels = (uint64_t)dec->width_ * dec->height_;
-  dec->argb_cache_ = NULL;    // for sanity check
-  dec->pixels_ = (uint32_t*)WebPSafeMalloc(total_num_pixels, sizeof(uint8_t));
-  if (dec->pixels_ == NULL) {
-    dec->status_ = VP8_STATUS_OUT_OF_MEMORY;
-    return 0;
-  }
+  dec->argb_cache_ = dec->argb_ + num_pixels + cache_top_pixels;
   return 1;
 }
 
 //------------------------------------------------------------------------------
-
 // Special row-processing that only stores the alpha data.
+
 static void ExtractAlphaRows(VP8LDecoder* const dec, int row) {
   const int num_rows = row - dec->last_row_;
-  const uint32_t* const in = dec->pixels_ + dec->width_ * dec->last_row_;
+  const uint32_t* const in = dec->argb_ + dec->width_ * dec->last_row_;
 
   if (num_rows <= 0) return;  // Nothing to be done.
   ApplyInverseTransforms(dec, num_rows, in);
@@ -1230,76 +1079,44 @@ static void ExtractAlphaRows(VP8LDecoder* const dec, int row) {
     int i;
     for (i = 0; i < cache_pixs; ++i) dst[i] = (src[i] >> 8) & 0xff;
   }
+
   dec->last_row_ = dec->last_out_row_ = row;
 }
 
-int VP8LDecodeAlphaHeader(ALPHDecoder* const alph_dec,
-                          const uint8_t* const data, size_t data_size,
-                          uint8_t* const output) {
+int VP8LDecodeAlphaImageStream(int width, int height, const uint8_t* const data,
+                               size_t data_size, uint8_t* const output) {
+  VP8Io io;
   int ok = 0;
-  VP8LDecoder* dec;
-  VP8Io* io;
-  assert(alph_dec != NULL);
-  alph_dec->vp8l_dec_ = VP8LNew();
-  if (alph_dec->vp8l_dec_ == NULL) return 0;
-  dec = alph_dec->vp8l_dec_;
+  VP8LDecoder* const dec = VP8LNew();
+  if (dec == NULL) return 0;
 
-  dec->width_ = alph_dec->width_;
-  dec->height_ = alph_dec->height_;
-  dec->io_ = &alph_dec->io_;
-  io = dec->io_;
+  dec->width_ = width;
+  dec->height_ = height;
+  dec->io_ = &io;
 
-  VP8InitIo(io);
-  WebPInitCustomIo(NULL, io);  // Just a sanity Init. io won't be used.
-  io->opaque = output;
-  io->width = alph_dec->width_;
-  io->height = alph_dec->height_;
+  VP8InitIo(&io);
+  WebPInitCustomIo(NULL, &io);    // Just a sanity Init. io won't be used.
+  io.opaque = output;
+  io.width = width;
+  io.height = height;
 
   dec->status_ = VP8_STATUS_OK;
   VP8LInitBitReader(&dec->br_, data, data_size);
 
   dec->action_ = READ_HDR;
-  if (!DecodeImageStream(alph_dec->width_, alph_dec->height_, 1, dec, NULL)) {
-    goto Err;
-  }
+  if (!DecodeImageStream(width, height, 1, dec, NULL)) goto Err;
 
-  // Special case: if alpha data uses only the color indexing transform and
-  // doesn't use color cache (a frequent case), we will use DecodeAlphaData()
-  // method that only needs allocation of 1 byte per pixel (alpha channel).
-  if (dec->next_transform_ == 1 &&
-      dec->transforms_[0].type_ == COLOR_INDEXING_TRANSFORM &&
-      Is8bOptimizable(&dec->hdr_)) {
-    alph_dec->use_8b_decode = 1;
-    ok = AllocateInternalBuffers8b(dec);
-  } else {
-    // Allocate internal buffers (note that dec->width_ may have changed here).
-    alph_dec->use_8b_decode = 0;
-    ok = AllocateInternalBuffers32b(dec, alph_dec->width_);
-  }
-
-  if (!ok) goto Err;
-
-  dec->action_ = READ_DATA;
-  return 1;
-
- Err:
-  VP8LDelete(alph_dec->vp8l_dec_);
-  alph_dec->vp8l_dec_ = NULL;
-  return 0;
-}
-
-int VP8LDecodeAlphaImageStream(ALPHDecoder* const alph_dec, int last_row) {
-  VP8LDecoder* const dec = alph_dec->vp8l_dec_;
-  assert(dec != NULL);
-  assert(dec->action_ == READ_DATA);
-  assert(last_row <= dec->height_);
+  // Allocate output (note that dec->width_ may have changed here).
+  if (!AllocateARGBBuffers(dec, width)) goto Err;
 
   // Decode (with special row processing).
-  return alph_dec->use_8b_decode ?
-      DecodeAlphaData(dec, (uint8_t*)dec->pixels_, dec->width_, dec->height_,
-                      last_row) :
-      DecodeImageData(dec, dec->pixels_, dec->width_, dec->height_,
-                      last_row, ExtractAlphaRows);
+  dec->action_ = READ_DATA;
+  ok = DecodeImageData(dec, dec->argb_, dec->width_, dec->height_,
+                       ExtractAlphaRows);
+
+ Err:
+  VP8LDelete(dec);
+  return ok;
 }
 
 //------------------------------------------------------------------------------
@@ -1329,9 +1146,9 @@ int VP8LDecodeHeader(VP8LDecoder* const dec, VP8Io* const io) {
   return 1;
 
  Error:
-  VP8LClear(dec);
-  assert(dec->status_ != VP8_STATUS_OK);
-  return 0;
+   VP8LClear(dec);
+   assert(dec->status_ != VP8_STATUS_OK);
+   return 0;
 }
 
 int VP8LDecodeImage(VP8LDecoder* const dec) {
@@ -1354,14 +1171,14 @@ int VP8LDecodeImage(VP8LDecoder* const dec) {
     goto Err;
   }
 
-  if (!AllocateInternalBuffers32b(dec, io->width)) goto Err;
+  if (!AllocateARGBBuffers(dec, io->width)) goto Err;
 
   if (io->use_scaling && !AllocateAndInitRescaler(dec, io)) goto Err;
 
   // Decode.
   dec->action_ = READ_DATA;
-  if (!DecodeImageData(dec, dec->pixels_, dec->width_, dec->height_,
-                       dec->height_, ProcessRows)) {
+  if (!DecodeImageData(dec, dec->argb_, dec->width_, dec->height_,
+                       ProcessRows)) {
     goto Err;
   }
 
@@ -1378,3 +1195,6 @@ int VP8LDecodeImage(VP8LDecoder* const dec) {
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

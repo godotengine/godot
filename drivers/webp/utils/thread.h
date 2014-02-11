@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Multi-threaded worker
@@ -14,15 +12,11 @@
 #ifndef WEBP_UTILS_THREAD_H_
 #define WEBP_UTILS_THREAD_H_
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
-#ifdef WEBP_USE_THREAD
+#if WEBP_USE_THREAD
 
 #if defined(_WIN32)
 
@@ -55,7 +49,7 @@ typedef int (*WebPWorkerHook)(void*, void*);
 
 // Synchronize object used to launch job in the worker thread
 typedef struct {
-#ifdef WEBP_USE_THREAD
+#if WEBP_USE_THREAD
   pthread_mutex_t mutex_;
   pthread_cond_t  condition_;
   pthread_t       thread_;
@@ -69,28 +63,23 @@ typedef struct {
 
 // Must be called first, before any other method.
 void WebPWorkerInit(WebPWorker* const worker);
-// Must be called to initialize the object and spawn the thread. Re-entrant.
+// Must be called initialize the object and spawn the thread. Re-entrant.
 // Will potentially launch the thread. Returns false in case of error.
 int WebPWorkerReset(WebPWorker* const worker);
-// Makes sure the previous work is finished. Returns true if worker->had_error
-// was not set and no error condition was triggered by the working thread.
+// Make sure the previous work is finished. Returns true if worker->had_error
+// was not set and not error condition was triggered by the working thread.
 int WebPWorkerSync(WebPWorker* const worker);
-// Triggers the thread to call hook() with data1 and data2 argument. These
+// Trigger the thread to call hook() with data1 and data2 argument. These
 // hook/data1/data2 can be changed at any time before calling this function,
 // but not be changed afterward until the next call to WebPWorkerSync().
 void WebPWorkerLaunch(WebPWorker* const worker);
-// This function is similar to WebPWorkerLaunch() except that it calls the
-// hook directly instead of using a thread. Convenient to bypass the thread
-// mechanism while still using the WebPWorker structs. WebPWorkerSync() must
-// still be called afterward (for error reporting).
-void WebPWorkerExecute(WebPWorker* const worker);
 // Kill the thread and terminate the object. To use the object again, one
 // must call WebPWorkerReset() again.
 void WebPWorkerEnd(WebPWorker* const worker);
 
 //------------------------------------------------------------------------------
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 }    // extern "C"
 #endif
 
