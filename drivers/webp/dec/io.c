@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // functions for sample output.
@@ -17,6 +15,10 @@
 #include "./webpi.h"
 #include "../dsp/dsp.h"
 #include "../dsp/yuv.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // Main YUV<->RGB conversion functions
@@ -115,7 +117,7 @@ static int EmitFancyRGB(const VP8Io* const io, WebPDecParams* const p) {
 
   if (y == 0) {
     // First line is special cased. We mirror the u/v samples at boundary.
-    upsample(cur_y, NULL, cur_u, cur_v, cur_u, cur_v, dst, NULL, mb_w);
+    upsample(NULL, cur_y, cur_u, cur_v, cur_u, cur_v, NULL, dst, mb_w);
   } else {
     // We can finish the left-over line from previous call.
     upsample(p->tmp_y, cur_y, top_u, top_v, cur_u, cur_v,
@@ -599,7 +601,7 @@ static int CustomPut(const VP8Io* io) {
     return 0;
   }
   num_lines_out = p->emit(io, p);
-  if (p->emit_alpha != NULL) {
+  if (p->emit_alpha) {
     p->emit_alpha(io, p);
   }
   p->last_y += num_lines_out;
@@ -626,3 +628,6 @@ void WebPInitCustomIo(WebPDecParams* const params, VP8Io* const io) {
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

@@ -1,19 +1,25 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Multi-threaded worker
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <assert.h>
 #include <string.h>   // for memset()
 #include "./thread.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 #ifdef WEBP_USE_THREAD
 
@@ -122,14 +128,14 @@ static int pthread_cond_wait(pthread_cond_t* const condition,
   return !ok;
 }
 
-#else  // !_WIN32
+#else  // _WIN32
 # define THREADFN void*
 # define THREAD_RETURN(val) val
-#endif  // _WIN32
+#endif
 
 //------------------------------------------------------------------------------
 
-static THREADFN ThreadLoop(void* ptr) {
+static THREADFN WebPWorkerThreadLoop(void *ptr) {    // thread loop
   WebPWorker* const worker = (WebPWorker*)ptr;
   int done = 0;
   while (!done) {
@@ -138,7 +144,9 @@ static THREADFN ThreadLoop(void* ptr) {
       pthread_cond_wait(&worker->condition_, &worker->mutex_);
     }
     if (worker->status_ == WORK) {
-      WebPWorkerExecute(worker);
+      if (worker->hook) {
+        worker->had_error |= !worker->hook(worker->data1, worker->data2);
+      }
       worker->status_ = OK;
     } else if (worker->status_ == NOT_OK) {   // finish the worker
       done = 1;
@@ -151,8 +159,8 @@ static THREADFN ThreadLoop(void* ptr) {
 }
 
 // main thread state control
-static void ChangeState(WebPWorker* const worker,
-                        WebPWorkerStatus new_status) {
+static void WebPWorkerChangeState(WebPWorker* const worker,
+                                  WebPWorkerStatus new_status) {
   // no-op when attempting to change state on a thread that didn't come up
   if (worker->status_ < OK) return;
 
@@ -169,7 +177,7 @@ static void ChangeState(WebPWorker* const worker,
   pthread_mutex_unlock(&worker->mutex_);
 }
 
-#endif  // WEBP_USE_THREAD
+#endif
 
 //------------------------------------------------------------------------------
 
@@ -180,7 +188,7 @@ void WebPWorkerInit(WebPWorker* const worker) {
 
 int WebPWorkerSync(WebPWorker* const worker) {
 #ifdef WEBP_USE_THREAD
-  ChangeState(worker, OK);
+  WebPWorkerChangeState(worker, OK);
 #endif
   assert(worker->status_ <= OK);
   return !worker->had_error;
@@ -196,7 +204,7 @@ int WebPWorkerReset(WebPWorker* const worker) {
       return 0;
     }
     pthread_mutex_lock(&worker->mutex_);
-    ok = !pthread_create(&worker->thread_, NULL, ThreadLoop, worker);
+    ok = !pthread_create(&worker->thread_, NULL, WebPWorkerThreadLoop, worker);
     if (ok) worker->status_ = OK;
     pthread_mutex_unlock(&worker->mutex_);
 #else
@@ -209,24 +217,19 @@ int WebPWorkerReset(WebPWorker* const worker) {
   return ok;
 }
 
-void WebPWorkerExecute(WebPWorker* const worker) {
-  if (worker->hook != NULL) {
-    worker->had_error |= !worker->hook(worker->data1, worker->data2);
-  }
-}
-
 void WebPWorkerLaunch(WebPWorker* const worker) {
 #ifdef WEBP_USE_THREAD
-  ChangeState(worker, WORK);
+  WebPWorkerChangeState(worker, WORK);
 #else
-  WebPWorkerExecute(worker);
+  if (worker->hook)
+    worker->had_error |= !worker->hook(worker->data1, worker->data2);
 #endif
 }
 
 void WebPWorkerEnd(WebPWorker* const worker) {
   if (worker->status_ >= OK) {
 #ifdef WEBP_USE_THREAD
-    ChangeState(worker, NOT_OK);
+    WebPWorkerChangeState(worker, NOT_OK);
     pthread_join(worker->thread_, NULL);
     pthread_mutex_destroy(&worker->mutex_);
     pthread_cond_destroy(&worker->condition_);
@@ -239,3 +242,6 @@ void WebPWorkerEnd(WebPWorker* const worker) {
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

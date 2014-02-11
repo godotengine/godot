@@ -1,10 +1,8 @@
 // Copyright 2010 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Boolean decoder
@@ -13,11 +11,11 @@
 
 #include "./bit_reader.h"
 
-#ifndef USE_RIGHT_JUSTIFY
-#define MK(X) (((range_t)(X) << (BITS)) | (MASK))
-#else
-#define MK(X) ((range_t)(X))
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
 #endif
+
+#define MK(X) (((bit_t)(X) << (BITS)) | (MASK))
 
 //------------------------------------------------------------------------------
 // VP8BitReader
@@ -31,7 +29,7 @@ void VP8InitBitReader(VP8BitReader* const br,
   br->buf_     = start;
   br->buf_end_ = end;
   br->value_   = 0;
-  br->bits_    = -8;   // to load the very first 8bits
+  br->missing_ = 8;   // to load the very first 8bits
   br->eof_     = 0;
 }
 
@@ -48,7 +46,7 @@ const uint8_t kVP8Log2Range[128] = {
 };
 
 // range = (range << kVP8Log2Range[range]) + trailing 1's
-const range_t kVP8NewRange[128] = {
+const bit_t kVP8NewRange[128] = {
   MK(127), MK(127), MK(191), MK(127), MK(159), MK(191), MK(223), MK(127),
   MK(143), MK(159), MK(175), MK(191), MK(207), MK(223), MK(239), MK(127),
   MK(135), MK(143), MK(151), MK(159), MK(167), MK(175), MK(183), MK(191),
@@ -73,19 +71,9 @@ void VP8LoadFinalBytes(VP8BitReader* const br) {
   assert(br != NULL && br->buf_ != NULL);
   // Only read 8bits at a time
   if (br->buf_ < br->buf_end_) {
-#ifndef USE_RIGHT_JUSTIFY
-    br->value_ |= (bit_t)(*br->buf_++) << ((BITS) - 8 - br->bits_);
-#else
-    br->value_ = (bit_t)(*br->buf_++) | (br->value_ << 8);
-#endif
-    br->bits_ += 8;
-  } else if (!br->eof_) {
-#ifdef USE_RIGHT_JUSTIFY
-    // These are not strictly needed, but it makes the behaviour
-    // consistent for both USE_RIGHT_JUSTIFY and !USE_RIGHT_JUSTIFY.
-    br->value_ <<= 8;
-    br->bits_ += 8;
-#endif
+    br->value_ |= (bit_t)(*br->buf_++) << ((BITS) - 8 + br->missing_);
+    br->missing_ -= 8;
+  } else {
     br->eof_ = 1;
   }
 }
@@ -111,10 +99,6 @@ int32_t VP8GetSignedValue(VP8BitReader* const br, int bits) {
 
 #define MAX_NUM_BIT_READ 25
 
-#define LBITS 64      // Number of bits prefetched.
-#define WBITS 32      // Minimum number of bytes needed after VP8LFillBitWindow.
-#define LOG8_WBITS 4  // Number of bytes needed to store WBITS bits.
-
 static const uint32_t kBitMask[MAX_NUM_BIT_READ] = {
   0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767,
   65535, 131071, 262143, 524287, 1048575, 2097151, 4194303, 8388607, 16777215
@@ -136,7 +120,7 @@ void VP8LInitBitReader(VP8LBitReader* const br,
   br->eos_ = 0;
   br->error_ = 0;
   for (i = 0; i < sizeof(br->val_) && i < br->len_; ++i) {
-    br->val_ |= ((vp8l_val_t)br->buf_[br->pos_]) << (8 * i);
+    br->val_ |= ((uint64_t)br->buf_[br->pos_]) << (8 * i);
     ++br->pos_;
   }
 }
@@ -151,57 +135,95 @@ void VP8LBitReaderSetBuffer(VP8LBitReader* const br,
   br->len_ = len;
 }
 
-// If not at EOS, reload up to LBITS byte-by-byte
 static void ShiftBytes(VP8LBitReader* const br) {
   while (br->bit_pos_ >= 8 && br->pos_ < br->len_) {
     br->val_ >>= 8;
-    br->val_ |= ((vp8l_val_t)br->buf_[br->pos_]) << (LBITS - 8);
+    br->val_ |= ((uint64_t)br->buf_[br->pos_]) << 56;
     ++br->pos_;
     br->bit_pos_ -= 8;
   }
 }
 
 void VP8LFillBitWindow(VP8LBitReader* const br) {
-  if (br->bit_pos_ >= WBITS) {
-#if (defined(__x86_64__) || defined(_M_X64))
-    if (br->pos_ + sizeof(br->val_) < br->len_) {
-      br->val_ >>= WBITS;
-      br->bit_pos_ -= WBITS;
+  if (br->bit_pos_ >= 32) {
+#if defined(__x86_64__) || defined(_M_X64)
+    if (br->pos_ + 8 < br->len_) {
+      br->val_ >>= 32;
       // The expression below needs a little-endian arch to work correctly.
       // This gives a large speedup for decoding speed.
-      br->val_ |= *(const vp8l_val_t*)(br->buf_ + br->pos_) << (LBITS - WBITS);
-      br->pos_ += LOG8_WBITS;
-      return;
+      br->val_ |= *(const uint64_t *)(br->buf_ + br->pos_) << 32;
+      br->pos_ += 4;
+      br->bit_pos_ -= 32;
+    } else {
+      // Slow path.
+      ShiftBytes(br);
     }
+#else
+    // Always the slow path.
+    ShiftBytes(br);
 #endif
-    ShiftBytes(br);       // Slow path.
-    if (br->pos_ == br->len_ && br->bit_pos_ >= LBITS) {
-      br->eos_ = 1;
-    }
+  }
+  if (br->pos_ == br->len_ && br->bit_pos_ == 64) {
+    br->eos_ = 1;
   }
 }
 
+uint32_t VP8LReadOneBit(VP8LBitReader* const br) {
+  const uint32_t val = (br->val_ >> br->bit_pos_) & 1;
+  // Flag an error at end_of_stream.
+  if (!br->eos_) {
+    ++br->bit_pos_;
+    if (br->bit_pos_ >= 32) {
+      ShiftBytes(br);
+    }
+    // After this last bit is read, check if eos needs to be flagged.
+    if (br->pos_ == br->len_ && br->bit_pos_ == 64) {
+      br->eos_ = 1;
+    }
+  } else {
+    br->error_ = 1;
+  }
+  return val;
+}
+
 uint32_t VP8LReadBits(VP8LBitReader* const br, int n_bits) {
+  uint32_t val = 0;
   assert(n_bits >= 0);
   // Flag an error if end_of_stream or n_bits is more than allowed limit.
   if (!br->eos_ && n_bits < MAX_NUM_BIT_READ) {
-    const uint32_t val =
-        (uint32_t)(br->val_ >> br->bit_pos_) & kBitMask[n_bits];
-    const int new_bits = br->bit_pos_ + n_bits;
-    br->bit_pos_ = new_bits;
     // If this read is going to cross the read buffer, set the eos flag.
     if (br->pos_ == br->len_) {
-      if (new_bits >= LBITS) {
+      if ((br->bit_pos_ + n_bits) >= 64) {
         br->eos_ = 1;
+        if ((br->bit_pos_ + n_bits) > 64) return val;
       }
     }
-    ShiftBytes(br);
-    return val;
+    val = (br->val_ >> br->bit_pos_) & kBitMask[n_bits];
+    br->bit_pos_ += n_bits;
+    if (br->bit_pos_ >= 40) {
+      if (br->pos_ + 5 < br->len_) {
+        br->val_ >>= 40;
+        br->val_ |=
+            (((uint64_t)br->buf_[br->pos_ + 0]) << 24) |
+            (((uint64_t)br->buf_[br->pos_ + 1]) << 32) |
+            (((uint64_t)br->buf_[br->pos_ + 2]) << 40) |
+            (((uint64_t)br->buf_[br->pos_ + 3]) << 48) |
+            (((uint64_t)br->buf_[br->pos_ + 4]) << 56);
+        br->pos_ += 5;
+        br->bit_pos_ -= 40;
+      }
+      if (br->bit_pos_ >= 8) {
+        ShiftBytes(br);
+      }
+    }
   } else {
     br->error_ = 1;
-    return 0;
   }
+  return val;
 }
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

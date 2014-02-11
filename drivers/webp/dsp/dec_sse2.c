@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // SSE2 version of some decoding functions (idct, loop filtering).
@@ -16,12 +14,12 @@
 
 #if defined(WEBP_USE_SSE2)
 
-// The 3-coeff sparse transform in SSE2 is not really faster than the plain-C
-// one it seems => disable it by default. Uncomment the following to enable:
-// #define USE_TRANSFORM_AC3
-
 #include <emmintrin.h>
 #include "../dec/vp8i.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // Transforms (Paragraph 14.4)
@@ -196,21 +194,21 @@ static void TransformSSE2(const int16_t* in, uint8_t* dst, int do_two) {
 
   // Add inverse transform to 'dst' and store.
   {
-    const __m128i zero = _mm_setzero_si128();
+    const __m128i zero = _mm_set1_epi16(0);
     // Load the reference(s).
     __m128i dst0, dst1, dst2, dst3;
     if (do_two) {
       // Load eight bytes/pixels per line.
-      dst0 = _mm_loadl_epi64((__m128i*)(dst + 0 * BPS));
-      dst1 = _mm_loadl_epi64((__m128i*)(dst + 1 * BPS));
-      dst2 = _mm_loadl_epi64((__m128i*)(dst + 2 * BPS));
-      dst3 = _mm_loadl_epi64((__m128i*)(dst + 3 * BPS));
+      dst0 = _mm_loadl_epi64((__m128i*)&dst[0 * BPS]);
+      dst1 = _mm_loadl_epi64((__m128i*)&dst[1 * BPS]);
+      dst2 = _mm_loadl_epi64((__m128i*)&dst[2 * BPS]);
+      dst3 = _mm_loadl_epi64((__m128i*)&dst[3 * BPS]);
     } else {
       // Load four bytes/pixels per line.
-      dst0 = _mm_cvtsi32_si128(*(int*)(dst + 0 * BPS));
-      dst1 = _mm_cvtsi32_si128(*(int*)(dst + 1 * BPS));
-      dst2 = _mm_cvtsi32_si128(*(int*)(dst + 2 * BPS));
-      dst3 = _mm_cvtsi32_si128(*(int*)(dst + 3 * BPS));
+      dst0 = _mm_cvtsi32_si128(*(int*)&dst[0 * BPS]);
+      dst1 = _mm_cvtsi32_si128(*(int*)&dst[1 * BPS]);
+      dst2 = _mm_cvtsi32_si128(*(int*)&dst[2 * BPS]);
+      dst3 = _mm_cvtsi32_si128(*(int*)&dst[3 * BPS]);
     }
     // Convert to 16b.
     dst0 = _mm_unpacklo_epi8(dst0, zero);
@@ -230,65 +228,19 @@ static void TransformSSE2(const int16_t* in, uint8_t* dst, int do_two) {
     // Store the results.
     if (do_two) {
       // Store eight bytes/pixels per line.
-      _mm_storel_epi64((__m128i*)(dst + 0 * BPS), dst0);
-      _mm_storel_epi64((__m128i*)(dst + 1 * BPS), dst1);
-      _mm_storel_epi64((__m128i*)(dst + 2 * BPS), dst2);
-      _mm_storel_epi64((__m128i*)(dst + 3 * BPS), dst3);
+      _mm_storel_epi64((__m128i*)&dst[0 * BPS], dst0);
+      _mm_storel_epi64((__m128i*)&dst[1 * BPS], dst1);
+      _mm_storel_epi64((__m128i*)&dst[2 * BPS], dst2);
+      _mm_storel_epi64((__m128i*)&dst[3 * BPS], dst3);
     } else {
       // Store four bytes/pixels per line.
-      *(int*)(dst + 0 * BPS) = _mm_cvtsi128_si32(dst0);
-      *(int*)(dst + 1 * BPS) = _mm_cvtsi128_si32(dst1);
-      *(int*)(dst + 2 * BPS) = _mm_cvtsi128_si32(dst2);
-      *(int*)(dst + 3 * BPS) = _mm_cvtsi128_si32(dst3);
+      *((int32_t *)&dst[0 * BPS]) = _mm_cvtsi128_si32(dst0);
+      *((int32_t *)&dst[1 * BPS]) = _mm_cvtsi128_si32(dst1);
+      *((int32_t *)&dst[2 * BPS]) = _mm_cvtsi128_si32(dst2);
+      *((int32_t *)&dst[3 * BPS]) = _mm_cvtsi128_si32(dst3);
     }
   }
 }
-
-#if defined(USE_TRANSFORM_AC3)
-#define MUL(a, b) (((a) * (b)) >> 16)
-static void TransformAC3SSE2(const int16_t* in, uint8_t* dst) {
-  static const int kC1 = 20091 + (1 << 16);
-  static const int kC2 = 35468;
-  const __m128i A = _mm_set1_epi16(in[0] + 4);
-  const __m128i c4 = _mm_set1_epi16(MUL(in[4], kC2));
-  const __m128i d4 = _mm_set1_epi16(MUL(in[4], kC1));
-  const int c1 = MUL(in[1], kC2);
-  const int d1 = MUL(in[1], kC1);
-  const __m128i CD = _mm_set_epi16(0, 0, 0, 0, -d1, -c1, c1, d1);
-  const __m128i B = _mm_adds_epi16(A, CD);
-  const __m128i m0 = _mm_adds_epi16(B, d4);
-  const __m128i m1 = _mm_adds_epi16(B, c4);
-  const __m128i m2 = _mm_subs_epi16(B, c4);
-  const __m128i m3 = _mm_subs_epi16(B, d4);
-  const __m128i zero = _mm_setzero_si128();
-  // Load the source pixels.
-  __m128i dst0 = _mm_cvtsi32_si128(*(int*)(dst + 0 * BPS));
-  __m128i dst1 = _mm_cvtsi32_si128(*(int*)(dst + 1 * BPS));
-  __m128i dst2 = _mm_cvtsi32_si128(*(int*)(dst + 2 * BPS));
-  __m128i dst3 = _mm_cvtsi32_si128(*(int*)(dst + 3 * BPS));
-  // Convert to 16b.
-  dst0 = _mm_unpacklo_epi8(dst0, zero);
-  dst1 = _mm_unpacklo_epi8(dst1, zero);
-  dst2 = _mm_unpacklo_epi8(dst2, zero);
-  dst3 = _mm_unpacklo_epi8(dst3, zero);
-  // Add the inverse transform.
-  dst0 = _mm_adds_epi16(dst0, _mm_srai_epi16(m0, 3));
-  dst1 = _mm_adds_epi16(dst1, _mm_srai_epi16(m1, 3));
-  dst2 = _mm_adds_epi16(dst2, _mm_srai_epi16(m2, 3));
-  dst3 = _mm_adds_epi16(dst3, _mm_srai_epi16(m3, 3));
-  // Unsigned saturate to 8b.
-  dst0 = _mm_packus_epi16(dst0, dst0);
-  dst1 = _mm_packus_epi16(dst1, dst1);
-  dst2 = _mm_packus_epi16(dst2, dst2);
-  dst3 = _mm_packus_epi16(dst3, dst3);
-  // Store the results.
-  *(int*)(dst + 0 * BPS) = _mm_cvtsi128_si32(dst0);
-  *(int*)(dst + 1 * BPS) = _mm_cvtsi128_si32(dst1);
-  *(int*)(dst + 2 * BPS) = _mm_cvtsi128_si32(dst2);
-  *(int*)(dst + 3 * BPS) = _mm_cvtsi128_si32(dst3);
-}
-#undef MUL
-#endif   // USE_TRANSFORM_AC3
 
 //------------------------------------------------------------------------------
 // Loop Filter (Paragraph 15)
@@ -326,14 +278,14 @@ static void TransformAC3SSE2(const int16_t* in, uint8_t* dst) {
 
 #define GET_NOTHEV(p1, p0, q0, q1, hev_thresh, not_hev) {                      \
   const __m128i zero = _mm_setzero_si128();                                    \
-  const __m128i t_1 = MM_ABS(p1, p0);                                          \
-  const __m128i t_2 = MM_ABS(q1, q0);                                          \
+  const __m128i t1 = MM_ABS(p1, p0);                                           \
+  const __m128i t2 = MM_ABS(q1, q0);                                           \
                                                                                \
   const __m128i h = _mm_set1_epi8(hev_thresh);                                 \
-  const __m128i t_3 = _mm_subs_epu8(t_1, h);  /* abs(p1 - p0) - hev_tresh */   \
-  const __m128i t_4 = _mm_subs_epu8(t_2, h);  /* abs(q1 - q0) - hev_tresh */   \
+  const __m128i t3 = _mm_subs_epu8(t1, h);  /* abs(p1 - p0) - hev_tresh */     \
+  const __m128i t4 = _mm_subs_epu8(t2, h);  /* abs(q1 - q0) - hev_tresh */     \
                                                                                \
-  not_hev = _mm_or_si128(t_3, t_4);                                            \
+  not_hev = _mm_or_si128(t3, t4);                                              \
   not_hev = _mm_cmpeq_epi8(not_hev, zero); /* not_hev <= t1 && not_hev <= t2 */\
 }
 
@@ -362,13 +314,13 @@ static void TransformAC3SSE2(const int16_t* in, uint8_t* dst) {
 
 // Updates values of 2 pixels at MB edge during complex filtering.
 // Update operations:
-// q = q - delta and p = p + delta; where delta = [(a_hi >> 7), (a_lo >> 7)]
+// q = q - a and p = p + a; where a = [(a_hi >> 7), (a_lo >> 7)]
 #define UPDATE_2PIXELS(pi, qi, a_lo, a_hi) {                                   \
   const __m128i a_lo7 = _mm_srai_epi16(a_lo, 7);                               \
   const __m128i a_hi7 = _mm_srai_epi16(a_hi, 7);                               \
-  const __m128i delta = _mm_packs_epi16(a_lo7, a_hi7);                         \
-  pi = _mm_adds_epi8(pi, delta);                                               \
-  qi = _mm_subs_epi8(qi, delta);                                               \
+  const __m128i a = _mm_packs_epi16(a_lo7, a_hi7);                             \
+  pi = _mm_adds_epi8(pi, a);                                                   \
+  qi = _mm_subs_epi8(qi, a);                                                   \
 }
 
 static void NeedsFilter(const __m128i* p1, const __m128i* p0, const __m128i* q0,
@@ -924,19 +876,10 @@ static void HFilter8iSSE2(uint8_t* u, uint8_t* v, int stride,
   Store16x4(u, v, stride, &p1, &p0, &q0, &q1);
 }
 
-#endif   // WEBP_USE_SSE2
-
-//------------------------------------------------------------------------------
-// Entry point
-
 extern void VP8DspInitSSE2(void);
 
 void VP8DspInitSSE2(void) {
-#if defined(WEBP_USE_SSE2)
   VP8Transform = TransformSSE2;
-#if defined(USE_TRANSFORM_AC3)
-  VP8TransformAC3 = TransformAC3SSE2;
-#endif
 
   VP8VFilter16 = VFilter16SSE2;
   VP8HFilter16 = HFilter16SSE2;
@@ -951,6 +894,10 @@ void VP8DspInitSSE2(void) {
   VP8SimpleHFilter16 = SimpleHFilter16SSE2;
   VP8SimpleVFilter16i = SimpleVFilter16iSSE2;
   VP8SimpleHFilter16i = SimpleHFilter16iSSE2;
-#endif   // WEBP_USE_SSE2
 }
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif
+
+#endif   // WEBP_USE_SSE2

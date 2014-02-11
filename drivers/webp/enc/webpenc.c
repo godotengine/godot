@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // WebP encoder: main entry point
@@ -21,6 +19,10 @@
 #include "../utils/utils.h"
 
 // #define PRINT_MEMORY_INFO
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 #ifdef PRINT_MEMORY_INFO
 #include <stdio.h>
@@ -91,53 +93,34 @@ static void ResetBoundaryPredictions(VP8Encoder* const enc) {
   enc->nz_[-1] = 0;   // constant
 }
 
-// Mapping from config->method_ to coding tools used.
-//-------------------+---+---+---+---+---+---+---+
-//   Method          | 0 | 1 | 2 | 3 |(4)| 5 | 6 |
-//-------------------+---+---+---+---+---+---+---+
-// fast probe        | x |   |   | x |   |   |   |
-//-------------------+---+---+---+---+---+---+---+
-// dynamic proba     | ~ | x | x | x | x | x | x |
-//-------------------+---+---+---+---+---+---+---+
-// fast mode analysis|   |   |   |   | x | x | x |
-//-------------------+---+---+---+---+---+---+---+
-// basic rd-opt      |   |   |   | x | x | x | x |
-//-------------------+---+---+---+---+---+---+---+
-// disto-score i4/16 |   |   | x |   |   |   |   |
-//-------------------+---+---+---+---+---+---+---+
-// rd-opt i4/16      |   |   | ~ | x | x | x | x |
-//-------------------+---+---+---+---+---+---+---+
-// token buffer (opt)|   |   |   | x | x | x | x |
-//-------------------+---+---+---+---+---+---+---+
-// Trellis           |   |   |   |   |   | x |Ful|
-//-------------------+---+---+---+---+---+---+---+
-// full-SNS          |   |   |   |   | x | x | x |
-//-------------------+---+---+---+---+---+---+---+
+// Map configured quality level to coding tools used.
+//-------------+---+---+---+---+---+---+
+//   Quality   | 0 | 1 | 2 | 3 | 4 | 5 +
+//-------------+---+---+---+---+---+---+
+// dynamic prob| ~ | x | x | x | x | x |
+//-------------+---+---+---+---+---+---+
+// rd-opt modes|   |   | x | x | x | x |
+//-------------+---+---+---+---+---+---+
+// fast i4/i16 | x | x |   |   |   |   |
+//-------------+---+---+---+---+---+---+
+// rd-opt i4/16|   |   | x | x | x | x |
+//-------------+---+---+---+---+---+---+
+// Trellis     |   | x |   |   | x | x |
+//-------------+---+---+---+---+---+---+
+// full-SNS    |   |   |   |   |   | x |
+//-------------+---+---+---+---+---+---+
 
 static void MapConfigToTools(VP8Encoder* const enc) {
-  const WebPConfig* const config = enc->config_;
-  const int method = config->method;
-  const int limit = 100 - config->partition_limit;
+  const int method = enc->config_->method;
+  const int limit = 100 - enc->config_->partition_limit;
   enc->method_ = method;
-  enc->rd_opt_level_ = (method >= 6) ? RD_OPT_TRELLIS_ALL
-                     : (method >= 5) ? RD_OPT_TRELLIS
-                     : (method >= 3) ? RD_OPT_BASIC
-                     : RD_OPT_NONE;
+  enc->rd_opt_level_ = (method >= 6) ? 3
+                     : (method >= 5) ? 2
+                     : (method >= 3) ? 1
+                     : 0;
   enc->max_i4_header_bits_ =
       256 * 16 * 16 *                 // upper bound: up to 16bit per 4x4 block
       (limit * limit) / (100 * 100);  // ... modulated with a quadratic curve.
-
-  enc->thread_level_ = config->thread_level;
-
-  enc->do_search_ = (config->target_size > 0 || config->target_PSNR > 0);
-  if (!config->low_memory) {
-#if !defined(DISABLE_TOKEN_BUFFER)
-    enc->use_tokens_ = (enc->rd_opt_level_ >= RD_OPT_BASIC);  // need rd stats
-#endif
-    if (enc->use_tokens_) {
-      enc->num_parts_ = 1;   // doesn't work with multi-partition
-    }
-  }
 }
 
 // Memory scaling with dimensions:
@@ -153,7 +136,7 @@ static void MapConfigToTools(VP8Encoder* const enc) {
 //             non-zero: 196
 //             lf-stats: 2048
 //                total: 68635
-// Transient object sizes:
+// Transcient object sizes:
 //       VP8EncIterator: 352
 //         VP8ModeScore: 912
 //       VP8SegmentInfo: 532
@@ -171,16 +154,20 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   const int preds_h = 4 * mb_h + 1;
   const size_t preds_size = preds_w * preds_h * sizeof(uint8_t);
   const int top_stride = mb_w * 16;
-  const size_t nz_size = (mb_w + 1) * sizeof(uint32_t) + ALIGN_CST;
+  const size_t nz_size = (mb_w + 1) * sizeof(uint32_t);
+  const size_t cache_size = (3 * YUV_SIZE + PRED_SIZE) * sizeof(uint8_t);
   const size_t info_size = mb_w * mb_h * sizeof(VP8MBInfo);
-  const size_t samples_size = 2 * top_stride * sizeof(uint8_t)  // top-luma/u/v
-                            + ALIGN_CST;                        // align all
+  const size_t samples_size = (2 * top_stride +         // top-luma/u/v
+                               16 + 16 + 16 + 8 + 1 +   // left y/u/v
+                               2 * ALIGN_CST)           // align all
+                               * sizeof(uint8_t);
   const size_t lf_stats_size =
       config->autofilter ? sizeof(LFStats) + ALIGN_CST : 0;
   VP8Encoder* enc;
   uint8_t* mem;
   const uint64_t size = (uint64_t)sizeof(VP8Encoder)   // main struct
                       + ALIGN_CST                      // cache alignment
+                      + cache_size                     // working caches
                       + info_size                      // modes info
                       + preds_size                     // prediction modes
                       + samples_size                   // top/left samples
@@ -191,15 +178,16 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   printf("===================================\n");
   printf("Memory used:\n"
          "             encoder: %ld\n"
+         "         block cache: %ld\n"
          "                info: %ld\n"
          "               preds: %ld\n"
          "         top samples: %ld\n"
          "            non-zero: %ld\n"
          "            lf-stats: %ld\n"
          "               total: %ld\n",
-         sizeof(VP8Encoder) + ALIGN_CST, info_size,
+         sizeof(VP8Encoder) + ALIGN_CST, cache_size, info_size,
          preds_size, samples_size, nz_size, lf_stats_size, size);
-  printf("Transient object sizes:\n"
+  printf("Transcient object sizes:\n"
          "      VP8EncIterator: %ld\n"
          "        VP8ModeScore: %ld\n"
          "      VP8SegmentInfo: %ld\n"
@@ -224,11 +212,19 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   enc->mb_w_ = mb_w;
   enc->mb_h_ = mb_h;
   enc->preds_w_ = preds_w;
+  enc->yuv_in_ = (uint8_t*)mem;
+  mem += YUV_SIZE;
+  enc->yuv_out_ = (uint8_t*)mem;
+  mem += YUV_SIZE;
+  enc->yuv_out2_ = (uint8_t*)mem;
+  mem += YUV_SIZE;
+  enc->yuv_p_ = (uint8_t*)mem;
+  mem += PRED_SIZE;
   enc->mb_info_ = (VP8MBInfo*)mem;
   mem += info_size;
   enc->preds_ = ((uint8_t*)mem) + 1 + enc->preds_w_;
   mem += preds_w * preds_h * sizeof(uint8_t);
-  enc->nz_ = 1 + (uint32_t*)DO_ALIGN(mem);
+  enc->nz_ = 1 + (uint32_t*)mem;
   mem += nz_size;
   enc->lf_stats_ = lf_stats_size ? (LFStats*)DO_ALIGN(mem) : NULL;
   mem += lf_stats_size;
@@ -238,7 +234,13 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   enc->y_top_ = (uint8_t*)mem;
   enc->uv_top_ = enc->y_top_ + top_stride;
   mem += 2 * top_stride;
-  assert(mem <= (uint8_t*)enc + size);
+  mem = (uint8_t*)DO_ALIGN(mem + 1);
+  enc->y_left_ = (uint8_t*)mem;
+  mem += 16 + 16;
+  enc->u_left_ = (uint8_t*)mem;
+  mem += 16;
+  enc->v_left_ = (uint8_t*)mem;
+  mem += 8;
 
   enc->config_ = config;
   enc->profile_ = use_filter ? ((config->filter_type == 1) ? 0 : 1) : 2;
@@ -257,27 +259,23 @@ static VP8Encoder* InitVP8Encoder(const WebPConfig* const config,
   VP8EncInitLayer(enc);
 #endif
 
-  VP8TBufferInit(&enc->tokens_);
   return enc;
 }
 
-static int DeleteVP8Encoder(VP8Encoder* enc) {
-  int ok = 1;
+static void DeleteVP8Encoder(VP8Encoder* enc) {
   if (enc != NULL) {
-    ok = VP8EncDeleteAlpha(enc);
+    VP8EncDeleteAlpha(enc);
 #ifdef WEBP_EXPERIMENTAL_FEATURES
     VP8EncDeleteLayer(enc);
 #endif
-    VP8TBufferClear(&enc->tokens_);
     free(enc);
   }
-  return ok;
 }
 
 //------------------------------------------------------------------------------
 
 static double GetPSNR(uint64_t err, uint64_t size) {
-  return (err > 0 && size > 0) ? 10. * log10(255. * 255. * size / err) : 99.;
+  return err ? 10. * log10(255. * 255. * size / err) : 99.;
 }
 
 static void FinalizePSNR(const VP8Encoder* const enc) {
@@ -334,7 +332,7 @@ int WebPReportProgress(const WebPPicture* const pic,
 //------------------------------------------------------------------------------
 
 int WebPEncode(const WebPConfig* config, WebPPicture* pic) {
-  int ok = 0;
+  int ok;
 
   if (pic == NULL)
     return 0;
@@ -353,48 +351,32 @@ int WebPEncode(const WebPConfig* config, WebPPicture* pic) {
   if (!config->lossless) {
     VP8Encoder* enc = NULL;
     if (pic->y == NULL || pic->u == NULL || pic->v == NULL) {
-      // Make sure we have YUVA samples.
-      float dithering = 0.f;
-      if (config->preprocessing & 2) {
-        const float x = config->quality / 100.f;
-        const float x2 = x * x;
-        // slowly decreasing from max dithering at low quality (q->0)
-        // to 0.5 dithering amplitude at high quality (q->100)
-        dithering = 1.0f + (0.5f - 1.0f) * x2 * x2;
-      }
-      if (!WebPPictureARGBToYUVADithered(pic, WEBP_YUV420, dithering)) {
-        return 0;
+      if (pic->argb != NULL) {
+        if (!WebPPictureARGBToYUVA(pic, WEBP_YUV420)) return 0;
+      } else {
+        return WebPEncodingSetError(pic, VP8_ENC_ERROR_NULL_PARAMETER);
       }
     }
 
     enc = InitVP8Encoder(config, pic);
     if (enc == NULL) return 0;  // pic->error is already set.
     // Note: each of the tasks below account for 20% in the progress report.
-    ok = VP8EncAnalyze(enc);
-
-    // Analysis is done, proceed to actual coding.
-    ok = ok && VP8EncStartAlpha(enc);   // possibly done in parallel
-    if (!enc->use_tokens_) {
-      ok = ok && VP8EncLoop(enc);
-    } else {
-      ok = ok && VP8EncTokenLoop(enc);
-    }
-    ok = ok && VP8EncFinishAlpha(enc);
+    ok = VP8EncAnalyze(enc)
+      && VP8StatLoop(enc)
+      && VP8EncLoop(enc)
+      && VP8EncFinishAlpha(enc)
 #ifdef WEBP_EXPERIMENTAL_FEATURES
-    ok = ok && VP8EncFinishLayer(enc);
+      && VP8EncFinishLayer(enc)
 #endif
-
-    ok = ok && VP8EncWrite(enc);
+      && VP8EncWrite(enc);
     StoreStats(enc);
     if (!ok) {
       VP8EncFreeBitWriters(enc);
     }
-    ok &= DeleteVP8Encoder(enc);  // must always be called, even if !ok
+    DeleteVP8Encoder(enc);
   } else {
-    // Make sure we have ARGB samples.
-    if (pic->argb == NULL && !WebPPictureYUVAToARGB(pic)) {
-      return 0;
-    }
+    if (pic->argb == NULL)
+      return WebPEncodingSetError(pic, VP8_ENC_ERROR_NULL_PARAMETER);
 
     ok = VP8LEncodeImage(config, pic);  // Sets pic->error in case of problem.
   }
@@ -402,3 +384,6 @@ int WebPEncode(const WebPConfig* config, WebPPicture* pic) {
   return ok;
 }
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

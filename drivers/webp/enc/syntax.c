@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Header syntax writing
@@ -13,13 +11,27 @@
 
 #include <assert.h>
 
-#include "../utils/utils.h"
-#include "../webp/format_constants.h"  // RIFF constants
-#include "../webp/mux_types.h"         // ALPHA_FLAG
+#include "../webp/format_constants.h"
 #include "./vp8enci.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // Helper functions
+
+// TODO(later): Move to webp/format_constants.h?
+static void PutLE24(uint8_t* const data, uint32_t val) {
+  data[0] = (val >>  0) & 0xff;
+  data[1] = (val >>  8) & 0xff;
+  data[2] = (val >> 16) & 0xff;
+}
+
+static void PutLE32(uint8_t* const data, uint32_t val) {
+  PutLE24(data, val);
+  data[3] = (val >> 24) & 0xff;
+}
 
 static int IsVP8XNeeded(const VP8Encoder* const enc) {
   return !!enc->has_alpha_;  // Currently the only case when VP8X is needed.
@@ -27,6 +39,7 @@ static int IsVP8XNeeded(const VP8Encoder* const enc) {
 }
 
 static int PutPaddingByte(const WebPPicture* const pic) {
+
   const uint8_t pad_byte[1] = { 0 };
   return !!pic->writer(pad_byte, 1, pic);
 }
@@ -60,14 +73,14 @@ static WebPEncodingError PutVP8XHeader(const VP8Encoder* const enc) {
   assert(pic->width <= MAX_CANVAS_SIZE && pic->height <= MAX_CANVAS_SIZE);
 
   if (enc->has_alpha_) {
-    flags |= ALPHA_FLAG;
+    flags |= ALPHA_FLAG_BIT;
   }
 
   PutLE32(vp8x + TAG_SIZE,              VP8X_CHUNK_SIZE);
   PutLE32(vp8x + CHUNK_HEADER_SIZE,     flags);
   PutLE24(vp8x + CHUNK_HEADER_SIZE + 4, pic->width - 1);
   PutLE24(vp8x + CHUNK_HEADER_SIZE + 7, pic->height - 1);
-  if (!pic->writer(vp8x, sizeof(vp8x), pic)) {
+  if(!pic->writer(vp8x, sizeof(vp8x), pic)) {
     return VP8_ENC_ERROR_BAD_WRITE;
   }
   return VP8_ENC_OK;
@@ -314,9 +327,7 @@ static size_t GeneratePartition0(VP8Encoder* const enc) {
 
   PutSegmentHeader(bw, enc);
   PutFilterHeader(bw, &enc->filter_hdr_);
-  VP8PutValue(bw, enc->num_parts_ == 8 ? 3 :
-                  enc->num_parts_ == 4 ? 2 :
-                  enc->num_parts_ == 2 ? 1 : 0, 2);
+  VP8PutValue(bw, enc->config_->partitions, 2);
   PutQuant(bw, enc);
   VP8PutBitUniform(bw, 0);   // no proba update
   VP8WriteProbas(bw, &enc->proba_);
@@ -421,3 +432,6 @@ int VP8EncWrite(VP8Encoder* const enc) {
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

@@ -1,10 +1,8 @@
 // Copyright 2010 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // VP8 decoder: internal header.
@@ -17,11 +15,10 @@
 #include <string.h>     // for memcpy()
 #include "./vp8li.h"
 #include "../utils/bit_reader.h"
-#include "../utils/random.h"
 #include "../utils/thread.h"
 #include "../dsp/dsp.h"
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
@@ -30,8 +27,10 @@ extern "C" {
 
 // version numbers
 #define DEC_MAJ_VERSION 0
-#define DEC_MIN_VERSION 4
+#define DEC_MIN_VERSION 2
 #define DEC_REV_VERSION 0
+
+#define ONLY_KEYFRAME_CODE      // to remove any code related to P-Frames
 
 // intra prediction modes
 enum { B_DC_PRED = 0,   // 4x4 modes
@@ -99,9 +98,6 @@ enum { MB_FEATURE_TREE_PROBS = 3,
 #define U_OFF    (Y_OFF + BPS * 16 + BPS)
 #define V_OFF    (U_OFF + 16)
 
-// minimal width under which lossy multi-threading is always disabled
-#define MIN_WIDTH_FOR_THREADS 512
-
 //------------------------------------------------------------------------------
 // Headers
 
@@ -130,19 +126,15 @@ typedef struct {
   int8_t filter_strength_[NUM_MB_SEGMENTS];  // filter strength for segments
 } VP8SegmentHeader;
 
-
-// probas associated to one of the contexts
-typedef uint8_t VP8ProbaArray[NUM_PROBAS];
-
-typedef struct {   // all the probas associated to one band
-  VP8ProbaArray probas_[NUM_CTX];
-} VP8BandProbas;
-
 // Struct collecting all frame-persistent probabilities.
 typedef struct {
   uint8_t segments_[MB_FEATURE_TREE_PROBS];
   // Type: 0:Intra16-AC  1:Intra16-DC   2:Chroma   3:Intra4
-  VP8BandProbas bands_[NUM_TYPES][NUM_BANDS];
+  uint8_t coeffs_[NUM_TYPES][NUM_BANDS][NUM_CTX][NUM_PROBAS];
+#ifndef ONLY_KEYFRAME_CODE
+  uint8_t ymode_[4], uvmode_[3];
+  uint8_t mv_[2][NUM_MV_PROBAS];
+#endif
 } VP8Proba;
 
 // Filter parameters
@@ -159,58 +151,31 @@ typedef struct {
 // Informations about the macroblocks.
 
 typedef struct {  // filter specs
-  uint8_t f_limit_;      // filter limit in [3..189], or 0 if no filtering
-  uint8_t f_ilevel_;     // inner limit in [1..63]
-  uint8_t f_inner_;      // do inner filtering?
-  uint8_t hev_thresh_;   // high edge variance threshold in [0..2]
+  unsigned int f_level_:6;      // filter strength: 0..63
+  unsigned int f_ilevel_:6;     // inner limit: 1..63
+  unsigned int f_inner_:1;      // do inner filtering?
 } VP8FInfo;
 
-typedef struct {  // Top/Left Contexts used for syntax-parsing
-  uint8_t nz_;        // non-zero AC/DC coeffs (4bit for luma + 4bit for chroma)
-  uint8_t nz_dc_;     // non-zero DC coeff (1bit)
+typedef struct {  // used for syntax-parsing
+  unsigned int nz_;          // non-zero AC/DC coeffs
+  unsigned int dc_nz_:1;     // non-zero DC coeffs
+  unsigned int skip_:1;      // block type
 } VP8MB;
 
 // Dequantization matrices
 typedef int quant_t[2];      // [DC / AC].  Can be 'uint16_t[2]' too (~slower).
 typedef struct {
   quant_t y1_mat_, y2_mat_, uv_mat_;
-
-  int uv_quant_;   // U/V quantizer value
-  int dither_;     // dithering amplitude (0 = off, max=255)
 } VP8QuantMatrix;
-
-// Data needed to reconstruct a macroblock
-typedef struct {
-  int16_t coeffs_[384];   // 384 coeffs = (16+4+4) * 4*4
-  uint8_t is_i4x4_;       // true if intra4x4
-  uint8_t imodes_[16];    // one 16x16 mode (#0) or sixteen 4x4 modes
-  uint8_t uvmode_;        // chroma prediction mode
-  // bit-wise info about the content of each sub-4x4 blocks (in decoding order).
-  // Each of the 4x4 blocks for y/u/v is associated with a 2b code according to:
-  //   code=0 -> no coefficient
-  //   code=1 -> only DC
-  //   code=2 -> first three coefficients are non-zero
-  //   code=3 -> more than three coefficients are non-zero
-  // This allows to call specialized transform functions.
-  uint32_t non_zero_y_;
-  uint32_t non_zero_uv_;
-  uint8_t dither_;      // local dithering strength (deduced from non_zero_*)
-} VP8MBData;
 
 // Persistent information needed by the parallel processing
 typedef struct {
-  int id_;              // cache row to process (in [0..2])
-  int mb_y_;            // macroblock position of the row
-  int filter_row_;      // true if row-filtering is needed
-  VP8FInfo* f_info_;    // filter strengths (swapped with dec->f_info_)
-  VP8MBData* mb_data_;  // reconstruction data (swapped with dec->mb_data_)
-  VP8Io io_;            // copy of the VP8Io to pass to put()
+  int id_;            // cache row to process (in [0..2])
+  int mb_y_;          // macroblock position of the row
+  int filter_row_;    // true if row-filtering is needed
+  VP8FInfo* f_info_;  // filter strengths
+  VP8Io io_;          // copy of the VP8Io to pass to put()
 } VP8ThreadContext;
-
-// Saved top samples, per macroblock. Fits into a cache-line.
-typedef struct {
-  uint8_t y[16], u[8], v[8];
-} VP8TopSamples;
 
 //------------------------------------------------------------------------------
 // VP8Decoder: the main opaque structure handed over to user
@@ -231,8 +196,7 @@ struct VP8Decoder {
 
   // Worker
   WebPWorker worker_;
-  int mt_method_;      // multi-thread method: 0=off, 1=[parse+recon][filter]
-                       // 2=[parse][recon+filter]
+  int use_threads_;    // use multi-thread
   int cache_id_;       // current cache row
   int num_caches_;     // number of cached rows of 16 pixels (1, 2 or 3)
   VP8ThreadContext thread_ctx_;  // Thread context
@@ -249,9 +213,12 @@ struct VP8Decoder {
   // per-partition boolean decoders.
   VP8BitReader parts_[MAX_NUM_PARTITIONS];
 
-  // Dithering strength, deduced from decoding options
-  int dither_;                // whether to use dithering or not
-  VP8Random dithering_rg_;    // random generator for dithering
+  // buffer refresh flags
+  //   bit 0: refresh Gold, bit 1: refresh Alt
+  //   bit 2-3: copy to Gold, bit 4-5: copy to Alt
+  //   bit 6: Gold sign bias, bit 7: Alt sign bias
+  //   bit 8: refresh last frame
+  uint32_t buffer_flags_;
 
   // dequantization (one set of DC/AC dequant factor per segment)
   VP8QuantMatrix dqm_[NUM_MB_SEGMENTS];
@@ -260,19 +227,24 @@ struct VP8Decoder {
   VP8Proba proba_;
   int use_skip_proba_;
   uint8_t skip_p_;
+#ifndef ONLY_KEYFRAME_CODE
+  uint8_t intra_p_, last_p_, golden_p_;
+  VP8Proba proba_saved_;
+  int update_proba_;
+#endif
 
   // Boundary data cache and persistent buffers.
-  uint8_t* intra_t_;      // top intra modes values: 4 * mb_w_
-  uint8_t  intra_l_[4];   // left intra modes values
+  uint8_t* intra_t_;     // top intra modes values: 4 * mb_w_
+  uint8_t  intra_l_[4];  // left intra modes values
+  uint8_t* y_t_;         // top luma samples: 16 * mb_w_
+  uint8_t* u_t_, *v_t_;  // top u/v samples: 8 * mb_w_ each
 
-  uint8_t segment_;       // segment of the currently parsed block
-  VP8TopSamples* yuv_t_;  // top y/u/v samples
+  VP8MB* mb_info_;       // contextual macroblock info (mb_w_ + 1)
+  VP8FInfo* f_info_;     // filter strength info
+  uint8_t* yuv_b_;       // main block for Y/U/V (size = YUV_SIZE)
+  int16_t* coeffs_;      // 384 coeffs = (16+8+8) * 4*4
 
-  VP8MB* mb_info_;        // contextual macroblock info (mb_w_ + 1)
-  VP8FInfo* f_info_;      // filter strength info
-  uint8_t* yuv_b_;        // main block for Y/U/V (size = YUV_SIZE)
-
-  uint8_t* cache_y_;      // macroblock row for storing unfiltered samples
+  uint8_t* cache_y_;     // macroblock row for storing unfiltered samples
   uint8_t* cache_u_;
   uint8_t* cache_v_;
   int cache_y_stride_;
@@ -284,20 +256,28 @@ struct VP8Decoder {
 
   // Per macroblock non-persistent infos.
   int mb_x_, mb_y_;       // current position, in macroblock units
-  VP8MBData* mb_data_;    // parsed reconstruction data
+  uint8_t is_i4x4_;       // true if intra4x4
+  uint8_t imodes_[16];    // one 16x16 mode (#0) or sixteen 4x4 modes
+  uint8_t uvmode_;        // chroma prediction mode
+  uint8_t segment_;       // block's segment
+
+  // bit-wise info about the content of each sub-4x4 blocks: there are 16 bits
+  // for luma (bits #0->#15), then 4 bits for chroma-u (#16->#19) and 4 bits for
+  // chroma-v (#20->#23), each corresponding to one 4x4 block in decoding order.
+  // If the bit is set, the 4x4 block contains some non-zero coefficients.
+  uint32_t non_zero_;
+  uint32_t non_zero_ac_;
 
   // Filtering side-info
-  int filter_type_;                          // 0=off, 1=simple, 2=complex
-  VP8FInfo fstrengths_[NUM_MB_SEGMENTS][2];  // precalculated per-segment/type
-
-  // Alpha
-  struct ALPHDecoder* alph_dec_;  // alpha-plane decoder object
-  const uint8_t* alpha_data_;     // compressed alpha data (if present)
-  size_t alpha_data_size_;
-  int is_alpha_decoded_;  // true if alpha_data_ is decoded in alpha_plane_
-  uint8_t* alpha_plane_;        // output. Persistent, contains the whole data.
+  int filter_type_;                         // 0=off, 1=simple, 2=complex
+  int filter_row_;                          // per-row flag
+  uint8_t filter_levels_[NUM_MB_SEGMENTS];  // precalculated per-segment
 
   // extensions
+  const uint8_t* alpha_data_;   // compressed alpha data (if present)
+  size_t alpha_data_size_;
+  uint8_t* alpha_plane_;        // output. Persistent, contains the whole data.
+
   int layer_colorspace_;
   const uint8_t* layer_data_;   // compressed layer data (if present)
   size_t layer_data_size_;
@@ -320,6 +300,8 @@ void VP8ParseQuant(VP8Decoder* const dec);
 
 // in frame.c
 int VP8InitFrame(VP8Decoder* const dec, VP8Io* io);
+// Predict a block and add residual
+void VP8ReconstructBlock(VP8Decoder* const dec);
 // Call io->setup() and finish setting up scan parameters.
 // After this call returns, one must always call VP8ExitCritical() with the
 // same parameters. Both functions should be used in pair. Returns VP8_STATUS_OK
@@ -328,16 +310,10 @@ VP8StatusCode VP8EnterCritical(VP8Decoder* const dec, VP8Io* const io);
 // Must always be called in pair with VP8EnterCritical().
 // Returns false in case of error.
 int VP8ExitCritical(VP8Decoder* const dec, VP8Io* const io);
-// Return the multi-threading method to use (0=off), depending
-// on options and bitstream size. Only for lossy decoding.
-int VP8GetThreadMethod(const WebPDecoderOptions* const options,
-                       const WebPHeaderStructure* const headers,
-                       int width, int height);
-// Initialize dithering post-process if needed.
-void VP8InitDithering(const WebPDecoderOptions* const options,
-                      VP8Decoder* const dec);
-// Process the last decoded row (filtering + output).
+// Process the last decoded row (filtering + output)
 int VP8ProcessRow(VP8Decoder* const dec, VP8Io* const io);
+// Store a block, along with filtering params
+void VP8StoreBlock(VP8Decoder* const dec);
 // To be called at the start of a new scanline, to initialize predictors.
 void VP8InitScanline(VP8Decoder* const dec);
 // Decode one macroblock. Returns false if there is not enough data.
@@ -352,7 +328,7 @@ int VP8DecodeLayer(VP8Decoder* const dec);
 
 //------------------------------------------------------------------------------
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 }    // extern "C"
 #endif
 

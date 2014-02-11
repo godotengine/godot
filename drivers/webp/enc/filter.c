@@ -1,67 +1,20 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Selecting filter level
 //
 // Author: somnath@google.com (Somnath Banerjee)
 
-#include <assert.h>
 #include "./vp8enci.h"
 
-// This table gives, for a given sharpness, the filtering strength to be
-// used (at least) in order to filter a given edge step delta.
-// This is constructed by brute force inspection: for all delta, we iterate
-// over all possible filtering strength / thresh until needs_filter() returns
-// true.
-#define MAX_DELTA_SIZE 64
-static const uint8_t kLevelsFromDelta[8][MAX_DELTA_SIZE] = {
-  { 0,   1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-    32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,
-    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63 },
-  { 0,  1,  2,  3,  5,  6,  7,  8,  9, 11, 12, 13, 14, 15, 17, 18,
-    20, 21, 23, 24, 26, 27, 29, 30, 32, 33, 35, 36, 38, 39, 41, 42,
-    44, 45, 47, 48, 50, 51, 53, 54, 56, 57, 59, 60, 62, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 },
-  {  0,  1,  2,  3,  5,  6,  7,  8,  9, 11, 12, 13, 14, 16, 17, 19,
-    20, 22, 23, 25, 26, 28, 29, 31, 32, 34, 35, 37, 38, 40, 41, 43,
-    44, 46, 47, 49, 50, 52, 53, 55, 56, 58, 59, 61, 62, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 },
-  {  0,  1,  2,  3,  5,  6,  7,  8,  9, 11, 12, 13, 15, 16, 18, 19,
-    21, 22, 24, 25, 27, 28, 30, 31, 33, 34, 36, 37, 39, 40, 42, 43,
-    45, 46, 48, 49, 51, 52, 54, 55, 57, 58, 60, 61, 63, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 },
-  {  0,  1,  2,  3,  5,  6,  7,  8,  9, 11, 12, 14, 15, 17, 18, 20,
-    21, 23, 24, 26, 27, 29, 30, 32, 33, 35, 36, 38, 39, 41, 42, 44,
-    45, 47, 48, 50, 51, 53, 54, 56, 57, 59, 60, 62, 63, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 },
-  {  0,  1,  2,  4,  5,  7,  8,  9, 11, 12, 13, 15, 16, 17, 19, 20,
-    22, 23, 25, 26, 28, 29, 31, 32, 34, 35, 37, 38, 40, 41, 43, 44,
-    46, 47, 49, 50, 52, 53, 55, 56, 58, 59, 61, 62, 63, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 },
-  {  0,  1,  2,  4,  5,  7,  8,  9, 11, 12, 13, 15, 16, 18, 19, 21,
-    22, 24, 25, 27, 28, 30, 31, 33, 34, 36, 37, 39, 40, 42, 43, 45,
-    46, 48, 49, 51, 52, 54, 55, 57, 58, 60, 61, 63, 63, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 },
-  {  0,  1,  2,  4,  5,  7,  8,  9, 11, 12, 14, 15, 17, 18, 20, 21,
-    23, 24, 26, 27, 29, 30, 32, 33, 35, 36, 38, 39, 41, 42, 44, 45,
-    47, 48, 50, 51, 53, 54, 56, 57, 59, 60, 62, 63, 63, 63, 63, 63,
-    63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63, 63 }
-};
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
-int VP8FilterStrengthFromDelta(int sharpness, int delta) {
-  const int pos = (delta < MAX_DELTA_SIZE) ? delta : MAX_DELTA_SIZE - 1;
-  assert(sharpness >= 0 && sharpness <= 7);
-  return kLevelsFromDelta[sharpness][pos];
-}
-
-// -----------------------------------------------------------------------------
 // NOTE: clip1, tables and InitTables are repeated entries of dsp.c
 static uint8_t abs0[255 + 255 + 1];     // abs(i)
 static uint8_t abs1[255 + 255 + 1];     // abs(i)>>1
@@ -385,29 +338,28 @@ static double GetMBSSIM(const uint8_t* yuv1, const uint8_t* yuv2) {
 // loop filter strength
 
 void VP8InitFilter(VP8EncIterator* const it) {
-  if (it->lf_stats_ != NULL) {
-    int s, i;
-    InitTables();
-    for (s = 0; s < NUM_MB_SEGMENTS; s++) {
-      for (i = 0; i < MAX_LF_LEVELS; i++) {
-        (*it->lf_stats_)[s][i] = 0;
-      }
+  int s, i;
+  if (!it->lf_stats_) return;
+
+  InitTables();
+  for (s = 0; s < NUM_MB_SEGMENTS; s++) {
+    for (i = 0; i < MAX_LF_LEVELS; i++) {
+      (*it->lf_stats_)[s][i] = 0;
     }
   }
 }
 
 void VP8StoreFilterStats(VP8EncIterator* const it) {
   int d;
-  VP8Encoder* const enc = it->enc_;
   const int s = it->mb_->segment_;
-  const int level0 = enc->dqm_[s].fstrength_;  // TODO: ref_lf_delta[]
+  const int level0 = it->enc_->dqm_[s].fstrength_;  // TODO: ref_lf_delta[]
 
   // explore +/-quant range of values around level0
-  const int delta_min = -enc->dqm_[s].quant_;
-  const int delta_max = enc->dqm_[s].quant_;
+  const int delta_min = -it->enc_->dqm_[s].quant_;
+  const int delta_max = it->enc_->dqm_[s].quant_;
   const int step_size = (delta_max - delta_min >= 4) ? 4 : 1;
 
-  if (it->lf_stats_ == NULL) return;
+  if (!it->lf_stats_) return;
 
   // NOTE: Currently we are applying filter only across the sublock edges
   // There are two reasons for that.
@@ -431,41 +383,27 @@ void VP8StoreFilterStats(VP8EncIterator* const it) {
 }
 
 void VP8AdjustFilterStrength(VP8EncIterator* const it) {
+  int s;
   VP8Encoder* const enc = it->enc_;
-  if (it->lf_stats_ != NULL) {
-    int s;
-    for (s = 0; s < NUM_MB_SEGMENTS; s++) {
-      int i, best_level = 0;
-      // Improvement over filter level 0 should be at least 1e-5 (relatively)
-      double best_v = 1.00001 * (*it->lf_stats_)[s][0];
-      for (i = 1; i < MAX_LF_LEVELS; i++) {
-        const double v = (*it->lf_stats_)[s][i];
-        if (v > best_v) {
-          best_v = v;
-          best_level = i;
-        }
-      }
-      enc->dqm_[s].fstrength_ = best_level;
-    }
-  } else if (enc->config_->filter_strength > 0) {
-    int max_level = 0;
-    int s;
-    for (s = 0; s < NUM_MB_SEGMENTS; s++) {
-      VP8SegmentInfo* const dqm = &enc->dqm_[s];
-      // this '>> 3' accounts for some inverse WHT scaling
-      const int delta = (dqm->max_edge_ * dqm->y2_.q_[1]) >> 3;
-      const int level =
-          VP8FilterStrengthFromDelta(enc->filter_hdr_.sharpness_, delta);
-      if (level > dqm->fstrength_) {
-        dqm->fstrength_ = level;
-      }
-      if (max_level < dqm->fstrength_) {
-        max_level = dqm->fstrength_;
+
+  if (!it->lf_stats_) {
+    return;
+  }
+  for (s = 0; s < NUM_MB_SEGMENTS; s++) {
+    int i, best_level = 0;
+    // Improvement over filter level 0 should be at least 1e-5 (relatively)
+    double best_v = 1.00001 * (*it->lf_stats_)[s][0];
+    for (i = 1; i < MAX_LF_LEVELS; i++) {
+      const double v = (*it->lf_stats_)[s][i];
+      if (v > best_v) {
+        best_v = v;
+        best_level = i;
       }
     }
-    enc->filter_hdr_.level_ = max_level;
+    enc->dqm_[s].fstrength_ = best_level;
   }
 }
 
-// -----------------------------------------------------------------------------
-
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

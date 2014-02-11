@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // WebPPicture utils: colorspace conversion, crop, ...
@@ -16,15 +14,14 @@
 #include <math.h>
 
 #include "./vp8enci.h"
-#include "../utils/alpha_processing.h"
-#include "../utils/random.h"
 #include "../utils/rescaler.h"
 #include "../utils/utils.h"
 #include "../dsp/dsp.h"
 #include "../dsp/yuv.h"
 
-// Uncomment to disable gamma-compression during RGB->U/V averaging
-#define USE_GAMMA_COMPRESSION
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 #define HALVE(x) (((x) + 1) >> 1)
 #define IS_YUV_CSP(csp, YUV_CSP) (((csp) & WEBP_CSP_UV_MASK) == (YUV_CSP))
@@ -34,10 +31,6 @@ static const union {
   uint8_t  bytes[4];
 } test_endian = { 0xff000000u };
 #define ALPHA_IS_LAST (test_endian.bytes[3] == 0xff)
-
-static WEBP_INLINE uint32_t MakeARGB32(int r, int g, int b) {
-  return (0xff000000u | (r << 16) | (g << 8) | b);
-}
 
 //------------------------------------------------------------------------------
 // WebPPicture
@@ -123,7 +116,6 @@ int WebPPictureAlloc(WebPPicture* picture) {
         picture->v0 = mem;
         mem += uv0_size;
       }
-      (void)mem;  // makes the static analyzer happy
     } else {
       void* memory;
       const uint64_t argb_size = (uint64_t)width * height;
@@ -298,11 +290,8 @@ int WebPPictureView(const WebPPicture* src,
     dst->y = src->y + top * src->y_stride + left;
     dst->u = src->u + (top >> 1) * src->uv_stride + (left >> 1);
     dst->v = src->v + (top >> 1) * src->uv_stride + (left >> 1);
-    dst->y_stride = src->y_stride;
-    dst->uv_stride = src->uv_stride;
     if (src->a != NULL) {
       dst->a = src->a + top * src->a_stride + left;
-      dst->a_stride = src->a_stride;
     }
 #ifdef WEBP_EXPERIMENTAL_FEATURES
     if (src->u0 != NULL) {
@@ -310,12 +299,10 @@ int WebPPictureView(const WebPPicture* src,
           IS_YUV_CSP(dst->colorspace, WEBP_YUV422) ? (left >> 1) : left;
       dst->u0 = src->u0 + top * src->uv0_stride + left_pos;
       dst->v0 = src->v0 + top * src->uv0_stride + left_pos;
-      dst->uv0_stride = src->uv0_stride;
     }
 #endif
   } else {
     dst->argb = src->argb + top * src->argb_stride + left;
-    dst->argb_stride = src->argb_stride;
   }
   return 1;
 }
@@ -401,28 +388,6 @@ static void RescalePlane(const uint8_t* src,
   }
 }
 
-static void AlphaMultiplyARGB(WebPPicture* const pic, int inverse) {
-  uint32_t* ptr = pic->argb;
-  int y;
-  for (y = 0; y < pic->height; ++y) {
-    WebPMultARGBRow(ptr, pic->width, inverse);
-    ptr += pic->argb_stride;
-  }
-}
-
-static void AlphaMultiplyY(WebPPicture* const pic, int inverse) {
-  const uint8_t* ptr_a = pic->a;
-  if (ptr_a != NULL) {
-    uint8_t* ptr_y = pic->y;
-    int y;
-    for (y = 0; y < pic->height; ++y) {
-      WebPMultRow(ptr_y, ptr_a, pic->width, inverse);
-      ptr_y += pic->y_stride;
-      ptr_a += pic->a_stride;
-    }
-  }
-}
-
 int WebPPictureRescale(WebPPicture* pic, int width, int height) {
   WebPPicture tmp;
   int prev_width, prev_height;
@@ -453,19 +418,9 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
       WebPPictureFree(&tmp);
       return 0;
     }
-    // If present, we need to rescale alpha first (for AlphaMultiplyY).
-    if (pic->a != NULL) {
-      RescalePlane(pic->a, prev_width, prev_height, pic->a_stride,
-                   tmp.a, width, height, tmp.a_stride, work, 1);
-    }
 
-    // We take transparency into account on the luma plane only. That's not
-    // totally exact blending, but still is a good approximation.
-    AlphaMultiplyY(pic, 0);
     RescalePlane(pic->y, prev_width, prev_height, pic->y_stride,
                  tmp.y, width, height, tmp.y_stride, work, 1);
-    AlphaMultiplyY(&tmp, 1);
-
     RescalePlane(pic->u,
                  HALVE(prev_width), HALVE(prev_height), pic->uv_stride,
                  tmp.u,
@@ -475,6 +430,10 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
                  tmp.v,
                  HALVE(width), HALVE(height), tmp.uv_stride, work, 1);
 
+    if (tmp.a != NULL) {
+      RescalePlane(pic->a, prev_width, prev_height, pic->a_stride,
+                   tmp.a, width, height, tmp.a_stride, work, 1);
+    }
 #ifdef WEBP_EXPERIMENTAL_FEATURES
     if (tmp.u0 != NULL) {
       const int s = IS_YUV_CSP(tmp.colorspace, WEBP_YUV422) ? 2 : 1;
@@ -492,16 +451,13 @@ int WebPPictureRescale(WebPPicture* pic, int width, int height) {
       WebPPictureFree(&tmp);
       return 0;
     }
-    // In order to correctly interpolate colors, we need to apply the alpha
-    // weighting first (black-matting), scale the RGB values, and remove
-    // the premultiplication afterward (while preserving the alpha channel).
-    AlphaMultiplyARGB(pic, 0);
+
     RescalePlane((const uint8_t*)pic->argb, prev_width, prev_height,
                  pic->argb_stride * 4,
                  (uint8_t*)tmp.argb, width, height,
                  tmp.argb_stride * 4,
                  work, 4);
-    AlphaMultiplyARGB(&tmp, 1);
+
   }
   WebPPictureFree(pic);
   free(work);
@@ -590,101 +546,20 @@ int WebPPictureHasTransparency(const WebPPicture* picture) {
 //------------------------------------------------------------------------------
 // RGB -> YUV conversion
 
-static int RGBToY(int r, int g, int b, VP8Random* const rg) {
-  return VP8RGBToY(r, g, b, VP8RandomBits(rg, YUV_FIX));
-}
-
-static int RGBToU(int r, int g, int b, VP8Random* const rg) {
-  return VP8RGBToU(r, g, b, VP8RandomBits(rg, YUV_FIX + 2));
-}
-
-static int RGBToV(int r, int g, int b, VP8Random* const rg) {
-  return VP8RGBToV(r, g, b, VP8RandomBits(rg, YUV_FIX + 2));
-}
-
-//------------------------------------------------------------------------------
-
-#if defined(USE_GAMMA_COMPRESSION)
-
-// gamma-compensates loss of resolution during chroma subsampling
-#define kGamma 0.80
-#define kGammaFix 12     // fixed-point precision for linear values
-#define kGammaScale ((1 << kGammaFix) - 1)
-#define kGammaTabFix 7   // fixed-point fractional bits precision
-#define kGammaTabScale (1 << kGammaTabFix)
-#define kGammaTabRounder (kGammaTabScale >> 1)
-#define kGammaTabSize (1 << (kGammaFix - kGammaTabFix))
-
-static int kLinearToGammaTab[kGammaTabSize + 1];
-static uint16_t kGammaToLinearTab[256];
-static int kGammaTablesOk = 0;
-
-static void InitGammaTables(void) {
-  if (!kGammaTablesOk) {
-    int v;
-    const double scale = 1. / kGammaScale;
-    for (v = 0; v <= 255; ++v) {
-      kGammaToLinearTab[v] =
-          (uint16_t)(pow(v / 255., kGamma) * kGammaScale + .5);
-    }
-    for (v = 0; v <= kGammaTabSize; ++v) {
-      const double x = scale * (v << kGammaTabFix);
-      kLinearToGammaTab[v] = (int)(pow(x, 1. / kGamma) * 255. + .5);
-    }
-    kGammaTablesOk = 1;
-  }
-}
-
-static WEBP_INLINE uint32_t GammaToLinear(uint8_t v) {
-  return kGammaToLinearTab[v];
-}
-
-// Convert a linear value 'v' to YUV_FIX+2 fixed-point precision
-// U/V value, suitable for RGBToU/V calls.
-static WEBP_INLINE int LinearToGamma(uint32_t base_value, int shift) {
-  const int v = base_value << shift;              // final uplifted value
-  const int tab_pos = v >> (kGammaTabFix + 2);    // integer part
-  const int x = v & ((kGammaTabScale << 2) - 1);  // fractional part
-  const int v0 = kLinearToGammaTab[tab_pos];
-  const int v1 = kLinearToGammaTab[tab_pos + 1];
-  const int y = v1 * x + v0 * ((kGammaTabScale << 2) - x);   // interpolate
-  return (y + kGammaTabRounder) >> kGammaTabFix;             // descale
-}
-
-#else
-
-static void InitGammaTables(void) {}
-static WEBP_INLINE uint32_t GammaToLinear(uint8_t v) { return v; }
-static WEBP_INLINE int LinearToGamma(uint32_t base_value, int shift) {
-  (void)shift;
-  return v;
-}
-
-#endif    // USE_GAMMA_COMPRESSION
-
-//------------------------------------------------------------------------------
-
-#define SUM4(ptr) LinearToGamma(                         \
-    GammaToLinear((ptr)[0]) +                            \
-    GammaToLinear((ptr)[step]) +                         \
-    GammaToLinear((ptr)[rgb_stride]) +                   \
-    GammaToLinear((ptr)[rgb_stride + step]), 0)          \
-
-#define SUM2H(ptr) \
-    LinearToGamma(GammaToLinear((ptr)[0]) + GammaToLinear((ptr)[step]), 1)
-#define SUM2V(ptr) \
-    LinearToGamma(GammaToLinear((ptr)[0]) + GammaToLinear((ptr)[rgb_stride]), 1)
-#define SUM1(ptr)  \
-    LinearToGamma(GammaToLinear((ptr)[0]), 2)
-
+// TODO: we can do better than simply 2x2 averaging on U/V samples.
+#define SUM4(ptr) ((ptr)[0] + (ptr)[step] + \
+                   (ptr)[rgb_stride] + (ptr)[rgb_stride + step])
+#define SUM2H(ptr) (2 * (ptr)[0] + 2 * (ptr)[step])
+#define SUM2V(ptr) (2 * (ptr)[0] + 2 * (ptr)[rgb_stride])
+#define SUM1(ptr)  (4 * (ptr)[0])
 #define RGB_TO_UV(x, y, SUM) {                           \
   const int src = (2 * (step * (x) + (y) * rgb_stride)); \
   const int dst = (x) + (y) * picture->uv_stride;        \
   const int r = SUM(r_ptr + src);                        \
   const int g = SUM(g_ptr + src);                        \
   const int b = SUM(b_ptr + src);                        \
-  picture->u[dst] = RGBToU(r, g, b, &rg);                \
-  picture->v[dst] = RGBToV(r, g, b, &rg);                \
+  picture->u[dst] = VP8RGBToU(r, g, b);                  \
+  picture->v[dst] = VP8RGBToV(r, g, b);                  \
 }
 
 #define RGB_TO_UV0(x_in, x_out, y, SUM) {                \
@@ -693,8 +568,8 @@ static WEBP_INLINE int LinearToGamma(uint32_t base_value, int shift) {
   const int r = SUM(r_ptr + src);                        \
   const int g = SUM(g_ptr + src);                        \
   const int b = SUM(b_ptr + src);                        \
-  picture->u0[dst] = RGBToU(r, g, b, &rg);               \
-  picture->v0[dst] = RGBToV(r, g, b, &rg);               \
+  picture->u0[dst] = VP8RGBToU(r, g, b);                 \
+  picture->v0[dst] = VP8RGBToV(r, g, b);                 \
 }
 
 static void MakeGray(WebPPicture* const picture) {
@@ -713,14 +588,12 @@ static int ImportYUVAFromRGBA(const uint8_t* const r_ptr,
                               const uint8_t* const a_ptr,
                               int step,         // bytes per pixel
                               int rgb_stride,   // bytes per scanline
-                              float dithering,
                               WebPPicture* const picture) {
   const WebPEncCSP uv_csp = picture->colorspace & WEBP_CSP_UV_MASK;
   int x, y;
   const int width = picture->width;
   const int height = picture->height;
   const int has_alpha = CheckNonOpaque(a_ptr, width, height, step, rgb_stride);
-  VP8Random rg;
 
   picture->colorspace = uv_csp;
   picture->use_argb = 0;
@@ -729,15 +602,12 @@ static int ImportYUVAFromRGBA(const uint8_t* const r_ptr,
   }
   if (!WebPPictureAlloc(picture)) return 0;
 
-  VP8InitRandom(&rg, dithering);
-  InitGammaTables();
-
   // Import luma plane
   for (y = 0; y < height; ++y) {
     for (x = 0; x < width; ++x) {
       const int offset = step * x + y * rgb_stride;
       picture->y[x + y * picture->y_stride] =
-          RGBToY(r_ptr[offset], g_ptr[offset], b_ptr[offset], &rg);
+          VP8RGBToY(r_ptr[offset], g_ptr[offset], b_ptr[offset]);
     }
   }
 
@@ -785,7 +655,6 @@ static int ImportYUVAFromRGBA(const uint8_t* const r_ptr,
 
   if (has_alpha) {
     assert(step >= 4);
-    assert(picture->a != NULL);
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x) {
         picture->a[x + y * picture->a_stride] =
@@ -808,7 +677,7 @@ static int Import(WebPPicture* const picture,
 
   if (!picture->use_argb) {
     return ImportYUVAFromRGBA(r_ptr, g_ptr, b_ptr, a_ptr, step, rgb_stride,
-                              0.f /* no dithering */, picture);
+                              picture);
   }
   if (import_alpha) {
     picture->colorspace |= WEBP_CSP_ALPHA_BIT;
@@ -823,7 +692,10 @@ static int Import(WebPPicture* const picture,
       for (x = 0; x < width; ++x) {
         const int offset = step * x + y * rgb_stride;
         const uint32_t argb =
-            MakeARGB32(r_ptr[offset], g_ptr[offset], b_ptr[offset]);
+            0xff000000u |
+            (r_ptr[offset] << 16) |
+            (g_ptr[offset] <<  8) |
+            (b_ptr[offset]);
         picture->argb[x + y * picture->argb_stride] = argb;
       }
     }
@@ -833,7 +705,7 @@ static int Import(WebPPicture* const picture,
     for (y = 0; y < height; ++y) {
       for (x = 0; x < width; ++x) {
         const int offset = step * x + y * rgb_stride;
-        const uint32_t argb = ((uint32_t)a_ptr[offset] << 24) |
+        const uint32_t argb = (a_ptr[offset] << 24) |
                               (r_ptr[offset] << 16) |
                               (g_ptr[offset] <<  8) |
                               (b_ptr[offset]);
@@ -884,7 +756,8 @@ int WebPPictureImportBGRX(WebPPicture* picture,
 
 int WebPPictureYUVAToARGB(WebPPicture* picture) {
   if (picture == NULL) return 0;
-  if (picture->y == NULL || picture->u == NULL || picture->v == NULL) {
+  if (picture->memory_ == NULL || picture->y == NULL ||
+      picture->u == NULL || picture->v == NULL) {
     return WebPEncodingSetError(picture, VP8_ENC_ERROR_NULL_PARAMETER);
   }
   if ((picture->colorspace & WEBP_CSP_ALPHA_BIT) && picture->a == NULL) {
@@ -907,7 +780,7 @@ int WebPPictureYUVAToARGB(WebPPicture* picture) {
     WebPUpsampleLinePairFunc upsample = WebPGetLinePairConverter(ALPHA_IS_LAST);
 
     // First row, with replicated top samples.
-    upsample(cur_y, NULL, cur_u, cur_v, cur_u, cur_v, dst, NULL, width);
+    upsample(NULL, cur_y, cur_u, cur_v, cur_u, cur_v, NULL, dst, width);
     cur_y += picture->y_stride;
     dst += argb_stride;
     // Center rows.
@@ -928,11 +801,11 @@ int WebPPictureYUVAToARGB(WebPPicture* picture) {
     // Insert alpha values if needed, in replacement for the default 0xff ones.
     if (picture->colorspace & WEBP_CSP_ALPHA_BIT) {
       for (y = 0; y < height; ++y) {
-        uint32_t* const argb_dst = picture->argb + y * picture->argb_stride;
+        uint32_t* const dst = picture->argb + y * picture->argb_stride;
         const uint8_t* const src = picture->a + y * picture->a_stride;
         int x;
         for (x = 0; x < width; ++x) {
-          argb_dst[x] = (argb_dst[x] & 0x00ffffffu) | ((uint32_t)src[x] << 24);
+          dst[x] = (dst[x] & 0x00ffffffu) | (src[x] << 24);
         }
       }
     }
@@ -940,8 +813,7 @@ int WebPPictureYUVAToARGB(WebPPicture* picture) {
   return 1;
 }
 
-int WebPPictureARGBToYUVADithered(WebPPicture* picture, WebPEncCSP colorspace,
-                                  float dithering) {
+int WebPPictureARGBToYUVA(WebPPicture* picture, WebPEncCSP colorspace) {
   if (picture == NULL) return 0;
   if (picture->argb == NULL) {
     return WebPEncodingSetError(picture, VP8_ENC_ERROR_NULL_PARAMETER);
@@ -957,8 +829,7 @@ int WebPPictureARGBToYUVADithered(WebPPicture* picture, WebPEncCSP colorspace,
     PictureResetARGB(&tmp);  // reset ARGB buffer so that it's not free()'d.
     tmp.use_argb = 0;
     tmp.colorspace = colorspace & WEBP_CSP_UV_MASK;
-    if (!ImportYUVAFromRGBA(r, g, b, a, 4, 4 * picture->argb_stride, dithering,
-                            &tmp)) {
+    if (!ImportYUVAFromRGBA(r, g, b, a, 4, 4 * picture->argb_stride, &tmp)) {
       return WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);
     }
     // Copy back the YUV specs into 'picture'.
@@ -968,10 +839,6 @@ int WebPPictureARGBToYUVADithered(WebPPicture* picture, WebPEncCSP colorspace,
     *picture = tmp;
   }
   return 1;
-}
-
-int WebPPictureARGBToYUVA(WebPPicture* picture, WebPEncCSP colorspace) {
-  return WebPPictureARGBToYUVADithered(picture, colorspace, 0.f);
 }
 
 //------------------------------------------------------------------------------
@@ -1039,220 +906,67 @@ void WebPCleanupTransparentArea(WebPPicture* pic) {
 #undef SIZE
 #undef SIZE2
 
-//------------------------------------------------------------------------------
-// Blend color and remove transparency info
-
-#define BLEND(V0, V1, ALPHA) \
-    ((((V0) * (255 - (ALPHA)) + (V1) * (ALPHA)) * 0x101) >> 16)
-#define BLEND_10BIT(V0, V1, ALPHA) \
-    ((((V0) * (1020 - (ALPHA)) + (V1) * (ALPHA)) * 0x101) >> 18)
-
-void WebPBlendAlpha(WebPPicture* pic, uint32_t background_rgb) {
-  const int red = (background_rgb >> 16) & 0xff;
-  const int green = (background_rgb >> 8) & 0xff;
-  const int blue = (background_rgb >> 0) & 0xff;
-  VP8Random rg;
-  int x, y;
-  if (pic == NULL) return;
-  VP8InitRandom(&rg, 0.f);
-  if (!pic->use_argb) {
-    const int uv_width = (pic->width >> 1);  // omit last pixel during u/v loop
-    const int Y0 = RGBToY(red, green, blue, &rg);
-    // VP8RGBToU/V expects the u/v values summed over four pixels
-    const int U0 = RGBToU(4 * red, 4 * green, 4 * blue, &rg);
-    const int V0 = RGBToV(4 * red, 4 * green, 4 * blue, &rg);
-    const int has_alpha = pic->colorspace & WEBP_CSP_ALPHA_BIT;
-    if (!has_alpha || pic->a == NULL) return;    // nothing to do
-    for (y = 0; y < pic->height; ++y) {
-      // Luma blending
-      uint8_t* const y_ptr = pic->y + y * pic->y_stride;
-      uint8_t* const a_ptr = pic->a + y * pic->a_stride;
-      for (x = 0; x < pic->width; ++x) {
-        const int alpha = a_ptr[x];
-        if (alpha < 0xff) {
-          y_ptr[x] = BLEND(Y0, y_ptr[x], a_ptr[x]);
-        }
-      }
-      // Chroma blending every even line
-      if ((y & 1) == 0) {
-        uint8_t* const u = pic->u + (y >> 1) * pic->uv_stride;
-        uint8_t* const v = pic->v + (y >> 1) * pic->uv_stride;
-        uint8_t* const a_ptr2 =
-            (y + 1 == pic->height) ? a_ptr : a_ptr + pic->a_stride;
-        for (x = 0; x < uv_width; ++x) {
-          // Average four alpha values into a single blending weight.
-          // TODO(skal): might lead to visible contouring. Can we do better?
-          const int alpha =
-              a_ptr[2 * x + 0] + a_ptr[2 * x + 1] +
-              a_ptr2[2 * x + 0] + a_ptr2[2 * x + 1];
-          u[x] = BLEND_10BIT(U0, u[x], alpha);
-          v[x] = BLEND_10BIT(V0, v[x], alpha);
-        }
-        if (pic->width & 1) {   // rightmost pixel
-          const int alpha = 2 * (a_ptr[2 * x + 0] + a_ptr2[2 * x + 0]);
-          u[x] = BLEND_10BIT(U0, u[x], alpha);
-          v[x] = BLEND_10BIT(V0, v[x], alpha);
-        }
-      }
-      memset(a_ptr, 0xff, pic->width);
-    }
-  } else {
-    uint32_t* argb = pic->argb;
-    const uint32_t background = MakeARGB32(red, green, blue);
-    for (y = 0; y < pic->height; ++y) {
-      for (x = 0; x < pic->width; ++x) {
-        const int alpha = (argb[x] >> 24) & 0xff;
-        if (alpha != 0xff) {
-          if (alpha > 0) {
-            int r = (argb[x] >> 16) & 0xff;
-            int g = (argb[x] >>  8) & 0xff;
-            int b = (argb[x] >>  0) & 0xff;
-            r = BLEND(red, r, alpha);
-            g = BLEND(green, g, alpha);
-            b = BLEND(blue, b, alpha);
-            argb[x] = MakeARGB32(r, g, b);
-          } else {
-            argb[x] = background;
-          }
-        }
-      }
-      argb += pic->argb_stride;
-    }
-  }
-}
-
-#undef BLEND
-#undef BLEND_10BIT
-
-//------------------------------------------------------------------------------
-// local-min distortion
-//
-// For every pixel in the *reference* picture, we search for the local best
-// match in the compressed image. This is not a symmetrical measure.
-
-// search radius. Shouldn't be too large.
-#define RADIUS 2
-
-static float AccumulateLSIM(const uint8_t* src, int src_stride,
-                            const uint8_t* ref, int ref_stride,
-                            int w, int h) {
-  int x, y;
-  double total_sse = 0.;
-  for (y = 0; y < h; ++y) {
-    const int y_0 = (y - RADIUS < 0) ? 0 : y - RADIUS;
-    const int y_1 = (y + RADIUS + 1 >= h) ? h : y + RADIUS + 1;
-    for (x = 0; x < w; ++x) {
-      const int x_0 = (x - RADIUS < 0) ? 0 : x - RADIUS;
-      const int x_1 = (x + RADIUS + 1 >= w) ? w : x + RADIUS + 1;
-      double best_sse = 255. * 255.;
-      const double value = (double)ref[y * ref_stride + x];
-      int i, j;
-      for (j = y_0; j < y_1; ++j) {
-        const uint8_t* s = src + j * src_stride;
-        for (i = x_0; i < x_1; ++i) {
-          const double sse = (double)(s[i] - value) * (s[i] - value);
-          if (sse < best_sse) best_sse = sse;
-        }
-      }
-      total_sse += best_sse;
-    }
-  }
-  return (float)total_sse;
-}
-#undef RADIUS
 
 //------------------------------------------------------------------------------
 // Distortion
 
 // Max value returned in case of exact similarity.
 static const double kMinDistortion_dB = 99.;
-static float GetPSNR(const double v) {
-  return (float)((v > 0.) ? -4.3429448 * log(v / (255 * 255.))
-                          : kMinDistortion_dB);
-}
 
-int WebPPictureDistortion(const WebPPicture* src, const WebPPicture* ref,
+int WebPPictureDistortion(const WebPPicture* pic1, const WebPPicture* pic2,
                           int type, float result[5]) {
+  int c;
   DistoStats stats[5];
   int has_alpha;
-  int uv_w, uv_h;
 
-  if (src == NULL || ref == NULL ||
-      src->width != ref->width || src->height != ref->height ||
-      src->y == NULL || ref->y == NULL ||
-      src->u == NULL || ref->u == NULL ||
-      src->v == NULL || ref->v == NULL ||
+  if (pic1 == NULL || pic2 == NULL ||
+      pic1->width != pic2->width || pic1->height != pic2->height ||
+      pic1->y == NULL || pic2->y == NULL ||
+      pic1->u == NULL || pic2->u == NULL ||
+      pic1->v == NULL || pic2->v == NULL ||
       result == NULL) {
     return 0;
   }
   // TODO(skal): provide distortion for ARGB too.
-  if (src->use_argb == 1 || src->use_argb != ref->use_argb) {
+  if (pic1->use_argb == 1 || pic1->use_argb != pic2->use_argb) {
     return 0;
   }
 
-  has_alpha = !!(src->colorspace & WEBP_CSP_ALPHA_BIT);
-  if (has_alpha != !!(ref->colorspace & WEBP_CSP_ALPHA_BIT) ||
-      (has_alpha && (src->a == NULL || ref->a == NULL))) {
+  has_alpha = !!(pic1->colorspace & WEBP_CSP_ALPHA_BIT);
+  if (has_alpha != !!(pic2->colorspace & WEBP_CSP_ALPHA_BIT) ||
+      (has_alpha && (pic1->a == NULL || pic2->a == NULL))) {
     return 0;
   }
 
   memset(stats, 0, sizeof(stats));
-
-  uv_w = HALVE(src->width);
-  uv_h = HALVE(src->height);
-  if (type >= 2) {
-    float sse[4];
-    sse[0] = AccumulateLSIM(src->y, src->y_stride,
-                            ref->y, ref->y_stride, src->width, src->height);
-    sse[1] = AccumulateLSIM(src->u, src->uv_stride,
-                            ref->u, ref->uv_stride, uv_w, uv_h);
-    sse[2] = AccumulateLSIM(src->v, src->uv_stride,
-                            ref->v, ref->uv_stride, uv_w, uv_h);
-    sse[3] = has_alpha ? AccumulateLSIM(src->a, src->a_stride,
-                                        ref->a, ref->a_stride,
-                                        src->width, src->height)
-                       : 0.f;
-    result[0] = GetPSNR(sse[0] / (src->width * src->height));
-    result[1] = GetPSNR(sse[1] / (uv_w * uv_h));
-    result[2] = GetPSNR(sse[2] / (uv_w * uv_h));
-    result[3] = GetPSNR(sse[3] / (src->width * src->height));
-    {
-      double total_sse = sse[0] + sse[1] + sse[2];
-      int total_pixels = src->width * src->height + 2 * uv_w * uv_h;
-      if (has_alpha) {
-        total_pixels += src->width * src->height;
-        total_sse += sse[3];
-      }
-      result[4] = GetPSNR(total_sse / total_pixels);
+  VP8SSIMAccumulatePlane(pic1->y, pic1->y_stride,
+                         pic2->y, pic2->y_stride,
+                         pic1->width, pic1->height, &stats[0]);
+  VP8SSIMAccumulatePlane(pic1->u, pic1->uv_stride,
+                         pic2->u, pic2->uv_stride,
+                         (pic1->width + 1) >> 1, (pic1->height + 1) >> 1,
+                         &stats[1]);
+  VP8SSIMAccumulatePlane(pic1->v, pic1->uv_stride,
+                         pic2->v, pic2->uv_stride,
+                         (pic1->width + 1) >> 1, (pic1->height + 1) >> 1,
+                         &stats[2]);
+  if (has_alpha) {
+    VP8SSIMAccumulatePlane(pic1->a, pic1->a_stride,
+                           pic2->a, pic2->a_stride,
+                           pic1->width, pic1->height, &stats[3]);
+  }
+  for (c = 0; c <= 4; ++c) {
+    if (type == 1) {
+      const double v = VP8SSIMGet(&stats[c]);
+      result[c] = (float)((v < 1.) ? -10.0 * log10(1. - v)
+                                   : kMinDistortion_dB);
+    } else {
+      const double v = VP8SSIMGetSquaredError(&stats[c]);
+      result[c] = (float)((v > 0.) ? -4.3429448 * log(v / (255 * 255.))
+                                   : kMinDistortion_dB);
     }
-  } else {
-    int c;
-    VP8SSIMAccumulatePlane(src->y, src->y_stride,
-                           ref->y, ref->y_stride,
-                           src->width, src->height, &stats[0]);
-    VP8SSIMAccumulatePlane(src->u, src->uv_stride,
-                           ref->u, ref->uv_stride,
-                           uv_w, uv_h, &stats[1]);
-    VP8SSIMAccumulatePlane(src->v, src->uv_stride,
-                           ref->v, ref->uv_stride,
-                           uv_w, uv_h, &stats[2]);
-    if (has_alpha) {
-      VP8SSIMAccumulatePlane(src->a, src->a_stride,
-                             ref->a, ref->a_stride,
-                             src->width, src->height, &stats[3]);
-    }
-    for (c = 0; c <= 4; ++c) {
-      if (type == 1) {
-        const double v = VP8SSIMGet(&stats[c]);
-        result[c] = (float)((v < 1.) ? -10.0 * log10(1. - v)
-                                     : kMinDistortion_dB);
-      } else {
-        const double v = VP8SSIMGetSquaredError(&stats[c]);
-        result[c] = GetPSNR(v);
-      }
-      // Accumulate forward
-      if (c < 4) VP8SSIMAddStats(&stats[c], &stats[4]);
-    }
+    // Accumulate forward
+    if (c < 4) VP8SSIMAddStats(&stats[c], &stats[4]);
   }
   return 1;
 }
@@ -1300,10 +1014,10 @@ size_t NAME(const uint8_t* in, int w, int h, int bps, float q,          \
   return Encode(in, w, h, bps, IMPORTER, q, 0, out);                    \
 }
 
-ENCODE_FUNC(WebPEncodeRGB, WebPPictureImportRGB)
-ENCODE_FUNC(WebPEncodeBGR, WebPPictureImportBGR)
-ENCODE_FUNC(WebPEncodeRGBA, WebPPictureImportRGBA)
-ENCODE_FUNC(WebPEncodeBGRA, WebPPictureImportBGRA)
+ENCODE_FUNC(WebPEncodeRGB, WebPPictureImportRGB);
+ENCODE_FUNC(WebPEncodeBGR, WebPPictureImportBGR);
+ENCODE_FUNC(WebPEncodeRGBA, WebPPictureImportRGBA);
+ENCODE_FUNC(WebPEncodeBGRA, WebPPictureImportBGRA);
 
 #undef ENCODE_FUNC
 
@@ -1313,12 +1027,15 @@ size_t NAME(const uint8_t* in, int w, int h, int bps, uint8_t** out) {       \
   return Encode(in, w, h, bps, IMPORTER, LOSSLESS_DEFAULT_QUALITY, 1, out);  \
 }
 
-LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessRGB, WebPPictureImportRGB)
-LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessBGR, WebPPictureImportBGR)
-LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessRGBA, WebPPictureImportRGBA)
-LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessBGRA, WebPPictureImportBGRA)
+LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessRGB, WebPPictureImportRGB);
+LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessBGR, WebPPictureImportBGR);
+LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessRGBA, WebPPictureImportRGBA);
+LOSSLESS_ENCODE_FUNC(WebPEncodeLosslessBGRA, WebPPictureImportBGRA);
 
 #undef LOSSLESS_ENCODE_FUNC
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif

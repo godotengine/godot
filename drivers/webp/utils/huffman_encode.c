@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Author: Jyrki Alakuijala (jyrki@google.com)
@@ -27,7 +25,7 @@ static int ValuesShouldBeCollapsedToStrideAverage(int a, int b) {
 }
 
 // Change the population counts in a way that the consequent
-// Huffman tree compression, especially its RLE-part, give smaller output.
+// Hufmann tree compression, especially its RLE-part, give smaller output.
 static int OptimizeHuffmanForRle(int length, int* const counts) {
   uint8_t* good_for_rle;
   // 1) Let's make the Huffman code more compatible with rle encoding.
@@ -140,8 +138,13 @@ static int CompareHuffmanTrees(const void* ptr1, const void* ptr2) {
   } else if (t1->total_count_ < t2->total_count_) {
     return 1;
   } else {
-    assert(t1->value_ != t2->value_);
-    return (t1->value_ < t2->value_) ? -1 : 1;
+    if (t1->value_ < t2->value_) {
+      return -1;
+    }
+    if (t1->value_ > t2->value_) {
+      return 1;
+    }
+    return 0;
   }
 }
 
@@ -190,10 +193,6 @@ static int GenerateOptimalTree(const int* const histogram, int histogram_size,
     }
   }
 
-  if (tree_size_orig == 0) {   // pretty optimal already!
-    return 1;
-  }
-
   // 3 * tree_size is enough to cover all the nodes representing a
   // population and all the inserted nodes combining two existing nodes.
   // The tree pool needs 2 * (tree_size_orig - 1) entities, and the
@@ -235,7 +234,7 @@ static int GenerateOptimalTree(const int* const histogram, int histogram_size,
         tree_pool[tree_pool_size++] = tree[tree_size - 1];
         tree_pool[tree_pool_size++] = tree[tree_size - 2];
         count = tree_pool[tree_pool_size - 1].total_count_ +
-                tree_pool[tree_pool_size - 2].total_count_;
+            tree_pool[tree_pool_size - 2].total_count_;
         tree_size -= 2;
         {
           // Search for the insertion point.

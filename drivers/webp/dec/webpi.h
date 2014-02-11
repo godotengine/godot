@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Internal header: WebP decoding parameters and custom IO on buffer
@@ -14,7 +12,7 @@
 #ifndef WEBP_DEC_WEBPI_H_
 #define WEBP_DEC_WEBPI_H_
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
 
@@ -63,10 +61,10 @@ typedef struct {
 } WebPHeaderStructure;
 
 // Skips over all valid chunks prior to the first VP8/VP8L frame header.
-// Returns: VP8_STATUS_OK, VP8_STATUS_BITSTREAM_ERROR (invalid header/chunk),
-// VP8_STATUS_NOT_ENOUGH_DATA (partial input) or VP8_STATUS_UNSUPPORTED_FEATURE
-// in the case of non-decodable features (animation for instance).
-// In 'headers', compressed_size, offset, alpha_data, alpha_size, and lossless
+// Returns VP8_STATUS_OK on success,
+//         VP8_STATUS_BITSTREAM_ERROR if an invalid header/chunk is found, and
+//         VP8_STATUS_NOT_ENOUGH_DATA if case of insufficient data.
+// In 'headers', compressed_size, offset, alpha_data, alpha_size and lossless
 // fields are updated appropriately upon success.
 VP8StatusCode WebPParseHeaders(WebPHeaderStructure* const headers);
 
@@ -109,7 +107,7 @@ void WebPGrabDecBuffer(WebPDecBuffer* const src, WebPDecBuffer* const dst);
 
 //------------------------------------------------------------------------------
 
-#ifdef __cplusplus
+#if defined(__cplusplus) || defined(c_plusplus)
 }    // extern "C"
 #endif
 

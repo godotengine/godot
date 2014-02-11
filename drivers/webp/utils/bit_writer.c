@@ -1,10 +1,8 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
 //
-// Use of this source code is governed by a BSD-style license
-// that can be found in the COPYING file in the root of the source
-// tree. An additional intellectual property rights grant can be found
-// in the file PATENTS. All contributing project authors may
-// be found in the AUTHORS file in the root of the source tree.
+// This code is licensed under the same terms as WebM:
+//  Software License Agreement:  http://www.webmproject.org/license/software/
+//  Additional IP Rights Grant:  http://www.webmproject.org/license/additional/
 // -----------------------------------------------------------------------------
 //
 // Bit writing and boolean coder
@@ -16,6 +14,10 @@
 #include <string.h>   // for memcpy()
 #include <stdlib.h>
 #include "./bit_writer.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
 
 //------------------------------------------------------------------------------
 // VP8BitWriter
@@ -39,10 +41,7 @@ static int BitWriterResize(VP8BitWriter* const bw, size_t extra_size) {
     bw->error_ = 1;
     return 0;
   }
-  if (bw->pos_ > 0) {
-    assert(bw->buf_ != NULL);
-    memcpy(new_buf, bw->buf_, bw->pos_);
-  }
+  memcpy(new_buf, bw->buf_, bw->pos_);
   free(bw->buf_);
   bw->buf_ = new_buf;
   bw->max_pos_ = new_size;
@@ -252,7 +251,7 @@ void VP8LWriteBits(VP8LBitWriter* const bw, int n_bits, uint32_t bits) {
     uint8_t* p = &bw->buf_[bw->bit_pos_ >> 3];
     const int bits_reserved_in_first_byte = bw->bit_pos_ & 7;
     const int bits_left_to_write = n_bits - 8 + bits_reserved_in_first_byte;
-    // implicit & 0xff is assumed for uint8_t arithmetic
+    // implicit & 0xff is assumed for uint8_t arithmetics
     *p++ |= bits << bits_reserved_in_first_byte;
     bits >>= 8 - bits_reserved_in_first_byte;
     if (bits_left_to_write >= 1) {
@@ -280,3 +279,6 @@ void VP8LWriteBits(VP8LBitWriter* const bw, int n_bits, uint32_t bits) {
 
 //------------------------------------------------------------------------------
 
+#if defined(__cplusplus) || defined(c_plusplus)
+}    // extern "C"
+#endif
