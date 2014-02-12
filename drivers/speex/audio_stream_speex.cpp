@@ -1,6 +1,4 @@
 #include "audio_stream_speex.h"
-
-#include "os_support.h"
 #include "os/os.h"
 #define READ_CHUNK 1024
 
@@ -270,7 +268,7 @@ void *AudioStreamSpeex::process_header(ogg_packet *op, int *frame_size, int *rat
 
 	*extra_headers = header->extra_headers;
 
-	speex_free(header);
+	speex_header_free(header);
 	return state;
 }
 

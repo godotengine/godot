@@ -30,7 +30,11 @@
 #define AUDIO_STREAM_OGG_VORBIS_H
 
 #include "scene/resources/audio_stream_resampled.h"
-#include "vorbis/vorbisfile.h"
+#if defined(GODOT_DYNLINK)
+#include    <vorbis/vorbisfile.h>
+#else
+#   include "drivers/vorbis/vorbisfile.h"
+#endif
 #include "os/file_access.h"
 #include "io/resource_loader.h"
 #include "os/thread_safe.h"

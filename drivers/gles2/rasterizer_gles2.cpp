@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include "servers/visual/shader_language.h"
 #include "servers/visual/particle_system_sw.h"
-#include "gl_context/context_gl.h"
+#include "drivers/gl_context/context_gl.h"
 #include <string.h>
 
 #ifdef GLEW_ENABLED

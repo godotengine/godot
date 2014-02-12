@@ -1,28 +1,33 @@
 Import('env')
 
+dynlink = env.get("dynlink", "no") == "yes"
 
-png_sources = [
-	"png/example.c",
-	"png/png.c",
-	"png/pngerror.c",
-	"png/pngget.c",
-	"png/pngmem.c",
-	"png/pngpread.c",
-	"png/pngread.c",
-	"png/pngrio.c",
-	"png/pngrtran.c",
-	"png/pngrutil.c",
-	"png/pngset.c",
-	"png/pngtrans.c",
-	"png/pngwio.c",
-	"png/pngwrite.c",
-	"png/pngwtran.c",
-	"png/pngwutil.c",
+png_sources = []
+if not dynlink:
+    png_sources.extend([
+        "png/example.c",
+        "png/png.c",
+        "png/pngerror.c",
+        "png/pngget.c",
+        "png/pngmem.c",
+        "png/pngpread.c",
+        "png/pngread.c",
+        "png/pngrio.c",
+        "png/pngrtran.c",
+        "png/pngrutil.c",
+        "png/pngset.c",
+        "png/pngtrans.c",
+        "png/pngwio.c",
+        "png/pngwrite.c",
+        "png/pngwtran.c",
+        "png/pngwutil.c",
+    ])
+png_sources.extend([
 	"png/resource_saver_png.cpp",
 	"png/image_loader_png.cpp"
-]
+])
 
-if ("neon_enabled" in env and env["neon_enabled"]):
+if not dynlink and ("neon_enabled" in env and env["neon_enabled"]):
 	env_neon = env.Clone();
 	if "S_compiler" in env:
 		env_neon['CC'] = env['S_compiler']

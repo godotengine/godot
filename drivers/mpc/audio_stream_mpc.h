@@ -3,7 +3,7 @@
 
 #include "scene/resources/audio_stream_resampled.h"
 #include "os/file_access.h"
-#include "mpc/mpcdec.h"
+#include "drivers/mpc/mpcdec.h"
 #include "os/thread_safe.h"
 #include "io/resource_loader.h"
 //#include "../libmpcdec/decoder.h"

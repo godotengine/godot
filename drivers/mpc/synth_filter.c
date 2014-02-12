@@ -35,7 +35,7 @@
 /// Synthesis functions.
 /// \todo document me
 #include <string.h>
-#include <mpc/mpcdec.h>
+#include "mpcdec.h"
 #include "decoder.h"
 #include "mpcdec_math.h"
 

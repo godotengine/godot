@@ -32,7 +32,7 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <mpc/mpcdec.h>
+#include "mpcdec.h"
 #include "internal.h"
 #include "huffman.h"
 #include "mpc_bits_reader.h"

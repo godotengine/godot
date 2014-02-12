@@ -35,8 +35,8 @@
 /// Core decoding routines and logic.
 
 #include <string.h>
-#include <mpc/mpcdec.h>
-#include <mpc/minimax.h>
+#include "mpcdec.h"
+#include "minimax.h"
 #include "decoder.h"
 #include "huffman.h"
 #include "internal.h"

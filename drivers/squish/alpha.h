@@ -26,7 +26,7 @@
 #ifndef SQUISH_ALPHA_H
 #define SQUISH_ALPHA_H
 
-#include "squish/squish.h"
+#include "squish.h"
 
 namespace squish {
 

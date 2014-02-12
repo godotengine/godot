@@ -13,8 +13,13 @@
 
 #include "print_string.h"
 #include "os/os.h"
+#if defined(GODOT_DYNLINK)
+#include <webp/decode.h>
+#include <webp/encode.h>
+#else
 #include "drivers/webp/decode.h"
 #include "drivers/webp/encode.h"
+#endif
 #include "io/marshalls.h"
 #include <stdlib.h>
 

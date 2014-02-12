@@ -38,7 +38,7 @@
 #pragma once
 #endif
 
-#include <mpc/mpc_types.h>
+#include <drivers/mpc/mpc_types.h>
 #include <stdio.h>
 
 #ifdef __cplusplus

@@ -2,17 +2,23 @@
 #define AUDIO_STREAM_SPEEX_H
 
 #include "scene/resources/audio_stream_resampled.h"
-#include "speex/speex.h"
 #include "os/file_access.h"
 #include "io/resource_loader.h"
 #include "os/thread_safe.h"
 
-#include <speex/speex.h>
-#include <speex/speex_header.h>
-#include <speex/speex_stereo.h>
-#include <speex/speex_callbacks.h>
-
-#include <ogg/ogg.h>
+#if defined(GODOT_DYNLINK)
+#   include <speex/speex.h>
+#   include <speex/speex_header.h>
+#   include <speex/speex_stereo.h>
+#   include <speex/speex_callbacks.h>
+#   include <ogg/ogg.h>
+#else
+#   include <drivers/speex/speex.h>
+#   include <drivers/speex/speex_header.h>
+#   include <drivers/speex/speex_stereo.h>
+#   include <dirvers/speex/speex_callbacks.h>
+#   include "drivers/ogg/ogg.h"
+#endif
 
 class AudioStreamSpeex : public AudioStreamResampled {
 

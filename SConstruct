@@ -122,6 +122,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('old_scenes', 'Compatibility with old-style scenes', "yes")
+opts.Add('dynlink', 'Use dynamic linked libraries where appropriate', "no")
 
 # add platform specific options
 
@@ -138,7 +139,7 @@ Help(opts.GenerateHelpText(env_base)) # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#core','#core/math','#tools','#drivers','#'])
+env_base.Append(CPPPATH=['#core','#core/math','#tools','#'])
 	
 # configure ENV for platform	
 env_base.detect_python=True
@@ -196,6 +197,8 @@ for p in platform_list:
 		sys.modules.pop('config')
 
 
+	if (env['dynlink']=='yes'):
+		env.Append(CPPFLAGS=['-DGODOT_DYNLINK']);
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
 

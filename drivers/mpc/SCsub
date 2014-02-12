@@ -1,6 +1,5 @@
 Import('env')
 
-
 mpc_sources = [
 	"mpc/huffman.c",
 	"mpc/mpc_bits_reader.c",
@@ -12,11 +11,10 @@ mpc_sources = [
 	"mpc/synth_filter.c",
 ]
 
+#if env.get('dynlink', 'no') == 'no':
 env.drivers_sources+=mpc_sources
 
 env.add_source_files(env.drivers_sources,"*.cpp")
-
-#env.add_source_files(env.drivers_sources, mpc_sources)
 
 Export('env')
 

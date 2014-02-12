@@ -26,7 +26,7 @@
 #ifndef SQUISH_COLOURBLOCK_H
 #define SQUISH_COLOURBLOCK_H
 
-#include "squish/squish.h"
+#include "squish.h"
 #include "maths.h"
 
 namespace squish {

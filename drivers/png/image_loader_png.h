@@ -30,7 +30,11 @@
 #define IMAGE_LOADER_PNG_H
 
 #include "io/image_loader.h"
-#include "drivers/png/png.h"
+#if defined(GODOT_DYNLINK)
+#   include <png.h>
+#else
+#   include "drivers/png/png.h"
+#endif
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
