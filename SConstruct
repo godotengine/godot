@@ -1,5 +1,6 @@
 EnsureSConsVersion(0,14);
 
+import string
 import os
 import os.path
 import glob
@@ -165,6 +166,11 @@ for p in platform_list:
 		env = detect.create(env_base)
 	else:
 		env = env_base.Clone()
+
+	CCFLAGS = env.get('CCFLAGS', '')
+	env['CCFLAGS'] = ''
+
+	env.Append(CCFLAGS=string.split(str(CCFLAGS)))
 	detect.configure(env)
 	env['platform'] = p
 	sys.path.remove("./platform/"+p)
