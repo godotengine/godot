@@ -134,6 +134,11 @@ Matrix32 Camera2D::get_camera_transform()  {
 	Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());;
 	screen_offset+=offset;
 
+	float angle = get_global_transform().get_rotation();
+	if(rotating){
+		screen_offset = screen_offset.rotated(angle);
+	}
+
 	Rect2 screen_rect(-screen_offset+ret_camera_pos,screen_size);
 	if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
 		screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
@@ -151,6 +156,9 @@ Matrix32 Camera2D::get_camera_transform()  {
 	camera_screen_center=screen_rect.pos+screen_rect.size*0.5;
 
 	Matrix32 xform;
+	if(rotating){
+		xform.set_rotation(angle);
+	}
 	xform.scale_basis(zoom);
 	xform.set_origin(screen_rect.pos/*.floor()*/);
 
@@ -249,6 +257,17 @@ void Camera2D::set_centered(bool p_centered){
 bool Camera2D::is_centered() const {
 
 	return centered;
+}
+
+void Camera2D::set_rotating(bool p_rotating){
+
+	rotating=p_rotating;
+	_update_scroll();
+}
+
+bool Camera2D::is_rotating() const {
+
+	return rotating;
 }
 
 
@@ -394,6 +413,9 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&Camera2D::set_centered);
 	ObjectTypeDB::bind_method(_MD("is_centered"),&Camera2D::is_centered);
 
+	ObjectTypeDB::bind_method(_MD("set_rotating","rotating"),&Camera2D::set_rotating);
+	ObjectTypeDB::bind_method(_MD("is_rotating"),&Camera2D::is_rotating);
+
 	ObjectTypeDB::bind_method(_MD("make_current"),&Camera2D::make_current);
 	ObjectTypeDB::bind_method(_MD("_make_current"),&Camera2D::_make_current);
 
@@ -436,6 +458,7 @@ void Camera2D::_bind_methods() {
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"centered"),_SCS("set_centered"),_SCS("is_centered"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"rotating"),_SCS("set_rotating"),_SCS("is_rotating"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"current"),_SCS("_set_current"),_SCS("is_current"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing"),_SCS("set_follow_smoothing"),_SCS("get_follow_smoothing") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"zoom"),_SCS("set_zoom"),_SCS("get_zoom") );
@@ -462,6 +485,7 @@ Camera2D::Camera2D() {
 
 
 	centered=true;
+	rotating=false;
 	current=false;
 	limit[MARGIN_LEFT]=-10000000;
 	limit[MARGIN_TOP]=-10000000;
