@@ -608,7 +608,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	theme_panel = memnew( Panel );
 	theme_panel->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
-	theme_panel->set_begin( Point2(0,20));
+	theme_panel->set_begin( Point2(0,26));
 	theme_panel->set_end( Point2(100,0) );
 	p_editor->get_viewport()->add_child(theme_panel);
 	theme_panel->hide();

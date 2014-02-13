@@ -197,7 +197,8 @@ bool ZipArchive::try_open_pack(const String& p_name) {
 		String fname = String("res://") + filename_inzip;
 		files[fname] = f;
 
-		PackedData::get_singleton()->add_path(p_name, fname, 0, 0, this);
+		uint8_t md5[16]={0,0,0,0,0,0,0,0 , 0,0,0,0,0,0,0,0};
+		PackedData::get_singleton()->add_path(p_name, fname, 0, 0, md5, this);
 
 		if ((i+1)<gi.number_entry) {
 			unzGoToNextFile(zfile);

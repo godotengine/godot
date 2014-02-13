@@ -143,6 +143,8 @@ private:
 	float emit_timeout;
 	float time_to_live;
 	float time_scale;
+	bool flip_h;
+	bool flip_v;
 	Point2 emissor_offset;
 	Vector2 initial_velocity;
 	Vector2 extents;
@@ -196,6 +198,12 @@ public:
 
 	void set_explosiveness(float p_value);
 	float get_explosiveness() const;
+
+	void set_flip_h(bool p_flip);
+	bool is_flipped_h() const;
+
+	void set_flip_v(bool p_flip);
+	bool is_flipped_v() const;
 
 	void set_color_phases(int p_phases);
 	int get_color_phases() const;

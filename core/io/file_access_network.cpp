@@ -243,7 +243,7 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 	quit=false;
 	singleton=this;
 	last_id=0;
-	client = Ref<StreamPeerTCP>( StreamPeerTCP::create() );
+	client = Ref<StreamPeerTCP>( StreamPeerTCP::create_ref() );
 	sem=Semaphore::create();
 	lockcount=0;
 }

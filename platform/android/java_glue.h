@@ -51,6 +51,7 @@ extern "C" {
     JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_method(JNIEnv * env, jobject obj, jstring sname, jstring name, jstring ret, jobjectArray args);
     JNIEXPORT jstring JNICALL Java_com_android_godot_GodotLib_getGlobal(JNIEnv * env, jobject obj, jstring path);
 	JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_callobject(JNIEnv * env, jobject obj, jint ID, jstring method, jobjectArray params);
+	JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env, jobject obj, jint ID, jstring method, jobjectArray params);
 };
 
 

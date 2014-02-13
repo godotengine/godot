@@ -310,6 +310,7 @@ void ProjectExportDialog::_notification(int p_what) {
 void ProjectExportDialog::_validate_platform() {
 
 	get_ok()->set_disabled(true);
+	button_export->set_disabled(true);
 	TreeItem *selected = platforms->get_selected();
 	plat_errors->hide();
 	if (!selected) {
@@ -351,6 +352,7 @@ void ProjectExportDialog::_validate_platform() {
 	}
 
 	get_ok()->set_disabled(false);
+	button_export->set_disabled(false);
 
 }
 
@@ -385,6 +387,35 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 
 }
 
+void ProjectExportDialog::_export_action_pck(const String& p_file) {
+
+	TreeItem *selected = platforms->get_selected();
+	if (!selected)
+		return;
+
+	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(selected->get_metadata(0));
+	if (exporter.is_null()) {
+		ERR_PRINT("Invalid platform for export of PCK");
+		return;
+	}
+	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
+	if (!f) {
+		error->set_text("Error exporting project PCK! Can't write");
+		error->popup_centered(Size2(300,70));;
+	}
+	ERR_FAIL_COND(!f);
+
+	Error err = exporter->save_pack(f,false);
+	memdelete(f);
+
+	if (err!=OK) {
+		error->set_text("Error exporting project!");
+		error->popup_centered(Size2(300,70));;
+		return;
+	}
+}
+
+
 Error ProjectExportDialog::export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password, bool p_quit_after) {
 
 	Ref<EditorExportPlatform> exporter = EditorImportExport::get_singleton()->get_export_platform(p_platform);
@@ -408,6 +439,12 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 }
 
 void ProjectExportDialog::ok_pressed() {
+	//export pck
+	pck_export->popup_centered_ratio();
+
+}
+void ProjectExportDialog::custom_action(const String&) {
+	//real export
 
 	TreeItem *selected = platforms->get_selected();
 	if (!selected)
@@ -909,6 +946,7 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_export_mode_changed"),&ProjectExportDialog::_export_mode_changed);
 	ObjectTypeDB::bind_method(_MD("_filters_edited"),&ProjectExportDialog::_filters_edited);
 	ObjectTypeDB::bind_method(_MD("_export_action"),&ProjectExportDialog::_export_action);
+	ObjectTypeDB::bind_method(_MD("_export_action_pck"),&ProjectExportDialog::_export_action_pck);
 	ObjectTypeDB::bind_method(_MD("_quality_edited"),&ProjectExportDialog::_quality_edited);
 	ObjectTypeDB::bind_method(_MD("_image_export_edited"),&ProjectExportDialog::_image_export_edited);
 	ObjectTypeDB::bind_method(_MD("_format_toggled"),&ProjectExportDialog::_format_toggled);
@@ -1201,7 +1239,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	add_child(confirm);
 	confirm->connect("confirmed",this,"_confirmed");
 
-	get_ok()->set_text("Export..");
+	get_ok()->set_text("Export PCK");
 
 
 	expopt="--,Export,Bundle";
@@ -1224,6 +1262,14 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	file_export_password->set_editable(false);
 	file_export->get_vbox()->add_margin_child("Password:",file_export_password);
 
+	pck_export = memnew( FileDialog );
+	pck_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	pck_export->set_title("Export Project PCK");
+	pck_export->connect("file_selected", this,"_export_action_pck");
+	pck_export->add_filter("*.pck ; Data Pack");
+	add_child(pck_export);
+
+	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
 
 
 }

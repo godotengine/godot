@@ -39,11 +39,18 @@ void StreamPeerTCP::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("disconnect"),&StreamPeerTCP::disconnect);
 }
 
-Ref<StreamPeerTCP> StreamPeerTCP::create() {
+Ref<StreamPeerTCP> StreamPeerTCP::create_ref() {
 
 	if (!_create)
 		return Ref<StreamPeerTCP>();
 	return Ref<StreamPeerTCP>(_create());
+}
+
+StreamPeerTCP* StreamPeerTCP::create() {
+
+	if (!_create)
+		return NULL;
+	return _create();
 }
 
 StreamPeerTCP::StreamPeerTCP() {

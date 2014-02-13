@@ -573,11 +573,11 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
 		return;
 
 	Rect2 src=p_src_rect;
-	src.pos+=rc.pos-margin.pos;
+	src.pos+=(rc.pos-margin.pos);
 	Rect2 src_c = rc.clip(src);
 	if (src_c.size==Size2())
 		return;
-	Vector2 ofs = src_c.pos-rc.pos + margin.pos;
+	Vector2 ofs = (src_c.pos-src.pos);
 
 	Vector2 scale = p_rect.size / p_src_rect.size;
 
@@ -952,7 +952,7 @@ void CubeMap::_bind_methods() {
 	BIND_CONSTANT( SIDE_BACK );
 	BIND_CONSTANT( FLAG_MIPMAPS );
 	BIND_CONSTANT( FLAG_REPEAT );
-	BIND_CONSTANT( 	FLAG_FILTER );
+	BIND_CONSTANT( FLAG_FILTER );
 	BIND_CONSTANT( FLAGS_DEFAULT );
 
 

@@ -1146,6 +1146,26 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_callobject(JNIEnv * env, 
 	// something
 };
 
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env, jobject p_obj, jint ID, jstring method, jobjectArray params) {
+
+	String str_method = env->GetStringUTFChars( method, NULL );
+
+	Object* obj = ObjectDB::get_instance(ID);
+	ERR_FAIL_COND(!obj);
+
+	int count = env->GetArrayLength(params);
+	Variant args[VARIANT_ARG_MAX];
+
+	for (int i=0; i<MIN(count,VARIANT_ARG_MAX); i++) {
+
+		jobject obj = env->GetObjectArrayElement(params, i);
+		args[i] = _jobject_to_variant(env, obj);
+	};
+
+
+	obj->call_deferred(str_method, args[0],args[1],args[2],args[3],args[4]);
+	// something
+};
 
 //Main::cleanup();
 

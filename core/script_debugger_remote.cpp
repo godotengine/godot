@@ -415,7 +415,7 @@ void ScriptDebuggerRemote::set_request_scene_tree_message_func(RequestSceneTreeM
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() {
 
-	tcp_client  = StreamPeerTCP::create();
+	tcp_client  = StreamPeerTCP::create_ref();
 	packet_peer_stream = Ref<PacketPeerStream>( memnew(PacketPeerStream) );
 	packet_peer_stream->set_stream_peer(tcp_client);
 	mutex = Mutex::create();

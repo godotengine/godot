@@ -1588,8 +1588,8 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
     }
     else if ((s->cur_file_info.compression_method==Z_DEFLATED) && (!raw))
     {
-      pfile_in_zip_read_info->stream.zalloc = (alloc_func)0;
-      pfile_in_zip_read_info->stream.zfree = (free_func)0;
+      pfile_in_zip_read_info->stream.zalloc = s->z_filefunc.zfile_func64.alloc_mem;
+      pfile_in_zip_read_info->stream.zfree = s->z_filefunc.zfile_func64.free_mem;
       pfile_in_zip_read_info->stream.opaque = (voidpf)0;
       pfile_in_zip_read_info->stream.next_in = 0;
       pfile_in_zip_read_info->stream.avail_in = 0;
@@ -1599,6 +1599,7 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
         pfile_in_zip_read_info->stream_initialised=Z_DEFLATED;
       else
       {
+	   printf("NO OPEN ZLIB %i\n",err);
         TRYFREE(pfile_in_zip_read_info);
         return err;
       }

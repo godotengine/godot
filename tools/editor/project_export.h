@@ -80,10 +80,12 @@ private:
 
 	Tree * tree;
 
+	FileDialog *pck_export;
 	FileDialog *file_export;
 	CheckButton *file_export_check;
 	LineEdit *file_export_password;
 
+	Button *button_export;
 	String _delete_attempt;
 
 	bool updating;
@@ -162,7 +164,9 @@ private:
 	void _group_del(Object *item,int p_column, int p_button);
 
 	void _export_action(const String& p_file);
+	void _export_action_pck(const String& p_file);
 	void ok_pressed();
+	void custom_action(const String&);
 
 	void _save_export_cfg();
 	void _format_toggled();

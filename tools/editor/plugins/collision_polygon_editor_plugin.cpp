@@ -109,6 +109,7 @@ void CollisionPolygonEditor::_wip_close() {
 
 bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
+
 	switch(p_event.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
@@ -140,10 +141,11 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 							wip.push_back( snap_point(cpoint) );
 							wip_active=true;
 							edited_point_pos=snap_point(cpoint);
-							canvas_item_editor->update();
+							canvas_item_editor->get_viewport_control()->update();
 							edited_point=1;
 							return true;
 						} else {
+
 
 							if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_treshold) {
 								//wip closed
@@ -154,7 +156,7 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 								wip.push_back( snap_point(cpoint) );
 								edited_point=wip.size();
-								canvas_item_editor->update();
+								canvas_item_editor->get_viewport_control()->update();
 								return true;
 
 								//add wip point
@@ -218,7 +220,7 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 									edited_point=closest_idx+1;
 									edited_point_pos=snap_point(xform.affine_inverse().xform(closest_pos));
 									node->set_polygon(poly);
-									canvas_item_editor->update();
+									canvas_item_editor->get_viewport_control()->update();
 									return true;
 								}
 							} else {
@@ -246,7 +248,7 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 									pre_move_edit=poly;
 									edited_point=closest_idx;
 									edited_point_pos=xform.affine_inverse().xform(closest_pos);
-									canvas_item_editor->update();
+									canvas_item_editor->get_viewport_control()->update();
 									return true;
 								}
 							}
@@ -323,7 +325,7 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				edited_point_pos = snap_point(xform.affine_inverse().xform(gpoint));
-				canvas_item_editor->update();
+				canvas_item_editor->get_viewport_control()->update();
 
 			}
 
@@ -337,6 +339,7 @@ void CollisionPolygonEditor::_canvas_draw() {
 	if (!node)
 		return;
 
+	Control *vpc = canvas_item_editor->get_viewport_control();
 
 	Vector<Vector2> poly;
 
@@ -365,8 +368,8 @@ void CollisionPolygonEditor::_canvas_draw() {
 		Vector2 next_point = xform.xform(p2);
 
 		Color col=Color(1,0.3,0.1,0.8);
-		canvas_item_editor->draw_line(point,next_point,col,2);
-		canvas_item_editor->draw_texture(handle,point-handle->get_size()*0.5);
+		vpc->draw_line(point,next_point,col,2);
+		vpc->draw_texture(handle,point-handle->get_size()*0.5);
 	}
 }
 
@@ -381,8 +384,8 @@ void CollisionPolygonEditor::edit(Node *p_collision_polygon) {
 	if (p_collision_polygon) {
 
 		node=p_collision_polygon->cast_to<CollisionPolygon2D>();
-		if (!canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
-			canvas_item_editor->connect("draw",this,"_canvas_draw");
+		if (!canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
+			canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
@@ -390,8 +393,8 @@ void CollisionPolygonEditor::edit(Node *p_collision_polygon) {
 	} else {
 		node=NULL;
 
-		if (canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
-			canvas_item_editor->disconnect("draw",this,"_canvas_draw");
+		if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
+			canvas_item_editor->get_viewport_control()->disconnect("draw",this,"_canvas_draw");
 
 	}
 

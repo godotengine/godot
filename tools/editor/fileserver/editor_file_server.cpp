@@ -310,7 +310,7 @@ void EditorFileServer::stop(){
 
 EditorFileServer::EditorFileServer() {
 
-	server = TCP_Server::create();
+	server = TCP_Server::create_ref();
 	thread=Thread::create(_thread_start,this);
 	wait_mutex = Mutex::create();
 	quit=false;

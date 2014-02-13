@@ -425,8 +425,25 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
-void OS::set_mouse_mode(MouseMode p_mode) {
+Error OS::native_video_play(String p_path) {
 
+	return FAILED;
+};
+
+bool OS::native_video_is_playing() {
+
+	return false;
+};
+
+void OS::native_video_pause() {
+
+};
+
+void OS::native_video_stop() {
+
+};
+
+void OS::set_mouse_mode(MouseMode p_mode) {
 
 }
 

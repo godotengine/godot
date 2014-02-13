@@ -315,6 +315,10 @@ public:
 
 	virtual String get_unique_ID() const;
 
+	virtual Error native_video_play(String p_path);
+	virtual bool native_video_is_playing();
+	virtual void native_video_pause();
+	virtual void native_video_stop();
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object* p_obj, String p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);

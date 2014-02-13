@@ -7,7 +7,7 @@
 static _FORCE_INLINE_ uint16_t le_short(uint16_t s)
 {
    uint16_t ret=s;
-#ifdef BIG_ENDIAN_ENABLED
+#if 0 //def BIG_ENDIAN_ENABLED
    ret =  s>>8;
    ret += s<<8;
 #endif

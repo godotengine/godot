@@ -148,7 +148,7 @@ static inline int atomic_decrement( volatile int *pw) {
 
 /* PowerPC32/64 GCC */
 
-#elif defined( __GNUC__ ) && ( defined( __powerpc__ ) || defined( __ppc__ ) )
+#elif ( defined( __GNUC__ ) ) && ( defined( __powerpc__ ) || defined( __ppc__ ) )
 
 #define REFCOUNT_T int
 #define REFCOUNT_GET_T int const volatile&
@@ -257,14 +257,14 @@ inline int atomic_decrement(volatile int* v)
 
 /* CW PPC */
 
-#elif defined( __MWERKS__ ) && defined( __POWERPC__ )
+#elif ( defined( __MWERKS__ ) ) && defined( __POWERPC__ )
 
 inline long atomic_conditional_increment( register long * pw )
 {
     register int a;
 
-    asm
-    {
+	asm
+	{
 	loop:
 	
 	lwarx   a, 0, pw

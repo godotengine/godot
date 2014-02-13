@@ -620,7 +620,7 @@ void HTTPClient::_bind_methods() {
 
 HTTPClient::HTTPClient(){
 
-	tcp_connection = StreamPeerTCP::create();
+	tcp_connection = StreamPeerTCP::create_ref();
 	resolving = IP::RESOLVER_INVALID_ID;
 	status=STATUS_DISCONNECTED;
 	conn_port=80;

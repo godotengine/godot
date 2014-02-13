@@ -519,6 +519,8 @@ void FileDialog::_make_dir_confirm() {
 void FileDialog::_make_dir() {
 
 	makedialog->popup_centered_minsize(Size2(250,80));
+	makedirname->grab_focus();
+
 }
 
 void FileDialog::_select_drive(int p_idx) {
