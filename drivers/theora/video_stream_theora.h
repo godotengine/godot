@@ -3,8 +3,13 @@
 
 #ifdef THEORA_ENABLED
 
-#include "theora/theoradec.h"
-#include "vorbis/codec.h"
+#if defined(GODOT_DYNLINK)
+#   include <theora/theoradec.h>
+#   include <vorbis/codec.h>
+#else
+#   include "driver/theora/theoradec.h"
+#   include "driver/vorbis/codec.h"
+#endif
 #include "os/file_access.h"
 
 #include "io/resource_loader.h"

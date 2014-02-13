@@ -26,7 +26,7 @@
 #ifndef SQUISH_SINGLECOLOURFIT_H
 #define SQUISH_SINGLECOLOURFIT_H
 
-#include "squish/squish.h"
+#include "squish.h"
 #include "colourfit.h"
 
 namespace squish {

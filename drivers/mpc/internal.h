@@ -42,7 +42,7 @@
 extern "C" {
 #endif
 
-#include <mpc/mpcdec.h>
+#include "mpcdec.h"
 
 /// Big/little endian 32 bit byte swapping routine.
 static mpc_inline

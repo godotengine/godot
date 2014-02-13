@@ -40,7 +40,7 @@
 #pragma once
 #endif
 
-#include <mpc/mpc_types.h>
+#include "mpc_types.h"
 
 #ifdef __cplusplus
 extern "C" {

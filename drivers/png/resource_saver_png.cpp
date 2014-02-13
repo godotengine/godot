@@ -28,7 +28,11 @@
 /*************************************************************************/
 #include "resource_saver_png.h"
 #include "scene/resources/texture.h"
-#include "drivers/png/png.h"
+#if defined(GODOT_DYNLINK)
+#   include <png.h>
+#else
+#   include "drivers/png/png.h"
+#endif
 #include "os/file_access.h"
 
 static void _write_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {

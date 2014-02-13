@@ -34,7 +34,7 @@
 /// \file requant.c
 /// Requantization function implementations.
 /// \todo document me
-#include <mpc/mpcdec.h>
+#include "mpcdec.h"
 
 #include "requant.h"
 #include "mpcdec_math.h"

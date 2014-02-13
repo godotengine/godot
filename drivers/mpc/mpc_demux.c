@@ -34,8 +34,8 @@
 
 #include <math.h>
 #include <string.h>
-#include <mpc/streaminfo.h>
-#include <mpc/mpcdec.h>
+#include "streaminfo.h"
+#include "mpcdec.h"
 #include "internal.h"
 #include "decoder.h"
 #include "huffman.h"

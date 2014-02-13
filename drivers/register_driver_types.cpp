@@ -11,44 +11,46 @@
 
 #include "register_driver_types.h"
 
-#include "png/image_loader_png.h"
-#include "webp/image_loader_webp.h"
-#include "png/resource_saver_png.h"
-#include "jpg/image_loader_jpg.h"
-#include "dds/texture_loader_dds.h"
-#include "pvr/texture_loader_pvr.h"
-#include "etc1/image_etc.h"
-#include "chibi/event_stream_chibi.h"
+#include "drivers/png/image_loader_png.h"
+#include "drivers/webp/image_loader_webp.h"
+#include "drivers/png/resource_saver_png.h"
+#include "drivers/jpg/image_loader_jpg.h"
+#include "drivers/dds/texture_loader_dds.h"
+#include "drivers/pvr/texture_loader_pvr.h"
+#include "drivers/etc1/image_etc.h"
+#include "drivers/chibi/event_stream_chibi.h"
 
 #ifdef TOOLS_ENABLED
-#include "squish/image_compress_squish.h"
+#ifdef SQUISH_ENABLED
+#include "drivers/squish/image_compress_squish.h"
+#endif
 #endif
 
 #ifdef TOOLS_ENABLED
-#include "convex_decomp/b2d_decompose.h"
+#include "drivers/convex_decomp/b2d_decompose.h"
 #endif
 
 #ifdef TREMOR_ENABLED
-#include "teora/audio_stream_ogg.h"
+#include "drivers/teora/audio_stream_ogg.h"
 #endif
 
 #ifdef VORBIS_ENABLED
-#include "vorbis/audio_stream_ogg_vorbis.h"
+#include "drivers/vorbis/audio_stream_ogg_vorbis.h"
 #endif
 
 
 #ifdef SPEEX_ENABLED
-#include "speex/audio_stream_speex.h"
+#include "drivers/speex/audio_stream_speex.h"
 #endif
 
 #ifdef THEORA_ENABLED
-#include "theora/video_stream_theora.h"
+#include "drivers/theora/video_stream_theora.h"
 #endif
 
 #include "drivers/trex/regex.h"
 
 #ifdef MUSEPACK_ENABLED
-#include "mpc/audio_stream_mpc.h"
+#include "drivers/mpc/audio_stream_mpc.h"
 #endif
 
 #ifdef PNG_ENABLED

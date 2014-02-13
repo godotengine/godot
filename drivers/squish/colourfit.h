@@ -26,7 +26,7 @@
 #ifndef SQUISH_COLOURFIT_H
 #define SQUISH_COLOURFIT_H
 
-#include "squish/squish.h"
+#include "squish.h"
 #include "maths.h"
 
 namespace squish {

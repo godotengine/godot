@@ -33,7 +33,7 @@
 */
 /// \file mpc_reader.c
 /// Contains implementations for simple file-based mpc_reader
-#include <mpc/reader.h>
+#include "reader.h"
 #include "internal.h"
 #include <stdio.h>
 

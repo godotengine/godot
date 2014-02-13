@@ -53,11 +53,12 @@ webp_sources = [
 	"webp/dec/io.c",
 	"webp/dec/layer.c",
 	"webp/dec/idec.c",
-	"webp/image_loader_webp.cpp"
 ]
 
-env.drivers_sources+=webp_sources
+if env.get('dynlink', 'no') == 'no':
+    env.drivers_sources+=webp_sources
 
+env.drivers_sources.append("webp/image_loader_webp.cpp")
 #env.add_source_files(env.drivers_sources, webp_sources)
 
 Export('env')

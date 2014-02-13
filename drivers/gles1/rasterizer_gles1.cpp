@@ -35,7 +35,6 @@
 #include "drivers/gl_context/context_gl.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual/particle_system_sw.h"
-#include "gl_context/context_gl.h"
 #include <string.h>
 
 _FORCE_INLINE_ static void _gl_load_transform(const Transform& tr) {

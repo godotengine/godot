@@ -1,5 +1,5 @@
 #include "image_compress_squish.h"
-#include "squish/squish.h"
+#include "squish.h"
 #include "print_string.h"
 
 void image_compress_squish(Image *p_image) {

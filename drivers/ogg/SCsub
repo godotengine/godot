@@ -1,10 +1,11 @@
 Import('env')
 
-ogg_sources = [
+if env.get('dynlink', 'no') == 'no':
+    ogg_sources = [
 
-	"ogg/bitwise.c",
-	"ogg/framing.c",
-]
+        "ogg/bitwise.c",
+        "ogg/framing.c",
+    ]
 
-env.drivers_sources+=ogg_sources
+    env.drivers_sources+=ogg_sources
 
