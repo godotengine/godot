@@ -136,7 +136,7 @@ public:
 
 		static int b;
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && _MSC_VER < 1800
 		__asm fld a
 		__asm fistp b
 /*#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) )
@@ -148,7 +148,7 @@ public:
 		: "=m" (b)
 		: "m" (a));*/
 #else
-		b=lrintf(a); //assuming everything but msvc has lrint
+		b=lrintf(a); //assuming everything but msvc 2012 or earlier has lrint
 #endif
 		return	b;
 	}

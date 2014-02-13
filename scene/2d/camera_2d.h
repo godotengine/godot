@@ -50,6 +50,7 @@ protected:
 	Vector2 offset;
 	Vector2 zoom;
 	bool centered;
+	bool rotating;
 	bool current;
 	float smoothing;
 	int limit[4];
@@ -78,6 +79,9 @@ public:
 
 	void set_centered(bool p_centered);
 	bool is_centered() const;
+
+	void set_rotating(bool p_rotating);
+	bool is_rotating() const;
 
 	void set_limit(Margin p_margin,int p_limit);
 	int get_limit(Margin p_margin) const;
