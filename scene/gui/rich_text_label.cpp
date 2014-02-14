@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rich_text_label.h"
-#include "scene/scene_string_names.h"e"
+#include "scene/scene_string_names.h"
 
 
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item) {
