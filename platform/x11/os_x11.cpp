@@ -1210,20 +1210,17 @@ void OS_X11::swap_buffers() {
 
 
 void OS_X11::set_icon(const Image& p_icon) {
-
-	//does not work, if anyone knows why, please fix
 	if (!p_icon.empty()) {
-
 		Image img=p_icon;
 		img.convert(Image::FORMAT_RGBA);
-
 
 		int w = img.get_width();
 		int h = img.get_height();
 
+		// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
 		Vector<long> pd;
 
-		pd.resize((2+w*h)*sizeof(long));
+		pd.resize(2+w*h);
 
 		print_line("***** SET ICON ***** "+itos(w)+"  "+itos(h));
 
@@ -1232,23 +1229,17 @@ void OS_X11::set_icon(const Image& p_icon) {
 
 		DVector<uint8_t>::Read r = img.get_data().read();
 
-		long *wr=(long*)&pd[2];
+		long * wr = &pd[2];
+		uint8_t const * pr = r.ptr();
 
 		for(int i=0;i<w*h;i++) {
-
-			uint32_t v=0;
-			v|=r[i*4+3];
-			v<<=8;
-			v|=r[i*4+0];
-			v<<=8;
-			v|=r[i*4+1];
-			v<<=8;
-			v|=r[i*4+2];
-			wr[i]=v;
+			long v=0;
+			//    A             R             G            B
+			v|=pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
+			*wr++=v;
+			pr += 4;
 		}
-
-		XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL,	32, PropModeReplace, (unsigned char *) pd.ptr(),
-				(2+w*h));
+		XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char*) pd.ptr(), pd.size());
 	} else {
 	    XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
