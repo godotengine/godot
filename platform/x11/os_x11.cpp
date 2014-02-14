@@ -1217,8 +1217,8 @@ void OS_X11::set_icon(const Image& p_icon) {
 		int w = img.get_width();
 		int h = img.get_height();
 
-		// We're using size_t to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
-		Vector<size_t> pd;
+		// We're using long to have wordsize (32Bit build -> 32 Bits, 64 Bit build -> 64 Bits
+		Vector<long> pd;
 
 		pd.resize(2+w*h);
 
@@ -1229,17 +1229,17 @@ void OS_X11::set_icon(const Image& p_icon) {
 
 		DVector<uint8_t>::Read r = img.get_data().read();
 
-		size_t * wr = &pd[2];
+		long * wr = &pd[2];
 		uint8_t const * pr = r.ptr();
 
 		for(int i=0;i<w*h;i++) {
-			size_t v=0;
+			long v=0;
 			//    A             R             G            B
 			v|=pr[3] << 24 | pr[0] << 16 | pr[1] << 8 | pr[2];
 			*wr++=v;
 			pr += 4;
 		}
-		XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (uint8_t*) pd.ptr(), pd.size());
+		XChangeProperty(x11_display, x11_window, net_wm_icon, XA_CARDINAL, 32, PropModeReplace, (unsigned char*) pd.ptr(), pd.size());
 	} else {
 	    XDeleteProperty(x11_display, x11_window, net_wm_icon);
 	}
