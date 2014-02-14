@@ -288,8 +288,7 @@ MainLoop* test() {
 
 	FileAccess *fa = FileAccess::open(test,FileAccess::READ);
 
-	if (!fa) {
-		memdelete(fa);
+	if (!fa) {        
 		ERR_FAIL_V(NULL);
 	}
 
