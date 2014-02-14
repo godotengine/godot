@@ -511,7 +511,7 @@ void OS_JavaScript::process_accelerometer(const Vector3& p_accelerometer) {
 
 bool OS_JavaScript::has_touchscreen_ui_hint() const {
 
-	return true;
+	return false; //???
 }
 
 void OS_JavaScript::main_loop_request_quit() {

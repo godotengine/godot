@@ -7151,7 +7151,8 @@ void RasterizerGLES2::_update_framebuffer() {
 
 		glDeleteTextures(1,&framebuffer.sample_color);
 		glDeleteFramebuffers(1,&framebuffer.sample_fbo);
-
+		framebuffer.luminance.clear();
+		framebuffer.blur_size=0;
 		framebuffer.fbo=0;
 	}
 

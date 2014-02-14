@@ -51,7 +51,8 @@ public:
 
 	virtual void stop()=0; //stop listening
 
-	static Ref<TCP_Server> create();
+	static Ref<TCP_Server> create_ref();
+	static TCP_Server* create();
 
 	TCP_Server();
 };

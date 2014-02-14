@@ -66,7 +66,8 @@ public:
 	virtual uint16_t get_connected_port() const=0;
 	virtual void set_nodelay(bool p_enabled)=0;
 
-	static Ref<StreamPeerTCP> create();
+	static Ref<StreamPeerTCP> create_ref();
+	static StreamPeerTCP* create();
 
 	StreamPeerTCP();
 	~StreamPeerTCP();

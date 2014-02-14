@@ -83,7 +83,7 @@ void FindReplaceDialog::popup_search() {
 	replace_label->hide();
 	replace_vb->hide();
 	skip->hide();
-	popup_centered(Point2(300,160));
+	popup_centered(Point2(300,190));
 	get_ok()->set_text("Find");
 	search_text->grab_focus();	
 	if (text_edit->is_selection_active() && ( text_edit->get_selection_from_line() == text_edit->get_selection_to_line())) {
@@ -105,7 +105,7 @@ void FindReplaceDialog::popup_replace() {
 	replace_mc->show();
 	replace_label->show();
 	replace_vb->show();
-	popup_centered(Point2(300,250));
+	popup_centered(Point2(300,300));
 	search_text->grab_focus();
 	search_text->select_all();
 	error_label->set_text("");

@@ -47,7 +47,7 @@
 /** Convert little endian */
 static SPEEX_INLINE spx_int32_t le_int(spx_int32_t i)
 {
-#if !defined(__LITTLE_ENDIAN__) && ( defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__) || defined(BIG_ENDIAN_ENABLED) )
+#if !defined(__LITTLE_ENDIAN__) && ( defined(WORDS_BIGENDIAN) || defined(__BIG_ENDIAN__) /* || defined(BIG_ENDIAN_ENABLED) */ )
    spx_uint32_t ui, ret;
    ui = i;
    ret =  ui>>24;

@@ -30,11 +30,18 @@
 
 TCP_Server* (*TCP_Server::_create)()=NULL;
 
-Ref<TCP_Server> TCP_Server::create() {
+Ref<TCP_Server> TCP_Server::create_ref() {
 
 	if (!_create)
 		return NULL;
 	return Ref<TCP_Server>(_create());
+}
+
+TCP_Server* TCP_Server::create() {
+
+	if (!_create)
+		return NULL;
+	return _create();
 }
 
 Error TCP_Server::_listen(uint16_t p_port,DVector<String> p_accepted_hosts) {

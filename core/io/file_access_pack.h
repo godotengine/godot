@@ -46,8 +46,9 @@ public:
 	struct PackedFile {
 
 		String pack;
-		uint64_t offset;
+		uint64_t offset; //if offset is ZERO, the file was ERASED
 		uint64_t size;
+		uint8_t md5[16];
 		PackSource* src;
 	};
 
@@ -72,7 +73,7 @@ private:
 public:
 
 	void add_pack_source(PackSource* p_source);
-	void add_path(const String& pkg_path, const String& path, uint64_t ofs, uint64_t size, PackSource* p_src); // for PackSource
+	void add_path(const String& pkg_path, const String& path, uint64_t ofs, uint64_t size,const uint8_t* p_md5, PackSource* p_src); // for PackSource
 
 	void set_disabled(bool p_disabled) { disabled=p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
@@ -150,11 +151,13 @@ public:
 
 FileAccess *PackedData::try_open_path(const String& p_path) {
 
-	if (files.has(p_path)) {
-		return files[p_path].src->get_file(p_path, &files[p_path]);
-	}
+	Map<String,PackedFile>::Element *E=files.find(p_path);
+	if (!E)
+		return NULL; //not found
+	if (E->get().offset==0)
+		return NULL; //was erased
 
-	return NULL;
+	return E->get().src->get_file(p_path, &E->get());
 }
 
 bool PackedData::has_path(const String& p_path) {

@@ -776,7 +776,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	inspector->set_read_only(true);
 	sc->add_child(inspector);
 
-	server = TCP_Server::create();
+	server = TCP_Server::create_ref();
 
 	pending_in_queue=0;
 

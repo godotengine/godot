@@ -1534,7 +1534,9 @@ void OS_Windows::set_icon(const Image& p_icon) {
 
 	/* Create temporary bitmap buffer */
 	int icon_len = 40 + h * w * 4;
-	BYTE *icon_bmp = (BYTE*)alloca(icon_len);
+	Vector<BYTE> v;
+	v.resize(icon_len);
+	BYTE *icon_bmp = &v[0];
 
 	encode_uint32(40,&icon_bmp[0]);
 	encode_uint32(w,&icon_bmp[4]);
@@ -1582,7 +1584,11 @@ bool OS_Windows::has_environment(const String& p_var) const {
 
 String OS_Windows::get_environment(const String& p_var) const {
 
-	return getenv(p_var.utf8().get_data());
+	char* val = getenv(p_var.utf8().get_data());
+	if (val)
+		return val;
+
+	return "";
 };
 
 String OS_Windows::get_stdin_string(bool p_block) {

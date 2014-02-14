@@ -205,6 +205,23 @@ public:
 		//nothing
 	}
 
+	template<class T>
+	static Object* _create_ptr_func() {
+
+		return T::create();
+	}
+
+	template<class T>
+	static void register_create_type() {
+
+		GLOBAL_LOCK_FUNCTION;
+		T::initialize_type();
+		TypeInfo *t=types.getptr(T::get_type_static());
+		ERR_FAIL_COND(!t);
+		t->creation_func=&_create_ptr_func<T>;
+		T::register_custom_data_to_otdb();
+	}
+
 	static void get_type_list( List<String> *p_types);
 	static void get_inheriters_from( const String& p_type,List<String> *p_types);
 	static String type_inherits_from(const String& p_type);

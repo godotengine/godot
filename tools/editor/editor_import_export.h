@@ -235,6 +235,7 @@ protected:
 	Map<StringName,Ref<EditorExportPlatform> > exporters;
 	Map<StringName,ImageGroup> image_groups;
 	Map<StringName,StringName> image_group_files;
+	Vector<String> diff_packs;
 
 	static EditorImportExport* singleton;
 
@@ -269,6 +270,8 @@ public:
 
 	void set_export_image_quality(float p_quality);
 	float get_export_image_quality() const;
+
+	Vector<String>& get_diff_packs() { return diff_packs; }
 
 	void image_export_group_create(const StringName& p_name);
 	void image_export_group_remove(const StringName& p_name);

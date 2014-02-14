@@ -1232,7 +1232,7 @@ void OS_X11::set_icon(const Image& p_icon) {
 
 		DVector<uint8_t>::Read r = img.get_data().read();
 
-		uint32_t *wr=(uint32_t*)&pd[2];
+		long *wr=(long*)&pd[2];
 
 		for(int i=0;i<w*h;i++) {
 

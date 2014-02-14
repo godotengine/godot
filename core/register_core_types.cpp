@@ -106,10 +106,6 @@ void register_core_types() {
 	object_format_loader_xml = memnew( ObjectFormatLoaderInstancerXML );
 	ObjectLoader::add_object_format_loader_instancer( object_format_loader_xml );
 #endif
-	resource_saver_xml = memnew( ResourceFormatSaverXML );
-	ResourceSaver::add_resource_format_saver(resource_saver_xml);
-	resource_loader_xml = memnew( ResourceFormatLoaderXML );
-	ResourceLoader::add_resource_format_loader(resource_loader_xml);
 #endif
 #ifdef OLD_SCENE_FORMAT_ENABLED
 	object_format_saver_binary = memnew( ObjectFormatSaverInstancerBinary );
@@ -128,6 +124,10 @@ void register_core_types() {
 	resource_loader_binary = memnew( ResourceFormatLoaderBinary );
 	ResourceLoader::add_resource_format_loader(resource_loader_binary);
 
+	resource_saver_xml = memnew( ResourceFormatSaverXML );
+	ResourceSaver::add_resource_format_saver(resource_saver_xml);
+	resource_loader_xml = memnew( ResourceFormatLoaderXML );
+	ResourceLoader::add_resource_format_loader(resource_loader_xml);
 
 	ObjectTypeDB::register_type<Object>();
 
@@ -136,8 +136,8 @@ void register_core_types() {
 	ObjectTypeDB::register_type<ResourceImportMetadata>();
 	ObjectTypeDB::register_type<Resource>();
 	ObjectTypeDB::register_virtual_type<StreamPeer>();
-	ObjectTypeDB::register_virtual_type<StreamPeerTCP>();
-	ObjectTypeDB::register_virtual_type<TCP_Server>();
+	ObjectTypeDB::register_create_type<StreamPeerTCP>();
+	ObjectTypeDB::register_create_type<TCP_Server>();
 	ObjectTypeDB::register_virtual_type<IP>();
 	ObjectTypeDB::register_virtual_type<PacketPeer>();
 	ObjectTypeDB::register_type<PacketPeerStream>();

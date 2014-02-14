@@ -880,6 +880,26 @@ float Particles2D::get_explosiveness() const{
 	return explosiveness;
 }
 
+void Particles2D::set_flip_h(bool p_flip) {
+
+	flip_h=p_flip;
+}
+
+bool Particles2D::is_flipped_h() const{
+
+	return flip_h;
+}
+
+void Particles2D::set_flip_v(bool p_flip){
+
+	flip_v=p_flip;
+}
+bool Particles2D::is_flipped_v() const{
+
+	return flip_v;
+}
+
+
 void Particles2D::set_emission_points(const DVector<Vector2>& p_points) {
 
 	emission_points=p_points;
@@ -922,6 +942,12 @@ void Particles2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_emissor_offset","offset"),&Particles2D::set_emissor_offset);
 	ObjectTypeDB::bind_method(_MD("get_emissor_offset"),&Particles2D::get_emissor_offset);
 
+	ObjectTypeDB::bind_method(_MD("set_flip_h","enable"),&Particles2D::set_flip_h);
+	ObjectTypeDB::bind_method(_MD("is_flipped_h"),&Particles2D::is_flipped_h);
+
+	ObjectTypeDB::bind_method(_MD("set_flip_v","enable"),&Particles2D::set_flip_v);
+	ObjectTypeDB::bind_method(_MD("is_flipped_v"),&Particles2D::is_flipped_v);
+
 	ObjectTypeDB::bind_method(_MD("set_emission_half_extents","extents"),&Particles2D::set_emission_half_extents);
 	ObjectTypeDB::bind_method(_MD("get_emission_half_extents"),&Particles2D::get_emission_half_extents);
 
@@ -958,6 +984,8 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"config/half_extents"),_SCS("set_emission_half_extents"),_SCS("get_emission_half_extents"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/local_space"),_SCS("set_use_local_space"),_SCS("is_using_local_space"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/explosiveness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_explosiveness"),_SCS("get_explosiveness"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/flip_h"),_SCS("set_flip_h"),_SCS("is_flipped_h"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/flip_v"),_SCS("set_flip_v"),_SCS("is_flipped_v"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"config/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 
 
@@ -1038,6 +1066,10 @@ Particles2D::Particles2D() {
 	set_color_phase_color(1,Color(0,0,0));
 	set_color_phase_color(2,Color(0,0,0));
 	set_color_phase_color(3,Color(0,0,0));
+
+	flip_h=false;
+	flip_v=false;
+
 
 	emit_timeout = 0;
 	time_to_live = 0;

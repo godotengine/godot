@@ -240,6 +240,9 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 		p_anim->node_cache[i]=NULL;
 		RES resource;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i),resource);
+		if (!child) {
+			ERR_EXPLAIN("On Animation: '"+p_anim->name+"', couldn't resolve track:  '"+String(a->track_get_path(i))+"'");
+		}
 		ERR_CONTINUE(!child); // couldn't find the child node
 		uint32_t id=resource.is_valid()?resource->get_instance_ID():child->get_instance_ID();
 		int bone_idx=-1;

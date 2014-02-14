@@ -1210,8 +1210,9 @@ extern int ZEXPORT zipOpenNewFileInZip4_64 (zipFile file, const char* filename, 
     {
         if(zi->ci.method == Z_DEFLATED)
         {
-          zi->ci.stream.zalloc = (alloc_func)0;
-          zi->ci.stream.zfree = (free_func)0;
+	  zi->ci.stream.zalloc = zi->z_filefunc.zfile_func64.alloc_mem;
+	  zi->ci.stream.zfree = zi->z_filefunc.zfile_func64.free_mem;
+
           zi->ci.stream.opaque = (voidpf)0;
 
           if (windowBits>0)

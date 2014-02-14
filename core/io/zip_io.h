@@ -32,6 +32,7 @@
 #include "io/zip.h"
 #include "io/unzip.h"
 #include "os/file_access.h"
+//#include "copymem.h"
 
 static void* zipio_open(void* data, const char* p_fname, int mode) {
 
@@ -110,6 +111,21 @@ static int zipio_testerror(voidpf opaque, voidpf stream) {
 };
 
 
+
+static voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
+
+	voidpf ptr =memalloc(items*size);
+	zeromem(ptr,items*size);
+	return ptr;
+}
+
+
+static void zipio_free(voidpf opaque, voidpf address) {
+
+	memfree(address);
+}
+
+
 static zlib_filefunc_def zipio_create_io_from_file(FileAccess **p_file) {
 
 	zlib_filefunc_def io;
@@ -121,6 +137,8 @@ static zlib_filefunc_def zipio_create_io_from_file(FileAccess **p_file) {
 	io.zseek_file = zipio_seek;
 	io.zclose_file = zipio_close;
 	io.zerror_file = zipio_testerror;
+	io.alloc_mem=zipio_alloc;
+	io.free_mem=zipio_free;
 	return io;
 }
 

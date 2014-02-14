@@ -44,7 +44,7 @@ Error PackedData::add_pack(const String& p_path) {
 	return ERR_FILE_UNRECOGNIZED;
 };
 
-void PackedData::add_path(const String& pkg_path, const String& path, uint64_t ofs, uint64_t size, PackSource* p_src) {
+void PackedData::add_path(const String& pkg_path, const String& path, uint64_t ofs, uint64_t size,const uint8_t* p_md5, PackSource* p_src) {
 
 	bool exists = files.has(path);
 
@@ -52,6 +52,8 @@ void PackedData::add_path(const String& pkg_path, const String& path, uint64_t o
 	pf.pack=pkg_path;
 	pf.offset=ofs;
 	pf.size=size;
+	for(int i=0;i<16;i++)
+		pf.md5[i]=p_md5[i];
 	pf.src = p_src;
 
 	files[path]=pf;
@@ -163,8 +165,10 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
+		uint8_t md5[16];
+		f->get_buffer(md5,16);
 
-		PackedData::get_singleton()->add_path(p_path, path, ofs, size, this);
+		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5,this);
 	};
 
 	return true;
