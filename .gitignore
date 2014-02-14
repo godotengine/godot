@@ -59,6 +59,8 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+*.o
+*.a
 *_i.c
 *_p.c
 *_i.h
