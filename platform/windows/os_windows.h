@@ -235,6 +235,7 @@ public:
 	void set_cursor_shape(CursorShape p_shape);
 	void set_icon(const Image& p_icon);
 
+	virtual String get_executable_path() const;
 
 	virtual String get_locale() const;
 

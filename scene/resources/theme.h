@@ -59,6 +59,7 @@ protected:
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
 
+	Ref<Font> default_theme_font;
 
 	DVector<String> _get_icon_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_icon_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
 	DVector<String> _get_stylebox_list(const String& p_type) const { DVector<String> ilret; List<StringName> il; get_stylebox_list(p_type,&il); for(List<StringName>::Element *E=il.front();E;E=E->next()) { ilret.push_back(E->get()); } return ilret; }
@@ -76,8 +77,10 @@ public:
 	static void set_default_icon( const Ref<Texture>& p_icon );
 	static void set_default_style( const Ref<StyleBox>& p_default_style);
 	static void set_default_font( const Ref<Font>& p_default_font );
-	
-	
+
+	void set_default_theme_font( const Ref<Font>& p_default_font );
+	Ref<Font> get_default_theme_font() const;
+
 	void set_icon(const StringName& p_name,const StringName& p_type,const Ref<Texture>& p_icon);
 	Ref<Texture> get_icon(const StringName& p_name,const StringName& p_type) const;
 	bool has_icon(const StringName& p_name,const StringName& p_type) const;

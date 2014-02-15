@@ -31,6 +31,8 @@
 
 #include <stdio.h>
 
+#define PACK_VERSION 0
+
 Error PackedData::add_pack(const String& p_path) {
 
 	for (int i=0; i<sources.size(); i++) {
@@ -113,12 +115,12 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 
 	uint32_t magic= f->get_32();
 
-	if (magic != 0x4b435047) {
+	if (magic != 0x43504447) {
 		//maybe at he end.... self contained exe
 		f->seek_end();
 		f->seek( f->get_pos() -4 );
 		magic = f->get_32();
-		if (magic != 0x4b435047) {
+		if (magic != 0x43504447) {
 
 			memdelete(f);
 			return false;
@@ -130,7 +132,7 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 		f->seek( f->get_pos() -ds-8 );
 
 		magic = f->get_32();
-		if (magic != 0x4b435047) {
+		if (magic != 0x43504447) {
 
 			memdelete(f);
 			return false;
@@ -138,10 +140,13 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 
 	}
 
+	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
 	uint32_t ver_rev = f->get_32();
 
+	ERR_EXPLAIN("Pack version newer than supported by engine: "+itos(version));
+	ERR_FAIL_COND_V( version > PACK_VERSION, ERR_INVALID_DATA);
 	ERR_EXPLAIN("Pack created with a newer version of the engine: "+itos(ver_major)+"."+itos(ver_minor)+"."+itos(ver_rev));
 	ERR_FAIL_COND_V( ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), ERR_INVALID_DATA);
 

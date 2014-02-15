@@ -394,7 +394,8 @@ String OS_Unix::get_executable_path() const {
 	memset(buf,0,256);
 	readlink("/proc/self/exe", buf, sizeof(buf));
 	//print_line("Exec path is:"+String(buf));
-	String b = buf;
+	String b;
+	b.parse_utf8(buf);
 	if (b=="") {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();

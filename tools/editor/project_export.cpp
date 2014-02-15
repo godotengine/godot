@@ -374,6 +374,24 @@ void ProjectExportDialog::_export_mode_changed(int p_idx) {
 
 void ProjectExportDialog::_export_action(const String& p_file) {
 
+	String location = Globals::get_singleton()->globalize_path(p_file).get_base_dir().replace("\\","/");
+
+	while(true) {
+
+		print_line("TESTING: "+location.plus_file("engine.cfg"));
+		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
+
+			error->set_text("Please export outside the project folder!");
+			error->popup_centered(Size2(300,70));;
+			return;
+		}
+		String nl = (location+"/..").simplify_path();
+		if (nl.find("/")==location.find_last("/"))
+			break;
+		location=nl;
+	}
+
+
 	TreeItem *selected = platforms->get_selected();
 	if (!selected)
 		return;

@@ -130,6 +130,7 @@ void Theme::_get_property_list( List<PropertyInfo> *p_list) const {
 	}
 	
 	key=NULL;
+
 	
 	while((key=font_map.next(key))) {
 	
@@ -172,6 +173,17 @@ Ref<Theme> Theme::get_default() {
 	return default_theme;	
 }
 
+
+void Theme::set_default_theme_font( const Ref<Font>& p_default_font ) {
+
+	default_theme_font=p_default_font;
+}
+
+Ref<Font> Theme::get_default_theme_font() const {
+
+	return default_theme_font;
+}
+
 void Theme::set_default(const Ref<Theme>& p_default) {
 	
 	default_theme=p_default;
@@ -203,8 +215,10 @@ void Theme::set_icon(const StringName& p_name,const StringName& p_type,const Ref
 
 	icon_map[p_type][p_name]=p_icon;	
 
-	if (new_value)
+	if (new_value) {
 		_change_notify();
+		emit_changed();;
+	}
 }
 Ref<Texture> Theme::get_icon(const StringName& p_name,const StringName& p_type) const {
 	
@@ -229,6 +243,8 @@ void Theme::clear_icon(const StringName& p_name,const StringName& p_type) {
 
 	icon_map[p_type].erase(p_name);
 	_change_notify();
+	emit_changed();;
+
 }
 
 void Theme::get_icon_list(StringName p_type, List<StringName> *p_list) const {
@@ -256,6 +272,8 @@ void Theme::set_stylebox(const StringName& p_name,const StringName& p_type,const
 
 	if (new_value)
 		_change_notify();
+	emit_changed();;
+
 }
 
 
@@ -281,6 +299,8 @@ void Theme::clear_stylebox(const StringName& p_name,const StringName& p_type) {
 
 	style_map[p_type].erase(p_name);
 	_change_notify();
+	emit_changed();;
+
 }
 
 void Theme::get_stylebox_list(StringName p_type, List<StringName> *p_list) const {
@@ -304,13 +324,18 @@ void Theme::set_font(const StringName& p_name,const StringName& p_type,const Ref
 	bool new_value=!font_map.has(p_type) || !font_map[p_type].has(p_name);
 	font_map[p_type][p_name]=p_font;
 
-	if (new_value)
+	if (new_value) {
 		_change_notify();
+		emit_changed();;
+
+	}
 }
 Ref<Font> Theme::get_font(const StringName& p_name,const StringName& p_type) const {
 	
 	if (font_map.has(p_type) && font_map[p_type].has(p_name) && font_map[p_type][p_name].is_valid())
 		return font_map[p_type][p_name];	
+	else if (default_theme_font.is_valid())
+		return default_theme_font;
 	else
 		return default_font;
 	
@@ -328,6 +353,8 @@ void Theme::clear_font(const StringName& p_name,const StringName& p_type) {
 
 	font_map[p_type].erase(p_name);
 	_change_notify();
+	emit_changed();;
+
 }
 
 void Theme::get_font_list(StringName p_type, List<StringName> *p_list) const {
@@ -350,8 +377,11 @@ void Theme::set_color(const StringName& p_name,const StringName& p_type,const Co
 
 	color_map[p_type][p_name]=p_color;
 
-	if (new_value)
+	if (new_value) {
 		_change_notify();
+		emit_changed();;
+
+	}
 }
 
 
@@ -377,6 +407,8 @@ void Theme::clear_color(const StringName& p_name,const StringName& p_type) {
 
 	color_map[p_type].erase(p_name);
 	_change_notify();
+	emit_changed();;
+
 }
 
 void Theme::get_color_list(StringName p_type, List<StringName> *p_list) const {
@@ -398,8 +430,10 @@ void Theme::set_constant(const StringName& p_name,const StringName& p_type,int p
 	bool new_value=!constant_map.has(p_type) || !constant_map[p_type].has(p_name);
 	constant_map[p_type][p_name]=p_constant;
 
-	if (new_value)
+	if (new_value) {
 		_change_notify();
+		emit_changed();;
+	}
 }
 
 int Theme::get_constant(const StringName& p_name,const StringName& p_type) const {
@@ -424,6 +458,8 @@ void Theme::clear_constant(const StringName& p_name,const StringName& p_type) {
 
 	constant_map[p_type].erase(p_name);
 	_change_notify();
+	emit_changed();;
+
 }
 
 void Theme::get_constant_list(StringName p_type, List<StringName> *p_list) const {
@@ -451,6 +487,8 @@ void Theme::copy_default_theme() {
 	color_map=default_theme->color_map;
 	constant_map=default_theme->constant_map;
 	_change_notify();
+	emit_changed();;
+
 }
 
 void Theme::get_type_list(List<StringName> *p_list) const {
@@ -532,9 +570,14 @@ void Theme::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear_constant","name","type"),&Theme::clear_constant);
 	ObjectTypeDB::bind_method(_MD("get_constant_list"),&Theme::_get_constant_list);
 
+	ObjectTypeDB::bind_method(_MD("set_default_font","font"),&Theme::set_default_theme_font);
+	ObjectTypeDB::bind_method(_MD("get_default_font"),&Theme::get_default_theme_font);
+
 	ObjectTypeDB::bind_method(_MD("get_type_list"),&Theme::_get_type_list);
 
 	ObjectTypeDB::bind_method("copy_default_theme",&Theme::copy_default_theme);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"default_font",PROPERTY_HINT_RESOURCE_TYPE,"Font"),_SCS("set_default_font"),_SCS("get_default_font"));
 
 }
 
