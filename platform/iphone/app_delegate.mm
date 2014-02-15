@@ -165,7 +165,7 @@ static int frame_count = 0;
 	printf("**************** app delegate init\n");
 	CGRect rect = [[UIScreen mainScreen] bounds];
 
-	[application setStatusBarHidden:YES animation:NO];
+	[application setStatusBarHidden:YES withAnimation:UIStatusBarAnimationNone];
 	// disable idle timer
 	application.idleTimerDisabled = YES;
 
