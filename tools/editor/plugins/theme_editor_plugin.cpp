@@ -33,13 +33,28 @@
 void ThemeEditor::edit(const Ref<Theme>& p_theme) {
 
 	theme=p_theme;
-	panel->set_theme(p_theme);
+	main_vb->set_theme(p_theme);
 
 }
 
-void ThemeEditor::_open_file_dialog() {
 
-	test_file_dialog->popup_centered_ratio();
+void ThemeEditor::_propagate_redraw(Control *p_at) {
+
+	p_at->notification(NOTIFICATION_THEME_CHANGED);
+	p_at->minimum_size_changed();
+	p_at->update();
+	for(int i=0;i<p_at->get_child_count();i++) {
+		Control *a = p_at->get_child(i)->cast_to<Control>();
+		if (a)
+			_propagate_redraw(a);
+
+	}
+}
+
+void ThemeEditor::_refresh_interval() {
+
+	_propagate_redraw(main_vb);
+
 }
 
 void ThemeEditor::_type_menu_cbk(int p_option) {
@@ -477,6 +492,18 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 }
 
+void ThemeEditor::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_PROCESS) {
+
+		time_left-=get_process_delta_time();
+		if (time_left<0) {
+			time_left=1.5;
+			_refresh_interval();
+		}
+	}
+}
+
 void ThemeEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_type_menu_cbk",&ThemeEditor::_type_menu_cbk);
@@ -489,44 +516,159 @@ void ThemeEditor::_bind_methods() {
 
 ThemeEditor::ThemeEditor() {
 
-	Panel *main_panel = memnew( Panel );
-	add_child(main_panel);
-	main_panel->set_area_as_parent_rect();
-	panel = memnew( Panel );
+	time_left=0;
 
-	main_panel->add_child(panel);
-	panel->set_area_as_parent_rect();
-	panel->set_margin( MARGIN_TOP,20 );
+	Panel * panel = memnew( Panel );
+	add_child(panel);
+	panel->set_area_as_parent_rect(0);
+	panel->set_margin(MARGIN_TOP,25);
 
-	test_button = memnew( Button );
-	test_button->set_pos(Point2(25,25));
-	test_button->set_text("Button");
-	panel->add_child(test_button);
+	main_vb= memnew( VBoxContainer );
+	panel->add_child(main_vb);
+	main_vb->set_area_as_parent_rect(4);
 
-	test_label = memnew( Label );
-	test_label->set_pos(Point2(25,75));
-	test_label->set_text("Label");
-	panel->add_child(test_label);
 
-	test_menu_button = memnew( MenuButton );
-	test_menu_button->set_pos(Point2(25,125));
-	test_menu_button->set_text("Menu Button");
+	HBoxContainer *hb_menu = memnew(HBoxContainer);
+	main_vb->add_child(hb_menu);
+
+
+
+	theme_menu = memnew( MenuButton );
+	theme_menu->set_text("Theme");
+	theme_menu->get_popup()->add_item("Add Item",POPUP_ADD);
+	theme_menu->get_popup()->add_item("Add Class Items",POPUP_CLASS_ADD);
+	theme_menu->get_popup()->add_item("Remove Item",POPUP_REMOVE);
+	theme_menu->get_popup()->add_separator();
+	theme_menu->get_popup()->add_item("Create Template",POPUP_CREATE_TEMPLATE);
+	hb_menu->add_child(theme_menu);
+	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
+
+
+	HBoxContainer *main_hb = memnew( HBoxContainer );
+	main_vb->add_child(main_hb);
+
+
+
+	VBoxContainer *first_vb = memnew( VBoxContainer);
+	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_hb->add_child(first_vb);
+
+
+
+//	main_panel->add_child(panel);
+//	panel->set_area_as_parent_rect();
+//	panel->set_margin( MARGIN_TOP,20 );
+
+	first_vb->add_child(memnew( Label("Label") ));
+
+	first_vb->add_child(memnew( Button("Button")) );
+	ToolButton *tb = memnew( ToolButton );
+	tb->set_text("ToolButton");
+	first_vb->add_child(tb );
+	CheckButton *cb = memnew( CheckButton );
+	cb->set_text("CheckButton");
+	first_vb->add_child(cb );
+
+	MenuButton* test_menu_button = memnew( MenuButton );
+	test_menu_button->set_text("MenuButton");
 	test_menu_button->get_popup()->add_item("Item");
 	test_menu_button->get_popup()->add_separator();
 	test_menu_button->get_popup()->add_check_item("Check Item");
 	test_menu_button->get_popup()->add_check_item("Checked Item");
 	test_menu_button->get_popup()->set_item_checked(2,true);
-	panel->add_child(test_menu_button);
+	first_vb->add_child(test_menu_button);
 
-	test_option_button = memnew( OptionButton );
-	test_option_button->set_pos(Point2(25,175));
+	OptionButton *test_option_button = memnew( OptionButton );
 	test_option_button->add_item("OptionButton");
 	test_option_button->add_separator();
 	test_option_button->add_item("Has");
 	test_option_button->add_item("Many");
 	test_option_button->add_item("Options");
-	panel->add_child(test_option_button);
+	first_vb->add_child(test_option_button);
 
+	ColorPickerButton *cpb = memnew( ColorPickerButton );
+	first_vb->add_child(cpb );
+
+	first_vb->add_child( memnew( HSeparator ));
+	first_vb->add_child( memnew( HSlider ));
+	first_vb->add_child( memnew( HScrollBar ));
+	first_vb->add_child( memnew( SpinBox ));
+	ProgressBar *pb=memnew( ProgressBar );
+	pb->set_val(50);
+	first_vb->add_child( pb);
+	Panel *pn=memnew( Panel );
+	pn->set_custom_minimum_size(Size2(40,40));
+	first_vb->add_child( pn);
+	first_vb->add_constant_override("separation",10);
+
+	VBoxContainer *second_vb = memnew( VBoxContainer );
+	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_hb->add_child(second_vb);
+	second_vb->add_constant_override("separation",10);
+	LineEdit *le =  memnew( LineEdit );
+	le->set_text("LineEdit");
+	second_vb->add_child(le);
+	TextEdit *te =  memnew( TextEdit );
+	te->set_text("TextEdit");
+	//te->set_v_size_flags(SIZE_EXPAND_FILL);
+	te->set_custom_minimum_size(Size2(0,160));
+	second_vb->add_child(te);
+
+	Tree *test_tree = memnew(Tree);
+	second_vb->add_child(test_tree);
+	test_tree->set_custom_minimum_size(Size2(0,160));
+
+
+	TreeItem *item = test_tree->create_item();
+	item->set_editable(0,true);
+	item->set_text(0,"Tree");
+	item = test_tree->create_item( test_tree->get_root() );
+	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+	item->set_editable(0,true);
+	item->set_text(0,"check");
+	item = test_tree->create_item( test_tree->get_root() );
+	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
+	item->set_editable(0,true);
+	item->set_range_config(0,0,20,0.1);
+	item->set_range(0,2);
+	item = test_tree->create_item( test_tree->get_root() );
+	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
+	item->set_editable(0,true);
+	item->set_text(0,"Have,Many,Several,Options!");
+	item->set_range(0,2);
+
+	VBoxContainer *third_vb = memnew( VBoxContainer );
+	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	third_vb->add_constant_override("separation",10);
+
+	main_hb->add_child(third_vb);
+
+	HBoxContainer *vhb = memnew( HBoxContainer );
+	vhb->set_custom_minimum_size(Size2(0,160));
+	vhb->add_child(memnew(VSeparator));
+	vhb->add_child(memnew(VSlider));
+	vhb->add_child(memnew(VScrollBar));
+	third_vb->add_child(vhb);
+
+	TabContainer *tc = memnew( TabContainer );
+	third_vb->add_child(tc);
+	tc->set_custom_minimum_size(Size2(0,160));
+	Control *tcc = memnew( Control );
+	tcc->set_name("Tab 1");
+	tc->add_child(tcc);
+	tcc = memnew( Control );
+	tcc->set_name("Tab 2");
+	tc->add_child(tcc);
+	tcc = memnew( Control );
+	tcc->set_name("Tab 3");
+	tc->add_child(tcc);
+
+	main_hb->add_constant_override("separation",20);
+
+
+
+
+/*
 	test_h_scroll = memnew( HScrollBar );
 	test_h_scroll->set_pos( Point2( 25, 225 ) );
 	test_h_scroll->set_size( Point2( 150, 5 ) );
@@ -576,21 +718,11 @@ ThemeEditor::ThemeEditor() {
 	panel->add_child(test_file_dialog);
 
 	fd_button->connect("pressed", this,"_open_file_dialog");
-
-	theme_menu = memnew( MenuButton );
-	theme_menu->set_text("Theme..");
-	theme_menu->get_popup()->add_item("Add Item",POPUP_ADD);
-	theme_menu->get_popup()->add_item("Add Class Items",POPUP_CLASS_ADD);
-	theme_menu->get_popup()->add_item("Remove Item",POPUP_REMOVE);
-	theme_menu->get_popup()->add_separator();
-	theme_menu->get_popup()->add_item("Create Template",POPUP_CREATE_TEMPLATE);
-	main_panel->add_child(theme_menu);
-	theme_menu->set_pos(Point2(5,5));
-	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
+*/
 
 	add_del_dialog = memnew(ConfirmationDialog);
 	add_del_dialog->hide();
-	main_panel->add_child(add_del_dialog);
+	add_child(add_del_dialog);
 
 
 	Label *l = memnew( Label );
@@ -665,10 +797,12 @@ ThemeEditor::ThemeEditor() {
 void ThemeEditorPlugin::edit(Object *p_node) {
 
 	if (p_node && p_node->cast_to<Theme>()) {
-		theme_editor->edit( p_node->cast_to<Theme>() );
 		theme_editor->show();
-	} else
+		theme_editor->edit( p_node->cast_to<Theme>() );
+	} else {
+		theme_editor->edit( Ref<Theme>() );
 		theme_editor->hide();
+	}
 }
 
 bool ThemeEditorPlugin::handles(Object *p_node) const{
@@ -678,10 +812,13 @@ bool ThemeEditorPlugin::handles(Object *p_node) const{
 
 void ThemeEditorPlugin::make_visible(bool p_visible){
 
-	if (p_visible)
+	if (p_visible) {
 		theme_editor->show();
-	else
+		theme_editor->set_process(true);
+	} else {
 		theme_editor->hide();
+		theme_editor->set_process(false);
+	}
 }
 
 ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {

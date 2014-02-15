@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<doc version="0.99.3656-pre-beta" name="Engine Types">
+<doc version="1.0.3917-beta1" name="Engine Types">
 <class name="@GDScript" category="Core">
 	<brief_description>
 	Built-in GDScript functions.
@@ -489,6 +489,28 @@
 			</argument>
 			<description>
 			Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial,final-1,increment).
+			</description>
+		</method>
+		<method name="inst2dict"  >
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="inst" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="dict2inst"  >
+			<return type="Object">
+			</return>
+			<argument index="0" name="dict" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="print_stack"  >
+			<return type="Nil">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -2334,6 +2356,10 @@
 			</argument>
 			<argument index="1" name="custom_blend" type="real" default="-1">
 			</argument>
+			<argument index="2" name="custom_speed" type="real" default="1">
+			</argument>
+			<argument index="3" name="from_end" type="bool" default="false">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -2519,31 +2545,25 @@
 		<method name="add_node"  >
 			<argument index="0" name="type" type="int">
 			</argument>
-			<argument index="1" name="id" type="int">
+			<argument index="1" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="get_node_id" qualifiers="const" >
+		<method name="node_exists" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="node" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="node_rename"  >
 			<return type="int">
 			</return>
-			<argument index="0" name="name" type="String">
+			<argument index="0" name="node" type="String">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="node_set_name"  >
-			<argument index="0" name="id" type="int">
-			</argument>
-			<argument index="1" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="node_get_name" qualifiers="const" >
-			<return type="String">
-			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="1" name="new_name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -2551,7 +2571,7 @@
 		<method name="node_get_type" qualifiers="const" >
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
@@ -2559,13 +2579,23 @@
 		<method name="node_get_input_count" qualifiers="const" >
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="node_get_input_sourcre" qualifiers="const" >
+			<return type="String">
+			</return>
+			<argument index="0" name="id" type="String">
+			</argument>
+			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="animation_node_set_animation"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="animation" type="Animation">
 			</argument>
@@ -2575,13 +2605,29 @@
 		<method name="animation_node_get_animation" qualifiers="const" >
 			<return type="Animation">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_node_set_master_animation"  >
+			<argument index="0" name="id" type="String">
+			</argument>
+			<argument index="1" name="source" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="animation_node_get_master_animation" qualifiers="const" >
+			<return type="String">
+			</return>
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadein_time"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="time_sec" type="real">
 			</argument>
@@ -2591,13 +2637,13 @@
 		<method name="oneshot_node_get_fadein_time" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="oneshot_node_set_fadeout_time"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="time_sec" type="real">
 			</argument>
@@ -2607,13 +2653,13 @@
 		<method name="oneshot_node_get_fadeout_time" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
@@ -2621,7 +2667,7 @@
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_delay"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="delay_sec" type="real">
 			</argument>
@@ -2629,7 +2675,7 @@
 			</description>
 		</method>
 		<method name="oneshot_node_set_autorestart_random_delay"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="rand_sec" type="real">
 			</argument>
@@ -2639,7 +2685,7 @@
 		<method name="oneshot_node_has_autorestart" qualifiers="const" >
 			<return type="bool">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
@@ -2647,7 +2693,7 @@
 		<method name="oneshot_node_get_autorestart_delay" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
@@ -2655,19 +2701,19 @@
 		<method name="oneshot_node_get_autorestart_random_delay" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="oneshot_node_start"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="oneshot_node_stop"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
@@ -2675,13 +2721,23 @@
 		<method name="oneshot_node_is_active" qualifiers="const" >
 			<return type="bool">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="oneshot_node_set_filter_path"  >
+			<argument index="0" name="id" type="String">
+			</argument>
+			<argument index="1" name="path" type="NodePath">
+			</argument>
+			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="mix_node_set_amount"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="ratio" type="real">
 			</argument>
@@ -2691,13 +2747,13 @@
 		<method name="mix_node_get_amount" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="blend2_node_set_amount"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="blend" type="real">
 			</argument>
@@ -2707,13 +2763,23 @@
 		<method name="blend2_node_get_amount" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="blend2_node_set_filter_path"  >
+			<argument index="0" name="id" type="String">
+			</argument>
+			<argument index="1" name="path" type="NodePath">
+			</argument>
+			<argument index="2" name="enable" type="bool">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="blend3_node_set_amount"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="blend" type="real">
 			</argument>
@@ -2723,13 +2789,13 @@
 		<method name="blend3_node_get_amount" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="blend4_node_set_amount"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="blend" type="Vector2">
 			</argument>
@@ -2739,13 +2805,13 @@
 		<method name="blend4_node_get_amount" qualifiers="const" >
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="timescale_node_set_scale"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="scale" type="real">
 			</argument>
@@ -2755,13 +2821,13 @@
 		<method name="timescale_node_get_scale" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="timeseek_node_seek"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="pos_sec" type="real">
 			</argument>
@@ -2769,7 +2835,7 @@
 			</description>
 		</method>
 		<method name="transition_node_set_input_count"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="count" type="int">
 			</argument>
@@ -2779,13 +2845,13 @@
 		<method name="transition_node_get_input_count" qualifiers="const" >
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="transition_node_delete_input"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="input_idx" type="int">
 			</argument>
@@ -2793,7 +2859,7 @@
 			</description>
 		</method>
 		<method name="transition_node_set_input_auto_advance"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="input_idx" type="int">
 			</argument>
@@ -2805,7 +2871,7 @@
 		<method name="transition_node_has_input_auto_advance" qualifiers="const" >
 			<return type="bool">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="input_idx" type="int">
 			</argument>
@@ -2813,7 +2879,7 @@
 			</description>
 		</method>
 		<method name="transition_node_set_xfade_time"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="time_sec" type="real">
 			</argument>
@@ -2823,13 +2889,13 @@
 		<method name="transition_node_get_xfade_time" qualifiers="const" >
 			<return type="real">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="transition_node_set_current"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="input_idx" type="int">
 			</argument>
@@ -2839,13 +2905,13 @@
 		<method name="transition_node_get_current" qualifiers="const" >
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="node_set_pos"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="screen_pos" type="Vector2">
 			</argument>
@@ -2855,13 +2921,13 @@
 		<method name="node_get_pos" qualifiers="const" >
 			<return type="Vector2">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
 		</method>
 		<method name="remove_node"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
 			</description>
@@ -2869,9 +2935,9 @@
 		<method name="connect"  >
 			<return type="int">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
-			<argument index="1" name="dst_id" type="int">
+			<argument index="1" name="dst_id" type="String">
 			</argument>
 			<argument index="2" name="dst_input_idx" type="int">
 			</argument>
@@ -2881,9 +2947,9 @@
 		<method name="is_connected" qualifiers="const" >
 			<return type="bool">
 			</return>
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
-			<argument index="1" name="dst_id" type="int">
+			<argument index="1" name="dst_id" type="String">
 			</argument>
 			<argument index="2" name="dst_input_idx" type="int">
 			</argument>
@@ -2891,7 +2957,7 @@
 			</description>
 		</method>
 		<method name="disconnect"  >
-			<argument index="0" name="id" type="int">
+			<argument index="0" name="id" type="String">
 			</argument>
 			<argument index="1" name="dst_input_idx" type="int">
 			</argument>
@@ -2923,7 +2989,7 @@
 			</description>
 		</method>
 		<method name="get_node_list"  >
-			<return type="IntArray">
+			<return type="StringArray">
 			</return>
 			<description>
 			</description>
@@ -3407,6 +3473,18 @@
 			</description>
 		</method>
 		<method name="get_region" qualifiers="const" >
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_margin"  >
+			<argument index="0" name="margin" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_margin" qualifiers="const" >
 			<return type="Rect2">
 			</return>
 			<description>
@@ -4381,6 +4459,18 @@
 			Return the state of the [i]clip_text[/i] property (see [method set_clip_text])
 			</description>
 		</method>
+		<method name="set_text_align"  >
+			<argument index="0" name="align" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_text_align" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="is_flat" qualifiers="const" >
 			<return type="bool">
 			</return>
@@ -4703,6 +4793,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="look_at"  >
+			<argument index="0" name="target" type="Vector3">
+			</argument>
+			<argument index="1" name="up" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="look_at_from_pos"  >
+			<argument index="0" name="pos" type="Vector3">
+			</argument>
+			<argument index="1" name="target" type="Vector3">
+			</argument>
+			<argument index="2" name="up" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_environment"  >
 			<argument index="0" name="env" type="Environment">
 			</argument>
@@ -4737,7 +4845,7 @@
 		</constant>
 	</constants>
 </class>
-<class name="Camera2D" inherits="ScreenProximity2D" category="Core">
+<class name="Camera2D" inherits="Node2D" category="Core">
 	<brief_description>
 	Camera node for 2D scenes.
 	</brief_description>
@@ -4748,7 +4856,6 @@
 	how the camera works. To make your own custom camera node, simply
 	inherit from [Node2D] and change the transform of the canvas by
 	calling get_viewport().set_canvas_transform(m) in [Viewport].
-	
 	</description>
 	<methods>
 		<method name="set_offset"  >
@@ -5330,7 +5437,7 @@
 		<constant name="NOTIFICATION_EXIT_CANVAS" value="33">
 			Canvas item has exited the canvas.
 		</constant>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="34">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Canvas item transform has changed. Only received if requested.
 		</constant>
 	</constants>
@@ -5511,6 +5618,230 @@
 	<constants>
 	</constants>
 </class>
+<class name="CarBody" inherits="PhysicsBody" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_max_steer_angle"  >
+			<argument index="0" name="value" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_steer_rate"  >
+			<argument index="0" name="rate" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_drive_torque"  >
+			<argument index="0" name="value" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_max_steer_angle" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_steer_rate" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_drive_torque" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_target_steering"  >
+			<argument index="0" name="amount" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_target_accelerate"  >
+			<argument index="0" name="amount" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_hand_brake"  >
+			<argument index="0" name="amount" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_target_steering" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_target_accelerate" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_hand_brake" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_mass"  >
+			<argument index="0" name="mass" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_mass" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_friction"  >
+			<argument index="0" name="friction" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_friction" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="CarWheel" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_side_friction"  >
+			<argument index="0" name="friction" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_forward_friction"  >
+			<argument index="0" name="friction" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_travel"  >
+			<argument index="0" name="distance" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_radius"  >
+			<argument index="0" name="radius" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_resting_frac"  >
+			<argument index="0" name="frac" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_damping_frac"  >
+			<argument index="0" name="frac" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_num_rays"  >
+			<argument index="0" name="amount" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_side_friction" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_forward_friction" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_travel" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_resting_frac" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_damping_frac" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_num_rays" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_type_drive"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_type_drive" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_type_steer"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_type_steer" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="CenterContainer" inherits="Container" category="Core">
 	<brief_description>
 	Keeps children controls centered.
@@ -5523,7 +5854,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="CheckButton" inherits="BaseButton" category="Core">
+<class name="CheckButton" inherits="Button" category="Core">
 	<brief_description>
 	Checkable button.
 	</brief_description>
@@ -5531,20 +5862,6 @@
 	CheckButton is a toggle button displayed as a check field.
 	</description>
 	<methods>
-		<method name="set_text"  >
-			<argument index="0" name="text" type="String">
-			</argument>
-			<description>
-			Set the field text.
-			</description>
-		</method>
-		<method name="get_text" qualifiers="const" >
-			<return type="String">
-			</return>
-			<description>
-			Return the field text.
-			</description>
-		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -5650,6 +5967,12 @@
 			</description>
 		</method>
 		<method name="clear_shapes"  >
+			<description>
+			</description>
+		</method>
+		<method name="get_rid" qualifiers="const" >
+			<return type="RID">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -5962,7 +6285,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="ColorPicker" inherits="Control" category="Core">
+<class name="ColorPicker" inherits="HBoxContainer" category="Core">
 	<brief_description>
 	Color picker control.
 	</brief_description>
@@ -5982,6 +6305,18 @@
 			</return>
 			<description>
 			Return the current (edited) color.
+			</description>
+		</method>
+		<method name="set_mode"  >
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_mode" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="set_edit_alpha"  >
@@ -6250,11 +6585,41 @@
 	</description>
 	<methods>
 		<method name="_input_event" qualifiers="virtual" >
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
 			<description>
 			Called when an input event reaches the control.
 			</description>
 		</method>
+		<method name="can_drop_data" qualifiers="virtual" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="var">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="drop_data" qualifiers="virtual" >
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<argument index="1" name="data" type="var">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_drag_data" qualifiers="virtual" >
+			<return type="Object">
+			</return>
+			<argument index="0" name="pos" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_minimum_size" qualifiers="virtual" >
+			<return type="Vector2">
+			</return>
 			<description>
 			Return the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
 			</description>
@@ -6269,6 +6634,12 @@
 			</return>
 			<description>
 			Return the minimum size this Control can shrink to. A control will never be displayed or resized smaller than its minimum size.
+			</description>
+		</method>
+		<method name="get_combined_minimum_size" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="is_window" qualifiers="const" >
@@ -6351,6 +6722,12 @@
 			Changes MARGIN_RIGHT and MARGIN_BOTTOM to fit a given size. This is a helper (see [method set_margin]).
 			</description>
 		</method>
+		<method name="set_custom_minimum_size"  >
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_global_pos"  >
 			<argument index="0" name="pos" type="Vector2">
 			</argument>
@@ -6392,6 +6769,12 @@
 			</return>
 			<description>
 			Returns the size of the Control, computed from all margins, however the size returned will [b]never be smaller than the minimum size reported by [method get_minimum_size][/b]. This means that even if end position of the Control rectangle is smaller than the begin position, the Control will still display and interact correctly. (see description, [method get_minimum_size], [method set_margin], [method set_anchor]).
+			</description>
+		</method>
+		<method name="get_custom_minimum_size" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_parent_area_size" qualifiers="const" >
@@ -6693,6 +7076,14 @@
 			Return if the control is ignoring mouse events (even touchpad events send mouse events).
 			</description>
 		</method>
+		<method name="force_drag"  >
+			<argument index="0" name="data" type="var">
+			</argument>
+			<argument index="1" name="preview" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="set_stop_mouse"  >
 			<argument index="0" name="stop" type="bool">
 			</argument>
@@ -6706,6 +7097,12 @@
 			</description>
 		</method>
 		<method name="grab_click_focus"  >
+			<description>
+			</description>
+		</method>
+		<method name="set_drag_preview"  >
+			<argument index="0" name="control" type="Control">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -6826,6 +7223,12 @@
 		</constant>
 		<constant name="CURSOR_HELP" value="16">
 		</constant>
+		<constant name="SIZE_EXPAND" value="1">
+		</constant>
+		<constant name="SIZE_FILL" value="2">
+		</constant>
+		<constant name="SIZE_EXPAND_FILL" value="3">
+		</constant>
 	</constants>
 </class>
 <class name="ConvexPolygonShape" inherits="Shape" category="Core">
@@ -6836,18 +7239,16 @@
 	Convex polygon shape resource, which can be set into a [PhysicsBody] or area.
 	</description>
 	<methods>
-		<method name="set_planes"  >
-			<argument index="0" name="planes" type="Array">
+		<method name="set_points"  >
+			<argument index="0" name="points" type="Vector3Array">
 			</argument>
 			<description>
-			Set the planes that make up the convex polygon.
 			</description>
 		</method>
-		<method name="get_planes" qualifiers="const" >
-			<return type="Array">
+		<method name="get_points" qualifiers="const" >
+			<return type="Vector3Array">
 			</return>
 			<description>
-			Return the planes that make up the convex polygon.
 			</description>
 		</method>
 	</methods>
@@ -7401,11 +7802,25 @@
 			Return the list of keys in the dictionary.
 			</description>
 		</method>
+		<method name="parse_json"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="json" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="size"  >
 			<return type="int">
 			</return>
 			<description>
 			Return the size of the dictionary (in pairs).
+			</description>
+		</method>
+		<method name="to_json"  >
+			<return type="String">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -7615,6 +8030,198 @@
 		<method name="get_radius" qualifiers="const" >
 			<return type="real">
 			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="EditorImportPlugin" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="custom_export" qualifiers="virtual" >
+			<return type="RawArray">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_name" qualifiers="virtual" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_visible_name" qualifiers="virtual" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="import" qualifiers="virtual" >
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="from" type="ResourceImportMetaData">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="import_dialog" qualifiers="virtual" >
+			<argument index="0" name="from" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="EditorPlugin" inherits="Node" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="apply_changes" qualifiers="virtual" >
+			<description>
+			</description>
+		</method>
+		<method name="clear" qualifiers="virtual" >
+			<description>
+			</description>
+		</method>
+		<method name="edit" qualifiers="virtual" >
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="forward_input_event" qualifiers="virtual" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="forward_spatial_input_event" qualifiers="virtual" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="camera" type="Camera">
+			</argument>
+			<argument index="1" name="event" type="InputEvent">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_breakpoints" qualifiers="virtual" >
+			<return type="StringArray">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_name" qualifiers="virtual" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_state" qualifiers="virtual" >
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="handles" qualifiers="virtual" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="object" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_main_screen" qualifiers="virtual" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="make_visible" qualifiers="virtual" >
+			<argument index="0" name="visible" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_state" qualifiers="virtual" >
+			<argument index="0" name="state" type="Dictionary">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_undo_redo"  >
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="add_custom_control"  >
+			<argument index="0" name="container" type="int">
+			</argument>
+			<argument index="1" name="control" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_custom_type"  >
+			<argument index="0" name="type" type="String">
+			</argument>
+			<argument index="1" name="base" type="String">
+			</argument>
+			<argument index="2" name="script" type="Script">
+			</argument>
+			<argument index="3" name="icon" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_custom_type"  >
+			<argument index="0" name="type" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="CONTAINER_TOOLBAR" value="0">
+		</constant>
+		<constant name="CONTAINER_SPATIAL_EDITOR_MENU" value="1">
+		</constant>
+		<constant name="CONTAINER_SPATIAL_EDITOR_SIDE" value="2">
+		</constant>
+		<constant name="CONTAINER_SPATIAL_EDITOR_BOTTOM" value="3">
+		</constant>
+		<constant name="CONTAINER_CANVAS_EDITOR_MENU" value="4">
+		</constant>
+		<constant name="CONTAINER_CANVAS_EDITOR_SIDE" value="5">
+		</constant>
+	</constants>
+</class>
+<class name="EditorScenePostImport" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="post_import" qualifiers="virtual" >
+			<argument index="0" name="scene" type="Object">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -8102,6 +8709,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_as_text" qualifiers="const" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_endian_swap"  >
 			<return type="bool">
 			</return>
@@ -8121,6 +8734,12 @@
 			</description>
 		</method>
 		<method name="get_var" qualifiers="const" >
+			<description>
+			</description>
+		</method>
+		<method name="get_csv_line" qualifiers="const" >
+			<return type="StringArray">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -9011,6 +9630,122 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_closest_points_between_segments_2d"  >
+			<return type="Vector2Array">
+			</return>
+			<argument index="0" name="p1" type="Vector2">
+			</argument>
+			<argument index="1" name="q1" type="Vector2">
+			</argument>
+			<argument index="2" name="p2" type="Vector2">
+			</argument>
+			<argument index="3" name="q2" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_points_between_segments"  >
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="p1" type="Vector3">
+			</argument>
+			<argument index="1" name="p2" type="Vector3">
+			</argument>
+			<argument index="2" name="q1" type="Vector3">
+			</argument>
+			<argument index="3" name="q2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_closest_point_to_segment"  >
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="point" type="Vector3">
+			</argument>
+			<argument index="1" name="s1" type="Vector3">
+			</argument>
+			<argument index="2" name="s2" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="ray_intersects_triangle"  >
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="dir" type="Vector3">
+			</argument>
+			<argument index="2" name="a" type="Vector3">
+			</argument>
+			<argument index="3" name="b" type="Vector3">
+			</argument>
+			<argument index="4" name="c" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_triangle"  >
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="a" type="Vector3">
+			</argument>
+			<argument index="3" name="b" type="Vector3">
+			</argument>
+			<argument index="4" name="c" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_sphere"  >
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="spos" type="Vector3">
+			</argument>
+			<argument index="3" name="sradius" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_cylinder"  >
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="height" type="real">
+			</argument>
+			<argument index="3" name="radius" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="segment_intersects_convex"  >
+			<return type="Vector3Array">
+			</return>
+			<argument index="0" name="from" type="Vector3">
+			</argument>
+			<argument index="1" name="to" type="Vector3">
+			</argument>
+			<argument index="2" name="planes" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="triangulate_polygon"  >
+			<return type="IntArray">
+			</return>
+			<argument index="0" name="polygon" type="Vector2Array">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -9200,6 +9935,28 @@
 			</return>
 			<argument index="0" name="arg0" type="String">
 			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="GridContainer" inherits="Container" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_columns"  >
+			<argument index="0" name="columns" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_columns" qualifiers="const" >
+			<return type="int">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -9635,6 +10392,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_response_chunked" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_response_code" qualifiers="const" >
 			<return type="int">
 			</return>
@@ -9900,6 +10663,16 @@
 	Built in native image datatype. Contains image data, which can be converted to a texture, and several functions to interact with it.
 	</description>
 	<methods>
+		<method name="blit_rect"  >
+			<argument index="0" name="src" type="Image">
+			</argument>
+			<argument index="1" name="src_rect" type="Rect2">
+			</argument>
+			<argument index="2" name="dest" type="Vector2" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="brush_transfer"  >
 			<argument index="0" name="src" type="Image">
 			</argument>
@@ -9936,6 +10709,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_data"  >
+			<return type="RawArray">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_format"  >
 			<return type="int">
 			</return>
@@ -9968,6 +10747,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_used_rect"  >
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_width"  >
 			<return type="int">
 			</return>
@@ -9978,6 +10763,18 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="path" type="String" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="resized"  >
+			<return type="Image">
+			</return>
+			<argument index="0" name="x" type="int">
+			</argument>
+			<argument index="1" name="y" type="int">
+			</argument>
+			<argument index="2" name="interpolation" type="int" default="1">
 			</argument>
 			<description>
 			</description>
@@ -10238,8 +11035,26 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_mouse_mode"  >
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_mouse_mode" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
+		<constant name="MOUSE_MODE_VISIBLE" value="0">
+		</constant>
+		<constant name="MOUSE_MODE_HIDDEN" value="1">
+		</constant>
+		<constant name="MOUSE_MODE_CAPTURED" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="InputDefault" inherits="Input" category="Core">
@@ -11091,6 +11906,18 @@
 			Return the state of the [i]autowrap[/i] mode (see [method set_autowrap]).
 			</description>
 		</method>
+		<method name="set_uppercase"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_uppercase" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_line_height" qualifiers="const" >
 			<return type="int">
 			</return>
@@ -11155,6 +11982,56 @@
 		<constant name="VALIGN_FILL" value="3">
 			Align the whole text by spreading the rows.
 		</constant>
+	</constants>
+</class>
+<class name="LargeTexture" inherits="Texture" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="add_piece"  >
+			<argument index="0" name="ofs" type="Vector2">
+			</argument>
+			<argument index="1" name="texture" type="Texture">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_size"  >
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear"  >
+			<description>
+			</description>
+		</method>
+		<method name="get_piece_count" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_piece_offset" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_piece_texture" qualifiers="const" >
+			<return type="Texture">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
 	</constants>
 </class>
 <class name="Light" inherits="VisualInstance" category="Core">
@@ -12474,6 +13351,10 @@
 			This helper creates a [StaticBody] child [Node] using the mesh geometry as collision. It"apos;s mainly used for testing.
 			</description>
 		</method>
+		<method name="create_convex_collision"  >
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -12702,6 +13583,30 @@
 	<description>
 	</description>
 	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="Mutex" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="lock"  >
+			<description>
+			</description>
+		</method>
+		<method name="try_lock"  >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="unlock"  >
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -13525,27 +14430,6 @@
         -Command Line
 	</description>
 	<methods>
-		<method name="set_mouse_show"  >
-			<argument index="0" name="show" type="bool">
-			</argument>
-			<description>
-			Set the mouse pointer to visible state.
-			</description>
-		</method>
-		<method name="set_mouse_grab"  >
-			<argument index="0" name="grab" type="bool">
-			</argument>
-			<description>
-			Grab the mouse pointer to the window.
-			</description>
-		</method>
-		<method name="is_mouse_grab_enabled" qualifiers="const" >
-			<return type="bool">
-			</return>
-			<description>
-			Return true if the mouse pointer is grabbed.
-			</description>
-		</method>
 		<method name="get_mouse_pos" qualifiers="const" >
 			<return type="Vector2">
 			</return>
@@ -13753,6 +14637,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_icon"  >
+			<argument index="0" name="arg0" type="Image">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="delay_usec" qualifiers="const" >
 			<argument index="0" name="usec" type="int">
 			</argument>
@@ -13865,6 +14755,12 @@
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_unique_ID" qualifiers="const" >
 			<return type="String">
 			</return>
 			<description>
@@ -14061,36 +14957,6 @@
 			Return the list of metadatas in the object.
 			</description>
 		</method>
-		<method name="call"  >
-			<argument index="0" name="method" type="String">
-			</argument>
-			<argument index="1" name="arg1" type="var" default="NULL">
-			</argument>
-			<argument index="2" name="arg2" type="var" default="NULL">
-			</argument>
-			<argument index="3" name="arg3" type="var" default="NULL">
-			</argument>
-			<argument index="4" name="arg4" type="var" default="NULL">
-			</argument>
-			<description>
-			Call a function in the object, result is returned.
-			</description>
-		</method>
-		<method name="call_deferred"  >
-			<argument index="0" name="method" type="String">
-			</argument>
-			<argument index="1" name="arg1" type="var" default="NULL">
-			</argument>
-			<argument index="2" name="arg2" type="var" default="NULL">
-			</argument>
-			<argument index="3" name="arg3" type="var" default="NULL">
-			</argument>
-			<argument index="4" name="arg4" type="var" default="NULL">
-			</argument>
-			<description>
-			Create and store a function in the object. The call will take place on idle time.
-			</description>
-		</method>
 		<method name="add_user_signal"  >
 			<argument index="0" name="signal" type="String">
 			</argument>
@@ -14103,10 +14969,78 @@
 		<method name="emit_signal"  >
 			<argument index="0" name="signal" type="String">
 			</argument>
-			<argument index="1" name="arguments" type="Array" default="Array()">
+			<argument index="1" name="arg0" type="var" default="NULL">
+			</argument>
+			<argument index="2" name="arg1" type="var" default="NULL">
+			</argument>
+			<argument index="3" name="arg2" type="var" default="NULL">
+			</argument>
+			<argument index="4" name="arg3" type="var" default="NULL">
+			</argument>
+			<argument index="5" name="arg4" type="var" default="NULL">
 			</argument>
 			<description>
 			Emit a signal. Arguments are passed in an array.
+			</description>
+		</method>
+		<method name="call"  >
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="arg0" type="var" default="NULL">
+			</argument>
+			<argument index="2" name="arg1" type="var" default="NULL">
+			</argument>
+			<argument index="3" name="arg2" type="var" default="NULL">
+			</argument>
+			<argument index="4" name="arg3" type="var" default="NULL">
+			</argument>
+			<argument index="5" name="arg4" type="var" default="NULL">
+			</argument>
+			<argument index="6" name="arg5" type="var" default="NULL">
+			</argument>
+			<argument index="7" name="arg6" type="var" default="NULL">
+			</argument>
+			<argument index="8" name="arg7" type="var" default="NULL">
+			</argument>
+			<argument index="9" name="arg8" type="var" default="NULL">
+			</argument>
+			<argument index="10" name="arg9" type="var" default="NULL">
+			</argument>
+			<description>
+			Call a function in the object, result is returned.
+			</description>
+		</method>
+		<method name="call_deferred"  >
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="arg0" type="var" default="NULL">
+			</argument>
+			<argument index="2" name="arg1" type="var" default="NULL">
+			</argument>
+			<argument index="3" name="arg2" type="var" default="NULL">
+			</argument>
+			<argument index="4" name="arg3" type="var" default="NULL">
+			</argument>
+			<argument index="5" name="arg4" type="var" default="NULL">
+			</argument>
+			<description>
+			Create and store a function in the object. The call will take place on idle time.
+			</description>
+		</method>
+		<method name="callv"  >
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="arg_array" type="Array">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_method" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="get_signal_list" qualifiers="const" >
@@ -14182,6 +15116,10 @@
 			</argument>
 			<description>
 			Return true if this object can translate strings.
+			</description>
+		</method>
+		<method name="property_list_changed_notify"  >
+			<description>
 			</description>
 		</method>
 		<method name="XL_MESSAGE" qualifiers="const" >
@@ -14419,6 +15357,52 @@
 	Optimized translation. Uses real-time compressed translations, which results in very small dictionaries.
 	</description>
 	<methods>
+		<method name="generate"  >
+			<argument index="0" name="from" type="Translation">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="PackedDataContainer" inherits="Resource" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="pack"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="value" type="var">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="size" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="PackedDataContainerRef" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="size" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -14455,7 +15439,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="PacketPeer" inherits="Object" category="Core">
+<class name="PacketPeer" inherits="Reference" category="Core">
 	<brief_description>
 	Abstraction and base class for packet-based protocols.
 	</brief_description>
@@ -14463,6 +15447,18 @@
 	PacketPeer is an abstration and base class for packet-based protocols (such as UDP). It provides an API for sending and receiving packets both as raw data or variables. This makes it easy to transfer data over a protocol, without having to encode data as low level bytes or having to worry about network ordering.
 	</description>
 	<methods>
+		<method name="get_var" qualifiers="const" >
+			<description>
+			</description>
+		</method>
+		<method name="put_var"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="var" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -14607,6 +15603,88 @@
 		</method>
 		<method name="get_mirroring" qualifiers="const" >
 			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="ParticleAttractor2D" inherits="Node2D" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_enabled"  >
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_radius"  >
+			<argument index="0" name="radius" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_radius" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_disable_radius"  >
+			<argument index="0" name="radius" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_disable_radius" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_gravity"  >
+			<argument index="0" name="gravity" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_gravity" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_absorption"  >
+			<argument index="0" name="absorption" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_absorption" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_particles_path"  >
+			<argument index="0" name="path" type="NodePath">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_particles_path" qualifiers="const" >
+			<return type="NodePath">
 			</return>
 			<description>
 			</description>
@@ -15039,6 +16117,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_flip_h"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_flipped_h" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_flip_v"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_flipped_v" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_emission_half_extents"  >
 			<argument index="0" name="extents" type="Vector2">
 			</argument>
@@ -15159,21 +16261,21 @@
 		</constant>
 		<constant name="PARAM_SPIN_VELOCITY" value="3">
 		</constant>
-		<constant name="PARAM_GRAVITY_DIRECTION" value="4">
+		<constant name="PARAM_GRAVITY_DIRECTION" value="5">
 		</constant>
-		<constant name="PARAM_GRAVITY_STRENGTH" value="5">
+		<constant name="PARAM_GRAVITY_STRENGTH" value="6">
 		</constant>
-		<constant name="PARAM_RADIAL_ACCEL" value="6">
+		<constant name="PARAM_RADIAL_ACCEL" value="7">
 		</constant>
-		<constant name="PARAM_TANGENTIAL_ACCEL" value="7">
+		<constant name="PARAM_TANGENTIAL_ACCEL" value="8">
 		</constant>
-		<constant name="PARAM_INITIAL_SIZE" value="9">
+		<constant name="PARAM_INITIAL_SIZE" value="10">
 		</constant>
-		<constant name="PARAM_FINAL_SIZE" value="10">
+		<constant name="PARAM_FINAL_SIZE" value="11">
 		</constant>
-		<constant name="PARAM_HUE_VARIATION" value="11">
+		<constant name="PARAM_HUE_VARIATION" value="12">
 		</constant>
-		<constant name="PARAM_MAX" value="12">
+		<constant name="PARAM_MAX" value="13">
 		</constant>
 		<constant name="MAX_COLOR_PHASES" value="4">
 		</constant>
@@ -15344,12 +16446,10 @@
 			Add a remap from a file to another.
 			</description>
 		</method>
-		<method name="has_remap"  >
+		<method name="has_remap" qualifiers="const" >
+			<return type="bool">
+			</return>
 			<argument index="0" name="path" type="String">
-			</argument>
-			<argument index="1" name="arg1" type="String">
-			</argument>
-			<argument index="2" name="arg2" type="String">
 			</argument>
 			<description>
 			Return true if a file is being remapped.
@@ -16245,6 +17345,8 @@
 			</argument>
 			<argument index="2" name="method" type="String">
 			</argument>
+			<argument index="3" name="arg3" type="var">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -16573,6 +17675,14 @@
 		<method name="get_transform" qualifiers="const" >
 			<return type="Transform">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="add_force"  >
+			<argument index="0" name="force" type="Vector3">
+			</argument>
+			<argument index="1" name="pos" type="Vector3">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -18054,68 +19164,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="ProximityArea" inherits="Spatial" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="set_track_flag"  >
-			<argument index="0" name="flag" type="int">
-			</argument>
-			<argument index="1" name="enabled" type="bool">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_track_flag" qualifiers="const" >
-			<return type="bool">
-			</return>
-			<argument index="0" name="flag" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_aabb"  >
-			<argument index="0" name="aabb" type="AABB">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_aabb" qualifiers="const" >
-			<return type="AABB">
-			</return>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<signals>
-		<signal name="area_enter">
-			<argument index="0" name="type" type="int">
-			</argument>
-			<argument index="1" name="node" type="Object">
-			</argument>
-			<description>
-			</description>
-		</signal>
-		<signal name="area_exit">
-			<argument index="0" name="type" type="int">
-			</argument>
-			<argument index="1" name="node" type="Object">
-			</argument>
-			<description>
-			</description>
-		</signal>
-	</signals>
-	<constants>
-		<constant name="TRACK_CAMERAS" value="0">
-		</constant>
-		<constant name="TRACK_ROOMS" value="1">
-		</constant>
-		<constant name="TRACK_MAX" value="2">
-		</constant>
-	</constants>
-</class>
 <class name="ProximityGroup" inherits="Spatial" category="Core">
 	<brief_description>
 	General purpose proximity-detection node.
@@ -18162,58 +19210,6 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<argument index="1" name="parameters" type="Array">
-			</argument>
-			<description>
-			</description>
-		</signal>
-	</signals>
-	<constants>
-	</constants>
-</class>
-<class name="ProximityGroup2D" inherits="Node2D" category="Core">
-	<brief_description>
-	General purpose 2D proximity-detection node.
-	</brief_description>
-	<description>
-	General purpose 2D proximity-detection node. The space is divided in quadrants of a given group size, and other nodes of this kind will report they neighbours when they are approaching vicinity.
-	</description>
-	<methods>
-		<method name="set_group_size"  >
-			<argument index="0" name="size" type="int">
-			</argument>
-			<description>
-			Set the size of a group cell. Cells in the 3x3 vicinity that overlap will be grouped.
-			</description>
-		</method>
-		<method name="get_group_size" qualifiers="const" >
-			<return type="int">
-			</return>
-			<description>
-			Return the size of a group cell.
-			</description>
-		</method>
-		<method name="set_group_notifym"  >
-			<argument index="0" name="notify" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_group_notify" qualifiers="const" >
-			<return type="int">
-			</return>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<signals>
-		<signal name="grouped">
-			<argument index="0" name="pgroup" type="Object">
-			</argument>
-			<description>
-			</description>
-		</signal>
-		<signal name="ungrouped">
-			<argument index="0" name="pgroup" type="Object">
 			</argument>
 			<description>
 			</description>
@@ -18625,6 +19621,70 @@
 		<method name="RawArray"  >
 			<argument index="0" name="from" type="Array">
 			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="RayCast" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_enabled"  >
+			<argument index="0" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_enabled" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_cast_to"  >
+			<argument index="0" name="local_point" type="Vector3">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_cast_to" qualifiers="const" >
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_colliding" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider" qualifiers="const" >
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_shape" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_point" qualifiers="const" >
+			<return type="Vector3">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const" >
+			<return type="Vector3">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -19209,6 +20269,12 @@
 			Poll the load. If OK is returned, this means poll will have to be called again. If ERR_EOF is returned, them the load has finished and the resource can be obtained by calling [get_resource].
 			</description>
 		</method>
+		<method name="wait"  >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_stage" qualifiers="const" >
 			<return type="int">
 			</return>
@@ -19275,6 +20341,14 @@
 		</method>
 		<method name="get_dependencies"  >
 			<return type="StringArray">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has"  >
+			<return type="bool">
 			</return>
 			<argument index="0" name="arg0" type="String">
 			</argument>
@@ -21206,72 +22280,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="ScreenProximity2D" inherits="ProximityGroup2D" category="Core">
-	<brief_description>
-	Proximity to Screen notificator.
-	</brief_description>
-	<description>
-	Proximity to Screen notificator. This node has two signals that notify when it's close to entering the screen (usually signal is emitted when it's only one screen away).
-	</description>
-	<methods>
-		<method name="enter_screen"  >
-			<description>
-			</description>
-		</method>
-		<method name="exit_screen"  >
-			<description>
-			</description>
-		</method>
-	</methods>
-	<signals>
-		<signal name="enter_screen">
-			<description>
-			Emitted when the node became close to the screen (usually less than one screen away)
-			</description>
-		</signal>
-		<signal name="exit_screen">
-			<description>
-			Emitted when the node became away from the screen (usually more than one screen away)
-			</description>
-		</signal>
-	</signals>
-	<constants>
-	</constants>
-</class>
-<class name="ScreenProximityAnimator2D" inherits="ScreenProximity2D" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="set_anim_player"  >
-			<argument index="0" name="path" type="NodePath">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_anim_player" qualifiers="const" >
-			<return type="NodePath">
-			</return>
-			<description>
-			</description>
-		</method>
-		<method name="set_animation"  >
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="get_animation" qualifiers="const" >
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<constants>
-	</constants>
-</class>
 <class name="Script" inherits="Resource" category="Core">
 	<brief_description>
 	Base class for scripts.
@@ -21382,6 +22390,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_h_scroll"  >
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_h_scroll" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_v_scroll"  >
+			<argument index="0" name="val" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_v_scroll" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -21414,6 +22446,28 @@
 		</method>
 		<method name="get_b" qualifiers="const" >
 			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="Semaphore" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="wait"  >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="post"  >
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -21937,6 +22991,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_world" qualifiers="const" >
+			<return type="World">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="update_gizmo"  >
 			<description>
 			</description>
@@ -21955,7 +23015,7 @@
 		</method>
 	</methods>
 	<constants>
-		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="40">
+		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="29">
 			Spatial nodes receive this notifacation with their global transform changes. This means that either the current or a parent node changed it's transform.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_WORLD" value="41">
@@ -22670,6 +23730,30 @@
 			Return the constant angular velocity for the body.
 			</description>
 		</method>
+		<method name="set_friction"  >
+			<argument index="0" name="friction" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_friction" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_bounce"  >
+			<argument index="0" name="bounce" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bounce" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -23109,6 +24193,34 @@
 			</return>
 			<argument index="0" name="at" type="int">
 			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pad_decimals"  >
+			<return type="String">
+			</return>
+			<argument index="0" name="digits" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="pad_zeros"  >
+			<return type="String">
+			</return>
+			<argument index="0" name="digits" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="percent_decode"  >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="percent_encode"  >
+			<return type="String">
+			</return>
 			<description>
 			</description>
 		</method>
@@ -23712,7 +24824,7 @@
 	<constants>
 	</constants>
 </class>
-<class name="TCP_Server" inherits="Object" category="Core">
+<class name="TCP_Server" inherits="Reference" category="Core">
 	<brief_description>
 	TCP Server.
 	</brief_description>
@@ -23913,6 +25025,12 @@
 		<method name="get_tab_icon" qualifiers="const" >
 			<return type="Texture">
 			</return>
+			<argument index="0" name="tab_idx" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_tab"  >
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
@@ -24442,6 +25560,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_modulate"  >
+			<argument index="0" name="modulate" type="Color">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_modulate" qualifiers="const" >
+			<return type="Color">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_expand"  >
 			<argument index="0" name="enable" type="bool">
 			</argument>
@@ -24759,6 +25889,52 @@
 		</method>
 	</methods>
 	<constants>
+	</constants>
+</class>
+<class name="Thread" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="start"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<argument index="1" name="method" type="String">
+			</argument>
+			<argument index="2" name="userdata" type="var" default="NULL">
+			</argument>
+			<argument index="3" name="priority" type="int" default="1">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_id" qualifiers="const" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_active" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="wait_to_finish"  >
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="PRIORITY_LOW" value="0">
+		</constant>
+		<constant name="PRIORITY_NORMAL" value="1">
+		</constant>
+		<constant name="PRIORITY_HIGH" value="2">
+		</constant>
 	</constants>
 </class>
 <class name="TileMap" inherits="Node2D" category="Core">
@@ -25431,6 +26607,26 @@
 		<method name="get_locale" qualifiers="const" >
 			<return type="String">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="translate" qualifiers="const" >
+			<return type="String">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_translation"  >
+			<argument index="0" name="arg0" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_translation"  >
+			<argument index="0" name="arg0" type="Object">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -26221,6 +27417,12 @@
 			Remove the fractional part of x and y.
 			</description>
 		</method>
+		<method name="floorf"  >
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_aspect"  >
 			<return type="real">
 			</return>
@@ -26786,7 +27988,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_final_global_transform" qualifiers="const" >
+		<method name="get_final_transform" qualifiers="const" >
 			<return type="Matrix32">
 			</return>
 			<description>
@@ -26817,6 +28019,8 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<argument index="1" name="size" type="Vector2" default="Vector2(-1,-1)">
+			</argument>
+			<argument index="2" name="margin" type="Vector2" default="Vector2(0,0)">
 			</argument>
 			<description>
 			</description>
@@ -26874,9 +28078,177 @@
 			Get the viewport RID from the visual server.
 			</description>
 		</method>
+		<method name="update_worlds"  >
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="size_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="VisibilityEnabler" inherits="VisibilityNotifier" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_enabler"  >
+			<argument index="0" name="enabler" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_enabler_enabled" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="enabler" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="ENABLER_FREEZE_BODIES" value="1">
+		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+		</constant>
+		<constant name="ENABLER_MAX" value="2">
+		</constant>
+	</constants>
+</class>
+<class name="VisibilityEnabler2D" inherits="VisibilityNotifier2D" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_enabler"  >
+			<argument index="0" name="enabler" type="int">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_enabler_enabled" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<argument index="0" name="enabler" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="ENABLER_FREEZE_BODIES" value="1">
+		</constant>
+		<constant name="ENABLER_PAUSE_ANIMATIONS" value="0">
+		</constant>
+		<constant name="ENABLER_MAX" value="2">
+		</constant>
+	</constants>
+</class>
+<class name="VisibilityNotifier" inherits="Spatial" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_aabb"  >
+			<argument index="0" name="rect" type="AABB">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_aabb" qualifiers="const" >
+			<return type="AABB">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_screen" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="enter_screen">
+			<description>
+			</description>
+		</signal>
+		<signal name="enter_camera">
+			<argument index="0" name="camera" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="exit_screen">
+			<description>
+			</description>
+		</signal>
+		<signal name="exit_camera">
+			<argument index="0" name="camera" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>
+<class name="VisibilityNotifier2D" inherits="Node2D" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="set_rect"  >
+			<argument index="0" name="rect" type="Rect2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_rect" qualifiers="const" >
+			<return type="Rect2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_on_screen" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="enter_screen">
+			<description>
+			</description>
+		</signal>
+		<signal name="enter_viewport">
+			<argument index="0" name="viewport" type="Object">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="exit_screen">
+			<description>
+			</description>
+		</signal>
+		<signal name="exit_viewport">
+			<argument index="0" name="viewport" type="Object">
+			</argument>
 			<description>
 			</description>
 		</signal>
@@ -28229,6 +29601,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="black_bars_set_margins"  >
+			<argument index="0" name="left" type="int">
+			</argument>
+			<argument index="1" name="top" type="int">
+			</argument>
+			<argument index="2" name="right" type="int">
+			</argument>
+			<argument index="3" name="bottom" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="make_sphere_mesh"  >
 			<return type="RID">
 			</return>
@@ -28453,17 +29837,17 @@
 		</constant>
 		<constant name="LIGHT_COLOR_SPECULAR" value="2">
 		</constant>
-		<constant name="LIGHT_VAR_SPOT_ATTENUATION" value="0">
+		<constant name="LIGHT_PARAM_SPOT_ATTENUATION" value="0">
 		</constant>
-		<constant name="LIGHT_VAR_SPOT_ANGLE" value="1">
+		<constant name="LIGHT_PARAM_SPOT_ANGLE" value="1">
 		</constant>
-		<constant name="LIGHT_VAR_RADIUS" value="2">
+		<constant name="LIGHT_PARAM_RADIUS" value="2">
 		</constant>
-		<constant name="LIGHT_VAR_ENERGY" value="3">
+		<constant name="LIGHT_PARAM_ENERGY" value="3">
 		</constant>
-		<constant name="LIGHT_VAR_ATTENUATION" value="4">
+		<constant name="LIGHT_PARAM_ATTENUATION" value="4">
 		</constant>
-		<constant name="LIGHT_VAR_MAX" value="8">
+		<constant name="LIGHT_PARAM_MAX" value="8">
 		</constant>
 		<constant name="SCENARIO_DEBUG_DISABLED" value="0">
 		</constant>

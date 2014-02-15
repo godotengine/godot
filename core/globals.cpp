@@ -319,11 +319,13 @@ Error Globals::setup(const String& p_path) {
 		String candidate = d->get_current_dir();
 		String current_dir = d->get_current_dir();
 		bool found = false;
+		bool first_time=true;
 
 		while(true) {
 			//try to load settings in ascending through dirs shape!
 
-			if (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.pcz")) {
+			//tries to open pack, but only first time
+			if (first_time && _load_resource_pack(current_dir+"/data.pck")) {
 				if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
 
 					_load_settings("res://override.cfg");
@@ -344,6 +346,7 @@ Error Globals::setup(const String& p_path) {
 			if (d->get_current_dir()==current_dir)
 				break; //not doing anything useful
 			current_dir=d->get_current_dir();
+			first_time=false;
 		}
 
 

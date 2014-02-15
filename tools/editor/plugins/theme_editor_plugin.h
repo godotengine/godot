@@ -42,21 +42,13 @@ class ThemeEditor : public Control {
 
 	OBJ_TYPE( ThemeEditor, Control );
 
-	Panel *panel;
 
+	VBoxContainer *main_vb;
 	Ref<Theme> theme;
 
 	FileDialog *file_dialog;
 
-	Button *test_button;
-	Label *test_label;
-	MenuButton *test_menu_button;
-	OptionButton *test_option_button;
-	HScrollBar *test_h_scroll;
-	VScrollBar *test_v_scroll;
-	LineEdit *line_edit;
-	FileDialog *test_file_dialog;
-
+	double time_left;
 
 	MenuButton *theme_menu;
 	ConfirmationDialog *add_del_dialog;
@@ -86,9 +78,12 @@ class ThemeEditor : public Control {
 	void _name_menu_about_to_show();
 	void _name_menu_cbk(int p_option);
 	void _theme_menu_cbk(int p_option);
-	void _open_file_dialog();
+	void _propagate_redraw(Control *p_at);
+	void _refresh_interval();
+
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 public:
 

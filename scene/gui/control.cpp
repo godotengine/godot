@@ -1407,6 +1407,8 @@ Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) c
 
 		if (theme_owner->data.theme->has_font(p_name, type ) )
 			return data.theme_owner->data.theme->get_font(p_name, type );
+		if (theme_owner->data.theme->get_default_theme_font().is_valid())
+			return theme_owner->data.theme->get_default_theme_font();
 		Control *parent = theme_owner->get_parent()?theme_owner->get_parent()->cast_to<Control>():NULL;
 
 		if (parent)

@@ -848,7 +848,8 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
 	uint64_t ofs_begin = dst->get_pos();
 
-	dst->store_32(0x4b435047); //GPCK
+	dst->store_32(0x43504447); //GDPK
+	dst->store_32(0); //pack version
 	dst->store_32(VERSION_MAJOR);
 	dst->store_32(VERSION_MINOR);
 	dst->store_32(VERSION_REVISION);
@@ -891,7 +892,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	memdelete(tmp);
 
 	dst->store_64(dst->get_pos()-ofs_begin);
-	dst->store_32(0x4b435047); //GPCK
+	dst->store_32(0x43504447); //GDPK
 
 	//fix offsets
 
