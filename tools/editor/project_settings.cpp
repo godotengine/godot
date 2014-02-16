@@ -113,6 +113,8 @@ void ProjectSettings::_action_persist_toggle() {
 	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,prev);
 	undo_redo->add_do_method(this,"_update_actions");
 	undo_redo->add_undo_method(this,"_update_actions");
+	undo_redo->add_do_method(this,"_settings_changed");
+	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 	setting=false;
 
@@ -614,7 +616,13 @@ void ProjectSettings::_action_add() {
 
 void ProjectSettings::_item_checked(const String& p_item, bool p_check) {
 
-	Globals::get_singleton()->set_persisting(p_item,p_check);
+	undo_redo->create_action("Toggle Persisting");
+	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",p_item,p_check);
+	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",p_item,!p_check);
+	undo_redo->add_do_method(this,"_settings_changed");
+	undo_redo->add_undo_method(this,"_settings_changed");
+	undo_redo->commit_action();
+
 }
 
 
@@ -754,6 +762,8 @@ void ProjectSettings::_autoload_add() {
 	undo_redo->add_do_method(Globals::get_singleton(),"set_persisting",name,true);
 	undo_redo->add_do_method(this,"_update_autoload");
 	undo_redo->add_undo_method(this,"_update_autoload");
+	undo_redo->add_do_method(this,"_settings_changed");
+	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
 	//autoload_file_open->popup_centered_ratio();
@@ -770,6 +780,8 @@ void ProjectSettings::_autoload_delete(Object *p_item,int p_column, int p_button
 	undo_redo->add_undo_method(Globals::get_singleton(),"set_persisting",name,true);
 	undo_redo->add_do_method(this,"_update_autoload");
 	undo_redo->add_undo_method(this,"_update_autoload");
+	undo_redo->add_do_method(this,"_settings_changed");
+	undo_redo->add_undo_method(this,"_settings_changed");
 	undo_redo->commit_action();
 
 }
@@ -1269,7 +1281,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	del->connect("pressed",this,"_item_del");
 
 	Button *save = memnew( Button );
-	props_base->add_child(save);
+	//props_base->add_child(save);
 	save->set_anchor(MARGIN_LEFT,ANCHOR_END);
 	save->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	save->set_anchor(MARGIN_TOP,ANCHOR_END);

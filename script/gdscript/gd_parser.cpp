@@ -557,7 +557,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 
 				//indexing using "."
 
-				if (tokenizer.get_token(1)!=GDTokenizer::TK_IDENTIFIER) {
+				if (tokenizer.get_token(1)!=GDTokenizer::TK_IDENTIFIER && tokenizer.get_token(1)!=GDTokenizer::TK_BUILT_IN_FUNC ) {
 					_set_error("Expected identifier as member");
 					return NULL;
 				} else if (tokenizer.get_token(2)==GDTokenizer::TK_PARENTHESIS_OPEN) {
@@ -566,7 +566,13 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 					op->op=OperatorNode::OP_CALL;
 
 					IdentifierNode * id = alloc_node<IdentifierNode>();
-					id->name=tokenizer.get_token_identifier(1);
+					if (tokenizer.get_token(1)==GDTokenizer::TK_BUILT_IN_FUNC ) {
+						//small hack so built in funcs don't obfuscate methods
+
+						id->name=GDFunctions::get_func_name(tokenizer.get_token_built_in_func(1));
+					} else {
+						id->name=tokenizer.get_token_identifier(1);
+					}
 
 					op->arguments.push_back(expr); // call what
 					op->arguments.push_back(id); // call func

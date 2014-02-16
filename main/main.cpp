@@ -797,7 +797,6 @@ bool Main::start() {
 
 	bool editor=false;
 	String doc_tool;
-	String doc_header;
 	bool doc_base=true;
 	String game_path;
 	String script;
@@ -819,10 +818,6 @@ bool Main::start() {
 		if (args[i]=="-doctool" && i <(args.size()-1)) {
 
 			doc_tool=args[i+1];
-			i++;
-		} else if (args[i]=="-docheader" && i <(args.size()-1)) {
-
-			doc_header=args[i+1];
 			i++;
 		}else if (args[i]=="-nodocbase") {
 
@@ -899,10 +894,7 @@ bool Main::start() {
 
 		}
 
-		if (doc_header.length())
-			doc.save_compressed_header(doc_header);
-		else
-			doc.save(doc_tool);
+		doc.save(doc_tool);
 
 		return false;
 	}

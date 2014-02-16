@@ -79,7 +79,7 @@ class EditorHelp : public VBoxContainer {
 
 	RichTextLabel *class_desc;
 	HSplitContainer *h_split;
-	DocData doc;
+	static DocData *doc;
 
 	Button *class_list_button;
 	Button *edited_class;
@@ -119,7 +119,10 @@ protected:
 	static void _bind_methods();
 public:
 
+	static void generate_doc();
+
 	EditorHelp(EditorNode *p_editor=NULL);
+	~EditorHelp();
 };
 
 

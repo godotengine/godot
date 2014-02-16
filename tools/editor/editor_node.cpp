@@ -3165,6 +3165,7 @@ Error EditorNode::export_platform(const String& p_platform, const String& p_path
 
 EditorNode::EditorNode() {
 
+	EditorHelp::generate_doc(); //before any editor classes are crated
 
 	singleton=this;
 
