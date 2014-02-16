@@ -5,11 +5,14 @@ iphone_lib = [
 	'#platform/iphone/os_iphone.cpp',
 	#'#platform/iphone/rasterizer_iphone.cpp',
 	'#platform/iphone/audio_driver_iphone.cpp',
+	'#platform/iphone/sem_iphone.cpp',
 	'#platform/iphone/gl_view.mm',
 	'#platform/iphone/main.m',
 	'#platform/iphone/app_delegate.mm',
 	'#platform/iphone/view_controller.mm',
-	'#platform/iphone/scoreloop_ios.mm',
+	'#platform/iphone/game_center.mm',
+	'#platform/iphone/in_app_store.mm',
+	'#platform/iphone/Appirater.m',
 ]
 
 
@@ -17,14 +20,25 @@ iphone_lib = [
 
 #iphone_lib = env.Library('iphone', iphone_lib)
 
-obj = env.Object('#platform/iphone/godot_iphone.cpp')
+env_ios = env.Clone();
+
+if env['ios_gles22_override'] == "yes":
+	env_ios.Append(CPPFLAGS=['-DGLES2_OVERRIDE'])
+
+if env['ios_GLES1_override'] == "yes":
+	env_ios.Append(CPPFLAGS=['-DGLES1_OVERRIDE'])
+
+if env['ios_appirater'] == "yes":
+	env_ios.Append(CPPFLAGS=['-DAPPIRATER_ENABLED'])
+
+obj = env_ios.Object('#platform/iphone/godot_iphone.cpp')
 
 prog = None
 if env["target"]=="release":
-	prog = env.Program('#bin/godot_iphone_opt', [obj] + iphone_lib)
+	prog = env_ios.Program('#bin/godot_opt', [obj] + iphone_lib)
 	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
 	#env.AddPostAction(prog, action)
 else:
-	prog = env.Program('#bin/godot', [obj] + iphone_lib)
+	prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
 	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
 	#env.AddPostAction(prog, action)

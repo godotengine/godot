@@ -21,8 +21,14 @@ def get_opts():
 
 	return [
 		('ISIMPLATFORM', 'name of the iphone platform', 'iPhoneSimulator'),
-		('ISIMPATH', 'the path to iphone toolchain', '/Developer/Platforms/${ISIMPLATFORM}.platform'),
-		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}4.3.sdk'),
+		('ISIMPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Platforms/${ISIMPLATFORM}.platform'),
+		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}7.0.sdk'),
+		('game_center', 'Support for game center', 'yes'),
+		('store_kit', 'Support for in-app store', 'yes'),
+		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
+		('ios_GLES1_override', 'Force legacy GLES (1.1) on iOS', 'no'),
+		('ios_appirater', 'Enable Appirater', 'no'),
+		('ios_exceptions', 'Use exceptions when compiling on playbook', 'no'),
 	]
 
 def get_flags():
@@ -31,6 +37,8 @@ def get_flags():
 		('lua', 'no'),
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
+		('webp', 'yes'),
+		('module_FacebookScorer_ios_enabled', 'no'),
 	]
 
 
@@ -50,12 +58,12 @@ def configure(env):
 	env['AR'] = 'ar'
 
 	import string
-	env['CCFLAGS'] = string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks  -Wall -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $ISIMSDK -mmacosx-version-min=10.6 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"')
+	env['CCFLAGS'] = string.split('-arch i386 -fobjc-abi-version=2 -fobjc-legacy-dispatch -fmessage-length=0 -fpascal-strings -fasm-blocks  -Wall -D__IPHONE_OS_VERSION_MIN_REQUIRED=40100 -isysroot $ISIMSDK -mios-simulator-version-min=4.3 -DCUSTOM_MATRIX_TRANSFORM_H=\\\"build/iphone/matrix4_iphone.h\\\" -DCUSTOM_VECTOR3_TRANSFORM_H=\\\"build/iphone/vector3_iphone.h\\\"')
 
 	env.Append(LINKFLAGS=['-arch', 'i386',
-							#'-miphoneos-version-min=2.2.1',
+							'-mios-simulator-version-min=4.3',
 							'-isysroot', '$ISIMSDK',
-							'-mmacosx-version-min=10.6',
+							#'-mmacosx-version-min=10.6',
 							'-Xlinker',
 							'-objc_abi_version',
 							'-Xlinker', '2',
