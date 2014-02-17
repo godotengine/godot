@@ -259,8 +259,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&Physics2DServer::area_clear_shapes);
 
 
-	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&Physics2DServer::area_get_param);
-	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&Physics2DServer::area_get_transform);
+	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&Physics2DServer::area_set_param);
+	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&Physics2DServer::area_set_transform);
 
 	ObjectTypeDB::bind_method(_MD("area_get_param","area","param"),&Physics2DServer::area_get_param);
 	ObjectTypeDB::bind_method(_MD("area_get_transform","area"),&Physics2DServer::area_get_transform);
