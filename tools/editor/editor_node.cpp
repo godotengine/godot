@@ -82,8 +82,6 @@
 #include "plugins/path_2d_editor_plugin.h"
 #include "plugins/particles_editor_plugin.h"
 #include "plugins/particles_2d_editor_plugin.h"
-#include "plugins/font_editor_plugin.h"
-#include "plugins/animation_editor_plugin.h"
 #include "plugins/animation_tree_editor_plugin.h"
 #include "plugins/tile_set_editor_plugin.h"
 #include "plugins/animation_player_editor_plugin.h"
@@ -3959,16 +3957,13 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
-	//add_editor_plugin( memnew( AnimationEditorPlugin(this) ) ); - not useful anymore
 	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
-	//add_editor_plugin( memnew( FontEditorPlugin(this) ) ); obsolete
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ThemeEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MultiMeshEditorPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationTreeEditorPlugin(this) ) );
-	//add_editor_plugin( memnew( GridMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SamplePlayerEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );
 	add_editor_plugin( memnew( StreamEditorPlugin(this) ) );
