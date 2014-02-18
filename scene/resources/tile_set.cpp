@@ -231,6 +231,17 @@ Array TileSet::_tile_get_shapes(int p_id) const{
 	return arr;
 }
 
+Array TileSet::_get_tiles_ids() const{
+	
+	Array arr;
+
+	for (Map<int, Data>::Element *E = tile_map.front(); E; E = E->next()) {
+		arr.push_back(E->key());		
+	}
+	
+	return arr;
+}
+
 void TileSet::get_tile_list(List<int> *p_tiles) const {
 
 	for(Map<int,Data>::Element *E=tile_map.front();E;E=E->next()) {
@@ -301,6 +312,7 @@ void TileSet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("clear"),&TileSet::clear);
 	ObjectTypeDB::bind_method(_MD("get_last_unused_tile_id"),&TileSet::get_last_unused_tile_id);
 	ObjectTypeDB::bind_method(_MD("find_tile_by_name","name"),&TileSet::find_tile_by_name);
+	ObjectTypeDB::bind_method(_MD("get_tiles_ids", "name"), &TileSet::_get_tiles_ids);
 
 }
 
