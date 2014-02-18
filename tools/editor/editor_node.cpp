@@ -94,6 +94,7 @@
 #include "tools/editor/io_plugins/editor_sample_import_plugin.h"
 #include "tools/editor/io_plugins/editor_translation_import_plugin.h"
 
+
 EditorNode *EditorNode::singleton=NULL;
 
 void EditorNode::_update_title() {
@@ -2130,8 +2131,27 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_SETTINGS: {
 
-
 			project_settings->popup_project_settings();
+		} break;
+		case RUN_PROJECT_MANAGER: {
+
+			if (!p_confirmed) {
+				confirmation->get_ok()->set_text("Yes");
+				confirmation->set_text("Open Project Manager? \n(Unsaved changes will be lost)");
+				confirmation->popup_centered(Size2(300,70));
+				break;
+			}
+
+			get_scene()->quit();
+			String exec = OS::get_singleton()->get_executable_path();
+
+			List<String> args;
+			args.push_back ( "-path" );
+			args.push_back (exec.get_base_dir() );
+
+			OS::ProcessID pid=0;
+			Error err = OS::get_singleton()->execute(exec,args,false,&pid);
+			ERR_FAIL_COND(err);
 		} break;
 		case RUN_FILE_SERVER: {
 
@@ -3407,6 +3427,7 @@ EditorNode::EditorNode() {
 	p->add_item("Redo",EDIT_REDO,KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_Z);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
+	p->add_item("Project Manager",RUN_PROJECT_MANAGER);
 	p->add_separator();
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
