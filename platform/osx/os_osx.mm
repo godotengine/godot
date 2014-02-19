@@ -845,18 +845,17 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
-
-	current_videomode=p_desired;
+    
 	window_delegate = [[GodotWindowDelegate alloc] init];
 
        // Don't use accumulation buffer support; it's not accelerated
        // Aux buffers probably aren't accelerated either
 
-	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | (current_videomode.resizable?NSResizableWindowMask:0);
+	unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask | NSMiniaturizableWindowMask | (p_desired.resizable?NSResizableWindowMask:0);
 
 
 	window_object = [[GodotWindow alloc]
-	    initWithContentRect:NSMakeRect(0, 0, current_videomode.width,current_videomode.height)
+	    initWithContentRect:NSMakeRect(0, 0, p_desired.width, p_desired.height)
 		      styleMask:styleMask
 			backing:NSBackingStoreBuffered
 			  defer:NO];
@@ -864,6 +863,13 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	ERR_FAIL_COND( window_object==nil );
 
 	window_view = [[GodotContentView alloc] init];
+
+	current_videomode = p_desired;
+
+	// Adjust for display density
+	const NSRect fbRect = convertRectToBacking(NSMakeRect(0, 0, p_desired.width, p_desired.height));
+	current_videomode.width = fbRect.size.width;
+	current_videomode.height = fbRect.size.height;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
 	if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
