@@ -12,7 +12,7 @@ SConscript('docdump/SCsub');
 SConscript('freetype/SCsub');
 SConscript('doc/SCsub');
 
-lib = env.Library("tool",env.tool_sources)
+lib = env.Library("tool",env.tool_sources, LIBSUFFIX=env['platform_libsuffix'])
 
 env.Prepend(LIBS=[lib])
 

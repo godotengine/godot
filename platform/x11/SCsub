@@ -7,7 +7,4 @@ common_x11=[\
 	"key_mapping_x11.cpp",\
 ]
 
-if env["target"]=="release":
-	env.Program('#bin/godot_rel',['godot_x11.cpp']+common_x11)
-else:
-	env.Program('#bin/godot',['godot_x11.cpp']+common_x11)
+env.Program('#bin/godot',['godot_x11.cpp']+common_x11)
