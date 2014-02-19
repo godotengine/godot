@@ -50,6 +50,7 @@ list = []
 lib_list = []
 
 import string
+import os
 
 for f in env.drivers_sources:
 	fname = ""
@@ -61,7 +62,10 @@ for f in env.drivers_sources:
 	fname = fname.replace("\\", "/")
 	base = string.join(fname.split("/")[:2], "/")
 	if base != cur_base and len(list) > max_src:
-		lib = env.Library("drivers"+str(num), list)
+		if (env["tools"]=="no" and os.name=="nt"):
+			lib = env.Library("drivers"+str(num)+".nt.lib", list)
+		else:
+			lib = env.Library("drivers"+str(num), list)
 		lib_list.append(lib)
 		list = []
 		num = num+1
@@ -69,7 +73,10 @@ for f in env.drivers_sources:
 	list.append(f)
 
 if len(list) > 0:
-	lib = env.Library("drivers"+str(num), list)
+	if (env["tools"]=="no" and os.name=="nt"):
+		lib = env.Library("drivers"+str(num)+".nt.lib", list)
+	else:
+		lib = env.Library("drivers"+str(num), list)
 	lib_list.append(lib)
 
 

@@ -1,4 +1,5 @@
 Import('env')
+import os
 
 env.servers_sources=[]
 env.add_source_files(env.servers_sources,"*.cpp")
@@ -12,7 +13,11 @@ SConscript('audio/SCsub');
 SConscript('spatial_sound/SCsub');
 SConscript('spatial_sound_2d/SCsub');
 
-lib = env.Library("servers",env.servers_sources)
+if (env["tools"]=="no" and os.name=="nt"):
+	lib = env.Library("servers.nt.lib",env.servers_sources)
+else:
+	lib = env.Library("servers",env.servers_sources)
+
 
 env.Prepend(LIBS=[lib])
 
