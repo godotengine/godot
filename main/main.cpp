@@ -202,7 +202,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	
 	for(int i=0;i<argc;i++) {
 
-		args.push_back(argv[i]);	
+		args.push_back(String::utf8(argv[i]));
 	}
 
 	List<String>::Element *I=args.front();
