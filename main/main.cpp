@@ -648,7 +648,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
-	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("display/target_fps",60));
+	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/fixed_fps",60));
+	OS::get_singleton()->set_target_fps(GLOBAL_DEF("application/target_fps",0));
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
 		OS::get_singleton()->_verbose_stdout=GLOBAL_DEF("debug/verbose_stdout",false);
@@ -1210,6 +1211,7 @@ bool Main::start() {
 }
 
 uint64_t Main::last_ticks=0;
+uint64_t Main::target_ticks=0;
 float Main::time_accum=0;
 uint32_t Main::frames=0;
 uint32_t Main::frame=0;
@@ -1295,7 +1297,6 @@ bool Main::iteration() {
 		}
 	} else {
 		VisualServer::get_singleton()->flush(); // flush visual commands
-
 	}
 
 	if (AudioServer::get_singleton())
@@ -1341,6 +1342,16 @@ bool Main::iteration() {
 		uint32_t frame_delay = OS::get_singleton()->get_frame_delay();
 		if (frame_delay)
 			OS::get_singleton()->delay_usec( OS::get_singleton()->get_frame_delay()*1000 );
+	}
+
+	int taret_fps = OS::get_singleton()->get_target_fps();
+	if (taret_fps>0) {
+		uint64_t time_step = 1000000L/taret_fps;
+		target_ticks += time_step;
+		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
+		if (current_ticks<target_ticks) OS::get_singleton()->delay_usec(target_ticks-current_ticks);
+		current_ticks = OS::get_singleton()->get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks,current_ticks-time_step),current_ticks+time_step);
 	}
 
 	return exit;
