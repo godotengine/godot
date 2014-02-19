@@ -44,8 +44,10 @@ bool TileSet::_set(const StringName& p_name, const Variant& p_value) {
 		tile_set_name(id,p_value);
 	else if (what=="texture")
 		tile_set_texture(id,p_value);
-	else if (what=="offset")
-		tile_set_offset(id,p_value);
+	else if (what=="tex_offset")
+		tile_set_texture_offset(id,p_value);
+	else if (what=="shape_offset")
+		tile_set_shape_offset(id,p_value);
 	else if (what=="region")
 		tile_set_region(id,p_value);
 	else if (what=="shape")
@@ -75,8 +77,10 @@ bool TileSet::_get(const StringName& p_name,Variant &r_ret) const{
 		r_ret=tile_get_name(id);
 	else if (what=="texture")
 		r_ret=tile_get_texture(id);
-	else if (what=="offset")
-		r_ret=tile_get_offset(id);
+	else if (what=="tex_offset")
+		r_ret=tile_get_texture_offset(id);
+	else if (what=="shape_offset")
+		r_ret=tile_get_shape_offset(id);
 	else if (what=="region")
 		r_ret=tile_get_region(id);
 	else if (what=="shape")
@@ -98,7 +102,8 @@ void TileSet::_get_property_list( List<PropertyInfo> *p_list) const{
 		String pre = itos(id)+"/";
 		p_list->push_back(PropertyInfo(Variant::STRING,pre+"name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"offset"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"tex_offset"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"shape_offset"));
 		p_list->push_back(PropertyInfo(Variant::RECT2,pre+"region"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D",PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY,pre+"shapes",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR));
@@ -129,17 +134,31 @@ Ref<Texture> TileSet::tile_get_texture(int p_id) const {
 
 }
 
-void TileSet::tile_set_offset(int p_id,const Vector2 &p_offset) {
+void TileSet::tile_set_texture_offset(int p_id,const Vector2 &p_offset) {
 
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].offset=p_offset;
 	emit_changed();
 }
 
-Vector2 TileSet::tile_get_offset(int p_id) const {
+Vector2 TileSet::tile_get_texture_offset(int p_id) const {
 
 	ERR_FAIL_COND_V(!tile_map.has(p_id),Vector2());
 	return tile_map[p_id].offset;
+
+}
+
+void TileSet::tile_set_shape_offset(int p_id,const Vector2 &p_offset) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].shape_offset=p_offset;
+	emit_changed();
+}
+
+Vector2 TileSet::tile_get_shape_offset(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Vector2());
+	return tile_map[p_id].shape_offset;
 
 }
 
@@ -289,8 +308,10 @@ void TileSet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("tile_get_name","id"),&TileSet::tile_get_name);
 	ObjectTypeDB::bind_method(_MD("tile_set_texture","id","texture:Texture"),&TileSet::tile_set_texture);
 	ObjectTypeDB::bind_method(_MD("tile_get_texture:Texture","id"),&TileSet::tile_get_texture);
-	ObjectTypeDB::bind_method(_MD("tile_set_offset","id","offset"),&TileSet::tile_set_offset);
-	ObjectTypeDB::bind_method(_MD("tile_get_offset","id"),&TileSet::tile_get_offset);
+	ObjectTypeDB::bind_method(_MD("tile_set_texture_offset","id","texture_offset"),&TileSet::tile_set_texture_offset);
+	ObjectTypeDB::bind_method(_MD("tile_get_texture_offset","id"),&TileSet::tile_get_texture_offset);
+	ObjectTypeDB::bind_method(_MD("tile_set_shape_offset","id","shape_offset"),&TileSet::tile_set_shape_offset);
+	ObjectTypeDB::bind_method(_MD("tile_get_shape_offset","id"),&TileSet::tile_get_shape_offset);
 	ObjectTypeDB::bind_method(_MD("tile_set_region","id","region"),&TileSet::tile_set_region);
 	ObjectTypeDB::bind_method(_MD("tile_get_region","id"),&TileSet::tile_get_region);
 	ObjectTypeDB::bind_method(_MD("tile_set_shape","id","shape:Shape2D"),&TileSet::tile_set_shape);

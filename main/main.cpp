@@ -1037,18 +1037,24 @@ bool Main::start() {
 
 				if (!absolute) {
 
-					int sep=local_game_path.find_last("/");
+					if (Globals::get_singleton()->is_using_datapack()) {
 
-					if (sep==-1) {
-						DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-						local_game_path=da->get_current_dir()+"/"+local_game_path;
-						memdelete(da)						;
+						local_game_path="res://"+local_game_path;
+
 					} else {
+						int sep=local_game_path.find_last("/");
 
-						DirAccess *da = DirAccess::open(local_game_path.substr(0,sep));
-						if (da) {
-							local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());;
-							memdelete(da);
+						if (sep==-1) {
+							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							local_game_path=da->get_current_dir()+"/"+local_game_path;
+							memdelete(da)						;
+						} else {
+
+							DirAccess *da = DirAccess::open(local_game_path.substr(0,sep));
+							if (da) {
+								local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());;
+								memdelete(da);
+							}
 						}
 					}
 

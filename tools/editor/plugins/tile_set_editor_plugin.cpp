@@ -73,7 +73,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 	       p_library->tile_set_texture(id,texture);
 	       if (mi->is_centered()) {
-		       p_library->tile_set_offset(id,texture->get_size()/2);
+		       p_library->tile_set_texture_offset(id,texture->get_size()/2);
 	       }
 	       if (mi->is_region()) {
 		       p_library->tile_set_region(id,mi->get_region_rect());

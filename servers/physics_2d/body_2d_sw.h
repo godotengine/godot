@@ -67,13 +67,13 @@ class Body2DSW : public CollisionObject2DSW {
 	SelfList<Body2DSW> direct_state_query_list;
 
 	VSet<RID> exceptions;
+	Physics2DServer::CCDMode continuous_cd_mode;
 	bool omit_force_integration;
 	bool active;
-	bool simulated_motion;
-	bool continuous_cd;
 	bool can_sleep;
 	void _update_inertia();
 	virtual void _shapes_changed();
+	Matrix32 new_transform;
 
 
 	Map<Constraint2DSW*,int> constraint_map;
@@ -173,6 +173,7 @@ public:
 	_FORCE_INLINE_ void set_biased_angular_velocity(real_t p_velocity) { biased_angular_velocity=p_velocity; }
 	_FORCE_INLINE_ real_t get_biased_angular_velocity() const { return biased_angular_velocity; }
 
+
 	_FORCE_INLINE_ void apply_impulse(const Vector2& p_pos, const Vector2& p_j) {
 
 		linear_velocity += p_j * _inv_mass;
@@ -203,8 +204,9 @@ public:
 	void set_applied_torque(real_t p_torque) { applied_torque=p_torque; }
 	real_t get_applied_torque() const { return applied_torque; }
 
-	_FORCE_INLINE_ void set_continuous_collision_detection(bool p_enable) { continuous_cd=p_enable; }
-	_FORCE_INLINE_ bool is_continuous_collision_detection_enabled() const { return continuous_cd; }
+
+	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode=p_mode; }
+	_FORCE_INLINE_ Physics2DServer::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
 
 	void set_space(Space2DSW *p_space);
 
@@ -215,11 +217,21 @@ public:
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ Vector2 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_density() const { return density; }
+	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 
-	void simulate_motion(const Matrix32& p_xform,real_t p_step);
+	_FORCE_INLINE_ Vector2 get_motion() const {
+
+		if (mode>Physics2DServer::BODY_MODE_KINEMATIC) {
+			return new_transform.get_origin() - get_transform().get_origin();
+		} else if (mode==Physics2DServer::BODY_MODE_KINEMATIC) {
+			return  get_transform().get_origin() -new_transform.get_origin(); //kinematic simulates forward
+		}
+		return Vector2();
+	}
+
 	void call_queries();
 	void wakeup_neighbours();
 

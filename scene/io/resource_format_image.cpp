@@ -135,7 +135,7 @@ RES ResourceFormatLoaderImage::load(const String &p_path,const String& p_origina
 			flags|=Texture::FLAG_FILTER;
 		if (bool(GLOBAL_DEF("texture_import/gen_mipmaps",true)))
 			flags|=Texture::FLAG_MIPMAPS;
-		if (bool(GLOBAL_DEF("texture_import/repeat",true)))
+		if (bool(GLOBAL_DEF("texture_import/repeat",false)))
 			flags|=Texture::FLAG_REPEAT;
 
 

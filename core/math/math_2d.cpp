@@ -255,6 +255,16 @@ Vector2 Vector2::cubic_interpolate(const Vector2& p_b,const Vector2& p_pre_a, co
 
 }
 
+Vector2 Vector2::slide(const Vector2& p_vec) const {
+
+	return p_vec - *this * this->dot(p_vec);
+}
+Vector2 Vector2::reflect(const Vector2& p_vec) const {
+
+	return p_vec - *this * this->dot(p_vec) * 2.0;
+
+}
+
 
 bool Rect2::intersects_segment(const Point2& p_from, const Point2& p_to, Point2* r_pos,Point2* r_normal) const {
 

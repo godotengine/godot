@@ -378,7 +378,8 @@ int BroadPhase2DHashGrid::get_subindex(ID p_id) const {
 	return E->get().subindex;
 }
 
-void BroadPhase2DHashGrid::_cull(const Point2i p_cell,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices,int &index) {
+template<bool use_aabb,bool use_segment>
+void BroadPhase2DHashGrid::_cull(const Point2i p_cell,const Rect2& p_aabb,const Point2& p_from, const Point2& p_to,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices,int &index) {
 
 
 	PosKey pk;
@@ -411,9 +412,17 @@ void BroadPhase2DHashGrid::_cull(const Point2i p_cell,CollisionObject2DSW** p_re
 			continue;
 
 		E->key()->pass=pass;
+
+		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+			continue;
+
+		if (use_segment && !E->key()->aabb.intersects_segment(p_from,p_to))
+			continue;
+
 		p_results[index]=E->key()->owner;
 		p_result_indices[index]=E->key()->subindex;
 		index++;
+
 
 	}
 
@@ -423,6 +432,12 @@ void BroadPhase2DHashGrid::_cull(const Point2i p_cell,CollisionObject2DSW** p_re
 		if (index>=p_max_results)
 			break;
 		if (E->key()->pass==pass)
+			continue;
+
+		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+			continue;
+
+		if (use_segment && !E->key()->aabb.intersects_segment(p_from,p_to))
 			continue;
 
 		E->key()->pass=pass;
@@ -468,7 +483,7 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 		max.y= (Math::floor(pos.y + 1)*cell_size - p_from.y) / dir.y;
 
 	int cullcount=0;
-	_cull(pos,p_results,p_max_results,p_result_indices,cullcount);
+	_cull<false,true>(pos,Rect2(),p_from,p_to,p_results,p_max_results,p_result_indices,cullcount);
 
 	bool reached_x=false;
 	bool reached_y=false;
@@ -502,7 +517,7 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 			reached_y=true;
 		}
 
-		_cull(pos,p_results,p_max_results,p_result_indices,cullcount);
+		_cull<false,true>(pos,Rect2(),p_from,p_to,p_results,p_max_results,p_result_indices,cullcount);
 
 		if (reached_x && reached_y)
 			break;
@@ -515,8 +530,22 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 
 int BroadPhase2DHashGrid::cull_aabb(const Rect2& p_aabb,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices) {
 
+	pass++;
 
-	return 0;
+	Point2i from = (p_aabb.pos/cell_size).floor();
+	Point2i to = ((p_aabb.pos+p_aabb.size)/cell_size).floor();
+	int cullcount=0;
+
+	for(int i=from.x;i<=to.x;i++) {
+
+		for(int j=from.y;j<=to.y;j++) {
+
+			_cull<true,false>(Point2i(i,j),p_aabb,Point2(),Point2(),p_results,p_max_results,p_result_indices,cullcount);
+		}
+
+	}
+
+	return cullcount;
 }
 
 void BroadPhase2DHashGrid::set_pair_callback(PairCallback p_pair_callback,void *p_userdata) {

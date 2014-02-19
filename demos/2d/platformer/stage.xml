@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<resource_file type="PackedScene" subresource_count="9" version="0.99" version_name="Godot Engine v0.99.3735-pre-beta">
-	<ext_resource path="res://music.*" type="AudioStreamOGGVorbis"></ext_resource>
+<resource_file type="PackedScene" subresource_count="9" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://music.*" type="AudioStream"></ext_resource>
 	<ext_resource path="res://tileset.*" type="TileSet"></ext_resource>
-	<ext_resource path="res://seesaw.*" type="PackedScene"></ext_resource>
-	<ext_resource path="res://player.*" type="PackedScene"></ext_resource>
 	<ext_resource path="res://coin.*" type="PackedScene"></ext_resource>
-	<ext_resource path="res://enemy.*" type="PackedScene"></ext_resource>
+	<ext_resource path="res://player.*" type="PackedScene"></ext_resource>
 	<ext_resource path="res://moving_platform.*" type="PackedScene"></ext_resource>
+	<ext_resource path="res://enemy.*" type="PackedScene"></ext_resource>
+	<ext_resource path="res://seesaw.*" type="PackedScene"></ext_resource>
 	<ext_resource path="res://parallax_bg.*" type="PackedScene"></ext_resource>
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
-			<string_array  len="92">
+			<string_array  len="118">
 				<string> "stage" </string>
 				<string> "Node" </string>
 				<string> "__meta__" </string>
@@ -104,15 +104,41 @@
 				<string> "enemy 15" </string>
 				<string> "parallax_bg" </string>
 				<string> "ParallaxBackground" </string>
+				<string> "Label" </string>
+				<string> "margin/left" </string>
+				<string> "margin/top" </string>
+				<string> "margin/right" </string>
+				<string> "margin/bottom" </string>
+				<string> "focus_neighbour/left" </string>
+				<string> "focus_neighbour/top" </string>
+				<string> "focus_neighbour/right" </string>
+				<string> "focus_neighbour/bottom" </string>
+				<string> "focus/ignore_mouse" </string>
+				<string> "focus/stop_mouse" </string>
+				<string> "size_flags/horizontal" </string>
+				<string> "size_flags/stretch_ratio" </string>
+				<string> "range/min" </string>
+				<string> "range/max" </string>
+				<string> "range/step" </string>
+				<string> "range/page" </string>
+				<string> "range/value" </string>
+				<string> "range/exp_edit" </string>
+				<string> "rounded_values" </string>
+				<string> "text" </string>
+				<string> "align" </string>
+				<string> "valign" </string>
+				<string> "autowrap" </string>
+				<string> "uppercase" </string>
+				<string> "percent_visible" </string>
 			</string_array>
 			<string> "version" </string>
 			<int> 1 </int>
 			<string> "conn_count" </string>
 			<int> 0 </int>
 			<string> "node_count" </string>
-			<int> 65 </int>
+			<int> 66 </int>
 			<string> "variants" </string>
-			<array  len="84" shared="false">
+			<array  len="95" shared="false">
 				<dictionary  shared="false">
 					<string> "__editor_plugin_states__" </string>
 					<dictionary  shared="false">
@@ -133,9 +159,9 @@
 							<string> "pixel_snap" </string>
 							<bool> False </bool>
 							<string> "zoom" </string>
-							<real> 0.598736 </real>
+							<real> 1.108033 </real>
 							<string> "ofs" </string>
-							<vector2> -37.7393, 205.061 </vector2>
+							<vector2> -19.8136, -223.194 </vector2>
 						</dictionary>
 						<string> "3D" </string>
 						<dictionary  shared="false">
@@ -297,7 +323,7 @@
 				<vector2> 450, 0 </vector2>
 				<resource  resource_type="PackedScene" path="res://seesaw.*">  </resource>
 				<vector2> 2402.79, 849.52 </vector2>
-				<resource  resource_type="AudioStreamOGGVorbis" path="res://music.*">  </resource>
+				<resource  resource_type="AudioStream" path="res://music.*">  </resource>
 				<bool> False </bool>
 				<real> 2 </real>
 				<resource  resource_type="PackedScene" path="res://enemy.*">  </resource>
@@ -313,9 +339,20 @@
 				<vector2> 3546.2, 1356.19 </vector2>
 				<vector2> 2406.63, 815.115 </vector2>
 				<resource  resource_type="PackedScene" path="res://parallax_bg.*">  </resource>
+				<real> 12 </real>
+				<real> -202 </real>
+				<real> 358 </real>
+				<real> -10 </real>
+				<node_path> "" </node_path>
+				<int> 2 </int>
+				<real> 14 </real>
+				<real> 14.769231 </real>
+				<string> "This is a simple demo on how to make a platformer game with Godot.&#10;This version uses physics and the 2D physics engine for motion and collision.&#10;&#10;The demo also shows the benefits of using the scene system, where coins,&#10;enemies and the player are edited separatedly and instanced in the stage.&#10;&#10;To edit the base tiles for the  tileset, open the tileset_edit.xml file and follow &#10;instructions.&#10;" </string>
+				<int> 0 </int>
+				<real> -1 </real>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="623"> 				-1, -1, 1, 0, -1, 1, 2, 0, 0, 0, 0, 4, 3, -1, 12, 5, 1, 6, 2, 7, 2, 8, 1, 9, 3, 10, 4, 11, 5, 12, 6, 13, 7, 14, 8, 15, 9, 2, 10, 0, 0, 0, 1, 16, -1, 1, 2, 11, 0, 2, 0, 18, 17, 12, 1, 9, 13, 0, 2, 0, 18, 19, 12, 1, 9, 14, 0, 2, 0, 18, 20, 12, 1, 9, 15, 0, 2, 0, 18, 21, 12, 1, 9, 16, 0, 2, 0, 18, 22, 12, 1, 9, 17, 0, 2, 0, 18, 23, 12, 1, 9, 18, 0, 2, 0, 18, 24, 12, 1, 9, 19, 0, 2, 0, 18, 25, 12, 1, 9, 20, 0, 2, 0, 18, 26, 12, 1, 9, 21, 0, 2, 0, 18, 27, 12, 1, 9, 22, 0, 2, 0, 18, 28, 12, 1, 9, 23, 0, 2, 0, 18, 29, 12, 1, 9, 24, 0, 2, 0, 18, 30, 12, 1, 9, 25, 0, 2, 0, 18, 31, 12, 1, 9, 26, 0, 2, 0, 18, 32, 12, 1, 9, 27, 0, 2, 0, 18, 33, 12, 1, 9, 28, 0, 2, 0, 18, 34, 12, 1, 9, 29, 0, 2, 0, 18, 35, 12, 1, 9, 30, 0, 2, 0, 18, 36, 12, 1, 9, 31, 0, 2, 0, 18, 37, 12, 1, 9, 32, 0, 2, 0, 18, 38, 12, 1, 9, 33, 0, 2, 0, 18, 39, 12, 1, 9, 34, 0, 2, 0, 18, 40, 12, 1, 9, 35, 0, 2, 0, 18, 41, 12, 1, 9, 36, 0, 2, 0, 18, 42, 12, 1, 9, 37, 0, 2, 0, 18, 43, 12, 1, 9, 38, 0, 2, 0, 18, 44, 12, 1, 9, 39, 0, 2, 0, 18, 45, 12, 1, 9, 40, 0, 2, 0, 18, 46, 12, 1, 9, 41, 0, 2, 0, 18, 47, 12, 1, 9, 42, 0, 2, 0, 18, 48, 12, 1, 9, 43, 0, 2, 0, 18, 49, 12, 1, 9, 44, 0, 2, 0, 18, 50, 12, 1, 9, 45, 0, 2, 0, 18, 51, 12, 1, 9, 46, 0, 2, 0, 18, 52, 12, 1, 9, 47, 0, 2, 0, 18, 53, 12, 1, 9, 48, 0, 2, 0, 18, 54, 12, 1, 9, 49, 0, 2, 0, 18, 55, 12, 1, 9, 50, 0, 2, 0, 18, 56, 12, 1, 9, 51, 0, 2, 0, 18, 57, 12, 1, 9, 52, 0, 2, 0, 18, 58, 12, 1, 9, 53, 0, 2, 0, 18, 59, 12, 1, 9, 54, 0, 0, 0, 61, 60, 55, 1, 9, 56, 0, 0, 0, 1, 62, -1, 0, 0, 46, 0, 64, 63, 57, 3, 9, 58, 65, 59, 66, 60, 0, 46, 0, 64, 67, 57, 3, 9, 61, 65, 62, 66, 63, 0, 46, 0, 64, 68, 57, 3, 9, 64, 65, 65, 66, 63, 0, 46, 0, 64, 69, 66, 1, 9, 67, 0, 0, 0, 71, 70, -1, 6, 72, 68, 73, 69, 74, 1, 75, 70, 76, 1, 77, 69, 0, 0, 0, 1, 78, -1, 0, 0, 52, 0, 61, 79, 71, 1, 9, 72, 0, 52, 0, 61, 80, 71, 1, 9, 73, 0, 52, 0, 61, 81, 71, 1, 9, 74, 0, 52, 0, 61, 82, 71, 1, 9, 75, 0, 52, 0, 61, 83, 71, 1, 9, 76, 0, 52, 0, 61, 84, 71, 1, 9, 77, 0, 52, 0, 61, 85, 71, 1, 9, 78, 0, 52, 0, 61, 86, 71, 1, 9, 79, 0, 52, 0, 61, 87, 71, 1, 9, 80, 0, 52, 0, 61, 88, 71, 1, 9, 81, 0, 52, 0, 61, 89, 71, 1, 9, 82, 0, 0, 0, 91, 90, 83, 0, 0 </int_array>
+			<int_array  len="688"> 				-1, -1, 1, 0, -1, 1, 2, 0, 0, 0, 0, 4, 3, -1, 12, 5, 1, 6, 2, 7, 2, 8, 1, 9, 3, 10, 4, 11, 5, 12, 6, 13, 7, 14, 8, 15, 9, 2, 10, 0, 0, 0, 1, 16, -1, 1, 2, 11, 0, 2, 0, 18, 17, 12, 1, 9, 13, 0, 2, 0, 18, 19, 12, 1, 9, 14, 0, 2, 0, 18, 20, 12, 1, 9, 15, 0, 2, 0, 18, 21, 12, 1, 9, 16, 0, 2, 0, 18, 22, 12, 1, 9, 17, 0, 2, 0, 18, 23, 12, 1, 9, 18, 0, 2, 0, 18, 24, 12, 1, 9, 19, 0, 2, 0, 18, 25, 12, 1, 9, 20, 0, 2, 0, 18, 26, 12, 1, 9, 21, 0, 2, 0, 18, 27, 12, 1, 9, 22, 0, 2, 0, 18, 28, 12, 1, 9, 23, 0, 2, 0, 18, 29, 12, 1, 9, 24, 0, 2, 0, 18, 30, 12, 1, 9, 25, 0, 2, 0, 18, 31, 12, 1, 9, 26, 0, 2, 0, 18, 32, 12, 1, 9, 27, 0, 2, 0, 18, 33, 12, 1, 9, 28, 0, 2, 0, 18, 34, 12, 1, 9, 29, 0, 2, 0, 18, 35, 12, 1, 9, 30, 0, 2, 0, 18, 36, 12, 1, 9, 31, 0, 2, 0, 18, 37, 12, 1, 9, 32, 0, 2, 0, 18, 38, 12, 1, 9, 33, 0, 2, 0, 18, 39, 12, 1, 9, 34, 0, 2, 0, 18, 40, 12, 1, 9, 35, 0, 2, 0, 18, 41, 12, 1, 9, 36, 0, 2, 0, 18, 42, 12, 1, 9, 37, 0, 2, 0, 18, 43, 12, 1, 9, 38, 0, 2, 0, 18, 44, 12, 1, 9, 39, 0, 2, 0, 18, 45, 12, 1, 9, 40, 0, 2, 0, 18, 46, 12, 1, 9, 41, 0, 2, 0, 18, 47, 12, 1, 9, 42, 0, 2, 0, 18, 48, 12, 1, 9, 43, 0, 2, 0, 18, 49, 12, 1, 9, 44, 0, 2, 0, 18, 50, 12, 1, 9, 45, 0, 2, 0, 18, 51, 12, 1, 9, 46, 0, 2, 0, 18, 52, 12, 1, 9, 47, 0, 2, 0, 18, 53, 12, 1, 9, 48, 0, 2, 0, 18, 54, 12, 1, 9, 49, 0, 2, 0, 18, 55, 12, 1, 9, 50, 0, 2, 0, 18, 56, 12, 1, 9, 51, 0, 2, 0, 18, 57, 12, 1, 9, 52, 0, 2, 0, 18, 58, 12, 1, 9, 53, 0, 2, 0, 18, 59, 12, 1, 9, 54, 0, 0, 0, 61, 60, 55, 1, 9, 56, 0, 0, 0, 1, 62, -1, 0, 0, 46, 0, 64, 63, 57, 3, 9, 58, 65, 59, 66, 60, 0, 46, 0, 64, 67, 57, 3, 9, 61, 65, 62, 66, 63, 0, 46, 0, 64, 68, 57, 3, 9, 64, 65, 65, 66, 63, 0, 46, 0, 64, 69, 66, 1, 9, 67, 0, 0, 0, 71, 70, -1, 6, 72, 68, 73, 69, 74, 1, 75, 70, 76, 1, 77, 69, 0, 0, 0, 1, 78, -1, 0, 0, 52, 0, 61, 79, 71, 1, 9, 72, 0, 52, 0, 61, 80, 71, 1, 9, 73, 0, 52, 0, 61, 81, 71, 1, 9, 74, 0, 52, 0, 61, 82, 71, 1, 9, 75, 0, 52, 0, 61, 83, 71, 1, 9, 76, 0, 52, 0, 61, 84, 71, 1, 9, 77, 0, 52, 0, 61, 85, 71, 1, 9, 78, 0, 52, 0, 61, 86, 71, 1, 9, 79, 0, 52, 0, 61, 87, 71, 1, 9, 80, 0, 52, 0, 61, 88, 71, 1, 9, 81, 0, 52, 0, 61, 89, 71, 1, 9, 82, 0, 0, 0, 91, 90, 83, 0, 0, 0, 0, 92, 92, -1, 29, 5, 1, 6, 2, 7, 2, 8, 1, 93, 84, 94, 85, 95, 86, 96, 87, 97, 88, 98, 88, 99, 88, 100, 88, 101, 1, 102, 1, 103, 89, 104, 2, 105, 4, 106, 90, 107, 2, 108, 91, 109, 4, 110, 69, 111, 69, 112, 92, 113, 93, 114, 93, 115, 1, 116, 69, 117, 94, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>

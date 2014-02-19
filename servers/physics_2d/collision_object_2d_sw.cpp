@@ -130,6 +130,7 @@ void CollisionObject2DSW::_update_shapes() {
 	if (!space)
 		return;
 
+
 	for(int i=0;i<shapes.size();i++) {
 
 		Shape &s=shapes[i];

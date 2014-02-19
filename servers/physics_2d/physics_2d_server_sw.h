@@ -58,6 +58,16 @@ friend class Physics2DDirectSpaceStateSW;
 	mutable RID_Owner<Body2DSW> body_owner;
 	mutable RID_Owner<Joint2DSW> joint_owner;
 
+	struct CollCbkData {
+
+		int max;
+		int amount;
+		Vector2 *ptr;
+	};
+
+	static void _shape_col_cbk(const Vector2& p_point_A,const Vector2& p_point_B,void *p_userdata);
+
+
 //	void _clear_query(Query2DSW *p_query);
 public:
 
@@ -68,6 +78,8 @@ public:
 	virtual ShapeType shape_get_type(RID p_shape) const;
 	virtual Variant shape_get_data(RID p_shape) const;
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const;
+
+	virtual bool shape_collide(RID p_shape_A, const Matrix32& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Matrix32& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count);
 
 	/* SPACE API */
 
@@ -124,7 +136,7 @@ public:
 	virtual RID body_get_space(RID p_body) const;
 
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
-	virtual BodyMode body_get_mode(RID p_body, BodyMode p_mode) const;
+	virtual BodyMode body_get_mode(RID p_body) const;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Matrix32& p_transform=Matrix32());
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape);
@@ -143,8 +155,8 @@ public:
 	virtual void body_attach_object_instance_ID(RID p_body,uint32_t p_ID);
 	virtual uint32_t body_get_object_instance_ID(RID p_body) const;
 
-	virtual void body_set_enable_continuous_collision_detection(RID p_body,bool p_enable);
-	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const;
+	virtual void body_set_continuous_collision_detection_mode(RID p_body,CCDMode p_mode);
+	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const;
@@ -152,8 +164,6 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
 
-	//advanced simulation
-	virtual void body_static_simulate_motion(RID p_body,const Matrix32& p_new_transform);
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant& p_variant);
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const;
@@ -181,6 +191,7 @@ public:
 	virtual int body_get_max_contacts_reported(RID p_body) const;
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
+	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);
 
 	/* JOINT API */
 

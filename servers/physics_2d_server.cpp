@@ -122,7 +122,7 @@ Variant Physics2DDirectSpaceState::_intersect_ray(const Vector2& p_from, const V
 	if (!res)
 		return Variant();
 
-	Dictionary d;
+	Dictionary d(true);
 	d["position"]=inters.position;
 	d["normal"]=inters.normal;
 	d["collider_id"]=inters.collider_id;
@@ -145,7 +145,7 @@ Variant Physics2DDirectSpaceState::_intersect_shape(const RID& p_shape, const Ma
 
 	ShapeResult *res=(ShapeResult*)alloca(p_result_max*sizeof(ShapeResult));
 
-	int rc = intersect_shape(p_shape,p_xform,res,p_result_max,exclude,p_user_mask);
+	int rc = intersect_shape(p_shape,p_xform,Vector2(),res,p_result_max,exclude,p_user_mask);
 
 	if (rc==0)
 		return Variant();
@@ -160,6 +160,34 @@ Variant Physics2DDirectSpaceState::_intersect_shape(const RID& p_shape, const Ma
 }
 
 
+Variant Physics2DDirectSpaceState::_cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
+
+
+	Set<RID> exclude;
+	for(int i=0;i<p_exclude.size();i++)
+		exclude.insert(p_exclude[i]);
+
+
+
+	MotionCastCollision mcc;
+
+	bool result = cast_motion(p_shape,p_xform,p_motion,mcc,exclude,p_user_mask);
+
+	if (!result)
+		return Variant();
+
+	Dictionary d(true);
+	d["point"]=mcc.point;
+	d["normal"]=mcc.normal;
+	d["rid"]=mcc.rid;
+	d["collider_id"]=mcc.collider_id;
+	d["collider"]=mcc.collider;
+	d["shape"]=mcc.shape;
+
+	return d;
+
+
+}
 
 
 
@@ -175,6 +203,7 @@ void Physics2DDirectSpaceState::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","umask"),&Physics2DDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("intersect_shape:Physics2DShapeQueryResult","shape","xform","result_max","exclude","umask"),&Physics2DDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("cast_motion","shape","xform","motion","exclude","umask"),&Physics2DDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
 
 }
 
@@ -297,8 +326,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_get_object_instance_ID","body"),&Physics2DServer::body_get_object_instance_ID);
 
 
-	ObjectTypeDB::bind_method(_MD("body_set_enable_continuous_collision_detection","body","enable"),&Physics2DServer::body_set_enable_continuous_collision_detection);
-	ObjectTypeDB::bind_method(_MD("body_is_continuous_collision_detection_enabled","body"),&Physics2DServer::body_is_continuous_collision_detection_enabled);
+	ObjectTypeDB::bind_method(_MD("body_set_continuous_collision_detection_mode","body","mode"),&Physics2DServer::body_set_continuous_collision_detection_mode);
+	ObjectTypeDB::bind_method(_MD("body_get_continuous_collision_detection_mode","body"),&Physics2DServer::body_get_continuous_collision_detection_mode);
 
 
 	//ObjectTypeDB::bind_method(_MD("body_set_user_flags","flags""),&Physics2DServer::body_set_shape,DEFVAL(Matrix32));
@@ -306,8 +335,6 @@ void Physics2DServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("body_set_param","body","param","value"),&Physics2DServer::body_set_param);
 	ObjectTypeDB::bind_method(_MD("body_get_param","body","param"),&Physics2DServer::body_get_param);
-
-	ObjectTypeDB::bind_method(_MD("body_static_simulate_motion","body","new_xform"),&Physics2DServer::body_static_simulate_motion);
 
 	ObjectTypeDB::bind_method(_MD("body_set_state","body","state","value"),&Physics2DServer::body_set_state);
 	ObjectTypeDB::bind_method(_MD("body_get_state","body","state"),&Physics2DServer::body_get_state);
@@ -371,7 +398,7 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( AREA_SPACE_OVERRIDE_REPLACE );
 
 	BIND_CONSTANT( BODY_MODE_STATIC );
-	BIND_CONSTANT( BODY_MODE_STATIC_ACTIVE );
+	BIND_CONSTANT( BODY_MODE_KINEMATIC );
 	BIND_CONSTANT( BODY_MODE_RIGID );
 	BIND_CONSTANT( BODY_MODE_CHARACTER );
 
@@ -393,6 +420,10 @@ void Physics2DServer::_bind_methods() {
 	BIND_CONSTANT( DAMPED_STRING_REST_LENGTH );
 	BIND_CONSTANT( DAMPED_STRING_STIFFNESS );
 	BIND_CONSTANT( DAMPED_STRING_DAMPING );
+
+	BIND_CONSTANT( CCD_MODE_DISABLED );
+	BIND_CONSTANT( CCD_MODE_CAST_RAY );
+	BIND_CONSTANT( CCD_MODE_CAST_SHAPE );
 
 //	BIND_CONSTANT( TYPE_BODY );
 //	BIND_CONSTANT( TYPE_AREA );

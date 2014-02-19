@@ -84,7 +84,7 @@ void Area2DSW::set_monitor_callback(ObjectID p_id, const StringName& p_method) {
 
 void Area2DSW::set_space_override_mode(Physics2DServer::AreaSpaceOverrideMode p_mode) {
 	bool do_override=p_mode!=Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED;
-	if (do_override==space_override_mode!=Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED)
+	if (do_override==(space_override_mode!=Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED))
 		return;
 	_unregister_shapes();
 	space_override_mode=p_mode;
