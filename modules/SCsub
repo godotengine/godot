@@ -1,4 +1,5 @@
 Import('env')
+import os
 
 env_modules = env.Clone()
 
@@ -17,7 +18,11 @@ for x in env.module_list:
 	env_modules.Append(CPPFLAGS=["-DMODULE_"+x.upper()+"_ENABLED"])
 	SConscript(x+"/SCsub")
 
-lib = env_modules.Library("modules",env.modules_sources)
+if (env["tools"]=="no" and os.name=="nt"):
+	lib = env_modules.Library("modules.nt.lib",env.modules_sources)
+else:
+	lib = env_modules.Library("modules",env.modules_sources)
+
 
 env.Prepend(LIBS=[lib])
 
