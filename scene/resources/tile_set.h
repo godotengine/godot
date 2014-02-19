@@ -42,6 +42,7 @@ class TileSet : public Resource {
 		String name;
 		Ref<Texture> texture;
 		Vector2 offset;
+		Vector2 shape_offset;
 		Rect2i region;
 		Vector<Ref<Shape2D> > shapes;
 	};
@@ -71,8 +72,11 @@ public:
 	void tile_set_texture(int p_id, const Ref<Texture> &p_texture);
 	Ref<Texture> tile_get_texture(int p_id) const;
 
-	void tile_set_offset(int p_id,const Vector2 &p_offset);
-	Vector2 tile_get_offset(int p_id) const;
+	void tile_set_texture_offset(int p_id,const Vector2 &p_offset);
+	Vector2 tile_get_texture_offset(int p_id) const;
+
+	void tile_set_shape_offset(int p_id,const Vector2 &p_offset);
+	Vector2 tile_get_shape_offset(int p_id) const;
 
 	void tile_set_region(int p_id,const Rect2 &p_region);
 	Rect2 tile_get_region(int p_id) const;

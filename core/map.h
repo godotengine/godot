@@ -115,7 +115,7 @@ private:
 		Element* _nil;
 		int size_cache;
 		
-		_Data() {
+		_FORCE_INLINE_ _Data() {
 #ifdef GLOBALNIL_DISABLED
 			_nil = memnew_allocator( Element, A );
 			_nil->parent=_nil->left=_nil->right=_nil;

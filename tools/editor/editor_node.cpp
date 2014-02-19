@@ -82,8 +82,6 @@
 #include "plugins/path_2d_editor_plugin.h"
 #include "plugins/particles_editor_plugin.h"
 #include "plugins/particles_2d_editor_plugin.h"
-#include "plugins/font_editor_plugin.h"
-#include "plugins/animation_editor_plugin.h"
 #include "plugins/animation_tree_editor_plugin.h"
 #include "plugins/tile_set_editor_plugin.h"
 #include "plugins/animation_player_editor_plugin.h"
@@ -93,6 +91,7 @@
 #include "tools/editor/io_plugins/editor_font_import_plugin.h"
 #include "tools/editor/io_plugins/editor_sample_import_plugin.h"
 #include "tools/editor/io_plugins/editor_translation_import_plugin.h"
+
 
 EditorNode *EditorNode::singleton=NULL;
 
@@ -2130,8 +2129,27 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_SETTINGS: {
 
-
 			project_settings->popup_project_settings();
+		} break;
+		case RUN_PROJECT_MANAGER: {
+
+			if (!p_confirmed) {
+				confirmation->get_ok()->set_text("Yes");
+				confirmation->set_text("Open Project Manager? \n(Unsaved changes will be lost)");
+				confirmation->popup_centered(Size2(300,70));
+				break;
+			}
+
+			get_scene()->quit();
+			String exec = OS::get_singleton()->get_executable_path();
+
+			List<String> args;
+			args.push_back ( "-path" );
+			args.push_back (exec.get_base_dir() );
+
+			OS::ProcessID pid=0;
+			Error err = OS::get_singleton()->execute(exec,args,false,&pid);
+			ERR_FAIL_COND(err);
 		} break;
 		case RUN_FILE_SERVER: {
 
@@ -3407,6 +3425,7 @@ EditorNode::EditorNode() {
 	p->add_item("Redo",EDIT_REDO,KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_Z);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
+	p->add_item("Project Manager",RUN_PROJECT_MANAGER);
 	p->add_separator();
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
@@ -3959,16 +3978,13 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
-	//add_editor_plugin( memnew( AnimationEditorPlugin(this) ) ); - not useful anymore
 	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
-	//add_editor_plugin( memnew( FontEditorPlugin(this) ) ); obsolete
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ThemeEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MultiMeshEditorPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationTreeEditorPlugin(this) ) );
-	//add_editor_plugin( memnew( GridMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SamplePlayerEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );
 	add_editor_plugin( memnew( StreamEditorPlugin(this) ) );

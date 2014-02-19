@@ -178,10 +178,11 @@ static void _fix_files(Vector<uint8_t>& html,uint64_t p_data_size) {
 	}
 
 	CharString cs = strnew.utf8();
-	html.resize(cs.size());
-	for(int i=9;i<cs.size();i++) {
+	html.resize(cs.length());
+	for(int i=9;i<cs.length();i++) {
 		html[i]=cs[i];
 	}
+
 }
 
 struct JSExportData {

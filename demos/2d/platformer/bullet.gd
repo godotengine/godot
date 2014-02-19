@@ -15,6 +15,7 @@ func disable():
 
 func _ready():
 	# Initalization here
+	get_node("Timer").start()
 	pass
 
 

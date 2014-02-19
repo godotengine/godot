@@ -105,7 +105,7 @@ void Sprite::set_texture(const Ref<Texture>& p_texture) {
 	}
 	texture=p_texture;
 	if (texture.is_valid()) {
-		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+		texture->set_flags(texture->get_flags()); //remove repeat from texture, it looks bad in sprites
 		texture->connect(CoreStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->update);
 	}
 	update();

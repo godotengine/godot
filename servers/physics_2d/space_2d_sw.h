@@ -47,7 +47,8 @@ public:
 	Space2DSW *space;
 
 	bool intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0);
-	int intersect_shape(const RID& p_shape, const Matrix32& p_xform,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0);
+	int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0);
+	bool cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion, MotionCastCollision &r_result, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0);
 
 	Physics2DDirectSpaceStateSW();
 };

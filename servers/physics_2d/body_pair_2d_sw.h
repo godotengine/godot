@@ -65,6 +65,7 @@ class BodyPair2DSW : public Constraint2DSW {
 		real_t depth;
 		bool active;
 		Vector2 rA,rB;
+		bool reused;
 	};
 
 	Vector2 offset_B; //use local A coordinates to avoid numerical issues on collision detection
@@ -76,7 +77,7 @@ class BodyPair2DSW : public Constraint2DSW {
 	int cc;
 
 
-	bool _test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Matrix32& p_xform_A,const Matrix32& p_xform_inv_A,Body2DSW *p_B, int p_shape_B,const Matrix32& p_xform_B,const Matrix32& p_xform_inv_B,bool p_swap_result=false);
+	bool _test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Matrix32& p_xform_A,Body2DSW *p_B, int p_shape_B,const Matrix32& p_xform_B,bool p_swap_result=false);
 	void _validate_contacts();
 	static void _add_contact(const Vector2& p_point_A,const Vector2& p_point_B,void *p_self);
 	_FORCE_INLINE_ void _contact_added_callback(const Vector2& p_point_A,const Vector2& p_point_B);

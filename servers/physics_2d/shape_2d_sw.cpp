@@ -30,7 +30,6 @@
 #include "geometry.h"
 #include "sort.h"
 
-#define _SEGMENT_IS_VALID_SUPPORT_TRESHOLD 0.99998
 
 
 void Shape2DSW::configure(const Rect2& p_aabb) {

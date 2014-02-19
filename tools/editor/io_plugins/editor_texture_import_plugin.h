@@ -116,6 +116,7 @@ class EditorImportTextureOptions : public VBoxContainer {
 	HSlider *quality;
 	Tree *flags;
 	Vector<TreeItem*> items;
+	Label *notice_for_2d;
 
 	bool updating;
 
@@ -139,6 +140,8 @@ public:
 
 	void set_quality(float p_quality);
 	float get_quality() const;
+
+	void show_2d_notice();
 
 	EditorImportTextureOptions();
 
