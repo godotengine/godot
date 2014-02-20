@@ -69,6 +69,7 @@ protected:
 	String resource_path;
 	HashMap<String,PropertyInfo> custom_prop_info;
 	bool disable_platform_override;
+	bool using_datapack;
 
 	
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -126,6 +127,8 @@ public:
 	Object* get_singleton_object(const String& p_name) const;
 
 	void register_global_defaults();
+
+	bool is_using_datapack() const;
 
 	Globals();	
 	~Globals();

@@ -270,6 +270,7 @@ protected:
 		RID body = ps->body_create();
 		ps->body_add_shape(body,body_shape_data[p_shape].shape);
 		ps->body_set_space(body,space);
+		ps->body_set_continuous_collision_detection_mode(body,Physics2DServer::CCD_MODE_CAST_SHAPE);
 		ps->body_set_state(body,Physics2DServer::BODY_STATE_TRANSFORM,p_xform);
 
 //		print_line("add body with xform: "+p_xform);

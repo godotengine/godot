@@ -240,6 +240,7 @@ bool Globals::_load_resource_pack(const String& p_pack) {
 
 	//if data.pck is found, all directory access will be from here
 	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
+	using_datapack=true;
 
 	return true;
 }
@@ -1327,6 +1328,10 @@ void Globals::set_disable_platform_override(bool p_disable) {
 	disable_platform_override=p_disable;
 }
 
+bool Globals::is_using_datapack() const {
+
+	return using_datapack;
+}
 
 void Globals::_bind_methods() {
 
@@ -1439,6 +1444,8 @@ Globals::Globals() {
 	custom_prop_info["render/mipmap_policy"]=PropertyInfo(Variant::INT,"render/mipmap_policy",PROPERTY_HINT_ENUM,"Allow,Allow For Po2,Disallow");
 	custom_prop_info["render/thread_model"]=PropertyInfo(Variant::INT,"render/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
 	set("display/emulate_touchscreen",false);
+
+	using_datapack=false;
 }
 
 

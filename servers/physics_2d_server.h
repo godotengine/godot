@@ -90,6 +90,7 @@ class Physics2DDirectSpaceState : public Object {
 
 	Variant _intersect_ray(const Vector2& p_from, const Vector2& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
 	Variant _intersect_shape(const RID& p_shape, const Matrix32& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
+	Variant _cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
 
 
 protected:
@@ -118,7 +119,26 @@ public:
 
 	};
 
-	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+
+
+
+	struct MotionCastCollision {
+
+		float travel; //0 to 1, if 0 then it's blocked
+		Vector2 point;
+		Vector2 normal;
+		RID rid;
+		ObjectID collider_id;
+		Object *collider;
+		int shape;
+
+	};
+
+	virtual bool cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion, MotionCastCollision &r_result, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+
+
+
 
 	Physics2DDirectSpaceState();
 };
@@ -179,6 +199,8 @@ public:
 	virtual Variant shape_get_data(RID p_shape) const=0;
 	virtual real_t shape_get_custom_solver_bias(RID p_shape) const=0;
 
+	//these work well, but should be used from the main thread only
+	virtual bool shape_collide(RID p_shape_A, const Matrix32& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Matrix32& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count)=0;
 
 	/* SPACE API */
 
@@ -265,10 +287,10 @@ public:
 
 	enum BodyMode {
 		BODY_MODE_STATIC,
-		BODY_MODE_STATIC_ACTIVE,
+		BODY_MODE_KINEMATIC,
 		BODY_MODE_RIGID,
-		//BODY_MODE_SOFT
 		BODY_MODE_CHARACTER
+		//BODY_MODE_SOFT ??
 	};
 
 	virtual RID body_create(BodyMode p_mode=BODY_MODE_RIGID,bool p_init_sleeping=false)=0;
@@ -277,7 +299,7 @@ public:
 	virtual RID body_get_space(RID p_body) const=0;
 
 	virtual void body_set_mode(RID p_body, BodyMode p_mode)=0;
-	virtual BodyMode body_get_mode(RID p_body, BodyMode p_mode) const=0;
+	virtual BodyMode body_get_mode(RID p_body) const=0;
 
 	virtual void body_add_shape(RID p_body, RID p_shape, const Matrix32& p_transform=Matrix32())=0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape)=0;
@@ -296,8 +318,14 @@ public:
 	virtual void body_attach_object_instance_ID(RID p_body,uint32_t p_ID)=0;
 	virtual uint32_t body_get_object_instance_ID(RID p_body) const=0;
 
-	virtual void body_set_enable_continuous_collision_detection(RID p_body,bool p_enable)=0;
-	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const=0;
+	enum CCDMode {
+		CCD_MODE_DISABLED,
+		CCD_MODE_CAST_RAY,
+		CCD_MODE_CAST_SHAPE,
+	};
+
+	virtual void body_set_continuous_collision_detection_mode(RID p_body,CCDMode p_mode)=0;
+	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const=0;
 
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags)=0;
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const=0;
@@ -313,8 +341,6 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value)=0;
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const=0;
 
-	//advanced simulation
-	virtual void body_static_simulate_motion(RID p_body,const Matrix32& p_new_transform)=0;
 
 	//state
 	enum BodyState {
@@ -354,6 +380,8 @@ public:
 	virtual bool body_is_omitting_force_integration(RID p_body) const=0;
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant())=0;
+
+	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count)=0;
 
 	/* JOINT API */
 
@@ -417,6 +445,7 @@ VARIANT_ENUM_CAST( Physics2DServer::AreaSpaceOverrideMode );
 VARIANT_ENUM_CAST( Physics2DServer::BodyMode );
 VARIANT_ENUM_CAST( Physics2DServer::BodyParameter );
 VARIANT_ENUM_CAST( Physics2DServer::BodyState );
+VARIANT_ENUM_CAST( Physics2DServer::CCDMode );
 VARIANT_ENUM_CAST( Physics2DServer::JointParam );
 VARIANT_ENUM_CAST( Physics2DServer::JointType );
 VARIANT_ENUM_CAST( Physics2DServer::DampedStringParam );

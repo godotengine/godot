@@ -105,6 +105,8 @@ struct Vector2 {
 	Vector2 cubic_interpolate(const Vector2& p_b,const Vector2& p_pre_a, const Vector2& p_post_b,float p_t) const;
 	Vector2 cubic_interpolate_soft(const Vector2& p_b,const Vector2& p_pre_a, const Vector2& p_post_b,float p_t) const;
 
+	Vector2 slide(const Vector2& p_vec) const;
+	Vector2 reflect(const Vector2& p_vec) const;
 
 	Vector2 operator+(const Vector2& p_v) const;
 	void operator+=(const Vector2& p_v);

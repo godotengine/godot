@@ -11027,6 +11027,9 @@
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the global, unscaled, screen pointer coordinates.
+			If the 2D viewport has been scaled, it may not work well
+			with [Camera] or controls.
 			</description>
 		</method>
 		<method name="get_mouse_speed" qualifiers="const" >
@@ -15411,6 +15414,7 @@
 	<brief_description>
 	</brief_description>
 	<description>
+	explain ownership, and that node does not need to own itself
 	</description>
 	<methods>
 		<method name="pack"  >
@@ -15419,6 +15423,8 @@
 			<argument index="0" name="path" type="Node">
 			</argument>
 			<description>
+			Pack will ignore any sub-nodes not owned by given
+			node. See [Node.set_owner].
 			</description>
 		</method>
 		<method name="instance" qualifiers="const" >
@@ -17490,7 +17496,7 @@
 		</constant>
 		<constant name="BODY_MODE_STATIC" value="0">
 		</constant>
-		<constant name="BODY_MODE_STATIC_ACTIVE" value="1">
+		<constant name="BODY_MODE_KINEMATIC" value="1">
 		</constant>
 		<constant name="BODY_MODE_RIGID" value="2">
 		</constant>
@@ -18420,7 +18426,7 @@
 		</constant>
 		<constant name="BODY_MODE_STATIC" value="0">
 		</constant>
-		<constant name="BODY_MODE_STATIC_ACTIVE" value="1">
+		<constant name="BODY_MODE_KINEMATIC" value="1">
 		</constant>
 		<constant name="BODY_MODE_RIGID" value="2">
 		</constant>
@@ -20861,7 +20867,7 @@
 	<constants>
 		<constant name="MODE_STATIC" value="1">
 		</constant>
-		<constant name="MODE_STATIC_ACTIVE" value="3">
+		<constant name="MODE_KINEMATIC" value="3">
 		</constant>
 		<constant name="MODE_RIGID" value="0">
 		</constant>
@@ -21143,7 +21149,7 @@
 		<constant name="MODE_STATIC" value="1">
 			Static mode (does not move, can't be moved).
 		</constant>
-		<constant name="MODE_STATIC_ACTIVE" value="3">
+		<constant name="MODE_KINEMATIC" value="3">
 		</constant>
 		<constant name="MODE_RIGID" value="0">
 			Rigid body, can move and rotate.

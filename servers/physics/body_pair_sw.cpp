@@ -198,7 +198,7 @@ bool BodyPairSW::setup(float p_step) {
 
 
 	//cannot collide
-	if (A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_STATIC_ACTIVE && B->get_mode()<=PhysicsServer::BODY_MODE_STATIC_ACTIVE)) {
+	if (A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {
 		return false;
 	}
 

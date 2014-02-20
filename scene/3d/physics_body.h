@@ -92,7 +92,7 @@ public:
 		MODE_RIGID,
 		MODE_STATIC,
 		MODE_CHARACTER,
-		MODE_STATIC_ACTIVE,
+		MODE_KINEMATIC,
 	};
 private:
 

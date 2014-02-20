@@ -32,7 +32,7 @@
 
 bool AreaPair2DSW::setup(float p_step) {
 
-	bool result = CollisionSolver2DSW::solve_static(body->get_shape(body_shape),body->get_transform() * body->get_shape_transform(body_shape),body->get_shape_inv_transform(body_shape) * body->get_inv_transform(),area->get_shape(area_shape),area->get_transform() * area->get_shape_transform(area_shape),area->get_shape_inv_transform(area_shape) * area->get_inv_transform(),NULL,this);
+	bool result = CollisionSolver2DSW::solve(body->get_shape(body_shape),body->get_transform() * body->get_shape_transform(body_shape),Vector2(),area->get_shape(area_shape),area->get_transform() * area->get_shape_transform(area_shape),Vector2(),NULL,this);
 
 	if (result!=colliding) {
 

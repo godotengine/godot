@@ -150,6 +150,11 @@ void EditorImportTextureOptions::_notification(int p_what) {
 	}
 }
 
+void EditorImportTextureOptions::show_2d_notice() {
+
+	notice_for_2d->show();
+}
+
 EditorImportTextureOptions::EditorImportTextureOptions() {
 
 
@@ -206,6 +211,14 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 
 
 	add_margin_child("Texture Options",flags,true);
+
+	notice_for_2d = memnew( Label );
+	notice_for_2d->set_text("NOTICE: You are not forced to import textures for 2D projects. Just copy your .jpg or .png files to your project, and change export options later. Atlases can be generated on export too.");
+	notice_for_2d->set_custom_minimum_size(Size2(0,50));
+	notice_for_2d->set_autowrap(true);
+	add_child(notice_for_2d);
+	notice_for_2d->hide();
+
 }
 
 ///////////////////////////////////////////////////////////
@@ -530,6 +543,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
 		texture_options->set_quality(0.7);
 		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
+		texture_options->show_2d_notice();
 		set_title("Import Textures for Atlas (2D)");
 
 	} else if (p_2d) {
@@ -537,6 +551,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS|EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_FILTER);
 		texture_options->set_quality(0.7);
 		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
+		texture_options->show_2d_notice();
 		set_title("Import Textures for 2D");
 	} else {
 
