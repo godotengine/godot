@@ -434,9 +434,9 @@ void RigidBody::set_mode(Mode p_mode) {
 			PhysicsServer::get_singleton()->body_set_mode(get_rid(),PhysicsServer::BODY_MODE_CHARACTER);
 
 		} break;
-		case MODE_STATIC_ACTIVE: {
+		case MODE_KINEMATIC: {
 
-			PhysicsServer::get_singleton()->body_set_mode(get_rid(),PhysicsServer::BODY_MODE_STATIC_ACTIVE);
+			PhysicsServer::get_singleton()->body_set_mode(get_rid(),PhysicsServer::BODY_MODE_KINEMATIC);
 		} break;
 
 	}
@@ -684,7 +684,7 @@ void RigidBody::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:PhysicsDirectBodyState")));
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Rigid,Static,Character,Static Active"),_SCS("set_mode"),_SCS("get_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Rigid,Static,Character,Kinematic"),_SCS("set_mode"),_SCS("get_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"mass",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01"),_SCS("set_mass"),_SCS("get_mass"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"weight",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01",PROPERTY_USAGE_EDITOR),_SCS("set_weight"),_SCS("get_weight"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
@@ -704,7 +704,7 @@ void RigidBody::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
 
 	BIND_CONSTANT( MODE_STATIC );
-	BIND_CONSTANT( MODE_STATIC_ACTIVE );
+	BIND_CONSTANT( MODE_KINEMATIC );
 	BIND_CONSTANT( MODE_RIGID );
 	BIND_CONSTANT( MODE_CHARACTER );
 }

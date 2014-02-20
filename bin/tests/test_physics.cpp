@@ -90,7 +90,7 @@ protected:
 		PhysicsServer * ps = PhysicsServer::get_singleton();
 
 		RID mesh_instance = vs->instance_create2(type_mesh_map[p_shape],scenario);
-		RID body = ps->body_create(p_body,!p_active_default);
+		RID body = ps->body_create(p_body,!p_active_default);		
 		ps->body_set_space(body,space);
 		ps->body_set_param(body,PhysicsServer::BODY_PARAM_BOUNCE,0.5);
 		//todo set space

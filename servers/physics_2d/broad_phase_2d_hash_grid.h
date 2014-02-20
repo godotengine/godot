@@ -94,7 +94,8 @@ class BroadPhase2DHashGrid : public BroadPhase2DSW {
 
 	void _enter_grid(Element* p_elem, const Rect2& p_rect,bool p_static);
 	void _exit_grid(Element* p_elem, const Rect2& p_rect,bool p_static);
-	_FORCE_INLINE_ void _cull(const Point2i p_cell,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices,int &index);
+	template<bool use_aabb,bool use_segment>
+	_FORCE_INLINE_ void _cull(const Point2i p_cell,const Rect2& p_aabb,const Point2& p_from, const Point2& p_to,CollisionObject2DSW** p_results,int p_max_results,int *p_result_indices,int &index);
 
 
 	struct PosKey {

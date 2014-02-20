@@ -89,7 +89,7 @@ void BodySW::update_inertias() {
 
 		} break;
 
-		case PhysicsServer::BODY_MODE_STATIC_ACTIVE:
+		case PhysicsServer::BODY_MODE_KINEMATIC:
 		case PhysicsServer::BODY_MODE_STATIC: {
 
 			_inv_inertia=Vector3();
@@ -190,12 +190,12 @@ void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 	switch(p_mode) {
 		//CLEAR UP EVERYTHING IN CASE IT NOT WORKS!
 		case PhysicsServer::BODY_MODE_STATIC:
-		case PhysicsServer::BODY_MODE_STATIC_ACTIVE: {
+		case PhysicsServer::BODY_MODE_KINEMATIC: {
 
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass=0;
 			_set_static(p_mode==PhysicsServer::BODY_MODE_STATIC);
-			set_active(p_mode==PhysicsServer::BODY_MODE_STATIC_ACTIVE);
+			set_active(p_mode==PhysicsServer::BODY_MODE_KINEMATIC);
 			linear_velocity=Vector3();
 			angular_velocity=Vector3();
 		} break;
@@ -235,7 +235,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 		case PhysicsServer::BODY_STATE_TRANSFORM: {
 
 
-			if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_STATIC_ACTIVE) {
+			if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
 				wakeup_neighbours();
@@ -262,7 +262,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 		} break;
 		case PhysicsServer::BODY_STATE_SLEEPING: {
 			//?
-			if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_STATIC_ACTIVE)
+			if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
 				break;
 			bool do_sleep=p_variant;
 			if (do_sleep) {
@@ -353,7 +353,7 @@ void BodySW::_compute_area_gravity(const AreaSW *p_area) {
 void BodySW::integrate_forces(real_t p_step) {
 
 
-	if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_STATIC_ACTIVE)
+	if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
 		return;
 
 	AreaSW *current_area = get_space()->get_default_area();
@@ -419,7 +419,7 @@ void BodySW::integrate_velocities(real_t p_step) {
 	if (mode==PhysicsServer::BODY_MODE_STATIC)
 		return;
 
-	if (mode==PhysicsServer::BODY_MODE_STATIC_ACTIVE) {
+	if (mode==PhysicsServer::BODY_MODE_KINEMATIC) {
 		if (fi_callback)
 			get_space()->body_add_to_state_query_list(&direct_state_query_list);
 		return;
@@ -548,7 +548,7 @@ void BodySW::call_queries() {
 
 bool BodySW::sleep_test(real_t p_step)  {
 
-	if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_STATIC_ACTIVE)
+	if (mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
 		return true; //
 	else if (mode==PhysicsServer::BODY_MODE_CHARACTER)
 		return !active; // characters don't sleep unless asked to sleep

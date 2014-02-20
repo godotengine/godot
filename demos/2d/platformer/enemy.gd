@@ -95,3 +95,4 @@ func _ready():
 	rc_right=get_node("raycast_right")
 
 
+

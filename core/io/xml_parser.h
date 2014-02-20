@@ -113,6 +113,8 @@ public:
 	Error seek(uint64_t p_pos);
 
 	Error open(const String& p_path);
+	Error open_buffer(const Vector<uint8_t>& p_buffer);
+
 	void close();
 
 	XMLParser();

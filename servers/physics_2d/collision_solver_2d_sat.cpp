@@ -321,19 +321,19 @@ static void _generate_contacts_from_supports(const Vector2 * p_points_A,int p_po
 
 
 
-template<class ShapeA, class ShapeB>
+template<class ShapeA, class ShapeB,bool castA=false,bool castB=false>
 class SeparatorAxisTest2D {
 
 	const ShapeA *shape_A;
 	const ShapeB *shape_B;
 	const Matrix32 *transform_A;
 	const Matrix32 *transform_B;
-	const Matrix32 *transform_inv_A;
-	const Matrix32 *transform_inv_B;
 	real_t best_depth;
 	Vector2 best_axis;
 	int best_axis_count;
 	int best_axis_index;
+	Vector2 motion_A;
+	Vector2 motion_B;
 	_CollectorCallback2D *callback;
 
 public:
@@ -351,6 +351,29 @@ public:
 		return true;
 	}
 
+	_FORCE_INLINE_ bool test_cast() {
+
+		if (castA) {
+
+			Vector2 na = motion_A.normalized();
+			if (!test_axis(na))
+				return false;
+			if (!test_axis(na.tangent()))
+				return false;
+		}
+
+		if (castB) {
+
+			Vector2 nb = motion_B.normalized();
+			if (!test_axis(nb))
+				return false;
+			if (!test_axis(nb.tangent()))
+				return false;
+		}
+
+		return true;
+	}
+
 	_FORCE_INLINE_ bool test_axis(const Vector2& p_axis) {
 
 		Vector2 axis=p_axis;
@@ -364,8 +387,15 @@ public:
 
 		real_t min_A,max_A,min_B,max_B;
 
-		shape_A->project_range(axis,*transform_A,min_A,max_A);
-		shape_B->project_range(axis,*transform_B,min_B,max_B);
+		if (castA)
+			shape_A->project_range_cast(motion_A,axis,*transform_A,min_A,max_A);
+		else
+			shape_A->project_range(axis,*transform_A,min_A,max_A);
+
+		if (castB)
+			shape_B->project_range_cast(motion_B,axis,*transform_B,min_B,max_B);
+		else
+			shape_B->project_range(axis,*transform_B,min_B,max_B);
 
 		min_B -= ( max_A - min_A ) * 0.5;
 		max_B += ( max_A - min_A ) * 0.5;
@@ -427,21 +457,28 @@ public:
 			return; //only collide, no callback
 		static const int max_supports=2;
 
-
 		Vector2 supports_A[max_supports];
 		int support_count_A;
-		shape_A->get_supports(transform_A->basis_xform_inv(-best_axis).normalized(),supports_A,support_count_A);
-		for(int i=0;i<support_count_A;i++) {
-			supports_A[i] = transform_A->xform(supports_A[i]);
+		if (castA) {
+			shape_A->get_supports_transformed_cast(motion_A,-best_axis,*transform_A,supports_A,support_count_A);
+		} else {
+			shape_A->get_supports(transform_A->basis_xform_inv(-best_axis).normalized(),supports_A,support_count_A);
+			for(int i=0;i<support_count_A;i++) {
+				supports_A[i] = transform_A->xform(supports_A[i]);
+			}
 		}
 
 
 
 		Vector2 supports_B[max_supports];
 		int support_count_B;
-		shape_B->get_supports(transform_B->basis_xform_inv(best_axis).normalized(),supports_B,support_count_B);
-		for(int i=0;i<support_count_B;i++) {
-			supports_B[i] = transform_B->xform(supports_B[i]);
+		if (castB) {
+			shape_B->get_supports_transformed_cast(motion_B,best_axis,*transform_B,supports_B,support_count_B);
+		} else {
+			shape_B->get_supports(transform_B->basis_xform_inv(best_axis).normalized(),supports_B,support_count_B);
+			for(int i=0;i<support_count_B;i++) {
+				supports_B[i] = transform_B->xform(supports_B[i]);
+			}
 		}
 /*
 
@@ -480,14 +517,15 @@ public:
 
 	}
 
-	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a, const ShapeB *p_shape_B,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A,const Matrix32& p_transform_a, const ShapeB *p_shape_B,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_A=Vector2(), const Vector2& p_motion_B=Vector2()) {
 		best_depth=1e15;
 		shape_A=p_shape_A;
 		shape_B=p_shape_B;
 		transform_A=&p_transform_a;
 		transform_B=&p_transform_b;
-		transform_inv_A=&p_transform_inv_a;
-		transform_inv_B=&p_transform_inv_b;
+		motion_A=p_motion_A;
+		motion_B=p_motion_B;
+
 		callback=p_collector;
 #ifdef DEBUG_ENABLED
 		best_axis_count=0;
@@ -503,68 +541,92 @@ public:
 /****** SAT TESTS *******/
 
 
-typedef void (*CollisionFunc)(const Shape2DSW*,const Matrix32&,const Matrix32&,const Shape2DSW*,const Matrix32&,const Matrix32&,_CollectorCallback2D *p_collector);
+#define TEST_POINT(m_a,m_b) \
+	 (	(!separator.test_axis(((m_a)-(m_b)).normalized())) ||\
+		(castA && !separator.test_axis(((m_a)+p_motion_a-(m_b)).normalized())) ||\
+		(castB && !separator.test_axis(((m_a)-((m_b)+p_motion_b)).normalized())) ||\
+		(castA && castB && !separator.test_axis(((m_a)+p_motion_a-((m_b)+p_motion_b)).normalized())) )
 
-static void _collision_segment_segment(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+
+typedef void (*CollisionFunc)(const Shape2DSW*,const Matrix32&,const Shape2DSW*,const Matrix32&,_CollectorCallback2D *p_collector,const Vector2&,const Vector2&);
+
+
+template<bool castA, bool castB>
+static void _collision_segment_segment(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const SegmentShape2DSW *segment_B = static_cast<const SegmentShape2DSW*>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW,SegmentShape2DSW> separator(segment_A,p_transform_a,p_transform_inv_a,segment_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<SegmentShape2DSW,SegmentShape2DSW,castA,castB> separator(segment_A,p_transform_a,segment_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
+
+	if (!separator.test_previous_axis())
+		return;
+	//this collision is kind of pointless
+
 
 	if (!separator.test_previous_axis())
 		return;
 
-	if (!separator.test_axis(p_transform_inv_a.basis_xform_inv(segment_A->get_normal()).normalized()))
+	if (!separator.test_cast())
 		return;
-	if (!separator.test_axis(p_transform_inv_a.basis_xform_inv(segment_B->get_normal()).normalized()))
+
+	if (!separator.test_axis(segment_A->get_xformed_normal(p_transform_a)))
+		return;
+	if (!separator.test_axis(segment_B->get_xformed_normal(p_transform_b)))
 		return;
 
 	separator.generate_contacts();
 
 }
 
-static void _collision_segment_circle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_segment_circle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const CircleShape2DSW *circle_B = static_cast<const CircleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<SegmentShape2DSW,CircleShape2DSW> separator(segment_A,p_transform_a,p_transform_inv_a,circle_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<SegmentShape2DSW,CircleShape2DSW,castA,castB> separator(segment_A,p_transform_a,circle_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
+	if (!separator.test_cast())
+		return;
+
+	//segment normal
 	if (!separator.test_axis(
 				(p_transform_a.xform(segment_A->get_b())-p_transform_a.xform(segment_A->get_a())).normalized().tangent()
 				))
 		return;
 
-//	if (!separator.test_axis(p_transform_inv_a.basis_xform_inv(segment_A->get_normal()).normalized()))
-//		return;
-	if (!separator.test_axis((p_transform_a.xform(segment_A->get_a())-p_transform_b.get_origin()).normalized()))
+	//endpoint a vs circle
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()),p_transform_b.get_origin()))
 		return;
-	if (!separator.test_axis((p_transform_a.xform(segment_A->get_b())-p_transform_b.get_origin()).normalized()))
+	//endpoint b vs circle
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()),p_transform_b.get_origin()))
 		return;
 
 
 	separator.generate_contacts();
-
-
 }
 
-static void _collision_segment_rectangle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_segment_rectangle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW*>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW,RectangleShape2DSW> separator(segment_A,p_transform_a,p_transform_inv_a,rectangle_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<SegmentShape2DSW,RectangleShape2DSW,castA,castB> separator(segment_A,p_transform_a,rectangle_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
-	if (!separator.test_axis(p_transform_inv_a.basis_xform_inv(segment_A->get_normal()).normalized()))
+	if (!separator.test_cast())
+		return;
+
+	if (!separator.test_axis(segment_A->get_xformed_normal(p_transform_a)))
 		return;
 
 	if (!separator.test_axis(p_transform_b.elements[0].normalized()))
@@ -577,50 +639,58 @@ static void _collision_segment_rectangle(const Shape2DSW* p_a,const Matrix32& p_
 
 }
 
-static void _collision_segment_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_segment_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW,CapsuleShape2DSW> separator(segment_A,p_transform_a,p_transform_inv_a,capsule_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<SegmentShape2DSW,CapsuleShape2DSW,castA,castB> separator(segment_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
-	if (!separator.test_axis(p_transform_inv_a.basis_xform_inv(segment_A->get_normal()).normalized()))
+	if (!separator.test_cast())
+		return;
+
+	if (!separator.test_axis(segment_A->get_xformed_normal(p_transform_a)))
 		return;
 
 	if (!separator.test_axis(p_transform_b.elements[0].normalized()))
 		return;
 
-	if (!separator.test_axis((p_transform_a.xform(segment_A->get_a())-(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*0.5)).normalized()))
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()),(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*0.5)))
 		return;
-	if (!separator.test_axis((p_transform_a.xform(segment_A->get_a())-(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*-0.5)).normalized()))
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_a()),(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*-0.5)))
 		return;
-	if (!separator.test_axis((p_transform_a.xform(segment_A->get_b())-(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*0.5)).normalized()))
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()),(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*0.5)))
 		return;
-	if (!separator.test_axis((p_transform_a.xform(segment_A->get_b())-(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*-0.5)).normalized()))
+	if (TEST_POINT(p_transform_a.xform(segment_A->get_b()),(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*-0.5)))
 		return;
 
 	separator.generate_contacts();
 }
 
-static void _collision_segment_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_segment_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const SegmentShape2DSW *segment_A = static_cast<const SegmentShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
 
-	SeparatorAxisTest2D<SegmentShape2DSW,ConvexPolygonShape2DSW> separator(segment_A,p_transform_a,p_transform_inv_a,convex_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<SegmentShape2DSW,ConvexPolygonShape2DSW,castA,castB> separator(segment_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
-	if (!separator.test_axis(p_transform_inv_a.basis_xform_inv(segment_A->get_normal()).normalized()))
+	if (!separator.test_cast())
+		return;
+
+	if (!separator.test_axis(segment_A->get_xformed_normal(p_transform_a)))
 		return;
 
 	for(int i=0;i<convex_B->get_point_count();i++) {
 
-		if (!separator.test_axis( p_transform_inv_b.basis_xform_inv(convex_B->get_segment_normal(i)).normalized() ))
+		if (!separator.test_axis( convex_B->get_xformed_segment_normal(p_transform_b,i)))
 			return;
 	}
 
@@ -631,33 +701,42 @@ static void _collision_segment_convex_polygon(const Shape2DSW* p_a,const Matrix3
 
 /////////
 
-static void _collision_circle_circle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_circle_circle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const CircleShape2DSW *circle_B = static_cast<const CircleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<CircleShape2DSW,CircleShape2DSW> separator(circle_A,p_transform_a,p_transform_inv_a,circle_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<CircleShape2DSW,CircleShape2DSW,castA,castB> separator(circle_A,p_transform_a,circle_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
-	if (!separator.test_axis((p_transform_a.get_origin()-p_transform_b.get_origin()).normalized()))
+	if (!separator.test_cast())
 		return;
+
+	if (TEST_POINT(p_transform_a.get_origin(),p_transform_b.get_origin()))
+		return;
+
 
 	separator.generate_contacts();
 
 }
 
-static void _collision_circle_rectangle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_circle_rectangle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<CircleShape2DSW,RectangleShape2DSW> separator(circle_A,p_transform_a,p_transform_inv_a,rectangle_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<CircleShape2DSW,RectangleShape2DSW,castA,castB> separator(circle_A,p_transform_a,rectangle_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	const Vector2 &sphere=p_transform_a.elements[2];
@@ -670,29 +749,80 @@ static void _collision_circle_rectangle(const Shape2DSW* p_a,const Matrix32& p_t
 	if (!separator.test_axis(axis[1].normalized()))
 		return;
 
-	Vector2 local_v = p_transform_inv_b.xform(p_transform_a.get_origin());
+	{
+		Vector2 local_v = p_transform_b.affine_inverse().xform(p_transform_a.get_origin());
 
-	Vector2 he(
-		(local_v.x<0) ? -half_extents.x : half_extents.x,
-		(local_v.y<0) ? -half_extents.y : half_extents.y
-	);
+		Vector2 he(
+			(local_v.x<0) ? -half_extents.x : half_extents.x,
+			(local_v.y<0) ? -half_extents.y : half_extents.y
+		);
 
 
-	if (!separator.test_axis((p_transform_b.xform(he)-sphere).normalized()))
-		return;
+		if (!separator.test_axis((p_transform_b.xform(he)-sphere).normalized()))
+			return;
+	}
+
+	if (castA) {
+
+		Vector2 sphereofs = sphere + p_motion_a;
+		Vector2 local_v = p_transform_b.affine_inverse().xform(sphereofs);
+
+		Vector2 he(
+			(local_v.x<0) ? -half_extents.x : half_extents.x,
+			(local_v.y<0) ? -half_extents.y : half_extents.y
+		);
+
+
+		if (!separator.test_axis((p_transform_b.xform(he)-sphereofs).normalized()))
+			return;
+	}
+
+	if (castB) {
+
+		Vector2 sphereofs = sphere - p_motion_b;
+		Vector2 local_v = p_transform_b.affine_inverse().xform(sphereofs);
+
+		Vector2 he(
+			(local_v.x<0) ? -half_extents.x : half_extents.x,
+			(local_v.y<0) ? -half_extents.y : half_extents.y
+		);
+
+
+		if (!separator.test_axis((p_transform_b.xform(he)-sphereofs).normalized()))
+			return;
+	}
+
+	if (castA && castB) {
+
+		Vector2 sphereofs = sphere - p_motion_b + p_motion_a;
+		Vector2 local_v = p_transform_b.affine_inverse().xform(sphereofs);
+
+		Vector2 he(
+			(local_v.x<0) ? -half_extents.x : half_extents.x,
+			(local_v.y<0) ? -half_extents.y : half_extents.y
+		);
+
+
+		if (!separator.test_axis((p_transform_b.xform(he)-sphereofs).normalized()))
+			return;
+	}
 
 	separator.generate_contacts();
 }
 
-static void _collision_circle_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_circle_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<CircleShape2DSW,CapsuleShape2DSW> separator(circle_A,p_transform_a,p_transform_inv_a,capsule_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<CircleShape2DSW,CapsuleShape2DSW,castA,castB> separator(circle_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	//capsule axis
@@ -700,35 +830,39 @@ static void _collision_circle_capsule(const Shape2DSW* p_a,const Matrix32& p_tra
 		return;
 
 	//capsule endpoints
-	if (!separator.test_axis((p_transform_a.get_origin()-(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*0.5)).normalized()))
+	if (TEST_POINT(p_transform_a.get_origin(),(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*0.5)))
 		return;
-	if (!separator.test_axis((p_transform_a.get_origin()-(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*-0.5)).normalized()))
+	if (TEST_POINT(p_transform_a.get_origin(),(p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*-0.5)))
 		return;
-
 
 	separator.generate_contacts();
 
 
 }
 
-static void _collision_circle_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_circle_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const CircleShape2DSW *circle_A = static_cast<const CircleShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<CircleShape2DSW,ConvexPolygonShape2DSW> separator(circle_A,p_transform_a,p_transform_inv_a,convex_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<CircleShape2DSW,ConvexPolygonShape2DSW,castA,castB> separator(circle_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
+	if (!separator.test_cast())
+		return;
+
+
 	//poly faces and poly points vs circle
 	for(int i=0;i<convex_B->get_point_count();i++) {
 
-		if (!separator.test_axis( (p_transform_b.xform(convex_B->get_point(i))-p_transform_a.get_origin()).normalized() ))
+		if (TEST_POINT( p_transform_a.get_origin(),p_transform_b.xform(convex_B->get_point(i)) ))
 			return;
 
-		if (!separator.test_axis( p_transform_inv_b.basis_xform_inv(convex_B->get_segment_normal(i)).normalized() ))
+		if (!separator.test_axis( convex_B->get_xformed_segment_normal(p_transform_b,i)))
 			return;
 	}
 
@@ -738,15 +872,19 @@ static void _collision_circle_convex_polygon(const Shape2DSW* p_a,const Matrix32
 
 /////////
 
-static void _collision_rectangle_rectangle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_rectangle_rectangle(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW*>(p_a);
 	const RectangleShape2DSW *rectangle_B = static_cast<const RectangleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<RectangleShape2DSW,RectangleShape2DSW> separator(rectangle_A,p_transform_a,p_transform_inv_a,rectangle_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<RectangleShape2DSW,RectangleShape2DSW,castA,castB> separator(rectangle_A,p_transform_a,rectangle_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	//box faces A
@@ -766,15 +904,19 @@ static void _collision_rectangle_rectangle(const Shape2DSW* p_a,const Matrix32& 
 	separator.generate_contacts();
 }
 
-static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<RectangleShape2DSW,CapsuleShape2DSW> separator(rectangle_A,p_transform_a,p_transform_inv_a,capsule_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<RectangleShape2DSW,CapsuleShape2DSW,castA,castB> separator(rectangle_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	//box faces
@@ -791,21 +933,77 @@ static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Matrix32& p_
 
 	//box endpoints to capsule circles
 
+	Matrix32 boxinv = p_transform_a.affine_inverse();
+
 	for(int i=0;i<2;i++) {
 
-		Vector2 capsule_endpoint = p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*(i==0?0.5:-0.5);
+		{
+			Vector2 capsule_endpoint = p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*(i==0?0.5:-0.5);
 
-		const Vector2& half_extents = rectangle_A->get_half_extents();
-		Vector2 local_v = p_transform_inv_a.xform(capsule_endpoint);
+			const Vector2& half_extents = rectangle_A->get_half_extents();
+			Vector2 local_v = boxinv.xform(capsule_endpoint);
 
-		Vector2 he(
-			(local_v.x<0) ? -half_extents.x : half_extents.x,
-			(local_v.y<0) ? -half_extents.y : half_extents.y
-		);
+			Vector2 he(
+				(local_v.x<0) ? -half_extents.x : half_extents.x,
+				(local_v.y<0) ? -half_extents.y : half_extents.y
+			);
+
+			if (!separator.test_axis(p_transform_a.xform(he-capsule_endpoint).normalized()))
+				return;
+		}
 
 
-		if (!separator.test_axis(p_transform_a.xform(he).normalized()))
-			return;
+		if (castA) {
+			Vector2 capsule_endpoint = p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*(i==0?0.5:-0.5);
+			capsule_endpoint-=p_motion_a;
+
+
+			const Vector2& half_extents = rectangle_A->get_half_extents();
+			Vector2 local_v = boxinv.xform(capsule_endpoint);
+
+			Vector2 he(
+				(local_v.x<0) ? -half_extents.x : half_extents.x,
+				(local_v.y<0) ? -half_extents.y : half_extents.y
+			);
+
+			if (!separator.test_axis(p_transform_a.xform(he-capsule_endpoint).normalized()))
+				return;
+		}
+
+		if (castB) {
+			Vector2 capsule_endpoint = p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*(i==0?0.5:-0.5);
+			capsule_endpoint+=p_motion_b;
+
+
+			const Vector2& half_extents = rectangle_A->get_half_extents();
+			Vector2 local_v = boxinv.xform(capsule_endpoint);
+
+			Vector2 he(
+				(local_v.x<0) ? -half_extents.x : half_extents.x,
+				(local_v.y<0) ? -half_extents.y : half_extents.y
+			);
+
+			if (!separator.test_axis(p_transform_a.xform(he-capsule_endpoint).normalized()))
+				return;
+		}
+
+		if (castA && castB) {
+			Vector2 capsule_endpoint = p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*(i==0?0.5:-0.5);
+			capsule_endpoint-=p_motion_a;
+			capsule_endpoint+=p_motion_b;
+
+
+			const Vector2& half_extents = rectangle_A->get_half_extents();
+			Vector2 local_v = boxinv.xform(capsule_endpoint);
+
+			Vector2 he(
+				(local_v.x<0) ? -half_extents.x : half_extents.x,
+				(local_v.y<0) ? -half_extents.y : half_extents.y
+			);
+
+			if (!separator.test_axis(p_transform_a.xform(he-capsule_endpoint).normalized()))
+				return;
+		}
 
 	}
 
@@ -813,14 +1011,18 @@ static void _collision_rectangle_capsule(const Shape2DSW* p_a,const Matrix32& p_
 	separator.generate_contacts();
 }
 
-static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const RectangleShape2DSW *rectangle_A = static_cast<const RectangleShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
 
-	SeparatorAxisTest2D<RectangleShape2DSW,ConvexPolygonShape2DSW> separator(rectangle_A,p_transform_a,p_transform_inv_a,convex_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<RectangleShape2DSW,ConvexPolygonShape2DSW,castA,castB> separator(rectangle_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	//box faces
@@ -833,7 +1035,7 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Matri
 	//convex faces
 	for(int i=0;i<convex_B->get_point_count();i++) {
 
-		if (!separator.test_axis( p_transform_inv_b.basis_xform_inv(convex_B->get_segment_normal(i)).normalized() ))
+		if (!separator.test_axis( convex_B->get_xformed_segment_normal(p_transform_b,i)))
 			return;
 	}
 
@@ -844,15 +1046,19 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Matri
 
 /////////
 
-static void _collision_capsule_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_capsule_capsule(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const CapsuleShape2DSW *capsule_A = static_cast<const CapsuleShape2DSW*>(p_a);
 	const CapsuleShape2DSW *capsule_B = static_cast<const CapsuleShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<CapsuleShape2DSW,CapsuleShape2DSW> separator(capsule_A,p_transform_a,p_transform_inv_a,capsule_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<CapsuleShape2DSW,CapsuleShape2DSW,castA,castB> separator(capsule_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	//capsule axis
@@ -873,7 +1079,7 @@ static void _collision_capsule_capsule(const Shape2DSW* p_a,const Matrix32& p_tr
 
 			Vector2 capsule_endpoint_B = p_transform_b.get_origin()+p_transform_b.elements[1]*capsule_B->get_height()*(j==0?0.5:-0.5);
 
-			if (!separator.test_axis( (capsule_endpoint_A-capsule_endpoint_B).normalized() ))
+			if (TEST_POINT(capsule_endpoint_A,capsule_endpoint_B) )
 				return;
 
 		}
@@ -883,15 +1089,19 @@ static void _collision_capsule_capsule(const Shape2DSW* p_a,const Matrix32& p_tr
 
 }
 
-static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 	const CapsuleShape2DSW *capsule_A = static_cast<const CapsuleShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
 
 
-	SeparatorAxisTest2D<CapsuleShape2DSW,ConvexPolygonShape2DSW> separator(capsule_A,p_transform_a,p_transform_inv_a,convex_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<CapsuleShape2DSW,ConvexPolygonShape2DSW,castA,castB> separator(capsule_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
+		return;
+
+	if (!separator.test_cast())
 		return;
 
 	//capsule axis
@@ -909,12 +1119,12 @@ static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Matrix3
 
 			Vector2 capsule_endpoint_A = p_transform_a.get_origin()+p_transform_a.elements[1]*capsule_A->get_height()*(j==0?0.5:-0.5);
 
-			if (!separator.test_axis( (cpoint - capsule_endpoint_A).normalized() ))
+			if (TEST_POINT(capsule_endpoint_A,cpoint ))
 				return;
 
 		}
 
-		if (!separator.test_axis( p_transform_inv_b.basis_xform_inv(convex_B->get_segment_normal(i)).normalized() ))
+		if (!separator.test_axis( convex_B->get_xformed_segment_normal(p_transform_b,i)))
 			return;
 	}
 
@@ -925,26 +1135,31 @@ static void _collision_capsule_convex_polygon(const Shape2DSW* p_a,const Matrix3
 /////////
 
 
-static void _collision_convex_polygon_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Matrix32& p_transform_inv_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,const Matrix32& p_transform_inv_b,_CollectorCallback2D *p_collector) {
+template<bool castA, bool castB>
+static void _collision_convex_polygon_convex_polygon(const Shape2DSW* p_a,const Matrix32& p_transform_a,const Shape2DSW* p_b,const Matrix32& p_transform_b,_CollectorCallback2D *p_collector,const Vector2& p_motion_a,const Vector2& p_motion_b) {
 
 
 	const ConvexPolygonShape2DSW *convex_A = static_cast<const ConvexPolygonShape2DSW*>(p_a);
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
 
-	SeparatorAxisTest2D<ConvexPolygonShape2DSW,ConvexPolygonShape2DSW> separator(convex_A,p_transform_a,p_transform_inv_a,convex_B,p_transform_b,p_transform_inv_b,p_collector);
+	SeparatorAxisTest2D<ConvexPolygonShape2DSW,ConvexPolygonShape2DSW,castA,castB> separator(convex_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b);
 
 	if (!separator.test_previous_axis())
 		return;
 
+	if (!separator.test_cast())
+		return;
+
+
 	for(int i=0;i<convex_A->get_point_count();i++) {
 
-		if (!separator.test_axis( p_transform_inv_a.basis_xform_inv(convex_A->get_segment_normal(i)).normalized() ))
+		if (!separator.test_axis( convex_A->get_xformed_segment_normal(p_transform_a,i)))
 			return;
 	}
 
 	for(int i=0;i<convex_B->get_point_count();i++) {
 
-		if (!separator.test_axis( p_transform_inv_b.basis_xform_inv(convex_B->get_segment_normal(i)).normalized() ))
+		if (!separator.test_axis( convex_B->get_xformed_segment_normal(p_transform_b,i)))
 			return;
 	}
 
@@ -955,7 +1170,7 @@ static void _collision_convex_polygon_convex_polygon(const Shape2DSW* p_a,const 
 
 ////////
 
-bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Matrix32& p_transform_A, const Matrix32& p_transform_inv_A, const Shape2DSW *p_shape_B, const Matrix32& p_transform_B, const Matrix32& p_transform_inv_B, CollisionSolver2DSW::CallbackResult p_result_callback,void *p_userdata, bool p_swap,Vector2 *sep_axis) {
+bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Matrix32& p_transform_A, const Vector2& p_motion_A, const Shape2DSW *p_shape_B, const Matrix32& p_transform_B,const Vector2& p_motion_B, CollisionSolver2DSW::CallbackResult p_result_callback,void *p_userdata, bool p_swap,Vector2 *sep_axis) {
 
 	Physics2DServer::ShapeType type_A=p_shape_A->get_type();
 
@@ -971,31 +1186,118 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Matrix32& p_
 
 
 	static const CollisionFunc collision_table[5][5]={
-		{_collision_segment_segment,
-		 _collision_segment_circle,
-		 _collision_segment_rectangle,
-		 _collision_segment_capsule,
-		 _collision_segment_convex_polygon},
+		{_collision_segment_segment<false,false>,
+		 _collision_segment_circle<false,false>,
+		 _collision_segment_rectangle<false,false>,
+		 _collision_segment_capsule<false,false>,
+		 _collision_segment_convex_polygon<false,false>},
 		{0,
-		 _collision_circle_circle,
-		 _collision_circle_rectangle,
-		 _collision_circle_capsule,
-		 _collision_circle_convex_polygon},
-		{0,
-		 0,
-		 _collision_rectangle_rectangle,
-		 _collision_rectangle_capsule,
-		 _collision_rectangle_convex_polygon},
+		 _collision_circle_circle<false,false>,
+		 _collision_circle_rectangle<false,false>,
+		 _collision_circle_capsule<false,false>,
+		 _collision_circle_convex_polygon<false,false>},
 		{0,
 		 0,
-		 0,
-		 _collision_capsule_capsule,
-		 _collision_capsule_convex_polygon},
+		 _collision_rectangle_rectangle<false,false>,
+		 _collision_rectangle_capsule<false,false>,
+		 _collision_rectangle_convex_polygon<false,false>},
 		{0,
 		 0,
 		 0,
+		 _collision_capsule_capsule<false,false>,
+		 _collision_capsule_convex_polygon<false,false>},
+		{0,
 		 0,
-		 _collision_convex_polygon_convex_polygon}
+		 0,
+		 0,
+		 _collision_convex_polygon_convex_polygon<false,false>}
+
+	};
+
+	static const CollisionFunc collision_table_castA[5][5]={
+		{_collision_segment_segment<true,false>,
+		 _collision_segment_circle<true,false>,
+		 _collision_segment_rectangle<true,false>,
+		 _collision_segment_capsule<true,false>,
+		 _collision_segment_convex_polygon<true,false>},
+		{0,
+		 _collision_circle_circle<true,false>,
+		 _collision_circle_rectangle<true,false>,
+		 _collision_circle_capsule<true,false>,
+		 _collision_circle_convex_polygon<true,false>},
+		{0,
+		 0,
+		 _collision_rectangle_rectangle<true,false>,
+		 _collision_rectangle_capsule<true,false>,
+		 _collision_rectangle_convex_polygon<true,false>},
+		{0,
+		 0,
+		 0,
+		 _collision_capsule_capsule<true,false>,
+		 _collision_capsule_convex_polygon<true,false>},
+		{0,
+		 0,
+		 0,
+		 0,
+		 _collision_convex_polygon_convex_polygon<true,false>}
+
+	};
+
+	static const CollisionFunc collision_table_castB[5][5]={
+		{_collision_segment_segment<false,true>,
+		 _collision_segment_circle<false,true>,
+		 _collision_segment_rectangle<false,true>,
+		 _collision_segment_capsule<false,true>,
+		 _collision_segment_convex_polygon<false,true>},
+		{0,
+		 _collision_circle_circle<false,true>,
+		 _collision_circle_rectangle<false,true>,
+		 _collision_circle_capsule<false,true>,
+		 _collision_circle_convex_polygon<false,true>},
+		{0,
+		 0,
+		 _collision_rectangle_rectangle<false,true>,
+		 _collision_rectangle_capsule<false,true>,
+		 _collision_rectangle_convex_polygon<false,true>},
+		{0,
+		 0,
+		 0,
+		 _collision_capsule_capsule<false,true>,
+		 _collision_capsule_convex_polygon<false,true>},
+		{0,
+		 0,
+		 0,
+		 0,
+		 _collision_convex_polygon_convex_polygon<false,true>}
+
+	};
+
+	static const CollisionFunc collision_table_castA_castB[5][5]={
+		{_collision_segment_segment<true,true>,
+		 _collision_segment_circle<true,true>,
+		 _collision_segment_rectangle<true,true>,
+		 _collision_segment_capsule<true,true>,
+		 _collision_segment_convex_polygon<true,true>},
+		{0,
+		 _collision_circle_circle<true,true>,
+		 _collision_circle_rectangle<true,true>,
+		 _collision_circle_capsule<true,true>,
+		 _collision_circle_convex_polygon<true,true>},
+		{0,
+		 0,
+		 _collision_rectangle_rectangle<true,true>,
+		 _collision_rectangle_capsule<true,true>,
+		 _collision_rectangle_convex_polygon<true,true>},
+		{0,
+		 0,
+		 0,
+		 _collision_capsule_capsule<true,true>,
+		 _collision_capsule_convex_polygon<true,true>},
+		{0,
+		 0,
+		 0,
+		 0,
+		 _collision_convex_polygon_convex_polygon<true,true>}
 
 	};
 
@@ -1010,23 +1312,34 @@ bool sat_2d_calculate_penetration(const Shape2DSW *p_shape_A, const Matrix32& p_
 	const Shape2DSW *B=p_shape_B;
 	const Matrix32 *transform_A=&p_transform_A;
 	const Matrix32 *transform_B=&p_transform_B;
-	const Matrix32 *transform_inv_A=&p_transform_inv_A;
-	const Matrix32 *transform_inv_B=&p_transform_inv_B;
+	const Vector2 *motion_A=&p_motion_A;
+	const Vector2 *motion_B=&p_motion_B;
 
 	if (type_A > type_B) {
 		SWAP(A,B);
 		SWAP(transform_A,transform_B);
-		SWAP(transform_inv_A,transform_inv_B);
 		SWAP(type_A,type_B);
+		SWAP(motion_A,motion_B);
 		callback.swap = !callback.swap;
 	}
 
 
-	CollisionFunc collision_func = collision_table[type_A-2][type_B-2];
+	CollisionFunc collision_func;
+	if (*motion_A==Vector2() && *motion_B==Vector2()) {
+		collision_func = collision_table[type_A-2][type_B-2];
+	} else if (*motion_A!=Vector2() &&  *motion_B==Vector2()) {
+		collision_func = collision_table_castA[type_A-2][type_B-2];
+	} else if (*motion_A==Vector2() && *motion_B!=Vector2()) {
+		collision_func = collision_table_castB[type_A-2][type_B-2];
+	} else {
+		collision_func = collision_table_castA_castB[type_A-2][type_B-2];
+	}
+
+
+
 	ERR_FAIL_COND_V(!collision_func,false);
 
-
-	collision_func(A,*transform_A,*transform_inv_A,B,*transform_B,*transform_inv_B,&callback);
+	collision_func(A,*transform_A,B,*transform_B,&callback,*motion_A,*motion_B);
 
 	return callback.collided;
 

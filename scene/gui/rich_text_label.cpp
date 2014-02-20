@@ -27,9 +27,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "rich_text_label.h"
-#include "scene/scene_string_names.h"e"
-
-
+#include "scene/scene_string_names.h"
+#include "os/keyboard.h"
+#include "os/os.h"
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item) {
 
 	if (p_item->subitems.size()) {
@@ -455,10 +455,17 @@ void RichTextLabel::_notification(int p_what) {
 			_validate_line_caches();
 			_update_scroll();
 
+
 			RID ci=get_canvas_item();
 			Size2 size = get_size();
 
 			VisualServer::get_singleton()->canvas_item_set_clip(ci,true);
+
+			if (has_focus()) {
+				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci,true);
+				draw_style_box(get_stylebox("focus"),Rect2(Point2(),size));
+				VisualServer::get_singleton()->canvas_item_add_clip_ignore(ci,false);
+			}
 
 			int ofs = vscroll->get_val();
 
@@ -607,6 +614,60 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 				if (scroll_active)
 					vscroll->set_val( vscroll->get_val()+vscroll->get_page()/8 );
 			}
+		} break;
+		case InputEvent::KEY: {
+
+			const InputEventKey &k=p_event.key;
+			if (k.pressed) {
+				bool handled=true;
+				switch(k.scancode) {
+					case KEY_PAGEUP: {
+
+						if (vscroll->is_visible())
+							vscroll->set_val( vscroll->get_val() - vscroll->get_page() );
+					} break;
+					case KEY_PAGEDOWN: {
+
+						if (vscroll->is_visible())
+							vscroll->set_val( vscroll->get_val() + vscroll->get_page() );
+					} break;
+					case KEY_UP: {
+
+						if (vscroll->is_visible())
+							vscroll->set_val( vscroll->get_val() - get_font("default_font")->get_height() );
+					} break;
+					case KEY_DOWN: {
+
+						if (vscroll->is_visible())
+							vscroll->set_val( vscroll->get_val() + get_font("default_font")->get_height() );
+					} break;
+					case KEY_HOME: {
+
+						if (vscroll->is_visible())
+							vscroll->set_val( 0 );
+					} break;
+					case KEY_END: {
+
+						if (vscroll->is_visible())
+							vscroll->set_val( vscroll->get_max() );
+					} break;
+					case KEY_INSERT:
+					case KEY_C: {
+
+						if (k.mod.command) {
+							selection_copy();
+						} else {
+							handled=false;
+						}
+
+					} break;
+					default: handled=false;
+				}
+
+				if (handled)
+					accept_event();
+			}
+
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
@@ -1300,6 +1361,9 @@ void RichTextLabel::set_selection_enabled(bool p_enabled) {
 			selection.active=false;
 			update();
 		}
+		set_focus_mode(FOCUS_NONE);
+	} else {
+		set_focus_mode(FOCUS_ALL);
 	}
 
 }
@@ -1365,6 +1429,46 @@ bool RichTextLabel::search(const String& p_string,bool p_from_selection) {
 
 
 	return false;
+
+}
+
+void RichTextLabel::selection_copy() {
+
+	if (!selection.enabled)
+		return;
+
+	String text;
+
+	RichTextLabel::Item *item=selection.from;
+
+	while(item) {
+
+		if (item->type==ITEM_TEXT) {
+
+			String itext = static_cast<ItemText*>(item)->text;
+			if (item==selection.from && item==selection.to) {
+				text+=itext.substr(selection.from_char,selection.to_char-selection.from_char+1);
+			} else if (item==selection.from) {
+				text+=itext.substr(selection.from_char,itext.size());
+			} else if (item==selection.to) {
+				text+=itext.substr(0,selection.to_char+1);
+			} else {
+				text+=itext;
+			}
+
+		} else if (item->type==ITEM_NEWLINE) {
+			text+="\n";
+		}
+		if (item==selection.to)
+			break;
+
+		item=_get_next_item(item);
+	}
+
+	if (text!="") {
+		OS::get_singleton()->set_clipboard(text);
+		print_line("COPY: "+text);
+	}
 
 }
 

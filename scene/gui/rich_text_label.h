@@ -289,6 +289,7 @@ public:
 
 	void set_selection_enabled(bool p_enabled);
 	bool is_selection_enabled() const;
+	void selection_copy();
 
 	Error parse_bbcode(const String& p_bbcode);
 	Error append_bbcode(const String& p_bbcode);

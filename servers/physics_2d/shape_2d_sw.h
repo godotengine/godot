@@ -30,6 +30,8 @@
 #define SHAPE_2D_2DSW_H
 
 #include "servers/physics_2d_server.h"
+#define _SEGMENT_IS_VALID_SUPPORT_TRESHOLD 0.99998
+
 /*
 
 SHAPE_LINE, ///< plane:"plane"
@@ -77,6 +79,7 @@ public:
 	virtual bool is_concave() const { return false; }
 
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const=0;
+	virtual void project_range_castv(const Vector2& p_cast, const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const=0;
 	virtual Vector2 get_support(const Vector2& p_normal) const;
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const=0;
 
@@ -94,10 +97,64 @@ public:
 	bool is_owner(ShapeOwner2DSW *p_owner) const;
 	const Map<ShapeOwner2DSW*,int>& get_owners() const;
 
+
+	_FORCE_INLINE_ void get_supports_transformed_cast(const Vector2& p_cast,const Vector2& p_normal,const Matrix32& p_xform,Vector2 *r_supports,int & r_amount) const {
+
+		get_supports(p_xform.basis_xform_inv(p_normal).normalized(),r_supports,r_amount);
+		for(int i=0;i<r_amount;i++)
+			r_supports[i]=p_xform.xform(r_supports[i]);
+
+		if (r_amount==1) {
+
+			if (Math::abs( p_normal.dot(p_cast.normalized()) )<(1.0-_SEGMENT_IS_VALID_SUPPORT_TRESHOLD) ) {
+				//make line because they are parallel
+				r_amount=2;
+				r_supports[1]=r_supports[0]+p_cast;
+			} else if (p_cast.dot(p_normal)>0) {
+				//normal points towards cast, add cast
+				r_supports[0]+=p_cast;
+			}
+
+		} else {
+
+			if (Math::abs( p_normal.dot(p_cast.normalized()) )<(1.0-_SEGMENT_IS_VALID_SUPPORT_TRESHOLD) ) {
+				//optimize line and make it larger because they are parallel
+				if ((r_supports[1]-r_supports[0]).dot(p_cast)>0) {
+					//larger towards 1
+					r_supports[1]+=p_cast;
+				} else {
+					//larger towards 0
+					r_supports[0]+=p_cast;
+				}
+			} else if (p_cast.dot(p_normal)>0) {
+				//normal points towards cast, add cast
+				r_supports[0]+=p_cast;
+				r_supports[1]+=p_cast;
+			}
+
+		}
+	}
+
 	Shape2DSW();
 	virtual ~Shape2DSW();
 };
 
+//let the optimizer do the magic
+#define DEFAULT_PROJECT_RANGE_CAST \
+virtual void project_range_castv(const Vector2& p_cast, const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const {\
+	project_range_cast(p_cast,p_normal,p_transform,r_min,r_max);\
+}\
+_FORCE_INLINE_ void project_range_cast(const Vector2& p_cast, const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const {\
+\
+	real_t mina,maxa;\
+	real_t minb,maxb;\
+	Matrix32 ofsb=p_transform;\
+	ofsb.elements[2]+=p_cast;\
+	project_range(p_normal,p_transform,mina,maxa);\
+	project_range(p_normal,ofsb,minb,maxb);	\
+	r_min=MIN(mina,minb);\
+	r_max=MAX(maxa,maxb);\
+}
 
 class LineShape2DSW : public Shape2DSW {
 
@@ -126,6 +183,18 @@ public:
 		r_min=-1e10;
 		r_max=1e10;
 	}
+
+	virtual void project_range_castv(const Vector2& p_cast, const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const {
+		project_range_cast(p_cast,p_normal,p_transform,r_min,r_max);
+	}
+
+	_FORCE_INLINE_ void project_range_cast(const Vector2& p_cast, const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const {
+		//real large
+		r_min=-1e10;
+		r_max=1e10;
+	}
+
+
 
 };
 
@@ -161,6 +230,9 @@ public:
 		}
 	}
 
+	DEFAULT_PROJECT_RANGE_CAST
+
+
 	_FORCE_INLINE_ RayShape2DSW() {}
 	_FORCE_INLINE_ RayShape2DSW(real_t p_length) { length=p_length; }
 };
@@ -182,6 +254,10 @@ public:
 
 	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_SEGMENT; }
 
+	_FORCE_INLINE_ Vector2 get_xformed_normal(const Matrix32& p_xform) const {
+
+		return (p_xform.xform(b) - p_xform.xform(a)).normalized().tangent();
+	}
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { project_range(p_normal,p_transform,r_min,r_max); }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
@@ -200,6 +276,8 @@ public:
 			SWAP(r_max,r_min);
 		}
 	}
+
+	DEFAULT_PROJECT_RANGE_CAST
 
 	_FORCE_INLINE_ SegmentShape2DSW() {}
 	_FORCE_INLINE_ SegmentShape2DSW(const Vector2& p_a,const Vector2& p_b,const Vector2& p_n) { a=p_a; b=p_b; n=p_n; }
@@ -238,6 +316,9 @@ public:
 		r_max = d + (radius) * scale;
 	}
 
+
+	DEFAULT_PROJECT_RANGE_CAST
+
 };
 
 
@@ -272,6 +353,8 @@ public:
 		r_min = distance - length;
 		r_max = distance + length;
 	}
+
+	DEFAULT_PROJECT_RANGE_CAST
 
 };
 
@@ -316,7 +399,11 @@ public:
 		//ERR_FAIL_COND( r_max < r_min );
 	}
 
+	DEFAULT_PROJECT_RANGE_CAST
+
 };
+
+
 
 
 class ConvexPolygonShape2DSW : public Shape2DSW {
@@ -336,6 +423,13 @@ public:
 	_FORCE_INLINE_ int get_point_count() const { return point_count; }
 	_FORCE_INLINE_ const Vector2& get_point(int p_idx) const { return points[p_idx].pos; }
 	_FORCE_INLINE_ const Vector2& get_segment_normal(int p_idx) const { return points[p_idx].normal; }
+	_FORCE_INLINE_ Vector2 get_xformed_segment_normal(const Matrix32& p_xform, int p_idx) const {
+
+		Vector2 a = points[p_idx].pos;
+		p_idx++;
+		Vector2 b = points[p_idx==point_count?0:p_idx].pos;
+		return (p_xform.xform(b)-p_xform.xform(a)).normalized().tangent();
+	}
 
 	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CONVEX_POLYGON; }
 
@@ -364,6 +458,7 @@ public:
 
 	}
 
+	DEFAULT_PROJECT_RANGE_CAST
 
 	ConvexPolygonShape2DSW();
 	~ConvexPolygonShape2DSW();
@@ -425,6 +520,7 @@ public:
 	virtual Physics2DServer::ShapeType get_type() const { return Physics2DServer::SHAPE_CONCAVE_POLYGON; }
 
 	virtual void project_rangev(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { /*project_range(p_normal,p_transform,r_min,r_max);*/ }
+	virtual void project_range(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const { /*project_range(p_normal,p_transform,r_min,r_max);*/ }
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
@@ -435,6 +531,9 @@ public:
 	virtual Variant get_data() const;
 
 	virtual void cull(const Rect2& p_local_aabb,Callback p_callback,void* p_userdata) const;
+
+
+	DEFAULT_PROJECT_RANGE_CAST
 
 };
 

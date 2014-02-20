@@ -202,7 +202,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	
 	for(int i=0;i<argc;i++) {
 
-		args.push_back(argv[i]);	
+		args.push_back(String::utf8(argv[i]));
 	}
 
 	List<String>::Element *I=args.front();
@@ -797,7 +797,6 @@ bool Main::start() {
 
 	bool editor=false;
 	String doc_tool;
-	String doc_header;
 	bool doc_base=true;
 	String game_path;
 	String script;
@@ -819,10 +818,6 @@ bool Main::start() {
 		if (args[i]=="-doctool" && i <(args.size()-1)) {
 
 			doc_tool=args[i+1];
-			i++;
-		} else if (args[i]=="-docheader" && i <(args.size()-1)) {
-
-			doc_header=args[i+1];
 			i++;
 		}else if (args[i]=="-nodocbase") {
 
@@ -899,10 +894,7 @@ bool Main::start() {
 
 		}
 
-		if (doc_header.length())
-			doc.save_compressed_header(doc_header);
-		else
-			doc.save(doc_tool);
+		doc.save(doc_tool);
 
 		return false;
 	}
@@ -1045,18 +1037,24 @@ bool Main::start() {
 
 				if (!absolute) {
 
-					int sep=local_game_path.find_last("/");
+					if (Globals::get_singleton()->is_using_datapack()) {
 
-					if (sep==-1) {
-						DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-						local_game_path=da->get_current_dir()+"/"+local_game_path;
-						memdelete(da)						;
+						local_game_path="res://"+local_game_path;
+
 					} else {
+						int sep=local_game_path.find_last("/");
 
-						DirAccess *da = DirAccess::open(local_game_path.substr(0,sep));
-						if (da) {
-							local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());;
-							memdelete(da);
+						if (sep==-1) {
+							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+							local_game_path=da->get_current_dir()+"/"+local_game_path;
+							memdelete(da)						;
+						} else {
+
+							DirAccess *da = DirAccess::open(local_game_path.substr(0,sep));
+							if (da) {
+								local_game_path=da->get_current_dir()+"/"+local_game_path.substr(sep+1,local_game_path.length());;
+								memdelete(da);
+							}
 						}
 					}
 

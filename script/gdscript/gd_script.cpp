@@ -1524,21 +1524,21 @@ bool GDScript::_get(const StringName& p_name,Variant &r_ret) const {
 			top=top->_base;
 		}
 
-		return false;
+		if (p_name==GDScriptLanguage::get_singleton()->strings._script_source) {
+
+			r_ret=get_source_code();
+			return true;
+		}
 	}
 
 
-	if (p_name=="script/source") {
 
-		r_ret=get_source_code();
-	}
-
-	return true;
+	return false;
 
 }
 bool GDScript::_set(const StringName& p_name, const Variant& p_value) {
 
-	if (p_name=="script/source") {
+	if (p_name==GDScriptLanguage::get_singleton()->strings._script_source) {
 
 		set_source_code(p_value);
 		reload();
@@ -2115,6 +2115,7 @@ GDScriptLanguage::GDScriptLanguage() {
 	strings._set= StaticCString::create("_set");
 	strings._get= StaticCString::create("_get");
 	strings._get_property_list= StaticCString::create("_get_property_list");
+	strings._script_source=StaticCString::create("script/source");
 	_debug_parse_err_line=-1;
 	_debug_parse_err_file="";
 

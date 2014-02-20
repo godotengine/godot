@@ -88,6 +88,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"printerr",
 		"printraw",
 		"range",
+		"load",
 		"inst2dict",
 		"dict2inst",
 		"print_stack",
@@ -668,6 +669,16 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			}
 
 		} break;
+		case RESOURCE_LOAD: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_ret=Variant();
+			}
+			r_ret=ResourceLoader::load(*p_args[0]);
+
+		}
 		case INST2DICT: {
 
 			VALIDATE_ARG_COUNT(1);
@@ -1168,6 +1179,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("range",PropertyInfo(Variant::NIL,"..."));
 			mi.return_val.type=Variant::ARRAY;
+			return mi;
+		} break;
+		case RESOURCE_LOAD: {
+
+			MethodInfo mi("load",PropertyInfo(Variant::STRING,"path"));
+			mi.return_val.type=Variant::OBJECT;
 			return mi;
 		} break;
 		case INST2DICT: {

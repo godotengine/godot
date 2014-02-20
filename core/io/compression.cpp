@@ -29,6 +29,8 @@
 #include "compression.h"
 
 #include "fastlz.h"
+#include "zlib.h"
+#include "zip_io.h"
 #include "os/copymem.h"
 
 int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size,Mode p_mode) {
@@ -44,6 +46,27 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size,M
 			} else {
 				return fastlz_compress(p_src,p_src_size,p_dst);
 			}
+
+		} break;
+		case MODE_DEFLATE: {
+
+			z_stream strm;
+			strm.zalloc = zipio_alloc;
+			strm.zfree = zipio_free;
+			strm.opaque = Z_NULL;
+			int err = deflateInit(&strm,Z_DEFAULT_COMPRESSION);
+			if (err==Z_OK)
+			    return -1;
+
+			strm.avail_in=p_src_size;
+			int aout = deflateBound(&strm,p_src_size);;
+			strm.avail_out=aout;
+			strm.next_in=(Bytef*)p_src;
+			strm.next_out=p_dst;
+			deflate(&strm,Z_FINISH);
+			aout = aout - strm.avail_out;
+			deflateEnd(&strm);
+			return aout;
 
 		} break;
 	}
@@ -62,6 +85,19 @@ int Compression::get_max_compressed_buffer_size(int p_src_size,Mode p_mode){
 				ss=66;
 			return ss;
 
+		} break;
+		case MODE_DEFLATE: {
+
+			z_stream strm;
+			strm.zalloc = zipio_alloc;
+			strm.zfree = zipio_free;
+			strm.opaque = Z_NULL;
+			int err = deflateInit(&strm,Z_DEFAULT_COMPRESSION);
+			if (err==Z_OK)
+			    return -1;
+			int aout = deflateBound(&strm,p_src_size);
+			deflateEnd(&strm);
+			return aout;
 		} break;
 	}
 
@@ -83,6 +119,27 @@ void Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *
 			} else {
 				fastlz_decompress(p_src,p_src_size,p_dst,p_dst_max_size);
 			}
+			return;
+		} break;
+		case MODE_DEFLATE: {
+
+			z_stream strm;
+			strm.zalloc = zipio_alloc;
+			strm.zfree = zipio_free;
+			strm.opaque = Z_NULL;
+			strm.avail_in= 0;
+			strm.next_in=Z_NULL;
+			int err = inflateInit(&strm);
+			ERR_FAIL_COND(err!=Z_OK);
+
+			strm.avail_in=p_src_size;
+			strm.avail_out=p_dst_max_size;
+			strm.next_in=(Bytef*)p_src;
+			strm.next_out=p_dst;
+
+			err = inflate(&strm,Z_FINISH);
+			inflateEnd(&strm);
+			ERR_FAIL_COND(err!=Z_STREAM_END);
 			return;
 		} break;
 	}

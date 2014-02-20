@@ -28,12 +28,13 @@
 /*************************************************************************/
 #include "version.h"
 #include "doc_data.h"
-#include "io/xml_parser.h"
+
 #include "global_constants.h"
 #include "globals.h"
 #include "script_language.h"
 #include "io/marshalls.h"
 #include "io/compression.h"
+
 void DocData::merge_from(const DocData& p_data) {
 
 	for( Map<String,ClassDoc>::Element *E=class_list.front();E;E=E->next()) {
@@ -601,10 +602,15 @@ static Error _parse_methods(Ref<XMLParser>& parser,Vector<DocData::MethodDoc>& m
 Error DocData::load(const String& p_path) {
 
 	Ref<XMLParser> parser=memnew(XMLParser);
-
 	Error err = parser->open(p_path);
 	if (err)
 		return err;
+	return _load(parser);
+
+}
+Error DocData::_load(Ref<XMLParser> parser) {
+
+	Error err=OK;
 
 	while((err=parser->read())==OK) {
 
@@ -891,221 +897,20 @@ Error DocData::save(const String& p_path) {
 	return OK;
 }
 
-static void add_to_arr(Vector<uint8_t>& p_arr,const Variant& p_var) {
-
-	int from = p_arr.size();
-	int len;
-	Error err =encode_variant(p_var,NULL,len);
-	ERR_FAIL_COND(err!=OK);
-	p_arr.resize(from+len);
-	encode_variant(p_var,&p_arr[from],len);
-}
-
-Error DocData::save_compressed_header(const String& p_path) {
-
-	Vector<uint8_t> data;
-	add_to_arr(data,version);
-	add_to_arr(data,class_list.size());
-	for (Map<String,ClassDoc>::Element *E=class_list.front();E;E=E->next()) {
-
-
-		ClassDoc &cd=E->get();
-		add_to_arr(data,cd.name);
-		add_to_arr(data,cd.inherits);
-		add_to_arr(data,cd.category);
-		add_to_arr(data,cd.brief_description);
-		add_to_arr(data,cd.description);
-		add_to_arr(data,cd.methods.size());
-		for(int i=0;i<cd.methods.size();i++) {
-
-			MethodDoc &md=cd.methods[i];
-			add_to_arr(data,md.name);
-			add_to_arr(data,md.return_type);
-			add_to_arr(data,md.qualifiers);
-			add_to_arr(data,md.description);
-			add_to_arr(data,md.arguments.size());
-			for(int j=0;j<md.arguments.size();j++) {
-				ArgumentDoc &ad=md.arguments[j];
-				add_to_arr(data,ad.name);
-				add_to_arr(data,ad.type);
-				add_to_arr(data,ad.default_value);
-			}
-		}
-
-		add_to_arr(data,cd.signals.size());
-		for(int i=0;i<cd.signals.size();i++) {
-
-			MethodDoc &md=cd.signals[i];
-			add_to_arr(data,md.name);
-			add_to_arr(data,md.return_type);
-			add_to_arr(data,md.qualifiers);
-			add_to_arr(data,md.description);
-			add_to_arr(data,md.arguments.size());
-			for(int j=0;j<md.arguments.size();j++) {
-				ArgumentDoc &ad=md.arguments[j];
-				add_to_arr(data,ad.name);
-				add_to_arr(data,ad.type);
-				add_to_arr(data,ad.default_value);
-			}
-		}
-
-		add_to_arr(data,cd.properties.size());
-		for(int i=0;i<cd.properties.size();i++) {
-
-			PropertyDoc &pd=cd.properties[i];
-			add_to_arr(data,pd.name);
-			add_to_arr(data,pd.type);
-			add_to_arr(data,pd.description);
-		}
-
-		add_to_arr(data,cd.constants.size());
-		for(int i=0;i<cd.constants.size();i++) {
-
-			ConstantDoc &kd=cd.constants[i];
-			add_to_arr(data,kd.name);
-			add_to_arr(data,kd.value);
-			add_to_arr(data,kd.description);
-		}
-
-
-	}
-
-
-	Vector<uint8_t> cdata;
-	cdata.resize( Compression::get_max_compressed_buffer_size(data.size()) );
-	int res = Compression::compress(cdata.ptr(),data.ptr(),data.size());
-
-	cdata.resize(res);
-
-	print_line("orig size: "+itos(data.size()));
-	print_line("comp size: "+itos(cdata.size()));
-
-	Error err;
-	FileAccess *f = FileAccess::open(p_path,FileAccess::WRITE,&err);
-	if (err!=OK) {
-
-		ERR_FAIL_COND_V(err,err);
-	}
-
-	f->store_line("/* This file is generated, do not edit */");
-	f->store_line("#ifndef DOC_DATA_COMPRESSED_H");
-	f->store_line("#define DOC_DATA_COMPRESSED_H");
-	f->store_line("");
-	f->store_line("static const int _doc_data_compressed_size="+itos(cdata.size())+";");
-	f->store_line("static const int _doc_data_uncompressed_size="+itos(data.size())+";");
-	f->store_line("static const unsigned char _doc_data_compressed[]={");
-	for(int i=0;i<cdata.size();i++)
-		f->store_line(itos(cdata[i])+",");
-	f->store_line("};");
-	f->store_line("");
-	f->store_line("#endif");
-
-	memdelete(f);
-
-	return OK;
-
-}
-
-static Variant get_data(int& ofs, const Vector<uint8_t>& p_array) {
-
-	int len;
-	Variant r;
-	decode_variant(r,&p_array[ofs],p_array.size()-ofs,&len);
-	ofs+=len;
-	return r;
-}
 
 Error DocData::load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size) {
 
 	Vector<uint8_t> data;
 	data.resize(p_uncompressed_size);
-	Compression::decompress(data.ptr(),p_uncompressed_size,p_data,p_compressed_size);
+	Compression::decompress(data.ptr(),p_uncompressed_size,p_data,p_compressed_size,Compression::MODE_DEFLATE);
 	class_list.clear();
-	int ofs=0;
-	version=get_data(ofs,data);
-	int ccount=get_data(ofs,data);
 
-	for(int i=0;i<ccount;i++) {
+	Ref<XMLParser> parser = memnew( XMLParser );
+	Error err = parser->open_buffer(data);
+	if (err)
+		return err;
 
-
-		ClassDoc cd;
-		cd.name=get_data(ofs,data);
-		cd.inherits=get_data(ofs,data);
-		cd.category=get_data(ofs,data);
-		cd.brief_description=get_data(ofs,data);
-		cd.description=get_data(ofs,data);
-		int mc = get_data(ofs,data);
-
-
-		for(int j=0;j<mc;j++) {
-
-			MethodDoc md;
-			md.name=get_data(ofs,data);
-			md.return_type=get_data(ofs,data);
-			md.qualifiers=get_data(ofs,data);
-			md.description=get_data(ofs,data);
-			int ac=get_data(ofs,data);
-
-			for(int k=0;k<ac;k++) {
-				ArgumentDoc ad;
-				ad.name=get_data(ofs,data);
-				ad.type=get_data(ofs,data);
-				ad.default_value=get_data(ofs,data);
-				md.arguments.push_back(ad);
-			}
-
-			cd.methods.push_back(md);
-		}
-
-		int sc = get_data(ofs,data);
-
-		for(int j=0;j<sc;j++) {
-
-			MethodDoc md;
-			md.name=get_data(ofs,data);
-			md.return_type=get_data(ofs,data);
-			md.qualifiers=get_data(ofs,data);
-			md.description=get_data(ofs,data);
-			int ac=get_data(ofs,data);
-
-			for(int k=0;k<ac;k++) {
-				ArgumentDoc ad;
-				ad.name=get_data(ofs,data);
-				ad.type=get_data(ofs,data);
-				ad.default_value=get_data(ofs,data);
-				md.arguments.push_back(ad);
-			}
-
-			cd.signals.push_back(md);
-		}
-
-		int pc = get_data(ofs,data);
-
-		for(int j=0;j<pc;j++) {
-
-			PropertyDoc pd;
-			pd.name=get_data(ofs,data);
-			pd.type=get_data(ofs,data);
-			pd.description=get_data(ofs,data);
-			cd.properties.push_back(pd);
-		}
-
-		int kc = get_data(ofs,data);
-
-		for(int j=0;j<kc;j++) {
-
-			ConstantDoc kd;
-			kd.name=get_data(ofs,data);
-			kd.value=get_data(ofs,data);
-			kd.description=get_data(ofs,data);
-			cd.constants.push_back(kd);
-		}
-
-
-		class_list[cd.name]=cd;
-	}
-
-
+	_load(parser);
 
 	return OK;
 

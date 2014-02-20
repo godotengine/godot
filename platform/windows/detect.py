@@ -66,7 +66,9 @@ def configure(env):
 	if (env["tools"]=="no"):
 		#no tools suffix
 		env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
+		#env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
+		env['platform_libsuffix'] = ".nt"+env['LIBSUFFIX']
+
 
 
 	if (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None):

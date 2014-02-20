@@ -533,6 +533,7 @@ void make_default_theme() {
 	t->set_color("font_color_selected","RichTextLabel", font_color_selection );
 	t->set_color("selection_color","RichTextLabel", Color(0.1,0.1,1,0.8) );
 	t->set_constant("line_separation","RichTextLabel", 1 );
+	t->set_stylebox("focus","RichTextLabel", focus );
 
 
 	t->set_constant("separation","HBoxContainer",4);

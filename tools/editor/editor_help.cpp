@@ -31,6 +31,9 @@
 #include "editor_settings.h"
 #include "os/keyboard.h"
 #include "doc_data_compressed.h"
+
+DocData *EditorHelp::doc=NULL;
+
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (is_visible() && p_ev.key.mod.control && p_ev.key.scancode==KEY_F) {
@@ -167,7 +170,7 @@ void EditorHelp::_scroll_changed(double p_scroll) {
 
 void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vscr) {
 
-	ERR_FAIL_COND(!doc.class_list.has(p_class));
+	ERR_FAIL_COND(!doc->class_list.has(p_class));
 
 
 	if (tree_item_map.has(p_class)) {
@@ -203,7 +206,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 	edited_class->show();
 
 
-	DocData::ClassDoc &cd=doc.class_list[p_class];
+	DocData::ClassDoc &cd=doc->class_list[p_class];
 
 	Color h_color;
 
@@ -630,7 +633,7 @@ void EditorHelp::_add_text(const String& p_bbcode) {
 			class_desc->pop();
 			pos=brk_end+1;
 
-		} else if (doc.class_list.has(tag)) {
+		} else if (doc->class_list.has(tag)) {
 
 
 			class_desc->push_meta("#"+tag);
@@ -796,7 +799,7 @@ void EditorHelp::add_type(const String& p_type,HashMap<String,TreeItem*>& p_type
 //	if (!ObjectTypeDB::is_type(p_type,base) || p_type==base)
 //		return;
 
-	String inherits=doc.class_list[p_type].inherits;
+	String inherits=doc->class_list[p_type].inherits;
 
 	TreeItem *parent=p_root;
 
@@ -814,7 +817,7 @@ void EditorHelp::add_type(const String& p_type,HashMap<String,TreeItem*>& p_type
 
 	TreeItem *item = class_list->create_item(parent);
 	item->set_metadata(0,p_type);
-	item->set_tooltip(0,doc.class_list[p_type].brief_description);
+	item->set_tooltip(0,doc->class_list[p_type].brief_description);
 	item->set_text(0,p_type);
 
 
@@ -841,11 +844,23 @@ void EditorHelp::_update_doc() {
 	class_list->set_hide_root(true);
 	List<String>::Element *I=type_list.front();
 
-	for(Map<String,DocData::ClassDoc>::Element *E=doc.class_list.front();E;E=E->next()) {
+	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
 
 
 		add_type(E->key(),tree_item_map,root);
 	}
+
+}
+
+
+void EditorHelp::generate_doc() {
+
+	doc = memnew( DocData );
+	doc->generate(true);
+	DocData compdoc;
+	compdoc.load_compressed(_doc_data_compressed,_doc_data_compressed_size,_doc_data_uncompressed_size);
+	doc->merge_from(compdoc); //ensure all is up to date
+
 
 }
 
@@ -856,7 +871,6 @@ void EditorHelp::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			doc.load_compressed(_doc_data_compressed,_doc_data_compressed_size,_doc_data_uncompressed_size);
 
 			forward->set_icon(get_icon("Forward","EditorIcons"));
 			back->set_icon(get_icon("Back","EditorIcons"));
@@ -983,7 +997,10 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 //	prev_search_page=-1;
 }
 
-
+EditorHelp::~EditorHelp() {
+	if (doc)
+		memdelete(doc);
+}
 
 
 void EditorHelpPlugin::edit(Object *p_object) {

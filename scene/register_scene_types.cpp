@@ -452,6 +452,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<PhysicsBody2D>();
 	ObjectTypeDB::register_type<StaticBody2D>();
 	ObjectTypeDB::register_type<RigidBody2D>();
+	//ObjectTypeDB::register_type<KinematicBody2D>();
 	ObjectTypeDB::register_type<Area2D>();
 	ObjectTypeDB::register_type<CollisionShape2D>();
 	ObjectTypeDB::register_type<CollisionPolygon2D>();

@@ -181,7 +181,7 @@ void TileMap::_update_dirty_quadrants() {
 			if (!tile_set->has_tile(c.id))
 				continue;
 			Ref<Texture> tex = tile_set->tile_get_texture(c.id);
-			Vector2 tile_ofs = tile_set->tile_get_offset(c.id);
+			Vector2 tile_ofs = tile_set->tile_get_texture_offset(c.id);
 
 			Vector2 offset = Point2( E->key().x, E->key().y )*cell_size - q.pos;
 
@@ -215,6 +215,7 @@ void TileMap::_update_dirty_quadrants() {
 				rect.size.y=-rect.size.y;
 
 
+			rect.pos+=tile_ofs;
 			if (r==Rect2()) {
 
 				tex->draw_rect(q.canvas_item,rect);
@@ -231,8 +232,9 @@ void TileMap::_update_dirty_quadrants() {
 				Ref<Shape2D> shape = shapes[i];
 				if (shape.is_valid()) {
 
+					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
 					Matrix32 xform;
-					xform.set_origin(offset.floor());
+					xform.set_origin(offset.floor()+shape_ofs);
 					if (c.flip_h) {
 						xform.elements[0]=-xform.elements[0];
 						xform.elements[2].x+=s.x;
@@ -241,6 +243,7 @@ void TileMap::_update_dirty_quadrants() {
 						xform.elements[1]=-xform.elements[1];
 						xform.elements[2].y+=s.y;
 					}
+
 
 					ps->body_add_shape(q.static_body,shape->get_rid(),xform);
 				}

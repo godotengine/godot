@@ -173,6 +173,8 @@ for p in platform_list:
 	env.Append(CCFLAGS=string.split(str(CCFLAGS)))
 	detect.configure(env)
 	env['platform'] = p
+        if not env.has_key('platform_libsuffix'):
+                env['platform_libsuffix'] = env['LIBSUFFIX']
 	sys.path.remove("./platform/"+p)
 	sys.modules.pop('detect')
 

@@ -219,6 +219,7 @@ friend class GDFunctions;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
+
 protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -392,6 +393,7 @@ public:
 		StringName _set;
 		StringName _get;
 		StringName _get_property_list;
+		StringName _script_source;
 
 	} strings;
 
