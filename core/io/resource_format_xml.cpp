@@ -97,16 +97,17 @@ ResourceInteractiveLoaderXML::Tag* ResourceInteractiveLoaderXML::parse_tag(bool 
 
 	if (!complete) {
 		String name;
-		String value;
+		CharString r_value;
 		bool reading_value=false;
 
 		while(!f->eof_reached()) {
 
 			CharType c=get_char();
 			if (c=='>') {
-				if (value.length()) {
+				if (r_value.size()) {
 
-					tag.args[name]=value;
+					r_value.push_back(0);
+					tag.args[name].parse_utf8(r_value.get_data());
 				}
 				break;
 
@@ -115,17 +116,18 @@ ResourceInteractiveLoaderXML::Tag* ResourceInteractiveLoaderXML::parse_tag(bool 
 				if (!reading_value && name.length()) {
 
 					reading_value=true;
-				} else if (reading_value && value.length()) {
+				} else if (reading_value && r_value.size()) {
 
-					tag.args[name]=value;
+					r_value.push_back(0);
+					tag.args[name].parse_utf8(r_value.get_data());
 					name="";
-					value="";
+					r_value.clear();
 					reading_value=false;
 				}
 
 			} else if (reading_value) {
 
-				value+=c;
+				r_value.push_back(c);
 			} else {
 
 				name+=c;
