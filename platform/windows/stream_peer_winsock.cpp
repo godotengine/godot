@@ -337,8 +337,9 @@ Error StreamPeerWinsock::connect(const IP_Address& p_host, uint16_t p_port) {
 };
 
 void StreamPeerWinsock::set_nodelay(bool p_enabled) {
-
-
+    ERR_FAIL_COND(!is_connected());
+    int flag=p_enabled?1:0;
+    setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, (char*)&flag, sizeof(int));
 }
 
 
