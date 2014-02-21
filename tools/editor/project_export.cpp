@@ -1057,7 +1057,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	tree = memnew( Tree );
 	tree_vb->add_margin_child("Resources to Export:",tree,true);
-	sections->add_child(tree);
+
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect("item_edited",this,"_tree_changed");
 	tree->set_columns(2);
