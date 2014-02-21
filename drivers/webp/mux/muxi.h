@@ -15,8 +15,8 @@
 #include <stdlib.h>
 #include "../dec/vp8i.h"
 #include "../dec/vp8li.h"
-#include "../webp/format_constants.h"
-#include "../webp/mux.h"
+#include "../format_constants.h"
+#include "../mux.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

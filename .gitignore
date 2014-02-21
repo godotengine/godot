@@ -13,12 +13,24 @@ modules/register_module_types.cpp
 core/version.h
 core/method_bind.inc
 core/global_defaults.cpp
+tools/editor/register_exporters.cpp
+-fpic
+
+# Android specific
+platform/android/java/local.properties
 platform/android/java/project.properties
 platform/android/java/AndroidManifest.xml
-tools/editor/register_exporters.cpp
+platform/android/java/bin/
+platform/android/java/gen/
+platform/android/java/assets
 
 # General c++ generated files
 *.lib
+*.o
+*.a
+*.d
+*.so
+*.os
 
 # QT project files
 *.config
@@ -26,6 +38,8 @@ tools/editor/register_exporters.cpp
 *.files
 *.includes
 
+# Misc
+.DS_Store
 
 # for projects that use SCons for building: http://http://www.scons.org/
 .sconsign.dblite
@@ -59,6 +73,8 @@ bld/
 *.VisualState.xml
 TestResult.xml
 
+*.o
+*.a
 *_i.c
 *_p.c
 *_i.h

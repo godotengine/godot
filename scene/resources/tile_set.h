@@ -57,6 +57,7 @@ protected:
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 	void _tile_set_shapes(int p_id,const Array& p_shapes);
 	Array _tile_get_shapes(int p_id) const;
+	Array _get_tiles_ids() const;
 
 	static void _bind_methods();
 public:

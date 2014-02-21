@@ -15046,6 +15046,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_tiles_ids" qualifiers="const" >
+			<return type="Array">
+			</return>			
+			<description>
+			
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
