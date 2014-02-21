@@ -938,7 +938,27 @@ void EditorNode::_dialog_action(String p_file) {
 
 
 		} break;
+		case FILE_RUN_SCRIPT: {
 
+			print_line("RUN: "+p_file);
+			Ref<Script> scr = ResourceLoader::load(p_file,"Script",true);
+			if (scr.is_null()) {
+				add_io_error("Script Failed to Load:\n"+p_file);
+				return;
+			}
+			if (!scr->is_tool()) {
+
+				add_io_error("Script is not tool, will not be able to run:\n"+p_file);
+				return;
+			}
+
+			Ref<EditorScript> es = memnew( EditorScript );
+			es->set_script(scr.get_ref_ptr());
+			es->set_editor(this);
+			es->_run();
+
+			get_undo_redo()->clear_history();
+		} break;
 		case FILE_DUMP_STRINGS: {
 
 			save_translatable_strings(p_file);
@@ -1633,7 +1653,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			quick_open->set_title("Quick Open Script..");
 
 		} break;
+		case FILE_RUN_SCRIPT: {
 
+			file_script->popup_centered_ratio();
+		} break;
 		case FILE_OPEN_PREV: {
 
 			if (previous_scenes.empty())
@@ -3028,6 +3051,7 @@ void EditorNode::register_editor_types() {
 	ObjectTypeDB::register_type<EditorPlugin>();
 	ObjectTypeDB::register_type<EditorImportPlugin>();
 	ObjectTypeDB::register_type<EditorScenePostImport>();
+	ObjectTypeDB::register_type<EditorScript>();
 
 
 	//ObjectTypeDB::register_type<EditorImporter>();
@@ -3423,6 +3447,8 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD+KEY_Z);
 	p->add_item("Redo",EDIT_REDO,KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_Z);
+	p->add_separator();
+	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_CMD+KEY_R);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
 	p->add_item("Project Manager",RUN_PROJECT_MANAGER);
@@ -3928,6 +3954,18 @@ EditorNode::EditorNode() {
 	file_export_password->set_editable(false);
 	file_export->get_vbox()->add_margin_child("Password:",file_export_password);
 
+
+	file_script = memnew( FileDialog );
+	file_script->set_title("Open & Run a Script");
+	file_script->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_script->set_mode(FileDialog::MODE_OPEN_FILE);
+	List<String> sexts;
+	ResourceLoader::get_recognized_extensions_for_type("Script",&sexts);
+	for (List<String>::Element*E=sexts.front();E;E=E->next()) {
+		file_script->add_filter("*."+E->get());
+	}
+	gui_base->add_child(file_script);
+	file_script->connect("file_selected",this,"_dialog_action");
 
 	reimport_dialog = memnew( EditorReImportDialog );
 	gui_base->add_child(reimport_dialog);

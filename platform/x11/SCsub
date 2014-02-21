@@ -8,3 +8,5 @@ common_x11=[\
 ]
 
 env.Program('#bin/godot',['godot_x11.cpp']+common_x11)
+if env['target'] == "release":
+	env.Command('#bin/godot_rel', '#bin/godot', Copy('bin/godot_rel', 'bin/godot'))

@@ -45,6 +45,36 @@
 
 class EditorNode;
 
+class EditorHelpSearch : public ConfirmationDialog {
+
+	OBJ_TYPE(EditorHelpSearch,ConfirmationDialog )
+
+	EditorNode *editor;
+	LineEdit *search_box;
+	Tree *search_options;
+	String base_type;
+
+	void _update_search();
+
+	void _sbox_input(const InputEvent& p_ie);
+
+	void _confirmed();
+	void _text_changed(const String& p_newtext);
+
+
+protected:
+
+	void _notification(int p_what);
+	static void _bind_methods();
+public:
+
+	void popup(const String& p_term="");
+
+	EditorHelpSearch(EditorNode *p_editor);
+};
+
+
+
 class EditorHelp : public VBoxContainer {
 	OBJ_TYPE( EditorHelp, VBoxContainer );
 
@@ -56,6 +86,7 @@ class EditorHelp : public VBoxContainer {
 		PAGE_CLASS_PREV,
 		PAGE_CLASS_NEXT,
 		PAGE_SEARCH,
+		CLASS_SEARCH,
 
 	};
 
@@ -74,6 +105,10 @@ class EditorHelp : public VBoxContainer {
 
 	EditorNode *editor;
 	Map<String,int> method_line;
+	Map<String,int> signal_line;
+	Map<String,int> property_line;
+	Map<String,int> constant_line;
+	int description_line;
 
 	Tree *class_list;
 
@@ -90,6 +125,9 @@ class EditorHelp : public VBoxContainer {
 	String base_path;
 
 	HashMap<String,TreeItem*> tree_item_map;
+
+
+	void _help_callback(const String& p_topic);
 
 	void _add_text(const String& p_text);
 	bool scroll_locked;
@@ -112,6 +150,8 @@ class EditorHelp : public VBoxContainer {
 	void add_type(const String& p_type,HashMap<String,TreeItem*>& p_types,TreeItem *p_root);
 	void _tree_item_selected();
 
+	EditorHelpSearch *class_search;
+
 protected:
 
 
@@ -120,10 +160,12 @@ protected:
 public:
 
 	static void generate_doc();
+	static DocData *get_doc_data() { return doc; }
 
 	EditorHelp(EditorNode *p_editor=NULL);
 	~EditorHelp();
 };
+
 
 
 class EditorHelpPlugin : public EditorPlugin {
@@ -155,5 +197,6 @@ public:
 	~EditorHelpPlugin();
 
 };
+
 
 #endif // EDITOR_HELP_H

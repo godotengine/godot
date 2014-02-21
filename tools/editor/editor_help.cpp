@@ -32,6 +32,288 @@
 #include "os/keyboard.h"
 #include "doc_data_compressed.h"
 
+
+
+#include "os/keyboard.h"
+
+
+void EditorHelpSearch::popup(const String& p_term) {
+
+	popup_centered_ratio(0.6);
+	if (p_term!="") {
+		search_box->set_text(p_term);
+		search_box->select_all();
+	} else
+		search_box->clear();
+	search_box->grab_focus();
+}
+
+
+void EditorHelpSearch::_text_changed(const String& p_newtext) {
+
+	_update_search();
+}
+
+void EditorHelpSearch::_sbox_input(const InputEvent& p_ie) {
+
+	if (p_ie.type==InputEvent::KEY && (
+		p_ie.key.scancode == KEY_UP ||
+		p_ie.key.scancode == KEY_DOWN ||
+		p_ie.key.scancode == KEY_PAGEUP ||
+		p_ie.key.scancode == KEY_PAGEDOWN ) ) {
+
+		search_options->call("_input_event",p_ie);
+		search_box->accept_event();
+	}
+
+}
+
+void EditorHelpSearch::_update_search() {
+
+
+	search_options->clear();
+	search_options->set_hide_root(true);
+
+	/*
+	TreeItem *root = search_options->create_item();
+	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
+*/
+
+	List<String> type_list;
+	ObjectTypeDB::get_type_list(&type_list);
+
+	DocData *doc=EditorHelp::get_doc_data();
+	String term = search_box->get_text();
+	if (term.length()<3)
+		return;
+
+	TreeItem *root = search_options->create_item();
+
+
+
+	Ref<Texture> def_icon = get_icon("Node","EditorIcons");
+	//classes first
+	for (Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
+
+		if (E->key().findn(term)!=-1) {
+
+			TreeItem *item = search_options->create_item(root);
+			item->set_metadata(0,"class_name:"+E->key());
+			item->set_text(0,E->key()+" (Class)");
+			if (has_icon(E->key(),"EditorIcons"))
+				item->set_icon(0,get_icon(E->key(),"EditorIcons"));
+			else
+				item->set_icon(0,def_icon);
+
+
+		}
+
+	}
+
+	//class methods, etc second
+	for (Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
+
+
+		DocData::ClassDoc & c = E->get();
+
+		Ref<Texture> cicon;
+		if (has_icon(E->key(),"EditorIcons"))
+			cicon=get_icon(E->key(),"EditorIcons");
+		else
+			cicon=def_icon;
+
+		for(int i=0;i<c.methods.size();i++) {
+
+			if (c.methods[i].name.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_method:"+E->key()+":"+c.methods[i].name);
+				item->set_text(0,E->key()+"."+c.methods[i].name+" (Method)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+		for(int i=0;i<c.signals.size();i++) {
+
+			if (c.signals[i].name.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_signal:"+E->key()+":"+c.signals[i].name);
+				item->set_text(0,E->key()+"."+c.signals[i].name+" (Signal)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+		for(int i=0;i<c.constants.size();i++) {
+
+			if (c.constants[i].name.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_constant:"+E->key()+":"+c.constants[i].name);
+				item->set_text(0,E->key()+"."+c.constants[i].name+" (Constant)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+		for(int i=0;i<c.properties.size();i++) {
+
+			if (c.properties[i].name.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_property:"+E->key()+":"+c.properties[i].name);
+				item->set_text(0,E->key()+"."+c.properties[i].name+" (Property)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+	}
+
+	//same but descriptions
+
+	for (Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
+
+
+		DocData::ClassDoc & c = E->get();
+
+		Ref<Texture> cicon;
+		if (has_icon(E->key(),"EditorIcons"))
+			cicon=get_icon(E->key(),"EditorIcons");
+		else
+			cicon=def_icon;
+
+		if (c.description.findn(term)!=-1) {
+
+
+			TreeItem *item = search_options->create_item(root);
+			item->set_metadata(0,"class_desc:"+E->key());
+			item->set_text(0,E->key()+" (Class Description)");
+			item->set_icon(0,cicon);
+
+		}
+
+		for(int i=0;i<c.methods.size();i++) {
+
+			if (c.methods[i].description.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_method_desc:"+E->key()+":"+c.methods[i].name);
+				item->set_text(0,E->key()+"."+c.methods[i].name+" (Method Description)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+		for(int i=0;i<c.signals.size();i++) {
+
+			if (c.signals[i].description.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_signal:"+E->key()+":"+c.signals[i].name);
+				item->set_text(0,E->key()+"."+c.signals[i].name+" (Signal Description)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+		for(int i=0;i<c.constants.size();i++) {
+
+			if (c.constants[i].description.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_constant:"+E->key()+":"+c.constants[i].name);
+				item->set_text(0,E->key()+"."+c.constants[i].name+" (Constant Description)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+		for(int i=0;i<c.properties.size();i++) {
+
+			if (c.properties[i].description.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_property_desc:"+E->key()+":"+c.properties[i].name);
+				item->set_text(0,E->key()+"."+c.properties[i].name+" (Property Description)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+	}
+
+	get_ok()->set_disabled(root->get_children()==NULL);
+
+}
+
+void EditorHelpSearch::_confirmed() {
+
+	TreeItem *ti = search_options->get_selected();
+	if (!ti)
+		return;
+
+	String mdata=ti->get_metadata(0);
+	emit_signal("go_to_help",mdata);
+	// go to that
+	hide();
+}
+
+void EditorHelpSearch::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_SCENE) {
+
+		connect("confirmed",this,"_confirmed");
+		_update_search();
+	}
+
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (is_visible()) {
+
+			search_box->call_deferred("grab_focus"); // still not visible
+			search_box->select_all();
+		}
+	}
+
+}
+
+
+void EditorHelpSearch::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
+	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
+	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
+	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_sbox_input);
+
+	ADD_SIGNAL(MethodInfo("go_to_help"));
+
+}
+
+
+EditorHelpSearch::EditorHelpSearch(EditorNode *p_editor) {
+
+	editor=p_editor;
+	VBoxContainer *vbc = memnew( VBoxContainer );
+	add_child(vbc);
+	set_child_rect(vbc);
+	HBoxContainer *sb_hb = memnew( HBoxContainer);
+	search_box = memnew( LineEdit );
+	sb_hb->add_child(search_box);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	Button *sb = memnew( Button("Search"));
+	sb->connect("pressed",this,"_update_search");
+	sb_hb->add_child(sb);
+	vbc->add_margin_child("Search:",sb_hb);
+	search_box->connect("text_changed",this,"_text_changed");
+	search_box->connect("input_event",this,"_sbox_input");
+	search_options = memnew( Tree );
+	vbc->add_margin_child("Matches:",search_options,true);
+	get_ok()->set_text("View");
+	get_ok()->set_disabled(true);
+	register_text_enter(search_box);
+	set_hide_on_ok(false);
+	search_options->connect("item_activated",this,"_confirmed");
+	set_title("Search Classes");
+//	search_options->set_hide_root(true);
+
+}
+
+
 DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
@@ -98,7 +380,11 @@ void EditorHelp::_button_pressed(int p_idx) {
 	} else if (p_idx==PAGE_SEARCH) {
 
 		_search("");
+	} else if (p_idx==CLASS_SEARCH) {
+
+		class_search->popup();
 	}
+
 
 }
 
@@ -181,6 +467,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 	//tabs->set_current_tab(PAGE_CLASS_DESC);
 	edited_class->set_pressed(true);
 	class_list_button->set_pressed(false);
+	description_line=0;
 
 	if (p_class==edited_class->get_text())
 		return; //already there
@@ -203,7 +490,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 	method_line.clear();
 
 	edited_class->set_text(p_class);
-	edited_class->show();
+	//edited_class->show();
 
 
 	DocData::ClassDoc &cd=doc->class_list[p_class];
@@ -216,6 +503,16 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 
 	h_color=Color(1,1,1,1);
+
+	class_desc->push_font(doc_title_font);
+	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+	class_desc->add_text("Class: ");
+	class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
+	class_desc->add_text(p_class);
+	class_desc->pop();
+	class_desc->pop();
+	class_desc->pop();
+	class_desc->add_newline();
 
 	if (cd.inherits!="") {
 
@@ -264,6 +561,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		for(int i=0;i<cd.methods.size();i++) {
 
+			method_line[cd.methods[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.methods[i].return_type);
 			class_desc->add_text(" ");
@@ -332,6 +630,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		for(int i=0;i<cd.properties.size();i++) {
 
+			property_line[cd.properties[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
 			class_desc->push_font(doc_code_font);
 			_add_type(cd.properties[i].type);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
@@ -374,6 +673,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		for(int i=0;i<cd.signals.size();i++) {
 
+			signal_line[cd.signals[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
 			class_desc->push_font(doc_code_font);
 			//_add_type("void");
 			//class_desc->add_text(" ");
@@ -435,6 +735,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		for(int i=0;i<cd.constants.size();i++) {
 
+			constant_line[cd.constants[i].name]=class_desc->get_line_count()-2;
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/base_type_color"));
 			class_desc->add_text(cd.constants[i].name);
@@ -466,6 +767,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 	if (cd.description!="") {
 
+		description_line=class_desc->get_line_count()-2;
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
 		class_desc->add_text("Description:");
@@ -560,12 +862,46 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 void EditorHelp::_request_help(const String& p_string) {
 
-
-
 	_goto_desc(p_string);
+
+
+	//100 palabras
 }
 
 
+void EditorHelp::_help_callback(const String& p_topic) {
+
+	String what = p_topic.get_slice(":",0);
+	String clss = p_topic.get_slice(":",1);
+	String name;
+	if (p_topic.get_slice_count(":")==3)
+		name=p_topic.get_slice(":",2);
+
+	_request_help(clss); //first go to class
+
+	int line=0;
+
+	if (what=="class_desc") {
+		line=description_line;
+	} else if (what=="class_signal") {
+		if (signal_line.has(name))
+			line=signal_line[name];
+	} else if (what=="class_method" || what=="class_method_desc") {
+		if (method_line.has(name))
+			line=method_line[name];
+	} else if (what=="class_property") {
+
+		if (property_line.has(name))
+			line=property_line[name];
+	} else if (what=="class_constant") {
+
+		if (constant_line.has(name))
+			line=constant_line[name];
+	}
+
+	class_desc->scroll_to_line(line);
+
+}
 
 void EditorHelp::_add_text(const String& p_bbcode) {
 
@@ -903,6 +1239,7 @@ void EditorHelp::_bind_methods() {
 	ObjectTypeDB::bind_method("_unhandled_key_input",&EditorHelp::_unhandled_key_input);
 	ObjectTypeDB::bind_method("_search",&EditorHelp::_search);
 	ObjectTypeDB::bind_method("_tree_item_selected",&EditorHelp::_tree_item_selected);
+	ObjectTypeDB::bind_method("_help_callback",&EditorHelp::_help_callback);
 
 }
 
@@ -933,6 +1270,10 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_DESC));
 	edited_class->hide();
 
+	b = memnew( Button );
+	b->set_text("Search in Classes");
+	panel_hb->add_child(b);
+	b->connect("pressed",this,"_button_pressed",make_binds(CLASS_SEARCH));
 
 	Control *expand = memnew( Control );
 	expand->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -959,9 +1300,12 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 	search->connect("text_entered",this,"_search");
 
 	b = memnew( Button );
-	b->set_text("Search");
+	b->set_text("Find");
 	panel_hb->add_child(b);
 	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_SEARCH));
+
+	hs = memnew( VSeparator );
+	panel_hb->add_child(hs);
 
 	h_split = memnew( HSplitContainer );
 	h_split->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -994,6 +1338,9 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 	class_list->connect("cell_selected",this,"_tree_item_selected");
 	class_desc->hide();
 
+	class_search = memnew( EditorHelpSearch(editor) );
+	editor->get_gui_base()->add_child(class_search);
+	class_search->connect("go_to_help",this,"_help_callback");
 //	prev_search_page=-1;
 }
 

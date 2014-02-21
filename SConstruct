@@ -160,6 +160,8 @@ env_base.platforms = {}
 
 for p in platform_list:
 
+	if env_base['platform'] != "" and env_base['platform'] != p:
+		continue
 	sys.path.append("./platform/"+p)
 	import detect
 	if "create" in dir(detect):
