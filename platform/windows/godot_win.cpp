@@ -116,16 +116,13 @@ PCHAR*
     }
 
 char* mb_to_utf8(const char* mbs) {
-	int wlen = MultiByteToWideChar(CP_ACP,0,mbs,-1,NULL,0);
-	if (wlen < 0)
-		wlen = 0;
+
+	int wlen = MultiByteToWideChar(CP_ACP,0,mbs,-1,NULL,0); // returns 0 if failed
 	wchar_t *wbuf = new wchar_t[wlen + 1];
 	MultiByteToWideChar(CP_ACP,0,mbs,-1,wbuf,wlen);
 	wbuf[wlen]=0;
 
 	int ulen = WideCharToMultiByte(CP_UTF8,0,wbuf,-1,NULL,0,NULL,NULL);
-	if (ulen < 0)
-		ulen = 0;
 	char * ubuf = new char[ulen + 1];
 	WideCharToMultiByte(CP_UTF8,0,wbuf,-1,ubuf,ulen,NULL,NULL);
 	ubuf[ulen] = 0;
