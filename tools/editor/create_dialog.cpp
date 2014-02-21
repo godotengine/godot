@@ -245,6 +245,7 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String& p_base) {
 
 	base_type=p_base;
+	set_title("Create New "+p_base);
 	_update_search();
 }
 
@@ -295,6 +296,7 @@ CreateDialog::CreateDialog() {
 	search_options->connect("item_activated",this,"_confirmed");
 //	search_options->set_hide_root(true);
 	base_type="Object";
+
 }
 
 

@@ -2518,7 +2518,7 @@ bool String::begins_with(const char* p_string) const {
 		
 	}
 	
-	return true;
+	return *p_string == 0;
 	
 }
 

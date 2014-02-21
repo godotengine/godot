@@ -8,13 +8,13 @@
 //  WebP container demux.
 //
 
-#include "../webp/mux.h"
+#include "../mux.h"
 
 #include <stdlib.h>
 #include <string.h>
 
-#include "../webp/decode.h"  // WebPGetInfo
-#include "../webp/format_constants.h"
+#include "../decode.h"  // WebPGetInfo
+#include "../format_constants.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

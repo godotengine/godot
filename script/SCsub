@@ -9,7 +9,7 @@ if (env["gdscript"]=="yes"):
 	SConscript('gdscript/SCsub');
 SConscript('multiscript/SCsub');
 
-lib = env.Library("script",env.script_sources)
+lib = env.Library("script",env.script_sources, LIBSUFFIX=env['platform_libsuffix'])
 
 env.Prepend(LIBS=[lib])
 

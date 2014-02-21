@@ -79,6 +79,7 @@ class ScriptTextEditor : public CodeTextEditor {
 
 	Vector<String> functions;
 
+
 protected:
 
 

@@ -160,6 +160,8 @@ env_base.platforms = {}
 
 for p in platform_list:
 
+	if env_base['platform'] != "" and env_base['platform'] != p:
+		continue
 	sys.path.append("./platform/"+p)
 	import detect
 	if "create" in dir(detect):
@@ -173,6 +175,8 @@ for p in platform_list:
 	env.Append(CCFLAGS=string.split(str(CCFLAGS)))
 	detect.configure(env)
 	env['platform'] = p
+        if not env.has_key('platform_libsuffix'):
+                env['platform_libsuffix'] = env['LIBSUFFIX']
 	sys.path.remove("./platform/"+p)
 	sys.modules.pop('detect')
 

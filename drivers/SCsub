@@ -75,7 +75,7 @@ if len(list) > 0:
 
 drivers_base=[]
 env.add_source_files(drivers_base,"*.cpp")
-lib_list.insert(0, env.Library("drivers", drivers_base))
+lib_list.insert(0, env.Library("drivers", drivers_base, LIBSUFFIX=env['platform_libsuffix']))
 
 env.Prepend(LIBS=lib_list)
 

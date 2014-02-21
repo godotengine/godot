@@ -547,7 +547,14 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				DEFAULT_OP_FAIL(STRING);
 				DEFAULT_OP_LOCALMEM_NUM(*,VECTOR2,Vector2);
 				DEFAULT_OP_FAIL(RECT2);
-				DEFAULT_OP_FAIL(MATRIX32);
+				case MATRIX32: {
+
+					if (p_b.type==MATRIX32) {
+						_RETURN( *p_a._data._matrix32 * *p_b._data._matrix32 );
+					};
+					r_valid=false;
+					return;
+				} break;
 				DEFAULT_OP_LOCALMEM_NUM(*,VECTOR3,Vector3);
 				DEFAULT_OP_FAIL(PLANE);
 				DEFAULT_OP_FAIL(QUAT);

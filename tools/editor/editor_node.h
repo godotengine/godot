@@ -65,6 +65,7 @@
 #include "tools/editor/scene_tree_dock.h"
 #include "tools/editor/resources_dock.h"
 #include "tools/editor/optimized_save_dialog.h"
+#include "tools/editor/editor_run_script.h"
 
 #include "tools/editor/editor_run_native.h"
 #include "scene/gui/tabs.h"
@@ -115,6 +116,7 @@ class EditorNode : public Node {
 		FILE_OPEN_OLD_SCENE,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
+		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_QUIT,
 		FILE_EXTERNAL_OPEN_SCENE,
@@ -231,6 +233,7 @@ class EditorNode : public Node {
 	FileDialog *file_templates;
 	FileDialog *file_export;
 	FileDialog *file_export_lib;
+	FileDialog *file_script;
 	CheckButton *file_export_check;
 	CheckButton *file_export_lib_merge;
 	LineEdit *file_export_password;
@@ -458,7 +461,6 @@ public:
 	void stop_child_process();
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
-
 
 	static void register_editor_types();
 
