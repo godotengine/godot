@@ -58,6 +58,12 @@ friend class Physics2DDirectSpaceStateSW;
 	mutable RID_Owner<Body2DSW> body_owner;
 	mutable RID_Owner<Joint2DSW> joint_owner;
 
+
+
+
+//	void _clear_query(Query2DSW *p_query);
+public:
+
 	struct CollCbkData {
 
 		int max;
@@ -67,9 +73,6 @@ friend class Physics2DDirectSpaceStateSW;
 
 	static void _shape_col_cbk(const Vector2& p_point_A,const Vector2& p_point_B,void *p_userdata);
 
-
-//	void _clear_query(Query2DSW *p_query);
-public:
 
 	virtual RID shape_create(ShapeType p_shape);
 	virtual void shape_set_data(RID p_shape, const Variant& p_data);
@@ -158,8 +161,8 @@ public:
 	virtual void body_set_continuous_collision_detection_mode(RID p_body,CCDMode p_mode);
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
-	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
-	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const;
+	virtual void body_set_user_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_user_mask(RID p_body, uint32_t p_mask) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;

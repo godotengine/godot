@@ -65,6 +65,7 @@ private:
 	Space2DSW *space;
 	Matrix32 transform;
 	Matrix32 inv_transform;
+	uint32_t user_mask;
 	bool _static;
 
 	void _update_shapes();
@@ -117,6 +118,8 @@ public:
 	_FORCE_INLINE_ bool is_shape_set_as_trigger(int p_idx) const { return shapes[p_idx].trigger; }
 
 
+	void set_user_mask(uint32_t p_mask) {user_mask=p_mask;}
+	_FORCE_INLINE_ uint32_t get_user_mask() const { return user_mask; }
 
 	void remove_shape(Shape2DSW *p_shape);
 	void remove_shape(int p_index);

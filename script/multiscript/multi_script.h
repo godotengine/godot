@@ -148,6 +148,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const {}
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const {}
+	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const {}
 
 	MultiScriptLanguage() { singleton=this; }
 	virtual ~MultiScriptLanguage() {};

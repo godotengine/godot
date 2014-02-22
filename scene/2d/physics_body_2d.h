@@ -243,6 +243,7 @@ class KinematicBody2D : public PhysicsBody2D {
 	bool colliding;
 	Vector2 collision;
 	Vector2 normal;
+	Vector2 collider_vel;
 	ObjectID collider;
 
 
@@ -254,16 +255,14 @@ protected:
 	static void _bind_methods();
 public:
 
-	bool is_trapped() const;
-	void untrap();
-
 	Vector2 move(const Vector2& p_motion);
 	Vector2 move_to(const Vector2& p_position);
 
-	bool can_move_to(const Vector2& p_position);
+	bool can_move_to(const Vector2& p_position,bool p_discrete=false);
 	bool is_colliding() const;
 	Vector2 get_collision_pos() const;
 	Vector2 get_collision_normal() const;
+	Vector2 get_collider_velocity() const;
 	ObjectID get_collider() const;
 
 	void set_collide_with_static_bodies(bool p_enable);

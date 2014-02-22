@@ -31,6 +31,7 @@
 
 #include "resource.h"
 #include "map.h"
+#include "pair.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -157,6 +158,7 @@ public:
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const=0;
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const=0;
+	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const=0;
 
 	virtual void frame();
 

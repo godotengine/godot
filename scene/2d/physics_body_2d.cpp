@@ -744,192 +744,149 @@ bool KinematicBody2D::_ignores_mode(Physics2DServer::BodyMode p_mode) const {
 	return true;
 }
 
-bool KinematicBody2D::is_trapped() const {
-
-	ERR_FAIL_COND_V(!is_inside_scene(),false);
-
-	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
-	ERR_FAIL_COND_V(!dss,false);
-
-	const int max_shapes=32;
-	Physics2DDirectSpaceState::ShapeResult sr[max_shapes];
-
-	Set<RID> exclude;
-	exclude.insert(get_rid());
-
-
-	for(int i=0;i<get_shape_count();i++) {
-
-
-		int res = dss->intersect_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),Vector2(),sr,max_shapes,exclude);
-
-		for(int j=0;j<res;j++) {
-
-			Physics2DServer::BodyMode bm = Physics2DServer::get_singleton()->body_get_mode(sr[j].rid);
-			if (!_ignores_mode(bm)) {
-				return true; //it's indeed trapped
-			}
-
-		}
-
-	}
-
-	return false;
-
-}
-void KinematicBody2D::untrap() {
-
-	//this is reaaaaaaaaally wild, will probably only work for simple cases
-	ERR_FAIL_COND(!is_inside_scene());
-
-	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
-	ERR_FAIL_COND(!dss);
-
-	const int max_shapes=32;
-	Physics2DDirectSpaceState::ShapeResult sr[max_shapes];
-	const int max_contacts=8;
-	Vector2 pairs[max_contacts*2];
-
-	Set<RID> exclude;
-	exclude.insert(get_rid());
-
-	Vector2 untrap_vec;
-
-	for(int i=0;i<get_shape_count();i++) {
-
-		Matrix32 shape_xform = get_global_transform() * get_shape_transform(i);
-		int res = dss->intersect_shape(get_shape(i)->get_rid(), shape_xform,Vector2(),sr,max_shapes,exclude);
-
-		for(int j=0;j<res;j++) {
-
-			Physics2DServer::BodyMode bm = Physics2DServer::get_singleton()->body_get_mode(sr[j].rid);
-			if (_ignores_mode(bm)) {
-				exclude.insert(sr[j].rid);
-			} else {
-
-				int rc;
-				bool c = Physics2DServer::get_singleton()->body_collide_shape(sr[j].rid,sr[j].shape,get_shape(i)->get_rid(),shape_xform,Vector2(),pairs,max_contacts,rc);
-
-				if (c) {
-
-					for(int k=0;k<rc;k++) {
-
-						untrap_vec+=pairs[k*2+0]-pairs[k*2+1];
-					}
-				}
-
-			}
-
-		}
-
-	}
-
-	untrap_vec += untrap_vec.normalized()*margin;
-
-
-	Matrix32 gt = get_global_transform();
-	gt.elements[2]+=untrap_vec;
-	set_global_transform(gt);
-
-}
-
 Vector2 KinematicBody2D::move(const Vector2& p_motion) {
+
+	//give me back regular physics engine logic
+	//this is madness
+	//and most people using this function will think
+	//what it does is simpler than using physics
+	//this took about a week to get right..
+	//but is it right? who knows at this point..
+
 
 	colliding=false;
 	ERR_FAIL_COND_V(!is_inside_scene(),Vector2());
 	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
 	ERR_FAIL_COND_V(!dss,Vector2());
 	const int max_shapes=32;
-	Physics2DDirectSpaceState::ShapeResult sr[max_shapes];
+	Vector2 sr[max_shapes*2];
+	int res_shapes;
 
-	float best_travel = 1e20;
-	Physics2DDirectSpaceState::MotionCastCollision mcc_final;
 	Set<RID> exclude;
 	exclude.insert(get_rid());
 
-	print_line("pos: "+get_global_pos());
-	print_line("mlen: "+p_motion);
 
-	if (!collide_static || ! collide_rigid || !collide_character || !collide_kinematic) {
+	//recover first
+	int recover_attempts=4;
+
+	bool collided=false;
+	uint32_t mask=0;
+	if (collide_static)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_STATIC_BODY;
+	if (collide_kinematic)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
+	if (collide_rigid)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_RIGID_BODY;
+	if (collide_character)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
+
+//	print_line("motion: "+p_motion+" margin: "+rtos(margin));
+
+	//print_line("margin: "+rtos(margin));
+	do {
+
 		//fill exclude list..
 		for(int i=0;i<get_shape_count();i++) {
 
 
-			int res = dss->intersect_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),p_motion,sr,max_shapes,exclude);
+			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),Vector2(),margin,sr,max_shapes,res_shapes,exclude,0,mask))
+				collided=true;
 
-			for(int j=0;j<res;j++) {
-
-				Physics2DServer::BodyMode bm = Physics2DServer::get_singleton()->body_get_mode(sr[j].rid);
-				if (_ignores_mode(bm)) {
-					exclude.insert(sr[j].rid);
-				} else {
-				//	print_line("DANGER???");
-				}
-			}
 		}
-	}
+
+		if (!collided)
+			break;
+
+		Vector2 recover_motion;
+
+		for(int i=0;i<res_shapes;i++) {
+
+			Vector2 a = sr[i*2+0];
+			Vector2 b = sr[i*2+1];
+
+			float d = a.distance_to(b);
+
+			//if (d<margin)
+			///	continue;
+			recover_motion+=(b-a)*0.2;
+		}
+
+		if (recover_motion==Vector2()) {
+			collided=false;
+			break;
+		}
+
+		Matrix32 gt = get_global_transform();
+		gt.elements[2]+=recover_motion;
+		set_global_transform(gt);
+
+		recover_attempts--;
+
+	} while (recover_attempts);
+
+
+	//move second
+	float safe = 1.0;
+	float unsafe = 1.0;
+	int best_shape=-1;
 
 	for(int i=0;i<get_shape_count();i++) {
 
-		Physics2DDirectSpaceState::MotionCastCollision mcc;
 
-		bool res = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, mcc,exclude,0);
-		if (res==false)
-			continue;
-		if (mcc.travel<=0) {
-			//uh it's trapped
-			colliding=false;
-			return p_motion;
+		float lsafe,lunsafe;
+		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,0,mask);
+		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
+		if (!valid) {
+			safe=0;
+			unsafe=0;
+			best_shape=i; //sadly it's the best
+			break;
 		}
-		if (mcc.travel < best_travel) {
+		if (lsafe==1.0) {
+			continue;
+		}
+		if (lsafe < safe) {
 
-			mcc_final=mcc;
-			best_travel=mcc.travel;
+			safe=lsafe;
+			unsafe=lunsafe;
+			best_shape=i;
 		}
 	}
 
-	float motion;
-	Vector2 motion_ret;
-	Vector2 push;
-	if (best_travel>1) {
+
+	//print_line("best shape: "+itos(best_shape)+" motion "+p_motion);
+
+	if (safe>=1) {
 		//not collided
 		colliding=false;
-		motion=p_motion.length(); //no stopped
 	} else {
 
-		colliding=true;
-		collision=mcc_final.point;
-		normal=mcc_final.normal;
-		collider=mcc_final.collider_id;
-		Vector2 mnormal=p_motion.normalized();
-
-		float sine = Math::abs(mnormal.dot(normal));
-		float retreat=0;
-		motion = p_motion.length()*mcc_final.travel;
-
-		if (sine==0) {
-			//something odd going on, do not allow motion?
-
-			retreat=motion;
-
+		//it collided, let's get the rest info in unsafe advance
+		Matrix32 ugt = get_global_transform();
+		ugt.elements[2]+=p_motion*unsafe;
+		Physics2DDirectSpaceState::ShapeRestInfo rest_info;
+		bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), Vector2(), margin,&rest_info,exclude,0,mask);
+		if (!c2) {
+			//should not happen, but floating point precision is so weird..
+			colliding=false;
 		} else {
 
-			retreat = margin/sine;
-			if (retreat>motion)
-				retreat=motion;
+			//print_line("Travel: "+rtos(travel));
+			colliding=true;
+			collision=rest_info.point;
+			normal=rest_info.normal;
+			collider=rest_info.collider_id;
+			collider_vel=rest_info.linear_velocity;
 		}
-
-		motion_ret=p_motion.normalized() * ( p_motion.length() - motion);
-		motion-=retreat;
-
 
 	}
 
+	Vector2 motion=p_motion*safe;
 	Matrix32 gt = get_global_transform();
-	gt.elements[2]+=p_motion.normalized()*motion;
+	gt.elements[2]+=motion;
 	set_global_transform(gt);
 
-	return motion_ret;
+	return p_motion-motion;
 
 }
 
@@ -938,18 +895,31 @@ Vector2 KinematicBody2D::move_to(const Vector2& p_position) {
 	return move(p_position-get_global_pos());
 }
 
-bool KinematicBody2D::can_move_to(const Vector2& p_position) {
+bool KinematicBody2D::can_move_to(const Vector2& p_position, bool p_discrete) {
 
 	ERR_FAIL_COND_V(!is_inside_scene(),false);
 	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
 	ERR_FAIL_COND_V(!dss,false);
 
-	const int max_shapes=32;
-	Physics2DDirectSpaceState::ShapeResult sr[max_shapes];
+	uint32_t mask=0;
+	if (collide_static)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_STATIC_BODY;
+	if (collide_kinematic)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
+	if (collide_rigid)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_RIGID_BODY;
+	if (collide_character)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
 
 	Vector2 motion = p_position-get_global_pos();
+	Matrix32 xform=get_global_transform();
 
-	Physics2DDirectSpaceState::MotionCastCollision mcc_final;
+	if (p_discrete) {
+
+		xform.elements[2]+=motion;
+		motion=Vector2();
+	}
+
 	Set<RID> exclude;
 	exclude.insert(get_rid());
 
@@ -957,19 +927,9 @@ bool KinematicBody2D::can_move_to(const Vector2& p_position) {
 	for(int i=0;i<get_shape_count();i++) {
 
 
-		int res = dss->intersect_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),motion,sr,max_shapes,exclude);
-
-		for(int j=0;j<res;j++) {
-
-			Physics2DServer::BodyMode bm = Physics2DServer::get_singleton()->body_get_mode(sr[j].rid);
-			if (_ignores_mode(bm)) {
-				exclude.insert(sr[j].rid);
-				continue;
-			}
-
-			return false; //omg collided
-
-		}
+		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),motion,0,NULL,0,exclude,0,mask);
+		if (col)
+			return false;
 	}
 
 	return true;
@@ -993,6 +953,12 @@ Vector2 KinematicBody2D::get_collision_normal() const {
 	return normal;
 
 }
+
+Vector2 KinematicBody2D::get_collider_velocity() const {
+
+	return collider_vel;
+}
+
 ObjectID KinematicBody2D::get_collider() const {
 
 	ERR_FAIL_COND_V(!colliding,0);
@@ -1051,9 +1017,6 @@ float KinematicBody2D::get_collision_margin() const{
 void KinematicBody2D::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("is_trapped"),&KinematicBody2D::is_trapped);
-	ObjectTypeDB::bind_method(_MD("untrap"),&KinematicBody2D::untrap);
-
 	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody2D::move);
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
 
@@ -1063,6 +1026,7 @@ void KinematicBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_collision_pos"),&KinematicBody2D::get_collision_pos);
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&KinematicBody2D::get_collision_normal);
+	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody2D::get_collider_velocity);
 	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::get_collider);
 
 
@@ -1085,7 +1049,7 @@ void KinematicBody2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/kinematic"),_SCS("set_collide_with_kinematic_bodies"),_SCS("can_collide_with_kinematic_bodies"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/rigid"),_SCS("set_collide_with_rigid_bodies"),_SCS("can_collide_with_rigid_bodies"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/character"),_SCS("set_collide_with_character_bodies"),_SCS("can_collide_with_character_bodies"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/margin",PROPERTY_HINT_RANGE,"0.01,256,0.01"),_SCS("set_collision_margin"),_SCS("get_collision_margin"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/margin",PROPERTY_HINT_RANGE,"0.001,256,0.001"),_SCS("set_collision_margin"),_SCS("get_collision_margin"));
 
 
 }
@@ -1100,7 +1064,7 @@ KinematicBody2D::KinematicBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_KI
 	colliding=false;
 	collider=0;
 
-	margin=1;
+	margin=0.01;
 }
 KinematicBody2D::~KinematicBody2D()  {
 
