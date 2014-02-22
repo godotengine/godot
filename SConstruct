@@ -173,6 +173,17 @@ for p in platform_list:
 	env['CCFLAGS'] = ''
 
 	env.Append(CCFLAGS=string.split(str(CCFLAGS)))
+
+	CFLAGS = env.get('CFLAGS', '')
+	env['CFLAGS'] = ''
+
+	env.Append(CFLAGS=string.split(str(CFLAGS)))
+
+	LINKFLAGS = env.get('LINKFLAGS', '')
+	env['LINKFLAGS'] = ''
+
+	env.Append(LINKFLAGS=string.split(str(LINKFLAGS)))
+
 	detect.configure(env)
 	env['platform'] = p
         if not env.has_key('platform_libsuffix'):
