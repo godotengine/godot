@@ -1416,7 +1416,7 @@ Error GDScript::reload() {
 	String basedir=path;
 
 	if (basedir=="")
-		basedir==get_path();
+		basedir=get_path();
 
 	if (basedir!="")
 		basedir=basedir.get_base_dir();
