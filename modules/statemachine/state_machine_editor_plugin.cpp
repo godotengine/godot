@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  state_machine_editor_plugin.cpp                                           */
+/*  animation_tree_editor_plugin.cpp                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -27,1404 +27,1463 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "state_machine_editor_plugin.h"
-#include "tools/editor/plugins/spatial_editor_plugin.h"
-#include "scene/3d/camera.h"
-#include "tools/editor/editor_settings.h"
 
+#include "scene/gui/menu_button.h"
+#include "scene/gui/panel.h"
+#include "scene/main/viewport.h"
+#include "core/io/resource_loader.h"
+#include "core/globals.h"
+#include "os/input.h"
 #include "os/keyboard.h"
-#include "geometry.h"
 
-void StateMachineEditor::_node_removed(Node *p_node) {
+void StateMachineEditor::edit(StateMachine* p_state_machine) {
 
-	if(p_node==node) {
-		node=NULL;
+
+	state_machine = p_state_machine;
+
+	if (!state_machine) {
 		hide();
-		theme_pallete->hide();
 	}
+	else {
+		order.clear();
+		// p_state_machine->get_node_list(&order);
+		// We would get the node list here...
 
-}
 
+		/*
+		for(List<StringName>::Element* E=order.front();E;E=E->next()) {
 
-void StateMachineEditor::_configure() {
-
-	if(!node)
-		return;
-
-	update_grid();
-
-}
-
-void  StateMachineEditor::_menu_option(int p_option) {
-
-
-	switch(p_option) {
-
-		case MENU_OPTION_CONFIGURE: {
-
-			
-		} break;
-		case MENU_OPTION_LOCK_VIEW: {
-
-			int index=options->get_popup()->get_item_index(MENU_OPTION_LOCK_VIEW);
-			lock_view=!options->get_popup()->is_item_checked(index);
-
-			options->get_popup()->set_item_checked(index,lock_view);
-		} break;
-		case MENU_OPTION_CLIP_DISABLED:
-		case MENU_OPTION_CLIP_ABOVE:
-		case MENU_OPTION_CLIP_BELOW: {
-
-			clip_mode=ClipMode(p_option-MENU_OPTION_CLIP_DISABLED);
-			for(int i=0;i<3;i++) {
-
-				int index=options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED+i);
-				options->get_popup()->set_item_checked(index,i==clip_mode);
-
-			}
-
-			_update_clip();
-		} break;
-		case MENU_OPTION_X_AXIS:
-		case MENU_OPTION_Y_AXIS:
-		case MENU_OPTION_Z_AXIS: {
-
-			int new_axis = p_option-MENU_OPTION_X_AXIS;
-			for(int i=0;i<3;i++) {
-				int idx=options->get_popup()->get_item_index(MENU_OPTION_X_AXIS+i);
-				options->get_popup()->set_item_checked(idx,i==new_axis);
-			}
-			edit_axis=Vector3::Axis(new_axis);
-			update_grid();
-			_update_clip();
-
-		} break;
-		case MENU_OPTION_CURSOR_ROTATE_Y: {
-			Matrix3 r;
-			if (input_action==INPUT_DUPLICATE) {
-
-				r.set_orthogonal_index(selection.duplicate_rot);
-				r.rotate(Vector3(0,1,0),Math_PI/2.0);
-				selection.duplicate_rot=r.get_orthogonal_index();
-				_update_duplicate_indicator();
-				break;
-			}
-			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,1,0),Math_PI/2.0);
-			cursor_rot=r.get_orthogonal_index();
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_ROTATE_X: {
-			Matrix3 r;
-			if (input_action==INPUT_DUPLICATE) {
-
-				r.set_orthogonal_index(selection.duplicate_rot);
-				r.rotate(Vector3(1,0,0),Math_PI/2.0);
-				selection.duplicate_rot=r.get_orthogonal_index();
-				_update_duplicate_indicator();
-				break;
-			}
-
-			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(1,0,0),Math_PI/2.0);
-			cursor_rot=r.get_orthogonal_index();
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_ROTATE_Z: {
-			Matrix3 r;
-			if (input_action==INPUT_DUPLICATE) {
-
-				r.set_orthogonal_index(selection.duplicate_rot);
-				r.rotate(Vector3(0,0,1),Math_PI/2.0);
-				selection.duplicate_rot=r.get_orthogonal_index();
-				_update_duplicate_indicator();
-				break;
-			}
-
-			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,0,1),Math_PI/2.0);
-			cursor_rot=r.get_orthogonal_index();
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
-			Matrix3 r;
-			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,1,0),-Math_PI/2.0);
-			cursor_rot=r.get_orthogonal_index();
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
-			Matrix3 r;
-			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(1,0,0),-Math_PI/2.0);
-			cursor_rot=r.get_orthogonal_index();
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
-			Matrix3 r;
-			r.set_orthogonal_index(cursor_rot);
-			r.rotate(Vector3(0,0,1),-Math_PI/2.0);
-			cursor_rot=r.get_orthogonal_index();
-			_update_cursor_transform();
-		} break;
-		case MENU_OPTION_CURSOR_CLEAR_ROTATION: {
-
-			if (input_action==INPUT_DUPLICATE) {
-
-
-				selection.duplicate_rot=0;
-				_update_duplicate_indicator();
-				break;
-			}
-
-			cursor_rot=0;
-			_update_cursor_transform();
-		} break;
-
-
-		case MENU_OPTION_DUPLICATE_SELECTS: {
-			int idx = options->get_popup()->get_item_index(MENU_OPTION_DUPLICATE_SELECTS);
-			options->get_popup()->set_item_checked( idx, !options->get_popup()->is_item_checked( idx ) );
-		} break;
-		case MENU_OPTION_SELECTION_MAKE_AREA:
-		case MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR: {
-
-			if (!selection.active)
-				break;
-			int area = node->get_unused_area_id();
-			Error err = node->create_area(area,AABB(selection.begin,selection.end-selection.begin+Vector3(1,1,1)));
-			if (err!=OK) {
-
-
-			}
-			if (p_option==MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR) {
-
-				node->area_set_exterior_portal(area,true);
-			}
-			_update_areas_display();
-			update_areas();
-
-
-		} break;
-		case MENU_OPTION_REMOVE_AREA: {
-			if (selected_area<1)
-				return;
-			node->erase_area(selected_area);
-			_update_areas_display();
-			update_areas();
-		} break;
-		case MENU_OPTION_SELECTION_CLEAR: {
-			if (!selection.active)
-				return;
-
-			_delete_selection();
-
-
-		} break;
-
-
-	}
-}
-
-void StateMachineEditor::_update_cursor_transform() {
-
-	cursor_transform=Transform();
-	cursor_transform.origin=cursor_origin;
-	cursor_transform.basis.set_orthogonal_index(cursor_rot);
-	cursor_transform = node->get_transform() * cursor_transform;
-
-
-	if (cursor_instance.is_valid()) {
-		VisualServer::get_singleton()->instance_set_transform(cursor_instance,cursor_transform);
-		VisualServer::get_singleton()->instance_geometry_set_flag(cursor_instance,VS::INSTANCE_FLAG_VISIBLE,cursor_visible);
-	}
-
-}
-
-void StateMachineEditor::_update_selection_transform() {
-
-	if (!selection.active) {
-
-		Transform xf;
-		xf.basis.set_zero();
-		VisualServer::get_singleton()->instance_set_transform(selection_instance,xf);
-		return;
-	}
-
-	Transform xf;
-	xf.scale(Vector3(1,1,1)*(Vector3(1,1,1)+(selection.end-selection.begin))*node->get_cell_size());
-	xf.origin=selection.begin*node->get_cell_size();
-
-	VisualServer::get_singleton()->instance_set_transform(selection_instance,node->get_global_transform() * xf);
-
-}
-
-void StateMachineEditor::_validate_selection() {
-
-	if (!selection.active)
-		return;
-	selection.begin=selection.click;
-	selection.end=selection.current;
-
-	if (selection.begin.x>selection.end.x)
-		SWAP(selection.begin.x,selection.end.x);
-	if (selection.begin.y>selection.end.y)
-		SWAP(selection.begin.y,selection.end.y);
-	if (selection.begin.z>selection.end.z)
-		SWAP(selection.begin.z,selection.end.z);
-
-
-	_update_selection_transform();
-}
-
-bool StateMachineEditor::do_input_action(Camera* p_camera,const Point2& p_point,bool p_click) {
-
-	if (!spatial_editor)
-		return false;
-
-
-	if (selected_pallete<0 && input_action!=INPUT_COPY && input_action!=INPUT_SELECT && input_action!=INPUT_DUPLICATE)
-		return false;
-	Ref<MeshLibrary> theme = node->get_theme();
-	if (theme.is_null())
-		return false;
-	if (input_action!=INPUT_COPY && input_action!=INPUT_SELECT && input_action!=INPUT_DUPLICATE && !theme->has_item(selected_pallete))
-		return false;
-
-	Camera *camera = p_camera;
-	Vector3 from = camera->project_ray_origin(p_point);
-	Vector3 normal = camera->project_ray_normal(p_point);
-	Transform local_xform = node->get_global_transform().affine_inverse();
-	Vector<Plane> planes=camera->get_frustum();
-	from=local_xform.xform(from);
-	normal=local_xform.basis.xform(normal).normalized();
-
-
-	Plane p;
-	p.normal[edit_axis]=1.0;
-	p.d=edit_floor[edit_axis]*node->get_cell_size();
-
-	Vector3 inters;
-	if (!p.intersects_segment(from,from+normal*500,&inters))
-		return false;
-
-
-	//make sure the intersection is inside the frustum planes, to avoid
-	//painting on invisible regions
-	for(int i=0;i<planes.size();i++) {
-
-		Plane fp = local_xform.xform(planes[i]);
-		if (fp.is_point_over(inters))
-			return false;
-	}
-
-
-	int cell[3];
-	float cell_size[3]={node->get_cell_size(),node->get_cell_size(),node->get_cell_size()};
-
-	last_mouseover=Vector3(-1,-1,-1);
-
-	for(int i=0;i<3;i++) {
-
-		if (i==edit_axis)
-			cell[i]=edit_floor[i];
-		else {
-
-			cell[i]=inters[i]/node->get_cell_size();
-			if (inters[i]<0)
-				cell[i]-=1; //compensate negative
-			grid_ofs[i]=cell[i]*cell_size[i];
-		}
-
-		/*if (cell[i]<0 || cell[i]>=grid_size[i]) {
-
-			cursor_visible=false;
-			_update_cursor_transform();
-			return false;
+		if (E->get() >= (int)last_id)
+		last_id=E->get()+1;
 		}*/
+		//play_button->set_pressed(p_state_machine->is_active());
+		//read the orders
 	}
-
-	last_mouseover=Vector3(cell[0],cell[1],cell[2]);
-	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis],Transform(Matrix3(),grid_ofs));
-
-
-	if (cursor_instance.is_valid()) {
-
-		cursor_origin=(Vector3(cell[0],cell[1],cell[2])+Vector3(0.5*node->get_center_x(),0.5*node->get_center_y(),0.5*node->get_center_z()))*node->get_cell_size();
-		cursor_visible=true;
-
-		_update_cursor_transform();
-
-	}
-
-	if (input_action==INPUT_DUPLICATE) {
-
-		selection.current=Vector3(cell[0],cell[1],cell[2]);
-		_update_duplicate_indicator();
-
-	} else if (input_action==INPUT_SELECT) {
-
-		selection.current=Vector3(cell[0],cell[1],cell[2]);
-		if (p_click)
-			selection.click=selection.current;
-		selection.active=true;
-		_validate_selection();
-
-		return true;
-	} else if (input_action==INPUT_COPY) {
-
-		int item=node->get_cell_item(cell[0],cell[1],cell[2]);
-		if (item>=0) {
-			selected_pallete=item;
-			update_pallete();
-		}
-		return true;
-	} if (input_action==INPUT_PAINT) {
-		SetItem si;
-		si.pos=Vector3(cell[0],cell[1],cell[2]);
-		si.new_value=selected_pallete;
-		si.new_orientation=cursor_rot;
-		si.old_value=node->get_cell_item(cell[0],cell[1],cell[2]);
-		si.old_orientation=node->get_cell_item_orientation(cell[0],cell[1],cell[2]);
-		set_items.push_back(si);
-		node->set_cell_item(cell[0],cell[1],cell[2],selected_pallete,cursor_rot);
-		return true;
-	} else if (input_action==INPUT_ERASE) {
-		SetItem si;
-		si.pos=Vector3(cell[0],cell[1],cell[2]);
-		si.new_value=-1;
-		si.new_orientation=0;
-		si.old_value=node->get_cell_item(cell[0],cell[1],cell[2]);
-		si.old_orientation=node->get_cell_item_orientation(cell[0],cell[1],cell[2]);
-		set_items.push_back(si);
-		node->set_cell_item(cell[0],cell[1],cell[2],-1);
-		return true;
-	}
-
-
-	return false;
 
 }
 
-void StateMachineEditor::_delete_selection() {
+Size2 StateMachineEditor::_get_maximum_size() {
 
-	if (!selection.active)
+	Size2 max=Size2(400,400);
+
+	/*for (List<StringName>::Element *E = order.front(); E; E = E->next()) {
+
+		Point2 pos = state_machine->node_get_pos(E->get());
+
+		if (click_type == CLICK_NODE && click_node == E->get()) {
+
+			pos += click_motion - click_pos;
+		}
+		pos += get_node_size(E->get());
+		if (pos.x>max.x)
+			max.x = pos.x;
+		if (pos.y>max.y)
+			max.y = pos.y;
+
+	}*/
+
+	return max;
+}
+
+
+const char* StateMachineEditor::_node_type_names[] = { "Output", "Animation", "OneShot", "Mix", "Blend2", "Blend3", "Blend4", "TimeScale", "TimeSeek", "Transition" };
+
+Size2 StateMachineEditor::get_node_size(const StringName& p_node) const {
+
+	
+	//StateMachine::NodeType type = state_machine->node_get_type(p_node);
+
+	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<Font> font = get_font("font", "PopupMenu");
+	Color font_color = get_color("font_color", "PopupMenu");
+
+	Size2 size = style->get_minimum_size();
+	/*
+	int count = 2; // title and name
+	int inputs = state_machine->node_get_input_count(p_node);
+	count += inputs ? inputs : 1;
+	String name = p_node;
+
+
+	float name_w = font->get_string_size(name).width;
+	float type_w = font->get_string_size(String(_node_type_names[type])).width;
+	float max_w = MAX(name_w, type_w);
+
+
+
+	switch (type) {
+	case StateMachine::NODE_TIMESEEK:
+	case StateMachine::NODE_OUTPUT: {} break;
+	case StateMachine::NODE_ANIMATION:
+	case StateMachine::NODE_ONESHOT:
+	case StateMachine::NODE_MIX:
+	case StateMachine::NODE_BLEND2:
+	case StateMachine::NODE_BLEND3:
+	case StateMachine::NODE_BLEND4:
+	case StateMachine::NODE_TIMESCALE:
+	case StateMachine::NODE_TRANSITION: {
+
+
+												   size.height += font->get_height();
+	} break;
+	case StateMachine::NODE_MAX: {}
+	}
+
+	size.x += max_w + 20;
+	size.y += count*(font->get_height() + get_constant("vseparation", "PopupMenu"));
+	*/
+	return size;// size;
+}
+
+
+void StateMachineEditor::_edit_dialog_changede(String) {
+
+	edit_dialog->hide();
+}
+
+void StateMachineEditor::_edit_dialog_changeds(String s) {
+
+	_edit_dialog_changed();
+}
+
+void StateMachineEditor::_edit_dialog_changedf(float) {
+
+	_edit_dialog_changed();
+}
+
+void StateMachineEditor::_edit_dialog_changed() {
+
+	if (updating_edit)
 		return;
 
-	undo_redo->create_action("StateMachine Delete Selection");
-	for(int i=selection.begin.x;i<=selection.end.x;i++) {
+	if (renaming_edit) {
 
-		for(int j=selection.begin.y;j<=selection.end.y;j++) {
+		/*if (state_machine->node_rename(edited_node, edit_line[0]->get_text()) == OK) {
+			for (List<StringName>::Element* E = order.front(); E; E = E->next()) {
 
-			for(int k=selection.begin.z;k<=selection.end.z;k++) {
-
-				undo_redo->add_do_method(node,"set_cell_item",i,j,k,StateMachine::INVALID_CELL_ITEM);
-				undo_redo->add_undo_method(node,"set_cell_item",i,j,k,node->get_cell_item(i,j,k),node->get_cell_item_orientation(i,j,k));
+				if (E->get() == edited_node)
+					E->get() = edit_line[0]->get_text();
 			}
-
-		}
-	}
-	undo_redo->commit_action();
-
-	selection.active=false;
-	_validate_selection();
-
-}
-
-void StateMachineEditor::_update_duplicate_indicator() {
-
-	if (!selection.active || input_action!=INPUT_DUPLICATE) {
-
-		Transform xf;
-		xf.basis.set_zero();
-		VisualServer::get_singleton()->instance_set_transform(duplicate_instance,xf);
+			edited_node = edit_line[0]->get_text();
+		}*/
+		update();
 		return;
 	}
 
-	Transform xf;
-	xf.scale(Vector3(1,1,1)*(Vector3(1,1,1)+(selection.end-selection.begin))*node->get_cell_size());
-	xf.origin=(selection.begin+(selection.current-selection.click))*node->get_cell_size();
-	Matrix3 rot;
-	rot.set_orthogonal_index(selection.duplicate_rot);
-	xf.basis = rot * xf.basis;
+	/*StateMachine::NodeType type = state_machine->node_get_type(edited_node);
 
-	VisualServer::get_singleton()->instance_set_transform(duplicate_instance,node->get_global_transform() * xf);
+	switch (type) {
 
+	case StateMachine::NODE_TIMESCALE:
+		state_machine->timescale_node_set_scale(edited_node, edit_line[0]->get_text().to_double());
+		break;
+	case StateMachine::NODE_ONESHOT:
+		state_machine->oneshot_node_set_fadein_time(edited_node, edit_line[0]->get_text().to_double());
+		state_machine->oneshot_node_set_fadeout_time(edited_node, edit_line[1]->get_text().to_double());
+		state_machine->oneshot_node_set_autorestart_delay(edited_node, edit_line[2]->get_text().to_double());
+		state_machine->oneshot_node_set_autorestart_random_delay(edited_node, edit_line[3]->get_text().to_double());
+		state_machine->oneshot_node_set_autorestart(edited_node, edit_check->is_pressed());
+		state_machine->oneshot_node_set_mix_mode(edited_node, edit_option->get_selected());
 
-}
+		break;
 
-struct __Item { Vector3 pos; int rot; int item	; };
-void StateMachineEditor::_duplicate_paste() {
+	case StateMachine::NODE_MIX:
 
-	if (!selection.active)
-		return;
+		state_machine->mix_node_set_amount(edited_node, edit_scroll[0]->get_val());
+		break;
+	case StateMachine::NODE_BLEND2:
+		state_machine->blend2_node_set_amount(edited_node, edit_scroll[0]->get_val());
 
-	int idx = options->get_popup()->get_item_index(MENU_OPTION_DUPLICATE_SELECTS);
-	bool reselect = options->get_popup()->is_item_checked( idx );
+		break;
 
+	case StateMachine::NODE_BLEND3:
+		state_machine->blend3_node_set_amount(edited_node, edit_scroll[0]->get_val());
 
+		break;
+	case StateMachine::NODE_BLEND4:
 
-	List< __Item > items;
+		state_machine->blend4_node_set_amount(edited_node, Point2(edit_scroll[0]->get_val(), edit_scroll[1]->get_val()));
 
-	Matrix3 rot;
-	rot.set_orthogonal_index(selection.duplicate_rot);
+		break;
 
-	for(int i=selection.begin.x;i<=selection.end.x;i++) {
-
-		for(int j=selection.begin.y;j<=selection.end.y;j++) {
-
-			for(int k=selection.begin.z;k<=selection.end.z;k++) {
-
-				int itm = node->get_cell_item(i,j,k);
-				if (itm==StateMachine::INVALID_CELL_ITEM)
-					continue;
-				int orientation = node->get_cell_item_orientation(i,j,k);
-				__Item item;
-				Vector3 rel=Vector3(i,j,k)-selection.begin;
-				rel = rot.xform(rel);
-
-				Matrix3 orm;
-				orm.set_orthogonal_index(orientation);
-				orm = rot * orm;
-
-				item.pos=selection.begin+rel;
-				item.item=itm;
-				item.rot=orm.get_orthogonal_index();
-				items.push_back(item);
-			}
-
-		}
-	}
-
-	Vector3 ofs=selection.current-selection.click;
-	if (items.size()) {
-		undo_redo->create_action("StateMachine Duplicate Selection");
-		for(List< __Item >::Element *E=items.front();E;E=E->next()) {
-			__Item &it=E->get();
-			Vector3 pos = it.pos+ofs;
-
-			undo_redo->add_do_method(node,"set_cell_item",pos.x,pos.y,pos.z,it.item,it.rot);
-			undo_redo->add_undo_method(node,"set_cell_item",pos.x,pos.y,pos.z,node->get_cell_item(pos.x,pos.y,pos.z),node->get_cell_item_orientation(pos.x,pos.y,pos.z));
-
-		}
-		undo_redo->commit_action();
-	}
-
-
-	if (reselect) {
-
-		selection.begin+=ofs;
-		selection.end+=ofs;
-		selection.click=selection.begin;
-		selection.current=selection.end;
-		_validate_selection();
-	}
+	case StateMachine::NODE_TRANSITION: {
+												   state_machine->transition_node_set_xfade_time(edited_node, edit_line[0]->get_text().to_double());
+												   if (state_machine->transition_node_get_current(edited_node) != edit_option->get_selected())
+													   state_machine->transition_node_set_current(edited_node, edit_option->get_selected());
+	} break;
+	default: {}
+	}*/
 
 }
-
-bool StateMachineEditor::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
-
-
-	if (edit_mode->get_selected()==0) { // regular click
-		switch (p_event.type) {
-			case InputEvent::KEY: {
-
-				if (p_event.key.pressed && p_event.key.scancode==KEY_D && p_event.key.mod.shift && selection.active && input_action==INPUT_NONE) {
-
-					if (last_mouseover==Vector3(-1,-1,-1)) //nono mouseovering anythin
-						return false;
-
-					input_action=INPUT_DUPLICATE;
-					selection.click=last_mouseover;
-					selection.current=last_mouseover;
-					selection.duplicate_rot=0;
-					_update_duplicate_indicator();
+/*
+void StateMachineEditor::_edit_dialog_animation_changed() {
 
 
-				}
-
-				if (p_event.key.pressed && p_event.key.scancode==KEY_DELETE && selection.active) {
-
-					_delete_selection();
-					return true;
-				}
-
-			} break;
-			case InputEvent::MOUSE_BUTTON: {
-
-				if (p_event.mouse_button.button_index==BUTTON_WHEEL_UP && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
-					if (p_event.mouse_button.pressed)
-						floor->set_val( floor->get_val() +1);
-
-					return true; //eaten
-				} else if (p_event.mouse_button.button_index==BUTTON_WHEEL_DOWN && (p_event.mouse_button.mod.command || p_event.mouse_button.mod.shift)) {
-					if (p_event.mouse_button.pressed)
-						floor->set_val( floor->get_val() -1);
-					return true;
-				}
-
-				if (p_event.mouse_button.pressed) {
-
-					if (p_event.mouse_button.button_index==BUTTON_LEFT) {
-
-						if (input_action==INPUT_DUPLICATE) {
-
-							//paste
-							_duplicate_paste();
-							input_action=INPUT_NONE;
-							_update_duplicate_indicator();
-						} else if (p_event.mouse_button.mod.shift) {
-							input_action=INPUT_SELECT;
-						} else if (p_event.mouse_button.mod.command)
-							input_action=INPUT_COPY;
-						else {
-							input_action=INPUT_PAINT;
-							set_items.clear();
-						}
-					} else if (p_event.mouse_button.button_index==BUTTON_RIGHT)
-						if (input_action==INPUT_DUPLICATE) {
-
-							input_action=INPUT_NONE;
-							_update_duplicate_indicator();
-						} else {
-							input_action=INPUT_ERASE;
-							set_items.clear();
-						}
-					else
-						return false;
-
-					return do_input_action(p_camera,Point2(p_event.mouse_button.x,p_event.mouse_button.y),true);
-				} else {
-
-
-					if (
-						(p_event.mouse_button.button_index==BUTTON_RIGHT && input_action==INPUT_ERASE) ||
-						(p_event.mouse_button.button_index==BUTTON_LEFT && input_action==INPUT_PAINT) ) {
-
-						if (set_items.size()) {
-							undo_redo->create_action("StateMachine Paint");
-							for(List<SetItem>::Element *E=set_items.front();E;E=E->next()) {
-
-								const SetItem &si=E->get();
-								undo_redo->add_do_method(node,"set_cell_item",si.pos.x,si.pos.y,si.pos.z,si.new_value,si.new_orientation);
-							}
-							for(List<SetItem>::Element *E=set_items.back();E;E=E->prev()) {
-
-								const SetItem &si=E->get();
-								undo_redo->add_undo_method(node,"set_cell_item",si.pos.x,si.pos.y,si.pos.z,si.old_value,si.old_orientation);
-							}
-
-
-							undo_redo->commit_action();
-						}
-						set_items.clear();
-						input_action=INPUT_NONE;
-						return true;
-
-					}
-
-
-
-					if (p_event.mouse_button.button_index==BUTTON_LEFT && input_action!=INPUT_NONE) {
-
-						set_items.clear();
-						input_action=INPUT_NONE;
-						return true;
-					}
-					if (p_event.mouse_button.button_index==BUTTON_RIGHT && (input_action==INPUT_ERASE || input_action==INPUT_DUPLICATE)) {
-						input_action=INPUT_NONE;
-						return true;
-					}
-				}
-			} break;
-			case InputEvent::MOUSE_MOTION: {
-
-				return do_input_action(p_camera,Point2(p_event.mouse_motion.x,p_event.mouse_motion.y),false);
-			} break;
-		}
-
-	} else if (edit_mode->get_selected()==1) {
-		//area mode, select an area
-
-		switch (p_event.type) {
-			case InputEvent::MOUSE_BUTTON: {
-
-				if (p_event.mouse_button.button_index==BUTTON_LEFT && p_event.mouse_button.pressed) {
-
-					Point2 point = Point2(p_event.mouse_motion.x,p_event.mouse_motion.y);
-
-					Camera *camera = p_camera;
-					Vector3 from = camera->project_ray_origin(point);
-					Vector3 normal = camera->project_ray_normal(point);
-					Transform local_xform = node->get_global_transform().affine_inverse();
-					from=local_xform.xform(from);
-					normal=local_xform.basis.xform(normal).normalized();
-
-					List<int> areas;
-					node->get_area_list(&areas);
-
-					float min_d=1e10;
-					int min_area=-1;
-
-
-					for(List<int>::Element *E=areas.front();E;E=E->next()) {
-
-						int area = E->get();
-						AABB aabb = node->area_get_bounds(area);
-						aabb.pos*=node->get_cell_size();
-						aabb.size*=node->get_cell_size();
-
-
-						Vector3 rclip,rnormal;
-						if (!aabb.intersects_segment(from,from+normal*10000,&rclip,&rnormal))
-							continue;
-
-						float d = normal.dot(rclip);
-						if (d<min_d) {
-							min_d=d;
-							min_area=area;
-						}
-					}
-
-					selected_area=min_area;
-					update_areas();
-
-				}
-			} break;
-		}
-
-	}
-
-
-	return false;
+	Ref<Animation> anim = property_editor->get_variant().operator RefPtr();
+	state_machine->animation_node_set_animation(edited_node, anim);
+	update();
 }
 
-struct _CGMEItemSort {
+void StateMachineEditor::_edit_dialog_edit_animation() {
 
-	String name;
-	int id;
-	_FORCE_INLINE_ bool operator<(const _CGMEItemSort& r_it) const { return name < r_it.name; }
-
+	if (get_scene()->is_editor_hint()) {
+		get_scene()->get_root()->get_child(0)->call("_resource_selected", property_editor->get_variant().operator RefPtr());
+	};
 };
 
-void StateMachineEditor::update_pallete()  {
+void StateMachineEditor::_edit_oneshot_start() {
 
-	theme_pallete->clear();
+	state_machine->oneshot_node_start(edited_node);
+}
 
-	Ref<MeshLibrary> theme = node->get_theme();
+void StateMachineEditor::_play_toggled() {
 
-	if (theme.is_null()) {
-		last_theme=NULL;
-		return;
-	}
-
-	Vector<int> ids;
-	ids = theme->get_item_list();
-
-	TreeItem *root = theme_pallete->create_item(NULL);
-	theme_pallete->set_hide_root(true);
-	TreeItem *selected=NULL;
-
-	List<_CGMEItemSort> il;
-	for(int i=0;i<ids.size();i++) {
-
-		_CGMEItemSort is;
-		is.id=ids[i];
-		is.name=theme->get_item_name(ids[i]);
-		il.push_back(is);
-	}
-	il.sort();
-
-	int col=0;
-	TreeItem *ti=NULL;
-	int selected_col=0;
-
-	for(List<_CGMEItemSort>::Element *E=il.front();E;E=E->next()) {
-
-		int id = E->get().id;
-
-		if (col==0) {
-			ti = theme_pallete->create_item(root);
-		}
-
-		String name=theme->get_item_name(id);
-		Ref<Texture> preview = theme->get_item_preview(id);
-
-		if (!preview.is_null()) {
-
-			ti->set_cell_mode(col,TreeItem::CELL_MODE_ICON);
-			ti->set_icon(col,preview);
-			ti->set_tooltip(col,name);
-		} else {
-
-			ti->set_text(col,name);
-		}
-		ti->set_metadata(col,id);
-
-		if (selected_pallete==id) {
-			selected=ti;
-			selected_col=col;
-		}
-
-		col++;
-		if (col==theme_pallete->get_columns())
-			col=0;
-
-	}
-
-	if (selected)
-		selected->select(selected_col);
-
-	last_theme=theme.operator->();
+	state_machine->set_active(play_button->is_pressed());
 }
 
 
-void StateMachineEditor::_area_renamed() {
+void StateMachineEditor::_master_anim_menu_item(int p_item) {
 
-	TreeItem * it = area_list->get_selected();
-	int area = it->get_metadata(0);
-	if (area<1)
-		return;
-	node->area_set_name(area,it->get_text(0));
+	String str = master_anim_popup->get_item_text(p_item);
+	state_machine->animation_node_set_master_animation(edited_node, str);
+	update();
 }
+*/
+void StateMachineEditor::_popup_edit_dialog() {
 
+	updating_edit = true;
 
-void StateMachineEditor::_area_selected() {
+	for (int i = 0; i<2; i++)
+		edit_scroll[i]->hide();
 
-	TreeItem * it = area_list->get_selected();
-	int area = it->get_metadata(0);
-	if (area<1)
-		return;
-	selected_area=area;
-}
+	for (int i = 0; i<4; i++) {
 
-void StateMachineEditor::update_areas()  {
-
-	area_list->clear();
-
-	List<int> areas;
-	node->get_area_list(&areas);
-
-	TreeItem *root = area_list->create_item(NULL);
-	area_list->set_hide_root(true);
-	TreeItem *selected=NULL;
-
-
-	for (List<int>::Element *E=areas.front();E;E=E->next()) {
-
-		int area = E->get();
-		TreeItem *ti = area_list->create_item(root);
-		String name=node->area_get_name(area);
-
-		ti->set_metadata(0,area);
-		ti->set_text(0,name);
-		ti->set_editable(0,true);
-		if (area==selected_area)
-			selected=ti;
+		edit_line[i]->hide();
+		edit_label[i]->hide();
 	}
 
+	edit_option->hide();
+	edit_button->hide();;
+	filter_button->hide();
+	edit_check->hide();;
+	/*
+	Point2 pos = state_machine->node_get_pos(edited_node) - Point2(h_scroll->get_val(), v_scroll->get_val());
+	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Size2 size = get_node_size(edited_node);
+	Point2 popup_pos(pos.x + style->get_margin(MARGIN_LEFT), pos.y + size.y - style->get_margin(MARGIN_BOTTOM));
+	popup_pos += get_global_pos();
 
-	if (selected)
-		selected->select(0);
+	if (renaming_edit) {
 
-}
-
-void StateMachineEditor::edit(StateMachine *p_statemachine) {
-
-	node=p_statemachine;
-	VS *vs = VS::get_singleton();
-
-	last_mouseover=Vector3(-1,-1,-1);
-	spatial_editor  = editor->get_editor_plugin_screen()->cast_to<SpatialEditorPlugin>();
-
-	if (!node) {
-		set_process(false);
-		for(int i=0;i<3;i++) {
-			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
-
-		}
-		_clear_areas();
-
-		return;
-	}
-
-
-	update_pallete();
-	update_areas();
-
-	set_process(true);
-
-	Vector3 edited_floor = p_statemachine->get_meta("_editor_floor_");
-	clip_mode=p_statemachine->has_meta("_editor_clip_")?ClipMode(p_statemachine->get_meta("_editor_clip_").operator int()):CLIP_DISABLED;
-
-
-
-	for(int i=0;i<3;i++) {
-		if (vs->mesh_get_surface_count(grid[i])>0)
-			vs->mesh_remove_surface(grid[i],0);
-		edit_floor[i]=edited_floor[i];
+		edit_label[0]->set_text("New name:");
+		edit_label[0]->set_pos(Point2(5, 5));
+		edit_label[0]->show();
+		edit_line[0]->set_begin(Point2(15, 25));
+		edit_line[0]->set_text(edited_node);
+		edit_line[0]->show();
+		edit_dialog->set_size(Size2(150, 50));
 
 	}
+	else {
 
-	{
-
-		//update grids
-		RID indicator_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
-
-		VisualServer::get_singleton()->fixed_material_set_param(indicator_mat,VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.8,0.5,0.1));
-		VisualServer::get_singleton()->fixed_material_set_flag( indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
-		VisualServer::get_singleton()->fixed_material_set_flag( indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY, true );
+		StateMachine::NodeType type = state_machine->node_get_type(edited_node);
 
 
-		Vector<Vector3> grid_points[3];
-		Vector<Color> grid_colors[3];
+		switch (type) {
 
-		float cell_size[3]={p_statemachine->get_cell_size(),p_statemachine->get_cell_size(),p_statemachine->get_cell_size()};
+		case StateMachine::NODE_ANIMATION:
 
-		for(int i=0;i<3;i++) {
+			if (state_machine->get_master_player() != NodePath() && state_machine->has_node(state_machine->get_master_player()) && state_machine->get_node(state_machine->get_master_player())->cast_to<AnimationPlayer>()) {
 
-			Vector3 axis;
-			axis[i]=1;
-			Vector3 axis_n1;
-			axis_n1[(i+1)%3]=cell_size[(i+1)%3];;
-			Vector3 axis_n2;
-			axis_n2[(i+2)%3]=cell_size[(i+2)%3];
-
-			for(int j=-GRID_CURSOR_SIZE;j<=GRID_CURSOR_SIZE;j++) {
-
-				for(int k=-GRID_CURSOR_SIZE;k<=GRID_CURSOR_SIZE;k++) {
-
-					Vector3 p = axis_n1*j + axis_n2 *k;
-					float trans = Math::pow(MAX(0,1.0-(Vector2(j,k).length()/GRID_CURSOR_SIZE)),2);
-
-					Vector3 pj = axis_n1*(j+1) + axis_n2 *k;
-					float transj = Math::pow(MAX(0,1.0-(Vector2(j+1,k).length()/GRID_CURSOR_SIZE)),2);
-
-					Vector3 pk = axis_n1*j + axis_n2 *(k+1);
-					float transk = Math::pow(MAX(0,1.0-(Vector2(j,k+1).length()/GRID_CURSOR_SIZE)),2);
-
-					grid_points[i].push_back(p);
-					grid_points[i].push_back(pk);
-					grid_colors[i].push_back(Color(1,1,1,trans));
-					grid_colors[i].push_back(Color(1,1,1,transk));
-
-					grid_points[i].push_back(p);
-					grid_points[i].push_back(pj);
-					grid_colors[i].push_back(Color(1,1,1,trans));
-					grid_colors[i].push_back(Color(1,1,1,transj));
+				AnimationPlayer *ap = state_machine->get_node(state_machine->get_master_player())->cast_to<AnimationPlayer>();
+				master_anim_popup->clear();
+				List<StringName> sn;
+				ap->get_animation_list(&sn);
+				sn.sort_custom<StringName::AlphCompare>();
+				for (List<StringName>::Element *E = sn.front(); E; E = E->next()) {
+					master_anim_popup->add_item(E->get());
 				}
 
+				master_anim_popup->set_pos(popup_pos);
+				master_anim_popup->popup();
 			}
+			else {
+				property_editor->edit(this, "", Variant::OBJECT, state_machine->animation_node_get_animation(edited_node), PROPERTY_HINT_RESOURCE_TYPE, "Animation");
+				property_editor->set_pos(popup_pos);
+				property_editor->popup();
+				updating_edit = false;
+			}
+			return;
+		case StateMachine::NODE_TIMESCALE:
+			edit_label[0]->set_text("Scale:");
+			edit_label[0]->set_pos(Point2(5, 5));
+			edit_label[0]->show();
+			edit_line[0]->set_begin(Point2(15, 25));
+			edit_line[0]->set_text(rtos(state_machine->timescale_node_get_scale(edited_node)));
+			edit_line[0]->show();
+			edit_dialog->set_size(Size2(150, 50));
+			break;
+		case StateMachine::NODE_ONESHOT:
+			edit_label[0]->set_text("Fade In (s):");
+			edit_label[0]->set_pos(Point2(5, 5));
+			edit_label[0]->show();
+			edit_line[0]->set_begin(Point2(15, 25));
+			edit_line[0]->set_text(rtos(state_machine->oneshot_node_get_fadein_time(edited_node)));
+			edit_line[0]->show();
+			edit_label[1]->set_text("Fade Out (s):");
+			edit_label[1]->set_pos(Point2(5, 55));
+			edit_label[1]->show();
+			edit_line[1]->set_begin(Point2(15, 75));
+			edit_line[1]->set_text(rtos(state_machine->oneshot_node_get_fadeout_time(edited_node)));
+			edit_line[1]->show();
 
-			Array d;
-			d.resize(VS::ARRAY_MAX);
-			d[VS::ARRAY_VERTEX]=grid_points[i];
-			d[VS::ARRAY_COLOR]=grid_colors[i];
-			VisualServer::get_singleton()->mesh_add_surface(grid[i],VisualServer::PRIMITIVE_LINES,d);
-			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat,true);
+			edit_option->clear();
+			edit_option->add_item("Blend", 0);
+			edit_option->add_item("Mix", 1);
+			edit_option->set_begin(Point2(15, 105));
 
+			edit_option->select(state_machine->oneshot_node_get_mix_mode(edited_node));
+			edit_option->show();
+
+			edit_check->set_text("Auto Restart:");
+			edit_check->set_begin(Point2(15, 125));
+			edit_check->set_pressed(state_machine->oneshot_node_has_autorestart(edited_node));
+			edit_check->show();
+
+			edit_label[2]->set_text("Restart (s):");
+			edit_label[2]->set_pos(Point2(5, 145));
+			edit_label[2]->show();
+			edit_line[2]->set_begin(Point2(15, 165));
+			edit_line[2]->set_text(rtos(state_machine->oneshot_node_get_autorestart_delay(edited_node)));
+			edit_line[2]->show();
+			edit_label[3]->set_text("Random Restart (s):");
+			edit_label[3]->set_pos(Point2(5, 195));
+			edit_label[3]->show();
+			edit_line[3]->set_begin(Point2(15, 215));
+			edit_line[3]->set_text(rtos(state_machine->oneshot_node_get_autorestart_random_delay(edited_node)));
+			edit_line[3]->show();
+
+			filter_button->set_begin(Point2(10, 245));
+			filter_button->show();
+
+			edit_button->set_begin(Point2(10, 268));
+			edit_button->set_text("Start!");
+
+			edit_button->show();
+
+			edit_dialog->set_size(Size2(180, 293));
+
+			break;
+
+		case StateMachine::NODE_MIX:
+
+			edit_label[0]->set_text("Amount:");
+			edit_label[0]->set_pos(Point2(5, 5));
+			edit_label[0]->show();
+			edit_scroll[0]->set_min(0);
+			edit_scroll[0]->set_max(1);
+			edit_scroll[0]->set_val(state_machine->mix_node_get_amount(edited_node));
+			edit_scroll[0]->set_begin(Point2(15, 25));
+			edit_scroll[0]->show();
+			edit_dialog->set_size(Size2(150, 50));
+
+			break;
+		case StateMachine::NODE_BLEND2:
+			edit_label[0]->set_text("Blend:");
+			edit_label[0]->set_pos(Point2(5, 5));
+			edit_label[0]->show();
+			edit_scroll[0]->set_min(0);
+			edit_scroll[0]->set_max(1);
+			edit_scroll[0]->set_val(state_machine->blend2_node_get_amount(edited_node));
+			edit_scroll[0]->set_begin(Point2(15, 25));
+			edit_scroll[0]->show();
+			filter_button->set_begin(Point2(10, 47));
+			filter_button->show();
+			edit_dialog->set_size(Size2(150, 74));
+
+			break;
+
+		case StateMachine::NODE_BLEND3:
+			edit_label[0]->set_text("Blend:");
+			edit_label[0]->set_pos(Point2(5, 5));
+			edit_label[0]->show();
+			edit_scroll[0]->set_min(-1);
+			edit_scroll[0]->set_max(1);
+			edit_scroll[0]->set_val(state_machine->blend3_node_get_amount(edited_node));
+			edit_scroll[0]->set_begin(Point2(15, 25));
+			edit_scroll[0]->show();
+			edit_dialog->set_size(Size2(150, 50));
+
+			break;
+		case StateMachine::NODE_BLEND4:
+
+			edit_label[0]->set_text("Blend 0:");
+			edit_label[0]->set_pos(Point2(5, 5));
+			edit_label[0]->show();
+			edit_scroll[0]->set_min(0);
+			edit_scroll[0]->set_max(1);
+			edit_scroll[0]->set_val(state_machine->blend4_node_get_amount(edited_node).x);
+			edit_scroll[0]->set_begin(Point2(15, 25));
+			edit_scroll[0]->show();
+			edit_label[1]->set_text("Blend 1:");
+			edit_label[1]->set_pos(Point2(5, 55));
+			edit_label[1]->show();
+			edit_scroll[1]->set_min(0);
+			edit_scroll[1]->set_max(1);
+			edit_scroll[1]->set_val(state_machine->blend4_node_get_amount(edited_node).y);
+			edit_scroll[1]->set_begin(Point2(15, 75));
+			edit_scroll[1]->show();
+			edit_dialog->set_size(Size2(150, 100));
+
+			break;
+
+		case StateMachine::NODE_TRANSITION: {
+
+
+													   edit_label[0]->set_text("X-Fade Time (s):");
+													   edit_label[0]->set_pos(Point2(5, 5));
+													   edit_label[0]->show();
+													   edit_line[0]->set_begin(Point2(15, 25));
+													   edit_line[0]->set_text(rtos(state_machine->transition_node_get_xfade_time(edited_node)));
+													   edit_line[0]->show();
+
+													   edit_label[1]->set_text("Current:");
+													   edit_label[1]->set_pos(Point2(5, 55));
+													   edit_label[1]->show();
+													   edit_option->set_begin(Point2(15, 75));
+
+													   edit_option->clear();;
+
+													   for (int i = 0; i<state_machine->transition_node_get_input_count(edited_node); i++) {
+														   edit_option->add_item(itos(i), i);
+													   }
+
+													   edit_option->select(state_machine->transition_node_get_current(edited_node));
+													   edit_option->show();
+													   edit_dialog->set_size(Size2(150, 100));
+
+		} break;
+		default: {}
 
 		}
 
 	}
 
-	update_grid();
-	_update_clip();
-	_update_areas_display();
 
 
+	edit_dialog->set_pos(popup_pos);
+	*/edit_dialog->popup();
+
+	updating_edit = false;
 }
 
-void StateMachineEditor::_update_clip() {
+void StateMachineEditor::_draw_node(const StringName& p_node) {
+
+	RID ci = get_canvas_item();
+	//StateMachine::NodeType type = state_machine->node_get_type(p_node);
+
+	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<Font> font = get_font("font", "PopupMenu");
+	Color font_color = get_color("font_color", "PopupMenu");
+	Color font_color_title = get_color("font_color_hover", "PopupMenu");
+	font_color_title.a *= 0.8;
+	Ref<Texture> slot_icon = get_icon("NodeRealSlot", "EditorIcons");
 
 
-	node->set_meta("_editor_clip_",clip_mode);
-	if (clip_mode==CLIP_DISABLED)
-		node->set_clip(false);
-	else
-		node->set_clip(true,clip_mode==CLIP_ABOVE,edit_floor[edit_axis],edit_axis);
-}
+	Size2 size = get_node_size(p_node);
+	/*
+	Point2 pos = state_machine->node_get_pos(p_node);
+	if (click_type == CLICK_NODE && click_node == p_node) {
 
-
-void StateMachineEditor::update_grid() {
-
-	grid_xform.origin.x-=1; //force update in hackish way.. what do i care
-
-	VS *vs = VS::get_singleton();
-
-	grid_ofs[edit_axis]=edit_floor[edit_axis]*node->get_cell_size();
-
-	edit_grid_xform.origin=grid_ofs;
-	edit_grid_xform.basis=Matrix3();
-
-
-	for(int i=0;i<3;i++) {
-		VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,i==edit_axis);
+		pos += click_motion - click_pos;
+		if (pos.x<5)
+			pos.x = 5;
+		if (pos.y<5)
+			pos.y = 5;
 
 	}
 
-	updating=true;
-	floor->set_val(edit_floor[edit_axis]);
-	updating=false;
+	pos -= Point2(h_scroll->get_val(), v_scroll->get_val());
+
+	style->draw(ci, Rect2(pos, size));
+
+	float w = size.width - style->get_minimum_size().width;
+	float h = font->get_height() + get_constant("vseparation", "PopupMenu");
+
+	Point2 ofs = style->get_offset() + pos;
+	Point2 ascofs(0, font->get_ascent());
+
+	Color bx = font_color_title;
+	bx.a *= 0.1;
+	draw_rect(Rect2(ofs, Size2(size.width - style->get_minimum_size().width, font->get_height())), bx);
+	font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, String(_node_type_names[type]), font_color_title);
+
+	ofs.y += h;
+	font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, p_node, font_color);
+	ofs.y += h;
+
+	int count = 2; // title and name
+	int inputs = state_machine->node_get_input_count(p_node);
+	count += inputs ? inputs : 1;
+
+	float icon_h_ofs = Math::floor((font->get_height() - slot_icon->get_height()) / 2.0) + 1;
+
+	if (type != StateMachine::NODE_OUTPUT)
+		slot_icon->draw(ci, ofs + Point2(w, icon_h_ofs)); //output
+
+	if (inputs) {
+		for (int i = 0; i<inputs; i++) {
+
+			slot_icon->draw(ci, ofs + Point2(-slot_icon->get_width(), icon_h_ofs));
+			String text;
+			switch (type) {
+
+			case StateMachine::NODE_TIMESCALE:
+			case StateMachine::NODE_TIMESEEK: text = "in"; break;
+			case StateMachine::NODE_OUTPUT: text = "out"; break;
+			case StateMachine::NODE_ANIMATION: break;
+			case StateMachine::NODE_ONESHOT: text = (i == 0 ? "in" : "add"); break;
+			case StateMachine::NODE_BLEND2:
+			case StateMachine::NODE_MIX: text = (i == 0 ? "a" : "b"); break;
+			case StateMachine::NODE_BLEND3:
+				switch (i) {
+				case 0: text = "b-"; break;
+				case 1: text = "a"; break;
+				case 2: text = "b+"; break;
+
+				}
+				break;
+
+
+			case StateMachine::NODE_BLEND4:
+				switch (i) {
+				case 0: text = "a0"; break;
+				case 1: text = "b0"; break;
+				case 2: text = "a1"; break;
+				case 3: text = "b1"; break;
+				}
+				break;
+
+			case StateMachine::NODE_TRANSITION:
+				text = itos(i);
+				if (state_machine->transition_node_has_input_auto_advance(p_node, i))
+					text += "->";
+
+				break;
+			default: {}
+			}
+			font->draw(ci, ofs + ascofs + Point2(3, 0), text, font_color);
+
+			ofs.y += h;
+		}
+	}
+	else {
+		ofs.y += h;
+	}
+
+	Ref<StyleBox> pg_bg = get_stylebox("bg", "ProgressBar");
+	Ref<StyleBox> pg_fill = get_stylebox("fill", "ProgressBar");
+	Rect2 pg_rect(ofs, Size2(w, h));
+
+	bool editable = true;
+	switch (type) {
+	case StateMachine::NODE_ANIMATION: {
+
+												  Ref<Animation> anim = state_machine->animation_node_get_animation(p_node);
+												  String text;
+												  if (state_machine->animation_node_get_master_animation(p_node) != "")
+													  text = state_machine->animation_node_get_master_animation(p_node);
+												  else if (anim.is_null())
+													  text = "load..";
+												  else
+													  text = anim->get_name();
+
+												  font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, text, font_color_title);
+
+	} break;
+	case StateMachine::NODE_ONESHOT:
+	case StateMachine::NODE_MIX:
+	case StateMachine::NODE_BLEND2:
+	case StateMachine::NODE_BLEND3:
+	case StateMachine::NODE_BLEND4:
+	case StateMachine::NODE_TIMESCALE:
+	case StateMachine::NODE_TRANSITION: {
+
+												   font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, "edit..", font_color_title);
+	} break;
+	default: editable = false;
+	}
+
+	if (editable) {
+
+		Ref<Texture> arrow = get_icon("arrow", "Tree");
+		Point2 arrow_ofs(w - arrow->get_width(), Math::floor((h - arrow->get_height()) / 2));
+		arrow->draw(ci, ofs + arrow_ofs);
+	}*/
+}
+
+#if 0
+void StateMachineEditor::_node_param_changed() {
+
+	//	state_machine->node_set_param( click_node,property_editor->get_variant() );
+	//	update();
+	//	_write_state_machine_graph();
+}
+#endif
+
+StateMachineEditor::ClickType StateMachineEditor::_locate_click(const Point2& p_click, StringName *p_node_id, int *p_slot_index) const {
+
+
+	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<Font> font = get_font("font", "PopupMenu");
+	Color font_color = get_color("font_color", "PopupMenu");
+
+	float h = (font->get_height() + get_constant("vseparation", "PopupMenu"));
+	/*
+	for (const List<StringName>::Element *E = order.back(); E; E = E->prev()) {
+
+		StringName node = E->get();
+		
+		StateMachine::NodeType type = state_machine->node_get_type(node);
+
+		Point2 pos = state_machine->node_get_pos(node);
+		Size2 size = get_node_size(node);
+
+		pos -= Point2(h_scroll->get_val(), v_scroll->get_val());
+
+		if (!Rect2(pos, size).has_point(p_click))
+			continue;
+
+		if (p_node_id)
+			*p_node_id = node;
+
+		pos = p_click - pos;
+
+		float y = pos.y - style->get_offset().height;
+
+		if (y<h)
+			return CLICK_NODE;
+		y -= h;
+
+		if (y<h)
+			return CLICK_NODE;
+
+		y -= h;
+
+		int count = 0; // title and name
+		int inputs = state_machine->node_get_input_count(node);
+		count += inputs ? inputs : 1;
+
+		for (int i = 0; i<count; i++) {
+
+			if (y<h) {
+
+				if (inputs == 0 || (type != StateMachine::NODE_OUTPUT && pos.x > size.width / 2))	{
+
+					if (p_slot_index)
+						*p_slot_index = 0;
+					return CLICK_OUTPUT_SLOT;
+				}
+				else {
+
+					if (p_slot_index)
+						*p_slot_index = i;
+					return CLICK_INPUT_SLOT;
+				}
+			}
+			y -= h;
+		}
+
+		return (type != StateMachine::NODE_OUTPUT && type != StateMachine::NODE_TIMESEEK) ? CLICK_PARAMETER : CLICK_NODE;
+	}*/
+
+	return CLICK_NONE;
+}
+
+Point2 StateMachineEditor::_get_slot_pos(const StringName& p_node, bool p_input, int p_slot) {
+
+	Ref<StyleBox> style = get_stylebox("panel", "PopupMenu");
+	Ref<Font> font = get_font("font", "PopupMenu");
+	Ref<Texture> slot_icon = get_icon("NodeRealSlot", "EditorIcons");
+	Point2 pos = Point2(0, 0);
+/*	Size2 size = get_node_size(p_node);
+	Point2 pos = state_machine->node_get_pos(p_node);
+
+	if (click_type == CLICK_NODE && click_node == p_node) {
+
+		pos += click_motion - click_pos;
+		if (pos.x<5)
+			pos.x = 5;
+		if (pos.y<5)
+			pos.y = 5;
+
+	}
+
+	pos -= Point2(h_scroll->get_val(), v_scroll->get_val());
+
+
+	float w = size.width - style->get_minimum_size().width;
+	float h = font->get_height() + get_constant("vseparation", "PopupMenu");
+
+
+	pos += style->get_offset();
+
+	pos.y += h * 2;
+
+	pos.y += h*p_slot;
+
+	pos += Point2(-slot_icon->get_width() / 2.0, h / 2.0).floor();
+
+	if (!p_input) {
+		pos.x += w + slot_icon->get_width();
+
+	}
+	*/
+	return pos;
+
+}
+
+void StateMachineEditor::_input_event(InputEvent p_event) {
+
+	switch (p_event.type) {
+
+	case InputEvent::MOUSE_BUTTON: {
+
+									   if (p_event.mouse_button.pressed) {
+
+
+										   if (p_event.mouse_button.button_index == 1) {
+											   click_pos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
+											   click_motion = click_pos;
+											   click_type = _locate_click(click_pos, &click_node, &click_slot);
+											   if (click_type != CLICK_NONE) {
+
+												   order.erase(click_node);
+												   order.push_back(click_node);
+												   update();
+											   }
+
+											   switch (click_type) {
+											   case CLICK_INPUT_SLOT: {
+																		  click_pos = _get_slot_pos(click_node, true, click_slot);
+											   } break;
+											   case CLICK_OUTPUT_SLOT: {
+																		   click_pos = _get_slot_pos(click_node, false, click_slot);
+											   } break;
+											   case CLICK_PARAMETER: {
+
+																		 edited_node = click_node;
+																		 renaming_edit = false;
+																		 _popup_edit_dialog();
+																		 //open editor
+																		 //		_node_edit_property(click_node);
+											   } break;
+											   default:{}
+											   }
+										   }
+										   if (p_event.mouse_button.button_index == 2) {
+
+											   if (click_type != CLICK_NONE) {
+												   click_type = CLICK_NONE;
+												   update();
+											   }
+											   else {
+												   // try to disconnect/remove
+												   /*
+												   Point2 rclick_pos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
+												   rclick_type = _locate_click(rclick_pos, &rclick_node, &rclick_slot);
+												   if (rclick_type == CLICK_INPUT_SLOT || rclick_type == CLICK_OUTPUT_SLOT) {
+
+													   node_popup->clear();
+													   node_popup->add_item("Disconnect", NODE_DISCONNECT);
+													   if (state_machine->node_get_type(rclick_node) == StateMachine::NODE_TRANSITION) {
+														   node_popup->add_item("Add Input", NODE_ADD_INPUT);
+														   if (rclick_type == CLICK_INPUT_SLOT) {
+															   if (state_machine->transition_node_has_input_auto_advance(rclick_node, rclick_slot))
+																   node_popup->add_item("Clear Auto-Advance", NODE_CLEAR_AUTOADVANCE);
+															   else
+																   node_popup->add_item("Set Auto-Advance", NODE_SET_AUTOADVANCE);
+															   node_popup->add_item("Delete Input", NODE_DELETE_INPUT);
+
+														   }
+													   }
+
+													   node_popup->set_pos(rclick_pos + get_global_pos());
+													   node_popup->popup();
+
+												   }
+												   
+												   if (rclick_type == CLICK_NODE) {
+													   node_popup->clear();
+													   node_popup->add_item("Rename", NODE_RENAME);
+													   node_popup->add_item("Remove", NODE_ERASE);
+													   if (state_machine->node_get_type(rclick_node) == StateMachine::NODE_TRANSITION)
+														   node_popup->add_item("Add Input", NODE_ADD_INPUT);
+													   node_popup->set_pos(rclick_pos + get_global_pos());
+													   node_popup->popup();
+												   }
+												   */
+
+											   }
+										   }
+									   }
+									   else {
+
+										   if (p_event.mouse_button.button_index == 1 && click_type != CLICK_NONE) {
+
+											   switch (click_type) {
+											   case CLICK_INPUT_SLOT:
+											   case CLICK_OUTPUT_SLOT: {
+																		   /*
+
+																		   Point2 dst_click_pos = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
+																		   StringName id;
+																		   int slot;
+																		   ClickType dst_click_type = _locate_click(dst_click_pos, &id, &slot);
+
+																		   if (dst_click_type == CLICK_INPUT_SLOT && click_type == CLICK_OUTPUT_SLOT) {
+
+																			   state_machine->connect(click_node, id, slot);
+
+																		   }
+																		   if (click_type == CLICK_INPUT_SLOT && dst_click_type == CLICK_OUTPUT_SLOT) {
+
+																			   state_machine->connect(id, click_node, click_slot);
+																		   }*/
+
+											   } break;
+											   case CLICK_NODE: {/*
+																	Point2 new_pos = state_machine->node_get_pos(click_node) + (click_motion - click_pos);
+																	if (new_pos.x<5)
+																		new_pos.x = 5;
+																	if (new_pos.y<5)
+																		new_pos.y = 5;
+																	state_machine->node_set_pos(click_node, new_pos);*/
+
+											   } break;
+											   default: {}
+											   }
+
+											   click_type = CLICK_NONE;
+											   update();
+										   }
+									   }
+	}
+
+	case InputEvent::MOUSE_MOTION: {
+
+									   if (p_event.mouse_motion.button_mask & 1 && click_type != CLICK_NONE) {
+
+										   click_motion = Point2(p_event.mouse_button.x, p_event.mouse_button.y);
+										   update();
+									   }
+									   if ((p_event.mouse_motion.button_mask & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+
+										   h_scroll->set_val(h_scroll->get_val() - p_event.mouse_motion.relative_x);
+										   v_scroll->set_val(v_scroll->get_val() - p_event.mouse_motion.relative_y);
+										   update();
+									   }
+
+	} break;
+	}
 
 }
 
 
+void StateMachineEditor::_draw_cos_line(const Vector2& p_from, const Vector2& p_to, const Color& p_color) {
+
+	static const int steps = 20;
+
+	Rect2 r;
+	r.pos = p_from;
+	r.expand_to(p_to);
+	Vector2 sign = Vector2((p_from.x < p_to.x) ? 1 : -1, (p_from.y < p_to.y) ? 1 : -1);
+	bool flip = sign.x * sign.y < 0;
+
+	Vector2 prev;
+	for (int i = 0; i <= steps; i++) {
+
+		float d = i / float(steps);
+		float c = -Math::cos(d*Math_PI) * 0.5 + 0.5;
+		if (flip)
+			c = 1.0 - c;
+		Vector2 p = r.pos + Vector2(d*r.size.width, c*r.size.height);
+
+		if (i>0) {
+
+			draw_line(prev, p, p_color, 2);
+		}
+
+		prev = p;
+	}
+}
 
 void StateMachineEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
 
-		theme_pallete->connect("cell_selected", this,"_item_selected_cbk");
-		edit_mode->connect("item_selected", this,"_edit_mode_changed");
-		area_list->connect("item_edited", this,"_area_renamed");
-		area_list->connect("item_selected", this,"_area_selected");
-		for(int i=0;i<3;i++) {
+	switch (p_what) {
 
-			grid[i]=VS::get_singleton()->mesh_create();
-			grid_instance[i]=VS::get_singleton()->instance_create2(grid[i],get_scene()->get_root()->get_world()->get_scenario());
-		}
+	case NOTIFICATION_ENTER_SCENE: {
 
-		selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh,get_scene()->get_root()->get_world()->get_scenario());
-		duplicate_instance = VisualServer::get_singleton()->instance_create2(duplicate_mesh,get_scene()->get_root()->get_world()->get_scenario());
+									   //play_button->set_icon(get_icon("Play", "EditorIcons"));
+									   add_menu->set_icon(get_icon("Add", "EditorIcons"));
+	} break;
+	case NOTIFICATION_DRAW: {
 
-		_update_selection_transform();
-		_update_duplicate_indicator();
 
-	} else if (p_what==NOTIFICATION_EXIT_SCENE) {
+								_update_scrollbars();
+								//VisualServer::get_singleton()->canvas_item_add_rect(get_canvas_item(),Rect2(Point2(),get_size()),Color(0,0,0,1));
+								get_stylebox("bg", "Tree")->draw(get_canvas_item(), Rect2(Point2(), get_size()));
+								VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 
-		for(int i=0;i<3;i++) {
+								for (List<StringName>::Element *E = order.front(); E; E = E->next()) {
 
-			VS::get_singleton()->free(grid_instance[i]);
-			VS::get_singleton()->free(grid[i]);
-			grid_instance[i]=RID();
-			grid[i]=RID();
-		}
+									_draw_node(E->get());
+								}
 
-		VisualServer::get_singleton()->free(selection_instance);
-		VisualServer::get_singleton()->free(duplicate_instance);
-		selection_instance=RID();
-		duplicate_instance=RID();
+								if (click_type == CLICK_INPUT_SLOT || click_type == CLICK_OUTPUT_SLOT) {
 
-	} else if (p_what==NOTIFICATION_PROCESS) {
+									_draw_cos_line(click_pos, click_motion, Color(0.5, 1, 0.5, 0.8));
+								}
 
-		Transform xf = node->get_global_transform();
+								List<StateMachine::Connection> connections;
+								/*state_machine->get_connection_list(&connections);
 
-		if (xf!=grid_xform) {
-			for(int i=0;i<3;i++) {
+								for (List<StateMachine::Connection>::Element *E = connections.front(); E; E = E->next()) {
 
-				
-				VS::get_singleton()->instance_set_transform(grid_instance[i],xf * edit_grid_xform);
-			}
-			grid_xform=xf;
-		}
-		Ref<MeshLibrary> cgmt = node->get_theme();
-		if (cgmt.operator->()!=last_theme)
-			update_pallete();
+									const StateMachine::Connection &c = E->get();
+									Point2 source = _get_slot_pos(c.src_node, false, 0);
+									Point2 dest = _get_slot_pos(c.dst_node, true, c.dst_input);
+									Color col = Color(1, 1, 0.5, 0.8);
+									
+									if (click_type==CLICK_NODE && click_node==c.src_node) {
 
-		if (lock_view) {
+									source+=click_motion-click_pos;
+									}
 
-			EditorNode*editor = get_scene()->get_root()->get_child(0)->cast_to<EditorNode>();
+									if (click_type==CLICK_NODE && click_node==c.dst_node) {
 
-			Plane p;
-			p.normal[edit_axis]=1.0;
-			p.d=edit_floor[edit_axis]*node->get_cell_size();
-			p = node->get_transform().xform(p); // plane to snap
+									dest+=click_motion-click_pos;
+									}
 
-			SpatialEditorPlugin *sep = editor->get_editor_plugin_screen()->cast_to<SpatialEditorPlugin>();
-			if (sep)
-				sep->snap_cursor_to_plane(p);
-				//editor->get_editor_plugin_screen()->call("snap_cursor_to_plane",p);
+									_draw_cos_line(source, dest, col);
 
-		}
+								}
+
+								switch (state_machine->get_last_error()) {
+
+								case StateMachine::CONNECT_OK: {
+
+																		  Ref<Font> f = get_font("font", "Label");
+																		  f->draw(get_canvas_item(), Point2(5, 25 + f->get_ascent()), "Animation Tree is Valid.", Color(0, 1, 0.6, 0.8));
+								} break;
+								default: {
+
+											 Ref<Font> f = get_font("font", "Label");
+											 f->draw(get_canvas_item(), Point2(5, 25 + f->get_ascent()), "Animation Tree is Invalid.", Color(1, 0.6, 0.0, 0.8));
+								} break;
+								}*/
+
+	} break;
 	}
 
 }
 
-void StateMachineEditor::_update_cursor_instance() {
+void StateMachineEditor::_update_scrollbars() {
+
+	Size2 size = get_size();
+	Size2 hmin = h_scroll->get_combined_minimum_size();
+	Size2 vmin = v_scroll->get_combined_minimum_size();
+
+	v_scroll->set_begin(Point2(size.width - vmin.width, 0));
+	v_scroll->set_end(Point2(size.width, size.height));
+
+	h_scroll->set_begin(Point2(0, size.height - hmin.height));
+	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
 
-	if (cursor_instance.is_valid())
-		VisualServer::get_singleton()->free(cursor_instance);
-	cursor_instance=RID();
+	Size2 min = _get_maximum_size();
 
-	if (selected_pallete>=0) {
+	if (min.height < size.height - hmin.height) {
 
-		if (node && !node->get_theme().is_null()) {
-			Ref<Mesh> mesh = node->get_theme()->get_item_mesh(selected_pallete);
-			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
+		v_scroll->hide();
+		offset.y = 0;
+	}
+	else {
 
-				cursor_instance=VisualServer::get_singleton()->instance_create2(mesh->get_rid(),get_scene()->get_root()->get_world()->get_scenario());
-				VisualServer::get_singleton()->instance_set_transform(cursor_instance,cursor_transform);
-			}
-		}
+		v_scroll->show();
+		v_scroll->set_max(min.height);
+		v_scroll->set_page(size.height - hmin.height);
+		offset.y = v_scroll->get_val();
 	}
 
-}
+	if (min.width < size.width - vmin.width) {
 
-void StateMachineEditor::_item_selected_cbk() {
-
-	TreeItem *it = theme_pallete->get_selected();
-	if (it) {
-
-		selected_pallete=it->get_metadata(theme_pallete->get_selected_column());
-
-	} else {
-
-		selected_pallete=-1;
-
+		h_scroll->hide();
+		offset.x = 0;
 	}
+	else {
 
-	_update_cursor_instance();
-
-}
-
-void StateMachineEditor::_clear_areas() {
-
-	for(int i=0;i<areas.size();i++) {
-
-		VisualServer::get_singleton()->free(areas[i].instance);
-		VisualServer::get_singleton()->free(areas[i].mesh);
+		h_scroll->show();
+		h_scroll->set_max(min.width);
+		h_scroll->set_page(size.width - vmin.width);
+		offset.x = h_scroll->get_val();
 	}
-
-	areas.clear();
 }
 
-void StateMachineEditor::_update_areas_display() {
+void StateMachineEditor::_scroll_moved(float) {
+
+	offset.x = h_scroll->get_val();
+	offset.y = v_scroll->get_val();
+	update();
+}
 
 
-	_clear_areas();
-	List<int> areas;
-	node->get_area_list(&areas);
+void StateMachineEditor::_node_menu_item(int p_item) {
+	/*
+	switch (p_item) {
 
-	Transform global_xf = node->get_global_transform();
+	case NODE_DISCONNECT: {
+							  
+							  if (rclick_type == CLICK_INPUT_SLOT) {
 
-	for(List<int>::Element *E=areas.front();E;E=E->next()) {
+								  state_machine->disconnect(rclick_node, rclick_slot);
+								  update();
+							  }
 
-		int area = E->get();
-		Color color;
-		if (node->area_is_exterior_portal(area))
-			color=Color(1,1,1,0.2);
+							  if (rclick_type == CLICK_OUTPUT_SLOT) {
+
+
+								  List<StateMachine::Connection> connections;
+								  state_machine->get_connection_list(&connections);
+
+								  for (List<StateMachine::Connection>::Element *E = connections.front(); E; E = E->next()) {
+
+									  const StateMachine::Connection &c = E->get();
+									  if (c.dst_node == rclick_node) {
+
+										  state_machine->disconnect(c.dst_node, c.dst_input);
+									  }
+								  }
+								  update();
+							  }
+
+	} break;
+	case NODE_RENAME: {
+
+						  renaming_edit = true;
+						  edited_node = rclick_node;
+						  _popup_edit_dialog();
+
+	} break;
+	case NODE_ADD_INPUT: {
+
+							 state_machine->transition_node_set_input_count(rclick_node, state_machine->transition_node_get_input_count(rclick_node) + 1);
+							 update();
+	} break;
+	case NODE_DELETE_INPUT: {
+
+								state_machine->transition_node_delete_input(rclick_node, rclick_slot);
+								update();
+	} break;
+	case NODE_SET_AUTOADVANCE: {
+
+								   state_machine->transition_node_set_input_auto_advance(rclick_node, rclick_slot, true);
+								   update();
+
+	} break;
+	case  NODE_CLEAR_AUTOADVANCE: {
+
+									  state_machine->transition_node_set_input_auto_advance(rclick_node, rclick_slot, false);
+									  update();
+
+	} break;
+
+	case NODE_ERASE: {
+
+						 if (rclick_node == "out")
+							 break;
+						 order.erase(rclick_node);
+						 state_machine->remove_node(rclick_node);
+						 update();
+	} break;
+	}*/
+}
+
+StringName StateMachineEditor::_add_node(int p_item) {
+	/*
+	static const char* bname[] = {
+		"out",
+		"anim",
+		"oneshot",
+		"mix",
+		"blend2",
+		"blend3",
+		"blend4",
+		"scale",
+		"seek",
+		"transition"
+	};
+
+	String name;
+	int idx = 1;
+
+	while (true) {
+
+		name = bname[p_item];
+		if (idx>1)
+			name += " " + itos(idx);
+		if (state_machine->node_exists(name))
+			idx++;
 		else
-			color.set_hsv(Math::fmod(area*0.37,1),Math::fmod(area*0.75,1),1.0,0.2);
-		RID material = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param( material, VS::FIXED_MATERIAL_PARAM_DIFFUSE,color );
-		VisualServer::get_singleton()->fixed_material_set_param( material, VS::FIXED_MATERIAL_PARAM_EMISSION,0.5 );
-		VisualServer::get_singleton()->fixed_material_set_flag( material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
+			break;
+	}
 
 
-		RID mesh = VisualServer::get_singleton()->mesh_create();
+	state_machine->add_node((StateMachine::NodeType)p_item, name);
+	state_machine->node_set_pos(name, Point2(last_x, last_y));
+	order.push_back(name);
+	last_x += 10;
+	last_y += 10;
+	last_x = last_x % (int)get_size().width;
+	last_y = last_y % (int)get_size().height;
+	update();
 
-		DVector<Plane> planes;
-		for(int i=0;i<3;i++) {
+	return name;*/
 
-			Vector3 axis;
-			axis[i]=1.0;
-			planes.push_back(Plane(axis,1));
-			planes.push_back(Plane(-axis,0));
+	return String("");
+};
+
+void StateMachineEditor::_file_dialog_selected(String p_path) {
+
+	switch (file_op) {
+		/*
+	case MENU_IMPORT_ANIMATIONS: {
+									 Vector<String> files = file_dialog->get_selected_files();
+
+									 for (int i = 0; i<files.size(); i++) {
+
+										 StringName node = _add_node(StateMachine::NODE_ANIMATION);
+
+										 RES anim = ResourceLoader::load(files[i]);
+										 state_machine->animation_node_set_animation(node, anim);
+										 //state_machine->node_set_name(node, files[i].get_file());
+									 };
+	} break;
+	*/
+	default:
+		break;
+	};
+};
+
+void StateMachineEditor::_add_menu_item(int p_item) {
+
+	if (p_item == MENU_GRAPH_CLEAR) {
+
+		//clear
+	}
+	else if (p_item == MENU_IMPORT_ANIMATIONS) {
+
+		file_op = MENU_IMPORT_ANIMATIONS;
+		file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+		file_dialog->popup_centered_ratio();
+
+	}
+	else {
+
+		_add_node(p_item);
+	}
+}
+
+Size2 StateMachineEditor::get_minimum_size() const {
+
+	return Size2(10, 200);
+}
+
+void StateMachineEditor::_find_paths_for_filter(const StringName& p_node, Set<String>& paths) {
+	/*
+	ERR_FAIL_COND(!state_machine->node_exists(p_node));
+
+	for (int i = 0; i<state_machine->node_get_input_count(p_node); i++) {
+
+		StringName port = state_machine->node_get_input_source(p_node, i);
+		if (port == StringName())
+			continue;
+		_find_paths_for_filter(port, paths);
+	}
+
+	if (state_machine->node_get_type(p_node) == StateMachine::NODE_ANIMATION) {
+
+		Ref<Animation> anim = state_machine->animation_node_get_animation(p_node);
+		if (anim.is_valid()) {
+
+			for (int i = 0; i<anim->get_track_count(); i++) {
+				paths.insert(anim->track_get_path(i));
+			}
 		}
-
-		VisualServer::get_singleton()->mesh_add_surface_from_planes(mesh,planes);
-		VisualServer::get_singleton()->mesh_surface_set_material(mesh,0,material,true);
-
-		AreaDisplay ad;
-		ad.mesh=mesh;
-		ad.instance = VisualServer::get_singleton()->instance_create2(mesh,node->get_world()->get_scenario());
-		Transform xform;
-		AABB aabb = node->area_get_bounds(area);
-		xform.origin=aabb.pos * node->get_cell_size();
-		xform.basis.scale(aabb.size * node->get_cell_size());
-		VisualServer::get_singleton()->instance_set_transform(ad.instance,global_xf * xform);
-		this->areas.push_back(ad);
-
-	}
-
+	}*/
 }
 
-void StateMachineEditor::_edit_mode_changed(int p_what) {
 
-	if (p_what==0) {
+void StateMachineEditor::_filter_edited() {
 
-		theme_pallete->show();
-		area_list->hide();
-	} else {
-
-		theme_pallete->hide();
-		area_list->show();
-
-	}
-}
-
-void StateMachineEditor::_floor_changed(float p_value) {
-
-
-	if (updating)
+	/*
+	TreeItem *ed = filter->get_edited();
+	if (!ed)
 		return;
 
-	edit_floor[edit_axis]=p_value;
-	node->set_meta("_editor_floor_",Vector3(edit_floor[0],edit_floor[1],edit_floor[2]));
-	update_grid();
-	_update_clip();
+	if (state_machine->node_get_type(edited_node) == StateMachine::NODE_ONESHOT) {
+		state_machine->oneshot_node_set_filter_path(edited_node, ed->get_metadata(0), ed->is_checked(0));
+	}
+	else if (state_machine->node_get_type(edited_node) == StateMachine::NODE_BLEND2) {
+		state_machine->blend2_node_set_filter_path(edited_node, ed->get_metadata(0), ed->is_checked(0));
+	}
+	*/
+}
+
+void StateMachineEditor::_edit_filters() {
+	/*
+	filter_dialog->popup_centered_ratio();
+	filter->clear();
+
+	Set<String> npb;
+	_find_paths_for_filter(edited_node, npb);
+
+	TreeItem *root = filter->create_item();
+	filter->set_hide_root(true);
+	Map<String, TreeItem*> pm;
+
+	Node *base = state_machine->get_node(state_machine->get_base_path());
+
+	for (Set<String>::Element *E = npb.front(); E; E = E->next()) {
+
+		TreeItem *parent = root;
+		String descr = E->get();
+		if (base) {
+			NodePath np = E->get();
+
+			if (np.get_property() != StringName()) {
+				Node *n = base->get_node(np);
+				Skeleton *s = n->cast_to<Skeleton>();
+				if (s) {
+
+					String skelbase = E->get().substr(0, E->get().find(":"));
+
+
+					int bidx = s->find_bone(np.get_property());
+
+					if (bidx != -1) {
+						int bparent = s->get_bone_parent(bidx);
+						//
+						if (bparent != -1) {
+
+
+							String bpn = skelbase + ":" + s->get_bone_name(bparent);
+							if (pm.has(bpn)) {
+								parent = pm[bpn];
+								descr = np.get_property();
+							}
+						}
+						else {
+
+							if (pm.has(skelbase)) {
+								parent = pm[skelbase];
+
+							}
+						}
+					}
+				}
+			}
+		}
+
+		TreeItem *it = filter->create_item(parent);
+		it->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+		it->set_text(0, descr);
+		it->set_metadata(0, NodePath(E->get()));
+		it->set_editable(0, true);
+		if (state_machine->node_get_type(edited_node) == StateMachine::NODE_ONESHOT) {
+			it->set_checked(0, state_machine->oneshot_node_is_path_filtered(edited_node, E->get()));
+		}
+		else if (state_machine->node_get_type(edited_node) == StateMachine::NODE_BLEND2) {
+			it->set_checked(0, state_machine->blend2_node_is_path_filtered(edited_node, E->get()));
+		}
+		pm[E->get()] = it;
+	}
+	*/
 
 }
 
 void StateMachineEditor::_bind_methods() {
 
-	ObjectTypeDB::bind_method("_menu_option",&StateMachineEditor::_menu_option);
-	ObjectTypeDB::bind_method("_configure",&StateMachineEditor::_configure);
-	ObjectTypeDB::bind_method("_item_selected_cbk",&StateMachineEditor::_item_selected_cbk);
-	ObjectTypeDB::bind_method("_edit_mode_changed",&StateMachineEditor::_edit_mode_changed);
-	ObjectTypeDB::bind_method("_area_renamed",&StateMachineEditor::_area_renamed);
-	ObjectTypeDB::bind_method("_area_selected",&StateMachineEditor::_area_selected);
-	ObjectTypeDB::bind_method("_floor_changed",&StateMachineEditor::_floor_changed);
-
+	ObjectTypeDB::bind_method("_add_menu_item", &StateMachineEditor::_add_menu_item);
+	ObjectTypeDB::bind_method("_node_menu_item", &StateMachineEditor::_node_menu_item);
+	ObjectTypeDB::bind_method("_input_event", &StateMachineEditor::_input_event);
+	//	ObjectTypeDB::bind_method( "_node_param_changed", &StateMachineEditor::_node_param_changed );
+	ObjectTypeDB::bind_method("_scroll_moved", &StateMachineEditor::_scroll_moved);
+	ObjectTypeDB::bind_method("_edit_dialog_changeds", &StateMachineEditor::_edit_dialog_changeds);
+	ObjectTypeDB::bind_method("_edit_dialog_changede", &StateMachineEditor::_edit_dialog_changede);
+	ObjectTypeDB::bind_method("_edit_dialog_changedf", &StateMachineEditor::_edit_dialog_changedf);
+	ObjectTypeDB::bind_method("_edit_dialog_changed", &StateMachineEditor::_edit_dialog_changed);
+//	ObjectTypeDB::bind_method("_edit_dialog_animation_changed", &StateMachineEditor::_edit_dialog_animation_changed);
+//	ObjectTypeDB::bind_method("_edit_dialog_edit_animation", &StateMachineEditor::_edit_dialog_edit_animation);
+//	ObjectTypeDB::bind_method("_play_toggled", &StateMachineEditor::_play_toggled);
+//	ObjectTypeDB::bind_method("_edit_oneshot_start", &StateMachineEditor::_edit_oneshot_start);
+	ObjectTypeDB::bind_method("_file_dialog_selected", &StateMachineEditor::_file_dialog_selected);
+//	ObjectTypeDB::bind_method("_master_anim_menu_item", &StateMachineEditor::_master_anim_menu_item);
+	ObjectTypeDB::bind_method("_edit_filters", &StateMachineEditor::_edit_filters);
+	ObjectTypeDB::bind_method("_filter_edited", &StateMachineEditor::_filter_edited);
 
 }
 
+StateMachineEditor::StateMachineEditor() {
+
+	set_focus_mode(FOCUS_ALL);
+
+	PopupMenu *p;
+	List<PropertyInfo> defaults;
+
+	add_menu = memnew(MenuButton);
+	//add_menu->set_
+	add_menu->set_pos(Point2(0, 0));
+	add_menu->set_size(Point2(25, 15));
+	add_child(add_menu);
+
+	p = add_menu->get_popup();
+	p->add_item("Animation Node", StateMachine::NODE_ANIMATION);
+	p->add_item("OneShot Node", StateMachine::NODE_ONESHOT);
+	p->add_item("Mix Node", StateMachine::NODE_MIX);
+	p->add_item("Blend2 Node", StateMachine::NODE_BLEND2);
+	p->add_item("Blend3 Node", StateMachine::NODE_BLEND3);
+	p->add_item("Blend4 Node", StateMachine::NODE_BLEND4);
+	p->add_item("TimeScale Node", StateMachine::NODE_TIMESCALE);
+	p->add_item("TimeSeek Node", StateMachine::NODE_TIMESEEK);
+	p->add_item("Transition Node", StateMachine::NODE_TRANSITION);
+	p->add_separator();
+	p->add_item("Import Animations...", MENU_IMPORT_ANIMATIONS); // wtf
+	p->add_separator();
+	p->add_item("Clear", MENU_GRAPH_CLEAR);
+
+	p->connect("item_pressed", this, "_add_menu_item");
+
+//	play_button = memnew(Button);
+//	play_button->set_pos(Point2(25, 0));
+//	play_button->set_size(Point2(25, 15));
+//	add_child(play_button);
+//	play_button->set_toggle_mode(true);
+//	play_button->connect("pressed", this, "_play_toggled");
 
 
-StateMachineEditor::StateMachineEditor(EditorNode *p_editor) {
 
 
-	input_action=INPUT_NONE;
-	editor=p_editor;
-	undo_redo=p_editor->get_undo_redo();
 
-	int mw = EDITOR_DEF("state_machine/palette_min_width",230);
-	EmptyControl *ec = memnew( EmptyControl);
-	ec->set_minsize(Size2(mw,0));
-	add_child(ec);
+	last_x = 50;
+	last_y = 50;
 
+	property_editor = memnew(CustomPropertyEditor);
+	add_child(property_editor);
+	property_editor->connect("variant_changed", this, "_edit_dialog_animation_changed");
+	property_editor->connect("resource_edit_request", this, "_edit_dialog_edit_animation");
 
-	spatial_editor_hb = memnew( HBoxContainer );
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(spatial_editor_hb);
-	options = memnew( MenuButton );
-	spatial_editor_hb->add_child(options);
-	spatial_editor_hb->hide();
+	h_scroll = memnew(HScrollBar);
+	v_scroll = memnew(VScrollBar);
 
-	options->set_text("Grid");
-	options->get_popup()->add_check_item("Snap View",MENU_OPTION_LOCK_VIEW);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Prev Level ("+keycode_get_string(KEY_MASK_CMD)+"Down Wheel)",MENU_OPTION_PREV_LEVEL);
-	options->get_popup()->add_item("Next Level ("+keycode_get_string(KEY_MASK_CMD)+"Up Wheel)",MENU_OPTION_NEXT_LEVEL);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Clip Disabled",MENU_OPTION_CLIP_DISABLED);
-	options->get_popup()->set_item_checked( options->get_popup()->get_item_index(MENU_OPTION_CLIP_DISABLED), true );
-	options->get_popup()->add_check_item("Clip Above",MENU_OPTION_CLIP_ABOVE);
-	options->get_popup()->add_check_item("Clip Below",MENU_OPTION_CLIP_BELOW);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Edit X Axis",MENU_OPTION_X_AXIS,KEY_Z);
-	options->get_popup()->add_check_item("Edit Y Axis",MENU_OPTION_Y_AXIS,KEY_X);
-	options->get_popup()->add_check_item("Edit Z Axis",MENU_OPTION_Z_AXIS,KEY_C);
-	options->get_popup()->set_item_checked( options->get_popup()->get_item_index(MENU_OPTION_Y_AXIS), true );
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Cursor Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_A);
-	options->get_popup()->add_item("Cursor Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_S);
-	options->get_popup()->add_item("Cursor Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_D);
-	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_ALT+KEY_A);
-	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_ALT+KEY_S);
-	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_ALT+KEY_D);
-	options->get_popup()->add_item("Cursor Clear Rotation",MENU_OPTION_CURSOR_CLEAR_ROTATION,KEY_W);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Duplicate Selects",MENU_OPTION_DUPLICATE_SELECTS);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create Area",MENU_OPTION_SELECTION_MAKE_AREA,KEY_CONTROL+KEY_C);
-	options->get_popup()->add_item("Create Exterior Connector",MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR);
-	options->get_popup()->add_item("Erase Area",MENU_OPTION_REMOVE_AREA);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Selection -> Clear",MENU_OPTION_SELECTION_CLEAR);
-	//options->get_popup()->add_separator();
-	//options->get_popup()->add_item("Configure",MENU_OPTION_CONFIGURE);
+	add_child(h_scroll);
+	add_child(v_scroll);
 
-	clip_mode=CLIP_DISABLED;
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
+	h_scroll->connect("value_changed", this, "_scroll_moved");
+	v_scroll->connect("value_changed", this, "_scroll_moved");
+
+	node_popup = memnew(PopupMenu);
+	add_child(node_popup);
+	node_popup->set_as_toplevel(true);
+
+	master_anim_popup = memnew(PopupMenu);
+	add_child(master_anim_popup);
+	master_anim_popup->connect("item_pressed", this, "_master_anim_menu_item");
 
 
-	edit_mode = memnew(OptionButton);
-	edit_mode->set_area_as_parent_rect();
-	edit_mode->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_BEGIN,24);;
-	edit_mode->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,14);;
-	edit_mode->add_item("Tiles");
-	edit_mode->add_item("Areas");
-	add_child(edit_mode);
+	node_popup->connect("item_pressed", this, "_node_menu_item");
 
-	selected_area=-1;
+	updating_edit = false;
 
+	edit_dialog = memnew(PopupPanel);
+	//	edit_dialog->get_ok()->hide();
+	//	edit_dialog->get_cancel()->hide();
+	add_child(edit_dialog);
 
-	theme_pallete = memnew( Tree );
-	theme_pallete->set_columns(3);
-	add_child(theme_pallete);
-	theme_pallete->set_v_size_flags(SIZE_EXPAND_FILL);
-
-	area_list = memnew( Tree );
-	add_child(area_list);
-	area_list->set_v_size_flags(SIZE_EXPAND_FILL);
-	area_list->hide();
-
-	spatial_editor_hb->add_child(memnew(VSeparator));
-	Label *fl = memnew(Label);
-	fl->set_text("   Floor: ");
-	spatial_editor_hb->add_child(fl);
-
-	floor = memnew( SpinBox );
-	floor->set_min(-32767);
-	floor->set_max(32767);
-	floor->set_step(1);
-	floor->get_line_edit()->add_constant_override("minimum_spaces",16);
-
-	spatial_editor_hb->add_child(floor);
-	floor->connect("value_changed",this,"_floor_changed");
+	edit_option = memnew(OptionButton);
+	edit_option->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	edit_option->set_margin(MARGIN_RIGHT, 10);
+	edit_dialog->add_child(edit_option);
+	edit_option->connect("item_selected", this, "_edit_dialog_changedf");
+	edit_option->hide();
 
 
-	edit_axis=Vector3::AXIS_Y;
-	edit_floor[0]=-1;
-	edit_floor[1]=-1;
-	edit_floor[2]=-1;
-
-	cursor_visible=false;
-	selected_pallete=-1;
-	lock_view=false;
-	cursor_rot=0;
-	last_mouseover=Vector3(-1,-1,-1);
-
-	selection_mesh = VisualServer::get_singleton()->mesh_create();
-	duplicate_mesh = VisualServer::get_singleton()->mesh_create();
-
-	{
-		//selection mesh create
-
-
-		DVector<Vector3> lines;
-		DVector<Vector3> triangles;
-
-		for (int i=0;i<6;i++) {
-
-
-			Vector3 face_points[4];
-
-			for (int j=0;j<4;j++) {
-
-				float v[3];
-				v[0]=1.0;
-				v[1]=1-2*((j>>1)&1);
-				v[2]=v[1]*(1-2*(j&1));
-
-				for (int k=0;k<3;k++) {
-
-					if (i<3)
-						face_points[j][(i+k)%3]=v[k]*(i>=3?-1:1);
-					else
-						face_points[3-j][(i+k)%3]=v[k]*(i>=3?-1:1);
-				}
-			}
-
-			triangles.push_back(face_points[0]*0.5+Vector3(0.5,0.5,0.5));
-			triangles.push_back(face_points[1]*0.5+Vector3(0.5,0.5,0.5));
-			triangles.push_back(face_points[2]*0.5+Vector3(0.5,0.5,0.5));
-
-			triangles.push_back(face_points[2]*0.5+Vector3(0.5,0.5,0.5));
-			triangles.push_back(face_points[3]*0.5+Vector3(0.5,0.5,0.5));
-			triangles.push_back(face_points[0]*0.5+Vector3(0.5,0.5,0.5));
-		}
-
-		for(int i=0;i<12;i++) {
-
-			AABB base(Vector3(0,0,0),Vector3(1,1,1));
-			Vector3 a,b;
-			base.get_edge(i,a,b);
-			lines.push_back(a);
-			lines.push_back(b);
-		}
-
-		Array d;
-		d.resize(VS::ARRAY_MAX);
-
-		RID inner_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(inner_mat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.7,0.7,1.0,0.3));
-		VisualServer::get_singleton()->material_set_flag(inner_mat,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(inner_mat,VS::MATERIAL_FLAG_UNSHADED,true);
-		VisualServer::get_singleton()->fixed_material_set_flag( inner_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
-
-
-		d[VS::ARRAY_VERTEX]=triangles;
-		VisualServer::get_singleton()->mesh_add_surface(selection_mesh,VS::PRIMITIVE_TRIANGLES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh,0,inner_mat,true);
-
-		RID outer_mat = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(outer_mat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.7,0.7,1.0,0.8));
-		VisualServer::get_singleton()->material_set_line_width(outer_mat,3.0);
-		VisualServer::get_singleton()->material_set_flag(outer_mat,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(outer_mat,VS::MATERIAL_FLAG_UNSHADED,true);
-		VisualServer::get_singleton()->fixed_material_set_flag( outer_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
-
-
-		d[VS::ARRAY_VERTEX]=lines;
-		VisualServer::get_singleton()->mesh_add_surface(selection_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh,1,outer_mat,true);
-
-
-		RID inner_mat_dup = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(inner_mat_dup,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(1.0,0.7,0.7,0.3));
-		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,VS::MATERIAL_FLAG_UNSHADED,true);
-		VisualServer::get_singleton()->fixed_material_set_flag( inner_mat_dup, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
-
-
-		d[VS::ARRAY_VERTEX]=triangles;
-		VisualServer::get_singleton()->mesh_add_surface(duplicate_mesh,VS::PRIMITIVE_TRIANGLES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh,0,inner_mat_dup,true);
-
-		RID outer_mat_dup = VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(outer_mat_dup,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(1.0,0.7,0.7,0.8));
-		VisualServer::get_singleton()->material_set_line_width(outer_mat_dup,3.0);
-		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,VS::MATERIAL_FLAG_ONTOP,true);
-		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,VS::MATERIAL_FLAG_UNSHADED,true);
-		VisualServer::get_singleton()->fixed_material_set_flag( outer_mat_dup, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA, true );
-
-
-		d[VS::ARRAY_VERTEX]=lines;
-		VisualServer::get_singleton()->mesh_add_surface(duplicate_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh,1,outer_mat_dup,true);
-
+	for (int i = 0; i<2; i++) {
+		edit_scroll[i] = memnew(HSlider);
+		edit_scroll[i]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+		edit_scroll[i]->set_margin(MARGIN_RIGHT, 10);
+		edit_dialog->add_child(edit_scroll[i]);
+		edit_scroll[i]->hide();
+		edit_scroll[i]->connect("value_changed", this, "_edit_dialog_changedf");
+	}
+	for (int i = 0; i<4; i++) {
+		edit_line[i] = memnew(LineEdit);
+		edit_line[i]->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+		edit_line[i]->set_margin(MARGIN_RIGHT, 10);
+		edit_dialog->add_child(edit_line[i]);
+		edit_line[i]->hide();
+		edit_line[i]->connect("text_changed", this, "_edit_dialog_changeds");
+		edit_line[i]->connect("text_entered", this, "_edit_dialog_changede");
+		edit_label[i] = memnew(Label);
+		edit_dialog->add_child(edit_label[i]);
+		edit_label[i]->hide();
 	}
 
-	selection.active=false;
-	updating=false;
+	edit_button = memnew(Button);
+	edit_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	edit_button->set_margin(MARGIN_RIGHT, 10);
+	edit_dialog->add_child(edit_button);
+	edit_button->hide();;
+	edit_button->connect("pressed", this, "_edit_oneshot_start");
+
+	edit_check = memnew(CheckButton);
+	edit_check->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	edit_check->set_margin(MARGIN_RIGHT, 10);
+	edit_dialog->add_child(edit_check);
+	edit_check->hide();;
+	edit_check->connect("pressed", this, "_edit_dialog_changed");
+
+	file_dialog = memnew(FileDialog);
+	file_dialog->set_enable_multiple_selection(true);
+	file_dialog->set_current_dir(Globals::get_singleton()->get_resource_path());
+	add_child(file_dialog);
+	file_dialog->connect("file_selected", this, "_file_dialog_selected");
+
+	filter_dialog = memnew(AcceptDialog);
+	filter_dialog->set_title("Edit Node Filters");
+	add_child(filter_dialog);
+
+	filter = memnew(Tree);
+	filter_dialog->add_child(filter);
+	filter_dialog->set_child_rect(filter);
+	filter->connect("item_edited", this, "_filter_edited");
+
+	filter_button = memnew(Button);
+	filter_button->set_anchor(MARGIN_RIGHT, ANCHOR_END);
+	filter_button->set_margin(MARGIN_RIGHT, 10);
+	edit_dialog->add_child(filter_button);
+	filter_button->hide();;
+	filter_button->set_text("Filters..");
+	filter_button->connect("pressed", this, "_edit_filters");
 
 }
 
-
-
-
-StateMachineEditor::~StateMachineEditor() {
-
-	for(int i=0;i<3;i++) {
-
-		if (grid[i].is_valid())
-			VisualServer::get_singleton()->free(grid[i]);
-		if (grid_instance[i].is_valid())
-			VisualServer::get_singleton()->free(grid_instance[i]);
-		if (cursor_instance)
-			VisualServer::get_singleton()->free(cursor_instance);
-	}
-
-	VisualServer::get_singleton()->free(selection_mesh);
-	if (selection_instance.is_valid())
-		VisualServer::get_singleton()->free(selection_instance);
-
-
-	VisualServer::get_singleton()->free(duplicate_mesh);
-	if (duplicate_instance.is_valid())
-		VisualServer::get_singleton()->free(duplicate_instance);
-
-	_clear_areas();
-}
 
 void StateMachineEditorPlugin::edit(Object *p_object) {
 
+	statemachine_editor->edit(p_object->cast_to<StateMachine>());
 
-	statemachine_editor->edit(p_object?p_object->cast_to<StateMachine>():NULL);
 }
 
 bool StateMachineEditorPlugin::handles(Object *p_object) const {
@@ -1435,29 +1494,32 @@ bool StateMachineEditorPlugin::handles(Object *p_object) const {
 void StateMachineEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
+		editor->hide_animation_player_editors();
+		editor->animation_panel_make_visible(true);
 		statemachine_editor->show();
-		statemachine_editor->spatial_editor_hb->show();
-		statemachine_editor->set_process(true);
-	} else {
+		statemachine_editor->set_fixed_process(true);
+		EditorNode::get_top_split()->set_collapsed(false);
 
-		statemachine_editor->spatial_editor_hb->hide();
-		statemachine_editor->hide();
-		statemachine_editor->edit(NULL);
-		statemachine_editor->set_process(false);
 	}
+	else {
 
+		statemachine_editor->hide();
+		statemachine_editor->set_fixed_process(false);
+		editor->animation_panel_make_visible(false);
+		EditorNode::get_top_split()->set_collapsed(true);
+	}
 }
-
 
 StateMachineEditorPlugin::StateMachineEditorPlugin(EditorNode *p_node) {
 
-	editor=p_node;
-	statemachine_editor = memnew( StateMachineEditor(editor) );
-
-	SpatialEditor::get_singleton()->get_palette_split()->add_child(statemachine_editor);
-	SpatialEditor::get_singleton()->get_palette_split()->move_child(statemachine_editor,0);
-
+	editor = p_node;
+	statemachine_editor = memnew(StateMachineEditor);
+	//editor->get_viewport()->add_child(statemachine_editor);
+	//statemachine_editor->set_area_as_parent_rect();
+	editor->get_animation_panel()->add_child(statemachine_editor);
+	statemachine_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	statemachine_editor->hide();
+
 
 
 

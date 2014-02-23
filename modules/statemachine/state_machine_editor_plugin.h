@@ -34,201 +34,149 @@
 #include "state_machine.h"
 #include "tools/editor/pane_drag.h"
 /**
-	@author Ben Potton <reduzio@gmail.com>
+	@author Ben Potton <ben.potton@gmail.com>
 */
 
-class SpatialEditorPlugin;
 
-class StateMachineEditor : public VBoxContainer {
+class StateMachineEditor : public Control {
 
-	OBJ_TYPE(StateMachineEditor, VBoxContainer );
+	OBJ_TYPE(StateMachineEditor, Control);
 
+	static const char* _node_type_names[];
+
+	enum ClickType {
+		CLICK_NONE,
+		CLICK_NAME,
+		CLICK_NODE,
+		CLICK_INPUT_SLOT,
+		CLICK_OUTPUT_SLOT,
+		CLICK_PARAMETER
+	};
 
 	enum {
 
-		GRID_CURSOR_SIZE=50
+		MENU_GRAPH_CLEAR = 100,
+		MENU_IMPORT_ANIMATIONS = 101,
+		NODE_DISCONNECT,
+		NODE_RENAME,
+		NODE_ERASE,
+		NODE_ADD_INPUT,
+		NODE_DELETE_INPUT,
+		NODE_SET_AUTOADVANCE,
+		NODE_CLEAR_AUTOADVANCE
 	};
 
-	enum InputAction {
+	bool renaming_edit;
+	StringName edited_node;
+	bool updating_edit;
+	Popup *edit_dialog;
+	HSlider *edit_scroll[2];
+	LineEdit *edit_line[4];
+	OptionButton *edit_option;
+	Label *edit_label[4];
+	Button *edit_button;
+	Button *filter_button;
+	CheckButton *edit_check;
+	FileDialog* file_dialog;
+	int file_op;
 
-		INPUT_NONE,
-		INPUT_PAINT,
-		INPUT_ERASE,
-		INPUT_COPY,
-		INPUT_SELECT,
-		INPUT_DUPLICATE,
-	};
-
-	enum ClipMode {
-
-		CLIP_DISABLED,
-		CLIP_ABOVE,
-		CLIP_BELOW
-	};
-
-
-	UndoRedo *undo_redo;
-	InputAction input_action;
-	Panel *panel;
-	MenuButton * options;
-	SpinBox *floor;
-	OptionButton *edit_mode;
-	HBoxContainer *spatial_editor_hb;
-
-	struct SetItem {
-
-		Vector3 pos;
-		int new_value;
-		int new_orientation;
-		int old_value;
-		int old_orientation;
-	};
-
-	List<SetItem> set_items;
-
-	StateMachine *node;
-	MeshLibrary* last_theme;
-	ClipMode clip_mode;
-
-	bool lock_view;
-	Transform grid_xform;
-	Transform edit_grid_xform;
-	Vector3::Axis edit_axis;
-	int edit_floor[3];
-	Vector3 grid_ofs;
-
-	RID grid[3];
-	RID grid_instance[3];
-	RID cursor_instance;
-	RID selection_mesh;
-	RID selection_instance;
-	RID duplicate_mesh;
-	RID duplicate_instance;
-
-	bool updating;
+	void _popup_edit_dialog();
 
 
-	struct Selection {
+	void _setup_edit_dialog(const StringName& p_node);
+	PopupMenu *master_anim_popup;
+	PopupMenu *node_popup;
+	PopupMenu *add_popup;
+	HScrollBar *h_scroll;
+	VScrollBar *v_scroll;
+	MenuButton* add_menu;
+
+	CustomPropertyEditor *property_editor;
+
+	StateMachine* state_machine;
+	List<StringName> order;
+	Set<StringName> active_nodes;
+
+	int last_x, last_y;
+
+	Point2 offset;
+	ClickType click_type;
+	Point2 click_pos;
+	StringName click_node;
+	int click_slot;
+	Point2 click_motion;
+	ClickType rclick_type;
+	StringName rclick_node;
+	int rclick_slot;
+
+	//Button *play_button;
+
+	Size2 _get_maximum_size();
+	Size2 get_node_size(const StringName &p_node) const;
+	void _draw_node(const StringName& p_node);
+
+	AcceptDialog *filter_dialog;
+	Tree *filter;
 
 
-		Vector3 click;
-		Vector3 current;
-		Vector3 begin;
-		Vector3 end;
-		int duplicate_rot;
-		bool active;
-	} selection;
 
-	bool cursor_visible;
-	Transform cursor_transform;
+	void _draw_cos_line(const Vector2& p_from, const Vector2& p_to, const Color& p_color);
+	void _update_scrollbars();
+	void _scroll_moved(float);
+	//void _play_toggled();
+	/*
+	void _node_param_changed();
+	void _node_add_callback();
+	void _node_add(VisualServer::AnimationTreeNodeType p_type);
+	void _node_edit_property(const StringName& p_node);
+	*/
 
-	Vector3 cursor_origin;
-	Vector3 last_mouseover;
-
-	int selected_pallete;
-	int selected_area;
-	int cursor_rot;
+	//void _master_anim_menu_item(int p_item);
+	void _node_menu_item(int p_item);
+	void _add_menu_item(int p_item);
 
 
-	enum Menu {
-
-		MENU_OPTION_CONFIGURE,
-		MENU_OPTION_NEXT_LEVEL,
-		MENU_OPTION_PREV_LEVEL,
-		MENU_OPTION_LOCK_VIEW,
-		MENU_OPTION_CLIP_DISABLED,
-		MENU_OPTION_CLIP_ABOVE,
-		MENU_OPTION_CLIP_BELOW,
-		MENU_OPTION_X_AXIS,
-		MENU_OPTION_Y_AXIS,
-		MENU_OPTION_Z_AXIS,
-		MENU_OPTION_CURSOR_ROTATE_Y,
-		MENU_OPTION_CURSOR_ROTATE_X,
-		MENU_OPTION_CURSOR_ROTATE_Z,
-		MENU_OPTION_CURSOR_BACK_ROTATE_Y,
-		MENU_OPTION_CURSOR_BACK_ROTATE_X,
-		MENU_OPTION_CURSOR_BACK_ROTATE_Z,
-		MENU_OPTION_CURSOR_CLEAR_ROTATION,
-		MENU_OPTION_DUPLICATE_SELECTS,
-		MENU_OPTION_SELECTION_MAKE_AREA,
-		MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR,
-		MENU_OPTION_SELECTION_CLEAR,
-		MENU_OPTION_REMOVE_AREA
+	void _filter_edited();
+	void _find_paths_for_filter(const StringName& p_node, Set<String>& paths);
+	void _edit_filters();
 
 
-	};
+	//void _edit_oneshot_start();
+	//void _edit_dialog_animation_changed();
+	//void _edit_dialog_edit_animation();
+	void _edit_dialog_changeds(String);
+	void _edit_dialog_changede(String);
+	void _edit_dialog_changedf(float);
+	void _edit_dialog_changed();
+	void _dialog_changed() const;
+	ClickType _locate_click(const Point2& p_click, StringName *p_node_id, int *p_slot_index) const;
+	Point2 _get_slot_pos(const StringName& p_node_id, bool p_input, int p_slot);
 
-	SpatialEditorPlugin *spatial_editor;
+	StringName _add_node(int p_item);
+	void _file_dialog_selected(String p_path);
 
-
-	struct AreaDisplay {
-
-		RID mesh;
-		RID instance;
-	};
-
-	Vector<AreaDisplay> areas;
-
-	void _update_areas_display();
-	void _clear_areas();
-
-	void update_grid();
-	void _configure();
-	void _menu_option(int);
-	void update_pallete();
-	Tree *theme_pallete;
-	Tree *area_list;
-	void _item_selected_cbk();
-	void _update_cursor_transform();
-	void _update_cursor_instance();
-	void _update_clip();
-
-	void _update_duplicate_indicator();
-	void _duplicate_paste();
-	void _update_selection_transform();
-	void _validate_selection();
-
-	void _edit_mode_changed(int p_what);
-	void _area_renamed();
-	void _area_selected();
-
-	void _floor_changed(float p_value);
-
-	void _delete_selection();
-	void update_areas();
-
-	EditorNode *editor;
-	bool do_input_action(Camera* p_camera,const Point2& p_point,bool p_click);
-
-friend class StateMachineEditorPlugin;
-	Panel *theme_panel;
 
 protected:
 	void _notification(int p_what);
-	void _node_removed(Node *p_node);
+	void _input_event(InputEvent p_event);
 	static void _bind_methods();
 public:
 
-	bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
 
-
-
+	virtual Size2 get_minimum_size() const;
 	void edit(StateMachine *p_statemachine);
-	StateMachineEditor() {}
-	StateMachineEditor(EditorNode *p_editor);
-	~StateMachineEditor();
+	StateMachineEditor();
 };
 
 class StateMachineEditorPlugin : public EditorPlugin {
 
-	OBJ_TYPE( StateMachineEditorPlugin, EditorPlugin );
+	OBJ_TYPE(StateMachineEditorPlugin, EditorPlugin);
 
 	StateMachineEditor *statemachine_editor;
 	EditorNode *editor;
 
 public:
 
-	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) { return statemachine_editor->forward_spatial_input_event(p_camera,p_event); }
 	virtual String get_name() const { return "StateMachine"; }
 	bool has_main_screen() const { return false; }
 	virtual void edit(Object *p_node);
@@ -239,5 +187,6 @@ public:
 	~StateMachineEditorPlugin();
 
 };
+
 
 #endif // CUBE_STATE_MACHINE_EDITOR_PLUGIN_H

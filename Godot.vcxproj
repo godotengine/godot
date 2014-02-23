@@ -36,12 +36,12 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <NMakeBuildCommandLine>"$(VSInstallDir)vc\vcvarsall.bat" &amp;&amp; "$(VSInstallDir)vc\bin\vcvars32.bat" &amp;&amp; c:/python27/scripts/scons.bat bin/godot.exe  bin/godot.pdb target=debug</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(VSInstallDir)vc\vcvarsall.bat" &amp;&amp; "$(VSInstallDir)vc\bin\vcvars32.bat" &amp;&amp; scons.bat bin/godot.exe  bin/godot.pdb target=debug</NMakeBuildCommandLine>
     <NMakeOutput>Godot.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <NMakeBuildCommandLine>"$(VSInstallDir)vc\vcvarsall.bat" &amp;&amp; "$(VSInstallDir)vc\bin\vcvars32.bat" &amp;&amp; c:/python27/scripts/scons.bat bin/godot.exe  bin/godot.pdb target=release</NMakeBuildCommandLine>
+    <NMakeBuildCommandLine>"$(VSInstallDir)vc\vcvarsall.bat" &amp;&amp; "$(VSInstallDir)vc\bin\vcvars32.bat" &amp;&amp; scons.bat bin/godot.exe  bin/godot.pdb target=release</NMakeBuildCommandLine>
     <NMakeOutput>Godot.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
   </PropertyGroup>
