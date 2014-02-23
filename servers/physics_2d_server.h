@@ -98,6 +98,16 @@ protected:
 
 public:
 
+	enum ObjectTypeMask {
+		TYPE_MASK_STATIC_BODY=1<<0,
+		TYPE_MASK_KINEMATIC_BODY=1<<1,
+		TYPE_MASK_RIGID_BODY=1<<2,
+		TYPE_MASK_CHARACTER_BODY=1<<3,
+		TYPE_MASK_AREA=1<<4,
+		TYPE_MASK_COLLISION=TYPE_MASK_STATIC_BODY|TYPE_MASK_CHARACTER_BODY|TYPE_MASK_KINEMATIC_BODY|TYPE_MASK_RIGID_BODY
+
+	};
+
 	struct RayResult {
 
 		Vector2 position;
@@ -108,7 +118,7 @@ public:
 		int shape;
 	};
 
-	virtual bool intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+	virtual bool intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
 	struct ShapeResult {
 
@@ -119,25 +129,26 @@ public:
 
 	};
 
-	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
 
 
-	struct MotionCastCollision {
+	virtual bool cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
-		float travel; //0 to 1, if 0 then it's blocked
+	virtual bool collide_shape(RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,float p_margin,Vector2 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
+
+	struct ShapeRestInfo {
+
 		Vector2 point;
 		Vector2 normal;
 		RID rid;
 		ObjectID collider_id;
-		Object *collider;
 		int shape;
+		Vector2 linear_velocity; //velocity at contact point
 
 	};
 
-	virtual bool cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion, MotionCastCollision &r_result, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
-
-
+	virtual bool rest_info(RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
 
 	Physics2DDirectSpaceState();
@@ -327,8 +338,8 @@ public:
 	virtual void body_set_continuous_collision_detection_mode(RID p_body,CCDMode p_mode)=0;
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const=0;
 
-	virtual void body_set_user_flags(RID p_body, uint32_t p_flags)=0;
-	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const=0;
+	virtual void body_set_user_mask(RID p_body, uint32_t p_mask)=0;
+	virtual uint32_t body_get_user_mask(RID p_body, uint32_t p_mask) const=0;
 
 	// common body variables
 	enum BodyParameter {

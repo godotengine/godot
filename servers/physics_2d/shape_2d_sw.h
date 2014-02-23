@@ -354,6 +354,51 @@ public:
 		r_max = distance + length;
 	}
 
+
+
+	_FORCE_INLINE_ Vector2 get_circle_axis(const Matrix32& p_xform, const Matrix32& p_xform_inv,const Vector2& p_circle) const {
+
+		Vector2 local_v = p_xform_inv.xform(p_circle);
+
+		Vector2 he(
+			(local_v.x<0) ? -half_extents.x : half_extents.x,
+			(local_v.y<0) ? -half_extents.y : half_extents.y
+		);
+
+		return (p_xform.xform(he)-p_circle).normalized();
+	}
+
+	_FORCE_INLINE_ Vector2 get_box_axis(const Matrix32& p_xform, const Matrix32& p_xform_inv,const RectangleShape2DSW *p_B,const Matrix32& p_B_xform, const Matrix32& p_B_xform_inv) const {
+
+		Vector2 a,b;
+
+		{
+			Vector2 local_v = p_xform_inv.xform(p_B_xform.get_origin());
+
+			Vector2 he(
+				(local_v.x<0) ? -half_extents.x : half_extents.x,
+				(local_v.y<0) ? -half_extents.y : half_extents.y
+			);
+
+			a=p_xform.xform(he);
+
+		}
+		{
+			Vector2 local_v = p_B_xform_inv.xform(p_xform.get_origin());
+
+			Vector2 he(
+				(local_v.x<0) ? -p_B->half_extents.x : p_B->half_extents.x,
+				(local_v.y<0) ? -p_B->half_extents.y : p_B->half_extents.y
+			);
+
+			b=p_B_xform.xform(he);
+
+		}
+
+		return (a-b).normalized();
+	}
+
+
 	DEFAULT_PROJECT_RANGE_CAST
 
 };

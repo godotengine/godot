@@ -108,6 +108,7 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton,Collada::Node *p_no
 
 	Collada::NodeJoint *joint = static_cast<Collada::NodeJoint*>(p_node);
 
+
 	p_skeleton->add_bone(p_node->name);
 	if (p_parent>=0)
 		p_skeleton->set_bone_parent(r_bone,p_parent);

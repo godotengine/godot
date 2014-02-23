@@ -150,6 +150,8 @@ struct _ConcaveCollisionInfo2D {
 	const Matrix32 *transform_B;
 	Vector2 motion_A;
 	Vector2 motion_B;
+	real_t margin_A;
+	real_t margin_B;
 	CollisionSolver2DSW::CallbackResult result_callback;
 	void *userdata;
 	bool swap_result;
@@ -169,7 +171,7 @@ void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex
 	if (!cinfo.result_callback && cinfo.collided)
 		return; //already collided and no contacts requested, don't test anymore
 
-	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, cinfo.motion_A, p_convex,*cinfo.transform_B, cinfo.motion_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result,cinfo.sep_axis );
+	bool collided = collision_solver(cinfo.shape_A, *cinfo.transform_A, cinfo.motion_A, p_convex,*cinfo.transform_B, cinfo.motion_B, cinfo.result_callback, cinfo.userdata, cinfo.swap_result,cinfo.sep_axis,cinfo.margin_A,cinfo.margin_B );
 	if (!collided)
 		return;
 
@@ -179,7 +181,7 @@ void CollisionSolver2DSW::concave_callback(void *p_userdata, Shape2DSW *p_convex
 
 }
 
-bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Matrix32& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Matrix32& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,bool p_swap_result,Vector2 *sep_axis) {
+bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Matrix32& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Matrix32& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,bool p_swap_result,Vector2 *sep_axis,float p_margin_A,float p_margin_B) {
 
 
 	const ConcaveShape2DSW *concave_B=static_cast<const ConcaveShape2DSW*>(p_shape_B);
@@ -195,6 +197,8 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Matrix3
 	cinfo.collided=false;
 	cinfo.collisions=0;
 	cinfo.sep_axis=sep_axis;
+	cinfo.margin_A=p_margin_A;
+	cinfo.margin_B=p_margin_B;
 
 	cinfo.aabb_tests=0;
 
@@ -227,7 +231,7 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Matrix3
 }
 
 
-bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Matrix32& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Matrix32& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,Vector2 *sep_axis) {
+bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Matrix32& p_transform_A,const Vector2& p_motion_A,const Shape2DSW *p_shape_B,const Matrix32& p_transform_B,const Vector2& p_motion_B,CallbackResult p_result_callback,void *p_userdata,Vector2 *sep_axis,float p_margin_A,float p_margin_B) {
 
 
 
@@ -236,12 +240,14 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Matrix32& p_tra
 	Physics2DServer::ShapeType type_B=p_shape_B->get_type();
 	bool concave_A=p_shape_A->is_concave();
 	bool concave_B=p_shape_B->is_concave();
+	real_t margin_A=p_margin_A,margin_B=p_margin_B;
 
 	bool swap = false;
 
 	if (type_A>type_B) {
 		SWAP(type_A,type_B);
 		SWAP(concave_A,concave_B);
+		SWAP(margin_A,margin_B);
 		swap=true;
 	}
 
@@ -292,16 +298,16 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A,const Matrix32& p_tra
 			return false;
 
 		if (!swap)
-			return solve_concave(p_shape_A,p_transform_A,p_motion_A,p_shape_B,p_transform_B,p_motion_B,p_result_callback,p_userdata,false,sep_axis);
+			return solve_concave(p_shape_A,p_transform_A,p_motion_A,p_shape_B,p_transform_B,p_motion_B,p_result_callback,p_userdata,false,sep_axis,margin_A,margin_B);
 		else
-			return solve_concave(p_shape_B,p_transform_B,p_motion_B,p_shape_A,p_transform_A,p_motion_A,p_result_callback,p_userdata,true,sep_axis);
+			return solve_concave(p_shape_B,p_transform_B,p_motion_B,p_shape_A,p_transform_A,p_motion_A,p_result_callback,p_userdata,true,sep_axis,margin_A,margin_B);
 
 
 
 	} else {
 
 
-		return collision_solver(p_shape_A, p_transform_A,p_motion_A, p_shape_B, p_transform_B, p_motion_B,p_result_callback,p_userdata,false,sep_axis);
+		return collision_solver(p_shape_A, p_transform_A,p_motion_A, p_shape_B, p_transform_B, p_motion_B,p_result_callback,p_userdata,false,sep_axis,margin_A,margin_B);
 	}
 
 

@@ -261,6 +261,9 @@ public:
 
 	void queue_delete();
 
+	static void set_human_readable_collision_renaming(bool p_enabled);
+	static void init_node_hrcr();
+
 	/* CANVAS */
 
 	Node();

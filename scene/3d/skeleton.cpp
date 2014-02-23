@@ -43,7 +43,8 @@ bool Skeleton::_set(const StringName& p_path, const Variant& p_value) {
 		
 	int which=path.get_slice("/",1).to_int();
 	String what=path.get_slice("/",2);
-	
+
+
 	if (which==bones.size() && what=="name") {
 	
 		add_bone(p_value);
@@ -94,7 +95,7 @@ bool Skeleton::_get(const StringName& p_name,Variant &r_ret) const {
 	
 	if (what=="name")
 		r_ret=get_bone_name(which);
-	if (what=="parent")
+	else if (what=="parent")
 		r_ret=get_bone_parent(which);
 	else if (what=="rest")
 		r_ret=get_bone_rest(which);
@@ -250,7 +251,7 @@ void Skeleton::add_bone(const String& p_name) {
 	
 		ERR_FAIL_COND( bones[i].name=="p_name");
 	}
-	
+
 	Bone b;
 	b.name=p_name;
 	bones.push_back(b);

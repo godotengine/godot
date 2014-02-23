@@ -111,7 +111,7 @@ ResourceInteractiveLoaderXML::Tag* ResourceInteractiveLoaderXML::parse_tag(bool 
 				}
 				break;
 
-			} else if ( ((!reading_value && (c<33)) || c=='=' || c=='"') && tag.name.length()) {
+			} else if ( ((!reading_value && (c<33)) || c=='=' || c=='"' || c=='\'') && tag.name.length()) {
 
 				if (!reading_value && name.length()) {
 

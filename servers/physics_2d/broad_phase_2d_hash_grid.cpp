@@ -434,8 +434,9 @@ void BroadPhase2DHashGrid::_cull(const Point2i p_cell,const Rect2& p_aabb,const 
 		if (E->key()->pass==pass)
 			continue;
 
-		if (use_aabb && !p_aabb.intersects(E->key()->aabb))
+		if (use_aabb && !p_aabb.intersects(E->key()->aabb)) {
 			continue;
+		}
 
 		if (use_segment && !E->key()->aabb.intersects_segment(p_from,p_to))
 			continue;

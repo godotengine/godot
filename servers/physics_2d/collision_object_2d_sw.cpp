@@ -218,4 +218,5 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) {
 	type=p_type;
 	space=NULL;
 	instance_id=0;
+	user_mask=0;
 }
