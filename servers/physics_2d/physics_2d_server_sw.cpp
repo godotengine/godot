@@ -132,7 +132,11 @@ real_t Physics2DServerSW::shape_get_custom_solver_bias(RID p_shape) const {
 
 void Physics2DServerSW::_shape_col_cbk(const Vector2& p_point_A,const Vector2& p_point_B,void *p_userdata) {
 
+
 	CollCbkData *cbk=(CollCbkData *)p_userdata;
+
+	if (cbk->max==0)
+		return;
 
 	if (cbk->amount == cbk->max) {
 		//find least deep
@@ -159,6 +163,7 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2& p_point_A,const Vector2& p
 
 		cbk->ptr[cbk->amount*2+0]=p_point_A;
 		cbk->ptr[cbk->amount*2+1]=p_point_B;
+		cbk->amount++;
 	}
 }
 
@@ -648,19 +653,20 @@ uint32_t Physics2DServerSW::body_get_object_instance_ID(RID p_body) const {
 };
 
 
-void Physics2DServerSW::body_set_user_flags(RID p_body, uint32_t p_flags) {
+void Physics2DServerSW::body_set_user_mask(RID p_body, uint32_t p_flags) {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+	body->set_user_mask(p_flags);
 
 };
 
-uint32_t Physics2DServerSW::body_get_user_flags(RID p_body, uint32_t p_flags) const {
+uint32_t Physics2DServerSW::body_get_user_mask(RID p_body, uint32_t p_flags) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
 
-	return 0;
+	return body->get_user_mask();
 };
 
 void Physics2DServerSW::body_set_param(RID p_body, BodyParameter p_param, float p_value) {

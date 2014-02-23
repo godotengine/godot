@@ -145,7 +145,7 @@ Variant Physics2DDirectSpaceState::_intersect_shape(const RID& p_shape, const Ma
 
 	ShapeResult *res=(ShapeResult*)alloca(p_result_max*sizeof(ShapeResult));
 
-	int rc = intersect_shape(p_shape,p_xform,Vector2(),res,p_result_max,exclude,p_user_mask);
+	int rc = intersect_shape(p_shape,p_xform,Vector2(),0,res,p_result_max,exclude,p_user_mask);
 
 	if (rc==0)
 		return Variant();
@@ -163,15 +163,13 @@ Variant Physics2DDirectSpaceState::_intersect_shape(const RID& p_shape, const Ma
 Variant Physics2DDirectSpaceState::_cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
 
 
+#if 0
 	Set<RID> exclude;
 	for(int i=0;i<p_exclude.size();i++)
 		exclude.insert(p_exclude[i]);
 
 
-
-	MotionCastCollision mcc;
-
-	bool result = cast_motion(p_shape,p_xform,p_motion,mcc,exclude,p_user_mask);
+	bool result = cast_motion(p_shape,p_xform,p_motion,0,mcc,exclude,p_user_mask);
 
 	if (!result)
 		return Variant();
@@ -185,7 +183,8 @@ Variant Physics2DDirectSpaceState::_cast_motion(const RID& p_shape, const Matrix
 	d["shape"]=mcc.shape;
 
 	return d;
-
+#endif
+	return Variant();
 
 }
 

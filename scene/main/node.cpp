@@ -462,7 +462,7 @@ void Node::_set_name_nocheck(const StringName& p_name) {
 
 void Node::set_name(const String& p_name) {
 	
-	String name=p_name.replace(":","").replace("/","");
+	String name=p_name.replace(":","").replace("/","").replace("@","");
 
 	ERR_FAIL_COND(name=="");
 	data.name=name;
@@ -479,45 +479,97 @@ void Node::set_name(const String& p_name) {
 	}
 }
 
+static bool node_hrcr=false;
+static SafeRefCount node_hrcr_count;
+
+void Node::init_node_hrcr() {
+	node_hrcr_count.init(1);
+}
+
+void Node::set_human_readable_collision_renaming(bool p_enabled) {
+
+	node_hrcr=p_enabled;
+}
+
+
 void Node::_validate_child_name(Node *p_child) {
 
 	/* Make sure the name is unique */
-	String basename = p_child->data.name;
 
-	if (basename=="") {
-		
-		basename = p_child->get_type();
-	}
-		
-	int val=1;
-	
-	for(;;) {
-		
-		String attempted = val > 1 ? (basename + " " +itos(val) ) : basename;
+	if (node_hrcr) {
 
-		bool found=false;
-		
-		for (int i=0;i<data.children.size();i++) {
-			
-			if (data.children[i]==p_child)
-				continue;
-			if (data.children[i]->get_name() == attempted) {
-				found=true;
-				break;
+		//this approach to autoset node names is human readable but very slow
+		//it's turned on while running in the editor
+
+		String basename = p_child->data.name;
+
+		if (basename=="") {
+
+			basename = p_child->get_type();
+		}
+
+		int val=1;
+
+		for(;;) {
+
+			String attempted = val > 1 ? (basename + " " +itos(val) ) : basename;
+
+			bool found=false;
+
+			for (int i=0;i<data.children.size();i++) {
+
+				if (data.children[i]==p_child)
+					continue;
+				if (data.children[i]->get_name() == attempted) {
+					found=true;
+					break;
+				}
+
 			}
-			
+
+			if (found) {
+
+				val++;
+				continue;
+			}
+
+			p_child->data.name=attempted;
+			break;
 		}
-		
-		if (found) {
-			
-			val++;
-			continue;
+	} else {
+
+		//this approach to autoset node names is fast but not as readable
+		//it's the default and reserves the '@' character for unique names.
+
+		bool unique=true;
+
+		if (p_child->data.name==StringName() || p_child->data.name.operator String()[0]=='@') {
+			//new unique name must be assigned
+			unique=false;
+		} else {
+			//check if exists
+			Node **childs=data.children.ptr();
+			int cc = data.children.size();
+
+			for(int i=0;i<cc;i++) {
+				if (childs[i]->data.name==p_child->data.name) {
+					unique=false;
+					break;
+				}
+			}
 		}
-		
-		p_child->data.name=attempted;
-		break;
+
+		if (!unique) {
+
+			node_hrcr_count.ref();
+#ifdef DEBUG_ENABLED
+			String name = "@"+String(p_child->get_type_name())+itos(node_hrcr_count.get());
+#else
+			String name = "@"+itos(node_hrcr_count.get());
+#endif
+			p_child->data.name=name;
+		}
 	}
-	
 }
 
 void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
@@ -540,6 +592,7 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 
 
 }
+
 
 void Node::add_child(Node *p_child) {
 

@@ -282,6 +282,14 @@ void GDScriptLanguage::get_public_functions(List<MethodInfo> *p_functions) const
 	}
 }
 
+void GDScriptLanguage::get_public_constants(List<Pair<String,Variant> > *p_constants) const {
+
+	Pair<String,Variant> pi;
+	pi.first="PI";
+	pi.second=Math_PI;
+	p_constants->push_back(pi);
+}
+
 String GDScriptLanguage::make_function(const String& p_class,const String& p_name,const StringArray& p_args) const {
 
 	String s="func "+p_name+"(";

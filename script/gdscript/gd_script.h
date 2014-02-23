@@ -440,6 +440,8 @@ public:
 	virtual void frame();
 
 	virtual void get_public_functions(List<MethodInfo> *p_functions) const;
+	virtual void get_public_constants(List<Pair<String,Variant> > *p_constants) const;
+
 	/* LOADER FUNCTIONS */
 
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

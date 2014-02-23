@@ -4148,6 +4148,7 @@ EditorNode::EditorNode() {
 
 
 	EditorSettings::get_singleton()->enable_plugins();
+	Node::set_human_readable_collision_renaming(true);
 
 //	Ref<ImageTexture> it = gui_base->get_icon("logo","Icons");
 //	OS::get_singleton()->set_icon( it->get_data() );
