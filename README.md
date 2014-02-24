@@ -15,9 +15,13 @@ Development is sponsored by OKAM Studio (http://www.okamstudio.com).
 Having been developed as in-house means that the user experience may still not be ideal for everyone. The features needed to make a great game are there, but we really need your help to fix all the rough edges and improve usability (via feedback and/or code contributions).
 We know we are close to having an awesome, open source, game engine with nothing to envy from the best commercial offerings, but we can't do this alone. This is why Godot is now open source, so everyone can help us reach this goal.
 
-### Binary Downloads, Documentation, Community, etc.
+### Documentation
 
-Binary downloads, documentation, community, etc. can be found in Godot homepage:
+Documentation has been moved to the [GitHub Wiki](https://github.com/okamstudio/godot/wiki).
+
+### Binary Downloads, Community, etc.
+
+Binary downloads, community, etc. can be found in Godot homepage:
 
 http://www.godotengine.org
 

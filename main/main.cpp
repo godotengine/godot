@@ -33,7 +33,6 @@
 #include "core/register_core_types.h"
 #include "scene/register_scene_types.h"
 #include "drivers/register_driver_types.h"
-#include "script/register_script_types.h"
 #include "servers/register_server_types.h"
 #include "modules/register_module_types.h"
 #include "script_debugger_local.h"
@@ -766,7 +765,6 @@ Error Main::setup2() {
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
 
 	register_module_types();
-	register_script_types();
 	register_driver_types();
 
 	MAIN_PRINT("Main: Load Translations");
@@ -1371,7 +1369,6 @@ void Main::cleanup() {
 	unregister_module_types();
 	unregister_scene_types();	
 	unregister_server_types();
-	unregister_script_types();
 
 	OS::get_singleton()->finalize();
 				

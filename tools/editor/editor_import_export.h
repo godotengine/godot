@@ -36,6 +36,7 @@
 class EditorExportPlatform;
 class FileAccess;
 class EditorProgress;
+
 class EditorImportPlugin : public Reference {
 
 	OBJ_TYPE( EditorImportPlugin, Reference);
@@ -57,6 +58,20 @@ public:
 	virtual Vector<uint8_t> custom_export(const String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
 	EditorImportPlugin();
+};
+
+class EditorExportPlugin : public Reference {
+
+	OBJ_TYPE( EditorExportPlugin, Reference);
+
+protected:
+	static void _bind_methods();
+
+public:
+
+	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
+
+	EditorExportPlugin();
 };
 
 class EditorExportPlatform : public Reference {
@@ -223,6 +238,7 @@ protected:
 		int shrink;
 	};
 
+	Vector<Ref<EditorExportPlugin> > export_plugins;
 	Vector<Ref<EditorImportPlugin> > plugins;
 	Map<String,int> by_idx;
 	ImageAction image_action;
@@ -248,6 +264,10 @@ public:
 	int get_import_plugin_count() const;
 	Ref<EditorImportPlugin> get_import_plugin(int p_idx) const;
 	Ref<EditorImportPlugin> get_import_plugin_by_name(const String& p_string) const;
+
+	void add_export_plugin(const Ref<EditorExportPlugin>& p_plugin);
+	int get_export_plugin_count() const;
+	Ref<EditorExportPlugin> get_export_plugin(int p_idx) const;
 
 	bool poll_export_platforms();
 

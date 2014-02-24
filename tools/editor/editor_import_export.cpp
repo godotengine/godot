@@ -124,6 +124,40 @@ EditorImportPlugin::EditorImportPlugin() {
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+void EditorExportPlugin::_bind_methods() {
+
+	BIND_VMETHOD( MethodInfo("custom_export:Dictionary",PropertyInfo(Variant::STRING,"name",PROPERTY_HINT_RESOURCE_TYPE,"EditorExportPlatformPC")) );
+}
+
+
+Vector<uint8_t> EditorExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
+
+	if (get_script_instance()) {
+
+		Variant d = get_script_instance()->call("custom_export",p_path,p_platform);
+		if (d.get_type()==Variant::NIL)
+			return Vector<uint8_t>();
+		ERR_FAIL_COND_V(d.get_type()!=Variant::DICTIONARY,Vector<uint8_t>());
+		Dictionary dict=d;
+		ERR_FAIL_COND_V(!dict.has("name"),Vector<uint8_t>());
+		ERR_FAIL_COND_V(!dict.has("data"),Vector<uint8_t>());
+		p_path=dict["name"];
+		return dict["data"];
+	}
+
+	return Vector<uint8_t>();
+
+}
+
+
+EditorExportPlugin::EditorExportPlugin() {
+
+
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 static void _add_to_list(EditorFileSystemDirectory *p_efsd,Set<StringName>& r_list) {
 
 	for(int i=0;i<p_efsd->get_subdir_count();i++) {
@@ -223,47 +257,16 @@ static void _add_filter_to_list(Set<StringName>& r_list,const String& p_filter) 
 
 Vector<uint8_t> EditorExportPlatform::get_exported_file(String& p_fname) const {
 
+	Ref<EditorExportPlatform> ep=EditorImportExport::get_singleton()->get_export_platform(get_name());
 
-	Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_fname);
+	for(int i=0;i<EditorImportExport::get_singleton()->get_export_plugin_count();i++) {
 
-	if (rimd.is_valid()) {
+		Vector<uint8_t> data = EditorImportExport::get_singleton()->get_export_plugin(i)->custom_export(p_fname,ep);
+		if (data.size())
+			return data;
 
-		if (rimd->get_editor()!="") {
-			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
-			if (pl.is_valid()) {
-				Vector<uint8_t> ce = pl->custom_export(p_fname,EditorImportExport::get_singleton()->get_export_platform(get_name()));
-				if (ce.size())
-					return ce;
-			}
-		}
-	} else if (EditorImportExport::get_singleton()->image_get_export_group(p_fname)) {
-
-
-		Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
-		if (pl.is_valid()) {
-			Vector<uint8_t> ce = pl->custom_export(p_fname,EditorImportExport::get_singleton()->get_export_platform(get_name()));
-			if (ce.size()) {
-				p_fname=p_fname.basename()+".tex";
-				return ce;
-			}
-		}
-
-	} else if (EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE){
-
-		String xt = p_fname.extension().to_lower();
-		print_line("TRY FOR: "+p_fname);
-		if (EditorImportExport::get_singleton()->get_image_formats().has(xt)) { //should check for more I guess?
-
-			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
-			if (pl.is_valid()) {
-				Vector<uint8_t> ce = pl->custom_export(p_fname,EditorImportExport::get_singleton()->get_export_platform(get_name()));
-				if (ce.size()) {
-					p_fname=p_fname.basename()+".tex";
-					return ce;
-				}
-			}
-		}
 	}
+
 
 	FileAccess *f = FileAccess::open(p_fname,FileAccess::READ);
 	ERR_FAIL_COND_V(!f,Vector<uint8_t>());
@@ -1061,12 +1064,29 @@ Ref<EditorImportPlugin> EditorImportExport::get_import_plugin(int p_idx) const{
 	return plugins[p_idx];
 
 }
+
+
+
 Ref<EditorImportPlugin> EditorImportExport::get_import_plugin_by_name(const String& p_string) const{
 
 	ERR_FAIL_COND_V( !by_idx.has(p_string), Ref<EditorImportPlugin>());
 	return plugins[ by_idx[p_string] ];
 }
 
+void EditorImportExport::add_export_plugin(const Ref<EditorExportPlugin>& p_plugin) {
+
+	export_plugins.push_back(p_plugin);
+}
+
+int EditorImportExport::get_export_plugin_count() const{
+
+	return export_plugins.size();
+}
+Ref<EditorExportPlugin> EditorImportExport::get_export_plugin(int p_idx) const{
+
+	ERR_FAIL_INDEX_V(p_idx,export_plugins.size(),Ref<EditorExportPlugin>());
+	return export_plugins[p_idx];
+}
 
 void EditorImportExport::set_export_file_action(const StringName& p_file, FileAction p_action) {
 

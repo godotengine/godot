@@ -35,10 +35,10 @@
 
 #ifdef GDSCRIPT_ENABLED
 
-#include "script/gdscript/gd_tokenizer.h"
-#include "script/gdscript/gd_parser.h"
-#include "script/gdscript/gd_compiler.h"
-#include "script/gdscript/gd_script.h"
+#include "modules/gdscript/gd_tokenizer.h"
+#include "modules/gdscript/gd_parser.h"
+#include "modules/gdscript/gd_compiler.h"
+#include "modules/gdscript/gd_script.h"
 
 
 namespace TestGDScript {
