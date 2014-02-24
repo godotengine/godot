@@ -4006,10 +4006,12 @@ EditorNode::EditorNode() {
 	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
 
+
 	for(int i=0;i<editor_import_export->get_import_plugin_count();i++) {
 		    import_menu->get_popup()->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(),IMPORT_PLUGIN_BASE+i);
 	}
 
+	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
 
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpatialEditorPlugin(this) ) );

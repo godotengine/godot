@@ -210,18 +210,9 @@ for p in platform_list:
 	if (env["builtin_zlib"]=='yes'):
 		env.Append(CPPPATH=['#drivers/builtin_zlib/zlib'])
 
-	if (env['squirrel']=='yes'):
-
-		env.Append(CPPFLAGS=['-DSQUIRREL_ENABLED'])
-		env.Append(CPPPATH=['#script/squirrel/src'])
-
 	# to test 64 bits compiltion
 	# env.Append(CPPFLAGS=['-m64'])
 
-	if (env['lua']=='yes'):
-
-		env.Append(CPPFLAGS=['-DLUA_ENABLED'])
-		env.Append(CPPPATH=['#script/lua/src'])
 	if (env_base['squish']=='yes'):
 		env.Append(CPPFLAGS=['-DSQUISH_ENABLED']);
 
@@ -297,7 +288,6 @@ for p in platform_list:
 	SConscript("servers/SCsub")
 	SConscript("scene/SCsub")
 	SConscript("tools/SCsub")
-	SConscript("script/SCsub");
 	SConscript("drivers/SCsub")
 	SConscript("bin/SCsub")
 

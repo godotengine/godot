@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_script_types.h                                              */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,13 +26,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef REGISTER_SCRIPT_TYPES_H
-#define REGISTER_SCRIPT_TYPES_H
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-void register_script_types();
-void unregister_script_types();
-
-#endif
+void register_multiscript_types();
+void unregister_multiscript_types();

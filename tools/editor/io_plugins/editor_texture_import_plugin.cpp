@@ -1190,3 +1190,56 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 	editor->get_gui_base()->add_child(dialog);
 
 }
+
+////////////////////////////
+
+
+ Vector<uint8_t> EditorTextureExportPlugin::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
+
+	Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_path);
+
+	if (rimd.is_valid()) {
+
+		if (rimd->get_editor()!="") {
+			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
+			if (pl.is_valid()) {
+				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
+				if (ce.size())
+					return ce;
+			}
+		}
+	} else if (EditorImportExport::get_singleton()->image_get_export_group(p_path)) {
+
+
+		Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
+		if (pl.is_valid()) {
+			Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
+			if (ce.size()) {
+				p_path=p_path.basename()+".tex";
+				return ce;
+			}
+		}
+
+	} else if (EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE){
+
+		String xt = p_path.extension().to_lower();
+		if (EditorImportExport::get_singleton()->get_image_formats().has(xt)) { //should check for more I guess?
+
+			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name("texture_2d");
+			if (pl.is_valid()) {
+				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);
+				if (ce.size()) {
+					p_path=p_path.basename()+".tex";
+					return ce;
+				}
+			}
+		}
+	}
+
+	return Vector<uint8_t>();
+}
+
+EditorTextureExportPlugin::EditorTextureExportPlugin() {
+
+
+}
