@@ -610,7 +610,7 @@ String EditorTextureImportPlugin::get_visible_name() const {
 		} break;
 		case MODE_ATLAS: {
 
-			return "Atlas Teture";
+			return "Atlas Texture";
 		} break;
 
 	}
