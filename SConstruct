@@ -88,7 +88,7 @@ if profile:
 	elif os.path.isfile(profile+".py"):
 		customs.append(profile+".py")
 
-opts=Options(customs, ARGUMENTS)
+opts=Variables(customs, ARGUMENTS)
 opts.Add('target', 'Compile Target (debug/profile/release).', "debug")
 opts.Add('platform','Platform: '+str(platform_list)+'(sfml).',"")
 opts.Add('python','Build Python Support: (yes/no)','no')
