@@ -884,14 +884,19 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 			++missing;
 		};
 	};
-	printf("total %i/%i\n", missing, import_chars.size());
+	print_line("total_chars: "+itos(font_data_list.size()));
 
 	/* KERNING */
 
 
 	for(int i=0;i<font_data_list.size();i++) {
 
+		if (font_data_list[i]->character>512)
+			continue;
 		for(int j=0;j<font_data_list.size();j++) {
+
+			if (font_data_list[j]->character>512)
+				continue;
 
 			FT_Vector  delta;
 			FT_Get_Kerning( face, font_data_list[i]->glyph,font_data_list[j]->glyph,  FT_KERNING_DEFAULT, &delta );

@@ -152,6 +152,11 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 		return TestGDScript::test(TestGDScript::TEST_COMPILER);
 	}
 
+	if (p_test=="gd_bytecode") {
+
+		return TestGDScript::test(TestGDScript::TEST_BYTECODE);
+	}
+
 	if (p_test=="image") {
 
 		return TestImage::test();

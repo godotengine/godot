@@ -1416,7 +1416,7 @@ Error GDScript::reload() {
 	String basedir=path;
 
 	if (basedir=="")
-		basedir==get_path();
+		basedir=get_path();
 
 	if (basedir!="")
 		basedir=basedir.get_base_dir();
@@ -1559,6 +1559,49 @@ void GDScript::_bind_methods() {
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));	
 
 }
+
+
+
+Error GDScript::load_byte_code(const String& p_path) {
+
+	Vector<uint8_t> bytecode = FileAccess::get_file_as_array(p_path);
+	ERR_FAIL_COND_V(bytecode.size()==0,ERR_PARSE_ERROR);
+	path=p_path;
+
+	String basedir=path;
+
+	if (basedir=="")
+		basedir=get_path();
+
+	if (basedir!="")
+		basedir=basedir.get_base_dir();
+
+	valid=false;
+	GDParser parser;
+	Error err = parser.parse_bytecode(bytecode,basedir);
+	if (err) {
+		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
+		ERR_FAIL_V(ERR_PARSE_ERROR);
+	}
+
+	GDCompiler compiler;
+	err = compiler.compile(&parser,this);
+
+	if (err) {
+		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),compiler.get_error_line(),("Compile Error: "+compiler.get_error()).utf8().get_data());
+		ERR_FAIL_V(ERR_COMPILATION_FAILED);
+	}
+
+	valid=true;
+
+	for(Map<StringName,Ref<GDScript> >::Element *E=subclasses.front();E;E=E->next()) {
+
+		_set_subclass_path(E->get(),path);
+	}
+
+	return OK;
+}
+
 
 Error GDScript::load_source_code(const String& p_path) {
 
@@ -2153,24 +2196,39 @@ RES ResourceFormatLoaderGDScript::load(const String &p_path,const String& p_orig
 
 	Ref<GDScript> scriptres(script);
 
-	Error err = script->load_source_code(p_path);
+	if (p_path.ends_with(".gdc")) {
 
-	if (err!=OK) {
+		script->set_script_path(p_original_path); // script needs this.
+		script->set_path(p_original_path);
+		Error err = script->load_byte_code(p_path);
 
-		ERR_FAIL_COND_V(err!=OK, RES());
+
+		if (err!=OK) {
+
+			ERR_FAIL_COND_V(err!=OK, RES());
+		}
+
+	} else {
+		Error err = script->load_source_code(p_path);
+
+		if (err!=OK) {
+
+			ERR_FAIL_COND_V(err!=OK, RES());
+		}
+
+		script->set_script_path(p_original_path); // script needs this.
+		script->set_path(p_original_path);
+		//script->set_name(p_path.get_file());
+
+		script->reload();
 	}
-
-	script->set_script_path(p_original_path); // script needs this.
-	script->set_path(p_original_path);
-	//script->set_name(p_path.get_file());
-
-	script->reload();
 
 	return scriptres;
 }
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 
 	p_extensions->push_back("gd");
+	p_extensions->push_back("gdc");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String& p_type) const {
@@ -2180,7 +2238,8 @@ bool ResourceFormatLoaderGDScript::handles_type(const String& p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 
-	if (p_path.extension().to_lower()=="gd")
+	String el = p_path.extension().to_lower();
+	if (el=="gd" || el=="gdc")
 		return "GDScript";
 	return "";
 }

@@ -33,6 +33,8 @@
 #include "variant.h"
 #include "string_db.h"
 #include "gd_functions.h"
+#include "vmap.h"
+
 class GDTokenizer {
 public:
 
@@ -117,11 +119,28 @@ public:
 		TK_MAX
 	};
 
-
-
-private:
-
+protected:
 	static const char* token_names[TK_MAX];
+public:
+	static const char *get_token_name(Token p_token);
+
+	virtual const Variant& get_token_constant(int p_offset=0) const=0;
+	virtual Token get_token(int p_offset=0) const=0;
+	virtual StringName get_token_identifier(int p_offset=0) const=0;
+	virtual GDFunctions::Function get_token_built_in_func(int p_offset=0) const=0;
+	virtual Variant::Type get_token_type(int p_offset=0) const=0;
+	virtual int get_token_line(int p_offset=0) const=0;
+	virtual int get_token_column(int p_offset=0) const=0;
+	virtual int get_token_line_indent(int p_offset=0) const=0;
+	virtual String get_token_error(int p_offset=0) const=0;
+	virtual void advance(int p_amount=1)=0;
+
+	virtual ~GDTokenizer(){};
+
+};
+
+class GDTokenizerText : public GDTokenizer {
+
 	enum {
 		MAX_LOOKAHEAD=4,
 		TK_RB_SIZE=MAX_LOOKAHEAD*2+1
@@ -162,20 +181,59 @@ private:
 	void _advance();
 public:
 
-	static const char *get_token_name(Token p_token);
 
 	void set_code(const String& p_code);
-	Token get_token(int p_offset=0) const;
-	const Variant& get_token_constant(int p_offset=0) const;
-	StringName get_token_identifier(int p_offset=0) const;
-	GDFunctions::Function get_token_built_in_func(int p_offset=0) const;
-	Variant::Type get_token_type(int p_offset=0) const;
-	int get_token_line(int p_offset=0) const;
-	int get_token_column(int p_offset=0) const;
-	int get_token_line_indent(int p_offset=0) const;
+	virtual Token get_token(int p_offset=0) const;
+	virtual StringName get_token_identifier(int p_offset=0) const;
+	virtual GDFunctions::Function get_token_built_in_func(int p_offset=0) const;
+	virtual Variant::Type get_token_type(int p_offset=0) const;
+	virtual int get_token_line(int p_offset=0) const;
+	virtual int get_token_column(int p_offset=0) const;
+	virtual int get_token_line_indent(int p_offset=0) const;
+	virtual const Variant& get_token_constant(int p_offset=0) const;
+	virtual String get_token_error(int p_offset=0) const;
+	virtual void advance(int p_amount=1);
+};
 
-	String get_token_error(int p_offset=0) const;
-	void advance(int p_amount=1);
+
+
+
+class GDTokenizerBuffer : public GDTokenizer {
+
+
+	enum {
+
+		TOKEN_BYTE_MASK=0x80,
+		TOKEN_BITS=8,
+		TOKEN_MASK=(1<<TOKEN_BITS)-1,
+		TOKEN_LINE_BITS=24,
+		TOKEN_LINE_MASK=(1<<TOKEN_LINE_BITS)-1,
+	};
+
+
+	Vector<StringName> identifiers;
+	Vector<Variant> constants;
+	VMap<uint32_t,uint32_t> lines;
+	Vector<uint32_t> tokens;
+	Variant nil;
+	int token;
+
+public:
+
+
+	Error set_code_buffer(const Vector<uint8_t> & p_buffer);
+	static Vector<uint8_t> parse_code_string(const String& p_code);
+	virtual Token get_token(int p_offset=0) const;
+	virtual StringName get_token_identifier(int p_offset=0) const;
+	virtual GDFunctions::Function get_token_built_in_func(int p_offset=0) const;
+	virtual Variant::Type get_token_type(int p_offset=0) const;
+	virtual int get_token_line(int p_offset=0) const;
+	virtual int get_token_column(int p_offset=0) const;
+	virtual int get_token_line_indent(int p_offset=0) const;
+	virtual const Variant& get_token_constant(int p_offset=0) const;
+	virtual String get_token_error(int p_offset=0) const;
+	virtual void advance(int p_amount=1);
+	GDTokenizerBuffer();
 };
 
 #endif // TOKENIZER_H

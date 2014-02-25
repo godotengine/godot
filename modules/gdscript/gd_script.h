@@ -261,6 +261,7 @@ public:
 	virtual String get_node_type() const;
 	void set_script_path(const String& p_path) { path=p_path; } //because subclasses need a path too...
 	Error load_source_code(const String& p_path);
+	Error load_byte_code(const String& p_path);
 
 	virtual ScriptLanguage *get_language() const;
 

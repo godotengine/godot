@@ -1319,7 +1319,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					return;
 
 				int type=p_value;
-				if (type<0 || type>=6)
+				if (type<0 || type>=InputEvent::TYPE_MAX)
 					return; //fail
 				valid=true;
 				ie.type=InputEvent::Type(type);
@@ -2763,6 +2763,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		case INPUT_EVENT: {
 
 			InputEvent ie = operator InputEvent();
+
 
 
 			p_list->push_back( PropertyInfo(Variant::INT,"type"));

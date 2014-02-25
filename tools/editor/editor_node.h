@@ -91,6 +91,9 @@
 
 
 
+
+typedef void (*EditorNodeInitCallback)();
+
 class EditorNode : public Node {
 
 	OBJ_TYPE( EditorNode, Node );
@@ -393,6 +396,8 @@ class EditorNode : public Node {
 
 	static EditorNode *singleton;
 
+	static Vector<EditorNodeInitCallback> _init_callbacks;
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();		
@@ -463,6 +468,7 @@ public:
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
 
 	static void register_editor_types();
+	static void unregister_editor_types();
 
 	Control *get_gui_base() { return gui_base; }
 
@@ -480,6 +486,8 @@ public:
 	EditorNode();	
 	~EditorNode();
 	void get_singleton(const char* arg1, bool arg2);
+
+	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 
 };
 

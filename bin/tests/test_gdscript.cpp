@@ -864,7 +864,7 @@ MainLoop* test(TestType p_test) {
 
 	if (p_test==TEST_TOKENIZER) {
 
-		GDTokenizer tk;
+		GDTokenizerText tk;
 		tk.set_code(code);
 		int line=-1;
 		while(tk.get_token()!=GDTokenizer::TK_EOF) {
@@ -969,7 +969,15 @@ MainLoop* test(TestType p_test) {
 
 
 
+	} else if (p_test==TEST_BYTECODE) {
+
+		Vector<uint8_t> buf = GDTokenizerBuffer::parse_code_string(code);
+		String dst = test.basename()+".gdc";
+		FileAccess *fw = FileAccess::open(dst,FileAccess::WRITE);
+		fw->store_buffer(buf.ptr(),buf.size());
+		memdelete(fw);
 	}
+
 
 #if 0
 	Parser parser;
