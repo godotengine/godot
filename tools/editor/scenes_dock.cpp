@@ -181,7 +181,7 @@ void ScenesDock::_instance_pressed() {
 	if (!sel)
 		return;
 	String path = sel->get_metadata(0);
-	emit_signal("instance","res://"+path);
+	emit_signal("instance",path);
 }
 
 void ScenesDock::_open_pressed(){

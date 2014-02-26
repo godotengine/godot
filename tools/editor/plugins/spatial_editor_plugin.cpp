@@ -1407,6 +1407,9 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 				} break;
 
+				case KEY_F: {
+					_menu_option(VIEW_CENTER_TO_SELECTION);
+				} break;
 			}
 
 
