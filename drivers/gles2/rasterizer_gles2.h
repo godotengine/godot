@@ -75,6 +75,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool pvr_supported;
 	bool s3tc_supported;
 	bool etc_supported;
+	bool atitc_supported;
 	bool npo2_textures_available;
 	bool read_depth_supported;
 	bool use_framebuffers;
@@ -111,6 +112,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool compressed;
 		bool disallow_mipmaps;
 		int total_data_size;
+		bool ignore_mipmaps;
 
 		ObjectID reloader;
 		StringName reloader_func;
@@ -123,6 +125,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 		Texture() {
 
+			ignore_mipmaps=false;
 			render_target=NULL;
 			flags=width=height=0;
 			tex_id=0;

@@ -413,6 +413,56 @@ void _OS::dump_memory_to_file(const String& p_file) {
 	OS::get_singleton()->dump_memory_to_file(p_file.utf8().get_data());
 }
 
+struct _OSCoreBindImg {
+
+	String path;
+	Size2 size;
+	int fmt;
+	ObjectID id;
+	int vram;
+	bool operator<(const _OSCoreBindImg& p_img) const { return vram==p_img.vram ? id<p_img.id : vram > p_img.vram; }
+};
+
+void _OS::print_all_textures_by_size() {
+
+
+	List<_OSCoreBindImg> imgs;
+	int total=0;
+	{
+		List<Ref<Resource> > rsrc;
+		ResourceCache::get_cached_resources(&rsrc);
+
+		for (List<Ref<Resource> >::Element *E=rsrc.front();E;E=E->next()) {
+
+			if (!E->get()->is_type("ImageTexture"))
+				continue;
+
+			Size2 size = E->get()->call("get_size");
+			int fmt = E->get()->call("get_format");
+
+			_OSCoreBindImg img;
+			img.size=size;
+			img.fmt=fmt;
+			img.path=E->get()->get_path();
+			img.vram=Image::get_image_data_size(img.size.width,img.size.height,Image::Format(img.fmt));
+			img.id=E->get()->get_instance_ID();
+			total+=img.vram;
+			imgs.push_back(img);
+		}
+	}
+
+	imgs.sort();
+
+	for(List<_OSCoreBindImg>::Element *E=imgs.front();E;E=E->next()) {
+
+		print_line(E->get().path+" - "+String::humanize_size(E->get().vram)+"  ("+E->get().size+") - total:"+String::humanize_size(total) );
+		total-=E->get().vram;
+	}
+
+
+
+}
+
 void _OS::print_all_resources(const String& p_to_file ) {
 
 	OS::get_singleton()->print_all_resources(p_to_file);
@@ -515,6 +565,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
 
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
+
+	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );

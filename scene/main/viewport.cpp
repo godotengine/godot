@@ -782,16 +782,41 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_as_render_target","enable"), &Viewport::set_as_render_target);
 	ObjectTypeDB::bind_method(_MD("is_set_as_render_target"), &Viewport::is_set_as_render_target);
 
+	ObjectTypeDB::bind_method(_MD("set_render_target_update_mode","mode"), &Viewport::set_render_target_update_mode);
+	ObjectTypeDB::bind_method(_MD("get_render_target_update_mode"), &Viewport::get_render_target_update_mode);
+
+	ObjectTypeDB::bind_method(_MD("get_render_target_texture:RenderTargetTexture"), &Viewport::get_render_target_texture);
+
+
 	ObjectTypeDB::bind_method(_MD("get_viewport"), &Viewport::get_viewport);
+
 
 	ObjectTypeDB::bind_method(_MD("update_worlds"), &Viewport::update_worlds);
 
+
+	ObjectTypeDB::bind_method(_MD("set_as_audio_listener","enable"), &Viewport::set_as_audio_listener);
+	ObjectTypeDB::bind_method(_MD("is_audio_listener","enable"), &Viewport::is_audio_listener);
+
+	ObjectTypeDB::bind_method(_MD("set_as_audio_listener_2d","enable"), &Viewport::set_as_audio_listener_2d);
+	ObjectTypeDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
+
+
+	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"), _SCS("set_rect"), _SCS("get_rect") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
 //	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target"), _SCS("set_as_render_target"), _SCS("is_set_as_render_target") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/enabled"), _SCS("set_as_render_target"), _SCS("is_set_as_render_target") );
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_render_target_update_mode"), _SCS("get_render_target_update_mode") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
+
+	BIND_CONSTANT( RENDER_TARGET_UPDATE_DISABLED );
+	BIND_CONSTANT( RENDER_TARGET_UPDATE_ONCE  );
+	BIND_CONSTANT( RENDER_TARGET_UPDATE_WHEN_VISIBLE  );
+	BIND_CONSTANT( RENDER_TARGET_UPDATE_ALWAYS  );
+
 }
 
 

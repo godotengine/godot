@@ -128,6 +128,7 @@ public:
 
 	void print_resources_in_use(bool p_short=false);
 	void print_all_resources(const String& p_to_file);
+	void print_all_textures_by_size();
 
 	bool has_touchscreen_ui_hint() const;
 

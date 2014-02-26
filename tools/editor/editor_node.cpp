@@ -3458,8 +3458,8 @@ EditorNode::EditorNode() {
 	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_CMD+KEY_R);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
-	p->add_item("Project Manager",RUN_PROJECT_MANAGER);
 	p->add_separator();
+	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER);
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
 	recent_scenes = memnew( PopupMenu );

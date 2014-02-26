@@ -110,6 +110,7 @@ private:
 	VBoxContainer *image_vb;
 	OptionButton *image_action;
 	HSlider *image_quality;
+	SpinBox *image_shrink;
 	Tree *image_formats;
 	Vector<TreeItem*> formats;
 
@@ -150,6 +151,8 @@ private:
 
 	void _quality_edited(float what);
 	void _image_export_edited(int what);
+	void _shrink_edited(float what);
+
 	void _update_group_list();
 	void _select_group(const String& p_by_name);
 

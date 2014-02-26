@@ -90,6 +90,9 @@ enum {
 	IMAGE_FORMAT_PVRTC4=14,
 	IMAGE_FORMAT_PVRTC4_ALPHA=15,
 	IMAGE_FORMAT_ETC=16,
+	IMAGE_FORMAT_ATC=17,
+	IMAGE_FORMAT_ATC_ALPHA_EXPLICIT=18,
+	IMAGE_FORMAT_ATC_ALPHA_INTERPOLATED=19,
 	IMAGE_FORMAT_CUSTOM=30,
 
 
@@ -283,6 +286,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 					case IMAGE_FORMAT_PVRTC4: { fmt=Image::FORMAT_PVRTC4; } break;
 					case IMAGE_FORMAT_PVRTC4_ALPHA: { fmt=Image::FORMAT_PVRTC4_ALPHA; } break;
 					case IMAGE_FORMAT_ETC: { fmt=Image::FORMAT_ETC; } break;
+					case IMAGE_FORMAT_ATC: { fmt=Image::FORMAT_ATC; } break;
+					case IMAGE_FORMAT_ATC_ALPHA_EXPLICIT: { fmt=Image::FORMAT_ATC_ALPHA_EXPLICIT; } break;
+					case IMAGE_FORMAT_ATC_ALPHA_INTERPOLATED: { fmt=Image::FORMAT_ATC_ALPHA_INTERPOLATED; } break;
 					case IMAGE_FORMAT_CUSTOM: { fmt=Image::FORMAT_CUSTOM; } break;
 					default: {
 
@@ -1335,6 +1341,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 					case Image::FORMAT_PVRTC4: f->store_32(IMAGE_FORMAT_PVRTC4 ); break;
 					case Image::FORMAT_PVRTC4_ALPHA: f->store_32(IMAGE_FORMAT_PVRTC4_ALPHA ); break;
 					case Image::FORMAT_ETC: f->store_32(IMAGE_FORMAT_ETC); break;
+					case Image::FORMAT_ATC: f->store_32(IMAGE_FORMAT_ATC); break;
+					case Image::FORMAT_ATC_ALPHA_EXPLICIT: f->store_32(IMAGE_FORMAT_ATC_ALPHA_EXPLICIT); break;
+					case Image::FORMAT_ATC_ALPHA_INTERPOLATED: f->store_32(IMAGE_FORMAT_ATC_ALPHA_INTERPOLATED); break;
 					case Image::FORMAT_CUSTOM: f->store_32(IMAGE_FORMAT_CUSTOM ); break;
 					default: {}
 

@@ -162,6 +162,10 @@ void Node2D::set_scale(const Size2& p_scale) {
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
 	scale=p_scale;
+	if (scale.x==0)
+		scale.x=CMP_EPSILON;
+	if (scale.y==0)
+		scale.y=CMP_EPSILON;
 	_update_transform();
 	_change_notify("transform/scale");
 

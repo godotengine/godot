@@ -154,11 +154,9 @@ public:
 
 	Camera* get_camera() const;
 
-	void set_listener_transform(const Transform& p_xform);
 	void set_as_audio_listener(bool p_enable);
 	bool is_audio_listener() const;
 
-	void set_listener_2d_transform(const Matrix32& p_xform);
 	void set_as_audio_listener_2d(bool p_enable);
 	bool is_audio_listener_2d() const;
 

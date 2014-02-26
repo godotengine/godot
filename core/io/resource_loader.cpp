@@ -192,7 +192,7 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 			res->set_last_modified_time(mt);
 		}
 #endif
-		print_line("LOADED: "+res->get_path());
+
 		return res;
 	}
 

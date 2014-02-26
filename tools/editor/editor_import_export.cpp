@@ -492,6 +492,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 		int group_format=0;
 		float group_lossy_quality=EditorImportExport::get_singleton()->image_export_group_get_lossy_quality(E->get());
 		int group_shrink=EditorImportExport::get_singleton()->image_export_group_get_shrink(E->get());
+		group_shrink*=EditorImportExport::get_singleton()->get_export_image_shrink();
 
 		switch(EditorImportExport::get_singleton()->image_export_group_get_image_action(E->get())) {
 			case EditorImportExport::IMAGE_ACTION_NONE: {
@@ -1186,6 +1187,16 @@ EditorImportExport::ImageAction EditorImportExport::get_export_image_action() co
 	return image_action;
 }
 
+void EditorImportExport::set_export_image_shrink(int p_shrink) {
+
+	image_shrink=p_shrink;
+}
+
+int EditorImportExport::get_export_image_shrink() const{
+
+	return image_shrink;
+}
+
 
 void EditorImportExport::set_export_image_quality(float p_quality){
 
@@ -1336,6 +1347,10 @@ void EditorImportExport::load_config() {
 			image_action=IMAGE_ACTION_COMPRESS_DISK;
 
 		image_action_compress_quality = cf->get_value(ci,"compress_quality");
+		if (cf->has_section_key(ci,"shrink"))
+			image_shrink = cf->get_value(ci,"shrink");
+		else
+			image_shrink=1;
 		String formats=cf->get_value(ci,"formats");
 		Vector<String> f = formats.split(",");
 		image_formats.clear();
@@ -1382,8 +1397,6 @@ void EditorImportExport::load_config() {
 		List<String> keys;
 		cf->get_section_keys(s,&keys);
 		for(List<String>::Element *F=keys.front();F;F=F->next()) {
-			print_line("sk: "+F->get());
-
 			ep->set(F->get(),cf->get_value(s,F->get()));
 		}
 	}
@@ -1494,6 +1507,7 @@ void EditorImportExport::save_config() {
 		case IMAGE_ACTION_COMPRESS_DISK: cf->set_value("convert_images","action","compress_disk"); break;
 	}
 
+	cf->set_value("convert_images","shrink",image_shrink);
 	cf->set_value("convert_images","compress_quality",image_action_compress_quality);
 
 	String formats;
@@ -1562,9 +1576,7 @@ EditorImportExport::EditorImportExport() {
 	image_action=IMAGE_ACTION_NONE;
 	image_action_compress_quality=0.7;
 	image_formats.insert("png");
-
-
-
+	image_shrink=1;
 }
 
 

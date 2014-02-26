@@ -207,6 +207,12 @@ void ProjectExportDialog::_quality_edited(float what) {
 	_save_export_cfg();
 }
 
+void ProjectExportDialog::_shrink_edited(float what) {
+
+	EditorImportExport::get_singleton()->set_export_image_shrink(what);
+	_save_export_cfg();
+}
+
 void ProjectExportDialog::_image_export_edited(int what) {
 
 	EditorImportExport::get_singleton()->set_export_image_action(EditorImportExport::ImageAction(what));
@@ -270,7 +276,9 @@ void ProjectExportDialog::_notification(int p_what) {
 
 			image_action->select(EditorImportExport::get_singleton()->get_export_image_action());
 			image_quality->set_val(EditorImportExport::get_singleton()->get_export_image_quality());
+			image_shrink->set_val(EditorImportExport::get_singleton()->get_export_image_quality());
 			image_quality->connect("value_changed",this,"_quality_edited");
+			image_shrink->connect("value_changed",this,"_shrink_edited");
 			image_action->connect("item_selected",this,"_image_export_edited");
 
 			for(int i=0;i<formats.size();i++) {
@@ -966,6 +974,7 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_export_action"),&ProjectExportDialog::_export_action);
 	ObjectTypeDB::bind_method(_MD("_export_action_pck"),&ProjectExportDialog::_export_action_pck);
 	ObjectTypeDB::bind_method(_MD("_quality_edited"),&ProjectExportDialog::_quality_edited);
+	ObjectTypeDB::bind_method(_MD("_shrink_edited"),&ProjectExportDialog::_shrink_edited);
 	ObjectTypeDB::bind_method(_MD("_image_export_edited"),&ProjectExportDialog::_image_export_edited);
 	ObjectTypeDB::bind_method(_MD("_format_toggled"),&ProjectExportDialog::_format_toggled);
 	ObjectTypeDB::bind_method(_MD("_group_changed"),&ProjectExportDialog::_group_changed);
@@ -1090,6 +1099,11 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	image_quality->set_max(1);
 	image_quality->set_step(0.01);
 	image_vb->add_margin_child("Compress for Disk (Lossy) Quality:",qhb);
+	image_shrink = memnew( SpinBox );
+	image_shrink->set_min(1);
+	image_shrink->set_max(8);
+	image_shrink->set_step(1);
+	image_vb->add_margin_child("Shrink All Images:",image_shrink);
 	sections->add_child(image_vb);
 
 	image_formats=memnew(Tree);

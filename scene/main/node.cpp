@@ -552,6 +552,8 @@ void Node::_validate_child_name(Node *p_child) {
 			int cc = data.children.size();
 
 			for(int i=0;i<cc;i++) {
+				if (childs[i]==p_child)
+					continue;
 				if (childs[i]->data.name==p_child->data.name) {
 					unique=false;
 					break;
