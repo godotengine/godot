@@ -1487,6 +1487,9 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_PVRTC4"]=Image::FORMAT_PVRTC4;
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_PVRTC4_ALPHA"]=Image::FORMAT_PVRTC4_ALPHA;
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_ETC"]=Image::FORMAT_ETC;
+	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_ATC"]=Image::FORMAT_ATC;
+	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_ATC_ALPHA_EXPLICIT"]=Image::FORMAT_ATC_ALPHA_EXPLICIT;
+	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_ATC_ALPHA_INTERPOLATED"]=Image::FORMAT_ATC_ALPHA_INTERPOLATED;
 	_VariantCall::constant_data[Variant::IMAGE].value["FORMAT_CUSTOM"]=Image::FORMAT_CUSTOM;
 
 }

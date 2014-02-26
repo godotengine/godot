@@ -610,7 +610,7 @@ String EditorTextureImportPlugin::get_visible_name() const {
 		} break;
 		case MODE_ATLAS: {
 
-			return "Atlas Teture";
+			return "Atlas Texture";
 		} break;
 
 	}
@@ -899,6 +899,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		}
 	}
 
+
 	if (format==IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS || format==IMAGE_FORMAT_COMPRESS_DISK_LOSSY) {
 
 		Image image=texture->get_data();
@@ -952,6 +953,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 	} else {
 
+		print_line("compress...");
 		Image image=texture->get_data();
 		ERR_FAIL_COND_V(image.empty(),ERR_INVALID_DATA);
 
@@ -988,13 +990,17 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		}
 
 
+		print_line("COMPRESSED TO: "+itos(image.get_format()));
 		texture->create_from_image(image,tex_flags);
+
 
 		if (shrink>1) {
 			texture->set_size_override(Size2(orig_w,orig_h));
 		}
 
-		Error err = ResourceSaver::save(p_path,texture);
+		uint32_t save_flags=ResourceSaver::FLAG_COMPRESS;
+
+		Error err = ResourceSaver::save(p_path,texture,save_flags);
 		if (err!=OK) {
 			EditorNode::add_io_error("Couldn't save converted texture: "+p_path);
 			return err;
@@ -1021,6 +1027,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			int group_format=0;
 			float group_lossy_quality=EditorImportExport::get_singleton()->image_export_group_get_lossy_quality(group);
 			int group_shrink=EditorImportExport::get_singleton()->image_export_group_get_shrink(group);
+			group_shrink*=EditorImportExport::get_singleton()->get_export_image_shrink();
 
 			switch(EditorImportExport::get_singleton()->image_export_group_get_image_action(group)) {
 				case EditorImportExport::IMAGE_ACTION_NONE: {
@@ -1062,6 +1069,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
 
+			print_line("group format"+itos(group_format));
 			rimd->set_option("format",group_format);
 			rimd->set_option("flags",flags);
 			rimd->set_option("quality",group_lossy_quality);
@@ -1090,6 +1098,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
 
+			rimd->set_option("shrink",EditorImportExport::get_singleton()->get_export_image_shrink());
 			rimd->set_option("flags",flags);
 			rimd->set_option("quality",EditorImportExport::get_singleton()->get_export_image_quality());
 			rimd->set_option("atlas",false);
@@ -1108,18 +1117,21 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	}
 
 	uint32_t flags = rimd->get_option("flags");
+	uint8_t shrink = rimd->has_option("shrink") ? rimd->get_option("shrink"): Variant(1);
+	uint8_t format = rimd->get_option("format");
+	uint8_t comp = (format==EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM)?uint8_t(p_platform->get_image_compression()):uint8_t(255);
 
 	MD5_CTX ctx;
 	uint8_t f4[4];
 	encode_uint32(flags,&f4[0]);
-	uint8_t ic = p_platform->get_image_compression();
 	MD5Init(&ctx);
 	String gp = Globals::get_singleton()->globalize_path(p_path);
 	CharString cs = gp.utf8();
 	MD5Update(&ctx,(unsigned char*)cs.get_data(),cs.length());
 	MD5Update(&ctx,f4,4);
-	MD5Update(&ctx,&ic,1);
-
+	MD5Update(&ctx,&format,1);
+	MD5Update(&ctx,&comp,1);
+	MD5Update(&ctx,&shrink,1);
 	MD5Final(&ctx);
 
 	uint64_t sd=0;
@@ -1137,6 +1149,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 
 			uint64_t d = f->get_line().strip_edges().to_int64();
 			sd = FileAccess::get_modified_time(p_path);
+
 			if (d==sd) {
 				valid=true;
 			} else {

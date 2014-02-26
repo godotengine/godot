@@ -243,6 +243,7 @@ protected:
 	Map<String,int> by_idx;
 	ImageAction image_action;
 	float image_action_compress_quality;
+	int image_shrink;
 	Set<String> image_formats;
 
 	ExportFilter export_filter;
@@ -287,6 +288,9 @@ public:
 
 	void set_export_image_action(ImageAction p_action);
 	ImageAction get_export_image_action() const;
+
+	void set_export_image_shrink(int p_shrink);
+	int get_export_image_shrink() const;
 
 	void set_export_image_quality(float p_quality);
 	float get_export_image_quality() const;

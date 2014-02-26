@@ -88,7 +88,7 @@ if profile:
 	elif os.path.isfile(profile+".py"):
 		customs.append(profile+".py")
 
-opts=Options(customs, ARGUMENTS)
+opts=Variables(customs, ARGUMENTS)
 opts.Add('target', 'Compile Target (debug/profile/release).', "debug")
 opts.Add('platform','Platform: '+str(platform_list)+'(sfml).',"")
 opts.Add('python','Build Python Support: (yes/no)','no')
@@ -173,6 +173,17 @@ for p in platform_list:
 	env['CCFLAGS'] = ''
 
 	env.Append(CCFLAGS=string.split(str(CCFLAGS)))
+
+	CFLAGS = env.get('CFLAGS', '')
+	env['CFLAGS'] = ''
+
+	env.Append(CFLAGS=string.split(str(CFLAGS)))
+
+	LINKFLAGS = env.get('LINKFLAGS', '')
+	env['LINKFLAGS'] = ''
+
+	env.Append(LINKFLAGS=string.split(str(LINKFLAGS)))
+
 	detect.configure(env)
 	env['platform'] = p
         if not env.has_key('platform_libsuffix'):

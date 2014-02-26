@@ -192,6 +192,7 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 			res->set_last_modified_time(mt);
 		}
 #endif
+
 		return res;
 	}
 
@@ -246,7 +247,7 @@ String ResourceLoader::find_complete_path(const String& p_path,const String& p_t
 
 			String path = local_path+E->get();
 
-			if (FileAccess::exists(path)) {
+			if (PathRemap::get_singleton()->has_remap(path) || FileAccess::exists(path)) {
 				candidates.push_back(path);
 			}
 

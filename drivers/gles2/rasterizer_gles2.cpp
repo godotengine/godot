@@ -303,6 +303,11 @@ void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, c
 #define _EXT_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT 0x8DBE
 #define _EXT_ETC1_RGB8_OES           0x8D64
 
+#define _EXT_ATC_RGB_AMD                        0x8C92
+#define _EXT_ATC_RGBA_EXPLICIT_ALPHA_AMD        0x8C93
+#define _EXT_ATC_RGBA_INTERPOLATED_ALPHA_AMD    0x87EE
+
+
 /* TEXTURE API */
 
 Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
@@ -393,6 +398,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 
 		} break;
 		case Image::FORMAT_BC5: {
+
 
 			r_gl_format=_EXT_COMPRESSED_RG_RGTC2;
 			r_gl_components=1; //doesn't matter much
@@ -492,6 +498,63 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			}
 
 		} break;
+		case Image::FORMAT_ATC: {
+
+			if (!atitc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=3;
+				r_gl_format=GL_RGB;
+
+
+			} else {
+
+				r_gl_format=_EXT_ATC_RGB_AMD;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			}
+
+		} break;
+		case Image::FORMAT_ATC_ALPHA_EXPLICIT: {
+
+			if (!atitc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+
+
+			} else {
+
+				r_gl_format=_EXT_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			}
+
+		} break;
+		case Image::FORMAT_ATC_ALPHA_INTERPOLATED: {
+
+			if (!atitc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+
+
+			} else {
+
+				r_gl_format=_EXT_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			}
+
+		} break;
 		case Image::FORMAT_YUV_422:
 		case Image::FORMAT_YUV_444: {
 
@@ -557,7 +620,9 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	texture->flags=p_flags;
 	texture->target = (p_flags & VS::TEXTURE_FLAG_CUBEMAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-	bool scale_textures = !(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && (!npo2_textures_available || p_flags&VS::TEXTURE_FLAG_MIPMAPS);
+	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,components,has_alpha_cache,compressed);
+
+	bool scale_textures = !compressed && !(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && (!npo2_textures_available || p_flags&VS::TEXTURE_FLAG_MIPMAPS);
 
 
 	if (scale_textures) {
@@ -570,7 +635,6 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 		texture->alloc_height = texture->height;
 	};
 
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,components,has_alpha_cache,compressed);
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
@@ -584,32 +648,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	glBindTexture(texture->target, texture->tex_id);
 
 
-	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS)
-		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
-	else
-		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 
-	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
-
-		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
-
-	} else {
-
-		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	// raw Filtering
-	}
-
-	bool force_clamp_to_edge = !(p_flags&VS::TEXTURE_FLAG_MIPMAPS) && (nearest_power_of_2(texture->alloc_height)!=texture->alloc_height || nearest_power_of_2(texture->alloc_width)!=texture->alloc_width);
-
-	if (!force_clamp_to_edge && texture->flags&VS::TEXTURE_FLAG_REPEAT && texture->target != GL_TEXTURE_CUBE_MAP) {
-
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-	} else {
-
-		//glTexParameterf( texture->target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
-		glTexParameterf( texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		glTexParameterf( texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	}
 
 	if (p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 		//prealloc if video
@@ -652,6 +691,8 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		texture->has_alpha=true;
 	}
 
+
+
 	GLenum blit_target = (texture->target == GL_TEXTURE_CUBE_MAP)?_cube_side_enum[p_cube_side]:GL_TEXTURE_2D;
 
 	texture->data_size=img.get_data().size();
@@ -659,6 +700,35 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
+
+	texture->ignore_mipmaps = compressed && img.get_mipmaps()==0;
+
+	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps)
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
+	else
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+
+	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
+
+		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
+
+	} else {
+
+		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	// raw Filtering
+	}
+
+	bool force_clamp_to_edge = !(texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (nearest_power_of_2(texture->alloc_height)!=texture->alloc_height || nearest_power_of_2(texture->alloc_width)!=texture->alloc_width);
+
+	if (!force_clamp_to_edge && texture->flags&VS::TEXTURE_FLAG_REPEAT && texture->target != GL_TEXTURE_CUBE_MAP) {
+
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+	} else {
+
+		//glTexParameterf( texture->target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE );
+		glTexParameterf( texture->target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameterf( texture->target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	}
 
 	int mipmaps= (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && img.get_mipmaps()>0) ? img.get_mipmaps() +1 : 1;
 
@@ -699,7 +769,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	//printf("texture: %i x %i - size: %i - total: %i\n",texture->width,texture->height,tsize,_rinfo.texture_mem);
 
 
-	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && mipmaps==1) {
+	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && mipmaps==1 && !texture->ignore_mipmaps) {
 		//generate mipmaps if they were requested and the image does not contain them
 		glGenerateMipmap(texture->target);
 	}
@@ -889,7 +959,7 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
 	texture->flags=p_flags|cube; // can't remove a cube from being a cube
 
-	bool force_clamp_to_edge = !(p_flags&VS::TEXTURE_FLAG_MIPMAPS) && (nearest_power_of_2(texture->alloc_height)!=texture->alloc_height || nearest_power_of_2(texture->alloc_width)!=texture->alloc_width);
+	bool force_clamp_to_edge = !(p_flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) && (nearest_power_of_2(texture->alloc_height)!=texture->alloc_height || nearest_power_of_2(texture->alloc_width)!=texture->alloc_width);
 
 	if (!force_clamp_to_edge && texture->flags&VS::TEXTURE_FLAG_REPEAT && texture->target != GL_TEXTURE_CUBE_MAP) {
 
@@ -903,17 +973,18 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 	}
 
 
+	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps)
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
+	else
+		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+
 	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
 
 		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_LINEAR);	// Linear Filtering
-		if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS)
-			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
-		else
-			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);	// Linear Filtering
 
 	} else {
 
-		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	// nearest
+		glTexParameteri(texture->target,GL_TEXTURE_MAG_FILTER,GL_NEAREST);	// raw Filtering
 	}
 }
 uint32_t RasterizerGLES2::texture_get_flags(RID p_texture) const {
@@ -7493,6 +7564,7 @@ void RasterizerGLES2::init() {
 	etc_supported=false;
 	use_depth24 =true;
 	s3tc_supported = true;
+	atitc_supported = false;
 	use_hw_skeleton_xform = false;
 //	use_texture_instancing=false;
 //	use_attribute_instancing=true;
@@ -7506,6 +7578,10 @@ void RasterizerGLES2::init() {
 	use_half_float=true;
 
 #else
+
+	for (Set<String>::Element *E=extensions.front();E;E=E->next()) {
+		print_line(E->get());
+	}
 	read_depth_supported=extensions.has("GL_OES_depth_texture");
 	use_rgba_shadowmaps=!read_depth_supported;
 	pvr_supported=extensions.has("GL_IMG_texture_compression_pvrtc");
@@ -7513,7 +7589,9 @@ void RasterizerGLES2::init() {
 	use_depth24 = extensions.has("GL_OES_depth24");
 	s3tc_supported = extensions.has("GL_EXT_texture_compression_dxt1") || extensions.has("GL_EXT_texture_compression_s3tc") || extensions.has("WEBGL_compressed_texture_s3tc");
 	use_half_float = extensions.has("GL_OES_vertex_half_float");
+	atitc_supported=extensions.has("GL_AMD_compressed_ATC_texture");
 
+	print_line("S3TC: "+itos(s3tc_supported)+" ATITC: "+itos(atitc_supported));
 
 	GLint vtf;
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&vtf);
@@ -7885,6 +7963,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	use_fast_texture_filter=GLOBAL_DEF("rasterizer/trilinear_mipmap_filter",true);
 	skel_default.resize(1024*4);
 	for(int i=0;i<1024/3;i++) {
+
 		float * ptr = skel_default.ptr();
 		ptr+=i*4*4;
 		ptr[0]=1.0;
@@ -7901,7 +7980,6 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 		ptr[9]=0.0;
 		ptr[10]=1.0;
 		ptr[12]=0.0;
-
 	}
 
 	base_framebuffer=0;

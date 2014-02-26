@@ -142,6 +142,12 @@ public:
 
 	}
 
+	int find_nearest(const T& p_val) const {
+
+		bool exact;
+		return _find(p_val,exact);
+
+	}
 
 	_FORCE_INLINE_ int size() const { return _data.size(); }
 	_FORCE_INLINE_ bool empty() const { return _data.empty(); }

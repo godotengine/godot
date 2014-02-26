@@ -585,8 +585,8 @@ TileMap::TileMap() {
 	center_x=false;
 	center_y=false;
 
-	fp_adjust=0.1;
-	fp_adjust=0.1;
+	fp_adjust=0.4;
+	fp_adjust=0.4;
 }
 
 TileMap::~TileMap() {

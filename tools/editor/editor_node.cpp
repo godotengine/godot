@@ -3058,6 +3058,12 @@ void EditorNode::register_editor_types() {
 //	ObjectTypeDB::register_type<EditorPostImport>();
 }
 
+void EditorNode::unregister_editor_types() {
+
+	_init_callbacks.clear();
+}
+
+
 void EditorNode::stop_child_process() {
 
 	_menu_option_confirm(RUN_STOP,false);
@@ -3193,6 +3199,7 @@ void EditorNode::_file_dialog_unregister(FileDialog *p_dialog){
 	singleton->file_dialogs.erase(p_dialog);
 }
 
+Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 Error EditorNode::export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after) {
 
@@ -3451,8 +3458,8 @@ EditorNode::EditorNode() {
 	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_CMD+KEY_R);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
-	p->add_item("Project Manager",RUN_PROJECT_MANAGER);
 	p->add_separator();
+	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER);
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
 	recent_scenes = memnew( PopupMenu );
@@ -4155,6 +4162,8 @@ EditorNode::EditorNode() {
 //	Ref<ImageTexture> it = gui_base->get_icon("logo","Icons");
 //	OS::get_singleton()->set_icon( it->get_data() );
 
+	for(int i=0;i<_init_callbacks.size();i++)
+		_init_callbacks[i]();
 
 }
 

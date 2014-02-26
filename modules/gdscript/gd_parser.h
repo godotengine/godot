@@ -343,10 +343,12 @@ public:
 		ProgramNode() { type=TYPE_PROGRAM; }
 	};
 */
+
+
 private:
 
 
-	GDTokenizer tokenizer;
+	GDTokenizer *tokenizer;
 
 
 	Node *head;
@@ -380,12 +382,15 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
+	Error _parse(const String& p_base_path);
+
 public:
 
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
 	Error parse(const String& p_code,const String& p_base_path="");
+	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="");
 
 	const Node *get_parse_tree() const;
 

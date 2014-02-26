@@ -106,7 +106,7 @@ bool GDScriptLanguage::has_named_classes() const {
 
 int GDScriptLanguage::find_function(const String& p_function,const String& p_code) const {
 
-	GDTokenizer tokenizer;
+	GDTokenizerText tokenizer;
 	tokenizer.set_code(p_code);
 	int indent=0;
 	while(tokenizer.get_token()!=GDTokenizer::TK_EOF && tokenizer.get_token()!=GDTokenizer::TK_ERROR) {

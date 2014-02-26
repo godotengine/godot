@@ -1365,6 +1365,10 @@ void Main::cleanup() {
 	OS::get_singleton()->_execpath="";
 	OS::get_singleton()->_local_clipboard="";
 
+#ifdef TOOLS_ENABLED
+	EditorNode::unregister_editor_types();
+#endif
+
 	unregister_driver_types();	
 	unregister_module_types();
 	unregister_scene_types();	

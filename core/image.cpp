@@ -1260,6 +1260,12 @@ int Image::get_format_pixel_size(Format p_format) {
 
 			return 1;
 		} break;
+		case FORMAT_ATC:
+		case FORMAT_ATC_ALPHA_EXPLICIT:
+		case FORMAT_ATC_ALPHA_INTERPOLATED: {
+
+			return 1;
+		} break;
 		case FORMAT_ETC: {
 
 			return 1;
@@ -1323,6 +1329,15 @@ void Image::_get_format_min_data_size(Format p_format,int &r_w, int &r_h) {
 			r_w=8;
 			r_h=8;
 		} break;
+		case FORMAT_ATC:
+		case FORMAT_ATC_ALPHA_EXPLICIT:
+		case FORMAT_ATC_ALPHA_INTERPOLATED: {
+
+			r_w=8;
+			r_h=8;
+
+		} break;
+
 		case FORMAT_ETC: {
 
 			r_w=4;
@@ -1339,7 +1354,7 @@ void Image::_get_format_min_data_size(Format p_format,int &r_w, int &r_h) {
 
 int Image::get_format_pixel_rshift(Format p_format) {
 
-	if (p_format==FORMAT_BC1 || p_format==FORMAT_BC4 || p_format==FORMAT_PVRTC4 || p_format==FORMAT_PVRTC4_ALPHA || p_format==FORMAT_ETC)
+	if (p_format==FORMAT_BC1 || p_format==FORMAT_BC4 || p_format==FORMAT_ATC || p_format==FORMAT_PVRTC4 || p_format==FORMAT_PVRTC4_ALPHA || p_format==FORMAT_ETC)
 		return 1;
 	else if (p_format==FORMAT_PVRTC2 || p_format==FORMAT_PVRTC2_ALPHA)
 		return 2;

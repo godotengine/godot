@@ -551,6 +551,12 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				imgformat=Image::FORMAT_PVRTC4_ALPHA;
 			} else if (format=="etc") {
 				imgformat=Image::FORMAT_ETC;
+			} else if (format=="atc") {
+				imgformat=Image::FORMAT_ATC;
+			} else if (format=="atcai") {
+				imgformat=Image::FORMAT_ATC_ALPHA_INTERPOLATED;
+			} else if (format=="atcae") {
+				imgformat=Image::FORMAT_ATC_ALPHA_EXPLICIT;
 			} else if (format=="custom") {
 				imgformat=Image::FORMAT_CUSTOM;
 			} else {
@@ -1937,6 +1943,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 				case Image::FORMAT_PVRTC4: params+=" format=\"pvrtc4\""; break;
 				case Image::FORMAT_PVRTC4_ALPHA: params+=" format=\"pvrtc4a\""; break;
 				case Image::FORMAT_ETC: params+=" format=\"etc\""; break;
+				case Image::FORMAT_ATC: params+=" format=\"atc\""; break;
+				case Image::FORMAT_ATC_ALPHA_EXPLICIT: params+=" format=\"atcae\""; break;
+				case Image::FORMAT_ATC_ALPHA_INTERPOLATED: params+=" format=\"atcai\""; break;
 				case Image::FORMAT_CUSTOM: params+=" format=\"custom\" custom_size=\""+itos(img.get_data().size())+"\""; break;
 				default: {}
 			}

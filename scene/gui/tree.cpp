@@ -1591,7 +1591,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			case TreeItem::CELL_MODE_CUSTOM: {
 				edited_item=p_item;
 				edited_col=col;					
-				custom_popup_rect=Rect2i(get_global_pos() + Point2i(col_ofs,_get_title_button_height()+y_ofs+item_h-v_scroll->get_val()), Size2(get_column_width(col),item_h));
+				custom_popup_rect=Rect2i(get_global_pos() + Point2i(col_ofs,_get_title_button_height()+y_ofs+item_h-cache.offset.y), Size2(get_column_width(col),item_h));
 				emit_signal("custom_popup_edited",((bool)(x >= (col_width-item_h/2))));
 
 				bring_up_editor=false;
