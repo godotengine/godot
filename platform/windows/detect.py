@@ -129,8 +129,8 @@ def configure(env):
                 else:
                         VC_PATH=""
 
-		env.Append(CCFLAGS=["/I"+VC_PATH+"/Include"])
-		env.Append(LIBPATH=[VC_PATH+"/Lib"])
+		env.Append(CCFLAGS=["/I" + p for p in os.getenv("INCLUDE").split(";")])
+		env.Append(LIBPATH=[p for p in os.getenv("LIB").split(";")])
 		env.Append(CCFLAGS=["/I"+DIRECTX_PATH+"/Include"])
 		env.Append(LIBPATH=[DIRECTX_PATH+"/Lib/x86"])
 		env['ENV'] = os.environ;
