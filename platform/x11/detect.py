@@ -131,6 +131,9 @@ def configure(env):
 	if (env["force_32_bits"]=="yes"):
 		env.Append(CPPFLAGS=['-m32'])
 		env.Append(LINKFLAGS=['-m32','-L/usr/lib/i386-linux-gnu'])
+		env['OBJSUFFIX'] = ".32"+env['OBJSUFFIX']
+		env['LIBSUFFIX'] = ".32"+env['LIBSUFFIX']
+
 
 	if (env["CXX"]=="clang++"):
 		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
