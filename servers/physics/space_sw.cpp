@@ -26,6 +26,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include "globals.h"
 #include "space_sw.h"
 #include "collision_solver_sw.h"
 #include "physics_server_sw.h"
@@ -351,8 +352,8 @@ void SpaceSW::set_param(PhysicsServer::SpaceParameter p_param, real_t p_value) {
 		case PhysicsServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: contact_recycle_radius=p_value; break;
 		case PhysicsServer::SPACE_PARAM_CONTACT_MAX_SEPARATION: contact_max_separation=p_value; break;
 		case PhysicsServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: contact_max_allowed_penetration=p_value; break;
-		case PhysicsServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: body_linear_velocity_sleep_treshold=p_value; break;
-		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: body_angular_velocity_sleep_treshold=p_value; break;
+		case PhysicsServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: body_linear_velocity_sleep_threshold=p_value; break;
+		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: body_angular_velocity_sleep_threshold=p_value; break;
 		case PhysicsServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep=p_value; break;
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: body_angular_velocity_damp_ratio=p_value; break;
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias=p_value; break;
@@ -366,8 +367,8 @@ real_t SpaceSW::get_param(PhysicsServer::SpaceParameter p_param) const {
 		case PhysicsServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS: return contact_recycle_radius;
 		case PhysicsServer::SPACE_PARAM_CONTACT_MAX_SEPARATION: return contact_max_separation;
 		case PhysicsServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: return contact_max_allowed_penetration;
-		case PhysicsServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: return body_linear_velocity_sleep_treshold;
-		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: return body_angular_velocity_sleep_treshold;
+		case PhysicsServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: return body_linear_velocity_sleep_threshold;
+		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: return body_angular_velocity_sleep_threshold;
 		case PhysicsServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: return body_time_to_sleep;
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: return body_angular_velocity_damp_ratio;
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: return constraint_bias;
@@ -404,8 +405,8 @@ SpaceSW::SpaceSW() {
 	contact_max_allowed_penetration= 0.01;
 
 	constraint_bias = 0.01;
-	body_linear_velocity_sleep_treshold=0.01;
-	body_angular_velocity_sleep_treshold=(8.0 / 180.0 * Math_PI);
+	body_linear_velocity_sleep_threshold=GLOBAL_DEF("physics/sleep_threshold_linear",0.1);
+	body_angular_velocity_sleep_threshold=GLOBAL_DEF("physics/sleep_threshold_angular", (8.0 / 180.0 * Math_PI) );
 	body_time_to_sleep=0.5;
 	body_angular_velocity_damp_ratio=10;
 
