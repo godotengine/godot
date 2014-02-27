@@ -648,7 +648,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
-	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("display/target_fps",60));
+	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/target_fps",60));
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
 		OS::get_singleton()->_verbose_stdout=GLOBAL_DEF("debug/verbose_stdout",false);
