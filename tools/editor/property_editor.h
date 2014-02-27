@@ -105,6 +105,8 @@ class CustomPropertyEditor : public Popup {
 	void _file_selected(String p_file);
 	void _scroll_modified(double p_value);
 	void _modified(String p_string);
+	void _focus_enter();
+	void _focus_exit();
 	void _action_pressed(int p_which);
 	void _type_create_selected(int p_idx);
 
