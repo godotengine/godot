@@ -748,6 +748,11 @@ bool LineEdit::is_secret() const {
 
 void LineEdit::select(int p_from, int p_to) {
 
+	if (p_from==0 && p_to==0) {
+		selection_clear();
+		return;
+	}
+
 	int len = text.length();
 	if (p_from<0)
 		p_from=0;
