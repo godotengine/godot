@@ -2491,19 +2491,21 @@ bool String::begins_with(const String& p_string) const {
 	const CharType *src=&p_string[0];
 	const CharType *str=&operator[](0);
 	
-	for (int i=0;i<l;i++) {
+	int i = 0;
+	for (;i<l;i++) {
 		
 		if (src[i]!=str[i])
 			return false;
 	}
 		     
-	return true;
+	// only if i == l the p_string matches the beginning
+	return i == l;
 	
 }
 bool String::begins_with(const char* p_string) const {
 		
 	int l=length();
-	if (l==0)
+	if (l==0||!p_string)
 		return false;
 	
 	const CharType *str=&operator[](0);
