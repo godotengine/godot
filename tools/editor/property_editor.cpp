@@ -51,7 +51,7 @@ void CustomPropertyEditor::_notification(int p_what) {
 			
 			VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2( 10,10,60, get_size().height-20 ), v );
 		}*/
-	}	
+	}
 }
 
 
@@ -1397,6 +1397,53 @@ void CustomPropertyEditor::_modified(String p_string) {
 	updating=false;
 }
 
+void CustomPropertyEditor::_focus_enter() {
+	switch(type) {
+		case Variant::REAL:
+		case Variant::STRING:
+		case Variant::VECTOR2:
+		case Variant::RECT2:
+		case Variant::VECTOR3:
+		case Variant::PLANE:
+		case Variant::QUAT:
+		case Variant::_AABB:
+		case Variant::MATRIX32:
+		case Variant::MATRIX3:
+		case Variant::TRANSFORM: {
+			for (int i=0;i<MAX_VALUE_EDITORS;++i) {
+				if (value_editor[i]->has_focus()) {
+					value_editor[i]->select_all();
+					break;
+				}
+			}
+		} break;
+		default: {}
+	}
+
+}
+
+void CustomPropertyEditor::_focus_exit() {
+	switch(type) {
+		case Variant::REAL:
+		case Variant::STRING:
+		case Variant::VECTOR2:
+		case Variant::RECT2:
+		case Variant::VECTOR3:
+		case Variant::PLANE:
+		case Variant::QUAT:
+		case Variant::_AABB:
+		case Variant::MATRIX32:
+		case Variant::MATRIX3:
+		case Variant::TRANSFORM: {
+			for (int i=0;i<MAX_VALUE_EDITORS;++i) {
+				value_editor[i]->select(0, 0);
+			}
+		} break;
+		default: {}
+	}
+
+}
+
 void CustomPropertyEditor::config_action_buttons(const List<String>& p_strings) {
 
 	int w=100;
@@ -1456,6 +1503,8 @@ void CustomPropertyEditor::config_value_editors(int p_amount, int p_columns,int 
 
 void CustomPropertyEditor::_bind_methods() {
 	
+	ObjectTypeDB::bind_method("_focus_enter", &CustomPropertyEditor::_focus_enter);
+	ObjectTypeDB::bind_method("_focus_exit", &CustomPropertyEditor::_focus_exit);
 	ObjectTypeDB::bind_method("_modified",&CustomPropertyEditor::_modified);
 	ObjectTypeDB::bind_method("_scroll_modified",&CustomPropertyEditor::_scroll_modified);
 	ObjectTypeDB::bind_method("_action_pressed",&CustomPropertyEditor::_action_pressed);
@@ -1487,6 +1536,8 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		value_editor[i]->hide();
 		value_label[i]->hide();
 		value_editor[i]->connect("text_entered", this,"_modified");
+		value_editor[i]->connect("focus_enter", this, "_focus_enter");
+		value_editor[i]->connect("focus_exit", this, "_focus_exit");
 	}
 	
 	for(int i=0;i<4;i++) {
