@@ -87,8 +87,8 @@ class SpaceSW {
 	CollisionObjectSW *intersection_query_results[INTERSECTION_QUERY_MAX];
 	int intersection_query_subindex_results[INTERSECTION_QUERY_MAX];
 
-	float body_linear_velocity_sleep_treshold;
-	float body_angular_velocity_sleep_treshold;
+	float body_linear_velocity_sleep_threshold;
+	float body_angular_velocity_sleep_threshold;
 	float body_time_to_sleep;
 	float body_angular_velocity_damp_ratio;
 
@@ -129,8 +129,8 @@ public:
 	_FORCE_INLINE_ real_t get_contact_max_separation() const { return contact_max_separation; }
 	_FORCE_INLINE_ real_t get_contact_max_allowed_penetration() const { return contact_max_allowed_penetration; }
 	_FORCE_INLINE_ real_t get_constraint_bias() const { return constraint_bias; }
-	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_treshold() const { return body_linear_velocity_sleep_treshold; }
-	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_treshold() const { return body_angular_velocity_sleep_treshold; }
+	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_treshold() const { return body_linear_velocity_sleep_threshold; }
+	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_treshold() const { return body_angular_velocity_sleep_threshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_damp_ratio() const { return body_angular_velocity_damp_ratio; }
 
