@@ -97,6 +97,8 @@ Error HTTPClient::request( Method p_method, const String& p_url, const Vector<St
 
 	String request=String(_methods[p_method])+" "+p_url+" HTTP/1.1\r\n";
 	request+="Host: "+conn_host+":"+itos(conn_port)+"\r\n";
+	request = request + "Content-Length: " + itos(p_body.length()) + "\r\n";
+	
 	for(int i=0;i<p_headers.size();i++) {
 		request+=p_headers[i]+"\r\n";
 	}
