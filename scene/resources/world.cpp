@@ -106,7 +106,9 @@ struct SpatialIndexer {
 
 		while(!removed.empty()) {
 
-			p_notifier->_exit_camera(removed.front()->get());
+#ifndef _3D_DISABLED
+            p_notifier->_exit_camera(removed.front()->get());
+#endif
 			removed.pop_front();
 		}
 
@@ -139,7 +141,9 @@ struct SpatialIndexer {
 		}
 
 		while(!removed.empty()) {
+#ifndef _3D_DISABLED
 			removed.front()->get()->_exit_camera(p_camera);
+#endif
 			removed.pop_front();
 		}
 
@@ -164,8 +168,11 @@ struct SpatialIndexer {
 
 			Camera *c=E->key();
 
-			Vector<Plane> planes = c->get_frustum();
-
+#ifndef _3D_DISABLED
+            Vector<Plane> planes = c->get_frustum();
+#else
+            Vector<Plane> planes;
+#endif
 			int culled = octree.cull_convex(planes,cull.ptr(),cull.size());
 
 
@@ -197,14 +204,18 @@ struct SpatialIndexer {
 			}
 
 			while(!added.empty()) {
-				added.front()->get()->_enter_camera(E->key());
-				added.pop_front();
+#ifndef _3D_DISABLED
+                added.front()->get()->_enter_camera(E->key());
+#endif
+                added.pop_front();
 			}
 
 			while(!removed.empty()) {
 				E->get().notifiers.erase(removed.front()->get());
+#ifndef _3D_DISABLED
 				removed.front()->get()->_exit_camera(E->key());
-				removed.pop_front();
+#endif
+                removed.pop_front();
 			}
 		}
 		changed=false;
