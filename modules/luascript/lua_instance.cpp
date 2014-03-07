@@ -440,6 +440,42 @@ static void *luaL_checkobject(lua_State *L, int idx, const char *type)
     return *((Object **) ptr);
 }
 
+int LuaInstance::l_ratain(lua_State *L)
+{
+    LUA_MULTITHREAD_GUARD();
+    // self -> GdObject
+    Object *self = (Object *) luaL_checkobject(L, 1, "GdObject");
+    Reference* ref = dynamic_cast<Reference *>(self);
+    if(ref != NULL)
+        ref->reference();
+
+    LuaInstance *inst = dynamic_cast<LuaInstance *>(self->get_script_instance());
+    if(inst != NULL)
+    {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
+        lua_pushstring(L, ".c_instance");
+        lua_rawget(L, -2);
+        lua_remove(L, -2);
+        return 1;
+    }
+
+    // do nothing...
+    return 0;
+}
+
+int LuaInstance::l_release(lua_State *L)
+{
+    LUA_MULTITHREAD_GUARD();
+    // self -> GdObject
+    Object *self = (Object *) luaL_checkobject(L, 1, "GdObject");
+    Reference* ref = dynamic_cast<Reference*>(self);
+    if(ref != NULL && ref->unreference())
+        memdelete(self);
+
+    // do nothing...
+    return 0;
+}
+
 int LuaInstance::l_methodbind_wrapper(lua_State *L)
 {
     LUA_MULTITHREAD_GUARD();
@@ -498,6 +534,9 @@ int LuaInstance::l_methodbind_wrapper(lua_State *L)
 int LuaInstance::meta__gc(lua_State *L)
 {
     LUA_MULTITHREAD_GUARD();
+
+    //// self -> GdObject
+    //Object *self = (Object *) luaL_checkobject(L, 1, "GdObject");
 
     lua_pushnil(L);
     lua_setmetatable(L, 1);
@@ -658,6 +697,8 @@ void LuaInstance::setup()
         lua_newtable(L);
         static luaL_reg methods[] = {
             { "extends", l_extends },
+            { "retain", l_ratain },
+            { "release", l_release },
             { NULL, NULL },
         };
         luaL_register(L, NULL, methods);
@@ -672,6 +713,7 @@ void LuaInstance::setup()
             { "__index", meta_bultins__index },
             { "__newindex", meta_bultins__newindex },
             { "__tostring", meta_bultins__tostring },
+            { "__mul", meta_bultins__mul },
             { NULL, NULL },
         };
         luaL_register(L, NULL, meta_methods);
