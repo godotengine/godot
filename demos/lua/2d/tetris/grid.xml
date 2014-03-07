@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="45">
+				<string> "Grid" </string>
+				<string> "Control" </string>
+				<string> "visibility/visible" </string>
+				<string> "visibility/opacity" </string>
+				<string> "visibility/self_opacity" </string>
+				<string> "visibility/on_top" </string>
+				<string> "margin/right" </string>
+				<string> "margin/bottom" </string>
+				<string> "focus_neighbour/left" </string>
+				<string> "focus_neighbour/top" </string>
+				<string> "focus_neighbour/right" </string>
+				<string> "focus_neighbour/bottom" </string>
+				<string> "focus/ignore_mouse" </string>
+				<string> "focus/stop_mouse" </string>
+				<string> "size_flags/horizontal" </string>
+				<string> "size_flags/vertical" </string>
+				<string> "size_flags/stretch_ratio" </string>
+				<string> "__meta__" </string>
+				<string> "timer" </string>
+				<string> "Timer" </string>
+				<string> "wait_time" </string>
+				<string> "one_shot" </string>
+				<string> "autostart" </string>
+				<string> "gameover" </string>
+				<string> "Label" </string>
+				<string> "anchor/right" </string>
+				<string> "anchor/bottom" </string>
+				<string> "custom_colors/font_color" </string>
+				<string> "custom_constants/shadow_offset_x" </string>
+				<string> "custom_constants/shadow_offset_y" </string>
+				<string> "range/min" </string>
+				<string> "range/max" </string>
+				<string> "range/step" </string>
+				<string> "range/page" </string>
+				<string> "range/value" </string>
+				<string> "range/exp_edit" </string>
+				<string> "rounded_values" </string>
+				<string> "text" </string>
+				<string> "align" </string>
+				<string> "valign" </string>
+				<string> "autowrap" </string>
+				<string> "uppercase" </string>
+				<string> "percent_visible" </string>
+				<string> "piece_move_down" </string>
+				<string> "timeout" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 1 </int>
+			<string> "node_count" </string>
+			<int> 3 </int>
+			<string> "variants" </string>
+			<array  len="12" shared="false">
+				<bool> True </bool>
+				<real> 1 </real>
+				<real> 40 </real>
+				<node_path> "" </node_path>
+				<bool> False </bool>
+				<int> 2 </int>
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "pixel_snap" </string>
+							<bool> False </bool>
+							<string> "zoom" </string>
+							<real> 0.9025 </real>
+							<string> "ofs" </string>
+							<vector2> -69, -307.895 </vector2>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 45 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> True </bool>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "2D" </string>
+				</dictionary>
+				<int> 1 </int>
+				<color> 0, 0, 0, 1 </color>
+				<real> 0 </real>
+				<string> "" </string>
+				<real> -1 </real>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="119"> 				-1, -1, 1, 0, -1, 16, 2, 0, 3, 1, 4, 1, 5, 0, 6, 2, 7, 2, 8, 3, 9, 3, 10, 3, 11, 3, 12, 4, 13, 0, 14, 5, 15, 5, 16, 1, 17, 6, 0, 0, 0, 19, 18, -1, 3, 20, 1, 21, 4, 22, 4, 0, 0, 0, 24, 23, -1, 30, 2, 0, 3, 1, 4, 1, 5, 0, 25, 7, 26, 7, 8, 3, 9, 3, 10, 3, 11, 3, 12, 0, 13, 0, 14, 5, 16, 1, 27, 8, 28, 7, 29, 7, 30, 9, 31, 1, 32, 1, 33, 1, 34, 9, 35, 4, 36, 4, 37, 10, 38, 7, 39, 7, 40, 4, 41, 4, 42, 11, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="6"> 				1, 0, 44, 43, 2, 0 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

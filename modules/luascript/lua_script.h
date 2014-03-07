@@ -170,7 +170,7 @@ friend class LuaScript;
 //friend class GDFunction;
 //friend class GDFunctions;
 
-	Object *owner;
+	Variant owner;
 	Ref<LuaScript> script;
 //	Vector<Variant> members;
 	bool base_ref;
@@ -210,7 +210,7 @@ friend class LuaScript;
     static int meta_bultins__tostring(lua_State *L);
     static int meta_bultins__index(lua_State *L);
     static int meta_bultins__newindex(lua_State *L);
-    static int meta_bultins__mul(lua_State *L);
+    static int meta_bultins__evaluate(lua_State *L);
 
 
 public:
