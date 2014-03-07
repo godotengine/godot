@@ -8,7 +8,7 @@ import sys
 import methods
 import multiprocessing
 
-# Enable aggresive compile mode if building on amulti core box
+# Enable aggresive compile mode if building on a multi core box
 if ARGUMENTS.get('spawn_jobs', 'yes') == 'yes':
 	NUM_JOBS = multiprocessing.cpu_count()
 	if NUM_JOBS > 1:
