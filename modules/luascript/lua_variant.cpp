@@ -184,19 +184,21 @@ int LuaInstance::meta_bultins__gc(lua_State *L)
     return 0;
 }
 
-int LuaInstance::meta_bultins__mul(lua_State *L)
+int LuaInstance::meta_bultins__evaluate(lua_State *L)
 {
     LUA_MULTITHREAD_GUARD();
+
+    Variant::Operator op = (Variant::Operator) lua_tointeger(L, lua_upvalueindex(1));
 
     void *ptr1 = luaL_checkudata(L, 1, "Variant");
     Variant* var1 = *((Variant **) ptr1);
 
-    void *ptr2 = luaL_checkudata(L, 1, "Variant");
+    void *ptr2 = luaL_checkudata(L, 2, "Variant");
     Variant* var2 = *((Variant **) ptr2);
 
     Variant ret;
     bool valid = false;
-    Variant::evaluate(Variant::OP_MULTIPLY, *var1, *var2, ret, valid);
+    Variant::evaluate(op, *var1, *var2, ret, valid);
     if(valid)
     {
         l_push_variant(L, ret);
@@ -213,7 +215,7 @@ int LuaInstance::meta_bultins__tostring(lua_State *L)
     Variant* var = *((Variant **) ptr);
 
     char buf[128];
-    sprintf(buf, "%s: 0x%p", var->get_type_name(var->get_type()).utf8().get_data(), var);
+    sprintf(buf, "%s[%s]", var->get_type_name(var->get_type()).utf8().get_data(), (var->operator String()).utf8().get_data());;
     lua_pushstring(L, buf);
 
     return 1;
@@ -317,7 +319,7 @@ void LuaInstance::l_get_variant(lua_State *L, int idx, Variant& var)
                     if(lua_rawequal(L, -1, -2))
                     {
                         lua_pop(L, 2);
-                        var = *((Object **) p);
+                        var = **((Variant **) p);
                         return;
                     }
                     lua_pop(L, 1);
@@ -395,7 +397,8 @@ void LuaInstance::l_push_variant(lua_State *L, const Variant& var)
                 }
             }
             void *ptr = lua_newuserdata(L, sizeof(obj));
-            *((Object **) ptr) = obj;
+            *((Variant **) ptr)= memnew(Variant);
+            **((Variant **) ptr) = var;
             //Reference *ref = dynamic_cast<Reference *>(obj);
             //if(ref != NULL)
             //    ref->reference();
