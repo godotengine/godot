@@ -440,43 +440,43 @@ static Variant *luaL_checkobject(lua_State *L, int idx, const char *type)
     return *((Variant **) ptr);
 }
 
-int LuaInstance::l_ratain(lua_State *L)
-{
-    LUA_MULTITHREAD_GUARD();
-    // self -> GdObject
-    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
-    Object *obj = *self;
-    Reference* ref = dynamic_cast<Reference *>(obj);
-    if(ref != NULL)
-        ref->reference();
-
-    LuaInstance *inst = dynamic_cast<LuaInstance *>(obj->get_script_instance());
-    if(inst != NULL)
-    {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
-        lua_pushstring(L, ".c_instance");
-        lua_rawget(L, -2);
-        lua_remove(L, -2);
-        return 1;
-    }
-
-    // do nothing...
-    return 0;
-}
-
-int LuaInstance::l_release(lua_State *L)
-{
-    LUA_MULTITHREAD_GUARD();
-    // self -> GdObject
-    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
-    Object *obj = *self;
-    Reference* ref = dynamic_cast<Reference*>(obj);
-    if(ref != NULL && ref->unreference())
-        memdelete(self);
-
-    // do nothing...
-    return 0;
-}
+//int LuaInstance::l_ratain(lua_State *L)
+//{
+//    LUA_MULTITHREAD_GUARD();
+//    // self -> GdObject
+//    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
+//    Object *obj = *self;
+//    Reference* ref = dynamic_cast<Reference *>(obj);
+//    if(ref != NULL)
+//        ref->reference();
+//
+//    LuaInstance *inst = dynamic_cast<LuaInstance *>(obj->get_script_instance());
+//    if(inst != NULL)
+//    {
+//        lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
+//        lua_pushstring(L, ".c_instance");
+//        lua_rawget(L, -2);
+//        lua_remove(L, -2);
+//        return 1;
+//    }
+//
+//    // do nothing...
+//    return 0;
+//}
+//
+//int LuaInstance::l_release(lua_State *L)
+//{
+//    LUA_MULTITHREAD_GUARD();
+//    // self -> GdObject
+//    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
+//    Object *obj = *self;
+//    Reference* ref = dynamic_cast<Reference*>(obj);
+//    if(ref != NULL && ref->unreference())
+//        memdelete(self);
+//
+//    // do nothing...
+//    return 0;
+//}
 
 class ReturnLuaInstace : public LuaInstance {
 public:
@@ -743,8 +743,8 @@ void LuaInstance::setup()
         lua_newtable(L);
         static luaL_reg methods[] = {
             { "extends", l_extends },
-            { "retain", l_ratain },
-            { "release", l_release },
+            //{ "retain", l_ratain },
+            //{ "release", l_release },
             { NULL, NULL },
         };
         luaL_register(L, NULL, methods);
