@@ -608,6 +608,28 @@ void OS_Windows::process_key_events() {
 		switch(ke.uMsg) {
 
 			case WM_CHAR: {
+                if ((i==0 && ke.uMsg==WM_CHAR) || (i>0 && key_event_buffer[i-1].uMsg==WM_CHAR))
+                {
+				    InputEvent event;
+				    event.type=InputEvent::KEY;
+				    event.ID=++last_id;
+				    InputEventKey &k=event.key;
+
+
+				    k.mod=ke.mod_state;
+				    k.pressed=true;
+				    k.scancode=KeyMappingWindows::get_keysym(ke.wParam);
+                    k.unicode=ke.wParam;
+				    if (k.unicode && gr_mem) {
+					    k.mod.alt=false;
+					    k.mod.control=false;
+				    }
+
+				    if (k.unicode<32)
+					    k.unicode=0;
+
+				    input->parse_input_event(event);
+                }
 
 				//do nothing
 			} break;
