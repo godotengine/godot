@@ -1,0 +1,183 @@
+HISTORY for Lua 5.1
+
+* Changes from version 5.0 to 5.1
+  -------------------------------
+  Language:
+  + new module system.
+  + new semantics for control variables of fors.
+  + new semantics for setn/getn.
+  + new syntax/semantics for varargs.
+  + new long strings and comments.
+  + new `mod' operator (`%')
+  + new length operator #t
+  + metatables for all types
+  API:
+  + new functions: lua_createtable, lua_get(set)field, lua_push(to)integer.
+  + user supplies memory allocator (lua_open becomes lua_newstate).
+  + luaopen_* functions must be called through Lua.
+  Implementation:
+  + new configuration scheme via luaconf.h.
+  + incremental garbage collection.
+  + better handling of end-of-line in the lexer.
+  + fully reentrant parser (new Lua function `load')
+  + better support for 64-bit machines.
+  + native loadlib support for Mac OS X.
+  + standard distribution in only one library (lualib.a merged into lua.a)
+
+* Changes from version 4.0 to 5.0
+  -------------------------------
+  Language:
+  + lexical scoping.
+  + Lua coroutines.
+  + standard libraries now packaged in tables.
+  + tags replaced by metatables and tag methods replaced by metamethods,
+    stored in metatables.
+  + proper tail calls.
+  + each function can have its own global table, which can be shared.
+  + new __newindex metamethod, called when we insert a new key into a table.
+  + new block comments: --[[ ... ]].
+  + new generic for.
+  + new weak tables.
+  + new boolean type.
+  + new syntax "local function".
+  + (f()) returns the first value returned by f.
+  + {f()} fills a table with all values returned by f.
+  + \n ignored in [[\n .
+  + fixed and-or priorities.
+  + more general syntax for function definition (e.g. function a.x.y:f()...end).
+  + more general syntax for function calls (e.g. (print or write)(9)).
+  + new functions (time/date, tmpfile, unpack, require, load*, etc.).
+  API:
+  + chunks are loaded by using lua_load; new luaL_loadfile and luaL_loadbuffer.
+  + introduced lightweight userdata, a simple "void*" without a metatable.
+  + new error handling protocol: the core no longer prints error messages;
+    all errors are reported to the caller on the stack.
+  + new lua_atpanic for host cleanup.
+  + new, signal-safe, hook scheme.
+  Implementation:
+  + new license: MIT.
+  + new, faster, register-based virtual machine.
+  + support for external multithreading and coroutines.
+  + new and consistent error message format.
+  + the core no longer needs "stdio.h" for anything (except for a single
+    use of sprintf to convert numbers to strings).
+  + lua.c now runs the environment variable LUA_INIT, if present. It can
+    be "@filename", to run a file, or the chunk itself.
+  + support for user extensions in lua.c.
+    sample implementation given for command line editing.
+  + new dynamic loading library, active by default on several platforms.
+  + safe garbage-collector metamethods.
+  + precompiled bytecodes checked for integrity (secure binary dostring).
+  + strings are fully aligned.
+  + position capture in string.find.
+  + read('*l') can read lines with embedded zeros.
+
+* Changes from version 3.2 to 4.0
+  -------------------------------
+  Language:
+  + new "break" and "for" statements (both numerical and for tables).
+  + uniform treatment of globals: globals are now stored in a Lua table.
+  + improved error messages.
+  + no more '$debug': full speed *and* full debug information.
+  + new read form: read(N) for next N bytes.
+  + general read patterns now deprecated.
+    (still available with -DCOMPAT_READPATTERNS.)
+  + all return values are passed as arguments for the last function
+    (old semantics still available with -DLUA_COMPAT_ARGRET)
+  + garbage collection tag methods for tables now deprecated.
+  + there is now only one tag method for order.
+  API:
+  + New API: fully re-entrant, simpler, and more efficient.
+  + New debug API.
+  Implementation:
+  + faster than ever: cleaner virtual machine and new hashing algorithm.
+  + non-recursive garbage-collector algorithm.
+  + reduced memory usage for programs with many strings.
+  + improved treatment for memory allocation errors.
+  + improved support for 16-bit machines (we hope).
+  + code now compiles unmodified as both ANSI C and C++.
+  + numbers in bases other than 10 are converted using strtoul.
+  + new -f option in Lua to support #! scripts.
+  + luac can now combine text and binaries.
+
+* Changes from version 3.1 to 3.2
+  -------------------------------
+  + redirected all output in Lua's core to _ERRORMESSAGE and _ALERT.
+  + increased limit on the number of constants and globals per function
+    (from 2^16 to 2^24).
+  + debugging info (lua_debug and hooks) moved into lua_state and new API
+    functions provided to get and set this info.
+  + new debug lib gives full debugging access within Lua.
+  + new table functions "foreachi", "sort", "tinsert", "tremove", "getn".
+  + new io functions "flush", "seek".
+
+* Changes from version 3.0 to 3.1
+  -------------------------------
+  + NEW FEATURE: anonymous functions with closures (via "upvalues").
+  + new syntax:
+    - local variables in chunks.
+    - better scope control with DO block END.
+    - constructors can now be also written: { record-part; list-part }.
+    - more general syntax for function calls and lvalues, e.g.:
+      f(x).y=1
+      o:f(x,y):g(z)
+      f"string" is sugar for f("string")
+  + strings may now contain arbitrary binary data (e.g., embedded zeros).
+  + major code re-organization and clean-up; reduced module interdependecies.
+  + no arbitrary limits on the total number of constants and globals.
+  + support for multiple global contexts.
+  + better syntax error messages.
+  + new traversal functions "foreach" and "foreachvar".
+  + the default for numbers is now double.
+    changing it to use floats or longs is easy.
+  + complete debug information stored in pre-compiled chunks.
+  + sample interpreter now prompts user when run interactively, and also
+    handles control-C interruptions gracefully.
+
+* Changes from version 2.5 to 3.0
+  -------------------------------
+  + NEW CONCEPT: "tag methods".
+    Tag methods replace fallbacks as the meta-mechanism for extending the
+    semantics of Lua. Whereas fallbacks had a global nature, tag methods
+    work on objects having the same tag (e.g., groups of tables).
+    Existing code that uses fallbacks should work without change.
+  + new, general syntax for constructors {[exp] = exp, ... }.
+  + support for handling variable number of arguments in functions (varargs).
+  + support for conditional compilation ($if ... $else ... $end).
+  + cleaner semantics in API simplifies host code.
+  + better support for writing libraries (auxlib.h).
+  + better type checking and error messages in the standard library.
+  + luac can now also undump.
+
+* Changes from version 2.4 to 2.5
+  -------------------------------
+  + io and string libraries are now based on pattern matching;
+    the old libraries are still available for compatibility
+  + dofile and dostring can now return values (via return statement)
+  + better support for 16- and 64-bit machines
+  + expanded documentation, with more examples
+
+* Changes from version 2.2 to 2.4
+  -------------------------------
+  + external compiler creates portable binary files that can be loaded faster
+  + interface for debugging and profiling
+  + new "getglobal" fallback
+  + new functions for handling references to Lua objects
+  + new functions in standard lib
+  + only one copy of each string is stored
+  + expanded documentation, with more examples
+
+* Changes from version 2.1 to 2.2
+  -------------------------------
+  + functions now may be declared with any "lvalue" as a name
+  + garbage collection of functions
+  + support for pipes
+
+* Changes from version 1.1 to 2.1
+  -------------------------------
+  + object-oriented support
+  + fallbacks
+  + simplified syntax for tables
+  + many internal improvements
+
+(end of HISTORY)
