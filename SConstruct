@@ -210,7 +210,7 @@ for p in platform_list:
 		sys.path.remove(tmppath)
 		sys.modules.pop('config')
 
-    if (env['lua']=='yes'):
+	if (env['lua']=='yes'):
 		env.Append(CPPFLAGS=['-DLUASCRIPT_ENABLED']);
 
 	if (env['musepack']=='yes'):
