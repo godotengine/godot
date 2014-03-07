@@ -60,6 +60,7 @@ public:
 	Variant _new();
 	Object *instance();
 	LuaNativeClass(const StringName& p_name);
+	virtual ~LuaNativeClass();
 };
 
 
