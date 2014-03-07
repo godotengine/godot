@@ -46,7 +46,7 @@ typedef struct {
 static BulitinTypes vtypes[] = {
     // math types
     { "Vector2", Variant::VECTOR2 },
-    { "RECT2", Variant::RECT2 },
+    { "Rect2", Variant::RECT2 },
     { "Vector3", Variant::VECTOR3 },
     { "Matrix32", Variant::MATRIX32 },
     { "Plane", Variant::PLANE },
@@ -71,6 +71,47 @@ static BulitinTypes vtypes[] = {
     { "Vector3Array", Variant::VECTOR3_ARRAY },
     { "ColorArray", Variant::COLOR_ARRAY },
 };
+
+int LuaInstance::l_bultins_caller_wrapper(lua_State *L)
+{
+    const char *key = luaL_checkstring(L, lua_upvalueindex(1));
+    int top = lua_gettop(L);
+
+    void *ptr = luaL_checkudata(L, 1, "Variant");
+    Variant* var = *((Variant **) ptr);
+
+    if(top == 1)
+    {
+        Variant::CallError err;
+        Variant ret = var->call(key, NULL, 0, err);
+        if(err.error == Variant::CallError::CALL_OK)
+        {
+            l_push_variant(L, ret);
+            return 1;
+        }
+    }
+    else
+    {
+        Variant *vars = memnew_arr(Variant, top - 1);
+        Variant *args[128];
+        for(int idx = 2; idx <= top; idx++)
+        {
+            Variant& var = vars[idx - 2];
+            args[idx - 2] = &var;
+            l_get_variant(L, idx, var);
+        }
+        Variant::CallError err;
+        Variant ret = var->call(key, (const Variant**) (args), top - 1, err);
+        memdelete_arr(vars);
+
+        if(err.error == Variant::CallError::CALL_OK)
+        {
+            l_push_variant(L, ret);
+            return 1;
+        }
+    }
+    return 0;
+}
 
 int LuaInstance::l_bultins_wrapper(lua_State *L)
 {
@@ -143,6 +184,27 @@ int LuaInstance::meta_bultins__gc(lua_State *L)
     return 0;
 }
 
+int LuaInstance::meta_bultins__mul(lua_State *L)
+{
+    LUA_MULTITHREAD_GUARD();
+
+    void *ptr1 = luaL_checkudata(L, 1, "Variant");
+    Variant* var1 = *((Variant **) ptr1);
+
+    void *ptr2 = luaL_checkudata(L, 1, "Variant");
+    Variant* var2 = *((Variant **) ptr2);
+
+    Variant ret;
+    bool valid = false;
+    Variant::evaluate(Variant::OP_MULTIPLY, *var1, *var2, ret, valid);
+    if(valid)
+    {
+        l_push_variant(L, ret);
+        return 1;
+    }
+    return 0;
+}
+
 int LuaInstance::meta_bultins__tostring(lua_State *L)
 {
     LUA_MULTITHREAD_GUARD();
@@ -172,6 +234,13 @@ int LuaInstance::meta_bultins__index(lua_State *L)
     if(valid)
     {
         l_push_variant(L, value);
+        return 1;    
+    }
+
+    if(lua_type(L, 2) == LUA_TSTRING)
+    {
+        lua_pushvalue(L, 2);
+        lua_pushcclosure(L, l_bultins_caller_wrapper, 1);
         return 1;
     }
     return 0;
@@ -257,7 +326,7 @@ void LuaInstance::l_get_variant(lua_State *L, int idx, Variant& var)
                     if(lua_rawequal(L, -1, -2))
                     {
                         lua_pop(L, 2);
-                        var = *((Variant **) p);
+                        var = **((Variant **) p);
                         return;
                     }
                     lua_pop(L, 1);
@@ -327,6 +396,9 @@ void LuaInstance::l_push_variant(lua_State *L, const Variant& var)
             }
             void *ptr = lua_newuserdata(L, sizeof(obj));
             *((Object **) ptr) = obj;
+            //Reference *ref = dynamic_cast<Reference *>(obj);
+            //if(ref != NULL)
+            //    ref->reference();
             //lua_pushlightuserdata(L, obj);
             luaL_getmetatable(L, "GdObject");
             lua_setmetatable(L, -2);
