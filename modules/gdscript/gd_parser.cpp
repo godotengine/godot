@@ -215,6 +215,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			String path = tokenizer->get_token_constant();
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
+            path = path.replace("///","//");
 
 			Ref<Resource> res = ResourceLoader::load(path);
 			if (!res.is_valid()) {

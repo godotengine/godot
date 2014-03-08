@@ -803,6 +803,7 @@ class RasterizerGLES1 : public Rasterizer {
 		int object_count;
 		int mat_change_count;
 		int shader_change_count;
+        int draw_commands;
 
 	} _rinfo;
 

@@ -263,8 +263,6 @@ void register_scene_types() {
 //	SceneLoader::add_scene_format_loader(scene_loader_script);
 #endif
 
-	make_default_theme();
-
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<Object>();
@@ -565,7 +563,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-
+	make_default_theme();
 }
 
 void unregister_scene_types() {

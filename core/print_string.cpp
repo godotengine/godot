@@ -73,9 +73,9 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 }
 
 
-void print_line(String p_string) {
+void print_line(String p_string, bool new_line) {
 
-	OS::get_singleton()->print("%s\n",p_string.utf8().get_data());
+    OS::get_singleton()->print("%s%s",p_string.utf8().get_data(), new_line ? "\n" : "");
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;

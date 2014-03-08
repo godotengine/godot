@@ -38,7 +38,7 @@ class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 	_THREAD_SAFE_CLASS_
 
 	enum {
-		MAX_CHUNKS=16384
+		MAX_CHUNKS=65536
 	};
 	
 	

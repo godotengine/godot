@@ -1,0 +1,172 @@
+<!-- $Id: lua.man,v 1.11 2006/01/06 16:03:34 lhf Exp $ -->
+<HTML>
+<HEAD>
+<TITLE>LUA man page</TITLE>
+<LINK REL="stylesheet" TYPE="text/css" HREF="lua.css">
+</HEAD>
+
+<BODY BGCOLOR="#FFFFFF">
+
+<H2>NAME</H2>
+lua - Lua interpreter
+<H2>SYNOPSIS</H2>
+<B>lua</B>
+[
+<I>options</I>
+]
+[
+<I>script</I>
+[
+<I>args</I>
+]
+]
+<H2>DESCRIPTION</H2>
+<B>lua</B>
+is the stand-alone Lua interpreter.
+It loads and executes Lua programs,
+either in textual source form or
+in precompiled binary form.
+(Precompiled binaries are output by
+<B>luac</B>,
+the Lua compiler.)
+<B>lua</B>
+can be used as a batch interpreter and also interactively.
+<P>
+The given
+<I>options</I>
+(see below)
+are executed and then
+the Lua program in file
+<I>script</I>
+is loaded and executed.
+The given
+<I>args</I>
+are available to
+<I>script</I>
+as strings in a global table named
+<B>arg</B>.
+If these arguments contain spaces or other characters special to the shell,
+then they should be quoted
+(but note that the quotes will be removed by the shell).
+The arguments in
+<B>arg</B>
+start at 0,
+which contains the string
+'<I>script</I>'.
+The index of the last argument is stored in
+<B>arg.n</B>.
+The arguments given in the command line before
+<I>script</I>,
+including the name of the interpreter,
+are available in negative indices in
+<B>arg</B>.
+<P>
+At the very start,
+before even handling the command line,
+<B>lua</B>
+executes the contents of the environment variable
+<B>LUA_INIT</B>,
+if it is defined.
+If the value of
+<B>LUA_INIT</B>
+is of the form
+'@<I>filename</I>',
+then
+<I>filename</I>
+is executed.
+Otherwise, the string is assumed to be a Lua statement and is executed.
+<P>
+Options start with
+<B>'-'</B>
+and are described below.
+You can use
+<B>'--'</B>
+to signal the end of options.
+<P>
+If no arguments are given,
+then
+<B>"-v -i"</B>
+is assumed when the standard input is a terminal;
+otherwise,
+<B>"-"</B>
+is assumed.
+<P>
+In interactive mode,
+<B>lua</B>
+prompts the user,
+reads lines from the standard input,
+and executes them as they are read.
+If a line does not contain a complete statement,
+then a secondary prompt is displayed and
+lines are read until a complete statement is formed or
+a syntax error is found.
+So, one way to interrupt the reading of an incomplete statement is
+to force a syntax error:
+adding a
+<B>';'</B>
+in the middle of a statement is a sure way of forcing a syntax error
+(except inside multiline strings and comments; these must be closed explicitly).
+If a line starts with
+<B>'='</B>,
+then
+<B>lua</B>
+displays the values of all the expressions in the remainder of the
+line. The expressions must be separated by commas.
+The primary prompt is the value of the global variable
+<B>_PROMPT</B>,
+if this value is a string;
+otherwise, the default prompt is used.
+Similarly, the secondary prompt is the value of the global variable
+<B>_PROMPT2</B>.
+So,
+to change the prompts,
+set the corresponding variable to a string of your choice.
+You can do that after calling the interpreter
+or on the command line
+(but in this case you have to be careful with quotes
+if the prompt string contains a space; otherwise you may confuse the shell.)
+The default prompts are "&gt; " and "&gt;&gt; ".
+<H2>OPTIONS</H2>
+<P>
+<B>-</B>
+load and execute the standard input as a file,
+that is,
+not interactively,
+even when the standard input is a terminal.
+<P>
+<B>-e </B><I>stat</I>
+execute statement
+<I>stat</I>.
+You need to quote
+<I>stat </I>
+if it contains spaces, quotes,
+or other characters special to the shell.
+<P>
+<B>-i</B>
+enter interactive mode after
+<I>script</I>
+is executed.
+<P>
+<B>-l </B><I>name</I>
+call
+<B>require</B>('<I>name</I>')
+before executing
+<I>script</I>.
+Typically used to load libraries.
+<P>
+<B>-v</B>
+show version information.
+<H2>SEE ALSO</H2>
+<B>luac</B>(1)
+<BR>
+<A HREF="http://www.lua.org/">http://www.lua.org/</A>
+<H2>DIAGNOSTICS</H2>
+Error messages should be self explanatory.
+<H2>AUTHORS</H2>
+R. Ierusalimschy,
+L. H. de Figueiredo,
+and
+W. Celes
+<!-- EOF -->
+</BODY>
+</HTML>
