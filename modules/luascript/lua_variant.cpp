@@ -214,7 +214,7 @@ int LuaInstance::meta_bultins__tostring(lua_State *L)
     void *ptr = luaL_checkudata(L, 1, "Variant");
     Variant* var = *((Variant **) ptr);
 
-    char buf[128];
+    char buf[4096];
     sprintf(buf, "%s[%s]", var->get_type_name(var->get_type()).utf8().get_data(), (var->operator String()).utf8().get_data());;
     lua_pushstring(L, buf);
 
