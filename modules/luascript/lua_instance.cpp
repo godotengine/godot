@@ -270,18 +270,18 @@ const char *LuaInstance::stacklevel = 0;
 
 void LuaInstance::_start_stacked() const
 {
-    stacklevel ++;
+    //stacklevel ++;
 }
 
 void LuaInstance::_ref_stacked(Variant& var) const
 {
-    stackrefs.push_back(var);
+    //stackrefs.push_back(var);
 }
 
 void LuaInstance::_cleanup_stacked() const
 {
-    if(--stacklevel == 0)
-        stackrefs.clear();
+    //if(--stacklevel == 0)
+    //    stackrefs.clear();
 }
 
 int LuaInstance::_call_script(const LuaScript *sptr, const LuaInstance *inst, const char *p_method, const Variant** p_args, int p_argcount, bool p_ret) const
