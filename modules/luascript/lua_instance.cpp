@@ -619,9 +619,25 @@ int LuaInstance::meta__index(lua_State *L)
         lua_pop(L, 2);
         return 1;
     }
-    lua_pop(L, 3);
-    // get symbol from c++
+    lua_pop(L, 1);
+
     const char *name = lua_tostring(L, 2);
+    // cached function name
+    char cache_name[128];
+    sprintf(cache_name, "@%s.%s", ((String) obj->get_type_name()).utf8().get_data(), name ? name : "");
+
+    // try to get cached function
+    lua_pushstring(L, cache_name);
+    lua_gettable(L, -2);
+    if(!lua_isnil(L, -1))
+    {
+        lua_insert(L, -3);
+        lua_pop(L, 2);
+        return 1;
+    }
+    lua_pop(L, 3);
+
+    // get symbol from c++
     if(name == NULL)
         return 0;
 
@@ -648,6 +664,17 @@ int LuaInstance::meta__index(lua_State *L)
         lua_pushlightuserdata(L, mb);
         //lua_pushlightuserdata(L, self);
         lua_pushcclosure(L, l_methodbind_wrapper, 1);
+        // cache wrapper func to metatable
+        //  to speed up when call it again
+        //  mt['.methods'][cache_name] = func
+        {
+            lua_getmetatable(L, 1);
+            lua_getfield(L, -1, ".methods");
+            lua_pushstring(L, cache_name);
+            lua_pushvalue(L, -4);
+            lua_rawset(L, -3);
+            lua_pop(L, 2);
+        }
         return 1;
     }
 
