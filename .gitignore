@@ -119,7 +119,7 @@ ipch/
 # CodeLite project files
 *.project
 *.workspace
-*.codelite
+.codelite/
 
 # TFS 2012 Local Workspace
 $tf/
