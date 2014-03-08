@@ -18,3 +18,9 @@ function node:_on_goto_scene_toggled( pressed )
 	-- replace with function body
 	print(pressed)
 end
+
+function node:_on_anim_trigered(path)
+    print('terigered', path, self:get_node(path))
+	self:get_node("node/btn"):set_text("trigered")
+end
+

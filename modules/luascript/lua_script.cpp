@@ -53,6 +53,10 @@ LuaNativeClass::LuaNativeClass(const StringName& p_name) {
 	name=p_name;
 }
 
+LuaNativeClass::~LuaNativeClass() {
+}
+
+
 /*void LuaNativeClass::call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount){
 
 

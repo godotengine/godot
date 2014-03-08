@@ -60,6 +60,7 @@ public:
 	Variant _new();
 	Object *instance();
 	LuaNativeClass(const StringName& p_name);
+	virtual ~LuaNativeClass();
 };
 
 
@@ -190,8 +191,8 @@ friend class LuaScript;
 
     // lua methods
     static int l_extends(lua_State *L);
-    static int l_ratain(lua_State *L);
-    static int l_release(lua_State *L);
+    //static int l_ratain(lua_State *L);
+    //static int l_release(lua_State *L);
 
     static int l_methodbind_wrapper(lua_State *L);
     static int l_bultins_wrapper(lua_State *L);

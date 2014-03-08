@@ -88,7 +88,7 @@ bool LuaInstance::get(const StringName& p_name, Variant &r_ret) const {
 
 	const LuaScript *sptr=script.ptr();
 	while(sptr) {
-        // get sprite's lua table field
+        // get script's lua table field
         lua_rawgeti(L, LUA_REGISTRYINDEX, sptr->ref);
         lua_pushstring(L, name);
         lua_rawget(L, -2);
@@ -440,43 +440,48 @@ static Variant *luaL_checkobject(lua_State *L, int idx, const char *type)
     return *((Variant **) ptr);
 }
 
-int LuaInstance::l_ratain(lua_State *L)
-{
-    LUA_MULTITHREAD_GUARD();
-    // self -> GdObject
-    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
-    Object *obj = *self;
-    Reference* ref = dynamic_cast<Reference *>(obj);
-    if(ref != NULL)
-        ref->reference();
+//int LuaInstance::l_ratain(lua_State *L)
+//{
+//    LUA_MULTITHREAD_GUARD();
+//    // self -> GdObject
+//    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
+//    Object *obj = *self;
+//    Reference* ref = dynamic_cast<Reference *>(obj);
+//    if(ref != NULL)
+//        ref->reference();
+//
+//    LuaInstance *inst = dynamic_cast<LuaInstance *>(obj->get_script_instance());
+//    if(inst != NULL)
+//    {
+//        lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
+//        lua_pushstring(L, ".c_instance");
+//        lua_rawget(L, -2);
+//        lua_remove(L, -2);
+//        return 1;
+//    }
+//
+//    // do nothing...
+//    return 0;
+//}
+//
+//int LuaInstance::l_release(lua_State *L)
+//{
+//    LUA_MULTITHREAD_GUARD();
+//    // self -> GdObject
+//    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
+//    Object *obj = *self;
+//    Reference* ref = dynamic_cast<Reference*>(obj);
+//    if(ref != NULL && ref->unreference())
+//        memdelete(self);
+//
+//    // do nothing...
+//    return 0;
+//}
 
-    LuaInstance *inst = dynamic_cast<LuaInstance *>(obj->get_script_instance());
-    if(inst != NULL)
-    {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
-        lua_pushstring(L, ".c_instance");
-        lua_rawget(L, -2);
-        lua_remove(L, -2);
-        return 1;
-    }
-
-    // do nothing...
-    return 0;
-}
-
-int LuaInstance::l_release(lua_State *L)
-{
-    LUA_MULTITHREAD_GUARD();
-    // self -> GdObject
-    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
-    Object *obj = *self;
-    Reference* ref = dynamic_cast<Reference*>(obj);
-    if(ref != NULL && ref->unreference())
-        memdelete(self);
-
-    // do nothing...
-    return 0;
-}
+class ReturnLuaInstace : public LuaInstance {
+public:
+    ReturnLuaInstace() {}
+};
 
 int LuaInstance::l_methodbind_wrapper(lua_State *L)
 {
@@ -510,13 +515,13 @@ int LuaInstance::l_methodbind_wrapper(lua_State *L)
         ret = mb->call(obj, NULL, 0, err);
     }
     {
-        Object *obj = ret;
-        if(obj != NULL && obj->get_script_instance() == NULL)
+        Object *robj = ret;
+        if(robj != NULL && robj->get_script_instance() == NULL)
         {
-            LuaInstance* instance = memnew( LuaInstance );
+            ReturnLuaInstace* instance = memnew( ReturnLuaInstace );
             instance->base_ref=false;
             //instance->members.resize(member_indices.size());
-            instance->script=Ref<LuaScript>();
+            instance->script=Ref<LuaScript>(obj->get_script_instance());
             instance->owner=ret;
             ((Object *) instance->owner)->set_script_instance(instance);
 
@@ -541,8 +546,13 @@ int LuaInstance::meta__gc(lua_State *L)
 
     //// self -> GdObject
     Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
-    //Object *obj = *self;
-    memdelete(self);
+    Object *obj = *self;
+
+    ReturnLuaInstace *inst = dynamic_cast<ReturnLuaInstace *>(obj->get_script_instance());
+    if(inst != NULL)
+        obj->set_script_instance(NULL);
+    else
+        memdelete(self);
 
     lua_pushnil(L);
     lua_setmetatable(L, 1);
@@ -733,8 +743,8 @@ void LuaInstance::setup()
         lua_newtable(L);
         static luaL_reg methods[] = {
             { "extends", l_extends },
-            { "retain", l_ratain },
-            { "release", l_release },
+            //{ "retain", l_ratain },
+            //{ "release", l_release },
             { NULL, NULL },
         };
         luaL_register(L, NULL, methods);
@@ -835,6 +845,11 @@ LuaInstance::~LuaInstance() {
         if(lua_istable(L, -1))
         {
             lua_getfield(L, -1, ".c_instance");
+
+            // delete userdata Variant
+            Variant *self = (Variant *) luaL_checkobject(L, -1, "GdObject");
+            memdelete(self);
+
             lua_pushnil(L);
             lua_setmetatable(L, -2);
             lua_pop(L, 1);
