@@ -952,7 +952,18 @@ void RichTextLabel::add_text(const String& p_text) {
 
 		pos=end+1;
 	}
+    text += p_text;
 }
+
+void RichTextLabel::set_text(const String& p_text) {
+    clear();
+    add_text(p_text);
+}
+
+String RichTextLabel::get_text() const {
+    return text;
+}
+
 
 void RichTextLabel::_add_item(Item *p_item, bool p_enter) {
 
@@ -1078,6 +1089,7 @@ void RichTextLabel::clear() {
 	lines.clear();
 	lines.resize(1);
 	first_invalid_line=0;
+    text.clear();
 	update();
 	selection.click=NULL;
 	selection.active=false;
@@ -1484,6 +1496,8 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
 	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
+	ObjectTypeDB::bind_method(_MD("set_text","text"),&RichTextLabel::set_text);
+	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
 	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
 	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);
 	ObjectTypeDB::bind_method(_MD("push_font","font"),&RichTextLabel::push_font);
@@ -1513,6 +1527,14 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
+
+
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "meta_underline" ), _SCS("set_meta_underline"),_SCS("set_meta_underline") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_active" ), _SCS("set_scroll_active"),_SCS("is_scroll_active") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_follow" ), _SCS("set_scroll_follow"),_SCS("is_scroll_following") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "tab_size" ), _SCS("set_tab_size"),_SCS("get_tab_size") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "selection_enabled" ), _SCS("set_selection_enabled"),_SCS("is_selection_enabled") );
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );

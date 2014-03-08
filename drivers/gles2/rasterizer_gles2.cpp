@@ -281,6 +281,7 @@ void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, c
 	*/
 
 	glDrawArrays(type,0,quad?6:p_points);
+	_rinfo.ci_draw_commands++;
 
 };
 
@@ -4837,6 +4838,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 					//print_line("LOCAL F: "+itos(s->format)+" C: "+itos(s->index_array_len)+" VC: "+itos(s->array_len));
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 					glDrawElements(gl_primitive[s->primitive], s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT, s->index_array_local);
+                	_rinfo.ci_draw_commands++;
 
 				} else {
 				//	print_line("indices: "+itos(s->index_array_local) );
@@ -4845,12 +4847,14 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 					//print_line("VBO F: "+itos(s->format)+" C: "+itos(s->index_array_len)+" VC: "+itos(s->array_len));
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,s->index_id);
 					glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0);
+	                _rinfo.ci_draw_commands++;
 				}
 
 
 			} else {
 
 				glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+	            _rinfo.ci_draw_commands++;
 
 			};
 
@@ -4893,6 +4897,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 						parm[1]=(i/(mm->tw>>2))*thd;
 						glVertexAttrib3fv(6,parm);
 						glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0);
+                    	_rinfo.ci_draw_commands++;
 
 					}
 
@@ -4904,6 +4909,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 						//parm[1]=(i/(mm->tw>>2))*thd;
 						glVertexAttrib3fv(6,parm);
 						glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+                    	_rinfo.ci_draw_commands++;
 					}
 				 };
 
@@ -4919,6 +4925,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 						glVertexAttrib4fv(10,&elements[i].matrix[8]);
 						glVertexAttrib4fv(11,&elements[i].matrix[12]);
 						glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0);
+                    	_rinfo.ci_draw_commands++;
 					}
 
 
@@ -4930,6 +4937,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 						glVertexAttrib4fv(10,&elements[i].matrix[8]);
 						glVertexAttrib4fv(11,&elements[i].matrix[12]);
 						glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+                    	_rinfo.ci_draw_commands++;
 					}
 				 };
 
@@ -4945,6 +4953,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 
 						glUniformMatrix4fv(material_shader.get_uniform_location(MaterialShaderGLES2::INSTANCE_TRANSFORM), 1, false, elements[i].matrix);
 						glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_INT:GL_UNSIGNED_SHORT,0);
+                    	_rinfo.ci_draw_commands++;
 					}
 
 
@@ -4953,6 +4962,7 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 					for(int i=0;i<element_count;i++) {
 						glUniformMatrix4fv(material_shader.get_uniform_location(MaterialShaderGLES2::INSTANCE_TRANSFORM), 1, false, elements[i].matrix);
 						glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+                    	_rinfo.ci_draw_commands++;
 					}
 				 };
 			}
@@ -6400,7 +6410,7 @@ void RasterizerGLES2::canvas_draw_line(const Point2& p_from, const Point2& p_to,
 
 	glLineWidth(p_width);
 	_draw_primitive(2,verts,0,0,0);
-	_rinfo.ci_draw_commands++;
+	//_rinfo.ci_draw_commands++;
 }
 
 void RasterizerGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color* p_colors, const Vector2 *p_uvs) {
@@ -6434,6 +6444,7 @@ void RasterizerGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertice
 	}
 
 	glDrawArrays(prim[p_points],0,p_points);
+	_rinfo.ci_draw_commands++;
 
 #else
 
@@ -6553,7 +6564,7 @@ void RasterizerGLES2::_draw_textured_quad(const Rect2& p_rect, const Rect2& p_sr
 	};
 
 	_draw_gui_primitive(4,coords,0,texcoords);
-	_rinfo.ci_draw_commands++;
+	//_rinfo.ci_draw_commands++;
 }
 
 void RasterizerGLES2::_draw_quad(const Rect2& p_rect) {
@@ -6566,7 +6577,7 @@ void RasterizerGLES2::_draw_quad(const Rect2& p_rect) {
 	};
 
 	_draw_gui_primitive(4,coords,0,0);
-	_rinfo.ci_draw_commands++;
+	//_rinfo.ci_draw_commands++;
 
 }
 
@@ -6598,7 +6609,7 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 
 	}
 
-	_rinfo.ci_draw_commands++;
+	//_rinfo.ci_draw_commands++;
 
 }
 
@@ -6667,7 +6678,7 @@ void RasterizerGLES2::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,c
 	}
 
 
-	_rinfo.ci_draw_commands++;
+	//_rinfo.ci_draw_commands++;
 }
 
 void RasterizerGLES2::canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width) {
@@ -6677,7 +6688,7 @@ void RasterizerGLES2::canvas_draw_primitive(const Vector<Point2>& p_points, cons
 	_bind_canvas_texture(p_texture);
 	_draw_gui_primitive(p_points.size(),p_points.ptr(),p_colors.ptr(),p_uvs.ptr());
 
-	_rinfo.ci_draw_commands++;
+	//_rinfo.ci_draw_commands++;
 }
 
 void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor) {
@@ -7704,6 +7715,10 @@ int RasterizerGLES2::get_render_info(VS::RenderInfo p_info) {
 
 			return _rinfo.draw_calls;
 		} break;
+        case VS::INFO_DRAW_COMMANDS_IN_FRAME: {
+
+            return _rinfo.ci_draw_commands;
+        } break;                                              
 		case VS::INFO_SURFACE_CHANGES_IN_FRAME: {
 
 			return _rinfo.surface_count;
