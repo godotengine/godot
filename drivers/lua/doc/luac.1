@@ -1,0 +1,136 @@
+.\" $Id: luac.man,v 1.28 2006/01/06 16:03:34 lhf Exp $
+.TH LUAC 1 "$Date: 2006/01/06 16:03:34 $"
+.SH NAME
+luac \- Lua compiler
+.SH SYNOPSIS
+.B luac
+[
+.I options
+] [
+.I filenames
+]
+.SH DESCRIPTION
+.B luac
+is the Lua compiler.
+It translates programs written in the Lua programming language
+into binary files that can be later loaded and executed.
+.LP
+The main advantages of precompiling chunks are:
+faster loading,
+protecting source code from accidental user changes,
+and
+off-line syntax checking.
+.LP
+Pre-compiling does not imply faster execution
+because in Lua chunks are always compiled into bytecodes before being executed.
+.B luac
+simply allows those bytecodes to be saved in a file for later execution.
+.LP
+Pre-compiled chunks are not necessarily smaller than the corresponding source.
+The main goal in pre-compiling is faster loading.
+.LP
+The binary files created by
+.B luac
+are portable only among architectures with the same word size and byte order.
+.LP
+.B luac
+produces a single output file containing the bytecodes
+for all source files given.
+By default,
+the output file is named
+.BR luac.out ,
+but you can change this with the
+.B \-o
+option.
+.LP
+In the command line,
+you can mix
+text files containing Lua source and
+binary files containing precompiled chunks.
+This is useful to combine several precompiled chunks,
+even from different (but compatible) platforms,
+into a single precompiled chunk.
+.LP
+You can use
+.B "'\-'"
+to indicate the standard input as a source file
+and
+.B "'\--'"
+to signal the end of options
+(that is,
+all remaining arguments will be treated as files even if they start with
+.BR "'\-'" ).
+.LP
+The internal format of the binary files produced by
+.B luac
+is likely to change when a new version of Lua is released.
+So,
+save the source files of all Lua programs that you precompile.
+.LP
+.SH OPTIONS
+Options must be separate.
+.TP
+.B \-l
+produce a listing of the compiled bytecode for Lua's virtual machine.
+Listing bytecodes is useful to learn about Lua's virtual machine.
+If no files are given, then
+.B luac
+loads
+.B luac.out
+and lists its contents.
+.TP
+.BI \-o " file"
+output to
+.IR file ,
+instead of the default
+.BR luac.out .
+(You can use
+.B "'\-'"
+for standard output,
+but not on platforms that open standard output in text mode.)
+The output file may be a source file because
+all files are loaded before the output file is written.
+Be careful not to overwrite precious files.
+.TP
+.B \-p
+load files but do not generate any output file.
+Used mainly for syntax checking and for testing precompiled chunks:
+corrupted files will probably generate errors when loaded.
+Lua always performs a thorough integrity test on precompiled chunks.
+Bytecode that passes this test is completely safe,
+in the sense that it will not break the interpreter.
+However,
+there is no guarantee that such code does anything sensible.
+(None can be given, because the halting problem is unsolvable.)
+If no files are given, then
+.B luac
+loads
+.B luac.out
+and tests its contents.
+No messages are displayed if the file passes the integrity test.
+.TP
+.B \-s
+strip debug information before writing the output file.
+This saves some space in very large chunks,
+but if errors occur when running a stripped chunk,
+then the error messages may not contain the full information they usually do.
+For instance,
+line numbers and names of local variables are lost.
+.TP
+.B \-v
+show version information.
+.SH FILES
+.TP 15
+.B luac.out
+default output file
+.SH "SEE ALSO"
+.BR lua (1)
+.br
+http://www.lua.org/
+.SH DIAGNOSTICS
+Error messages should be self explanatory.
+.SH AUTHORS
+L. H. de Figueiredo,
+R. Ierusalimschy and
+W. Celes
+.\" EOF
