@@ -10,7 +10,7 @@ local score_label
 
 local MAX_SHAPES = 7
 
-local block = ResourceLoader:load("block.png")
+local block = ResourceLoader:load("res://block.png")
 
 local block_colors = {
     Color(1,0.5,0.5),

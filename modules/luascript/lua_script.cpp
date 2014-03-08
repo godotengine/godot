@@ -450,15 +450,27 @@ Error LuaScript::reload() {
 	if (basedir!="")
 		basedir=basedir.get_base_dir();
 
-    CharString code = source.utf8();
-
     lua_State *L = LuaScriptLanguage::get_singleton()->get_state();
     int top = lua_gettop(L);
-    if(luaL_loadbuffer(L, code.get_data(), code.length(), path.utf8()))
+
+    if(bytecode.size() == 0)
     {
-        const char *err = lua_tostring(L, -1);
-        reportError("Parse Error: %s", err);
-		ERR_FAIL_V(ERR_PARSE_ERROR);
+        CharString code = source.utf8();
+        if(luaL_loadbuffer(L, code.get_data(), code.length(), path.utf8()))
+        {
+            const char *err = lua_tostring(L, -1);
+            reportError("Parse Error: %s", err);
+		    ERR_FAIL_V(ERR_PARSE_ERROR);
+        }
+    }
+    else
+    {
+        if(luaL_loadbuffer(L, (const char *) &bytecode[0], bytecode.size(), path.utf8()))
+        {
+            const char *err = lua_tostring(L, -1);
+            reportError("Parse Error: %s", err);
+		    ERR_FAIL_V(ERR_PARSE_ERROR);
+        }
     }
     // new object's mtable(method table)
     lua_newtable(L);
@@ -602,6 +614,22 @@ ScriptLanguage *LuaScript::get_language() const {
 void LuaScript::_bind_methods()
 {
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&LuaScript::_new,MethodInfo("new"));	
+}
+
+Error LuaScript::load_byte_code(const String& p_path) {
+	bytecode = FileAccess::get_file_as_array(p_path);
+	ERR_FAIL_COND_V(bytecode.size()==0,ERR_PARSE_ERROR);
+	path=p_path;
+
+	String basedir=path;
+
+	if (basedir=="")
+		basedir=get_path();
+
+	if (basedir!="")
+		basedir=basedir.get_base_dir();
+
+	return OK;
 }
 
 Error LuaScript::load_source_code(const String& p_path) {
@@ -953,18 +981,33 @@ RES ResourceFormatLoaderLuaScript::load(const String &p_path,const String& p_ori
 
     // lua does not need load_byte_code
     //  bytecode also stored in source
-	Error err = script->load_source_code(p_path);
+	if (p_path.ends_with(".luac")) {
 
-	if (err!=OK) {
+		script->set_script_path(p_original_path); // script needs this.
+		script->set_path(p_original_path);
+		Error err = script->load_byte_code(p_path);
 
-		ERR_FAIL_COND_V(err!=OK, RES());
-	}
 
-	script->set_script_path(p_original_path); // script needs this.
-	script->set_path(p_original_path);
-	script->set_name(p_path.get_file());
+		if (err!=OK) {
+			ERR_FAIL_COND_V(err!=OK, RES());
+		}
 
-	script->reload();
+	    script->reload();
+
+    } else {
+	    Error err = script->load_source_code(p_path);
+
+	    if (err!=OK) {
+
+		    ERR_FAIL_COND_V(err!=OK, RES());
+	    }
+
+	    script->set_script_path(p_original_path); // script needs this.
+	    script->set_path(p_original_path);
+	    script->set_name(p_path.get_file());
+
+	    script->reload();
+    }
 
 	return scriptres;
 }
