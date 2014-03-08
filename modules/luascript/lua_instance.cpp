@@ -581,7 +581,7 @@ int LuaInstance::meta__index(lua_State *L)
     // self -> GdObject
     Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
     Object *obj = *self;
-    const char *key = luaL_checkstring(L, 2);
+    //const char *key = luaL_checkstring(L, 2);
     // get symbol from script
     ScriptInstance *sci = obj->get_script_instance();
     if(sci != NULL)
@@ -629,23 +629,24 @@ int LuaInstance::meta__index(lua_State *L)
         lua_pop(L, 2);
         return 1;
     }
-    lua_pop(L, 1);
+    //lua_pop(L, 1);
+    lua_pop(L, 3);
 
     const char *name = lua_tostring(L, 2);
-    // cached function name
-    char cache_name[128];
-    sprintf(cache_name, "@%s.%s", ((String) obj->get_type_name()).utf8().get_data(), name ? name : "");
+    //// cached function name
+    //char cache_name[128];
+    //sprintf(cache_name, "@%s.%s", ((String) obj->get_type_name()).utf8().get_data(), name ? name : "");
 
-    // try to get cached function
-    lua_pushstring(L, cache_name);
-    lua_gettable(L, -2);
-    if(!lua_isnil(L, -1))
-    {
-        lua_insert(L, -3);
-        lua_pop(L, 2);
-        return 1;
-    }
-    lua_pop(L, 3);
+    //// try to get cached function
+    //lua_pushstring(L, cache_name);
+    //lua_gettable(L, -2);
+    //if(!lua_isnil(L, -1))
+    //{
+    //    lua_insert(L, -3);
+    //    lua_pop(L, 2);
+    //    return 1;
+    //}
+    //lua_pop(L, 3);
 
     // get symbol from c++
     if(name == NULL)
@@ -674,17 +675,27 @@ int LuaInstance::meta__index(lua_State *L)
         lua_pushlightuserdata(L, mb);
         //lua_pushlightuserdata(L, self);
         lua_pushcclosure(L, l_methodbind_wrapper, 1);
-        // cache wrapper func to metatable
-        //  to speed up when call it again
-        //  mt['.methods'][cache_name] = func
+
+        LuaInstance *inst = dynamic_cast<LuaInstance *>(sci);
+        if(inst)
         {
-            lua_getmetatable(L, 1);
-            lua_getfield(L, -1, ".methods");
-            lua_pushstring(L, cache_name);
-            lua_pushvalue(L, -4);
+            lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
+            lua_pushvalue(L, 2);
+            lua_pushvalue(L, -3);
             lua_rawset(L, -3);
-            lua_pop(L, 2);
+            lua_pop(L, 1);
         }
+        //// cache wrapper func to metatable
+        ////  to speed up when call it again
+        ////  mt['.methods'][cache_name] = func
+        //{
+        //    lua_getmetatable(L, 1);
+        //    lua_getfield(L, -1, ".methods");
+        //    lua_pushstring(L, cache_name);
+        //    lua_pushvalue(L, -4);
+        //    lua_rawset(L, -3);
+        //    lua_pop(L, 2);
+        //}
         return 1;
     }
 

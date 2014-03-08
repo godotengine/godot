@@ -423,8 +423,9 @@ public:
 
 };
 
-#define LUA_MULTITHREAD_GUARD()\
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
-    MutexLock(lang->get_lock());
+#define LUA_MULTITHREAD_GUARD()
+//#define LUA_MULTITHREAD_GUARD()\
+//    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
+//    MutexLock(lang->get_lock());
 
 #endif // LUA_SCRIPT_H
