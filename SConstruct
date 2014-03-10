@@ -122,6 +122,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('old_scenes', 'Compatibility with old-style scenes', "yes")
+opts.Add('cjk', 'Add CJK language support', "no")
 
 # add platform specific options
 
