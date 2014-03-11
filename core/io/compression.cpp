@@ -55,7 +55,7 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size,M
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
 			int err = deflateInit(&strm,Z_DEFAULT_COMPRESSION);
-			if (err==Z_OK)
+			if (err!=Z_OK)
 			    return -1;
 
 			strm.avail_in=p_src_size;
@@ -93,7 +93,7 @@ int Compression::get_max_compressed_buffer_size(int p_src_size,Mode p_mode){
 			strm.zfree = zipio_free;
 			strm.opaque = Z_NULL;
 			int err = deflateInit(&strm,Z_DEFAULT_COMPRESSION);
-			if (err==Z_OK)
+			if (err!=Z_OK)
 			    return -1;
 			int aout = deflateBound(&strm,p_src_size);
 			deflateEnd(&strm);
