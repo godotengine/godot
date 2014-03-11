@@ -594,8 +594,10 @@ int LuaScript::l_export(lua_State *L)
     Variant def;
     LuaInstance::l_get_variant(L, 3, def);
 
+#ifdef TOOLS_ENABLED
     if(def.get_type() != Variant::NIL)
         self->member_default_values[name] = def;
+#endif
 
     return 0;
 }

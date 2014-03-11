@@ -402,7 +402,9 @@ int LuaInstance::l_extends(lua_State *L)
 		LuaScript *cmp = ins->script.ptr();
 		bool found=false;
 		while(cmp) {
-            if(cmp->path == type)
+            // path check
+            //  res://xx.lua euqal to res:://xx.luac
+            if(cmp->path.find(type) == 0)
             {
                 found = true;
                 break;

@@ -32,7 +32,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'no'),
+		('lua', 'yes'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 	]
