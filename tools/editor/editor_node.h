@@ -410,6 +410,8 @@ public:
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
+    static EditorNode * get_singleton() { return singleton; }
+
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource>& p_resource);
