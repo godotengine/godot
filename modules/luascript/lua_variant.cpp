@@ -286,11 +286,12 @@ void LuaInstance::l_get_variant(lua_State *L, int idx, Variant& var)
 
     switch(lua_type(L, idx))
     {
+    case LUA_TNONE:
     case LUA_TNIL:
     case LUA_TTHREAD:
     case LUA_TLIGHTUSERDATA:
     case LUA_TFUNCTION:
-        var = NULL;
+        var = Variant();
         break;
 
     case LUA_TTABLE:

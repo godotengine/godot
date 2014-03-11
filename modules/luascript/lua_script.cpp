@@ -127,6 +127,18 @@ LuaInstance* LuaScript::_create_instance(const Variant** p_args,int p_argcount,O
 		ERR_FAIL_V(NULL); //error consrtucting
     }
 
+	const LuaScript *sptr=this;
+	while(sptr) {
+
+		for(Map<StringName,PropertyInfo>::Element *E=sptr->member_info.front();E;E=E->next()) {
+            const StringName& name = E->key();
+//            props.push_front(E->get());
+        }
+
+		sptr = sptr->_base;
+	}
+
+
 	//@TODO make thread safe
 	return instance;
 
@@ -186,15 +198,6 @@ StringName LuaScript::get_instance_base_type() const {
 	return StringName();
 }
 
-//struct _GDScriptMemberSort {
-//
-//	int index;
-//	StringName name;
-//	_FORCE_INLINE_ bool operator<(const _GDScriptMemberSort& p_member) const { return index < p_member.index; }
-//
-//};
-//
-
 #ifdef TOOLS_ENABLED
 
 
@@ -211,36 +214,19 @@ void LuaScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 	Map<StringName,Variant> default_values;
 	while(scr) {
-//
-//		Vector<_GDScriptMemberSort> msort;
-//		for(Map<StringName,PropertyInfo>::Element *E=scr->member_info.front();E;E=E->next()) {
-//
-//			_GDScriptMemberSort ms;
-//			ERR_CONTINUE(!scr->member_indices.has(E->key()));
-//			ms.index=scr->member_indices[E->key()];
-//			ms.name=E->key();
-//
-//			msort.push_back(ms);
-//
-//		}
-//
-//		msort.sort();
-//		msort.invert();
-//		for(int i=0;i<msort.size();i++) {
-//
-//			plist.push_front(scr->member_info[msort[i].name]);
-//			if (scr->member_default_values.has(msort[i].name))
-//				default_values[msort[i].name]=scr->member_default_values[msort[i].name];
-//			else {
-//				Variant::CallError err;
-//				default_values[msort[i].name]=Variant::construct(scr->member_info[msort[i].name].type,NULL,0,err);
-//			}
-//		}
 
+		for(Map<StringName,PropertyInfo>::Element *E=scr->member_info.front();E;E=E->next()) {
+            plist.push_front(E->get());
+            String name = E->get().name;
+            if (scr->member_default_values.has(name))
+                default_values[name]=scr->member_default_values[name];
+			else {
+				Variant::CallError err;
+				default_values[name]=Variant::construct(scr->member_info[name].type,NULL,0,err);
+			}
+        }
 		scr=scr->_base;
 	}
-
-
 	p_placeholder->update(plist,default_values);
 
 }
@@ -434,6 +420,186 @@ int LuaScript::l_extends(lua_State *L)
     return 1;
 }
 
+typedef struct {
+    const char *type;
+    Variant::Type vt;
+} BulitinTypes;
+
+static BulitinTypes vtypes[] = {
+	// atomic types 		
+    { "Bool", Variant::BOOL },
+    { "Int", Variant::INT },
+    { "Real", Variant::REAL },
+    { "String", Variant::STRING },
+    // other types
+    { "FILE", Variant::STRING },
+    { "DIR", Variant::STRING },
+    // math types
+    { "Vector2", Variant::VECTOR2 },
+    { "Rect2", Variant::RECT2 },
+    { "Vector3", Variant::VECTOR3 },
+    { "Matrix32", Variant::MATRIX32 },
+    { "Plane", Variant::PLANE },
+    { "Quat", Variant::QUAT },
+    { "AABB", Variant::_AABB },
+    { "Matrix3", Variant::MATRIX3 },
+    { "Transform", Variant::TRANSFORM },
+    // misc types
+    { "Color", Variant::COLOR },
+    { "Image", Variant::IMAGE },
+    { "NodePath", Variant::NODE_PATH },
+    { "RID", Variant::_RID },
+    { "Object", Variant::OBJECT },
+    { "InputEvent", Variant::INPUT_EVENT },
+    { "Dictionary", Variant::DICTIONARY },
+    { "Array", Variant::ARRAY },
+    { "RawArray", Variant::RAW_ARRAY },
+    { "IntArray", Variant::INT_ARRAY },
+    { "FloatArray", Variant::REAL_ARRAY },
+    { "StringArray", Variant::STRING_ARRAY },
+    { "Vector2Array", Variant::VECTOR2_ARRAY },
+    { "Vector3Array", Variant::VECTOR3_ARRAY },
+    { "ColorArray", Variant::COLOR_ARRAY },
+};
+
+bool LuaScript::preprocessHints(PropertyInfo& pi, Vector<String>& tokens)
+{
+    switch(pi.type)
+    {
+    case Variant::INT:
+        {
+            if(tokens.size() == 1)
+                pi.hint=PROPERTY_HINT_NONE;
+            else
+            {
+                pi.hint=PROPERTY_HINT_ENUM;
+                for(int idx = 1; idx < tokens.size(); idx++)
+                {
+                    String& tok = tokens[idx];
+                    if(tok.to_int() != 0)
+                        pi.hint=PROPERTY_HINT_RANGE;
+                    pi.hint_string += ((pi.hint_string.empty() ? "" : ",") + tok);
+                }
+                if(pi.hint==PROPERTY_HINT_RANGE && tokens.size()==2)
+                    pi.hint_string = ("0," + pi.hint_string);
+            }
+        }
+        break;
+    case Variant::REAL:
+        {
+            if(tokens.size() == 1)
+                pi.hint=PROPERTY_HINT_NONE;
+            else
+            {
+                pi.hint=PROPERTY_HINT_RANGE;
+                for(int idx = 1; idx < tokens.size(); idx++)
+                {
+                    String& tok = tokens[idx];
+                    pi.hint_string += ((pi.hint_string.empty() ? "" : ",") + tok);
+                }
+                if(tokens.size()==2)
+                    pi.hint_string = ("0," + pi.hint_string);
+            }
+        }
+        break;
+    case Variant::STRING:
+        {
+            if(tokens.size() == 1)
+                pi.hint=PROPERTY_HINT_NONE;
+            else
+            {
+                pi.hint=PROPERTY_HINT_ENUM;
+                if(tokens.size() >= 2)
+                {
+                    String& type = tokens[1];
+                    if(type == "FILE")
+                    {
+                        pi.hint=PROPERTY_HINT_FILE;
+                        pi.hint_string = tokens.size() >= 3 ? tokens[2] : "";
+                    }
+                    else if(type == "DIR")
+                    {
+                        pi.hint=PROPERTY_HINT_DIR;
+                    }
+                }
+                if(pi.hint==PROPERTY_HINT_ENUM)
+                {
+                    for(int idx = 1; idx < tokens.size(); idx++)
+                    {
+                        String& tok = tokens[idx];
+                        pi.hint_string += ((pi.hint_string.empty() ? "" : ",") + tok);
+                    }
+                }
+            }
+        }
+        break;
+    }
+    return true;
+}
+
+int LuaScript::l_export(lua_State *L)
+{
+    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
+    MutexLock(lang->get_lock());
+
+    LuaScript *self = (LuaScript *) lua_touserdata(L, lua_upvalueindex(1));
+    String name = luaL_checkstring(L, 1);
+    String type = luaL_checkstring(L, 2);
+
+    Vector<String> tokens = type.split(",", true);
+    if(tokens.empty())
+        luaL_error(L, "type statement is empty");
+
+    PropertyInfo pi;
+    pi.type = Variant::NIL;
+    pi.name = name;
+
+    String& vt = tokens[0];
+    for(int idx = 0; idx < (sizeof(vtypes) / sizeof(vtypes[0])); idx++)
+    {
+        BulitinTypes& t = vtypes[idx];
+        if(vt == t.type)
+        {
+            pi.type = t.vt;
+
+            if(!preprocessHints(pi, tokens))
+                luaL_error(L, "type statement is invalid: %s", type.utf8().get_data());
+
+            break;
+        }
+    }
+
+    if(pi.type == Variant::COLOR && tokens.size() >= 2)
+    {
+        if(tokens[1] == "RGB")
+            pi.hint = PROPERTY_HINT_COLOR_NO_ALPHA;
+    }
+
+    if(pi.type == Variant::NIL)
+    {
+		String& identifier = tokens[0];
+		if(!ObjectTypeDB::is_type(identifier,"Resource"))
+            luaL_error(L, "Export hint not a type or resource: %s", identifier.utf8().get_data());
+
+		pi.type=Variant::OBJECT;
+		pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
+		pi.hint_string=identifier;
+    }
+
+    if(pi.type == Variant::NIL)
+        luaL_error(L, "Can't export a nil type");
+
+    self->member_info[name] = pi;
+
+    Variant def;
+    LuaInstance::l_get_variant(L, 3, def);
+
+    if(def.get_type() != Variant::NIL)
+        self->member_default_values[name] = def;
+
+    return 0;
+}
+
 Error LuaScript::reload() {
 
     LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
@@ -481,6 +647,10 @@ Error LuaScript::reload() {
         lua_pushlightuserdata(L, this);
         lua_pushcclosure(L, l_extends, 1);
         lua_setfield(L, -2, "extends");
+
+        lua_pushlightuserdata(L, this);
+        lua_pushcclosure(L, l_export, 1);
+        lua_setfield(L, -2, "export");
 
         lua_newtable(L);
         luaL_reg meta_methods[] = {
@@ -561,23 +731,23 @@ ScriptLanguage *LuaScript::get_language() const {
 //		const LuaScript *top=this;
 //		while(top) {
 //
-//			{
-//				const Map<StringName,Variant>::Element *E=top->constants.find(p_name);
-//				if (E) {
+//			//{
+//			//	const Map<StringName,Variant>::Element *E=top->constants.find(p_name);
+//			//	if (E) {
 //
-//					r_ret= E->get();
-//					return true;
-//				}
-//			}
+//			//		r_ret= E->get();
+//			//		return true;
+//			//	}
+//			//}
 //
-//			{
-//				const Map<StringName,Ref<LuaScript> >::Element *E=subclasses.find(p_name);
-//				if (E) {
+//			//{
+//			//	const Map<StringName,Ref<LuaScript> >::Element *E=subclasses.find(p_name);
+//			//	if (E) {
 //
-//					r_ret=E->get();
-//					return true;
-//				}
-//			}
+//			//		r_ret=E->get();
+//			//		return true;
+//			//	}
+//			//}
 //			top=top->_base;
 //		}
 //

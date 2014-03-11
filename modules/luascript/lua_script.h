@@ -83,13 +83,11 @@ friend class LuaInstance;
 //	Map<StringName,int> member_indices; //members are just indices to the instanced script.
 //	Map<StringName,Ref<LuaScript> > subclasses;	
 //
-//#ifdef TOOLS_ENABLED
-//	Map<StringName,Variant> member_default_values;
-//#endif
-//	Map<StringName,PropertyInfo> member_info;
-//
-//	GDFunction *initializer; //direct pointer to _init , faster to locate
-//
+#ifdef TOOLS_ENABLED
+	Map<StringName,Variant> member_default_values;
+#endif
+	Map<StringName,PropertyInfo> member_info;
+
 //	int subclass_count;
 	Set<Object*> instances;
 	//exported members
@@ -112,6 +110,10 @@ friend class LuaInstance;
     void reset();
     // lua functions
     static int l_extends(lua_State *L);
+
+    static bool preprocessHints(PropertyInfo& pi, Vector<String>& tokens);
+    static int l_export(lua_State *L);
+
     // lua meta methods
     static int l_meta_index(lua_State *L);
     static int l_meta_gc(lua_State *L);
@@ -121,9 +123,9 @@ protected:
 //	bool _get(const StringName& p_name,Variant &r_ret) const;
 //	bool _set(const StringName& p_name, const Variant& p_value);
 //	void _get_property_list(List<PropertyInfo> *p_properties) const;
-
+//
 //	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
-////	void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
+//	void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
 
 	static void _bind_methods();
 public:
@@ -178,18 +180,12 @@ friend class LuaScript;
 //	Vector<Variant> members;
 	bool base_ref;
     int ref; // ref to object's lua table
-    static Vector<Variant> stackrefs;
-    static const char *stacklevel;
 
 	void _ml_call_reversed(LuaScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
 
     int _call_script(const LuaScript *sptr, const LuaInstance *inst, const char *p_method, const Variant** p_args, int p_argcount, bool p_ret) const;
     int _call_script_func(const LuaScript *sptr, const LuaInstance *inst, const char *p_method, const Variant** p_args, int p_argcount) const;
     int _call_script_func(const LuaScript *sptr, const LuaInstance *inst, const char *p_method, const Variant** p_args, int p_argcount, Variant& result) const;
-
-    void _start_stacked() const;
-    void _ref_stacked(Variant& var) const;
-    void _cleanup_stacked() const;
 
     // lua methods
     static int l_extends(lua_State *L);
