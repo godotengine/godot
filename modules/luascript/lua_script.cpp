@@ -879,11 +879,11 @@ static int l_print(lua_State *L)
             return luaL_error(L, LUA_QL("tostring") " must return a string to "
                 LUA_QL("print"));
         if (i>1)
-            print_line("\t");
-        print_line(s);
+            print_line("\t", false);
+        print_line(s, false);
         lua_pop(L, 1);  /* pop result */
     }
-    print_line("\n");
+    print_line("\n", false);
     return 0;
 }
 
