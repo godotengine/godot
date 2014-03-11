@@ -22,6 +22,7 @@
 #include "mono_font.inc"
 
 #include "editor_fonts.inc"
+#include "core/io/compression.h"
 
 typedef Map<const void*,Ref<ImageTexture> > TexCacheMap;
 
@@ -226,13 +227,23 @@ void make_default_theme() {
 	Ref<Font> source_font;
 	Ref<Font> large_font;
 	if (_use_cjk_font) {
-		if (_cjk_img_data_compressed) {
-			// todo: add compressed img data support
-			default_font=make_font3(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data_cjk,_builtin_normal_font_pages);
+		if (_cjk_img_data_compressed) { // zlib deflated stream
+			unsigned char **img_data_cjk = new unsigned char*[_builtin_normal_font_pages];
+			for (int i=0;i<_builtin_normal_font_pages;++i) {
+				const unsigned char* src = _builtin_normal_font_img_data_cjk[i];
+				int src_size = _builtin_normal_font_img_data_cjk_count[i];
+				int dst_size=_builtin_normal_font_img_width*_builtin_normal_font_img_height*2;
+				unsigned char* dst = new unsigned char[dst_size];
+				Compression::decompress(dst,dst_size,src,src_size,Compression::MODE_DEFLATE);
+				img_data_cjk[i]=dst;
+			}
+			default_font=make_font3(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,(const unsigned char **)img_data_cjk,_builtin_normal_font_pages);
+			for (int i=0;i<_builtin_normal_font_pages;++i)
+				delete[] img_data_cjk[i];
+			delete[] img_data_cjk;
 		} else {
 			default_font=make_font3(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data_cjk,_builtin_normal_font_pages);			
-		}
-		
+		}		
 	} else {
 		default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
 		source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
