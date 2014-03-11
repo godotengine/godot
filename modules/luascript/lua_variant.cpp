@@ -193,12 +193,12 @@ int LuaInstance::meta_bultins__evaluate(lua_State *L)
     void *ptr1 = luaL_checkudata(L, 1, "Variant");
     Variant* var1 = *((Variant **) ptr1);
 
-    void *ptr2 = luaL_checkudata(L, 2, "Variant");
-    Variant* var2 = *((Variant **) ptr2);
+    Variant var2;
+    l_get_variant(L, 2, var2);
 
     Variant ret;
     bool valid = false;
-    Variant::evaluate(op, *var1, *var2, ret, valid);
+    Variant::evaluate(op, *var1, var2, ret, valid);
     if(valid)
     {
         l_push_variant(L, ret);
