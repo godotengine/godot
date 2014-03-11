@@ -38,6 +38,14 @@
 //         INSTANCE         //
 //////////////////////////////
 
+
+static Variant *luaL_checkobject(lua_State *L, int idx, const char *type)
+{
+    LUA_MULTITHREAD_GUARD();
+    void *ptr = luaL_checkudata(L, idx, type);
+    return *((Variant **) ptr);
+}
+
 bool LuaInstance::set(const StringName& p_name, const Variant& p_value) {
 
 	LuaScript *sptr=script.ptr();
@@ -378,15 +386,35 @@ ScriptLanguage *LuaInstance::get_language() {
 int LuaInstance::l_extends(lua_State *L)
 {
     LUA_MULTITHREAD_GUARD();
-    // do nothing...
-    return 0;
-}
 
-static Variant *luaL_checkobject(lua_State *L, int idx, const char *type)
-{
-    LUA_MULTITHREAD_GUARD();
-    void *ptr = luaL_checkudata(L, idx, type);
-    return *((Variant **) ptr);
+    // self -> GdObject
+    Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
+    Object *obj = *self;
+    const char *type = luaL_checkstring(L, 2);
+
+    if(obj->get_type() == type)
+        lua_pushboolean(L, 1);
+    else if(ObjectTypeDB::is_type(obj->get_type_name(), type))
+        lua_pushboolean(L, 1);
+    else if(obj->get_script_instance() && obj->get_script_instance()->get_language() == LuaScriptLanguage::get_singleton())
+    {
+		LuaInstance *ins = static_cast<LuaInstance*>(obj->get_script_instance());
+		LuaScript *cmp = ins->script.ptr();
+		bool found=false;
+		while(cmp) {
+            if(cmp->path == type)
+            {
+                found = true;
+                break;
+            }
+			cmp=cmp->_base;
+		}
+        lua_pushboolean(L, found ? 1 : 0);
+    }
+    else
+        lua_pushboolean(L, 0);
+
+    return 1;
 }
 
 class ReturnLuaInstace : public LuaInstance {
@@ -491,7 +519,18 @@ int LuaInstance::meta__index(lua_State *L)
     // self -> GdObject
     Variant *self = (Variant *) luaL_checkobject(L, 1, "GdObject");
     Object *obj = *self;
-    //const char *key = luaL_checkstring(L, 2);
+    // get symbol from c++ method binds
+    lua_getmetatable(L, 1);
+    lua_getfield(L, -1, ".methods");
+    lua_pushvalue(L, 2);
+    lua_gettable(L, -2);
+    if(!lua_isnil(L, -1))
+    {
+        lua_insert(L, -3);
+        lua_pop(L, 2);
+        return 1;
+    }
+    lua_pop(L, 3);
     // get symbol from script
     ScriptInstance *sci = obj->get_script_instance();
     if(sci != NULL)
@@ -528,19 +567,6 @@ int LuaInstance::meta__index(lua_State *L)
     		sptr = sptr->_base;
         }
     }
-    // get symbol from c++ method binds
-    lua_getmetatable(L, 1);
-    lua_getfield(L, -1, ".methods");
-    lua_pushvalue(L, 2);
-    lua_gettable(L, -2);
-    if(!lua_isnil(L, -1))
-    {
-        lua_insert(L, -3);
-        lua_pop(L, 2);
-        return 1;
-    }
-    //lua_pop(L, 1);
-    lua_pop(L, 3);
 
     const char *name = lua_tostring(L, 2);
     // get symbol from c++
