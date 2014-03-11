@@ -50,6 +50,6 @@ struct PrintHandlerList {
 void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(PrintHandlerList *p_handler);
 
-extern void print_line(String p_string);
+extern void print_line(String p_string, bool new_line = true);
 
 #endif

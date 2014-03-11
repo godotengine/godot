@@ -1,0 +1,83 @@
+body {
+	color: #000000 ;
+	background-color: #FFFFFF ;
+	font-family: Helvetica, Arial, sans-serif ;
+	text-align: justify ;
+	margin-right: 30px ;
+	margin-left: 30px ;
+}
+
+h1, h2, h3, h4 {
+	font-family: Verdana, Geneva, sans-serif ;
+	font-weight: normal ;
+	font-style: italic ;
+}
+
+h2 {
+	padding-top: 0.4em ;
+	padding-bottom: 0.4em ;
+	padding-left: 30px ;
+	padding-right: 30px ;
+	margin-left: -30px ;
+	background-color: #E0E0FF ;
+}
+
+h3 {
+	padding-left: 0.5em ;
+	border-left: solid #E0E0FF 1em ;
+}
+
+table h3 {
+	padding-left: 0px ;
+	border-left: none ;
+}
+
+a:link {
+	color: #000080 ;
+	background-color: inherit ;
+	text-decoration: none ;
+}
+
+a:visited {
+	background-color: inherit ;
+	text-decoration: none ;
+}
+
+a:link:hover, a:visited:hover {
+	color: #000080 ;
+	background-color: #E0E0FF ;
+}
+
+a:link:active, a:visited:active {
+	color: #FF0000 ;
+}
+
+hr {
+	border: 0 ;
+	height: 1px ;
+	color: #a0a0a0 ;
+	background-color: #a0a0a0 ;
+}
+
+:target {
+	background-color: #F8F8F8 ;
+	padding: 8px ;
+	border: solid #a0a0a0 2px ;
+}
+
+.footer {
+	color: gray ;
+	font-size: small ;
+}
+
+input[type=text] {
+	border: solid #a0a0a0 2px ;
+	border-radius: 2em ;
+	-moz-border-radius: 2em ;
+	background-image: url('images/search.png') ;
+	background-repeat: no-repeat;
+	background-position: 4px center ;
+	padding-left: 20px ;
+	height: 2em ;
+}
+

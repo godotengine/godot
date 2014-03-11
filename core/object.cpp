@@ -918,11 +918,16 @@ void Object::set_script_instance(ScriptInstance *p_instance) {
 		return;
 
 	if (script_instance)
-		memdelete(script_instance);
+    {
+        ScriptInstance *si = script_instance;
+        script_instance=NULL;
+		memdelete(si);
+    }
 
 	script_instance=p_instance;
 
-	script=p_instance->get_script().get_ref_ptr();
+    if (p_instance)
+	    script=p_instance->get_script().get_ref_ptr();
 }
 
 RefPtr Object::get_script() const {
@@ -1652,8 +1657,13 @@ void ObjectDB::cleanup() {
 
 	GLOBAL_LOCK_FUNCTION;
 	if (instances.size()) {
-	
 		WARN_PRINT("ObjectDB Instances still exist!");		
+
+	    const uint32_t *K=NULL;
+    	while((K=instances.next(K))) {
+            Object *o = instances[*K];
+            print_line(" >> " + o->get_type());
+	    }
 	}
 	instances.clear();
 	instance_checks.clear();
