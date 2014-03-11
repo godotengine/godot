@@ -110,7 +110,7 @@ LuaInstance* LuaScript::_create_instance(const Variant** p_args,int p_argcount,O
 //	instance->members.resize(member_indices.size());
 	instance->script=Ref<LuaScript>(this);
 	instance->owner=p_owner;
-	instance->owner->set_script_instance(instance);
+	((Object *) instance->owner)->set_script_instance(instance);
 
 	/* STEP 2, INITIALIZE AND CONSRTUCT */
 	instances.insert(instance->owner);
