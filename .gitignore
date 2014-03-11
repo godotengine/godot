@@ -64,7 +64,11 @@ platform/android/java/assets
 x64/
 build/
 bld/
-[Bb]in/
+
+!bin/
+[Bb]in/*
+!bin/tests/
+
 [Oo]bj/
 
 # MSTest test Results
