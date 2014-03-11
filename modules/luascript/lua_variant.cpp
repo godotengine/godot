@@ -347,27 +347,27 @@ void LuaInstance::l_push_variant(lua_State *L, const Variant& var)
 
     switch(var.get_type())
     {
-    case Variant::Type::NIL:
+    case Variant::NIL:
         lua_pushnil(L);
         break;
 
-    case Variant::Type::BOOL:
+    case Variant::BOOL:
         lua_pushboolean(L, ((bool) var) ? 1 : 0);
         break;
 
-    case Variant::Type::INT:
+    case Variant::INT:
         lua_pushinteger(L, (int) var);
         break;
 
-    case Variant::Type::REAL:
+    case Variant::REAL:
         lua_pushnumber(L, (double) var);
         break;
 
-    case Variant::Type::STRING:
+    case Variant::STRING:
         lua_pushstring(L, ((String) var).utf8().get_data());
         break;
 
-    case Variant::Type::OBJECT:
+    case Variant::OBJECT:
         {
             Object *obj = var;
             if(obj == NULL)
@@ -409,30 +409,30 @@ void LuaInstance::l_push_variant(lua_State *L, const Variant& var)
         }
         break;
 
-    case Variant::Type::VECTOR2:
-    case Variant::Type::RECT2:
-    case Variant::Type::VECTOR3:
-    case Variant::Type::MATRIX32:
-    case Variant::Type::PLANE:
-    case Variant::Type::QUAT:
-    case Variant::Type::_AABB:
-    case Variant::Type::MATRIX3:
-    case Variant::Type::TRANSFORM:
+    case Variant::VECTOR2:
+    case Variant::RECT2:
+    case Variant::VECTOR3:
+    case Variant::MATRIX32:
+    case Variant::PLANE:
+    case Variant::QUAT:
+    case Variant::_AABB:
+    case Variant::MATRIX3:
+    case Variant::TRANSFORM:
 
-    case Variant::Type::COLOR:
-    case Variant::Type::IMAGE:
-    case Variant::Type::NODE_PATH:
-    case Variant::Type::_RID:
-    case Variant::Type::INPUT_EVENT:
-    case Variant::Type::DICTIONARY:
-    case Variant::Type::ARRAY:
-    case Variant::Type::RAW_ARRAY:
-    case Variant::Type::INT_ARRAY:
-    case Variant::Type::REAL_ARRAY:
-    case Variant::Type::STRING_ARRAY:
-    case Variant::Type::VECTOR2_ARRAY:
-    case Variant::Type::VECTOR3_ARRAY:
-    case Variant::Type::COLOR_ARRAY:
+    case Variant::COLOR:
+    case Variant::IMAGE:
+    case Variant::NODE_PATH:
+    case Variant::_RID:
+    case Variant::INPUT_EVENT:
+    case Variant::DICTIONARY:
+    case Variant::ARRAY:
+    case Variant::RAW_ARRAY:
+    case Variant::INT_ARRAY:
+    case Variant::REAL_ARRAY:
+    case Variant::STRING_ARRAY:
+    case Variant::VECTOR2_ARRAY:
+    case Variant::VECTOR3_ARRAY:
+    case Variant::COLOR_ARRAY:
         l_push_bulltins_type(L, var);
         break;
     }
