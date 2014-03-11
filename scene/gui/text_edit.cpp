@@ -2094,15 +2094,33 @@ void TextEdit::set_readonly(bool p_readonly) {
 	readonly=p_readonly;
 }
 
+bool TextEdit::is_readonly() const {
+
+    return readonly;
+}
+
+
 void TextEdit::set_wrap(bool p_wrap) {
 
 	wrap=p_wrap;
 }
 
+bool TextEdit::is_wrap() const {
+
+    return wrap;
+}
+
+
 void TextEdit::set_max_chars(int p_max_chars) {
 
 	max_chars=p_max_chars;
 }
+
+int TextEdit::get_max_chars() const {
+
+    return max_chars;
+}
+
 
 void TextEdit::_update_caches() {
 
@@ -2784,6 +2802,12 @@ void TextEdit::set_show_line_numbers(bool p_show) {
 	update();
 }
 
+bool TextEdit::is_show_line_numbers() const {
+
+    return line_numbers;
+}
+
+
 
 void TextEdit::_bind_methods() {
 
@@ -2818,8 +2842,11 @@ void TextEdit::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("set_readonly","enable"),&TextEdit::set_readonly);
+	ObjectTypeDB::bind_method(_MD("is_readonly"),&TextEdit::is_readonly);
 	ObjectTypeDB::bind_method(_MD("set_wrap","enable"),&TextEdit::set_wrap);
+	ObjectTypeDB::bind_method(_MD("is_wrap"),&TextEdit::is_wrap);
 	ObjectTypeDB::bind_method(_MD("set_max_chars","amount"),&TextEdit::set_max_chars);
+	ObjectTypeDB::bind_method(_MD("get_max_chars"),&TextEdit::get_max_chars);
 
 	ObjectTypeDB::bind_method(_MD("cut"),&TextEdit::cut);
 	ObjectTypeDB::bind_method(_MD("copy"),&TextEdit::copy);
@@ -2842,6 +2869,11 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_syntax_coloring","enable"),&TextEdit::set_syntax_coloring);
 	ObjectTypeDB::bind_method(_MD("is_syntax_coloring_enabled"),&TextEdit::is_syntax_coloring_enabled);
 
+	ObjectTypeDB::bind_method(_MD("set_show_line_numbers","enable"),&TextEdit::set_show_line_numbers);
+	ObjectTypeDB::bind_method(_MD("is_show_line_numbers"),&TextEdit::is_show_line_numbers);
+
+    ObjectTypeDB::bind_method(_MD("set_draw_tabs","enable"),&TextEdit::set_draw_tabs);
+	ObjectTypeDB::bind_method(_MD("is_drawing_tabs"),&TextEdit::is_drawing_tabs);
 	
 	ObjectTypeDB::bind_method(_MD("add_keyword_color","keyword","color"),&TextEdit::add_keyword_color);
 	ObjectTypeDB::bind_method(_MD("add_color_region","begin_key","end_key","color","line_only"),&TextEdit::add_color_region,DEFVAL(false));
@@ -2849,6 +2881,13 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_custom_bg_color","color"),&TextEdit::set_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
 
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "read_only" ), _SCS("set_readonly"),_SCS("is_readonly") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_chars" ), _SCS("set_max_chars"),_SCS("get_max_chars") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "wrap" ), _SCS("set_wrap"),_SCS("is_wrap") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "syntax_color" ), _SCS("set_syntax_coloring"),_SCS("is_syntax_coloring_enabled") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "show_line" ), _SCS("set_show_line_numbers"),_SCS("is_show_line_numbers") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "drawing_tabs" ), _SCS("set_draw_tabs"),_SCS("is_drawing_tabs") );
 
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));

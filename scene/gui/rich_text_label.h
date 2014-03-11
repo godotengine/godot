@@ -178,6 +178,7 @@ private:
 
 
 	Vector<Line> lines;
+    String text;
 	int first_invalid_line;
 
 	int tab_size;
@@ -249,6 +250,8 @@ protected:
 public:
 
 	void add_text(const String& p_text);
+    void set_text(const String& p_text);
+    String get_text() const;
 	void add_image(const Ref<Texture>& p_image);
 	void add_newline();
 	void push_font(const Ref<Font>& p_font);

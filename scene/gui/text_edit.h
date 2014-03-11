@@ -303,9 +303,13 @@ public:
 	int cursor_get_line() const;
 
 	void set_readonly(bool p_readonly);
+    bool is_readonly() const;
 
 	void set_max_chars(int p_max_chars);
+    int get_max_chars() const;
+
 	void set_wrap(bool p_wrap);
+    bool is_wrap() const;
 
 	void clear();
 
@@ -353,6 +357,7 @@ public:
 	void tag_saved_version();
 
 	void set_show_line_numbers(bool p_show);
+    bool is_show_line_numbers() const;
 
 	void set_tooltip_request_func(Object *p_obj, const StringName& p_function, const Variant& p_udata);
 
