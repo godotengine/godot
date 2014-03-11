@@ -47,11 +47,11 @@ void LuaScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const 
 String LuaScriptLanguage::get_template(const String& p_class_name, const String& p_base_class_name) const {
 
 	String _template = String()+
-	"\nextends '%BASE%'\n\n"+
+	"\nlocal node = extends '%BASE%'\n\n"+
 	"# member variables here, example:\n"+
 	"# local a=2\n"+
 	"# b=\"textvar\"\n\n"+
-	"function _ready():\n"+
+    "function node:_ready():\n"+
 	"\t# Initalization here\n"+
 	"\t-- pass\n"+
 	"end\n"+
