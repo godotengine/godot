@@ -283,13 +283,44 @@ public class Godot extends Activity implements SensorEventListener
 		return true;
 	}
 
+    @Override public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
+        String s = event.getCharacters();
+        if (s == null || s.length() == 0)
+        	return super.onKeyMultiple(inKeyCode, repeatCount, event);
+        
+        final char[] cc = s.toCharArray();
+        int cnt = 0;
+        for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0);
+        if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
+        final Activity me = this;
+        queueEvent(new Runnable() {
+            // This method will be called on the rendering thread:
+            public void run() {
+                for (int i = 0, n = cc.length; i < n; i++) {
+                    int keyCode;
+                    if ((keyCode = cc[i]) != 0) {
+                        // Simulate key down and up...
+                		GodotLib.key(0, keyCode, true);
+                		GodotLib.key(0, keyCode, false);
+                    }
+                }
+            }
+        });
+        return true;
+    }	
+
+	private void queueEvent(Runnable runnable) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
-		GodotLib.key(event.getUnicodeChar(0), false);
+		GodotLib.key(keyCode, event.getUnicodeChar(0), false);
 		return super.onKeyUp(keyCode, event);
 	};
 
 	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-		GodotLib.key(event.getUnicodeChar(0), true);
+		GodotLib.key(keyCode, event.getUnicodeChar(0), true);
 		return super.onKeyDown(keyCode, event);
 	};
 
