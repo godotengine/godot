@@ -116,6 +116,11 @@ ipch/
 *.vsp
 *.vspx
 
+# CodeLite project files
+*.project
+*.workspace
+.codelite/
+
 # TFS 2012 Local Workspace
 $tf/
 
@@ -197,6 +202,9 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+
+# KDE
+.directory
 
 # RIA/Silverlight projects
 Generated_Code/
