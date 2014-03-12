@@ -22,7 +22,7 @@ def write_font_inc(cjk, pages=1):
 			output+='#include "font_normal_cjk_'+str(i)+'.inc"\n'
 
 		output+='static const bool _use_cjk_font = true;\n'
-		output+='static const bool _cjk_img_data_compressed= false;\n'
+		output+='static const bool _cjk_img_data_compressed= true;\n'
 		output+='static const int _builtin_normal_font_pages = '+ str(pages) +';\n'
 		output+='static const unsigned char *_builtin_normal_font_img_data = 0;\n'
 		output+='static const unsigned char *_builtin_normal_font_img_data_cjk['+str(pages)+']={'
