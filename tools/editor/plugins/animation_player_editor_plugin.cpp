@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "animation_player_editor_plugin.h"
 #include "io/resource_loader.h"
+#include "core/translation.h"
 
 
 void AnimationPlayerEditor::_node_removed(Node *p_node) {
@@ -235,10 +236,10 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 void AnimationPlayerEditor::_animation_new() {
 
 	renaming=false;
-	name_title->set_text("New Animation Name:");
+	name_title->set_text(_TR("New Animation Name:"));
 
 	int count=1;
-	String base="New Anim";
+	String base=_TR("New Anim");
 	while(true) {
 		String attempt  = base;
 		if (count>1)
@@ -263,7 +264,7 @@ void AnimationPlayerEditor::_animation_rename() {
 	int selected = animation->get_selected();
 	String selected_name = animation->get_item_text(selected);
 
-	name_title->set_text("Change Animation Name:");
+	name_title->set_text(_TR("Change Animation Name:"));
 	name->set_text(selected_name);
 	renaming=true;
 	name_dialog->popup_centered(Size2(300,90));
@@ -333,7 +334,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	String new_name = name->get_text();
 	if (new_name=="" || new_name.find(":")!=-1 || new_name.find("/")!=-1) {
-		error_dialog->set_text("ERROR: Invalid animation name!");
+		error_dialog->set_text(_TR("ERROR: Invalid animation name!"));
 		error_dialog->popup_centered(Size2(300,70));
 		return;
 	}
@@ -344,7 +345,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	}
 
 	if (player->has_animation(new_name)) {
-		error_dialog->set_text("ERROR: Animation Name Already Exists!");
+		error_dialog->set_text(_TR("ERROR: Animation Name Already Exists!"));
 		error_dialog->popup_centered(Size2(300,70));
 		return;
 	}
@@ -939,56 +940,56 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 
 	load_anim = memnew( Button );
-	load_anim->set_tooltip("Load an animation from disk.");
+	load_anim->set_tooltip(_TR("Load an animation from disk."));
 	hb->add_child(load_anim);
 
 	duplicate_anim = memnew( Button );
 	hb->add_child(duplicate_anim);
-	duplicate_anim->set_tooltip("Duplicate Animation");
+	duplicate_anim->set_tooltip(_TR("Duplicate Animation"));
 
 	animation = memnew( OptionButton );
 	hb->add_child(animation);
 	animation->set_h_size_flags(SIZE_EXPAND_FILL);
-	animation->set_tooltip("Display list of animations in player.");
+	animation->set_tooltip(_TR("Display list of animations in player."));
 
 	autoplay = memnew( Button );
 	hb->add_child(autoplay);
-	autoplay->set_tooltip("Autoplay On Load");
+	autoplay->set_tooltip(_TR("Autoplay On Load"));
 
 
 	rename_anim = memnew( Button );
 	hb->add_child(rename_anim);
-	rename_anim->set_tooltip("Rename Animation");
+	rename_anim->set_tooltip(_TR("Rename Animation"));
 
 	remove_anim = memnew( Button );
 
 	hb->add_child(remove_anim);
-	remove_anim->set_tooltip("Remove Animation");
+	remove_anim->set_tooltip(_TR("Remove Animation"));
 
 	blend_anim = memnew( Button );
 	hb->add_child(blend_anim);
-	blend_anim->set_tooltip("Edit Target Blend Times");
+	blend_anim->set_tooltip(_TR("Edit Target Blend Times"));
 
 
 
 	edit_anim = memnew( Button );
 	edit_anim->set_toggle_mode(true);
 	hb->add_child(edit_anim);
-	edit_anim->set_tooltip("Open animation editor.\nProperty editor will displays all editable keys too.");
+	edit_anim->set_tooltip(_TR("Open animation editor.\nProperty editor will displays all editable keys too."));
 
 
 	hb = memnew (HBoxContainer);
 	add_child(hb);
 
 	play = memnew( Button );
-	play->set_tooltip("Play selected animation.");
+	play->set_tooltip(_TR("Play selected animation."));
 
 	hb->add_child(play);
 
 	stop = memnew( Button );
 	stop->set_toggle_mode(true);
 	hb->add_child(stop);
-	play->set_tooltip("Stop animation playback.");
+	play->set_tooltip(_TR("Stop animation playback."));
 
 	//pause = memnew( Button );
 	//pause->set_toggle_mode(true);
@@ -1000,13 +1001,13 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	hb->add_child(seek);
 	seek->set_h_size_flags(SIZE_EXPAND_FILL);
 	seek->set_stretch_ratio(8);
-	seek->set_tooltip("Seek animation (when stopped).");
+	seek->set_tooltip(_TR("Seek animation (when stopped)."));
 
 	frame = memnew( SpinBox );
 	hb->add_child(frame);
 	frame->set_h_size_flags(SIZE_EXPAND_FILL);
 	frame->set_stretch_ratio(2);
-	frame->set_tooltip("Animation position (in seconds).");
+	frame->set_tooltip(_TR("Animation position (in seconds)."));
 	seek->share(frame);
 
 
@@ -1015,7 +1016,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	hb->add_child(scale);
 	scale->set_h_size_flags(SIZE_EXPAND_FILL);
 	scale->set_stretch_ratio(1);
-	scale->set_tooltip("Scale animation playback globally for the node.");
+	scale->set_tooltip(_TR("Scale animation playback globally for the node."));
 	scale->hide();
 
 	resource_edit_anim= memnew( Button );
@@ -1036,7 +1037,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 
 	l = memnew( Label );
-	l->set_text("Animation Name:");
+	l->set_text(_TR("Animation Name:"));
 	l->set_pos( Point2(10,10) );
 
 	name_dialog->add_child(l);
@@ -1045,7 +1046,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	error_dialog = memnew( ConfirmationDialog );
 	error_dialog->get_ok()->set_text("Close");
 	//error_dialog->get_cancel()->set_text("Close");
-	error_dialog->set_text("Error!");
+	error_dialog->set_text(_TR("Error!"));
 	add_child(error_dialog);
 
 	name_dialog->connect("confirmed", this,"_animation_name_edited");
@@ -1059,10 +1060,10 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	blend_editor.dialog->set_child_rect(blend_vb);
 	blend_editor.tree = memnew( Tree );
 	blend_editor.tree->set_columns(2);
-	blend_vb->add_margin_child("Blend Times: ",blend_editor.tree,true);
+	blend_vb->add_margin_child(_TR("Blend Times: "),blend_editor.tree,true);
 	blend_editor.next = memnew( LineEdit );
-	blend_vb->add_margin_child("Next (Auto Queue):",blend_editor.next);
-	blend_editor.dialog->set_title("Cross-Animation Blend Times");
+	blend_vb->add_margin_child(_TR("Next (Auto Queue):"),blend_editor.next);
+	blend_editor.dialog->set_title(_TR("Cross-Animation Blend Times"));
 	updating_blends=false;
 
 	blend_editor.tree->connect("item_edited",this,"_blend_edited");

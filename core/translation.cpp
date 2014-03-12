@@ -31,6 +31,12 @@
 #include "io/resource_loader.h"
 #include "os/os.h"
 
+#ifdef TOOLS_ENABLED
+#include "tools/editor/editor_settings.h"
+#include "core/io/translation_loader_po.h"
+#include "os/file_access.h"
+#endif
+
 static const char* locale_list[]={
 "ar", //  Arabic
 "ar_AE", //  Arabic (United Arab Emirates)
@@ -591,6 +597,10 @@ bool TranslationServer::_load_translations(const String& p_from) {
 	return false;
 }
 
+void TranslationServer::clear_translations() {
+	translations.clear();
+}
+
 void TranslationServer::setup() {
 
 
@@ -643,4 +653,50 @@ TranslationServer::TranslationServer() {
 	locale="en";
 	enabled=true;
 
+}
+
+EditorTranslationServer *EditorTranslationServer::singleton=NULL;
+EditorTranslationServer::EditorTranslationServer() {
+	singleton=this;
+}
+
+void EditorTranslationServer::load() {
+#ifdef TOOLS_ENABLED
+	clear_translations();
+
+	// load settings
+	if (!EditorSettings::get_singleton())
+		EditorSettings::create();
+
+	// load locale
+	String locale = OS::get_singleton()->get_locale();
+	if (EditorSettings::get_singleton()->has("editor_language/locale"))
+		locale = EditorSettings::get_singleton()->get("editor_language/locale");
+	set_locale(locale);
+
+	// load translation
+	String po =  EditorSettings::get_singleton()->get_settings_path() + "/lang/" + locale +"/editor.po";
+	if (!FileAccess::exists(po))
+		return;
+
+	TranslationLoaderPO *po_loader = memnew(TranslationLoaderPO);
+	if (po_loader) {
+		Ref<Translation> tran = po_loader->load(po);
+		add_translation(tran);
+		memdelete(po_loader);
+	}
+#endif
+}
+
+void EditorTranslationServer::create() {
+	if (singleton)
+		return;
+	memnew(EditorTranslationServer);
+}
+
+void EditorTranslationServer::destroy() {
+
+	if (!singleton)
+		return;
+	memdelete(singleton);
 }

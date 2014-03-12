@@ -29,7 +29,7 @@
 #include "item_list_editor_plugin.h"
 
 #include "io/resource_loader.h"
-
+#include "core/translation.h"
 
 bool ItemListPlugin::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -226,8 +226,8 @@ ItemListEditor::ItemListEditor() {
 	add_child(options);
 	options->set_area_as_parent_rect();
 
-	options->set_text("Items");
-	options->get_popup()->add_item("Edit Items",MENU_EDIT_ITEMS);
+	options->set_text(_TR("Items"));
+	options->get_popup()->add_item(_TR("Edit Items"),MENU_EDIT_ITEMS);
 	//options->get_popup()->add_item("Clear",MENU_CLEAR);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
@@ -260,7 +260,7 @@ ItemListEditor::ItemListEditor() {
 	del_button->connect("pressed",this,"_delete_button");
 	vbc->add_child(del_button);
 
-	dialog->set_title("Item List");
+	dialog->set_title(_TR("Item List"));
 	prop_editor->hide_top_label();
 
 

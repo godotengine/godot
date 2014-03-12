@@ -29,6 +29,7 @@
 #include "import_settings.h"
 #include "os/os.h"
 #include "editor_node.h"
+#include "core/translation.h"
 
 void ImportSettingsDialog::_item_pressed(int p_idx) {
 
@@ -276,7 +277,7 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 	tree = memnew( Tree );
 	add_child(tree);
 	set_child_rect(tree);
-	set_title("Imported Resources");
+	set_title(_TR("Imported Resources"));
 
 	texformat="Keep,None,Disk,VRAM";
 
