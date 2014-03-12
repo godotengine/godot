@@ -39,6 +39,7 @@
 #include "scene/main/timer.h"
 #include "script_language.h"
 #include "tools/editor/code_editor.h"
+#include "tools/editor/editor_translation.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/item_list.h"
 
@@ -267,7 +268,7 @@ class ScriptEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 public:
 
-	virtual String get_name() const { return "Script"; }
+	virtual String get_name() const { return _TR("Script"); }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

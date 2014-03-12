@@ -41,7 +41,7 @@
 #include "scene/main/timer.h"
 #include "tools/editor/code_editor.h"
 #include "tools/doc/doc_data.h"
-
+#include "tools/editor/editor_translation.h"
 
 class EditorNode;
 
@@ -177,7 +177,7 @@ class EditorHelpPlugin : public EditorPlugin {
 	EditorNode *editor;
 public:
 
-	virtual String get_name() const { return "Help"; }
+	virtual String get_name() const { return _TR("Help"); }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

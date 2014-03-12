@@ -80,7 +80,7 @@
 #include "fileserver/editor_file_server.h"
 #include "editor_resource_preview.h"
 
-
+#include "tools/editor/editor_translation.h"
 
 #include "progress_dialog.h"
 

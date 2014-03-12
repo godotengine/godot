@@ -223,11 +223,11 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	add_child(vbc);
 	set_child_rect(vbc);
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:",search_box);
+	vbc->add_margin_child(_TR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
+	vbc->add_margin_child(_TR("Matches:"),search_options,true);
 	get_ok()->set_text("Open");
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
@@ -1825,11 +1825,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
 	edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_Y);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
-	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
-	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
+	edit_menu->get_popup()->add_item(_TR("Cut"),EDIT_CUT,KEY_MASK_CMD|KEY_X);
+	edit_menu->get_popup()->add_item(_TR("Copy"),EDIT_COPY,KEY_MASK_CMD|KEY_C);
+	edit_menu->get_popup()->add_item(_TR("Paste"),EDIT_PASTE,KEY_MASK_CMD|KEY_V);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	edit_menu->get_popup()->add_item(_TR("Select All"),EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Move Up",EDIT_MOVE_LINE_UP,KEY_MASK_ALT|KEY_UP);
 	edit_menu->get_popup()->add_item("Move Down",EDIT_MOVE_LINE_DOWN,KEY_MASK_ALT|KEY_DOWN);
@@ -1849,27 +1849,27 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	search_menu = memnew( MenuButton );
 	menu_hb->add_child(search_menu);
-	search_menu->set_text("Search");
-	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_MASK_CMD|KEY_G);
-	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
+	search_menu->set_text(_TR("Search"));
+	search_menu->get_popup()->add_item(_TR("Find.."),SEARCH_FIND,KEY_MASK_CMD|KEY_F);
+	search_menu->get_popup()->add_item(_TR("Find Next"),SEARCH_FIND_NEXT,KEY_MASK_CMD|KEY_G);
+	search_menu->get_popup()->add_item(_TR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_item("Goto Function..",SEARCH_LOCATE_FUNCTION,KEY_MASK_SHIFT|KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_L);
+	search_menu->get_popup()->add_item(_TR("Goto Function.."),SEARCH_LOCATE_FUNCTION,KEY_MASK_SHIFT|KEY_MASK_CMD|KEY_F);
+	search_menu->get_popup()->add_item(_TR("Goto Line.."),SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_L);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	debug_menu = memnew( MenuButton );
 	menu_hb->add_child(debug_menu);
-	debug_menu->set_text("Debug");
-	debug_menu->get_popup()->add_item("Toggle Breakpoint",DEBUG_TOGGLE_BREAKPOINT,KEY_F9);
+	debug_menu->set_text(_TR("Debug"));
+	debug_menu->get_popup()->add_item(_TR("Toggle Breakpoint"),DEBUG_TOGGLE_BREAKPOINT,KEY_F9);
 	debug_menu->get_popup()->add_separator();
-	debug_menu->get_popup()->add_item("Step Over",DEBUG_NEXT,KEY_F10);
-	debug_menu->get_popup()->add_item("Step Into",DEBUG_STEP,KEY_F11);
+	debug_menu->get_popup()->add_item(_TR("Step Over"),DEBUG_NEXT,KEY_F10);
+	debug_menu->get_popup()->add_item(_TR("Step Into"),DEBUG_STEP,KEY_F11);
 	debug_menu->get_popup()->add_separator();
-	debug_menu->get_popup()->add_item("Break",DEBUG_BREAK);
-	debug_menu->get_popup()->add_item("Continue",DEBUG_CONTINUE);
+	debug_menu->get_popup()->add_item(_TR("Break"),DEBUG_BREAK);
+	debug_menu->get_popup()->add_item(_TR("Continue"),DEBUG_CONTINUE);
 	debug_menu->get_popup()->add_separator();
-	debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
+	debug_menu->get_popup()->add_check_item(_TR("Show Debugger"),DEBUG_SHOW);
 	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	debug_menu->get_popup()->set_item_disabled( debug_menu->get_popup()->get_item_index(DEBUG_NEXT), true);
@@ -1881,11 +1881,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 #if 0
 	window_menu = memnew( MenuButton );
 	menu_hb->add_child(window_menu);
-	window_menu->set_text("Window");
-	window_menu->get_popup()->add_item("Close",WINDOW_CLOSE,KEY_MASK_CMD|KEY_W);
+	window_menu->set_text(_TR("Window"));
+	window_menu->get_popup()->add_item(_TR("Close"),WINDOW_CLOSE,KEY_MASK_CMD|KEY_W);
 	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
-	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
+	window_menu->get_popup()->add_item(_TR("Move Left"),WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
+	window_menu->get_popup()->add_item(_TR("Move Right"),WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
 	window_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -1925,7 +1925,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed->set_child_rect(vbc);
 
 		Label *dl = memnew( Label );
-		dl->set_text("The following files are newer on disk.\nWhat action should be taken?:");
+		dl->set_text(_TR("The following files are newer on disk.\nWhat action should be taken?:"));
 		vbc->add_child(dl);
 
 		disk_changed_list = memnew( Tree );
@@ -1933,9 +1933,9 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 		disk_changed_list->set_v_size_flags(SIZE_EXPAND_FILL);
 
 		disk_changed->connect("confirmed",this,"_reload_scripts");
-		disk_changed->get_ok()->set_text("Reload");
+		disk_changed->get_ok()->set_text(_TR("Reload"));
 
-		disk_changed->add_button("Resave",!OS::get_singleton()->get_swap_ok_cancel(),"resave");
+		disk_changed->add_button(_TR("Resave"),!OS::get_singleton()->get_swap_ok_cancel(),"resave");
 		disk_changed->connect("custom_action",this,"_resave_scripts");
 
 

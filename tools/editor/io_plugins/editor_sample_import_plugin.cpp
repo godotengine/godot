@@ -250,7 +250,7 @@ public:
 		Vector<String> samples = import_path->get_text().split(",");
 
 		if (samples.size()==0) {
-			error_dialog->set_text("No samples to import!");
+			error_dialog->set_text(_TR("No samples to import!"));
 			error_dialog->popup_centered(Size2(200,100));
 		}
 
@@ -291,7 +291,7 @@ public:
 
 			String dst = save_path->get_text();
 			if (dst=="") {
-				error_dialog->set_text("Save path is empty!");
+				error_dialog->set_text(_TR("Save path is empty!"));
 				error_dialog->popup_centered(Size2(200,100));
 			}
 
@@ -330,7 +330,7 @@ public:
 		plugin=p_plugin;
 
 
-		set_title("Import Audio Samples");
+		set_title(_TR("Import Audio Samples"));
 
 		VBoxContainer *vbc = memnew( VBoxContainer );
 		add_child(vbc);
@@ -338,7 +338,7 @@ public:
 
 
 		HBoxContainer *hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Source Sample(s):",hbc);
+		vbc->add_margin_child(_TR("Source Sample(s):"),hbc);
 
 		import_path = memnew( LineEdit );
 		import_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -351,7 +351,7 @@ public:
 		import_choose->connect("pressed", this,"_browse");
 
 		hbc = memnew( HBoxContainer );
-		vbc->add_margin_child("Target Path:",hbc);
+		vbc->add_margin_child(_TR("Target Path:"),hbc);
 
 		save_path = memnew( LineEdit );
 		save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -376,12 +376,12 @@ public:
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");
-		get_ok()->set_text("Import");
+		get_ok()->set_text(_TR("Import"));
 
 
 		error_dialog = memnew ( ConfirmationDialog );
 		add_child(error_dialog);
-		error_dialog->get_ok()->set_text("Accept");
+		error_dialog->get_ok()->set_text(_TR("Accept"));
 	//	error_dialog->get_cancel()->hide();
 
 		set_hide_on_ok(false);
@@ -389,7 +389,7 @@ public:
 
 		option_editor = memnew( PropertyEditor );
 		option_editor->hide_top_label();
-		vbc->add_margin_child("Options:",option_editor,true);
+		vbc->add_margin_child(_TR("Options:"),option_editor,true);
 	}
 
 	~EditorSampleImportDialog() {
@@ -405,7 +405,7 @@ String EditorSampleImportPlugin::get_name() const {
 }
 String EditorSampleImportPlugin::get_visible_name() const{
 
-	return "Audio Sample";
+	return _TR("Audio Sample");
 }
 void EditorSampleImportPlugin::import_dialog(const String& p_from){
 

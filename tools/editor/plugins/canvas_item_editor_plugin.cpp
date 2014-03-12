@@ -3017,19 +3017,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(select_button);
 	select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).");
+	select_button->set_tooltip(_TR("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving)."));
 
 	move_button = memnew( ToolButton );
 	move_button->set_toggle_mode(true);
 	hb->add_child(move_button);
 	move_button->connect("pressed",this,"_tool_select",make_binds(TOOL_MOVE));
-	move_button->set_tooltip("Move Mode (W)");
+	move_button->set_tooltip(_TR("Move Mode (W)"));
 
 	rotate_button = memnew( ToolButton );
 	rotate_button->set_toggle_mode(true);
 	hb->add_child(rotate_button);
 	rotate_button->connect("pressed",this,"_tool_select",make_binds(TOOL_ROTATE));
-	rotate_button->set_tooltip("Rotate Mode (E)");
+	rotate_button->set_tooltip(_TR("Rotate Mode (E)"));
 
 	hb->add_child(memnew(VSeparator));
 
@@ -3071,13 +3071,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	PopupMenu *p;
 	p = edit_menu->get_popup();
-	p->add_check_item("Use Snap",SNAP_USE);
-	p->add_check_item("Show Grid",SNAP_SHOW_GRID);
-	p->add_check_item("Use Rotation Snap",SNAP_USE_ROTATION);
-	p->add_check_item("Snap Relative",SNAP_RELATIVE);
-	p->add_item("Configure Snap..",SNAP_CONFIGURE);
+	p->add_check_item(_TR("Use Snap"),SNAP_USE);
+	p->add_check_item(_TR("Show Grid"),SNAP_SHOW_GRID);
+	p->add_check_item(_TR("Use Rotation Snap"),SNAP_USE_ROTATION);
+	p->add_check_item(_TR("Snap Relative"),SNAP_RELATIVE);
+	p->add_item(_TR("Configure Snap.."),SNAP_CONFIGURE);
 	p->add_separator();
-	p->add_check_item("Use Pixel Snap",SNAP_USE_PIXEL);
+	p->add_check_item(_TR("Use Pixel Snap"),SNAP_USE_PIXEL);
 	p->add_separator();
 	p->add_item("Expand to Parent",EXPAND_TO_PARENT,KEY_MASK_CMD|KEY_P);
 	p->add_separator();
@@ -3100,7 +3100,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Space Vertical",SPACE_VERTICAL);*/
 
 	view_menu = memnew( MenuButton );
-	view_menu->set_text("View");
+	view_menu->set_text(_TR("View"));
 	hb->add_child(view_menu);
 	view_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
 
@@ -3166,8 +3166,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	p = animation_menu->get_popup();
 
-	p->add_item("Insert Key",ANIM_INSERT_KEY,KEY_INSERT);
-	p->add_item("Insert Key (Existing Tracks)",ANIM_INSERT_KEY_EXISTING,KEY_MASK_CMD+KEY_INSERT);
+	p->add_item(_TR("Insert Key"),ANIM_INSERT_KEY,KEY_INSERT);
+	p->add_item(_TR("Insert Key (Existing Tracks)"),ANIM_INSERT_KEY_EXISTING,KEY_MASK_CMD+KEY_INSERT);
 	p->add_separator();
 	p->add_item("Copy Pose",ANIM_COPY_POSE);
 	p->add_item("Paste Pose",ANIM_PASTE_POSE);
@@ -3178,12 +3178,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	add_child(snap_dialog);
 
 	value_dialog = memnew( AcceptDialog );
-	value_dialog->set_title("Set a Value");
-	value_dialog->get_ok()->set_text("Close");
+	value_dialog->set_title(_TR("Set a Value"));
+	value_dialog->get_ok()->set_text(_TR("Close"));
 	add_child(value_dialog);
 
 	Label *l = memnew(Label);
-	l->set_text("Snap (Pixels):");
+	l->set_text(_TR("Snap (Pixels):"));
 	l->set_pos(Point2(5,5));
 	value_dialog->add_child(l);
 	dialog_label=l;
