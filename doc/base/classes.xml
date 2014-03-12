@@ -20966,7 +20966,7 @@
 			<argument index="0" name="linear_velocity" type="Vector2">
 			</argument>
 			<description>
-			Set the body linear velocity. Can be used sporadically, but[b] DONT SET THIS IN EVERY FRAME [b], because physics may be running in another thread and definitely runs at a different granularity. Use [_integrate_forces] as your process loop if you want to have precise control of the body state.
+			Set the body linear velocity. Can be used sporadically, but[b] DONT SET THIS IN EVERY FRAME [/b], because physics may be running in another thread and definitely runs at a different granularity. Use [_integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="get_linear_velocity" qualifiers="const" >
@@ -20980,7 +20980,7 @@
 			<argument index="0" name="angular_velocity" type="real">
 			</argument>
 			<description>
-			Set the body angular velocity. Can be used sporadically, but[b] DONT SET THIS IN EVERY FRAME [b], because physics may be running in another thread and definitely runs at a different granularity. Use [_integrate_forces] as your process loop if you want to have precise control of the body state.
+			Set the body angular velocity. Can be used sporadically, but[b] DONT SET THIS IN EVERY FRAME [/b], because physics may be running in another thread and definitely runs at a different granularity. Use [_integrate_forces] as your process loop if you want to have precise control of the body state.
 			</description>
 		</method>
 		<method name="get_angular_velocity" qualifiers="const" >
