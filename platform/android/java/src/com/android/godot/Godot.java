@@ -53,6 +53,8 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
 import android.provider.Settings.Secure;
+import android.widget.FrameLayout;
+import com.android.godot.input.*;
 
 
 public class Godot extends Activity implements SensorEventListener
@@ -117,7 +119,7 @@ public class Godot extends Activity implements SensorEventListener
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 
-	public RelativeLayout layout;
+	public FrameLayout layout;
 
 
 	static public GodotIO io;
@@ -143,13 +145,22 @@ public class Godot extends Activity implements SensorEventListener
 //		mView = new GodotView(getApplication(),io,use_gl2);
 //		setContentView(mView);
 
-		layout = new RelativeLayout(this);
+		layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		setContentView(layout);
+		
+		// GodotEditText layout
+		GodotEditText edittext = new GodotEditText(this); 
+        edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
+        // ...add to FrameLayout
+        layout.addView(edittext);
+		
 		mView = new GodotView(getApplication(),io,use_gl2, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		mView.setKeepScreenOn(true);
-
+		
+        edittext.setView(mView);
+        io.setEdit(edittext);
 	}
 
 	@Override protected void onCreate(Bundle icicle) {
@@ -172,7 +183,7 @@ public class Godot extends Activity implements SensorEventListener
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
 		result_callback = null;
-
+		
 	//	instanceSingleton( new GodotFacebook(this) );
 
 
