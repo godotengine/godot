@@ -61,7 +61,7 @@ import javax.microedition.khronos.opengles.GL10;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-class GodotView extends GLSurfaceView {
+public class GodotView extends GLSurfaceView {
     private static String TAG = "GodotView";
     private static final boolean DEBUG = false;
     private static Context ctx;
