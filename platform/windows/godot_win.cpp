@@ -29,6 +29,7 @@
 #include "os_windows.h"
 #include "main/main.h"
 #include <stdio.h>
+#include <locale.h>
 
 PCHAR*
     CommandLineToArgvA(
@@ -114,14 +115,41 @@ PCHAR*
         return argv;
     }
 
+char* mb_to_utf8(const char* mbs) {
+
+	int wlen = MultiByteToWideChar(CP_ACP,0,mbs,-1,NULL,0); // returns 0 if failed
+	wchar_t *wbuf = new wchar_t[wlen + 1];
+	MultiByteToWideChar(CP_ACP,0,mbs,-1,wbuf,wlen);
+	wbuf[wlen]=0;
+
+	int ulen = WideCharToMultiByte(CP_UTF8,0,wbuf,-1,NULL,0,NULL,NULL);
+	char * ubuf = new char[ulen + 1];
+	WideCharToMultiByte(CP_UTF8,0,wbuf,-1,ubuf,ulen,NULL,NULL);
+	ubuf[ulen] = 0;
+	return ubuf;
+}
+
 int main(int argc, char** argv) {
 
 	OS_Windows os(NULL);
 
-	Main::setup(argv[0], argc - 1, &argv[1]);
+	setlocale(LC_CTYPE, "");
+
+	char ** argv_utf8 = new char*[argc];
+	for(int i=0; i<argc; ++i) {
+		argv_utf8[i] = mb_to_utf8(argv[i]);
+	}
+
+	Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
 	if (Main::start())
 		os.run();
 	Main::cleanup();
+
+
+	for (int i=0; i<argc; ++i) {
+		delete[] argv_utf8[i];
+	}
+	delete[] argv_utf8;
 
 	return os.get_exit_code();
 };

@@ -51,7 +51,7 @@ public class GodotLib {
      public static native void step();
      public static native void touch(int what,int pointer,int howmany, int[] arr);
      public static native void accelerometer(float x, float y, float z);
-	 public static native void key(int p_unicode_char, boolean p_pressed);
+	 public static native void key(int p_scancode, int p_unicode_char, boolean p_pressed);
      public static native void focusin();
      public static native void focusout();
      public static native void audio();
