@@ -47,6 +47,7 @@
 #include "test_shader_lang.h"
 #include "test_gdscript.h"
 #include "test_image.h"
+#include "test_compression.h"
 
 
 const char ** tests_get_names()  {
@@ -61,6 +62,7 @@ const char ** tests_get_names()  {
 		"gui",
 		"io",
 		"shaderlang",
+		"compression",
 		NULL
 	};
 	
@@ -165,6 +167,9 @@ MainLoop* test_main(String p_test,const List<String>& p_args) {
 	if (p_test=="detailer") {
 
 		return TestMultiMesh::test();
+	}
+	if (p_test=="compression") {
+		return TestCompression::test();
 	}
 
 #ifdef PYTHON_ENABLED
