@@ -27,6 +27,7 @@ void register_multiscript_types() {
 }
 void unregister_multiscript_types() {
 
-	if (script_multi_script);
+	if (script_multi_script) {
 		memdelete(script_multi_script);
+	}
 }
