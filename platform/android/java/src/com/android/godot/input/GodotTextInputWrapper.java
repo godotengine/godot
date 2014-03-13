@@ -65,8 +65,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			final String insertText = s.subSequence(this.mText.length(), s.length()).toString();
 			for(int i = 0; i < insertText.length(); i++) {
 				int ch = insertText.codePointAt(i);
-				GodotLib.key(0, ch, false);
 				GodotLib.key(0, ch, true);
+				GodotLib.key(0, ch, false);
 			}
 			/*
 			if (BuildConfig.DEBUG) {
@@ -75,8 +75,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			*/
 		} else {
 			for (; nModified < 0; ++nModified) {
-				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
 				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
+				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
 				/*
 				if (BuildConfig.DEBUG) {
 					Log.d(TAG, "deleteBackward");
@@ -107,8 +107,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 		if (this.mEdit == pTextView && this.isFullScreenEdit()) {
 			// user press the action button, delete all old text and insert new text
 			for (int i = this.mOriginText.length(); i > 0; i--) {
-				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
 				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, true);
+				GodotLib.key(KeyEvent.KEYCODE_DEL, 0, false);
 				/*
 				if (BuildConfig.DEBUG) {
 					Log.d(TAG, "deleteBackward");
@@ -128,8 +128,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 
 			for(int i = 0; i < text.length(); i++) {
 				int ch = text.codePointAt(i);
-				GodotLib.key(0, ch, false);
 				GodotLib.key(0, ch, true);
+				GodotLib.key(0, ch, false);
 			}
 			/*
 			if (BuildConfig.DEBUG) {
