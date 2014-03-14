@@ -6,6 +6,16 @@ import os.path
 import glob
 import sys
 import methods
+import multiprocessing
+
+# Enable aggresive compile mode if building on a multi core box
+# only is we have not set the number of jobs already or we do
+# not want it
+if ARGUMENTS.get('spawn_jobs', 'yes') == 'yes' and \
+	int(GetOption('num_jobs')) <= 1:
+	NUM_JOBS = multiprocessing.cpu_count()
+	if NUM_JOBS > 1:
+		SetOption('num_jobs', NUM_JOBS+1)
 
 methods.update_version()
 

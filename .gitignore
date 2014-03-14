@@ -116,6 +116,11 @@ ipch/
 *.vsp
 *.vspx
 
+# CodeLite project files
+*.project
+*.workspace
+.codelite/
+
 # TFS 2012 Local Workspace
 $tf/
 
@@ -150,6 +155,9 @@ AutoTest.Net/
 
 # Installshield output folder
 [Ee]xpress/
+
+# dumpdoc generated files
+doc/html/class_list
 
 # DocProject is a documentation generator add-in
 DocProject/buildhelp/
@@ -197,6 +205,9 @@ ClientBin/
 *.pfx
 *.publishsettings
 node_modules/
+
+# KDE
+.directory
 
 # RIA/Silverlight projects
 Generated_Code/

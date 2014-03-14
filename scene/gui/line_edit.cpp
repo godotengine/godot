@@ -748,6 +748,11 @@ bool LineEdit::is_secret() const {
 
 void LineEdit::select(int p_from, int p_to) {
 
+	if (p_from==0 && p_to==0) {
+		selection_clear();
+		return;
+	}
+
 	int len = text.length();
 	if (p_from<0)
 		p_from=0;
@@ -786,7 +791,7 @@ void LineEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_editable"),&LineEdit::is_editable);	
 	ObjectTypeDB::bind_method(_MD("set_secret","enabled"),&LineEdit::set_secret);
 	ObjectTypeDB::bind_method(_MD("is_secret"),&LineEdit::is_secret);	
-	ObjectTypeDB::bind_method(_MD("select","from","to"),&LineEdit::is_secret,DEFVAL(0),DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("select","from","to"),&LineEdit::select,DEFVAL(0),DEFVAL(-1));
 
 	ADD_SIGNAL( MethodInfo("text_changed", PropertyInfo( Variant::STRING, "text" )) );
 	ADD_SIGNAL( MethodInfo("text_entered", PropertyInfo( Variant::STRING, "text" )) );

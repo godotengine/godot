@@ -479,6 +479,36 @@ bool test_26() {
 	return captures.size();
 };
 
+struct test_27_data {
+	char const * data;
+	char const * begin;
+	bool expected;
+};
+
+bool test_27() {
+
+	OS::get_singleton()->print("\n\nTest 26: begins_with\n");
+	test_27_data tc[] = {
+		{"res://foobar", "res://", true},
+		{"res", "res://", false},
+		{"abc", "abc", true}
+	};
+	size_t count = sizeof(tc) / sizeof(tc[0]);
+	bool state = true;
+	for (size_t i = 0;state && i < count; ++i) {
+		String s = tc[i].data;
+		state = s.begins_with(tc[i].begin) == tc[i].expected;
+		if (state) {
+			String sb = tc[i].begin;
+			state = s.begins_with(sb) == tc[i].expected;
+		}
+		if (!state) {
+			OS::get_singleton()->print("\n\t Failure on:\n\t\tstring: ", tc[i].data, "\n\t\tbegin: ", tc[i].begin, "\n\t\texpected: ", tc[i].expected ? "true" : "false", "\n");
+		}
+	};
+	return state;
+};
+
 typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
@@ -509,6 +539,7 @@ TestFunc test_funcs[] = {
 	test_24,
 	test_25,
 	test_26,
+	test_27,
 	0
 	
 };
