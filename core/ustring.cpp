@@ -31,6 +31,7 @@
 #include "os/memory.h"
 #include "print_string.h"
 #include "math_funcs.h"
+#include "io/md5.h"
 #include "ucaps.h"
 #include "color.h"
 #define MAX_DIGITS 6
@@ -2264,6 +2265,15 @@ uint64_t String::hash64() const {
 
 }
 
+String String::md5_text() const {
+
+	CharString cs=utf8();
+	MD5_CTX ctx;
+	MD5Init(&ctx);
+	MD5Update(&ctx,(unsigned char*)cs.ptr(),cs.length());
+	MD5Final(&ctx);
+	return String::md5(ctx.digest);
+}
 
 String String::insert(int p_at_pos,String p_string) const {
 

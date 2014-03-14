@@ -447,11 +447,63 @@ void EditorExportPlatformPC::_get_property_list( List<PropertyInfo> *p_list) con
 
 
 
+static void _exp_add_dep(Map<StringName,List<StringName> > &deps,const StringName& p_path) {
+
+
+	if (deps.has(p_path))
+		return; //already done
+
+	deps.insert(p_path,List<StringName>());
+
+	List<StringName> &deplist=deps[p_path];
+	Set<StringName> depset;
+
+	List<String> dl;
+	ResourceLoader::get_dependencies(p_path,&dl);
+
+	//added in order so child dependencies are always added bfore parent dependencies
+	for (List<String>::Element *E=dl.front();E;E=E->next()) {
+
+
+		if (!deps.has(E->get()))
+			_exp_add_dep(deps,E->get());
+
+		for(List<StringName>::Element *F=deps[E->get()].front();F;F=F->next()) {
+
+
+			if (!depset.has(F->get())) {
+				depset.insert(F->get());
+				deplist.push_back(F->get());
+			}
+		}
+
+		if (!depset.has(E->get())) {
+			depset.insert(E->get());
+			deplist.push_back(E->get());
+		}
+
+	}
+}
+
+
+
 Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func, void* p_udata,bool p_make_bundles) {
 
 /* ALL FILES AND DEPENDENCIES */
 
 	Vector<StringName> files=get_dependencies(p_make_bundles);
+
+	Map<StringName,List<StringName> > deps;
+
+	if (false) {
+		for(int i=0;i<files.size();i++) {
+
+			_exp_add_dep(deps,files[i]);
+
+		}
+	}
+
+
 
 /* GROUP ATLAS */
 
@@ -643,7 +695,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			for (List<StringName>::Element *F=atlas_images.front();F;F=F->next()) {
 
-				imd->add_source(EditorImportPlugin::validate_source_path(F->get()));
+				imd->add_source(EditorImportPlugin::validate_source_path(F->get()),FileAccess::get_md5(F->get()));
 			}
 
 
@@ -683,7 +735,6 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			rects.resize(r_rects.size());
 			for(int i=0;i<r_rects.size();i++) {
 				//get back region and margins
-
 				rects[i]=r_rects[i];
 			}
 
@@ -788,18 +839,49 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	{
 
 		//make binary engine.cfg config
-
 		Map<String,Variant> custom;
+
 
 		if (remap_files.size()) {
 			Vector<String> remapsprop;
 			for(Map<StringName,StringName>::Element *E=remap_files.front();E;E=E->next()) {
+				print_line("REMAP: "+String(E->key())+" -> "+E->get());
 				remapsprop.push_back(E->key());
 				remapsprop.push_back(E->get());
 			}
 
 			custom["remap/all"]=remapsprop;
 		}
+
+		//add presaved dependencies
+		for(Map<StringName,List<StringName> >::Element *E=deps.front();E;E=E->next()) {
+
+			if (E->get().size()==0)
+				continue; //no deps
+			String key;
+			Vector<StringName> deps;
+			//if bundle continue (when bundles supported obviously)
+
+			if (remap_files.has(E->key())) {
+				key=remap_files[E->key()];
+			} else {
+				key=E->key();
+			}
+
+			deps.resize(E->get().size());
+			int i=0;
+
+			for(List<StringName>::Element *F=E->get().front();F;F=F->next()) {
+				deps[i++]=F->get();
+				print_line(" -"+String(F->get()));
+			}
+
+			NodePath prop(deps,true,String()); //seems best to use this for performance
+
+			custom["deps/"+key.md5_text()]=prop;
+
+		}
+
 		String remap_file="engine.cfb";
 		String engine_cfb =EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmp"+remap_file;
 		Globals::get_singleton()->save_custom(engine_cfb,custom);

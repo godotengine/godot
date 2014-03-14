@@ -52,6 +52,8 @@ class SceneTreeEditor : public Control {
 	Tree *tree;
 	Node *selected;
 
+	AcceptDialog *error;
+
 	int blocked;
 	
 	void _compute_hash(Node *p_node,uint64_t &hash);

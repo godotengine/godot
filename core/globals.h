@@ -65,9 +65,9 @@ protected:
 	};
 
 	int last_order;
-	HashMap<String,VariantContainer> props;
+	Map<StringName,VariantContainer> props;
 	String resource_path;
-	HashMap<String,PropertyInfo> custom_prop_info;
+	Map<StringName,PropertyInfo> custom_prop_info;
 	bool disable_platform_override;
 	bool using_datapack;
 

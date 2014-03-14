@@ -50,6 +50,10 @@ class ResourceInteractiveLoaderXML : public ResourceInteractiveLoader {
 
 	_FORCE_INLINE_ Error _parse_array_element(Vector<char> &buff,bool p_number_only,FileAccess *f,bool *end);
 
+
+
+	List<StringName> ext_resources;
+
 	int resources_total;
 	int resource_current;
 	String resource_type;
@@ -113,7 +117,6 @@ class ResourceFormatSaverXMLInstance  {
 
 
 
-	bool no_extension;
 	bool relative_paths;
 	bool bundle_resources;
 	bool skip_editor;

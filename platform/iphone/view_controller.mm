@@ -46,6 +46,26 @@ int add_path(int p_argc, char** p_args) {
 	return p_argc;
 };
 
+int add_cmdline(int p_argc, char** p_args) {
+
+	NSArray* arr = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"godot_cmdline"];
+	if (!arr)
+		return p_argc;
+
+	for (int i=0; i < [arr count]; i++) {
+
+		NSString* str = [arr objectAtIndex:i];
+		if (!str)
+			continue;
+		[str retain]; // @todo delete these at some point
+		p_args[p_argc++] = (char*)[str cString];
+	};
+
+	p_args[p_argc] = NULL;
+
+	return p_argc;
+};
+
 };
 
 @interface ViewController ()
@@ -103,5 +123,11 @@ int add_path(int p_argc, char** p_args) {
 		return NO;
 	}
 };
+
+
+- (BOOL)prefersStatusBarHidden
+{
+	return YES;
+}
 
 @end

@@ -422,6 +422,8 @@ void OSIPhone::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) c
 
 bool OSIPhone::can_draw() const {
 
+	if (native_video_is_playing())
+		return false;
 	return true;
 };
 
@@ -481,6 +483,31 @@ void OSIPhone::set_locale(String p_locale)
 
 String OSIPhone::get_locale() const {
 	return locale_code;
+}
+
+extern bool _play_video(String p_path);
+extern bool _is_video_playing();
+extern void _pause_video();
+extern void _stop_video();
+
+Error OSIPhone::native_video_play(String p_path) {
+    if ( _play_video(p_path) )
+		return OK;
+	return FAILED;
+}
+
+bool OSIPhone::native_video_is_playing() const {
+    return _is_video_playing();
+}
+
+void OSIPhone::native_video_pause() {
+	if (native_video_is_playing())
+    	_pause_video();
+}
+
+void OSIPhone::native_video_stop() {
+	if (native_video_is_playing())
+    	_stop_video();
 }
 
 OSIPhone::OSIPhone(int width, int height) {

@@ -49,6 +49,7 @@
 #include "core/io/xml_parser.h"
 #include "io/http_client.h"
 #include "packed_data_container.h"
+#include "func_ref.h"
 
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
@@ -135,6 +136,7 @@ void register_core_types() {
 	ObjectTypeDB::register_type<Reference>();
 	ObjectTypeDB::register_type<ResourceImportMetadata>();
 	ObjectTypeDB::register_type<Resource>();
+	ObjectTypeDB::register_type<FuncRef>();
 	ObjectTypeDB::register_virtual_type<StreamPeer>();
 	ObjectTypeDB::register_create_type<StreamPeerTCP>();
 	ObjectTypeDB::register_create_type<TCP_Server>();

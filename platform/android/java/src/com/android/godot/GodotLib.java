@@ -51,14 +51,14 @@ public class GodotLib {
      public static native void step();
      public static native void touch(int what,int pointer,int howmany, int[] arr);
      public static native void accelerometer(float x, float y, float z);
-	 public static native void key(int p_unicode_char, boolean p_pressed);
+	public static native void key(int p_unicode_char, boolean p_pressed);
      public static native void focusin();
      public static native void focusout();
      public static native void audio();
      public static native void singleton(String p_name,Object p_object);
      public static native void method(String p_sname,String p_name,String p_ret,String[] p_params);
      public static native String getGlobal(String p_key);
-	 public static native void callobject(int p_ID, String p_method, Object[] p_params);
-	 public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
+	public static native void callobject(int p_ID, String p_method, Object[] p_params);
+	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
 
 }

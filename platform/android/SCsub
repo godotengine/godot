@@ -8,7 +8,7 @@ android_files = [
 	'godot_android.cpp',
 	'file_access_android.cpp',
 	'dir_access_android.cpp',
-	'audio_driver_android.cpp',
+	'audio_driver_opensl.cpp',
 	'file_access_jandroid.cpp',
 	'dir_access_jandroid.cpp',
 	'thread_jandroid.cpp',
@@ -37,7 +37,9 @@ abspath=env.Dir(".").abspath
 pp_basein = open(abspath+"/project.properties.template","rb")
 pp_baseout = open(abspath+"/java/project.properties","wb")
 pp_baseout.write( pp_basein.read() )
+
 refcount=1
+
 for x in env.android_source_modules:
 	pp_baseout.write("android.library.reference."+str(refcount)+"="+x+"\n")
 	refcount+=1

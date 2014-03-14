@@ -97,7 +97,7 @@ long AudioStreamOGGVorbis::_ov_tell_func(void *_f) {
 
 bool AudioStreamOGGVorbis::_can_mix() const {
 
-	return playing && !paused;
+	return /*playing &&*/ !paused;
 }
 
 
@@ -125,6 +125,8 @@ void AudioStreamOGGVorbis::update() {
 		if (ret<0) {
 
 			playing = false;
+			setting_up=false;
+
 			ERR_EXPLAIN("Error reading OGG Vorbis File: "+file);
 			ERR_BREAK(ret<0);
 		} else if (ret==0) { // end of song, reload?
@@ -135,7 +137,8 @@ void AudioStreamOGGVorbis::update() {
 
 			if (!has_loop()) {
 
-				playing=false;	
+				playing=false;
+				setting_up=false;
 				repeats=1;
 				return;
 			}
@@ -145,6 +148,7 @@ void AudioStreamOGGVorbis::update() {
 			int errv = ov_open_callbacks(f,&vf,NULL,0,_ov_callbacks);
 			if (errv!=0) {
 				playing=false;
+				setting_up=false;
 				return; // :(
 			}
 
@@ -179,6 +183,8 @@ void AudioStreamOGGVorbis::play() {
 	playing=false;
 	setting_up=true;
 	update();
+	if (!setting_up)
+		return;
 	setting_up=false;
 	playing=true;
 }

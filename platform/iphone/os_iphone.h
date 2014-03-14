@@ -184,6 +184,11 @@ public:
 	void set_unique_ID(String p_ID);
 	String get_unique_ID() const;
 
+    virtual Error native_video_play(String p_path);
+    virtual bool native_video_is_playing() const;
+    virtual void native_video_pause();
+    virtual void native_video_stop();
+
 	OSIPhone(int width, int height);
 	~OSIPhone();
 };

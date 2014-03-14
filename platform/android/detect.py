@@ -14,6 +14,7 @@ def can_build():
         import os
         if (not os.environ.has_key("ANDROID_NDK_ROOT")):
         	return False
+
 	return True
 
 def get_opts():
@@ -23,7 +24,7 @@ def get_opts():
              ('NDK_TOOLCHAIN', 'toolchain to use for the NDK',"arm-eabi-4.4.0"), 	                      
              #android 2.3       
 		 ('ndk_platform', 'compile for platform: (2.2,2.3)',"2.2"),
-		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.7"),
+		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
 	     ('android_stl','enable STL support in android port (for modules)','no'),
 	     ('armv6','compile for older phones running arm v6 (instead of v7+neon+smp)','no')
 
@@ -55,13 +56,10 @@ def configure(env):
 		env.Tool('gcc')
 		env['SPAWN'] = methods.win32_spawn
 
+	env.android_source_modules.append("../libs/apk_expansion")	
 	ndk_platform=""
 
-	if (env["ndk_platform"]=="2.2"):
-		ndk_platform="android-8"
-	else:
-		ndk_platform="android-9"
-		env.Append(CPPFLAGS=["-DANDROID_NATIVE_ACTIVITY"])
+	ndk_platform="android-15"
 
 	print("Godot Android!!!!!")
 
@@ -111,6 +109,7 @@ def configure(env):
 		env['CCFLAGS'] = string.split('-DNO_STATVFS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_7__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED -DGLES1_ENABLED')
 
 	env.Append(LDPATH=[ld_path])
+	env.Append(LIBS=['OpenSLES'])
 #	env.Append(LIBS=['c','m','stdc++','log','EGL','GLESv1_CM','GLESv2','OpenSLES','supc++','android'])
 	if (env["ndk_platform"]!="2.2"):
 		env.Append(LIBS=['EGL','OpenSLES','android'])

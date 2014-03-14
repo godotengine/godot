@@ -34,7 +34,7 @@
 #include "drivers/unix/dir_access_unix.h"
 
 #include "servers/visual/visual_server_raster.h"
-
+#include "servers/visual/visual_server_wrap_mt.h"
 #include "main/main.h"
 
 #include "core/globals.h"
@@ -128,6 +128,10 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	}
 
 	visual_server = memnew( VisualServerRaster(rasterizer) );
+	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+
+		visual_server = memnew(VisualServerWrapMT(visual_server, false));
+	};
 	visual_server->init();
 	visual_server->cursor_set_visible(false, 0);
 
@@ -672,8 +676,29 @@ String OS_Android::get_unique_ID() const {
 	return OS::get_unique_ID();
 }
 
+Error OS_Android::native_video_play(String p_path) {
+	if (video_play_func)
+		video_play_func(p_path);
+    return OK;
+}
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id) {
+bool OS_Android::native_video_is_playing() {
+	if (video_is_playing_func)
+		return video_is_playing_func();
+    return false;
+}
+
+void OS_Android::native_video_pause() {
+	if (video_pause_func)
+		video_pause_func();
+}
+
+void OS_Android::native_video_stop() {
+	if (video_stop_func)
+		video_stop_func();
+}
+
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func) {
 
 
 	default_videomode.width=800;
