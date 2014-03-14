@@ -1240,14 +1240,16 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_key(JNIEnv * env, jobject
 	ievent.key.mod.control=false;
 	ievent.key.echo=false;
 
-	if (val == 61448) {
+    if (val == '\n')
+    {
+		ievent.key.scancode = KEY_ENTER;
+    }else if (val == 61448) {
 		ievent.key.scancode = KEY_BACKSPACE;
 		ievent.key.unicode = KEY_BACKSPACE;
-	};
-	if (val == 61453) {
+	} else if (val == 61453) {
 		ievent.key.scancode = KEY_ENTER;
 		ievent.key.unicode = KEY_ENTER;
-	};
+	}
 
 	input_mutex->lock();
 	key_events.push_back(ievent);

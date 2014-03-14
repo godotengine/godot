@@ -857,6 +857,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 			} else {
 
 				selection.selecting_mode=Selection::MODE_NONE;
+                // notify to show soft keyboard
+                notification(NOTIFICATION_FOCUS_ENTER);
 			}
 
 		} break;
