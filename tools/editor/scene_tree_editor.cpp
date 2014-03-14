@@ -73,6 +73,12 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			undo_redo->commit_action();
 		} else if (n->is_type("CanvasItem")) {
 
+			CanvasItem *ci = n->cast_to<CanvasItem>();
+			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
+				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
+				error->popup_centered_minsize(Size2(400,80));
+				return;
+			}
 			bool v = !bool(n->call("is_hidden"));
 			undo_redo->create_action("Toggle CanvasItem Visible");
 			undo_redo->add_do_method(n,v?"hide":"show");
@@ -662,6 +668,9 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	tree->connect("multi_selected",this,"_cell_multi_selected");
 	tree->connect("button_pressed",this,"_cell_button_pressed");
 //	tree->connect("item_edited", this,"_renamed",Vector<Variant>(),true);
+
+	error = memnew( AcceptDialog );
+	add_child(error);
 
 	last_hash=0;
 	pending_test_update=false;

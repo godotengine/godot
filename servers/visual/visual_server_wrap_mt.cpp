@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "visual_server_wrap_mt.h"
 #include "os/os.h"
-
+#include "globals.h"
 void VisualServerWrapMT::thread_exit() {
 
 	exit=true;
@@ -160,8 +160,12 @@ void VisualServerWrapMT::finish() {
 	if (thread) {
 
 		command_queue.push( this, &VisualServerWrapMT::thread_exit);
-		Thread::wait_to_finish( thread );
+		Thread::wait_to_finish( thread );		
 		memdelete(thread);
+
+
+		texture_free_cached_ids();
+
 		thread=NULL;
 	} else {
 		visual_server->finish();
@@ -181,6 +185,8 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer* p_contained,bool p_create_t
 	draw_mutex=NULL;
 	draw_pending=0;
 	draw_thread_up=false;
+	alloc_mutex=Mutex::create();
+	texture_pool_max_size=GLOBAL_DEF("render/thread_textures_prealloc",20);
 	if (!p_create_thread) {
 		server_thread=Thread::get_caller_ID();
 	} else {
@@ -192,6 +198,7 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer* p_contained,bool p_create_t
 VisualServerWrapMT::~VisualServerWrapMT() {
 
 	memdelete(visual_server);
+	memdelete(alloc_mutex);
 	//finish();
 
 }

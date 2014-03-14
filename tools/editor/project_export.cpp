@@ -276,7 +276,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 			image_action->select(EditorImportExport::get_singleton()->get_export_image_action());
 			image_quality->set_val(EditorImportExport::get_singleton()->get_export_image_quality());
-			image_shrink->set_val(EditorImportExport::get_singleton()->get_export_image_quality());
+			image_shrink->set_val(EditorImportExport::get_singleton()->get_export_image_shrink());
 			image_quality->connect("value_changed",this,"_quality_edited");
 			image_shrink->connect("value_changed",this,"_shrink_edited");
 			image_action->connect("item_selected",this,"_image_export_edited");
@@ -349,7 +349,7 @@ void ProjectExportDialog::_validate_platform() {
 	List<String> pl;
 	EditorFileSystem::get_singleton()->get_changed_sources(&pl);
 
-	if (pl.size()) {
+	if (false && pl.size()) {
 		if (pl.size()==1)
 			platform_error_string->set_text(" -One Resource is pending re-import.");
 		else

@@ -98,6 +98,11 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
+	Error native_video_play(String p_path);
+	bool native_video_is_playing();
+	void native_video_pause();
+	void native_video_stop();
+
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
@@ -166,6 +171,7 @@ public:
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
 
+	bool can_use_threads() const;
 
 	bool can_draw() const;
 
@@ -279,6 +285,9 @@ public:
 
 	void store_string(const String& p_string);
 	void store_line(const String& p_string);
+
+	virtual void store_pascal_string(const String& p_string);
+	virtual String get_pascal_string();
 
 	Vector<String> get_csv_line() const;
 

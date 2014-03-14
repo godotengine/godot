@@ -181,7 +181,8 @@ public:
 	static uint32_t hash(const char* p_cstr,int p_len); /* hash the string */
 	static uint32_t hash(const char* p_cstr); /* hash the string */
 	uint32_t hash() const; /* hash the string */
-	uint64_t hash64() const; /* hash the string */
+	uint64_t hash64() const; /* hash the string */	
+	String md5_text() const;
 	
 	inline bool empty() const { return length() == 0; }	
 

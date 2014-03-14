@@ -49,15 +49,19 @@ import android.media.*;
 import android.hardware.*;
 import android.content.*;
 
+import android.net.Uri;
+import android.media.MediaPlayer;
+
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
+import com.android.godot.payments.PaymentsManager;
+import java.io.IOException;
 import android.provider.Settings.Secure;
 
 
 public class Godot extends Activity implements SensorEventListener
-{
-
+{	
 	static public class SingletonBase {
 
 		protected void registerClass(String p_name, String[] p_methods) {
@@ -131,8 +135,12 @@ public class Godot extends Activity implements SensorEventListener
 	};
 	public ResultCallback result_callback;
 
+	private PaymentsManager mPaymentsManager;
+
 	@Override protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-		if (result_callback != null) {
+		if(requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE){
+			mPaymentsManager.processPurchaseResponse(resultCode, data);
+		}else if (result_callback != null) {
 			result_callback.callback(requestCode, resultCode, data);
 			result_callback = null;
 		};
@@ -152,13 +160,17 @@ public class Godot extends Activity implements SensorEventListener
 
 	}
 
+	private static Godot _self;
+	
+	public static Godot getInstance(){
+		return Godot._self;
+	}
+	
 	@Override protected void onCreate(Bundle icicle) {
 
 
 		super.onCreate(icicle);
-
-
-
+		_self = this;
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
 			| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -172,12 +184,20 @@ public class Godot extends Activity implements SensorEventListener
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
 		result_callback = null;
-
+		
+		mPaymentsManager = PaymentsManager.createManager(this).initService();
+		
 	//	instanceSingleton( new GodotFacebook(this) );
 
 
 	}
 
+	@Override protected void onDestroy(){
+		
+		if(mPaymentsManager != null ) mPaymentsManager.destroy();
+		super.onDestroy();
+	}
+	
 	@Override protected void onPause() {
 		super.onPause();
 		mView.onPause();
@@ -322,7 +342,15 @@ public class Godot extends Activity implements SensorEventListener
 	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
 		GodotLib.key(keyCode, event.getUnicodeChar(0), true);
 		return super.onKeyDown(keyCode, event);
-	};
+	}
+
+	public PaymentsManager getPaymentsManager() {
+		return mPaymentsManager;
+	}
+
+//	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
+//		this.mPaymentsManager = mPaymentsManager;
+//	};
 
 
 	// Audio
