@@ -176,7 +176,6 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5,16);
-
 #ifdef WIN32
         wprintf(L" >> %s : %s\n", p_path.c_str(), path.c_str());
 #endif // WIN32

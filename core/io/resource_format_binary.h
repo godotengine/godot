@@ -120,7 +120,7 @@ class ResourceFormatSaverBinaryInstance  {
 
 	String local_path;
 
-	bool no_extensions;
+
 	bool relative_paths;
 	bool bundle_resources;
 	bool skip_editor;

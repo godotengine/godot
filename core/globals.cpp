@@ -166,10 +166,9 @@ bool Globals::_get(const StringName& p_name,Variant &r_ret) const {
 
 	_THREAD_SAFE_METHOD_
 
-	const VariantContainer *v=props.getptr(p_name);
-	if (!v)
+	if (!props.has(p_name))
 		return false;
-	r_ret=v->variant;
+	r_ret=props[p_name].variant;
 	return true;
 	
 }
@@ -188,18 +187,17 @@ void Globals::_get_property_list(List<PropertyInfo> *p_list) const {
 	
 	_THREAD_SAFE_METHOD_
 
-	const String *k=NULL;
 	Set<_VCSort> vclist;
 	
-	while ((k=props.next(k))) {
+	for(Map<StringName,VariantContainer>::Element *E=props.front();E;E=E->next()) {
 		
-		const VariantContainer *v=props.getptr(*k);
+		const VariantContainer *v=&E->get();
 
 		if (v->hide_from_editor)
 			continue;
 
 		_VCSort vc;
-		vc.name=*k;
+		vc.name=E->key();
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
 		if (vc.name.begins_with("input/") || vc.name.begins_with("import/") || vc.name.begins_with("export/") || vc.name.begins_with("/remap") || vc.name.begins_with("/locale") || vc.name.begins_with("/autoload"))
@@ -1138,24 +1136,23 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 
 	ERR_FAIL_COND_V(p_path=="",ERR_INVALID_PARAMETER);
 
-	const String *k=NULL;
 	Set<_VCSort> vclist;
 
-	while ((k=props.next(k))) {
+	for(Map<StringName,VariantContainer>::Element *G=props.front();G;G=G->next()) {
 
-		const VariantContainer *v=props.getptr(*k);
+		const VariantContainer *v=&G->get();
 
 		if (v->hide_from_editor)
 			continue;
 
-		if (p_custom.has(*k))
+		if (p_custom.has(G->key()))
 			continue;
 
 		bool discard=false;
 
 		for(const Set<String>::Element *E=p_ignore_masks.front();E;E=E->next()) {
 
-			if ( (*k).match(E->get())) {
+			if ( String(G->key()).match(E->get())) {
 				discard=true;
 				break;
 			}
@@ -1165,7 +1162,7 @@ Error Globals::save_custom(const String& p_path,const CustomMap& p_custom,const 
 			continue;
 
 		_VCSort vc;
-		vc.name=*k;
+		vc.name=G->key();//*k;
 		vc.order=v->order;
 		vc.type=v->variant.get_type();
 		vc.flags=PROPERTY_USAGE_CHECKABLE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_STORAGE;

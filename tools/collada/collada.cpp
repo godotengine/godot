@@ -344,6 +344,9 @@ void Collada::_parse_image(XMLParser& parser) {
 						// path is relative to file being loaded, so convert to a resource path
 						path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path);
 
+					} else if (path.find("file:///")==0) {
+						path=path.replace_first("file:///","");
+						path=Globals::get_singleton()->localize_path(path);
 					}
 
 					image.path=path;

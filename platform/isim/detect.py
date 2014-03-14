@@ -74,6 +74,7 @@ def configure(env):
 							'-framework', 'OpenGLES',
 							'-framework', 'QuartzCore',
 							'-framework', 'AudioToolbox',
+							'-framework', 'MediaPlayer',
 							'-F$ISIMSDK',
 							])
 

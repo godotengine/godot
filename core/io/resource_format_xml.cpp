@@ -1357,6 +1357,31 @@ Error ResourceInteractiveLoaderXML::poll() {
 	if (error!=OK)
 		return error;
 
+	if (ext_resources.size()) {
+
+		error=ERR_FILE_CORRUPT;
+		String path=ext_resources.front()->get();
+
+		RES res = ResourceLoader::load(path);
+
+		if (res.is_null()) {
+
+			if (ResourceLoader::get_abort_on_missing_resources()) {
+				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": editor exported unexisting resource at: "+path);
+				ERR_FAIL_V(error);
+			} else {
+				ResourceLoader::notify_load_error("Resource Not Found: "+path);
+			}
+		} else {
+
+			resource_cache.push_back(res);
+		}
+
+		error=OK;
+		ext_resources.pop_front();
+		resource_current++;
+		return error;
+	}
 
 	bool exit;
 	Tag *tag = parse_tag(&exit);
@@ -1528,7 +1553,7 @@ int ResourceInteractiveLoaderXML::get_stage() const {
 }
 int ResourceInteractiveLoaderXML::get_stage_count() const {
 
-	return resources_total;
+	return resources_total+ext_resources.size();
 }
 
 ResourceInteractiveLoaderXML::~ResourceInteractiveLoaderXML() {
@@ -1571,6 +1596,12 @@ void ResourceInteractiveLoaderXML::get_dependencies(FileAccess *f,List<String> *
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
 			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+		}
+
+		if (path.ends_with("*")) {
+			ERR_FAIL_COND(!tag->args.has("type"));
+			String type = tag->args["type"];
+			path = ResourceLoader::guess_full_filename(path,type);
 		}
 
 		p_dependencies->push_back(path);
@@ -1641,6 +1672,19 @@ void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 		ERR_FAIL();
 
 	}
+
+	String preload_depts = "deps/"+local_path.md5_text();
+	if (Globals::get_singleton()->has(preload_depts)) {
+		ext_resources.clear();
+		//ignore external resources and use these
+		NodePath depts=Globals::get_singleton()->get(preload_depts);
+
+		for(int i=0;i<depts.get_name_count();i++) {
+			ext_resources.push_back(depts.get_name(i));
+		}
+		print_line(local_path+" - EXTERNAL RESOURCES: "+itos(ext_resources.size()));
+	}
+
 
 }
 
@@ -1969,8 +2013,6 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 			if (res->get_path().length() && res->get_path().find("::")==-1) {
 				//external resource
 				String path=relative_paths?local_path.path_to_file(res->get_path()):res->get_path();
-				if (no_extension)
-					path=path.basename()+".*";
 				escape(path);
 				params+=" path=\""+path+"\"";
 			} else {
@@ -2458,7 +2500,6 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	relative_paths=p_flags&ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor=p_flags&ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
 	bundle_resources=p_flags&ResourceSaver::FLAG_BUNDLE_RESOURCES;
-	no_extension=p_flags&ResourceSaver::FLAG_NO_EXTENSION;
 	depth=0;
 
 	// save resources
@@ -2475,8 +2516,6 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		write_tabs();
 		String p = E->get()->get_path();
-		if (no_extension)
-			p=p.basename()+".*";
 
 		enter_tag("ext_resource","path=\""+p+"\" type=\""+E->get()->get_save_type()+"\""); //bundled
 		exit_tag("ext_resource"); //bundled

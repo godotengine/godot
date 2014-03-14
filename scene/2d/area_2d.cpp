@@ -317,6 +317,7 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	density=0.1;
 	priority=0;
 	monitoring=false;
+	set_enable_monitoring(true);
 
 }
 

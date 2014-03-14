@@ -569,6 +569,11 @@ static jmethodID _hideKeyboard=0;
 static jmethodID _setScreenOrientation=0;
 static jmethodID _getUniqueID=0;
 
+static jmethodID _playVideo=0;
+static jmethodID _isVideoPlaying=0;
+static jmethodID _pauseVideo=0;
+static jmethodID _stopVideo=0;
+
 
 static void _gfx_init_func(void* ud, bool gl2) {
 
@@ -629,6 +634,31 @@ static void _hide_vk() {
 	env->CallVoidMethod(godot_io, _hideKeyboard);
 };
 
+// virtual Error native_video_play(String p_path);
+// virtual bool native_video_is_playing();
+// virtual void native_video_pause();
+// virtual void native_video_stop();
+
+static void _play_video(const String& p_path) {
+
+}
+
+static bool _is_video_playing() {
+	JNIEnv* env = ThreadAndroid::get_env();
+	return env->CallBooleanMethod(godot_io, _isVideoPlaying);
+	//return false;
+}
+
+static void _pause_video() {
+	JNIEnv* env = ThreadAndroid::get_env();
+	env->CallVoidMethod(godot_io, _pauseVideo);
+}
+
+static void _stop_video() {
+	JNIEnv* env = ThreadAndroid::get_env();
+	env->CallVoidMethod(godot_io, _stopVideo);
+}
+
 JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook) {
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**INIT EVENT! - %p\n",env);
@@ -676,6 +706,11 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 			_showKeyboard = env->GetMethodID(c,"showKeyboard","(Ljava/lang/String;)V");
 			_hideKeyboard = env->GetMethodID(c,"hideKeyboard","()V");
 			_setScreenOrientation = env->GetMethodID(c,"setScreenOrientation","(I)V");
+
+			_playVideo = env->GetMethodID(c,"playVideo","(Ljava/lang/String;)V");
+			_isVideoPlaying = env->GetMethodID(c,"isVideoPlaying","()Z");
+			_pauseVideo = env->GetMethodID(c,"pauseVideo","()V");
+			_stopVideo = env->GetMethodID(c,"stopVideo","()V");
 		}
 
 		ThreadAndroid::make_default(jvm);
@@ -686,7 +721,7 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 
 
 
-    os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id);
+    os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _play_video, _is_video_playing, _pause_video, _stop_video);
     os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
@@ -804,6 +839,12 @@ static void _initialize_java_modules() {
 			__android_log_print(ANDROID_LOG_INFO,"godot","****^*^*?^*^*class data %x",singletonClass);
 			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lcom/android/godot/Godot$SingletonBase;");
 
+			if (!initialize) {
+
+				ERR_EXPLAIN("Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: "+m);
+				ERR_CONTINUE(!initialize);
+
+			}
 			jobject obj = env->CallStaticObjectMethod(singletonClass,initialize,_godot_instance);
 			__android_log_print(ANDROID_LOG_INFO,"godot","****^*^*?^*^*class instance %x",obj);
 			jobject gob = env->NewGlobalRef(obj);

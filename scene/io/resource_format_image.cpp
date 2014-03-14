@@ -131,11 +131,11 @@ RES ResourceFormatLoaderImage::load(const String &p_path,const String& p_origina
 		
 		
 		uint32_t flags=0;
-		if (bool(GLOBAL_DEF("texture_import/filter",true)))
+		if (bool(GLOBAL_DEF("image_loader/filter",true)))
 			flags|=Texture::FLAG_FILTER;
-		if (bool(GLOBAL_DEF("texture_import/gen_mipmaps",true)))
+		if (bool(GLOBAL_DEF("image_loader/gen_mipmaps",true)))
 			flags|=Texture::FLAG_MIPMAPS;
-		if (bool(GLOBAL_DEF("texture_import/repeat",false)))
+		if (bool(GLOBAL_DEF("image_loader/repeat",false)))
 			flags|=Texture::FLAG_REPEAT;
 
 
@@ -192,8 +192,8 @@ ResourceFormatLoaderImage::ResourceFormatLoaderImage() {
 	max_texture_size = GLOBAL_DEF("debug/max_texture_size",0);
 	GLOBAL_DEF("debug/max_texture_size_alert",false);
 	debug_load_times=GLOBAL_DEF("debug/image_load_times",false);
-	GLOBAL_DEF("texture_import/filter",true);
-	GLOBAL_DEF("texture_import/gen_mipmaps",true);
-	GLOBAL_DEF("texture_import/repeat",true);
+	GLOBAL_DEF("image_loader/filter",true);
+	GLOBAL_DEF("image_loader/gen_mipmaps",true);
+	GLOBAL_DEF("image_loader/repeat",false);
 
 }

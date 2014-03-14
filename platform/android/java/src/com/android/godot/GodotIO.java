@@ -57,6 +57,9 @@ public class GodotIO {
 	AssetManager am;
 	Activity activity;
 
+	Context applicationContext;
+	MediaPlayer mediaPlayer;
+
 	final int SCREEN_LANDSCAPE=0;
 	final int SCREEN_PORTRAIT=1;
 	final int SCREEN_REVERSE_LANDSCAPE=2;
@@ -326,7 +329,7 @@ public class GodotIO {
 		activity=p_activity;
 		streams=new HashMap<Integer,AssetData>();
 		dirs=new HashMap<Integer,AssetDir>();
-
+		applicationContext = activity.getApplicationContext();
 
 	}
 
@@ -501,6 +504,43 @@ public class GodotIO {
 
 		}
 	};
+
+	public void playVideo(String p_path)
+	{
+		Uri filePath = Uri.parse(p_path);
+		mediaPlayer = new MediaPlayer();
+
+		try {
+			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			mediaPlayer.setDataSource(applicationContext, filePath);
+			mediaPlayer.prepare();
+			mediaPlayer.start();
+		}
+		catch(IOException e)
+        {
+            System.out.println("IOError while playing video");
+        }
+	}
+
+	public boolean isVideoPlaying() {
+		if (mediaPlayer != null) {
+			return mediaPlayer.isPlaying();
+		}
+		return false;
+	}
+
+	public void pauseVideo() {
+		if (mediaPlayer != null) {
+			mediaPlayer.pause();
+		}
+	}
+
+	public void stopVideo() {
+		if (mediaPlayer != null) {
+			mediaPlayer.release();
+			mediaPlayer = null;
+		}
+	}
 
 	protected static final String PREFS_FILE = "device_id.xml";
 	protected static final String PREFS_DEVICE_ID = "device_id";

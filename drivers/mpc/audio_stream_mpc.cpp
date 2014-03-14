@@ -140,7 +140,7 @@ mpc_bool_t AudioStreamMPC::_mpc_canseek(mpc_reader *p_reader) {
 
 bool AudioStreamMPC::_can_mix() const {
 
-	return active && !paused;
+	return /*active &&*/ !paused;
 }
 
 
