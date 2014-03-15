@@ -38,7 +38,7 @@ class CollisionShape2D : public Node2D {
 	Ref<Shape2D> shape;
 	Rect2 rect;
 	bool trigger;
-
+	bool unparenting;
 	void _shape_changed();
 protected:
 
