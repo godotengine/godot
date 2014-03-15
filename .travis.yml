@@ -1,0 +1,3 @@
+language: cpp
+compiler: gcc
+script: scons bin/godot.exe
