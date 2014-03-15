@@ -33,6 +33,7 @@
 
 class FileAccessMemory : public FileAccess {
 
+    Vector<uint8_t> vdata;
 	uint8_t* data;
 	int length;
 	mutable int pos;
@@ -71,6 +72,7 @@ public:
 
 
 	FileAccessMemory();
+    FileAccessMemory(Vector<uint8_t> p_data);
 };
 
 #endif // FILE_ACCESS_MEMORY_H

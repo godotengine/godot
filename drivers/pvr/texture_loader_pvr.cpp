@@ -1,6 +1,52 @@
 #include "texture_loader_pvr.h"
 #include "os/file_access.h"
+#include "io/file_access_memory.h"
 #include <string.h>
+
+#include "zlib.h"
+
+static void *zlib_alloc_func(void *opaque, uint32_t items, uint32_t size) {
+	voidpf ptr =memalloc(items*size);
+	zeromem(ptr,items*size);
+	return ptr;
+}
+
+static void zlib_free_func(void *opaque, void *address) {
+	memfree(address);
+}
+
+static int zlib_uncompress(Bytef *dest, uLongf *destLen, const Bytef *source, uLong sourceLen) {
+    z_stream stream;
+    int err;
+
+    stream.next_in = (Bytef*)source;
+    stream.avail_in = (uInt)sourceLen;
+    /* Check for source > 64K on 16-bit machine: */
+    if ((uLong)stream.avail_in != sourceLen) return Z_BUF_ERROR;
+
+    stream.next_out = dest;
+    stream.avail_out = (uInt)*destLen;
+    if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
+
+    stream.zalloc = zlib_alloc_func;
+    stream.zfree = zlib_free_func;
+
+    err = inflateInit(&stream);
+    if (err != Z_OK) return err;
+
+    err = inflate(&stream, Z_FINISH);
+    if (err != Z_STREAM_END) {
+        inflateEnd(&stream);
+        if (err == Z_NEED_DICT || (err == Z_BUF_ERROR && stream.avail_in == 0))
+            return Z_DATA_ERROR;
+        return err;
+    }
+    *destLen = stream.total_out;
+
+    err = inflateEnd(&stream);
+    return err;
+}
+
 
 static void _pvrtc_decompress(Image* p_img);
 
@@ -18,13 +64,134 @@ enum PVRFLags {
 
 };
 
+// v2
+enum PVR2TexturePixelFormat {
+	kPVR2TexturePixelFormat_RGBA_4444 = 0x10,
+	kPVR2TexturePixelFormat_RGBA_5551,
+	kPVR2TexturePixelFormat_RGBA_8888,
+	kPVR2TexturePixelFormat_RGB_565,
+	kPVR2TexturePixelFormat_RGB_555,				// unsupported
+	kPVR2TexturePixelFormat_RGB_888,
+	kPVR2TexturePixelFormat_I_8,
+	kPVR2TexturePixelFormat_AI_88,
+	kPVR2TexturePixelFormat_PVRTC_2BPP_RGBA,
+	kPVR2TexturePixelFormat_PVRTC_4BPP_RGBA,
+	kPVR2TexturePixelFormat_BGRA_8888,
+	kPVR2TexturePixelFormat_A_8,
+};
 
+
+
+static FileAccess *load_pvr_file(const String &p_path, Error& err)
+{
+    FileAccess *f=FileAccess::open(p_path,FileAccess::READ,&err);
+    if(!f)
+        return NULL;
+    if(p_path.find(".pvr.ccz") != -1)
+    {
+        struct CCZHeader {
+            uint8_t sig[4];             // signature. Should be 'CCZ!' 4 bytes
+            uint16_t compression_type;  // should 0
+            uint16_t version;           // should be 2 (although version type==1 is also supported)
+            uint32_t reserved;          // Reserved for users.
+            uint32_t len;               // size of the uncompressed file
+        } header;
+
+        enum {
+            CCZ_COMPRESSION_ZLIB,       // zlib format.
+            CCZ_COMPRESSION_BZIP2,      // bzip2 format (not supported yet)
+            CCZ_COMPRESSION_GZIP,       // gzip format (not supported yet)
+            CCZ_COMPRESSION_NONE,       // plain (not supported yet)
+        };
+
+        if(f->get_len() <= sizeof(header))
+        {
+            ERR_EXPLAIN("Invalid CCZ file");
+            memdelete(f);
+            return NULL;
+        }
+    	f->set_endian_swap(true); //ccz is big endian format
+        f->get_buffer((uint8_t *) &header.sig, 4);
+        header.compression_type = f->get_16();
+        header.version = f->get_16();
+        header.reserved = f->get_32();
+        header.len = f->get_32();
+
+        // verify header
+        if(header.sig[0] != 'C' || header.sig[1] != 'C' || header.sig[2] != 'Z' || header.sig[3] != '!')
+        {
+            ERR_EXPLAIN("Invalid CCZ file");
+            memdelete(f);
+            return NULL;
+        }
+        // verify header version
+        if(header.version > 2)
+        {
+            ERR_EXPLAIN("Unsupported CCZ header format");
+            memdelete(f);
+            return NULL;
+        }
+        // verify compression format
+        if(header.compression_type != CCZ_COMPRESSION_ZLIB)
+        {
+            ERR_EXPLAIN("CCZ Unsupported compression method");
+            memdelete(f);
+            return NULL;
+        }
+        uint32_t len = header.len;
+
+        Vector<uint8_t> data;
+        if(data.resize(len) != OK)
+        {
+            ERR_EXPLAIN("CCZ: Failed to allocate memory for texture data");
+            memdelete(f);
+            return NULL;
+        }
+
+        uint32_t compressed_size = f->get_len() - f->get_pos();
+        Vector<uint8_t> compressed;
+        if(compressed.resize(compressed_size) != OK)
+        {
+            ERR_EXPLAIN("CCZ: Failed to allocate memory for compressed buffer");
+            memdelete(f);
+            return NULL;
+        }
+        if(f->get_buffer(&compressed[0], compressed_size) != compressed_size)
+        {
+            ERR_EXPLAIN("CCZ: Failed to read compressed buffer");
+            memdelete(f);
+            return NULL;
+        }
+        memdelete(f);
+
+        uint32_t destlen = len;
+        //unsigned long source = (unsigned long) compressed + sizeof(*header);
+        int ret = zlib_uncompress(&data[0], (uLongf *) &destlen, &compressed[0], compressed_size);
+        if(ret != Z_OK)
+        {
+            ERR_EXPLAIN("CCZ: Failed to uncompress data");
+            memdelete(f);
+            return NULL;
+        }
+        return memnew(FileAccessMemory(data));
+    }
+    else if(p_path.find(".pvr.gz") != -1)
+    {
+        // does not support yet
+        memdelete(f);
+        return NULL;
+    }
+    else
+    {
+        return f;
+    }
+}
 
 RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path) {
 
 
 	Error err;
-	FileAccess *f = FileAccess::open(p_path,FileAccess::READ,&err);
+	FileAccess *f = load_pvr_file(p_path,err);//FileAccess::open(p_path,FileAccess::READ,&err);
 	if (!f)
 		return RES();
 
@@ -81,36 +248,76 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path) 
 
 	switch(flags&0xFF) {
 
-		case 0x18:
-		case 0xC: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC2_ALPHA:Image::FORMAT_PVRTC2;  break;
-		case 0x19:
-		case 0xD: format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC4_ALPHA:Image::FORMAT_PVRTC4;  break;
-		case 0x16:
-			format=Image::FORMAT_GRAYSCALE; break;
-		case 0x17:
-			format=Image::FORMAT_GRAYSCALE_ALPHA; break;
+        case kPVR2TexturePixelFormat_RGBA_4444:
+            format=Image::FORMAT_RGBA_4444;
+            break;
+        case kPVR2TexturePixelFormat_RGBA_5551:
+            format=Image::FORMAT_RGBA_5551;
+            break;
+        case kPVR2TexturePixelFormat_RGB_565:
+            format=Image::FORMAT_RGB_565;
+            break;
+        //case kPVR2TexturePixelFormat_RGB_555:
+        //    format=Image::FORMAT_RGB_555;
+        //    break;
+        //case kPVR2TexturePixelFormat_BGRA_8888:
+        //    format=Image::FORMAT_BGRA_8888;
+        //    break;
+        case kPVR2TexturePixelFormat_A_8:
+            format=Image::FORMAT_ALPHA_8;
+            break;
+		case kPVR2TexturePixelFormat_PVRTC_2BPP_RGBA:
+		case 0xC:
+            format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC2_ALPHA:Image::FORMAT_PVRTC2;
+            break;
+
+		case kPVR2TexturePixelFormat_PVRTC_4BPP_RGBA:
+		case 0xD:
+            format=(flags&PVR_HAS_ALPHA)?Image::FORMAT_PVRTC4_ALPHA:Image::FORMAT_PVRTC4;
+            break;
+
+		case kPVR2TexturePixelFormat_I_8:
+			format=Image::FORMAT_GRAYSCALE;
+            break;
+
+		case kPVR2TexturePixelFormat_AI_88:
+			format=Image::FORMAT_GRAYSCALE_ALPHA;
+            break;
+
 		case 0x20:
 		case 0x80:
 		case 0x81:
-			format=Image::FORMAT_BC1; break;
+			format=Image::FORMAT_BC1;
+            break;
+
 		case 0x21:
 		case 0x22:
 		case 0x82:
 		case 0x83:
-			format=Image::FORMAT_BC2; break;
+			format=Image::FORMAT_BC2;
+            break;
+
 		case 0x23:
 		case 0x24:
 		case 0x84:
 		case 0x85:
-			format=Image::FORMAT_BC3; break;
+			format=Image::FORMAT_BC3;
+            break;
+
 		case 0x4:
-		case 0x15:
-			format=Image::FORMAT_RGB; break;
+		case kPVR2TexturePixelFormat_RGB_888:
+			format=Image::FORMAT_RGB;
+            break;
+
 		case 0x5:
-		case 0x12:
-			format=Image::FORMAT_RGBA; break;
+		case kPVR2TexturePixelFormat_RGBA_8888:
+			format=Image::FORMAT_RGBA;
+            break;
+
 		case 0x36:
-			format=Image::FORMAT_ETC; break;
+			format=Image::FORMAT_ETC;
+            break;
+
 		default:
 			ERR_EXPLAIN("Unsupported format in PVR texture: "+itos(flags&0xFF));
 			ERR_FAIL_V(RES());
@@ -140,6 +347,7 @@ RES ResourceFormatPVR::load(const String &p_path,const String& p_original_path) 
 void ResourceFormatPVR::get_recognized_extensions(List<String> *p_extensions) const {
 
 	p_extensions->push_back("pvr");
+    p_extensions->push_back("ccz");
 }
 bool ResourceFormatPVR::handles_type(const String& p_type) const {
 
@@ -150,12 +358,13 @@ String ResourceFormatPVR::get_resource_type(const String &p_path) const {
 
 	if (p_path.extension().to_lower()=="pvr")
 		return "Texture";
+	if (p_path.extension().to_lower()=="ccz")
+		return "Texture";
 	return "";
 }
 
 
 ResourceFormatPVR::ResourceFormatPVR() {
-
 
 	Image::_image_decompress_pvrtc=_pvrtc_decompress;
 
