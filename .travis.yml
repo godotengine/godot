@@ -1,3 +1,5 @@
 language: cpp
 compiler: gcc
+before_script: 
+  - sudo apt-get install scons pkg-config libx11-dev libxcursor-dev build-essential libasound2-dev libfreetype6-dev libgl1-mesa-dev libglu-dev
 script: scons bin/godot
