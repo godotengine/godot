@@ -286,42 +286,6 @@
 				</File>
 			</Filter>
 			<Filter
-				Name="multiscript"
-				>
-				<File
-					RelativePath="..\modules\multiscript\multi_script.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\modules\multiscript\multi_script.h"
-					>
-				</File>
-				<File
-					RelativePath="..\modules\multiscript\register_types.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\register_types_multiscript.obj"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							ObjectFile="$(IntDir)\register_types_multiscript.obj"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\modules\multiscript\register_types.h"
-					>
-				</File>
-			</Filter>
-			<Filter
 				Name="luascript"
 				>
 				<File
