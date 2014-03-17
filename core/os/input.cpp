@@ -283,7 +283,7 @@ Point2 InputDefault::get_mouse_speed() const {
 
 int InputDefault::get_mouse_button_mask() const {
 
-	OS::get_singleton()->get_mouse_button_state();
+	return OS::get_singleton()->get_mouse_button_state();
 }
 
 
