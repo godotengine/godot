@@ -72,6 +72,8 @@ class LuaScript : public Script {
 	bool valid;
 
 friend class LuaInstance;
+friend class LuaScriptLanguage;
+
 	Ref<LuaNativeClass> native;
 	Ref<LuaScript> base;
 	LuaScript *_base; //fast pointer access
@@ -262,7 +264,8 @@ class LuaScriptLanguage : public ScriptLanguage {
 
 //        Variant *stack;
 //        GDFunction *function;
-        //LuaInstance *instance;
+        const LuaInstance *instance;
+        String function;
         //int *ip;
         //int *line;
 
@@ -278,69 +281,61 @@ class LuaScriptLanguage : public ScriptLanguage {
     int _debug_max_call_stack;
     CallLevel *_call_stack;
 
-	void _add_global(const StringName& p_name,const Variant& p_value);
+    bool _debug_in_coroutine;
+    int _debug_running_level;
+    int _debug_break_level;
 
+    bool hitBreakPoint(lua_State *L, lua_Debug *ar);
+    void onHook(lua_State *L, lua_Debug *ar);
+    static void hookRoutine(lua_State *L, lua_Debug *ar);
+
+	void _add_global(const StringName& p_name,const Variant& p_value);
+    bool execute(const char *script);
 
 public:
 
 	int calls;
 
-//    bool debug_break(const String& p_error,bool p_allow_continue=true);
+    bool debug_break(const String& p_error,bool p_allow_continue=true);
     bool debug_break_parse(const String& p_file, int p_line,const String& p_error);
-//
-//    _FORCE_INLINE_ void enter_function(LuaInstance *p_instance,GDFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-//
-//        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-//            return; //no support for other threads than main for now
-//
-//        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-//            ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
-//
-//        if (_debug_call_stack_pos >= _debug_max_call_stack) {
-//            //stack overflow
-//            _debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
-//            ScriptDebugger::get_singleton()->debug(this);
-//            return;
-//	}
-//
-//        _call_stack[_debug_call_stack_pos].stack=p_stack;
-//        _call_stack[_debug_call_stack_pos].instance=p_instance;
-//        _call_stack[_debug_call_stack_pos].function=p_function;
-//        _call_stack[_debug_call_stack_pos].ip=p_ip;
-//        _call_stack[_debug_call_stack_pos].line=p_line;
-//        _debug_call_stack_pos++;
-//    }
-//
-//    _FORCE_INLINE_ void exit_function() {
-//
-//        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-//            return; //no support for other threads than main for now
-//
-//        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-//	    ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
-//
-//        if (_debug_call_stack_pos==0) {
-//
-//            _debug_error="Stack Underflow (Engine Bug)";
-//            ScriptDebugger::get_singleton()->debug(this);
-//            return;
-//        }
-//
-//        _debug_call_stack_pos--;
-//    }
 
+    _FORCE_INLINE_ void enter_function(const LuaInstance *p_instance,const char *p_function) {
 
-	struct {
+        if (Thread::get_main_ID()!=Thread::get_caller_ID())
+            return; //no support for other threads than main for now
 
-		StringName _init;
-		StringName _notification;
-		StringName _set;
-		StringName _get;
-		StringName _get_property_list;
-		StringName _script_source;
+        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
+            ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
 
-	} strings;
+        if (_debug_call_stack_pos >= _debug_max_call_stack) {
+            //stack overflow
+            _debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
+            ScriptDebugger::get_singleton()->debug(this);
+            return;
+	}
 
+        _call_stack[_debug_call_stack_pos].instance=p_instance;
+        _call_stack[_debug_call_stack_pos].function=p_function;
+        _debug_call_stack_pos++;
+    }
+
+    _FORCE_INLINE_ void exit_function() {
+
+        if (Thread::get_main_ID()!=Thread::get_caller_ID())
+            return; //no support for other threads than main for now
+
+        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
+	    ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
+
+        if (_debug_call_stack_pos==0) {
+
+            _debug_error="Stack Underflow (Engine Bug)";
+            ScriptDebugger::get_singleton()->debug(this);
+            return;
+        }
+
+        _debug_call_stack_pos--;
+    }
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant* get_global_array() { return _global_array; }
@@ -380,6 +375,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level,List<String> *p_members, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1);
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1);
 	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1);
+    virtual void debug_status_changed();
 
 	virtual void frame();
 

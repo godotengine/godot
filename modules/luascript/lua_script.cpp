@@ -45,8 +45,6 @@
    -const checks
    -make thread safe
  */
-static void l_push_variant(lua_State *L, const Variant& var);
-
 
 LuaNativeClass::LuaNativeClass(const StringName& p_name) {
 
@@ -929,6 +927,48 @@ void LuaScriptLanguage::_add_global(const StringName& p_name,const Variant& p_va
 	_global_array=global_array.ptr();
 }
 
+bool LuaScriptLanguage::execute(const char *script)
+{
+    int status;
+    int top = lua_gettop(L);
+
+    if(luaL_loadbuffer(L, script, strlen(script), "=(debug command)"))
+    {
+        lua_getglobal(L, "print");
+        lua_insert(L, -2);
+        lua_pcall(L, 1, 0, 0);
+        return false;
+    }
+    else
+    {
+        status = lua_pcall(L, 0, LUA_MULTRET, 0);
+        if(status != 0)
+        {
+            lua_getglobal(L, "print");
+            lua_insert(L, -2);
+            lua_pcall(L, 1, 0, 0);
+        }
+        else
+        {
+            int result = lua_gettop(L) - top;
+            if (result > 0)
+            {
+                lua_getglobal(L, "print");
+                lua_insert(L, -result - 1);
+                if(lua_pcall(L, result, 0, 0) != 0)
+                {
+                    String error = String("error calling in print ") + String(lua_tostring(L, -1));
+                    ERR_PRINT(error.utf8().get_data());
+                }
+            }
+        }
+    }
+    lua_settop(L, top);
+
+    return status == 0;
+}
+
+
 void LuaScriptLanguage::init() {
 
     // setup lua instance object's metamethods
@@ -1091,19 +1131,26 @@ static int l_print(lua_State *L)
     return 0;
 }
 
+static int l_deb(lua_State *L)
+{
+    ScriptDebugger *deb = ScriptDebugger::get_singleton();
+    // set step next
+    deb->set_depth(0);
+    deb->set_lines_left(1);
+
+    return 0;
+}
+
 LuaScriptLanguage::LuaScriptLanguage() {
 
 	calls=0;
 	ERR_FAIL_COND(singleton);
 	singleton=this;
-	strings._init = StaticCString::create("_init");
-	strings._notification = StaticCString::create("_notification");
-	strings._set= StaticCString::create("_set");
-	strings._get= StaticCString::create("_get");
-	strings._get_property_list= StaticCString::create("_get_property_list");
-	strings._script_source=StaticCString::create("script/source");
 	_debug_parse_err_line=-1;
 	_debug_parse_err_file="";
+    _debug_in_coroutine=false;
+    _debug_running_level=-1;
+    _debug_break_level=-1;
 
     _debug_call_stack_pos=0;
     int dmcs=GLOBAL_DEF("debug/script_max_call_stack",1024);
@@ -1124,6 +1171,7 @@ LuaScriptLanguage::LuaScriptLanguage() {
     luaL_openlibs(L);
     // replace lua print function for debugger's output
     lua_register(L, "print", l_print);
+    lua_register(L, "deb", l_deb);
 
     lock = Mutex::create();
 }

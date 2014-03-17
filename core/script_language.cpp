@@ -140,6 +140,9 @@ ScriptDebugger * ScriptDebugger::singleton=NULL;
 void ScriptDebugger::set_lines_left(int p_left) {
 
 	lines_left=p_left;
+
+    if (get_break_language())
+        get_break_language()->debug_status_changed();
 }
 
 int ScriptDebugger::get_lines_left() const {
@@ -150,6 +153,9 @@ int ScriptDebugger::get_lines_left() const {
 void ScriptDebugger::set_depth(int p_depth) {
 
 	depth=p_depth;
+
+    if (get_break_language())
+        get_break_language()->debug_status_changed();
 }
 
 int ScriptDebugger::get_depth() const {
@@ -163,8 +169,11 @@ void ScriptDebugger::insert_breakpoint(int p_line, const StringName& p_source) {
 		breakpoints[p_line]=Set<StringName>();
 	breakpoints[p_line].insert(p_source);
 
-}
+    //printf("insert breakpoint at %s:%d\n", ((String) p_source).utf8().get_data(), p_line);
 
+    if (get_break_language())
+        get_break_language()->debug_status_changed();
+}
 void ScriptDebugger::remove_breakpoint(int p_line, const StringName& p_source) {
 
 	if (!breakpoints.has(p_line))
@@ -173,6 +182,9 @@ void ScriptDebugger::remove_breakpoint(int p_line, const StringName& p_source) {
 	breakpoints[p_line].erase(p_source);
 	if (breakpoints[p_line].size()==0)
 		breakpoints.erase(p_line);
+
+    if (get_break_language())
+        get_break_language()->debug_status_changed();
 }
 bool ScriptDebugger::is_breakpoint(int p_line,const StringName& p_source) const {
 
@@ -198,6 +210,11 @@ void ScriptDebugger::clear_breakpoints() {
 	breakpoints.clear();
 }
 
+bool ScriptDebugger::has_breakpoint() {
+    return !breakpoints.empty();
+}
+
+
 void ScriptDebugger::idle_poll() {
 
 
@@ -212,6 +229,8 @@ void ScriptDebugger::line_poll() {
 void ScriptDebugger::set_break_language(ScriptLanguage *p_lang) {
 
 	break_lang=p_lang;
+    if (get_break_language())
+        get_break_language()->debug_status_changed();
 }
 
 ScriptLanguage* ScriptDebugger::get_break_language() const{

@@ -48,6 +48,7 @@ static Variant *luaL_checkobject(lua_State *L, int idx, const char *type)
 
 bool LuaInstance::set(const StringName& p_name, const Variant& p_value) {
 
+    LUA_MULTITHREAD_GUARD();
 	LuaScript *sptr=script.ptr();
 
     Variant v_name = p_name;
@@ -82,6 +83,7 @@ bool LuaInstance::set(const StringName& p_name, const Variant& p_value) {
 
 bool LuaInstance::get(const StringName& p_name, Variant &r_ret) const {
 
+    LUA_MULTITHREAD_GUARD();
     lua_State *L = LuaScriptLanguage::get_singleton()->get_state();
     CharString name = ((String) p_name).utf8();
 
@@ -252,6 +254,8 @@ int LuaInstance::_call_script(const LuaScript *sptr, const LuaInstance *inst, co
 
     lua_State *L = LuaScriptLanguage::get_singleton()->get_state();
 
+    LuaScriptLanguage::get_singleton()->enter_function(inst, p_method);
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
     lua_pushstring(L, p_method);
     lua_rawget(L, -2);
@@ -277,8 +281,12 @@ int LuaInstance::_call_script(const LuaScript *sptr, const LuaInstance *inst, co
             script->reportError("Call Error: %s, Function: %s", err, p_method);
             return ERR_SCRIPT_FAILED;
         }
+
+        LuaScriptLanguage::get_singleton()->exit_function();
         return OK;
     }
+
+    LuaScriptLanguage::get_singleton()->exit_function();
     return ERR_SKIP;
 }
 
