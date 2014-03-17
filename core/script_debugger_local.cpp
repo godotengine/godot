@@ -104,11 +104,11 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 		} else if (line.begins_with("p") || line.begins_with("print")) {
 
-			if (line.get_slice_count(" ")<=1) {
+			if (line.get_slice_count(" ")<1) {
 				print_line("Usage: print <expre>");
 			} else {
 
-				String expr = line.get_slice(" ",2);
+				String expr = line.get_slice(" ",1);
 				String res = p_script->debug_parse_stack_level_expression(current_frame,expr);
 				print_line(res);
 			}
