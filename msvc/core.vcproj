@@ -246,6 +246,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\core\func_ref.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\core\func_ref.h"
+				>
+			</File>
+			<File
 				RelativePath="..\core\global_constants.cpp"
 				>
 			</File>
