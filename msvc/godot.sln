@@ -1,4 +1,3 @@
-
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "godot", "godot.vcproj", "{5569A196-A230-4A06-A9E0-141FCA73E124}"
