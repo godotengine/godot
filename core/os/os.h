@@ -54,6 +54,7 @@ class OS {
 	int _exit_code;
 	int _orientation;
 	float _fps;
+	int _target_fps;
 
 	char *last_error;
 
@@ -149,7 +150,11 @@ public:
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 
+	virtual void set_target_fps(int p_fps);
+	virtual float get_target_fps() const;
+
 	virtual float get_frames_per_second() const { return _fps; };
+
 
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
