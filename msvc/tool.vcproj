@@ -105,6 +105,72 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
+				EnableIntrinsicFunctions="true"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\$(ProjectName).pdb"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="lib\$(ConfigurationName)\$(ProjectName).lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Shipping|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
@@ -1626,6 +1692,14 @@
 								ObjectFile="$(IntDir)\export_android.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\export_android.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\platform\android\export\export.h"
@@ -1652,6 +1726,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\export_bb10.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1690,6 +1772,14 @@
 								ObjectFile="$(IntDir)\export_javascript.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\export_javascript.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\platform\javascript\export\export.h"
@@ -1716,6 +1806,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\export_osx.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1754,6 +1852,14 @@
 								ObjectFile="$(IntDir)\export_windows.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\export_windows.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\platform\windows\export\export.h"
@@ -1780,6 +1886,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\export_x11.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"

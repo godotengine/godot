@@ -105,6 +105,72 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
+				EnableIntrinsicFunctions="true"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="..\drivers\webp;..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED"
+				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				ProgramDataBaseFileName="$(IntDir)\$(ProjectName).pdb"
+				WarningLevel="3"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				OutputFile="lib\$(ConfigurationName)\$(ProjectName).lib"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Shipping|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="4"
+			CharacterSet="2"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
@@ -403,6 +469,14 @@
 							ObjectFile="$(IntDir)\encode_theora.obj"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\encode_theora.obj"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\drivers\theora\enquant.c"
@@ -679,6 +753,14 @@
 							ObjectFile="$(IntDir)\block_voribs.obj"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\block_voribs.obj"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\drivers\vorbis\codebook.c"
@@ -735,6 +817,14 @@
 							ObjectFile="$(IntDir)\info_vorbis.obj"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\info_vorbis.obj"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\drivers\vorbis\lookup.c"
@@ -767,6 +857,14 @@
 							ObjectFile="$(IntDir)\lpc_voribs.obj"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\lpc_voribs.obj"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\drivers\vorbis\lpc.h"
@@ -785,6 +883,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\lsp_voribs.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -867,6 +973,14 @@
 							ObjectFile="$(IntDir)\smallft_voribs.obj"
 						/>
 					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\smallft_voribs.obj"
+						/>
+					</FileConfiguration>
 				</File>
 				<File
 					RelativePath="..\drivers\vorbis\smallft.h"
@@ -909,6 +1023,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\window_voribs.obj"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Shipping|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1086,6 +1208,14 @@
 								ObjectFile="$(IntDir)\alpha_webp.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\alpha_webp.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\dec\buffer.c"
@@ -1100,6 +1230,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\buffer_webp.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1146,6 +1284,14 @@
 								ObjectFile="$(IntDir)\quant_webp.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\quant_webp.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\dec\tree.c"
@@ -1170,6 +1316,14 @@
 								ObjectFile="$(IntDir)\vp8_webp.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\vp8_webp.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\dec\vp8i.h"
@@ -1188,6 +1342,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\vp8l_webp.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1224,6 +1386,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\cpu__webp.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1302,6 +1472,14 @@
 								ObjectFile="$(IntDir)\alpha_webp_enc.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\alpha_webp_enc.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\enc\analysis.c"
@@ -1316,6 +1494,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\analysis_webp.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1362,6 +1548,14 @@
 								ObjectFile="$(IntDir)\filter_webp.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\filter_webp.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\enc\frame.c"
@@ -1376,6 +1570,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\frame_webp_enc.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1422,6 +1624,14 @@
 								ObjectFile="$(IntDir)\quant_webp_enc.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\quant_webp_enc.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\enc\syntax.c"
@@ -1440,6 +1650,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\tree_webp_enc.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
@@ -1534,6 +1752,14 @@
 								ObjectFile="$(IntDir)\filters_webp.obj"
 							/>
 						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\filters_webp.obj"
+							/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\drivers\webp\utils\filters.h"
@@ -1552,6 +1778,14 @@
 						</FileConfiguration>
 						<FileConfiguration
 							Name="Release|Win32"
+							>
+							<Tool
+								Name="VCCLCompilerTool"
+								ObjectFile="$(IntDir)\huffman_webp.obj"
+							/>
+						</FileConfiguration>
+						<FileConfiguration
+							Name="Shipping|Win32"
 							>
 							<Tool
 								Name="VCCLCompilerTool"
