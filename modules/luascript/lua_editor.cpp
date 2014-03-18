@@ -232,12 +232,26 @@ String LuaScriptLanguage::debug_get_stack_level_source(int p_level) const {
     }
     return "";
 }
+
+static bool is_filter_locals(const char *name)
+{
+    if(!strcmp(name, "(*temporary)"))
+        return true;
+    //if(!strcmp(name, "(for limit)"))
+    //    return true;
+    //if(!strcmp(name, "(for step)"))
+    //    return true;
+    //if(!strcmp(name, "(for range)"))
+    //    return true;
+    return false;
+}
+
 void LuaScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p_locals, List<Variant> *p_values, int p_max_subitems,int p_max_depth) {
 
 	if (_debug_parse_err_line>=0)
 		return;
 
-    int level = 1;
+    int level = p_level;
 
     lua_Debug _ar;
     for(int depth = 0; lua_getstack(L, depth, &_ar); ++depth)
@@ -250,12 +264,12 @@ void LuaScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p
         // get local values first
         while((name = lua_getlocal(L, &_ar, n++)) != NULL)
         {
-            if(strcmp(name, "(*temporary)"))
+            if(!is_filter_locals(name))
             {
-                p_locals->push_back(String("local ") + name);
+                p_locals->push_back(String("[local] ") + name);
                 Variant var;
                 LuaInstance::l_get_variant(L, -1, var);
-                if(var.get_type() == Variant::NIL)
+                if(var.get_type() == Variant::NIL || var.get_type() == Variant::OBJECT)
                 {
                     lua_getglobal(L, "tostring");
                     lua_insert(L, -2);
@@ -271,13 +285,13 @@ void LuaScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p
         lua_getinfo(L, "f", &_ar);
         while((name = lua_getupvalue(L, -1, n++)) != NULL)
         {
-            if(strcmp(name, "(*temporary)"))
+            if(!is_filter_locals(name))
             {
-                p_locals->push_back(String("upvalue ") + name);
+                p_locals->push_back(String("[upvalue] ") + name);
                 Variant var;
                 LuaInstance::l_get_variant(L, -1, var);
                 p_values->push_back(var);
-                if(var.get_type() == Variant::NIL)
+                if(var.get_type() == Variant::NIL || var.get_type() == Variant::OBJECT)
                 {
                     lua_getglobal(L, "tostring");
                     lua_insert(L, -2);
@@ -471,7 +485,7 @@ void LuaScriptLanguage::debug_status_changed()
     }
     else if(deb->has_breakpoint())
     {
-        lua_sethook(L, hookRoutine, LUA_MASKCALL | LUA_MASKRET | LUA_MASKLINE, 0);
+        lua_sethook(L, hookRoutine, LUA_MASKLINE | LUA_MASKRET | LUA_MASKLINE, 0);
     }
     else
     {
