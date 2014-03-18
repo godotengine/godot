@@ -237,12 +237,12 @@ static bool is_filter_locals(const char *name)
 {
     if(!strcmp(name, "(*temporary)"))
         return true;
-    //if(!strcmp(name, "(for limit)"))
-    //    return true;
-    //if(!strcmp(name, "(for step)"))
-    //    return true;
-    //if(!strcmp(name, "(for range)"))
-    //    return true;
+    if(!strcmp(name, "(for index)"))
+        return true;
+    if(!strcmp(name, "(for limit)"))
+        return true;
+    if(!strcmp(name, "(for step)"))
+        return true;
     return false;
 }
 
@@ -290,7 +290,6 @@ void LuaScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p
                 p_locals->push_back(String("[upvalue] ") + name);
                 Variant var;
                 LuaInstance::l_get_variant(L, -1, var);
-                p_values->push_back(var);
                 if(var.get_type() == Variant::NIL || var.get_type() == Variant::OBJECT)
                 {
                     lua_getglobal(L, "tostring");
@@ -298,6 +297,7 @@ void LuaScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p
                     lua_call(L, 1, 1);
                     var = lua_tostring(L, -1);
                 }
+                p_values->push_back(var);
             }
             lua_pop(L, 1);
         }
