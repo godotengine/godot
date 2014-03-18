@@ -254,7 +254,8 @@ int LuaInstance::_call_script(const LuaScript *sptr, const LuaInstance *inst, co
 
     lua_State *L = LuaScriptLanguage::get_singleton()->get_state();
 
-    LuaScriptLanguage::get_singleton()->enter_function(inst, p_method);
+    if (ScriptDebugger::get_singleton())
+        LuaScriptLanguage::get_singleton()->enter_function(inst, p_method);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
     lua_pushstring(L, p_method);
@@ -281,12 +282,13 @@ int LuaInstance::_call_script(const LuaScript *sptr, const LuaInstance *inst, co
             script->reportError("Call Error: %s, Function: %s", err, p_method);
             return ERR_SCRIPT_FAILED;
         }
-
-        LuaScriptLanguage::get_singleton()->exit_function();
+        if (ScriptDebugger::get_singleton())
+            LuaScriptLanguage::get_singleton()->exit_function();
         return OK;
     }
 
-    LuaScriptLanguage::get_singleton()->exit_function();
+    if (ScriptDebugger::get_singleton())
+        LuaScriptLanguage::get_singleton()->exit_function();
     return ERR_SKIP;
 }
 
