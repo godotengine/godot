@@ -106,6 +106,9 @@ public:
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
+	void set_target_fps(int p_fps);
+	float get_target_fps() const;
+
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 

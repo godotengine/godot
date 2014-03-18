@@ -648,7 +648,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			OS::get_singleton()->set_screen_orientation(OS::SCREEN_LANDSCAPE);
 	}
 
-	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/target_fps",60));
+	OS::get_singleton()->set_iterations_per_second(GLOBAL_DEF("physics/fixed_fps",60));
+	OS::get_singleton()->set_target_fps(GLOBAL_DEF("application/target_fps",0));
 
 	if (!OS::get_singleton()->_verbose_stdout) //overrided
 		OS::get_singleton()->_verbose_stdout=GLOBAL_DEF("debug/verbose_stdout",false);
@@ -1210,7 +1211,7 @@ bool Main::start() {
 }
 
 uint64_t Main::last_ticks=0;
-uint64_t Main::last_draw_ticks = 0;
+uint64_t Main::target_ticks=0;
 float Main::time_accum=0;
 uint32_t Main::frames=0;
 uint32_t Main::frame=0;
@@ -1230,9 +1231,8 @@ bool Main::iteration() {
 	last_ticks=ticks;
 	double step=(double)ticks_elapsed / 1000000.0;
 
-	//float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
-	float frame_slice=1.0/50.0;
-	float draw_frame_slice = 1.0/OS::get_singleton()->get_iterations_per_second();
+	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
+
 	if (step>frame_slice*8)
 		step=frame_slice*8;
 
@@ -1274,44 +1274,29 @@ bool Main::iteration() {
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
+	OS::get_singleton()->get_main_loop()->idle( step );
+	message_queue->flush();
 
 	if (SpatialSoundServer::get_singleton())
 		SpatialSoundServer::get_singleton()->update( step );
 	if (SpatialSound2DServer::get_singleton())
 		SpatialSound2DServer::get_singleton()->update( step );
 
-	uint32_t draw_elapsed = ticks - last_draw_ticks;
-	if ( draw_elapsed/1000000.0 > draw_frame_slice ) {
 
-		if (OS::get_singleton()->can_draw()) {
-			/*
-			uint32_t display_frame_delay;
-			double elapsed = (double)(OS::get_singleton()->get_ticks_usec() - last_ticks) / 1000000.0;
-			if (elapsed < frame_slice) {
-				display_frame_delay = (frame_slice - elapsed) * 1000000;
-				OS::get_singleton()->delay_usec( display_frame_delay );
-			}*/
+	if (OS::get_singleton()->can_draw()) {
 
-
-			if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
-				if (VisualServer::get_singleton()->has_changed()) {
-					VisualServer::get_singleton()->draw(); // flush visual commands
-					OS::get_singleton()->frames_drawn++;
-				}
-			} else {
+		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
+			if (VisualServer::get_singleton()->has_changed()) {
 				VisualServer::get_singleton()->draw(); // flush visual commands
 				OS::get_singleton()->frames_drawn++;
-				force_redraw_requested = false;
 			}
 		} else {
-			VisualServer::get_singleton()->flush(); // flush visual commands
+			VisualServer::get_singleton()->draw(); // flush visual commands
+			OS::get_singleton()->frames_drawn++;
+			force_redraw_requested = false;
 		}
-
-		//OS::get_singleton()->get_main_loop()->idle( step );
-		OS::get_singleton()->get_main_loop()->idle( draw_elapsed/1000000.0 );
-		message_queue->flush();
-
-		last_draw_ticks = OS::get_singleton()->get_ticks_usec();
+	} else {
+		VisualServer::get_singleton()->flush(); // flush visual commands
 	}
 
 	if (AudioServer::get_singleton())
@@ -1357,6 +1342,16 @@ bool Main::iteration() {
 		uint32_t frame_delay = OS::get_singleton()->get_frame_delay();
 		if (frame_delay)
 			OS::get_singleton()->delay_usec( OS::get_singleton()->get_frame_delay()*1000 );
+	}
+
+	int taret_fps = OS::get_singleton()->get_target_fps();
+	if (taret_fps>0) {
+		uint64_t time_step = 1000000L/taret_fps;
+		target_ticks += time_step;
+		uint64_t current_ticks = OS::get_singleton()->get_ticks_usec();
+		if (current_ticks<target_ticks) OS::get_singleton()->delay_usec(target_ticks-current_ticks);
+		current_ticks = OS::get_singleton()->get_ticks_usec();
+		target_ticks = MIN(MAX(target_ticks,current_ticks-time_step),current_ticks+time_step);
 	}
 
 	return exit;

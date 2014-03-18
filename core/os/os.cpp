@@ -92,6 +92,14 @@ int OS::get_iterations_per_second() const {
 	return ips;
 }
 
+void OS::set_target_fps(int p_fps) {
+	_target_fps=p_fps>0? p_fps : 0;
+}
+
+float OS::get_target_fps() const {
+	return _target_fps;
+}
+
 void OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	low_processor_usage_mode=p_enabled;
@@ -474,6 +482,7 @@ OS::OS() {
 	_exit_code=0;
 	_orientation=SCREEN_LANDSCAPE;
 	_fps=1;
+	_target_fps=0;
 	_render_thread_mode=RENDER_THREAD_SAFE;
 	Math::seed(1234567);
 }
