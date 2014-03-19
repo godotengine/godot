@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_android.cpp                                             */
+/*  audio_driver_opensl.cpp                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,9 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "audio_driver_android.h"
+#include "audio_driver_opensl.h"
 #include <string.h>
-#ifdef ANDROID_NATIVE_ACTIVITY
 
 
 
@@ -40,21 +39,32 @@
 /* Structure for passing information to callback function */
 
 
-void AudioDriverAndroid::_buffer_callback(
+void AudioDriverOpenSL::_buffer_callback(
     SLAndroidSimpleBufferQueueItf queueItf
  /*   SLuint32 eventFlags,
     const void * pBuffer,
     SLuint32 bufferSize,
     SLuint32 dataUsed*/) {
 
+	bool mix=true;
 
+	if (pause) {
+		mix=false;
+	} else if (mutex) {
+		mix = mutex->try_lock()==OK;
+	}
 
-	if (mutex)
-		mutex->lock();
+	if (mix) {
+		audio_server_process(buffer_size,mixdown_buffer);
+	} else {
 
-	audio_server_process(buffer_size,mixdown_buffer);
+		int32_t* src_buff=mixdown_buffer;
+		for(int i=0;i<buffer_size*2;i++) {
+			src_buff[i]=0;
+		}
+	}
 
-	if (mutex)
+	if (mutex && mix)
 		mutex->unlock();
 
 
@@ -87,7 +97,7 @@ void AudioDriverAndroid::_buffer_callback(
 #endif
 }
 
-void AudioDriverAndroid::_buffer_callbacks(
+void AudioDriverOpenSL::_buffer_callbacks(
     SLAndroidSimpleBufferQueueItf queueItf,
     /*SLuint32 eventFlags,
     const void * pBuffer,
@@ -96,7 +106,7 @@ void AudioDriverAndroid::_buffer_callbacks(
     void *pContext) {
 
 
-	AudioDriverAndroid *ad = (AudioDriverAndroid*)pContext;
+	AudioDriverOpenSL *ad = (AudioDriverOpenSL*)pContext;
 
 //	ad->_buffer_callback(queueItf,eventFlags,pBuffer,bufferSize,dataUsed);
 	ad->_buffer_callback(queueItf);
@@ -104,17 +114,17 @@ void AudioDriverAndroid::_buffer_callbacks(
 }
 
 
-AudioDriverAndroid* AudioDriverAndroid::s_ad=NULL;
+AudioDriverOpenSL* AudioDriverOpenSL::s_ad=NULL;
 
-const char* AudioDriverAndroid::get_name() const {
+const char* AudioDriverOpenSL::get_name() const {
 
 	return "Android";
 }
 
 #if 0
-int AudioDriverAndroid::thread_func(SceSize args, void *argp) {
+int AudioDriverOpenSL::thread_func(SceSize args, void *argp) {
 
-	AudioDriverAndroid* ad = s_ad;
+	AudioDriverOpenSL* ad = s_ad;
 	sceAudioOutput2Reserve(AUDIO_OUTPUT_SAMPLE);
 
 	int half=0;
@@ -170,7 +180,7 @@ int AudioDriverAndroid::thread_func(SceSize args, void *argp) {
 }
 
 #endif
-Error AudioDriverAndroid::init(){
+Error AudioDriverOpenSL::init(){
 
 	SLresult
 	res;
@@ -197,7 +207,7 @@ Error AudioDriverAndroid::init(){
 	return OK;
 
 }
-void AudioDriverAndroid::start(){
+void AudioDriverOpenSL::start(){
 
 
 	mutex = Mutex::create();
@@ -357,37 +367,44 @@ void AudioDriverAndroid::start(){
 
 	active=true;
 }
-int AudioDriverAndroid::get_mix_rate() const {
+int AudioDriverOpenSL::get_mix_rate() const {
 
 	return 44100;
 }
-AudioDriverSW::OutputFormat AudioDriverAndroid::get_output_format() const{
+AudioDriverSW::OutputFormat AudioDriverOpenSL::get_output_format() const{
 
 	return OUTPUT_STEREO;
 }
-void AudioDriverAndroid::lock(){
+void AudioDriverOpenSL::lock(){
 
-	//if (active && mutex)
-	//	mutex->lock();
-
-}
-void AudioDriverAndroid::unlock() {
-
-	//if (active && mutex)
-	//	mutex->unlock();
+	if (active && mutex)
+		mutex->lock();
 
 }
-void AudioDriverAndroid::finish(){
+void AudioDriverOpenSL::unlock() {
+
+	if (active && mutex)
+		mutex->unlock();
+
+}
+void AudioDriverOpenSL::finish(){
 
 	(*sl)->Destroy(sl);
 
 }
 
+void AudioDriverOpenSL::set_pause(bool p_pause) {
 
-AudioDriverAndroid::AudioDriverAndroid()
-{
-	s_ad=this;
-	mutex=NULL;
+	pause=p_pause;
 }
 
-#endif
+
+AudioDriverOpenSL::AudioDriverOpenSL()
+{
+	s_ad=this;
+	mutex=Mutex::create();//NULL;
+	pause=false;
+}
+
+
+

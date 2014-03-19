@@ -88,6 +88,7 @@ public:
 	Color color;
 	Color gradient_begin;
 	Color gradient_end;
+	bool color_use_monochrome;
 	String gradient_image;
 
 
@@ -148,6 +149,8 @@ public:
 			gradient_end=p_value;
 		else if (n=="color/image")
 			gradient_image=p_value;
+		else if (n=="color/monochrome")
+			color_use_monochrome=p_value;
 		else if (n=="advanced/round_advance")
 			round_advance=p_value;
 		else
@@ -210,6 +213,8 @@ public:
 			r_ret=gradient_end;
 		else if (n=="color/image")
 			r_ret=gradient_image;
+		else if (n=="color/monochrome")
+			r_ret=color_use_monochrome;
 		else if (n=="advanced/round_advance")
 			r_ret=round_advance;
 		else
@@ -258,6 +263,7 @@ public:
 		if (color_type==COLOR_GRADIENT_IMAGE) {
 			p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_FILE));
 		}
+		p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/round_advance"));
 
 	}
@@ -269,6 +275,35 @@ public:
 		ADD_SIGNAL( MethodInfo("changed"));
 	}
 
+
+	void reset() {
+
+		char_extra_spacing=0;
+		top_extra_spacing=0;
+		bottom_extra_spacing=0;
+		space_extra_spacing=0;
+
+		character_set=CHARSET_LATIN;
+
+		shadow=false;
+		shadow_radius=2;
+		shadow_color=Color(0,0,0,0.3);
+		shadow_transition=1.0;
+
+		shadow2=false;
+		shadow2_radius=2;
+		shadow2_color=Color(0,0,0,0.3);
+		shadow2_transition=1.0;
+
+		color_type=COLOR_WHITE;
+		color=Color(1,1,1,1);
+		gradient_begin=Color(1,1,1,1);
+		gradient_end=Color(0.5,0.5,0.5,1);
+		color_use_monochrome=false;
+
+		round_advance=true;
+
+	}
 
 	_EditorFontImportOptions() {
 
@@ -293,6 +328,7 @@ public:
 		color=Color(1,1,1,1);
 		gradient_begin=Color(1,1,1,1);
 		gradient_end=Color(0.5,0.5,0.5,1);
+		color_use_monochrome=false;
 
 		round_advance=true;
 	}
@@ -503,6 +539,7 @@ public:
 			dest->get_line_edit()->set_text(p_path);
 			List<String> opts;
 			rimd->get_options(&opts);
+			options->reset();
 			for(List<String>::Element *E=opts.front();E;E=E->next()) {
 
 				options->_set(E->get(),rimd->get_option(E->get()));
@@ -1198,6 +1235,12 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		font_data_list[i]->ofs_y=res[i].y+spacing;
 
 
+	}
+
+
+	if (from->has_option("color/monochrome") && bool(from->get_option("color/monochrome"))) {
+
+		atlas.convert(Image::FORMAT_GRAYSCALE_ALPHA);
 	}
 
 	if (0) {

@@ -430,7 +430,7 @@ Error OS::native_video_play(String p_path) {
 	return FAILED;
 };
 
-bool OS::native_video_is_playing() {
+bool OS::native_video_is_playing() const {
 
 	return false;
 };
@@ -445,6 +445,15 @@ void OS::native_video_stop() {
 
 void OS::set_mouse_mode(MouseMode p_mode) {
 
+}
+
+bool OS::can_use_threads() const {
+
+#ifdef NO_THREADS
+	return false;
+#else
+	return true;
+#endif
 }
 
 OS::MouseMode OS::get_mouse_mode() const{

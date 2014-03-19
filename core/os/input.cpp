@@ -56,6 +56,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
 	ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos);
 	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
+	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
 	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
 	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
 
@@ -279,6 +280,12 @@ Point2 InputDefault::get_mouse_speed() const {
 
 	return mouse_speed_track.speed;
 }
+
+int InputDefault::get_mouse_button_mask() const {
+
+	return OS::get_singleton()->get_mouse_button_state();
+}
+
 
 void InputDefault::iteration(float p_step) {
 

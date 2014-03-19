@@ -166,7 +166,7 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
 	if (OS::get_singleton()->is_stdout_verbose())
-		print_line("load resource: ");
+		print_line("load resource: "+remapped_path);
 
 	String extension=remapped_path.extension();
 	bool found=false;
@@ -233,6 +233,10 @@ Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p
 
 
 String ResourceLoader::find_complete_path(const String& p_path,const String& p_type) {
+	//this is an old vestige when the engine saved files without extension.
+	//remains here for compatibility with old projects and only because it
+	//can be sometimes nice to open files using .* from a script and have it guess
+	//the right extension.
 
 	String local_path = p_path;
 	if (local_path.ends_with("*")) {
@@ -353,6 +357,13 @@ void ResourceLoader::get_dependencies(const String& p_path,List<String> *p_depen
 	}
 }
 
+String ResourceLoader::guess_full_filename(const String &p_path,const String& p_type) {
+
+	String local_path = Globals::get_singleton()->localize_path(p_path);
+
+	return find_complete_path(local_path,p_type);
+
+}
 
 String ResourceLoader::get_resource_type(const String &p_path) {
 

@@ -82,7 +82,8 @@ def configure(env):
 							'-framework', 'AudioToolbox',
 							'-framework', 'SystemConfiguration',
 							'-framework', 'Security',
-							'-framework', 'AdSupport',
+							#'-framework', 'AdSupport',
+							'-framework', 'MediaPlayer',
 							])
 
 	if env['game_center'] == 'yes':

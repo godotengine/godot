@@ -227,7 +227,7 @@ EditorFileSystem::DirItem* EditorFileSystem::_scan_dir(DirAccess *da,Set<String>
 	DirCache *dc = dir_cache.getptr(path);
 
 
-	if (dc && dc->modification_time==mtime) {
+	if (false && dc && dc->modification_time==mtime) {
 		//use the cached files, since directory did not change
 		for (Set<String>::Element *E=dc->subdirs.front();E;E=E->next()) {
 			dirs.push_back(E->get());
@@ -542,6 +542,7 @@ bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta
 
 		for(int j=0;j<p_meta.sources.size();j++) {
 
+
 			String src = EditorImportPlugin::expand_source_path(p_meta.sources[j].path);
 
 			if (!FileAccess::exists(src)) {
@@ -556,6 +557,7 @@ bool EditorFileSystem::_check_meta_sources(EditorFileSystemDirectory::ImportMeta
 			if (mt!=p_meta.sources[j].modified_time) {
 				//scan
 				String md5 = FileAccess::get_md5(src);
+				print_line("checking: "+src);
 				print_line("md5: "+md5);
 				print_line("vs: "+p_meta.sources[j].md5);
 				if (md5!=p_meta.sources[j].md5) {

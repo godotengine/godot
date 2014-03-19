@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*
+** Copyright 2008, The Android Open Source Project
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+*/
+-->
+
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:baselineAligned="false"
+    android:orientation="horizontal" android:id="@+id/notificationLayout" xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <RelativeLayout
+        android:layout_width="35dp"
+        android:layout_height="fill_parent"
+        android:paddingTop="10dp"
+        android:paddingBottom="8dp" >
+
+        <ImageView
+            android:id="@+id/appIcon"
+            android:layout_width="fill_parent"
+            android:layout_height="25dp"
+            android:scaleType="centerInside"            
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"            
+            android:src="@android:drawable/stat_sys_download" />
+
+        <TextView
+            android:id="@+id/progress_text"
+            style="@style/NotificationText"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentBottom="true"
+            android:layout_gravity="center_horizontal"
+            android:singleLine="true"
+            android:gravity="center" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="1.0"
+        android:clickable="true"
+        android:focusable="true"
+        android:paddingTop="10dp"
+        android:paddingRight="8dp"
+        android:paddingBottom="8dp" >
+
+        <TextView
+            android:id="@+id/title"
+            style="@style/NotificationTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:singleLine="true"/>
+
+        <TextView
+            android:id="@+id/time_remaining"
+            style="@style/NotificationText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:singleLine="true"/>
+        <!-- Only one of progress_bar and paused_text will be visible. -->
+
+        <FrameLayout
+            android:id="@+id/progress_bar_frame"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:paddingRight="25dp" />
+
+            <TextView
+                android:id="@+id/description"
+                style="@style/NotificationTextShadow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:paddingRight="25dp"
+                android:singleLine="true" />
+        </FrameLayout>
+
+    </RelativeLayout>
+
+</LinearLayout>

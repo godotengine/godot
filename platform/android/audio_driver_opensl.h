@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_android.h                                               */
+/*  audio_driver_opensl.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,16 +26,18 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef AUDIO_DRIVER_ANDROID_H
-#define AUDIO_DRIVER_ANDROID_H
+#ifndef AUDIO_DRIVER_OPENSL_H
+#define AUDIO_DRIVER_OPENSL_H
 
-#ifdef ANDROID_NATIVE_ACTIVITY
+
 
 #include "servers/audio/audio_server_sw.h"
 #include "os/mutex.h"
 #include <SLES/OpenSLES.h>
 #include "SLES/OpenSLES_Android.h"
-class AudioDriverAndroid : public AudioDriverSW {
+
+
+class AudioDriverOpenSL : public AudioDriverSW {
 
 	bool active;
 	Mutex *mutex;
@@ -45,7 +47,7 @@ class AudioDriverAndroid : public AudioDriverSW {
 		BUFFER_COUNT=2
 	};
 
-
+	bool pause;
 
 
 	uint32_t buffer_size;
@@ -67,7 +69,7 @@ class AudioDriverAndroid : public AudioDriverSW {
 	SLDataLocator_OutputMix locator_outputmix;
 	SLBufferQueueState state;
 
-	static AudioDriverAndroid* s_ad;
+	static AudioDriverOpenSL* s_ad;
 
 	void _buffer_callback(
 	    SLAndroidSimpleBufferQueueItf queueItf
@@ -97,9 +99,10 @@ public:
 	virtual void unlock();
 	virtual void finish();
 
+	virtual void set_pause(bool p_pause);
 
-	AudioDriverAndroid();
+	AudioDriverOpenSL();
 };
 
 #endif // AUDIO_DRIVER_ANDROID_H
-#endif
+

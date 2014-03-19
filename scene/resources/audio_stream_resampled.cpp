@@ -180,7 +180,6 @@ bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
 	}
 
 	int todo = MIN( ((int64_t(rb_todo)<<MIX_FRAC_BITS)/increment)+1, p_frames );
-
 #if 0
 	if (int(mix_rate)==get_mix_rate()) {
 

@@ -37,4 +37,6 @@
 
 - (void)didReceiveMemoryWarning;
 
+- (BOOL)prefersStatusBarHidden;
+
 @end

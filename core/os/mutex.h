@@ -50,7 +50,7 @@ public:
 
 	virtual void lock()=0; ///< Lock the mutex, block if locked by someone else
 	virtual void unlock()=0; ///< Unlock the mutex, let other threads continue
-	virtual Error try_lock()=0; ///< Attempt to lock the mutex, true on success, false means it can't lock.
+	virtual Error try_lock()=0; ///< Attempt to lock the mutex, OK on success, ERROR means it can't lock.
 
 	static Mutex * create(bool p_recursive=true); ///< Create a mutex
 	
