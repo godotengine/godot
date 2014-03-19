@@ -73,6 +73,7 @@ public:
 	String custom_file;
 
 	bool shadow;
+    bool filter;
 	Vector2 shadow_offset;
 	int shadow_radius;
 	Color shadow_color;
@@ -116,6 +117,9 @@ public:
 
 		else if (n=="shadow/enabled") {
 			shadow=p_value;
+			_change_notify();
+        }else if (n=="filter/enabled") {
+			filter=p_value;
 			_change_notify();
 		}else if (n=="shadow/radius")
 			shadow_radius=p_value;
@@ -182,6 +186,8 @@ public:
 
 		else if (n=="shadow/enabled")
 			r_ret=shadow;
+        else if (n=="filter/enabled")
+            r_ret=filter;
 		else if (n=="shadow/radius")
 			r_ret=shadow_radius;
 		else if (n=="shadow/offset")
@@ -242,6 +248,7 @@ public:
 			p_list->push_back(PropertyInfo(Variant::COLOR,"shadow/color"));
 			p_list->push_back(PropertyInfo(Variant::REAL,"shadow/transition",PROPERTY_HINT_EXP_EASING));
 		}
+        p_list->push_back(PropertyInfo(Variant::BOOL,"filter/enabled"));
 
 		p_list->push_back(PropertyInfo(Variant::BOOL,"shadow2/enabled"));
 		if (shadow2) {
@@ -315,6 +322,7 @@ public:
 		character_set=CHARSET_LATIN;
 
 		shadow=false;
+        filter=true;
 		shadow_radius=2;
 		shadow_color=Color(0,0,0,0.3);
 		shadow_transition=1.0;
@@ -1276,10 +1284,13 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	font->set_height(height+bottom_space+top_space);
 	font->set_ascent(ascent+top_space);
 
+    bool filter_enabled = from->get_option("filter/enabled");
 	//register texures
 	{
 		Ref<ImageTexture> t = memnew(ImageTexture);
 		t->create_from_image(atlas);
+        if(!filter_enabled)
+            t->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
 		t->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
 		font->add_texture(t);
 
