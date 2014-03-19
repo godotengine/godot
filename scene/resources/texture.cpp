@@ -583,7 +583,7 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
 
     if(scale.x >= 0 && scale.y >= 0)
     {
-	    Rect2 dr(src_c.size*scale,p_rect.pos+ofs*scale);
+	    Rect2 dr(p_rect.pos+ofs*scale,src_c.size*scale);
 	    VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate);
     }
     else
