@@ -241,7 +241,7 @@ public:
     static void l_push_variant(lua_State *L, const Variant& var);
     static void l_get_variant(lua_State *L, int idx, Variant& var);
     static void l_push_value(lua_State *L, int idx);
-    static bool l_push_bultins_ctor(lua_State *L, const char *type);
+    static bool l_register_bultins_ctors(lua_State *L);
 
     static void setup();
 
@@ -415,9 +415,9 @@ public:
 
 };
 
-#define LUA_MULTITHREAD_GUARD()
-//#define LUA_MULTITHREAD_GUARD()\
-//    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
-//    MutexLock(lang->get_lock());
+//#define LUA_MULTITHREAD_GUARD()
+#define LUA_MULTITHREAD_GUARD()\
+    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
+    MutexLock(lang->get_lock());
 
 #endif // LUA_SCRIPT_H

@@ -153,21 +153,16 @@ int LuaInstance::l_bultins_wrapper(lua_State *L)
     return 0;
 }
 
-bool LuaInstance::l_push_bultins_ctor(lua_State *L, const char *type)
+bool LuaInstance::l_register_bultins_ctors(lua_State *L)
 {
-    LUA_MULTITHREAD_GUARD();
-
     for(int idx = 0; idx < (sizeof(vtypes) / sizeof(vtypes[0])); idx++)
     {
         BulitinTypes& t = vtypes[idx];
-        if(!strcmp(t.type, type))
-        {
-            lua_pushinteger(L, t.vt);
-            lua_pushcclosure(L, l_bultins_wrapper, 1);
-            return true;
-        }
+        lua_pushinteger(L, t.vt);
+        lua_pushcclosure(L, l_bultins_wrapper, 1);
+        lua_setglobal(L, t.type);
     }
-    return false;
+    return true;
 }
 
 int LuaInstance::meta_bultins__gc(lua_State *L)
