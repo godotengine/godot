@@ -259,27 +259,12 @@ class LuaScriptLanguage : public ScriptLanguage {
 	Vector<Variant> global_array;
 	Map<StringName,int> globals;
 
-
-    struct CallLevel {
-
-//        Variant *stack;
-//        GDFunction *function;
-        const LuaInstance *instance;
-        String function;
-        //int *ip;
-        //int *line;
-
-    };
-
     lua_State *L;
     Mutex* lock;
 
     int _debug_parse_err_line;
     String _debug_parse_err_file;
     String _debug_error;
-    int _debug_call_stack_pos;
-    int _debug_max_call_stack;
-    CallLevel *_call_stack;
 
     bool _debug_in_coroutine;
     int _debug_running_level;
@@ -298,44 +283,6 @@ public:
 
     bool debug_break(const String& p_error,bool p_allow_continue=true);
     bool debug_break_parse(const String& p_file, int p_line,const String& p_error);
-
-    _FORCE_INLINE_ void enter_function(const LuaInstance *p_instance,const char *p_function) {
-
-        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-            return; //no support for other threads than main for now
-
-        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-            ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
-
-        if (_debug_call_stack_pos >= _debug_max_call_stack) {
-            //stack overflow
-            _debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
-            ScriptDebugger::get_singleton()->debug(this);
-            return;
-	}
-
-        _call_stack[_debug_call_stack_pos].instance=p_instance;
-        _call_stack[_debug_call_stack_pos].function=p_function;
-        _debug_call_stack_pos++;
-    }
-
-    _FORCE_INLINE_ void exit_function() {
-
-        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-            return; //no support for other threads than main for now
-
-        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-	    ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
-
-        if (_debug_call_stack_pos==0) {
-
-            _debug_error="Stack Underflow (Engine Bug)";
-            ScriptDebugger::get_singleton()->debug(this);
-            return;
-        }
-
-        _debug_call_stack_pos--;
-    }
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant* get_global_array() { return _global_array; }

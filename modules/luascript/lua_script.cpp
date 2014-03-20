@@ -1149,20 +1149,8 @@ LuaScriptLanguage::LuaScriptLanguage() {
     _debug_running_level=-1;
     _debug_break_level=-1;
 
-    _debug_call_stack_pos=0;
-    int dmcs=GLOBAL_DEF("debug/script_max_call_stack",1024);
-    if (ScriptDebugger::get_singleton()) {
-        //debugging enabled!
+    //int dmcs=GLOBAL_DEF("debug/script_max_call_stack",1024);
 
-	_debug_max_call_stack = dmcs;
-        if (_debug_max_call_stack<1024)
-            _debug_max_call_stack=1024;
-	_call_stack = memnew_arr( CallLevel, _debug_max_call_stack+1 );
-
-    } else {
-        _debug_max_call_stack=0;
-        _call_stack=NULL;
-    }
     L = lua_newstate(l_alloc, NULL);
     lua_atpanic(L, panic);
     luaL_openlibs(L);
@@ -1178,9 +1166,6 @@ LuaScriptLanguage::LuaScriptLanguage() {
 
 LuaScriptLanguage::~LuaScriptLanguage() {
 
-    if (_call_stack)  {
-        memdelete_arr(_call_stack);
-    }
     lock->lock();
     if (L) {
         lua_close(L);
