@@ -361,9 +361,6 @@ int LuaScript::l_meta_index(lua_State *L)
         return 1;
     }
 
-    if(LuaInstance::l_push_bultins_ctor(L, key))
-        return 1;
-
     // get from globals
     lua_getglobal(L, "_G");
     lua_pushvalue(L, 2);
@@ -1172,6 +1169,8 @@ LuaScriptLanguage::LuaScriptLanguage() {
     // replace lua print function for debugger's output
     lua_register(L, "print", l_print);
     lua_register(L, "deb", l_deb);
+
+    LuaInstance::l_register_bultins_ctors(L);
 
     lock = Mutex::create();
 }
