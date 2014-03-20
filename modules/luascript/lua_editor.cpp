@@ -308,13 +308,35 @@ void LuaScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *
 	if (_debug_parse_err_line>=0)
 		return;
 
-    ERR_FAIL_INDEX(p_level,_debug_call_stack_pos);
-    int l = _debug_call_stack_pos - p_level -1;
+    lua_Debug ar;
+    if(!lua_getstack(L, p_level, &ar))
+        return;
 
+    const LuaInstance *instance = NULL;
 
-    const LuaInstance *instance = _call_stack[l].instance;
-    if (!instance)
-    	return;
+    int n = 1;
+    const char *name = NULL;
+    // get local 'self'
+    while((name = lua_getlocal(L, &ar, n++)) != NULL)
+    {
+        if(!strcmp(name, "self"))
+        {
+            Variant self;
+            LuaInstance::l_get_variant(L, -1, self);
+            if(self.get_type() != Variant::OBJECT)
+            {
+                lua_pop(L, 1);
+                return;
+            }
+            Object *obj = self;
+            if(obj->get_script_instance() == NULL)
+                return;
+            instance = dynamic_cast<LuaInstance *>(obj->get_script_instance());
+        }
+        lua_pop(L, 1);
+    }
+    if(instance == NULL)
+        return;
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, instance->ref);
     if(lua_istable(L, -1))
