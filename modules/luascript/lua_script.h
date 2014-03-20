@@ -174,7 +174,7 @@ public:
 
 class LuaInstance : public ScriptInstance {
 friend class LuaScript;
-//friend class GDFunction;
+friend class LuaScriptLanguage;
 //friend class GDFunctions;
 
 	Variant owner;

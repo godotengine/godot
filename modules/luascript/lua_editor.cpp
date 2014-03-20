@@ -228,7 +228,7 @@ String LuaScriptLanguage::debug_get_stack_level_source(int p_level) const {
     if(lua_getstack(L, p_level, &ar))
     {
         lua_getinfo(L, "S", &ar);
-        return ar.short_src;
+        return ar.source ? ar.source : ar.short_src;
     }
     return "";
 }
@@ -313,23 +313,56 @@ void LuaScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *
 
 
     const LuaInstance *instance = _call_stack[l].instance;
-
     if (!instance)
-	return;
+    	return;
 
-    Ref<LuaScript> script = instance->get_script();
-    ERR_FAIL_COND( script.is_null() );
-
-    for(Map<StringName,PropertyInfo>::Element *E=script->member_info.front(); E; E=E->next())
+    lua_rawgeti(L, LUA_REGISTRYINDEX, instance->ref);
+    if(lua_istable(L, -1))
     {
-        const StringName& key = E->key();
-        Variant value;
-        if(instance->get(key, value))
+        lua_pushnil(L);
+        while(lua_next(L, -2))
         {
-            p_members->push_back(key);
-            p_values->push_back(value);
+            Variant key, value;
+            LuaInstance::l_get_variant(L, -2, key);
+            if(key.get_type() == Variant::NIL || key.get_type() == Variant::OBJECT)
+            {
+                lua_getglobal(L, "tostring");
+                lua_insert(L, -2);
+                lua_call(L, 1, 1);
+                key = lua_tostring(L, -1);
+            }
+            LuaInstance::l_get_variant(L, -1, value);
+            if(value.get_type() == Variant::NIL || value.get_type() == Variant::OBJECT)
+            {
+                lua_getglobal(L, "tostring");
+                lua_insert(L, -2);
+                lua_call(L, 1, 1);
+                value = lua_tostring(L, -1);
+            }
+            if((String) key != String(".c_instance"))
+            {
+                p_members->push_back(key);
+                p_values->push_back(value);
+            }
+
+            lua_pop(L, 1);
         }
     }
+    lua_pop(L, 1);
+
+    //Ref<LuaScript> script = instance->get_script();
+    //ERR_FAIL_COND( script.is_null() );
+
+    //for(Map<StringName,PropertyInfo>::Element *E=script->member_info.front(); E; E=E->next())
+    //{
+    //    const StringName& key = E->key();
+    //    Variant value;
+    //    if(instance->get(key, value))
+    //    {
+    //        p_members->push_back(key);
+    //        p_values->push_back(value);
+    //    }
+    //}
 }
 
 void LuaScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems,int p_max_depth) {
