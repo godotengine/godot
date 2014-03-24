@@ -74,6 +74,8 @@ static BulitinTypes vtypes[] = {
 
 int LuaInstance::l_bultins_caller_wrapper(lua_State *L)
 {
+    LUA_MULTITHREAD_GUARD();
+
     const char *key = luaL_checkstring(L, lua_upvalueindex(1));
     int top = lua_gettop(L);
 

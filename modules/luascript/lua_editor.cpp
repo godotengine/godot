@@ -61,6 +61,8 @@ String LuaScriptLanguage::get_template(const String& p_class_name, const String&
 
 bool LuaScriptLanguage::validate(const String& p_script, int &r_line_error,int &r_col_error,String& r_test_error, const String& p_path,List<String> *r_functions) const {
 
+    LUA_MULTITHREAD_GUARD();
+
     CharString code = p_script.utf8();
 
     lua_State *L = LuaScriptLanguage::get_singleton()->get_state();
@@ -168,6 +170,8 @@ int LuaScriptLanguage::debug_get_stack_level_count() const {
 	if (_debug_parse_err_line>=0)
 		return 1;
 
+    LUA_MULTITHREAD_GUARD();
+
     lua_Debug ld;
     int depth = 0;
     for(; lua_getstack(L, depth, &ld); ++depth);
@@ -176,6 +180,8 @@ int LuaScriptLanguage::debug_get_stack_level_count() const {
 
 bool printFrame(lua_State *L, unsigned int level)
 {
+    LUA_MULTITHREAD_GUARD();
+
     lua_Debug ld;
     if(!lua_getstack(L, level, &ld))
         return false;
@@ -197,6 +203,8 @@ int LuaScriptLanguage::debug_get_stack_level_line(int p_level) const {
 	if (_debug_parse_err_line>=0)
 		return _debug_parse_err_line;
 
+    LUA_MULTITHREAD_GUARD();
+
     lua_Debug ar;
     if(lua_getstack(L, p_level, &ar))
     {
@@ -211,6 +219,8 @@ String LuaScriptLanguage::debug_get_stack_level_function(int p_level) const {
 	if (_debug_parse_err_line>=0)
 		return "";
 
+    LUA_MULTITHREAD_GUARD();
+
     lua_Debug ar;
     if(lua_getstack(L, p_level, &ar))
     {
@@ -223,6 +233,8 @@ String LuaScriptLanguage::debug_get_stack_level_source(int p_level) const {
 
 	if (_debug_parse_err_line>=0)
 		return _debug_parse_err_file;
+
+    LUA_MULTITHREAD_GUARD();
 
     lua_Debug ar;
     if(lua_getstack(L, p_level, &ar))
@@ -252,6 +264,8 @@ void LuaScriptLanguage::debug_get_stack_level_locals(int p_level,List<String> *p
 		return;
 
     int level = p_level;
+
+    LUA_MULTITHREAD_GUARD();
 
     lua_Debug _ar;
     for(int depth = 0; lua_getstack(L, depth, &_ar); ++depth)
@@ -307,6 +321,8 @@ void LuaScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *
 
 	if (_debug_parse_err_line>=0)
 		return;
+
+    LUA_MULTITHREAD_GUARD();
 
     lua_Debug ar;
     if(!lua_getstack(L, p_level, &ar))
@@ -397,6 +413,8 @@ String LuaScriptLanguage::debug_parse_stack_level_expression(int p_level,const S
 	if (_debug_parse_err_line>=0)
 		return "";
 
+    LUA_MULTITHREAD_GUARD();
+
     char script[4096];
 #if defined(_MSC_VER)
     _snprintf(script, sizeof(script), "return %s", p_expression.utf8().get_data());
@@ -419,6 +437,8 @@ String LuaScriptLanguage::debug_parse_stack_level_expression(int p_level,const S
 
 bool LuaScriptLanguage::hitBreakPoint(lua_State *L, lua_Debug *ar)
 {
+    LUA_MULTITHREAD_GUARD();
+
     ScriptDebugger *deb = ScriptDebugger::get_singleton();
     if(deb == NULL || !deb->has_breakpoint())
         return false;
