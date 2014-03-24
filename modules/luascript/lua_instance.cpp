@@ -515,6 +515,19 @@ int LuaInstance::meta__index(lua_State *L)
         lua_pop(L, 2);
     }
 
+    // get symbol from c++ method binds
+    lua_getmetatable(L, 1);
+    lua_getfield(L, -1, ".methods");
+    lua_pushvalue(L, 2);
+    lua_gettable(L, -2);
+    if(!lua_isnil(L, -1))
+    {
+        lua_insert(L, -3);
+        lua_pop(L, 2);
+        return 1;
+    }
+    lua_pop(L, 3);
+
     // get symbol from script
     if(inst != NULL)
     {
@@ -535,19 +548,6 @@ int LuaInstance::meta__index(lua_State *L)
     		sptr = sptr->_base;
         }
     }
-
-    // get symbol from c++ method binds
-    lua_getmetatable(L, 1);
-    lua_getfield(L, -1, ".methods");
-    lua_pushvalue(L, 2);
-    lua_gettable(L, -2);
-    if(!lua_isnil(L, -1))
-    {
-        lua_insert(L, -3);
-        lua_pop(L, 2);
-        return 1;
-    }
-    lua_pop(L, 3);
 
     const char *name = lua_tostring(L, 2);
     // get symbol from c++
