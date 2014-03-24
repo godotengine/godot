@@ -374,35 +374,41 @@ void LuaInstance::l_push_variant(lua_State *L, const Variant& var)
             }
 
             ScriptInstance *sci = obj->get_script_instance();
-            if(sci != NULL)
+            if(sci == NULL)
             {
-                LuaInstance *inst = dynamic_cast<LuaInstance *>(sci);
-                if(inst != NULL)
+                ReturnLuaInstace* instance = memnew( ReturnLuaInstace );
+                instance->base_ref=false;
+                //instance->members.resize(member_indices.size());
+                instance->script=Ref<LuaScript>(obj->get_script_instance());
+                instance->owner=var;
+                obj->set_script_instance(instance);
+                if(instance->init() != OK)
                 {
-                    lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
-                    if(lua_istable(L, -1))
-                    {
-                        lua_pushstring(L, ".c_instance");
-                        lua_rawget(L, -2);
-                        if(!lua_isnil(L, -1))
-                        {
-                            lua_remove(L, -2);
-                            break;
-                        }
-                        lua_pop(L, 2);
-                    }
-                    lua_pop(L, 1);
+                    instance->script=Ref<LuaScript>();
+                    memdelete(instance);
+                    ERR_FAIL(); //error consrtucting
                 }
+                sci = instance;
             }
-            void *ptr = lua_newuserdata(L, sizeof(obj));
-            *((Variant **) ptr)= memnew(Variant);
-            **((Variant **) ptr) = var;
-            //Reference *ref = dynamic_cast<Reference *>(obj);
-            //if(ref != NULL)
-            //    ref->reference();
-            //lua_pushlightuserdata(L, obj);
-            luaL_getmetatable(L, "GdObject");
-            lua_setmetatable(L, -2);
+            LuaInstance *inst = dynamic_cast<LuaInstance *>(sci);
+            if(inst != NULL)
+            {
+                lua_rawgeti(L, LUA_REGISTRYINDEX, inst->ref);
+                if(lua_istable(L, -1))
+                {
+                    lua_pushstring(L, ".c_instance");
+                    lua_rawget(L, -2);
+                    if(!lua_isnil(L, -1))
+                    {
+                        lua_remove(L, -2);
+                        break;
+                    }
+                    lua_pop(L, 2);
+                }
+                lua_pop(L, 1);
+            }
+            else
+                lua_pushnil(L);
         }
         break;
 
