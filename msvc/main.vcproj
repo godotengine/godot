@@ -148,8 +148,8 @@
 		</Configuration>
 		<Configuration
 			Name="Shipping|Win32"
-			OutputDirectory="$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="bin\$(ConfigurationName)"
+			IntermediateDirectory="obj\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
