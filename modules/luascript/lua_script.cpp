@@ -300,10 +300,9 @@ void LuaScript::set_source_code(const String& p_code) {
 
 void LuaScript::reportError(const char *fmt, ...) const
 {
-    char buf[2048];
+    LUA_MULTITHREAD_GUARD();
 
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    char buf[2048];
 
     lua_State *L = lang->get_state();
     lua_getglobal(L, "debug");
@@ -340,15 +339,14 @@ void LuaScript::reportError(const char *fmt, ...) const
 
 int LuaScript::l_meta_gc(lua_State *L)
 {
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
+
     return 0;
 }
 
 int LuaScript::l_meta_index(lua_State *L)
 {
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
 
     const char *key = luaL_checkstring(L, 2);
 
@@ -372,8 +370,7 @@ int LuaScript::l_meta_index(lua_State *L)
 
 int LuaScript::l_extends(lua_State *L)
 {
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
 
     LuaScript *self = (LuaScript *) lua_touserdata(L, lua_upvalueindex(1));
     const char *base = luaL_checkstring(L, 1);
@@ -534,8 +531,7 @@ bool LuaScript::preprocessHints(PropertyInfo& pi, Vector<String>& tokens)
 
 int LuaScript::l_export(lua_State *L)
 {
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
 
     LuaScript *self = (LuaScript *) lua_touserdata(L, lua_upvalueindex(1));
     String name = luaL_checkstring(L, 1);
@@ -599,8 +595,7 @@ int LuaScript::l_export(lua_State *L)
 
 Error LuaScript::reload() {
 
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
 
     ERR_FAIL_COND_V(instances.size(),ERR_ALREADY_IN_USE);
     reset();
@@ -860,8 +855,7 @@ Error LuaScript::load_source_code(const String& p_path) {
 
 void LuaScript::reset()
 {
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
 
     if(ref != LUA_NOREF)
     {
@@ -926,6 +920,8 @@ void LuaScriptLanguage::_add_global(const StringName& p_name,const Variant& p_va
 
 bool LuaScriptLanguage::execute(const char *script)
 {
+    LUA_MULTITHREAD_GUARD();
+
     int status;
     int top = lua_gettop(L);
 
@@ -1094,8 +1090,7 @@ static void *l_alloc(void *ud, void *ptr, size_t osize, size_t nsize)
 
 int LuaScriptLanguage::panic(lua_State *L)
 {
-    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
-    MutexLock(lang->get_lock());
+    LUA_MULTITHREAD_GUARD();
 
     const char *s = lua_tostring(L, -1);
     fputs("PANIC: unprotected error in call to Lua API (", stderr);
@@ -1107,6 +1102,8 @@ int LuaScriptLanguage::panic(lua_State *L)
 
 static int l_print(lua_State *L)
 {
+    LUA_MULTITHREAD_GUARD();
+
     int n = lua_gettop(L);  /* number of arguments */
     int i;
     lua_getglobal(L, "tostring");
@@ -1130,6 +1127,8 @@ static int l_print(lua_State *L)
 
 static int l_deb(lua_State *L)
 {
+    LUA_MULTITHREAD_GUARD();
+
     ScriptDebugger *deb = ScriptDebugger::get_singleton();
     // set step next
     deb->set_depth(0);
