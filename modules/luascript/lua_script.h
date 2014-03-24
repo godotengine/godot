@@ -251,6 +251,12 @@ public:
 
 };
 
+class ReturnLuaInstace : public LuaInstance {
+public:
+    ReturnLuaInstace() {}
+};
+
+
 class LuaScriptLanguage : public ScriptLanguage {
 
 	static LuaScriptLanguage *singleton;
@@ -362,7 +368,8 @@ public:
 
 };
 
-//#define LUA_MULTITHREAD_GUARD()
+//#define LUA_MULTITHREAD_GUARD()\
+//    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
 #define LUA_MULTITHREAD_GUARD()\
     LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
     MutexLock(lang->get_lock());

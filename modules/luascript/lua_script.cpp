@@ -350,11 +350,10 @@ int LuaScript::l_meta_index(lua_State *L)
 
     const char *key = luaL_checkstring(L, 2);
 
-    LuaScriptLanguage *lsl = ::LuaScriptLanguage::get_singleton();
-    if(lsl->get_global_map().has(key))
+    if(lang->get_global_map().has(key))
     {
-        int idx = lsl->get_global_map()[key];
-        Variant& var = lsl->get_global_array()[idx];
+        int idx = lang->get_global_map()[key];
+        Variant& var = lang->get_global_array()[idx];
         LuaInstance::l_push_variant(L, var);
         return 1;
     }
