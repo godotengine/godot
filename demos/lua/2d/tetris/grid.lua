@@ -107,6 +107,7 @@ function node:piece_check_fit(ofs, er)
     return true
 end
 
+
 function node:new_piece()
     piece_shape = math.random(0, MAX_SHAPES - 1)
     piece_pos = Vector2(width / 2, 0)

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resource_file type="PackedScene" subresource_count="3" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
-	<ext_resource path="res://grid.*" type="Script"></ext_resource>
-	<ext_resource path="res://grid.*" type="PackedScene"></ext_resource>
+	<ext_resource path="res://grid.lua" type="Script"></ext_resource>
+	<ext_resource path="res://grid.xml" type="PackedScene"></ext_resource>
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
@@ -177,12 +177,12 @@
 					<string> "__editor_plugin_screen__" </string>
 					<string> "Script" </string>
 				</dictionary>
-				<resource  resource_type="PackedScene" path="res://grid.*">  </resource>
+				<resource  resource_type="PackedScene" path="res://grid.xml">  </resource>
 				<real> 40 </real>
 				<real> 35 </real>
 				<real> 80 </real>
 				<real> 75 </real>
-				<resource  resource_type="Script" path="res://grid.*">  </resource>
+				<resource  resource_type="Script" path="res://grid.lua">  </resource>
 				<real> 243 </real>
 				<real> 36 </real>
 				<real> 283 </real>

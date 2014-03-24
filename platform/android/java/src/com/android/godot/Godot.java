@@ -55,7 +55,7 @@ import android.media.MediaPlayer;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.ArrayList;
-import com.android.godot.payments.PaymentsManager;
+//import com.android.godot.payments.PaymentsManager;
 import java.io.IOException;
 import android.provider.Settings.Secure;
 import android.widget.FrameLayout;
@@ -137,15 +137,15 @@ public class Godot extends Activity implements SensorEventListener
 	};
 	public ResultCallback result_callback;
 
-	private PaymentsManager mPaymentsManager;
+	//private PaymentsManager mPaymentsManager;
 
 	@Override protected void onActivityResult (int requestCode, int resultCode, Intent data) {
-		if(requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE){
-			mPaymentsManager.processPurchaseResponse(resultCode, data);
-		}else if (result_callback != null) {
-			result_callback.callback(requestCode, resultCode, data);
-			result_callback = null;
-		};
+		//if(requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE){
+		//	mPaymentsManager.processPurchaseResponse(resultCode, data);
+		//}else if (result_callback != null) {
+		//	result_callback.callback(requestCode, resultCode, data);
+		//	result_callback = null;
+		//};
 	};
 
 	public void onVideoInit(boolean use_gl2) {
@@ -196,7 +196,7 @@ public class Godot extends Activity implements SensorEventListener
 
 		result_callback = null;
 		
-		mPaymentsManager = PaymentsManager.createManager(this).initService();
+		//mPaymentsManager = PaymentsManager.createManager(this).initService();
 		
 	//	instanceSingleton( new GodotFacebook(this) );
 
@@ -205,7 +205,7 @@ public class Godot extends Activity implements SensorEventListener
 
 	@Override protected void onDestroy(){
 		
-		if(mPaymentsManager != null ) mPaymentsManager.destroy();
+		//if(mPaymentsManager != null ) mPaymentsManager.destroy();
 		super.onDestroy();
 	}
 	
@@ -355,9 +355,9 @@ public class Godot extends Activity implements SensorEventListener
 		return super.onKeyDown(keyCode, event);
 	}
 
-	public PaymentsManager getPaymentsManager() {
-		return mPaymentsManager;
-	}
+	//public PaymentsManager getPaymentsManager() {
+	//	return mPaymentsManager;
+	//}
 
 //	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
 //		this.mPaymentsManager = mPaymentsManager;
