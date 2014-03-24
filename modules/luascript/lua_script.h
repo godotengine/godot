@@ -372,6 +372,6 @@ public:
 //    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
 #define LUA_MULTITHREAD_GUARD()\
     LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
-    MutexLock(lang->get_lock());
+    MutexLock lklua(lang->get_lock());
 
 #endif // LUA_SCRIPT_H
