@@ -196,6 +196,8 @@ friend class LuaScriptLanguage;
 
     static int l_methodbind_wrapper(lua_State *L);
     static int l_bultins_wrapper(lua_State *L);
+    static int l_bultins_tostring(lua_State *L);
+    static int l_bultins_index(lua_State *L);
     static int l_bultins_caller_wrapper(lua_State *L);
 
     static int l_push_bulltins_type(lua_State *L, const Variant& var);
