@@ -6473,7 +6473,6 @@ void RasterizerGLES2::_draw_gui_primitive(int p_points, const Vector2 *p_vertice
 	}
 
 	glDrawArrays(prim[p_points],0,p_points);
-	_rinfo.ci_draw_commands++;
 
 #else
 
