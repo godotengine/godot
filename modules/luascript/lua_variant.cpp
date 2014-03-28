@@ -119,13 +119,14 @@ int LuaInstance::l_bultins_wrapper(lua_State *L)
 {
     LUA_MULTITHREAD_GUARD();
 
-    int type = lua_tointeger(L, lua_upvalueindex(1));
+    Variant::Type type = (Variant::Type) lua_tointeger(L, lua_upvalueindex(1));
+    const char *type_name = lua_tostring(L, lua_upvalueindex(2));
     int top = lua_gettop(L);
 
-    if(top == 0)
+    if(top <= 1)
     {
         Variant::CallError err;
-        Variant ret = Variant::construct((Variant::Type) type, NULL, 0, err);
+        Variant ret = Variant::construct(type, NULL, 0, err);
         if(err.error == Variant::CallError::CALL_OK)
         {
             l_push_variant(L, ret);
@@ -134,16 +135,16 @@ int LuaInstance::l_bultins_wrapper(lua_State *L)
     }
     else
     {
-        Variant *vars = memnew_arr(Variant, top);
+        Variant *vars = memnew_arr(Variant, top - 1);
         Variant *args[128];
-        for(int idx = 1; idx <= top; idx++)
+        for(int idx = 2; idx <= top; idx++)
         {
-            Variant& var = vars[idx - 1];
-            args[idx - 1] = &var;
+            Variant& var = vars[idx - 2];
+            args[idx - 2] = &var;
             l_get_variant(L, idx, var);
         }
         Variant::CallError err;
-        Variant ret = Variant::construct((Variant::Type) type, (const Variant**) (args), top, err);
+        Variant ret = Variant::construct(type, (const Variant**) (args), top - 1, err);
         memdelete_arr(vars);
 
         if(err.error == Variant::CallError::CALL_OK)
@@ -152,6 +153,33 @@ int LuaInstance::l_bultins_wrapper(lua_State *L)
             return 1;
         }
     }
+    luaL_error(L, "Invalid construct arguments pass to bultin types: '%s'", type_name);
+    return 0;
+}
+
+int LuaInstance::l_bultins_tostring(lua_State *L)
+{
+    LUA_MULTITHREAD_GUARD();
+
+    const char *type_name = lua_tostring(L, lua_upvalueindex(1));
+    lua_pushfstring(L, "Bultin type '%s'", type_name);
+    return 1;
+}
+
+int LuaInstance::l_bultins_index(lua_State *L)
+{
+    LUA_MULTITHREAD_GUARD();
+
+    Variant::Type type = (Variant::Type) lua_tointeger(L, lua_upvalueindex(1));
+    const char *type_name = lua_tostring(L, lua_upvalueindex(2));
+    const char *key = luaL_checkstring(L, 2);
+
+    if(Variant::has_numeric_constant(type, key))
+    {
+        lua_pushnumber(L, Variant::get_numeric_constant_value(type, key));
+        return 1;
+    }
+    luaL_error(L, "Bultin type '%s' has no constant: '%s'", type_name, key);
     return 0;
 }
 
@@ -160,8 +188,26 @@ bool LuaInstance::l_register_bultins_ctors(lua_State *L)
     for(int idx = 0; idx < (sizeof(vtypes) / sizeof(vtypes[0])); idx++)
     {
         BulitinTypes& t = vtypes[idx];
-        lua_pushinteger(L, t.vt);
-        lua_pushcclosure(L, l_bultins_wrapper, 1);
+        lua_newtable(L);
+        {
+            lua_newtable(L);
+            {
+                lua_pushinteger(L, t.vt);
+                lua_pushstring(L, t.type);
+                lua_pushcclosure(L, l_bultins_wrapper, 2);
+                lua_setfield(L, -2, "__call");
+
+                lua_pushstring(L, t.type);
+                lua_pushcclosure(L, l_bultins_tostring, 1);
+                lua_setfield(L, -2, "__tostring");
+
+                lua_pushinteger(L, t.vt);
+                lua_pushstring(L, t.type);
+                lua_pushcclosure(L, l_bultins_index, 2);
+                lua_setfield(L, -2, "__index");
+            }
+            lua_setmetatable(L, -2);
+        }
         lua_setglobal(L, t.type);
     }
     return true;
