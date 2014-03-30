@@ -109,6 +109,7 @@ LuaInstance* LuaScript::_create_instance(const Variant** p_args,int p_argcount,O
 	/* STEP 1, CREATE */
 	LuaInstance* instance = memnew( LuaInstance );
 	instance->base_ref=p_isref;
+    instance->gc_delete=true;
 //	instance->members.resize(member_indices.size());
 	instance->script=Ref<LuaScript>(this);
 	instance->owner=p_owner;
@@ -117,7 +118,7 @@ LuaInstance* LuaScript::_create_instance(const Variant** p_args,int p_argcount,O
 	/* STEP 2, INITIALIZE AND CONSRTUCT */
 	instances.insert(instance->owner);
 
-    if(instance->init() != OK)
+    if(instance->init(true) != OK)
     {
 		instance->script=Ref<LuaScript>();
 		instances.erase(p_owner);

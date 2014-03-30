@@ -354,8 +354,7 @@ void LuaScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *
     if(instance == NULL)
         return;
 
-    lua_rawgeti(L, LUA_REGISTRYINDEX, instance->ref);
-    if(lua_istable(L, -1))
+    if(instance->l_get_object_table())
     {
         lua_pushnil(L);
         while(lua_next(L, -2))
@@ -382,11 +381,10 @@ void LuaScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *
                 p_members->push_back(key);
                 p_values->push_back(value);
             }
-
             lua_pop(L, 1);
         }
+        lua_pop(L, 1);
     }
-    lua_pop(L, 1);
 
     //Ref<LuaScript> script = instance->get_script();
     //ERR_FAIL_COND( script.is_null() );
