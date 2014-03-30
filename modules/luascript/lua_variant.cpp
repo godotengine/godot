@@ -81,16 +81,12 @@ int LuaInstance::l_bultins_caller_wrapper(lua_State *L)
 
     void *ptr = luaL_checkudata(L, 1, "Variant");
     Variant* var = *((Variant **) ptr);
+    Variant::CallError err;
+    Variant ret;
 
     if(top == 1)
     {
-        Variant::CallError err;
-        Variant ret = var->call(key, NULL, 0, err);
-        if(err.error == Variant::CallError::CALL_OK)
-        {
-            l_push_variant(L, ret);
-            return 1;
-        }
+        ret = var->call(key, NULL, 0, err);
     }
     else
     {
@@ -102,15 +98,29 @@ int LuaInstance::l_bultins_caller_wrapper(lua_State *L)
             args[idx - 2] = &var;
             l_get_variant(L, idx, var);
         }
-        Variant::CallError err;
-        Variant ret = var->call(key, (const Variant**) (args), top - 1, err);
+        ret = var->call(key, (const Variant**) (args), top - 1, err);
         memdelete_arr(vars);
-
-        if(err.error == Variant::CallError::CALL_OK)
-        {
-            l_push_variant(L, ret);
-            return 1;
-        }
+    }
+    switch(err.error)
+    {
+    case Variant::CallError::CALL_OK:
+        l_push_variant(L, ret);
+        return 1;
+    case Variant::CallError::CALL_ERROR_INVALID_METHOD:
+        luaL_error(L, "Invalid method '%s'", key);
+        break;
+    case Variant::CallError::CALL_ERROR_INVALID_ARGUMENT:
+        luaL_error(L, "Invalid argument to call '%s'", key);
+        break;
+    case Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+        luaL_error(L, "Too many arguments to call '%s'", key);
+        break;
+    case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+        luaL_error(L, "Too few arguments to call '%s'", key);
+        break;
+    case Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+        luaL_error(L, "Instance is null");
+        break;
     }
     return 0;
 }
@@ -122,16 +132,12 @@ int LuaInstance::l_bultins_wrapper(lua_State *L)
     Variant::Type type = (Variant::Type) lua_tointeger(L, lua_upvalueindex(1));
     const char *type_name = lua_tostring(L, lua_upvalueindex(2));
     int top = lua_gettop(L);
+    Variant::CallError err;
+    Variant ret;
 
     if(top <= 1)
     {
-        Variant::CallError err;
-        Variant ret = Variant::construct(type, NULL, 0, err);
-        if(err.error == Variant::CallError::CALL_OK)
-        {
-            l_push_variant(L, ret);
-            return 1;
-        }
+        ret = Variant::construct(type, NULL, 0, err);
     }
     else
     {
@@ -143,17 +149,30 @@ int LuaInstance::l_bultins_wrapper(lua_State *L)
             args[idx - 2] = &var;
             l_get_variant(L, idx, var);
         }
-        Variant::CallError err;
-        Variant ret = Variant::construct(type, (const Variant**) (args), top - 1, err);
+        ret = Variant::construct(type, (const Variant**) (args), top - 1, err);
         memdelete_arr(vars);
-
-        if(err.error == Variant::CallError::CALL_OK)
-        {
-            l_push_variant(L, ret);
-            return 1;
-        }
     }
-    luaL_error(L, "Invalid construct arguments pass to bultin types: '%s'", type_name);
+    switch(err.error)
+    {
+    case Variant::CallError::CALL_OK:
+        l_push_variant(L, ret);
+        return 1;
+    case Variant::CallError::CALL_ERROR_INVALID_METHOD:
+        luaL_error(L, "Invalid method");
+        break;
+    case Variant::CallError::CALL_ERROR_INVALID_ARGUMENT:
+        luaL_error(L, "Invalid argument to construct built-in type '%s", type_name);
+        break;
+    case Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+        luaL_error(L, "Too many arguments to construct built-in type '%s", type_name);
+        break;
+    case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+        luaL_error(L, "Too few arguments to construct built-in type '%s", type_name);
+        break;
+    case Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+        luaL_error(L, "Instance is null");
+        break;
+    }
     return 0;
 }
 
@@ -452,6 +471,14 @@ void LuaInstance::l_push_variant(lua_State *L, const Variant& var)
                     lua_pop(L, 2);
                 }
                 lua_pop(L, 1);
+            }
+            else if(sci != NULL)
+            {
+                void *ptr = lua_newuserdata(L, sizeof(obj));
+                *((Variant **) ptr)= memnew(Variant);
+                **((Variant **) ptr) = obj;
+                luaL_getmetatable(L, "GdObject");
+                lua_setmetatable(L, -2);
             }
             else
                 lua_pushnil(L);

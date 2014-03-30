@@ -431,6 +431,7 @@ int LuaInstance::l_methodbind_wrapper(lua_State *L)
     Object *obj = *self;
 
     Variant ret;
+    Variant::CallError err;
 
     int top = lua_gettop(L);
     if(top >= 2)
@@ -443,18 +444,35 @@ int LuaInstance::l_methodbind_wrapper(lua_State *L)
             args[idx - 2] = &var;
             l_get_variant(L, idx, var);
         }
-        Variant::CallError err;
         ret = mb->call(obj, (const Variant **) args, top - 1, err);
         memdelete_arr(vars);
     }
     else
     {
-        Variant::CallError err;
         ret = mb->call(obj, NULL, 0, err);
     }
-    l_push_variant(L, ret);
-
-    return 1;
+    switch(err.error)
+    {
+    case Variant::CallError::CALL_OK:
+        l_push_variant(L, ret);
+        return 1;
+    case Variant::CallError::CALL_ERROR_INVALID_METHOD:
+        luaL_error(L, "Invalid method");
+        break;
+    case Variant::CallError::CALL_ERROR_INVALID_ARGUMENT:
+        luaL_error(L, "Invalid arguments");
+        break;
+    case Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS:
+        luaL_error(L, "Too many arguments");
+        break;
+    case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS:
+        luaL_error(L, "Too few arguments");
+        break;
+    case Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL:
+        luaL_error(L, "Instance is null");
+        break;
+    }
+    return 0;
 }
 
 int LuaInstance::meta__gc(lua_State *L)
