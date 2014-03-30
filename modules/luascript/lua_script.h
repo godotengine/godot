@@ -181,6 +181,7 @@ friend class LuaScriptLanguage;
 	Ref<LuaScript> script;
 //	Vector<Variant> members;
 	bool base_ref;
+    bool gc_delete;
     int ref; // ref to object's lua table
 
 	void _ml_call_reversed(LuaScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
@@ -238,12 +239,14 @@ public:
 
 //	void set_path(const String& p_path);
 
-    int init();
+    int init(bool p_ref = false);
     // helper lua functions
     static void l_push_variant(lua_State *L, const Variant& var);
     static void l_get_variant(lua_State *L, int idx, Variant& var);
     static void l_push_value(lua_State *L, int idx);
     static bool l_register_bultins_ctors(lua_State *L);
+
+    bool l_get_object_table() const;
 
     static void setup();
 
@@ -252,12 +255,6 @@ public:
 	~LuaInstance();
 
 };
-
-class ReturnLuaInstace : public LuaInstance {
-public:
-    ReturnLuaInstace() {}
-};
-
 
 class LuaScriptLanguage : public ScriptLanguage {
 
