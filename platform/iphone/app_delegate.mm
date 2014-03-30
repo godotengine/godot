@@ -38,7 +38,7 @@
 #endif
 
 #define kFilteringFactor                        0.1
-#define kRenderingFrequency						30
+#define kRenderingFrequency						60
 #define kAccelerometerFrequency         100.0 // Hz
 
 #ifdef APPIRATER_ENABLED
