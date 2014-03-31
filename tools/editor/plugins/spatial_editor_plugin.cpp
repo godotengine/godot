@@ -844,6 +844,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					if (b.pressed) {
 
+						NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
+							break;
+						}
+
 						_edit.mouse_pos=Point2(b.x,b.y);
 						_edit.snap=false;
 						_edit.mode=TRANSFORM_NONE;
