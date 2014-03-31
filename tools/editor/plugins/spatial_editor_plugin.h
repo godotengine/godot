@@ -120,7 +120,8 @@ class SpatialEditorViewport : public Control {
 
 	enum NavigationScheme {
 		NAVIGATION_GODOT,
-		NAVIGATION_MAYA
+		NAVIGATION_MAYA,
+		NAVIGATION_MODO,
 	};
 	NavigationScheme _get_navigation_schema(const String& p_property);
 

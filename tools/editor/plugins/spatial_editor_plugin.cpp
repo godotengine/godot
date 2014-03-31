@@ -528,11 +528,11 @@ static int _get_key_modifier(const String& p_property) {
 
 SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_schema(const String& p_property) {
 	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 0: return NAVIGATION_GODOT;
 		case 1: return NAVIGATION_MAYA;
-		case 0:
-		default:
-			return NAVIGATION_GODOT;
+		case 2: return NAVIGATION_MODO;
 	}
+	return NAVIGATION_GODOT;
 }
 
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
@@ -1013,7 +1013,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			}
 
-			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_schema");
+			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
 			NavigationMode nav_mode = NAVIGATION_NONE;
 
 			if (_edit.gizmo.is_valid()) {
@@ -1036,6 +1036,12 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			} else if (m.button_mask&1) {
 
 				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
+					nav_mode = NAVIGATION_ORBIT;				
+				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt && m.mod.shift) {
+					nav_mode = NAVIGATION_PAN;
+				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt && m.mod.control) {
+					nav_mode = NAVIGATION_ZOOM;
+				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt) {
 					nav_mode = NAVIGATION_ORBIT;
 				} else {
 					if (clicked) {
