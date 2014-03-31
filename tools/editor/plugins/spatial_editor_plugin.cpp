@@ -816,7 +816,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							case TRANSFORM_VIEW: {
 
 								_edit.plane=TRANSFORM_X_AXIS;
-								set_message("Y-Axis Transform.",2);
+								set_message("X-Axis Transform.",2);
 							} break;
 							case TRANSFORM_X_AXIS: {
 
@@ -846,6 +846,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				case BUTTON_LEFT: {
 
 					if (b.pressed) {
+
+						NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
+							break;
+						}
 
 						_edit.mouse_pos=Point2(b.x,b.y);
 						_edit.snap=false;
