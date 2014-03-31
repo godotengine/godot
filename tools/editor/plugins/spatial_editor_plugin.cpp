@@ -1037,259 +1037,260 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
 					nav_mode = NAVIGATION_ORBIT;
-				}
+				} else {
+					if (clicked) {
 
-				if (clicked) {
+						if (!clicked_includes_current) {
 
-					if (!clicked_includes_current) {
+							_select_clicked(clicked_wants_append,true);
+							//clickd processing was deferred
+						}
 
-						_select_clicked(clicked_wants_append,true);
-						//clickd processing was deferred
+
+						_compute_edit(_edit.mouse_pos);
+						clicked=0;
+
+						_edit.mode=TRANSFORM_TRANSLATE;
+
 					}
 
+					if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
 
-					_compute_edit(_edit.mouse_pos);
-					clicked=0;
-
-					_edit.mode=TRANSFORM_TRANSLATE;
-
-				}
-
-				if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
-
-					cursor.region_end=Point2(m.x,m.y);
-					surface->update();
-					return;
-				}
-
-				if (_edit.mode==TRANSFORM_NONE && nav_mode == NAVIGATION_NONE)
-					break;
-
-
-				Vector3 ray_pos=_get_ray_pos( Vector2( m.x, m.y ) );
-				Vector3 ray=_get_ray( Vector2( m.x, m.y ) );
-
-
-				switch(_edit.mode) {
-
-					case TRANSFORM_SCALE: {
-
-
-						Plane plane=Plane(_edit.center,_get_camera_normal());
-
-
-						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos,ray,&intersection))
-							break;
-
-						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos,_edit.click_ray,&click))
-							break;
-
-						float center_click_dist = click.distance_to(_edit.center);
-						float center_inters_dist = intersection.distance_to(_edit.center);
-						if (center_click_dist==0)
-							break;
-
-						float scale = (center_inters_dist / center_click_dist)*100.0;
-
-						if (_edit.snap || spatial_editor->is_snap_enabled()) {
-
-							scale = Math::stepify(scale,spatial_editor->get_scale_snap());
-						}
-
-						set_message("Scaling to "+String::num(scale,1)+"%.");
-						scale/=100.0;
-
-						Transform r;
-						r.basis.scale(Vector3(scale,scale,scale));
-
-
-						List<Node*> &selection = editor_selection->get_selected_node_list();
-
-						for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-							Spatial *sp = E->get()->cast_to<Spatial>();
-							if (!sp)
-								continue;
-
-							SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
-							if (!se)
-								continue;
-
-
-							Transform original=se->original;
-
-							Transform base=Transform( Matrix3(), _edit.center);
-							Transform t=base * (r * (base.inverse() * original));
-
-							sp->set_global_transform(t);
-						}
-
+						cursor.region_end=Point2(m.x,m.y);
 						surface->update();
+						return;
+					}
 
-					} break;
+					if (_edit.mode==TRANSFORM_NONE && nav_mode == NAVIGATION_NONE)
+						break;
 
-					case TRANSFORM_TRANSLATE: {
+
+					Vector3 ray_pos=_get_ray_pos( Vector2( m.x, m.y ) );
+					Vector3 ray=_get_ray( Vector2( m.x, m.y ) );
 
 
-						Vector3 motion_mask;
-						Plane plane;
+					switch(_edit.mode) {
 
-						switch( _edit.plane ) {
-							case TRANSFORM_VIEW:
-								motion_mask=Vector3(0,0,0);
-								plane=Plane(_edit.center,_get_camera_normal());
-							break;
-							case TRANSFORM_X_AXIS:
-								motion_mask=spatial_editor->get_gizmo_transform().basis.get_axis(0);
-								plane=Plane(_edit.center,motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
-							break;
-							case TRANSFORM_Y_AXIS:
-								motion_mask=spatial_editor->get_gizmo_transform().basis.get_axis(1);
-								plane=Plane(_edit.center,motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
-							break;
-							case TRANSFORM_Z_AXIS:
-								motion_mask=spatial_editor->get_gizmo_transform().basis.get_axis(2);
-								plane=Plane(_edit.center,motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
-							break;
-						}
+						case TRANSFORM_SCALE: {
 
-						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos,ray,&intersection))
-							break;
 
-						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos,_edit.click_ray,&click))
-							break;
+							Plane plane=Plane(_edit.center,_get_camera_normal());
 
-						//_validate_selection();
-						Vector3 motion = intersection-click;
-						if (motion_mask!=Vector3()) {
-							motion=motion_mask.dot(motion)*motion_mask;
-						}
 
-						float snap=0;
+							Vector3 intersection;
+							if (!plane.intersects_ray(ray_pos,ray,&intersection))
+								break;
 
-						if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							Vector3 click;
+							if (!plane.intersects_ray(_edit.click_ray_pos,_edit.click_ray,&click))
+								break;
 
-							snap = spatial_editor->get_translate_snap();
-							motion.snap(snap);
-						}
+							float center_click_dist = click.distance_to(_edit.center);
+							float center_inters_dist = intersection.distance_to(_edit.center);
+							if (center_click_dist==0)
+								break;
 
-						//set_message("Translating: "+motion);
+							float scale = (center_inters_dist / center_click_dist)*100.0;
 
-						List<Node*> &selection = editor_selection->get_selected_node_list();
+							if (_edit.snap || spatial_editor->is_snap_enabled()) {
 
-						for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-							Spatial *sp = E->get()->cast_to<Spatial>();
-							if (!sp) {
-								continue;
+								scale = Math::stepify(scale,spatial_editor->get_scale_snap());
 							}
 
-							SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
-							if (!se) {
-								continue;
+							set_message("Scaling to "+String::num(scale,1)+"%.");
+							scale/=100.0;
+
+							Transform r;
+							r.basis.scale(Vector3(scale,scale,scale));
+
+
+							List<Node*> &selection = editor_selection->get_selected_node_list();
+
+							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+								Spatial *sp = E->get()->cast_to<Spatial>();
+								if (!sp)
+									continue;
+
+								SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+								if (!se)
+									continue;
+
+
+								Transform original=se->original;
+
+								Transform base=Transform( Matrix3(), _edit.center);
+								Transform t=base * (r * (base.inverse() * original));
+
+								sp->set_global_transform(t);
 							}
 
-							Transform t=se->original;
-							t.origin+=motion;
-							sp->set_global_transform(t);
-						}
-					} break;
+							surface->update();
 
-					case TRANSFORM_ROTATE: {
+						} break;
+
+						case TRANSFORM_TRANSLATE: {
 
 
-						Plane plane;
+							Vector3 motion_mask;
+							Plane plane;
 
-						switch( _edit.plane ) {
-							case TRANSFORM_VIEW:
-								plane=Plane(_edit.center,_get_camera_normal());
-							break;
-							case TRANSFORM_X_AXIS:
-								plane=Plane(_edit.center,spatial_editor->get_gizmo_transform().basis.get_axis(0));
-							break;
-							case TRANSFORM_Y_AXIS:
-								plane=Plane(_edit.center,spatial_editor->get_gizmo_transform().basis.get_axis(1));
-							break;
-							case TRANSFORM_Z_AXIS:
-								plane=Plane(_edit.center,spatial_editor->get_gizmo_transform().basis.get_axis(2));
-							break;
-						}
+							switch( _edit.plane ) {
+								case TRANSFORM_VIEW:
+									motion_mask=Vector3(0,0,0);
+									plane=Plane(_edit.center,_get_camera_normal());
+								break;
+								case TRANSFORM_X_AXIS:
+									motion_mask=spatial_editor->get_gizmo_transform().basis.get_axis(0);
+									plane=Plane(_edit.center,motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								break;
+								case TRANSFORM_Y_AXIS:
+									motion_mask=spatial_editor->get_gizmo_transform().basis.get_axis(1);
+									plane=Plane(_edit.center,motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								break;
+								case TRANSFORM_Z_AXIS:
+									motion_mask=spatial_editor->get_gizmo_transform().basis.get_axis(2);
+									plane=Plane(_edit.center,motion_mask.cross(motion_mask.cross(_get_camera_normal())).normalized());
+								break;
+							}
 
-						Vector3 intersection;
-						if (!plane.intersects_ray(ray_pos,ray,&intersection))
-							break;
+							Vector3 intersection;
+							if (!plane.intersects_ray(ray_pos,ray,&intersection))
+								break;
 
-						Vector3 click;
-						if (!plane.intersects_ray(_edit.click_ray_pos,_edit.click_ray,&click))
-							break;
+							Vector3 click;
+							if (!plane.intersects_ray(_edit.click_ray_pos,_edit.click_ray,&click))
+								break;
+
+							//_validate_selection();
+							Vector3 motion = intersection-click;
+							if (motion_mask!=Vector3()) {
+								motion=motion_mask.dot(motion)*motion_mask;
+							}
+
+							float snap=0;
+
+							if (_edit.snap || spatial_editor->is_snap_enabled()) {
+
+								snap = spatial_editor->get_translate_snap();
+								motion.snap(snap);
+							}
+
+							//set_message("Translating: "+motion);
+
+							List<Node*> &selection = editor_selection->get_selected_node_list();
+
+							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+								Spatial *sp = E->get()->cast_to<Spatial>();
+								if (!sp) {
+									continue;
+								}
+
+								SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+								if (!se) {
+									continue;
+								}
+
+								Transform t=se->original;
+								t.origin+=motion;
+								sp->set_global_transform(t);
+							}
+						} break;
+
+						case TRANSFORM_ROTATE: {
 
 
-						Vector3 y_axis=(click-_edit.center).normalized();
-						Vector3 x_axis=plane.normal.cross(y_axis).normalized();
+							Plane plane;
 
-						float angle=Math::atan2( x_axis.dot(intersection-_edit.center), y_axis.dot(intersection-_edit.center) );
-						if (_edit.snap || spatial_editor->is_snap_enabled()) {
+							switch( _edit.plane ) {
+								case TRANSFORM_VIEW:
+									plane=Plane(_edit.center,_get_camera_normal());
+								break;
+								case TRANSFORM_X_AXIS:
+									plane=Plane(_edit.center,spatial_editor->get_gizmo_transform().basis.get_axis(0));
+								break;
+								case TRANSFORM_Y_AXIS:
+									plane=Plane(_edit.center,spatial_editor->get_gizmo_transform().basis.get_axis(1));
+								break;
+								case TRANSFORM_Z_AXIS:
+									plane=Plane(_edit.center,spatial_editor->get_gizmo_transform().basis.get_axis(2));
+								break;
+							}
 
-							float snap = spatial_editor->get_rotate_snap();
+							Vector3 intersection;
+							if (!plane.intersects_ray(ray_pos,ray,&intersection))
+								break;
 
-							if (snap) {
-								angle=Math::rad2deg(angle)+snap*0.5; //else it wont reach +180
-								angle-=Math::fmod(angle,snap);
-								set_message("Rotating "+rtos(angle)+" degrees.");
-								angle=Math::deg2rad(angle);
-							} else
+							Vector3 click;
+							if (!plane.intersects_ray(_edit.click_ray_pos,_edit.click_ray,&click))
+								break;
+
+
+							Vector3 y_axis=(click-_edit.center).normalized();
+							Vector3 x_axis=plane.normal.cross(y_axis).normalized();
+
+							float angle=Math::atan2( x_axis.dot(intersection-_edit.center), y_axis.dot(intersection-_edit.center) );
+							if (_edit.snap || spatial_editor->is_snap_enabled()) {
+
+								float snap = spatial_editor->get_rotate_snap();
+
+								if (snap) {
+									angle=Math::rad2deg(angle)+snap*0.5; //else it wont reach +180
+									angle-=Math::fmod(angle,snap);
+									set_message("Rotating "+rtos(angle)+" degrees.");
+									angle=Math::deg2rad(angle);
+								} else
+									set_message("Rotating "+rtos(Math::rad2deg(angle))+" degrees.");
+
+							} else {
 								set_message("Rotating "+rtos(Math::rad2deg(angle))+" degrees.");
-
-						} else {
-							set_message("Rotating "+rtos(Math::rad2deg(angle))+" degrees.");
-						}
+							}
 
 
 
 
-						Transform r;
-						r.basis.rotate(plane.normal,-angle);
+							Transform r;
+							r.basis.rotate(plane.normal,-angle);
 
-						List<Node*> &selection = editor_selection->get_selected_node_list();
+							List<Node*> &selection = editor_selection->get_selected_node_list();
 
-						for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
-							Spatial *sp = E->get()->cast_to<Spatial>();
-							if (!sp)
-								continue;
+								Spatial *sp = E->get()->cast_to<Spatial>();
+								if (!sp)
+									continue;
 
-							SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
-							if (!se)
-								continue;
+								SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+								if (!se)
+									continue;
 
 
-							Transform original=se->original;
+								Transform original=se->original;
 
-							Transform base=Transform( Matrix3(), _edit.center);
-							Transform t=base * (r * (base.inverse() * original));
+								Transform base=Transform( Matrix3(), _edit.center);
+								Transform t=base * (r * (base.inverse() * original));
 
-							sp->set_global_transform(t);
-						}
+								sp->set_global_transform(t);
+							}
 
-						surface->update();
-						/*
-						VisualServer::get_singleton()->poly_clear(indicators);
+							surface->update();
+							/*
+							VisualServer::get_singleton()->poly_clear(indicators);
 
-						Vector<Vector3> points;
-						Vector<Vector3> empty;
-						Vector<Color> colors;
-						points.push_back(intersection);
-						points.push_back(_edit.original.origin);
-						colors.push_back( Color(255,155,100) );
-						colors.push_back( Color(255,155,100) );
-						VisualServer::get_singleton()->poly_add_primitive(indicators,points,empty,colors,empty);
-						*/
-					} break;
-					default:{}
+							Vector<Vector3> points;
+							Vector<Vector3> empty;
+							Vector<Color> colors;
+							points.push_back(intersection);
+							points.push_back(_edit.original.origin);
+							colors.push_back( Color(255,155,100) );
+							colors.push_back( Color(255,155,100) );
+							VisualServer::get_singleton()->poly_add_primitive(indicators,points,empty,colors,empty);
+							*/
+						} break;
+						default:{}
+					}
+
 				}
 
 			} else if (m.button_mask&2) {
