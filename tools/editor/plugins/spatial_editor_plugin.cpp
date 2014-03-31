@@ -833,7 +833,10 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							case TRANSFORM_Z_AXIS: {
 
 								_edit.plane=TRANSFORM_VIEW;
-								set_message("View Plane Transform.",2);
+								if (_edit.mode==TRANSFORM_SCALE)
+									set_message("Uniform Scale.",2); //reuse TRANSFORM_VIEW as uniform scale switch
+								else
+									set_message("View Plane Transform.",2);
 
 							} break;
 						}
@@ -1101,7 +1104,22 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							scale/=100.0;
 
 							Transform r;
-							r.basis.scale(Vector3(scale,scale,scale));
+							Vector3 s(1,1,1);
+							switch(_edit.plane) {
+								case TRANSFORM_X_AXIS:
+									s[0]=scale;
+									break;
+								case TRANSFORM_Y_AXIS:
+									s[1]=scale;
+									break;
+								case TRANSFORM_Z_AXIS:
+									s[2]=scale;
+									break;
+								case TRANSFORM_VIEW:
+								default:
+									s=Vector3(scale,scale,scale);
+							}
+							r.basis.scale(s);
 
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
