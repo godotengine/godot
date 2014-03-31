@@ -526,6 +526,14 @@ static int _get_key_modifier(const String& p_property) {
 	return 0;
 }
 
+SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_schema(const String& p_property) {
+	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 1: return NAVIGATION_MAYA;
+		case 0:
+		default:
+			return NAVIGATION_GODOT;
+	}
+}
 
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
 
@@ -1005,6 +1013,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			}
 
+			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_schema");
+			NavigationMode nav_mode = NAVIGATION_NONE;
 
 			if (_edit.gizmo.is_valid()) {
 
@@ -1025,6 +1035,10 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			} else if (m.button_mask&1) {
 
+				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
+					nav_mode = NAVIGATION_ORBIT;
+				}
+
 				if (clicked) {
 
 					if (!clicked_includes_current) {
@@ -1041,15 +1055,16 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 				}
 
-				if (cursor.region_select) {
+				if (cursor.region_select && nav_mode == NAVIGATION_NONE) {
 
 					cursor.region_end=Point2(m.x,m.y);
 					surface->update();
 					return;
 				}
 
-				if (_edit.mode==TRANSFORM_NONE)
+				if (_edit.mode==TRANSFORM_NONE && nav_mode == NAVIGATION_NONE)
 					break;
+
 
 				Vector3 ray_pos=_get_ray_pos( Vector2( m.x, m.y ) );
 				Vector3 ray=_get_ray( Vector2( m.x, m.y ) );
@@ -1277,23 +1292,41 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					default:{}
 				}
 
+			} else if (m.button_mask&2) {
+
+				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
+					nav_mode = NAVIGATION_ZOOM;
+				}
+
 			} else if (m.button_mask&4) {
 
+				if (nav_scheme == NAVIGATION_GODOT) {
 
-				int mod = 0;
-				if (m.mod.shift)
-					mod=KEY_SHIFT;
-				if (m.mod.alt)
-					mod=KEY_ALT;
-				if (m.mod.control)
-					mod=KEY_CONTROL;
-				if (m.mod.meta)
-					mod=KEY_META;
+					int mod = 0;
+					if (m.mod.shift)
+						mod=KEY_SHIFT;
+					if (m.mod.alt)
+						mod=KEY_ALT;
+					if (m.mod.control)
+						mod=KEY_CONTROL;
+					if (m.mod.meta)
+						mod=KEY_META;
 
+					if (mod == _get_key_modifier("3d_editor/pan_modifier"))
+						nav_mode = NAVIGATION_PAN;
+					else if (mod == _get_key_modifier("3d_editor/zoom_modifier"))
+						nav_mode = NAVIGATION_ZOOM;
+					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
+						nav_mode = NAVIGATION_ORBIT;
 
+				} else if (nav_scheme == NAVIGATION_MAYA) {
+					if (m.mod.alt)
+						nav_mode = NAVIGATION_PAN;
+				}
+			}
 
-				if (mod == _get_key_modifier("3d_editor/pan_modifier")) {
-
+			switch(nav_mode) {
+				case NAVIGATION_PAN:{
 
 					Transform camera_transform;
 
@@ -1305,24 +1338,28 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					camera_transform.translate(translation);
 					cursor.pos=camera_transform.origin;
 
-				} else if (mod == _get_key_modifier("3d_editor/zoom_modifier")) {
+				} break;
+
+				case NAVIGATION_ZOOM: {
 
 					if ( m.relative_y > 0)
 						cursor.distance*=1+m.relative_y/80.0;
 					else if (m.relative_y < 0)
 						cursor.distance/=1-m.relative_y/80.0;
 
-				} else if (mod == _get_key_modifier("3d_editor/orbit_modifier")) {
+				} break;
+
+				case NAVIGATION_ORBIT: {
 					cursor.x_rot+=m.relative_y/80.0;
 					cursor.y_rot+=m.relative_x/80.0;
 					if (cursor.x_rot>Math_PI/2.0)
 						cursor.x_rot=Math_PI/2.0;
 					if (cursor.x_rot<-Math_PI/2.0)
 						cursor.x_rot=-Math_PI/2.0;
+				} break;
 
-				}
+				default: {}
 			}
-
 		} break;
 
 		case InputEvent::KEY: {
