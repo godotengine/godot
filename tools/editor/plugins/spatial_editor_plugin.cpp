@@ -528,11 +528,11 @@ static int _get_key_modifier(const String& p_property) {
 
 SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_schema(const String& p_property) {
 	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 0: return NAVIGATION_GODOT;
 		case 1: return NAVIGATION_MAYA;
-		case 0:
-		default:
-			return NAVIGATION_GODOT;
+		case 2: return NAVIGATION_MODO;
 	}
+	return NAVIGATION_GODOT;
 }
 
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
@@ -816,7 +816,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							case TRANSFORM_VIEW: {
 
 								_edit.plane=TRANSFORM_X_AXIS;
-								set_message("Y-Axis Transform.",2);
+								set_message("X-Axis Transform.",2);
 							} break;
 							case TRANSFORM_X_AXIS: {
 
@@ -846,6 +846,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				case BUTTON_LEFT: {
 
 					if (b.pressed) {
+
+						NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
+						if ( (nav_scheme==NAVIGATION_MAYA || nav_scheme==NAVIGATION_MODO) && b.mod.alt) {
+							break;
+						}
 
 						_edit.mouse_pos=Point2(b.x,b.y);
 						_edit.snap=false;
@@ -1016,7 +1021,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 			}
 
-			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_schema");
+			NavigationScheme nav_scheme = _get_navigation_schema("3d_editor/navigation_scheme");
 			NavigationMode nav_mode = NAVIGATION_NONE;
 
 			if (_edit.gizmo.is_valid()) {
@@ -1039,6 +1044,12 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			} else if (m.button_mask&1) {
 
 				if (nav_scheme == NAVIGATION_MAYA && m.mod.alt) {
+					nav_mode = NAVIGATION_ORBIT;				
+				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt && m.mod.shift) {
+					nav_mode = NAVIGATION_PAN;
+				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt && m.mod.control) {
+					nav_mode = NAVIGATION_ZOOM;
+				} else if (nav_scheme == NAVIGATION_MODO && m.mod.alt) {
 					nav_mode = NAVIGATION_ORBIT;
 				} else {
 					if (clicked) {
@@ -1347,12 +1358,17 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			switch(nav_mode) {
 				case NAVIGATION_PAN:{
 
+					real_t pan_speed = 1/150.0;
+					int pan_speed_modifier = 10;
+					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
+						pan_speed *= pan_speed_modifier;
+
 					Transform camera_transform;
 
 					camera_transform.translate(cursor.pos);
 					camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
 					camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
-					Vector3 translation(-m.relative_x/150.0,m.relative_y/150.0,0);
+					Vector3 translation(-m.relative_x*pan_speed,m.relative_y*pan_speed,0);
 					translation*=cursor.distance/DISTANCE_DEFAULT;
 					camera_transform.translate(translation);
 					cursor.pos=camera_transform.origin;
@@ -1360,11 +1376,15 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 
 				case NAVIGATION_ZOOM: {
+					real_t zoom_speed = 1/80.0;
+					int zoom_speed_modifier = 10;
+					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
+						zoom_speed *= zoom_speed_modifier;
 
 					if ( m.relative_y > 0)
-						cursor.distance*=1+m.relative_y/80.0;
+						cursor.distance*=1+m.relative_y*zoom_speed;
 					else if (m.relative_y < 0)
-						cursor.distance/=1-m.relative_y/80.0;
+						cursor.distance/=1-m.relative_y*zoom_speed;
 
 				} break;
 
