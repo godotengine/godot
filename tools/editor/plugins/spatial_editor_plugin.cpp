@@ -1340,12 +1340,17 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			switch(nav_mode) {
 				case NAVIGATION_PAN:{
 
+					real_t pan_speed = 1/150.0;
+					int pan_speed_modifier = 10;
+					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
+						pan_speed *= pan_speed_modifier;
+
 					Transform camera_transform;
 
 					camera_transform.translate(cursor.pos);
 					camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
 					camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
-					Vector3 translation(-m.relative_x/150.0,m.relative_y/150.0,0);
+					Vector3 translation(-m.relative_x*pan_speed,m.relative_y*pan_speed,0);
 					translation*=cursor.distance/DISTANCE_DEFAULT;
 					camera_transform.translate(translation);
 					cursor.pos=camera_transform.origin;
@@ -1353,11 +1358,15 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 
 				case NAVIGATION_ZOOM: {
+					real_t zoom_speed = 1/80.0;
+					int zoom_speed_modifier = 10;
+					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
+						zoom_speed *= zoom_speed_modifier;
 
 					if ( m.relative_y > 0)
-						cursor.distance*=1+m.relative_y/80.0;
+						cursor.distance*=1+m.relative_y*zoom_speed;
 					else if (m.relative_y < 0)
-						cursor.distance/=1-m.relative_y/80.0;
+						cursor.distance/=1-m.relative_y*zoom_speed;
 
 				} break;
 
