@@ -501,6 +501,7 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 			continue;
 
 		se->original=se->sp->get_global_transform();
+		se->original_scale=se->sp->get_scale();
 //		center+=se->original.origin;
 //		nc++;
 	}
@@ -1114,23 +1115,17 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							set_message("Scaling to "+String::num(scale,1)+"%.");
 							scale/=100.0;
 
-							Transform r;
+							//Transform r;
 							Vector3 s(1,1,1);
-							switch(_edit.plane) {
-								case TRANSFORM_X_AXIS:
-									s[0]=scale;
-									break;
-								case TRANSFORM_Y_AXIS:
-									s[1]=scale;
-									break;
-								case TRANSFORM_Z_AXIS:
-									s[2]=scale;
-									break;
-								case TRANSFORM_VIEW:
-								default:
-									s=Vector3(scale,scale,scale);
-							}
-							r.basis.scale(s);
+							if (_edit.plane == TRANSFORM_X_AXIS)
+								s[0] = scale;
+							else if (_edit.plane == TRANSFORM_Y_AXIS)
+								s[1] = scale;
+							else if (_edit.plane == TRANSFORM_Z_AXIS)
+								s[2] = scale;
+							else if (_edit.plane == TRANSFORM_VIEW)
+								s = Vector3(scale,scale,scale);
+							//r.basis.scale(s);
 
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
@@ -1145,13 +1140,17 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								if (!se)
 									continue;
 
-
+								/*
 								Transform original=se->original;
 
-								Transform base=Transform( Matrix3(), _edit.center);
+								//Transform base=Transform( Matrix3(), _edit.center);
+								Transform base=Transform( Matrix3(), original.origin);
 								Transform t=base * (r * (base.inverse() * original));
 
 								sp->set_global_transform(t);
+								*/
+
+								sp->set_scale(se->original_scale*s);
 							}
 
 							surface->update();
