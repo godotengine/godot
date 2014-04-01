@@ -3042,12 +3042,8 @@ void SpatialEditor::_toggle_maximize_view(Object* p_viewport) {
 	for(int i=0;i<4;i++) {
 		if (viewports[i]==current_viewport) {
 			index=i;
-			print_line("Toggle viewport : " + itos(i));
-
-			if ( current_viewport->get_global_rect() == viewport_base->get_global_rect() ) {
+			if ( current_viewport->get_global_rect() == viewport_base->get_global_rect() )
 				maximized=true;
-				print_line("Same Rect: hehe, maximzed");
-			}
 			break;
 		}
 	}
@@ -3062,6 +3058,7 @@ void SpatialEditor::_toggle_maximize_view(Object* p_viewport) {
 				viewports[i]->hide();
 		}
 	} else {
+
 		for(int i=0;i<4;i++)
 			viewports[i]->show();
 
