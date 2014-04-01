@@ -3029,10 +3029,10 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item("Use Default Light",MENU_VIEW_USE_DEFAULT_LIGHT);
 	p->add_separator();
 
-	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT);
-	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS);
-	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS);
-	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS);
+	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT,KEY_MASK_ALT+KEY_1);
+	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS,KEY_MASK_ALT+KEY_2);
+	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS,KEY_MASK_ALT+KEY_3);
+	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS,KEY_MASK_ALT+KEY_4);
 	p->add_separator();
 
 	p->add_check_item("Display Normal",MENU_VIEW_DISPLAY_NORMAL);
