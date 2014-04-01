@@ -1482,11 +1482,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 
 				case KEY_F: {
-					if (k.mod.shift && k.mod.control) {
+
+					if (k.pressed && k.mod.shift && k.mod.control) {
 						_menu_option(VIEW_ALIGN_SELECTION_WITH_VIEW);
-					} else {
+					} else if (k.pressed) {
 						_menu_option(VIEW_CENTER_TO_SELECTION);
 					}
+
 				} break;
 			}
 
