@@ -26402,7 +26402,7 @@
 			<description>
 			</description>
 		</signal>
-		<signal name="release">
+		<signal name="released">
 			<description>
 			</description>
 		</signal>
