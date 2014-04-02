@@ -516,7 +516,6 @@ void Path2DEditor::_node_visibility_changed() {
 		return;
 
 	canvas_item_editor->get_viewport_control()->update();
-
 }
 
 void Path2DEditor::edit(Node *p_path2d) {
@@ -533,15 +532,15 @@ void Path2DEditor::edit(Node *p_path2d) {
 		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 			node->connect("visibility_changed", this, "_node_visibility_changed");
 
-
 	} else {
 
 		if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->disconnect("draw",this,"_canvas_draw");
-		if (node->is_connected("visibility_changed", this, "_node_visibility_changed"))
+
+		// node may have been deleted at this point
+		if (node && node->is_connected("visibility_changed", this, "_node_visibility_changed"))
 			node->disconnect("visibility_changed", this, "_node_visibility_changed");
 		node=NULL;
-
 	}
 
 }
