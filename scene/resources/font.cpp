@@ -470,7 +470,13 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 		cpos.x+=ofs+c->h_align;
 		cpos.y-=ascent;
 		cpos.y+=c->v_align;
-	    ERR_CONTINUE( p_text[i]!=' ' && (c->texture_idx<-1 || c->texture_idx>=textures.size()),0);
+		if( c->texture_idx<-1 || c->texture_idx>=textures.size())
+        {
+            if (p_text[i] == ' ')
+                continue;
+            else
+		        ERR_CONTINUE( c->texture_idx<-1 || c->texture_idx>=textures.size());
+        }
 		if (c->texture_idx!=-1)
 			textures[c->texture_idx]->draw_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), c->rect, p_modulate );
 		
@@ -489,7 +495,13 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	cpos.x+=c->h_align;
 	cpos.y-=ascent;
 	cpos.y+=c->v_align;
-	ERR_FAIL_COND_V( p_char!=' ' && (c->texture_idx<-1 || c->texture_idx>=textures.size()),0);
+	if (c->texture_idx<-1 || c->texture_idx>=textures.size())
+    {
+        if (p_char==' ')
+            return 0;
+        else
+    	    ERR_FAIL_COND_V( c->texture_idx<-1 || c->texture_idx>=textures.size(),0)
+    }
 	if (c->texture_idx!=-1)
 		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx]->get_rid(),c->rect, p_modulate );
 	
