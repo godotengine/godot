@@ -2883,7 +2883,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_custom_bg_color","color"),&TextEdit::set_custom_bg_color);
 	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
 
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "read_only" ), _SCS("set_readonly"),_SCS("is_readonly") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_chars" ), _SCS("set_max_chars"),_SCS("get_max_chars") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "wrap" ), _SCS("set_wrap"),_SCS("is_wrap") );

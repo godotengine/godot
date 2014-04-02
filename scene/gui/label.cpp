@@ -420,6 +420,26 @@ void Label::regenerate_word_cache() {
 			
 		}
 		
+        if ((current>255)&&(autowrap && line_width>=width))
+        {
+		    if (current_word_size>0) {
+				
+			    WordCache *wc = memnew( WordCache );
+			    if (word_cache) {
+				    last->next=wc;
+			    } else {
+				    word_cache=wc;
+			    }
+			    last=wc;
+				
+			    wc->pixel_width=current_word_size;
+			    wc->char_pos=word_pos;
+			    wc->word_len=i-word_pos;
+			    current_word_size=0;
+                i--;
+		    }
+        }
+
 		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
 			
 			WordCache *wc = memnew( WordCache );
