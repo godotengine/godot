@@ -1759,25 +1759,45 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			Vector3 center;
 			int count=0;
 
-			List<Node*> &selection = editor_selection->get_selected_node_list();
+			AABB aabb;
+			bool first = true;
 
-			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-				Spatial *sp = E->get()->cast_to<Spatial>();
+			Map<Node*,Object*> &selection = editor_selection->get_selection(); // editor_selection->get_selected_node_list() return wrong result?
+			for( Map<Node*,Object*>::Element *E=selection.front();E;E=E->next() ) {
+				Spatial *sp = E->key()->cast_to<Spatial>();
 				if (!sp)
 					continue;
 
-				SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+				SpatialEditorSelectedItem *se = editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
 				if (!se)
 					continue;
 
 				center+=sp->get_global_transform().origin;
 				count++;
+
+				AABB next_aabb;
+				VisualInstance *vi = sp->cast_to<VisualInstance>();
+				if (vi) {
+					next_aabb = vi->get_aabb();
+					next_aabb.size *= sp->get_global_transform().basis.get_scale();
+				}
+				next_aabb.pos = sp->get_global_transform().origin;
+				if (first) {
+					aabb = next_aabb;
+					first=false;
+				} else {
+					aabb.merge_with(next_aabb);
+				}
 			}
 
 			center/=float(count);
 
+			float fov = camera->get_fov();
+			float s = aabb.get_longest_axis_size();
+			float d = s/2 + s/2/Math::tan(Math::deg2rad(fov/2));
+			cursor.distance=MAX(d, DISTANCE_DEFAULT);
 			cursor.pos=center;
+
 		} break;
 		case VIEW_ALIGN_SELECTION_WITH_VIEW: {
 
