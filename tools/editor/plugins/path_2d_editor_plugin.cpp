@@ -115,7 +115,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 						Point2 p = xform.xform( curve->get_point_pos(i) );
 						if (gpoint.distance_to(p) < grab_treshold ) {
 
-							if (!mb.mod.control) {
+							if (!mb.mod.shift) {
 
 								action=ACTION_MOVING_POINT;
 								action_point=i;
