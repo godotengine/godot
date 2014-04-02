@@ -1079,7 +1079,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		pixels.resize(s.x*s.y*4);
 
 		DVector<uint8_t>::Write w = pixels.write();
-		print_line("val: "+itos(font_data_list[i]->valign));
+		//print_line("val: "+itos(font_data_list[i]->valign));
 		for(int y=0;y<s.height;y++) {
 
 			int yc=CLAMP(y-o.y+font_data_list[i]->valign,0,height-1);
@@ -1107,7 +1107,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 				Point2i so=Point2(from->get_option(S_VAR("offset")));
 
 				float tr = from->get_option(S_VAR("transition"));
-				print_line("shadow enabled: "+itos(si));
+				//print_line("shadow enabled: "+itos(si));
 
 				Vector<uint8_t> s2buf;
 				s2buf.resize(s.x*s.y);
@@ -1232,29 +1232,75 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	res_size.y=nearest_power_of_2(res_size.y);
 	print_line("Atlas size: "+res_size);
 
-	Image atlas(res_size.x,res_size.y,0,Image::FORMAT_RGBA);
+    Vector<Image *> atlas;
+    if(res_size.x > 1024 || res_size.y > 1024)
+    {
+        print_line("Split atlas into 1024*1024");
+        atlas.push_back(memnew( Image(1024,1024,0,Image::FORMAT_RGBA)));
+        Image* atlas_image = atlas[0];
+        Point2 atlas_pos(0,0);
+        int atlas_idx = 0;
+        int line_height = 0;
 
-	for(int i=0;i<font_data_list.size();i++) {
+        for(int i=0;i<font_data_list.size();i++) {
 
-		if (font_data_list[i]->bitmap.size()==0)
-			continue;
-		atlas.blit_rect(font_data_list[i]->blit,Rect2(0,0,font_data_list[i]->blit.get_width(),font_data_list[i]->blit.get_height()),res[i]+Size2(spacing,spacing));
-		font_data_list[i]->ofs_x=res[i].x+spacing;
-		font_data_list[i]->ofs_y=res[i].y+spacing;
+            _EditorFontData& efd=*font_data_list[i];
+            if (efd.bitmap.size()==0)
+			    continue;
 
+            Point2 blit_size(efd.blit.get_width(),efd.blit.get_height());
+            if(atlas_pos.x+blit_size.width+spacing>1024)
+            {
+                atlas_pos.x=0;
+                atlas_pos.y+=line_height;
+                line_height=0;
+            }
 
-	}
+            if(atlas_pos.y+blit_size.height+spacing>1024)
+            {
+                atlas_pos.x=atlas_pos.y=0;
+                line_height=0;
+                atlas.push_back(memnew( Image(1024,1024,0,Image::FORMAT_RGBA)));
+                atlas_idx = atlas.size()-1;
+                atlas_image = atlas[atlas_idx];
+            }
+
+            atlas_image->blit_rect(efd.blit,Rect2(Point2(0,0),blit_size),atlas_pos+Size2(spacing,spacing));
+            if(line_height < (blit_size.y + spacing * 2))
+                line_height = blit_size.y + spacing * 2;
+            efd.texture=atlas_idx;
+		    efd.ofs_x=atlas_pos.x+spacing;
+            efd.ofs_y=atlas_pos.y+spacing;
+            atlas_pos.x+=(blit_size.width+spacing*2);
+        }
+        print_line("Total atlas count: " + String::num(atlas.size()));
+    }
+    else
+    {
+        atlas.push_back(memnew( Image(res_size.x,res_size.y,0,Image::FORMAT_RGBA)));
+        Image& atlas_image = *(atlas[0]);
+	    for(int i=0;i<font_data_list.size();i++) {
+
+		    if (font_data_list[i]->bitmap.size()==0)
+			    continue;
+		    atlas_image.blit_rect(font_data_list[i]->blit,Rect2(0,0,font_data_list[i]->blit.get_width(),font_data_list[i]->blit.get_height()),res[i]+Size2(spacing,spacing));
+            font_data_list[i]->texture=0;
+		    font_data_list[i]->ofs_x=res[i].x+spacing;
+		    font_data_list[i]->ofs_y=res[i].y+spacing;
+	    }
+    }
 
 
 	if (from->has_option("color/monochrome") && bool(from->get_option("color/monochrome"))) {
 
-		atlas.convert(Image::FORMAT_GRAYSCALE_ALPHA);
+        for(int idx = 0; idx < atlas.size(); idx++)
+		    atlas[idx]->convert(Image::FORMAT_GRAYSCALE_ALPHA);
 	}
 
 	if (0) {
 		//debug the texture
 		Ref<ImageTexture> atlast = memnew( ImageTexture );
-		atlast->create_from_image(atlas);
+		atlast->create_from_image(*atlas[0]);
 //		atlast->create_from_image(font_data_list[5]->blit);
 		TextureFrame *tf = memnew( TextureFrame );
 		tf->set_texture(atlast);
@@ -1287,12 +1333,17 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
     bool filter_enabled = from->get_option("filter/enabled");
 	//register texures
 	{
-		Ref<ImageTexture> t = memnew(ImageTexture);
-		t->create_from_image(atlas);
-        if(!filter_enabled)
-            t->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
-		t->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
-		font->add_texture(t);
+        for(int idx = 0; idx < atlas.size(); idx++)
+        {
+    		Ref<ImageTexture> t = memnew(ImageTexture);
+    		t->create_from_image(*atlas[idx]);
+            if(!filter_enabled)
+                t->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
+    		t->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
+	    	font->add_texture(t);
+            // free image
+            memdelete(atlas[idx]);
+        }
 
 	}
 	//register characters
@@ -1300,9 +1351,8 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 	for(int i=0;i<font_data_list.size();i++) {
 		_EditorFontData *fd=font_data_list[i];
-		int tex_idx=0;
 
-		font->add_char(fd->character,tex_idx,Rect2( fd->ofs_x, fd->ofs_y, fd->blit.get_width(), fd->blit.get_height()),Point2(fd->halign-fd->blit_ofs.x,fd->valign-fd->blit_ofs.y+top_space), fd->advance+char_space+(fd->character==' '?space_space:0));
+        font->add_char(fd->character, fd->texture, Rect2( fd->ofs_x, fd->ofs_y, fd->blit.get_width(), fd->blit.get_height()),Point2(fd->halign-fd->blit_ofs.x,fd->valign-fd->blit_ofs.y+top_space), fd->advance+char_space+(fd->character==' '?space_space:0));
 		memdelete(fd);
 	}
 
