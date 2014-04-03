@@ -420,7 +420,8 @@ void Label::regenerate_word_cache() {
 			
 		}
 		
-        if ((current>255)&&(autowrap && line_width>=width))
+        bool unicode_wrap=false;
+        if (/*(current>255)&&*/(autowrap && line_width>=width))
         {
 		    if (current_word_size>0) {
 				
@@ -436,8 +437,8 @@ void Label::regenerate_word_cache() {
 			    wc->char_pos=word_pos;
 			    wc->word_len=i-word_pos;
 			    current_word_size=0;
-                i--;
 		    }
+            unicode_wrap=true;
         }
 
 		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
@@ -456,7 +457,15 @@ void Label::regenerate_word_cache() {
 			line_width=current_word_size;
 			line_count++;
 
-			
+            if (unicode_wrap) {
+			    if (current_word_size==0) {
+				    word_pos=i;
+			    }
+    			
+			    int char_width=font->get_char_size(current).width;
+			    current_word_size+=char_width;
+			    line_width+=char_width;
+            }			
 		}
 		
 		last_width=line_width;
