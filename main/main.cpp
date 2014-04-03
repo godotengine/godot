@@ -77,6 +77,10 @@
 
 #include "performance.h"
 
+#ifdef FIXED_RFS
+#include "main/fixed_rfs.h"
+#endif
+
 static Globals *globals=NULL;
 static InputMap *input_map=NULL;
 static bool _start_success=false;
@@ -495,8 +499,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		script_debugger = memnew( ScriptDebuggerLocal );
 	}
 
-#if MY_RFS
-	remotefs="192.168.33.175";
+#ifdef FIXED_RFS
+	if (remotefs=="")
+		remotefs=_fixed_rfs;
 #endif
 	if (remotefs!="") {
 		file_access_network_client=memnew(FileAccessNetworkClient);
