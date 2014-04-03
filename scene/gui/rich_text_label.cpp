@@ -638,7 +638,7 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 				if (true) {
 					if (b.pressed && !b.doubleclick) {
 
-            			if(OS::get_singleton()->has_touchscreen_ui_hint())
+            			if(OS::get_singleton()->has_touchscreen_ui_hint() && !selection.enabled)
                         {
 				            if (drag_touching) {
 					            set_fixed_process(false);
