@@ -40,9 +40,9 @@
 */
 class CanvasItemEditor;
 
-class Path2DEditor : public ButtonGroup {
+class Path2DEditor : public HBoxContainer {
 
-	OBJ_TYPE(Path2DEditor, ButtonGroup);
+	OBJ_TYPE(Path2DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 
