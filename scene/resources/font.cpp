@@ -472,7 +472,7 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 		cpos.y+=c->v_align;
 		if( c->texture_idx<-1 || c->texture_idx>=textures.size())
         {
-            if (p_text[i] == ' ')
+            if (p_text[i]==' '||p_text[i]==L'¡¡')
                 continue;
             else
 		        ERR_CONTINUE( c->texture_idx<-1 || c->texture_idx>=textures.size());
@@ -497,7 +497,7 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	cpos.y+=c->v_align;
 	if (c->texture_idx<-1 || c->texture_idx>=textures.size())
     {
-        if (p_char==' ')
+        if (p_char==' '||p_char==L'¡¡')
             return 0;
         else
     	    ERR_FAIL_COND_V( c->texture_idx<-1 || c->texture_idx>=textures.size(),0)

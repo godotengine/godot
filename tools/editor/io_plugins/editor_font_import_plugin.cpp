@@ -782,7 +782,14 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	int import_mode = from->get_option("character_set/mode");
 	bool round_advance = from->get_option("advanced/round_advance");
 
-	if (import_mode>=_EditorFontImportOptions::CHARSET_CUSTOM) {
+	CharType max_char=0;
+	if (import_mode==_EditorFontImportOptions::CHARSET_ASCII)
+		max_char=127;
+	else if(import_mode==_EditorFontImportOptions::CHARSET_LATIN)
+		max_char=255;
+	else if(import_mode==_EditorFontImportOptions::CHARSET_UNICODE)
+		max_char=0xFFFF;
+	else if (import_mode>=_EditorFontImportOptions::CHARSET_CUSTOM) {
 
 		//load from custom text
 		String path = from->get_option("character_set/custom");
@@ -803,6 +810,8 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 			String line = fa->get_line();
 			for(int i=0;i<line.length();i++) {
 				import_chars.insert(line[i]);
+				if (max_char<line[i])
+					max_char=line[i];
 			}
 		}
 
@@ -810,6 +819,8 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 			for(int i=32;i<128;i++)
 				import_chars.insert(i);
+			if (max_char<127)
+				max_char=127;
 		}
 
 		memdelete(fa);
@@ -842,7 +853,11 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 			skip=true;
 
 		if (skip) {
-			charcode=FT_Get_Next_Char(face,charcode,&gindex);
+			if (charcode<=max_char)
+				charcode=FT_Get_Next_Char(face,charcode,&gindex);
+			else
+				// break loop if charcode out of range(max_char)
+				gindex=0;
 			continue;
 		}
 
