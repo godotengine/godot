@@ -554,17 +554,18 @@ void Font::update_atlas() const {
     atlas_dirty=false;
 
     for (int i=atlas_dirty_index;i<atlas_images.size();i++) {
+        Image& img = *atlas_images[i];
         Ref<ImageTexture> tex;
         if (textures.size()==i) {
             tex=Ref<Texture>(memnew( ImageTexture ));
-            tex->create(512,512,Image::FORMAT_RGBA);
+            tex->create(img.get_width(),img.get_height(),img.get_format());
             textures.push_back(tex);
         }
         else
             tex=textures[i];
 
         if (tex.is_valid()) {
-            tex->set_data( *atlas_images[i] );
+            tex->set_data( img );
         }
     }
 }
