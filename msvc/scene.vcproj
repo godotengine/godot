@@ -1643,6 +1643,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\resources\ttf_font.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\resources\ttf_font.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\resources\video_stream.cpp"
 					>
 				</File>

@@ -177,12 +177,22 @@ void make_default_theme() {
 	Ref<Font> source_font=NULL;//make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
 	Ref<Font> large_font=NULL;//make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
 
-#ifdef WIN32
-    String exec_path = OS::get_singleton()->get_executable_path();
-    String font_path = exec_path.substr(0, exec_path.find_last("\\")) + "\\msyh.fnt";
-    Ref<Font> font = ResourceLoader::load(font_path);
-    if(font.is_valid())
+#if defined(WIN32) && defined(TOOLS_ENABLED)
+    String config_path;
+	if (OS::get_singleton()->has_environment("APPDATA")) {
+		// Most likely under windows, save here
+		config_path=OS::get_singleton()->get_environment("APPDATA");
+	} else if (OS::get_singleton()->has_environment("HOME")) {
+
+		config_path=OS::get_singleton()->get_environment("HOME");
+	}
+
+    String font_path = config_path + "\\Godot\\editor.ttf";
+    Ref<TtfFont> ttf_font = ResourceLoader::load(font_path);
+    if(ttf_font.is_valid())
     {
+        Ref<Font> font=Ref<Font>(memnew (Font));
+        font->set_ttf_path(font_path, 18);
 	    default_font=font;
 	    source_font=font;
 	    large_font=font;
