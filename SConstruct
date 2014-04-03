@@ -133,7 +133,7 @@ opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('old_scenes', 'Compatibility with old-style scenes', "yes")
 opts.Add('cjk', 'Add CJK language support', "no")
-opts.Add('rfs', 'My rfs', "no")
+opts.Add('rfs', 'Fixed rfs')
 
 # add platform specific options
 
@@ -303,8 +303,11 @@ for p in platform_list:
 	#if env['nedmalloc'] == 'yes':
 	#	env.Append(CPPFLAGS = ['-DNEDMALLOC_ENABLED'])
 
-	if (env["rfs"]=='yes'):
-		env.Append(CPPFLAGS=['-DMY_RFS'])
+	rfs = env.get('rfs', 'no')
+	if (rfs=='no'):
+		env['rfs']='no'
+	else:
+		env.Append(CPPFLAGS=['-DFIXED_RFS'])
 
 	Export('env')
 
