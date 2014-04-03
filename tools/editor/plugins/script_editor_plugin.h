@@ -223,7 +223,7 @@ class ScriptEditorPlugin : public EditorPlugin {
 	EditorNode *editor;
 public:
 
-	virtual String get_name() const { return "Script"; }
+	virtual String get_name() const { return XL_MESSAGE("Script"); }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;

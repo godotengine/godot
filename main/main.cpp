@@ -110,7 +110,7 @@ static String unescape_cmdline(const String& p_str) {
 
 void Main::print_help(const char* p_binary) {
 
-	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2010 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2010-2014 www.fengei.com.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
 	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
@@ -771,7 +771,6 @@ Error Main::setup2() {
 
 	translation_server->setup(); //register translations, load them, etc.
 	if (locale!="") {
-
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -959,7 +958,7 @@ bool Main::start() {
 	
 	if (!main_loop) {
 		if (!ObjectTypeDB::type_exists(main_loop_type)) {
-			OS::get_singleton()->alert("godot: error: MainLoop type doesn't exist: "+main_loop_type);
+			OS::get_singleton()->alert("xvision: error: MainLoop type doesn't exist: "+main_loop_type);
 			return false;
 		} else {
 

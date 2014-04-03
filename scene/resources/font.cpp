@@ -481,9 +481,9 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {
 	
 	const Character * c = char_map.getptr(p_char);
-	
-	if (!c)
-		return 0;
+    if( !c ){
+        return 0;
+    }
 	
 	Point2 cpos=p_pos;
 	cpos.x+=c->h_align;

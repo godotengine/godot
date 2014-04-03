@@ -465,7 +465,7 @@ void Node::set_name(const String& p_name) {
 	String name=p_name.replace(":","").replace("/","").replace("@","");
 
 	ERR_FAIL_COND(name=="");
-	data.name=name;
+	data.name=XL_MESSAGE(name);
 	
 	if (data.parent) {
 		
