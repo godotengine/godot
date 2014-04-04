@@ -347,7 +347,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			if (main_loop) {
 				input->parse_input_event(event);
 
-				if (input->is_mouse_button_pressed(1) && OS::has_touchscreen_ui_hint()) {
+				if (input->is_mouse_button_pressed(1) && has_touchscreen_ui_hint()) {
 					InputEvent drag_event;
 					drag_event.type=InputEvent::SCREEN_DRAG;
 					drag_event.ID = ++last_id;
@@ -496,7 +496,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 				}
 
-				if (mb.button_index==1 && OS::has_touchscreen_ui_hint()) {
+				if (mb.button_index==1 && has_touchscreen_ui_hint()) {
 					InputEvent touch_event;
 					touch_event.type = InputEvent::SCREEN_TOUCH;
 					touch_event.ID = ++last_id;

@@ -759,7 +759,7 @@ void OS_X11::process_xevents() {
 
 			input->parse_input_event( mouse_event);
 
-			if (mouse_event.mouse_button.button_index==1 && OS::has_touchscreen_ui_hint()) {
+			if (mouse_event.mouse_button.button_index==1 && has_touchscreen_ui_hint()) {
 				InputEvent touch_event;
 				touch_event.type = InputEvent::SCREEN_TOUCH;
 				touch_event.ID = ++event_id;
@@ -842,7 +842,7 @@ void OS_X11::process_xevents() {
 			
 			input->parse_input_event( motion_event);
 
-			if (input->is_mouse_button_pressed(1) && OS::has_touchscreen_ui_hint()) {
+			if (input->is_mouse_button_pressed(1) && has_touchscreen_ui_hint()) {
 				InputEvent drag_event;
 				drag_event.type = InputEvent::SCREEN_DRAG;
 				drag_event.ID = ++event_id;
