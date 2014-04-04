@@ -334,7 +334,7 @@ static int button_mask=0;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 
-	if (OS::has_touchscreen_ui_hint()) {
+	if (OS_OSX::singleton->has_touchscreen_ui_hint()) {
 		InputEvent touch_event;
 		touch_event.type = InputEvent::SCREEN_TOUCH;
 		touch_event.screen_touch.index=0;
@@ -372,7 +372,7 @@ static int button_mask=0;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 
-	if (OS::has_touchscreen_ui_hint()) {
+	if (OS_OSX::singleton->has_touchscreen_ui_hint()) {
 		InputEvent touch_event;
 		touch_event.type = InputEvent::SCREEN_TOUCH;
 		touch_event.screen_touch.index = 0;
@@ -416,7 +416,7 @@ static int button_mask=0;
 	OS_OSX::singleton->input->set_mouse_pos(Point2(mouse_x,mouse_y));
 	OS_OSX::singleton->push_input(ev);
 
-	if (input->is_mouse_button_pressed(1) && OS::has_touchscreen_ui_hint()) {
+	if (OS_OSX::singleton->input->is_mouse_button_pressed(1) && OS_OSX::singleton->has_touchscreen_ui_hint()) {
 		InputEvent drag_event;
 		drag_event.type=InputEvent::SCREEN_DRAG;
 		drag_event.screen_drag.index=0;
