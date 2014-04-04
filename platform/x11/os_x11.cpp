@@ -759,6 +759,16 @@ void OS_X11::process_xevents() {
 
 			input->parse_input_event( mouse_event);
 
+			if (mouse_event.mouse_button.button_index==1 && OS::has_touchscreen_ui_hint()) {
+				InputEvent touch_event;
+				touch_event.type = InputEvent::SCREEN_TOUCH;
+				touch_event.ID = ++event_id;
+				touch_event.screen_touch.index=0;
+				touch_event.screen_touch.pressed = mouse_event.mouse_button.pressed;
+				touch_event.screen_touch.x = mouse_event.mouse_button.x;
+				touch_event.screen_touch.y = mouse_event.mouse_button.y;
+				input->parse_input_event(touch_event);
+			}
 			
 		} break;	
 		case MotionNotify: {
@@ -831,6 +841,18 @@ void OS_X11::process_xevents() {
 			last_mouse_pos=pos;
 			
 			input->parse_input_event( motion_event);
+
+			if (input->is_mouse_button_pressed(1) && OS::has_touchscreen_ui_hint()) {
+				InputEvent drag_event;
+				drag_event.type = InputEvent::SCREEN_DRAG;
+				drag_event.ID = ++event_id;
+				drag_event.screen_drag.index = 0;
+				drag_event.screen_drag.x = pos.x;
+				drag_event.screen_drag.y = pos.y;
+				drag_event.screen_drag.relative_x = rel.x;
+				drag_event.screen_drag.relative_y = rel.y;
+				input->parse_input_event(drag_event);
+			}
 			
 		} break;			
 		case KeyPress: 
