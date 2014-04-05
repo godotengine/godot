@@ -364,6 +364,8 @@ private:
 	void _init_indicators();
 	void _finish_indicators();
 
+	void _toggle_maximize_view(Object* p_viewport);
+
 	Node *custom_camera;
 
 	Object *_get_editor_data(Object *p_what);

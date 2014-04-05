@@ -1410,6 +1410,12 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				case KEY_F: {
 					_menu_option(VIEW_CENTER_TO_SELECTION);
 				} break;
+
+				case KEY_SPACE: {
+					if (!k.pressed)
+						emit_signal("toggle_maximize_view", this);
+				} break;
+
 			}
 
 
@@ -1816,6 +1822,7 @@ void SpatialEditorViewport::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
 	ObjectTypeDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
 
+	ADD_SIGNAL( MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")) );
 }
 
 
@@ -2916,6 +2923,48 @@ void SpatialEditor::_request_gizmo(Object* p_obj) {
 
 }
 
+void SpatialEditor::_toggle_maximize_view(Object* p_viewport) {
+	if (!p_viewport) return;
+	SpatialEditorViewport *current_viewport = p_viewport->cast_to<SpatialEditorViewport>();
+	if (!current_viewport) return;
+
+	int index=-1;
+	bool maximized = false;
+	for(int i=0;i<4;i++) {
+		if (viewports[i]==current_viewport) {
+			index=i;
+			if ( current_viewport->get_global_rect() == viewport_base->get_global_rect() )
+				maximized=true;
+			break;
+		}
+	}
+	if (index==-1) return;
+
+	if (!maximized) {
+
+		for(int i=0;i<4;i++) {
+			if (i==index)
+				viewports[i]->set_area_as_parent_rect();
+			else
+				viewports[i]->hide();
+		}
+	} else {
+
+		for(int i=0;i<4;i++)
+			viewports[i]->show();
+
+		if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT) ))
+			_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
+		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS) ))
+			_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS);
+		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS) ))
+			_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS);
+		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS) ))
+			_menu_item_pressed(MENU_VIEW_USE_4_VIEWPORTS);
+	}
+
+}
+
 void SpatialEditor::_bind_methods() {
 
 //	ObjectTypeDB::bind_method("_input_event",&SpatialEditor::_input_event);
@@ -2928,7 +2977,10 @@ void SpatialEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_get_editor_data",&SpatialEditor::_get_editor_data);
 	ObjectTypeDB::bind_method("_request_gizmo",&SpatialEditor::_request_gizmo);
 
+	ObjectTypeDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
+
 	ADD_SIGNAL( MethodInfo("transform_key_request") );
+
 
 }
 
@@ -3029,10 +3081,10 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item("Use Default Light",MENU_VIEW_USE_DEFAULT_LIGHT);
 	p->add_separator();
 
-	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT);
-	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS);
-	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS);
-	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS);
+	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT,KEY_MASK_ALT+KEY_1);
+	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS,KEY_MASK_ALT+KEY_2);
+	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS,KEY_MASK_ALT+KEY_3);
+	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS,KEY_MASK_ALT+KEY_4);
 	p->add_separator();
 
 	p->add_check_item("Display Normal",MENU_VIEW_DISPLAY_NORMAL);
@@ -3069,6 +3121,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	for(int i=0;i<4;i++) {
 
 		viewports[i] = memnew( SpatialEditorViewport(this,editor) );
+		viewports[i]->connect("toggle_maximize_view",this,"_toggle_maximize_view");
 		viewport_base->add_child(viewports[i]);
 	}
 	//vbc->add_child(viewport_base);
