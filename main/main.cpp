@@ -577,12 +577,15 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		video_mode.height=globals->get("display/height");
 	if (use_custom_res && globals->has("display/fullscreen"))
 		video_mode.fullscreen=globals->get("display/fullscreen");
+	if (use_custom_res && globals->has("display/resizable"))
+		video_mode.resizable=globals->get("display/resizable");
 
 
 
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
+	GLOBAL_DEF("display/resizable",video_mode.resizable);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
 	}
