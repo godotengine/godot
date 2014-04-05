@@ -167,6 +167,31 @@ Error InAppStore::request_product_info(Variant p_params) {
 			ret["type"] = "purchase";
 			ret["result"] = "ok";
 			ret["product_id"] = pid;
+            
+            if([[[UIDevice currentDevice] systemVersion] floatValue] >= 7.0){
+                
+                NSURL *receiptFileURL = nil;
+                NSBundle *bundle = [NSBundle mainBundle];
+                if ([bundle respondsToSelector:@selector(appStoreReceiptURL)]) {
+                    
+                    // Get the transaction receipt file path location in the app bundle.
+                    receiptFileURL = [bundle appStoreReceiptURL];
+                    
+                    // Read in the contents of the transaction file.
+                    ret["receipt"] = receiptFileURL;
+                    
+                } else {
+                    // Fall back to deprecated transaction receipt,
+                    // which is still available in iOS 7.
+                    
+                    // Use SKPaymentTransaction's transactionReceipt.
+                    ret["receipt"] = transaction.transactionReceipt;
+                }
+                
+            }else{
+                ret["receipt"] = transaction.transactionReceipt;
+            }
+            
 			InAppStore::get_singleton()->_post_event(ret);
 			[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
 		} break;

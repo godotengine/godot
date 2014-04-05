@@ -124,6 +124,11 @@ String OS::get_executable_path() const {
 	return _execpath;
 }
 
+int OS::get_process_ID() const {
+
+	return -1;
+};
+
 uint64_t OS::get_frames_drawn() {
 
 	return frames_drawn;

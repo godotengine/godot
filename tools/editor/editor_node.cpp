@@ -3263,6 +3263,14 @@ EditorNode::EditorNode() {
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
 
+	String global_font = EditorSettings::get_singleton()->get("global/font");
+	if (global_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(global_font);
+		if (fnt.is_valid()) {
+			theme->set_default_theme_font(fnt);
+		}
+	}
+
 	Ref<StyleBoxTexture> focus_sbt=memnew( StyleBoxTexture );
 	focus_sbt->set_texture(theme->get_icon("EditorFocus","EditorIcons"));
 	for(int i=0;i<4;i++) {

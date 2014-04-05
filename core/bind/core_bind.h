@@ -117,6 +117,8 @@ public:
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
+	int get_process_ID() const;
+
 	bool has_environment(const String& p_var) const;
 	String get_environment(const String& p_var) const;
 
