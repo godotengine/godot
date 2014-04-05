@@ -199,6 +199,14 @@ int _OS::get_iterations_per_second() const {
 
 }
 
+void _OS::set_target_fps(int p_fps) {
+	OS::get_singleton()->set_target_fps(p_fps);
+}
+
+float _OS::get_target_fps() const {
+	return OS::get_singleton()->get_target_fps();
+}
+
 void _OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
@@ -537,6 +545,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
+	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
+	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
