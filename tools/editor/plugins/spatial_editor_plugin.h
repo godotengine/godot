@@ -110,7 +110,6 @@ class SpatialEditorViewport : public Control {
 	void _update_selection();
 	bool _gizmo_select(const Vector2& p_screenpos,bool p_hilite_only=false);
 
-
 	float get_znear() const;
 	float get_zfar() const;
 	float get_fov() const;
@@ -119,6 +118,19 @@ class SpatialEditorViewport : public Control {
 	bool clicked_includes_current;
 	bool clicked_wants_append;
 
+	enum NavigationScheme {
+		NAVIGATION_GODOT,
+		NAVIGATION_MAYA,
+		NAVIGATION_MODO,
+	};
+	NavigationScheme _get_navigation_schema(const String& p_property);
+
+	enum NavigationMode {
+		NAVIGATION_NONE,
+		NAVIGATION_PAN,
+		NAVIGATION_ZOOM,
+		NAVIGATION_ORBIT
+	};
 	enum TransformMode {
 		TRANSFORM_NONE,
 		TRANSFORM_ROTATE,
@@ -363,6 +375,8 @@ private:
 	void _instance_scene();
 	void _init_indicators();
 	void _finish_indicators();
+
+	void _toggle_maximize_view(Object* p_viewport);
 
 	Node *custom_camera;
 

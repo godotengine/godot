@@ -78,6 +78,9 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 	if (!node)
 		return false;
 
+	if (!node->is_visible())
+		return false;
+
 	if (!node->get_curve().is_valid())
 		return false;
 
@@ -89,9 +92,9 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
-
 			Vector2 gpoint = Point2(mb.x,mb.y);
-			Vector2 cpoint = xform.affine_inverse().xform(gpoint);
+			Vector2 cpoint = !mb.mod.alt? snap_point(xform.affine_inverse().xform(gpoint))
+										: node->get_global_transform().affine_inverse().xform( snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 			//first check if a point is to be added (segment split)
 			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
@@ -112,7 +115,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 						Point2 p = xform.xform( curve->get_point_pos(i) );
 						if (gpoint.distance_to(p) < grab_treshold ) {
 
-							if (!mb.mod.control) {
+							if (!mb.mod.shift) {
 
 								action=ACTION_MOVING_POINT;
 								action_point=i;
@@ -173,6 +176,8 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 				moving_from=curve->get_point_pos(action_point);
 				moving_screen_from=gpoint;
 
+				canvas_item_editor->get_viewport_control()->update();
+
 				return true;
 			}
 
@@ -188,7 +193,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 
 						undo_redo->create_action("Move Point in Curve");
-						undo_redo->add_do_method(curve.ptr(),"set_point_pos",action_point,new_pos);
+						undo_redo->add_do_method(curve.ptr(),"set_point_pos",action_point,cpoint);
 						undo_redo->add_undo_method(curve.ptr(),"set_point_pos",action_point,moving_from);
 						undo_redo->add_do_method(canvas_item_editor,"update");
 						undo_redo->add_undo_method(canvas_item_editor,"update");
@@ -420,9 +425,10 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 				Vector2 gpoint = Point2(mm.x,mm.y);
+				Vector2 cpoint = !mm.mod.alt? snap_point(xform.affine_inverse().xform(gpoint))
+											: node->get_global_transform().affine_inverse().xform( snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 				Ref<Curve2D> curve = node->get_curve();
-
 
 				Vector2 new_pos = moving_from + xform.basis_xform( gpoint - moving_screen_from );
 
@@ -430,7 +436,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 					case ACTION_MOVING_POINT: {
 
-						curve->set_point_pos(action_point,new_pos);
+						curve->set_point_pos(action_point,cpoint);
 					} break;
 					case ACTION_MOVING_IN: {
 
@@ -445,7 +451,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 				}
 
 
-				canvas_item_editor->update();
+				canvas_item_editor->get_viewport_control()->update();
 				return true;
 			}
 
@@ -471,59 +477,74 @@ void Path2DEditor::_canvas_draw() {
 	if (!node)
 		return ;
 
+	if (!node->is_visible())
+		return;
+
 	if (!node->get_curve().is_valid())
 		return ;
 
 	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 	Ref<Texture> handle= get_icon("EditorHandle","EditorIcons");
+	Size2 handle_size = handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
 
 	int len = curve->get_point_count();
-	RID ci = canvas_item_editor->get_canvas_item();
+	Control *vpc = canvas_item_editor->get_viewport_control();
+
 
 	for(int i=0;i<len;i++) {
 
 
 		Vector2 point = xform.xform(curve->get_point_pos(i));
-		handle->draw(ci,point-handle->get_size()*0.5,Color(1,1,1,0.3));
+		vpc->draw_texture_rect(handle,Rect2(point-handle_size*0.5,handle_size),false,Color(1,1,1,1));
 
 		if (i<len-1) {
 			Vector2 pointout = xform.xform(curve->get_point_pos(i)+curve->get_point_out(i));
-			canvas_item_editor->draw_line(point,pointout,Color(0.5,0.5,1.0,0.8),1.0);
-			handle->draw(ci,pointout-handle->get_size()*0.5,Color(1,0.5,1,0.3));
+			vpc->draw_line(point,pointout,Color(0.5,0.5,1.0,0.8),1.0);
+			vpc->draw_texture_rect(handle, Rect2(pointout-handle_size*0.5,handle_size),false,Color(1,0.5,1,0.3));
 		}
 
 		if (i>0) {
 			Vector2 pointin = xform.xform(curve->get_point_pos(i)+curve->get_point_in(i));
-			canvas_item_editor->draw_line(point,pointin,Color(0.5,0.5,1.0,0.8),1.0);
-			handle->draw(ci,pointin-handle->get_size()*0.5,Color(1,0.5,1,0.3));
+			vpc->draw_line(point,pointin,Color(0.5,0.5,1.0,0.8),1.0);
+			vpc->draw_texture_rect(handle, Rect2(pointin-handle_size*0.5,handle_size),false,Color(1,0.5,1,0.3));
 		}
 
 	}
 
 }
 
+void Path2DEditor::_node_visibility_changed() {
+	if (!node)
+		return;
 
+	canvas_item_editor->get_viewport_control()->update();
+}
 
-void Path2DEditor::edit(Node *p_collision_polygon) {
+void Path2DEditor::edit(Node *p_path2d) {
 
 	if (!canvas_item_editor) {
 		canvas_item_editor=CanvasItemEditor::get_singleton();
 	}
 
-	if (p_collision_polygon) {
+	if (p_path2d) {
 
-		node=p_collision_polygon->cast_to<Path2D>();
-		if (!canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
-			canvas_item_editor->connect("draw",this,"_canvas_draw");
-
+		node=p_path2d->cast_to<Path2D>();
+		if (!canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
+			canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
+		if (!node->is_connected("visibility_changed", this, "_node_visibility_changed"))
+			node->connect("visibility_changed", this, "_node_visibility_changed");
 
 	} else {
-		node=NULL;
-		if (canvas_item_editor->is_connected("draw",this,"_canvas_draw"))
-			canvas_item_editor->disconnect("draw",this,"_canvas_draw");
 
+		if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
+			canvas_item_editor->get_viewport_control()->disconnect("draw",this,"_canvas_draw");
+
+		// node may have been deleted at this point
+		if (node && node->is_connected("visibility_changed", this, "_node_visibility_changed"))
+			node->disconnect("visibility_changed", this, "_node_visibility_changed");
+		node=NULL;
 	}
 
 }
@@ -532,7 +553,7 @@ void Path2DEditor::_bind_methods() {
 
 	//ObjectTypeDB::bind_method(_MD("_menu_option"),&Path2DEditor::_menu_option);
 	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&Path2DEditor::_canvas_draw);
-
+	ObjectTypeDB::bind_method(_MD("_node_visibility_changed"),&Path2DEditor::_node_visibility_changed);
 }
 
 Path2DEditor::Path2DEditor(EditorNode *p_editor) {
@@ -559,7 +580,7 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 
 void Path2DEditorPlugin::edit(Object *p_object) {
 
-	collision_polygon_editor->edit(p_object->cast_to<Node>());
+	path2d_editor->edit(p_object->cast_to<Node>());
 }
 
 bool Path2DEditorPlugin::handles(Object *p_object) const {
@@ -570,11 +591,11 @@ bool Path2DEditorPlugin::handles(Object *p_object) const {
 void Path2DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		collision_polygon_editor->show();
+		path2d_editor->show();
 	} else {
 
-		collision_polygon_editor->hide();
-		collision_polygon_editor->edit(NULL);
+		path2d_editor->hide();
+		path2d_editor->edit(NULL);
 	}
 
 }
@@ -582,19 +603,10 @@ void Path2DEditorPlugin::make_visible(bool p_visible) {
 Path2DEditorPlugin::Path2DEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
-	collision_polygon_editor = memnew( Path2DEditor(p_node) );
-	editor->get_viewport()->add_child(collision_polygon_editor);
+	path2d_editor = memnew( Path2DEditor(p_node) );
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(path2d_editor);
 
-	collision_polygon_editor->set_margin(MARGIN_LEFT,200);
-	collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
-	collision_polygon_editor->set_margin(MARGIN_TOP,0);
-	collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
-
-
-	collision_polygon_editor->hide();
-
-
-
+	path2d_editor->hide();
 }
 
 

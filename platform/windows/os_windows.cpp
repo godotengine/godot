@@ -888,6 +888,10 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	} else {
 		dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 		dwStyle=WS_OVERLAPPEDWINDOW;
+		if (!video_mode.resizable) {
+			dwStyle &= ~WS_THICKFRAME;
+			dwStyle &= ~WS_MAXIMIZEBOX;
+		}
 	}
 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);

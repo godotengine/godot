@@ -600,6 +600,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R( Matrix3, determinant );
 	VCALL_PTR2R( Matrix3, rotated );
 	VCALL_PTR1R( Matrix3, scaled );
+	VCALL_PTR0R( Matrix3, get_scale );
 	VCALL_PTR0R( Matrix3, get_euler );
 	VCALL_PTR1R( Matrix3, tdotx );
 	VCALL_PTR1R( Matrix3, tdoty );
@@ -1390,6 +1391,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(MATRIX3,REAL,Matrix3,determinant,varray());
 	ADDFUNC2(MATRIX3,MATRIX3,Matrix3,rotated,VECTOR3,"axis",REAL,"phi",varray());
 	ADDFUNC1(MATRIX3,MATRIX3,Matrix3,scaled,VECTOR3,"scale",varray());
+	ADDFUNC0(MATRIX3,VECTOR3,Matrix3,get_scale,varray());
 	ADDFUNC0(MATRIX3,VECTOR3,Matrix3,get_euler,varray());
 	ADDFUNC1(MATRIX3,REAL,Matrix3,tdotx,VECTOR3,"with",varray());
 	ADDFUNC1(MATRIX3,REAL,Matrix3,tdoty,VECTOR3,"with",varray());

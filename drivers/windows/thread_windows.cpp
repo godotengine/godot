@@ -46,7 +46,7 @@ DWORD ThreadWindows::thread_callback( LPVOID userdata ) {
 
 	ThreadWindows *t=reinterpret_cast<ThreadWindows*>(userdata);
 	t->callback(t->user);
-	t->id=(ID)0; // must implement
+	t->id=(ID)GetCurrentThreadId(); // must implement
 	return 0;
 }
 
@@ -67,7 +67,7 @@ Thread* ThreadWindows::create_func_windows(ThreadCreateCallback p_callback,void 
 }
 Thread::ID ThreadWindows::get_thread_ID_func_windows() {
 
-	return (ID)0; //must implement
+	return (ID)GetCurrentThreadId(); //must implement
 }
 void ThreadWindows::wait_to_finish_func_windows(Thread* p_thread) {
 

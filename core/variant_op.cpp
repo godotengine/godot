@@ -103,8 +103,8 @@ case m_name: {\
 		case BOOL: _RETURN( p_a._data.m_type m_op p_b._data._bool);\
 		case INT: _RETURN( p_a._data.m_type m_op p_b._data._int);\
 		case REAL: _RETURN( p_a._data.m_type m_op p_b._data._real);\
-		case VECTOR2: _RETURN( p_a._data.m_type m_op *reinterpret_cast<const Vector2*>(p_a._data._mem));\
-		case VECTOR3: _RETURN( p_a._data.m_type m_op *reinterpret_cast<const Vector3*>(p_a._data._mem));\
+		case VECTOR2: _RETURN( p_a._data.m_type m_op *reinterpret_cast<const Vector2*>(p_b._data._mem));\
+		case VECTOR3: _RETURN( p_a._data.m_type m_op *reinterpret_cast<const Vector3*>(p_b._data._mem));\
 		default: {}\
 	}\
 	r_valid=false;\
