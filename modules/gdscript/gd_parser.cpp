@@ -174,10 +174,19 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		/* Parse Operand */
 		/*****************/
 
+		if (parenthesis>0) {
+			//remove empty space (only allowed if inside parenthesis
+			while(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+		}
+
 		if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
 			//subexpression ()
 			tokenizer->advance();
+			parenthesis++;
 			Node* subexpr = _parse_expression(p_parent,p_static);
+			parenthesis--;
 			if (!subexpr)
 				return NULL;
 
@@ -629,6 +638,12 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		/* Parse Operator */
 		/******************/
 
+		if (parenthesis>0) {
+			//remove empty space (only allowed if inside parenthesis
+			while(tokenizer->get_token()==GDTokenizer::TK_NEWLINE) {
+				tokenizer->advance();
+			}
+		}
 
 		Expression e;
 		e.is_op=false;
@@ -2475,6 +2490,7 @@ void GDParser::clear() {
 	tab_level.push_back(0);
 	error_line=0;
 	error_column=0;
+	parenthesis=0;
 	current_export.type=Variant::NIL;
 	error="";
 

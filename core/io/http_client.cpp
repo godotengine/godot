@@ -97,8 +97,16 @@ Error HTTPClient::request( Method p_method, const String& p_url, const Vector<St
 
 	String request=String(_methods[p_method])+" "+p_url+" HTTP/1.1\r\n";
 	request+="Host: "+conn_host+":"+itos(conn_port)+"\r\n";
+	bool add_clen=p_body.length()>0;
 	for(int i=0;i<p_headers.size();i++) {
 		request+=p_headers[i]+"\r\n";
+		if (add_clen && p_headers[i].find("Content-Length:")==0) {
+			add_clen=false;
+		}
+	}
+	if (add_clen) {
+		request+="Content-Length: "+itos(p_body.utf8().length())+"\r\n";
+		//should it add utf8 encoding? not sure
 	}
 	request+="\r\n";
 	request+=p_body;

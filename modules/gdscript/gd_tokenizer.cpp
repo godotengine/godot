@@ -242,6 +242,24 @@ void GDTokenizerText::_advance() {
 			case 0:
 				_make_token(TK_EOF);
 				break;
+			case '\\':
+				INCPOS(1);
+				if (GETCHAR(0)=='\r') {
+					INCPOS(1);
+				}
+
+				if (GETCHAR(0)!='\n') {
+					_make_error("Expected newline after '\\'.");
+					return;
+				}
+
+				INCPOS(1);
+
+				while(GETCHAR(0)==' ' || GETCHAR(0)=='\t') {
+					INCPOS(1);
+				}
+
+				continue;
 			case '\t':
 			case '\r':
 			case ' ':
