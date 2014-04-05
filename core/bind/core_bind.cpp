@@ -246,6 +246,12 @@ Error _OS::kill(int p_pid) {
 	return OS::get_singleton()->kill(p_pid);
 }
 
+int _OS::get_process_ID() const {
+
+	return OS::get_singleton()->get_process_ID();
+};
+
+
 bool _OS::has_environment(const String& p_var) const {
 
 	return OS::get_singleton()->has_environment(p_var);
@@ -561,6 +567,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking"),&_OS::execute);
 	ObjectTypeDB::bind_method(_MD("kill","pid"),&_OS::kill);
 	ObjectTypeDB::bind_method(_MD("shell_open","uri"),&_OS::shell_open);
+	ObjectTypeDB::bind_method(_MD("get_process_ID"),&_OS::get_process_ID);
 
 	ObjectTypeDB::bind_method(_MD("get_environment","environment"),&_OS::get_environment);
 	ObjectTypeDB::bind_method(_MD("has_environment","environment"),&_OS::has_environment);

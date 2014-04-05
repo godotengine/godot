@@ -162,6 +162,7 @@ public:
 	virtual String get_executable_path() const;
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL)=0;
 	virtual Error kill(const ProcessID& p_pid)=0;
+	virtual int get_process_ID() const;
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String& p_cwd);

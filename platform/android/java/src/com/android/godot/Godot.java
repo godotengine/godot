@@ -135,7 +135,7 @@ public class Godot extends Activity implements SensorEventListener
 	};
 	public ResultCallback result_callback;
 
-	private PaymentsManager mPaymentsManager;
+	private PaymentsManager mPaymentsManager = null;
 
 	@Override protected void onActivityResult (int requestCode, int resultCode, Intent data) {
 		if(requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE){
@@ -168,6 +168,7 @@ public class Godot extends Activity implements SensorEventListener
 	
 	@Override protected void onCreate(Bundle icicle) {
 
+		System.out.printf("** GODOT ACTIVITY CREATED HERE ***\n");
 
 		super.onCreate(icicle);
 		_self = this;

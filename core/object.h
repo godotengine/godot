@@ -331,7 +331,9 @@ public:
 		Connection(const Variant& p_variant);
 	};
 private:
-
+#ifdef DEBUG_ENABLED
+friend class _ObjectDebugLock;
+#endif
 friend bool predelete_handler(Object*);
 friend void postinitialize_handler(Object*);
 
@@ -365,7 +367,9 @@ friend void postinitialize_handler(Object*);
 
 	HashMap< StringName, Signal, StringNameHasher> signal_map;
 	List<Connection> connections;
-
+#ifdef DEBUG_ENABLED
+	SafeRefCount _lock_index;
+#endif
 	bool _block_signals;
 	int _predelete_ok;
 	Set<Object*> change_receptors;

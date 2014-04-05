@@ -635,6 +635,19 @@ Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_ar
 								err.argument-=1;
 							}
 						}
+					} if (methodstr=="free") {
+
+						if (err.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
+
+							if (base->is_ref()) {
+								err_text="Attempted to free a reference.";
+								break;
+							} else if (base->get_type()==Variant::OBJECT) {
+
+								err_text="Attempted to free a locked object (calling or emitting).";
+								break;
+							}
+						}
 					}
 					err_text=_get_call_error(err,"function '"+methodstr+"' in base '"+basestr+"'",(const Variant**)argptrs);
 					break;

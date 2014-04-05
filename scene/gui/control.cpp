@@ -351,11 +351,13 @@ void Control::_notification(int p_notification) {
 
 				window->tooltip_timer = memnew( Timer );
 				add_child(window->tooltip_timer);
+				window->tooltip_timer->force_parent_owned();
 				window->tooltip_timer->set_wait_time( GLOBAL_DEF("display/tooltip_delay",0.7));
 				window->tooltip_timer->connect("timeout",this,"_window_show_tooltip");
 				window->tooltip=NULL;
 				window->tooltip_popup = memnew( TooltipPanel );
 				add_child(window->tooltip_popup);
+				window->tooltip_popup->force_parent_owned();
 				window->tooltip_label = memnew( TooltipLabel );
 				window->tooltip_popup->add_child(window->tooltip_label);
 				window->tooltip_popup->set_as_toplevel(true);
