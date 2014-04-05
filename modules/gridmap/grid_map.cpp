@@ -1472,7 +1472,9 @@ void GridMap::bake_geometry() {
 				Light *l = get_child(i)->cast_to<Light>();
 				BakeLight bl;
 				for(int i=0;i<Light::PARAM_MAX;i++) {
-					bl.param[i]=l->get_parameter(Light::Parameter(i));
+#ifndef _3D_DISABLED
+                    bl.param[i]=l->get_parameter(Light::Parameter(i));
+#endif
 				}
 				Transform t=l->get_global_transform();
 				bl.pos=t.origin;

@@ -158,6 +158,19 @@ void ScriptEditorDebugger::debug_continue() {
 
 }
 
+void ScriptEditorDebugger::debug_set_breakpoint(const String& p_path,int p_line,bool p_dobreak)
+{
+	ERR_FAIL_COND(connection.is_null());
+	ERR_FAIL_COND(!connection->is_connected());
+
+	Array msg;
+	msg.push_back("set_breakpoint");
+    msg.push_back(p_path);
+	msg.push_back(p_line+1);
+    msg.push_back(p_dobreak);
+	ppeer->put_var(msg);
+}
+
 void ScriptEditorDebugger::_scene_tree_request() {
 
 	ERR_FAIL_COND(connection.is_null());
