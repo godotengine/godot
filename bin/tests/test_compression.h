@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  path_2d_editor_plugin.h                                              */
+/*  test_compression.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,88 +26,20 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PATH_2D_EDITOR_PLUGIN_H
-#define PATH_2D_EDITOR_PLUGIN_H
+#ifndef TEST_COMPRESSION_H
+#define TEST_COMPRESSION_H
 
-#include "tools/editor/editor_plugin.h"
-#include "tools/editor/editor_node.h"
-#include "scene/2d/path_2d.h"
-#include "scene/gui/tool_button.h"
-#include "scene/gui/button_group.h"
 
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
+	@author mary.w.nate <mary.w.nate@gmail.com>
 */
-class CanvasItemEditor;
 
-class Path2DEditor : public HBoxContainer {
+#include "os/main_loop.h"
 
-	OBJ_TYPE(Path2DEditor, HBoxContainer);
+namespace TestCompression {
 
-	UndoRedo *undo_redo;
+MainLoop* test();
 
-	ToolButton *curve_create;
-	ToolButton *curve_edit;
-	ToolButton *curve_del;
-	ToolButton *curve_close;
+}
 
-	CanvasItemEditor *canvas_item_editor;
-	EditorNode *editor;
-	Panel *panel;
-	Path2D *node;
-
-	enum Action {
-
-		ACTION_NONE,
-		ACTION_MOVING_POINT,
-		ACTION_MOVING_IN,
-		ACTION_MOVING_OUT,
-	};
-
-
-	Action action;
-	int action_point;
-	Point2 moving_from;
-	Point2 moving_screen_from;
-
-
-	void _canvas_draw();
-	void _node_visibility_changed();
-
-protected:
-	void _notification(int p_what);
-	void _node_removed(Node *p_node);
-	static void _bind_methods();
-public:
-
-	Vector2 snap_point(const Vector2& p_point) const;
-	bool forward_input_event(const InputEvent& p_event);
-	void edit(Node *p_path2d);
-	Path2DEditor(EditorNode *p_editor);
-};
-
-class Path2DEditorPlugin : public EditorPlugin {
-
-	OBJ_TYPE( Path2DEditorPlugin, EditorPlugin );
-
-	Path2DEditor *path2d_editor;
-	EditorNode *editor;
-
-public:
-
-	virtual bool forward_input_event(const InputEvent& p_event) { return path2d_editor->forward_input_event(p_event); }
-
-	virtual String get_name() const { return "Path2D"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
-
-	Path2DEditorPlugin(EditorNode *p_node);
-	~Path2DEditorPlugin();
-
-};
-
-
-
-#endif // PATH_2D_EDITOR_PLUGIN_H
+#endif // TEST_COMPRESSION_H

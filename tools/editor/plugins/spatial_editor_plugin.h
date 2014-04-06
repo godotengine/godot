@@ -70,6 +70,7 @@ class SpatialEditorViewport : public Control {
 		VIEW_FRONT,
 		VIEW_REAR,
 		VIEW_CENTER_TO_SELECTION,
+		VIEW_ALIGN_SELECTION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL
@@ -218,6 +219,7 @@ public:
 
 	AABB aabb;
 	Transform original; // original location when moving
+	Vector3 original_scale; // original scale
 	Transform last_xform; // last transform
 	Spatial *sp;
 	RID sbox_instance;

@@ -501,6 +501,7 @@ void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 			continue;
 
 		se->original=se->sp->get_global_transform();
+		se->original_scale=se->sp->get_scale();
 //		center+=se->original.origin;
 //		nc++;
 	}
@@ -816,24 +817,27 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							case TRANSFORM_VIEW: {
 
 								_edit.plane=TRANSFORM_X_AXIS;
-								set_message("View Plane Transform.",2);
+								set_message("X-Axis Transform.",2);
 							} break;
 							case TRANSFORM_X_AXIS: {
 
 								_edit.plane=TRANSFORM_Y_AXIS;
-								set_message("X-Axis Transform.",2);
+								set_message("Y-Axis Transform.",2);
 
 							} break;
 							case TRANSFORM_Y_AXIS: {
 
 								_edit.plane=TRANSFORM_Z_AXIS;
-								set_message("Y-Axis Transform.",2);
+								set_message("Z-Axis Transform.",2);
 
 							} break;
 							case TRANSFORM_Z_AXIS: {
 
 								_edit.plane=TRANSFORM_VIEW;
-								set_message("Z-Axis Transform.",2);
+								if (_edit.mode==TRANSFORM_SCALE)
+									set_message("Uniform Scale.",2); //reuse TRANSFORM_VIEW as uniform scale switch
+								else
+									set_message("View Plane Transform.",2);
 
 							} break;
 						}
@@ -1111,9 +1115,17 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							set_message("Scaling to "+String::num(scale,1)+"%.");
 							scale/=100.0;
 
-							Transform r;
-							r.basis.scale(Vector3(scale,scale,scale));
-
+							//Transform r;
+							Vector3 s(1,1,1);
+							if (_edit.plane == TRANSFORM_X_AXIS)
+								s[0] = scale;
+							else if (_edit.plane == TRANSFORM_Y_AXIS)
+								s[1] = scale;
+							else if (_edit.plane == TRANSFORM_Z_AXIS)
+								s[2] = scale;
+							else if (_edit.plane == TRANSFORM_VIEW)
+								s = Vector3(scale,scale,scale);
+							//r.basis.scale(s);
 
 							List<Node*> &selection = editor_selection->get_selected_node_list();
 
@@ -1127,13 +1139,17 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 								if (!se)
 									continue;
 
-
+								/*
 								Transform original=se->original;
 
-								Transform base=Transform( Matrix3(), _edit.center);
+								//Transform base=Transform( Matrix3(), _edit.center);
+								Transform base=Transform( Matrix3(), original.origin);
 								Transform t=base * (r * (base.inverse() * original));
 
 								sp->set_global_transform(t);
+								*/
+
+								sp->set_scale(se->original_scale*s);
 							}
 
 							surface->update();
@@ -1466,7 +1482,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 
 				case KEY_F: {
-					_menu_option(VIEW_CENTER_TO_SELECTION);
+
+					if (k.pressed && k.mod.shift && k.mod.control) {
+						_menu_option(VIEW_ALIGN_SELECTION_WITH_VIEW);
+					} else if (k.pressed) {
+						_menu_option(VIEW_CENTER_TO_SELECTION);
+					}
+
 				} break;
 
 				case KEY_SPACE: {
@@ -1737,8 +1759,56 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			Vector3 center;
 			int count=0;
 
+			AABB aabb;
+			bool first = true;
+
+			Map<Node*,Object*> &selection = editor_selection->get_selection(); // editor_selection->get_selected_node_list() return wrong result?
+			for( Map<Node*,Object*>::Element *E=selection.front();E;E=E->next() ) {
+				Spatial *sp = E->key()->cast_to<Spatial>();
+				if (!sp)
+					continue;
+
+				SpatialEditorSelectedItem *se = editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+				if (!se)
+					continue;
+
+				center+=sp->get_global_transform().origin;
+				count++;
+
+				AABB next_aabb;
+				VisualInstance *vi = sp->cast_to<VisualInstance>();
+				if (vi) {
+					next_aabb = vi->get_aabb();
+					next_aabb.size *= sp->get_global_transform().basis.get_scale();
+				}
+				next_aabb.pos = sp->get_global_transform().origin;
+				if (first) {
+					aabb = next_aabb;
+					first=false;
+				} else {
+					aabb.merge_with(next_aabb);
+				}
+			}
+
+			center/=float(count);
+
+			float fov = camera->get_fov();
+			float s = aabb.get_longest_axis_size();
+			float d = s/2 + s/2/Math::tan(Math::deg2rad(fov/2));
+			cursor.distance=MAX(d, DISTANCE_DEFAULT);
+			cursor.pos=center;
+
+		} break;
+		case VIEW_ALIGN_SELECTION_WITH_VIEW: {
+
+			if (!get_selected_count())
+				break;
+
+			Transform camera_transform = camera->get_global_transform();
+
 			List<Node*> &selection = editor_selection->get_selected_node_list();
 
+			undo_redo->create_action("Align with view");
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				Spatial *sp = E->get()->cast_to<Spatial>();
@@ -1749,13 +1819,13 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 				if (!se)
 					continue;
 
-				center+=sp->get_global_transform().origin;
-				count++;
+				Vector3 original_scale = sp->get_scale();
+				sp->set_global_transform(camera_transform);
+				sp->set_scale(original_scale);
+				undo_redo->add_do_method(sp,"set_global_transform",sp->get_global_transform());
+				undo_redo->add_undo_method(sp,"set_global_transform",se->original);
 			}
-
-			center/=float(count);
-
-			cursor.pos=center;
+			undo_redo->commit_action();
 		} break;
 		case VIEW_ENVIRONMENT: {
 
@@ -1933,6 +2003,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor,Edi
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT),true);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_item("Selection",VIEW_CENTER_TO_SELECTION);
+	view_menu->get_popup()->add_item("Align with view",VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
 	preview_camera = memnew( Button );
