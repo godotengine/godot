@@ -79,6 +79,9 @@ void LineEdit::_input_event(InputEvent p_event) {
 				}
 				selection.creating=false;
 				selection.doubleclick=false;
+
+                // notify to show soft keyboard
+                notification(NOTIFICATION_FOCUS_ENTER);
 			}
 			
 			update();				
@@ -208,6 +211,8 @@ void LineEdit::_input_event(InputEvent p_event) {
 					case KEY_RETURN: {
 
 						emit_signal( "text_entered",text );
+                        // notify to hide soft keyboard
+                        notification(NOTIFICATION_FOCUS_EXIT);
 						return;
 					} break;
 

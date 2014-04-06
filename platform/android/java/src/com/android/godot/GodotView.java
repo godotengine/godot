@@ -61,7 +61,7 @@ import javax.microedition.khronos.opengles.GL10;
  *   that matches it exactly (with regards to red/green/blue/alpha channels
  *   bit depths). Failure to do so would result in an EGL_BAD_MATCH error.
  */
-class GodotView extends GLSurfaceView {
+public class GodotView extends GLSurfaceView {
     private static String TAG = "GodotView";
     private static final boolean DEBUG = false;
     private static Context ctx;
@@ -98,8 +98,24 @@ class GodotView extends GLSurfaceView {
 		return activity.gotTouchEvent(event);
 	};
 
+	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
+		GodotLib.key(keyCode, event.getUnicodeChar(0), false);
+		return super.onKeyUp(keyCode, event);
+	};
+
+	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
+		GodotLib.key(keyCode, event.getUnicodeChar(0), true);
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			// press 'back' button should not terminate program
+			//	normal handle 'back' event in game logic
+			return true;
+		}
+		return super.onKeyDown(keyCode, event);
+	}
+
     private void init(boolean translucent, int depth, int stencil) {
 
+	this.setFocusableInTouchMode(true);
 	/* By default, GLSurfaceView() creates a RGB_565 opaque surface.
 	 * If we want a translucent one, we should change the surface's
 	 * format here, using PixelFormat.TRANSLUCENT for GL Surfaces
