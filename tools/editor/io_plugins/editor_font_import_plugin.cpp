@@ -252,7 +252,9 @@ public:
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/top",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/bottom",PROPERTY_HINT_RANGE,"-64,64,1"));
-		p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
+
+        if(!dynamic_ttf)
+		    p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
 
 		if (character_set>=CHARSET_CUSTOM)
 			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_FILE));
@@ -494,7 +496,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 	void _import() {
 
-		if (source->get_line_edit()->get_text()=="") {
+		Ref<ResourceImportMetadata> rimd = get_rimd();
+        bool dynamic_enabled=get_rimd()->get_option("dynamic/enabled");
+
+		if (!dynamic_enabled&&source->get_line_edit()->get_text()=="") {
 			error_dialog->set_text("No source font file!");
 			error_dialog->popup_centered(Size2(200,100));
 			return;
@@ -505,8 +510,6 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
-
-		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
 			error_dialog->set_text("Can't load/process source font");

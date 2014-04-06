@@ -349,16 +349,15 @@ const Font::Character *Font::get_character_p(CharType p_char) const {
 
 bool Font::create_character(CharType p_char) {
 
+#ifdef FREETYPE_ENABLED
     if(!ttf_font.is_valid())
         return false;
 
-    Character ch;
-    atlas_dirty_index=atlas_images.size()-1;
-    if(ttf_font->get_char(p_char, atlas_images, atlas_x, atlas_y, atlas_height, &ch, ttf_options)) {
+    if(ttf_font->render_char(p_char, *this)) {
         atlas_dirty=true;
-        char_map[p_char]=ch;
         return true;
     }
+#endif
     return false;
 }
 
@@ -431,6 +430,7 @@ void Font::clear() {
 	textures.clear();
 	kerning_map.clear();
 
+#ifdef FREETYPE_ENABLED
     atlas_x=0;
     atlas_y=0;
     atlas_height=0;
@@ -440,6 +440,7 @@ void Font::clear() {
         memdelete(atlas_images[i]);
     }
     atlas_images.clear();
+#endif
 }
 
 Size2 Font::get_string_size(const String& p_string) const {
@@ -484,8 +485,9 @@ void Font::draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,fl
 
 void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, const Color& p_modulate,int p_clip_w) const {
 		
+#ifdef FREETYPE_ENABLED
     update_atlas();
-
+#endif
 	Point2 pos=p_pos;
 	float ofs=0;
 	VisualServer *vs = VisualServer::get_singleton();
@@ -527,8 +529,10 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	if (!c)
 		return 0;
 
+#ifdef FREETYPE_ENABLED
     update_atlas();
-	
+#endif
+
 	Point2 cpos=p_pos;
 	cpos.x+=c->h_align;
 	cpos.y-=ascent;
@@ -558,14 +562,19 @@ void Font::update_atlas() const {
         Ref<ImageTexture> tex;
         if (textures.size()==i) {
             tex=Ref<Texture>(memnew( ImageTexture ));
-            tex->create(img.get_width(),img.get_height(),img.get_format());
-            textures.push_back(tex);
-        }
-        else
-            tex=textures[i];
 
-        if (tex.is_valid()) {
-            tex->set_data( img );
+            bool filter_enabled = ttf_options["filter/enabled"];
+            tex->create_from_image( img );
+            if (!filter_enabled)
+                tex->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
+            tex->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
+
+            textures.push_back(tex);
+        } else {
+            tex=textures[i];
+            if (tex.is_valid()) {
+                tex->set_data( img );
+            }
         }
     }
 }
@@ -678,13 +687,15 @@ void Font::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
 
-	ObjectTypeDB::bind_method(_MD("set_ttf_options"),&Font::set_ttf_options);
+#ifdef FREETYPE_ENABLED
+    ObjectTypeDB::bind_method(_MD("set_ttf_options"),&Font::set_ttf_options);
 	ObjectTypeDB::bind_method(_MD("get_ttf_options"),&Font::get_ttf_options);
     ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "data", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), _SCS("set_ttf_options"),_SCS("get_ttf_options"));
 
 	ObjectTypeDB::bind_method(_MD("set_ttf_font","font:Font"),&Font::set_ttf_font);
 	ObjectTypeDB::bind_method(_MD("get_ttf_font:Font"),&Font::get_ttf_font);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE,"Font"), _SCS("set_ttf_font"),_SCS("get_ttf_font"));
+#endif
 }
 
 Font::Font() {
