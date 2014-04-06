@@ -41,7 +41,6 @@
 
 #endif
 
-
 class _EditorFontImportOptions : public Object {
 
 	OBJ_TYPE(_EditorFontImportOptions,Object);
@@ -71,6 +70,9 @@ public:
 
 	CharacterSet character_set;
 	String custom_file;
+
+    bool dynamic_ttf;
+    String dynamic_ttf_file;
 
 	bool shadow;
 	Vector2 shadow_offset;
@@ -117,6 +119,12 @@ public:
 		else if (n=="shadow/enabled") {
 			shadow=p_value;
 			_change_notify();
+        }else if (n=="dynamic/enabled") {
+            dynamic_ttf=p_value;
+            _change_notify();
+        }else if (n=="dynamic/ttf_file") {
+            dynamic_ttf_file=p_value;
+            _change_notify();
 		}else if (n=="shadow/radius")
 			shadow_radius=p_value;
 		else if (n=="shadow/offset")
@@ -182,6 +190,10 @@ public:
 
 		else if (n=="shadow/enabled")
 			r_ret=shadow;
+        else if (n=="dynamic/enabled")
+            r_ret=dynamic_ttf;
+        else if (n=="dynamic/ttf_file")
+            r_ret=dynamic_ttf_file;
 		else if (n=="shadow/radius")
 			r_ret=shadow_radius;
 		else if (n=="shadow/offset")
@@ -226,11 +238,17 @@ public:
 
 	void _get_property_list( List<PropertyInfo> *p_list) const{
 
-		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/char",PROPERTY_HINT_RANGE,"-64,64,1"));
+		p_list->push_back(PropertyInfo(Variant::BOOL,"dynamic/enabled"));
+        if(dynamic_ttf)
+			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/ttf_file",PROPERTY_HINT_FILE,"ttf"));
+
+        p_list->push_back(PropertyInfo(Variant::INT,"extra_space/char",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/top",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/bottom",PROPERTY_HINT_RANGE,"-64,64,1"));
-		p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
+
+        if(!dynamic_ttf)
+		    p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
 
 		if (character_set>=CHARSET_CUSTOM)
 			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_FILE));
@@ -313,6 +331,8 @@ public:
 		space_extra_spacing=0;
 
 		character_set=CHARSET_LATIN;
+
+        dynamic_ttf=false;
 
 		shadow=false;
 		shadow_radius=2;
@@ -468,7 +488,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 
 	void _import() {
 
-		if (source->get_line_edit()->get_text()=="") {
+		Ref<ResourceImportMetadata> rimd = get_rimd();
+        bool dynamic_enabled=get_rimd()->get_option("dynamic/enabled");
+
+		if (!dynamic_enabled&&source->get_line_edit()->get_text()=="") {
 			error_dialog->set_text("No source font file!");
 			error_dialog->popup_centered(Size2(200,100));
 			return;
@@ -479,8 +502,6 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
-
-		Ref<ResourceImportMetadata> rimd = get_rimd();
 
 		if (rimd.is_null()) {
 			error_dialog->set_text("Can't load/process source font");
@@ -706,7 +727,61 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	String src_path = EditorImportPlugin::expand_source_path(from->get_source_path(0));
 	int size = from->get_option("font/size");
 
+	int char_space = from->get_option("extra_space/char");
+	int space_space = from->get_option("extra_space/space");
+	int top_space = from->get_option("extra_space/top");
+	int bottom_space = from->get_option("extra_space/bottom");
+
 #ifdef FREETYPE_ENABLED
+	bool dynamic_ttf = from->get_option("dynamic/enabled");
+    if (dynamic_ttf)
+    {
+    	String dynamic_ttf_file = from->get_option("dynamic/ttf_file");
+        RES res=ResourceLoader::load(dynamic_ttf_file);
+        Ref<TtfFont> ttf_font=res;
+        if(ttf_font.is_valid())
+        {
+            int height=0;
+            int ascent=0;
+            int max_up,max_down;
+        	ERR_EXPLAIN("Error calc font height/ascent.");
+	        ERR_FAIL_COND_V( !ttf_font->calc_size(size, height, ascent, max_up, max_down), Ref<Font>() );
+
+            printf("Generate dynamic font\n");
+			List<String> opts;
+			from->get_options(&opts);
+
+            Dictionary options;
+			for(List<String>::Element *E=opts.front();E;E=E->next()) {
+				options[E->get()]=from->get_option(E->get());
+            }
+            options["meta/height"]=height;
+            options["meta/ascent"]=ascent;
+            options["meta/max_up"]=max_up;
+            options["meta/max_down"]=max_down;
+
+	        Ref<Font> font;
+
+	        if (p_existing!=String() && ResourceCache::has(p_existing)) {
+
+		        font = Ref<Font>( ResourceCache::get(p_existing)->cast_to<Font>());
+	        }
+
+	        if (font.is_null()) {
+		         font = Ref<Font>( memnew( Font ) );
+	        }
+
+	        font->clear();
+            font->set_ttf_font(ttf_font);
+            font->set_ttf_options(options);
+            font->set_height(height+bottom_space+top_space);
+            font->set_ascent(ascent+top_space);
+
+            return font;
+        }
+    }
+
+
 	FT_Library   library;   /* handle to library     */
 	FT_Face      face;      /* handle to face object */
 
@@ -1255,12 +1330,6 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 
 	/* CREATE FONT */
-
-	int char_space = from->get_option("extra_space/char");
-	int space_space = from->get_option("extra_space/space");
-	int top_space = from->get_option("extra_space/top");
-	int bottom_space = from->get_option("extra_space/bottom");
-
 	Ref<Font> font;
 
 	if (p_existing!=String() && ResourceCache::has(p_existing)) {

@@ -211,6 +211,10 @@ static SceneFormatLoaderObject *scene_loader_object=NULL;
 //static SceneFormatLoaderScript *scene_loader_script=NULL;
 #endif
 
+#ifdef FREETYPE_ENABLED
+static ResourceFormatLoaderTtfFont *resource_loader_ttf=NULL;
+#endif
+
 #ifdef OLD_SCENE_FORMAT_ENABLED
 SceneIO *scene_io=NULL;
 #endif
@@ -261,6 +265,16 @@ void register_scene_types() {
 
 //	scene_loader_script=memnew( SceneFormatLoaderScript );
 //	SceneLoader::add_scene_format_loader(scene_loader_script);
+#endif
+
+#ifdef FREETYPE_ENABLED
+	resource_loader_ttf=memnew( ResourceFormatLoaderTtfFont );
+    ResourceLoader::add_resource_format_loader(resource_loader_ttf);
+#endif
+
+#ifdef FREETYPE_ENABLED
+	resource_loader_ttf=memnew( ResourceFormatLoaderTtfFont );
+    ResourceLoader::add_resource_format_loader(resource_loader_ttf);
 #endif
 
 	make_default_theme();
@@ -588,6 +602,9 @@ void unregister_scene_types() {
 	memdelete( scene_loader_object );
 //	memdelete( scene_loader_script );
 	memdelete( scene_io );
+#endif
+#ifdef FREETYPE_ENABLED
+	memdelete( resource_loader_ttf );
 #endif
 	SceneStringNames::free();
 }
