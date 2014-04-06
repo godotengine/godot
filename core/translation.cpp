@@ -633,6 +633,16 @@ void TranslationServer::load_translations() {
 		this->locale=fallback;
 
 	}
+#ifdef TOOLS_ENABLED
+    String exe_path = OS::get_singleton()->get_executable_path();
+    exe_path = exe_path.get_base_dir();
+    //
+    String lang_path = exe_path + "/lang." + locale + ".xl";
+    Ref<Translation> tr = ResourceLoader::load( lang_path );
+	if (tr.is_valid())
+		add_translation(tr);
+    
+#endif
 
 }
 

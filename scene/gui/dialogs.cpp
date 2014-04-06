@@ -148,7 +148,6 @@ WindowDialog::WindowDialog() {
 	close_button = memnew( TextureButton );
 	add_child(close_button);
 	close_button->connect("pressed",this,"_closed");
-
 }
 
 WindowDialog::~WindowDialog(){
@@ -369,7 +368,7 @@ Button *ConfirmationDialog::get_cancel() {
 }
 
 ConfirmationDialog::ConfirmationDialog() {
-
+    set_exclusive(true);
 	set_title("Please Confirm...");
 	cancel = add_cancel();
 }

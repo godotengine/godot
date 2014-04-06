@@ -1158,8 +1158,9 @@ void Control::_window_input_event(InputEvent p_event) {
 			}
 			
 			window->mouse_over=over;
-
-			get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_tooltip");
+            if( p_event.mouse_motion.relative_x != 0 || p_event.mouse_motion.relative_y != 0 ) {
+			    get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_tooltip");
+            }
 
 			if (window->drag_preview) {
 				window->drag_preview->set_pos(pos);

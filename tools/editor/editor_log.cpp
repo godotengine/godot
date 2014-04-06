@@ -217,7 +217,7 @@ EditorLog::EditorLog() {
 	log = memnew( RichTextLabel );
 	log->set_scroll_follow(true);
 	pc->add_child(log);
-	add_message(VERSION_FULL_NAME" (c) 2008-2014 Juan Linietsky, Ariel Manzur.");
+	add_message(VERSION_FULL_NAME" (c) 2010-2014 www.fengei.com.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.
 	add_style_override("panel",get_stylebox("panelf","Panel"));
 

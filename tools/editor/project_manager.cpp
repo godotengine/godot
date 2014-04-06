@@ -261,7 +261,7 @@ public:
 			pn->show();
 			project_name->show();
 
-			popup_centered(Size2(500,145));
+			popup_centered(Size2(500,185));
 
 		}
 
@@ -653,7 +653,7 @@ ProjectManager::ProjectManager() {
 
 
 	Label *l = memnew( Label );
-	l->set_text(_MKSTR(VERSION_NAME)" - Project Manager");
+	l->set_text("Project Manager");
 	l->add_font_override("font",get_font("large","Fonts"));
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
@@ -748,7 +748,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	l->set_text(cp+" 2008-2012 Juan Linietsky, Ariel Manzur.");
+	l->set_text(cp+" 2010-2014 www.fengei.com.");
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 

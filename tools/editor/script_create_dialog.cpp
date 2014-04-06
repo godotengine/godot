@@ -361,9 +361,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	vb->add_margin_child("Path:",vb2);
 
-	set_size(Size2(200,150));
+	set_size(Size2(200,260));
 	set_hide_on_ok(false);
-	set_title("Create Script for Node..");;
+	set_title("Create Script for Node..");
 
 	file_browse = memnew( FileDialog );
 	file_browse->connect("file_selected",this,"_file_selected");

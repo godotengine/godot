@@ -2155,7 +2155,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (!p_confirmed) {
 				confirmation->get_ok()->set_text("Yes");
 				confirmation->set_text("Open Project Manager? \n(Unsaved changes will be lost)");
-				confirmation->popup_centered(Size2(300,70));
+				confirmation->popup_centered(Size2(300,120));
 				break;
 			}
 
@@ -2484,7 +2484,7 @@ Error EditorNode::save_translatable_strings(const String& p_to_file) {
 	OS::Time time = OS::get_singleton()->get_time();
 	f->store_line("# Translation Strings Dump.");
 	f->store_line("# Created By.");
-	f->store_line("# \t"VERSION_FULL_NAME" (c) 2008-2014 Juan Linietsky, Ariel Manzur.");
+	f->store_line("# \t"VERSION_FULL_NAME" (c) 2010-2014 www.fengei.com.");
 	f->store_line("# From Scene: ");
 	f->store_line("# \t"+get_edited_scene()->get_filename());
 	f->store_line("");
@@ -3217,7 +3217,7 @@ EditorNode::EditorNode() {
 	FileAccess::set_backup_save(true);
 
 	PathRemap::get_singleton()->clear_remaps();; //editor uses no remaps
-	TranslationServer::get_singleton()->set_enabled(false);
+	//TranslationServer::get_singleton()->set_enabled(false);
 	// load settings
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
@@ -3437,9 +3437,9 @@ EditorNode::EditorNode() {
 	p->add_separator();
 
 	PopupMenu *pm_export = memnew(PopupMenu );
-	pm_export->set_name("Export");
+	pm_export->set_name("_Export_");
 	p->add_child(pm_export);
-	p->add_submenu_item("Convert To..","Export");
+	p->add_submenu_item("Convert To..","_Export_");
 	pm_export->add_item("Subscene..",FILE_SAVE_SUBSCENE);
 	pm_export->add_item("Translatable Strings..",FILE_DUMP_STRINGS);
 	pm_export->add_separator();
@@ -3902,7 +3902,7 @@ EditorNode::EditorNode() {
 	about->get_ok()->set_text("Thanks!");
 	about->set_hide_on_ok(true);
 	Label *about_text = memnew( Label );
-	about_text->set_text(VERSION_FULL_NAME"\n(c) 2008-2014 Juan Linietsky, Ariel Manzur.\n");
+	about_text->set_text(VERSION_FULL_NAME"\n(c) 2010-2014 www.fengei.com.\n");
 	about_text->set_pos(Point2(gui_base->get_icon("Logo","EditorIcons")->get_size().width+30,20));
 	gui_base->add_child(about);
 	about->add_child(about_text);

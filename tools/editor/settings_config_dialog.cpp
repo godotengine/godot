@@ -38,7 +38,6 @@ void EditorSettingsDialog::ok_pressed() {
 
 	_settings_save();
 	timer->stop();
-
 }
 
 void EditorSettingsDialog::_settings_changed() {
@@ -330,5 +329,6 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	add_child(install_confirm);
 
 	updating=false;
-
+    //Set exclusive mode.
+    set_exclusive(true);
 }
