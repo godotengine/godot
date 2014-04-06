@@ -350,8 +350,10 @@ void CanvasItem::_notification(int p_what) {
 			if (xform_change.in_list())
 				get_scene()->xform_change_list.remove(&xform_change);
 			_exit_canvas();
-			if (C)
+			if (C) {
 				get_parent()->cast_to<CanvasItem>()->children_items.erase(C);
+				C=NULL;
+			}
 		} break;
 		case NOTIFICATION_DRAW: {
 
