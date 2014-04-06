@@ -334,6 +334,16 @@ static int button_mask=0;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
 
+	if (OS_OSX::singleton->has_touchscreen_ui_hint()) {
+		InputEvent touch_event;
+		touch_event.type = InputEvent::SCREEN_TOUCH;
+		touch_event.screen_touch.index=0;
+		touch_event.screen_touch.pressed = true;
+		touch_event.screen_touch.x = mouse_x;
+		touch_event.screen_touch.y = mouse_y;
+		OS_OSX::singleton->push_input(touch_event);
+	}
+
 
   /*  _glfwInputMouseClick(window,
 			 GLFW_MOUSE_BUTTON_LEFT,
@@ -361,6 +371,16 @@ static int button_mask=0;
 	ev.mouse_button.button_mask=button_mask;
 	ev.mouse_button.mod = translateFlags([event modifierFlags]);
 	OS_OSX::singleton->push_input(ev);
+
+	if (OS_OSX::singleton->has_touchscreen_ui_hint()) {
+		InputEvent touch_event;
+		touch_event.type = InputEvent::SCREEN_TOUCH;
+		touch_event.screen_touch.index = 0;
+		touch_event.screen_touch.pressed = false;
+		touch_event.screen_touch.x = mouse_x;
+		touch_event.screen_touch.y = mouse_y;
+		OS_OSX::singleton->push_input(touch_event);
+	}
 
    /* _glfwInputMouseClick(window,
 			 GLFW_MOUSE_BUTTON_LEFT,
@@ -396,6 +416,16 @@ static int button_mask=0;
 	OS_OSX::singleton->input->set_mouse_pos(Point2(mouse_x,mouse_y));
 	OS_OSX::singleton->push_input(ev);
 
+	if (OS_OSX::singleton->input->is_mouse_button_pressed(1) && OS_OSX::singleton->has_touchscreen_ui_hint()) {
+		InputEvent drag_event;
+		drag_event.type=InputEvent::SCREEN_DRAG;
+		drag_event.screen_drag.index=0;
+		drag_event.screen_drag.x = mouse_x;
+		drag_event.screen_drag.y = mouse_y;
+		drag_event.screen_drag.relative_x = mouse_x - prev_mouse_x;
+		drag_event.screen_drag.relative_y = mouse_y - prev_mouse_y;
+		OS_OSX::singleton->push_input(drag_event);
+	}
 
   /*  if (window->cursorMode == GLFW_CURSOR_DISABLED)
 	_glfwInputCursorMotion(window, [event deltaX], [event deltaY]);
