@@ -169,14 +169,22 @@ void make_default_theme() {
 	tex_cache = memnew( TexCacheMap );
 
 	uint32_t last=OS::get_singleton()->get_ticks_msec();
-
 	Ref<Theme> t( memnew( Theme ) );
-
+#ifdef TOOLS_ENABLED
+    //--------patch-----------
+    String exe_path = OS::get_singleton()->get_executable_path();
+    exe_path = exe_path.get_base_dir();
+    //
+    Ref<Font> default_font( memnew( Font ) );
+    default_font->create_from_fnt(exe_path+"/fonts/default_fnt.fnt");
+    Ref<Font> source_font = default_font;
+    Ref<Font> large_font = default_font;
+#else
 	//Ref<Font> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
 	Ref<Font> default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
 	Ref<Font> source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
 	Ref<Font> large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
-
+#endif
 	t->set_stylebox("panel","Panel", make_stylebox( panel_bg_png,0,0,0,0) );
 
 	Color control_font_color = Color::html("cfc9d5");
