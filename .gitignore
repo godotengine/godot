@@ -238,6 +238,9 @@ FakesAssemblies/
 # Windows image file caches
 Thumbs.db
 ehthumbs.db
+msvc/*.filters
+*.orig
+*.xcscheme
 
 # Folder config file
 Desktop.ini
