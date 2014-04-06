@@ -326,8 +326,6 @@ void CPPlayer::update_mixer() {
 		
 		tmpvol*=(uint64_t)song->get_mixing_volume(); /* max 128 - 7 bits */
 		tmpvol*=(uint64_t)control.global_volume;   /* max 128 - 7 bits*/
-				/* total 10+6+8+6+7+7=44 bits */
-		uint64_t preshift=tmpvol;
 		tmpvol>>=43; /* Move back to 8 bits range , 44-19+8=43*/
 		
 		/*

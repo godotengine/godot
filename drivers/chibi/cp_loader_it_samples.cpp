@@ -101,8 +101,6 @@ CPLoader::Error CPLoader_IT::load_sample(CPSample *p_sample) {
 	file->get_byte_array((uint8_t*)aux_name,26);
 	p_sample->set_name(aux_name);
 	
-	// ??
-	uint8_t convert_flag=file->get_byte();
 	// PAN
 	uint8_t pan=file->get_byte();
 	p_sample->set_pan( pan&0x7F ); 

@@ -1716,9 +1716,6 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 				AABB aabb;
 
 				float scale=1;
-				float max=0;
-
-
 
 				if (p_surface->array[VS::ARRAY_VERTEX].datatype==_GL_HALF_FLOAT_OES) {
 
@@ -3834,13 +3831,9 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 		m->last_pass=frame;
 	}
 
-
-	LightInstance *lights[RenderList::MAX_LIGHTS];
-
 	RenderList *render_list=NULL;
 
 	bool has_alpha = m->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX || (m->shader_cache && m->shader_cache->has_alpha) || m->flags[VS::MATERIAL_FLAG_ONTOP];
-
 
 	if (shadow) {
 
@@ -4737,8 +4730,7 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 					base = skinned_buffer;
 					//copy stuff and get it ready for the skeleton
 
-					int src_stride = surf->stride;
-						int dst_stride = surf->stride - ( surf->array[VS::ARRAY_BONES].size + surf->array[VS::ARRAY_WEIGHTS].size );
+					int dst_stride = surf->stride - ( surf->array[VS::ARRAY_BONES].size + surf->array[VS::ARRAY_WEIGHTS].size );
 					const uint8_t *src_weights=&surf->array_local[surf->array[VS::ARRAY_WEIGHTS].ofs];
 					const uint8_t *src_bones=&surf->array_local[surf->array[VS::ARRAY_BONES].ofs];
 					const Skeleton::Bone *skeleton = &p_skeleton->bones[0];
@@ -5032,8 +5024,6 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 
 void RasterizerGLES2::_setup_shader_params(const Material *p_material) {
 
-	int idx=0;
-	int tex_idx=0;
 #if 0
 	for(Map<StringName,Variant>::Element *E=p_material->shader_cache->params.front();E;E=E->next(),idx++) {
 
@@ -5094,11 +5084,8 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	uint16_t prev_light=0x777E;
 	const Geometry *prev_geometry_cmp=NULL;
 	uint8_t prev_light_type=0xEF;
-	const ParamOverrideMap* prev_overrides=NULL; // make it diferent than NULL
 	const Skeleton *prev_skeleton =NULL;
 	uint8_t prev_sort_flags=0xFF;
-
-	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_VERTEX_LIGHTING,!shadow && !p_fragment_light);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_FRAGMENT_LIGHTING,!shadow && p_fragment_light);
@@ -5144,10 +5131,8 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				prev_light=0x777E;
 				prev_geometry_cmp=NULL;
 				prev_light_type=0xEF;
-				prev_overrides=NULL; // make it diferent than NULL
 				prev_skeleton =NULL;
 				prev_sort_flags=0xFF;
-				prev_geometry_type=Geometry::GEOMETRY_INVALID;
 				glEnable(GL_BLEND);
 				glDepthMask(GL_TRUE);
 				glEnable(GL_DEPTH_TEST);
@@ -5514,7 +5499,6 @@ void RasterizerGLES2::_process_hdr() {
 	_copy_screen_quad();
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_HDR_COPY,false);
-	int passes = current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_PASSES];
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_HDR_REDUCE,true);
 	copy_shader.bind();
@@ -5974,7 +5958,7 @@ void RasterizerGLES2::end_shadow_map() {
 	//glPolygonOffset( 8.0f, 16.0f);
 
 	CameraMatrix cm;
-	float z_near,z_far;
+	float z_far;
 	Transform light_transform;
 
 	float dp_direction=0.0;
@@ -6009,7 +5993,6 @@ void RasterizerGLES2::end_shadow_map() {
 				glViewport(0, 0, sb->size, sb->size);
 			}
 
-			z_near=cm.get_z_near();
 			z_far=cm.get_z_far();
 
 			_glClearDepth(1.0f);
@@ -6030,7 +6013,6 @@ void RasterizerGLES2::end_shadow_map() {
 			dp_direction = shadow_pass?1.0:-1.0;
 			flip_facing = (shadow_pass == 1);
 			light_transform=shadow->transform;
-			z_near=0;
 			z_far=shadow->base->vars[ VS::LIGHT_PARAM_RADIUS ];
 			shadow->dp.x=1.0/z_far;
 			shadow->dp.y=dp_direction;
@@ -6070,7 +6052,6 @@ void RasterizerGLES2::end_shadow_map() {
 
 			shadow->projection=cm; // cache
 			light_transform=shadow->transform;
-			z_near=cm.get_z_near();
 			z_far=cm.get_z_far();
 
 			glViewport(0, 0, sb->size, sb->size);
@@ -7631,9 +7612,6 @@ void RasterizerGLES2::init() {
 	//read_depth_supported=false;
 
 	{
-		//shadowmaps
-		OS::VideoMode vm=OS::get_singleton()->get_video_mode();
-
 		//don't use a shadowbuffer too big in GLES, this should be the maximum
 		int max_shadow_size = GLOBAL_DEF("rasterizer/max_shadow_buffer_size",1024);//nearest_power_of_2(MIN(vm.width,vm.height))/2;
 		while(max_shadow_size>=16) {

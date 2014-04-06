@@ -49,7 +49,7 @@ typedef struct {
  * Windows where ov_open_callbacks() should always be used instead of
  * ov_open() to avoid problems with incompatible crt.o version linking
  * issues. */
-
+/*
 static int _ov_header_fseek_wrap(FILE *f,ogg_int64_t off,int whence){
   if(f==NULL)return(-1);
 
@@ -60,7 +60,7 @@ static int _ov_header_fseek_wrap(FILE *f,ogg_int64_t off,int whence){
 #else
   return fseek(f,off,whence);
 #endif
-}
+}*/
 
 /* These structs below (OV_CALLBACKS_DEFAULT etc) are defined here as
  * static data. That means that every file which includes this header
@@ -72,6 +72,7 @@ static int _ov_header_fseek_wrap(FILE *f,ogg_int64_t off,int whence){
  * we're using (the same one as the main application).
  */
 
+/*
 static ov_callbacks OV_CALLBACKS_DEFAULT = {
   (size_t (*)(void *, size_t, size_t, void *))  fread,
   (int (*)(void *, ogg_int64_t, int))           _ov_header_fseek_wrap,
@@ -99,6 +100,7 @@ static ov_callbacks OV_CALLBACKS_STREAMONLY_NOCLOSE = {
   (int (*)(void *))                             NULL,
   (long (*)(void *))                            NULL
 };
+*/
 
 #endif
 

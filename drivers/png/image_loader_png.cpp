@@ -339,7 +339,6 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 	}
 
 	int pngf=0;
-	int pngb=8;
 	int cs=0;
 
 	switch(img.get_format()) {

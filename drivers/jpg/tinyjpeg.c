@@ -401,7 +401,6 @@ static void build_huffman_table(const unsigned char *bits, const unsigned char *
   unsigned int i, j, code, code_size, val, nbits;
   unsigned char huffsize[HUFFMAN_BITS_SIZE+1], *hz;
   unsigned int huffcode[HUFFMAN_BITS_SIZE+1], *hc;
-  int next_free_entry;
 
   /*
    * Build a temp array 
@@ -440,7 +439,6 @@ static void build_huffman_table(const unsigned char *bits, const unsigned char *
   /*
    * Build the lookup table, and the slowtable if needed.
    */
-  next_free_entry = -1;
   for (i=0; huffsize[i]; i++)
    {
      val = vals[i];
@@ -696,19 +694,19 @@ static void YCrCB_to_YUV420P_2x2(struct jdec_private *priv)
 static void YCrCB_to_RGB24_1x1(struct jdec_private *priv)
 {
   const unsigned char *Y, *Cb, *Cr;
-  unsigned char *p;
+  //unsigned char *p;
   int i,j;
-  int offset_to_next_row;
+  //int offset_to_next_row;
 
 #define SCALEBITS       10
 #define ONE_HALF        (1UL << (SCALEBITS-1))
 #define FIX(x)          ((int)((x) * (1UL<<SCALEBITS) + 0.5))
 
-  p = priv->plane[0];
+  //p = priv->plane[0];
   Y = priv->Y;
   Cb = priv->Cb;
   Cr = priv->Cr;
-  offset_to_next_row = priv->width*3 - 8*3;
+  //offset_to_next_row = priv->width*3 - 8*3;
   for (i=0; i<8; i++) {
 
     for (j=0; j<8; j++) {
@@ -1521,7 +1519,7 @@ static void decode_MCU_1x2_1plane(struct jdec_private *priv)
 
 static void print_SOF(const unsigned char *stream)
 {
-  int width, height, nr_components, precision;
+  //int width, height, nr_components, precision;
 #if DEBUG
   const char *nr_components_to_string[] = {
      "????",
@@ -1532,10 +1530,12 @@ static void print_SOF(const unsigned char *stream)
   };
 #endif
 
+  /*
   precision = stream[2];
   height = be16_to_cpu(stream+3);
   width  = be16_to_cpu(stream+5);
   nr_components = stream[7];
+  */
 
   trace("> SOF marker\n");
   trace("Size:%dx%d nr_components:%d (%s)  precision:%d\n", 

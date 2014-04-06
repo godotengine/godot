@@ -309,7 +309,6 @@ static int comp(const void *a,const void *b){
 #define EPSILON 10e-7
 static int Laguerre_With_Deflation(float *a,int ord,float *r){
   int i,m;
-  double lastdelta=0.f;
   double *defl=alloca(sizeof(*defl)*(ord+1));
   for(i=0;i<=ord;i++)defl[i]=a[i];
 
@@ -346,7 +345,6 @@ static int Laguerre_With_Deflation(float *a,int ord,float *r){
       if(delta<0.f)delta*=-1;
 
       if(fabs(delta/new)<10e-12)break;
-      lastdelta=delta;
     }
 
     r[m-1]=new;

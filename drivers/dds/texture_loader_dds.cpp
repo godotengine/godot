@@ -83,7 +83,6 @@ RES ResourceFormatDDS::load(const String &p_path,const String& p_original_path) 
 	uint32_t width = f->get_32();
 	uint32_t height = f->get_32();
 	uint32_t pitch = f->get_32();
-	uint32_t depth = f->get_32();
 	uint32_t mipmaps = f->get_32();
 
 	//skip 11
@@ -98,8 +97,6 @@ RES ResourceFormatDDS::load(const String &p_path,const String& p_original_path) 
 		ERR_FAIL_V(RES());
 	}
 
-
-	uint32_t format_size = f->get_32();
 	uint32_t format_flags = f->get_32();
 	uint32_t format_fourcc = f->get_32();
 	uint32_t format_rgb_bits = f->get_32();
@@ -107,10 +104,6 @@ RES ResourceFormatDDS::load(const String &p_path,const String& p_original_path) 
 	uint32_t format_green_mask = f->get_32();
 	uint32_t format_blue_mask = f->get_32();
 	uint32_t format_alpha_mask = f->get_32();
-
-	uint32_t caps_1 = f->get_32();
-	uint32_t caps_2 = f->get_32();
-	uint32_t caps_ddsx = f->get_32();
 
 	//reserved skip
 	f->get_32();

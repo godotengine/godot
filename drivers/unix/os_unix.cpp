@@ -167,9 +167,9 @@ static int has_data(FILE* p_fd, int timeout_usec = 0) {
 	int fd = fileno(p_fd);
 	FD_ZERO(&readset);
 	FD_SET(fd, &readset);
-	timeval time;
-	time.tv_sec = 0;
-	time.tv_usec = timeout_usec;
+	//timeval time;
+	//time.tv_sec = 0;
+	//time.tv_usec = timeout_usec;
 	int res = 0;//select(fd + 1, &readset, NULL, NULL, &time);
 	return res > 0;
 };

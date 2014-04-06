@@ -40,7 +40,7 @@
 #include "os_support.h"
 
 #define MAX_FFT_SIZE 2048
-
+/*
 #ifdef FIXED_POINT
 static int maximize_range(spx_word16_t *in, spx_word16_t *out, spx_word16_t bound, int len)
 {
@@ -75,7 +75,7 @@ static void renorm_range(spx_word16_t *in, spx_word16_t *out, int shift, int len
    }
 }
 #endif
-
+*/
 #ifdef USE_SMALLFT
 
 #include "smallft.h"

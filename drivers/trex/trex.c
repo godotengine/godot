@@ -504,7 +504,7 @@ static const TRexChar *trex_matchnode(TRex* exp,TRexNode *node,const TRexChar *s
 		return NULL;
 	case OP_DOT:{
 		*str++;
-				}
+		    }
 		return str;
 	case OP_NCLASS:
 	case OP_CLASS:

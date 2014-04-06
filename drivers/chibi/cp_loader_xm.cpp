@@ -372,8 +372,6 @@ CPLoader::Error CPLoader_XM::load_song(const char *p_file,CPSong *p_song,bool p_
 
         for (int i=0;i<header.instruments_used;i++) {
 
-
-          	uint32_t aux;
            	int sampnum;
 		
 		CPInstrument &instrument=*song->get_instrument(i);
@@ -390,7 +388,6 @@ CPLoader::Error CPLoader_XM::load_song(const char *p_file,CPSong *p_song,bool p_
   		file->get_byte_array((uint8_t*)instrname,22);
 //XM_LOAD_DEBUG printf("name is %s\n",instrname);
 
-/* +27 */	aux=file->get_byte(); //byte that must be ignored
 //XM_LOAD_DEBUG printf("header size is %i\n",hsize);
 
 /* +29 */	sampnum=file->get_word(); 
@@ -560,8 +557,6 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 			if (s_idx==-1) ABORT_LOAD;
 			//printf("free sample: %i\n",s_idx);
 			
-			
-			char auxb;
 			CPSample& sample=*song->get_sample(s_idx);
 			
 			int sample_size=file->get_dword();
@@ -611,7 +606,6 @@ CPLoader::Error CPLoader_XM::load_instrument_internal(CPInstrument *p_instr,bool
 			sm->set_c5_freq( sample_data, CPTables::get_linear_frequency(CPTables::get_linear_period(note_offset<<1,finetune)) );
 			//printf("NOTE %i,fine %i\n",note_offset,finetune);
 
-			auxb=file->get_byte(); //reserved?
 			file->get_byte_array((uint8_t*)instrname,22);
 			sample.set_name(instrname);
 
@@ -687,8 +681,6 @@ CPLoader::Error CPLoader_XM::load_instrument(const char *p_file,CPSong *p_song,i
 	//int i;
 	song=p_song;
 	CPInstrument& instr=*p_song->get_instrument( p_instr_idx );
-  	int aux;
-
 
         char buffer[500];
         file->get_byte_array((uint8_t*)buffer,0x15);
@@ -708,7 +700,7 @@ CPLoader::Error CPLoader_XM::load_instrument(const char *p_file,CPSong *p_song,i
         file->get_byte_array((uint8_t*)buffer,0x16);
         buffer[0x16]=0;
 	instr.set_name(buffer);
-	aux=file->get_byte(); //says ignore ti
+	//aux=file->get_byte(); //says ignore ti
 	/*if(aux!=0x1a) { I'm not sure. this is supposed to be ignored...
 
 		file->close();
@@ -716,7 +708,6 @@ CPLoader::Error CPLoader_XM::load_instrument(const char *p_file,CPSong *p_song,i
 	} */
 
         file->get_byte_array((uint8_t*)buffer,0x14); //somethingaboutthename
-        aux=file->get_word(); //version or blahblah
  	
   	if (load_instrument_internal(&instr,true,0,0)) {
 
@@ -726,12 +717,8 @@ CPLoader::Error CPLoader_XM::load_instrument(const char *p_file,CPSong *p_song,i
 
 	file->close(); //ook, we got it..
 
-
 	return FILE_OK;
-
 }
-
-
 
 CPLoader_XM::CPLoader_XM(CPFileAccessWrapper *p_file){
 	

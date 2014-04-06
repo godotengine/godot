@@ -46,10 +46,9 @@ int VideoStreamTheora::get_pending_frame_count() const {
 
 void VideoStreamTheora::video_write(void){
 	th_ycbcr_buffer yuv;
-	int y_offset, uv_offset;
 	th_decode_ycbcr_out(td,yuv);
 
-	y_offset=(ti.pic_x&~1)+yuv[0].stride*(ti.pic_y&~1);
+	//y_offset=(ti.pic_x&~1)+yuv[0].stride*(ti.pic_y&~1);
 
 	/*
 	{
@@ -81,7 +80,7 @@ void VideoStreamTheora::video_write(void){
 	DVector<uint8_t>::Write w = frame_data.write();
 	char* dst = (char*)w.ptr();
 
-	uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
+	//uv_offset=(ti.pic_x/2)+(yuv[1].stride)*(ti.pic_y/2);
 
 	if (px_fmt == TH_PF_444) {
 
@@ -460,7 +459,6 @@ void VideoStreamTheora::update() {
 					out[count++] = val;
 				};
 			};
-			int tr = vorbis_synthesis_read(&vd, to_read);
 			audio_todo -= to_read;
 			audio_frames_wrote += to_read;
 			write(to_read);

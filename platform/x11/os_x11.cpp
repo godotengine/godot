@@ -507,15 +507,9 @@ void OS_X11::handle_key_event(XKeyEvent *p_event) {
 		
 	KeySym keysym_keycode=0; // keysym used to find a keycode
 	KeySym keysym_unicode=0; // keysym used to find unicode
-					
-	int nbytes=0; // bytes the string takes
-						 
+				
 	// XLookupString returns keysyms usable as nice scancodes/
-	char str[256+1];
-	nbytes=XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
-						 
  	// Meanwhile, XLookupString returns keysyms useful for unicode.
-	
 	
 	if (!xmbstring) {
 		// keep a temporary buffer for the string
@@ -774,7 +768,6 @@ void OS_X11::process_xevents() {
 
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 #if 1
-				Vector2 c = Point2i(current_videomode.width/2,current_videomode.height/2);
 				if (pos==Point2i(current_videomode.width/2,current_videomode.height/2)) {
 					//this sucks, it's a hack, etc and is a little inaccurate, etc.
 					//but nothing I can do, X11 sucks.
