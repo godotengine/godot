@@ -332,6 +332,7 @@ class SpatialEditorGizmos  {
 public:
 
 	Ref<FixedMaterial> handle2_material;
+	Ref<FixedMaterial> handle2_secondary_material;
 	Ref<FixedMaterial> handle_material;
 	Ref<FixedMaterial> light_material;
 	Ref<FixedMaterial> light_material_omni_icon;

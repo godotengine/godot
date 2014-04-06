@@ -949,6 +949,7 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 
 	} else if (header[0]!='R' || header[1]!='S' || header[2]!='R' || header[3]!='C') {
 		//not normal
+		error=ERR_FILE_UNRECOGNIZED;
 		return "";
 	}
 

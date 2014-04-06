@@ -1095,7 +1095,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_RAND: {
-			MethodInfo mi("rand");
+			MethodInfo mi("randi");
 			mi.return_val.type=Variant::INT;
 			return mi;
 		} break;

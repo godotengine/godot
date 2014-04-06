@@ -191,7 +191,10 @@ void SpatialGizmoTool::add_handles(const Vector<Vector3> &p_handles, bool p_bill
 	a.resize(VS::ARRAY_MAX);
 	a[VS::ARRAY_VERTEX]=p_handles;
 	mesh->add_surface(Mesh::PRIMITIVE_POINTS,a);
-	mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_material);
+	if (!p_secondary)
+		mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_material);
+	else
+		mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_secondary_material);
 
 
 #else
@@ -2130,6 +2133,9 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	handle2_material->set_texture(FixedMaterial::PARAM_DIFFUSE,handle_t);
 	handle2_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
 	handle2_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+
+	handle2_secondary_material = handle2_material->duplicate();
+	handle2_secondary_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,.5));
 
 	light_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	light_material->set_flag(Material::FLAG_UNSHADED, true);

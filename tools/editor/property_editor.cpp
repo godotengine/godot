@@ -909,7 +909,14 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 						Vector<String> extensions=hint_text.split(",");
 						for(int i=0;i<extensions.size();i++) {
 
-							file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper() );
+							String filter = extensions[i];
+							if (filter.begins_with("."))
+								filter="*"+extensions[i];
+							else if (!filter.begins_with("*"))
+								filter="*."+extensions[i];
+
+
+							file->add_filter(filter+" ; "+extensions[i].to_upper() );
 
 						}
 					}

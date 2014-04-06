@@ -37,7 +37,6 @@ def get_flags():
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
-		('module_FacebookScorer_ios_enabled', 'no'),
 	]
 
 

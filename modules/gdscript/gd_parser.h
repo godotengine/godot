@@ -356,6 +356,7 @@ private:
 	template<class T>
 	T* alloc_node();
 
+	int parenthesis;
 	bool error_set;
 	String error;
 	int error_line;

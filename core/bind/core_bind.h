@@ -106,6 +106,9 @@ public:
 	void set_iterations_per_second(int p_ips);
 	int get_iterations_per_second() const;
 
+	void set_target_fps(int p_fps);
+	float get_target_fps() const;
+
 	void set_low_processor_usage_mode(bool p_enabled);
 	bool is_in_low_processor_usage_mode() const;
 
@@ -113,6 +116,8 @@ public:
 	int execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking);
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
+
+	int get_process_ID() const;
 
 	bool has_environment(const String& p_var) const;
 	String get_environment(const String& p_var) const;

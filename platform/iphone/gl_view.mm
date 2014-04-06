@@ -64,25 +64,22 @@ bool _play_video(String p_path) {
 	
 	p_path = Globals::get_singleton()->globalize_path(p_path);
 
-	// NSString *file_path = [NSString stringWithCString:p_path.utf8().get_data() encoding:NSASCIIStringEncoding];
 	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
 	NSURL *file_url = [NSURL fileURLWithPath:file_path];
 		
 	_instance.moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:file_url];
 	_instance.moviePlayerController.controlStyle = MPMovieControlStyleNone;
-	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
-	// [_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
+	// [_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
+	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:_instance
                    selector:@selector(moviePlayBackDidFinish:)
                    name:MPMoviePlayerPlaybackDidFinishNotification
                    object:_instance.moviePlayerController];
-
-	[[_instance window] makeKeyAndVisible];
-	_instance.backgroundWindow = [[UIApplication sharedApplication] keyWindow];
-	[_instance.moviePlayerController.view setFrame:_instance.backgroundWindow.frame];
+	
+	[_instance.moviePlayerController.view setFrame:_instance.bounds];
 	_instance.moviePlayerController.view.userInteractionEnabled = NO;
-	[_instance.backgroundWindow addSubview:_instance.moviePlayerController.view];
+	[_instance addSubview:_instance.moviePlayerController.view];
 	[_instance.moviePlayerController play];
 
 	return true;
@@ -484,6 +481,14 @@ static void clear_touches() {
 	return self;
 }
 
+// -(BOOL)automaticallyForwardAppearanceAndRotationMethodsToChildViewControllers {
+//     return YES;
+// }
+
+// - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation{
+//     return YES;
+// }
+
 // Stop animating and release resources when they are no longer needed.
 - (void)dealloc
 {
@@ -508,10 +513,6 @@ static void clear_touches() {
       object:player];
 
     _stop_video();
-}
-
-- (void)handleTap:(UITapGestureRecognizer *)gesture {
-    NSLog(@"Gesture\n");
 }
 
 @end

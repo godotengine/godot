@@ -357,7 +357,7 @@ void TouchScreenButton::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"visibility_mode",PROPERTY_HINT_ENUM,"Always,TouchScreen Only"),_SCS("set_visibility_mode"),_SCS("get_visibility_mode"));
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
-	ADD_SIGNAL( MethodInfo("release" ) );
+	ADD_SIGNAL( MethodInfo("released" ) );
 
 
 

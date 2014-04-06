@@ -375,6 +375,18 @@ bool BodyPair2DSW::setup(float p_step) {
 		}
 
 #endif
+
+
+		c.bounce=MAX(A->get_bounce(),B->get_bounce());
+		if (c.bounce) {
+
+			Vector2 crA( -A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x );
+			Vector2 crB( -B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x );
+			Vector2 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
+			c.bounce = c.bounce * dv.dot(c.normal);
+		}
+
+
 	}
 
 	return true;
@@ -420,8 +432,7 @@ void BodyPair2DSW::solve(float p_step) {
 		A->apply_bias_impulse(c.rA,-jb);
 		B->apply_bias_impulse(c.rB, jb);
 
-		real_t bounce=MAX(A->get_bounce(),B->get_bounce());
-		real_t jn = -(bounce + vn)*c.mass_normal;
+		real_t jn = -(c.bounce + vn)*c.mass_normal;
 		real_t jnOld = c.acc_normal_impulse;
 		c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
 
