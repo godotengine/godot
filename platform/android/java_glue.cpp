@@ -440,7 +440,8 @@ public:
 			case Variant::STRING: {
 
 				jobject o = env->CallObjectMethodA(instance,E->get().method,v);
-				String singname = env->GetStringUTFChars((jstring)o, NULL );
+				String str = env->GetStringUTFChars((jstring)o, NULL );
+				ret=str;
 			} break;
 			case Variant::STRING_ARRAY: {
 
@@ -665,11 +666,12 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 
 
 	initialized=true;
-	_godot_instance=activity;
 
 	JavaVM *jvm;
 	env->GetJavaVM(&jvm);
 
+	_godot_instance=env->NewGlobalRef(activity);
+//	_godot_instance=activity;
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","***************** HELLO FROM JNI!!!!!!!!");
 
@@ -816,8 +818,10 @@ static void _initialize_java_modules() {
 		jmethodID getClassLoader = env->GetMethodID(activityClass,"getClassLoader", "()Ljava/lang/ClassLoader;");
 
 		jobject cls = env->CallObjectMethod(_godot_instance, getClassLoader);
+		//cls=env->NewGlobalRef(cls);
 
 		jclass classLoader = env->FindClass("java/lang/ClassLoader");
+		//classLoader=(jclass)env->NewGlobalRef(classLoader);
 
 		jmethodID findClass = env->GetMethodID(classLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
 
@@ -835,6 +839,7 @@ static void _initialize_java_modules() {
 				ERR_EXPLAIN("Couldn't find singleton for class: "+m);
 				ERR_CONTINUE(!singletonClass);
 			}
+			//singletonClass=(jclass)env->NewGlobalRef(singletonClass);
 
 			__android_log_print(ANDROID_LOG_INFO,"godot","****^*^*?^*^*class data %x",singletonClass);
 			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lcom/android/godot/Godot$SingletonBase;");
@@ -1240,14 +1245,16 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_key(JNIEnv * env, jobject
 	ievent.key.mod.control=false;
 	ievent.key.echo=false;
 
-	if (val == 61448) {
+    if (val == '\n')
+    {
+		ievent.key.scancode = KEY_ENTER;
+    }else if (val == 61448) {
 		ievent.key.scancode = KEY_BACKSPACE;
 		ievent.key.unicode = KEY_BACKSPACE;
-	};
-	if (val == 61453) {
+	} else if (val == 61453) {
 		ievent.key.scancode = KEY_ENTER;
 		ievent.key.unicode = KEY_ENTER;
-	};
+	}
 
 	input_mutex->lock();
 	key_events.push_back(ievent);

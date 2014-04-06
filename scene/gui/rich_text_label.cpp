@@ -491,8 +491,63 @@ void RichTextLabel::_notification(int p_what) {
 				_process_line(y,size.width-scroll_w,from_line,PROCESS_DRAW,base_font,base_color);
 				from_line++;
 			}
-		}
-	}
+		} break;
+        case NOTIFICATION_FIXED_PROCESS: {
+
+		    if (drag_touching)  {
+
+			    if (drag_touching_deaccel) {
+
+				    Vector2 pos = Vector2(0,vscroll->get_val());
+				    pos+=drag_speed*get_fixed_process_delta_time();
+
+				    bool turnoff_v=false;
+
+				    if (pos.y<0) {
+					    pos.x=0;
+					    turnoff_v=true;
+				    }
+				    if (pos.y > (vscroll->get_max()-vscroll->get_page())) {
+					    pos.y=vscroll->get_max()-vscroll->get_page();
+					    turnoff_v=true;
+				    }
+
+				    if (vscroll)
+					    vscroll->set_val(pos.y);
+
+				    float sgn_y = drag_speed.y<0? -1 : 1;
+				    float val_y = Math::abs(drag_speed.y);
+				    val_y-=1000*get_fixed_process_delta_time();
+
+				    if (val_y<0) {
+					    turnoff_v=true;
+				    }
+
+
+				    drag_speed=Vector2(0,sgn_y*val_y);
+
+				    if (turnoff_v) {
+					    set_fixed_process(false);
+					    drag_touching=false;
+					    drag_touching_deaccel=false;
+				    }
+
+
+			    } else {
+
+
+				    if (time_since_motion==0 || time_since_motion>0.1) {
+
+					    Vector2 diff = drag_accum - last_drag_accum;
+					    last_drag_accum=drag_accum;
+					    drag_speed=diff/get_fixed_process_delta_time();
+				    }
+
+				    time_since_motion+=get_fixed_process_delta_time();
+			    }
+		    }
+	    } break;
+    }
 }
 
 
@@ -557,6 +612,15 @@ Control::CursorShape RichTextLabel::get_cursor_shape(const Point2& p_pos) const 
 	return CURSOR_ARROW;
 }
 
+void RichTextLabel::_cancel_drag() {
+	set_fixed_process(false);
+	drag_touching_deaccel=false;
+	drag_touching=false;
+	drag_speed=Vector2();
+	drag_accum=Vector2();
+	last_drag_accum=Vector2();
+	drag_from=Vector2();
+}
 
 void RichTextLabel::_input_event(InputEvent p_event) {
 
@@ -572,33 +636,78 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 			if (b.button_index==BUTTON_LEFT) {
 
 				if (true) {
-
-
 					if (b.pressed && !b.doubleclick) {
-						int line=0;
-						Item *item=NULL;
+
+            			if(OS::get_singleton()->has_touchscreen_ui_hint() && !selection.enabled)
+                        {
+				            if (drag_touching) {
+					            set_fixed_process(false);
+					            drag_touching_deaccel=false;
+					            drag_touching=false;
+					            drag_speed=Vector2();
+					            drag_accum=Vector2();
+					            last_drag_accum=Vector2();
+					            drag_from=Vector2();
+				            }
+
+				            if (true) {
+					            drag_speed=Vector2();
+					            drag_accum=Vector2();
+					            last_drag_accum=Vector2();
+					            drag_from=Vector2(0,vscroll->get_val());
+					            drag_touching=OS::get_singleton()->has_touchscreen_ui_hint();
+					            drag_touching_deaccel=false;
+					            time_since_motion=0;
+					            if (drag_touching) {
+						            set_fixed_process(true);
+						            time_since_motion=0;
+
+					            }
+				            }
+                        }
 
 						bool outside;
-						_find_click(Point2i(b.x,b.y),&item,&line,&outside);
+						_find_click(Point2i(b.x,b.y),&click.item,&click.line,&outside);
 
-						if (item) {
+						if (click.item) {
 
 							Variant meta;
-							if (!outside && _find_meta(item,&meta)) {
+							if (!outside && _find_meta(click.item,&meta)) {
 								//meta clicked
 
-								emit_signal("meta_clicked",meta);
+								//emit_signal("meta_clicked",meta);
 							} else if (selection.enabled) {
 
-								selection.click=item;
-								selection.click_char=line;
-
+								selection.click=click.item;
+								selection.click_char=click.line;
 							}
-
+                            if (outside)
+                                click.item=NULL;
 						}
 
 					} else if (!b.pressed) {
 
+				        if (drag_touching) {
+
+					        if (drag_speed==Vector2()) {
+						        drag_touching_deaccel=false;
+						        drag_touching=false;
+						        set_fixed_process(false);
+					        } else {
+
+						        drag_touching_deaccel=true;
+					        }
+				        }
+
+						bool outside;
+                        Item *item;
+                        int line;
+						_find_click(Point2i(b.x,b.y),&item,&line,&outside);
+
+                        Variant meta;
+                        if (!outside && click.item==item && click.line==line &&_find_meta(item,&meta)) {
+                            emit_signal("meta_clicked",meta);
+                        }
 						selection.click=NULL;
 					}
 				}
@@ -618,7 +727,7 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 		case InputEvent::KEY: {
 
 			const InputEventKey &k=p_event.key;
-			if (k.pressed) {
+			if (k.pressed&&!drag_touching) {
 				bool handled=true;
 				switch(k.scancode) {
 					case KEY_PAGEUP: {
@@ -675,6 +784,19 @@ void RichTextLabel::_input_event(InputEvent p_event) {
 				return;
 
 			const InputEventMouseMotion& m = p_event.mouse_motion;
+
+			if (drag_touching && ! drag_touching_deaccel) {
+
+				Vector2 motion = Vector2(m.relative_x,m.relative_y);
+				drag_accum-=motion;
+				Vector2 diff = drag_from+drag_accum;
+
+				if (vscroll)
+					vscroll->set_val(diff.y);
+				else
+					drag_accum.y=0;
+				time_since_motion=0;
+			}
 
 			if (selection.click) {
 
@@ -952,7 +1074,18 @@ void RichTextLabel::add_text(const String& p_text) {
 
 		pos=end+1;
 	}
+    text += p_text;
 }
+
+void RichTextLabel::set_text(const String& p_text) {
+    clear();
+    add_text(p_text);
+}
+
+String RichTextLabel::get_text() const {
+    return text;
+}
+
 
 void RichTextLabel::_add_item(Item *p_item, bool p_enter) {
 
@@ -1078,6 +1211,7 @@ void RichTextLabel::clear() {
 	lines.clear();
 	lines.resize(1);
 	first_invalid_line=0;
+    text.clear();
 	update();
 	selection.click=NULL;
 	selection.active=false;
@@ -1112,6 +1246,7 @@ bool RichTextLabel::is_meta_underlined() const {
 void RichTextLabel::set_offset(int p_pixel) {
 
 	vscroll->set_val(p_pixel);
+	_cancel_drag();
 }
 
 void RichTextLabel::set_scroll_active(bool p_active) {
@@ -1344,8 +1479,7 @@ void RichTextLabel::scroll_to_line(int p_line) {
 	ERR_FAIL_INDEX(p_line,lines.size());
 	_validate_line_caches();
 	vscroll->set_val(lines[p_line].height_accum_cache);
-
-
+	_cancel_drag();
 }
 
 int RichTextLabel::get_line_count() const {
@@ -1484,6 +1618,8 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&RichTextLabel::_input_event);
 	ObjectTypeDB::bind_method(_MD("_scroll_changed"),&RichTextLabel::_scroll_changed);
 	ObjectTypeDB::bind_method(_MD("add_text","text"),&RichTextLabel::add_text);
+	ObjectTypeDB::bind_method(_MD("set_text","text"),&RichTextLabel::set_text);
+	ObjectTypeDB::bind_method(_MD("get_text"),&RichTextLabel::get_text);
 	ObjectTypeDB::bind_method(_MD("add_image","image:Texture"),&RichTextLabel::add_image);
 	ObjectTypeDB::bind_method(_MD("newline"),&RichTextLabel::add_newline);
 	ObjectTypeDB::bind_method(_MD("push_font","font"),&RichTextLabel::push_font);
@@ -1513,6 +1649,14 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_selection_enabled"),&RichTextLabel::is_selection_enabled);
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
+
+
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "meta_underline" ), _SCS("set_meta_underline"),_SCS("set_meta_underline") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_active" ), _SCS("set_scroll_active"),_SCS("is_scroll_active") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_follow" ), _SCS("set_scroll_follow"),_SCS("is_scroll_following") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "tab_size" ), _SCS("set_tab_size"),_SCS("get_tab_size") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "selection_enabled" ), _SCS("set_selection_enabled"),_SCS("is_selection_enabled") );
 
 	BIND_CONSTANT( ALIGN_LEFT );
 	BIND_CONSTANT( ALIGN_CENTER );
@@ -1572,6 +1716,12 @@ RichTextLabel::RichTextLabel() {
 	selection.active=false;
 	selection.enabled=false;
 
+	drag_touching_deaccel=false;
+	drag_touching=false;
+	drag_speed=Vector2();
+	drag_accum=Vector2();
+	last_drag_accum=Vector2();
+	drag_from=Vector2();
 }
 
 RichTextLabel::~RichTextLabel() {

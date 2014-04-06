@@ -42,6 +42,8 @@ class RayCast2D : public Node2D {
 	int against_shape;
 	Vector2 collision_point;
 	Vector2 collision_normal;
+	Set<RID> exclude;
+
 
 	Vector2 cast_to;
 protected:
@@ -61,6 +63,12 @@ public:
 	int get_collider_shape() const;
 	Vector2 get_collision_point() const;
 	Vector2 get_collision_normal() const;
+
+	void add_exception_rid(const RID& p_rid);
+	void add_exception(const Object* p_object);
+	void remove_exception_rid(const RID& p_rid);
+	void remove_exception(const Object* p_object);
+	void clear_exceptions();
 
 	RayCast2D();
 };

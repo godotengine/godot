@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="3" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://grid.lua" type="Script"></ext_resource>
+	<ext_resource path="res://grid.xml" type="PackedScene"></ext_resource>
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="48">
+				<string> "Tetris" </string>
+				<string> "Panel" </string>
+				<string> "visibility/visible" </string>
+				<string> "visibility/opacity" </string>
+				<string> "visibility/self_opacity" </string>
+				<string> "visibility/on_top" </string>
+				<string> "margin/right" </string>
+				<string> "margin/bottom" </string>
+				<string> "focus_neighbour/left" </string>
+				<string> "focus_neighbour/top" </string>
+				<string> "focus_neighbour/right" </string>
+				<string> "focus_neighbour/bottom" </string>
+				<string> "focus/ignore_mouse" </string>
+				<string> "focus/stop_mouse" </string>
+				<string> "size_flags/horizontal" </string>
+				<string> "size_flags/vertical" </string>
+				<string> "size_flags/stretch_ratio" </string>
+				<string> "__meta__" </string>
+				<string> "Grid" </string>
+				<string> "Control" </string>
+				<string> "margin/left" </string>
+				<string> "margin/top" </string>
+				<string> "script/script" </string>
+				<string> "Label" </string>
+				<string> "range/min" </string>
+				<string> "range/max" </string>
+				<string> "range/step" </string>
+				<string> "range/page" </string>
+				<string> "range/value" </string>
+				<string> "range/exp_edit" </string>
+				<string> "rounded_values" </string>
+				<string> "text" </string>
+				<string> "align" </string>
+				<string> "valign" </string>
+				<string> "autowrap" </string>
+				<string> "uppercase" </string>
+				<string> "percent_visible" </string>
+				<string> "score" </string>
+				<string> "restart" </string>
+				<string> "Button" </string>
+				<string> "disabled" </string>
+				<string> "toggle_mode" </string>
+				<string> "click_on_press" </string>
+				<string> "icon" </string>
+				<string> "flat" </string>
+				<string> "clip_text" </string>
+				<string> "restart_pressed" </string>
+				<string> "pressed" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 1 </int>
+			<string> "node_count" </string>
+			<int> 5 </int>
+			<string> "variants" </string>
+			<array  len="32" shared="false">
+				<bool> True </bool>
+				<real> 1 </real>
+				<real> 400 </real>
+				<node_path> "" </node_path>
+				<bool> False </bool>
+				<int> 2 </int>
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "Script" </string>
+						<dictionary  shared="false">
+							<string> "current" </string>
+							<int> 0 </int>
+							<string> "sources" </string>
+							<array  len="1" shared="false">
+								<string> "res://grid.lua" </string>
+							</array>
+						</dictionary>
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "pixel_snap" </string>
+							<bool> False </bool>
+							<string> "zoom" </string>
+							<real> 1.360374 </real>
+							<string> "ofs" </string>
+							<vector2> -155.62, -54.344 </vector2>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 45 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> True </bool>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "Script" </string>
+				</dictionary>
+				<resource  resource_type="PackedScene" path="res://grid.xml">  </resource>
+				<real> 40 </real>
+				<real> 35 </real>
+				<real> 80 </real>
+				<real> 75 </real>
+				<resource  resource_type="Script" path="res://grid.lua">  </resource>
+				<real> 243 </real>
+				<real> 36 </real>
+				<real> 283 </real>
+				<real> 49 </real>
+				<real> 0 </real>
+				<string> "Score:" </string>
+				<int> 0 </int>
+				<real> -1 </real>
+				<real> 252 </real>
+				<real> 55 </real>
+				<real> 293 </real>
+				<real> 68 </real>
+				<string> "0" </string>
+				<real> 292 </real>
+				<real> 303 </real>
+				<real> 311 </real>
+				<string> "Restart" </string>
+				<resource name=""></resource>				<int> 1 </int>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="243"> 				-1, -1, 1, 0, -1, 16, 2, 0, 3, 1, 4, 1, 5, 0, 6, 2, 7, 2, 8, 3, 9, 3, 10, 3, 11, 3, 12, 4, 13, 0, 14, 5, 15, 5, 16, 1, 17, 6, 0, 0, 0, 19, 18, 7, 5, 20, 8, 21, 9, 6, 10, 7, 11, 22, 12, 0, 0, 0, 23, 23, -1, 29, 2, 0, 3, 1, 4, 1, 5, 0, 20, 13, 21, 14, 6, 15, 7, 16, 8, 3, 9, 3, 10, 3, 11, 3, 12, 0, 13, 0, 14, 5, 16, 1, 24, 17, 25, 1, 26, 1, 27, 1, 28, 17, 29, 4, 30, 4, 31, 18, 32, 19, 33, 19, 34, 4, 35, 4, 36, 20, 0, 0, 0, 23, 37, -1, 29, 2, 0, 3, 1, 4, 1, 5, 0, 20, 21, 21, 22, 6, 23, 7, 24, 8, 3, 9, 3, 10, 3, 11, 3, 12, 0, 13, 0, 14, 5, 16, 1, 24, 17, 25, 1, 26, 1, 27, 1, 28, 17, 29, 4, 30, 4, 31, 25, 32, 19, 33, 19, 34, 4, 35, 4, 36, 20, 0, 0, 0, 39, 38, -1, 25, 2, 0, 3, 1, 4, 1, 5, 0, 20, 13, 21, 26, 6, 27, 7, 28, 8, 3, 9, 3, 10, 3, 11, 3, 12, 4, 13, 0, 14, 5, 15, 5, 16, 1, 40, 4, 41, 4, 42, 4, 31, 29, 43, 30, 44, 4, 45, 4, 32, 31, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="6"> 				4, 1, 47, 46, 2, 0 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

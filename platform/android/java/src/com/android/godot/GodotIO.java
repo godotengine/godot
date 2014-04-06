@@ -47,6 +47,7 @@ import android.media.*;
 import android.hardware.*;
 import android.content.*;
 import android.content.pm.ActivityInfo;
+import com.android.godot.input.*;
 //android.os.Build
 
 // Wrapper for native library
@@ -55,7 +56,8 @@ public class GodotIO {
 
 
 	AssetManager am;
-	Activity activity;
+	Godot activity;
+	GodotEditText edit;
 
 	Context applicationContext;
 	MediaPlayer mediaPlayer;
@@ -323,7 +325,7 @@ public class GodotIO {
 
 
 
-	GodotIO(Activity p_activity) {
+	GodotIO(Godot p_activity) {
 
 		am=p_activity.getAssets();
 		activity=p_activity;
@@ -465,15 +467,24 @@ public class GodotIO {
 	}
 
 	public void showKeyboard(String p_existing_text) {
+		if(edit != null)
+			edit.showKeyboard(p_existing_text);
 
-		InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-		inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
+		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+		//inputMgr.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
 	};
 
 	public void hideKeyboard() {
+		if(edit != null)
+			edit.hideKeyboard();
 
-		InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-		inputMgr.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        View v = activity.getCurrentFocus();
+        if (v != null) {
+            inputMgr.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        } else {
+            inputMgr.hideSoftInputFromWindow(new View(activity).getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
 	};
 
 	public void setScreenOrientation(int p_orientation) {
@@ -504,6 +515,10 @@ public class GodotIO {
 
 		}
 	};
+	
+	public void setEdit(GodotEditText _edit) {
+		edit = _edit;
+	}
 
 	public void playVideo(String p_path)
 	{

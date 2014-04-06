@@ -178,6 +178,7 @@ private:
 
 
 	Vector<Line> lines;
+    String text;
 	int first_invalid_line;
 
 	int tab_size;
@@ -221,6 +222,20 @@ private:
 
 	Selection selection;
 
+    struct {
+        Item *item;
+        int line;
+    } click;
+
+    Vector2 drag_speed;
+    Vector2 drag_accum;
+    Vector2 drag_from;
+    Vector2 last_drag_accum;
+    float last_drag_time;
+    float time_since_motion;
+    bool drag_touching;
+    bool drag_touching_deaccel;
+    bool click_handled;
 
 
 
@@ -239,6 +254,7 @@ private:
 	void _update_scroll();
 	void _scroll_changed(double);
 
+    void _cancel_drag();
 	void _input_event(InputEvent p_event);
 	Item *_get_next_item(Item* p_item);
 
@@ -249,6 +265,8 @@ protected:
 public:
 
 	void add_text(const String& p_text);
+    void set_text(const String& p_text);
+    String get_text() const;
 	void add_image(const Ref<Texture>& p_image);
 	void add_newline();
 	void push_font(const Ref<Font>& p_font);

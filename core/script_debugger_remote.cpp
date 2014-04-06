@@ -243,9 +243,18 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 				if (request_scene_tree)
 					request_scene_tree(request_scene_tree_ud);
-			}
+			} else if (command=="set_breakpoint") {
 
+			    ERR_CONTINUE( cmd.size()!=3 );
+			    String path = cmd[0];
+			    int line = cmd[1];
+			    bool dobreak = cmd[2];
 
+                if (dobreak)
+                    insert_breakpoint(line, path);
+                else
+                    remove_breakpoint(line, path);
+            }
 
 		} else {
 			OS::get_singleton()->delay_usec(10000);
@@ -331,7 +340,18 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			if (request_scene_tree)
 				request_scene_tree(request_scene_tree_ud);
-		}
+        } else if (command=="set_breakpoint") {
+
+			ERR_CONTINUE( cmd.size()!=3 );
+			String path = cmd[0];
+			int line = cmd[1];
+			bool dobreak = cmd[2];
+
+            if (dobreak)
+                insert_breakpoint(line, path);
+            else
+                remove_breakpoint(line, path);
+        }
 
 	}
 

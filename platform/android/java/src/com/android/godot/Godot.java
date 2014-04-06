@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import com.android.godot.payments.PaymentsManager;
 import java.io.IOException;
 import android.provider.Settings.Secure;
+import android.widget.FrameLayout;
+import com.android.godot.input.*;
 
 
 public class Godot extends Activity implements SensorEventListener
@@ -121,7 +123,7 @@ public class Godot extends Activity implements SensorEventListener
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
 
-	public RelativeLayout layout;
+	public FrameLayout layout;
 
 
 	static public GodotIO io;
@@ -135,7 +137,7 @@ public class Godot extends Activity implements SensorEventListener
 	};
 	public ResultCallback result_callback;
 
-	private PaymentsManager mPaymentsManager;
+	private PaymentsManager mPaymentsManager = null;
 
 	@Override protected void onActivityResult (int requestCode, int resultCode, Intent data) {
 		if(requestCode == PaymentsManager.REQUEST_CODE_FOR_PURCHASE){
@@ -151,13 +153,22 @@ public class Godot extends Activity implements SensorEventListener
 //		mView = new GodotView(getApplication(),io,use_gl2);
 //		setContentView(mView);
 
-		layout = new RelativeLayout(this);
+		layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		setContentView(layout);
+		
+		// GodotEditText layout
+		GodotEditText edittext = new GodotEditText(this); 
+        edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
+        // ...add to FrameLayout
+        layout.addView(edittext);
+		
 		mView = new GodotView(getApplication(),io,use_gl2, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		mView.setKeepScreenOn(true);
-
+		
+        edittext.setView(mView);
+        io.setEdit(edittext);
 	}
 
 	private static Godot _self;
@@ -168,6 +179,7 @@ public class Godot extends Activity implements SensorEventListener
 	
 	@Override protected void onCreate(Bundle icicle) {
 
+		System.out.printf("** GODOT ACTIVITY CREATED HERE ***\n");
 
 		super.onCreate(icicle);
 		_self = this;
@@ -194,7 +206,7 @@ public class Godot extends Activity implements SensorEventListener
 
 	@Override protected void onDestroy(){
 		
-		if(mPaymentsManager != null ) mPaymentsManager.destroy();
+		//if(mPaymentsManager != null ) mPaymentsManager.destroy();
 		super.onDestroy();
 	}
 	
@@ -334,23 +346,13 @@ public class Godot extends Activity implements SensorEventListener
 		
 	}
 
-	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
-		GodotLib.key(keyCode, event.getUnicodeChar(0), false);
-		return super.onKeyUp(keyCode, event);
-	};
-
-	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-		GodotLib.key(keyCode, event.getUnicodeChar(0), true);
-		return super.onKeyDown(keyCode, event);
-	}
-
 	public PaymentsManager getPaymentsManager() {
 		return mPaymentsManager;
 	}
 
-//	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
-//		this.mPaymentsManager = mPaymentsManager;
-//	};
+	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
+		this.mPaymentsManager = mPaymentsManager;
+	};
 
 
 	// Audio

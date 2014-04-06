@@ -14,6 +14,7 @@ core/version.h
 core/method_bind.inc
 core/global_defaults.cpp
 tools/editor/register_exporters.cpp
+tools/editor/doc_data_compressed.h
 -fpic
 
 # Android specific

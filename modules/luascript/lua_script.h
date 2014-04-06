@@ -60,6 +60,7 @@ public:
 	Variant _new();
 	Object *instance();
 	LuaNativeClass(const StringName& p_name);
+	virtual ~LuaNativeClass();
 };
 
 
@@ -71,6 +72,8 @@ class LuaScript : public Script {
 	bool valid;
 
 friend class LuaInstance;
+friend class LuaScriptLanguage;
+
 	Ref<LuaNativeClass> native;
 	Ref<LuaScript> base;
 	LuaScript *_base; //fast pointer access
@@ -82,17 +85,16 @@ friend class LuaInstance;
 //	Map<StringName,int> member_indices; //members are just indices to the instanced script.
 //	Map<StringName,Ref<LuaScript> > subclasses;	
 //
-//#ifdef TOOLS_ENABLED
-//	Map<StringName,Variant> member_default_values;
-//#endif
-//	Map<StringName,PropertyInfo> member_info;
-//
-//	GDFunction *initializer; //direct pointer to _init , faster to locate
-//
+#ifdef TOOLS_ENABLED
+	Map<StringName,Variant> member_default_values;
+#endif
+	Map<StringName,PropertyInfo> member_info;
+
 //	int subclass_count;
 	Set<Object*> instances;
 	//exported members
 	String source;
+    Vector<uint8_t> bytecode;
 	String path;
 	String name;
     int ref; // ref to loaded lua script chunk(function)
@@ -110,6 +112,10 @@ friend class LuaInstance;
     void reset();
     // lua functions
     static int l_extends(lua_State *L);
+
+    static bool preprocessHints(PropertyInfo& pi, Vector<String>& tokens);
+    static int l_export(lua_State *L);
+
     // lua meta methods
     static int l_meta_index(lua_State *L);
     static int l_meta_gc(lua_State *L);
@@ -119,9 +125,9 @@ protected:
 //	bool _get(const StringName& p_name,Variant &r_ret) const;
 //	bool _set(const StringName& p_name, const Variant& p_value);
 //	void _get_property_list(List<PropertyInfo> *p_properties) const;
-
+//
 //	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error);
-////	void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
+//	void call_multilevel(const StringName& p_method,const Variant** p_args,int p_argcount);
 
 	static void _bind_methods();
 public:
@@ -156,6 +162,7 @@ public:
 	virtual String get_node_type() const;
 	void set_script_path(const String& p_path) { path=p_path; } //because subclasses need a path too...
 	Error load_source_code(const String& p_path);
+    Error load_byte_code(const String& p_path);
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -167,16 +174,15 @@ public:
 
 class LuaInstance : public ScriptInstance {
 friend class LuaScript;
-//friend class GDFunction;
+friend class LuaScriptLanguage;
 //friend class GDFunctions;
 
-	Object *owner;
+	Variant owner;
 	Ref<LuaScript> script;
 //	Vector<Variant> members;
 	bool base_ref;
+    bool gc_delete;
     int ref; // ref to object's lua table
-    static Vector<Variant> stackrefs;
-    static const char *stacklevel;
 
 	void _ml_call_reversed(LuaScript *sptr,const StringName& p_method,const Variant** p_args,int p_argcount);
 
@@ -184,14 +190,17 @@ friend class LuaScript;
     int _call_script_func(const LuaScript *sptr, const LuaInstance *inst, const char *p_method, const Variant** p_args, int p_argcount) const;
     int _call_script_func(const LuaScript *sptr, const LuaInstance *inst, const char *p_method, const Variant** p_args, int p_argcount, Variant& result) const;
 
-    void _start_stacked() const;
-    void _ref_stacked(Variant& var) const;
-    void _cleanup_stacked() const;
-
     // lua methods
     static int l_extends(lua_State *L);
+    //static int l_ratain(lua_State *L);
+    //static int l_release(lua_State *L);
+
     static int l_methodbind_wrapper(lua_State *L);
     static int l_bultins_wrapper(lua_State *L);
+    static int l_bultins_tostring(lua_State *L);
+    static int l_bultins_index(lua_State *L);
+    static int l_bultins_caller_wrapper(lua_State *L);
+
     static int l_push_bulltins_type(lua_State *L, const Variant& var);
 
     // GdObject lua meta methods
@@ -205,6 +214,8 @@ friend class LuaScript;
     static int meta_bultins__tostring(lua_State *L);
     static int meta_bultins__index(lua_State *L);
     static int meta_bultins__newindex(lua_State *L);
+    static int meta_bultins__evaluate(lua_State *L);
+
 
 public:
 
@@ -228,12 +239,14 @@ public:
 
 //	void set_path(const String& p_path);
 
-    int init();
+    int init(bool p_ref = false);
     // helper lua functions
     static void l_push_variant(lua_State *L, const Variant& var);
     static void l_get_variant(lua_State *L, int idx, Variant& var);
     static void l_push_value(lua_State *L, int idx);
-    static bool l_push_bultins_ctor(lua_State *L, const char *type);
+    static bool l_register_bultins_ctors(lua_State *L);
+
+    bool l_get_object_table() const;
 
     static void setup();
 
@@ -251,90 +264,30 @@ class LuaScriptLanguage : public ScriptLanguage {
 	Vector<Variant> global_array;
 	Map<StringName,int> globals;
 
-
-    struct CallLevel {
-
-//        Variant *stack;
-//        GDFunction *function;
-        //LuaInstance *instance;
-        //int *ip;
-        //int *line;
-
-    };
-
     lua_State *L;
     Mutex* lock;
 
     int _debug_parse_err_line;
     String _debug_parse_err_file;
     String _debug_error;
-    int _debug_call_stack_pos;
-    int _debug_max_call_stack;
-    CallLevel *_call_stack;
+
+    bool _debug_in_coroutine;
+    int _debug_running_level;
+    int _debug_break_level;
+
+    bool hitBreakPoint(lua_State *L, lua_Debug *ar);
+    void onHook(lua_State *L, lua_Debug *ar);
+    static void hookRoutine(lua_State *L, lua_Debug *ar);
 
 	void _add_global(const StringName& p_name,const Variant& p_value);
-
+    bool execute(const char *script);
 
 public:
 
 	int calls;
 
-//    bool debug_break(const String& p_error,bool p_allow_continue=true);
+    bool debug_break(const String& p_error,bool p_allow_continue=true);
     bool debug_break_parse(const String& p_file, int p_line,const String& p_error);
-//
-//    _FORCE_INLINE_ void enter_function(LuaInstance *p_instance,GDFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
-//
-//        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-//            return; //no support for other threads than main for now
-//
-//        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-//            ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() +1 );
-//
-//        if (_debug_call_stack_pos >= _debug_max_call_stack) {
-//            //stack overflow
-//            _debug_error="Stack Overflow (Stack Size: "+itos(_debug_max_call_stack)+")";
-//            ScriptDebugger::get_singleton()->debug(this);
-//            return;
-//	}
-//
-//        _call_stack[_debug_call_stack_pos].stack=p_stack;
-//        _call_stack[_debug_call_stack_pos].instance=p_instance;
-//        _call_stack[_debug_call_stack_pos].function=p_function;
-//        _call_stack[_debug_call_stack_pos].ip=p_ip;
-//        _call_stack[_debug_call_stack_pos].line=p_line;
-//        _debug_call_stack_pos++;
-//    }
-//
-//    _FORCE_INLINE_ void exit_function() {
-//
-//        if (Thread::get_main_ID()!=Thread::get_caller_ID())
-//            return; //no support for other threads than main for now
-//
-//        if (ScriptDebugger::get_singleton()->get_lines_left()>0 && ScriptDebugger::get_singleton()->get_depth()>=0)
-//	    ScriptDebugger::get_singleton()->set_depth( ScriptDebugger::get_singleton()->get_depth() -1 );
-//
-//        if (_debug_call_stack_pos==0) {
-//
-//            _debug_error="Stack Underflow (Engine Bug)";
-//            ScriptDebugger::get_singleton()->debug(this);
-//            return;
-//        }
-//
-//        _debug_call_stack_pos--;
-//    }
-
-
-	struct {
-
-		StringName _init;
-		StringName _notification;
-		StringName _set;
-		StringName _get;
-		StringName _get_property_list;
-		StringName _script_source;
-
-	} strings;
-
 
 	_FORCE_INLINE_ int get_global_array_size() const { return global_array.size(); }
 	_FORCE_INLINE_ Variant* get_global_array() { return _global_array; }
@@ -374,6 +327,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level,List<String> *p_members, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1);
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1);
 	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1);
+    virtual void debug_status_changed();
 
 	virtual void frame();
 
@@ -413,8 +367,10 @@ public:
 
 };
 
+//#define LUA_MULTITHREAD_GUARD()\
+//    LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();
 #define LUA_MULTITHREAD_GUARD()\
     LuaScriptLanguage *lang = LuaScriptLanguage::get_singleton();\
-    MutexLock(lang->get_lock());
+    MutexLock lklua(lang->get_lock());
 
 #endif // LUA_SCRIPT_H

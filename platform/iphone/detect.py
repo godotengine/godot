@@ -33,11 +33,10 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'no'),
+		('lua', 'yes'),
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
-		('module_FacebookScorer_ios_enabled', 'no'),
 	]
 
 

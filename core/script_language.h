@@ -153,6 +153,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level,List<String> *p_members, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1)=0;
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1)=0;
 	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1)=0;
+    virtual void debug_status_changed() = 0;
 
 	/* LOADER FUNCTIONS */
 
@@ -228,6 +229,7 @@ public:
 	bool is_breakpoint(int p_line,const StringName& p_source) const;
 	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
+    bool has_breakpoint();
 
 	virtual void debug(ScriptLanguage *p_script,bool p_can_continue=true)=0;
 	virtual void idle_poll();

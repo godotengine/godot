@@ -77,11 +77,6 @@ def configure(env):
 		env.Append(CPPPATH=['#platform/windows/include'])
 		env.Append(LIBPATH=['#platform/windows/lib'])
 
-		if (env["freetype"]!="no"):
-			env.Append(CCFLAGS=['/DFREETYPE_ENABLED'])
-			env.Append(CPPPATH=['#tools/freetype'])
-			env.Append(CPPPATH=['#tools/freetype/freetype/include'])
-
 		if (env["target"]=="release"):
 
 			env.Append(CCFLAGS=['/O2'])
@@ -176,11 +171,6 @@ def configure(env):
 
 			env.Append(CCFLAGS=['-O2','-Wall','-DDEBUG_ENABLED'])
 
-
-		if (env["freetype"]!="no"):
-			env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-			env.Append(CPPPATH=['#tools/freetype'])
-			env.Append(CPPPATH=['#tools/freetype/freetype/include'])
 
 		env["CC"]=mingw_prefix+"gcc"
 		env['AS']=mingw_prefix+"as"

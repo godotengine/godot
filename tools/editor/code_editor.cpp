@@ -510,6 +510,20 @@ void CodeTextEditor::set_error(const String& p_error) {
 
 }
 
+void CodeTextEditor::_update_font() {
+
+	String editor_font = EditorSettings::get_singleton()->get("text_editor/font");
+	if (editor_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(editor_font);
+		if (fnt.is_valid()) {
+			text_editor->add_font_override("font",fnt);
+			return;
+		}
+	}
+
+	text_editor->add_font_override("font",get_font("source","Fonts"));
+}
+
 void CodeTextEditor::_text_changed_idle_timeout() {
 
 
@@ -527,8 +541,9 @@ void CodeTextEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_line_col_changed",&CodeTextEditor::_line_col_changed);
 	ObjectTypeDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
+	ObjectTypeDB::bind_method("_update_font",&CodeTextEditor::_update_font);
 	ObjectTypeDB::bind_method("_text_changed_idle_timeout",&CodeTextEditor::_text_changed_idle_timeout);
-    ObjectTypeDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
+	ObjectTypeDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
 }
 
 CodeTextEditor::CodeTextEditor() {
@@ -571,4 +586,5 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_completion(true,cs);
 	idle->connect("timeout", this,"_text_changed_idle_timeout");
 
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_update_font");
 }

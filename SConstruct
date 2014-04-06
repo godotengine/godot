@@ -11,7 +11,7 @@ import multiprocessing
 # Enable aggresive compile mode if building on a multi core box
 # only is we have not set the number of jobs already or we do
 # not want it
-if ARGUMENTS.get('spawn_jobs', 'yes') == 'yes' and \
+if ARGUMENTS.get('spawn_jobs', 'no') == 'yes' and \
 	int(GetOption('num_jobs')) <= 1:
 	NUM_JOBS = multiprocessing.cpu_count()
 	if NUM_JOBS > 1:
@@ -99,12 +99,12 @@ if profile:
 		customs.append(profile+".py")
 
 opts=Variables(customs, ARGUMENTS)
-opts.Add('target', 'Compile Target (debug/profile/release).', "debug")
+opts.Add('target', 'Compile Target (debug/profile/release).', "release")
 opts.Add('platform','Platform: '+str(platform_list)+'(sfml).',"")
 opts.Add('python','Build Python Support: (yes/no)','no')
 opts.Add('squirrel','Build Squirrel Support: (yes/no)','no')
-opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
-opts.Add('lua','Build Lua Support: (yes/no)','no')
+opts.Add('tools','Build Tools (Including Editor): (yes/no)','no')
+opts.Add('lua','Build Lua Support: (yes/no)','yes')
 opts.Add('rfd','Remote Filesystem Driver: (yes/no)','no')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
@@ -220,6 +220,8 @@ for p in platform_list:
 		sys.path.remove(tmppath)
 		sys.modules.pop('config')
 
+	if (env['lua']=='yes'):
+		env.Append(CPPFLAGS=['-DLUASCRIPT_ENABLED']);
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
@@ -275,6 +277,11 @@ for p in platform_list:
 	if (env['default_gui_theme']=='no'):
 		env.Append(CPPFLAGS=['-DDEFAULT_THEME_DISABLED'])
 
+	if (env["freetype"]!="no"):
+		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+		env.Append(CPPPATH=['#tools/freetype'])
+		env.Append(CPPPATH=['#tools/freetype/freetype/include'])
+
 	if (env["python"]=='yes'):
 		detected=False;
 		if (env.detect_python):
@@ -307,8 +314,8 @@ for p in platform_list:
 
 	SConscript("core/SCsub")
 	SConscript("servers/SCsub")
-	SConscript("scene/SCsub")
 	SConscript("tools/SCsub")
+	SConscript("scene/SCsub")
 	SConscript("drivers/SCsub")
 	SConscript("bin/SCsub")
 

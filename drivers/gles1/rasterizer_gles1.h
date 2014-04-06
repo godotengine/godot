@@ -75,7 +75,7 @@ class RasterizerGLES1 : public Rasterizer {
 	bool pack_arrays;
 	bool use_reload_hooks;
 
-	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
+	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
 
 	struct Texture {
@@ -803,6 +803,7 @@ class RasterizerGLES1 : public Rasterizer {
 		int object_count;
 		int mat_change_count;
 		int shader_change_count;
+        int draw_commands;
 
 	} _rinfo;
 

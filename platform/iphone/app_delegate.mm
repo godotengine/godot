@@ -38,7 +38,7 @@
 #endif
 
 #define kFilteringFactor                        0.1
-#define kRenderingFrequency						30
+#define kRenderingFrequency						60
 #define kAccelerometerFrequency         100.0 // Hz
 
 #ifdef APPIRATER_ENABLED
@@ -108,8 +108,15 @@ static int frame_count = 0;
 		if ([[UIDevice currentDevice]respondsToSelector:@selector(identifierForVendor)]) {
 			uuid = [UIDevice currentDevice].identifierForVendor.UUIDString;
 		}else{
-			// return [UIDevice currentDevice]. uniqueIdentifier
-			uuid = [[UIDevice currentDevice] performSelector:@selector(uniqueIdentifier)];
+
+			// before iOS 6, so just generate an identifier and store it
+			uuid = [[NSUserDefaults standardUserDefaults] objectForKey:@"identiferForVendor"];
+			if( !uuid ) {
+				CFUUIDRef cfuuid = CFUUIDCreate(NULL);
+				uuid = (__bridge_transfer NSString*)CFUUIDCreateString(NULL, cfuuid);
+				CFRelease(cfuuid);
+				[[NSUserDefaults standardUserDefaults] setObject:uuid forKey:@"identifierForVendor"];
+			}
 		}
 
 		OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));

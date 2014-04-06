@@ -38,8 +38,12 @@ class MemoryPoolDynamicStatic : public MemoryPoolDynamic {
 	_THREAD_SAFE_CLASS_
 
 	enum {
+#ifdef TOOLS_ENABLED
 		MAX_CHUNKS=65536
-	};
+#else
+		MAX_CHUNKS=16384
+#endif
+    };
 	
 	
 	struct Chunk {

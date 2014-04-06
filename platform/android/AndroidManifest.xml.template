@@ -11,7 +11,7 @@
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:launchMode="singleTask"
                   android:screenOrientation="landscape"
-                  android:configChanges="orientation|keyboardHidden">
+                  android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize">
                                                                                                   
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

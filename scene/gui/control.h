@@ -54,7 +54,8 @@ public:
 	enum AnchorType {		
 		ANCHOR_BEGIN,
 		ANCHOR_END,
-		ANCHOR_RATIO		
+		ANCHOR_RATIO,
+        ANCHOR_CENTER,
 	};
 	
 	enum FocusMode {

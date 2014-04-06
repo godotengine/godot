@@ -39,6 +39,9 @@
 
 void CollisionShape2D::_add_to_collision_object(Object *p_obj) {
 
+	if (unparenting)
+		return;
+
 	CollisionObject2D *co = p_obj->cast_to<CollisionObject2D>();
 	ERR_FAIL_COND(!co);
 	co->add_shape(shape,get_transform());
@@ -189,7 +192,10 @@ void CollisionShape2D::_notification(int p_what) {
 			rect=rect.grow(3);
 
 		} break;
-
+		case NOTIFICATION_UNPARENTED: {
+			unparenting = true;
+			_update_parent();
+		} break;
 	}
 
 }
@@ -245,4 +251,5 @@ CollisionShape2D::CollisionShape2D() {
 	rect=Rect2(-Point2(10,10),Point2(20,20));
 
 	trigger=false;
+	unparenting = false;
 }

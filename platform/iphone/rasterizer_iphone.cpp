@@ -127,7 +127,7 @@ static void _draw_primitive(int p_points, const float *p_vertices, const float *
 
 /* TEXTURE API */
 
-static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache) {
+static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,int &r_gl_components,bool &r_has_alpha_cache) {
 
 	r_has_alpha_cache=false;
 	Image image=p_image;
@@ -180,6 +180,26 @@ static Image _get_gl_image_and_format(const Image& p_image, Image::Format p_form
 			r_gl_format=GL_RGBA;
 			r_has_alpha_cache=true;
 		} break;
+        case Image::FORMAT_RGBA_4444: {
+
+			r_gl_components=2;
+			r_gl_format=GL_RGBA;
+            r_gl_type=GL_UNSIGNED_SHORT_4_4_4_4;
+			r_has_alpha_cache=true;
+        } break;
+        case Image::FORMAT_RGBA_5551: {
+
+			r_gl_components=2;
+			r_gl_format=GL_RGBA;
+            r_gl_type=GL_UNSIGNED_SHORT_5_5_5_1;
+			r_has_alpha_cache=true;
+        } break;
+        case Image::FORMAT_RGB_565: {
+
+			r_gl_components=2;
+			r_gl_format=GL_RGB;
+            r_gl_type=GL_UNSIGNED_SHORT_5_6_5;
+        } break;
 		default: {
 
 			ERR_FAIL_V(Image());
@@ -204,7 +224,9 @@ void RasterizerIPhone::texture_allocate(RID p_texture,int p_width, int p_height,
 
 	bool has_alpha_cache;
 	int components;
+
 	GLenum format;
+    GLenum type = GL_UNSIGNED_BYTE;
 
 	Texture *texture = texture_owner.get( p_texture );
 	ERR_FAIL_COND(!texture);
@@ -215,7 +237,7 @@ void RasterizerIPhone::texture_allocate(RID p_texture,int p_width, int p_height,
 	//texture->target = (p_flags & VS::TEXTURE_FLAG_CUBEMAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 	texture->target = GL_TEXTURE_2D;
 
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,components,has_alpha_cache);
+	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,type,components,has_alpha_cache);
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
@@ -230,7 +252,7 @@ void RasterizerIPhone::texture_allocate(RID p_texture,int p_width, int p_height,
 
 
 	if (texture->target==GL_TEXTURE_2D) {
-		glTexImage2D(texture->target, 0, format, texture->width, texture->height, 0, format, GL_UNSIGNED_BYTE,NULL);
+		glTexImage2D(texture->target, 0, format, texture->width, texture->height, 0, format, type,NULL);
 	}
 
 	/*
@@ -277,9 +299,10 @@ void RasterizerIPhone::texture_blit_rect(RID p_texture,int p_x,int p_y, const Im
 
 	int components;
 	GLenum format;
+    GLenum type = GL_UNSIGNED_BYTE;
 	bool alpha;
 
-	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,components,alpha);
+	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,type,components,alpha);
 
 	if (img.detect_alpha())
 		texture->has_alpha=true;
@@ -289,7 +312,7 @@ void RasterizerIPhone::texture_blit_rect(RID p_texture,int p_x,int p_y, const Im
 	DVector<uint8_t>::Read read = img.get_data().read();
 
 	glBindTexture(texture->target, texture->tex_id);
-	glTexSubImage2D( blit_target, 0, p_x,p_y,img.get_width(),img.get_height(),format,GL_UNSIGNED_BYTE,read.ptr() );
+	glTexSubImage2D( blit_target, 0, p_x,p_y,img.get_width(),img.get_height(),format,type,read.ptr() );
 
 	//glGenerateMipmap( texture->target );
 }

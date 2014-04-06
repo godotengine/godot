@@ -350,8 +350,10 @@ void CanvasItem::_notification(int p_what) {
 			if (xform_change.in_list())
 				get_scene()->xform_change_list.remove(&xform_change);
 			_exit_canvas();
-			if (C)
+			if (C) {
 				get_parent()->cast_to<CanvasItem>()->children_items.erase(C);
+				C=NULL;
+			}
 		} break;
 		case NOTIFICATION_DRAW: {
 
@@ -715,17 +717,18 @@ bool CanvasItem::is_block_transform_notify_enabled() const {
 	return block_transform_notify;
 }
 
-void CanvasItem::set_on_top(bool p_on_top) {
+void CanvasItem::set_draw_behind_parent(bool p_enable) {
 
-	if (on_top==p_on_top)
+	if (behind==p_enable)
 		return;
-	on_top=p_on_top;
-	VisualServer::get_singleton()->canvas_item_set_on_top(canvas_item,on_top);
+	behind=p_enable;
+	VisualServer::get_singleton()->canvas_item_set_on_top(canvas_item,!behind);
+
 }
 
-bool CanvasItem::is_on_top() const {
+bool CanvasItem::is_draw_behind_parent_enabled() const{
 
-	return on_top;
+	return behind;
 }
 
 
@@ -764,8 +767,11 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_self_opacity","self_opacity"),&CanvasItem::set_self_opacity);
 	ObjectTypeDB::bind_method(_MD("get_self_opacity"),&CanvasItem::get_self_opacity);
 
-	ObjectTypeDB::bind_method(_MD("set_on_top","on_top"),&CanvasItem::set_on_top);
-	ObjectTypeDB::bind_method(_MD("is_on_top"),&CanvasItem::is_on_top);
+	ObjectTypeDB::bind_method(_MD("set_draw_behind_parent","enabe"),&CanvasItem::set_draw_behind_parent);
+	ObjectTypeDB::bind_method(_MD("is_draw_behind_parent_enabled"),&CanvasItem::is_draw_behind_parent_enabled);
+
+	ObjectTypeDB::bind_method(_MD("_set_on_top","on_top"),&CanvasItem::_set_on_top);
+	ObjectTypeDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
 
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 
@@ -796,7 +802,8 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top"), _SCS("set_on_top"),_SCS("is_on_top") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
 	//exporting these two things doesn't really make much sense i think
@@ -859,7 +866,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	first_draw=false;
 	blend_mode=BLEND_MODE_MIX;
 	drawing=false;
-	on_top=true;
+	behind=false;
 	block_transform_notify=false;
 	viewport=NULL;
 	canvas_layer=NULL;

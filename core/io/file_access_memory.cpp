@@ -57,6 +57,7 @@ void FileAccessMemory::cleanup() {
 		return;
 
 	memdelete(files);
+    files=NULL;
 };
 
 
@@ -93,6 +94,7 @@ Error FileAccessMemory::_open(const String& p_path, int p_mode_flags) {
 
 void FileAccessMemory::close() {
 
+    vdata.clear();
 	data = NULL;
 };
 
@@ -160,7 +162,7 @@ int FileAccessMemory::get_buffer(uint8_t *p_dst,int p_length) const {
 
 Error FileAccessMemory::get_error() const {
 
-	return pos >= length ? ERR_FILE_EOF : OK;
+	return pos > length ? ERR_FILE_EOF : OK;
 };
 
 void FileAccessMemory::store_8(uint8_t p_byte) {
@@ -185,4 +187,12 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src,int p_length) {
 FileAccessMemory::FileAccessMemory() {
 
 	data = NULL;
+}
+
+FileAccessMemory::FileAccessMemory(Vector<uint8_t> p_data) {
+    vdata = p_data;
+	data = &(vdata[0]);
+	length = vdata.size();
+	pos = 0;
+
 }
