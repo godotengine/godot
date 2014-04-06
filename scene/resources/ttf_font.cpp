@@ -190,6 +190,7 @@ bool TtfFont::render_char(CharType p_char, Font& p_font) {
 
     if (skip) {
         if (p_char==' ') {
+            efd.texture=0;
             efd.advance=0;
             efd.character=' ';
             efd.halign=0;
