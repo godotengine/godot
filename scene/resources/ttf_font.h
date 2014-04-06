@@ -63,7 +63,7 @@ protected:
 public:
     bool load_ttf(const String& p_path);
     bool calc_size(int p_size, int& height, int& ascent, int& max_up, int& max_down);
-    bool get_char(CharType p_char, Vector<Image *>& p_images, int& p_atlas_x, int& p_atlas_y, int& p_atlas_height, void *p_ch, const Dictionary& p_options);
+    bool render_char(CharType p_char, Font& p_font);
     void gen_kerning(Font *p_font);
 
 	TtfFont();

@@ -146,11 +146,15 @@ enum ColorType {
 	COLOR_GRADIENT_IMAGE
 };
 
-bool TtfFont::get_char(CharType p_char, Vector<Image *>& p_images, int& p_atlas_x, int& p_atlas_y, int& p_atlas_height, void *p_ch, const Dictionary& p_options) {
-    Font::Character *ch = (Font::Character *) p_ch;
+bool TtfFont::render_char(CharType p_char, Font& p_font) {
+    Vector<Image *>& p_images=p_font.atlas_images;
+    int& p_atlas_x=p_font.atlas_x;
+    int& p_atlas_y=p_font.atlas_y;
+    int& p_atlas_height=p_font.atlas_height;
+    const Dictionary& p_options=p_font.ttf_options;
+    int& p_atlas_dirty_index=p_font.atlas_dirty_index;
 
     int size=p_options["font/size"];
-
     int height=p_options["meta/height"];
     //int ascent=p_options["meta/ascent"];
     int max_up=p_options["meta/max_up"];
@@ -475,6 +479,7 @@ bool TtfFont::get_char(CharType p_char, Vector<Image *>& p_images, int& p_atlas_
         if (p_images.empty()||(p_atlas_y+blit_size.height+spacing>ALTAS_SIZE)) {
 
             atlas=memnew( Image(ALTAS_SIZE,ALTAS_SIZE,0,Image::FORMAT_RGBA) );
+            p_atlas_dirty_index=p_images.size();
             p_images.push_back(atlas);
 
             p_atlas_x=p_atlas_y=p_atlas_height=0;
@@ -495,26 +500,17 @@ bool TtfFont::get_char(CharType p_char, Vector<Image *>& p_images, int& p_atlas_
 
             atlas->convert(Image::FORMAT_GRAYSCALE_ALPHA);
 	    }
-        bool filter_enabled = p_options["filter/enabled"];
-	    //register texures
-        //tex->create_from_image( atlas );
-        //if (!filter_enabled)
-        //    tex->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
-        //tex->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
-
         memdelete_arr(color);
     }
-    ch->texture_idx=efd.texture;
-    ch->rect=Rect2( efd.ofs_x, efd.ofs_y, efd.blit.get_width(), efd.blit.get_height());
 
 	int char_space = p_options["extra_space/char"];
 	int space_space = p_options["extra_space/space"];
 	int top_space = p_options["extra_space/top"];
-    int advance=efd.advance+char_space+(efd.character==' '?space_space:0);
 
-    ch->h_align=efd.halign-efd.blit_ofs.x;
-    ch->v_align=efd.valign-efd.blit_ofs.y+top_space;
-    ch->advance=advance;
+    p_font.add_char(p_char, efd.texture,
+	    Rect2( efd.ofs_x, efd.ofs_y, efd.blit.get_width(), efd.blit.get_height()),
+        Size2(efd.halign-efd.blit_ofs.x,efd.valign-efd.blit_ofs.y+top_space),
+        efd.advance+char_space+(efd.character==' '?space_space:0));
 
     return true;
 }

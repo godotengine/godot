@@ -43,6 +43,7 @@ class Font : public Resource {
 	
 	mutable Vector< Ref<Texture> > textures;
 #ifdef FREETYPE_ENABLED
+    friend class TtfFont;
     Vector<Image *> atlas_images;
     Ref<TtfFont> ttf_font;
     Dictionary ttf_options;
