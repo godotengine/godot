@@ -304,6 +304,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<MenuButton>();
 	ObjectTypeDB::register_type<CheckButton>();
 	ObjectTypeDB::register_type<Panel>();
+	ObjectTypeDB::register_type<TooltipPanel>();
+	ObjectTypeDB::register_type<TooltipLabel>();
 	ObjectTypeDB::register_type<Range>();
 
 	OS::get_singleton()->yield(); //may take time to init

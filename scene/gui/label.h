@@ -133,4 +133,13 @@ public:
 VARIANT_ENUM_CAST( Label::Align );
 VARIANT_ENUM_CAST( Label::VAlign );
 
+
+class TooltipLabel : public Label {
+
+	OBJ_TYPE(TooltipLabel,Label)
+public:
+	TooltipLabel() {};
+
+};
+
 #endif

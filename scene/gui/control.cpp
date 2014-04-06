@@ -42,22 +42,6 @@
 #include <stdio.h>
 
 
-class TooltipPanel : public Panel {
-
-	OBJ_TYPE(TooltipPanel,Panel)
-public:
-	TooltipPanel() {};
-
-};
-
-class TooltipLabel : public Label {
-
-	OBJ_TYPE(TooltipLabel,Label)
-public:
-	TooltipLabel() {};
-
-};
-
 Control::Window::Window() {
 
 
