@@ -28,3 +28,5 @@ debug:
 
 clean:
 	scons -c bin/godot
+
+.PHONY: all release profile debug clean
