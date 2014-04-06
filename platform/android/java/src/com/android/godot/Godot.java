@@ -346,16 +346,6 @@ public class Godot extends Activity implements SensorEventListener
 		
 	}
 
-	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
-		GodotLib.key(keyCode, event.getUnicodeChar(0), false);
-		return super.onKeyUp(keyCode, event);
-	};
-
-	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-		GodotLib.key(keyCode, event.getUnicodeChar(0), true);
-		return super.onKeyDown(keyCode, event);
-	}
-
 	public PaymentsManager getPaymentsManager() {
 		return mPaymentsManager;
 	}
