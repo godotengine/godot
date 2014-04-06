@@ -199,6 +199,14 @@ int _OS::get_iterations_per_second() const {
 
 }
 
+void _OS::set_target_fps(int p_fps) {
+	OS::get_singleton()->set_target_fps(p_fps);
+}
+
+float _OS::get_target_fps() const {
+	return OS::get_singleton()->get_target_fps();
+}
+
 void _OS::set_low_processor_usage_mode(bool p_enabled) {
 
 	OS::get_singleton()->set_low_processor_usage_mode(p_enabled);
@@ -237,6 +245,12 @@ Error _OS::kill(int p_pid) {
 
 	return OS::get_singleton()->kill(p_pid);
 }
+
+int _OS::get_process_ID() const {
+
+	return OS::get_singleton()->get_process_ID();
+};
+
 
 bool _OS::has_environment(const String& p_var) const {
 
@@ -387,6 +401,12 @@ uint32_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 
+
+bool _OS::can_use_threads() const {
+
+	return OS::get_singleton()->can_use_threads();
+}
+
 bool _OS::can_draw() const {
 
 	return OS::get_singleton()->can_draw();
@@ -488,6 +508,27 @@ float _OS::get_frames_per_second() const {
 	return OS::get_singleton()->get_frames_per_second();
 }
 
+Error _OS::native_video_play(String p_path) {
+
+	return OS::get_singleton()->native_video_play(p_path);
+};
+
+bool _OS::native_video_is_playing() {
+
+	return OS::get_singleton()->native_video_is_playing();
+};
+
+void _OS::native_video_pause() {
+
+	OS::get_singleton()->native_video_pause();
+};
+
+void _OS::native_video_stop() {
+
+	OS::get_singleton()->native_video_stop();
+};
+
+
 String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
@@ -496,7 +537,7 @@ _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&_OS::get_mouse_pos);
+	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&_OS::get_mouse_pos);
 	//ObjectTypeDB::bind_method(_MD("is_mouse_grab_enabled"),&_OS::is_mouse_grab_enabled);
 
 	ObjectTypeDB::bind_method(_MD("set_clipboard","clipboard"),&_OS::set_clipboard);
@@ -510,6 +551,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
+	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
+	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
@@ -524,6 +567,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking"),&_OS::execute);
 	ObjectTypeDB::bind_method(_MD("kill","pid"),&_OS::kill);
 	ObjectTypeDB::bind_method(_MD("shell_open","uri"),&_OS::shell_open);
+	ObjectTypeDB::bind_method(_MD("get_process_ID"),&_OS::get_process_ID);
 
 	ObjectTypeDB::bind_method(_MD("get_environment","environment"),&_OS::get_environment);
 	ObjectTypeDB::bind_method(_MD("has_environment","environment"),&_OS::has_environment);
@@ -550,7 +594,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_frames_drawn"),&_OS::get_frames_drawn);
 	ObjectTypeDB::bind_method(_MD("is_stdout_verbose"),&_OS::is_stdout_verbose);
 
-	ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
+	ObjectTypeDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
+
+	//ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
 	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
 	ObjectTypeDB::bind_method(_MD("dump_resources_to_file","file"),&_OS::dump_resources_to_file);
@@ -567,6 +613,12 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 
 	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
+
+	ObjectTypeDB::bind_method(_MD("native_video_play"),&_OS::native_video_play);
+	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
+	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
+	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -983,8 +1035,22 @@ void _File::store_string(const String& p_string){
 
 	f->store_string(p_string);
 }
-void _File::store_line(const String& p_string){
 
+void _File::store_pascal_string(const String& p_string) {
+
+	ERR_FAIL_COND(!f);
+
+	f->store_pascal_string(p_string);
+};
+
+String _File::get_pascal_string() {
+
+	ERR_FAIL_COND_V(!f, "");
+
+	return f->get_pascal_string();
+};
+
+void _File::store_line(const String& p_string){
 
 	ERR_FAIL_COND(!f);
 	f->store_line(p_string);
@@ -1082,6 +1148,9 @@ void _File::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("store_line","line"),&_File::store_line);
 	ObjectTypeDB::bind_method(_MD("store_string","string"),&_File::store_string);
 	ObjectTypeDB::bind_method(_MD("store_var","value"),&_File::store_var);
+
+	ObjectTypeDB::bind_method(_MD("store_pascal_string","string"),&_File::store_pascal_string);
+	ObjectTypeDB::bind_method(_MD("get_pascal_string"),&_File::get_pascal_string);
 
 	ObjectTypeDB::bind_method(_MD("file_exists","path"),&_File::file_exists);
 

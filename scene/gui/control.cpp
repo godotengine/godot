@@ -351,11 +351,13 @@ void Control::_notification(int p_notification) {
 
 				window->tooltip_timer = memnew( Timer );
 				add_child(window->tooltip_timer);
+				window->tooltip_timer->force_parent_owned();
 				window->tooltip_timer->set_wait_time( GLOBAL_DEF("display/tooltip_delay",0.7));
 				window->tooltip_timer->connect("timeout",this,"_window_show_tooltip");
 				window->tooltip=NULL;
 				window->tooltip_popup = memnew( TooltipPanel );
 				add_child(window->tooltip_popup);
+				window->tooltip_popup->force_parent_owned();
 				window->tooltip_label = memnew( TooltipLabel );
 				window->tooltip_popup->add_child(window->tooltip_label);
 				window->tooltip_popup->set_as_toplevel(true);
@@ -1660,6 +1662,10 @@ void Control::_size_changed() {
 
 				margin_pos[i]=area*data.margin[i];
 			} break;
+            case ANCHOR_CENTER: {
+
+                margin_pos[i]=(area/2)-data.margin[i];
+            } break;
 		}
 	}
 
@@ -1724,6 +1730,9 @@ float Control::_s2a(float p_val, AnchorType p_anchor,float p_range) const {
 		case ANCHOR_RATIO: {
 			return p_val/p_range;
 		} break;			
+        case ANCHOR_CENTER: {
+            return (p_range/2)-p_val;
+        } break;
 	}	
 	
 	return 0;
@@ -1743,6 +1752,9 @@ float Control::_a2s(float p_val, AnchorType p_anchor,float p_range) const {
 		case ANCHOR_RATIO: {
 			return Math::floor(p_range*p_val);
 		} break;			
+        case ANCHOR_CENTER: {
+            return Math::floor((p_range/2)-p_val);
+        } break;
 	}
 	return 0;
 }
@@ -2772,10 +2784,10 @@ void Control::_bind_methods() {
 	BIND_VMETHOD(MethodInfo(Variant::BOOL,"can_drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
 	BIND_VMETHOD(MethodInfo("drop_data",PropertyInfo(Variant::VECTOR2,"pos"),PropertyInfo(Variant::NIL,"data")));
 
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/left", PROPERTY_HINT_ENUM, "Begin,End,Ratio"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/top", PROPERTY_HINT_ENUM, "Begin,End,Ratio"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/right", PROPERTY_HINT_ENUM, "Begin,End,Ratio"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
-	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/bottom", PROPERTY_HINT_ENUM, "Begin,End,Ratio"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/left", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/top", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/right", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"anchor/bottom", PROPERTY_HINT_ENUM, "Begin,End,Ratio,Center"), _SCS("set_anchor"),_SCS("get_anchor"), MARGIN_BOTTOM );
 
 	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin/left", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"), MARGIN_LEFT );
 	ADD_PROPERTYINZ( PropertyInfo(Variant::INT,"margin/top", PROPERTY_HINT_RANGE, "-4096,4096"), _SCS("set_margin"),_SCS("get_margin"), MARGIN_TOP );
@@ -2801,6 +2813,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT( ANCHOR_BEGIN );
 	BIND_CONSTANT( ANCHOR_END );
 	BIND_CONSTANT( ANCHOR_RATIO );	
+    BIND_CONSTANT( ANCHOR_CENTER );
 	BIND_CONSTANT( FOCUS_NONE );
 	BIND_CONSTANT( FOCUS_CLICK );
 	BIND_CONSTANT( FOCUS_ALL );

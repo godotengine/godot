@@ -1027,7 +1027,7 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_pos"),&KinematicBody2D::get_collision_pos);
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&KinematicBody2D::get_collision_normal);
 	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody2D::get_collider_velocity);
-	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::get_collider);
+	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody2D::_get_collider);
 
 
 	ObjectTypeDB::bind_method(_MD("set_collide_with_static_bodies","enable"),&KinematicBody2D::set_collide_with_static_bodies);
@@ -1064,7 +1064,7 @@ KinematicBody2D::KinematicBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_KI
 	colliding=false;
 	collider=0;
 
-	margin=0.01;
+	margin=0.08;
 }
 KinematicBody2D::~KinematicBody2D()  {
 

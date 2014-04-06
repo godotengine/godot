@@ -378,11 +378,12 @@ void MessageQueue::flush() {
 			}
 
 		}
-		message->~Message();
 
 		read_pos+=sizeof(Message);
 		if (message->type!=TYPE_NOTIFICATION)
 			read_pos+=sizeof(Variant)*message->args;
+		message->~Message();
+
 		_THREAD_SAFE_UNLOCK_
 
 	}

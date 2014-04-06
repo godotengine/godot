@@ -50,7 +50,6 @@ public:
 	bool is_connected();
 
 	Error post_score(Variant p_score);
-
 	Error award_achievement(Variant p_params);
 
 	int get_pending_event_count();

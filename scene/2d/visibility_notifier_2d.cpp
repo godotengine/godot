@@ -37,11 +37,11 @@ void VisibilityNotifier2D::_enter_viewport(Viewport* p_viewport) {
 
 	ERR_FAIL_COND(viewports.has(p_viewport));
 	viewports.insert(p_viewport);
+
 	if (viewports.size()==1) {
 		emit_signal(SceneStringNames::get_singleton()->enter_screen);
+
 		_screen_enter();
-
-
 	}
 	emit_signal(SceneStringNames::get_singleton()->enter_viewport,p_viewport);
 

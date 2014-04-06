@@ -132,7 +132,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 
 
 	Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());;
-	screen_offset+=offset;
+	screen_offset;
 
 	float angle = get_global_transform().get_rotation();
 	if(rotating){
@@ -152,6 +152,24 @@ Matrix32 Camera2D::get_camera_transform()  {
 
 	if (screen_rect.pos.y < limit[MARGIN_TOP])
 		screen_rect.pos.y =limit[MARGIN_TOP];
+
+	if (offset!=Vector2()) {
+
+		screen_rect.pos+=offset;
+		if (screen_rect.pos.x + screen_rect.size.x > limit[MARGIN_RIGHT])
+			screen_rect.pos.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
+
+		if (screen_rect.pos.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
+			screen_rect.pos.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
+
+
+		if (screen_rect.pos.x < limit[MARGIN_LEFT])
+			screen_rect.pos.x=limit[MARGIN_LEFT];
+
+		if (screen_rect.pos.y < limit[MARGIN_TOP])
+			screen_rect.pos.y =limit[MARGIN_TOP];
+
+	}
 
 	camera_screen_center=screen_rect.pos+screen_rect.size*0.5;
 

@@ -647,7 +647,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 		}
 
 		stage++;
-		return OK;
+		return error;
 	}
 
 	s-=external_resources.size();
@@ -804,7 +804,12 @@ void ResourceInteractiveLoaderBinary::get_dependencies(FileAccess *p_f,List<Stri
 
 	for(int i=0;i<external_resources.size();i++) {
 
-		p_dependencies->push_back(external_resources[i].path);
+		String dep=external_resources[i].path;
+		if (dep.ends_with("*")) {
+			dep=ResourceLoader::guess_full_filename(dep,external_resources[i].type);
+		}
+
+		p_dependencies->push_back(dep);
 	}
 
 }
@@ -892,6 +897,19 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 
 	}
 
+	//see if the exporter has different set of external resources for more efficient loading
+	String preload_depts = "deps/"+res_path.md5_text();
+	if (Globals::get_singleton()->has(preload_depts)) {
+		external_resources.clear();
+		//ignore external resources and use these
+		NodePath depts=Globals::get_singleton()->get(preload_depts);
+		external_resources.resize(depts.get_name_count());
+		for(int i=0;i<depts.get_name_count();i++) {
+			external_resources[i].path=depts.get_name(i);
+		}
+		print_line(res_path+" - EXTERNAL RESOURCES: "+itos(external_resources.size()));
+	}
+
 	print_bl("ext resources: "+itos(ext_resources_size));
 	uint32_t int_resources_size=f->get_32();
 
@@ -931,6 +949,7 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 
 	} else if (header[0]!='R' || header[1]!='S' || header[2]!='R' || header[3]!='C') {
 		//not normal
+		error=ERR_FILE_UNRECOGNIZED;
 		return "";
 	}
 
@@ -1412,8 +1431,6 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 				f->store_32(OBJECT_EXTERNAL_RESOURCE);
 				save_unicode_string(res->get_save_type());
 				String path=relative_paths?local_path.path_to_file(res->get_path()):res->get_path();
-				if (no_extensions)
-					path=path.basename()+".*";
 				save_unicode_string(path);
 			} else {
 
@@ -1439,7 +1456,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 
 			f->store_32(VARIANT_DICTIONARY);
 			Dictionary d = p_property;
-            f->store_32(uint32_t(d.size())|(d.is_shared()?0x80000000:0));
+			f->store_32(uint32_t(d.size())|(d.is_shared()?0x80000000:0));
 
 			List<Variant> keys;
 			d.get_key_list(&keys);
@@ -1734,7 +1751,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	skip_editor=p_flags&ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
 	bundle_resources=p_flags&ResourceSaver::FLAG_BUNDLE_RESOURCES;
 	big_endian=p_flags&ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
-	no_extensions=p_flags&ResourceSaver::FLAG_NO_EXTENSION;
+
 
 	local_path=p_path.get_base_dir();
 	//bin_meta_idx = get_string_index("__bin_meta__"); //is often used, so create
@@ -1816,8 +1833,6 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 		save_unicode_string(E->get()->get_save_type());
 		String path = E->get()->get_path();
-		if (no_extensions)
-			path=path.basename()+".*";
 		save_unicode_string(path);
 	}
 	// save internal resource table
@@ -1861,6 +1876,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	}
 
 	f->seek_end();
+	print_line("SAVING: "+p_path);
 	if (p_resource->get_import_metadata().is_valid()) {
 		uint64_t md_pos = f->get_pos();
 		Ref<ResourceImportMetadata> imd=p_resource->get_import_metadata();
@@ -1869,6 +1885,8 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 		for(int i=0;i<imd->get_source_count();i++) {
 			save_unicode_string(imd->get_source_path(i));
 			save_unicode_string(imd->get_source_md5(i));
+			print_line("SAVE PATH: "+imd->get_source_path(i));
+			print_line("SAVE MD5: "+imd->get_source_md5(i));
 		}
 		List<String> options;
 		imd->get_options(&options);

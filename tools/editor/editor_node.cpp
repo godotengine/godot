@@ -723,8 +723,6 @@ void EditorNode::_save_scene(String p_file) {
 		flg|=ResourceSaver::FLAG_COMPRESS;
 	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
 		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
-	if (EditorSettings::get_singleton()->get("on_save/save_paths_without_extension"))
-		flg|=ResourceSaver::FLAG_NO_EXTENSION;
 
 
 	err = ResourceSaver::save(p_file,sdata,flg);
@@ -1005,8 +1003,6 @@ void EditorNode::_dialog_action(String p_file) {
 					flg|=ResourceSaver::FLAG_COMPRESS;
 				if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
 					flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
-				if (EditorSettings::get_singleton()->get("on_save/save_paths_without_extension"))
-					flg|=ResourceSaver::FLAG_NO_EXTENSION;
 
 
 				err = ResourceSaver::save(p_file,sdata,flg);
@@ -3267,6 +3263,14 @@ EditorNode::EditorNode() {
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
 
+	String global_font = EditorSettings::get_singleton()->get("global/font");
+	if (global_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(global_font);
+		if (fnt.is_valid()) {
+			theme->set_default_theme_font(fnt);
+		}
+	}
+
 	Ref<StyleBoxTexture> focus_sbt=memnew( StyleBoxTexture );
 	focus_sbt->set_texture(theme->get_icon("EditorFocus","EditorIcons"));
 	for(int i=0;i<4;i++) {
@@ -3455,7 +3459,7 @@ EditorNode::EditorNode() {
 	p->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD+KEY_Z);
 	p->add_item("Redo",EDIT_REDO,KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_Z);
 	p->add_separator();
-	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_CMD+KEY_R);
+	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_R);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
 	p->add_separator();

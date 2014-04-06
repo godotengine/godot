@@ -54,6 +54,7 @@ class OS {
 	int _exit_code;
 	int _orientation;
 	float _fps;
+	int _target_fps;
 
 	char *last_error;
 
@@ -149,7 +150,11 @@ public:
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 
+	virtual void set_target_fps(int p_fps);
+	virtual float get_target_fps() const;
+
 	virtual float get_frames_per_second() const { return _fps; };
+
 
 	virtual void set_low_processor_usage_mode(bool p_enabled);
 	virtual bool is_in_low_processor_usage_mode() const;
@@ -157,6 +162,7 @@ public:
 	virtual String get_executable_path() const;
 	virtual Error execute(const String& p_path, const List<String>& p_arguments,bool p_blocking,ProcessID *r_child_id=NULL,String* r_pipe=NULL,int *r_exitcode=NULL)=0;
 	virtual Error kill(const ProcessID& p_pid)=0;
+	virtual int get_process_ID() const;
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String& p_cwd);
@@ -316,9 +322,11 @@ public:
 	virtual String get_unique_ID() const;
 
 	virtual Error native_video_play(String p_path);
-	virtual bool native_video_is_playing();
+	virtual bool native_video_is_playing() const;
 	virtual void native_video_pause();
 	virtual void native_video_stop();
+
+	virtual bool can_use_threads() const;
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object* p_obj, String p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);

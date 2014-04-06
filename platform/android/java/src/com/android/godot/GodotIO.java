@@ -59,6 +59,9 @@ public class GodotIO {
 	Godot activity;
 	GodotEditText edit;
 
+	Context applicationContext;
+	MediaPlayer mediaPlayer;
+
 	final int SCREEN_LANDSCAPE=0;
 	final int SCREEN_PORTRAIT=1;
 	final int SCREEN_REVERSE_LANDSCAPE=2;
@@ -328,7 +331,7 @@ public class GodotIO {
 		activity=p_activity;
 		streams=new HashMap<Integer,AssetData>();
 		dirs=new HashMap<Integer,AssetDir>();
-
+		applicationContext = activity.getApplicationContext();
 
 	}
 
@@ -475,8 +478,13 @@ public class GodotIO {
 		if(edit != null)
 			edit.hideKeyboard();
 
-		//InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-		//inputMgr.hideSoftInputFromWindow(activity.getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        InputMethodManager inputMgr = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+        View v = activity.getCurrentFocus();
+        if (v != null) {
+            inputMgr.hideSoftInputFromWindow(v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        } else {
+            inputMgr.hideSoftInputFromWindow(new View(activity).getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
 	};
 
 	public void setScreenOrientation(int p_orientation) {
@@ -510,6 +518,43 @@ public class GodotIO {
 	
 	public void setEdit(GodotEditText _edit) {
 		edit = _edit;
+	}
+
+	public void playVideo(String p_path)
+	{
+		Uri filePath = Uri.parse(p_path);
+		mediaPlayer = new MediaPlayer();
+
+		try {
+			mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+			mediaPlayer.setDataSource(applicationContext, filePath);
+			mediaPlayer.prepare();
+			mediaPlayer.start();
+		}
+		catch(IOException e)
+        {
+            System.out.println("IOError while playing video");
+        }
+	}
+
+	public boolean isVideoPlaying() {
+		if (mediaPlayer != null) {
+			return mediaPlayer.isPlaying();
+		}
+		return false;
+	}
+
+	public void pauseVideo() {
+		if (mediaPlayer != null) {
+			mediaPlayer.pause();
+		}
+	}
+
+	public void stopVideo() {
+		if (mediaPlayer != null) {
+			mediaPlayer.release();
+			mediaPlayer = null;
+		}
 	}
 
 	protected static final String PREFS_FILE = "device_id.xml";

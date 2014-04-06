@@ -37,7 +37,6 @@ def get_flags():
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
-		('module_FacebookScorer_ios_enabled', 'no'),
 	]
 
 
@@ -82,7 +81,8 @@ def configure(env):
 							'-framework', 'AudioToolbox',
 							'-framework', 'SystemConfiguration',
 							'-framework', 'Security',
-							'-framework', 'AdSupport',
+							#'-framework', 'AdSupport',
+							'-framework', 'MediaPlayer',
 							])
 
 	if env['game_center'] == 'yes':

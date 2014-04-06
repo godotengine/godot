@@ -172,7 +172,6 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5,16);
-
 		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5,this);
 	};
 

@@ -31,6 +31,7 @@
 #import <OpenGLES/EAGL.h>
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
+#import <MediaPlayer/MediaPlayer.h>
 
 @protocol GLViewDelegate;
 
@@ -64,6 +65,9 @@
 }
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;
+
+@property(strong, nonatomic) MPMoviePlayerController *moviePlayerController;
+@property(strong, nonatomic) UIWindow *backgroundWindow;
 
 -(void)startAnimation;
 -(void)stopAnimation;

@@ -102,6 +102,7 @@ public:
 	static String get_resource_type(const String &p_path);
 	static void get_dependencies(const String& p_path,List<String> *p_dependencies);
 
+	static String guess_full_filename(const String &p_path,const String& p_type);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load=p_timestamp; }
 

@@ -747,8 +747,10 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		for(int i=0;i<from->get_source_count();i++) {
 
 			String path = EditorImportPlugin::expand_source_path(from->get_source_path(i));
+			String md5 = FileAccess::get_md5(path);
+			from->set_source_md5(i,FileAccess::get_md5(path));
 			ep.step("Loading Image: "+path,i);
-			print_line("source path: "+path);
+			print_line("source path: "+path+" md5 "+md5);
 			Image src;
 			Error err = ImageLoader::load_image(path,&src);
 			if (err) {
@@ -894,7 +896,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 					EditorNode::add_io_error("Couldn't save atlas image: "+apath);
 					return err;
 				}
-				from->set_source_md5(i,FileAccess::get_md5(apath));
+				//from->set_source_md5(i,FileAccess::get_md5(apath));
 			}
 		}
 	}
@@ -953,7 +955,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 	} else {
 
-		print_line("compress...");
+
 		Image image=texture->get_data();
 		ERR_FAIL_COND_V(image.empty(),ERR_INVALID_DATA);
 
@@ -990,7 +992,6 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		}
 
 
-		print_line("COMPRESSED TO: "+itos(image.get_format()));
 		texture->create_from_image(image,tex_flags);
 
 
@@ -1075,7 +1076,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			rimd->set_option("quality",group_lossy_quality);
 			rimd->set_option("atlas",false);
 			rimd->set_option("shrink",group_shrink);
-			rimd->add_source(EditorImportPlugin::validate_source_path(p_path));
+			rimd->add_source(EditorImportPlugin::validate_source_path(p_path),FileAccess::get_md5(p_path));
 
 		} else if (EditorImportExport::get_singleton()->get_image_formats().has(p_path.extension().to_lower()) && EditorImportExport::get_singleton()->get_export_image_action()!=EditorImportExport::IMAGE_ACTION_NONE) {
 			//handled by general image export settings
@@ -1102,7 +1103,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 			rimd->set_option("flags",flags);
 			rimd->set_option("quality",EditorImportExport::get_singleton()->get_export_image_quality());
 			rimd->set_option("atlas",false);
-			rimd->add_source(EditorImportPlugin::validate_source_path(p_path));
+			rimd->add_source(EditorImportPlugin::validate_source_path(p_path),FileAccess::get_md5(p_path));
 
 		} else {
 			return Vector<uint8_t>();
@@ -1117,7 +1118,7 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	}
 
 	uint32_t flags = rimd->get_option("flags");
-	uint8_t shrink = rimd->has_option("shrink") ? rimd->get_option("shrink"): Variant(1);
+	uint8_t shrink = rimd->has_option("shrink") ? rimd->get_option("shrink"): Variant(1);	
 	uint8_t format = rimd->get_option("format");
 	uint8_t comp = (format==EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM)?uint8_t(p_platform->get_image_compression()):uint8_t(255);
 
@@ -1214,6 +1215,9 @@ EditorTextureImportPlugin::EditorTextureImportPlugin(EditorNode *p_editor, Mode 
 	if (rimd.is_valid()) {
 
 		if (rimd->get_editor()!="") {
+			int compression = rimd->get_option("format");
+			if (compression!=EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM)
+				return Vector<uint8_t>(); //only useful for RAM compression to reconvert
 			Ref<EditorImportPlugin> pl = EditorImportExport::get_singleton()->get_import_plugin_by_name(rimd->get_editor());
 			if (pl.is_valid()) {
 				Vector<uint8_t> ce = pl->custom_export(p_path,p_platform);

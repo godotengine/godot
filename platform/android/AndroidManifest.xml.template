@@ -11,7 +11,7 @@
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:launchMode="singleTask"
                   android:screenOrientation="landscape"
-                  android:configChanges="orientation|keyboardHidden">
+                  android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize">
                                                                                                   
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,6 +35,6 @@ $$ADD_APPLICATION_CHUNKS$$
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
 	
-    <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="11"/>
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="15"/>
          
 </manifest> 

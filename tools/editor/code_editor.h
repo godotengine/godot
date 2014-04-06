@@ -131,7 +131,9 @@ class CodeTextEditor : public Control {
 
 	Label *error;
 
-    void _complete_request(const String& p_request,int p_line);
+	void _update_font();
+
+	void _complete_request(const String& p_request,int p_line);
 protected:
 
 	void set_error(const String& p_error);

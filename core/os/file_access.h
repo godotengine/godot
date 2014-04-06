@@ -125,6 +125,9 @@ public:
 	virtual void store_string(const String& p_string);
 	virtual void store_line(const String& p_string);
 
+	virtual void store_pascal_string(const String& p_string);
+	virtual String get_pascal_string();
+
 	virtual void store_buffer(const uint8_t *p_src,int p_length); ///< store an array of bytes 
 	
 	virtual bool file_exists(const String& p_name)=0; ///< return true if a file exists 

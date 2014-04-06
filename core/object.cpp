@@ -33,6 +33,30 @@
 #include "message_queue.h"
 #include "core_string_names.h"
 #include "translation.h"
+
+#ifdef DEBUG_ENABLED
+
+struct _ObjectDebugLock {
+
+	Object *obj;
+
+	_ObjectDebugLock(Object *p_obj) {
+		obj=p_obj;
+		obj->_lock_index.ref();
+	}
+	~_ObjectDebugLock() {
+		obj->_lock_index.unref();
+	}
+};
+
+#define OBJ_DEBUG_LOCK _ObjectDebugLock _debug_lock(this);
+
+#else
+
+#define OBJ_DEBUG_LOCK
+
+#endif
+
 Array convert_property_list(const List<PropertyInfo> * p_list) {
 
 	Array va;
@@ -562,13 +586,22 @@ void Object::call_multilevel(const StringName& p_method,const Variant** p_args,i
 			ERR_FAIL();
 			return;
 		}
+
+
+		if (_lock_index.get()>1) {
+			ERR_EXPLAIN("Object is locked and can't be freed.");
+			ERR_FAIL();
+			return;
+		}
 #endif
+
 		//must be here, must be before everything,
 		memdelete(this);
 		return;
 	}
 
 	//Variant ret;
+	OBJ_DEBUG_LOCK
 
 	Variant::CallError error;
 
@@ -594,6 +627,7 @@ void Object::call_multilevel_reversed(const StringName& p_method,const Variant**
 	MethodBind *method=ObjectTypeDB::get_method(get_type_name(),p_method);
 
 	Variant::CallError error;
+	OBJ_DEBUG_LOCK
 
 	if (method) {
 
@@ -813,6 +847,15 @@ Variant Object::call(const StringName& p_method,const Variant** p_args,int p_arg
 			ERR_EXPLAIN("Can't 'free' a reference.");
 			ERR_FAIL_V(Variant());
 		}
+
+		if (_lock_index.get()>1) {
+			r_error.argument=0;
+			r_error.error=Variant::CallError::CALL_ERROR_INVALID_METHOD;
+			ERR_EXPLAIN("Object is locked and can't be freed.");
+			ERR_FAIL_V(Variant());
+
+		}
+
 #endif
 		//must be here, must be before everything,
 		memdelete(this);
@@ -821,7 +864,7 @@ Variant Object::call(const StringName& p_method,const Variant** p_args,int p_arg
 	}
 
 	Variant ret;
-
+	OBJ_DEBUG_LOCK
 	if (script_instance) {
 		ret = script_instance->call(p_method,p_args,p_argcount,r_error);
 		//force jumptable
@@ -902,7 +945,7 @@ void Object::set_script(const RefPtr& p_script) {
 	Ref<Script> s(script);
 
 	if (!s.is_null() && s->can_instance() ) {
-		
+		OBJ_DEBUG_LOCK
 		script_instance = s->instance_create(this);
 
 	}
@@ -1065,6 +1108,8 @@ void Object::emit_signal(const StringName& p_name,VARIANT_ARG_DECLARE) {
 	VMap<Signal::Target,Signal::Slot> slot_map = s->slot_map;
 
 	int ssize = slot_map.size();
+
+	OBJ_DEBUG_LOCK
 
 	for(int i=0;i<ssize;i++) {
 
@@ -1535,6 +1580,11 @@ Object::Object() {
 
 	_edited=false;
 #endif
+
+#ifdef DEBUG_ENABLED
+	_lock_index.init(1);
+#endif
+
 
 
 }

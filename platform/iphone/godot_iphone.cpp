@@ -37,6 +37,7 @@ static OSIPhone* os = NULL;
 
 extern "C" {
 int add_path(int p_argc, char** p_args);
+int add_cmdline(int p_argc, char** p_args);
 };
 
 int iphone_main(int width, int height, int argc, char** argv) {
@@ -67,6 +68,7 @@ int iphone_main(int width, int height, int argc, char** argv) {
 	};
 	fargv[argc] = NULL;
 	argc = add_path(argc, fargv);
+	argc = add_cmdline(argc, fargv);
 
 	printf("os created\n");
 	Error err  = Main::setup(fargv[0], argc - 1, &fargv[1], false);

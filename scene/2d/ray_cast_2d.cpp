@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "ray_cast_2d.h"
 #include "servers/physics_2d_server.h"
+#include "collision_object_2d.h"
 
 void RayCast2D::set_cast_to(const Vector2& p_point) {
 
@@ -151,7 +152,7 @@ void RayCast2D::_notification(int p_what) {
 
 			Physics2DDirectSpaceState::RayResult rr;
 
-			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr)) {
+			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude)) {
 
 				collided=true;
 				against=rr.collider_id;
@@ -168,6 +169,41 @@ void RayCast2D::_notification(int p_what) {
 	}
 }
 
+void RayCast2D::add_exception_rid(const RID& p_rid) {
+
+	exclude.insert(p_rid);
+}
+
+void RayCast2D::add_exception(const Object* p_object){
+
+	ERR_FAIL_NULL(p_object);
+	CollisionObject2D *co=((Object*)p_object)->cast_to<CollisionObject2D>();
+	if (!co)
+		return;
+	add_exception_rid(co->get_rid());
+}
+
+void RayCast2D::remove_exception_rid(const RID& p_rid) {
+
+	exclude.erase(p_rid);
+}
+
+void RayCast2D::remove_exception(const Object* p_object){
+
+	ERR_FAIL_NULL(p_object);
+	CollisionObject2D *co=((Object*)p_object)->cast_to<CollisionObject2D>();
+	if (!co)
+		return;
+	remove_exception_rid(co->get_rid());
+}
+
+
+void RayCast2D::clear_exceptions(){
+
+	exclude.clear();
+}
+
+
 void RayCast2D::_bind_methods() {
 
 
@@ -183,6 +219,14 @@ void RayCast2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&RayCast2D::get_collider_shape);
 	ObjectTypeDB::bind_method(_MD("get_collision_point"),&RayCast2D::get_collision_point);
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&RayCast2D::get_collision_normal);
+
+	ObjectTypeDB::bind_method(_MD("add_exception_rid","rid"),&RayCast2D::add_exception_rid);
+	ObjectTypeDB::bind_method(_MD("add_exception","node"),&RayCast2D::add_exception);
+
+	ObjectTypeDB::bind_method(_MD("remove_exception_rid","rid"),&RayCast2D::remove_exception_rid);
+	ObjectTypeDB::bind_method(_MD("remove_exception","node"),&RayCast2D::remove_exception);
+
+	ObjectTypeDB::bind_method(_MD("clear_exceptions"),&RayCast2D::clear_exceptions);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"cast_to"),_SCS("set_cast_to"),_SCS("get_cast_to"));

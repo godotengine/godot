@@ -60,65 +60,102 @@ class VisualServerWrapMT : public VisualServer {
 
 	void thread_exit();
 
+	Mutex*alloc_mutex;
+
+
+	int texture_pool_max_size;
+	List<RID> texture_id_pool;
+
+
 public:
 
-#define FUNC0R(m_r,m_func)\
-	virtual m_r m_func() { \
+#define FUNC0R(m_r,m_type)\
+	virtual m_r m_type() { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func();\
+			return visual_server->m_type();\
 		}\
 	}
 
-#define FUNC0RC(m_r,m_func)\
-	virtual m_r m_func() const { \
+#define FUNCRID(m_type)\
+	int m_type##allocn() {\
+		for(int i=0;i<m_type##_pool_max_size;i++) {\
+			m_type##_id_pool.push_back( visual_server->m_type##_create() );\
+		}\
+		return 0;\
+	}\
+	void m_type##_free_cached_ids() {\
+		while (m_type##_id_pool.size()) {\
+			free(m_type##_id_pool.front()->get());\
+			m_type##_id_pool.pop_front();\
+		}\
+	}\
+	virtual RID m_type##_create() { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			RID rid;\
+			alloc_mutex->lock();\
+			if (m_type##_id_pool.size()==0) {\
+				int ret;\
+				command_queue.push_and_ret( this, &VisualServerWrapMT::m_type##allocn,&ret);\
+			}\
+			rid=m_type##_id_pool.front()->get();\
+			m_type##_id_pool.pop_front();\
+			alloc_mutex->unlock();\
+			return rid;\
+		} else {\
+			return visual_server->m_type##_create();\
+		}\
+	}
+
+#define FUNC0RC(m_r,m_type)\
+	virtual m_r m_type() const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func();\
+			return visual_server->m_type();\
 		}\
 	}
 
 
-#define FUNC0(m_func)\
-	virtual void m_func() { \
+#define FUNC0(m_type)\
+	virtual void m_type() { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func);\
+			command_queue.push( visual_server, &VisualServer::m_type);\
 		} else {\
-			visual_server->m_func();\
+			visual_server->m_type();\
 		}\
 	}
 
-#define FUNC0C(m_func)\
-	virtual void m_func() const { \
+#define FUNC0C(m_type)\
+	virtual void m_type() const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func);\
+			command_queue.push( visual_server, &VisualServer::m_type);\
 		} else {\
-			visual_server->m_func();\
+			visual_server->m_type();\
 		}\
 	}
 
 
-#define FUNC0S(m_func)\
-	virtual void m_func() { \
+#define FUNC0S(m_type)\
+	virtual void m_type() { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type);\
 		} else {\
-			visual_server->m_func();\
+			visual_server->m_type();\
 		}\
 	}
 
-#define FUNC0SC(m_func)\
-	virtual void m_func() const { \
+#define FUNC0SC(m_type)\
+	virtual void m_type() const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type);\
 		} else {\
-			visual_server->m_func();\
+			visual_server->m_type();\
 		}\
 	}
 
@@ -126,448 +163,449 @@ public:
 ///////////////////////////////////////////////
 
 
-#define FUNC1R(m_r,m_func,m_arg1)\
-	virtual m_r m_func(m_arg1 p1) { \
+#define FUNC1R(m_r,m_type,m_arg1)\
+	virtual m_r m_type(m_arg1 p1) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1);\
+			return visual_server->m_type(p1);\
 		}\
 	}
 
-#define FUNC1RC(m_r,m_func,m_arg1)\
-	virtual m_r m_func(m_arg1 p1) const { \
+#define FUNC1RC(m_r,m_type,m_arg1)\
+	virtual m_r m_type(m_arg1 p1) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1);\
+			return visual_server->m_type(p1);\
 		}\
 	}
 
 
-#define FUNC1S(m_func,m_arg1)\
-	virtual void m_func(m_arg1 p1) { \
+#define FUNC1S(m_type,m_arg1)\
+	virtual void m_type(m_arg1 p1) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1);\
 		} else {\
-			visual_server->m_func(p1);\
+			visual_server->m_type(p1);\
 		}\
 	}
 
-#define FUNC1SC(m_func,m_arg1)\
-	virtual void m_func(m_arg1 p1) const { \
+#define FUNC1SC(m_type,m_arg1)\
+	virtual void m_type(m_arg1 p1) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1);\
 		} else {\
-			visual_server->m_func(p1);\
+			visual_server->m_type(p1);\
 		}\
 	}
 
 
-#define FUNC1(m_func,m_arg1)\
-	virtual void m_func(m_arg1 p1) { \
+#define FUNC1(m_type,m_arg1)\
+	virtual void m_type(m_arg1 p1) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1);\
 		} else {\
-			visual_server->m_func(p1);\
+			visual_server->m_type(p1);\
 		}\
 	}
 
-#define FUNC1C(m_func,m_arg1)\
-	virtual void m_func(m_arg1 p1) const { \
+#define FUNC1C(m_type,m_arg1)\
+	virtual void m_type(m_arg1 p1) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1);\
 		} else {\
-			visual_server->m_func(p1);\
+			visual_server->m_type(p1);\
 		}\
 	}
 
 
 
 
-#define FUNC2R(m_r,m_func,m_arg1, m_arg2)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2) { \
+#define FUNC2R(m_r,m_type,m_arg1, m_arg2)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2);\
+			return visual_server->m_type(p1, p2);\
 		}\
 	}
 
-#define FUNC2RC(m_r,m_func,m_arg1, m_arg2)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2) const { \
+#define FUNC2RC(m_r,m_type,m_arg1, m_arg2)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2);\
+			return visual_server->m_type(p1, p2);\
 		}\
 	}
 
 
-#define FUNC2S(m_func,m_arg1, m_arg2)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2) { \
+#define FUNC2S(m_type,m_arg1, m_arg2)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2);\
 		} else {\
-			visual_server->m_func(p1, p2);\
+			visual_server->m_type(p1, p2);\
 		}\
 	}
 
-#define FUNC2SC(m_func,m_arg1, m_arg2)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2) const { \
+#define FUNC2SC(m_type,m_arg1, m_arg2)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2);\
 		} else {\
-			visual_server->m_func(p1, p2);\
+			visual_server->m_type(p1, p2);\
 		}\
 	}
 
 
-#define FUNC2(m_func,m_arg1, m_arg2)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2) { \
+#define FUNC2(m_type,m_arg1, m_arg2)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2);\
 		} else {\
-			visual_server->m_func(p1, p2);\
+			visual_server->m_type(p1, p2);\
 		}\
 	}
 
-#define FUNC2C(m_func,m_arg1, m_arg2)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2) const { \
+#define FUNC2C(m_type,m_arg1, m_arg2)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2);\
 		} else {\
-			visual_server->m_func(p1, p2);\
+			visual_server->m_type(p1, p2);\
 		}\
 	}
 
 
 
 
-#define FUNC3R(m_r,m_func,m_arg1, m_arg2, m_arg3)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3) { \
+#define FUNC3R(m_r,m_type,m_arg1, m_arg2, m_arg3)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3);\
+			return visual_server->m_type(p1, p2, p3);\
 		}\
 	}
 
-#define FUNC3RC(m_r,m_func,m_arg1, m_arg2, m_arg3)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3) const { \
+#define FUNC3RC(m_r,m_type,m_arg1, m_arg2, m_arg3)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3);\
+			return visual_server->m_type(p1, p2, p3);\
 		}\
 	}
 
 
-#define FUNC3S(m_func,m_arg1, m_arg2, m_arg3)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3) { \
+#define FUNC3S(m_type,m_arg1, m_arg2, m_arg3)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3);\
 		} else {\
-			visual_server->m_func(p1, p2, p3);\
+			visual_server->m_type(p1, p2, p3);\
 		}\
 	}
 
-#define FUNC3SC(m_func,m_arg1, m_arg2, m_arg3)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3) const { \
+#define FUNC3SC(m_type,m_arg1, m_arg2, m_arg3)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3);\
 		} else {\
-			visual_server->m_func(p1, p2, p3);\
+			visual_server->m_type(p1, p2, p3);\
 		}\
 	}
 
 
-#define FUNC3(m_func,m_arg1, m_arg2, m_arg3)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3) { \
+#define FUNC3(m_type,m_arg1, m_arg2, m_arg3)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3);\
 		} else {\
-			visual_server->m_func(p1, p2, p3);\
+			visual_server->m_type(p1, p2, p3);\
 		}\
 	}
 
-#define FUNC3C(m_func,m_arg1, m_arg2, m_arg3)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3) const { \
+#define FUNC3C(m_type,m_arg1, m_arg2, m_arg3)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3);\
 		} else {\
-			visual_server->m_func(p1, p2, p3);\
+			visual_server->m_type(p1, p2, p3);\
 		}\
 	}
 
 
 
 
-#define FUNC4R(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) { \
+#define FUNC4R(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4);\
+			return visual_server->m_type(p1, p2, p3, p4);\
 		}\
 	}
 
-#define FUNC4RC(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const { \
+#define FUNC4RC(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4);\
+			return visual_server->m_type(p1, p2, p3, p4);\
 		}\
 	}
 
 
-#define FUNC4S(m_func,m_arg1, m_arg2, m_arg3, m_arg4)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) { \
+#define FUNC4S(m_type,m_arg1, m_arg2, m_arg3, m_arg4)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4);\
+			visual_server->m_type(p1, p2, p3, p4);\
 		}\
 	}
 
-#define FUNC4SC(m_func,m_arg1, m_arg2, m_arg3, m_arg4)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const { \
+#define FUNC4SC(m_type,m_arg1, m_arg2, m_arg3, m_arg4)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4);\
+			visual_server->m_type(p1, p2, p3, p4);\
 		}\
 	}
 
 
-#define FUNC4(m_func,m_arg1, m_arg2, m_arg3, m_arg4)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) { \
+#define FUNC4(m_type,m_arg1, m_arg2, m_arg3, m_arg4)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4);\
+			visual_server->m_type(p1, p2, p3, p4);\
 		}\
 	}
 
-#define FUNC4C(m_func,m_arg1, m_arg2, m_arg3, m_arg4)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const { \
+#define FUNC4C(m_type,m_arg1, m_arg2, m_arg3, m_arg4)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4);\
+			visual_server->m_type(p1, p2, p3, p4);\
 		}\
 	}
 
 
 
 
-#define FUNC5R(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
+#define FUNC5R(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4, p5);\
+			return visual_server->m_type(p1, p2, p3, p4, p5);\
 		}\
 	}
 
-#define FUNC5RC(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const { \
+#define FUNC5RC(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4, p5);\
+			return visual_server->m_type(p1, p2, p3, p4, p5);\
 		}\
 	}
 
 
-#define FUNC5S(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
+#define FUNC5S(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5);\
+			visual_server->m_type(p1, p2, p3, p4, p5);\
 		}\
 	}
 
-#define FUNC5SC(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const { \
+#define FUNC5SC(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5);\
+			visual_server->m_type(p1, p2, p3, p4, p5);\
 		}\
 	}
 
 
-#define FUNC5(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
+#define FUNC5(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5);\
+			visual_server->m_type(p1, p2, p3, p4, p5);\
 		}\
 	}
 
-#define FUNC5C(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const { \
+#define FUNC5C(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5);\
+			visual_server->m_type(p1, p2, p3, p4, p5);\
 		}\
 	}
 
 
 
 
-#define FUNC6R(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) { \
+#define FUNC6R(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4, p5, p6);\
+			return visual_server->m_type(p1, p2, p3, p4, p5, p6);\
 		}\
 	}
 
-#define FUNC6RC(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const { \
+#define FUNC6RC(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4, p5, p6);\
+			return visual_server->m_type(p1, p2, p3, p4, p5, p6);\
 		}\
 	}
 
 
-#define FUNC6S(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) { \
+#define FUNC6S(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6);\
 		}\
 	}
 
-#define FUNC6SC(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const { \
+#define FUNC6SC(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6);\
 		}\
 	}
 
 
-#define FUNC6(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) { \
+#define FUNC6(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6);\
 		}\
 	}
 
-#define FUNC6C(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const { \
+#define FUNC6C(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6);\
 		}\
 	}
 
 
 
 
-#define FUNC7R(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
+#define FUNC7R(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6, p7,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4, p5, p6, p7);\
+			return visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
 		}\
 	}
 
-#define FUNC7RC(m_r,m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
-	virtual m_r m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
+#define FUNC7RC(m_r,m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
+	virtual m_r m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
-			command_queue.push_and_ret( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6, p7,&ret);\
+			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7,&ret);\
 			return ret;\
 		} else {\
-			return visual_server->m_func(p1, p2, p3, p4, p5, p6, p7);\
+			return visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
 		}\
 	}
 
 
-#define FUNC7S(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
+#define FUNC7S(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6, p7);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6, p7);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
 		}\
 	}
 
-#define FUNC7SC(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
+#define FUNC7SC(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push_and_sync( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6, p7);\
+			command_queue.push_and_sync( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6, p7);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
 		}\
 	}
 
 
-#define FUNC7(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
+#define FUNC7(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6, p7);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6, p7);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
 		}\
 	}
 
-#define FUNC7C(m_func,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
-	virtual void m_func(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
+#define FUNC7C(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
-			command_queue.push( visual_server, &VisualServer::m_func,p1, p2, p3, p4, p5, p6, p7);\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7);\
 		} else {\
-			visual_server->m_func(p1, p2, p3, p4, p5, p6, p7);\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
 		}\
 	}
 
 
 
 
-	FUNC0R(RID,texture_create);
+	//FUNC0R(RID,texture_create);
+	FUNCRID(texture);
 	FUNC5(texture_allocate,RID,int,int,Image::Format,uint32_t);
 	FUNC3(texture_set_data,RID,const Image&,CubeMapSide);
 	FUNC2RC(Image,texture_get_data,RID,CubeMapSide);
@@ -594,7 +632,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {
 			command_queue.push_and_sync( visual_server, &VisualServer::shader_get_param_list,p_shader,p_param_list);
 		} else {
-			visual_server->m_func(p1, p2, p3, p4, p5);
+			visual_server->m_type(p1, p2, p3, p4, p5);
 		}
 	}*/
 

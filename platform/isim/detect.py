@@ -38,7 +38,6 @@ def get_flags():
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
-		('module_FacebookScorer_ios_enabled', 'no'),
 	]
 
 
@@ -74,6 +73,7 @@ def configure(env):
 							'-framework', 'OpenGLES',
 							'-framework', 'QuartzCore',
 							'-framework', 'AudioToolbox',
+							'-framework', 'MediaPlayer',
 							'-F$ISIMSDK',
 							])
 

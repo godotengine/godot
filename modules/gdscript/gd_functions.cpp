@@ -31,6 +31,7 @@
 #include "object_type_db.h"
 #include "reference.h"
 #include "gd_script.h"
+#include "func_ref.h"
 #include "os/os.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
@@ -80,6 +81,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"clamp",
 		"nearest_po2",
 		"weakref",
+		"funcref",
 		"convert",
 		"typeof",
 		"str",
@@ -452,6 +454,36 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 
 		} break;
+		case FUNC_FUNCREF: {
+			VALIDATE_ARG_COUNT(2);
+			if (p_args[0]->get_type()!=Variant::OBJECT) {
+
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::OBJECT;
+				r_ret=Variant();
+				return;
+
+			}
+			if (p_args[1]->get_type()!=Variant::STRING && p_args[1]->get_type()!=Variant::NODE_PATH) {
+
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=1;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+				return;
+
+			}
+
+			Ref<FuncRef> fr = memnew( FuncRef);
+
+			Object *obj = *p_args[0];
+			fr->set_instance(*p_args[0]);
+			fr->set_function(*p_args[1]);
+
+			r_ret=fr;
+
+		} break;
 		case TYPE_CONVERT: {
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(1);
@@ -678,7 +710,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			}
 			r_ret=ResourceLoader::load(*p_args[0]);
 
-		}
+		} break;
 		case INST2DICT: {
 
 			VALIDATE_ARG_COUNT(1);
@@ -1063,7 +1095,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_RAND: {
-			MethodInfo mi("rand");
+			MethodInfo mi("randi");
 			mi.return_val.type=Variant::INT;
 			return mi;
 		} break;
@@ -1126,6 +1158,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case OBJ_WEAKREF: {
 
 			MethodInfo mi("weakref",PropertyInfo(Variant::OBJECT,"obj"));
+			mi.return_val.type=Variant::OBJECT;
+			return mi;
+
+		} break;
+		case FUNC_FUNCREF: {
+
+			MethodInfo mi("funcref",PropertyInfo(Variant::OBJECT,"instance"),PropertyInfo(Variant::STRING,"funcname"));
 			mi.return_val.type=Variant::OBJECT;
 			return mi;
 

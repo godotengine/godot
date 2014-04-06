@@ -31,6 +31,7 @@
 #import <OpenGLES/EAGLDrawable.h>
 #include "os_iphone.h"
 #include "core/os/keyboard.h"
+#include "core/globals.h"
 
 #import "gl_view.h"
 
@@ -58,6 +59,45 @@ void _hide_keyboard() {
 	[_instance hide_keyboard];
 	keyboard_text = "";
 };
+
+bool _play_video(String p_path) {
+	
+	p_path = Globals::get_singleton()->globalize_path(p_path);
+
+	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
+	NSURL *file_url = [NSURL fileURLWithPath:file_path];
+		
+	_instance.moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:file_url];
+	_instance.moviePlayerController.controlStyle = MPMovieControlStyleNone;
+	// [_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
+	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:_instance
+                   selector:@selector(moviePlayBackDidFinish:)
+                   name:MPMoviePlayerPlaybackDidFinishNotification
+                   object:_instance.moviePlayerController];
+	
+	[_instance.moviePlayerController.view setFrame:_instance.bounds];
+	_instance.moviePlayerController.view.userInteractionEnabled = NO;
+	[_instance addSubview:_instance.moviePlayerController.view];
+	[_instance.moviePlayerController play];
+
+	return true;
+}
+
+bool _is_video_playing() {
+	NSInteger playback_state = _instance.moviePlayerController.playbackState;
+	return (playback_state == MPMoviePlaybackStatePlaying);
+}
+
+void _pause_video() {
+	[_instance.moviePlayerController pause];
+}
+
+void _stop_video() {
+	[_instance.moviePlayerController stop];
+	[_instance.moviePlayerController.view removeFromSuperview];
+}
 
 @implementation GLView
 
@@ -189,8 +229,10 @@ static void clear_touches() {
 // If our view is resized, we'll be asked to layout subviews.
 // This is the perfect opportunity to also update the framebuffer so that it is
 // the same size as our display area.
+
 -(void)layoutSubviews
 {
+	printf("HERE\n");
 	[EAGLContext setCurrentContext:context];
 	[self destroyFramebuffer];
 	[self createFramebuffer];
@@ -201,6 +243,7 @@ static void clear_touches() {
 {
 	// Generate IDs for a framebuffer object and a color renderbuffer
 	UIScreen* mainscr = [UIScreen mainScreen];
+	printf("******** screen size %i, %i\n", (int)mainscr.currentMode.size.width, (int)mainscr.currentMode.size.height);
 	if (mainscr.currentMode.size.width == 640 || mainscr.currentMode.size.width == 960) // modern iphone, can go to 640x960
 		self.contentScaleFactor = 2.0;
 
@@ -438,6 +481,14 @@ static void clear_touches() {
 	return self;
 }
 
+// -(BOOL)automaticallyForwardAppearanceAndRotationMethodsToChildViewControllers {
+//     return YES;
+// }
+
+// - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation{
+//     return YES;
+// }
+
 // Stop animating and release resources when they are no longer needed.
 - (void)dealloc
 {
@@ -452,6 +503,16 @@ static void clear_touches() {
 	context = nil;
 
 	[super dealloc];
+}
+
+- (void)moviePlayBackDidFinish:(NSNotification*)notification {
+    MPMoviePlayerController *player = [notification object];
+    [[NSNotificationCenter defaultCenter]
+      removeObserver:self
+      name:MPMoviePlayerPlaybackDidFinishNotification
+      object:player];
+
+    _stop_video();
 }
 
 @end

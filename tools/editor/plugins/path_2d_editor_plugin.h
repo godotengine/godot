@@ -40,9 +40,9 @@
 */
 class CanvasItemEditor;
 
-class Path2DEditor : public ButtonGroup {
+class Path2DEditor : public HBoxContainer {
 
-	OBJ_TYPE(Path2DEditor, ButtonGroup );
+	OBJ_TYPE(Path2DEditor, HBoxContainer);
 
 	UndoRedo *undo_redo;
 
@@ -67,6 +67,7 @@ class Path2DEditor : public ButtonGroup {
 
 
 	void _canvas_draw();
+	void _node_visibility_changed();
 
 protected:
 	void _notification(int p_what);
@@ -76,7 +77,7 @@ public:
 
 	Vector2 snap_point(const Vector2& p_point) const;
 	bool forward_input_event(const InputEvent& p_event);
-	void edit(Node *p_collision_polygon);
+	void edit(Node *p_path2d);
 	Path2DEditor(EditorNode *p_editor);
 };
 
@@ -84,12 +85,12 @@ class Path2DEditorPlugin : public EditorPlugin {
 
 	OBJ_TYPE( Path2DEditorPlugin, EditorPlugin );
 
-	Path2DEditor *collision_polygon_editor;
+	Path2DEditor *path2d_editor;
 	EditorNode *editor;
 
 public:
 
-	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual bool forward_input_event(const InputEvent& p_event) { return path2d_editor->forward_input_event(p_event); }
 
 	virtual String get_name() const { return "Path2D"; }
 	bool has_main_screen() const { return false; }
