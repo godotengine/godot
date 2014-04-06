@@ -692,9 +692,9 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_ttf_options"),&Font::get_ttf_options);
     ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "data", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), _SCS("set_ttf_options"),_SCS("get_ttf_options"));
 
-	ObjectTypeDB::bind_method(_MD("set_ttf_font","font:Font"),&Font::set_ttf_font);
-	ObjectTypeDB::bind_method(_MD("get_ttf_font:Font"),&Font::get_ttf_font);
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE,"Font"), _SCS("set_ttf_font"),_SCS("get_ttf_font"));
+	ObjectTypeDB::bind_method(_MD("set_ttf_font","font:TtfFont"),&Font::set_ttf_font);
+	ObjectTypeDB::bind_method(_MD("get_ttf_font:TtfFont"),&Font::get_ttf_font);
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE,"TtfFont"), _SCS("set_ttf_font"),_SCS("get_ttf_font"));
 #endif
 }
 
