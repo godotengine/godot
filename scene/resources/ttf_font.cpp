@@ -569,13 +569,13 @@ void ResourceFormatLoaderTtfFont::get_recognized_extensions(List<String> *p_exte
 }
 
 bool ResourceFormatLoaderTtfFont::handles_type(const String& p_type) const {
-	return p_type=="Font"||p_type=="TtfFont";
+	return p_type=="TtfFont";
 }
 
 String ResourceFormatLoaderTtfFont::get_resource_type(const String &p_path) const {
     String el = p_path.extension().to_lower();
     if (el=="ttf" || el=="otf")
-	    return "Font";
+	    return "TtfFont";
     return "";
 }
 

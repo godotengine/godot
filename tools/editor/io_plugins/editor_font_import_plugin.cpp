@@ -240,7 +240,7 @@ public:
 
 		p_list->push_back(PropertyInfo(Variant::BOOL,"dynamic/enabled"));
         if(dynamic_ttf)
-			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/ttf_file",PROPERTY_HINT_FILE,"ttf"));
+			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/ttf_file",PROPERTY_HINT_FILE,"ttf,otf"));
 
         p_list->push_back(PropertyInfo(Variant::INT,"extra_space/char",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
