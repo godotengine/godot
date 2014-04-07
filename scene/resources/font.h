@@ -42,7 +42,7 @@ class Font : public Resource {
 	RES_BASE_EXTENSION("fnt");
 	
 	mutable Vector< Ref<Texture> > textures;
-#ifdef FREETYPE_ENABLED
+
     friend class TtfFont;
     Vector<Image *> atlas_images;
     Ref<TtfFont> ttf_font;
@@ -52,7 +52,6 @@ class Font : public Resource {
     mutable bool atlas_dirty;
 
     void update_atlas() const;
-#endif
 
 public:
 	struct Character {
@@ -129,14 +128,11 @@ public:
 	_FORCE_INLINE_ Size2 get_char_size(CharType p_char,CharType p_next=0) const;
 	Size2 get_string_size(const String& p_string) const;
 
-#ifdef FREETYPE_ENABLED
     bool set_ttf_path(const String& p_path, int p_size);
     void set_ttf_font(const Ref<TtfFont>& p_font);
     Ref<TtfFont> get_ttf_font() const;
     void set_ttf_options(const Dictionary& p_options);
     const Dictionary& get_ttf_options() const;
-#endif
-
 	
 	void clear();
 	

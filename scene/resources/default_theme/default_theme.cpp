@@ -192,7 +192,7 @@ void make_default_theme() {
     if(ttf_font.is_valid())
     {
         Ref<Font> font=Ref<Font>(memnew (Font));
-        font->set_ttf_path(font_path, 18);
+        font->set_ttf_path(font_path, 22);
 	    default_font=font;
 	    source_font=font;
 	    large_font=font;

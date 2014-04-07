@@ -275,11 +275,6 @@ for p in platform_list:
 	if (env['default_gui_theme']=='no'):
 		env.Append(CPPFLAGS=['-DDEFAULT_THEME_DISABLED'])
 
-	if (env["freetype"]!="no"):
-		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-		env.Append(CPPPATH=['#tools/freetype'])
-		env.Append(CPPPATH=['#tools/freetype/freetype/include'])
-
 	if (env["python"]=='yes'):
 		detected=False;
 		if (env.detect_python):
@@ -312,8 +307,8 @@ for p in platform_list:
 
 	SConscript("core/SCsub")
 	SConscript("servers/SCsub")
-	SConscript("tools/SCsub")
 	SConscript("scene/SCsub")
+	SConscript("tools/SCsub")
 	SConscript("drivers/SCsub")
 	SConscript("bin/SCsub")
 

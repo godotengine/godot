@@ -349,7 +349,6 @@ const Font::Character *Font::get_character_p(CharType p_char) const {
 
 bool Font::create_character(CharType p_char) {
 
-#ifdef FREETYPE_ENABLED
     if(!ttf_font.is_valid())
         return false;
 
@@ -357,7 +356,7 @@ bool Font::create_character(CharType p_char) {
         atlas_dirty=true;
         return true;
     }
-#endif
+
     return false;
 }
 
@@ -430,7 +429,6 @@ void Font::clear() {
 	textures.clear();
 	kerning_map.clear();
 
-#ifdef FREETYPE_ENABLED
     atlas_x=0;
     atlas_y=0;
     atlas_height=0;
@@ -440,7 +438,6 @@ void Font::clear() {
         memdelete(atlas_images[i]);
     }
     atlas_images.clear();
-#endif
 }
 
 Size2 Font::get_string_size(const String& p_string) const {
@@ -485,9 +482,9 @@ void Font::draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,fl
 
 void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, const Color& p_modulate,int p_clip_w) const {
 		
-#ifdef FREETYPE_ENABLED
+
     update_atlas();
-#endif
+
 	Point2 pos=p_pos;
 	float ofs=0;
 	VisualServer *vs = VisualServer::get_singleton();
@@ -523,9 +520,8 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	if (!c)
 		return 0;
 
-#ifdef FREETYPE_ENABLED
+
     update_atlas();
-#endif
 
 	Point2 cpos=p_pos;
 	cpos.x+=c->h_align;
@@ -538,7 +534,6 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 	return get_char_size(p_char,p_next).width;
 }
 
-#ifdef FREETYPE_ENABLED
 void Font::update_atlas() const {
 
     if ((!atlas_dirty)||ttf_font.is_null())
@@ -614,8 +609,10 @@ void Font::set_ttf_font(const Ref<TtfFont>& p_font) {
     atlas_images.clear();
 
 	ttf_font=p_font;
-    kerning_map.clear();
-    ttf_font->gen_kerning(this);
+    if (!ttf_options.empty()) {
+        kerning_map.clear();
+        ttf_font->gen_kerning(this);
+    }
 }
 
 Ref<TtfFont> Font::get_ttf_font() const {
@@ -626,14 +623,15 @@ Ref<TtfFont> Font::get_ttf_font() const {
 void Font::set_ttf_options(const Dictionary& p_options) {
 
     ttf_options=p_options;
+    if (kerning_map.empty()&&ttf_font.is_valid()) {
+        ttf_font->gen_kerning(this);
+    }
 }
 
 const Dictionary& Font::get_ttf_options() const {
 
     return ttf_options;
 }
-
-#endif
 
 void Font::_bind_methods() {
 
@@ -675,7 +673,6 @@ void Font::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
 
-#ifdef FREETYPE_ENABLED
     ObjectTypeDB::bind_method(_MD("set_ttf_options"),&Font::set_ttf_options);
 	ObjectTypeDB::bind_method(_MD("get_ttf_options"),&Font::get_ttf_options);
     ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "data", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), _SCS("set_ttf_options"),_SCS("get_ttf_options"));
@@ -683,7 +680,6 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_ttf_font","font:TtfFont"),&Font::set_ttf_font);
 	ObjectTypeDB::bind_method(_MD("get_ttf_font:TtfFont"),&Font::get_ttf_font);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE,"TtfFont"), _SCS("set_ttf_font"),_SCS("get_ttf_font"));
-#endif
 }
 
 Font::Font() {

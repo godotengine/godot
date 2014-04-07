@@ -29,19 +29,16 @@
 #ifndef TTF_FONT_H
 #define TTF_FONT_H
 
-#ifdef FREETYPE_ENABLED
-
 #include "resource.h"
 #include "core/io/resource_loader.h"
 #include "scene/resources/texture.h"
 #include "map.h"
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
 /**
 	@author sanikoyes <sanikoyes@163.com>
 */
 class Font;
+struct stbtt_fontinfo;
 
 class TtfFont : public Resource {
 	
@@ -51,10 +48,7 @@ class TtfFont : public Resource {
     String path;
 	Vector<uint8_t> data;
 
-    static int instance_count;
-	static FT_Library library;
-
-	FT_Face face;
+    stbtt_fontinfo *font;
 
 protected:
 	void _set_data(const DVector<uint8_t>& p_data);
@@ -79,7 +73,5 @@ public:
     virtual String get_resource_type(const String &p_path) const;
 };
 
-
-#endif
 
 #endif
