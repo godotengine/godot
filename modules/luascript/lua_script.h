@@ -399,6 +399,8 @@ public:
 
     static int panic(lua_State *L);
 
+    virtual void debug_status_changed(){}
+
 	LuaScriptLanguage();
 	~LuaScriptLanguage();
 };
