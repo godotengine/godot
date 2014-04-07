@@ -43,13 +43,13 @@ void add_print_handler(PrintHandlerList *p_handler) {
 
 void remove_print_handler(PrintHandlerList *p_handler) {
 
-	//OS::get_singleton()->print("pre-removing print handler...\n");
+	OS::get_singleton()->print("pre-removing print handler...\n");
 	_global_lock();
 
 	PrintHandlerList *prev = NULL;
 	PrintHandlerList *l = print_handler_list;
 
-	//OS::get_singleton()->print("removing print handler...\n");
+	OS::get_singleton()->print("removing print handler...\n");
 	while(l) {
 
 		if (l==p_handler) {
@@ -65,7 +65,7 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 		l=l->next;
 
 	}
-	//OS::get_singleton()->print("print hanlder list is %p\n",print_handler_list);
+	OS::get_singleton()->print("print hanlder list is %p\n",print_handler_list);
 
 	ERR_FAIL_COND(l==NULL);
 	_global_unlock();
@@ -75,7 +75,7 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 
 void print_line(String p_string, bool new_line) {
 
-    OS::get_singleton()->print("%s%s",p_string.utf8().get_data(), new_line ? "\n" : "");
+	OS::get_singleton()->print("%s%s",p_string.utf8().get_data(), new_line?"\n":"");
 
 	_global_lock();
 	PrintHandlerList *l = print_handler_list;

@@ -29,7 +29,4 @@ function node:_ready()
 	-- after the autoloaded nodes
 	local root = self:get_scene():get_root()
 	current_scene = root:get_child( root:get_child_count() -1 )
-	
-	local other = ResourceLoader:load("res://scene_b.scn")
-	current_scene:add_child(other)
 end
