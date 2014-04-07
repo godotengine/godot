@@ -46,6 +46,7 @@ int VideoStreamTheora::get_pending_frame_count() const {
 
 void VideoStreamTheora::video_write(void){
 	th_ycbcr_buffer yuv;
+	//int y_offset, uv_offset;
 	th_decode_ycbcr_out(td,yuv);
 
 	//y_offset=(ti.pic_x&~1)+yuv[0].stride*(ti.pic_y&~1);

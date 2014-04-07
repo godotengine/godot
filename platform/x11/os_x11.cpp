@@ -510,6 +510,8 @@ void OS_X11::handle_key_event(XKeyEvent *p_event) {
 				
 	// XLookupString returns keysyms usable as nice scancodes/
  	// Meanwhile, XLookupString returns keysyms useful for unicode.
+	char str[256+1];
+ 	XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
 	
 	if (!xmbstring) {
 		// keep a temporary buffer for the string
