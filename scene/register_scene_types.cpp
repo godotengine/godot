@@ -268,6 +268,13 @@ void register_scene_types() {
 	resource_loader_ttf=memnew( ResourceFormatLoaderTtfFont );
     ResourceLoader::add_resource_format_loader(resource_loader_ttf);
 
+#ifdef FREETYPE_ENABLED
+	resource_loader_ttf=memnew( ResourceFormatLoaderTtfFont );
+    ResourceLoader::add_resource_format_loader(resource_loader_ttf);
+#endif
+
+	make_default_theme();
+
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<Object>();
