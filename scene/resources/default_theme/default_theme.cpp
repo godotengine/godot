@@ -230,34 +230,24 @@ void make_default_theme() {
     Ref<Font> source_font = default_font;
     Ref<Font> large_font = default_font;
 #else
-	//Ref<Font> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
-	Ref<Font> default_font;
-	Ref<Font> source_font;
-	Ref<Font> large_font;
-	if (_use_cjk_font) {
-		if (_cjk_img_data_compressed) { // zlib deflated stream
-			unsigned char **img_data_cjk = new unsigned char*[_builtin_normal_font_pages];
-			for (int i=0;i<_builtin_normal_font_pages;++i) {
-				const unsigned char* src = _builtin_normal_font_img_data_cjk[i];
-				int src_size = _builtin_normal_font_img_data_cjk_count[i];
-				int dst_size=_builtin_normal_font_img_width*_builtin_normal_font_img_height*2;
-				unsigned char* dst = new unsigned char[dst_size];
-				Compression::decompress(dst,dst_size,src,src_size,Compression::MODE_DEFLATE);
-				img_data_cjk[i]=dst;
-			}
-			default_font=make_font3(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,(const unsigned char **)img_data_cjk,_builtin_normal_font_pages);
-			for (int i=0;i<_builtin_normal_font_pages;++i)
-				delete[] img_data_cjk[i];
-			delete[] img_data_cjk;
-		} else {
-			default_font=make_font3(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data_cjk,_builtin_normal_font_pages);			
-		}		
-	} else {
-		default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
-		source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
-		large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
-	}
-#endif //TOOLS_ENABLED
+    String font_path = config_path + "\\Godot\\editor.ttf";
+    Ref<TtfFont> ttf_font = ResourceLoader::load(font_path);
+    if(ttf_font.is_valid())
+    {
+        Ref<Font> font=Ref<Font>(memnew (Font));
+        font->set_ttf_path(font_path, 22);
+	    default_font=font;
+	    source_font=font;
+	    large_font=font;
+    }
+    else
+    {
+	    default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
+	    source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
+	    large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
+    }
+#endif
+
 
 	t->set_stylebox("panel","Panel", make_stylebox( panel_bg_png,0,0,0,0) );
 

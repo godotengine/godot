@@ -149,7 +149,6 @@
     </ProjectReference>
     <ProjectReference Include="tests.vcxproj">
       <Project>{8dd3d016-c444-49e3-9020-b21fccbdc4a7}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="tool.vcxproj">
       <Project>{2a45ade8-19b1-460b-b1b5-36b4636e1057}</Project>

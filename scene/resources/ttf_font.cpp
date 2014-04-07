@@ -31,92 +31,32 @@
 #include "core/globals.h"
 #include "core/os/file_access.h"
 #include "core/io/image_loader.h"
-
-#ifdef FREETYPE_ENABLED
+#define STB_TRUETYPE_IMPLEMENTATION  // force following include to generate implementation
+#include "stb/stb_truetype.h"
 
 #define ALTAS_SIZE 512
 
-int TtfFont::instance_count=0;
-FT_Library TtfFont::library=NULL;
-
 bool TtfFont::load_ttf(const String& p_path) {
+	print_line("loadfrom: "+p_path);
     data = FileAccess::get_file_as_array(p_path);
     ERR_FAIL_COND_V(data.size()==0,false);
 
-	ERR_EXPLAIN("Error initializing FreeType.");
-    ERR_FAIL_COND_V( library==NULL, false );
+    ERR_FAIL_COND_V(!stbtt_InitFont(font, data.ptr(), stbtt_GetFontOffsetForIndex(data.ptr(),0)), false);
 
-	print_line("loadfrom: "+p_path);
-    FT_Error error = FT_New_Memory_Face( library, data.ptr(), data.size(), 0,&face );
-	if ( error == FT_Err_Unknown_File_Format ) {
-		ERR_EXPLAIN("Unknown font format.");
-	} else if ( error ) {
-		ERR_EXPLAIN("Error loading font.");
-	}
-	ERR_FAIL_COND_V(error,false);
     path = p_path;
     return true;
 }
 
 bool TtfFont::calc_size(int p_size, int& height, int& ascent, int& max_up, int& max_down) {
 
-	FT_Error error = FT_Set_Char_Size(face,0,64*p_size,512,512);
-	if ( error ) {
-		ERR_EXPLAIN("Invalid font size. ");
-		ERR_FAIL_COND_V( error,false );
-	}
-	error = FT_Set_Pixel_Sizes(face,0,p_size);
+    ERR_FAIL_COND_V(!font->index_map, false);
+    int descent;
+    stbtt_GetFontVMetrics(font, &ascent, &descent, NULL);
 
-	FT_GlyphSlot slot = face->glyph;
+    float scale=stbtt_ScaleForPixelHeight(font,p_size);
+    max_up=Math::ceil(ascent*scale);
+    max_down=Math::floor(descent*scale);
 
-	/* PRINT CHARACTERS TO INDIVIDUAL BITMAPS */
-	FT_ULong  charcode;
-	FT_UInt   gindex;
-
-	max_up=-1324345; ///gibberish
-	max_down=124232;
-
-    charcode = FT_Get_First_Char( face, &gindex );
-
-	int xsize=0;
-	while ( gindex != 0 )
-	{
-		bool skip=false;
-		error = FT_Load_Char( face, charcode, FT_LOAD_RENDER );
-		if (error) skip=true;
-		else error = FT_Render_Glyph( face->glyph, ft_render_mode_normal );
-		if (error) {
-			skip=true;
-		} else if (!skip) {
-            skip=charcode>127;
-		}
-
-		if (charcode<=32) //??
-			skip=true;
-
-		if (skip) {
-			if (charcode<=127)
-				charcode=FT_Get_Next_Char(face,charcode,&gindex);
-			else
-				// break loop if charcode out of range(127)
-				gindex=0;
-			continue;
-		}
-
-		if  (charcode=='x')
-			xsize=slot->bitmap.width;
-
-		if (charcode<127) {
-			if (slot->bitmap_top>max_up) {
-				max_up=slot->bitmap_top;
-			}
-
-			if ( (slot->bitmap_top - slot->bitmap.rows)<max_down ) {
-				max_down=slot->bitmap_top - slot->bitmap.rows;
-			}
-		}
-		charcode=FT_Get_Next_Char(face,charcode,&gindex);
-	}
 	height=max_up-max_down;
 	ascent=max_up;
     return true;
@@ -147,6 +87,9 @@ enum ColorType {
 };
 
 bool TtfFont::render_char(CharType p_char, Font& p_font) {
+
+    ERR_FAIL_COND_V(!font->index_map, false);
+
     Vector<Image *>& p_images=p_font.atlas_images;
     int& p_atlas_x=p_font.atlas_x;
     int& p_atlas_y=p_font.atlas_y;
@@ -162,27 +105,33 @@ bool TtfFont::render_char(CharType p_char, Font& p_font) {
 
 	int font_spacing=0;
 
-	FT_Error error = FT_Set_Char_Size(face,0,64*size,512,512);
-	if ( error ) {
-		ERR_EXPLAIN("Invalid font size. ");
-		ERR_FAIL_COND_V( error,false );
-	}
-	error = FT_Set_Pixel_Sizes(face,0,size);
-
-	FT_GlyphSlot slot = face->glyph;
-
-	FT_ULong  charcode;
-	FT_UInt   gindex;
-
 	bool round_advance = p_options["advanced/round_advance"];
 
     FontData efd;
 
+    int w, h, xoff, yoff;
+    float scale=stbtt_ScaleForPixelHeight(font, size*1.1);
+
+    // optimize for get codepoint bitmap(without memory alloc/free)
+    static unsigned char static_bitmap[256*256];
+    unsigned char *bitmap=static_bitmap;
+    if (size<=256) {
+        int ix0,iy0,ix1,iy1;
+        stbtt_GetCodepointBitmapBox(font, p_char, scale, scale, &ix0, &iy0, &ix1, &iy1);
+        w = (ix1 - ix0); h = (iy1 - iy0);
+        xoff = ix0; yoff = iy0;
+        stbtt_MakeCodepointBitmap(font, bitmap, w, h, w, scale, scale, p_char);
+    } else {
+        bitmap=stbtt_GetCodepointBitmap(font, 0, scale, p_char, &w, &h, &xoff, &yoff);
+    }
+
+    int advanceWidth, leftSideBearing;
+    stbtt_GetCodepointHMetrics(font, p_char, &advanceWidth, &leftSideBearing);
+    advanceWidth*=scale;
+    leftSideBearing*=scale;
+
 	bool skip=false;
-	error = FT_Load_Char( face, p_char, FT_LOAD_RENDER );
-	if (error) skip=true;
-	else error = FT_Render_Glyph( face->glyph, ft_render_mode_normal );
-	if (error)
+	if (bitmap==NULL)
 		skip=true;
     if (p_char<=32) {
         skip=true;
@@ -199,46 +148,32 @@ bool TtfFont::render_char(CharType p_char, Font& p_font) {
             efd.height=0;
             efd.ofs_x=0;
             efd.ofs_y=0;
-        	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, ft_render_mode_normal )) {
-
-        		efd.advance = slot->advance.x>>6; //round to nearest or store as float
-        		efd.advance+=font_spacing;
-        	} else {
-                // use 'x' size
-            	FT_Load_Char( face, 'x', FT_LOAD_RENDER );
-                FT_Render_Glyph( face->glyph, ft_render_mode_normal );
-                efd.advance=face->glyph->bitmap.width;
-        		efd.advance+=font_spacing;
-        	}
+            efd.advance=advanceWidth + 1;
+		    efd.advance+=font_spacing;
         }
         else
             return false;
     }
     else {
-		efd.bitmap.resize( slot->bitmap.width*slot->bitmap.rows );
-		efd.width=slot->bitmap.width;
-		efd.height=slot->bitmap.rows;
-		efd.character=p_char;
-		efd.glyph=FT_Get_Char_Index(face,p_char);
-        efd.valign=slot->bitmap_top;
-        efd.halign=slot->bitmap_left;
-
-		if (round_advance)
-			efd.advance=(slot->advance.x+(1<<5))>>6;
-		else
-			efd.advance=slot->advance.x/float(1<<6);
-
+        efd.bitmap.resize( w * h );
+        efd.width=w;
+        efd.height=h;
+        efd.character=p_char;
+        efd.valign=yoff;
+        efd.halign=xoff;
+        efd.advance=advanceWidth + 1;
 		efd.advance+=font_spacing;
 
-		for (int i=0;i<slot->bitmap.width;i++) {
-			for (int j=0;j<slot->bitmap.rows;j++) {
-
-				efd.bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
-			}
-		}
+        for (int i=0;i<w;i++) {
+            for (int j=0;j<h;j++) {
+				efd.bitmap[j*w+i]=bitmap[j*w+i];
+            }
+        }
     }
+    if (bitmap!=static_bitmap)
+        STBTT_free(bitmap,NULL);
 	/* ADJUST THE VALIGN FOR CHARACTER */
-    efd.valign=max_up-efd.valign;
+    efd.valign=max_up+efd.valign;
 
 	Color *color=memnew_arr(Color,height);
 	int gradient_type=p_options["color/mode"];
@@ -518,14 +453,19 @@ bool TtfFont::render_char(CharType p_char, Font& p_font) {
 
 void TtfFont::gen_kerning(Font *p_font) {
 
+    ERR_FAIL_COND(!font->index_map);
+
+    int size=p_font->ttf_options["font/size"];
+    float scale=stbtt_ScaleForPixelHeight(font,size);
+
     for(int i=0;i<=512;i++) {
         for(int j=0;j<512;j++) {
-			FT_Vector  delta;
-            int left=FT_Get_Char_Index( face, i );
-            int right=FT_Get_Char_Index( face, j );
-			FT_Get_Kerning( face, left, right, FT_KERNING_DEFAULT, &delta );
-			if (delta.x!=0) {
-				int kern = ((-delta.x)+(1<<5))>>6;
+            int left=stbtt_FindGlyphIndex( font, i );
+            int right=stbtt_FindGlyphIndex( font, j );
+			int delta_x=stbtt_GetCodepointKernAdvance( font, left, right );
+
+			if (delta_x!=0) {
+				int kern = (-delta_x*scale);//((-delta_x)+(1<<5))>>6;
 				if (kern==0)
 					continue;
                 p_font->add_kerning_pair(left, right, kern);
@@ -535,21 +475,12 @@ void TtfFont::gen_kerning(Font *p_font) {
 }
 
 TtfFont::TtfFont() {
-    face=NULL;
-
-    if(instance_count++==0)
-    {
-    	int error = FT_Init_FreeType( &library );
-    	ERR_EXPLAIN("Error initializing FreeType.");
-	    ERR_FAIL_COND( error !=0 );
-    }
+    font=memnew( stbtt_fontinfo );
 }
 
 TtfFont::~TtfFont() {
-    if(--instance_count==0 && library!=NULL)
-    {
-	    FT_Done_FreeType( library );
-        library=NULL;
+    if (font!=NULL) {
+        memdelete( font );
     }
 }
 
@@ -578,6 +509,3 @@ String ResourceFormatLoaderTtfFont::get_resource_type(const String &p_path) cons
 	    return "TtfFont";
     return "";
 }
-
-#endif
-

@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "godot", "godot.vcxproj", "{5569A196-A230-4A06-A9E0-141FCA73E124}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8DD3D016-C444-49E3-9020-B21FCCBDC4A7} = {8DD3D016-C444-49E3-9020-B21FCCBDC4A7}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "main", "main.vcxproj", "{D7D304D0-1A39-411D-97EB-C472237FD7B9}"
 EndProject

@@ -64,6 +64,11 @@ def configure(env):
 		env.Append(CCFLAGS=['-g','-pg'])
 		env.Append(LINKFLAGS=['-pg'])
 
+	if (env["freetype"]!="no"):
+		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+		env.Append(CPPPATH=['#tools/freetype'])
+		env.Append(CPPPATH=['#tools/freetype/freetype/include'])
+
 	if (env["force_64_bits"]!="no"):
 		env.Append(CCFLAGS=['-arch', 'x86_64'])
 		env.Append(LINKFLAGS=['-arch', 'x86_64'])
