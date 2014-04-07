@@ -87,6 +87,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\scene\register_scene_types.cpp" />
+    <ClCompile Include="..\scene\resources\ttf_font.cpp" />
     <ClCompile Include="..\scene\scene_binds.cpp" />
     <ClCompile Include="..\scene\scene_string_names.cpp" />
     <ClCompile Include="..\scene\2d\animated_sprite.cpp" />

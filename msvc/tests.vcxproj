@@ -86,6 +86,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\bin\tests\test_compression.cpp" />
     <ClCompile Include="..\bin\tests\test_containers.cpp" />
     <ClCompile Include="..\bin\tests\test_detailer.cpp" />
     <ClCompile Include="..\bin\tests\test_gdscript.cpp" />

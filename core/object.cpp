@@ -1712,7 +1712,7 @@ void ObjectDB::cleanup() {
 	    const uint32_t *K=NULL;
     	while((K=instances.next(K))) {
             Object *o = instances[*K];
-            print_line(" >> " + o->get_type());
+            //print_line(" >> " + o->get_type());
 	    }
 	}
 	instances.clear();
