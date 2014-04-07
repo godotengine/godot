@@ -199,7 +199,6 @@ if (m_height > line_height) {\
 					color=_find_color(text,p_base_color);
 					underline=_find_underline(text);
 					if (_find_meta(text,&meta)) {
-
 						underline=true;
 					}
 
@@ -222,35 +221,21 @@ if (m_height > line_height) {\
 						end++;
 					}
 
-					ENSURE_WIDTH(w);					
-
-
+					ENSURE_WIDTH(w);
 
 					{
-
-
 						int ofs=0;
 						for(int i=0;i<end;i++) {
 							int pofs=wofs+ofs;
-
-
-
-
 							if (p_mode==PROCESS_POINTER && r_click_char && p_click_pos.y>=y && p_click_pos.y<=y+lh) {
 								//int o = (wofs+w)-p_click_pos.x;
-
 								int cw=font->get_char_size(c[i],c[i+1]).x;
-
 								if (p_click_pos.x-cw/2>pofs) {
-
 									rchar=int((&c[i])-cf);
 									//print_line("GOT: "+itos(rchar));
-
-
 									//if (i==end-1 && p_click_pos.x+cw/2 > pofs)
 									//	rchar++;
 									//int o = (wofs+w)-p_click_pos.x;
-
 								//	if (o>cw/2)
 								//		rchar++;
 								}
@@ -1652,7 +1637,7 @@ void RichTextLabel::_bind_methods() {
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "meta_underline" ), _SCS("set_meta_underline"),_SCS("set_meta_underline") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "meta_underline" ), _SCS("set_meta_underline"),_SCS("is_meta_underlined") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_active" ), _SCS("set_scroll_active"),_SCS("is_scroll_active") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_follow" ), _SCS("set_scroll_follow"),_SCS("is_scroll_following") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "tab_size" ), _SCS("set_tab_size"),_SCS("get_tab_size") );

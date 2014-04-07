@@ -70,7 +70,6 @@ class String : public Vector<CharType> {
 public:
 
 	enum {
-
 		npos=-1 ///<for "some" compatibility with std::string (npos is a huge value in std::string)
 	};
 
@@ -214,7 +213,7 @@ public:
 	/**
 	 * The constructors must not depend on other overloads
 	 */
-/*	String(CharType p_char);*/
+    /*	String(CharType p_char);*/
 	inline String() {}
 	String(const char *p_str);
 	String(const CharType *p_str,int p_clip_to_len=-1);
