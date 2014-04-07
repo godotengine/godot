@@ -3279,6 +3279,14 @@
 					</File>
 				</Filter>
 			</Filter>
+			<Filter
+				Name="stb"
+				>
+				<File
+					RelativePath="..\drivers\stb\stb_truetype.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>
