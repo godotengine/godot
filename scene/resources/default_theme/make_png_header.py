@@ -22,6 +22,9 @@ f.write("\n\n\n");
 for x in pixmaps:
 	
 	var_str=x[:-4]+"_png";
+
+	# For @2x images
+	var_str = var_str.replace("@", "_")
 	
 	f.write("static const unsigned char "+ var_str +"[]={\n");
 	
