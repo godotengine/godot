@@ -45,12 +45,4 @@ public:
 
 };
 
-class TooltipPanel : public Panel {
-
-	OBJ_TYPE(TooltipPanel,Panel)
-public:
-	TooltipPanel() {};
-
-};
-
 #endif
