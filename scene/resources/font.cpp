@@ -344,7 +344,10 @@ const Font::Character *Font::get_character_p(CharType p_char) const {
         return NULL;
 
 	if (!char_map.has(p_char)) {
-		ERR_FAIL_COND_V(!(const_cast<Font *>(this))->create_character(p_char),NULL);
+		//ERR_FAIL_COND_V(!(const_cast<Font *>(this))->create_character(p_char),NULL);
+        if( !(const_cast<Font *>(this))->create_character(p_char) ){
+            return 0;
+        }
 	};
 
 	return &char_map[p_char];
@@ -579,15 +582,15 @@ void Font::update_atlas() const {
 
 bool Font::set_ttf_path(const String& p_path, int p_size) {
     RES res=ResourceLoader::load(p_path);
-    Ref<TtfFont> ttf_font=res;
-    if(!ttf_font.is_valid())
+    Ref<TtfFont> fnt = res;
+    if(!fnt.is_valid())
         return false;
 
     int height=0;
     int ascent=0;
     int max_up,max_down;
     ERR_EXPLAIN("Error calc font height/ascent.");
-    ERR_FAIL_COND_V( !ttf_font->calc_size(p_size, height, ascent, max_up, max_down), false );
+    ERR_FAIL_COND_V( !fnt->calc_size(p_size, height, ascent, max_up, max_down), false );
 
     Dictionary options;
     options["font/size"]=p_size;
@@ -597,7 +600,7 @@ bool Font::set_ttf_path(const String& p_path, int p_size) {
     options["meta/max_down"]=max_down;
 
     clear();
-    set_ttf_font(ttf_font);
+    set_ttf_font(fnt);
     set_ttf_options(options);
     set_height(height);
     set_ascent(ascent);

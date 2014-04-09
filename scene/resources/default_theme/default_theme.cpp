@@ -221,30 +221,44 @@ void make_default_theme() {
 	uint32_t last=OS::get_singleton()->get_ticks_msec();
 	Ref<Theme> t( memnew( Theme ) );
 #ifdef TOOLS_ENABLED
+    Ref<Font> default_font;
+    Ref<Font> source_font;
+    Ref<Font> large_font;
+    bool font_ok = false;
     //--------patch-----------
     String exe_path = OS::get_singleton()->get_executable_path();
     exe_path = exe_path.get_base_dir();
-    //
-    Ref<Font> default_font( memnew( Font ) );
-    default_font->create_from_fnt(exe_path+"/fonts/default_fnt.fnt");
-    Ref<Font> source_font = default_font;
-    Ref<Font> large_font = default_font;
-#else
-    String font_path = config_path + "\\Godot\\editor.ttf";
+    //Load ttf-font first.
+    String font_path = exe_path + "/fonts/default.ttc";
     Ref<TtfFont> ttf_font = ResourceLoader::load(font_path);
     if(ttf_font.is_valid())
     {
-        Ref<Font> font=Ref<Font>(memnew (Font));
-        font->set_ttf_path(font_path, 22);
-	    default_font=font;
-	    source_font=font;
-	    large_font=font;
+        Ref<Font> def_font=Ref<Font>(memnew (Font));
+        def_font->set_ttf_path(font_path, 18);
+	    default_font=def_font;
+	    source_font=def_font;
+	    large_font=Ref<Font>(memnew (Font));
+        large_font->set_ttf_path(font_path, 22);
+        //
+        font_ok = true;
     }
-    else
+    //Then try the bmp-font.
+    if( !font_ok )
+    {
+        Ref<Font> def_font = ( memnew( Font ) );
+        def_font->create_from_fnt(exe_path+"/fonts/default_fnt.fnt");
+        default_font = def_font;
+        source_font = default_font;
+        large_font = default_font;
+        font_ok = true;
+    }
+    //If still can't create font,try the builtin font data.
+    if( !font_ok )
     {
 	    default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
 	    source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
 	    large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
+        font_ok = true;
     }
 #endif
 
@@ -573,15 +587,10 @@ void make_default_theme() {
 
 	t->set_icon("close","Icons", make_icon(icon_close_png));
 	t->set_font("normal","Fonts", default_font );
-	if (_use_cjk_font) {
-		t->set_font("source","Fonts", default_font);
-		t->set_font("large","Fonts", default_font );
-	} else {
-		t->set_font("source","Fonts", source_font);
-		t->set_font("large","Fonts", large_font );
-	}
-	
-
+	//
+	t->set_font("source","Fonts", source_font);
+	t->set_font("large","Fonts", large_font );
+    t->set_default_theme_font( default_font );
 
 
 	t->set_constant("margin","Dialogs",10);

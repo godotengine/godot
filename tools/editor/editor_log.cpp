@@ -48,7 +48,7 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 //		self->emit_signal("show_request");
 
 	err_str=" "+err_str;
-	self->log->add_newline();
+	//self->log->add_newline();
 
 	Ref<Texture> icon;
 
@@ -115,7 +115,6 @@ void EditorLog::add_message(const String& p_msg,bool p_error) {
 	} else {
 		button->set_icon(Ref<Texture>());
 	}
-
 
 	log->add_newline();
 	log->add_text(p_msg);

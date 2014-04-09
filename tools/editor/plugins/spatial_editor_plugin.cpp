@@ -978,7 +978,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						}
 
 
-						if (_edit.mode!=TRANSFORM_NONE) {
+                        if (_edit.mode!=TRANSFORM_NONE && _edit.mode >= 0) //--coldblue67
+                        { 
 
 
 							static const char* _transform_name[4]={"None","Rotate","Translate","Scale"};

@@ -1137,6 +1137,9 @@ Position3DSpatialGizmo::Position3DSpatialGizmo(Position3D* p_p3d) {
 void SkeletonSpatialGizmo::redraw() {
 
 	clear();
+    /**
+    TODO:   check the property of skeleton,decide whether to show the gizmo. --coldblue67
+    */
 
 	Ref<SurfaceTool> surface_tool( memnew( SurfaceTool ));
 

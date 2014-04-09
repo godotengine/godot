@@ -485,7 +485,8 @@ TtfFont::~TtfFont() {
 }
 
 RES ResourceFormatLoaderTtfFont::load(const String &p_path,const String& p_original_path) {
-    if (p_path.ends_with(".ttf") || p_path.ends_with(".otf")) {
+    if (p_path.ends_with(".ttf") || p_path.ends_with(".otf") || p_path.ends_with(".ttc") )
+    {
         TtfFont *font=memnew( TtfFont );
         Ref<TtfFont> fontres(font);
         ERR_FAIL_COND_V(!font->load_ttf(p_path),RES());
@@ -497,15 +498,16 @@ RES ResourceFormatLoaderTtfFont::load(const String &p_path,const String& p_origi
 void ResourceFormatLoaderTtfFont::get_recognized_extensions(List<String> *p_extensions) const {
     p_extensions->push_back("ttf");
     p_extensions->push_back("otf");
+    p_extensions->push_back("ttc");
 }
 
 bool ResourceFormatLoaderTtfFont::handles_type(const String& p_type) const {
-	return p_type=="TtfFont";
+	return p_type=="FreeType-Font";
 }
 
 String ResourceFormatLoaderTtfFont::get_resource_type(const String &p_path) const {
     String el = p_path.extension().to_lower();
-    if (el=="ttf" || el=="otf")
-	    return "TtfFont";
+    if (el=="ttf" || el=="otf" || el=="ttc")
+	    return "FreeType-Font";
     return "";
 }
