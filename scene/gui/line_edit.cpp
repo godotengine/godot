@@ -801,7 +801,7 @@ void LineEdit::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("text_changed", PropertyInfo( Variant::STRING, "text" )) );
 	ADD_SIGNAL( MethodInfo("text_entered", PropertyInfo( Variant::STRING, "text" )) );
 
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text" ), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "max_length" ), _SCS("set_max_length"),_SCS("get_max_length") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "editable" ), _SCS("set_editable"),_SCS("is_editable") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "secret" ), _SCS("set_secret"),_SCS("is_secret") );

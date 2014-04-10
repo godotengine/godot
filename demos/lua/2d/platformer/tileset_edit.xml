@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="12" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://tiles_demo.png" type="Texture"></ext_resource>
+	<resource type="ConvexPolygonShape2D" path="local://0">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 8, 64, 8, 64, 64, 0, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://1">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 64, 0, 8, 56, 8, 56, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://2">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 64, 0, 0, 56, 0, 56, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://3">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 64, 0, 0, 56, 0, 56, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://4">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="5"> 			0, 64, 0, 0, 56, 0, 64, 8, 64, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConcavePolygonShape2D" path="local://5">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="segments" len="8"> 			0, 8, 64, 72, 64, 72, 64, 128, 64, 128, 0, 128, 0, 128, 0, 8 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://6">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 64, 0, 8, 64, 8, 64, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://7">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 64, 0, 8, 64, 8, 64, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://8">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 0, 64, 0, 64, 64, 0, 64 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://9">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 64, 0, 0, 56, 0, 56, 64 </vector2_array>
+
+	</resource>
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="73">
+				<string> "Node" </string>
+				<string> "__meta__" </string>
+				<string> "floor" </string>
+				<string> "Sprite" </string>
+				<string> "visibility/visible" </string>
+				<string> "visibility/opacity" </string>
+				<string> "visibility/self_opacity" </string>
+				<string> "visibility/on_top" </string>
+				<string> "transform/pos" </string>
+				<string> "transform/rot" </string>
+				<string> "transform/scale" </string>
+				<string> "texture" </string>
+				<string> "centered" </string>
+				<string> "offset" </string>
+				<string> "flip_h" </string>
+				<string> "flip_v" </string>
+				<string> "vframes" </string>
+				<string> "hframes" </string>
+				<string> "frame" </string>
+				<string> "modulate" </string>
+				<string> "region" </string>
+				<string> "region_rect" </string>
+				<string> "collision" </string>
+				<string> "StaticBody2D" </string>
+				<string> "shape_count" </string>
+				<string> "shapes/0/shape" </string>
+				<string> "shapes/0/transform" </string>
+				<string> "shapes/0/trigger" </string>
+				<string> "constant_linear_velocity" </string>
+				<string> "constant_angular_velocity" </string>
+				<string> "friction" </string>
+				<string> "bounce" </string>
+				<string> "CollisionPolygon2D" </string>
+				<string> "build_mode" </string>
+				<string> "polygon" </string>
+				<string> "edge" </string>
+				<string> "wall" </string>
+				<string> "wall_deco" </string>
+				<string> "corner" </string>
+				<string> "ramp" </string>
+				<string> "flowers" </string>
+				<string> "tree_base" </string>
+				<string> "tree_mid" </string>
+				<string> "tree_mid 2" </string>
+				<string> "tree_top" </string>
+				<string> "solid" </string>
+				<string> "ceiling" </string>
+				<string> "ceiling2wall" </string>
+				<string> "help" </string>
+				<string> "Label" </string>
+				<string> "margin/right" </string>
+				<string> "margin/bottom" </string>
+				<string> "focus_neighbour/left" </string>
+				<string> "focus_neighbour/top" </string>
+				<string> "focus_neighbour/right" </string>
+				<string> "focus_neighbour/bottom" </string>
+				<string> "focus/ignore_mouse" </string>
+				<string> "focus/stop_mouse" </string>
+				<string> "size_flags/horizontal" </string>
+				<string> "size_flags/stretch_ratio" </string>
+				<string> "range/min" </string>
+				<string> "range/max" </string>
+				<string> "range/step" </string>
+				<string> "range/page" </string>
+				<string> "range/value" </string>
+				<string> "range/exp_edit" </string>
+				<string> "rounded_values" </string>
+				<string> "text" </string>
+				<string> "align" </string>
+				<string> "valign" </string>
+				<string> "autowrap" </string>
+				<string> "uppercase" </string>
+				<string> "percent_visible" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 0 </int>
+			<string> "node_count" </string>
+			<int> 36 </int>
+			<string> "variants" </string>
+			<array  len="72" shared="false">
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "Script" </string>
+						<dictionary  shared="false">
+							<string> "current" </string>
+							<int> 0 </int>
+							<string> "sources" </string>
+							<array  len="1" shared="false">
+								<string> "res://enemy.lua" </string>
+							</array>
+						</dictionary>
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "pixel_snap" </string>
+							<bool> False </bool>
+							<string> "zoom" </string>
+							<real> 5.162316 </real>
+							<string> "ofs" </string>
+							<vector2> 116.572, 106.078 </vector2>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 45 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4.000001 </real>
+									<string> "x_rot" </string>
+									<real> 0.4125 </real>
+									<string> "y_rot" </string>
+									<real> 0.275 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> True </bool>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "Script" </string>
+				</dictionary>
+				<bool> True </bool>
+				<real> 1 </real>
+				<vector2> 0, 0 </vector2>
+				<real> 0 </real>
+				<vector2> 1, 1 </vector2>
+				<resource  resource_type="Texture" path="res://tiles_demo.png">  </resource>
+				<bool> False </bool>
+				<int> 1 </int>
+				<int> 0 </int>
+				<color> 1, 1, 1, 1 </color>
+				<rect2> 0, 0, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://0">  </resource>
+				<matrix32> 1, -0, 0, 1, 0, 0 </matrix32>
+				<vector2_array  len="4"> 					64, 8, 64, 64, 0, 64, 0, 8 </vector2_array>
+				<vector2> 64, 0 </vector2>
+				<rect2> 64, 0, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://1">  </resource>
+				<vector2_array  len="4"> 					0, 8, 56, 8, 56, 64, 0, 64 </vector2_array>
+				<vector2> 64, 64 </vector2>
+				<rect2> 64, 64, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://2">  </resource>
+				<vector2_array  len="4"> 					0, 0, 56, 0, 56, 64, 0, 64 </vector2_array>
+				<vector2> 64, 128 </vector2>
+				<rect2> 320, 128, 128, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://3">  </resource>
+				<vector2> 64, 192 </vector2>
+				<rect2> 64, 128, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://4">  </resource>
+				<vector2_array  len="5"> 					0, 0, 56, 0, 64, 8, 64, 64, 0, 64 </vector2_array>
+				<vector2> 256, 192 </vector2>
+				<rect2> 128, 128, 64, 128 </rect2>
+				<resource  resource_type="Shape2D" path="local://5">  </resource>
+				<vector2_array  len="4"> 					0, 8, 64, 72, 64, 128, 0, 128 </vector2_array>
+				<vector2> 128, 192 </vector2>
+				<rect2> 192, 192, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://6">  </resource>
+				<vector2_array  len="4"> 					0, 64, 64, 64, 64, 8, 0, 8 </vector2_array>
+				<vector2> 192, 192 </vector2>
+				<rect2> 256, 192, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://7">  </resource>
+				<vector2> 192, 128 </vector2>
+				<rect2> 256, 128, 64, 64 </rect2>
+				<vector2> 192, 64 </vector2>
+				<rect2> 256, 64, 64, 64 </rect2>
+				<vector2> 192, 0 </vector2>
+				<rect2> 256, 0, 64, 64 </rect2>
+				<vector2> 0, 64 </vector2>
+				<rect2> 0, 64, 64, 64 </rect2>
+				<vector2> 0, 128 </vector2>
+				<rect2> 384, 64, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://8">  </resource>
+				<vector2_array  len="4"> 					64, 0, 64, 64, 0, 64, 0, 0 </vector2_array>
+				<vector2> 0, 192 </vector2>
+				<rect2> 448, 64, 64, 64 </rect2>
+				<dictionary  shared="false">
+					<string> "_editor_collapsed" </string>
+					<bool> True </bool>
+				</dictionary>
+				<resource  resource_type="Shape2D" path="local://9">  </resource>
+				<real> 650 </real>
+				<real> 285 </real>
+				<node_path> "" </node_path>
+				<int> 2 </int>
+				<real> 15 </real>
+				<string> "This scene serves as a tool for editing the tileset.&#10;Nodes (sprites) and their respective collisions&#10;are edited here. &#10;&#10;To create a tileset from this, a &quot;TileSet&quot; resoucre &#10;must be created. Use the helper in:&#10;&#10; Scene -&lt; Convert To -&lt; TileSet&#10;&#10;This will save a tileset. Saving over it will merge your changes.&#10;&#10;Finally, the saved tileset resource (tileset.xml in this&#10; case), can be opened to be used into a TileMap node&#10; for editing a tile map.&#10;" </string>
+				<real> -1 </real>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="1310"> 				-1, -1, 0, 0, -1, 1, 1, 0, 0, 0, 0, 3, 2, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 11, 6, 12, 7, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 11, 1, 12, 0, 1, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 13, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 2, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 15, 0, 0, 0, 3, 35, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 16, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 17, 1, 18, 0, 4, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 19, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 5, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 20, 0, 0, 0, 3, 36, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 21, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 22, 1, 23, 0, 7, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 24, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 8, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 25, 0, 0, 0, 3, 37, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 26, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 27, 1, 28, 0, 10, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 29, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 11, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 25, 0, 0, 0, 3, 38, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 30, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 31, 1, 32, 0, 13, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 33, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 14, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 34, 0, 0, 0, 3, 39, -1, 18, 4, 1, 5, 2, 6, 2, 7, 1, 8, 35, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 36, 0, 16, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 37, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 17, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 8, 34, 38, 0, 0, 0, 3, 40, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 39, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 40, 1, 41, 0, 19, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 42, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 20, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 43, 0, 0, 0, 3, 41, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 44, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 45, 1, 46, 0, 22, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 47, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 23, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 43, 0, 0, 0, 3, 42, -1, 18, 4, 1, 5, 2, 6, 2, 7, 1, 8, 48, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 49, 0, 0, 0, 3, 43, -1, 18, 4, 1, 5, 2, 6, 2, 7, 1, 8, 50, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 51, 0, 0, 0, 3, 44, -1, 18, 4, 1, 5, 2, 6, 2, 7, 1, 8, 52, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 53, 0, 0, 0, 3, 45, -1, 18, 4, 1, 5, 2, 6, 2, 7, 1, 8, 54, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 55, 0, 0, 0, 3, 46, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 56, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 57, 1, 58, 0, 29, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 59, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 30, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 60, 0, 0, 0, 3, 47, -1, 19, 4, 1, 5, 2, 6, 2, 7, 1, 8, 61, 9, 4, 10, 5, 11, 6, 12, 1, 13, 3, 14, 7, 15, 7, 16, 8, 17, 8, 18, 9, 19, 10, 20, 1, 21, 62, 1, 63, 0, 32, 0, 23, 22, -1, 15, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 24, 8, 25, 64, 26, 14, 27, 7, 28, 3, 29, 4, 30, 2, 31, 4, 0, 33, 0, 32, 32, -1, 9, 4, 1, 5, 2, 6, 2, 7, 1, 8, 3, 9, 4, 10, 5, 33, 9, 34, 25, 0, 0, 0, 49, 48, -1, 27, 4, 7, 5, 2, 6, 2, 7, 1, 50, 65, 51, 66, 52, 67, 53, 67, 54, 67, 55, 67, 56, 1, 57, 1, 58, 68, 59, 2, 60, 4, 61, 69, 62, 2, 63, 69, 64, 4, 65, 7, 66, 7, 67, 70, 68, 9, 69, 9, 70, 7, 71, 7, 72, 71, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="0"> 				 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

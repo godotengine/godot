@@ -206,7 +206,7 @@ public class Godot extends Activity implements SensorEventListener
 
 	@Override protected void onDestroy(){
 		
-		if(mPaymentsManager != null ) mPaymentsManager.destroy();
+		//if(mPaymentsManager != null ) mPaymentsManager.destroy();
 		super.onDestroy();
 	}
 	
@@ -350,9 +350,9 @@ public class Godot extends Activity implements SensorEventListener
 		return mPaymentsManager;
 	}
 
-//	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
-//		this.mPaymentsManager = mPaymentsManager;
-//	};
+	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
+		this.mPaymentsManager = mPaymentsManager;
+	};
 
 
 	// Audio

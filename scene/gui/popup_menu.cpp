@@ -495,7 +495,7 @@ void PopupMenu::add_icon_item(const Ref<Texture>& p_icon,const String& p_label,i
 
 	Item item;
 	item.icon=p_icon;
-	item.text=p_label;
+	item.text=XL_MESSAGE(p_label);
 	item.accel=p_accel;
 	item.ID=(p_ID<0)?idcount++:p_ID;
 	items.push_back(item);

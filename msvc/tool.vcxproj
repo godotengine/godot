@@ -1,0 +1,451 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2A45ADE8-19B1-460B-B1B5-36B4636E1057}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ALLOC;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\tools\collada\collada.cpp" />
+    <ClCompile Include="..\tools\doc\doc_data.cpp" />
+    <ClCompile Include="..\tools\docdump\doc_dump.cpp" />
+    <ClCompile Include="..\tools\editor\animation_editor.cpp" />
+    <ClCompile Include="..\tools\editor\call_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\code_editor.cpp" />
+    <ClCompile Include="..\tools\editor\connections_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\console.cpp" />
+    <ClCompile Include="..\tools\editor\create_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\default_saver.cpp" />
+    <ClCompile Include="..\tools\editor\editor_data.cpp" />
+    <ClCompile Include="..\tools\editor\editor_dir_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\editor_file_system.cpp" />
+    <ClCompile Include="..\tools\editor\editor_fonts.cpp" />
+    <ClCompile Include="..\tools\editor\editor_help.cpp" />
+    <ClCompile Include="..\tools\editor\editor_icons.cpp" />
+    <ClCompile Include="..\tools\editor\editor_import_export.cpp" />
+    <ClCompile Include="..\tools\editor\editor_log.cpp" />
+    <ClCompile Include="..\tools\editor\editor_node.cpp" />
+    <ClCompile Include="..\tools\editor\editor_path.cpp" />
+    <ClCompile Include="..\tools\editor\editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\editor_reimport_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\editor_run.cpp" />
+    <ClCompile Include="..\tools\editor\editor_run_native.cpp" />
+    <ClCompile Include="..\tools\editor\editor_run_script.cpp" />
+    <ClCompile Include="..\tools\editor\editor_selection.cpp" />
+    <ClCompile Include="..\tools\editor\editor_settings.cpp" />
+    <ClCompile Include="..\tools\editor\editor_shape_gizmos.cpp" />
+    <ClCompile Include="..\tools\editor\editor_sub_scene.cpp" />
+    <ClCompile Include="..\tools\editor\editor_vu.cpp" />
+    <ClCompile Include="..\tools\editor\file_type_cache.cpp" />
+    <ClCompile Include="..\tools\editor\groups_editor.cpp" />
+    <ClCompile Include="..\tools\editor\import_settings.cpp" />
+    <ClCompile Include="..\tools\editor\optimized_save_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\output_strings.cpp" />
+    <ClCompile Include="..\tools\editor\pane_drag.cpp" />
+    <ClCompile Include="..\tools\editor\progress_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\project_export.cpp" />
+    <ClCompile Include="..\tools\editor\project_manager.cpp" />
+    <ClCompile Include="..\tools\editor\project_settings.cpp" />
+    <ClCompile Include="..\tools\editor\property_editor.cpp" />
+    <ClCompile Include="..\tools\editor\pvrtc_compress.cpp" />
+    <ClCompile Include="..\tools\editor\quick_open.cpp" />
+    <ClCompile Include="..\tools\editor\register_exporters.cpp" />
+    <ClCompile Include="..\tools\editor\reparent_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\resources_dock.cpp" />
+    <ClCompile Include="..\tools\editor\run_settings_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\scene_tree_dock.cpp" />
+    <ClCompile Include="..\tools\editor\scene_tree_editor.cpp" />
+    <ClCompile Include="..\tools\editor\scenes.cpp" />
+    <ClCompile Include="..\tools\editor\scenes_dock.cpp" />
+    <ClCompile Include="..\tools\editor\script_create_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\script_editor_debugger.cpp" />
+    <ClCompile Include="..\tools\editor\settings_config_dialog.cpp" />
+    <ClCompile Include="..\tools\editor\spatial_editor_gizmos.cpp" />
+    <ClCompile Include="..\tools\editor\fileserver\editor_file_server.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_atlas.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_font_import_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_import_collada.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_sample_import_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_scene_import_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_texture_import_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\io_plugins\editor_translation_import_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\animation_data_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\animation_player_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\animation_tree_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\camera_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\canvas_item_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\collision_polygon_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\control_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\cube_grid_theme_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\item_list_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\multimesh_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\particles_2d_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\particles_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\path_2d_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\path_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\resource_preloader_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\rich_text_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\sample_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\sample_library_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\sample_player_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\script_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\shader_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\shader_graph_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\spatial_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\sprite_frames_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\stream_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\style_box_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\theme_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\tile_map_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\editor\plugins\tile_set_editor_plugin.cpp" />
+    <ClCompile Include="..\tools\freetype\freetype\src\autofit\autofit.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftapi.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftbase.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftbbox.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftbdf.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftbitmap.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftcid.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftdebug.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftfstype.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftgasp.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftglyph.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftgxval.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftinit.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftlcdfil.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftmm.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftotval.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftpatent.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftpfr.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftpic.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftstroke.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftsynth.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftsystem.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\fttype1.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftwinfnt.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\base\ftxf86.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\bdf\bdf.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\cache\ftcache.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\cff\cff.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\cid\type1cid.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\gxvalid\gxvalid.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\otvalid\otvalid.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\pcf\pcf.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\pfr\pfr.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\psaux\psaux.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\pshinter\pshinter.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\psnames\psnames.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\raster\raster.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\sfnt\sfnt.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\smooth\smooth.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\truetype\truetype.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\type1\type1.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\type42\type42.c" />
+    <ClCompile Include="..\tools\freetype\freetype\src\winfonts\winfnt.c" />
+    <ClCompile Include="..\platform\android\export\export.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)export_android.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)export_android.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\platform\bb10\export\export.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)export_bb10.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)export_bb10.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\platform\javascript\export\export.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)export_javascript.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)export_javascript.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\platform\osx\export\export.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)export_osx.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)export_osx.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\platform\windows\export\export.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)export_windows.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)export_windows.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\platform\x11\export\export.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)export_x11.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)export_x11.obj</ObjectFileName>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\tools\collada\collada.h" />
+    <ClInclude Include="..\tools\doc\doc_data.h" />
+    <ClInclude Include="..\tools\docdump\doc_dump.h" />
+    <ClInclude Include="..\tools\editor\animation_editor.h" />
+    <ClInclude Include="..\tools\editor\call_dialog.h" />
+    <ClInclude Include="..\tools\editor\code_editor.h" />
+    <ClInclude Include="..\tools\editor\connections_dialog.h" />
+    <ClInclude Include="..\tools\editor\console.h" />
+    <ClInclude Include="..\tools\editor\create_dialog.h" />
+    <ClInclude Include="..\tools\editor\default_saver.h" />
+    <ClInclude Include="..\tools\editor\doc_code_font.h" />
+    <ClInclude Include="..\tools\editor\doc_data_compressed.h" />
+    <ClInclude Include="..\tools\editor\doc_font.h" />
+    <ClInclude Include="..\tools\editor\doc_title_font.h" />
+    <ClInclude Include="..\tools\editor\editor_data.h" />
+    <ClInclude Include="..\tools\editor\editor_dir_dialog.h" />
+    <ClInclude Include="..\tools\editor\editor_file_system.h" />
+    <ClInclude Include="..\tools\editor\editor_fonts.h" />
+    <ClInclude Include="..\tools\editor\editor_help.h" />
+    <ClInclude Include="..\tools\editor\editor_icons.h" />
+    <ClInclude Include="..\tools\editor\editor_import_export.h" />
+    <ClInclude Include="..\tools\editor\editor_log.h" />
+    <ClInclude Include="..\tools\editor\editor_node.h" />
+    <ClInclude Include="..\tools\editor\editor_path.h" />
+    <ClInclude Include="..\tools\editor\editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\editor_reimport_dialog.h" />
+    <ClInclude Include="..\tools\editor\editor_run.h" />
+    <ClInclude Include="..\tools\editor\editor_run_native.h" />
+    <ClInclude Include="..\tools\editor\editor_run_script.h" />
+    <ClInclude Include="..\tools\editor\editor_selection.h" />
+    <ClInclude Include="..\tools\editor\editor_settings.h" />
+    <ClInclude Include="..\tools\editor\editor_shape_gizmos.h" />
+    <ClInclude Include="..\tools\editor\editor_sub_scene.h" />
+    <ClInclude Include="..\tools\editor\editor_vu.h" />
+    <ClInclude Include="..\tools\editor\file_type_cache.h" />
+    <ClInclude Include="..\tools\editor\groups_editor.h" />
+    <ClInclude Include="..\tools\editor\import_settings.h" />
+    <ClInclude Include="..\tools\editor\optimized_save_dialog.h" />
+    <ClInclude Include="..\tools\editor\output_strings.h" />
+    <ClInclude Include="..\tools\editor\pane_drag.h" />
+    <ClInclude Include="..\tools\editor\progress_dialog.h" />
+    <ClInclude Include="..\tools\editor\project_export.h" />
+    <ClInclude Include="..\tools\editor\project_manager.h" />
+    <ClInclude Include="..\tools\editor\project_settings.h" />
+    <ClInclude Include="..\tools\editor\property_editor.h" />
+    <ClInclude Include="..\tools\editor\pvrtc_compress.h" />
+    <ClInclude Include="..\tools\editor\quick_open.h" />
+    <ClInclude Include="..\tools\editor\register_exporters.h" />
+    <ClInclude Include="..\tools\editor\reparent_dialog.h" />
+    <ClInclude Include="..\tools\editor\resources_dock.h" />
+    <ClInclude Include="..\tools\editor\run_settings_dialog.h" />
+    <ClInclude Include="..\tools\editor\scene_tree_dock.h" />
+    <ClInclude Include="..\tools\editor\scene_tree_editor.h" />
+    <ClInclude Include="..\tools\editor\scenes.h" />
+    <ClInclude Include="..\tools\editor\scenes_dock.h" />
+    <ClInclude Include="..\tools\editor\script_create_dialog.h" />
+    <ClInclude Include="..\tools\editor\script_editor_debugger.h" />
+    <ClInclude Include="..\tools\editor\settings_config_dialog.h" />
+    <ClInclude Include="..\tools\editor\spatial_editor_gizmos.h" />
+    <ClInclude Include="..\tools\editor\fileserver\editor_file_server.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_atlas.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_font_import_plugin.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_import_collada.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_sample_import_plugin.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_scene_import_plugin.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_texture_import_plugin.h" />
+    <ClInclude Include="..\tools\editor\io_plugins\editor_translation_import_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\animation_data_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\animation_player_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\animation_tree_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\camera_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\canvas_item_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\collision_polygon_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\control_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\cube_grid_theme_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\item_list_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\multimesh_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\particles_2d_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\particles_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\path_2d_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\path_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\resource_preloader_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\rich_text_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\sample_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\sample_library_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\sample_player_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\script_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\shader_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\shader_graph_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\spatial_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\sprite_frames_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\stream_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\style_box_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\theme_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\tile_map_editor_plugin.h" />
+    <ClInclude Include="..\tools\editor\plugins\tile_set_editor_plugin.h" />
+    <ClInclude Include="..\tools\freetype\ft2build.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\ftoption.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\freetype.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftadvanc.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftautoh.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftbbox.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftbdf.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftbitmap.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftbzip2.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftcache.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftcffdrv.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftchapters.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftcid.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\fterrdef.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\fterrors.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftgasp.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftglyph.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftgxval.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftgzip.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftimage.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftincrem.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftlcdfil.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftlist.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftlzw.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftmac.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftmm.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftmodapi.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftmoderr.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftotval.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftoutln.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftpfr.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftrender.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftsizes.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftsnames.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftstroke.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftsynth.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftsystem.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\fttrigon.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftttdrv.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\fttypes.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftwinfnt.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ftxf86.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\t1tables.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ttnameid.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\tttables.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\tttags.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\ttunpat.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\config\ftheader.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\config\ftoption.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\config\ftstdlib.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\autohint.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftcalc.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftdebug.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftdriver.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftgloadr.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftmemory.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftobjs.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftpic.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftrfork.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftserv.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftstream.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\fttrace.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\ftvalid.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\internal.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\psaux.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\pshints.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\sfnt.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\t1types.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\tttypes.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svbdf.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svcid.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svgldict.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svgxval.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svkern.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svmm.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svotval.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svpfr.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svpostnm.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svprop.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svpscmap.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svpsinfo.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svsfnt.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svttcmap.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svtteng.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svttglyf.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svwinfnt.h" />
+    <ClInclude Include="..\tools\freetype\freetype\include\freetype\internal\services\svxf86nm.h" />
+    <ClInclude Include="..\tools\freetype\freetype\src\base\ftbase.h" />
+    <ClInclude Include="..\tools\freetype\freetype\src\bdf\bdf.h" />
+    <ClInclude Include="..\tools\freetype\freetype\src\gxvalid\gxvalid.h" />
+    <ClInclude Include="..\tools\freetype\freetype\src\otvalid\otvalid.h" />
+    <ClInclude Include="..\tools\freetype\freetype\src\pcf\pcf.h" />
+    <ClInclude Include="..\tools\freetype\freetype\src\winfonts\winfnt.h" />
+    <ClInclude Include="..\platform\android\export\export.h" />
+    <ClInclude Include="..\platform\bb10\export\export.h" />
+    <ClInclude Include="..\platform\javascript\export\export.h" />
+    <ClInclude Include="..\platform\osx\export\export.h" />
+    <ClInclude Include="..\platform\windows\export\export.h" />
+    <ClInclude Include="..\platform\x11\export\export.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

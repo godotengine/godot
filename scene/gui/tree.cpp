@@ -2880,7 +2880,7 @@ bool Tree::are_column_titles_visible() const {
 void Tree::set_column_title(int p_column,const String& p_title) {
 
 	ERR_FAIL_INDEX(p_column,columns.size());
-	columns[p_column].title=p_title;
+	columns[p_column].title=XL_MESSAGE(p_title);
 	update();
 }
 

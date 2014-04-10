@@ -6,16 +6,6 @@ import os.path
 import glob
 import sys
 import methods
-import multiprocessing
-
-# Enable aggresive compile mode if building on a multi core box
-# only is we have not set the number of jobs already or we do
-# not want it
-if ARGUMENTS.get('spawn_jobs', 'no') == 'yes' and \
-	int(GetOption('num_jobs')) <= 1:
-	NUM_JOBS = multiprocessing.cpu_count()
-	if NUM_JOBS > 1:
-		SetOption('num_jobs', NUM_JOBS+1)
 
 methods.update_version()
 
@@ -104,7 +94,7 @@ opts.Add('platform','Platform: '+str(platform_list)+'(sfml).',"")
 opts.Add('python','Build Python Support: (yes/no)','no')
 opts.Add('squirrel','Build Squirrel Support: (yes/no)','no')
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
-opts.Add('lua','Build Lua Support: (yes/no)','no')
+opts.Add('lua','Build Lua Support: (yes/no)','yes')
 opts.Add('rfd','Remote Filesystem Driver: (yes/no)','no')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
@@ -220,6 +210,8 @@ for p in platform_list:
 		sys.path.remove(tmppath)
 		sys.modules.pop('config')
 
+        if (env['lua']=='yes'):
+		env.Append(CPPFLAGS=['-DLUASCRIPT_ENABLED']);
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);

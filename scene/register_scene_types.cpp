@@ -211,6 +211,8 @@ static SceneFormatLoaderObject *scene_loader_object=NULL;
 //static SceneFormatLoaderScript *scene_loader_script=NULL;
 #endif
 
+static ResourceFormatLoaderTtfFont *resource_loader_ttf=NULL;
+
 #ifdef OLD_SCENE_FORMAT_ENABLED
 SceneIO *scene_io=NULL;
 #endif
@@ -263,6 +265,14 @@ void register_scene_types() {
 //	SceneLoader::add_scene_format_loader(scene_loader_script);
 #endif
 
+	resource_loader_ttf=memnew( ResourceFormatLoaderTtfFont );
+    ResourceLoader::add_resource_format_loader(resource_loader_ttf);
+
+#ifdef FREETYPE_ENABLED
+	resource_loader_ttf=memnew( ResourceFormatLoaderTtfFont );
+    ResourceLoader::add_resource_format_loader(resource_loader_ttf);
+#endif
+
 	make_default_theme();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -297,6 +307,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<MenuButton>();
 	ObjectTypeDB::register_type<CheckButton>();
 	ObjectTypeDB::register_type<Panel>();
+	ObjectTypeDB::register_type<TooltipPanel>();
+	ObjectTypeDB::register_type<TooltipLabel>();
 	ObjectTypeDB::register_type<Range>();
 
 	OS::get_singleton()->yield(); //may take time to init
@@ -566,7 +578,7 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); //may take time to init
 
-
+	make_default_theme();
 }
 
 void unregister_scene_types() {
@@ -590,5 +602,6 @@ void unregister_scene_types() {
 //	memdelete( scene_loader_script );
 	memdelete( scene_io );
 #endif
+	memdelete( resource_loader_ttf );
 	SceneStringNames::free();
 }

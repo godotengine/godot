@@ -21,9 +21,8 @@
 #include "bold_font.inc"
 #include "mono_font.inc"
 
-#include "font_normal.inc"
-#include "font_source.inc"
-#include "font_large.inc"
+#include "editor_fonts.inc"
+#include "core/io/compression.h"
 
 typedef Map<const void*,Ref<ImageTexture> > TexCacheMap;
 
@@ -148,6 +147,57 @@ static Ref<Font> make_font2(int p_height,int p_ascent, int p_charcount, const in
 	return font;
 }
 
+// font texture pages support
+static Ref<Font> make_font3(int p_height,int p_ascent, int p_charcount, const int *p_char_rects,int p_kerning_count,const int *p_kernings,int p_w, int p_h, const unsigned char **p_img, const int pages) {
+
+
+	Ref<Font> font( memnew( Font ) );
+
+	for (int p=0; p<pages; ++p) {
+
+		DVector<uint8_t> img;
+		img.resize(p_w*p_h*2);
+		{
+			DVector<uint8_t>::Write w = img.write();
+			for(int i=0;i<(p_w*p_h*2);i++) {
+				w[i]=p_img[p][i];
+			}
+		}
+		Image image(p_w,p_h,0,Image::FORMAT_GRAYSCALE_ALPHA,img);
+		Ref<ImageTexture> tex = memnew( ImageTexture );
+		tex->create_from_image(image);
+
+		font->add_texture( tex );
+	}
+	
+	for (int i=0;i<p_charcount;i++) {
+
+		const int *c = &p_char_rects[i*9];
+
+		int chr=c[0];
+		Rect2 frect;
+		frect.pos.x=c[1];
+		frect.pos.y=c[2];
+		frect.size.x=c[3];
+		frect.size.y=c[4];
+		Point2 align( c[6], c[5]);
+		int advance=c[7];
+		int pageid=c[8];
+
+		font->add_char( chr, pageid, frect, align,advance );
+
+	}
+
+	for(int i=0;i<p_kerning_count;i++) {
+
+		font->add_kerning_pair(p_kernings[i*3+0],p_kernings[i*3+1],p_kernings[i*3+2]);
+	}
+
+	font->set_height( p_height );
+	font->set_ascent( p_ascent );
+
+	return font;
+}
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left=-1, float p_margin_top=-1, float p_margin_right=-1, float p_margin_botton=-1) {
 
@@ -169,13 +219,49 @@ void make_default_theme() {
 	tex_cache = memnew( TexCacheMap );
 
 	uint32_t last=OS::get_singleton()->get_ticks_msec();
-
 	Ref<Theme> t( memnew( Theme ) );
+#ifdef TOOLS_ENABLED
+    Ref<Font> default_font;
+    Ref<Font> source_font;
+    Ref<Font> large_font;
+    bool font_ok = false;
+    //--------patch-----------
+    String exe_path = OS::get_singleton()->get_executable_path();
+    exe_path = exe_path.get_base_dir();
+    //Load ttf-font first.
+    String font_path = exe_path + "/fonts/default.ttc";
+    Ref<TtfFont> ttf_font = ResourceLoader::load(font_path);
+    if(ttf_font.is_valid())
+    {
+        Ref<Font> def_font=Ref<Font>(memnew (Font));
+        def_font->set_ttf_path(font_path, 18);
+	    default_font=def_font;
+	    source_font=def_font;
+	    large_font=Ref<Font>(memnew (Font));
+        large_font->set_ttf_path(font_path, 22);
+        //
+        font_ok = true;
+    }
+    //Then try the bmp-font.
+    if( !font_ok )
+    {
+        Ref<Font> def_font = ( memnew( Font ) );
+        def_font->create_from_fnt(exe_path+"/fonts/default_fnt.fnt");
+        default_font = def_font;
+        source_font = default_font;
+        large_font = default_font;
+        font_ok = true;
+    }
+    //If still can't create font,try the builtin font data.
+    if( !font_ok )
+    {
+	    default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
+	    source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
+	    large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
+        font_ok = true;
+    }
+#endif
 
-	//Ref<Font> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
-	Ref<Font> default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
-	Ref<Font> source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
-	Ref<Font> large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
 
 	t->set_stylebox("panel","Panel", make_stylebox( panel_bg_png,0,0,0,0) );
 
@@ -500,10 +586,11 @@ void make_default_theme() {
 	t->set_constant("separation","VSeparator", 7);
 
 	t->set_icon("close","Icons", make_icon(icon_close_png));
-	t->set_font("source","Fonts", source_font);
 	t->set_font("normal","Fonts", default_font );
+	//
+	t->set_font("source","Fonts", source_font);
 	t->set_font("large","Fonts", large_font );
-
+    t->set_default_theme_font( default_font );
 
 
 	t->set_constant("margin","Dialogs",10);

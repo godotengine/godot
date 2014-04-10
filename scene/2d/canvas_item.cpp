@@ -780,6 +780,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_set_transform","pos","rot","scale"),&CanvasItem::draw_set_transform);
 	ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 	ObjectTypeDB::bind_method(_MD("get_global_transform"),&CanvasItem::get_global_transform);
+	ObjectTypeDB::bind_method(_MD("get_global_transform_with_canvas"),&CanvasItem::get_global_transform_with_canvas);
 	ObjectTypeDB::bind_method(_MD("get_viewport_transform"),&CanvasItem::get_viewport_transform);
 	ObjectTypeDB::bind_method(_MD("get_viewport_rect"),&CanvasItem::get_viewport_rect);
 	ObjectTypeDB::bind_method(_MD("get_canvas"),&CanvasItem::get_canvas);

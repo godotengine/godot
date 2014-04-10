@@ -1,0 +1,899 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Shipping|Win32">
+      <Configuration>Shipping</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C5398C47-695D-43E8-8C5D-9332ADFD99B3}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\drivers\webp;..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ALLOC;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\drivers\webp;..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\drivers\webp;..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\drivers\register_driver_types.cpp" />
+    <ClCompile Include="..\drivers\alsa\audio_driver_alsa.cpp" />
+    <ClCompile Include="..\drivers\nedmalloc\memory_pool_static_nedmalloc.cpp" />
+    <ClCompile Include="..\drivers\nedmalloc\nedmalloc.cpp" />
+    <ClCompile Include="..\drivers\squish\alpha.cpp" />
+    <ClCompile Include="..\drivers\squish\clusterfit.cpp" />
+    <ClCompile Include="..\drivers\squish\colourblock.cpp" />
+    <ClCompile Include="..\drivers\squish\colourfit.cpp" />
+    <ClCompile Include="..\drivers\squish\colourset.cpp" />
+    <ClCompile Include="..\drivers\squish\image_compress_squish.cpp" />
+    <ClCompile Include="..\drivers\squish\maths.cpp" />
+    <ClCompile Include="..\drivers\squish\rangefit.cpp" />
+    <ClCompile Include="..\drivers\squish\singlecolourfit.cpp" />
+    <ClCompile Include="..\drivers\squish\squish.cpp" />
+    <ClCompile Include="..\drivers\theora\analyze.c" />
+    <ClCompile Include="..\drivers\theora\apiwrapper.c" />
+    <ClCompile Include="..\drivers\theora\bitpack.c" />
+    <ClCompile Include="..\drivers\theora\cpu.c" />
+    <ClCompile Include="..\drivers\theora\decapiwrapper.c" />
+    <ClCompile Include="..\drivers\theora\decinfo.c" />
+    <ClCompile Include="..\drivers\theora\decode.c" />
+    <ClCompile Include="..\drivers\theora\dequant.c" />
+    <ClCompile Include="..\drivers\theora\encapiwrapper.c" />
+    <ClCompile Include="..\drivers\theora\encfrag.c" />
+    <ClCompile Include="..\drivers\theora\encinfo.c" />
+    <ClCompile Include="..\drivers\theora\encode.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)encode_theora.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)encode_theora.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)encode_theora.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\theora\enquant.c" />
+    <ClCompile Include="..\drivers\theora\fdct.c" />
+    <ClCompile Include="..\drivers\theora\fragment.c" />
+    <ClCompile Include="..\drivers\theora\huffdec.c" />
+    <ClCompile Include="..\drivers\theora\huffenc.c" />
+    <ClCompile Include="..\drivers\theora\idct.c" />
+    <ClCompile Include="..\drivers\theora\info.c" />
+    <ClCompile Include="..\drivers\theora\internal.c" />
+    <ClCompile Include="..\drivers\theora\mathops.c" />
+    <ClCompile Include="..\drivers\theora\mcenc.c" />
+    <ClCompile Include="..\drivers\theora\quant.c" />
+    <ClCompile Include="..\drivers\theora\rate.c" />
+    <ClCompile Include="..\drivers\theora\state.c" />
+    <ClCompile Include="..\drivers\theora\tokenize.c" />
+    <ClCompile Include="..\drivers\theora\video_stream_theora.cpp" />
+    <ClCompile Include="..\drivers\trex\regex.cpp" />
+    <ClCompile Include="..\drivers\trex\trex.c" />
+    <ClCompile Include="..\drivers\unix\dir_access_unix.cpp" />
+    <ClCompile Include="..\drivers\unix\file_access_unix.cpp" />
+    <ClCompile Include="..\drivers\unix\ip_unix.cpp" />
+    <ClCompile Include="..\drivers\unix\memory_pool_static_malloc.cpp" />
+    <ClCompile Include="..\drivers\unix\mutex_posix.cpp" />
+    <ClCompile Include="..\drivers\unix\os_unix.cpp" />
+    <ClCompile Include="..\drivers\unix\semaphore_posix.cpp" />
+    <ClCompile Include="..\drivers\unix\stream_peer_tcp_posix.cpp" />
+    <ClCompile Include="..\drivers\unix\tcp_server_posix.cpp" />
+    <ClCompile Include="..\drivers\unix\thread_posix.cpp" />
+    <ClCompile Include="..\drivers\vorbis\analysis.c" />
+    <ClCompile Include="..\drivers\vorbis\audio_stream_ogg_vorbis.cpp" />
+    <ClCompile Include="..\drivers\vorbis\bitrate.c" />
+    <ClCompile Include="..\drivers\vorbis\block.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)block_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)block_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)block_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\vorbis\codebook.c" />
+    <ClCompile Include="..\drivers\vorbis\envelope.c" />
+    <ClCompile Include="..\drivers\vorbis\floor0.c" />
+    <ClCompile Include="..\drivers\vorbis\floor1.c" />
+    <ClCompile Include="..\drivers\vorbis\info.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)info_vorbis.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)info_vorbis.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)info_vorbis.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\vorbis\lookup.c" />
+    <ClCompile Include="..\drivers\vorbis\lpc.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)lpc_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)lpc_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)lpc_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\vorbis\lsp.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)lsp_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)lsp_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)lsp_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\vorbis\mapping0.c" />
+    <ClCompile Include="..\drivers\vorbis\mdct.c" />
+    <ClCompile Include="..\drivers\vorbis\psy.c" />
+    <ClCompile Include="..\drivers\vorbis\registry.c" />
+    <ClCompile Include="..\drivers\vorbis\res0.c" />
+    <ClCompile Include="..\drivers\vorbis\sharedbook.c" />
+    <ClCompile Include="..\drivers\vorbis\smallft.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)smallft_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)smallft_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)smallft_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\vorbis\synthesis.c" />
+    <ClCompile Include="..\drivers\vorbis\tone.c" />
+    <ClCompile Include="..\drivers\vorbis\vorbisenc.c" />
+    <ClCompile Include="..\drivers\vorbis\vorbisfile.c" />
+    <ClCompile Include="..\drivers\vorbis\window.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)window_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)window_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)window_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\image_loader_webp.cpp" />
+    <ClCompile Include="..\drivers\webp\dec\alpha.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)alpha_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)alpha_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)alpha_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\dec\buffer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)buffer_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)buffer_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)buffer_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\dec\frame.c" />
+    <ClCompile Include="..\drivers\webp\dec\idec.c" />
+    <ClCompile Include="..\drivers\webp\dec\io.c" />
+    <ClCompile Include="..\drivers\webp\dec\layer.c" />
+    <ClCompile Include="..\drivers\webp\dec\quant.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)quant_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)quant_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)quant_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\dec\tree.c" />
+    <ClCompile Include="..\drivers\webp\dec\vp8.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)vp8_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)vp8_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)vp8_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\dec\vp8l.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)vp8l_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)vp8l_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)vp8l_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\dec\webp.c" />
+    <ClCompile Include="..\drivers\webp\dsp\cpu.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)cpu__webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)cpu__webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)cpu__webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\dsp\dec.c" />
+    <ClCompile Include="..\drivers\webp\dsp\dec_neon.c" />
+    <ClCompile Include="..\drivers\webp\dsp\dec_sse2.c" />
+    <ClCompile Include="..\drivers\webp\dsp\enc.c" />
+    <ClCompile Include="..\drivers\webp\dsp\enc_sse2.c" />
+    <ClCompile Include="..\drivers\webp\dsp\lossless.c" />
+    <ClCompile Include="..\drivers\webp\dsp\upsampling.c" />
+    <ClCompile Include="..\drivers\webp\dsp\upsampling_sse2.c" />
+    <ClCompile Include="..\drivers\webp\dsp\yuv.c" />
+    <ClCompile Include="..\drivers\webp\enc\alpha.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)alpha_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)alpha_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)alpha_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\enc\analysis.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)analysis_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)analysis_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)analysis_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\enc\backward_references.c" />
+    <ClCompile Include="..\drivers\webp\enc\config.c" />
+    <ClCompile Include="..\drivers\webp\enc\cost.c" />
+    <ClCompile Include="..\drivers\webp\enc\filter.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)filter_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)filter_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)filter_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\enc\frame.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)frame_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)frame_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)frame_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\enc\histogram.c" />
+    <ClCompile Include="..\drivers\webp\enc\iterator.c" />
+    <ClCompile Include="..\drivers\webp\enc\layer.c" />
+    <ClCompile Include="..\drivers\webp\enc\picture.c" />
+    <ClCompile Include="..\drivers\webp\enc\quant.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)quant_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)quant_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)quant_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\enc\syntax.c" />
+    <ClCompile Include="..\drivers\webp\enc\tree.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)tree_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)tree_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)tree_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\enc\vp8l.c" />
+    <ClCompile Include="..\drivers\webp\enc\webpenc.c" />
+    <ClCompile Include="..\drivers\webp\mux\demux.c" />
+    <ClCompile Include="..\drivers\webp\mux\muxedit.c" />
+    <ClCompile Include="..\drivers\webp\mux\muxinternal.c" />
+    <ClCompile Include="..\drivers\webp\mux\muxread.c" />
+    <ClCompile Include="..\drivers\webp\utils\bit_reader.c" />
+    <ClCompile Include="..\drivers\webp\utils\bit_writer.c" />
+    <ClCompile Include="..\drivers\webp\utils\color_cache.c" />
+    <ClCompile Include="..\drivers\webp\utils\filters.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)filters_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)filters_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)filters_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\utils\huffman.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)huffman_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)huffman_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)huffman_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\drivers\webp\utils\huffman_encode.c" />
+    <ClCompile Include="..\drivers\webp\utils\quant_levels.c" />
+    <ClCompile Include="..\drivers\webp\utils\rescaler.c" />
+    <ClCompile Include="..\drivers\webp\utils\thread.c" />
+    <ClCompile Include="..\drivers\webp\utils\utils.c" />
+    <ClCompile Include="..\drivers\windows\dir_access_windows.cpp" />
+    <ClCompile Include="..\drivers\windows\file_access_windows.cpp" />
+    <ClCompile Include="..\drivers\windows\mutex_windows.cpp" />
+    <ClCompile Include="..\drivers\windows\semaphore_windows.cpp" />
+    <ClCompile Include="..\drivers\windows\shell_windows.cpp" />
+    <ClCompile Include="..\drivers\windows\thread_windows.cpp" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\adler32.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\compress.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\crc32.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\deflate.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\infback.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\inffast.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\inflate.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\inftrees.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\trees.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\uncompr.c" />
+    <ClCompile Include="..\drivers\builtin_zlib\zlib\zutil.c" />
+    <ClCompile Include="..\drivers\chibi\cp_envelope.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_file_access_wrapper.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_instrument.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_it.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_it_info.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_it_instruments.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_it_patterns.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_it_samples.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_mod.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_s3m.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_loader_xm.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_pattern.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_control.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_effects.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_envelopes.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_events.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_filter.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_nna.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_notes.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_reserved.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_player_data_utils.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_sample.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_sample_manager.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_song.cpp" />
+    <ClCompile Include="..\drivers\chibi\cp_tables.cpp" />
+    <ClCompile Include="..\drivers\chibi\event_stream_chibi.cpp" />
+    <ClCompile Include="..\drivers\convex_decomp\b2d_decompose.cpp" />
+    <ClCompile Include="..\drivers\convex_decomp\b2Polygon.cpp" />
+    <ClCompile Include="..\drivers\convex_decomp\b2Triangle.cpp" />
+    <ClCompile Include="..\drivers\dds\texture_loader_dds.cpp" />
+    <ClCompile Include="..\drivers\etc1\image_etc.cpp" />
+    <ClCompile Include="..\drivers\etc1\rg_etc1.cpp" />
+    <ClCompile Include="..\drivers\gl_context\context_gl.cpp" />
+    <ClCompile Include="..\drivers\gl_context\glew.c" />
+    <ClCompile Include="..\drivers\gles1\rasterizer_gles1.cpp" />
+    <ClCompile Include="..\drivers\gles2\rasterizer_gles2.cpp" />
+    <ClCompile Include="..\drivers\gles2\rasterizer_instance_gles2.cpp" />
+    <ClCompile Include="..\drivers\gles2\shader_compiler_gles2.cpp" />
+    <ClCompile Include="..\drivers\gles2\shader_gles2.cpp" />
+    <ClCompile Include="..\drivers\jpg\image_loader_jpg.cpp" />
+    <ClCompile Include="..\drivers\jpg\jidctflt.c" />
+    <ClCompile Include="..\drivers\jpg\tinyjpeg.c" />
+    <ClCompile Include="..\drivers\mpc\audio_stream_mpc.cpp" />
+    <ClCompile Include="..\drivers\mpc\huffman.c" />
+    <ClCompile Include="..\drivers\mpc\mpc_bits_reader.c" />
+    <ClCompile Include="..\drivers\mpc\mpc_decoder.c" />
+    <ClCompile Include="..\drivers\mpc\mpc_demux.c" />
+    <ClCompile Include="..\drivers\mpc\mpc_reader.c" />
+    <ClCompile Include="..\drivers\mpc\requant.c" />
+    <ClCompile Include="..\drivers\mpc\streaminfo.c" />
+    <ClCompile Include="..\drivers\mpc\synth_filter.c" />
+    <ClCompile Include="..\drivers\ogg\bitwise.c" />
+    <ClCompile Include="..\drivers\ogg\framing.c" />
+    <ClCompile Include="..\drivers\png\example.c" />
+    <ClCompile Include="..\drivers\png\image_loader_png.cpp" />
+    <ClCompile Include="..\drivers\png\png.c" />
+    <ClCompile Include="..\drivers\png\pngerror.c" />
+    <ClCompile Include="..\drivers\png\pngget.c" />
+    <ClCompile Include="..\drivers\png\pngmem.c" />
+    <ClCompile Include="..\drivers\png\pngpread.c" />
+    <ClCompile Include="..\drivers\png\pngread.c" />
+    <ClCompile Include="..\drivers\png\pngrio.c" />
+    <ClCompile Include="..\drivers\png\pngrtran.c" />
+    <ClCompile Include="..\drivers\png\pngrutil.c" />
+    <ClCompile Include="..\drivers\png\pngset.c" />
+    <ClCompile Include="..\drivers\png\pngtrans.c" />
+    <ClCompile Include="..\drivers\png\pngwio.c" />
+    <ClCompile Include="..\drivers\png\pngwrite.c" />
+    <ClCompile Include="..\drivers\png\pngwtran.c" />
+    <ClCompile Include="..\drivers\png\pngwutil.c" />
+    <ClCompile Include="..\drivers\png\resource_saver_png.cpp" />
+    <ClCompile Include="..\drivers\pvr\texture_loader_pvr.cpp" />
+    <ClCompile Include="..\drivers\rtaudio\audio_driver_rtaudio.cpp" />
+    <ClCompile Include="..\drivers\rtaudio\RtAudio.cpp" />
+    <ClCompile Include="..\drivers\speex\audio_stream_speex.cpp" />
+    <ClCompile Include="..\drivers\speex\bits.c" />
+    <ClCompile Include="..\drivers\speex\buffer.c" />
+    <ClCompile Include="..\drivers\speex\cb_search.c" />
+    <ClCompile Include="..\drivers\speex\exc_10_16_table.c" />
+    <ClCompile Include="..\drivers\speex\exc_10_32_table.c" />
+    <ClCompile Include="..\drivers\speex\exc_20_32_table.c" />
+    <ClCompile Include="..\drivers\speex\exc_5_256_table.c" />
+    <ClCompile Include="..\drivers\speex\exc_5_64_table.c" />
+    <ClCompile Include="..\drivers\speex\exc_8_128_table.c" />
+    <ClCompile Include="..\drivers\speex\fftwrap.c" />
+    <ClCompile Include="..\drivers\speex\filterbank.c" />
+    <ClCompile Include="..\drivers\speex\filters.c" />
+    <ClCompile Include="..\drivers\speex\gain_table.c" />
+    <ClCompile Include="..\drivers\speex\gain_table_lbr.c" />
+    <ClCompile Include="..\drivers\speex\hexc_10_32_table.c" />
+    <ClCompile Include="..\drivers\speex\hexc_table.c" />
+    <ClCompile Include="..\drivers\speex\high_lsp_tables.c" />
+    <ClCompile Include="..\drivers\speex\jitter.c" />
+    <ClCompile Include="..\drivers\speex\kiss_fft.c" />
+    <ClCompile Include="..\drivers\speex\kiss_fftr.c" />
+    <ClCompile Include="..\drivers\speex\lpc.c" />
+    <ClCompile Include="..\drivers\speex\lsp.c" />
+    <ClCompile Include="..\drivers\speex\lsp_tables_nb.c" />
+    <ClCompile Include="..\drivers\speex\ltp.c" />
+    <ClCompile Include="..\drivers\speex\mdf.c" />
+    <ClCompile Include="..\drivers\speex\modes.c" />
+    <ClCompile Include="..\drivers\speex\modes_wb.c" />
+    <ClCompile Include="..\drivers\speex\nb_celp.c" />
+    <ClCompile Include="..\drivers\speex\preprocess.c" />
+    <ClCompile Include="..\drivers\speex\quant_lsp.c" />
+    <ClCompile Include="..\drivers\speex\resample.c" />
+    <ClCompile Include="..\drivers\speex\sb_celp.c" />
+    <ClCompile Include="..\drivers\speex\scal.c" />
+    <ClCompile Include="..\drivers\speex\smallft.c" />
+    <ClCompile Include="..\drivers\speex\speex.c" />
+    <ClCompile Include="..\drivers\speex\speex_callbacks.c" />
+    <ClCompile Include="..\drivers\speex\speex_header.c" />
+    <ClCompile Include="..\drivers\speex\stereo.c" />
+    <ClCompile Include="..\drivers\speex\vbr.c" />
+    <ClCompile Include="..\drivers\speex\vq.c" />
+    <ClCompile Include="..\drivers\speex\window.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_aux.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_base.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_bit.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_debug.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_ffi.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_init.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_io.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_jit.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_math.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_os.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_package.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_string.c" />
+    <ClCompile Include="..\drivers\luajit\src\lib_table.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_alloc.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_api.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_asm.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_bc.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_bcread.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_bcwrite.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_carith.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_ccall.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_ccallback.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_cconv.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_cdata.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_char.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_clib.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_cparse.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_crecord.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_ctype.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_debug.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_dispatch.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_err.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_ffrecord.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_func.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_gc.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_gdbjit.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_ir.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_lex.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_lib.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_load.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_mcode.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_meta.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_obj.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_dce.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_fold.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_loop.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_mem.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_narrow.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_sink.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_opt_split.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_parse.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_record.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_snap.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_state.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_str.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_strscan.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_tab.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_trace.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_udata.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_vmevent.c" />
+    <ClCompile Include="..\drivers\luajit\src\lj_vmmath.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\drivers\register_driver_types.h" />
+    <ClInclude Include="..\drivers\alsa\audio_driver_alsa.h" />
+    <ClInclude Include="..\drivers\nedmalloc\malloc.c.h" />
+    <ClInclude Include="..\drivers\nedmalloc\memory_pool_static_nedmalloc.h" />
+    <ClInclude Include="..\drivers\nedmalloc\nedmalloc.h" />
+    <ClInclude Include="..\drivers\squish\alpha.h" />
+    <ClInclude Include="..\drivers\squish\clusterfit.h" />
+    <ClInclude Include="..\drivers\squish\colourblock.h" />
+    <ClInclude Include="..\drivers\squish\colourfit.h" />
+    <ClInclude Include="..\drivers\squish\colourset.h" />
+    <ClInclude Include="..\drivers\squish\config.h" />
+    <ClInclude Include="..\drivers\squish\image_compress_squish.h" />
+    <ClInclude Include="..\drivers\squish\maths.h" />
+    <ClInclude Include="..\drivers\squish\rangefit.h" />
+    <ClInclude Include="..\drivers\squish\simd.h" />
+    <ClInclude Include="..\drivers\squish\simd_float.h" />
+    <ClInclude Include="..\drivers\squish\simd_sse.h" />
+    <ClInclude Include="..\drivers\squish\simd_ve.h" />
+    <ClInclude Include="..\drivers\squish\singlecolourfit.h" />
+    <ClInclude Include="..\drivers\squish\squish.h" />
+    <ClInclude Include="..\drivers\theora\apiwrapper.h" />
+    <ClInclude Include="..\drivers\theora\bitpack.h" />
+    <ClInclude Include="..\drivers\theora\codec.h" />
+    <ClInclude Include="..\drivers\theora\cpu.h" />
+    <ClInclude Include="..\drivers\theora\dct.h" />
+    <ClInclude Include="..\drivers\theora\decint.h" />
+    <ClInclude Include="..\drivers\theora\dequant.h" />
+    <ClInclude Include="..\drivers\theora\encint.h" />
+    <ClInclude Include="..\drivers\theora\enquant.h" />
+    <ClInclude Include="..\drivers\theora\huffdec.h" />
+    <ClInclude Include="..\drivers\theora\huffenc.h" />
+    <ClInclude Include="..\drivers\theora\huffman.h" />
+    <ClInclude Include="..\drivers\theora\internal.h" />
+    <ClInclude Include="..\drivers\theora\mathops.h" />
+    <ClInclude Include="..\drivers\theora\modedec.h" />
+    <ClInclude Include="..\drivers\theora\ocintrin.h" />
+    <ClInclude Include="..\drivers\theora\quant.h" />
+    <ClInclude Include="..\drivers\theora\theora.h" />
+    <ClInclude Include="..\drivers\theora\theoradec.h" />
+    <ClInclude Include="..\drivers\theora\theoraenc.h" />
+    <ClInclude Include="..\drivers\theora\video_stream_theora.h" />
+    <ClInclude Include="..\drivers\theora\yuv2rgb.h" />
+    <ClInclude Include="..\drivers\trex\regex.h" />
+    <ClInclude Include="..\drivers\trex\trex.h" />
+    <ClInclude Include="..\drivers\trex\TRexpp.h" />
+    <ClInclude Include="..\drivers\unix\dir_access_unix.h" />
+    <ClInclude Include="..\drivers\unix\file_access_unix.h" />
+    <ClInclude Include="..\drivers\unix\ip_unix.h" />
+    <ClInclude Include="..\drivers\unix\memory_pool_static_malloc.h" />
+    <ClInclude Include="..\drivers\unix\mutex_posix.h" />
+    <ClInclude Include="..\drivers\unix\os_unix.h" />
+    <ClInclude Include="..\drivers\unix\semaphore_posix.h" />
+    <ClInclude Include="..\drivers\unix\stream_peer_tcp_posix.h" />
+    <ClInclude Include="..\drivers\unix\tcp_server_posix.h" />
+    <ClInclude Include="..\drivers\unix\thread_posix.h" />
+    <ClInclude Include="..\drivers\vorbis\audio_stream_ogg_vorbis.h" />
+    <ClInclude Include="..\drivers\vorbis\backends.h" />
+    <ClInclude Include="..\drivers\vorbis\bitrate.h" />
+    <ClInclude Include="..\drivers\vorbis\codebook.h" />
+    <ClInclude Include="..\drivers\vorbis\codec.h" />
+    <ClInclude Include="..\drivers\vorbis\codec_internal.h" />
+    <ClInclude Include="..\drivers\vorbis\envelope.h" />
+    <ClInclude Include="..\drivers\vorbis\highlevel.h" />
+    <ClInclude Include="..\drivers\vorbis\lookup.h" />
+    <ClInclude Include="..\drivers\vorbis\lookup_data.h" />
+    <ClInclude Include="..\drivers\vorbis\lpc.h" />
+    <ClInclude Include="..\drivers\vorbis\lsp.h" />
+    <ClInclude Include="..\drivers\vorbis\masking.h" />
+    <ClInclude Include="..\drivers\vorbis\mdct.h" />
+    <ClInclude Include="..\drivers\vorbis\misc.h" />
+    <ClInclude Include="..\drivers\vorbis\os.h" />
+    <ClInclude Include="..\drivers\vorbis\psy.h" />
+    <ClInclude Include="..\drivers\vorbis\registry.h" />
+    <ClInclude Include="..\drivers\vorbis\scales.h" />
+    <ClInclude Include="..\drivers\vorbis\smallft.h" />
+    <ClInclude Include="..\drivers\vorbis\vorbisenc.h" />
+    <ClInclude Include="..\drivers\vorbis\vorbisfile.h" />
+    <ClInclude Include="..\drivers\vorbis\window.h" />
+    <ClInclude Include="..\drivers\vorbis\books\coupled\res_books_51.h" />
+    <ClInclude Include="..\drivers\vorbis\books\coupled\res_books_stereo.h" />
+    <ClInclude Include="..\drivers\vorbis\books\floor\floor_books.h" />
+    <ClInclude Include="..\drivers\vorbis\books\uncoupled\res_books_uncoupled.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\floor_all.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\psych_11.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\psych_16.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\psych_44.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\psych_8.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\residue_16.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\residue_44.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\residue_44p51.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\residue_44u.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\residue_8.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_11.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_16.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_22.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_32.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_44.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_44p51.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_44u.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_8.h" />
+    <ClInclude Include="..\drivers\vorbis\modes\setup_X.h" />
+    <ClInclude Include="..\drivers\webp\decode.h" />
+    <ClInclude Include="..\drivers\webp\encode.h" />
+    <ClInclude Include="..\drivers\webp\format_constants.h" />
+    <ClInclude Include="..\drivers\webp\image_loader_webp.h" />
+    <ClInclude Include="..\drivers\webp\mux.h" />
+    <ClInclude Include="..\drivers\webp\types.h" />
+    <ClInclude Include="..\drivers\webp\dec\decode_vp8.h" />
+    <ClInclude Include="..\drivers\webp\dec\vp8i.h" />
+    <ClInclude Include="..\drivers\webp\dec\vp8li.h" />
+    <ClInclude Include="..\drivers\webp\dec\webpi.h" />
+    <ClInclude Include="..\drivers\webp\dsp\dsp.h" />
+    <ClInclude Include="..\drivers\webp\dsp\lossless.h" />
+    <ClInclude Include="..\drivers\webp\dsp\yuv.h" />
+    <ClInclude Include="..\drivers\webp\enc\backward_references.h" />
+    <ClInclude Include="..\drivers\webp\enc\cost.h" />
+    <ClInclude Include="..\drivers\webp\enc\histogram.h" />
+    <ClInclude Include="..\drivers\webp\enc\vp8enci.h" />
+    <ClInclude Include="..\drivers\webp\enc\vp8li.h" />
+    <ClInclude Include="..\drivers\webp\mux\muxi.h" />
+    <ClInclude Include="..\drivers\webp\utils\bit_reader.h" />
+    <ClInclude Include="..\drivers\webp\utils\bit_writer.h" />
+    <ClInclude Include="..\drivers\webp\utils\color_cache.h" />
+    <ClInclude Include="..\drivers\webp\utils\filters.h" />
+    <ClInclude Include="..\drivers\webp\utils\huffman.h" />
+    <ClInclude Include="..\drivers\webp\utils\huffman_encode.h" />
+    <ClInclude Include="..\drivers\webp\utils\quant_levels.h" />
+    <ClInclude Include="..\drivers\webp\utils\rescaler.h" />
+    <ClInclude Include="..\drivers\webp\utils\thread.h" />
+    <ClInclude Include="..\drivers\webp\utils\utils.h" />
+    <ClInclude Include="..\drivers\windows\dir_access_windows.h" />
+    <ClInclude Include="..\drivers\windows\file_access_windows.h" />
+    <ClInclude Include="..\drivers\windows\mutex_windows.h" />
+    <ClInclude Include="..\drivers\windows\semaphore_windows.h" />
+    <ClInclude Include="..\drivers\windows\shell_windows.h" />
+    <ClInclude Include="..\drivers\windows\thread_windows.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\crc32.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\deflate.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\inffast.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\inffixed.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\inflate.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\inftrees.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\trees.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\zconf.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\zconf.in.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\zlib.h" />
+    <ClInclude Include="..\drivers\builtin_zlib\zlib\zutil.h" />
+    <ClInclude Include="..\drivers\chibi\cp_config.h" />
+    <ClInclude Include="..\drivers\chibi\cp_envelope.h" />
+    <ClInclude Include="..\drivers\chibi\cp_file_access_wrapper.h" />
+    <ClInclude Include="..\drivers\chibi\cp_instrument.h" />
+    <ClInclude Include="..\drivers\chibi\cp_loader.h" />
+    <ClInclude Include="..\drivers\chibi\cp_loader_it.h" />
+    <ClInclude Include="..\drivers\chibi\cp_loader_mod.h" />
+    <ClInclude Include="..\drivers\chibi\cp_loader_s3m.h" />
+    <ClInclude Include="..\drivers\chibi\cp_loader_xm.h" />
+    <ClInclude Include="..\drivers\chibi\cp_mixer.h" />
+    <ClInclude Include="..\drivers\chibi\cp_note.h" />
+    <ClInclude Include="..\drivers\chibi\cp_order.h" />
+    <ClInclude Include="..\drivers\chibi\cp_pattern.h" />
+    <ClInclude Include="..\drivers\chibi\cp_player_data.h" />
+    <ClInclude Include="..\drivers\chibi\cp_sample.h" />
+    <ClInclude Include="..\drivers\chibi\cp_sample_defs.h" />
+    <ClInclude Include="..\drivers\chibi\cp_sample_manager.h" />
+    <ClInclude Include="..\drivers\chibi\cp_song.h" />
+    <ClInclude Include="..\drivers\chibi\cp_tables.h" />
+    <ClInclude Include="..\drivers\chibi\event_stream_chibi.h" />
+    <ClInclude Include="..\drivers\convex_decomp\b2d_decompose.h" />
+    <ClInclude Include="..\drivers\convex_decomp\b2Glue.h" />
+    <ClInclude Include="..\drivers\convex_decomp\b2Polygon.h" />
+    <ClInclude Include="..\drivers\convex_decomp\b2Triangle.h" />
+    <ClInclude Include="..\drivers\dds\texture_loader_dds.h" />
+    <ClInclude Include="..\drivers\etc1\image_etc.h" />
+    <ClInclude Include="..\drivers\etc1\rg_etc1.h" />
+    <ClInclude Include="..\drivers\gl_context\context_gl.h" />
+    <ClInclude Include="..\drivers\gl_context\glew.h" />
+    <ClInclude Include="..\drivers\gl_context\glxew.h" />
+    <ClInclude Include="..\drivers\gl_context\wglew.h" />
+    <ClInclude Include="..\drivers\gles1\rasterizer_gles1.h" />
+    <ClInclude Include="..\drivers\gles2\rasterizer_gles2.h" />
+    <ClInclude Include="..\drivers\gles2\rasterizer_instance_gles2.h" />
+    <ClInclude Include="..\drivers\gles2\shader_compiler_gles2.h" />
+    <ClInclude Include="..\drivers\gles2\shader_gles2.h" />
+    <ClInclude Include="..\drivers\gles2\shaders\blur.glsl.h" />
+    <ClInclude Include="..\drivers\gles2\shaders\canvas.glsl.h" />
+    <ClInclude Include="..\drivers\gles2\shaders\copy.glsl.h" />
+    <ClInclude Include="..\drivers\gles2\shaders\material.glsl.h" />
+    <ClInclude Include="..\drivers\jpg\image_loader_jpg.h" />
+    <ClInclude Include="..\drivers\jpg\tinyjpeg-internal.h" />
+    <ClInclude Include="..\drivers\jpg\tinyjpeg.h" />
+    <ClInclude Include="..\drivers\mpc\audio_stream_mpc.h" />
+    <ClInclude Include="..\drivers\mpc\datatypes.h" />
+    <ClInclude Include="..\drivers\mpc\decoder.h" />
+    <ClInclude Include="..\drivers\mpc\huffman.h" />
+    <ClInclude Include="..\drivers\mpc\internal.h" />
+    <ClInclude Include="..\drivers\mpc\minimax.h" />
+    <ClInclude Include="..\drivers\mpc\mpc_bits_reader.h" />
+    <ClInclude Include="..\drivers\mpc\mpc_types.h" />
+    <ClInclude Include="..\drivers\mpc\mpcdec.h" />
+    <ClInclude Include="..\drivers\mpc\mpcdec_math.h" />
+    <ClInclude Include="..\drivers\mpc\mpcmath.h" />
+    <ClInclude Include="..\drivers\mpc\reader.h" />
+    <ClInclude Include="..\drivers\mpc\requant.h" />
+    <ClInclude Include="..\drivers\mpc\streaminfo.h" />
+    <ClInclude Include="..\drivers\ogg\config_types.h" />
+    <ClInclude Include="..\drivers\ogg\ogg.h" />
+    <ClInclude Include="..\drivers\ogg\os_types.h" />
+    <ClInclude Include="..\drivers\png\image_loader_png.h" />
+    <ClInclude Include="..\drivers\png\png.h" />
+    <ClInclude Include="..\drivers\png\pngconf.h" />
+    <ClInclude Include="..\drivers\png\pngdebug.h" />
+    <ClInclude Include="..\drivers\png\pnginfo.h" />
+    <ClInclude Include="..\drivers\png\pnglibconf.h" />
+    <ClInclude Include="..\drivers\png\pngpriv.h" />
+    <ClInclude Include="..\drivers\png\pngstruct.h" />
+    <ClInclude Include="..\drivers\png\resource_saver_png.h" />
+    <ClInclude Include="..\drivers\pvr\texture_loader_pvr.h" />
+    <ClInclude Include="..\drivers\rtaudio\audio_driver_rtaudio.h" />
+    <ClInclude Include="..\drivers\rtaudio\RtAudio.h" />
+    <ClInclude Include="..\drivers\rtaudio\RtError.h" />
+    <ClInclude Include="..\drivers\speex\_kiss_fft_guts.h" />
+    <ClInclude Include="..\drivers\speex\arch.h" />
+    <ClInclude Include="..\drivers\speex\audio_stream_speex.h" />
+    <ClInclude Include="..\drivers\speex\cb_search.h" />
+    <ClInclude Include="..\drivers\speex\cb_search_arm4.h" />
+    <ClInclude Include="..\drivers\speex\cb_search_bfin.h" />
+    <ClInclude Include="..\drivers\speex\cb_search_sse.h" />
+    <ClInclude Include="..\drivers\speex\config.h" />
+    <ClInclude Include="..\drivers\speex\fftwrap.h" />
+    <ClInclude Include="..\drivers\speex\filterbank.h" />
+    <ClInclude Include="..\drivers\speex\filters.h" />
+    <ClInclude Include="..\drivers\speex\filters_arm4.h" />
+    <ClInclude Include="..\drivers\speex\filters_bfin.h" />
+    <ClInclude Include="..\drivers\speex\filters_sse.h" />
+    <ClInclude Include="..\drivers\speex\fixed_arm4.h" />
+    <ClInclude Include="..\drivers\speex\fixed_arm5e.h" />
+    <ClInclude Include="..\drivers\speex\fixed_bfin.h" />
+    <ClInclude Include="..\drivers\speex\fixed_debug.h" />
+    <ClInclude Include="..\drivers\speex\fixed_generic.h" />
+    <ClInclude Include="..\drivers\speex\kiss_fft.h" />
+    <ClInclude Include="..\drivers\speex\kiss_fftr.h" />
+    <ClInclude Include="..\drivers\speex\lpc.h" />
+    <ClInclude Include="..\drivers\speex\lpc_bfin.h" />
+    <ClInclude Include="..\drivers\speex\lsp.h" />
+    <ClInclude Include="..\drivers\speex\lsp_bfin.h" />
+    <ClInclude Include="..\drivers\speex\ltp.h" />
+    <ClInclude Include="..\drivers\speex\ltp_arm4.h" />
+    <ClInclude Include="..\drivers\speex\ltp_bfin.h" />
+    <ClInclude Include="..\drivers\speex\ltp_sse.h" />
+    <ClInclude Include="..\drivers\speex\math_approx.h" />
+    <ClInclude Include="..\drivers\speex\misc_bfin.h" />
+    <ClInclude Include="..\drivers\speex\modes.h" />
+    <ClInclude Include="..\drivers\speex\nb_celp.h" />
+    <ClInclude Include="..\drivers\speex\os_support.h" />
+    <ClInclude Include="..\drivers\speex\pseudofloat.h" />
+    <ClInclude Include="..\drivers\speex\quant_lsp.h" />
+    <ClInclude Include="..\drivers\speex\quant_lsp_bfin.h" />
+    <ClInclude Include="..\drivers\speex\resample_sse.h" />
+    <ClInclude Include="..\drivers\speex\sb_celp.h" />
+    <ClInclude Include="..\drivers\speex\smallft.h" />
+    <ClInclude Include="..\drivers\speex\speex.h" />
+    <ClInclude Include="..\drivers\speex\speex_bits.h" />
+    <ClInclude Include="..\drivers\speex\speex_buffer.h" />
+    <ClInclude Include="..\drivers\speex\speex_callbacks.h" />
+    <ClInclude Include="..\drivers\speex\speex_config_types.h" />
+    <ClInclude Include="..\drivers\speex\speex_echo.h" />
+    <ClInclude Include="..\drivers\speex\speex_header.h" />
+    <ClInclude Include="..\drivers\speex\speex_jitter.h" />
+    <ClInclude Include="..\drivers\speex\speex_preprocess.h" />
+    <ClInclude Include="..\drivers\speex\speex_resampler.h" />
+    <ClInclude Include="..\drivers\speex\speex_stereo.h" />
+    <ClInclude Include="..\drivers\speex\speex_types.h" />
+    <ClInclude Include="..\drivers\speex\stack_alloc.h" />
+    <ClInclude Include="..\drivers\speex\vbr.h" />
+    <ClInclude Include="..\drivers\speex\vorbis_psy.h" />
+    <ClInclude Include="..\drivers\speex\vq.h" />
+    <ClInclude Include="..\drivers\speex\vq_arm4.h" />
+    <ClInclude Include="..\drivers\speex\vq_bfin.h" />
+    <ClInclude Include="..\drivers\speex\vq_sse.h" />
+    <ClInclude Include="..\drivers\luajit\src\lauxlib.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_alloc.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_arch.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_asm.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_asm_arm.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_asm_mips.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_asm_ppc.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_asm_x86.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_bc.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_bcdef.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_bcdump.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_carith.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ccall.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ccallback.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_cconv.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_cdata.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_char.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_clib.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_cparse.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_crecord.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ctype.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_debug.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_def.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_dispatch.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_emit_arm.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_emit_mips.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_emit_ppc.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_emit_x86.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_err.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_errmsg.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ff.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ffdef.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ffrecord.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_folddef.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_frame.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_func.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_gc.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_gdbjit.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ir.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_ircall.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_iropt.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_jit.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_lex.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_lib.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_libdef.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_mcode.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_meta.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_obj.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_parse.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_recdef.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_record.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_snap.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_state.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_str.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_strscan.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_tab.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_target.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_target_arm.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_target_mips.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_target_ppc.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_target_x86.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_trace.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_traceerr.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_udata.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_vm.h" />
+    <ClInclude Include="..\drivers\luajit\src\lj_vmevent.h" />
+    <ClInclude Include="..\drivers\luajit\src\lua.h" />
+    <ClInclude Include="..\drivers\luajit\src\luaconf.h" />
+    <ClInclude Include="..\drivers\luajit\src\luajit.h" />
+    <ClInclude Include="..\drivers\luajit\src\lualib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\drivers\squish\singlecolourlookup.inl" />
+    <None Include="..\drivers\theora\theora.exp" />
+    <None Include="..\drivers\gles2\shaders\blur.glsl" />
+    <None Include="..\drivers\gles2\shaders\canvas.glsl" />
+    <None Include="..\drivers\gles2\shaders\copy.glsl" />
+    <None Include="..\drivers\gles2\shaders\material.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="..\drivers\luajit\src\lj_vm.obj" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

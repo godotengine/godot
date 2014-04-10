@@ -28,4 +28,10 @@ func _on_load_pressed():
 		#already working
 		return
 	print("START THREAD!")
+
+	var st = OS.get_ticks_msec()
+	for i in range(1000000):
+		var v = OS.get_ticks_msec()
+	print(OS.get_ticks_msec() - st)
+
 	thread.start(self,"_bg_load","res://mona.png")

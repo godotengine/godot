@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{79019AA6-0163-4882-AB47-4DFD99C1AB01}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ALLOC;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\servers\audio_server.cpp" />
+    <ClCompile Include="..\servers\physics_2d_server.cpp" />
+    <ClCompile Include="..\servers\physics_server.cpp" />
+    <ClCompile Include="..\servers\register_server_types.cpp" />
+    <ClCompile Include="..\servers\spatial_sound_2d_server.cpp" />
+    <ClCompile Include="..\servers\spatial_sound_server.cpp" />
+    <ClCompile Include="..\servers\visual_server.cpp" />
+    <ClCompile Include="..\servers\audio\audio_driver_dummy.cpp" />
+    <ClCompile Include="..\servers\audio\audio_filter_sw.cpp" />
+    <ClCompile Include="..\servers\audio\audio_mixer_sw.cpp" />
+    <ClCompile Include="..\servers\audio\audio_server_sw.cpp" />
+    <ClCompile Include="..\servers\audio\reverb_buffers_sw.cpp" />
+    <ClCompile Include="..\servers\audio\reverb_sw.cpp" />
+    <ClCompile Include="..\servers\audio\sample_manager_sw.cpp" />
+    <ClCompile Include="..\servers\audio\voice_rb_sw.cpp" />
+    <ClCompile Include="..\servers\physics\area_pair_sw.cpp" />
+    <ClCompile Include="..\servers\physics\area_sw.cpp" />
+    <ClCompile Include="..\servers\physics\body_pair_sw.cpp" />
+    <ClCompile Include="..\servers\physics\body_sw.cpp" />
+    <ClCompile Include="..\servers\physics\broad_phase_basic.cpp" />
+    <ClCompile Include="..\servers\physics\broad_phase_octree.cpp" />
+    <ClCompile Include="..\servers\physics\broad_phase_sw.cpp" />
+    <ClCompile Include="..\servers\physics\collision_object_sw.cpp" />
+    <ClCompile Include="..\servers\physics\collision_solver_sat.cpp" />
+    <ClCompile Include="..\servers\physics\collision_solver_sw.cpp" />
+    <ClCompile Include="..\servers\physics\constraint_sw.cpp" />
+    <ClCompile Include="..\servers\physics\gjk_epa.cpp" />
+    <ClCompile Include="..\servers\physics\joints_sw.cpp" />
+    <ClCompile Include="..\servers\physics\physics_server_sw.cpp" />
+    <ClCompile Include="..\servers\physics\shape_sw.cpp" />
+    <ClCompile Include="..\servers\physics\space_sw.cpp" />
+    <ClCompile Include="..\servers\physics\step_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\area_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\area_pair_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\body_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\body_pair_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\broad_phase_2d_basic.cpp" />
+    <ClCompile Include="..\servers\physics_2d\broad_phase_2d_hash_grid.cpp" />
+    <ClCompile Include="..\servers\physics_2d\broad_phase_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\collision_object_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\collision_solver_2d_sat.cpp" />
+    <ClCompile Include="..\servers\physics_2d\collision_solver_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\constraint_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\joints_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\physics_2d_server_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\shape_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\space_2d_sw.cpp" />
+    <ClCompile Include="..\servers\physics_2d\step_2d_sw.cpp" />
+    <ClCompile Include="..\servers\spatial_sound\spatial_sound_server_sw.cpp" />
+    <ClCompile Include="..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.cpp" />
+    <ClCompile Include="..\servers\visual\particle_system_sw.cpp" />
+    <ClCompile Include="..\servers\visual\rasterizer.cpp" />
+    <ClCompile Include="..\servers\visual\rasterizer_dummy.cpp" />
+    <ClCompile Include="..\servers\visual\shader_compiler.cpp" />
+    <ClCompile Include="..\servers\visual\shader_graph.cpp" />
+    <ClCompile Include="..\servers\visual\shader_language.cpp" />
+    <ClCompile Include="..\servers\visual\visual_server_raster.cpp" />
+    <ClCompile Include="..\servers\visual\visual_server_wrap_mt.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\servers\audio_server.h" />
+    <ClInclude Include="..\servers\physics_2d_server.h" />
+    <ClInclude Include="..\servers\physics_server.h" />
+    <ClInclude Include="..\servers\register_server_types.h" />
+    <ClInclude Include="..\servers\spatial_sound_2d_server.h" />
+    <ClInclude Include="..\servers\spatial_sound_server.h" />
+    <ClInclude Include="..\servers\visual_server.h" />
+    <ClInclude Include="..\servers\audio\audio_driver_dummy.h" />
+    <ClInclude Include="..\servers\audio\audio_filter_sw.h" />
+    <ClInclude Include="..\servers\audio\audio_mixer_sw.h" />
+    <ClInclude Include="..\servers\audio\audio_server_sw.h" />
+    <ClInclude Include="..\servers\audio\reverb_buffers_sw.h" />
+    <ClInclude Include="..\servers\audio\reverb_sw.h" />
+    <ClInclude Include="..\servers\audio\sample_manager_sw.h" />
+    <ClInclude Include="..\servers\audio\voice_rb_sw.h" />
+    <ClInclude Include="..\servers\physics\area_pair_sw.h" />
+    <ClInclude Include="..\servers\physics\area_sw.h" />
+    <ClInclude Include="..\servers\physics\body_pair_sw.h" />
+    <ClInclude Include="..\servers\physics\body_sw.h" />
+    <ClInclude Include="..\servers\physics\broad_phase_basic.h" />
+    <ClInclude Include="..\servers\physics\broad_phase_octree.h" />
+    <ClInclude Include="..\servers\physics\broad_phase_sw.h" />
+    <ClInclude Include="..\servers\physics\collision_object_sw.h" />
+    <ClInclude Include="..\servers\physics\collision_solver_sat.h" />
+    <ClInclude Include="..\servers\physics\collision_solver_sw.h" />
+    <ClInclude Include="..\servers\physics\constraint_sw.h" />
+    <ClInclude Include="..\servers\physics\gjk_epa.h" />
+    <ClInclude Include="..\servers\physics\joints_sw.h" />
+    <ClInclude Include="..\servers\physics\physics_server_sw.h" />
+    <ClInclude Include="..\servers\physics\shape_sw.h" />
+    <ClInclude Include="..\servers\physics\space_sw.h" />
+    <ClInclude Include="..\servers\physics\step_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\area_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\area_pair_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\body_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\body_pair_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\broad_phase_2d_basic.h" />
+    <ClInclude Include="..\servers\physics_2d\broad_phase_2d_hash_grid.h" />
+    <ClInclude Include="..\servers\physics_2d\broad_phase_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\collision_object_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\collision_solver_2d_sat.h" />
+    <ClInclude Include="..\servers\physics_2d\collision_solver_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\constraint_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\joints_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\physics_2d_server_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\shape_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\space_2d_sw.h" />
+    <ClInclude Include="..\servers\physics_2d\step_2d_sw.h" />
+    <ClInclude Include="..\servers\spatial_sound\spatial_sound_server_sw.h" />
+    <ClInclude Include="..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.h" />
+    <ClInclude Include="..\servers\visual\particle_system_sw.h" />
+    <ClInclude Include="..\servers\visual\rasterizer.h" />
+    <ClInclude Include="..\servers\visual\rasterizer_dummy.h" />
+    <ClInclude Include="..\servers\visual\shader_compiler.h" />
+    <ClInclude Include="..\servers\visual\shader_graph.h" />
+    <ClInclude Include="..\servers\visual\shader_language.h" />
+    <ClInclude Include="..\servers\visual\visual_server_raster.h" />
+    <ClInclude Include="..\servers\visual\visual_server_wrap_mt.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

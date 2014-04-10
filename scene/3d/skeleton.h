@@ -102,7 +102,9 @@ public:
 
 
 	RID get_skeleton() const;
-
+    /**
+    TODO:   add property for 'gizmo' visibility.--- coldbue67
+    */
 	// skeleton creation api
 	void add_bone(const String&p_name);
 	int find_bone(String p_name) const;

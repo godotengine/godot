@@ -277,8 +277,10 @@ void Viewport::_notification(int p_what) {
 					}
 				}
 
-				if (first)
+#ifndef _3D_DISABLED
+                if (first)
 					first->make_current();
+#endif
 			}
 		} break;
 		case NOTIFICATION_EXIT_SCENE: {

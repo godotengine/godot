@@ -217,7 +217,7 @@ static void _draw_primitive(int p_points, const Vector3 *p_vertices, const Vecto
 
 /* TEXTURE API */
 
-Image RasterizerGLES1::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
+Image RasterizerGLES1::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
 
 	r_has_alpha_cache=false;
 	r_compressed=false;
@@ -275,6 +275,35 @@ Image RasterizerGLES1::_get_gl_image_and_format(const Image& p_image, Image::For
 			r_gl_format=GL_RGBA;
 			r_has_alpha_cache=true;
 		} break;
+        case Image::FORMAT_RGBA_4444: {
+			r_gl_components=2;
+			r_gl_format=GL_RGBA;
+            r_gl_type=GL_UNSIGNED_SHORT_4_4_4_4;
+			r_has_alpha_cache=true;
+        } break;
+        case Image::FORMAT_RGBA_5551: {
+			r_gl_components=2;
+			r_gl_format=GL_RGBA;
+            r_gl_type=GL_UNSIGNED_SHORT_5_5_5_1;
+			r_has_alpha_cache=true;
+        } break;
+        case Image::FORMAT_RGB_565: {
+			r_gl_components=2;
+			r_gl_format=GL_RGB;
+            r_gl_type=GL_UNSIGNED_SHORT_5_6_5;
+        } break;
+   //     case Image::FORMAT_RGB_555: {
+			//r_gl_components=2;
+			//r_gl_format=GL_RGB;
+   //         r_gl_type=GL_UNSIGNED_SHORT_5_5_5;
+   //     } break;
+   //     case Image::FORMAT_BGRA_8888: {
+			//r_gl_components=4;
+			//r_gl_format=GL_BGRA;
+			//r_has_alpha_cache=true;
+   //     } break;
+        case Image::FORMAT_ALPHA_8: {
+        } break;
 		case Image::FORMAT_BC1: {
 
 			r_gl_components=1; //doesn't matter much
@@ -440,6 +469,7 @@ void RasterizerGLES1::texture_allocate(RID p_texture,int p_width, int p_height,I
 	bool has_alpha_cache;
 	int components;
 	GLenum format;
+    GLenum type = GL_UNSIGNED_BYTE;
 	bool compressed;
 
 	int po2_width =  nearest_power_of_2(p_width);
@@ -465,7 +495,7 @@ void RasterizerGLES1::texture_allocate(RID p_texture,int p_width, int p_height,I
 		texture->alloc_height = texture->height;
 	};
 
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,components,has_alpha_cache,compressed);
+	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,type,components,has_alpha_cache,compressed);
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
@@ -533,6 +563,7 @@ void RasterizerGLES1::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	int components;
 	GLenum format;
+    GLenum type = GL_UNSIGNED_BYTE;
 	bool alpha;
 	bool compressed;
 
@@ -541,7 +572,7 @@ void RasterizerGLES1::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	}
 
 
-	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,components,alpha,compressed);
+	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,type,components,alpha,compressed);
 	if (texture->alloc_width != img.get_width() || texture->alloc_height != img.get_height()) {
 
 		img.resize(texture->alloc_width, texture->alloc_height, Image::INTERPOLATE_BILINEAR);
@@ -574,7 +605,7 @@ void RasterizerGLES1::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 //			glTexImage2D(blit_target, i, format==GL_RGB?GL_RGB8:format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
-			glTexImage2D(blit_target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
+			glTexImage2D(blit_target, i, format, w, h, 0, format, type, &read[ofs]);
 			//glTexSubImage2D( blit_target, i, 0,0,w,h,format,GL_UNSIGNED_BYTE,&read[ofs] );
 		}
 		tsize+=size;
@@ -3940,18 +3971,21 @@ void RasterizerGLES1::_render(const Geometry *p_geometry,const Material *p_mater
 
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 					glDrawElements(gl_primitive[s->primitive], s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_SHORT:GL_UNSIGNED_SHORT, s->index_array_local);
+                    _rinfo.draw_commands ++;
 
 				} else {
 				//	print_line("indices: "+itos(s->index_array_local) );
 
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,s->index_id);
 					glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_SHORT:GL_UNSIGNED_SHORT,0);
+                    _rinfo.draw_commands ++;
 				}
 
 
 			} else {
 
 				glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+                _rinfo.draw_commands ++;
 
 			};
 
@@ -3985,6 +4019,7 @@ void RasterizerGLES1::_render(const Geometry *p_geometry,const Material *p_mater
 				for(int i=0;i<element_count;i++) {
 					//glUniformMatrix4fv(material_shader.get_uniform_location(MaterialShaderGLES1::INSTANCE_TRANSFORM), 1, false, elements[i].matrix);
 					glDrawElements(gl_primitive[s->primitive],s->index_array_len, (s->array_len>(1<<16))?GL_UNSIGNED_SHORT:GL_UNSIGNED_SHORT,0);
+                    _rinfo.draw_commands ++;
 				}
 
 
@@ -3993,6 +4028,7 @@ void RasterizerGLES1::_render(const Geometry *p_geometry,const Material *p_mater
 				for(int i=0;i<element_count;i++) {
 //					glUniformMatrix4fv(material_shader.get_uniform_location(MaterialShaderGLES1::INSTANCE_TRANSFORM), 1, false, elements[i].matrix);
 					glDrawArrays(gl_primitive[s->primitive],0,s->array_len);
+                    _rinfo.draw_commands ++;
 				}
 
 
@@ -4066,6 +4102,7 @@ void RasterizerGLES1::_render(const Geometry *p_geometry,const Material *p_mater
 
 					glColor4f(pinfo.color.r*last_color.r,pinfo.color.g*last_color.g,pinfo.color.b*last_color.b,pinfo.color.a*last_color.a);
 					_draw_primitive(4,points,normals,NULL,uvs,tangents);
+                    _rinfo.draw_commands ++;
 					glPopMatrix();
 
 				}
@@ -4690,6 +4727,7 @@ void RasterizerGLES1::canvas_draw_line(const Point2& p_from, const Point2& p_to,
 	colors[1].a*=canvas_opacity;
 	glLineWidth(p_width);
 	_draw_primitive(2,verts,0,colors,0);
+    _rinfo.draw_commands ++;
 
 }
 
@@ -4740,7 +4778,6 @@ static void _draw_quad(const Rect2& p_rect) {
 	};
 
 	_draw_primitive(4,coords,0,0,0);
-
 }
 
 
@@ -4760,17 +4797,20 @@ void RasterizerGLES1::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 
 			Rect2 region = Rect2(0,0,texture->width,texture->height);
 			_draw_textured_quad(p_rect,region,region.size,p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V);
+            _rinfo.draw_commands ++;
 
 		} else {
 
 
 			_draw_textured_quad(p_rect, p_source, Size2(texture->width,texture->height),p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V );
+            _rinfo.draw_commands ++;
 
 		}
 	} else {
 
 		glDisable(GL_TEXTURE_2D);
 		_draw_quad( p_rect );
+        _rinfo.draw_commands ++;
 
 	}
 
@@ -4795,22 +4835,26 @@ void RasterizerGLES1::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,c
 		Rect2( p_rect.pos, Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
 		Rect2( Point2(), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // top right
 		Rect2( Point2( p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
 		Rect2( Point2(texture->width-p_margin[MARGIN_RIGHT],0), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 
 	_draw_textured_quad( // bottom left
 		Rect2( Point2(p_rect.pos.x,p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
 		Rect2( Point2(0,texture->height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // bottom right
 		Rect2( Point2( p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
 		Rect2( Point2(texture->width-p_margin[MARGIN_RIGHT],texture->height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	Rect2 rect_center( p_rect.pos+Point2( p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2( p_rect.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], p_rect.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
 
@@ -4821,21 +4865,25 @@ void RasterizerGLES1::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,c
 		Rect2( Point2(rect_center.pos.x,p_rect.pos.y),Size2(rect_center.size.width,p_margin[MARGIN_TOP])),
 		Rect2( Point2(p_margin[MARGIN_LEFT],0), Size2(src_center.size.width,p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // bottom
 		Rect2( Point2(rect_center.pos.x,rect_center.pos.y+rect_center.size.height),Size2(rect_center.size.width,p_margin[MARGIN_BOTTOM])),
 		Rect2( Point2(p_margin[MARGIN_LEFT],src_center.pos.y+src_center.size.height), Size2(src_center.size.width,p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // left
 		Rect2( Point2(p_rect.pos.x,rect_center.pos.y),Size2(p_margin[MARGIN_LEFT],rect_center.size.height)),
 		Rect2( Point2(0,p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_LEFT],src_center.size.height)),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // right
 		Rect2( Point2(rect_center.pos.x+rect_center.size.width,rect_center.pos.y),Size2(p_margin[MARGIN_RIGHT],rect_center.size.height)),
 		Rect2( Point2(src_center.pos.x+src_center.size.width,p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_RIGHT],src_center.size.height)),
 		Size2( texture->width, texture->height ) );
+    _rinfo.draw_commands ++;
 
 	if (p_draw_center) {
 
@@ -4843,6 +4891,7 @@ void RasterizerGLES1::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,c
 			rect_center,
 			src_center,
 			Size2( texture->width, texture->height ));
+        _rinfo.draw_commands ++;
 	}
 
 }
@@ -4875,6 +4924,7 @@ void RasterizerGLES1::canvas_draw_primitive(const Vector<Point2>& p_points, cons
 
 	glLineWidth(p_width);
 	_draw_primitive(p_points.size(),&verts[0],NULL,p_colors.size()?&p_colors[0]:NULL,p_uvs.size()?uvs:NULL);
+    _rinfo.draw_commands ++;
 
 }
 
@@ -4935,9 +4985,11 @@ void RasterizerGLES1::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 			_draw_poly_indices[i] = p_indices[i];
 		};
 		glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_SHORT, _draw_poly_indices );
+        _rinfo.draw_commands ++;
 	} else {
 
 		glDrawArrays(GL_TRIANGLES,0,p_vertex_count);
+        _rinfo.draw_commands ++;
 	}
 
 	glDisableClientState(GL_VERTEX_ARRAY);
@@ -5751,6 +5803,9 @@ int RasterizerGLES1::get_render_info(VS::RenderInfo p_info) {
 
 			return _rinfo.shader_change_count;
 		} break;
+        case VS::INFO_DRAW_COMMANDS_IN_FRAME: {
+            return _rinfo.draw_commands;
+        } break;
 		case VS::INFO_USAGE_VIDEO_MEM_TOTAL: {
 
 			return 0;

@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5569A196-A230-4A06-A9E0-141FCA73E124}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bin\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">obj\$(ProjectName)\$(Configuration)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ALLOC;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;opengl32.lib;dsound.lib;kernel32.lib;ole32.lib;user32.lib;gdi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ProgramDatabaseFile>$(TargetDir)$(TargetName)_d.pdb</ProgramDatabaseFile>
+      <Profile>false</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalDependencies>winmm.lib;opengl32.lib;dsound.lib;kernel32.lib;ole32.lib;user32.lib;gdi32.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ManifestFile>$(OutDir)$(TargetFileName).intermediate.manifest</ManifestFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>
+      </LinkTimeCodeGeneration>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\platform\windows\context_gl_win.cpp" />
+    <ClCompile Include="..\platform\windows\ctxgl_procaddr.cpp" />
+    <ClCompile Include="..\platform\windows\godot_win.cpp" />
+    <ClCompile Include="..\platform\windows\key_mapping_win.cpp" />
+    <ClCompile Include="..\platform\windows\os_windows.cpp" />
+    <ClCompile Include="..\platform\windows\stream_peer_winsock.cpp" />
+    <ClCompile Include="..\platform\windows\tcp_server_winsock.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\platform\windows\context_gl_win.h" />
+    <ClInclude Include="..\platform\windows\ctxgl_procaddr.h" />
+    <ClInclude Include="..\platform\windows\key_mapping_win.h" />
+    <ClInclude Include="..\platform\windows\lang_table.h" />
+    <ClInclude Include="..\platform\windows\logo.h" />
+    <ClInclude Include="..\platform\windows\os_windows.h" />
+    <ClInclude Include="..\platform\windows\platform_config.h" />
+    <ClInclude Include="..\platform\windows\stream_peer_winsock.h" />
+    <ClInclude Include="..\platform\windows\tcp_server_winsock.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="core.vcxproj">
+      <Project>{80a78ae6-934f-4926-974c-cafa5bd4a497}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="drivers.vcxproj">
+      <Project>{29d00e36-7337-4e41-84d9-ffac894ba070}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="main.vcxproj">
+      <Project>{d7d304d0-1a39-411d-97eb-c472237fd7b9}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="modules.vcxproj">
+      <Project>{70555339-d0fd-4778-b2c7-9f427c04edab}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="scene.vcxproj">
+      <Project>{e33a81f0-c119-48a7-b50d-14505bf0b213}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="servers.vcxproj">
+      <Project>{79019aa6-0163-4882-ab47-4dfd99c1ab01}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="tests.vcxproj">
+      <Project>{8dd3d016-c444-49e3-9020-b21fccbdc4a7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="tool.vcxproj">
+      <Project>{2a45ade8-19b1-460b-b1b5-36b4636e1057}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

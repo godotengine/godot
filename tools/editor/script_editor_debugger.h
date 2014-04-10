@@ -124,6 +124,7 @@ public:
 	void debug_step();
 	void debug_break();
 	void debug_continue();
+    void debug_set_breakpoint(const String& p_path,int p_line,bool p_dobreak);
 
 	String get_var_value(const String& p_var) const;
 

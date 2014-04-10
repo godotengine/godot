@@ -56,7 +56,12 @@
 #include "globals.h"
 void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 
-	if (p_rationale && p_rationale[0]) {
+#ifdef ANDROID
+	if (p_rationale && *p_rationale)
+		print("**ERROR**: %s\n ",p_rationale);
+	print("**ERROR**: At: %s:%i:%s() - %s\n",p_file,p_line,p_function,p_code);
+#else
+    if (p_rationale && p_rationale[0]) {
 
 		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
 		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
@@ -66,6 +71,7 @@ void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,c
 		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
 
 	}
+#endif
 }
 
 

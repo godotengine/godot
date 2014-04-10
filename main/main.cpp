@@ -77,6 +77,10 @@
 
 #include "performance.h"
 
+#ifdef FIXED_RFS
+#include "main/fixed_rfs.h"
+#endif
+
 static Globals *globals=NULL;
 static InputMap *input_map=NULL;
 static bool _start_success=false;
@@ -110,7 +114,7 @@ static String unescape_cmdline(const String& p_str) {
 
 void Main::print_help(const char* p_binary) {
 
-	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2010 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2010-2014 www.fengei.com.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
 	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
@@ -495,9 +499,11 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		script_debugger = memnew( ScriptDebuggerLocal );
 	}
 
-
+#ifdef FIXED_RFS
+	if (remotefs=="")
+		remotefs=_fixed_rfs;
+#endif
 	if (remotefs!="") {
-
 		file_access_network_client=memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.find(":")!=-1) {
@@ -506,7 +512,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else {
 			port=6010;
 		}
-
 		Error err = file_access_network_client->connect(remotefs,port,remotefs_pass);
 		if (err) {
 			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i\n",remotefs.utf8().get_data(),port);
@@ -515,6 +520,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
+
 	if (script_debugger) {
 		//there is a debugger, parse breakpoints
 
@@ -775,7 +781,6 @@ Error Main::setup2() {
 
 	translation_server->setup(); //register translations, load them, etc.
 	if (locale!="") {
-
 		translation_server->set_locale(locale);
 	}
 	translation_server->load_translations();
@@ -961,7 +966,7 @@ bool Main::start() {
 	
 	if (!main_loop) {
 		if (!ObjectTypeDB::type_exists(main_loop_type)) {
-			OS::get_singleton()->alert("godot: error: MainLoop type doesn't exist: "+main_loop_type);
+			OS::get_singleton()->alert("xvision: error: MainLoop type doesn't exist: "+main_loop_type);
 			return false;
 		} else {
 

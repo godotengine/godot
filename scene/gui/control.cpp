@@ -42,22 +42,6 @@
 #include <stdio.h>
 
 
-class TooltipPanel : public Panel {
-
-	OBJ_TYPE(TooltipPanel,Panel)
-public:
-	TooltipPanel() {};
-
-};
-
-class TooltipLabel : public Label {
-
-	OBJ_TYPE(TooltipLabel,Label)
-public:
-	TooltipLabel() {};
-
-};
-
 Control::Window::Window() {
 
 
@@ -905,10 +889,12 @@ void Control::_window_show_tooltip() {
 
 	window->tooltip_popup->set_pos(r.pos);
 	window->tooltip_popup->set_size(r.size);
-
-	window->tooltip_popup->raise();
+	//window->tooltip_popup->raise(); // this make the gui slow.--coldblue67
 
 	window->tooltip_popup->show();
+    //
+    if (window->tooltip_timer)
+		window->tooltip_timer->stop();
 }
 
 
@@ -1160,8 +1146,9 @@ void Control::_window_input_event(InputEvent p_event) {
 			}
 			
 			window->mouse_over=over;
-
-			get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_tooltip");
+            if( p_event.mouse_motion.relative_x != 0 || p_event.mouse_motion.relative_y != 0 ) {
+			    get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_tooltip");
+            }
 
 			if (window->drag_preview) {
 				window->drag_preview->set_pos(pos);
@@ -1192,10 +1179,12 @@ void Control::_window_input_event(InputEvent p_event) {
 
 
 				if (can_tooltip) {
-
-					window->tooltip=over;
-					window->tooltip_pos=(parent_xform * get_transform()).affine_inverse().xform(pos);
-					window->tooltip_timer->start();
+                    if( window->tooltip != over )
+                    {
+					    window->tooltip=over;
+					    window->tooltip_pos=(parent_xform * get_transform()).affine_inverse().xform(pos);
+					    window->tooltip_timer->start();
+                    }
 				}
 			}
 

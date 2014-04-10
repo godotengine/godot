@@ -43,7 +43,6 @@ class ResourceInteractiveLoaderXML : public ResourceInteractiveLoader {
 	FileAccess *f;
 
 	struct Tag {
-
 		String name;
 		HashMap<String,String> args;
 	};

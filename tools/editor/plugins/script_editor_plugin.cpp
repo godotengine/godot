@@ -718,6 +718,9 @@ void ScriptEditor::_menu_option(int p_option) {
 			int line=current->get_text_edit()->cursor_get_line();
 			bool dobreak = !current->get_text_edit()->is_line_set_as_breakpoint(line);
 			current->get_text_edit()->set_line_as_breakpoint(line,dobreak);
+
+            if (debugger)
+                debugger->debug_set_breakpoint(current->get_edited_script()->get_path(),line,dobreak);
 		} break;
 		case DEBUG_NEXT: {
 
@@ -1341,7 +1344,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->get_popup()->add_item("Step Into",DEBUG_STEP,KEY_F11);
 	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_item("Break",DEBUG_BREAK);
-	debug_menu->get_popup()->add_item("Continue",DEBUG_CONTINUE);
+	debug_menu->get_popup()->add_item("Continue",DEBUG_CONTINUE,KEY_F5);
 	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_check_item("Show Debugger",DEBUG_SHOW);
 	debug_menu->get_popup()->connect("item_pressed", this,"_menu_option");

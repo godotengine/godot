@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/marynate/godot.png?branch=master)](https://travis-ci.org/marynate/godot)
+
 ![GODOT](/logo.png)
 
 ### The Engine

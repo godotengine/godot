@@ -233,26 +233,13 @@ if (m_height > line_height) {\
 						for(int i=0;i<end;i++) {
 							int pofs=wofs+ofs;
 
-
-
-
 							if (p_mode==PROCESS_POINTER && r_click_char && p_click_pos.y>=y && p_click_pos.y<=y+lh) {
-								//int o = (wofs+w)-p_click_pos.x;
 
 								int cw=font->get_char_size(c[i],c[i+1]).x;
 
 								if (p_click_pos.x-cw/2>pofs) {
 
 									rchar=int((&c[i])-cf);
-									//print_line("GOT: "+itos(rchar));
-
-
-									//if (i==end-1 && p_click_pos.x+cw/2 > pofs)
-									//	rchar++;
-									//int o = (wofs+w)-p_click_pos.x;
-
-								//	if (o>cw/2)
-								//		rchar++;
 								}
 
 
