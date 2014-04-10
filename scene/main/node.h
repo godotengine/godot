@@ -37,6 +37,7 @@
 #include "scene/main/scene_main_loop.h"
 
 
+class Viewport;
 class Node : public Object {
 
 	OBJ_TYPE( Node, Object );
@@ -82,6 +83,8 @@ private:
 		SceneMainLoop *scene;
 		bool inside_scene;
 
+		Viewport *viewport;
+
 				
 		HashMap< StringName, GroupData,StringNameHasher>  grouped;
 		List<Node*>::Element *OW; // owned element
@@ -95,6 +98,7 @@ private:
 
 		bool input;
 		bool unhandled_input;
+		bool unhandled_key_input;
 
 		bool parent_owned;
 		bool in_constructor;
@@ -237,6 +241,9 @@ public:
 	void set_process_unhandled_input(bool p_enable);
 	bool is_processing_unhandled_input() const;
 
+	void set_process_unhandled_key_input(bool p_enable);
+	bool is_processing_unhandled_key_input() const;
+
 	int get_position_in_parent() const;
 
 	Node *duplicate() const;
@@ -265,6 +272,8 @@ public:
 	static void init_node_hrcr();
 
 	void force_parent_owned() { data.parent_owned=true; } //hack to avoid duplicate nodes
+
+	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
 	/* CANVAS */
 

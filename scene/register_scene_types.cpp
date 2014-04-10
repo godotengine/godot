@@ -446,6 +446,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Particles2D>();
 	ObjectTypeDB::register_type<ParticleAttractor2D>();
 	ObjectTypeDB::register_type<Sprite>();
+	ObjectTypeDB::register_type<ViewportSprite>();
 	ObjectTypeDB::register_type<SpriteFrames>();
 	ObjectTypeDB::register_type<AnimatedSprite>();
 	ObjectTypeDB::register_type<Position2D>();

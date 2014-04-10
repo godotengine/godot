@@ -874,8 +874,6 @@ bool Main::start() {
 		}
 	}
 
-	print_line("editor: "+itos(editor));
-
 	if (editor)
 		Globals::get_singleton()->set("editor_active",true);
 

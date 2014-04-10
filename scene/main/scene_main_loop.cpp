@@ -340,7 +340,7 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 
 
 	InputEvent ev = p_event;
-
+#if 0
 	switch(ev.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
@@ -391,14 +391,11 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 		} break;
 	}
 
-
+#endif
 
 	MainLoop::input_event(p_event);
-
+#if 0
 	_call_input_pause("input","_input",ev);
-
-
-
 
 	call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"_gui_input","_gui_input",p_event); //special one for GUI, as controls use their own process check
 
@@ -416,7 +413,11 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 	//}
 
 	//transform for the rest
+#else
 
+	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input",p_event); //special one for GUI, as controls use their own process check
+
+#endif
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote() && ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F8) {
 
 		ScriptDebugger::get_singleton()->request_quit();
@@ -429,13 +430,19 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 	root_lock++;
 
 	if (!input_handled) {
+
+#if 0
 		_call_input_pause("unhandled_input","_unhandled_input",ev);
 		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
 		if (!input_handled && ev.type==InputEvent::KEY) {
 			_call_input_pause("unhandled_key_input","_unhandled_key_input",ev);
 			//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
 		}
+#else
 
+		call_group(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",p_event); //special one for GUI, as controls use their own process check
+
+#endif
 		input_handled=true;
 		_flush_ugc();
 		root_lock--;

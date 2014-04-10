@@ -1136,6 +1136,25 @@ RID VisualServerRaster::viewport_get_render_target_texture(RID p_viewport) const
 
 }
 
+void VisualServerRaster::viewport_set_render_target_vflip(RID p_viewport,bool p_enable) {
+
+	Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+
+	viewport->render_target_vflip=p_enable;
+
+}
+
+bool VisualServerRaster::viewport_get_render_target_vflip(RID p_viewport) const{
+
+	const Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND_V(!viewport,false);
+
+	return viewport->render_target_vflip;
+
+}
+
+
 void VisualServerRaster::viewport_queue_screen_capture(RID p_viewport) {
 
 	VS_CHANGED;
@@ -1164,6 +1183,9 @@ void VisualServerRaster::viewport_set_rect(RID p_viewport,const ViewportRect& p_
 	ERR_FAIL_COND(!viewport);
 	
 	viewport->rect=p_rect;
+	if (viewport->render_target.is_valid()) {
+		rasterizer->render_target_set_size(viewport->render_target,viewport->rect.width,viewport->rect.height);
+	}
 }
 
 
@@ -5450,7 +5472,7 @@ void VisualServerRaster::_draw_viewports() {
 			continue;
 		}
 
-		rasterizer->set_render_target(vp->render_target);
+		rasterizer->set_render_target(vp->render_target,vp->transparent_bg,vp->render_target_vflip);
 		_draw_viewport(vp,0,0,vp->rect.width,vp->rect.height);
 
 		if ( (vp->queue_capture && vp->render_target_update_mode==RENDER_TARGET_UPDATE_DISABLED) || vp->render_target_update_mode==RENDER_TARGET_UPDATE_ONCE) {

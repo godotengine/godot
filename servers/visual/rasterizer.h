@@ -444,7 +444,7 @@ public:
 	virtual void begin_frame()=0;
 	
 	virtual void set_viewport(const VS::ViewportRect& p_viewport)=0;
-	virtual void set_render_target(RID p_render_target)=0;
+	virtual void set_render_target(RID p_render_target,bool p_transparent_bg=false,bool p_vflip=false)=0;
 	virtual void clear_viewport(const Color& p_color)=0;
 	virtual void capture_viewport(Image* r_capture)=0;
 	

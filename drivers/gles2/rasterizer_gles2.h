@@ -1047,6 +1047,8 @@ class RasterizerGLES2 : public Rasterizer {
 
 
 	RenderTarget *current_rt;
+	bool current_rt_transparent;
+	bool current_rt_vflip;
 	ViewportData *current_vd;
 
 
@@ -1344,7 +1346,7 @@ public:
 
 
 	virtual void set_viewport(const VS::ViewportRect& p_viewport);
-	virtual void set_render_target(RID p_render_target);
+	virtual void set_render_target(RID p_render_target,bool p_transparent_bg=false,bool p_vflip=false);
 	virtual void clear_viewport(const Color& p_color);
 	virtual void capture_viewport(Image* r_capture);
 

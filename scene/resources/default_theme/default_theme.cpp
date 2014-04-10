@@ -583,7 +583,7 @@ void make_default_theme() {
 
 	t->set_stylebox("panel","PanelContainer", tc_sb );
 
-	t->set_stylebox( "logo","Icons", make_icon(logo_png) );
+	t->set_icon( "logo","Icons", make_icon(logo_png) );
 
 	Theme::set_default( t );
 	Theme::set_default_icon( make_icon(error_icon_png) );
