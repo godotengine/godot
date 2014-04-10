@@ -154,9 +154,10 @@ def configure(env):
 			mingw_prefix=env["mingw_prefix_64"];
 			env['OBJSUFFIX'] = ".64"+env['OBJSUFFIX']
 			env['LIBSUFFIX'] = ".64"+env['LIBSUFFIX']
-			env.Append(LINKFLAGS=['-static'])
 		else:
 			mingw_prefix=env["mingw_prefix"];
+
+		env.Append(LINKFLAGS=['-static'])
 
 		if (env["target"]=="release"):
 			
