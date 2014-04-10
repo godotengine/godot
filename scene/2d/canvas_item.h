@@ -59,7 +59,7 @@ private:
 	RID canvas_item;
 	String group;
 
-	Viewport *viewport;
+
 	CanvasLayer *canvas_layer;
 
 	float opacity;
@@ -200,7 +200,7 @@ public:
 	RID get_viewport_rid() const;
 	RID get_canvas() const;
 	Ref<World2D> get_world_2d() const;
-	Viewport *get_viewport() const;
+
 
 
 	CanvasItem();

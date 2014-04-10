@@ -321,7 +321,7 @@ void EditorSettings::scan_plugins() {
 	d->list_dir_begin();
 
 	String base = d->get_current_dir();
-	print_line("list diring on: "+base);
+	//print_line("list diring on: "+base);
 	while(true) {
 		String p = d->get_next();
 		if (p=="")

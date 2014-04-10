@@ -82,6 +82,7 @@ private:
 	Tree *tree;
 	LineEdit *file;
 	AcceptDialog *mkdirerr;
+	AcceptDialog *exterr;
 	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;

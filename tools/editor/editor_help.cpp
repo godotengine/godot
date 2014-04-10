@@ -1333,7 +1333,7 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 	history_pos=0;
 	scroll_locked=false;
 	select_locked=false;
-	add_to_group("unhandled_key_input");
+	set_process_unhandled_key_input(true);
 	h_split->set_split_offset(200);
 	class_list->connect("cell_selected",this,"_tree_item_selected");
 	class_desc->hide();

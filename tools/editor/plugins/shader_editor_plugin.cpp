@@ -153,7 +153,7 @@ void ShaderTextEditor::_validate_script() {
 void ShaderTextEditor::_bind_methods() {
 
 
-	ADD_SIGNAL( MethodInfo("script_changed") );
+	//ADD_SIGNAL( MethodInfo("script_changed") );
 
 }
 

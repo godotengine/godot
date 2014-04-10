@@ -600,10 +600,13 @@ public:
 		RENDER_TARGET_UPDATE_ALWAYS
 	};
 
+
 	virtual void viewport_set_as_render_target(RID p_viewport,bool p_enable)=0;
 	virtual void viewport_set_render_target_update_mode(RID p_viewport,RenderTargetUpdateMode p_mode)=0;
 	virtual RenderTargetUpdateMode viewport_get_render_target_update_mode(RID p_viewport) const=0;
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const=0;
+	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable)=0;
+	virtual bool viewport_get_render_target_vflip(RID p_viewport) const=0;
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;

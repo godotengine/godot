@@ -255,7 +255,7 @@ void CanvasItem::_enter_canvas() {
 	if ((!get_parent() || !get_parent()->cast_to<CanvasItem>()) || toplevel) {
 
 		Node *n = this;
-		viewport=NULL;
+		Viewport *viewport=NULL;
 		canvas_layer=NULL;
 
 		while(n) {
@@ -288,15 +288,10 @@ void CanvasItem::_enter_canvas() {
 	} else {
 
 		CanvasItem *parent = get_parent_item();
-		viewport=parent->viewport;
 		VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,parent->get_canvas_item());
 		parent->_queue_sort_children();
 	}
 
-	if (!viewport) {
-
-		print_line("no viewport wtf!");
-	}
 	pending_update=false;
 	update();
 
@@ -308,7 +303,6 @@ void CanvasItem::_exit_canvas() {
 
 	notification(NOTIFICATION_EXIT_CANVAS,true); //reverse the notification
 	VisualServer::get_singleton()->canvas_item_set_parent(canvas_item,RID());
-	viewport=NULL;
 	canvas_layer=NULL;
 	group="";
 
@@ -655,7 +649,7 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 Rect2 CanvasItem::get_viewport_rect() const {
 
 	ERR_FAIL_COND_V(!is_inside_scene(),Rect2());
-	return viewport->get_visible_rect();
+	return get_viewport()->get_visible_rect();
 }
 
 RID CanvasItem::get_canvas() const {
@@ -665,7 +659,7 @@ RID CanvasItem::get_canvas() const {
 	if (canvas_layer)
 		return canvas_layer->get_world_2d()->get_canvas();
 	else
-		return viewport->find_world_2d()->get_canvas();
+		return get_viewport()->find_world_2d()->get_canvas();
 
 
 }
@@ -680,11 +674,6 @@ CanvasItem *CanvasItem::get_toplevel() const {
 	return ci;
 }
 
-Viewport *CanvasItem::get_viewport() const {
-
-	return viewport;
-}
-
 
 Ref<World2D> CanvasItem::get_world_2d() const {
 
@@ -694,8 +683,8 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 	if (tl->canvas_layer) {
 		return tl->canvas_layer->get_world_2d();
-	} else if (tl->viewport) {
-		return tl->viewport->find_world_2d();
+	} else if (tl->get_viewport()) {
+		return tl->get_viewport()->find_world_2d();
 	} else {
 		return Ref<World2D>();
 	}
@@ -705,7 +694,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 RID CanvasItem::get_viewport_rid() const {
 
 	ERR_FAIL_COND_V(!is_inside_scene(),RID());
-	return viewport->get_viewport();
+	return get_viewport()->get_viewport();
 }
 
 void CanvasItem::set_block_transform_notify(bool p_enable) {
@@ -795,7 +784,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport_rect"),&CanvasItem::get_viewport_rect);
 	ObjectTypeDB::bind_method(_MD("get_canvas"),&CanvasItem::get_canvas);
 	ObjectTypeDB::bind_method(_MD("get_world_2d"),&CanvasItem::get_world_2d);
-	ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasItem::get_viewport);
+	//ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasItem::get_viewport);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 
@@ -838,14 +827,14 @@ Matrix32 CanvasItem::get_viewport_transform() const {
 
 	if (canvas_layer) {
 
-		if (viewport) {
-			return viewport->get_final_transform() * canvas_layer->get_transform();
+		if (get_viewport()) {
+			return get_viewport()->get_final_transform() * canvas_layer->get_transform();
 		} else {
 			return canvas_layer->get_transform();
 		}
 
-	} else if (viewport) {
-		return viewport->get_final_transform() * viewport->get_canvas_transform();
+	} else if (get_viewport()) {
+		return get_viewport()->get_final_transform() * get_viewport()->get_canvas_transform();
 	}
 
 	return Matrix32();
@@ -868,7 +857,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	drawing=false;
 	behind=false;
 	block_transform_notify=false;
-	viewport=NULL;
+//	viewport=NULL;
 	canvas_layer=NULL;
 	global_invalid=true;
 

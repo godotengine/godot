@@ -977,7 +977,7 @@ Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int
 			case TRANSFORM: return (Transform(p_args[0]->operator Transform()));
 
 			// misc types
-			case COLOR: return (Color(*p_args[0]));
+			case COLOR: return p_args[0]->type == Variant::STRING ? Color::html(*p_args[0]) : Color::hex(*p_args[0]);
 			case IMAGE: return (Image(*p_args[0]));
 			case NODE_PATH: return (NodePath(p_args[0]->operator NodePath()));		// 15
 			case _RID: return (RID(*p_args[0]));

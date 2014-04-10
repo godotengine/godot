@@ -129,6 +129,9 @@ void Viewport::_update_rect() {
 	}
 
 	emit_signal("size_changed");
+	render_target_texture->emit_changed();
+
+
 }
 
 void Viewport::_parent_resized() {
@@ -658,6 +661,7 @@ void Viewport::set_size_override(bool p_enable, const Size2& p_size, const Vecto
 	_update_rect();
 	_update_stretch_transform();
 
+
 }
 
 Size2 Viewport::get_size_override() const {
@@ -711,6 +715,8 @@ void Viewport::set_as_render_target(bool p_enable){
 
 		render_target_texture_rid=RID();
 	}
+
+	render_target_texture->emit_changed();
 }
 
 bool Viewport::is_set_as_render_target() const{
@@ -743,6 +749,120 @@ Ref<RenderTargetTexture> Viewport::get_render_target_texture() const {
 	return render_target_texture;
 }
 
+void Viewport::set_render_target_vflip(bool p_enable) {
+
+	render_target_vflip=p_enable;
+	VisualServer::get_singleton()->viewport_set_render_target_vflip(viewport,p_enable);
+}
+
+bool Viewport::get_render_target_vflip() const{
+
+	return render_target_vflip;
+}
+
+
+void Viewport::_make_input_local(InputEvent& ev) {
+
+	switch(ev.type) {
+
+		case InputEvent::MOUSE_BUTTON: {
+
+			Matrix32 ai = get_final_transform().affine_inverse();
+			Vector2 g = ai.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
+			Vector2 l = ai.xform(Vector2(ev.mouse_button.x,ev.mouse_button.y));
+			ev.mouse_button.x=l.x;
+			ev.mouse_button.y=l.y;
+			ev.mouse_button.global_x=g.x;
+			ev.mouse_button.global_y=g.y;
+
+		} break;
+		case InputEvent::MOUSE_MOTION: {
+
+			Matrix32 ai = get_final_transform().affine_inverse();
+			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
+			Vector2 l = ai.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
+			Vector2 r = ai.xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			ev.mouse_motion.x=l.x;
+			ev.mouse_motion.y=l.y;
+			ev.mouse_motion.global_x=g.x;
+			ev.mouse_motion.global_y=g.y;
+			ev.mouse_motion.relative_x=r.x;
+			ev.mouse_motion.relative_y=r.y;
+
+		} break;
+		case InputEvent::SCREEN_TOUCH: {
+
+			Matrix32 ai = get_final_transform().affine_inverse();
+			Vector2 t = ai.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
+			ev.screen_touch.x=t.x;
+			ev.screen_touch.y=t.y;
+
+		} break;
+		case InputEvent::SCREEN_DRAG: {
+
+			Matrix32 ai = get_final_transform().affine_inverse();
+			Vector2 t = ai.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
+			Vector2 r = ai.xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
+			Vector2 s = ai.xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
+			ev.screen_drag.x=t.x;
+			ev.screen_drag.y=t.y;
+			ev.screen_drag.relative_x=r.x;
+			ev.screen_drag.relative_y=r.y;
+			ev.screen_drag.speed_x=s.x;
+			ev.screen_drag.speed_y=s.y;
+		} break;
+	}
+
+}
+
+
+void Viewport::_vp_input(const InputEvent& p_ev) {
+
+	if (render_target)
+		return; //if render target, can't get input events
+
+	//this one handles system input, p_ev are in system coordinates
+	//they are converted to viewport coordinates
+
+	InputEvent ev = p_ev;
+	_make_input_local(ev);
+	input(ev);
+
+}
+
+void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
+
+	if (render_target)
+		return; //if render target, can't get input events
+
+	//this one handles system input, p_ev are in system coordinates
+	//they are converted to viewport coordinates
+
+	InputEvent ev = p_ev;
+	_make_input_local(ev);
+	unhandled_input(ev);
+
+}
+
+void Viewport::input(const InputEvent& p_event) {
+
+	ERR_FAIL_COND(!is_inside_scene());
+	get_scene()->_call_input_pause(input_group,"_input",p_event);
+	get_scene()->call_group(SceneMainLoop::GROUP_CALL_REVERSE|SceneMainLoop::GROUP_CALL_REALTIME|SceneMainLoop::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
+}
+
+void Viewport::unhandled_input(const InputEvent& p_event) {
+
+	ERR_FAIL_COND(!is_inside_scene());
+
+	get_scene()->_call_input_pause(unhandled_input_group,"_unhandled_input",p_event);
+	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
+	if (!get_scene()->input_handled && p_event.type==InputEvent::KEY) {
+		get_scene()->_call_input_pause(unhandled_key_input_group,"_unhandled_key_input",p_event);
+		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
+	}
+}
+
 
 void Viewport::_bind_methods() {
 
@@ -770,6 +890,8 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_parent_visibility_changed"), &Viewport::_parent_visibility_changed);
 
 	ObjectTypeDB::bind_method(_MD("_parent_resized"), &Viewport::_parent_resized);
+	ObjectTypeDB::bind_method(_MD("_vp_input"), &Viewport::_vp_input);
+	ObjectTypeDB::bind_method(_MD("_vp_unhandled_input"), &Viewport::_vp_unhandled_input);
 
 	ObjectTypeDB::bind_method(_MD("set_size_override","enable","size","margin"), &Viewport::set_size_override,DEFVAL(Size2(-1,-1)),DEFVAL(Size2(0,0)));
 	ObjectTypeDB::bind_method(_MD("get_size_override"), &Viewport::get_size_override);
@@ -782,14 +904,17 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_as_render_target","enable"), &Viewport::set_as_render_target);
 	ObjectTypeDB::bind_method(_MD("is_set_as_render_target"), &Viewport::is_set_as_render_target);
 
+	ObjectTypeDB::bind_method(_MD("set_render_target_vflip","enable"), &Viewport::set_render_target_vflip);
+	ObjectTypeDB::bind_method(_MD("get_render_target_vflip"), &Viewport::get_render_target_vflip);
+
 	ObjectTypeDB::bind_method(_MD("set_render_target_update_mode","mode"), &Viewport::set_render_target_update_mode);
 	ObjectTypeDB::bind_method(_MD("get_render_target_update_mode"), &Viewport::get_render_target_update_mode);
 
 	ObjectTypeDB::bind_method(_MD("get_render_target_texture:RenderTargetTexture"), &Viewport::get_render_target_texture);
 
-
 	ObjectTypeDB::bind_method(_MD("get_viewport"), &Viewport::get_viewport);
-
+	ObjectTypeDB::bind_method(_MD("input","local_event"), &Viewport::input);
+	ObjectTypeDB::bind_method(_MD("unhandled_input","local_event"), &Viewport::unhandled_input);
 
 	ObjectTypeDB::bind_method(_MD("update_worlds"), &Viewport::update_worlds);
 
@@ -806,6 +931,7 @@ void Viewport::_bind_methods() {
 //	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/enabled"), _SCS("set_as_render_target"), _SCS("is_set_as_render_target") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/v_flip"), _SCS("set_render_target_vflip"), _SCS("get_render_target_vflip") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_render_target_update_mode"), _SCS("get_render_target_update_mode") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
@@ -839,10 +965,15 @@ Viewport::Viewport() {
 	size_override_stretch=false;
 	size_override_size=Size2(1,1);
 	render_target=false;
+	render_target_vflip=false;
 	render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE;
 	render_target_texture = Ref<RenderTargetTexture>( memnew( RenderTargetTexture(this) ) );
 
-
+	String id=itos(get_instance_ID());
+	input_group = "_vp_input"+id;
+	gui_input_group = "_vp_gui_input"+id;
+	unhandled_input_group = "_vp_unhandled_input"+id;
+	unhandled_key_input_group = "_vp_unhandled_key_input"+id;
 
 
 }

@@ -889,6 +889,9 @@ public:
 	FUNC1RC(RenderTargetUpdateMode,viewport_get_render_target_update_mode,RID);
 	FUNC1RC(RID,viewport_get_render_target_texture,RID);
 
+	FUNC2(viewport_set_render_target_vflip,RID,bool);
+	FUNC1RC(bool,viewport_get_render_target_vflip,RID);
+
 	FUNC1(viewport_queue_screen_capture,RID);
 	FUNC1RC(Image,viewport_get_screen_capture,RID);
 

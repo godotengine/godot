@@ -298,6 +298,19 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 			valid_types=valid;
 
 		} break;		
+
+		case COLOR: {
+
+			static const Type valid[] = {
+				STRING,
+				INT,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+
 		case _RID: {
 
 			static const Type valid[]={

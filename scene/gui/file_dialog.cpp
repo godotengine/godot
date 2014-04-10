@@ -156,11 +156,61 @@ void FileDialog::_action_pressed() {
 
 	if (mode==MODE_SAVE_FILE) {
 		
+		String ext = f.extension();
+		bool valid=false;
+
+		if (filter->get_selected()==filter->get_item_count()-1) {
+			valid=true; //match none
+		} else if (filters.size()>1 && filter->get_selected()==0) {
+			// match all filters
+			for (int i=0;i<filters.size();i++) {
+
+				String flt=filters[i].get_slice(";",0);
+				for (int j=0;j<flt.get_slice_count(",");j++) {
+
+					String str = flt.get_slice(",",j).strip_edges();
+					if (f.match(str)) {
+						valid=true;
+						break;
+					}
+				}
+				if (valid)
+					break;
+			}
+		} else {
+			int idx=filter->get_selected();
+			if (filters.size()>1)
+				idx--;
+			if (idx>=0 && idx<filters.size()) {
+
+				String flt=filters[idx].get_slice(";",0);
+				for (int j=0;j<flt.get_slice_count(",");j++) {
+
+					String str = (flt.get_slice(",",j).strip_edges());
+					if (f.match(str)) {
+						valid=true;
+						break;
+					}
+				}
+			} else {
+				valid=true;
+			}
+		}
+
+
+		if (!valid) {
+
+			exterr->popup_centered_minsize(Size2(250,80));
+			return;
+
+		}
+
 		if (dir_access->file_exists(f)) {
 			confirm_save->set_text("File Exists, Overwrite?");
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
 			
+
 			emit_signal("file_selected",f);
 			hide();
 		}
@@ -681,6 +731,10 @@ FileDialog::FileDialog() {
 	mkdirerr = memnew( AcceptDialog );
 	mkdirerr->set_text("Could not create folder.");
 	add_child(mkdirerr);
+
+	exterr = memnew( AcceptDialog );
+	exterr->set_text("Must use a valid extension.");
+	add_child(exterr);
 
 
 	//update_file_list();

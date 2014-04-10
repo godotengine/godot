@@ -2885,7 +2885,7 @@ void RasterizerGLES1::set_viewport(const VS::ViewportRect& p_viewport) {
 	glViewport( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height );
 }
 
-void RasterizerGLES1::set_render_target(RID p_render_target) {
+void RasterizerGLES1::set_render_target(RID p_render_target, bool p_transparent_bg, bool p_vflip) {
 
 
 }

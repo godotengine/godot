@@ -484,8 +484,8 @@ class VisualServerRaster : public VisualServer {
 		bool hide_scenario;
 		bool hide_canvas;
 		bool transparent_bg;
-
 		bool queue_capture;
+		bool render_target_vflip;
 		Image capture;
 
 		bool rendered_in_prev_frame;
@@ -512,7 +512,7 @@ class VisualServerRaster : public VisualServer {
 
 		SelfList<Viewport> update_list;
 
-		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false;}
+		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false;}
 	};
 
 	SelfList<Viewport>::List viewport_update_list;
@@ -911,6 +911,8 @@ public:
 	virtual void viewport_set_render_target_update_mode(RID p_viewport,RenderTargetUpdateMode p_mode);
 	virtual RenderTargetUpdateMode viewport_get_render_target_update_mode(RID p_viewport) const;
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const;
+	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable);
+	virtual bool viewport_get_render_target_vflip(RID p_viewport) const;
 
 	virtual void viewport_queue_screen_capture(RID p_viewport);
 	virtual Image viewport_get_screen_capture(RID p_viewport) const;
