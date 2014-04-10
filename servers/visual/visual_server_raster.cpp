@@ -3267,13 +3267,21 @@ void VisualServerRaster::free( RID p_rid ) {
 
 	VS_CHANGED;
 
-	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) || rasterizer->is_skeleton(p_rid) || rasterizer->is_shader(p_rid)) {
+	if (rasterizer->is_texture(p_rid) || 
+        rasterizer->is_material(p_rid) || 
+        rasterizer->is_skeleton(p_rid) || 
+        rasterizer->is_shader(p_rid) ||
+        rasterizer->is_environment(p_rid) ) 
+    {
 	
 		rasterizer->free(p_rid);
 	
-	} else if (rasterizer->is_mesh(p_rid) || rasterizer->is_multimesh(p_rid) || rasterizer->is_light(p_rid) || rasterizer->is_particles(p_rid) ) {
+	} else if (rasterizer->is_mesh(p_rid) || 
+        rasterizer->is_multimesh(p_rid) || 
+        rasterizer->is_light(p_rid) || 
+        rasterizer->is_particles(p_rid) ) 
+    {
 		//delete the resource
-	
 		_free_attached_instances(p_rid);
 		rasterizer->free(p_rid);
 	} else if (room_owner.owns(p_rid)) {
