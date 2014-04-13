@@ -106,7 +106,9 @@ struct SpatialIndexer {
 
 		while(!removed.empty()) {
 
-			p_notifier->_exit_camera(removed.front()->get());
+#ifndef _3D_DISABLED
+            p_notifier->_exit_camera(removed.front()->get());
+#endif
 			removed.pop_front();
 		}
 
@@ -139,7 +141,9 @@ struct SpatialIndexer {
 		}
 
 		while(!removed.empty()) {
+#ifndef _3D_DISABLED
 			removed.front()->get()->_exit_camera(p_camera);
+#endif
 			removed.pop_front();
 		}
 
@@ -164,8 +168,11 @@ struct SpatialIndexer {
 
 			Camera *c=E->key();
 
-			Vector<Plane> planes = c->get_frustum();
-
+#ifndef _3D_DISABLED
+            Vector<Plane> planes = c->get_frustum();
+#else
+            Vector<Plane> planes;
+#endif
 			int culled = octree.cull_convex(planes,cull.ptr(),cull.size());
 
 
@@ -197,14 +204,18 @@ struct SpatialIndexer {
 			}
 
 			while(!added.empty()) {
-				added.front()->get()->_enter_camera(E->key());
-				added.pop_front();
+#ifndef _3D_DISABLED
+                added.front()->get()->_enter_camera(E->key());
+#endif
+                added.pop_front();
 			}
 
 			while(!removed.empty()) {
 				E->get().notifiers.erase(removed.front()->get());
+#ifndef _3D_DISABLED
 				removed.front()->get()->_exit_camera(E->key());
-				removed.pop_front();
+#endif
+                removed.pop_front();
 			}
 		}
 		changed=false;
@@ -270,15 +281,12 @@ void World::_update(uint64_t p_frame) {
 
 
 RID World::get_space() const {
-
 	return space;
 }
 RID World::get_scenario() const{
-
 	return scenario;
 }
 RID World::get_sound_space() const{
-
 	return sound_space;
 }
 
@@ -304,16 +312,22 @@ void World::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_sound_space"),&World::get_sound_space);
 	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&World::set_environment);
 	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&World::get_environment);
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
 
+    ObjectTypeDB::bind_method(_MD("set_is_unique","b_unique:bool"),&World::set_is_unique);
+	ObjectTypeDB::bind_method(_MD("get_is_unique:bool"),&World::get_is_unique);
+    //
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment"),_SCS("set_environment"),_SCS("get_environment"));
+    //
+    ADD_PROPERTY( PropertyInfo(Variant::BOOL,"is_unique"),_SCS("set_is_unique"),_SCS("get_is_unique") );
 }
 
 
 World::World() {
 
-	space = PhysicsServer::get_singleton()->space_create();
-	scenario = VisualServer::get_singleton()->scenario_create();
+	space       = PhysicsServer::get_singleton()->space_create();
+	scenario    = VisualServer::get_singleton()->scenario_create();
 	sound_space = SpatialSoundServer::get_singleton()->space_create();
+    is_unique   = false;
 
 	PhysicsServer::get_singleton()->space_set_active(space,true);
 
