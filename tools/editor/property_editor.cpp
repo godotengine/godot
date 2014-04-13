@@ -38,6 +38,7 @@
 #include "scene/scene_string_names.h"
 #include "editor_settings.h"
 #include "editor_import_export.h"
+#include "editor_node.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 	
@@ -849,11 +850,12 @@ void CustomPropertyEditor::_color_changed(const Color& p_color) {
 void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	if (owner && owner->is_type("Node")) {
-
-		Node *node = owner->cast_to<Node>();
-		Node *tonode=node->get_node(p_path);
+        Node *scene = EditorNode::get_singleton()->get_edited_scene();
+        p_path = NodePath( "/"+scene->get_name() ).rel_path_to( p_path );
+		Node *node      = owner->cast_to<Node>();
+		Node *tonode    = scene->get_node( p_path );
+        //
 		if (tonode) {
-
 			p_path=node->get_path_to(tonode);
 		}
 

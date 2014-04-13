@@ -48,6 +48,8 @@ private:
 	RID sound_space;
 	SpatialIndexer* indexer;
 	Ref<Environment> environment;
+    //
+    bool    is_unique;
 
 protected:
 
@@ -74,6 +76,9 @@ public:
 	RID get_sound_space() const;
 	void set_environment(const Ref<Environment>& p_environment);
 	Ref<Environment> get_environment() const;
+    //
+    void set_is_unique( bool b_unique )   { is_unique = b_unique; }
+    bool get_is_unique() const { return is_unique; }
 
 	World();
 	~World();
