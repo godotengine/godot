@@ -103,7 +103,7 @@ opts.Add('target', 'Compile Target (debug/profile/release).', "release")
 opts.Add('platform','Platform: '+str(platform_list)+'(sfml).',"")
 opts.Add('python','Build Python Support: (yes/no)','no')
 opts.Add('squirrel','Build Squirrel Support: (yes/no)','no')
-opts.Add('tools','Build Tools (Including Editor): (yes/no)','no')
+opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
 opts.Add('lua','Build Lua Support: (yes/no)','yes')
 opts.Add('rfd','Remote Filesystem Driver: (yes/no)','no')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
@@ -149,8 +149,8 @@ Help(opts.GenerateHelpText(env_base)) # generate help
 # add default include paths
 
 env_base.Append(CPPPATH=['#core','#core/math','#tools','#drivers','#'])
-	
-# configure ENV for platform	
+
+# configure ENV for platform
 env_base.detect_python=True
 env_base.platform_exporters=platform_exporters
 
