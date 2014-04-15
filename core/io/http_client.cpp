@@ -277,7 +277,7 @@ Error HTTPClient::poll(){
 					response_str.push_back(0);
 					String response;
 					response.parse_utf8((const char*)response_str.ptr());
-					print_line("END OF RESPONSE? :\n"+response+"\n------");
+					//print_line("END OF RESPONSE? :\n"+response+"\n------");
 					Vector<String> responses = response.split("\n");
 					body_size=0;
 					chunked=false;
@@ -298,7 +298,7 @@ Error HTTPClient::poll(){
 
 						if (s.begins_with("Transfer-Encoding:")) {
 							String encoding = s.substr(s.find(":")+1,s.length()).strip_edges();
-							print_line("TRANSFER ENCODING: "+encoding);
+							//print_line("TRANSFER ENCODING: "+encoding);
 							if (encoding=="chunked") {
 								chunked=true;
 							}

@@ -112,10 +112,14 @@ void FileAccessWindows::close() {
 
 		//unlink(save_path.utf8().get_data());
 		//print_line("renaming..");
-		_wunlink(save_path.c_str()); //unlink if exists
-		int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
+		for (;;) {
+			_wunlink(save_path.c_str()); //unlink if exists
+			int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
+			if (rename_error == 0)
+				break;
+		}
 		save_path="";
-		ERR_FAIL_COND( rename_error != 0);
+		//ERR_FAIL_COND( rename_error != 0);
 	}
 
 

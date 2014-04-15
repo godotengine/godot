@@ -187,12 +187,20 @@ void make_default_theme() {
 		config_path=OS::get_singleton()->get_environment("HOME");
 	}
 
+	size_t font_size = 20;
     String font_path = config_path + "\\Godot\\editor.ttf";
     Ref<TtfFont> ttf_font = ResourceLoader::load(font_path);
+	if(ttf_font.is_null())
+	{
+		font_path = "C:\\Windows\\Fonts\\msyh.ttf";
+		ttf_font = ResourceLoader::load(font_path);
+		font_size = 18;
+	}
+
     if(ttf_font.is_valid())
     {
         Ref<Font> font=Ref<Font>(memnew (Font));
-        font->set_ttf_path(font_path, 22);
+        font->set_ttf_path(font_path, font_size);
 	    default_font=font;
 	    source_font=font;
 	    large_font=font;

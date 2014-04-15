@@ -340,9 +340,6 @@ Font::Character Font::get_character(CharType p_char) const {
 
 const Font::Character *Font::get_character_p(CharType p_char) const {
 
-    if (p_char=='\r'||p_char=='\n')
-        return NULL;
-
 	if (!char_map.has(p_char)) {
 		ERR_FAIL_COND_V(!(const_cast<Font *>(this))->create_character(p_char),NULL);
 	};
@@ -359,8 +356,8 @@ bool Font::create_character(CharType p_char) {
         atlas_dirty=true;
         return true;
     }
-
-    return false;
+	char_map[p_char]=Character();
+    return true;
 }
 
 void Font::add_char(CharType p_char, int p_texture_idx, const Rect2& p_rect, const Size2& p_align, float p_advance) {
