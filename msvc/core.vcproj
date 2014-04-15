@@ -671,6 +671,14 @@
 				Name="io"
 				>
 				<File
+					RelativePath="..\core\io\aes256.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\core\io\aes256.h"
+					>
+				</File>
+				<File
 					RelativePath="..\core\io\base64.c"
 					>
 				</File>
@@ -724,6 +732,14 @@
 				</File>
 				<File
 					RelativePath="..\core\io\file_access_compressed.h"
+					>
+				</File>
+				<File
+					RelativePath="..\core\io\file_access_encrypted.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\core\io\file_access_encrypted.h"
 					>
 				</File>
 				<File
