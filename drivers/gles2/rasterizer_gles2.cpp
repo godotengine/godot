@@ -6302,6 +6302,12 @@ void RasterizerGLES2::canvas_begin() {
 
 
 }
+
+void RasterizerGLES2::canvas_disable_blending() {
+
+	glDisable(GL_BLEND);
+}
+
 void RasterizerGLES2::canvas_set_opacity(float p_opacity) {
 
 	canvas_opacity = p_opacity;

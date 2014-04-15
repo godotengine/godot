@@ -24,8 +24,12 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 			}
 		});
 	};
+	
+/*	public string requestPurchasedTicket(){
+	    activity.getPaymentsManager()
+	}
 
-
+*/
     static public Godot.SingletonBase initialize(Activity p_activity) {
 
         return new GodotPaymentV3(p_activity);
@@ -40,8 +44,8 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 
 
 	
-	public void callbackSuccess(){
-        GodotLib.callobject(purchaseCallbackId, "purchase_success", new Object[]{});
+	public void callbackSuccess(String ticket){
+        GodotLib.callobject(purchaseCallbackId, "purchase_success", new Object[]{ticket});
 	}
 	
 	public void callbackFail(){

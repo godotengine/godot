@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Pata huduma za Google Play"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Programu hii haiwezi kuendeshwa bila huduma za Google Play, ambazo hazipo kwenye simu yako."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Programu hii haiwezi kufanya kazi bila huduma za Google Play, ambazo hazipatikani kwenye kompyuta kibao yako."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Pata huduma za Google Play"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Wezesha huduma za Google Play"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Programu hii haitafanya kazi mpaka utakapowezesha huduma za Google Play."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Wezesha huduma za Google Play"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Sasisha huduma za Google Play"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Programu hii haiwezi kuendeshwa mpaka utakaposasisha huduma za Google Play."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Hitilafu ya Mtandao"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Muunganisho wa data unahitajika ili kuunganisha kwenye huduma za Google Play."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Akaunti Batili"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"Akaunti iliyobainishwa haipo kwenye kifaa hiki. Tafadhali chagua akaunti tofauti."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Suala lisilojulikana na huduma za Google Play."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Huduma za Google Play"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Huduma za Google Play, ambazo baadhi ya programu zako zinategemea, si linganifu na kifaa chako. Tafadhali wasiliana na mtengenezaji kwa usaidizi."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Inaeonekana tarehe ya kifaa sio sahihi. Tafadhali angalia tarehe ya kifaa."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Sasisha"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Ingia"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Ingia ukitumia Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Programu ilijaribu kutumia toleo baya la Huduma za Google Play."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Programu inahitaji Huduma za Google Play ili kuwashwa."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Programu inahitaji usakinishaji wa Huduma za Google Play."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Programu inahitaji sasisho la Huduma za Google Play."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Hitilafu kwenye Huduma za Google Play"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Imeombwa na <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>

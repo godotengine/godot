@@ -57,6 +57,7 @@ def configure(env):
 		env['SPAWN'] = methods.win32_spawn
 
 	env.android_source_modules.append("../libs/apk_expansion")	
+	env.android_source_modules.append("../libs/google_play_services")	
 	ndk_platform=""
 
 	ndk_platform="android-15"

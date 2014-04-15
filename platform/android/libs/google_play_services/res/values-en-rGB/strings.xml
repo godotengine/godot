@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Get Google Play services"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"This app won\'t run without Google Play services, which are missing from your phone."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"This app won\'t run without Google Play services, which are missing from your tablet."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Get Google Play services"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Enable Google Play services"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"This app won\'t work unless you enable Google Play services."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Enable Google Play services"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Update Google Play services"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"This app won\'t run unless you update Google Play services."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Network Error"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"A data connection is required to connect to Google Play services."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Invalid Account"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"The specified account does not exist on this device. Please choose a different account."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Unknown issue with Google Play services."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Google Play services"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Google Play services, which some of your applications rely on, is not supported by your device. Please contact the manufacturer for assistance."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"The date on the device appears to be incorrect. Please check the date on the device."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Update"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Sign in"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Sign in with Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"An application attempted to use a bad version of Google Play Services."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"An application requires Google Play Services to be enabled."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"An application requires installation of Google Play Services."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"An application requires an update for Google Play Services."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Google Play services error"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Requested by <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>
