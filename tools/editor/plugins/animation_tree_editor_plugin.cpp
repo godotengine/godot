@@ -324,7 +324,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				edit_line[0]->set_begin(Point2(15,25));
 				edit_line[0]->set_text(rtos(anim_tree->oneshot_node_get_fadein_time(edited_node)));
 				edit_line[0]->show();
-				edit_label[1]->set_text("Fade Out (s):");
+				edit_label[1]->set_text(_TR("Fade Out (s):"));
 				edit_label[1]->set_pos(Point2(5,55));
 				edit_label[1]->show();
 				edit_line[1]->set_begin(Point2(15,75));
@@ -811,14 +811,14 @@ void AnimationTreeEditor::_input_event(InputEvent p_event) {
 						if (rclick_type==CLICK_INPUT_SLOT || rclick_type==CLICK_OUTPUT_SLOT) {
 
 							node_popup->clear();
-							node_popup->add_item("Disconnect",NODE_DISCONNECT);
+							node_popup->add_item(_TR("Disconnect"),NODE_DISCONNECT);
 							if (anim_tree->node_get_type(rclick_node)==AnimationTreePlayer::NODE_TRANSITION) {
-								node_popup->add_item("Add Input",NODE_ADD_INPUT);
+								node_popup->add_item(_TR("Add Input"),NODE_ADD_INPUT);
 								if (rclick_type==CLICK_INPUT_SLOT) {
 									if (anim_tree->transition_node_has_input_auto_advance(rclick_node,rclick_slot))
-										node_popup->add_item("Clear Auto-Advance",NODE_CLEAR_AUTOADVANCE);
+										node_popup->add_item(_TR("Clear Auto-Advance"),NODE_CLEAR_AUTOADVANCE);
 									else
-										node_popup->add_item("Set Auto-Advance",NODE_SET_AUTOADVANCE);
+										node_popup->add_item(_TR("Set Auto-Advance"),NODE_SET_AUTOADVANCE);
 									node_popup->add_item("Delete Input",NODE_DELETE_INPUT);
 
 								}
@@ -831,10 +831,10 @@ void AnimationTreeEditor::_input_event(InputEvent p_event) {
 
 						if (rclick_type==CLICK_NODE) {
 							node_popup->clear();
-							node_popup->add_item("Rename",NODE_RENAME);
-							node_popup->add_item("Remove",NODE_ERASE);
+							node_popup->add_item(_TR("Rename"),NODE_RENAME);
+							node_popup->add_item(_TR("Remove"),NODE_ERASE);
 							if (anim_tree->node_get_type(rclick_node)==AnimationTreePlayer::NODE_TRANSITION)
-								node_popup->add_item("Add Input",NODE_ADD_INPUT);
+								node_popup->add_item(_TR("Add Input"),NODE_ADD_INPUT);
 							node_popup->set_pos(rclick_pos+get_global_pos());
 							node_popup->popup();
 						}
@@ -989,12 +989,12 @@ void AnimationTreeEditor::_notification(int p_what) {
 				case AnimationTreePlayer::CONNECT_OK: {
 
 					Ref<Font> f = get_font("font","Label");
-					f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),"Animation Tree is Valid.",Color(0,1,0.6,0.8));
+					f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),_TR("Animation Tree is Valid."),Color(0,1,0.6,0.8));
 				} break;
 				default: {
 
 					   Ref<Font> f = get_font("font","Label");
-					   f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),"Animation Tree is Invalid.",Color(1,0.6,0.0,0.8));
+					   f->draw(get_canvas_item(),Point2(5,25+f->get_ascent()),_TR("Animation Tree is Invalid."),Color(1,0.6,0.0,0.8));
 				} break;
 			}
 

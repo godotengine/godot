@@ -307,7 +307,7 @@ void EditorTextureImportDialog::_import() {
 
 	if (!files.size()) {
 
-		error_dialog->set_text("Please specify some files!");
+		error_dialog->set_text(_TR("Please specify some files!"));
 		error_dialog->popup_centered(Size2(200,100));
 		return;
 	}
@@ -742,7 +742,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		bool alpha=false;
 		bool crop = from->get_option("crop");
 
-		EditorProgress ep("make_atlas","Build Atlas For: "+p_path.get_file(),from->get_source_count()+3);
+		EditorProgress ep("make_atlas",_TR("Build Atlas For: ")+p_path.get_file(),from->get_source_count()+3);
 
 		print_line("sources: "+itos(from->get_source_count()));
 		for(int i=0;i<from->get_source_count();i++) {
@@ -750,12 +750,12 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			String path = EditorImportPlugin::expand_source_path(from->get_source_path(i));
 			String md5 = FileAccess::get_md5(path);
 			from->set_source_md5(i,FileAccess::get_md5(path));
-			ep.step("Loading Image: "+path,i);
+			ep.step(_TR("Loading Image: ")+path,i);
 			print_line("source path: "+path+" md5 "+md5);
 			Image src;
 			Error err = ImageLoader::load_image(path,&src);
 			if (err) {
-				EditorNode::add_io_error("Couldn't load image: "+path);
+				EditorNode::add_io_error(_TR("Couldn't load image: ")+path);
 				return err;
 			}
 
@@ -764,7 +764,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 			sources.push_back(src);
 		}
-		ep.step("Converting Images",sources.size());
+		ep.step(_TR("Converting Images"),sources.size());
 
 		for(int i=0;i<sources.size();i++) {
 
@@ -783,7 +783,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		Vector<Size2i> src_sizes;
 		Vector<Rect2> crops;
 
-		ep.step("Cropping Images",sources.size()+1);
+		ep.step(_TR("Cropping Images"),sources.size()+1);
 
 		for(int j=0;j<sources.size();j++) {
 
@@ -807,7 +807,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		print_line("size that workeD: "+itos(dst_size.width)+","+itos(dst_size.height));
 
-		ep.step("Blitting Images",sources.size()+2);
+		ep.step(_TR("Blitting Images"),sources.size()+2);
 
 		Image atlas;
 		atlas.create(nearest_power_of_2(dst_size.width),nearest_power_of_2(dst_size.height),0,alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB);
@@ -894,7 +894,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 				atlases[i]->set_atlas(texture);
 				Error err = ResourceSaver::save(apath,atlases[i]);
 				if (err) {
-					EditorNode::add_io_error("Couldn't save atlas image: "+apath);
+					EditorNode::add_io_error(_TR("Couldn't save atlas image: ")+apath);
 					return err;
 				}
 				//from->set_source_md5(i,FileAccess::get_md5(apath));
@@ -949,7 +949,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		Error err = ResourceSaver::save(p_path,texture);
 
 		if (err!=OK) {
-			EditorNode::add_io_error("Couldn't save converted texture: "+p_path);
+			EditorNode::add_io_error(_TR("Couldn't save converted texture: ")+p_path);
 			return err;
 		}
 
@@ -1004,7 +1004,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		Error err = ResourceSaver::save(p_path,texture,save_flags);
 		if (err!=OK) {
-			EditorNode::add_io_error("Couldn't save converted texture: "+p_path);
+			EditorNode::add_io_error(_TR("Couldn't save converted texture: ")+p_path);
 			return err;
 		}
 

@@ -36,6 +36,8 @@ RES TranslationLoaderPO::load(const String &p_path,const String& p_original_path
 	ERR_FAIL_COND_V(!f,RES());
 
 	String l = f->get_line();
+	if (!l.empty())
+		f->seek(0);
 
 	enum Status {
 

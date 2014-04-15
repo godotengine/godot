@@ -3385,7 +3385,7 @@ EditorNode::EditorNode() {
 	animation_vb->add_child(animation_hb);
 
 	Label *l= memnew( Label );
-	l->set_text("Animation:");
+	l->set_text(_TR("Animation:"));
 	//l->set_h_size_flags(Control::SIZE_);
 	animation_hb->add_child(l);
 

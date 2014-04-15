@@ -2314,31 +2314,31 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );				
 				//menu_track->set_icon(get_icon("AddTrack","EditorIcons"));
-				menu_track->get_popup()->add_icon_item(get_icon("KeyValue","EditorIcons"),"Add Normal Track",TRACK_MENU_ADD_VALUE_TRACK);
-				menu_track->get_popup()->add_icon_item(get_icon("KeyXform","EditorIcons"),"Add Transform Track",TRACK_MENU_ADD_TRANSFORM_TRACK);
-				menu_track->get_popup()->add_icon_item(get_icon("KeyCall","EditorIcons"),"Add Call Func Track",TRACK_MENU_ADD_CALL_TRACK);
+				menu_track->get_popup()->add_icon_item(get_icon("KeyValue","EditorIcons"),_TR("Add Normal Track"),TRACK_MENU_ADD_VALUE_TRACK);
+				menu_track->get_popup()->add_icon_item(get_icon("KeyXform","EditorIcons"),_TR("Add Transform Track"),TRACK_MENU_ADD_TRANSFORM_TRACK);
+				menu_track->get_popup()->add_icon_item(get_icon("KeyCall","EditorIcons"),_TR("Add Call Func Track"),TRACK_MENU_ADD_CALL_TRACK);
 				menu_track->get_popup()->add_separator();
-				menu_track->get_popup()->add_item("Scale Selection",TRACK_MENU_SCALE);
-				menu_track->get_popup()->add_item("Scale From Cursor",TRACK_MENU_SCALE_PIVOT);
+				menu_track->get_popup()->add_item(_TR("Scale Selection"),TRACK_MENU_SCALE);
+				menu_track->get_popup()->add_item(_TR("Scale From Cursor"),TRACK_MENU_SCALE_PIVOT);
 				menu_track->get_popup()->add_separator();
-				menu_track->get_popup()->add_item("Duplicate Selection",TRACK_MENU_DUPLICATE);
-				menu_track->get_popup()->add_item("Duplicate Transposed",TRACK_MENU_DUPLICATE_TRANSPOSE);
+				menu_track->get_popup()->add_item(_TR("Duplicate Selection"),TRACK_MENU_DUPLICATE);
+				menu_track->get_popup()->add_item(_TR("Duplicate Transposed"),TRACK_MENU_DUPLICATE_TRANSPOSE);
 				menu_track->get_popup()->add_separator();
-				menu_track->get_popup()->add_item("Goto Next Step",TRACK_MENU_NEXT_STEP,KEY_MASK_CMD|KEY_RIGHT);
-				menu_track->get_popup()->add_item("Goto Prev Step",TRACK_MENU_PREV_STEP,KEY_MASK_CMD|KEY_LEFT);
+				menu_track->get_popup()->add_item(_TR("Goto Next Step"),TRACK_MENU_NEXT_STEP,KEY_MASK_CMD|KEY_RIGHT);
+				menu_track->get_popup()->add_item(_TR("Goto Prev Step"),TRACK_MENU_PREV_STEP,KEY_MASK_CMD|KEY_LEFT);
 				menu_track->get_popup()->add_separator();
 				PopupMenu *tpp = memnew( PopupMenu );
-				tpp->add_item("Linear",TRACK_MENU_SET_ALL_TRANS_LINEAR);
-				tpp->add_item("Constant",TRACK_MENU_SET_ALL_TRANS_CONSTANT);
-				tpp->add_item("In",TRACK_MENU_SET_ALL_TRANS_IN);
-				tpp->add_item("Out",TRACK_MENU_SET_ALL_TRANS_OUT);
-				tpp->add_item("In-Out",TRACK_MENU_SET_ALL_TRANS_INOUT);
-				tpp->add_item("Out-In",TRACK_MENU_SET_ALL_TRANS_OUTIN);
+				tpp->add_item(_TR("Linear"),TRACK_MENU_SET_ALL_TRANS_LINEAR);
+				tpp->add_item(_TR("Constant"),TRACK_MENU_SET_ALL_TRANS_CONSTANT);
+				tpp->add_item(_TR("In"),TRACK_MENU_SET_ALL_TRANS_IN);
+				tpp->add_item(_TR("Out"),TRACK_MENU_SET_ALL_TRANS_OUT);
+				tpp->add_item(_TR("In-Out"),TRACK_MENU_SET_ALL_TRANS_INOUT);
+				tpp->add_item(_TR("Out-In"),TRACK_MENU_SET_ALL_TRANS_OUTIN);
 				tpp->set_name("Transitions");
 				tpp->connect("item_pressed",this,"_menu_track");
 
 				menu_track->get_popup()->add_child(tpp);
-				menu_track->get_popup()->add_submenu_item("Set Transitions..","Transitions");
+				menu_track->get_popup()->add_submenu_item(_TR("Set Transitions.."),"Transitions");
 				//menu_track->get_popup()->add_separator();
 				//menu_track->get_popup()->add_item("Optimize Animation",TRACK_MENU_OPTIMIZE);
 
@@ -2515,9 +2515,9 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 	if (p_id.track_idx==-1) {
 		//potential new key, does not exist		
 		if (insert_data.size()==1)
-			insert_confirm->set_text("Create NEW track for "+p_id.query+" and insert key?");
+			insert_confirm->set_text(_TR("Create NEW track for ")+p_id.query+_TR(" and insert key?"));
 		else
-			insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
+			insert_confirm->set_text(_TR("Create ")+itos(insert_data.size())+_TR(" NEW tracks and insert keys?"));
 
 		insert_confirm->get_ok()->set_text("Create");
 		insert_confirm->popup_centered(Size2(300,100));
