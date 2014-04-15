@@ -1373,6 +1373,8 @@ public:
 	/* CANVAS API */
 
 	virtual void canvas_begin();
+	virtual void canvas_disable_blending();
+
 	virtual void canvas_set_opacity(float p_opacity);
 	virtual void canvas_set_blend_mode(VS::MaterialBlendMode p_mode);
 	virtual void canvas_begin_rect(const Matrix32& p_transform);

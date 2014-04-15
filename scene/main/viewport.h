@@ -101,6 +101,7 @@ friend class RenderTargetTexture;
 	Matrix32 stretch_transform;
 
 	Rect2 rect;
+	Rect2 to_screen_rect;
 
 
 	bool size_override;
@@ -120,6 +121,7 @@ friend class RenderTargetTexture;
 
 	Ref<World2D> world_2d;
 	Ref<World> world;
+	Ref<World> own_world;
 
 	StringName input_group;
 	StringName gui_input_group;
@@ -213,8 +215,14 @@ public:
 	void queue_screen_capture();
 	Image get_screen_capture() const;
 
+	void set_use_own_world(bool p_world);
+	bool is_using_own_world() const;
+
 	void input(const InputEvent& p_event);
 	void unhandled_input(const InputEvent& p_event);
+
+	void set_render_target_to_screen_rect(const Rect2& p_rect);
+	Rect2 get_render_target_to_screen_rect() const;
 
 	Viewport();	
 	~Viewport();

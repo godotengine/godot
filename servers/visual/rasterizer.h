@@ -494,6 +494,7 @@ public:
 	};
 		
 	virtual void canvas_begin()=0;
+	virtual void canvas_disable_blending()=0;
 	virtual void canvas_set_opacity(float p_opacity)=0;
 	virtual void canvas_set_blend_mode(VS::MaterialBlendMode p_mode)=0;
 	virtual void canvas_begin_rect(const Matrix32& p_transform)=0;;

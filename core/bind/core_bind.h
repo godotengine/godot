@@ -243,6 +243,10 @@ public:
 		READ_WRITE=3,
 	};
 
+	Error open_encrypted(const String& p_path, int p_mode_flags,const Vector<uint8_t>& p_key);
+	Error open_encrypted_pass(const String& p_path, int p_mode_flags,const String& p_pass);
+
+
 	Error open(const String& p_path, int p_mode_flags); ///< open a file
 	void close(); ///< close a file
 	bool is_open() const; ///< true when file is open

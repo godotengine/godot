@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Google Play үйлчилгээ авах"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Таны утсанд байхгүй байгаа Google Play үйлчилгээг идэвхжүүлж байж энэ апп-г ажиллуулах боломжтой."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Таны таблетэд байхгүй Google Play үйлчилгээг идэвхжүүлж байж энэ апп-г ажиллуулах боломжтой."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Google Play үйлчилгээ авах"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Google Play үйлчилгээг идэвхжүүлэх"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Та Google Play үйлчилгээг идэвхжүүлж байж энэ апп-г ажиллуулах боломжтой."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Google Play үйлчилгээг идэвхжүүлэх"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Google Play үйлчилгээг шинэчлэх"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Та Google Play үйлчилгээг шинэчлэхгүй бол энэ апп ажиллах боломжгүй."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Сүлжээний алдаа"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Google Play үйлчилгээнд холбогдохын тулд дата холболт шаардлагатай."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Буруу акаунт"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"Заасан акаунт энэ төхөөрөмж дээр байхгүй байна. Өөр акаунт сонгоно уу."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Google Play үйлчилгээтэй холбоотой тодорхойгүй алдаа."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Google Play үйлчилгээ"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Таны зарим аппликешнүүдийн хамаардаг Google Play үйлчилгээ таны төхөөрөмжид дэмжигдэхгүй байна. Тусламж авахын тулд үйлдвэрлэгчтэй холбоо барина уу."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Төхөөрөмжийн огноо буруу байгаа бололтой. Төхөөрөмжийн огноог шалгана уу."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Шинэчлэх"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Нэвтрэх"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Google-р нэвтрэх:"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Аппликешн Google Play Үйлчилгээний муу хувилбарыг ашиглахыг оролдлоо."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Аппликешн Google Play Үйлчилгээг идэвхжүүлсэн байхыг шаардана."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Аппликешн Google Play Үйлчилгээг суулгахыг шаардана."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Аппликешн Google Play Үйлчилгээг шинэчлэхийг шаардана."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Google Play үйлчилгээний алдаа"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Хүсэлт гаргасан <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>

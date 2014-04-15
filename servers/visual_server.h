@@ -592,6 +592,7 @@ public:
 
 	virtual void viewport_attach_to_screen(RID p_viewport,int p_screen=0)=0;
 	virtual void viewport_detach(RID p_viewport)=0;
+	virtual void viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect)=0;
 
 	enum RenderTargetUpdateMode {
 		RENDER_TARGET_UPDATE_DISABLED,
@@ -610,6 +611,8 @@ public:
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;
+
+
 
 	struct ViewportRect {
 	

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Установити Google Play Послуги"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Ця програма не запуститься без Google Play Послуг, яких немає у вашому телефоні."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Ця програма не запуститься без Google Play Послуг, яких немає на вашому планшетному ПК."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Установити Google Play Послуги"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Увімкнути Google Play Послуги"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Ця програма не працюватиме, поки ви не ввімкнете Google Play Послуги."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Увімкнути Google Play Послуги"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Оновити Google Play Послуги"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Ця програма не запуститься, поки ви не оновите Google Play Послуги."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Помилка мережі"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Для під’єднання до сервісів Google Play потрібне з’єднання з мережею."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Недійсний обліковий запис"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"Указаний обліковий запис не існує на цьому пристрої. Виберіть інший обліковий запис."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Google Play Послуги – невідома проблема."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Сервіси Google Play"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Ваш пристрій не підтримує Сервіси Google Play, від яких залежить робота деяких програм. Зверніться по допомогу до виробника."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Схоже, на пристрої вказано неправильну дату. Перевірте її."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Оновити"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Увійти"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Увійти в обл.запис Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Програма спробувала застосувати хибну версію Сервісів Google Play."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Щоб програма працювала, потрібно ввімкнути Сервіси Google Play."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Щоб програма працювала, потрібно встановити Сервіси Google Play."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Щоб програма працювала, потрібно оновити Сервіси Google Play."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Помилка Сервісів Google Play"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Запит від програми <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>

@@ -84,8 +84,9 @@ public class PaymentsManager {
 		new HandlePurchaseTask(activity){
 
 			@Override
-			protected void success(String purchaseToken, String sku) {
-				validatePurchase(purchaseToken, sku);
+			protected void success(String ticket) {
+			    godotPaymentV3.callbackSuccess(ticket);
+			    //validatePurchase(purchaseToken, sku);
 			}
 
 			@Override
@@ -112,7 +113,7 @@ public class PaymentsManager {
 					
 					@Override
 					protected void success() {
-						godotPaymentV3.callbackSuccess();
+						godotPaymentV3.callbackSuccess("");
 						
 					}
 					
@@ -145,7 +146,5 @@ public class PaymentsManager {
 		this.godotPaymentV3 = godotPaymentV3;
 		
 	}
-
-
 }
 
