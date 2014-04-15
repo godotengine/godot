@@ -821,6 +821,17 @@ void CanvasItem::_bind_methods() {
 
 }
 
+Matrix32 CanvasItem::get_canvas_transform() const {
+
+	ERR_FAIL_COND_V(!is_inside_scene(),Matrix32());
+
+	if (canvas_layer)
+		return canvas_layer->get_transform();
+	else
+		return get_viewport()->get_canvas_transform();
+
+}
+
 Matrix32 CanvasItem::get_viewport_transform() const {
 
 	ERR_FAIL_COND_V(!is_inside_scene(),Matrix32());

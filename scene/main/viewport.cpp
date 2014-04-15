@@ -86,8 +86,9 @@ void Viewport::_update_stretch_transform() {
 	if (size_override_stretch && size_override) {
 
 		stretch_transform=Matrix32();
-		stretch_transform.scale(rect.size/(size_override_size+size_override_margin*2));
-		stretch_transform.elements[2]=size_override_margin;
+		Size2 scale = rect.size/(size_override_size+size_override_margin*2);
+		stretch_transform.scale(scale);
+		stretch_transform.elements[2]=size_override_margin*scale;
 
 	} else {
 
@@ -629,7 +630,9 @@ Ref<World> Viewport::get_world() const{
 
 Ref<World> Viewport::find_world() const{
 
-	if (world.is_valid())
+	if (own_world.is_valid())
+		return own_world;
+	else if (world.is_valid())
 		return world;
 	else if (parent)
 		return parent->find_world();
@@ -863,6 +866,60 @@ void Viewport::unhandled_input(const InputEvent& p_event) {
 	}
 }
 
+void Viewport::set_use_own_world(bool p_world) {
+
+	if (p_world==own_world.is_valid())
+		return;
+
+
+	if (is_inside_scene())
+		_propagate_exit_world(this);
+
+#ifndef _3D_DISABLED
+	if (find_world().is_valid() && camera)
+		camera->notification(Camera::NOTIFICATION_LOST_CURRENT);
+#endif
+
+	if (!p_world)
+		own_world=Ref<World>();
+	else
+		own_world=Ref<World>( memnew( World ));
+
+	if (is_inside_scene())
+		_propagate_enter_world(this);
+
+#ifndef _3D_DISABLED
+	if (find_world().is_valid() && camera)
+		camera->notification(Camera::NOTIFICATION_BECAME_CURRENT);
+#endif
+
+	//propagate exit
+
+	if (is_inside_scene()) {
+		VisualServer::get_singleton()->viewport_set_scenario(viewport,find_world()->get_scenario());
+	}
+
+	_update_listener();
+
+
+}
+
+bool Viewport::is_using_own_world() const {
+
+	return own_world.is_valid();
+}
+
+void Viewport::set_render_target_to_screen_rect(const Rect2& p_rect) {
+
+	to_screen_rect=p_rect;
+	VisualServer::get_singleton()->viewport_set_render_target_to_screen_rect(viewport,to_screen_rect);
+}
+
+Rect2 Viewport::get_render_target_to_screen_rect() const{
+
+	return to_screen_rect;
+}
+
 
 void Viewport::_bind_methods() {
 
@@ -918,15 +975,20 @@ void Viewport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("update_worlds"), &Viewport::update_worlds);
 
+	ObjectTypeDB::bind_method(_MD("set_use_own_world","enable"), &Viewport::set_use_own_world);
+	ObjectTypeDB::bind_method(_MD("is_using_own_world"), &Viewport::is_using_own_world);
+
 
 	ObjectTypeDB::bind_method(_MD("set_as_audio_listener","enable"), &Viewport::set_as_audio_listener);
 	ObjectTypeDB::bind_method(_MD("is_audio_listener","enable"), &Viewport::is_audio_listener);
 
 	ObjectTypeDB::bind_method(_MD("set_as_audio_listener_2d","enable"), &Viewport::set_as_audio_listener_2d);
 	ObjectTypeDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
+	ObjectTypeDB::bind_method(_MD("set_render_target_to_screen_rect"), &Viewport::set_render_target_to_screen_rect);
 
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"), _SCS("set_rect"), _SCS("get_rect") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world",PROPERTY_HINT_RESOURCE_TYPE,"World"), _SCS("set_world"), _SCS("get_world") );
 //	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"world_2d",PROPERTY_HINT_RESOURCE_TYPE,"World2D"), _SCS("set_world_2d"), _SCS("get_world_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
@@ -968,6 +1030,7 @@ Viewport::Viewport() {
 	render_target_vflip=false;
 	render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE;
 	render_target_texture = Ref<RenderTargetTexture>( memnew( RenderTargetTexture(this) ) );
+
 
 	String id=itos(get_instance_ID());
 	input_group = "_vp_input"+id;

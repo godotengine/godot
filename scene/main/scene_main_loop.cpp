@@ -516,7 +516,8 @@ bool SceneMainLoop::idle(float p_time){
 
 
 		last_screen_size=win_size;
-		root->set_rect(Rect2(Point2(),last_screen_size));
+		_update_root_rect();
+
 
 		emit_signal("screen_resized");
 
@@ -849,6 +850,120 @@ int SceneMainLoop::get_node_count() const {
 	return node_count;
 }
 
+
+void SceneMainLoop::_update_root_rect() {
+
+
+	if (stretch_mode==STRETCH_MODE_DISABLED) {
+		root->set_rect(Rect2(Point2(),last_screen_size));
+		return; //user will take care
+	}
+
+	//actual screen video mode
+	Size2 video_mode = Size2(OS::get_singleton()->get_video_mode().width,OS::get_singleton()->get_video_mode().height);
+	Size2 desired_res = stretch_min;
+
+	Size2 viewport_size;
+	Size2 screen_size;
+
+	float viewport_aspect = desired_res.get_aspect();
+	float video_mode_aspect = video_mode.get_aspect();
+
+	if (stretch_aspect==STRETCH_ASPECT_IGNORE || ABS(viewport_aspect - video_mode_aspect)<CMP_EPSILON) {
+		//same aspect or ignore aspect
+		viewport_size=desired_res;
+		screen_size=video_mode;
+	} else if (viewport_aspect < video_mode_aspect) {
+		// screen ratio is smaller vertically
+
+		if (stretch_aspect==STRETCH_ASPECT_KEEP_HEIGHT) {
+
+			//will stretch horizontally
+			viewport_size.x=desired_res.y*video_mode_aspect;
+			viewport_size.y=desired_res.y;
+			screen_size=video_mode;
+
+		} else {
+			//will need black bars
+			viewport_size=desired_res;
+			screen_size.x = video_mode.y * viewport_aspect;
+			screen_size.y=video_mode.y;
+		}
+	} else {
+		//screen ratio is smaller horizontally
+		if (stretch_aspect==STRETCH_ASPECT_KEEP_WIDTH) {
+
+			//will stretch horizontally
+			viewport_size.x=desired_res.x;
+			viewport_size.y=desired_res.x / video_mode_aspect;
+			screen_size=video_mode;
+
+		} else {
+			//will need black bars
+			viewport_size=desired_res;
+			screen_size.x=video_mode.x;
+			screen_size.y = video_mode.x / viewport_aspect;
+		}
+
+	}
+
+	screen_size = screen_size.floor();
+	viewport_size = viewport_size.floor();
+
+	Size2 margin;
+	Size2 offset;
+	//black bars and margin
+	if (screen_size.x < video_mode.x) {
+		margin.x = Math::round((video_mode.x - screen_size.x)/2.0);
+		VisualServer::get_singleton()->black_bars_set_margins(margin.x,0,margin.x,0);
+		offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
+	} else if (screen_size.y < video_mode.y) {
+
+		margin.y = Math::round((video_mode.y - screen_size.y)/2.0);
+		VisualServer::get_singleton()->black_bars_set_margins(0,margin.y,0,margin.y);
+		offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
+	} else {
+		VisualServer::get_singleton()->black_bars_set_margins(0,0,0,0);
+	}
+
+//	print_line("VP SIZE: "+viewport_size+" OFFSET: "+offset+" = "+(offset*2+viewport_size));
+//	print_line("SS: "+video_mode);
+	switch (stretch_mode) {
+		case STRETCH_MODE_2D: {
+
+//			root->set_rect(Rect2(Point2(),video_mode));
+			root->set_as_render_target(false);
+			root->set_rect(Rect2(margin,screen_size));
+			root->set_size_override_stretch(true);
+			root->set_size_override(true,viewport_size);
+
+		} break;
+		case STRETCH_MODE_VIEWPORT: {
+
+			print_line("VP SIZE: "+viewport_size);
+			root->set_rect(Rect2(Point2(),viewport_size));
+			root->set_size_override_stretch(false);
+			root->set_size_override(false,Size2());
+			root->set_as_render_target(true);
+			root->set_render_target_update_mode(Viewport::RENDER_TARGET_UPDATE_ALWAYS);
+			root->set_render_target_to_screen_rect(Rect2(margin,screen_size));
+
+		} break;
+
+
+	}
+
+}
+
+void SceneMainLoop::set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize) {
+
+	stretch_mode=p_mode;
+	stretch_aspect=p_aspect;
+	stretch_min=p_minsize;
+	_update_root_rect();
+}
+
+
 void SceneMainLoop::_bind_methods() {
 
 
@@ -874,6 +989,9 @@ void SceneMainLoop::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_frame"),&SceneMainLoop::get_frame);
 	ObjectTypeDB::bind_method(_MD("quit"),&SceneMainLoop::quit);
 
+	ObjectTypeDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneMainLoop::set_screen_stretch);
+
+
 	ObjectTypeDB::bind_method(_MD("queue_delete","obj"),&SceneMainLoop::queue_delete);
 
 
@@ -898,6 +1016,14 @@ void SceneMainLoop::_bind_methods() {
 	BIND_CONSTANT( GROUP_CALL_REVERSE );
 	BIND_CONSTANT( GROUP_CALL_REALTIME );
 	BIND_CONSTANT( GROUP_CALL_UNIQUE );
+
+	BIND_CONSTANT( STRETCH_MODE_DISABLED );
+	BIND_CONSTANT( STRETCH_MODE_2D );
+	BIND_CONSTANT( STRETCH_MODE_VIEWPORT );
+	BIND_CONSTANT( STRETCH_ASPECT_IGNORE );
+	BIND_CONSTANT( STRETCH_ASPECT_KEEP );
+	BIND_CONSTANT( STRETCH_ASPECT_KEEP_WIDTH );
+	BIND_CONSTANT( STRETCH_ASPECT_KEEP_HEIGHT );
 
 }
 
@@ -927,13 +1053,15 @@ SceneMainLoop::SceneMainLoop() {
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
 
+	stretch_mode=STRETCH_MODE_DISABLED;
+	stretch_aspect=STRETCH_ASPECT_IGNORE;
+
 	last_screen_size=Size2( OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height );
 	root->set_rect(Rect2(Point2(),last_screen_size));
 
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree,this);
 	}
-
 
 }
 

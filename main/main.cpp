@@ -1008,11 +1008,25 @@ bool Main::start() {
 		if (!editor) {
 			//standard helpers that can be changed from main config
 
-			if (GLOBAL_DEF("display/stretch_2d",false).operator bool()) {
+			String stretch_mode = GLOBAL_DEF("display/stretch_mode","disabled");
+			String stretch_aspect = GLOBAL_DEF("display/stretch_aspect","ignore");
+			Size2i stretch_size = Size2(GLOBAL_DEF("display/width",0),GLOBAL_DEF("display/height",0));
 
-				sml->get_root()->set_size_override(true,Size2(Globals::get_singleton()->get("display/width"),Globals::get_singleton()->get("display/height")));
-				sml->get_root()->set_size_override_stretch(true);
-			}
+			SceneMainLoop::StretchMode sml_sm=SceneMainLoop::STRETCH_MODE_DISABLED;
+			if (stretch_mode=="2d")
+				sml_sm=SceneMainLoop::STRETCH_MODE_2D;
+			else if (stretch_mode=="viewport")
+				sml_sm=SceneMainLoop::STRETCH_MODE_VIEWPORT;
+
+			SceneMainLoop::StretchAspect sml_aspect=SceneMainLoop::STRETCH_ASPECT_IGNORE;
+			if (stretch_aspect=="keep")
+				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP;
+			else if (stretch_aspect=="keep_width")
+				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP_WIDTH;
+			else if (stretch_aspect=="keep_height")
+				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP_HEIGHT;
+
+			sml->set_screen_stretch(sml_sm,sml_aspect,stretch_size);
 
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
 			String appname = Globals::get_singleton()->get("application/name");
@@ -1021,7 +1035,10 @@ bool Main::start() {
 
 
 		} else {
-			GLOBAL_DEF("display/stretch_2d",false);
+			GLOBAL_DEF("display/stretch_mode","disabled");
+			Globals::get_singleton()->set_custom_property_info("display/stretch_mode",PropertyInfo(Variant::STRING,"display/stretch_mode",PROPERTY_HINT_ENUM,"disabled,2d,viewport"));
+			GLOBAL_DEF("display/stretch_aspect","ignore");
+			Globals::get_singleton()->set_custom_property_info("display/stretch_aspect",PropertyInfo(Variant::STRING,"display/stretch_aspect",PROPERTY_HINT_ENUM,"ignore,keep,keep_width,keep_height"));
 			sml->set_auto_accept_quit(GLOBAL_DEF("application/auto_accept_quit",true));
 
 

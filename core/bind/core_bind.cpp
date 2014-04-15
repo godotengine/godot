@@ -4,6 +4,7 @@
 #include "io/marshalls.h"
 #include "io/base64.h"
 #include "core/globals.h"
+#include "io/file_access_encrypted.h"
 
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
@@ -812,6 +813,44 @@ _Geometry::_Geometry() {
 ///////////////////////// FILE
 
 
+
+Error _File::open_encrypted(const String& p_path, int p_mode_flags,const Vector<uint8_t>& p_key) {
+
+	Error err = open(p_path,p_mode_flags);
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew( FileAccessEncrypted );
+	err = fae->open_and_parse(f,p_key,(p_mode_flags==WRITE)?FileAccessEncrypted::MODE_WRITE_AES256:FileAccessEncrypted::MODE_READ);
+	if (err) {
+		memdelete(fae);
+		close();
+		return err;
+	}
+	f=fae;
+	return OK;
+}
+
+Error _File::open_encrypted_pass(const String& p_path, int p_mode_flags,const String& p_pass) {
+
+	Error err = open(p_path,p_mode_flags);
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew( FileAccessEncrypted );
+	err = fae->open_and_parse_password(f,p_pass,(p_mode_flags==WRITE)?FileAccessEncrypted::MODE_WRITE_AES256:FileAccessEncrypted::MODE_READ);
+	if (err) {
+		memdelete(fae);
+		close();
+		return err;
+	}
+
+	f=fae;
+	return OK;
+
+}
+
+
 Error _File::open(const String& p_path, int p_mode_flags) {
 
 	close();
@@ -1112,6 +1151,10 @@ Variant _File::get_var() const {
 }
 
 void _File::_bind_methods() {
+
+
+	ObjectTypeDB::bind_method(_MD("open_encrypted","path","mode_flags","key"),&_File::open_encrypted);
+	ObjectTypeDB::bind_method(_MD("open_encrypted_with_pass","path","mode_flags","pass"),&_File::open_encrypted_pass);
 
 	ObjectTypeDB::bind_method(_MD("open","path","flags"),&_File::open);
 	ObjectTypeDB::bind_method(_MD("close"),&_File::close);

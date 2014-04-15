@@ -1145,6 +1145,15 @@ void VisualServerRaster::viewport_set_render_target_vflip(RID p_viewport,bool p_
 
 }
 
+void VisualServerRaster::viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect) {
+
+	Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+
+	viewport->rt_to_screen_rect=p_rect;
+
+}
+
 bool VisualServerRaster::viewport_get_render_target_vflip(RID p_viewport) const{
 
 	const Viewport *viewport = viewport_owner.get( p_viewport );
@@ -5458,6 +5467,8 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 void VisualServerRaster::_draw_viewports() {
 
 	//draw viewports for render targets
+
+	List<Viewport*> to_blit;
 	List<Viewport*> to_disable;
 	for(SelfList<Viewport> *E=viewport_update_list.first();E;E=E->next()) {
 
@@ -5471,6 +5482,9 @@ void VisualServerRaster::_draw_viewports() {
 
 			continue;
 		}
+
+		if (vp->rt_to_screen_rect!=Rect2())
+			to_blit.push_back(vp);
 
 		rasterizer->set_render_target(vp->render_target,vp->transparent_bg,vp->render_target_vflip);
 		_draw_viewport(vp,0,0,vp->rect.width,vp->rect.height);
@@ -5490,6 +5504,38 @@ void VisualServerRaster::_draw_viewports() {
 		viewport_update_list.remove(&to_disable.front()->get()->update_list);
 		to_disable.pop_front();
 	}
+
+
+	//draw RTs directly to screen when requested
+
+	for (List<Viewport*>::Element *E=to_blit.front();E;E=E->next()) {
+
+		int window_w = OS::get_singleton()->get_video_mode().width;
+		int window_h = OS::get_singleton()->get_video_mode().height;
+
+		ViewportRect desired_rect;
+		desired_rect.x = desired_rect.y = 0;
+		desired_rect.width = window_w;
+		desired_rect.height = window_h;
+
+		if ( viewport_rect.x != desired_rect.x ||
+			viewport_rect.y != desired_rect.y ||
+			viewport_rect.width != desired_rect.width ||
+			viewport_rect.height != desired_rect.height ) {
+
+			viewport_rect=desired_rect;
+
+			rasterizer->set_viewport(viewport_rect);
+		}
+
+		rasterizer->canvas_begin();
+		rasterizer->canvas_disable_blending();
+		rasterizer->canvas_begin_rect(Matrix32());
+		rasterizer->canvas_draw_rect(E->get()->rt_to_screen_rect,0,Rect2(Point2(),E->get()->rt_to_screen_rect.size),E->get()->render_target_texture,Color(1,1,1));
+
+	}
+
+
 
 	//draw viewports attached to screen
 
