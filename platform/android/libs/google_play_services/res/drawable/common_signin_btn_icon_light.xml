@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_pressed="true"
+        android:drawable="@drawable/common_signin_btn_icon_pressed_light" />
+    <item
+        android:state_enabled="false"
+        android:state_focused="true"
+        android:drawable="@drawable/common_signin_btn_icon_disabled_focus_light" />
+    <item
+        android:state_focused="true"
+        android:drawable="@drawable/common_signin_btn_icon_focus_light" />
+    <item
+        android:state_enabled="false"
+        android:drawable="@drawable/common_signin_btn_icon_disabled_light" />
+    <item
+        android:drawable="@drawable/common_signin_btn_icon_normal_light" />
+</selector>

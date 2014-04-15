@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Namestite storitve Google Play"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Ta aplikacija ne deluje brez storitev Google Play, ki jih ni v telefonu."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Ta aplikacija ne deluje brez storitev Google Play, ki jih ni v tabličnem računalniku."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Namestite storitve Google Play"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Omogočite storitve Google Play"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Aplikacija ne bo delovala, če ne omogočite storitev Google Play."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Omogočite storitve Google Play"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Posodobite storitve Google Play"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Ta aplikacija ne deluje, če ne posodobite storitev Google Play."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Omrežna napaka"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Za povezavo s storitvami Google Play potrebujete internetno povezavo."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Neveljaven račun"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"V tej napravi ne obstaja navedeni račun. Izberite drugega."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Neznana težava s storitvami Google Play."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Storitve Google Play"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Vaša naprava na podpira storitev Google Play, ki jih potrebujejo nekatere od vaših aplikacij. Za pomoč se obrnite na izdelovalca."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Videti je, da je datum v napravi napačen. Preverite ga."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Posodobi"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Prijava"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Prijavite se v Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Aplikacija je poskusila uporabiti napačno različico Storitev Google Play."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Za delovanje aplikacije morate omogočiti Storitve Google Play."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Za delovanje aplikacije morate namestiti Storitve Google Play."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Za delovanje aplikacije morate posodobiti Storitve Google Play."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Napaka storitev Google Play"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Zahtevala aplikacija <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>
