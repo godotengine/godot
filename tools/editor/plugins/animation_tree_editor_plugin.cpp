@@ -35,6 +35,7 @@
 #include "core/globals.h"
 #include "os/input.h"
 #include "os/keyboard.h"
+#include "core/translation.h"
 
 void AnimationTreeEditor::edit(AnimationTreePlayer* p_anim_tree) {
 
@@ -270,7 +271,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 
 	if (renaming_edit) {
 
-		edit_label[0]->set_text("New name:");
+		edit_label[0]->set_text(_TR("New name:"));
 		edit_label[0]->set_pos(Point2(5,5));
 		edit_label[0]->show();
 		edit_line[0]->set_begin(Point2(15,25));
@@ -308,7 +309,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				}
 				return;
 			 case AnimationTreePlayer::NODE_TIMESCALE:
-				edit_label[0]->set_text("Scale:");
+				edit_label[0]->set_text(_TR("Scale:"));
 				edit_label[0]->set_pos(Point2(5,5));
 				edit_label[0]->show();
 				edit_line[0]->set_begin(Point2(15,25));
@@ -317,7 +318,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				edit_dialog->set_size(Size2(150,50));
 				break;
 			 case AnimationTreePlayer::NODE_ONESHOT:
-				edit_label[0]->set_text("Fade In (s):");
+				edit_label[0]->set_text(_TR("Fade In (s):"));
 				edit_label[0]->set_pos(Point2(5,5));
 				edit_label[0]->show();
 				edit_line[0]->set_begin(Point2(15,25));
@@ -331,25 +332,25 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				edit_line[1]->show();
 
 				edit_option->clear();
-				edit_option->add_item("Blend",0);
-				edit_option->add_item("Mix",1);
+				edit_option->add_item(_TR("Blend"),0);
+				edit_option->add_item(_TR("Mix"),1);
 				edit_option->set_begin(Point2(15,105));
 
 				edit_option->select( anim_tree->oneshot_node_get_mix_mode(edited_node));
 				edit_option->show();
 
-				edit_check->set_text("Auto Restart:");
+				edit_check->set_text(_TR("Auto Restart:"));
 				edit_check->set_begin(Point2(15,125));
 				edit_check->set_pressed(anim_tree->oneshot_node_has_autorestart(edited_node));
 				edit_check->show();
 
-				edit_label[2]->set_text("Restart (s):");
+				edit_label[2]->set_text(_TR("Restart (s):"));
 				edit_label[2]->set_pos(Point2(5,145));
 				edit_label[2]->show();
 				edit_line[2]->set_begin(Point2(15,165));
 				edit_line[2]->set_text(rtos(anim_tree->oneshot_node_get_autorestart_delay(edited_node)));
 				edit_line[2]->show();
-				edit_label[3]->set_text("Random Restart (s):");
+				edit_label[3]->set_text(_TR("Random Restart (s):"));
 				edit_label[3]->set_pos(Point2(5,195));
 				edit_label[3]->show();
 				edit_line[3]->set_begin(Point2(15,215));
@@ -360,7 +361,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				filter_button->show();
 
 				edit_button->set_begin(Point2(10,268));
-				edit_button->set_text("Start!");
+				edit_button->set_text(_TR("Start!"));
 
 				edit_button->show();
 
@@ -370,7 +371,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 
 			 case AnimationTreePlayer::NODE_MIX:
 
-				 edit_label[0]->set_text("Amount:");
+				 edit_label[0]->set_text(_TR("Amount:"));
 				 edit_label[0]->set_pos(Point2(5,5));
 				 edit_label[0]->show();
 				 edit_scroll[0]->set_min(0);
@@ -382,7 +383,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 
 				 break;
 			 case AnimationTreePlayer::NODE_BLEND2:
-				 edit_label[0]->set_text("Blend:");
+				 edit_label[0]->set_text(_TR("Blend:"));
 				 edit_label[0]->set_pos(Point2(5,5));
 				 edit_label[0]->show();
 				 edit_scroll[0]->set_min(0);
@@ -397,7 +398,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				 break;
 
 			 case AnimationTreePlayer::NODE_BLEND3:
-				 edit_label[0]->set_text("Blend:");
+				 edit_label[0]->set_text(_TR("Blend:"));
 				 edit_label[0]->set_pos(Point2(5,5));
 				 edit_label[0]->show();
 				 edit_scroll[0]->set_min(-1);
@@ -410,7 +411,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				 break;
 			case AnimationTreePlayer::NODE_BLEND4:
 
-				edit_label[0]->set_text("Blend 0:");
+				edit_label[0]->set_text(_TR("Blend 0:"));
 				edit_label[0]->set_pos(Point2(5,5));
 				edit_label[0]->show();
 				edit_scroll[0]->set_min(0);
@@ -418,7 +419,7 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 				edit_scroll[0]->set_val(anim_tree->blend4_node_get_amount(edited_node).x);
 				edit_scroll[0]->set_begin(Point2(15,25));
 				edit_scroll[0]->show();
-				edit_label[1]->set_text("Blend 1:");
+				edit_label[1]->set_text(_TR("Blend 1:"));
 				edit_label[1]->set_pos(Point2(5,55));
 				edit_label[1]->show();
 				edit_scroll[1]->set_min(0);
@@ -433,14 +434,14 @@ void AnimationTreeEditor::_popup_edit_dialog() {
 			 case AnimationTreePlayer::NODE_TRANSITION: {
 
 
-				 edit_label[0]->set_text("X-Fade Time (s):");
+				 edit_label[0]->set_text(_TR("X-Fade Time (s):"));
 				 edit_label[0]->set_pos(Point2(5,5));
 				 edit_label[0]->show();
 				 edit_line[0]->set_begin(Point2(15,25));
 				 edit_line[0]->set_text(rtos(anim_tree->transition_node_get_xfade_time(edited_node)));
 				 edit_line[0]->show();
 
-				 edit_label[1]->set_text("Current:");
+				 edit_label[1]->set_text(_TR("Current:"));
 				 edit_label[1]->set_pos(Point2(5,55));
 				 edit_label[1]->show();
 				 edit_option->set_begin(Point2(15,75));
@@ -1353,19 +1354,19 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	add_child( add_menu );
 
 	p=add_menu->get_popup();
-	p->add_item("Animation Node",AnimationTreePlayer::NODE_ANIMATION);
-	p->add_item("OneShot Node",AnimationTreePlayer::NODE_ONESHOT);
-	p->add_item("Mix Node",AnimationTreePlayer::NODE_MIX);
-	p->add_item("Blend2 Node",AnimationTreePlayer::NODE_BLEND2);
-	p->add_item("Blend3 Node",AnimationTreePlayer::NODE_BLEND3);
-	p->add_item("Blend4 Node",AnimationTreePlayer::NODE_BLEND4);
-	p->add_item("TimeScale Node",AnimationTreePlayer::NODE_TIMESCALE);
-	p->add_item("TimeSeek Node",AnimationTreePlayer::NODE_TIMESEEK);
-	p->add_item("Transition Node",AnimationTreePlayer::NODE_TRANSITION);
+	p->add_item(_TR("Animation Node"),AnimationTreePlayer::NODE_ANIMATION);
+	p->add_item(_TR("OneShot Node"),AnimationTreePlayer::NODE_ONESHOT);
+	p->add_item(_TR("Mix Node"),AnimationTreePlayer::NODE_MIX);
+	p->add_item(_TR("Blend2 Node"),AnimationTreePlayer::NODE_BLEND2);
+	p->add_item(_TR("Blend3 Node"),AnimationTreePlayer::NODE_BLEND3);
+	p->add_item(_TR("Blend4 Node"),AnimationTreePlayer::NODE_BLEND4);
+	p->add_item(_TR("TimeScale Node"),AnimationTreePlayer::NODE_TIMESCALE);
+	p->add_item(_TR("TimeSeek Node"),AnimationTreePlayer::NODE_TIMESEEK);
+	p->add_item(_TR("Transition Node"),AnimationTreePlayer::NODE_TRANSITION);
 	p->add_separator();
-	p->add_item("Import Animations...", MENU_IMPORT_ANIMATIONS); // wtf
+	p->add_item(_TR("Import Animations..."), MENU_IMPORT_ANIMATIONS); // wtf
 	p->add_separator();
-	p->add_item("Clear",MENU_GRAPH_CLEAR);
+	p->add_item(_TR("Clear"),MENU_GRAPH_CLEAR);
 
 	p->connect("item_pressed", this,"_add_menu_item");
 
@@ -1465,7 +1466,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	 file_dialog->connect("file_selected", this, "_file_dialog_selected");
 
 	filter_dialog = memnew( AcceptDialog );
-	filter_dialog->set_title("Edit Node Filters");
+	filter_dialog->set_title(_TR("Edit Node Filters"));
 	add_child(filter_dialog);
 
 	filter = memnew( Tree );
@@ -1478,7 +1479,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	filter_button->set_margin(MARGIN_RIGHT, 10);
 	edit_dialog->add_child(filter_button);
 	filter_button->hide();;
-	filter_button->set_text("Filters..");
+	filter_button->set_text(_TR("Filters.."));
 	filter_button->connect("pressed", this,"_edit_filters");
 
 }

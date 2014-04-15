@@ -35,7 +35,7 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/2d/canvas_item.h"
-
+#include "core/translation.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -320,7 +320,7 @@ class CanvasItemEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual String get_name() const { return "2D"; }
+	virtual String get_name() const { return _TR("2D"); }
 	bool has_main_screen() const { return true; }
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;

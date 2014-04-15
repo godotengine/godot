@@ -31,6 +31,11 @@
 
 #include "resource.h"
 
+#ifdef TOOLS_ENABLED
+#define _TR(s) (EditorTranslationServer::get_singleton()?String(EditorTranslationServer::get_singleton()->translate(s)):s)
+#else
+#define _TR(s) s
+#endif
 
 class Translation : public Resource {
 
@@ -105,7 +110,19 @@ public:
 
 	void load_translations();
 
+	void clear_translations();
+
 	TranslationServer();
 };
 
+class EditorTranslationServer : public TranslationServer {
+
+	static EditorTranslationServer *singleton;
+public:
+	_FORCE_INLINE_ static EditorTranslationServer *get_singleton() { return singleton; }
+	EditorTranslationServer();
+	static void create();
+	static void destroy();
+	void load();
+};
 #endif // TRANSLATION_H

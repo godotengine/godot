@@ -33,6 +33,7 @@
 #include "tools/editor/editor_node.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/gui/panel_container.h"
+#include "core/translation.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -463,7 +464,7 @@ public:
 	void snap_cursor_to_plane(const Plane& p_plane);
 
 	SpatialEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_name() const { return "3D"; }
+	virtual String get_name() const { return _TR("3D"); }
 	bool has_main_screen() const { return true; }
 	virtual void make_visible(bool p_visible);	
 	virtual void edit(Object *p_object);

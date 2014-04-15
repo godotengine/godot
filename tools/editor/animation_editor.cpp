@@ -33,6 +33,7 @@
 #include "io/resource_saver.h"
 #include "pair.h"
 #include "scene/gui/separator.h"
+#include "core/translation.h"
 /* Missing to fix:
 
   *Set
@@ -3131,7 +3132,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	//add_child(menu);
 
 	menu_track = memnew( MenuButton );
-	menu_track->set_text("Tracks..");
+	menu_track->set_text(_TR("Tracks.."));
 	hb->add_child(menu_track);
 	menu_track->get_popup()->connect("item_pressed",this,"_menu_track");
 
@@ -3141,7 +3142,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 
 	zoomicon = memnew( TextureFrame );
 	hb->add_child(zoomicon);
-	zoomicon->set_tooltip("Animation zoom.");
+	zoomicon->set_tooltip(_TR("Animation zoom."));
 
 	zoom = memnew( HSlider );
 	//hb->add_child(zoom);
@@ -3153,12 +3154,12 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	zoom->set_stretch_ratio(2);
 	hb->add_child(zoom);
 	zoom->connect("value_changed",this,"_scroll_changed");
-	zoom->set_tooltip("Animation zoom.");
+	zoom->set_tooltip(_TR("Animation zoom."));
 
 	hb->add_child( memnew( VSeparator ) );
 
 	Label *l = memnew( Label );
-	l->set_text("Len(s):");
+	l->set_text(_TR("Len(s):"));
 	hb->add_child(l);
 
 	length = memnew( SpinBox );
@@ -3167,13 +3168,13 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	length->set_step(0.01);
 	length->set_h_size_flags(SIZE_EXPAND_FILL);
 	length->set_stretch_ratio(1);
-	length->set_tooltip("Animation length (in seconds).");
+	length->set_tooltip(_TR("Animation length (in seconds)."));
 
 	hb->add_child(length);
 	length->connect("value_changed",this,"_animation_len_changed");
 
 	l = memnew( Label );
-	l->set_text("Step(s):");
+	l->set_text(_TR("Step(s):"));
 	hb->add_child(l);
 
 	step = memnew( SpinBox );
@@ -3183,7 +3184,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	step->set_val(0.0);
 	step->set_h_size_flags(SIZE_EXPAND_FILL);
 	step->set_stretch_ratio(1);
-	step->set_tooltip("Cursor step snap (in seconds).");
+	step->set_tooltip(_TR("Cursor step snap (in seconds)."));
 
 	hb->add_child(step);
 	step->connect("value_changed",this,"_step_changed");
@@ -3192,7 +3193,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	loop->set_toggle_mode(true);
 	loop->connect("pressed",this,"_animation_loop_changed");
 	hb->add_child(loop);
-	loop->set_tooltip("Enable/Disable looping in animation.");
+	loop->set_tooltip(_TR("Enable/Disable looping in animation."));
 
 	hb->add_child( memnew( VSeparator ) );
 
@@ -3201,28 +3202,28 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	edit_button->set_focus_mode(FOCUS_NONE);
 	edit_button->set_disabled(true);
 	hb->add_child(edit_button);
-	edit_button->set_tooltip("Enable editing of individual keys by clicking them.");
+	edit_button->set_tooltip(_TR("Enable editing of individual keys by clicking them."));
 
 	move_up_button = memnew( ToolButton );
 	hb->add_child(move_up_button);
 	move_up_button->connect("pressed",this,"_menu_track",make_binds(TRACK_MENU_MOVE_UP));
 	move_up_button->set_focus_mode(FOCUS_NONE);
 	move_up_button->set_disabled(true);
-	move_up_button->set_tooltip("Move current track up.");
+	move_up_button->set_tooltip(_TR("Move current track up."));
 
 	move_down_button = memnew( ToolButton );
 	hb->add_child(move_down_button);
 	move_down_button->connect("pressed",this,"_menu_track",make_binds(TRACK_MENU_MOVE_DOWN));
 	move_down_button->set_focus_mode(FOCUS_NONE);
 	move_down_button->set_disabled(true);
-	move_down_button->set_tooltip("Move current track dosn.");
+	move_down_button->set_tooltip(_TR("Move current track dosn."));
 
 	remove_button = memnew( ToolButton );
 	hb->add_child(remove_button);
 	remove_button->connect("pressed",this,"_menu_track",make_binds(TRACK_MENU_REMOVE));
 	remove_button->set_focus_mode(FOCUS_NONE);
 	remove_button->set_disabled(true);
-	remove_button->set_tooltip("Remove selected track.");
+	remove_button->set_tooltip(_TR("Remove selected track."));
 
 	/*keying = memnew( Button );
 	keying->set_toggle_mode(true);
@@ -3341,7 +3342,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	scale->set_min(-99999);
 	scale->set_max(99999);
 	scale->set_step(0.001);
-	vbc->add_margin_child("Scale Ratio:",scale);
+	vbc->add_margin_child(_TR("Scale Ratio:"),scale);
 	scale_dialog->connect("confirmed",this,"_scale");
 	add_child(scale_dialog);
 

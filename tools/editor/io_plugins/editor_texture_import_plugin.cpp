@@ -35,6 +35,7 @@
 #include "io/md5.h"
 #include "io/marshalls.h"
 #include "globals.h"
+#include "core/translation.h"
 
 static const char *flag_names[]={
 	"Streaming Format",
@@ -167,7 +168,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	format->add_item("Compress (VRAM)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
 
 
-	add_margin_child("Texture Format",format);
+	add_margin_child(_TR("Texture Format"),format);
 
 	quality_vb = memnew( VBoxContainer );
 
@@ -187,7 +188,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	hs->set_step(0.01);
 	hs->set_val(0.7);
 	quality=hs;
-	quality_vb->add_margin_child("Texture Compression Quality (WebP):",quality_hb);
+	quality_vb->add_margin_child(_TR("Texture Compression Quality (WebP):"),quality_hb);
 
 	add_child(quality_vb);
 
@@ -210,10 +211,10 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	}
 
 
-	add_margin_child("Texture Options",flags,true);
+	add_margin_child(_TR("Texture Options"),flags,true);
 
 	notice_for_2d = memnew( Label );
-	notice_for_2d->set_text("NOTICE: You are not forced to import textures for 2D projects. Just copy your .jpg or .png files to your project, and change export options later. Atlases can be generated on export too.");
+	notice_for_2d->set_text(_TR("NOTICE: You are not forced to import textures for 2D projects. Just copy your .jpg or .png files to your project, and change export options later. Atlases can be generated on export too."));
 	notice_for_2d->set_custom_minimum_size(Size2(0,50));
 	notice_for_2d->set_autowrap(true);
 	add_child(notice_for_2d);
@@ -315,7 +316,7 @@ void EditorTextureImportDialog::_import() {
 
 	if (dst_path.empty()) {
 
-		error_dialog->set_text("Please specify a valid target import path!");
+		error_dialog->set_text(_TR("Please specify a valid target import path!"));
 		error_dialog->popup_centered(Size2(200,100));
 		return;
 
@@ -325,7 +326,7 @@ void EditorTextureImportDialog::_import() {
 
 		if (files.size()==0) {
 
-			error_dialog->set_text("At least one file needed for Atlas.");
+			error_dialog->set_text(_TR("At least one file needed for Atlas."));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -346,7 +347,7 @@ void EditorTextureImportDialog::_import() {
 		Error err = plugin->import(dst_file,imd);
 		if (err) {
 
-			error_dialog->set_text("Error importing: "+dst_file.get_file());
+			error_dialog->set_text(_TR("Error importing: ")+dst_file.get_file());
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 
@@ -369,7 +370,7 @@ void EditorTextureImportDialog::_import() {
 			Error err = plugin->import(dst_file,imd);
 			if (err) {
 
-				error_dialog->set_text("Error importing: "+dst_file.get_file());
+				error_dialog->set_text(_TR("Error importing: ")+dst_file.get_file());
 				error_dialog->popup_centered(Size2(200,100));
 				return;
 
@@ -461,7 +462,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	atlas=p_atlas;
 	plugin=p_plugin;
-	set_title("Import Textures");
+	set_title(_TR("Import Textures"));
 
 	texture_options = memnew( EditorImportTextureOptions );;
 	VBoxContainer *vbc = texture_options;
@@ -470,7 +471,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 
 	VBoxContainer *source_vb=memnew(VBoxContainer);
-	vbc->add_margin_child("Source Texture(s):",source_vb);
+	vbc->add_margin_child(_TR("Source Texture(s):"),source_vb);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	source_vb->add_child(hbc);
@@ -481,7 +482,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	crop_source = memnew( CheckButton );
 	crop_source->set_pressed(true);
 	source_vb->add_child(crop_source);
-	crop_source->set_text("Crop empty space.");
+	crop_source->set_text(_TR("Crop empty space."));
 	if (!p_atlas)
 		crop_source->hide();
 
@@ -492,7 +493,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	import_choose->connect("pressed", this,"_browse");
 
 	hbc = memnew( HBoxContainer );
-	vbc->add_margin_child("Target Path:",hbc);
+	vbc->add_margin_child(_TR("Target Path:"),hbc);
 
 	save_path = memnew( LineEdit );
 	save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -525,7 +526,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_select->connect("dir_selected", this,"_choose_save_dir");
 
 	get_ok()->connect("pressed", this,"_import");
-	get_ok()->set_text("Import");
+	get_ok()->set_text(_TR("Import"));
 
 	//move stuff up
 	for(int i=0;i<4;i++)
@@ -533,7 +534,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
-	error_dialog->get_ok()->set_text("Accept");
+	error_dialog->get_ok()->set_text(_TR("Accept"));
 //	error_dialog->get_cancel()->hide();
 
 	set_hide_on_ok(false);
@@ -544,7 +545,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 		texture_options->set_quality(0.7);
 		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
 		texture_options->show_2d_notice();
-		set_title("Import Textures for Atlas (2D)");
+		set_title(_TR("Import Textures for Atlas (2D)"));
 
 	} else if (p_2d) {
 
@@ -552,14 +553,14 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 		texture_options->set_quality(0.7);
 		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
 		texture_options->show_2d_notice();
-		set_title("Import Textures for 2D");
+		set_title(_TR("Import Textures for 2D"));
 	} else {
 
 		//texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_);
 		//texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS);
 		texture_options->set_flags(EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA|EditorTextureImportPlugin::IMAGE_FLAG_FILTER|EditorTextureImportPlugin::IMAGE_FLAG_REPEAT);
 		texture_options->set_format(EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
-		set_title("Import Textures for 3D");
+		set_title(_TR("Import Textures for 3D"));
 	}
 
 
@@ -601,16 +602,16 @@ String EditorTextureImportPlugin::get_visible_name() const {
 	switch(mode) {
 		case MODE_TEXTURE_2D: {
 
-			return "2D Texture";
+			return _TR("2D Texture");
 		} break;
 		case MODE_TEXTURE_3D: {
 
-			return "3D Texture";
+			return _TR("3D Texture");
 
 		} break;
 		case MODE_ATLAS: {
 
-			return "Atlas Texture";
+			return _TR("Atlas Texture");
 		} break;
 
 	}

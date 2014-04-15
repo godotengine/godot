@@ -39,6 +39,8 @@
 #include "editor_settings.h"
 #include "editor_import_export.h"
 
+#include "core/translation.h"
+
 void CustomPropertyEditor::_notification(int p_what) {
 	
 
@@ -2065,7 +2067,7 @@ void PropertyEditor::update_tree() {
 				sep->set_icon(0,get_icon("Object","EditorIcons") );
 			print_line("CATEGORY: "+type);
 			*/
-			sep->set_text(0,type);
+			sep->set_text(0,_TR(type));
 			sep->set_selectable(0,false);
 			sep->set_selectable(1,false);
 			sep->set_custom_bg_color(0,get_color("prop_category","Editor"));
@@ -2986,8 +2988,8 @@ PropertyEditor::PropertyEditor() {
 	
 	capitalize_paths=true;
 	autoclear=false;
-	tree->set_column_title(0,"Property");
-	tree->set_column_title(1,"Value");
+	tree->set_column_title(0,_TR("Property"));
+	tree->set_column_title(1,_TR("Value"));
 	tree->set_column_titles_visible(true);
 
 	keying=false;

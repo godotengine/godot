@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "camera_editor_plugin.h"
 #include "spatial_editor_plugin.h"
+#include "core/translation.h"
 
 
 void CameraEditor::_notification(int p_what) {
@@ -87,7 +88,7 @@ CameraEditor::CameraEditor() {
 	preview = memnew( Button );
 	add_child(preview);
 
-	preview->set_text("Preview");
+	preview->set_text(_TR("Preview"));
 	preview->set_toggle_mode(true);
 	preview->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	preview->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
