@@ -195,6 +195,8 @@ public:
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;
 
+
+	Matrix32 get_canvas_transform() const;
 	Matrix32 get_viewport_transform() const;
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;

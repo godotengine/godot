@@ -891,6 +891,7 @@ public:
 
 	FUNC2(viewport_set_render_target_vflip,RID,bool);
 	FUNC1RC(bool,viewport_get_render_target_vflip,RID);
+	FUNC2(viewport_set_render_target_to_screen_rect,RID,const Rect2&);
 
 	FUNC1(viewport_queue_screen_capture,RID);
 	FUNC1RC(Image,viewport_get_screen_capture,RID);

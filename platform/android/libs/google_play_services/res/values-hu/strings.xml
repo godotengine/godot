@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Play Szolgáltatások telepítése"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Az alkalmazás működéséhez a Google Play Szolgáltatások szükségesek, ezek nincsenek telepítve a telefonon."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Az alkalmazás működéséhez a Google Play Szolgáltatások szükségesek, ezek nincsenek telepítve a táblagépen."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Play Szolgáltatások telepítése"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Google Play Szolgáltatások aktiválása"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Az alkalmazás csak akkor fog működni, ha engedélyezi a Google Play Szolgáltatásokat."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Play Szolgáltatások aktiválása"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Play Szolgáltatások frissítése"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Az alkalmazás csak akkor fog működni, ha frissíti a Google Play Szolgáltatásokat."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Hálózati hiba"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"A Google Play Szolgáltatásokhoz történő kapcsolódáshoz adatkapcsolat szükséges."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Érvénytelen fiók"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"A megadott fiók nem létezik ezen az eszközön. Kérjük, válasszon másik fiókot."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Ismeretlen hiba a Google Play Szolgáltatásokban."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Google Play Szolgáltatások"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"A Google Play Szolgáltatásokat, amelyre egyes alkalmazások támaszkodnak, nem támogatja az eszköz. Segítségért forduljon az eszköz gyártójához."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Az eszközön beállított dátum helytelen. Kérjük, ellenőrizze azt."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Frissítés"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Belépés"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Google-bejelentkezés"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Egy alkalmazás a Play Szolgáltatások rossz verzióját akarta használni."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Egy alkalmazás kéri a Google Play Szolgáltatások engedélyezését."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Egy alkalmazás kéri a Google Play Szolgáltatások telepítését."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Egy alkalmazás kéri a Google Play Szolgáltatások frissítését."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Google Play szolgáltatási hiba"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Igénylő: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>

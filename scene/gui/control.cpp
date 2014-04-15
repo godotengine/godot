@@ -955,7 +955,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 		window->key_event_accepted=false;
 
-		Point2 mpos =(get_viewport_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
+		Point2 mpos =(get_canvas_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
 
 		if (p_event.mouse_button.pressed) {
 
@@ -1102,7 +1102,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 			window->key_event_accepted=false;
 
-			Matrix32 localizer = (get_viewport_transform()).affine_inverse();
+			Matrix32 localizer = (get_canvas_transform()).affine_inverse();
 			Size2 pos = localizer.xform(Size2(p_event.mouse_motion.x,p_event.mouse_motion.y)) - _window_get_pos();
 			Vector2 speed = localizer.basis_xform(Point2(p_event.mouse_motion.speed_x,p_event.mouse_motion.speed_y));
 			Vector2 rel = localizer.basis_xform(Point2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y));

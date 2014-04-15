@@ -50,6 +50,25 @@ class SceneMainLoop : public MainLoop {
 	_THREAD_SAFE_CLASS_
 
 	OBJ_TYPE( SceneMainLoop, MainLoop );	
+public:
+
+
+	enum StretchMode {
+
+		STRETCH_MODE_DISABLED,
+		STRETCH_MODE_2D,
+		STRETCH_MODE_VIEWPORT,
+	};
+
+	enum StretchAspect {
+
+		STRETCH_ASPECT_IGNORE,
+		STRETCH_ASPECT_KEEP,
+		STRETCH_ASPECT_KEEP_WIDTH,
+		STRETCH_ASPECT_KEEP_HEIGHT,
+	};
+private:
+
 
 	struct Group {
 
@@ -94,6 +113,12 @@ class SceneMainLoop : public MainLoop {
 	int call_lock;
 	Set<Node*> call_skip; //skip erased nodes
 
+
+	StretchMode stretch_mode;
+	StretchAspect stretch_aspect;
+	Size2i stretch_min;
+
+	void _update_root_rect();
 
 	List<ObjectID> delete_queue;
 
@@ -152,7 +177,6 @@ public:
 		GROUP_CALL_MULIILEVEL=8,
 	};
 
-
 	_FORCE_INLINE_ Viewport *get_root() const { return root; }
 
 	uint32_t get_last_event_id() const;
@@ -196,10 +220,18 @@ public:
 
 	void get_nodes_in_group(const StringName& p_group,List<Node*> *p_list);
 
+	void set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize);
+
+
 	SceneMainLoop();
 	~SceneMainLoop();
 
 };
+
+
+VARIANT_ENUM_CAST( SceneMainLoop::StretchMode );
+VARIANT_ENUM_CAST( SceneMainLoop::StretchAspect );
+
 
 
 #endif

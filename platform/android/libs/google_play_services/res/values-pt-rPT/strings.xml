@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Obter serviços do Google Play"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Esta aplicação não será executada sem os serviços do Google Play, que estão em falta no seu telemóvel."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Esta aplicação não será executada sem os serviços do Google Play, que estão em falta no seu tablet."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Obter serviços do Google Play"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Ativar serviços do Google Play"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Esta aplicação não funcionará enquanto não ativar os serviços do Google Play."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Ativar serviços do Google Play"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Atualizar serviços do Google Play"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Esta aplicação não será executada enquanto não atualizar os serviços do Google Play."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Erro de Rede"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"É necessária uma ligação de dados para se ligar aos Serviços do Google Play."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Conta Inválida"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"A conta especificada não existe neste dispositivo. Escolha uma conta diferente."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Problema desconhecido nos serviços do Google Play."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Serviços do Google Play"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Os serviços do Google Play, dos quais dependem algumas das suas aplicações, não são suportados pelo seu dispositivo. Contacte o fabricante para obter assistência."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"A data no dispositivo parece estar incorreta. Verifique a data no dispositivo."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Atualizar"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Inic. ses."</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Inic. sessão com o Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Aplicação tentou utiliz. versão incorreta dos Serviços do Google Play."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Uma aplicação necessita da ativação dos Serviços do Google Play."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Uma aplicação necessita da instalação dos Serviços do Google Play."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Uma aplicação necessita da atualização dos Serviços do Google Play."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Erro dos serviços do Google Play"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Solicitado por <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>

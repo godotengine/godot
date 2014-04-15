@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2013 Google Inc. All Rights Reserved. -->
+<resources>
+  <declare-styleable name="AdsAttrs">
+    <!--
+    The size of the ad. It must be one of BANNER, FULL_BANNER, LEADERBOARD,
+    MEDIUM_RECTANGLE, SMART_BANNER, WIDE_SKYSCRAPER, or
+    &lt;width&gt;x&lt;height&gt;.
+    -->
+    <attr name="adSize" format="string"/>
+
+    <!--
+    A comma-separated list of the supported ad sizes. The sizes must be one of
+    BANNER, FULL_BANNER, LEADERBOARD, MEDIUM_RECTANGLE, SMART_BANNER,
+    WIDE_SKYSCRAPER, or &lt;width&gt;x&lt;height&gt;.
+    -->
+    <attr name="adSizes" format="string"/>
+
+    <!-- The ad unit ID. -->
+    <attr name="adUnitId" format="string"/>
+  </declare-styleable>
+</resources>

@@ -3927,7 +3927,7 @@ EditorNode::EditorNode() {
 	file_templates->set_mode(FileDialog::MODE_OPEN_FILE);
 	file_templates->set_access(FileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
-	file_templates->add_filter("*.zip ; Zip Template Package");
+	file_templates->add_filter("*.tpz ; Template Package");
 
 
 	file = memnew( FileDialog );

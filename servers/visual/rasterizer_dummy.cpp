@@ -1384,7 +1384,7 @@ void RasterizerDummy::set_viewport(const VS::ViewportRect& p_viewport) {
 
 }
 
-void RasterizerDummy::set_render_target(RID p_render_target,bool p_transparent_bg) {
+void RasterizerDummy::set_render_target(RID p_render_target, bool p_transparent_bg, bool p_vflip) {
 
 
 }
@@ -1455,6 +1455,12 @@ void RasterizerDummy::canvas_begin() {
 
 
 }
+void RasterizerDummy::canvas_disable_blending() {
+
+
+
+}
+
 void RasterizerDummy::canvas_set_opacity(float p_opacity) {
 
 
