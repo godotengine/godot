@@ -390,7 +390,7 @@ static String _parse_string(const uint8_t *p_bytes,bool p_utf8) {
 
 	}
 	offset+=2;
-	printf("len %i, unicode: %i\n",len,int(p_utf8));
+	//printf("len %i, unicode: %i\n",len,int(p_utf8));
 
 	if (p_utf8) {
 
@@ -432,9 +432,9 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 
 	Vector<String> string_table;
 
-	printf("stirng block len: %i\n",string_block_len);
-	printf("stirng count: %i\n",string_count);
-	printf("flags: %x\n",string_flags);
+	//printf("stirng block len: %i\n",string_block_len);
+	//printf("stirng count: %i\n",string_count);
+	//printf("flags: %x\n",string_flags);
 
 	for(int i=0;i<string_count;i++) {
 
@@ -518,7 +518,7 @@ void EditorExportPlatformAndroid::_fix_resources(Vector<uint8_t>& p_manifest) {
 
 
 	p_manifest=ret;
-	printf("end\n");
+	//printf("end\n");
 }
 
 String EditorExportPlatformAndroid::get_project_name() const {
@@ -679,11 +679,11 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 					else
 						nspace="";
 
-					printf("ATTR %i NSPACE: %i\n",i,attr_nspace);
-					printf("ATTR %i NAME: %i (%s)\n",i,attr_name,attrname.utf8().get_data());
-					printf("ATTR %i VALUE: %i (%s)\n",i,attr_value,value.utf8().get_data());
-					printf("ATTR %i FLAGS: %x\n",i,attr_flags);
-					printf("ATTR %i RESID: %x\n",i,attr_resid);
+					//printf("ATTR %i NSPACE: %i\n",i,attr_nspace);
+					//printf("ATTR %i NAME: %i (%s)\n",i,attr_name,attrname.utf8().get_data());
+					//printf("ATTR %i VALUE: %i (%s)\n",i,attr_value,value.utf8().get_data());
+					//printf("ATTR %i FLAGS: %x\n",i,attr_flags);
+					//printf("ATTR %i RESID: %x\n",i,attr_resid);
 
 					//replace project information
 					if (tname=="manifest" && attrname=="package") {
@@ -807,12 +807,12 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 			} break;
 		}
-		printf("chunk %x: size: %d\n",chunk,size);
+		//printf("chunk %x: size: %d\n",chunk,size);
 
 		ofs+=size;
 	}
 
-	printf("end\n");
+	//printf("end\n");
 
 	//create new andriodmanifest binary
 
@@ -829,14 +829,14 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 		encode_uint32(ofs,&ret[string_table_begins+i*4]);
 		ofs+=string_table[i].length()*2+2+2;
-		print_line("ofs: "+itos(i)+": "+itos(ofs));
+		//print_line("ofs: "+itos(i)+": "+itos(ofs));
 	}
 	ret.resize(ret.size()+ofs);
 	uint8_t *chars=&ret[ret.size()-ofs];
 	for(int i=0;i<string_table.size();i++) {
 
 		String s = string_table[i];
-		print_line("savint string :"+s);
+		//print_line("savint string :"+s);
 		encode_uint16(s.length(),chars);
 		chars+=2;
 		for(int j=0;j<s.length();j++) { //include zero?
