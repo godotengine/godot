@@ -98,7 +98,7 @@ public:
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
 	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
-	virtual Error import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external=false);
+	virtual Error import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external=false, bool p_preview=false);
 	virtual Vector<uint8_t> custom_export(const String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
 

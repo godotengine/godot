@@ -708,7 +708,7 @@ Error EditorTextureImportPlugin::import(const String& p_path, const Ref<Resource
 	return import2(p_path,p_from,EditorExportPlatform::IMAGE_COMPRESSION_BC,false);
 }
 
-Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external){
+Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external, bool p_preview){
 
 
 
@@ -810,7 +810,6 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		Image atlas;
 		atlas.create(nearest_power_of_2(dst_size.width),nearest_power_of_2(dst_size.height),0,alpha?Image::FORMAT_RGBA:Image::FORMAT_RGB);
-
 		for(int i=0;i<sources.size();i++) {
 
 			int x=dst_positions[i].x;
@@ -833,6 +832,15 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			at->set_path(apath);
 			atlases.push_back(at);
 
+		}
+		if (p_preview) {
+			for(int x=0;x<atlas.get_width();x++) {
+				for(int y=0;y<atlas.get_height();y++) {
+					bool gray=(x / 32 + y / 32) & 1;
+					Color c=Color(gray?0.25:0.75,gray?0.25:0.75,gray?0.25:0.75,0.5);
+					atlas.put_pixel(x,y,c.blend(atlas.get_pixel(x,y)));
+				}
+			}
 		}
 		if (ResourceCache::has(p_path)) {
 			texture = Ref<ImageTexture> ( ResourceCache::get(p_path)->cast_to<ImageTexture>() );
