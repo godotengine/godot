@@ -719,7 +719,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
-	vbc->set_name("Debugger");
+	vbc->set_name(_TR("Debugger"));
 	//tabs->add_child(vbc);
 	Control *dbg=vbc;
 

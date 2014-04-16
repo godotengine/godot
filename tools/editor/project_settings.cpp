@@ -1323,7 +1323,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	message->set_hide_on_ok(true);
 
 	Control *input_base = memnew( Control );
-	input_base->set_name("Input Map");
+	input_base->set_name(_TR("Input Map"));
 	input_base->set_area_as_parent_rect();;
 	tab_container->add_child(input_base);
 
@@ -1424,14 +1424,14 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	//translations
 	TabContainer *translations = memnew( TabContainer );
-	translations->set_name("Localization");
+	translations->set_name(_TR("Localization"));
 	tab_container->add_child(translations);
 
 	{
 
 		VBoxContainer *tvb = memnew( VBoxContainer );
 		translations->add_child(tvb);
-		tvb->set_name("Translations");
+		tvb->set_name(_TR("Translations"));
 		HBoxContainer *thb = memnew( HBoxContainer);
 		tvb->add_child(thb);
 		thb->add_child( memnew( Label(_TR("Translations:"))));
@@ -1456,7 +1456,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	{
 		VBoxContainer *tvb = memnew( VBoxContainer );
 		translations->add_child(tvb);
-		tvb->set_name("Remaps");
+		tvb->set_name(_TR("Remaps"));
 		HBoxContainer *thb = memnew( HBoxContainer);
 		tvb->add_child(thb);
 		thb->add_child( memnew( Label(_TR("Resources:"))));
@@ -1514,7 +1514,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	{
 		VBoxContainer *avb = memnew( VBoxContainer );
 		tab_container->add_child(avb);
-		avb->set_name("AutoLoad");
+		avb->set_name(_TR("AutoLoad"));
 		HBoxContainer *ahb = memnew( HBoxContainer);
 		avb->add_child(ahb);
 

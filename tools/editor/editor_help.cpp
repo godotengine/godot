@@ -619,7 +619,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Members:");
+		class_desc->add_text(_TR("Members:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->add_newline();
@@ -662,7 +662,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Signals:");
+		class_desc->add_text(_TR("Signals:"));
 		class_desc->pop();
 		class_desc->pop();
 
@@ -725,7 +725,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Constants:");
+		class_desc->add_text(_TR("Constants:"));
 		class_desc->pop();
 		class_desc->pop();
 		class_desc->push_indent(1);
@@ -770,7 +770,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 		description_line=class_desc->get_line_count()-2;
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
 		class_desc->push_font(doc_title_font);
-		class_desc->add_text("Description:");
+		class_desc->add_text(_TR("Description:"));
 		class_desc->pop();
 		class_desc->pop();
 

@@ -607,7 +607,7 @@ bool ProjectExportDialog::_update_group_treef(TreeItem *p_parent,EditorFileSyste
 
 	String filter=group_images_filter->get_text();
 	StringName current_group = _get_selected_group();
-	String check_text="Include";
+	String check_text=_TR("Include");
 
 	for(int i=0;i<p_dir->get_file_count();i++) {
 
@@ -951,7 +951,7 @@ void ProjectExportDialog::_group_atlas_preview() {
 
 	Ref<Texture> tex = ResourceLoader::load(dst_file);
 	atlas_preview_frame->set_texture(tex); //clear previous
-	atlas_preview_dialog->set_title("Atlas Preview ("+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
+	atlas_preview_dialog->set_title(_TR("Atlas Preview (")+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
 	atlas_preview_dialog->popup_centered_ratio(0.9);
 
 }
@@ -1013,7 +1013,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	VBoxContainer *pvbox = memnew( VBoxContainer );
 	sections->add_child(pvbox);
-	pvbox->set_name("Target");
+	pvbox->set_name(_TR("Target"));
 
 	HBoxContainer *phbox = memnew( HBoxContainer );
 	pvbox->add_child(phbox);
@@ -1050,7 +1050,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	//////////////////
 
 	vb = memnew( VBoxContainer );
-	vb->set_name("Resources");
+	vb->set_name(_TR("Resources"));
 	sections->add_child(vb);
 	export_mode = memnew( OptionButton );
 	export_mode->add_item(_TR("Export selected resources (including dependencies)."));
@@ -1082,7 +1082,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 
 	image_vb = memnew( VBoxContainer );
-	image_vb->set_name("Images");
+	image_vb->set_name(_TR("Images"));
 	image_action = memnew( OptionButton );
 	image_action->add_item(_TR("Keep Original"));
 	image_action->add_item(_TR("Compress for Disk (Lossy, WebP)"));
@@ -1123,7 +1123,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	/// groups
 	HBoxContainer *group_hb = memnew( HBoxContainer );
-	group_hb->set_name("Image Groups");
+	group_hb->set_name(_TR("Image Groups"));
 	sections->add_child(group_hb);
 	VBoxContainer *group_vb_left = memnew( VBoxContainer);
 	group_hb->add_child(group_vb_left);
@@ -1274,7 +1274,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	get_ok()->set_text(_TR("Export PCK"));
 
 
-	expopt="--,Export,Bundle";
+	expopt=_TR("--,Export,Bundle");
 
 	file_export = memnew( FileDialog );
 	add_child(file_export);

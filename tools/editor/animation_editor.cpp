@@ -2334,7 +2334,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 				tpp->add_item(_TR("Out"),TRACK_MENU_SET_ALL_TRANS_OUT);
 				tpp->add_item(_TR("In-Out"),TRACK_MENU_SET_ALL_TRANS_INOUT);
 				tpp->add_item(_TR("Out-In"),TRACK_MENU_SET_ALL_TRANS_OUTIN);
-				tpp->set_name("Transitions");
+				tpp->set_name(_TR("Transitions"));
 				tpp->connect("item_pressed",this,"_menu_track");
 
 				menu_track->get_popup()->add_child(tpp);

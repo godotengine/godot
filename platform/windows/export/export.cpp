@@ -1,6 +1,7 @@
 #include "export.h"
 #include "platform/windows/logo.h"
 #include "tools/editor/editor_import_export.h"
+#include "core/translation.h"
 
 void register_windows_exporter() {
 
@@ -15,7 +16,7 @@ void register_windows_exporter() {
 		exporter->set_debug_binary32("windows_32_debug.exe");
 		exporter->set_release_binary64("windows_64_release.exe");
 		exporter->set_debug_binary64("windows_64_debug.exe");
-		exporter->set_name("Windows Desktop");
+		exporter->set_name(_TR("Windows Desktop"));
 		exporter->set_logo(logo);
 		EditorImportExport::get_singleton()->add_export_platform(exporter);
 	}
