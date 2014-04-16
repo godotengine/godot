@@ -193,5 +193,331 @@ ContextGL_X11::~ContextGL_X11() {
 }
 
 
+#elif defined(GLES2_ENABLED)
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <GLES2/gl2.h>
+
+
+#define GLX_CONTEXT_MAJOR_VERSION_ARB		0x2091
+#define GLX_CONTEXT_MINOR_VERSION_ARB		0x2092
+
+/*typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+
+struct ContextGL_X11_Private { 
+
+	::GLXContext glx_context;
+};*/
+
+
+void ContextGL_X11::release_current() {
+
+	eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+void ContextGL_X11::make_current() {
+
+	eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+}
+void ContextGL_X11::swap_buffers() {
+
+	eglSwapBuffers(egl_display, egl_surface);
+}
+
+const char* EGLErrorString()
+{
+	EGLint nErr = eglGetError();
+	switch(nErr){
+		case EGL_SUCCESS:
+			return "EGL_SUCCESS";
+		case EGL_BAD_DISPLAY:
+			return "EGL_BAD_DISPLAY";
+		case EGL_NOT_INITIALIZED:
+			return "EGL_NOT_INITIALIZED";
+		case EGL_BAD_ACCESS:
+			return "EGL_BAD_ACCESS";
+		case EGL_BAD_ALLOC:
+			return "EGL_BAD_ALLOC";
+		case EGL_BAD_ATTRIBUTE:
+			return "EGL_BAD_ATTRIBUTE";
+		case EGL_BAD_CONFIG:
+			return "EGL_BAD_CONFIG";
+		case EGL_BAD_CONTEXT:
+			return "EGL_BAD_CONTEXT";
+		case EGL_BAD_CURRENT_SURFACE:
+			return "EGL_BAD_CURRENT_SURFACE";
+		case EGL_BAD_MATCH:
+			return "EGL_BAD_MATCH";
+		case EGL_BAD_NATIVE_PIXMAP:
+			return "EGL_BAD_NATIVE_PIXMAP";
+		case EGL_BAD_NATIVE_WINDOW:
+			return "EGL_BAD_NATIVE_WINDOW";
+		case EGL_BAD_PARAMETER:
+			return "EGL_BAD_PARAMETER";
+		case EGL_BAD_SURFACE:
+			return "EGL_BAD_SURFACE";
+		default:
+			return "unknown";
+	}
+}
+
+Error ContextGL_X11::initialize()
+{
+
+	if (!x11_display) {
+		printf("no X11 display ... creating my own ...\n");
+		x11_display = XOpenDisplay( NULL );
+	}
+
+	//_______________________________________________________________________________________
+	// code from http://pandorawiki.org/GLESGAE#GLES1Context.h
+    printf("I'm creating a XWindow!\n");
+	// Create the actual window and store the pointer.
+	x11_window = XCreateWindow(x11_display			// Pointer to the Display
+				, RootWindow(x11_display,DefaultScreen(x11_display))	// Parent Window
+				, 0				// X of top-left corner
+				, 0				// Y of top-left corner
+				, OS::get_singleton()->get_video_mode().width				// requested width
+				, OS::get_singleton()->get_video_mode().height			// requested height
+				, 0				// border width
+				, CopyFromParent		// window depth
+				, CopyFromParent		// window class - InputOutput / InputOnly / CopyFromParent
+				, CopyFromParent		// visual type
+				, 0				// value mask 
+				, 0);				// attributes
+						
+	// Map the window to the display.
+	XMapWindow(x11_display, x11_window);
+	
+	printf("I'm setting up a EGL Display!\n");
+	// Initialise the EGL Display
+	EGLBoolean eglb = eglInitialize(egl_display, NULL, NULL);
+    if (0 == eglb)
+    {
+		printf("failed to init egl..\n");
+        printf(EGLErrorString());
+		printf("\n");
+	}
+
+	// Now we want to find an EGL Surface that will work for us...
+	EGLint eglAttribs[] = {
+		EGL_BUFFER_SIZE, 16			// 16bit Colour Buffer
+	,	EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT	// We want an ES2 config
+	,	EGL_NONE
+	};
+
+	EGLConfig  eglConfig;
+	EGLint     numConfig;
+	if (0 == eglChooseConfig(egl_display, eglAttribs, &eglConfig, 1, &numConfig)) {
+		printf("failed to get context..\n");
+	}
+
+	// Create the actual surface based upon the list of configs we've just gotten...
+	egl_surface = eglCreateWindowSurface(egl_display, eglConfig, reinterpret_cast<EGLNativeWindowType>(/*x11_window.getWindow()*/x11_window), NULL);
+	if (EGL_NO_SURFACE == egl_surface) {
+		printf("failed to get surface..\n");
+	}
+
+	// Setup the EGL context
+	EGLint contextAttribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2
+	,	EGL_NONE
+	};
+
+	// Create our Context
+	egl_context = eglCreateContext (egl_display, eglConfig, EGL_NO_CONTEXT, contextAttribs);
+	if (EGL_NO_CONTEXT == egl_context) {
+		printf("failed to get context...\n");
+	}
+
+	// Bind the Display, Surface and Contexts together
+	eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+	
+
+	// Setup the viewport
+	glViewport(0, 0, default_video_mode.width, default_video_mode.height);
+	//______________________________________________________________________________________
+	printf("done!\n");
+	return OK;
+}
+
+int ContextGL_X11::get_window_width() {
+
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,x11_window,&xwa);
+	
+	return xwa.width;
+}
+int ContextGL_X11::get_window_height() {
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,x11_window,&xwa);
+	
+	return xwa.height;
+
+}
+
+
+ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,const OS::VideoMode& p_default_video_mode,bool p_opengl_3_context) : x11_window(p_x11_window) {
+
+	default_video_mode=p_default_video_mode;
+	x11_display=p_x11_display;
+	egl_display=eglGetDisplay((EGLNativeDisplayType)x11_display);
+	
+	opengl_3_context=p_opengl_3_context;
+	
+	double_buffer=false;
+	direct_render=false;
+	glx_minor=glx_major=0;
+	/*p = memnew( ContextGL_X11_Private );
+	p->glx_context=0;*/
+}
+
+
+ContextGL_X11::~ContextGL_X11() {
+
+	//memdelete( p );
+}
+
+#elif defined(GLES1_ENABLED)
+
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <GLES/gl.h>
+
+
+#define GLX_CONTEXT_MAJOR_VERSION_ARB		0x2091
+#define GLX_CONTEXT_MINOR_VERSION_ARB		0x2092
+
+/*typedef GLXContext (*GLXCREATECONTEXTATTRIBSARBPROC)(Display*, GLXFBConfig, GLXContext, Bool, const int*);
+
+struct ContextGL_X11_Private { 
+
+	::GLXContext glx_context;
+};*/
+
+
+void ContextGL_X11::release_current() {
+
+	eglMakeCurrent(egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+}
+
+void ContextGL_X11::make_current() {
+
+	eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+}
+void ContextGL_X11::swap_buffers() {
+
+	eglSwapBuffers(egl_display, egl_surface);
+}
+
+Error ContextGL_X11::initialize() {
+
+	//_______________________________________________________________________________________
+	// code from http://pandorawiki.org/GLESGAE#GLES1Context.h
+	printf("I'm creating a XWindow!");
+	// Create the actual window and store the pointer.
+	x11_window = XCreateWindow(x11_display			// Pointer to the Display
+				, RootWindow(x11_display,DefaultScreen(x11_display))	// Parent Window
+				, 0				// X of top-left corner
+				, 0				// Y of top-left corner
+				, OS::get_singleton()->get_video_mode().width				// requested width
+				, OS::get_singleton()->get_video_mode().height			// requested height
+				, 0				// border width
+				, CopyFromParent		// window depth
+				, CopyFromParent		// window class - InputOutput / InputOnly / CopyFromParent
+				, CopyFromParent		// visual type
+				, 0				// value mask 
+				, 0);				// attributes
+						
+	// Map the window to the display.
+	XMapWindow(x11_display, x11_window);
+	
+	printf("I'm setting up a EGL Display!\n");
+	// Initialise the EGL Display
+	if (0 == eglInitialize(egl_display, NULL, NULL)) {
+		printf("failed to init egl..\n");
+	}
+
+	// Now we want to find an EGL Surface that will work for us...
+	EGLint eglAttribs[] = {
+		EGL_BUFFER_SIZE, 16			// 16bit Colour Buffer
+	,	EGL_NONE
+	};
+
+	EGLConfig  eglConfig;
+	EGLint     numConfig;
+	if (0 == eglChooseConfig(egl_display, eglAttribs, &eglConfig, 1, &numConfig)) {
+		printf("failed to get context..\n");
+	}
+
+	// Create the actual surface based upon the list of configs we've just gotten...
+	egl_surface = eglCreateWindowSurface(egl_display, eglConfig, reinterpret_cast<EGLNativeWindowType>(/*x11_window.getWindow()*/x11_window), NULL);
+	if (EGL_NO_SURFACE == egl_surface) {
+		printf("failed to get surface..\n");
+	}
+
+	// Setup the EGL context
+	EGLint contextAttribs[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 1
+	,	EGL_NONE
+	};
+
+	// Create our Context
+	egl_context = eglCreateContext (egl_display, eglConfig, EGL_NO_CONTEXT, contextAttribs);
+	if (EGL_NO_CONTEXT == egl_context) {
+		printf("failed to get context...\n");
+	}
+
+	// Bind the Display, Surface and Contexts together
+	eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+	
+
+	// Setup the viewport
+	glViewport(0, 0, default_video_mode.width, default_video_mode.height);
+	//______________________________________________________________________________________
+	printf("done!\n");
+	return OK;
+}
+
+int ContextGL_X11::get_window_width() {
+
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,x11_window,&xwa);
+	
+	return xwa.width;
+}
+int ContextGL_X11::get_window_height() {
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display,x11_window,&xwa);
+	
+	return xwa.height;
+
+}
+
+
+ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,const OS::VideoMode& p_default_video_mode,bool p_opengl_3_context) : x11_window(p_x11_window) {
+
+	default_video_mode=p_default_video_mode;
+	x11_display=p_x11_display;
+	egl_display=eglGetDisplay((EGLNativeDisplayType)x11_display);
+	
+	opengl_3_context=p_opengl_3_context;
+	
+	double_buffer=false;
+	direct_render=false;
+	glx_minor=glx_major=0;
+	/*p = memnew( ContextGL_X11_Private );
+	p->glx_context=0;*/
+}
+
+
+ContextGL_X11::~ContextGL_X11() {
+
+	//memdelete( p );
+}
+
 #endif
 #endif

@@ -28,6 +28,9 @@
 /*************************************************************************/
 #include "servers/visual/visual_server_raster.h"
 #include "drivers/gles2/rasterizer_gles2.h"
+#if defined(GLES2_ENABLED)
+  #define GLES1_INCLUDE_H <GLES2/gl2.h>
+#endif
 #include "drivers/gles1/rasterizer_gles1.h"
 #include "os_x11.h"
 #include "key_mapping_x11.h"
@@ -71,7 +74,7 @@ const char * OS_X11::get_video_driver_name(int p_driver) const {
 }
 OS::VideoMode OS_X11::get_default_video_mode() const {
 
-	return OS::VideoMode(800,600,false);
+	return OS::VideoMode(800,480,false);
 }
 
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
@@ -150,14 +153,21 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	// maybe contextgl wants to be in charge of creating the window
 	//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED) || defined(GLES1_ENABLED)
 	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
 	context_gl->initialize();
 
 	if (p_video_driver == 0) {
+		#if defined(GLES2_ENABLED)
 		rasterizer = memnew( RasterizerGLES2 );
+		#elif defined(GLES1_ENABLED)
+		printf("tried to get GLES2 but only GLES1 available!\nusing GLES1\n");
+		rasterizer = memnew( RasterizerGLES1 ); // some kind of fallback for platforms where GLES2 doesn't work properly
+		#endif
 	} else {
+		#if defined(GLES1_ENABLED)
 		rasterizer = memnew( RasterizerGLES1 );
+		#endif
 	};
 
 #endif

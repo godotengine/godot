@@ -58,7 +58,7 @@
 class OS_X11 : public OS_Unix {
 
 	Atom wm_delete;
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED) || defined(GLES1_ENABLED)
 	ContextGL_X11 *context_gl;
 #endif
 	Rasterizer *rasterizer;
