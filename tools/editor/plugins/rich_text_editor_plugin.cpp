@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "rich_text_editor_plugin.h"
 #include "os/file_access.h"
+#include "core/translation.h"
 void RichTextEditor::_notification(int p_what) {
 
 	switch(p_what) {
@@ -103,9 +104,9 @@ RichTextEditor::RichTextEditor() {
 	add_child(options);
 	options->set_area_as_parent_rect();
 
-	options->set_text("RichText");
-	options->get_popup()->add_item("Parse BBCODE",PARSE_BBCODE);
-	options->get_popup()->add_item("Clear",CLEAR);
+	options->set_text(_TR("RichText"));
+	options->get_popup()->add_item(_TR("Parse BBCODE"),PARSE_BBCODE);
+	options->get_popup()->add_item(_TR("Clear"),CLEAR);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 	file_dialog = memnew( FileDialog );

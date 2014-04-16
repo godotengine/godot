@@ -33,6 +33,7 @@
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
 
+#include "core/translation.h"
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
@@ -57,8 +58,8 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 		current_option=-1;
 		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text("Ok :( ");
-		accept->set_text("No parent to instance a child at.");
+		accept->get_ok()->set_text(_TR("Ok :( "));
+		accept->set_text(_TR("No parent to instance a child at."));
 		accept->popup_centered(Size2(300,70));
 		return NULL;
 	};
@@ -75,8 +76,8 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 		current_option=-1;
 		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text("Ugh");
-		accept->set_text(String("Error loading scene from ")+p_file);
+		accept->get_ok()->set_text(_TR("Ugh"));
+		accept->set_text(String(_TR("Error loading scene from "))+p_file);
 		accept->popup_centered(Size2(300,70));;
 		return NULL;
 	}
@@ -116,8 +117,8 @@ void SceneTreeDock::_tool_selected(int p_tool) {
 
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation can't be done without a tree root.");
+				accept->get_ok()->set_text(_TR("I see.."));
+				accept->set_text(_TR("This operation can't be done without a tree root."));
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
@@ -186,8 +187,8 @@ void SceneTreeDock::_tool_selected(int p_tool) {
 
 				current_option=-1;
 				//accept->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation can't be done on the tree root.");
+				accept->get_ok()->set_text(_TR("I see.."));
+				accept->set_text(_TR("This operation can't be done on the tree root."));
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
@@ -217,8 +218,8 @@ void SceneTreeDock::_tool_selected(int p_tool) {
 
 				current_option=-1;
 				//accept->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation can't be done on the tree root.");
+				accept->get_ok()->set_text(_TR("I see.."));
+				accept->set_text(_TR("This operation can't be done on the tree root."));
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
@@ -316,8 +317,8 @@ void SceneTreeDock::_tool_selected(int p_tool) {
 
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("This operation can't be done on the tree root.");
+				accept->get_ok()->set_text(_TR("I see.."));
+				accept->set_text(_TR("This operation can't be done on the tree root."));
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
@@ -339,7 +340,7 @@ void SceneTreeDock::_tool_selected(int p_tool) {
 			if (remove_list.empty())
 				return;
 
-			delete_dialog->set_text("Delete Node(s)?");
+			delete_dialog->set_text(_TR("Delete Node(s)?"));
 			delete_dialog->popup_centered(Size2(200,80));
 
 
@@ -1087,19 +1088,19 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW));
-	tb->set_tooltip("Add/Create a New Node\n("+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
+	tb->set_tooltip(_TR("Add/Create a New Node\n(")+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_NEW]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE));
-	tb->set_tooltip("Instance a Node from scene file.");
+	tb->set_tooltip(_TR("Instance a Node from scene file."));
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_INSTANCE]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPLACE));
-	tb->set_tooltip("Replace a Node by Another Node Type");
+	tb->set_tooltip(_TR("Replace a Node by Another Node Type"));
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_REPLACE]=tb;
 
@@ -1107,19 +1108,19 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_CONNECT));
-	tb->set_tooltip("Edit the Node Connections");
+	tb->set_tooltip(_TR("Edit the Node Connections"));
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_CONNECT]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_GROUP));
-	tb->set_tooltip("Edit the Node Groups");
+	tb->set_tooltip(_TR("Edit the Node Groups"));
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_GROUP]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_SCRIPT));
-	tb->set_tooltip("Edit/Create the Node Script");
+	tb->set_tooltip(_TR("Edit/Create the Node Script"));
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_SCRIPT]=tb;
 
@@ -1142,25 +1143,25 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_UP));
-	tb->set_tooltip("Move Node Up\n("+keycode_get_string(KEY_MASK_CMD|KEY_UP)+")");
+	tb->set_tooltip(_TR("Move Node Up\n(")+keycode_get_string(KEY_MASK_CMD|KEY_UP)+")");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_MOVE_UP]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_DOWN));
-	tb->set_tooltip("Move Node Down\n("+keycode_get_string(KEY_MASK_CMD|KEY_DOWN)+")");
+	tb->set_tooltip(_TR("Move Node Down\n(")+keycode_get_string(KEY_MASK_CMD|KEY_DOWN)+")");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_MOVE_DOWN]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_DUPLICATE));
-	tb->set_tooltip("Duplicate Selected Node(s)\n("+keycode_get_string(KEY_MASK_CMD|KEY_D)+")");
+	tb->set_tooltip(_TR("Duplicate Selected Node(s)\n(")+keycode_get_string(KEY_MASK_CMD|KEY_D)+")");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_DUPLICATE]=tb;
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPARENT));
-	tb->set_tooltip("Reparent Selected Node(s)");
+	tb->set_tooltip(_TR("Reparent Selected Node(s)"));
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_REPARENT]=tb;
 
@@ -1168,7 +1169,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_ERASE));
-	tb->set_tooltip("Erase Selected Node(s)");
+	tb->set_tooltip(_TR("Erase Selected Node(s)"));
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_ERASE]=tb;
 

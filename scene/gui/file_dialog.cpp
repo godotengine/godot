@@ -29,7 +29,7 @@
 #include "file_dialog.h"
 #include "scene/gui/label.h"
 #include "print_string.h"
-
+#include "core/translation.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func=NULL;
 FileDialog::GetIconFunc FileDialog::get_large_icon_func=NULL;
@@ -206,7 +206,7 @@ void FileDialog::_action_pressed() {
 		}
 
 		if (dir_access->file_exists(f)) {
-			confirm_save->set_text("File Exists, Overwrite?");
+			confirm_save->set_text(_TR("File Exists, Overwrite?"));
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
 			
@@ -404,7 +404,7 @@ void FileDialog::update_filters() {
 		if (max_filters<filters.size())
 			all_filters+=", ...";
 		
-		filter->add_item("All Recognized ( "+all_filters+" )");
+		filter->add_item(_TR("All Recognized ( ")+all_filters+" )");
 	}
 	for(int i=0;i<filters.size();i++) {
 		
@@ -416,7 +416,7 @@ void FileDialog::update_filters() {
 			filter->add_item("( "+flt+" )");
 	}
 	
-	filter->add_item("All Files (*)");
+	filter->add_item(_TR("All Files (*)"));
 	
 }
 
@@ -489,10 +489,10 @@ void FileDialog::set_mode(Mode p_mode) {
 	mode=p_mode;
 	switch(mode) {
 		
-		case MODE_OPEN_FILE: get_ok()->set_text("Open"); set_title("Open a File"); makedir->hide(); break;
-		case MODE_OPEN_FILES: get_ok()->set_text("Open"); set_title("Open File(s)"); makedir->hide(); break;
-		case MODE_SAVE_FILE: get_ok()->set_text("Save"); set_title("Save a File"); makedir->show(); break;
-		case MODE_OPEN_DIR: get_ok()->set_text("Open"); set_title("Open a Directory"); makedir->show(); break;
+		case MODE_OPEN_FILE: get_ok()->set_text(_TR("Open")); set_title(_TR("Open a File")); makedir->hide(); break;
+		case MODE_OPEN_FILES: get_ok()->set_text(_TR("Open")); set_title(_TR("Open File(s)")); makedir->hide(); break;
+		case MODE_SAVE_FILE: get_ok()->set_text(_TR("Save")); set_title(_TR("Save a File")); makedir->show(); break;
+		case MODE_OPEN_DIR: get_ok()->set_text(_TR("Open")); set_title(_TR("Open a Directory")); makedir->show(); break;
 	}
 
 	if (mode==MODE_OPEN_FILES) {
@@ -665,7 +665,7 @@ FileDialog::FileDialog() {
 	set_child_rect(vbc);
 
 	mode=MODE_SAVE_FILE;
-	set_title("Save a File");
+	set_title(_TR("Save a File"));
 	
 	dir = memnew(LineEdit);
 	HBoxContainer *pathhb = memnew( HBoxContainer );
@@ -677,24 +677,24 @@ FileDialog::FileDialog() {
 	drives->connect("item_selected",this,"_select_drive");
 
 	makedir = memnew( Button );
-	makedir->set_text("Create Folder");
+	makedir->set_text(_TR("Create Folder"));
 	makedir->connect("pressed",this,"_make_dir");
 	pathhb->add_child(makedir);
 	
-	vbc->add_margin_child("Path:",pathhb);
+	vbc->add_margin_child(_TR("Path:"),pathhb);
 	
 	tree = memnew(Tree);
 	tree->set_hide_root(true);
-	vbc->add_margin_child("Directories & Files:",tree,true);
+	vbc->add_margin_child(_TR("Directories & Files:"),tree,true);
 	
 	file = memnew(LineEdit);
 	//add_child(file);
-	vbc->add_margin_child("File:",file);
+	vbc->add_margin_child(_TR("File:"),file);
 	
 
 	filter = memnew( OptionButton );
 	//add_child(filter);
-	vbc->add_margin_child("Filter:",filter);
+	vbc->add_margin_child(_TR("Filter:"),filter);
 	filter->set_clip_text(true);//too many extensions overflow it
 
 	dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -719,21 +719,21 @@ FileDialog::FileDialog() {
 	confirm_save->connect("confirmed", this,"_save_confirm_pressed");
 
 	makedialog = memnew( ConfirmationDialog );
-	makedialog->set_title("Create Folder");
+	makedialog->set_title(_TR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
 	makedialog->set_child_rect(makevb);
 	makedirname = memnew( LineEdit );
-	makevb->add_margin_child("Name:",makedirname);
+	makevb->add_margin_child(_TR("Name:"),makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
 	mkdirerr = memnew( AcceptDialog );
-	mkdirerr->set_text("Could not create folder.");
+	mkdirerr->set_text(_TR("Could not create folder."));
 	add_child(mkdirerr);
 
 	exterr = memnew( AcceptDialog );
-	exterr->set_text("Must use a valid extension.");
+	exterr->set_text(_TR("Must use a valid extension."));
 	add_child(exterr);
 
 

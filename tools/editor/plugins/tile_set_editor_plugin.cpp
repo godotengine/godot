@@ -29,6 +29,7 @@
 #include "tile_set_editor_plugin.h"
 #include "scene/2d/sprite.h"
 #include "scene/2d/physics_body_2d.h"
+#include "core/translation.h"
 void TileSetEditor::edit(const Ref<TileSet>& p_tileset) {
 
 	tileset=p_tileset;
@@ -141,18 +142,18 @@ void TileSetEditor::_menu_cbk(int p_option) {
 			if (p.begins_with("/TileSet") && p.get_slice_count("/")>=2) {
 
 				to_erase = p.get_slice("/",2).to_int();
-				cd->set_text("Remove Item "+itos(to_erase)+"?");
+				cd->set_text(_TR("Remove Item ")+itos(to_erase)+"?");
 				cd->popup_centered(Size2(300,60));
 			}
 		} break;
 		case MENU_OPTION_CREATE_FROM_SCENE: {
 
-			cd->set_text("Create from scene?");
+			cd->set_text(_TR("Create from scene?"));
 			cd->popup_centered(Size2(300,60));
 		} break;
 		 case MENU_OPTION_MERGE_FROM_SCENE: {
 
-			 cd->set_text("Merge from scene?");
+			 cd->set_text(_TR("Merge from scene?"));
 			 cd->popup_centered(Size2(300,60));
 		 } break;
 	}
@@ -181,12 +182,12 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	MenuButton * options = memnew( MenuButton );
 	panel->add_child(options);
 	options->set_pos(Point2(1,1));
-	options->set_text("Theme");
-	options->get_popup()->add_item("Add Item",MENU_OPTION_ADD_ITEM);
-	options->get_popup()->add_item("Remove Selected Item",MENU_OPTION_REMOVE_ITEM);
+	options->set_text(_TR("Theme"));
+	options->get_popup()->add_item(_TR("Add Item"),MENU_OPTION_ADD_ITEM);
+	options->get_popup()->add_item(_TR("Remove Selected Item"),MENU_OPTION_REMOVE_ITEM);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item("Create from Scene",MENU_OPTION_CREATE_FROM_SCENE);
-	options->get_popup()->add_item("Merge from Scene",MENU_OPTION_MERGE_FROM_SCENE);
+	options->get_popup()->add_item(_TR("Create from Scene"),MENU_OPTION_CREATE_FROM_SCENE);
+	options->get_popup()->add_item(_TR("Merge from Scene"),MENU_OPTION_MERGE_FROM_SCENE);
 	options->get_popup()->connect("item_pressed", this,"_menu_cbk");
 	editor=p_editor;
 	cd = memnew(ConfirmationDialog);

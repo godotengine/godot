@@ -31,6 +31,7 @@
 #include "scene/gui/label.h"
 #include "object_type_db.h"
 #include "print_string.h"
+#include "core/translation.h"
 
 
 class CallDialogParams : public Object {
@@ -239,7 +240,7 @@ void CallDialog::set_object(Object *p_object,StringName p_selected) {
 	return_value->clear();
 
 	_update_method_list();
-	method_label->set_text("Method List For ' "+p_object->get_type()+" ':");
+	method_label->set_text(_TR("Method List For ' ")+p_object->get_type()+" ':");
 }
 
 CallDialog::CallDialog() {
@@ -253,7 +254,7 @@ CallDialog::CallDialog() {
 	call->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 	call->set_begin( Point2( 70, 29 ) );
 	call->set_end( Point2( 15, 15 ) );	
-	call->set_text("Call");
+	call->set_text(_TR("Call"));
 	
 	add_child(call);
 	
@@ -262,7 +263,7 @@ CallDialog::CallDialog() {
 	cancel->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 	cancel->set_begin( Point2( 15, 29 ) );
 	cancel->set_end( Point2( 70, 15 ) );	
-	cancel->set_text("Close");
+	cancel->set_text(_TR("Close"));
 	
 	add_child(cancel);
 	
@@ -291,21 +292,21 @@ CallDialog::CallDialog() {
 	add_child(property_editor);
 	method_label = memnew( Label );
 	method_label->set_pos( Point2( 15,25) );
-	method_label->set_text("Method List:");
+	method_label->set_text(_TR("Method List:"));
 	
 	add_child(method_label);
 	
 	Label *label = memnew( Label );
 	label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
 	label->set_anchor_and_margin( MARGIN_TOP, ANCHOR_BEGIN, 25 );
-	label->set_text("Arguments:");
+	label->set_text(_TR("Arguments:"));
 	
 	add_child(label);
 	
 	return_label = memnew( Label );
 	return_label->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.53 );
 	return_label->set_anchor_and_margin( MARGIN_TOP, ANCHOR_END, 85 );
-	return_label->set_text("Return:");
+	return_label->set_text(_TR("Return:"));
 	
 	add_child(return_label);
 	

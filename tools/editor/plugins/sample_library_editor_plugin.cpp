@@ -33,6 +33,7 @@
 #include "tools/editor/editor_settings.h"
 #include "scene/main/viewport.h"
 #include "sample_editor_plugin.h"
+#include "core/translation.h"
 
 
 
@@ -89,10 +90,10 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 		String path = p_path[i];
 		Ref<Sample> sample = ResourceLoader::load(path,"Sample");
 		if (sample.is_null()) {
-			dialog->set_text("ERROR: Couldn't load sample!");
-			dialog->set_title("Error!");
+			dialog->set_text(_TR("ERROR: Couldn't load sample!"));
+			dialog->set_title(_TR("Error!"));
 			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text("Close");
+			dialog->get_ok()->set_text(_TR("Close"));
 			dialog->popup_centered(Size2(300,60));
 			return; ///beh should show an error i guess
 		}
@@ -104,7 +105,7 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 			name=basename+"_"+itos(counter);
 		}
 
-		undo_redo->create_action("Add Sample");
+		undo_redo->create_action(_TR("Add Sample"));
 		undo_redo->add_do_method(sample_library.operator->(),"add_sample",name,sample);
 		undo_redo->add_undo_method(sample_library.operator->(),"remove_sample",name);
 		undo_redo->add_do_method(this,"_update_library");
@@ -368,12 +369,12 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	tree->set_anchor_and_margin(MARGIN_TOP,ANCHOR_BEGIN,30);
 	tree->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,5);
 	tree->set_column_titles_visible(true);
-	tree->set_column_title(0,"Name");
+	tree->set_column_title(0,_TR("Name"));
 
-	tree->set_column_title(1,"Preview");
-	tree->set_column_title(2,"Format");
-	tree->set_column_title(3,"dB");
-	tree->set_column_title(4,"PScale");
+	tree->set_column_title(1,_TR("Preview"));
+	tree->set_column_title(2,_TR("Format"));
+	tree->set_column_title(3,_TR("dB"));
+	tree->set_column_title(4,_TR("PScale"));
 	tree->set_column_min_width(1,150);
 	tree->set_column_min_width(2,100);
 	tree->set_column_min_width(3,50);

@@ -29,10 +29,11 @@
 #include "editor_reimport_dialog.h"
 #include "editor_file_system.h"
 #include "editor_node.h"
+#include "core/translation.h"
 void EditorReImportDialog::popup_reimport() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
-		error->set_text("Please wait for scan to complete");
+		error->set_text(_TR("Please wait for scan to complete"));
 		error->popup_centered(Size2(250,100));
 		return;
 	}
@@ -66,11 +67,11 @@ void EditorReImportDialog::popup_reimport() {
 void EditorReImportDialog::ok_pressed() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
-		error->set_text("Please wait for scan to complete");
+		error->set_text(_TR("Please wait for scan to complete"));
 		error->popup_centered(Size2(250,100));
 		return;
 	}
-	EditorProgress ep("reimport","Re-Importing",items.size());
+	EditorProgress ep("reimport",_TR("Re-Importing"),items.size());
 	for(int i=0;i<items.size();i++) {
 
 		String it = items[i]->get_metadata(0);
@@ -83,7 +84,7 @@ void EditorReImportDialog::ok_pressed() {
 		ERR_CONTINUE(eip.is_null());
 		Error err = eip->import(it,rimd);
 		if (err!=OK) {
-			EditorNode::add_io_error("Error Importing:\n  "+it);
+			EditorNode::add_io_error(_TR("Error Importing:\n  ")+it);
 		}
 
 	}
@@ -97,7 +98,7 @@ EditorReImportDialog::EditorReImportDialog() {
 	add_child(tree);
 	tree->set_hide_root(true);
 	set_child_rect(tree);
-	set_title("Re-Import Changed Resources");
+	set_title(_TR("Re-Import Changed Resources"));
 	error = memnew( AcceptDialog);
 	add_child(error);
 

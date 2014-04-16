@@ -30,6 +30,7 @@
 #include "editor_log.h"
 #include "scene/gui/center_container.h"
 #include "editor_node.h"
+#include "core/translation.h"
 
 void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type ) {
 
@@ -181,7 +182,7 @@ EditorLog::EditorLog() {
 	HBoxContainer *hb = memnew( HBoxContainer );
 	vb->add_child(hb);
 	title = memnew( Label );
-	title->set_text(" Output:");
+	title->set_text(_TR(" Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
 
@@ -191,7 +192,7 @@ EditorLog::EditorLog() {
 	button->connect("pressed",this,"_flip_request");
 	button->set_focus_mode(FOCUS_NONE);
 	button->set_clip_text(true);
-	button->set_tooltip("Open/Close output panel.");
+	button->set_tooltip(_TR("Open/Close output panel."));
 
 	//pd = memnew( PaneDrag );
 	//hb->add_child(pd);

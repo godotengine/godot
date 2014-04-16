@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "run_settings_dialog.h"
+#include "core/translation.h"
 
 
 void RunSettingsDialog::popup_run_settings() {
@@ -79,20 +80,20 @@ RunSettingsDialog::RunSettingsDialog() {
 	set_child_rect(vbc);
 
 	run_mode = memnew( OptionButton );
-	vbc->add_margin_child("Run Mode:",run_mode);
-	run_mode->add_item("Current Scene");
-	run_mode->add_item("Main Scene");
+	vbc->add_margin_child(_TR("Run Mode:"),run_mode);
+	run_mode->add_item(_TR("Current Scene"));
+	run_mode->add_item(_TR("Main Scene"));
 	run_mode->connect("item_selected",this,"_run_mode_changed");
 	arguments = memnew( LineEdit );
-	vbc->add_margin_child("Main Scene Arguments:",arguments);	
+	vbc->add_margin_child(_TR("Main Scene Arguments:"),arguments);	
 	arguments->set_editable(false);
 
-	get_ok()->set_text("Close");
+	get_ok()->set_text(_TR("Close"));
 	//get_cancel()->set_text("Close");
 
 	arguments->set_text("-l $scene");
 
-	set_title("Scene Run Settings");
+	set_title(_TR("Scene Run Settings"));
 
 
 }

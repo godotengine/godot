@@ -162,10 +162,10 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 	updating=false;
 	format = memnew( OptionButton );
 
-	format->add_item("Uncompressed",EditorTextureImportPlugin::IMAGE_FORMAT_UNCOMPRESSED);
-	format->add_item("Compress Lossless (PNG)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS);
-	format->add_item("Compress Lossy (WebP)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
-	format->add_item("Compress (VRAM)",EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
+	format->add_item(_TR("Uncompressed"),EditorTextureImportPlugin::IMAGE_FORMAT_UNCOMPRESSED);
+	format->add_item(_TR("Compress Lossless (PNG)"),EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSLESS);
+	format->add_item(_TR("Compress Lossy (WebP)"),EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_DISK_LOSSY);
+	format->add_item(_TR("Compress (VRAM)"),EditorTextureImportPlugin::IMAGE_FORMAT_COMPRESS_RAM);
 
 
 	add_margin_child(_TR("Texture Format"),format);

@@ -292,15 +292,15 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				type_button->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,3);
 				type_button->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,25);
 				type_button->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,7);
-				type_button->set_text("Preset..");
+				type_button->set_text(_TR("Preset.."));
 				type_button->get_popup()->clear();
-				type_button->get_popup()->add_item("Linear",EASING_LINEAR);
-				type_button->get_popup()->add_item("Ease In",EASING_EASE_IN);
-				type_button->get_popup()->add_item("Ease Out",EASING_EASE_OUT);
+				type_button->get_popup()->add_item(_TR("Linear"),EASING_LINEAR);
+				type_button->get_popup()->add_item(_TR("Ease In"),EASING_EASE_IN);
+				type_button->get_popup()->add_item(_TR("Ease Out"),EASING_EASE_OUT);
 				if (hint_text!="attenuation") {
-					type_button->get_popup()->add_item("Zero",EASING_ZERO);
-					type_button->get_popup()->add_item("Easing In-Out",EASING_IN_OUT);
-					type_button->get_popup()->add_item("Easing Out-In",EASING_OUT_IN);
+					type_button->get_popup()->add_item(_TR("Zero"),EASING_ZERO);
+					type_button->get_popup()->add_item(_TR("Easing In-Out"),EASING_IN_OUT);
+					type_button->get_popup()->add_item(_TR("Easing Out-In"),EASING_OUT_IN);
 				}
 
 				type_button->show();
@@ -326,7 +326,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			} else {
 				List<String> names;
-				names.push_back("value:");
+				names.push_back(_TR("value:"));
 				config_value_editors(1,1,50,names);
 				Vector3 vec=v;
 				value_editor[0]->set_text( String::num(v) );
@@ -338,15 +338,15 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			if (hint==PROPERTY_HINT_FILE || hint==PROPERTY_HINT_GLOBAL_FILE) {
 
 				List<String> names;
-				names.push_back("File..");
-				names.push_back("Clear");
+				names.push_back(_TR("File.."));
+				names.push_back(_TR("Clear"));
 				config_action_buttons(names);
 
 			} else if (hint==PROPERTY_HINT_DIR || hint==PROPERTY_HINT_GLOBAL_DIR) {
 
 				List<String> names;
-				names.push_back("Dir..");
-				names.push_back("Clear");
+				names.push_back(_TR("Dir.."));
+				names.push_back(_TR("Clear"));
 				config_action_buttons(names);
 			} else if (hint==PROPERTY_HINT_ENUM) {
 
@@ -368,12 +368,12 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				action_buttons[0]->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 				action_buttons[0]->set_begin( Point2( 70, button_margin-5 ) );
 				action_buttons[0]->set_end( Point2( margin, margin ) );
-				action_buttons[0]->set_text("Close");
+				action_buttons[0]->set_text(_TR("Close"));
 				action_buttons[0]->show();
 
 			} else {
 				List<String> names;
-				names.push_back("string:");
+				names.push_back(_TR("string:"));
 				config_value_editors(1,1,50,names);
 				Vector3 vec=v;
 				value_editor[0]->set_text( v );
@@ -579,17 +579,17 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		case Variant::IMAGE: {
 			
 			List<String> names;
-			names.push_back("New");
-			names.push_back("Load");
-			names.push_back("Clear");
+			names.push_back(_TR("New"));
+			names.push_back(_TR("Load"));
+			names.push_back(_TR("Clear"));
 			config_action_buttons(names);
 			
 		} break;
 		case Variant::NODE_PATH: {
 			
 			List<String> names;
-			names.push_back("Assign");
-			names.push_back("Clear");
+			names.push_back(_TR("Assign"));
+			names.push_back(_TR("Clear"));
 			config_action_buttons(names);
 
 		} break;
@@ -670,12 +670,12 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				if (!RES(v).is_null()) {
 
-					menu->add_item("Copy",OBJ_MENU_COPY);
+					menu->add_item(_TR("Copy"),OBJ_MENU_COPY);
 				}
 
 				if (paste_valid) {
 
-					menu->add_item("Paste",OBJ_MENU_PASTE);
+					menu->add_item(_TR("Paste"),OBJ_MENU_PASTE);
 				}
 			}
 
@@ -755,7 +755,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			RES res = ResourceLoader::load(p_file,type);
 			if (res.is_null()) {
-				error->set_text("Error loading file: Not a resource!");
+				error->set_text(_TR("Error loading file: Not a resource!"));
 				error->popup_centered(Size2(300,80));
 				break;
 			}
@@ -767,7 +767,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			Image image;
 			Error err = ImageLoader::load_image(p_file,&image);
-			ERR_EXPLAIN("Couldn't load image");
+			ERR_EXPLAIN(_TR("Couldn't load image"));
 			ERR_FAIL_COND(err);
 			v=image;
 			emit_signal("variant_changed");
@@ -1812,9 +1812,9 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 		
 			Image img = obj->get( p_name );
 			if (img.empty())
-				p_item->set_text(1,"[Image (empty)]");
+				p_item->set_text(1,_TR("[Image (empty)]"));
 			else
-				p_item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"]");
+				p_item->set_text(1,_TR("[Image ")+itos(img.get_width())+"x"+itos(img.get_height())+"]");
 
 		} break;
 		case Variant::NODE_PATH: {
@@ -2408,9 +2408,9 @@ void PropertyEditor::update_tree() {
 				item->set_editable( 1, !read_only );
 				Image img = obj->get( p.name );
 				if (img.empty())
-					item->set_text(1,"[Image (empty)]");
+					item->set_text(1,_TR("[Image (empty)]"));
 				else
-					item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"]");
+					item->set_text(1,_TR("[Image ")+itos(img.get_width())+"x"+itos(img.get_height())+"]");
 				item->set_icon( 0,get_icon("Image","EditorIcons") );
 			
 			} break;
@@ -2950,7 +2950,7 @@ PropertyEditor::PropertyEditor() {
 	update_tree_pending=false;
 	
 	top_label = memnew( Label );
-	top_label->set_text("Properties:");
+	top_label->set_text(_TR("Properties:"));
 	top_label->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	top_label->set_begin( Point2( 10,0) );
 	top_label->set_end( Point2( 0,12) );		

@@ -459,37 +459,37 @@ ShaderEditor::ShaderEditor() {
 	edit_menu = memnew( MenuButton );
 	add_child(edit_menu);
 	edit_menu->set_pos(Point2(5,-1));
-	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
-	edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
+	edit_menu->set_text(_TR("Edit"));
+	edit_menu->get_popup()->add_item(_TR("Undo"),EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
+	edit_menu->get_popup()->add_item(_TR("Redo"),EDIT_REDO,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_Z);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
-	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
-	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
+	edit_menu->get_popup()->add_item(_TR("Cut"),EDIT_CUT,KEY_MASK_CMD|KEY_X);
+	edit_menu->get_popup()->add_item(_TR("Copy"),EDIT_COPY,KEY_MASK_CMD|KEY_C);
+	edit_menu->get_popup()->add_item(_TR("Paste"),EDIT_PASTE,KEY_MASK_CMD|KEY_V);
 	edit_menu->get_popup()->add_separator();
-	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+	edit_menu->get_popup()->add_item(_TR("Select All"),EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
 	search_menu = memnew( MenuButton );
 	add_child(search_menu);
 	search_menu->set_pos(Point2(38,-1));
-	search_menu->set_text("Search");
-	search_menu->get_popup()->add_item("Find..",SEARCH_FIND,KEY_MASK_CMD|KEY_F);
-	search_menu->get_popup()->add_item("Find Next",SEARCH_FIND_NEXT,KEY_F3);
-	search_menu->get_popup()->add_item("Replace..",SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
+	search_menu->set_text(_TR("Search"));
+	search_menu->get_popup()->add_item(_TR("Find.."),SEARCH_FIND,KEY_MASK_CMD|KEY_F);
+	search_menu->get_popup()->add_item(_TR("Find Next"),SEARCH_FIND_NEXT,KEY_F3);
+	search_menu->get_popup()->add_item(_TR("Replace.."),SEARCH_REPLACE,KEY_MASK_CMD|KEY_R);
 	search_menu->get_popup()->add_separator();
 //	search_menu->get_popup()->add_item("Locate Symbol..",SEARCH_LOCATE_SYMBOL,KEY_MASK_CMD|KEY_K);
-	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
+	search_menu->get_popup()->add_item(_TR("Goto Line.."),SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	settings_menu = memnew( MenuButton );
 	add_child(settings_menu);
 	settings_menu->set_pos(Point2(90,-1));
-	settings_menu->set_text("Shader");
-	settings_menu->get_popup()->add_check_item("Material Mode",SHADER_MATERIAL_MODE);
+	settings_menu->set_text(_TR("Shader"));
+	settings_menu->get_popup()->add_check_item(_TR("Material Mode"),SHADER_MATERIAL_MODE);
 	settings_menu->get_popup()->set_item_checked(settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE),true);
-	settings_menu->get_popup()->add_check_item("Post Process Mode",SHADER_POST_PROCESS_MODE);
+	settings_menu->get_popup()->add_check_item(_TR("Post Process Mode"),SHADER_POST_PROCESS_MODE);
 
 	settings_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
@@ -508,11 +508,11 @@ ShaderEditor::ShaderEditor() {
 
 	vertex_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(vertex_editor);
-	vertex_editor->set_name("Vertex");
+	vertex_editor->set_name(_TR("Vertex"));
 
 	fragment_editor = memnew( ShaderTextEditor );
 	tab_container->add_child(fragment_editor);
-	fragment_editor->set_name("Fragment");
+	fragment_editor->set_name(_TR("Fragment"));
 
 	tab_container->set_current_tab(1);
 

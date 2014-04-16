@@ -627,12 +627,12 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	mirror_x = memnew( ToolButton );
 	mirror_x->set_toggle_mode(true);
-	mirror_x->set_tooltip("Mirror X (A)");
+	mirror_x->set_tooltip(_TR("Mirror X (A)"));
 	mirror_x->set_focus_mode(FOCUS_NONE);
 	add_child(mirror_x);
 	mirror_y = memnew( ToolButton );
 	mirror_y->set_toggle_mode(true);
-	mirror_y->set_tooltip("Mirror Y (S)");
+	mirror_y->set_tooltip(_TR("Mirror Y (S)"));
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	add_child(mirror_y);
 

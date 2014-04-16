@@ -30,6 +30,7 @@
 
 #include "scene/gui/label.h"
 #include "scene/gui/box_container.h"
+#include "core/translation.h"
 
 
 #include "print_string.h"
@@ -80,7 +81,7 @@ void ReparentDialog::_bind_methods() {
 ReparentDialog::ReparentDialog() {
 	
 
-	set_title("Reparent Node");
+	set_title(_TR("Reparent Node"));
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);
@@ -88,7 +89,7 @@ ReparentDialog::ReparentDialog() {
 	tree = memnew( SceneTreeEditor(false) );
 	
 
-	vbc->add_margin_child("Reparent Location (Select new Parent):",tree,true);
+	vbc->add_margin_child(_TR("Reparent Location (Select new Parent):"),tree,true);
 	
 	//Label *label = memnew( Label );
 	//label->set_pos( Point2( 15,8) );
@@ -103,7 +104,7 @@ ReparentDialog::ReparentDialog() {
 
 	//cancel->connect("pressed", this,"_cancel");
 
-	get_ok()->set_text("Reparent");
+	get_ok()->set_text(_TR("Reparent"));
 }
 
 

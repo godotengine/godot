@@ -32,6 +32,7 @@
 #include "print_string.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
+#include "core/translation.h"
 
 Node *SceneTreeEditor::get_scene_node() {
 
@@ -650,7 +651,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	if (p_label) {
 		Label *label = memnew( Label );
 		label->set_pos( Point2(10, 0));
-		label->set_text("Scene Tree (Nodes):");
+		label->set_text(_TR("Scene Tree (Nodes):"));
 		
 		add_child(label);
 	}
@@ -732,7 +733,7 @@ void SceneTreeDialog::_bind_methods() {
 
 SceneTreeDialog::SceneTreeDialog() {
 
-	set_title("Select a Node");
+	set_title(_TR("Select a Node"));
 
 	tree = memnew( SceneTreeEditor(false,false) );
 	add_child(tree);

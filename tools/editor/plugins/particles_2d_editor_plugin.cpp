@@ -168,9 +168,9 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	sep->hide();
 
 	menu = memnew( MenuButton );
-	menu->get_popup()->add_item("Load Emission Mask",MENU_LOAD_EMISSION_MASK);
-	menu->get_popup()->add_item("Clear Emission Mask",MENU_CLEAR_EMISSION_MASK);
-	menu->set_text("Particles");
+	menu->get_popup()->add_item(_TR("Load Emission Mask"),MENU_LOAD_EMISSION_MASK);
+	menu->get_popup()->add_item(_TR("Clear Emission Mask"),MENU_CLEAR_EMISSION_MASK);
+	menu->set_text(_TR("Particles"));
 
 	file = memnew(FileDialog);
 	add_child(file);
@@ -186,7 +186,7 @@ Particles2DEditorPlugin::Particles2DEditorPlugin(EditorNode *p_node) {
 	epoints->set_max(8192);
 	epoints->set_step(1);
 	epoints->set_val(512);
-	file->get_vbox()->add_margin_child("Generated Point Count:",epoints);
+	file->get_vbox()->add_margin_child(_TR("Generated Point Count:"),epoints);
 	menu->hide();
 
 }

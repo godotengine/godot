@@ -41,6 +41,7 @@
 #include "globals.h"
 #include "editor_node.h"
 #include "main/performance.h"
+#include "core/translation.h"
 
 class ScriptEditorDebuggerVariables : public Object {
 
@@ -468,7 +469,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					if (connection.is_null())
 						break;
 
-					EditorNode::get_log()->add_message("** Debug Process Started **");
+					EditorNode::get_log()->add_message(_TR("** Debug Process Started **"));
 					log_forced_visible=false;
 
 					ppeer->set_stream_peer(connection);
@@ -479,8 +480,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					tabs->set_current_tab(0);
 
 					emit_signal("show_debugger",true);
-					reason->set_text("Child Process Connected");
-					reason->set_tooltip("Child Process Connected");
+					reason->set_text(_TR("Child Process Connected"));
+					reason->set_tooltip(_TR("Child Process Connected"));
 
 				} else {
 
@@ -491,7 +492,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (!connection->is_connected()) {
 				stop();
 				editor->notify_child_process_exited(); //somehow, exited
-				msgdialog->set_text("Process being debugged exited.");
+				msgdialog->set_text(_TR("Process being debugged exited."));
 				msgdialog->popup_centered(Size2(250,100));
 				break;
 			};
@@ -616,7 +617,7 @@ void ScriptEditorDebugger::stop(){
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
 	if (connection.is_valid()) {
-		EditorNode::get_log()->add_message("** Debug Process Stopped **");
+		EditorNode::get_log()->add_message(_TR("** Debug Process Stopped **"));
 		connection.unref();
 	}
 
@@ -737,35 +738,35 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	step = memnew( Button );
 	hbc->add_child(step);
-	step->set_tooltip("Step Into");
+	step->set_tooltip(_TR("Step Into"));
 	step->connect("pressed",this,"debug_step");
 
 	next = memnew( Button );
 	hbc->add_child(next);
-	next->set_tooltip("Step Over");
+	next->set_tooltip(_TR("Step Over"));
 	next->connect("pressed",this,"debug_next");
 
 	hbc->add_child( memnew( VSeparator) );
 
 	dobreak = memnew( Button );
 	hbc->add_child(dobreak);
-	dobreak->set_tooltip("Break");
+	dobreak->set_tooltip(_TR("Break"));
 	dobreak->connect("pressed",this,"debug_break");
 
 	docontinue = memnew( Button );
 	hbc->add_child(docontinue);
-	docontinue->set_tooltip("Continue");
+	docontinue->set_tooltip(_TR("Continue"));
 	docontinue->connect("pressed",this,"debug_continue");
 
 	hbc->add_child( memnew( VSeparator) );
 
 	back = memnew( Button );
 	hbc->add_child(back);
-	back->set_tooltip("Inspect Previous Instance");
+	back->set_tooltip(_TR("Inspect Previous Instance"));
 
 	forward = memnew( Button );
 	hbc->add_child(forward);
-	back->set_tooltip("Inspect Next Instance");
+	back->set_tooltip(_TR("Inspect Next Instance"));
 
 
 	HSplitContainer *sc = memnew( HSplitContainer );
@@ -775,7 +776,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	stack_dump = memnew( Tree );
 	stack_dump->set_columns(1);
 	stack_dump->set_column_titles_visible(true);
-	stack_dump->set_column_title(0,"Stack Frames");
+	stack_dump->set_column_title(0,_TR("Stack Frames"));
 	stack_dump->set_h_size_flags(SIZE_EXPAND_FILL);
 	stack_dump->set_hide_root(true);
 	stack_dump->connect("cell_selected",this,"_stack_dump_frame_selected");
@@ -784,7 +785,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	inspector = memnew( PropertyEditor );
 	inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 	inspector->hide_top_label();
-	inspector->get_tree()->set_column_title(0,"Variable");
+	inspector->get_tree()->set_column_title(0,_TR("Variable"));
 	inspector->set_capitalize_paths(false);
 	inspector->set_read_only(true);
 	sc->add_child(inspector);
@@ -808,8 +809,8 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	perf_monitors = memnew(Tree);
 	perf_monitors->set_columns(2);
-	perf_monitors->set_column_title(0,"Monitor");
-	perf_monitors->set_column_title(1,"Value");
+	perf_monitors->set_column_title(0,_TR("Monitor"));
+	perf_monitors->set_column_title(1,_TR("Value"));
 	perf_monitors->set_column_titles_visible(true);
 	hsp->add_child(perf_monitors);
 	perf_monitors->set_select_mode(Tree::SELECT_MULTI);
@@ -817,7 +818,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	perf_draw = memnew( Control );
 	perf_draw->connect("draw",this,"_performance_draw");
 	hsp->add_child(perf_draw);
-	hsp->set_name("Performance");
+	hsp->set_name(_TR("Performance"));
 	hsp->set_split_offset(300);
 	tabs->add_child(hsp);
 	perf_max.resize(Performance::MONITOR_MAX);
@@ -848,22 +849,22 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	}
 
 	info = memnew( HSplitContainer );
-	info->set_name("Info");
+	info->set_name(_TR("Info"));
 	tabs->add_child(info);
 
 	VBoxContainer *info_left = memnew( VBoxContainer );
 	info_left->set_h_size_flags(SIZE_EXPAND_FILL);
 	info->add_child(info_left);
 	clicked_ctrl = memnew( LineEdit );
-	info_left->add_margin_child("Clicked Control:",clicked_ctrl);
+	info_left->add_margin_child(_TR("Clicked Control:"),clicked_ctrl);
 	clicked_ctrl_type = memnew( LineEdit );
-	info_left->add_margin_child("Clicked Control Type:",clicked_ctrl_type);
+	info_left->add_margin_child(_TR("Clicked Control Type:"),clicked_ctrl_type);
 	VBoxContainer *info_right = memnew(VBoxContainer);
 	info_right->set_h_size_flags(SIZE_EXPAND_FILL);
 	info->add_child(info_right);
 	HBoxContainer *inforhb = memnew( HBoxContainer );
 	info_right->add_child(inforhb);
-	Label *l2 = memnew( Label("Scene Tree:" ) );
+	Label *l2 = memnew( Label(_TR("Scene Tree:") ) );
 	l2->set_h_size_flags(SIZE_EXPAND_FILL);
 	inforhb->add_child( l2 );
 	Button *refresh = memnew( Button );

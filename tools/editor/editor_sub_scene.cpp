@@ -29,6 +29,7 @@
 #include "editor_sub_scene.h"
 #include "scene/gui/margin_container.h"
 #include "scene/resources/packed_scene.h"
+#include "core/translation.h"
 void EditorSubScene::_path_selected(const String& p_path) {
 
 
@@ -196,7 +197,7 @@ void EditorSubScene::_bind_methods() {
 
 EditorSubScene::EditorSubScene() {
 
-	set_title("Select Sub-Scene..");
+	set_title(_TR("Select Sub-Scene.."));
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
 	set_child_rect(vb);
@@ -210,10 +211,10 @@ EditorSubScene::EditorSubScene() {
 	b->set_text(" .. ");
 	hb->add_child(b);
 	b->connect("pressed",this,"_path_browse");
-	vb->add_margin_child("Scene Path:",hb);
+	vb->add_margin_child(_TR("Scene Path:"),hb);
 	tree = memnew( Tree );
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
-	vb->add_margin_child("Import From Node:",tree)->set_v_size_flags(SIZE_EXPAND_FILL);
+	vb->add_margin_child(_TR("Import From Node:"),tree)->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	file_dialog = memnew( FileDialog );
 	List<String> extensions;

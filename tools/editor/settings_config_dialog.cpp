@@ -31,6 +31,7 @@
 #include "scene/gui/margin_container.h"
 #include "globals.h"
 #include "editor_file_system.h"
+#include "core/translation.h"
 void EditorSettingsDialog::ok_pressed() {
 
 	if (!EditorSettings::get_singleton())
@@ -170,14 +171,14 @@ void EditorSettingsDialog::_plugin_settings(Object *p_obj,int p_cell,int p_index
 	plugin_setting_edit = ti->get_metadata(0);
 	if (plugin.installs) {
 		if (Globals::get_singleton()->has("plugins/"+plugin_setting_edit))
-			plugin_setting->get_ok()->set_text("Re-Install to Project");
+			plugin_setting->get_ok()->set_text(_TR("Re-Install to Project"));
 		else
-			plugin_setting->get_ok()->set_text("Install to Project");
+			plugin_setting->get_ok()->set_text(_TR("Install to Project"));
 		plugin_setting->get_ok()->show();
-		plugin_setting->get_cancel()->set_text("Close");
+		plugin_setting->get_cancel()->set_text(_TR("Close"));
 	} else {
 		plugin_setting->get_ok()->hide();
-		plugin_setting->get_cancel()->set_text("Close");
+		plugin_setting->get_cancel()->set_text(_TR("Close"));
 	}
 
 	plugin_setting->set_title(plugin.name);
@@ -195,13 +196,13 @@ void EditorSettingsDialog::_update_plugins() {
 
 	Color sc = get_color("prop_subsection","Editor");
 	TreeItem *editor = plugins->create_item(root);
-	editor->set_text(0,"Editor Plugins");
+	editor->set_text(0,_TR("Editor Plugins"));
 	editor->set_custom_bg_color(0,sc);
 	editor->set_custom_bg_color(1,sc);
 	editor->set_custom_bg_color(2,sc);
 
 	TreeItem *install = plugins->create_item(root);
-	install->set_text(0,"Installable Plugins");
+	install->set_text(0,_TR("Installable Plugins"));
 	install->set_custom_bg_color(0,sc);
 	install->set_custom_bg_color(1,sc);
 	install->set_custom_bg_color(2,sc);
@@ -221,7 +222,7 @@ void EditorSettingsDialog::_update_plugins() {
 
 			if (Globals::get_singleton()->has("plugins/"+E->key())) {
 
-				ti->set_text(0,E->get().name+" (Installed)");
+				ti->set_text(0,E->get().name+_TR(" (Installed)"));
 			} else {
 				ti->set_text(0,E->get().name);
 			}
@@ -265,7 +266,7 @@ void EditorSettingsDialog::_bind_methods() {
 
 EditorSettingsDialog::EditorSettingsDialog() {
 
-	set_title("Editor Settings");
+	set_title(_TR("Editor Settings"));
 
 	tabs = memnew( TabContainer );
 	add_child(tabs);
@@ -274,18 +275,18 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	property_editor = memnew( PropertyEditor );
 	property_editor->hide_top_label();
 	tabs->add_child(property_editor);
-	property_editor->set_name("General");
+	property_editor->set_name(_TR("General"));
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	tabs->add_child(vbc);
-	vbc->set_name("Plugins");
+	vbc->set_name(_TR("Plugins"));
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	vbc->add_child(hbc);
-	hbc->add_child( memnew( Label("Plugin List: ")));
+	hbc->add_child( memnew( Label(_TR("Plugin List: "))));
 	hbc->add_spacer();
 	Button *load = memnew( Button );
-	load->set_text("Load..");
+	load->set_text(_TR("Load.."));
 	Button *rescan = memnew( Button );
 	rescan_plugins=rescan;
 	rescan_plugins->connect("pressed",this,"_rescan_plugins");
@@ -297,9 +298,9 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	mc->add_child(plugins);
 	mc->set_v_size_flags(SIZE_EXPAND_FILL);
 	plugins->set_columns(3);
-	plugins->set_column_title(0,"Name");
-	plugins->set_column_title(1,"Author");
-	plugins->set_column_title(2,"Version");
+	plugins->set_column_title(0,_TR("Name"));
+	plugins->set_column_title(1,_TR("Author"));
+	plugins->set_column_title(2,_TR("Version"));
 	plugins->set_column_expand(2,false);
 	plugins->set_column_min_width(2,100);
 	plugins->set_column_titles_visible(true);
@@ -325,7 +326,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	timer->set_one_shot(true);
 	add_child(timer);
 	EditorSettings::get_singleton()->connect("settings_changed",this,"_settings_changed");
-	get_ok()->set_text("Close");
+	get_ok()->set_text(_TR("Close"));
 	install_confirm = memnew( ConfirmationDialog );
 	add_child(install_confirm);
 

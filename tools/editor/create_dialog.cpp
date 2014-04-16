@@ -32,6 +32,7 @@
 #include "print_string.h"
 #include "scene/gui/box_container.h"
 #include "editor_node.h"
+#include "core/translation.h"
 
 #if 1
 
@@ -245,7 +246,7 @@ void CreateDialog::_notification(int p_what) {
 void CreateDialog::set_base_type(const String& p_base) {
 
 	base_type=p_base;
-	set_title("Create New "+p_base);
+	set_title(_TR("Create New ")+p_base);
 	_update_search();
 }
 
@@ -284,12 +285,12 @@ CreateDialog::CreateDialog() {
 	add_child(vbc);
 	set_child_rect(vbc);
 	search_box = memnew( LineEdit );
-	vbc->add_margin_child("Search:",search_box);
+	vbc->add_margin_child(_TR("Search:"),search_box);
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Open");
+	vbc->add_margin_child(_TR("Matches:"),search_options,true);
+	get_ok()->set_text(_TR("Open"));
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

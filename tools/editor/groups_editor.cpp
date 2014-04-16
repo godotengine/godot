@@ -30,6 +30,7 @@
 #include "scene/gui/box_container.h"
 
 #include "scene/gui/label.h"
+#include "core/translation.h"
 
 
 #include "print_string.h"
@@ -118,11 +119,11 @@ void GroupsEditor::_bind_methods() {
 
 GroupsEditor::GroupsEditor() {
 
-	set_title("Group Editor");
+	set_title(_TR("Group Editor"));
 	
 	Label * label = memnew( Label );
 	label->set_pos( Point2( 8,11) );
-	label->set_text("Groups:");
+	label->set_text(_TR("Groups:"));
 	
 	add_child(label);	
 	
@@ -146,7 +147,7 @@ GroupsEditor::GroupsEditor() {
 	add->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	add->set_begin( Point2( 90, 28 ) );
 	add->set_end( Point2( 15, 48 ) );	
-	add->set_text("Add");
+	add->set_text(_TR("Add"));
 	
 	add_child(add);
 	
@@ -155,11 +156,11 @@ GroupsEditor::GroupsEditor() {
 	remove->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	remove->set_begin( Point2( 90, 52 ) );
 	remove->set_end( Point2( 15, 72 ) );	
-	remove->set_text("Remove");
+	remove->set_text(_TR("Remove"));
 	
 	add_child(remove);
 
-	get_ok()->set_text("Close");
+	get_ok()->set_text(_TR("Close"));
 			
 	add->connect("pressed", this,"_add");
 	remove->connect("pressed", this,"_remove");	

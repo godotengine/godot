@@ -33,6 +33,7 @@
 #include "editor_icons.h"
 #include "scene/gui/label.h"
 #include "globals.h"
+#include "core/translation.h"
 
 
 void Console::_stats_update_timer_callback() {
@@ -232,19 +233,19 @@ Console::Console() {
 	tabs->set_area_as_parent_rect();
 
 	output = memnew( OutputStrings );
-	output->set_name("Output");
+	output->set_name(_TR("Output"));
 	tabs->add_child(output);
 	errors = memnew( OutputStrings );
-	errors->set_name("Errors");
+	errors->set_name(_TR("Errors"));
 	tabs->add_child(errors);
 	status = memnew( Control );
-	status->set_name("Stats");
+	status->set_name(_TR("Stats"));
 	tabs->add_child(status);
 	inspect  = memnew( Control );
-	inspect->set_name("Inspect");
+	inspect->set_name(_TR("Inspect"));
 	tabs->add_child(inspect);
 	globals = memnew( Control );
-	globals->set_name("Globals");
+	globals->set_name(_TR("Globals"));
 	tabs->add_child(globals);
 
 	// stats
@@ -260,7 +261,7 @@ Console::Console() {
 	stats_tree->set_end( Point2( 0.5,5 ) );
 
 	Label *stats_label = memnew( Label );
-	stats_label->set_text("Engine Statistics:");
+	stats_label->set_text(_TR("Engine Statistics:"));
 	stats_label->set_pos( Point2( 5,5 ) );
 	status->add_child(stats_label);
 
@@ -269,34 +270,34 @@ Console::Console() {
 	{
 		//system items
 		TreeItem *system_item = stats_tree->create_item(stats_tree_root);
-		system_item->set_text(0,"System");
+		system_item->set_text(0,_TR("System"));
 
 		stats.usage_static_memory_total = stats_tree->create_item(system_item);
-		stats.usage_static_memory_total->set_text(0,"Total Static Mem");;
+		stats.usage_static_memory_total->set_text(0,_TR("Total Static Mem"));;
 		stats.usage_static_memory = stats_tree->create_item(system_item);
-		stats.usage_static_memory->set_text(0,"Static Mem Usage");;
+		stats.usage_static_memory->set_text(0,_TR("Static Mem Usage"));;
 		stats.usage_dynamic_memory_total = stats_tree->create_item(system_item);
-		stats.usage_dynamic_memory_total->set_text(0,"Total Dynamic Mem");;
+		stats.usage_dynamic_memory_total->set_text(0,_TR("Total Dynamic Mem"));;
 		stats.usage_dynamic_memory = stats_tree->create_item(system_item);
-		stats.usage_dynamic_memory->set_text(0,"Dynamic Mem Usage");
+		stats.usage_dynamic_memory->set_text(0,_TR("Dynamic Mem Usage"));
 		stats.usage_objects_instanced = stats_tree->create_item(system_item);
-		stats.usage_objects_instanced->set_text(0,"Instanced Objects");
+		stats.usage_objects_instanced->set_text(0,_TR("Instanced Objects"));
 
 		//render items
 		TreeItem *render_item = stats_tree->create_item(stats_tree_root);
-		render_item->set_text(0,"Render");
+		render_item->set_text(0,_TR("Render"));
 		stats.render_objects_in_frame = stats_tree->create_item(render_item);
-		stats.render_objects_in_frame->set_text(0,"Visible Objects");
+		stats.render_objects_in_frame->set_text(0,_TR("Visible Objects"));
 		stats.material_changes_in_frame = stats_tree->create_item(render_item);
-		stats.material_changes_in_frame->set_text(0,"Material Changes");
+		stats.material_changes_in_frame->set_text(0,_TR("Material Changes"));
 		stats.usage_video_mem_total = stats_tree->create_item(render_item);
-		stats.usage_video_mem_total->set_text(0,"Total Video Mem");
+		stats.usage_video_mem_total->set_text(0,_TR("Total Video Mem"));
 		stats.usage_texture_mem_used = stats_tree->create_item(render_item);
-		stats.usage_texture_mem_used->set_text(0,"Texture Mem Usage");
+		stats.usage_texture_mem_used->set_text(0,_TR("Texture Mem Usage"));
 		stats.usage_vertex_mem_used = stats_tree->create_item(render_item);
-		stats.usage_vertex_mem_used->set_text(0,"Vertex Mem Usage");
+		stats.usage_vertex_mem_used->set_text(0,_TR("Vertex Mem Usage"));
 		stats.usage_video_mem_used = stats_tree->create_item(render_item);
-		stats.usage_video_mem_used->set_text(0,"Combined Mem Usage");
+		stats.usage_video_mem_used->set_text(0,_TR("Combined Mem Usage"));
 	}
 
 	{
@@ -325,7 +326,7 @@ Console::Console() {
 		globals_property_editor->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 		globals_property_editor->set_begin( Point2( 15, 5 ) );
 		globals_property_editor->set_end( Point2( 5, 5 ) );
-		globals_property_editor->get_top_label()->set_text("Globals Editor:");
+		globals_property_editor->get_top_label()->set_text(_TR("Globals Editor:"));
 		globals->add_child(globals_property_editor);
 
 	}

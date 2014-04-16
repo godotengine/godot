@@ -40,6 +40,7 @@
 #include "io/resource_saver.h"
 #include "io/md5.h"
 #include "io_plugins/editor_texture_import_plugin.h"
+#include "core/translation.h"
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
@@ -725,7 +726,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 			Error err = plugin->import2(dst_file,imd,get_image_compression(),true);
 			if (err) {
 
-				EditorNode::add_io_error("Error saving atlas! "+dst_file.get_file());
+				EditorNode::add_io_error(_TR("Error saving atlas! ")+dst_file.get_file());
 				return ERR_CANT_CREATE;
 			}
 
@@ -775,7 +776,7 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 				String path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpatlas.atex";
 				Error err = ResourceSaver::save(path,atex);
 				if (err!=OK) {
-					EditorNode::add_io_error("Could not save atlas subtexture: "+path);
+					EditorNode::add_io_error(_TR("Could not save atlas subtexture: ")+path);
 					return ERR_CANT_CREATE;
 				}
 				Vector<uint8_t> data = FileAccess::get_file_as_array(path);
@@ -919,7 +920,7 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 		MD5Final(&ctx);
 		pd->f->store_buffer(ctx.digest,16);
 	}
-	pd->ep->step("Storing File: "+p_path,2+p_file*100/p_total);
+	pd->ep->step(_TR("Storing File: ")+p_path,2+p_file*100/p_total);
 	pd->count++;
 	pd->ftmp->store_buffer(p_data.ptr(),p_data.size());
 	return OK;
@@ -928,7 +929,7 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 
 Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 
-	EditorProgress ep("savepack","Packing",102);
+	EditorProgress ep("savepack",_TR("Packing"),102);
 
 	String tmppath = EditorSettings::get_singleton()->get_settings_path()+"/tmp/packtmp";
 	FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
@@ -998,13 +999,13 @@ Error EditorExportPlatformPC::export_project(const String& p_path,bool p_debug,c
 
 
 
-	EditorProgress ep("export","Exporting for "+get_name(),102);
+	EditorProgress ep("export",_TR("Exporting for ")+get_name(),102);
 
 	const int BUFSIZE = 32768;
 
 
 
-	ep.step("Setting Up..",0);
+	ep.step(_TR("Setting Up.."),0);
 
 	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 	if (use64) {
@@ -1024,14 +1025,14 @@ Error EditorExportPlatformPC::export_project(const String& p_path,bool p_debug,c
 	FileAccess *src_exe=FileAccess::open(exe_path,FileAccess::READ);
 	if (!src_exe) {
 
-		EditorNode::add_io_error("Couldn't read source executable at:\n "+exe_path);
+		EditorNode::add_io_error(_TR("Couldn't read source executable at:\n ")+exe_path);
 		return ERR_FILE_CANT_READ;
 	}
 
 	FileAccess *dst=FileAccess::open(p_path,FileAccess::WRITE);
 	if (!dst) {
 
-		EditorNode::add_io_error("Can't copy executable file to:\n "+p_path);
+		EditorNode::add_io_error(_TR("Can't copy executable file to:\n ")+p_path);
 		return ERR_FILE_CANT_READ;
 	}
 
@@ -1060,7 +1061,7 @@ Error EditorExportPlatformPC::export_project(const String& p_path,bool p_debug,c
 		dst=FileAccess::open(dstfile,FileAccess::WRITE);
 		if (!dst) {
 
-			EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
+			EditorNode::add_io_error(_TR("Can't write data pack to:\n ")+p_path);
 			return ERR_FILE_CANT_READ;
 		}
 	}
@@ -1086,22 +1087,22 @@ bool EditorExportPlatformPC::can_export(String *r_error) const {
 
 	if (!FileAccess::exists(exe_path+debug_binary32) || !FileAccess::exists(exe_path+release_binary32)) {
 		valid=false;
-		err="No 32 bits export templates found.\nDownload and install export templates.\n";
+		err=_TR("No 32 bits export templates found.\nDownload and install export templates.\n");
 	}
 	if (!FileAccess::exists(exe_path+debug_binary64) || !FileAccess::exists(exe_path+release_binary64)) {
 		valid=false;
-		err="No 64 bits export templates found.\nDownload and install export templates.\n";
+		err=_TR("No 64 bits export templates found.\nDownload and install export templates.\n");
 	}
 
 
 	if (custom_debug_binary!="" && !FileAccess::exists(custom_debug_binary)) {
 		valid=false;
-		err+="Custom debug binary not found.\n";
+		err+=_TR("Custom debug binary not found.\n");
 	}
 
 	if (custom_release_binary!="" && !FileAccess::exists(custom_release_binary)) {
 		valid=false;
-		err+="Custom release binary not found.\n";
+		err+=_TR("Custom release binary not found.\n");
 	}
 
 	if (r_error)

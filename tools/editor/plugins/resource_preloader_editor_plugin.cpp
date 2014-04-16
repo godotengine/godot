@@ -31,6 +31,7 @@
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
 #include "scene/resources/scene_preloader.h"
+#include "core/translation.h"
 
 
 
@@ -68,10 +69,10 @@ void ResourcePreloaderEditor::_file_load_request(const String& p_path) {
 	resource = ResourceLoader::load(p_path);
 
 	if (resource.is_null()) {
-		dialog->set_text("ERROR: Couldn't load resource!");
-		dialog->set_title("Error!");
+		dialog->set_text(_TR("ERROR: Couldn't load resource!"));
+		dialog->set_title(_TR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
+		dialog->get_ok()->set_text(_TR("Close"));
 		dialog->popup_centered(Size2(300,60));
 		return; ///beh should show an error i guess
 	}
@@ -163,10 +164,10 @@ void ResourcePreloaderEditor::_paste_pressed() {
 
 	RES r=EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
-		dialog->set_text("Resource clipboard is empty!");
-		dialog->set_title("Error!");
+		dialog->set_text(_TR("Resource clipboard is empty!"));
+		dialog->set_title(_TR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
+		dialog->get_ok()->set_text(_TR("Close"));
 		dialog->popup_centered(Size2(300,60));
 		return; ///beh should show an error i guess
 	}
@@ -298,7 +299,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew( Button );
-	load->set_tooltip("Load Resource");
+	load->set_tooltip(_TR("Load Resource"));
 	hbc->add_child(load);
 
 
@@ -307,7 +308,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	hbc->add_child(_delete);
 
 	paste = memnew( Button );
-	paste->set_text("Paste");
+	paste->set_text(_TR("Paste"));
 	hbc->add_child(paste);
 
 	file = memnew( FileDialog );

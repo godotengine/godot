@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "editor_dir_dialog.h"
 #include "os/os.h"
+#include "core/translation.h"
 
 void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
@@ -186,31 +187,31 @@ void EditorDirDialog::_bind_methods() {
 
 EditorDirDialog::EditorDirDialog() {
 
-	set_title("Choose a Directory");
+	set_title(_TR("Choose a Directory"));
 	tree = memnew( Tree );
 	add_child(tree);
 	set_child_rect(tree);
 	updating=false;
-	get_ok()->set_text("Choose");
+	get_ok()->set_text(_TR("Choose"));
 	set_hide_on_ok(false);
 
 
 
-	makedir = add_button("Create Folder",OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
+	makedir = add_button(_TR("Create Folder"),OS::get_singleton()->get_swap_ok_cancel()?true:false,"makedir");
 	makedir->connect("pressed",this,"_make_dir");
 
 	makedialog = memnew( ConfirmationDialog );
-	makedialog->set_title("Create Folder");
+	makedialog->set_title(_TR("Create Folder"));
 	VBoxContainer *makevb= memnew( VBoxContainer );
 	makedialog->add_child(makevb);
 	makedialog->set_child_rect(makevb);
 	makedirname = memnew( LineEdit );
-	makevb->add_margin_child("Name:",makedirname);
+	makevb->add_margin_child(_TR("Name:"),makedirname);
 	add_child(makedialog);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed",this,"_make_dir_confirm");
 	mkdirerr = memnew( AcceptDialog );
-	mkdirerr->set_text("Could not create folder.");
+	mkdirerr->set_text(_TR("Could not create folder."));
 	add_child(mkdirerr);
 
 }

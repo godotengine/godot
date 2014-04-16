@@ -67,7 +67,7 @@ class NewProjectDialog : public ConfirmationDialog {
 		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		if (d->change_dir(project_path->get_text())!=OK) {
-			error->set_text("Invalid Path for Project, Path Must Exist!");
+			error->set_text(_TR("Invalid Path for Project, Path Must Exist!"));
 			memdelete(d);
 			return false;
 		}
@@ -76,7 +76,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 			if (d->file_exists("engine.cfg")) {
 
-				error->set_text("Invalid Project Path (engine.cfg must not exist).");
+				error->set_text(_TR("Invalid Project Path (engine.cfg must not exist)."));
 				memdelete(d);
 				return false;
 			}
@@ -85,7 +85,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 			if (!d->file_exists("engine.cfg")) {
 
-				error->set_text("Invalid Project Path (engine.cfg must exist).");
+				error->set_text(_TR("Invalid Project Path (engine.cfg must exist)."));
 				memdelete(d);
 				return false;
 			}
@@ -110,7 +110,7 @@ class NewProjectDialog : public ConfirmationDialog {
 				sp=sp.substr(lidx+1,sp.length());
 			}
 			if (sp=="")
-				sp="Imported Project";
+				sp=_TR("Imported Project");
 
 			project_name->set_text(sp);
 		}
@@ -172,7 +172,7 @@ class NewProjectDialog : public ConfirmationDialog {
 			DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 
 			if (d->change_dir(project_path->get_text())!=OK) {
-				error->set_text("Invalid Path for Project (changed anything?)");
+				error->set_text(_TR("Invalid Path for Project (changed anything?)"));
 				memdelete(d);
 				return;
 			}
@@ -182,7 +182,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 			FileAccess *f = FileAccess::open(dir.plus_file("/engine.cfg"),FileAccess::WRITE);
 			if (!f) {
-				error->set_text("Couldn't create engine.cfg in project path");
+				error->set_text(_TR("Couldn't create engine.cfg in project path"));
 			} else {
 
 				f->store_line("; Engine configuration file.");
@@ -247,18 +247,18 @@ public:
 		project_name->clear();
 
 		if (import_mode) {
-			set_title("Import Existing Project:");
-			pp->set_text("Project Path: (Must exist)");
-			pn->set_text("Project Name:");
+			set_title(_TR("Import Existing Project:"));
+			pp->set_text(_TR("Project Path: (Must exist)"));
+			pn->set_text(_TR("Project Name:"));
 			pn->hide();
 			project_name->hide();
 
 			popup_centered(Size2(500,125));
 
 		} else {
-			set_title("Create New Project:");
-			pp->set_text("Project Path:");
-			pn->set_text("Project Name:");
+			set_title(_TR("Create New Project:"));
+			pp->set_text(_TR("Project Path:"));
+			pn->set_text(_TR("Project Name:"));
 			pn->show();
 			project_name->show();
 
@@ -278,7 +278,7 @@ public:
 		set_child_rect(vb);
 
 		Label* l = memnew(Label);
-		l->set_text("Project Path:");
+		l->set_text(_TR("Project Path:"));
 		vb->add_child(l);
 		pp=l;
 
@@ -292,11 +292,11 @@ public:
 
 		Button* browse = memnew( Button );
 		pphb->add_child(browse);
-		browse->set_text("Browse");
+		browse->set_text(_TR("Browse"));
 		browse->connect("pressed", this,"_browse_path");
 
 		l = memnew(Label);
-		l->set_text("Project Name:");
+		l->set_text(_TR("Project Name:"));
 		l->set_pos(Point2(5,50));
 		vb->add_child(l);
 		pn=l;
@@ -305,17 +305,17 @@ public:
 		mc = memnew( MarginContainer );
 		vb->add_child(mc);
 		mc->add_child(project_name);
-		project_name->set_text("New Game Project");
+		project_name->set_text(_TR("New Game Project"));
 
 
 		l = memnew(Label);
-		l->set_text("That's a BINGO!");
+		l->set_text(_TR("That's a BINGO!"));
 		vb->add_child(l);
 		error=l;
 		l->add_color_override("font_color",Color(1,0.4,0.3,0.8));
 		l->set_align(Label::ALIGN_CENTER);
 
-		get_ok()->set_text("Create");
+		get_ok()->set_text(_TR("Create"));
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		project_path->set_text(d->get_current_dir());
 		memdelete(d);
@@ -394,7 +394,7 @@ void ProjectManager::_load_recent_projects() {
 		ERR_CONTINUE(err!=OK);
 
 		Ref<Texture> icon;
-		String project_name="Unnamed Project";
+		String project_name=_TR("Unnamed Project");
 
 
 		if (cf->has_section_key("application","icon")) {
@@ -605,7 +605,7 @@ void ProjectManager::_erase_project()  {
 		return;
 
 
-	erase_ask->set_text("Erase project from list?? (Folder contents will not be modified)");
+	erase_ask->set_text(_TR("Erase project from list?? (Folder contents will not be modified)"));
 	erase_ask->popup_centered(Size2(300,100));
 
 }

@@ -39,18 +39,18 @@ String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	if (p_idx<c->get_point_count()) {
 
-		return "Curve Point #"+itos(p_idx);
+		return _TR("Curve Point #")+itos(p_idx);
 	}
 
 	p_idx=p_idx-c->get_point_count()+1;
 
 	int idx=p_idx/2;
 	int t=p_idx%2;
-	String n = "Curve Point #"+itos(idx);
+	String n = _TR("Curve Point #")+itos(idx);
 	if (t==0)
-		n+=" In";
+		n+=_TR(" In");
 	else
-		n+=" Out";
+		n+=_TR(" Out");
 
 	return n;
 
@@ -548,27 +548,27 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->hide();
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
-	curve_edit->set_tooltip("Select Points\nShift+Drag: Select Control Points\n"+keycode_get_string(KEY_MASK_CMD)+"Click: Add Point\nRight Click: Delete Point.");
+	curve_edit->set_tooltip(_TR("Select Points\nShift+Drag: Select Control Points\n")+keycode_get_string(KEY_MASK_CMD)+_TR("Click: Add Point\nRight Click: Delete Point."));
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(curve_edit);
 	curve_create = memnew( ToolButton );
 	curve_create->set_icon(SpatialEditor::get_singleton()->get_icon("CurveCreate","EditorIcons"));
 	curve_create->set_toggle_mode(true);
 	curve_create->hide();
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
-	curve_create->set_tooltip("Add Point (in empty space)\nSplit Segment (in curve).");
+	curve_create->set_tooltip(_TR("Add Point (in empty space)\nSplit Segment (in curve)."));
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(curve_create);
 	curve_del = memnew( ToolButton );
 	curve_del->set_icon(SpatialEditor::get_singleton()->get_icon("CurveDelete","EditorIcons"));
 	curve_del->set_toggle_mode(true);
 	curve_del->hide();
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
-	curve_del->set_tooltip("Delete Point.");
+	curve_del->set_tooltip(_TR("Delete Point."));
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(curve_del);
     curve_close = memnew( ToolButton );
 	curve_close->set_icon(SpatialEditor::get_singleton()->get_icon("CurveClose","EditorIcons"));
 	curve_close->hide();
     curve_close->set_focus_mode(Control::FOCUS_NONE);
-    curve_close->set_tooltip("Close Curve");
+    curve_close->set_tooltip(_TR("Close Curve"));
     SpatialEditor::get_singleton()->add_control_to_menu_panel(curve_close);
 
 

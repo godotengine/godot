@@ -272,7 +272,7 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 
 	editor=p_editor;
 
-	get_ok()->set_text("Close");
+	get_ok()->set_text(_TR("Close"));
 
 	tree = memnew( Tree );
 	add_child(tree);
@@ -290,7 +290,7 @@ ImportSettingsDialog::ImportSettingsDialog(EditorNode *p_editor) {
 	tree->connect("button_pressed",this,"_button_pressed");
 
 //	add_button("Re-Import","reimport");
-	get_ok()->set_text("Re-Import");
+	get_ok()->set_text(_TR("Re-Import"));
 	get_cancel()->set_text("Close");
 
 	updating=false;

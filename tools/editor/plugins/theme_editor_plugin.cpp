@@ -29,6 +29,7 @@
 #include "version.h"
 #include "theme_editor_plugin.h"
 #include "os/file_access.h"
+#include "core/translation.h"
 
 void ThemeEditor::edit(const Ref<Theme>& p_theme) {
 
@@ -425,16 +426,16 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	if (p_option==POPUP_ADD) {//add
 
-		add_del_dialog->set_title("Add Item");
-		add_del_dialog->get_ok()->set_text("Add");
+		add_del_dialog->set_title(_TR("Add Item"));
+		add_del_dialog->get_ok()->set_text(_TR("Add"));
 		add_del_dialog->popup_centered(Size2(490,85));
 
 		base_theme=Theme::get_default();
 
 	} else if (p_option==POPUP_CLASS_ADD) {//add
 
-		add_del_dialog->set_title("Add All Items");
-		add_del_dialog->get_ok()->set_text("Add All");
+		add_del_dialog->set_title(_TR("Add All Items"));
+		add_del_dialog->get_ok()->set_text(_TR("Add All"));
 		add_del_dialog->popup_centered(Size2(240,85));
 
 		base_theme=Theme::get_default();
@@ -447,8 +448,8 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	} else if (p_option==POPUP_REMOVE) {
 
-		add_del_dialog->set_title("Remove Item");
-		add_del_dialog->get_ok()->set_text("Remove");
+		add_del_dialog->set_title(_TR("Remove Item"));
+		add_del_dialog->get_ok()->set_text(_TR("Remove"));
 		add_del_dialog->popup_centered(Size2(490,85));
 
 		base_theme=theme;
@@ -534,12 +535,12 @@ ThemeEditor::ThemeEditor() {
 
 
 	theme_menu = memnew( MenuButton );
-	theme_menu->set_text("Theme");
-	theme_menu->get_popup()->add_item("Add Item",POPUP_ADD);
-	theme_menu->get_popup()->add_item("Add Class Items",POPUP_CLASS_ADD);
-	theme_menu->get_popup()->add_item("Remove Item",POPUP_REMOVE);
+	theme_menu->set_text(_TR("Theme"));
+	theme_menu->get_popup()->add_item(_TR("Add Item"),POPUP_ADD);
+	theme_menu->get_popup()->add_item(_TR("Add Class Items"),POPUP_CLASS_ADD);
+	theme_menu->get_popup()->add_item(_TR("Remove Item"),POPUP_REMOVE);
 	theme_menu->get_popup()->add_separator();
-	theme_menu->get_popup()->add_item("Create Template",POPUP_CREATE_TEMPLATE);
+	theme_menu->get_popup()->add_item(_TR("Create Template"),POPUP_CREATE_TEMPLATE);
 	hb_menu->add_child(theme_menu);
 	theme_menu->get_popup()->connect("item_pressed", this,"_theme_menu_cbk");
 
@@ -785,7 +786,7 @@ ThemeEditor::ThemeEditor() {
 
 
 	file_dialog = memnew( FileDialog );
-	file_dialog->add_filter("*.theme ; Theme File");
+	file_dialog->add_filter(_TR("*.theme ; Theme File"));
 	add_child(file_dialog);
 	file_dialog->connect("file_selected",this,"_save_template_cbk");
 

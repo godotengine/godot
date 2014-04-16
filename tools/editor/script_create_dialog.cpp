@@ -33,6 +33,8 @@
 #include "os/file_access.h"
 #include "editor_file_system.h"
 
+#include "core/translation.h"
+
 void ScriptCreateDialog::config(const String& p_base_name,const String&p_base_path) {
 
 	class_name->set_text("");
@@ -74,22 +76,22 @@ bool ScriptCreateDialog::_validate(const String& p_string) {
 void ScriptCreateDialog::_class_name_changed(const String& p_name) {
 
 	if (!_validate(parent_name->get_text())) {
-		error_label->set_text("INVALID PARENT CLASS NAME");
+		error_label->set_text(_TR("INVALID PARENT CLASS NAME"));
 		error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 	} else if (class_name->is_editable()) {
 		if (class_name->get_text()=="") {
-		error_label->set_text("Valid Chars: a-z A-Z 0-9 _");
+		error_label->set_text(_TR("Valid Chars: a-z A-Z 0-9 _"));
 		error_label->add_color_override("font_color",Color(1,1,1,0.6));
 		} else if (!_validate(class_name->get_text())) {
-			error_label->set_text("INVALID CLASS NAME");
+			error_label->set_text(_TR("INVALID CLASS NAME"));
 			error_label->add_color_override("font_color",Color(1,0.2,0.2,0.8));
 		} else {
-			error_label->set_text("Name is Valid");
+			error_label->set_text(_TR("Name is Valid"));
 			error_label->add_color_override("font_color",Color(0,1.0,0.8,0.8));
 		}
 	} else {
 
-		error_label->set_text("N/A");
+		error_label->set_text(_TR("N/A"));
 		error_label->add_color_override("font_color",Color(0,1.0,0.8,0.8));
 	}
 }
@@ -98,12 +100,12 @@ void ScriptCreateDialog::ok_pressed() {
 
 	if (class_name->is_editable() && !_validate(class_name->get_text())) {
 
-		alert->set_text("Class Name is Invalid!");
+		alert->set_text(_TR("Class Name is Invalid!"));
 		alert->popup_centered(Size2(200,60));
 		return;
 	}
 	if (!_validate(parent_name->get_text())) {
-		alert->set_text("Parent Class Name is Invalid!");
+		alert->set_text(_TR("Parent Class Name is Invalid!"));
 		alert->popup_centered(Size2(200,60));
 
 		return;
@@ -133,7 +135,7 @@ void ScriptCreateDialog::ok_pressed() {
 		script->set_path(lpath);
 		if (!path_valid) {
 
-			alert->set_text("Path is Invalid!");
+			alert->set_text(_TR("Path is Invalid!"));
 			alert->popup_centered(Size2(200,60));
 			return;
 
@@ -141,7 +143,7 @@ void ScriptCreateDialog::ok_pressed() {
 		Error err = ResourceSaver::save(lpath,scr,ResourceSaver::FLAG_CHANGE_PATH);		
 		if (err!=OK) {
 
-			alert->set_text("Could not create script in filesystem: "+String(""));
+			alert->set_text(_TR("Could not create script in filesystem: ")+String(""));
 			alert->popup_centered(Size2(200,60));
 			return;
 		}
@@ -215,7 +217,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 
 	if (p=="")	 {
 
-		path_error_label->set_text("Path is Empty");
+		path_error_label->set_text(_TR("Path is Empty"));
 		path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 		return;
 
@@ -224,7 +226,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 	p = Globals::get_singleton()->localize_path(p);
 	if (!p.begins_with("res://")) {
 
-		path_error_label->set_text("Path is not local");
+		path_error_label->set_text(_TR("Path is not local"));
 		path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 		return;
 	}
@@ -234,7 +236,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 
 		if (d->change_dir(p.get_base_dir())!=OK) {
 
-			path_error_label->set_text("Base Path Invalid");
+			path_error_label->set_text(_TR("Base Path Invalid"));
 			path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 			memdelete(d);
 			return;
@@ -249,7 +251,7 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 
 	if (f->file_exists(p)) {
 
-		path_error_label->set_text("File Exists");
+		path_error_label->set_text(_TR("File Exists"));
 		path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 		memdelete(f);
 		return;
@@ -273,13 +275,13 @@ void ScriptCreateDialog::_path_changed(const String& p_path) {
 
 	if (!found) {
 
-		path_error_label->set_text("Invalid Extension");
+		path_error_label->set_text(_TR("Invalid Extension"));
 		path_error_label->add_color_override("font_color",Color(1,0.4,0.0,0.8));
 		return;
 	}
 
 
-	path_error_label->set_text("Path is Valid");
+	path_error_label->set_text(_TR("Path is Valid"));
 	path_error_label->add_color_override("font_color",Color(0,1.0,0.8,0.8));
 
 	path_valid=true;
@@ -312,17 +314,17 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	vb2->add_child(class_name);
 	class_name->connect("text_changed", this,"_class_name_changed");
 	error_label = memnew(Label);
-	error_label->set_text("valid chars: a-z A-Z 0-9 _");
+	error_label->set_text(_TR("Valid chars: a-z A-Z 0-9 _"));
 	error_label->set_align(Label::ALIGN_CENTER);
 	vb2->add_child(error_label);
-	vb->add_margin_child("Class Name:",vb2);
+	vb->add_margin_child(_TR("Class Name:"),vb2);
 
 	parent_name = memnew( LineEdit );
-	vb->add_margin_child("Inherits:",parent_name);
+	vb->add_margin_child(_TR("Inherits:"),parent_name);
 	parent_name->connect("text_changed", this,"_class_name_changed");
 
 	language_menu = memnew( OptionButton );
-	vb->add_margin_child("Language",language_menu);
+	vb->add_margin_child(_TR("Language"),language_menu);
 
 	for(int i=0;i<ScriptServer::get_language_count();i++) {
 
@@ -350,25 +352,25 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	path_vb->add_child(hbc);
 	path_error_label = memnew( Label );
 	path_vb->add_child( path_error_label );
-	path_error_label->set_text("Error!");
+	path_error_label->set_text(_TR("Error!"));
 	path_error_label->set_align(Label::ALIGN_CENTER);
 
 
 	internal = memnew( CheckButton );
-	internal->set_text("Built-In Script");
+	internal->set_text(_TR("Built-In Script"));
 	vb2->add_child(internal);
 	internal->connect("pressed",this,"_built_in_pressed");
 
-	vb->add_margin_child("Path:",vb2);
+	vb->add_margin_child(_TR("Path:"),vb2);
 
 	set_size(Size2(200,150));
 	set_hide_on_ok(false);
-	set_title("Create Script for Node..");;
+	set_title(_TR("Create Script for Node.."));;
 
 	file_browse = memnew( FileDialog );
 	file_browse->connect("file_selected",this,"_file_selected");
 	add_child(file_browse);
-	get_ok()->set_text("Create");
+	get_ok()->set_text(_TR("Create"));
 	alert = memnew( AcceptDialog );
 	add_child(alert);
 	_lang_changed(0);

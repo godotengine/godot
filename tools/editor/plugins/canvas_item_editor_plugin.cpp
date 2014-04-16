@@ -1608,7 +1608,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case SNAP_CONFIGURE: {
 				updating_value_dialog=true;
 
-				dialog_label->set_text("Snap (Pixels):");
+				dialog_label->set_text(_TR("Snap (Pixels):"));
 				dialog_val->set_min(1);
 				dialog_val->set_step(1);
 				dialog_val->set_max(4096);
@@ -1642,7 +1642,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			updating_value_dialog=true;
 
-			dialog_label->set_text("Zoom (%):");
+			dialog_label->set_text(_TR("Zoom (%):"));
 			dialog_val->set_min(0.1);
 			dialog_val->set_step(0.1);
 			dialog_val->set_max(800);
@@ -2191,7 +2191,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item(_TR("Zoom Set.."),ZOOM_SET);
 
 	animation_menu = memnew( MenuButton );
-	animation_menu->set_text("Animation");
+	animation_menu->set_text(_TR("Animation"));
 	hb->add_child(animation_menu);
 	animation_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
 

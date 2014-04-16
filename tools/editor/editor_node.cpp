@@ -2861,7 +2861,8 @@ void EditorNode::animation_editor_make_visible(bool p_visible) {
 		//pd_anim->hide();
 		animation_editor->hide();
 //		scene_root_parent->set_margin(MARGIN_TOP,0);
-		animation_vb->get_parent_control()->minimum_size_changed();
+		if (animation_vb->get_parent_control())
+			animation_vb->get_parent_control()->minimum_size_changed();
 		top_split->set_collapsed(true);
 	}
 

@@ -31,6 +31,7 @@
 #include "io/resource_loader.h"
 #include "globals.h"
 #include "tools/editor/editor_settings.h"
+#include "core/translation.h"
 
 
 
@@ -72,10 +73,10 @@ void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path) {
 		resource = ResourceLoader::load(p_path[i]);
 
 		if (resource.is_null()) {
-			dialog->set_text("ERROR: Couldn't load frame resource!");
-			dialog->set_title("Error!");
+			dialog->set_text(_TR("ERROR: Couldn't load frame resource!"));
+			dialog->set_title(_TR("Error!"));
 			//dialog->get_cancel()->set_text("Close");
-			dialog->get_ok()->set_text("Close");
+			dialog->get_ok()->set_text(_TR("Close"));
 			dialog->popup_centered(Size2(300,60));
 			return; ///beh should show an error i guess
 		}
@@ -184,10 +185,10 @@ void SpriteFramesEditor::_paste_pressed() {
 
 	Ref<Texture> r=EditorSettings::get_singleton()->get_resource_clipboard();
 	if (!r.is_valid()) {
-		dialog->set_text("Resource clipboard is empty or not a texture!");
-		dialog->set_title("Error!");
+		dialog->set_text(_TR("Resource clipboard is empty or not a texture!"));
+		dialog->set_title(_TR("Error!"));
 		//dialog->get_cancel()->set_text("Close");
-		dialog->get_ok()->set_text("Close");
+		dialog->get_ok()->set_text(_TR("Close"));
 		dialog->popup_centered(Size2(300,60));
 		return; ///beh should show an error i guess
 	}
@@ -316,10 +317,10 @@ void SpriteFramesEditor::_update_library() {
 
 		if (frames->get_frame(i).is_null()) {
 
-			ti->set_text(0,"Frame "+itos(i)+" (empty)");
+			ti->set_text(0,_TR("Frame ")+itos(i)+_TR(" (empty)"));
 
 		} else {
-			ti->set_text(0,"Frame "+itos(i));
+			ti->set_text(0,_TR("Frame ")+itos(i));
 			ti->set_icon(0,frames->get_frame(i));
 		}
 		ti->set_metadata(0,i);
@@ -376,26 +377,26 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	vbc->add_child(hbc);
 
 	load = memnew( Button );
-	load->set_tooltip("Load Resource");
+	load->set_tooltip(_TR("Load Resource"));
 	hbc->add_child(load);
 
 
 
 
 	paste = memnew( Button );
-	paste->set_text("Paste");
+	paste->set_text(_TR("Paste"));
 	hbc->add_child(paste);
 
 	empty = memnew( Button );
-	empty->set_text("Insert Empty");
+	empty->set_text(_TR("Insert Empty"));
 	hbc->add_child(empty);
 
 	move_up = memnew( Button );
-	move_up->set_text("Up");
+	move_up->set_text(_TR("Move Up"));
 	hbc->add_child(move_up);
 
 	move_down = memnew( Button );
-	move_down->set_text("Down");
+	move_down->set_text(_TR("Move Down"));
 	hbc->add_child(move_down);
 
 	_delete = memnew( Button );

@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "sample_player_editor_plugin.h"
 #include "scene/resources/sample_library.h"
+#include "core/translation.h"
 
 
 void SamplePlayerEditor::_notification(int p_what) {
@@ -83,7 +84,7 @@ void SamplePlayerEditor::_update_sample_library() {
 	samples->clear();
 	Ref<SampleLibrary> sl = node->call("get_sample_library");
 	if (sl.is_null()) {
-		samples->add_item("<NO SAMPLE LIBRARY>");
+		samples->add_item(_TR("<NO SAMPLE LIBRARY>"));
 		return; //no sample library;;
 	}
 

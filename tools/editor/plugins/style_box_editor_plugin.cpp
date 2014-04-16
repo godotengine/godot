@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "style_box_editor_plugin.h"
+#include "core/translation.h"
 
 
 void StyleBoxEditor::edit(const Ref<StyleBox>& p_stylebox) {
@@ -61,7 +62,7 @@ StyleBoxEditor::StyleBoxEditor() {
 	panel->set_area_as_parent_rect();
 
 	Label *l = memnew( Label );
-	l->set_text("StyleBox Preview:");
+	l->set_text(_TR("StyleBox Preview:"));
 	l->set_pos(Point2(5,5));
 	panel->add_child(l);
 

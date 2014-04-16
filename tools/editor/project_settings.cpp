@@ -265,7 +265,7 @@ void ProjectSettings::_add_item(int p_item){
 
 		case InputEvent::KEY: {
 
-			press_a_key_label->set_text("Press a Key..");
+			press_a_key_label->set_text(_TR("Press a Key.."));
 			last_wait_for_key=InputEvent();
 			press_a_key->popup_centered(Size2(250,80));
 			press_a_key->grab_focus();
@@ -273,27 +273,27 @@ void ProjectSettings::_add_item(int p_item){
 		case InputEvent::MOUSE_BUTTON: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Mouse Button Index:");
+			device_index_label->set_text(_TR("Mouse Button Index:"));
 			device_index->clear();
-			device_index->add_item("Left Button");
-			device_index->add_item("Right Button");
-			device_index->add_item("Middle Button");
-			device_index->add_item("Wheel Up Button");
-			device_index->add_item("Wheel Down Button");
-			device_index->add_item("Button 6");
-			device_index->add_item("Button 7");
-			device_index->add_item("Button 8");
-			device_index->add_item("Button 9");
+			device_index->add_item(_TR("Left Button"));
+			device_index->add_item(_TR("Right Button"));
+			device_index->add_item(_TR("Middle Button"));
+			device_index->add_item(_TR("Wheel Up Button"));
+			device_index->add_item(_TR("Wheel Down Button"));
+			device_index->add_item(_TR("Button 6"));
+			device_index->add_item(_TR("Button 7"));
+			device_index->add_item(_TR("Button 8"));
+			device_index->add_item(_TR("Button 9"));
 			device_input->popup_centered(Size2(350,95));
 		} break;
 		case InputEvent::JOYSTICK_MOTION: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Joy Button Axis:");
+			device_index_label->set_text(_TR("Joy Button Axis:"));
 			device_index->clear();
 			for(int i=0;i<8;i++) {
 
-				device_index->add_item("Axis "+itos(i));
+				device_index->add_item(_TR("Axis ")+itos(i));
 			}
 			device_input->popup_centered(Size2(350,95));
 
@@ -301,7 +301,7 @@ void ProjectSettings::_add_item(int p_item){
 		case InputEvent::JOYSTICK_BUTTON: {
 
 			device_id->set_val(0);
-			device_index_label->set_text("Joy Button Index:");
+			device_index_label->set_text(_TR("Joy Button Index:"));
 			device_index->clear();
 
 			for(int i=0;i<JOY_BUTTON_MAX;i++) {
@@ -463,14 +463,14 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::MOUSE_BUTTON: {
 
-					String str = "Device "+itos(ie.device)+", ";
+					String str = _TR("Device ")+itos(ie.device)+", ";
 					switch (ie.mouse_button.button_index) {
-						case BUTTON_LEFT: str+="Left Button."; break;
-						case BUTTON_RIGHT: str+="Right Button."; break;
-						case BUTTON_MIDDLE: str+="Middle Button."; break;
-						case BUTTON_WHEEL_UP: str+="Wheel Up."; break;
-						case BUTTON_WHEEL_DOWN: str+="Wheel Down."; break;
-						default: str+="Button "+itos(ie.mouse_button.button_index)+".";
+						case BUTTON_LEFT: str+=_TR("Left Button."); break;
+						case BUTTON_RIGHT: str+=_TR("Right Button."); break;
+						case BUTTON_MIDDLE: str+=_TR("Middle Button."); break;
+						case BUTTON_WHEEL_UP: str+=_TR("Wheel Up."); break;
+						case BUTTON_WHEEL_DOWN: str+=_TR("Wheel Down."); break;
+						default: str+=_TR("Button ")+itos(ie.mouse_button.button_index)+".";
 					}
 
 					action->set_text(0,str);
@@ -478,7 +478,7 @@ void ProjectSettings::_update_actions() {
 				} break;
 				case InputEvent::JOYSTICK_MOTION: {
 
-					String str = "Device "+itos(ie.device)+", Axis "+itos(ie.joy_motion.axis)+".";
+					String str = _TR("Device ")+itos(ie.device)+_TR(", Axis ")+itos(ie.joy_motion.axis)+".";
 					action->set_text(0,str);
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
@@ -573,13 +573,13 @@ void ProjectSettings::_action_add() {
 
 	String action = action_name->get_text();
 	if (action.find("/")!=-1 || action.find(":")!=-1 || action=="") {
-		message->set_text("Invalid Action (Anything goes but / or :).");
+		message->set_text(_TR("Invalid Action (Anything goes but / or :)."));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
 
 	if (Globals::get_singleton()->has("input/"+action)) {
-		message->set_text("Action '"+action+"' already exists!.");
+		message->set_text(_TR("Action '")+action+_TR("' already exists!."));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
@@ -629,7 +629,7 @@ void ProjectSettings::_item_checked(const String& p_item, bool p_check) {
 void ProjectSettings::_save() {
 
 	Error err = Globals::get_singleton()->save();
-	message->set_text(err!=OK?"Error saving settings.":"Settings Saved OK.");
+	message->set_text(err!=OK?_TR("Error saving settings."):_TR("Settings Saved OK."));
 	message->popup_centered(Size2(300,100));
 }
 
@@ -656,7 +656,7 @@ void ProjectSettings::_copy_to_platform(int p_which) {
 
 	String catname = category->get_text();
 	if (!catname.is_valid_identifier()) {
-		message->set_text("Invalid Category.\nValid characters: a-z,A-Z,0-9 or _");
+		message->set_text(_TR("Invalid Category.\nValid characters: a-z,A-Z,0-9 or _"));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
@@ -664,7 +664,7 @@ void ProjectSettings::_copy_to_platform(int p_which) {
 
 	String propname = property->get_text();
 	if (!propname.is_valid_identifier()) {
-		message->set_text("Invalid Property.\nValid characters: a-z,A-Z,0-9 or _");
+		message->set_text(_TR("Invalid Property.\nValid characters: a-z,A-Z,0-9 or _"));
 		message->popup_centered(Size2(300,100));
 		return;
 	}
@@ -731,7 +731,7 @@ void ProjectSettings::_autoload_add() {
 
 	String name = autoload_add_name->get_text();
 	if (!name.is_valid_identifier()) {
-		message->set_text("Invalid Name.\nValid characters: a-z,A-Z,0-9 or _");
+		message->set_text(_TR("Invalid Name.\nValid characters: a-z,A-Z,0-9 or _"));
 		message->popup_centered(Size2(300,100));
 		return;
 
@@ -739,13 +739,13 @@ void ProjectSettings::_autoload_add() {
 
 	String path = autoload_add_path->get_text();
 	if (!FileAccess::exists(path)) {
-		message->set_text("Invalid Path.\nFile does not exist.");
+		message->set_text(_TR("Invalid Path.\nFile does not exist."));
 		message->popup_centered(Size2(300,100));
 		return;
 
 	}
 	if (!path.begins_with("res://")) {
-		message->set_text("Invalid Path.\nNot in resource path.");
+		message->set_text(_TR("Invalid Path.\nNot in resource path."));
 		message->popup_centered(Size2(300,100));
 		return;
 
@@ -1186,7 +1186,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 
 	singleton=this;
-	set_title("Project Settings (engine.cfg)");
+	set_title(_TR("Project Settings (engine.cfg)"));
 	undo_redo=&p_data->get_undo_redo();
 	data=p_data;
 
@@ -1202,7 +1202,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	Control *props_base = memnew( Control );
 	tab_container->add_child(props_base);
-	props_base->set_name("General");
+	props_base->set_name(_TR("General"));
 	globals_editor = memnew( PropertyEditor );
 	props_base->add_child(globals_editor);
 	globals_editor->set_area_as_parent_rect();
@@ -1220,20 +1220,20 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	Label *l = memnew( Label );
 	props_base->add_child(l);
 	l->set_pos(Point2(6,5));
-	l->set_text("Category:");
+	l->set_text(_TR("Category:"));
 
 
 	l = memnew( Label );
 	l->set_anchor(MARGIN_LEFT,ANCHOR_RATIO);
 	props_base->add_child(l);
 	l->set_begin(Point2(0.21,5));
-	l->set_text("Property:");
+	l->set_text(_TR("Property:"));
 
 	l = memnew( Label );
 	l->set_anchor(MARGIN_LEFT,ANCHOR_RATIO);
 	props_base->add_child(l);
 	l->set_begin(Point2(0.51,5));
-	l->set_text("Type:");
+	l->set_text(_TR("Type:"));
 
 	category = memnew( LineEdit );
 	props_base->add_child(category);
@@ -1268,7 +1268,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	add->set_anchor(MARGIN_RIGHT,ANCHOR_RATIO);
 	add->set_begin( Point2(0.71,25) );
 	add->set_end( Point2(0.85,26) );
-	add->set_text("Add");
+	add->set_text(_TR("Add"));
 	add->connect("pressed",this,"_item_add");
 
 	Button *del = memnew( Button );
@@ -1277,7 +1277,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	del->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	del->set_begin( Point2(0.86,25) );
 	del->set_end( Point2(5,26) );
-	del->set_text("Del");
+	del->set_text(_TR("Del"));
 	del->connect("pressed",this,"_item_del");
 
 	Button *save = memnew( Button );
@@ -1288,11 +1288,11 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	save->set_begin( Point2(80,28) );
 	save->set_end( Point2(10,20) );
-	save->set_text("Save");
+	save->set_text(_TR("Save"));
 	save->connect("pressed",this,"_save");
 
 	popup_platform = memnew( MenuButton );
-	popup_platform->set_text("Copy To Platform..");
+	popup_platform->set_text(_TR("Copy To Platform.."));
 	popup_platform->set_disabled(true);
 	props_base->add_child(popup_platform);
 
@@ -1314,7 +1314,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	}
 
 	popup_platform->get_popup()->connect("item_pressed",this,"_copy_to_platform");
-	get_ok()->set_text("Close");
+	get_ok()->set_text(_TR("Close"));
 	set_hide_on_ok(true);
 
 	message = memnew( ConfirmationDialog );
@@ -1330,7 +1330,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	l = memnew( Label );
 	input_base->add_child(l);
 	l->set_pos(Point2(6,5));
-	l->set_text("Action:");
+	l->set_text(_TR("Action:"));
 
 	action_name = memnew( LineEdit );
 	action_name->set_anchor(MARGIN_RIGHT,ANCHOR_RATIO);
@@ -1345,7 +1345,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	add->set_begin( Point2(0.86,25) );
 	add->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	add->set_end( Point2(5,26) );
-	add->set_text("Add");
+	add->set_text(_TR("Add"));
 	add->connect("pressed",this,"_action_add");
 
 	input_editor = memnew( Tree );
@@ -1368,7 +1368,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 
 	l = memnew( Label );
-	l->set_text("Press a Key..");
+	l->set_text(_TR("Press a Key.."));
 	l->set_area_as_parent_rect();
 	l->set_align(Label::ALIGN_CENTER);
 	l->set_margin(MARGIN_TOP,20);
@@ -1381,16 +1381,16 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	device_input=memnew( ConfirmationDialog );
 	add_child(device_input);
-	device_input->get_ok()->set_text("Add");
+	device_input->get_ok()->set_text(_TR("Add"));
 	device_input->connect("confirmed",this,"_device_input_add");
 
 	l = memnew( Label );
-	l->set_text("Device:");
+	l->set_text(_TR("Device:"));
 	l->set_pos(Point2(15,10));
 	device_input->add_child(l);
 
 	l = memnew( Label );
-	l->set_text("Index:");
+	l->set_text(_TR("Index:"));
 	l->set_pos(Point2(90,10));
 	device_input->add_child(l);
 	device_index_label=l;
@@ -1417,7 +1417,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
 	save->set_begin( Point2(80,28) );
 	save->set_end( Point2(10,20) );
-	save->set_text("Save");
+	save->set_text(_TR("Save"));
 	save->connect("pressed",this,"_save");
 
 	setting=false;
@@ -1434,9 +1434,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		tvb->set_name("Translations");
 		HBoxContainer *thb = memnew( HBoxContainer);
 		tvb->add_child(thb);
-		thb->add_child( memnew( Label("Translations:")));
+		thb->add_child( memnew( Label(_TR("Translations:"))));
 		thb->add_spacer();
-		Button *addtr = memnew( Button("Add..") );
+		Button *addtr = memnew( Button(_TR("Add..")) );
 		addtr->connect("pressed",this,"_translation_file_open");
 		thb->add_child(addtr);
 		MarginContainer *tmc = memnew( MarginContainer );
@@ -1459,9 +1459,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		tvb->set_name("Remaps");
 		HBoxContainer *thb = memnew( HBoxContainer);
 		tvb->add_child(thb);
-		thb->add_child( memnew( Label("Resources:")));
+		thb->add_child( memnew( Label(_TR("Resources:"))));
 		thb->add_spacer();
-		Button *addtr = memnew( Button("Add..") );
+		Button *addtr = memnew( Button(_TR("Add..")) );
 		addtr->connect("pressed",this,"_translation_res_file_open");
 		thb->add_child(addtr);
 		MarginContainer *tmc = memnew( MarginContainer );
@@ -1480,9 +1480,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 		thb = memnew( HBoxContainer);
 		tvb->add_child(thb);
-		thb->add_child( memnew( Label("Remaps by Locale:")));
+		thb->add_child( memnew( Label(_TR("Remaps by Locale:"))));
 		thb->add_spacer();
-		addtr = memnew( Button("Add..") );
+		addtr = memnew( Button(_TR("Add..")) );
 		addtr->connect("pressed",this,"_translation_res_option_file_open");
 		translation_res_option_add_button=addtr;
 		thb->add_child(addtr);
@@ -1494,8 +1494,8 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		tmc->add_child(translation_remap_options);
 
 		translation_remap_options->set_columns(2);
-		translation_remap_options->set_column_title(0,"Path");
-		translation_remap_options->set_column_title(1,"Locale");
+		translation_remap_options->set_column_title(0,_TR("Path"));
+		translation_remap_options->set_column_title(1,_TR("Locale"));
 		translation_remap_options->set_column_titles_visible(true);
 		translation_remap_options->set_column_expand(0,true);
 		translation_remap_options->set_column_expand(1,false);
@@ -1521,7 +1521,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		VBoxContainer *avb_name = memnew( VBoxContainer );
 		avb_name->set_h_size_flags(SIZE_EXPAND_FILL);
 		autoload_add_name = memnew(LineEdit);
-		avb_name->add_margin_child("Node Name:",autoload_add_name);
+		avb_name->add_margin_child(_TR("Node Name:"),autoload_add_name);
 		ahb->add_child(avb_name);
 
 		VBoxContainer *avb_path = memnew( VBoxContainer );
@@ -1533,16 +1533,16 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		Button *browseaa = memnew( Button("..") );
 		ahb_path->add_child(browseaa);
 		browseaa->connect("pressed",this,"_autoload_file_open");
-		Button *addaa = memnew( Button("Add") );
+		Button *addaa = memnew( Button(_TR("Add")) );
 		ahb_path->add_child(addaa);
 		addaa->connect("pressed",this,"_autoload_add");
 
-		avb_path->add_margin_child("Path:",ahb_path);
+		avb_path->add_margin_child(_TR("Path:"),ahb_path);
 		ahb->add_child(avb_path);
 
 		autoload_list = memnew( Tree );
 		autoload_list->set_v_size_flags(SIZE_EXPAND_FILL);
-		avb->add_margin_child("List:",autoload_list,true);
+		avb->add_margin_child(_TR("List:"),autoload_list,true);
 
 		autoload_file_open=memnew( FileDialog );
 		add_child(autoload_file_open);
