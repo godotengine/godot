@@ -47,7 +47,6 @@
 #define TAB_PIXELS
 
 
-
 static bool _is_text_char(CharType c) {
 
 	return (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_';
@@ -2037,6 +2036,14 @@ void TextEdit::insert_text_at_cursor(const String& p_text) {
 	update();
 
 }
+
+Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
+	if(completion_active && completion_rect.has_point(p_pos)) {
+		return CURSOR_ARROW;
+	}
+	return CURSOR_IBEAM;
+}
+
 
 void TextEdit::set_text(String p_text){
 
