@@ -3451,7 +3451,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 
 	PopupMenu *pm_export = memnew(PopupMenu );
-	pm_export->set_name(_TR("Export"));
+	pm_export->set_name("Export");
 	p->add_child(pm_export);
 	p->add_submenu_item(_TR("Convert To.."),"Export");
 	pm_export->add_item(_TR("Subscene.."),FILE_SAVE_SUBSCENE);
@@ -3473,7 +3473,7 @@ EditorNode::EditorNode() {
 	p->add_item(_TR("Quit"),FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
 	recent_scenes = memnew( PopupMenu );
-	recent_scenes->set_name(_TR("RecentScenes"));
+	recent_scenes->set_name("RecentScenes");
 	p->add_child(recent_scenes);
 	recent_scenes->connect("item_pressed",this,"_open_recent_scene");
 
