@@ -1101,7 +1101,7 @@ public:
 	virtual void begin_frame();
 
 	virtual void set_viewport(const VS::ViewportRect& p_viewport);
-	virtual void set_render_target(RID p_render_target);
+	virtual void set_render_target(RID p_render_target,bool p_transparent_bg=false,bool p_vflip=false);
 	virtual void clear_viewport(const Color& p_color);
 	virtual void capture_viewport(Image* r_capture);
 
@@ -1126,6 +1126,7 @@ public:
 	/* CANVAS API */
 
 	virtual void canvas_begin();
+	virtual void canvas_disable_blending();
 	virtual void canvas_set_opacity(float p_opacity);
 	virtual void canvas_set_blend_mode(VS::MaterialBlendMode p_mode);
 	virtual void canvas_begin_rect(const Matrix32& p_transform);

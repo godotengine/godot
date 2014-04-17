@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Gauti „Google Play“ paslaugų"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Ši programa neveiks be „Google Play“ paslaugų, kurios neįdiegtos telefone."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Ši programa neveiks be „Google Play“ paslaugų, kurios neįdiegtos planšetiniame kompiuteryje."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Gauti „Google Play“ paslaugų"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Įgalinti „Google Play“ paslaugas"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Ši programa neveiks, jei neįgalinsite „Google Play“ paslaugų."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Įgal. „Google Play“ paslaugas"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Atnaujinti „Google Play“ paslaugas"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Ši programa neveiks, jei neatnaujinsite „Google Play“ paslaugų."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Tinklo klaida"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Norint prisijungti prie „Google Play“ paslaugų reikia duomenų ryšio."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Netinkama paskyra"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"Nurodytos paskyros šiame įrenginyje nėra. Pasirinkite kitą paskyrą."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Nežinoma „Google Play“ paslaugų problema."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"„Google Play“ paslaugos"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Jūsų įrenginys nepalaiko „Google Play“ paslaugų, kuriomis remiasi kai kurios programos. Jei reikia pagalbos, susisiekite su gamintoju."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Įrenginyje nurodyta data neteisinga. Patikrinkite įrenginyje nurodytą datą."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Atnaujinti"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Prisij."</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Prisij. naud. „Google“"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Programa bandė naudotis netinkama „Google Play“ paslaugų versija."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Norint naudoti programą būtina įgalinti „Google Play“ paslaugas."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Norint naudoti programą būtina įdiegti „Google Play“ paslaugas."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Norint naudoti programą būtina atnaujinti „Google Play“ paslaugas."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"„Google Play“ paslaugų klaida"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Užklausą pateikė „<xliff:g id="APP_NAME">%1$s</xliff:g>“"</string>
+</resources>

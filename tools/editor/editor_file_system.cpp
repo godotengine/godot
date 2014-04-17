@@ -630,7 +630,7 @@ void EditorFileSystem::scan_sources() {
 		s.priority=Thread::PRIORITY_LOW;
 		thread_sources = Thread::create(_thread_func_sources,this,s);
 		//tree->hide();
-		print_line("SCAN BEGIN!");
+		//print_line("SCAN BEGIN!");
 		//progress->show();
 	}
 
@@ -724,7 +724,7 @@ void EditorFileSystem::_notification(int p_what) {
 						Thread::wait_to_finish(thread_sources);
 						memdelete(thread_sources);
 						thread_sources=NULL;
-						print_line("sources changed: "+itos(sources_changed.size()));
+						//print_line("sources changed: "+itos(sources_changed.size()));
 						emit_signal("sources_changed",sources_changed.size()>0);
 					}
 				} else if (!scanning) {
@@ -748,7 +748,7 @@ void EditorFileSystem::_notification(int p_what) {
 					thread=NULL;
 					emit_signal("filesystem_changed");
 					emit_signal("sources_changed",sources_changed.size()>0);
-					print_line("initial sources changed: "+itos(sources_changed.size()));
+					//print_line("initial sources changed: "+itos(sources_changed.size()));
 
 
 

@@ -2708,8 +2708,6 @@ Error EditorNode::load_scene(const String& p_scene) {
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	print_line("OPEN FILENAME: "+new_scene->get_filename());
-
 	/*
 	Node *old_scene = edited_scene;
 	_hide_top_editors();
@@ -3929,7 +3927,7 @@ EditorNode::EditorNode() {
 	file_templates->set_mode(FileDialog::MODE_OPEN_FILE);
 	file_templates->set_access(FileDialog::ACCESS_FILESYSTEM);
 	file_templates->clear_filters();
-	file_templates->add_filter("*.zip ; Zip Template Package");
+	file_templates->add_filter("*.tpz ; Template Package");
 
 
 	file = memnew( FileDialog );

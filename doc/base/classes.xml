@@ -50,6 +50,7 @@
 			<argument index="0" name="s" type="real">
 			</argument>
 			<description>
+			Hyperbolic cosine.
 			</description>
 		</method>
 		<method name="tanh"  >
@@ -281,13 +282,18 @@
 			<return type="Nil">
 			</return>
 			<description>
+			Reset the seed of the random number generator with a
+			new, different one.
 			</description>
 		</method>
-		<method name="rand"  >
+		<method name="randi"  >
 			<return type="int">
 			</return>
 			<description>
-			Random value (integer).
+			Random 32 bits value (integer). To obtain a value
+			from 0 to N, you can use remainder, like (for random
+			from 0 to 19): randi() %
+			20.
 			</description>
 		</method>
 		<method name="randf"  >
@@ -305,7 +311,8 @@
 			<argument index="1" name="to" type="real">
 			</argument>
 			<description>
-			Random range.
+			Random range, any floating point value between
+			'from' and 'to'
 			</description>
 		</method>
 		<method name="rand_seed"  >
@@ -314,7 +321,7 @@
 			<argument index="0" name="seed" type="real">
 			</argument>
 			<description>
-			random from seed, pass a seed and an array with both number and new seed is returned.
+			Random from seed, pass a seed and an array with both number and new seed is returned.
 			</description>
 		</method>
 		<method name="deg2rad"  >
@@ -406,6 +413,16 @@
 			Return a weak reference to an object.
 			</description>
 		</method>
+		<method name="funcref"  >
+			<return type="Object">
+			</return>
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<argument index="1" name="funcname" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="convert"  >
 			<return type="Object">
 			</return>
@@ -491,12 +508,24 @@
 			Return an array with the given range. Range can be 1 argument N (0 to N-1), two arguments (initial, final-1) or three arguments (initial,final-1,increment).
 			</description>
 		</method>
+		<method name="load"  >
+			<return type="Object">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			Load a resource from the filesystem, pass a valid
+			path as argument.
+			</description>
+		</method>
 		<method name="inst2dict"  >
 			<return type="Dictionary">
 			</return>
 			<argument index="0" name="inst" type="Object">
 			</argument>
 			<description>
+			Convert a script class instance to a dictionary
+			(useful for serializing).
 			</description>
 		</method>
 		<method name="dict2inst"  >
@@ -505,16 +534,24 @@
 			<argument index="0" name="dict" type="Dictionary">
 			</argument>
 			<description>
+			Convert a previously converted instances to dictionary
+			back into an instance. Useful for deserializing.
 			</description>
 		</method>
 		<method name="print_stack"  >
 			<return type="Nil">
 			</return>
 			<description>
+			Print a stack track at code location, only works when
+			running with debugger turned on.
 			</description>
 		</method>
 	</methods>
 	<constants>
+		<constant name="PI" value="3.141593">
+		Constant that represents how many times the diameter of a
+		circumference fits around it's perimeter.
+		</constant>
 	</constants>
 </class>
 <class name="@Global Scope" category="Core">
@@ -531,54 +568,79 @@
 		<member name="Performance" type="Performance">
 		</member>
 		<member name="Globals" type="Globals">
+		The file engine.cfg is read into this singleton.
 		</member>
 		<member name="IP" type="IP">
+		Global IP protocol functions (like hostname resolution). 
 		</member>
 		<member name="Geometry" type="Geometry">
+		Geometry helpers.
 		</member>
 		<member name="ResourceLoader" type="ResourceLoader">
+		Singleton that loads resources (load() calls this)
 		</member>
 		<member name="ResourceSaver" type="ResourceSaver">
+		Singleton that saves resources.
 		</member>
 		<member name="PathRemap" type="PathRemap">
+		Uset to setup remaps for the filesystem.
 		</member>
 		<member name="OS" type="OS">
+		Operating system functions.
 		</member>
 		<member name="Marshalls" type="Reference">
+		Used to serialize and deserialize, helpers.
 		</member>
 		<member name="TranslationServer" type="TranslationServer">
+		Server that takes care of translating between different
+		languages.
 		</member>
 		<member name="TS" type="TranslationServer">
+		Short version for TranslationServer.
 		</member>
 		<member name="Input" type="Input">
+		Global input variables and functions.
 		</member>
 		<member name="SceneIO" type="SceneIO">
+		Deprecaed.
 		</member>
 		<member name="VisualServer" type="VisualServer">
+		Server that handles anything visual at low level.
 		</member>
 		<member name="VS" type="VisualServer">
+		Short for VisualServer.
 		</member>
 		<member name="AudioServer" type="AudioServer">
+		Server that handles anything audio at low level.
 		</member>
 		<member name="AS" type="AudioServer">
+		Short for AudioServer.
 		</member>
 		<member name="PhysicsServer" type="PhysicsServer">
+		Server that handles anything 3D physics at low level.
 		</member>
 		<member name="PS" type="PhysicsServer">
+		Short for PhysicsServer.
 		</member>
 		<member name="Physics2DServer" type="Physics2DServer">
+		Server that handles anything 2D physics at low level.
 		</member>
 		<member name="PS2D" type="Physics2DServer">
+		Short for Physics2DServer.
 		</member>
 		<member name="SpatialSoundServer" type="SpatialSound2DServer">
+		Server that handles spatial audio positioning in 3D at low
+		level.
 		</member>
 		<member name="SS" type="SpatialSound2DServer">
+		Short for SpatialSoundServer.
 		</member>
 		<member name="SpatialSound2DServer" type="SpatialSound2DServer">
+		Server that handles spatial audio positioning in 2D at low
+		level.
 		</member>
 		<member name="SS2D" type="SpatialSound2DServer">
-		</member>
-		<member name="Flurry" type="Flurry">
+		Short for SpatialSound2DServer.
 		</member>
 	</members>
 	<constants>
@@ -1493,16 +1555,6 @@
 		</constant>
 	</constants>
 </class>
-<class name="@MultiScript" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
-</class>
 <class name="AABB" category="Built-In Types">
 	<brief_description>
 	Axis-Aligned Bounding Box.
@@ -1692,6 +1744,7 @@
 		<member name="size" type="Vector3">
 		</member>
 		<member name="end" type="Vector3">
+		Same as pos+size.
 		</member>
 	</members>
 	<constants>
@@ -1794,92 +1847,114 @@
 </class>
 <class name="AnimatedSprite" inherits="Node2D" category="Core">
 	<brief_description>
+	Sprite node that can use multiple textures for animation.
 	</brief_description>
 	<description>
+	Sprite node that can use multiple textures for animation.
 	</description>
 	<methods>
 		<method name="set_sprite_frames"  >
 			<argument index="0" name="sprite_frames" type="SpriteFrames">
 			</argument>
 			<description>
+			Set the [SpriteFrames] resource, which contains all
+			frames.
 			</description>
 		</method>
 		<method name="get_sprite_frames" qualifiers="const" >
 			<return type="SpriteFrames">
 			</return>
 			<description>
+			Get the [SpriteFrames] resource, which contains all
+			frames.
 			</description>
 		</method>
 		<method name="set_centered"  >
 			<argument index="0" name="centered" type="bool">
 			</argument>
 			<description>
+			When turned on, offset at (0,0) is the center of the
+			sprite, when off, the top-left corner is.
 			</description>
 		</method>
 		<method name="is_centered" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
+			Return true when centered. See [set_centered].
 			</description>
 		</method>
 		<method name="set_offset"  >
 			<argument index="0" name="offset" type="Vector2">
 			</argument>
 			<description>
+			Set the offset of the sprite in the node origin.
+			Position varies depending on whether it is centered
+			or not.
 			</description>
 		</method>
 		<method name="get_offset" qualifiers="const" >
 			<return type="Vector2">
 			</return>
 			<description>
+			Return the offset of the sprite in the node origin.
 			</description>
 		</method>
 		<method name="set_flip_h"  >
 			<argument index="0" name="flip_h" type="bool">
 			</argument>
 			<description>
+			If true, sprite is flipped horizontally.
 			</description>
 		</method>
 		<method name="is_flipped_h" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
+			Return true if sprite is flipped horizontally.
 			</description>
 		</method>
 		<method name="set_flip_v"  >
 			<argument index="0" name="flip_v" type="bool">
 			</argument>
 			<description>
+			If true, sprite is flipped vertically.
 			</description>
 		</method>
 		<method name="is_flipped_v" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
+			Return true if sprite is flipped vertically.
 			</description>
 		</method>
 		<method name="set_frame"  >
 			<argument index="0" name="frame" type="int">
 			</argument>
 			<description>
+			Set the visible sprite frame index (from the list of
+			frames inside the [SpriteFrames] resource). 
 			</description>
 		</method>
 		<method name="get_frame" qualifiers="const" >
 			<return type="int">
 			</return>
 			<description>
+			Return the visible frame index.
 			</description>
 		</method>
 		<method name="set_modulate"  >
 			<argument index="0" name="modulate" type="Color">
 			</argument>
 			<description>
+			Change the color modulation (multiplication) for this sprite.
 			</description>
 		</method>
 		<method name="get_modulate" qualifiers="const" >
 			<return type="Color">
 			</return>
 			<description>
+			Return the color modulation for this sprite.
 			</description>
 		</method>
 	</methods>
@@ -2361,22 +2436,27 @@
 			<argument index="3" name="from_end" type="bool" default="false">
 			</argument>
 			<description>
+			Play a given animation by the animation name. Custom
+			speed and blend times can be set. If custom speed is
+			negative (-1), 'from_end' being true can play the
+			animation backwards.
 			</description>
 		</method>
 		<method name="stop"  >
 			<description>
+			Stop the currently played animation.
 			</description>
 		</method>
 		<method name="stop_all"  >
 			<description>
-			Stop playback on all animation channels.
+			Stop playback of animations (deprecated).
 			</description>
 		</method>
 		<method name="is_playing" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
-			Return wether an animation chanel is playing (or channel 0 if none is provided).
+			Return wether an animation is playing.
 			</description>
 		</method>
 		<method name="set_current_animation"  >
@@ -2390,7 +2470,7 @@
 			<return type="String">
 			</return>
 			<description>
-			Return the name of the animation being played in a channel (or channel 0 if none is provided).
+			Return the name of the animation being played.
 			</description>
 		</method>
 		<method name="queue"  >
@@ -2402,13 +2482,15 @@
 		</method>
 		<method name="clear_queue"  >
 			<description>
+			If animations are queued to play, clear them.
 			</description>
 		</method>
 		<method name="set_active"  >
 			<argument index="0" name="active" type="bool">
 			</argument>
 			<description>
-			Set the player as active (playing)
+			Set the player as active (playing). If false, it
+			will do nothing.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const" >
@@ -2450,12 +2532,16 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
+			AnimationPlayer resolves animation track paths from
+			this node (which is relative to itself), by
+			default root is "..", but it can be changed..
 			</description>
 		</method>
 		<method name="get_root" qualifiers="const" >
 			<return type="NodePath">
 			</return>
 			<description>
+			Return path to root node (see [set_root]).
 			</description>
 		</method>
 		<method name="seek"  >
@@ -2464,7 +2550,10 @@
 			<argument index="1" name="update" type="bool" default="false">
 			</argument>
 			<description>
-			Seek the animation in an animation channel (or channel 0 if none is provided) to a specific position (in seconds).
+			Seek the animation to a given position in time (in
+			seconds). If 'update'
+			is true, the animation will be updated too,
+			otherwise it will be updated at process time.
 			</description>
 		</method>
 		<method name="get_pos" qualifiers="const" >
@@ -2506,12 +2595,16 @@
 			<return type="real">
 			</return>
 			<description>
+			Get the position (in seconds) of the currently being
+			played animation.
 			</description>
 		</method>
 		<method name="get_current_animation_length" qualifiers="const" >
 			<return type="real">
 			</return>
 			<description>
+			Get the length (in seconds) of the currently being
+			played animation.
 			</description>
 		</method>
 	</methods>
@@ -2522,24 +2615,35 @@
 			<argument index="1" name="new_name" type="String">
 			</argument>
 			<description>
+			If the currently being played animation changes,
+			this signal will notify of such change.
 			</description>
 		</signal>
 		<signal name="finished">
 			<description>
+			Notifies when an animation finished playing.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="ANIMATION_PROCESS_FIXED" value="0">
+		Process animation on fixed process. This is specially useful
+		when animating kinematic bodies.
 		</constant>
 		<constant name="ANIMATION_PROCESS_IDLE" value="1">
+		Process animation on idle process.
 		</constant>
 	</constants>
 </class>
 <class name="AnimationTreePlayer" inherits="Node" category="Core">
 	<brief_description>
+	Animation Player that uses a node graph for the blending.
 	</brief_description>
 	<description>
+	Animation Player that uses a node graph for the blending. This kind
+	of player is very useful when animating character or other skeleton
+	based rigs, because it can combine several animations to form a
+	desired pose.
 	</description>
 	<methods>
 		<method name="add_node"  >
@@ -2548,6 +2652,8 @@
 			<argument index="1" name="id" type="String">
 			</argument>
 			<description>
+			Add a node of a given type in the graph with given
+			id.
 			</description>
 		</method>
 		<method name="node_exists" qualifiers="const" >
@@ -2556,6 +2662,7 @@
 			<argument index="0" name="node" type="String">
 			</argument>
 			<description>
+			Check if a node exists (by name).
 			</description>
 		</method>
 		<method name="node_rename"  >
@@ -2566,6 +2673,7 @@
 			<argument index="1" name="new_name" type="String">
 			</argument>
 			<description>
+			Rename a node in the graph.
 			</description>
 		</method>
 		<method name="node_get_type" qualifiers="const" >
@@ -2574,6 +2682,7 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+			Get the node type, will return from NODE_* enum.
 			</description>
 		</method>
 		<method name="node_get_input_count" qualifiers="const" >
@@ -2582,6 +2691,8 @@
 			<argument index="0" name="id" type="String">
 			</argument>
 			<description>
+			Return the input count for a given node. Different
+			types of nodes have different amount of inputs.
 			</description>
 		</method>
 		<method name="node_get_input_sourcre" qualifiers="const" >
@@ -2592,6 +2703,7 @@
 			<argument index="1" name="idx" type="int">
 			</argument>
 			<description>
+			Return the input source for a given node input.
 			</description>
 		</method>
 		<method name="animation_node_set_animation"  >
@@ -2600,6 +2712,7 @@
 			<argument index="1" name="animation" type="Animation">
 			</argument>
 			<description>
+			Set the animation for an animation node.
 			</description>
 		</method>
 		<method name="animation_node_get_animation" qualifiers="const" >
@@ -4887,6 +5000,18 @@
 			Return true if the camera is at the center of the screen (default: true).
 			</description>
 		</method>
+		<method name="set_rotating"  >
+			<argument index="0" name="rotating" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_rotating" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="make_current"  >
 			<description>
 			Make this the current 2D camera for the scene (viewport and layer), in case there's many cameras in the scene.
@@ -5168,18 +5293,16 @@
 			Set canvas item self-opacity. This does not affect the opacity of children items.
 			</description>
 		</method>
-		<method name="set_on_top"  >
-			<argument index="0" name="on_top" type="bool">
+		<method name="set_draw_behind_parent"  >
+			<argument index="0" name="enabe" type="bool">
 			</argument>
 			<description>
-			Set canvas item as drawing over the parent canvas item (default: true).
 			</description>
 		</method>
-		<method name="is_on_top" qualifiers="const" >
+		<method name="is_draw_behind_parent_enabled" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
-			Return if the canvas item is drawing over the parent canvas item (default: true).
 			</description>
 		</method>
 		<method name="draw_line"  >
@@ -8229,6 +8352,32 @@
 	<constants>
 	</constants>
 </class>
+<class name="EditorScript" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="_run" qualifiers="virtual" >
+			<description>
+			</description>
+		</method>
+		<method name="add_root_node"  >
+			<argument index="0" name="node" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_scene"  >
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
 <class name="EmptyControl" inherits="Control" category="Core">
 	<brief_description>
 	</brief_description>
@@ -8809,6 +8958,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="store_pascal_string"  >
+			<argument index="0" name="string" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_pascal_string"  >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="file_exists" qualifiers="const" >
 			<return type="bool">
 			</return>
@@ -9122,38 +9283,6 @@
 		</constant>
 		<constant name="FLAG_USE_POINT_SIZE" value="2">
 		</constant>
-	</constants>
-</class>
-<class name="Flurry" inherits="Object" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-		<method name="log_event"  >
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="params" type="Dictionary">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="log_timed_event"  >
-			<argument index="0" name="name" type="String">
-			</argument>
-			<argument index="1" name="params" type="Dictionary">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="end_timed_event"  >
-			<argument index="0" name="name" type="String">
-			</argument>
-			<description>
-			</description>
-		</method>
-	</methods>
-	<constants>
 	</constants>
 </class>
 <class name="FollowCamera" inherits="Camera" category="Core">
@@ -9526,6 +9655,54 @@
 			</argument>
 			<description>
 			Draw character "char" into a canvas item using the font at a given "pos" position, with "modulate" color, and optionally kerning if "next" is apassed. clipping the width. "pos" specifies te baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis. The width used by the character is returned, making this function useful for drawing strings character by character.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="FuncRef" inherits="Reference" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="call_func"  >
+			<argument index="0" name="method" type="String">
+			</argument>
+			<argument index="1" name="arg0" type="var" default="NULL">
+			</argument>
+			<argument index="2" name="arg1" type="var" default="NULL">
+			</argument>
+			<argument index="3" name="arg2" type="var" default="NULL">
+			</argument>
+			<argument index="4" name="arg3" type="var" default="NULL">
+			</argument>
+			<argument index="5" name="arg4" type="var" default="NULL">
+			</argument>
+			<argument index="6" name="arg5" type="var" default="NULL">
+			</argument>
+			<argument index="7" name="arg6" type="var" default="NULL">
+			</argument>
+			<argument index="8" name="arg7" type="var" default="NULL">
+			</argument>
+			<argument index="9" name="arg8" type="var" default="NULL">
+			</argument>
+			<argument index="10" name="arg9" type="var" default="NULL">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_instance"  >
+			<argument index="0" name="instance" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_function"  >
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -10827,7 +11004,13 @@
 		</constant>
 		<constant name="FORMAT_ETC" value="18">
 		</constant>
-		<constant name="FORMAT_CUSTOM" value="19">
+		<constant name="FORMAT_ATC" value="19">
+		</constant>
+		<constant name="FORMAT_ATC_ALPHA_EXPLICIT" value="20">
+		</constant>
+		<constant name="FORMAT_ATC_ALPHA_INTERPOLATED" value="21">
+		</constant>
+		<constant name="FORMAT_CUSTOM" value="22">
 		</constant>
 	</constants>
 </class>
@@ -11034,6 +11217,12 @@
 		</method>
 		<method name="get_mouse_speed" qualifiers="const" >
 			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_mouse_button_mask" qualifiers="const" >
+			<return type="int">
 			</return>
 			<description>
 			</description>
@@ -11595,6 +11784,26 @@
 		</member>
 		<member name="ID" type="int">
 		</member>
+		<member name="index" type="int">
+		</member>
+		<member name="x" type="real">
+		</member>
+		<member name="y" type="real">
+		</member>
+		<member name="pos" type="Vector2">
+		</member>
+		<member name="relative_x" type="real">
+		</member>
+		<member name="relative_y" type="real">
+		</member>
+		<member name="relative_pos" type="Vector2">
+		</member>
+		<member name="speed_x" type="real">
+		</member>
+		<member name="speed_y" type="real">
+		</member>
+		<member name="speed" type="Vector2">
+		</member>
 	</members>
 	<constants>
 		<constant name="NONE" value="0">
@@ -11650,6 +11859,16 @@
 		<member name="device" type="int">
 		</member>
 		<member name="ID" type="int">
+		</member>
+		<member name="index" type="int">
+		</member>
+		<member name="x" type="real">
+		</member>
+		<member name="y" type="real">
+		</member>
+		<member name="pos" type="Vector2">
+		</member>
+		<member name="pressed" type="bool">
 		</member>
 	</members>
 	<constants>
@@ -11838,6 +12057,130 @@
 			</description>
 		</method>
 		<method name="get_bias" qualifiers="const" >
+			<return type="real">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="KinematicBody2D" inherits="PhysicsBody2D" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="move"  >
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="rel_vec" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="move_to"  >
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_move_to"  >
+			<return type="bool">
+			</return>
+			<argument index="0" name="position" type="Vector2">
+			</argument>
+			<argument index="1" name="arg1" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_colliding" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_pos" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_normal" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider_velocity" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_collider" qualifiers="const" >
+			<description>
+			</description>
+		</method>
+		<method name="set_collide_with_static_bodies"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_collide_with_static_bodies" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collide_with_kinematic_bodies"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_collide_with_kinematic_bodies" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collide_with_rigid_bodies"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_collide_with_rigid_bodies" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collide_with_character_bodies"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="can_collide_with_character_bodies" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_collision_margin"  >
+			<argument index="0" name="pixels" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_collision_margin" qualifiers="const" >
 			<return type="real">
 			</return>
 			<description>
@@ -13580,16 +13923,6 @@
 	<constants>
 	</constants>
 </class>
-<class name="MultiScript" inherits="Script" category="Core">
-	<brief_description>
-	</brief_description>
-	<description>
-	</description>
-	<methods>
-	</methods>
-	<constants>
-	</constants>
-</class>
 <class name="Mutex" inherits="Reference" category="Core">
 	<brief_description>
 	</brief_description>
@@ -14433,13 +14766,6 @@
         -Command Line
 	</description>
 	<methods>
-		<method name="get_mouse_pos" qualifiers="const" >
-			<return type="Vector2">
-			</return>
-			<description>
-			Return the mouse pos.
-			</description>
-		</method>
 		<method name="set_clipboard"  >
 			<argument index="0" name="clipboard" type="String">
 			</argument>
@@ -14706,11 +15032,10 @@
 			Return true if the engine was executed with -v (verbose stdout).
 			</description>
 		</method>
-		<method name="get_mouse_button_state" qualifiers="const" >
-			<return type="int">
+		<method name="can_use_threads" qualifiers="const" >
+			<return type="bool">
 			</return>
 			<description>
-			Return the state of the mouse buttons (each button in each bit).
 			</description>
 		</method>
 		<method name="dump_memory_to_file"  >
@@ -14772,6 +15097,32 @@
 		<method name="get_frames_per_second" qualifiers="const" >
 			<return type="real">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="print_all_textures_by_size"  >
+			<description>
+			</description>
+		</method>
+		<method name="native_video_play"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="arg0" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_is_playing"  >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="native_video_stop"  >
+			<description>
+			</description>
+		</method>
+		<method name="native_video_pause"  >
 			<description>
 			</description>
 		</method>
@@ -16804,6 +17155,20 @@
 			Intersect a given shape (RID or [Shape2D]) against the space, the intersected shapes are returned in a special result object.
 			</description>
 		</method>
+		<method name="cast_motion"  >
+			<argument index="0" name="shape" type="RID">
+			</argument>
+			<argument index="1" name="xform" type="Matrix32">
+			</argument>
+			<argument index="2" name="motion" type="int">
+			</argument>
+			<argument index="3" name="exclude" type="Array" default="Array()">
+			</argument>
+			<argument index="4" name="umask" type="int" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -17006,18 +17371,20 @@
 			<description>
 			</description>
 		</method>
-		<method name="area_set_param" qualifiers="const" >
+		<method name="area_set_param"  >
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<argument index="1" name="param" type="int">
 			</argument>
+			<argument index="2" name="value" type="var">
+			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="area_set_transform" qualifiers="const" >
-			<return type="Matrix32">
-			</return>
+		<method name="area_set_transform"  >
 			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="transform" type="Matrix32">
 			</argument>
 			<description>
 			</description>
@@ -17102,8 +17469,6 @@
 			<return type="int">
 			</return>
 			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="arg1" type="int">
 			</argument>
 			<description>
 			</description>
@@ -17216,16 +17581,16 @@
 			<description>
 			</description>
 		</method>
-		<method name="body_set_enable_continuous_collision_detection"  >
+		<method name="body_set_continuous_collision_detection_mode"  >
 			<argument index="0" name="body" type="RID">
 			</argument>
-			<argument index="1" name="enable" type="bool">
+			<argument index="1" name="mode" type="int">
 			</argument>
 			<description>
 			</description>
 		</method>
-		<method name="body_is_continuous_collision_detection_enabled" qualifiers="const" >
-			<return type="bool">
+		<method name="body_get_continuous_collision_detection_mode" qualifiers="const" >
+			<return type="int">
 			</return>
 			<argument index="0" name="body" type="RID">
 			</argument>
@@ -17248,14 +17613,6 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="param" type="int">
-			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="body_static_simulate_motion"  >
-			<argument index="0" name="body" type="RID">
-			</argument>
-			<argument index="1" name="new_xform" type="Matrix32">
 			</argument>
 			<description>
 			</description>
@@ -17531,6 +17888,12 @@
 		<constant name="DAMPED_STRING_STIFFNESS" value="1">
 		</constant>
 		<constant name="DAMPED_STRING_DAMPING" value="2">
+		</constant>
+		<constant name="CCD_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="CCD_MODE_CAST_RAY" value="1">
+		</constant>
+		<constant name="CCD_MODE_CAST_SHAPE" value="2">
 		</constant>
 		<constant name="AREA_BODY_ADDED" value="0">
 		</constant>
@@ -21032,18 +21395,16 @@
 			Return wether contact monitoring is enabled.
 			</description>
 		</method>
-		<method name="set_use_continuous_collision_detection"  >
-			<argument index="0" name="enable" type="bool">
+		<method name="set_continuous_collision_detection_mode"  >
+			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
-			Enable continuos collision detection. This prevents very fast-moving bodies (such as bullets) to not go through objects.
 			</description>
 		</method>
-		<method name="is_using_continuous_collision_detection" qualifiers="const" >
-			<return type="bool">
+		<method name="get_continuous_collision_detection_mode" qualifiers="const" >
+			<return type="int">
 			</return>
 			<description>
-			Return true if  continuous collision detection is in use.
 			</description>
 		</method>
 		<method name="set_axis_velocity"  >
@@ -21156,6 +21517,12 @@
 		</constant>
 		<constant name="MODE_CHARACTER" value="2">
 			Character body, can move but not rotate.
+		</constant>
+		<constant name="CCD_MODE_DISABLED" value="0">
+		</constant>
+		<constant name="CCD_MODE_CAST_RAY" value="1">
+		</constant>
+		<constant name="CCD_MODE_CAST_SHAPE" value="2">
 		</constant>
 	</constants>
 </class>
@@ -22610,6 +22977,54 @@
 			Return the custom solver bias. No need to change this unless you really know what you are doing.
 			</description>
 		</method>
+		<method name="collide"  >
+			<return type="bool">
+			</return>
+			<argument index="0" name="local_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="2" name="shape_xform" type="Matrix32">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="collide_with_motion"  >
+			<return type="bool">
+			</return>
+			<argument index="0" name="local_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="local_motion" type="Vector2">
+			</argument>
+			<argument index="2" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="3" name="shape_xform" type="Matrix32">
+			</argument>
+			<argument index="4" name="shape_motion" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="collide_and_get_contacts"  >
+			<argument index="0" name="local_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="with_shape" type="Shape2D">
+			</argument>
+			<argument index="2" name="shape_xform" type="Matrix32">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="collide_with_motion_and_get_contacts"  >
+			<argument index="0" name="local_xform" type="Matrix32">
+			</argument>
+			<argument index="1" name="local_motion" type="Object">
+			</argument>
+			<argument index="2" name="with_shape" type="Shape2D">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 	</constants>
@@ -23694,20 +24109,6 @@
 	Alternatively, a constant linear or angular velocity can be set for the static body, so even if it doesn't move, it affects other bodies as if it was moving (this is useful for simulating conveyor belts or conveyor wheels).
 	</description>
 	<methods>
-		<method name="set_simulate_motion"  >
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-			Enable or disable simulated motion mode.
-			</description>
-		</method>
-		<method name="is_simulating_motion" qualifiers="const" >
-			<return type="bool">
-			</return>
-			<description>
-			Return true if simulated motion mode is enabled.
-			</description>
-		</method>
 		<method name="set_constant_linear_velocity"  >
 			<argument index="0" name="vel" type="Vector2">
 			</argument>
@@ -25881,6 +26282,18 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_default_font"  >
+			<argument index="0" name="font" type="Object">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_default_font" qualifiers="const" >
+			<return type="Object">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_type_list" qualifiers="const" >
 			<return type="StringArray">
 			</return>
@@ -26133,22 +26546,36 @@
 			Return the texture of the tile.
 			</description>
 		</method>
-		<method name="tile_set_offset"  >
+		<method name="tile_set_texture_offset"  >
 			<argument index="0" name="id" type="int">
 			</argument>
-			<argument index="1" name="offset" type="Vector2">
+			<argument index="1" name="texture_offset" type="Vector2">
 			</argument>
 			<description>
-			Set the offset to draw the tile.
 			</description>
 		</method>
-		<method name="tile_get_offset" qualifiers="const" >
+		<method name="tile_get_texture_offset" qualifiers="const" >
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-			Return the offset to draw the tile.
+			</description>
+		</method>
+		<method name="tile_set_shape_offset"  >
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="shape_offset" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="tile_get_shape_offset" qualifiers="const" >
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="tile_set_region"  >
@@ -26229,6 +26656,12 @@
 			</argument>
 			<description>
 			Find the first tile with the given name.
+			</description>
+		</method>
+		<method name="get_tiles_ids" qualifiers="const" >
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -27466,10 +27899,26 @@
 			Returns a normalized vector to unit length.
 			</description>
 		</method>
+		<method name="reflect"  >
+			<return type="real">
+			</return>
+			<argument index="0" name="vec" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="rotated"  >
 			<return type="Vector2">
 			</return>
 			<argument index="0" name="phi" type="real">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="slide"  >
+			<return type="real">
+			</return>
+			<argument index="0" name="vec" type="Vector2">
 			</argument>
 			<description>
 			</description>
@@ -28077,6 +28526,24 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_render_target_update_mode"  >
+			<argument index="0" name="mode" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_render_target_update_mode" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_render_target_texture" qualifiers="const" >
+			<return type="RenderTargetTexture">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="get_viewport" qualifiers="const" >
 			<return type="RID">
 			</return>
@@ -28088,6 +28555,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_as_audio_listener"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_audio_listener" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_as_audio_listener_2d"  >
+			<argument index="0" name="enable" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_audio_listener_2d" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="size_changed">
@@ -28096,6 +28587,14 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="RENDER_TARGET_UPDATE_DISABLED" value="0">
+		</constant>
+		<constant name="RENDER_TARGET_UPDATE_ONCE" value="1">
+		</constant>
+		<constant name="RENDER_TARGET_UPDATE_WHEN_VISIBLE" value="2">
+		</constant>
+		<constant name="RENDER_TARGET_UPDATE_ALWAYS" value="3">
+		</constant>
 	</constants>
 </class>
 <class name="VisibilityEnabler" inherits="VisibilityNotifier" category="Core">
@@ -30133,7 +30632,15 @@
 		<method name="open"  >
 			<return type="int">
 			</return>
-			<argument index="0" name="arg0" type="String">
+			<argument index="0" name="file" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="open_buffer"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="buffer" type="RawArray">
 			</argument>
 			<description>
 			</description>

@@ -1196,7 +1196,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	file = memnew( FileDialog );
 	add_child(file);
 	file->connect("file_selected",this,"instance");
-	add_to_group("unhandled_key_input");
+	set_process_unhandled_key_input(true);
 
 	delete_dialog = memnew( ConfirmationDialog );
 	add_child(delete_dialog);

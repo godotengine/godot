@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:state_pressed="true"
+        android:color="@color/common_signin_btn_light_text_pressed" />
+    <item
+        android:state_enabled="false"
+        android:state_focused="true"
+        android:color="@color/common_signin_btn_light_text_disabled" />
+    <item
+        android:state_focused="true"
+        android:color="@color/common_signin_btn_light_text_focused" />
+    <item
+        android:state_enabled="false"
+        android:color="@color/common_signin_btn_light_text_disabled" />
+    <item
+        android:color="@color/common_signin_btn_light_text_default" />
+</selector>

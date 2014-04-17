@@ -592,6 +592,7 @@ public:
 
 	virtual void viewport_attach_to_screen(RID p_viewport,int p_screen=0)=0;
 	virtual void viewport_detach(RID p_viewport)=0;
+	virtual void viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect)=0;
 
 	enum RenderTargetUpdateMode {
 		RENDER_TARGET_UPDATE_DISABLED,
@@ -600,13 +601,18 @@ public:
 		RENDER_TARGET_UPDATE_ALWAYS
 	};
 
+
 	virtual void viewport_set_as_render_target(RID p_viewport,bool p_enable)=0;
 	virtual void viewport_set_render_target_update_mode(RID p_viewport,RenderTargetUpdateMode p_mode)=0;
 	virtual RenderTargetUpdateMode viewport_get_render_target_update_mode(RID p_viewport) const=0;
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const=0;
+	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable)=0;
+	virtual bool viewport_get_render_target_vflip(RID p_viewport) const=0;
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;
+
+
 
 	struct ViewportRect {
 	

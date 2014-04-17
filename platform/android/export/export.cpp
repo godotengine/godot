@@ -10,9 +10,168 @@
 #include "os/os.h"
 #include "platform/android/logo.h"
 
+
+static const char* android_perms[]={
+"ACCESS_CHECKIN_PROPERTIES",
+"ACCESS_COARSE_LOCATION",
+"ACCESS_FINE_LOCATION",
+"ACCESS_LOCATION_EXTRA_COMMANDS",
+"ACCESS_MOCK_LOCATION",
+"ACCESS_NETWORK_STATE",
+"ACCESS_SURFACE_FLINGER",
+"ACCESS_WIFI_STATE",
+"ACCOUNT_MANAGER",
+"ADD_VOICEMAIL",
+"AUTHENTICATE_ACCOUNTS",
+"BATTERY_STATS",
+"BIND_ACCESSIBILITY_SERVICE",
+"BIND_APPWIDGET",
+"BIND_DEVICE_ADMIN",
+"BIND_INPUT_METHOD",
+"BIND_NFC_SERVICE",
+"BIND_NOTIFICATION_LISTENER_SERVICE",
+"BIND_PRINT_SERVICE",
+"BIND_REMOTEVIEWS",
+"BIND_TEXT_SERVICE",
+"BIND_VPN_SERVICE",
+"BIND_WALLPAPER",
+"BLUETOOTH",
+"BLUETOOTH_ADMIN",
+"BLUETOOTH_PRIVILEGED",
+"BRICK",
+"BROADCAST_PACKAGE_REMOVED",
+"BROADCAST_SMS",
+"BROADCAST_STICKY",
+"BROADCAST_WAP_PUSH",
+"CALL_PHONE",
+"CALL_PRIVILEGED",
+"CAMERA",
+"CAPTURE_AUDIO_OUTPUT",
+"CAPTURE_SECURE_VIDEO_OUTPUT",
+"CAPTURE_VIDEO_OUTPUT",
+"CHANGE_COMPONENT_ENABLED_STATE",
+"CHANGE_CONFIGURATION",
+"CHANGE_NETWORK_STATE",
+"CHANGE_WIFI_MULTICAST_STATE",
+"CHANGE_WIFI_STATE",
+"CLEAR_APP_CACHE",
+"CLEAR_APP_USER_DATA",
+"CONTROL_LOCATION_UPDATES",
+"DELETE_CACHE_FILES",
+"DELETE_PACKAGES",
+"DEVICE_POWER",
+"DIAGNOSTIC",
+"DISABLE_KEYGUARD",
+"DUMP",
+"EXPAND_STATUS_BAR",
+"FACTORY_TEST",
+"FLASHLIGHT",
+"FORCE_BACK",
+"GET_ACCOUNTS",
+"GET_PACKAGE_SIZE",
+"GET_TASKS",
+"GET_TOP_ACTIVITY_INFO",
+"GLOBAL_SEARCH",
+"HARDWARE_TEST",
+"INJECT_EVENTS",
+"INSTALL_LOCATION_PROVIDER",
+"INSTALL_PACKAGES",
+"INSTALL_SHORTCUT",
+"INTERNAL_SYSTEM_WINDOW",
+"INTERNET",
+"KILL_BACKGROUND_PROCESSES",
+"LOCATION_HARDWARE",
+"MANAGE_ACCOUNTS",
+"MANAGE_APP_TOKENS",
+"MANAGE_DOCUMENTS",
+"MASTER_CLEAR",
+"MEDIA_CONTENT_CONTROL",
+"MODIFY_AUDIO_SETTINGS",
+"MODIFY_PHONE_STATE",
+"MOUNT_FORMAT_FILESYSTEMS",
+"MOUNT_UNMOUNT_FILESYSTEMS",
+"NFC",
+"PERSISTENT_ACTIVITY",
+"PROCESS_OUTGOING_CALLS",
+"READ_CALENDAR",
+"READ_CALL_LOG",
+"READ_CONTACTS",
+"READ_EXTERNAL_STORAGE",
+"READ_FRAME_BUFFER",
+"READ_HISTORY_BOOKMARKS",
+"READ_INPUT_STATE",
+"READ_LOGS",
+"READ_PHONE_STATE",
+"READ_PROFILE",
+"READ_SMS",
+"READ_SOCIAL_STREAM",
+"READ_SYNC_SETTINGS",
+"READ_SYNC_STATS",
+"READ_USER_DICTIONARY",
+"REBOOT",
+"RECEIVE_BOOT_COMPLETED",
+"RECEIVE_MMS",
+"RECEIVE_SMS",
+"RECEIVE_WAP_PUSH",
+"RECORD_AUDIO",
+"REORDER_TASKS",
+"RESTART_PACKAGES",
+"SEND_RESPOND_VIA_MESSAGE",
+"SEND_SMS",
+"SET_ACTIVITY_WATCHER",
+"SET_ALARM",
+"SET_ALWAYS_FINISH",
+"SET_ANIMATION_SCALE",
+"SET_DEBUG_APP",
+"SET_ORIENTATION",
+"SET_POINTER_SPEED",
+"SET_PREFERRED_APPLICATIONS",
+"SET_PROCESS_LIMIT",
+"SET_TIME",
+"SET_TIME_ZONE",
+"SET_WALLPAPER",
+"SET_WALLPAPER_HINTS",
+"SIGNAL_PERSISTENT_PROCESSES",
+"STATUS_BAR",
+"SUBSCRIBED_FEEDS_READ",
+"SUBSCRIBED_FEEDS_WRITE",
+"SYSTEM_ALERT_WINDOW",
+"TRANSMIT_IR",
+"UNINSTALL_SHORTCUT",
+"UPDATE_DEVICE_STATS",
+"USE_CREDENTIALS",
+"USE_SIP",
+"VIBRATE",
+"WAKE_LOCK",
+"WRITE_APN_SETTINGS",
+"WRITE_CALENDAR",
+"WRITE_CALL_LOG",
+"WRITE_CONTACTS",
+"WRITE_EXTERNAL_STORAGE",
+"WRITE_GSERVICES",
+"WRITE_HISTORY_BOOKMARKS",
+"WRITE_PROFILE",
+"WRITE_SECURE_SETTINGS",
+"WRITE_SETTINGS",
+"WRITE_SMS",
+"WRITE_SOCIAL_STREAM",
+"WRITE_SYNC_SETTINGS",
+"WRITE_USER_DICTIONARY",
+NULL};
+
 class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	OBJ_TYPE( EditorExportPlatformAndroid,EditorExportPlatform );
+
+
+	enum {
+		MAX_USER_PERMISSIONS=20,
+		SCREEN_SMALL=0,
+		SCREEN_NORMAL=1,
+		SCREEN_LARGE=2,
+		SCREEN_XLARGE=3,
+		SCREEN_MAX=4
+	};
 
 	String custom_release_package;
 	String custom_debug_package;
@@ -46,6 +205,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	Mutex *device_lock;
 	Thread *device_thread;
 	Ref<ImageTexture> logo;
+
+	Set<String> perms;
+	String user_perms[MAX_USER_PERMISSIONS];
+	bool screen_support[SCREEN_MAX];
 
 	volatile bool quit_request;
 
@@ -104,11 +267,33 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		_signed=p_value;
 	else if (n=="screen/orientation")
 		orientation=p_value;
+	else if (n=="screen/support_small")
+		screen_support[SCREEN_SMALL]=p_value;
+	else if (n=="screen/support_normal")
+		screen_support[SCREEN_NORMAL]=p_value;
+	else if (n=="screen/support_large")
+		screen_support[SCREEN_LARGE]=p_value;
+	else if (n=="screen/support_xlarge")
+		screen_support[SCREEN_XLARGE]=p_value;
 	else if (n=="keystore/release")
 		release_keystore=p_value;
 	else if (n=="keystore/release_user")
 		release_username=p_value;
-	else
+	else if (n.begins_with("permissions/")) {
+
+		String what = n.get_slice("/",1).to_upper();
+		bool state = p_value;
+		if (state)
+			perms.insert(what);
+		else
+			perms.erase(what);
+	} else if (n.begins_with("user_permissions/")) {
+
+		int which = n.get_slice("/",1).to_int();
+		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
+		user_perms[which]=p_value;
+
+	} else
 		return false;
 
 	return true;
@@ -132,15 +317,33 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=_signed;
 	else if (n=="screen/orientation")
 		r_ret=orientation;
+	else if (n=="screen/support_small")
+		r_ret=screen_support[SCREEN_SMALL];
+	else if (n=="screen/support_normal")
+		r_ret=screen_support[SCREEN_NORMAL];
+	else if (n=="screen/support_large")
+		r_ret=screen_support[SCREEN_LARGE];
+	else if (n=="screen/support_xlarge")
+		r_ret=screen_support[SCREEN_XLARGE];
 	else if (n=="keystore/release")
 		r_ret=release_keystore;
 	else if (n=="keystore/release_user")
 		r_ret=release_username;
-	else
+	else if (n.begins_with("permissions/")) {
+
+		String what = n.get_slice("/",1).to_upper();
+		r_ret = perms.has(what);
+	} else if (n.begins_with("user_permissions/")) {
+
+		int which = n.get_slice("/",1).to_int();
+		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
+		r_ret=user_perms[which];
+	} else
 		return false;
 
 	return true;
 }
+
 void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list) const{
 
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_FILE,"apk"));
@@ -152,8 +355,24 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/icon",PROPERTY_HINT_FILE,"png") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "package/signed") );
 	p_list->push_back( PropertyInfo( Variant::INT, "screen/orientation",PROPERTY_HINT_ENUM,"Landscape,Portrait") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_small") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_normal") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_large") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_xlarge") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release",PROPERTY_HINT_FILE,"keystore") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release_user" ) );
+
+	const char **perms = android_perms;
+	while(*perms) {
+
+		p_list->push_back( PropertyInfo( Variant::BOOL, "permissions/"+String(*perms).to_lower()));
+		perms++;
+	}
+
+	for(int i=0;i<MAX_USER_PERMISSIONS;i++) {
+
+		p_list->push_back( PropertyInfo( Variant::STRING, "user_permissions/"+itos(i)));
+	}
 
 	//p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Copy,Single Exec.,Pack (.pck),Bundles (Optical)"));
 
@@ -535,6 +754,53 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 							string_table[attr_value]=aname;
 						}
 					}
+
+					if (tname=="uses-permission" && /*nspace=="android" &&*/ attrname=="name") {
+
+						if (value.begins_with("godot.custom")) {
+
+							int which = value.get_slice(".",2).to_int();
+							if (which>=0 && which<MAX_USER_PERMISSIONS && user_perms[which].strip_edges()!="") {
+
+								string_table[attr_value]=user_perms[which].strip_edges();
+							}
+
+						} else if (value.begins_with("godot.")) {
+							String perm = value.get_slice(".",1);
+							if (perms.has(perm)) {
+								string_table[attr_value]="android.permission."+perm;
+							}
+
+						}
+					}
+
+					if (tname=="supports-screens" ) {
+
+						if (attr_value==0xFFFFFFFF) {
+							WARN_PRINT("Screen res name in a resource, should be plaintext")
+						} else if (attrname=="smallScreens") {
+
+							print_line("SMALLSCREEN");
+							string_table[attr_value]=screen_support[SCREEN_SMALL]?"true":"false";
+
+						} else if (attrname=="mediumScreens") {
+
+							print_line("MEDSCREEN");
+							string_table[attr_value]=screen_support[SCREEN_NORMAL]?"true":"false";
+
+						} else if (attrname=="largeScreens") {
+
+							print_line("LARGECREEN");
+							string_table[attr_value]=screen_support[SCREEN_LARGE]?"true":"false";
+
+						} else if (attrname=="xlargeScreens") {
+
+							print_line("XLARGECREEN");
+							string_table[attr_value]=screen_support[SCREEN_XLARGE]?"true":"false";
+
+						}
+					}
+
 
 					iofs+=20;
 				}
@@ -1144,6 +1410,9 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	Image img( _android_logo );
 	logo = Ref<ImageTexture>( memnew( ImageTexture ));
 	logo->create_from_image(img);
+
+	for(int i=0;i<4;i++)
+		screen_support[i]=true;
 }
 
 bool EditorExportPlatformAndroid::can_export(String *r_error) const {

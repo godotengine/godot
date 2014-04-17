@@ -59,7 +59,7 @@ private:
 	RID canvas_item;
 	String group;
 
-	Viewport *viewport;
+
 	CanvasLayer *canvas_layer;
 
 	float opacity;
@@ -195,12 +195,14 @@ public:
 	void set_block_transform_notify(bool p_enable);
 	bool is_block_transform_notify_enabled() const;
 
+
+	Matrix32 get_canvas_transform() const;
 	Matrix32 get_viewport_transform() const;
 	Rect2 get_viewport_rect() const;
 	RID get_viewport_rid() const;
 	RID get_canvas() const;
 	Ref<World2D> get_world_2d() const;
-	Viewport *get_viewport() const;
+
 
 
 	CanvasItem();

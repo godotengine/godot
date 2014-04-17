@@ -2245,7 +2245,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	//zoom=0.5;
 	singleton=this;
 	editor->get_animation_editor()->connect("keying_changed",this,"_keying_changed");
-	add_to_group("unhandled_key_input");
+	set_process_unhandled_key_input(true);
 	can_move_pivot=false;
 	pixel_snap=false;
 	drag=DRAG_NONE;

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Thola amasevisi e-Google Play"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Lolu hlelo lokusebenza ngeke lusebenze ngaphandle kwamasevisi e-Google Play, angekho efonini yakho."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Lolu hlelo lokusebenza ngeke lusebenze ngaphandle kwamasevisi e-Google Play, angekho kuthebulethi yakho."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Thola amasevisi e-Google Play"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Nika amandla amasevisi e-Google Play"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Lolu hlelo lokusebenza ngeke lusebenze ngaphandle nje kokuthi unike amandla amasevisi e-Google Play."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Nika amandla amasevisi e-Google Play"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Buyekeza amasevisi e-Google Play"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Lolu hlelo lokusebenza ngeke lusebenze ngaphandle nje kokuthi ubuyekeze amasevisi e-Google Play."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Iphutha lenethiwekhi"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Kudingeka ukuxhumeka kwedatha ukuze kuxhunyekwe kumasevisi we-Google Play."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"I-Akhawunti engavumelekile"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"I-Akhawunti ecacisiwe ayikho kule divayisi. Sicela ukhethe i-akhawunti ehlukile."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Indaba engaziwa yamasevisi we-Google Play"</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Amasevisi we-Google Play"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Amasevisi we-Google Play, okungukuthi ezinye izinhlelo zakho zithembele kuwo, awasekelwe yidivayisi yakho. Sicela uxhumane nomkhiqizi ukuze uthole usizo."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Idethi kudivayisi ibonakala ingalungile. Sicela uhlole idethi kudivayisi."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Isibuyekezo"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Ngena ngemvume"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Ngena ngemvume nge-Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Uhlelo lokusebenza luzame ukusebenzisa inguqulo embi yamasevisi we-Google Play."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Uhlelo lokusebenza ludinga amasevisi we-Google Play ukuze anikwe amandla."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Uhlelo lokusebenza ludinga ukufakwa kwamasevisi we-Google Play."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Uhlelo lokusebenza ludinga isibuyekezo samasevisi we-Google Play."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Iphutha lamasevisi we-Google Play"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"Kucelwe yi-<xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>
