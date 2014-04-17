@@ -186,6 +186,13 @@ public class Godot extends Activity implements SensorEventListener
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
 			| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		window.getDecorView().setSystemUiVisibility(
+		            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+		            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+		            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+		            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+		            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+		            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 
 		io = new GodotIO(this);
 		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
