@@ -280,6 +280,8 @@ public:
 		SEARCH_WHOLE_WORDS=2,
 		SEARCH_BACKWARDS=4
 	};
+	
+	virtual CursorShape get_cursor_shape(const Point2& p_pos=Point2i()) const;
 
 	//void delete_char();
 	//void delete_line();
