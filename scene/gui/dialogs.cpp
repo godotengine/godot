@@ -290,12 +290,12 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 	return b;
 }
 
-void AcceptDialog::set_ok_caption(const String& p_caption) {
+void AcceptDialog::set_ok_text(const String& p_text) {
 
-    ok->set_text(p_caption);
+    ok->set_text(p_text);
 }
 
-String AcceptDialog::get_ok_caption() const {
+String AcceptDialog::get_ok_text() const {
 
     return ok->get_text();
 }
@@ -314,14 +314,14 @@ void AcceptDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_custom_action"),&AcceptDialog::_custom_action);
 	ObjectTypeDB::bind_method(_MD("set_text","text"),&AcceptDialog::set_text);
 	ObjectTypeDB::bind_method(_MD("get_text"),&AcceptDialog::get_text);
-	ObjectTypeDB::bind_method(_MD("set_ok_caption","text"),&AcceptDialog::set_ok_caption);
-	ObjectTypeDB::bind_method(_MD("get_ok_caption"),&AcceptDialog::get_ok_caption);
+	ObjectTypeDB::bind_method(_MD("set_ok_text","text"),&AcceptDialog::set_ok_text);
+	ObjectTypeDB::bind_method(_MD("get_ok_text"),&AcceptDialog::get_ok_text);
 
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
 	ADD_PROPERTY( PropertyInfo(Variant::STRING,"dialog/text",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_text"),_SCS("get_text"));
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"dialog/ok_caption",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_ok_caption"),_SCS("get_ok_caption"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"dialog/ok_text",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_ok_text"),_SCS("get_ok_text"));
 	
 }
 
@@ -375,10 +375,10 @@ AcceptDialog::~AcceptDialog()
 void ConfirmationDialog::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_cancel:Button"),&ConfirmationDialog::get_cancel);
-	ObjectTypeDB::bind_method(_MD("set_cancel_caption","text"),&ConfirmationDialog::set_cancel_caption);
-	ObjectTypeDB::bind_method(_MD("get_cancel_caption"),&ConfirmationDialog::get_cancel_caption);
+	ObjectTypeDB::bind_method(_MD("set_cancel_text","text"),&ConfirmationDialog::set_cancel_text);
+	ObjectTypeDB::bind_method(_MD("get_cancel_text"),&ConfirmationDialog::get_cancel_text);
 
-	ADD_PROPERTY( PropertyInfo(Variant::STRING,"dialog/cancel_caption",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_cancel_caption"),_SCS("get_cancel_caption"));
+	ADD_PROPERTY( PropertyInfo(Variant::STRING,"dialog/cancel_text",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL),_SCS("set_cancel_text"),_SCS("get_cancel_text"));
 }
 
 Button *ConfirmationDialog::get_cancel() {
@@ -386,12 +386,12 @@ Button *ConfirmationDialog::get_cancel() {
 	return cancel;
 }
 
-void ConfirmationDialog::set_cancel_caption(const String& p_caption) {
+void ConfirmationDialog::set_cancel_text(const String& p_text) {
 
-    cancel->set_text(p_caption);
+    cancel->set_text(p_text);
 }
 
-String ConfirmationDialog::get_cancel_caption() const {
+String ConfirmationDialog::get_cancel_text() const {
 
     return cancel->get_text();
 }

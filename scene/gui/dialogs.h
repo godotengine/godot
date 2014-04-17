@@ -126,8 +126,8 @@ public:
 	Button* add_button(const String& p_text,bool p_right=false,const String& p_action="");
 	Button* add_cancel(const String &p_cancel="");
 
-    void set_ok_caption(const String& p_caption);
-    String get_ok_caption() const;
+    void set_ok_text(const String& p_text);
+    String get_ok_text() const;
 
 	void set_hide_on_ok(bool p_hide);
 	bool get_hide_on_ok() const;
@@ -152,8 +152,8 @@ protected:
 public:
 
 	Button *get_cancel();
-    void set_cancel_caption(const String& p_caption);
-    String get_cancel_caption() const;
+    void set_cancel_text(const String& p_text);
+    String get_cancel_text() const;
 	ConfirmationDialog();
 
 };
