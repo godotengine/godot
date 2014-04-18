@@ -715,8 +715,7 @@ void SceneTreeDialog::_cancel() {
 void SceneTreeDialog::_select() {
 
 	if (tree->get_selected()) {
-        Node *scene = EditorNode::get_singleton()->get_edited_scene();
-        emit_signal("selected","/root/" + scene->get_parent()->get_path_to(tree->get_selected()));
+	        emit_signal("selected",tree->get_selected()->get_path());
 		hide();
 	}
 }
