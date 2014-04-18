@@ -246,6 +246,8 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual Error shell_open(String p_uri);
+
 	void run();
 
 	virtual bool get_swap_ok_cancel() { return true; }
