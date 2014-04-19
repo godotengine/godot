@@ -67,16 +67,25 @@ bool RenderTargetTexture::has_alpha() const{
 
 void RenderTargetTexture::set_flags(uint32_t p_flags){
 
+	ERR_FAIL_COND(!vp);
+	if (p_flags&FLAG_FILTER)
+		flags=FLAG_FILTER;
+	else
+		flags=0;
+
+	VS::get_singleton()->texture_set_flags(vp->render_target_texture_rid,flags);
 
 }
+
 uint32_t RenderTargetTexture::get_flags() const{
 
-	return 0;
+	return flags;
 }
 
 RenderTargetTexture::RenderTargetTexture(Viewport *p_vp){
 
 	vp=p_vp;
+	flags=0;
 }
 
 

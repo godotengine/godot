@@ -45,6 +45,7 @@ class RenderTargetTexture : public Texture {
 
 	OBJ_TYPE( RenderTargetTexture, Texture );
 
+	int flags;
 friend class Viewport;
 	Viewport *vp;
 

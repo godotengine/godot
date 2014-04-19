@@ -398,6 +398,7 @@ void SceneTreeEditor::_notification(int p_what) {
 		get_scene()->disconnect("node_removed",this,"_node_removed");
 		_update_tree();
 	}
+
 }
 
 
@@ -699,10 +700,12 @@ void SceneTreeDialog::_notification(int p_what) {
 		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
 	}
 
-	if (p_what==NOTIFICATION_POST_POPUP) {
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED && is_visible()) {
 
-
+		tree->update_tree();
 	}
+
+
 }
 
 void SceneTreeDialog::_cancel() {
