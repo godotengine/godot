@@ -645,19 +645,6 @@ void Control::_notification(int p_notification) {
 }
 
 
-Size2 Control::_window_get_pos() const {
-
-	if (data.viewport) {
-
-		Rect2 r = data.viewport->get_visible_rect();
-		return r.pos;
-	} else
-		return Point2();
-
-	//return get_global_transform().get_origin();
-}
-
-
 bool Control::clips_input() const {
 
 	return false;
@@ -956,12 +943,11 @@ void Control::_window_input_event(InputEvent p_event) {
 		window->key_event_accepted=false;
 
 		Point2 mpos =(get_canvas_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
-
 		if (p_event.mouse_button.pressed) {
 
 
 
-			Size2 pos = mpos - _window_get_pos();
+			Size2 pos = mpos;
 			if (window->mouse_focus && p_event.mouse_button.button_index!=window->mouse_focus_button) {
 
 				//do not steal mouse focus and stuff
@@ -1062,7 +1048,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 					if (window->mouse_over && window->drag_data.get_type()!=Variant::NIL && p_event.mouse_button.button_index==BUTTON_LEFT) {
 
-						Size2 pos = mpos - _window_get_pos();
+						Size2 pos = mpos;
 						pos = window->focus_inv_xform.xform(pos);
 						window->mouse_over->drop_data(pos,window->drag_data);
 						window->drag_data=Variant();
@@ -1072,7 +1058,7 @@ void Control::_window_input_event(InputEvent p_event) {
 					break;
 				}
 
-				Size2 pos = mpos - _window_get_pos();
+				Size2 pos = mpos;
 				p_event.mouse_button.global_x = pos.x;
 				p_event.mouse_button.global_y = pos.y;
 				pos = window->focus_inv_xform.xform(pos);
@@ -1103,7 +1089,7 @@ void Control::_window_input_event(InputEvent p_event) {
 			window->key_event_accepted=false;
 
 			Matrix32 localizer = (get_canvas_transform()).affine_inverse();
-			Size2 pos = localizer.xform(Size2(p_event.mouse_motion.x,p_event.mouse_motion.y)) - _window_get_pos();
+			Size2 pos = localizer.xform(Size2(p_event.mouse_motion.x,p_event.mouse_motion.y));
 			Vector2 speed = localizer.basis_xform(Point2(p_event.mouse_motion.speed_x,p_event.mouse_motion.speed_y));
 			Vector2 rel = localizer.basis_xform(Point2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y));
 

@@ -84,8 +84,25 @@ public class PaymentsManager {
 		new HandlePurchaseTask(activity){
 
 			@Override
-			protected void success(String ticket) {
-			    godotPaymentV3.callbackSuccess(ticket);
+			protected void success(final String sku) {
+				new ConsumeTask(mService, activity) {
+					
+					@Override
+					protected void success(String ticket) {
+//						godotPaymentV3.callbackSuccess("");
+						godotPaymentV3.callbackSuccess(ticket);
+					}
+					
+					@Override
+					protected void error(String message) {
+						godotPaymentV3.callbackFail();
+						
+					}
+				}.consume(sku);
+
+				
+				
+//			    godotPaymentV3.callbackSuccess(ticket);
 			    //validatePurchase(purchaseToken, sku);
 			}
 
@@ -99,7 +116,8 @@ public class PaymentsManager {
 			protected void canceled() {
 				godotPaymentV3.callbackCancel();
 				
-			}}.handlePurchaseRequest(resultCode, data);
+			}
+			}.handlePurchaseRequest(resultCode, data);
 	}
 	
 	public void validatePurchase(String purchaseToken, final String sku){
@@ -112,8 +130,8 @@ public class PaymentsManager {
 				new ConsumeTask(mService, activity) {
 					
 					@Override
-					protected void success() {
-						godotPaymentV3.callbackSuccess("");
+					protected void success(String ticket) {
+						godotPaymentV3.callbackSuccess(ticket);
 						
 					}
 					

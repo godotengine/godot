@@ -116,7 +116,7 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
 		env.Append(CCFLAGS=['/DGLES1_ENABLED'])
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
-		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32','wsock32'])
+		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32','wsock32', 'shell32'])
 		
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
                 if (os.getenv("DXSDK_DIR")):

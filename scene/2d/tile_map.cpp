@@ -97,6 +97,7 @@ void TileMap::set_tileset(const Ref<TileSet>& p_tileset) {
 		clear();
 
 	_recreate_quadrants();
+	emit_signal("settings_changed");
 
 }
 
@@ -112,6 +113,7 @@ void TileMap::set_cell_size(int p_size) {
 	_clear_quadrants();
 	cell_size=p_size;
 	_recreate_quadrants();
+	emit_signal("settings_changed");
 
 
 }
@@ -126,6 +128,7 @@ void TileMap::set_quadrant_size(int p_size) {
 	_clear_quadrants();
 	quadrant_size=p_size;
 	_recreate_quadrants();
+	emit_signal("settings_changed");
 
 }
 int TileMap::get_quadrant_size() const {
@@ -137,6 +140,8 @@ void TileMap::set_center_x(bool p_enable) {
 
 	center_x=p_enable;
 	_recreate_quadrants();
+	emit_signal("settings_changed");
+
 
 }
 bool TileMap::get_center_x() const {
@@ -147,6 +152,7 @@ void TileMap::set_center_y(bool p_enable) {
 
 	center_y=p_enable;
 	_recreate_quadrants();
+	emit_signal("settings_changed");
 
 }
 bool TileMap::get_center_y() const {
@@ -234,14 +240,20 @@ void TileMap::_update_dirty_quadrants() {
 
 					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
 					Matrix32 xform;
-					xform.set_origin(offset.floor()+shape_ofs);
+					xform.set_origin(offset.floor());
 					if (c.flip_h) {
 						xform.elements[0]=-xform.elements[0];
-						xform.elements[2].x+=s.x;
+						xform.elements[2].x+=s.x-shape_ofs.x;
+					} else {
+
+						xform.elements[2].x+=shape_ofs.x;
 					}
 					if (c.flip_v) {
 						xform.elements[1]=-xform.elements[1];
-						xform.elements[2].y+=s.y;
+						xform.elements[2].y+=s.y-shape_ofs.y;
+					} else {
+
+						xform.elements[2].y+=shape_ofs.y;
 					}
 
 
@@ -483,8 +495,9 @@ void TileMap::_set_tile_data(const DVector<int>& p_data) {
 		SWAP(local[4],local[7]);
 		SWAP(local[5],local[6]);
 #endif
-		int x = decode_uint16(&local[0]);
-		int y = decode_uint16(&local[2]);
+
+		int16_t x = decode_uint16(&local[0]);
+		int16_t y = decode_uint16(&local[2]);
 		uint32_t v = decode_uint32(&local[4]);
 		bool flip_h = v&(1<<29);
 		bool flip_v = v&(1<<30);
@@ -571,6 +584,8 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),_SCS("set_tileset"),_SCS("get_tileset"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
 
+	ADD_SIGNAL(MethodInfo("settings_changed"));
+
 	BIND_CONSTANT( INVALID_CELL );
 }
 
@@ -585,8 +600,8 @@ TileMap::TileMap() {
 	center_x=false;
 	center_y=false;
 
-	fp_adjust=0.4;
-	fp_adjust=0.4;
+	fp_adjust=0.01;
+	fp_adjust=0.01;
 }
 
 TileMap::~TileMap() {

@@ -1015,6 +1015,11 @@ String OS_X11::get_name() {
 	return "X11";
 }
 
+Error OS_X11::shell_open(String p_uri) {
+
+
+}
+
 
 void OS_X11::close_joystick(int p_id) {
 
