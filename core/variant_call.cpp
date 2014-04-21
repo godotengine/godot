@@ -504,15 +504,15 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1(ColorArray,append_array);
 
 #define VCALL_PTR0(m_type,m_method)\
-static void _call_##m_type##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(); }
+static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(); }
 #define VCALL_PTR0R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(); }
 #define VCALL_PTR1(m_type,m_method)\
-static void _call_##m_type##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0]); }
+static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0]); }
 #define VCALL_PTR1R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0]); }
 #define VCALL_PTR2(m_type,m_method)\
-static void _call_##m_type##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1]); }
+static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1]); }
 #define VCALL_PTR2R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1]); }
 #define VCALL_PTR3(m_type,m_method)\
@@ -520,11 +520,11 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 #define VCALL_PTR3R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2]); }
 #define VCALL_PTR4(m_type,m_method)\
-static void _call_##m_type##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3]); }
+static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3]); }
 #define VCALL_PTR4R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3]); }
 #define VCALL_PTR5(m_type,m_method)\
-static void _call_##m_type##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3],*p_args[4]); }
+static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3],*p_args[4]); }
 #define VCALL_PTR5R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3],*p_args[4]); }
 
@@ -533,6 +533,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R(Image,get_height);
 	VCALL_PTR0R(Image,empty);
 	VCALL_PTR3R(Image,get_pixel);
+	VCALL_PTR4(Image,put_pixel);
 	VCALL_PTR0R(Image,get_used_rect);
 	VCALL_PTR3R(Image,brushed);
 	VCALL_PTR1R(Image,load);
@@ -542,6 +543,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR3R(Image, resized);
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
+	VCALL_PTR1(Image,convert);
 
 	VCALL_PTR0R( AABB, get_area );
 	VCALL_PTR0R( AABB, has_no_area );
@@ -1259,6 +1261,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(IMAGE, INT, Image, get_height, varray());
 	ADDFUNC0(IMAGE, BOOL, Image, empty, varray());
 	ADDFUNC3(IMAGE, COLOR, Image, get_pixel, INT, "x", INT, "y", INT, "mipmap_level", varray(0));
+	ADDFUNC4(IMAGE, NIL, Image, put_pixel, INT, "x", INT, "y", COLOR, "color", INT, "mipmap_level", varray(0));
 	ADDFUNC3(IMAGE, IMAGE, Image, brushed, IMAGE, "src", IMAGE, "brush", VECTOR2, "pos", varray(0));
 	ADDFUNC1(IMAGE, INT, Image, load, STRING, "path", varray(0));
 	ADDFUNC3(IMAGE, NIL, Image, brush_transfer, IMAGE, "src", IMAGE, "brush", VECTOR2, "pos", varray(0));
@@ -1268,6 +1271,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC3(IMAGE, IMAGE, Image, resized, INT, "x", INT, "y", INT, "interpolation", varray(((int)Image::INTERPOLATE_BILINEAR)));
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
+	ADDFUNC1(IMAGE, NIL, Image, convert, INT, "format", varray());
 
 	ADDFUNC0(_RID,INT,RID,get_id,varray());
 
