@@ -1805,8 +1805,8 @@ void Control::_change_notify_margins() {
 	_change_notify("margin/bottom");
 	_change_notify("rect/pos");
 	_change_notify("rect/size");
-	_change_notify("rect/rot");
-	_change_notify("rect/scale");
+	_change_notify("transform/rot");
+	_change_notify("transform/scale");
 
 }
 
