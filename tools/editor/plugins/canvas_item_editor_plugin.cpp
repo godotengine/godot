@@ -1834,6 +1834,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 					if (key_pos)
 						editor->get_animation_editor()->insert_node_value_key(ctrl,"rect/pos",ctrl->get_pos(),existing);
+					if (key_rot)
+						editor->get_animation_editor()->insert_node_value_key(ctrl,"transform/rot",Math::rad2deg(ctrl->get_rot()),existing);
 					if (key_scale)
 						editor->get_animation_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size(),existing);
 				}
