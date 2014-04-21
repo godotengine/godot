@@ -116,14 +116,31 @@ Size2 Control::edit_get_minimum_size() const {
 void Control::edit_set_rect(const Rect2& p_edit_rect) {
 
 
-	Rect2 new_rect=get_rect();
+	Rect2 r = get_item_rect();
 
-	new_rect.pos+=p_edit_rect.pos.snapped(Vector2(1,1));
-	new_rect.size=p_edit_rect.size.snapped(Vector2(1,1));
+	Vector2 zero_offset;
+	if (r.size.x!=0)
+		zero_offset.x = -r.pos.x / r.size.x;
+	if (r.size.y!=0)
+		zero_offset.y = -r.pos.y / r.size.y;
 
-	set_pos(new_rect.pos);
-	set_size(new_rect.size);
+	Point2 new_pos = p_edit_rect.pos + p_edit_rect.size*zero_offset;//p_edit_rect.pos - r.pos;
 
+	Matrix32 postxf;
+	postxf.set_rotation_and_scale(data.angle,data.scale);
+	new_pos = get_pos() + postxf.xform(new_pos);
+
+	Size2 new_size=p_edit_rect.size.snapped(Vector2(1,1));
+
+	set_pos(new_pos);
+	set_size(new_size);
+}
+
+void Control::edit_rotate(float p_rot) {
+
+	printf("Control:%f\n",p_rot);
+	data.angle+=p_rot;
+	_size_changed();
 }
 
 bool Control::_set(const StringName& p_name, const Variant& p_value) {
@@ -567,6 +584,7 @@ void Control::_notification(int p_notification) {
 
 			Matrix32 xform;
 			xform.set_origin(get_pos());
+			xform.set_rotation_and_scale(get_rot(),get_scale());
 			VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),xform);
 			VisualServer::get_singleton()->canvas_item_set_custom_rect( get_canvas_item(),true, Rect2(Point2(),get_size()));
 			//emit_signal(SceneStringNames::get_singleton()->draw);
@@ -1663,9 +1681,11 @@ void Control::_size_changed() {
 	new_size_cache.y = MAX( minimum_size.y, new_size_cache.y );
 
 
-	if (new_pos_cache == data.pos_cache && new_size_cache == data.size_cache)
+	if (new_pos_cache == data.pos_cache && new_size_cache == data.size_cache && data.angle == data.angle_cache && data.scale == data.scale_cache)
 		return; // did not change, don't emit signal
 
+	data.angle_cache=data.angle;
+	data.scale_cache=data.scale;
 	data.pos_cache=new_pos_cache;
 	data.size_cache=new_size_cache;
 
@@ -1785,6 +1805,8 @@ void Control::_change_notify_margins() {
 	_change_notify("margin/bottom");
 	_change_notify("rect/pos");
 	_change_notify("rect/size");
+	_change_notify("transform/rot");
+	_change_notify("transform/scale");
 
 }
 
@@ -1839,6 +1861,8 @@ void Control::set_global_pos(const Point2& p_point) {
 	}
 
 	set_pos(inv.xform(p_point));
+	set_rot(inv.get_rotation());
+	set_scale(inv.get_scale());
 }
 
 void Control::set_pos(const Size2& p_point) {
@@ -1866,6 +1890,28 @@ void Control::set_pos(const Size2& p_point) {
 	data.margin[2] = _s2a( x+w, data.anchor[2], pw );
 	data.margin[3] = _s2a( y+h, data.anchor[3], ph );
 
+	_size_changed();
+}
+
+void Control::set_rot(float p_angle) {
+
+	data.angle=p_angle;
+	_size_changed();
+}
+
+void Control::_set_rotd(float p_angle) {
+
+	set_rot(Math::deg2rad(p_angle));
+}
+
+void Control::set_scale(const Size2& p_scale) {
+
+	data.scale=p_scale;
+	_size_changed();
+	if (data.scale.x==0)
+		data.scale.x=CMP_EPSILON;
+	if (data.scale.y==0)
+		data.scale.y=CMP_EPSILON;
 	_size_changed();
 }
 
@@ -1897,6 +1943,21 @@ void Control::set_size(const Size2& p_size) {
 Size2 Control::get_pos() const {
 
 	return data.pos_cache;
+}
+
+float Control::get_rot() const {
+
+	return data.angle;
+}
+
+float Control::_get_rotd() const {
+
+	return Math::rad2deg(get_rot());
+}
+
+Size2 Control::get_scale() const {
+
+	return data.scale;
 }
 
 Size2 Control::get_size() const {
@@ -2375,6 +2436,7 @@ Matrix32 Control::get_transform() const {
 
 	Matrix32 xf;
 	xf.set_origin(get_pos());
+	xf.set_rotation_and_scale(get_rot(),get_scale());
 	return xf;
 }
 
@@ -2680,6 +2742,8 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_window_show_tooltip"),&Control::_window_show_tooltip);
 	ObjectTypeDB::bind_method(_MD("_size_changed"),&Control::_size_changed);
 	ObjectTypeDB::bind_method(_MD("_update_minimum_size"),&Control::_update_minimum_size);
+	ObjectTypeDB::bind_method(_MD("_get_rotd"),&Control::_get_rotd);
+	ObjectTypeDB::bind_method(_MD("_set_rotd"),&Control::_set_rotd);
 
 	ObjectTypeDB::bind_method(_MD("accept_event"),&Control::accept_event);
 	ObjectTypeDB::bind_method(_MD("get_minimum_size"),&Control::get_minimum_size);
@@ -2693,6 +2757,8 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_begin","pos"),&Control::set_begin);
 	ObjectTypeDB::bind_method(_MD("set_end","pos"),&Control::set_end);
 	ObjectTypeDB::bind_method(_MD("set_pos","pos"),&Control::set_pos);
+	ObjectTypeDB::bind_method(_MD("set_rot","rot"),&Control::set_rot);
+	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&Control::set_scale);
 	ObjectTypeDB::bind_method(_MD("set_size","size"),&Control::set_size);
 	ObjectTypeDB::bind_method(_MD("set_custom_minimum_size","size"),&Control::set_custom_minimum_size);
 	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Control::set_global_pos);
@@ -2700,6 +2766,8 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_begin"),&Control::get_begin);
 	ObjectTypeDB::bind_method(_MD("get_end"),&Control::get_end);
 	ObjectTypeDB::bind_method(_MD("get_pos"),&Control::get_pos);
+	ObjectTypeDB::bind_method(_MD("get_rot"),&Control::get_rot);
+	ObjectTypeDB::bind_method(_MD("get_scale"),&Control::get_scale);
 	ObjectTypeDB::bind_method(_MD("get_size"),&Control::get_size);
 	ObjectTypeDB::bind_method(_MD("get_custom_minimum_size"),&Control::get_custom_minimum_size);
 	ObjectTypeDB::bind_method(_MD("get_parent_area_size"),&Control::get_size);
@@ -2783,6 +2851,8 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/pos", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_pos"),_SCS("get_pos") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
+	ADD_PROPERTY(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint/tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
 	ADD_PROPERTYI( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
 	ADD_PROPERTYI( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
@@ -2874,8 +2944,10 @@ Control::Control() {
 	data.focus_mode=FOCUS_NONE;
 	data.modal_prev_focus_owner=0;
 
-
-
+	data.angle=0;
+	data.scale=Size2(1,1);
+	data.angle_cache=0;
+	data.scale_cache=Size2(1,1);
 
 			
 }

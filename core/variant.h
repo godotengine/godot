@@ -215,6 +215,7 @@ public:
 
 	operator Color() const;
 	operator Image() const;
+	operator Image::Format() const;
 	operator NodePath() const;
 	operator RefPtr() const;
 	operator RID() const;
