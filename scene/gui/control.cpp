@@ -138,7 +138,6 @@ void Control::edit_set_rect(const Rect2& p_edit_rect) {
 
 void Control::edit_rotate(float p_rot) {
 
-	printf("Control:%f\n",p_rot);
 	data.angle+=p_rot;
 	_size_changed();
 }
