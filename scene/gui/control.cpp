@@ -77,14 +77,24 @@ Control::Window::Window() {
 
 Variant Control::edit_get_state() const {
 
-	return get_rect();
+	Array state;
+	state.push_back(get_pos());
+	state.push_back(get_size());
+	state.push_back(get_rot());
+	state.push_back(get_scale());
+
+	return state;
 
 }
 void Control::edit_set_state(const Variant& p_state) {
 
-	Rect2 state=p_state;
-	set_pos(state.pos);
-	set_size(state.size);
+	Array state = p_state;
+	ERR_FAIL_COND( state.size() != 4);
+
+	set_pos(state[0]);
+	set_size(state[1]);
+	set_rot(state[2]);
+	set_scale(state[3]);
 }
 
 void Control::set_custom_minimum_size(const Size2& p_custom) {
