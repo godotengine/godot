@@ -186,13 +186,17 @@ public class Godot extends Activity implements SensorEventListener
 		Window window = getWindow();
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
 			| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-		window.getDecorView().setSystemUiVisibility(
-		            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-		            | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-		            | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-		            | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
-		            | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-		            | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+		if(Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
+			window.getDecorView().setSystemUiVisibility(
+				  View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+		       	| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+		        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+		        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+		        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+		        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+			UiChangeListener(); // need to run to check if other application draw above and re-enable the immersive mode
+		}
 
 		io = new GodotIO(this);
 		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
@@ -230,7 +234,34 @@ public class Godot extends Activity implements SensorEventListener
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		GodotLib.focusin();
+		if(Build.VERSION.SDK_INT >= 19.0){ // re-enable after the application resumes
+			window.getDecorView().setSystemUiVisibility(
+		   		  View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+		       	| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+		        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+		        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+		        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+		        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+		}
 	}
+
+	public void UiChangeListener() {
+        final View decorView = getWindow().getDecorView();
+        decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+        @Override
+        public void onSystemUiVisibilityChange(int visibility) {
+            if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+			    decorView.setSystemUiVisibility(
+                      View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+            		| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+                }
+            }
+        });
+    }
 
 	@Override public void onSensorChanged(SensorEvent event) {
 		float x = event.values[0];
