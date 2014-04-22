@@ -28,11 +28,12 @@ abstract public class HandlePurchaseTask {
 	
 	
 	public void handlePurchaseRequest(int resultCode, Intent data){
-//		Log.d("XXX", "Handling purchase response");
+		Log.d("XXX", "Handling purchase response");
 //		int responseCode = data.getIntExtra("RESPONSE_CODE", 0);
 		PaymentsCache pc = new PaymentsCache(context);
 		
 		String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
+		Log.d("XXX", "Purchase data:" + purchaseData);
 //		String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
 		
 		if (resultCode == Activity.RESULT_OK) {
@@ -61,7 +62,7 @@ abstract public class HandlePurchaseTask {
 				pc.setConsumableFlag("block", productId, true);
 				pc.setConsumableValue("token", productId, purchaseToken);
 				
-				success(purchaseData);
+				success(productId);
 				return;
 			}	catch (JSONException e) {
 				error(e.getMessage());

@@ -45,6 +45,7 @@ class RenderTargetTexture : public Texture {
 
 	OBJ_TYPE( RenderTargetTexture, Texture );
 
+	int flags;
 friend class Viewport;
 	Viewport *vp;
 
@@ -146,6 +147,7 @@ friend class RenderTargetTexture;
 
 	void update_worlds();
 
+	_FORCE_INLINE_ Matrix32 _get_input_pre_xform() const;
 
 	void _vp_enter_scene();
 	void _vp_exit_scene();

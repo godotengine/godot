@@ -940,7 +940,6 @@ void SceneMainLoop::_update_root_rect() {
 		} break;
 		case STRETCH_MODE_VIEWPORT: {
 
-			print_line("VP SIZE: "+viewport_size);
 			root->set_rect(Rect2(Point2(),viewport_size));
 			root->set_size_override_stretch(false);
 			root->set_size_override(false,Size2());

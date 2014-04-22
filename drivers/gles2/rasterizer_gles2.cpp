@@ -3290,6 +3290,7 @@ RID RasterizerGLES2::render_target_create(){
 	texture->active=false;
 	texture->total_data_size=0;
 	texture->render_target=rt;
+	texture->ignore_mipmaps=true;
 	rt->texture_ptr=texture;
 	rt->texture=texture_owner.make_rid( texture );
 	rt->texture_ptr->active=false;
@@ -5911,6 +5912,7 @@ void RasterizerGLES2::end_scene() {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GAMMA,current_env && current_env->fx_enabled[VS::ENV_FX_GAMMA]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,current_env && current_env->fx_enabled[VS::ENV_FX_HDR]);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,true);
 
 		copy_shader.bind();
 		//copy_shader.set_uniform(CopyShaderGLES2::SOURCE,0);
@@ -5954,6 +5956,8 @@ void RasterizerGLES2::end_scene() {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GAMMA,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,false);
+
 		material_shader.set_conditional(MaterialShaderGLES2::USE_HDR,false);
 
 

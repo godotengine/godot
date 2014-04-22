@@ -1111,12 +1111,12 @@ void VisualServerRaster::viewport_set_render_target_update_mode(RID p_viewport,R
 	Viewport *viewport = viewport_owner.get( p_viewport );
 	ERR_FAIL_COND(!viewport);
 
-	if (viewport->update_list.in_list())
+	if (viewport->render_target.is_valid() && viewport->update_list.in_list())
 		viewport_update_list.remove(&viewport->update_list);
 
 	viewport->render_target_update_mode=p_mode;
 
-	if (viewport->render_target_update_mode!=RENDER_TARGET_UPDATE_DISABLED)
+	if (viewport->render_target.is_valid() &&viewport->render_target_update_mode!=RENDER_TARGET_UPDATE_DISABLED)
 		viewport_update_list.add(&viewport->update_list);
 
 }

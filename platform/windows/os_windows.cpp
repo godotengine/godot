@@ -1647,6 +1647,13 @@ void OS_Windows::move_window_to_foreground() {
 
 }
 
+Error OS_Windows::shell_open(String p_uri) {
+
+	ShellExecuteW(NULL, L"open", p_uri.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	return OK;
+}
+
+
 String OS_Windows::get_locale() const {
 
 	const _WinLocale *wl = &_win_locales[0];

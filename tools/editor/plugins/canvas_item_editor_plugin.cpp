@@ -2142,18 +2142,22 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(lock_button);
 
 	lock_button->connect("pressed",this,"_popup_callback",varray(LOCK_SELECTED));
+	lock_button->set_tooltip("Lock the selected object in-place (can't be moved).");
 
 	unlock_button = memnew( ToolButton );
 	hb->add_child(unlock_button);
 	unlock_button->connect("pressed",this,"_popup_callback",varray(UNLOCK_SELECTED));
+	unlock_button->set_tooltip("Unlock the selected object (can be moved).");
 
 	group_button = memnew( ToolButton );
 	hb->add_child(group_button);
 	group_button->connect("pressed",this,"_popup_callback",varray(GROUP_SELECTED));
+	group_button->set_tooltip("Makes sure the object's' children are not selectable.");
 
 	ungroup_button = memnew( ToolButton );
 	hb->add_child(ungroup_button);
 	ungroup_button->connect("pressed",this,"_popup_callback",varray(UNGROUP_SELECTED));
+	ungroup_button->set_tooltip("Restores the object's' children ability to be selected.");
 
 	hb->add_child(memnew(VSeparator));
 
