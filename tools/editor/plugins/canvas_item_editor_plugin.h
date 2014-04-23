@@ -135,7 +135,6 @@ class CanvasItemEditor : public VBoxContainer {
 	Matrix32 transform;
 	float zoom;
 	int snap;
-	bool use_snap;
 	bool pixel_snap;
 	bool box_selecting;
 	Point2 box_selecting_to;
