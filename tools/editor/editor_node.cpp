@@ -97,12 +97,13 @@ EditorNode *EditorNode::singleton=NULL;
 
 void EditorNode::_update_title() {
 
+	String appname = Globals::get_singleton()->get("application/name");
+	String title = appname.empty()?String(VERSION_FULL_NAME):String(_MKSTR(VERSION_NAME) + String(" - ") + appname);
 	String edited = edited_scene?edited_scene->get_filename():String();
-
-	String title = edited.empty()?String(VERSION_FULL_NAME):String(_MKSTR(VERSION_NAME) + String(" - ")+edited.get_file());
+	if (!edited.empty())
+		title+=" - " + String(edited.get_file());
 	if (unsaved_cache)
 		title+=" (*)";
-
 
 	OS::get_singleton()->set_window_title(title);
 
@@ -1588,6 +1589,8 @@ void EditorNode::_cleanup_scene() {
 		}
 
 	}
+	
+	_update_title();
 
 }
 
