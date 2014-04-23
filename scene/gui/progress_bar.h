@@ -35,10 +35,16 @@ class ProgressBar : public Range {
 
 	OBJ_TYPE( ProgressBar, Range );
 
+private:
+	String text;
 protected:
 
+	static void _bind_methods();
 	void _notification(int p_what);
 public:
+
+	void set_text(const String& p_string);
+	String get_text() const;
 
 	Size2 get_minimum_size() const;
 	ProgressBar();

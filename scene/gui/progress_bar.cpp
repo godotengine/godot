@@ -61,12 +61,33 @@ void ProgressBar::_notification(int p_what) {
 		}
 
 		int fh=font->get_height();
-		String txt=itos(int(get_unit_value()*100))+"%";
+		String txt;
+		if (text != "") {
+			txt=text;
+		} else {
+			txt=itos(int(get_unit_value()*100))+"%";
+		}
 		font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
 	}
+}
+
+void ProgressBar::set_text(const String& p_string) {
+	text = p_string;
+	update();
+}
+
+String ProgressBar::get_text() const {
+	return text;
+}
+
+void ProgressBar::_bind_methods() {
+	ObjectTypeDB::bind_method(_MD("set_text","text"),&ProgressBar::set_text);
+	ObjectTypeDB::bind_method(_MD("get_text"),&ProgressBar::get_text);
+	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL ), _SCS("set_text"),_SCS("get_text")  );
 }
 
 ProgressBar::ProgressBar() {
 
 	set_v_size_flags(0);
+	text="";
 }
