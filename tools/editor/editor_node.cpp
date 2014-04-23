@@ -1780,6 +1780,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			bool relpaths = (scene->has_meta("__editor_relpaths__") && scene->get_meta("__editor_relpaths__").operator bool());
 
+			file->set_mode(FileDialog::MODE_SAVE_FILE);
+
 			file->set_current_path(cpath);
 			file->set_title("Save Translatable Strings");
 			file->popup_centered_ratio();
