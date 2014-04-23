@@ -538,7 +538,7 @@ _OS *_OS::singleton=NULL;
 
 void _OS::print_line(String p_string, bool new_line) {
 
-	return ::print_line(p_string, new_line);
+	return ::print_line(p_string);
 }
 
 void _OS::_bind_methods() {
