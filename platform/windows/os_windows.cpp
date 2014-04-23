@@ -1254,7 +1254,7 @@ void OS_Windows::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 	if (dx != 0 || dy != 0) {
 		RECT rt;
 		GetWindowRect(hWnd, &rt);
-		MoveWindow(hWnd, rt.left, rt.top, (rt.right-rt.left+1)+dx, (rt.bottom-rt.top+1)+dy, true);
+		MoveWindow(hWnd, rt.left, rt.top, (rt.right-rt.left)+dx, (rt.bottom-rt.top)+dy, true);
 	}
 }
 OS::VideoMode OS_Windows::get_video_mode(int p_screen) const {
