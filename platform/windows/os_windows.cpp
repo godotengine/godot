@@ -51,6 +51,9 @@
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+
+#include<Iphlpapi.h>  
+
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 //#define STDOUT_FILE
@@ -1730,7 +1733,24 @@ void OS_Windows::run() {
 
 }
 
+String OS_Windows::get_unique_ID() const {
 
+    IP_ADAPTER_INFO adapter;  
+    DWORD retval = 0;  
+    ULONG out_buflen = sizeof(IP_ADAPTER_INFO);  
+
+	ERR_FAIL_COND_V(GetAdaptersInfo(&adapter, &out_buflen) != NO_ERROR, "");
+
+	char mac[128];
+	sprintf(mac, "%02x-%02x-%02x-%02x-%02x-%02x",
+		adapter.Address[0],  
+		adapter.Address[1],  
+		adapter.Address[2],  
+		adapter.Address[3],  
+		adapter.Address[4],  
+		adapter.Address[5]);
+	return mac;
+}
 
 MainLoop *OS_Windows::get_main_loop() const {
 

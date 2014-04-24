@@ -250,6 +250,8 @@ public:
 
 	void run();
 
+	virtual String get_unique_ID() const;
+
 	virtual bool get_swap_ok_cancel() { return true; }
 
 	OS_Windows(HINSTANCE _hInstance);	
