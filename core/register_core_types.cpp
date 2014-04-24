@@ -193,6 +193,7 @@ void register_core_singletons() {
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TS",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("Input",Input::get_singleton() ) );
+	Globals::get_singleton()->add_singleton( Globals::Singleton("InputMap",InputMap::get_singleton() )  );
 
 
 }
