@@ -62,7 +62,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib opengl32.lib dsound.lib kernel32.lib ole32.lib user32.lib gdi32.lib wsock32.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib dsound.lib kernel32.lib ole32.lib user32.lib gdi32.lib wsock32.lib iphlpapi.lib"
 				LinkIncremental="2"
 				GenerateManifest="true"
 				GenerateDebugInformation="true"
@@ -139,7 +139,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib opengl32.lib dsound.lib kernel32.lib ole32.lib user32.lib gdi32.lib wsock32.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib dsound.lib kernel32.lib ole32.lib user32.lib gdi32.lib wsock32.lib iphlpapi.lib"
 				LinkIncremental="1"
 				GenerateManifest="true"
 				ManifestFile="$(OutDir)\$(TargetFileName).intermediate.manifest"
@@ -220,7 +220,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="winmm.lib opengl32.lib dsound.lib kernel32.lib ole32.lib user32.lib gdi32.lib wsock32.lib"
+				AdditionalDependencies="winmm.lib opengl32.lib dsound.lib kernel32.lib ole32.lib user32.lib gdi32.lib wsock32.lib iphlpapi.lib"
 				LinkIncremental="1"
 				GenerateManifest="true"
 				ManifestFile="$(OutDir)\$(TargetFileName).intermediate.manifest"
