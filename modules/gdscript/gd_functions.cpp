@@ -596,7 +596,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			String str=p_args[0]->operator String();
 			for(int i=1;i<p_arg_count;i++) {
 
-				str=str.replace(String("{") + String::num(i) + String("}"),p_args[i]->operator String());
+				str=str.replace(String("{") + String::num(i-1) + String("}"),p_args[i]->operator String());
 			}
 
 			r_ret=str;
