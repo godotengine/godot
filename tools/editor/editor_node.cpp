@@ -1982,7 +1982,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				confirmation->popup_centered(Size2(300,70));
 				break;
 			}
-			
+
+			_menu_option_confirm(RUN_STOP,true);
 			get_scene()->quit();
 				
 		} break;
