@@ -764,6 +764,36 @@ Variant Object::call(const StringName& p_name, VARIANT_ARG_DECLARE) {
 	Variant::CallError error;
 
 	Variant ret = call(p_name,argptr,argc,error);
+
+	switch(error.error) {
+
+		case Variant::CallError::CALL_ERROR_INVALID_ARGUMENT: {
+
+			String err = "Invalid type for argument #"+itos(error.argument)+", expected '"+Variant::get_type_name(error.expected)+"'.";
+			ERR_PRINT(err.utf8().get_data());
+
+		} break;
+		//case Variant::CallError::CALL_ERROR_INVALID_METHOD: {
+
+		//	String err = "Invalid method '"+p_name+"' for type '"+Variant::get_type_name(Variant::OBJECT)+"'.";
+		//	ERR_PRINT(err.utf8().get_data());
+		//} break;
+		case Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS: {
+
+			String err = "Too few arguments for method '"+p_name+"'";
+			ERR_PRINT(err.utf8().get_data());
+		} break;
+		case Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS: {
+
+			String err = "Too many arguments for method '"+p_name+"'";
+			ERR_PRINT(err.utf8().get_data());
+		} break;
+		default: {}
+	}
+
+	//	break;
+	//}
+
 	return ret;
 
 #endif
