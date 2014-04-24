@@ -2,36 +2,36 @@
 
 import os
 
-import sys	
+import sys
 
 
 def is_active():
 	return True
-        
+
 def get_name():
         return "Windows"
 
 def can_build():
-	
-	
+
+
 	if (os.name=="nt"):
 		#building natively on windows!
 		if (os.getenv("VSINSTALLDIR")):
-			return True 
+			return True
 		else:
 			print("MSVC Not detected, attempting mingw.")
 			return True
-			
-			
-			
+
+
+
 	if (os.name=="posix"):
-	
+
 		if os.system("i586-mingw32msvc-gcc --version") == 0:
 			return True
 
-			
+
 	return False
-		
+
 def get_opts():
 
 	mwp=""
@@ -46,13 +46,13 @@ def get_opts():
 		('mingw_prefix','Mingw Prefix',mwp),
 		('mingw_prefix_64','Mingw Prefix 64 bits',mwp64),
 	]
-  
+
 def get_flags():
 
 	return [
 		('freetype','builtin'), #use builtin freetype
 	]
-			
+
 
 
 def configure(env):
@@ -116,8 +116,8 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
 		env.Append(CCFLAGS=['/DGLES1_ENABLED'])
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
-		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32','wsock32', 'shell32'])
-		
+		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32','wsock32', 'shell32', 'iphlpapi'])
+
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
                 if (os.getenv("DXSDK_DIR")):
                         DIRECTX_PATH=os.getenv("DXSDK_DIR")
@@ -159,7 +159,7 @@ def configure(env):
 			mingw_prefix=env["mingw_prefix"];
 
 		if (env["target"]=="release"):
-			
+
 			env.Append(CCFLAGS=['-O3','-ffast-math','-fomit-frame-pointer','-msse2'])
 			env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
 			env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
@@ -170,7 +170,7 @@ def configure(env):
 			env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
 
 		elif (env["target"]=="debug"):
-					
+
 			env.Append(CCFLAGS=['-g', '-Wall','-DDEBUG_ENABLED'])
 		elif (env["target"]=="release_tools"):
 
@@ -195,7 +195,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-DWINDOWS_ENABLED','-mwindows'])
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLES1_ENABLED','-DGLEW_ENABLED'])
-		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','wsock32','kernel32'])
+		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','wsock32','kernel32','iphlpapi'])
 		#'d3dx9d'
 		env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
 		env.Append(LINKFLAGS=['-g'])
@@ -206,5 +206,5 @@ def configure(env):
 	env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
-	
+
 

@@ -1916,7 +1916,6 @@ void Control::_set_rotd(float p_angle) {
 void Control::set_scale(const Size2& p_scale) {
 
 	data.scale=p_scale;
-	_size_changed();
 	if (data.scale.x==0)
 		data.scale.x=CMP_EPSILON;
 	if (data.scale.y==0)
