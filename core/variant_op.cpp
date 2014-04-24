@@ -738,6 +738,18 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				_RETURN( p_a._data._int % p_b._data._int );
 			}
 
+			if (p_a.type==STRING && p_b.type==ARRAY) {
+
+				const Array& arr = p_b;
+				String str=p_a;
+				for(int i=0;i<arr.size();i++) {
+
+					str=str.replace(String("{") + String::num(i) + String("}"),arr[i].operator String());
+				}
+
+				_RETURN(str);
+			}
+
 			r_valid=false;
 			return;
 
