@@ -1072,8 +1072,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 							cursor_set_line(selection.from_line);
 							cursor_set_column(selection.from_column);
+							_begin_compex_operation();
 							_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 							_insert_text_at_cursor(txt);
+							_end_compex_operation();
 							selection.active=true;
 							selection.from_column=sel_column;
 							selection.from_line=sel_line;
@@ -1569,8 +1571,6 @@ void TextEdit::_post_shift_selection() {
 
 /**** TEXT EDIT CORE API ****/
 
-
-
 void TextEdit::_base_insert_text(int p_line, int p_char,const String& p_text,int &r_end_line,int &r_end_column) {
 
 	//save for undo...
@@ -1677,14 +1677,12 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column,int p_to_lin
 
 
 
-
 void TextEdit::_insert_text(int p_line, int p_char,const String& p_text,int *r_end_line,int *r_end_column) {
 
 	if (!setting_text)
 		idle_detect->start();
 
 	if (undo_enabled) {
-
 		_clear_redo();
 	}
 
@@ -2496,7 +2494,7 @@ void TextEdit::_clear_redo() {
 
 
 void TextEdit::undo() {
-
+	
 	_push_current_op();
 
 	if (undo_stack_pos==NULL) {
@@ -2511,8 +2509,13 @@ void TextEdit::undo() {
 	else
 		undo_stack_pos=undo_stack_pos->prev();
 
-
 	_do_text_op( undo_stack_pos->get(),true);
+	if(undo_stack_pos->get().chain_backward) {
+		do {
+			undo_stack_pos = undo_stack_pos->prev();
+			_do_text_op(undo_stack_pos->get(), true);
+		} while(!undo_stack_pos->get().chain_forward);
+	}
 
 	cursor_set_line(undo_stack_pos->get().from_line);
 	cursor_set_column(undo_stack_pos->get().from_column);
@@ -2526,8 +2529,13 @@ void TextEdit::redo() {
 	if (undo_stack_pos==NULL)
 		return; //nothing to do.
 
-
-	_do_text_op( undo_stack_pos->get(),false);
+	_do_text_op(undo_stack_pos->get(), false);
+	if(undo_stack_pos->get().chain_forward) {
+		do {
+			undo_stack_pos=undo_stack_pos->next();
+			_do_text_op(undo_stack_pos->get(), false);
+		} while(!undo_stack_pos->get().chain_backward);
+	}
 	cursor_set_line(undo_stack_pos->get().from_line);
 	cursor_set_column(undo_stack_pos->get().from_column);
 	undo_stack_pos=undo_stack_pos->next();
@@ -2539,20 +2547,43 @@ void TextEdit::clear_undo_history() {
 	saved_version=0;
 	current_op.type=TextOperation::TYPE_NONE;
 	undo_stack_pos=NULL;
-	undo_stack.clear();;
+	undo_stack.clear();
 
 }
 
+void TextEdit::_begin_compex_operation() {
+	_push_current_op();
+	next_operation_is_complex=true;
+}
+
+void TextEdit::_end_compex_operation() {
+	
+	_push_current_op();
+	ERR_FAIL_COND(undo_stack.size() == 0);
+	
+	if(undo_stack.back()->get().chain_forward) {
+		undo_stack.back()->get().chain_forward=false;
+		return;
+	}
+	
+	undo_stack.back()->get().chain_backward=true;
+}
 
 void TextEdit::_push_current_op() {
-
+	
 	if (current_op.type==TextOperation::TYPE_NONE)
 		return; // do nothing
-
+	
+	if(next_operation_is_complex) {
+		current_op.chain_forward=true;
+		next_operation_is_complex=false;
+	}
+	
 	undo_stack.push_back(current_op);
 	current_op.type=TextOperation::TYPE_NONE;
 	current_op.text="";
-
+	current_op.chain_forward=false;
+	
 }
 
 void TextEdit::set_draw_tabs(bool p_draw) {
@@ -2957,6 +2988,7 @@ TextEdit::TextEdit()  {
 	completion_line_ofs=0;
 	tooltip_obj=NULL;
 	line_numbers=false;
+	next_operation_is_complex=false;
 }
 
 TextEdit::~TextEdit(){
