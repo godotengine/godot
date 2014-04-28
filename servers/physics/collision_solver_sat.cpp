@@ -118,9 +118,9 @@ static void _generate_contacts_edge_edge(const Vector3 * p_points_A,int p_point_
 		Vector3 base_B = p_points_B[0] - axis * axis.dot(p_points_B[0]);
 
 		//sort all 4 points in axis
-		float dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
+		real_t dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
 
-		SortArray<float> sa;
+		SortArray<real_t> sa;
 		sa.sort(dvec,4);
 
 		//use the middle ones as contacts

@@ -249,7 +249,7 @@ _FORCE_INLINE_ static void _generate_contacts_edge_edge(const Vector2 * p_points
 	float dvec[4]={ axis.dot(p_points_A[0]), axis.dot(p_points_A[1]), axis.dot(p_points_B[0]), axis.dot(p_points_B[1]) };
 
 	//todo , find max/min and then use 2 central points
-	SortArray<float> sa;
+	SortArray<real_t> sa;
 	sa.sort(dvec,4);
 
 	//use the middle ones as contacts

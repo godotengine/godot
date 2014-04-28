@@ -206,8 +206,8 @@ b2Vec2* b2Polygon::GetVertexVecs() {
 	
 b2Polygon::b2Polygon(b2Triangle& t) {
 	nVertices = 3;
-	x = new float[nVertices];
-	y = new float[nVertices];
+	x = new real_t[nVertices];
+	y = new real_t[nVertices];
 	for (int32 i = 0; i < nVertices; ++i) {
 		x[i] = t.x[i];
 		y[i] = t.y[i];
@@ -494,8 +494,8 @@ b2Polygon* b2Polygon::Add(b2Triangle& t) {
         if (tipT == firstT || tipT == secondT)
             tipT = 2;
 		
-        float32* newx = new float[nVertices + 1];
-        float32* newy = new float[nVertices + 1];
+        float32* newx = new real_t[nVertices + 1];
+        float32* newy = new real_t[nVertices + 1];
         int32 currOut = 0;
         for (int32 i = 0; i < nVertices; i++) {
             newx[currOut] = x[i];
@@ -923,7 +923,7 @@ void ReversePolygon(b2Polygon& p){
 	ReversePolygon(p.x,p.y,p.nVertices);
 }
 	
-void ReversePolygon(float* x, float* y, int n) {
+void ReversePolygon(real_t* x, real_t* y, int n) {
         if (n == 1)
             return;
         int32 low = 0;

@@ -95,7 +95,7 @@ public:
 	_FORCE_INLINE_ Vector3 get_endpoint(int p_point) const;
 
 	AABB expand(const Vector3& p_vector) const;
-	_FORCE_INLINE_ void project_range_in_plane(const Plane& p_plane,float &r_min,float& r_max) const;
+	_FORCE_INLINE_ void project_range_in_plane(const Plane& p_plane,real_t &r_min,real_t& r_max) const;
 	_FORCE_INLINE_ void expand_to(const Vector3& p_vector); /** expand to contain a point if necesary */
 
 	operator String() const;
@@ -273,7 +273,7 @@ inline void AABB::expand_to(const Vector3& p_vector) {
 	size=end-begin;
 }
 
-void AABB::project_range_in_plane(const Plane& p_plane,float &r_min,float& r_max) const {
+void AABB::project_range_in_plane(const Plane& p_plane,real_t &r_min,real_t& r_max) const {
 
 	Vector3 half_extents( size.x * 0.5, size.y * 0.5, size.z * 0.5 );
 	Vector3 center( pos.x + half_extents.x, pos.y + half_extents.y, pos.z + half_extents.z );

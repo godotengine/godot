@@ -328,7 +328,7 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 
 	} else if (p_msg=="performance") {
 		Array arr = p_data[0];
-		Vector<float> p;
+		Vector<real_t> p;
 		p.resize(arr.size());
 		for(int i=0;i<arr.size();i++) {
 			p[i]=arr[i];
@@ -405,7 +405,7 @@ void ScriptEditorDebugger::_performance_draw() {
 		float spacing=point_sep/float(cols);
 		float from = r.size.width;
 
-		List<Vector<float> >::Element *E=perf_history.front();
+		List<Vector<real_t> >::Element *E=perf_history.front();
 		float prev=-1;
 		while(from>=0 && E) {
 

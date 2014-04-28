@@ -211,10 +211,10 @@ bool CollisionSolver2DSW::solve_concave(const Shape2DSW *p_shape_A,const Matrix3
 	for(int i=0;i<2;i++) {
 
 	     Vector2 axis( p_transform_B.elements[i] );
-	     float axis_scale = 1.0/axis.length();
+	     real_t axis_scale = 1.0/axis.length();
 	     axis*=axis_scale;
 
-	     float smin,smax;
+	     real_t smin,smax;
 	     p_shape_A->project_rangev(axis,rel_transform,smin,smax);
 	     smin*=axis_scale;
 	     smax*=axis_scale;

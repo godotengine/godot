@@ -90,7 +90,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_half_float;
 
 
-	Vector<float> skel_default;
+	Vector<real_t> skel_default;
 
 	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
@@ -938,7 +938,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _setup_skeleton(const Skeleton *p_skeleton);
 
 
-	Error _setup_geometry(const Geometry *p_geometry, const Material* p_material,const Skeleton *p_skeleton, const float *p_morphs);
+	Error _setup_geometry(const Geometry *p_geometry, const Material* p_material,const Skeleton *p_skeleton, const real_t *p_morphs);
 	void _render(const Geometry *p_geometry,const Material *p_material, const Skeleton* p_skeleton, const GeometryOwner *p_owner,const Transform& p_xform);
 
 

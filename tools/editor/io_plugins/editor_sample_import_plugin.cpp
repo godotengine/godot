@@ -414,7 +414,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	print_line("\tloop: "+itos(loop));
 	print_line("\tloop begin: "+itos(loop_beg));
 	print_line("\tloop end: "+itos(loop_end));
-	Vector<float> data;
+	Vector<real_t> data;
 	data.resize(len*chans);
 
 	{
@@ -445,7 +445,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	if (limit_rate && rate > limit_rate_hz) {
 		//resampleeee!!!
 		int new_data_len = len * limit_rate_hz / rate;
-		Vector<float> new_data;
+		Vector<real_t> new_data;
 		new_data.resize( new_data_len * chans );
 		for(int c=0;c<chans;c++) {
 
@@ -533,7 +533,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 
 		if (first<last) {
 
-			Vector<float> new_data;
+			Vector<real_t> new_data;
 			new_data.resize((last-first+1)*chans);
 			for(int i=first*chans;i<=last*chans;i++) {
 				new_data[i-first*chans]=data[i];
@@ -557,7 +557,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 	bool force_mono = from->get_option("force/mono");
 	if (force_mono && chans==2) {
 
-		Vector<float> new_data;
+		Vector<real_t> new_data;
 		new_data.resize(data.size()/2);
 		for(int i=0;i<len;i++) {
 			new_data[i]=(data[i*2+0]+data[i*2+1])/2.0;

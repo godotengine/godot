@@ -76,8 +76,8 @@ class ScriptEditorDebugger : public Control {
 	Button *dobreak;
 	Button *docontinue;
 
-	List<Vector<float> > perf_history;
-	Vector<float> perf_max;
+	List<Vector<real_t> > perf_history;
+	Vector<real_t> perf_max;
 	Vector<TreeItem*> perf_items;
 
 	Tree *perf_monitors;

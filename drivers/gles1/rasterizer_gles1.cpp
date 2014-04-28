@@ -3546,7 +3546,7 @@ static const int gl_texcoord_index[VS::ARRAY_MAX-1] = {
 };
 
 
-Error RasterizerGLES1::_setup_geometry(const Geometry *p_geometry, const Material* p_material, const Skeleton *p_skeleton,const float *p_morphs) {
+Error RasterizerGLES1::_setup_geometry(const Geometry *p_geometry, const Material* p_material, const Skeleton *p_skeleton,const real_t *p_morphs) {
 
 
 	switch(p_geometry->type) {
