@@ -839,8 +839,8 @@ void TextEdit::backspace_at_cursor() {
 
 	int prev_line = cursor.column?cursor.line:cursor.line-1;
 	int prev_column = cursor.column?(cursor.column-1):(text[cursor.line-1].length());
-	bool pair_symbols_tool = EDITOR_DEF("text_editor/pair_symbols_tool", false);
-	if(pair_symbols_tool && 
+	bool auto_brace_tool = EDITOR_DEF("text_editor/auto_brace_tool", false);
+	if(auto_brace_tool && 
 		cursor.column > 0 &&
 		_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
 		_consume_backspace_for_pair_symbol(prev_line, prev_column);
@@ -1246,8 +1246,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					default:
 						if (k.unicode>=32 && !k.mod.command && !k.mod.alt && !k.mod.meta)
 							clear=true;
-						bool pair_symbols_tool=EDITOR_DEF("text_editor/pair_symbols_tool", false);
-						if (pair_symbols_tool && _is_pair_left_symbol(k.unicode))
+						bool auto_brace_tool=EDITOR_DEF("text_editor/auto_brace_tool", false);
+						if (auto_brace_tool && _is_pair_left_symbol(k.unicode))
 							clear=false;
 				}
 
@@ -1674,9 +1674,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					
 					const CharType chr[2] = {k.unicode, 0};
-					bool pair_symbols_tool = EDITOR_DEF("text_editor/pair_symbols_tool", false);
+					bool auto_brace_tool = EDITOR_DEF("text_editor/auto_brace_tool", false);
 					
-					if(pair_symbols_tool && _is_pair_symbol(chr[0])) {
+					if(auto_brace_tool && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);
 					} else {
 						_insert_text_at_cursor(chr);
