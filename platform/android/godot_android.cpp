@@ -174,10 +174,18 @@ public:
 				} break;
 				case Variant::REAL_ARRAY: {
 
-					DVector<float> array = *p_args[i];
+					DVector<real_t> array = *p_args[i];
+#ifdef REAL_T_IS_DOUBLE
+					jdoubleArray arr = env->NewDoubleArray(array.size());
+#else
 					jfloatArray arr = env->NewFloatArray(array.size());
-					DVector<float>::Read r = array.read();
+#endif
+					DVector<real_t>::Read r = array.read();
+#ifdef REAL_T_IS_DOUBLE
+					env->SetDoubleArrayRegion(arr,0,array.size(),r.ptr());
+#else
 					env->SetFloatArrayRegion(arr,0,array.size(),r.ptr());
+#endif
 					v[i].l=arr;
 
 				} break;
@@ -250,16 +258,23 @@ public:
 				ret=sarr;
 			} break;
 			case Variant::REAL_ARRAY: {
-
+#ifdef REAL_T_IS_DOUBLE
+				jdoubleArray arr = (jdoubleArray)env->CallObjectMethodA(instance,E->get().method,v);
+#else
 				jfloatArray arr = (jfloatArray)env->CallObjectMethodA(instance,E->get().method,v);
+#endif
 
 				int fCount = env->GetArrayLength(arr);
-				DVector<float> sarr;
+				DVector<real_t> sarr;
 				sarr.resize(fCount);
 
-				DVector<float>::Write w = sarr.write();
+				DVector<real_t>::Write w = sarr.write();
+#ifdef REAL_T_IS_DOUBLE
+				env->GetDoubleArrayRegion(arr,0,fCount,w.ptr());
+#else
 				env->GetFloatArrayRegion(arr,0,fCount,w.ptr());
-				w = DVector<float>::Write();
+#endif
+				w = DVector<real_t>::Write();
 				ret=sarr;
 			} break;
 			default: {
@@ -885,10 +900,18 @@ static Variant::Type get_jni_type(const String& p_type) {
 		{"void",Variant::NIL},
 		{"boolean",Variant::BOOL},
 		{"int",Variant::INT},
+#ifdef REAL_T_IS_DOUBLE
+		{"double",Variant::REAL},
+#else
 		{"float",Variant::REAL},
+#endif
 		{"java.lang.String",Variant::STRING},
 		{"[I",Variant::INT_ARRAY},
+#ifdef REAL_T_IS_DOUBLE
+		{"[D",Variant::REAL_ARRAY},
+#else
 		{"[F",Variant::REAL_ARRAY},
+#endif
 		{"[java.lang.String",Variant::STRING_ARRAY},
 		{NULL,Variant::NIL}
 	};

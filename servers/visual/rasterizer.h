@@ -464,7 +464,7 @@ public:
 		RID skeleton;
 		RID material_override;
 		Vector<RID> light_instances;
-		Vector<float> morph_values;
+		Vector<real_t> morph_values;
 		bool mirror :8;
 		bool depth_scale :8;
 		bool billboard :8;

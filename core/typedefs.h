@@ -202,6 +202,12 @@ static inline uint32_t BSWAP32(uint32_t x) {
 	return((x<<24)|((x<<8)&0x00FF0000)|((x>>8)&0x0000FF00)|(x>>24));
 }
 
+/** Swap 64 bits value for endianness */
+static inline uint64_t BSWAP64(uint64_t x) {
+	return((x<<56)&0xff00000000000000UL)|((x<<40)&0x00ff000000000000UL)|((x<<24)&0x0000ff0000000000UL)|((x<<8)&0x000000ff00000000UL)|
+		  ((x>>8)&0x00000000ff000000UL)|((x>>24)&0x0000000000ff0000UL)|((x>>40)&0x000000000000ff00UL)|((x>>56)&0x00000000000000ffUL);
+}
+
 /** When compiling with RTTI, we can add an "extra"
  * layer of safeness in many operations, so dynamic_cast
  * is used besides casting by enum.

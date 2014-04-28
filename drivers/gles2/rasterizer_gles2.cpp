@@ -4526,7 +4526,7 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 }
 
 
-Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Material* p_material, const Skeleton *p_skeleton,const float *p_morphs) {
+Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Material* p_material, const Skeleton *p_skeleton,const real_t *p_morphs) {
 
 
 	switch(p_geometry->type) {
@@ -8042,7 +8042,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	skel_default.resize(1024*4);
 	for(int i=0;i<1024/3;i++) {
 
-		float * ptr = skel_default.ptr();
+		real_t * ptr = skel_default.ptr();
 		ptr+=i*4*4;
 		ptr[0]=1.0;
 		ptr[1]=0.0;

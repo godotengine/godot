@@ -3473,7 +3473,7 @@ void VisualServerRaster::_instance_draw(Instance *p_instance) {
 	switch(p_instance->base_type) {
 	
 		case INSTANCE_MESH: {
-			const float *morphs = NULL;
+			const real_t *morphs = NULL;
 			if (!p_instance->data.morph_values.empty()) {
 				morphs=&p_instance->data.morph_values[0];
 			}
@@ -3762,7 +3762,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 		// a pre pass will need to be needed to determine the actual z-near to be used
 		for(int j=0;j<caster_cull_count;j++) {
 		
-			float min,max;
+			real_t min,max;
 			Instance *ins=instance_shadow_cull_result[j];
 			if (!ins->visible || !ins->cast_shadows)
 				continue;
@@ -4968,7 +4968,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 
 			if (keep) {
 				// update cull range
-				float min,max;
+				real_t min,max;
 				ins->transformed_aabb.project_range_in_plane(cull_range.nearp,min,max);
 
 				if (min<cull_range.min)

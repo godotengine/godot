@@ -47,7 +47,7 @@ public:
 			Vector2 uv;
 			Vector2 uv2;
 			Vector<int> bones;
-			Vector<float> weights;
+			Vector<real_t> weights;
 
 			Vertex() {  }
 	};
@@ -71,7 +71,7 @@ private:
 	Vector2 last_uv;
 	Vector2 last_uv2;
 	Vector<int> last_bones;
-	Vector<float> last_weights;
+	Vector<real_t> last_weights;
 	Plane last_tangent;
 
 	void _create_list(const Ref<Mesh>& p_existing, int p_surface, List<Vertex> *r_vertex, List<int> *r_index,int &lformat);
@@ -91,7 +91,7 @@ public:
 	void add_uv( const Vector2& p_uv);
 	void add_uv2( const Vector2& p_uv);
 	void add_bones( const Vector<int>& p_indices);
-	void add_weights( const Vector<float>& p_weights);
+	void add_weights( const Vector<real_t>& p_weights);
 
 	void add_index( int p_index);
 

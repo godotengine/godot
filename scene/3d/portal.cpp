@@ -34,7 +34,7 @@
 bool Portal::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (p_name=="shape") {
-		DVector<float> src_coords=p_value;
+		DVector<real_t> src_coords=p_value;
 		Vector<Point2> points;
 		int src_coords_size = src_coords.size();
 		ERR_FAIL_COND_V(src_coords_size%2,false);
@@ -63,7 +63,7 @@ bool Portal::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (p_name=="shape") {
 		Vector<Point2> points=get_shape();
-		DVector<float> dst_coords;
+		DVector<real_t> dst_coords;
 		dst_coords.resize(points.size()*2);
 		
 		for (int i=0;i<points.size();i++) {

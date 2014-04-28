@@ -46,7 +46,7 @@ AudioServer *AudioServer::get_singleton() {
 	return singleton;
 }
 
-void AudioServer::sample_set_signed_data(RID p_sample, const DVector<float>& p_buffer) {
+void AudioServer::sample_set_signed_data(RID p_sample, const DVector<real_t>& p_buffer) {
 
 	int len = p_buffer.size();
 	ERR_FAIL_COND( len == 0 );
@@ -57,7 +57,7 @@ void AudioServer::sample_set_signed_data(RID p_sample, const DVector<float>& p_b
 
 	int16_t *samples = (int16_t*)w.ptr();
 
-	DVector<float>::Read r = p_buffer.read();
+	DVector<real_t>::Read r = p_buffer.read();
 
 	for(int i=0;i<len;i++) {
 

@@ -167,7 +167,7 @@ public:
 	virtual int sample_get_length(RID p_sample) const=0;
 	virtual const void* sample_get_data_ptr(RID p_sample) const=0;
 
-	virtual void sample_set_signed_data(RID p_sample, const DVector<float>& p_buffer);
+	virtual void sample_set_signed_data(RID p_sample, const DVector<real_t>& p_buffer);
 	virtual void sample_set_data(RID p_sample, const DVector<uint8_t>& p_buffer)=0;
 	virtual const DVector<uint8_t> sample_get_data(RID p_sample) const=0;
 

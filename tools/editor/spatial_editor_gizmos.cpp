@@ -1147,7 +1147,7 @@ void SkeletonSpatialGizmo::redraw() {
 	grests.resize(skel->get_bone_count());
 
 	Vector<int> bones;
-	Vector<float> weights;
+	Vector<real_t> weights;
 	bones.resize(4);
 	weights.resize(4);
 
