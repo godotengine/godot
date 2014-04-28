@@ -50,6 +50,7 @@
 #include "io/http_client.h"
 #include "packed_data_container.h"
 #include "func_ref.h"
+#include "input_map.h"
 
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
