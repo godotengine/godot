@@ -572,6 +572,33 @@ void Font::update_atlas() const {
             }
         }
     }
+	// setup reload hook
+	for (int i=0;i<textures.size();i++) {
+		Ref<ImageTexture> tex=textures[i];
+		if(tex.is_null())
+			continue;
+		VisualServer::get_singleton()->texture_set_reload_hook(tex->get_rid(),get_instance_ID(),"_reload_hook");
+	}
+}
+
+void Font::_reload_hook(const RID& p_hook) {
+
+    if ((!atlas_dirty)||ttf_font.is_null())
+        return;
+
+	// device lost, cleanup all cached font atlas(will re-generated when draw text characters)
+	char_map.clear();
+	textures.clear();
+
+    atlas_x=0;
+    atlas_y=0;
+    atlas_height=0;
+    atlas_dirty_index=0;
+    atlas_dirty=false;
+    for(int i=0;i<atlas_images.size();i++) {
+        memdelete(atlas_images[i]);
+    }
+    atlas_images.clear();
 }
 
 bool Font::set_ttf_path(const String& p_path, int p_size) {
@@ -676,6 +703,7 @@ void Font::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_textures"),&Font::_set_textures);
 	ObjectTypeDB::bind_method(_MD("_get_textures"),&Font::_get_textures);
+	ObjectTypeDB::bind_method(_MD("_reload_hook","rid"),&Font::_reload_hook);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::ARRAY, "textures", PROPERTY_HINT_NONE,"", PROPERTY_USAGE_NOEDITOR ), _SCS("_set_textures"), _SCS("_get_textures") );

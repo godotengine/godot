@@ -93,6 +93,7 @@ private:
 	DVector<int> _get_kernings() const;
 	void _set_textures(const Vector<Variant> & p_textures);
 	Vector<Variant> _get_textures() const;
+	void _reload_hook(const RID& p_hook);
 
 protected:
 	
