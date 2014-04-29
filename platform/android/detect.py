@@ -1,11 +1,11 @@
-import os
+﻿import os
 import sys
 import string
 import platform
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "Android"
 
@@ -20,9 +20,9 @@ def can_build():
 def get_opts():
 
 	return [
-	     ('ANDROID_NDK_ROOT', 'the path to Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)), 
-             ('NDK_TOOLCHAIN', 'toolchain to use for the NDK',"arm-eabi-4.4.0"), 	                      
-             #android 2.3       
+	     ('ANDROID_NDK_ROOT', 'the path to Android NDK', os.environ.get("ANDROID_NDK_ROOT", 0)),
+             ('NDK_TOOLCHAIN', 'toolchain to use for the NDK',"arm-eabi-4.4.0"),
+             #android 2.3
 		 ('ndk_platform', 'compile for platform: (2.2,2.3)',"2.2"),
 		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
 	     ('android_stl','enable STL support in android port (for modules)','no'),
@@ -33,11 +33,11 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'yes'),
+		#('lua', 'yes'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('builtin_zlib', 'no'),
-                ('openssl','builtin'), #use builtin openssl
+                #('openssl','builtin'), #use builtin openssl
         ]
 
 
@@ -57,8 +57,8 @@ def configure(env):
 		env.Tool('gcc')
 		env['SPAWN'] = methods.win32_spawn
 
-	env.android_source_modules.append("../libs/apk_expansion")	
-	env.android_source_modules.append("../libs/google_play_services")	
+	env.android_source_modules.append("../libs/apk_expansion")
+	env.android_source_modules.append("../libs/google_play_services")
 	ndk_platform=""
 
 	ndk_platform="android-15"
@@ -66,14 +66,14 @@ def configure(env):
 	print("Godot Android!!!!!")
 
 	env.Append(CPPPATH=['#platform/android'])
-	
+
 	env['OBJSUFFIX'] = ".android.o"
 	env['LIBSUFFIX'] = ".android.a"
 	env['PROGSUFFIX'] = ".android"
 	env['SHLIBSUFFIX'] = ".so"
-	
+
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
-	
+
 	import os
 	if (sys.platform.find("linux")==0):
 		if (platform.architecture()[0]=='64bit' or os.path.isdir(gcc_path+"linux-x86_64/bin")): # check was not working
@@ -85,8 +85,8 @@ def configure(env):
 		env['SHLINKFLAGS'][1] = '-shared'
 	elif (os.name=="nt"):
 		gcc_path=gcc_path+"/windows/bin" #this may be wrong
-	
-	
+
+
 
 	env['ENV']['PATH'] = gcc_path+":"+env['ENV']['PATH']
 

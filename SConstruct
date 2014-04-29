@@ -1,4 +1,4 @@
-EnsureSConsVersion(0,14);
+﻿EnsureSConsVersion(0,14);
 
 import string
 import os
@@ -104,7 +104,7 @@ opts.Add('platform','Platform: '+str(platform_list)+'(sfml).',"")
 opts.Add('python','Build Python Support: (yes/no)','no')
 opts.Add('squirrel','Build Squirrel Support: (yes/no)','no')
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
-opts.Add('lua','Build Lua Support: (yes/no)','yes')
+opts.Add('lua','Build Lua Support: (yes/no)','no')
 opts.Add('rfd','Remote Filesystem Driver: (yes/no)','no')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
