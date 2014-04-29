@@ -122,6 +122,7 @@ opts.Add('webp','WEBP Image loader support (yes/no)','yes')
 opts.Add('dds','DDS Texture loader support (yes/no)','yes')
 opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
+opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
 opts.Add('default_gui_theme','Default GUI theme (yes/no)','yes')
 opts.Add("CXX", "Compiler");
@@ -226,6 +227,11 @@ for p in platform_list:
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
+        if (env['openssl']!='no'):
+            env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+            if (env['openssl']=="builtin"):
+                env.Append(CPPPATH=['#drivers/builtin_openssl'])
+
 
 	if (env["old_scenes"]=='yes'):
 		env.Append(CPPFLAGS=['-DOLD_SCENE_FORMAT_ENABLED'])

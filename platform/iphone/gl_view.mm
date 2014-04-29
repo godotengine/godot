@@ -69,8 +69,8 @@ bool _play_video(String p_path) {
 		
 	_instance.moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:file_url];
 	_instance.moviePlayerController.controlStyle = MPMovieControlStyleNone;
-	// [_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
-	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
+	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
+	//[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:_instance
 				   selector:@selector(moviePlayBackDidFinish:)

@@ -51,7 +51,8 @@ def get_flags():
 
 	return [
 		('freetype','builtin'), #use builtin freetype
-	]
+                ('openssl','builtin'), #use builtin openssl
+        ]
 
 
 

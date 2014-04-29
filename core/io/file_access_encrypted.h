@@ -9,7 +9,8 @@ public:
 
 	enum Mode {
 		MODE_READ,
-		MODE_WRITE_AES256
+		MODE_WRITE_AES256,
+		MODE_MAX
 	};
 
 private:
@@ -22,7 +23,8 @@ private:
 	size_t base;
 	size_t length;
 	Vector<uint8_t> data;
-	size_t pos;
+	mutable size_t pos;
+	mutable bool eofed;
 
 
 public:

@@ -219,6 +219,7 @@ void FileAccessPack::seek(size_t p_position){
 	}
 
 	f->seek(pf.offset+p_position);
+	pos=p_position;
 }
 void FileAccessPack::seek_end(int64_t p_position){
 
