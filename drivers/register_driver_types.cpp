@@ -20,6 +20,10 @@
 #include "etc1/image_etc.h"
 #include "chibi/event_stream_chibi.h"
 
+#ifdef OPENSSL_ENABLED
+#include "openssl/stream_peer_openssl.h"
+#endif
+
 #ifdef TOOLS_ENABLED
 #include "squish/image_compress_squish.h"
 #endif
@@ -191,6 +195,12 @@ void register_driver_types() {
 
 #endif
 
+#ifdef OPENSSL_ENABLED
+
+	ObjectTypeDB::register_type<StreamPeerOpenSSL>();
+	StreamPeerOpenSSL::initialize_ssl();
+#endif
+
 #ifdef THEORA_ENABLED
 	theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
 	ResourceLoader::add_resource_format_loader(theora_stream_loader);
@@ -239,6 +249,11 @@ void unregister_driver_types() {
 
 #ifdef PVR_ENABLED
 	memdelete(resource_loader_pvr);
+#endif
+
+#ifdef OPENSSL_ENABLED
+
+	StreamPeerOpenSSL::finalize_ssl();
 #endif
 
 	finalize_chibi();

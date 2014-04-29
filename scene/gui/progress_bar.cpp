@@ -60,13 +60,35 @@ void ProgressBar::_notification(int p_what) {
 			draw_style_box(fg,Rect2(Point2(),Size2(p+fg->get_minimum_size().width,get_size().height)));
 		}
 
-		int fh=font->get_height();
-		String txt=itos(int(get_unit_value()*100))+"%";
-		font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
+		if (percent_visible) {
+			int fh=font->get_height();
+			String txt=itos(int(get_unit_value()*100))+"%";
+			font->draw_halign(get_canvas_item(),Point2(0,font->get_ascent()+(get_size().height-font->get_height())/2),HALIGN_CENTER,get_size().width,txt,font_color);
+		}
 	}
+}
+
+
+void ProgressBar::set_percent_visible(bool p_visible) {
+
+	percent_visible=p_visible;
+	update();
+}
+
+bool ProgressBar::is_percent_visible() const{
+
+	return percent_visible;
+}
+
+void ProgressBar::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_percent_visible","visible"),&ProgressBar::set_percent_visible);
+	ObjectTypeDB::bind_method(_MD("is_percent_visible"),&ProgressBar::is_percent_visible);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"percent/visible"),_SCS("set_percent_visible"),_SCS("is_percent_visible"));
 }
 
 ProgressBar::ProgressBar() {
 
 	set_v_size_flags(0);
+	percent_visible=true;
 }
