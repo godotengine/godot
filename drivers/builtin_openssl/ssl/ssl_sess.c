@@ -136,12 +136,12 @@
  */
 
 #include <stdio.h>
+#include "ssl_locl.h"
 #include <openssl/lhash.h>
 #include <openssl/rand.h>
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
-#include "ssl_locl.h"
 
 static void SSL_SESSION_list_remove(SSL_CTX *ctx, SSL_SESSION *s);
 static void SSL_SESSION_list_add(SSL_CTX *ctx,SSL_SESSION *s);

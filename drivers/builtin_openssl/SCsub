@@ -1,4 +1,4 @@
-Import('env')
+﻿Import('env')
 
 openssl_sources = [
 "builtin_openssl/ssl/t1_lib.c",
@@ -186,7 +186,7 @@ openssl_sources = [
 "builtin_openssl/crypto/evp/e_rc5.c",
 "builtin_openssl/crypto/evp/e_rc2.c",
 "builtin_openssl/crypto/evp/p_dec.c",
-"builtin_openssl/crypto/evp/e_dsa.c",
+#"builtin_openssl/crypto/evp/e_dsa.c",
 "builtin_openssl/crypto/evp/p_verify.c",
 "builtin_openssl/crypto/evp/e_rc4_hmac_md5.c",
 "builtin_openssl/crypto/evp/pmeth_lib.c",
@@ -386,7 +386,7 @@ openssl_sources = [
 "builtin_openssl/crypto/des/ede_cbcm_enc.c",
 "builtin_openssl/crypto/des/des_old2.c",
 "builtin_openssl/crypto/des/cfb_enc.c",
-"builtin_openssl/crypto/des/des.c",
+#"builtin_openssl/crypto/des/des.c",
 "builtin_openssl/crypto/des/ecb_enc.c",
 #"builtin_openssl/crypto/des/read_pwd.c",
 "builtin_openssl/crypto/des/enc_read.c",
@@ -539,7 +539,7 @@ openssl_sources = [
 #"builtin_openssl/crypto/bf/bftest.c",
 "builtin_openssl/crypto/bf/bf_skey.c",
 "builtin_openssl/crypto/bf/bf_ofb64.c",
-"builtin_openssl/crypto/bf/bf_cbc.c",
+#"builtin_openssl/crypto/bf/bf_cbc.c",
 #"builtin_openssl/crypto/LPdir_wince.c",
 #"builtin_openssl/crypto/o_dir_test.c",
 "builtin_openssl/crypto/idea/i_skey.c",

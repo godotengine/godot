@@ -4,10 +4,10 @@
 #ifdef OPENSSL_ENABLED
 
 #include "io/stream_peer_ssl.h"
+#include <openssl/x509v3.h>
 #include <openssl/bio.h> // BIO objects for I/O
 #include <openssl/ssl.h> // SSL and SSL_CTX for SSL connections
 #include <openssl/err.h> // Error reporting
-#include <openssl/x509v3.h>
 #include <stdio.h> // If you don't know what this is for stop reading now.
 
 class StreamPeerOpenSSL : public StreamPeerSSL {

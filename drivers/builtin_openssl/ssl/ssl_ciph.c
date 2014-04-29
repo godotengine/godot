@@ -141,6 +141,7 @@
  */
 
 #include <stdio.h>
+#include "ssl_locl.h"
 #include <openssl/objects.h>
 #ifndef OPENSSL_NO_COMP
 #include <openssl/comp.h>
@@ -148,7 +149,6 @@
 #ifndef OPENSSL_NO_ENGINE
 #include <openssl/engine.h>
 #endif
-#include "ssl_locl.h"
 
 #define SSL_ENC_DES_IDX		0
 #define SSL_ENC_3DES_IDX	1

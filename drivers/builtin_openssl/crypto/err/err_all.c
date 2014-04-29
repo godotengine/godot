@@ -57,6 +57,7 @@
  */
 
 #include <stdio.h>
+#include <openssl/ocsp.h>
 #include <openssl/asn1.h>
 #include <openssl/bn.h>
 #ifndef OPENSSL_NO_EC
@@ -95,7 +96,6 @@
 #include <openssl/engine.h>
 #endif
 #include <openssl/ui.h>
-#include <openssl/ocsp.h>
 #include <openssl/err.h>
 #ifdef OPENSSL_FIPS
 #include <openssl/fips.h>
