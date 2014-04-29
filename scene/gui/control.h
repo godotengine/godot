@@ -193,7 +193,6 @@ private:
 
 	float _get_parent_range(int p_idx) const;
 	float _get_range(int p_idx) const;
-	Point2 _window_get_pos() const;
 	float _s2a(float p_val, AnchorType p_anchor,float p_range) const;
 	float _a2s(float p_val, AnchorType p_anchor,float p_range) const;
 	void _modal_stack_remove();
