@@ -272,7 +272,7 @@ struct Rect2 {
 		
 		return new_rect;
 	};
-	bool has_point(const Point2& p_point) const {
+	inline bool has_point(const Point2& p_point) const {
 		if (p_point.x < pos.x)
 			return false; 
 		if (p_point.y < pos.y)
@@ -286,12 +286,12 @@ struct Rect2 {
 		return true;
 	}
 	
-	bool no_area() const { return (size.width<=0 || size.height<=0 ); }
+	inline bool no_area() const { return (size.width<=0 || size.height<=0 ); }
 	
 	bool operator==(const Rect2& p_rect) const { return pos==p_rect.pos && size==p_rect.size; }
 	bool operator!=(const Rect2& p_rect) const { return pos!=p_rect.pos || size!=p_rect.size; }
 	
-	Rect2 grow(real_t p_by) const {
+	inline Rect2 grow(real_t p_by) const {
 		
 		Rect2 g=*this;
 		g.pos.x-=p_by;
@@ -463,7 +463,7 @@ struct Rect2i {
 
 		return new_rect;
 	};
-	bool has_point(const Point2& p_point) {
+	bool has_point(const Point2& p_point) const {
 		if (p_point.x < pos.x)
 			return false;
 		if (p_point.y < pos.y)

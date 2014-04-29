@@ -45,11 +45,13 @@
 #include "io/translation_loader_po.h"
 #include "io/resource_format_xml.h"
 #include "io/resource_format_binary.h"
+#include "io/stream_peer_ssl.h"
 #include "os/input.h"
 #include "core/io/xml_parser.h"
 #include "io/http_client.h"
 #include "packed_data_container.h"
 #include "func_ref.h"
+#include "input_map.h"
 
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
@@ -140,6 +142,7 @@ void register_core_types() {
 	ObjectTypeDB::register_virtual_type<StreamPeer>();
 	ObjectTypeDB::register_create_type<StreamPeerTCP>();
 	ObjectTypeDB::register_create_type<TCP_Server>();
+	ObjectTypeDB::register_create_type<StreamPeerSSL>();
 	ObjectTypeDB::register_virtual_type<IP>();
 	ObjectTypeDB::register_virtual_type<PacketPeer>();
 	ObjectTypeDB::register_type<PacketPeerStream>();
@@ -193,6 +196,7 @@ void register_core_singletons() {
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TranslationServer",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("TS",TranslationServer::get_singleton() ) );
 	Globals::get_singleton()->add_singleton( Globals::Singleton("Input",Input::get_singleton() ) );
+	Globals::get_singleton()->add_singleton( Globals::Singleton("InputMap",InputMap::get_singleton() )  );
 
 
 }

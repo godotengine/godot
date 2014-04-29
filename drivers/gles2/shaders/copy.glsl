@@ -248,6 +248,11 @@ void main() {
 #ifdef USE_ENERGY
 	color.rgb*=energy;
 #endif
-	gl_FragColor = color;
+
+#ifdef USE_NO_ALPHA
+        color.a=1.0;
+#endif
+
+        gl_FragColor = color;
 }
 

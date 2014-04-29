@@ -85,8 +85,10 @@ Dictionary CanvasItemEditor::get_state() const {
 	Dictionary state;
 	state["zoom"]=zoom;
 	state["ofs"]=Point2(h_scroll->get_val(),v_scroll->get_val());
-	state["pixel_snap"]=pixel_snap;
 //	state["ofs"]=-transform.get_origin();
+	state["use_snap"]=is_snap_active();
+	state["snap"]=snap;
+	state["pixel_snap"]=pixel_snap;
 	return state;
 }
 void CanvasItemEditor::set_state(const Dictionary& p_state){
@@ -103,12 +105,19 @@ void CanvasItemEditor::set_state(const Dictionary& p_state){
 		v_scroll->set_val(ofs.y);
 	}
 
+	if (state.has("use_snap")) {
+		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE);
+		edit_menu->get_popup()->set_item_checked(idx,state["use_snap"]);
+	}
+
+	if (state.has("snap")) {
+		snap=state["snap"];
+	}
+
 	if (state.has("pixel_snap")) {
 		pixel_snap=state["pixel_snap"];
 		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
 		edit_menu->get_popup()->set_item_checked(idx,pixel_snap);
-
-
 	}
 }
 
@@ -2142,18 +2151,22 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(lock_button);
 
 	lock_button->connect("pressed",this,"_popup_callback",varray(LOCK_SELECTED));
+	lock_button->set_tooltip("Lock the selected object in-place (can't be moved).");
 
 	unlock_button = memnew( ToolButton );
 	hb->add_child(unlock_button);
 	unlock_button->connect("pressed",this,"_popup_callback",varray(UNLOCK_SELECTED));
+	unlock_button->set_tooltip("Unlock the selected object (can be moved).");
 
 	group_button = memnew( ToolButton );
 	hb->add_child(group_button);
 	group_button->connect("pressed",this,"_popup_callback",varray(GROUP_SELECTED));
+	group_button->set_tooltip("Makes sure the object's' children are not selectable.");
 
 	ungroup_button = memnew( ToolButton );
 	hb->add_child(ungroup_button);
 	ungroup_button->connect("pressed",this,"_popup_callback",varray(UNGROUP_SELECTED));
+	ungroup_button->set_tooltip("Restores the object's' children ability to be selected.");
 
 	hb->add_child(memnew(VSeparator));
 

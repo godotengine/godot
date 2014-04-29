@@ -120,7 +120,9 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
-			Vector2 cpoint = xform.affine_inverse().xform(gpoint);
+			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
+			cpoint=snap_point(cpoint);
+			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
 			Vector<Vector2> poly = node->get_polygon();
 
@@ -138,9 +140,9 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 						if (!wip_active) {
 
 							wip.clear();
-							wip.push_back( snap_point(cpoint) );
+							wip.push_back( cpoint );
 							wip_active=true;
-							edited_point_pos=snap_point(cpoint);
+							edited_point_pos=cpoint;
 							canvas_item_editor->get_viewport_control()->update();
 							edited_point=1;
 							return true;
@@ -154,7 +156,7 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							} else {
 
-								wip.push_back( snap_point(cpoint) );
+								wip.push_back( cpoint );
 								edited_point=wip.size();
 								canvas_item_editor->get_viewport_control()->update();
 								return true;
@@ -216,9 +218,9 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								if (closest_idx>=0) {
 
 									pre_move_edit=poly;
-									poly.insert(closest_idx+1,snap_point(xform.affine_inverse().xform(closest_pos)));
+									poly.insert(closest_idx+1,xform.affine_inverse().xform(closest_pos));
 									edited_point=closest_idx+1;
-									edited_point_pos=snap_point(xform.affine_inverse().xform(closest_pos));
+									edited_point_pos=xform.affine_inverse().xform(closest_pos);
 									node->set_polygon(poly);
 									canvas_item_editor->get_viewport_control()->update();
 									return true;
@@ -320,11 +322,11 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 			if (edited_point!=-1 && (wip_active || mm.button_mask&BUTTON_MASK_LEFT)) {
 
-
-				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-
 				Vector2 gpoint = Point2(mm.x,mm.y);
-				edited_point_pos = snap_point(xform.affine_inverse().xform(gpoint));
+				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
+				cpoint=snap_point(cpoint);
+				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
+
 				canvas_item_editor->get_viewport_control()->update();
 
 			}

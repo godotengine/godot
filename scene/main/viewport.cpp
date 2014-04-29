@@ -67,16 +67,25 @@ bool RenderTargetTexture::has_alpha() const{
 
 void RenderTargetTexture::set_flags(uint32_t p_flags){
 
+	ERR_FAIL_COND(!vp);
+	if (p_flags&FLAG_FILTER)
+		flags=FLAG_FILTER;
+	else
+		flags=0;
+
+	VS::get_singleton()->texture_set_flags(vp->render_target_texture_rid,flags);
 
 }
+
 uint32_t RenderTargetTexture::get_flags() const{
 
-	return 0;
+	return flags;
 }
 
 RenderTargetTexture::RenderTargetTexture(Viewport *p_vp){
 
 	vp=p_vp;
+	flags=0;
 }
 
 
@@ -764,13 +773,30 @@ bool Viewport::get_render_target_vflip() const{
 }
 
 
+Matrix32 Viewport::_get_input_pre_xform() const {
+
+	Matrix32 pre_xf;
+	if (render_target) {
+
+		ERR_FAIL_COND_V(to_screen_rect.size.x==0,pre_xf);
+		ERR_FAIL_COND_V(to_screen_rect.size.y==0,pre_xf);
+		pre_xf.scale(rect.size/to_screen_rect.size);
+		pre_xf.elements[2]=-to_screen_rect.pos;
+	} else {
+
+		pre_xf.elements[2]=-rect.pos;
+	}
+
+	return pre_xf;
+}
+
 void Viewport::_make_input_local(InputEvent& ev) {
 
 	switch(ev.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
 
-			Matrix32 ai = get_final_transform().affine_inverse();
+			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 g = ai.xform(Vector2(ev.mouse_button.global_x,ev.mouse_button.global_y));
 			Vector2 l = ai.xform(Vector2(ev.mouse_button.x,ev.mouse_button.y));
 			ev.mouse_button.x=l.x;
@@ -781,7 +807,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 
-			Matrix32 ai = get_final_transform().affine_inverse();
+			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
 			Vector2 l = ai.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
 			Vector2 r = ai.xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
@@ -795,7 +821,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 		} break;
 		case InputEvent::SCREEN_TOUCH: {
 
-			Matrix32 ai = get_final_transform().affine_inverse();
+			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 t = ai.xform(Vector2(ev.screen_touch.x,ev.screen_touch.y));
 			ev.screen_touch.x=t.x;
 			ev.screen_touch.y=t.y;
@@ -803,7 +829,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 		} break;
 		case InputEvent::SCREEN_DRAG: {
 
-			Matrix32 ai = get_final_transform().affine_inverse();
+			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 t = ai.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
 			Vector2 r = ai.xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
 			Vector2 s = ai.xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
@@ -821,13 +847,13 @@ void Viewport::_make_input_local(InputEvent& ev) {
 
 void Viewport::_vp_input(const InputEvent& p_ev) {
 
-	if (render_target)
+	if (render_target && to_screen_rect==Rect2())
 		return; //if render target, can't get input events
 
 	//this one handles system input, p_ev are in system coordinates
 	//they are converted to viewport coordinates
 
-	InputEvent ev = p_ev;
+	InputEvent ev = p_ev;	
 	_make_input_local(ev);
 	input(ev);
 

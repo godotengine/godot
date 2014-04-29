@@ -32,7 +32,7 @@ abstract public class PurchaseTask {
 	private boolean isLooping = false;
 	
 	public void purchase(final String sku){
-//		Log.d("XXX", "Starting purchase");
+		Log.d("XXX", "Starting purchase for: " + sku);
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
 //		if(isBlocked){
@@ -68,7 +68,7 @@ abstract public class PurchaseTask {
 			new ConsumeTask(mService, context) {
 				
 				@Override
-				protected void success() {
+				protected void success(String ticket) {
 //					Log.d("XXX", "Product was erroniously purchased!");
 					if(isLooping){
 //						Log.d("XXX", "It is looping");

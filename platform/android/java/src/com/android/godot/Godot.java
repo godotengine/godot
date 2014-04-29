@@ -60,6 +60,7 @@ import java.io.IOException;
 import android.provider.Settings.Secure;
 import android.widget.FrameLayout;
 import com.android.godot.input.*;
+import java.io.InputStream;
 
 
 public class Godot extends Activity implements SensorEventListener
@@ -177,6 +178,48 @@ public class Godot extends Activity implements SensorEventListener
 		return Godot._self;
 	}
 	
+
+        private String[] getCommandLine() {
+
+            InputStream is;
+            try {
+                is = getAssets().open("/_cl_");
+                byte[] len = new byte[4];
+                int r = is.read(len);
+                if (r<4) {
+                    System.out.printf("**ERROR** Wrong cmdline length.\n");
+                    return new String[0];
+                }
+                int argc=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
+                String[] cmdline = new String[argc];
+                for(int i=0;i<argc;i++) {
+                    r = is.read(len);
+                    if (r<4) {
+                        System.out.printf("**ERROR** Wrong cmdline param lenght.\n");
+                        return new String[0];
+                    }
+                    int strlen=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
+                    if (strlen>65535) {
+                        System.out.printf("**ERROR** Wrong command len\n");
+                        return new String[0];
+                    }
+                    byte[] arg = new byte[strlen];
+                    r = is.read(arg);
+                    if (r!=strlen) {
+                        cmdline[i]=new String(arg,"UTF-8");
+                    }
+
+                }
+
+                return cmdline;
+            } catch (Exception e) {
+
+                return new String[0];
+            }
+
+
+        }
+
 	@Override protected void onCreate(Bundle icicle) {
 
 		System.out.printf("** GODOT ACTIVITY CREATED HERE ***\n");
@@ -187,10 +230,13 @@ public class Godot extends Activity implements SensorEventListener
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
 			| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+
+
+
 		io = new GodotIO(this);
 		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
 		GodotLib.io=io;
-		GodotLib.initialize(this,io.needsReloadHooks());
+                GodotLib.initialize(this,io.needsReloadHooks(),getCommandLine());
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
@@ -198,6 +244,8 @@ public class Godot extends Activity implements SensorEventListener
 		result_callback = null;
 		
 		mPaymentsManager = PaymentsManager.createManager(this).initService();
+
+
 		
 	//	instanceSingleton( new GodotFacebook(this) );
 

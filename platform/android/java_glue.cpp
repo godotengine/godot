@@ -660,7 +660,7 @@ static void _stop_video() {
 	env->CallVoidMethod(godot_io, _stopVideo);
 }
 
-JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook) {
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, jobject obj, jobject activity,jboolean p_need_reload_hook, jobjectArray p_cmdline) {
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**INIT EVENT! - %p\n",env);
 
@@ -723,8 +723,8 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 
 
 
-    os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _play_video, _is_video_playing, _pause_video, _stop_video);
-    os_android->set_need_reload_hooks(p_need_reload_hook);
+	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _play_video, _is_video_playing, _pause_video, _stop_video);
+	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
 	getcwd(wd,500);
@@ -734,13 +734,23 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**SETUP");
 
+	const char ** cmdline=NULL;
+	int cmdlen = env->GetArrayLength(p_cmdline);
+	cmdline = (const char**)malloc((env->GetArrayLength(p_cmdline)+1)*sizeof(const char*));
+	cmdline[cmdlen]=NULL;
+	for (int i=0; i<cmdlen; i++) {
+
+		jstring string = (jstring) env->GetObjectArrayElement(p_cmdline, i);
+		const char *rawString = env->GetStringUTFChars(string, 0);
+		cmdline[i]=rawString;
+	}
 
 #if 0
 	char *args[]={"-test","render",NULL};
 	__android_log_print(ANDROID_LOG_INFO,"godot","pre asdasd setup...");
 	Error err  = Main::setup("apk",2,args,false);
 #else
-	Error err  = Main::setup("apk",0,NULL,false);
+	Error err  = Main::setup("apk",cmdlen,(char**)cmdline,false);
 #endif
 
 	if (err!=OK) {
