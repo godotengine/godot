@@ -218,6 +218,8 @@ class TextEdit : public Control  {
 	Object *tooltip_obj;
 	StringName tooltip_func;
 	Variant tooltip_ud;
+	
+	bool next_operation_is_complex;
 
 	int get_visible_rows() const;
 
@@ -241,11 +243,13 @@ class TextEdit : public Control  {
 	void _update_caches();
 	void _cursor_changed_emit();
 	void _text_changed_emit();
-
+	
+	void _begin_compex_operation();
+	void _end_compex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
-
+	
 	void _base_insert_text(int p_line, int p_column,const String& p_text,int &r_end_line,int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
@@ -262,7 +266,7 @@ class TextEdit : public Control  {
 protected:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
-
+	
 	void _insert_text(int p_line, int p_column,const String& p_text,int *r_end_line=NULL,int *r_end_char=NULL);
 	void _remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
 	void _insert_text_at_cursor(const String& p_text);

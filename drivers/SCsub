@@ -11,6 +11,7 @@ SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gles1/SCsub');
 SConscript('gl_context/SCsub');
+SConscript('openssl/SCsub');
 
 if (env["png"]=="yes"):
 	SConscript("png/SCsub");
@@ -23,6 +24,9 @@ SConscript("pvr/SCsub");
 SConscript("etc1/SCsub")
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");
+if (env["openssl"]=="builtin"):
+	SConscript("builtin_openssl/SCsub");
+
 SConscript("rtaudio/SCsub");
 SConscript("nedmalloc/SCsub");
 SConscript("trex/SCsub");
