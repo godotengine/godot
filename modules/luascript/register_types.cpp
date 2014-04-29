@@ -8,6 +8,7 @@
 /*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
 /*             All Rights Reserved.              */
 /*************************************************/
+#ifdef LUASCRIPT_ENABLED
 
 #include "register_types.h"
 
@@ -85,7 +86,6 @@ static void register_editor_plugin() {
 #endif
 
 void register_luascript_types() {
-#ifdef LUASCRIPT_ENABLED
 	script_language_lua=memnew( LuaScriptLanguage );
 	script_language_lua->init();
 	ScriptServer::register_language(script_language_lua);
@@ -100,16 +100,19 @@ void register_luascript_types() {
 	EditorNode::add_init_callback(register_editor_plugin);
 #endif
 
-#endif
-
 }
 void unregister_luascript_types() {
-#ifdef LUASCRIPT_ENABLED
 	if (script_language_lua)
 		memdelete( script_language_lua );
 	if (resource_loader_lua)
 		memdelete( resource_loader_lua );
 	if (resource_saver_lua)
 		memdelete( resource_saver_lua );
-#endif
 }
+
+#else
+
+void register_luascript_types() {}
+void unregister_luascript_types() {}
+
+#endif

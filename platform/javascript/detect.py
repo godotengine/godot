@@ -1,10 +1,10 @@
-import os
+﻿import os
 import sys
 import string
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "JavaScript"
 
@@ -24,7 +24,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'yes'),
+		#('lua', 'yes'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('theora', 'no'),
@@ -47,13 +47,13 @@ def configure(env):
 
 
 	env.Append(CPPPATH=['#platform/android'])
-	
+
 	env['OBJSUFFIX'] = ".js.o"
 	env['LIBSUFFIX'] = ".js.a"
 	env['PROGSUFFIX'] = ".html"
-	
+
 	em_path=os.environ["EMSCRIPTEN_ROOT"]
-	
+
 	env['ENV']['PATH'] = em_path+":"+env['ENV']['PATH']
 
 	env['CC'] = em_path+'/emcc'

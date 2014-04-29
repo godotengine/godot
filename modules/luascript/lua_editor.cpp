@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifdef LUASCRIPT_ENABLED
+
 #include <stdlib.h>
 #include <string.h>
 #include "lua_script.h"
@@ -1090,3 +1092,4 @@ Error LuaScriptLanguage::complete_keyword(const String& p_code, int p_line, cons
 	return OK;
 }
 
+#endif

@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifdef LUASCRIPT_ENABLED
+
 #ifndef LUA_SCRIPT_H
 #define LUA_SCRIPT_H
 
@@ -374,3 +376,5 @@ public:
     MutexLock lklua(lang->get_lock());
 
 #endif // LUA_SCRIPT_H
+
+#endif

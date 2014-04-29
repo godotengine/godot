@@ -1,10 +1,10 @@
-import os
+﻿import os
 import sys
 import string
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "Flash"
 
@@ -19,12 +19,12 @@ def can_build():
 def get_opts():
 
 	return []
-	
+
 
 def get_flags():
 
 	return [
-		('lua', 'yes'),
+		#('lua', 'yes'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('theora', 'no'),
@@ -53,7 +53,7 @@ def configure(env):
 	if (ccroot.find("/cygdrive")==0):
 		unit = ccroot[ ccroot.find("/") + 1 ]
 		ccroot=ccroot.replace("/cygdrive/"+unit,unit+":")
-		
+
 	env['FLASCC_ROOT'] = ccroot
 	if env['PLATFORM'] == 'win32':
 		import methods
@@ -72,11 +72,11 @@ def configure(env):
 	env['AR'] = ccroot+'/sdk/usr/bin/ar'
 	env['LINK'] = ccroot+'/sdk/usr/bin/gcc'
 
-	
+
 	env['OBJSUFFIX'] = ".fl.o"
 	env['LIBSUFFIX'] = ".fl.a"
 	env['PROGSUFFIX'] = "_flash"
-	
+
 	#env["CXX"]='gcc-4'
 	import string
 	#include path

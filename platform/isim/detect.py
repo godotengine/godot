@@ -1,13 +1,13 @@
-import os
+﻿import os
 import sys
 
 
 def is_active():
 	return False
-	
+
 def get_name():
 	return "iSIM"
-	
+
 
 def can_build():
 
@@ -34,7 +34,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'yes'),
+		#('lua', 'yes'),
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),

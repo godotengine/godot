@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#ifdef LUASCRIPT_ENABLED
+
 #include <stdlib.h>
 #include <string.h>
 #include "lua_script.h"
@@ -826,3 +828,4 @@ LuaInstance::~LuaInstance() {
     }
 }
 
+#endif

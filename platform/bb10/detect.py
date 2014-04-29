@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 import string
 import methods
@@ -6,7 +6,7 @@ import methods
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "BlackBerry 10"
 
@@ -32,7 +32,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'yes'),
+		#('lua', 'yes'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 	]

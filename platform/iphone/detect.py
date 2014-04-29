@@ -1,10 +1,10 @@
-import os
+﻿import os
 import sys
 
 
 def is_active():
 	return True
-	
+
 def get_name():
 	return "iOS"
 
@@ -33,7 +33,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'yes'),
+		#('lua', 'yes'),
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
