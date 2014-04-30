@@ -55,7 +55,7 @@ public:
 
 
 	void set_text_editor(TextEdit *p_text_editor);
-	GotoLineDialog();
+	GotoLineDialog();	
 };
 
 
@@ -131,7 +131,7 @@ class CodeTextEditor : public Control {
 
 	Label *error;
 
-	void _update_font();
+	void _on_settings_change();
 
 	void _complete_request(const String& p_request,int p_line);
 protected:

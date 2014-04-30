@@ -206,6 +206,8 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	
+	bool auto_brace_completion_enabled;
 
 	uint64_t last_dblclk;
 
@@ -304,8 +306,11 @@ public:
 	String get_text();
 	String get_line(int line) const;
 	void backspace_at_cursor();
-
-
+	
+	inline void set_auto_brace_completion(bool p_enabled) {
+		auto_brace_completion_enabled = p_enabled;
+	}
+	
 	void cursor_set_column(int p_col);
 	void cursor_set_line(int p_row);
 

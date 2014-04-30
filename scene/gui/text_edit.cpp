@@ -44,8 +44,6 @@
 #include "globals.h"
 #include "message_queue.h"
 
-#include "tools/editor/editor_settings.h"
-
 #define TAB_PIXELS
 
 static bool _is_text_char(CharType c) {
@@ -64,7 +62,7 @@ static bool _is_pair_right_symbol(CharType c) {
 		c == '\'' ||
 		c == ')'  ||
 		c == ']'  ||
-		c == '}';
+		c == '}';		
 }
 
 static bool _is_pair_left_symbol(CharType c) {
@@ -839,8 +837,7 @@ void TextEdit::backspace_at_cursor() {
 
 	int prev_line = cursor.column?cursor.line:cursor.line-1;
 	int prev_column = cursor.column?(cursor.column-1):(text[cursor.line-1].length());
-	bool auto_brace_complete = EDITOR_DEF("text_editor/auto_brace_complete", false);
-	if(auto_brace_complete && 
+	if(auto_brace_completion_enabled && 
 		cursor.column > 0 &&
 		_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
 		_consume_backspace_for_pair_symbol(prev_line, prev_column);
@@ -1246,8 +1243,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					default:
 						if (k.unicode>=32 && !k.mod.command && !k.mod.alt && !k.mod.meta)
 							clear=true;
-						bool auto_brace_complete=EDITOR_DEF("text_editor/auto_brace_complete", false);
-						if (auto_brace_complete && _is_pair_left_symbol(k.unicode))
+						if (auto_brace_completion_enabled && _is_pair_left_symbol(k.unicode))
 							clear=false;
 				}
 
@@ -1671,12 +1667,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (readonly)
 						break;
 					
-					
-					
 					const CharType chr[2] = {k.unicode, 0};
-					bool auto_brace_complete = EDITOR_DEF("text_editor/auto_brace_complete", false);
 					
-					if(auto_brace_complete && _is_pair_symbol(chr[0])) {
+					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);
 					} else {
 						_insert_text_at_cursor(chr);
@@ -2024,7 +2017,6 @@ void TextEdit::adjust_viewport_to_cursor() {
 
 
 }
-
 
 void TextEdit::cursor_set_column(int p_col) {
 
@@ -3148,6 +3140,7 @@ TextEdit::TextEdit()  {
 	tooltip_obj=NULL;
 	line_numbers=false;
 	next_operation_is_complex=false;
+	auto_brace_completion_enabled=false;
 }
 
 TextEdit::~TextEdit(){

@@ -510,7 +510,7 @@ void CodeTextEditor::set_error(const String& p_error) {
 
 }
 
-void CodeTextEditor::_update_font() {
+void CodeTextEditor::_on_settings_change() {
 
 	String editor_font = EditorSettings::get_singleton()->get("text_editor/font");
 	if (editor_font!="") {
@@ -522,6 +522,10 @@ void CodeTextEditor::_update_font() {
 	}
 
 	text_editor->add_font_override("font",get_font("source","Fonts"));
+	
+	text_editor->set_auto_brace_completion(
+		EDITOR_DEF("text_editor/auto_brace_complete", false)
+	);
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
@@ -541,7 +545,7 @@ void CodeTextEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_line_col_changed",&CodeTextEditor::_line_col_changed);
 	ObjectTypeDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
-	ObjectTypeDB::bind_method("_update_font",&CodeTextEditor::_update_font);
+	ObjectTypeDB::bind_method("_on_settings_change",&CodeTextEditor::_on_settings_change);
 	ObjectTypeDB::bind_method("_text_changed_idle_timeout",&CodeTextEditor::_text_changed_idle_timeout);
 	ObjectTypeDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
 }
@@ -586,5 +590,5 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_completion(true,cs);
 	idle->connect("timeout", this,"_text_changed_idle_timeout");
 
-	EditorSettings::get_singleton()->connect("settings_changed",this,"_update_font");
+	EditorSettings::get_singleton()->connect("settings_changed",this,"_on_settings_change");
 }
