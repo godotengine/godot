@@ -648,14 +648,30 @@ uint32_t LargeTexture::get_flags() const{
 }
 
 
-void LargeTexture::add_piece(const Point2& p_offset,const Ref<Texture>& p_texture) {
+int LargeTexture::add_piece(const Point2& p_offset,const Ref<Texture>& p_texture) {
 
-	ERR_FAIL_COND(p_texture.is_null());
+	ERR_FAIL_COND_V(p_texture.is_null(), -1);
 	Piece p;
 	p.offset=p_offset;
 	p.texture=p_texture;
 	pieces.push_back(p);
+
+	return pieces.size() - 1;
 }
+
+void LargeTexture::set_piece_offset(int p_idx, const Point2& p_offset) {
+
+	ERR_FAIL_INDEX(p_idx, pieces.size());
+	pieces[p_idx].offset = p_offset;
+};
+
+void LargeTexture::set_piece_texture(int p_idx, const Ref<Texture>& p_texture) {
+
+	ERR_FAIL_INDEX(p_idx, pieces.size());
+	pieces[p_idx].texture = p_texture;
+};
+
+
 
 void LargeTexture::set_size(const Size2& p_size){
 
@@ -709,6 +725,8 @@ Ref<Texture> LargeTexture::get_piece_texture(int p_idx) const{
 void LargeTexture::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_piece","ofs","texture:Texture"),&LargeTexture::add_piece);
+	ObjectTypeDB::bind_method(_MD("set_piece_offset", "idx", "ofs"),&LargeTexture::set_piece_offset);
+	ObjectTypeDB::bind_method(_MD("set_piece_texture","idx", "texture:Texture"),&LargeTexture::set_piece_texture);
 	ObjectTypeDB::bind_method(_MD("set_size","size"),&LargeTexture::set_size);
 	ObjectTypeDB::bind_method(_MD("clear"),&LargeTexture::clear);
 
