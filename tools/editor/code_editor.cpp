@@ -511,21 +511,25 @@ void CodeTextEditor::set_error(const String& p_error) {
 }
 
 void CodeTextEditor::_on_settings_change() {
-
-	String editor_font = EditorSettings::get_singleton()->get("text_editor/font");
+	
+	// FONTS
+	String editor_font = EDITOR_DEF("text_editor/font", "");
+	bool font_overrode = false;
 	if (editor_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(editor_font);
 		if (fnt.is_valid()) {
 			text_editor->add_font_override("font",fnt);
-			return;
+			font_overrode = true;
 		}
 	}
-
-	text_editor->add_font_override("font",get_font("source","Fonts"));
+	if(!font_overrode)
+		text_editor->add_font_override("font",get_font("source","Fonts"));
 	
+	// AUTO BRACE COMPLETION 
 	text_editor->set_auto_brace_completion(
 		EDITOR_DEF("text_editor/auto_brace_complete", false)
 	);
+	
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
