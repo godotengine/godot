@@ -333,9 +333,17 @@ public:
 
 };
 
-
-
-
+struct ProjectItem {
+	String project;
+	String path;
+	String conf;
+	uint64_t last_modified;
+	ProjectItem() {}
+	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified) {
+		project = p_project; path = p_path; conf = p_conf; last_modified = p_last_modified;
+	}
+	_FORCE_INLINE_ bool operator <(const ProjectItem& l) const { return last_modified > l.last_modified; }
+};
 
 void ProjectManager::_panel_draw(Node *p_hb) {
 
@@ -378,6 +386,8 @@ void ProjectManager::_load_recent_projects() {
 
 	Color font_color = get_color("font_color","Tree");
 
+	List<ProjectItem> projects;
+
 	for(List<PropertyInfo>::Element *E=properties.front();E;E=E->next()) {
 
 		String _name = E->get().name;
@@ -387,6 +397,29 @@ void ProjectManager::_load_recent_projects() {
 		String project = _name.get_slice("/",1);
 		String path = EditorSettings::get_singleton()->get(_name);
 		String conf=path.plus_file("engine.cfg");
+
+		uint64_t last_modified = 0;
+		if (FileAccess::exists(conf))
+			last_modified = FileAccess::get_modified_time(conf);
+		String fscache = path.plus_file(".fscache");
+		if (FileAccess::exists(fscache)) {
+			uint64_t cache_modified = FileAccess::get_modified_time(fscache);
+			if ( cache_modified > last_modified )
+				last_modified = cache_modified;
+		}
+
+		ProjectItem item(project, path, conf, last_modified);
+		projects.push_back(item);
+	}
+
+	projects.sort();
+
+	for(List<ProjectItem>::Element *E=projects.front();E;E=E->next()) {
+
+		ProjectItem &item = E->get();
+		String project = item.project;
+		String path = item.path;
+		String conf = item.conf;
 
 		Ref<ConfigFile> cf = memnew( ConfigFile );
 		Error err = cf->load(conf);
