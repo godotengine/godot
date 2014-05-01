@@ -34,7 +34,7 @@ Error HTTPClient::connect_url(const String& p_url) {
 	return OK;
 }
 
-Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl){
+Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
 
 	close();
 	conn_port=p_port;
@@ -50,6 +50,7 @@ Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl){
 
 
 	ssl=p_ssl;
+	ssl_verify_host=p_verify_host;
 	connection=tcp_connection;
 
 
@@ -239,7 +240,7 @@ Error HTTPClient::poll(){
 				case StreamPeerTCP::STATUS_CONNECTED: {
 					if (ssl) {
 						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
-						Error err = ssl->connect(tcp_connection,true,conn_host);
+						Error err = ssl->connect(tcp_connection,true,ssl_verify_host?conn_host:String());
 						if (err!=OK) {
 							close();
 							status=STATUS_SSL_HANDSHAKE_ERROR;
@@ -553,7 +554,7 @@ bool HTTPClient::is_blocking_mode_enabled() const{
 
 void HTTPClient::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl"),&HTTPClient::connect,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ObjectTypeDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);

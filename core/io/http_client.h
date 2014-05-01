@@ -137,6 +137,7 @@ private:
 	int conn_port;
 	String conn_host;
 	bool ssl;
+	bool ssl_verify_host;
 	bool blocking;
 
 	Vector<uint8_t> response_str;
@@ -161,7 +162,7 @@ public:
 
 
 	Error connect_url(const String& p_url); //connects to a full url and perform request
-	Error connect(const String &p_host,int p_port,bool p_ssl=false);
+	Error connect(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true);
 
 	void set_connection(const Ref<StreamPeer>& p_connection);
 

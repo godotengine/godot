@@ -172,6 +172,7 @@ int int_rsa_verify(int dtype, const unsigned char *m,
 
 	if (siglen != (unsigned int)RSA_size(rsa))
 		{
+		printf("siglen: %i - RSAs: %i\n",siglen,(unsigned int)RSA_size(rsa));
 		RSAerr(RSA_F_INT_RSA_VERIFY,RSA_R_WRONG_SIGNATURE_LENGTH);
 		return(0);
 		}
