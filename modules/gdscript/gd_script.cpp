@@ -61,6 +61,10 @@ Variant *GDFunction::_get_variant(int p_address,GDInstance *p_instance,GDScript 
 			}
 			return &self;
 		} break;
+		case ADDR_TYPE_CLASS: {
+
+			return &p_script->_static_ref;
+		} break;
 		case ADDR_TYPE_MEMBER: {
 			//member indexing is O(1)
 			if (!p_instance) {
@@ -1678,6 +1682,7 @@ Ref<GDScript> GDScript::get_base() const {
 GDScript::GDScript() {
 
 
+	_static_ref=this;
 	valid=false;
 	subclass_count=0;
 	initializer=NULL;
