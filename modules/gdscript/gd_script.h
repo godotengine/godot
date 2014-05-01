@@ -75,13 +75,14 @@ public:
 		ADDR_MASK=((1<<ADDR_BITS)-1),
 		ADDR_TYPE_MASK=~ADDR_MASK,
 		ADDR_TYPE_SELF=0,
-		ADDR_TYPE_MEMBER=1,
-		ADDR_TYPE_CLASS_CONSTANT=2,
-		ADDR_TYPE_LOCAL_CONSTANT=3,
-		ADDR_TYPE_STACK=4,
-		ADDR_TYPE_STACK_VARIABLE=5,
-		ADDR_TYPE_GLOBAL=6,
-		ADDR_TYPE_NIL=7
+		ADDR_TYPE_CLASS=1,
+		ADDR_TYPE_MEMBER=2,
+		ADDR_TYPE_CLASS_CONSTANT=3,
+		ADDR_TYPE_LOCAL_CONSTANT=4,
+		ADDR_TYPE_STACK=5,
+		ADDR_TYPE_STACK_VARIABLE=6,
+		ADDR_TYPE_GLOBAL=7,
+		ADDR_TYPE_NIL=8
 	};
 
     struct StackDebug {
@@ -139,9 +140,9 @@ public:
 	int get_max_stack_size() const;
 	int get_default_argument_count() const;
 	int get_default_argument_addr(int p_idx) const;
-    GDScript *get_script() const { return _script; }
+	GDScript *get_script() const { return _script; }
 
-    void debug_get_stack_member_state(int p_line,List<Pair<StringName,int> > *r_stackvars) const;
+	void debug_get_stack_member_state(int p_line,List<Pair<StringName,int> > *r_stackvars) const;
 
 	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
 
@@ -183,6 +184,7 @@ friend class GDInstance;
 friend class GDFunction;
 friend class GDCompiler;
 friend class GDFunctions;
+	Variant _static_ref; //used for static call
 	Ref<GDNativeClass> native;
 	Ref<GDScript> base;
 	GDScript *_base; //fast pointer access

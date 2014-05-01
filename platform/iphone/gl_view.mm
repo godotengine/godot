@@ -69,8 +69,8 @@ bool _play_video(String p_path) {
 		
 	_instance.moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:file_url];
 	_instance.moviePlayerController.controlStyle = MPMovieControlStyleNone;
-	// [_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
-	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
+	[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFit];
+	//[_instance.moviePlayerController setScalingMode:MPMovieScalingModeAspectFill];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:_instance
                    selector:@selector(moviePlayBackDidFinish:)
@@ -86,8 +86,8 @@ bool _play_video(String p_path) {
 }
 
 bool _is_video_playing() {
-	NSInteger playback_state = _instance.moviePlayerController.playbackState;
-	return (playback_state == MPMoviePlaybackStatePlaying);
+	//NSInteger playback_state = _instance.moviePlayerController.playbackState;
+	return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
 }
 
 void _pause_video() {
@@ -512,7 +512,7 @@ static void clear_touches() {
       name:MPMoviePlayerPlaybackDidFinishNotification
       object:player];
 
-    _stop_video();
+    [_instance.moviePlayerController.view removeFromSuperview];
 }
 
 @end

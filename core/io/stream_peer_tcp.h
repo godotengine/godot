@@ -73,4 +73,6 @@ public:
 	~StreamPeerTCP();
 };
 
+VARIANT_ENUM_CAST( StreamPeerTCP::Status );
+
 #endif
