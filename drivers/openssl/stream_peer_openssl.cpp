@@ -1,6 +1,7 @@
 
 #ifdef OPENSSL_ENABLED
 #include "stream_peer_openssl.h"
+#include <openssl/x509v3.h>
 //hostname matching code from curl
 
 

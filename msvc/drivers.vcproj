@@ -6994,6 +6994,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\drivers\openssl\register_openssl.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\drivers\openssl\register_openssl.h"
+					>
+				</File>
+				<File
 					RelativePath="..\drivers\openssl\stream_peer_openssl.cpp"
 					>
 				</File>
