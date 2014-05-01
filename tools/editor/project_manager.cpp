@@ -351,8 +351,7 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 
 	hb->draw_line(Point2(0,hb->get_size().y+1),Point2(hb->get_size().x-10,hb->get_size().y+1),get_color("guide_color","Tree"));
 
-	if (hb->get_meta("name")==selected) {
-
+	if (selected_list.has(hb->get_meta("name"))) {
 		hb->draw_style_box(get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
 	}
 }
@@ -361,17 +360,69 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 
 	if (p_ev.type==InputEvent::MOUSE_BUTTON && p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
-		selected = p_hb->get_meta("name");
-		selected_main = p_hb->get_meta("main_scene");
-		for(int i=0;i<scroll_childs->get_child_count();i++) {
-			scroll_childs->get_child(i)->cast_to<CanvasItem>()->update();
+		String clicked = p_hb->get_meta("name");
+
+		if (p_ev.key.mod.shift && selected_list.size()>0 && last_clicked!="" && clicked != last_clicked) {
+
+			int clicked_id = -1;
+			int last_clicked_id = -1;
+			for(int i=0;i<scroll_childs->get_child_count();i++) {
+				HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+				if (!hb) continue;
+				if (hb->get_meta("name") == clicked) clicked_id = i;
+				if (hb->get_meta("name") == last_clicked) last_clicked_id = i;
+			}
+
+			if (last_clicked_id!=-1 && clicked_id!=-1) {
+				int min = clicked_id < last_clicked_id? clicked_id : last_clicked_id;
+				int max = clicked_id > last_clicked_id? clicked_id : last_clicked_id;
+				for(int i=0; i<scroll_childs->get_child_count(); ++i) {
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (!hb) continue;
+					if (i!=clicked_id && (i<min || i>max) && !p_ev.key.mod.control) {
+						selected_list.erase(hb->get_meta("name"));
+					} else if (i>=min && i<=max) {
+						selected_list.insert(hb->get_meta("name"));
+					}
+				}
+			}
+
+		} else if (selected_list.has(clicked) && p_ev.key.mod.control) {
+
+			selected_list.erase(clicked);
+
+		} else {
+
+			last_clicked = clicked;
+			if (p_ev.key.mod.control || selected_list.size()==0) {
+				selected_list.insert(clicked);
+			} else {
+				selected_list.clear();
+				selected_list.insert(clicked);
+			}
 		}
-		erase_btn->set_disabled(false);
-		open_btn->set_disabled(false);
+
+		String selected = "";
+		if (selected_list.size() == 1) {
+			selected = selected_list.front()->get();
+		}
+
+		selected_main = "";
+		for(int i=0;i<scroll_childs->get_child_count();i++) {
+			CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+			item->update();
+
+			if (selected!="" && selected == item->get_meta("name"))
+				selected_main = item->get_meta("main_scene");
+		}
+
+		erase_btn->set_disabled(selected_list.size()<1);
+		open_btn->set_disabled(selected_list.size()!=1);
 		run_btn->set_disabled(selected_main=="");
 
 		if (p_ev.mouse_button.doubleclick)
 			_open_project(); //open if doubleclicked
+
 	}
 }
 
@@ -483,19 +534,19 @@ void ProjectManager::_load_recent_projects() {
 		scroll_childs->add_child(hb);
 	}
 
-	erase_btn->set_disabled(selected=="");
-	open_btn->set_disabled(selected=="");
-	if (selected=="")
-		run_btn->set_disabled(true);
+	erase_btn->set_disabled(selected_list.size()<1);
+	open_btn->set_disabled(selected_list.size()!=1);
+	run_btn->set_disabled(selected_main == "");
 }
 
 void ProjectManager::_open_project() {
 
 
-	if (selected=="") {
+	if (selected_list.size()!=1) {
 		return;
 	}
 
+	const String &selected = selected_list.front()->get();
 	String path = EditorSettings::get_singleton()->get("projects/"+selected);
 	print_line("OPENING: "+path+" ("+selected+")");
 
@@ -524,10 +575,11 @@ void ProjectManager::_open_project() {
 void ProjectManager::_run_project() {
 
 
-	if (selected=="") {
+	if (selected_list.size()!=1) {
 		return;
 	}
 
+	const String &selected = selected_list.front()->get();
 	String path = EditorSettings::get_singleton()->get("projects/"+selected);
 	print_line("OPENING: "+path+" ("+selected+")");
 
@@ -619,13 +671,15 @@ void ProjectManager::_import_project()  {
 
 void ProjectManager::_erase_project_confirm()  {
 
-	if (selected=="") {
+	if (selected_list.size()==0) {
 		return;
 	}
-
-	EditorSettings::get_singleton()->erase("projects/"+selected);
+	for (Set<String>::Element *E=selected_list.front(); E; E=E->next()) {
+		EditorSettings::get_singleton()->erase("projects/"+E->get());
+	}
 	EditorSettings::get_singleton()->save();
-	selected="";
+	selected_list.clear();
+	last_clicked = "";
 	selected_main="";
 	_load_recent_projects();
 
@@ -633,7 +687,7 @@ void ProjectManager::_erase_project_confirm()  {
 
 void ProjectManager::_erase_project()  {
 
-	if (selected=="")
+	if (selected_list.size()==0)
 		return;
 
 
@@ -806,6 +860,7 @@ ProjectManager::ProjectManager() {
 	//get_ok()->set_text("Open");
 	//get_ok()->set_text("Exit");
 
+	last_clicked = "";
 }
 
 
