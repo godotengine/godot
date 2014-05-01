@@ -452,6 +452,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 						const GDParser::Node *instance = on->arguments[0];
 
+						bool in_static=false;
 						if (instance->type==GDParser::Node::TYPE_SELF) {
 							//room for optimization
 
@@ -465,7 +466,10 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							int ret;
 
-							if (i==1) {
+							if (i==0 && on->arguments[i]->type==GDParser::Node::TYPE_SELF && codegen.function_node && codegen.function_node->_static) {
+								//static call to self
+								ret=(GDFunction::ADDR_TYPE_CLASS<<GDFunction::ADDR_BITS);
+							} else if (i==1) {
 
 								if (on->arguments[i]->type!=GDParser::Node::TYPE_IDENTIFIER) {
 									_set_error("Attempt to call a non-identifier.",on);
@@ -475,6 +479,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 								ret=codegen.get_name_map_pos(id->name);
 
 							} else {
+
 								ret = _parse_expression(codegen,on->arguments[i],slevel);
 								if (ret<0)
 									return ret;
