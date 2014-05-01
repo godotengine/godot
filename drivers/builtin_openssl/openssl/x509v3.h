@@ -59,13 +59,17 @@
 #define HEADER_X509V3_H
 
 #include <openssl/bio.h>
-#include <openssl/x509.h>
 #include <openssl/conf.h>
+#include <openssl/x509.h>
+#include <openssl/ossl_typ.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifdef X509_NAME
+#undef X509_NAME
+#endif
 /* Forward reference */
 struct v3_ext_method;
 struct v3_ext_ctx;

@@ -86,8 +86,8 @@ bool _play_video(String p_path) {
 }
 
 bool _is_video_playing() {
-	NSInteger playback_state = _instance.moviePlayerController.playbackState;
-	return (playback_state == MPMoviePlaybackStatePlaying);
+	//NSInteger playback_state = _instance.moviePlayerController.playbackState;
+	return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
 }
 
 void _pause_video() {
@@ -512,7 +512,7 @@ static void clear_touches() {
       name:MPMoviePlayerPlaybackDidFinishNotification
       object:player];
 
-    _stop_video();
+    [_instance.moviePlayerController.view removeFromSuperview];
 }
 
 @end

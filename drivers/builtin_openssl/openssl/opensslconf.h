@@ -1,6 +1,30 @@
 /* opensslconf.h */
 /* WARNING: Generated automatically from opensslconf.h.in by Configure. */
 
+//sorry godot needs a single file for multiple builds
+
+// Check windows
+
+#ifdef USE_64BITS
+//weirder platforms that don't use GCC, LLVM  or MSVC must define this
+# define OPENSSL_USE_64_BITS
+#elif _WIN32 || _WIN64
+# if _WIN64
+# define OPENSSL_USE_64_BITS
+# endif
+// Check GCC
+#elif __GNUC__
+# if __x86_64__ || __ppc64__
+# define OPENSSL_USE_64_BITS
+# endif
+#endif
+
+#ifndef OPENSSL_USE_64_BITS
+//wqerw
+#endif
+
+
+
 /* OpenSSL was configured with the following options: */
 #ifndef OPENSSL_DOING_MAKEDEPEND
 
@@ -117,7 +141,12 @@
  * - Intel P6 because partial register stalls are very expensive;
  * - elder Alpha because it lacks byte load/store instructions;
  */
+#ifdef OPENSSL_USE_64_BITS 
 #define RC4_INT unsigned int
+#else
+#define RC4_INT unsigned char
+#endif
+
 #endif
 #if !defined(RC4_CHUNK)
 /*
@@ -138,14 +167,31 @@
 
 #if defined(HEADER_BN_H) && !defined(CONFIG_HEADER_BN_H)
 #define CONFIG_HEADER_BN_H
+#ifdef OPENSSL_USE_64_BITS
 #undef BN_LLONG
+#else
+#define BN_LLONG
+#endif
 
 /* Should we define BN_DIV2W here? */
 
 /* Only one for the following should be defined */
+
+#ifdef OPENSSL_USE_64_BITS
+
 #define SIXTY_FOUR_BIT_LONG
 #undef SIXTY_FOUR_BIT
 #undef THIRTY_TWO_BIT
+
+#else
+
+#undef SIXTY_FOUR_BIT_LONG
+#undef SIXTY_FOUR_BIT
+#define THIRTY_TWO_BIT
+
+#endif
+
+
 #endif
 
 #if defined(HEADER_RC4_LOCL_H) && !defined(CONFIG_HEADER_RC4_LOCL_H)
