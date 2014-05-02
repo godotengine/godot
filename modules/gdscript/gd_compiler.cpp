@@ -185,51 +185,59 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 			//TRY CLASS CONSTANTS
 
-			GDScript *scr = codegen.script;
-			GDNativeClass *nc=NULL;
-			while(scr) {
+			GDScript *owner = codegen.script;
+			while (owner) {
 
-				if (scr->constants.has(identifier)) {
+				GDScript *scr = owner;
+				GDNativeClass *nc=NULL;
+				while(scr) {
 
-					//int idx=scr->constants[identifier];
-					int idx = codegen.get_name_map_pos(identifier);
-					return idx|(GDFunction::ADDR_TYPE_CLASS_CONSTANT<<GDFunction::ADDR_BITS); //argument (stack root)
+					if (scr->constants.has(identifier)) {
+
+						//int idx=scr->constants[identifier];
+						int idx = codegen.get_name_map_pos(identifier);
+						return idx|(GDFunction::ADDR_TYPE_CLASS_CONSTANT<<GDFunction::ADDR_BITS); //argument (stack root)
+					}
+					if (scr->native.is_valid())
+						nc=scr->native.ptr();
+					scr=scr->_base;
 				}
-				if (scr->native.is_valid())
-					nc=scr->native.ptr();
-				scr=scr->_base;
-			}
 
-			// CLASS C++ Integer Constant
+				// CLASS C++ Integer Constant
 
-			if (nc) {
+				if (nc) {
 
-				bool success=false;
-				int constant = ObjectTypeDB::get_integer_constant(nc->get_name(),identifier,&success);
-				if (success) {
-					Variant key=constant;
-					int idx;
+					bool success=false;
+					int constant = ObjectTypeDB::get_integer_constant(nc->get_name(),identifier,&success);
+					if (success) {
+						Variant key=constant;
+						int idx;
 
-					if (!codegen.constant_map.has(key)) {
+						if (!codegen.constant_map.has(key)) {
 
-						idx=codegen.constant_map.size();
-						codegen.constant_map[key]=idx;
+							idx=codegen.constant_map.size();
+							codegen.constant_map[key]=idx;
 
-					} else {
-						idx=codegen.constant_map[key];
+						} else {
+							idx=codegen.constant_map[key];
+						}
+
+						return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 					}
 
-					return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 				}
 
+				owner=owner->_owner;
 			}
 
-			if (codegen.script->subclasses.has(identifier)) {
+			/*
+			 handled in constants now
+			 if (codegen.script->subclasses.has(identifier)) {
 				//same with a subclass, make it a local constant.
 				int idx = codegen.get_constant_pos(codegen.script->subclasses[identifier]);
 				return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 
-			}
+			}*/
 
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 
@@ -1457,6 +1465,8 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		Error err = _parse_class(subclass.ptr(),p_script,p_class->subclasses[i]);
 		if (err)
 			return err;
+
+		p_script->constants.insert(name,subclass); //once parsed, goes to the list of constants
 		p_script->subclasses.insert(name,subclass);
 
 	}
