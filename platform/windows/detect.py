@@ -54,8 +54,6 @@ def get_flags():
                 ('openssl','builtin'), #use builtin openssl
         ]
 			
-
-
 def configure(env):
 
 	if os.name == "posix":
@@ -148,9 +146,6 @@ def configure(env):
 		    env.Append(CCFLAGS=['-m32'])
 		    env.Append(LINKFLAGS=['-m32'])
 
-
-
-
 		if (env["force_64_bits"]!="no"):
 			mingw_prefix=env["mingw_prefix_64"];
 			env['OBJSUFFIX'] = ".64"+env['OBJSUFFIX']
@@ -193,6 +188,12 @@ def configure(env):
 		#env['CC'] = "winegcc"
 		#env['CXX'] = "wineg++"
 
+		env["TEMPFILE"]		= __Godot__TempFileMunge
+		env['CCCOM']		= "${TEMPFILE('%s')}" % env['CCCOM']
+		env['ASCOM']		= "${TEMPFILE('%s')}" % env['ASCOM']
+		env['CXXCOM']		= "${TEMPFILE('%s')}" % env['CXXCOM']
+		env['ARCOM']		= "${TEMPFILE('%s')}" % env['ARCOM']
+
 		env.Append(CCFLAGS=['-DWINDOWS_ENABLED','-mwindows'])
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLES1_ENABLED','-DGLEW_ENABLED'])
@@ -207,5 +208,51 @@ def configure(env):
 	env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
+class __Godot__TempFileMunge(object):
+	# Workaround MingW windows long command line argument limitation
+	# Based on TempFileMunge implementation from SCons\Platform\__init__.py
+	# Tested with scons-2.3.1
+	# Reference: http://four.pairlist.net/pipermail/scons-users/2013-March/001145.html
 	
+	def __init__(self, cmd):
+		self.cmd = cmd
+
+	def __call__(self, target, source, env, for_signature):
+
+		import tempfile
+		import os
+		import SCons.Util
+		import SCons.Subst
+		import SCons.Action
+
+		if for_signature:
+			return self.cmd
+		cmd = env.subst_list(self.cmd, SCons.Subst.SUBST_CMD, target, source)[0]
+		try:
+			maxline = int(env.subst('$MAXLINELENGTH'))
+		except ValueError:
+			maxline = 2048
+		length = 0
+		for c in cmd:
+			length += len(c)
+		if length <= maxline:
+			return self.cmd
+		(fd, tmp) = tempfile.mkstemp('.lnk', text=True)
+		native_tmp = SCons.Util.get_native_path(os.path.normpath(tmp))
+		if env['SHELL'] and env['SHELL'] == 'sh':
+			native_tmp = native_tmp.replace('\\', r'\\\\')
+			rm = env.Detect('rm') or 'del'
+		else:
+			rm = 'del'
+		prefix = env.subst('$TEMPFILEPREFIX')
+		if not prefix:
+			prefix = '@'
+		args = list(map(SCons.Subst.quote_spaces, cmd[1:]))
+		os.write(fd, (" ".join(args) + "\n").replace("\\", r"\\\\"))
+		os.close(fd)
+		if SCons.Action.print_actions:
+			print("Using tempfile "+native_tmp+" for command line:\n"+
+				str(cmd[0]) + " " + " ".join(args))
+		return [ cmd[0], prefix + native_tmp + '\n' + rm, native_tmp ]
+
 
