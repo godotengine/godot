@@ -49,7 +49,8 @@ class ProjectManager : public Control {
 	NewProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
-	String selected;
+	Set<String> selected_list;
+	String last_clicked;
 	String selected_main;
 	bool importing;
 
