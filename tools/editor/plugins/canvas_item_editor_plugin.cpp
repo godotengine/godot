@@ -2263,7 +2263,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Zoom Reset",ZOOM_RESET);
 	p->add_item("Zoom Set..",ZOOM_SET);
 	p->add_item("Center Selection", VIEW_CENTER_TO_SELECTION, KEY_F);
-	p->add_item("Frame Selection", VIEW_FRAME_TO_SELECTION, KEY_MASK_CTRL|KEY_F);
+	p->add_item("Frame Selection", VIEW_FRAME_TO_SELECTION, KEY_MASK_CMD|KEY_F);
 
 	animation_menu = memnew( MenuButton );
 	animation_menu->set_text("Animation");
