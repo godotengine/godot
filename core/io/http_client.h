@@ -126,6 +126,8 @@ public:
 		STATUS_REQUESTING, // request in progress
 		STATUS_BODY, // request resulted in body, which must be read
 		STATUS_CONNECTION_ERROR,
+		STATUS_SSL_HANDSHAKE_ERROR,
+
 	};
 
 private:
@@ -134,6 +136,9 @@ private:
 	IP::ResolverID resolving;
 	int conn_port;
 	String conn_host;
+	bool ssl;
+	bool ssl_verify_host;
+	bool blocking;
 
 	Vector<uint8_t> response_str;
 
@@ -157,7 +162,7 @@ public:
 
 
 	Error connect_url(const String& p_url); //connects to a full url and perform request
-	Error connect(const String &p_host,int p_port);
+	Error connect(const String &p_host,int p_port,bool p_ssl=false,bool p_verify_host=true);
 
 	void set_connection(const Ref<StreamPeer>& p_connection);
 
@@ -176,6 +181,10 @@ public:
 	int get_response_body_length() const;
 
 	ByteArray read_response_body_chunk(); // can't get body as partial text because of most encodings UTF8, gzip, etc.
+
+	void set_blocking_mode(bool p_enable); //useful mostly if running in a thread
+	bool is_blocking_mode_enabled() const;
+
 
 	Error poll();
 

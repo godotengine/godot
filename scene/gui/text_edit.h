@@ -206,6 +206,8 @@ class TextEdit : public Control  {
 	bool text_changed_dirty;
 	bool undo_enabled;
 	bool line_numbers;
+	
+	bool auto_brace_completion_enabled;
 
 	uint64_t last_dblclk;
 
@@ -218,6 +220,8 @@ class TextEdit : public Control  {
 	Object *tooltip_obj;
 	StringName tooltip_func;
 	Variant tooltip_ud;
+	
+	bool next_operation_is_complex;
 
 	int get_visible_rows() const;
 
@@ -241,11 +245,13 @@ class TextEdit : public Control  {
 	void _update_caches();
 	void _cursor_changed_emit();
 	void _text_changed_emit();
-
+	
+	void _begin_compex_operation();
+	void _end_compex_operation();
 	void _push_current_op();
 
 	/* super internal api, undo/redo builds on it */
-
+	
 	void _base_insert_text(int p_line, int p_column,const String& p_text,int &r_end_line,int &r_end_column);
 	String _base_get_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column) const;
 	void _base_remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
@@ -262,12 +268,16 @@ class TextEdit : public Control  {
 protected:
 
 	virtual String get_tooltip(const Point2& p_pos) const;
-
+	
 	void _insert_text(int p_line, int p_column,const String& p_text,int *r_end_line=NULL,int *r_end_char=NULL);
 	void _remove_text(int p_from_line, int p_from_column,int p_to_line,int p_to_column);
 	void _insert_text_at_cursor(const String& p_text);
 	void _input_event(const InputEvent& p_input);
 	void _notification(int p_what);
+	
+	void _consume_pair_symbol(CharType ch);
+	void _consume_backspace_for_pair_symbol(int prev_line, int prev_column);
+	
 	static void _bind_methods();
 
 
@@ -296,8 +306,11 @@ public:
 	String get_text();
 	String get_line(int line) const;
 	void backspace_at_cursor();
-
-
+	
+	inline void set_auto_brace_completion(bool p_enabled) {
+		auto_brace_completion_enabled = p_enabled;
+	}
+	
 	void cursor_set_column(int p_col);
 	void cursor_set_line(int p_row);
 

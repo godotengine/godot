@@ -2,22 +2,74 @@
 #include "aes256.h"
 #include "md5.h"
 #include "os/copymem.h"
+#include "print_string.h"
 #define COMP_MAGIC 0x43454447
 
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base,const Vector<uint8_t>& p_key,Mode p_mode) {
 
+	print_line("open and parse!");
 	ERR_FAIL_COND_V(file!=NULL,ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V(p_key.size()!=32,ERR_INVALID_PARAMETER);
+
+	pos=0;
+	eofed=false;
 
 	if (p_mode==MODE_WRITE_AES256) {
 
-		ERR_FAIL_COND_V(p_key.size()!=32,ERR_INVALID_PARAMETER);
 		data.clear();
 		writing=true;
 		file=p_base;
 		mode=p_mode;
 		key=p_key;
 
+	} else if (p_mode==MODE_READ) {
+
+		key=p_key;
+		uint32_t magic = p_base->get_32();
+		print_line("MAGIC: "+itos(magic));
+		ERR_FAIL_COND_V(magic!=COMP_MAGIC,ERR_FILE_UNRECOGNIZED);
+		mode=Mode(p_base->get_32());
+		ERR_FAIL_INDEX_V(mode,MODE_MAX,ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V(mode==0,ERR_FILE_CORRUPT);
+		print_line("MODE: "+itos(mode));
+		unsigned char md5d[16];
+		p_base->get_buffer(md5d,16);
+		length=p_base->get_64();
+		base=p_base->get_pos();
+		ERR_FAIL_COND_V(p_base->get_len() < base+length, ERR_FILE_CORRUPT );
+		int ds = length;
+		if (ds % 16) {
+			ds+=16-(ds % 16);
+		}
+
+		data.resize(ds);
+
+		int blen = p_base->get_buffer(data.ptr(),ds);
+		ERR_FAIL_COND_V(blen!=ds,ERR_FILE_CORRUPT);
+
+		aes256_context ctx;
+		aes256_init(&ctx,key.ptr());
+
+		for(size_t i=0;i<ds;i+=16) {
+
+			aes256_decrypt_ecb(&ctx,&data[i]);
+		}
+
+		aes256_done(&ctx);
+
+		data.resize(length);
+
+		MD5_CTX md5;
+		MD5Init(&md5);
+		MD5Update(&md5,data.ptr(),data.size());
+		MD5Final(&md5);
+
+
+		ERR_FAIL_COND_V(String::md5(md5.digest)!=String::md5(md5d),ERR_FILE_CORRUPT)		;
+
+
+		file=p_base;
 	}
 
 	return OK;
@@ -57,6 +109,11 @@ void FileAccessEncrypted::close() {
 			len+=16-(len % 16);
 		}
 
+		MD5_CTX md5;
+		MD5Init(&md5);
+		MD5Update(&md5,data.ptr(),data.size());
+		MD5Final(&md5);
+
 		compressed.resize(len);
 		zeromem( compressed.ptr(), len );
 		for(int i=0;i<data.size();i++) {
@@ -76,10 +133,6 @@ void FileAccessEncrypted::close() {
 		file->store_32(COMP_MAGIC);
 		file->store_32(mode);
 
-		MD5_CTX md5;
-		MD5Init(&md5);
-		MD5Update(&md5,compressed.ptr(),compressed.size());
-		MD5Final(&md5);
 
 		file->store_buffer(md5.digest,16);
 		file->store_64(data.size());
@@ -88,8 +141,17 @@ void FileAccessEncrypted::close() {
 		file->close();
 		memdelete(file);
 		file=NULL;
+		data.clear();
 
+	} else {
+
+		file->close();
+		memdelete(file);
+		data.clear();
+		file=NULL;
 	}
+
+
 
 }
 
@@ -100,12 +162,12 @@ bool FileAccessEncrypted::is_open() const{
 
 void FileAccessEncrypted::seek(size_t p_position){
 
-	if (writing) {
-		if (p_position > (size_t)data.size())
-			p_position=data.size();
+	if (p_position > (size_t)data.size())
+		p_position=data.size();
 
-		pos=p_position;
-	}
+	pos=p_position;
+	eofed=false;
+
 }
 
 
@@ -116,38 +178,51 @@ void FileAccessEncrypted::seek_end(int64_t p_position){
 size_t FileAccessEncrypted::get_pos() const{
 
 	return pos;
-	return 0;
 }
 size_t FileAccessEncrypted::get_len() const{
 
-	if (writing)
-		return data.size();
-	return 0;
+	return data.size();
 }
 
 bool FileAccessEncrypted::eof_reached() const{
 
-	if (!writing) {
-
-
-	}
-
-	return false;
+	return eofed;
 }
 
 uint8_t FileAccessEncrypted::get_8() const{
 
-	return 0;
+	ERR_FAIL_COND_V(writing,0);
+	if (pos>=data.size()) {
+		eofed=true;
+		return 0;
+	}
+
+	uint8_t b = data[pos];
+	pos++;
+	return b;
+
 }
 int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const{
 
+	ERR_FAIL_COND_V(writing,0);
 
-	return 0;
+	int to_copy=MIN(p_length,data.size()-pos);
+	for(int i=0;i<to_copy;i++) {
+
+		p_dst[i]=data[pos++];
+	}
+
+	if (to_copy<p_length) {
+		eofed=true;
+	}
+
+
+	return to_copy;
 }
 
 Error FileAccessEncrypted::get_error() const{
 
-	return OK;
+	return eofed?ERR_FILE_EOF:OK;
 }
 
 void FileAccessEncrypted::store_buffer(const uint8_t *p_src,int p_length) {
@@ -210,8 +285,4 @@ FileAccessEncrypted::~FileAccessEncrypted() {
 
 	if (file)
 		close();
-
-	if (file) {
-		memdelete(file);
-	}
 }

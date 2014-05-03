@@ -29,10 +29,16 @@ def can_build():
 		print("X11 not found.. x11 disabled.")
 		return False
 
+        ssl_error=os.system("pkg-config openssl --modversion > /dev/null ")
+        if (ssl_error):
+                print("OpenSSL not found.. x11 disabled.")
+                return False
+
 	x11_error=os.system("pkg-config xcursor --modversion > /dev/null ")
 	if (x11_error):
 		print("xcursor not found.. x11 disabled.")
 		return False
+
 	
 	return True # X11 enabled
   
@@ -50,7 +56,8 @@ def get_flags():
 	('opengl', 'no'),
 	('legacygl', 'yes'),
 	('builtin_zlib', 'no'),
-	]
+	("openssl", "yes"),
+        ]
 			
 
 
@@ -114,6 +121,7 @@ def configure(env):
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
+	env.ParseConfig('pkg-config openssl --cflags --libs')
 
 
 	env.ParseConfig('pkg-config freetype2 --cflags --libs')

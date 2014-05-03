@@ -27,14 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "http_client.h"
-
+#include "io/stream_peer_ssl.h"
 
 Error HTTPClient::connect_url(const String& p_url) {
 
 	return OK;
 }
 
-Error HTTPClient::connect(const String &p_host,int p_port){
+Error HTTPClient::connect(const String &p_host, int p_port, bool p_ssl,bool p_verify_host){
 
 	close();
 	conn_port=p_port;
@@ -49,7 +49,12 @@ Error HTTPClient::connect(const String &p_host,int p_port){
 	}
 
 
+	ssl=p_ssl;
+	ssl_verify_host=p_verify_host;
 	connection=tcp_connection;
+
+
+
 	if (conn_host.is_valid_ip_address()) {
 		//is ip
 		Error err = tcp_connection->connect(IP_Address(conn_host),p_port);
@@ -233,6 +238,17 @@ Error HTTPClient::poll(){
 					return OK; //do none
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
+					if (ssl) {
+						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
+						Error err = ssl->connect(tcp_connection,true,ssl_verify_host?conn_host:String());
+						if (err!=OK) {
+							close();
+							status=STATUS_SSL_HANDSHAKE_ERROR;
+							return ERR_CANT_CONNECT;
+						}
+						print_line("SSL! TURNED ON!");
+						connection=ssl;
+					}
 					status=STATUS_CONNECTED;
 					return OK;
 				} break;
@@ -525,9 +541,20 @@ HTTPClient::Status HTTPClient::get_status() const {
 	return status;
 }
 
+void HTTPClient::set_blocking_mode(bool p_enable) {
+
+	blocking=p_enable;
+}
+
+bool HTTPClient::is_blocking_mode_enabled() const{
+
+	return blocking;
+}
+
+
 void HTTPClient::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect:Error","host","port"),&HTTPClient::connect);
+	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ObjectTypeDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
 	ObjectTypeDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);
@@ -542,8 +569,12 @@ void HTTPClient::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_response_body_length"),&HTTPClient::get_response_body_length);
 	ObjectTypeDB::bind_method(_MD("read_response_body_chunk"),&HTTPClient::read_response_body_chunk);
 
+	ObjectTypeDB::bind_method(_MD("set_blocking_mode","enabled"),&HTTPClient::set_blocking_mode);
+	ObjectTypeDB::bind_method(_MD("is_blocking_mode_enabled"),&HTTPClient::is_blocking_mode_enabled);
+
 	ObjectTypeDB::bind_method(_MD("get_status"),&HTTPClient::get_status);
 	ObjectTypeDB::bind_method(_MD("poll:Error"),&HTTPClient::poll);
+
 
 	BIND_CONSTANT( METHOD_GET );
 	BIND_CONSTANT( METHOD_HEAD );
@@ -564,6 +595,7 @@ void HTTPClient::_bind_methods() {
 	BIND_CONSTANT( STATUS_REQUESTING );  // request in progress
 	BIND_CONSTANT( STATUS_BODY );  // request resulted in body );  which must be read
 	BIND_CONSTANT( STATUS_CONNECTION_ERROR );
+	BIND_CONSTANT( STATUS_SSL_HANDSHAKE_ERROR );
 
 
 	BIND_CONSTANT( RESPONSE_CONTINUE );
@@ -637,7 +669,8 @@ HTTPClient::HTTPClient(){
 	body_left=0;
 	chunk_left=0;
 	response_num=0;
-
+	ssl=false;
+	blocking=false;
 	tmp_read.resize(4096);
 }
 

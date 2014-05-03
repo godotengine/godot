@@ -46,6 +46,9 @@ class InputMap : public Object {
 
 	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
 
+protected:
+
+	static void _bind_methods();
 public:
 
 	static _FORCE_INLINE_ InputMap *get_singleton() { return singleton; }

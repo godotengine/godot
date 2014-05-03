@@ -20,6 +20,7 @@
 #include "etc1/image_etc.h"
 #include "chibi/event_stream_chibi.h"
 
+
 #ifdef TOOLS_ENABLED
 #include "squish/image_compress_squish.h"
 #endif
@@ -92,6 +93,10 @@ static ResourceFormatLoaderVideoStreamTheora* theora_stream_loader = NULL;
 
 #ifdef MUSEPACK_ENABLED
 static ResourceFormatLoaderAudioStreamMPC * mpc_stream_loader=NULL;
+#endif
+
+#ifdef OPENSSL_ENABLED
+#include "openssl/register_openssl.h"
 #endif
 
 void register_core_driver_types() {
@@ -191,6 +196,11 @@ void register_driver_types() {
 
 #endif
 
+#ifdef OPENSSL_ENABLED
+
+	register_openssl();
+#endif
+
 #ifdef THEORA_ENABLED
 	theora_stream_loader = memnew( ResourceFormatLoaderVideoStreamTheora );
 	ResourceLoader::add_resource_format_loader(theora_stream_loader);
@@ -239,6 +249,11 @@ void unregister_driver_types() {
 
 #ifdef PVR_ENABLED
 	memdelete(resource_loader_pvr);
+#endif
+
+#ifdef OPENSSL_ENABLED
+
+	unregister_openssl();
 #endif
 
 	finalize_chibi();

@@ -39,9 +39,9 @@
 
 /* Use only fixed point arithmetic */
 
-#ifdef _MSC_VER
-#define inline _inline
-#endif
+//#ifdef _MSC_VER
+//#define inline _inline
+//#endif
 
 #define FIXED_POINT 1
 
