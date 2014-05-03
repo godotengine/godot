@@ -1956,7 +1956,59 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 
 		} break;
+		case VIEW_CENTER_TO_SELECTION:
+		case VIEW_FRAME_TO_SELECTION: {
 
+			Vector2 center(0.f, 0.f);
+			Rect2 rect;
+			int count = 0;
+
+			Map<Node*,Object*> &selection = editor_selection->get_selection();
+			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
+				CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
+				if (!canvas_item) continue;
+
+				// counting invisible items, for now
+				//if (!canvas_item->is_visible()) continue;
+				++count;
+
+				Rect2 item_rect = canvas_item->get_item_rect();
+
+				Vector2 pos = canvas_item->get_global_transform().get_origin();
+				Vector2 scale = canvas_item->get_global_transform().get_scale();
+				real_t angle = canvas_item->get_global_transform().get_rotation();
+
+				Matrix32 t(angle, Vector2(0.f,0.f));
+				item_rect = t.xform(item_rect);
+				Rect2 canvas_item_rect(pos + scale*item_rect.pos, scale*item_rect.size);
+				if (count == 1) {
+					rect = canvas_item_rect;
+				} else {
+					rect = rect.merge(canvas_item_rect);
+				}
+			};
+			if (count==0) break;
+
+			if (p_op == VIEW_CENTER_TO_SELECTION) {
+
+				center = rect.pos + rect.size/2;
+				Vector2 offset = viewport->get_size()/2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
+				h_scroll->set_val(h_scroll->get_val() - offset.x/zoom);
+				v_scroll->set_val(v_scroll->get_val() - offset.y/zoom);
+
+			} else { // VIEW_FRAME_TO_SELECTION
+
+				if (rect.size.x > CMP_EPSILON && rect.size.y > CMP_EPSILON) {
+					float scale_x = viewport->get_size().x/rect.size.x;
+					float scale_y = viewport->get_size().y/rect.size.y;
+					zoom = scale_x < scale_y? scale_x:scale_y;
+					zoom *= 0.90;
+					_update_scroll(0);
+					call_deferred("_popup_callback", VIEW_CENTER_TO_SELECTION);
+				}
+			}
+
+		} break;
 	}
 }
 #if 0
@@ -2201,6 +2253,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Zoom Out",ZOOM_OUT);
 	p->add_item("Zoom Reset",ZOOM_RESET);
 	p->add_item("Zoom Set..",ZOOM_SET);
+	p->add_item("Center Selection", VIEW_CENTER_TO_SELECTION, KEY_F);
+	p->add_item("Frame Selection", VIEW_FRAME_TO_SELECTION, KEY_MASK_CMD|KEY_F);
 
 	animation_menu = memnew( MenuButton );
 	animation_menu->set_text("Animation");
