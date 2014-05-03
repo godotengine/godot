@@ -1957,7 +1957,26 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 
 		} break;
+		case VIEW_CENTER_TO_SELECTION: {
 
+			Map<Node*,Object*> &selection = editor_selection->get_selection();
+			Vector2 center(0.f, 0.f);
+			int count = 0;
+			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
+				CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
+				if (!canvas_item)
+					continue;
+				center += canvas_item->get_global_transform().get_origin();
+				++ count;
+			};
+			if (count==0) break;
+			center = center/count;
+
+			Vector2 offset = viewport->get_size()/2 - editor->get_scene_root()->get_global_canvas_transform().xform(center);
+			h_scroll->set_val(h_scroll->get_val() - offset.x/zoom);
+			v_scroll->set_val(v_scroll->get_val() - offset.y/zoom);
+
+		} break;
 	}
 }
 #if 0
@@ -2210,6 +2229,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Zoom Out",ZOOM_OUT);
 	p->add_item("Zoom Reset",ZOOM_RESET);
 	p->add_item("Zoom Set..",ZOOM_SET);
+	p->add_item("Selection", VIEW_CENTER_TO_SELECTION,KEY_F);
 
 	animation_menu = memnew( MenuButton );
 	animation_menu->set_text("Animation");
