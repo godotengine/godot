@@ -1106,7 +1106,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						return;
 					}
 
-					if (k.scancode==KEY_RETURN) {
+					if (k.scancode==KEY_RETURN || k.scancode==KEY_TAB) {
 
 						_confirm_completion();
 						accept_event();
