@@ -76,16 +76,21 @@ Variant *GDFunction::_get_variant(int p_address,GDInstance *p_instance,GDScript 
 		case ADDR_TYPE_CLASS_CONSTANT: {
 
 			//todo change to index!
-			GDScript *s=p_script;
+			GDScript *o=p_script;
 			ERR_FAIL_INDEX_V(address,_global_names_count,NULL);
 			const StringName *sn = &_global_names_ptr[address];
 
-			while(s) {
-				Map<StringName,Variant>::Element *E=s->constants.find(*sn);
-				if (E) {
-					return &E->get();
+			while(o) {
+				GDScript *s=o;
+				while(s) {
+
+					Map<StringName,Variant>::Element *E=s->constants.find(*sn);
+					if (E) {
+						return &E->get();
+					}
+					s=s->_base;
 				}
-				s=s->_base;
+				o=o->_owner;
 			}
 
 
