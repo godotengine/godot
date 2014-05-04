@@ -1746,7 +1746,7 @@ String OS_Windows::get_unique_ID() const {
 
 	if(GetAdaptersInfo(adapter, &out_buflen) == ERROR_BUFFER_OVERFLOW)
 	{
-		buffer.resize(sizeof(out_buflen));
+		buffer.resize(out_buflen);
 		adapter = (PIP_ADAPTER_INFO) &buffer[0];
 		ERR_FAIL_COND_V(GetAdaptersInfo(adapter, &out_buflen) != NO_ERROR, "");
 	}
