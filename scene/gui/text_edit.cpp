@@ -2875,6 +2875,7 @@ void TextEdit::_update_completion_candidates() {
 
 	completion_current=completion_options[completion_index];
 
+#if 0	// even there's only one option, user still get the chance to choose using it or not
 	if (completion_options.size()==1) {
 		//one option to complete, just complete it automagically
 		_confirm_completion();
@@ -2883,7 +2884,7 @@ void TextEdit::_update_completion_candidates() {
 		return;
 
 	}
-
+#endif
 	completion_enabled=true;
 
 
