@@ -194,7 +194,13 @@ void make_default_theme() {
 	{
 		font_path = "C:\\Windows\\Fonts\\msyh.ttf";
 		ttf_font = ResourceLoader::load(font_path);
-		font_size = 18;
+		if(ttf_font.is_null())
+		{
+			font_path = "C:\\Windows\\Fonts\\msyh.ttc";
+			ttf_font = ResourceLoader::load(font_path);
+		}
+		if(ttf_font.is_valid())
+			font_size = 18;
 	}
 
     if(ttf_font.is_valid())
