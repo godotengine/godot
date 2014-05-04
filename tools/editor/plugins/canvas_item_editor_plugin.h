@@ -69,6 +69,7 @@ class CanvasItemEditor : public VBoxContainer {
 		TOOL_SELECT,
 		TOOL_MOVE,
 		TOOL_ROTATE,
+		TOOL_PAN,
 		TOOL_MAX
 	};
 
@@ -97,10 +98,12 @@ class CanvasItemEditor : public VBoxContainer {
 		ANIM_INSERT_POS_ROT,
 		ANIM_INSERT_POS_SCALE,
 		ANIM_INSERT_ROT_SCALE,
-		ANIM_INSERT_POS_ROT_SCALE,		
+		ANIM_INSERT_POS_ROT_SCALE,
 		ANIM_COPY_POSE,
 		ANIM_PASTE_POSE,
-		ANIM_CLEAR_POSE
+		ANIM_CLEAR_POSE,
+		VIEW_CENTER_TO_SELECTION,
+		VIEW_FRAME_TO_SELECTION,
 
 	};
 
@@ -169,6 +172,8 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *select_button;
 	ToolButton *move_button;
 	ToolButton *rotate_button;
+
+	ToolButton *pan_button;
 
 	ToolButton *lock_button;
 	ToolButton *unlock_button;
