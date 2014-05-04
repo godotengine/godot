@@ -2885,6 +2885,9 @@ void TextEdit::_update_completion_candidates() {
 
 	}
 #endif
+	if (completion_options.size()==1 && s==completion_options[0])
+		_cancel_completion();
+
 	completion_enabled=true;
 
 
