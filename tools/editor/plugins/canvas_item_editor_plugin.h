@@ -103,6 +103,7 @@ class CanvasItemEditor : public VBoxContainer {
 		ANIM_PASTE_POSE,
 		ANIM_CLEAR_POSE,
 		VIEW_CENTER_TO_SELECTION,
+		VIEW_FRAME_TO_SELECTION,
 
 	};
 
