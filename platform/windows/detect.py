@@ -193,7 +193,6 @@ def configure(env):
 		env['ASCOM']		= "${TEMPFILE('%s')}" % env['ASCOM']
 		env['CXXCOM']		= "${TEMPFILE('%s')}" % env['CXXCOM']
 		env['ARCOM']		= "${TEMPFILE('%s')}" % env['ARCOM']
-		env['RANLIBCOM']	= "${TEMPFILE('%s')}" % env['RANLIBCOM']
 
 		env.Append(CCFLAGS=['-DWINDOWS_ENABLED','-mwindows'])
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
