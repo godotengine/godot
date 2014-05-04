@@ -1,8 +1,8 @@
-#ifdef OPENSSL_ENABLED
 
 #include "register_openssl.h"
 
 #include "stream_peer_openssl.h"
+#ifdef OPENSSL_ENABLED
 
 void register_openssl() {
 

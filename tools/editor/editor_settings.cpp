@@ -416,6 +416,7 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_seconds",60);
 	set("text_editor/font","");
+	set("text_editor/auto_brace_complete", false);
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
 
 

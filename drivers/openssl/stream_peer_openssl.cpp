@@ -554,6 +554,25 @@ void StreamPeerOpenSSL::initialize_ssl() {
 	}
 	String config_path =GLOBAL_DEF("ssl/config","");
 	Globals::get_singleton()->set_custom_property_info("ssl/config",PropertyInfo(Variant::STRING,"ssl/config",PROPERTY_HINT_FILE,"*.cnf"));
+	if (config_path!="") {
+
+		Vector<uint8_t> data = FileAccess::get_file_as_array(config_path);
+		if (data.size()) {
+			data.push_back(0);
+			BIO* mem = BIO_new(BIO_s_mem());
+			BIO_puts(mem,(const char*) data.ptr());
+
+			while(true) {
+				X509*cert = PEM_read_bio_X509(mem, NULL, 0, NULL);
+				if (!cert)
+					break;
+				certs.push_back(cert);
+			}
+			BIO_free(mem);
+		}
+		print_line("Loaded certs from '"+certs_path+"':  "+itos(certs.size()));
+
+	}
 
 }
 
