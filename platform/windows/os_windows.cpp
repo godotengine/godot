@@ -1735,20 +1735,30 @@ void OS_Windows::run() {
 
 String OS_Windows::get_unique_ID() const {
 
-    IP_ADAPTER_INFO adapter;  
+    PIP_ADAPTER_INFO adapter;
+	std::string buffer;
+	buffer.resize(sizeof(IP_ADAPTER_INFO));
+	adapter = (PIP_ADAPTER_INFO) &buffer[0];
+
+    //IP_ADAPTER_INFO adapter;  
     DWORD retval = 0;  
     ULONG out_buflen = sizeof(IP_ADAPTER_INFO);  
 
-	ERR_FAIL_COND_V(GetAdaptersInfo(&adapter, &out_buflen) != NO_ERROR, "");
+	if(GetAdaptersInfo(adapter, &out_buflen) == ERROR_BUFFER_OVERFLOW)
+	{
+		buffer.resize(sizeof(out_buflen));
+		adapter = (PIP_ADAPTER_INFO) &buffer[0];
+		ERR_FAIL_COND_V(GetAdaptersInfo(adapter, &out_buflen) != NO_ERROR, "");
+	}
 
 	char mac[128];
 	sprintf(mac, "%02x-%02x-%02x-%02x-%02x-%02x",
-		adapter.Address[0],  
-		adapter.Address[1],  
-		adapter.Address[2],  
-		adapter.Address[3],  
-		adapter.Address[4],  
-		adapter.Address[5]);
+		adapter->Address[0],  
+		adapter->Address[1],  
+		adapter->Address[2],  
+		adapter->Address[3],  
+		adapter->Address[4],  
+		adapter->Address[5]);
 	return mac;
 }
 
