@@ -1106,7 +1106,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						return;
 					}
 
-					if (k.scancode==KEY_RETURN) {
+					if (k.scancode==KEY_RETURN || k.scancode==KEY_TAB) {
 
 						_confirm_completion();
 						accept_event();
@@ -2896,6 +2896,7 @@ void TextEdit::_update_completion_candidates() {
 
 	completion_current=completion_options[completion_index];
 
+#if 0	// even there's only one option, user still get the chance to choose using it or not
 	if (completion_options.size()==1) {
 		//one option to complete, just complete it automagically
 		_confirm_completion();
@@ -2904,6 +2905,9 @@ void TextEdit::_update_completion_candidates() {
 		return;
 
 	}
+#endif
+	if (completion_options.size()==1 && s==completion_options[0])
+		_cancel_completion();
 
 	completion_enabled=true;
 
