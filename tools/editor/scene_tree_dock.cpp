@@ -72,6 +72,9 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 	Ref<Texture> texture = ResourceLoader::load(p_file);
 	if (texture.is_valid()) {
+
+		String name_only = p_file.get_file().substr(0, p_file.get_file().find_last("."));
+
 		if (InputDefault::get_singleton()->is_key_pressed(KEY_SHIFT)) {
 			AnimatedSprite *sprite = memnew(AnimatedSprite);
 			Ref<SpriteFrames> frames = memnew(SpriteFrames);
@@ -98,16 +101,28 @@ Node* SceneTreeDock::instance(const String& p_file) {
 				texture = ResourceLoader::load(next_file);
 			}
 			sprite->set_sprite_frames(frames);
+
+			name_only = name_only.substr(0, name_only.length()-digits);
+			CharType last = name_only[name_only.length()-1];
+			if (last == '_' || last=='-' || last=='.') // some common used delimeter before number, e.g. texture_001.png
+				name_only = name_only.substr(0, name_only.length()-1);
+
+			sprite->set_name(name_only);
 			instanced=sprite;
+
 		} else {
+
 			Sprite *sprite = memnew(Sprite);
 			sprite->set_texture(texture);
+			sprite->set_name(name_only);
 			instanced = sprite;
 		}
+
 		if (!instanced) {
 			print_line("Error instancing from " + p_file);
 			return NULL;
 		}
+
 	}
 
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
