@@ -28,7 +28,10 @@
 /*************************************************************************/
 package com.android.godot;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MotionEvent;
 import android.widget.RelativeLayout;
@@ -220,6 +223,7 @@ public class Godot extends Activity implements SensorEventListener
 
         }
 
+	@SuppressLint("NewApi")
 	@Override protected void onCreate(Bundle icicle) {
 
 		System.out.printf("** GODOT ACTIVITY CREATED HERE ***\n");
@@ -276,6 +280,7 @@ public class Godot extends Activity implements SensorEventListener
 
 	}
 
+	@SuppressLint({ "NewApi" })
 	@Override protected void onResume() {
 		super.onResume();
 		mView.onResume();
@@ -290,12 +295,15 @@ public class Godot extends Activity implements SensorEventListener
 		        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
 		        | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
 		        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+				}
 	}
 
+		@SuppressLint("NewApi")
 		public void UiChangeListener() {
         final View decorView = getWindow().getDecorView();
         decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
-        @Override
+        @TargetApi(Build.VERSION_CODES.KITKAT)
+		@Override
         public void onSystemUiVisibilityChange(int visibility) {
             if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
 			    decorView.setSystemUiVisibility(
