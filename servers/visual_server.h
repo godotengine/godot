@@ -334,7 +334,10 @@ public:
 	
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
-		
+
+	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
+
 	/* MULTIMESH API */
 
 	virtual RID multimesh_create()=0;
@@ -502,7 +505,8 @@ public:
 	enum LightDirectionalShadowMode {
 		LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL,
 		LIGHT_DIRECTIONAL_SHADOW_PERSPECTIVE,
-		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_SPLIT
+		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS,
+		LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS
 	};
 
 	virtual void light_directional_set_shadow_mode(RID p_light,LightDirectionalShadowMode p_mode)=0;

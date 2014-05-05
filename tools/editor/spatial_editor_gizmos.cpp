@@ -53,6 +53,7 @@ void SpatialGizmoTool::clear() {
 
 	}
 
+	billboard_handle=false;
 	collision_segments.clear();
 	collision_mesh=Ref<TriangleMesh>();
 	instances.clear();
@@ -103,10 +104,39 @@ void SpatialGizmoTool::add_lines(const Vector<Vector3> &p_lines, const Ref<Mater
 	Ref<Mesh> mesh = memnew( Mesh );
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
+
 	a[Mesh::ARRAY_VERTEX]=p_lines;
+
+	DVector<Color> color;
+	color.resize(p_lines.size());
+	{
+		DVector<Color>::Write w = color.write();
+		for(int i=0;i<p_lines.size();i++) {
+			if (is_selected())
+				w[i]=Color(1,1,1,0.6);
+			else
+				w[i]=Color(1,1,1,0.25);
+		}
+
+	}
+
+	a[Mesh::ARRAY_COLOR]=color;
+
+
 	mesh->add_surface(Mesh::PRIMITIVE_LINES,a);
 	mesh->surface_set_material(0,p_material);
 
+	if (p_billboard) {
+		float md=0;
+		for(int i=0;i<p_lines.size();i++) {
+
+			md=MAX(0,p_lines[i].length());
+
+		}
+		if (md) {
+			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+		}
+	}
 
 	ins.billboard=p_billboard;
 	ins.mesh=mesh;
@@ -145,6 +175,17 @@ void SpatialGizmoTool::add_unscaled_billboard(const Ref<Material>& p_material,fl
 	mesh->add_surface(Mesh::PRIMITIVE_TRIANGLE_FAN,a);
 	mesh->surface_set_material(0,p_material);
 
+	if (true) {
+		float md=0;
+		for(int i=0;i<vs.size();i++) {
+
+			md=MAX(0,vs[i].length());
+
+		}
+		if (md) {
+			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+		}
+	}
 
 	ins.mesh=mesh;
 	ins.unscaled=true;
@@ -177,12 +218,16 @@ void SpatialGizmoTool::add_collision_segments(const Vector<Vector3> &p_lines) {
 
 void SpatialGizmoTool::add_handles(const Vector<Vector3> &p_handles, bool p_billboard,bool p_secondary){
 
+	billboard_handle=p_billboard;
+
+	if (!is_selected())
+		return;
+
 	ERR_FAIL_COND(!spatial_node);
 
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
-	billboard_handle=p_billboard;
 
 	Ref<Mesh> mesh = memnew( Mesh );
 #if 1
@@ -190,11 +235,35 @@ void SpatialGizmoTool::add_handles(const Vector<Vector3> &p_handles, bool p_bill
 	Array a;
 	a.resize(VS::ARRAY_MAX);
 	a[VS::ARRAY_VERTEX]=p_handles;
+	DVector<Color> colors;
+	{
+		colors.resize(p_handles.size());
+		DVector<Color>::Write w=colors.write();
+		for(int i=0;i<p_handles.size();i++) {
+
+			Color col(1,1,1,1);
+			if (SpatialEditor::get_singleton()->get_over_gizmo_handle()!=i)
+				col=Color(0.9,0.9,0.9,0.9);
+			w[i]=col;
+		}
+
+	}
+	a[VS::ARRAY_COLOR]=colors;
 	mesh->add_surface(Mesh::PRIMITIVE_POINTS,a);
-	if (!p_secondary)
-		mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_material);
-	else
-		mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_secondary_material);
+	mesh->surface_set_material(0,SpatialEditorGizmos::singleton->handle2_material);
+
+	if (p_billboard) {
+		float md=0;
+		for(int i=0;i<p_handles.size();i++) {
+
+			md=MAX(0,p_handles[i].length());
+
+		}
+		if (md) {
+			mesh->set_custom_aabb(AABB(Vector3(-md,-md,-md),Vector3(md,md,md)*2.0));
+		}
+	}
+
 
 
 #else
@@ -467,6 +536,9 @@ bool SpatialGizmoTool::intersect_ray(const Camera *p_camera,const Point2& p_poin
 		int vc=collision_segments.size();
 		const Vector3* vptr=collision_segments.ptr();
 		Transform t = spatial_node->get_global_transform();
+		if (billboard_handle) {
+			t.set_look_at(t.origin,t.origin+p_camera->get_transform().basis.get_axis(2),p_camera->get_transform().basis.get_axis(1));
+		}
 
 		Vector3 cp;
 		float cpd=1e20;
@@ -507,7 +579,7 @@ bool SpatialGizmoTool::intersect_ray(const Camera *p_camera,const Point2& p_poin
 			}
 		}
 
-		if (cpd<5) {
+		if (cpd<8) {
 
 			r_pos=cp;
 			r_normal=-p_camera->project_ray_normal(p_point);
@@ -520,6 +592,11 @@ bool SpatialGizmoTool::intersect_ray(const Camera *p_camera,const Point2& p_poin
 
 	if (collision_mesh.is_valid()) {
 		Transform gt = spatial_node->get_global_transform();
+
+		if (billboard_handle) {
+			gt.set_look_at(gt.origin,gt.origin+p_camera->get_transform().basis.get_axis(2),p_camera->get_transform().basis.get_axis(1));
+		}
+
 		Transform ai=gt.affine_inverse();
 		Vector3 ray_from = ai.xform(p_camera->project_ray_origin(p_point));
 		Vector3 ray_dir=ai.basis.xform(p_camera->project_ray_normal(p_point)).normalized();
@@ -815,6 +892,7 @@ void LightSpatialGizmo::redraw() {
 		}
 
 		add_lines(points,SpatialEditorGizmos::singleton->light_material,true);
+		add_collision_segments(points);
 
 		add_unscaled_billboard(SpatialEditorGizmos::singleton->light_material_omni_icon,0.05);
 
@@ -2117,6 +2195,20 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	return Ref<SpatialEditorGizmo>();
 }
 
+
+Ref<FixedMaterial> SpatialEditorGizmos::create_line_material(const Color& p_base_color) {
+
+	Ref<FixedMaterial> line_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
+	line_material->set_flag(Material::FLAG_UNSHADED, true);
+	line_material->set_line_width(3.0);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
+	line_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,p_base_color);
+
+	return line_material;
+
+}
+
 SpatialEditorGizmos::SpatialEditorGizmos() {
 
 	singleton=this;
@@ -2133,15 +2225,9 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	handle2_material->set_texture(FixedMaterial::PARAM_DIFFUSE,handle_t);
 	handle2_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
 	handle2_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	handle2_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
 
-	handle2_secondary_material = handle2_material->duplicate();
-	handle2_secondary_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,.5));
-
-	light_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	light_material->set_flag(Material::FLAG_UNSHADED, true);
-	light_material->set_line_width(3.0);
-	light_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	light_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,0.2,0.3));
+	light_material = create_line_material(Color(1,1,0.2));
 
 	light_material_omni_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	light_material_omni_icon->set_flag(Material::FLAG_UNSHADED, true);
@@ -2160,22 +2246,10 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_directional_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	light_material_directional_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight","EditorIcons"));
 
-	camera_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	camera_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.5,1.0,0.7) );
-	camera_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	camera_material->set_line_width(3);
-	camera_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	camera_material->set_flag(Material::FLAG_UNSHADED,true);
-	camera_material->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+	camera_material = create_line_material(Color(1.0,0.5,1.0));
 
 
-
-	skeleton_material=Ref<FixedMaterial>( memnew( FixedMaterial ));
-
-	//skeleton_material->set_parameter( FixedMaterial::PARAM_DIFFUSE,Color(0.6,1.0,0.3,0.1) );
-	skeleton_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	skeleton_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, true);
-	skeleton_material->set_line_width(3);
+	skeleton_material = create_line_material(Color(0.6,1.0,0.3));
 	skeleton_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	skeleton_material->set_flag(Material::FLAG_UNSHADED,true);
 	skeleton_material->set_flag(Material::FLAG_ONTOP,true);
@@ -2224,48 +2298,11 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	sample_player_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	sample_player_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer","EditorIcons"));
 
-	room_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	room_material->set_flag(Material::FLAG_UNSHADED, true);
-	room_material->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	//room_material->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
-	room_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	room_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.6,0.9,0.8));
-	room_material->set_line_width(3);
-
-	portal_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	portal_material->set_flag(Material::FLAG_UNSHADED, true);
-	portal_material->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	//portal_material->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
-	portal_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	portal_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.8,0.6,0.8));
-	portal_material->set_line_width(3);
-
-
-	raycast_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	raycast_material->set_flag(Material::FLAG_UNSHADED, true);
-	raycast_material->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	//raycast_material->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
-	raycast_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	raycast_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.8,0.6,0.8));
-	raycast_material->set_line_width(3);
-
-	car_wheel_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	car_wheel_material->set_flag(Material::FLAG_UNSHADED, true);
-	car_wheel_material->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	//car_wheel_material->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
-	car_wheel_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	car_wheel_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(0.6,0.8,1.0,0.8));
-	car_wheel_material->set_line_width(3);
-
-
-
-	visibility_notifier_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	visibility_notifier_material->set_flag(Material::FLAG_UNSHADED, true);
-	visibility_notifier_material->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	//visibility_notifier_material->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
-	visibility_notifier_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	visibility_notifier_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1.0,0.5,1.0,0.8));
-	visibility_notifier_material->set_line_width(3);
+	room_material = create_line_material(Color(1.0,0.6,0.9));
+	portal_material = create_line_material(Color(1.0,0.8,0.6));
+	raycast_material = create_line_material(Color(1.0,0.8,0.6));
+	car_wheel_material = create_line_material(Color(0.6,0.8,1.0));
+	visibility_notifier_material = create_line_material(Color(1.0,0.5,1.0));
 
 	stream_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	stream_player_icon->set_flag(Material::FLAG_UNSHADED, true);
@@ -2326,11 +2363,8 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 		test_cube_tm->create(vertices);
 	}
 
+	shape_material = create_line_material(Color(0.2,1,1.0));
 
-	shape_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
-	shape_material->set_flag(Material::FLAG_UNSHADED, true);
-	shape_material->set_line_width(3.0);
-	shape_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-	shape_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(0.2,1,1.0,0.3));
 
 }
+
