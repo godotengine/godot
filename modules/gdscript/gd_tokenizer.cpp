@@ -692,7 +692,7 @@ void GDTokenizerText::_advance() {
 						// Use real_t if real(value) ~= int(value)
 						real_t val = str.to_double();
 						int int_val = str.to_int();
-						if(int_val != val)
+						if(int_val == val)
 							_make_constant(int_val);
 						else
 							_make_constant(val);
