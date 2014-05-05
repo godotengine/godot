@@ -30,7 +30,10 @@
 #include "editor_node.h"
 #include "globals.h"
 #include "os/keyboard.h"
+#include "os/input.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/2d/sprite.h"
+#include "scene/2d/animated_sprite.h"
 #include "editor_settings.h"
 
 
@@ -65,36 +68,77 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 	ERR_FAIL_COND_V(!parent,NULL);
 
-	Node*instanced_scene=NULL;
-	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
-	if (sdata.is_valid())
-		instanced_scene=sdata->instance();
+	Node *instanced=NULL;
 
+	Ref<Texture> texture = ResourceLoader::load(p_file);
+	if (texture.is_valid()) {
+		if (InputDefault::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+			AnimatedSprite *sprite = memnew(AnimatedSprite);
+			Ref<SpriteFrames> frames = memnew(SpriteFrames);
 
-	if (!instanced_scene) {
+			int digits = 0;
+			String name_with_path = p_file.basename();
+			for (int i=name_with_path.length()-1; i>=0 && name_with_path[i]>='0'&& name_with_path[i]<='9'; --i)
+				++digits;
+			bool is_pad_zeros = name_with_path[name_with_path.length()-digits] == '0';
 
-		current_option=-1;
-		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text("Ugh");
-		accept->set_text(String("Error loading scene from ")+p_file);
-		accept->popup_centered(Size2(300,70));;
-		return NULL;
+			int i=0;
+			int base = name_with_path.substr(name_with_path.length()-digits, digits).to_int();
+			while(texture.is_valid()) {
+				frames->add_frame(texture);
+
+				String next = itos(base + ++i);
+				if (is_pad_zeros)
+					next = next.pad_zeros(digits);
+
+				String next_file = name_with_path.substr(0, name_with_path.length()-digits) + next + "." + p_file.extension();
+				if (!FileAccess::exists(next_file))
+					break;
+
+				texture = ResourceLoader::load(next_file);
+			}
+			sprite->set_sprite_frames(frames);
+			instanced=sprite;
+		} else {
+			Sprite *sprite = memnew(Sprite);
+			sprite->set_texture(texture);
+			instanced = sprite;
+		}
+		if (!instanced) {
+			print_line("Error instancing from " + p_file);
+			return NULL;
+		}
 	}
 
-	instanced_scene->generate_instance_state();
-	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
+	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
+	if (sdata.is_valid()) {
+		instanced=sdata->instance();
+		if (!instanced) {
+
+			current_option=-1;
+			//accept->get_cancel()->hide();
+			accept->get_ok()->set_text("Ugh");
+			accept->set_text(String("Error loading scene from ")+p_file);
+			accept->popup_centered(Size2(300,70));;
+			return NULL;
+		}
+
+		instanced->generate_instance_state();
+		instanced->set_filename( Globals::get_singleton()->localize_path(p_file) );
+	}
+
 
 	editor_data->get_undo_redo().create_action("Instance Scene");
-	editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene,"set_owner",edited_scene);
+	editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced);
+	editor_data->get_undo_redo().add_do_method(instanced,"set_owner",edited_scene);
 	editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
-	editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced_scene);
-	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced_scene);
+	editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced);
+	editor_data->get_undo_redo().add_do_reference(instanced);
+	editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced);
 	editor_data->get_undo_redo().commit_action();
 
 
-	return instanced_scene;
+	return instanced;
 
 }
 
