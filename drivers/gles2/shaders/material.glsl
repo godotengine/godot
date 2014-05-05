@@ -140,6 +140,12 @@ varying highp vec4 shadow_coord;
 uniform highp mat4 shadow_matrix2;
 varying highp vec4 shadow_coord2;
 #endif
+#ifdef LIGHT_USE_PSSM4
+uniform highp mat4 shadow_matrix3;
+varying highp vec4 shadow_coord3;
+uniform highp mat4 shadow_matrix4;
+varying highp vec4 shadow_coord4;
+#endif
 
 
 #endif
@@ -290,6 +296,22 @@ VERTEX_SHADER_CODE
 	shadow_coord2.xyz/=shadow_coord2.w;
 	shadow_coord2.y*=0.5;
 #endif
+#ifdef LIGHT_USE_PSSM4
+	shadow_coord.x*=0.5;
+	shadow_coord2.x*=0.5;
+
+	shadow_coord3 = shadow_matrix3 * vec4(vertex_interp,1.0);
+	shadow_coord3.xyz/=shadow_coord3.w;
+	shadow_coord3.xy*=vec2(0.5);
+	shadow_coord3.xy+=vec2(0.5);
+
+	shadow_coord4 = shadow_matrix4 * vec4(vertex_interp,1.0);
+	shadow_coord4.xyz/=shadow_coord4.w;
+	shadow_coord4.xy*=vec2(0.5);
+	shadow_coord4.x+=0.5;
+
+#endif
+
 #endif
 
 #ifdef USE_FOG
@@ -428,7 +450,7 @@ varying vec4 var2_interp;
 #endif
 
 #ifdef LIGHT_USE_PSSM
-uniform float light_pssm_split;
+uniform vec3 light_pssm_split;
 #endif
 
 varying vec3 vertex_interp;
@@ -504,6 +526,11 @@ varying highp vec4 shadow_coord;
 #ifdef LIGHT_USE_PSSM
 varying highp vec4 shadow_coord2;
 #endif
+#ifdef LIGHT_USE_PSSM4
+varying highp vec4 shadow_coord3;
+varying highp vec4 shadow_coord4;
+#endif
+
 uniform highp sampler2D shadow_texture;
 uniform highp vec2 shadow_texel_size;
 
@@ -523,6 +550,9 @@ uniform float shadow_darkening;
 #ifdef USE_SHADOW_PCF
 
 
+#ifdef USE_SHADOW_PCF_HQ
+
+
 float SAMPLE_SHADOW_TEX( highp vec2 coord, highp float refdepth) {
 
 	float avg=(SHADOW_DEPTH(shadow_texture,coord) < refdepth ?  0.0 : 1.0);
@@ -530,8 +560,32 @@ float SAMPLE_SHADOW_TEX( highp vec2 coord, highp float refdepth) {
 	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
 	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
 	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
-        return avg*0.2;
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x*2.0,0.0)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x*2.0,0.0)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,shadow_texel_size.y*2.0)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,-shadow_texel_size.y*2.0)) < refdepth ?  0.0 : 1.0);
+	return avg*(1.0/13.0);
 }
+
+#else
+
+float SAMPLE_SHADOW_TEX( highp vec2 coord, highp float refdepth) {
+
+	float avg=(SHADOW_DEPTH(shadow_texture,coord) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(-shadow_texel_size.x,0.0)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
+	avg+=(SHADOW_DEPTH(shadow_texture,coord+vec2(0.0,-shadow_texel_size.y)) < refdepth ?  0.0 : 1.0);
+	return avg*0.2;
+}
+
+#endif
+
+
 
 
 /*
@@ -697,7 +751,7 @@ FRAGMENT_SHADER_CODE
 #if 0
 	highp vec3 splane = vec3(0.0,0.0,0.0);
 
-	if (gl_FragCoord.w > light_pssm_split) {
+	if (gl_FragCoord.w > light_pssm_split.x) {
 
 		splane = shadow_coord.xyz;
 		splane.y+=1.0;
@@ -711,19 +765,56 @@ FRAGMENT_SHADER_CODE
 /*
 	float sa_a = SAMPLE_SHADOW_TEX(shadow_coord.xy,shadow_coord.z);
 	float sa_b = SAMPLE_SHADOW_TEX(shadow_coord2.xy,shadow_coord2.z);
-	if (gl_FragCoord.w > light_pssm_split) {
+	if (gl_FragCoord.w > light_pssm_split.x) {
 		shadow_attenuation=sa_a;
 	} else {
 		shadow_attenuation=sa_b;
 	}
 */
 
-	if (gl_FragCoord.w > light_pssm_split) {
-		shadow_attenuation=SAMPLE_SHADOW_TEX(shadow_coord.xy,shadow_coord.z);
+	vec2 pssm_coord;
+	float pssm_z;
+
+#ifdef LIGHT_USE_PSSM4
+
+
+	if (gl_FragCoord.w > light_pssm_split.y) {
+
+		if (gl_FragCoord.w > light_pssm_split.x) {
+			pssm_coord=shadow_coord.xy;
+			pssm_z=shadow_coord.z;
+
+		} else {
+			pssm_coord=shadow_coord2.xy;
+			pssm_z=shadow_coord2.z;
+		}
 	} else {
-		shadow_attenuation=SAMPLE_SHADOW_TEX(shadow_coord2.xy,shadow_coord2.z);
+
+
+		if (gl_FragCoord.w > light_pssm_split.z) {
+			pssm_coord=shadow_coord3.xy;
+			pssm_z=shadow_coord3.z;
+		} else {
+			pssm_coord=shadow_coord4.xy;
+			pssm_z=shadow_coord4.z;
+		}
 	}
 
+#else
+
+	if (gl_FragCoord.w > light_pssm_split.x) {
+		pssm_coord=shadow_coord.xy;
+		pssm_z=shadow_coord.z;
+
+	} else {
+		pssm_coord=shadow_coord2.xy;
+		pssm_z=shadow_coord2.z;
+	}
+
+#endif
+
+	//one one sample
+	shadow_attenuation=SAMPLE_SHADOW_TEX(pssm_coord,pssm_z);
 
 #endif
 

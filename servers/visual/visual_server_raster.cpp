@@ -434,6 +434,21 @@ int VisualServerRaster::mesh_get_surface_count(RID p_mesh) const{
 
 }
 
+
+void VisualServerRaster::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb) {
+
+	VS_CHANGED;
+	_dependency_queue_update(p_mesh,true);
+	rasterizer->mesh_set_custom_aabb(p_mesh,p_aabb);
+
+}
+
+AABB VisualServerRaster::mesh_get_custom_aabb(RID p_mesh) const {
+
+	return rasterizer->mesh_get_custom_aabb(p_mesh);
+}
+
+
 /* MULTIMESH */
 
 RID VisualServerRaster::multimesh_create() {

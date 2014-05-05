@@ -2241,6 +2241,9 @@ AABB RasterizerGLES2::mesh_get_aabb(RID p_mesh) const {
 	Mesh *mesh = mesh_owner.get( p_mesh );
 	ERR_FAIL_COND_V(!mesh,AABB());
 
+	if (mesh->custom_aabb!=AABB())
+		return mesh->custom_aabb;
+
 	AABB aabb;
 
 	for (int i=0;i<mesh->surfaces.size();i++) {
@@ -2252,6 +2255,24 @@ AABB RasterizerGLES2::mesh_get_aabb(RID p_mesh) const {
 	}
 
 	return aabb;
+}
+
+
+void RasterizerGLES2::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb) {
+
+	Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND(!mesh);
+
+	mesh->custom_aabb=p_aabb;
+
+}
+
+AABB RasterizerGLES2::mesh_get_custom_aabb(RID p_mesh) const {
+
+	const Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND_V(!mesh,AABB());
+
+	return mesh->custom_aabb;
 }
 /* MULTIMESH API */
 
@@ -3114,7 +3135,8 @@ Rasterizer::ShadowType RasterizerGLES2::light_instance_get_shadow_type(RID p_lig
 				case VS::LIGHT_DIRECTIONAL_SHADOW_PERSPECTIVE:{
 					return SHADOW_PSM;
 				} break;
-				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_SPLIT:{
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
+				case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS:{
 					return SHADOW_PSSM;
 				} break;
 			}
@@ -3131,9 +3153,13 @@ int RasterizerGLES2::light_instance_get_shadow_passes(RID p_light_instance) cons
 
 	LightInstance *lighti = light_instance_owner.get( p_light_instance );
 	ERR_FAIL_COND_V(!lighti,0);
-	if (lighti->base->type==VS::LIGHT_OMNI || (lighti->base->type==VS::LIGHT_DIRECTIONAL && lighti->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_SPLIT))
+
+	if (lighti->base->type==VS::LIGHT_DIRECTIONAL && lighti->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+
+		return 4; // dp4
+	} else if (lighti->base->type==VS::LIGHT_OMNI || (lighti->base->type==VS::LIGHT_DIRECTIONAL && lighti->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS)) {
 		return 2; // dp
-	else
+	} else
 		return 1;
 }
 
@@ -3145,6 +3171,10 @@ void RasterizerGLES2::light_instance_set_shadow_transform(RID p_light_instance, 
 	ERR_FAIL_COND(lighti->base->type!=VS::LIGHT_DIRECTIONAL);
 //	ERR_FAIL_INDEX(p_index,1);
 
+	lighti->custom_projection[p_index]=p_camera;
+	lighti->custom_transform[p_index]=p_transform;
+	lighti->shadow_split[p_index]=1.0/p_split_far;
+#if 0
 	if (p_index==0) {
 		lighti->custom_projection=p_camera;
 		lighti->custom_transform=p_transform;
@@ -3161,7 +3191,7 @@ void RasterizerGLES2::light_instance_set_shadow_transform(RID p_light_instance, 
 		lighti->shadow_split2=p_split_far;
 
 	}
-
+#endif
 }
 
 int RasterizerGLES2::light_instance_get_shadow_size(RID p_light_instance, int p_index) const{
@@ -3407,6 +3437,7 @@ void RasterizerGLES2::begin_frame() {
 
 	//fragment_lighting=Globals::get_singleton()->get("rasterizer/use_fragment_lighting");
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("rasterizer/use_pixel_snap",false));
+	shadow_filter=ShadowFilterTechnique(int(Globals::get_singleton()->get("rasterizer/shadow_filter")));
 
 
 	window_size = Size2( OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height );
@@ -3675,18 +3706,21 @@ void RasterizerGLES2::add_light( RID p_light_instance ) {
 			if (li->base->shadow_enabled) {
 				CameraMatrix bias;
 				bias.set_light_bias();
-				Transform modelview=Transform(camera_transform_inverse * li->custom_transform).inverse();
-				li->shadow_projection = bias * li->custom_projection * modelview;
 
-				Transform modelview2=Transform(camera_transform_inverse * li->custom_transform2).inverse();
-				li->shadow_projection2 = bias * li->custom_projection2 * modelview2;
+				int passes=light_instance_get_shadow_passes(p_light_instance);
+
+				for(int i=0;i<passes;i++) {
+					Transform modelview=Transform(camera_transform_inverse * li->custom_transform[i]).inverse();
+					li->shadow_projection[i] = bias * li->custom_projection[i] * modelview;
+				}
+
 				lights_use_shadow=true;
 			}
 		} break;
 		case VS::LIGHT_OMNI: {
 
 			if (li->base->shadow_enabled) {
-				li->shadow_projection = Transform(camera_transform_inverse * li->transform).inverse();
+				li->shadow_projection[0] = Transform(camera_transform_inverse * li->transform).inverse();
 				lights_use_shadow=true;
 			}
 		} break;
@@ -3696,7 +3730,7 @@ void RasterizerGLES2::add_light( RID p_light_instance ) {
 				CameraMatrix bias;
 				bias.set_light_bias();
 				Transform modelview=Transform(camera_transform_inverse * li->transform).inverse();
-				li->shadow_projection = bias * li->projection * modelview;
+				li->shadow_projection[0] = bias * li->projection * modelview;
 				lights_use_shadow=true;
 			}
 		} break;
@@ -3954,8 +3988,10 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 			light_types[i]=VS::LIGHT_DIRECTIONAL;
 			if (directional_lights[i]->base->shadow_enabled) {
 				light_types[i]|=0x8;
-				if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_SPLIT)
+				if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS)
 					light_types[i]|=0x10;
+				else if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS)
+					light_types[i]|=0x30;
 
 			}
 
@@ -4152,7 +4188,8 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 	//all goes to false by default
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PASS,shadow!=NULL);
-	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,use_shadow_pcf);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,shadow_filter!=SHADOW_FILTER_NONE);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter>SHADOW_FILTER_PCF5);
 	//material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,true);
 
 
@@ -4379,16 +4416,27 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 
 		//}
 
-		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX,li->shadow_projection);
+		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX,li->shadow_projection[0]);
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXEL_SIZE,Vector2(1.0,1.0)/li->near_shadow_buffer->size);
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXTURE,7);
 
-		if (li->base->type==VS::LIGHT_DIRECTIONAL && li->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_SPLIT) {
+		if (li->base->type==VS::LIGHT_DIRECTIONAL) {
 
-			material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX2,li->shadow_projection2);
-			material_shader.set_uniform(MaterialShaderGLES2::LIGHT_PSSM_SPLIT,li->shadow_split);
+			if (li->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
+
+				material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX2,li->shadow_projection[1]);
+				material_shader.set_uniform(MaterialShaderGLES2::LIGHT_PSSM_SPLIT,Vector3(li->shadow_split[0],li->shadow_split[1],li->shadow_split[2]));
+			} else if (li->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+
+
+				material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX2,li->shadow_projection[1]);
+				material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX3,li->shadow_projection[2]);
+				material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX4,li->shadow_projection[3]);
+				material_shader.set_uniform(MaterialShaderGLES2::LIGHT_PSSM_SPLIT,Vector3(li->shadow_split[0],li->shadow_split[1],li->shadow_split[2]));
+
+			}
 			//print_line("shadow split: "+rtos(li->shadow_split));
-		}
+		} else
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_DARKENING,li->base->vars[VS::LIGHT_PARAM_SHADOW_DARKENING]);
 		//matrix
 
@@ -5126,6 +5174,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_SPOT,false);
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_SHADOW,false);
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,false);
+		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,false);
 		material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,false);
 	}
 
@@ -5179,6 +5228,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_SPOT,false);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_SHADOW,false);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,false);
+					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,false);
 					material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,true);
 				} else {
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_DIRECTIONAL,(light_type&0x3)==VS::LIGHT_DIRECTIONAL);
@@ -5186,6 +5236,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_SPOT,(light_type&0x3)==VS::LIGHT_SPOT);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_SHADOW,(light_type&0x8));
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,(light_type&0x10));
+					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,(light_type&0x20));
 					material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,false);
 				}
 
@@ -6010,18 +6061,45 @@ void RasterizerGLES2::end_shadow_map() {
 
 		case VS::LIGHT_DIRECTIONAL: {
 
-			if (shadow->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_SPLIT) {
+			if (shadow->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS) {
+
+				cm = shadow->custom_projection[shadow_pass];
+				light_transform=shadow->custom_transform[shadow_pass];
 
 				if (shadow_pass==0) {
 
-					cm = shadow->custom_projection;
-					light_transform=shadow->custom_transform;
+					glViewport(0, sb->size*0.5, sb->size*0.5, sb->size*0.5);
+					glScissor(0, sb->size*0.5, sb->size*0.5, sb->size*0.5);
+				} else if (shadow_pass==1) {
+
+					glViewport(0, 0, sb->size*0.5, sb->size*0.5);
+					glScissor(0, 0, sb->size*0.5, sb->size*0.5);
+
+				} else if (shadow_pass==2) {
+
+					glViewport(sb->size*0.5, sb->size*0.5, sb->size*0.5, sb->size*0.5);
+					glScissor(sb->size*0.5, sb->size*0.5, sb->size*0.5, sb->size*0.5);
+				} else if (shadow_pass==3) {
+
+					glViewport(sb->size*0.5, 0, sb->size*0.5, sb->size*0.5);
+					glScissor(sb->size*0.5, 0, sb->size*0.5, sb->size*0.5);
+
+				}
+
+				glEnable(GL_SCISSOR_TEST);
+
+			} else if (shadow->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS) {
+
+				if (shadow_pass==0) {
+
+					cm = shadow->custom_projection[0];
+					light_transform=shadow->custom_transform[0];
 					glViewport(0, sb->size*0.5, sb->size, sb->size*0.5);
 					glScissor(0, sb->size*0.5, sb->size, sb->size*0.5);
 				} else {
 
-					cm = shadow->custom_projection2;
-					light_transform=shadow->custom_transform2;
+					cm = shadow->custom_projection[1];
+					light_transform=shadow->custom_transform[1];
 					glViewport(0, 0, sb->size, sb->size*0.5);
 					glScissor(0, 0, sb->size, sb->size*0.5);
 
@@ -6030,8 +6108,8 @@ void RasterizerGLES2::end_shadow_map() {
 				glEnable(GL_SCISSOR_TEST);
 
 			} else {
-				cm = shadow->custom_projection;
-				light_transform=shadow->custom_transform;
+				cm = shadow->custom_projection[0];
+				light_transform=shadow->custom_transform[0];
 				glViewport(0, 0, sb->size, sb->size);
 			}
 
@@ -7993,9 +8071,11 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	p_default_fragment_lighting=false;
 	fragment_lighting=GLOBAL_DEF("rasterizer/use_fragment_lighting",true);
 	read_depth_supported=true; //todo check for extension
-	use_shadow_pcf=GLOBAL_DEF("rasterizer/use_shadow_pcf",true);
+	shadow_filter=ShadowFilterTechnique((int)(GLOBAL_DEF("rasterizer/shadow_filter",SHADOW_FILTER_PCF5)));
+	Globals::get_singleton()->set_custom_property_info("rasterizer/shadow_filter",PropertyInfo(Variant::INT,"rasterizer/shadow_filter",PROPERTY_HINT_ENUM,"None,PCF5,PCF13,ESM,VSM"));
+
 	use_shadow_mapping=true;
-	use_fast_texture_filter=GLOBAL_DEF("rasterizer/trilinear_mipmap_filter",true);
+	use_fast_texture_filter=!bool(GLOBAL_DEF("rasterizer/trilinear_mipmap_filter",true));
 	skel_default.resize(1024*4);
 	for(int i=0;i<1024/3;i++) {
 

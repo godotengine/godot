@@ -39,6 +39,7 @@ class Popup : public Control {
 	OBJ_TYPE( Popup, Control );
 
 	bool exclusive;
+	bool popped_up;
 	
 protected:
 
@@ -51,7 +52,8 @@ protected:
 public:
 
 	enum {
-		NOTIFICATION_POST_POPUP=80
+		NOTIFICATION_POST_POPUP=80,
+		NOTIFICATION_POPUP_HIDE=81
 	};
 	
 	void set_exclusive(bool p_exclusive);
