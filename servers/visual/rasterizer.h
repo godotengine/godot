@@ -153,6 +153,16 @@ protected:
 	void _free_fixed_material(const RID& p_material);
 
 public:
+
+	enum ShadowFilterTechnique {
+		SHADOW_FILTER_NONE,
+		SHADOW_FILTER_PCF5,
+		SHADOW_FILTER_PCF13,
+		SHADOW_FILTER_ESM,
+		SHADOW_FILTER_VSM,
+	};
+
+
 	/* TEXTURE API */
 
 	virtual RID texture_create()=0;
@@ -263,6 +273,9 @@ public:
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
 		
 	virtual AABB mesh_get_aabb(RID p_mesh) const=0;
+
+	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
 
 	/* MULTIMESH API */
 

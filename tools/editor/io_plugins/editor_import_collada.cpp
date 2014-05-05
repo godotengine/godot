@@ -515,9 +515,9 @@ static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const
 			tangent=Vector3();
 		} else {
 			tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-			(t2 * z1 - t1 * z2) * r);
+			(t2 * z1 - t1 * z2) * r).normalized();
 			binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-			(s1 * z2 - s2 * z1) * r);
+			(s1 * z2 - s2 * z1) * r).normalized();
 		}
 
 		tangents[ index_arrayr[idx*3+0] ]+=tangent;
@@ -527,6 +527,8 @@ static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const
 		tangents[ index_arrayr[idx*3+2] ]+=tangent;
 		binormals[ index_arrayr[idx*3+2] ]+=binormal;
 
+		//print_line(itos(idx)+" tangent: "+tangent);
+		//print_line(itos(idx)+" binormal: "+binormal);
 	}
 
 	r_tangents.resize(vlen*4);
@@ -2107,7 +2109,7 @@ void EditorSceneImporterCollada::get_extensions(List<String> *r_extensions) cons
 
 	r_extensions->push_back("dae");
 }
-Node* EditorSceneImporterCollada::import_scene(const String& p_path,uint32_t p_flags,Error* r_err) {
+Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_flags, List<String> *r_missing_deps, Error* r_err) {
 
 
 	ColladaImport state;
@@ -2122,12 +2124,19 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path,uint32_t p_f
 
 	if (state.missing_textures.size()) {
 
-		for(int i=0;i<state.missing_textures.size();i++) {
-			EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
-		}
+		//for(int i=0;i<state.missing_textures.size();i++) {
+//			EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
+//		}
 
-		if (p_flags&IMPORT_FAIL_ON_MISSING_DEPENDENCIES)
-			return NULL;
+
+		if (r_missing_deps) {
+
+			for(int i=0;i<state.missing_textures.size();i++) {
+				//EditorNode::add_io_error("Texture Not Found: "+state.missing_textures[i]);
+				r_missing_deps->push_back(state.missing_textures[i]);
+			}
+
+		}
 	}
 
 	if (p_flags&IMPORT_ANIMATION) {

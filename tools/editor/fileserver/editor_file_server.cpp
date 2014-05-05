@@ -311,11 +311,11 @@ void EditorFileServer::stop(){
 EditorFileServer::EditorFileServer() {
 
 	server = TCP_Server::create_ref();
-	thread=Thread::create(_thread_start,this);
 	wait_mutex = Mutex::create();
 	quit=false;
 	active=false;
 	cmd=CMD_NONE;
+	thread=Thread::create(_thread_start,this);
 
 	EDITOR_DEF("file_server/port",6010);
 	EDITOR_DEF("file_server/password","");

@@ -323,6 +323,7 @@ class RasterizerGLES1 : public Rasterizer {
 		Vector<Surface*> surfaces;
 		int morph_target_count;
 		VS::MorphTargetMode morph_target_mode;
+		AABB custom_aabb;
 
 		mutable uint64_t last_pass;
 		Mesh() {
@@ -938,6 +939,9 @@ public:
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
 	virtual AABB mesh_get_aabb(RID p_mesh) const;
+
+	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
 	/* MULTIMESH API */
 

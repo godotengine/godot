@@ -303,6 +303,10 @@ void EditorNode::_notification(int p_what) {
 		}
 */
 
+		if (bool(EDITOR_DEF("resources/auto_reload_modified_images",true))) {
+
+			_menu_option_confirm(DEPENDENCY_LOAD_CHANGED_IMAGES,true);
+		}
 
 		EditorFileSystem::get_singleton()->scan_sources();
 
@@ -2244,9 +2248,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			reimport_dialog->popup_reimport();
 		} break;
-		case DEPENDENCY_UPDATE_LOCAL: {
+		case DEPENDENCY_LOAD_CHANGED_IMAGES: {
 
-			/*
+
 			List<Ref<Resource> > cached;
 			ResourceCache::get_cached_resources(&cached);
 
@@ -2261,15 +2265,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 
-			sources_button->get_popup()->set_item_disabled(sources_button->get_popup()->get_item_index(DEPENDENCY_UPDATE_LOCAL),true);
-
-
-			if (sources_button->get_popup()->is_item_disabled(sources_button->get_popup()->get_item_index(DEPENDENCY_UPDATE_IMPORTED)))
-				sources_button->set_icon(gui_base->get_icon("DependencyOk","EditorIcons"));
-			else
-				sources_button->set_icon(gui_base->get_icon("DependencyChanged","EditorIcons"));
-
-			*/
 		} break;
 		case DEPENDENCY_UPDATE_IMPORTED: {
 
@@ -4174,6 +4169,7 @@ EditorNode::EditorNode() {
 
 	EditorSettings::get_singleton()->enable_plugins();
 	Node::set_human_readable_collision_renaming(true);
+
 
 //	Ref<ImageTexture> it = gui_base->get_icon("logo","Icons");
 //	OS::get_singleton()->set_icon( it->get_data() );

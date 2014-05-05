@@ -773,7 +773,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
 	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()),DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
-	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
+	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("draw_string","font:Font","pos","text","modulate","clip_w"),&CanvasItem::draw_string,DEFVAL(Color(1,1,1)),DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("draw_char","font:Font","pos","char","next","modulate"),&CanvasItem::draw_char,DEFVAL(Color(1,1,1)));
 

@@ -696,6 +696,7 @@ public:
 	FUNC2(mesh_set_morph_target_count,RID,int);
 	FUNC1RC(int,mesh_get_morph_target_count,RID);
 
+
 	FUNC2(mesh_set_morph_target_mode,RID,MorphTargetMode);
 	FUNC1RC(MorphTargetMode,mesh_get_morph_target_mode,RID);
 
@@ -716,6 +717,9 @@ public:
 	FUNC2(mesh_remove_surface,RID,int);
 	FUNC1RC(int,mesh_get_surface_count,RID);
 
+
+	FUNC2(mesh_set_custom_aabb,RID,const AABB&);
+	FUNC1RC(AABB,mesh_get_custom_aabb,RID);
 
 
 	/* MULTIMESH API */
