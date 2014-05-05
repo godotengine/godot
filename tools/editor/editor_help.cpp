@@ -43,9 +43,16 @@ void EditorHelpSearch::popup(const String& p_term) {
 	if (p_term!="") {
 		search_box->set_text(p_term);
 		search_box->select_all();
-	} else
+		_update_search();
+		//TreeItem *ti = search_options->select_single_item();
+		//if (!ti)
+		//	return;
+		search_options->grab_focus();
+
+	} else {
 		search_box->clear();
-	search_box->grab_focus();
+		search_box->grab_focus();
+	}
 }
 
 
@@ -863,6 +870,8 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 void EditorHelp::_request_help(const String& p_string) {
 
 	_goto_desc(p_string);
+	class_search->popup(p_string);
+
 
 
 	//100 palabras

@@ -752,6 +752,11 @@ void ScriptEditor::_menu_option(int p_option) {
 					debugger->show();
 			}
 		} break;
+		case HELP_SELECTED: {
+			String selected = current->get_text_edit()->get_selection_text();
+			editor->call("_editor_select", 3);
+			editor->emit_signal("request_help", selected);
+		} break;
 		case WINDOW_CLOSE: {
 
 			erase_tab_confirm->set_text("Close Tab?:\n\""+current->get_name()+"\"");
@@ -1361,6 +1366,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
 	window_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+
+	help_menu = memnew( MenuButton );
+	menu_hb->add_child(help_menu);
+	help_menu->set_text("Help");
+	help_menu->get_popup()->add_item("Selected", HELP_SELECTED, KEY_MASK_CTRL|KEY_MASK_SHIFT|KEY_D);
+	help_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
 
