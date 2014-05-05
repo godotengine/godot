@@ -331,8 +331,8 @@ public:
 class SpatialEditorGizmos  {
 public:
 
+	Ref<FixedMaterial> create_line_material(const Color& p_base_color);
 	Ref<FixedMaterial> handle2_material;
-	Ref<FixedMaterial> handle2_secondary_material;
 	Ref<FixedMaterial> handle_material;
 	Ref<FixedMaterial> light_material;
 	Ref<FixedMaterial> light_material_omni_icon;
@@ -364,3 +364,4 @@ public:
 };
 
 #endif // SPATIAL_EDITOR_GIZMOS_H
+
