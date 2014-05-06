@@ -115,7 +115,10 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
 		switch(p_event.key.scancode) {
 
-			case KEY_F1: _editor_select(3); break;
+			case KEY_F1:
+				if (!p_event.key.mod.shift && !p_event.key.mod.command)
+					_editor_select(3);
+			break;
 			case KEY_F2: _editor_select(0); break;
 			case KEY_F3: _editor_select(1); break;
 			case KEY_F4: _editor_select(2); break;

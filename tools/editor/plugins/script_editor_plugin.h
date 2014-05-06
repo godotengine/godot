@@ -133,6 +133,7 @@ class ScriptEditor : public VBoxContainer {
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
 		DEBUG_SHOW,
+		HELP_CONTEXTUAL,
 		WINDOW_CLOSE,
 		WINDOW_MOVE_LEFT,
 		WINDOW_MOVE_RIGHT,
@@ -145,6 +146,7 @@ class ScriptEditor : public VBoxContainer {
 	MenuButton *search_menu;
 	MenuButton *window_menu;
 	MenuButton *debug_menu;
+	MenuButton *help_menu;
 	uint64_t idle;
 
 	TabContainer *tab_container;
@@ -185,6 +187,7 @@ class ScriptEditor : public VBoxContainer {
 	void _breaked(bool p_breaked,bool p_can_debug);
 	void _show_debugger(bool p_show);
 	void _update_window_menu();
+
 	static ScriptEditor *script_editor;
 protected:
 	void _notification(int p_what);
