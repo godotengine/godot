@@ -38,7 +38,7 @@ void Position2D::_draw_cross() {
 
 Rect2 Position2D::get_item_rect() const {
 
-	return Rect2(Point2(-10,-10),Size2(20,20));
+	return Rect2(Point2(-8,-8),Size2(16,16));
 }
 
 void Position2D::_notification(int p_what) {
