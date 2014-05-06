@@ -471,7 +471,7 @@ BSP_Tree::operator Variant() const {
 	Dictionary d;
 	d["error_radius"]=error_radius;
 
-	Vector<float> plane_values;
+	Vector<real_t> plane_values;
 	plane_values.resize(planes.size()*4);
 
 	for(int i=0;i<planes.size();i++) {
@@ -520,13 +520,13 @@ BSP_Tree::BSP_Tree(const Variant& p_variant) {
 
 	if (d["planes"].get_type()==Variant::REAL_ARRAY) {
 
-		DVector<float> src_planes=d["planes"];
+		DVector<real_t> src_planes=d["planes"];
 		int plane_count=src_planes.size();
 		ERR_FAIL_COND(plane_count%4);
 		planes.resize(plane_count/4);
 
 		if (plane_count) {
-			DVector<float>::Read r = src_planes.read();
+			DVector<real_t>::Read r = src_planes.read();
 			for(int i=0;i<plane_count/4;i++) {
 
 				planes[i].normal.x=r[i*4+0];

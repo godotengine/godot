@@ -133,7 +133,7 @@ RID VisualServer::_make_test_cube() {
 
 	DVector<Vector3> vertices;
 	DVector<Vector3> normals;
-	DVector<float> tangents;	
+	DVector<real_t> tangents;	
 	DVector<Vector3> uvs;
 							
 	int vtx_idx=0;
@@ -630,7 +630,7 @@ void VisualServer::_bind_methods() {
 
 }
 
-void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate) {
+void VisualServer::_canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<real_t>& p_margins, const Color& p_modulate) {
 
 	ERR_FAIL_COND(p_margins.size()!=4);
 	canvas_item_add_style_box(p_item, p_rect, p_texture,Vector2(p_margins[0],p_margins[1]),Vector2(p_margins[2],p_margins[3]),true,p_modulate);

@@ -700,7 +700,7 @@ static Variant _decode_variant(const String& p_string) {
 	}
 
 	if (str.find(",")!=-1) { //vector2 or vector3
-		Vector<float> farr = str.split_floats(",",true);
+		Vector<real_t> farr = str.split_floats(",",true);
 		if (farr.size()==2) {
 			return Point2(farr[0],farr[1]);
 		}

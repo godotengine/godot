@@ -174,7 +174,7 @@ void SurfaceTool::add_bones( const Vector<int>& p_bones) {
 	last_bones=p_bones;
 }
 
-void SurfaceTool::add_weights( const Vector<float>& p_weights) {
+void SurfaceTool::add_weights( const Vector<real_t>& p_weights) {
 
 	ERR_FAIL_COND(!begun);
 
@@ -277,9 +277,9 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 			case Mesh::ARRAY_FORMAT_TANGENT: {
 
 
-				DVector<float> array;
+				DVector<real_t> array;
 				array.resize(varr_len*4);
-				DVector<float>::Write w = array.write();
+				DVector<real_t>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
@@ -289,11 +289,11 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 					w[idx+0]=v.tangent.x;
 					w[idx+1]=v.tangent.y;
 					w[idx+2]=v.tangent.z;
-					float d = v.binormal.dot(v.normal.cross(v.tangent));
+					real_t d = v.binormal.dot(v.normal.cross(v.tangent));
 					w[idx+3]=d<0 ? -1 : 1;
 				}
 
-				w=DVector<float>::Write();
+				w=DVector<real_t>::Write();
 				a[i]=array;
 
 			} break;
@@ -317,9 +317,9 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 			case Mesh::ARRAY_FORMAT_WEIGHTS: {
 
 
-				DVector<float> array;
+				DVector<real_t> array;
 				array.resize(varr_len*4);
-				DVector<float>::Write w = array.write();
+				DVector<real_t>::Write w = array.write();
 
 				int idx=0;
 				for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next(),idx+=4) {
@@ -341,7 +341,7 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 				}
 
-				w=DVector<float>::Write();
+				w=DVector<real_t>::Write();
 				a[i]=array;
 
 			} break;
@@ -460,12 +460,12 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 
 	DVector<Vector3> varr = arr[VS::ARRAY_VERTEX];
 	DVector<Vector3> narr = arr[VS::ARRAY_NORMAL];
-	DVector<float> tarr = arr[VS::ARRAY_TANGENT];
+	DVector<real_t> tarr = arr[VS::ARRAY_TANGENT];
 	DVector<Color> carr = arr[VS::ARRAY_COLOR];
 	DVector<Vector2> uvarr = arr[VS::ARRAY_TEX_UV];
 	DVector<Vector2> uv2arr = arr[VS::ARRAY_TEX_UV2];
 	DVector<int> barr = arr[VS::ARRAY_BONES];
-	DVector<float> warr = arr[VS::ARRAY_WEIGHTS];
+	DVector<real_t> warr = arr[VS::ARRAY_WEIGHTS];
 
 	int vc = varr.size();
 
@@ -483,7 +483,7 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 		lformat|=VS::ARRAY_FORMAT_NORMAL;
 		rn=narr.read();
 	}
-	DVector<float>::Read rt;
+	DVector<real_t>::Read rt;
 	if (tarr.size()) {
 		lformat|=VS::ARRAY_FORMAT_TANGENT;
 		rt=tarr.read();
@@ -512,7 +512,7 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 		rb=barr.read();
 	}
 
-	DVector<float>::Read rw;
+	DVector<real_t>::Read rw;
 	if (warr.size()) {
 		lformat|=VS::ARRAY_FORMAT_WEIGHTS;
 		rw=warr.read();
@@ -546,7 +546,7 @@ void SurfaceTool::_create_list(const Ref<Mesh>& p_existing, int p_surface, List<
 			v.bones=b;
 		}
 		if (lformat&VS::ARRAY_FORMAT_WEIGHTS) {
-			Vector<float> w;
+			Vector<real_t> w;
 			w.resize(4);
 			w[0]=warr[i*4+0];
 			w[1]=warr[i*4+1];

@@ -449,13 +449,13 @@ void MeshDataTool::set_vertex_bones(int p_idx,const Vector<int>& p_bones){
 
 }
 
-Vector<float> MeshDataTool::get_vertex_weights(int p_idx) const{
+Vector<real_t> MeshDataTool::get_vertex_weights(int p_idx) const{
 
-	ERR_FAIL_INDEX_V(p_idx,vertices.size(),Vector<float>());
+	ERR_FAIL_INDEX_V(p_idx,vertices.size(),Vector<real_t>());
 	return vertices[p_idx].weights;
 
 }
-void MeshDataTool::set_vertex_weights(int p_idx,const Vector<float>& p_weights){
+void MeshDataTool::set_vertex_weights(int p_idx,const Vector<real_t>& p_weights){
 	ERR_FAIL_INDEX(p_idx,vertices.size());
 	vertices[p_idx].weights=p_weights;
 	format|=Mesh::ARRAY_FORMAT_WEIGHTS;

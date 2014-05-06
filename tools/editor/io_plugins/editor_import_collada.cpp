@@ -1006,12 +1006,12 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 
 			DVector<Vector3> final_vertex_array;
 			DVector<Vector3> final_normal_array;
-			DVector<float> final_tangent_array;
+			DVector<real_t> final_tangent_array;
 			DVector<Color> final_color_array;
 			DVector<Vector3> final_uv_array;
 			DVector<Vector3> final_uv2_array;
-			DVector<float> final_bone_array;
-			DVector<float> final_weight_array;
+			DVector<real_t> final_bone_array;
+			DVector<real_t> final_weight_array;
 
 			uint32_t final_format=0;
 
@@ -1160,13 +1160,13 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 			}
 
 			if (has_weights) {
-				DVector<float> weightarray;
-				DVector<float> bonearray;
+				DVector<real_t> weightarray;
+				DVector<real_t> bonearray;
 
 				weightarray.resize(vertex_array.size()*4);
-				DVector<float>::Write weightarrayw = weightarray.write();
+				DVector<real_t>::Write weightarrayw = weightarray.write();
 				bonearray.resize(vertex_array.size()*4);
-				DVector<float>::Write bonearrayw = bonearray.write();
+				DVector<real_t>::Write bonearrayw = bonearray.write();
 
 				for(int k=0;k<vlen;k++) {
 					float sum=0;
@@ -1191,8 +1191,8 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 
 				}
 
-				weightarrayw = DVector<float>::Write();
-				bonearrayw = DVector<float>::Write();
+				weightarrayw = DVector<real_t>::Write();
+				bonearrayw = DVector<real_t>::Write();
 
 				final_weight_array = weightarray;
 				final_bone_array = bonearray;
@@ -1312,7 +1312,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 					//vertices are in place, now generate everything else
 					vertw = DVector<Vector3>::Write();
 					DVector<Vector3> normals;
-					DVector<float> tangents;
+					DVector<real_t> tangents;
 
 					_generate_normals(index_array,vertices,normals);
 					if (final_tangent_array.size() && final_uv_array.size()) {
@@ -1801,7 +1801,7 @@ void ColladaImport::create_animation(int p_clip) {
 	//animation->set_loop(true);
 	//create animation tracks
 
-	Vector<float> base_snapshots;
+	Vector<real_t> base_snapshots;
 
 	float f=0;
 	float snapshot_interval = 1.0/20.0; //should be customizable somewhere...
@@ -1852,7 +1852,7 @@ void ColladaImport::create_animation(int p_clip) {
 		int track = animation->get_track_count() -1;		
 		animation->track_set_path( track , path );
 
-		Vector<float> snapshots = base_snapshots;
+		Vector<real_t> snapshots = base_snapshots;
 
 		if (nm.anim_tracks.size()==1) {
 			//use snapshot keys from anim track instead, because this was most likely exported baked
@@ -1902,7 +1902,7 @@ void ColladaImport::create_animation(int p_clip) {
 
 				ERR_CONTINUE(xform_idx==-1);
 
-				Vector<float> data = at.get_value_at_time(snapshots[i]);
+				Vector<real_t> data = at.get_value_at_time(snapshots[i]);
 				ERR_CONTINUE(data.empty());
 
 
@@ -2058,7 +2058,7 @@ void ColladaImport::create_animation(int p_clip) {
 
 			float time = at.keys[i].time;
 			Variant value;
-			Vector<float> data = at.keys[i].data;
+			Vector<real_t> data = at.keys[i].data;
 			if (data.size()==1) {
 				//push a float
 				value=data[0];

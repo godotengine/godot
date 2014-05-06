@@ -137,8 +137,10 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			r_v=int(f->get_32());
 		} break;
 		case VARIANT_REAL: {
-
-			r_v=f->get_real();
+			if(use_real64)
+				r_v=f->get_double();
+			else
+				r_v=f->get_real();
 		} break;
 		case VARIANT_STRING: {
 
@@ -481,23 +483,71 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 			uint32_t len = f->get_32();
 
+			if(!use_real64) {
+				DVector<float> array;
+				array.resize(len);
+				DVector<float>::Write w = array.write();
+				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(float));
+#ifdef BIG_ENDIAN_ENABLED
+				{
+					uint32_t *ptr=(uint32_t*)w.ptr();
+					for(int i=0;i<len;i++) {
+
+						ptr[i]=BSWAP32(ptr[i]);
+					}
+				}
+#endif
+				w=DVector<float>::Write();
+
+#if REAL_T_IS_DOUBLE
+				DVector<real_t> output;
+				output.resize(len);
+				{
+					DVector<float>::Read r = array.read();
+					DVector<real_t>::Write ow=output.write();
+					for(int i=0;i<len;i++) {
+						ow[i]=r[i];
+					}
+					ow=DVector<real_t>::Write();
+				}
+				r_v=output;
+#else
+				r_v=array;
+#endif
+				break;
+			} 
+
 			DVector<real_t> array;
 			array.resize(len);
 			DVector<real_t>::Write w = array.write();
 			f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t));
 #ifdef BIG_ENDIAN_ENABLED
 			{
-				uint32_t *ptr=(uint32_t*)w.ptr();
+				uint64_t *ptr=(uint64_t*)w.ptr();
 				for(int i=0;i<len;i++) {
 
-					ptr[i]=BSWAP32(ptr[i]);
+					ptr[i]=BSWAP64(ptr[i]);
 				}
 			}
 
 #endif
 
 			w=DVector<real_t>::Write();
+#if REAL_T_IS_DOUBLE
 			r_v=array;
+#else
+			DVector<real_t> output;
+			output.resize(len);
+			{
+				DVector<double>::Read r = array.read();
+				DVector<real_t>::Write ow=output.write();
+				for(int i=0;i<len;i++) {
+					ow[i]=r[i];
+				}
+				ow=DVector<real_t>::Write();
+			}
+			r_v=output;
+#endif
 		} break;
 		case VARIANT_STRING_ARRAY: {
 
@@ -519,6 +569,15 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector2> array;
 			array.resize(len);
 			DVector<Vector2>::Write w = array.write();
+			if(use_real64)
+			{
+				for(uint32_t idx=0;idx<len;idx++) {
+					w[idx].x=f->get_double();
+					w[idx].y=f->get_double();
+				}
+				r_v=array;
+				break;
+			}
 			if (sizeof(Vector2)==8) {
 				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*2);
 #ifdef BIG_ENDIAN_ENABLED
@@ -547,6 +606,16 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector3> array;
 			array.resize(len);
 			DVector<Vector3>::Write w = array.write();
+			if(use_real64)
+			{
+				for(uint32_t idx=0;idx<len;idx++) {
+					w[idx].x=f->get_double();
+					w[idx].y=f->get_double();
+					w[idx].z=f->get_double();
+				}
+				r_v=array;
+				break;
+			}
 			if (sizeof(Vector3)==12) {
 				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*3);
 #ifdef BIG_ENDIAN_ENABLED
@@ -575,6 +644,17 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Color> array;
 			array.resize(len);
 			DVector<Color>::Write w = array.write();
+			if(use_real64)
+			{
+				for(uint32_t idx=0;idx<len;idx++) {
+					w[idx].r=f->get_double();
+					w[idx].g=f->get_double();
+					w[idx].b=f->get_double();
+					w[idx].a=f->get_double();
+				}
+				r_v=array;
+				break;
+			}
 			if (sizeof(Color)==16) {
 				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*4);
 #ifdef BIG_ENDIAN_ENABLED
@@ -587,7 +667,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			}
 
 #endif
-
 			} else {
 				ERR_EXPLAIN("Color size is NOT 16!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -846,7 +925,9 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	bool endian_swap = big_endian;
 #endif
 
-	bool use_real64 = f->get_32();
+	use_real64 = f->get_32();
+
+	f->real_is_double = use_real64;
 
 	f->set_endian_swap(big_endian!=0); //read big endian if saved as big endian
 
@@ -960,7 +1041,9 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	bool endian_swap = big_endian;
 #endif
 
-	bool use_real64 = f->get_32();
+	use_real64 = f->get_32();
+
+	f->real_is_double = use_real64;
 
 	f->set_endian_swap(big_endian!=0); //read big endian if saved as big endian
 
@@ -1769,8 +1852,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 		f->set_endian_swap(true);
 	} else
 		f->store_32(0);
-
+#ifdef REAL_T_IS_DOUBLE
+	f->store_32(1); //64 bits file, false for now
+#else
 	f->store_32(0); //64 bits file, false for now
+#endif // REAL_T_IS_DOUBLE
 	f->store_32(VERSION_MAJOR);
 	f->store_32(VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);

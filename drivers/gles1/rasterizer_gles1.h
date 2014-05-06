@@ -736,7 +736,7 @@ class RasterizerGLES1 : public Rasterizer {
 	void _setup_fixed_material(const Geometry *p_geometry,const Material *p_material);
 	void _setup_material(const Geometry *p_geometry,const Material *p_material);
 
-	Error _setup_geometry(const Geometry *p_geometry, const Material* p_material,const Skeleton *p_skeleton, const float *p_morphs);
+	Error _setup_geometry(const Geometry *p_geometry, const Material* p_material,const Skeleton *p_skeleton, const real_t *p_morphs);
 	void _render(const Geometry *p_geometry,const Material *p_material, const Skeleton* p_skeleton, const GeometryOwner *p_owner);
 
 

@@ -608,7 +608,21 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 
 				w = DVector<float>::Write();
 			}
+#ifdef REAL_T_IS_DOUBLE
+			// Convert float_array to double_array
+			DVector<real_t> output;
+			output.resize(count);
+
+			DVector<float>::Read r = data.read();
+			DVector<real_t>::Write ow=output.write();
+			for(int i=0;i<len;i++) {
+				ow[i]=r[i];
+			}
+			ow=DVector<real_t>::Write();
+			r_variant=output;
+#else
 			r_variant=data;
+#endif
 
 			if (r_len) {
 				(*r_len)+=4+count*sizeof(float);
@@ -1274,7 +1288,7 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 			DVector<real_t> data = p_variant;
 			int datalen=data.size();
-			int datasize=sizeof(real_t);
+			int datasize=sizeof(float);
 
 			if (buf) {
 				encode_uint32(datalen,buf);

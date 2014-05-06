@@ -255,7 +255,7 @@ bool Face3::intersects_aabb(const AABB& p_aabb) const {
 				continue; // coplanar
 			axis.normalize();
 
-			float minA,maxA,minB,maxB;
+			real_t minA,maxA,minB,maxB;
 			p_aabb.project_range_in_plane(Plane(axis,0),minA,maxA);
 			project_range(axis,Transform(),minB,maxB);
 
@@ -272,7 +272,7 @@ Face3::operator String() const {
 	return String()+vertex[0]+", "+vertex[1]+", "+vertex[2];
 }
 
-void Face3::project_range(const Vector3& p_normal,const Transform& p_transform,float& r_min, float& r_max) const {
+void Face3::project_range(const Vector3& p_normal,const Transform& p_transform,real_t& r_min, real_t& r_max) const {
 
 	for (int i=0;i<3;i++) {
 

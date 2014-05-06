@@ -514,6 +514,10 @@ String FileAccess::get_md5(const String& p_file) {
 FileAccess::FileAccess() {
 
 	endian_swap=false;
+#ifdef REAL_T_IS_DOUBLE
+	real_is_double=true;
+#else
 	real_is_double=false;
+#endif
 	_access_type=ACCESS_FILESYSTEM;
 };

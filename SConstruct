@@ -133,6 +133,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('old_scenes', 'Compatibility with old-style scenes', "yes")
+opts.Add('use_double', 'Use Real type as Double, default is float', "no")
 
 # add platform specific options
 
@@ -268,6 +269,8 @@ for p in platform_list:
 		env.Append(CPPFLAGS=['-DTOOLS_ENABLED'])
 	if (env['disable_3d']=='yes'):
 		env.Append(CPPFLAGS=['-D_3D_DISABLED'])
+	if (env['use_double']=='yes'):
+		env.Append(CPPFLAGS=['-DREAL_T_IS_DOUBLE'])
 	if (env['gdscript']=='yes'):
 		env.Append(CPPFLAGS=['-DGDSCRIPT_ENABLED'])
 	if (env['disable_advanced_gui']=='yes'):

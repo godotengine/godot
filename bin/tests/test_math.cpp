@@ -90,14 +90,14 @@ MainLoop* test() {
 	{
 		Vector3 v(1,2,3);
 		v.normalize();
-		float a=0.3;
+		real_t a=0.3;
 
 		//Quat q(v,a);
 		Matrix3 m(v,a);
 
 		Vector3 v2(7,3,1);
 		v2.normalize();
-		float a2=0.8;
+		real_t a2=0.8;
 
 		//Quat q(v,a);
 		Matrix3 m2(v2,a2);

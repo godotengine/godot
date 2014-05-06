@@ -1534,7 +1534,7 @@ ConcavePolygonShapeSW::ConcavePolygonShapeSW() {
 
 /* HEIGHT MAP SHAPE */
 
-DVector<float> HeightMapShapeSW::get_heights() const {
+DVector<real_t> HeightMapShapeSW::get_heights() const {
 
 	return heights;
 }
@@ -1610,7 +1610,7 @@ void HeightMapShapeSW::_setup(DVector<real_t> p_heights,int p_width,int p_depth,
 
 		for(int j=0;j<width;j++) {
 
-			float h = r[i*width+j];
+			real_t h = r[i*width+j];
 
 			Vector3 pos( j*cell_size, h, i*cell_size );
 			if (i==0 || j==0)
@@ -1636,8 +1636,8 @@ void HeightMapShapeSW::set_data(const Variant& p_data) {
 
 	int width=d["width"];
 	int depth=d["depth"];
-	float cell_size=d["cell_size"];
-	DVector<float> heights=d["heights"];
+	real_t cell_size=d["cell_size"];
+	DVector<real_t> heights=d["heights"];
 
 	ERR_FAIL_COND( width<= 0);
 	ERR_FAIL_COND( depth<= 0);

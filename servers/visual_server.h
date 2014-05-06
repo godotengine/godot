@@ -52,7 +52,7 @@ class VisualServer : public Object {
 	void _camera_set_orthogonal(RID p_camera,float p_size,float p_z_near,float p_z_far);
 	void _viewport_set_rect(RID p_viewport,const Rect2& p_rect);
 	Rect2 _viewport_get_rect(RID p_viewport) const;
-	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
+	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<real_t>& p_margins, const Color& p_modulate=Color(1,1,1));
 protected:	
 	RID _make_test_cube();
 	RID test_texture;
