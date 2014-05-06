@@ -569,6 +569,15 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector2> array;
 			array.resize(len);
 			DVector<Vector2>::Write w = array.write();
+			if(use_real64)
+			{
+				for(uint32_t idx=0;idx<len;idx++) {
+					w[idx].x=f->get_double();
+					w[idx].y=f->get_double();
+				}
+				r_v=array;
+				break;
+			}
 			if (sizeof(Vector2)==8) {
 				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*2);
 #ifdef BIG_ENDIAN_ENABLED
@@ -597,6 +606,16 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector3> array;
 			array.resize(len);
 			DVector<Vector3>::Write w = array.write();
+			if(use_real64)
+			{
+				for(uint32_t idx=0;idx<len;idx++) {
+					w[idx].x=f->get_double();
+					w[idx].y=f->get_double();
+					w[idx].z=f->get_double();
+				}
+				r_v=array;
+				break;
+			}
 			if (sizeof(Vector3)==12) {
 				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*3);
 #ifdef BIG_ENDIAN_ENABLED
@@ -625,6 +644,17 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Color> array;
 			array.resize(len);
 			DVector<Color>::Write w = array.write();
+			if(use_real64)
+			{
+				for(uint32_t idx=0;idx<len;idx++) {
+					w[idx].r=f->get_double();
+					w[idx].g=f->get_double();
+					w[idx].b=f->get_double();
+					w[idx].a=f->get_double();
+				}
+				r_v=array;
+				break;
+			}
 			if (sizeof(Color)==16) {
 				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*4);
 #ifdef BIG_ENDIAN_ENABLED
@@ -637,7 +667,6 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			}
 
 #endif
-
 			} else {
 				ERR_EXPLAIN("Color size is NOT 16!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
