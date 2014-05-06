@@ -394,7 +394,6 @@ ScriptTextEditor::ScriptTextEditor() {
 
 /*** SCRIPT EDITOR ******/
 
-
 String ScriptEditor::_get_debug_tooltip(const String&p_text,Node *_ste) {
 
 	ScriptTextEditor *ste=_ste->cast_to<ScriptTextEditor>();
@@ -752,10 +751,12 @@ void ScriptEditor::_menu_option(int p_option) {
 					debugger->show();
 			}
 		} break;
-		case HELP_SELECTED: {
-			String selected = current->get_text_edit()->get_selection_text();
-			editor->call("_editor_select", 3);
-			editor->emit_signal("request_help", selected);
+		case HELP_CONTEXTUAL: {
+			String text = current->get_text_edit()->get_selection_text();
+			if (text == "")
+				text = current->get_text_edit()->get_word_under_cursor();
+			if (text != "")
+				editor->emit_signal("request_help", text);
 		} break;
 		case WINDOW_CLOSE: {
 
@@ -1055,9 +1056,6 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
 	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
 	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
-
-
-
 
 }
 
@@ -1370,7 +1368,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	help_menu = memnew( MenuButton );
 	menu_hb->add_child(help_menu);
 	help_menu->set_text("Help");
-	help_menu->get_popup()->add_item("Selected", HELP_SELECTED, KEY_MASK_CTRL|KEY_MASK_SHIFT|KEY_D);
+	help_menu->get_popup()->add_item("Contextual", HELP_CONTEXTUAL, KEY_MASK_SHIFT|KEY_F1);
 	help_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
@@ -1425,6 +1423,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	v_split->add_child(debugger);
 	debugger->connect("breaked",this,"_breaked");
 //	debugger_gui->hide();
+
 }
 
 
