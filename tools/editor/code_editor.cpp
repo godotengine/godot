@@ -492,7 +492,7 @@ void CodeTextEditor::_complete_request(const String& p_request, int p_line) {
 
 	List<String> entries;
 	_code_complete_script(text_editor->get_text(),p_request,p_line,&entries);
-	print_line("COMPLETE: "+p_request);
+	// print_line("COMPLETE: "+p_request);
 	Vector<String> strs;
 	strs.resize(entries.size());
 	int i=0;
