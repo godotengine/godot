@@ -37,10 +37,7 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/portal.h"
-
 #include "os/os.h"
-#include "core/translation.h"
-
 
 
 
@@ -144,7 +141,6 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	void _browse();
 	void _browse_target();
 	void _browse_script();
-	void _import();
 	void _import(bool p_and_open=false);
 	void _import_confirm();
 
@@ -262,7 +258,7 @@ EditorImportAnimationOptions::EditorImportAnimationOptions() {
 	}
 
 
-	add_margin_child(_TR("Animation Options"),flags,true);
+	add_margin_child("Animation Options",flags,true);
 
 }
 
@@ -321,7 +317,6 @@ void EditorSceneImportDialog::_choose_script(const String& p_path) {
 
 }
 
-void EditorSceneImportDialog::_import() {
 
 void EditorSceneImportDialog::_open_and_import() {
 
@@ -363,8 +358,6 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	for(int i=0;i<scene_flags.size();i++) {
 
-		if (scene_flags[i]->is_checked(0))
-			flags|=(1<<i);
 		if (scene_flags[i]->is_checked(0)) {
 			int md = scene_flags[i]->get_metadata(0);
 			flags|=md;
@@ -377,7 +370,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	if (script_path->get_text()!="") {
 		Ref<Script> scr = ResourceLoader::load(script_path->get_text());
 		if (!scr.is_valid()) {
-			error_dialog->set_text(_TR("Couldn't load Post-Import Script."));
+			error_dialog->set_text("Couldn't load Post-Import Script.");
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -386,7 +379,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 		pi->set_script(scr.get_ref_ptr());
 		if (!pi->get_script_instance()) {
 
-			error_dialog->set_text(_TR("Invalid/Broken Script for Post-Import."));
+			error_dialog->set_text("Invalid/Broken Script for Post-Import.");
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
@@ -414,7 +407,6 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("post_import_script",script_path->get_text()!=String()?EditorImportPlugin::validate_source_path(script_path->get_text()):String());
 	rim->set_option("reimport",true);
 
-	Error err = plugin->import(save_file,rim);
 	List<String> missing;
 	Error err = plugin->import1(rim,&scene,&missing);
 
@@ -535,7 +527,6 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 
 		for(int i=0;i<scene_flags.size();i++) {
 
-			scene_flags[i]->set_checked(0,flags&(1<<i));
 			int md = scene_flags[i]->get_metadata(0);
 			scene_flags[i]->set_checked(0,flags&md);
 		}
@@ -632,20 +623,6 @@ void EditorSceneImportDialog::_bind_methods() {
 
 
 
-static const char *scene_flag_names[]={
-	"Create Collisions (-col,-colonly)",
-	"Create Portals (-portal)",
-	"Create Rooms (-room)",
-	"Simplify Rooms",
-	"Create Billboards (-bb)",
-	"Create Impostors (-imp:dist)",
-	"Create LODs (-lod:dist)",
-	"Remove Nodes (-noimp)",
-	"Import Animations",
-	"Compress Geometry",
-	"Fail on Missing Images",
-	"Force Generation of Tangent Arrays",
-	NULL
 
 const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_names[]={
 
@@ -674,7 +651,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	editor=p_editor;
 	plugin=p_plugin;
 
-	set_title(_TR("Import 3D Scene"));
+	set_title("Import 3D Scene");
 	HBoxContainer *import_hb = memnew( HBoxContainer );
 	add_child(import_hb);
 	set_child_rect(import_hb);
@@ -684,7 +661,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	vbc->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
-	vbc->add_margin_child(_TR("Source Scene:"),hbc);
+	vbc->add_margin_child("Source Scene:",hbc);
 
 	import_path = memnew( LineEdit );
 	import_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -697,7 +674,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	import_choose->connect("pressed", this,"_browse");
 
 	hbc = memnew( HBoxContainer );
-	vbc->add_margin_child(_TR("Target Scene:"),hbc);
+	vbc->add_margin_child("Target Scene:",hbc);
 
 	save_path = memnew( LineEdit );
 	save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -710,14 +687,14 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	save_choose->connect("pressed", this,"_browse_target");
 
 	texture_action = memnew( OptionButton );
-	texture_action->add_item(_TR("Same as Target Scene"));
-	texture_action->add_item(_TR("Shared"));
+	texture_action->add_item("Same as Target Scene");
+	texture_action->add_item("Shared");
 	texture_action->select(0);
-	vbc->add_margin_child(_TR("Target Texture Folder:"),texture_action);
+	vbc->add_margin_child("Target Texture Folder:",texture_action);
 
 	import_options = memnew( Tree );
 	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
-	vbc->add_margin_child(_TR("Options:"),import_options,true);
+	vbc->add_margin_child("Options:",import_options,true);
 
 	file_select = memnew(FileDialog);
 	file_select->set_access(FileDialog::ACCESS_FILESYSTEM);
@@ -735,7 +712,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	save_select->connect("dir_selected", this,"_choose_save_file");
 
 	get_ok()->connect("pressed", this,"_import");
-	get_ok()->set_text(_TR("Import"));
+	get_ok()->set_text("Import");
 
 	TreeItem *root = import_options->create_item(NULL);
 	import_options->set_hide_root(true);
@@ -744,19 +721,16 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 
 	TreeItem *importopts = import_options->create_item(root);
-	importopts->set_text(0,_TR("Import:"));
+	importopts->set_text(0,"Import:");
 
-	const char ** fn=scene_flag_names;
 	const FlagInfo* fn=scene_flag_names;
 
-	while(*fn) {
 	while(fn->text) {
 
 		TreeItem *opt = import_options->create_item(importopts);
 		opt->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		opt->set_checked(0,true);
 		opt->set_editable(0,true);
-		opt->set_text(0,*fn);
 		opt->set_text(0,fn->text);
 		opt->set_metadata(0,fn->value);
 
@@ -765,7 +739,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	}
 
 	hbc = memnew( HBoxContainer );
-	vbc->add_margin_child(_TR("Post-Process Script:"),hbc);
+	vbc->add_margin_child("Post-Process Script:",hbc);
 
 	script_path = memnew( LineEdit );
 	script_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -795,7 +769,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 	error_dialog = memnew ( ConfirmationDialog );
 	add_child(error_dialog);
-	error_dialog->get_ok()->set_text(_TR("Accept"));
+	error_dialog->get_ok()->set_text("Accept");
 //	error_dialog->get_cancel()->hide();
 
 	set_hide_on_ok(false);
@@ -869,7 +843,7 @@ String EditorSceneImportPlugin::get_name() const {
 
 String EditorSceneImportPlugin::get_visible_name() const{
 
-	return _TR("3D Scene");
+	return "3D Scene";
 }
 
 void EditorSceneImportPlugin::import_dialog(const String& p_from){
@@ -1514,7 +1488,6 @@ Error EditorImport::import_scene(const String& p_path,const String& p_dest_path,
 }
 #endif
 
-Error EditorSceneImportPlugin::import(const String& p_dest_path, const Ref<ResourceImportMetadata>& p_from){
 
 Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from,Node**r_node,List<String> *r_missing) {
 
@@ -1528,8 +1501,8 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	String ext=src_path.extension().to_lower();
 
 
-	EditorProgress progress("import",_TR("Import Scene"),104);
-	progress.step(_TR("Importing Scene.."),0);
+	EditorProgress progress("import","Import Scene",104);
+	progress.step("Importing Scene..",0);
 
 	for(int i=0;i<importers.size();i++) {
 
@@ -1549,9 +1522,6 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 			break;
 	}
 
-	if (!importer.is_valid()) {
-		EditorNode::progress_end_task("import");
-	}
 	ERR_FAIL_COND_V(!importer.is_valid(),ERR_FILE_UNRECOGNIZED);
 
 	int animation_flags=p_from->get_option("animation_flags");
@@ -1561,12 +1531,9 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_DETECT_LOOP;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE)
-		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_OPTIMIZE;		
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_OPTIMIZE;
 	if (scene_flags&SCENE_FLAG_IMPORT_ANIMATIONS)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION;
-	if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
-		import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
 //	if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
 //		import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
 	if (scene_flags&SCENE_FLAG_GENERATE_TANGENT_ARRAYS)
@@ -1576,12 +1543,9 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 
 
-
 	Error err=OK;
-	Node *scene = importer->import_scene(src_path,import_flags,&err);
 	Node *scene = importer->import_scene(src_path,import_flags,r_missing,&err);	
 	if (!scene || err!=OK) {
-		EditorNode::progress_end_task("import");
 		return err;
 	}
 
@@ -1614,13 +1578,12 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	Set< Ref<ImageTexture> > imagemap;
 
-
 	scene=_fix_node(scene,scene,collision_map,scene_flags,imagemap);
 
 
 	/// BEFORE ANYTHING, RUN SCRIPT
 
-	progress.step(_TR("Running Custom Script.."),2);
+	progress.step("Running Custom Script..",2);
 
 	String post_import_script_path = from->get_option("post_import_script");
 	Ref<EditorScenePostImport>  post_import_script;
@@ -1629,13 +1592,13 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		post_import_script_path = EditorImportPlugin::expand_source_path(post_import_script_path);
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
-			EditorNode::add_io_error(_TR("Couldn't load post-import script: '")+post_import_script_path);
+			EditorNode::add_io_error("Couldn't load post-import script: '"+post_import_script_path);
 		} else {
 
 			post_import_script = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
 			post_import_script->set_script(scr.get_ref_ptr());
 			if (!post_import_script->get_script_instance()) {
-				EditorNode::add_io_error(_TR("Invalid/Broken Script for Post-Import: '")+post_import_script_path);
+				EditorNode::add_io_error("Invalid/Broken Script for Post-Import: '"+post_import_script_path);
 				post_import_script.unref();
 			}
 		}
@@ -1645,7 +1608,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	if (post_import_script.is_valid()) {
 		err = post_import_script->post_import(scene);
 		if (err) {
-			EditorNode::add_io_error(_TR("Error running Post-Import script: '")+post_import_script_path);
+			EditorNode::add_io_error("Error running Post-Import script: '"+post_import_script_path);
 			return err;
 		}
 	}
@@ -1671,18 +1634,18 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		String path = texture->get_path();
 		String fname= path.get_file();
 		String target_path = Globals::get_singleton()->localize_path(target_res_path.plus_file(fname));
-		progress.step(_TR("Import Img: ")+fname,3+(idx)*100/imagemap.size());
+		progress.step("Import Img: "+fname,3+(idx)*100/imagemap.size());
 
 		idx++;
 
 		if (path==target_path) {
 
-			EditorNode::add_io_error(_TR("Can't import a file over itself: '")+target_path);
+			EditorNode::add_io_error("Can't import a file over itself: '"+target_path);
 			continue;
 		}
 
 		if (!target_path.begins_with("res://")) {
-			EditorNode::add_io_error(_TR("Couldn't localize path: '")+target_path+"' (already local)");
+			EditorNode::add_io_error("Couldn't localize path: '"+target_path+"' (already local)");
 			continue;
 		}
 
@@ -1692,10 +1655,6 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 			target_path=target_path.basename()+".tex";
 
-			if (FileAccess::exists(target_path)) {
-				texture->set_path(target_path);
-				continue; //already imported
-			}
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			print_line("flags: "+itos(image_flags));
 			imd->set_option("flags",image_flags);
@@ -1738,7 +1697,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	if (merge) {
 
-		progress.step(_TR("Merging.."),103);
+		progress.step("Merging..",103);
 
 		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
 		if (fa->file_exists(p_dest_path)) {
@@ -1765,7 +1724,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	}
 
 
-	progress.step(_TR("Saving.."),104);
+	progress.step("Saving..",104);
 
 	Ref<PackedScene> packer = memnew( PackedScene );
 	packer->pack(scene);
@@ -1796,7 +1755,6 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	String op=_getrelpath(p_path,p_dest_path);
 
 	*/
-	EditorNode::progress_end_task("import");
 
 
 	return err;
@@ -1841,7 +1799,7 @@ String EditorSceneAnimationImportPlugin::get_name() const {
 String EditorSceneAnimationImportPlugin::get_visible_name() const{
 
 
-	return _TR("3D Scene Animation");
+	return "3D Scene Animation";
 }
 void EditorSceneAnimationImportPlugin::import_dialog(const String& p_from){
 
