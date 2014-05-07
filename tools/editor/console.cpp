@@ -201,7 +201,7 @@ void Console::_inspector_node_selected() {
 	Node *node = inspect_tree_editor->get_selected();
 
 	if (!node)
-		inspect_property_editor->edit(NULL);
+		inspect_property_editor->reset();
 	else {
 
 		inspect_history.add_object(node->get_instance_ID());
