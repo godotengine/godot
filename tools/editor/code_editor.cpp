@@ -242,7 +242,7 @@ bool FindReplaceDialog::_search() {
 
 
 	if (found) {
-		print_line("found");
+		// print_line("found");
 		text_edit->cursor_set_line(line);
 		text_edit->cursor_set_column(col+text.length());
 		text_edit->select(line,col,line,col+text.length());

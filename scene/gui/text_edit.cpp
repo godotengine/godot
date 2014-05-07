@@ -750,7 +750,6 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 	CharType ch_single_pair[2] = {_get_right_pair_symbol(ch), 0};
 	CharType ch_pair[3] = {ch, _get_right_pair_symbol(ch), 0};
 	
-	printf("Selectin if active, %d\n", is_selection_active());
 	if(is_selection_active()) {	
 		
 		int new_column,new_line;
@@ -1123,7 +1122,6 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 
 					if (k.scancode==KEY_SHIFT) {
-						print_line("accent shift and return");
 						accept_event();
 						return;
 					}
