@@ -1574,6 +1574,7 @@ void EditorNode::_cleanup_scene() {
 	property_editor->edit(NULL);
 	scene_import_metadata.unref();
 	set_edited_scene(NULL);
+	property_editor->reset();
 	if (scene) {
 		if (scene->get_filename()!="") {
 			previous_scenes.push_back(scene->get_filename());

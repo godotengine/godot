@@ -2723,8 +2723,20 @@ void PropertyEditor::_custom_editor_request(bool p_arrow) {
 	}
 }
 
+void PropertyEditor::reset() {
+
+	if (obj) {
+		
+		obj->remove_change_receptor(this);
+	}
+	obj=NULL;
+	update_tree();
+}
+
 void PropertyEditor::edit(Object* p_object) {
-	
+
+	if (p_object == NULL)
+		return;	
 
 	if (obj==p_object)
 		return;
