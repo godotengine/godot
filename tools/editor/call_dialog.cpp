@@ -235,7 +235,7 @@ void CallDialog::set_object(Object *p_object,StringName p_selected) {
 
 	object=p_object;
 	selected=p_selected;
-	property_editor->edit(NULL);
+	property_editor->reset();
 	call->set_disabled(true);
 	return_value->clear();
 
