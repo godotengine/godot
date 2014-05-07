@@ -459,9 +459,9 @@ void EditorSettings::_load_defaults() {
 
 	set("run/auto_save_before_running",true);
 	set("resources/save_compressed_resources",true);
+	set("resources/auto_reload_modified_images",true);
 
 	set("editor_language/locale","en");
-	set("resources/auto_reload_modified_images",true);
 }
 
 void EditorSettings::notify_changes() {

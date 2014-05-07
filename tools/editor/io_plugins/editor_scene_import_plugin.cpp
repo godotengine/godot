@@ -1528,9 +1528,8 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	String ext=src_path.extension().to_lower();
 
 
-	EditorNode::progress_add_task("import",_TR("Import Scene"),104);
-	EditorProgress progress("import","Import Scene",104);
-	progress.step("Importing Scene..",0);
+	EditorProgress progress("import",_TR("Import Scene"),104);
+	progress.step(_TR("Importing Scene.."),0);
 
 	for(int i=0;i<importers.size();i++) {
 
@@ -1575,7 +1574,6 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 
 
-	EditorNode::progress_task_step("import","Importing Scene..",0);
 
 
 
@@ -1615,9 +1613,6 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Ref<ResourceImportMetadata> imd = memnew(ResourceImportMetadata);
 
 	Set< Ref<ImageTexture> > imagemap;
-	EditorNode::progress_task_step("import",_TR("Post-Processing Scene.."),1);
-
-
 
 
 	scene=_fix_node(scene,scene,collision_map,scene_flags,imagemap);
@@ -1625,8 +1620,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	/// BEFORE ANYTHING, RUN SCRIPT
 
-	EditorNode::progress_task_step("import",_TR("Running Custom Script.."),2);
-	progress.step("Running Custom Script..",2);
+	progress.step(_TR("Running Custom Script.."),2);
 
 	String post_import_script_path = from->get_option("post_import_script");
 	Ref<EditorScenePostImport>  post_import_script;
@@ -1652,7 +1646,6 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		err = post_import_script->post_import(scene);
 		if (err) {
 			EditorNode::add_io_error(_TR("Error running Post-Import script: '")+post_import_script_path);
-			EditorNode::progress_end_task("import");
 			return err;
 		}
 	}
@@ -1678,8 +1671,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 		String path = texture->get_path();
 		String fname= path.get_file();
 		String target_path = Globals::get_singleton()->localize_path(target_res_path.plus_file(fname));
-		EditorNode::progress_task_step("import","Import Img: "+fname,3+(idx)*100/imagemap.size());
-		progress.step("Import Img: "+fname,3+(idx)*100/imagemap.size());
+		progress.step(_TR("Import Img: ")+fname,3+(idx)*100/imagemap.size());
 
 		idx++;
 
@@ -1746,8 +1738,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	if (merge) {
 
-		EditorNode::progress_task_step("import","Merging..",103);
-		progress.step("Merging..",103);
+		progress.step(_TR("Merging.."),103);
 
 		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
 		if (fa->file_exists(p_dest_path)) {
@@ -1774,8 +1765,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	}
 
 
-	EditorNode::progress_task_step("import","Saving..",104);
-	progress.step("Saving..",104);
+	progress.step(_TR("Saving.."),104);
 
 	Ref<PackedScene> packer = memnew( PackedScene );
 	packer->pack(scene);
