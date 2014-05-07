@@ -242,7 +242,7 @@ bool FindReplaceDialog::_search() {
 
 
 	if (found) {
-		print_line("found");
+		// print_line("found");
 		text_edit->cursor_set_line(line);
 		text_edit->cursor_set_column(col+text.length());
 		text_edit->select(line,col,line,col+text.length());
@@ -479,15 +479,20 @@ void CodeTextEditor::_line_col_changed() {
 
 void CodeTextEditor::_text_changed() {
 
-
+	code_complete_timer->start();
 	idle->start();
+}
+
+void CodeTextEditor::_code_complete_timer_timeout() {
+
+	text_editor->query_code_comple();
 }
 
 void CodeTextEditor::_complete_request(const String& p_request, int p_line) {
 
 	List<String> entries;
 	_code_complete_script(text_editor->get_text(),p_request,p_line,&entries);
-	print_line("COMPLETE: "+p_request);
+	// print_line("COMPLETE: "+p_request);
 	Vector<String> strs;
 	strs.resize(entries.size());
 	int i=0;
@@ -551,6 +556,7 @@ void CodeTextEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_text_changed",&CodeTextEditor::_text_changed);
 	ObjectTypeDB::bind_method("_on_settings_change",&CodeTextEditor::_on_settings_change);
 	ObjectTypeDB::bind_method("_text_changed_idle_timeout",&CodeTextEditor::_text_changed_idle_timeout);
+	ObjectTypeDB::bind_method("_code_complete_timer_timeout",&CodeTextEditor::_code_complete_timer_timeout);
 	ObjectTypeDB::bind_method("_complete_request",&CodeTextEditor::_complete_request);
 }
 
@@ -575,6 +581,11 @@ CodeTextEditor::CodeTextEditor() {
 	idle->set_one_shot(true);
 	idle->set_wait_time(EDITOR_DEF("text_editor/idle_parse_delay",2));
 
+	code_complete_timer = memnew(Timer);
+	add_child(code_complete_timer);
+	code_complete_timer->set_one_shot(true);
+	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/code_complete_delay",.3f));
+
 	error = memnew( Label );
 	add_child(error);
 	error->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN,5);
@@ -593,6 +604,7 @@ CodeTextEditor::CodeTextEditor() {
 	cs.push_back(".");
 	text_editor->set_completion(true,cs);
 	idle->connect("timeout", this,"_text_changed_idle_timeout");
+	code_complete_timer->connect("timeout", this,"_code_complete_timer_timeout");
 
 	EditorSettings::get_singleton()->connect("settings_changed",this,"_on_settings_change");
 }
