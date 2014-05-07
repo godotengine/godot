@@ -128,6 +128,7 @@ class CodeTextEditor : public Control {
 	Label *line_col;
 	Label *info;
 	Timer *idle;
+	Timer *code_complete_timer;
 
 	Label *error;
 
@@ -145,6 +146,7 @@ protected:
 
 
 	void _text_changed_idle_timeout();
+	void _code_complete_timer_timeout();
 	void _text_changed();
 	void _line_col_changed();
 	void _notification(int);

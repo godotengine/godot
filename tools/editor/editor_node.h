@@ -156,7 +156,7 @@ class EditorNode : public Node {
 		SETTINGS_HELP,
 		SETTINGS_ABOUT,
 		SOURCES_REIMPORT,
-		DEPENDENCY_UPDATE_LOCAL,
+		DEPENDENCY_LOAD_CHANGED_IMAGES,
 		DEPENDENCY_UPDATE_IMPORTED,
 
 		IMPORT_PLUGIN_BASE=100,
@@ -403,6 +403,8 @@ protected:
 	static void _bind_methods();		
 public:
 
+	static EditorNode* get_singleton() { return singleton; }
+
 
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPlugin *get_editor_plugin_over() { return editor_plugin_over; }
@@ -410,7 +412,6 @@ public:
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
-    static EditorNode * get_singleton() { return singleton; }
 
 
 	void edit_node(Node *p_node);
@@ -419,7 +420,7 @@ public:
 	void save_resource(const Ref<Resource>& p_resource);
 	void save_resource_as(const Ref<Resource>& p_resource);
 
-
+	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 

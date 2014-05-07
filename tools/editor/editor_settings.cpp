@@ -461,6 +461,7 @@ void EditorSettings::_load_defaults() {
 	set("resources/save_compressed_resources",true);
 
 	set("editor_language/locale","en");
+	set("resources/auto_reload_modified_images",true);
 }
 
 void EditorSettings::notify_changes() {

@@ -1106,7 +1106,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						return;
 					}
 
-					if (k.scancode==KEY_RETURN) {
+					if (k.scancode==KEY_RETURN || k.scancode==KEY_TAB) {
 
 						_confirm_completion();
 						accept_event();
@@ -2503,6 +2503,27 @@ String TextEdit::get_selection_text() const {
 
 }
 
+String TextEdit::get_word_under_cursor() const {
+
+	int prev_cc = cursor.column;
+	while(prev_cc >0) {
+		bool is_char = _is_text_char(text[cursor.line][prev_cc-1]);
+		if (!is_char)
+			break;
+		--prev_cc;
+	}
+
+	int next_cc = cursor.column;
+	while(next_cc<text[cursor.line].length()) {
+		bool is_char = _is_text_char(text[cursor.line][next_cc]);
+		if(!is_char)
+			break;
+		++ next_cc;
+	}
+	if (prev_cc == cursor.column || next_cc == cursor.column)
+		return "";
+	return text[cursor.line].substr(prev_cc, next_cc-prev_cc);
+}
 
 DVector<int> TextEdit::_search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const {
 
@@ -2893,6 +2914,7 @@ void TextEdit::_update_completion_candidates() {
 
 	completion_current=completion_options[completion_index];
 
+#if 0	// even there's only one option, user still get the chance to choose using it or not
 	if (completion_options.size()==1) {
 		//one option to complete, just complete it automagically
 		_confirm_completion();
@@ -2901,6 +2923,9 @@ void TextEdit::_update_completion_candidates() {
 		return;
 
 	}
+#endif
+	if (completion_options.size()==1 && s==completion_options[0])
+		_cancel_completion();
 
 	completion_enabled=true;
 
@@ -3064,6 +3089,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_selection_to_line"),&TextEdit::get_selection_to_line);
 	ObjectTypeDB::bind_method(_MD("get_selection_to_column"),&TextEdit::get_selection_to_column);
 	ObjectTypeDB::bind_method(_MD("get_selection_text"),&TextEdit::get_selection_text);
+	ObjectTypeDB::bind_method(_MD("get_word_under_cursor"),&TextEdit::get_word_under_cursor);
 	ObjectTypeDB::bind_method(_MD("search","flags","from_line","from_column","to_line","to_column"),&TextEdit::_search_bind);
 
 	ObjectTypeDB::bind_method(_MD("undo"),&TextEdit::undo);

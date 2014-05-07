@@ -345,6 +345,8 @@ public:
 	int get_selection_to_column() const;
 	String get_selection_text() const;
 
+	String get_word_under_cursor() const;
+
 	bool search(const String &p_key,uint32_t p_search_flags, int p_from_line, int p_from_column,int &r_line,int &r_column) const;
 
 	void undo();

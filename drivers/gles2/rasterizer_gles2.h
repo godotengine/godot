@@ -80,6 +80,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool read_depth_supported;
 	bool use_framebuffers;
 	bool use_shadow_mapping;
+	ShadowFilterTechnique shadow_filter;
+
 	bool use_shadow_esm;
 	bool use_shadow_pcf;
 	bool use_hw_skeleton_xform;
@@ -374,6 +376,7 @@ class RasterizerGLES2 : public Rasterizer {
 		Vector<Surface*> surfaces;
 		int morph_target_count;
 		VS::MorphTargetMode morph_target_mode;
+		AABB custom_aabb;
 
 		mutable uint64_t last_pass;
 		Mesh() {
@@ -659,11 +662,8 @@ class RasterizerGLES2 : public Rasterizer {
 		Transform transform;
 		CameraMatrix projection;
 
-		Transform custom_transform;
-		CameraMatrix custom_projection;
-
-		Transform custom_transform2;
-		CameraMatrix custom_projection2;
+		Transform custom_transform[4];
+		CameraMatrix custom_projection[4];
 
 		Vector3 light_vector;
 		Vector3 spot_vector;
@@ -675,11 +675,9 @@ class RasterizerGLES2 : public Rasterizer {
 
 		Vector2 dp;
 
-		CameraMatrix shadow_projection;
-		CameraMatrix shadow_projection2;
+		CameraMatrix shadow_projection[4];
+		float shadow_split[4];
 
-		float shadow_split;
-		float shadow_split2;		
 
 
 		ShadowBuffer* near_shadow_buffer;
@@ -1182,6 +1180,9 @@ public:
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
 	virtual AABB mesh_get_aabb(RID p_mesh) const;
+
+	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
 
 	/* MULTIMESH API */
 
