@@ -204,6 +204,7 @@ public:
 	void update_property(const String& p_prop);
 
 	void edit(Object* p_object);
+	void reset();
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only) { read_only=p_read_only; custom_editor->set_read_only(p_read_only);}
