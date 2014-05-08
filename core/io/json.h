@@ -75,7 +75,9 @@ class JSON {
 
 public:
 	static String print(const Dictionary& p_dict);
+	static String print(const Array& p_array);
 	static Error parse(const String& p_json,Dictionary& r_ret,String &r_err_str,int &r_err_line);
+	static Error parse(const String& p_json,Array& r_ret,String &r_err_str,int &r_err_line);
 };
 
 #endif // JSON_H

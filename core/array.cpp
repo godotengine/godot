@@ -31,6 +31,7 @@
 #include "hashfuncs.h"
 #include "variant.h"
 #include "object.h"
+#include "io/json.h"
 
 struct ArrayPrivate {
 
@@ -221,6 +222,23 @@ void Array::invert(){
 	_p->array.invert();
 }
 
+Error Array::parse_json(const String& p_json) {
+
+	String errstr;
+	int errline=0;
+	Error err = JSON::parse(p_json,*this,errstr,errline);
+	if (err!=OK) {
+		ERR_EXPLAIN("Error parsing JSON: "+errstr+" at line: "+itos(errline));
+		ERR_FAIL_COND_V(err!=OK,err);
+	}
+
+	return OK;
+}
+
+String Array::to_json() const {
+
+	return JSON::print(*this);
+}
 
 
 Array::Array(const Array& p_from) {
