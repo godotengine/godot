@@ -1674,7 +1674,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 
 				canvas_item->set_meta("_edit_lock_",true);
-
+				emit_signal("item_lock_status_changed");
 			}
 			viewport->update();
 		} break;
@@ -1692,7 +1692,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 
 				canvas_item->set_meta("_edit_lock_",Variant());
-
+				emit_signal("item_lock_status_changed");
 			}
 
 			viewport->update();
@@ -1711,7 +1711,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 					continue;
 
 				canvas_item->set_meta("_edit_group_",true);
-
+				emit_signal("item_group_status_changed");
 			}
 			viewport->update();
 		} break;
@@ -1727,9 +1727,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				if (!canvas_item->is_visible())
 					continue;
 
-
 				canvas_item->set_meta("_edit_group_",Variant());
-
+				emit_signal("item_group_status_changed");
 			}
 
 			viewport->update();
@@ -2055,7 +2054,8 @@ void CanvasItemEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_viewport_draw",&CanvasItemEditor::_viewport_draw);
 	ObjectTypeDB::bind_method("_viewport_input_event",&CanvasItemEditor::_viewport_input_event);
 
-
+	ADD_SIGNAL( MethodInfo("item_lock_status_changed") );
+	ADD_SIGNAL( MethodInfo("item_group_status_changed") );
 
 }
 
