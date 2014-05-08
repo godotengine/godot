@@ -1569,8 +1569,8 @@ void EditorNode::_cleanup_scene() {
 	editor_history.clear();
 	_hide_top_editors();
 	animation_editor->cleanup();
-	resources_dock->cleanup();
 	property_editor->edit(NULL);
+	resources_dock->cleanup();
 	scene_import_metadata.unref();
 	set_edited_scene(NULL);
 	if (scene) {
