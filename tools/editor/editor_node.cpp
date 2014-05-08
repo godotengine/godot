@@ -1211,7 +1211,7 @@ void EditorNode::push_item(Object *p_object,const String& p_property) {
 
 
 	if (!p_object) {
-		property_editor->reset();
+		property_editor->edit(NULL);
 		scene_tree_dock->set_selected(NULL);
 		return;
 	}
@@ -1573,7 +1573,7 @@ void EditorNode::_cleanup_scene() {
 	resources_dock->cleanup();
 	scene_import_metadata.unref();
 	set_edited_scene(NULL);
-	property_editor->reset();
+	property_editor->edit(NULL);
 	if (scene) {
 		if (scene->get_filename()!="") {
 			previous_scenes.push_back(scene->get_filename());
