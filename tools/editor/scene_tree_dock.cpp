@@ -32,6 +32,7 @@
 #include "os/keyboard.h"
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
+#include "tools/editor/plugins/canvas_item_editor_plugin.h"
 
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
@@ -373,6 +374,15 @@ void SceneTreeDock::_notification(int p_what) {
 			for(int i=0;i<TOOL_BUTTON_MAX;i++)
 				tool_buttons[i]->set_icon(get_icon(button_names[i],"EditorIcons"));
 
+		} break;
+		case NOTIFICATION_READY: {
+
+			CanvasItemEditorPlugin *canvas_item_plugin =  editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
+			if (canvas_item_plugin) {
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
+				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
+			}
 		} break;
 	}
 }
