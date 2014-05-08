@@ -750,7 +750,6 @@ void TextEdit::_consume_pair_symbol(CharType ch) {
 	CharType ch_single_pair[2] = {_get_right_pair_symbol(ch), 0};
 	CharType ch_pair[3] = {ch, _get_right_pair_symbol(ch), 0};
 	
-	printf("Selectin if active, %d\n", is_selection_active());
 	if(is_selection_active()) {	
 		
 		int new_column,new_line;
@@ -1132,11 +1131,17 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						if (cursor.column<text[cursor.line].length() && text[cursor.line][cursor.column]==k.unicode) {
 							//same char, move ahead
 							cursor_set_column(cursor.column+1);
+							
 						} else {
 							//different char, go back
 							const CharType chr[2] = {k.unicode, 0};
-							_insert_text_at_cursor(chr);
+							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
+								_consume_pair_symbol(chr[0]);
+							} else {
+								_insert_text_at_cursor(chr);
+							}
 						}
+
 						_update_completion_candidates();
 						accept_event();
 
