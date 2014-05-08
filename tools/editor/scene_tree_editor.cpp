@@ -172,6 +172,14 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 		if (p_node->is_type("CanvasItem")) {
 
+			bool is_locked = p_node->has_meta("_edit_lock_");//_edit_group_
+			if (is_locked)
+				item->add_button(0,get_icon("Lock", "EditorIcons"), BUTTON_LOCK);
+
+			bool is_grouped = p_node->has_meta("_edit_group_");
+			if (is_grouped)
+				item->add_button(0,get_icon("Group", "EditorIcons"), BUTTON_GROUP);
+
 			bool h = p_node->call("is_hidden");
 			if (h)
 				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
@@ -181,18 +189,7 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
 
-			bool is_locked = p_node->has_meta("_edit_lock_");//_edit_group_
-			if (is_locked)
-				item->add_button(0,get_icon("Lock", "EditorIcons"), BUTTON_LOCK);
-
-			bool is_grouped = p_node->has_meta("_edit_group_");
-			if (is_grouped)
-				item->add_button(0,get_icon("Group", "EditorIcons"), BUTTON_GROUP);
-
-
-
 		} else if (p_node->is_type("GeometryInstance")) {
-
 
 			bool h = !p_node->call("get_flag",VS::INSTANCE_FLAG_VISIBLE);
 			if (h)
