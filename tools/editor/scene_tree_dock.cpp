@@ -1165,19 +1165,19 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	ToolButton *tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW, false));
 	tb->set_tooltip("Add/Create a New Node\n("+keycode_get_string(KEY_MASK_CMD|KEY_A)+")");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_NEW]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
 	tb->set_tooltip("Instance a Node from scene file.");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_INSTANCE]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPLACE));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPLACE, false));
 	tb->set_tooltip("Replace a Node by Another Node Type");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_REPLACE]=tb;
@@ -1185,19 +1185,19 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_top->add_spacer();
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_CONNECT));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_CONNECT, false));
 	tb->set_tooltip("Edit the Node Connections");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_CONNECT]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_GROUP));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_GROUP, false));
 	tb->set_tooltip("Edit the Node Groups");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_GROUP]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_SCRIPT));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_SCRIPT, false));
 	tb->set_tooltip("Edit/Create the Node Script");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_SCRIPT]=tb;
@@ -1220,25 +1220,25 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_UP));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_UP, false));
 	tb->set_tooltip("Move Node Up\n("+keycode_get_string(KEY_MASK_CMD|KEY_UP)+")");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_MOVE_UP]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_DOWN));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_MOVE_DOWN, false));
 	tb->set_tooltip("Move Node Down\n("+keycode_get_string(KEY_MASK_CMD|KEY_DOWN)+")");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_MOVE_DOWN]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_DUPLICATE));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_DUPLICATE, false));
 	tb->set_tooltip("Duplicate Selected Node(s)\n("+keycode_get_string(KEY_MASK_CMD|KEY_D)+")");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_DUPLICATE]=tb;
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPARENT));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_REPARENT, false));
 	tb->set_tooltip("Reparent Selected Node(s)");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_REPARENT]=tb;
@@ -1246,7 +1246,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_bottom->add_spacer();
 
 	tb = memnew( ToolButton );
-	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_ERASE));
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_ERASE, false));
 	tb->set_tooltip("Erase Selected Node(s)");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_ERASE]=tb;
