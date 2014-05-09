@@ -122,6 +122,12 @@ class CanvasItemEditor : public VBoxContainer {
 
 	};
 
+	enum KeyMoveMODE {
+		MOVE_VIEW_BASE,
+		MOVE_LOCAL_BASE,
+		MOVE_LOCAL_WITH_ROT
+	};
+
 	EditorSelection *editor_selection;
 
 	Tool tool;
@@ -220,7 +226,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _remove_canvas_item(CanvasItem *p_canvas_item);
 	void _clear_canvas_items();
 	void _visibility_changed(ObjectID p_canvas_item);
-	void _key_move(const Vector2& p_dir, bool p_snap);
+	void _key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE p_move_mode);
 
 	DragType _find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
 
