@@ -50,6 +50,7 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 		case KEY_MASK_CMD|KEY_D: { _tool_selected(TOOL_DUPLICATE); } break;
 		case KEY_MASK_CMD|KEY_UP: { _tool_selected(TOOL_MOVE_UP); } break;
 		case KEY_MASK_CMD|KEY_DOWN: { _tool_selected(TOOL_MOVE_DOWN); } break;
+		case KEY_MASK_SHIFT|KEY_DELETE: { _tool_selected(TOOL_ERASE, true); } break;
 		case KEY_DELETE: { _tool_selected(TOOL_ERASE); } break;
 	}
 }
@@ -158,7 +159,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 }
 
-void SceneTreeDock::_tool_selected(int p_tool) {
+void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 	current_option=p_tool;
 
@@ -399,8 +400,17 @@ void SceneTreeDock::_tool_selected(int p_tool) {
 			if (remove_list.empty())
 				return;
 
-			delete_dialog->set_text("Delete Node(s)?");
-			delete_dialog->popup_centered(Size2(200,80));
+			if (p_confirm_override) {
+				_delete_confirm();
+
+				// hack, force 2d editor viewport to refresh after deletion
+				if (CanvasItemEditor *editor = CanvasItemEditor::get_singleton())
+					editor->get_viewport_control()->update();
+
+			} else {
+				delete_dialog->set_text("Delete Node(s)?");
+				delete_dialog->popup_centered(Size2(200,80));
+			}
 
 
 
