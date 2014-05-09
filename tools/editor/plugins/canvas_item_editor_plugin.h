@@ -223,7 +223,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _remove_canvas_item(CanvasItem *p_canvas_item);
 	void _clear_canvas_items();
 	void _visibility_changed(ObjectID p_canvas_item);
-	void _key_move(const Vector2& p_dir, bool p_snap);
+	void _key_move(const Vector2& p_dir, bool p_snap, bool p_local);
 
 	DragType _find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
 
