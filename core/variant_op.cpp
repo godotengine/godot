@@ -2339,6 +2339,12 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 			const Dictionary *dic=reinterpret_cast<const Dictionary*>(_data._mem);
 			const Variant * res = dic->getptr(p_index);
+			if (res == NULL) {
+				if (p_index.get_type()==Variant::INT)
+					res = dic->getptr((real_t) p_index);
+				else if (p_index.get_type()==Variant::REAL&&(real_t)p_index==(int32_t) p_index)
+					res = dic->getptr((int32_t) p_index);
+			}
 			if (res) {
 				valid=true;
 				return *res;

@@ -1404,6 +1404,8 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 			p_script->base=script;
 			p_script->_base=p_script->base.ptr();
 			p_script->member_indices=script->member_indices;
+			p_script->members=script->members;
+
 
 		} else if (native.is_valid()) {
 
