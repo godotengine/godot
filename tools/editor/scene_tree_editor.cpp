@@ -32,6 +32,7 @@
 #include "print_string.h"
 #include "message_queue.h"
 #include "scene/main/viewport.h"
+#include "tools/editor/plugins/canvas_item_editor_plugin.h"
 #include "core/translation.h"
 
 Node *SceneTreeEditor::get_scene_node() {
@@ -85,6 +86,21 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			undo_redo->add_do_method(n,v?"hide":"show");
 			undo_redo->add_undo_method(n,v?"show":"hide");
 			undo_redo->commit_action();
+		}
+
+	} else if (p_id==BUTTON_LOCK) {
+
+		if (n->is_type("CanvasItem")) {
+			n->set_meta("_edit_lock_", Variant());
+			_update_tree();
+			emit_signal("node_changed");
+		}
+
+	} else if (p_id==BUTTON_GROUP) {
+		if (n->is_type("CanvasItem")) {
+			n->set_meta("_edit_group_", Variant());
+			_update_tree();
+			emit_signal("node_changed");
 		}
 	}
 }
@@ -157,6 +173,14 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 		if (p_node->is_type("CanvasItem")) {
 
+			bool is_locked = p_node->has_meta("_edit_lock_");//_edit_group_
+			if (is_locked)
+				item->add_button(0,get_icon("Lock", "EditorIcons"), BUTTON_LOCK);
+
+			bool is_grouped = p_node->has_meta("_edit_group_");
+			if (is_grouped)
+				item->add_button(0,get_icon("Group", "EditorIcons"), BUTTON_GROUP);
+
 			bool h = p_node->call("is_hidden");
 			if (h)
 				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
@@ -167,7 +191,6 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
 
 		} else if (p_node->is_type("GeometryInstance")) {
-
 
 			bool h = !p_node->call("get_flag",VS::INSTANCE_FLAG_VISIBLE);
 			if (h)
@@ -628,9 +651,11 @@ void SceneTreeEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("node_selected") );
 	ADD_SIGNAL( MethodInfo("node_renamed") );
 	ADD_SIGNAL( MethodInfo("node_prerename") );
+	ADD_SIGNAL( MethodInfo("node_changed") );
 
 	ADD_SIGNAL( MethodInfo("open") );
 	ADD_SIGNAL( MethodInfo("open_script") );
+
 
 }
 
@@ -729,6 +754,7 @@ void SceneTreeDialog::_bind_methods() {
 	ObjectTypeDB::bind_method("_select",&SceneTreeDialog::_select);
 	ObjectTypeDB::bind_method("_cancel",&SceneTreeDialog::_cancel);
 	ADD_SIGNAL( MethodInfo("selected",PropertyInfo(Variant::NODE_PATH,"path")));
+
 
 }
 
