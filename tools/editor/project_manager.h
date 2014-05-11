@@ -46,12 +46,14 @@ class ProjectManager : public Control {
 	FileDialog *scan_dir;
 
 	ConfirmationDialog *erase_ask;
+	ConfirmationDialog *multi_open_ask;
+	ConfirmationDialog *multi_run_ask;
 	NewProjectDialog *npdialog;
 	ScrollContainer *scroll;
 	VBoxContainer *scroll_childs;
-	Set<String> selected_list;
+	Map<String, String> selected_list; // name -> main_scene
 	String last_clicked;
-	String selected_main;
+	String single_selected_main;
 	bool importing;
 
 	void _item_doubleclicked();
@@ -60,7 +62,9 @@ class ProjectManager : public Control {
 
 	void _scan_projects();
 	void _run_project();
+	void _run_project_confirm();
 	void _open_project();
+	void _open_project_confirm();
 	void _import_project();
 	void _new_project();
 	void _erase_project();
