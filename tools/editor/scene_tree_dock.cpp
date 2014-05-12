@@ -387,7 +387,7 @@ void SceneTreeDock::_notification(int p_what) {
 				"MoveDown",
 				"Duplicate",
 				"Reparent",
-				"Reparent",
+				"Focus",
 				"Del",
 			};
 
