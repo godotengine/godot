@@ -334,6 +334,15 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			reparent_dialog->set_current( nodeset );
 
 		} break;
+		case TOOL_FOCUS: {
+
+			Node *selected = scene_tree->get_selected();
+			if (!selected)
+				break;
+			scene_tree->set_selected(NULL,false);
+			scene_tree->set_selected(selected,false); // de-select and re-select node to make sure ensure_cursor_is_visible() get invoked
+
+		} break;
 		case TOOL_ERASE: {
 
 			List<Node*> remove_list = editor_selection->get_selected_node_list();
@@ -377,6 +386,7 @@ void SceneTreeDock::_notification(int p_what) {
 				"MoveUp",
 				"MoveDown",
 				"Duplicate",
+				"Reparent",
 				"Reparent",
 				"Del",
 			};
@@ -906,6 +916,7 @@ void SceneTreeDock::_update_tool_buttons() {
 	tool_buttons[TOOL_MOVE_DOWN]->set_disabled(disable_root);
 	tool_buttons[TOOL_DUPLICATE]->set_disabled(disable_root);
 	tool_buttons[TOOL_REPARENT]->set_disabled(disable_root);
+	tool_buttons[TOOL_FOCUS]->set_disabled(disable_root);
 	tool_buttons[TOOL_ERASE]->set_disabled(disable);
 
 }
@@ -1183,6 +1194,12 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	tb->set_tooltip("Reparent Selected Node(s)");
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_REPARENT]=tb;
+
+	tb = memnew( ToolButton );
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_FOCUS, false));
+	tb->set_tooltip("View Selected Node(s)");
+	hbc_bottom->add_child(tb);
+	tool_buttons[TOOL_FOCUS]=tb;
 
 	hbc_bottom->add_spacer();
 
