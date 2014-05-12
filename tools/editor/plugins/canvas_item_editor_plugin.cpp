@@ -271,7 +271,7 @@ void CanvasItemEditor::_find_canvas_items_at_rect(const Rect2& p_rect,Node* p_no
 
 }
 
-void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap) {
+void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE p_move_mode) {
 
 
 	if (drag!=DRAG_NONE)
@@ -299,18 +299,36 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap) {
 			continue;
 
 
-		Vector2 drag =  transform.affine_inverse().basis_xform(p_dir);
-		drag = canvas_item->get_global_transform_with_canvas().affine_inverse().basis_xform(drag);
-
+		Vector2 drag = p_dir;
 		if (p_snap)
 			drag*=snap;
 
 		undo_redo->add_undo_method(canvas_item,"edit_set_state",canvas_item->edit_get_state());
-		Rect2 local_rect = canvas_item->get_item_rect();
-		local_rect.pos+=drag;
-		//canvas_item->edit_set_rect(local_rect);
-		undo_redo->add_do_method(canvas_item,"edit_set_rect",local_rect);
 
+		if (p_move_mode  == MOVE_VIEW_BASE) {
+
+			// drag =  transform.affine_inverse().basis_xform(p_dir); // zoom sensitive
+			drag = canvas_item->get_global_transform_with_canvas().affine_inverse().basis_xform(drag);
+			Rect2 local_rect = canvas_item->get_item_rect();
+			local_rect.pos+=drag;
+			undo_redo->add_do_method(canvas_item,"edit_set_rect",local_rect);
+
+		} else { // p_move_mode==MOVE_LOCAL_BASE || p_move_mode==MOVE_LOCAL_WITH_ROT
+
+			if (Node2D *node_2d = canvas_item->cast_to<Node2D>()) {
+
+				if (p_move_mode == MOVE_LOCAL_WITH_ROT) {
+					Matrix32 m;
+					m.rotate( node_2d->get_rot() );
+					drag = m.xform(drag);
+				}
+				node_2d->set_pos(node_2d->get_pos() + drag);
+
+			} else if (Control *control = canvas_item->cast_to<Control>()) {
+
+				control->set_pos(control->get_pos()+drag);
+			}
+		}
 	}
 
 	undo_redo->commit_action();
@@ -1125,19 +1143,20 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		const InputEventKey &k=p_event.key;
 
-		if (p_event.key.mod.alt || p_event.key.mod.control ||  p_event.key.mod.meta)
-			return;
-
 		if (k.pressed && drag==DRAG_NONE) {
 
+			KeyMoveMODE move_mode = MOVE_VIEW_BASE;
+			if (k.mod.alt) move_mode = MOVE_LOCAL_BASE;
+			if (k.mod.control || k.mod.meta) move_mode = MOVE_LOCAL_WITH_ROT;
+
 			if (k.scancode==KEY_UP)
-				_key_move(Vector2(0,-1),k.mod.shift);
+				_key_move( Vector2(0,-1), k.mod.shift, move_mode );
 			else if (k.scancode==KEY_DOWN)
-				_key_move(Vector2(0,1),k.mod.shift);
+				_key_move( Vector2(0,1), k.mod.shift, move_mode );
 			else if (k.scancode==KEY_LEFT)
-				_key_move(Vector2(-1,0),k.mod.shift);
+				_key_move( Vector2(-1,0), k.mod.shift, move_mode );
 			else if (k.scancode==KEY_RIGHT)
-				_key_move(Vector2(1,0),k.mod.shift);
+				_key_move( Vector2(1,0), k.mod.shift, move_mode );
 			else if (k.scancode==KEY_ESCAPE) {
 				editor_selection->clear();
 				viewport->update();
