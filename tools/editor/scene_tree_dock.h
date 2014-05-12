@@ -62,6 +62,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_FOCUS,
 		TOOL_ERASE,
 		TOOL_BUTTON_MAX
 	};

@@ -443,7 +443,7 @@ public:
 	
 	Rect2 get_custom_popup_rect() const;
 
-	int get_item_offset(TreeItem *p_item) const;
+	int get_item_offset(TreeItem *p_item, bool p_as_expanded=true, bool p_expand_ancestor_only=false) const;
 	Rect2 get_item_rect(TreeItem *p_item,int p_column=-1) const;	
 	bool edit_selected();
 

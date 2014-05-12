@@ -2773,12 +2773,17 @@ Rect2 Tree::get_custom_popup_rect() const {
 	return custom_popup_rect;
 }
 
-int Tree::get_item_offset(TreeItem *p_item) const {
+int Tree::get_item_offset(TreeItem *p_item, bool p_as_expanded, bool p_expand_ancestor_only) const {
 
-	TreeItem *it=root;
-	int ofs=_get_title_button_height();
-	if (!it)
+	if (!root)
 		return 0;
+
+	Set<TreeItem *> ancestors;
+	for(TreeItem *it=p_item->parent;it;it=it->parent)
+		ancestors.insert(it);
+
+	int ofs=_get_title_button_height();
+	TreeItem *it=root;
 
 	while(true) {
 
@@ -2787,10 +2792,14 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 
 		ofs+=compute_item_height(it)+cache.vseparation;
 
-		if (it->childs) {
+		bool use_childs = it->childs;
+		//print_line("use childs: " + itos(use_childs));
+		if (use_childs && it->collapsed && !p_as_expanded) use_childs = false;
+		if (use_childs && it->collapsed && p_as_expanded && p_expand_ancestor_only && !ancestors.has(it)) use_childs = false;
+
+		if (use_childs) {
 
 			it=it->childs;
-
 		} else if (it->next) {
 
 			it=it->next;
@@ -2818,9 +2827,24 @@ void Tree::ensure_cursor_is_visible() {
 	TreeItem *selected = get_selected();
 	if (!selected)
 		return;
-	int ofs = get_item_offset(selected);
+
+	int ofs = get_item_offset(selected, true, true);
 	if (ofs==-1)
 		return;
+
+	bool height_changed=false;
+	for (TreeItem *it=selected->parent;it;it=it->parent) {
+		if (it->collapsed) {
+			it->collapsed=false;
+			height_changed=true;
+		}
+	}
+
+	if (height_changed) {
+		call_deferred("ensure_cursor_is_visible");
+		return;
+	}
+
 	int h = compute_item_height(selected)+cache.vseparation;
 	int screenh=get_size().height-h_scroll->get_combined_minimum_size().height;
 
