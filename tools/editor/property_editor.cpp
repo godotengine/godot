@@ -1941,7 +1941,7 @@ TreeItem *PropertyEditor::get_parent_node(String p_path,HashMap<String,TreeItem*
 		TreeItem *parent = get_parent_node( p_path.left( p_path.find_last("/") ),item_paths,root );
 		item = tree->create_item( parent );
 
-		String name = (p_path.find("/")!=-1)?p_path.right( p_path.find_last("/") ):p_path;
+		String name = (p_path.find("/")!=-1)?p_path.right( p_path.find_last("/")+1 ):p_path;
 		if (capitalize_paths)
 			item->set_text(0, name.capitalize() );
 		else
@@ -2099,7 +2099,7 @@ void PropertyEditor::update_tree() {
 
 		TreeItem * item = tree->create_item( parent );
 
-		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/") ):p.name;
+		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/")+1 ):p.name;
 
 		if (level>0) {
 			item->set_custom_bg_color(0,col);
