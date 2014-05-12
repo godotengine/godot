@@ -109,6 +109,7 @@ void ScenesDock::_notification(int p_what) {
 			button_favorite->set_icon( get_icon("Favorites","EditorIcons"));
 			button_instance->set_icon( get_icon("Add","EditorIcons"));
 			button_open->set_icon( get_icon("Folder","EditorIcons"));
+			button_replace->set_icon( get_icon("Add","EditorIcons"));
 
 			String path = Globals::get_singleton()->get_resource_path()+"/favorites.cfg";
 			FileAccess *f=FileAccess::open(path,FileAccess::READ);
@@ -211,6 +212,15 @@ void ScenesDock::_open_pressed(){
 
 }
 
+void ScenesDock::_replace_pressed() {
+
+	TreeItem *sel = tree->get_selected();
+	if (!sel)
+		return;
+	String path = sel->get_metadata(0);
+	emit_signal("replace",path);
+}
+
 void ScenesDock::_save_favorites() {
 
 	String path = Globals::get_singleton()->get_resource_path()+"/favorites.cfg";
@@ -240,10 +250,12 @@ void ScenesDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_favorite_toggled"),&ScenesDock::_favorite_toggled);
 	ObjectTypeDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ObjectTypeDB::bind_method(_MD("_open_pressed"),&ScenesDock::_open_pressed);
+	ObjectTypeDB::bind_method(_MD("_replace_pressed"),&ScenesDock::_replace_pressed);
 	ObjectTypeDB::bind_method(_MD("_save_favorites"),&ScenesDock::_save_favorites);
 
 	ADD_SIGNAL(MethodInfo("instance"));
 	ADD_SIGNAL(MethodInfo("open"));
+	ADD_SIGNAL(MethodInfo("replace"));
 
 }
 
@@ -290,6 +302,15 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	button_open->set_flat(true);
 	add_child(button_open);
 	button_open->connect("pressed",this,"_open_pressed");
+
+	button_replace = memnew( Button );
+	button_replace->set_anchor(MARGIN_LEFT,ANCHOR_END);
+	button_replace->set_anchor(MARGIN_RIGHT,ANCHOR_END);
+	button_replace->set_begin(Point2(3+70,2));
+	button_replace->set_end(Point2(2+53,5));
+	button_replace->set_flat(true);
+	add_child(button_replace);
+	button_replace->connect("pressed",this,"_replace_pressed");
 
 	timer = memnew( Timer );
 	timer->set_one_shot(true);

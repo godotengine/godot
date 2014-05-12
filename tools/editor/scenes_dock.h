@@ -52,6 +52,7 @@ class ScenesDock : public Control {
 	Button *button_instance;
 	Button *button_favorite;
 	Button *button_open;
+	Button *button_replace;
 	Timer *timer;
 
 	bool updating_tree;
@@ -64,6 +65,7 @@ class ScenesDock : public Control {
 	void _favorite_toggled();
 	void _instance_pressed();
 	void _open_pressed();
+	void _replace_pressed();
 	void _save_favorites();
 
 protected:

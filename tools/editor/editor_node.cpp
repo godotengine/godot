@@ -2786,6 +2786,11 @@ void EditorNode::_instance_request(const String& p_path){
 	request_instance_scene(p_path);
 }
 
+void EditorNode::_instance_replace_request(const String& p_path){
+
+	scene_tree_dock->instance(p_path, true);
+}
+
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value) {
 
 	animation_editor->insert_value_key(p_keyed,p_value);
@@ -3127,6 +3132,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_edited_scene",&EditorNode::set_edited_scene);
 	ObjectTypeDB::bind_method("open_request",&EditorNode::open_request);
 	ObjectTypeDB::bind_method("_instance_request",&EditorNode::_instance_request);
+	ObjectTypeDB::bind_method("_instance_replace_request",&EditorNode::_instance_replace_request);
 	ObjectTypeDB::bind_method("_update_keying",&EditorNode::_update_keying);
 	ObjectTypeDB::bind_method("_property_keyed",&EditorNode::_property_keyed);
 	ObjectTypeDB::bind_method("_transform_keyed",&EditorNode::_transform_keyed);
@@ -3759,6 +3765,7 @@ EditorNode::EditorNode() {
 	prop_pallete->add_child(scenes_dock);
 	scenes_dock->connect("open",this,"open_request");
 	scenes_dock->connect("instance",this,"_instance_request");
+	scenes_dock->connect("replace",this,"_instance_replace_request");
 
 
 
