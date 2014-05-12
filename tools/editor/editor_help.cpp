@@ -123,8 +123,10 @@ void EditorHelpSearch::_update_search() {
 			cicon=def_icon;
 
 		for(int i=0;i<c.methods.size();i++) {
-
-			if (c.methods[i].name.findn(term)!=-1) {
+			if( (term.begins_with(".") && c.methods[i].name.begins_with(term.right(1)))
+				|| (term.ends_with("(") && c.methods[i].name.ends_with(term.left(term.length()-1)))
+				|| (term.begins_with(".") && term.ends_with("(") && c.methods[i].name==term.substr(1,term.length()-2).strip_edges())
+				|| c.methods[i].name.findn(term)!=-1) {
 
 				TreeItem *item = search_options->create_item(root);
 				item->set_metadata(0,"class_method:"+E->key()+":"+c.methods[i].name);
