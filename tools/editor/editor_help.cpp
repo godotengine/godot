@@ -124,7 +124,7 @@ void EditorHelpSearch::_update_search() {
 
 		for(int i=0;i<c.methods.size();i++) {
 			if( (term.begins_with(".") && c.methods[i].name.begins_with(term.right(1)))
-				|| (term.ends_with("(") && c.methods[i].name.ends_with(term.left(term.length()-1)))
+				|| (term.ends_with("(") && c.methods[i].name.ends_with(term.left(term.length()-1).strip_edges()))
 				|| (term.begins_with(".") && term.ends_with("(") && c.methods[i].name==term.substr(1,term.length()-2).strip_edges())
 				|| c.methods[i].name.findn(term)!=-1) {
 
