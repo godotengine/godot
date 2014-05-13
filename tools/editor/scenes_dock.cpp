@@ -109,7 +109,7 @@ void ScenesDock::_notification(int p_what) {
 			button_favorite->set_icon( get_icon("Favorites","EditorIcons"));
 			button_instance->set_icon( get_icon("Add","EditorIcons"));
 			button_open->set_icon( get_icon("Folder","EditorIcons"));
-			button_replace->set_icon( get_icon("Add","EditorIcons"));
+			button_replace->set_icon( get_icon("Replace","EditorIcons"));
 
 			String path = Globals::get_singleton()->get_resource_path()+"/favorites.cfg";
 			FileAccess *f=FileAccess::open(path,FileAccess::READ);

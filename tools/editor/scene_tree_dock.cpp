@@ -135,61 +135,49 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 		}
 
 		if (!instanced) {
-			print_line("Error instancing from " + p_file);
+			print_line("Error instancing sprite from " + p_file);
 			return NULL;
+		}
+	} else {
+
+		Ref<PackedScene> sdata = ResourceLoader::load(p_file);
+		if (sdata.is_valid()) {
+
+			instanced=sdata->instance();
+			if (!instanced) {
+				current_option=-1;
+				//accept->get_cancel()->hide();
+				accept->get_ok()->set_text("Ugh");
+				accept->set_text(String("Error loading scene from ")+p_file);
+				accept->popup_centered(Size2(300,70));;
+				return NULL;
+			}
+
+			instanced->generate_instance_state();
+			instanced->set_filename( Globals::get_singleton()->localize_path(p_file) );
+
+			if (p_replace_selected) {
+				editor_data->copy_object_params(selected);
+				editor_data->paste_object_params(instanced);
+			}
 		}
 	}
 
-	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
-	if (sdata.is_valid()) {
-		instanced=sdata->instance();
-		if (!instanced) {
-
-			current_option=-1;
-			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text("Ugh");
-			accept->set_text(String("Error loading scene from ")+p_file);
-			accept->popup_centered(Size2(300,70));;
-			return NULL;
-		}
-
-		instanced->generate_instance_state();
-		instanced->set_filename( Globals::get_singleton()->localize_path(p_file) );
-
-		if (p_replace_selected) {
-			editor_data->copy_object_params(selected);
-			editor_data->paste_object_params(instanced);
-		}
-	}
+	// undo-redo
+	if (!instanced)
+		return NULL;
 
 	if (p_replace_selected) {
-		/*
-		parent->add_child(instanced);
-		parent->move_child(instanced,selected->get_index());
-		instanced->set_owner(edited_scene);
-		editor_selection->clear();
-		editor_selection->add_node(instanced);
-		print_line("select child: " + itos(selected->get_child_count()));
-		for(int i=0; i<selected->get_child_count();++i) {
-			Node *child = selected->get_child(i);
-			if (child->get_owner() != instanced->get_owner()) {
-				continue;
-			}
-			selected->remove_child(child);
-			instanced->add_child(child);
-			child->set_owner(edited_scene);
-		}
-		parent->remove_child(selected);
-		*/
-
 
 		editor_data->get_undo_redo().create_action("Replace Instance");
 
+		editor_data->get_undo_redo().add_do_method(parent,"remove_child",selected);
 		editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced);
 		editor_data->get_undo_redo().add_do_method(parent,"move_child",instanced,selected->get_index());
 		editor_data->get_undo_redo().add_do_method(instanced,"set_owner",edited_scene);
 		editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
 		editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced);
+		editor_data->get_undo_redo().add_do_method(this,"set_selected",instanced);
 
 		for(int i=0; i<selected->get_child_count();++i) {
 			Node *child = selected->get_child(i);
@@ -197,24 +185,21 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 				continue;
 			editor_data->get_undo_redo().add_do_method(selected,"remove_child",child);
 			editor_data->get_undo_redo().add_do_method(instanced,"add_child",child);
-			editor_data->get_undo_redo().add_do_reference(child);
 			editor_data->get_undo_redo().add_do_method(child,"set_owner",edited_scene);
 		}
 
-		//editor_data->get_undo_redo().add_do_method(scene_tree,"set_selected",instanced,true);
 		if (editor->get_animation_editor()->get_root()==selected)
 			editor_data->get_undo_redo().add_do_method(editor->get_animation_editor(),"set_root",instanced);
-		editor_data->get_undo_redo().add_do_reference(instanced);
 		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced);
-
+/*
 		List<Node*> owned;
 		selected->get_owned_by(selected->get_owner(),&owned);
 		Array owners;
 		for(List<Node*>::Element *E=owned.front();E;E=E->next()) {
 			owners.push_back(E->get());
 		}
+*/
 
-		editor_data->get_undo_redo().add_do_method(parent,"remove_child",selected);
 		editor_data->get_undo_redo().add_undo_method(parent,"add_child",selected);
 		editor_data->get_undo_redo().add_undo_method(parent,"move_child",selected,selected->get_index());
 		editor_data->get_undo_redo().add_undo_method(selected,"set_owner",edited_scene);
@@ -222,9 +207,9 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 		editor_data->get_undo_redo().add_undo_method(editor_selection,"clear");
 		editor_data->get_undo_redo().add_undo_method(editor_selection,"add_node",selected);
 		//editor_data->get_undo_redo().add_undo_method(scene_tree,"set_selected",selected,true);
+		editor_data->get_undo_redo().add_undo_method(this,"set_selected",selected);
 		if (editor->get_animation_editor()->get_root()==selected)
-			editor_data->get_undo_redo().add_undo_method(editor->get_animation_editor(),"set_root",selected);
-		editor_data->get_undo_redo().add_undo_reference(selected);
+			editor_data->get_undo_redo().add_undo_method(editor->get_animation_editor(),"set_root",selected);		
 		for(int i=0; i<selected->get_child_count();++i) {
 			Node *child = selected->get_child(i);
 			if (child->get_owner() != selected->get_owner())
@@ -233,7 +218,9 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 			editor_data->get_undo_redo().add_undo_method(selected,"add_child",child);
 			editor_data->get_undo_redo().add_undo_method(child,"set_owner",edited_scene);
 		}
-		//editor_data->get_undo_redo().add_undo_reference(instanced);
+
+		editor_data->get_undo_redo().add_undo_reference(selected);
+		editor_data->get_undo_redo().add_do_reference(instanced);
 
 		editor_data->get_undo_redo().commit_action();
 		//*/
