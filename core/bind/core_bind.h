@@ -98,7 +98,7 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
-	Error native_video_play(String p_path);
+	Error native_video_play(String p_path, float p_volume);
 	bool native_video_is_playing();
 	void native_video_pause();
 	void native_video_stop();
@@ -139,6 +139,7 @@ public:
 	void print_resources_in_use(bool p_short=false);
 	void print_all_resources(const String& p_to_file);
 	void print_all_textures_by_size();
+	void print_resources_by_type(const Vector<String>& p_types);
 
 	bool has_touchscreen_ui_hint() const;
 

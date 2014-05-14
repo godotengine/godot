@@ -167,6 +167,9 @@ public:
 	virtual void body_apply_impulse(RID p_body, const Vector3& p_pos, const Vector3& p_impulse);
 	virtual void body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity);
 
+	virtual void body_set_axis_lock(RID p_body,BodyAxisLock p_lock);
+	virtual BodyAxisLock body_get_axis_lock(RID p_body) const;
+
 	virtual void body_add_collision_exception(RID p_body, RID p_body_b);
 	virtual void body_remove_collision_exception(RID p_body, RID p_body_b);
 	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions);

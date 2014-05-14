@@ -676,7 +676,7 @@ String OS_Android::get_unique_ID() const {
 	return OS::get_unique_ID();
 }
 
-Error OS_Android::native_video_play(String p_path) {
+Error OS_Android::native_video_play(String p_path, float p_volume) {
 	if (video_play_func)
 		video_play_func(p_path);
     return OK;
@@ -719,6 +719,11 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	get_locale_func=p_get_locale_func;
 	get_model_func=p_get_model_func;
 	get_unique_id_func=p_get_unique_id;
+    
+    video_play_func = p_video_play_func;
+    video_is_playing_func = p_video_is_playing_func;
+    video_pause_func = p_video_pause_func;
+    video_stop_func = p_video_stop_func;
 
 	show_virtual_keyboard_func = p_show_vk;
 	hide_virtual_keyboard_func = p_hide_vk;

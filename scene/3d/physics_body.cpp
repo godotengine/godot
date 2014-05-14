@@ -632,6 +632,16 @@ bool RigidBody::is_contact_monitor_enabled() const {
 	return contact_monitor!=NULL;
 }
 
+void RigidBody::set_axis_lock(AxisLock p_lock) {
+
+	axis_lock=p_lock;
+	PhysicsServer::get_singleton()->body_set_axis_lock(get_rid(),PhysicsServer::BodyAxisLock(axis_lock));
+}
+
+RigidBody::AxisLock RigidBody::get_axis_lock() const {
+
+	return axis_lock;
+}
 
 
 void RigidBody::_bind_methods() {
@@ -682,6 +692,9 @@ void RigidBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_body_enter_scene"),&RigidBody::_body_enter_scene);
 	ObjectTypeDB::bind_method(_MD("_body_exit_scene"),&RigidBody::_body_exit_scene);
 
+	ObjectTypeDB::bind_method(_MD("set_axis_lock","axis_lock"),&RigidBody::set_axis_lock);
+	ObjectTypeDB::bind_method(_MD("get_axis_lock"),&RigidBody::get_axis_lock);
+
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:PhysicsDirectBodyState")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Rigid,Static,Character,Kinematic"),_SCS("set_mode"),_SCS("get_mode"));
@@ -695,6 +708,7 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"contact_monitor"),_SCS("set_contact_monitor"),_SCS("is_contact_monitor_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"active"),_SCS("set_active"),_SCS("is_active"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"can_sleep"),_SCS("set_can_sleep"),_SCS("is_able_to_sleep"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"axis_lock",PROPERTY_HINT_ENUM,"Disabled,Lock X,Lock Y,Lock Z"),_SCS("set_axis_lock"),_SCS("get_axis_lock"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"velocity/linear"),_SCS("set_linear_velocity"),_SCS("get_linear_velocity"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"velocity/angular"),_SCS("set_angular_velocity"),_SCS("get_angular_velocity"));
 
@@ -726,6 +740,8 @@ RigidBody::RigidBody() : PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
 	custom_integrator=false;
 	contact_monitor=NULL;
 	can_sleep=true;
+
+	axis_lock = AXIS_LOCK_DISABLED;
 
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(),this,"_direct_state_changed");
 }

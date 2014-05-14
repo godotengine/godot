@@ -1337,6 +1337,10 @@ Variant::operator Matrix3() const {
 
 	if (type==MATRIX3)
 		return *_data._matrix3;
+	else if (type==QUAT)
+		return *reinterpret_cast<const Quat*>(_data._mem);
+	else if (type==TRANSFORM)
+		return _data._transform->basis;
 	else
 		return Matrix3();
 }
@@ -1345,6 +1349,10 @@ Variant::operator Quat() const {
 
 	if (type==QUAT)
 		return *reinterpret_cast<const Quat*>(_data._mem);
+	else if (type==MATRIX3)
+		return 	*_data._matrix3;
+	else if (type==TRANSFORM)
+		return 	_data._transform->basis;
 	else
 		return Quat();
 }
@@ -1357,6 +1365,8 @@ Variant::operator Transform() const {
 		return *_data._transform;
 	else if (type==MATRIX3)
 		return Transform(*_data._matrix3,Vector3());
+	else if (type==QUAT)
+		return Transform(Matrix3(*reinterpret_cast<const Quat*>(_data._mem)),Vector3());
 	else
 		return Transform();
 }

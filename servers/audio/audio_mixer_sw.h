@@ -73,6 +73,7 @@ private:
 		MAX_REVERBS=4
 	};
 
+
 	struct Channel {
 
 		RID sample;
@@ -92,6 +93,19 @@ private:
 			struct Filter { //history (stereo)
 				float ha[2],hb[2];
 			} filter_l,filter_r;
+
+			struct IMA_ADPCM_State {
+
+				int16_t step_index;
+				int32_t predictor;
+				/* values at loop point */
+				int16_t loop_step_index;
+				int32_t loop_predictor;
+				int32_t last_nibble;
+				int32_t loop_pos;
+				int32_t window_ofs;
+				const uint8_t *ptr;
+			} ima_adpcm;
 
 		} mix;
 
@@ -163,17 +177,20 @@ private:
 		int32_t chorus_vol_inc[4];
 
 
+
 		Channel::Mix::Filter *filter_l;
 		Channel::Mix::Filter *filter_r;
 		Channel::Filter::Coefs coefs;
 		Channel::Filter::Coefs coefs_inc;
+
+		Channel::Mix::IMA_ADPCM_State *ima_adpcm;
 
 		int32_t *reverb_buffer;
 	};
 
 
 
-	template<class Depth,bool is_stereo,bool use_filter,bool use_fx,InterpolationType type,MixChannels>
+	template<class Depth,bool is_stereo,bool use_filter,bool is_ima_adpcm,bool use_fx,InterpolationType type,MixChannels>
 	_FORCE_INLINE_ void do_resample(const Depth* p_src, int32_t *p_dst, ResamplerState *p_state);
 
 	MixChannels mix_channels;

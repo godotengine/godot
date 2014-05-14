@@ -695,6 +695,86 @@ public:
 	}
 
 
+
+	static inline Vector<Vector3> clip_polygon(const Vector<Vector3>& polygon,const Plane& p_plane) {
+
+		enum LocationCache {
+			LOC_INSIDE=1,
+			LOC_BOUNDARY=0,
+			LOC_OUTSIDE=-1
+		};
+
+		if (polygon.size()==0)
+			return polygon;
+
+		int *location_cache = (int*)alloca(sizeof(int)*polygon.size());
+		int inside_count = 0;
+		int outside_count = 0;
+
+		for (int a = 0; a < polygon.size(); a++) {
+			//float p_plane.d = (*this) * polygon[a];
+			float dist = p_plane.distance_to(polygon[a]);
+			if (dist <-CMP_POINT_IN_PLANE_EPSILON) {
+				location_cache[a] = LOC_INSIDE;
+				inside_count++;
+			} else {
+				if (dist > CMP_POINT_IN_PLANE_EPSILON) {
+					location_cache[a] = LOC_OUTSIDE;
+					outside_count++;
+				} else {
+					location_cache[a] = LOC_BOUNDARY;
+				}
+			}
+		}
+
+		if (outside_count == 0) {
+
+			return polygon; // no changes
+
+		} else if (inside_count == 0) {
+
+			return Vector<Vector3>(); //empty
+		}
+
+//		long count = 0;
+		long previous = polygon.size() - 1;
+
+		Vector<Vector3> clipped;
+
+		for (int index = 0; index < polygon.size(); index++) {
+			int loc = location_cache[index];
+			if (loc == LOC_OUTSIDE) {
+				if (location_cache[previous] == LOC_INSIDE) {
+					const Vector3& v1 = polygon[previous];
+					const Vector3& v2 = polygon[index];
+
+					Vector3 segment= v1 - v2;
+					double den=p_plane.normal.dot( segment );
+					double dist=p_plane.distance_to( v1 ) / den;
+					dist=-dist;
+					clipped.push_back( v1 + segment * dist );
+				}
+			} else {
+				const Vector3& v1 = polygon[index];
+				if ((loc == LOC_INSIDE) && (location_cache[previous] == LOC_OUTSIDE)) {
+					const Vector3& v2 = polygon[previous];
+					Vector3 segment= v1 - v2;
+					double den=p_plane.normal.dot( segment );
+					double dist=p_plane.distance_to( v1 ) / den;
+					dist=-dist;
+					clipped.push_back( v1 + segment * dist );
+				}
+
+				clipped.push_back(v1);
+			}
+
+			previous = index;
+		}
+
+		return clipped;
+	}
+
+
 	static Vector<int> triangulate_polygon(const Vector<Vector2>& p_polygon) {
 
 		Vector<int> triangles;

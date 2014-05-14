@@ -187,6 +187,7 @@
 #include "scene/3d/area.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/multimesh_instance.h"
+#include "scene/3d/baked_light.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/spatial_sample_player.h"
 #include "scene/3d/spatial_stream_player.h"
@@ -401,7 +402,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PathFollow>();
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
-
+	ObjectTypeDB::register_type<BakedLight>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 
 	//scenariofx	
