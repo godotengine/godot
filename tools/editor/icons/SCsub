@@ -1,18 +1,21 @@
 Import('env')
 
-def make_editor_icons():
+def make_editor_icons_action(target, source, env):
 
-	import glob	
+	import os
+
+	dst = target[0].srcnode().abspath
+	pixmaps = source
 	
-	pixmaps = glob.glob("*.png")
-	
-	f = open("../editor_icons.cpp","wb")
+	f = open(dst,"wb")
 	f.write("#include \"editor_icons.h\"\n\n")
 	f.write("#include \"scene/resources/theme.h\"\n\n")
 
 	for x in pixmaps:
-		
-		var_str=x[:-4]+"_png";
+	
+		x=str(x)
+		var_str=os.path.basename(x)[:-4]+"_png";
+		#print(var_str)
 		
 		f.write("static const unsigned char "+ var_str +"[]={\n");
 		
@@ -37,7 +40,8 @@ def make_editor_icons():
 	f.write("void editor_register_icons(Ref<Theme> p_theme) {\n\n")
 
 	for x in pixmaps:
-
+	
+		x=os.path.basename(str(x))
 		type=x[5:-4].title().replace("_","");
 		var_str=x[:-4]+"_png";
 		f.write("\tp_theme->set_icon(\""+type+"\",\"EditorIcons\",make_icon("+var_str+"));\n");
@@ -45,4 +49,12 @@ def make_editor_icons():
 	f.write("\n\n}\n\n");
 	f.close()
 
-make_editor_icons()
+make_editor_icons_builder = Builder(action=make_editor_icons_action,
+							suffix = '.cpp',
+							src_suffix = '.png')
+env['BUILDERS']['MakeEditorIconsBuilder']=make_editor_icons_builder
+env.Alias('editor_icons',[env.MakeEditorIconsBuilder('#tools/editor/editor_icons.cpp',Glob("*.png"))])
+
+env.tool_sources.append("#tools/editor/editor_icons.cpp")
+Export('env')
+
