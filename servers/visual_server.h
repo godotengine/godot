@@ -682,6 +682,7 @@ public:
 	virtual Variant environment_get_background_param(RID p_env,EnvironmentBGParam p_param) const=0;
 
 	enum EnvironmentFx {
+		ENV_FX_FXAA,
 		ENV_FX_GLOW,
 		ENV_FX_DOF_BLUR,
 		ENV_FX_HDR,
@@ -815,6 +816,7 @@ public:
 		INSTANCE_FLAG_RECEIVE_SHADOWS,
 		INSTANCE_FLAG_DEPH_SCALE,
 		INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,
+		INSTANCE_FLAG_USE_BAKED_LIGHT_VOLUME,
 		INSTANCE_FLAG_MAX
 	};
 

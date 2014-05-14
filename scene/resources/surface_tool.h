@@ -49,12 +49,17 @@ public:
 			Vector<int> bones;
 			Vector<float> weights;
 
+			bool operator==(const Vertex& p_vertex) const;
+
 			Vertex() {  }
 	};
 
 
 private:
-	bool compare(const Vertex& p_a,const Vertex& p_b) const;
+
+	struct VertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
+	};
 
 	bool begun;
 	bool first;
@@ -64,6 +69,7 @@ private:
 	//arrays
 	List< Vertex > vertex_array;
 	List< int > index_array;
+	Map<int,bool> smooth_groups;
 
 	//memory
 	Color last_color;
@@ -92,13 +98,13 @@ public:
 	void add_uv2( const Vector2& p_uv);
 	void add_bones( const Vector<int>& p_indices);
 	void add_weights( const Vector<float>& p_weights);
+	void add_smooth_group(bool p_smooth);
 
 	void add_index( int p_index);
 
 	void index();
 	void deindex();
-	void generate_flat_normals();
-	void generate_smooth_normals();
+	void generate_normals();
 	void generate_tangents();
 
 	void add_to_format(int p_flags) { format|=p_flags; }

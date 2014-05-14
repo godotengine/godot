@@ -161,6 +161,9 @@ public:
 	virtual void body_set_continuous_collision_detection_mode(RID p_body,CCDMode p_mode);
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
+	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
+
 	virtual void body_set_user_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_user_mask(RID p_body, uint32_t p_mask) const;
 

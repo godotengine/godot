@@ -32,57 +32,56 @@
 #define EQ_VERTEX_DIST 0.00001
 
 
+bool SurfaceTool::Vertex::operator==(const Vertex& p_b) const {
 
-bool SurfaceTool::compare(const Vertex& p_a,const Vertex& p_b) const {
 
-	if (p_a.vertex.distance_to(p_b.vertex)>EQ_VERTEX_DIST)
+	if (vertex!=p_b.vertex)
 		return false;
 
-	if (format&Mesh::ARRAY_FORMAT_TEX_UV) {
+	if (uv!=p_b.uv)
+		return false;
 
-		if (p_a.uv.distance_to(p_b.uv)>EQ_VERTEX_DIST)
+	if (uv2!=p_b.uv2)
+		return false;
+
+	if (normal!=p_b.normal)
+		return false;
+
+	if (binormal!=p_b.binormal)
+		return false;
+
+	if (color!=p_b.color)
+		return false;
+
+	if (bones.size()!=p_b.bones.size())
+		return false;
+
+	for(int i=0;i<bones.size();i++) {
+		if (bones[i]!=p_b.bones[i])
 			return false;
 	}
 
-	if (format&Mesh::ARRAY_FORMAT_TEX_UV2) {
-
-		if (p_a.uv2.distance_to(p_b.uv2)>EQ_VERTEX_DIST)
+	for(int i=0;i<weights.size();i++) {
+		if (weights[i]!=p_b.weights[i])
 			return false;
 	}
-
-	if (format&Mesh::ARRAY_FORMAT_NORMAL) {
-		if (p_a.normal.distance_to(p_b.normal)>EQ_VERTEX_DIST)
-			return false;
-	}
-
-	if (format&Mesh::ARRAY_FORMAT_TANGENT) {
-		if (p_a.binormal.distance_to(p_b.binormal)>EQ_VERTEX_DIST)
-			return false;
-		if (p_a.tangent.distance_to(p_b.tangent)>EQ_VERTEX_DIST)
-			return false;
-	}
-
-	if (format&Mesh::ARRAY_FORMAT_COLOR) {
-		if (p_a.color!=p_b.color)
-			return false;
-	}
-
-	if (format&Mesh::ARRAY_FORMAT_BONES) {
-		for(int i=0;i<4;i++) {
-			if (Math::abs(p_a.bones[i]-p_b.bones[i])>CMP_EPSILON)
-				return false;
-		}
-	}
-
-	if (format&Mesh::ARRAY_FORMAT_WEIGHTS) {
-		for(int i=0;i<4;i++) {
-			if (Math::abs(p_a.weights[i]-p_b.weights[i])>CMP_EPSILON)
-				return false;
-		}
-	}
-
 
 	return true;
+}
+
+
+uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
+
+	uint32_t h = hash_djb2_buffer((const uint8_t*)&p_vtx.vertex,sizeof(real_t)*3);
+	h = hash_djb2_buffer((const uint8_t*)&p_vtx.normal,sizeof(real_t)*3,h);
+	h = hash_djb2_buffer((const uint8_t*)&p_vtx.binormal,sizeof(real_t)*3,h);
+	h = hash_djb2_buffer((const uint8_t*)&p_vtx.tangent,sizeof(real_t)*3,h);
+	h = hash_djb2_buffer((const uint8_t*)&p_vtx.uv,sizeof(real_t)*2,h);
+	h = hash_djb2_buffer((const uint8_t*)&p_vtx.uv2,sizeof(real_t)*2,h);
+	h = hash_djb2_buffer((const uint8_t*)&p_vtx.color,sizeof(real_t)*4,h);
+	h = hash_djb2_buffer((const uint8_t*)p_vtx.bones.ptr(),p_vtx.bones.size()*sizeof(int),h);
+	h = hash_djb2_buffer((const uint8_t*)p_vtx.weights.ptr(),p_vtx.weights.size()*sizeof(float),h);
+	return h;
 }
 
 void SurfaceTool::begin(Mesh::PrimitiveType p_primitive) {
@@ -184,6 +183,17 @@ void SurfaceTool::add_weights( const Vector<float>& p_weights) {
 	format|=Mesh::ARRAY_FORMAT_WEIGHTS;
 	last_weights=p_weights;
 
+}
+
+void SurfaceTool::add_smooth_group(bool p_smooth) {
+
+	ERR_FAIL_COND(!begun);
+	if (index_array.size()) {
+		smooth_groups[index_array.size()]=p_smooth;
+	} else {
+
+		smooth_groups[vertex_array.size()]=p_smooth;
+	}
 }
 
 
@@ -377,79 +387,53 @@ Ref<Mesh> SurfaceTool::commit(const Ref<Mesh>& p_existing) {
 
 void SurfaceTool::index() {
 
-#if 0
-	printf("indexing..\n");
-	ERR_FAIL_COND( format & Surface::ARRAY_FORMAT_INDEX ); // already indexed
+	if (index_array.size())
+		return; //already indexed
 
-	index_array.clear();
-	DVector< Vertex > indexed_vertex_array;
 
-	int vertex_array_len = vertex_array.size();
-	vertex_array.read_lock();
-	const Vertex*vertex_array_ptr = vertex_array.read();
+	HashMap<Vertex,int,VertexHasher> indices;
+	List<Vertex> new_vertices;
 
-	for (int i=0;i<vertex_array_len;i++) {
+	for(List< Vertex >::Element *E=vertex_array.front();E;E=E->next()) {
 
-		int index_pos=-1;
-
-		int indexed_vertex_array_len=indexed_vertex_array.size();
-
-		if (indexed_vertex_array_len) {
-
-			indexed_vertex_array.read_lock();
-			const Vertex* indexed_vertex_array_ptr=indexed_vertex_array.read();
-
-			for (int j=0;j<indexed_vertex_array_len;j++) {
-
-				if (vertex_array_ptr[i].same_as(indexed_vertex_array_ptr[j])) {
-
-					index_pos=j;
-					break;
-				}
-			}
-
-			indexed_vertex_array.read_unlock();
-		}
-
-		if (index_pos==-1) {
-
-			index_pos=indexed_vertex_array.size();
-			indexed_vertex_array.push_back(vertex_array_ptr[i]);
+		int *idxptr=indices.getptr(E->get());
+		int idx;
+		if (!idxptr) {
+			idx=indices.size();
+			new_vertices.push_back(E->get());
+			indices[E->get()]=idx;
 		} else {
-
-			indexed_vertex_array.write_lock();
-			indexed_vertex_array.write()[index_pos].normal+=vertex_array_ptr[i].normal;
-			indexed_vertex_array.write()[index_pos].binormal+=vertex_array_ptr[i].binormal;
-			indexed_vertex_array.write()[index_pos].tangent+=vertex_array_ptr[i].tangent;
-			indexed_vertex_array.write_unlock();
+			idx=*idxptr;
 		}
 
-		index_array.push_back(index_pos);
+		index_array.push_back(idx);
+
 	}
 
-	int idxvertsize=indexed_vertex_array.size();
-	indexed_vertex_array.write_lock();
-	Vertex* idxvert=indexed_vertex_array.write();
-	for (int i=0;i<idxvertsize;i++) {
+	vertex_array.clear();
+	vertex_array=new_vertices;
 
-		idxvert[i].normal.normalize();
-		idxvert[i].tangent.normalize();
-		idxvert[i].binormal.normalize();
-	}
-	indexed_vertex_array.write_unlock();
-
-	vertex_array.read_unlock();
-
-	format|=Surface::ARRAY_FORMAT_INDEX;
-	vertex_array=indexed_vertex_array;
-
-	printf("indexing.. end\n");
-#endif
+	format|=Mesh::ARRAY_FORMAT_INDEX;
 }
 
 void SurfaceTool::deindex() {
 
+	if (index_array.size()==0)
+		return; //nothing to deindex
+	Vector< Vertex > varr;
+	varr.resize(vertex_array.size());
+	int idx=0;
+	for (List< Vertex >::Element *E=vertex_array.front();E;E=E->next()) {
 
+		varr[idx++]=E->get();
+	}
+	vertex_array.clear();
+	for (List<int>::Element *E=index_array.front();E;E=E->next()) {
+
+		ERR_FAIL_INDEX(E->get(),varr.size());
+		vertex_array.push_back(varr[E->get()]);
+	}
+	format&=~Mesh::ARRAY_FORMAT_INDEX;
 }
 
 
@@ -631,80 +615,250 @@ void SurfaceTool::append_from(const Ref<Mesh>& p_existing, int p_surface,const T
 void SurfaceTool::generate_tangents() {
 
 	ERR_FAIL_COND(!(format&Mesh::ARRAY_FORMAT_TEX_UV));
-
-#if 0
-
-	int len=vertex_array.size();
-	vertex_array.write_lock();
-	Vertex *vertexptr=vertex_array.write();
-
-	for (int i=0;i<len/3;i++) {
+	ERR_FAIL_COND(!(format&Mesh::ARRAY_FORMAT_NORMAL));
 
 
-		Vector3 v1 = vertexptr[i*3+0].vertex;
-		Vector3 v2 = vertexptr[i*3+1].vertex;
-		Vector3 v3 = vertexptr[i*3+2].vertex;
+	if (index_array.size()) {
 
-		Vector3 w1 = vertexptr[i*3+0].uv[0];
-		Vector3 w2 = vertexptr[i*3+1].uv[0];
-		Vector3 w3 = vertexptr[i*3+2].uv[0];
-
-
-		float x1 = v2.x - v1.x;
-		float x2 = v3.x - v1.x;
-		float y1 = v2.y - v1.y;
-		float y2 = v3.y - v1.y;
-		float z1 = v2.z - v1.z;
-		float z2 = v3.z - v1.z;
-
-		float s1 = w2.x - w1.x;
-		float s2 = w3.x - w1.x;
-		float t1 = w2.y - w1.y;
-		float t2 = w3.y - w1.y;
-
-		float r  = (s1 * t2 - s2 * t1);
-
-		Vector3 binormal,tangent;
-
-		if (r==0) {
-			binormal=Vector3(0,0,0);
-			tangent=Vector3(0,0,0);
-		} else {
-			tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-			(t2 * z1 - t1 * z2) * r);
-			binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-			(s1 * z2 - s2 * z1) * r);
+		Vector<List<Vertex>::Element*> vtx;
+		vtx.resize(vertex_array.size());
+		int idx=0;
+		for (List<Vertex>::Element *E=vertex_array.front();E;E=E->next()) {
+			vtx[idx++]=E;
+			E->get().binormal=Vector3();
+			E->get().tangent=Vector3();
 		}
 
-		tangent.normalize();
-		binormal.normalize();
-		Vector3 normal=Plane( v1, v2, v3 ).normal;
+		for (List<int>::Element *E=index_array.front();E;) {
 
-		Vector3 tangentp = tangent - normal * normal.dot( tangent );
-		Vector3 binormalp = binormal - normal * (normal.dot(binormal)) - tangent * (tangent.dot(binormal));
+			int i[3];
+			i[0]=E->get();
+			E=E->next();
+			ERR_FAIL_COND(!E);
+			i[1]=E->get();
+			E=E->next();
+			ERR_FAIL_COND(!E);
+			i[2]=E->get();
+			E=E->next();
+			ERR_FAIL_COND(!E);
 
-		tangentp.normalize();
-		binormalp.normalize();
+
+			Vector3 v1 = vtx[ i[0] ]->get().vertex;
+			Vector3 v2 = vtx[ i[1] ]->get().vertex;
+			Vector3 v3 = vtx[ i[2] ]->get().vertex;
+
+			Vector2 w1 = vtx[ i[0] ]->get().uv;
+			Vector2 w2 = vtx[ i[1] ]->get().uv;
+			Vector2 w3 = vtx[ i[2] ]->get().uv;
 
 
-		for (int j=0;j<3;j++) {
-			vertexptr[i*3+j].normal=normal;
-			vertexptr[i*3+j].binormal=binormalp;
-			vertexptr[i*3+j].tangent=tangentp;
+			float x1 = v2.x - v1.x;
+			float x2 = v3.x - v1.x;
+			float y1 = v2.y - v1.y;
+			float y2 = v3.y - v1.y;
+			float z1 = v2.z - v1.z;
+			float z2 = v3.z - v1.z;
+
+			float s1 = w2.x - w1.x;
+			float s2 = w3.x - w1.x;
+			float t1 = w2.y - w1.y;
+			float t2 = w3.y - w1.y;
+
+			float r  = (s1 * t2 - s2 * t1);
+
+			Vector3 binormal,tangent;
+
+			if (r==0) {
+				binormal=Vector3(0,0,0);
+				tangent=Vector3(0,0,0);
+			} else {
+				tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+				(t2 * z1 - t1 * z2) * r);
+				binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+				(s1 * z2 - s2 * z1) * r);
+			}
+
+			tangent.normalize();
+			binormal.normalize();
+			Vector3 normal=Plane( v1, v2, v3 ).normal;
+
+			Vector3 tangentp = tangent - normal * normal.dot( tangent );
+			Vector3 binormalp = binormal - normal * (normal.dot(binormal)) - tangent * (tangent.dot(binormal));
+
+			tangentp.normalize();
+			binormalp.normalize();
+
+
+			for (int j=0;j<3;j++) {
+				vtx[ i[j] ]->get().binormal+=binormalp;
+				vtx[ i[j] ]->get().tangent+=tangentp;
+
+			}
+		}
+
+		for (List<Vertex>::Element *E=vertex_array.front();E;E=E->next()) {
+			E->get().binormal.normalize();
+			E->get().tangent.normalize();
+		}
+
+
+	} else {
+
+
+		for (List<Vertex>::Element *E=vertex_array.front();E;) {
+
+			List< Vertex >::Element *v[3];
+			v[0]=E;
+			v[1]=v[0]->next();
+			ERR_FAIL_COND(!v[1]);
+			v[2]=v[1]->next();
+			ERR_FAIL_COND(!v[2]);
+			E=v[2]->next();
+
+			Vector3 v1 = v[0]->get().vertex;
+			Vector3 v2 = v[1]->get().vertex;
+			Vector3 v3 = v[2]->get().vertex;
+
+			Vector2 w1 = v[0]->get().uv;
+			Vector2 w2 = v[1]->get().uv;
+			Vector2 w3 = v[2]->get().uv;
+
+
+			float x1 = v2.x - v1.x;
+			float x2 = v3.x - v1.x;
+			float y1 = v2.y - v1.y;
+			float y2 = v3.y - v1.y;
+			float z1 = v2.z - v1.z;
+			float z2 = v3.z - v1.z;
+
+			float s1 = w2.x - w1.x;
+			float s2 = w3.x - w1.x;
+			float t1 = w2.y - w1.y;
+			float t2 = w3.y - w1.y;
+
+			float r  = (s1 * t2 - s2 * t1);
+
+			Vector3 binormal,tangent;
+
+			if (r==0) {
+				binormal=Vector3(0,0,0);
+				tangent=Vector3(0,0,0);
+			} else {
+				tangent = Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+				(t2 * z1 - t1 * z2) * r);
+				binormal = Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+				(s1 * z2 - s2 * z1) * r);
+			}
+
+			tangent.normalize();
+			binormal.normalize();
+			Vector3 normal=Plane( v1, v2, v3 ).normal;
+
+			Vector3 tangentp = tangent - normal * normal.dot( tangent );
+			Vector3 binormalp = binormal - normal * (normal.dot(binormal)) - tangent * (tangent.dot(binormal));
+
+			tangentp.normalize();
+			binormalp.normalize();
+
+
+			for (int j=0;j<3;j++) {
+				v[j]->get().binormal=binormalp;
+				v[j]->get().tangent=tangentp;
+
+			}
 		}
 	}
 
-	format|=Surface::ARRAY_FORMAT_TANGENT;
-	printf("adding tangents to the format\n");
-
-	vertex_array.write_unlock();
-#endif
-}
-
-void SurfaceTool::generate_flat_normals() {
+	format|=Mesh::ARRAY_FORMAT_TANGENT;
 
 }
-void SurfaceTool::generate_smooth_normals() {
+
+void SurfaceTool::generate_normals() {
+
+	ERR_FAIL_COND(primitive!=Mesh::PRIMITIVE_TRIANGLES);
+
+	bool was_indexed=index_array.size();
+
+	deindex();
+
+	HashMap<Vertex,Vector3,VertexHasher> vertex_hash;
+
+	int count=0;
+	bool smooth=false;
+	if (smooth_groups.has(0))
+		smooth=smooth_groups[0];
+
+	print_line("SMOOTH BEGIN? "+itos(smooth));
+
+	List< Vertex >::Element *B=vertex_array.front();
+	for(List< Vertex >::Element *E=B;E;) {
+
+		List< Vertex >::Element *v[3];
+		v[0]=E;
+		v[1]=v[0]->next();
+		ERR_FAIL_COND(!v[1]);
+		v[2]=v[1]->next();
+		ERR_FAIL_COND(!v[2]);
+		E=v[2]->next();
+
+		Vector3 normal = Plane(v[0]->get().vertex,v[1]->get().vertex,v[2]->get().vertex).normal;
+
+		if (smooth) {
+
+			for(int i=0;i<3;i++) {
+
+				Vector3 *lv=vertex_hash.getptr(v[i]->get());
+				if (!lv) {
+					vertex_hash.set(v[i]->get(),normal);
+				} else {
+					(*lv)+=normal;
+				}
+			}
+		} else {
+
+			for(int i=0;i<3;i++) {
+
+				v[i]->get().normal=normal;
+
+			}
+		}
+		count+=3;
+
+		if (smooth_groups.has(count) || !E) {
+
+			if (vertex_hash.size()) {
+
+				while (B!=E) {
+
+
+					Vector3* lv=vertex_hash.getptr(B->get());
+					if (lv) {
+						B->get().normal=lv->normalized();
+					}
+
+					B=B->next();
+				}
+
+			} else {
+				B=E;
+			}
+
+			vertex_hash.clear();
+			if (E) {
+				smooth=smooth_groups[count];
+				print_line("SMOOTH AT "+itos(count)+": "+itos(smooth));
+
+			}
+		}
+
+	}
+
+	format|=Mesh::ARRAY_FORMAT_NORMAL;
+
+	if (was_indexed) {
+		index();
+		smooth_groups.clear();
+	}
 
 }
 
@@ -722,6 +876,7 @@ void SurfaceTool::clear() {
 	last_weights.clear();
 	index_array.clear();
 	vertex_array.clear();
+	smooth_groups.clear();
 
 }
 
@@ -736,12 +891,12 @@ void SurfaceTool::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_uv2","uv2"),&SurfaceTool::add_uv2);
 	ObjectTypeDB::bind_method(_MD("add_bones","bones"),&SurfaceTool::add_bones);
 	ObjectTypeDB::bind_method(_MD("add_weights","weights"),&SurfaceTool::add_weights);
+	ObjectTypeDB::bind_method(_MD("add_smooth_group","smooth"),&SurfaceTool::add_smooth_group);
 	ObjectTypeDB::bind_method(_MD("set_material","material:Material"),&SurfaceTool::set_material);
 	ObjectTypeDB::bind_method(_MD("index"),&SurfaceTool::index);
 	ObjectTypeDB::bind_method(_MD("deindex"),&SurfaceTool::deindex);
-	ObjectTypeDB::bind_method(_MD("generate_flat_normals"),&SurfaceTool::generate_flat_normals);
-	ObjectTypeDB::bind_method(_MD("generate_smooth_normals"),&SurfaceTool::generate_smooth_normals);
-	ObjectTypeDB::bind_method(_MD("generate_tangents"),&SurfaceTool::generate_tangents);
+	///ObjectTypeDB::bind_method(_MD("generate_flat_normals"),&SurfaceTool::generate_flat_normals);
+	ObjectTypeDB::bind_method(_MD("generate_normals"),&SurfaceTool::generate_normals);
 	ObjectTypeDB::bind_method(_MD("commit:Mesh","existing:Mesh"),&SurfaceTool::commit,DEFVAL( RefPtr() ));
 	ObjectTypeDB::bind_method(_MD("clear"),&SurfaceTool::clear);
 

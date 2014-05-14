@@ -46,8 +46,13 @@ RID SampleManagerMallocSW::sample_create(AS::SampleFormat p_format, bool p_stere
 		datalen*=2;
 	if (p_format==AS::SAMPLE_FORMAT_PCM16)
 		datalen*=2;
-	else if (p_format==AS::SAMPLE_FORMAT_IMA_ADPCM)
+	else if (p_format==AS::SAMPLE_FORMAT_IMA_ADPCM) {
+		if (datalen&1) {
+			datalen++;
+		}
 		datalen/=2;
+		datalen+=4;
+	}
 #define SAMPLE_EXTRA 16
 
 	s->data = memalloc(datalen+SAMPLE_EXTRA); //help the interpolator by allocating a little more..
@@ -128,11 +133,13 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 	int buff_size=p_buffer.size();
 	ERR_FAIL_COND(buff_size==0);
 
+
 	ERR_EXPLAIN("Sample buffer size does not match sample size.");
 	ERR_FAIL_COND(s->length_bytes!=buff_size);
 	DVector<uint8_t>::Read buffer_r=p_buffer.read();
 	const uint8_t *src = buffer_r.ptr();
 	uint8_t *dst = (uint8_t*)s->data;
+	print_line("set data: "+itos(s->length_bytes));
 
 	for(int i=0;i<s->length_bytes;i++) {
 

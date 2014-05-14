@@ -234,7 +234,7 @@ bool BodyPair2DSW::setup(float p_step) {
 
 
 	//cannot collide
-	if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC)) {
+	if ((A->get_layer_mask()&B->get_layer_mask())==0 || A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC && B->get_mode()<=Physics2DServer::BODY_MODE_KINEMATIC)) {
 		collided=false;
 		return false;
 	}
@@ -341,6 +341,11 @@ bool BodyPair2DSW::setup(float p_step) {
 				Vector2 crA( -A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x );
 				B->add_contact(global_B,c.normal,depth,shape_B,global_A,shape_A,A->get_instance_id(),A->get_self(),crA+A->get_linear_velocity());
 			}
+		}
+
+		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B)) {
+			c.active=false;
+			collided=false;
 		}
 
 		// Precompute normal mass, tangent mass, and bias.
