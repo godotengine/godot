@@ -2153,6 +2153,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"and",
 		"or",
 		"export",
+		"assert",
 	0};
 
 

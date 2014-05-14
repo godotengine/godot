@@ -54,9 +54,9 @@ static inline uint32_t hash_djb2(const char *p_cstr) {
 	return hash;
 }
 
-static inline uint32_t hash_djb2_buffer(uint8_t *p_buff, int p_len) {
+static inline uint32_t hash_djb2_buffer(const uint8_t *p_buff, int p_len,uint32_t p_prev=5381) {
 
-	uint32_t hash = 5381;
+	uint32_t hash = p_prev;
 
 	for(int i=0;i<p_len;i++)
 		hash = ((hash << 5) + hash) + p_buff[i]; /* hash * 33 + c */

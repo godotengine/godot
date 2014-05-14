@@ -315,6 +315,9 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_apply_impulse","body","pos","impulse"),&PhysicsServer::body_apply_impulse);
 	ObjectTypeDB::bind_method(_MD("body_set_axis_velocity","body","axis_velocity"),&PhysicsServer::body_set_axis_velocity);
 
+	ObjectTypeDB::bind_method(_MD("body_set_axis_lock","body","axis"),&PhysicsServer::body_set_axis_lock);
+	ObjectTypeDB::bind_method(_MD("body_get_axis_lock","body"),&PhysicsServer::body_set_axis_lock);
+
 	ObjectTypeDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&PhysicsServer::body_add_collision_exception);
 	ObjectTypeDB::bind_method(_MD("body_remove_collision_exception","body","excepted_body"),&PhysicsServer::body_remove_collision_exception);
 //	virtual void body_get_collision_exceptions(RID p_body, List<RID> *p_exceptions)=0;

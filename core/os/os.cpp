@@ -225,7 +225,7 @@ void OS::print_all_resources(String p_to_file) {
 void OS::print_resources_in_use(bool p_short) {
 
 
-	//ResourceCache::dump(NULL,p_short);
+	ResourceCache::dump(NULL,p_short);
 }
 
 void OS::dump_resources_to_file(const char* p_file) {
@@ -438,7 +438,7 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
-Error OS::native_video_play(String p_path) {
+Error OS::native_video_play(String p_path, float p_volume) {
 
 	return FAILED;
 };

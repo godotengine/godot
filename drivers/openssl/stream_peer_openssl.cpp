@@ -362,6 +362,7 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 
 	print_line("CONNECTION RESULT: "+itos(result));
 	if (result<1) {
+		ERR_print_errors_fp(stdout);
 		_print_error(result);
 	}
 

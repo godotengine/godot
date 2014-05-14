@@ -208,7 +208,7 @@ public:
 	void process_event(InputEvent p_event);
 	void init_video_mode(int p_video_width,int p_video_height);
 
-	virtual Error native_video_play(String p_path);
+	virtual Error native_video_play(String p_path, float p_volume);
     virtual bool native_video_is_playing();
     virtual void native_video_pause();
     virtual void native_video_stop();
