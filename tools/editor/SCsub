@@ -51,6 +51,7 @@ if (env["tools"]=="yes"):
 	
 	env.add_source_files(env.tool_sources,"*.cpp")
 	
+	Export('env')
 	SConscript('icons/SCsub');	
 	SConscript('plugins/SCsub');
 	SConscript('fileserver/SCsub');
