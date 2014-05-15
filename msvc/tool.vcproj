@@ -733,6 +733,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\tools\editor\io_plugins\editor_mesh_import_plugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\io_plugins\editor_mesh_import_plugin.h"
+						>
+					</File>
+					<File
 						RelativePath="..\tools\editor\io_plugins\editor_sample_import_plugin.cpp"
 						>
 					</File>
@@ -790,6 +798,14 @@
 					</File>
 					<File
 						RelativePath="..\tools\editor\plugins\animation_tree_editor_plugin.h"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\plugins\baked_light_editor_plugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\plugins\baked_light_editor_plugin.h"
 						>
 					</File>
 					<File

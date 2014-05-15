@@ -454,6 +454,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\3d\baked_light.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\baked_light.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\3d\body_shape.cpp"
 					>
 				</File>
