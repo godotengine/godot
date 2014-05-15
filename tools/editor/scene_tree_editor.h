@@ -53,6 +53,9 @@ class SceneTreeEditor : public Control {
 
 	Tree *tree;
 	Node *selected;
+	Vector<Node *> filtered;
+	int current_filtered;
+	bool filtering_tree;
 
 	AcceptDialog *error;
 
@@ -98,6 +101,8 @@ class SceneTreeEditor : public Control {
 
 	void _selection_changed();
 	Node *get_scene_node();
+
+	void _filter_node(Node *p_node, const String &p_newtext);
 public:
 
 
@@ -111,6 +116,10 @@ public:
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename=p_can_rename; }
 	void set_editor_selection(EditorSelection *p_selection);
+
+	void focus_selected();
+	void filter_tree(const String& p_newtext);
+	void select_filtered(bool p_next=true);
 
 	void update_tree() { _update_tree(); }
 

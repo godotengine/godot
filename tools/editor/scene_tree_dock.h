@@ -64,7 +64,11 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_REPARENT,
 		TOOL_FOCUS,
 		TOOL_ERASE,
-		TOOL_BUTTON_MAX
+		TOOL_BUTTON_MAX,
+
+		TOOL_CLEAR_FILTER,
+		TOOL_FILTER_PREV,
+		TOOL_FILTER_NEXT,
 	};
 
 
@@ -73,7 +77,11 @@ class SceneTreeDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 
 	ToolButton *tool_buttons[TOOL_BUTTON_MAX];
-	SceneTreeEditor *scene_tree;
+	SceneTreeEditor *scene_tree;	
+	LineEdit *scene_tree_filter;
+	Button *clear_filter_button;
+	Button *filter_prev_button;
+	Button *filter_next_button;
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
@@ -116,8 +124,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _import_subscene();
 
-
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
+
+	void _tree_filter_text_changed(const String& p_newtext);
 
 protected:
 

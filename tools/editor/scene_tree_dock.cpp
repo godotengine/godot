@@ -395,11 +395,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_FOCUS: {
 
-			Node *selected = scene_tree->get_selected();
-			if (!selected)
-				break;
-			scene_tree->set_selected(NULL,false);
-			scene_tree->set_selected(selected,false); // de-select and re-select node to make sure ensure_cursor_is_visible() get invoked
+			scene_tree->focus_selected();
 
 		} break;
 		case TOOL_ERASE: {
@@ -424,7 +420,18 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 
 		} break;
-
+		case TOOL_CLEAR_FILTER: {
+			scene_tree_filter->clear();
+			scene_tree->filter_tree("");
+		}break;
+		case TOOL_FILTER_PREV: {
+			if (scene_tree_filter->get_text().strip_edges()!="")
+				scene_tree->select_filtered(false);
+		}break;
+		case TOOL_FILTER_NEXT: {
+			if (scene_tree_filter->get_text().strip_edges()!="")
+				scene_tree->select_filtered();
+		}break;
 	}
 
 }
@@ -447,7 +454,7 @@ void SceneTreeDock::_notification(int p_what) {
 				"Duplicate",
 				"Reparent",
 				"Focus",
-				"Del",
+				"Del"
 			};
 
 			for(int i=0;i<TOOL_BUTTON_MAX;i++)
@@ -1139,6 +1146,10 @@ void SceneTreeDock::_import_subscene() {
 */
 }
 
+void SceneTreeDock::_tree_filter_text_changed(const String &p_newtext) {
+	scene_tree->filter_tree(p_newtext.strip_edges());
+}
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected);
@@ -1156,6 +1167,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
+	ObjectTypeDB::bind_method(_MD("_tree_filter_text_changed"), &SceneTreeDock::_tree_filter_text_changed);
 }
 
 
@@ -1212,6 +1224,29 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	tb->set_tooltip("Edit/Create the Node Script");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_SCRIPT]=tb;
+
+	HBoxContainer *tree_filter_hbc = memnew( HBoxContainer );
+	vbc->add_child(tree_filter_hbc);
+
+	filter_prev_button = memnew( Button );
+	filter_prev_button->set_text("<");
+	filter_prev_button->connect("pressed",this,"_tool_selected",make_binds(TOOL_FILTER_PREV,false));
+	tree_filter_hbc->add_child(filter_prev_button);
+
+	filter_next_button = memnew( Button );
+	filter_next_button->set_text(">");
+	filter_next_button->connect("pressed",this,"_tool_selected",make_binds(TOOL_FILTER_NEXT,false));
+	tree_filter_hbc->add_child(filter_next_button);
+
+	scene_tree_filter = memnew( LineEdit );
+	scene_tree_filter->connect("text_changed",this,"_tree_filter_text_changed");
+	scene_tree_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	tree_filter_hbc->add_child(scene_tree_filter);
+
+	clear_filter_button = memnew( Button );
+	clear_filter_button->set_text("clear");
+	clear_filter_button->connect("pressed",this,"_tool_selected",make_binds(TOOL_CLEAR_FILTER,false));
+	tree_filter_hbc->add_child(clear_filter_button);
 
 
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));
