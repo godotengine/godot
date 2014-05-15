@@ -907,8 +907,8 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 		}
 	}
 	
-	c.current.pos=p_from_end ? c.current.from->animation->get_length() : 0;
 	c.current.from=&animation_set[name];
+	c.current.pos=p_from_end ? c.current.from->animation->get_length() : 0;
 	c.current.speed_scale=p_custom_scale;
 	c.assigned=p_name;
 

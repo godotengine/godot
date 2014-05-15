@@ -165,6 +165,7 @@ static int frame_count = 0;
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
 
 	printf("****************** did receive memory warning!\n");
+	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
 };
 
 - (void)applicationDidFinishLaunching:(UIApplication*)application {

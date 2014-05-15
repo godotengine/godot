@@ -31,9 +31,9 @@
 #include "physics_2d_server_sw.h"
 
 
-_FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_object, uint32_t p_user_mask, uint32_t p_type_mask) {
+_FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_object, uint32_t p_layer_mask, uint32_t p_type_mask) {
 
-	if (p_user_mask && !(p_object->get_user_mask()&p_user_mask))
+	if ((p_object->get_layer_mask()&p_layer_mask)==0)
 		return false;
 
 	if (p_object->get_type()==CollisionObject2DSW::TYPE_AREA && !(p_type_mask&Physics2DDirectSpaceState::TYPE_MASK_AREA))
@@ -45,7 +45,7 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 
 }
 
-bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude,uint32_t p_user_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 
@@ -70,7 +70,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vec
 
 	for(int i=0;i<amount;i++) {
 
-		if (!_match_object_type_query(space->intersection_query_results[i],p_user_mask,p_object_type_mask))
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -135,7 +135,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vec
 }
 
 
-int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_user_mask,uint32_t p_object_type_mask) {
+int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 	if (p_result_max<=0)
 		return 0;
@@ -153,7 +153,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matri
 
 	for(int i=0;i<amount;i++) {
 
-		if (!_match_object_type_query(space->intersection_query_results[i],p_user_mask,p_object_type_mask))
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -182,7 +182,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matri
 
 
 
-bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_user_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 
@@ -204,7 +204,7 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 	for(int i=0;i<amount;i++) {
 
 
-		if (!_match_object_type_query(space->intersection_query_results[i],p_user_mask,p_object_type_mask))
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -267,7 +267,7 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 }
 
 
-bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,float p_margin,Vector2 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_user_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,float p_margin,Vector2 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 	if (p_result_max<=0)
@@ -301,7 +301,7 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Matrix32& p_s
 
 	for(int i=0;i<amount;i++) {
 
-		if (!_match_object_type_query(space->intersection_query_results[i],p_user_mask,p_object_type_mask))
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
 		const CollisionObject2DSW *col_obj=space->intersection_query_results[i];
@@ -353,7 +353,7 @@ static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,v
 }
 
 
-bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_user_mask,uint32_t p_object_type_mask) {
+bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
 	Shape2DSW *shape = static_cast<Physics2DServerSW*>(Physics2DServer::get_singleton())->shape_owner.get(p_shape);
@@ -373,7 +373,7 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Matrix32& p_shape
 	for(int i=0;i<amount;i++) {
 
 
-		if (!_match_object_type_query(space->intersection_query_results[i],p_user_mask,p_object_type_mask))
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
 		const CollisionObject2DSW *col_obj=space->intersection_query_results[i];

@@ -92,10 +92,17 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 		return true;
 	}
 
-	if (sname.begins_with("materials/")) {
+	if (sname.begins_with("surface_")) {
 
-		int idx=sname.get_slice("/",1).to_int()-1;
-		surface_set_material(idx,p_value);
+		int sl=sname.find("/");
+		if (sl==-1)
+			return false;
+		int idx=sname.substr(8,sl-8).to_int()-1;
+		String what = sname.get_slice("/",1);
+		if (what=="material")
+			surface_set_material(idx,p_value);
+		else if (what=="name")
+			surface_set_name(idx,p_value);
 		return true;
 	}
 
@@ -166,10 +173,17 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 
 		r_ret = get_morph_target_mode();
 		return true;
-	} else if (sname.begins_with("materials/")) {
+	} else if (sname.begins_with("surface_")) {
 
-		int idx=sname.get_slice("/",1).to_int()-1;
-		r_ret=surface_get_material(idx);
+		int sl=sname.find("/");
+		if (sl==-1)
+			return false;
+		int idx=sname.substr(8,sl-8).to_int()-1;
+		String what = sname.get_slice("/",1);
+		if (what=="material")
+			r_ret=surface_get_material(idx);
+		else if (what=="name")
+			r_ret=surface_get_name(idx);
 		return true;
 	} else if (sname=="custom_aabb/custom_aabb") {
 
@@ -210,7 +224,8 @@ void Mesh::_get_property_list( List<PropertyInfo> *p_list) const {
 	for (int i=0;i<surfaces.size();i++) {
 		
 		p_list->push_back( PropertyInfo( Variant::DICTIONARY,"surfaces/"+itos(i), PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR ) );
-		p_list->push_back( PropertyInfo( Variant::OBJECT,"materials/"+itos(i+1), PROPERTY_HINT_RESOURCE_TYPE,"Material",PROPERTY_USAGE_EDITOR ) );
+		p_list->push_back( PropertyInfo( Variant::STRING,"surface_"+itos(i+1)+"/name", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR ) );
+		p_list->push_back( PropertyInfo( Variant::OBJECT,"surface_"+itos(i+1)+"/material", PROPERTY_HINT_RESOURCE_TYPE,"Material",PROPERTY_USAGE_EDITOR ) );
 	}
 
 	p_list->push_back( PropertyInfo( Variant::_AABB,"custom_aabb/custom_aabb" ) );

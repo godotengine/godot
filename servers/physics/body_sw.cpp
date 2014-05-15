@@ -425,6 +425,27 @@ void BodySW::integrate_velocities(real_t p_step) {
 		return;
 	}
 
+
+
+	//apply axis lock
+	if (axis_lock!=PhysicsServer::BODY_AXIS_LOCK_DISABLED) {
+
+
+		int axis=axis_lock-1;
+		for(int i=0;i<3;i++) {
+			if (i==axis) {
+				linear_velocity[i]=0;
+				biased_linear_velocity[i]=0;
+			} else {
+
+				angular_velocity[i]=0;
+				biased_angular_velocity[i]=0;
+			}
+		}
+
+	}
+
+
 	Vector3 total_angular_velocity = angular_velocity+biased_angular_velocity;
 
 
@@ -441,7 +462,11 @@ void BodySW::integrate_velocities(real_t p_step) {
 	}
 
 	Vector3 total_linear_velocity=linear_velocity+biased_linear_velocity;
-
+	/*for(int i=0;i<3;i++) {
+		if (axis_lock&(1<<i)) {
+			transform.origin[i]=0.0;
+		}
+	}*/
 
 	transform.origin+=total_linear_velocity * p_step;
 
@@ -614,6 +639,7 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	continuous_cd=false;
 	can_sleep=false;
 	fi_callback=NULL;
+	axis_lock=PhysicsServer::BODY_AXIS_LOCK_DISABLED;
 
 }
 

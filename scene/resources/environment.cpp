@@ -101,6 +101,8 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("fx_set_param","param","value"),&Environment::fx_set_param);
 	ObjectTypeDB::bind_method(_MD("fx_get_param","param"),&Environment::fx_get_param);
 
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"fxaa/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_FXAA);
+
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Keep,Default Color,Color,Texture,Cubemap,Texture RGBE,Cubemap RGBE"),_SCS("set_background"),_SCS("get_background"));
 	ADD_PROPERTYI( PropertyInfo(Variant::COLOR,"background/color"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_COLOR);
 	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_TEXTURE);
@@ -181,6 +183,7 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( BG_PARAM_MAX );
 
 
+	BIND_CONSTANT( FX_FXAA );
 	BIND_CONSTANT( FX_GLOW );
 	BIND_CONSTANT( FX_DOF_BLUR );
 	BIND_CONSTANT( FX_HDR );

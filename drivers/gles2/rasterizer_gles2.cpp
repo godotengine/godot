@@ -982,7 +982,11 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 
 	Texture *texture = texture_owner.get( p_texture );
 	ERR_FAIL_COND(!texture);
-	ERR_FAIL_COND(texture->render_target);
+	if (texture->render_target) {
+
+		p_flags&=VS::TEXTURE_FLAG_FILTER;//can change only filter
+	}
+
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
@@ -5219,6 +5223,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 
 
+	bool stores_glow = !shadow && (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) && !p_alpha_pass;
 
 	bool prev_blend=false;
 	glDisable(GL_BLEND);
@@ -5239,7 +5244,6 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		if (!shadow) {
 
 			if (texscreen_used && !texscreen_copied && material->shader_cache && material->shader_cache->valid && material->shader_cache->has_texscreen) {
-
 				texscreen_copied=true;
 				_copy_to_texscreen();
 
@@ -5286,10 +5290,14 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			if (!*e->additive_ptr) {
 
 				additive=false;
-				*e->additive_ptr=true;
+				*e->additive_ptr=true;				
 			} else {
 				additive=true;
 			}
+
+			if (stores_glow)
+				material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,!additive);
+
 
 			bool desired_blend=false;
 			VS::MaterialBlendMode desired_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
@@ -5933,7 +5941,7 @@ void RasterizerGLES2::end_scene() {
 	glDisable(GL_BLEND);
 	current_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 
-	material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
+	//material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
 	opaque_render_list.sort_mat_light_type_flags();
 	_render_list_forward(&opaque_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting);
 
@@ -5989,12 +5997,15 @@ void RasterizerGLES2::end_scene() {
 
 		glBindFramebuffer(GL_FRAMEBUFFER, current_rt?current_rt->fbo:base_framebuffer);
 
+		Size2 size;
 		if (current_rt) {
 			glBindFramebuffer(GL_FRAMEBUFFER, current_rt->fbo);
 			glViewport( 0,0,viewport.width,viewport.height);
+			size=Size2(viewport.width,viewport.height);
 		} else {
 			glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
 			glViewport( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height );
+			size=Size2(viewport.width,viewport.height);
 		}
 
 		//time to copy!!!
@@ -6003,6 +6014,7 @@ void RasterizerGLES2::end_scene() {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,current_env && current_env->fx_enabled[VS::ENV_FX_HDR]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,true);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_FXAA,current_env && current_env->fx_enabled[VS::ENV_FX_FXAA]);
 
 		copy_shader.bind();
 		//copy_shader.set_uniform(CopyShaderGLES2::SOURCE,0);
@@ -6023,6 +6035,9 @@ void RasterizerGLES2::end_scene() {
 			copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_EXPOSURE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]));
 
 		}
+
+		if (current_env && current_env->fx_enabled[VS::ENV_FX_FXAA])
+			copy_shader.set_uniform(CopyShaderGLES2::PIXEL_SIZE,Size2(1.0/size.x,1.0/size.y));
 
 
 		if (current_env && current_env->fx_enabled[VS::ENV_FX_BCS]) {
@@ -6047,6 +6062,7 @@ void RasterizerGLES2::end_scene() {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_FXAA,false);
 
 		material_shader.set_conditional(MaterialShaderGLES2::USE_HDR,false);
 

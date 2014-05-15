@@ -2640,7 +2640,7 @@ String String::right(int p_pos) const {
 	if (p_pos<0)
 		return "";
 
-	return substr(p_pos+1,(length()-p_pos)-1);
+	return substr(p_pos,(length()-p_pos));
 }
 
 CharType String::ord_at(int p_idx) const {

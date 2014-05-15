@@ -35,7 +35,7 @@
 #define NO_REVERB
 #endif
 
-template<class Depth,bool is_stereo,bool use_filter,bool use_fx,AudioMixerSW::InterpolationType type,AudioMixerSW::MixChannels mix_mode>
+template<class Depth,bool is_stereo,bool is_ima_adpcm,bool use_filter,bool use_fx,AudioMixerSW::InterpolationType type,AudioMixerSW::MixChannels mix_mode>
 void AudioMixerSW::do_resample(const Depth* p_src, int32_t *p_dst, ResamplerState *p_state) {
 
 	// this function will be compiled branchless by any decent compiler
@@ -48,37 +48,110 @@ void AudioMixerSW::do_resample(const Depth* p_src, int32_t *p_dst, ResamplerStat
 		if (is_stereo)
 			pos<<=1;
 
-		final=p_src[pos];
-		if (is_stereo)
-			final_r=p_src[pos+1];
+		if (is_ima_adpcm) {
 
-		if (sizeof(Depth)==1) { /* conditions will not exist anymore when compiled! */
-			final<<=8;
-			if (is_stereo)
-				final_r<<=8;
-		}
+			int sample_pos = pos + p_state->ima_adpcm->window_ofs;
 
-		if (type==INTERPOLATION_LINEAR) {
+			while(sample_pos>p_state->ima_adpcm->last_nibble) {
 
-			if (is_stereo) {
 
-				next=p_src[pos+2];
-				next_r=p_src[pos+3];
-			} else {
-				next=p_src[pos+1];
+				static const int16_t _ima_adpcm_step_table[89] = {
+					7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
+					19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
+					50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
+					130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
+					337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+					876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
+					2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
+					5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
+					15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
+				};
+
+				static const int8_t _ima_adpcm_index_table[16] = {
+					-1, -1, -1, -1, 2, 4, 6, 8,
+					-1, -1, -1, -1, 2, 4, 6, 8
+				};
+
+				int16_t nibble,signed_nibble,diff,step;
+
+				p_state->ima_adpcm->last_nibble++;
+				const uint8_t *src_ptr=p_state->ima_adpcm->ptr;
+
+				nibble = (p_state->ima_adpcm->last_nibble&1)?
+						(src_ptr[p_state->ima_adpcm->last_nibble>>1]>>4):(src_ptr[p_state->ima_adpcm->last_nibble>>1]&0xF);
+				step=_ima_adpcm_step_table[p_state->ima_adpcm->step_index];
+
+				p_state->ima_adpcm->step_index += _ima_adpcm_index_table[nibble];
+				if (p_state->ima_adpcm->step_index<0)
+					p_state->ima_adpcm->step_index=0;
+				if (p_state->ima_adpcm->step_index>88)
+					p_state->ima_adpcm->step_index=88;
+
+				/*
+				signed_nibble = (nibble&7) * ((nibble&8)?-1:1);
+				diff = (2 * signed_nibble + 1) * step / 4; */
+
+				diff = step >> 3 ;
+				if (nibble & 1)
+					diff += step >> 2 ;
+				if (nibble & 2)
+					diff += step >> 1 ;
+				if (nibble & 4)
+					diff += step ;
+				if (nibble & 8)
+					diff = -diff ;
+
+				p_state->ima_adpcm->predictor+=diff;
+				if (p_state->ima_adpcm->predictor<-0x8000)
+					p_state->ima_adpcm->predictor=-0x8000;
+				else if (p_state->ima_adpcm->predictor>0x7FFF)
+					p_state->ima_adpcm->predictor=0x7FFF;
+
+
+				/* store loop if there */
+				if (p_state->ima_adpcm->last_nibble==p_state->ima_adpcm->loop_pos) {
+
+					p_state->ima_adpcm->loop_step_index = p_state->ima_adpcm->step_index;
+					p_state->ima_adpcm->loop_predictor = p_state->ima_adpcm->predictor;
+				}
+
 			}
 
-			if (sizeof(Depth)==1) {
-				next<<=8;
+			final=p_state->ima_adpcm->predictor;
+
+		} else {
+			final=p_src[pos];
+			if (is_stereo)
+				final_r=p_src[pos+1];
+
+			if (sizeof(Depth)==1) { /* conditions will not exist anymore when compiled! */
+				final<<=8;
 				if (is_stereo)
-					next_r<<=8;
+					final_r<<=8;
 			}
 
-			int32_t frac=int32_t(p_state->pos&MIX_FRAC_MASK);
+			if (type==INTERPOLATION_LINEAR) {
 
-			final=final+((next-final)*frac >> MIX_FRAC_BITS);
-			if (is_stereo)
-				final_r=final_r+((next_r-final_r)*frac >> MIX_FRAC_BITS);
+				if (is_stereo) {
+
+					next=p_src[pos+2];
+					next_r=p_src[pos+3];
+				} else {
+					next=p_src[pos+1];
+				}
+
+				if (sizeof(Depth)==1) {
+					next<<=8;
+					if (is_stereo)
+						next_r<<=8;
+				}
+
+				int32_t frac=int32_t(p_state->pos&MIX_FRAC_MASK);
+
+				final=final+((next-final)*frac >> MIX_FRAC_BITS);
+				if (is_stereo)
+					final_r=final_r+((next_r-final_r)*frac >> MIX_FRAC_BITS);
+			}
 		}
 
 		if (use_filter) {
@@ -314,6 +387,15 @@ void AudioMixerSW::mix_channel(Channel& c) {
 	rstate.filter_l=&c.mix.filter_l;
 	rstate.filter_r=&c.mix.filter_r;
 
+	if (format==AS::SAMPLE_FORMAT_IMA_ADPCM) {
+
+		rstate.ima_adpcm=&c.mix.ima_adpcm;
+		if (loop_format!=AS::SAMPLE_LOOP_NONE) {
+			c.mix.ima_adpcm.loop_pos=loop_begin_fp>>MIX_FRAC_BITS;
+			loop_format=AS::SAMPLE_LOOP_FORWARD;
+		}
+	}
+
 	while (todo>0) {
 
 		int64_t limit=0;
@@ -354,7 +436,14 @@ void AudioMixerSW::mix_channel(Channel& c) {
 				} else {
 					/* go to loop-begin */
 
-					c.mix.offset=loop_begin_fp+(c.mix.offset-loop_end_fp);
+					if (format==AS::SAMPLE_FORMAT_IMA_ADPCM) {
+						c.mix.ima_adpcm.step_index=c.mix.ima_adpcm.loop_step_index;
+						c.mix.ima_adpcm.predictor=c.mix.ima_adpcm.loop_predictor;
+						c.mix.ima_adpcm.last_nibble=loop_begin_fp>>MIX_FRAC_BITS;
+						c.mix.offset=loop_begin_fp;
+					} else {
+						c.mix.offset=loop_begin_fp+(c.mix.offset-loop_end_fp);
+					}
 
 				}
 			} else {
@@ -393,48 +482,48 @@ void AudioMixerSW::mix_channel(Channel& c) {
 
 /* Macros to call the resample function for all possibilities, creating a dedicated-non branchy function call for each thanks to template magic*/
 
-#define CALL_RESAMPLE_FUNC( m_depth, m_stereo, m_use_filter,  m_use_fx, m_interp, m_mode)\
-	do_resample<m_depth,m_stereo,m_use_filter,m_use_fx,m_interp, m_mode>(\
+#define CALL_RESAMPLE_FUNC( m_depth, m_stereo, m_ima_adpcm, m_use_filter,  m_use_fx, m_interp, m_mode)\
+	do_resample<m_depth,m_stereo,m_ima_adpcm, m_use_filter,m_use_fx,m_interp, m_mode>(\
 		src_ptr,\
 		dst_buff,&rstate);
 
 
-#define CALL_RESAMPLE_INTERP( m_depth, m_stereo, m_use_filter,  m_use_fx, m_interp, m_mode)\
+#define CALL_RESAMPLE_INTERP( m_depth, m_stereo, m_ima_adpcm, m_use_filter,  m_use_fx, m_interp, m_mode)\
 	if(m_interp==INTERPOLATION_RAW) {\
-		CALL_RESAMPLE_FUNC(m_depth,m_stereo,m_use_filter,m_use_fx,INTERPOLATION_RAW,m_mode);\
+		CALL_RESAMPLE_FUNC(m_depth,m_stereo, m_ima_adpcm,m_use_filter,m_use_fx,INTERPOLATION_RAW,m_mode);\
 	} else if(m_interp==INTERPOLATION_LINEAR) {\
-		CALL_RESAMPLE_FUNC(m_depth,m_stereo,m_use_filter,m_use_fx,INTERPOLATION_LINEAR,m_mode);\
+		CALL_RESAMPLE_FUNC(m_depth,m_stereo, m_ima_adpcm,m_use_filter,m_use_fx,INTERPOLATION_LINEAR,m_mode);\
 	} else if(m_interp==INTERPOLATION_CUBIC) {\
-		CALL_RESAMPLE_FUNC(m_depth,m_stereo,m_use_filter,m_use_fx,INTERPOLATION_CUBIC,m_mode);\
+		CALL_RESAMPLE_FUNC(m_depth,m_stereo, m_ima_adpcm,m_use_filter,m_use_fx,INTERPOLATION_CUBIC,m_mode);\
 	}\
 
-#define CALL_RESAMPLE_FX( m_depth, m_stereo, m_use_filter,  m_use_fx, m_interp, m_mode)\
+#define CALL_RESAMPLE_FX( m_depth, m_stereo, m_ima_adpcm, m_use_filter,  m_use_fx, m_interp, m_mode)\
 	if(m_use_fx) {\
-		CALL_RESAMPLE_INTERP(m_depth,m_stereo,m_use_filter,true,m_interp, m_mode);\
+		CALL_RESAMPLE_INTERP(m_depth,m_stereo, m_ima_adpcm,m_use_filter,true,m_interp, m_mode);\
 	} else {\
-		CALL_RESAMPLE_INTERP(m_depth,m_stereo,m_use_filter,false,m_interp, m_mode);\
+		CALL_RESAMPLE_INTERP(m_depth,m_stereo, m_ima_adpcm,m_use_filter,false,m_interp, m_mode);\
 	}\
 
 
-#define CALL_RESAMPLE_FILTER( m_depth, m_stereo, m_use_filter,  m_use_fx, m_interp, m_mode)\
+#define CALL_RESAMPLE_FILTER( m_depth, m_stereo, m_ima_adpcm, m_use_filter,  m_use_fx, m_interp, m_mode)\
 	if(m_use_filter) {\
-		CALL_RESAMPLE_FX(m_depth,m_stereo,true,m_use_fx,m_interp, m_mode);\
+		CALL_RESAMPLE_FX(m_depth,m_stereo, m_ima_adpcm,true,m_use_fx,m_interp, m_mode);\
 	} else {\
-		CALL_RESAMPLE_FX(m_depth,m_stereo,false,m_use_fx,m_interp, m_mode);\
+		CALL_RESAMPLE_FX(m_depth,m_stereo, m_ima_adpcm,false,m_use_fx,m_interp, m_mode);\
 	}\
 
-#define CALL_RESAMPLE_STEREO( m_depth, m_stereo, m_use_filter,  m_use_fx, m_interp, m_mode)\
+#define CALL_RESAMPLE_STEREO( m_depth, m_stereo, m_ima_adpcm, m_use_filter,  m_use_fx, m_interp, m_mode)\
 	if(m_stereo) {\
-		CALL_RESAMPLE_FILTER(m_depth,true,m_use_filter,m_use_fx,m_interp, m_mode);\
+		CALL_RESAMPLE_FILTER(m_depth,true,m_ima_adpcm, m_use_filter,m_use_fx,m_interp, m_mode);\
 	} else {\
-		CALL_RESAMPLE_FILTER(m_depth,false,m_use_filter,m_use_fx,m_interp, m_mode);\
+		CALL_RESAMPLE_FILTER(m_depth,false,m_ima_adpcm,m_use_filter,m_use_fx,m_interp, m_mode);\
 	}\
 
-#define CALL_RESAMPLE_MODE( m_depth, m_stereo, m_use_filter,  m_use_fx, m_interp, m_mode)\
+#define CALL_RESAMPLE_MODE( m_depth, m_stereo, m_ima_adpcm, m_use_filter,  m_use_fx, m_interp, m_mode)\
 	if(m_mode==MIX_STEREO) {\
-		CALL_RESAMPLE_STEREO(m_depth,m_stereo,m_use_filter,m_use_fx,m_interp, MIX_STEREO);\
+		CALL_RESAMPLE_STEREO(m_depth,m_stereo, m_ima_adpcm,m_use_filter,m_use_fx,m_interp, MIX_STEREO);\
 	} else {\
-		CALL_RESAMPLE_STEREO(m_depth,m_stereo,m_use_filter,m_use_fx,m_interp, MIX_QUAD);\
+		CALL_RESAMPLE_STEREO(m_depth,m_stereo, m_ima_adpcm,m_use_filter,m_use_fx,m_interp, MIX_QUAD);\
 	}\
 
 
@@ -443,11 +532,17 @@ void AudioMixerSW::mix_channel(Channel& c) {
 		if (format==AS::SAMPLE_FORMAT_PCM8) {
 
 			int8_t *src_ptr =  &((int8_t*)data)[(c.mix.offset >> MIX_FRAC_BITS)<<(is_stereo?1:0) ];
-			CALL_RESAMPLE_MODE(int8_t,is_stereo,use_filter,use_fx,interpolation_type,mix_channels);
+			CALL_RESAMPLE_MODE(int8_t,is_stereo,false,use_filter,use_fx,interpolation_type,mix_channels);
 
 		} else if (format==AS::SAMPLE_FORMAT_PCM16) {
 			int16_t *src_ptr =  &((int16_t*)data)[(c.mix.offset >> MIX_FRAC_BITS)<<(is_stereo?1:0) ];
-			CALL_RESAMPLE_MODE(int16_t,is_stereo,use_filter,use_fx,interpolation_type,mix_channels);
+			CALL_RESAMPLE_MODE(int16_t,is_stereo,false,use_filter,use_fx,interpolation_type,mix_channels);
+
+		} else if (format==AS::SAMPLE_FORMAT_IMA_ADPCM) {
+			c.mix.ima_adpcm.window_ofs=c.mix.offset>>MIX_FRAC_BITS;
+			c.mix.ima_adpcm.ptr=(const uint8_t*)data;
+			int8_t *src_ptr =  &((int8_t*)data)[(c.mix.offset >> MIX_FRAC_BITS)<<(is_stereo?1:0) ];
+			CALL_RESAMPLE_MODE(int8_t,false,true,use_filter,use_fx,interpolation_type,mix_channels);
 
 		}
 
@@ -668,6 +763,19 @@ AudioMixer::ChannelID AudioMixerSW::channel_alloc(RID p_sample) {
 	c.had_prev_chorus=false;
 	c.had_prev_reverb=false;
 	c.had_prev_vol=false;
+
+
+	if (sample_manager->sample_get_format(c.sample)==AudioServer::SAMPLE_FORMAT_IMA_ADPCM) {
+
+		c.mix.ima_adpcm.step_index=0;
+		c.mix.ima_adpcm.predictor=0;
+		c.mix.ima_adpcm.loop_step_index=0;
+		c.mix.ima_adpcm.loop_predictor=0;
+		c.mix.ima_adpcm.last_nibble=-1;
+		c.mix.ima_adpcm.loop_pos=0x7FFFFFFF;
+		c.mix.ima_adpcm.window_ofs=0;
+		c.mix.ima_adpcm.ptr=NULL;
+	}
 
 	ChannelID ret_id = index+c.check*MAX_CHANNELS;
 

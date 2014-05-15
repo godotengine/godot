@@ -60,6 +60,7 @@ public:
 	};
 
 	enum Fx {
+		FX_FXAA=VS::ENV_FX_FXAA,
 		FX_GLOW=VS::ENV_FX_GLOW,
 		FX_DOF_BLUR=VS::ENV_FX_DOF_BLUR,
 		FX_HDR=VS::ENV_FX_HDR,

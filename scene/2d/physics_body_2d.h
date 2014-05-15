@@ -38,11 +38,17 @@ class PhysicsBody2D : public CollisionObject2D {
 
 	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
 
+	uint32_t mask;
 protected:
 
 	void _notification(int p_what);
 	PhysicsBody2D(Physics2DServer::BodyMode p_mode);
+
+	static void _bind_methods();
 public:
+
+	void set_layer_mask(uint32_t p_mask);
+	uint32_t get_layer_mask() const;
 
 	PhysicsBody2D();
 

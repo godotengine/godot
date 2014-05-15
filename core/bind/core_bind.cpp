@@ -479,10 +479,54 @@ void _OS::print_all_textures_by_size() {
 		print_line(E->get().path+" - "+String::humanize_size(E->get().vram)+"  ("+E->get().size+") - total:"+String::humanize_size(total) );
 		total-=E->get().vram;
 	}
-
-
-
 }
+
+void _OS::print_resources_by_type(const Vector<String>& p_types) {
+
+	Map<String,int> type_count;
+
+	List<Ref<Resource> > resources;
+	ResourceCache::get_cached_resources(&resources);
+
+	List<Ref<Resource> > rsrc;
+	ResourceCache::get_cached_resources(&rsrc);
+
+	for (List<Ref<Resource> >::Element *E=rsrc.front();E;E=E->next()) {
+
+		Ref<Resource> r = E->get();
+
+		bool found = false;
+
+		for (int i=0; i<p_types.size(); i++) {
+			if (r->is_type(p_types[i]))
+				found = true;
+		}
+		if (!found)
+			continue;
+
+		if (!type_count.has(r->get_type())) {
+			type_count[r->get_type()]=0;
+		}
+
+
+		type_count[r->get_type()]++;
+
+		print_line(r->get_type()+": "+r->get_path());
+
+		List<String> metas;
+		r->get_meta_list(&metas);
+		for (List<String>::Element* me = metas.front(); me; me = me->next()) {
+			print_line(" "+String(me->get()) + ": " + r->get_meta(me->get()));
+		};
+	}
+
+	for(Map<String,int>::Element *E=type_count.front();E;E=E->next()) {
+
+		print_line(E->key()+" count: "+itos(E->get()));
+	}
+
+};
+
 
 void _OS::print_all_resources(const String& p_to_file ) {
 
@@ -509,9 +553,9 @@ float _OS::get_frames_per_second() const {
 	return OS::get_singleton()->get_frames_per_second();
 }
 
-Error _OS::native_video_play(String p_path) {
+Error _OS::native_video_play(String p_path, float p_volume) {
 
-	return OS::get_singleton()->native_video_play(p_path);
+	return OS::get_singleton()->native_video_play(p_path, p_volume);
 };
 
 bool _OS::native_video_is_playing() {
@@ -619,6 +663,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 
 	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
+	ObjectTypeDB::bind_method(_MD("print_resources_by_type"),&_OS::print_resources_by_type);
 
 	ObjectTypeDB::bind_method(_MD("print_line"),&_OS::print_line,DEFVAL(true));
 

@@ -43,6 +43,16 @@ Vector2 RayCast2D::get_cast_to() const{
 	return cast_to;
 }
 
+void RayCast2D::set_layer_mask(uint32_t p_mask) {
+
+	layer_mask=p_mask;
+}
+
+uint32_t RayCast2D::get_layer_mask() const {
+
+	return layer_mask;
+}
+
 bool RayCast2D::is_colliding() const{
 
 	return collided;
@@ -152,7 +162,7 @@ void RayCast2D::_notification(int p_what) {
 
 			Physics2DDirectSpaceState::RayResult rr;
 
-			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude)) {
+			if (dss->intersect_ray(gt.get_origin(),gt.xform(to),rr,exclude,layer_mask)) {
 
 				collided=true;
 				against=rr.collider_id;
@@ -228,8 +238,12 @@ void RayCast2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("clear_exceptions"),&RayCast2D::clear_exceptions);
 
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&RayCast2D::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&RayCast2D::get_layer_mask);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"cast_to"),_SCS("set_cast_to"),_SCS("get_cast_to"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layer_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
 }
 
 RayCast2D::RayCast2D() {
@@ -238,5 +252,6 @@ RayCast2D::RayCast2D() {
 	against=0;
 	collided=false;
 	against_shape=0;
+	layer_mask=1;
 	cast_to=Vector2(0,50);
 }

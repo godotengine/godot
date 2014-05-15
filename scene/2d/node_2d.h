@@ -70,6 +70,10 @@ public:
 	void set_rot(float p_angle);
 	void set_scale(const Size2& p_scale);
 
+	void rotate(float p_degrees);
+	void move_x(float p_delta,bool p_scaled=false);
+	void move_y(float p_delta,bool p_scaled=false);
+
 	Point2 get_pos() const;
 	float get_rot() const;
 	Size2 get_scale() const;

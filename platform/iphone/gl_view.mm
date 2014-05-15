@@ -32,6 +32,7 @@
 #include "os_iphone.h"
 #include "core/os/keyboard.h"
 #include "core/globals.h"
+#include "servers/audio_server.h"
 
 #import "gl_view.h"
 
@@ -48,6 +49,9 @@ int gl_view_base_fb;
 static String keyboard_text;
 static GLView* _instance = NULL;
 
+static bool video_found_error = false;
+static float video_previous_volume = 0.0f;
+
 void _show_keyboard(String p_existing) {
 	keyboard_text = p_existing;
 	printf("instance on show is %p\n", _instance);
@@ -60,8 +64,13 @@ void _hide_keyboard() {
 	keyboard_text = "";
 };
 
-bool _play_video(String p_path) {
+bool _play_video(String p_path, float p_volume) {
 	
+	float player_volume = p_volume * AudioServer::get_singleton()->get_singleton()->get_stream_global_volume_scale();
+	video_previous_volume = [[MPMusicPlayerController applicationMusicPlayer] volume];
+
+	[[MPMusicPlayerController applicationMusicPlayer] setVolume: player_volume];
+
 	p_path = Globals::get_singleton()->globalize_path(p_path);
 
 	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
@@ -87,6 +96,8 @@ bool _play_video(String p_path) {
 
 bool _is_video_playing() {
 	//NSInteger playback_state = _instance.moviePlayerController.playbackState;
+	if (video_found_error)
+		return false;
 	return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
 }
 
@@ -97,6 +108,7 @@ void _pause_video() {
 void _stop_video() {
 	[_instance.moviePlayerController stop];
 	[_instance.moviePlayerController.view removeFromSuperview];
+	[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 }
 
 @implementation GLView
@@ -546,13 +558,38 @@ static void clear_touches() {
 }
 
 - (void)moviePlayBackDidFinish:(NSNotification*)notification {
+    
+
+    NSNumber* reason = [[notification userInfo] objectForKey:MPMoviePlayerPlaybackDidFinishReasonUserInfoKey];
+    switch ([reason intValue]) {
+        case MPMovieFinishReasonPlaybackEnded:
+            //NSLog(@"Playback Ended");
+            break;
+        case MPMovieFinishReasonPlaybackError:
+            //NSLog(@"Playback Error");
+            video_found_error = true;
+            break;
+        case MPMovieFinishReasonUserExited:
+            //NSLog(@"User Exited");
+            video_found_error = true;
+            break;
+        default:
+        	//NSLog(@"Unsupported reason!");
+        	break;
+    }
+
+
 	MPMoviePlayerController *player = [notification object];
+
 	[[NSNotificationCenter defaultCenter]
 	  removeObserver:self
 	  name:MPMoviePlayerPlaybackDidFinishNotification
 	  object:player];
 
+    [_instance.moviePlayerController stop];
     [_instance.moviePlayerController.view removeFromSuperview];
+
+    [[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 }
 
 #pragma mark UITextInputTrait protocol

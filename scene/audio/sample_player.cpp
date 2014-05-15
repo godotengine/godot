@@ -52,7 +52,7 @@ bool SamplePlayer::_set(const StringName& p_name, const Variant& p_value) {
 		set_voice_count(p_value);
 	else if (name.begins_with("default/")) {
 
-		String what=name.right(7);
+		String what=name.right(8);
 
 		if (what=="volume_db")
 			set_default_volume_db(p_value);
