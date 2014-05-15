@@ -249,6 +249,26 @@ void ImageTexture::load(const String& p_path) {
 
 }
 
+void ImageTexture::load_image_buffer(const DVector<uint8_t>& p_buffer, uint8_t type){
+    Image img;
+    String imagetype =  "";
+    switch(type){
+        case 0:
+                imagetype="_.jpg";
+            break;
+        case 1:
+                imagetype="_.png";
+            break;
+        case 2:
+                imagetype="_.webp";
+            break;
+        default:
+            return;
+    }
+    img.load_image_buffer(p_buffer,imagetype);
+    create_from_image(img);
+}
+
 void ImageTexture::set_data(const Image& p_image) {
 	
 	VisualServer::get_singleton()->texture_set_data(texture,p_image);
@@ -379,6 +399,7 @@ void ImageTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("create_from_image","image","flags"),&ImageTexture::create_from_image,DEFVAL(FLAGS_DEFAULT));
 	ObjectTypeDB::bind_method(_MD("get_format"),&ImageTexture::get_format);
 	ObjectTypeDB::bind_method(_MD("load","path"),&ImageTexture::load);
+    ObjectTypeDB::bind_method(_MD("load_image_buffer","buffer","type"),&ImageTexture::load_image_buffer);
 	ObjectTypeDB::bind_method(_MD("set_data","image"),&ImageTexture::set_data);
 	ObjectTypeDB::bind_method(_MD("get_data","cube_side"),&ImageTexture::get_data);
 	ObjectTypeDB::bind_method(_MD("set_storage","mode"),&ImageTexture::set_storage);

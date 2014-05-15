@@ -78,6 +78,26 @@ Error ImageLoader::load_image(String p_file,Image *p_image, FileAccess *p_custom
 
 }
 
+Error ImageLoader::load_image_buffer(String p_file,Image *p_image, const uint8_t *p_src,int p_length){
+    Error err;
+    FileAccess *f=FileAccess::open(p_file,FileAccess::READ_WRITE,&err);
+    if (!f)return err;
+    f->store_buffer(p_src,p_length);
+    f->seek(0);
+    String extension = p_file.extension();
+    for (int i=0;i<loader_count;i++) {
+        if (!loader[i]->recognize(extension))
+            continue;
+        Error err = loader[i]->load_image(p_image,f);
+        if (err!=ERR_FILE_UNRECOGNIZED) {
+            memdelete(f);
+            return err;
+        }
+    }
+    memdelete(f);
+    return ERR_FILE_UNRECOGNIZED;
+}
+
 void ImageLoader::get_recognized_extensions(List<String> *p_extensions) {
 	
 	for (int i=0;i<loader_count;i++) {

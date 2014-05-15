@@ -269,6 +269,7 @@ public:
 	
 	Error load(const String& p_path);
 	
+    Error load_image_buffer(const DVector<uint8_t>& p_buffer, const String & type);
 	/** 
 	 * create an empty image
 	 */
