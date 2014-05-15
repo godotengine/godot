@@ -81,6 +81,7 @@ protected:
 public:
 	
 	static Error load_image(String p_file,Image *p_image, FileAccess *p_custom=NULL);
+    static Error load_image_buffer(String p_file,Image *p_image, const uint8_t *p_src,int p_length);
 	static void get_recognized_extensions(List<String> *p_extensions) ;
 	static bool recognize(const String& p_extension) ;
 		

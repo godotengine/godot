@@ -57,12 +57,17 @@ void Reference::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("init_ref"),&Reference::init_ref);
 	ObjectTypeDB::bind_method(_MD("reference"),&Reference::reference);
 	ObjectTypeDB::bind_method(_MD("unreference"),&Reference::unreference);
+    ObjectTypeDB::bind_method(_MD("getcount"),&Reference::getcount);
 }
 
 void Reference::reference(){
 
 	refcount.ref();
 
+}
+long Reference::getcount(){
+
+    return refcount.get();
 }
 bool Reference::unreference(){
 

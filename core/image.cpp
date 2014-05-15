@@ -1199,7 +1199,13 @@ Error Image::load(const String& p_path) {
 
 	return ImageLoader::load_image(p_path, this);
 }
-
+Error Image::load_image_buffer(const DVector<uint8_t>& p_buffer,const String & type){
+    int len = p_buffer.size();
+    if (len==0)
+        return FAILED;
+    DVector<uint8_t>::Read r = p_buffer.read();
+    return ImageLoader::load_image_buffer(type,this, &r[0],len);
+}
 bool Image::operator==(const Image& p_image) const {
 
 	if (data.size() == 0 && p_image.data.size() == 0)
