@@ -2771,7 +2771,7 @@ void EditorNode::open_request(const String& p_path) {
 
 Node* EditorNode::request_instance_scene(const String &p_path) {
 
-	return scene_tree_dock->instance(p_path);
+	return scene_tree_dock->new_instance(p_path);
 
 }
 
@@ -2788,7 +2788,7 @@ void EditorNode::_instance_request(const String& p_path){
 
 void EditorNode::_instance_replace_request(const String& p_path){
 
-	scene_tree_dock->instance(p_path, true);
+	scene_tree_dock->replace_instance(p_path);
 }
 
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value) {

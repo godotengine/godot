@@ -55,7 +55,15 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	}
 }
 
-Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
+Node* SceneTreeDock::new_instance(const String& p_file) {
+	return _instance(p_file, false);
+}
+
+Node* SceneTreeDock::replace_instance(const String& p_file) {
+	return _instance(p_file, true);
+}
+
+Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 
 	Node *selected = scene_tree->get_selected();
 
@@ -169,7 +177,10 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 
 	if (p_replace_selected) {
 
+		//_replace_node(selected, instanced);
+
 		editor_data->get_undo_redo().create_action("Replace Instance");
+
 
 		editor_data->get_undo_redo().add_do_method(parent,"remove_child",selected);
 		editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced);
@@ -185,20 +196,25 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 				continue;
 			editor_data->get_undo_redo().add_do_method(selected,"remove_child",child);
 			editor_data->get_undo_redo().add_do_method(instanced,"add_child",child);
-			editor_data->get_undo_redo().add_do_method(child,"set_owner",edited_scene);
+
+			List<Node*> owned;
+			child->get_owned_by(child->get_owner(),&owned);
+			Array owners;
+			for(List<Node*>::Element *E=owned.front();E;E=E->next()) {
+
+				owners.push_back(E->get());
+			}
+			editor_data->get_undo_redo().add_do_method(this,"_set_owners",edited_scene,owners);
 		}
+
+
+		//*/
+
 
 		if (editor->get_animation_editor()->get_root()==selected)
 			editor_data->get_undo_redo().add_do_method(editor->get_animation_editor(),"set_root",instanced);
 		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced);
-/*
-		List<Node*> owned;
-		selected->get_owned_by(selected->get_owner(),&owned);
-		Array owners;
-		for(List<Node*>::Element *E=owned.front();E;E=E->next()) {
-			owners.push_back(E->get());
-		}
-*/
+
 
 		editor_data->get_undo_redo().add_undo_method(parent,"add_child",selected);
 		editor_data->get_undo_redo().add_undo_method(parent,"move_child",selected,selected->get_index());
@@ -216,13 +232,21 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 				continue;
 			editor_data->get_undo_redo().add_undo_method(instanced,"remove_child",child);
 			editor_data->get_undo_redo().add_undo_method(selected,"add_child",child);
-			editor_data->get_undo_redo().add_undo_method(child,"set_owner",edited_scene);
+			List<Node*> owned;
+			child->get_owned_by(child->get_owner(),&owned);
+			Array owners;
+			for(List<Node*>::Element *E=owned.front();E;E=E->next()) {
+
+				owners.push_back(E->get());
+			}
+			editor_data->get_undo_redo().add_undo_method(this,"_set_owners",edited_scene,owners);
 		}
 
 		editor_data->get_undo_redo().add_undo_reference(selected);
 		editor_data->get_undo_redo().add_do_reference(instanced);
-
 		editor_data->get_undo_redo().commit_action();
+
+
 		//*/
 	} else {
 
@@ -234,6 +258,7 @@ Node* SceneTreeDock::instance(const String& p_file, bool p_replace_selected) {
 		editor_data->get_undo_redo().add_do_reference(instanced);
 		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced);
 		editor_data->get_undo_redo().commit_action();
+		editor->push_item(instanced);
 	}
 
 	return instanced;
@@ -1176,7 +1201,6 @@ void SceneTreeDock::_create() {
 		memdelete(n);
 		newnode->set_name(newname);
 		editor->push_item(newnode);
-
 		_update_tool_buttons();
 
 	}
@@ -1236,7 +1260,8 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
 
-	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
+	ObjectTypeDB::bind_method(_MD("new_instance"),&SceneTreeDock::new_instance);
+	ObjectTypeDB::bind_method(_MD("replace_instance"),&SceneTreeDock::replace_instance);
 }
 
 
@@ -1372,7 +1397,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	file = memnew( FileDialog );
 	add_child(file);
-	file->connect("file_selected",this,"instance");
+	file->connect("file_selected",this,"new_instance");
 	set_process_unhandled_key_input(true);
 
 	delete_dialog = memnew( ConfirmationDialog );

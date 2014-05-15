@@ -119,6 +119,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
 
+	Node* _instance(const String& p_path, bool p_replace_selected=false);
+
 protected:
 
 	void _notification(int p_what);
@@ -127,7 +129,8 @@ public:
 
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
-	Node* instance(const String& p_path, bool p_replace_selected=false);
+	Node* new_instance(const String& p_path);
+	Node* replace_instance(const String& p_path);
 	void set_selected(Node *p_node);
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
