@@ -55,7 +55,11 @@ public:
 		FLAG_VIDEO_SURFACE=VisualServer::TEXTURE_FLAG_VIDEO_SURFACE,
 		FLAGS_DEFAULT=FLAG_MIPMAPS|FLAG_REPEAT|FLAG_FILTER,
 	};
-
+    enum ImageType {
+        JPEG,
+        PNG,
+        WEBP
+    };
 
 	virtual int get_width() const=0;
 	virtual int get_height() const=0;
@@ -155,6 +159,7 @@ public:
 
 
 VARIANT_ENUM_CAST( ImageTexture::Storage );
+VARIANT_ENUM_CAST( ImageTexture::ImageType );
 
 class AtlasTexture : public Texture {
 
