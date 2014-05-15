@@ -644,7 +644,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 
 }
 
-void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,DVector<uint8_t>& dst_data) {
+void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<real_t>& p_data,DVector<uint8_t>& dst_data) {
 
 
 	/*p_sample_data->data = (void*)malloc(len);
@@ -680,7 +680,7 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 	int i,step_idx=0,prev=0;
 	uint8_t *out = w.ptr();
 	//int16_t xm_prev=0;
-	const float *in=p_data.ptr();
+	const real_t *in=p_data.ptr();
 
 
 	/* initial value is zero */
