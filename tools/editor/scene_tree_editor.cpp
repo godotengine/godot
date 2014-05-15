@@ -382,10 +382,14 @@ void SceneTreeEditor::filter_tree(const String &p_newtext) {
 	filtered.clear();
 	current_filtered=-1;
 
-	if (p_newtext!="")
-		_filter_node( get_scene_node(), p_newtext);
+	print_line("filter_tree: " + p_newtext);
 
-	filtering_tree = filtered.size()>0?true:false;
+	if (p_newtext!="") {
+		filtering_tree = true;
+		_filter_node( get_scene_node(), p_newtext);
+	} else {
+		filtering_tree = false;
+	}
 	update_tree();
 	if (filtering_tree)
 		select_filtered();
@@ -523,11 +527,13 @@ void SceneTreeEditor::set_selected(Node *p_node,bool p_emit_selected) {
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
 
 	if (item) {
+		print_line("set_selected: has item!");
 		item->select(0);
 		item->set_as_cursor(0);
 		selected=p_node;	
 		tree->ensure_cursor_is_visible();
 	} else {
+		print_line("set_selected: NONONO item!");
 		if (!p_node)
 			selected=NULL;
 		_update_tree();

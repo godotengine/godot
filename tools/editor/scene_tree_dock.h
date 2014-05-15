@@ -46,6 +46,8 @@
 #include "editor_sub_scene.h"
 class EditorNode;
 
+class SceneTreeFilter;
+
 class SceneTreeDock : public VBoxContainer {
 
 	OBJ_TYPE( SceneTreeDock, VBoxContainer );
@@ -65,10 +67,6 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_FOCUS,
 		TOOL_ERASE,
 		TOOL_BUTTON_MAX,
-
-		TOOL_CLEAR_FILTER,
-		TOOL_FILTER_PREV,
-		TOOL_FILTER_NEXT,
 	};
 
 
@@ -77,11 +75,7 @@ class SceneTreeDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 
 	ToolButton *tool_buttons[TOOL_BUTTON_MAX];
-	SceneTreeEditor *scene_tree;	
-	LineEdit *scene_tree_filter;
-	Button *clear_filter_button;
-	Button *filter_prev_button;
-	Button *filter_next_button;
+	SceneTreeEditor *scene_tree;
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
@@ -126,8 +120,6 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
 
-	void _tree_filter_text_changed(const String& p_newtext);
-
 protected:
 
 	void _notification(int p_what);
@@ -142,6 +134,33 @@ public:
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
 
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
+};
+
+class SceneTreeFilter : public HBoxContainer {
+
+	OBJ_TYPE( SceneTreeFilter, HBoxContainer );
+
+	enum Command {
+		CMD_CLEAR_FILTER,
+		CMD_FILTER_PREVIOUS,
+		CMD_FILTER_NEXT,
+	};
+
+	SceneTreeEditor *scene_tree;
+	LineEdit *scene_tree_filter;
+	Button *clear_filter_button;
+	Button *filter_prev_button;
+	Button *filter_next_button;
+
+	void _filter_command(int p_command);
+	void _filter_text_changed(const String& p_newtext);
+
+protected:
+
+	static void _bind_methods();
+
+public:
+	SceneTreeFilter(SceneTreeEditor *p_scene_tree);
 };
 
 #endif // SCENE_TREE_DOCK_H

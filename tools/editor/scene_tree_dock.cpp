@@ -420,18 +420,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 
 		} break;
-		case TOOL_CLEAR_FILTER: {
-			scene_tree_filter->clear();
-			scene_tree->filter_tree("");
-		}break;
-		case TOOL_FILTER_PREV: {
-			if (scene_tree_filter->get_text().strip_edges()!="")
-				scene_tree->select_filtered(false);
-		}break;
-		case TOOL_FILTER_NEXT: {
-			if (scene_tree_filter->get_text().strip_edges()!="")
-				scene_tree->select_filtered();
-		}break;
 	}
 
 }
@@ -1146,9 +1134,6 @@ void SceneTreeDock::_import_subscene() {
 */
 }
 
-void SceneTreeDock::_tree_filter_text_changed(const String &p_newtext) {
-	scene_tree->filter_tree(p_newtext.strip_edges());
-}
 
 void SceneTreeDock::_bind_methods() {
 
@@ -1167,7 +1152,6 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
-	ObjectTypeDB::bind_method(_MD("_tree_filter_text_changed"), &SceneTreeDock::_tree_filter_text_changed);
 }
 
 
@@ -1225,31 +1209,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_SCRIPT]=tb;
 
-	HBoxContainer *tree_filter_hbc = memnew( HBoxContainer );
-	vbc->add_child(tree_filter_hbc);
-
-	filter_prev_button = memnew( Button );
-	filter_prev_button->set_text("<");
-	filter_prev_button->connect("pressed",this,"_tool_selected",make_binds(TOOL_FILTER_PREV,false));
-	tree_filter_hbc->add_child(filter_prev_button);
-
-	filter_next_button = memnew( Button );
-	filter_next_button->set_text(">");
-	filter_next_button->connect("pressed",this,"_tool_selected",make_binds(TOOL_FILTER_NEXT,false));
-	tree_filter_hbc->add_child(filter_next_button);
-
-	scene_tree_filter = memnew( LineEdit );
-	scene_tree_filter->connect("text_changed",this,"_tree_filter_text_changed");
-	scene_tree_filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	tree_filter_hbc->add_child(scene_tree_filter);
-
-	clear_filter_button = memnew( Button );
-	clear_filter_button->set_text("clear");
-	clear_filter_button->connect("pressed",this,"_tool_selected",make_binds(TOOL_CLEAR_FILTER,false));
-	tree_filter_hbc->add_child(clear_filter_button);
-
-
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));
+
+	SceneTreeFilter *tree_filter_hbc = memnew( SceneTreeFilter(scene_tree) );
+	vbc->add_child(tree_filter_hbc);
 	vbc->add_child(scene_tree);
 	scene_tree->set_v_size_flags(SIZE_EXPAND|SIZE_FILL);
 
@@ -1340,3 +1303,58 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 
 }
+
+void SceneTreeFilter::_filter_command(int p_command) {
+	switch (p_command) {
+
+		case CMD_CLEAR_FILTER: {
+			scene_tree_filter->clear();
+			scene_tree->filter_tree("");
+		}break;
+		case CMD_FILTER_PREVIOUS: {
+			if (scene_tree_filter->get_text().strip_edges()!="")
+				scene_tree->select_filtered(false);
+		}break;
+		case CMD_FILTER_NEXT: {
+			if (scene_tree_filter->get_text().strip_edges()!="")
+				scene_tree->select_filtered();
+		}break;
+	}
+}
+
+void SceneTreeFilter::_filter_text_changed(const String &p_newtext) {
+	scene_tree->filter_tree(p_newtext.strip_edges());
+}
+
+void SceneTreeFilter::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_filter_command"),&SceneTreeFilter::_filter_command);
+	ObjectTypeDB::bind_method(_MD("_filter_text_changed"), &SceneTreeFilter::_filter_text_changed);
+}
+
+
+SceneTreeFilter::SceneTreeFilter(SceneTreeEditor *p_scene_tree) {
+
+	scene_tree = p_scene_tree;
+
+	filter_prev_button = memnew( Button );
+	filter_prev_button->set_text("<");
+	filter_prev_button->connect("pressed",this,"_filter_command",make_binds(CMD_FILTER_PREVIOUS));
+	add_child(filter_prev_button);
+
+	filter_next_button = memnew( Button );
+	filter_next_button->set_text(">");
+	filter_next_button->connect("pressed",this,"_filter_command",make_binds(CMD_FILTER_NEXT));
+	add_child(filter_next_button);
+
+	scene_tree_filter = memnew( LineEdit );
+	scene_tree_filter->connect("text_changed",this,"_filter_text_changed");
+	scene_tree_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(scene_tree_filter);
+
+	clear_filter_button = memnew( Button );
+	clear_filter_button->set_text("clear");
+	clear_filter_button->connect("pressed",this,"_filter_command",make_binds(CMD_CLEAR_FILTER));
+	add_child(clear_filter_button);
+}
+
