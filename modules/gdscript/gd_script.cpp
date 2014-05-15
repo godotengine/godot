@@ -350,22 +350,53 @@ Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_ar
 					break;
 
 				}
-				if (b->get_type()!=Variant::OBJECT || b->operator Object*()==NULL) {
+				if ((b->get_type()!=Variant::OBJECT || b->operator Object*()==NULL) && b->get_type()!=Variant::STRING) {
 
-					err_text="Right operand of 'extends' is not a class.";
+					err_text="Right operand of 'extends' is not a class/script_path/class_name.";
 					break;
 
 				}
 #endif
 
+				bool extends_ok=false;
 
 				Object *obj_A = *a;
+
+				if (b->get_type()==Variant::STRING) {
+					String path = *b;
+
+					if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language()==GDScriptLanguage::get_singleton()) {
+
+						GDInstance *ins = static_cast<GDInstance*>(obj_A->get_script_instance());
+						GDScript *cmp = ins->script.ptr();
+						//bool found=false;
+						while(cmp) {
+
+							if (cmp->get_path()==path) {
+								//inherits from script, all ok
+								extends_ok=true;
+								break;
+
+							}
+
+							cmp=cmp->_base;
+						}
+
+						if(!extends_ok) {
+							extends_ok=ObjectTypeDB::is_type(obj_A->get_type_name(),path);
+						}
+
+						*dst=extends_ok;
+						ip+=4;
+						continue;
+					}
+				}
+
 				Object *obj_B = *b;
 
 
 				GDScript *scr_B = obj_B->cast_to<GDScript>();
 
-				bool extends_ok=false;
 
 				if (scr_B) {
 					//if B is a script, the only valid condition is that A has an instance which inherits from the script
