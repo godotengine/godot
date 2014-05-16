@@ -34,6 +34,8 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/label.h"
 #include "scene/gui/button.h"
+#include "scene/gui/option_button.h"
+#include "scene/gui/box_container.h"
 #include "os/dir_access.h"
 #include "os/thread.h"
 
@@ -42,8 +44,9 @@
 
 class EditorNode;
 
-class ScenesDock : public Control {
-	OBJ_TYPE( ScenesDock, Control );
+class ScenesDockFilter;
+class ScenesDock : public VBoxContainer {
+	OBJ_TYPE( ScenesDock, VBoxContainer );
 
 	EditorNode *editor;
 	Set<String> favorites;
@@ -54,6 +57,8 @@ class ScenesDock : public Control {
 	Button *button_open;
 	Button *button_replace;
 	Timer *timer;
+
+	ScenesDockFilter *tree_filter;
 
 	bool updating_tree;
 	Tree * tree;
@@ -77,6 +82,34 @@ public:
 
 	ScenesDock(EditorNode *p_editor);
 	~ScenesDock();
+};
+
+class ScenesDockFilter : public HBoxContainer {
+
+	OBJ_TYPE( ScenesDockFilter, HBoxContainer );
+
+	enum Command {
+		CMD_CLEAR_FILTER,
+		CMD_FILTER_PREVIOUS,
+		CMD_FILTER_NEXT,
+	};
+
+	Tree *tree;
+	OptionButton *filter;
+	LineEdit *search_box;
+	Button *clear_search_button;
+	Button *prev_button;
+	Button *next_button;
+
+	void _command(int p_command);
+	void _search_text_changed(const String& p_newtext);
+	void _setup_filters();
+protected:
+
+	static void _bind_methods();
+
+public:
+	ScenesDockFilter(Tree *p_tree);
 };
 
 #endif // SCENES_DOCK_H

@@ -263,54 +263,59 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	editor=p_editor;
 
-	tree = memnew( Tree );
-	add_child(tree);
-	tree->set_area_as_parent_rect();
-	tree->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,25);
-	tree->connect("item_edited",this,"_favorite_toggled");
-
+	HBoxContainer *toolbar_hbc = memnew( HBoxContainer );
+	add_child(toolbar_hbc);
 
 	button_reload = memnew( Button );
-	button_reload->set_pos(Point2(3,2));
-	button_reload->set_size(Point2(20,5));
 	button_reload->set_flat(true);
-	add_child(button_reload);
+	toolbar_hbc->add_child(button_reload);
 	button_reload->connect("pressed",this,"_rescan");
 
 	button_favorite = memnew( Button );
-	button_favorite->set_pos(Point2(28,2));
-	button_favorite->set_size(Point2(20,5));
+	//button_favorite->set_pos(Point2(28,2));
+	//button_favorite->set_size(Point2(20,5));
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
-	add_child(button_favorite);
+	toolbar_hbc->add_child(button_favorite);
 	button_favorite->connect("toggled",this,"_favorites_toggled");
 
+	toolbar_hbc->add_spacer();
+
 	button_instance = memnew( Button );
-	button_instance->set_anchor(MARGIN_LEFT,ANCHOR_END);
-	button_instance->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	button_instance->set_begin(Point2(3+20,2));
-	button_instance->set_end(Point2(2+15,5));
+	//button_instance->set_anchor(MARGIN_LEFT,ANCHOR_END);
+	//button_instance->set_anchor(MARGIN_RIGHT,ANCHOR_END);
+	//button_instance->set_begin(Point2(3+20,2));
+	//button_instance->set_end(Point2(2+15,5));
 	button_instance->set_flat(true);
-	add_child(button_instance);
+	toolbar_hbc->add_child(button_instance);
 	button_instance->connect("pressed",this,"_instance_pressed");
 
 	button_open = memnew( Button );
-	button_open->set_anchor(MARGIN_LEFT,ANCHOR_END);
-	button_open->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	button_open->set_begin(Point2(3+45,2));
-	button_open->set_end(Point2(2+34,5));
+	//button_open->set_anchor(MARGIN_LEFT,ANCHOR_END);
+	//button_open->set_anchor(MARGIN_RIGHT,ANCHOR_END);
+	//button_open->set_begin(Point2(3+45,2));
+	//button_open->set_end(Point2(2+34,5));
 	button_open->set_flat(true);
-	add_child(button_open);
+	toolbar_hbc->add_child(button_open);
 	button_open->connect("pressed",this,"_open_pressed");
 
 	button_replace = memnew( Button );
-	button_replace->set_anchor(MARGIN_LEFT,ANCHOR_END);
-	button_replace->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	button_replace->set_begin(Point2(3+70,2));
-	button_replace->set_end(Point2(2+53,5));
+	//button_replace->set_anchor(MARGIN_LEFT,ANCHOR_END);
+	//button_replace->set_anchor(MARGIN_RIGHT,ANCHOR_END);
+	//button_replace->set_begin(Point2(3+70,2));
+	//button_replace->set_end(Point2(2+53,5));
 	button_replace->set_flat(true);
-	add_child(button_replace);
+	toolbar_hbc->add_child(button_replace);
 	button_replace->connect("pressed",this,"_replace_pressed");
+
+	tree = memnew( Tree );
+	tree_filter=memnew( ScenesDockFilter(tree) );
+	add_child(tree_filter);
+	add_child(tree);
+	//tree->set_area_as_parent_rect();
+	//tree->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,25);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->connect("item_edited",this,"_favorite_toggled");
 
 	timer = memnew( Timer );
 	timer->set_one_shot(true);
@@ -328,3 +333,110 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 ScenesDock::~ScenesDock() {
 
 }
+
+void ScenesDockFilter::_setup_filters() {
+
+	filter->clear();
+
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("",&extensions);
+	List<String> filters;
+	for(int i=0;i<extensions.size();i++) {
+		filters.push_back("*."+extensions[i]+" ; "+extensions[i].to_upper());
+	}
+
+	if (filters.size()>1) {
+		String all_filters;
+
+		const int max_filters=5;
+
+		for(int i=0;i<MIN( max_filters, filters.size()) ;i++) {
+			String flt=filters[i].get_slice(";",0);
+			if (i>0)
+				all_filters+=",";
+			all_filters+=flt;
+		}
+
+		if (max_filters<filters.size())
+			all_filters+=", ...";
+
+		filter->add_item("All Recognized ( "+all_filters+" )");
+	}
+	for(int i=0;i<filters.size();i++) {
+
+		String flt=filters[i].get_slice(";",0).strip_edges();
+		String desc=filters[i].get_slice(";",1).strip_edges();
+		if (desc.length())
+			filter->add_item(desc+" ( "+flt+" )");
+		else
+			filter->add_item("( "+flt+" )");
+	}
+
+	filter->add_item("All Files (*)");
+
+}
+
+
+
+void ScenesDockFilter::_command(int p_command) {
+	switch (p_command) {
+
+		case CMD_CLEAR_FILTER: {
+			search_box->clear();
+			//scene_tree->filter_tree("");
+		}break;
+		case CMD_FILTER_PREVIOUS: {
+			if (search_box->get_text().strip_edges()!="") {
+				//scene_tree->select_filtered(false);
+			}
+		}break;
+		case CMD_FILTER_NEXT: {
+			if (search_box->get_text().strip_edges()!="") {
+				//scene_tree->select_filtered();
+			}
+		}break;
+	}
+}
+
+void ScenesDockFilter::_search_text_changed(const String &p_newtext) {
+	//scene_tree->filter_tree(p_newtext.strip_edges());
+}
+
+void ScenesDockFilter::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_command"),&ScenesDockFilter::_command);
+	ObjectTypeDB::bind_method(_MD("_search_text_changed"), &ScenesDockFilter::_search_text_changed);
+}
+
+
+ScenesDockFilter::ScenesDockFilter(Tree *p_tree) {
+
+	tree = p_tree;
+
+	prev_button = memnew( Button );
+	prev_button->set_text("<");
+	prev_button->connect("pressed",this,"_command",make_binds(CMD_FILTER_PREVIOUS));
+	add_child(prev_button);
+
+	next_button = memnew( Button );
+	next_button->set_text(">");
+	next_button->connect("pressed",this,"_command",make_binds(CMD_FILTER_NEXT));
+	add_child(next_button);
+
+	filter = memnew( OptionButton );
+	add_child(filter);
+	filter->set_clip_text(true);
+
+	search_box = memnew( LineEdit );
+	search_box->connect("text_changed",this,"_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(search_box);
+
+	clear_search_button = memnew( Button );
+	clear_search_button->set_text("clear");
+	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
+	add_child(clear_search_button);
+
+	_setup_filters();
+}
+
