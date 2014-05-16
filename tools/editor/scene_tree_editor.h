@@ -53,9 +53,9 @@ class SceneTreeEditor : public Control {
 
 	Tree *tree;
 	Node *selected;
-	Vector<Node *> filtered;
-	int current_filtered;
-	bool filtering_tree;
+	Vector<Node *> highlighted;
+	int current_highlighted;
+	bool highlighting_tree;
 
 	AcceptDialog *error;
 
@@ -102,7 +102,7 @@ class SceneTreeEditor : public Control {
 	void _selection_changed();
 	Node *get_scene_node();
 
-	void _filter_node(Node *p_node, const String &p_newtext);
+	void _highlight_node(Node *p_node, const String &p_newtext);
 public:
 
 
@@ -118,8 +118,8 @@ public:
 	void set_editor_selection(EditorSelection *p_selection);
 
 	void focus_selected();
-	void filter_tree(const String& p_newtext);
-	void select_filtered(bool p_next=true);
+	void highlight_tree(const String& p_newtext);
+	void select_highlighted(bool p_next=true);
 
 	void update_tree() { _update_tree(); }
 

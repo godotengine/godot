@@ -217,8 +217,8 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 		item->set_as_cursor(0);
 	}
 
-	if (filtering_tree) {
-		if (filtered.find(p_node)==-1)
+	if (highlighting_tree) {
+		if (highlighted.find(p_node)==-1)
 			item->set_custom_color(0,Color(0.5,0.5,0.5));
 		else
 			item->set_custom_color(0,Color(1.0,1.0,1.0));
@@ -361,7 +361,7 @@ void SceneTreeEditor::_tree_changed() {
 
 }
 
-void SceneTreeEditor::_filter_node(Node *p_node, const String &p_newtext) {
+void SceneTreeEditor::_highlight_node(Node *p_node, const String &p_newtext) {
 
 	if (!p_node)
 		return;
@@ -370,29 +370,27 @@ void SceneTreeEditor::_filter_node(Node *p_node, const String &p_newtext) {
 		return;
 
 	if (String(p_node->get_name()).findn(p_newtext)!=-1) {
-		filtered.push_back(p_node);
+		highlighted.push_back(p_node);
 	}
 
 	for (int i=0;i<p_node->get_child_count();i++) {
-		_filter_node(p_node->get_child(i),p_newtext);
+		_highlight_node(p_node->get_child(i),p_newtext);
 	}
 }
 
-void SceneTreeEditor::filter_tree(const String &p_newtext) {
-	filtered.clear();
-	current_filtered=-1;
-
-	print_line("filter_tree: " + p_newtext);
+void SceneTreeEditor::highlight_tree(const String &p_newtext) {
+	highlighted.clear();
+	current_highlighted=-1;
 
 	if (p_newtext!="") {
-		filtering_tree = true;
-		_filter_node( get_scene_node(), p_newtext);
+		highlighting_tree = true;
+		_highlight_node( get_scene_node(), p_newtext);
 	} else {
-		filtering_tree = false;
+		highlighting_tree = false;
 	}
 	update_tree();
-	if (filtering_tree)
-		select_filtered();
+	if (highlighting_tree)
+		select_highlighted();
 
 }
 
@@ -404,19 +402,19 @@ void SceneTreeEditor::focus_selected() {
 	set_selected(selected,false); // de-select and re-select node to make sure ensure_cursor_is_visible() get invoked
 }
 
-void SceneTreeEditor::select_filtered(bool p_next) {
-	if (filtered.size()<=0)
+void SceneTreeEditor::select_highlighted(bool p_next) {
+	if (highlighted.size()<=0)
 		return;
 	if (p_next) {
-		++current_filtered;
-		if (current_filtered>=filtered.size()) current_filtered=0;
+		++current_highlighted;
+		if (current_highlighted>=highlighted.size()) current_highlighted=0;
 	} else {
-		--current_filtered;
-		if (current_filtered<0) current_filtered=filtered.size()-1;
+		--current_highlighted;
+		if (current_highlighted<0) current_highlighted=highlighted.size()-1;
 	}
 	editor_selection->clear();
-	editor_selection->add_node(filtered[current_filtered]);
-	set_selected(filtered[current_filtered],true);
+	editor_selection->add_node(highlighted[current_highlighted]);
+	set_selected(highlighted[current_highlighted],true);
 }
 
 void SceneTreeEditor::_selected_changed() {
@@ -527,13 +525,11 @@ void SceneTreeEditor::set_selected(Node *p_node,bool p_emit_selected) {
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
 
 	if (item) {
-		print_line("set_selected: has item!");
 		item->select(0);
 		item->set_as_cursor(0);
 		selected=p_node;	
 		tree->ensure_cursor_is_visible();
 	} else {
-		print_line("set_selected: NONONO item!");
 		if (!p_node)
 			selected=NULL;
 		_update_tree();
@@ -732,8 +728,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	undo_redo=NULL;
 	tree_dirty=true;
 	selected=NULL;
-	filtering_tree=false;
-	current_filtered=-1;
+	highlighting_tree=false;
+	current_highlighted=-1;
 
 	marked_selectable=false;
 	marked_children_selectable=false;

@@ -46,7 +46,7 @@
 #include "editor_sub_scene.h"
 class EditorNode;
 
-class SceneTreeFilter;
+class SceneTreeSearch;
 
 class SceneTreeDock : public VBoxContainer {
 
@@ -136,9 +136,9 @@ public:
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
 };
 
-class SceneTreeFilter : public HBoxContainer {
+class SceneTreeSearch : public HBoxContainer {
 
-	OBJ_TYPE( SceneTreeFilter, HBoxContainer );
+	OBJ_TYPE( SceneTreeSearch, HBoxContainer );
 
 	enum Command {
 		CMD_CLEAR_FILTER,
@@ -147,20 +147,20 @@ class SceneTreeFilter : public HBoxContainer {
 	};
 
 	SceneTreeEditor *scene_tree;
-	LineEdit *scene_tree_filter;
-	Button *clear_filter_button;
-	Button *filter_prev_button;
-	Button *filter_next_button;
+	LineEdit *search_box;
+	Button *clear_search_button;
+	Button *prev_button;
+	Button *next_button;
 
-	void _filter_command(int p_command);
-	void _filter_text_changed(const String& p_newtext);
+	void _command(int p_command);
+	void _search_text_changed(const String& p_newtext);
 
 protected:
 
 	static void _bind_methods();
 
 public:
-	SceneTreeFilter(SceneTreeEditor *p_scene_tree);
+	SceneTreeSearch(SceneTreeEditor *p_scene_tree);
 };
 
 #endif // SCENE_TREE_DOCK_H
