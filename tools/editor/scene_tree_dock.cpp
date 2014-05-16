@@ -501,11 +501,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_FOCUS: {
 
-			Node *selected = scene_tree->get_selected();
-			if (!selected)
-				break;
-			scene_tree->set_selected(NULL,false);
-			scene_tree->set_selected(selected,false); // de-select and re-select node to make sure ensure_cursor_is_visible() get invoked
+			scene_tree->focus_selected();
 
 		} break;
 		case TOOL_ERASE: {
@@ -530,7 +526,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 
 		} break;
-
 	}
 
 }
@@ -553,7 +548,7 @@ void SceneTreeDock::_notification(int p_what) {
 				"Duplicate",
 				"Reparent",
 				"Focus",
-				"Del",
+				"Del"
 			};
 
 			for(int i=0;i<TOOL_BUTTON_MAX;i++)
@@ -1244,6 +1239,7 @@ void SceneTreeDock::_import_subscene() {
 */
 }
 
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected);
@@ -1319,8 +1315,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_SCRIPT]=tb;
 
-
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));
+
+	SceneTreeSearch *tree_search_hbc = memnew( SceneTreeSearch(scene_tree) );
+	vbc->add_child(tree_search_hbc);
 	vbc->add_child(scene_tree);
 	scene_tree->set_v_size_flags(SIZE_EXPAND|SIZE_FILL);
 
@@ -1411,3 +1409,58 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 
 }
+
+void SceneTreeSearch::_command(int p_command) {
+	switch (p_command) {
+
+		case CMD_CLEAR_FILTER: {
+			search_box->clear();
+			scene_tree->highlight_tree("");
+		}break;
+		case CMD_FILTER_PREVIOUS: {
+			if (search_box->get_text().strip_edges()!="")
+				scene_tree->select_highlighted(false);
+		}break;
+		case CMD_FILTER_NEXT: {
+			if (search_box->get_text().strip_edges()!="")
+				scene_tree->select_highlighted();
+		}break;
+	}
+}
+
+void SceneTreeSearch::_search_text_changed(const String &p_newtext) {
+	scene_tree->highlight_tree(p_newtext.strip_edges());
+}
+
+void SceneTreeSearch::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_command"),&SceneTreeSearch::_command);
+	ObjectTypeDB::bind_method(_MD("_search_text_changed"), &SceneTreeSearch::_search_text_changed);
+}
+
+
+SceneTreeSearch::SceneTreeSearch(SceneTreeEditor *p_scene_tree) {
+
+	scene_tree = p_scene_tree;
+
+	prev_button = memnew( Button );
+	prev_button->set_text("<");
+	prev_button->connect("pressed",this,"_command",make_binds(CMD_FILTER_PREVIOUS));
+	add_child(prev_button);
+
+	next_button = memnew( Button );
+	next_button->set_text(">");
+	next_button->connect("pressed",this,"_command",make_binds(CMD_FILTER_NEXT));
+	add_child(next_button);
+
+	search_box = memnew( LineEdit );
+	search_box->connect("text_changed",this,"_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(search_box);
+
+	clear_search_button = memnew( Button );
+	clear_search_button->set_text("clear");
+	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
+	add_child(clear_search_button);
+}
+
