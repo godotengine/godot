@@ -53,7 +53,7 @@ public:
 	bool init_ref();
 	void reference();
 	bool unreference();
-
+    long getcount();
 	Reference();
 	~Reference();
 };
