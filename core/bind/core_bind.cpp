@@ -854,6 +854,12 @@ _Geometry::_Geometry() {
 	singleton=this;
 }
 
+///////////////////////// ByteArray
+
+void _ByteArray::_bind_methods() {
+
+
+}
 
 ///////////////////////// FILE
 

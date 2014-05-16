@@ -224,7 +224,14 @@ public:
 	_Geometry();
 };
 
+class _ByteArray : public Object {
 
+    OBJ_TYPE(_ByteArray,Object);
+protected:
+    static void _bind_methods();
+public:
+
+};
 
 
 class _File : public Reference {
