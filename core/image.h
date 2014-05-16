@@ -32,6 +32,7 @@
 #include "dvector.h"
 #include "color.h"
 #include "math_2d.h"
+#include "os/file_access.h"
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>
  *
@@ -268,7 +269,9 @@ public:
 	DVector<uint8_t> get_data() const;
 	
 	Error load(const String& p_path);
-	
+
+	Error load_image_buffer(const String& p_path,FileAccess *p_custom);
+
 	/** 
 	 * create an empty image
 	 */

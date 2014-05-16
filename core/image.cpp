@@ -1200,6 +1200,11 @@ Error Image::load(const String& p_path) {
 	return ImageLoader::load_image(p_path, this);
 }
 
+Error Image::load_image_buffer(const String& p_path,FileAccess *p_custom)
+{
+    return ImageLoader::load_image(p_path, this,p_custom);
+}
+
 bool Image::operator==(const Image& p_image) const {
 
 	if (data.size() == 0 && p_image.data.size() == 0)
