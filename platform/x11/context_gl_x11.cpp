@@ -316,6 +316,8 @@ Error ContextGL_X11::initialize()
 	// Now we want to find an EGL Surface that will work for us...
 	EGLint eglAttribs[] = {
 		EGL_BUFFER_SIZE, 16			// 16bit Colour Buffer
+    ,   EGL_DEPTH_SIZE, 24
+    ,   EGL_SURFACE_TYPE, EGL_WINDOW_BIT
 	,	EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT	// We want an ES2 config
 	,	EGL_NONE
 	};
@@ -456,6 +458,7 @@ Error ContextGL_X11::initialize() {
 	// Now we want to find an EGL Surface that will work for us...
 	EGLint eglAttribs[] = {
 		EGL_BUFFER_SIZE, 16			// 16bit Colour Buffer
+    ,   EGL_DEPTH_SIZE, 24
 	,	EGL_NONE
 	};
 
