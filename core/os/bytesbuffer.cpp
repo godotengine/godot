@@ -1,5 +1,4 @@
 #include "bytesbuffer.h"
-
 BytesBuffer::BytesBuffer()
 {
     position = 0;
@@ -28,19 +27,23 @@ bool BytesBuffer::is_open() const
 
 void BytesBuffer::seek(size_t p_position)
 {
-    if(p_position>=data.size())p_position=data.size()-1;
+    if(p_position>0 && data.size()>0){
+        if(p_position>=data.size())p_position=data.size()-1;
+    }
     position = p_position;
 }
 
 void BytesBuffer::seek_end(int64_t p_position)
 {
     if(p_position==0){
-        position=data.size();
-        if(position>0)position-=1;
+        p_position=data.size();
+        if(p_position>0)p_position-=1;
     }else{
-        if(p_position>=data.size())p_position=data.size()-1;
-        position = p_position;
+        if(p_position>0 && data.size()>0){
+            if(p_position>=data.size())p_position=data.size()-1;
+        }
     }
+    position = p_position;
 }
 
 size_t BytesBuffer::get_pos() const
@@ -78,7 +81,7 @@ void BytesBuffer::store_8(uint8_t p_dest)
 
 bool BytesBuffer::file_exists(const String &p_name)
 {
-    return false;
+    return true;
 }
  BytesBuffer::~BytesBuffer()
  {
