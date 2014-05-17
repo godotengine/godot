@@ -37,11 +37,13 @@
 
 bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
 
+	String search_term = tree_filter->get_search_term();
+	String file_filter = tree_filter->get_file_filter();
+
 	TreeItem *item = tree->create_item(p_parent);
 	item->set_text(0,p_dir->get_name()+"/");
 	item->set_icon(0,get_icon("Folder","EditorIcons"));
 	item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
-
 
 	bool has_items=false;
 
@@ -53,6 +55,15 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 
 	for (int i=0;i<p_dir->get_file_count();i++) {
 
+		String file_name = p_dir->get_file(i);
+		String extension = file_name.extension();
+
+		if (search_term!="" && file_name.findn(search_term)==-1)
+			continue;
+
+		if (file_filter!="*" && extension != file_filter )
+			continue;
+
 		bool isfave = favorites.has(p_dir->get_file_path(i));
 		if (button_favorite->is_pressed() && !isfave)
 			continue;
@@ -61,7 +72,7 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 		fitem->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		fitem->set_editable(0,true);
 		fitem->set_checked(0,isfave);
-		fitem->set_text(0,p_dir->get_file(i));
+		fitem->set_text(0,file_name);
 
 		Ref<Texture> icon = get_icon( (has_icon(p_dir->get_file_type(i),"EditorIcons")?p_dir->get_file_type(i):String("Object")),"EditorIcons");
 		fitem->set_icon(0, icon );
@@ -263,54 +274,45 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	editor=p_editor;
 
-	tree = memnew( Tree );
-	add_child(tree);
-	tree->set_area_as_parent_rect();
-	tree->set_anchor_and_margin(MARGIN_TOP,Control::ANCHOR_BEGIN,25);
-	tree->connect("item_edited",this,"_favorite_toggled");
-
+	HBoxContainer *toolbar_hbc = memnew( HBoxContainer );
+	add_child(toolbar_hbc);
 
 	button_reload = memnew( Button );
-	button_reload->set_pos(Point2(3,2));
-	button_reload->set_size(Point2(20,5));
 	button_reload->set_flat(true);
-	add_child(button_reload);
-	button_reload->connect("pressed",this,"_rescan");
+	button_reload->connect("pressed",this,"_rescan");	
+	toolbar_hbc->add_child(button_reload);
 
 	button_favorite = memnew( Button );
-	button_favorite->set_pos(Point2(28,2));
-	button_favorite->set_size(Point2(20,5));
 	button_favorite->set_flat(true);
 	button_favorite->set_toggle_mode(true);
-	add_child(button_favorite);
 	button_favorite->connect("toggled",this,"_favorites_toggled");
+	toolbar_hbc->add_child(button_favorite);
 
-	button_instance = memnew( Button );
-	button_instance->set_anchor(MARGIN_LEFT,ANCHOR_END);
-	button_instance->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	button_instance->set_begin(Point2(3+20,2));
-	button_instance->set_end(Point2(2+15,5));
-	button_instance->set_flat(true);
-	add_child(button_instance);
-	button_instance->connect("pressed",this,"_instance_pressed");
+	toolbar_hbc->add_spacer();
 
 	button_open = memnew( Button );
-	button_open->set_anchor(MARGIN_LEFT,ANCHOR_END);
-	button_open->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	button_open->set_begin(Point2(3+45,2));
-	button_open->set_end(Point2(2+34,5));
 	button_open->set_flat(true);
-	add_child(button_open);
 	button_open->connect("pressed",this,"_open_pressed");
+	toolbar_hbc->add_child(button_open);
+
+	button_instance = memnew( Button );
+	button_instance->set_flat(true);
+	button_instance->connect("pressed",this,"_instance_pressed");
+	toolbar_hbc->add_child(button_instance);
 
 	button_replace = memnew( Button );
-	button_replace->set_anchor(MARGIN_LEFT,ANCHOR_END);
-	button_replace->set_anchor(MARGIN_RIGHT,ANCHOR_END);
-	button_replace->set_begin(Point2(3+70,2));
-	button_replace->set_end(Point2(2+53,5));
 	button_replace->set_flat(true);
-	add_child(button_replace);
 	button_replace->connect("pressed",this,"_replace_pressed");
+	toolbar_hbc->add_child(button_replace);
+
+	tree = memnew( Tree );
+	tree_filter=memnew( ScenesDockFilter(tree) );
+	tree_filter->connect("filter_changed", this, "_update_tree");
+	add_child(tree_filter);
+	add_child(tree);
+
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
+	tree->connect("item_edited",this,"_favorite_toggled");
 
 	timer = memnew( Timer );
 	timer->set_one_shot(true);
@@ -321,10 +323,102 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	updating_tree=false;
 
-
-
 }
 
 ScenesDock::~ScenesDock() {
 
 }
+
+void ScenesDockFilter::_setup_filters() {
+
+	file_filter->clear();
+
+	List<String> extensions;
+	ResourceLoader::get_recognized_extensions_for_type("",&extensions);
+
+	file_filter->add_item("All Files (*)");
+	filters.push_back("*");
+
+	List<String> filter_texts;
+	for(int i=0;i<extensions.size();i++) {
+		filter_texts.push_back("*."+extensions[i]+" ; "+extensions[i].to_upper());
+		filters.push_back(extensions[i]);
+	}
+	for(int i=0;i<filter_texts.size();i++) {
+
+		String flt=filter_texts[i].get_slice(";",0).strip_edges();
+		String desc=filter_texts[i].get_slice(";",1).strip_edges();
+		if (desc.length())
+			file_filter->add_item(desc+" ( "+flt+" )");
+		else
+			file_filter->add_item("( "+flt+" )");
+	}
+}
+
+void ScenesDockFilter::_command(int p_command) {
+	switch (p_command) {
+
+		case CMD_CLEAR_FILTER: {
+			if (search_box->get_text()!="") {
+				search_box->clear();
+				emit_signal("filter_changed");
+			}
+		}break;
+	}
+}
+
+void ScenesDockFilter::_search_text_changed(const String &p_newtext) {
+	emit_signal("filter_changed");
+}
+
+String ScenesDockFilter::get_search_term() {
+	return search_box->get_text().strip_edges();
+}
+
+String ScenesDockFilter::get_file_filter() {
+	return _current_filter;
+}
+
+void ScenesDockFilter::_file_filter_selected(int p_idx) {
+	String selected = filters[file_filter->get_selected()];
+	if (_current_filter != selected ) {
+		_current_filter = selected;
+		emit_signal("filter_changed");
+	}
+}
+
+void ScenesDockFilter::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_command"),&ScenesDockFilter::_command);
+	ObjectTypeDB::bind_method(_MD("_search_text_changed"), &ScenesDockFilter::_search_text_changed);
+	ObjectTypeDB::bind_method(_MD("_file_filter_selected"), &ScenesDockFilter::_file_filter_selected);
+
+	ADD_SIGNAL( MethodInfo("filter_changed") );
+}
+
+ScenesDockFilter::ScenesDockFilter(Tree *p_tree) {
+
+	_current_filter = "*";
+
+	tree = p_tree;
+
+	file_filter = memnew( OptionButton );
+	file_filter->set_custom_minimum_size(Size2(90,10));
+	file_filter->set_clip_text(true);
+	file_filter->connect("item_selected", this, "_file_filter_selected");
+	add_child(file_filter);
+
+	_setup_filters();
+
+	search_box = memnew( LineEdit );
+	search_box->connect("text_changed",this,"_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(search_box);
+
+	clear_search_button = memnew( Button );
+	clear_search_button->set_text("clear");
+	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
+	add_child(clear_search_button);
+
+}
+
