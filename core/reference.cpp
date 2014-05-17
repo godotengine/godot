@@ -65,9 +65,9 @@ void Reference::reference(){
 	refcount.ref();
 
 }
-long Reference::getcount(){
+int Reference::getcount(){
 
-    return refcount.get();
+    return int(refcount.get());
 }
 bool Reference::unreference(){
 

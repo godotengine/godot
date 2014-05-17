@@ -859,7 +859,212 @@ _Geometry::_Geometry() {
 void _ByteArray::_bind_methods() {
 
 
+    ObjectTypeDB::bind_method(_MD("clear"),&_ByteArray::clear);
+    ObjectTypeDB::bind_method(_MD("seek","pos"),&_ByteArray::seek);
+    ObjectTypeDB::bind_method(_MD("seek_end","pos"),&_ByteArray::seek_end,DEFVAL(0));
+    ObjectTypeDB::bind_method(_MD("get_pos"),&_ByteArray::get_pos);
+    ObjectTypeDB::bind_method(_MD("get_len"),&_ByteArray::get_len);
+    ObjectTypeDB::bind_method(_MD("eof_reached"),&_ByteArray::eof_reached);
+
+    ObjectTypeDB::bind_method(_MD("get_8"),&_ByteArray::get_8);
+    ObjectTypeDB::bind_method(_MD("get_16"),&_ByteArray::get_16);
+    ObjectTypeDB::bind_method(_MD("get_32"),&_ByteArray::get_32);
+    ObjectTypeDB::bind_method(_MD("get_64"),&_ByteArray::get_64);
+    ObjectTypeDB::bind_method(_MD("get_float"),&_ByteArray::get_float);
+    ObjectTypeDB::bind_method(_MD("get_double"),&_ByteArray::get_double);
+    ObjectTypeDB::bind_method(_MD("get_buffer","len"),&_ByteArray::get_buffer);
+    ObjectTypeDB::bind_method(_MD("get_line"),&_ByteArray::get_line);
+    ObjectTypeDB::bind_method(_MD("get_as_text"),&_ByteArray::get_as_text);
+    ObjectTypeDB::bind_method(_MD("get_csv_line"),&_ByteArray::get_csv_line);
+    ObjectTypeDB::bind_method(_MD("get_pascal_string"),&_ByteArray::get_pascal_string);
+
+    ObjectTypeDB::bind_method(_MD("get_endian_swap"),&_ByteArray::get_endian_swap);
+    ObjectTypeDB::bind_method(_MD("set_endian_swap","enable"),&_ByteArray::set_endian_swap);
+
+    ObjectTypeDB::bind_method(_MD("store_8","value"),&_ByteArray::store_8);
+    ObjectTypeDB::bind_method(_MD("store_16","value"),&_ByteArray::store_16);
+    ObjectTypeDB::bind_method(_MD("store_32","value"),&_ByteArray::store_32);
+    ObjectTypeDB::bind_method(_MD("store_64","value"),&_ByteArray::store_64);
+    ObjectTypeDB::bind_method(_MD("store_float","value"),&_ByteArray::store_float);
+    ObjectTypeDB::bind_method(_MD("store_double","value"),&_ByteArray::store_double);
+    ObjectTypeDB::bind_method(_MD("store_buffer","buffer"),&_ByteArray::store_buffer);
+    ObjectTypeDB::bind_method(_MD("store_line","line"),&_ByteArray::store_line);
+    ObjectTypeDB::bind_method(_MD("store_string","string"),&_ByteArray::store_string);
+    ObjectTypeDB::bind_method(_MD("store_pascal_string","string"),&_ByteArray::store_pascal_string);
+
+
+
 }
+
+void _ByteArray::clear()
+{
+    db.close();
+}
+
+void _ByteArray::seek(int64_t p_position)
+{
+    db.seek(p_position);
+}
+
+void _ByteArray::seek_end(int64_t p_position)
+{
+    db.seek_end(p_position);
+}
+
+int64_t _ByteArray::get_pos() const
+{
+    return db.get_pos();
+}
+
+int64_t _ByteArray::get_len() const
+{
+    return db.get_len();
+}
+
+bool _ByteArray::eof_reached() const
+{
+    return db.eof_reached();
+}
+
+uint8_t _ByteArray::get_8() const
+{
+    return db.get_8();
+}
+
+uint16_t _ByteArray::get_16() const
+{
+    return db.get_16();
+}
+
+uint32_t _ByteArray::get_32() const
+{
+    return db.get_32();
+}
+
+uint64_t _ByteArray::get_64() const
+{
+    return db.get_64();
+}
+
+float _ByteArray::get_float() const
+{
+    return db.get_float();
+}
+
+double _ByteArray::get_double() const
+{
+    return db.get_double();
+}
+
+DVector<uint8_t> _ByteArray::get_buffer(int p_length) const
+{
+    DVector<uint8_t> data;
+    ERR_FAIL_COND_V(p_length<=0,data);
+    Error err = data.resize(p_length);
+    ERR_FAIL_COND_V(err!=OK,data);
+    DVector<uint8_t>::Write w = data.write();
+    int len = db.get_buffer(&w[0],p_length);
+    ERR_FAIL_COND_V( len <= 0 , DVector<uint8_t>());
+    w = DVector<uint8_t>::Write();
+    if (len < p_length)data.resize(p_length);
+    return data;
+}
+
+String _ByteArray::get_line() const
+{
+    return db.get_line();
+}
+
+String _ByteArray::get_as_text() const
+{
+    String text;
+    String l = "";
+    while(!db.eof_reached()) {
+        l = db.get_line();
+        text+=l+"\n";
+    }
+    return text;
+}
+
+Vector<String> _ByteArray::get_csv_line() const
+{
+    return db.get_csv_line();
+}
+
+void _ByteArray::set_endian_swap(bool p_swap)
+{
+    return db.set_endian_swap(p_swap);
+}
+
+bool _ByteArray::get_endian_swap()
+{
+    return db.get_endian_swap();
+}
+
+String _ByteArray::get_pascal_string()
+{
+    return db.get_pascal_string();
+}
+
+void _ByteArray::store_8(uint8_t p_dest)
+{
+    db.store_8(p_dest);
+}
+
+void _ByteArray::store_16(uint16_t p_dest)
+{
+    db.store_16(p_dest);
+}
+
+void _ByteArray::store_32(uint32_t p_dest)
+{
+    db.store_32(p_dest);
+}
+
+void _ByteArray::store_64(uint64_t p_dest)
+{
+    db.store_64(p_dest);
+}
+
+void _ByteArray::store_float(float p_dest)
+{
+    db.store_float(p_dest);
+}
+
+void _ByteArray::store_double(double p_dest)
+{
+    db.store_double(p_dest);
+}
+
+void _ByteArray::store_string(const String &p_string)
+{
+    db.store_string(p_string);
+}
+
+void _ByteArray::store_line(const String &p_string)
+{
+    db.store_line(p_string);
+}
+
+void _ByteArray::store_pascal_string(const String &p_string)
+{
+    db.store_pascal_string(p_string);
+}
+
+void _ByteArray::store_buffer(const DVector<uint8_t> &p_buffer)
+{
+
+    int len = p_buffer.size();
+    ERR_FAIL_COND(len<=0);
+    DVector<uint8_t>::Read r = p_buffer.read();
+    db.store_buffer(&r[0],len);
+}
+
+_ByteArray::~_ByteArray()
+{
+    db.close();
+}
+
 
 ///////////////////////// FILE
 
