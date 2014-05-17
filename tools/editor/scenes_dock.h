@@ -90,25 +90,27 @@ class ScenesDockFilter : public HBoxContainer {
 
 	enum Command {
 		CMD_CLEAR_FILTER,
-		CMD_FILTER_PREVIOUS,
-		CMD_FILTER_NEXT,
 	};
 
 	Tree *tree;
-	OptionButton *filter;
+	OptionButton *file_filter;
 	LineEdit *search_box;
 	Button *clear_search_button;
-	Button *prev_button;
-	Button *next_button;
+
+	String _current_filter;
+	Vector<String> filters;
 
 	void _command(int p_command);
 	void _search_text_changed(const String& p_newtext);
 	void _setup_filters();
-protected:
+	void _file_filter_selected(int p_idx);
 
+protected:
 	static void _bind_methods();
 
 public:
+	String get_search_term();
+	String get_file_filter();
 	ScenesDockFilter(Tree *p_tree);
 };
 
