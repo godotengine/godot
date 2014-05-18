@@ -768,8 +768,13 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
     } else {
         print_line("have no mipmaps");
         if (minfilter_mipmap) {
-            print_line("change minfilter to linear");
-            glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+            if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
+                print_line("change minfilter to linear");
+                glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+            } else {
+                print_line("change minfilter to nearest");
+                glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+            }
         }
     }
 
