@@ -644,7 +644,7 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
 		return;
 
 	const Vector3 *vrts=&mesh.vertices[0];
-
+    #ifndef NEON
 	for (int i=0;i<vertex_count;i++) {
 
 		float d=p_normal.dot( p_transform.xform( vrts[i] ) );
@@ -654,6 +654,158 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
 		if (i==0 || d < r_min)
 			r_min=d;
 	}
+    #else
+    int i;
+    for (i=0;i<vertex_count-4;i+=4) { // as long as 4 calculations at a time are possible
+            /*_FORCE_INLINE_ Vector3 Transform::xform(const Vector3& p_vector) const {
+
+            return Vector3(
+                basis[0].dot(p_vector)+origin.x,
+                basis[1].dot(p_vector)+origin.y,
+                basis[2].dot(p_vector)+origin.z
+            );
+            
+            }*/
+            print_line("yay");
+            float d1, d2, d3, d4;
+            
+            Matrix3 m = p_transform.get_basis();
+            Vector3 o = p_transform.get_origin();
+            
+            float f1_1, f1_2, f1_3, f1_4, f2_1, f2_2, f2_3, f2_4, f3_1, f3_2, f3_3, f3_4;
+            
+            f1_1 = m[0][0]*vrts[i][0];
+            f2_1 = m[1][0]*vrts[i][0];
+            f3_1 = m[2][0]*vrts[i][0];
+            f1_2 = m[0][0]*vrts[i+1][0];
+            f2_2 = m[1][0]*vrts[i+1][0];
+            f3_2 = m[2][0]*vrts[i+1][0];
+            f1_3 = m[0][0]*vrts[i+2][0];
+            f2_3 = m[1][0]*vrts[i+2][0];
+            f3_3 = m[2][0]*vrts[i+2][0];
+            f1_4 = m[0][0]*vrts[i+3][0];
+            f2_4 = m[1][0]*vrts[i+3][0];
+            f3_4 = m[2][0]*vrts[i+3][0];
+            
+            f1_1 += m[0][1]*vrts[i][1];
+            f2_1 += m[1][1]*vrts[i][1];
+            f3_1 += m[2][1]*vrts[i][1];
+            f1_2 += m[0][1]*vrts[i+1][1];
+            f2_2 += m[1][1]*vrts[i+1][1];
+            f3_2 += m[2][1]*vrts[i+1][1];
+            f1_3 += m[0][1]*vrts[i+2][1];
+            f2_3 += m[1][1]*vrts[i+2][1];
+            f3_3 += m[2][1]*vrts[i+2][1];
+            f1_4 += m[0][1]*vrts[i+3][1];
+            f2_4 += m[1][1]*vrts[i+3][1];
+            f3_4 += m[2][1]*vrts[i+3][1];
+            
+            
+            f1_1 += m[0][2]*vrts[i][3];
+            f2_1 += m[1][2]*vrts[i][3];
+            f3_1 += m[2][2]*vrts[i][3];
+            f1_2 += m[0][2]*vrts[i+1][3];
+            f2_2 += m[1][2]*vrts[i+1][3];
+            f3_2 += m[2][2]*vrts[i+1][3];
+            f1_3 += m[0][2]*vrts[i+2][3];
+            f2_3 += m[1][2]*vrts[i+2][3];
+            f3_3 += m[2][2]*vrts[i+2][3];
+            f1_4 += m[0][2]*vrts[i+3][3];
+            f2_4 += m[1][2]*vrts[i+3][3];
+            f3_4 += m[2][2]*vrts[i+3][3];
+            
+            f1_1 += o[0];
+            f2_1 += o[1];
+            f3_1 += o[2];
+            f1_2 += o[0];
+            f2_2 += o[1];
+            f3_2 += o[2];
+            f1_3 += o[0];
+            f2_3 += o[1];
+            f3_3 += o[2];
+            f1_4 += o[0];
+            f2_4 += o[1];
+            f3_4 += o[2];
+            
+            d1 = f1_1*p_normal[0];
+            d2 = f1_2*p_normal[0];
+            d3 = f1_3*p_normal[0];
+            d4 = f1_4*p_normal[0];
+            
+            d1 += f2_1*p_normal[1];
+            d2 += f2_2*p_normal[1];
+            d3 += f2_3*p_normal[1];
+            d4 += f2_4*p_normal[1];
+            
+            d1 += f3_1*p_normal[2];
+            d2 += f3_2*p_normal[2];
+            d3 += f3_3*p_normal[2];
+            d4 += f3_4*p_normal[2];
+            
+            if (i==0 || d1 > r_max)
+                r_max=d1;
+            if (i==0 || d1 < r_min)
+                r_min=d1;
+                
+            if (i==0 || d2 > r_max)
+                r_max=d2;
+            if (i==0 || d2 < r_min)
+                r_min=d2;
+                
+            if (i==0 || d3 > r_max)
+                r_max=d3;
+            if (i==0 || d3 < r_min)
+                r_min=d3;
+                
+            if (i==0 || d4 > r_max)
+                r_max=d4;
+            if (i==0 || d4 < r_min)
+                r_min=d4;
+    }  
+    for (i=i;i<vertex_count;i++) { // rest
+            /*_FORCE_INLINE_ Vector3 Transform::xform(const Vector3& p_vector) const {
+
+            return Vector3(
+                basis[0].dot(p_vector)+origin.x,
+                basis[1].dot(p_vector)+origin.y,
+                basis[2].dot(p_vector)+origin.z
+            );
+            
+            }*/
+            
+            float d;
+            
+            Matrix3 m = p_transform.get_basis();
+            Vector3 o = p_transform.get_origin();
+            
+            float f1, f2, f3;
+            
+            f1 = m[0][0]*vrts[i][0];
+            f2 = m[1][0]*vrts[i][0];
+            f3 = m[2][0]*vrts[i][0];
+            
+            f1 += m[0][1]*vrts[i][1];
+            f2 += m[1][1]*vrts[i][1];
+            f3 += m[2][1]*vrts[i][1];
+            
+            f1 += m[0][2]*vrts[i][3];
+            f2 += m[1][2]*vrts[i][3];
+            f3 += m[2][2]*vrts[i][3];
+            
+            f1 += o[0];
+            f2 += o[1];
+            f3 += o[2];
+            
+            d = f1*p_normal[0];
+            d += f2*p_normal[1];
+            d += f3*p_normal[2];
+            
+            if (i==0 || d > r_max)
+                r_max=d;
+            if (i==0 || d < r_min)
+                r_min=d;
+    }    
+    #endif
 }
 
 Vector3 ConvexPolygonShapeSW::get_support(const Vector3& p_normal) const {
