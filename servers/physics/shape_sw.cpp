@@ -666,7 +666,7 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
             );
             
             }*/
-            print_line("yay");
+            //print_line("yay");
             float d1, d2, d3, d4;
             
             Matrix3 m = p_transform.get_basis();
@@ -675,56 +675,65 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
             float f1_1, f1_2, f1_3, f1_4, f2_1, f2_2, f2_3, f2_4, f3_1, f3_2, f3_3, f3_4;
             
             f1_1 = m[0][0]*vrts[i][0];
-            f2_1 = m[1][0]*vrts[i][0];
-            f3_1 = m[2][0]*vrts[i][0];
             f1_2 = m[0][0]*vrts[i+1][0];
-            f2_2 = m[1][0]*vrts[i+1][0];
-            f3_2 = m[2][0]*vrts[i+1][0];
             f1_3 = m[0][0]*vrts[i+2][0];
-            f2_3 = m[1][0]*vrts[i+2][0];
-            f3_3 = m[2][0]*vrts[i+2][0];
             f1_4 = m[0][0]*vrts[i+3][0];
+            
+            f2_1 = m[1][0]*vrts[i][0];
+            f2_2 = m[1][0]*vrts[i+1][0];
+            f2_3 = m[1][0]*vrts[i+2][0];
             f2_4 = m[1][0]*vrts[i+3][0];
+            
+            f3_1 = m[2][0]*vrts[i][0];
+            f3_2 = m[2][0]*vrts[i+1][0];
+            f3_3 = m[2][0]*vrts[i+2][0];
             f3_4 = m[2][0]*vrts[i+3][0];
             
             f1_1 += m[0][1]*vrts[i][1];
-            f2_1 += m[1][1]*vrts[i][1];
-            f3_1 += m[2][1]*vrts[i][1];
             f1_2 += m[0][1]*vrts[i+1][1];
-            f2_2 += m[1][1]*vrts[i+1][1];
-            f3_2 += m[2][1]*vrts[i+1][1];
             f1_3 += m[0][1]*vrts[i+2][1];
-            f2_3 += m[1][1]*vrts[i+2][1];
-            f3_3 += m[2][1]*vrts[i+2][1];
             f1_4 += m[0][1]*vrts[i+3][1];
+            
+            f2_1 += m[1][1]*vrts[i][1];
+            f2_2 += m[1][1]*vrts[i+1][1];
+            f2_3 += m[1][1]*vrts[i+2][1];
             f2_4 += m[1][1]*vrts[i+3][1];
+            
+            f3_1 += m[2][1]*vrts[i][1];
+            f3_2 += m[2][1]*vrts[i+1][1];
+            f3_3 += m[2][1]*vrts[i+2][1];
             f3_4 += m[2][1]*vrts[i+3][1];
             
             
             f1_1 += m[0][2]*vrts[i][3];
-            f2_1 += m[1][2]*vrts[i][3];
-            f3_1 += m[2][2]*vrts[i][3];
             f1_2 += m[0][2]*vrts[i+1][3];
-            f2_2 += m[1][2]*vrts[i+1][3];
-            f3_2 += m[2][2]*vrts[i+1][3];
             f1_3 += m[0][2]*vrts[i+2][3];
-            f2_3 += m[1][2]*vrts[i+2][3];
-            f3_3 += m[2][2]*vrts[i+2][3];
             f1_4 += m[0][2]*vrts[i+3][3];
+            
+            f2_1 += m[1][2]*vrts[i][3];
+            f2_2 += m[1][2]*vrts[i+1][3];
+            f2_3 += m[1][2]*vrts[i+2][3];
             f2_4 += m[1][2]*vrts[i+3][3];
+            
+            f3_1 += m[2][2]*vrts[i][3];
+            f3_2 += m[2][2]*vrts[i+1][3];
+            f3_3 += m[2][2]*vrts[i+2][3];
             f3_4 += m[2][2]*vrts[i+3][3];
             
             f1_1 += o[0];
-            f2_1 += o[1];
-            f3_1 += o[2];
             f1_2 += o[0];
-            f2_2 += o[1];
-            f3_2 += o[2];
             f1_3 += o[0];
-            f2_3 += o[1];
-            f3_3 += o[2];
             f1_4 += o[0];
+            
+            f2_1 += o[1];
+            f2_2 += o[1];
+            f2_3 += o[1];
             f2_4 += o[1];
+            
+            
+            f3_1 += o[2];
+            f3_2 += o[2];
+            f3_3 += o[2];
             f3_4 += o[2];
             
             d1 = f1_1*p_normal[0];
