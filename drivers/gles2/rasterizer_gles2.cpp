@@ -732,7 +732,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	texture->ignore_mipmaps = compressed && img.get_mipmaps()==0;
 
-	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps) {
+	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps && (img.get_mipmaps()>0 || texture->target == GL_TEXTURE_CUBE_MAP)) {
 		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
         print_line("MIN_FILTER uses ...MIPMAP...");
         minfilter_mipmap = true;
@@ -763,7 +763,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	int mipmaps= (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && img.get_mipmaps()>0) ? img.get_mipmaps() +1 : 1;
     
-    if (mipmaps > 1) {
+    /*if (mipmaps > 1) {
         print_line("have mipmaps");
     } else {
         print_line("have no mipmaps");
@@ -776,7 +776,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
                 glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
             }
         }
-    }
+    }*/
 
 	int w=img.get_width();
 	int h=img.get_height();
@@ -801,7 +801,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
                 if ( w != h ) {
                     //print_line("stretch to square!");
                     //printf("%d x %d\n",w,h);
-                    if (w < h && false) {
+                    if (w < h) {
                         squared = (int *) malloc(sizeof(int)*h*h); // todo: currently I assume RGBA or any other format using 32bit(int) colors
                         for ( int i = 0; i<h; i++) { // i is line
                             int n = h/w; // n is amount of copies per collum
