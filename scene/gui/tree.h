@@ -34,6 +34,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
+#include "core/helper/value_evaluator.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -241,14 +242,6 @@ public:
 
 VARIANT_ENUM_CAST( TreeItem::TreeCellMode );
 
-class ValueEvaluator : public Object {
-
-	OBJ_TYPE(ValueEvaluator, Object);
-public:
-	virtual double eval(String& p_text) {
-		return p_text.to_double();
-	}
-};
 
 class Tree : public Control {
 	
