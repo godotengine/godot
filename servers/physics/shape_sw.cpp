@@ -30,6 +30,11 @@
 #include "geometry.h"
 #include "sort.h"
 #include "quick_hull.h"
+
+#ifdef NEON
+    #include <arm_neon.h>
+#endif
+
 #define _POINT_SNAP 0.001953125
 #define _EDGE_IS_VALID_SUPPORT_TRESHOLD 0.0002
 #define _FACE_IS_VALID_SUPPORT_TRESHOLD 0.9998
@@ -656,6 +661,9 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
 	}
     #else
     int i;
+    Matrix3 m = p_transform.get_basis();
+    Vector3 o = p_transform.get_origin();
+    float32x4_t vo[4] = {{o[0],o[0],o[0],o[0]} , {o[1],o[1],o[1],o[1]} , {o[2],o[2],o[2],o[2]} , {o[3],o[3],o[3],o[3]}};
     for (i=0;i<vertex_count-4;i+=4) { // as long as 4 calculations at a time are possible
             /*_FORCE_INLINE_ Vector3 Transform::xform(const Vector3& p_vector) const {
 
@@ -667,110 +675,146 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
             
             }*/
             //print_line("yay");
-            float d1, d2, d3, d4;
+            //float d1, d2, d3, d4;
             
-            Matrix3 m = p_transform.get_basis();
-            Vector3 o = p_transform.get_origin();
             
-            float f1_1, f1_2, f1_3, f1_4, f2_1, f2_2, f2_3, f2_4, f3_1, f3_2, f3_3, f3_4;
-            //float32x4_t f1, f2, f3;
             
-            f1_1 = m[0][0]*vrts[i][0];
+            //float f1_1, f1_2, f1_3, f1_4, f2_1, f2_2, f2_3, f2_4, f3_1, f3_2, f3_3, f3_4;
+            float32x4_t f1, f2, f3;
+            float32x4_t d;
+            float32x4_t vrts_x = {vrts[i].x, vrts[i+1].x, vrts[i+2].x, vrts[i+3].x};
+            float32x4_t vrts_y = {vrts[i].y, vrts[i+1].y, vrts[i+2].y, vrts[i+3].y};
+            float32x4_t vrts_z = {vrts[i].z, vrts[i+1].z, vrts[i+2].z, vrts[i+3].z};
+            
+            /*f1_1 = m[0][0]*vrts[i][0];
             f1_2 = m[0][0]*vrts[i+1][0];
             f1_3 = m[0][0]*vrts[i+2][0];
-            f1_4 = m[0][0]*vrts[i+3][0];
+            f1_4 = m[0][0]*vrts[i+3][0];*/
             
-            f2_1 = m[1][0]*vrts[i][0];
+            //f1 = vrts_x * m[0][0];
+            f1 = vmulq_n_f32(vrts_x, m[0][0]);
+            
+            /*f2_1 = m[1][0]*vrts[i][0];
             f2_2 = m[1][0]*vrts[i+1][0];
             f2_3 = m[1][0]*vrts[i+2][0];
-            f2_4 = m[1][0]*vrts[i+3][0];
+            f2_4 = m[1][0]*vrts[i+3][0];*/
             
-            f3_1 = m[2][0]*vrts[i][0];
+            //f2 = m[1][0] * vrts_x;
+            f2 = vmulq_n_f32(vrts_x, m[1][0]);
+            
+            /*f3_1 = m[2][0]*vrts[i][0];
             f3_2 = m[2][0]*vrts[i+1][0];
             f3_3 = m[2][0]*vrts[i+2][0];
-            f3_4 = m[2][0]*vrts[i+3][0];
+            f3_4 = m[2][0]*vrts[i+3][0];*/
             
-            f1_1 += m[0][1]*vrts[i][1];
+            //f3 = m[2][0] * vrts_x;
+            f3 = vmulq_n_f32(vrts_x, m[2][0]);
+            
+            /*f1_1 += m[0][1]*vrts[i][1];
             f1_2 += m[0][1]*vrts[i+1][1];
             f1_3 += m[0][1]*vrts[i+2][1];
-            f1_4 += m[0][1]*vrts[i+3][1];
+            f1_4 += m[0][1]*vrts[i+3][1];*/
             
-            f2_1 += m[1][1]*vrts[i][1];
+            //f1 += m[0][1] * vrts_y;
+            f1 += vmulq_n_f32(vrts_y, m[0][1]);
+            
+            /*f2_1 += m[1][1]*vrts[i][1];
             f2_2 += m[1][1]*vrts[i+1][1];
             f2_3 += m[1][1]*vrts[i+2][1];
-            f2_4 += m[1][1]*vrts[i+3][1];
+            f2_4 += m[1][1]*vrts[i+3][1];*/
             
-            f3_1 += m[2][1]*vrts[i][1];
+            //f2 += m[1][1] * vrts_y;
+            f2 += vmulq_n_f32(vrts_y, m[1][1]);
+            
+            /*f3_1 += m[2][1]*vrts[i][1];
             f3_2 += m[2][1]*vrts[i+1][1];
             f3_3 += m[2][1]*vrts[i+2][1];
-            f3_4 += m[2][1]*vrts[i+3][1];
+            f3_4 += m[2][1]*vrts[i+3][1];*/
+            
+            //f3 += m[2][1] * vrts_y;
+            f3 += vmulq_n_f32(vrts_y, m[2][1]);
             
             
-            f1_1 += m[0][2]*vrts[i][2];
+            /*f1_1 += m[0][2]*vrts[i][2];
             f1_2 += m[0][2]*vrts[i+1][2];
             f1_3 += m[0][2]*vrts[i+2][2];
-            f1_4 += m[0][2]*vrts[i+3][2];
+            f1_4 += m[0][2]*vrts[i+3][2];*/
             
-            f2_1 += m[1][2]*vrts[i][2];
+            //f1 += m[0][2] * vrts_z;
+            f1 += vmulq_n_f32(vrts_z, m[0][2]);
+            
+            /*f2_1 += m[1][2]*vrts[i][2];
             f2_2 += m[1][2]*vrts[i+1][2];
             f2_3 += m[1][2]*vrts[i+2][2];
-            f2_4 += m[1][2]*vrts[i+3][2];
+            f2_4 += m[1][2]*vrts[i+3][2];*/
             
-            f3_1 += m[2][2]*vrts[i][2];
+            //f2 += m[1][2] * vrts_z;
+            f2 += vmulq_n_f32(vrts_z, m[1][2]);
+            
+            /*f3_1 += m[2][2]*vrts[i][2];
             f3_2 += m[2][2]*vrts[i+1][2];
             f3_3 += m[2][2]*vrts[i+2][2];
-            f3_4 += m[2][2]*vrts[i+3][2];
+            f3_4 += m[2][2]*vrts[i+3][2];*/
             
-            f1_1 += o[0];
+            //f3 += m[2][2] * vrts_z;
+            f3 += vmulq_n_f32(vrts_z, m[2][2]);
+            
+            /*f1_1 += o[0];
             f1_2 += o[0];
             f1_3 += o[0];
-            f1_4 += o[0];
+            f1_4 += o[0];*/
+            f1 += vo[0];
             
-            f2_1 += o[1];
+            /*f2_1 += o[1];
             f2_2 += o[1];
             f2_3 += o[1];
-            f2_4 += o[1];
+            f2_4 += o[1];*/
+            f2 += vo[1];
             
-            
-            f3_1 += o[2];
+            /*f3_1 += o[2];
             f3_2 += o[2];
             f3_3 += o[2];
-            f3_4 += o[2];
+            f3_4 += o[2];*/
+            f3 += vo[2];
             
-            d1 = f1_1*p_normal[0];
+            /*d1 = f1_1*p_normal[0];
             d2 = f1_2*p_normal[0];
             d3 = f1_3*p_normal[0];
-            d4 = f1_4*p_normal[0];
+            d4 = f1_4*p_normal[0];*/
+            d = vmulq_n_f32(f1 , p_normal[0]);
             
-            d1 += f2_1*p_normal[1];
+            /*d1 += f2_1*p_normal[1];
             d2 += f2_2*p_normal[1];
             d3 += f2_3*p_normal[1];
-            d4 += f2_4*p_normal[1];
+            d4 += f2_4*p_normal[1];*/
+            d += vmulq_n_f32(f2 , p_normal[1]);
             
-            d1 += f3_1*p_normal[2];
+            /*d1 += f3_1*p_normal[2];
             d2 += f3_2*p_normal[2];
             d3 += f3_3*p_normal[2];
-            d4 += f3_4*p_normal[2];
+            d4 += f3_4*p_normal[2];*/
+            d += vmulq_n_f32(f3 , p_normal[2]);
             
-            if (i==0 || d1 > r_max)
-                r_max=d1;
-            if (i==0 || d1 < r_min)
-                r_min=d1;
+            float *fd = (float *)&d;
+            if (i==0 || fd[0] > r_max)
+                r_max=fd[0];
+            if (i==0 || fd[0] < r_min)
+                r_min=fd[0];
                 
-            if (i==0 || d2 > r_max)
-                r_max=d2;
-            if (i==0 || d2 < r_min)
-                r_min=d2;
+            if (i==0 || fd[1] > r_max)
+                r_max=fd[1];
+            if (i==0 || fd[1] < r_min)
+                r_min=fd[1];
                 
-            if (i==0 || d3 > r_max)
-                r_max=d3;
-            if (i==0 || d3 < r_min)
-                r_min=d3;
+            if (i==0 || fd[2] > r_max)
+                r_max=fd[2];
+            if (i==0 || fd[2] < r_min)
+                r_min=fd[2];
                 
-            if (i==0 || d4 > r_max)
-                r_max=d4;
-            if (i==0 || d4 < r_min)
-                r_min=d4;
+            if (i==0 || fd[3] > r_max)
+                r_max=fd[3];
+            if (i==0 || fd[3] < r_min)
+                r_min=fd[3];
     }  
     for (i=i;i<vertex_count;i++) { // rest
             /*_FORCE_INLINE_ Vector3 Transform::xform(const Vector3& p_vector) const {
