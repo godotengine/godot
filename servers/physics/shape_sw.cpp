@@ -673,6 +673,7 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
             Vector3 o = p_transform.get_origin();
             
             float f1_1, f1_2, f1_3, f1_4, f2_1, f2_2, f2_3, f2_4, f3_1, f3_2, f3_3, f3_4;
+            //float32x4_t f1, f2, f3;
             
             f1_1 = m[0][0]*vrts[i][0];
             f1_2 = m[0][0]*vrts[i+1][0];
@@ -705,20 +706,20 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
             f3_4 += m[2][1]*vrts[i+3][1];
             
             
-            f1_1 += m[0][2]*vrts[i][3];
-            f1_2 += m[0][2]*vrts[i+1][3];
-            f1_3 += m[0][2]*vrts[i+2][3];
-            f1_4 += m[0][2]*vrts[i+3][3];
+            f1_1 += m[0][2]*vrts[i][2];
+            f1_2 += m[0][2]*vrts[i+1][2];
+            f1_3 += m[0][2]*vrts[i+2][2];
+            f1_4 += m[0][2]*vrts[i+3][2];
             
-            f2_1 += m[1][2]*vrts[i][3];
-            f2_2 += m[1][2]*vrts[i+1][3];
-            f2_3 += m[1][2]*vrts[i+2][3];
-            f2_4 += m[1][2]*vrts[i+3][3];
+            f2_1 += m[1][2]*vrts[i][2];
+            f2_2 += m[1][2]*vrts[i+1][2];
+            f2_3 += m[1][2]*vrts[i+2][2];
+            f2_4 += m[1][2]*vrts[i+3][2];
             
-            f3_1 += m[2][2]*vrts[i][3];
-            f3_2 += m[2][2]*vrts[i+1][3];
-            f3_3 += m[2][2]*vrts[i+2][3];
-            f3_4 += m[2][2]*vrts[i+3][3];
+            f3_1 += m[2][2]*vrts[i][2];
+            f3_2 += m[2][2]*vrts[i+1][2];
+            f3_3 += m[2][2]*vrts[i+2][2];
+            f3_4 += m[2][2]*vrts[i+3][2];
             
             f1_1 += o[0];
             f1_2 += o[0];
@@ -797,9 +798,9 @@ void ConvexPolygonShapeSW::project_range(const Vector3& p_normal, const Transfor
             f2 += m[1][1]*vrts[i][1];
             f3 += m[2][1]*vrts[i][1];
             
-            f1 += m[0][2]*vrts[i][3];
-            f2 += m[1][2]*vrts[i][3];
-            f3 += m[2][2]*vrts[i][3];
+            f1 += m[0][2]*vrts[i][2];
+            f2 += m[1][2]*vrts[i][2];
+            f3 += m[2][2]*vrts[i][2];
             
             f1 += o[0];
             f2 += o[1];
