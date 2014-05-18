@@ -54,9 +54,9 @@ uniform highp sampler2D instance_matrices; // texunit:6
 
 #endif
 
-uniform highp mat4 world_transform;
-uniform highp mat4 camera_inverse_transform;
-uniform highp mat4 projection_transform;
+uniform mediump mat4 world_transform;
+uniform mediump mat4 camera_inverse_transform;
+uniform mediump mat4 projection_transform;
 
 #ifdef USE_UNIFORM_INSTANCING
 //shittiest form of instancing (but most compatible)
