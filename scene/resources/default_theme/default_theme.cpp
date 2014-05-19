@@ -580,10 +580,13 @@ void make_default_theme() {
 
 
 	t->set_constant("separation","HBoxContainer",4);
+	t->set_constant("center_separation","HBoxContainer", false);
 	t->set_constant("separation","VBoxContainer",4);
+	t->set_constant("center_separation","VBoxContainer", false);
 	t->set_constant("margin","MarginContainer",15);
 
 	t->set_constant("separation","GridContainer",4);
+	t->set_constant("center_separation","GridContainer", false);
 
 	t->set_constant("separation","HSplitContainer",8);
 	t->set_constant("separation","VSplitContainer",8);

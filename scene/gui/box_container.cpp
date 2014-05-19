@@ -45,6 +45,7 @@ void BoxContainer::_resort() {
 	Size2i new_size=get_size();;
 
 	int sep=get_constant("separation",vertical?"VBoxContainer":"HBoxContainer");
+	bool center_sep=get_constant("center_separation",vertical?"VBoxContainer":"HBoxContainer") != 0;
 
 	bool first=true;
 	int children_count=0;
@@ -187,6 +188,13 @@ void BoxContainer::_resort() {
 			rect=Rect2(from,0,size,new_size.height);
 
 		}
+		if (center_sep) {
+			if (vertical) {
+				rect.pos+=Point2(0,sep/2);
+			} else {
+				rect.pos+=Point2(sep/2,0);
+			}
+		}
 
 		fit_child_in_rect(c,rect);
 
@@ -203,6 +211,7 @@ Size2 BoxContainer::get_minimum_size() const {
 
 	Size2i minimum;
 	int sep=get_constant("separation",vertical?"VBoxContainer":"HBoxContainer");
+	bool center_sep=get_constant("center_separation",vertical?"VBoxContainer":"HBoxContainer") != 0;
 
 	bool first=true;
 
@@ -238,6 +247,14 @@ Size2 BoxContainer::get_minimum_size() const {
 		}
 
 		first=false;
+	}
+
+	if (center_sep) {
+		if (vertical) {
+			minimum+=Point2(0,sep);
+		} else {
+			minimum+=Point2(sep,0);
+		}
 	}
 
 	return minimum;

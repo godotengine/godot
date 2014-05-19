@@ -41,6 +41,7 @@ void GridContainer::_notification(int p_what) {
 			Set<int> row_expanded;
 
 			int sep=get_constant("separation");
+			bool center_sep=get_constant("center_separation") != 0;
 
 			int idx=0;
 			int max_row=0;
@@ -134,6 +135,8 @@ void GridContainer::_notification(int p_what) {
 						s.width+=col_expand;
 
 					Point2 p(col_ofs,row_ofs);
+					if (center_sep)
+						p+=Point2(sep/2,sep/2);
 
 					fit_child_in_rect(c,Rect2(p,s));
 
@@ -179,6 +182,7 @@ Size2 GridContainer::get_minimum_size() const {
 	Map<int,int> row_minh;
 
 	int sep=get_constant("separation");
+	bool center_sep=get_constant("center_separation") != 0;
 
 	int idx=0;
 	int max_row=0;
@@ -218,6 +222,9 @@ Size2 GridContainer::get_minimum_size() const {
 
 	ms.height+=sep*max_row;
 	ms.width+=sep*max_col;
+
+	if (center_sep)
+		ms+=Point2(sep,sep);
 
 	return ms;
 
