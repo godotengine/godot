@@ -58,7 +58,7 @@ size_t BytesBuffer::get_len() const
 
 bool BytesBuffer::eof_reached() const
 {
-    return position>=data.size()?true:false;
+    return position>data.size()?true:false;
 }
 
 uint8_t BytesBuffer::get_8() const
