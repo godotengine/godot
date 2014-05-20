@@ -31,6 +31,9 @@
 
 Size2 TextureButton::get_minimum_size() const {
 
+	if (expand)
+		return Size2();
+
 	if (normal.is_null()) {
 		if (pressed.is_null()) {
 			if (hover.is_null())
@@ -62,6 +65,29 @@ bool TextureButton::has_point(const Point2& p_point) const {
 	return Control::has_point(p_point);
 }
 
+void TextureButton::set_modulate(const Color& p_tex) {
+
+	modulate=p_tex;
+	update();
+}
+
+Color TextureButton::get_modulate() const{
+
+	return modulate;
+}
+
+
+void TextureButton::set_expand(bool p_expand) {
+
+	expand=p_expand;
+	update();
+	minimum_size_changed();
+}
+bool TextureButton::has_expand() const {
+
+	return expand;
+}
+
 void TextureButton::_notification(int p_what) {
 
 	switch( p_what ) {
@@ -71,46 +97,51 @@ void TextureButton::_notification(int p_what) {
 			DrawMode draw_mode = get_draw_mode();
 //			if (normal.is_null())
 //				break;
+			Ref<Texture> tex;
 			switch (draw_mode) {
 				case DRAW_NORMAL: {
 
 					if (normal.is_valid())
-						normal->draw(canvas_item,Point2());
+						tex=normal;
 				} break;
 				case DRAW_PRESSED: {
 
 					if (pressed.is_null()) {
 						if (hover.is_null()) {
 							if (normal.is_valid())
-								normal->draw(canvas_item,Point2());
+								tex=normal;
 						} else
-							hover->draw(canvas_item,Point2());
+							tex=hover;
 
 					} else
-						pressed->draw(canvas_item,Point2());
+						tex=pressed;
 				} break;
 				case DRAW_HOVER: {
 
 					if (hover.is_null()) {
 						if (pressed.is_valid() && is_pressed())
-							pressed->draw(canvas_item,Point2());
+							tex=pressed;
 						else if (normal.is_valid())
-							normal->draw(canvas_item,Point2());
+							tex=normal;
 					} else
-						hover->draw(canvas_item,Point2());
+						tex=hover;
 				} break;
 				case DRAW_DISABLED: {
 
 					if (disabled.is_null()) {
 						if (normal.is_valid())
-							normal->draw(canvas_item,Point2());
+							tex=normal;
 					} else
-						disabled->draw(canvas_item,Point2());
+						tex=disabled;
 				} break;
 			}
+
+			Size2 s=expand?get_size():tex->get_size();
+			draw_texture_rect(tex,Rect2(Point2(),s),false,modulate);
+
 			if (has_focus() && focused.is_valid()) {
 
-				focused->draw(canvas_item, Point2());
+				draw_texture_rect(focused,Rect2(Point2(),s),false,modulate);
 			};
 
 		} break;
@@ -133,12 +164,19 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
 	ObjectTypeDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
 
+	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"), & TextureButton::set_modulate );
+	ObjectTypeDB::bind_method(_MD("get_modulate"), & TextureButton::get_modulate );
+	ObjectTypeDB::bind_method(_MD("set_expand","enable"), & TextureButton::set_expand );
+	ObjectTypeDB::bind_method(_MD("has_expand"), & TextureButton::has_expand );
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_pressed_texture"), _SCS("get_pressed_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/hover",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_hover_texture"), _SCS("get_hover_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
 
 }
 
@@ -208,4 +246,6 @@ void TextureButton::set_focused_texture(const Ref<Texture>& p_focused) {
 
 
 TextureButton::TextureButton() {
+	expand=false;
+	modulate=Color(1,1,1,1);
 }

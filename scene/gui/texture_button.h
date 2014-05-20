@@ -35,6 +35,9 @@ class TextureButton : public BaseButton {
 
 	OBJ_TYPE( TextureButton, BaseButton );
 
+	bool expand;
+	Color modulate;
+
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
 	Ref<Texture> hover;
@@ -66,6 +69,11 @@ public:
 	Ref<Texture> get_focused_texture() const;
 	Ref<BitMap> get_click_mask() const;
 
+	void set_modulate(const Color& p_tex);
+	Color get_modulate() const;
+
+	void set_expand(bool p_expand);
+	bool has_expand() const;
 
 	TextureButton();
 };
