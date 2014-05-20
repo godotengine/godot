@@ -336,7 +336,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->set_val(cursor.line_ofs);
 
 	}  else {
-
+		cursor.line_ofs = 0;
 		v_scroll->hide();
 	}
 
