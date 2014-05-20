@@ -338,11 +338,13 @@ struct ProjectItem {
 	String path;
 	String conf;
 	uint64_t last_modified;
+	bool favorite;
 	ProjectItem() {}
-	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified) {
-		project = p_project; path = p_path; conf = p_conf; last_modified = p_last_modified;
+	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified, bool p_favorite=false) {
+		project = p_project; path = p_path; conf = p_conf; last_modified = p_last_modified; favorite=p_favorite;
 	}
 	_FORCE_INLINE_ bool operator <(const ProjectItem& l) const { return last_modified > l.last_modified; }
+	_FORCE_INLINE_ bool operator ==(const ProjectItem& l) const { return project==l.project; }
 };
 
 
@@ -428,6 +430,23 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 	}
 }
 
+void ProjectManager::_favorite_pressed(Node *p_hb) {
+
+	String clicked = p_hb->get_meta("name");
+	bool favorite = !p_hb->get_meta("favorite");
+	String proj=clicked.replace(":::",":/");
+	proj=proj.replace("::","/");
+
+	if (favorite) {
+		EditorSettings::get_singleton()->set("favorite_projects/"+clicked,proj);
+	} else {
+		EditorSettings::get_singleton()->erase("favorite_projects/"+clicked);
+	}
+	EditorSettings::get_singleton()->save();
+	_load_recent_projects();
+}
+
+
 void ProjectManager::_load_recent_projects() {
 
 	while(scroll_childs->get_child_count()>0) {
@@ -440,12 +459,14 @@ void ProjectManager::_load_recent_projects() {
 	Color font_color = get_color("font_color","Tree");
 
 	List<ProjectItem> projects;
+	List<ProjectItem> favorite_projects;
 
 	for(List<PropertyInfo>::Element *E=properties.front();E;E=E->next()) {
 
 		String _name = E->get().name;
-		if (!_name.begins_with("projects/"))
+		if (!_name.begins_with("projects/") && !_name.begins_with("favorite_projects/"))
 			continue;
+		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
 
 		String project = _name.get_slice("/",1);
 		String path = EditorSettings::get_singleton()->get(_name);
@@ -461,11 +482,27 @@ void ProjectManager::_load_recent_projects() {
 				last_modified = cache_modified;
 		}
 
-		ProjectItem item(project, path, conf, last_modified);
-		projects.push_back(item);
+		ProjectItem item(project, path, conf, last_modified, favorite);
+		if (favorite)
+			favorite_projects.push_back(item);
+		else
+			projects.push_back(item);
 	}
 
 	projects.sort();
+	favorite_projects.sort();
+
+	for(List<ProjectItem>::Element *E=projects.front();E;) {
+		List<ProjectItem>::Element *next = E->next();
+		if (favorite_projects.find(E->get()) != NULL)
+			projects.erase(E->get());
+		E=next;
+	}
+	for(List<ProjectItem>::Element *E=favorite_projects.back();E;E=E->prev()) {
+		projects.push_front(E->get());
+	}
+
+	Ref<Texture> favorite_icon = get_icon("Favorites","EditorIcons");
 
 	for(List<ProjectItem>::Element *E=projects.front();E;E=E->next()) {
 
@@ -473,6 +510,7 @@ void ProjectManager::_load_recent_projects() {
 		String project = item.project;
 		String path = item.path;
 		String conf = item.conf;
+		bool is_favorite = item.favorite;
 
 		Ref<ConfigFile> cf = memnew( ConfigFile );
 		Error err = cf->load(conf);
@@ -480,7 +518,6 @@ void ProjectManager::_load_recent_projects() {
 
 		Ref<Texture> icon;
 		String project_name="Unnamed Project";
-
 
 		if (cf->has_section_key("application","icon")) {
 			String appicon = cf->get_value("application","icon");
@@ -510,15 +547,27 @@ void ProjectManager::_load_recent_projects() {
 			main_scene = cf->get_value("application","main_scene");
 		}
 
-
 		HBoxContainer *hb = memnew( HBoxContainer );
 		hb->set_meta("name",project);
 		hb->set_meta("main_scene",main_scene);
+		hb->set_meta("favorite",is_favorite);
 		hb->connect("draw",this,"_panel_draw",varray(hb));
 		hb->connect("input_event",this,"_panel_input",varray(hb));
+
+		VBoxContainer *favorite_box = memnew( VBoxContainer );
+		TextureButton *favorite = memnew( TextureButton );
+		favorite->set_normal_texture(favorite_icon);
+		if (!is_favorite)
+			favorite->set_opacity(0.2);
+		favorite->set_v_size_flags(SIZE_EXPAND);
+		favorite->connect("pressed",this,"_favorite_pressed",varray(hb));
+		favorite_box->add_child(favorite);
+		hb->add_child(favorite_box);
+
 		TextureFrame *tf = memnew( TextureFrame );
 		tf->set_texture(icon);
 		hb->add_child(tf);
+
 		VBoxContainer *vb = memnew(VBoxContainer);
 		hb->add_child(vb);
 		EmptyControl *ec = memnew( EmptyControl );
@@ -701,6 +750,7 @@ void ProjectManager::_erase_project_confirm()  {
 	}
 	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
 		EditorSettings::get_singleton()->erase("projects/"+E->key());
+		EditorSettings::get_singleton()->erase("favorite_projects/"+E->key());
 	}
 	EditorSettings::get_singleton()->save();
 	selected_list.clear();
@@ -743,6 +793,8 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
 	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
 	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
+	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
+
 
 }
 
