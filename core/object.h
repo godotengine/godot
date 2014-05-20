@@ -59,6 +59,7 @@ enum PropertyHint {
 	PROPERTY_HINT_ALL_FLAGS,
 	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc," 
 	PROPERTY_HINT_DIR, ///< a directort path must be passed
+	PROPERTY_HINT_NODEPATH, ///< a valid nodepath must be passed
 	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
 	PROPERTY_HINT_GLOBAL_DIR, ///< a directort path must be passed
 	PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
