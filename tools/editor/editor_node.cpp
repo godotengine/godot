@@ -2726,10 +2726,10 @@ Error EditorNode::load_scene(const String& p_scene) {
 	}
 */
 	set_edited_scene(new_scene);
+	_get_scene_metadata();
 	scene_tree_dock->set_selected(new_scene);
 	property_editor->edit(new_scene);
 	scene_import_metadata = sdata->get_import_metadata();
-	_get_scene_metadata();
 
 	editor_data.get_undo_redo().clear_history();
 	saved_version=editor_data.get_undo_redo().get_version();
