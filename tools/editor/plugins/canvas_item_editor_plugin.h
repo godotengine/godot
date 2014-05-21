@@ -69,6 +69,7 @@ class CanvasItemEditor : public VBoxContainer {
 		TOOL_SELECT,
 		TOOL_MOVE,
 		TOOL_ROTATE,
+		TOOL_PAN,
 		TOOL_MAX
 	};
 
@@ -177,6 +178,8 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *select_button;
 	ToolButton *move_button;
 	ToolButton *rotate_button;
+
+	ToolButton *pan_button;
 
 	ToolButton *lock_button;
 	ToolButton *unlock_button;
