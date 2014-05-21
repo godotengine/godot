@@ -3476,7 +3476,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item(_TR("Project Settings"),RUN_SETTINGS);
 	p->add_separator();
-	p->add_item(_TR("Quit to Project List"),RUN_PROJECT_MANAGER);
+	p->add_item(_TR("Quit to Project List"),RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_Q);
 	p->add_item(_TR("Quit"),FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
 	recent_scenes = memnew( PopupMenu );
