@@ -3074,7 +3074,7 @@ PropertyEditor::~PropertyEditor()
 	memdelete(evaluator);
 }
 
-double PropertyValueEvaluator::eval(String& p_text) {
+double PropertyValueEvaluator::eval(const String& p_text) {
 
 	if (!obj)
 		return _default_eval(p_text);
@@ -3095,7 +3095,7 @@ double PropertyValueEvaluator::eval(String& p_text) {
 	if (call_err.error == Variant::CallError::CALL_OK) {
 		return result;
 	}
-	print_line("[PropertyValueEvaluator]: Error eval! Error code: " + call_err.error);
+    print_line("[PropertyValueEvaluator]: Error eval! Error code: " + itos(call_err.error));
 
 	memdelete(script_instance);
 
@@ -3107,7 +3107,7 @@ void PropertyValueEvaluator::edit(Object *p_obj) {
 	obj = p_obj;
 }
 
-String PropertyValueEvaluator::_build_script(String& p_text) {
+String PropertyValueEvaluator::_build_script(const String& p_text) {
 	String script_text = "tool\nvar this\nfunc set_this(p_this):\n\tthis=p_this\nfunc e():\n\treturn ";
 	script_text += p_text.strip_edges();
 	script_text += "\n";
