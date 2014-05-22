@@ -865,7 +865,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	}
 
-	v=p_path;
+	v=String(p_path); // - explict NodePath->String for exported script variable with PROPERTY_HINT_NODEPATH (String); For NodePath property, implict String->NodePath when set
 	emit_signal("variant_changed");
 	hide();
 
