@@ -3115,7 +3115,7 @@ double PropertyValueEvaluator::eval(const String& p_text) {
 	if (call_err.error == Variant::CallError::CALL_OK) {
 		return result;
 	}
-    print_line("[PropertyValueEvaluator]: Error eval! Error code: " + itos(call_err.error));
+	print_line("[PropertyValueEvaluator]: Error eval! Error code: " + itos(call_err.error));
 
 	memdelete(script_instance);
 
