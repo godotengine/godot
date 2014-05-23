@@ -171,6 +171,7 @@ class PropertyEditor : public Control {
 	CustomPropertyEditor *custom_editor;
 	
 	void _resource_edit_request();
+	void _select_node_request();
 	void _custom_editor_edited();
 	void _custom_editor_request(bool p_arrow);
 	
