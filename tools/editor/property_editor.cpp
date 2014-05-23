@@ -349,7 +349,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			} else if (hint==PROPERTY_HINT_NODEPATH) {
 
 				List<String> names;
-				names.push_back("Node..");
+				names.push_back("Assign");
+				names.push_back("Select");
 				names.push_back("Clear");
 				config_action_buttons(names);
 			}else if (hint==PROPERTY_HINT_ENUM) {
@@ -593,6 +594,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			
 			List<String> names;
 			names.push_back("Assign");
+			names.push_back("Select");
 			names.push_back("Clear");
 			config_action_buttons(names);
 
@@ -956,12 +958,19 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				}
 			} else if (hint==PROPERTY_HINT_NODEPATH) {
 
-				if (p_which==0) {
+				if (p_which==0) { // assign
 
 					scene_tree->popup_centered_ratio();
-				} else {
 
-					v=NodePath();
+				} else if (p_which==1) { // select
+
+					if (!v.is_zero())
+						emit_signal("select_node_request");
+					hide();
+
+				} else { // clear
+
+					v="";
 					emit_signal("variant_changed");
 					hide();
 
@@ -972,13 +981,17 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		} break;
 		case Variant::NODE_PATH: {
 				
-			if (p_which==0) {
-
+			if (p_which==0) { // assign
 
 				scene_tree->popup_centered_ratio();
 
-			} else if (p_which==1) {
+			} else if (p_which==1) { // select
 
+				if (!v.is_zero())
+					emit_signal("select_node_request");
+				hide();
+
+			} else { // clear
 
 				v=NodePath();
 				emit_signal("variant_changed");
@@ -1604,6 +1617,7 @@ void CustomPropertyEditor::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("variant_changed") );
 	ADD_SIGNAL( MethodInfo("resource_edit_request") );
+	ADD_SIGNAL( MethodInfo("select_node_request") );
 }
 CustomPropertyEditor::CustomPropertyEditor() {
 	
@@ -2772,8 +2786,25 @@ void PropertyEditor::_resource_edit_request() {
 	emit_signal("resource_selected",res.get_ref_ptr(),name);
 }
 
-void PropertyEditor::_custom_editor_edited() {
+void PropertyEditor::_select_node_request() {
+	if (!obj)
+		return;
 
+	Node *editing = obj->cast_to<Node>();
+	if (!editing)
+		return;
+
+	NodePath node_path=custom_editor->get_variant();
+	if (node_path.is_empty())
+		return;
+	Node *node = editing->get_node(node_path);
+	if (!node)
+		return;
+
+	emit_signal("select_node_request",node);
+}
+
+void PropertyEditor::_custom_editor_edited() {
 
 	if (!obj)
 		return;
@@ -2965,13 +2996,15 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_custom_editor_request",&PropertyEditor::_custom_editor_request);
 	ObjectTypeDB::bind_method( "_custom_editor_edited",&PropertyEditor::_custom_editor_edited);	
 	ObjectTypeDB::bind_method( "_resource_edit_request",&PropertyEditor::_resource_edit_request);	
+	ObjectTypeDB::bind_method( "_select_node_request",&PropertyEditor::_select_node_request);
 	ObjectTypeDB::bind_method( "_node_removed",&PropertyEditor::_node_removed);		
 	ObjectTypeDB::bind_method( "_edit_button",&PropertyEditor::_edit_button);
 	ObjectTypeDB::bind_method( "_changed_callback",&PropertyEditor::_changed_callbacks);
 	ObjectTypeDB::bind_method( "_draw_flags",&PropertyEditor::_draw_flags);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
-	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
+	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );	
+	ADD_SIGNAL( MethodInfo("select_node_request", PropertyInfo(Variant::OBJECT, "node")));
 	ADD_SIGNAL( MethodInfo("property_keyed",PropertyInfo( Variant::STRING, "property")));
 	ADD_SIGNAL( MethodInfo("property_edited",PropertyInfo( Variant::STRING, "property")));
 }
@@ -3071,6 +3104,7 @@ PropertyEditor::PropertyEditor() {
 
 	custom_editor->connect("variant_changed", this,"_custom_editor_edited");
 	custom_editor->connect("resource_edit_request", this,"_resource_edit_request",make_binds(),CONNECT_DEFERRED);
+	custom_editor->connect("select_node_request", this, "_select_node_request");
 	custom_editor->set_value_evaluator(evaluator);
 	
 	capitalize_paths=true;

@@ -2791,6 +2791,11 @@ void EditorNode::_instance_replace_request(const String& p_path){
 	scene_tree_dock->replace_instance(p_path);
 }
 
+void EditorNode::_select_node_request(Node *p_node) {
+	scene_tree_dock->set_selected(p_node,true);
+	object_menu->get_popup()->clear();
+}
+
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value) {
 
 	animation_editor->insert_value_key(p_keyed,p_value);
@@ -3156,6 +3161,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
 	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
 
+	ObjectTypeDB::bind_method("_select_node_request", &EditorNode::_select_node_request);
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
@@ -3738,6 +3744,7 @@ EditorNode::EditorNode() {
 	prop_editor_base->add_child( property_editor );
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
+	property_editor->connect("select_node_request", this, "_select_node_request");
 
 	
 	property_back = memnew( ToolButton );
