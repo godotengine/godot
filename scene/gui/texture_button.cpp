@@ -136,11 +136,14 @@ void TextureButton::_notification(int p_what) {
 				} break;
 			}
 
-			Size2 s=expand?get_size():tex->get_size();
-			draw_texture_rect(tex,Rect2(Point2(),s),false,modulate);
+			if (!tex.is_null()) {
+				Size2 s=expand?get_size():tex->get_size();
+				draw_texture_rect(tex,Rect2(Point2(),s),false,modulate);
+			}
 
 			if (has_focus() && focused.is_valid()) {
 
+				Size2 s=expand?get_size():focused->get_size();
 				draw_texture_rect(focused,Rect2(Point2(),s),false,modulate);
 			};
 
