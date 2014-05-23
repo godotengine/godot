@@ -2755,6 +2755,7 @@ void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("accept_event"),&Control::accept_event);
 	ObjectTypeDB::bind_method(_MD("get_minimum_size"),&Control::get_minimum_size);
+	ObjectTypeDB::bind_method(_MD("has_point"),&Control::has_point);
 	ObjectTypeDB::bind_method(_MD("get_combined_minimum_size"),&Control::get_combined_minimum_size);
 	ObjectTypeDB::bind_method(_MD("is_window"),&Control::is_window);
 	ObjectTypeDB::bind_method(_MD("get_window"),&Control::get_window);
