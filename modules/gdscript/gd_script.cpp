@@ -389,6 +389,8 @@ Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_ar
 						}
 
 					}
+
+
 				} else {
 
 					GDNativeClass *nc= obj_B->cast_to<GDNativeClass>();

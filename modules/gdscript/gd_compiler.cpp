@@ -1321,6 +1321,16 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		if (path!="") {
 			//path (and optionally subclasses)
 
+			if (path.is_rel_path()) {
+
+				String base = p_script->get_path();
+				if (base=="" || base.is_rel_path()) {
+					_set_error("Could not resolve relative path for parent class: "+path,p_class);
+					return ERR_FILE_NOT_FOUND;
+				}
+				path=base.get_base_dir().plus_file(path);
+			}
+
 			script = ResourceLoader::load(path);
 			if (script.is_null()) {
 				_set_error("Could not load base class: "+path,p_class);
