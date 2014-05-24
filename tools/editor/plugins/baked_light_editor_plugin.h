@@ -19,6 +19,15 @@ class BakedLightEditor : public Control {
 	OBJ_TYPE(BakedLightEditor, Control );
 
 
+	float update_timeout;
+	DVector<Color> colors;
+	DVector<Vector3> vertices;
+	Ref<Mesh> mesh;
+	Ref<FixedMaterial> material;
+
+	Thread *bake_thread;
+	bool bake_thread_exit;
+
 	MeshInstance *preview;
 	BakedLightBaker *baker;
 	AcceptDialog *err_dialog;
@@ -32,12 +41,15 @@ class BakedLightEditor : public Control {
 		MENU_OPTION_CLEAR
 	};
 
+	static void _bake_thread_func(void *arg);
+	void _end_baking();
 	void _menu_option(int);
 
 friend class BakedLightEditorPlugin;
 protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
+	void _notification(int p_what);
 public:
 
 	void edit(BakedLight *p_baked_light);

@@ -1,7 +1,10 @@
 package com.android.godot;
 
 
+import org.json.JSONObject;
+
 import android.app.Activity;
+import android.util.Log;
 
 
 public class GodotPaymentV3 extends Godot.SingletonBase {
@@ -13,14 +16,17 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	private String accessToken;
 	
 	private String purchaseValidationUrlPrefix;
+	
+	private String transactionId;
 
-	public void purchase( String _sku) {
+	public void purchase( String _sku, String _transactionId) {
 		final String sku = _sku;
+		final String transactionId = _transactionId;
 		activity.getPaymentsManager().setBaseSingleton(this);
 		activity.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				activity.getPaymentsManager().requestPurchase(sku);				
+				activity.getPaymentsManager().requestPurchase(sku, transactionId);				
 			}
 		});
 	};
@@ -38,22 +44,31 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	
 	public GodotPaymentV3(Activity p_activity) {
 
-		registerClass("GodotPayments", new String[] {"purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix"});
+		registerClass("GodotPayments", new String[] {"purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix", "setTransactionId", "getSignature"});
 		activity=(Godot) p_activity;
 	}
 
 
+	private String signature;
+	public String getSignature(){
+	        return this.signature;
+	}
 	
-	public void callbackSuccess(String ticket){
-        GodotLib.callobject(purchaseCallbackId, "purchase_success", new Object[]{ticket});
+	
+	public void callbackSuccess(String ticket, String signature){
+	        Log.d(this.getClass().getName(), "PRE-Send callback to purchase success");
+            GodotLib.calldeferred(purchaseCallbackId, "purchase_success", new Object[]{ticket, signature});
+        	Log.d(this.getClass().getName(), "POST-Send callback to purchase success");
 	}
 	
 	public void callbackFail(){
-        GodotLib.callobject(purchaseCallbackId, "purchase_fail", new Object[]{});
+                GodotLib.calldeferred(purchaseCallbackId, "purchase_fail", new Object[]{});
+//                GodotLib.callobject(purchaseCallbackId, "purchase_fail", new Object[]{});
 	}
 	
 	public void callbackCancel(){
-		GodotLib.callobject(purchaseCallbackId, "purchase_cancel", new Object[]{});
+		GodotLib.calldeferred(purchaseCallbackId, "purchase_cancel", new Object[]{});
+//		GodotLib.callobject(purchaseCallbackId, "purchase_cancel", new Object[]{});
 	}
 	
 	public int getPurchaseCallbackId() {
@@ -82,6 +97,14 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 
 	public void setAccessToken(String accessToken) {
 		this.accessToken = accessToken;
+	}
+	
+	public void setTransactionId(String transactionId){
+		this.transactionId = transactionId;
+	}
+	
+	public String getTransactionId(){
+		return this.transactionId;
 	}
 	
 }

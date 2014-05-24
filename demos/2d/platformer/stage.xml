@@ -3,10 +3,10 @@
 	<ext_resource path="res://music.ogg" type="AudioStream"></ext_resource>
 	<ext_resource path="res://tileset.xml" type="TileSet"></ext_resource>
 	<ext_resource path="res://coin.xml" type="PackedScene"></ext_resource>
+	<ext_resource path="res://player.xml" type="PackedScene"></ext_resource>
+	<ext_resource path="res://moving_platform.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://seesaw.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://enemy.xml" type="PackedScene"></ext_resource>
-	<ext_resource path="res://moving_platform.xml" type="PackedScene"></ext_resource>
-	<ext_resource path="res://player.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://parallax_bg.xml" type="PackedScene"></ext_resource>
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
@@ -160,9 +160,13 @@
 							<string> "pixel_snap" </string>
 							<bool> False </bool>
 							<string> "zoom" </string>
-							<real> 0.735092 </real>
+							<real> 0.54036 </real>
+							<string> "use_snap" </string>
+							<bool> False </bool>
 							<string> "ofs" </string>
-							<vector2> 55.9232, 767.661 </vector2>
+							<vector2> 418.81, 615.088 </vector2>
+							<string> "snap" </string>
+							<int> 10 </int>
 						</dictionary>
 						<string> "3D" </string>
 						<dictionary  shared="false">

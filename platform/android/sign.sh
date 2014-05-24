@@ -1,6 +1,6 @@
 #!/bin/bash
 
-jarsigner -digestalg SHA1 -sigalg MD5withRSA -verbose -keystore /home/luis/Downloads/carnavalguachin.keystore -storepass 12345678 "$1" momoselacome
+jarsigner -digestalg SHA1 -sigalg MD5withRSA -verbose -keystore my-release-key.keystore "$1" reduz
 
 echo ""
 echo ""

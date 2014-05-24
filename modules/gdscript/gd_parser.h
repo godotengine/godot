@@ -362,6 +362,8 @@ private:
 	int error_line;
 	int error_column;
 
+	int pending_newline;
+
 	List<int> tab_level;
 
 	String base_path;
