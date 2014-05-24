@@ -1263,6 +1263,16 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	gdfunc->name=func_name;
 	gdfunc->_script=p_script;
 	gdfunc->source=source;
+
+#ifdef DEBUG_ENABLED
+
+	{
+		gdfunc->func_cname=(String(source)+" - "+String(func_name)).utf8();
+		gdfunc->_func_cname=gdfunc->func_cname.get_data();
+
+	}
+
+#endif
 	if (p_func) {
 		gdfunc->_initial_line=p_func->line;
 	} else {

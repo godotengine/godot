@@ -25,6 +25,7 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base,const Vector<uint8_
 
 	} else if (p_mode==MODE_READ) {
 
+		writing=false;
 		key=p_key;
 		uint32_t magic = p_base->get_32();
 		print_line("MAGIC: "+itos(magic));
@@ -278,6 +279,10 @@ uint64_t FileAccessEncrypted::_get_modified_time(const String& p_file){
 FileAccessEncrypted::FileAccessEncrypted() {
 
 	file=NULL;
+	pos=0;
+	eofed=false;
+	mode=MODE_MAX;
+	writing=false;
 }
 
 

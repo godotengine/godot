@@ -447,7 +447,7 @@ float CanvasItem::get_self_opacity() const {
 
 void CanvasItem::set_blend_mode(BlendMode p_blend_mode) {
 
-	ERR_FAIL_INDEX(p_blend_mode,4);
+	ERR_FAIL_INDEX(p_blend_mode,5);
 	blend_mode=p_blend_mode;
 	VisualServer::get_singleton()->canvas_item_set_blend_mode(canvas_item,VS::MaterialBlendMode(blend_mode));
 
@@ -794,7 +794,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
 	//exporting these two things doesn't really make much sense i think
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), _SCS("set_as_toplevel"),_SCS("is_set_as_toplevel") );
 	//ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),_SCS("set_transform_notify"),_SCS("is_transform_notify_enabled"));
@@ -810,6 +810,7 @@ void CanvasItem::_bind_methods() {
 	BIND_CONSTANT( BLEND_MODE_ADD );
 	BIND_CONSTANT( BLEND_MODE_SUB );
 	BIND_CONSTANT( BLEND_MODE_MUL );
+	BIND_CONSTANT( BLEND_MODE_PREMULT_ALPHA );
 
 
 	BIND_CONSTANT( NOTIFICATION_DRAW);

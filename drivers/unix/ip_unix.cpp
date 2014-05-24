@@ -30,12 +30,24 @@
 
 #if defined(UNIX_ENABLED) || defined(WINDOWS_ENABLED)
 
+
 #ifdef WINDOWS_ENABLED
+#define WINVER 0x0600
 #include <ws2tcpip.h>
 #include <winsock2.h>
 #include <windows.h>
+#include <stdio.h>
+#include <iphlpapi.h>
 #else
 #include <netdb.h>
+#ifdef ANDROID_ENABLED
+#include "platform/android/ifaddrs_android.h"
+#else
+#include <ifaddrs.h>
+#endif
+#include <arpa/inet.h>
+#include <sys/socket.h>
+
 #endif
 IP_Address IP_Unix::_resolve_hostname(const String& p_hostname) {
 
@@ -51,6 +63,93 @@ IP_Address IP_Unix::_resolve_hostname(const String& p_hostname) {
 	return ip;
 
 }
+
+#if defined(WINDOWS_ENABLED)
+
+void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
+
+	ULONG buf_size = 1024;
+	IP_ADAPTER_ADDRESSES* addrs;
+
+	while (true) {
+
+		addrs = (IP_ADAPTER_ADDRESSES*)memalloc(buf_size);
+		int err = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_ANYCAST |
+									   GAA_FLAG_SKIP_MULTICAST |
+									   GAA_FLAG_SKIP_DNS_SERVER |
+									   GAA_FLAG_SKIP_FRIENDLY_NAME,
+									 NULL, addrs, &buf_size);
+		if (err == NO_ERROR) {
+			break;
+		};
+		memfree(addrs);
+		if (err == ERROR_BUFFER_OVERFLOW) {
+			continue; // will go back and alloc the right size
+		};
+
+		ERR_EXPLAIN("Call to GetAdaptersAddresses failed with error " + itos(err));
+		ERR_FAIL();
+		return;
+	};
+
+
+	IP_ADAPTER_ADDRESSES* adapter = addrs;
+
+	while (adapter != NULL) {
+
+		IP_ADAPTER_UNICAST_ADDRESS* address = adapter->FirstUnicastAddress;
+		while (address != NULL) {
+
+			char addr_chr[INET_ADDRSTRLEN];
+			SOCKADDR_IN* ipv4 = reinterpret_cast<SOCKADDR_IN*>(address->Address.lpSockaddr);
+
+			IP_Address ip;
+			ip.host= *((unsigned long*)&ipv4->sin_addr);
+
+
+			//inet_ntop(AF_INET, &ipv4->sin_addr, addr_chr, INET_ADDRSTRLEN);
+
+			r_addresses->push_back(ip);
+
+			address = address->Next;
+		};
+		adapter = adapter->Next;
+	};
+
+	memfree(addrs);
+};
+
+
+#else
+
+void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
+
+	struct ifaddrs * ifAddrStruct=NULL;
+	struct ifaddrs * ifa=NULL;
+
+	getifaddrs(&ifAddrStruct);
+
+	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+		if (ifa ->ifa_addr->sa_family==AF_INET) { // check it is IP4
+			// is a valid IP4 Address
+
+			IP_Address ip;
+			ip.host= *((unsigned long*)&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr);
+
+			r_addresses->push_back(ip);
+		}/* else if (ifa->ifa_addr->sa_family==AF_INET6) { // check it is IP6
+			// is a valid IP6 Address
+			tmpAddrPtr=&((struct sockaddr_in6 *)ifa->ifa_addr)->sin6_addr;
+			char addressBuffer[INET6_ADDRSTRLEN];
+			inet_ntop(AF_INET6, tmpAddrPtr, addressBuffer, INET6_ADDRSTRLEN);
+			printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
+		} */
+	}
+
+	if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
+
+}
+#endif
 
 void IP_Unix::make_default() {
 
