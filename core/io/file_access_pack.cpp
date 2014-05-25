@@ -443,6 +443,11 @@ bool DirAccessPack::file_exists(String p_file){
 	return current->files.has(p_file);
 }
 
+bool DirAccessPack::dir_exists(String p_dir) {
+
+	return current->subdirs.has(p_dir);
+}
+
 Error DirAccessPack::make_dir(String p_dir){
 
 	return ERR_UNAVAILABLE;
