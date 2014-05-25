@@ -98,7 +98,6 @@ bool CPPlayer::process_note_and_instrument(int p_track,int p_note,int p_instrume
 	aux_result=false;
 	CPSample *aux_sample=0; // current sample
 	int dest_sample_index;
-	bool new_instrument=false;
 
 	control.channel[p_track].row_has_note=false; // wise man says.. "we dont have a note... until we really know we have a note".
 	control.channel[p_track].new_instrument=false;
@@ -134,8 +133,6 @@ bool CPPlayer::process_note_and_instrument(int p_track,int p_note,int p_instrume
 
 
 	if ( (p_instrument>=0) && (p_instrument<CPSong::MAX_INSTRUMENTS)) {
-		new_instrument=process_new_instrument(p_track,p_instrument);
-	
 		if ( song->has_instruments() ) {
 			// If we're in instrument mode...
 			if ( control.channel[p_track].instrument_ptr->get_sample_number(control.channel[p_track].real_note) >= CPSong::MAX_SAMPLES) {

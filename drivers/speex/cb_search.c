@@ -524,14 +524,15 @@ spx_int32_t *seed
    VARDECL(int *ind);
    VARDECL(int *signs);
    const signed char *shape_cb;
-   int shape_cb_size, subvect_size, nb_subvect;
+   //int shape_cb_size;
+   int subvect_size, nb_subvect;
    const split_cb_params *params;
    int have_sign;
 
    params = (const split_cb_params *) par;
    subvect_size = params->subvect_size;
    nb_subvect = params->nb_subvect;
-   shape_cb_size = 1<<params->shape_bits;
+   //shape_cb_size = 1<<params->shape_bits;
    shape_cb = params->shape_cb;
    have_sign = params->have_sign;
 

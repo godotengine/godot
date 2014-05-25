@@ -84,9 +84,7 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 	}
 
 	int pngf=0;
-	int pngb=8;
 	int cs=0;
-
 
 	switch(img.get_format()) {
 

@@ -144,8 +144,6 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 		int loop_end=file->get_dword();
 
 		int def_volume=file->get_byte();;
-		int dsk=file->get_byte();
-		int pack=file->get_byte();
 		
 		int flags=file->get_byte();
 		int c2speed=file->get_dword();

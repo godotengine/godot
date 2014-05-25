@@ -1195,12 +1195,10 @@ static unsigned oc_analyze_intra_chroma_block(oc_enc_ctx *_enc,
 static void oc_enc_sb_transform_quantize_intra_chroma(oc_enc_ctx *_enc,
  oc_enc_pipeline_state *_pipe,int _pli,int _sbi_start,int _sbi_end){
   const oc_sb_map *sb_maps;
-  oc_sb_flags     *sb_flags;
   ptrdiff_t       *coded_fragis;
   ptrdiff_t        ncoded_fragis;
   int              sbi;
   sb_maps=(const oc_sb_map *)_enc->state.sb_maps;
-  sb_flags=_enc->state.sb_flags;
   coded_fragis=_pipe->coded_fragis[_pli];
   ncoded_fragis=_pipe->ncoded_fragis[_pli];
   for(sbi=_sbi_start;sbi<_sbi_end;sbi++){
@@ -1232,7 +1230,6 @@ void oc_enc_analyze_intra(oc_enc_ctx *_enc,int _recode){
   oc_sb_flags            *sb_flags;
   signed char            *mb_modes;
   const oc_mb_map        *mb_maps;
-  oc_mb_enc_info         *embs;
   oc_fragment            *frags;
   unsigned                stripe_sby;
   unsigned                mcu_nvsbs;
@@ -1253,7 +1250,6 @@ void oc_enc_analyze_intra(oc_enc_ctx *_enc,int _recode){
   sb_flags=_enc->state.sb_flags;
   mb_modes=_enc->state.mb_modes;
   mb_maps=(const oc_mb_map *)_enc->state.mb_maps;
-  embs=_enc->mb_info;
   frags=_enc->state.frags;
   notstart=0;
   notdone=1;
@@ -1871,12 +1867,12 @@ int oc_enc_analyze_inter(oc_enc_ctx *_enc,int _allow_keyframe,int _recode){
   oc_mb_enc_info         *embs;
   oc_fragment            *frags;
   oc_mv                  *frag_mvs;
-  int                     qi;
+  //int                     qi;
   unsigned                stripe_sby;
   unsigned                mcu_nvsbs;
   int                     notstart;
   int                     notdone;
-  int                     vdec;
+  //int                     vdec;
   unsigned                sbi;
   unsigned                sbi_end;
   int                     refi;
@@ -1894,7 +1890,7 @@ int oc_enc_analyze_inter(oc_enc_ctx *_enc,int _allow_keyframe,int _recode){
     Must be done in Hilbert order.*/
   map_idxs=OC_MB_MAP_IDXS[_enc->state.info.pixel_fmt];
   nmap_idxs=OC_MB_MAP_NIDXS[_enc->state.info.pixel_fmt];
-  qi=_enc->state.qis[0];
+  //qi=_enc->state.qis[0];
   coded_mbis=_enc->coded_mbis;
   uncoded_mbis=coded_mbis+_enc->state.nmbs;
   ncoded_mbis=0;
@@ -1909,7 +1905,7 @@ int oc_enc_analyze_inter(oc_enc_ctx *_enc,int _allow_keyframe,int _recode){
   embs=_enc->mb_info;
   frags=_enc->state.frags;
   frag_mvs=_enc->state.frag_mvs;
-  vdec=!(_enc->state.info.pixel_fmt&2);
+  //vdec=!(_enc->state.info.pixel_fmt&2);
   notstart=0;
   notdone=1;
   mcu_nvsbs=_enc->mcu_nvsbs;

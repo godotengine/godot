@@ -41,7 +41,7 @@ class FileAccessMemory : public FileAccess {
 
 public:
 
-	static void register_file(String p_name, Vector<uint8_t> p_data);
+	static void register_file(const String &p_name, const Vector<uint8_t> p_data);
 	static void cleanup();
 
 	virtual Error _open(const String& p_path, int p_mode_flags); ///< open a file

@@ -46,12 +46,10 @@ CPLoader::Error CPLoader_IT::load_patterns() {
 			continue;
 		}
 			
-		uint16_t pat_size;
 		uint16_t pat_length;
 
 		int row=0,flag,channel,j;
 		uint8_t aux_byte;
-		uint32_t reserved;
 		uint8_t chan_mask[64]; //mask cache for each
 		CPNote last_value[64]; //last value of each
 
@@ -63,9 +61,7 @@ CPLoader::Error CPLoader_IT::load_patterns() {
 
 		file->seek(pattern_offset);
 
-		pat_size=file->get_word();
 		pat_length=file->get_word();
-		reserved=file->get_dword();
 
 		song->get_pattern(i)->set_length( pat_length );
 		

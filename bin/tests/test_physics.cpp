@@ -596,7 +596,7 @@ public:
 				PhysicsServer::SHAPE_CONVEX_POLYGON
 			};
 
-			PhysicsServer::ShapeType type=shape_idx[i%4];
+			//PhysicsServer::ShapeType type=shape_idx[i%4];
 			//type=PhysicsServer::SHAPE_CONVEX_POLYGON;
 
 			Transform t;			
@@ -608,8 +608,6 @@ public:
 			//t.basis.rotate(Vector3(0,-1,0),Math_PI/4*i);
 			//t.basis.rotate(Vector3(-1,0,0),Math_PI/4*i);
 
-
-			RID b = create_body(type,PhysicsServer::BODY_MODE_RIGID,t);
 			//RID b = create_body(type,i==0?PhysicsServer::BODY_MODE_STATIC:PhysicsServer::BODY_MODE_RIGID,t);
 
 		}

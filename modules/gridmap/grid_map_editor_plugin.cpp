@@ -951,8 +951,6 @@ void GridMapEditor::update_grid() {
 
 	grid_xform.origin.x-=1; //force update in hackish way.. what do i care
 
-	VS *vs = VS::get_singleton();
-
 	grid_ofs[edit_axis]=edit_floor[edit_axis]*node->get_cell_size();
 
 	edit_grid_xform.origin=grid_ofs;

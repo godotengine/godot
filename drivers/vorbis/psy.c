@@ -1020,7 +1020,7 @@ void _vp_couple_quantize_normalize(int blobno,
   int limit = g->coupling_pointlimit[p->vi->blockflag][blobno];
   float prepoint=stereo_threshholds[g->coupling_prepointamp[blobno]];
   float postpoint=stereo_threshholds[g->coupling_postpointamp[blobno]];
-  float de=0.1*p->m_val; /* a blend of the AoTuV M2 and M3 code here and below */
+  //float de=0.1*p->m_val; /* a blend of the AoTuV M2 and M3 code here and below */
 
   /* mdct is our raw mdct output, floor not removed. */
   /* inout passes in the ifloor, passes back quantized result */

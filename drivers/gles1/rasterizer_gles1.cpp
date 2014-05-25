@@ -1590,8 +1590,6 @@ Error RasterizerGLES1::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 				AABB aabb;
 
 				float scale=1;
-				float max=0;
-
 
 				for (int i=0;i<p_surface->array_len;i++) {
 
@@ -3241,10 +3239,7 @@ void RasterizerGLES1::_setup_fixed_material(const Geometry *p_geometry,const Mat
 
 		glMaterialf(side,GL_SHININESS,p_material->parameters[VS::FIXED_MATERIAL_PARAM_SPECULAR_EXP]);
 
-		Plane sparams=p_material->parameters[VS::FIXED_MATERIAL_PARAM_SHADE_PARAM];
 		//depth test?
-
-
 	}
 
 
@@ -3993,8 +3988,6 @@ void RasterizerGLES1::_render(const Geometry *p_geometry,const Material *p_mater
 
 			if (element_count==0)
 				return;
-
-			const MultiMesh::Element *elements=&mm->elements[0];
 
 			_rinfo.vertex_count+=s->array_len*element_count;
 
@@ -4907,7 +4900,6 @@ void RasterizerGLES1::canvas_draw_primitive(const Vector<Point2>& p_points, cons
 
 static const int _max_draw_poly_indices = 8*1024;
 static uint16_t _draw_poly_indices[_max_draw_poly_indices];
-static float _verts3[_max_draw_poly_indices];
 
 void RasterizerGLES1::canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor) {
 
@@ -5701,9 +5693,6 @@ void RasterizerGLES1::init() {
 //		print_line(strings[i]);
 	}
 
-
-
-	GLint tmp = 0;
 //	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &tmp);
 //	print_line("GL_MAX_VERTEX_ATTRIBS "+itos(tmp));
 
@@ -5786,10 +5775,8 @@ int RasterizerGLES1::get_render_info(VS::RenderInfo p_info) {
 
 			return get_render_info(VS::INFO_TEXTURE_MEM_USED)+get_render_info(VS::INFO_VERTEX_MEM_USED);
 		} break;
-		case VS::INFO_TEXTURE_MEM_USED: {
-
-			_rinfo.texture_mem;
-		} break;
+		/*case VS::INFO_TEXTURE_MEM_USED: {
+		} break;*/
 		case VS::INFO_VERTEX_MEM_USED: {
 
 			return 0;

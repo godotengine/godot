@@ -1127,7 +1127,6 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 
 	if (p_func) {
 		for(int i=0;i<p_func->arguments.size();i++) {
-			int idx = i;
 			codegen.add_stack_identifier(p_func->arguments[i],i);
 		}
 		stack_level=p_func->arguments.size();
@@ -1307,9 +1306,6 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	p_script->_owner=p_owner;
 	p_script->tool=p_class->tool;
 	p_script->name=p_class->name;
-
-
-	int index_from=0;
 
 	if (p_class->extends_used) {
 		//do inheritance
