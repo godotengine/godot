@@ -190,6 +190,7 @@ public:
 
 
 	virtual bool file_exists(String p_file);
+	virtual bool dir_exists(String p_dir);
 
 	virtual Error make_dir(String p_dir);
 

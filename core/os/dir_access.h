@@ -91,7 +91,7 @@ public:
 	virtual Error erase_contents_recursive(); //super dangerous, use with care!
 
 	virtual bool file_exists(String p_file)=0;
-
+	virtual bool dir_exists(String p_dir)=0;
 
 	virtual size_t get_space_left()=0;
 
