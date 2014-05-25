@@ -587,6 +587,23 @@ AABB RasterizerDummy::mesh_get_aabb(RID p_mesh) const {
 	return aabb;
 }
 
+void RasterizerDummy::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb) {
+
+	Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND(!mesh);
+
+	mesh->custom_aabb=p_aabb;
+}
+
+AABB RasterizerDummy::mesh_get_custom_aabb(RID p_mesh) const {
+
+	const Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND_V(!mesh,AABB());
+
+	return mesh->custom_aabb;
+
+}
+
 /* MULTIMESH API */
 
 RID RasterizerDummy::multimesh_create() {

@@ -92,7 +92,7 @@ class CustomPropertyEditor : public Popup {
 	ColorPicker *color_picker;
 	TextEdit *text_edit;
 	bool read_only;
-	CheckButton *checks20[20];
+	Button *checks20[20];
 
 
 	Control *easing_draw;

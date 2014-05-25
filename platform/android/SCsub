@@ -13,6 +13,7 @@ android_files = [
 	'dir_access_jandroid.cpp',
 	'thread_jandroid.cpp',
 	'audio_driver_jandroid.cpp',
+	'ifaddrs_android.cpp',
 	'android_native_app_glue.c',
 	'java_glue.cpp'
 ]

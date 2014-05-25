@@ -46,7 +46,9 @@ class SceneTreeEditor : public Control {
 	enum {
 		BUTTON_SUBSCENE=0,
 		BUTTON_VISIBILITY=1,
-		BUTTON_SCRIPT=2
+		BUTTON_SCRIPT=2,
+		BUTTON_LOCK=3,
+		BUTTON_GROUP=4,
 	};
 
 	Tree *tree;

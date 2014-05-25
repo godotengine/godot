@@ -92,7 +92,7 @@ Error ContextGL_X11::initialize() {
 	    GLX_RED_SIZE, 1,
 	    GLX_GREEN_SIZE, 1,
 	    GLX_BLUE_SIZE, 1,
-	    GLX_DEPTH_SIZE,0,
+	    GLX_DEPTH_SIZE, 24,
 	    None 
 	};
 

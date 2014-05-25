@@ -90,7 +90,7 @@ class OS_X11 : public OS_Unix {
 	MouseMode mouse_mode;
 	Point2i center;
 	
-	void handle_key_event(XKeyEvent *p_event);
+	void handle_key_event(XKeyEvent *p_event,bool p_echo=false);
 	void process_xevents();
 	virtual void delete_main_loop();
 	IP_Unix *ip_unix;

@@ -1,9 +1,6 @@
-#include "stream_peer_openssl.h"
 
 #ifdef OPENSSL_ENABLED
-#include "globals.h"
-#include "os/file_access.h"
-#include "curl_hostcheck.h"
+#include "stream_peer_openssl.h"
 //hostname matching code from curl
 
 
@@ -109,6 +106,7 @@ int StreamPeerOpenSSL::_cert_verify_callback(X509_STORE_CTX *x509_ctx, void *arg
 	bool base_cert_valid = X509_verify_cert(x509_ctx);
 	if (!base_cert_valid) {
 		print_line("Cause: "+String(X509_verify_cert_error_string(X509_STORE_CTX_get_error(x509_ctx))));
+		ERR_print_errors_fp(stdout);
 	}
 	X509 *server_cert = X509_STORE_CTX_get_current_cert(x509_ctx);
 
@@ -361,7 +359,12 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 
 	// Same as before, try to connect.
 	int result = SSL_connect( ssl );
+
 	print_line("CONNECTION RESULT: "+itos(result));
+	if (result<1) {
+		ERR_print_errors_fp(stdout);
+		_print_error(result);
+	}
 
 	X509 * peer = SSL_get_peer_certificate(ssl);
 
@@ -547,7 +550,28 @@ void StreamPeerOpenSSL::initialize_ssl() {
 			}
 			BIO_free(mem);
 		}
-		print_line("Loaded certs: "+itos(certs.size()));
+		print_line("Loaded certs from '"+certs_path+"':  "+itos(certs.size()));
+	}
+	String config_path =GLOBAL_DEF("ssl/config","");
+	Globals::get_singleton()->set_custom_property_info("ssl/config",PropertyInfo(Variant::STRING,"ssl/config",PROPERTY_HINT_FILE,"*.cnf"));
+	if (config_path!="") {
+
+		Vector<uint8_t> data = FileAccess::get_file_as_array(config_path);
+		if (data.size()) {
+			data.push_back(0);
+			BIO* mem = BIO_new(BIO_s_mem());
+			BIO_puts(mem,(const char*) data.ptr());
+
+			while(true) {
+				X509*cert = PEM_read_bio_X509(mem, NULL, 0, NULL);
+				if (!cert)
+					break;
+				certs.push_back(cert);
+			}
+			BIO_free(mem);
+		}
+		print_line("Loaded certs from '"+certs_path+"':  "+itos(certs.size()));
+
 	}
 
 }

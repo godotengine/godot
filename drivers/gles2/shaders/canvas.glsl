@@ -64,6 +64,9 @@ void main() {
 	highp float enc32 = dot( color,highp vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1)  );
 	color = vec4(vec3(enc32),1.0);
 #endif
+
+//	color.rgb*=color.a;
 	gl_FragColor = color;
+
 }
 

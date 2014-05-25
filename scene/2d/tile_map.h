@@ -98,6 +98,7 @@ class TileMap : public Node2D {
 	Rect2 rect_cache;
 	bool rect_cache_dirty;
 	float fp_adjust;
+	uint32_t collision_layer;
 
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
@@ -144,6 +145,9 @@ public:
 	bool is_cell_y_flipped(int p_x,int p_y) const;
 
 	Rect2 get_item_rect() const;
+
+	void set_collision_layer_mask(uint32_t p_layer);
+	uint32_t get_collision_layer_mask() const;
 
 	void clear();
 

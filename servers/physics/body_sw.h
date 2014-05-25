@@ -50,6 +50,8 @@ class BodySW : public CollisionObjectSW {
 	real_t bounce;
 	real_t friction;
 
+	PhysicsServer::BodyAxisLock axis_lock;
+
 	real_t _inv_mass;
 	Vector3 _inv_inertia;
 	Matrix3 _inv_inertia_tensor;
@@ -226,6 +228,9 @@ public:
 	_FORCE_INLINE_ Vector3 get_gravity() const { return gravity; }
 	_FORCE_INLINE_ real_t get_density() const { return density; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
+
+	_FORCE_INLINE_ void set_axis_lock(PhysicsServer::BodyAxisLock p_lock) { axis_lock=p_lock; }
+	_FORCE_INLINE_ PhysicsServer::BodyAxisLock get_axis_lock() const { return axis_lock; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);

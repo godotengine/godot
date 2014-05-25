@@ -113,6 +113,27 @@ Ref<Mesh> MeshInstance::get_mesh() const {
 	return mesh;
 }
 
+void MeshInstance::_resolve_skeleton_path(){
+
+	if (skeleton_path.is_empty())
+		return;
+
+	Skeleton *skeleton=get_node(skeleton_path)?get_node(skeleton_path)->cast_to<Skeleton>():NULL;
+	if (skeleton)
+		VisualServer::get_singleton()->instance_attach_skeleton( get_instance(), skeleton->get_skeleton() );
+}
+
+void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
+
+	skeleton_path = p_skeleton;
+	if (!is_inside_scene())
+		return;
+	_resolve_skeleton_path();
+}
+
+NodePath MeshInstance::get_skeleton_path() {
+	return skeleton_path;
+}
 
 AABB MeshInstance::get_aabb() const {
 
@@ -192,22 +213,32 @@ void MeshInstance::create_convex_collision() {
 
 }
 
+void MeshInstance::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_SCENE) {
+		_resolve_skeleton_path();
+	}
+}
+
+
 void MeshInstance::_bind_methods() {
 	
 	ObjectTypeDB::bind_method(_MD("set_mesh","mesh:Mesh"),&MeshInstance::set_mesh);
 	ObjectTypeDB::bind_method(_MD("get_mesh:Mesh"),&MeshInstance::get_mesh);
+	ObjectTypeDB::bind_method(_MD("set_skeleton_path","skeleton_path:NodePath"),&MeshInstance::set_skeleton_path);
+	ObjectTypeDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
 	ObjectTypeDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
 	ObjectTypeDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
 	ObjectTypeDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh/mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
-	
-	
+	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "mesh/skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
 }
 
 MeshInstance::MeshInstance()
 {
+	skeleton_path=NodePath("..");
 }
 
 

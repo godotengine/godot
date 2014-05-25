@@ -185,51 +185,59 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 			//TRY CLASS CONSTANTS
 
-			GDScript *scr = codegen.script;
-			GDNativeClass *nc=NULL;
-			while(scr) {
+			GDScript *owner = codegen.script;
+			while (owner) {
 
-				if (scr->constants.has(identifier)) {
+				GDScript *scr = owner;
+				GDNativeClass *nc=NULL;
+				while(scr) {
 
-					//int idx=scr->constants[identifier];
-					int idx = codegen.get_name_map_pos(identifier);
-					return idx|(GDFunction::ADDR_TYPE_CLASS_CONSTANT<<GDFunction::ADDR_BITS); //argument (stack root)
+					if (scr->constants.has(identifier)) {
+
+						//int idx=scr->constants[identifier];
+						int idx = codegen.get_name_map_pos(identifier);
+						return idx|(GDFunction::ADDR_TYPE_CLASS_CONSTANT<<GDFunction::ADDR_BITS); //argument (stack root)
+					}
+					if (scr->native.is_valid())
+						nc=scr->native.ptr();
+					scr=scr->_base;
 				}
-				if (scr->native.is_valid())
-					nc=scr->native.ptr();
-				scr=scr->_base;
-			}
 
-			// CLASS C++ Integer Constant
+				// CLASS C++ Integer Constant
 
-			if (nc) {
+				if (nc) {
 
-				bool success=false;
-				int constant = ObjectTypeDB::get_integer_constant(nc->get_name(),identifier,&success);
-				if (success) {
-					Variant key=constant;
-					int idx;
+					bool success=false;
+					int constant = ObjectTypeDB::get_integer_constant(nc->get_name(),identifier,&success);
+					if (success) {
+						Variant key=constant;
+						int idx;
 
-					if (!codegen.constant_map.has(key)) {
+						if (!codegen.constant_map.has(key)) {
 
-						idx=codegen.constant_map.size();
-						codegen.constant_map[key]=idx;
+							idx=codegen.constant_map.size();
+							codegen.constant_map[key]=idx;
 
-					} else {
-						idx=codegen.constant_map[key];
+						} else {
+							idx=codegen.constant_map[key];
+						}
+
+						return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 					}
 
-					return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 				}
 
+				owner=owner->_owner;
 			}
 
-			if (codegen.script->subclasses.has(identifier)) {
+			/*
+			 handled in constants now
+			 if (codegen.script->subclasses.has(identifier)) {
 				//same with a subclass, make it a local constant.
 				int idx = codegen.get_constant_pos(codegen.script->subclasses[identifier]);
 				return idx|(GDFunction::ADDR_TYPE_LOCAL_CONSTANT<<GDFunction::ADDR_BITS); //make it a local constant (faster access)
 
-			}
+			}*/
 
 			if (GDScriptLanguage::get_singleton()->get_global_map().has(identifier)) {
 
@@ -452,6 +460,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 						const GDParser::Node *instance = on->arguments[0];
 
+						bool in_static=false;
 						if (instance->type==GDParser::Node::TYPE_SELF) {
 							//room for optimization
 
@@ -465,7 +474,10 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							int ret;
 
-							if (i==1) {
+							if (i==0 && on->arguments[i]->type==GDParser::Node::TYPE_SELF && codegen.function_node && codegen.function_node->_static) {
+								//static call to self
+								ret=(GDFunction::ADDR_TYPE_CLASS<<GDFunction::ADDR_BITS);
+							} else if (i==1) {
 
 								if (on->arguments[i]->type!=GDParser::Node::TYPE_IDENTIFIER) {
 									_set_error("Attempt to call a non-identifier.",on);
@@ -475,6 +487,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 								ret=codegen.get_name_map_pos(id->name);
 
 							} else {
+
 								ret = _parse_expression(codegen,on->arguments[i],slevel);
 								if (ret<0)
 									return ret;
@@ -1249,6 +1262,16 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	gdfunc->name=func_name;
 	gdfunc->_script=p_script;
 	gdfunc->source=source;
+
+#ifdef DEBUG_ENABLED
+
+	{
+		gdfunc->func_cname=(String(source)+" - "+String(func_name)).utf8();
+		gdfunc->_func_cname=gdfunc->func_cname.get_data();
+
+	}
+
+#endif
 	if (p_func) {
 		gdfunc->_initial_line=p_func->line;
 	} else {
@@ -1293,6 +1316,16 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 		if (path!="") {
 			//path (and optionally subclasses)
+
+			if (path.is_rel_path()) {
+
+				String base = p_script->get_path();
+				if (base=="" || base.is_rel_path()) {
+					_set_error("Could not resolve relative path for parent class: "+path,p_class);
+					return ERR_FILE_NOT_FOUND;
+				}
+				path=base.get_base_dir().plus_file(path);
+			}
 
 			script = ResourceLoader::load(path);
 			if (script.is_null()) {
@@ -1448,6 +1481,8 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		Error err = _parse_class(subclass.ptr(),p_script,p_class->subclasses[i]);
 		if (err)
 			return err;
+
+		p_script->constants.insert(name,subclass); //once parsed, goes to the list of constants
 		p_script->subclasses.insert(name,subclass);
 
 	}

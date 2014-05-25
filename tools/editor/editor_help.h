@@ -139,7 +139,7 @@ class EditorHelp : public VBoxContainer {
 	void _class_list_select(const String& p_select);
 	void _class_desc_select(const String& p_select);
 
-	void _goto_desc(const String& p_class,bool p_update_history=true,int p_vscr=-1);
+	Error _goto_desc(const String& p_class,bool p_update_history=true,int p_vscr=-1);
 	void _update_history_buttons();
 	void _update_doc();
 

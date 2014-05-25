@@ -69,6 +69,7 @@ class CanvasItemEditor : public VBoxContainer {
 		TOOL_SELECT,
 		TOOL_MOVE,
 		TOOL_ROTATE,
+		TOOL_PAN,
 		TOOL_MAX
 	};
 
@@ -97,10 +98,12 @@ class CanvasItemEditor : public VBoxContainer {
 		ANIM_INSERT_POS_ROT,
 		ANIM_INSERT_POS_SCALE,
 		ANIM_INSERT_ROT_SCALE,
-		ANIM_INSERT_POS_ROT_SCALE,		
+		ANIM_INSERT_POS_ROT_SCALE,
 		ANIM_COPY_POSE,
 		ANIM_PASTE_POSE,
-		ANIM_CLEAR_POSE
+		ANIM_CLEAR_POSE,
+		VIEW_CENTER_TO_SELECTION,
+		VIEW_FRAME_TO_SELECTION,
 
 	};
 
@@ -118,6 +121,12 @@ class CanvasItemEditor : public VBoxContainer {
 		DRAG_ROTATE,
 		DRAG_PIVOT,
 
+	};
+
+	enum KeyMoveMODE {
+		MOVE_VIEW_BASE,
+		MOVE_LOCAL_BASE,
+		MOVE_LOCAL_WITH_ROT
 	};
 
 	EditorSelection *editor_selection;
@@ -170,6 +179,8 @@ class CanvasItemEditor : public VBoxContainer {
 	ToolButton *move_button;
 	ToolButton *rotate_button;
 
+	ToolButton *pan_button;
+
 	ToolButton *lock_button;
 	ToolButton *unlock_button;
 
@@ -218,7 +229,7 @@ class CanvasItemEditor : public VBoxContainer {
 	void _remove_canvas_item(CanvasItem *p_canvas_item);
 	void _clear_canvas_items();
 	void _visibility_changed(ObjectID p_canvas_item);
-	void _key_move(const Vector2& p_dir, bool p_snap);
+	void _key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE p_move_mode);
 
 	DragType _find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
 

@@ -1660,6 +1660,31 @@ void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
 }
 
 
+
+void Image::premultiply_alpha() {
+
+	if (data.size()==0)
+		return;
+
+	if (format!=FORMAT_RGBA)
+		return; //not needed
+
+	DVector<uint8_t>::Write wp = data.write();
+	unsigned char *data_ptr=wp.ptr();
+
+
+	for(int i=0;i<height;i++) {
+		for(int j=0;j<width;j++) {
+
+			BColor bc = _get_pixel(j,i,data_ptr,0);
+			bc.r=(int(bc.r)*int(bc.a))>>8;
+			bc.g=(int(bc.g)*int(bc.a))>>8;
+			bc.b=(int(bc.b)*int(bc.a))>>8;
+			_put_pixel(j,i,bc,data_ptr);
+		}
+	}
+}
+
 void Image::fix_alpha_edges() {
 
 	if (data.size()==0)

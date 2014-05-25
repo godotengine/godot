@@ -315,6 +315,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	VisualServer::get_singleton()->canvas_item_set_parent( q.canvas_item, get_canvas_item() );
 	VisualServer::get_singleton()->canvas_item_set_transform( q.canvas_item, xform );
 	q.static_body=Physics2DServer::get_singleton()->body_create(Physics2DServer::BODY_MODE_STATIC);
+	Physics2DServer::get_singleton()->body_set_layer_mask(q.static_body,collision_layer);
 	if (is_inside_scene()) {
 		xform = get_global_transform() * xform;
 		RID space = get_world_2d()->get_space();
@@ -545,6 +546,22 @@ Rect2 TileMap::get_item_rect() const {
 	return rect_cache;
 }
 
+void TileMap::set_collision_layer_mask(uint32_t p_layer) {
+
+	collision_layer=p_layer;
+	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+		Quadrant &q=E->get();
+		Physics2DServer::get_singleton()->body_set_layer_mask(q.static_body,collision_layer);
+	}
+}
+
+uint32_t TileMap::get_collision_layer_mask() const {
+
+	return collision_layer;
+}
+
+
 void TileMap::_bind_methods() {
 
 
@@ -564,6 +581,8 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_center_y","enable"),&TileMap::set_center_y);
 	ObjectTypeDB::bind_method(_MD("get_center_y"),&TileMap::get_center_y);
 
+	ObjectTypeDB::bind_method(_MD("set_collision_layer_mask","mask"),&TileMap::set_collision_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_layer_mask"),&TileMap::get_collision_layer_mask);
 
 	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
@@ -583,6 +602,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),_SCS("set_tileset"),_SCS("get_tileset"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision_layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer_mask"),_SCS("get_collision_layer_mask"));
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
@@ -599,6 +619,7 @@ TileMap::TileMap() {
 	cell_size=64;
 	center_x=false;
 	center_y=false;
+	collision_layer=1;
 
 	fp_adjust=0.01;
 	fp_adjust=0.01;

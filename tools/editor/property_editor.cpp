@@ -261,12 +261,12 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				for(int i=0;i<2;i++) {
 
 					Point2 ofs(4,4);
-					ofs.y+=16*i;
+					ofs.y+=22*i;
 					for(int j=0;j<10;j++) {
 
-						CheckButton *c=checks20[i*10+j];
+						Button *c=checks20[i*10+j];
 						Point2 o=ofs;
-						o.x+=j*16;
+						o.x+=j*22;
 						if (j>=5)
 							o.x+=4;
 						c->set_pos(o);
@@ -277,7 +277,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				}
 
-				set_size(checks20[19]->get_pos()+Size2(12,17));
+				set_size(checks20[19]->get_pos()+Size2(20,25));
 
 
 			} else if (hint==PROPERTY_HINT_EXP_EASING) {
@@ -1560,10 +1560,13 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	}
 
 	for(int i=0;i<20;i++) {
-		checks20[i]=memnew( CheckButton );
+		checks20[i]=memnew( Button );
+		checks20[i]->set_toggle_mode(true);
+		checks20[i]->set_focus_mode(FOCUS_NONE);
 		add_child(checks20[i]);
 		checks20[i]->hide();
 		checks20[i]->connect("pressed",this,"_action_pressed",make_binds(i));
+		checks20[i]->set_tooltip("Bit "+itos(i)+", val "+itos(1<<i)+".");
 	}
 
 	text_edit = memnew( TextEdit );
@@ -1941,7 +1944,7 @@ TreeItem *PropertyEditor::get_parent_node(String p_path,HashMap<String,TreeItem*
 		TreeItem *parent = get_parent_node( p_path.left( p_path.find_last("/") ),item_paths,root );
 		item = tree->create_item( parent );
 
-		String name = (p_path.find("/")!=-1)?p_path.right( p_path.find_last("/") ):p_path;
+		String name = (p_path.find("/")!=-1)?p_path.right( p_path.find_last("/")+1 ):p_path;
 		if (capitalize_paths)
 			item->set_text(0, name.capitalize() );
 		else
@@ -2099,7 +2102,7 @@ void PropertyEditor::update_tree() {
 
 		TreeItem * item = tree->create_item( parent );
 
-		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/") ):p.name;
+		String name = (p.name.find("/")!=-1)?p.name.right( p.name.find_last("/")+1 ):p.name;
 
 		if (level>0) {
 			item->set_custom_bg_color(0,col);

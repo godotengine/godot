@@ -323,9 +323,12 @@ bool LineEdit::can_drop_data(const Point2& p_point,const Variant& p_data) const{
 void LineEdit::drop_data(const Point2& p_point,const Variant& p_data){
 
 	if (p_data.get_type()==Variant::STRING) {
-
 		set_cursor_at_pixel_pos(p_point.x);
+		int selected = selection.end - selection.begin;
+		text.erase(selection.begin, selected);
 		append_at_cursor(p_data);
+		selection.begin = cursor_pos-selected;
+		selection.end = cursor_pos;
 	}
 }
 

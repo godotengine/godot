@@ -1,0 +1,60 @@
+Import('env')
+
+def make_editor_icons_action(target, source, env):
+
+	import os
+
+	dst = target[0].srcnode().abspath
+	pixmaps = source
+	
+	f = open(dst,"wb")
+	f.write("#include \"editor_icons.h\"\n\n")
+	f.write("#include \"scene/resources/theme.h\"\n\n")
+
+	for x in pixmaps:
+	
+		x=str(x)
+		var_str=os.path.basename(x)[:-4]+"_png";
+		#print(var_str)
+		
+		f.write("static const unsigned char "+ var_str +"[]={\n");
+		
+		pngf=open(x,"rb");
+		
+		b=pngf.read(1);
+		while(len(b)==1):
+			f.write(hex(ord(b)))
+			b=pngf.read(1);
+			if (len(b)==1):
+				f.write(",")
+				
+		f.write("\n};\n\n\n");
+		pngf.close();
+	  
+	f.write("static Ref<ImageTexture> make_icon(const uint8_t* p_png) {\n")
+	f.write("\tRef<ImageTexture> texture( memnew( ImageTexture ) );\n")
+	f.write("\ttexture->create_from_image( Image(p_png),ImageTexture::FLAG_FILTER );\n")
+	f.write("\treturn texture;\n")
+	f.write("}\n\n")
+
+	f.write("void editor_register_icons(Ref<Theme> p_theme) {\n\n")
+
+	for x in pixmaps:
+	
+		x=os.path.basename(str(x))
+		type=x[5:-4].title().replace("_","");
+		var_str=x[:-4]+"_png";
+		f.write("\tp_theme->set_icon(\""+type+"\",\"EditorIcons\",make_icon("+var_str+"));\n");
+
+	f.write("\n\n}\n\n");
+	f.close()
+
+make_editor_icons_builder = Builder(action=make_editor_icons_action,
+							suffix = '.cpp',
+							src_suffix = '.png')
+env['BUILDERS']['MakeEditorIconsBuilder']=make_editor_icons_builder
+env.Alias('editor_icons',[env.MakeEditorIconsBuilder('#tools/editor/editor_icons.cpp',Glob("*.png"))])
+
+env.tool_sources.append("#tools/editor/editor_icons.cpp")
+Export('env')
+

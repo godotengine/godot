@@ -55,7 +55,7 @@ public:
 
 
 	void set_text_editor(TextEdit *p_text_editor);
-	GotoLineDialog();
+	GotoLineDialog();	
 };
 
 
@@ -128,10 +128,12 @@ class CodeTextEditor : public Control {
 	Label *line_col;
 	Label *info;
 	Timer *idle;
+	Timer *code_complete_timer;
+	bool enable_complete_timer;
 
 	Label *error;
 
-	void _update_font();
+	void _on_settings_change();
 
 	void _complete_request(const String& p_request,int p_line);
 protected:
@@ -145,6 +147,7 @@ protected:
 
 
 	void _text_changed_idle_timeout();
+	void _code_complete_timer_timeout();
 	void _text_changed();
 	void _line_col_changed();
 	void _notification(int);

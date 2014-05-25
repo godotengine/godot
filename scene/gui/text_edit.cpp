@@ -46,7 +46,6 @@
 
 #define TAB_PIXELS
 
-
 static bool _is_text_char(CharType c) {
 
 	return (c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9') || c=='_';
@@ -55,6 +54,42 @@ static bool _is_text_char(CharType c) {
 static bool _is_symbol(CharType c) {
 
 	return c!='_' && ((c>='!' && c<='/') || (c>=':' && c<='@') || (c>='[' && c<='`') || (c>='{' && c<='~') || c=='\t');
+}
+
+static bool _is_pair_right_symbol(CharType c) {
+	return
+		c == '"'  ||
+		c == '\'' ||
+		c == ')'  ||
+		c == ']'  ||
+		c == '}';		
+}
+
+static bool _is_pair_left_symbol(CharType c) {
+	return
+		c == '"'  ||
+		c == '\'' ||
+		c == '('  ||
+		c == '['  ||
+		c == '{';
+}
+
+static bool _is_pair_symbol(CharType c) {
+	return _is_pair_left_symbol(c) || _is_pair_right_symbol(c);
+}
+
+static CharType _get_right_pair_symbol(CharType c) {
+	if(c == '"')
+		return '"';
+	if(c == '\'')
+		return '\'';
+	if(c == '(')
+		return ')';
+	if(c == '[')
+		return ']';
+	if(c == '{')
+		return '}';
+	return 0;
 }
 
 void TextEdit::Text::set_font(const Ref<Font>& p_font) {
@@ -301,7 +336,7 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->set_val(cursor.line_ofs);
 
 	}  else {
-
+		cursor.line_ofs = 0;
 		v_scroll->hide();
 	}
 
@@ -707,6 +742,93 @@ void TextEdit::_notification(int p_what) {
 	}
 }
 
+void TextEdit::_consume_pair_symbol(CharType ch) {
+	
+	int cursor_position_to_move = cursor_get_column() + 1;
+	
+	CharType ch_single[2] = {ch, 0};
+	CharType ch_single_pair[2] = {_get_right_pair_symbol(ch), 0};
+	CharType ch_pair[3] = {ch, _get_right_pair_symbol(ch), 0};
+	
+	if(is_selection_active()) {	
+		
+		int new_column,new_line;
+		
+		_begin_compex_operation();
+		_insert_text(get_selection_from_line(), get_selection_from_column(),
+					 ch_single,
+					 &new_line, &new_column);
+		
+		int to_col_offset = 0;
+		if(get_selection_from_line() == get_selection_to_line()) 
+			to_col_offset = 1;
+		
+		_insert_text(get_selection_to_line(), 
+					 get_selection_to_column() + to_col_offset,
+					 ch_single_pair,
+					 &new_line,&new_column);
+		_end_compex_operation();
+		
+		cursor_set_line(get_selection_to_line());
+		cursor_set_column(get_selection_to_column() + to_col_offset);
+		
+		deselect();
+		update();
+		return;
+	}
+	
+	if( (ch == '\'' || ch == '"') &&
+		cursor_get_column() > 0 &&
+		_is_text_char(text[cursor.line][cursor_get_column() - 1])
+	) {
+		insert_text_at_cursor(ch_single);
+		cursor_set_column(cursor_position_to_move);
+		return;
+	}
+	
+	if(cursor_get_column() < text[cursor.line].length()) {
+		if(_is_text_char(text[cursor.line][cursor_get_column()])) {
+			insert_text_at_cursor(ch_single);
+			cursor_set_column(cursor_position_to_move);
+			return;
+		}
+		if(	_is_pair_right_symbol(ch) && 
+			text[cursor.line][cursor_get_column()] == ch 
+		) {
+			cursor_set_column(cursor_position_to_move);
+			return;
+		}
+	}
+	
+	
+	insert_text_at_cursor(ch_pair);
+	cursor_set_column(cursor_position_to_move);
+	return;
+	
+}
+
+void TextEdit::_consume_backspace_for_pair_symbol(int prev_line, int prev_column) {
+	
+	bool remove_right_symbol = false;
+	
+	if(cursor.column < text[cursor.line].length() && cursor.column > 0) {
+		
+		CharType left_char = text[cursor.line][cursor.column - 1];
+		CharType right_char = text[cursor.line][cursor.column];
+		
+		if(right_char == _get_right_pair_symbol(left_char)) {
+			remove_right_symbol = true;
+		}
+		
+	}
+	if(remove_right_symbol) {
+		_remove_text(prev_line,prev_column,cursor.line,cursor.column + 1);
+	} else {
+		_remove_text(prev_line,prev_column,cursor.line,cursor.column);
+	}
+	
+}
+
 void TextEdit::backspace_at_cursor() {
 
 	if (cursor.column==0 && cursor.line==0)
@@ -714,7 +836,14 @@ void TextEdit::backspace_at_cursor() {
 
 	int prev_line = cursor.column?cursor.line:cursor.line-1;
 	int prev_column = cursor.column?(cursor.column-1):(text[cursor.line-1].length());
-	_remove_text(prev_line,prev_column,cursor.line,cursor.column);
+	if(auto_brace_completion_enabled && 
+		cursor.column > 0 &&
+		_is_pair_left_symbol(text[cursor.line][cursor.column - 1])) {
+		_consume_backspace_for_pair_symbol(prev_line, prev_column);
+	} else {
+		_remove_text(prev_line,prev_column,cursor.line,cursor.column);
+	}
+
 	cursor_set_line(prev_line);
 	cursor_set_column(prev_column);
 
@@ -976,7 +1105,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						return;
 					}
 
-					if (k.scancode==KEY_RETURN) {
+					if (k.scancode==KEY_RETURN || k.scancode==KEY_TAB) {
 
 						_confirm_completion();
 						accept_event();
@@ -1002,11 +1131,17 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						if (cursor.column<text[cursor.line].length() && text[cursor.line][cursor.column]==k.unicode) {
 							//same char, move ahead
 							cursor_set_column(cursor.column+1);
+							
 						} else {
 							//different char, go back
 							const CharType chr[2] = {k.unicode, 0};
-							_insert_text_at_cursor(chr);
+							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
+								_consume_pair_symbol(chr[0]);
+							} else {
+								_insert_text_at_cursor(chr);
+							}
 						}
+
 						_update_completion_candidates();
 						accept_event();
 
@@ -1113,7 +1248,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					default:
 						if (k.unicode>=32 && !k.mod.command && !k.mod.alt && !k.mod.meta)
 							clear=true;
-
+						if (auto_brace_completion_enabled && _is_pair_left_symbol(k.unicode))
+							clear=false;
 				}
 
 				if (unselect) {
@@ -1522,14 +1658,35 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (readonly)
 						break;
 
-					const CharType chr[2] = {k.unicode, 0};
-					_insert_text_at_cursor(chr);
 					accept_event();
 				} else {
 
 					break;
 				}
 			}
+			
+			if (!scancode_handled && !k.mod.command && !k.mod.alt) {
+			
+				if (k.unicode>=32) {
+
+					if (readonly)
+						break;
+					
+					const CharType chr[2] = {k.unicode, 0};
+					
+					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
+						_consume_pair_symbol(chr[0]);
+					} else {
+						_insert_text_at_cursor(chr);
+					}
+					
+					accept_event();
+				} else {
+
+					break;
+				}
+			}
+			
 
 			if (!selection.selecting_test) {
 
@@ -1865,7 +2022,6 @@ void TextEdit::adjust_viewport_to_cursor() {
 
 
 }
-
 
 void TextEdit::cursor_set_column(int p_col) {
 
@@ -2334,6 +2490,27 @@ String TextEdit::get_selection_text() const {
 
 }
 
+String TextEdit::get_word_under_cursor() const {
+
+	int prev_cc = cursor.column;
+	while(prev_cc >0) {
+		bool is_char = _is_text_char(text[cursor.line][prev_cc-1]);
+		if (!is_char)
+			break;
+		--prev_cc;
+	}
+
+	int next_cc = cursor.column;
+	while(next_cc<text[cursor.line].length()) {
+		bool is_char = _is_text_char(text[cursor.line][next_cc]);
+		if(!is_char)
+			break;
+		++ next_cc;
+	}
+	if (prev_cc == cursor.column || next_cc == cursor.column)
+		return "";
+	return text[cursor.line].substr(prev_cc, next_cc-prev_cc);
+}
 
 DVector<int> TextEdit::_search_bind(const String &p_key,uint32_t p_search_flags, int p_from_line,int p_from_column) const {
 
@@ -2724,6 +2901,7 @@ void TextEdit::_update_completion_candidates() {
 
 	completion_current=completion_options[completion_index];
 
+#if 0	// even there's only one option, user still get the chance to choose using it or not
 	if (completion_options.size()==1) {
 		//one option to complete, just complete it automagically
 		_confirm_completion();
@@ -2732,6 +2910,9 @@ void TextEdit::_update_completion_candidates() {
 		return;
 
 	}
+#endif
+	if (completion_options.size()==1 && s==completion_options[0])
+		_cancel_completion();
 
 	completion_enabled=true;
 
@@ -2886,6 +3067,7 @@ void TextEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_selection_to_line"),&TextEdit::get_selection_to_line);
 	ObjectTypeDB::bind_method(_MD("get_selection_to_column"),&TextEdit::get_selection_to_column);
 	ObjectTypeDB::bind_method(_MD("get_selection_text"),&TextEdit::get_selection_text);
+	ObjectTypeDB::bind_method(_MD("get_word_under_cursor"),&TextEdit::get_word_under_cursor);
 	ObjectTypeDB::bind_method(_MD("search","flags","from_line","from_column","to_line","to_column"),&TextEdit::_search_bind);
 
 	ObjectTypeDB::bind_method(_MD("undo"),&TextEdit::undo);
@@ -2989,6 +3171,7 @@ TextEdit::TextEdit()  {
 	tooltip_obj=NULL;
 	line_numbers=false;
 	next_operation_is_complex=false;
+	auto_brace_completion_enabled=false;
 }
 
 TextEdit::~TextEdit(){

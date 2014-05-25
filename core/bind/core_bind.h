@@ -39,6 +39,16 @@ protected:
 	static _ResourceSaver *singleton;
 public:
 
+	enum SaverFlags {
+
+		FLAG_RELATIVE_PATHS=1,
+		FLAG_BUNDLE_RESOURCES=2,
+		FLAG_CHANGE_PATH=4,
+		FLAG_OMIT_EDITOR_PROPERTIES=8,
+		FLAG_SAVE_BIG_ENDIAN=16,
+		FLAG_COMPRESS=32,
+	};
+
 	static _ResourceSaver *get_singleton() { return singleton; }
 
 	Error save(const String &p_path,const RES& p_resource, uint32_t p_flags);
@@ -98,7 +108,7 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
-	Error native_video_play(String p_path);
+	Error native_video_play(String p_path, float p_volume);
 	bool native_video_is_playing();
 	void native_video_pause();
 	void native_video_stop();
@@ -139,6 +149,7 @@ public:
 	void print_resources_in_use(bool p_short=false);
 	void print_all_resources(const String& p_to_file);
 	void print_all_textures_by_size();
+	void print_resources_by_type(const Vector<String>& p_types);
 
 	bool has_touchscreen_ui_hint() const;
 

@@ -442,6 +442,9 @@ static String _disassemble_addr(const Ref<GDScript>& p_script,const GDFunction& 
 		case GDFunction::ADDR_TYPE_SELF: {
 			return "self";
 		} break;
+		case GDFunction::ADDR_TYPE_CLASS: {
+			return "class";
+		} break;
 		case GDFunction::ADDR_TYPE_MEMBER: {
 
 			return "member("+p_script->debug_get_member_by_index(addr)+")";

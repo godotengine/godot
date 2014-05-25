@@ -44,7 +44,12 @@ class SpatialEditorGizmos;
 class SpatialEditorGizmo : public SpatialGizmo {
 
 	OBJ_TYPE(SpatialEditorGizmo,SpatialGizmo);
+
+	bool selected;
 public:
+
+	void set_selected(bool p_selected) { selected=p_selected; }
+	bool is_selected() const { return selected; }
 
 	virtual String get_handle_name(int p_idx) const;
 	virtual Variant get_handle_value(int p_idx) const;
@@ -74,8 +79,13 @@ class SpatialEditorViewport : public Control {
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL
 	};
+	enum {
+		GIZMO_BASE_LAYER=25
+	};
 
+	int index;
 	void _menu_option(int p_option);
+	Size2 prev_size;
 
 	EditorNode *editor;
 	EditorSelection *editor_selection;
@@ -90,6 +100,7 @@ class SpatialEditorViewport : public Control {
 	Camera *camera;
 	bool transforming;
 	bool orthogonal;
+	float gizmo_scale;
 
 	void _compute_edit(const Point2& p_point);
 	void _clear_selected();
@@ -174,6 +185,9 @@ class SpatialEditorViewport : public Control {
 		Cursor() { x_rot=y_rot=0; distance=4; region_select=false; }
 	} cursor;
 
+	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
+
+
 	String last_message;
 	String message;
 	float message_time;
@@ -193,11 +207,16 @@ class SpatialEditorViewport : public Control {
 
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
+	void _init_gizmo_instance(int p_idx);
+
+
 protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
+	void update_transform_gizmo_view();
 
 	void set_can_preview(Camera* p_preview);
 	void set_state(const Dictionary& p_state);
@@ -205,7 +224,7 @@ public:
 
 
 
-	SpatialEditorViewport(SpatialEditor *p_spatial_editor,EditorNode *p_editor);
+	SpatialEditorViewport(SpatialEditor *p_spatial_editor,EditorNode *p_editor,int p_index);
 };
 
 
@@ -275,10 +294,11 @@ private:
 	bool grid_enabled;
 
 	Ref<Mesh> move_gizmo[3], rotate_gizmo[3];
-	RID move_gizmo_instance[3], rotate_gizmo_instance[3];
 	Ref<FixedMaterial> gizmo_color[3];
 	Ref<FixedMaterial> gizmo_hl;
 
+
+	int over_gizmo_handle;
 
 
 
@@ -365,8 +385,6 @@ private:
 
 	HBoxContainer *hbc_menu;
 
-	void _update_transform_gizmo_view();
-
 //
 //
 	void _generate_selection_box();
@@ -386,10 +404,13 @@ private:
 
 	List<EditorPlugin*> gizmo_plugins;
 
+	Spatial *selected;
+
 	void _request_gizmo(Object* p_obj);
 
 	static SpatialEditor *singleton;
 
+	void _node_removed(Node* p_node);
 	SpatialEditorGizmos *gizmos;
 	SpatialEditor();
 
@@ -422,6 +443,9 @@ public:
 	float get_rotate_snap() const { return snap_rotate->get_text().to_double(); }
 	float get_scale_snap() const { return snap_scale->get_text().to_double(); }
 
+	Ref<Mesh> get_move_gizmo(int idx) const { return move_gizmo[idx]; }
+	Ref<Mesh> get_rotate_gizmo(int idx) const { return rotate_gizmo[idx]; }
+
 	void update_transform_gizmo();
 
 	void select_gizmo_hilight_axis(int p_axis);
@@ -441,6 +465,11 @@ public:
 
 	VSplitContainer *get_shader_split();
 	HSplitContainer *get_palette_split();
+
+	Spatial *get_selected() { return selected; }
+
+	int get_over_gizmo_handle() const { return over_gizmo_handle; }
+	void set_over_gizmo_handle(int idx) { over_gizmo_handle=idx; }
 
 	void set_can_preview(Camera* p_preview);
 
