@@ -54,7 +54,7 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 void CanvasItemEditor::_tool_select(int p_index) {
 
 
-	ToolButton *tb[TOOL_MAX]={select_button,move_button,rotate_button};
+	ToolButton *tb[TOOL_MAX]={select_button,move_button,rotate_button,pan_button};
 	for(int i=0;i<TOOL_MAX;i++) {
 
 		tb[i]->set_pressed(i==p_index);
@@ -608,7 +608,14 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_WHEEL_DOWN) {
 
+			float prev_zoom=zoom;
 			zoom=zoom*0.95;
+			{
+				Point2 ofs(b.x,b.y);
+				ofs = ofs/prev_zoom - ofs/zoom;
+				h_scroll->set_val( h_scroll->get_val() + ofs.x );
+				v_scroll->set_val( v_scroll->get_val() + ofs.y );
+			}
 			_update_scroll(0);
 			viewport->update();
 			return;
@@ -616,7 +623,15 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_WHEEL_UP) {
 
+			float prev_zoom=zoom;
 			zoom=zoom*(1.0/0.95);
+			{
+				Point2 ofs(b.x,b.y);
+				ofs = ofs/prev_zoom - ofs/zoom;
+				h_scroll->set_val( h_scroll->get_val() + ofs.x );
+				v_scroll->set_val( v_scroll->get_val() + ofs.y );
+			}
+
 			_update_scroll(0);
 			viewport->update();
 			return;
@@ -665,7 +680,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		//if (!canvas_items.size())
 		//	return;
 
-		if (b.button_index!=BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
+		if (tool==TOOL_PAN || b.button_index!=BUTTON_LEFT || Input::get_singleton()->is_key_pressed(KEY_SPACE))
 			return;
 
 		if (!b.pressed) {
@@ -962,7 +977,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		if (drag==DRAG_NONE) {
 
 
-			if (m.button_mask&BUTTON_MASK_MIDDLE || (m.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+			if ( (m.button_mask&BUTTON_MASK_LEFT && tool == TOOL_PAN) || m.button_mask&BUTTON_MASK_MIDDLE || (m.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
 
 				h_scroll->set_val( h_scroll->get_val() - m.relative_x/zoom);
 				v_scroll->set_val( v_scroll->get_val() - m.relative_y/zoom);
@@ -1058,7 +1073,8 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			Vector2 begin=local_rect.pos;
 			Vector2 end=local_rect.pos+local_rect.size;
 			Vector2 minsize = canvas_item->edit_get_minimum_size();
-			bool symmetric=m.mod.shift;
+			bool uniform = m.mod.shift;
+			bool symmetric=m.mod.alt;
 
 
 			switch(drag) {
@@ -1078,10 +1094,19 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				} break;
 				case DRAG_BOTTOM_RIGHT: {
 
+					if (uniform) {
+						drag_vector.y=drag_vector.x;
+						minsize.y=minsize.x;
+					}
 					incend(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 					incend(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
-				} break;
+				} break;				
 				case DRAG_TOP_LEFT: {
+
+					if (uniform) {
+						drag_vector.y=drag_vector.x;
+						minsize.y=minsize.x;
+					}
 					incbeg(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 					incbeg(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
 				} break;
@@ -1097,12 +1122,20 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				} break;
 				case DRAG_TOP_RIGHT: {
 
+					if (uniform) {
+						drag_vector.x=-drag_vector.y;
+						minsize.x=minsize.y;
+					}
 					incbeg(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
 					incend(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 
 				} break;
 				case DRAG_BOTTOM_LEFT: {
 
+					if (uniform) {
+						drag_vector.x=-drag_vector.y;
+						minsize.x=minsize.y;
+					}
 					incbeg(begin.x,end.x,drag_vector.x,minsize.x,symmetric);
 					incend(begin.y,end.y,drag_vector.y,minsize.y,symmetric);
 				} break;
@@ -1406,6 +1439,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		select_button->set_icon( get_icon("ToolSelect","EditorIcons"));
 		move_button->set_icon( get_icon("ToolMove","EditorIcons"));
 		rotate_button->set_icon( get_icon("ToolRotate","EditorIcons"));
+		pan_button->set_icon( get_icon("ToolPan", "EditorIcons"));
 		select_handle=get_icon("EditorHandle","EditorIcons");
 		lock_button->set_icon(get_icon("Lock","EditorIcons"));
 		unlock_button->set_icon(get_icon("Unlock","EditorIcons"));
@@ -2215,6 +2249,14 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(rotate_button);
 	rotate_button->connect("pressed",this,"_tool_select",make_binds(TOOL_ROTATE));
 	rotate_button->set_tooltip("Rotate Mode (E)");
+
+	hb->add_child(memnew(VSeparator));
+
+	pan_button = memnew( ToolButton );
+	pan_button->set_toggle_mode(true);
+	hb->add_child(pan_button);
+	pan_button->connect("pressed",this,"_tool_select",make_binds(TOOL_PAN));
+	pan_button->set_tooltip("Pan Mode");
 
 	hb->add_child(memnew(VSeparator));
 

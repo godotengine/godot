@@ -149,6 +149,7 @@ public:
 	float get_lossy_storage_quality() const;
 
 	void fix_alpha_edges();
+	void premultiply_alpha();
 
 	void set_size_override(const Size2& p_size);
 

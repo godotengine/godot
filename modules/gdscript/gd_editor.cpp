@@ -787,3 +787,67 @@ Error GDScriptLanguage::complete_keyword(const String& p_code, int p_line, const
 	return OK;
 }
 
+void GDScriptLanguage::auto_indent_code(String& p_code,int p_from_line,int p_to_line) const {
+
+
+	Vector<String> lines = p_code.split("\n");
+	List<int> indent_stack;
+
+	for(int i=0;i<lines.size();i++) {
+
+		String l = lines[i];
+		int tc=0;
+		for(int j=0;j<l.length();j++) {
+			if (l[j]==' ' || l[j]=='\t') {
+
+				tc++;
+			} else {
+				break;
+			}
+		}
+
+
+		String st = l.substr(tc,l.length()).strip_edges();
+		if (st=="" || st.begins_with("#"))
+			continue; //ignore!
+
+		int ilevel=0;
+		if (indent_stack.size()) {
+			ilevel=indent_stack.back()->get();
+		}
+
+		if (tc>ilevel) {
+			indent_stack.push_back(tc);
+		} else if (tc<ilevel) {
+			while(indent_stack.size() && indent_stack.back()->get()>tc) {
+				indent_stack.pop_back();
+			}
+
+			if (indent_stack.size() && indent_stack.back()->get()!=tc)
+				indent_stack.push_back(tc); //this is not right but gets the job done
+		}
+
+		if (i>=p_from_line) {
+
+			l="";
+			for(int j=0;j<indent_stack.size();j++)
+				l+="\t";
+			l+=st;
+
+
+		} else if (i>p_to_line) {
+			break;
+		}
+
+		//print_line(itos(indent_stack.size())+","+itos(tc)+": "+l);
+		lines[i]=l;
+	}
+
+	p_code="";
+	for(int i=0;i<lines.size();i++) {
+		if (i>0)
+			p_code+="\n";
+		p_code+=lines[i];
+	}
+
+}

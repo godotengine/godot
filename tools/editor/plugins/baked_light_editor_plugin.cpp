@@ -134,6 +134,8 @@ public:
 
 
 	void _plot_light(const Vector3& p_plot_pos,const AABB& p_plot_aabb, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
+	void _plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
+
 	void _throw_ray(const Vector3& p_from, const Vector3& p_to,const Color& p_light,float *p_att_curve,float p_att_curve_len,int p_bounces);
 
 
@@ -165,7 +167,7 @@ public:
 	}
 
 	BakedLightBaker() {
-		octree_depth=8;
+		octree_depth=6;
 		octree=NULL;
 		bvh=NULL;
 		leaf_list=NULL;
@@ -408,7 +410,7 @@ void BakedLightBaker::_make_bvh() {
 void BakedLightBaker::_octree_insert(const AABB& p_aabb,Octant *p_octant,Triangle* p_triangle, int p_depth) {
 
 	if (p_octant->leaf) {
-
+#if 0
 		if (p_aabb.has_point(p_triangle->vertices[0]) && p_aabb.has_point(p_triangle->vertices[1]) &&p_aabb.has_point(p_triangle->vertices[2])) {
 			//face is completely enclosed, add area
 			p_octant->surface_area+=Face3(p_triangle->vertices[0],p_triangle->vertices[1],p_triangle->vertices[2]).get_area();
@@ -433,12 +435,18 @@ void BakedLightBaker::_octree_insert(const AABB& p_aabb,Octant *p_octant,Triangl
 				p.d=-p_aabb.pos[i];
 				poly=Geometry::clip_polygon(poly,p);
 			}
-			//calculate area
-			for(int i=2;i<poly.size();i++) {
-				p_octant->surface_area+=Face3(poly[0],poly[i-1],poly[i]).get_area();
-			}
-		}
 
+
+			//calculate area
+			float clipped_area=0;
+			for(int i=2;i<poly.size();i++) {
+				clipped_area+=Face3(poly[0],poly[i-1],poly[i]).get_area();
+			}
+
+			print_line(itos(poly.size())+" Base: "+rtos(Face3(p_triangle->vertices[0],p_triangle->vertices[1],p_triangle->vertices[2]).get_area())+" clipped: "+rtos(clipped_area));
+			p_octant->surface_area+=clipped_area;
+		}
+#endif
 	} else {
 
 
@@ -500,7 +508,7 @@ void BakedLightBaker::_make_octree() {
 	octree_aabb=base;
 
 	cell_size=base.size.x;
-	for(int i=0;i<=octree_depth;i++)
+	for(int i=0;i<octree_depth;i++)
 		cell_size/=2.0;
 
 	octree = memnew( Octant );
@@ -526,7 +534,7 @@ void BakedLightBaker::_plot_light(const Vector3& p_plot_pos,const AABB& p_plot_a
 		float d = p_plot_pos.distance_to(center);
 		if (d>r)
 			return; //oh crap! outside radius
-		float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
+		float intensity = 1.0;// - (d/r)*(d/r); //not gauss but..
 		p_octant->light_accum[0]+=p_light.r*intensity;
 		p_octant->light_accum[1]+=p_light.g*intensity;
 		p_octant->light_accum[2]+=p_light.b*intensity;
@@ -552,6 +560,42 @@ void BakedLightBaker::_plot_light(const Vector3& p_plot_pos,const AABB& p_plot_a
 				continue;
 
 			_plot_light(p_plot_pos,p_plot_aabb,p_octant->children[i],aabb,p_light);
+
+		}
+
+	}
+}
+
+void BakedLightBaker::_plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light) {
+
+
+	if (p_octant->leaf) {
+
+		p_octant->light_accum[0]+=p_light.r;
+		p_octant->light_accum[1]+=p_light.g;
+		p_octant->light_accum[2]+=p_light.b;
+
+	} else {
+
+		for(int i=0;i<8;i++) {
+
+			if (!p_octant->children[i])
+				continue;
+
+			AABB aabb=p_aabb;
+			aabb.size*=0.5;
+			if (i&1)
+				aabb.pos.x+=aabb.size.x;
+			if (i&2)
+				aabb.pos.y+=aabb.size.y;
+			if (i&4)
+				aabb.pos.z+=aabb.size.z;
+
+
+			if (!aabb.has_point(p_plot_pos))
+				continue;
+
+			_plot_light_point(p_plot_pos,p_octant->children[i],aabb,p_light);
 
 		}
 
@@ -692,6 +736,7 @@ void BakedLightBaker::_throw_ray(const Vector3& p_begin, const Vector3& p_end,co
 		aabb.size=Vector3(2,2,2)*cell_size*plot_size;
 
 		_plot_light(r_point,aabb,octree,octree_aabb,p_light);
+//		_plot_light_point(r_point,octree,octree_aabb,p_light);
 
 	}
 
@@ -772,9 +817,21 @@ void BakedLightBaker::bake(Node* p_node) {
 
 
 
+void BakedLightEditor::_end_baking() {
+
+	if (!bake_thread)
+		return;
+
+	bake_thread_exit=true;
+	Thread::wait_to_finish(bake_thread);
+	bake_thread=NULL;
+	bake_thread_exit=false;
+}
+
 void BakedLightEditor::_node_removed(Node *p_node) {
 
 	if(p_node==node) {
+		_end_baking();
 		node=NULL;
 		p_node->remove_child(preview);
 		preview->set_mesh(Ref<Mesh>());
@@ -783,6 +840,79 @@ void BakedLightEditor::_node_removed(Node *p_node) {
 
 }
 
+
+void BakedLightEditor::_bake_thread_func(void *arg) {
+
+	BakedLightEditor *ble = (BakedLightEditor*)arg;
+
+	while(!ble->bake_thread_exit) {
+
+		ble->baker->throw_rays(1000);
+	}
+
+}
+
+
+
+void BakedLightEditor::_notification(int p_option) {
+
+
+	if (p_option==NOTIFICATION_PROCESS) {
+
+		if (bake_thread) {
+
+			update_timeout-=get_process_delta_time();
+			if (update_timeout<0) {
+
+
+
+				float norm =  baker->get_normalization();
+				float max_lum=0;
+				{
+					DVector<Color>::Write cw=colors.write();
+					BakedLightBaker::Octant *oct = baker->leaf_list;
+					int vert_idx=0;
+
+					while(oct) {
+
+						Color color;
+
+
+						color.r=oct->light_accum[0]/norm;
+						color.g=oct->light_accum[1]/norm;
+						color.b=oct->light_accum[2]/norm;
+						float lum = color.get_v();
+						//if (lum<0.05)
+						//	color.a=0;
+						if (lum>max_lum)
+							max_lum=lum;
+
+						for (int i=0;i<36;i++) {
+
+
+							cw[vert_idx++]=color;
+						}
+
+						oct=oct->next_leaf;
+
+					}
+				}
+
+
+				Array a;
+				a.resize(Mesh::ARRAY_MAX);
+				a[Mesh::ARRAY_VERTEX]=vertices;
+				a[Mesh::ARRAY_COLOR]=colors;
+				while(mesh->get_surface_count())
+					mesh->surface_remove(0);
+				mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
+				mesh->surface_set_material(0,material);
+
+				update_timeout=1;
+			}
+		}
+	}
+}
 
 
 void BakedLightEditor::_menu_option(int p_option) {
@@ -797,13 +927,9 @@ void BakedLightEditor::_menu_option(int p_option) {
 			preview->set_mesh(Ref<Mesh>());
 			baker->base_inv=node->get_global_transform().affine_inverse();
 			baker->bake(node);
-			baker->throw_rays(100000);
-			float norm =  baker->get_normalization();
-			float max_lum=0;
 
 			print_line("CELLS: "+itos(baker->cell_count));
-			DVector<Color> colors;
-			DVector<Vector3> vertices;
+			print_line("cell size: "+rtos(baker->cell_size));
 			colors.resize(baker->cell_count*36);
 			vertices.resize(baker->cell_count*36);
 
@@ -817,12 +943,6 @@ void BakedLightEditor::_menu_option(int p_option) {
 				while(oct) {
 
 					Color color;
-					color.r=oct->light_accum[0]/norm;
-					color.g=oct->light_accum[1]/norm;
-					color.b=oct->light_accum[2]/norm;
-					float lum = color.get_v();
-					if (lum>max_lum)
-						max_lum=lum;
 
 					for (int i=0;i<6;i++) {
 
@@ -845,7 +965,7 @@ void BakedLightEditor::_menu_option(int p_option) {
 						}
 
 						for(int j=0;j<4;j++) {
-							face_points[j]*=baker->cell_size;
+							face_points[j]*=baker->cell_size*0.5;
 							face_points[j]+=Vector3(oct->offset[0],oct->offset[1],oct->offset[2]);
 						}
 
@@ -873,25 +993,20 @@ void BakedLightEditor::_menu_option(int p_option) {
 
 			}
 
-			print_line("max lum: "+rtos(max_lum));
 			Array a;
 			a.resize(Mesh::ARRAY_MAX);
 			a[Mesh::ARRAY_VERTEX]=vertices;
 			a[Mesh::ARRAY_COLOR]=colors;
+			while(mesh->get_surface_count())
+				mesh->surface_remove(0);
+			mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
+			mesh->surface_set_material(0,material);
 
-			Ref<FixedMaterial> matcol = memnew( FixedMaterial );
-			matcol->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
-			matcol->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-			matcol->set_flag(FixedMaterial::FLAG_UNSHADED,true);
-			matcol->set_flag(FixedMaterial::FLAG_DOUBLE_SIDED,true);
-			matcol->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
-			Ref<Mesh> m = memnew( Mesh );
-			m->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
-			m->surface_set_material(0,matcol);
-			preview->set_mesh(m);
-
-
-
+			bake_thread_exit=false;
+			update_timeout=0;
+			set_process(true);
+			bake_thread=Thread::create(_bake_thread_func,this);
+			preview->set_mesh(mesh);
 
 
 		} break;
@@ -914,6 +1029,7 @@ void BakedLightEditor::edit(BakedLight *p_baked_light) {
 	}
 
 	node=p_baked_light;
+	_end_baking();
 
 	if (node)
 		node->add_child(preview);
@@ -943,6 +1059,19 @@ BakedLightEditor::BakedLightEditor() {
 	node=NULL;
 	baker = memnew( BakedLightBaker );
 	preview = memnew( MeshInstance );
+	bake_thread=NULL;
+	update_timeout=0;
+
+	material = Ref<FixedMaterial> ( memnew( FixedMaterial ) );
+	material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+	material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+	material->set_flag(FixedMaterial::FLAG_UNSHADED,true);
+	material->set_flag(FixedMaterial::FLAG_DOUBLE_SIDED,true);
+	material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
+
+	mesh = Ref<Mesh>( memnew( Mesh ));
+
+
 }
 
 BakedLightEditor::~BakedLightEditor() {

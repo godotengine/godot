@@ -98,6 +98,13 @@ void _ResourceSaver::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("save","path","resource:Resource"),&_ResourceSaver::save, DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions","type"),&_ResourceSaver::get_recognized_extensions);
+
+	BIND_CONSTANT(FLAG_RELATIVE_PATHS);
+	BIND_CONSTANT(FLAG_BUNDLE_RESOURCES);
+	BIND_CONSTANT(FLAG_CHANGE_PATH);
+	BIND_CONSTANT(FLAG_OMIT_EDITOR_PROPERTIES);
+	BIND_CONSTANT(FLAG_SAVE_BIG_ENDIAN);
+	BIND_CONSTANT(FLAG_COMPRESS);
 }
 
 _ResourceSaver::_ResourceSaver() {

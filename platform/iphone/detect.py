@@ -21,7 +21,8 @@ def get_opts():
 	return [
 		('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
 		('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
-		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS7.1.sdk/'),
+		('IOS_SDK_VERSION', 'The SDK version', 'iPhoneOS7.0'),
+		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
@@ -37,6 +38,7 @@ def get_flags():
 		('tools', 'yes'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
+		('openssl','builtin'), #use builtin openssl
 	]
 
 
@@ -81,7 +83,7 @@ def configure(env):
 							'-framework', 'AudioToolbox',
 							'-framework', 'SystemConfiguration',
 							'-framework', 'Security',
-							'-framework', 'AdSupport',
+							#'-framework', 'AdSupport',
 							'-framework', 'MediaPlayer',
 							])
 

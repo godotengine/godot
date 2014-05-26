@@ -242,8 +242,8 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 							touched=true;
 					}
 				} else {
-
-					touched=Rect2(Point2(),texture->get_size()).has_point(coord);
+					if (!texture.is_null())
+						touched=Rect2(Point2(),texture->get_size()).has_point(coord);
 				}
 
 
