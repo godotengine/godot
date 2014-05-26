@@ -7,6 +7,7 @@
 #include "os/dir_access.h"
 #include "os/thread.h"
 #include "os/semaphore.h"
+#include "os/bytesbuffer.h"
 
 
 class _ResourceLoader : public Object  {
@@ -234,7 +235,60 @@ public:
 	_Geometry();
 };
 
+class _ByteArray : public Object {
 
+    OBJ_TYPE(_ByteArray,Object);
+private:
+    BytesBuffer db;
+protected:
+    static void _bind_methods();
+public:
+	void clear();
+	void seek(int64_t p_position); ///< seek to a given position
+	void seek_end(int64_t p_position=0); ///< seek from the end of file
+	int64_t get_pos() const; ///< get position in the file
+	int64_t get_len() const; ///< get size of the file
+
+	bool eof_reached() const; ///< reading passed EOF
+
+	uint8_t get_8() const; ///< get a byte
+	uint16_t get_16() const; ///< get 16 bits uint
+	uint32_t get_32() const; ///< get 32 bits uint
+	uint64_t get_64() const; ///< get 64 bits uint
+	float get_float() const;
+	double get_double() const;
+    //real_t get_real() const;
+    //Variant get_var() const;
+    DVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
+	String get_line() const;
+	String get_as_text() const;
+    Vector<String> get_csv_line() const;
+    virtual String get_pascal_string();
+
+	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
+	 * It's not about the current CPU type but file formats.
+	 * this flags get reset to false (little endian) on each open
+	 */
+
+	void set_endian_swap(bool p_swap);
+	bool get_endian_swap();
+
+	void store_8(uint8_t p_dest); ///< store a byte
+	void store_16(uint16_t p_dest); ///< store 16 bits uint
+	void store_32(uint32_t p_dest); ///< store 32 bits uint
+	void store_64(uint64_t p_dest); ///< store 64 bits uint
+	void store_float(float p_dest);
+	void store_double(double p_dest);
+    //void store_real(real_t p_real);
+	void store_string(const String& p_string);
+	void store_line(const String& p_string);
+	virtual void store_pascal_string(const String& p_string);
+	void store_buffer(const DVector<uint8_t>& p_buffer); ///< store an array of bytes
+    //void store_var(const Variant& p_var);
+    //bool file_exists(const String& p_name) const; ///< return true if a file exists
+    ~_ByteArray();
+
+};
 
 
 class _File : public Reference {
@@ -283,6 +337,8 @@ public:
 	DVector<uint8_t> get_buffer(int p_length) const; ///< get an array of bytes
 	String get_line() const;
 	String get_as_text() const;
+    Vector<String> get_csv_line() const;
+    virtual String get_pascal_string();
 
 	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.
@@ -292,7 +348,7 @@ public:
 	void set_endian_swap(bool p_swap);
 	bool get_endian_swap();
 
-	Error get_error() const; ///< get last error
+    Error get_error() const; ///< get last error
 
 	void store_8(uint8_t p_dest); ///< store a byte
 	void store_16(uint16_t p_dest); ///< store 16 bits uint
@@ -307,10 +363,6 @@ public:
 	void store_line(const String& p_string);
 
 	virtual void store_pascal_string(const String& p_string);
-	virtual String get_pascal_string();
-
-	Vector<String> get_csv_line() const;
-
 
 	void store_buffer(const DVector<uint8_t>& p_buffer); ///< store an array of bytes
 

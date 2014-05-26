@@ -1703,7 +1703,12 @@ void ObjectDB::cleanup() {
 	GLOBAL_LOCK_FUNCTION;
 	if (instances.size()) {
 	
-		WARN_PRINT("ObjectDB Instances still exist!");		
+		WARN_PRINT("ObjectDB Instances still exist!");
+		const uint32_t *K=NULL;
+    	while((K=instances.next(K))) {
+            Object *o = instances[*K];
+            print_line(" >> " + o->get_type()+" -- "+ o->get_type_name());
+	    }	
 	}
 	instances.clear();
 	instance_checks.clear();

@@ -89,6 +89,11 @@ public:
 		STORAGE_COMPRESS_LOSSY,
 		STORAGE_COMPRESS_LOSSLESS
 	};
+    enum ImageType {
+        JPEG,
+        PNG,
+        WEBP
+    };
 private:
 	RID texture;
 	Image::Format format;
@@ -123,6 +128,7 @@ public:
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
 	void load(const String& p_path);
+    void load_image_buffer(const DVector<uint8_t>& p_buffer, uint8_t type);
 	void set_data(const Image& p_image);
 	Image get_data() const;
 		
@@ -155,6 +161,7 @@ public:
 
 
 VARIANT_ENUM_CAST( ImageTexture::Storage );
+VARIANT_ENUM_CAST( ImageTexture::ImageType );
 
 class AtlasTexture : public Texture {
 
