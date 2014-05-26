@@ -48,9 +48,11 @@ if (env["tools"]=="yes"):
 	env.Command("#tools/editor/doc_data_compressed.h","#doc/base/classes.xml",make_doc_header)
 
 	#make_doc_header(env.File("#tools/editor/doc_data_raw.h").srcnode().abspath,env.File("#doc/base/classes.xml").srcnode().abspath,env)
+	
 	env.add_source_files(env.tool_sources,"*.cpp")
-
+	
 	Export('env')
+	SConscript('icons/SCsub');	
 	SConscript('plugins/SCsub');
 	SConscript('fileserver/SCsub');
 	SConscript('io_plugins/SCsub');

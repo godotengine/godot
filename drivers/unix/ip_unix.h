@@ -41,6 +41,8 @@ class IP_Unix : public IP {
 	static IP* _create_unix();
 public:
 
+	virtual void get_local_addresses(List<IP_Address> *r_addresses) const;
+
 	static void make_default();
 	IP_Unix();
 };

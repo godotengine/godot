@@ -39,6 +39,16 @@ protected:
 	static _ResourceSaver *singleton;
 public:
 
+	enum SaverFlags {
+
+		FLAG_RELATIVE_PATHS=1,
+		FLAG_BUNDLE_RESOURCES=2,
+		FLAG_CHANGE_PATH=4,
+		FLAG_OMIT_EDITOR_PROPERTIES=8,
+		FLAG_SAVE_BIG_ENDIAN=16,
+		FLAG_COMPRESS=32,
+	};
+
 	static _ResourceSaver *get_singleton() { return singleton; }
 
 	Error save(const String &p_path,const RES& p_resource, uint32_t p_flags);

@@ -129,6 +129,7 @@ class CodeTextEditor : public Control {
 	Label *info;
 	Timer *idle;
 	Timer *code_complete_timer;
+	bool enable_complete_timer;
 
 	Label *error;
 

@@ -40,6 +40,7 @@ class MeshInstance : public GeometryInstance {
 	OBJ_TYPE( MeshInstance, GeometryInstance );
 	
 	Ref<Mesh> mesh;
+	NodePath skeleton_path;
 
 	struct MorphTrack {
 
@@ -50,6 +51,7 @@ class MeshInstance : public GeometryInstance {
 
 	Map<StringName,MorphTrack> morph_tracks;
 
+	void _resolve_skeleton_path();
 
 protected:
 
@@ -57,12 +59,15 @@ protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 
-	
+	void _notification(int p_what);
 	static void _bind_methods();
 public:
 
 	void set_mesh(const Ref<Mesh>& p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_skeleton_path(const NodePath& p_skeleton);
+	NodePath get_skeleton_path();
 	
 	Node* create_trimesh_collision_node();
 	void create_trimesh_collision();

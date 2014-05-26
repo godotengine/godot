@@ -56,8 +56,7 @@ abstract public class ConsumeTask {
 			
 			protected void onPostExecute(String param){
 				if(param == null){
-					
-					success(new PaymentsCache(context).getConsumableValue("ticket", sku));
+					success( new PaymentsCache(context).getConsumableValue("ticket", sku) );
 				}else{
 					error(param);
 				}

@@ -158,7 +158,7 @@ void Material::_bind_methods() {
 	for(int i=0;i<HINT_MAX;i++)
 		ADD_PROPERTYI( PropertyInfo( Variant::BOOL, String()+"hints/"+_hint_names[i] ),_SCS("set_hint"),_SCS("get_hint"),_hint_indices[i]);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub" ), _SCS("set_blend_mode"),_SCS("get_blend_mode"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,PMAlpha" ), _SCS("set_blend_mode"),_SCS("get_blend_mode"));
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "params/line_width",PROPERTY_HINT_RANGE,"0.1,32.0,0.1" ), _SCS("set_line_width"),_SCS("get_line_width"));
 
 
@@ -189,6 +189,8 @@ void Material::_bind_methods() {
 	BIND_CONSTANT( BLEND_MODE_MIX );
 	BIND_CONSTANT( BLEND_MODE_ADD );
 	BIND_CONSTANT( BLEND_MODE_SUB );
+	BIND_CONSTANT( BLEND_MODE_MUL );
+	BIND_CONSTANT( BLEND_MODE_PREMULT_ALPHA );
 
 }
 
