@@ -1221,6 +1221,15 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			return; //go back a level
 		}
 
+		if (pending_newline!=-1) {
+
+			NewLineNode *nl = alloc_node<NewLineNode>();
+			nl->line=pending_newline;
+			p_block->statements.push_back(nl);
+			pending_newline=-1;
+
+		}
+
 		switch(token) {
 
 
@@ -1234,16 +1243,19 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 			} break;
 			case GDTokenizer::TK_NEWLINE: {
 
+				if (!_parse_newline()) {
+					if (!error_set) {
+						p_block->end_line=tokenizer->get_token_line();
+						pending_newline=p_block->end_line;
+
+					}
+					return;
+				}
+
 				NewLineNode *nl = alloc_node<NewLineNode>();
 				nl->line=tokenizer->get_token_line();
 				p_block->statements.push_back(nl);
 
-				if (!_parse_newline()) {
-					if (!error_set) {
-						p_block->end_line=tokenizer->get_token_line();
-					}
-					return;
-				}
 			} break;
 			case GDTokenizer::TK_CF_PASS: {
 				if (tokenizer->get_token(1)!=GDTokenizer::TK_SEMICOLON && tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE ) {
@@ -1782,6 +1794,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 			case GDTokenizer::TK_PR_FUNCTION: {
 
 				bool _static=false;
+				pending_newline=-1;
 
 				if (tokenizer->get_token(-1)==GDTokenizer::TK_PR_STATIC) {
 
@@ -2490,6 +2503,7 @@ void GDParser::clear() {
 	tab_level.push_back(0);
 	error_line=0;
 	error_column=0;
+	pending_newline=-1;
 	parenthesis=0;
 	current_export.type=Variant::NIL;
 	error="";
@@ -2501,6 +2515,7 @@ GDParser::GDParser() {
 	head=NULL;
 	list=NULL;
 	tokenizer=NULL;
+	pending_newline=-1;
 	clear();
 
 }

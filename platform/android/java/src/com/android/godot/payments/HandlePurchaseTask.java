@@ -34,7 +34,8 @@ abstract public class HandlePurchaseTask {
 		
 		String purchaseData = data.getStringExtra("INAPP_PURCHASE_DATA");
 		Log.d("XXX", "Purchase data:" + purchaseData);
-//		String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+		String dataSignature = data.getStringExtra("INAPP_DATA_SIGNATURE");
+		Log.d("XXX", "Purchase signature:" + dataSignature);
 		
 		if (resultCode == Activity.RESULT_OK) {
 			
@@ -57,12 +58,13 @@ abstract public class HandlePurchaseTask {
 					error("Untrusted callback");
 					return;
 				}
-				
+				Log.d("XXX", "Este es el product ID:" + productId);
+				pc.setConsumableValue("ticket_signautre", productId, dataSignature);
 				pc.setConsumableValue("ticket", productId, purchaseData);
 				pc.setConsumableFlag("block", productId, true);
 				pc.setConsumableValue("token", productId, purchaseToken);
 				
-				success(productId);
+				success(productId, dataSignature);
 				return;
 			}	catch (JSONException e) {
 				error(e.getMessage());
@@ -72,7 +74,7 @@ abstract public class HandlePurchaseTask {
 		}
 	}
 
-	abstract protected void success(String ticket);
+	abstract protected void success(String ticket, String signature);
 	abstract protected void error(String message);
 	abstract protected void canceled();
 

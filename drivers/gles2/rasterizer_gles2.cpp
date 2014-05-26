@@ -6475,7 +6475,10 @@ void RasterizerGLES2::canvas_set_blend_mode(VS::MaterialBlendMode p_mode) {
 		case VS::MATERIAL_BLEND_MODE_MUL: {
 			glBlendEquation(GL_FUNC_ADD);
 			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-
+		} break;
+		case VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA: {
+			glBlendEquation(GL_FUNC_ADD);
+			glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
 		} break;
 
 	}

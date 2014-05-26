@@ -1568,6 +1568,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 		add_child(checks20[i]);
 		checks20[i]->hide();
 		checks20[i]->connect("pressed",this,"_action_pressed",make_binds(i));
+		checks20[i]->set_tooltip("Bit "+itos(i)+", val "+itos(1<<i)+".");
 	}
 
 	text_edit = memnew( TextEdit );

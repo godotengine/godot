@@ -118,10 +118,13 @@ friend class GDCompiler;
 	Vector<Variant> constants;
 	Vector<StringName> global_names;
 	Vector<int> default_arguments;
-
 	Vector<int> code;
+#ifdef DEBUG_ENABLED
+	CharString func_cname;
+	const char*_func_cname;
+#endif
 
-    List<StackDebug> stack_debug;
+	List<StackDebug> stack_debug;
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError& p_err, const String& p_where,const Variant**argptrs) const;
@@ -427,6 +430,7 @@ public:
 	virtual int find_function(const String& p_function,const String& p_code) const;
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
 	virtual Error complete_keyword(const String& p_code, int p_line, const String& p_base_path,const String& p_keyword, List<String>* r_options);
+	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 
 	/* DEBUGGER FUNCTIONS */
 

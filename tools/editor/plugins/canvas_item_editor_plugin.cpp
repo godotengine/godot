@@ -609,7 +609,14 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_WHEEL_DOWN) {
 
+			float prev_zoom=zoom;
 			zoom=zoom*0.95;
+			{
+				Point2 ofs(b.x,b.y);
+				ofs = ofs/prev_zoom - ofs/zoom;
+				h_scroll->set_val( h_scroll->get_val() + ofs.x );
+				v_scroll->set_val( v_scroll->get_val() + ofs.y );
+			}
 			_update_scroll(0);
 			viewport->update();
 			return;
@@ -617,7 +624,15 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_WHEEL_UP) {
 
+			float prev_zoom=zoom;
 			zoom=zoom*(1.0/0.95);
+			{
+				Point2 ofs(b.x,b.y);
+				ofs = ofs/prev_zoom - ofs/zoom;
+				h_scroll->set_val( h_scroll->get_val() + ofs.x );
+				v_scroll->set_val( v_scroll->get_val() + ofs.y );
+			}
+
 			_update_scroll(0);
 			viewport->update();
 			return;

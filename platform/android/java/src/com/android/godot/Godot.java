@@ -65,6 +65,9 @@ import java.io.InputStream;
 
 public class Godot extends Activity implements SensorEventListener
 {	
+
+	static final int MAX_SINGLETONS = 64;
+
 	static public class SingletonBase {
 
 		protected void registerClass(String p_name, String[] p_methods) {
@@ -104,7 +107,20 @@ public class Godot extends Activity implements SensorEventListener
 
 
 			}
+
+			Godot.singletons[Godot.singleton_count++]=this;
 		}
+
+		protected void onMainActivityResult(int requestCode, int resultCode, Intent data) {
+
+
+		}
+
+		protected void onMainResume() {
+
+
+		}
+
 
 		public void registerMethods() {}
 	}
@@ -133,6 +149,12 @@ public class Godot extends Activity implements SensorEventListener
 		//setTitle(title);
 	}
 
+
+	static SingletonBase singletons[] = new SingletonBase[MAX_SINGLETONS];
+	static int singleton_count=0;
+
+
+
 	public interface ResultCallback {
 		public void callback(int requestCode, int resultCode, Intent data);
 	};
@@ -147,6 +169,11 @@ public class Godot extends Activity implements SensorEventListener
 			result_callback.callback(requestCode, resultCode, data);
 			result_callback = null;
 		};
+
+		for(int i=0;i<singleton_count;i++) {
+
+			singletons[i].onMainActivityResult(requestCode,resultCode,data);
+		}
 	};
 
 	public void onVideoInit(boolean use_gl2) {
@@ -271,6 +298,12 @@ public class Godot extends Activity implements SensorEventListener
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		GodotLib.focusin();
+
+		for(int i=0;i<singleton_count;i++) {
+
+			singletons[i].onMainResume();
+		}
+
 	}
 
 	@Override public void onSensorChanged(SensorEvent event) {

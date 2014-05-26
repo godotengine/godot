@@ -689,6 +689,26 @@ void ScriptEditor::_menu_option(int p_option) {
 			current->get_text_edit()->query_code_comple();
 
 		} break;
+		case EDIT_AUTO_INDENT: {
+
+			TextEdit *te = current->get_text_edit();
+			String text = te->get_text();
+			Ref<Script> scr = current->get_edited_script();
+			if (scr.is_null())
+				return;
+			int begin,end;
+			if (te->is_selection_active()) {
+				begin=te->get_selection_from_line();
+				end=te->get_selection_to_line();
+			} else {
+				begin=0;
+				end=te->get_line_count()-1;
+			}
+			scr->get_language()->auto_indent_code(text,begin,end);
+			te->set_text(text);
+
+
+		} break;
 		case SEARCH_FIND: {
 
 			find_replace_dialog->set_text_edit(current->get_text_edit());
@@ -1325,6 +1345,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item(_TR("Select All"),EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item(_TR("Complete Symbol"),EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
+	edit_menu->get_popup()->add_item("Auto Indent",EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 

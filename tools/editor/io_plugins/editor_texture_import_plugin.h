@@ -91,7 +91,8 @@ public:
 		IMAGE_FLAG_COMPRESS_EXTRA=8, // used for pvrtc2
 		IMAGE_FLAG_NO_MIPMAPS=16, //normal for 2D games
 		IMAGE_FLAG_REPEAT=32, //usually disabled in 2D
-		IMAGE_FLAG_FILTER=64 //almost always enabled
+		IMAGE_FLAG_FILTER=64, //almost always enabled
+		IMAGE_FLAG_PREMULT_ALPHA=128//almost always enabled
 	};
 
 	virtual String get_name() const;

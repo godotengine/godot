@@ -45,6 +45,7 @@ static const char *flag_names[]={
 	"No MipMaps",
 	"Repeat",
 	"Filter (Magnifying)",
+	"Premultiply Alpha",
 	NULL
 };
 
@@ -56,6 +57,7 @@ static const char *flag_short_names[]={
 	"NoMipMap",
 	"Repeat",
 	"Filter",
+	"PMAlpha",
 	NULL
 };
 
@@ -928,6 +930,11 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.fix_alpha_edges();
 		}
 
+		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+
+			image.premultiply_alpha();
+		}
+
 
 		if (shrink>1) {
 
@@ -979,6 +986,11 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_FIX_BORDER_ALPHA) {
 
 			image.fix_alpha_edges();
+		}
+
+		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
+
+			image.premultiply_alpha();
 		}
 
 		int orig_w=image.get_width();

@@ -362,6 +362,7 @@ public:
 	virtual Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,Variant::CallError &r_error) {
 
 		//print_line("attempt to call "+String(p_method));
+		ERR_FAIL_COND_V(!instance,Variant());
 
 		r_error.error=Variant::CallError::CALL_OK;
 
@@ -533,7 +534,10 @@ public:
 	}
 
 
-	JNISingleton() {}
+	JNISingleton() {
+		instance=NULL;
+
+	}
 
 };
 

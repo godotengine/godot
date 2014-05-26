@@ -50,6 +50,7 @@ static String keyboard_text;
 static GLView* _instance = NULL;
 
 static bool video_found_error = false;
+static bool video_playing = false;
 static float video_previous_volume = 0.0f;
 
 void _show_keyboard(String p_existing) {
@@ -91,24 +92,29 @@ bool _play_video(String p_path, float p_volume) {
 	[_instance addSubview:_instance.moviePlayerController.view];
 	[_instance.moviePlayerController play];
 
+	video_playing = true;
+
 	return true;
 }
 
 bool _is_video_playing() {
 	//NSInteger playback_state = _instance.moviePlayerController.playbackState;
-	if (video_found_error)
-		return false;
-	return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
+	return video_playing || _instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying;
+	//if (video_found_error)
+	//	return false;
+	//return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
 }
 
 void _pause_video() {
 	[_instance.moviePlayerController pause];
+	video_playing = false;
 }
 
 void _stop_video() {
 	[_instance.moviePlayerController stop];
 	[_instance.moviePlayerController.view removeFromSuperview];
 	[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
+	video_playing = false;
 }
 
 @implementation GLView
@@ -590,6 +596,7 @@ static void clear_touches() {
     [_instance.moviePlayerController.view removeFromSuperview];
 
     [[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
+	video_playing = false;
 }
 
 #pragma mark UITextInputTrait protocol
