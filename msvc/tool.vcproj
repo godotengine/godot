@@ -717,6 +717,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\tools\editor\io_plugins\editor_export_res.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\io_plugins\editor_export_res.h"
+						>
+					</File>
+					<File
 						RelativePath="..\tools\editor\io_plugins\editor_font_import_plugin.cpp"
 						>
 					</File>

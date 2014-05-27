@@ -35,6 +35,7 @@
 void LuaScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("--");
+	p_delimiters->push_back("--[[ ]]");
 
 }
 void LuaScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
@@ -48,11 +49,11 @@ String LuaScriptLanguage::get_template(const String& p_class_name, const String&
 
 	String _template = String()+
 	"\nlocal node = extends '%BASE%'\n\n"+
-	"# member variables here, example:\n"+
-	"# local a=2\n"+
-	"# b=\"textvar\"\n\n"+
-    "function node:_ready():\n"+
-	"\t# Initalization here\n"+
+	"-- member variables here, example:\n"+
+	"-- local a=2\n"+
+	"-- b=\"textvar\"\n\n"+
+    "function node:_ready()\n"+
+	"\t-- Initalization here\n"+
 	"\t-- pass\n"+
 	"end\n"+
 	"\n"
