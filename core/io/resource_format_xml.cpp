@@ -2512,15 +2512,38 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	enter_tag("resource_file","type=\""+p_resource->get_type()+"\" subresource_count=\""+itos(saved_resources.size()+external_resources.size())+"\" version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\" version_name=\""+VERSION_FULL_NAME+"\"");
 	write_string("\n",false);
 
+	// save ext_resource(sort by path)
+	List<String> external_resources_names;
+	HashMap<String,RES> external_resources_maps;
 	for(Set<RES>::Element *E=external_resources.front();E;E=E->next()) {
 
-		write_tabs();
-		String p = E->get()->get_path();
+		RES res=E->get();
+		String path=res->get_path();
+		external_resources_names.push_back(path);
+		external_resources_maps.set(path,res);
+	}
+	external_resources_names.sort();
 
-		enter_tag("ext_resource","path=\""+p+"\" type=\""+E->get()->get_save_type()+"\""); //bundled
+	for(List<String>::Element *E=external_resources_names.front();E;E=E->next()) {
+
+		write_tabs();
+		String& p = E->get();
+
+		RES res=external_resources_maps.get(p);
+		enter_tag("ext_resource","path=\""+p+"\" type=\""+res->get_save_type()+"\""); //bundled
 		exit_tag("ext_resource"); //bundled
 		write_string("\n",false);
 	}
+
+	//for(Set<RES>::Element *E=external_resources.front();E;E=E->next()) {
+
+	//	write_tabs();
+	//	String p = E->get()->get_path();
+
+	//	enter_tag("ext_resource","path=\""+p+"\" type=\""+E->get()->get_save_type()+"\""); //bundled
+	//	exit_tag("ext_resource"); //bundled
+	//	write_string("\n",false);
+	//}
 
 
 
