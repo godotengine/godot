@@ -32,7 +32,9 @@ platform/android/java/assets
 # General c++ generated files
 *.lib
 *.o
+*.ox
 *.a
+*.ax
 *.d
 *.so
 *.os
