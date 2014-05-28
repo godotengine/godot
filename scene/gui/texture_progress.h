@@ -35,6 +35,9 @@ class TextureProgress : public Range {
 
 	OBJ_TYPE( TextureProgress, Range  );
 
+	bool expand;
+	Color modulate;
+
 	Ref<Texture> under;
 	Ref<Texture> progress;
 	Ref<Texture> over;
@@ -55,6 +58,12 @@ public:
 	Ref<Texture> get_over_texture() const;
 
 	Size2 get_minimum_size() const;
+
+	void set_modulate(const Color& p_tex);
+	Color get_modulate() const;
+
+	void set_expand(bool p_expand);
+	bool has_expand() const;
 
 	TextureProgress();
 };

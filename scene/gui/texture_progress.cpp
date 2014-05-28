@@ -57,6 +57,9 @@ Ref<Texture> TextureProgress::get_over_texture() const{
 
 Size2 TextureProgress::get_minimum_size() const {
 
+	if (expand)
+		return Size2();
+
 	if (under.is_valid())
 		return under->get_size();
 	else if (over.is_valid())
@@ -80,7 +83,28 @@ Ref<Texture> TextureProgress::get_progress_texture() const{
 
 }
 
+void TextureProgress::set_modulate(const Color& p_tex) {
 
+	modulate=p_tex;
+	update();
+}
+
+Color TextureProgress::get_modulate() const{
+
+	return modulate;
+}
+
+
+void TextureProgress::set_expand(bool p_expand) {
+
+	expand=p_expand;
+	update();
+	minimum_size_changed();
+}
+bool TextureProgress::has_expand() const {
+
+	return expand;
+}
 void TextureProgress::_notification(int p_what){
 
 	switch(p_what) {
@@ -88,14 +112,19 @@ void TextureProgress::_notification(int p_what){
 		case NOTIFICATION_DRAW: {
 
 
-			if (under.is_valid())
-				draw_texture(under,Point2());
-			if (progress.is_valid()) {
-				Size2 s = progress->get_size();
-				draw_texture_rect_region(progress,Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)),Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)));
+			if (under.is_valid()) {
+				Size2 s=expand?get_size():under->get_size();
+				draw_texture_rect(under,Rect2(Point2(),s),false,modulate);
 			}
-			if (over.is_valid())
-				draw_texture(over,Point2());
+			if (progress.is_valid()) {
+				Size2 s=expand?get_size():progress->get_size();
+				Size2 ss=progress->get_size();
+				draw_texture_rect_region(progress,Rect2(Point2(),Size2(s.x*get_unit_value(),s.y)),Rect2(Point2(),Size2(ss.x*get_unit_value(),ss.y)),modulate);
+			}
+			if (over.is_valid()) {
+				Size2 s=expand?get_size():over->get_size();
+				draw_texture_rect(over,Rect2(Point2(),s),false,modulate);
+			}
 
 		} break;
 	}
@@ -112,13 +141,22 @@ void TextureProgress::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_over_texture","tex"),&TextureProgress::set_over_texture);
 	ObjectTypeDB::bind_method(_MD("get_over_texture"),&TextureProgress::get_over_texture);
 
+	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"), & TextureProgress::set_modulate );
+	ObjectTypeDB::bind_method(_MD("get_modulate"), & TextureProgress::get_modulate );
+	ObjectTypeDB::bind_method(_MD("set_expand","enable"), & TextureProgress::set_expand );
+	ObjectTypeDB::bind_method(_MD("has_expand"), & TextureProgress::has_expand );
+
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/under",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_under_texture"),_SCS("get_under_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/over",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_over_texture"),_SCS("get_over_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture/progress",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_progress_texture"),_SCS("get_progress_texture"));
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
 
 }
 
 
 TextureProgress::TextureProgress()
 {
+	expand=false;
+	modulate=Color(1,1,1,1);
 }
