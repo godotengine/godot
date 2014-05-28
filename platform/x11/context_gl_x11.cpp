@@ -329,7 +329,7 @@ Error ContextGL_X11::initialize()
 	}
 
 	// Create the actual surface based upon the list of configs we've just gotten...
-	egl_surface = eglCreateWindowSurface(egl_display, eglConfig, reinterpret_cast<EGLNativeWindowType>(/*x11_window.getWindow()*/x11_window), NULL);
+	egl_surface = eglCreateWindowSurface(egl_display, eglConfig, NULL, NULL);
 	if (EGL_NO_SURFACE == egl_surface) {
 		printf("failed to get surface..\n");
 	}
@@ -377,7 +377,7 @@ ContextGL_X11::ContextGL_X11(::Display *p_x11_display,::Window &p_x11_window,con
 
 	default_video_mode=p_default_video_mode;
 	x11_display=p_x11_display;
-	egl_display=eglGetDisplay((EGLNativeDisplayType)x11_display);
+	egl_display=eglGetDisplay((EGLNativeDisplayType)EGL_DEFAULT_DISPLAY);
 	
 	opengl_3_context=p_opengl_3_context;
 	
