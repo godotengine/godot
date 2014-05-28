@@ -639,6 +639,23 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
     }
 	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
 
+    if(p_rect.size.x<0){
+           if (p_src_rect.pos.x==0){
+               dr.pos.x -= p_rect.size.x-dr.size.x;
+           }else{
+               float vx = src_c.size.x + dr.pos.x;
+               dr.pos.x+= src_c.size.x - Math::abs(vx)*2;
+           }
+      }
+      if(p_rect.size.y<0){
+          if (p_src_rect.pos.y==0){
+              dr.pos.y -= p_rect.size.y-dr.size.y;
+          }else{
+              float vy = src_c.size.y + dr.pos.y;
+              dr.pos.y-=  src_c.size.y - (src_c.size.y - Math::abs(vy))*2;
+          }
+      }
+
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate);
 }
 
