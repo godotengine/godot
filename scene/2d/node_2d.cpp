@@ -224,6 +224,30 @@ Rect2 Node2D::get_item_rect() const {
 	return Rect2(Point2(-32,-32),Size2(64,64));
 }
 
+void Node2D::rotate(float p_degrees) {
+
+	set_rot( get_rot() + p_degrees);
+}
+
+void Node2D::move_x(float p_delta,bool p_scaled){
+
+	Matrix32 t = get_transform();
+	Vector2 m = t[0];
+	if (!p_scaled)
+		m.normalize();
+	set_pos(t[2]+m*p_delta);
+}
+
+void Node2D::move_y(float p_delta,bool p_scaled){
+
+	Matrix32 t = get_transform();
+	Vector2 m = t[1];
+	if (!p_scaled)
+		m.normalize();
+	set_pos(t[2]+m*p_delta);
+}
+
+
 Point2 Node2D::get_global_pos() const {
 
 	return get_global_transform().get_origin();
@@ -267,6 +291,10 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_pos"),&Node2D::get_pos);
 	ObjectTypeDB::bind_method(_MD("get_rot"),&Node2D::get_rot);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
+
+	ObjectTypeDB::bind_method(_MD("rotate","degrees"),&Node2D::rotate);
+	ObjectTypeDB::bind_method(_MD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
 

@@ -53,6 +53,13 @@ void Texture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,get_rid(),p_src_rect,p_modulate);
 }
 
+bool Texture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const {
+
+	r_rect=p_rect;
+	r_src_rect=p_src_rect;
+
+	return true;
+}
 
 void Texture::_bind_methods() {
 
@@ -302,6 +309,16 @@ void ImageTexture::fix_alpha_edges() {
 	}
 }
 
+void ImageTexture::premultiply_alpha() {
+
+	if (format==Image::FORMAT_RGBA /*&& !(flags&FLAG_CUBEMAP)*/) {
+
+		Image img = get_data();
+		img.premultiply_alpha();
+		set_data(img);
+	}
+}
+
 bool ImageTexture::has_alpha() const {
 
 	return ( format==Image::FORMAT_GRAYSCALE_ALPHA || format==Image::FORMAT_INDEXED_ALPHA || format==Image::FORMAT_RGBA );
@@ -386,8 +403,10 @@ void ImageTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_lossy_storage_quality","quality"),&ImageTexture::set_lossy_storage_quality);
 	ObjectTypeDB::bind_method(_MD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
 	ObjectTypeDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
+	ObjectTypeDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
 	ObjectTypeDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 
@@ -595,6 +614,42 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
 	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
 
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate);
+}
+
+bool AtlasTexture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const {
+
+	Rect2 rc=region;
+
+	if (!atlas.is_valid())
+		return false;
+
+	Rect2 src=p_src_rect;
+	src.pos+=(rc.pos-margin.pos);
+	Rect2 src_c = rc.clip(src);
+	if (src_c.size==Size2())
+		return false;
+	Vector2 ofs = (src_c.pos-src.pos);
+
+	Vector2 scale = p_rect.size / p_src_rect.size;
+    if(scale.x < 0)
+    {
+	float mx = (margin.size.width - margin.pos.x);
+	mx -= margin.pos.x;
+	ofs.x = -(ofs.x + mx);
+    }
+    if(scale.y < 0)
+    {
+	float my = margin.size.height - margin.pos.y;
+	my -= margin.pos.y;
+	ofs.y = -(ofs.y + my);
+    }
+	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
+
+
+
+	r_rect=dr;
+	r_src_rect=src_c;
+	return true;
 }
 
 

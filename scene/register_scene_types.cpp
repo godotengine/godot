@@ -187,7 +187,10 @@
 #include "scene/3d/area.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/multimesh_instance.h"
+#include "scene/3d/baked_light.h"
 #include "scene/3d/ray_cast.h"
+#include "scene/3d/immediate_geometry.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/3d/spatial_sample_player.h"
 #include "scene/3d/spatial_stream_player.h"
 #include "scene/3d/proximity_group.h"
@@ -371,6 +374,9 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<InterpolatedCamera>();
 	ObjectTypeDB::register_type<TestCube>();
 	ObjectTypeDB::register_type<MeshInstance>();
+	ObjectTypeDB::register_type<ImmediateGeometry>();
+	ObjectTypeDB::register_type<Sprite3D>();
+	ObjectTypeDB::register_type<AnimatedSprite3D>();
 	ObjectTypeDB::register_virtual_type<Light>();
 	ObjectTypeDB::register_type<DirectionalLight>();
 	ObjectTypeDB::register_type<OmniLight>();
@@ -401,7 +407,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PathFollow>();
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
-
+	ObjectTypeDB::register_type<BakedLight>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 
 	//scenariofx	

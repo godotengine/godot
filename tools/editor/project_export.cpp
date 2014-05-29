@@ -449,7 +449,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 		ERR_PRINT("Invalid platform for export");
 		return ERR_INVALID_PARAMETER;
 	}
-	Error err = exporter->export_project(p_path,p_debug,p_password);
+	Error err = exporter->export_project(p_path,p_debug);
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
 		error->popup_centered(Size2(300,70));;

@@ -43,9 +43,27 @@ void PhysicsBody2D::_notification(int p_what) {
 	*/
 }
 
+void PhysicsBody2D::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+}
+
+void PhysicsBody2D::set_layer_mask(uint32_t p_mask) {
+
+	mask=p_mask;
+	Physics2DServer::get_singleton()->body_set_layer_mask(get_rid(),p_mask);
+}
+
+uint32_t PhysicsBody2D::get_layer_mask() const {
+
+	return mask;
+}
+
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
-
+	mask=1;
 
 }
 
@@ -789,7 +807,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 		for(int i=0;i<get_shape_count();i++) {
 
 
-			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),Vector2(),margin,sr,max_shapes,res_shapes,exclude,0,mask))
+			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),Vector2(),margin,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask))
 				collided=true;
 
 		}
@@ -834,7 +852,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 
 		float lsafe,lunsafe;
-		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,0,mask);
+		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,get_layer_mask(),mask);
 		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
 		if (!valid) {
 			safe=0;
@@ -865,7 +883,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 		Matrix32 ugt = get_global_transform();
 		ugt.elements[2]+=p_motion*unsafe;
 		Physics2DDirectSpaceState::ShapeRestInfo rest_info;
-		bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), Vector2(), margin,&rest_info,exclude,0,mask);
+		bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), Vector2(), margin,&rest_info,exclude,get_layer_mask(),mask);
 		if (!c2) {
 			//should not happen, but floating point precision is so weird..
 			colliding=false;
@@ -927,7 +945,7 @@ bool KinematicBody2D::can_move_to(const Vector2& p_position, bool p_discrete) {
 	for(int i=0;i<get_shape_count();i++) {
 
 
-		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),motion,0,NULL,0,exclude,0,mask);
+		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),motion,0,NULL,0,exclude,get_layer_mask(),mask);
 		if (col)
 			return false;
 	}

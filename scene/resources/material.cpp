@@ -45,6 +45,7 @@ static const char*_hint_names[Material::HINT_MAX]={
 	"opaque_pre_zpass",
 	"no_shadow",
 	"no_depth_draw",
+	"no_alpha_depth_draw",
 };
 
 static const Material::Flag _flag_indices[Material::FLAG_MAX]={
@@ -158,7 +159,7 @@ void Material::_bind_methods() {
 	for(int i=0;i<HINT_MAX;i++)
 		ADD_PROPERTYI( PropertyInfo( Variant::BOOL, String()+"hints/"+_hint_names[i] ),_SCS("set_hint"),_SCS("get_hint"),_hint_indices[i]);
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub" ), _SCS("set_blend_mode"),_SCS("get_blend_mode"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/blend_mode",PROPERTY_HINT_ENUM,"Mix,Add,Sub,PMAlpha" ), _SCS("set_blend_mode"),_SCS("get_blend_mode"));
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "params/line_width",PROPERTY_HINT_RANGE,"0.1,32.0,0.1" ), _SCS("set_line_width"),_SCS("get_line_width"));
 
 
@@ -175,6 +176,7 @@ void Material::_bind_methods() {
 	BIND_CONSTANT( HINT_OPAQUE_PRE_PASS );
 	BIND_CONSTANT( HINT_NO_SHADOW );
 	BIND_CONSTANT( HINT_NO_DEPTH_DRAW );
+	BIND_CONSTANT( HINT_NO_DEPTH_DRAW_FOR_ALPHA );
 	BIND_CONSTANT( HINT_MAX );
 
 	BIND_CONSTANT( SHADE_MODEL_LAMBERT );
@@ -189,6 +191,8 @@ void Material::_bind_methods() {
 	BIND_CONSTANT( BLEND_MODE_MIX );
 	BIND_CONSTANT( BLEND_MODE_ADD );
 	BIND_CONSTANT( BLEND_MODE_SUB );
+	BIND_CONSTANT( BLEND_MODE_MUL );
+	BIND_CONSTANT( BLEND_MODE_PREMULT_ALPHA );
 
 }
 
@@ -206,6 +210,7 @@ Material::Material(const RID& p_material) {
 
 	for(int i=0;i<HINT_MAX;i++)
 		hints[i]=false;
+	hints[HINT_NO_DEPTH_DRAW_FOR_ALPHA]=true;
 
 	blend_mode=BLEND_MODE_MIX;
 	shade_model = SHADE_MODEL_LAMBERT;
@@ -363,14 +368,14 @@ Material::BlendMode FixedMaterial::get_detail_blend_mode() const {
 }
 
 void FixedMaterial::set_fixed_flag(FixedFlag p_flag, bool p_value) {
-	ERR_FAIL_INDEX(p_flag,3);
+	ERR_FAIL_INDEX(p_flag,4);
 	fixed_flags[p_flag]=p_value;
 	VisualServer::get_singleton()->fixed_material_set_flag(material,(VS::FixedMaterialFlags)p_flag,p_value);
 
 }
 
 bool FixedMaterial::get_fixed_flag(FixedFlag p_flag) const {
-	ERR_FAIL_INDEX_V(p_flag,3,false);
+	ERR_FAIL_INDEX_V(p_flag,4,false);
 	return fixed_flags[p_flag];
 }
 
@@ -417,6 +422,7 @@ void FixedMaterial::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_alpha" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_ALPHA);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_color_array" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_COLOR_ARRAY);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_point_size" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_POINT_SIZE);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/discard_alpha" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_DISCARD_ALPHA);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/diffuse" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_DIFFUSE);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/specular", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPECULAR );
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/emission", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_EMISSION );
@@ -455,6 +461,7 @@ void FixedMaterial::_bind_methods() {
 	BIND_CONSTANT( FLAG_USE_ALPHA );
 	BIND_CONSTANT( FLAG_USE_COLOR_ARRAY );
 	BIND_CONSTANT( FLAG_USE_POINT_SIZE );
+	BIND_CONSTANT( FLAG_DISCARD_ALPHA );
 
 }
 

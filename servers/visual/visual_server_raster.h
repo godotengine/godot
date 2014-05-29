@@ -742,7 +742,10 @@ public:
 	
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
-		
+
+	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
+
 
 	/* MULTIMESH API */
 
@@ -762,6 +765,21 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
+
+	/* IMMEDIATE API */
+
+	virtual RID immediate_create();
+	virtual void immediate_begin(RID p_immediate,PrimitiveType p_rimitive,RID p_texture=RID());
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex);
+	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal);
+	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent);
+	virtual void immediate_color(RID p_immediate,const Color& p_color);
+	virtual void immediate_uv(RID p_immediate, const Vector2& p_uv);
+	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv);
+	virtual void immediate_end(RID p_immediate);
+	virtual void immediate_clear(RID p_immediate);
+	virtual void immediate_set_material(RID p_immediate,RID p_material);
+	virtual RID immediate_get_material(RID p_immediate) const;
 
 	
 	/* PARTICLES API */

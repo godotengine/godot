@@ -1982,6 +1982,9 @@ AABB RasterizerGLES1::mesh_get_aabb(RID p_mesh) const {
 	Mesh *mesh = mesh_owner.get( p_mesh );
 	ERR_FAIL_COND_V(!mesh,AABB());
 
+	if (mesh->custom_aabb!=AABB())
+		return mesh->custom_aabb;
+
 	AABB aabb;
 
 	for (int i=0;i<mesh->surfaces.size();i++) {
@@ -1994,6 +1997,24 @@ AABB RasterizerGLES1::mesh_get_aabb(RID p_mesh) const {
 
 	return aabb;
 }
+
+void RasterizerGLES1::mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb) {
+
+	Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND(!mesh);
+
+	mesh->custom_aabb=p_aabb;
+
+}
+
+AABB RasterizerGLES1::mesh_get_custom_aabb(RID p_mesh) const {
+
+	const Mesh *mesh = mesh_owner.get( p_mesh );
+	ERR_FAIL_COND_V(!mesh,AABB());
+
+	return mesh->custom_aabb;
+}
+
 
 /* MULTIMESH API */
 
@@ -2141,6 +2162,74 @@ int RasterizerGLES1::multimesh_get_visible_instances(RID p_multimesh) const {
 	MultiMesh *multimesh = multimesh_owner.get(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh,-1);
 	return multimesh->visible;
+
+}
+
+/* IMMEDIATE API */
+
+
+RID RasterizerGLES1::immediate_create() {
+
+	Immediate *im = memnew( Immediate );
+	return immediate_owner.make_rid(im);
+
+}
+
+void RasterizerGLES1::immediate_begin(RID p_immediate, VS::PrimitiveType p_rimitive, RID p_texture){
+
+
+}
+void RasterizerGLES1::immediate_vertex(RID p_immediate,const Vector3& p_vertex){
+
+
+}
+void RasterizerGLES1::immediate_normal(RID p_immediate,const Vector3& p_normal){
+
+
+}
+void RasterizerGLES1::immediate_tangent(RID p_immediate,const Plane& p_tangent){
+
+
+}
+void RasterizerGLES1::immediate_color(RID p_immediate,const Color& p_color){
+
+
+}
+void RasterizerGLES1::immediate_uv(RID p_immediate,const Vector2& tex_uv){
+
+
+}
+void RasterizerGLES1::immediate_uv2(RID p_immediate,const Vector2& tex_uv){
+
+
+}
+
+void RasterizerGLES1::immediate_end(RID p_immediate){
+
+
+}
+void RasterizerGLES1::immediate_clear(RID p_immediate) {
+
+
+}
+
+AABB RasterizerGLES1::immediate_get_aabb(RID p_immediate) const {
+
+	return AABB(Vector3(-1,-1,-1),Vector3(2,2,2));
+}
+
+void RasterizerGLES1::immediate_set_material(RID p_immediate,RID p_material) {
+
+	Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND(!im);
+	im->material=p_material;
+}
+
+RID RasterizerGLES1::immediate_get_material(RID p_immediate) const {
+
+	const Immediate *im = immediate_owner.get(p_immediate);
+	ERR_FAIL_COND_V(!im,RID());
+	return im->material;
 
 }
 
@@ -5306,6 +5395,12 @@ bool RasterizerGLES1::is_mesh(const RID& p_rid) const {
 
 	return mesh_owner.owns(p_rid);
 }
+
+bool RasterizerGLES1::is_immediate(const RID& p_rid) const {
+
+	return immediate_owner.owns(p_rid);
+}
+
 bool RasterizerGLES1::is_multimesh(const RID& p_rid) const {
 
 	return multimesh_owner.owns(p_rid);
@@ -5426,6 +5521,13 @@ void RasterizerGLES1::free(const RID& p_rid) {
 
 		particles_owner.free(p_rid);
 		memdelete(particles);
+	} else if (immediate_owner.owns(p_rid)) {
+
+		Immediate *immediate = immediate_owner.get(p_rid);
+		ERR_FAIL_COND(!immediate);
+
+		immediate_owner.free(p_rid);
+		memdelete(immediate);
 	} else if (particles_instance_owner.owns(p_rid)) {
 
 		ParticlesInstance *particles_isntance = particles_instance_owner.get(p_rid);

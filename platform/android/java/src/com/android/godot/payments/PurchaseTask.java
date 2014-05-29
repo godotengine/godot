@@ -31,7 +31,7 @@ abstract public class PurchaseTask {
 
 	private boolean isLooping = false;
 	
-	public void purchase(final String sku){
+	public void purchase(final String sku, final String transactionId){
 		Log.d("XXX", "Starting purchase for: " + sku);
 		PaymentsCache pc = new PaymentsCache(context);
 		Boolean isBlocked = pc.getConsumableFlag("block", sku);
@@ -40,7 +40,7 @@ abstract public class PurchaseTask {
 //			error("Awaiting payment confirmation");
 //			return;
 //		}
-		final String hash = Crypt.createRandomHash() + Crypt.createRandomHash();
+		final String hash = transactionId;
 
 		Bundle buyIntentBundle;
 		try {
@@ -76,7 +76,7 @@ abstract public class PurchaseTask {
 						return;
 					}
 					isLooping=true;
-					PurchaseTask.this.purchase(sku);
+					PurchaseTask.this.purchase(sku, transactionId);
 					
 				}
 				

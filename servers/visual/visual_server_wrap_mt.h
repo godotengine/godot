@@ -696,6 +696,7 @@ public:
 	FUNC2(mesh_set_morph_target_count,RID,int);
 	FUNC1RC(int,mesh_get_morph_target_count,RID);
 
+
 	FUNC2(mesh_set_morph_target_mode,RID,MorphTargetMode);
 	FUNC1RC(MorphTargetMode,mesh_get_morph_target_mode,RID);
 
@@ -717,6 +718,9 @@ public:
 	FUNC1RC(int,mesh_get_surface_count,RID);
 
 
+	FUNC2(mesh_set_custom_aabb,RID,const AABB&);
+	FUNC1RC(AABB,mesh_get_custom_aabb,RID);
+
 
 	/* MULTIMESH API */
 
@@ -736,6 +740,22 @@ public:
 
 	FUNC2(multimesh_set_visible_instances,RID,int);
 	FUNC1RC(int,multimesh_get_visible_instances,RID);
+
+	/* IMMEDIATE API */
+
+
+	FUNC0R(RID,immediate_create);
+	FUNC3(immediate_begin,RID,PrimitiveType,RID);
+	FUNC2(immediate_vertex,RID,const Vector3&);
+	FUNC2(immediate_normal,RID,const Vector3&);
+	FUNC2(immediate_tangent,RID,const Plane&);
+	FUNC2(immediate_color,RID,const Color&);
+	FUNC2(immediate_uv,RID,const Vector2&);
+	FUNC2(immediate_uv2,RID,const Vector2&);
+	FUNC1(immediate_end,RID);
+	FUNC1(immediate_clear,RID);
+	FUNC2(immediate_set_material,RID,RID);
+	FUNC1RC(RID,immediate_get_material,RID);
 
 
 	/* PARTICLES API */

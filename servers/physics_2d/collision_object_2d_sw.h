@@ -66,6 +66,7 @@ private:
 	Matrix32 transform;
 	Matrix32 inv_transform;
 	uint32_t user_mask;
+	uint32_t layer_mask;
 	bool _static;
 
 	void _update_shapes();
@@ -120,6 +121,9 @@ public:
 
 	void set_user_mask(uint32_t p_mask) {user_mask=p_mask;}
 	_FORCE_INLINE_ uint32_t get_user_mask() const { return user_mask; }
+
+	void set_layer_mask(uint32_t p_mask) {layer_mask=p_mask;}
+	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }
 
 	void remove_shape(Shape2DSW *p_shape);
 	void remove_shape(int p_index);

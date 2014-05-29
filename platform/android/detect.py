@@ -25,8 +25,9 @@ def get_opts():
              #android 2.3       
 		 ('ndk_platform', 'compile for platform: (2.2,2.3)',"2.2"),
 		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
-	     ('android_stl','enable STL support in android port (for modules)','no'),
-	     ('armv6','compile for older phones running arm v6 (instead of v7+neon+smp)','no')
+		('android_stl','enable STL support in android port (for modules)','no'),
+		('armv6','compile for older phones running arm v6 (instead of v7+neon+smp)','no'),
+		 ('x86','compile for x86','no')
 
 	]
 
@@ -52,6 +53,9 @@ def create(env):
 
 def configure(env):
 
+	if env['x86']=='yes':
+		env['NDK_TARGET']='x86-4.8'
+
 	if env['PLATFORM'] == 'win32':
 		import methods
 		env.Tool('gcc')
@@ -67,8 +71,12 @@ def configure(env):
 
 	env.Append(CPPPATH=['#platform/android'])
 	
-	env['OBJSUFFIX'] = ".android.o"
-	env['LIBSUFFIX'] = ".android.a"
+	if env['x86']=='yes':
+		env['OBJSUFFIX'] = ".android.ox"
+		env['LIBSUFFIX'] = ".android.ax"
+	else:
+		env['OBJSUFFIX'] = ".android.o"
+		env['LIBSUFFIX'] = ".android.a"
 	env['PROGSUFFIX'] = ".android"
 	env['SHLIBSUFFIX'] = ".so"
 	
@@ -89,23 +97,36 @@ def configure(env):
 	
 
 	env['ENV']['PATH'] = gcc_path+":"+env['ENV']['PATH']
+	if env['x86']=='yes':
+		env['CC'] = gcc_path+'/i686-linux-android-gcc'
+		env['CXX'] = gcc_path+'/i686-linux-android-g++'
+		env['AR'] = gcc_path+"/i686-linux-android-ar"
+		env['RANLIB'] = gcc_path+"/i686-linux-android-ranlib"
+		env['AS'] = gcc_path+"/i686-linux-android-as"
+	else:
+		env['CC'] = gcc_path+'/arm-linux-androideabi-gcc'
+		env['CXX'] = gcc_path+'/arm-linux-androideabi-g++'
+		env['AR'] = gcc_path+"/arm-linux-androideabi-ar"
+		env['RANLIB'] = gcc_path+"/arm-linux-androideabi-ranlib"
+		env['AS'] = gcc_path+"/arm-linux-androideabi-as"
 
-	env['CC'] = gcc_path+'/arm-linux-androideabi-gcc'
-	env['CXX'] = gcc_path+'/arm-linux-androideabi-g++'
-	env['AR'] = gcc_path+"/arm-linux-androideabi-ar"
-	env['RANLIB'] = gcc_path+"/arm-linux-androideabi-ranlib"
-	env['AS'] = gcc_path+"/arm-linux-androideabi-as"
+	if env['x86']=='yes':
+		env['ARCH'] = 'arch-x86'
+	else:
+		env['ARCH'] = 'arch-arm'
 
 	import string
 	#include path
-	gcc_include=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/arch-arm/usr/include"
-	ld_sysroot=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/arch-arm"
+	gcc_include=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/"+env['ARCH'] +"/usr/include"
+	ld_sysroot=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/"+env['ARCH']
 	#glue_include=env["ANDROID_NDK_ROOT"]+"/sources/android/native_app_glue"
-	ld_path=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/arch-arm/usr/lib"
+	ld_path=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/"+env['ARCH']+"/usr/lib"
 	env.Append(CPPPATH=[gcc_include])
 #	env['CCFLAGS'] = string.split('-DNO_THREADS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__  -Wno-psabi -march=armv5te -mtune=xscale -msoft-float  -fno-exceptions -mthumb -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED ')
 	print("********* armv6", env['armv6'])
-	if env["armv6"]!="no":
+	if env['x86']=='yes':
+		env['CCFLAGS'] = string.split('-DNO_STATVFS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__GLIBC__  -Wno-psabi -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED -DGLES1_ENABLED')
+	elif env["armv6"]!="no":
 		env['CCFLAGS'] = string.split('-DNO_STATVFS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_6__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=vfp -mfloat-abi=softfp -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED -DGLES1_ENABLED')
 	else:
 		env['CCFLAGS'] = string.split('-DNO_STATVFS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_7__ -D__GLIBC__  -Wno-psabi -march=armv6 -mfpu=neon -mfloat-abi=softfp -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED -DGLES1_ENABLED')
@@ -146,7 +167,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-D_DEBUG', '-g1', '-Wall', '-O0', '-DDEBUG_ENABLED'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 
-	if env["armv6"] == "no":
+	if env["armv6"] == "no" and env['x86'] != 'yes':
 		env['neon_enabled']=True
 	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
@@ -165,7 +186,10 @@ def configure(env):
 
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/include"])
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cpufeatures"])
-		env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/armeabi"])
+		if env['x86']=='yes':
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/x86"])
+		else:
+			env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gabi++/libs/armeabi"])
 		env.Append(LIBS=['gabi++_static'])
 		env.Append(CCFLAGS=["-fno-exceptions",'-DNO_SAFE_CAST'])
 
@@ -173,4 +197,3 @@ def configure(env):
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
-

@@ -329,8 +329,12 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_get_continuous_collision_detection_mode","body"),&Physics2DServer::body_get_continuous_collision_detection_mode);
 
 
-	//ObjectTypeDB::bind_method(_MD("body_set_user_flags","flags""),&Physics2DServer::body_set_shape,DEFVAL(Matrix32));
-	//ObjectTypeDB::bind_method(_MD("body_get_user_flags","body","shape_idx","shape"),&Physics2DServer::body_get_shape);
+	ObjectTypeDB::bind_method(_MD("body_set_layer_mask","body","mask"),&Physics2DServer::body_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_layer_mask","body"),&Physics2DServer::body_get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("body_set_user_mask","body","mask"),&Physics2DServer::body_set_user_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_user_mask","body"),&Physics2DServer::body_get_user_mask);
+
 
 	ObjectTypeDB::bind_method(_MD("body_set_param","body","param","value"),&Physics2DServer::body_set_param);
 	ObjectTypeDB::bind_method(_MD("body_get_param","body","param"),&Physics2DServer::body_get_param);

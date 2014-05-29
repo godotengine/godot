@@ -38,7 +38,13 @@ void Popup::_input_event(InputEvent p_event) {
 
 void Popup::_notification(int p_what) {
 	
-
+	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+		if (popped_up && !is_visible()) {
+			popped_up=false;
+			notification(NOTIFICATION_POPUP_HIDE);
+			emit_signal("popup_hide");
+		}
+	}
 }
 
 void Popup::_fix_size() {
@@ -101,6 +107,7 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 
 
 	popup_centered( total_minsize );
+	popped_up=true;
 
 }
 
@@ -127,6 +134,7 @@ void Popup::popup_centered(const Size2& p_size) {
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
+	popped_up=true;
 }
 
 void Popup::popup_centered_ratio(float p_screen_ratio) {
@@ -153,6 +161,7 @@ void Popup::popup_centered_ratio(float p_screen_ratio) {
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
+	popped_up=true;
 
 }
 
@@ -171,6 +180,7 @@ void Popup::popup() {
 
 	_post_popup();
 	notification(NOTIFICATION_POST_POPUP);
+	popped_up=true;
 }
 
 void Popup::set_exclusive(bool p_exclusive) {
@@ -193,8 +203,11 @@ void Popup::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_exclusive","enable"),&Popup::set_exclusive);
 	ObjectTypeDB::bind_method(_MD("is_exclusive"),&Popup::is_exclusive);
 	ADD_SIGNAL( MethodInfo("about_to_show") );
+	ADD_SIGNAL( MethodInfo("popup_hide") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "popup/exclusive"), _SCS("set_exclusive"),_SCS("is_exclusive") );
 	BIND_CONSTANT(NOTIFICATION_POST_POPUP);
+	BIND_CONSTANT(NOTIFICATION_POPUP_HIDE);
+
 
 }
 
@@ -202,6 +215,7 @@ Popup::Popup() {
 
 	set_as_toplevel(true);
 	exclusive=false;
+	popped_up=false;
 	hide();
 }
 

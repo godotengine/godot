@@ -188,6 +188,18 @@ void IP::erase_resolve_item(ResolverID p_id) {
 }
 
 
+Array IP::_get_local_addresses() const {
+
+	Array addresses;
+	List<IP_Address> ip_addresses;
+	get_local_addresses(&ip_addresses);
+	for(List<IP_Address>::Element *E=ip_addresses.front();E;E=E->next()) {
+		addresses.push_back(E->get());
+	}
+
+	return addresses;
+}
+
 void IP::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("resolve_hostname","host"),&IP::resolve_hostname);
@@ -195,6 +207,7 @@ void IP::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_status","id"),&IP::get_resolve_item_status);
 	ObjectTypeDB::bind_method(_MD("get_resolve_item_address","id"),&IP::get_resolve_item_address);
 	ObjectTypeDB::bind_method(_MD("erase_resolve_item","id"),&IP::erase_resolve_item);
+	ObjectTypeDB::bind_method(_MD("get_local_addresses"),&IP::_get_local_addresses);
 
 	BIND_CONSTANT( RESOLVER_STATUS_NONE );
 	BIND_CONSTANT( RESOLVER_STATUS_WAITING );

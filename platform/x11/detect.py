@@ -56,7 +56,7 @@ def get_flags():
 	('opengl', 'no'),
 	('legacygl', 'yes'),
 	('builtin_zlib', 'no'),
-        ('openssl', 'yes'),
+	("openssl", "yes"),
         ]
 			
 
@@ -121,7 +121,7 @@ def configure(env):
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
-        env.ParseConfig('pkg-config openssl --cflags --libs')
+	env.ParseConfig('pkg-config openssl --cflags --libs')
 
 
 	env.ParseConfig('pkg-config freetype2 --cflags --libs')

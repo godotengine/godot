@@ -65,10 +65,12 @@ void VisualInstance::_notification(int p_what) {
 
 				VisualServer::get_singleton()->instance_set_room(instance,room->get_instance());
 			}
-			// CHECK SKELETON
+			// CHECK SKELETON => moving skeleton attaching logic to MeshInstance
+			/*
 			Skeleton *skeleton=get_parent()?get_parent()->cast_to<Skeleton>():NULL;
 			if (skeleton)
 				VisualServer::get_singleton()->instance_attach_skeleton( instance, skeleton->get_skeleton() );
+			*/
 
 			VisualServer::get_singleton()->instance_set_scenario( instance, get_world()->get_scenario() );
 

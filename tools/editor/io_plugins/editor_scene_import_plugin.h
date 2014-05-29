@@ -65,7 +65,7 @@ public:
 
 	virtual uint32_t get_import_flags() const=0;
 	virtual void get_extensions(List<String> *r_extensions) const=0;
-	virtual Node* import_scene(const String& p_path,uint32_t p_flags,Error* r_err=NULL)=0;
+	virtual Node* import_scene(const String& p_path,uint32_t p_flags,List<String> *r_missing_deps,Error* r_err=NULL)=0;
 	virtual Ref<Animation> import_animation(const String& p_path,uint32_t p_flags)=0;
 
 
@@ -109,19 +109,22 @@ public:
 
 	enum SceneFlags {
 
-		SCENE_FLAG_CREATE_COLLISIONS=1,
-		SCENE_FLAG_CREATE_PORTALS=2,
-		SCENE_FLAG_CREATE_ROOMS=4,
-		SCENE_FLAG_SIMPLIFY_ROOMS=8,
-		SCENE_FLAG_CREATE_BILLBOARDS=16,
-		SCENE_FLAG_CREATE_IMPOSTORS=32,
-		SCENE_FLAG_CREATE_LODS=64,
-		SCENE_FLAG_REMOVE_NOIMP=128,
-		SCENE_FLAG_IMPORT_ANIMATIONS=256,
-		SCENE_FLAG_COMPRESS_GEOMETRY=512,
-		SCENE_FLAG_FAIL_ON_MISSING_IMAGES=1024,
-		SCENE_FLAG_GENERATE_TANGENT_ARRAYS=2048,
-		SCENE_FLAG_DONT_SAVE_TO_DB=8192
+		SCENE_FLAG_CREATE_COLLISIONS=1<<0,
+		SCENE_FLAG_CREATE_PORTALS=1<<1,
+		SCENE_FLAG_CREATE_ROOMS=1<<2,
+		SCENE_FLAG_SIMPLIFY_ROOMS=1<<3,
+		SCENE_FLAG_CREATE_BILLBOARDS=1<<4,
+		SCENE_FLAG_CREATE_IMPOSTORS=1<<5,
+		SCENE_FLAG_CREATE_LODS=1<<6,
+		SCENE_FLAG_CREATE_CARS=1<<8,
+		SCENE_FLAG_CREATE_WHEELS=1<<9,
+		SCENE_FLAG_DETECT_ALPHA=1<<15,
+		SCENE_FLAG_DETECT_VCOLOR=1<<16,
+
+		SCENE_FLAG_REMOVE_NOIMP=1<<24,
+		SCENE_FLAG_IMPORT_ANIMATIONS=1<<25,
+		SCENE_FLAG_COMPRESS_GEOMETRY=1<<26,
+		SCENE_FLAG_GENERATE_TANGENT_ARRAYS=1<<27,
 	};
 
 
@@ -129,6 +132,9 @@ public:
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");
 	virtual Error import(const String& p_path, const Ref<ResourceImportMetadata>& p_from);
+
+	Error import1(const Ref<ResourceImportMetadata>& p_from,Node**r_node,List<String> *r_missing=NULL);
+	Error import2(Node* p_scene,const String& p_path, const Ref<ResourceImportMetadata>& p_from);
 
 	void add_importer(const Ref<EditorSceneImporter>& p_importer);
 	const Vector<Ref<EditorSceneImporter> >& get_importers() { return importers; }

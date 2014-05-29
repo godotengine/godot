@@ -66,9 +66,11 @@ protected:
 	static void _bind_methods();
 
 	virtual IP_Address _resolve_hostname(const String& p_hostname)=0;
+	Array _get_local_addresses() const;
 
 	static IP* (*_create)();
 public:
+
 
 
 	IP_Address resolve_hostname(const String& p_hostname);
@@ -76,6 +78,7 @@ public:
 	ResolverID resolve_hostname_queue_item(const String& p_hostname);
 	ResolverStatus get_resolve_item_status(ResolverID p_id) const;
 	IP_Address get_resolve_item_address(ResolverID p_id) const;
+	virtual void get_local_addresses(List<IP_Address> *r_addresses) const=0;
 	void erase_resolve_item(ResolverID p_id);
 
 	static IP* get_singleton();

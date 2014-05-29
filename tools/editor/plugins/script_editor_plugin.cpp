@@ -394,7 +394,6 @@ ScriptTextEditor::ScriptTextEditor() {
 
 /*** SCRIPT EDITOR ******/
 
-
 String ScriptEditor::_get_debug_tooltip(const String&p_text,Node *_ste) {
 
 	ScriptTextEditor *ste=_ste->cast_to<ScriptTextEditor>();
@@ -689,6 +688,26 @@ void ScriptEditor::_menu_option(int p_option) {
 			current->get_text_edit()->query_code_comple();
 
 		} break;
+		case EDIT_AUTO_INDENT: {
+
+			TextEdit *te = current->get_text_edit();
+			String text = te->get_text();
+			Ref<Script> scr = current->get_edited_script();
+			if (scr.is_null())
+				return;
+			int begin,end;
+			if (te->is_selection_active()) {
+				begin=te->get_selection_from_line();
+				end=te->get_selection_to_line();
+			} else {
+				begin=0;
+				end=te->get_line_count()-1;
+			}
+			scr->get_language()->auto_indent_code(text,begin,end);
+			te->set_text(text);
+
+
+		} break;
 		case SEARCH_FIND: {
 
 			find_replace_dialog->set_text_edit(current->get_text_edit());
@@ -751,6 +770,13 @@ void ScriptEditor::_menu_option(int p_option) {
 				else
 					debugger->show();
 			}
+		} break;
+		case HELP_CONTEXTUAL: {
+			String text = current->get_text_edit()->get_selection_text();
+			if (text == "")
+				text = current->get_text_edit()->get_word_under_cursor();
+			if (text != "")
+				editor->emit_signal("request_help", text);
 		} break;
 		case WINDOW_CLOSE: {
 
@@ -1051,9 +1077,6 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
 	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
 
-
-
-
 }
 
 
@@ -1318,6 +1341,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
+	edit_menu->get_popup()->add_item("Auto Indent",EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 
@@ -1361,6 +1385,12 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
 	window_menu->get_popup()->connect("item_pressed", this,"_menu_option");
+
+	help_menu = memnew( MenuButton );
+	menu_hb->add_child(help_menu);
+	help_menu->set_text("Help");
+	help_menu->get_popup()->add_item("Contextual", HELP_CONTEXTUAL, KEY_MASK_SHIFT|KEY_F1);
+	help_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
 
@@ -1414,6 +1444,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	v_split->add_child(debugger);
 	debugger->connect("breaked",this,"_breaked");
 //	debugger_gui->hide();
+
 }
 
 

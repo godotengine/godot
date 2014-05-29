@@ -145,6 +145,10 @@ public:
 
 	StringName play_play;
 
+	StringName _im_update;
+	StringName _queue_update;
+
+
 };
 
 

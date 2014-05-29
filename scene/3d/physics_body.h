@@ -94,6 +94,14 @@ public:
 		MODE_CHARACTER,
 		MODE_KINEMATIC,
 	};
+
+	enum AxisLock {
+		AXIS_LOCK_DISABLED,
+		AXIS_LOCK_X,
+		AXIS_LOCK_Y,
+		AXIS_LOCK_Z,
+	};
+
 private:
 
 	bool can_sleep;
@@ -108,6 +116,8 @@ private:
 	Vector3  angular_velocity;
 	bool active;
 	bool ccd;
+
+	AxisLock axis_lock;
 
 
 	int max_contacts_reported;
@@ -208,6 +218,10 @@ public:
 	void set_use_continuous_collision_detection(bool p_enable);
 	bool is_using_continuous_collision_detection() const;
 
+	void set_axis_lock(AxisLock p_lock);
+	AxisLock get_axis_lock() const;
+
+
 	void apply_impulse(const Vector3& p_pos, const Vector3& p_impulse);
 
 	RigidBody();
@@ -216,4 +230,5 @@ public:
 };
 
 VARIANT_ENUM_CAST(RigidBody::Mode);
+VARIANT_ENUM_CAST(RigidBody::AxisLock);
 #endif // PHYSICS_BODY__H

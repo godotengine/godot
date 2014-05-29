@@ -43,6 +43,7 @@ void EditorHelpSearch::popup(const String& p_term) {
 	if (p_term!="") {
 		search_box->set_text(p_term);
 		search_box->select_all();
+		_update_search();
 	} else
 		search_box->clear();
 	search_box->grab_focus();
@@ -69,7 +70,6 @@ void EditorHelpSearch::_sbox_input(const InputEvent& p_ie) {
 }
 
 void EditorHelpSearch::_update_search() {
-
 
 	search_options->clear();
 	search_options->set_hide_root(true);
@@ -123,8 +123,10 @@ void EditorHelpSearch::_update_search() {
 			cicon=def_icon;
 
 		for(int i=0;i<c.methods.size();i++) {
-
-			if (c.methods[i].name.findn(term)!=-1) {
+			if( (term.begins_with(".") && c.methods[i].name.begins_with(term.right(1)))
+				|| (term.ends_with("(") && c.methods[i].name.ends_with(term.left(term.length()-1).strip_edges()))
+				|| (term.begins_with(".") && term.ends_with("(") && c.methods[i].name==term.substr(1,term.length()-2).strip_edges())
+				|| c.methods[i].name.findn(term)!=-1) {
 
 				TreeItem *item = search_options->create_item(root);
 				item->set_metadata(0,"class_method:"+E->key()+":"+c.methods[i].name);
@@ -249,6 +251,7 @@ void EditorHelpSearch::_confirmed() {
 
 	String mdata=ti->get_metadata(0);
 	emit_signal("go_to_help",mdata);
+	editor->call("_editor_select",3); // in case EditorHelpSearch beeen invoked on top of other editor window
 	// go to that
 	hide();
 }
@@ -318,10 +321,14 @@ DocData *EditorHelp::doc=NULL;
 
 void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
-	if (is_visible() && p_ev.key.mod.control && p_ev.key.scancode==KEY_F) {
+	if (!is_visible())
+		return;
+	if ( p_ev.key.mod.control && p_ev.key.scancode==KEY_F) {
 
 		search->grab_focus();
 		search->select_all();
+	} else if (p_ev.key.mod.shift && p_ev.key.scancode==KEY_F1) {
+		class_search->popup();
 	}
 }
 
@@ -454,9 +461,11 @@ void EditorHelp::_scroll_changed(double p_scroll) {
 	history[p].scroll=p_scroll;
 }
 
-void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vscr) {
+Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vscr) {
 
-	ERR_FAIL_COND(!doc->class_list.has(p_class));
+	//ERR_FAIL_COND(!doc->class_list.has(p_class));
+	if (!doc->class_list.has(p_class))
+		return ERR_DOES_NOT_EXIST;
 
 
 	if (tree_item_map.has(p_class)) {
@@ -470,7 +479,7 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 	description_line=0;
 
 	if (p_class==edited_class->get_text())
-		return; //already there
+		return OK; //already there
 
 	scroll_locked=true;
 
@@ -858,13 +867,16 @@ void EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_vs
 
 	scroll_locked=false;
 
+	return OK;
 }
 
-void EditorHelp::_request_help(const String& p_string) {
-
-	_goto_desc(p_string);
-
-
+void EditorHelp::_request_help(const String& p_string) {	
+	Error err = _goto_desc(p_string);
+	if (err==OK) {
+		editor->call("_editor_select",3);
+	} else {
+		class_search->popup(p_string);
+	}
 	//100 palabras
 }
 

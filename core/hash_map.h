@@ -285,14 +285,12 @@ public:
 	}
 	
 	void set( const Pair& p_pair ) {
-		
+
+		Entry *e=NULL;
 		if (!hash_table)
 			make_hash_table(); // if no table, make one
 		else
-			check_hash_table(); // perform mantenience routine
-		
-		/* As said, i want to have only one get_entry */
-		Entry *e = const_cast<Entry*>( get_entry(p_pair.key) );
+			e = const_cast<Entry*>( get_entry(p_pair.key) );
 		
 		/* if we made it up to here, the pair doesn't exist, create and assign */
 		
@@ -301,6 +299,7 @@ public:
 			e=create_entry(p_pair.key);
 			if (!e)
 				return;
+			check_hash_table(); // perform mantenience routine
 		}
 		
 		e->pair.data = p_pair.data;
@@ -478,12 +477,11 @@ public:
 	}
 	inline TData& operator[](const TKey& p_key ) { //assignment
 		
+		Entry *e=NULL;
 		if (!hash_table)
 			make_hash_table(); // if no table, make one
 		else
-			check_hash_table(); // perform mantenience routine
-			
-		Entry *e = const_cast<Entry*>( get_entry(p_key) );
+			e = const_cast<Entry*>( get_entry(p_key) );
 		
 		/* if we made it up to here, the pair doesn't exist, create */
 		if (!e) {
@@ -491,6 +489,7 @@ public:
 			e=create_entry(p_key);
 			if (!e)
 				return *(TData*)NULL; /* panic! */
+			check_hash_table(); // perform mantenience routine
 		}
 		
 		return e->pair.data;

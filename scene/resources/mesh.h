@@ -107,6 +107,7 @@ private:
 	AABB aabb;
 	MorphTargetMode morph_target_mode;
 	Vector<StringName> morph_targets;
+	AABB custom_aabb;
 
 	mutable Ref<TriangleMesh> triangle_mesh;
 
@@ -155,6 +156,9 @@ public:
 	String surface_get_name(int p_idx) const;
 
 	void add_surface_from_mesh_data(const Geometry::MeshData& p_mesh_data);
+
+	void set_custom_aabb(const AABB& p_custom);
+	AABB get_custom_aabb() const;
 
 	AABB get_aabb() const;
 	virtual RID get_rid() const;

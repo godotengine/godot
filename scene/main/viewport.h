@@ -113,6 +113,7 @@ friend class RenderTargetTexture;
 
 	bool transparent_bg;
 	bool render_target_vflip;
+	bool render_target_filter;
 
 	void _update_rect();
 
@@ -209,6 +210,9 @@ public:
 
 	void set_render_target_vflip(bool p_enable);
 	bool get_render_target_vflip() const;
+
+	void set_render_target_filter(bool p_enable);
+	bool get_render_target_filter() const;
 
 	void set_render_target_update_mode(RenderTargetUpdateMode p_mode);
 	RenderTargetUpdateMode get_render_target_update_mode() const;

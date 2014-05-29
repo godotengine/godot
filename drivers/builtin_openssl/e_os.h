@@ -145,6 +145,7 @@ extern "C" {
 #endif
 
 #if defined(WINDOWS)
+
 #define get_last_socket_error()	WSAGetLastError()
 #define clear_socket_error()	WSASetLastError(0)
 #define readsocket(s,b,n)	recv((s),(b),(n),0)
@@ -282,6 +283,7 @@ extern "C" {
 #      include <ws2tcpip.h>
        /* yes, they have to be #included prior to <windows.h> */
 #    endif
+#define WIN32_LEAN_AND_MEAN
 #    include <windows.h>
 #    include <stdio.h>
 #    include <stddef.h>

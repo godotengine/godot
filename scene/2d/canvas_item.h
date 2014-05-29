@@ -49,7 +49,8 @@ public:
 		BLEND_MODE_MIX, //default
 		BLEND_MODE_ADD,
 		BLEND_MODE_SUB,
-		BLEND_MODE_MUL
+		BLEND_MODE_MUL,
+		BLEND_MODE_PREMULT_ALPHA
 	};
 
 private:

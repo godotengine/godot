@@ -75,7 +75,7 @@ class SceneTreeDock : public VBoxContainer {
 	SceneTreeEditor *scene_tree;
 
 	HBoxContainer *tool_hbc;
-	void _tool_selected(int p_tool);
+	void _tool_selected(int p_tool, bool p_confirm_override = false);
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;

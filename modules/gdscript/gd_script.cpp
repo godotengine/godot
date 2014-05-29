@@ -61,6 +61,10 @@ Variant *GDFunction::_get_variant(int p_address,GDInstance *p_instance,GDScript 
 			}
 			return &self;
 		} break;
+		case ADDR_TYPE_CLASS: {
+
+			return &p_script->_static_ref;
+		} break;
 		case ADDR_TYPE_MEMBER: {
 			//member indexing is O(1)
 			if (!p_instance) {
@@ -72,16 +76,21 @@ Variant *GDFunction::_get_variant(int p_address,GDInstance *p_instance,GDScript 
 		case ADDR_TYPE_CLASS_CONSTANT: {
 
 			//todo change to index!
-			GDScript *s=p_script;
+			GDScript *o=p_script;
 			ERR_FAIL_INDEX_V(address,_global_names_count,NULL);
 			const StringName *sn = &_global_names_ptr[address];
 
-			while(s) {
-				Map<StringName,Variant>::Element *E=s->constants.find(*sn);
-				if (E) {
-					return &E->get();
+			while(o) {
+				GDScript *s=o;
+				while(s) {
+
+					Map<StringName,Variant>::Element *E=s->constants.find(*sn);
+					if (E) {
+						return &E->get();
+					}
+					s=s->_base;
 				}
-				s=s->_base;
+				o=o->_owner;
 			}
 
 
@@ -380,6 +389,8 @@ Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_ar
 						}
 
 					}
+
+
 				} else {
 
 					GDNativeClass *nc= obj_B->cast_to<GDNativeClass>();
@@ -1150,6 +1161,9 @@ GDFunction::GDFunction() {
 	_stack_size=0;
 	_call_size=0;
 	name="<anonymous>";
+#ifdef DEBUG_ENABLED
+	_func_cname=NULL;
+#endif
 
 }
 
@@ -1678,6 +1692,7 @@ Ref<GDScript> GDScript::get_base() const {
 GDScript::GDScript() {
 
 
+	_static_ref=this;
 	valid=false;
 	subclass_count=0;
 	initializer=NULL;
@@ -2143,6 +2158,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"and",
 		"or",
 		"export",
+		"assert",
 	0};
 
 

@@ -85,12 +85,15 @@
 #include "plugins/animation_tree_editor_plugin.h"
 #include "plugins/tile_set_editor_plugin.h"
 #include "plugins/animation_player_editor_plugin.h"
+#include "plugins/baked_light_editor_plugin.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
 #include "tools/editor/io_plugins/editor_font_import_plugin.h"
 #include "tools/editor/io_plugins/editor_sample_import_plugin.h"
 #include "tools/editor/io_plugins/editor_translation_import_plugin.h"
+#include "tools/editor/io_plugins/editor_mesh_import_plugin.h"
+
 
 
 EditorNode *EditorNode::singleton=NULL;
@@ -115,7 +118,10 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
 		switch(p_event.key.scancode) {
 
-			case KEY_F1: _editor_select(3); break;
+			case KEY_F1:
+				if (!p_event.key.mod.shift && !p_event.key.mod.command)
+					_editor_select(3);
+			break;
 			case KEY_F2: _editor_select(0); break;
 			case KEY_F3: _editor_select(1); break;
 			case KEY_F4: _editor_select(2); break;
@@ -302,6 +308,10 @@ void EditorNode::_notification(int p_what) {
 		}
 */
 
+		if (bool(EDITOR_DEF("resources/auto_reload_modified_images",true))) {
+
+			_menu_option_confirm(DEPENDENCY_LOAD_CHANGED_IMAGES,true);
+		}
 
 		EditorFileSystem::get_singleton()->scan_sources();
 
@@ -1562,8 +1572,8 @@ void EditorNode::_cleanup_scene() {
 	editor_history.clear();
 	_hide_top_editors();
 	animation_editor->cleanup();
-	resources_dock->cleanup();
 	property_editor->edit(NULL);
+	resources_dock->cleanup();
 	scene_import_metadata.unref();
 	set_edited_scene(NULL);
 	if (scene) {
@@ -2194,8 +2204,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_DEPLOY_DUMB_CLIENTS: {
 
-		bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
-		fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
+			bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
+			fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
+			run_native->set_deploy_dumb(!ischecked);
 
 		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
@@ -2241,9 +2252,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			reimport_dialog->popup_reimport();
 		} break;
-		case DEPENDENCY_UPDATE_LOCAL: {
+		case DEPENDENCY_LOAD_CHANGED_IMAGES: {
 
-			/*
+
 			List<Ref<Resource> > cached;
 			ResourceCache::get_cached_resources(&cached);
 
@@ -2258,15 +2269,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 
-			sources_button->get_popup()->set_item_disabled(sources_button->get_popup()->get_item_index(DEPENDENCY_UPDATE_LOCAL),true);
-
-
-			if (sources_button->get_popup()->is_item_disabled(sources_button->get_popup()->get_item_index(DEPENDENCY_UPDATE_IMPORTED)))
-				sources_button->set_icon(gui_base->get_icon("DependencyOk","EditorIcons"));
-			else
-				sources_button->set_icon(gui_base->get_icon("DependencyChanged","EditorIcons"));
-
-			*/
 		} break;
 		case DEPENDENCY_UPDATE_IMPORTED: {
 
@@ -3465,7 +3467,7 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
 	p->add_separator();
-	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER);
+	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_Q);
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
 	recent_scenes = memnew( PopupMenu );
@@ -3611,7 +3613,7 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_index(RUN_FILE_SERVER),"Enable/Disable the File Server.");
 	p->add_separator();
 	p->add_check_item("Deploy Dumb Clients",RUN_DEPLOY_DUMB_CLIENTS);
-	p->set_item_checked( p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),true );
+	//p->set_item_checked( p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),true );
 	p->set_item_tooltip(p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),"Deploy dumb clients when the File Server is active.");
 	p->connect("item_pressed",this,"_menu_option");
 
@@ -4015,6 +4017,7 @@ EditorNode::EditorNode() {
 	_scene_import->add_importer(_collada_import);
 	editor_import_export->add_import_plugin( _scene_import);
 	editor_import_export->add_import_plugin( Ref<EditorSceneAnimationImportPlugin>( memnew(EditorSceneAnimationImportPlugin(this))));
+	editor_import_export->add_import_plugin( Ref<EditorMeshImportPlugin>( memnew(EditorMeshImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorFontImportPlugin>( memnew(EditorFontImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
@@ -4053,6 +4056,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( Particles2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
+	add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );
@@ -4164,6 +4168,7 @@ EditorNode::EditorNode() {
 
 	EditorSettings::get_singleton()->enable_plugins();
 	Node::set_human_readable_collision_renaming(true);
+
 
 //	Ref<ImageTexture> it = gui_base->get_icon("logo","Icons");
 //	OS::get_singleton()->set_icon( it->get_data() );

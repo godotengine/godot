@@ -695,6 +695,25 @@ void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_v
 
 };
 
+
+void PhysicsServerSW::body_set_axis_lock(RID p_body,BodyAxisLock p_lock) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_axis_lock(p_lock);
+
+}
+
+PhysicsServerSW::BodyAxisLock PhysicsServerSW::body_get_axis_lock(RID p_body) const{
+
+	const BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,BODY_AXIS_LOCK_DISABLED);
+	return body->get_axis_lock();
+
+}
+
+
+
 void PhysicsServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
 
 	BodySW *body = body_owner.get(p_body);

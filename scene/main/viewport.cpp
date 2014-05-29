@@ -728,6 +728,7 @@ void Viewport::set_as_render_target(bool p_enable){
 		render_target_texture_rid=RID();
 	}
 
+	render_target_texture->set_flags(render_target_texture->flags);
 	render_target_texture->emit_changed();
 }
 
@@ -770,6 +771,18 @@ void Viewport::set_render_target_vflip(bool p_enable) {
 bool Viewport::get_render_target_vflip() const{
 
 	return render_target_vflip;
+}
+
+
+void Viewport::set_render_target_filter(bool p_enable) {
+
+	render_target_texture->set_flags(p_enable?int(Texture::FLAG_FILTER):int(0));
+
+}
+
+bool Viewport::get_render_target_filter() const{
+
+	return (render_target_texture->get_flags()&Texture::FLAG_FILTER)!=0;
 }
 
 
@@ -990,6 +1003,9 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_render_target_vflip","enable"), &Viewport::set_render_target_vflip);
 	ObjectTypeDB::bind_method(_MD("get_render_target_vflip"), &Viewport::get_render_target_vflip);
 
+	ObjectTypeDB::bind_method(_MD("set_render_target_filter","enable"), &Viewport::set_render_target_filter);
+	ObjectTypeDB::bind_method(_MD("get_render_target_filter"), &Viewport::get_render_target_filter);
+
 	ObjectTypeDB::bind_method(_MD("set_render_target_update_mode","mode"), &Viewport::set_render_target_update_mode);
 	ObjectTypeDB::bind_method(_MD("get_render_target_update_mode"), &Viewport::get_render_target_update_mode);
 
@@ -1020,6 +1036,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/enabled"), _SCS("set_as_render_target"), _SCS("is_set_as_render_target") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/v_flip"), _SCS("set_render_target_vflip"), _SCS("get_render_target_vflip") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/filter"), _SCS("set_render_target_filter"), _SCS("get_render_target_filter") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_render_target_update_mode"), _SCS("get_render_target_update_mode") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
