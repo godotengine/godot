@@ -315,6 +315,7 @@ ShaderGLES2::Version* ShaderGLES2::get_current_version() {
 		for(int i=0;i<cc->custom_defines.size();i++) {
 
 			strings.push_back(cc->custom_defines[i]);
+			DEBUG_PRINT("CD #"+itos(i)+": "+String(cc->custom_defines[i]));
 		}
 	}
 
@@ -349,9 +350,11 @@ ShaderGLES2::Version* ShaderGLES2::get_current_version() {
 
 	strings.push_back(vertex_code2.get_data());
 #ifdef DEBUG_SHADER
+
+	DEBUG_PRINT("\nVertex Code:\n\n"+String(code_string.get_data()));
 	for(int i=0;i<strings.size();i++) {
 
-		print_line("vert strings "+itos(i)+":"+String(strings[i]));
+		//print_line("vert strings "+itos(i)+":"+String(strings[i]));
 	}
 #endif
 
@@ -435,9 +438,10 @@ ShaderGLES2::Version* ShaderGLES2::get_current_version() {
 
 	strings.push_back(fragment_code2.get_data());
 #ifdef DEBUG_SHADER
+	DEBUG_PRINT("\nFragment Code:\n\n"+String(code_string.get_data()));
 	for(int i=0;i<strings.size();i++) {
 
-		print_line("frag strings "+itos(i)+":"+String(strings[i]));
+		//print_line("frag strings "+itos(i)+":"+String(strings[i]));
 	}
 #endif
 

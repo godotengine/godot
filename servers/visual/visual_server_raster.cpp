@@ -519,6 +519,72 @@ int VisualServerRaster::multimesh_get_visible_instances(RID p_multimesh) const {
 }
 
 
+/* IMMEDIATE API */
+
+
+RID VisualServerRaster::immediate_create() {
+
+	return rasterizer->immediate_create();
+}
+
+void VisualServerRaster::immediate_begin(RID p_immediate,PrimitiveType p_primitive,RID p_texture){
+
+	rasterizer->immediate_begin(p_immediate,p_primitive,p_texture);
+}
+void VisualServerRaster::immediate_vertex(RID p_immediate,const Vector3& p_vertex){
+
+	rasterizer->immediate_vertex(p_immediate,p_vertex);
+
+}
+void VisualServerRaster::immediate_normal(RID p_immediate,const Vector3& p_normal){
+
+	rasterizer->immediate_normal(p_immediate,p_normal);
+
+}
+void VisualServerRaster::immediate_tangent(RID p_immediate,const Plane& p_tangent){
+
+	rasterizer->immediate_tangent(p_immediate,p_tangent);
+
+}
+void VisualServerRaster::immediate_color(RID p_immediate,const Color& p_color){
+
+	rasterizer->immediate_color(p_immediate,p_color);
+
+}
+void VisualServerRaster::immediate_uv(RID p_immediate,const Vector2& p_uv){
+
+	rasterizer->immediate_uv(p_immediate,p_uv);
+
+}
+void VisualServerRaster::immediate_uv2(RID p_immediate,const Vector2& p_uv2){
+
+	rasterizer->immediate_uv2(p_immediate,p_uv2);
+
+}
+void VisualServerRaster::immediate_end(RID p_immediate){
+
+	VS_CHANGED;
+	_dependency_queue_update(p_immediate,true);
+	rasterizer->immediate_end(p_immediate);
+
+}
+void VisualServerRaster::immediate_clear(RID p_immediate){
+
+	VS_CHANGED;
+	_dependency_queue_update(p_immediate,true);
+	rasterizer->immediate_clear(p_immediate);
+
+}
+
+void VisualServerRaster::immediate_set_material(RID p_immediate,RID p_material) {
+
+	rasterizer->immediate_set_material(p_immediate,p_material);
+}
+
+RID VisualServerRaster::immediate_get_material(RID p_immediate) const {
+
+	return rasterizer->immediate_get_material(p_immediate);
+}
 
 
 /* PARTICLES API */
@@ -1705,6 +1771,8 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 			instance->data.morph_values.resize( rasterizer->mesh_get_morph_target_count(p_base));
 		} else if (rasterizer->is_multimesh(p_base)) {
 			instance->base_type=INSTANCE_MULTIMESH;
+		} else if (rasterizer->is_immediate(p_base)) {
+			instance->base_type=INSTANCE_IMMEDIATE;
 		} else if (rasterizer->is_particles(p_base)) {
 			instance->base_type=INSTANCE_PARTICLES;
 			instance->particles_info=memnew( Instance::ParticlesInfo );
@@ -2466,6 +2534,12 @@ void VisualServerRaster::_update_instance_aabb(Instance *p_instance) {
 		case VisualServer::INSTANCE_MULTIMESH: {
 
 			new_aabb = rasterizer->multimesh_get_aabb(p_instance->base_rid);
+
+		} break;
+		case VisualServer::INSTANCE_IMMEDIATE: {
+
+			new_aabb = rasterizer->immediate_get_aabb(p_instance->base_rid);
+
 
 		} break;
 		case VisualServer::INSTANCE_PARTICLES: {
@@ -3497,6 +3571,9 @@ void VisualServerRaster::_instance_draw(Instance *p_instance) {
 		} break;		
 		case INSTANCE_MULTIMESH: {
 			rasterizer->add_multimesh(p_instance->base_rid, &p_instance->data);
+		} break;
+		case INSTANCE_IMMEDIATE: {
+			rasterizer->add_immediate(p_instance->base_rid, &p_instance->data);
 		} break;
 		case INSTANCE_PARTICLES: {
 			rasterizer->add_particles(p_instance->particles_info->instance, &p_instance->data);
