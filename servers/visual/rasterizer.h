@@ -55,6 +55,7 @@ protected:
 			bool use_alpha:1;
 			bool use_color_array:1;
 			bool use_pointsize:1;
+			bool discard_alpha:1;
 			bool valid:1;
 		};
 
@@ -80,6 +81,7 @@ protected:
 		RID self;
 		bool use_alpha;
 		bool use_color_array;
+		bool discard_alpha;
 		bool use_pointsize;
 		float point_size;
 		Transform uv_xform;
@@ -100,6 +102,7 @@ protected:
 			k.use_alpha=use_alpha;
 			k.use_color_array=use_color_array;
 			k.use_pointsize=use_pointsize;
+			k.discard_alpha=discard_alpha;
 			k.detail_blend=detail_blend;
 			k.valid=true;
 			for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
@@ -119,6 +122,7 @@ protected:
 			use_alpha=false;
 			use_color_array=false;
 			use_pointsize=false;
+			discard_alpha=false;
 			point_size=1.0;
 			detail_blend=VS::MATERIAL_BLEND_MODE_MIX;
 			for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
@@ -297,6 +301,22 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const=0;
+
+	/* IMMEDIATE API */
+
+	virtual RID immediate_create()=0;
+	virtual void immediate_begin(RID p_immediate,VS::PrimitiveType p_rimitive,RID p_texture=RID())=0;
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex)=0;
+	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal)=0;
+	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent)=0;
+	virtual void immediate_color(RID p_immediate,const Color& p_color)=0;
+	virtual void immediate_uv(RID p_immediate,const Vector2& tex_uv)=0;
+	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv)=0;
+	virtual void immediate_end(RID p_immediate)=0;
+	virtual void immediate_clear(RID p_immediate)=0;
+	virtual AABB immediate_get_aabb(RID p_immediate) const=0;
+	virtual void immediate_set_material(RID p_immediate,RID p_material)=0;
+	virtual RID immediate_get_material(RID p_immediate) const=0;
 
 	
 	/* PARTICLES API */
@@ -487,6 +507,7 @@ public:
 
 	virtual void add_mesh( const RID& p_mesh, const InstanceData *p_data)=0;
 	virtual void add_multimesh( const RID& p_multimesh, const InstanceData *p_data)=0;
+	virtual void add_immediate( const RID& p_immediate, const InstanceData *p_data)=0;
 	virtual void add_particles( const RID& p_particle_instance, const InstanceData *p_data)=0;
 
 
@@ -544,6 +565,7 @@ public:
 	virtual bool is_material(const RID& p_rid) const=0;
 	virtual bool is_mesh(const RID& p_rid) const=0;
 	virtual bool is_multimesh(const RID& p_rid) const=0;
+	virtual bool is_immediate(const RID& p_rid) const=0;
 	virtual bool is_particles(const RID &p_beam) const=0;
 
 	virtual bool is_light(const RID& p_rid) const=0;
