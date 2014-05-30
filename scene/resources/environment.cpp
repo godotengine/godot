@@ -109,9 +109,13 @@ void Environment::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/cubemap",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_CUBEMAP);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/energy",PROPERTY_HINT_RANGE,"0,128,0.01"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_ENERGY);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/scale",PROPERTY_HINT_RANGE,"0.001,16,0.001"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_SCALE);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/glow",PROPERTY_HINT_RANGE,"0.00,8,0.01"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_GLOW);
 
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"glow/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_GLOW);
 	ADD_PROPERTYI( PropertyInfo(Variant::INT,"glow/blur_passes",PROPERTY_HINT_RANGE,"1,4,1"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLUR_PASSES);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"glow/blur_scale",PROPERTY_HINT_RANGE,"0.01,4,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLUR_SCALE);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"glow/blur_strength",PROPERTY_HINT_RANGE,"0.01,4,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLUR_STRENGTH);
+	ADD_PROPERTYI( PropertyInfo(Variant::INT,"glow/blur_blend_mode",PROPERTY_HINT_ENUM,"Additive,Screen,SoftLight"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLUR_BLEND_MODE);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"glow/bloom",PROPERTY_HINT_RANGE,"0,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLOOM);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"glow/bloom_treshold",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GLOW_BLOOM_TRESHOLD);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"dof_blur/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_DOF_BLUR);
@@ -180,6 +184,7 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( BG_PARAM_TEXTURE );
 	BIND_CONSTANT( BG_PARAM_CUBEMAP );
 	BIND_CONSTANT( BG_PARAM_ENERGY );
+	BIND_CONSTANT( BG_PARAM_GLOW );
 	BIND_CONSTANT( BG_PARAM_MAX );
 
 
@@ -193,7 +198,14 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( FX_MAX );
 
 
+	BIND_CONSTANT( FX_BLUR_BLEND_MODE_ADDITIVE );
+	BIND_CONSTANT( FX_BLUR_BLEND_MODE_SCREEN );
+	BIND_CONSTANT( FX_BLUR_BLEND_MODE_SOFTLIGHT );
+
 	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_PASSES );
+	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_SCALE );
+	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_STRENGTH );
+	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_BLEND_MODE );
 	BIND_CONSTANT( FX_PARAM_GLOW_BLOOM);
 	BIND_CONSTANT( FX_PARAM_GLOW_BLOOM_TRESHOLD);
 	BIND_CONSTANT( FX_PARAM_DOF_BLUR_PASSES );
@@ -229,11 +241,14 @@ Environment::Environment() {
 	set_background_param(BG_PARAM_CUBEMAP,Ref<CubeMap>());
 	set_background_param(BG_PARAM_ENERGY,1.0);
 	set_background_param(BG_PARAM_SCALE,1.0);
+	set_background_param(BG_PARAM_GLOW,0.0);
 
 	for(int i=0;i<FX_MAX;i++)
 		set_enable_fx(Fx(i),false);
 
 	fx_set_param(FX_PARAM_GLOW_BLUR_PASSES,1);
+	fx_set_param(FX_PARAM_GLOW_BLUR_SCALE,1);
+	fx_set_param(FX_PARAM_GLOW_BLUR_STRENGTH,1);
 	fx_set_param(FX_PARAM_GLOW_BLOOM,0.0);
 	fx_set_param(FX_PARAM_GLOW_BLOOM_TRESHOLD,0.5);
 	fx_set_param(FX_PARAM_DOF_BLUR_PASSES,1);

@@ -56,6 +56,8 @@ class VisualServer : public Object {
 protected:	
 	RID _make_test_cube();
 	RID test_texture;
+	RID white_texture;
+	RID material_2d[16];
 	
 	static VisualServer* (*create_func)();
 	static void _bind_methods();	
@@ -189,6 +191,7 @@ public:
 		MATERIAL_HINT_OPAQUE_PRE_PASS,
 		MATERIAL_HINT_NO_SHADOW,
 		MATERIAL_HINT_NO_DEPTH_DRAW,
+		MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA,
 		MATERIAL_HINT_MAX
 	};
 
@@ -241,6 +244,7 @@ public:
 		FIXED_MATERIAL_FLAG_USE_ALPHA,
 		FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,
 		FIXED_MATERIAL_FLAG_USE_POINT_SIZE,
+		FIXED_MATERIAL_FLAG_DISCARD_ALPHA,
 		FIXED_MATERIAL_FLAG_MAX,
 	};
 
@@ -360,7 +364,22 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const=0;
 
-		
+	/* IMMEDIATE API */
+
+	virtual RID immediate_create()=0;
+	virtual void immediate_begin(RID p_immediate,PrimitiveType p_rimitive,RID p_texture=RID())=0;
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex)=0;
+	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal)=0;
+	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent)=0;
+	virtual void immediate_color(RID p_immediate,const Color& p_color)=0;
+	virtual void immediate_uv(RID p_immediate,const Vector2& tex_uv)=0;
+	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv)=0;
+	virtual void immediate_end(RID p_immediate)=0;
+	virtual void immediate_clear(RID p_immediate)=0;
+	virtual void immediate_set_material(RID p_immediate,RID p_material)=0;
+	virtual RID immediate_get_material(RID p_immediate) const=0;
+
+
 	/* PARTICLES API */
 		
 	virtual RID particles_create()=0;
@@ -556,6 +575,8 @@ public:
 	virtual void portal_set_connect_range(RID p_portal, float p_range) =0;
 	virtual float portal_get_connect_range(RID p_portal) const =0;
 
+
+
 	/* CAMERA API */
 	
 	virtual RID camera_create()=0;
@@ -675,6 +696,7 @@ public:
 		ENV_BG_PARAM_CUBEMAP,
 		ENV_BG_PARAM_ENERGY,
 		ENV_BG_PARAM_SCALE,
+		ENV_BG_PARAM_GLOW,
 		ENV_BG_PARAM_MAX
 	};
 
@@ -698,8 +720,17 @@ public:
 	virtual void environment_set_enable_fx(RID p_env,EnvironmentFx p_effect,bool p_enabled)=0;
 	virtual bool environment_is_fx_enabled(RID p_env,EnvironmentFx p_mode) const=0;
 
+	enum EnvironmentFxBlurBlendMode {
+		ENV_FX_BLUR_BLEND_MODE_ADDITIVE,
+		ENV_FX_BLUR_BLEND_MODE_SCREEN,
+		ENV_FX_BLUR_BLEND_MODE_SOFTLIGHT,
+	};
+
 	enum EnvironmentFxParam {
 		ENV_FX_PARAM_GLOW_BLUR_PASSES,
+		ENV_FX_PARAM_GLOW_BLUR_SCALE,
+		ENV_FX_PARAM_GLOW_BLUR_STRENGTH,
+		ENV_FX_PARAM_GLOW_BLUR_BLEND_MODE,
 		ENV_FX_PARAM_GLOW_BLOOM,
 		ENV_FX_PARAM_GLOW_BLOOM_TRESHOLD,
 		ENV_FX_PARAM_DOF_BLUR_PASSES,
@@ -756,12 +787,13 @@ public:
 		INSTANCE_NONE,
 		INSTANCE_MESH,
 		INSTANCE_MULTIMESH,
+		INSTANCE_IMMEDIATE,
 		INSTANCE_PARTICLES,
 		INSTANCE_LIGHT,
 		INSTANCE_ROOM,
 		INSTANCE_PORTAL,
 		
-		INSTANCE_GEOMETRY_MASK=(1<<INSTANCE_MESH)|(1<<INSTANCE_MULTIMESH)|(1<<INSTANCE_PARTICLES)
+		INSTANCE_GEOMETRY_MASK=(1<<INSTANCE_MESH)|(1<<INSTANCE_MULTIMESH)|(1<<INSTANCE_IMMEDIATE)|(1<<INSTANCE_PARTICLES)
 	};
 	
 
@@ -932,6 +964,12 @@ public:
 	};
 
 	virtual int get_render_info(RenderInfo p_info)=0;
+
+
+	/* Materials for 2D on 3D */
+
+
+	RID material_2d_get(bool p_shaded, bool p_transparent, bool p_cut_alpha,bool p_opaque_prepass);
 	
 
 	/* TESTING */
@@ -939,6 +977,7 @@ public:
 	virtual RID get_test_cube()=0;
 
 	virtual RID get_test_texture();
+	virtual RID get_white_texture();
 
 	virtual RID make_sphere_mesh(int p_lats,int p_lons,float p_radius);
 

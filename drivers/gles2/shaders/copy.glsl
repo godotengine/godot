@@ -99,6 +99,8 @@ uniform float bloom_treshold;
 #if defined(BLUR_V_PASS) || defined(BLUR_H_PASS) || defined(USE_HDR_REDUCE)
 
 uniform vec2 pixel_size;
+uniform float pixel_scale;
+uniform float blur_magnitude;
 
 #ifdef USE_HDR_STORE
 
@@ -121,6 +123,10 @@ uniform vec2 pixel_size;
 
 uniform highp float energy;
 
+#endif
+
+#ifdef USE_CUSTOM_ALPHA
+uniform float custom_alpha;
 #endif
 
 
@@ -195,28 +201,28 @@ void main() {
 
 #ifdef BLUR_V_PASS
 
-	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-3.0));
-	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-2.0));
-	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-1.0));
-	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*1.0));
-	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*2.0));
-	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*3.0));
+	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-3.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-2.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-1.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*1.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*2.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*3.0)*pixel_scale);
 
-	color*=(1.0/7.0);
+	color*=(1.0/7.0)*blur_magnitude;
 
 #endif
 
 #ifdef BLUR_H_PASS
 
 
-	color+=texture2D(source,uv_interp+vec2(pixel_size.x*-3.0,0.0));
-	color+=texture2D(source,uv_interp+vec2(pixel_size.x*-2.0,0.0));
-	color+=texture2D(source,uv_interp+vec2(pixel_size.x*-1.0,0.0));
-	color+=texture2D(source,uv_interp+vec2(pixel_size.x*1.0,0.0));
-	color+=texture2D(source,uv_interp+vec2(pixel_size.x*2.0,0.0));
-	color+=texture2D(source,uv_interp+vec2(pixel_size.x*3.0,0.0));
+	color+=texture2D(source,uv_interp+vec2(pixel_size.x*-3.0,0.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(pixel_size.x*-2.0,0.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(pixel_size.x*-1.0,0.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(pixel_size.x*1.0,0.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(pixel_size.x*2.0,0.0)*pixel_scale);
+	color+=texture2D(source,uv_interp+vec2(pixel_size.x*3.0,0.0)*pixel_scale);
 
-	color*=(1.0/7.0);
+	color*=(1.0/7.0)*blur_magnitude;
 
 #endif
 
@@ -249,12 +255,25 @@ void main() {
 
 	vec4 glow = texture2D( glow_source,  uv2_interp );
 
-#if 1
-//ifdef USE_GLOW_SCREEN
+#ifdef USE_GLOW_SCREEN
 
 	color.rgb = clamp((color.rgb + glow.rgb) - (color.rgb * glow.rgb), 0.0, 1.0);
 
-#else
+#endif
+
+#ifdef USE_GLOW_SOFTLIGHT
+
+	{
+
+		glow.rgb = (glow.rgb * 0.5) + 0.5;
+		color.r =  (glow.r <= 0.5) ? (color.r - (1.0 - 2.0 * glow.r) * color.r * (1.0 - color.r)) : (((glow.r > 0.5) && (color.r <= 0.25)) ? (color.r + (2.0 * glow.r - 1.0) * (4.0 * color.r * (4.0 * color.r + 1.0) * (color.r - 1.0) + 7.0 * color.r)) : (color.r + (2.0 * glow.r - 1.0) * (sqrt(color.r) - color.r)));
+		color.g =  (glow.g <= 0.5) ? (color.g - (1.0 - 2.0 * glow.g) * color.g * (1.0 - color.g)) : (((glow.g > 0.5) && (color.g <= 0.25)) ? (color.g + (2.0 * glow.g - 1.0) * (4.0 * color.g * (4.0 * color.g + 1.0) * (color.g - 1.0) + 7.0 * color.g)) : (color.g + (2.0 * glow.g - 1.0) * (sqrt(color.g) - color.g)));
+		color.b =  (glow.b <= 0.5) ? (color.b - (1.0 - 2.0 * glow.b) * color.b * (1.0 - color.b)) : (((glow.b > 0.5) && (color.b <= 0.25)) ? (color.b + (2.0 * glow.b - 1.0) * (4.0 * color.b * (4.0 * color.b + 1.0) * (color.b - 1.0) + 7.0 * color.b)) : (color.b + (2.0 * glow.b - 1.0) * (sqrt(color.b) - color.b)));
+	}
+
+#endif
+
+#if !defined(USE_GLOW_SCREEN) && !defined(USE_GLOW_SOFTLIGHT)
 	color.rgb+=glow.rgb;
 #endif
 
@@ -316,6 +335,9 @@ void main() {
         color.a=1.0;
 #endif
 
+#ifdef USE_CUSTOM_ALPHA
+	color.a=custom_alpha;
+#endif
         gl_FragColor = color;
 }
 

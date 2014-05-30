@@ -61,6 +61,7 @@ private:
 	StringName vname_binormal_interp;
 	StringName vname_var1_interp;
 	StringName vname_var2_interp;
+	StringName vname_vertex;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 

@@ -2208,8 +2208,9 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 		case RUN_DEPLOY_DUMB_CLIENTS: {
 
-		bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
-		fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
+			bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
+			fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
+			run_native->set_deploy_dumb(!ischecked);
 
 		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
@@ -3623,7 +3624,7 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_index(RUN_FILE_SERVER),"Enable/Disable the File Server.");
 	p->add_separator();
 	p->add_check_item("Deploy Dumb Clients",RUN_DEPLOY_DUMB_CLIENTS);
-	p->set_item_checked( p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),true );
+	//p->set_item_checked( p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),true );
 	p->set_item_tooltip(p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),_TR("Deploy dumb clients when the File Server is active."));
 	p->connect("item_pressed",this,"_menu_option");
 

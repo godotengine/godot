@@ -189,6 +189,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	int orientation;
 
 	String release_keystore;
+	String release_password;
 	String release_username;
 
 	struct APKExportData {
@@ -241,11 +242,11 @@ public:
 	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const;
 	virtual String get_device_info(int p_device) const;
-	virtual Error run(int p_device);
+	virtual Error run(int p_device,bool p_dumb=false);
 
 	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "apk"; }
-	virtual Error export_project(const String& p_path,bool p_debug,const String& p_password="");
+	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -285,6 +286,8 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		release_keystore=p_value;
 	else if (n=="keystore/release_user")
 		release_username=p_value;
+	else if (n=="keystore/release_password")
+		release_password=p_value;
 	else if (n=="apk_expansion/enable")
 		apk_expansion=p_value;
 	else if (n=="apk_expansion/SALT")
@@ -343,6 +346,8 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=release_keystore;
 	else if (n=="keystore/release_user")
 		r_ret=release_username;
+	else if (n=="keystore/release_password")
+		r_ret=release_password;
 	else if (n=="apk_expansion/enable")
 		r_ret=apk_expansion;
 	else if (n=="apk_expansion/SALT")
@@ -968,7 +973,7 @@ Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata,const String& 
 
 
 
-Error EditorExportPlatformAndroid::export_project(const String& p_path,bool p_debug,const String& p_password) {
+Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_debug, bool p_dumb) {
 
 	String src_apk;
 
@@ -1088,34 +1093,51 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path,bool p_de
 
 
 	ep.step("Adding Files..",1);
-
 	Error err=OK;
 	Vector<String> cl = cmdline.strip_edges().split(" ");
-	if (apk_expansion) {
 
-		String apkfname="main."+itos(version_code)+"."+package+".obb";
-		String fullpath=p_path.get_base_dir().plus_file(apkfname);
-		FileAccess *pf = FileAccess::open(fullpath,FileAccess::WRITE);
-		if (!pf) {
-			EditorNode::add_io_error("Could not write expansion package file: "+apkfname);
-			return OK;
+	if (p_dumb) {
+
+		String host = EditorSettings::get_singleton()->get("file_server/host");
+		int port = EditorSettings::get_singleton()->get("file_server/post");
+		String passwd = EditorSettings::get_singleton()->get("file_server/password");
+		cl.push_back("-rfs");
+		cl.push_back(host+":"+itos(port));
+		if (passwd!="") {
+			cl.push_back("-rfs_pass");
+			cl.push_back(passwd);
 		}
-		err = save_pack(pf);
-		memdelete(pf);
-		cl.push_back("-main_pack");
-		cl.push_back(apkfname);
-		cl.push_back("-main_pack_md5");
-		cl.push_back(FileAccess::get_md5(fullpath));
-		cl.push_back("-main_pack_cfg");
-		cl.push_back(apk_expansion_salt+","+apk_expansion_pkey);
+
 
 	} else {
+		//all files
 
-		APKExportData ed;
-		ed.ep=&ep;
-		ed.apk=apk;
+		if (apk_expansion) {
 
-		err = export_project_files(save_apk_file,&ed,false);
+			String apkfname="main."+itos(version_code)+"."+package+".obb";
+			String fullpath=p_path.get_base_dir().plus_file(apkfname);
+			FileAccess *pf = FileAccess::open(fullpath,FileAccess::WRITE);
+			if (!pf) {
+				EditorNode::add_io_error("Could not write expansion package file: "+apkfname);
+				return OK;
+			}
+			err = save_pack(pf);
+			memdelete(pf);
+			cl.push_back("-main_pack");
+			cl.push_back(apkfname);
+			cl.push_back("-main_pack_md5");
+			cl.push_back(FileAccess::get_md5(fullpath));
+			cl.push_back("-main_pack_cfg");
+			cl.push_back(apk_expansion_salt+","+apk_expansion_pkey);
+
+		} else {
+
+			APKExportData ed;
+			ed.ep=&ep;
+			ed.apk=apk;
+
+			err = export_project_files(save_apk_file,&ed,false);
+		}
 	}
 
 	if (cl.size()) {
@@ -1179,7 +1201,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path,bool p_de
 
 		} else {
 			keystore=release_keystore;
-			password=p_password;
+			password=release_password;
 			user=release_username;
 
 			ep.step("Signing Release APK..",103);
@@ -1388,7 +1410,7 @@ void EditorExportPlatformAndroid::_device_poll_thread(void *ud) {
 
 }
 
-Error EditorExportPlatformAndroid::run(int p_device) {
+Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 	device_lock->lock();
@@ -1407,7 +1429,7 @@ Error EditorExportPlatformAndroid::run(int p_device) {
 	ep.step("Exporting APK",0);
 
 	String export_to=EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.apk";
-	Error err = export_project(export_to,true);
+	Error err = export_project(export_to,true,p_dumb);
 	if (err) {
 		device_lock->unlock();
 		return err;

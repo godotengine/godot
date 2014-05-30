@@ -274,6 +274,55 @@ RID VisualServer::make_sphere_mesh(int p_lats,int p_lons,float p_radius) {
 	return mesh;
 }
 
+
+RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_cut_alpha, bool p_opaque_prepass) {
+
+	int version=0;
+	if (p_shaded)
+		version=1;
+	if (p_transparent)
+		version|=2;
+	if (p_cut_alpha)
+		version|=4;
+	if (p_opaque_prepass)
+		version|=8;
+	if (material_2d[version].is_valid())
+		return material_2d[version];
+
+	//not valid, make
+
+	material_2d[version]=fixed_material_create();
+	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_ALPHA,p_transparent);
+	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);	
+	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_DISCARD_ALPHA,p_cut_alpha);
+	material_set_flag(material_2d[version],MATERIAL_FLAG_UNSHADED,!p_shaded);
+	material_set_flag(material_2d[version],MATERIAL_FLAG_DOUBLE_SIDED,true);
+	material_set_hint(material_2d[version],MATERIAL_HINT_OPAQUE_PRE_PASS,p_opaque_prepass);
+	fixed_material_set_texture(material_2d[version],FIXED_MATERIAL_PARAM_DIFFUSE,get_white_texture());
+	//material cut alpha?
+	return material_2d[version];
+}
+
+RID VisualServer::get_white_texture() {
+
+	if (white_texture.is_valid())
+		return white_texture;
+
+	DVector<uint8_t> wt;
+	wt.resize(16*3);
+	{
+		DVector<uint8_t>::Write w =wt.write();
+		for(int i=0;i<16*3;i++)
+			w[i]=255;
+	}
+	Image white(4,4,0,Image::FORMAT_RGB,wt);
+	white_texture=texture_create();
+	texture_allocate(white_texture,4,4,Image::FORMAT_RGB);
+	texture_set_data(white_texture,white);
+	return white_texture;
+
+}
+
 void VisualServer::_bind_methods() {
 
 
