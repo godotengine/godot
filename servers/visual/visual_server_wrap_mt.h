@@ -741,6 +741,22 @@ public:
 	FUNC2(multimesh_set_visible_instances,RID,int);
 	FUNC1RC(int,multimesh_get_visible_instances,RID);
 
+	/* IMMEDIATE API */
+
+
+	FUNC0R(RID,immediate_create);
+	FUNC3(immediate_begin,RID,PrimitiveType,RID);
+	FUNC2(immediate_vertex,RID,const Vector3&);
+	FUNC2(immediate_normal,RID,const Vector3&);
+	FUNC2(immediate_tangent,RID,const Plane&);
+	FUNC2(immediate_color,RID,const Color&);
+	FUNC2(immediate_uv,RID,const Vector2&);
+	FUNC2(immediate_uv2,RID,const Vector2&);
+	FUNC1(immediate_end,RID);
+	FUNC1(immediate_clear,RID);
+	FUNC2(immediate_set_material,RID,RID);
+	FUNC1RC(RID,immediate_get_material,RID);
+
 
 	/* PARTICLES API */
 

@@ -994,7 +994,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	return OK;
 }
 
-Error EditorExportPlatformPC::export_project(const String& p_path,bool p_debug,const String& p_password) {
+Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, bool p_dumb) {
 
 
 

@@ -70,6 +70,7 @@ public:
 	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1)) const;
 	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1)) const;
 	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1)) const;
+	virtual bool get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const;
 
 
 
@@ -198,6 +199,7 @@ public:
 	virtual void draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate=Color(1,1,1)) const;
 	virtual void draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1)) const;
 	virtual void draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1)) const;
+	virtual bool get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const;
 
 
 	AtlasTexture();

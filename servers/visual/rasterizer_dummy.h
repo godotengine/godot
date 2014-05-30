@@ -231,7 +231,17 @@ class RasterizerDummy : public Rasterizer {
 
 	};
 
+
 	mutable RID_Owner<MultiMesh> multimesh_owner;
+
+	struct Immediate {
+
+
+		RID material;
+		int empty;
+	};
+
+	mutable RID_Owner<Immediate> immediate_owner;
 
 	struct Particles : public Geometry {
 
@@ -490,6 +500,23 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
 
+	/* IMMEDIATE API */
+
+	virtual RID immediate_create();
+	virtual void immediate_begin(RID p_immediate,VS::PrimitiveType p_rimitive,RID p_texture=RID());
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex);
+	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal);
+	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent);
+	virtual void immediate_color(RID p_immediate,const Color& p_color);
+	virtual void immediate_uv(RID p_immediate,const Vector2& tex_uv);
+	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv);
+	virtual void immediate_end(RID p_immediate);
+	virtual void immediate_clear(RID p_immediate);
+	virtual void immediate_set_material(RID p_immediate,RID p_material);
+	virtual RID immediate_get_material(RID p_immediate) const;
+
+	virtual AABB immediate_get_aabb(RID p_mesh) const;
+
 	/* PARTICLES API */
 
 	virtual RID particles_create();
@@ -647,6 +674,7 @@ public:
 
 	virtual void add_mesh( const RID& p_mesh, const InstanceData *p_data);
 	virtual void add_multimesh( const RID& p_multimesh, const InstanceData *p_data);
+	virtual void add_immediate( const RID& p_immediate, const InstanceData *p_data) {}
 	virtual void add_particles( const RID& p_particle_instance, const InstanceData *p_data);
 
 	virtual void end_scene();
@@ -692,6 +720,7 @@ public:
 	virtual bool is_texture(const RID& p_rid) const;
 	virtual bool is_material(const RID& p_rid) const;
 	virtual bool is_mesh(const RID& p_rid) const;
+	virtual bool is_immediate(const RID& p_rid) const;
 	virtual bool is_multimesh(const RID& p_rid) const;
 	virtual bool is_particles(const RID &p_beam) const;
 

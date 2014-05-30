@@ -137,5 +137,7 @@ SceneStringNames::SceneStringNames() {
 	drop_data = StaticCString::create("drop_data");
 	can_drop_data = StaticCString::create("can_drop_data");
 
+	_im_update = StaticCString::create("_im_update");
+	_queue_update = StaticCString::create("_queue_update");
 
 }

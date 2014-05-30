@@ -1034,7 +1034,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::fragment_builtins_defs[]={
 	{ "SPEC_EXP", TYPE_FLOAT},
 	{ "GLOW", TYPE_FLOAT},
 	{ "SHADE_PARAM", TYPE_FLOAT},
-	{ "DISCARD", TYPE_FLOAT},
+	{ "DISCARD", TYPE_BOOL},
 	{ "SCREEN_UV", TYPE_VEC2},
 	{ "POINT_COORD", TYPE_VEC2},
 	{ "INV_CAMERA_MATRIX", TYPE_MAT4},
