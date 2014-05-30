@@ -130,14 +130,14 @@ public:
 	virtual int get_device_count() const { return 0; }
 	virtual String get_device_name(int p_device) const { return ""; }
 	virtual String get_device_info(int p_device) const { return ""; }
-	virtual Error run(int p_device) { return OK; }
+	virtual Error run(int p_device,bool p_dumb=false) { return OK; }
 
 	virtual bool can_export(String *r_error=NULL) const=0;
 
 
 	virtual bool requieres_password(bool p_debug) const { return false; }
 	virtual String get_binary_extension() const=0;
-	virtual Error export_project(const String& p_path,bool p_debug,const String& p_password="")=0;
+	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false)=0;
 
 	EditorExportPlatform() {};
 };
@@ -187,7 +187,7 @@ public:
 	virtual ImageCompression get_image_compression() const { return IMAGE_COMPRESSION_BC; }
 
 	virtual String get_binary_extension() const { return binary_extension; }
-	virtual Error export_project(const String& p_path,bool p_debug,const String& p_password="");
+	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
 	virtual void set_release_binary32(const String& p_binary) { release_binary32=p_binary; }
 	virtual void set_debug_binary32(const String& p_binary) { debug_binary32=p_binary; }
 	virtual void set_release_binary64(const String& p_binary) { release_binary64=p_binary; }

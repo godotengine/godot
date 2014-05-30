@@ -173,8 +173,11 @@ class RasterizerGLES2 : public Rasterizer {
 		bool can_zpass;
 		bool has_texscreen;
 		bool has_screen_uv;
+		bool writes_vertex;
+		bool uses_discard;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
+		StringName first_texture;
 
 
 		SelfList<Shader> dirty_list;
@@ -190,6 +193,8 @@ class RasterizerGLES2 : public Rasterizer {
 			can_zpass=true;
 			has_texscreen=false;
 			has_screen_uv=false;
+			writes_vertex=false;
+			uses_discard=false;
 		}
 
 
@@ -235,6 +240,7 @@ class RasterizerGLES2 : public Rasterizer {
 			flags[VS::MATERIAL_FLAG_VISIBLE]=true;
 			for(int i=0;i<VS::MATERIAL_HINT_MAX;i++)
 				hints[i]=false;
+			hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA]=true;
 
 			line_width=1;
 			has_alpha=false;
@@ -256,7 +262,7 @@ class RasterizerGLES2 : public Rasterizer {
 		enum Type {
 			GEOMETRY_INVALID,
 			GEOMETRY_SURFACE,
-			GEOMETRY_POLY,
+			GEOMETRY_IMMEDIATE,
 			GEOMETRY_PARTICLES,
 			GEOMETRY_MULTISURFACE,
 		};
@@ -457,6 +463,31 @@ class RasterizerGLES2 : public Rasterizer {
 	mutable RID_Owner<MultiMesh> multimesh_owner;
 	mutable SelfList<MultiMesh>::List _multimesh_dirty_list;
 
+	struct Immediate : public Geometry {
+
+		struct Chunk {
+
+			RID texture;
+			VS::PrimitiveType primitive;
+			Vector<Vector3> vertices;
+			Vector<Vector3> normals;
+			Vector<Plane> tangents;
+			Vector<Color> colors;
+			Vector<Vector2> uvs;
+			Vector<Vector2> uvs2;
+		};
+
+		List<Chunk> chunks;
+		bool building;
+		int mask;
+		AABB aabb;
+
+		Immediate() { type=GEOMETRY_IMMEDIATE; building=false;}
+
+	};
+
+	mutable RID_Owner<Immediate> immediate_owner;
+
 	struct Particles : public Geometry {
 
 		ParticleSystemSW data; // software particle system
@@ -585,11 +616,15 @@ class RasterizerGLES2 : public Rasterizer {
 			bg_param[VS::ENV_BG_PARAM_CUBEMAP]=RID();
 			bg_param[VS::ENV_BG_PARAM_ENERGY]=1.0;
 			bg_param[VS::ENV_BG_PARAM_SCALE]=1.0;
+			bg_param[VS::ENV_BG_PARAM_GLOW]=0.0;
 
 			for(int i=0;i<VS::ENV_FX_MAX;i++)
 				fx_enabled[i]=false;
 
 			fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_PASSES]=1;
+			fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_SCALE]=1.0;
+			fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_STRENGTH]=1.0;
+			fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_BLEND_MODE]=0;
 			fx_param[VS::ENV_FX_PARAM_GLOW_BLOOM]=0.0;
 			fx_param[VS::ENV_FX_PARAM_GLOW_BLOOM_TRESHOLD]=0.5;
 			fx_param[VS::ENV_FX_PARAM_DOF_BLUR_PASSES]=1;
@@ -932,7 +967,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _setup_light(uint16_t p_light);
 
 	_FORCE_INLINE_ void _setup_shader_params(const Material *p_material);
-	bool _setup_material(const Geometry *p_geometry,const Material *p_material,bool p_no_const_light);
+	bool _setup_material(const Geometry *p_geometry, const Material *p_material, bool p_no_const_light, bool p_opaque_pass);
 	void _setup_skeleton(const Skeleton *p_skeleton);
 
 
@@ -1096,6 +1131,16 @@ class RasterizerGLES2 : public Rasterizer {
 	void _copy_screen_quad();
 	void _copy_to_texscreen();
 
+
+	Vector3 chunk_vertex;
+	Vector3 chunk_normal;
+	Plane chunk_tangent;
+	Color chunk_color;
+	Vector2 chunk_uv;
+	Vector2 chunk_uv2;
+	GLuint tc0_id_cache;
+	GLuint tc0_idx;
+
 public:
 
 	/* TEXTURE API */
@@ -1204,6 +1249,22 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible);
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const;
+
+	/* IMMEDIATE API */
+
+	virtual RID immediate_create();
+	virtual void immediate_begin(RID p_immediate,VS::PrimitiveType p_rimitive,RID p_texture=RID());
+	virtual void immediate_vertex(RID p_immediate,const Vector3& p_vertex);
+	virtual void immediate_normal(RID p_immediate,const Vector3& p_normal);
+	virtual void immediate_tangent(RID p_immediate,const Plane& p_tangent);
+	virtual void immediate_color(RID p_immediate,const Color& p_color);
+	virtual void immediate_uv(RID p_immediate,const Vector2& tex_uv);
+	virtual void immediate_uv2(RID p_immediate,const Vector2& tex_uv);
+	virtual void immediate_end(RID p_immediate);
+	virtual void immediate_clear(RID p_immediate);
+	virtual AABB immediate_get_aabb(RID p_immediate) const;
+	virtual void immediate_set_material(RID p_immediate,RID p_material);
+	virtual RID immediate_get_material(RID p_immediate) const;
 
 	/* PARTICLES API */
 
@@ -1364,6 +1425,7 @@ public:
 
 	virtual void add_mesh( const RID& p_mesh, const InstanceData *p_data);
 	virtual void add_multimesh( const RID& p_multimesh, const InstanceData *p_data);
+	virtual void add_immediate( const RID& p_immediate, const InstanceData *p_data);
 	virtual void add_particles( const RID& p_particle_instance, const InstanceData *p_data);
 
 	virtual void end_scene();
@@ -1411,6 +1473,7 @@ public:
 	virtual bool is_texture(const RID& p_rid) const;
 	virtual bool is_material(const RID& p_rid) const;
 	virtual bool is_mesh(const RID& p_rid) const;
+	virtual bool is_immediate(const RID& p_rid) const;
 	virtual bool is_multimesh(const RID& p_rid) const;
 	virtual bool is_particles(const RID &p_beam) const;
 

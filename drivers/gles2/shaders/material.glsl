@@ -386,6 +386,7 @@ VERTEX_SHADER_CODE
 			specular_interp=vec3(0.0);
 		}
 	}
+
 #else
 
 #ifdef SHADELESS
@@ -722,17 +723,24 @@ void main() {
 
 
 
-#ifdef FRAGMENT_SHADER_CODE_USE_DISCARD
-	float discard_=0.0;
+#if defined(ENABLE_DISCARD)
+	bool discard_=false;
 #endif
 
 
 FRAGMENT_SHADER_CODE
 
 
-#ifdef FRAGMENT_SHADER_CODE_USE_DISCARD
-	if (discard_>0.0) {
+#if defined(ENABLE_DISCARD)
+	if (discard_) {
 	//easy to eliminate dead code
+		discard;
+	}
+#endif
+
+#ifdef ENABLE_CLIP_ALPHA
+	if (diffuse.a<0.99) {
+		//used for doublepass and shadowmapping
 		discard;
 	}
 #endif
@@ -902,7 +910,10 @@ FRAGMENT_SHADER_CODE
 
 # if !defined(LIGHT_TYPE_DIRECTIONAL) && !defined(LIGHT_TYPE_OMNI) && !defined (LIGHT_TYPE_SPOT)
 //none
+#ifndef SHADELESS
 	diffuse.rgb=vec3(0.0,0.0,0.0);
+#endif
+
 # endif
 
 	diffuse.rgb+=const_light_mult*emission;
@@ -959,6 +970,7 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_HDR
 	diffuse.rgb*=0.25;
 #endif
+
 	gl_FragColor = diffuse;
 #endif
 }

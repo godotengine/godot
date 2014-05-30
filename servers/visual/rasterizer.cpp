@@ -157,6 +157,9 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 
 	if (p_key.use_alpha) {
 		code+="DIFFUSE_ALPHA=diffuse;\n";
+		if (p_key.discard_alpha) {
+			code+="DISCARD=diffuse.a<0.5;\n";
+		}
 	} else {
 		code+="DIFFUSE=diffuse.rgb;\n";
 	}
@@ -262,6 +265,7 @@ void Rasterizer::_free_shader(const FixedMaterialShaderKey& p_key) {
 
 void Rasterizer::fixed_material_set_flag(RID p_material, VS::FixedMaterialFlags p_flag, bool p_enabled) {
 
+
 	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
 	ERR_FAIL_COND(!E);
 	FixedMaterial &fm=*E->get();
@@ -271,6 +275,7 @@ void Rasterizer::fixed_material_set_flag(RID p_material, VS::FixedMaterialFlags 
 		case VS::FIXED_MATERIAL_FLAG_USE_ALPHA: fm.use_alpha=p_enabled; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY: fm.use_color_array=p_enabled; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE: fm.use_pointsize=p_enabled; break;
+		case VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA: fm.discard_alpha=p_enabled; break;
 	}
 
 	if (!fm.dirty_list.in_list())
@@ -288,6 +293,7 @@ bool Rasterizer::fixed_material_get_flag(RID p_material, VS::FixedMaterialFlags 
 		case VS::FIXED_MATERIAL_FLAG_USE_ALPHA: return fm.use_alpha;; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY: return fm.use_color_array;; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE: return fm.use_pointsize;; break;
+		case VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA: return fm.discard_alpha;; break;
 	}
 
 

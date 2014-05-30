@@ -145,6 +145,12 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 		} break;
 		case SL::Node::TYPE_VARIABLE: {
 			SL::VariableNode *vnode=(SL::VariableNode*)p_node;
+			if (type==ShaderLanguage::SHADER_MATERIAL_VERTEX) {
+
+				if (vnode->name==vname_vertex && p_assign_left) {
+					vertex_code_writes_vertex=true;
+				}
+			}
 			if (type==ShaderLanguage::SHADER_MATERIAL_FRAGMENT) {
 
 				if (vnode->name==vname_discard) {
@@ -644,5 +650,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_binormal_interp="BINORMAL";
 	vname_var1_interp="VAR1";
 	vname_var2_interp="VAR2";
+	vname_vertex="VERTEX";
 
 }

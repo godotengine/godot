@@ -101,7 +101,7 @@ void EditorRunNative::_run_native(int p_idx,const String& p_platform) {
 
 	Ref<EditorExportPlatform> eep = EditorImportExport::get_singleton()->get_export_platform(p_platform);
 	ERR_FAIL_COND(eep.is_null());
-	eep->run(p_idx);
+	eep->run(p_idx,deploy_dumb);
 }
 
 void EditorRunNative::_bind_methods() {
@@ -109,8 +109,20 @@ void EditorRunNative::_bind_methods() {
 	ObjectTypeDB::bind_method("_run_native",&EditorRunNative::_run_native);
 }
 
+void EditorRunNative::set_deploy_dumb(bool p_enabled) {
+
+	deploy_dumb=p_enabled;
+}
+
+bool EditorRunNative::is_deploy_dumb_enabled() const{
+
+	return deploy_dumb;
+}
+
+
 EditorRunNative::EditorRunNative()
 {
 	set_process(true);
 	first=true;
+	deploy_dumb=false;
 }

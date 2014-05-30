@@ -54,6 +54,13 @@ void Texture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect
 	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,get_rid(),p_src_rect,p_modulate);
 }
 
+bool Texture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const {
+
+	r_rect=p_rect;
+	r_src_rect=p_src_rect;
+
+	return true;
+}
 
 void Texture::_bind_methods() {
 
@@ -640,6 +647,42 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
 	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
 
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate);
+}
+
+bool AtlasTexture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const {
+
+	Rect2 rc=region;
+
+	if (!atlas.is_valid())
+		return false;
+
+	Rect2 src=p_src_rect;
+	src.pos+=(rc.pos-margin.pos);
+	Rect2 src_c = rc.clip(src);
+	if (src_c.size==Size2())
+		return false;
+	Vector2 ofs = (src_c.pos-src.pos);
+
+	Vector2 scale = p_rect.size / p_src_rect.size;
+    if(scale.x < 0)
+    {
+	float mx = (margin.size.width - margin.pos.x);
+	mx -= margin.pos.x;
+	ofs.x = -(ofs.x + mx);
+    }
+    if(scale.y < 0)
+    {
+	float my = margin.size.height - margin.pos.y;
+	my -= margin.pos.y;
+	ofs.y = -(ofs.y + my);
+    }
+	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
+
+
+
+	r_rect=dr;
+	r_src_rect=src_c;
+	return true;
 }
 
 
