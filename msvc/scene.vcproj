@@ -526,6 +526,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\3d\immediate_geometry.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\immediate_geometry.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\3d\interpolated_camera.cpp"
 					>
 				</File>
@@ -699,6 +707,14 @@
 				</File>
 				<File
 					RelativePath="..\scene\3d\spatial_stream_player.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\sprite_3d.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\sprite_3d.h"
 					>
 				</File>
 				<File
