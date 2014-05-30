@@ -36,11 +36,18 @@ class Position2D : public Node2D {
 
 	OBJ_TYPE(Position2D,Node2D)
 
+	bool alway_show;
+
 	void _draw_cross();
 protected:
 
 	void _notification(int p_what);
+
+	static void _bind_methods();
 public:
+
+	bool is_always_show() const;
+	void set_always_show(bool p_show);
 
 	virtual Rect2 get_item_rect() const;
 	Position2D();

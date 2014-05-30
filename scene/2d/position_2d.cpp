@@ -52,7 +52,7 @@ void Position2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_scene())
 				break;
-			if (get_scene()->is_editor_hint())
+			if (get_scene()->is_editor_hint() || alway_show)
 				_draw_cross();
 
 		} break;
@@ -60,6 +60,25 @@ void Position2D::_notification(int p_what) {
 
 }
 
+bool Position2D::is_always_show() const {
+
+	return alway_show;
+}
+
+void Position2D::set_always_show(bool p_show) {
+
+	alway_show = p_show;
+}
+
+void Position2D::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_always_show","disable"),&Position2D::set_always_show);
+	ObjectTypeDB::bind_method(_MD("is_always_show"),&Position2D::is_always_show);
+
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "always_show"),_SCS("set_always_show"),_SCS("is_always_show") );
+}
+
 Position2D::Position2D()
 {
+	alway_show = false;
 }
