@@ -33,6 +33,10 @@ class RemoteTransform2D : public Node2D {
 	OBJ_TYPE(RemoteTransform2D,Node2D);
 
 	NodePath remote_node;
+	bool track_pos;
+	bool track_rot;
+	bool track_scale;
+	bool track_backwards;
 
 	ObjectID cache;
 
@@ -47,6 +51,18 @@ public:
 
 	void set_remote_node(const NodePath& p_remote_node);
 	NodePath get_remote_node() const;
+
+	void set_track_pos(bool track);
+	bool get_track_pos() const;
+
+	void set_track_rot(bool track);
+	bool get_track_rot() const;
+
+	void set_track_scale(bool track);
+	bool get_track_scale() const;
+
+	void set_track_method(bool track);
+	bool get_track_method() const;
 
 	RemoteTransform2D();
 };

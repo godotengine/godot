@@ -55,15 +55,25 @@ void RemoteTransform2D::_update_remote() {
 	if (!obj)
 		return;
 
-	Node2D *n = obj->cast_to<Node2D>();
-	if (!n)
+	Node2D *object = obj->cast_to<Node2D>();
+	Node2D *subject = this;
+
+	if (!object)
 		return;
 
-	if (!n->is_inside_scene())
+	if (!object->is_inside_scene())
 		return;
 
-					//todo make faster
-	n->set_global_transform(get_global_transform());
+	if (track_backwards) {
+		SWAP(object, subject);
+	}
+
+	if (track_pos && track_rot && track_scale) object->set_global_transform(subject->get_global_transform()); //todo make faster
+	else {
+		if (track_pos) object->set_pos(subject->get_pos());
+		if (track_rot) object->set_rot(subject->get_rot());
+		if (track_scale) object->set_scale(subject->get_scale());
+	}
 
 }
 
@@ -97,11 +107,35 @@ void RemoteTransform2D::set_remote_node(const NodePath& p_remote_node) {
 	remote_node=p_remote_node;
 	if (is_inside_scene())
 		_update_cache();
+		_update_remote();
 }
 
 NodePath RemoteTransform2D::get_remote_node() const{
-
 	return remote_node;
+}
+
+bool RemoteTransform2D::get_track_pos()	const { return track_pos; }
+void RemoteTransform2D::set_track_pos(bool track) {
+	track_pos = track; 
+	if (is_inside_scene()) _update_remote();
+}
+
+bool RemoteTransform2D::get_track_rot()	const { return track_rot; }
+void RemoteTransform2D::set_track_rot(bool track) {
+	track_rot = track;
+	if (is_inside_scene()) _update_remote();
+}
+
+bool RemoteTransform2D::get_track_scale() const { return track_scale; }
+void RemoteTransform2D::set_track_scale(bool track) {
+	track_scale = track;
+	if (is_inside_scene()) _update_remote();
+}
+
+bool RemoteTransform2D::get_track_method() const { return track_backwards; }
+void RemoteTransform2D::set_track_method(bool backward) {
+	track_backwards = backward;
+	if (is_inside_scene()) _update_remote();
 }
 
 
@@ -110,13 +144,31 @@ void RemoteTransform2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_remote_node","path"),&RemoteTransform2D::set_remote_node);
 	ObjectTypeDB::bind_method(_MD("get_remote_node"),&RemoteTransform2D::get_remote_node);
 
+	ObjectTypeDB::bind_method(_MD("set_track_pos", "track_pos"), &RemoteTransform2D::set_track_pos);
+	ObjectTypeDB::bind_method(_MD("get_track_pos"), &RemoteTransform2D::get_track_pos);
+
+	ObjectTypeDB::bind_method(_MD("set_track_rot", "track_rot"), &RemoteTransform2D::set_track_rot);
+	ObjectTypeDB::bind_method(_MD("get_track_rot"), &RemoteTransform2D::get_track_rot);
+
+	ObjectTypeDB::bind_method(_MD("set_track_scale", "track_scale"), &RemoteTransform2D::set_track_scale);
+	ObjectTypeDB::bind_method(_MD("get_track_scale"), &RemoteTransform2D::get_track_scale);
+
+	ObjectTypeDB::bind_method(_MD("set_track_method", "track_backwards"), &RemoteTransform2D::set_track_method);
+	ObjectTypeDB::bind_method(_MD("get_track_method"), &RemoteTransform2D::get_track_method);
+
 	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"remote_path"),_SCS("set_remote_node"),_SCS("get_remote_node"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"track_pos"),_SCS("set_track_pos"),_SCS("get_track_pos") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"track_rot"),_SCS("set_track_rot"),_SCS("get_track_rot") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"track_scale"),_SCS("set_track_scale"),_SCS("get_track_scale") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"track_backwards"),_SCS("set_track_method"),_SCS("get_track_method"));
 }
 
 RemoteTransform2D::RemoteTransform2D() {
 
 	cache=0;
-
+	track_pos=true;
+	track_rot=true;
+	track_scale=true;
 }
 
 
