@@ -942,7 +942,17 @@ void Control::_window_call_input(Control *p_control,const InputEvent& p_input) {
 			break;
 		if (p_control->data.stop_mouse && (p_input.type==InputEvent::MOUSE_BUTTON || p_input.type==InputEvent::MOUSE_MOTION))
 			break;
-		p_control=p_control->data.parent;
+		Node *walk=p_control;
+		for(;;)
+		{
+			if(walk==NULL)
+				break;
+			p_control=dynamic_cast<Control *>(walk->get_parent());
+			if(p_control)
+				break;
+			walk=walk->get_parent();
+		}
+		//p_control=p_control->data.parent;
 	}
 }
 
