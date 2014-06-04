@@ -100,17 +100,18 @@ class NewProjectDialog : public ConfirmationDialog {
 
 		if ( _test_path() ) {
 
-            String sp=p_path;
+			String sp=p_path;
 
-            sp=sp.replace("\\","/");
-            int lidx=sp.find_last("/");
-            if (lidx!=-1) {
-                sp=sp.substr(lidx+1,sp.length());
-            }
-            if (sp=="" && import_mode )
-                sp="Imported Project";
+			sp=sp.replace("\\","/");
+			int lidx=sp.find_last("/");
 
-            project_name->set_text(sp);
+			if (lidx!=-1) {
+				sp=sp.substr(lidx+1,sp.length());
+			}
+			if (sp=="" && import_mode )
+				sp="Imported Project";
+
+			project_name->set_text(sp);
 		}
 	}
 
