@@ -167,7 +167,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-D_DEBUG', '-g1', '-Wall', '-O0', '-DDEBUG_ENABLED'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 
-	if env["armv6"] == "no" and env['x86'] != 'yes':
+	if env["armv6"] == "no" and env['x86'] != 'yes' and env['PLATFORM'] != 'win32':
 		env['neon_enabled']=True
 	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
