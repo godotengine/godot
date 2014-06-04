@@ -13,9 +13,7 @@
 #include "core/reference.h"
 #include "core/globals.h"
 
-#include "snappy/snappy-c.h"
-
-#ifdef MODULE_DIGEST_ENABLED
+#include "snappy/csnappy.h"
 
 class Snappy : public Reference {
 
@@ -38,14 +36,17 @@ static Snappy *_snappy = NULL;
 ByteArray Snappy::compress(const ByteArray& p_input) {
 
 	ByteArray::Read r = p_input.read();
-	size_t max_compressed_length = snappy_max_compressed_length(p_input.size());
+	uint32_t max_compressed_length = csnappy_max_compressed_length(p_input.size());
 
 	ByteArray output;
 	output.resize(max_compressed_length);
 	ByteArray::Write w = output.write();
 
-	size_t compressed_length;
-	if(snappy_compress((const char *) r.ptr(), p_input.size(), (char *) w.ptr(), &compressed_length) == SNAPPY_OK) {
+	static char working_memory[CSNAPPY_WORKMEM_BYTES];
+
+	uint32_t compressed_length;
+	csnappy_compress((const char *) r.ptr(), p_input.size(), (char *) w.ptr(), &compressed_length, working_memory, CSNAPPY_WORKMEM_BYTES_POWER_OF_TWO);
+	if(compressed_length > 0) {
 
 		w = ByteArray::Write();
 		output.resize(compressed_length);
@@ -58,14 +59,14 @@ ByteArray Snappy::compress(const ByteArray& p_input) {
 ByteArray Snappy::uncompress(const ByteArray& p_input) {
 
 	ByteArray::Read r = p_input.read();
-	size_t uncompressed_length;
-	if(snappy_uncompressed_length((const char *) r.ptr(), p_input.size(), &uncompressed_length) == SNAPPY_OK) {
+	uint32_t uncompressed_length;
+	if(csnappy_get_uncompressed_length((const char *) r.ptr(), p_input.size(), &uncompressed_length) != CSNAPPY_E_HEADER_BAD) {
 		
 		ByteArray output;
 		output.resize(uncompressed_length);
 		ByteArray::Write w = output.write();
 
-		if(::snappy_uncompress((const char *) r.ptr(), p_input.size(), (char *) w.ptr(), &uncompressed_length) == SNAPPY_OK)
+		if(csnappy_decompress((const char *) r.ptr(), p_input.size(), (char *) w.ptr(), uncompressed_length) == CSNAPPY_E_OK)
 			return output;
 	}
 
@@ -89,5 +90,3 @@ void unregister_digest_types() {
 
 	memdelete( _snappy );
 }
-
-#endif
