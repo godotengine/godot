@@ -296,8 +296,8 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 size = get_size();
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin = scroll_h ? h_scroll->get_combined_minimum_size() : Size2(0, 0);
+	Size2 vmin = scroll_v ? v_scroll->get_combined_minimum_size() : Size2(0, 0);
 
 	Size2 min = child_max_size;
 
