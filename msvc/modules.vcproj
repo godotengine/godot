@@ -465,43 +465,27 @@
 					Name="snappy"
 					>
 					<File
-						RelativePath="..\modules\digest\snappy\snappy-c.cc"
+						RelativePath="..\modules\digest\snappy\csnappy.h"
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\snappy-c.h"
+						RelativePath="..\modules\digest\snappy\csnappy_compat.h"
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\snappy-internal.h"
+						RelativePath="..\modules\digest\snappy\csnappy_compress.c"
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\snappy-sinksource.cc"
+						RelativePath="..\modules\digest\snappy\csnappy_decompress.c"
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\snappy-sinksource.h"
+						RelativePath="..\modules\digest\snappy\csnappy_internal.h"
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\snappy-stubs-internal.cc"
-						>
-					</File>
-					<File
-						RelativePath="..\modules\digest\snappy\snappy-stubs-internal.h"
-						>
-					</File>
-					<File
-						RelativePath="..\modules\digest\snappy\snappy-stubs-public.h"
-						>
-					</File>
-					<File
-						RelativePath="..\modules\digest\snappy\snappy.cc"
-						>
-					</File>
-					<File
-						RelativePath="..\modules\digest\snappy\snappy.h"
+						RelativePath="..\modules\digest\snappy\csnappy_internal_userspace.h"
 						>
 					</File>
 				</Filter>
