@@ -608,6 +608,7 @@ public:
 		source->get_file_dialog()->set_mode(FileDialog::MODE_OPEN_FILE);
 		source->get_file_dialog()->add_filter("*.ttf;TrueType");
 		source->get_file_dialog()->add_filter("*.otf;OpenType");
+		source->get_file_dialog()->add_filter("*.fnt;BmFont");
 		source->get_line_edit()->connect("text_entered",this,"_src_changed");
 
 		vbl->add_margin_child(_TR("Source Font:"),source);
@@ -734,7 +735,25 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	Ref<ResourceImportMetadata> from = p_from;
 	ERR_FAIL_COND_V(from->get_source_count()!=1,Ref<Font>());
 
+	/* CREATE FONT */
+	Ref<Font> font;
+    if (p_existing!=String() && ResourceCache::has(p_existing)) {
+
+        font = Ref<Font>( ResourceCache::get(p_existing)->cast_to<Font>());
+    }
+
+    if (font.is_null()) {
+         font = Ref<Font>( memnew( Font ) );
+    }
+
 	String src_path = EditorImportPlugin::expand_source_path(from->get_source_path(0));
+	if (src_path.ends_with(".fnt")) {
+
+        font->clear();
+		if (font->create_from_fnt(src_path) == OK)
+			return font;
+	}
+
 	int size = from->get_option("font/size");
 
 	int char_space = from->get_option("extra_space/char");
@@ -769,17 +788,6 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
             options["meta/ascent"]=ascent;
             options["meta/max_up"]=max_up;
             options["meta/max_down"]=max_down;
-
-	        Ref<Font> font;
-
-	        if (p_existing!=String() && ResourceCache::has(p_existing)) {
-
-		        font = Ref<Font>( ResourceCache::get(p_existing)->cast_to<Font>());
-	        }
-
-	        if (font.is_null()) {
-		         font = Ref<Font>( memnew( Font ) );
-	        }
 
 	        font->clear();
             font->set_ttf_font(ttf_font);
@@ -1401,17 +1409,6 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 
 	/* CREATE FONT */
-	Ref<Font> font;
-
-	if (p_existing!=String() && ResourceCache::has(p_existing)) {
-
-		font = Ref<Font>( ResourceCache::get(p_existing)->cast_to<Font>());
-	}
-
-	if (font.is_null()) {
-		 font = Ref<Font>( memnew( Font ) );
-	}
-
 	font->clear();
 	font->set_height(height+bottom_space+top_space);
 	font->set_ascent(ascent+top_space);
