@@ -19,8 +19,36 @@ f = open("global_defaults.cpp","wb")
 f.write(gd_cpp)
 f.close()
 
+import os
+txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
+if ("SCRIPT_AES256_ENCRYPTION_KEY" in os.environ):
+	e=os.environ["SCRIPT_AES256_ENCRYPTION_KEY"]
+	txt = ""
+	ec_valid=True
+	if (len(e)!=64):
+		ec_valid=False
+	else:
+
+		for i in range(len(e)>>1):
+			if (i>0):
+				txt+=","
+			txts="0x"+e[i*2:i*2+2]
+			try:
+				int(txts,16)
+			except:
+				ec_valid=False
+			txt+=txts
+	if (not ec_valid):
+		txt = "0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0"
+		print("Invalid AES256 encryption key, not 64 bits hex: "+e)
+
+f = open("script_encryption_key.cpp", "wb")
+f.write("#include \"globals.h\"\nuint8_t script_encryption_key[32]={" + txt + "};\n")
+f.close()
+
 
 env.add_source_files(env.core_sources,"*.cpp")
+
 
 Export('env')
 

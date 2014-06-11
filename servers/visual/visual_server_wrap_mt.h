@@ -879,6 +879,17 @@ public:
 	FUNC1RC(float,portal_get_connect_range,RID);
 
 
+	FUNC0R(RID,baked_light_create);
+	FUNC2(baked_light_set_mode,RID,BakedLightMode);
+	FUNC1RC(BakedLightMode,baked_light_get_mode,RID);
+
+	FUNC2(baked_light_set_octree,RID,DVector<uint8_t>);
+	FUNC1RC(DVector<uint8_t>,baked_light_get_octree,RID);
+
+
+	FUNC3(baked_light_add_lightmap,RID,RID,int);
+	FUNC1(baked_light_clear_lightmaps,RID);
+
 
 	/* CAMERA API */
 
@@ -1014,6 +1025,14 @@ public:
 	FUNC1RC(float,instance_geometry_get_draw_range_max,RID);
 	FUNC1RC(float,instance_geometry_get_draw_range_min,RID);
 
+	FUNC2(instance_geometry_set_baked_light,RID, RID );
+	FUNC1RC(RID,instance_geometry_get_baked_light,RID);
+
+	FUNC2(instance_geometry_set_baked_light_texture_index,RID, int);
+	FUNC1RC(int,instance_geometry_get_baked_light_texture_index,RID);
+
+	FUNC2(instance_light_set_enabled,RID,bool);
+	FUNC1RC(bool,instance_light_is_enabled,RID);
 
 	/* CANVAS (2D) */
 
@@ -1076,6 +1095,7 @@ public:
 	/* BLACK BARS */
 
 	FUNC4(black_bars_set_margins,int , int , int , int );
+	FUNC4(black_bars_set_images,RID , RID , RID , RID );
 
 	/* FREE */
 

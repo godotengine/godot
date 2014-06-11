@@ -302,6 +302,11 @@ public:
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const=0;
 
+	/* BAKED LIGHT */
+
+
+
+
 	/* IMMEDIATE API */
 
 	virtual RID immediate_create()=0;
@@ -490,6 +495,20 @@ public:
 	
 	typedef Map<StringName,Variant> ParamOverrideMap;
 
+	struct BakedLightData {
+
+		VS::BakedLightMode mode;
+		RID octree_texture;
+		float color_multiplier; //used for both lightmaps and octree
+		Transform octree_transform;
+		Map<int,RID> lightmaps;
+		//cache
+
+		float octree_lattice_size;
+		float octree_lattice_divide;
+		int octree_steps;
+		Vector2 octree_tex_pixel_size;
+	};
 
 	struct InstanceData {
 
@@ -498,6 +517,8 @@ public:
 		RID material_override;
 		Vector<RID> light_instances;
 		Vector<float> morph_values;
+		BakedLightData *baked_light;
+		Transform *baked_light_octree_xform;
 		bool mirror :8;
 		bool depth_scale :8;
 		bool billboard :8;

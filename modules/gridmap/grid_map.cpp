@@ -31,7 +31,9 @@
 #include "scene/resources/surface_tool.h"
 #include "message_queue.h"
 #include "scene/3d/light.h"
+#include "scene/3d/baked_light_instance.h"
 #include "io/marshalls.h"
+#include "scene/scene_string_names.h"
 
 
 bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
@@ -53,6 +55,8 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 		set_center_z(p_value);
 	} else if (name=="cell/scale") {
 		set_cell_scale(p_value);
+	} else if (name=="lighting/bake") {
+		set_use_baked_light(p_value);
 	} else if (name=="theme/bake") {
 		set_bake(p_value);
 /*	} else if (name=="cells") {
@@ -120,6 +124,7 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 				g.baked=b;
 				g.bake_instance=VS::get_singleton()->instance_create();;
 				VS::get_singleton()->instance_set_base(g.bake_instance,g.baked->get_rid());
+				VS::get_singleton()->instance_geometry_set_baked_light(g.bake_instance,baked_light_instance?baked_light_instance->get_baked_light_instance():RID());
 			}
 		}
 
@@ -169,6 +174,8 @@ bool GridMap::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= get_center_z();
 	} else if (name=="cell/scale") {
 		r_ret= cell_scale;
+	} else if (name=="lighting/bake") {
+		r_ret=is_using_baked_light();
 	} else if (name=="theme/bake") {
 		r_ret= bake;
 	} else if (name=="data") {
@@ -231,6 +238,7 @@ void GridMap::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "theme/theme", PROPERTY_HINT_RESOURCE_TYPE, "MeshLibrary"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "theme/bake"));
+	p_list->push_back( PropertyInfo( Variant::BOOL, "lighting/bake"));
 	p_list->push_back( PropertyInfo( Variant::REAL, "cell/size",PROPERTY_HINT_RANGE,"0.01,16384,0.01") );
 	p_list->push_back( PropertyInfo( Variant::INT, "cell/octant_size",PROPERTY_HINT_RANGE,"1,1024,1") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "cell/center_x") );
@@ -428,6 +436,8 @@ void GridMap::set_cell_item(int p_x,int p_y,int p_z, int p_item,int p_rot){
 		ii.multimesh->set_mesh(ii.mesh);
 		ii.multimesh_instance = VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(ii.multimesh_instance,ii.multimesh->get_rid());
+		VS::get_singleton()->instance_geometry_set_baked_light(ii.multimesh_instance,baked_light_instance?baked_light_instance->get_baked_light_instance():RID());
+
 		if (!baked_lock) {
 
 			//unbake just in case
@@ -863,6 +873,12 @@ void GridMap::_notification(int p_what) {
 			awaiting_update=false;
 
 			last_transform=get_global_transform();
+
+			if (use_baked_light) {
+
+				_find_baked_light();
+			}
+
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
@@ -882,6 +898,17 @@ void GridMap::_notification(int p_what) {
 			for(Map<OctantKey,Octant*>::Element *E=octant_map.front();E;E=E->next()) {
 				_octant_exit_world(E->key());
 			}
+
+			if (use_baked_light) {
+
+				if (baked_light_instance) {
+					baked_light_instance->disconnect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
+					baked_light_instance=NULL;
+				}
+				_baked_light_changed();
+
+			}
+
 
 			//_queue_dirty_map(MAP_DIRTY_INSTANCES|MAP_DIRTY_TRANSFORMS);
 			//_update_dirty_map_callback();
@@ -1027,6 +1054,14 @@ void GridMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("erase_area","area"),&GridMap::erase_area);
 	ObjectTypeDB::bind_method(_MD("get_unused_area_id","area"),&GridMap::get_unused_area_id);
 	ObjectTypeDB::bind_method(_MD("bake_geometry"),&GridMap::bake_geometry);
+
+	ObjectTypeDB::bind_method(_MD("_baked_light_changed"),&GridMap::_baked_light_changed);
+	ObjectTypeDB::bind_method(_MD("set_use_baked_light","use"),&GridMap::set_use_baked_light);
+	ObjectTypeDB::bind_method(_MD("is_using_baked_light","use"),&GridMap::is_using_baked_light);
+
+	ObjectTypeDB::bind_method(_MD("_get_baked_light_meshes"),&GridMap::_get_baked_light_meshes);
+
+
 
 	ObjectTypeDB::set_method_flags("GridMap","bake_geometry",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
@@ -1496,6 +1531,108 @@ void GridMap::bake_geometry() {
 
 }
 
+void GridMap::_baked_light_changed() {
+
+//	if (!baked_light_instance)
+//		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),RID());
+//	else
+//		VS::get_singleton()->instance_geometry_set_baked_light(get_instance(),baked_light_instance->get_baked_light_instance());
+	for(Map<OctantKey,Octant*>::Element *E=octant_map.front();E;E=E->next()) {
+
+		for(Map<int,Octant::ItemInstances>::Element *F=E->get()->items.front();F;F=F->next()) {
+
+			VS::get_singleton()->instance_geometry_set_baked_light(F->get().multimesh_instance,baked_light_instance?baked_light_instance->get_baked_light_instance():RID());
+		}
+
+	}
+
+}
+
+void GridMap::_find_baked_light() {
+
+	Node *n=get_parent();
+	while(n) {
+
+		BakedLightInstance *bl=n->cast_to<BakedLightInstance>();
+		if (bl) {
+
+			baked_light_instance=bl;
+			baked_light_instance->connect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
+			_baked_light_changed();
+
+			return;
+		}
+
+		n=n->get_parent();
+	}
+
+	_baked_light_changed();
+}
+
+
+Array GridMap::_get_baked_light_meshes() {
+
+	if (theme.is_null())
+		return Array();
+
+	Vector3 ofs(cell_size*0.5*int(center_x),cell_size*0.5*int(center_y),cell_size*0.5*int(center_z));
+	Array meshes;
+
+	for (Map<IndexKey,Cell>::Element *E=cell_map.front();E;E=E->next()) {
+
+
+		int id = E->get().item;
+		if (!theme->has_item(id))
+			continue;
+		Ref<Mesh> mesh=theme->get_item_mesh(id);
+		if (mesh.is_null())
+			continue;
+
+		IndexKey ik=E->key();
+
+		Vector3 cellpos = Vector3(ik.x,ik.y,ik.z );
+
+		Transform xform;
+
+		xform.basis.set_orthogonal_index(E->get().rot);
+
+
+		xform.set_origin( cellpos*cell_size+ofs);
+		xform.basis.scale(Vector3(cell_scale,cell_scale,cell_scale));
+
+		meshes.push_back(xform);
+		meshes.push_back(mesh);
+
+	}
+
+	return meshes;
+}
+
+void GridMap::set_use_baked_light(bool p_use) {
+
+	if (use_baked_light==p_use)
+		return;
+
+	use_baked_light=p_use;
+
+	if (is_inside_world()) {
+		if (!p_use) {
+			if (baked_light_instance) {
+				baked_light_instance->disconnect(SceneStringNames::get_singleton()->baked_light_changed,this,SceneStringNames::get_singleton()->_baked_light_changed);
+				baked_light_instance=NULL;
+			}
+			_baked_light_changed();
+		} else {
+			_find_baked_light();
+		}
+	}
+
+}
+
+bool GridMap::is_using_baked_light() const{
+
+	return use_baked_light;
+}
 
 
 GridMap::GridMap() {
@@ -1516,7 +1653,8 @@ GridMap::GridMap() {
 	bake=false;
 	cell_scale=1.0;
 
-
+	baked_light_instance=NULL;
+	use_baked_light=false;
 
 
 }

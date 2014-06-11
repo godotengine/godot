@@ -193,7 +193,9 @@ Error ResourceInteractiveLoaderXML::close_tag(const String& p_name) {
 
 void ResourceInteractiveLoaderXML::unquote(String& p_str) {
 
-	p_str=p_str.strip_edges();
+	p_str=p_str.strip_edges().replace("\"","").xml_unescape();
+
+	/*p_str=p_str.strip_edges();
 	p_str=p_str.replace("\"","");
 	p_str=p_str.replace("&gt;","<");
 	p_str=p_str.replace("&lt;",">");
@@ -205,7 +207,7 @@ void ResourceInteractiveLoaderXML::unquote(String& p_str) {
 		p_str=p_str.replace("&#"+String::num(i)+";",chr);
 	}
 	p_str=p_str.replace("&amp;","&");
-
+*/
 	//p_str.parse_utf8( p_str.ascii(true).get_data() );
 
 }
@@ -652,11 +654,14 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		while( idx<len*2) {
 
 			CharType c=get_char();
+			if (c<=32)
+				continue;
 
 			if (idx&1) {
 
 				byte|=HEX2CHR(c);
 				bytesptr[idx>>1]=byte;
+				//printf("%x\n",int(byte));
 			} else {
 
 				byte=HEX2CHR(c)<<4;
