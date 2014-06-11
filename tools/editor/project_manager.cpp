@@ -98,22 +98,21 @@ class NewProjectDialog : public ConfirmationDialog {
 
 	void _path_text_changed(const String& p_path) {
 
-		_test_path();
-		if (import_mode) {
+		if ( _test_path() ) {
 
 			String sp=p_path;
 
 			sp=sp.replace("\\","/");
 			int lidx=sp.find_last("/");
+
 			if (lidx!=-1) {
 				sp=sp.substr(lidx+1,sp.length());
 			}
-			if (sp=="")
+			if (sp=="" && import_mode )
 				sp="Imported Project";
 
 			project_name->set_text(sp);
 		}
-
 	}
 
 	void _file_selected(const String& p_path) {
@@ -845,7 +844,7 @@ ProjectManager::ProjectManager() {
 	scroll->set_enable_h_scroll(false);
 
 	VBoxContainer *tree_vb = memnew( VBoxContainer);
-	tree_hb->add_child(tree_vb);	
+	tree_hb->add_child(tree_vb);
 	scroll_childs = memnew( VBoxContainer );
 	scroll_childs->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->add_child(scroll_childs);
