@@ -350,6 +350,7 @@ public:
 	Error make_dir_recursive(String p_dir);
 
 	bool file_exists(String p_file);
+	bool dir_exists(String p_dir);
 
 	int get_space_left();
 

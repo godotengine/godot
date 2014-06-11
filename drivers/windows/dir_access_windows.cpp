@@ -303,6 +303,39 @@ bool DirAccessWindows::file_exists(String p_file) {
 	return false;
 }
 
+bool DirAccessWindows::dir_exists(String p_dir) {
+
+	GLOBAL_LOCK_FUNCTION
+
+		if (!p_dir.is_abs_path())
+			p_dir=get_current_dir()+"/"+p_dir;
+	p_dir=fix_path(p_dir);
+
+	p_dir.replace("/","\\");
+
+	if (unicode) {
+
+		DWORD       fileAttr;
+
+		fileAttr = GetFileAttributesW(p_dir.c_str());
+		if (0xFFFFFFFF == fileAttr)
+			return false;
+
+		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
+
+	} else {
+		DWORD       fileAttr;
+
+		fileAttr = GetFileAttributesA(p_dir.ascii().get_data());
+		if (0xFFFFFFFF == fileAttr)
+			return false;
+		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
+
+	}
+
+	return false;
+}
+
 Error DirAccessWindows::rename(String p_path,String p_new_path) {
 
 	p_path=fix_path(p_path);
