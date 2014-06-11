@@ -29,6 +29,7 @@
 #include "editor_export_res.h"
 
 #include "core/io/resource_saver.h"
+#include "core/io/md5.h"
 
 #include "tools/editor/editor_node.h"
 #include "tools/editor/editor_settings.h"
@@ -74,9 +75,12 @@ Vector<uint8_t> EditorExportResources::custom_export(String& p_path,const Ref<Ed
 			Vector<uint8_t> data = FileAccess::get_file_as_array(cache_path);
 			if (!data.empty()) {
 
-				print_line("CACHED: " + p_path);
-				p_path = p_path.replace("xml", base_extension);
-				return data;
+				// check file checksum
+				if (FileAccess::get_md5(p_path) == md5) {
+					print_line("CACHED: " + p_path);
+					p_path = p_path.replace("xml", base_extension);
+					return data;
+				}
 			}
 		}
 
