@@ -532,9 +532,8 @@ void RigidBody2D::set_active(bool p_active) {
 
 	if (active != p_active)
 		emit_signal("active_state_changed", p_active);
-	Physics2DServer::get_singleton()->body_set_state(get_rid(),Physics2DServer::BODY_STATE_SLEEPING,!p_active);
 	active=p_active;
-
+	Physics2DServer::get_singleton()->body_set_state(get_rid(),Physics2DServer::BODY_STATE_SLEEPING,!active);
 }
 
 void RigidBody2D::set_can_sleep(bool p_active) {
