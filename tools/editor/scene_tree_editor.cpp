@@ -649,20 +649,28 @@ void SceneTreeEditor::_rename_node(ObjectID p_node,const String& p_name) {
 void SceneTreeEditor::_renamed() {
 
 	TreeItem *which=tree->get_edited();
-	
+
 	ERR_FAIL_COND(!which);
 	NodePath np = which->get_metadata(0);
 	Node *n=get_node(np);
 	ERR_FAIL_COND(!n);
 
+	String new_name=which->get_text(0);
+	if (new_name.find(".") != -1 || new_name.find("/") != -1) {
+
+		error->set_text("Invalid node name, the following characters are not allowed:\n  \".\", \"/\"");
+		error->popup_centered_minsize();
+		new_name=n->get_name();
+	}
+
 	if (!undo_redo) {
-		n->set_name( which->get_text(0) );
+		n->set_name( new_name );
 		which->set_metadata(0,n->get_path());
 		emit_signal("node_renamed");
 	} else {
 		undo_redo->create_action("Rename Node");
-		emit_signal("node_prerename",n,which->get_text(0));
-		undo_redo->add_do_method(this,"_rename_node",n->get_instance_ID(),which->get_text(0));
+		emit_signal("node_prerename",n,new_name);
+		undo_redo->add_do_method(this,"_rename_node",n->get_instance_ID(),new_name);
 		undo_redo->add_undo_method(this,"_rename_node",n->get_instance_ID(),n->get_name());
 		undo_redo->commit_action();
 	}
