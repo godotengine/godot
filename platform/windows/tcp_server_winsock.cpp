@@ -86,6 +86,9 @@ Error TCPServerWinsock::listen(uint16_t p_port,const List<String> *p_accepted_ho
 			closesocket(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
+	}
+	else {
+		return ERR_ALREADY_IN_USE;
 	};
 
 	if (listen_sockfd != INVALID_SOCKET) {
