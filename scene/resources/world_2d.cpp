@@ -368,7 +368,9 @@ World2D::World2D() {
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_RECYCLE_RADIUS,1.0);
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONTACT_MAX_SEPARATION,1.5);
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION,0.3);
-	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD,2);
+	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD,GLOBAL_DEF("physics_2d/sleep_threshold_linear",2));
+	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD,GLOBAL_DEF("physics_2d/sleep_threshold_angular",(8.0 / 180.0 * Math_PI)));
+	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP,GLOBAL_DEF("physics_2d/time_to_sleep",0.5));
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO,20);
 	Physics2DServer::get_singleton()->space_set_param(space,Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,0.2);
 
