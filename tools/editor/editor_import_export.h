@@ -69,6 +69,8 @@ protected:
 
 public:
 
+	virtual void initialize(){}
+	virtual void finalize(){}
 	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
 	EditorExportPlugin();
@@ -321,6 +323,7 @@ public:
 	void save_config();
 
 	EditorImportExport();
+	~EditorImportExport();
 };
 
 VARIANT_ENUM_CAST(EditorImportExport::ImageAction);

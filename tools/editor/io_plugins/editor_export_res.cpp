@@ -33,13 +33,61 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/editor_settings.h"
 
+void EditorExportResources::initialize() {
+
+	String json_path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.json";
+
+	Vector<uint8_t> data = FileAccess::get_file_as_array(json_path);
+	if (data.empty())
+		return;
+
+	cache_map.parse_json((const char *) data.ptr());
+}
+
+void EditorExportResources::finalize() {
+
+	String json_path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/tmpexport.json";
+
+	FileAccess *f=FileAccess::open(json_path,FileAccess::READ_WRITE);
+	if (f) {
+
+		String json = cache_map.to_json();
+		CharString utf8 = json.utf8();
+		f->store_buffer((const uint8_t *) utf8.ptr(), utf8.length());
+		memdelete(f);
+	}
+}
+
 Vector<uint8_t> EditorExportResources::custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
 
 	// save xml resouces to binary format
 	if (p_path.ends_with(".xml")) {
+
+		if (cache_map.has(p_path)) {
+
+			Dictionary info=cache_map[p_path];
+			String md5 = info["md5"];
+			String base_extension = info["base_extension"];
+
+			String cache_path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/"+md5+"."+base_extension;
+
+			Vector<uint8_t> data = FileAccess::get_file_as_array(cache_path);
+			if (!data.empty()) {
+
+				print_line("CACHED: " + p_path);
+				p_path = p_path.replace("xml", base_extension);
+				return data;
+			}
+		}
+
 		Ref<Resource> res = ResourceLoader::load(p_path, "", true);
 		if(res.is_null())
 			return Vector<uint8_t>();
+
+		// Use file checksum(md5) for cache exported binary file
+		String md5 = FileAccess::get_md5(p_path);
+		String new_path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/";
+		new_path += md5 + "." + res->get_base_extension();
 
 		int flg=0;
 		if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
@@ -47,20 +95,18 @@ Vector<uint8_t> EditorExportResources::custom_export(String& p_path,const Ref<Ed
 		if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
 			flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
 
-		String new_path = EditorSettings::get_singleton()->get_settings_path()+"/tmp/";
-		DirAccess *dir = DirAccess::open(new_path);
-		new_path += "tmp_export_res." + res->get_base_extension();
+		if(ResourceSaver::save(new_path, res, flg) != OK)
+			return Vector<uint8_t>();
 
-		if(ResourceSaver::save(new_path, res, flg) == OK) {
+		// Add cache information
+		Dictionary d;
+		d["md5"] = md5;
+		d["base_extension"] = res->get_base_extension();
+		cache_map[p_path] = d;
 
-			Vector<uint8_t> data = FileAccess::get_file_as_array(new_path);
-
-			dir->remove(new_path);
-			memdelete(dir);
-
-			p_path = p_path.replace("xml", res->get_base_extension());
-			return data;
-		}
+		Vector<uint8_t> data = FileAccess::get_file_as_array(new_path);
+		p_path = p_path.replace("xml", res->get_base_extension());
+		return data;
 	}
 	return Vector<uint8_t>();
 }
