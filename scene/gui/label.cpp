@@ -398,10 +398,13 @@ void Label::regenerate_word_cache() {
 			}
 			
 			if (current=='\n') {
-				
 				insert_newline=true;
 			} else {
 				total_char_cache++;
+			}
+
+			if (i<text.length() && text[i] == ' ') {
+				total_char_cache--;  // do not count spaces
 			}
 
 
@@ -442,7 +445,8 @@ void Label::regenerate_word_cache() {
 		last_width=line_width;
 		
 	}
-		
+	
+	total_char_cache -= line_count + 1; // do not count new lines (including the first one)
 	
 	if (!autowrap) {
 		
@@ -519,6 +523,7 @@ String Label::get_text() const {
 	
 	return text;
 }
+
 void Label::set_visible_characters(int p_amount) {
 
 	visible_chars=p_amount;
@@ -582,7 +587,7 @@ void Label::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
-	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
 
 }
 

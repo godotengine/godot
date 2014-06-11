@@ -93,6 +93,9 @@ Error TCPServerPosix::listen(uint16_t p_port,const List<String> *p_accepted_host
 			close(sockfd);
 			ERR_FAIL_V(FAILED);
 		};
+	}
+	else {
+		return ERR_ALREADY_IN_USE;
 	};
 
 	if (listen_sockfd != -1) {

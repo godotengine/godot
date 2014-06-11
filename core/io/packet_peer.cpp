@@ -112,6 +112,7 @@ void PacketPeer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_var"),&PacketPeer::_bnd_get_var);
 	ObjectTypeDB::bind_method(_MD("put_var", "var:Variant"),&PacketPeer::put_var);
+	ObjectTypeDB::bind_method(_MD("get_available_packet_count"),&PacketPeer::get_available_packet_count);
 };
 
 /***************/

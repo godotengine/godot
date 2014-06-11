@@ -179,6 +179,32 @@ bool DirAccessJAndroid::file_exists(String p_file){
 	return exists;
 }
 
+bool DirAccessJAndroid::dir_exists(String p_dir) {
+
+	JNIEnv *env = ThreadAndroid::get_env();
+
+	String sd;
+	if (current_dir=="")
+		sd=p_dir;
+	else
+		sd=current_dir+"/"+p_dir;
+
+	String path=fix_path(sd).simplify_path();
+	if (path.begins_with("/"))
+		path=path.substr(1,path.length());
+	else if (path.begins_with("res://"))
+		path=path.substr(6,path.length());
+
+	jstring js = env->NewStringUTF(path.utf8().get_data());
+	int res = env->CallIntMethod(io,_dir_open,js);
+	if (res<=0)
+		return false;
+
+	env->CallVoidMethod(io,_dir_close,res);
+	env->DeleteLocalRef(js);
+
+	return true;
+}
 
 Error DirAccessJAndroid::make_dir(String p_dir){
 
