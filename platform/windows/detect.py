@@ -143,10 +143,12 @@ def configure(env):
 		mingw_prefix=""
 
 		if (env["force_32_bits"]!="no"):
-		    env['OBJSUFFIX'] = ".32"+env['OBJSUFFIX']
-		    env['LIBSUFFIX'] = ".32"+env['LIBSUFFIX']
-		    env.Append(CCFLAGS=['-m32'])
-		    env.Append(LINKFLAGS=['-m32'])
+			env['OBJSUFFIX'] = ".32"+env['OBJSUFFIX']
+			env['LIBSUFFIX'] = ".32"+env['LIBSUFFIX']
+			env.Append(CCFLAGS=['-m32'])
+			env.Append(LINKFLAGS=['-m32'])
+			env.Append(LINKFLAGS=['-static-libgcc'])
+			env.Append(LINKFLAGS=['-static-libstdc++'])
 
 
 

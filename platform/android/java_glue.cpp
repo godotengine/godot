@@ -153,6 +153,14 @@ jvalue _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant* p_ar
 			v.l=arr;
 
 		} break;
+		case Variant::RAW_ARRAY: {
+			DVector<uint8_t> array = *p_arg;
+			jbyteArray arr = env->NewByteArray(array.size());
+			DVector<uint8_t>::Read r = array.read();
+			env->SetByteArrayRegion(arr,0,array.size(),reinterpret_cast<const signed char*>(r.ptr()));
+			v.l=arr;
+
+		} break;
 		case Variant::REAL_ARRAY: {
 
 			DVector<real_t> array = *p_arg;
@@ -249,6 +257,19 @@ Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 		DVector<int>::Write w = sarr.write();
 		env->GetIntArrayRegion(arr,0,fCount,w.ptr());
 		w = DVector<int>::Write();
+		return sarr;
+	};
+
+	if (name == "[B") {
+
+		jbyteArray arr = (jbyteArray)obj;
+		int fCount = env->GetArrayLength(arr);
+		DVector<uint8_t> sarr;
+		sarr.resize(fCount);
+
+		DVector<uint8_t>::Write w = sarr.write();
+		env->GetByteArrayRegion(arr,0,fCount,reinterpret_cast<signed char*>(w.ptr()));
+		w = DVector<uint8_t>::Write();
 		return sarr;
 	};
 
@@ -1360,6 +1381,7 @@ static Variant::Type get_jni_type(const String& p_type) {
 		{"double", Variant::REAL},
 		{"java.lang.String",Variant::STRING},
 		{"[I",Variant::INT_ARRAY},
+		{"[B",Variant::RAW_ARRAY},
 		{"[F",Variant::REAL_ARRAY},
 		{"[D",Variant::REAL_ARRAY},
 		{"[java.lang.String",Variant::STRING_ARRAY},
@@ -1396,6 +1418,7 @@ static const char* get_jni_sig(const String& p_type) {
 		{"java.lang.String","Ljava/lang/String;"},
 		{"com.android.godot.Dictionary", "Lcom/android/godot/Dictionary;"},
 		{"[I","[I"},
+		{"[B","[B"},
 		{"[F","[F"},
 		{"[java.lang.String","[Ljava/lang/String;"},
 		{NULL,"V"}

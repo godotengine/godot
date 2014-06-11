@@ -1354,6 +1354,10 @@ bool _Directory::file_exists(String p_file){
 	return d->file_exists(p_file);
 }
 
+bool _Directory::dir_exists(String p_dir) {
+	ERR_FAIL_COND_V(!d,false);
+	return d->dir_exists(p_dir);
+}
 
 int _Directory::get_space_left(){
 
@@ -1393,6 +1397,7 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
 	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
 	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);

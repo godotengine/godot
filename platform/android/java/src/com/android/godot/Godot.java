@@ -62,6 +62,7 @@ import android.widget.FrameLayout;
 import com.android.godot.input.*;
 import java.io.InputStream;
 
+import javax.microedition.khronos.opengles.GL10;
 
 public class Godot extends Activity implements SensorEventListener
 {	
@@ -116,11 +117,13 @@ public class Godot extends Activity implements SensorEventListener
 
 		}
 
-		protected void onMainResume() {
+		protected void onMainPause() {}
+		protected void onMainResume() {}
+		protected void onMainDestroy() {}
 
-
-		}
-
+		protected void onGLDrawFrame(GL10 gl) {}
+		protected void onGLSurfaceChanged(GL10 gl, int width, int height) {} // singletons will always miss first onGLSurfaceChanged call
+		//protected void onGLSurfaceCreated(GL10 gl, EGLConfig config) {} // singletons won't be ready until first GodotLib.step()
 
 		public void registerMethods() {}
 	}
@@ -141,6 +144,7 @@ public class Godot extends Activity implements SensorEventListener
 	private Sensor mAccelerometer;
 
 	public FrameLayout layout;
+	public RelativeLayout adLayout;
 
 
 	static public GodotIO io;
@@ -152,7 +156,6 @@ public class Godot extends Activity implements SensorEventListener
 
 	static SingletonBase singletons[] = new SingletonBase[MAX_SINGLETONS];
 	static int singleton_count=0;
-
 
 
 	public interface ResultCallback {
@@ -197,6 +200,12 @@ public class Godot extends Activity implements SensorEventListener
 		
         edittext.setView(mView);
         io.setEdit(edittext);
+		
+		// Ad layout
+		adLayout = new RelativeLayout(this);
+		adLayout.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
+		layout.addView(adLayout);
+		
 	}
 
 	private static Godot _self;
@@ -206,46 +215,46 @@ public class Godot extends Activity implements SensorEventListener
 	}
 	
 
-        private String[] getCommandLine() {
+	private String[] getCommandLine() {
 
-            InputStream is;
-            try {
-                is = getAssets().open("/_cl_");
-                byte[] len = new byte[4];
-                int r = is.read(len);
-                if (r<4) {
-                    System.out.printf("**ERROR** Wrong cmdline length.\n");
-                    return new String[0];
-                }
-                int argc=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
-                String[] cmdline = new String[argc];
-                for(int i=0;i<argc;i++) {
-                    r = is.read(len);
-                    if (r<4) {
-                        System.out.printf("**ERROR** Wrong cmdline param lenght.\n");
-                        return new String[0];
-                    }
-                    int strlen=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
-                    if (strlen>65535) {
-                        System.out.printf("**ERROR** Wrong command len\n");
-                        return new String[0];
-                    }
-                    byte[] arg = new byte[strlen];
-                    r = is.read(arg);
-                    if (r!=strlen) {
-                        cmdline[i]=new String(arg,"UTF-8");
-                    }
+		InputStream is;
+		try {
+			is = getAssets().open("/_cl_");
+			byte[] len = new byte[4];
+			int r = is.read(len);
+			if (r<4) {
+				System.out.printf("**ERROR** Wrong cmdline length.\n");
+				return new String[0];
+			}
+			int argc=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
+			String[] cmdline = new String[argc];
+			for(int i=0;i<argc;i++) {
+				r = is.read(len);
+				if (r<4) {
+					System.out.printf("**ERROR** Wrong cmdline param lenght.\n");
+					return new String[0];
+				}
+				int strlen=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
+				if (strlen>65535) {
+					System.out.printf("**ERROR** Wrong command len\n");
+					return new String[0];
+				}
+				byte[] arg = new byte[strlen];
+				r = is.read(arg);
+				if (r!=strlen) {
+					cmdline[i]=new String(arg,"UTF-8");
+				}
 
-                }
+			}
 
-                return cmdline;
-            } catch (Exception e) {
+			return cmdline;
+		} catch (Exception e) {
 
-                return new String[0];
-            }
+			return new String[0];
+		}
 
 
-        }
+	}
 
 	@Override protected void onCreate(Bundle icicle) {
 
@@ -282,6 +291,9 @@ public class Godot extends Activity implements SensorEventListener
 	@Override protected void onDestroy(){
 		
 		//if(mPaymentsManager != null ) mPaymentsManager.destroy();
+		for(int i=0;i<singleton_count;i++) {
+			singletons[i].onMainDestroy();
+		}
 		super.onDestroy();
 	}
 	
@@ -291,6 +303,9 @@ public class Godot extends Activity implements SensorEventListener
 		mSensorManager.unregisterListener(this);
 		GodotLib.focusout();
 
+		for(int i=0;i<singleton_count;i++) {
+			singletons[i].onMainPause();
+		}
 	}
 
 	@Override protected void onResume() {
@@ -396,31 +411,31 @@ public class Godot extends Activity implements SensorEventListener
 		return true;
 	}
 
-    @Override public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
-        String s = event.getCharacters();
-        if (s == null || s.length() == 0)
-        	return super.onKeyMultiple(inKeyCode, repeatCount, event);
-        
-        final char[] cc = s.toCharArray();
-        int cnt = 0;
-        for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0);
-        if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
-        final Activity me = this;
-        queueEvent(new Runnable() {
-            // This method will be called on the rendering thread:
-            public void run() {
-                for (int i = 0, n = cc.length; i < n; i++) {
-                    int keyCode;
-                    if ((keyCode = cc[i]) != 0) {
-                        // Simulate key down and up...
-                		GodotLib.key(0, keyCode, true);
-                		GodotLib.key(0, keyCode, false);
-                    }
-                }
-            }
-        });
-        return true;
-    }	
+	@Override public boolean onKeyMultiple(final int inKeyCode, int repeatCount, KeyEvent event) {
+		String s = event.getCharacters();
+		if (s == null || s.length() == 0)
+			return super.onKeyMultiple(inKeyCode, repeatCount, event);
+
+		final char[] cc = s.toCharArray();
+		int cnt = 0;
+		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0);
+		if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
+		final Activity me = this;
+		queueEvent(new Runnable() {
+			// This method will be called on the rendering thread:
+			public void run() {
+				for (int i = 0, n = cc.length; i < n; i++) {
+					int keyCode;
+					if ((keyCode = cc[i]) != 0) {
+						// Simulate key down and up...
+						GodotLib.key(0, keyCode, true);
+						GodotLib.key(0, keyCode, false);
+					}
+				}
+			}
+		});
+		return true;
+	}
 
 	private void queueEvent(Runnable runnable) {
 		// TODO Auto-generated method stub
