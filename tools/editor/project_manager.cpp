@@ -98,22 +98,21 @@ class NewProjectDialog : public ConfirmationDialog {
 
 	void _path_text_changed(const String& p_path) {
 
-		_test_path();
-		if (import_mode) {
+		if ( _test_path() ) {
 
 			String sp=p_path;
 
 			sp=sp.replace("\\","/");
 			int lidx=sp.find_last("/");
+
 			if (lidx!=-1) {
 				sp=sp.substr(lidx+1,sp.length());
 			}
-			if (sp=="")
+			if (sp=="" && import_mode )
 				sp="Imported Project";
 
 			project_name->set_text(sp);
 		}
-
 	}
 
 	void _file_selected(const String& p_path) {
@@ -338,12 +337,15 @@ struct ProjectItem {
 	String path;
 	String conf;
 	uint64_t last_modified;
+	bool favorite;
 	ProjectItem() {}
-	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified) {
-		project = p_project; path = p_path; conf = p_conf; last_modified = p_last_modified;
+	ProjectItem(const String &p_project, const String &p_path, const String &p_conf, uint64_t p_last_modified, bool p_favorite=false) {
+		project = p_project; path = p_path; conf = p_conf; last_modified = p_last_modified; favorite=p_favorite;
 	}
 	_FORCE_INLINE_ bool operator <(const ProjectItem& l) const { return last_modified > l.last_modified; }
+	_FORCE_INLINE_ bool operator ==(const ProjectItem& l) const { return project==l.project; }
 };
+
 
 void ProjectManager::_panel_draw(Node *p_hb) {
 
@@ -351,8 +353,7 @@ void ProjectManager::_panel_draw(Node *p_hb) {
 
 	hb->draw_line(Point2(0,hb->get_size().y+1),Point2(hb->get_size().x-10,hb->get_size().y+1),get_color("guide_color","Tree"));
 
-	if (hb->get_meta("name")==selected) {
-
+	if (selected_list.has(hb->get_meta("name"))) {
 		hb->draw_style_box(get_stylebox("selected","Tree"),Rect2(Point2(),hb->get_size()-Size2(10,0)));
 	}
 }
@@ -361,19 +362,89 @@ void ProjectManager::_panel_input(const InputEvent& p_ev,Node *p_hb) {
 
 	if (p_ev.type==InputEvent::MOUSE_BUTTON && p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
-		selected = p_hb->get_meta("name");
-		selected_main = p_hb->get_meta("main_scene");
-		for(int i=0;i<scroll_childs->get_child_count();i++) {
-			scroll_childs->get_child(i)->cast_to<CanvasItem>()->update();
+		String clicked = p_hb->get_meta("name");
+		String clicked_main_scene = p_hb->get_meta("main_scene");
+
+		if (p_ev.key.mod.shift && selected_list.size()>0 && last_clicked!="" && clicked != last_clicked) {
+
+			int clicked_id = -1;
+			int last_clicked_id = -1;
+			for(int i=0;i<scroll_childs->get_child_count();i++) {
+				HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+				if (!hb) continue;
+				if (hb->get_meta("name") == clicked) clicked_id = i;
+				if (hb->get_meta("name") == last_clicked) last_clicked_id = i;
+			}
+
+			if (last_clicked_id!=-1 && clicked_id!=-1) {
+				int min = clicked_id < last_clicked_id? clicked_id : last_clicked_id;
+				int max = clicked_id > last_clicked_id? clicked_id : last_clicked_id;
+				for(int i=0; i<scroll_childs->get_child_count(); ++i) {
+					HBoxContainer *hb = scroll_childs->get_child(i)->cast_to<HBoxContainer>();
+					if (!hb) continue;
+					if (i!=clicked_id && (i<min || i>max) && !p_ev.key.mod.control) {
+						selected_list.erase(hb->get_meta("name"));
+					} else if (i>=min && i<=max) {
+						selected_list.insert(hb->get_meta("name"), hb->get_meta("main_scene"));
+					}
+				}
+			}
+
+		} else if (selected_list.has(clicked) && p_ev.key.mod.control) {
+
+			selected_list.erase(clicked);
+
+		} else {
+
+			last_clicked = clicked;
+			if (p_ev.key.mod.control || selected_list.size()==0) {
+				selected_list.insert(clicked, clicked_main_scene);
+			} else {
+				selected_list.clear();
+				selected_list.insert(clicked, clicked_main_scene);
+			}
 		}
-		erase_btn->set_disabled(false);
-		open_btn->set_disabled(false);
-		run_btn->set_disabled(selected_main=="");
+
+		String single_selected = "";
+		if (selected_list.size() == 1) {
+			single_selected = selected_list.front()->key();
+		}
+
+		single_selected_main = "";
+		for(int i=0;i<scroll_childs->get_child_count();i++) {
+			CanvasItem *item = scroll_childs->get_child(i)->cast_to<CanvasItem>();
+			item->update();
+
+			if (single_selected!="" && single_selected == item->get_meta("name"))
+				single_selected_main = item->get_meta("main_scene");
+		}
+
+		erase_btn->set_disabled(selected_list.size()<1);
+		open_btn->set_disabled(selected_list.size()<1);
+		run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
 
 		if (p_ev.mouse_button.doubleclick)
 			_open_project(); //open if doubleclicked
+
 	}
 }
+
+void ProjectManager::_favorite_pressed(Node *p_hb) {
+
+	String clicked = p_hb->get_meta("name");
+	bool favorite = !p_hb->get_meta("favorite");
+	String proj=clicked.replace(":::",":/");
+	proj=proj.replace("::","/");
+
+	if (favorite) {
+		EditorSettings::get_singleton()->set("favorite_projects/"+clicked,proj);
+	} else {
+		EditorSettings::get_singleton()->erase("favorite_projects/"+clicked);
+	}
+	EditorSettings::get_singleton()->save();
+	_load_recent_projects();
+}
+
 
 void ProjectManager::_load_recent_projects() {
 
@@ -387,12 +458,14 @@ void ProjectManager::_load_recent_projects() {
 	Color font_color = get_color("font_color","Tree");
 
 	List<ProjectItem> projects;
+	List<ProjectItem> favorite_projects;
 
 	for(List<PropertyInfo>::Element *E=properties.front();E;E=E->next()) {
 
 		String _name = E->get().name;
-		if (!_name.begins_with("projects/"))
+		if (!_name.begins_with("projects/") && !_name.begins_with("favorite_projects/"))
 			continue;
+		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
 
 		String project = _name.get_slice("/",1);
 		String path = EditorSettings::get_singleton()->get(_name);
@@ -408,11 +481,27 @@ void ProjectManager::_load_recent_projects() {
 				last_modified = cache_modified;
 		}
 
-		ProjectItem item(project, path, conf, last_modified);
-		projects.push_back(item);
+		ProjectItem item(project, path, conf, last_modified, favorite);
+		if (favorite)
+			favorite_projects.push_back(item);
+		else
+			projects.push_back(item);
 	}
 
 	projects.sort();
+	favorite_projects.sort();
+
+	for(List<ProjectItem>::Element *E=projects.front();E;) {
+		List<ProjectItem>::Element *next = E->next();
+		if (favorite_projects.find(E->get()) != NULL)
+			projects.erase(E->get());
+		E=next;
+	}
+	for(List<ProjectItem>::Element *E=favorite_projects.back();E;E=E->prev()) {
+		projects.push_front(E->get());
+	}
+
+	Ref<Texture> favorite_icon = get_icon("Favorites","EditorIcons");
 
 	for(List<ProjectItem>::Element *E=projects.front();E;E=E->next()) {
 
@@ -420,6 +509,7 @@ void ProjectManager::_load_recent_projects() {
 		String project = item.project;
 		String path = item.path;
 		String conf = item.conf;
+		bool is_favorite = item.favorite;
 
 		Ref<ConfigFile> cf = memnew( ConfigFile );
 		Error err = cf->load(conf);
@@ -427,7 +517,6 @@ void ProjectManager::_load_recent_projects() {
 
 		Ref<Texture> icon;
 		String project_name="Unnamed Project";
-
 
 		if (cf->has_section_key("application","icon")) {
 			String appicon = cf->get_value("application","icon");
@@ -457,15 +546,27 @@ void ProjectManager::_load_recent_projects() {
 			main_scene = cf->get_value("application","main_scene");
 		}
 
-
 		HBoxContainer *hb = memnew( HBoxContainer );
 		hb->set_meta("name",project);
 		hb->set_meta("main_scene",main_scene);
+		hb->set_meta("favorite",is_favorite);
 		hb->connect("draw",this,"_panel_draw",varray(hb));
 		hb->connect("input_event",this,"_panel_input",varray(hb));
+
+		VBoxContainer *favorite_box = memnew( VBoxContainer );
+		TextureButton *favorite = memnew( TextureButton );
+		favorite->set_normal_texture(favorite_icon);
+		if (!is_favorite)
+			favorite->set_opacity(0.2);
+		favorite->set_v_size_flags(SIZE_EXPAND);
+		favorite->connect("pressed",this,"_favorite_pressed",varray(hb));
+		favorite_box->add_child(favorite);
+		hb->add_child(favorite_box);
+
 		TextureFrame *tf = memnew( TextureFrame );
 		tf->set_texture(icon);
 		hb->add_child(tf);
+
 		VBoxContainer *vb = memnew(VBoxContainer);
 		hb->add_child(vb);
 		EmptyControl *ec = memnew( EmptyControl );
@@ -483,68 +584,92 @@ void ProjectManager::_load_recent_projects() {
 		scroll_childs->add_child(hb);
 	}
 
-	erase_btn->set_disabled(selected=="");
-	open_btn->set_disabled(selected=="");
-	if (selected=="")
-		run_btn->set_disabled(true);
+	erase_btn->set_disabled(selected_list.size()<1);
+	open_btn->set_disabled(selected_list.size()<1);
+	run_btn->set_disabled(selected_list.size()<1 || (selected_list.size()==1 && single_selected_main==""));
+}
+
+void ProjectManager::_open_project_confirm() {
+
+	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/"+selected);
+		print_line("OPENING: "+path+" ("+selected+")");
+
+		List<String> args;
+
+		args.push_back("-path");
+		args.push_back(path);
+
+		args.push_back("-editor");
+
+		const String &selected_main = E->get();
+		if (selected_main!="") {
+			args.push_back(selected_main);
+		}
+
+		String exec = OS::get_singleton()->get_executable_path();
+
+		OS::ProcessID pid=0;
+		Error err = OS::get_singleton()->execute(exec,args,false,&pid);
+		ERR_FAIL_COND(err);
+	}
+
+	get_scene()->quit();
 }
 
 void ProjectManager::_open_project() {
 
-
-	if (selected=="") {
+	if (selected_list.size()<1) {
 		return;
 	}
 
-	String path = EditorSettings::get_singleton()->get("projects/"+selected);
-	print_line("OPENING: "+path+" ("+selected+")");
-
-	List<String> args;
-
-
-	args.push_back("-path");
-	args.push_back(path);
-
-	args.push_back("-editor");
-
-	if (selected_main!="") {
-		args.push_back(selected_main);
+	if (selected_list.size()>1) {
+		multi_open_ask->set_text("Are you sure to open more than one projects?");
+		multi_open_ask->popup_centered(Size2(300,100));
+	} else {
+		_open_project_confirm();
 	}
+}
 
-	String exec = OS::get_singleton()->get_executable_path();
+void ProjectManager::_run_project_confirm() {
 
-	OS::ProcessID pid=0;
-	Error err = OS::get_singleton()->execute(exec,args,false,&pid);
-	ERR_FAIL_COND(err);
+	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
 
-	get_scene()->quit();
+		const String &selected_main = E->get();
+		if (selected_main == "") continue;
 
+		const String &selected = E->key();
+		String path = EditorSettings::get_singleton()->get("projects/"+selected);
+		print_line("OPENING: "+path+" ("+selected+")");
+
+		List<String> args;
+
+		args.push_back("-path");
+		args.push_back(path);
+
+		String exec = OS::get_singleton()->get_executable_path();
+
+		OS::ProcessID pid=0;
+		Error err = OS::get_singleton()->execute(exec,args,false,&pid);
+		ERR_FAIL_COND(err);
+	}
+	//	get_scene()->quit(); do not quit
 }
 
 void ProjectManager::_run_project() {
 
 
-	if (selected=="") {
+	if (selected_list.size()<1) {
 		return;
 	}
 
-	String path = EditorSettings::get_singleton()->get("projects/"+selected);
-	print_line("OPENING: "+path+" ("+selected+")");
-
-	List<String> args;
-
-
-	args.push_back("-path");
-	args.push_back(path);
-
-	String exec = OS::get_singleton()->get_executable_path();
-
-	OS::ProcessID pid=0;
-	Error err = OS::get_singleton()->execute(exec,args,false,&pid);
-	ERR_FAIL_COND(err);
-
-//	get_scene()->quit(); do not quit
-
+	if (selected_list.size()>1) {
+		multi_run_ask->set_text("Are you sure to run more than one projects?");
+		multi_run_ask->popup_centered(Size2(300,100));
+	} else {
+		_run_project_confirm();
+	}
 }
 
 void ProjectManager::_scan_dir(DirAccess *da,float pos, float total,List<String> *r_projects) {
@@ -619,21 +744,24 @@ void ProjectManager::_import_project()  {
 
 void ProjectManager::_erase_project_confirm()  {
 
-	if (selected=="") {
+	if (selected_list.size()==0) {
 		return;
 	}
-
-	EditorSettings::get_singleton()->erase("projects/"+selected);
+	for (Map<String,String>::Element *E=selected_list.front(); E; E=E->next()) {
+		EditorSettings::get_singleton()->erase("projects/"+E->key());
+		EditorSettings::get_singleton()->erase("favorite_projects/"+E->key());
+	}
 	EditorSettings::get_singleton()->save();
-	selected="";
-	selected_main="";
+	selected_list.clear();
+	last_clicked = "";
+	single_selected_main="";
 	_load_recent_projects();
 
 }
 
 void ProjectManager::_erase_project()  {
 
-	if (selected=="")
+	if (selected_list.size()==0)
 		return;
 
 
@@ -651,7 +779,9 @@ void ProjectManager::_exit_dialog()  {
 void ProjectManager::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_open_project",&ProjectManager::_open_project);
+	ObjectTypeDB::bind_method("_open_project_confirm",&ProjectManager::_open_project_confirm);
 	ObjectTypeDB::bind_method("_run_project",&ProjectManager::_run_project);
+	ObjectTypeDB::bind_method("_run_project_confirm",&ProjectManager::_run_project_confirm);
 	ObjectTypeDB::bind_method("_scan_projects",&ProjectManager::_scan_projects);
 	ObjectTypeDB::bind_method("_scan_begin",&ProjectManager::_scan_begin);
 	ObjectTypeDB::bind_method("_import_project",&ProjectManager::_import_project);
@@ -662,6 +792,8 @@ void ProjectManager::_bind_methods() {
 	ObjectTypeDB::bind_method("_load_recent_projects",&ProjectManager::_load_recent_projects);
 	ObjectTypeDB::bind_method("_panel_draw",&ProjectManager::_panel_draw);
 	ObjectTypeDB::bind_method("_panel_input",&ProjectManager::_panel_input);
+	ObjectTypeDB::bind_method("_favorite_pressed",&ProjectManager::_favorite_pressed);
+
 
 }
 
@@ -712,7 +844,7 @@ ProjectManager::ProjectManager() {
 	scroll->set_enable_h_scroll(false);
 
 	VBoxContainer *tree_vb = memnew( VBoxContainer);
-	tree_hb->add_child(tree_vb);	
+	tree_hb->add_child(tree_vb);
 	scroll_childs = memnew( VBoxContainer );
 	scroll_childs->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->add_child(scroll_childs);
@@ -792,6 +924,18 @@ ProjectManager::ProjectManager() {
 
 	add_child(erase_ask);
 
+	multi_open_ask = memnew( ConfirmationDialog );
+	multi_open_ask->get_ok()->set_text("Edit");
+	multi_open_ask->get_ok()->connect("pressed", this, "_open_project_confirm");
+
+	add_child(multi_open_ask);
+
+	multi_run_ask = memnew( ConfirmationDialog );
+	multi_run_ask->get_ok()->set_text("Run");
+	multi_run_ask->get_ok()->connect("pressed", this, "_run_project_confirm");
+
+	add_child(multi_run_ask);
+
 	OS::get_singleton()->set_low_processor_usage_mode(true);
 
 	npdialog = memnew( NewProjectDialog );
@@ -806,6 +950,7 @@ ProjectManager::ProjectManager() {
 	//get_ok()->set_text("Open");
 	//get_ok()->set_text("Exit");
 
+	last_clicked = "";
 }
 
 

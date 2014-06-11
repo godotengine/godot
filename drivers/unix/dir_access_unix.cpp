@@ -81,6 +81,26 @@ bool DirAccessUnix::file_exists(String p_file) {
 
 }
 
+bool DirAccessUnix::dir_exists(String p_dir) {
+
+	GLOBAL_LOCK_FUNCTION
+
+
+	if (p_dir.is_rel_path())
+		p_dir=current_dir+"/"+p_dir;
+	else
+		p_dir=fix_path(p_dir);
+
+	struct stat flags;
+	bool success = 	(stat(p_dir.utf8().get_data(),&flags)==0);
+
+	if (success && S_ISDIR(flags.st_mode))
+		return true;
+
+	return false;
+
+}
+
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
 
 	if (p_file.is_rel_path())

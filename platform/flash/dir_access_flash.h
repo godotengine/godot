@@ -45,6 +45,7 @@ public:
 	Error make_dir(String p_dir);
 
 	bool file_exists(String p_file);
+	bool dir_exists(String p_dir);
 
 	size_t get_space_left();
 

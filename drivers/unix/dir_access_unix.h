@@ -66,7 +66,9 @@ public:
 	virtual String get_current_dir(); ///< return current dir location
 	virtual Error make_dir(String p_dir);
 	
-	virtual bool file_exists(String p_file);	
+	virtual bool file_exists(String p_file);
+	virtual bool dir_exists(String p_dir);
+
 	virtual uint64_t get_modified_time(String p_file);
 
 

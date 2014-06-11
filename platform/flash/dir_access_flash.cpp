@@ -156,6 +156,26 @@ bool DirAccessFlash::file_exists(String p_file) {
 	return success;
 };
 
+bool DirAccessFlash::dir_exists(String p_dir) {
+
+	GLOBAL_LOCK_FUNCTION
+
+
+	if (p_dir.is_rel_path())
+		p_dir=current_dir+"/"+p_dir;
+	else
+		p_dir=fix_path(p_dir);
+
+	struct stat flags;
+	bool success = 	(stat(p_dir.utf8().get_data(),&flags)==0);
+
+	if (success && S_ISDIR(flags.st_mode)) {
+		return true;
+	}
+
+	return false;
+};
+
 size_t DirAccessFlash::get_space_left() {
 
 	return 0;
