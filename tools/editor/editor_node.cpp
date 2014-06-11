@@ -4195,6 +4195,7 @@ EditorNode::~EditorNode() {
 
 	memdelete(editor_selection);
 	memdelete(file_server);
+	memdelete(editor_import_export);
 	EditorSettings::destroy();
 	if (EditorTranslationServer::get_singleton())
 		EditorTranslationServer::destroy();

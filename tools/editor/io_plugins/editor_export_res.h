@@ -35,8 +35,14 @@ class EditorExportResources : public EditorExportPlugin {
 
 	OBJ_TYPE(EditorExportResources,EditorExportPlugin);
 
+
+	Dictionary cache_map;
+
+
 public:
 
+	virtual void initialize();
+	virtual void finalize();
 	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform);
 
 	EditorExportResources(){}

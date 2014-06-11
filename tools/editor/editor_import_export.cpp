@@ -1160,6 +1160,7 @@ Ref<EditorImportPlugin> EditorImportExport::get_import_plugin_by_name(const Stri
 void EditorImportExport::add_export_plugin(const Ref<EditorExportPlugin>& p_plugin) {
 
 	export_plugins.push_back(p_plugin);
+	export_plugins[export_plugins.size() - 1]->initialize();
 }
 
 int EditorImportExport::get_export_plugin_count() const{
@@ -1662,4 +1663,11 @@ EditorImportExport::EditorImportExport() {
 	image_shrink=1;
 }
 
+EditorImportExport::~EditorImportExport() {
 
+	for (int idx = 0; idx < export_plugins.size(); idx++) {
+
+		Ref<EditorExportPlugin> p_plugin = export_plugins[idx];
+		p_plugin->finalize();
+	}
+}
