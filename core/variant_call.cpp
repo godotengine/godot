@@ -567,6 +567,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R( Matrix32, affine_inverse );
 	VCALL_PTR0R( Matrix32, get_rotation );
 	VCALL_PTR0R( Matrix32, get_origin );
+	VCALL_PTR0R( Matrix32, get_scale );
 	VCALL_PTR0R( Matrix32, orthonormalized );
 	VCALL_PTR1R( Matrix32, rotated );
 	VCALL_PTR1R( Matrix32, scaled );
@@ -1377,6 +1378,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,affine_inverse,varray());
 	ADDFUNC0(MATRIX32,REAL,Matrix32,get_rotation,varray());
 	ADDFUNC0(MATRIX32,VECTOR2,Matrix32,get_origin,varray());
+	ADDFUNC0(MATRIX32,VECTOR2,Matrix32,get_scale,varray());
 	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,orthonormalized,varray());
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,rotated,REAL,"phi",varray());
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,scaled,VECTOR2,"scale",varray());
