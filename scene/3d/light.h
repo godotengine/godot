@@ -64,6 +64,14 @@ public:
 		COLOR_SPECULAR=VisualServer::LIGHT_COLOR_SPECULAR
 	};
 
+	enum BakeMode {
+
+		BAKE_MODE_DISABLED,
+		BAKE_MODE_INDIRECT,
+		BAKE_MODE_FULL
+
+	};
+
 
 	enum Operator {
 
@@ -78,8 +86,10 @@ private:
 	Color colors[3];
 	
 	
+	BakeMode bake_mode;
 	VisualServer::LightType type;
 	bool shadows;
+	bool enabled;
 	Operator op;
 	
 // bind helpers
@@ -114,6 +124,12 @@ public:
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
+	void set_bake_mode(BakeMode p_bake_mode);
+	BakeMode get_bake_mode() const;
+
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
+
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
@@ -127,6 +143,7 @@ public:
 VARIANT_ENUM_CAST( Light::Parameter );
 VARIANT_ENUM_CAST( Light::LightColor );
 VARIANT_ENUM_CAST( Light::Operator );
+VARIANT_ENUM_CAST( Light::BakeMode);
 
 
 class DirectionalLight : public Light {

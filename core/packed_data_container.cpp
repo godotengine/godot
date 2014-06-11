@@ -89,11 +89,13 @@ Variant PackedDataContainer::_iter_get_ofs(const Variant& p_iter,uint32_t p_offs
 	bool err=false;
 	if (type==TYPE_ARRAY) {
 
-		return _get_at_ofs(p_offset+8+pos*4,rd.ptr(),err);
+		uint32_t vpos = decode_uint32(rd.ptr() + p_offset+8+pos*4);
+		return _get_at_ofs(vpos,rd.ptr(),err);
 
 	} else if (type==TYPE_DICT) {
 
-		return _get_at_ofs(p_offset+8+pos*12+8,rd.ptr(),err);
+		uint32_t vpos = decode_uint32(rd.ptr() + p_offset+8+pos*12+4);
+		return _get_at_ofs(vpos,rd.ptr(),err);
 	} else {
 		ERR_FAIL_V(Variant());
 	}
@@ -126,6 +128,15 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs,const uint8_t *p_buf,boo
 	}
 
 }
+
+uint32_t PackedDataContainer::_type_at_ofs(uint32_t p_ofs) const {
+
+	DVector<uint8_t>::Read rd=data.read();
+	const uint8_t *r=&rd[p_ofs];
+	uint32_t type = decode_uint32(r);
+
+	return type;
+};
 
 int PackedDataContainer::_size(uint32_t p_ofs) const {
 
@@ -408,6 +419,10 @@ Variant PackedDataContainerRef::_iter_get(const Variant& p_iter){
 	return from->_iter_get_ofs(p_iter,offset);
 }
 
+bool PackedDataContainerRef::_is_dictionary() const {
+
+	return from->_type_at_ofs(offset) == PackedDataContainer::TYPE_DICT;
+};
 
 void PackedDataContainerRef::_bind_methods() {
 
@@ -415,6 +430,7 @@ void PackedDataContainerRef::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_iter_init"),&PackedDataContainerRef::_iter_init);
 	ObjectTypeDB::bind_method(_MD("_iter_get"),&PackedDataContainerRef::_iter_get);
 	ObjectTypeDB::bind_method(_MD("_iter_next"),&PackedDataContainerRef::_iter_next);
+	ObjectTypeDB::bind_method(_MD("_is_dictionary"),&PackedDataContainerRef::_is_dictionary);
 }
 
 

@@ -78,6 +78,8 @@ public:
 
 };
 
+class BakedLightInstance;
+
 class GeometryInstance : public VisualInstance {
 
 	OBJ_TYPE( GeometryInstance, VisualInstance );
@@ -91,7 +93,7 @@ public:
 		FLAG_BILLBOARD_FIX_Y=VS::INSTANCE_FLAG_BILLBOARD_FIX_Y,
 		FLAG_DEPH_SCALE=VS::INSTANCE_FLAG_DEPH_SCALE,
 		FLAG_VISIBLE_IN_ALL_ROOMS=VS::INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,
-		FLAG_USE_BAKED_LIGHT_VOLUME=VS::INSTANCE_FLAG_USE_BAKED_LIGHT_VOLUME,
+		FLAG_USE_BAKED_LIGHT=VS::INSTANCE_FLAG_USE_BAKED_LIGHT,
 		FLAG_MAX=VS::INSTANCE_FLAG_MAX,
 	};
 
@@ -102,8 +104,13 @@ private:
 	Ref<Material> material_override;
 	float draw_begin;
 	float draw_end;
+	void _find_baked_light();
+	BakedLightInstance *baked_light_instance;
+
+	void _baked_light_changed();
 protected:
 
+	void _notification(int p_what);
 	static void _bind_methods();
 public:
 

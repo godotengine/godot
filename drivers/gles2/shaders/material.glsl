@@ -93,6 +93,13 @@ varying vec3 tangent_interp;
 varying vec3 binormal_interp;
 #endif
 
+#ifdef ENABLE_AMBIENT_OCTREE
+
+uniform highp mat4 ambient_octree_inverse_transform;
+varying highp vec3 ambient_octree_coords;
+
+#endif
+
 #ifdef USE_FOG
 
 varying vec4 fog_interp;
@@ -173,12 +180,19 @@ void main() {
 #ifdef USE_UNIFORM_INSTANCING
 
 	highp mat4 modelview = (camera_inverse_transform * (world_transform * instance_transform));
+#ifdef ENABLE_AMBIENT_OCTREE
+	highp mat4 ambient_octree_transform = (ambient_octree_inverse_transform * (world_transform * instance_transform));
+#endif
+
 #else
 
 #ifdef USE_ATTRIBUTE_INSTANCING
 
 	highp mat4 minst=mat4(instance_row0,instance_row1,instance_row2,instance_row3);
 	highp mat4 modelview = (camera_inverse_transform * (world_transform * minst));
+#ifdef ENABLE_AMBIENT_OCTREE
+	highp mat4 ambient_octree_transform = (ambient_octree_inverse_transform * (world_transform * minst));
+#endif
 
 #else
 
@@ -201,9 +215,16 @@ void main() {
 	);*/
 
 	highp mat4 modelview = (camera_inverse_transform * (world_transform * minst));
+#ifdef ENABLE_AMBIENT_OCTREE
+	highp mat4 ambient_octree_transform = (ambient_octree_inverse_transform * (world_transform * minst));
+#endif
 
 #else
 	highp mat4 modelview = (camera_inverse_transform * world_transform);
+#ifdef ENABLE_AMBIENT_OCTREE
+	highp mat4 ambient_octree_transform = (ambient_octree_inverse_transform * world_transform);
+#endif
+
 #endif
 
 #endif
@@ -231,6 +252,11 @@ void main() {
 #endif
 	}
 
+#endif
+
+#ifdef ENABLE_AMBIENT_OCTREE
+
+	ambient_octree_coords = (ambient_octree_transform * vertex_in).xyz;
 #endif
 
 	vertex_interp = (modelview * vertex_in).xyz;
@@ -515,6 +541,16 @@ vec3 process_shade(in vec3 normal, in vec3 light_dir, in vec3 eye_vec, in vec3 d
 uniform float const_light_mult;
 uniform float time;
 
+#ifdef ENABLE_AMBIENT_OCTREE
+
+varying highp vec3 ambient_octree_coords;
+uniform highp float ambient_octree_lattice_size;
+uniform highp vec2 ambient_octree_pix_size;
+uniform highp float ambient_octree_lattice_divide;
+uniform highp sampler2D ambient_octree_tex;
+uniform int ambient_octree_steps;
+
+#endif
 
 
 FRAGMENT_SHADER_GLOBALS
@@ -745,8 +781,55 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#ifdef ENABLE_AMBIENT_OCTREE
+
+	vec3 ambientmap_color = vec3(0.0,0.0,0.0);
+
+
+	{
+
+		//read position from initial lattice grid
+		highp vec3 lattice_pos = floor(ambient_octree_coords*ambient_octree_lattice_size);
+		highp vec2 octant_uv = highp vec2(lattice_pos.x+ambient_octree_lattice_size*lattice_pos.z,lattice_pos.y);
+		octant_uv=(octant_uv*highp vec2(2.0,4.0)+highp vec2(0.0,4.0));
+		highp float ld = 1.0/ambient_octree_lattice_size;
+
+
+		//go down the octree
+
+		for(int i=0;i<ambient_octree_steps;i++) {
+
+
+			highp vec3 sub=mod(ambient_octree_coords,ld);
+			ld*=0.5;
+			highp vec3 s = step(ld,sub);
+			octant_uv+=s.xy;
+			octant_uv.y+=s.z*2.0;
+			octant_uv=(octant_uv+0.5)*ambient_octree_pix_size;
+			highp vec4 new_uv = texture2D(ambient_octree_tex,octant_uv);
+			octant_uv=floor(highp vec2( dot(new_uv.xy,highp vec2(65280.0,255.0)),  dot(new_uv.zw,highp vec2(65280.0,255.0)) )+0.5);//+ambient_octree_pix_size*0.5;
+
+		}
+
+		//sample color
+		octant_uv=(octant_uv+0.5)*ambient_octree_pix_size;
+		highp vec3 sub=(mod(ambient_octree_coords,ld)/ld);
+		octant_uv.xy+=sub.xy*ambient_octree_pix_size.xy;
+		vec3 col_up=texture2D(ambient_octree_tex,octant_uv).rgb;
+		octant_uv.y+=ambient_octree_pix_size.y*2.0;
+		vec3 col_down=texture2D(ambient_octree_tex,octant_uv).rgb;
+		ambientmap_color=mix(col_down,col_up,1.0-sub.z);
+
+		ambientmap_color*=diffuse.rgb;
+
+	}
+
+#endif
 
         float shadow_attenuation = 1.0;
+
+
+
 
 
 #ifdef LIGHT_USE_SHADOW
@@ -921,6 +1004,8 @@ FRAGMENT_SHADER_CODE
 #endif
 
 
+
+
 #ifdef USE_VERTEX_LIGHTING
 
 	vec3 ambient = light_ambient*diffuse.rgb;
@@ -933,11 +1018,13 @@ FRAGMENT_SHADER_CODE
 	diffuse.rgb=(diffuse.rgb * diffuse_interp.rgb + specular * specular_interp)*shadow_attenuation + ambient;
 	diffuse.rgb+=emission * const_light_mult;
 
-
 #endif
 
 
+#ifdef ENABLE_AMBIENT_OCTREE
 
+	diffuse.rgb+=ambientmap_color;
+#endif
 
 
 #ifdef USE_SHADOW_PASS

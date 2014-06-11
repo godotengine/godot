@@ -45,8 +45,8 @@
 class Image {
 
 	enum { 
-		MAX_WIDTH=4096, // force a limit somehow
-		MAX_HEIGHT=4096 // force a limit somehow
+		MAX_WIDTH=16384, // force a limit somehow
+		MAX_HEIGHT=16384// force a limit somehow
 	};
 public:
 
@@ -317,7 +317,7 @@ public:
 
 	Error compress(CompressMode p_mode=COMPRESS_BC);
 	Image compressed(int p_mode); /* from the Image::CompressMode enum */
-	void decompress();
+	Error decompress();
 
 	void fix_alpha_edges();
 	void premultiply_alpha();

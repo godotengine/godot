@@ -166,6 +166,7 @@ public:
 	virtual ~ScriptLanguage() {};	
 };
 
+extern uint8_t script_encryption_key[32];
 
 class PlaceHolderScriptInstance : public ScriptInstance {
 
