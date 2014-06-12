@@ -290,6 +290,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 			} else {
 				//mesh since nothing else
 				node = memnew( MeshInstance );
+				node->cast_to<MeshInstance>()->set_flag(GeometryInstance::FLAG_USE_BAKED_LIGHT,true);
 			}
 		} break;
 		case Collada::Node::TYPE_SKELETON: {

@@ -145,6 +145,7 @@ RID VisualServer::_make_test_cube() {
 	tangents.push_back( normal_points[m_idx][0] );\
 	tangents.push_back( 1.0 );\
 	uvs.push_back( Vector3(uv_points[m_idx*2+0],uv_points[m_idx*2+1],0) );\
+	print_line(itos( (face_points[m_idx][0]>0?1:0)|(face_points[m_idx][1]>0?2:0)|(face_points[m_idx][2]>0?4:0)));\
 	vtx_idx++;\
 
 	for (int i=0;i<6;i++) {
@@ -527,6 +528,7 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("cursor_set_pos"),&VisualServer::cursor_set_pos);
 
 	ObjectTypeDB::bind_method(_MD("black_bars_set_margins","left","top","right","bottom"),&VisualServer::black_bars_set_margins);
+	ObjectTypeDB::bind_method(_MD("black_bars_set_images","left","top","right","bottom"),&VisualServer::black_bars_set_images);
 
 	ObjectTypeDB::bind_method(_MD("make_sphere_mesh"),&VisualServer::make_sphere_mesh);
 	ObjectTypeDB::bind_method(_MD("mesh_add_surface_from_planes"),&VisualServer::mesh_add_surface_from_planes);

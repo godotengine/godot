@@ -1430,7 +1430,7 @@ String _Marshalls::variant_to_base64(const Variant& p_var) {
 	err = encode_variant(p_var,&w[0],len);
 	ERR_FAIL_COND_V( err != OK, "" );
 
-	int b64len = len / 3 * 4 + 4;
+	int b64len = len / 3 * 4 + 4 + 1;
 	DVector<uint8_t> b64buff;
 	b64buff.resize(b64len);
 	DVector<uint8_t>::Write w64 = b64buff.write();
@@ -1449,7 +1449,7 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	CharString cstr = p_str.ascii();
 
 	DVector<uint8_t> buf;
-	buf.resize(strlen / 4 * 3);
+	buf.resize(strlen / 4 * 3 + 1);
 	DVector<uint8_t>::Write w = buf.write();
 
 	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);

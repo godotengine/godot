@@ -335,15 +335,6 @@ AABB AABB::grow(real_t p_by) const {
 	aabb.grow_by(p_by);
 	return aabb;
 }
-void AABB::grow_by(real_t p_amount) {
-
-	pos.x-=p_amount;
-	pos.y-=p_amount;
-	pos.z-=p_amount;
-	size.x+=2.0*p_amount;
-	size.y+=2.0*p_amount;
-	size.z+=2.0*p_amount;
-}
 
 void AABB::get_edge(int p_edge,Vector3& r_from,Vector3& r_to) const {
 

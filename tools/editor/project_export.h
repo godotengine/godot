@@ -132,6 +132,12 @@ private:
 	TextureFrame *atlas_preview_frame;
 
 
+	VBoxContainer *script_vbox;
+	OptionButton *script_mode;
+	LineEdit *script_key;
+
+
+
 	void _export_mode_changed(int p_idx);
 	void _prop_edited(String what);
 
@@ -166,6 +172,9 @@ private:
 	void _group_select_none();
 	void _group_del(Object *item,int p_column, int p_button);
 
+	bool updating_script;
+	void _update_script();
+	void _script_edited(Variant v);
 	void _export_action(const String& p_file);
 	void _export_action_pck(const String& p_file);
 	void ok_pressed();

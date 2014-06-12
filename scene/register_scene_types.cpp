@@ -187,7 +187,7 @@
 #include "scene/3d/area.h"
 #include "scene/3d/physics_joint.h"
 #include "scene/3d/multimesh_instance.h"
-#include "scene/3d/baked_light.h"
+#include "scene/3d/baked_light_instance.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/immediate_geometry.h"
 #include "scene/3d/sprite_3d.h"
@@ -410,7 +410,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PathFollow>();
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
-	ObjectTypeDB::register_type<BakedLight>();
+	ObjectTypeDB::register_type<BakedLightInstance>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 
 	//scenariofx	
@@ -518,6 +518,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<SurfaceTool>();
 	ObjectTypeDB::register_type<MeshDataTool>();
+	ObjectTypeDB::register_type<BakedLight>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

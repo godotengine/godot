@@ -1544,14 +1544,17 @@ int Image::get_format_pallete_size(Format p_format) {
 }
 
 
-void Image::decompress() {
+Error Image::decompress() {
 
 	if (format>=FORMAT_BC1 && format<=FORMAT_BC5 && _image_decompress_bc)
 		_image_decompress_bc(this);
-	if (format>=FORMAT_PVRTC2 && format<=FORMAT_PVRTC4_ALPHA && _image_decompress_pvrtc)
+	else if (format>=FORMAT_PVRTC2 && format<=FORMAT_PVRTC4_ALPHA && _image_decompress_pvrtc)
 		_image_decompress_pvrtc(this);
-	if (format==FORMAT_ETC && _image_decompress_etc)
+	else if (format==FORMAT_ETC && _image_decompress_etc)
 		_image_decompress_etc(this);
+	else
+		return ERR_UNAVAILABLE;
+	return OK;
 }
 
 

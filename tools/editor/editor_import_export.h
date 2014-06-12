@@ -229,6 +229,11 @@ public:
 		IMAGE_ACTION_COMPRESS_RAM,
 	};
 
+	enum ScriptAction {
+		SCRIPT_ACTION_NONE,
+		SCRIPT_ACTION_COMPILE,
+		SCRIPT_ACTION_ENCRYPT
+	};
 
 protected:
 
@@ -255,6 +260,9 @@ protected:
 	Map<StringName,ImageGroup> image_groups;
 	Map<StringName,StringName> image_group_files;
 	Vector<String> diff_packs;
+
+	ScriptAction script_action;
+	String script_key;
 
 	static EditorImportExport* singleton;
 
@@ -318,6 +326,11 @@ public:
 
 	Set<String>& get_image_formats() { return image_formats; }
 
+	void script_set_action(ScriptAction p_action);
+	ScriptAction script_get_action() const;
+
+	void script_set_encryption_key(const String& p_key);
+	String script_get_encryption_key() const;
 
 	void load_config();
 	void save_config();
@@ -327,5 +340,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorImportExport::ImageAction);
+VARIANT_ENUM_CAST(EditorImportExport::ScriptAction);
 
 #endif // EDITOR_IMPORT_EXPORT_H

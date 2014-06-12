@@ -68,6 +68,7 @@ class PackedDataContainer : public Resource {
 friend class PackedDataContainerRef;
 	Variant _key_at_ofs(uint32_t p_ofs,const Variant& p_key,bool &err) const;
 	Variant _get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, bool &err) const;
+	uint32_t _type_at_ofs(uint32_t p_ofs) const;
 	int _size(uint32_t p_ofs) const;
 
 protected:
@@ -100,6 +101,7 @@ public:
 	Variant _iter_init(const Array& p_iter);
 	Variant _iter_next(const Array& p_iter);
 	Variant _iter_get(const Variant& p_iter);
+	bool _is_dictionary() const;
 
 	int size() const;
 	virtual Variant getvar(const Variant& p_key, bool *r_valid=NULL) const;

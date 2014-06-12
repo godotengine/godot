@@ -130,6 +130,8 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	getifaddrs(&ifAddrStruct);
 
 	for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+		if (!ifa->ifa_addr)
+			continue;
 		if (ifa ->ifa_addr->sa_family==AF_INET) { // check it is IP4
 			// is a valid IP4 Address
 

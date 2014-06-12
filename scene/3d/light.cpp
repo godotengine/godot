@@ -351,6 +351,17 @@ void Light::set_operator(Operator p_op) {
 
 }
 
+void Light::set_bake_mode(BakeMode p_bake_mode) {
+
+	bake_mode=p_bake_mode;
+}
+
+Light::BakeMode Light::get_bake_mode() const {
+
+	return bake_mode;
+}
+
+
 Light::Operator Light::get_operator() const {
 
 	return op;
@@ -416,6 +427,18 @@ void Light::approximate_opengl_attenuation(float p_constant, float p_linear, flo
 
 }
 
+void Light::set_enabled(bool p_enabled) {
+
+	enabled=p_enabled;
+	VS::get_singleton()->instance_light_set_enabled(get_instance(),enabled);
+}
+
+bool Light::is_enabled() const{
+
+	return enabled;
+}
+
+
 void Light::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_parameter","variable","value"), &Light::set_parameter );
@@ -428,8 +451,14 @@ void Light::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_projector:Texture"), &Light::get_projector );
 	ObjectTypeDB::bind_method(_MD("set_operator","operator"), &Light::set_operator );
 	ObjectTypeDB::bind_method(_MD("get_operator"), &Light::get_operator );
+	ObjectTypeDB::bind_method(_MD("set_bake_mode","bake_mode"), &Light::set_bake_mode );
+	ObjectTypeDB::bind_method(_MD("get_bake_mode"), &Light::get_bake_mode );
+	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"), &Light::set_enabled );
+	ObjectTypeDB::bind_method(_MD("is_enabled"), &Light::is_enabled );
 
 
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "params/enabled"), _SCS("set_enabled"), _SCS("is_enabled"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/bake_mode",PROPERTY_HINT_ENUM,"Disabled,Indirect,Full"), _SCS("set_bake_mode"), _SCS("get_bake_mode"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/energy", PROPERTY_HINT_EXP_RANGE, "0,64,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_ENERGY );
 	/*
 	if (type == VisualServer::LIGHT_OMNI || type == VisualServer::LIGHT_SPOT) {
@@ -490,6 +519,8 @@ Light::Light(VisualServer::LightType p_type) {
 	op=OPERATOR_ADD;
 	set_project_shadows( false );
 	set_base(light);
+	enabled=true;
+	bake_mode=BAKE_MODE_DISABLED;
 
 }
 
@@ -562,6 +593,7 @@ DirectionalLight::DirectionalLight() : Light( VisualServer::LIGHT_DIRECTIONAL ) 
 	shadow_param[SHADOW_PARAM_MAX_DISTANCE]=0;
 	shadow_param[SHADOW_PARAM_PSSM_SPLIT_WEIGHT]=0.5;
 	shadow_param[SHADOW_PARAM_PSSM_ZOFFSET_SCALE]=2.0;
+
 
 }
 

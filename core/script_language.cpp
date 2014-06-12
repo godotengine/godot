@@ -248,8 +248,6 @@ ScriptDebugger::ScriptDebugger() {
 }
 
 
-
-
 bool PlaceHolderScriptInstance::set(const StringName& p_name, const Variant& p_value) {
 
 	if (values.has(p_name)) {

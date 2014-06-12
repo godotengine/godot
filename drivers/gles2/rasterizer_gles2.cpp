@@ -1072,8 +1072,8 @@ void RasterizerGLES2::texture_set_size_override(RID p_texture,int p_width, int p
 	ERR_FAIL_COND(!texture);
 	ERR_FAIL_COND(texture->render_target);
 
-	ERR_FAIL_COND(p_width<=0 || p_width>4096);
-	ERR_FAIL_COND(p_height<=0 || p_height>4096);
+	ERR_FAIL_COND(p_width<=0 || p_width>16384);
+	ERR_FAIL_COND(p_height<=0 || p_height>16384);
 	//real texture size is in alloc width and height
 	texture->width=p_width;
 	texture->height=p_height;
@@ -5510,6 +5510,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	const ParamOverrideMap* prev_overrides=NULL; // make it diferent than NULL
 	const Skeleton *prev_skeleton =NULL;
 	uint8_t prev_sort_flags=0xFF;
+	const BakedLightData *prev_baked_light=NULL;
 
 	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
@@ -5525,6 +5526,9 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM,false);
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,false);
 		material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,false);
+		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
+//		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_TEXTURE,false);
+
 	}
 
 
@@ -5542,8 +5546,10 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		uint8_t sort_flags= e->sort_flags;
 		const Skeleton *skeleton = e->skeleton;
 		const Geometry *geometry_cmp = e->geometry_cmp;
+		const BakedLightData *baked_light = e->instance->baked_light;
 
 		bool rebind=false;
+		bool bind_baked_light_octree=false;
 		bool additive=false;
 
 
@@ -5661,6 +5667,32 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				current_blend_mode=desired_blend_mode;
 			}
 
+			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
+//			material_shader.set_conditional(MaterialShaderGLES2::USE_AMBIENT_TEXTURE,false);
+
+			if (!additive && baked_light) {
+
+				if (baked_light->mode==VS::BAKED_LIGHT_OCTREE && baked_light->octree_texture.is_valid() && e->instance->baked_light_octree_xform) {
+					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,true);
+					bind_baked_light_octree=true;
+					if (prev_baked_light!=baked_light) {
+						Texture *tex=texture_owner.get(baked_light->octree_texture);
+						if (tex) {
+
+							glActiveTexture(GL_TEXTURE5);
+							glBindTexture(tex->target,tex->tex_id); //bind the texture
+						}
+
+					}
+				} else if (baked_light->mode==VS::BAKED_LIGHT_LIGHTMAPS) {
+
+					//material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_TEXTURE,true);
+				}
+			}
+
+			if (int(prev_baked_light!=NULL) ^ int(baked_light!=NULL)) {
+				rebind=true;
+			}
 		}
 
 		if (sort_flags!=prev_sort_flags) {
@@ -5709,6 +5741,18 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			if (e->light!=0xFFFF) {
 				_setup_light(e->light&0x3);
 			}
+		}
+
+		if (bind_baked_light_octree && (baked_light!=prev_baked_light || rebind)) {
+
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_INVERSE_TRANSFORM, *e->instance->baked_light_octree_xform);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LATTICE_SIZE, baked_light->octree_lattice_size);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LATTICE_DIVIDE, baked_light->octree_lattice_divide);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_STEPS, baked_light->octree_steps);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_TEX,5);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_PIX_SIZE,baked_light->octree_tex_pixel_size);
+
+
 		}
 
 		_set_cull(e->mirror,p_reverse_cull);
@@ -5765,6 +5809,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		prev_light=e->light;
 		prev_light_type=e->light_type;
 		prev_sort_flags=sort_flags;
+		prev_baked_light=baked_light;
 //		prev_geometry_type=geometry->type;
 	}
 
