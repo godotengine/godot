@@ -809,6 +809,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\tools\editor\plugins\baked_light_baker.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\plugins\baked_light_baker.h"
+						>
+					</File>
+					<File
 						RelativePath="..\tools\editor\plugins\baked_light_editor_plugin.cpp"
 						>
 					</File>

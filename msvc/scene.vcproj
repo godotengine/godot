@@ -454,11 +454,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\scene\3d\baked_light.cpp"
+					RelativePath="..\scene\3d\baked_light_instance.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\scene\3d\baked_light.h"
+					RelativePath="..\scene\3d\baked_light_instance.h"
 					>
 				</File>
 				<File
@@ -1315,6 +1315,14 @@
 				</File>
 				<File
 					RelativePath="..\scene\resources\audio_stream_resampled.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\resources\baked_light.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\resources\baked_light.h"
 					>
 				</File>
 				<File

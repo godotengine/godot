@@ -551,6 +551,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\core\script_encryption_key.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\core\script_language.cpp"
 				>
 			</File>
