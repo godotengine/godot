@@ -165,8 +165,6 @@ class EditorNode : public Node {
 	};
 
 
-
-
 	Node *edited_scene; //scene being edited
 	Viewport *scene_root; //root of the scene being edited
 
@@ -187,7 +185,7 @@ class EditorNode : public Node {
 	Panel *menu_panel;
 
 	HSplitContainer *editor_hsplit;
-	VSplitContainer *editor_vsplit;
+	SplitContainer *editor_palletes_split;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -243,8 +241,10 @@ class EditorNode : public Node {
 	String current_path;
 	MenuButton *update_menu;
 	ToolButton *sources_button;
-	TabContainer *prop_pallete;
-	TabContainer *top_pallete;
+	//TabContainer *prop_pallete;
+	Control *prop_pallete;
+	//TabContainer *top_pallete;
+	Control *top_pallete;
 	String defer_load_scene;
 	String defer_translatable;
 	String defer_optimize;
@@ -400,6 +400,13 @@ class EditorNode : public Node {
 	static EditorNode *singleton;
 
 	static Vector<EditorNodeInitCallback> _init_callbacks;
+
+	enum EditorLayout {
+		LAYOUT_DEFAULT,
+		LAYOUT_SIDE_BY_SIDE,
+	};
+	EditorLayout _current_layout;
+	EditorLayout _get_editor_layout(const String& p_property);
 
 protected:
 	void _notification(int p_what);

@@ -387,6 +387,9 @@ void EditorSettings::_load_defaults() {
 	set("global/font","");
 	hints["global/font"]=PropertyInfo(Variant::STRING,"global/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
 
+	set("editor_layout/layout",0);
+	hints["editor_layout/layout"]=PropertyInfo(Variant::INT,"editor_layout/layout",PROPERTY_HINT_ENUM,"Default,Side-by-Side");
+
 	set("text_editor/background_color",Color::html("3b000000"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
 	set("text_editor/text_selected_color",Color::html("000000"));
