@@ -102,12 +102,21 @@ void FindReplaceDialog::popup_replace() {
 	bool do_selection=(text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line());
 	set_replace_selection_only(do_selection);
 
+	if (!do_selection && text_edit->is_selection_active()) {
+		search_text->set_text(text_edit->get_selection_text());
+	}
+
 	replace_mc->show();
 	replace_label->show();
 	replace_vb->show();
 	popup_centered(Point2(300,300));
-	search_text->grab_focus();
-	search_text->select_all();
+	if (search_text->get_text()!="" && replace_text->get_text()=="") {
+		search_text->select(0,0);
+		replace_text->grab_focus();
+	} else {
+		search_text->grab_focus();
+		search_text->select_all();
+	}
 	error_label->set_text("");
 
 	if (prompt->is_pressed()) {
@@ -372,7 +381,7 @@ void FindReplaceDialog::_bind_methods() {
 
 FindReplaceDialog::FindReplaceDialog() {
 
-	set_self_opacity(0.6);
+	set_self_opacity(0.8);
 
 	VBoxContainer *vb = memnew( VBoxContainer );
 	add_child(vb);
@@ -382,7 +391,7 @@ FindReplaceDialog::FindReplaceDialog() {
 	search_text = memnew( LineEdit );
 	vb->add_margin_child("Search",search_text);
 	search_text->connect("text_entered", this,"_search_text_entered");
-	search_text->set_self_opacity(0.7);
+	//search_text->set_self_opacity(0.7);
 
 
 
@@ -396,7 +405,7 @@ FindReplaceDialog::FindReplaceDialog() {
 	replace_text->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	replace_text->set_begin( Point2(15,132) );
 	replace_text->set_end( Point2(15,135) );
-	replace_text->set_self_opacity(0.7);
+	//replace_text->set_self_opacity(0.7);
 	replace_mc->add_child(replace_text);
 
 
