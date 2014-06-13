@@ -91,6 +91,7 @@ public:
 		INST2DICT,
 		DICT2INST,
 		PRINT_STACK,
+		AUTOLOAD,
 		FUNC_MAX
 
 	};

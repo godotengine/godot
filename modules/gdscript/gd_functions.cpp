@@ -33,6 +33,8 @@
 #include "gd_script.h"
 #include "func_ref.h"
 #include "os/os.h"
+#include "scene/main/scene_main_loop.h"
+#include "scene/main/viewport.h"
 
 const char *GDFunctions::get_func_name(Function p_func) {
 
@@ -95,6 +97,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"inst2dict",
 		"dict2inst",
 		"print_stack",
+		"autoload",
 	};
 
 	return _names[p_func];
@@ -901,6 +904,29 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			};
 		} break;
 
+		case AUTOLOAD: {
+
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_ret=Variant();
+				break;
+			}
+
+			SceneMainLoop *sml = dynamic_cast<SceneMainLoop *> (OS::get_singleton()->get_main_loop());
+			if (sml != NULL) {
+				Viewport *root = sml->get_root();
+				if (root != NULL)
+					r_ret=root->get_node(*p_args[0]);
+				else
+					r_ret=Variant();
+			}
+			else
+				r_ret=Variant();
+
+		}; break;
+
 		case FUNC_MAX: {
 
 			ERR_FAIL_V();
@@ -1278,6 +1304,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case PRINT_STACK: {
 			MethodInfo mi("print_stack");
 			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
+
+		case AUTOLOAD: {
+
+			MethodInfo mi("autoload",PropertyInfo(Variant::STRING,"path"));
+			mi.return_val.type=Variant::OBJECT;
 			return mi;
 		} break;
 
