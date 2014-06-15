@@ -73,10 +73,14 @@ class ScenesDock : public VBoxContainer {
 	void _replace_pressed();
 	void _save_favorites();
 
+	TreeItem* _find(TreeItem *p_item, const String& p_path);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+
+	void set_selected(const String& p_path);
 
 	String get_selected_path() const;
 

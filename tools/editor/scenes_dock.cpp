@@ -178,6 +178,33 @@ void ScenesDock::_favorites_toggled(bool p_toggled) {
 	_update_tree();
 }
 
+TreeItem* ScenesDock::_find(TreeItem *p_item, const String& p_path) {
+
+	if (!p_item)
+		return NULL;
+
+	if (p_item->get_metadata(0) == p_path)
+		return p_item;
+
+	TreeItem *children = p_item->get_children();
+	while(children) {
+		TreeItem *item = _find(children, p_path);
+		if (item)
+			return item;
+		children = children->get_next();
+	}
+	return NULL;
+}
+
+void ScenesDock::set_selected(const String& p_path) {
+	TreeItem * item = _find(tree->get_root(), p_path);
+	if (item) {
+		item->select(0);
+		item->set_as_cursor(0);
+		tree->ensure_cursor_is_visible();
+	}
+}
+
 String ScenesDock::get_selected_path() const {
 
 	TreeItem *sel = tree->get_selected();
