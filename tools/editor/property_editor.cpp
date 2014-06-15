@@ -690,8 +690,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					menu->add_separator();
 			}
 
-			menu->add_icon_item(get_icon("Load","EditorIcons"),"From FileSystem",OBJ_MENU_FROM_FILESYSTEM);
-			menu->add_icon_item(get_icon("Load","EditorIcons"),"From Resource",OBJ_MENU_FROM_RESOURCE);
+			menu->add_icon_item(get_icon("Back","EditorIcons"),"From FileSystem",OBJ_MENU_FROM_FILESYSTEM);
+			menu->add_icon_item(get_icon("Back","EditorIcons"),"From Resource",OBJ_MENU_FROM_RESOURCE);
 			menu->add_icon_item(get_icon("Load","EditorIcons"),"Load",OBJ_MENU_LOAD);
 
 			if (!RES(v).is_null()) {
