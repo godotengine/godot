@@ -390,14 +390,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				names.push_back("Dir..");
 				names.push_back("Clear");
 				config_action_buttons(names);
-			} else if (hint==PROPERTY_HINT_NODEPATH) {
-
-				List<String> names;
-				names.push_back("Assign");
-				names.push_back("Select");
-				names.push_back("Clear");
-				config_action_buttons(names);
-			}else if (hint==PROPERTY_HINT_ENUM) {
+			} else if (hint==PROPERTY_HINT_ENUM) {
 
 
 
@@ -915,7 +908,6 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	v=p_path;
 	emit_signal("variant_changed");
-	hide();
 
 }
 
@@ -996,25 +988,6 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 					file->clear_filters();
 					file->popup_centered_ratio();
 				} else {
-
-					v="";
-					emit_signal("variant_changed");
-					hide();
-
-				}
-			} else if (hint==PROPERTY_HINT_NODEPATH) {
-
-				if (p_which==0) { // assign
-
-					scene_tree->popup_centered_ratio();
-
-				} else if (p_which==1) { // select
-
-					if (!v.is_zero())
-						emit_signal("select_node_request");
-					hide();
-
-				} else { // clear
 
 					v="";
 					emit_signal("variant_changed");
@@ -2415,8 +2388,7 @@ void PropertyEditor::update_tree() {
 					case PROPERTY_HINT_DIR:
 					case PROPERTY_HINT_FILE:
 					case PROPERTY_HINT_GLOBAL_DIR:
-					case PROPERTY_HINT_GLOBAL_FILE:
-					case PROPERTY_HINT_NODEPATH:{
+					case PROPERTY_HINT_GLOBAL_FILE: {
 
 						item->set_cell_mode( 1, TreeItem::CELL_MODE_STRING );
 						item->set_editable(1,!read_only);
@@ -2964,7 +2936,7 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 			Variant v = obj->get(n);
 			custom_editor->edit(obj,n,(Variant::Type)t,v,h,ht);
 			//Rect2 where=tree->get_custom_popup_rect();
-			if (h==PROPERTY_HINT_FILE || h==PROPERTY_HINT_DIR || h==PROPERTY_HINT_GLOBAL_DIR || h==PROPERTY_HINT_GLOBAL_FILE || h==PROPERTY_HINT_NODEPATH) {
+			if (h==PROPERTY_HINT_FILE || h==PROPERTY_HINT_DIR || h==PROPERTY_HINT_GLOBAL_DIR || h==PROPERTY_HINT_GLOBAL_FILE) {
 
 				Rect2 where=tree->get_item_rect(ti,1);
 				where.pos-=tree->get_scroll();

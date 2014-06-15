@@ -229,7 +229,6 @@ void DocDump::dump(const String& p_file) {
 					case PROPERTY_HINT_LENGTH: hint="Length: "+arginfo.hint_string; break;
 					case PROPERTY_HINT_FLAGS: hint="Values: "; for(int j=0;j<arginfo.hint_string.get_slice_count(",");j++) { if (j>0) hint+=", "; hint+=arginfo.hint_string.get_slice(",",j)+"="+itos(1<<j); } break;
 					case PROPERTY_HINT_FILE: hint="A file:"; break;
-					case PROPERTY_HINT_NODEPATH: hint="A nodepath:"; break;
 					default: {}
 					//case PROPERTY_HINT_RESOURCE_TYPE: hint="Type: "+arginfo.hint_string; break;
 				};
