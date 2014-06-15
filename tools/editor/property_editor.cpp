@@ -1921,6 +1921,13 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 			if (obj->get( p_name ).get_type() == Variant::NIL || obj->get( p_name ).operator RefPtr().is_null()) {
 				p_item->set_text(1,"<null>");
 
+				Dictionary d = p_item->get_metadata(0);
+				int hint=d.has("hint")?d["hint"].operator int():-1;
+				String hint_text=d.has("hint_text")?d["hint_text"]:"";
+				if (hint==PROPERTY_HINT_RESOURCE_TYPE && hint_text == "Texture") {
+					p_item->set_icon(1,NULL);
+				}
+
 			} else {
 				RES res = obj->get( p_name ).operator RefPtr();
 				if (res->is_type("Texture")) {
