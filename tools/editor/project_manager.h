@@ -94,6 +94,10 @@ class ProjectListFilter : public HBoxContainer {
 
 	OBJ_TYPE( ProjectListFilter, HBoxContainer );
 
+private:
+
+	friend class ProjectManager;
+
 	enum Command {
 		CMD_CLEAR_FILTER,
 	};
@@ -102,7 +106,10 @@ class ProjectListFilter : public HBoxContainer {
 	LineEdit *search_box;
 	Button *clear_search_button;
 
-	enum FilterOption;
+	enum FilterOption {
+		FILTER_NAME,
+		FILTER_PATH,
+	};
 	FilterOption _current_filter;
 
 	void _command(int p_command);
@@ -111,13 +118,10 @@ class ProjectListFilter : public HBoxContainer {
 	void _filter_option_selected(int p_idx);
 
 protected:
+
 	static void _bind_methods();
 
 public:
-	enum FilterOption {
-		FILTER_NAME,
-		FILTER_PATH,
-	};
 
 	String get_search_term();
 	FilterOption get_filter_option();
