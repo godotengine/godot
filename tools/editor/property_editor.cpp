@@ -139,8 +139,19 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					file->popup_centered_ratio();
-				} break;
 
+				} break;
+				case OBJ_MENU_SELECT_IN_FILESYSTEM: {
+
+					RefPtr ref_ptr=v;
+					Ref<Resource> res = ref_ptr;
+					if (res.is_null())
+						return;
+
+					// todo: avoid communicate with scenes dock directly by emiting singal
+					EditorNode::get_singleton()->get_scenes_dock()->set_selected(res->get_path());
+
+				} break;
 				case OBJ_MENU_EDIT: {
 
 					RefPtr RefPtr=v;
@@ -381,6 +392,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				List<String> names;
 				names.push_back("File..");
+				names.push_back("Select");
 				names.push_back("Clear");
 				config_action_buttons(names);
 
@@ -692,6 +704,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			menu->add_icon_item(get_icon("Back","EditorIcons"),"From FileSystem",OBJ_MENU_FROM_FILESYSTEM);
 			menu->add_icon_item(get_icon("Back","EditorIcons"),"From Resource",OBJ_MENU_FROM_RESOURCE);
 			menu->add_icon_item(get_icon("Load","EditorIcons"),"Load",OBJ_MENU_LOAD);
+			menu->add_icon_item(get_icon("Forward","EditorIcons"),"Select",OBJ_MENU_SELECT_IN_FILESYSTEM);
 
 			if (!RES(v).is_null()) {
 
@@ -940,7 +953,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				hide();
 
 			} else if (hint==PROPERTY_HINT_FILE || hint==PROPERTY_HINT_GLOBAL_FILE) {
-				if (p_which==0) {
+				if (p_which==0) { // File..
 
 					if (hint==PROPERTY_HINT_FILE)
 						file->set_access(FileDialog::ACCESS_RESOURCES);
@@ -968,7 +981,14 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 						}
 					}
 					file->popup_centered_ratio();
-				} else {
+
+				}else if (p_which==1) { // Select
+
+					// todo: avoid communicate with scene dock directly by emiting signal
+					EditorNode::get_singleton()->get_scenes_dock()->set_selected(v);
+					hide();
+
+				} else { // Clear
 
 					v="";
 					emit_signal("variant_changed");
