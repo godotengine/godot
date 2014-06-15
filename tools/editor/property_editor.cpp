@@ -38,6 +38,7 @@
 #include "scene/scene_string_names.h"
 #include "editor_settings.h"
 #include "editor_import_export.h"
+#include "editor_node.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 	
@@ -80,6 +81,49 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 		case Variant::OBJECT: {
 
 			switch(p_which) {
+				case OBJ_MENU_FROM_FILESYSTEM: {
+
+					String selected = EditorNode::get_singleton()->get_scenes_dock()->get_selected_path();
+					if (selected == "") return;
+
+					List<String> extensions;
+					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
+					ResourceLoader::get_recognized_extensions_for_type(type,&extensions);
+					if (extensions.find(selected.extension()) == NULL) return;
+
+					RES res = ResourceLoader::load(selected,type);
+					if (res.is_null()) {
+						error->set_text("Error loading file: Not a resource!");
+						error->popup_centered(Size2(300,80));
+						break;
+					}
+					v=res.get_ref_ptr();
+					emit_signal("variant_changed");
+
+				} break;
+				case OBJ_MENU_FROM_RESOURCE: {
+
+					RES res = EditorNode::get_singleton()->get_resources_dock()->get_selected_resource();
+					if (res.is_null())
+						break;
+
+					if (res->get_path() == "") {
+						error->set_text( "Resource should be saved first");
+						error->popup_centered(Size2(300,80));
+						break;
+					}
+
+					List<String> extensions;
+					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
+
+					ResourceLoader::get_recognized_extensions_for_type(type,&extensions);
+					if (extensions.find(res->get_path().extension()) == NULL)
+						break;
+
+					v=res.get_ref_ptr();
+					emit_signal("variant_changed");
+
+				} break;
 				case OBJ_MENU_LOAD: {
 
 					file->set_mode(FileDialog::MODE_OPEN_FILE);
@@ -652,6 +696,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					menu->add_separator();
 			}
 
+			menu->add_icon_item(get_icon("Back","EditorIcons"),"From FileSystem",OBJ_MENU_FROM_FILESYSTEM);
+			menu->add_icon_item(get_icon("Back","EditorIcons"),"From Resource",OBJ_MENU_FROM_RESOURCE);
 			menu->add_icon_item(get_icon("Load","EditorIcons"),"Load",OBJ_MENU_LOAD);
 
 			if (!RES(v).is_null()) {
@@ -1810,7 +1856,7 @@ void PropertyEditor::update_property(const String& p_prop) {
 
 
 void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p_name, int p_hint, const String& p_hint_text) {
-	
+
 	switch( p_type ) {
 
 		case Variant::BOOL: {
@@ -1919,6 +1965,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 
 			if (obj->get( p_name ).get_type() == Variant::NIL || obj->get( p_name ).operator RefPtr().is_null()) {
+
 				p_item->set_text(1,"<null>");
 
 				Dictionary d = p_item->get_metadata(0);
@@ -1931,6 +1978,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 			} else {
 				RES res = obj->get( p_name ).operator RefPtr();
 				if (res->is_type("Texture")) {
+
 					int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
 					p_item->set_icon_max_width(1,tw);
 					p_item->set_icon(1,res);
@@ -1940,8 +1988,10 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 					p_item->set_text(1, res->get_name());
 				} else if (res->get_path()!="" && !res->get_path().begins_with("local://")) {
+
 					p_item->set_text(1, res->get_path().get_file());
 				} else {
+
 					p_item->set_text(1,"<"+res->get_type()+">");
 				};
 			}
@@ -2076,7 +2126,6 @@ TreeItem *PropertyEditor::get_parent_node(String p_path,HashMap<String,TreeItem*
 
 
 void PropertyEditor::update_tree() {
-
 
 	tree->clear();
 
@@ -2620,9 +2669,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		_changed_callbacks(obj,p_name);
 		emit_signal(_prop_edited,p_name);
 
-
 	} else {
-
 
 		undo_redo->create_action("Set "+p_name,true);
 		undo_redo->add_do_property(obj,p_name,p_value);
@@ -2641,6 +2688,7 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		undo_redo->add_do_method(this,"emit_signal",_prop_edited,_prop_edited_name);
 		undo_redo->commit_action();
 	}
+
 }
 
 

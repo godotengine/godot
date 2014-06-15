@@ -183,8 +183,7 @@ String ScenesDock::get_selected_path() const {
 	TreeItem *sel = tree->get_selected();
 	if (!sel)
 		return "";
-	String path = sel->get_metadata(0);
-	return "res://"+path;
+	return sel->get_metadata(0);
 }
 
 void ScenesDock::_instance_pressed() {
