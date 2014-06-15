@@ -35,6 +35,15 @@
 #include "globals.h"
 #include "editor_file_system.h"
 
+RES ResourcesDock::get_selected_resource() {
+
+	TreeItem *ti = resources->get_selected();
+	if (!ti) return NULL;
+
+	Ref<Resource> current_res = ti->get_metadata(0);
+	RES res(current_res);
+	return current_res;
+}
 
 void ResourcesDock::_tool_selected(int p_tool) {
 

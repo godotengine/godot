@@ -99,6 +99,7 @@ public:
 	void save_resource(const String& p_path,const Ref<Resource>& p_resource);
 	void save_resource_as(const Ref<Resource>& p_resource);
 
+	RES get_selected_resource();
 
 	void cleanup();
 
