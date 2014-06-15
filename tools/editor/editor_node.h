@@ -466,6 +466,7 @@ public:
 
 	Node* request_instance_scene(const String &p_path);
 	ScenesDock *get_scenes_dock();
+	ResourcesDock *get_resources_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }

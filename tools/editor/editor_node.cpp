@@ -2792,6 +2792,12 @@ ScenesDock *EditorNode::get_scenes_dock() {
 	return scenes_dock;
 }
 
+ResourcesDock *EditorNode::get_resources_dock() {
+
+	return resources_dock;
+}
+
+
 void EditorNode::_instance_request(const String& p_path){
 
 
