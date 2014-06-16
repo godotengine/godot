@@ -40,7 +40,9 @@ static const char* _light_param_names[VS::LIGHT_PARAM_MAX]={
 	"params/attenuation",
 	"shadow/darkening",
 	"shadow/z_offset",
-	"shadow/z_slope_scale"
+	"shadow/z_slope_scale",
+	"shadow/esm_multiplier",
+	"shadow/blur_passes"
 };
 
 void Light::set_parameter(Parameter p_param, float p_value) {
@@ -479,6 +481,8 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/darkening", PROPERTY_HINT_RANGE, "0,64,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_DARKENING );
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/z_offset", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_Z_OFFSET);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/z_slope_scale", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_Z_SLOPE_SCALE);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/esm_multiplier", PROPERTY_HINT_RANGE, "1.0,512.0,0.1"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_ESM_MULTIPLIER);
+	ADD_PROPERTYI( PropertyInfo( Variant::INT, "shadow/blur_passes", PROPERTY_HINT_RANGE, "0,4,1"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_BLUR_PASSES);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "projector",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_projector"), _SCS("get_projector"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "operator",PROPERTY_HINT_ENUM,"Add,Sub"), _SCS("set_operator"), _SCS("get_operator"));
 
@@ -511,6 +515,8 @@ Light::Light(VisualServer::LightType p_type) {
 	set_parameter(PARAM_SHADOW_DARKENING,0.0);
 	set_parameter(PARAM_SHADOW_Z_OFFSET,0.05);
 	set_parameter(PARAM_SHADOW_Z_SLOPE_SCALE,0);
+	set_parameter(PARAM_SHADOW_ESM_MULTIPLIER,60);
+	set_parameter(PARAM_SHADOW_BLUR_PASSES,1);
 
 	set_color( COLOR_AMBIENT, Color(0,0,0));
 	set_color( COLOR_DIFFUSE, Color(1,1,1));

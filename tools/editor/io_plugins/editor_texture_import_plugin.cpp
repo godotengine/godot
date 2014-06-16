@@ -45,6 +45,7 @@ static const char *flag_names[]={
 	"Repeat",
 	"Filter (Magnifying)",
 	"Premultiply Alpha",
+	"Convert SRGB->Linear",
 	NULL
 };
 
@@ -57,6 +58,7 @@ static const char *flag_short_names[]={
 	"Repeat",
 	"Filter",
 	"PMAlpha",
+	"ToLinear",
 	NULL
 };
 
@@ -927,6 +929,10 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.premultiply_alpha();
 		}
 
+		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			image.srgb_to_linear();
+		}
 
 		if (shrink>1) {
 
@@ -983,6 +989,11 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
+		}
+
+		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			image.srgb_to_linear();
 		}
 
 		int orig_w=image.get_width();

@@ -93,6 +93,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"load",
 		"inst2dict",
 		"dict2inst",
+		"hash",
 		"print_stack",
 	};
 
@@ -864,6 +865,12 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret = gdscr->_new(NULL,0,r_error);
 
 		} break;
+		case HASH: {
+
+			VALIDATE_ARG_COUNT(1);
+			r_ret=p_args[0]->hash();
+
+		} break;
 
 		case PRINT_STACK: {
 
@@ -1236,6 +1243,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("dict2inst",PropertyInfo(Variant::DICTIONARY,"dict"));
 			mi.return_val.type=Variant::OBJECT;
+			return mi;
+		} break;
+		case HASH: {
+
+			MethodInfo mi("hash",PropertyInfo(Variant::NIL,"var:var"));
+			mi.return_val.type=Variant::INT;
 			return mi;
 		} break;
 

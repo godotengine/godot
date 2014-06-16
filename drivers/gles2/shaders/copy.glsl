@@ -54,7 +54,11 @@ varying vec3 cube_interp;
 uniform samplerCube source_cube;
 #else
 varying vec2 uv_interp;
+#ifdef HIGHP_SOURCE
+uniform highp sampler2D source;
+#else
 uniform sampler2D source;
+#endif
 #endif
 varying vec2 uv2_interp;
 
@@ -83,12 +87,6 @@ uniform vec3 bcs;
 
 #endif
 
-#ifdef USE_GAMMA
-
-uniform float gamma;
-
-#endif
-
 #ifdef USE_GLOW_COPY
 
 uniform float bloom;
@@ -96,7 +94,7 @@ uniform float bloom_treshold;
 
 #endif
 
-#if defined(BLUR_V_PASS) || defined(BLUR_H_PASS) || defined(USE_HDR_REDUCE)
+#if defined(SHADOW_BLUR_V_PASS) || defined(SHADOW_BLUR_H_PASS) || defined(BLUR_V_PASS) || defined(BLUR_H_PASS) || defined(USE_HDR_REDUCE)
 
 uniform vec2 pixel_size;
 uniform float pixel_scale;
@@ -133,6 +131,17 @@ uniform float custom_alpha;
 void main() {
 
 	//vec4 color = color_interp;
+#ifdef USE_HIGHP_SOURCE
+
+#ifdef USE_CUBEMAP
+	highp vec4 color = textureCube( source_cube,  normalize(cube_interp) );
+
+#else
+	highp vec4 color = texture2D( source,  uv_interp );
+#endif
+
+#else
+
 #ifdef USE_CUBEMAP
 	vec4 color = textureCube( source_cube,  normalize(cube_interp) );
 
@@ -140,6 +149,8 @@ void main() {
 	vec4 color = texture2D( source,  uv_interp );
 #endif
 
+
+#endif
 
 #ifdef USE_FXAA
 
@@ -226,16 +237,102 @@ void main() {
 
 #endif
 
+#ifdef SHADOW_BLUR_V_PASS
+
+#ifdef USE_RGBA_DEPTH
+
+#define VEC42DEPTH(m_vec4) dot(m_vec4,vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1))
+
+	highp float depth = VEC42DEPTH(color)*0.383;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-3.0)*pixel_scale))*0.006;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-2.0)*pixel_scale))*0.061;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-1.0)*pixel_scale))*0.242;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(0.0,pixel_size.y*1.0)*pixel_scale))*0.242;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(0.0,pixel_size.y*2.0)*pixel_scale))*0.061;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(0.0,pixel_size.y*3.0)*pixel_scale))*0.006;
+	highp vec4 comp = fract(depth * vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0));
+	comp -= comp.xxyz * vec4(0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+	color=comp;
+
+#else
+
+	highp float depth = color.r*0.383;
+	depth+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-3.0)*pixel_scale).r*0.006;
+	depth+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-2.0)*pixel_scale).r*0.061;
+	depth+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*-1.0)*pixel_scale).r*0.242;
+	depth+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*1.0)*pixel_scale).r*0.242;
+	depth+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*2.0)*pixel_scale).r*0.061;
+	depth+=texture2D(source,uv_interp+vec2(0.0,pixel_size.y*3.0)*pixel_scale).r*0.006;
+
+#ifdef USE_GLES_OVER_GL
+	gl_FragDepth = depth;
+
+#else
+	gl_FragDepthEXT = depth;
+#endif
+
+	return;
+#endif
+
+#endif
+
+#ifdef SHADOW_BLUR_H_PASS
+
+
+#ifdef USE_RGBA_DEPTH
+
+#define VEC42DEPTH(m_vec4) dot(m_vec4,vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1))
+
+	highp float depth = VEC42DEPTH(color)*0.383;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(pixel_size.x*-3.0,0.0)*pixel_scale))*0.006;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(pixel_size.x*-2.0,0.0)*pixel_scale))*0.061;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(pixel_size.x*-1.0,0.0)*pixel_scale))*0.242;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(pixel_size.x*1.0,0.0)*pixel_scale))*0.242;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(pixel_size.x*2.0,0.0)*pixel_scale))*0.061;
+	depth+=VEC42DEPTH(texture2D(source,uv_interp+vec2(pixel_size.x*3.0,0.0)*pixel_scale))*0.006;
+	highp vec4 comp = fract(depth * vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0));
+	comp -= comp.xxyz * vec4(0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
+	color=comp;
+#else
+
+
+	highp float depth = color.r*0.383;
+	depth+=texture2D(source,uv_interp+vec2(pixel_size.x*-3.0,0.0)*pixel_scale).r*0.006;
+	depth+=texture2D(source,uv_interp+vec2(pixel_size.x*-2.0,0.0)*pixel_scale).r*0.061;
+	depth+=texture2D(source,uv_interp+vec2(pixel_size.x*-1.0,0.0)*pixel_scale).r*0.242;
+	depth+=texture2D(source,uv_interp+vec2(pixel_size.x*1.0,0.0)*pixel_scale).r*0.242;
+	depth+=texture2D(source,uv_interp+vec2(pixel_size.x*2.0,0.0)*pixel_scale).r*0.061;
+	depth+=texture2D(source,uv_interp+vec2(pixel_size.x*3.0,0.0)*pixel_scale).r*0.006;
+
+#ifdef USE_GLES_OVER_GL
+	gl_FragDepth = depth;
+#else
+	gl_FragDepthEXT = depth;
+#endif
+
+	return;
+
+#endif
+
+#endif
+
 #ifdef USE_HDR
 
+
+#ifdef USE_8BIT_HDR
 	highp vec4 _mult = vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1);
 	highp float hdr_lum = dot(texture2D( hdr_source, vec2(0.0) ), _mult  );
 	color.rgb*=LUM_RANGE;
 	hdr_lum*=LUM_RANGE; //restore to full range
+#else
+	highp float hdr_lum = texture2D( hdr_source, vec2(0.0) ).r;
+#endif
+
 	highp float tone_scale = tonemap_exposure / hdr_lum; //only linear supported
 	color.rgb*=tone_scale;
 
 #endif
+
 
 #ifdef USE_GLOW_COPY
 
@@ -281,10 +378,15 @@ void main() {
 
 #endif
 
-#ifdef USE_GAMMA
+#ifdef USE_SRGB
 
-	color.rgb = pow(color.rgb,gamma);
-
+	{ //i have my doubts about how fast this is
+		color.rgb = min(color.rgb,vec3(1.0)); //clamp just in case
+		vec3 S1 = sqrt(color.rgb);
+		vec3 S2 = sqrt(S1);
+		vec3 S3 = sqrt(S2);
+		color.rgb = 0.662002687 * S1 + 0.684122060 * S2 - 0.323583601 * S3 - 0.225411470 * color.rgb;
+	}
 #endif
 
 
@@ -292,13 +394,20 @@ void main() {
 
 	//highp float lum = dot(color.rgb,highp vec3(1.0/3.0,1.0/3.0,1.0/3.0));
 	highp float lum = max(color.r,max(color.g,color.b));
+#ifdef USE_8BIT_HDR
 	highp vec4 comp = fract(lum * vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
 	color=comp;
+#else
+	color.rgb=vec3(lum);
+#endif
+
+
 #endif
 
 #ifdef USE_HDR_REDUCE
 
+#ifdef USE_8BIT_HDR
 	highp vec4 _multcv = vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0, 1.0);
 	highp float lum_accum = dot(color,_multcv  );
 	lum_accum += dot(texture2D( source,  uv_interp+vec2(-pixel_size.x,-pixel_size.y) ),_multcv  );
@@ -310,16 +419,42 @@ void main() {
 	lum_accum += dot(texture2D( source,  uv_interp+vec2(0.0,pixel_size.y) ),_multcv  );
 	lum_accum += dot(texture2D( source,  uv_interp+vec2(pixel_size.x,pixel_size.y) ),_multcv  );
 	lum_accum/=9.0;
+#else
+
+	highp float lum_accum = color.r;
+	lum_accum += texture2D( source,  uv_interp+vec2(-pixel_size.x,-pixel_size.y) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(0.0,-pixel_size.y) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(pixel_size.x,-pixel_size.y) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(-pixel_size.x,0.0) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(pixel_size.x,0.0) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(-pixel_size.x,pixel_size.y) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(0.0,pixel_size.y) ).r;
+	lum_accum += texture2D( source,  uv_interp+vec2(pixel_size.x,pixel_size.y) ).r;
+	lum_accum/=9.0;
+
+#endif
 
 #ifdef USE_HDR_STORE
 
+#ifdef USE_8BIT_HDR
 	highp float vd_lum = dot(texture2D( source_vd_lum, vec2(0.0) ), _multcv  );
 	lum_accum = clamp( vd_lum + (lum_accum-vd_lum)*hdr_time_delta*hdr_exp_adj_speed,min_luminance*(1.0/LUM_RANGE),max_luminance*(1.0/LUM_RANGE));
+#else
+	highp float vd_lum=texture2D( source_vd_lum, vec2(0.0) );
+	lum_accum = clamp( vd_lum + (lum_accum-vd_lum)*hdr_time_delta*hdr_exp_adj_speed,min_luminance,max_luminance);
 #endif
 
+#endif
+
+#ifdef USE_8BIT_HDR
 	highp vec4 comp = fract(lum_accum * vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
 	color=comp;
+#else
+	color.rgb=vec3(lum_accum);
+#endif
+
+
 #endif
 
 #ifdef USE_RGBE
@@ -338,6 +473,8 @@ void main() {
 #ifdef USE_CUSTOM_ALPHA
 	color.a=custom_alpha;
 #endif
+
+
         gl_FragColor = color;
 }
 

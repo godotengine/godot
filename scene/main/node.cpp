@@ -1078,6 +1078,18 @@ void Node::remove_from_group(const StringName& p_identifier) {
 
 }
 
+Array Node::_get_groups() const {
+
+	Array groups;
+	List<GroupInfo> gi;
+	get_groups(&gi);
+	for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
+		groups.push_back(E->get().name);
+	}
+
+	return groups;
+}
+
 void Node::get_groups(List<GroupInfo> *p_groups) const {
 
 	const StringName *K=NULL;
@@ -1712,6 +1724,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
 	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
 	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);
+	ObjectTypeDB::bind_method(_MD("get_groups"),&Node::_get_groups);
 	ObjectTypeDB::bind_method(_MD("raise"),&Node::raise);
 	ObjectTypeDB::bind_method(_MD("set_owner","owner:Node"),&Node::set_owner);
 	ObjectTypeDB::bind_method(_MD("get_owner:Node"),&Node::get_owner);

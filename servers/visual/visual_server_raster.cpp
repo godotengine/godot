@@ -3970,6 +3970,8 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 	//float cull_max=p_cull_range.max;
 
 	
+	bool overlap = 	rasterizer->light_instance_get_pssm_shadow_overlap(p_light->light_info->instance);
+
 	float cull_min=p_camera->znear;
 	float cull_max=p_camera->zfar;
 	float max_dist = rasterizer->light_directional_get_shadow_param(p_light->base_rid,VS::LIGHT_DIRECTIONAL_SHADOW_PARAM_MAX_DISTANCE);
@@ -3999,7 +4001,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 				camera_matrix.set_orthogonal(
 					p_camera->size,
 					viewport_rect.width / (float)viewport_rect.height,
-					distances[i],
+					distances[(i==0 || !overlap )?i:i-1],
 					distances[i+1],
 					p_camera->vaspect
 
@@ -4011,7 +4013,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 				camera_matrix.set_perspective(
 					p_camera->fov,
 					viewport_rect.width / (float)viewport_rect.height,
-					distances[i],
+					distances[(i==0 || !overlap )?i:i-1],
 					distances[i+1],
 					p_camera->vaspect
 

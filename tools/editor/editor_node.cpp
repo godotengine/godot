@@ -4067,7 +4067,7 @@ EditorNode::EditorNode() {
 
 
 	import_menu->get_popup()->add_separator();
-	import_menu->get_popup()->add_item("Import Settings",SETTINGS_IMPORT);
+	import_menu->get_popup()->add_item("Re-Import..",SETTINGS_IMPORT);
 
 	editor_plugin_screen=NULL;
 	editor_plugin_over=NULL;

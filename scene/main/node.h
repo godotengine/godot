@@ -125,6 +125,7 @@ private:
 
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
 	Array _get_children() const;
+	Array _get_groups() const;
 
 friend class SceneMainLoop;
 

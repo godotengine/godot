@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resource_file type="PackedScene" subresource_count="7" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://enemy.scn" type="PackedScene"></ext_resource>
+	<ext_resource path="res://player.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://sb.cube" type="CubeMap"></ext_resource>
 	<ext_resource path="res://tiles.res" type="MeshLibrary"></ext_resource>
 	<ext_resource path="res://coin.scn" type="PackedScene"></ext_resource>
-	<ext_resource path="res://player.xml" type="PackedScene"></ext_resource>
-	<ext_resource path="res://enemy.scn" type="PackedScene"></ext_resource>
 	<resource type="Environment" path="local://1">
 		<bool name="fxaa/enabled"> False </bool>
 		<int name="background/mode"> 4 </int>
@@ -50,13 +50,14 @@
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
-			<string_array  len="86">
+			<string_array  len="89">
 				<string> "world" </string>
 				<string> "Spatial" </string>
 				<string> "__meta__" </string>
 				<string> "GridMap" </string>
 				<string> "theme/theme" </string>
 				<string> "theme/bake" </string>
+				<string> "lighting/bake" </string>
 				<string> "cell/size" </string>
 				<string> "cell/octant_size" </string>
 				<string> "cell/center_x" </string>
@@ -67,6 +68,8 @@
 				<string> "DirectionalLight" </string>
 				<string> "transform/local" </string>
 				<string> "layers" </string>
+				<string> "params/enabled" </string>
+				<string> "params/bake_mode" </string>
 				<string> "params/energy" </string>
 				<string> "colors/ambient" </string>
 				<string> "colors/diffuse" </string>
@@ -172,17 +175,17 @@
 							<array  len="4" shared="false">
 								<dictionary  shared="false">
 									<string> "distance" </string>
-									<real> 6.622579 </real>
+									<real> 4.173348 </real>
 									<string> "x_rot" </string>
-									<real> 0.358295 </real>
+									<real> 0.558294 </real>
 									<string> "y_rot" </string>
-									<real> 0.45 </real>
+									<real> 1.049999 </real>
 									<string> "use_orthogonal" </string>
 									<bool> False </bool>
 									<string> "use_environment" </string>
 									<bool> False </bool>
 									<string> "pos" </string>
-									<vector3> 9.41795, 2.98588, 13.6496 </vector3>
+									<vector3> 13.4293, 5.68289, 13.9717 </vector3>
 								</dictionary>
 								<dictionary  shared="false">
 									<string> "distance" </string>
@@ -267,14 +270,14 @@
 				</dictionary>
 				<transform> 0.522923, 0.663002, -0.535706, -0.24539, 0.718971, 0.650281, 0.816294, -0.20859, 0.53866, 0, 0, 0 </transform>
 				<int> 1 </int>
+				<int> 0 </int>
 				<real> 1.5 </real>
 				<color> 0.159092, 0.219774, 0.52093, 1 </color>
 				<color> 1, 1, 1, 1 </color>
 				<real> 0 </real>
 				<real> 0.08 </real>
 				<real> 0.5 </real>
-				<resource name=""></resource>				<int> 0 </int>
-				<int> 2 </int>
+				<resource name=""></resource>				<int> 2 </int>
 				<real> 40 </real>
 				<real> 0.410558 </real>
 				<resource  resource_type="Environment" path="local://1">  </resource>
@@ -336,7 +339,7 @@
 				<transform> 0.0160676, 0, -0.999871, 0, 1, 0, 0.999871, 0, 0.0160676, 8.50167, 4.15811, 15.9334 </transform>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="541"> 				-1, -1, 1, 0, -1, 1, 2, 0, 0, 0, 0, 3, 3, -1, 10, 4, 1, 5, 2, 6, 3, 7, 4, 8, 5, 9, 5, 10, 5, 11, 6, 12, 7, 2, 8, 0, 0, 0, 13, 13, -1, 16, 14, 9, 15, 10, 16, 11, 17, 12, 18, 13, 19, 13, 20, 5, 21, 14, 22, 15, 23, 16, 24, 17, 25, 18, 26, 19, 27, 20, 28, 21, 29, 3, 0, 0, 0, 31, 30, -1, 1, 30, 22, 0, 0, 0, 33, 32, -1, 1, 2, 23, 0, 4, 0, 35, 34, 24, 1, 14, 25, 0, 4, 0, 35, 36, 24, 1, 14, 26, 0, 4, 0, 35, 37, 24, 1, 14, 27, 0, 4, 0, 35, 38, 24, 1, 14, 28, 0, 4, 0, 35, 39, 24, 1, 14, 29, 0, 4, 0, 35, 40, 24, 1, 14, 30, 0, 4, 0, 35, 41, 24, 1, 14, 31, 0, 4, 0, 35, 42, 24, 1, 14, 32, 0, 4, 0, 35, 43, 24, 1, 14, 33, 0, 4, 0, 35, 44, 24, 1, 14, 34, 0, 4, 0, 35, 45, 24, 1, 14, 35, 0, 4, 0, 35, 46, 24, 1, 14, 36, 0, 4, 0, 35, 47, 24, 1, 14, 37, 0, 4, 0, 35, 48, 24, 1, 14, 38, 0, 4, 0, 35, 49, 24, 1, 14, 39, 0, 4, 0, 35, 50, 24, 1, 14, 40, 0, 4, 0, 35, 51, 24, 1, 14, 41, 0, 4, 0, 35, 52, 24, 1, 14, 42, 0, 4, 0, 35, 53, 24, 1, 14, 43, 0, 4, 0, 35, 54, 24, 1, 14, 44, 0, 4, 0, 35, 55, 24, 1, 14, 45, 0, 4, 0, 35, 56, 24, 1, 14, 46, 0, 4, 0, 35, 57, 24, 1, 14, 47, 0, 4, 0, 35, 58, 24, 1, 14, 48, 0, 4, 0, 35, 59, 24, 1, 14, 49, 0, 4, 0, 35, 60, 24, 1, 14, 50, 0, 4, 0, 35, 61, 24, 1, 14, 51, 0, 4, 0, 35, 62, 24, 1, 14, 52, 0, 4, 0, 35, 63, 24, 1, 14, 53, 0, 4, 0, 35, 64, 24, 1, 14, 54, 0, 4, 0, 35, 65, 24, 1, 14, 55, 0, 4, 0, 35, 66, 24, 1, 14, 56, 0, 4, 0, 35, 67, 24, 1, 14, 57, 0, 4, 0, 35, 68, 24, 1, 14, 58, 0, 4, 0, 35, 69, 24, 1, 14, 59, 0, 4, 0, 35, 70, 24, 1, 14, 60, 0, 4, 0, 35, 71, 24, 1, 14, 61, 0, 4, 0, 35, 72, 24, 1, 14, 62, 0, 4, 0, 35, 73, 24, 1, 14, 63, 0, 4, 0, 35, 74, 24, 1, 14, 64, 0, 4, 0, 35, 75, 24, 1, 14, 65, 0, 4, 0, 35, 76, 24, 1, 14, 66, 0, 4, 0, 35, 77, 24, 1, 14, 67, 0, 4, 0, 35, 78, 24, 1, 14, 68, 0, 0, 0, 33, 79, -1, 0, 0, 49, 0, 81, 80, 69, 1, 14, 70, 0, 49, 0, 81, 82, 69, 1, 14, 71, 0, 49, 0, 81, 83, 69, 1, 14, 72, 0, 49, 0, 81, 84, 69, 1, 14, 73, 0, 0, 0, 81, 85, 74, 1, 14, 75, 0 </int_array>
+			<int_array  len="547"> 				-1, -1, 1, 0, -1, 1, 2, 0, 0, 0, 0, 3, 3, -1, 11, 4, 1, 5, 2, 6, 2, 7, 3, 8, 4, 9, 5, 10, 5, 11, 5, 12, 6, 13, 7, 2, 8, 0, 0, 0, 14, 14, -1, 18, 15, 9, 16, 10, 17, 5, 18, 11, 19, 12, 20, 13, 21, 14, 22, 14, 23, 5, 24, 15, 25, 16, 26, 17, 27, 18, 28, 11, 29, 19, 30, 20, 31, 21, 32, 3, 0, 0, 0, 34, 33, -1, 1, 33, 22, 0, 0, 0, 36, 35, -1, 1, 2, 23, 0, 4, 0, 38, 37, 24, 1, 15, 25, 0, 4, 0, 38, 39, 24, 1, 15, 26, 0, 4, 0, 38, 40, 24, 1, 15, 27, 0, 4, 0, 38, 41, 24, 1, 15, 28, 0, 4, 0, 38, 42, 24, 1, 15, 29, 0, 4, 0, 38, 43, 24, 1, 15, 30, 0, 4, 0, 38, 44, 24, 1, 15, 31, 0, 4, 0, 38, 45, 24, 1, 15, 32, 0, 4, 0, 38, 46, 24, 1, 15, 33, 0, 4, 0, 38, 47, 24, 1, 15, 34, 0, 4, 0, 38, 48, 24, 1, 15, 35, 0, 4, 0, 38, 49, 24, 1, 15, 36, 0, 4, 0, 38, 50, 24, 1, 15, 37, 0, 4, 0, 38, 51, 24, 1, 15, 38, 0, 4, 0, 38, 52, 24, 1, 15, 39, 0, 4, 0, 38, 53, 24, 1, 15, 40, 0, 4, 0, 38, 54, 24, 1, 15, 41, 0, 4, 0, 38, 55, 24, 1, 15, 42, 0, 4, 0, 38, 56, 24, 1, 15, 43, 0, 4, 0, 38, 57, 24, 1, 15, 44, 0, 4, 0, 38, 58, 24, 1, 15, 45, 0, 4, 0, 38, 59, 24, 1, 15, 46, 0, 4, 0, 38, 60, 24, 1, 15, 47, 0, 4, 0, 38, 61, 24, 1, 15, 48, 0, 4, 0, 38, 62, 24, 1, 15, 49, 0, 4, 0, 38, 63, 24, 1, 15, 50, 0, 4, 0, 38, 64, 24, 1, 15, 51, 0, 4, 0, 38, 65, 24, 1, 15, 52, 0, 4, 0, 38, 66, 24, 1, 15, 53, 0, 4, 0, 38, 67, 24, 1, 15, 54, 0, 4, 0, 38, 68, 24, 1, 15, 55, 0, 4, 0, 38, 69, 24, 1, 15, 56, 0, 4, 0, 38, 70, 24, 1, 15, 57, 0, 4, 0, 38, 71, 24, 1, 15, 58, 0, 4, 0, 38, 72, 24, 1, 15, 59, 0, 4, 0, 38, 73, 24, 1, 15, 60, 0, 4, 0, 38, 74, 24, 1, 15, 61, 0, 4, 0, 38, 75, 24, 1, 15, 62, 0, 4, 0, 38, 76, 24, 1, 15, 63, 0, 4, 0, 38, 77, 24, 1, 15, 64, 0, 4, 0, 38, 78, 24, 1, 15, 65, 0, 4, 0, 38, 79, 24, 1, 15, 66, 0, 4, 0, 38, 80, 24, 1, 15, 67, 0, 4, 0, 38, 81, 24, 1, 15, 68, 0, 0, 0, 36, 82, -1, 0, 0, 49, 0, 84, 83, 69, 1, 15, 70, 0, 49, 0, 84, 85, 69, 1, 15, 71, 0, 49, 0, 84, 86, 69, 1, 15, 72, 0, 49, 0, 84, 87, 69, 1, 15, 73, 0, 0, 0, 84, 88, 74, 1, 15, 75, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>

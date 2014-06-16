@@ -308,6 +308,8 @@ public:
 		uniforms_dirty = true;
 	};
 
+	uint32_t get_version() const { return new_conditional_version.version; }
+
 	void set_uniform_camera(int p_idx, const CameraMatrix& p_mat) {
 
 		uniform_cameras[p_idx] = p_mat;
