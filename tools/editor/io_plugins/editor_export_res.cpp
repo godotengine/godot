@@ -84,7 +84,7 @@ Vector<uint8_t> EditorExportResources::custom_export(String& p_path,const Ref<Ed
 			}
 		}
 
-		Ref<Resource> res = ResourceLoader::load(p_path, "", true);
+		Ref<Resource> res = ResourceLoader::load(p_path, "");
 		if(res.is_null())
 			return Vector<uint8_t>();
 
