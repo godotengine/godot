@@ -288,12 +288,12 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 
 
 
-Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str) {
+Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str,bool p_shared) {
 
 
 	if (token.type==TK_CURLY_BRACKET_OPEN) {
 
-		Dictionary d;
+		Dictionary d(p_shared);
 		Error err = _parse_object(d,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -301,7 +301,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 		return OK;
 	} else if (token.type==TK_BRACKET_OPEN) {
 
-		Array a;
+		Array a(p_shared);
 		Error err = _parse_array(a,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -370,7 +370,7 @@ Error JSON::_parse_array(Array &array,const CharType *p_str,int &index, int p_le
 		}
 
 		Variant v;
-		err = _parse_value(v,token,p_str,index,p_len,line,r_err_str);
+		err = _parse_value(v,token,p_str,index,p_len,line,r_err_str,array.is_shared());
 		if (err)
 			return err;
 
@@ -442,7 +442,7 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 				return err;
 
 			Variant v;
-			err = _parse_value(v,token,p_str,index,p_len,line,r_err_str);
+			err = _parse_value(v,token,p_str,index,p_len,line,r_err_str,object.is_shared());
 			if (err)
 				return err;
 			object[key]=v;
