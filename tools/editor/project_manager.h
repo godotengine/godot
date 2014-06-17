@@ -33,6 +33,7 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/tool_button.h"
 
 class NewProjectDialog;
 class ProjectListFilter;
@@ -104,7 +105,7 @@ private:
 
 	OptionButton *filter_option;
 	LineEdit *search_box;
-	Button *clear_search_button;
+	ToolButton *clear_search_button;
 
 	enum FilterOption {
 		FILTER_NAME,
@@ -118,7 +119,7 @@ private:
 	void _filter_option_selected(int p_idx);
 
 protected:
-
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
