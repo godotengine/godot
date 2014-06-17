@@ -85,20 +85,22 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 	Ref<Texture> texture = ResourceLoader::load(p_file);
 	if (texture.is_valid()) {
 
-		String name_only = p_file.get_file().substr(0, p_file.get_file().find_last("."));
+		String basename =  p_file.get_file().basename();
 
 		if (InputDefault::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+
 			AnimatedSprite *sprite = memnew(AnimatedSprite);
 			Ref<SpriteFrames> frames = memnew(SpriteFrames);
 
 			int digits = 0;
-			String name_with_path = p_file.basename();
-			for (int i=name_with_path.length()-1; i>=0 && name_with_path[i]>='0'&& name_with_path[i]<='9'; --i)
+			String path = p_file.basename();
+			for (int i=path.length()-1; i>=0 && path[i]>='0'&& path[i]<='9'; --i) // find digits backward
 				++digits;
-			bool is_pad_zeros = name_with_path[name_with_path.length()-digits] == '0';
+			int digits_start = path.length() - digits;
+			bool is_pad_zeros = path[digits_start] == '0';
 
 			int i=0;
-			int base = name_with_path.substr(name_with_path.length()-digits, digits).to_int();
+			int base = path.right(digits_start).to_int();
 			while(texture.is_valid()) {
 				frames->add_frame(texture);
 
@@ -106,19 +108,20 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 				if (is_pad_zeros)
 					next = next.pad_zeros(digits);
 
-				String next_file = name_with_path.substr(0, name_with_path.length()-digits) + next + "." + p_file.extension();
+				String next_file = path.left(digits_start) + next + "." + p_file.extension();
 				if (!FileAccess::exists(next_file))
 					break;
 
 				texture = ResourceLoader::load(next_file);
 			}
+			if (digits < basename.length()) {
+				basename = basename.substr(0, basename.length()-digits);
+				CharType last = basename[basename.length()-1];
+				if (last == '_' || last=='-' || last=='.') // some common used delimeter before number, e.g. texture_001.png
+					basename = basename.substr(0, basename.length()-1);
+			}
 
-			name_only = name_only.substr(0, name_only.length()-digits);
-			CharType last = name_only[name_only.length()-1];
-			if (last == '_' || last=='-' || last=='.') // some common used delimeter before number, e.g. texture_001.png
-				name_only = name_only.substr(0, name_only.length()-1);
-
-			sprite->set_name(name_only);
+			sprite->set_name(basename);
 
 			if (p_replace_selected) {
 				editor_data->copy_object_params(selected);
@@ -131,7 +134,7 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 		} else {
 
 			Sprite *sprite = memnew(Sprite);			
-			sprite->set_name(name_only);
+			sprite->set_name(basename);
 
 			if (p_replace_selected) {
 				editor_data->copy_object_params(selected);
