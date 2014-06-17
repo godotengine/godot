@@ -912,12 +912,6 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		Color diffuse_at_point(0.8,0.8,0.8);
 		Color specular_at_point(0.0,0.0,0.0);
 
-		if (triangle->material) {
-
-			//triangle->get_uv(r_point);
-			diffuse_at_point=triangle->material->diffuse.get_color(uv);
-			specular_at_point=triangle->material->specular.get_color(uv);
-		}
 
 		float dist = p_begin.distance_to(r_point);
 
@@ -962,6 +956,14 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 			r_point+=r_normal*0.01;
 
 
+
+			if (triangle->material) {
+
+				//triangle->get_uv(r_point);
+
+				diffuse_at_point=triangle->material->diffuse.get_color(uv);
+				specular_at_point=triangle->material->specular.get_color(uv);
+			}
 
 
 			diffuse_at_point.r=res_light.r*diffuse_at_point.r;

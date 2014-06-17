@@ -441,7 +441,7 @@ class RasterizerFlash : public Rasterizer {
 			fx_param[VS::ENV_FX_PARAM_BCS_BRIGHTNESS]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_CONTRAST]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_SATURATION]=1.0;
-			fx_param[VS::ENV_FX_PARAM_GAMMA]=1.0;
+			fx_param[VS::ENV_FX_PARAM_SRGB_CONVERT]=1.0;
 
 		}
 

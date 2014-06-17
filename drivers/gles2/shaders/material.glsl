@@ -342,7 +342,7 @@ VERTEX_SHADER_CODE
 
 #ifdef USE_FOG
 
-	fog_interp.a = pow( clamp( (-vertex_interp.z-fog_params.x)/(fog_params.y-fog_params.x), 0.0, 1.0 ), fog_params.z );
+	fog_interp.a = pow( clamp( (length(vertex_interp)-fog_params.x)/(fog_params.y-fog_params.x), 0.0, 1.0 ), fog_params.z );
 	fog_interp.rgb = mix( fog_color_begin, fog_color_end, fog_interp.a );
 #endif
 
@@ -666,9 +666,14 @@ float SAMPLE_SHADOW_TEX( highp vec2 coord, highp float refdepth) {
 
 #ifdef USE_SHADOW_ESM
 
+uniform float esm_multiplier;
 
 float SAMPLE_SHADOW_TEX(vec2 p_uv,float p_depth) {
 
+#if defined (USE_DEPTH_SHADOWS)
+	//these only are used if interpolation exists
+	highp float occluder = SHADOW_DEPTH(shadow_texture, p_uv);
+#else
 	vec2 unnormalized = p_uv/shadow_texel_size;
 	vec2 fractional = fract(unnormalized);
 	unnormalized = floor(unnormalized);
@@ -681,7 +686,8 @@ float SAMPLE_SHADOW_TEX(vec2 p_uv,float p_depth) {
 
 	highp float occluder = (exponent.w + (exponent.x - exponent.w) * fractional.y);
 	occluder = occluder + ((exponent.z + (exponent.y - exponent.z) * fractional.y) - occluder)*fractional.x;
-	return clamp(exp(28.0 * ( occluder - p_depth )),0.0,1.0);
+#endif
+	return clamp(exp(esm_multiplier* ( occluder - p_depth )),0.0,1.0);
 
 }
 
@@ -818,7 +824,7 @@ FRAGMENT_SHADER_CODE
 		vec3 col_up=texture2D(ambient_octree_tex,octant_uv).rgb;
 		octant_uv.y+=ambient_octree_pix_size.y*2.0;
 		vec3 col_down=texture2D(ambient_octree_tex,octant_uv).rgb;
-		ambientmap_color=mix(col_down,col_up,1.0-sub.z);
+		ambientmap_color=mix(col_up,col_down,sub.z);
 
 		ambientmap_color*=diffuse.rgb;
 
@@ -866,6 +872,15 @@ FRAGMENT_SHADER_CODE
 	vec2 pssm_coord;
 	float pssm_z;
 
+#if defined(LIGHT_USE_PSSM) && defined(USE_SHADOW_ESM)
+#define USE_PSSM_BLEND
+	float pssm_blend;
+	vec2 pssm_coord_2;
+	float pssm_z_2;
+	vec3 light_pssm_split_inv = 1.0/light_pssm_split;
+	float w_inv = 1.0/gl_FragCoord.w;
+#endif
+
 #ifdef LIGHT_USE_PSSM4
 
 
@@ -874,10 +889,21 @@ FRAGMENT_SHADER_CODE
 		if (gl_FragCoord.w > light_pssm_split.x) {
 			pssm_coord=shadow_coord.xy;
 			pssm_z=shadow_coord.z;
+#if defined(USE_PSSM_BLEND)
+			pssm_coord_2=shadow_coord2.xy;
+			pssm_z_2=shadow_coord2.z;
+			pssm_blend=smoothstep(0.0,light_pssm_split_inv.x,w_inv);
+#endif
 
 		} else {
 			pssm_coord=shadow_coord2.xy;
 			pssm_z=shadow_coord2.z;
+#if defined(USE_PSSM_BLEND)
+			pssm_coord_2=shadow_coord3.xy;
+			pssm_z_2=shadow_coord3.z;
+			pssm_blend=smoothstep(light_pssm_split_inv.x,light_pssm_split_inv.y,w_inv);
+#endif
+
 		}
 	} else {
 
@@ -885,9 +911,21 @@ FRAGMENT_SHADER_CODE
 		if (gl_FragCoord.w > light_pssm_split.z) {
 			pssm_coord=shadow_coord3.xy;
 			pssm_z=shadow_coord3.z;
+#if defined(USE_PSSM_BLEND)
+			pssm_coord_2=shadow_coord4.xy;
+			pssm_z_2=shadow_coord4.z;
+			pssm_blend=smoothstep(light_pssm_split_inv.y,light_pssm_split_inv.z,w_inv);
+#endif
+
 		} else {
 			pssm_coord=shadow_coord4.xy;
 			pssm_z=shadow_coord4.z;
+#if defined(USE_PSSM_BLEND)
+			pssm_coord_2=shadow_coord4.xy;
+			pssm_z_2=shadow_coord4.z;
+			pssm_blend=0.0;
+#endif
+
 		}
 	}
 
@@ -896,16 +934,31 @@ FRAGMENT_SHADER_CODE
 	if (gl_FragCoord.w > light_pssm_split.x) {
 		pssm_coord=shadow_coord.xy;
 		pssm_z=shadow_coord.z;
+#if defined(USE_PSSM_BLEND)
+		pssm_coord_2=shadow_coord2.xy;
+		pssm_z_2=shadow_coord2.z;
+		pssm_blend=smoothstep(0.0,light_pssm_split_inv.x,w_inv);
+#endif
 
 	} else {
 		pssm_coord=shadow_coord2.xy;
 		pssm_z=shadow_coord2.z;
+#if defined(USE_PSSM_BLEND)
+		pssm_coord_2=shadow_coord2.xy;
+		pssm_z_2=shadow_coord2.z;
+		pssm_blend=0.0;
+#endif
+
 	}
 
 #endif
 
 	//one one sample
 	shadow_attenuation=SAMPLE_SHADOW_TEX(pssm_coord,pssm_z);
+#if defined(USE_PSSM_BLEND)
+	shadow_attenuation=mix(shadow_attenuation,SAMPLE_SHADOW_TEX(pssm_coord_2,pssm_z_2),pssm_blend);
+#endif
+
 
 #endif
 
@@ -1054,7 +1107,7 @@ FRAGMENT_SHADER_CODE
 	diffuse.a=glow;
 #endif
 
-#ifdef USE_HDR
+#ifdef USE_8BIT_HDR
 	diffuse.rgb*=0.25;
 #endif
 

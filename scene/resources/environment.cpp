@@ -140,8 +140,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"bcs/brightness",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_BCS_BRIGHTNESS);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"bcs/contrast",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_BCS_CONTRAST);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"bcs/saturation",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_BCS_SATURATION);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"gamma/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_GAMMA);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"gamma/gamma",PROPERTY_HINT_EXP_EASING,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GAMMA);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"srgb/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_SRGB);
+
 
 
 
@@ -194,7 +194,7 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( FX_HDR );
 	BIND_CONSTANT( FX_FOG );
 	BIND_CONSTANT( FX_BCS);
-	BIND_CONSTANT( FX_GAMMA );
+	BIND_CONSTANT( FX_SRGB );
 	BIND_CONSTANT( FX_MAX );
 
 
@@ -226,7 +226,6 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( FX_PARAM_BCS_BRIGHTNESS );
 	BIND_CONSTANT( FX_PARAM_BCS_CONTRAST );
 	BIND_CONSTANT( FX_PARAM_BCS_SATURATION );
-	BIND_CONSTANT( FX_PARAM_GAMMA );
 	BIND_CONSTANT( FX_PARAM_MAX );
 
 }
@@ -269,7 +268,7 @@ Environment::Environment() {
 	fx_set_param(FX_PARAM_BCS_BRIGHTNESS,1.0);
 	fx_set_param(FX_PARAM_BCS_CONTRAST,1.0);
 	fx_set_param(FX_PARAM_BCS_SATURATION,1.0);
-	fx_set_param(FX_PARAM_GAMMA,1.0);
+
 }
 Environment::~Environment() {
 

@@ -2878,6 +2878,11 @@ int RasterizerGLES1::light_instance_get_shadow_passes(RID p_light_instance) cons
 	return 0;
 }
 
+bool RasterizerGLES1::light_instance_get_pssm_shadow_overlap(RID p_light_instance) const {
+
+	return false;
+}
+
 void RasterizerGLES1::light_instance_set_custom_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near,float p_split_far) {
 
 	LightInstance *lighti = light_instance_owner.get( p_light_instance );

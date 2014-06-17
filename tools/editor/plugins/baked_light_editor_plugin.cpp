@@ -111,7 +111,7 @@ void BakedLightEditor::_notification(int p_option) {
 				ERR_FAIL_COND(node->get_baked_light().is_null());
 
 				baker->update_octree_image(octree_texture);
-#if 0
+#if 1
 //debug
 				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA,octree_texture);
 				Ref<ImageTexture> it = memnew( ImageTexture );

@@ -140,6 +140,7 @@
 #include "scene/resources/mesh_library.h"
 
 #include "scene/resources/image_path_finder.h"
+#include "scene/resources/polygon_path_finder.h"
 
 #include "scene/resources/sample.h"
 #include "scene/audio/sample_player.h"
@@ -539,6 +540,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<StyleBoxImageMask>();
 	ObjectTypeDB::register_type<Theme>();
 	ObjectTypeDB::register_type<ImagePathFinder>();
+	ObjectTypeDB::register_type<PolygonPathFinder>();
 	ObjectTypeDB::register_type<BitMap>();
 
 	OS::get_singleton()->yield(); //may take time to init
