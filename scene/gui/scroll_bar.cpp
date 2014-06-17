@@ -432,6 +432,46 @@ float ScrollBar::get_custom_step() const {
 }
 
 
+void ScrollBar::_drag_slave_exit() {
+
+
+}
+
+
+void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
+
+
+}
+
+void ScrollBar::set_drag_slave(const NodePath& p_path) {
+
+	if (drag_slave) {
+		drag_slave->disconnect("input_event",this,"_drag_slave_input");
+		drag_slave->disconnect("exit_scene",this,"_drag_slave_exit");
+	}
+
+	drag_slave=NULL;
+	drag_slave_path=p_path;
+	if (has_node(p_path)) {
+		Node *n = get_node(p_path);
+		drag_slave=n->cast_to<Control>();
+	}
+
+	if (drag_slave) {
+		drag_slave->connect("input_event",this,"_drag_slave_input");
+		drag_slave->connect("exit_scene",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+	}
+
+}
+
+NodePath ScrollBar::get_drag_slave() const{
+
+
+	return drag_slave_path;
+}
+
+
+
 #if 0
 
 void ScrollBar::mouse_button(const Point2& p_pos, int b.button_index,bool b.pressed,int p_modifier_mask) {
@@ -571,6 +611,8 @@ void ScrollBar::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ScrollBar::_input_event);
 	ObjectTypeDB::bind_method(_MD("set_custom_step","step"),&ScrollBar::set_custom_step);
 	ObjectTypeDB::bind_method(_MD("get_custom_step"),&ScrollBar::get_custom_step);
+	ObjectTypeDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
+	ObjectTypeDB::bind_method(_MD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), _SCS("set_custom_step"),_SCS("get_custom_step"));
 
@@ -584,6 +626,7 @@ ScrollBar::ScrollBar(Orientation p_orientation)
 	orientation=p_orientation;
 	hilite=HILITE_NONE;
 	custom_step=-1;
+	drag_slave=NULL;
 		
 	drag.active=false;
 	

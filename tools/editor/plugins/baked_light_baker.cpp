@@ -1498,11 +1498,16 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 		w[i+3]=0xFF;
 	}
 
+	float multiplier=1.0;
+
+	if (baked_light->get_format()==BakedLight::FORMAT_HDR8)
+		multiplier=8;
 	encode_uint32(baked_octree_texture_w,&w[0]);
 	encode_uint32(baked_octree_texture_h,&w[4]);
 	encode_uint32(0,&w[8]);
 	encode_float(1<<lattice_size,&w[12]);
 	encode_uint32(octree_depth-lattice_size,&w[16]);
+	encode_uint32(multiplier,&w[20]);
 
 	encode_float(octree_aabb.pos.x,&w[32]);
 	encode_float(octree_aabb.pos.y,&w[36]);
@@ -1538,6 +1543,7 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 	const double *normptr=norm_arr.ptr();
 
 	int lz=lights.size();
+	mult/=multiplier;
 
 	for(int i=0;i<octant_count;i++) {
 

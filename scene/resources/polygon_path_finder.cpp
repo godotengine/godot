@@ -2,7 +2,7 @@
 #include "geometry.h"
 
 
-bool PolygonPathFinder::_is_point_inside(const Vector2& p_point) {
+bool PolygonPathFinder::_is_point_inside(const Vector2& p_point) const {
 
 	int crosses=0;
 
@@ -36,6 +36,7 @@ void PolygonPathFinder::setup(const Vector<Vector2>& p_points, const Vector<int>
 
 	int point_count=p_points.size();
 	points.resize(point_count+2);
+	bounds=Rect2();
 
 	for(int i=0;i<p_points.size();i++) {
 
@@ -43,6 +44,12 @@ void PolygonPathFinder::setup(const Vector<Vector2>& p_points, const Vector<int>
 
 		outside_point.x = i==0?p_points[0].x:(MAX( p_points[i].x, outside_point.x ));
 		outside_point.y = i==0?p_points[0].y:(MAX( p_points[i].y, outside_point.y ));
+
+		if (i==0) {
+			bounds.pos=points[i].pos;
+		} else {
+			bounds.expand_to(points[i].pos);
+		}
 	}
 
 	outside_point.x+=20.451+Math::randf()*10.2039;
@@ -108,10 +115,14 @@ void PolygonPathFinder::setup(const Vector<Vector2>& p_points, const Vector<int>
 Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector2& p_to) {
 
 	Vector<Vector2> path;
-	if (!_is_point_inside(p_from))
+	if (!_is_point_inside(p_from)) {
+		printf("p_from outside\n");
 		return path;
-	if (!_is_point_inside(p_to))
+	};
+	if (!_is_point_inside(p_to)) {
+		printf("p_to outside\n");
 		return path;
+	};
 
 	//test direct connection
 	{
@@ -148,8 +159,8 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 	points[bidx].pos=p_to;
 	points[aidx].distance=0;
 	points[bidx].distance=0;
-	points[aidx].distance=0;
-	points[bidx].distance=0;
+	points[aidx].prev=-1;
+	points[bidx].prev=-1;
 
 
 	for(int i=0;i<points.size()-2;i++) {
@@ -185,7 +196,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 			}
 
 			if (!valid_a && !valid_b)
-				continue;
+				break;
 
 		}
 
@@ -220,6 +231,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 	while(true) {
 
 		if (open_list.size()==0) {
+			printf("open list empty\n");
 			break;
 		}
 		//check open list
@@ -315,6 +327,7 @@ void PolygonPathFinder::_set_data(const Dictionary& p_data) {
 	ERR_FAIL_COND(!p_data.has("points"));
 	ERR_FAIL_COND(!p_data.has("connections"));
 	ERR_FAIL_COND(!p_data.has("segments"));
+	ERR_FAIL_COND(!p_data.has("bounds"));
 
 	DVector<Vector2> p=p_data["points"];
 	Array c=p_data["connections"];
@@ -348,6 +361,7 @@ void PolygonPathFinder::_set_data(const Dictionary& p_data) {
 		Edge e(sr[i],sr[i+1]);
 		edges.insert(e);
 	}
+	bounds=p_data["bounds"];
 
 }
 
@@ -387,6 +401,7 @@ Dictionary PolygonPathFinder::_get_data() const{
 
 	}
 
+	d["bounds"]=bounds;
 	d["points"]=p;
 	d["connections"]=connections;
 	d["segments"]=ind;
@@ -395,10 +410,63 @@ Dictionary PolygonPathFinder::_get_data() const{
 
 }
 
+bool PolygonPathFinder::is_point_inside(const Vector2& p_point) const {
+
+	return _is_point_inside(p_point);
+}
+
+Vector2 PolygonPathFinder::get_closest_point(const Vector2& p_point) const {
+
+	int closest_idx=-1;
+	float closest_dist=1e20;
+	for(int i=0;i<points.size()-2;i++) {
+
+		float d = p_point.distance_squared_to(points[i].pos);
+		if (d<closest_dist) {
+			d=closest_dist;
+			closest_idx=i;
+		}
+
+	}
+
+	ERR_FAIL_COND_V(closest_idx==-1,Vector2());
+
+	return points[closest_idx].pos;
+}
+
+
+Vector<Vector2> PolygonPathFinder::get_intersections(const Vector2& p_from, const Vector2& p_to) const {
+
+	Vector<Vector2> inters;
+
+	for (Set<Edge>::Element *E=edges.front();E;E=E->next()) {
+		Vector2 a = points[E->get().points[0]].pos;
+		Vector2 b = points[E->get().points[1]].pos;
+
+		Vector2 res;
+		if (Geometry::segment_intersects_segment_2d(a,b,p_from,p_to,&res)) {
+			inters.push_back(res);
+		}
+	}
+
+	return inters;
+
+}
+
+Rect2 PolygonPathFinder::get_bounds() const {
+
+	return bounds;
+}
+
+
 void PolygonPathFinder::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("setup","points","connections"),&PolygonPathFinder::setup);
 	ObjectTypeDB::bind_method(_MD("find_path","from","to"),&PolygonPathFinder::find_path);
+	ObjectTypeDB::bind_method(_MD("get_intersections","from","to"),&PolygonPathFinder::get_intersections);
+	ObjectTypeDB::bind_method(_MD("get_closest_point","point"),&PolygonPathFinder::get_closest_point);
+	ObjectTypeDB::bind_method(_MD("is_point_inside","point"),&PolygonPathFinder::is_point_inside);
+	ObjectTypeDB::bind_method(_MD("get_bounds"),&PolygonPathFinder::get_bounds);
 	ObjectTypeDB::bind_method(_MD("_set_data"),&PolygonPathFinder::_set_data);
 	ObjectTypeDB::bind_method(_MD("_get_data"),&PolygonPathFinder::_get_data);
 

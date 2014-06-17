@@ -548,6 +548,7 @@ uniform highp float ambient_octree_lattice_size;
 uniform highp vec2 ambient_octree_pix_size;
 uniform highp float ambient_octree_lattice_divide;
 uniform highp sampler2D ambient_octree_tex;
+uniform float ambient_octree_multiplier;
 uniform int ambient_octree_steps;
 
 #endif
@@ -824,7 +825,7 @@ FRAGMENT_SHADER_CODE
 		vec3 col_up=texture2D(ambient_octree_tex,octant_uv).rgb;
 		octant_uv.y+=ambient_octree_pix_size.y*2.0;
 		vec3 col_down=texture2D(ambient_octree_tex,octant_uv).rgb;
-		ambientmap_color=mix(col_up,col_down,sub.z);
+		ambientmap_color=mix(col_up,col_down,sub.z)*ambient_octree_multiplier;
 
 		ambientmap_color*=diffuse.rgb;
 

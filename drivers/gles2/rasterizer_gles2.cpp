@@ -5739,6 +5739,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LATTICE_DIVIDE, baked_light->octree_lattice_divide);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_STEPS, baked_light->octree_steps);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_TEX,5);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_MULTIPLIER,baked_light->texture_multiplier);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_PIX_SIZE,baked_light->octree_tex_pixel_size);
 
 

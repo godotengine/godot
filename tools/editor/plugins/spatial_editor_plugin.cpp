@@ -2130,8 +2130,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_item("Environment",VIEW_ENVIRONMENT);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT),true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_item("Selection",VIEW_CENTER_TO_SELECTION);
-	view_menu->get_popup()->add_item("Align with view",VIEW_ALIGN_SELECTION_WITH_VIEW);
+	view_menu->get_popup()->add_item("Selection (F)",VIEW_CENTER_TO_SELECTION);
+	view_menu->get_popup()->add_item("Align with view (Ctrl+Shift+F)",VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
 	preview_camera = memnew( Button );
