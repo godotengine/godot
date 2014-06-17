@@ -482,7 +482,6 @@ class RasterizerGLES1 : public Rasterizer {
 			fx_param[VS::ENV_FX_PARAM_BCS_BRIGHTNESS]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_CONTRAST]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_SATURATION]=1.0;
-			fx_param[VS::ENV_FX_PARAM_GAMMA]=1.0;
 
 		}
 
@@ -1100,6 +1099,7 @@ public:
 	virtual bool light_instance_assign_shadow(RID p_light_instance);
 	virtual ShadowType light_instance_get_shadow_type(RID p_light_instance) const;
 	virtual int light_instance_get_shadow_passes(RID p_light_instance) const;
+	virtual bool light_instance_get_pssm_shadow_overlap(RID p_light_instance) const;
 	virtual void light_instance_set_custom_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near=0,float p_split_far=0);
 	virtual int light_instance_get_shadow_size(RID p_light_instance, int p_index=0) const { return 1; }
 

@@ -167,6 +167,7 @@ public:
 	};
 
 
+
 	/* TEXTURE API */
 
 	virtual RID texture_create()=0;
@@ -455,6 +456,7 @@ public:
 	virtual int light_instance_get_shadow_passes(RID p_light_instance) const=0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near=0,float p_split_far=0)=0;
 	virtual int light_instance_get_shadow_size(RID p_light_instance, int p_index=0) const=0;
+	virtual bool light_instance_get_pssm_shadow_overlap(RID p_light_instance) const=0;
 
 	/* SHADOWS */
 

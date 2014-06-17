@@ -1330,12 +1330,17 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 				}
 				path=base.get_base_dir().plus_file(path);
 			}
-
 			script = ResourceLoader::load(path);
 			if (script.is_null()) {
 				_set_error("Could not load base class: "+path,p_class);
 				return ERR_FILE_NOT_FOUND;
 			}
+			if (!script->valid) {
+
+				_set_error("Script not fully loaded (cyclic preload?): "+path,p_class);
+				return ERR_BUSY;
+			}
+			//print_line("EXTENDS PATH: "+path+" script is "+itos(script.is_valid())+" indices is "+itos(script->member_indices.size())+" valid? "+itos(script->valid));
 
 			if (p_class->extends_class.size()) {
 
@@ -1436,6 +1441,9 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 
 	}
+
+
+	print_line("Script: "+p_script->get_path()+" indices: "+itos(p_script->member_indices.size()));
 
 
 	for(int i=0;i<p_class->variables.size();i++) {

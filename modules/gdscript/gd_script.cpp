@@ -1451,6 +1451,7 @@ Error GDScript::reload() {
 
 
 
+
 	valid=false;
 	GDParser parser;
 	Error err = parser.parse(source,basedir);
@@ -1721,6 +1722,7 @@ GDScript::GDScript() {
 	_base=NULL;
 	_owner=NULL;
 	tool=false;
+
 }
 
 

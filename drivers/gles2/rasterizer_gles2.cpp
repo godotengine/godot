@@ -43,6 +43,11 @@
 #define   _GL_HALF_FLOAT_OES      0x8D61
 #endif
 
+#define _GL_RGBA16F_EXT                                  0x881A
+#define _GL_RGB16F_EXT                                   0x881B
+#define _GL_RG16F_EXT                                    0x822F
+#define _GL_R16F_EXT                                     0x822D
+#define _GL_R32F_EXT 0x822E
 
 #define _DEPTH_COMPONENT24_OES                 0x81A6
 
@@ -3317,6 +3322,11 @@ int RasterizerGLES2::light_instance_get_shadow_passes(RID p_light_instance) cons
 		return 1;
 }
 
+bool RasterizerGLES2::light_instance_get_pssm_shadow_overlap(RID p_light_instance) const {
+
+	return shadow_filter>=SHADOW_FILTER_ESM;
+}
+
 void RasterizerGLES2::light_instance_set_shadow_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near,float p_split_far) {
 
 	LightInstance *lighti = light_instance_owner.get( p_light_instance );
@@ -3590,9 +3600,10 @@ void RasterizerGLES2::begin_frame() {
 	glFrontFace(GL_CW);
 
 	//fragment_lighting=Globals::get_singleton()->get("rasterizer/use_fragment_lighting");
+#ifdef TOOLS_ENABLED
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("rasterizer/use_pixel_snap",false));
 	shadow_filter=ShadowFilterTechnique(int(Globals::get_singleton()->get("rasterizer/shadow_filter")));
-
+#endif
 
 	window_size = Size2( OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height );
 
@@ -4302,6 +4313,13 @@ void RasterizerGLES2::add_particles( const RID& p_particle_instance, const Insta
 
 }
 
+Color RasterizerGLES2::_convert_color(const Color& p_color) {
+
+	if (current_env && current_env->fx_enabled[VS::ENV_FX_SRGB])
+		return p_color.to_linear();
+	else
+		return p_color;
+}
 
 void RasterizerGLES2::_set_cull(bool p_front,bool p_reverse_cull) {
 
@@ -4383,9 +4401,9 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 	//all goes to false by default
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PASS,shadow!=NULL);
-	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,shadow_filter!=SHADOW_FILTER_NONE);
-	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter>SHADOW_FILTER_PCF5);
-	//material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,true);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,shadow_filter==SHADOW_FILTER_PCF5 || shadow_filter==SHADOW_FILTER_PCF13);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter==SHADOW_FILTER_PCF13);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,shadow_filter==SHADOW_FILTER_ESM);
 
 	if (p_opaque_pass && p_material->hints[VS::MATERIAL_HINT_OPAQUE_PRE_PASS] && p_material->shader_cache && p_material->shader_cache->has_alpha) {
 
@@ -4484,6 +4502,9 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 					glBindTexture(GL_TEXTURE_2D,white_tex); //no texture
 				texcoord++;
 
+			} else if (E->get().value.get_type()==Variant::COLOR){
+				Color c = E->get().value;
+				material_shader.set_custom_uniform(E->get().index,_convert_color(c));
 			} else {
 				material_shader.set_custom_uniform(E->get().index,E->get().value);
 			}
@@ -4534,6 +4555,8 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 		Color col_begin = current_env->fx_param[VS::ENV_FX_PARAM_FOG_BEGIN_COLOR];
 		Color col_end = current_env->fx_param[VS::ENV_FX_PARAM_FOG_END_COLOR];
+		col_begin=_convert_color(col_begin);
+		col_end=_convert_color(col_end);
 		float from = current_env->fx_param[VS::ENV_FX_PARAM_FOG_BEGIN];
 		float zf = camera_z_far;
 		float curve = current_env->fx_param[VS::ENV_FX_PARAM_FOG_ATTENUATION];
@@ -4588,11 +4611,14 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 	LightInstance *li=light_instances[p_light];
 	Light *l=li->base;
 
+	Color col_ambient=_convert_color(l->colors[VS::LIGHT_COLOR_AMBIENT]);
+	Color col_diffuse=_convert_color(l->colors[VS::LIGHT_COLOR_DIFFUSE]);
+	Color col_specular=_convert_color(l->colors[VS::LIGHT_COLOR_SPECULAR]);
 
 	for(int j=0;j<3;j++) {
-		light_data[VL_LIGHT_AMBIENT][j]=l->colors[VS::LIGHT_COLOR_AMBIENT][j];
-		light_data[VL_LIGHT_DIFFUSE][j]=l->colors[VS::LIGHT_COLOR_DIFFUSE][j];
-		light_data[VL_LIGHT_SPECULAR][j]=l->colors[VS::LIGHT_COLOR_SPECULAR][j];
+		light_data[VL_LIGHT_AMBIENT][j]=col_ambient[j];
+		light_data[VL_LIGHT_DIFFUSE][j]=col_diffuse[j];
+		light_data[VL_LIGHT_SPECULAR][j]=col_specular[j];
 	}
 
 	if (l->type!=VS::LIGHT_OMNI) {
@@ -4626,6 +4652,8 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX,li->shadow_projection[0]);
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXEL_SIZE,Vector2(1.0,1.0)/li->near_shadow_buffer->size);
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXTURE,7);
+		if (shadow_filter==SHADOW_FILTER_ESM)
+			material_shader.set_uniform(MaterialShaderGLES2::ESM_MULTIPLIER,float(li->base->vars[VS::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER]));
 
 		if (li->base->type==VS::LIGHT_DIRECTIONAL) {
 
@@ -6064,7 +6092,7 @@ void RasterizerGLES2::_draw_tex_bg() {
 	}
 
 	float nrg =float(current_env->bg_param[VS::ENV_BG_PARAM_ENERGY]);
-	if (current_env->fx_enabled[VS::ENV_FX_HDR])
+	if (current_env->fx_enabled[VS::ENV_FX_HDR] && !use_fp16_fb)
 		nrg*=0.25; //go down a quarter for hdr
 	copy_shader.set_uniform(CopyShaderGLES2::ENERGY,nrg);
 	copy_shader.set_uniform(CopyShaderGLES2::CUSTOM_ALPHA,float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]));
@@ -6178,7 +6206,7 @@ void RasterizerGLES2::end_scene() {
 		glViewport( 0,0,viewport.width / framebuffer.scale, viewport.height / framebuffer.scale );
 		glScissor(  0,0,viewport.width / framebuffer.scale, viewport.height / framebuffer.scale );
 
-		material_shader.set_conditional(MaterialShaderGLES2::USE_HDR,current_env && current_env->fx_enabled[VS::ENV_FX_HDR]);
+		material_shader.set_conditional(MaterialShaderGLES2::USE_8BIT_HDR,!use_fp16_fb && current_env && current_env->fx_enabled[VS::ENV_FX_HDR]);
 
 	} else {
 		if (current_rt) {
@@ -6218,6 +6246,7 @@ void RasterizerGLES2::end_scene() {
 					bgcolor = current_env->bg_param[VS::ENV_BG_PARAM_COLOR];
 				else
 					bgcolor = Globals::get_singleton()->get("render/default_clear_color");
+				bgcolor = _convert_color(bgcolor);
 				float a = use_fb ? float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]) : 1.0;
 				glClearColor(bgcolor.r,bgcolor.g,bgcolor.b,a);
 				_glClearDepth(1.0);
@@ -6237,7 +6266,8 @@ void RasterizerGLES2::end_scene() {
 		}
 	} else {
 
-		glClearColor(0.3,0.3,0.3,1.0);
+		Color c = _convert_color(Color(0.3,0.3,0.3));
+		glClearColor(c.r,c.g,c.b,0.0);
 		glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	}
 
@@ -6340,7 +6370,7 @@ void RasterizerGLES2::end_scene() {
 
 		//time to copy!!!
 		copy_shader.set_conditional(CopyShaderGLES2::USE_BCS,current_env && current_env->fx_enabled[VS::ENV_FX_BCS]);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_GAMMA,current_env && current_env->fx_enabled[VS::ENV_FX_GAMMA]);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_SRGB,current_env && current_env->fx_enabled[VS::ENV_FX_SRGB]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,current_env && current_env->fx_enabled[VS::ENV_FX_HDR]);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,true);
@@ -6378,9 +6408,7 @@ void RasterizerGLES2::end_scene() {
 			bcs.z=current_env->fx_param[VS::ENV_FX_PARAM_BCS_SATURATION];
 			copy_shader.set_uniform(CopyShaderGLES2::BCS,bcs);
 		}
-		if (current_env && current_env->fx_enabled[VS::ENV_FX_GAMMA]) {
-			copy_shader.set_uniform(CopyShaderGLES2::GAMMA,float(current_env->fx_param[VS::ENV_FX_PARAM_GAMMA]));
-		}
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, framebuffer.color );
 		glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE),0);
@@ -6388,7 +6416,7 @@ void RasterizerGLES2::end_scene() {
 		_copy_screen_quad();
 
 		copy_shader.set_conditional(CopyShaderGLES2::USE_BCS,false);
-		copy_shader.set_conditional(CopyShaderGLES2::USE_GAMMA,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_SRGB,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_HDR,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_NO_ALPHA,false);
@@ -6396,7 +6424,7 @@ void RasterizerGLES2::end_scene() {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SCREEN,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SOFTLIGHT,false);
 
-		material_shader.set_conditional(MaterialShaderGLES2::USE_HDR,false);
+		material_shader.set_conditional(MaterialShaderGLES2::USE_8BIT_HDR,false);
 
 
 		if (current_env && current_env->fx_enabled[VS::ENV_FX_HDR] && GLOBAL_DEF("rasterizer/debug_hdr",false)) {
@@ -6443,6 +6471,7 @@ void RasterizerGLES2::end_shadow_map() {
 
 	float dp_direction=0.0;
 	bool flip_facing=false;
+	Rect2 vp_rect;
 
 	switch(shadow->base->type) {
 
@@ -6455,23 +6484,29 @@ void RasterizerGLES2::end_shadow_map() {
 
 				if (shadow_pass==0) {
 
-					glViewport(0, sb->size*0.5, sb->size*0.5, sb->size*0.5);
-					glScissor(0, sb->size*0.5, sb->size*0.5, sb->size*0.5);
+					vp_rect=Rect2(0, sb->size/2, sb->size/2, sb->size/2);
+					glViewport(0, sb->size/2, sb->size/2, sb->size/2);
+					glScissor(0, sb->size/2, sb->size/2, sb->size/2);
 				} else if (shadow_pass==1) {
 
-					glViewport(0, 0, sb->size*0.5, sb->size*0.5);
-					glScissor(0, 0, sb->size*0.5, sb->size*0.5);
+					vp_rect=Rect2(0, 0, sb->size/2, sb->size/2);
+					glViewport(0, 0, sb->size/2, sb->size/2);
+					glScissor(0, 0, sb->size/2, sb->size/2);
 
 				} else if (shadow_pass==2) {
 
-					glViewport(sb->size*0.5, sb->size*0.5, sb->size*0.5, sb->size*0.5);
-					glScissor(sb->size*0.5, sb->size*0.5, sb->size*0.5, sb->size*0.5);
+					vp_rect=Rect2(sb->size/2, sb->size/2, sb->size/2, sb->size/2);
+					glViewport(sb->size/2, sb->size/2, sb->size/2, sb->size/2);
+					glScissor(sb->size/2, sb->size/2, sb->size/2, sb->size/2);
 				} else if (shadow_pass==3) {
 
-					glViewport(sb->size*0.5, 0, sb->size*0.5, sb->size*0.5);
-					glScissor(sb->size*0.5, 0, sb->size*0.5, sb->size*0.5);
+					vp_rect=Rect2(sb->size/2, 0, sb->size/2, sb->size/2);
+					glViewport(sb->size/2, 0, sb->size/2, sb->size/2);
+					glScissor(sb->size/2, 0, sb->size/2, sb->size/2);
 
 				}
+
+
 
 				glEnable(GL_SCISSOR_TEST);
 
@@ -6481,14 +6516,16 @@ void RasterizerGLES2::end_shadow_map() {
 
 					cm = shadow->custom_projection[0];
 					light_transform=shadow->custom_transform[0];
-					glViewport(0, sb->size*0.5, sb->size, sb->size*0.5);
-					glScissor(0, sb->size*0.5, sb->size, sb->size*0.5);
+					vp_rect=Rect2(0, sb->size/2, sb->size, sb->size/2);
+					glViewport(0, sb->size/2, sb->size, sb->size/2);
+					glScissor(0, sb->size/2, sb->size, sb->size/2);
 				} else {
 
 					cm = shadow->custom_projection[1];
 					light_transform=shadow->custom_transform[1];
-					glViewport(0, 0, sb->size, sb->size*0.5);
-					glScissor(0, 0, sb->size, sb->size*0.5);
+					vp_rect=Rect2(0, 0, sb->size, sb->size/2);
+					glViewport(0, 0, sb->size, sb->size/2);
+					glScissor(0, 0, sb->size, sb->size/2);
 
 				}
 
@@ -6497,6 +6534,7 @@ void RasterizerGLES2::end_shadow_map() {
 			} else {
 				cm = shadow->custom_projection[0];
 				light_transform=shadow->custom_transform[0];
+				vp_rect=Rect2(0, 0, sb->size, sb->size);
 				glViewport(0, 0, sb->size, sb->size);
 			}
 
@@ -6527,11 +6565,13 @@ void RasterizerGLES2::end_shadow_map() {
 			shadow->dp.y=dp_direction;
 
 			if (shadow_pass==0) {
-				glViewport(0, sb->size*0.5, sb->size, sb->size*0.5);
-				glScissor(0, sb->size*0.5, sb->size, sb->size*0.5);
+				vp_rect=Rect2(0, sb->size/2, sb->size, sb->size/2);
+				glViewport(0, sb->size/2, sb->size, sb->size/2);
+				glScissor(0, sb->size/2, sb->size, sb->size/2);
 			} else {
-				glViewport(0, 0, sb->size, sb->size*0.5);
-				glScissor(0, 0, sb->size, sb->size*0.5);
+				vp_rect=Rect2(0, 0, sb->size, sb->size/2);
+				glViewport(0, 0, sb->size, sb->size/2);
+				glScissor(0, 0, sb->size, sb->size/2);
 			}
 			glEnable(GL_SCISSOR_TEST);
 			shadow->projection=cm;
@@ -6565,6 +6605,7 @@ void RasterizerGLES2::end_shadow_map() {
 			z_far=cm.get_z_far();
 
 			glViewport(0, 0, sb->size, sb->size);
+			vp_rect=Rect2(0, 0, sb->size, sb->size);
 			_glClearDepth(1.0f);
 			glClearColor(1,1,1,1);
 			if (use_rgba_shadowmaps)
@@ -6583,16 +6624,124 @@ void RasterizerGLES2::end_shadow_map() {
 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_DUAL_PARABOLOID,false);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, current_rt?current_rt->fbo:base_framebuffer);
-	//glDisable(GL_POLYGON_OFFSET_FILL);
-
 
 	//if (!use_rgba_shadowmaps)
-	glColorMask(1, 1, 1, 1);
+
+	if (shadow_filter==SHADOW_FILTER_ESM) {
+
+		copy_shader.set_conditional(CopyShaderGLES2::USE_RGBA_DEPTH,use_rgba_shadowmaps);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_HIGHP_SOURCE,!use_rgba_shadowmaps);
+
+		Vector2 psize(1.0/sb->size,1.0/sb->size);
+		float pscale = 1.0;
+		int passes=shadow->base->vars[VS::LIGHT_PARAM_SHADOW_BLUR_PASSES];
+		glDisable(GL_BLEND);
+		glDisable(GL_CULL_FACE);
+#ifdef GLEW_ENABLED
+		glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+#endif
+
+		for(int i=0;i<VS::ARRAY_MAX;i++) {
+			glDisableVertexAttribArray(i);
+		}
+		glBindBuffer(GL_ARRAY_BUFFER,0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+		glDisable(GL_SCISSOR_TEST);
+
+		if (!use_rgba_shadowmaps) {
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_ALWAYS);
+			glDepthMask(true);
+		} else {
+			glDisable(GL_DEPTH_TEST);
+		}
+
+		for(int i=0;i<passes;i++) {
+
+
+			Vector2 src_sb_uv[4]={
+				(vp_rect.pos+Vector2(0,vp_rect.size.y))/sb->size,
+				(vp_rect.pos+vp_rect.size)/sb->size,
+				(vp_rect.pos+Vector2(vp_rect.size.x,0))/sb->size,
+				(vp_rect.pos)/sb->size
+			};
+/*
+			Vector2 src_uv[4]={
+				Vector2( 0, 1),
+				Vector2( 1, 1),
+				Vector2( 1, 0),
+				Vector2( 0, 0)
+			};
+*/
+			static const Vector2 dst_pos[4]={
+				Vector2(-1, 1),
+				Vector2( 1, 1),
+				Vector2( 1,-1),
+				Vector2(-1,-1)
+			};
+
+			glBindFramebuffer(GL_FRAMEBUFFER, blur_shadow_buffer.fbo);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, sb->depth);
+#ifdef GLEW_ENABLED
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+#endif
+
+			copy_shader.set_conditional(CopyShaderGLES2::SHADOW_BLUR_V_PASS,true);
+			copy_shader.set_conditional(CopyShaderGLES2::SHADOW_BLUR_H_PASS,false);
+
+			copy_shader.bind();
+			copy_shader.set_uniform(CopyShaderGLES2::PIXEL_SIZE,psize);
+			copy_shader.set_uniform(CopyShaderGLES2::PIXEL_SCALE,pscale);
+			copy_shader.set_uniform(CopyShaderGLES2::BLUR_MAGNITUDE,1);
+			//copy_shader.set_uniform(CopyShaderGLES2::SOURCE,0);
+			glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE),0);
+
+
+			_draw_gui_primitive(4,dst_pos,NULL,src_sb_uv);
+
+
+			Vector2 src_bb_uv[4]={
+				(vp_rect.pos+Vector2(0,vp_rect.size.y))/blur_shadow_buffer.size,
+				(vp_rect.pos+vp_rect.size)/blur_shadow_buffer.size,
+				(vp_rect.pos+Vector2(vp_rect.size.x,0))/blur_shadow_buffer.size,
+				(vp_rect.pos)/blur_shadow_buffer.size,
+			};
+
+			glBindFramebuffer(GL_FRAMEBUFFER, sb->fbo);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, blur_shadow_buffer.depth);
+#ifdef GLEW_ENABLED
+
+			//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+#endif
+
+			copy_shader.set_conditional(CopyShaderGLES2::SHADOW_BLUR_V_PASS,false);
+			copy_shader.set_conditional(CopyShaderGLES2::SHADOW_BLUR_H_PASS,true);
+			copy_shader.bind();
+			copy_shader.set_uniform(CopyShaderGLES2::PIXEL_SIZE,psize);
+			copy_shader.set_uniform(CopyShaderGLES2::PIXEL_SCALE,pscale);
+			copy_shader.set_uniform(CopyShaderGLES2::BLUR_MAGNITUDE,1);
+			glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE),0);
+
+			_draw_gui_primitive(4,dst_pos,NULL,src_bb_uv);
+
+
+		}
+
+		glDepthFunc(GL_LEQUAL);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_RGBA_DEPTH,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_HIGHP_SOURCE,false);
+		copy_shader.set_conditional(CopyShaderGLES2::SHADOW_BLUR_V_PASS,false);
+		copy_shader.set_conditional(CopyShaderGLES2::SHADOW_BLUR_H_PASS,false);
+
+	}
 
 	DEBUG_TEST_ERROR("Drawing Shadow");
 	shadow=NULL;
-
+	glBindFramebuffer(GL_FRAMEBUFFER, current_rt?current_rt->fbo:base_framebuffer);
+	glColorMask(1, 1, 1, 1);
+	//glDisable(GL_POLYGON_OFFSET_FILL);
 
 }
 
@@ -6635,23 +6784,14 @@ void RasterizerGLES2::_debug_draw_shadows_type(Vector<ShadowBuffer>& p_shadows,P
 //	Size2 debug_size(512,512);
 
 
-	for (int i=0;i<p_shadows.size();i++) {
+	int useblur=shadow_filter==SHADOW_FILTER_ESM?1:0;
+	for (int i=0;i<p_shadows.size()+useblur;i++) {
 
-		ShadowBuffer *sb=&p_shadows[i];
+		ShadowBuffer *sb=i==p_shadows.size()?&blur_shadow_buffer:&p_shadows[i];
 
-		if (!sb->owner)
+		if (!sb->owner && i!=p_shadows.size())
 			continue;
 
-
-		if (sb->owner->base->type==VS::LIGHT_DIRECTIONAL) {
-
-			//if (sb->owner->shadow_pass!=scene_pass-1)
-			//	continue;
-		} else {
-
-			//if (sb->owner->shadow_pass!=frame)
-			//	continue;
-		}
 		_debug_draw_shadow(sb->depth, Rect2( ofs, debug_size ));
 		ofs.x+=debug_size.x;
 		if ( (ofs.x+debug_size.x) > viewport.width ) {
@@ -7560,6 +7700,11 @@ bool RasterizerGLES2::ShadowBuffer::init(int p_size,bool p_use_depth) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, size, size, 0,
 			     GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL);
 
+#ifdef GLEW_ENABLED
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+#endif
+
 		// Attach the depth texture to FBO depth attachment point
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
 				       GL_TEXTURE_2D, depth, 0);
@@ -7778,9 +7923,17 @@ void RasterizerGLES2::_update_framebuffer() {
 
 #endif
 	//color
+
+	GLuint format_rgba = use_fp16_fb?_GL_RGBA16F_EXT:GL_RGBA;
+	GLuint format_rgb = use_fp16_fb?_GL_RGB16F_EXT:GL_RGB;
+	GLuint format_type = use_fp16_fb?_GL_HALF_FLOAT_OES:GL_UNSIGNED_BYTE;
+	GLuint format_luminance = use_fp16_fb?_GL_R32F_EXT:GL_RGBA;
+	GLuint format_luminance_type = use_fp16_fb?GL_FLOAT:GL_UNSIGNED_BYTE;
+	GLuint format_luminance_components = use_fp16_fb?GL_RED:GL_RGBA;
+
 	glGenTextures(1, &framebuffer.color);
 	glBindTexture(GL_TEXTURE_2D, framebuffer.color);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  framebuffer.width, framebuffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, format_rgba,  framebuffer.width, framebuffer.height, 0, GL_RGBA, format_type, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -7814,7 +7967,7 @@ void RasterizerGLES2::_update_framebuffer() {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.sample_fbo);
 	glGenTextures(1, &framebuffer.sample_color);
 	glBindTexture(GL_TEXTURE_2D, framebuffer.sample_color);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  framebuffer.width, framebuffer.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, format_rgba,  framebuffer.width, framebuffer.height, 0, GL_RGBA, format_type, NULL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 //	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -7873,8 +8026,8 @@ void RasterizerGLES2::_update_framebuffer() {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size, size, 0,
-				     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, format_rgba, size, size, 0,
+				     GL_RGBA, format_type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					       GL_TEXTURE_2D, framebuffer.blur[i].color, 0);
 
@@ -7922,8 +8075,8 @@ void RasterizerGLES2::_update_framebuffer() {
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, lb.size, lb.size, 0,
-				     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+			glTexImage2D(GL_TEXTURE_2D, 0, format_luminance, lb.size, lb.size, 0,
+				     format_luminance_components, format_luminance_type, NULL);
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 					       GL_TEXTURE_2D, lb.color, 0);
 
@@ -8052,6 +8205,7 @@ void RasterizerGLES2::init() {
 //	framebuffer.blur[1].fbo=false;
 	framebuffer.active=false;
 
+
 	//do a single initial clear
 	glClearColor(0,0,0,1);
 	//glClearDepth(1.0);
@@ -8086,8 +8240,9 @@ void RasterizerGLES2::init() {
 	use_attribute_instancing=true;
 #ifdef OSX_ENABLED
 	use_rgba_shadowmaps=true;
+	use_fp16_fb=false;
 #else
-	use_rgba_shadowmaps=false;
+
 #endif
 	use_half_float=true;
 
@@ -8098,6 +8253,9 @@ void RasterizerGLES2::init() {
 	}
 	read_depth_supported=extensions.has("GL_OES_depth_texture");
 	use_rgba_shadowmaps=!read_depth_supported;
+	if (shadow_filter>=SHADOW_FILTER_ESM && !extensions.has("GL_EXT_frag_depth")) {
+		use_rgba_shadowmaps=true; //no other way, go back to rgba
+	}
 	pvr_supported=extensions.has("GL_IMG_texture_compression_pvrtc");
 	etc_supported=extensions.has("GL_OES_compressed_ETC1_RGB8_texture");
 	use_depth24 = extensions.has("GL_OES_depth24");
@@ -8131,6 +8289,10 @@ void RasterizerGLES2::init() {
 		use_attribute_instancing=false;
 	}
 
+	if (use_fp16_fb) {
+		use_fp16_fb=extensions.has("GL_OES_texture_half_float") && extensions.has("GL_EXT_color_buffer_half_float");
+	}
+
 
 	//etc_supported=false;
 	use_hw_skeleton_xform=false;
@@ -8150,14 +8312,18 @@ void RasterizerGLES2::init() {
 
 		//don't use a shadowbuffer too big in GLES, this should be the maximum
 		int max_shadow_size = GLOBAL_DEF("rasterizer/max_shadow_buffer_size",1024);//nearest_power_of_2(MIN(vm.width,vm.height))/2;
-		while(max_shadow_size>=16) {
+		int smsize=max_shadow_size;
+		while(smsize>=16) {
 
 			ShadowBuffer sb;
-			bool s = sb.init(max_shadow_size,!use_rgba_shadowmaps);
+			bool s = sb.init(smsize,!use_rgba_shadowmaps);
 			if (s)
 				near_shadow_buffers.push_back(sb);
-			max_shadow_size/=2;
+			smsize/=2;
 		}
+
+		blur_shadow_buffer.init(max_shadow_size,!use_rgba_shadowmaps);
+
 
 		//material_shader
 		material_shader.set_conditional(MaterialShaderGLES2::USE_DEPTH_SHADOWS,!use_rgba_shadowmaps);
@@ -8168,6 +8334,9 @@ void RasterizerGLES2::init() {
 	shadow_material = material_create(); //empty with nothing
 	shadow_mat_ptr = material_owner.get(shadow_material);
 	overdraw_material = create_overdraw_debug_material();
+	copy_shader.set_conditional(CopyShaderGLES2::USE_8BIT_HDR,!use_fp16_fb);
+
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("rasterizer/use_pixel_snap",false));
 
 	npo2_textures_available=true;
 	//fragment_lighting=false;
@@ -8423,6 +8592,8 @@ void RasterizerGLES2::reload_vram() {
 		near_shadow_buffers[i].init(near_shadow_buffers[i].size,!use_rgba_shadowmaps);
 	}
 
+	blur_shadow_buffer.init(near_shadow_buffers[0].size,!use_rgba_shadowmaps);
+
 
 
 	canvas_shader.clear_caches();
@@ -8473,8 +8644,8 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 	fragment_lighting=GLOBAL_DEF("rasterizer/use_fragment_lighting",true);
 	read_depth_supported=true; //todo check for extension
 	shadow_filter=ShadowFilterTechnique((int)(GLOBAL_DEF("rasterizer/shadow_filter",SHADOW_FILTER_PCF5)));
-	Globals::get_singleton()->set_custom_property_info("rasterizer/shadow_filter",PropertyInfo(Variant::INT,"rasterizer/shadow_filter",PROPERTY_HINT_ENUM,"None,PCF5,PCF13,ESM,VSM"));
-
+	Globals::get_singleton()->set_custom_property_info("rasterizer/shadow_filter",PropertyInfo(Variant::INT,"rasterizer/shadow_filter",PROPERTY_HINT_ENUM,"None,PCF5,PCF13,ESM"));
+	use_fp16_fb=bool(GLOBAL_DEF("rasterizer/fp16_framebuffer",true));
 	use_shadow_mapping=true;
 	use_fast_texture_filter=!bool(GLOBAL_DEF("rasterizer/trilinear_mipmap_filter",true));
 	skel_default.resize(1024*4);

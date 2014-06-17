@@ -66,6 +66,16 @@ class VisualServerWrapMT : public VisualServer {
 	int texture_pool_max_size;
 	List<RID> texture_id_pool;
 
+	int mesh_pool_max_size;
+	List<RID> mesh_id_pool;
+
+//#define DEBUG_SYNC
+
+#ifdef DEBUG_SYNC
+#define SYNC_DEBUG print_line("sync on: "+String(__FUNCTION__));
+#else
+#define SYNC_DEBUG
+#endif
 
 public:
 
@@ -74,6 +84,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type();\
@@ -115,6 +126,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type();\
@@ -168,6 +180,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1);\
@@ -179,6 +192,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1);\
@@ -231,6 +245,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2);\
@@ -242,6 +257,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2);\
@@ -294,6 +310,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3);\
@@ -357,6 +374,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4);\
@@ -368,6 +386,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4);\
@@ -420,6 +439,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4, p5);\
@@ -431,6 +451,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4, p5);\
@@ -483,6 +504,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4, p5, p6);\
@@ -546,6 +568,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
@@ -557,6 +580,7 @@ public:
 		if (Thread::get_caller_ID()!=server_thread) {\
 			m_r ret;\
 			command_queue.push_and_ret( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7,&ret);\
+			SYNC_DEBUG\
 			return ret;\
 		} else {\
 			return visual_server->m_type(p1, p2, p3, p4, p5, p6, p7);\
@@ -691,7 +715,7 @@ public:
 	FUNC1RC(float,fixed_material_get_point_size,RID);
 
 	/* SURFACE API */
-	FUNC0R(RID,mesh_create);
+	FUNCRID(mesh);
 
 	FUNC2(mesh_set_morph_target_count,RID,int);
 	FUNC1RC(int,mesh_get_morph_target_count,RID);
@@ -1122,7 +1146,7 @@ public:
 	/* RENDER INFO */
 
 	FUNC1R(int,get_render_info,RenderInfo );
-	FUNC1RC(bool,has_feature,Features );
+	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
 
 	FUNC2(set_boot_image,const Image& , const Color& );
 	FUNC1(set_default_clear_color,const Color& );

@@ -30,6 +30,7 @@
 #define COLOR_H
 
 #include "ustring.h"
+#include "math_funcs.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -95,6 +96,16 @@ struct Color {
 			res.b = (b*a*sa + p_over.b * p_over.a)/res.a;
 		}
 		return res;
+	}
+
+	_FORCE_INLINE_ Color to_linear() const {
+
+		return Color(
+			r<0.04045 ? r * (1.0 / 12.92) : Math::pow((r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+			g<0.04045 ? g * (1.0 / 12.92) : Math::pow((g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+			b<0.04045 ? b * (1.0 / 12.92) : Math::pow((b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+			a
+		);
 	}
 
 	static Color hex(uint32_t p_hex);
