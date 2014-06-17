@@ -14,6 +14,13 @@ public:
 		MODE_LIGHTMAPS
 	};
 
+	enum Format {
+
+		FORMAT_RGB,
+		FORMAT_HDR8,
+		FORMAT_HDR16
+	};
+
 	enum BakeFlags {
 		BAKE_DIFFUSE,
 		BAKE_SPECULAR,
@@ -38,6 +45,7 @@ private:
 	float edge_damp;
 	float normal_damp;
 	int bounces;
+	Format format;
 	bool flags[BAKE_MAX];
 
 
@@ -80,6 +88,8 @@ public:
 	void set_bake_flag(BakeFlags p_flags,bool p_enable);
 	bool get_bake_flag(BakeFlags p_flags) const;
 
+	void set_format(Format p_margin);
+	Format get_format() const;
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
@@ -100,6 +110,7 @@ public:
 };
 
 
+VARIANT_ENUM_CAST(BakedLight::Format);
 VARIANT_ENUM_CAST(BakedLight::Mode);
 VARIANT_ENUM_CAST(BakedLight::BakeFlags);
 

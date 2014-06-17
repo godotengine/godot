@@ -125,6 +125,8 @@ void BakedLightEditor::_notification(int p_option) {
 				print_line("MSUPDATE: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t=OS::get_singleton()->get_ticks_msec();
 				node->get_baked_light()->set_octree(octree_texture);
+				node->get_baked_light()->set_edited(true);
+
 				print_line("MSSET: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 
 
