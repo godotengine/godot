@@ -85,19 +85,12 @@ void RemoteTransform2D::_update_remote() {
 		object_xform[0] = subject_xform[0];
 		object_xform[1] = subject_xform[1];
 
-		object->xform_set_dirty(false); //Prevend get_scale() and get_rot() from decomposing the matrix
-
-		Size2 obj_scale = object->get_scale();
-		float obj_rot = object->get_rot();
-
-		object->xform_set_dirty(true);
-
 		if (track_scale) {
-			object_xform.set_rotation(obj_rot);
+			object_xform.set_rotation(object_state[2]);
 			object_state[2] = subject_state[2];
 		}
 		if (track_rot) {
-			object_xform.scale(obj_scale);
+			object_xform.scale(object_state[1]);
 			object_state[1] = subject_state[1];
 		}
 

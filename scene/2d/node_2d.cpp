@@ -213,10 +213,6 @@ Matrix32 Node2D::get_transform() const {
 	return _mat;
 }
 
-void Node2D::xform_set_dirty(bool p_dirty) {
-	_xform_dirty = p_dirty;
-}
-
 Rect2 Node2D::get_item_rect() const {
 
 	if (get_script_instance()) {
