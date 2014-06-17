@@ -86,6 +86,7 @@ public:
 
 
 	Matrix32 get_transform() const;
+	void xform_set_dirty(bool p_dirty);
 
 	Node2D();
 };

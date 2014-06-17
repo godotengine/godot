@@ -68,11 +68,41 @@ void RemoteTransform2D::_update_remote() {
 		SWAP(object, subject);
 	}
 
-	if (track_pos && track_rot && track_scale) object->set_global_transform(subject->get_global_transform()); //todo make faster
+
+	Matrix32 subject_xform = subject->get_global_transform();
+	if (track_pos && track_rot && track_scale) object->set_global_transform(subject_xform);
 	else {
-		if (track_pos) object->set_pos(subject->get_pos());
-		if (track_rot) object->set_rot(subject->get_rot());
-		if (track_scale) object->set_scale(subject->get_scale());
+		Array subject_state = subject->edit_get_state();
+		Array object_state = object->edit_get_state();
+
+		Matrix32 object_xform = object->get_global_transform();
+		if (track_pos) {
+			object_xform[2] = subject_xform[2];
+			object_state[0] = subject_state[0];
+		}
+
+		if (!track_rot && !track_scale) return;
+		object_xform[0] = subject_xform[0];
+		object_xform[1] = subject_xform[1];
+
+		object->xform_set_dirty(false); //Prevend get_scale() and get_rot() from decomposing the matrix
+
+		Size2 obj_scale = object->get_scale();
+		float obj_rot = object->get_rot();
+
+		object->xform_set_dirty(true);
+
+		if (track_scale) {
+			object_xform.set_rotation(obj_rot);
+			object_state[2] = subject_state[2];
+		}
+		if (track_rot) {
+			object_xform.scale(obj_scale);
+			object_state[1] = subject_state[1];
+		}
+
+		object->set_global_transform(object_xform);
+		object->edit_set_state(object_state);
 	}
 
 }
