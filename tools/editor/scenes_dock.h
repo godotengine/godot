@@ -33,7 +33,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/label.h"
-#include "scene/gui/button.h"
+#include "scene/gui/tool_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/box_container.h"
 #include "os/dir_access.h"
@@ -86,17 +86,25 @@ class ScenesDockFilter : public HBoxContainer {
 
 	OBJ_TYPE( ScenesDockFilter, HBoxContainer );
 
+private:
+	friend class ScenesDock;
+
 	enum Command {
 		CMD_CLEAR_FILTER,
 	};
 
 	Tree *tree;
-	OptionButton *file_filter;
+	OptionButton *filter_option;
 	LineEdit *search_box;
-	Button *clear_search_button;
+	ToolButton *clear_search_button;
 
-	String _current_filter;
-	Vector<String> filters;
+	enum FilterOption {
+		FILTER_PATH, // NAME or Folder
+		FILTER_NAME,
+		FILTER_FOLDER,
+	};
+	FilterOption _current_filter;
+	//Vector<String> filters;
 
 	void _command(int p_command);
 	void _search_text_changed(const String& p_newtext);
@@ -104,12 +112,13 @@ class ScenesDockFilter : public HBoxContainer {
 	void _file_filter_selected(int p_idx);
 
 protected:
+	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 	String get_search_term();
-	String get_file_filter();
-	ScenesDockFilter(Tree *p_tree);
+	FilterOption get_file_filter();
+	ScenesDockFilter();
 };
 
 #endif // SCENES_DOCK_H
