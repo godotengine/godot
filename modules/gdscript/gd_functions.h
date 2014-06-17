@@ -92,6 +92,7 @@ public:
 		DICT2INST,
 		HASH,
 		PRINT_STACK,
+		AUTOLOAD,
 		FUNC_MAX
 
 	};

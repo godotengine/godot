@@ -982,6 +982,8 @@ bool Main::start() {
 		}
 	}
 
+	OS::get_singleton()->set_main_loop( main_loop );
+
 	if (main_loop->is_type("SceneMainLoop")) {
 		
 		SceneMainLoop *sml = main_loop->cast_to<SceneMainLoop>();
@@ -1222,8 +1224,6 @@ bool Main::start() {
 
 #endif
 	}
-
-	OS::get_singleton()->set_main_loop( main_loop );
 
 	return true;
 }
