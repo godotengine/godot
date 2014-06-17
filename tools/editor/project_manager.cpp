@@ -1023,6 +1023,14 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 	}
 }
 
+void ProjectListFilter::_notification(int p_what) {
+	switch(p_what) {
+		case NOTIFICATION_ENTER_SCENE: {
+			clear_search_button->set_icon(get_icon("CloseHover","EditorIcons"));
+		} break;
+	}
+}
+
 void ProjectListFilter::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_command"),&ProjectListFilter::_command);
@@ -1049,8 +1057,7 @@ ProjectListFilter::ProjectListFilter() {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);
 
-	clear_search_button = memnew( Button );
-	clear_search_button->set_text("clear");
+	clear_search_button = memnew( ToolButton );
 	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
 	add_child(clear_search_button);
 
