@@ -38,7 +38,7 @@
 bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_dir) {
 
 	String search_term = tree_filter->get_search_term();
-	String file_filter = tree_filter->get_file_filter();
+	ScenesDockFilter::FilterOption file_filter = tree_filter->get_file_filter();
 
 	TreeItem *item = tree->create_item(p_parent);
 	item->set_text(0,p_dir->get_name()+"/");
@@ -56,15 +56,19 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 	for (int i=0;i<p_dir->get_file_count();i++) {
 
 		String file_name = p_dir->get_file(i);
-		String extension = file_name.extension();
+		String file_path = p_dir->get_file_path(i);
 
-		if (search_term!="" && file_name.findn(search_term)==-1)
+		// ScenesDockFilter::FILTER_PATH
+		String search_from = file_path.right(6); // trim "res://"
+		if (file_filter == ScenesDockFilter::FILTER_NAME)
+			 search_from = file_name;
+		else if (file_filter == ScenesDockFilter::FILTER_FOLDER)
+			search_from = file_path.right(6).get_base_dir();
+
+		if (search_term!="" && search_from.findn(search_term)==-1)
 			continue;
 
-		if (file_filter!="*" && extension != file_filter )
-			continue;
-
-		bool isfave = favorites.has(p_dir->get_file_path(i));
+		bool isfave = favorites.has(file_path);
 		if (button_favorite->is_pressed() && !isfave)
 			continue;
 
@@ -78,7 +82,7 @@ bool ScenesDock::_create_tree(TreeItem *p_parent,EditorFileSystemDirectory *p_di
 		fitem->set_icon(0, icon );
 
 
-		fitem->set_metadata(0,p_dir->get_file_path(i));
+		fitem->set_metadata(0,file_path);
 		//if (p_dir->files[i]->icon.is_valid()) {
 //			fitem->set_icon(0,p_dir->files[i]->icon);
 //		}
@@ -289,7 +293,7 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	toolbar_hbc->add_child(button_instance);
 
 	tree = memnew( Tree );
-	tree_filter=memnew( ScenesDockFilter(tree) );
+	tree_filter=memnew( ScenesDockFilter() );
 	tree_filter->connect("filter_changed", this, "_update_tree");
 	add_child(tree_filter);
 	add_child(tree);
@@ -314,8 +318,11 @@ ScenesDock::~ScenesDock() {
 
 void ScenesDockFilter::_setup_filters() {
 
-	file_filter->clear();
-
+	filter_option->clear();
+	filter_option->add_item("Path");
+	filter_option->add_item("Name");
+	filter_option->add_item("Folder");
+#if 0
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("",&extensions);
 
@@ -336,6 +343,7 @@ void ScenesDockFilter::_setup_filters() {
 		else
 			file_filter->add_item("( "+flt+" )");
 	}
+#endif
 }
 
 void ScenesDockFilter::_command(int p_command) {
@@ -358,15 +366,23 @@ String ScenesDockFilter::get_search_term() {
 	return search_box->get_text().strip_edges();
 }
 
-String ScenesDockFilter::get_file_filter() {
+ScenesDockFilter::FilterOption ScenesDockFilter::get_file_filter() {
 	return _current_filter;
 }
 
 void ScenesDockFilter::_file_filter_selected(int p_idx) {
-	String selected = filters[file_filter->get_selected()];
+	FilterOption selected = (FilterOption)(filter_option->get_selected());
 	if (_current_filter != selected ) {
 		_current_filter = selected;
 		emit_signal("filter_changed");
+	}
+}
+
+void ScenesDockFilter::_notification(int p_what) {
+	switch(p_what) {
+		case NOTIFICATION_ENTER_SCENE: {
+			clear_search_button->set_icon(get_icon("CloseHover","EditorIcons"));
+		} break;
 	}
 }
 
@@ -379,17 +395,15 @@ void ScenesDockFilter::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("filter_changed") );
 }
 
-ScenesDockFilter::ScenesDockFilter(Tree *p_tree) {
+ScenesDockFilter::ScenesDockFilter() {
 
-	_current_filter = "*";
+	_current_filter = FILTER_PATH;
 
-	tree = p_tree;
-
-	file_filter = memnew( OptionButton );
-	file_filter->set_custom_minimum_size(Size2(90,10));
-	file_filter->set_clip_text(true);
-	file_filter->connect("item_selected", this, "_file_filter_selected");
-	add_child(file_filter);
+	filter_option = memnew( OptionButton );
+	filter_option->set_custom_minimum_size(Size2(60,10));
+	filter_option->set_clip_text(true);
+	filter_option->connect("item_selected", this, "_file_filter_selected");
+	add_child(filter_option);
 
 	_setup_filters();
 
@@ -398,8 +412,7 @@ ScenesDockFilter::ScenesDockFilter(Tree *p_tree) {
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(search_box);
 
-	clear_search_button = memnew( Button );
-	clear_search_button->set_text("clear");
+	clear_search_button = memnew( ToolButton );
 	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
 	add_child(clear_search_button);
 

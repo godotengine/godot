@@ -201,6 +201,16 @@ bool BakedLight::get_bake_flag(BakeFlags p_flags) const{
 	return flags[p_flags];
 }
 
+void BakedLight::set_format(Format p_format) {
+
+	format=p_format;
+
+}
+
+BakedLight::Format BakedLight::get_format() const{
+
+	return format;
+}
 
 
 void BakedLight::_bind_methods(){
@@ -240,6 +250,10 @@ void BakedLight::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_normal_damp","normal_damp"),&BakedLight::set_normal_damp);
 	ObjectTypeDB::bind_method(_MD("get_normal_damp"),&BakedLight::get_normal_damp);
 
+	ObjectTypeDB::bind_method(_MD("set_format","format"),&BakedLight::set_format);
+	ObjectTypeDB::bind_method(_MD("get_format"),&BakedLight::get_format);
+
+
 	ObjectTypeDB::bind_method(_MD("set_energy_multiplier","energy_multiplier"),&BakedLight::set_energy_multiplier);
 	ObjectTypeDB::bind_method(_MD("get_energy_multiplier"),&BakedLight::get_energy_multiplier);
 
@@ -251,6 +265,7 @@ void BakedLight::_bind_methods(){
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode/mode",PROPERTY_HINT_ENUM,"Octree,Lightmaps"),_SCS("set_mode"),_SCS("get_mode"));
 
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"baking/format",PROPERTY_HINT_ENUM,"RGB,HDR8,HDR16"),_SCS("set_format"),_SCS("get_format"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"baking/cell_subdiv",PROPERTY_HINT_RANGE,"4,14,1"),_SCS("set_cell_subdivision"),_SCS("get_cell_subdivision"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"baking/lattice_subdiv",PROPERTY_HINT_RANGE,"1,5,1"),_SCS("set_initial_lattice_subdiv"),_SCS("get_initial_lattice_subdiv"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"baking/light_bounces",PROPERTY_HINT_RANGE,"0,3,1"),_SCS("set_bounces"),_SCS("get_bounces"));
@@ -292,6 +307,7 @@ BakedLight::BakedLight() {
 	cell_extra_margin=0.05;
 	edge_damp=0.0;
 	normal_damp=0.0;
+	format=FORMAT_RGB;
 
 	flags[BAKE_DIFFUSE]=true;
 	flags[BAKE_SPECULAR]=false;

@@ -105,6 +105,8 @@ public:
 	static void (*_image_decompress_bc)(Image *);
 	static void (*_image_decompress_etc)(Image *);
 
+	Error _decompress_bc();
+
 	static DVector<uint8_t> (*lossy_packer)(const Image& p_image,float p_quality);
 	static Image (*lossy_unpacker)(const DVector<uint8_t>& p_buffer);
 	static DVector<uint8_t> (*lossless_packer)(const Image& p_image);
@@ -324,6 +326,7 @@ public:
 	Error compress(CompressMode p_mode=COMPRESS_BC);
 	Image compressed(int p_mode); /* from the Image::CompressMode enum */
 	Error decompress();
+	Image decompressed() const;
 
 	void fix_alpha_edges();
 	void premultiply_alpha();

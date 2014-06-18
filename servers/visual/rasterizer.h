@@ -508,6 +508,7 @@ public:
 
 		float octree_lattice_size;
 		float octree_lattice_divide;
+		float texture_multiplier;
 		int octree_steps;
 		Vector2 octree_tex_pixel_size;
 	};

@@ -1098,6 +1098,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 			baked_light->data.octree_steps=decode_uint32(&r[16]);
 			baked_light->data.octree_tex_pixel_size.x=1.0/tex_w;
 			baked_light->data.octree_tex_pixel_size.y=1.0/tex_h;
+			baked_light->data.texture_multiplier=decode_uint32(&r[20]);
 
 
 			baked_light->octree_aabb.pos.x=decode_float(&r[32]);
