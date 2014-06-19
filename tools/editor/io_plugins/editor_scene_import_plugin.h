@@ -99,11 +99,14 @@ class EditorSceneImportPlugin : public EditorImportPlugin {
 
 	Vector<Ref<EditorSceneImporter> > importers;
 
-	void _find_resources(const Variant& p_var,Set<Ref<ImageTexture> >& image_map);
-	Node* _fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Set<Ref<ImageTexture> >& image_map);
-	void _merge_node(Node *p_node,Node*p_root,Node *p_existing,Set<Ref<Resource> >& checked_resources);
-	void _merge_scenes(Node *p_existing,Node *p_new);
+	void _find_resources(const Variant& p_var,Map<Ref<ImageTexture>,bool >& image_map);
+	Node* _fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Map<Ref<ImageTexture>,bool >& image_map);
+	void _merge_existing_node(Node *p_node,Node *p_imported_scene,Set<Ref<Resource> >& checked_resources,Set<Node*> &checked_nodes);
+	void _add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Set<Node*> &checked_nodes);
 
+	void _merge_scenes(Node *p_node, Node *p_imported);
+
+	void _tag_import_paths(Node *p_scene,Node *p_node);
 
 public:
 
@@ -120,11 +123,13 @@ public:
 		SCENE_FLAG_CREATE_WHEELS=1<<9,
 		SCENE_FLAG_DETECT_ALPHA=1<<15,
 		SCENE_FLAG_DETECT_VCOLOR=1<<16,
+		SCENE_FLAG_CREATE_NAVMESH=1<<17,
 
 		SCENE_FLAG_REMOVE_NOIMP=1<<24,
 		SCENE_FLAG_IMPORT_ANIMATIONS=1<<25,
 		SCENE_FLAG_COMPRESS_GEOMETRY=1<<26,
 		SCENE_FLAG_GENERATE_TANGENT_ARRAYS=1<<27,
+		SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES=1<<28,
 	};
 
 

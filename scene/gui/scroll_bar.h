@@ -74,6 +74,16 @@ class ScrollBar : public Range {
 	Node* drag_slave;
 	NodePath drag_slave_path;
 
+	Vector2 drag_slave_speed;
+	Vector2 drag_slave_accum;
+	Vector2 drag_slave_from;
+	Vector2 last_drag_slave_accum;
+	float last_drag_slave_time;
+	float time_since_motion;
+	bool drag_slave_touching;
+	bool drag_slave_touching_deaccel;
+	bool click_handled;
+
 	void _drag_slave_exit();
 	void _drag_slave_input(const InputEvent& p_input);
 	
