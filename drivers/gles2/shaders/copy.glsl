@@ -440,7 +440,7 @@ void main() {
 	highp float vd_lum = dot(texture2D( source_vd_lum, vec2(0.0) ), _multcv  );
 	lum_accum = clamp( vd_lum + (lum_accum-vd_lum)*hdr_time_delta*hdr_exp_adj_speed,min_luminance*(1.0/LUM_RANGE),max_luminance*(1.0/LUM_RANGE));
 #else
-	highp float vd_lum=texture2D( source_vd_lum, vec2(0.0) );
+	highp float vd_lum=texture2D( source_vd_lum, vec2(0.0) ).r;
 	lum_accum = clamp( vd_lum + (lum_accum-vd_lum)*hdr_time_delta*hdr_exp_adj_speed,min_luminance,max_luminance);
 #endif
 

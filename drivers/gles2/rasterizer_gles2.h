@@ -79,6 +79,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool npo2_textures_available;
 	bool read_depth_supported;
 	bool use_framebuffers;
+	bool full_float_fb_supported;
 	bool use_shadow_mapping;
 	bool use_fp16_fb;
 	ShadowFilterTechnique shadow_filter;
@@ -90,6 +91,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_texture_instancing;
 	bool use_attribute_instancing;
 	bool use_rgba_shadowmaps;
+
 	bool use_half_float;
 
 

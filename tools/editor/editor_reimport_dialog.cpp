@@ -42,6 +42,9 @@ void EditorReImportDialog::popup_reimport() {
 	List<String> ril;
 	EditorFileSystem::get_singleton()->get_changed_sources(&ril);
 
+	scene_must_save=false;
+
+
 	TreeItem *root = tree->create_item();
 	for(List<String>::Element *E=ril.front();E;E=E->next()) {
 
@@ -52,10 +55,33 @@ void EditorReImportDialog::popup_reimport() {
 		item->set_tooltip(0,E->get());
 		item->set_checked(0,true);
 		item->set_editable(0,true);
-
 		items.push_back(item);
+
+		String name = E->get();
+
+		if (EditorFileSystem::get_singleton()->get_file_type(name)=="PackedScene" && EditorNode::get_singleton()->is_scene_in_use(name)) {
+
+			scene_must_save=true;
+		}
 	}
 
+
+	if (scene_must_save) {
+		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->get_filename()=="") {
+
+			error->set_text("Current scene must be saved to re-import.");
+			error->popup_centered(Size2(250,100));
+			get_ok()->set_text("Re-Import");
+			get_ok()->set_disabled(true);
+			return;
+
+		}
+		get_ok()->set_disabled(false);
+		get_ok()->set_text("Save & Re-Import");
+	} else {
+		get_ok()->set_text("Re-Import");
+		get_ok()->set_disabled(false);
+	}
 
 	popup_centered(Size2(600,400));
 
@@ -70,7 +96,17 @@ void EditorReImportDialog::ok_pressed() {
 		error->popup_centered(Size2(250,100));
 		return;
 	}
+
+
+
 	EditorProgress ep("reimport","Re-Importing",items.size());
+	String reload_fname;
+	if (scene_must_save && EditorNode::get_singleton()->get_edited_scene()) {
+		reload_fname = EditorNode::get_singleton()->get_edited_scene()->get_filename();
+		EditorNode::get_singleton()->save_scene(reload_fname);
+		EditorNode::get_singleton()->clear_scene();
+	}
+
 	for(int i=0;i<items.size();i++) {
 
 		String it = items[i]->get_metadata(0);
@@ -87,6 +123,9 @@ void EditorReImportDialog::ok_pressed() {
 		}
 
 	}
+	if (reload_fname!="") {
+		EditorNode::get_singleton()->load_scene(reload_fname);
+	}
 
 	EditorFileSystem::get_singleton()->scan_sources();
 }
@@ -100,5 +139,6 @@ EditorReImportDialog::EditorReImportDialog() {
 	set_title("Re-Import Changed Resources");
 	error = memnew( AcceptDialog);
 	add_child(error);
+	scene_must_save=false;
 
 }

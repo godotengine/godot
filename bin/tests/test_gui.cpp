@@ -305,7 +305,7 @@ public:
 		richtext->push_color(Color(1,0.5,0.5));
 		richtext->add_text("leprechauns");
 		richtext->pop();
-#if 0
+
 		richtext->add_text(" and ");
 		richtext->push_color(Color(0,1.0,0.5));
 		richtext->add_text("faeries.\n");
@@ -329,7 +329,7 @@ public:
 		richtext->pop();
 		richtext->add_text("of the rich text label for huge text (not like this text will really be huge but, you know).\nAs long as it is so long that it will work nicely for a test/demo, then it's welcomed in my book...\nChanging subject, the day is cloudy today and I'm wondering if I'll get che chance to travel somewhere nice. Sometimes, watching the clouds from satellite images may give a nice insight about how pressure zones in our planet work, althogh it also makes it pretty obvious to see why most weather forecasts get it wrong so often.\nClouds are so difficult to predict!\nBut it's pretty cool how our civilization has adapted to having water falling from the sky each time it rains...");
 		//richtext->add_text("Hello!\nGorgeous..");
-#endif
+
 
 		//richtext->push_meta("http://www.scrollingcapabilities.xz");
 		///richtext->add_text("Hello!\n");

@@ -95,6 +95,7 @@ class Spatial : public Node {
 		Ref<SpatialGizmo> gizmo;
 		bool gizmo_disabled;
 		bool gizmo_dirty;
+		Transform import_transform;
 #endif
 
 	} data;
@@ -157,6 +158,11 @@ public:
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 
 	Transform get_relative_transform(const Node *p_parent) const;
+
+#ifdef TOOLS_ENABLED
+	void set_import_transform(const Transform& p_transform)	;
+	Transform get_import_transform() const;
+#endif
 
 	Spatial();	
 	~Spatial();

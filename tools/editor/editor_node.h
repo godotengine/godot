@@ -407,6 +407,8 @@ class EditorNode : public Node {
 	};
 	EditorLayout _current_layout;
 	EditorLayout _get_editor_layout(const String& p_property);
+	bool _find_scene_in_use(Node* p_node,const String& p_path) const;
+
 
 protected:
 	void _notification(int p_what);
@@ -495,6 +497,10 @@ public:
 	static void progress_add_task_bg(const String& p_task,const String& p_label, int p_steps);
 	static void progress_task_step_bg(const String& p_task,int p_step=-1);
 	static void progress_end_task_bg(const String& p_task);
+
+	void save_scene(String p_file) { _save_scene(p_file); }
+
+	bool is_scene_in_use(const String& p_path);
 
 	void scan_import_changes();
 	EditorNode();	

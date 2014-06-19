@@ -1698,6 +1698,20 @@ Array Node::_get_children() const {
 	return arr;
 }
 
+#ifdef TOOLS_ENABLED
+void Node::set_import_path(const NodePath& p_import_path) {
+
+
+	data.import_path=p_import_path;
+}
+
+NodePath Node::get_import_path() const {
+
+	return data.import_path;
+}
+
+#endif
+
 
 void Node::_bind_methods() {
 
@@ -1760,6 +1774,12 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
+#ifdef TOOLS_ENABLED
+	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
+	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
+	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
+
+#endif
 
 	BIND_CONSTANT( NOTIFICATION_ENTER_SCENE );
 	BIND_CONSTANT( NOTIFICATION_EXIT_SCENE );
