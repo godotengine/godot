@@ -31,6 +31,7 @@
 #include "globals.h"
 #include "default_mouse_cursor.xpm"
 #include "sort.h"
+#include "io/marshalls.h"
 // careful, these may run in different threads than the visual server
 
 BalloonAllocator<> *VisualServerRaster::OctreeAllocator::allocator=NULL;
@@ -921,6 +922,7 @@ void VisualServerRaster::room_set_bounds(RID p_room, const BSP_Tree& p_bounds) {
 	Room *room = room_owner.get(p_room);
 	ERR_FAIL_COND(!room);
 	room->bounds=p_bounds;
+	_dependency_queue_update(p_room,true);
 
 }
 
@@ -1029,6 +1031,139 @@ float VisualServerRaster::portal_get_connect_range(RID p_portal) const {
 	Portal *portal = portal_owner.get(p_portal);
 	ERR_FAIL_COND_V(!portal,0);
 	return portal->connect_range;
+}
+
+
+RID VisualServerRaster::baked_light_create() {
+
+	BakedLight *baked_light = memnew( BakedLight );
+	ERR_FAIL_COND_V(!baked_light,RID());
+	baked_light->data.mode=BAKED_LIGHT_OCTREE;
+
+	baked_light->data.octree_lattice_size=0;
+	baked_light->data.octree_lattice_divide=0;
+	baked_light->data.octree_steps=1;
+
+	return baked_light_owner.make_rid( baked_light );
+
+}
+
+void VisualServerRaster::baked_light_set_mode(RID p_baked_light,BakedLightMode p_mode){
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+	baked_light->data.mode=p_mode;
+	baked_light->data.color_multiplier=1.0;
+	_dependency_queue_update(p_baked_light,true);
+
+
+}
+
+VisualServer::BakedLightMode VisualServerRaster::baked_light_get_mode(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light,BAKED_LIGHT_OCTREE);
+	return baked_light->data.mode;
+
+}
+
+void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree){
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	if (p_octree.size()==0) {
+		if (baked_light->data.octree_texture.is_valid())
+			rasterizer->free(baked_light->data.octree_texture);
+		baked_light->data.octree_texture=RID();
+		baked_light->octree_aabb=AABB();
+		baked_light->octree_tex_size=Size2();
+	} else {
+
+		int tex_w;
+		int tex_h;
+		bool is16;
+		{
+			DVector<uint8_t>::Read r=p_octree.read();
+			tex_w = decode_uint32(&r[0]);
+			tex_h = decode_uint32(&r[4]);
+			print_line("TEX W: "+itos(tex_w)+" TEX H:"+itos(tex_h)+" LEN: "+itos(p_octree.size()));
+			is16=decode_uint32(&r[8]);
+			baked_light->data.octree_lattice_size=decode_float(&r[12]);
+			baked_light->data.octree_lattice_divide=tex_w/4.0;
+			print_line("LATTICE SIZE: "+rtos(baked_light->data.octree_lattice_size));
+			print_line("LATTICE DIVIDE: "+rtos(baked_light->data.octree_lattice_divide));
+			baked_light->data.octree_steps=decode_uint32(&r[16]);
+			baked_light->data.octree_tex_pixel_size.x=1.0/tex_w;
+			baked_light->data.octree_tex_pixel_size.y=1.0/tex_h;
+			baked_light->data.texture_multiplier=decode_uint32(&r[20]);
+
+
+			baked_light->octree_aabb.pos.x=decode_float(&r[32]);
+			baked_light->octree_aabb.pos.y=decode_float(&r[36]);
+			baked_light->octree_aabb.pos.z=decode_float(&r[40]);
+			baked_light->octree_aabb.size.x=decode_float(&r[44]);
+			baked_light->octree_aabb.size.y=decode_float(&r[48]);
+			baked_light->octree_aabb.size.z=decode_float(&r[52]);
+
+
+		}
+
+		if (baked_light->data.octree_texture.is_valid()) {
+			if (tex_w!=baked_light->octree_tex_size.x || tex_h!=baked_light->octree_tex_size.y) {
+
+				rasterizer->free(baked_light->data.octree_texture);
+				baked_light->data.octree_texture=RID();
+			}
+		}
+
+		if (!baked_light->data.octree_texture.is_valid()) {
+			baked_light->data.octree_texture=rasterizer->texture_create();
+			rasterizer->texture_allocate(baked_light->data.octree_texture,tex_w,tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+		}
+
+		Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_octree);
+		rasterizer->texture_set_data(baked_light->data.octree_texture,img);
+
+	}
+
+
+	_dependency_queue_update(p_baked_light,true);
+
+}
+
+DVector<uint8_t> VisualServerRaster::baked_light_get_octree(RID p_baked_light) const{
+
+
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light,DVector<uint8_t>());
+
+	if (rasterizer->is_texture(baked_light->data.octree_texture)) {
+
+		Image img = rasterizer->texture_get_data(baked_light->data.octree_texture);
+		return img.get_data();
+	} else {
+		return DVector<uint8_t>();
+	}
+}
+
+void VisualServerRaster::baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id){
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+	baked_light->data.lightmaps.insert(p_id,p_texture);
+
+}
+void VisualServerRaster::baked_light_clear_lightmaps(RID p_baked_light){
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+	baked_light->data.lightmaps.clear();
+
 }
 
 
@@ -1710,6 +1845,23 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 
 		}
 
+		if (instance->baked_light_info) {
+
+			while(instance->baked_light_info->owned_instances.size()) {
+
+				Instance *owned=instance->baked_light_info->owned_instances.front()->get();
+				owned->baked_light=NULL;
+				owned->data.baked_light=NULL;
+				owned->data.baked_light_octree_xform=NULL;
+				owned->BLE=NULL;
+				instance->baked_light_info->owned_instances.pop_front();
+			}
+
+			memdelete(instance->baked_light_info);
+			instance->baked_light_info=NULL;
+
+		}
+
 		if (instance->scenario && instance->octree_id) {
 			instance->scenario->octree.erase( instance->octree_id );
 			instance->octree_id=0;
@@ -1796,6 +1948,14 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 			instance->base_type=INSTANCE_PORTAL;
 			instance->portal_info = memnew(Instance::PortalInfo);
 			instance->portal_info->portal=portal_owner.get(p_base);
+		} else if (baked_light_owner.owns(p_base)) {
+
+			instance->base_type=INSTANCE_BAKED_LIGHT;
+			instance->baked_light_info=memnew(Instance::BakedLightInfo);
+			instance->baked_light_info->baked_light=baked_light_owner.get(p_base);
+
+			//instance->portal_info = memnew(Instance::PortalInfo);
+			//instance->portal_info->portal=portal_owner.get(p_base);
 		} else {
 			ERR_EXPLAIN("Invalid base RID for instance!")
 			ERR_FAIL();
@@ -2365,6 +2525,68 @@ float VisualServerRaster::instance_geometry_get_draw_range_max(RID p_instance) c
 
 }
 
+
+void VisualServerRaster::instance_geometry_set_baked_light(RID p_instance,RID p_baked_light) {
+
+	VS_CHANGED;
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+
+
+	if (instance->baked_light) {
+
+
+		instance->baked_light->baked_light_info->owned_instances.erase(instance->BLE);
+		instance->BLE=NULL;
+		instance->baked_light=NULL;
+		instance->data.baked_light=NULL;
+		instance->data.baked_light_octree_xform=NULL;
+
+	}
+
+	if (!p_baked_light.is_valid())
+		return;
+	Instance *bl_instance = instance_owner.get( p_baked_light );
+	ERR_FAIL_COND( !bl_instance );
+	ERR_FAIL_COND( bl_instance->base_type!=INSTANCE_BAKED_LIGHT );
+
+	instance->baked_light=bl_instance;
+	instance->BLE=bl_instance->baked_light_info->owned_instances.push_back(instance);
+	instance->data.baked_light=&bl_instance->baked_light_info->baked_light->data;
+	instance->data.baked_light_octree_xform=&bl_instance->baked_light_info->affine_inverse;
+
+}
+
+RID VisualServerRaster::instance_geometry_get_baked_light(RID p_instance) const{
+
+	const Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND_V( !instance,RID() );
+	if (instance->baked_light)
+		instance->baked_light->self;
+	return RID();
+
+}
+
+void VisualServerRaster::instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id){
+
+	VS_CHANGED;
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+
+	instance->lightmap_texture_index=p_tex_id;
+
+
+}
+int VisualServerRaster::instance_geometry_get_baked_light_texture_index(RID p_instance) const{
+
+	const Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND_V( !instance,0 );
+
+	return instance->lightmap_texture_index;
+
+}
+
+
 void VisualServerRaster::_update_instance(Instance *p_instance) {
 
 	p_instance->version++;
@@ -2385,7 +2607,7 @@ void VisualServerRaster::_update_instance(Instance *p_instance) {
 	}
 		
 
-	if (p_instance->base_type&INSTANCE_GEOMETRY_MASK) {
+	if ((1<<p_instance->base_type)&INSTANCE_GEOMETRY_MASK) {
 
 		//make sure lights are updated
 		InstanceSet::Element *E=p_instance->lights.front();
@@ -2395,12 +2617,19 @@ void VisualServerRaster::_update_instance(Instance *p_instance) {
 			E=E->next();
 		}
 
-	}
-
-	if (p_instance->base_type == INSTANCE_ROOM) {
+	} else if (p_instance->base_type == INSTANCE_ROOM) {
 
 		p_instance->room_info->affine_inverse=p_instance->data.transform.affine_inverse();
+	} else if (p_instance->base_type == INSTANCE_BAKED_LIGHT) {
+
+		Transform scale;
+		scale.basis.scale(p_instance->baked_light_info->baked_light->octree_aabb.size);
+		scale.origin=p_instance->baked_light_info->baked_light->octree_aabb.pos;
+		//print_line("scale: "+scale);
+		p_instance->baked_light_info->affine_inverse=(p_instance->data.transform*scale).affine_inverse();
 	}
+
+
 
 	p_instance->data.mirror = p_instance->data.transform.basis.determinant() < 0.0;
 
@@ -2463,7 +2692,7 @@ void VisualServerRaster::_update_instance(Instance *p_instance) {
 
 		if (p_instance->base_type == INSTANCE_LIGHT) {
 
-			pairable_mask=INSTANCE_GEOMETRY_MASK;
+			pairable_mask=p_instance->light_info->enabled?INSTANCE_GEOMETRY_MASK:0;
 			pairable=true;
 		}
 
@@ -2578,6 +2807,13 @@ void VisualServerRaster::_update_instance_aabb(Instance *p_instance) {
 			}
 
 		} break;			
+		case VisualServer::INSTANCE_BAKED_LIGHT: {
+
+			BakedLight *baked_light = baked_light_owner.get( p_instance->base_rid );
+			ERR_FAIL_COND(!baked_light);
+			new_aabb=baked_light->octree_aabb;
+
+		} break;
 		default: {}
 	}
 
@@ -2605,6 +2841,33 @@ void VisualServerRaster::_update_instances() {
 		instance->update_aabb=false;
 		instance->update_next=0;
 	}
+}
+
+void VisualServerRaster::instance_light_set_enabled(RID p_instance,bool p_enabled) {
+
+	VS_CHANGED;
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+	ERR_FAIL_COND( instance->base_type!=INSTANCE_LIGHT );
+
+	if (p_enabled==instance->light_info->enabled)
+		return;
+
+	instance->light_info->enabled=p_enabled;
+	if (light_get_type(instance->base_rid)!=VS::LIGHT_DIRECTIONAL && instance->octree_id && instance->scenario)
+		instance->scenario->octree.set_pairable(instance->octree_id,p_enabled,1<<INSTANCE_LIGHT,p_enabled?INSTANCE_GEOMETRY_MASK:0);
+
+	//_instance_queue_update( instance , true );
+
+}
+
+bool VisualServerRaster::instance_light_is_enabled(RID p_instance) const {
+
+	const Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND_V( !instance,false );
+	ERR_FAIL_COND_V( instance->base_type!=INSTANCE_LIGHT,false );
+
+	return instance->light_info->enabled;
 }
 
 /****** CANVAS *********/
@@ -3330,6 +3593,13 @@ void VisualServerRaster::black_bars_set_margins(int p_left, int p_top, int p_rig
 	black_margin[MARGIN_BOTTOM]=p_bottom;
 }
 
+void VisualServerRaster::black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom) {
+
+	black_image[MARGIN_LEFT]=p_left;
+	black_image[MARGIN_TOP]=p_top;
+	black_image[MARGIN_RIGHT]=p_right;
+	black_image[MARGIN_BOTTOM]=p_bottom;
+}
 
 void VisualServerRaster::_free_attached_instances(RID p_rid,bool p_free_scenario) {
 
@@ -3414,6 +3684,17 @@ void VisualServerRaster::free( RID p_rid ) {
 		portal_owner.free(p_rid);
 		memdelete(portal);
 
+	} else if (baked_light_owner.owns(p_rid)) {
+
+		_free_attached_instances(p_rid);
+
+		BakedLight *baked_light = baked_light_owner.get(p_rid);
+		ERR_FAIL_COND(!baked_light);
+		if (baked_light->data.octree_texture.is_valid())
+			rasterizer->free(baked_light->data.octree_texture);
+		baked_light_owner.free(p_rid);
+		memdelete(baked_light);
+
 	} else if (camera_owner.owns(p_rid)) {
 		// delete te camera
 		
@@ -3464,8 +3745,9 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		instance_set_room(p_rid,RID());
 		instance_set_scenario(p_rid,RID());
+		instance_geometry_set_baked_light(p_rid,RID());
 		instance_set_base(p_rid,RID());
-			
+
 		instance_owner.free(p_rid);
 		memdelete(instance);
 		
@@ -3689,6 +3971,8 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 	//float cull_max=p_cull_range.max;
 
 	
+	bool overlap = 	rasterizer->light_instance_get_pssm_shadow_overlap(p_light->light_info->instance);
+
 	float cull_min=p_camera->znear;
 	float cull_max=p_camera->zfar;
 	float max_dist = rasterizer->light_directional_get_shadow_param(p_light->base_rid,VS::LIGHT_DIRECTIONAL_SHADOW_PARAM_MAX_DISTANCE);
@@ -3718,7 +4002,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 				camera_matrix.set_orthogonal(
 					p_camera->size,
 					viewport_rect.width / (float)viewport_rect.height,
-					distances[i],
+					distances[(i==0 || !overlap )?i:i-1],
 					distances[i+1],
 					p_camera->vaspect
 
@@ -3730,7 +4014,7 @@ void VisualServerRaster::_light_instance_update_pssm_shadow(Instance *p_light,Sc
 				camera_matrix.set_perspective(
 					p_camera->fov,
 					viewport_rect.width / (float)viewport_rect.height,
-					distances[i],
+					distances[(i==0 || !overlap )?i:i-1],
 					distances[i+1],
 					p_camera->vaspect
 
@@ -5101,7 +5385,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 
 			Instance  *light = E->get().is_valid()?instance_owner.get(E->get()):NULL;
 
-			if (rasterizer->light_has_shadow(light->base_rid)) {
+			if (light && light->light_info->enabled && rasterizer->light_has_shadow(light->base_rid)) {
 				//rasterizer->light_instance_set_active_hint(light->light_info->instance);
 				_light_instance_update_shadow(light,p_scenario,p_camera,cull_range);
 			}
@@ -5190,6 +5474,9 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 			Instance  *light = E->get().is_valid()?instance_owner.get(E->get()):NULL;
 
 			ERR_CONTINUE(!light);
+			if (!light->light_info->enabled)
+				continue;
+
 			rasterizer->add_light(light->light_info->instance);
 			light->light_info->last_add_pass=render_pass;
 		}
@@ -5694,9 +5981,16 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 		rasterizer->canvas_draw_rect(Rect2(cursors[i].pos, size), 0, Rect2(), tex, Color(1, 1, 1, 1));
 	};
 
-	if (black_margin[MARGIN_LEFT])
+	if (black_image[MARGIN_LEFT].is_valid()) {
+		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_LEFT]),rasterizer->texture_get_height(black_image[MARGIN_LEFT]));
+		rasterizer->canvas_draw_rect(Rect2(0,0,black_margin[MARGIN_LEFT],window_h),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_LEFT],Color(1,1,1));
+	} else if (black_margin[MARGIN_LEFT])
 		rasterizer->canvas_draw_rect(Rect2(0,0,black_margin[MARGIN_LEFT],window_h),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
-	if (black_margin[MARGIN_RIGHT])
+
+	if (black_image[MARGIN_RIGHT].is_valid()) {
+		Size2 sz(rasterizer->texture_get_width(black_image[MARGIN_RIGHT]),rasterizer->texture_get_height(black_image[MARGIN_RIGHT]));
+		rasterizer->canvas_draw_rect(Rect2(window_w-black_margin[MARGIN_RIGHT],0,black_margin[MARGIN_RIGHT],window_h),0,Rect2(0,0,sz.x,sz.y),black_image[MARGIN_RIGHT],Color(1,1,1));
+	} else if (black_margin[MARGIN_RIGHT])
 		rasterizer->canvas_draw_rect(Rect2(window_w-black_margin[MARGIN_RIGHT],0,black_margin[MARGIN_RIGHT],window_h),0,Rect2(0,0,1,1),RID(),Color(0,0,0));
 	if (black_margin[MARGIN_TOP])
 		rasterizer->canvas_draw_rect(Rect2(0,0,window_w,black_margin[MARGIN_TOP]),0,Rect2(0,0,1,1),RID(),Color(0,0,0));

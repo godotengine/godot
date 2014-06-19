@@ -494,6 +494,17 @@ Ref<World> Spatial::get_world() const {
 
 }
 
+#ifdef TOOLS_ENABLED
+void Spatial::set_import_transform(const Transform& p_transform) {
+	data.import_transform=p_transform;
+}
+
+Transform Spatial::get_import_transform() const {
+
+	return data.import_transform;
+}
+#endif
+
 
 void Spatial::_bind_methods() {
 
@@ -517,6 +528,9 @@ void Spatial::_bind_methods() {
 
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_update_gizmo"), &Spatial::_update_gizmo);
+	ObjectTypeDB::bind_method(_MD("_set_import_transform"), &Spatial::set_import_transform);
+	ObjectTypeDB::bind_method(_MD("_get_import_transform"), &Spatial::get_import_transform);
+	ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"_import_transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_transform"),_SCS("_get_import_transform"));
 #endif
 
 	ObjectTypeDB::bind_method(_MD("update_gizmo"), &Spatial::update_gizmo);

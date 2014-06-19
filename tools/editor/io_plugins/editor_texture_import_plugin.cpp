@@ -45,6 +45,7 @@ static const char *flag_names[]={
 	"Repeat",
 	"Filter (Magnifying)",
 	"Premultiply Alpha",
+	"Convert SRGB->Linear",
 	NULL
 };
 
@@ -57,6 +58,7 @@ static const char *flag_short_names[]={
 	"Repeat",
 	"Filter",
 	"PMAlpha",
+	"ToLinear",
 	NULL
 };
 
@@ -732,6 +734,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 	if (!(flags&EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS))
 		tex_flags|=Texture::FLAG_MIPMAPS;
 
+	print_line("path: "+p_path+" flags: "+itos(tex_flags));
 	int shrink=1;
 	if (from->has_option("shrink"))
 		shrink=from->get_option("shrink");
@@ -926,6 +929,10 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.premultiply_alpha();
 		}
 
+		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			image.srgb_to_linear();
+		}
 
 		if (shrink>1) {
 
@@ -982,6 +989,11 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		if (image.get_format()==Image::FORMAT_RGBA && flags&IMAGE_FLAG_PREMULT_ALPHA) {
 
 			image.premultiply_alpha();
+		}
+
+		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+			image.srgb_to_linear();
 		}
 
 		int orig_w=image.get_width();
@@ -1073,11 +1085,11 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 
 			int flags=0;
 
-			if (Globals::get_singleton()->get("texture_import/filter"))
+			if (Globals::get_singleton()->get("image_loader/filter"))
 				flags|=IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("texture_import/gen_mipmaps"))
+			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
 				flags|=IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("texture_import/repeat"))
+			if (!Globals::get_singleton()->get("image_loader/repeat"))
 				flags|=IMAGE_FLAG_REPEAT;
 
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -1102,11 +1114,11 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 
 			int flags=0;
 
-			if (Globals::get_singleton()->get("texture_import/filter"))
+			if (Globals::get_singleton()->get("image_loader/filter"))
 				flags|=IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("texture_import/gen_mipmaps"))
+			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
 				flags|=IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("texture_import/repeat"))
+			if (!Globals::get_singleton()->get("image_loader/repeat"))
 				flags|=IMAGE_FLAG_REPEAT;
 
 			flags|=IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -1147,10 +1159,13 @@ Vector<uint8_t> EditorTextureImportPlugin::custom_export(const String& p_path, c
 	MD5Update(&ctx,&shrink,1);
 	MD5Final(&ctx);
 
+
+
 	uint64_t sd=0;
 	String smd5;
 
 	String md5 = String::md5(ctx.digest);
+	print_line(p_path+" MD5: "+md5+" FLAGS: "+itos(flags));
 
 	String tmp_path = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/");
 

@@ -481,6 +481,8 @@ public:
 		LIGHT_PARAM_SHADOW_DARKENING,
 		LIGHT_PARAM_SHADOW_Z_OFFSET,
 		LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,
+		LIGHT_PARAM_SHADOW_ESM_MULTIPLIER,
+		LIGHT_PARAM_SHADOW_BLUR_PASSES,
 		LIGHT_PARAM_MAX
 	};
 
@@ -575,6 +577,23 @@ public:
 	virtual void portal_set_connect_range(RID p_portal, float p_range) =0;
 	virtual float portal_get_connect_range(RID p_portal) const =0;
 
+
+	/* BAKED LIGHT API */
+
+	virtual RID baked_light_create()=0;
+	enum BakedLightMode {
+		BAKED_LIGHT_OCTREE,
+		BAKED_LIGHT_LIGHTMAPS
+	};
+
+	virtual void baked_light_set_mode(RID p_baked_light,BakedLightMode p_mode)=0;
+	virtual BakedLightMode baked_light_get_mode(RID p_baked_light) const=0;
+
+	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree)=0;
+	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const=0;
+
+	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id)=0;
+	virtual void baked_light_clear_lightmaps(RID p_baked_light)=0;
 
 
 	/* CAMERA API */
@@ -711,7 +730,7 @@ public:
 		ENV_FX_HDR,
 		ENV_FX_FOG,
 		ENV_FX_BCS,
-		ENV_FX_GAMMA,
+		ENV_FX_SRGB,
 		ENV_FX_MAX
 	};
 
@@ -751,7 +770,6 @@ public:
 		ENV_FX_PARAM_BCS_BRIGHTNESS,
 		ENV_FX_PARAM_BCS_CONTRAST,
 		ENV_FX_PARAM_BCS_SATURATION,
-		ENV_FX_PARAM_GAMMA,
 		ENV_FX_PARAM_MAX
 	};
 
@@ -792,6 +810,7 @@ public:
 		INSTANCE_LIGHT,
 		INSTANCE_ROOM,
 		INSTANCE_PORTAL,
+		INSTANCE_BAKED_LIGHT,
 		
 		INSTANCE_GEOMETRY_MASK=(1<<INSTANCE_MESH)|(1<<INSTANCE_MULTIMESH)|(1<<INSTANCE_IMMEDIATE)|(1<<INSTANCE_PARTICLES)
 	};
@@ -849,7 +868,7 @@ public:
 		INSTANCE_FLAG_RECEIVE_SHADOWS,
 		INSTANCE_FLAG_DEPH_SCALE,
 		INSTANCE_FLAG_VISIBLE_IN_ALL_ROOMS,
-		INSTANCE_FLAG_USE_BAKED_LIGHT_VOLUME,
+		INSTANCE_FLAG_USE_BAKED_LIGHT,
 		INSTANCE_FLAG_MAX
 	};
 
@@ -863,6 +882,14 @@ public:
 	virtual float instance_geometry_get_draw_range_max(RID p_instance) const=0;
 	virtual float instance_geometry_get_draw_range_min(RID p_instance) const=0;
 
+	virtual void instance_geometry_set_baked_light(RID p_instance,RID p_baked_light)=0;
+	virtual RID instance_geometry_get_baked_light(RID p_instance) const=0;
+
+	virtual void instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id)=0;
+	virtual int instance_geometry_get_baked_light_texture_index(RID p_instance) const=0;
+
+	virtual void instance_light_set_enabled(RID p_instance,bool p_enabled)=0;
+	virtual bool instance_light_is_enabled(RID p_instance) const=0;
 
 	/* CANVAS (2D) */
 
@@ -923,6 +950,7 @@ public:
 
 
 	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom)=0;
+	virtual void black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom)=0;
 
 
 	/* FREE */

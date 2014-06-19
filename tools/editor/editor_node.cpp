@@ -3046,6 +3046,33 @@ void EditorNode::_load_error_notify(void* p_ud,const String& p_text) {
 
 }
 
+
+bool EditorNode::_find_scene_in_use(Node* p_node,const String& p_path) const {
+
+	if (p_node->get_filename()==p_path) {
+		return true;
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+
+		if (_find_scene_in_use(p_node->get_child(i),p_path)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+bool EditorNode::is_scene_in_use(const String& p_path) {
+
+	Node *es = get_edited_scene();
+	if (es)
+		return _find_scene_in_use(es,p_path);
+	return false;
+
+}
+
 void EditorNode::register_editor_types() {
 
 	ObjectTypeDB::register_type<EditorPlugin>();
@@ -3210,6 +3237,7 @@ Error EditorNode::export_platform(const String& p_platform, const String& p_path
 
 	return OK;
 }
+
 
 
 EditorNode::EditorNode() {
@@ -4067,7 +4095,7 @@ EditorNode::EditorNode() {
 
 
 	import_menu->get_popup()->add_separator();
-	import_menu->get_popup()->add_item("Import Settings",SETTINGS_IMPORT);
+	import_menu->get_popup()->add_item("Re-Import..",SETTINGS_IMPORT);
 
 	editor_plugin_screen=NULL;
 	editor_plugin_over=NULL;

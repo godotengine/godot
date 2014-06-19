@@ -1596,6 +1596,7 @@ bool String::is_numeric() const {
 };
 
 #define IS_DIGIT(m_d) ( (m_d)>='0' && (m_d)<='9' )
+#define IS_HEX_DIGIT(m_d) ( ( (m_d)>='0' && (m_d)<='9' ) || ( (m_d)>='a' && (m_d)<='f' ) || ( (m_d)>='A' && (m_d)<='F' ) )
 
 template<class C>
 static double built_in_strtod(const C *string,         /* A decimal ASCII floating-point number,
@@ -2891,23 +2892,107 @@ String String::xml_escape(bool p_escape_quotes) const {
 	return str;
 }
 
+static _FORCE_INLINE_ int _xml_unescape(const CharType *p_src,int p_src_len,CharType *p_dst) {
+
+	int len=0;
+	while(p_src_len) {
+
+		if (*p_src=='&') {
+
+			int eat=0;
+
+			if (p_src_len>=4 && p_src[1]=='#') {
+
+				CharType c=0;
+
+				for(int i=2;i<p_src_len;i++) {
+
+					eat=i+1;
+					CharType ct=p_src[i];
+					if (ct==';') {
+						break;
+					} else if (ct>='0' && ct<='9') {
+						ct=ct-'0';
+					} else if (ct>='a' && ct<='f') {
+						ct=(ct-'a')+10;
+					} else if (ct>='A' && ct<='F') {
+						ct=(ct-'A')+10;
+					} else {
+						continue;
+					}
+					c<<=4;
+					c|=ct;
+				}
+
+				if (p_dst)
+					*p_dst=c;
+
+			} else if (p_src_len>=4 && p_src[1]=='g' && p_src[2]=='t' && p_src[3]==';') {
+
+				if (p_dst)
+					*p_dst='<';
+				eat=4;
+			} else if (p_src_len>=4 && p_src[1]=='l' && p_src[2]=='t' && p_src[3]==';') {
+
+				if (p_dst)
+					*p_dst='>';
+				eat=4;
+			} else if (p_src_len>=5 && p_src[1]=='a' && p_src[2]=='m' && p_src[3]=='p' && p_src[4]==';') {
+
+				if (p_dst)
+					*p_dst='&';
+				eat=5;
+			} else if (p_src_len>=6 && p_src[1]=='q' && p_src[2]=='u' && p_src[3]=='o' && p_src[4]=='t' && p_src[5]==';') {
+
+				if (p_dst)
+					*p_dst='"';
+				eat=6;
+			} else if (p_src_len>=6 && p_src[1]=='a' && p_src[2]=='p' && p_src[3]=='o' && p_src[4]=='s' && p_src[5]==';') {
+
+				if (p_dst)
+					*p_dst='\'';
+				eat=6;
+			} else {
+
+				if (p_dst)
+					*p_dst=*p_src;
+				eat=1;
+
+			}
+
+			if (p_dst)
+				p_dst++;
+
+			len++;
+			p_src+=eat;
+			p_src_len-=eat;
+		} else {
+
+			if (p_dst) {
+				*p_dst=*p_src;
+				p_dst++;
+			}
+			len++;
+			p_src++;
+			p_src_len--;
+		}
+	}
+
+	return len;
+
+}
+
 String String::xml_unescape() const {
 
-	String str=*this;
-	str=str.strip_edges();
-	//str=str.replace("\"","");
-	str=str.replace("&gt;","<");
-	str=str.replace("&lt;",">");
-	str=str.replace("&apos;","'");
-	str=str.replace("&quot;","\"");
-	/*
-	for (int i=1;i<32;i++) {
 
-		char chr[2]={i,0};
-		str=str.replace("&#"+String::num(i)+";",chr);
-	}*/
-	str=str.replace("&amp;","&");
-
+	String str;
+	int l = length();
+	int len = _xml_unescape(c_str(),l,NULL);
+	if (len==0)
+		return String();
+	str.resize(len+1);
+	_xml_unescape(c_str(),l,&str[0]);
+	str[len]=0;
 	return str;
 }
 

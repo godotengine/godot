@@ -45,8 +45,8 @@
 class Image {
 
 	enum { 
-		MAX_WIDTH=4096, // force a limit somehow
-		MAX_HEIGHT=4096 // force a limit somehow
+		MAX_WIDTH=16384, // force a limit somehow
+		MAX_HEIGHT=16384// force a limit somehow
 	};
 public:
 
@@ -98,6 +98,8 @@ public:
 	static void (*_image_decompress_pvrtc)(Image *);
 	static void (*_image_decompress_bc)(Image *);
 	static void (*_image_decompress_etc)(Image *);
+
+	Error _decompress_bc();
 
 	static DVector<uint8_t> (*lossy_packer)(const Image& p_image,float p_quality);
 	static Image (*lossy_unpacker)(const DVector<uint8_t>& p_buffer);
@@ -317,10 +319,12 @@ public:
 
 	Error compress(CompressMode p_mode=COMPRESS_BC);
 	Image compressed(int p_mode); /* from the Image::CompressMode enum */
-	void decompress();
+	Error decompress();
+	Image decompressed() const;
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
+	void srgb_to_linear();
 
 	void blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& p_dest);
 	void brush_transfer(const Image& p_src, const Image& p_brush, const Point2& p_dest);

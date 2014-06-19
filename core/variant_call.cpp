@@ -539,6 +539,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR3(Image,brush_transfer);
 	VCALL_PTR1R(Image,get_rect);
 	VCALL_PTR1R(Image,compressed);
+	VCALL_PTR0R(Image,decompressed);
 	VCALL_PTR3R(Image, resized);
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
@@ -567,6 +568,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R( Matrix32, affine_inverse );
 	VCALL_PTR0R( Matrix32, get_rotation );
 	VCALL_PTR0R( Matrix32, get_origin );
+	VCALL_PTR0R( Matrix32, get_scale );
 	VCALL_PTR0R( Matrix32, orthonormalized );
 	VCALL_PTR1R( Matrix32, rotated );
 	VCALL_PTR1R( Matrix32, scaled );
@@ -1265,6 +1267,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(IMAGE, RECT2, Image, get_used_rect, varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, get_rect, RECT2, "area", varray(0));
 	ADDFUNC1(IMAGE, IMAGE, Image, compressed, INT, "format", varray(0));
+	ADDFUNC0(IMAGE, IMAGE, Image, decompressed, varray(0));
 	ADDFUNC3(IMAGE, IMAGE, Image, resized, INT, "x", INT, "y", INT, "interpolation", varray(((int)Image::INTERPOLATE_BILINEAR)));
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
@@ -1377,6 +1380,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,affine_inverse,varray());
 	ADDFUNC0(MATRIX32,REAL,Matrix32,get_rotation,varray());
 	ADDFUNC0(MATRIX32,VECTOR2,Matrix32,get_origin,varray());
+	ADDFUNC0(MATRIX32,VECTOR2,Matrix32,get_scale,varray());
 	ADDFUNC0(MATRIX32,MATRIX32,Matrix32,orthonormalized,varray());
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,rotated,REAL,"phi",varray());
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,scaled,VECTOR2,"scale",varray());

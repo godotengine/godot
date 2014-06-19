@@ -1347,6 +1347,10 @@ bool _Directory::file_exists(String p_file){
 	return d->file_exists(p_file);
 }
 
+bool _Directory::dir_exists(String p_dir) {
+	ERR_FAIL_COND_V(!d,false);
+	return d->dir_exists(p_dir);
+}
 
 int _Directory::get_space_left(){
 
@@ -1386,6 +1390,7 @@ void _Directory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("make_dir:Error","name"),&_Directory::make_dir);
 	ObjectTypeDB::bind_method(_MD("make_dir_recursive:Error","name"),&_Directory::make_dir_recursive);
 	ObjectTypeDB::bind_method(_MD("file_exists","name"),&_Directory::file_exists);
+	ObjectTypeDB::bind_method(_MD("dir_exists","name"),&_Directory::dir_exists);
 //	ObjectTypeDB::bind_method(_MD("get_modified_time","file"),&_Directory::get_modified_time);
 	ObjectTypeDB::bind_method(_MD("get_space_left"),&_Directory::get_space_left);
 	ObjectTypeDB::bind_method(_MD("copy:Error","from","to"),&_Directory::copy);
@@ -1418,7 +1423,7 @@ String _Marshalls::variant_to_base64(const Variant& p_var) {
 	err = encode_variant(p_var,&w[0],len);
 	ERR_FAIL_COND_V( err != OK, "" );
 
-	int b64len = len / 3 * 4 + 4;
+	int b64len = len / 3 * 4 + 4 + 1;
 	DVector<uint8_t> b64buff;
 	b64buff.resize(b64len);
 	DVector<uint8_t>::Write w64 = b64buff.write();
@@ -1437,7 +1442,7 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	CharString cstr = p_str.ascii();
 
 	DVector<uint8_t> buf;
-	buf.resize(strlen / 4 * 3);
+	buf.resize(strlen / 4 * 3 + 1);
 	DVector<uint8_t>::Write w = buf.write();
 
 	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);

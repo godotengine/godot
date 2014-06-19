@@ -82,6 +82,9 @@ private:
 		StringName name;
 		SceneMainLoop *scene;
 		bool inside_scene;
+#ifdef TOOLS_ENABLED
+		NodePath import_path; //path used when imported, used by scene editors to keep tracking
+#endif
 
 		Viewport *viewport;
 
@@ -125,6 +128,7 @@ private:
 
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
 	Array _get_children() const;
+	Array _get_groups() const;
 
 friend class SceneMainLoop;
 
@@ -268,10 +272,17 @@ public:
 
 	void queue_delete();
 
+//shitty hacks for speed
 	static void set_human_readable_collision_renaming(bool p_enabled);
 	static void init_node_hrcr();
 
 	void force_parent_owned() { data.parent_owned=true; } //hack to avoid duplicate nodes
+
+#ifdef TOOLS_ENABLED
+	void set_import_path(const NodePath& p_import_path); //path used when imported, used by scene editors to keep tracking
+	NodePath get_import_path() const;
+#endif
+
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 

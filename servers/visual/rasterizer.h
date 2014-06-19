@@ -167,6 +167,7 @@ public:
 	};
 
 
+
 	/* TEXTURE API */
 
 	virtual RID texture_create()=0;
@@ -301,6 +302,11 @@ public:
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh,int p_visible)=0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const=0;
+
+	/* BAKED LIGHT */
+
+
+
 
 	/* IMMEDIATE API */
 
@@ -450,6 +456,7 @@ public:
 	virtual int light_instance_get_shadow_passes(RID p_light_instance) const=0;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near=0,float p_split_far=0)=0;
 	virtual int light_instance_get_shadow_size(RID p_light_instance, int p_index=0) const=0;
+	virtual bool light_instance_get_pssm_shadow_overlap(RID p_light_instance) const=0;
 
 	/* SHADOWS */
 
@@ -490,6 +497,21 @@ public:
 	
 	typedef Map<StringName,Variant> ParamOverrideMap;
 
+	struct BakedLightData {
+
+		VS::BakedLightMode mode;
+		RID octree_texture;
+		float color_multiplier; //used for both lightmaps and octree
+		Transform octree_transform;
+		Map<int,RID> lightmaps;
+		//cache
+
+		float octree_lattice_size;
+		float octree_lattice_divide;
+		float texture_multiplier;
+		int octree_steps;
+		Vector2 octree_tex_pixel_size;
+	};
 
 	struct InstanceData {
 
@@ -498,6 +520,8 @@ public:
 		RID material_override;
 		Vector<RID> light_instances;
 		Vector<float> morph_values;
+		BakedLightData *baked_light;
+		Transform *baked_light_octree_xform;
 		bool mirror :8;
 		bool depth_scale :8;
 		bool billboard :8;

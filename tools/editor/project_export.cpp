@@ -232,6 +232,26 @@ void ProjectExportDialog::_format_toggled() {
 }
 
 
+void ProjectExportDialog::_script_edited(Variant v) {
+
+	if (updating_script)
+		return;
+	updating_script=true;
+	EditorNode::get_undo_redo()->create_action("Edit Script Options");
+	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"script_set_action",script_mode->get_selected());
+	EditorNode::get_undo_redo()->add_undo_method(EditorImportExport::get_singleton(),"script_set_action",EditorImportExport::get_singleton()->script_get_action());
+	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"script_set_encryption_key",script_key->get_text());
+	EditorNode::get_undo_redo()->add_undo_method(EditorImportExport::get_singleton(),"script_set_encryption_key",EditorImportExport::get_singleton()->script_get_encryption_key());
+	EditorNode::get_undo_redo()->add_do_method(this,"_update_script");
+	EditorNode::get_undo_redo()->add_undo_method(this,"_update_script");
+	EditorNode::get_undo_redo()->add_do_method(this,"_save_export_cfg");
+	EditorNode::get_undo_redo()->add_undo_method(this,"_save_export_cfg");
+	EditorNode::get_undo_redo()->commit_action();
+	updating_script=false;
+
+
+}
+
 void ProjectExportDialog::_notification(int p_what) {
 
 	switch(p_what) {
@@ -277,9 +297,15 @@ void ProjectExportDialog::_notification(int p_what) {
 			image_action->select(EditorImportExport::get_singleton()->get_export_image_action());
 			image_quality->set_val(EditorImportExport::get_singleton()->get_export_image_quality());
 			image_shrink->set_val(EditorImportExport::get_singleton()->get_export_image_shrink());
+			_update_script();
+
+
 			image_quality->connect("value_changed",this,"_quality_edited");
 			image_shrink->connect("value_changed",this,"_shrink_edited");
 			image_action->connect("item_selected",this,"_image_export_edited");
+
+			script_mode->connect("item_selected",this,"_script_edited");
+			script_key->connect("text_changed",this,"_script_edited");
 
 			for(int i=0;i<formats.size();i++) {
 				if (EditorImportExport::get_singleton()->get_image_formats().has(formats[i]->get_text(0)))
@@ -651,10 +677,15 @@ bool ProjectExportDialog::_update_group_treef(TreeItem *p_parent,EditorFileSyste
 }
 void ProjectExportDialog::_update_group_tree() {
 
+	if (updating)
+		return;
+
 	group_images->clear();
 
 	if (_get_selected_group()=="")
 		return;
+
+	updating=true;
 	print_line("****UGT");
 	List<String> img_extensions;
 	ImageLoader::get_recognized_extensions(&img_extensions);
@@ -677,7 +708,7 @@ void ProjectExportDialog::_update_group_tree() {
 		groupenum+=","+String(E->get());
 	}
 
-
+	updating=false;
 
 
 	_update_group_treef(NULL,EditorFileSystem::get_singleton()->get_filesystem(),extensions,groupenum,group_index);
@@ -690,7 +721,7 @@ void ProjectExportDialog::_group_changed(Variant v) {
 		return;
 	if (_get_selected_group()=="")
 		return;
-
+	updating=true;
 	StringName name = _get_selected_group();
 	EditorNode::get_undo_redo()->create_action("Change Image Group");
 	EditorNode::get_undo_redo()->add_do_method(EditorImportExport::get_singleton(),"image_export_group_set_image_action",name,group_image_action->get_selected());
@@ -706,6 +737,7 @@ void ProjectExportDialog::_group_changed(Variant v) {
 	EditorNode::get_undo_redo()->add_do_method(this,"_save_export_cfg");
 	EditorNode::get_undo_redo()->add_undo_method(this,"_save_export_cfg");
 	EditorNode::get_undo_redo()->commit_action();
+	updating=false;
 }
 
 void ProjectExportDialog::_group_item_edited() {
@@ -926,11 +958,11 @@ void ProjectExportDialog::_group_atlas_preview() {
 
 	int flags=0;
 
-	if (Globals::get_singleton()->get("texture_import/filter"))
+	if (Globals::get_singleton()->get("image_loader/filter"))
 		flags|=EditorTextureImportPlugin::IMAGE_FLAG_FILTER;
-	if (!Globals::get_singleton()->get("texture_import/gen_mipmaps"))
+	if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
 		flags|=EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS;
-	if (!Globals::get_singleton()->get("texture_import/repeat"))
+	if (!Globals::get_singleton()->get("image_loader/repeat"))
 		flags|=EditorTextureImportPlugin::IMAGE_FLAG_REPEAT;
 
 	flags|=EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -953,6 +985,17 @@ void ProjectExportDialog::_group_atlas_preview() {
 	atlas_preview_frame->set_texture(tex); //clear previous
 	atlas_preview_dialog->set_title("Atlas Preview ("+itos(tex->get_width())+"x"+itos(tex->get_height())+")");
 	atlas_preview_dialog->popup_centered_ratio(0.9);
+
+}
+
+void ProjectExportDialog::_update_script() {
+
+	if (updating_script)
+		return;
+	updating_script=true;
+	script_mode->select(EditorImportExport::get_singleton()->script_get_action());
+	script_key->set_text(EditorImportExport::get_singleton()->script_get_encryption_key());
+	updating_script=false;
 
 }
 
@@ -991,6 +1034,8 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_group_atlas_preview"),&ProjectExportDialog::_group_atlas_preview);
 	ObjectTypeDB::bind_method(_MD("_group_select_all"),&ProjectExportDialog::_group_select_all);
 	ObjectTypeDB::bind_method(_MD("_group_select_none"),&ProjectExportDialog::_group_select_none);
+	ObjectTypeDB::bind_method(_MD("_script_edited"),&ProjectExportDialog::_script_edited);
+	ObjectTypeDB::bind_method(_MD("_update_script"),&ProjectExportDialog::_update_script);
 
 
 	ObjectTypeDB::bind_method(_MD("export_platform"),&ProjectExportDialog::export_platform);
@@ -1171,7 +1216,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_lossy_quality->set_step(0.1);
 	group_lossy_quality->set_val(0.7);
 	group_options->add_margin_child("Lossy Quality:",group_lossy_quality);
-	group_lossy_quality->connect("value_changed",this,"_group_changed");
+	group_lossy_quality->connect("value_changed",this,"_quality_edited");
 
 	group_atlas = memnew(CheckButton);
 	group_atlas->set_pressed("Generate Atlas");
@@ -1261,6 +1306,18 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	hbc->add_child(button_reload);
 */
 
+	script_vbox = memnew( VBoxContainer );
+	script_vbox->set_name("Script");
+	sections->add_child(script_vbox);
+	script_mode = memnew( OptionButton );
+	script_vbox->add_margin_child("Script Export Mode:",script_mode);
+	script_mode->add_item("Text");
+	script_mode->add_item("Compiled");
+	script_mode->add_item("Encrypted (Provide Key Below)");
+	script_key = memnew( LineEdit );
+	script_vbox->add_margin_child("Script Encryption Key (256-bits as hex):",script_key);
+
+
 
 	updating=false;
 
@@ -1302,6 +1359,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	add_child(pck_export);
 
 	button_export = add_button("Export..",!OS::get_singleton()->get_swap_ok_cancel(),"export_pck");
+	updating_script=false;
 
 
 }

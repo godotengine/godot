@@ -79,7 +79,9 @@ class RasterizerGLES2 : public Rasterizer {
 	bool npo2_textures_available;
 	bool read_depth_supported;
 	bool use_framebuffers;
+	bool full_float_fb_supported;
 	bool use_shadow_mapping;
+	bool use_fp16_fb;
 	ShadowFilterTechnique shadow_filter;
 
 	bool use_shadow_esm;
@@ -89,6 +91,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_texture_instancing;
 	bool use_attribute_instancing;
 	bool use_rgba_shadowmaps;
+
 	bool use_half_float;
 
 
@@ -585,6 +588,8 @@ class RasterizerGLES2 : public Rasterizer {
 			vars[VS::LIGHT_PARAM_SHADOW_DARKENING]=0.0;
 			vars[VS::LIGHT_PARAM_SHADOW_Z_OFFSET]=0.2;
 			vars[VS::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE]=1.4;
+			vars[VS::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER]=60.0;
+			vars[VS::LIGHT_PARAM_SHADOW_BLUR_PASSES]=1;
 			colors[VS::LIGHT_COLOR_AMBIENT]=Color(0,0,0);
 			colors[VS::LIGHT_COLOR_DIFFUSE]=Color(1,1,1);
 			colors[VS::LIGHT_COLOR_SPECULAR]=Color(1,1,1);
@@ -645,7 +650,6 @@ class RasterizerGLES2 : public Rasterizer {
 			fx_param[VS::ENV_FX_PARAM_BCS_BRIGHTNESS]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_CONTRAST]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_SATURATION]=1.0;
-			fx_param[VS::ENV_FX_PARAM_GAMMA]=1.0;
 
 		}
 
@@ -998,6 +1002,8 @@ class RasterizerGLES2 : public Rasterizer {
 	};
 
 	Vector<ShadowBuffer> near_shadow_buffers;
+	ShadowBuffer blur_shadow_buffer;
+
 	Vector<ShadowBuffer> far_shadow_buffers;
 
 	LightInstance *shadow;
@@ -1100,6 +1106,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool cull_front;
 	bool lights_use_shadow;
 	_FORCE_INLINE_ void _set_cull(bool p_front,bool p_reverse_cull=false);
+	_FORCE_INLINE_ Color _convert_color(const Color& p_color);
 
 	void _process_glow_bloom();
 	void _process_hdr();
@@ -1376,6 +1383,7 @@ public:
 
 	virtual ShadowType light_instance_get_shadow_type(RID p_light_instance,bool p_far=false) const;
 	virtual int light_instance_get_shadow_passes(RID p_light_instance) const;
+	virtual bool light_instance_get_pssm_shadow_overlap(RID p_light_instance) const;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near=0,float p_split_far=0);
 	virtual int light_instance_get_shadow_size(RID p_light_instance, int p_index=0) const;
 

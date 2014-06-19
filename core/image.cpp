@@ -1399,14 +1399,351 @@ int Image::get_format_pallete_size(Format p_format) {
 }
 
 
-void Image::decompress() {
 
-	if (format>=FORMAT_BC1 && format<=FORMAT_BC5 && _image_decompress_bc)
-		_image_decompress_bc(this);
-	if (format>=FORMAT_PVRTC2 && format<=FORMAT_PVRTC4_ALPHA && _image_decompress_pvrtc)
+
+Error Image::_decompress_bc() {
+
+	print_line("decompressing bc");
+
+	int mm;
+	int size = _get_dst_image_size(width,height,FORMAT_RGBA,mm,mipmaps);
+
+	DVector<uint8_t> newdata;
+	newdata.resize(size);
+
+	DVector<uint8_t>::Write w = newdata.write();
+	DVector<uint8_t>::Read r = data.read();
+
+	int rofs=0;
+	int wofs=0;
+	int wd=width,ht=height;
+
+	for(int i=0;i<=mm;i++) {
+
+		switch(format) {
+
+			case FORMAT_BC1: {
+
+				int len = (wd*ht)/16;
+				uint8_t* dst=&w[wofs];
+
+				uint32_t ofs_table[16];
+				for(int x=0;x<4;x++) {
+
+					for(int y=0;y<4;y++) {
+
+						ofs_table[15-(y*4+(3-x))]=(x+y*wd)*4;
+					}
+				}
+
+
+				for(int j=0;j<len;j++) {
+
+					const uint8_t* src=&r[rofs+j*8];
+					uint16_t col_a=src[1];
+					col_a<<=8;
+					col_a|=src[0];
+					uint16_t col_b=src[3];
+					col_b<<=8;
+					col_b|=src[2];
+
+					uint8_t table[4][4]={
+						{ (col_a>>11)<<3, ((col_a>>5)&0x3f)<<2,	((col_a)&0x1f)<<3, 255 },
+						{ (col_b>>11)<<3, ((col_b>>5)&0x3f)<<2,	((col_b)&0x1f)<<3, 255 },
+						{0,0,0,255},
+						{0,0,0,255}
+					};
+
+					if (col_a<col_b) {
+						//punchrough
+						table[2][0]=(int(table[0][0])+int(table[1][0]))>>1;
+						table[2][1]=(int(table[0][1])+int(table[1][1]))>>1;
+						table[2][2]=(int(table[0][2])+int(table[1][2]))>>1;
+						table[3][3]=0; //premul alpha black
+					} else {
+						//gradient
+						table[2][0]=(int(table[0][0])*2+int(table[1][0]))/3;
+						table[2][1]=(int(table[0][1])*2+int(table[1][1]))/3;
+						table[2][2]=(int(table[0][2])*2+int(table[1][2]))/3;
+						table[3][0]=(int(table[0][0])+int(table[1][0])*2)/3;
+						table[3][1]=(int(table[0][1])+int(table[1][1])*2)/3;
+						table[3][2]=(int(table[0][2])+int(table[1][2])*2)/3;
+					}
+
+					uint32_t block=src[4];
+					block<<=8;
+					block|=src[5];
+					block<<=8;
+					block|=src[6];
+					block<<=8;
+					block|=src[7];
+
+					int y = (j/(wd/4))*4;
+					int x = (j%(wd/4))*4;
+					int pixofs = (y*wd+x)*4;
+
+					for(int k=0;k<16;k++) {
+						int idx = pixofs+ofs_table[k];
+						dst[idx+0]=table[block&0x3][0];
+						dst[idx+1]=table[block&0x3][1];
+						dst[idx+2]=table[block&0x3][2];
+						dst[idx+3]=table[block&0x3][3];
+						block>>=2;
+					}
+
+				}
+
+				rofs+=len*8;
+				wofs+=wd*ht*4;
+
+
+				wd/=2;
+				ht/=2;
+
+			} break;
+			case FORMAT_BC2: {
+
+				int len = (wd*ht)/16;
+				uint8_t* dst=&w[wofs];
+
+				uint32_t ofs_table[16];
+				for(int x=0;x<4;x++) {
+
+					for(int y=0;y<4;y++) {
+
+						ofs_table[15-(y*4+(3-x))]=(x+y*wd)*4;
+					}
+				}
+
+
+				for(int j=0;j<len;j++) {
+
+					const uint8_t* src=&r[rofs+j*16];
+
+					uint64_t ablock=src[1];
+					ablock<<=8;
+					ablock|=src[0];
+					ablock<<=8;
+					ablock|=src[3];
+					ablock<<=8;
+					ablock|=src[2];
+					ablock<<=8;
+					ablock|=src[5];
+					ablock<<=8;
+					ablock|=src[4];
+					ablock<<=8;
+					ablock|=src[7];
+					ablock<<=8;
+					ablock|=src[6];
+
+
+					uint16_t col_a=src[8+1];
+					col_a<<=8;
+					col_a|=src[8+0];
+					uint16_t col_b=src[8+3];
+					col_b<<=8;
+					col_b|=src[8+2];
+
+					uint8_t table[4][4]={
+						{ (col_a>>11)<<3, ((col_a>>5)&0x3f)<<2,	((col_a)&0x1f)<<3, 255 },
+						{ (col_b>>11)<<3, ((col_b>>5)&0x3f)<<2,	((col_b)&0x1f)<<3, 255 },
+						{0,0,0,255},
+						{0,0,0,255}
+					};
+
+					//always gradient
+					table[2][0]=(int(table[0][0])*2+int(table[1][0]))/3;
+					table[2][1]=(int(table[0][1])*2+int(table[1][1]))/3;
+					table[2][2]=(int(table[0][2])*2+int(table[1][2]))/3;
+					table[3][0]=(int(table[0][0])+int(table[1][0])*2)/3;
+					table[3][1]=(int(table[0][1])+int(table[1][1])*2)/3;
+					table[3][2]=(int(table[0][2])+int(table[1][2])*2)/3;
+
+					uint32_t block=src[4+8];
+					block<<=8;
+					block|=src[5+8];
+					block<<=8;
+					block|=src[6+8];
+					block<<=8;
+					block|=src[7+8];
+
+					int y = (j/(wd/4))*4;
+					int x = (j%(wd/4))*4;
+					int pixofs = (y*wd+x)*4;
+
+					for(int k=0;k<16;k++) {
+						uint8_t alpha = ablock&0xf;
+						alpha=int(alpha)*255/15; //right way for alpha
+						int idx = pixofs+ofs_table[k];
+						dst[idx+0]=table[block&0x3][0];
+						dst[idx+1]=table[block&0x3][1];
+						dst[idx+2]=table[block&0x3][2];
+						dst[idx+3]=alpha;
+						block>>=2;
+						ablock>>=4;
+					}
+
+				}
+
+				rofs+=len*16;
+				wofs+=wd*ht*4;
+
+
+				wd/=2;
+				ht/=2;
+
+			} break;
+			case FORMAT_BC3: {
+
+				int len = (wd*ht)/16;
+				uint8_t* dst=&w[wofs];
+
+				uint32_t ofs_table[16];
+				for(int x=0;x<4;x++) {
+
+					for(int y=0;y<4;y++) {
+
+						ofs_table[15-(y*4+(3-x))]=(x+y*wd)*4;
+					}
+				}
+
+
+
+				for(int j=0;j<len;j++) {
+
+					const uint8_t* src=&r[rofs+j*16];
+
+					uint8_t a_start=src[1];
+					uint8_t a_end=src[0];
+
+					uint64_t ablock=src[3];
+					ablock<<=8;
+					ablock|=src[2];
+					ablock<<=8;
+					ablock|=src[5];
+					ablock<<=8;
+					ablock|=src[4];
+					ablock<<=8;
+					ablock|=src[7];
+					ablock<<=8;
+					ablock|=src[6];
+
+					uint8_t atable[8];
+
+					if (a_start>a_end) {
+
+						atable[0]=(int(a_start)*7+int(a_end)*0)/7;
+						atable[1]=(int(a_start)*6+int(a_end)*1)/7;
+						atable[2]=(int(a_start)*5+int(a_end)*2)/7;
+						atable[3]=(int(a_start)*4+int(a_end)*3)/7;
+						atable[4]=(int(a_start)*3+int(a_end)*4)/7;
+						atable[5]=(int(a_start)*2+int(a_end)*5)/7;
+						atable[6]=(int(a_start)*1+int(a_end)*6)/7;
+						atable[7]=(int(a_start)*0+int(a_end)*7)/7;
+					} else {
+
+						atable[0]=(int(a_start)*5+int(a_end)*0)/5;
+						atable[1]=(int(a_start)*4+int(a_end)*1)/5;
+						atable[2]=(int(a_start)*3+int(a_end)*2)/5;
+						atable[3]=(int(a_start)*2+int(a_end)*3)/5;
+						atable[4]=(int(a_start)*1+int(a_end)*4)/5;
+						atable[5]=(int(a_start)*0+int(a_end)*5)/5;
+						atable[6]=0;
+						atable[7]=255;
+
+					}
+
+
+					uint16_t col_a=src[8+1];
+					col_a<<=8;
+					col_a|=src[8+0];
+					uint16_t col_b=src[8+3];
+					col_b<<=8;
+					col_b|=src[8+2];
+
+					uint8_t table[4][4]={
+						{ (col_a>>11)<<3, ((col_a>>5)&0x3f)<<2,	((col_a)&0x1f)<<3, 255 },
+						{ (col_b>>11)<<3, ((col_b>>5)&0x3f)<<2,	((col_b)&0x1f)<<3, 255 },
+						{0,0,0,255},
+						{0,0,0,255}
+					};
+
+					//always gradient
+					table[2][0]=(int(table[0][0])*2+int(table[1][0]))/3;
+					table[2][1]=(int(table[0][1])*2+int(table[1][1]))/3;
+					table[2][2]=(int(table[0][2])*2+int(table[1][2]))/3;
+					table[3][0]=(int(table[0][0])+int(table[1][0])*2)/3;
+					table[3][1]=(int(table[0][1])+int(table[1][1])*2)/3;
+					table[3][2]=(int(table[0][2])+int(table[1][2])*2)/3;
+
+
+					uint32_t block=src[4+8];
+					block<<=8;
+					block|=src[5+8];
+					block<<=8;
+					block|=src[6+8];
+					block<<=8;
+					block|=src[7+8];
+
+					int y = (j/(wd/4))*4;
+					int x = (j%(wd/4))*4;
+					int pixofs = (y*wd+x)*4;
+
+
+
+					for(int k=0;k<16;k++) {
+						uint8_t alpha = ablock&0x7;
+						int idx = pixofs+ofs_table[k];
+						dst[idx+0]=table[block&0x3][0];
+						dst[idx+1]=table[block&0x3][1];
+						dst[idx+2]=table[block&0x3][2];
+						dst[idx+3]=atable[alpha];
+						block>>=2;
+						ablock>>=3;
+					}
+
+				}
+
+				rofs+=len*16;
+				wofs+=wd*ht*4;
+
+
+				wd/=2;
+				ht/=2;
+
+			} break;
+		}
+
+	}
+
+	w=DVector<uint8_t>::Write();
+	r=DVector<uint8_t>::Read();
+
+	data=newdata;
+	format=FORMAT_RGBA;
+
+	return OK;
+}
+
+
+Image Image::decompressed() const {
+
+	Image img=*this;
+	img.decompress();
+	return img;
+}
+
+Error Image::decompress() {
+
+	if (format>=FORMAT_BC1 && format<=FORMAT_BC5 )
+		_decompress_bc();//_image_decompress_bc(this);
+	else if (format>=FORMAT_PVRTC2 && format<=FORMAT_PVRTC4_ALPHA && _image_decompress_pvrtc)
 		_image_decompress_pvrtc(this);
-	if (format==FORMAT_ETC && _image_decompress_etc)
+	else if (format==FORMAT_ETC && _image_decompress_etc)
 		_image_decompress_etc(this);
+	else
+		return ERR_UNAVAILABLE;
+	return OK;
 }
 
 
@@ -1660,6 +1997,45 @@ void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
 }
 
 
+
+void Image::srgb_to_linear() {
+
+	if (data.size()==0)
+		return;
+
+	static const uint8_t srgb2lin[256]={0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 8, 8, 8, 9, 9, 9, 10, 10, 10, 11, 11, 11, 12, 12, 13, 13, 13, 14, 14, 15, 15, 16, 16, 16, 17, 17, 18, 18, 19, 19, 20, 20, 21, 22, 22, 23, 23, 24, 24, 25, 26, 26, 27, 27, 28, 29, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 36, 37, 38, 38, 39, 40, 41, 42, 42, 43, 44, 45, 46, 47, 47, 48, 49, 50, 51, 52, 53, 54, 55, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 80, 81, 82, 83, 84, 85, 87, 88, 89, 90, 92, 93, 94, 95, 97, 98, 99, 101, 102, 103, 105, 106, 107, 109, 110, 112, 113, 114, 116, 117, 119, 120, 122, 123, 125, 126, 128, 129, 131, 132, 134, 135, 137, 139, 140, 142, 144, 145, 147, 148, 150, 152, 153, 155, 157, 159, 160, 162, 164, 166, 167, 169, 171, 173, 175, 176, 178, 180, 182, 184, 186, 188, 190, 192, 193, 195, 197, 199, 201, 203, 205, 207, 209, 211, 213, 215, 218, 220, 222, 224, 226, 228, 230, 232, 235, 237, 239, 241, 243, 245, 248, 250, 252};
+
+
+	ERR_FAIL_COND( format!=FORMAT_RGB && format!=FORMAT_RGBA  );
+
+	if (format==FORMAT_RGBA) {
+
+		int len = data.size()/4;
+		DVector<uint8_t>::Write wp = data.write();
+		unsigned char *data_ptr=wp.ptr();
+
+		for(int i=0;i<len;i++) {
+
+			data_ptr[(i<<2)+0]=srgb2lin[ data_ptr[(i<<2)+0] ];
+			data_ptr[(i<<2)+1]=srgb2lin[ data_ptr[(i<<2)+1] ];
+			data_ptr[(i<<2)+2]=srgb2lin[ data_ptr[(i<<2)+2] ];
+		}
+
+	} else if (format==FORMAT_RGB) {
+
+		int len = data.size()/3;
+		DVector<uint8_t>::Write wp = data.write();
+		unsigned char *data_ptr=wp.ptr();
+
+		for(int i=0;i<len;i++) {
+
+			data_ptr[(i*3)+0]=srgb2lin[ data_ptr[(i*3)+0] ];
+			data_ptr[(i*3)+1]=srgb2lin[ data_ptr[(i*3)+1] ];
+			data_ptr[(i*3)+2]=srgb2lin[ data_ptr[(i*3)+2] ];
+		}
+	}
+
+}
 
 void Image::premultiply_alpha() {
 

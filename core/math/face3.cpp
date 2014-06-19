@@ -247,7 +247,7 @@ bool Face3::intersects_aabb(const AABB& p_aabb) const {
 		p_aabb.get_edge(i,from,to);
 		Vector3 e1=from-to;
 		for (int j=0;j<3;j++) {
-			Vector3 e2=edge_norms[i];
+			Vector3 e2=edge_norms[j];
 
 			Vector3 axis=vec3_cross( e1, e2 );
 

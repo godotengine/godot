@@ -39,6 +39,7 @@ class EditorReImportDialog : public ConfirmationDialog {
 	Tree *tree;
 	Vector<TreeItem*> items;
 	AcceptDialog *error;
+	bool scene_must_save;
 
 	void ok_pressed();
 public:
