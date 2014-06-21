@@ -60,7 +60,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 	int texcoords_used=0;
 	String code;
 
-	static const char* _uv_str[4]={"UV","UV2","uv_xform","uv_sphere"};
+	static const char* _uv_str[4]={"UV","uv_xform","UV2","uv_sphere"};
 #define _TEXUVSTR(m_idx) String( _uv_str[(p_key.texcoord_mask>>(m_idx*2))&0x3] )
 
 
