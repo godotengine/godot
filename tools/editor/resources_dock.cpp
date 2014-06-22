@@ -224,6 +224,7 @@ void ResourcesDock::_file_action(const String& p_path) {
 
 			save_resource(p_path,res);
 
+			_update_name(ti);
 
 		} break;
 
