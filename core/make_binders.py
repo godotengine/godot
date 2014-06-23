@@ -214,19 +214,19 @@ def make_version(template,nargs,argmax,const,ret):
 
 def run(target, source, env):
 
-	versions=5
+	versions=9
 	text=""
 
 	for i in range(0,versions+1):
 
-		text+=make_version(template,i,5,False,False)
-		text+=make_version(template_typed,i,5,False,False)
-		text+=make_version(template,i,5,False,True)
-		text+=make_version(template_typed,i,5,False,True)
-		text+=make_version(template,i,5,True,False)
-		text+=make_version(template_typed,i,5,True,False)
-		text+=make_version(template,i,5,True,True)
-		text+=make_version(template_typed,i,5,True,True)
+		text+=make_version(template,i,versions,False,False)
+		text+=make_version(template_typed,i,versions,False,False)
+		text+=make_version(template,i,versions,False,True)
+		text+=make_version(template_typed,i,versions,False,True)
+		text+=make_version(template,i,versions,True,False)
+		text+=make_version(template_typed,i,versions,True,False)
+		text+=make_version(template,i,versions,True,True)
+		text+=make_version(template_typed,i,versions,True,True)
 
 
 	f=open(target[0].path,"w")
