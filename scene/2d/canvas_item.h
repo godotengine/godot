@@ -141,6 +141,7 @@ public:
 	/* VISIBILITY */
 
 	bool is_visible() const;
+	bool set_visible(bool p_visible);
 	bool is_hidden() const;
 	void show();
 	void hide();

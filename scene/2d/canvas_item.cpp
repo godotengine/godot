@@ -53,6 +53,16 @@ bool CanvasItem::is_visible() const {
 	return true;
 }
 
+bool CanvasItem::set_visible(bool p_visible) {
+
+	if (p_visible)
+		show();
+	else
+		hide();
+
+	return true;
+}
+
 bool CanvasItem::is_hidden() const {
 
 	/*if (!is_inside_scene())
@@ -739,6 +749,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_canvas_item"),&CanvasItem::get_canvas_item);
 
 	ObjectTypeDB::bind_method(_MD("is_visible"),&CanvasItem::is_visible);
+	ObjectTypeDB::bind_method(_MD("set_visible","visible"),&CanvasItem::set_visible);
 	ObjectTypeDB::bind_method(_MD("is_hidden"),&CanvasItem::is_hidden);
 	ObjectTypeDB::bind_method(_MD("show"),&CanvasItem::show);
 	ObjectTypeDB::bind_method(_MD("hide"),&CanvasItem::hide);
