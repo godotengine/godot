@@ -442,7 +442,7 @@ void ProjectManager::_favorite_pressed(Node *p_hb) {
 		EditorSettings::get_singleton()->erase("favorite_projects/"+clicked);
 	}
 	EditorSettings::get_singleton()->save();
-	_load_recent_projects();
+	call_deferred("_load_recent_projects");
 }
 
 
