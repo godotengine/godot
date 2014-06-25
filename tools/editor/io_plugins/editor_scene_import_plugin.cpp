@@ -36,6 +36,8 @@
 #include "io/resource_saver.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/3d/room_instance.h"
+#include "scene/3d/body_shape.h"
+#include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
 #include "os/os.h"
 
@@ -104,7 +106,9 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 
 	struct FlagInfo {
 		int value;
+		const char *category;
 		const char *text;
+		bool defval;
 	};
 
 	static const FlagInfo scene_flag_names[];
@@ -626,22 +630,24 @@ void EditorSceneImportDialog::_bind_methods() {
 
 const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_names[]={
 
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,"Create Collisions (-col},-colonly)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,"Create Portals (-portal)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,"Create Rooms (-room)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_SIMPLIFY_ROOMS,"Simplify Rooms"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_BILLBOARDS,"Create Billboards (-bb)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_IMPOSTORS,"Create Impostors (-imp:dist)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_LODS,"Create LODs (-lod:dist)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_CARS,"Create Cars (-car)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_WHEELS,"Create Car Wheels (-wheel)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,"Set Alpha in Materials (-alpha)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,"Set Vert. Color in Materials (-vcol)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_REMOVE_NOIMP,"Remove Nodes (-noimp)"},
-	{EditorSceneImportPlugin::SCENE_FLAG_IMPORT_ANIMATIONS,"Import Animations"},
-	{EditorSceneImportPlugin::SCENE_FLAG_COMPRESS_GEOMETRY,"Compress Geometry"},
-	{EditorSceneImportPlugin::SCENE_FLAG_GENERATE_TANGENT_ARRAYS,"Force Generation of Tangent Arrays"},
-	{-1,NULL}
+	{EditorSceneImportPlugin::SCENE_FLAG_REMOVE_NOIMP,"Actions","Remove Nodes (-noimp)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_IMPORT_ANIMATIONS,"Actions","Import Animations",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_COMPRESS_GEOMETRY,"Actions","Compress Geometry",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_GENERATE_TANGENT_ARRAYS,"Actions","Force Generation of Tangent Arrays",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,"Materials","Set Alpha in Materials (-alpha)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,"Materials","Set Vert. Color in Materials (-vcol)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES,"Actions","SRGB->Linear Of Diffuse Textures",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,"Create","Create Collisions (-col},-colonly)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,"Create","Create Portals (-portal)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,"Create","Create Rooms (-room)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_SIMPLIFY_ROOMS,"Create","Simplify Rooms",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_BILLBOARDS,"Create","Create Billboards (-bb)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_IMPOSTORS,"Create","Create Impostors (-imp:dist)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_LODS,"Create","Create LODs (-lod:dist)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_CARS,"Create","Create Cars (-car)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_WHEELS,"Create","Create Car Wheels (-wheel)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_NAVMESH,"Create","Create Navigation Meshes (-navmesh)",true},
+	{-1,NULL,NULL,false}
 };
 
 
@@ -717,19 +723,25 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	TreeItem *root = import_options->create_item(NULL);
 	import_options->set_hide_root(true);
 
-
-
-
-	TreeItem *importopts = import_options->create_item(root);
-	importopts->set_text(0,"Import:");
-
 	const FlagInfo* fn=scene_flag_names;
+
+	Map<String,TreeItem*> categories;
 
 	while(fn->text) {
 
-		TreeItem *opt = import_options->create_item(importopts);
+		String cat = fn->category;
+		TreeItem *parent;
+		if (!categories.has(cat)) {
+			parent = import_options->create_item(root);
+			parent->set_text(0,cat);
+			categories[cat]=parent;
+		} else {
+			parent=categories[cat];
+		}
+
+		TreeItem *opt = import_options->create_item(parent);
 		opt->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
-		opt->set_checked(0,true);
+		opt->set_checked(0,fn->defval);
 		opt->set_editable(0,true);
 		opt->set_text(0,fn->text);
 		opt->set_metadata(0,fn->value);
@@ -875,7 +887,7 @@ static String _fixstr(const String& p_what,const String& p_str) {
 
 
 
-void EditorSceneImportPlugin::_find_resources(const Variant& p_var,Set<Ref<ImageTexture> >& image_map) {
+void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<ImageTexture>, bool> &image_map) {
 
 
 	switch(p_var.get_type()) {
@@ -885,9 +897,9 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var,Set<Ref<Image
 			Ref<Resource> res = p_var;
 			if (res.is_valid()) {
 
-				if (res->is_type("Texture")) {
+				if (res->is_type("Texture") && !image_map.has(res)) {
 
-					image_map.insert(res);
+					image_map.insert(res,false);
 
 
 				} else {
@@ -898,7 +910,17 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var,Set<Ref<Image
 					for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
 
 						if (E->get().type==Variant::OBJECT || E->get().type==Variant::ARRAY || E->get().type==Variant::DICTIONARY) {
-							_find_resources(res->get(E->get().name),image_map);
+							if (E->get().type==Variant::OBJECT && res->cast_to<FixedMaterial>() && (E->get().name=="textures/diffuse" || E->get().name=="textures/detail" || E->get().name=="textures/emission")) {
+
+								Ref<ImageTexture> tex =res->get(E->get().name);
+								if (tex.is_valid()) {
+
+									image_map.insert(tex,true);
+								}
+
+							} else {
+								_find_resources(res->get(E->get().name),image_map);
+							}
 						}
 					}
 
@@ -938,7 +960,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var,Set<Ref<Image
 }
 
 
-Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Set<Ref<ImageTexture> >& image_map) {
+Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Map<Ref<ImageTexture>,bool >& image_map) {
 
 	// children first..
 	for(int i=0;i<p_node->get_child_count();i++) {
@@ -1006,6 +1028,36 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
+			}
+		}
+	}
+
+
+	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR) && p_node->cast_to<MeshInstance>()) {
+
+		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+
+		Ref<Mesh> m = mi->get_mesh();
+
+		if (m.is_valid()) {
+
+			for(int i=0;i<m->get_surface_count();i++) {
+
+				Ref<FixedMaterial> mat = m->surface_get_material(i);
+				if (!mat.is_valid())
+					continue;
+
+				if (p_flags&SCENE_FLAG_DETECT_ALPHA && _teststr(mat->get_name(),"alpha")) {
+
+					mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
+					mat->set_name(_fixstr(mat->get_name(),"alpha"));
+				}
+				if (p_flags&SCENE_FLAG_DETECT_VCOLOR && _teststr(mat->get_name(),"vcol")) {
+
+					mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
+					mat->set_name(_fixstr(mat->get_name(),"vcol"));
+				}
+
 			}
 		}
 	}
@@ -1141,13 +1193,21 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 		Node * col = mi->create_trimesh_collision_node();
-
 		ERR_FAIL_COND_V(!col,NULL);
+
 		col->set_name(_fixstr(name,"colonly"));
 		col->cast_to<Spatial>()->set_transform(mi->get_transform());
 		p_node->replace_by(col);
 		memdelete(p_node);
 		p_node=col;
+
+		StaticBody *sb = col->cast_to<StaticBody>();
+		CollisionShape *colshape = memnew( CollisionShape);
+		colshape->set_shape(sb->get_shape(0));
+		colshape->set_name("shape");
+		sb->add_child(colshape);
+		colshape->set_owner(p_node->get_owner());
+
 
 	} else if (p_flags&SCENE_FLAG_CREATE_COLLISIONS &&_teststr(name,"col") && p_node->cast_to<MeshInstance>()) {
 
@@ -1155,7 +1215,20 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 
 		mi->set_name(_fixstr(name,"col"));
-		mi->create_trimesh_collision();
+		Node *col= mi->create_trimesh_collision_node();
+		ERR_FAIL_COND_V(!col,NULL);
+
+		col->set_name("col");
+		p_node->add_child(col);
+
+
+		StaticBody *sb = col->cast_to<StaticBody>();
+		CollisionShape *colshape = memnew( CollisionShape);
+		colshape->set_shape(sb->get_shape(0));
+		colshape->set_name("shape");
+		sb->add_child(colshape);
+		colshape->set_owner(p_node->get_owner());
+
 	} else if (p_flags&SCENE_FLAG_CREATE_ROOMS && _teststr(name,"room") && p_node->cast_to<MeshInstance>()) {
 
 
@@ -1346,92 +1419,122 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	}
 
 
-
-
 	return p_node;
 }
 
 
-void EditorSceneImportPlugin::_merge_node(Node *p_node,Node*p_root,Node *p_existing,Set<Ref<Resource> >& checked_resources) {
+void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported_scene,Set<Ref<Resource> >& checked_resources,Set<Node*> &checked_nodes) {
 
 
-	NodePath path = p_root->get_path_to(p_node);
+	NodePath path = p_node->get_import_path();
 
-	bool valid=false;
+	if (!path.is_empty() && p_imported_scene->has_node(path)) {
 
-	if (p_existing->has_node(path)) {
+		Node *imported_node = p_imported_scene->get_node(path);
 
-		Node *existing = p_existing->get_node(path);
-
-		if (existing->get_type()==p_node->get_type()) {
+		if (imported_node->get_type()==p_node->get_type()) {
 			//same thing, check what it is
 
-			if (existing->get_type()=="MeshInstance") {
+			if (p_node->get_type()=="MeshInstance") {
 
 				//merge mesh instance, this is a special case!
-				MeshInstance *mi_existing=existing->cast_to<MeshInstance>();
+				MeshInstance *mi_imported=imported_node->cast_to<MeshInstance>();
 				MeshInstance *mi_node=p_node->cast_to<MeshInstance>();
 
-				Ref<Mesh> mesh_existing = mi_existing->get_mesh();
+				Ref<Mesh> mesh_imported = mi_imported->get_mesh();
 				Ref<Mesh> mesh_node = mi_node->get_mesh();
 
-				if (mesh_existing.is_null() || checked_resources.has(mesh_node)) {
+				if (mesh_node.is_null() && mesh_imported.is_valid()) {
 
-					if (mesh_node.is_valid())
-						mi_existing->set_mesh(mesh_node);
-				} else if (mesh_node.is_valid()) {
+					mi_node->set_mesh(mesh_imported);
 
-					//mesh will always be overwritten, so check materials from original
+				} else if (mesh_node.is_valid() && mesh_imported.is_valid()) {
 
-					for(int i=0;i<mesh_node->get_surface_count();i++) {
+					if (checked_resources.has(mesh_imported)) {
 
-						String name = mesh_node->surface_get_name(i);
+						mi_node->set_mesh(mesh_imported);
+					} else {
+						//mix up meshes
+						//import new geometry but keep materials
+						for(int i=0;i<mesh_imported->get_surface_count();i++) {
 
-						if (name!="") {
+							String name = mesh_imported->surface_get_name(i);
 
-							for(int j=0;j<mesh_existing->get_surface_count();j++) {
+							for(int j=0;j<mesh_node->get_surface_count();j++) {
 
-								Ref<Material> keep;
+								Ref<Material> mat = mesh_node->surface_get_material(j);
+								if (mat.is_valid() && mesh_node->surface_get_name(j)==name  ) {
 
-								if (name==mesh_existing->surface_get_name(j)) {
-
-									Ref<Material> mat = mesh_existing->surface_get_material(j);
-
-									if (mat.is_valid()) {
-										if (mat->get_path()!="" && mat->get_path().begins_with("res://") && mat->get_path().find("::")==-1) {
-											keep=mat; //mat was loaded from file
-										} else if (mat->is_edited()) {
-											keep=mat; //mat was edited
-										}
-									}
+									mesh_imported->surface_set_material(i,mat);
 									break;
 								}
-								if (keep.is_valid())
-									mesh_node->surface_set_material(i,keep); //kept
 							}
 						}
+						// was imported, do nothing further
+						checked_resources.insert(mesh_imported);
+						mi_node->set_mesh(mesh_imported);
 					}
 
-					mi_existing->set_mesh(mesh_node); //always overwrite mesh
-					checked_resources.insert(mesh_node);
-
 				}
-			} else if (existing->get_type()=="Path") {
-
-				Path *path_existing =existing->cast_to<Path>();
+			} else if (p_node->get_type()=="Path") {
+				//for paths, overwrite path
+				Path *path_imported =imported_node->cast_to<Path>();
 				Path *path_node =p_node->cast_to<Path>();
 
-				if (path_node->get_curve().is_valid()) {
+				if (path_imported->get_curve().is_valid()) {
 
-					if (!path_existing->get_curve().is_valid() || !path_existing->get_curve()->is_edited()) {
-						path_existing->set_curve(path_node->get_curve());
-					}
+					path_node->set_curve(path_imported->get_curve());
 				}
+			} else if (p_node->get_type()=="Portal") {
+				//for paths, overwrite path
+
+				Portal *portal_imported =imported_node->cast_to<Portal>();
+				Portal *portal_node =p_node->cast_to<Portal>();
+
+				portal_node->set_shape( portal_imported->get_shape() );
+
+			} else if (p_node->get_type()=="Room") {
+				//for paths, overwrite path
+
+				Room *room_imported =imported_node->cast_to<Room>();
+				Room *room_node =p_node->cast_to<Room>();
+
+				room_node->set_room( room_imported->get_room() );
+
+			} else if (p_node->get_type()=="CollisionShape") {
+				//for paths, overwrite path
+
+				CollisionShape *collision_imported =imported_node->cast_to<CollisionShape>();
+				CollisionShape *collision_node =p_node->cast_to<CollisionShape>();
+
+				collision_node->set_shape( collision_imported->get_shape() );
 			}
 		}
 
-		valid=true;
-	} else {
+		if (p_node->cast_to<Spatial>() && imported_node->cast_to<Spatial>()) {
+			//apply transform if changed
+			Spatial *snode = p_node->cast_to<Spatial>();
+			Spatial *simp = imported_node->cast_to<Spatial>();
+
+			if (snode->get_import_transform() == snode->get_transform()) {
+				//not moved, apply new
+				snode->set_import_transform(simp->get_transform());
+				snode->set_transform(simp->get_transform());
+			} else if (snode->get_import_transform() == simp->get_import_transform()) {
+				//do nothing, nothing changed keep local changes
+			} else {
+				//changed both, imported and edited, merge
+				Transform local_xform = snode->get_import_transform().affine_inverse() * snode->get_transform();
+				snode->set_import_transform(simp->get_import_transform());
+				snode->set_transform(simp->get_import_transform() * local_xform);
+			}
+		}
+
+		checked_nodes.insert(imported_node);
+
+	}
+#if 0
+	else {
 
 		if (p_node!=p_root && p_existing->has_node(p_root->get_path_to(p_node->get_parent()))) {
 
@@ -1461,24 +1564,75 @@ void EditorSceneImportPlugin::_merge_node(Node *p_node,Node*p_root,Node *p_exist
 		}
 
 	}
+#endif
 
-
-	if (valid) {
-
-		for(int i=0;i<p_node->get_child_count();i++) {
-			_merge_node(p_node->get_child(i),p_root,p_existing,checked_resources);
-		}
+	for(int i=0;i<p_node->get_child_count();i++) {
+		_merge_existing_node(p_node->get_child(i),p_imported_scene,checked_resources,checked_nodes);
 	}
-
 }
 
 
-void EditorSceneImportPlugin::_merge_scenes(Node *p_existing,Node *p_new) {
+void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Set<Node*> &checked_nodes) {
+
+
+	for(int i=0;i<p_imported->get_child_count();i++) {
+
+
+		Node *imported_node = p_imported->get_child(i);
+
+		if (imported_node->get_owner()!=p_imported_scene)
+			continue; //end of the road
+
+		Vector<StringName> nn;
+		nn.push_back(imported_node->get_name());
+		NodePath imported_path(nn,false);
+
+		if (!p_node->has_node(imported_path) && !checked_nodes.has(imported_node)) {
+			//not there, re-add it
+			//add it.. because not existing in existing scene
+			Object *o = ObjectTypeDB::instance(imported_node->get_type());
+			Node *n=NULL;
+			if (o)
+				n=o->cast_to<Node>();
+
+			if (n) {
+
+				List<PropertyInfo> pl;
+				imported_node->get_property_list(&pl);
+				for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+					if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+						continue;
+					n->set( E->get().name, imported_node->get(E->get().name) );
+				}
+
+				p_node->add_child(n);
+			}
+
+		}
+
+
+		if (p_node->has_node(imported_path)) {
+
+			Node *other_node = p_node->get_node(imported_path);
+
+			_add_new_nodes(other_node,imported_node,p_imported_scene,checked_nodes);
+
+		}
+
+	}
+}
+
+
+void EditorSceneImportPlugin::_merge_scenes(Node *p_node,Node *p_imported) {
 
 	Set<Ref<Resource> > checked_resources;
-	_merge_node(p_new,p_new,p_existing,checked_resources);
-
+	Set<Node*> checked_nodes;
+	_merge_existing_node(p_node,p_imported,checked_resources,checked_nodes);
+	_add_new_nodes(p_node,p_imported,p_imported,checked_nodes);
+	//add existing.. ?
 }
+
+
 
 #if 0
 
@@ -1488,6 +1642,26 @@ Error EditorImport::import_scene(const String& p_path,const String& p_dest_path,
 }
 #endif
 
+void EditorSceneImportPlugin::_tag_import_paths(Node *p_scene,Node *p_node) {
+
+	if (p_scene!=p_node && p_node->get_owner()!=p_scene)
+		return;
+
+	NodePath path = p_scene->get_path_to(p_node);
+	p_node->set_import_path( path );
+
+	Spatial *snode=p_node->cast_to<Spatial>();
+
+	if (snode) {
+
+		snode->set_import_transform(snode->get_transform());
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+		_tag_import_paths(p_scene,p_node->get_child(i));
+	}
+
+}
 
 Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from,Node**r_node,List<String> *r_missing) {
 
@@ -1549,6 +1723,8 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 		return err;
 	}
 
+	_tag_import_paths(scene,scene);
+
 	*r_node=scene;
 	return OK;
 }
@@ -1566,6 +1742,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 
 	bool merge = !bool(from->get_option("reimport"));
+
 	from->set_source_md5(0,FileAccess::get_md5(src_path));
 	from->set_editor(get_name());
 
@@ -1576,7 +1753,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	Ref<ResourceImportMetadata> imd = memnew(ResourceImportMetadata);
 
-	Set< Ref<ImageTexture> > imagemap;
+	Map< Ref<ImageTexture>,bool > imagemap;
 
 	scene=_fix_node(scene,scene,collision_map,scene_flags,imagemap);
 
@@ -1622,12 +1799,12 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	int image_flags =  from->get_option("texture_flags");
 	float image_quality = from->get_option("texture_quality");
 
-	for (Set< Ref<ImageTexture> >::Element *E=imagemap.front();E;E=E->next()) {
+	for (Map< Ref<ImageTexture>,bool >::Element *E=imagemap.front();E;E=E->next()) {
 
 		//texture could be converted to something more useful for 3D, that could load individual mipmaps and stuff
 		//but not yet..
 
-		Ref<ImageTexture> texture = E->get();
+		Ref<ImageTexture> texture = E->key();
 
 		ERR_CONTINUE(!texture.is_valid());
 
@@ -1657,7 +1834,10 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			print_line("flags: "+itos(image_flags));
-			imd->set_option("flags",image_flags);
+			uint32_t flags = image_flags;
+			if (E->get())
+				flags|=EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_TO_LINEAR;
+			imd->set_option("flags",flags);
 			imd->set_option("format",image_format);
 			imd->set_option("quality",image_quality);
 			imd->set_option("atlas",false);
@@ -1697,11 +1877,14 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	if (merge) {
 
+		print_line("MERGING?????");
 		progress.step("Merging..",103);
 
-		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_FILESYSTEM);
+		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_RESOURCES);
+		print_line("OPEN IN FS: "+p_dest_path);
 		if (fa->file_exists(p_dest_path)) {
 
+			print_line("TRY REALLY TO MERGE?");
 			//try to merge
 
 			Ref<PackedScene> s = ResourceLoader::load(p_dest_path);
@@ -1711,7 +1894,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 				if (existing) {
 
-					_merge_scenes(scene,existing);
+					_merge_scenes(existing,scene);
 
 					memdelete(scene);
 					scene=existing;

@@ -49,6 +49,12 @@
 #define _GL_R16F_EXT                                     0x822D
 #define _GL_R32F_EXT 0x822E
 
+
+#define _GL_RED_EXT                 0x1903
+#define _GL_RG_EXT                  0x8227
+#define _GL_R8_EXT                  0x8229
+#define _GL_RG8_EXT                 0x822B
+
 #define _DEPTH_COMPONENT24_OES                 0x81A6
 
 #ifdef GLEW_ENABLED
@@ -7913,6 +7919,7 @@ void RasterizerGLES2::_update_framebuffer() {
 			glDeleteFramebuffers(1,&framebuffer.luminance[i].fbo);
 
 		}
+
 		for(int i=0;i<3;i++) {
 
 			glDeleteTextures(1,&framebuffer.blur[i].color);
@@ -7964,12 +7971,15 @@ void RasterizerGLES2::_update_framebuffer() {
 #endif
 	//color
 
-	GLuint format_rgba = use_fp16_fb?_GL_RGBA16F_EXT:GL_RGBA;
+//	GLuint format_rgba = use_fp16_fb?_GL_RGBA16F_EXT:GL_RGBA;
+	GLuint format_rgba = GL_RGBA;
 	GLuint format_rgb = use_fp16_fb?_GL_RGB16F_EXT:GL_RGB;
 	GLuint format_type = use_fp16_fb?_GL_HALF_FLOAT_OES:GL_UNSIGNED_BYTE;
-	GLuint format_luminance = use_fp16_fb?_GL_R32F_EXT:GL_RGBA;
-	GLuint format_luminance_type = use_fp16_fb?GL_FLOAT:GL_UNSIGNED_BYTE;
-	GLuint format_luminance_components = use_fp16_fb?GL_RED:GL_RGBA;
+	GLuint format_luminance = use_fp16_fb?_GL_RED_EXT:GL_RGBA;
+	GLuint format_luminance_type = use_fp16_fb?(full_float_fb_supported?GL_FLOAT:_GL_HALF_FLOAT_OES):GL_UNSIGNED_BYTE;
+	GLuint format_luminance_components = use_fp16_fb?_GL_RED_EXT:GL_RGBA;
+
+
 
 	glGenTextures(1, &framebuffer.color);
 	glBindTexture(GL_TEXTURE_2D, framebuffer.color);
@@ -8124,10 +8134,12 @@ void RasterizerGLES2::_update_framebuffer() {
 			GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+			base_size/=3;
+
 			DEBUG_TEST_ERROR("Shadow Buffer Init");
 			ERR_CONTINUE( status != GL_FRAMEBUFFER_COMPLETE );
 
-			base_size/=3;
 			framebuffer.luminance.push_back(lb);
 
 		}
@@ -8278,6 +8290,7 @@ void RasterizerGLES2::init() {
 //	use_attribute_instancing=true;
 	use_texture_instancing=false;
 	use_attribute_instancing=true;
+	full_float_fb_supported=true;
 #ifdef OSX_ENABLED
 	use_rgba_shadowmaps=true;
 	use_fp16_fb=false;
@@ -8330,8 +8343,10 @@ void RasterizerGLES2::init() {
 	}
 
 	if (use_fp16_fb) {
-		use_fp16_fb=extensions.has("GL_OES_texture_half_float") && extensions.has("GL_EXT_color_buffer_half_float");
+		use_fp16_fb=extensions.has("GL_OES_texture_half_float") && extensions.has("GL_EXT_color_buffer_half_float") && extensions.has("GL_EXT_texture_rg");
 	}
+
+	full_float_fb_supported=extensions.has("GL_EXT_color_buffer_float");
 
 
 	//etc_supported=false;
