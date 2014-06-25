@@ -1526,6 +1526,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\resources\polygon_path_finder.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\resources\polygon_path_finder.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\resources\ray_shape.cpp"
 					>
 				</File>
