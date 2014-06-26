@@ -98,7 +98,7 @@ public:
 	id context;
 
 	CursorShape cursor_shape;
-
+	MouseMode mouse_mode;
 protected:
 
 	virtual int get_video_driver_count() const;
@@ -159,6 +159,8 @@ public:
 
 	void run();
 
+    void set_mouse_mode(MouseMode p_mode);
+    MouseMode get_mouse_mode() const;
 
 	OS_OSX();
 };
