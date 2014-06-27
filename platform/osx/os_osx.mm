@@ -1310,6 +1310,32 @@ void OS_OSX::run() {
 	main_loop->finish();
 }
 
+void OS_OSX::set_mouse_mode(MouseMode p_mode) {
+
+    if (p_mode==mouse_mode)
+        return;
+
+    if (p_mode==MOUSE_MODE_CAPTURED) {
+        // Apple Docs state that the display parameter is not used.
+        // "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
+        // https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
+        CGDisplayHideCursor(kCGDirectMainDisplay);
+        CGAssociateMouseAndMouseCursorPosition(false);
+    } else if (p_mode==MOUSE_MODE_HIDDEN) {
+        CGDisplayHideCursor(kCGDirectMainDisplay);
+        CGAssociateMouseAndMouseCursorPosition(true);
+    } else {
+        CGDisplayShowCursor(kCGDirectMainDisplay);
+        CGAssociateMouseAndMouseCursorPosition(true);
+    }
+
+    mouse_mode=p_mode;
+}
+
+OS::MouseMode OS_OSX::get_mouse_mode() const {
+
+    return mouse_mode;
+}
 
 OS_OSX* OS_OSX::singleton=NULL;
 
