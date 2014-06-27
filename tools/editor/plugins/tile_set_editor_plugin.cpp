@@ -75,18 +75,26 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 	       p_library->tile_set_texture(id,texture);
 	       Vector2 phys_offset = mi->get_offset();
 
+	       Size2 s;
 	       if (mi->is_centered()) {
-		       Size2 s;
 		       if (mi->is_region()) {
 			       s=mi->get_region_rect().size;
 		       } else {
 			       s=texture->get_size();
+				   s=s/Point2(mi->get_hframes(),mi->get_vframes());
 		       }
 		       phys_offset+=-s/2;
 	       }
 	       if (mi->is_region()) {
 		       p_library->tile_set_region(id,mi->get_region_rect());
 	       }
+		   else {
+		       Rect2i src_rect;
+		       src_rect.size=s;
+			   src_rect.pos.x+=(mi->get_frame()%mi->get_hframes())*s.x;
+			   src_rect.pos.y+=(mi->get_frame()/mi->get_hframes())*s.y;
+		       p_library->tile_set_region(id,src_rect);
+		   }
 
 	       Vector<Ref<Shape2D> >collisions;
 
