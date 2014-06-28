@@ -78,7 +78,7 @@ uniform highp float hdr_glow_scale;
 
 uniform sampler2D hdr_source;
 uniform highp float tonemap_exposure;
-
+uniform highp float tonemap_white;
 #endif
 
 #ifdef USE_BCS
@@ -318,6 +318,7 @@ void main() {
 
 #ifdef USE_HDR
 
+	highp float white_mult = 1.0;
 
 #ifdef USE_8BIT_HDR
 	highp vec4 _mult = vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1);
@@ -325,11 +326,37 @@ void main() {
 	color.rgb*=LUM_RANGE;
 	hdr_lum*=LUM_RANGE; //restore to full range
 #else
-	highp float hdr_lum = texture2D( hdr_source, vec2(0.0) ).r;
+
+	highp vec2 lv = texture2D( hdr_source, vec2(0.0) ).rg;
+	highp float hdr_lum = lv.r;
+#ifdef USE_AUTOWHITE
+	white_mult=lv.g;
 #endif
 
+#endif
+
+#ifdef USE_REINHARDT_TONEMAPPER
+	float src_lum = dot(color.rgb,vec3(0.3, 0.58, 0.12));
+	float lp = tonemap_exposure/hdr_lum*src_lum;
+	float white = tonemap_white;
+#ifdef USE_AUTOWHITE
+	white_mult = (white_mult + 1.0 * white_mult);
+	white_mult*=white_mult;
+	white*=white_mult;
+#endif
+	lp = ( lp * ( 1.0 + ( lp / ( white) ) ) ) / ( 1.0 + lp );
+	color.rgb*=lp;
+
+#else
+
+#ifdef USE_LOG_TONEMAPPER
+	color.rgb = tonemap_exposure * log(color.rgb+1.0)/log(hdr_lum+1.0);
+#else
 	highp float tone_scale = tonemap_exposure / hdr_lum; //only linear supported
 	color.rgb*=tone_scale;
+#endif
+
+#endif
 
 #endif
 
@@ -393,7 +420,11 @@ void main() {
 #ifdef USE_HDR_COPY
 
 	//highp float lum = dot(color.rgb,highp vec3(1.0/3.0,1.0/3.0,1.0/3.0));
-	highp float lum = max(color.r,max(color.g,color.b));
+	//highp float lum = max(color.r,max(color.g,color.b));
+	highp float lum = dot(color.rgb,vec3(0.3, 0.58, 0.12));
+
+	//lum=log(lum+0.0001); //everyone does it
+
 #ifdef USE_8BIT_HDR
 	highp vec4 comp = fract(lum * vec4(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0, 1.0));
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
@@ -422,21 +453,33 @@ void main() {
 #else
 
 	highp float lum_accum = color.r;
-	lum_accum += texture2D( source,  uv_interp+vec2(-pixel_size.x,-pixel_size.y) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(0.0,-pixel_size.y) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(pixel_size.x,-pixel_size.y) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(-pixel_size.x,0.0) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(pixel_size.x,0.0) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(-pixel_size.x,pixel_size.y) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(0.0,pixel_size.y) ).r;
-	lum_accum += texture2D( source,  uv_interp+vec2(pixel_size.x,pixel_size.y) ).r;
+	highp float lum_max = color.g;
+
+#define LUM_REDUCE(m_uv) \
+	{\
+		vec2 val = texture2D( source,  uv_interp+m_uv ).rg;\
+		lum_accum+=val.x;\
+		lum_max=max(val.y,lum_max);\
+	}
+
+	LUM_REDUCE( vec2(-pixel_size.x,-pixel_size.y) );
+	LUM_REDUCE( vec2(0.0,-pixel_size.y) );
+	LUM_REDUCE( vec2(pixel_size.x,-pixel_size.y) );
+	LUM_REDUCE( vec2(-pixel_size.x,0.0) );
+	LUM_REDUCE( vec2(pixel_size.x,0.0) );
+	LUM_REDUCE( vec2(-pixel_size.x,pixel_size.y) );
+	LUM_REDUCE( vec2(0.0,pixel_size.y) );
+	LUM_REDUCE( vec2(pixel_size.x,pixel_size.y) );
 	lum_accum/=9.0;
 
 #endif
 
 #ifdef USE_HDR_STORE
 
-#ifdef USE_8BIT_HDR
+	//lum_accum=exp(lum_accum);
+
+#ifdef USE_8BIT_HDR	
+
 	highp float vd_lum = dot(texture2D( source_vd_lum, vec2(0.0) ), _multcv  );
 	lum_accum = clamp( vd_lum + (lum_accum-vd_lum)*hdr_time_delta*hdr_exp_adj_speed,min_luminance*(1.0/LUM_RANGE),max_luminance*(1.0/LUM_RANGE));
 #else
@@ -451,11 +494,19 @@ void main() {
 	comp -= comp.xxyz * vec4(0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0);
 	color=comp;
 #else
+#ifdef USE_AUTOWHITE
+	color.r=lum_accum;
+	color.g=lum_max;
+#else
 	color.rgb=vec3(lum_accum);
 #endif
 
 
 #endif
+
+#endif
+
+
 
 #ifdef USE_RGBE
 

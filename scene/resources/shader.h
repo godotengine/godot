@@ -64,9 +64,10 @@ public:
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
-	void set_code( const String& p_vertex, const String& p_fragment, int p_vertex_ofs=0,int p_fragment_ofs=0);
+	void set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs=0,int p_light_ofs=0);
 	String get_vertex_code() const;
 	String get_fragment_code() const;
+	String get_light_code() const;
 
 	void get_param_list(List<PropertyInfo> *p_params) const;
 	bool has_param(const StringName& p_param) const;

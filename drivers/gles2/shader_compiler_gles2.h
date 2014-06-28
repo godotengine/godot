@@ -39,10 +39,11 @@ private:
 
 	ShaderLanguage::ProgramNode *program_node;
 	String dump_node_code(ShaderLanguage::Node *p_node,int p_level,bool p_assign_left=false);
-	void compile_node(ShaderLanguage::ProgramNode *p_program);
-	static void create_glsl_120_code(void *p_str,ShaderLanguage::ProgramNode *p_program);
+	Error compile_node(ShaderLanguage::ProgramNode *p_program);
+	static Error create_glsl_120_code(void *p_str,ShaderLanguage::ProgramNode *p_program);
 
 
+	bool uses_light;
 	bool uses_texscreen;
 	bool uses_texpos;
 	bool uses_alpha;
@@ -62,6 +63,7 @@ private:
 	StringName vname_var1_interp;
 	StringName vname_var2_interp;
 	StringName vname_vertex;
+	StringName vname_light;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 
@@ -73,7 +75,7 @@ private:
 
 	String replace_string(const StringName& p_string);
 
-	Map<StringName,StringName> mode_replace_table[2];
+	Map<StringName,StringName> mode_replace_table[3];
 	Map<StringName,StringName> replace_table;
 
 public:
@@ -92,6 +94,7 @@ public:
 		bool use_tangent_interp;
 		bool use_var1_interp;
 		bool use_var2_interp;
+		bool uses_light;
 	};
 
 	Error compile(const String& p_code, ShaderLanguage::ShaderType p_type, String& r_code_line, String& r_globals_line, Flags& r_flags, Map<StringName,ShaderLanguage::Uniform> *r_uniforms=NULL);

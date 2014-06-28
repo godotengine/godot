@@ -71,10 +71,12 @@ class RasterizerDummy : public Rasterizer {
 
 		String vertex_code;
 		String fragment_code;
+		String light_code;
 		VS::ShaderMode mode;
 		Map<StringName,Variant> params;
 		int fragment_line;
 		int vertex_line;
+		int light_line;
 		bool valid;
 		bool has_alpha;
 		bool use_world_transform;
@@ -87,9 +89,8 @@ class RasterizerDummy : public Rasterizer {
 	struct Material {
 
 		bool flags[VS::MATERIAL_FLAG_MAX];
-		bool hints[VS::MATERIAL_HINT_MAX];
 
-		VS::MaterialShadeModel shade_model;
+		VS::MaterialDepthDrawMode depth_draw_mode;
 
 		VS::MaterialBlendMode blend_mode;
 
@@ -107,9 +108,8 @@ class RasterizerDummy : public Rasterizer {
 			for(int i=0;i<VS::MATERIAL_FLAG_MAX;i++)
 				flags[i]=false;
 			flags[VS::MATERIAL_FLAG_VISIBLE]=true;
-			for(int i=0;i<VS::MATERIAL_HINT_MAX;i++)
-				hints[i]=false;
 
+			depth_draw_mode=VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY;
 			line_width=1;
 			blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 			point_size = 1.0;
@@ -296,7 +296,7 @@ class RasterizerDummy : public Rasterizer {
 			vars[VS::LIGHT_PARAM_ENERGY]=1.0;
 			vars[VS::LIGHT_PARAM_RADIUS]=1.0;
 			vars[VS::LIGHT_PARAM_SHADOW_Z_OFFSET]=0.05;
-			colors[VS::LIGHT_COLOR_AMBIENT]=Color(0,0,0);
+
 			colors[VS::LIGHT_COLOR_DIFFUSE]=Color(1,1,1);
 			colors[VS::LIGHT_COLOR_SPECULAR]=Color(1,1,1);
 			shadow_enabled=false;
@@ -331,7 +331,7 @@ class RasterizerDummy : public Rasterizer {
 			fx_param[VS::ENV_FX_PARAM_DOF_BLUR_BEGIN]=100.0;
 			fx_param[VS::ENV_FX_PARAM_DOF_BLUR_RANGE]=10.0;
 			fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]=0.4;
-			fx_param[VS::ENV_FX_PARAM_HDR_SCALAR]=1.0;
+			fx_param[VS::ENV_FX_PARAM_HDR_WHITE]=1.0;
 			fx_param[VS::ENV_FX_PARAM_HDR_GLOW_TRESHOLD]=0.95;
 			fx_param[VS::ENV_FX_PARAM_HDR_GLOW_SCALE]=0.2;
 			fx_param[VS::ENV_FX_PARAM_HDR_MIN_LUMINANCE]=0.4;
@@ -415,9 +415,10 @@ public:
 	virtual void shader_set_mode(RID p_shader,VS::ShaderMode p_mode);
 	virtual VS::ShaderMode shader_get_mode(RID p_shader) const;
 
-	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs=0,int p_fragment_ofs=0);
+	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs=0,int p_fragment_ofs=0,int p_light_ofs=0);
 	virtual String shader_get_fragment_code(RID p_shader) const;
 	virtual String shader_get_vertex_code(RID p_shader) const;
+	virtual String shader_get_light_code(RID p_shader) const;
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
@@ -434,11 +435,8 @@ public:
 	virtual void material_set_flag(RID p_material, VS::MaterialFlag p_flag,bool p_enabled);
 	virtual bool material_get_flag(RID p_material,VS::MaterialFlag p_flag) const;
 
-	virtual void material_set_hint(RID p_material, VS::MaterialHint p_hint,bool p_enabled);
-	virtual bool material_get_hint(RID p_material,VS::MaterialHint p_hint) const;
-
-	virtual void material_set_shade_model(RID p_material, VS::MaterialShadeModel p_model);
-	virtual VS::MaterialShadeModel material_get_shade_model(RID p_material) const;
+	virtual void material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode);
+	virtual VS::MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const;
 
 	virtual void material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode);
 	virtual VS::MaterialBlendMode material_get_blend_mode(RID p_material) const;

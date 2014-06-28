@@ -445,7 +445,7 @@ RES Skeleton::_get_gizmo_geometry() const {
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	mat->set_flag(Material::FLAG_UNSHADED,true);
 	mat->set_flag(Material::FLAG_ONTOP,true);
-	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 	surface_tool->begin(Mesh::PRIMITIVE_LINES);
 	surface_tool->set_material(mat);

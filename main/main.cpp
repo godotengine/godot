@@ -211,6 +211,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	while (I) {
 
 		I->get()=unescape_cmdline(I->get().strip_escapes());
+//		print_line("CMD: "+I->get());
 		I=I->next();
 	}
 
@@ -223,6 +224,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	String game_path=".";
 	String debug_mode;
 	String debug_host;
+	String main_pack;
 	int rtm=-1;
 
 	String remotefs;
@@ -237,9 +239,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	I=args.front();
 
-    packed_data = PackedData::get_singleton();
-    if (!packed_data)
-        packed_data = memnew(PackedData);
+	packed_data = PackedData::get_singleton();
+	if (!packed_data)
+		packed_data = memnew(PackedData);
 
 #ifdef MINIZIP_ENABLED
 	packed_data->add_pack_source(ZipArchive::get_singleton());
@@ -425,6 +427,17 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 				goto error;
 			};
 
+		} else if (I->get() == "-main_pack") {
+
+			if (I->next()) {
+
+				main_pack=I->next()->get();
+				N = I->next()->next();
+			} else {
+
+				goto error;
+			};
+
 		} else if (I->get()=="-debug" || I->get()=="-d") {
 			debug_mode="local";
 		} else if (I->get()=="-editor_scene") {
@@ -541,7 +554,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 #endif
 
 
-	if (globals->setup(game_path)!=OK) {
+	if (globals->setup(game_path,main_pack)!=OK) {
 		
 #ifdef TOOLS_ENABLED
 		editor=false;

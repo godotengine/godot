@@ -99,6 +99,7 @@ class ShaderEditor : public Control {
 
 	ShaderTextEditor *vertex_editor;
 	ShaderTextEditor *fragment_editor;
+	ShaderTextEditor *light_editor;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_optin);

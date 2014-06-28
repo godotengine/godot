@@ -130,10 +130,10 @@ VisualServer::ShaderMode VisualServerRaster::shader_get_mode(RID p_shader) const
 }
 
 
-void VisualServerRaster::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs,int p_fragment_ofs) {
+void VisualServerRaster::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs,int p_fragment_ofs,int p_light_ofs) {
 
 	VS_CHANGED;
-	rasterizer->shader_set_code(p_shader,p_vertex,p_fragment,p_vertex_ofs,p_fragment_ofs);
+	rasterizer->shader_set_code(p_shader,p_vertex,p_fragment,p_light,p_vertex_ofs,p_fragment_ofs,p_light_ofs);
 }
 
 String VisualServerRaster::shader_get_vertex_code(RID p_shader) const{
@@ -142,6 +142,11 @@ String VisualServerRaster::shader_get_vertex_code(RID p_shader) const{
 }
 
 String VisualServerRaster::shader_get_fragment_code(RID p_shader) const{
+
+	return rasterizer->shader_get_fragment_code(p_shader);
+}
+
+String VisualServerRaster::shader_get_light_code(RID p_shader) const{
 
 	return rasterizer->shader_get_fragment_code(p_shader);
 }
@@ -187,27 +192,16 @@ void VisualServerRaster::material_set_flag(RID p_material, MaterialFlag p_flag,b
 	rasterizer->material_set_flag(p_material,p_flag,p_enabled);
 }
 
-void VisualServerRaster::material_set_hint(RID p_material, MaterialHint p_hint,bool p_enabled) {
+void VisualServerRaster::material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode) {
 
 	VS_CHANGED;
-	rasterizer->material_set_hint(p_material,p_hint,p_enabled);
-}
-
-bool VisualServerRaster::material_get_hint(RID p_material,MaterialHint p_hint) const {
-
-	return rasterizer->material_get_hint(p_material,p_hint);
+	rasterizer->material_set_depth_draw_mode(p_material,p_mode);
 
 }
 
-void VisualServerRaster::material_set_shade_model(RID p_material, MaterialShadeModel p_model) {
-	VS_CHANGED;
-	rasterizer->material_set_shade_model(p_material,p_model);
-}
+VS::MaterialDepthDrawMode VisualServerRaster::material_get_depth_draw_mode(RID p_material) const {
 
-VisualServer::MaterialShadeModel VisualServerRaster::material_get_shade_model(RID p_material) const {
-
-	return rasterizer->material_get_shade_model(p_material);
-
+	return rasterizer->material_get_depth_draw_mode(p_material);
 }
 
 
@@ -273,17 +267,6 @@ RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedMaterialP
 }
 
 
-void VisualServerRaster::fixed_material_set_detail_blend_mode(RID p_material,MaterialBlendMode p_mode) {
-	VS_CHANGED;
-	rasterizer->fixed_material_set_detail_blend_mode(p_material,p_mode);
-}
-
-VS::MaterialBlendMode VisualServerRaster::fixed_material_get_detail_blend_mode(RID p_material) const {
-
-	return rasterizer->fixed_material_get_detail_blend_mode(p_material);
-}
-
-
 
 
 void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode) {
@@ -316,6 +299,18 @@ void VisualServerRaster::fixed_material_set_uv_transform(RID p_material,const Tr
 Transform VisualServerRaster::fixed_material_get_uv_transform(RID p_material) const {
 
 	return rasterizer->fixed_material_get_uv_transform(p_material);
+}
+
+void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader) {
+
+	VS_CHANGED;
+	rasterizer->fixed_material_set_light_shader(p_material,p_shader);
+
+}
+
+VisualServerRaster::FixedMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
+
+	return rasterizer->fixed_material_get_light_shader(p_material);
 }
 
 

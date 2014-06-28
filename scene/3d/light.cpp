@@ -165,7 +165,7 @@ RES Light::_get_gizmo_geometry() const {
 	mat_area->set_parameter( FixedMaterial::PARAM_EMISSION,Color(0.7,0.7,0.7) );
 	mat_area->set_blend_mode( Material::BLEND_MODE_ADD );
 	mat_area->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat_area->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+//	mat_area->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 	Ref<FixedMaterial> mat_light( memnew( FixedMaterial ));
 
@@ -474,7 +474,6 @@ void Light::_bind_methods() {
 
 	}*/
 
-	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "colors/ambient"), _SCS("set_color"), _SCS("get_color"),COLOR_AMBIENT);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "colors/diffuse"), _SCS("set_color"), _SCS("get_color"),COLOR_DIFFUSE);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "colors/specular"), _SCS("set_color"), _SCS("get_color"),COLOR_SPECULAR);
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "shadow/shadow"), _SCS("set_project_shadows"), _SCS("has_project_shadows"));
@@ -495,7 +494,7 @@ void Light::_bind_methods() {
 	BIND_CONSTANT( PARAM_SHADOW_DARKENING );
 	BIND_CONSTANT( PARAM_SHADOW_Z_OFFSET );
 
-	BIND_CONSTANT( COLOR_AMBIENT );
+
 	BIND_CONSTANT( COLOR_DIFFUSE );
 	BIND_CONSTANT( COLOR_SPECULAR );	
 
@@ -518,7 +517,7 @@ Light::Light(VisualServer::LightType p_type) {
 	set_parameter(PARAM_SHADOW_ESM_MULTIPLIER,60);
 	set_parameter(PARAM_SHADOW_BLUR_PASSES,1);
 
-	set_color( COLOR_AMBIENT, Color(0,0,0));
+
 	set_color( COLOR_DIFFUSE, Color(1,1,1));
 	set_color( COLOR_SPECULAR, Color(1,1,1));
 
