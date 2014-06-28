@@ -151,6 +151,7 @@ RID RasterizerDummy::shader_create(VS::ShaderMode p_mode) {
 	shader->mode=p_mode;
 	shader->fragment_line=0;
 	shader->vertex_line=0;
+	shader->light_line=0;
 	RID rid = shader_owner.make_rid(shader);
 
 	return rid;
@@ -174,16 +175,17 @@ VS::ShaderMode RasterizerDummy::shader_get_mode(RID p_shader) const {
 	return shader->mode;
 }
 
+void RasterizerDummy::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs,int p_fragment_ofs,int p_light_ofs) {
 
-
-void RasterizerDummy::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs,int p_fragment_ofs) {
 
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 	shader->fragment_code=p_fragment;
 	shader->vertex_code=p_vertex;
+	shader->light_code=p_light;
 	shader->fragment_line=p_fragment_ofs;
 	shader->vertex_line=p_vertex_ofs;
+	shader->light_line=p_vertex_ofs;
 
 }
 
@@ -201,6 +203,14 @@ String RasterizerDummy::shader_get_fragment_code(RID p_shader) const {
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND_V(!shader,String());
 	return shader->fragment_code;
+
+}
+
+String RasterizerDummy::shader_get_light_code(RID p_shader) const {
+
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,String());
+	return shader->light_code;
 
 }
 
@@ -274,38 +284,20 @@ bool RasterizerDummy::material_get_flag(RID p_material,VS::MaterialFlag p_flag) 
 
 }
 
-void RasterizerDummy::material_set_hint(RID p_material, VS::MaterialHint p_hint,bool p_enabled) {
+void RasterizerDummy::material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	ERR_FAIL_INDEX(p_hint,VS::MATERIAL_HINT_MAX);
-	material->hints[p_hint]=p_enabled;
-
+	material->depth_draw_mode=p_mode;
 }
 
-bool RasterizerDummy::material_get_hint(RID p_material,VS::MaterialHint p_hint) const {
+VS::MaterialDepthDrawMode RasterizerDummy::material_get_depth_draw_mode(RID p_material) const{
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,false);
-	ERR_FAIL_INDEX_V(p_hint,VS::MATERIAL_HINT_MAX,false);
-	return material->hints[p_hint];
+	ERR_FAIL_COND_V(!material,VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+	return material->depth_draw_mode;
 
 }
-
-void RasterizerDummy::material_set_shade_model(RID p_material, VS::MaterialShadeModel p_model) {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND(!material);
-	material->shade_model=p_model;
-
-};
-
-VS::MaterialShadeModel RasterizerDummy::material_get_shade_model(RID p_material) const {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,VS::MATERIAL_SHADE_MODEL_LAMBERT);
-	return material->shade_model;
-};
 
 
 void RasterizerDummy::material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode) {

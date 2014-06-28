@@ -2232,7 +2232,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_omni_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	light_material_omni_icon->set_flag(Material::FLAG_UNSHADED, true);
 	light_material_omni_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	light_material_omni_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	light_material_omni_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	light_material_omni_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	light_material_omni_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	light_material_omni_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoLight","EditorIcons"));
@@ -2241,7 +2241,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_directional_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	light_material_directional_icon->set_flag(Material::FLAG_UNSHADED, true);
 	light_material_directional_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	light_material_directional_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	light_material_directional_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	light_material_directional_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	light_material_directional_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	light_material_directional_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight","EditorIcons"));
@@ -2253,7 +2253,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	skeleton_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	skeleton_material->set_flag(Material::FLAG_UNSHADED,true);
 	skeleton_material->set_flag(Material::FLAG_ONTOP,true);
-	skeleton_material->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+	skeleton_material->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 
 	//position 3D Shared mesh
 
@@ -2293,7 +2293,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	sample_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	sample_player_icon->set_flag(Material::FLAG_UNSHADED, true);
 	sample_player_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	sample_player_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	sample_player_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	sample_player_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	sample_player_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	sample_player_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer","EditorIcons"));
@@ -2307,7 +2307,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	stream_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	stream_player_icon->set_flag(Material::FLAG_UNSHADED, true);
 	stream_player_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	stream_player_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	stream_player_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	stream_player_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	stream_player_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	stream_player_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoSpatialStreamPlayer","EditorIcons"));
@@ -2315,7 +2315,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	visibility_notifier_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	visibility_notifier_icon->set_flag(Material::FLAG_UNSHADED, true);
 	visibility_notifier_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	visibility_notifier_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	visibility_notifier_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	visibility_notifier_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	visibility_notifier_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	visibility_notifier_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("Visible","EditorIcons"));

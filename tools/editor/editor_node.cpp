@@ -742,6 +742,7 @@ void EditorNode::_save_scene(String p_file) {
 		flg|=ResourceSaver::FLAG_COMPRESS;
 	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
 		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+	flg|=ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 
 	err = ResourceSaver::save(p_file,sdata,flg);

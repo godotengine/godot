@@ -647,9 +647,10 @@ public:
 	FUNC1R(RID,shader_create,ShaderMode);
 	FUNC2(shader_set_mode,RID,ShaderMode);
 	FUNC1RC(ShaderMode,shader_get_mode,RID);
-	FUNC5(shader_set_code,RID,const String&,const String&,int,int);
+	FUNC7(shader_set_code,RID,const String&,const String&,const String&,int,int,int);
 	FUNC1RC(String,shader_get_vertex_code,RID);
 	FUNC1RC(String,shader_get_fragment_code,RID);
+	FUNC1RC(String,shader_get_light_code,RID);
 	FUNC2SC(shader_get_param_list,RID,List<PropertyInfo>*);
 
 	/*virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) {
@@ -675,11 +676,8 @@ public:
 	FUNC3(material_set_flag,RID,MaterialFlag,bool);
 	FUNC2RC(bool,material_get_flag,RID,MaterialFlag);
 
-	FUNC3(material_set_hint,RID,MaterialHint,bool);
-	FUNC2RC(bool,material_get_hint,RID,MaterialHint);
-
-	FUNC2(material_set_shade_model,RID,MaterialShadeModel);
-	FUNC1RC(MaterialShadeModel,material_get_shade_model,RID);
+	FUNC2(material_set_depth_draw_mode,RID,MaterialDepthDrawMode);
+	FUNC1RC(MaterialDepthDrawMode,material_get_depth_draw_mode,RID);
 
 	FUNC2(material_set_blend_mode,RID,MaterialBlendMode);
 	FUNC1RC(MaterialBlendMode,material_get_blend_mode,RID);
@@ -701,12 +699,13 @@ public:
 	FUNC3(fixed_material_set_texture,RID ,FixedMaterialParam, RID );
 	FUNC2RC(RID, fixed_material_get_texture,RID,FixedMaterialParam);
 
-	FUNC2(fixed_material_set_detail_blend_mode,RID ,MaterialBlendMode );
-	FUNC1RC(MaterialBlendMode, fixed_material_get_detail_blend_mode,RID);
 
 
 	FUNC3(fixed_material_set_texcoord_mode,RID,FixedMaterialParam, FixedMaterialTexCoordMode );
 	FUNC2RC(FixedMaterialTexCoordMode, fixed_material_get_texcoord_mode,RID,FixedMaterialParam);
+
+	FUNC2(fixed_material_set_light_shader,RID,FixedMaterialLightShader);
+	FUNC1RC(FixedMaterialLightShader, fixed_material_get_light_shader,RID);
 
 	FUNC2(fixed_material_set_uv_transform,RID,const Transform&);
 	FUNC1RC(Transform, fixed_material_get_uv_transform,RID);

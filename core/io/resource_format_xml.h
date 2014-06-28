@@ -117,6 +117,7 @@ class ResourceFormatSaverXMLInstance  {
 
 
 
+	bool takeover_paths;
 	bool relative_paths;
 	bool bundle_resources;
 	bool skip_editor;

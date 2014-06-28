@@ -46,6 +46,7 @@ public:
 	enum ShaderType {
 		SHADER_MATERIAL_VERTEX,
 		SHADER_MATERIAL_FRAGMENT,
+		SHADER_MATERIAL_LIGHT,
 		SHADER_POST_PROCESS,
 	};
 
@@ -215,7 +216,7 @@ public:
 		ProgramNode() { type=TYPE_PROGRAM; }
 	};
 
-	typedef void (*CompileFunc)(void*,ProgramNode*);
+	typedef Error (*CompileFunc)(void*,ProgramNode*);
 
 	struct VarInfo {
 
@@ -360,6 +361,7 @@ private:
 
 	static const BuiltinsDef vertex_builtins_defs[];
 	static const BuiltinsDef fragment_builtins_defs[];
+	static const BuiltinsDef light_builtins_defs[];
 	static const BuiltinsDef postprocess_fragment_builtins_defs[];
 
 	static DataType get_token_datatype(TokenType p_type);
