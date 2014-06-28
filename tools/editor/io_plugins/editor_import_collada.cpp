@@ -341,6 +341,11 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 	Ref<FixedMaterial> material= memnew( FixedMaterial );
 
+	if (src_mat.name!="")
+		material->set_name(src_mat.name);
+	else if (effect.name!="")
+		material->set_name(effect.name);
+
 	// DIFFUSE
 
 	if (effect.diffuse.texture!="") {
@@ -424,6 +429,8 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
 	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
+
+
 
 	material_cache[p_target]=material;
 	return OK;
