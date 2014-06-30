@@ -123,7 +123,8 @@ public:
 	bool is_in_low_processor_usage_mode() const;
 
 	String get_executable_path() const;
-	int execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking);
+	int execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking,Array p_output=Array());
+
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
