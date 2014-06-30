@@ -2273,6 +2273,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 				if (!E->get()->can_reload_from_file())
 					continue;
+				if (!FileAccess::exists(E->get()->get_path()))
+					continue;
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
 				if (mt!=E->get()->get_last_modified_time()) {
 					E->get()->reload_from_file();
