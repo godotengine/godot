@@ -1419,13 +1419,40 @@ _Directory::~_Directory() {
 		memdelete(d);
 }
 
+ByteArray _Marshalls::variant_to_raw(const Variant& p_var) {
+
+	int len;
+	Error err = encode_variant(p_var,NULL,len);
+	ERR_FAIL_COND_V( err != OK, ByteArray() );
+
+	DVector<uint8_t> buff;
+	buff.resize(len);
+	DVector<uint8_t>::Write w = buff.write();
+
+	err = encode_variant(p_var,&w[0],len);
+	ERR_FAIL_COND_V( err != OK, ByteArray() );
+
+	return buff;
+}
+
+Variant _Marshalls::raw_to_variant(const ByteArray& p_raw) {
+
+	ByteArray::Read r = p_raw.read();
+
+	Variant v;
+	Error err = decode_variant(v, &r[0], p_raw.size());
+	ERR_FAIL_COND_V( err!=OK, Variant() );
+
+	return v;
+}
+
 String _Marshalls::variant_to_base64(const Variant& p_var) {
 
 	int len;
 	Error err = encode_variant(p_var,NULL,len);
 	ERR_FAIL_COND_V( err != OK, "" );
 
-	DVector<uint8_t> buff;
+	DVector<uint8_t> buff = variant_to_raw(p_var);
 	buff.resize(len);
 	DVector<uint8_t>::Write w = buff.write();
 
@@ -1466,6 +1493,8 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 
 void _Marshalls::_bind_methods() {
 
+	ObjectTypeDB::bind_method(_MD("variant_to_raw:RawArray","variant"),&_Marshalls::variant_to_raw);
+	ObjectTypeDB::bind_method(_MD("raw_to_variant:Variant","raw"),&_Marshalls::raw_to_variant);
 	ObjectTypeDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
 	ObjectTypeDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
 

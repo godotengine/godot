@@ -129,6 +129,59 @@ Error HTTPClient::request( Method p_method, const String& p_url, const Vector<St
 	return OK;
 }
 
+Error HTTPClient::request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const ByteArray& p_body)
+{
+	ERR_FAIL_INDEX_V(p_method,METHOD_MAX,ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(status!=STATUS_CONNECTED,ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(connection.is_null(),ERR_INVALID_DATA);
+
+
+	static const char* _methods[METHOD_MAX]={
+		"GET",
+		"HEAD",
+		"POST",
+		"PUT",
+		"DELETE",
+		"OPTIONS",
+		"TRACE",
+		"CONNECT"};
+
+	String request=String(_methods[p_method])+" "+p_url+" HTTP/1.1\r\n";
+	request+="Host: "+conn_host+":"+itos(conn_port)+"\r\n";
+	bool add_clen=p_body.size()>0;
+	for(int i=0;i<p_headers.size();i++) {
+		request+=p_headers[i]+"\r\n";
+		if (add_clen && p_headers[i].find("Content-Length:")==0) {
+			add_clen=false;
+		}
+	}
+	if (add_clen) {
+		request+="Content-Length: "+itos(p_body.size())+"\r\n";
+		//should it add utf8 encoding? not sure
+	}
+	request+="\r\n";
+
+	CharString cs=request.utf8();
+	Error err = connection->put_data((const uint8_t*)cs.ptr(),cs.length());
+	if (err) {
+		close();
+		status=STATUS_CONNECTION_ERROR;
+		return err;
+	}
+	ByteArray::Read read = p_body.read();
+	err = connection->put_data(read.ptr(),p_body.size());
+	read = ByteArray::Read();
+	if (err) {
+		close();
+		status=STATUS_CONNECTION_ERROR;
+		return err;
+	}
+
+	status=STATUS_REQUESTING;
+
+	return OK;
+}
+
 Error HTTPClient::send_body_text(const String& p_body){
 
 	return OK;
@@ -557,6 +610,7 @@ void HTTPClient::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("connect:Error","host","port","use_ssl"),&HTTPClient::connect,DEFVAL(false),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("set_connection","connection:StreamPeer"),&HTTPClient::set_connection);
 	ObjectTypeDB::bind_method(_MD("request","method","url","headers","body"),&HTTPClient::request,DEFVAL(String()));
+	ObjectTypeDB::bind_method(_MD("request_raw","method","url","headers","body"),&HTTPClient::request_raw,DEFVAL(ByteArray()));
 	ObjectTypeDB::bind_method(_MD("send_body_text","body"),&HTTPClient::send_body_text);
 	ObjectTypeDB::bind_method(_MD("send_body_data","body"),&HTTPClient::send_body_data);
 	ObjectTypeDB::bind_method(_MD("close"),&HTTPClient::close);

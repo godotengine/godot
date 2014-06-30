@@ -73,11 +73,16 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 		} break;
 		case Variant::REAL: {
 
-			ERR_FAIL_COND_V(len<(int)4,ERR_INVALID_DATA);
+			ERR_FAIL_COND_V(len<(int)sizeof(real_t),ERR_INVALID_DATA);
+#ifdef REAL_T_IS_DOUBLE
+			double val = decode_double(buf);
+#else
 			float val = decode_float(buf);
+#endif // REAL_T_IS_DOUBLE
+
 			r_variant=val;
 			if (r_len)
-				(*r_len)+=4;
+				(*r_len)+=sizeof(real_t);
 
 		} break;
 		case Variant::STRING: {
@@ -593,39 +598,29 @@ Error decode_variant(Variant& r_variant,const uint8_t *p_buffer, int p_len,int *
 			uint32_t count = decode_uint32(buf);
 			buf+=4;
 			len-=4;
-			ERR_FAIL_COND_V((int)count*4>len,ERR_INVALID_DATA);
+			ERR_FAIL_COND_V((int)count*sizeof(real_t)>len,ERR_INVALID_DATA);
 
-			DVector<float> data;
+			DVector<real_t> data;
 
 			if (count) {
 				//const float*rbuf=(const float*)buf;
 				data.resize(count);
-				DVector<float>::Write w = data.write();
+				DVector<real_t>::Write w = data.write();
 				for(int i=0;i<count;i++) {
 
+#ifdef REAL_T_IS_DOUBLE
+					w[i]=decode_double(&buf[i*8]);
+#else
 					w[i]=decode_float(&buf[i*4]);
+#endif
 				}
 
-				w = DVector<float>::Write();
+				w = DVector<real_t>::Write();
 			}
-#ifdef REAL_T_IS_DOUBLE
-			// Convert float_array to double_array
-			DVector<real_t> output;
-			output.resize(count);
-
-			DVector<float>::Read r = data.read();
-			DVector<real_t>::Write ow=output.write();
-			for(int i=0;i<len;i++) {
-				ow[i]=r[i];
-			}
-			ow=DVector<real_t>::Write();
-			r_variant=output;
-#else
 			r_variant=data;
-#endif
 
 			if (r_len) {
-				(*r_len)+=4+count*sizeof(float);
+				(*r_len)+=4+count*sizeof(real_t);
 			}
 
 
@@ -845,10 +840,14 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 		case Variant::REAL: {
 
 			if (buf) {
+#ifdef REAL_T_IS_DOUBLE
+				encode_double(p_variant.operator double(),buf);
+#else
 				encode_float(p_variant.operator float(),buf);
+#endif // REAL_T_IS_DOUBLE
 			}
 
-			r_len+=4;
+			r_len+=sizeof(real_t);
 
 		} break;
 		case Variant::NODE_PATH: {
@@ -1288,14 +1287,18 @@ Error encode_variant(const Variant& p_variant, uint8_t *r_buffer, int &r_len) {
 
 			DVector<real_t> data = p_variant;
 			int datalen=data.size();
-			int datasize=sizeof(float);
+			int datasize=sizeof(real_t);
 
 			if (buf) {
 				encode_uint32(datalen,buf);
-				buf+=4;
+				buf+=sizeof(real_t);
 				DVector<real_t>::Read r = data.read();
 				for(int i=0;i<datalen;i++)
+#ifdef REAL_T_IS_DOUBLE
+					encode_double(r[i],&buf[i*datasize]);
+#else
 					encode_float(r[i],&buf[i*datasize]);
+#endif // REAL_T_IS_DOUBLE
 
 			}
 
