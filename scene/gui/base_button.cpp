@@ -276,6 +276,10 @@ bool BaseButton::is_pressed() const {
 	return toggle_mode?status.pressed:status.press_attempt;
 }
 
+bool BaseButton::is_hovered() const {
+
+	return status.hovering;
+}
 
 BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	
@@ -337,6 +341,7 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
 	ObjectTypeDB::bind_method(_MD("set_pressed","pressed"),&BaseButton::set_pressed);
 	ObjectTypeDB::bind_method(_MD("is_pressed"),&BaseButton::is_pressed);
+	ObjectTypeDB::bind_method(_MD("is_hovered"),&BaseButton::is_hovered);
 	ObjectTypeDB::bind_method(_MD("set_toggle_mode","enabled"),&BaseButton::set_toggle_mode);
 	ObjectTypeDB::bind_method(_MD("is_toggle_mode"),&BaseButton::is_toggle_mode);
 	ObjectTypeDB::bind_method(_MD("set_disabled","disabled"),&BaseButton::set_disabled);

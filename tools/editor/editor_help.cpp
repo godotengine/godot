@@ -168,6 +168,18 @@ void EditorHelpSearch::_update_search() {
 			}
 		}
 
+		for(int i=0;i<c.theme_properties.size();i++) {
+
+			if (c.theme_properties[i].name.findn(term)!=-1) {
+
+				TreeItem *item = search_options->create_item(root);
+				item->set_metadata(0,"class_theme_item:"+E->key()+":"+c.theme_properties[i].name);
+				item->set_text(0,E->key()+"."+c.theme_properties[i].name+" (Theme Item)");
+				item->set_icon(0,cicon);
+			}
+		}
+
+
 	}
 
 	//same but descriptions
@@ -666,7 +678,48 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 	}
 
+	if (cd.theme_properties.size()) {
 
+
+		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
+		class_desc->push_font(doc_title_font);
+		class_desc->add_text("GUI Theme Items:");
+		class_desc->pop();
+		class_desc->pop();
+		class_desc->add_newline();
+
+		class_desc->push_indent(1);
+
+		//class_desc->add_newline();
+
+		for(int i=0;i<cd.theme_properties.size();i++) {
+
+			theme_property_line[cd.theme_properties[i].name]=class_desc->get_line_count()-2;	//gets overriden if description
+			class_desc->push_font(doc_code_font);
+			_add_type(cd.theme_properties[i].type);
+			class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/text_color"));
+			class_desc->add_text(" "+cd.theme_properties[i].name);
+			class_desc->pop();
+			class_desc->pop();
+
+			if (cd.theme_properties[i].description!="") {
+				class_desc->push_font(doc_font);
+				class_desc->add_text("  ");
+				class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/comment_color"));
+				class_desc->add_text(cd.theme_properties[i].description);
+				class_desc->pop();
+				class_desc->pop();
+
+			}
+
+			class_desc->add_newline();
+		}
+
+		class_desc->add_newline();
+		class_desc->pop();
+
+
+	}
 	if (cd.signals.size()) {
 
 		class_desc->push_color(EditorSettings::get_singleton()->get("text_editor/keyword_color"));
@@ -905,6 +958,10 @@ void EditorHelp::_help_callback(const String& p_topic) {
 
 		if (property_line.has(name))
 			line=property_line[name];
+	} else if (what=="class_theme_item") {
+
+		if (theme_property_line.has(name))
+			line=theme_property_line[name];
 	} else if (what=="class_constant") {
 
 		if (constant_line.has(name))

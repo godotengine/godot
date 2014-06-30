@@ -34,6 +34,7 @@
 #include "script_language.h"
 #include "io/marshalls.h"
 #include "io/compression.h"
+#include "scene/resources/theme.h"
 
 void DocData::merge_from(const DocData& p_data) {
 
@@ -105,6 +106,21 @@ void DocData::merge_from(const DocData& p_data) {
 				if (cf.properties[j].name!=p.name)
 					continue;
 				const PropertyDoc &pf = cf.properties[j];
+
+				p.description=pf.description;
+				break;
+			}
+		}
+
+		for(int i=0;i<c.theme_properties.size();i++) {
+
+			PropertyDoc &p = c.theme_properties[i];
+
+			for(int j=0;j<cf.theme_properties.size();j++) {
+
+				if (cf.theme_properties[j].name!=p.name)
+					continue;
+				const PropertyDoc &pf = cf.theme_properties[j];
 
 				p.description=pf.description;
 				break;
@@ -333,6 +349,60 @@ void DocData::generate(bool p_basic_types) {
 			constant.value=itos(ObjectTypeDB::get_integer_constant(name, E->get()));
 			c.constants.push_back(constant);
 		}
+
+		//theme stuff
+
+		{
+			List<StringName> l;
+			Theme::get_default()->get_constant_list(cname,&l);
+			for (List<StringName>::Element*E=l.front();E;E=E->next()) {
+
+				PropertyDoc pd;
+				pd.name=E->get();
+				pd.type="int";
+				c.theme_properties.push_back(pd);
+			}
+
+			l.clear();
+			Theme::get_default()->get_color_list(cname,&l);
+			for (List<StringName>::Element*E=l.front();E;E=E->next()) {
+
+				PropertyDoc pd;
+				pd.name=E->get();
+				pd.type="Color";
+				c.theme_properties.push_back(pd);
+			}
+
+			l.clear();
+			Theme::get_default()->get_icon_list(cname,&l);
+			for (List<StringName>::Element*E=l.front();E;E=E->next()) {
+
+				PropertyDoc pd;
+				pd.name=E->get();
+				pd.type="Texture";
+				c.theme_properties.push_back(pd);
+			}
+			l.clear();
+			Theme::get_default()->get_font_list(cname,&l);
+			for (List<StringName>::Element*E=l.front();E;E=E->next()) {
+
+				PropertyDoc pd;
+				pd.name=E->get();
+				pd.type="Font";
+				c.theme_properties.push_back(pd);
+			}
+			l.clear();
+			Theme::get_default()->get_stylebox_list(cname,&l);
+			for (List<StringName>::Element*E=l.front();E;E=E->next()) {
+
+				PropertyDoc pd;
+				pd.name=E->get();
+				pd.type="StyleBox";
+				c.theme_properties.push_back(pd);
+			}
+
+		}
+
 
 		classes.pop_front();
 	}
@@ -714,6 +784,35 @@ Error DocData::_load(Ref<XMLParser> parser) {
 							break; //end of <constants>
 					}
 
+				} else if (name=="theme_items") {
+
+					while(parser->read()==OK) {
+
+						if (parser->get_node_type() == XMLParser::NODE_ELEMENT)	{
+
+							String name = parser->get_node_name();
+
+							if (name=="theme_item") {
+
+								PropertyDoc prop;
+
+								ERR_FAIL_COND_V(!parser->has_attribute("name"),ERR_FILE_CORRUPT);
+								prop.name=parser->get_attribute_value("name");
+								ERR_FAIL_COND_V(!parser->has_attribute("type"),ERR_FILE_CORRUPT);
+								prop.type=parser->get_attribute_value("type");
+								parser->read();
+								if (parser->get_node_type()==XMLParser::NODE_TEXT)
+									prop.description=parser->get_node_data().strip_edges();
+								c.theme_properties.push_back(prop);
+							} else {
+								ERR_EXPLAIN("Invalid tag in doc file: "+name);
+								ERR_FAIL_V(ERR_FILE_CORRUPT);
+							}
+
+						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name()=="members")
+							break; //end of <constants>
+					}
+
 				} else if (name=="constants") {
 
 					while(parser->read()==OK) {
@@ -897,7 +996,20 @@ Error DocData::save(const String& p_path) {
 		}
 
 		_write_string(f,1,"</constants>");
-		_write_string(f,0,"</class>");
+
+		_write_string(f,1,"<theme_items>");
+		if (c.theme_properties.size()) {
+			for(int i=0;i<c.theme_properties.size();i++) {
+
+
+				PropertyDoc &p=c.theme_properties[i];
+				_write_string(f,2,"<theme_item name=\""+p.name+"\" type=\""+p.type+"\">");
+				_write_string(f,2,"</theme_item>");
+
+			}
+		}
+
+		_write_string(f,0,"</theme_items>");
 
 	}
 

@@ -4113,7 +4113,6 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 	}
 
 
-	LightInstance *lights[RenderList::MAX_LIGHTS];
 
 	RenderList *render_list=NULL;
 
@@ -4227,25 +4226,35 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 		e->light_type=0x7F; //unshaded is zero
 	} else {
 
-		//setup lights
-		uint16_t light_count=0;
-		uint16_t sort_key[4];
-		uint8_t light_types[4];
+		bool duplicate=false;
 
-		int dlc = MIN(directional_light_count,RenderList::MAX_LIGHTS);;
-		light_count=dlc;
 
-		for(int i=0;i<dlc;i++) {
-			sort_key[i]=directional_lights[i]->sort_key;
-			light_types[i]=VS::LIGHT_DIRECTIONAL;
+		for(int i=0;i<directional_light_count;i++) {
+			uint16_t sort_key = directional_lights[i]->sort_key;
+			uint8_t light_type = VS::LIGHT_DIRECTIONAL;
 			if (directional_lights[i]->base->shadow_enabled) {
-				light_types[i]|=0x8;
+				light_type|=0x8;
 				if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS)
-					light_types[i]|=0x10;
+					light_type|=0x10;
 				else if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS)
-					light_types[i]|=0x30;
+					light_type|=0x30;
 
 			}
+
+			RenderList::Element *ec;
+			if (duplicate) {
+
+				ec = render_list->add_element();
+				memcpy(ec,e,sizeof(RenderList::Element));
+			} else {
+
+				ec=e;
+				duplicate=true;
+			}
+
+			ec->light_type=light_type;
+			ec->light=sort_key;
+			ec->additive_ptr=&e->additive;
 
 		}
 
@@ -4257,36 +4266,32 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 
 		for(int i=0;i<ilc;i++) {
 
-			if (light_count>=RenderList::MAX_LIGHTS)
-				break;
-
 			LightInstance *li=light_instance_owner.get( liptr[i] );
 			if (!li || li->last_pass!=scene_pass) //lit by light not in visible scene
 				continue;
-			light_types[light_count]=li->base->type;
+			uint8_t light_type=li->base->type;
 			if (li->base->shadow_enabled)
-				light_types[light_count]|=0x8;
-			sort_key[light_count++]=li->sort_key;
-
-
-		}
-
-		for(int i=0;i<light_count;i++) {
+				light_type|=0x8;
+			uint16_t sort_key =li->sort_key;
 
 			RenderList::Element *ec;
-			if (i>0) {
+			if (duplicate) {
 
 				ec = render_list->add_element();
 				memcpy(ec,e,sizeof(RenderList::Element));
 			} else {
 
+				duplicate=true;
 				ec=e;
 			}
 
-			ec->light_type=light_types[i];
-			ec->light=sort_key[i];
+			ec->light_type=light_type;
+			ec->light=sort_key;
 			ec->additive_ptr=&e->additive;
+
 		}
+
+
 
 	}
 
@@ -5587,6 +5592,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 	bool stores_glow = !shadow && (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) && !p_alpha_pass;
 
+
 	bool prev_blend=false;
 	glDisable(GL_BLEND);
 	for (int i=0;i<p_render_list->element_count;i++) {
@@ -5658,6 +5664,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			} else {
 				additive=true;
 			}
+
 
 			if (stores_glow)
 				material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,!additive);
@@ -5791,7 +5798,8 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		if (i==0 || light!=prev_light || rebind) {			
 			if (e->light!=0xFFFF) {
-				_setup_light(e->light&0x3);
+				_setup_light(e->light);
+
 			}
 		}
 
@@ -5862,6 +5870,9 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		} else {
 			material_shader.set_uniform(MaterialShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
 		}
+
+		material_shader.set_uniform(MaterialShaderGLES2::NORMAL_MULT, e->mirror?-1.0:1.0);
+
 
 
 		_render(e->geometry, material, skeleton,e->owner,e->instance->transform);
