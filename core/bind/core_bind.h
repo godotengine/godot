@@ -377,8 +377,10 @@ protected:
 
 public:
 
+	ByteArray variant_to_raw(const Variant& p_var);
+	Variant raw_to_variant(const ByteArray& p_str);
 	String variant_to_base64(const Variant& p_var);
-	Variant base64_to_variant(const String& p_str);
+	Variant base64_to_variant(const String& p_raw);
 
 	_Marshalls() {};
 };
