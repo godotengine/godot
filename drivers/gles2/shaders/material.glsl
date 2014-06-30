@@ -115,7 +115,6 @@ uniform vec3 light_pos;
 uniform vec3 light_direction;
 uniform vec3 light_attenuation;
 uniform vec3 light_spot_attenuation;
-uniform vec3 light_ambient;
 uniform vec3 light_diffuse;
 uniform vec3 light_specular;
 
@@ -132,6 +131,7 @@ varying vec3 specular_interp;
 uniform float time;
 uniform float instance_id;
 
+uniform vec3 ambient_light;
 
 #if !defined(USE_DEPTH_SHADOWS) && defined(USE_SHADOW_PASS)
 
@@ -404,7 +404,7 @@ VERTEX_SHADER_CODE
 		float NdotL = max(0.0,dot( normal_interp, light_dir ));
 		vec3 half_vec = normalize(light_dir + eye_vec);
 		float eye_light = max(dot(normal_interp, half_vec),0.0);
-		diffuse_interp.rgb=light_diffuse * NdotL * attenuation;// + light_ambient;
+		diffuse_interp.rgb=light_diffuse * NdotL * attenuation;
 		diffuse_interp.a=attenuation;
 		if (NdotL > 0.0) {
 			specular_interp=light_specular * pow( eye_light, vertex_specular_exp ) * attenuation;
@@ -510,27 +510,15 @@ uniform vec3 light_pos;
 uniform vec3 light_direction;
 uniform vec3 light_attenuation;
 uniform vec3 light_spot_attenuation;
-uniform vec3 light_ambient;
 uniform vec3 light_diffuse;
 uniform vec3 light_specular;
+
+uniform vec3 ambient_light;
 
 
 #ifdef USE_FRAGMENT_LIGHTING
 
 
-
-vec3 process_shade(in vec3 normal, in vec3 light_dir, in vec3 eye_vec, in vec3 diffuse, in vec3 specular, in float specular_exp, in float attenuation) {
-
-	float NdotL = max(0.0,dot( normal, light_dir ));
-	vec3 half_vec = normalize(light_dir + eye_vec);
-	float eye_light = max(dot(normal, half_vec),0.0);
-
-	vec3 ret = light_ambient *diffuse + light_diffuse * diffuse * NdotL * attenuation;
-        if (NdotL > 0.0) {
-		ret+=light_specular * specular * pow( eye_light, specular_exp ) * attenuation;
-	}
-        return ret;
-}
 
 # ifdef USE_DEPTH_SHADOWS
 # else
@@ -770,9 +758,12 @@ void main() {
 	bool discard_=false;
 #endif
 
+{
+
 
 FRAGMENT_SHADER_CODE
 
+}
 
 #if defined(ENABLE_DISCARD)
 	if (discard_) {
@@ -1009,9 +1000,8 @@ FRAGMENT_SHADER_CODE
 #ifdef LIGHT_TYPE_DIRECTIONAL
 
 	vec3 light_dir = -light_direction;
-	float light_attenuation = light_attenuation.r;
+	float attenuation = light_attenuation.r;
 
-	diffuse.rgb=process_shade(normal,light_dir,eye_vec,diffuse.rgb,specular,specular_exp,shadow_attenuation)*light_attenuation;
 
 #endif
 
@@ -1023,7 +1013,6 @@ FRAGMENT_SHADER_CODE
 	light_dir=normalize(light_dir);
 	float attenuation = pow( max(1.0 - dist/radius, 0.0), light_attenuation.b ) * light_attenuation.r;
 
-	diffuse.rgb=process_shade(normal,light_dir,eye_vec,diffuse.rgb,specular,specular_exp,shadow_attenuation)*attenuation;
 #endif
 
 
@@ -1040,10 +1029,39 @@ FRAGMENT_SHADER_CODE
 	float rim = (1.0 - scos) / (1.0 - spot_cutoff);
 	attenuation *= 1.0 - pow( rim, light_spot_attenuation.g);
 
-	diffuse.rgb=process_shade(normal,light_dir,eye_vec,diffuse.rgb,specular,specular_exp,shadow_attenuation)*attenuation;
-
 #endif
 
+# if defined(LIGHT_TYPE_DIRECTIONAL) || defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
+
+	{
+
+		vec3 mdiffuse = diffuse.rgb;
+		vec3 light;
+
+#if defined(USE_LIGHT_SHADER_CODE)
+//light is written by the light shader
+{
+
+LIGHT_SHADER_CODE
+
+}
+#else
+//traditional lambert + blinn
+		float NdotL = max(0.0,dot( normal, light_dir ));
+		vec3 half_vec = normalize(light_dir + eye_vec);
+		float eye_light = max(dot(normal, half_vec),0.0);
+
+		light = light_diffuse * mdiffuse * NdotL;
+		if (NdotL > 0.0) {
+			light+=specular * light_specular * pow( eye_light, specular_exp );
+		}
+#endif
+		diffuse.rgb = ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
+
+	}
+
+
+# endif
 
 # if !defined(LIGHT_TYPE_DIRECTIONAL) && !defined(LIGHT_TYPE_OMNI) && !defined (LIGHT_TYPE_SPOT)
 //none
@@ -1062,7 +1080,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING
 
-	vec3 ambient = light_ambient*diffuse.rgb;
+	vec3 ambient = ambient_light*diffuse.rgb;
 # if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
 	ambient*=diffuse_interp.a; //attenuation affects ambient too
 # endif

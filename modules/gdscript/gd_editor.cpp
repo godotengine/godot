@@ -65,7 +65,7 @@ bool GDScriptLanguage::validate(const String& p_script, int &r_line_error,int &r
 
 	GDParser parser;
 
-	Error err = parser.parse(p_script,p_path.get_base_dir());
+	Error err = parser.parse(p_script,p_path.get_base_dir(),true);
 	if (err) {
 		r_line_error=parser.get_error_line();
 		r_col_error=parser.get_error_column();

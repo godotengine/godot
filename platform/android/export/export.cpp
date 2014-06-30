@@ -258,7 +258,11 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 
 	String n=p_name;
 
-	if (n=="version/code")
+	if (n=="custom_package/debug")
+		custom_debug_package=p_value;
+	else if (n=="custom_package/release")
+		custom_release_package=p_value;
+	else if (n=="version/code")
 		version_code=p_value;
 	else if (n=="version/name")
 		version_name=p_value;
@@ -317,8 +321,11 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) const{
 
 	String n=p_name;
-
-	if (n=="version/code")
+	if (n=="custom_package/debug")
+		r_ret=custom_debug_package;
+	else if (n=="custom_package/release")
+		r_ret=custom_release_package;
+	else if (n=="version/code")
 		r_ret=version_code;
 	else if (n=="version/name")
 		r_ret=version_name;
@@ -389,7 +396,7 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release_user" ) );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "apk_expansion/enable" ) );
 	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/SALT" ) );
-	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/pubic_key" ) );
+	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/public_key",PROPERTY_HINT_MULTILINE_TEXT ) );
 
 	const char **perms = android_perms;
 	while(*perms) {
@@ -1095,6 +1102,12 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 	ep.step("Adding Files..",1);
 	Error err=OK;
 	Vector<String> cl = cmdline.strip_edges().split(" ");
+	for(int i=0;i<cl.size();i++) {
+		if (cl[i].strip_edges().length()==0) {
+			cl.remove(i);
+			i--;
+		}
+	}
 
 	if (p_dumb) {
 
@@ -1123,12 +1136,12 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			}
 			err = save_pack(pf);
 			memdelete(pf);
-			cl.push_back("-main_pack");
-			cl.push_back(apkfname);
-			cl.push_back("-main_pack_md5");
+
+			cl.push_back("-use_apk_expansion");
+			cl.push_back("-apk_expansion_md5");
 			cl.push_back(FileAccess::get_md5(fullpath));
-			cl.push_back("-main_pack_cfg");
-			cl.push_back(apk_expansion_salt+","+apk_expansion_pkey);
+			cl.push_back("-apk_expansion_key");
+			cl.push_back(apk_expansion_pkey.strip_edges());
 
 		} else {
 
@@ -1562,10 +1575,10 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 	if (apk_expansion) {
 
-		if (apk_expansion_salt=="") {
-			valid=false;
-			err+="Invalid SALT for apk expansion.\n";
-		}
+		//if (apk_expansion_salt=="") {
+		//	valid=false;
+		//	err+="Invalid SALT for apk expansion.\n";
+		//}
 		if (apk_expansion_pkey=="") {
 			valid=false;
 			err+="Invalid public key for apk expansion.\n";

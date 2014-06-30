@@ -199,7 +199,7 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 						return OK;
 					//well, it's an ambient light..
 					Light *l = memnew( DirectionalLight );
-					l->set_color(Light::COLOR_AMBIENT,ld.color);
+//					l->set_color(Light::COLOR_AMBIENT,ld.color);
 					l->set_color(Light::COLOR_DIFFUSE,Color(0,0,0));
 					l->set_color(Light::COLOR_SPECULAR,Color(0,0,0));
 					node = l;
@@ -208,8 +208,8 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 					//well, it's an ambient light..
 					Light *l = memnew( DirectionalLight );
-					if (found_ambient) //use it here
-						l->set_color(Light::COLOR_AMBIENT,ambient);
+					//if (found_ambient) //use it here
+					//	l->set_color(Light::COLOR_AMBIENT,ambient);
 
 					l->set_color(Light::COLOR_DIFFUSE,ld.color);
 					l->set_color(Light::COLOR_SPECULAR,Color(1,1,1));
@@ -341,6 +341,11 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 	Ref<FixedMaterial> material= memnew( FixedMaterial );
 
+	if (src_mat.name!="")
+		material->set_name(src_mat.name);
+	else if (effect.name!="")
+		material->set_name(effect.name);
+
 	// DIFFUSE
 
 	if (effect.diffuse.texture!="") {
@@ -424,6 +429,8 @@ Error ColladaImport::_create_material(const String& p_target) {
 
 	material->set_parameter(FixedMaterial::PARAM_SPECULAR_EXP,effect.shininess);
 	material->set_flag(Material::FLAG_DOUBLE_SIDED,effect.double_sided);
+
+
 
 	material_cache[p_target]=material;
 	return OK;
@@ -661,7 +668,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 		const Collada::MeshData::Source *color_src=NULL;
 		int color_ofs=0;
 
-		if (false && p.sources.has("COLOR")) {
+		if (p.sources.has("COLOR")) {
 
 			String color_source_id = p.sources["COLOR"].source;
 			color_ofs = p.sources["COLOR"].offset;

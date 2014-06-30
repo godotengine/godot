@@ -298,7 +298,7 @@ RID VisualServer::material_2d_get(bool p_shaded, bool p_transparent, bool p_cut_
 	fixed_material_set_flag(material_2d[version],FIXED_MATERIAL_FLAG_DISCARD_ALPHA,p_cut_alpha);
 	material_set_flag(material_2d[version],MATERIAL_FLAG_UNSHADED,!p_shaded);
 	material_set_flag(material_2d[version],MATERIAL_FLAG_DOUBLE_SIDED,true);
-	material_set_hint(material_2d[version],MATERIAL_HINT_OPAQUE_PRE_PASS,p_opaque_prepass);
+	material_set_depth_draw_mode(material_2d[version],p_opaque_prepass?MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA:MATERIAL_DEPTH_DRAW_OPAQUE_ONLY);
 	fixed_material_set_texture(material_2d[version],FIXED_MATERIAL_PARAM_DIFFUSE,get_white_texture());
 	//material cut alpha?
 	return material_2d[version];
@@ -568,8 +568,6 @@ void VisualServer::_bind_methods() {
 	BIND_CONSTANT( MATERIAL_FLAG_INVERT_FACES );
 	BIND_CONSTANT( MATERIAL_FLAG_UNSHADED );
 	BIND_CONSTANT( MATERIAL_FLAG_ONTOP );
-	BIND_CONSTANT( MATERIAL_FLAG_WIREFRAME );
-	BIND_CONSTANT( MATERIAL_FLAG_BILLBOARD );
 	BIND_CONSTANT( MATERIAL_FLAG_MAX );
 
 	BIND_CONSTANT( MATERIAL_BLEND_MODE_MIX );
@@ -642,7 +640,7 @@ void VisualServer::_bind_methods() {
 	BIND_CONSTANT( LIGHT_OMNI );
 	BIND_CONSTANT( LIGHT_SPOT );
 
-	BIND_CONSTANT( LIGHT_COLOR_AMBIENT );
+
 	BIND_CONSTANT( LIGHT_COLOR_DIFFUSE );
 	BIND_CONSTANT( LIGHT_COLOR_SPECULAR );
 

@@ -173,7 +173,7 @@ public:
 
 
 static const char *anim_flag_names[]={
-	"Detect Loop",
+	"Detect Loop (-loop,-cycle)",
 	"Keep Value Tracks",
 	"Optimize",
 	NULL
@@ -680,7 +680,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	import_choose->connect("pressed", this,"_browse");
 
 	hbc = memnew( HBoxContainer );
-	vbc->add_margin_child("Target Scene:",hbc);
+	vbc->add_margin_child("Target Path:",hbc);
 
 	save_path = memnew( LineEdit );
 	save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -1024,7 +1024,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 					if (fm.is_valid()) {
 						fm->set_flag(Material::FLAG_UNSHADED,true);
 						fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-						fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+						fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
@@ -1129,7 +1129,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 							if (fm.is_valid()) {
 								fm->set_flag(Material::FLAG_UNSHADED,true);
 								fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-								fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+								fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 								fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 							}
 						}
@@ -1500,6 +1500,37 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 				Room *room_node =p_node->cast_to<Room>();
 
 				room_node->set_room( room_imported->get_room() );
+
+			} else if (p_node->get_type()=="Skeleton") {
+				//for paths, overwrite path
+
+				Skeleton *skeleton_imported =imported_node->cast_to<Skeleton>();
+				Skeleton *skeleton_node =p_node->cast_to<Skeleton>();
+
+				//use imported bones, obviously
+				skeleton_node->clear_bones();
+				for(int i=0;i<skeleton_imported->get_bone_count();i++) {
+
+					skeleton_node->add_bone(skeleton_imported->get_bone_name(i));
+					skeleton_node->set_bone_parent(i,skeleton_imported->get_bone_parent(i));
+					skeleton_node->set_bone_rest(i,skeleton_imported->get_bone_rest(i));
+					skeleton_node->set_bone_pose(i,skeleton_imported->get_bone_pose(i));
+				}
+			} else if (p_node->get_type()=="AnimationPlayer") {
+				//for paths, overwrite path
+
+				AnimationPlayer *aplayer_imported =imported_node->cast_to<AnimationPlayer>();
+				AnimationPlayer *aplayer_node =p_node->cast_to<AnimationPlayer>();
+
+				//use imported bones, obviously
+				List<StringName> anims;
+				aplayer_imported->get_animation_list(&anims);
+				//use imported animations, could merge some stuff though
+				for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
+
+
+					aplayer_node->add_animation(E->get(),aplayer_imported->get_animation(E->get()));
+				}
 
 			} else if (p_node->get_type()=="CollisionShape") {
 				//for paths, overwrite path
@@ -1877,14 +1908,14 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	if (merge) {
 
-		print_line("MERGING?????");
+
 		progress.step("Merging..",103);
 
 		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-		print_line("OPEN IN FS: "+p_dest_path);
+
 		if (fa->file_exists(p_dest_path)) {
 
-			print_line("TRY REALLY TO MERGE?");
+
 			//try to merge
 
 			Ref<PackedScene> s = ResourceLoader::load(p_dest_path);
@@ -1915,7 +1946,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	packer->set_import_metadata(from);
 
 	print_line("SAVING TO: "+p_dest_path);
-	err = ResourceSaver::save(p_dest_path,packer);
+	err = ResourceSaver::save(p_dest_path,packer,ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	//EditorFileSystem::get_singleton()->update_resource(packer);
 

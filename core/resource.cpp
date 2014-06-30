@@ -157,7 +157,7 @@ void Resource::_resource_path_changed() {
 
 }
 	
-void Resource::set_path(const String& p_path) {
+void Resource::set_path(const String& p_path, bool p_take_over) {
 
 	if (path_cache==p_path)
 		return;
@@ -168,7 +168,16 @@ void Resource::set_path(const String& p_path) {
 	}
 
 	path_cache="";
-	ERR_FAIL_COND( ResourceCache::resources.has( p_path ) );
+	if (ResourceCache::resources.has( p_path )) {
+		if (p_take_over) {
+
+			ResourceCache::resources.get(p_path)->set_name("");
+		} else {
+			ERR_EXPLAIN("Another resource is loaded from path: "+p_path);
+			ERR_FAIL_COND( ResourceCache::resources.has( p_path ) );
+		}
+
+	}
 	path_cache=p_path;
 	
 	if (path_cache!="") {
@@ -240,7 +249,7 @@ void Resource::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_path","path"),&Resource::set_path);
 	ObjectTypeDB::bind_method(_MD("get_path"),&Resource::get_path);
-	ObjectTypeDB::bind_method(_MD("set_name","name"),&Resource::set_name);
+	ObjectTypeDB::bind_method(_MD("set_name","name","take_over"),&Resource::set_name,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_name"),&Resource::get_name);
 	ObjectTypeDB::bind_method(_MD("get_rid"),&Resource::get_rid);
 	ObjectTypeDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);

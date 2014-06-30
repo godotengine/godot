@@ -11,6 +11,7 @@ class PolygonPathFinder : public Resource {
 		Vector2 pos;
 		Set<int> connections;
 		float distance;
+		float penalty;
 		int prev;
 	};
 
@@ -55,9 +56,12 @@ public:
 	void setup(const Vector<Vector2>& p_points, const Vector<int>& p_connections);
 	Vector<Vector2> find_path(const Vector2& p_from, const Vector2& p_to);
 
+	void set_point_penalty(int p_point,float p_penalty);
+	float get_point_penalty(int p_point) const;
+
 	bool is_point_inside(const Vector2& p_point) const;
 	Vector2 get_closest_point(const Vector2& p_point) const;
-	Vector<Vector2> get_intersections(const Vector2& p_from, const Vector2& p_to) const;
+	Vector<Vector2> get_intersections(const Vector2& p_from, const Vector2& p_to) const;	
 	Rect2 get_bounds() const;
 
 

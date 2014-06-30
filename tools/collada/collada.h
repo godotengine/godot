@@ -53,12 +53,14 @@ public:
 
 	struct Material {
 
+		String name;
 		String instance_effect;
 	};
 
 
 	struct Effect {
 
+		String name;
 		Map<String, Variant> params;
 
 		struct Channel {

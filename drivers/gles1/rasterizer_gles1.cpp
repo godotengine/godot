@@ -922,6 +922,7 @@ RID RasterizerGLES1::shader_create(VS::ShaderMode p_mode) {
 	shader->has_alpha=false;
 	shader->fragment_line=0;
 	shader->vertex_line=0;
+	shader->light_line=0;
 	RID rid = shader_owner.make_rid(shader);
 	shader_set_mode(rid,p_mode);
 //	_shader_make_dirty(shader);
@@ -952,19 +953,22 @@ VS::ShaderMode RasterizerGLES1::shader_get_mode(RID p_shader) const {
 
 
 
-void RasterizerGLES1::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs,int p_fragment_ofs) {
+void RasterizerGLES1::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs,int p_fragment_ofs,int p_light_ofs) {
+
 
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
 #ifdef DEBUG_ENABLED
-	if (shader->vertex_code==p_vertex && shader->fragment_code==p_fragment)
+	if (shader->vertex_code==p_vertex && shader->fragment_code==p_fragment && shader->light_code==p_light)
 		return;
 #endif
 	shader->fragment_code=p_fragment;
 	shader->vertex_code=p_vertex;
+	shader->light_code=p_light;
 	shader->fragment_line=p_fragment_ofs;
 	shader->vertex_line=p_vertex_ofs;
+	shader->light_line=p_light_ofs;
 
 }
 
@@ -984,6 +988,13 @@ String RasterizerGLES1::shader_get_fragment_code(RID p_shader) const {
 
 }
 
+String RasterizerGLES1::shader_get_light_code(RID p_shader) const {
+
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,String());
+	return shader->light_code;
+
+}
 
 void RasterizerGLES1::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
 
@@ -1130,38 +1141,20 @@ bool RasterizerGLES1::material_get_flag(RID p_material,VS::MaterialFlag p_flag) 
 
 }
 
-void RasterizerGLES1::material_set_hint(RID p_material, VS::MaterialHint p_hint,bool p_enabled) {
+void RasterizerGLES1::material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	ERR_FAIL_INDEX(p_hint,VS::MATERIAL_HINT_MAX);
-	material->hints[p_hint]=p_enabled;
-
+	material->depth_draw_mode=p_mode;
 }
 
-bool RasterizerGLES1::material_get_hint(RID p_material,VS::MaterialHint p_hint) const {
+VS::MaterialDepthDrawMode RasterizerGLES1::material_get_depth_draw_mode(RID p_material) const{
+
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,false);
-	ERR_FAIL_INDEX_V(p_hint,VS::MATERIAL_HINT_MAX,false);
-	return material->hints[p_hint];
-
+	ERR_FAIL_COND_V(!material,VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+	return material->depth_draw_mode;
 }
-
-void RasterizerGLES1::material_set_shade_model(RID p_material, VS::MaterialShadeModel p_model) {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND(!material);
-	material->shade_model=p_model;
-
-};
-
-VS::MaterialShadeModel RasterizerGLES1::material_get_shade_model(RID p_material) const {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,VS::MATERIAL_SHADE_MODEL_LAMBERT);
-	return material->shade_model;
-};
 
 
 void RasterizerGLES1::material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode) {
@@ -1254,20 +1247,6 @@ RID RasterizerGLES1::fixed_material_get_texture(RID p_material,VS::FixedMaterial
 	return m->textures[p_parameter];
 }
 
-void RasterizerGLES1::fixed_material_set_detail_blend_mode(RID p_material,VS::MaterialBlendMode p_mode) {
-
-	Material *m=material_owner.get( p_material );
-	ERR_FAIL_COND(!m);
-
-	m->detail_blend_mode = p_mode;
-}
-VS::MaterialBlendMode RasterizerGLES1::fixed_material_get_detail_blend_mode(RID p_material) const {
-
-	Material *m=material_owner.get( p_material );
-	ERR_FAIL_COND_V(!m, VS::MATERIAL_BLEND_MODE_MIX);
-
-	return m->detail_blend_mode;
-}
 
 void RasterizerGLES1::fixed_material_set_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter, VS::FixedMaterialTexCoordMode p_mode) {
 
@@ -3426,7 +3405,7 @@ void RasterizerGLES1::_setup_material(const Geometry *p_geometry,const Material 
 
 	}
 
-	bool current_depth_write=!p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW];
+	bool current_depth_write=p_material->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_ALWAYS; //broken
 	bool current_depth_test=!p_material->flags[VS::MATERIAL_FLAG_ONTOP];
 
 
@@ -3491,7 +3470,7 @@ void RasterizerGLES1::_setup_light(LightInstance* p_instance, int p_idx) {
 
 	glLightfv(glid , GL_DIFFUSE, diffuse_sdark);
 
-	Color amb_color = ld->colors[VS::LIGHT_COLOR_AMBIENT];
+	Color amb_color = Color(0,0,0);
 	GLfloat amb_stexsize[4]={
 		amb_color.r,
 		amb_color.g,

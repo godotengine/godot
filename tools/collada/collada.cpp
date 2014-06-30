@@ -378,6 +378,8 @@ void Collada::_parse_material(XMLParser& parser) {
 	Material material;
 
 	String id=parser.get_attribute_value("id");
+	if (parser.has_attribute("name"))
+		material.name=parser.get_attribute_value("name");
 
 	if (state.version<State::Version(1,4,0)) {
 		/* <1.4 */
@@ -775,7 +777,10 @@ void Collada::_parse_effect(XMLParser& parser) {
 	String id=parser.get_attribute_value("id");
 
 	Effect effect;
+	if (parser.has_attribute("name"))
+		effect.name=parser.get_attribute_value("name");
 	_parse_effect_material(parser,effect,id);
+
 
 
 	state.effect_map[id]=effect;

@@ -176,7 +176,7 @@ public:
 		vs->camera_set_transform(camera, Transform( Matrix3(), Vector3(0,0,2 ) ) );
 
 		RID lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
-		vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.3,0.3,0.3) );
+		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.3,0.3,0.3) );
 		light = vs->instance_create2( lightaux,scenario );
 		vs->instance_set_transform(light,Transform(Matrix3(Vector3(0.1,0.4,0.7).normalized(),0.9)));
 		

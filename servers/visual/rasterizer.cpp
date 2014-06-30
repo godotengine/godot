@@ -60,7 +60,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 	int texcoords_used=0;
 	String code;
 
-	static const char* _uv_str[4]={"UV","UV2","uv_xform","uv_sphere"};
+	static const char* _uv_str[4]={"UV","uv_xform","UV2","uv_sphere"};
 #define _TEXUVSTR(m_idx) String( _uv_str[(p_key.texcoord_mask>>(m_idx*2))&0x3] )
 
 
@@ -134,23 +134,8 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		dcode+="uniform texture fmp_detail_tex;\n";
 		dcode+="uniform float fmp_detail;\n";
 		dcode+="color detail=tex( fmp_detail_tex,"+_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_DETAIL)+");\n";
-
-		switch(p_key.detail_blend) {
-
-			case VS::MATERIAL_BLEND_MODE_MIX:
-
-				dcode+="diffuse=vec4(mix(diffuse.rgb,detail.rgb,detail.a*fmp_detail),diffuse.a);\n";
-			break;
-			case VS::MATERIAL_BLEND_MODE_ADD:
-				dcode+="diffuse=vec4(diffuse.rgb+detail.rgb*fmp_detail,diffuse.a);\n";
-			break;
-			case VS::MATERIAL_BLEND_MODE_SUB:
-				dcode+="diffuse=vec4(diffuse.rgb+detail.rgb*fmp_detail,diffuse.a);\n";
-			break;
-			case VS::MATERIAL_BLEND_MODE_MUL:
-				dcode+="diffuse=diffuse*mix(vec4(1,1,1,1),detail,fmp_detail);\n";
-			break;
-		}
+		//aways mix
+		dcode+="diffuse=vec4(mix(diffuse.rgb,detail.rgb,detail.a*fmp_detail),diffuse.a);\n";
 
 		code+=dcode;
 	}
@@ -223,6 +208,22 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 
 	code+="GLOW=glow;\n";
 
+	if (p_key.texture_mask&(1<<VS::FIXED_MATERIAL_PARAM_SHADE_PARAM)) {
+
+		String scode;
+		scode+="uniform texture fmp_shade_param_tex;\n";
+		scode+="SHADE_PARAM=tex( fmp_shade_param_tex,"+_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_SHADE_PARAM)+").r;\n";
+		code+=scode;
+	} else {
+
+		String scode;
+		scode+="uniform float fmp_shade_param;\n";
+		scode+="SHADE_PARAM=fmp_shade_param;\n";
+		code+=scode;
+
+	}
+
+
 	//print_line("**FRAGMENT SHADER GENERATED code: \n"+code);
 
 	String vcode;
@@ -235,12 +236,58 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 //		vcode+="POINT_SIZE=10.0;\n";
 	}
 
+	String lcode;
+
+	switch(p_key.light_shader) {
+
+		case VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT: {
+			//do nothing
+
+		} break;
+		case VS::FIXED_MATERIAL_LIGHT_SHADER_WRAP: {
+
+			lcode+="float NdotL = max(0.0,((dot( NORMAL, LIGHT_DIR )+SHADE_PARAM)/(1.0+SHADE_PARAM)));";
+			lcode+="vec3 half_vec = normalize(LIGHT_DIR + EYE_VEC);";
+			lcode+="float eye_light = max(dot(NORMAL, half_vec),0.0);";
+			lcode+="LIGHT = LIGHT_DIFFUSE * DIFFUSE * NdotL;";
+			lcode+="if (NdotL > 0.0) {";
+			lcode+="\tLIGHT+=LIGHT_SPECULAR * SPECULAR * pow( eye_light, SPECULAR_EXP );";
+			lcode+="};";
+
+		} break;
+		case VS::FIXED_MATERIAL_LIGHT_SHADER_VELVET: {
+			lcode+="float NdotL = max(0.0,dot( NORMAL, LIGHT_DIR ));";
+			lcode+="vec3 half_vec = normalize(LIGHT_DIR + EYE_VEC);";
+			lcode+="float eye_light = max(dot(NORMAL, half_vec),0.0);";
+			lcode+="LIGHT = LIGHT_DIFFUSE * DIFFUSE * NdotL;";
+			lcode+="float rim = (1.0-abs(dot(NORMAL,vec3(0,0,1))))*SHADE_PARAM;";
+			lcode+="LIGHT += LIGHT_DIFFUSE * DIFFUSE * rim;";
+			lcode+="if (NdotL > 0.0) {";
+			lcode+="\tLIGHT+=LIGHT_SPECULAR * SPECULAR * pow( eye_light, SPECULAR_EXP );";
+			lcode+="};";
+
+
+		} break;
+		case VS::FIXED_MATERIAL_LIGHT_SHADER_TOON: {
+
+			lcode+="float NdotL = dot( NORMAL, LIGHT_DIR );";
+			lcode+="vec3 light_ref = reflect( LIGHT_DIR, NORMAL );";
+			lcode+="float eye_light = clamp( dot( light_ref, vec3(0,0,0)-EYE_VEC), 0.0, 1.0 );";
+			lcode+="float NdotL_diffuse = smoothstep( max( SHADE_PARAM-0.05, 0.0-1.0), min( SHADE_PARAM+0.05, 1.0), NdotL );";
+			lcode+="float spec_radius=clamp((1.0-(SPECULAR_EXP/64.0)),0.0,1.0);";
+			lcode+="float NdotL_specular = smoothstep( max( spec_radius-0.05, 0.0), min( spec_radius+0.05, 1.0), eye_light )*max(NdotL,0);";
+			lcode+="LIGHT = NdotL_diffuse * LIGHT_DIFFUSE*DIFFUSE + NdotL_specular * LIGHT_SPECULAR*SPECULAR;";
+
+		} break;
+
+	}
+
 	//print_line("**VERTEX SHADER GENERATED code: \n"+vcode);
 
 	double tf = (OS::get_singleton()->get_ticks_usec()-t)/1000.0;
 //	print_line("generate: "+rtos(tf));
 
-	shader_set_code(fms.shader,vcode,code,0,0);
+	shader_set_code(fms.shader,vcode,code,lcode,0,0);
 
 	fixed_material_shaders[p_key]=fms;
 	return fms.shader;
@@ -389,28 +436,6 @@ RID Rasterizer::fixed_material_get_texture(RID p_material,VS::FixedMaterialParam
 	return fm.texture[p_parameter];
 }
 
-void Rasterizer::fixed_material_set_detail_blend_mode(RID p_material,VS::MaterialBlendMode p_mode){
-
-	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
-	ERR_FAIL_COND(!E);
-	FixedMaterial &fm=*E->get();
-
-
-	fm.get_key();
-	ERR_FAIL_INDEX(p_mode,4);
-	fm.detail_blend=p_mode;
-	if (!fm.dirty_list.in_list())
-		fixed_material_dirty_list.add( &fm.dirty_list );
-
-}
-VS::MaterialBlendMode Rasterizer::fixed_material_get_detail_blend_mode(RID p_material) const{
-
-	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
-	ERR_FAIL_COND_V(!E,VS::MATERIAL_BLEND_MODE_MIX);
-	const FixedMaterial &fm=*E->get();
-
-	return fm.detail_blend;
-}
 
 void Rasterizer::fixed_material_set_texcoord_mode(RID p_material,VS::FixedMaterialParam p_parameter, VS::FixedMaterialTexCoordMode p_mode) {
 
@@ -460,6 +485,28 @@ Transform Rasterizer::fixed_material_get_uv_transform(RID p_material) const {
 	const FixedMaterial &fm=*E->get();
 
 	return fm.uv_xform;
+}
+
+void Rasterizer::fixed_material_set_light_shader(RID p_material,VS::FixedMaterialLightShader p_shader) {
+
+	Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	ERR_FAIL_COND(!E);
+	FixedMaterial &fm=*E->get();
+
+	fm.light_shader=p_shader;
+
+	if (!fm.dirty_list.in_list())
+		fixed_material_dirty_list.add( &fm.dirty_list );
+
+}
+
+VS::FixedMaterialLightShader Rasterizer::fixed_material_get_light_shader(RID p_material) const {
+
+	const Map<RID,FixedMaterial*>::Element *E = fixed_materials.find(p_material);
+	ERR_FAIL_COND_V(!E,VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT);
+	const FixedMaterial &fm=*E->get();
+
+	return fm.light_shader;
 }
 
 void Rasterizer::fixed_material_set_point_size(RID p_material,float p_size) {

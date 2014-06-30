@@ -356,6 +356,7 @@ private:
 	template<class T>
 	T* alloc_node();
 
+	bool validating;
 	int parenthesis;
 	bool error_set;
 	String error;
@@ -392,7 +393,7 @@ public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String& p_code,const String& p_base_path="");
+	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="");
 
 	const Node *get_parse_tree() const;

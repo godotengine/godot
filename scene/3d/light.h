@@ -61,7 +61,6 @@ public:
 	
 	enum LightColor {
 	
-		COLOR_AMBIENT=VisualServer::LIGHT_COLOR_AMBIENT,
 		COLOR_DIFFUSE=VisualServer::LIGHT_COLOR_DIFFUSE,
 		COLOR_SPECULAR=VisualServer::LIGHT_COLOR_SPECULAR
 	};

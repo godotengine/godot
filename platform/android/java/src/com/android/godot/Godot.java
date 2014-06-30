@@ -63,6 +63,10 @@ import com.android.godot.input.*;
 import java.io.InputStream;
 
 import javax.microedition.khronos.opengles.GL10;
+import java.security.MessageDigest;
+import java.io.File;
+import java.io.FileInputStream;
+import java.util.LinkedList;
 
 public class Godot extends Activity implements SensorEventListener
 {	
@@ -138,7 +142,11 @@ public class Godot extends Activity implements SensorEventListener
 
 */
 
+	private String[] command_line;
+
 	public GodotView mView;
+	private boolean godot_initialized=false;
+
 
 	private SensorManager mSensorManager;
 	private Sensor mAccelerometer;
@@ -190,9 +198,9 @@ public class Godot extends Activity implements SensorEventListener
 		
 		// GodotEditText layout
 		GodotEditText edittext = new GodotEditText(this); 
-        edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
+		   edittext.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.WRAP_CONTENT));
         // ...add to FrameLayout
-        layout.addView(edittext);
+		   layout.addView(edittext);
 		
 		mView = new GodotView(getApplication(),io,use_gl2, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
@@ -216,45 +224,88 @@ public class Godot extends Activity implements SensorEventListener
 	
 
 	private String[] getCommandLine() {
+            InputStream is;
+            try {
+		is = getAssets().open("_cl_");
+                byte[] len = new byte[4];
+                int r = is.read(len);
+		if (r<4) {
+                    System.out.printf("**ERROR** Wrong cmdline length.\n");
+		    Log.d("GODOT", "**ERROR** Wrong cmdline length.\n");
+                    return new String[0];
+                }
+		int argc=((int)(len[3]&0xFF)<<24) | ((int)(len[2]&0xFF)<<16) | ((int)(len[1]&0xFF)<<8) | ((int)(len[0]&0xFF));
+                String[] cmdline = new String[argc];
 
-		InputStream is;
-		try {
-			is = getAssets().open("/_cl_");
-			byte[] len = new byte[4];
-			int r = is.read(len);
-			if (r<4) {
-				System.out.printf("**ERROR** Wrong cmdline length.\n");
-				return new String[0];
+                for(int i=0;i<argc;i++) {
+                    r = is.read(len);
+                    if (r<4) {
+
+			Log.d("GODOT", "**ERROR** Wrong cmdline param lenght.\n");
+                        return new String[0];
+                    }
+		    int strlen=((int)(len[3]&0xFF)<<24) | ((int)(len[2]&0xFF)<<16) | ((int)(len[1]&0xFF)<<8) | ((int)(len[0]&0xFF));
+                    if (strlen>65535) {
+			Log.d("GODOT", "**ERROR** Wrong command len\n");
+                        return new String[0];
+                    }
+		    byte[] arg = new byte[strlen];
+                    r = is.read(arg);
+		    if (r==strlen) {
+                        cmdline[i]=new String(arg,"UTF-8");
+		    }
 			}
-			int argc=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
-			String[] cmdline = new String[argc];
-			for(int i=0;i<argc;i++) {
-				r = is.read(len);
-				if (r<4) {
-					System.out.printf("**ERROR** Wrong cmdline param lenght.\n");
-					return new String[0];
-				}
-				int strlen=((int)(len[3])<<24) | ((int)(len[2])<<16) | ((int)(len[1])<<8) | ((int)(len[0]));
-				if (strlen>65535) {
-					System.out.printf("**ERROR** Wrong command len\n");
-					return new String[0];
-				}
-				byte[] arg = new byte[strlen];
-				r = is.read(arg);
-				if (r!=strlen) {
-					cmdline[i]=new String(arg,"UTF-8");
-				}
-
-			}
-
 			return cmdline;
 		} catch (Exception e) {
-
+		e.printStackTrace();
+		System.out.printf("**ERROR** No commandline.\n");
+		Log.d("GODOT", "**ERROR** Exception " + e.getClass().getName() + ":" + e.getMessage());
 			return new String[0];
 		}
 
 
 	}
+
+
+	String expansion_pack_path;
+
+
+	private void initializeGodot() {
+
+		if (expansion_pack_path!=null) {
+
+			String[] new_cmdline;
+			int cll=0;
+			if (command_line!=null) {
+				new_cmdline = new String[ command_line.length + 2 ];
+				cll=command_line.length;
+				for(int i=0;i<command_line.length;i++) {
+					new_cmdline[i]=command_line[i];
+				}
+			} else {
+				new_cmdline = new String[ 2 ];
+			}
+
+			new_cmdline[cll]="-main_pack";
+			new_cmdline[cll+1]=expansion_pack_path;
+			command_line=new_cmdline;
+		}
+
+		io = new GodotIO(this);
+		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
+		GodotLib.io=io;
+		GodotLib.initialize(this,io.needsReloadHooks(),command_line);
+		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+		result_callback = null;
+
+		mPaymentsManager = PaymentsManager.createManager(this).initService();
+		godot_initialized=true;
+
+	}
+
 
 	@Override protected void onCreate(Bundle icicle) {
 
@@ -267,20 +318,112 @@ public class Godot extends Activity implements SensorEventListener
 			| WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
 
+		//check for apk expansion API
+		if (true) {
+			command_line = getCommandLine();
+			boolean use_apk_expansion=false;
+			String main_pack_md5=null;
+			String main_pack_key=null;
+
+			List<String> new_args = new LinkedList<String>();
 
 
-		io = new GodotIO(this);
-		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
-		GodotLib.io=io;
-                GodotLib.initialize(this,io.needsReloadHooks(),getCommandLine());
-		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+			for(int i=0;i<command_line.length;i++) {
 
-		result_callback = null;
-		
-		mPaymentsManager = PaymentsManager.createManager(this).initService();
+				boolean has_extra = i< command_line.length -1;
+				if (command_line[i].equals("-use_apk_expansion")) {
+					use_apk_expansion=true;
+				} else if (has_extra && command_line[i].equals("-apk_expansion_md5")) {
+					main_pack_md5=command_line[i+1];
+					i++;
+				} else if (has_extra && command_line[i].equals("-apk_expansion_key")) {
+					main_pack_key=command_line[i+1];
+					i++;
+				} else if (command_line[i].trim().length()!=0){
+					new_args.add(command_line[i]);
+				}
+			}
 
+			if (new_args.isEmpty())
+				command_line=null;
+			else
+				command_line = new_args.toArray(new String[new_args.size()]);
+
+			if (use_apk_expansion && main_pack_md5!=null && main_pack_key!=null) {
+				//check that environment is ok!
+				if (!Environment.getExternalStorageState().equals( Environment.MEDIA_MOUNTED )) {
+					Log.d("GODOT", "**ERROR! No media mounted!");
+					//show popup and die
+				}
+
+				// Build the full path to the app's expansion files
+				try {
+					expansion_pack_path = Environment.getExternalStorageDirectory().toString() + "/Android/obb/"+this.getPackageName();
+					expansion_pack_path+="/"+"main."+getPackageManager().getPackageInfo(getPackageName(), 0).versionCode+"."+this.getPackageName()+".obb";
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				File f = new File(expansion_pack_path);
+
+				boolean pack_valid = true;
+				Log.d("GODOT","**PACK** - Path "+expansion_pack_path);
+
+				if (!f.exists()) {
+
+					pack_valid=false;
+					Log.d("GODOT","**PACK** - File does not exist");
+
+				} else {
+					try {
+
+						InputStream fis =  new FileInputStream(expansion_pack_path);
+
+						// Create MD5 Hash
+						byte[] buffer = new byte[16384];
+
+						MessageDigest complete = MessageDigest.getInstance("MD5");
+						int numRead;
+						do {
+							numRead = fis.read(buffer);
+							if (numRead > 0) {
+								complete.update(buffer, 0, numRead);
+							}
+					       } while (numRead != -1);
+
+
+						fis.close();
+						byte[] messageDigest = complete.digest();
+
+						// Create Hex String
+						StringBuffer hexString = new StringBuffer();
+						for (int i=0; i<messageDigest.length; i++)
+							hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+						String md5str =  hexString.toString();
+
+						Log.d("GODOT","**PACK** - My MD5: "+hexString+" - APK md5: "+main_pack_md5);
+						if (!hexString.equals(main_pack_md5)) {
+							pack_valid=false;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						Log.d("GODOT","**PACK FAIL**");
+						pack_valid=false;
+					}
+
+
+				}
+
+				if (!pack_valid) {
+
+
+
+				}
+
+			}
+		}
+
+		initializeGodot();
 
 		
 	//	instanceSingleton( new GodotFacebook(this) );
@@ -299,6 +442,8 @@ public class Godot extends Activity implements SensorEventListener
 	
 	@Override protected void onPause() {
 		super.onPause();
+		if (!godot_initialized)
+			return;
 		mView.onPause();
 		mSensorManager.unregisterListener(this);
 		GodotLib.focusout();
@@ -310,6 +455,9 @@ public class Godot extends Activity implements SensorEventListener
 
 	@Override protected void onResume() {
 		super.onResume();
+		if (!godot_initialized)
+			return;
+
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		GodotLib.focusin();
