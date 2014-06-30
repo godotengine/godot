@@ -245,11 +245,23 @@ Ref<Resource> Resource::duplicate(bool p_subresources) {
 }
 
 
+void Resource::_set_path(const String& p_path) {
+
+	set_path(p_path,false);
+}
+
+void Resource::_take_over_path(const String& p_path) {
+
+	set_path(p_path,true);
+}
+
+
 void Resource::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_path","path"),&Resource::set_path);
+	ObjectTypeDB::bind_method(_MD("set_path","path"),&Resource::_set_path);
+	ObjectTypeDB::bind_method(_MD("take_over_path","path"),&Resource::_take_over_path);
 	ObjectTypeDB::bind_method(_MD("get_path"),&Resource::get_path);
-	ObjectTypeDB::bind_method(_MD("set_name","name","take_over"),&Resource::set_name,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("set_name","name"),&Resource::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Resource::get_name);
 	ObjectTypeDB::bind_method(_MD("get_rid"),&Resource::get_rid);
 	ObjectTypeDB::bind_method(_MD("set_import_metadata","metadata"),&Resource::set_import_metadata);
