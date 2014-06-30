@@ -77,6 +77,7 @@ public:
 		Vector<MethodDoc> signals;
 		Vector<ConstantDoc> constants;
 		Vector<PropertyDoc> properties;
+		Vector<PropertyDoc> theme_properties;
 
 	};
 

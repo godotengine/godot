@@ -1002,7 +1002,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 			}
 
-			p_event.mouse_button.global_x = pos.x;
+				p_event.mouse_button.global_x = pos.x;
 				p_event.mouse_button.global_y = pos.y;
 
 				pos = window->focus_inv_xform.xform(pos);

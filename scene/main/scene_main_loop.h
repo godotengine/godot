@@ -45,6 +45,7 @@ class SceneMainLoop;
 
 class Node;
 class Viewport;
+
 class SceneMainLoop : public MainLoop {
 
 	_THREAD_SAFE_CLASS_

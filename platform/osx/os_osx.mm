@@ -404,14 +404,9 @@ static int button_mask=0;
 	ev.mouse_motion.y=mouse_y;
 	ev.mouse_motion.global_x=mouse_x;
 	ev.mouse_motion.global_y=mouse_y;
-	ev.mouse_motion.relative_x=mouse_x - prev_mouse_x;
-	ev.mouse_motion.relative_y=mouse_y - prev_mouse_y;
+	ev.mouse_motion.relative_x=[event deltaX] * [[event window] backingScaleFactor];
+    ev.mouse_motion.relative_y=[event deltaY] * [[event window] backingScaleFactor];
 	ev.mouse_motion.mod = translateFlags([event modifierFlags]);
-
-
-//	ev.mouse_motion.relative_x=[event deltaX];
-//	ev.mouse_motion.relative_y=[event deltaY];
-
 
 	OS_OSX::singleton->input->set_mouse_pos(Point2(mouse_x,mouse_y));
 	OS_OSX::singleton->push_input(ev);
