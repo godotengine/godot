@@ -167,6 +167,7 @@ public:
 	void set_connection(const Ref<StreamPeer>& p_connection);
 
 	Error request( Method p_method, const String& p_url, const Vector<String>& p_headers,const String& p_body=String());
+	Error request_raw( Method p_method, const String& p_url, const Vector<String>& p_headers,const ByteArray& p_body=ByteArray());
 	Error send_body_text(const String& p_body);
 	Error send_body_data(const ByteArray& p_body);
 
