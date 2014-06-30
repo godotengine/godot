@@ -235,7 +235,7 @@ Error _OS::shell_open(String p_uri) {
 };
 
 
-int _OS::execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking) {
+int _OS::execute(const String& p_path, const Vector<String> & p_arguments, bool p_blocking, Array p_output) {
 
 	OS::ProcessID pid;
 	List<String> args;
@@ -243,6 +243,8 @@ int _OS::execute(const String& p_path, const Vector<String> & p_arguments,bool p
 		args.push_back(p_arguments[i]);
 	String pipe;
 	Error err = OS::get_singleton()->execute(p_path,args,p_blocking,&pid, &pipe);
+	p_output.clear();
+	p_output.push_back(pipe);
 	if (err != OK)
 		return -1;
 	else
@@ -616,7 +618,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_processor_count"),&_OS::get_processor_count);
 
 	ObjectTypeDB::bind_method(_MD("get_executable_path"),&_OS::get_executable_path);
-	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking"),&_OS::execute);
+	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking","output"),&_OS::execute,DEFVAL(Array()));
 	ObjectTypeDB::bind_method(_MD("kill","pid"),&_OS::kill);
 	ObjectTypeDB::bind_method(_MD("shell_open","uri"),&_OS::shell_open);
 	ObjectTypeDB::bind_method(_MD("get_process_ID"),&_OS::get_process_ID);
