@@ -781,9 +781,22 @@ class RasterizerGLES2 : public Rasterizer {
 			bool *additive_ptr;
 			bool additive;
 			bool mirror;
-			uint16_t light;
-			uint8_t light_type;
-			uint8_t sort_flags;
+			union {
+#ifdef BIG_ENDIAN_ENABLED
+				struct {
+					uint8_t sort_flags;
+					uint8_t light_type;
+					uint16_t light;
+				};
+#else
+				struct {
+					uint16_t light;
+					uint8_t light_type;
+					uint8_t sort_flags;
+				};
+#endif
+				uint32_t sort_key;
+			};
 		};
 
 
@@ -896,27 +909,22 @@ class RasterizerGLES2 : public Rasterizer {
 
 			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
 
-				if (A->sort_flags == B->sort_flags) {
-					if (A->light_type == B->light_type) {
-						if (A->material->shader_cache == B->material->shader_cache) {
-							if (A->material == B->material) {
+				if (A->sort_key == B->sort_key) {
+					if (A->material->shader_cache == B->material->shader_cache) {
+						if (A->material == B->material) {
 
-								return (A->geometry_cmp < B->geometry_cmp);
-							} else {
-
-								return (A->material < B->material);
-							}
+							return (A->geometry_cmp < B->geometry_cmp);
 						} else {
 
-							return (A->material->shader_cache < B->material->shader_cache);
+							return (A->material < B->material);
 						}
 					} else {
 
-						return A->light_type < B->light_type;
+						return (A->material->shader_cache < B->material->shader_cache);
 					}
 				} else {
 
-					return A->sort_flags < B->sort_flags; //one is null and one is not
+					return A->sort_key < B->sort_key; //one is null and one is not
 				}
 			}
 		};

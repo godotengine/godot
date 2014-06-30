@@ -107,6 +107,7 @@ class EditorHelp : public VBoxContainer {
 	Map<String,int> method_line;
 	Map<String,int> signal_line;
 	Map<String,int> property_line;
+	Map<String,int> theme_property_line;
 	Map<String,int> constant_line;
 	int description_line;
 

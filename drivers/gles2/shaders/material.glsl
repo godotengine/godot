@@ -31,6 +31,8 @@ attribute vec4 color_attrib; // attrib:3
 attribute vec2 uv_attrib; // attrib:4
 attribute vec2 uv2_attrib; // attrib:5
 
+uniform float normal_mult;
+
 #ifdef USE_SKELETON
 attribute vec4 bone_indices; // attrib:6
 attribute vec4 bone_weights; // attrib:7
@@ -232,8 +234,10 @@ void main() {
 #endif
 	highp vec4 vertex_in = vertex_attrib; // vec4(vertex_attrib.xyz * data_attrib.x,1.0);
 	vec3 normal_in = normal_attrib;
+	normal_in*=normal_mult;
 #if defined(ENABLE_TANGENT_INTERP)
 	vec3 tangent_in = tangent_attrib.xyz;
+	tangent_in*=normal_mult;
 #endif
 
 #ifdef USE_SKELETON
