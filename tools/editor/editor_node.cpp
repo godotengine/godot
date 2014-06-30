@@ -2741,7 +2741,7 @@ Error EditorNode::load_scene(const String& p_scene) {
 */
 	set_edited_scene(new_scene);
 	_get_scene_metadata();
-	scene_tree_dock->set_selected(new_scene);
+	scene_tree_dock->set_selected(new_scene, true);
 	property_editor->edit(new_scene);
 	scene_import_metadata = sdata->get_import_metadata();
 
