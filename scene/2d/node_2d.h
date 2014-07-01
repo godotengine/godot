@@ -83,6 +83,7 @@ public:
 
 	void set_transform(const Matrix32& p_transform);
 	void set_global_transform(const Matrix32& p_transform);
+	void set_global_pos(const Point2& p_pos);
 
 
 	Matrix32 get_transform() const;
