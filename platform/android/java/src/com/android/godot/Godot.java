@@ -498,6 +498,7 @@ public class Godot extends Activity implements SensorEventListener
 
 	@Override public void onBackPressed() {
 
+		System.out.printf("** BACK REQUEST!\n");
 		GodotLib.quit();
 	}
 

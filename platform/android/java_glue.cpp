@@ -581,6 +581,8 @@ static Vector3 accelerometer;
 static HashMap<String,JNISingleton*> jni_singletons;
 static jobject godot_io;
 
+static Vector<int> joy_device_ids;
+
 typedef void (*GFXInitFunc)(void *ud,bool gl2);
 
 static jmethodID _on_video_init=0;
@@ -1278,6 +1280,49 @@ static unsigned int android_get_keysym(unsigned int p_code) {
 
 	return KEY_UNKNOWN;
 }
+
+static int find_device(int p_device) {
+
+	for (int i=0; i<joy_device_ids.size(); i++) {
+
+		if (joy_device_ids[i] == p_device) {
+			//print_line("found device at "+String::num(i));
+			return i;
+		};
+	};
+
+	//print_line("adding a device at" + String::num(joy_device_ids.size()));
+	joy_device_ids.push_back(p_device);
+
+	return joy_device_ids.size() - 1;
+};
+
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_joybutton(JNIEnv * env, jobject obj, jint p_device, jint p_button, jboolean p_pressed) {
+
+	InputEvent ievent;
+	ievent.type = InputEvent::JOYSTICK_BUTTON;
+	ievent.device = find_device(p_device);
+	ievent.joy_button.button_index = p_button;
+	ievent.joy_button.pressed = p_pressed;
+
+	input_mutex->lock();
+	key_events.push_back(ievent);
+	input_mutex->unlock();
+};
+
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_joyaxis(JNIEnv * env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
+
+	InputEvent ievent;
+	ievent.type = InputEvent::JOYSTICK_MOTION;
+	ievent.device = find_device(p_device);
+	ievent.joy_motion.axis = p_axis;
+	ievent.joy_motion.axis_value = p_value;
+
+	input_mutex->lock();
+	key_events.push_back(ievent);
+	input_mutex->unlock();
+};
+
 
 JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_key(JNIEnv * env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 
