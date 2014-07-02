@@ -35,6 +35,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.content.ContextWrapper;
+import android.view.InputDevice;
 
 import java.io.File;
 import javax.microedition.khronos.egl.EGL10;
@@ -99,22 +100,251 @@ public class GodotView extends GLSurfaceView {
 		return activity.gotTouchEvent(event);
 	};
 
+	public int get_godot_button(int keyCode) {
+
+		int button = 0;
+		switch (keyCode) {
+			case KeyEvent.KEYCODE_BUTTON_A: // Android A is SNES B
+				button = 0;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_B:
+				button = 1;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_X: // Android X is SNES Y
+				button = 2;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_Y:
+				button = 3;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_L1:
+				button = 4;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_L2:
+				button = 6;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_R1:
+				button = 5;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_R2:
+				button = 7;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_SELECT:
+				button = 10;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_START:
+				button = 11;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_THUMBL:
+				button = 8;
+				break;
+			case KeyEvent.KEYCODE_BUTTON_THUMBR:
+				button = 9;
+				break;
+			case KeyEvent.KEYCODE_DPAD_UP:
+				button = 12;
+				break;
+			case KeyEvent.KEYCODE_DPAD_DOWN:
+				button = 13;
+				break;
+			case KeyEvent.KEYCODE_DPAD_LEFT:
+				button = 14;
+				break;
+			case KeyEvent.KEYCODE_DPAD_RIGHT:
+				button = 15;
+				break;
+
+			default:
+				button = keyCode - KeyEvent.KEYCODE_BUTTON_1;
+				break;
+		};
+
+		return button;
+	};
+
 	@Override public boolean onKeyUp(int keyCode, KeyEvent event) {
-		GodotLib.key(keyCode, event.getUnicodeChar(0), false);
+
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			return true;
+		}
+
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return super.onKeyUp(keyCode, event);
+		};
+
+		int source = event.getSource();
+		if ((source & InputDevice.SOURCE_JOYSTICK) != 0 || (source & InputDevice.SOURCE_DPAD) != 0 || (source & InputDevice.SOURCE_GAMEPAD) != 0) {
+
+			int button = get_godot_button(keyCode);
+			int device = event.getDeviceId();
+
+			GodotLib.joybutton(device, button, false);
+			return true;
+		} else {
+
+			GodotLib.key(keyCode, event.getUnicodeChar(0), false);
+		};
 		return super.onKeyUp(keyCode, event);
 	};
 
 	@Override public boolean onKeyDown(int keyCode, KeyEvent event) {
-		GodotLib.key(keyCode, event.getUnicodeChar(0), true);
+
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			GodotLib.quit();
 			// press 'back' button should not terminate program
 			//	normal handle 'back' event in game logic
 			return true;
 		}
+
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return super.onKeyDown(keyCode, event);
+		};
+
+		int source = event.getSource();
+		//Log.e(TAG, String.format("Key down! source %d, device %d, joystick %d, %d, %d", event.getDeviceId(), source, (source & InputDevice.SOURCE_JOYSTICK), (source & InputDevice.SOURCE_DPAD), (source & InputDevice.SOURCE_GAMEPAD)));
+
+		if ((source & InputDevice.SOURCE_JOYSTICK) != 0 || (source & InputDevice.SOURCE_DPAD) != 0 || (source & InputDevice.SOURCE_GAMEPAD) != 0) {
+
+			if (event.getRepeatCount() > 0) // ignore key echo
+				return true;
+			int button = get_godot_button(keyCode);
+			int device = event.getDeviceId();
+			//Log.e(TAG, String.format("joy button down! button %x, %d, device %d", keyCode, button, device));
+
+			GodotLib.joybutton(device, button, true);
+			return true;
+
+		} else {
+			GodotLib.key(keyCode, event.getUnicodeChar(0), true);
+		};
 		return super.onKeyDown(keyCode, event);
 	}
 
-	private void init(boolean translucent, int depth, int stencil) {
+	public float axis_value(MotionEvent p_event, InputDevice p_device, int p_axis, int p_pos) {
+
+		final InputDevice.MotionRange range = p_device.getMotionRange(p_axis, p_event.getSource());
+		if (range == null)
+			return 0;
+
+		//Log.e(TAG, String.format("axis ranges %f, %f, %f", range.getRange(), range.getMin(), range.getMax()));
+
+		final float flat = range.getFlat();
+		final float value =
+			p_pos < 0 ? p_event.getAxisValue(p_axis):
+			p_event.getHistoricalAxisValue(p_axis, p_pos);
+
+		final float absval = Math.abs(value);
+		if (absval <= flat) {
+			return 0;
+		};
+
+		final float ret = (value - range.getMin()) / range.getRange() * 2 - 1.0f;
+
+		return ret;
+	};
+
+	float[] last_axis_values = { 0, 0, 0, 0, -1, -1 };
+	boolean[] last_axis_buttons = { false, false, false, false, false, false }; // dpad up down left right, ltrigger, rtrigger
+
+	public void process_axis_state(MotionEvent p_event, int p_pos) {
+
+		int device_id = p_event.getDeviceId();
+		InputDevice device = p_event.getDevice();
+		float val;
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_X, p_pos);
+		if (val != last_axis_values[0]) {
+			last_axis_values[0] = val;
+			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 0, val));
+			GodotLib.joyaxis(device_id, 0, val);
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_Y, p_pos);
+		if (val != last_axis_values[1]) {
+			last_axis_values[1] = val;
+			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 1, val));
+			GodotLib.joyaxis(device_id, 1, val);
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_Z, p_pos);
+		if (val != last_axis_values[2]) {
+			last_axis_values[2] = val;
+			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 2, val));
+			GodotLib.joyaxis(device_id, 2, val);
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_RZ, p_pos);
+		if (val != last_axis_values[3]) {
+			last_axis_values[3] = val;
+			//Log.e(TAG, String.format("axis moved! axis %d, value %f", 3, val));
+			GodotLib.joyaxis(device_id, 3, val);
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_LTRIGGER, p_pos);
+		if (val != last_axis_values[4]) {
+			last_axis_values[4] = val;
+			if ((val != 0) != (last_axis_buttons[4])) {
+				last_axis_buttons[4] = (val != 0);
+				GodotLib.joybutton(device_id, 6, (val != 0));
+			};
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_RTRIGGER, p_pos);
+		if (val != last_axis_values[5]) {
+			last_axis_values[5] = val;
+			if ((val != 0) != (last_axis_buttons[5])) {
+				last_axis_buttons[5] = (val != 0);
+				GodotLib.joybutton(device_id, 7, (val != 0));
+			};
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_HAT_Y, p_pos);
+
+		if (last_axis_buttons[0] != (val > 0)) {
+			last_axis_buttons[0] = val > 0;
+			GodotLib.joybutton(device_id, 12, val > 0);
+		};
+		if (last_axis_buttons[1] != (val < 0)) {
+			last_axis_buttons[1] = val < 0;
+			GodotLib.joybutton(device_id, 13, val > 0);
+		};
+
+		val = axis_value(p_event, device, MotionEvent.AXIS_HAT_X, p_pos);
+		if (last_axis_buttons[2] != (val < 0)) {
+			last_axis_buttons[2] = val < 0;
+			GodotLib.joybutton(device_id, 14, val < 0);
+		};
+		if (last_axis_buttons[3] != (val > 0)) {
+			last_axis_buttons[3] = val > 0;
+			GodotLib.joybutton(device_id, 15, val > 0);
+		};
+	};
+
+	@Override public boolean onGenericMotionEvent(MotionEvent event) {
+
+		if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK && event.getAction() == MotionEvent.ACTION_MOVE) {
+
+			// Process all historical movement samples in the batch
+			final int historySize = event.getHistorySize();
+
+			// Process the movements starting from the
+			// earliest historical position in the batch
+			for (int i = 0; i < historySize; i++) {
+				// Process the event at historical position i
+				process_axis_state(event, i);
+			}
+
+			// Process the current movement sample in the batch (position -1)
+			process_axis_state(event, -1);
+			return true;
+
+
+		};
+
+		return super.onGenericMotionEvent(event);
+	};
+
+
+    private void init(boolean translucent, int depth, int stencil) {
 
 		this.setFocusableInTouchMode(true);
 		/* By default, GLSurfaceView() creates a RGB_565 opaque surface.

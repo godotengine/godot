@@ -1060,7 +1060,19 @@ LIGHT_SHADER_CODE
 			light+=specular * light_specular * pow( eye_light, specular_exp );
 		}
 #endif
-		diffuse.rgb = ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
+		diffuse.rgb = const_light_mult * ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
+
+#ifdef USE_FOG
+
+		diffuse.rgb = mix(diffuse.rgb,fog_interp.rgb,fog_interp.a);
+
+# if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
+		diffuse.rgb = mix(mix(vec3(0.0),diffuse.rgb,attenuation),diffuse.rgb,const_light_mult);
+# endif
+
+
+#endif
+
 
 	}
 
@@ -1084,15 +1096,26 @@ LIGHT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING
 
-	vec3 ambient = ambient_light*diffuse.rgb;
+	vec3 ambient = const_light_mult*ambient_light*diffuse.rgb;
 # if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
 	ambient*=diffuse_interp.a; //attenuation affects ambient too
+
 # endif
 
 //	diffuse.rgb=(diffuse.rgb * diffuse_interp.rgb + specular * specular_interp)*shadow_attenuation + ambient;
 //	diffuse.rgb+=emission * const_light_mult;
 	diffuse.rgb=(diffuse.rgb * diffuse_interp.rgb + specular * specular_interp)*shadow_attenuation + ambient;
 	diffuse.rgb+=emission * const_light_mult;
+
+#ifdef USE_FOG
+
+	diffuse.rgb = mix(diffuse.rgb,fog_interp.rgb,fog_interp.a);
+
+# if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
+	diffuse.rgb = mix(mix(vec3(0.0),diffuse.rgb,diffuse_interp.a),diffuse.rgb,const_light_mult);
+# endif
+
+#endif
 
 #endif
 
@@ -1120,10 +1143,7 @@ LIGHT_SHADER_CODE
 
 #else
 
-#ifdef USE_FOG
 
-	diffuse.rgb = mix(diffuse.rgb,fog_interp.rgb,fog_interp.a);
-#endif
 
 #ifdef USE_GLOW
 
