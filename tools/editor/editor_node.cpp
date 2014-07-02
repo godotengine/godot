@@ -2267,6 +2267,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 				if (!E->get()->can_reload_from_file())
 					continue;
+				if (!FileAccess::exists(E->get()->get_path()))
+					continue;
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
 				if (mt!=E->get()->get_last_modified_time()) {
 					E->get()->reload_from_file();
@@ -2732,10 +2734,10 @@ Error EditorNode::load_scene(const String& p_scene) {
 	}
 */
 	set_edited_scene(new_scene);
-	scene_tree_dock->set_selected(new_scene);
+	_get_scene_metadata();
+	scene_tree_dock->set_selected(new_scene, true);
 	property_editor->edit(new_scene);
 	scene_import_metadata = sdata->get_import_metadata();
-	_get_scene_metadata();
 
 	editor_data.get_undo_redo().clear_history();
 	saved_version=editor_data.get_undo_redo().get_version();

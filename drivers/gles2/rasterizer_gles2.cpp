@@ -4269,9 +4269,10 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 			LightInstance *li=light_instance_owner.get( liptr[i] );
 			if (!li || li->last_pass!=scene_pass) //lit by light not in visible scene
 				continue;
-			uint8_t light_type=li->base->type;
-			if (li->base->shadow_enabled)
+			uint8_t light_type=li->base->type|0x40; //penalty to ensure directionals always go first
+			if (li->base->shadow_enabled) {
 				light_type|=0x8;
+			}
 			uint16_t sort_key =li->sort_key;
 
 			RenderList::Element *ec;
@@ -4628,7 +4629,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		material_shader.set_uniform(MaterialShaderGLES2::FOG_COLOR_END,Vector3(col_end.r,col_end.g,col_end.b));
 	}
 
-	material_shader.set_uniform(MaterialShaderGLES2::CONST_LIGHT_MULT,p_no_const_light?0.0:1.0);
+
 	//material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,300.0));
 	//if uses TIME - draw_next_frame=true
 
@@ -5707,7 +5708,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					 case VS::MATERIAL_BLEND_MODE_ADD: {
 
 						glBlendEquation(GL_FUNC_ADD);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+						glBlendFunc(p_alpha_pass?GL_SRC_ALPHA:GL_ONE,GL_ONE);
 
 					 } break;
 					 case VS::MATERIAL_BLEND_MODE_SUB: {
@@ -5872,7 +5873,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		}
 
 		material_shader.set_uniform(MaterialShaderGLES2::NORMAL_MULT, e->mirror?-1.0:1.0);
-
+		material_shader.set_uniform(MaterialShaderGLES2::CONST_LIGHT_MULT,additive?0.0:1.0);
 
 
 		_render(e->geometry, material, skeleton,e->owner,e->instance->transform);
@@ -6136,6 +6137,9 @@ void RasterizerGLES2::_draw_tex_bg() {
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glColorMask(1,1,1,1);
+
 
 	RID texture;
 
@@ -6170,6 +6174,7 @@ void RasterizerGLES2::_draw_tex_bg() {
 	}
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA,true);
+
 
 	copy_shader.bind();
 
@@ -6389,6 +6394,7 @@ void RasterizerGLES2::end_scene() {
 	_render_list_forward(&opaque_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting);
 
 	if (draw_tex_background) {
+
 		//most 3D vendors recommend drawing a texture bg or skybox here,
 		//after opaque geometry has been drawn
 		//so the zbuffer can get rid of most pixels

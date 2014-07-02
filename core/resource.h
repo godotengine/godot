@@ -115,6 +115,9 @@ protected:
 
 	virtual void _resource_path_changed();
 	static void _bind_methods();
+
+	void _set_path(const String& p_path);
+	void _take_over_path(const String& p_path);
 public:
 	
 	virtual bool can_reload_from_file();
