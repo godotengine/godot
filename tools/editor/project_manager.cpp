@@ -448,6 +448,9 @@ void ProjectManager::_favorite_pressed(Node *p_hb) {
 
 void ProjectManager::_load_recent_projects() {
 
+	ProjectListFilter::FilterOption filter_option = project_filter->get_filter_option();
+	String search_term = project_filter->get_search_term();
+
 	while(scroll_childs->get_child_count()>0) {
 		memdelete( scroll_childs->get_child(0));
 	}
@@ -465,11 +468,14 @@ void ProjectManager::_load_recent_projects() {
 		String _name = E->get().name;
 		if (!_name.begins_with("projects/") && !_name.begins_with("favorite_projects/"))
 			continue;
-		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
+
+		String path = EditorSettings::get_singleton()->get(_name);
+		if (filter_option == ProjectListFilter::FILTER_PATH && search_term!="" && path.findn(search_term)==-1)
+			continue;
 
 		String project = _name.get_slice("/",1);
-		String path = EditorSettings::get_singleton()->get(_name);
 		String conf=path.plus_file("engine.cfg");
+		bool favorite = (_name.begins_with("favorite_projects/"))?true:false;
 
 		uint64_t last_modified = 0;
 		if (FileAccess::exists(conf))
@@ -515,9 +521,17 @@ void ProjectManager::_load_recent_projects() {
 		Error err = cf->load(conf);
 		ERR_CONTINUE(err!=OK);
 
-		Ref<Texture> icon;
+
 		String project_name="Unnamed Project";
 
+		if (cf->has_section_key("application","name")) {
+			project_name = cf->get_value("application","name");
+		}
+
+		if (filter_option==ProjectListFilter::FILTER_NAME && search_term!="" && project_name.findn(search_term)==-1)
+			continue;
+
+		Ref<Texture> icon;
 		if (cf->has_section_key("application","icon")) {
 			String appicon = cf->get_value("application","icon");
 			if (appicon!="") {
@@ -531,10 +545,6 @@ void ProjectManager::_load_recent_projects() {
 					icon=it;
 				}
 			}
-		}
-
-		if (cf->has_section_key("application","name")) {
-			project_name = cf->get_value("application","name");
 		}
 
 		if (icon.is_null()) {
@@ -583,6 +593,8 @@ void ProjectManager::_load_recent_projects() {
 
 		scroll_childs->add_child(hb);
 	}
+
+	scroll->set_v_scroll(0);
 
 	erase_btn->set_disabled(selected_list.size()<1);
 	open_btn->set_disabled(selected_list.size()<1);
@@ -834,10 +846,22 @@ ProjectManager::ProjectManager() {
 	HBoxContainer *tree_hb = memnew( HBoxContainer);
 	vb->add_margin_child("Recent Projects:",tree_hb,true);
 
+	VBoxContainer *search_tree_vb = memnew(VBoxContainer);
+	search_tree_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	tree_hb->add_child(search_tree_vb);
+
+	HBoxContainer *search_box = memnew(HBoxContainer);
+	search_box->add_spacer(true);
+	project_filter = memnew(ProjectListFilter);
+	search_box->add_child(project_filter);
+	project_filter->connect("filter_changed", this, "_load_recent_projects");
+	project_filter->set_custom_minimum_size(Size2(250,10));
+	search_tree_vb->add_child(search_box);
+
 	PanelContainer *pc = memnew( PanelContainer);
 	pc->add_style_override("panel",get_stylebox("bg","Tree"));
-	tree_hb->add_child(pc);
-	pc->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_tree_vb->add_child(pc);
+	pc->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	scroll = memnew( ScrollContainer );
 	pc->add_child(scroll);
@@ -958,4 +982,83 @@ ProjectManager::~ProjectManager() {
 
 	if (EditorSettings::get_singleton())
 		EditorSettings::destroy();
+}
+
+void ProjectListFilter::_setup_filters() {
+
+	filter_option->clear();
+	filter_option->add_item("Name");
+	filter_option->add_item("Path");
+}
+
+void ProjectListFilter::_command(int p_command) {
+	switch (p_command) {
+
+		case CMD_CLEAR_FILTER: {
+			if (search_box->get_text()!="") {
+				search_box->clear();
+				emit_signal("filter_changed");
+			}
+		}break;
+	}
+}
+
+void ProjectListFilter::_search_text_changed(const String &p_newtext) {
+	emit_signal("filter_changed");
+}
+
+String ProjectListFilter::get_search_term() {
+	return search_box->get_text().strip_edges();
+}
+
+ProjectListFilter::FilterOption ProjectListFilter::get_filter_option() {
+	return _current_filter;
+}
+
+void ProjectListFilter::_filter_option_selected(int p_idx) {
+	FilterOption selected = (FilterOption)(filter_option->get_selected());
+	if (_current_filter != selected ) {
+		_current_filter = selected;
+		emit_signal("filter_changed");
+	}
+}
+
+void ProjectListFilter::_notification(int p_what) {
+	switch(p_what) {
+		case NOTIFICATION_ENTER_SCENE: {
+			clear_search_button->set_icon(get_icon("CloseHover","EditorIcons"));
+		} break;
+	}
+}
+
+void ProjectListFilter::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_command"),&ProjectListFilter::_command);
+	ObjectTypeDB::bind_method(_MD("_search_text_changed"), &ProjectListFilter::_search_text_changed);
+	ObjectTypeDB::bind_method(_MD("_filter_option_selected"), &ProjectListFilter::_filter_option_selected);
+
+	ADD_SIGNAL( MethodInfo("filter_changed") );
+}
+
+ProjectListFilter::ProjectListFilter() {
+
+	_current_filter = FILTER_NAME;
+
+	filter_option = memnew(OptionButton);
+	filter_option->set_custom_minimum_size(Size2(80,10));
+	filter_option->set_clip_text(true);
+	filter_option->connect("item_selected", this, "_filter_option_selected");
+	add_child(filter_option);
+
+	_setup_filters();
+
+	search_box = memnew( LineEdit );
+	search_box->connect("text_changed",this,"_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(search_box);
+
+	clear_search_button = memnew( ToolButton );
+	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
+	add_child(clear_search_button);
+
 }

@@ -33,8 +33,10 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/tool_button.h"
 
 class NewProjectDialog;
+class ProjectListFilter;
 
 class ProjectManager : public Control {
 	OBJ_TYPE( ProjectManager, Control );
@@ -44,6 +46,8 @@ class ProjectManager : public Control {
 	Button *run_btn;
 
 	FileDialog *scan_dir;
+
+	ProjectListFilter *project_filter;
 
 	ConfirmationDialog *erase_ask;
 	ConfirmationDialog *multi_open_ask;
@@ -85,6 +89,44 @@ protected:
 public:
 	ProjectManager();
 	~ProjectManager();
+};
+
+class ProjectListFilter : public HBoxContainer {
+
+	OBJ_TYPE( ProjectListFilter, HBoxContainer );
+
+private:
+
+	friend class ProjectManager;
+
+	enum Command {
+		CMD_CLEAR_FILTER,
+	};
+
+	OptionButton *filter_option;
+	LineEdit *search_box;
+	ToolButton *clear_search_button;
+
+	enum FilterOption {
+		FILTER_NAME,
+		FILTER_PATH,
+	};
+	FilterOption _current_filter;
+
+	void _command(int p_command);
+	void _search_text_changed(const String& p_newtext);
+	void _setup_filters();
+	void _filter_option_selected(int p_idx);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:
+
+	String get_search_term();
+	FilterOption get_filter_option();
+	ProjectListFilter();
 };
 
 #endif // PROJECT_MANAGER_H
