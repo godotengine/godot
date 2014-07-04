@@ -276,7 +276,7 @@ void Viewport::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_READY: {
-
+#ifndef _3D_DISABLED
 			if (cameras.size() && !camera) {
 				//there are cameras but no current camera, pick first in tree and make it current
 				Camera *first=NULL;
@@ -292,6 +292,7 @@ void Viewport::_notification(int p_what) {
 					first->make_current();
 #endif
 			}
+#endif
 		} break;
 		case NOTIFICATION_EXIT_SCENE: {
 
