@@ -1736,7 +1736,7 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			return OS::get_singleton()->get_environment("APPDATA")+"\\"+an;
+			return (OS::get_singleton()->get_environment("APPDATA")+"\\"+an).replace("\\","/"); // windows path to unix path to be consistent with get_resource_path
 		}
 	}
 
