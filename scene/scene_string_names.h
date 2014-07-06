@@ -128,6 +128,7 @@ public:
 	StringName offset;
 	StringName unit_offset;
 	StringName rotation_mode;
+	StringName rotate;
 	StringName v_offset;
 	StringName h_offset;
 

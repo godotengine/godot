@@ -553,6 +553,9 @@ struct Matrix32 {
 	void scale_basis(const Vector2& p_scale);
 	void translate( real_t p_tx, real_t p_ty);
 	void translate( const Vector2& p_translation );
+
+	float basis_determinant() const;
+
 	Vector2 get_scale() const;
 
 	_FORCE_INLINE_ const Vector2& get_origin() const { return elements[2]; }
