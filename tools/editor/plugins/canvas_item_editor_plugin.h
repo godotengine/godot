@@ -167,6 +167,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	struct BoneList {
 
+		Matrix32 xform;
 		Vector2 from;
 		Vector2 to;
 		ObjectID bone;
