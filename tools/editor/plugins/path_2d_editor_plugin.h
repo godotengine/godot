@@ -46,11 +46,6 @@ class Path2DEditor : public HBoxContainer {
 
 	UndoRedo *undo_redo;
 
-	ToolButton *curve_create;
-	ToolButton *curve_edit;
-	ToolButton *curve_del;
-	ToolButton *curve_close;
-
 	CanvasItemEditor *canvas_item_editor;
 	EditorNode *editor;
 	Panel *panel;
