@@ -319,7 +319,7 @@ public class Godot extends Activity implements SensorEventListener
 
 
 		//check for apk expansion API
-		if (true) {
+		if (!true) {
 			command_line = getCommandLine();
 			boolean use_apk_expansion=false;
 			String main_pack_md5=null;

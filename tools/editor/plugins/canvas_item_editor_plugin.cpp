@@ -35,7 +35,7 @@
 #include "scene/2d/node_2d.h"
 #include "globals.h"
 #include "os/input.h"
-
+#include "tools/editor/editor_settings.h"
 void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (!is_visible())
@@ -180,9 +180,9 @@ void CanvasItemEditor::_node_removed(Node *p_node) {
 void CanvasItemEditor::_keying_changed(bool p_changed) {
 
 	if (p_changed)
-		animation_menu->show();
+		animation_hb->show();
 	else
-		animation_menu->hide();
+		animation_hb->hide();
 }
 
 // slow but modern computers should have no problem
@@ -639,29 +639,47 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		if (b.button_index==BUTTON_RIGHT) {
 
+
+
 			if (get_item_count() > 0 && drag!=DRAG_NONE) {
 				//cancel drag
 
+				if (bone_ik_list.size()) {
 
-				List<Node*> &selection = editor_selection->get_selected_node_list();
+					for(List<BoneIK>::Element *E=bone_ik_list.back();E;E=E->prev()) {
 
-				for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+						E->get().node->edit_set_state(E->get().orig_state);
+					}
 
-					CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-					if (!canvas_item)
-						continue;
-					if (!canvas_item->is_visible())
-						continue;
+					bone_ik_list.clear();
 
-					CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-					if (!se)
-						continue;
+				} else {
 
-					canvas_item->edit_set_state(se->undo_state);
-					if (canvas_item->cast_to<Node2D>())
-						canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
 
+					List<Node*> &selection = editor_selection->get_selected_node_list();
+
+					for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+						CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
+						if (!canvas_item)
+							continue;
+						if (!canvas_item->is_visible())
+							continue;
+
+						CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
+						if (!se)
+							continue;
+
+						canvas_item->edit_set_state(se->undo_state);
+						if (canvas_item->cast_to<Node2D>())
+							canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
+
+					}
 				}
+
+				drag=DRAG_NONE;
+				viewport->update();
+				can_move_pivot=false;
 
 			} else if (box_selecting) {
 				box_selecting=false;
@@ -689,34 +707,55 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 				if (undo_redo) {
 
-					undo_redo->create_action("Edit CanvasItem");
+
+					if (bone_ik_list.size()) {
 
 
-					List<Node*> &selection = editor_selection->get_selected_node_list();
+						undo_redo->create_action("Edit IK Chain");
 
-					for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+						for(List<BoneIK>::Element *E=bone_ik_list.back();E;E=E->prev()) {
 
-						CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-						if (!canvas_item)
-							continue;
-						if (!canvas_item->is_visible())
-							continue;
-						CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
-						if (!se)
-							continue;
+							undo_redo->add_do_method(E->get().node,"edit_set_state",E->get().node->edit_get_state());
+							undo_redo->add_undo_method(E->get().node,"edit_set_state",E->get().orig_state);
+						}
 
-						Variant state=canvas_item->edit_get_state();
-						undo_redo->add_do_method(canvas_item,"edit_set_state",state);
-						undo_redo->add_undo_method(canvas_item,"edit_set_state",se->undo_state);
-						if (canvas_item->cast_to<Node2D>()) {
-							Node2D *pvt = canvas_item->cast_to<Node2D>();
-							if (pvt->edit_has_pivot()) {
-								undo_redo->add_do_method(canvas_item,"edit_set_pivot",pvt->edit_get_pivot());
-								undo_redo->add_undo_method(canvas_item,"edit_set_pivot",se->undo_pivot);
+						undo_redo->add_do_method(viewport,"update");
+						undo_redo->add_undo_method(viewport,"update");
+
+						bone_ik_list.clear();
+
+						undo_redo->commit_action();
+					} else {
+
+						undo_redo->create_action("Edit CanvasItem");
+
+
+						List<Node*> &selection = editor_selection->get_selected_node_list();
+
+						for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+							CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
+							if (!canvas_item)
+								continue;
+							if (!canvas_item->is_visible())
+								continue;
+							CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
+							if (!se)
+								continue;
+
+							Variant state=canvas_item->edit_get_state();
+							undo_redo->add_do_method(canvas_item,"edit_set_state",state);
+							undo_redo->add_undo_method(canvas_item,"edit_set_state",se->undo_state);
+							if (canvas_item->cast_to<Node2D>()) {
+								Node2D *pvt = canvas_item->cast_to<Node2D>();
+								if (pvt->edit_has_pivot()) {
+									undo_redo->add_do_method(canvas_item,"edit_set_pivot",pvt->edit_get_pivot());
+									undo_redo->add_undo_method(canvas_item,"edit_set_pivot",se->undo_pivot);
+								}
 							}
 						}
+						undo_redo->commit_action();
 					}
-					undo_redo->commit_action();
 				}
 
 				drag=DRAG_NONE;
@@ -759,6 +798,86 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			return;
 		}
 
+
+		List<BoneList>::Element *Cbone=NULL; //closest
+
+		{
+			bone_ik_list.clear();
+			float closest_dist=1e20;
+			int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");
+			for(List<BoneList>::Element *E=bone_list.front();E;E=E->next()) {
+
+				if (E->get().from == E->get().to)
+					continue;
+				Vector2 s[2]={
+					E->get().from,
+					E->get().to
+				};
+
+				Vector2 p = Geometry::get_closest_point_to_segment_2d(Vector2(b.x,b.y),s);
+				float d = p.distance_to(Vector2(b.x,b.y));
+				if (d<bone_width && d<closest_dist) {
+					Cbone=E;
+					closest_dist=d;
+				}
+			}
+
+			if (Cbone) {
+				Node2D *b=NULL;
+				Object* obj=ObjectDB::get_instance(Cbone->get().bone);
+				if (obj)
+					b=obj->cast_to<Node2D>();
+
+				if (b) {
+
+
+					bool ik_found=false;
+					bool first=true;
+
+
+
+					while(b) {
+
+						CanvasItem *pi=b->get_parent_item();
+						if (!pi)
+							break;
+
+						float len=pi->get_global_transform().get_origin().distance_to(b->get_global_pos());
+						b=pi->cast_to<Node2D>();
+						if (!b)
+							break;
+
+						if (first) {
+
+							bone_orig_xform=b->get_global_transform();
+							first=false;
+						}
+
+						BoneIK bik;						
+						bik.node=b;
+						bik.len=len;
+						bik.orig_state=b->edit_get_state();
+
+						bone_ik_list.push_back(bik);
+
+						if (b->has_meta("_edit_ik_")) {
+
+							ik_found=bone_ik_list.size()>1;
+							break;
+						}
+
+						if (!pi->has_meta("_edit_bone_"))
+							break;
+
+					}
+
+					if (!ik_found)
+						bone_ik_list.clear();
+
+				}
+			}
+		}
+
 		CanvasItem *single_item = get_single_item();
 
 		if (single_item) {
@@ -797,7 +916,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 					}
 				}
 
-				if (drag!=DRAG_NONE) {
+				if (drag!=DRAG_NONE && (!Cbone || drag!=DRAG_ALL)) {
 					drag_from=transform.affine_inverse().xform(click);
 					se->undo_state=canvas_item->edit_get_state();
 					if (canvas_item->cast_to<Node2D>())
@@ -856,16 +975,30 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			//no window.... ?
 			click-=current_window->get_scroll();
 		}*/
-		CanvasItem *c=_select_canvas_item_at_pos(click, scene,transform,Matrix32());
+		CanvasItem *c=NULL;
+
+		if (Cbone) {
+
+			Object* obj=ObjectDB::get_instance(Cbone->get().bone);
+			if (obj)
+				c=obj->cast_to<CanvasItem>();
+			if (c)
+				c=c->get_parent_item();
 
 
-		CanvasItem* cn = c;
+		}
+		if (!c) {
+			c =_select_canvas_item_at_pos(click, scene,transform,Matrix32());
 
-		while(cn) {
-			if (cn->has_meta("_edit_group_")) {
-				c=cn;
+
+			CanvasItem* cn = c;
+
+			while(cn) {
+				if (cn->has_meta("_edit_group_")) {
+					c=cn;
+				}
+				cn=cn->get_parent_item();
 			}
-			cn=cn->get_parent_item();
 		}
 
 		Node* n = c;
@@ -989,6 +1122,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 		List<Node*> &selection = editor_selection->get_selected_node_list();
 
+
 		for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 			CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
@@ -1000,9 +1134,14 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			if (!se)
 				continue;
 
-			canvas_item->edit_set_state(se->undo_state); //reset state and reapply
-			if (canvas_item->cast_to<Node2D>())
-				canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
+			bool dragging_bone = drag==DRAG_ALL && selection.size()==1 && bone_ik_list.size();
+
+
+			if (!dragging_bone) {
+				canvas_item->edit_set_state(se->undo_state); //reset state and reapply
+				if (canvas_item->cast_to<Node2D>())
+					canvas_item->cast_to<Node2D>()->edit_set_pivot(se->undo_pivot);
+			}
 
 
 			Vector2 dfrom = drag_from;
@@ -1153,10 +1292,145 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			}
 
 
-			local_rect.pos=begin;
-			local_rect.size=end-begin;
-			canvas_item->edit_set_rect(local_rect);
 
+
+
+			if (!dragging_bone) {
+
+				local_rect.pos=begin;
+				local_rect.size=end-begin;
+				canvas_item->edit_set_rect(local_rect);
+
+			} else {
+				//ok, all that had to be done was done, now solve IK
+
+
+
+
+				Node2D *n2d = canvas_item->cast_to<Node2D>();
+				Matrix32 final_xform = bone_orig_xform;
+
+
+
+				if (n2d) {
+
+					float total_len = 0;
+					for (List<BoneIK>::Element *E=bone_ik_list.front();E;E=E->next()) {
+						if (E->prev())
+							total_len+=E->get().len;
+						E->get().pos = E->get().node->get_global_transform().get_origin();
+					}
+
+					{
+
+						final_xform.elements[2]+=dto-dfrom;//final_xform.affine_inverse().basis_xform_inv(drag_vector);
+						//n2d->set_global_transform(final_xform);
+
+					}
+
+
+					CanvasItem *last = bone_ik_list.back()->get().node;
+					if (!last)
+						break;
+
+					Vector2 root_pos = last->get_global_transform().get_origin();
+					Vector2 leaf_pos = final_xform.get_origin();
+
+					if ((leaf_pos.distance_to(root_pos)) > total_len) {
+						//oops dude you went too far
+						//print_line("TOO FAR!");
+						Vector2 rel = leaf_pos - root_pos;
+						rel = rel.normalized() * total_len;
+						leaf_pos=root_pos+rel;
+
+					}
+
+					bone_ik_list.front()->get().pos=leaf_pos;
+
+					//print_line("BONE IK LIST "+itos(bone_ik_list.size()));
+
+
+					if (bone_ik_list.size()>2) {
+						int solver_iterations=64;
+						float solver_k=0.3;
+
+						for(int i=0;i<solver_iterations;i++) {
+
+							for (List<BoneIK>::Element *E=bone_ik_list.front();E;E=E->next()) {
+
+
+
+								if (E==bone_ik_list.back()) {
+
+									break;
+								}
+
+								float len = E->next()->get().len;
+
+								if (E->next()==bone_ik_list.back()) {
+
+									//print_line("back");
+
+									Vector2 rel = E->get().pos - E->next()->get().pos;
+									//print_line("PREV "+E->get().pos);
+									Vector2 desired = E->next()->get().pos+rel.normalized()*len;
+									//print_line("DESIRED "+desired);
+									E->get().pos=E->get().pos.linear_interpolate(desired,solver_k);
+									//print_line("POST "+E->get().pos);
+
+
+								} else if (E==bone_ik_list.front()) {
+									//only adjust parent
+									//print_line("front");
+									Vector2 rel = E->next()->get().pos - E->get().pos;
+									//print_line("PREV "+E->next()->get().pos);
+									Vector2 desired = E->get().pos+rel.normalized()*len;
+									//print_line("DESIRED "+desired);
+									E->next()->get().pos=E->next()->get().pos.linear_interpolate(desired,solver_k);
+									//print_line("POST "+E->next()->get().pos);
+								} else {
+
+									Vector2 rel = E->next()->get().pos - E->get().pos;
+									Vector2 cen = (E->next()->get().pos + E->get().pos)*0.5;
+									rel=rel.linear_interpolate(rel.normalized()*len,solver_k);
+									rel*=0.5;
+									E->next()->get().pos=cen+rel;
+									E->get().pos=cen-rel;
+									//print_line("mid");
+
+								}
+							}
+						}
+					}
+				}
+
+				for (List<BoneIK>::Element *E=bone_ik_list.back();E;E=E->prev()) {
+
+					Node2D *n = E->get().node;
+
+					if (!E->prev()) {
+						//last goes to what it was
+						final_xform.set_origin(n->get_global_pos());
+						n->set_global_transform(final_xform);
+
+					} else {
+						Vector2 rel = (E->prev()->get().node->get_global_pos() - n->get_global_pos()).normalized();
+						Vector2 rel2 = (E->prev()->get().pos - E->get().pos).normalized();
+						float rot = rel.angle_to(rel2);
+						if (n->get_global_transform().basis_determinant()<0) {
+							//mirrored, rotate the other way
+							rot=-rot;
+						}
+
+						n->rotate(rot);
+					}
+
+				}
+
+
+
+				break;
+			}
 		}
 	}
 
@@ -1393,7 +1667,77 @@ void CanvasItemEditor::_viewport_draw() {
 
 	}
 
+	int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");
+	Color bone_color1 = EditorSettings::get_singleton()->get("2d_editor/bone_color1");
+	Color bone_color2 = EditorSettings::get_singleton()->get("2d_editor/bone_color2");
+	Color bone_ik_color = EditorSettings::get_singleton()->get("2d_editor/bone_ik_color");
+	Color bone_selected_color = EditorSettings::get_singleton()->get("2d_editor/bone_selected_color");
 
+	for(List<BoneList>::Element*E=bone_list.front();E;E=E->next()) {
+
+		E->get().from=Vector2();
+		E->get().to=Vector2();
+
+		Object *obj = ObjectDB::get_instance(E->get().bone);
+		if (!obj)
+			continue;
+
+		Node2D* n2d = obj->cast_to<Node2D>();
+		if (!n2d)
+			continue;
+
+		if (!n2d->get_parent())
+			continue;
+
+		CanvasItem *pi = n2d->get_parent_item();
+
+
+		Node2D* pn2d=n2d->get_parent()->cast_to<Node2D>();
+
+		if (!pn2d)
+			continue;
+
+		Vector2 from = transform.xform(pn2d->get_global_pos());
+		Vector2 to = transform.xform(n2d->get_global_pos());
+
+		E->get().from=from;
+		E->get().to=to;
+
+		Vector2 rel = to-from;
+		Vector2 relt = rel.tangent().normalized()*bone_width;
+
+
+
+		Vector<Vector2> bone_shape;
+		bone_shape.push_back(from);
+		bone_shape.push_back(from+rel*0.2+relt);
+		bone_shape.push_back(to);
+		bone_shape.push_back(from+rel*0.2-relt);
+		Vector<Color> colors;
+		if (pi->has_meta("_edit_ik_")) {
+
+			colors.push_back(bone_ik_color);
+			colors.push_back(bone_ik_color);
+			colors.push_back(bone_ik_color);
+			colors.push_back(bone_ik_color);
+		} else {
+			colors.push_back(bone_color1);
+			colors.push_back(bone_color2);
+			colors.push_back(bone_color1);
+			colors.push_back(bone_color2);
+		}
+
+
+		VisualServer::get_singleton()->canvas_item_add_primitive(ci,bone_shape,colors,Vector<Vector2>(),RID());
+
+		if (editor_selection->is_selected(pi)) {
+			for(int i=0;i<bone_shape.size();i++) {
+
+				VisualServer::get_singleton()->canvas_item_add_line(ci,bone_shape[i],bone_shape[(i+1)%bone_shape.size()],bone_selected_color,2);
+			}
+		}
+
+	}
 }
 
 void CanvasItemEditor::_notification(int p_what) {
@@ -1445,6 +1789,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		unlock_button->set_icon(get_icon("Unlock","EditorIcons"));
 		group_button->set_icon(get_icon("Group","EditorIcons"));
 		ungroup_button->set_icon(get_icon("Ungroup","EditorIcons"));
+		key_insert_button->set_icon(get_icon("Key","EditorIcons"));
 
 	}
 
@@ -1509,6 +1854,13 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 			lock_list.push_back(lock);
 		}
 
+		if (c->has_meta("_edit_bone_")) {
+
+			BoneList bone;
+			bone.bone=c->get_instance_ID();
+			bone_list.push_back(bone);
+		}
+
 		r_rect.expand_to( xform.xform(rect.pos) );
 		r_rect.expand_to( xform.xform(rect.pos+Point2(rect.size.x,0)) );
 		r_rect.expand_to( xform.xform(rect.pos+Point2(0,rect.size.y)) );
@@ -1541,6 +1893,7 @@ void CanvasItemEditor::_update_scrollbars() {
 	Rect2 canvas_item_rect=Rect2(Point2(),screen_rect);
 
 	lock_list.clear();;
+	bone_list.clear();;
 
 	if (editor->get_edited_scene())
 		_find_canvas_items_span(editor->get_edited_scene(),canvas_item_rect,Matrix32());
@@ -1878,6 +2231,44 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 						editor->get_animation_editor()->insert_node_value_key(n2d,"transform/rot",Math::rad2deg(n2d->get_rot()),existing);
 					if (key_scale)
 						editor->get_animation_editor()->insert_node_value_key(n2d,"transform/scale",n2d->get_scale(),existing);
+
+
+					if (n2d->has_meta("_edit_bone_") && n2d->get_parent_item()) {
+						//look for an IK chain
+						List<Node2D*> ik_chain;
+
+						Node2D *n = n2d->get_parent_item()->cast_to<Node2D>();
+						bool has_chain=false;
+
+						while(n) {
+
+							ik_chain.push_back(n);
+							if (n->has_meta("_edit_ik_")) {
+								has_chain=true;
+								break;
+							}
+
+							if (!n->get_parent_item())
+								break;
+							n=n->get_parent_item()->cast_to<Node2D>();
+						}
+
+						if (has_chain && ik_chain.size()) {
+
+							for(List<Node2D*>::Element *F=ik_chain.front();F;F=F->next()) {
+
+								if (key_pos)
+									editor->get_animation_editor()->insert_node_value_key(F->get(),"transform/pos",F->get()->get_pos(),existing);
+								if (key_rot)
+									editor->get_animation_editor()->insert_node_value_key(F->get(),"transform/rot",Math::rad2deg(F->get()->get_rot()),existing);
+								if (key_scale)
+									editor->get_animation_editor()->insert_node_value_key(F->get(),"transform/scale",F->get()->get_scale(),existing);
+
+
+							}
+						}
+					}
+
 				} else if (canvas_item->cast_to<Control>()) {
 
 					Control *ctrl = canvas_item->cast_to<Control>();
@@ -1891,10 +2282,20 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 		} break;
-		case ANIM_INSERT_POS:
-		case ANIM_INSERT_ROT:
-		case ANIM_INSERT_SCALE:
-		case ANIM_INSERT_POS_ROT:
+		case ANIM_INSERT_POS: {
+
+			key_pos = key_loc_button->is_pressed();
+		} break;
+		case ANIM_INSERT_ROT: {
+
+			key_pos = key_rot_button->is_pressed();
+		} break;
+		case ANIM_INSERT_SCALE: {
+
+			key_scale = key_scale_button->is_pressed();
+		} break;
+			/*
+		case ANIM_INSERT_POS_ROT
 		case ANIM_INSERT_POS_SCALE:
 		case ANIM_INSERT_ROT_SCALE:
 		case ANIM_INSERT_POS_ROT_SCALE: {
@@ -1917,7 +2318,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				animation_menu->get_popup()->set_item_checked(idx,i==p_op);
 			}
 
-		} break;
+		} break;*/
 		case ANIM_COPY_POSE: {
 
 			pose_clipboard.clear();;
@@ -2061,6 +2462,85 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			}
 
 		} break;
+		case SKELETON_MAKE_BONES: {
+
+
+
+			Map<Node*,Object*> &selection = editor_selection->get_selection();
+
+			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
+
+				Node2D *n2d = E->key()->cast_to<Node2D>();
+				if (!n2d)
+					continue;
+				if (!n2d->is_visible())
+					continue;
+				if (!n2d->get_parent_item())
+					continue;
+
+				n2d->set_meta("_edit_bone_",true);
+
+			}
+			viewport->update();
+
+		} break;
+		case SKELETON_CLEAR_BONES: {
+
+			Map<Node*,Object*> &selection = editor_selection->get_selection();
+
+			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
+
+				Node2D *n2d = E->key()->cast_to<Node2D>();
+				if (!n2d)
+					continue;
+				if (!n2d->is_visible())
+					continue;
+
+				n2d->set_meta("_edit_bone_",Variant());
+
+			}
+			viewport->update();
+
+		} break;
+		case SKELETON_SET_IK_CHAIN: {
+
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+
+			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
+				if (!canvas_item)
+					continue;
+				if (!canvas_item->is_visible())
+					continue;
+
+
+				canvas_item->set_meta("_edit_ik_",true);
+
+			}
+
+			viewport->update();
+
+		} break;
+		case SKELETON_CLEAR_IK_CHAIN: {
+
+			Map<Node*,Object*> &selection = editor_selection->get_selection();
+
+			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
+
+				CanvasItem *n2d = E->key()->cast_to<CanvasItem>();
+				if (!n2d)
+					continue;
+				if (!n2d->is_visible())
+					continue;
+
+				n2d->set_meta("_edit_ik_",Variant());
+
+			}
+			viewport->update();
+
+		} break;
+
 	}
 }
 #if 0
@@ -2296,6 +2776,18 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_item("Use Pixel Snap",SNAP_USE_PIXEL);
 	p->add_separator();
 	p->add_item("Expand to Parent",EXPAND_TO_PARENT,KEY_MASK_CMD|KEY_P);
+	p->add_separator();
+	p->add_submenu_item("Skeleton..","skeleton");
+	PopupMenu *p2 = memnew(PopupMenu);
+	p->add_child(p2);
+	p2->set_name("skeleton");
+	p2->add_item("Make Bones",SKELETON_MAKE_BONES,KEY_MASK_CMD|KEY_SHIFT|KEY_B);
+	p2->add_item("Clear Bones",SKELETON_CLEAR_BONES);
+	p2->add_separator();
+	p2->add_item("Make IK Chain",SKELETON_SET_IK_CHAIN);
+	p2->add_item("Clear IK Chain",SKELETON_CLEAR_IK_CHAIN);
+	p2->connect("item_pressed", this,"_popup_callback");
+
 
 	/*
 	p->add_item("Align Horizontal",ALIGN_HORIZONTAL);
@@ -2314,12 +2806,50 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Zoom Out",ZOOM_OUT);
 	p->add_item("Zoom Reset",ZOOM_RESET);
 	p->add_item("Zoom Set..",ZOOM_SET);
+	p->add_separator();
 	p->add_item("Center Selection", VIEW_CENTER_TO_SELECTION, KEY_F);
 	p->add_item("Frame Selection", VIEW_FRAME_TO_SELECTION, KEY_MASK_CMD|KEY_F);
 
+
+
+	animation_hb = memnew( HBoxContainer );
+	hb->add_child(animation_hb);
+	animation_hb->add_child( memnew( VSeparator ));
+	animation_hb->hide();
+
+	key_loc_button = memnew( Button("loc"));
+	key_loc_button->set_toggle_mode(true);
+	key_loc_button->set_pressed(true);
+	key_loc_button->set_focus_mode(FOCUS_NONE);
+	key_loc_button->add_color_override("font_color",Color(1,0.6,0.6));
+	key_loc_button->add_color_override("font_color_pressed",Color(0.6,1,0.6));
+	key_loc_button->connect("pressed",this,"_popup_callback",varray(ANIM_INSERT_POS));
+	animation_hb->add_child(key_loc_button);
+	key_rot_button = memnew( Button("rot"));
+	key_rot_button->set_toggle_mode(true);
+	key_rot_button->set_pressed(true);
+	key_rot_button->set_focus_mode(FOCUS_NONE);
+	key_rot_button->add_color_override("font_color",Color(1,0.6,0.6));
+	key_rot_button->add_color_override("font_color_pressed",Color(0.6,1,0.6));
+	key_rot_button->connect("pressed",this,"_popup_callback",varray(ANIM_INSERT_ROT));
+	animation_hb->add_child(key_rot_button);
+	key_scale_button = memnew( Button("scl"));
+	key_scale_button->set_toggle_mode(true);
+	key_scale_button->set_focus_mode(FOCUS_NONE);
+	key_scale_button->add_color_override("font_color",Color(1,0.6,0.6));
+	key_scale_button->add_color_override("font_color_pressed",Color(0.6,1,0.6));
+	key_scale_button->connect("pressed",this,"_popup_callback",varray(ANIM_INSERT_SCALE));
+	animation_hb->add_child(key_scale_button);
+	key_insert_button = memnew( Button );
+	key_insert_button->set_focus_mode(FOCUS_NONE);
+	key_insert_button->connect("pressed",this,"_popup_callback",varray(ANIM_INSERT_KEY));
+	key_insert_button->set_tooltip("Insert Keys (Insert)");
+
+	animation_hb->add_child(key_insert_button);
+
 	animation_menu = memnew( MenuButton );
 	animation_menu->set_text("Animation");
-	hb->add_child(animation_menu);
+	animation_hb->add_child(animation_menu);
 	animation_menu->get_popup()->connect("item_pressed", this,"_popup_callback");
 
 	p = animation_menu->get_popup();
@@ -2327,21 +2857,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Insert Key",ANIM_INSERT_KEY,KEY_INSERT);
 	p->add_item("Insert Key (Existing Tracks)",ANIM_INSERT_KEY_EXISTING,KEY_MASK_CMD+KEY_INSERT);
 	p->add_separator();
-	p->add_check_item("Pos",ANIM_INSERT_POS);
-	p->add_check_item("Rot",ANIM_INSERT_ROT);
-	p->add_check_item("Scale",ANIM_INSERT_SCALE);
-	p->add_check_item("Pos+Rot",ANIM_INSERT_POS_ROT);
-	p->set_item_checked(p->get_item_index(ANIM_INSERT_POS_ROT),true);
-	p->add_check_item("Pos+Scale",ANIM_INSERT_POS_SCALE);
-	p->add_check_item("Rot+Scale",ANIM_INSERT_ROT_SCALE);
-	p->add_check_item("Loc+Rot+Scale",ANIM_INSERT_POS_ROT_SCALE);
-	p->add_separator();
 	p->add_item("Copy Pose",ANIM_COPY_POSE);
 	p->add_item("Paste Pose",ANIM_PASTE_POSE);
 	p->add_item("Clear Pose",ANIM_CLEAR_POSE,KEY_MASK_ALT|KEY_K);
-
-	animation_menu->hide();
-
 
 	value_dialog = memnew( AcceptDialog );
 	value_dialog->set_title("Set a Value");
