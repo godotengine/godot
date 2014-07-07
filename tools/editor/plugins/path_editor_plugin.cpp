@@ -564,7 +564,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip(_TR("Delete Point."));
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(curve_del);
-    curve_close = memnew( ToolButton );
+	curve_close = memnew( ToolButton );
 	curve_close->set_icon(SpatialEditor::get_singleton()->get_icon("CurveClose","EditorIcons"));
 	curve_close->hide();
     curve_close->set_focus_mode(Control::FOCUS_NONE);

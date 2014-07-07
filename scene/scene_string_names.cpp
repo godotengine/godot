@@ -112,6 +112,7 @@ SceneStringNames::SceneStringNames() {
 	offset=StaticCString::create("offset");
 	unit_offset=StaticCString::create("unit_offset");
 	rotation_mode=StaticCString::create("rotation_mode");
+	rotate=StaticCString::create("rotate");
 	h_offset=StaticCString::create("h_offset");
 	v_offset=StaticCString::create("v_offset");
 

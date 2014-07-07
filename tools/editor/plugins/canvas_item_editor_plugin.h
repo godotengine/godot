@@ -95,15 +95,15 @@ class CanvasItemEditor : public VBoxContainer {
 		ANIM_INSERT_POS,
 		ANIM_INSERT_ROT,
 		ANIM_INSERT_SCALE,
-		ANIM_INSERT_POS_ROT,
-		ANIM_INSERT_POS_SCALE,
-		ANIM_INSERT_ROT_SCALE,
-		ANIM_INSERT_POS_ROT_SCALE,
 		ANIM_COPY_POSE,
 		ANIM_PASTE_POSE,
 		ANIM_CLEAR_POSE,
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_FRAME_TO_SELECTION,
+		SKELETON_MAKE_BONES,
+		SKELETON_CLEAR_BONES,
+		SKELETON_SET_IK_CHAIN,
+		SKELETON_CLEAR_IK_CHAIN
 
 	};
 
@@ -165,6 +165,26 @@ class CanvasItemEditor : public VBoxContainer {
 
 	List<LockList> lock_list;
 
+	struct BoneList {
+
+		Vector2 from;
+		Vector2 to;
+		ObjectID bone;
+	};
+
+	List<BoneList> bone_list;
+	Matrix32 bone_orig_xform;
+
+	struct BoneIK {
+
+		Variant orig_state;
+		Vector2 pos;
+		float len;
+		Node2D *node;
+	};
+
+	List<BoneIK> bone_ik_list;
+
 	struct PoseClipboard {
 
 		Vector2 pos;
@@ -189,7 +209,14 @@ class CanvasItemEditor : public VBoxContainer {
 
 	MenuButton *edit_menu;
 	MenuButton *view_menu;
+	HBoxContainer *animation_hb;
 	MenuButton *animation_menu;
+
+	Button *key_loc_button;
+	Button *key_rot_button;
+	Button *key_scale_button;
+	Button *key_insert_button;
+
 	//PopupMenu *popup;
 	DragType drag;
 	Point2 drag_from;

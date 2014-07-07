@@ -565,6 +565,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConcavePolygonShape2D>();
 	ObjectTypeDB::register_type<Curve2D>();
 	ObjectTypeDB::register_type<Path2D>();
+	ObjectTypeDB::register_type<PathFollow2D>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

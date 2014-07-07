@@ -433,6 +433,12 @@ void EditorSettings::_load_defaults() {
 	set("3d_editor/zoom_modifier",4);
 	hints["3d_editor/zoom_modifier"]=PropertyInfo(Variant::INT,"3d_editor/zoom_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 
+	set("2d_editor/bone_width",5);
+	set("2d_editor/bone_color1",Color(1.0,1.0,1.0,0.9));
+	set("2d_editor/bone_color2",Color(0.75,0.75,0.75,0.9));
+	set("2d_editor/bone_selected_color",Color(0.9,0.45,0.45,0.9));
+	set("2d_editor/bone_ik_color",Color(0.9,0.9,0.45,0.9));
+
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);
 	set("on_save/save_paths_as_relative",false);

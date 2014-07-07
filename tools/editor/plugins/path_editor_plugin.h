@@ -60,7 +60,7 @@ class PathEditorPlugin : public EditorPlugin {
 	ToolButton *curve_create;
 	ToolButton *curve_edit;
 	ToolButton *curve_del;
-    ToolButton *curve_close;
+	ToolButton *curve_close;
 
 	EditorNode *editor;
 
