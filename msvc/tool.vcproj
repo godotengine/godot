@@ -913,6 +913,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\tools\editor\plugins\polygon_2d_editor_plugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\plugins\polygon_2d_editor_plugin.h"
+						>
+					</File>
+					<File
 						RelativePath="..\tools\editor\plugins\resource_preloader_editor_plugin.cpp"
 						>
 					</File>

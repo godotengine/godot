@@ -362,11 +362,27 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\2d\path_texture.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\2d\path_texture.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\2d\physics_body_2d.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\scene\2d\physics_body_2d.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\2d\polygon_2d.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\2d\polygon_2d.h"
 					>
 				</File>
 				<File
