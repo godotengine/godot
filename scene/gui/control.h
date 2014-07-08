@@ -103,7 +103,12 @@ private:
 	struct Data {
 			
 		Point2 pos_cache;
+		float angle_cache;
+		Size2 scale_cache;
 		Size2 size_cache;
+
+		float angle;
+		Size2 scale;
 
 		float margin[4];
 		AnchorType anchor[4];
@@ -211,6 +216,8 @@ private:
 	void _size_changed();
 	String _get_tooltip() const;
 
+	void _set_rotd(float p_angle);
+	float _get_rotd() const;
 
 protected:	
 	bool window_has_modal_stack() const;
@@ -248,6 +255,7 @@ public:
 	virtual Variant edit_get_state() const;
 	virtual void edit_set_state(const Variant& p_state);
 	virtual void edit_set_rect(const Rect2& p_edit_rect);
+	virtual void edit_rotate(float p_rot);
 	virtual Size2 edit_get_minimum_size() const;
 
 	void accept_event();
@@ -290,10 +298,14 @@ public:
 	Point2 get_end() const;
 		
 	void set_pos(const Point2& p_point);
+	void set_rot(float p_angle);
+	void set_scale(const Size2& p_scale);
 	void set_size(const Size2& p_size);
 	void set_global_pos(const Point2& p_point);
-	
+
 	Point2 get_pos() const;
+	float get_rot() const;
+	Size2 get_scale() const;
 	Point2 get_global_pos() const;
 	Size2 get_size() const;
 	Rect2 get_rect() const;

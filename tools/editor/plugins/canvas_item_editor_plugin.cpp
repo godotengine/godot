@@ -1154,11 +1154,22 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 				Vector2 center = canvas_item->get_global_transform_with_canvas().get_origin();
 
-				Matrix32 rot;
-				rot.elements[1] = (dfrom - center).normalized();
-				rot.elements[0] = rot.elements[1].tangent();
-				float ang = rot.xform_inv(dto-center).atan2();
-				canvas_item->edit_rotate(ang);
+				if (E->get()->cast_to<Control>())
+				{
+					float angle=Math::atan2(center.x-dto.x,center.y-dto.y)*180/3.1415926;
+					if (angle<90)
+						E->get()->cast_to<Control>()->set_rot(Math::deg2rad(angle+90));
+					else
+						E->get()->cast_to<Control>()->set_rot(Math::deg2rad(angle-270));
+				}
+				else
+				{
+					Matrix32 rot;
+					rot.elements[1] = (dfrom - center).normalized();
+					rot.elements[0] = rot.elements[1].tangent();
+					float ang = rot.xform_inv(dto-center).atan2();
+					canvas_item->edit_rotate(ang);
+				}
 				display_rotate_to = dto;
 				display_rotate_from = center;
 
@@ -2294,6 +2305,8 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 					if (key_pos)
 						editor->get_animation_editor()->insert_node_value_key(ctrl,"rect/pos",ctrl->get_pos(),existing);
+					if (key_rot)
+						editor->get_animation_editor()->insert_node_value_key(ctrl,"transform/rot",Math::rad2deg(ctrl->get_rot()),existing);
 					if (key_scale)
 						editor->get_animation_editor()->insert_node_value_key(ctrl,"rect/size",ctrl->get_size(),existing);
 				}

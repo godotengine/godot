@@ -1405,6 +1405,11 @@ Variant::operator Image() const {
 		return Image();
 }
 
+Variant::operator Image::Format() const {
+
+	return (Image::Format) this->operator int();
+}
+
 Variant::operator NodePath() const {
 
 	if (type==NODE_PATH)
