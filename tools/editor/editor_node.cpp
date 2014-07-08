@@ -86,6 +86,7 @@
 #include "plugins/tile_set_editor_plugin.h"
 #include "plugins/animation_player_editor_plugin.h"
 #include "plugins/baked_light_editor_plugin.h"
+#include "plugins/polygon_2d_editor_plugin.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -1324,6 +1325,7 @@ void EditorNode::_edit_current() {
 	}
 
 	/* Take care of PLUGIN EDITOR */
+
 
 	EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
 
@@ -2763,7 +2765,7 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	top_pallete->set_current_tab(0); //always go to scene
 
-	//push_item(new_scene);
+	push_item(new_scene);
 
 	return OK;
 }
@@ -4100,6 +4102,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
 	add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
+	add_editor_plugin( memnew( Polygon2DEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );

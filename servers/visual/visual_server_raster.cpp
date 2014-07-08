@@ -3432,7 +3432,7 @@ void VisualServerRaster::canvas_item_add_triangle_array(RID p_item, const Vector
 	ERR_FAIL_COND(!canvas_item);
 
 	int ps = p_points.size();
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size()!=ps);
+	ERR_FAIL_COND(!p_colors.empty() && p_colors.size()!=ps && p_colors.size()!=1);
 	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size()!=ps);
 
 	Vector<int> indices = p_indices;

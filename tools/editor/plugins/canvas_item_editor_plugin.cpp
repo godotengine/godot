@@ -1783,6 +1783,25 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		}
 
+		for(List<BoneList>::Element *E=bone_list.front();E;E=E->next()) {
+
+			Object *b = ObjectDB::get_instance(E->get().bone);
+			if (!b) {
+				viewport->update();
+				break;
+			}
+
+			Node2D *b2 = b->cast_to<Node2D>();
+			if (!b2) {
+				continue;
+			}
+
+			if (b2->get_global_transform()!=E->get().xform) {
+
+				E->get().xform=b2->get_global_transform();
+				viewport->update();
+			}
+		}
 	}
 
 	if (p_what==NOTIFICATION_ENTER_SCENE) {
