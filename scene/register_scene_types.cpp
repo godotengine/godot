@@ -82,6 +82,7 @@
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/sprite.h"
 #include "scene/2d/animated_sprite.h"
+#include "scene/2d/polygon_2d.h"
 
 
 #include "scene/2d/visibility_notifier_2d.h"
@@ -468,6 +469,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<RayCast2D>();
 	ObjectTypeDB::register_type<VisibilityNotifier2D>();
 	ObjectTypeDB::register_type<VisibilityEnabler2D>();
+	ObjectTypeDB::register_type<Polygon2D>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);

@@ -96,7 +96,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		} else {
 			uv_str=_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_NORMAL);
 		}
-		scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * 2.0 - vec3(1.0,1.0,1.0);\n";
+		scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
 		scode+="NORMAL = mix( NORMAL,mat3(TANGENT,BINORMAL,NORMAL) * normal,  fmp_normal);\n";
 		code+=scode;
 	}
