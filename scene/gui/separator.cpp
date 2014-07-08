@@ -79,3 +79,70 @@ VSeparator::VSeparator() {
 
 	orientation=VERTICAL;
 }
+
+Size2 CollapsibleVSeparator::get_minimum_size() const {
+
+	return Size2(5,get_constant("separation"));
+}
+
+void CollapsibleVSeparator::add_control(Control *p_control) {
+	controls.push_back(p_control);
+}
+
+void CollapsibleVSeparator::remove_control(Control *p_control) {
+	controls.erase(p_control);
+}
+
+void CollapsibleVSeparator::_collapse(bool p_toggled) {
+
+	collapsed = p_toggled;
+	for (List<Control *>::Element *E = controls.front(); E; E=E->next()) {
+		if (collapsed)
+			E->get()->hide();
+		else
+			E->get()->show();
+	}
+	update();
+}
+
+void CollapsibleVSeparator::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_DRAW) {
+
+		Size2i size = get_size();
+		if (size.width==0 || size.height==0)
+			return;
+
+		RID ci = get_canvas_item();
+
+		Color color(1,1,1);
+		if (collapsed) {
+			color.a = 0.6f;
+		} else {
+			color.a = 0.3f;
+		}
+
+		Size2 handle(MIN(3,size.width), size.height*0.33f);
+		Point2 ofs((size.width-handle.width)/2, (size.height-handle.height)/2);
+
+		draw_rect(Rect2(ofs,handle),color);
+	}
+}
+
+void CollapsibleVSeparator::_bind_methods() {
+	ObjectTypeDB::bind_method(_MD("add_control","control"), &CollapsibleVSeparator::add_control);
+	ObjectTypeDB::bind_method(_MD("remove_control","control"), &CollapsibleVSeparator::remove_control);
+	ObjectTypeDB::bind_method(_MD("_toggled"), &CollapsibleVSeparator::_collapse);
+}
+
+CollapsibleVSeparator::CollapsibleVSeparator() {
+
+	collapsed = false;
+
+	toggle_button = memnew(BaseButton);
+	toggle_button->set_toggle_mode(true);
+	toggle_button->set_area_as_parent_rect();
+	toggle_button->connect("toggled", this, "_toggled");
+
+	add_child(toggle_button);
+}
