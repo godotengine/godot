@@ -34,6 +34,8 @@
 */
 
 #include "scene/gui/control.h"
+#include "scene/gui/base_button.h"
+
 class Separator : public Control {
 
 	OBJ_TYPE( Separator, Control );
@@ -45,7 +47,7 @@ protected:
 	void _notification(int p_what);
 public:
 
-	virtual Size2 get_minimum_size() const;;
+	virtual Size2 get_minimum_size() const;
 
 	Separator();
 	~Separator();
@@ -69,6 +71,35 @@ class HSeparator : public Separator {
 public:
 
 	HSeparator();
+
+};
+
+class CollapsibleVSeparator : public VSeparator {
+
+	OBJ_TYPE( CollapsibleVSeparator, VSeparator );
+
+	List<Control *> controls;
+	BaseButton *toggle_button;
+
+	bool collapsed;
+	bool hovering;
+
+	void _on_hovered(bool p_hovered);
+
+protected:
+
+	static void _bind_methods();
+	void _notification(int p_what);
+
+public:
+
+	virtual Size2 get_minimum_size() const;
+
+	void set_collapsed(bool p_toggled);
+	void add_control(Control *p_control);
+	void remove_control(Control *p_control);
+
+	CollapsibleVSeparator();
 
 };
 
