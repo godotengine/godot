@@ -341,8 +341,11 @@ void ParticlesEditor::_bind_methods() {
 
 ParticlesEditor::ParticlesEditor() {
 
+	particles_editor_hb = memnew ( HBoxContainer );
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew( MenuButton );
-	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
+	particles_editor_hb->add_child(options);
+	particles_editor_hb->hide();
 
 	options->set_text("Particles");
 	options->get_popup()->add_item("Generate AABB",MENU_OPTION_GENERATE_AABB);
@@ -429,8 +432,9 @@ void ParticlesEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		particles_editor->show();
+		particles_editor->particles_editor_hb->show();
 	} else {
-
+		particles_editor->particles_editor_hb->hide();
 		particles_editor->hide();
 		particles_editor->edit(NULL);
 	}
