@@ -29,6 +29,7 @@
 #include "particles_editor_plugin.h"
 #include "io/resource_loader.h"
 #include "servers/visual/particle_system_sw.h"
+#include "tools/editor/plugins/spatial_editor_plugin.h"
 
 
 void ParticlesEditor::_node_removed(Node *p_node) {
@@ -341,8 +342,7 @@ void ParticlesEditor::_bind_methods() {
 ParticlesEditor::ParticlesEditor() {
 
 	options = memnew( MenuButton );
-	add_child(options);
-	options->set_area_as_parent_rect();
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("Particles");
 	options->get_popup()->add_item("Generate AABB",MENU_OPTION_GENERATE_AABB);
@@ -442,14 +442,6 @@ ParticlesEditorPlugin::ParticlesEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	particles_editor = memnew( ParticlesEditor );
 	editor->get_viewport()->add_child(particles_editor);
-
-//	particles_editor->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
-//	particles_editor->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);
-	particles_editor->set_margin(MARGIN_LEFT,253);
-	particles_editor->set_margin(MARGIN_RIGHT,280);
-	particles_editor->set_margin(MARGIN_TOP,0);
-	particles_editor->set_margin(MARGIN_BOTTOM,10);
-
 
 	particles_editor->hide();
 }
