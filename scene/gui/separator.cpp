@@ -93,9 +93,9 @@ void CollapsibleVSeparator::remove_control(Control *p_control) {
 	controls.erase(p_control);
 }
 
-void CollapsibleVSeparator::_collapse(bool p_toggled) {
+void CollapsibleVSeparator::set_collapsed(bool p_collapsed) {
 
-	collapsed = p_toggled;
+	collapsed = p_collapsed;
 	for (List<Control *>::Element *E = controls.front(); E; E=E->next()) {
 		if (collapsed)
 			E->get()->hide();
@@ -132,7 +132,7 @@ void CollapsibleVSeparator::_notification(int p_what) {
 void CollapsibleVSeparator::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_control","control"), &CollapsibleVSeparator::add_control);
 	ObjectTypeDB::bind_method(_MD("remove_control","control"), &CollapsibleVSeparator::remove_control);
-	ObjectTypeDB::bind_method(_MD("_toggled"), &CollapsibleVSeparator::_collapse);
+	ObjectTypeDB::bind_method(_MD("set_collapsed"), &CollapsibleVSeparator::set_collapsed);
 }
 
 CollapsibleVSeparator::CollapsibleVSeparator() {
@@ -142,7 +142,7 @@ CollapsibleVSeparator::CollapsibleVSeparator() {
 	toggle_button = memnew(BaseButton);
 	toggle_button->set_toggle_mode(true);
 	toggle_button->set_area_as_parent_rect();
-	toggle_button->connect("toggled", this, "_toggled");
+	toggle_button->connect("toggled", this, "set_collapsed");
 
 	add_child(toggle_button);
 }

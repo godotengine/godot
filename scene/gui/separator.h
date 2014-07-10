@@ -82,7 +82,6 @@ class CollapsibleVSeparator : public VSeparator {
 	BaseButton *toggle_button;
 
 	bool collapsed;
-	void _collapse(bool p_toggled);
 
 protected:
 
@@ -92,6 +91,8 @@ protected:
 public:
 
 	virtual Size2 get_minimum_size() const;
+
+	void set_collapsed(bool p_toggled);
 	void add_control(Control *p_control);
 	void remove_control(Control *p_control);
 
