@@ -82,6 +82,9 @@ class CollapsibleVSeparator : public VSeparator {
 	BaseButton *toggle_button;
 
 	bool collapsed;
+	bool hovering;
+
+	void set_hovering(bool p_hovered);
 
 protected:
 

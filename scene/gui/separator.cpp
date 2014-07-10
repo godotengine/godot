@@ -105,6 +105,12 @@ void CollapsibleVSeparator::set_collapsed(bool p_collapsed) {
 	update();
 }
 
+void CollapsibleVSeparator::set_hovering(bool p_hovered) {
+
+	hovering = p_hovered;
+	update();
+}
+
 void CollapsibleVSeparator::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_DRAW) {
@@ -116,11 +122,15 @@ void CollapsibleVSeparator::_notification(int p_what) {
 		RID ci = get_canvas_item();
 
 		Color color(1,1,1);
+
 		if (collapsed) {
-			color.a = 0.6f;
+			color.a = 0.7f;
 		} else {
-			color.a = 0.3f;
+			color.a = 0.4f;
 		}
+
+		if (hovering)
+			color = Color(.9,.9,0,0.7f);
 
 		Size2 handle(MIN(3,size.width), size.height*0.33f);
 		Point2 ofs((size.width-handle.width)/2, (size.height-handle.height)/2);
@@ -130,19 +140,23 @@ void CollapsibleVSeparator::_notification(int p_what) {
 }
 
 void CollapsibleVSeparator::_bind_methods() {
+
 	ObjectTypeDB::bind_method(_MD("add_control","control"), &CollapsibleVSeparator::add_control);
 	ObjectTypeDB::bind_method(_MD("remove_control","control"), &CollapsibleVSeparator::remove_control);
 	ObjectTypeDB::bind_method(_MD("set_collapsed"), &CollapsibleVSeparator::set_collapsed);
+	ObjectTypeDB::bind_method(_MD("set_hovering"), &CollapsibleVSeparator::set_hovering);
 }
 
 CollapsibleVSeparator::CollapsibleVSeparator() {
 
 	collapsed = false;
+	hovering=false;
 
 	toggle_button = memnew(BaseButton);
 	toggle_button->set_toggle_mode(true);
 	toggle_button->set_area_as_parent_rect();
 	toggle_button->connect("toggled", this, "set_collapsed");
-
+	toggle_button->connect("hovered", this, "set_hovering");
 	add_child(toggle_button);
+
 }
