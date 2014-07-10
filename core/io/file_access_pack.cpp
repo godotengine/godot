@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "file_access_pack.h"
 #include "version.h"
+#include "core/os/os.h"
 
 #include <stdio.h>
 
@@ -157,9 +158,8 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 
 	int file_count = f->get_32();
 
-#ifdef WIN32
-    printf("Total files in pack: %d\n", file_count);
-#endif // WIN32
+	if (OS::get_singleton()->is_stdout_verbose())
+		print_line("Total files in pack: " + file_count);
 
 	for(int i=0;i<file_count;i++) {
 
@@ -176,9 +176,9 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5,16);
-#ifdef WIN32
-        wprintf(L" >> %s : %s\n", p_path.c_str(), path.c_str());
-#endif // WIN32
+
+		if (OS::get_singleton()->is_stdout_verbose())
+			print_line(" >> " + p_path + " : " + path);
 
 		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5,this);
 	};

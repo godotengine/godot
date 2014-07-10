@@ -1358,6 +1358,8 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
 	ObjectTypeDB::bind_method(_MD("has_singleton"),&Globals::has_singleton);
 	ObjectTypeDB::bind_method(_MD("get_singleton"),&Globals::get_singleton_object);
+	ObjectTypeDB::bind_method(_MD("load_resource_pack"),&Globals::_load_resource_pack);
+
 }
 
 Globals::Globals() {

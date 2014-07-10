@@ -91,7 +91,7 @@ class FileAccessZip : public FileAccess {
 
 	mutable bool at_eof;
 
-	ZipArchive* archive;
+	const ZipArchive* archive;
 
 public:
 

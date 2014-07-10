@@ -198,6 +198,19 @@ typedef struct
 #include "crypt.h"
 #endif
 
+local voidpf zipio_alloc(voidpf opaque, uInt items, uInt size) {
+
+	voidpf ptr =malloc(items*size);
+	memset(ptr,0,items*size);
+	return ptr;
+}
+
+
+local void zipio_free(voidpf opaque, voidpf address) {
+
+	free(address);
+}
+
 /* ===========================================================================
      Read a byte from a gz_stream; update next_in and avail_in. Return EOF
    for end of file.
@@ -1593,6 +1606,8 @@ extern int ZEXPORT unzOpenCurrentFile3 (unzFile file, int* method,
       pfile_in_zip_read_info->stream.opaque = (voidpf)0;
       pfile_in_zip_read_info->stream.next_in = 0;
       pfile_in_zip_read_info->stream.avail_in = 0;
+	  pfile_in_zip_read_info->stream.zalloc = zipio_alloc;
+	  pfile_in_zip_read_info->stream.zfree = zipio_free;
 
       err=inflateInit2(&pfile_in_zip_read_info->stream, -MAX_WBITS);
       if (err == Z_OK)

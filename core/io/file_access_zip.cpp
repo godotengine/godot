@@ -29,7 +29,7 @@
 #ifdef MINIZIP_ENABLED
 
 #include "file_access_zip.h"
-
+#include "core/os/os.h"
 #include "core/os/file_access.h"
 
 ZipArchive* ZipArchive::instance = NULL;
@@ -182,6 +182,9 @@ bool ZipArchive::try_open_pack(const String& p_name) {
 	packages.push_back(pkg);
 	int pkg_num = packages.size()-1;
 
+	if (OS::get_singleton()->is_stdout_verbose())
+		print_line("Total files in pack: " + gi.number_entry);
+
 	for (unsigned int i=0;i<gi.number_entry;i++) {
 
 		char filename_inzip[256];
@@ -198,7 +201,10 @@ bool ZipArchive::try_open_pack(const String& p_name) {
 		files[fname] = f;
 
 		uint8_t md5[16]={0,0,0,0,0,0,0,0 , 0,0,0,0,0,0,0,0};
-		PackedData::get_singleton()->add_path(p_name, fname, 0, 0, md5, this);
+		PackedData::get_singleton()->add_path(p_name, fname, file_info.crc, file_info.uncompressed_size, md5, this);
+
+		if (OS::get_singleton()->is_stdout_verbose())
+			print_line(" >> " + p_name + " : " + fname);
 
 		if ((i+1)<gi.number_entry) {
 			unzGoToNextFile(zfile);
@@ -252,7 +258,7 @@ Error FileAccessZip::_open(const String& p_path, int p_mode_flags) {
 	close();
 
 	ERR_FAIL_COND_V(p_mode_flags & FileAccess::WRITE, FAILED);
-	ZipArchive* arch = ZipArchive::get_singleton();
+	const ZipArchive* arch = archive; //ZipArchive::get_singleton();
 	ERR_FAIL_COND_V(!arch, FAILED);
 	zfile = arch->get_file_handle(p_path);
 	ERR_FAIL_COND_V(!zfile, FAILED);
@@ -268,7 +274,7 @@ void FileAccessZip::close() {
 	if (!zfile)
 		return;
 
-	ZipArchive* arch = ZipArchive::get_singleton();
+	const ZipArchive* arch = archive;//ZipArchive::get_singleton();
 	ERR_FAIL_COND(!arch);
 	arch->close_handle(zfile);
 	zfile = NULL;
@@ -357,6 +363,8 @@ bool FileAccessZip::file_exists(const String& p_name) {
 FileAccessZip::FileAccessZip(const String& p_path, const PackedData::PackedFile& p_file) {
 
 	zfile = NULL;
+	archive=dynamic_cast<ZipArchive *>(p_file.src);
+	ERR_FAIL_COND(archive==NULL);
 	_open(p_path, FileAccess::READ);
 };
 
