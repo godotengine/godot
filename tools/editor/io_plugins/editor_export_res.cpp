@@ -30,6 +30,7 @@
 
 #include "core/io/resource_saver.h"
 #include "core/io/md5.h"
+#include "core/io/marshalls.h"
 
 #include "tools/editor/editor_node.h"
 #include "tools/editor/editor_settings.h"
@@ -111,6 +112,45 @@ Vector<uint8_t> EditorExportResources::custom_export(String& p_path,const Ref<Ed
 		Vector<uint8_t> data = FileAccess::get_file_as_array(new_path);
 		p_path = p_path.replace("xml", res->get_base_extension());
 		return data;
+	}
+	// save json to marshal-binary
+	else if(p_path.ends_with(".json")) {
+
+		FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
+		ERR_FAIL_COND_V( f == NULL, Vector<uint8_t>() );
+		String text;
+		String l="";
+
+		while(!f->eof_reached()) {
+			l = f->get_line();
+			text+=l+"\n";
+		}
+
+		memdelete(f);
+
+		Variant var;
+		Dictionary dict;
+		Array arr;
+
+		if(dict.parse_json(text) == OK)
+			var = dict;
+		else if(arr.parse_json(text) == OK)
+			var = arr;
+		else
+			return Vector<uint8_t>();
+
+		int len;
+		Error err = encode_variant(var,NULL,len);
+		ERR_FAIL_COND_V( err != OK, Vector<uint8_t>() );
+
+		Vector<uint8_t> buff;
+		buff.resize(len);
+
+		err = encode_variant(var,buff.ptr(),len);
+		ERR_FAIL_COND_V( err != OK, Vector<uint8_t>() );
+
+		return buff;
+
 	}
 	return Vector<uint8_t>();
 }

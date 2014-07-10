@@ -48,7 +48,8 @@ void PathRemap::add_remap(const String& p_from, const String& p_to,const String&
 	else
 		remap[p_from].locale[p_locale]=p_to;
 
-	print_line("REMAP: "+p_from+" -> "+p_to+" ("+p_locale+")");
+	if (OS::get_singleton()->is_stdout_verbose())
+		print_line("REMAP: "+p_from+" -> "+p_to+" ("+p_locale+")");
 
 }
 
