@@ -84,7 +84,7 @@ class CollapsibleVSeparator : public VSeparator {
 	bool collapsed;
 	bool hovering;
 
-	void set_hovering(bool p_hovered);
+	void _on_hovered(bool p_hovered);
 
 protected:
 

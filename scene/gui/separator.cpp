@@ -95,6 +95,8 @@ void CollapsibleVSeparator::remove_control(Control *p_control) {
 
 void CollapsibleVSeparator::set_collapsed(bool p_collapsed) {
 
+	toggle_button->set_pressed(p_collapsed);
+
 	collapsed = p_collapsed;
 	for (List<Control *>::Element *E = controls.front(); E; E=E->next()) {
 		if (collapsed)
@@ -105,7 +107,7 @@ void CollapsibleVSeparator::set_collapsed(bool p_collapsed) {
 	update();
 }
 
-void CollapsibleVSeparator::set_hovering(bool p_hovered) {
+void CollapsibleVSeparator::_on_hovered(bool p_hovered) {
 
 	hovering = p_hovered;
 	update();
@@ -144,7 +146,7 @@ void CollapsibleVSeparator::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_control","control"), &CollapsibleVSeparator::add_control);
 	ObjectTypeDB::bind_method(_MD("remove_control","control"), &CollapsibleVSeparator::remove_control);
 	ObjectTypeDB::bind_method(_MD("set_collapsed"), &CollapsibleVSeparator::set_collapsed);
-	ObjectTypeDB::bind_method(_MD("set_hovering"), &CollapsibleVSeparator::set_hovering);
+	ObjectTypeDB::bind_method(_MD("_on_hovered"), &CollapsibleVSeparator::_on_hovered);
 }
 
 CollapsibleVSeparator::CollapsibleVSeparator() {
@@ -156,7 +158,7 @@ CollapsibleVSeparator::CollapsibleVSeparator() {
 	toggle_button->set_toggle_mode(true);
 	toggle_button->set_area_as_parent_rect();
 	toggle_button->connect("toggled", this, "set_collapsed");
-	toggle_button->connect("hovered", this, "set_hovering");
+	toggle_button->connect("hovered", this, "_on_hovered");
 	add_child(toggle_button);
 
 }
