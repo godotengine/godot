@@ -123,16 +123,9 @@ void CollapsibleVSeparator::_notification(int p_what) {
 
 		RID ci = get_canvas_item();
 
-		Color color(1,1,1);
-
-		if (collapsed) {
-			color.a = 0.7f;
-		} else {
-			color.a = 0.4f;
-		}
-
-		if (hovering)
-			color = Color(.9,.9,0,0.7f);
+		Color color = hovering ?
+			get_color("color_hover"):
+			(collapsed ? get_color("color_collapsed") : get_color("color_expanded"));
 
 		Size2 handle(MIN(3,size.width), size.height*0.33f);
 		Point2 ofs((size.width-handle.width)/2, (size.height-handle.height)/2);
