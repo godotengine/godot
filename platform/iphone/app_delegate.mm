@@ -269,7 +269,8 @@ static int frame_count = 0;
 - (void) applicationWillResignActive:(UIApplication *)application
 {
 	printf("********************* will resign active\n");
-	[view_controller.view stopAnimation]; // FIXME: pause seems to be recommended elsewhere
+	if (Globals::get_singleton() && GLOBAL_DEF("ios/pause_when_resign_active", true))
+		[view_controller.view stopAnimation]; // FIXME: pause seems to be recommended elsewhere
 }
 
 - (void) applicationDidBecomeActive:(UIApplication *)application
