@@ -114,9 +114,17 @@ void TileMapEditor::_update_palette() {
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
 
+	int i=0;
 	for(List<int>::Element *E=tiles.front();E;E=E->next()) {
 
 		TreeItem *tile = palette->create_item(root);
+
+		if (++i%2==0)
+			tile->set_custom_bg_color(0,Color(1,1,1,0.07));
+
+		String tile_name = tileset->tile_get_name(E->get());
+		if (tile_name == "")
+			tile_name = "#"+itos(E->get());
 
 		tile->set_icon_max_width(0,64);
 		Ref<Texture> tex = tileset->tile_get_texture(E->get());
@@ -125,11 +133,10 @@ void TileMapEditor::_update_palette() {
 			Rect2 region = tileset->tile_get_region(E->get());
 			if (region!=Rect2())
 				tile->set_icon_region(0,region);
+			tile->set_tooltip(0,tile_name);
+		}
 
-		} else if (tileset->tile_get_name(E->get())!="")
-			tile->set_text(0,tileset->tile_get_name(E->get()));
-		else
-			tile->set_text(0,"#"+itos(E->get()));
+		tile->set_text(0,tile_name);
 
 		tile->set_metadata(0,E->get());
 
