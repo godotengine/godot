@@ -92,7 +92,10 @@ void TouchScreenButton::_notification(int p_what) {
 			if (!get_scene()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility==VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
-			set_process_input(true);
+
+			if (!get_scene()->is_editor_hint())
+				set_process_input(true);
+
 			if (action.operator String()!="" && InputMap::get_singleton()->has_action(action)) {
 				action_id=InputMap::get_singleton()->get_action_id(action);
 			} else {
