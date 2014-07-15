@@ -2345,8 +2345,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 		bool use = d["show_grid"];
 
 		if (use!=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID))) {
-			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), use );
-			grid_enabled=use;
+			_menu_item_pressed(MENU_VIEW_GRID);
 		}
 	}
 
