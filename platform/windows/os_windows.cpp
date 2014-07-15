@@ -273,28 +273,29 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		}
 		case WM_MOUSELEAVE: {
 
-                    old_invalid=true;
-                    outside=true;
+			old_invalid=true;
+			outside=true;
 
 		} break;
 		case WM_MOUSEMOVE: {
 
-                    if (outside) {
+			if (outside) {
 
-                        CursorShape c=cursor_shape;
-                        cursor_shape=CURSOR_MAX;
-                        set_cursor_shape(c);
-                        outside=false;
+				CursorShape c=cursor_shape;
+				cursor_shape=CURSOR_MAX;
+				set_cursor_shape(c);
+				outside=false;
 
-			//Once-Off notification, must call again....
-			TRACKMOUSEEVENT tme;
-			tme.cbSize=sizeof(TRACKMOUSEEVENT);
-			tme.dwFlags=TME_LEAVE;
-			tme.hwndTrack=hWnd;
-			tme.dwHoverTime=HOVER_DEFAULT;
-			TrackMouseEvent(&tme);
+				//Once-Off notification, must call again....
+				TRACKMOUSEEVENT tme;
+				tme.cbSize=sizeof(TRACKMOUSEEVENT);
+				tme.dwFlags=TME_LEAVE;
+				tme.hwndTrack=hWnd;
+				tme.dwHoverTime=HOVER_DEFAULT;
+				TrackMouseEvent(&tme);
 
-                    }
+			}
+
 			InputEvent event;
 			event.type=InputEvent::MOUSE_MOTION;
 			event.ID=++last_id;
@@ -346,9 +347,21 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mm.relative_y=mm.y-old_y;
 			old_x=mm.x;
 			old_y=mm.y;
-			if (main_loop)
+			if (main_loop) {
 				input->parse_input_event(event);
 
+				if (input->is_mouse_button_pressed(1) && has_touchscreen_ui_hint()) {
+					InputEvent drag_event;
+					drag_event.type=InputEvent::SCREEN_DRAG;
+					drag_event.ID = ++last_id;
+					drag_event.screen_drag.index=0;
+					drag_event.screen_drag.x=mm.x;
+					drag_event.screen_drag.y=mm.y;
+					drag_event.screen_drag.relative_x = mm.relative_x;
+					drag_event.screen_drag.relative_y = mm.relative_y;
+					input->parse_input_event(drag_event);
+				}
+			}
 			
 
 		} break;
@@ -485,6 +498,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 					input->parse_input_event(event);
 
 				}
+
+				if (mb.button_index==1 && has_touchscreen_ui_hint()) {
+					InputEvent touch_event;
+					touch_event.type = InputEvent::SCREEN_TOUCH;
+					touch_event.ID = ++last_id;
+					touch_event.screen_touch.index=0;
+					touch_event.screen_touch.pressed=mb.pressed;
+					touch_event.screen_touch.x=mb.x;
+					touch_event.screen_touch.y=mb.y;
+					input->parse_input_event(touch_event);
+				}
 			}
 
 
@@ -611,28 +635,27 @@ void OS_Windows::process_key_events() {
 		switch(ke.uMsg) {
 
 			case WM_CHAR: {
-                if ((i==0 && ke.uMsg==WM_CHAR) || (i>0 && key_event_buffer[i-1].uMsg==WM_CHAR))
-                {
-				    InputEvent event;
-				    event.type=InputEvent::KEY;
-				    event.ID=++last_id;
-				    InputEventKey &k=event.key;
+				if ((i==0 && ke.uMsg==WM_CHAR) || (i>0 && key_event_buffer[i-1].uMsg==WM_CHAR))
+				{
+					InputEvent event;
+					event.type=InputEvent::KEY;
+					event.ID=++last_id;
+					InputEventKey &k=event.key;
 
+					k.mod=ke.mod_state;
+					k.pressed=true;
+					k.scancode=KeyMappingWindows::get_keysym(ke.wParam);
+					k.unicode=ke.wParam;
+					if (k.unicode && gr_mem) {
+						k.mod.alt=false;
+						k.mod.control=false;
+					}
 
-				    k.mod=ke.mod_state;
-				    k.pressed=true;
-				    k.scancode=KeyMappingWindows::get_keysym(ke.wParam);
-                    k.unicode=ke.wParam;
-				    if (k.unicode && gr_mem) {
-					    k.mod.alt=false;
-					    k.mod.control=false;
-				    }
+					if (k.unicode<32)
+						k.unicode=0;
 
-				    if (k.unicode<32)
-					    k.unicode=0;
-
-				    input->parse_input_event(event);
-                }
+					input->parse_input_event(event);
+				}
 
 				//do nothing
 			} break;
@@ -1775,7 +1798,7 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			return OS::get_singleton()->get_environment("APPDATA")+"\\"+an;
+			return (OS::get_singleton()->get_environment("APPDATA")+"\\"+an).replace("\\","/"); // windows path to unix path to be consistent with get_resource_path
 		}
 	}
 

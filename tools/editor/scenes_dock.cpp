@@ -124,6 +124,7 @@ void ScenesDock::_notification(int p_what) {
 			button_favorite->set_icon( get_icon("Favorites","EditorIcons"));
 			button_instance->set_icon( get_icon("Add","EditorIcons"));
 			button_open->set_icon( get_icon("Folder","EditorIcons"));
+			button_replace->set_icon( get_icon("Replace","EditorIcons"));
 
 			String path = Globals::get_singleton()->get_resource_path()+"/favorites.cfg";
 			FileAccess *f=FileAccess::open(path,FileAccess::READ);
@@ -181,13 +182,39 @@ void ScenesDock::_favorites_toggled(bool p_toggled) {
 	_update_tree();
 }
 
+TreeItem* ScenesDock::_find(TreeItem *p_item, const String& p_path) {
+
+	if (!p_item)
+		return NULL;
+
+	if (p_item->get_metadata(0) == p_path)
+		return p_item;
+
+	TreeItem *children = p_item->get_children();
+	while(children) {
+		TreeItem *item = _find(children, p_path);
+		if (item)
+			return item;
+		children = children->get_next();
+	}
+	return NULL;
+}
+
+void ScenesDock::set_selected(const String& p_path) {
+	TreeItem * item = _find(tree->get_root(), p_path);
+	if (item) {
+		item->select(0);
+		item->set_as_cursor(0);
+		tree->ensure_cursor_is_visible();
+	}
+}
+
 String ScenesDock::get_selected_path() const {
 
 	TreeItem *sel = tree->get_selected();
 	if (!sel)
 		return "";
-	String path = sel->get_metadata(0);
-	return "res://"+path;
+	return sel->get_metadata(0);
 }
 
 void ScenesDock::_instance_pressed() {
@@ -226,6 +253,15 @@ void ScenesDock::_open_pressed(){
 
 }
 
+void ScenesDock::_replace_pressed() {
+
+	TreeItem *sel = tree->get_selected();
+	if (!sel)
+		return;
+	String path = sel->get_metadata(0);
+	emit_signal("replace",path);
+}
+
 void ScenesDock::_save_favorites() {
 
 	String path = Globals::get_singleton()->get_resource_path()+"/favorites.cfg";
@@ -255,10 +291,12 @@ void ScenesDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_favorite_toggled"),&ScenesDock::_favorite_toggled);
 	ObjectTypeDB::bind_method(_MD("_instance_pressed"),&ScenesDock::_instance_pressed);
 	ObjectTypeDB::bind_method(_MD("_open_pressed"),&ScenesDock::_open_pressed);
+	ObjectTypeDB::bind_method(_MD("_replace_pressed"),&ScenesDock::_replace_pressed);
 	ObjectTypeDB::bind_method(_MD("_save_favorites"),&ScenesDock::_save_favorites);
 
 	ADD_SIGNAL(MethodInfo("instance"));
 	ADD_SIGNAL(MethodInfo("open"));
+	ADD_SIGNAL(MethodInfo("replace"));
 
 }
 
@@ -291,6 +329,11 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 	button_instance->set_flat(true);
 	button_instance->connect("pressed",this,"_instance_pressed");
 	toolbar_hbc->add_child(button_instance);
+
+	button_replace = memnew( Button );
+	button_replace->set_flat(true);
+	button_replace->connect("pressed",this,"_replace_pressed");
+	toolbar_hbc->add_child(button_replace);
 
 	tree = memnew( Tree );
 	tree_filter=memnew( ScenesDockFilter() );

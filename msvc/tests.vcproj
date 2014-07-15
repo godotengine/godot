@@ -226,6 +226,14 @@
 				Name="tests"
 				>
 				<File
+					RelativePath="..\bin\tests\test_compression.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\bin\tests\test_compression.h"
+					>
+				</File>
+				<File
 					RelativePath="..\bin\tests\test_containers.cpp"
 					>
 				</File>

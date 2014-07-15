@@ -77,6 +77,10 @@
 
 #include "performance.h"
 
+#ifdef FIXED_RFS
+#include "main/fixed_rfs.h"
+#endif
+
 static Globals *globals=NULL;
 static InputMap *input_map=NULL;
 static bool _start_success=false;
@@ -508,9 +512,11 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		script_debugger = memnew( ScriptDebuggerLocal );
 	}
 
-
+#ifdef FIXED_RFS
+	if (remotefs=="")
+		remotefs=_fixed_rfs;
+#endif
 	if (remotefs!="") {
-
 		file_access_network_client=memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.find(":")!=-1) {
@@ -519,7 +525,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else {
 			port=6010;
 		}
-
 		Error err = file_access_network_client->connect(remotefs,port,remotefs_pass);
 		if (err) {
 			OS::get_singleton()->printerr("Could not connect to remotefs: %s:%i\n",remotefs.utf8().get_data(),port);
@@ -528,6 +533,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
+
 	if (script_debugger) {
 		//there is a debugger, parse breakpoints
 

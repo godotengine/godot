@@ -30,6 +30,7 @@
 
 #include "canvas_item_editor_plugin.h"
 #include "os/file_access.h"
+#include "os/keyboard.h"
 #include "tools/editor/editor_settings.h"
 #include "os/keyboard.h"
 void Path2DEditor::_notification(int p_what) {
@@ -625,6 +626,33 @@ Path2DEditor::Path2DEditor(EditorNode *p_editor) {
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
 
+	add_child( memnew( VSeparator ) );
+
+	curve_edit = memnew( ToolButton );
+	curve_edit->set_icon( CanvasItemEditor::get_singleton()->get_icon( "CurveEdit", "EditorIcons" ) );
+	curve_edit->set_toggle_mode( true );
+	curve_edit->set_tooltip("Select Points\nShift+Drag: Select Control Points\n"+keycode_get_string(KEY_MASK_CMD)+"Click: Add Point\nRight Click: Delete Point.");
+	add_child(curve_edit);
+
+	curve_create = memnew( ToolButton );
+	curve_create->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveCreate","EditorIcons"));
+	curve_create->set_toggle_mode(true);
+	curve_create->set_tooltip("Add Point (in empty space)\nSplit Segment (in curve).");
+	add_child(curve_create);
+
+	curve_del = memnew( ToolButton );
+	curve_del->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveDelete","EditorIcons"));
+	curve_del->set_toggle_mode(true);
+	curve_del->set_tooltip("Delete Point.");
+	add_child(curve_del);
+
+	curve_close = memnew( ToolButton );
+	curve_close->set_icon(CanvasItemEditor::get_singleton()->get_icon("CurveClose","EditorIcons"));
+	curve_close->set_toggle_mode(true);
+	curve_close->set_tooltip("Close Curve");
+	add_child(curve_close);
+
+	curve_edit->set_pressed(true);
 
 	action=ACTION_NONE;
 #if 0

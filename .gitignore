@@ -18,6 +18,9 @@ tools/editor/register_exporters.cpp
 tools/editor/doc_data_compressed.h
 tools/editor/editor_icons.cpp
 -fpic
+scene/resources/default_theme/editor_fonts.inc
+scene/resources/default_theme/font_normal_cjk*.inc
+main/fixed_rfs.h
 
 # Android specific
 platform/android/java/local.properties
@@ -74,7 +77,11 @@ platform/android/libs/play_licensing/gen/*
 x64/
 build/
 bld/
-[Bb]in/
+
+!bin/
+[Bb]in/*
+!bin/tests/
+
 [Oo]bj/
 
 # MSTest test Results

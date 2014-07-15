@@ -11,7 +11,8 @@ SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gles1/SCsub');
 SConscript('gl_context/SCsub');
-SConscript('openssl/SCsub');
+if (env["openssl"]!="no"):
+	SConscript('openssl/SCsub');
 
 if (env["png"]=="yes"):
 	SConscript("png/SCsub");

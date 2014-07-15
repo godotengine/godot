@@ -34,6 +34,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
+#include "core/helper/value_evaluator.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -52,6 +53,7 @@ public:
 		CELL_MODE_STRING, ///< just a string
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range
+		CELL_MODE_RANGE_EXPRESSION, ///< Contains a range
 		CELL_MODE_ICON, ///< Contains a icon, not editable
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
@@ -399,6 +401,8 @@ friend class TreeItem;
 	bool drag_touching_deaccel;
 	bool click_handled;
 
+	ValueEvaluator *evaluator;
+
 protected:
 	static void _bind_methods();
 	
@@ -443,7 +447,7 @@ public:
 	
 	Rect2 get_custom_popup_rect() const;
 
-	int get_item_offset(TreeItem *p_item) const;
+	int get_item_offset(TreeItem *p_item, bool p_as_expanded=true, bool p_expand_ancestor_only=false) const;
 	Rect2 get_item_rect(TreeItem *p_item,int p_column=-1) const;	
 	bool edit_selected();
 
@@ -453,6 +457,8 @@ public:
 
 	void set_cursor_can_exit_tree(bool p_enable);
 	bool can_cursor_exit_tree() const;
+
+	void set_value_evaluator(ValueEvaluator *p_evaluator);
 
 	Tree();
 	~Tree();	

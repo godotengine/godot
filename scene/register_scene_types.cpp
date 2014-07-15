@@ -315,6 +315,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<Separator>();
 	ObjectTypeDB::register_type<HSeparator>();
 	ObjectTypeDB::register_type<VSeparator>();
+	ObjectTypeDB::register_type<CollapsibleVSeparator>();
 	ObjectTypeDB::register_type<TextureButton>();
 	ObjectTypeDB::register_type<Container>();
 	ObjectTypeDB::register_virtual_type<BoxContainer>();

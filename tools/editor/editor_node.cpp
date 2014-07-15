@@ -101,6 +101,14 @@
 
 EditorNode *EditorNode::singleton=NULL;
 
+EditorNode::EditorLayout EditorNode::_get_editor_layout(const String& p_property) {
+	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 0: return LAYOUT_DEFAULT;
+		case 1: return LAYOUT_SIDE_BY_SIDE;
+	}
+	return LAYOUT_DEFAULT;
+}
+
 void EditorNode::_update_title() {
 
 	String appname = Globals::get_singleton()->get("application/name");
@@ -1303,7 +1311,8 @@ void EditorNode::_edit_current() {
 		object_menu->set_disabled(false);
 
 		resources_dock->add_resource(Ref<Resource>(current_res));
-		top_pallete->set_current_tab(1);
+		if ( _current_layout == LAYOUT_DEFAULT )
+			top_pallete->call("set_current_tab",1);
 	}
 
 
@@ -1320,7 +1329,8 @@ void EditorNode::_edit_current() {
 		scene_tree_dock->set_selected(current_node);
 		object_menu->get_popup()->clear();
 
-		top_pallete->set_current_tab(0);
+		if ( _current_layout == LAYOUT_DEFAULT )
+			top_pallete->call("set_current_tab",0);
 
 	}
 
@@ -2763,7 +2773,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 	prev_scene->set_disabled(previous_scenes.size()==0);
 	opening_prev=false;
 
-	top_pallete->set_current_tab(0); //always go to scene
+	if ( _current_layout == LAYOUT_DEFAULT )
+		top_pallete->call("set_current_tab",0); //always go to scene
 
 	push_item(new_scene);
 
@@ -2781,7 +2792,7 @@ void EditorNode::open_request(const String& p_path) {
 
 Node* EditorNode::request_instance_scene(const String &p_path) {
 
-	return scene_tree_dock->instance(p_path);
+	return scene_tree_dock->new_instance(p_path);
 
 }
 
@@ -2790,10 +2801,26 @@ ScenesDock *EditorNode::get_scenes_dock() {
 	return scenes_dock;
 }
 
+ResourcesDock *EditorNode::get_resources_dock() {
+
+	return resources_dock;
+}
+
+
 void EditorNode::_instance_request(const String& p_path){
 
 
 	request_instance_scene(p_path);
+}
+
+void EditorNode::_instance_replace_request(const String& p_path){
+
+	scene_tree_dock->replace_instance(p_path);
+}
+
+void EditorNode::_select_node_request(Node *p_node) {
+	scene_tree_dock->set_selected(p_node,true);
+	object_menu->get_popup()->clear();
 }
 
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value) {
@@ -3165,6 +3192,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_edited_scene",&EditorNode::set_edited_scene);
 	ObjectTypeDB::bind_method("open_request",&EditorNode::open_request);
 	ObjectTypeDB::bind_method("_instance_request",&EditorNode::_instance_request);
+	ObjectTypeDB::bind_method("_instance_replace_request",&EditorNode::_instance_replace_request);
 	ObjectTypeDB::bind_method("_update_keying",&EditorNode::_update_keying);
 	ObjectTypeDB::bind_method("_property_keyed",&EditorNode::_property_keyed);
 	ObjectTypeDB::bind_method("_transform_keyed",&EditorNode::_transform_keyed);
@@ -3188,6 +3216,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
 	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
 
+	ObjectTypeDB::bind_method("_select_node_request", &EditorNode::_select_node_request);
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
@@ -3300,6 +3329,8 @@ EditorNode::EditorNode() {
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",true);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",true);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeConvexPolygon",true);
+
+	_current_layout = _get_editor_layout("editor_layout/layout");
 
 	gui_base = memnew( Panel );
 	add_child(gui_base);
@@ -3719,48 +3750,18 @@ EditorNode::EditorNode() {
 	s2->set_size(Point2(10,15));
 */
 
-
-
 	editor_hsplit = memnew( HSplitContainer );
 	main_split->add_child(editor_hsplit);
 	editor_hsplit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	editor_vsplit = memnew( VSplitContainer );
-	editor_hsplit->add_child(editor_vsplit);
-
-	top_pallete = memnew( TabContainer );
 	scene_tree_dock = memnew( SceneTreeDock(this,scene_root,editor_selection,editor_data) );
 	scene_tree_dock->set_name(_TR("Scene"));
-	top_pallete->add_child(scene_tree_dock);
 
 	resources_dock = memnew( ResourcesDock(this) );
 	resources_dock->set_name(_TR("Resources"));
-	top_pallete->add_child(resources_dock);
-	top_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	EmptyControl *editor_spacer = memnew( EmptyControl );
-	editor_spacer->set_minsize(Size2(260,200));
-	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor_vsplit->add_child( editor_spacer );
-	editor_spacer->add_child( top_pallete );
-	top_pallete->set_area_as_parent_rect();
-
-
-	prop_pallete = memnew( TabContainer );
-
-	prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-
-	editor_spacer = memnew( EmptyControl );
-	editor_spacer->set_minsize(Size2(260,200));
-	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor_vsplit->add_child( editor_spacer );
-	editor_spacer->add_child( prop_pallete );
-	prop_pallete->set_area_as_parent_rect();
 
 	VBoxContainer *prop_editor_base = memnew( VBoxContainer );
 	prop_editor_base->set_name(_TR("Inspector")); // Properties?
-	prop_pallete->add_child(prop_editor_base);
-
 	HBoxContainer *prop_editor_hb = memnew( HBoxContainer );
 	prop_editor_base->add_child(prop_editor_hb);
 	editor_path = memnew( EditorPath(&editor_history) );
@@ -3771,12 +3772,13 @@ EditorNode::EditorNode() {
 	property_editor->set_autoclear(true);
 	property_editor->set_show_categories(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	
+
 	property_editor->hide_top_label();
 
 	prop_editor_base->add_child( property_editor );
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
+	property_editor->connect("select_node_request", this, "_select_node_request");
 
 	
 	property_back = memnew( ToolButton );
@@ -3801,10 +3803,109 @@ EditorNode::EditorNode() {
 
 	scenes_dock = memnew( ScenesDock(this) );
 	scenes_dock->set_name(_TR("FileSystem"));
-	prop_pallete->add_child(scenes_dock);
 	scenes_dock->connect("open",this,"open_request");
 	scenes_dock->connect("instance",this,"_instance_request");
+	scenes_dock->connect("replace",this,"_instance_replace_request");
 
+
+	if(_current_layout == LAYOUT_SIDE_BY_SIDE) {
+
+		editor_palletes_split = memnew( HSplitContainer );
+		editor_palletes_split->set_custom_minimum_size(Size2(400,0));
+		editor_palletes_split->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+		// ----------------------------------------
+		// left pallete
+
+		VSplitContainer *left_pallete = memnew( VSplitContainer );
+		left_pallete->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+		// scene_tree_dock
+		TabContainer * tab_wrapper = memnew(TabContainer);
+		tab_wrapper->set_tab_align(TabContainer::ALIGN_LEFT);
+		tab_wrapper->add_child(scene_tree_dock);
+		tab_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		left_pallete->add_child(tab_wrapper);
+
+		// prop_editor_base
+		tab_wrapper = memnew(TabContainer);
+		tab_wrapper->set_tab_align(TabContainer::ALIGN_LEFT);
+		tab_wrapper->add_child(prop_editor_base);
+		tab_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		left_pallete->add_child(tab_wrapper);
+
+		editor_palletes_split->add_child(left_pallete);
+
+		// ----------------------------------------
+		// right pallete
+
+		VSplitContainer *right_pallete = memnew( VSplitContainer );
+		right_pallete->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+
+		// resources_dock
+		tab_wrapper = memnew(TabContainer);
+		tab_wrapper->set_tab_align(TabContainer::ALIGN_LEFT);
+		tab_wrapper->add_child(resources_dock);
+		tab_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		right_pallete->add_child(tab_wrapper);
+
+		// scenes_dock
+		tab_wrapper = memnew(TabContainer);
+		tab_wrapper->set_tab_align(TabContainer::ALIGN_LEFT);
+		tab_wrapper->add_child(scenes_dock);
+		tab_wrapper->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		right_pallete->add_child(tab_wrapper);
+
+		editor_palletes_split->add_child(right_pallete);
+
+	} else {
+
+		editor_palletes_split = memnew( VSplitContainer );
+
+		// ----------------------------------------
+		// top pallete
+
+		top_pallete = memnew( TabContainer );
+		top_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		top_pallete->set_area_as_parent_rect();
+
+		// scene_tree_dock
+		scene_tree_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		top_pallete->add_child(scene_tree_dock);
+
+		// resources_dock
+		resources_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		top_pallete->add_child(resources_dock);
+
+		EmptyControl *editor_spacer = memnew( EmptyControl );
+		editor_spacer->set_minsize(Size2(260,200));
+		editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		editor_spacer->add_child( top_pallete );
+		editor_palletes_split->add_child( editor_spacer );
+
+		// ----------------------------------------
+		// prop pallete
+
+		prop_pallete = memnew( TabContainer );
+		prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		prop_pallete->set_area_as_parent_rect();
+
+		// scenes_dock
+		scenes_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		prop_pallete->add_child(scenes_dock);
+
+		// prop_editor_base
+		prop_editor_base->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		prop_pallete->add_child(prop_editor_base);
+
+		editor_spacer = memnew( EmptyControl );
+		editor_spacer->set_minsize(Size2(260,200));
+		editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+		editor_spacer->add_child( prop_pallete );
+		editor_palletes_split->add_child( editor_spacer );
+	}
+
+	editor_hsplit->add_child(editor_palletes_split);
 
 
 	log = memnew( EditorLog );

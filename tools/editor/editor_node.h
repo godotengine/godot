@@ -165,8 +165,6 @@ class EditorNode : public Node {
 	};
 
 
-
-
 	Node *edited_scene; //scene being edited
 	Viewport *scene_root; //root of the scene being edited
 
@@ -187,7 +185,7 @@ class EditorNode : public Node {
 	Panel *menu_panel;
 
 	HSplitContainer *editor_hsplit;
-	VSplitContainer *editor_vsplit;
+	SplitContainer *editor_palletes_split;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -243,8 +241,10 @@ class EditorNode : public Node {
 	String current_path;
 	MenuButton *update_menu;
 	ToolButton *sources_button;
-	TabContainer *prop_pallete;
-	TabContainer *top_pallete;
+	//TabContainer *prop_pallete;
+	Control *prop_pallete;
+	//TabContainer *top_pallete;
+	Control *top_pallete;
 	String defer_load_scene;
 	String defer_translatable;
 	String defer_optimize;
@@ -339,6 +339,9 @@ class EditorNode : public Node {
 
 
 	void _instance_request(const String& p_path);
+	void _instance_replace_request(const String& p_path);
+
+	void _select_node_request(Node *p_node);
 
 	void _property_keyed(const String& p_keyed,const Variant& p_value);
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
@@ -398,6 +401,12 @@ class EditorNode : public Node {
 
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
+	enum EditorLayout {
+		LAYOUT_DEFAULT,
+		LAYOUT_SIDE_BY_SIDE,
+	};
+	EditorLayout _current_layout;
+	EditorLayout _get_editor_layout(const String& p_property);
 	bool _find_scene_in_use(Node* p_node,const String& p_path) const;
 
 
@@ -459,6 +468,7 @@ public:
 
 	Node* request_instance_scene(const String &p_path);
 	ScenesDock *get_scenes_dock();
+	ResourcesDock *get_resources_dock();
 	static UndoRedo* get_undo_redo() { return &singleton->editor_data.get_undo_redo(); }
 
 	EditorSelection *get_editor_selection() { return editor_selection; }

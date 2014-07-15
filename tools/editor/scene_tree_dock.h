@@ -46,6 +46,8 @@
 #include "editor_sub_scene.h"
 class EditorNode;
 
+class SceneTreeSearch;
+
 class SceneTreeDock : public VBoxContainer {
 
 	OBJ_TYPE( SceneTreeDock, VBoxContainer );
@@ -62,8 +64,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_FOCUS,
 		TOOL_ERASE,
-		TOOL_BUTTON_MAX
+		TOOL_BUTTON_MAX,
 	};
 
 
@@ -115,8 +118,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _import_subscene();
 
-
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
+
+	Node* _instance(const String& p_path, bool p_replace_selected=false);
 
 protected:
 
@@ -126,12 +130,40 @@ public:
 
 	void import_subscene();
 	void set_edited_scene(Node* p_scene);
-	Node* instance(const String& p_path);
+	Node* new_instance(const String& p_path);
+	Node* replace_instance(const String& p_path);
 	void set_selected(Node *p_node, bool p_emit_selected=false);
 	void fill_path_renames(Node* p_node, Node *p_new_parent, List<Pair<NodePath,NodePath> > *p_renames);
 	void perform_node_renames(Node* p_base,List<Pair<NodePath,NodePath> > *p_renames, Map<Ref<Animation>, Set<int> > *r_rem_anims=NULL);
 
 	SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelection *p_editor_selection,EditorData &p_editor_data);
+};
+
+class SceneTreeSearch : public HBoxContainer {
+
+	OBJ_TYPE( SceneTreeSearch, HBoxContainer );
+
+	enum Command {
+		CMD_CLEAR_FILTER,
+		CMD_FILTER_PREVIOUS,
+		CMD_FILTER_NEXT,
+	};
+
+	SceneTreeEditor *scene_tree;
+	LineEdit *search_box;
+	Button *clear_search_button;
+	Button *prev_button;
+	Button *next_button;
+
+	void _command(int p_command);
+	void _search_text_changed(const String& p_newtext);
+
+protected:
+
+	static void _bind_methods();
+
+public:
+	SceneTreeSearch(SceneTreeEditor *p_scene_tree);
 };
 
 #endif // SCENE_TREE_DOCK_H

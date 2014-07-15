@@ -217,6 +217,13 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			item->select(0);
 		item->set_as_cursor(0);
 	}
+
+	if (highlighting_tree) {
+		if (highlighted.find(p_node)==-1)
+			item->set_custom_color(0,Color(0.5,0.5,0.5));
+		else
+			item->set_custom_color(0,Color(1.0,1.0,1.0));
+	}
 		
 	for (int i=0;i<p_node->get_child_count();i++) {
 		
@@ -355,6 +362,62 @@ void SceneTreeEditor::_tree_changed() {
 
 }
 
+void SceneTreeEditor::_highlight_node(Node *p_node, const String &p_newtext) {
+
+	if (!p_node)
+		return;
+
+	if (!display_foreign && p_node->get_owner()!=get_scene_node() && p_node!=get_scene_node())
+		return;
+
+	if (String(p_node->get_name()).findn(p_newtext)!=-1) {
+		highlighted.push_back(p_node);
+	}
+
+	for (int i=0;i<p_node->get_child_count();i++) {
+		_highlight_node(p_node->get_child(i),p_newtext);
+	}
+}
+
+void SceneTreeEditor::highlight_tree(const String &p_newtext) {
+	highlighted.clear();
+	current_highlighted=-1;
+
+	if (p_newtext!="") {
+		highlighting_tree = true;
+		_highlight_node( get_scene_node(), p_newtext);
+	} else {
+		highlighting_tree = false;
+	}
+	update_tree();
+	if (highlighting_tree)
+		select_highlighted();
+
+}
+
+void SceneTreeEditor::focus_selected() {
+	Node *selected = get_selected();
+	if (!selected)
+		return;
+	set_selected(NULL,false);
+	set_selected(selected,false); // de-select and re-select node to make sure ensure_cursor_is_visible() get invoked
+}
+
+void SceneTreeEditor::select_highlighted(bool p_next) {
+	if (highlighted.size()<=0)
+		return;
+	if (p_next) {
+		++current_highlighted;
+		if (current_highlighted>=highlighted.size()) current_highlighted=0;
+	} else {
+		--current_highlighted;
+		if (current_highlighted<0) current_highlighted=highlighted.size()-1;
+	}
+	editor_selection->clear();
+	editor_selection->add_node(highlighted[current_highlighted]);
+	set_selected(highlighted[current_highlighted],true);
+}
+
 void SceneTreeEditor::_selected_changed() {
 
 	
@@ -471,10 +534,10 @@ void SceneTreeEditor::set_selected(Node *p_node,bool p_emit_selected) {
 		if (!p_node)
 			selected=NULL;
 		_update_tree();
-		selected=p_node;	
-		if (p_emit_selected)
-			emit_signal("node_selected");
+		selected=p_node;
 	}
+	if (p_emit_selected)
+		emit_signal("node_selected");
 	
 }
 
@@ -674,6 +737,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label,bool p_can_rename, bool p_can_open
 	undo_redo=NULL;
 	tree_dirty=true;
 	selected=NULL;
+	highlighting_tree=false;
+	current_highlighted=-1;
 
 	marked_selectable=false;
 	marked_children_selectable=false;

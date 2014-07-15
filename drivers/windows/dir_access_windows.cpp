@@ -172,9 +172,10 @@ Error DirAccessWindows::change_dir(String p_dir) {
 			current_dir=real_current_dir_name; // TODO, utf8 parser
 			current_dir=current_dir.replace("\\","/");
 
-		}
+		} else {
 
-		SetCurrentDirectoryW(prev_dir.c_str());
+			SetCurrentDirectoryW(prev_dir.c_str());
+		}
 
 		return worked?OK:ERR_INVALID_PARAMETER;
 	} else {
@@ -192,9 +193,10 @@ Error DirAccessWindows::change_dir(String p_dir) {
 			current_dir=real_current_dir_name; // TODO, utf8 parser
 			current_dir=current_dir.replace("\\","/");
 
-		}
+		} else {
 
-		SetCurrentDirectoryA(prev_dir.ascii().get_data());
+			SetCurrentDirectoryA(prev_dir.ascii().get_data());
+		}
 
 		return worked?OK:ERR_INVALID_PARAMETER;
 
@@ -274,29 +276,31 @@ bool DirAccessWindows::file_exists(String p_file) {
 
 	GLOBAL_LOCK_FUNCTION
 
-        if (!p_file.is_abs_path())
-            p_file=get_current_dir()+"/"+p_file;
+	if (!p_file.is_abs_path())
+		p_file=get_current_dir()+"/"+p_file;
+
 	p_file=fix_path(p_file);
 	
 	p_file.replace("/","\\");
 
 	if (unicode) {
 
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesW(p_file.c_str());
 		if (0xFFFFFFFF == fileAttr)
 			return false;
 
-                return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
+		return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	} else {
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesA(p_file.ascii().get_data());
 		if (0xFFFFFFFF == fileAttr)
 			return false;
-                return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
+
+		return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	}
 
@@ -307,15 +311,16 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-		if (!p_dir.is_abs_path())
-			p_dir=get_current_dir()+"/"+p_dir;
+	if (!p_dir.is_abs_path())
+		p_dir=get_current_dir()+"/"+p_dir;
+
 	p_dir=fix_path(p_dir);
 
 	p_dir.replace("/","\\");
 
 	if (unicode) {
 
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesW(p_dir.c_str());
 		if (0xFFFFFFFF == fileAttr)
@@ -324,11 +329,12 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	} else {
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesA(p_dir.ascii().get_data());
 		if (0xFFFFFFFF == fileAttr)
 			return false;
+
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	}

@@ -186,11 +186,13 @@ void BaseButton::_notification(int p_what) {
 	if (p_what==NOTIFICATION_MOUSE_ENTER) {
 	
 		status.hovering=true;
+		emit_signal("hovered",true);
 		update();
 	}
 	
 	if (p_what==NOTIFICATION_MOUSE_EXIT) {
 		status.hovering=false;
+		emit_signal("hovered",false);
 		update();
 	}	
 	if (p_what==NOTIFICATION_FOCUS_EXIT) {
@@ -351,6 +353,7 @@ void BaseButton::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
+	ADD_SIGNAL( MethodInfo("hovered", PropertyInfo( Variant::BOOL,"hovering") ) );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));

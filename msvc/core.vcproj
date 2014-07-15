@@ -1298,6 +1298,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="helper"
+				>
+				<File
+					RelativePath="..\core\helper\value_evaluator.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="platform"

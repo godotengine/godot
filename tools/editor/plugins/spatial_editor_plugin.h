@@ -239,6 +239,7 @@ public:
 
 	AABB aabb;
 	Transform original; // original location when moving
+	Vector3 original_scale; // original scale
 	Transform last_xform; // last transform
 	Spatial *sp;
 	RID sbox_instance;

@@ -30,7 +30,10 @@
 #include "editor_node.h"
 #include "globals.h"
 #include "os/keyboard.h"
+#include "os/input.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/2d/sprite.h"
+#include "scene/2d/animated_sprite.h"
 #include "editor_settings.h"
 #include "tools/editor/plugins/canvas_item_editor_plugin.h"
 
@@ -53,10 +56,19 @@ void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 	}
 }
 
-Node* SceneTreeDock::instance(const String& p_file) {
+Node* SceneTreeDock::new_instance(const String& p_file) {
+	return _instance(p_file, false);
+}
 
-	Node *parent = scene_tree->get_selected();
-	if (!parent || !edited_scene) {
+Node* SceneTreeDock::replace_instance(const String& p_file) {
+	return _instance(p_file, true);
+}
+
+Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
+
+	Node *selected = scene_tree->get_selected();
+
+	if (!selected || !edited_scene) {
 
 		current_option=-1;
 		//accept->get_cancel()->hide();
@@ -66,38 +78,194 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		return NULL;
 	};
 
+	Node *parent = p_replace_selected? selected->get_parent() : selected;
 	ERR_FAIL_COND_V(!parent,NULL);
 
-	Node*instanced_scene=NULL;
-	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
-	if (sdata.is_valid())
-		instanced_scene=sdata->instance();
+	Node *instanced=NULL;
 
+	Ref<Texture> texture = ResourceLoader::load(p_file);
+	if (texture.is_valid()) {
 
-	if (!instanced_scene) {
+		String basename =  p_file.get_file().basename();
 
-		current_option=-1;
-		//accept->get_cancel()->hide();
-		accept->get_ok()->set_text(_TR("Ugh"));
-		accept->set_text(String(_TR("Error loading scene from "))+p_file);
-		accept->popup_centered(Size2(300,70));;
-		return NULL;
+		if (InputDefault::get_singleton()->is_key_pressed(KEY_SHIFT)) {
+
+			AnimatedSprite *sprite = memnew(AnimatedSprite);
+			Ref<SpriteFrames> frames = memnew(SpriteFrames);
+
+			int digits = 0;
+			String path = p_file.basename();
+			for (int i=path.length()-1; i>=0 && path[i]>='0'&& path[i]<='9'; --i) // find digits backward
+				++digits;
+			int digits_start = path.length() - digits;
+			bool is_pad_zeros = path[digits_start] == '0';
+
+			int i=0;
+			int base = path.right(digits_start).to_int();
+			while(texture.is_valid()) {
+				frames->add_frame(texture);
+
+				String next = itos(base + ++i);
+				if (is_pad_zeros)
+					next = next.pad_zeros(digits);
+
+				String next_file = path.left(digits_start) + next + "." + p_file.extension();
+				if (!FileAccess::exists(next_file))
+					break;
+
+				texture = ResourceLoader::load(next_file);
+			}
+			if (digits < basename.length()) {
+				basename = basename.substr(0, basename.length()-digits);
+				CharType last = basename[basename.length()-1];
+				if (last == '_' || last=='-' || last=='.') // some common used delimeter before number, e.g. texture_001.png
+					basename = basename.substr(0, basename.length()-1);
+			}
+
+			sprite->set_name(basename);
+
+			if (p_replace_selected) {
+				editor_data->copy_object_params(selected);
+				editor_data->paste_object_params(sprite);
+			}
+
+			sprite->set_sprite_frames(frames);
+			instanced=sprite;
+
+		} else {
+
+			Sprite *sprite = memnew(Sprite);			
+			sprite->set_name(basename);
+
+			if (p_replace_selected) {
+				editor_data->copy_object_params(selected);
+				editor_data->paste_object_params(sprite);
+			}
+
+			sprite->set_texture(texture);			
+			instanced = sprite;
+		}
+
+		if (!instanced) {
+			print_line("Error instancing sprite from " + p_file);
+			return NULL;
+		}
+	} else {
+
+		Ref<PackedScene> sdata = ResourceLoader::load(p_file);
+		if (sdata.is_valid()) {
+
+			instanced=sdata->instance();
+			if (!instanced) {
+				current_option=-1;
+				//accept->get_cancel()->hide();
+				accept->get_ok()->set_text("Ugh");
+				accept->set_text(String("Error loading scene from ")+p_file);
+				accept->popup_centered(Size2(300,70));;
+				return NULL;
+			}
+
+			instanced->generate_instance_state();
+			instanced->set_filename( Globals::get_singleton()->localize_path(p_file) );
+
+			if (p_replace_selected) {
+				editor_data->copy_object_params(selected);
+				editor_data->paste_object_params(instanced);
+			}
+		}
 	}
 
-	instanced_scene->generate_instance_state();
-	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
+	// undo-redo
+	if (!instanced)
+		return NULL;
 
-	editor_data->get_undo_redo().create_action("Instance Scene");
-	editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced_scene);
-	editor_data->get_undo_redo().add_do_method(instanced_scene,"set_owner",edited_scene);
-	editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
-	editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced_scene);
-	editor_data->get_undo_redo().add_do_reference(instanced_scene);
-	editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced_scene);
-	editor_data->get_undo_redo().commit_action();
+	if (p_replace_selected) {
+
+		//_replace_node(selected, instanced);
+
+		editor_data->get_undo_redo().create_action("Replace Instance");
 
 
-	return instanced_scene;
+		editor_data->get_undo_redo().add_do_method(parent,"remove_child",selected);
+		editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced);
+		editor_data->get_undo_redo().add_do_method(parent,"move_child",instanced,selected->get_index());
+		editor_data->get_undo_redo().add_do_method(instanced,"set_owner",edited_scene);
+		editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
+		editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced);
+		editor_data->get_undo_redo().add_do_method(this,"set_selected",instanced);
+
+		for(int i=0; i<selected->get_child_count();++i) {
+			Node *child = selected->get_child(i);
+			if (child->get_owner() != selected->get_owner())
+				continue;
+			editor_data->get_undo_redo().add_do_method(selected,"remove_child",child);
+			editor_data->get_undo_redo().add_do_method(instanced,"add_child",child);
+
+			List<Node*> owned;
+			child->get_owned_by(child->get_owner(),&owned);
+			Array owners;
+			for(List<Node*>::Element *E=owned.front();E;E=E->next()) {
+
+				owners.push_back(E->get());
+			}
+			editor_data->get_undo_redo().add_do_method(this,"_set_owners",edited_scene,owners);
+		}
+
+
+		//*/
+
+
+		if (editor->get_animation_editor()->get_root()==selected)
+			editor_data->get_undo_redo().add_do_method(editor->get_animation_editor(),"set_root",instanced);
+		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced);
+
+
+		editor_data->get_undo_redo().add_undo_method(parent,"add_child",selected);
+		editor_data->get_undo_redo().add_undo_method(parent,"move_child",selected,selected->get_index());
+		editor_data->get_undo_redo().add_undo_method(selected,"set_owner",edited_scene);
+		//editor_data->get_undo_redo().add_undo_method(this,"_set_owners",edited_scene,owners);
+		editor_data->get_undo_redo().add_undo_method(editor_selection,"clear");
+		editor_data->get_undo_redo().add_undo_method(editor_selection,"add_node",selected);
+		//editor_data->get_undo_redo().add_undo_method(scene_tree,"set_selected",selected,true);
+		editor_data->get_undo_redo().add_undo_method(this,"set_selected",selected);
+		if (editor->get_animation_editor()->get_root()==selected)
+			editor_data->get_undo_redo().add_undo_method(editor->get_animation_editor(),"set_root",selected);		
+		for(int i=0; i<selected->get_child_count();++i) {
+			Node *child = selected->get_child(i);
+			if (child->get_owner() != selected->get_owner())
+				continue;
+			editor_data->get_undo_redo().add_undo_method(instanced,"remove_child",child);
+			editor_data->get_undo_redo().add_undo_method(selected,"add_child",child);
+			List<Node*> owned;
+			child->get_owned_by(child->get_owner(),&owned);
+			Array owners;
+			for(List<Node*>::Element *E=owned.front();E;E=E->next()) {
+
+				owners.push_back(E->get());
+			}
+			editor_data->get_undo_redo().add_undo_method(this,"_set_owners",edited_scene,owners);
+		}
+
+		editor_data->get_undo_redo().add_undo_reference(selected);
+		editor_data->get_undo_redo().add_do_reference(instanced);
+		editor_data->get_undo_redo().commit_action();
+
+
+		//*/
+	} else {
+
+		editor_data->get_undo_redo().create_action("Instance Scene");
+		editor_data->get_undo_redo().add_do_method(parent,"add_child",instanced);
+		editor_data->get_undo_redo().add_do_method(instanced,"set_owner",edited_scene);
+		editor_data->get_undo_redo().add_do_method(editor_selection,"clear");
+		editor_data->get_undo_redo().add_do_method(editor_selection,"add_node",instanced);
+		editor_data->get_undo_redo().add_do_reference(instanced);
+		editor_data->get_undo_redo().add_undo_method(parent,"remove_child",instanced);
+		editor_data->get_undo_redo().commit_action();
+		editor->push_item(instanced);
+	}
+
+	return instanced;
 
 }
 
@@ -335,6 +503,11 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			reparent_dialog->set_current( nodeset );
 
 		} break;
+		case TOOL_FOCUS: {
+
+			scene_tree->focus_selected();
+
+		} break;
 		case TOOL_ERASE: {
 
 			List<Node*> remove_list = editor_selection->get_selected_node_list();
@@ -359,7 +532,6 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 
 		} break;
-
 	}
 
 }
@@ -381,7 +553,8 @@ void SceneTreeDock::_notification(int p_what) {
 				"MoveDown",
 				"Duplicate",
 				"Reparent",
-				"Del",
+				"Focus",
+				"Del"
 			};
 
 			for(int i=0;i<TOOL_BUTTON_MAX;i++)
@@ -909,6 +1082,7 @@ void SceneTreeDock::_update_tool_buttons() {
 	tool_buttons[TOOL_MOVE_DOWN]->set_disabled(disable_root);
 	tool_buttons[TOOL_DUPLICATE]->set_disabled(disable_root);
 	tool_buttons[TOOL_REPARENT]->set_disabled(disable_root);
+	tool_buttons[TOOL_FOCUS]->set_disabled(disable_root);
 	tool_buttons[TOOL_ERASE]->set_disabled(disable);
 
 }
@@ -1028,7 +1202,6 @@ void SceneTreeDock::_create() {
 		memdelete(n);
 		newnode->set_name(newname);
 		editor->push_item(newnode);
-
 		_update_tool_buttons();
 
 	}
@@ -1072,6 +1245,7 @@ void SceneTreeDock::_import_subscene() {
 */
 }
 
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected);
@@ -1088,7 +1262,8 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
 
-	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
+	ObjectTypeDB::bind_method(_MD("new_instance"),&SceneTreeDock::new_instance);
+	ObjectTypeDB::bind_method(_MD("replace_instance"),&SceneTreeDock::replace_instance);
 }
 
 
@@ -1146,8 +1321,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_SCRIPT]=tb;
 
-
 	scene_tree = memnew( SceneTreeEditor(false,true,true ));
+
+	SceneTreeSearch *tree_search_hbc = memnew( SceneTreeSearch(scene_tree) );
+	vbc->add_child(tree_search_hbc);
 	vbc->add_child(scene_tree);
 	scene_tree->set_v_size_flags(SIZE_EXPAND|SIZE_FILL);
 
@@ -1187,6 +1364,12 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_REPARENT]=tb;
 
+	tb = memnew( ToolButton );
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_FOCUS, false));
+	tb->set_tooltip("View Selected Node(s)");
+	hbc_bottom->add_child(tb);
+	tool_buttons[TOOL_FOCUS]=tb;
+
 	hbc_bottom->add_spacer();
 
 	tb = memnew( ToolButton );
@@ -1218,7 +1401,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	file = memnew( FileDialog );
 	add_child(file);
-	file->connect("file_selected",this,"instance");
+	file->connect("file_selected",this,"new_instance");
 	set_process_unhandled_key_input(true);
 
 	delete_dialog = memnew( ConfirmationDialog );
@@ -1232,3 +1415,58 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 
 }
+
+void SceneTreeSearch::_command(int p_command) {
+	switch (p_command) {
+
+		case CMD_CLEAR_FILTER: {
+			search_box->clear();
+			scene_tree->highlight_tree("");
+		}break;
+		case CMD_FILTER_PREVIOUS: {
+			if (search_box->get_text().strip_edges()!="")
+				scene_tree->select_highlighted(false);
+		}break;
+		case CMD_FILTER_NEXT: {
+			if (search_box->get_text().strip_edges()!="")
+				scene_tree->select_highlighted();
+		}break;
+	}
+}
+
+void SceneTreeSearch::_search_text_changed(const String &p_newtext) {
+	scene_tree->highlight_tree(p_newtext.strip_edges());
+}
+
+void SceneTreeSearch::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_command"),&SceneTreeSearch::_command);
+	ObjectTypeDB::bind_method(_MD("_search_text_changed"), &SceneTreeSearch::_search_text_changed);
+}
+
+
+SceneTreeSearch::SceneTreeSearch(SceneTreeEditor *p_scene_tree) {
+
+	scene_tree = p_scene_tree;
+
+	prev_button = memnew( Button );
+	prev_button->set_text("<");
+	prev_button->connect("pressed",this,"_command",make_binds(CMD_FILTER_PREVIOUS));
+	add_child(prev_button);
+
+	next_button = memnew( Button );
+	next_button->set_text(">");
+	next_button->connect("pressed",this,"_command",make_binds(CMD_FILTER_NEXT));
+	add_child(next_button);
+
+	search_box = memnew( LineEdit );
+	search_box->connect("text_changed",this,"_search_text_changed");
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(search_box);
+
+	clear_search_button = memnew( Button );
+	clear_search_button->set_text("clear");
+	clear_search_button->connect("pressed",this,"_command",make_binds(CMD_CLEAR_FILTER));
+	add_child(clear_search_button);
+}
+
