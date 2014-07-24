@@ -406,6 +406,11 @@ void _OS::delay_msec(uint32_t p_msec) const {
 	OS::get_singleton()->delay_usec(int64_t(p_msec)*1000);
 }
 
+uint32_t _OS::get_ticks_usec() const {
+
+	return OS::get_singleton()->get_ticks_usec();
+}
+
 uint32_t _OS::get_ticks_msec() const {
 
 	return OS::get_singleton()->get_ticks_msec();
@@ -643,6 +648,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
+	ObjectTypeDB::bind_method(_MD("get_ticks_usec"),&_OS::get_ticks_usec);
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);

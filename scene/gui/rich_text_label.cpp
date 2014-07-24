@@ -216,8 +216,15 @@ if (m_height > line_height) {\
 						lh=line<l.height_caches.size()?l.height_caches[line]:1;
 					}
 
+					bool new_line=false;
 					while (c[end]!=0 && !(end && c[end-1]==' ' && c[end]!=' ')) {
 						int cw = font->get_char_size(c[end],c[end+1]).width;
+						// auto newline for cjk characters
+						if ((c[end] > 0xFF) && (w + cw > p_width)) {
+							new_line=true;
+							break;
+						}
+
 						w+=cw;
 						end++;
 					}
@@ -294,6 +301,8 @@ if (m_height > line_height) {\
 
 					ADVANCE(w);
 					CHECK_HEIGHT(fh); //must be done somewhere
+					if (new_line)
+						NEW_LINE;
 					c=&c[end];
 				}
 
