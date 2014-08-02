@@ -1519,17 +1519,55 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 			} else if (p_node->get_type()=="AnimationPlayer") {
 				//for paths, overwrite path
 
-				AnimationPlayer *aplayer_imported =imported_node->cast_to<AnimationPlayer>();
-				AnimationPlayer *aplayer_node =p_node->cast_to<AnimationPlayer>();
+				AnimationPlayer *aplayer_imported = imported_node->cast_to<AnimationPlayer>();
+				AnimationPlayer *aplayer_node = p_node->cast_to<AnimationPlayer>();
 
 				//use imported bones, obviously
 				List<StringName> anims;
+				List<StringName> existing_anims;
 				aplayer_imported->get_animation_list(&anims);
+				aplayer_node->get_animation_list(&existing_anims);
 				//use imported animations, could merge some stuff though
-				for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
+				for (List<StringName>::Element *N = anims.front(); N; N = N->next()) {
 
+					Ref<Animation> candidate = aplayer_imported->get_animation(N->get());
 
-					aplayer_node->add_animation(E->get(),aplayer_imported->get_animation(E->get()));
+					if (aplayer_node->has_animation(N->get())) {
+
+						Ref<Animation> found = aplayer_node->get_animation(N->get());
+
+						candidate->set_loop(found->has_loop());
+						candidate->set_step(found->get_step());
+
+						//For each track candidate
+						for (int i = 0; i < candidate->get_track_count(); i++) {
+
+							NodePath track_path = candidate->track_get_path(i);
+							// For each track existing
+							for (int x = 0; x < found->get_track_count(); x++) {
+
+								NodePath path_to_compare = found->track_get_path(x);
+								if (track_path == path_to_compare && candidate->track_get_type(x) == found->track_get_type(i)) {
+
+									//Tracks matches
+									candidate->track_set_interpolation_type(i, found->track_get_interpolation_type(x));
+									candidate->value_track_set_continuous(i, found->value_track_is_continuous(x));
+
+									//Key transitions might have changed, but the animation remained unchanged
+									if (candidate->track_get_key_count(x) == found->track_get_key_count(i)) {
+										for (int k = 0; k < candidate->track_get_key_count(x); k++) {
+											candidate->track_set_key_transition(x, k, found->track_get_key_transition(i, k));
+										}
+									}
+
+								}
+
+							}
+						}
+
+					}
+
+					aplayer_node->add_animation(N->get(), candidate);
 				}
 
 			} else if (p_node->get_type()=="CollisionShape") {
