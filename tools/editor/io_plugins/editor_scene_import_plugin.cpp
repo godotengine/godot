@@ -1514,11 +1514,11 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 					skeleton_node->add_bone(skeleton_imported->get_bone_name(i));
 					skeleton_node->set_bone_parent(i,skeleton_imported->get_bone_parent(i));
 					skeleton_node->set_bone_rest(i,skeleton_imported->get_bone_rest(i));
-					skeleton_node->set_bone_pose(i,skeleton_imported->get_bone_pose(i));
+					//skeleton_node->set_bone_pose(i,skeleton_imported->get_bone_pose(i)); // not in a scene, will throw errors
 				}
-			} else if (p_node->get_type()=="AnimationPlayer") {
+			}
+			else if (p_node->get_type() == "AnimationPlayer") {
 				//for paths, overwrite path
-
 				AnimationPlayer *aplayer_imported = imported_node->cast_to<AnimationPlayer>();
 				AnimationPlayer *aplayer_node = p_node->cast_to<AnimationPlayer>();
 
@@ -1527,7 +1527,8 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 				List<StringName> existing_anims;
 				aplayer_imported->get_animation_list(&anims);
 				aplayer_node->get_animation_list(&existing_anims);
-				//use imported animations, could merge some stuff though
+
+				//use imported animations
 				for (List<StringName>::Element *N = anims.front(); N; N = N->next()) {
 
 					Ref<Animation> candidate = aplayer_imported->get_animation(N->get());
@@ -1547,16 +1548,21 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 							for (int x = 0; x < found->get_track_count(); x++) {
 
 								NodePath path_to_compare = found->track_get_path(x);
-								if (track_path == path_to_compare && candidate->track_get_type(x) == found->track_get_type(i)) {
+
+								if (track_path.hash() == path_to_compare.hash() && candidate->track_get_type(x) == found->track_get_type(i)) {
 
 									//Tracks matches
-									candidate->track_set_interpolation_type(i, found->track_get_interpolation_type(x));
-									candidate->value_track_set_continuous(i, found->value_track_is_continuous(x));
+									if (candidate->track_get_interpolation_type(i) != found->track_get_interpolation_type(x))
+										candidate->track_set_interpolation_type(i, found->track_get_interpolation_type(x));
+									if (candidate->track_get_type(i) == Animation::TYPE_VALUE && candidate->value_track_is_continuous(i) != found->value_track_is_continuous(x))
+										candidate->value_track_set_continuous(i, found->value_track_is_continuous(x));
 
 									//Key transitions might have changed, but the animation remained unchanged
-									if (candidate->track_get_key_count(x) == found->track_get_key_count(i)) {
-										for (int k = 0; k < candidate->track_get_key_count(x); k++) {
-											candidate->track_set_key_transition(x, k, found->track_get_key_transition(i, k));
+									if (candidate->track_get_key_count(i) == found->track_get_key_count(x)) {
+										for (int k = 0; k < candidate->track_get_key_count(i); k++) {
+
+											if (candidate->track_get_key_transition(i, k) != found->track_get_key_transition(x, k))
+												candidate->track_set_key_transition(i, k, found->track_get_key_transition(x, k));
 										}
 									}
 
@@ -1565,6 +1571,15 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 							}
 						}
 
+						// Append function callbacks
+						for (int x = 0; x < found->get_track_count(); x++) {
+							if (found->track_get_type(x) == Animation::TYPE_METHOD)
+								candidate->add_track(Animation::TYPE_METHOD, candidate->get_track_count());
+
+							for (int k = 0; k < found->track_get_key_count(x); k++) {
+								candidate->track_insert_key(x, found->track_get_key_time(x, k), found->track_get_key_value(x, k), found->track_get_key_transition(x, k));
+							}
+						}
 					}
 
 					aplayer_node->add_animation(N->get(), candidate);
