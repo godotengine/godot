@@ -34,6 +34,7 @@ class AudioDriverIphone : public AudioDriverSW {
 
 	AudioComponentInstance audio_unit;
 	bool active;
+	Mutex *mutex;
 
 	int channels;
 	int32_t* samples_in;
@@ -59,5 +60,8 @@ public:
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
+
+	AudioDriverIphone();
+	~AudioDriverIphone();
 };
 

@@ -43,6 +43,7 @@
 #include "scene/3d/visibility_notifier.h"
 #include "scene/3d/portal.h"
 #include "scene/3d/ray_cast.h"
+#include "scene/3d/navigation_mesh.h"
 #include "scene/3d/car_body.h"
 
 
@@ -327,11 +328,36 @@ public:
 };
 
 
+class NavigationMeshSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(NavigationMeshSpatialGizmo,SpatialGizmoTool);
+
+
+	struct _EdgeKey {
+
+		Vector3 from;
+		Vector3 to;
+
+		bool operator<(const _EdgeKey& p_with) const { return from==p_with.from ? to < p_with.to : from < p_with.from; }
+	};
+
+
+
+	NavigationMeshInstance* navmesh;
+
+public:
+
+	void redraw();
+	NavigationMeshSpatialGizmo(NavigationMeshInstance* p_navmesh=NULL);
+
+};
+
 
 class SpatialEditorGizmos  {
 public:
 
 	Ref<FixedMaterial> create_line_material(const Color& p_base_color);
+	Ref<FixedMaterial> create_solid_material(const Color& p_base_color);
 	Ref<FixedMaterial> handle2_material;
 	Ref<FixedMaterial> handle_material;
 	Ref<FixedMaterial> light_material;
@@ -344,6 +370,12 @@ public:
 	Ref<FixedMaterial> raycast_material;
 	Ref<FixedMaterial> visibility_notifier_material;
 	Ref<FixedMaterial> car_wheel_material;
+
+	Ref<FixedMaterial> navmesh_edge_material;
+	Ref<FixedMaterial> navmesh_solid_material;
+	Ref<FixedMaterial> navmesh_edge_material_disabled;
+	Ref<FixedMaterial> navmesh_solid_material_disabled;
+
 
 	Ref<FixedMaterial> sample_player_icon;
 	Ref<FixedMaterial> stream_player_icon;

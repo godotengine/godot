@@ -57,6 +57,7 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 #include "tools/editor/console.h"
+#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -225,6 +226,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	String debug_mode;
 	String debug_host;
 	String main_pack;
+	bool quiet_stdout=false;
 	int rtm=-1;
 
 	String remotefs;
@@ -373,6 +375,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get()=="-quiet") { // fullscreen
+
+			quiet_stdout=true;
 		} else if (I->get()=="-v") { // fullscreen
 			OS::get_singleton()->_verbose_stdout=true;
 		} else if (I->get()=="-path") { // resolution
@@ -569,6 +574,13 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		main_args.push_back("-editor");
 		use_custom_res=false;
 	}
+
+	if (bool(Globals::get_singleton()->get("application/disable_stdout"))) {
+		quiet_stdout=true;
+	}
+
+	if (quiet_stdout)
+		_print_line_enabled=false;
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
@@ -777,6 +789,7 @@ Error Main::setup2() {
 
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
+	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
 #endif
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");

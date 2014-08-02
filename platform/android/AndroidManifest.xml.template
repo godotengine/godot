@@ -10,12 +10,12 @@
                       android:largeScreens="true"
                       android:xlargeScreens="true"/>
 
-    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon">
+    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false">
         <activity android:name="com.android.godot.Godot"
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:launchMode="singleTask"
-                  android:screenOrientation="landscape"
+                  android:screenOrientation="portrait"
                   android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize">
                                                                                                   
             <intent-filter>
@@ -23,6 +23,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+	<service android:name="com.android.godot.GodotDownloaderService" />
 
 
   

@@ -1358,6 +1358,7 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
 	ObjectTypeDB::bind_method(_MD("has_singleton"),&Globals::has_singleton);
 	ObjectTypeDB::bind_method(_MD("get_singleton"),&Globals::get_singleton_object);
+	ObjectTypeDB::bind_method(_MD("load_resource_pack"),&Globals::_load_resource_pack);
 }
 
 Globals::Globals() {
@@ -1379,6 +1380,7 @@ Globals::Globals() {
 	set("application/name","" );
 	set("application/main_scene","");
 	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"xml,res,scn,xscn");
+	set("application/disable_stdout",false);
 
 
 	key.key.scancode=KEY_RETURN;

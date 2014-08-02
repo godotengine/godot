@@ -426,7 +426,7 @@ static String _parse_string(const uint8_t *p_bytes,bool p_utf8) {
 
 	}
 	offset+=2;
-	printf("len %i, unicode: %i\n",len,int(p_utf8));
+	//printf("len %i, unicode: %i\n",len,int(p_utf8));
 
 	if (p_utf8) {
 

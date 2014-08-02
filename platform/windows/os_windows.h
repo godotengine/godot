@@ -106,13 +106,16 @@ class OS_Windows : public OS {
 
 	struct Joystick {
 
+		int id;
 		bool attached;
 
 		DWORD last_axis[JOY_AXIS_COUNT];
 		DWORD last_buttons;
 		DWORD last_pov;
+		String name;
 
 		Joystick() {
+			id = -1;
 			attached = false;
 			for (int i=0; i<JOY_AXIS_COUNT; i++) {
 
@@ -123,6 +126,7 @@ class OS_Windows : public OS {
 		};
 	};
 
+	List<Joystick> joystick_change_queue;
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
 	

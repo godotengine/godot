@@ -23,55 +23,78 @@ DVector<uint8_t> BakedLight::get_octree() const {
 }
 
 
-void BakedLight::_update_lightmaps() {
 
-	VS::get_singleton()->baked_light_clear_lightmaps(baked_light);
-	for(Map<int,Ref<Texture> >::Element *E=lightmaps.front();E;E=E->next()) {
 
-		VS::get_singleton()->baked_light_add_lightmap(baked_light,E->get()->get_rid(),E->key());
-	}
 
+void BakedLight::add_lightmap(const Ref<Texture> &p_texture,Size2 p_gen_size) {
+
+	LightMap lm;
+	lm.texture=p_texture;
+	lm.gen_size=p_gen_size;
+	lightmaps.push_back(lm);
+	_update_lightmaps();
+	_change_notify();
 }
 
-void BakedLight::add_lightmap(const Ref<Texture> p_texture,int p_id) {
+void BakedLight::set_lightmap_gen_size(int p_idx,const Size2& p_size){
 
-	ERR_FAIL_COND(!p_texture.is_valid());
-	ERR_FAIL_COND(p_id<0);
-	lightmaps[p_id]=p_texture;
-	VS::get_singleton()->baked_light_add_lightmap(baked_light,p_texture->get_rid(),p_id);
-}
-
-void BakedLight::erase_lightmap(int p_id) {
-
-	ERR_FAIL_COND(!lightmaps.has(p_id));
-	lightmaps.erase(p_id);
+	ERR_FAIL_INDEX(p_idx,lightmaps.size());
+	lightmaps[p_idx].gen_size=p_size;
 	_update_lightmaps();
 }
+Size2 BakedLight::get_lightmap_gen_size(int p_idx) const{
 
-void BakedLight::get_lightmaps(List<int> *r_lightmaps) {
-
-	for(Map<int,Ref<Texture> >::Element *E=lightmaps.front();E;E=E->next()) {
-
-		r_lightmaps->push_back(E->key());
-	}
+	ERR_FAIL_INDEX_V(p_idx,lightmaps.size(),Size2());
+	return lightmaps[p_idx].gen_size;
 
 }
+void BakedLight::set_lightmap_texture(int p_idx,const Ref<Texture> &p_texture){
 
-Ref<Texture> BakedLight::get_lightmap_texture(int p_id) {
-
-	if (!lightmaps.has(p_id))
-		return Ref<Texture>();
-
-	return lightmaps[p_id];
-
+	ERR_FAIL_INDEX(p_idx,lightmaps.size());
+	lightmaps[p_idx].texture=p_texture;
+	_update_lightmaps();
 
 }
+Ref<Texture> BakedLight::get_lightmap_texture(int p_idx) const{
 
-void BakedLight::clear_lightmaps() {
+	ERR_FAIL_INDEX_V(p_idx,lightmaps.size(),Ref<Texture>());
+	return lightmaps[p_idx].texture;
+
+}
+void BakedLight::erase_lightmap(int p_idx){
+
+	ERR_FAIL_INDEX(p_idx,lightmaps.size());
+	lightmaps.remove(p_idx);
+	_update_lightmaps();
+	_change_notify();
+
+}
+int  BakedLight::get_lightmaps_count() const{
+
+	return lightmaps.size();
+}
+void BakedLight::clear_lightmaps(){
 
 	lightmaps.clear();
 	_update_lightmaps();
+	_change_notify();
 }
+
+
+
+void BakedLight::_update_lightmaps() {
+
+	VS::get_singleton()->baked_light_clear_lightmaps(baked_light);
+	for(int i=0;i<lightmaps.size();i++) {
+
+		RID tid;
+		if (lightmaps[i].texture.is_valid())
+			tid=lightmaps[i].texture->get_rid();
+		VS::get_singleton()->baked_light_add_lightmap(baked_light,tid,i);
+	}
+}
+
+
 
 RID BakedLight::get_rid() const {
 
@@ -84,12 +107,11 @@ Array BakedLight::_get_lightmap_data() const {
 	ret.resize(lightmaps.size()*2);
 
 	int idx=0;
-	for(Map<int,Ref<Texture> >::Element *E=lightmaps.front();E;E=E->next()) {
+	for(int i=0;i<lightmaps.size();i++) {
 
-		ret[idx++]=E->key();
-		ret[idx++]=E->get();
+		ret[idx++]=Size2(lightmaps[i].gen_size);
+		ret[idx++]=lightmaps[i].texture;
 	}
-
 	return ret;
 
 }
@@ -99,11 +121,13 @@ void BakedLight::_set_lightmap_data(Array p_array){
 	lightmaps.clear();
 	for(int i=0;i<p_array.size();i+=2) {
 
-		int id = p_array[i];
+		Size2 size = p_array[i];
 		Ref<Texture> tex = p_array[i+1];
-		ERR_CONTINUE(id<0);
 		ERR_CONTINUE(tex.is_null());
-		lightmaps[id]=tex;
+		LightMap lm;
+		lm.gen_size=size;
+		lm.texture=tex;
+		lightmaps.push_back(lm);
 	}
 	_update_lightmaps();
 }
@@ -212,6 +236,77 @@ BakedLight::Format BakedLight::get_format() const{
 	return format;
 }
 
+bool BakedLight::_set(const StringName& p_name, const Variant& p_value) {
+
+	String n = p_name;
+	if (!n.begins_with("lightmap"))
+		return false;
+	int idx = n.get_slice("/",1).to_int();
+	ERR_FAIL_COND_V(idx<0,false);
+	ERR_FAIL_COND_V(idx>lightmaps.size(),false);
+
+	String what = n.get_slice("/",2);
+	Ref<Texture> tex;
+	Size2 gens;
+
+	if (what=="texture")
+		tex=p_value;
+	else if (what=="gen_size")
+		gens=p_value;
+
+	if (idx==lightmaps.size()) {
+		if (tex.is_valid() || gens!=Size2())
+			add_lightmap(tex,gens);
+	} else {
+		if (tex.is_valid())
+			set_lightmap_texture(idx,tex);
+		else if (gens!=Size2())
+			set_lightmap_gen_size(idx,gens);
+	}
+
+
+	return true;
+}
+
+bool BakedLight::_get(const StringName& p_name,Variant &r_ret) const{
+
+	String n = p_name;
+	if (!n.begins_with("lightmap"))
+		return false;
+	int idx = n.get_slice("/",1).to_int();
+	ERR_FAIL_COND_V(idx<0,false);
+	ERR_FAIL_COND_V(idx>lightmaps.size(),false);
+
+	String what = n.get_slice("/",2);
+
+	if (what=="texture") {
+		if (idx==lightmaps.size())
+			r_ret=Ref<Texture>();
+		else
+			r_ret=lightmaps[idx].texture;
+
+	} else if (what=="gen_size") {
+
+		if (idx==lightmaps.size())
+			r_ret=Size2();
+		else
+			r_ret=Size2(lightmaps[idx].gen_size);
+	} else
+		return false;
+
+	return true;
+
+
+}
+void BakedLight::_get_property_list( List<PropertyInfo> *p_list) const{
+
+	for(int i=0;i<=lightmaps.size();i++) {
+
+		p_list->push_back(PropertyInfo(Variant::VECTOR2,"lightmaps/"+itos(i)+"/gen_size",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::OBJECT,"lightmaps/"+itos(i)+"/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture",PROPERTY_USAGE_EDITOR));
+	}
+}
+
 
 void BakedLight::_bind_methods(){
 
@@ -222,7 +317,7 @@ void BakedLight::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_octree","octree"),&BakedLight::set_octree);
 	ObjectTypeDB::bind_method(_MD("get_octree"),&BakedLight::get_octree);
 
-	ObjectTypeDB::bind_method(_MD("add_lightmap","texture:Texture","id"),&BakedLight::add_lightmap);
+	ObjectTypeDB::bind_method(_MD("add_lightmap","texture:Texture","gen_size"),&BakedLight::add_lightmap);
 	ObjectTypeDB::bind_method(_MD("erase_lightmap","id"),&BakedLight::erase_lightmap);
 	ObjectTypeDB::bind_method(_MD("clear_lightmaps"),&BakedLight::clear_lightmaps);
 

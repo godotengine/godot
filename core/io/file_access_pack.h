@@ -60,8 +60,34 @@ private:
 		Set<String> files;
 	};
 
+	struct PathMD5 {
+		uint64_t a;
+		uint64_t b;
+		bool operator < (const PathMD5& p_md5) const {
 
-	Map<String,PackedFile> files;
+			if (p_md5.a == a) {
+				return b < p_md5.b;
+			} else {
+				return a < p_md5.a;
+			}
+		}
+
+		bool operator == (const PathMD5& p_md5) const {
+			return a == p_md5.a && b == p_md5.b;
+		};
+
+		PathMD5() {
+			a = b = 0;
+		};
+
+		PathMD5(const Vector<uint8_t> p_buf) {
+			a = *((uint64_t*)&p_buf[0]);
+			b = *((uint64_t*)&p_buf[8]);
+		};
+	};
+
+	Map<PathMD5,PackedFile> files;
+
 	Vector<PackSource*> sources;
 
 	PackedDir *root;
@@ -151,7 +177,9 @@ public:
 
 FileAccess *PackedData::try_open_path(const String& p_path) {
 
-	Map<String,PackedFile>::Element *E=files.find(p_path);
+	//print_line("try open path " + p_path);
+	PathMD5 pmd5(p_path.md5_buffer());
+	Map<PathMD5,PackedFile>::Element *E=files.find(pmd5);
 	if (!E)
 		return NULL; //not found
 	if (E->get().offset==0)
@@ -162,7 +190,7 @@ FileAccess *PackedData::try_open_path(const String& p_path) {
 
 bool PackedData::has_path(const String& p_path) {
 
-	return files.has(p_path);
+	return files.has(PathMD5(p_path.md5_buffer()));
 }
 
 

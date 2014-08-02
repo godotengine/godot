@@ -1,5 +1,9 @@
 package com.android.godot;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.util.Log;
+
 import com.google.android.vending.expansion.downloader.impl.DownloaderService;
 
 /**
@@ -21,7 +25,11 @@ public class GodotDownloaderService extends DownloaderService {
      */
     @Override
     public String getPublicKey() {
-	return BASE64_PUBLIC_KEY;
+    	SharedPreferences prefs = getApplicationContext().getSharedPreferences("app_data_keys", Context.MODE_PRIVATE);
+    	Log.d("GODOT", "getting public key:" + prefs.getString("store_public_key", null));
+    	return prefs.getString("store_public_key", null);
+		
+//	return BASE64_PUBLIC_KEY;
     }
 
     /**
@@ -41,7 +49,8 @@ public class GodotDownloaderService extends DownloaderService {
      */
     @Override
     public String getAlarmReceiverClassName() {
-	return GodotDownloaderAlarmReceiver.class.getName();
+    	Log.d("GODOT", "getAlarmReceiverClassName()");
+    	return GodotDownloaderAlarmReceiver.class.getName();
     }
 
 }

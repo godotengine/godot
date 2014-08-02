@@ -720,7 +720,7 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 					float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
 					float damp = Math::abs(p_plane.normal.dot(Vector3(octant.normal_accum[i][0],octant.normal_accum[i][1],octant.normal_accum[i][2])));
 					intensity*=pow(damp,edge_damp);
-					//intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
+					intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
 					octant.light[p_light_index].accum[i][0]+=p_light.r*intensity;
 					octant.light[p_light_index].accum[i][1]+=p_light.g*intensity;
 					octant.light[p_light_index].accum[i][2]+=p_light.b*intensity;
@@ -1023,7 +1023,7 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		if (!p_first_bounce) {
 
 
-			float r = plot_size * cell_size;
+			float r = plot_size * cell_size*4;
 			if (ret<r) {
 				//avoid accumulaiton of light on corners
 				//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);

@@ -176,6 +176,11 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+void _OS::set_use_file_access_save_and_swap(bool p_enable) {
+
+	FileAccess::set_backup_save(p_enable);
+}
+
 bool _OS::is_video_mode_resizable(int p_screen) const {
 
 	OS::VideoMode vm;
@@ -673,6 +678,10 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+
+
+	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
+
 
 
 	BIND_CONSTANT( DAY_SUNDAY );

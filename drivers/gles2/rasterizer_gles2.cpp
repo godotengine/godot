@@ -3990,6 +3990,8 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 	}
 
+	bool uses_time=false;
+
 	if (p_shader->mode==VS::SHADER_MATERIAL) {
 		//print_line("setting code to id.. "+itos(p_shader->custom_code_id));
 		Vector<const char*> enablers;
@@ -4017,6 +4019,10 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
 		}
+		if (light_flags.uses_time || fragment_flags.uses_time || vertex_flags.uses_time) {
+			enablers.push_back("#define USE_TIME\n");
+			uses_time=true;
+		}
 
 		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 	} else {
@@ -4030,6 +4036,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	p_shader->has_texscreen=fragment_flags.uses_texscreen;
 	p_shader->has_screen_uv=fragment_flags.uses_screen_uv;
 	p_shader->can_zpass=!fragment_flags.uses_discard && !vertex_flags.vertex_code_writes_vertex;
+	p_shader->uses_time=uses_time;
 	p_shader->version++;
 
 }
@@ -4557,6 +4564,13 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		}
 		DEBUG_TEST_ERROR("Material arameters");
 
+		if (p_material->shader_cache->uses_time) {
+			material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,300.0));
+			draw_next_frame=true;
+		}
+			//if uses TIME - draw_next_frame=true
+
+
 	} else {
 
 		material_shader.set_custom_shader(0);
@@ -4598,6 +4612,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		material_shader.set_uniform(MaterialShaderGLES2::FOG_COLOR_BEGIN,Vector3(col_begin.r,col_begin.g,col_begin.b));
 		material_shader.set_uniform(MaterialShaderGLES2::FOG_COLOR_END,Vector3(col_end.r,col_end.g,col_end.b));
 	}
+
 
 
 	//material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,300.0));
@@ -7035,7 +7050,7 @@ void RasterizerGLES2::canvas_set_blend_mode(VS::MaterialBlendMode p_mode) {
 		 } break;
 		case VS::MATERIAL_BLEND_MODE_MUL: {
 			glBlendEquation(GL_FUNC_ADD);
-			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			glBlendFunc(GL_DST_COLOR,GL_ZERO);
 		} break;
 		case VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA: {
 			glBlendEquation(GL_FUNC_ADD);

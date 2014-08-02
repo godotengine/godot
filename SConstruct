@@ -229,7 +229,7 @@ for p in platform_list:
         if (env['openssl']!='no'):
             env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
             if (env['openssl']=="builtin"):
-                env.Append(CPPPATH=['#drivers/builtin_openssl'])
+                env.Append(CPPPATH=['#drivers/builtin_openssl2'])
 
 
 	if (env["old_scenes"]=='yes'):

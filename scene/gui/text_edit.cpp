@@ -1354,13 +1354,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 						cursor_set_column(cc);
 
-					} else if (cursor.column==0) {
+                    } else if (cursor.column==0) {
 
 						if (cursor.line>0) {
 							cursor_set_line(cursor.line-1);
 							cursor_set_column(text[cursor.line].length());
 						}
-					} else {
+                    } else {
 						cursor_set_column(cursor_get_column()-1);
 					}
 
@@ -1394,13 +1394,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 						cursor_set_column(cc);
 
-					} else if (cursor.column==text[cursor.line].length()) {
+                    } else if (cursor.column==text[cursor.line].length()) {
 
 						if (cursor.line<text.size()-1) {
 							cursor_set_line(cursor.line+1);
 							cursor_set_column(0);
 						}
-					} else {
+                    } else {
 						cursor_set_column(cursor_get_column()+1);
 					}
 
@@ -1569,19 +1569,35 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						break;
 					}
 
-					if (!selection.active)
-						break;
+                    if (!selection.active){
 
-					String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-					OS::get_singleton()->set_clipboard(clipboard);
+                        String clipboard = text[cursor.line];
+                        OS::get_singleton()->set_clipboard(clipboard);
+                        cursor_set_line(cursor.line);
+                        cursor_set_column(0);
+                        _remove_text(cursor.line,0,cursor.line,text[cursor.line].length());
 
-					cursor_set_line(selection.from_line);
-					cursor_set_column(selection.from_column);
+                        backspace_at_cursor();
+                        update();
+                        cursor_set_line(cursor.line+1);
+                        cut_copy_line = true;
 
-					_remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-					selection.active=false;
-					selection.selecting_mode=Selection::MODE_NONE;
-					update();
+                    }
+                    else
+                    {
+
+                        String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
+                        OS::get_singleton()->set_clipboard(clipboard);
+
+                        cursor_set_line(selection.from_line);
+                        cursor_set_column(selection.from_column);
+
+                        _remove_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
+                        selection.active=false;
+                        selection.selecting_mode=Selection::MODE_NONE;
+                        update();
+                        cut_copy_line = false;
+                    }
 
 				} break;
 				case KEY_C: {
@@ -1591,11 +1607,16 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						   break;
 					}
 
-					if (!selection.active)
-						break;
-
-					String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
-					OS::get_singleton()->set_clipboard(clipboard);
+                    if (!selection.active){
+                        String clipboard = _base_get_text(cursor.line,0,cursor.line,text[cursor.line].length());
+                        OS::get_singleton()->set_clipboard(clipboard);
+                        cut_copy_line = true;
+                    }
+                    else{
+                        String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
+                        OS::get_singleton()->set_clipboard(clipboard);
+                        cut_copy_line = false;
+                    }
 				} break;
 				case KEY_Z: {
 
@@ -1625,6 +1646,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						cursor_set_column(selection.from_column);
 
 					}
+                    else if (cut_copy_line)
+                    {
+                        cursor_set_column(0);
+                        String ins="\n";
+                        clipboard += ins;
+                    }
 
 					_insert_text_at_cursor(clipboard);
 
@@ -1641,10 +1668,54 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 				} break;
 
-				default: {
+                case KEY_K:{
+                    if (!k.mod.command || k.mod.shift || k.mod.alt) {
+                        scancode_handled=false;
+                        break;
+                    }
+                    else {
+                        if (selection.active) {
+                            int ini = selection.from_line;
+                            int end = selection.to_line;
+                            for (int i=ini; i<= end; i++)
+                            {
+                                _insert_text(i,0,"#");
+                            }
+                        }
+                        else{
+                            _insert_text(cursor.line,0,"#");
+                        }
+                        update();
+                    }
+                    break;}
 
-					scancode_handled=false;
-				} break;
+            case KEY_U:{
+                if (!k.mod.command || k.mod.shift || k.mod.alt) {
+                    scancode_handled=false;
+                    break;
+                }
+                else {
+                    if (selection.active) {
+                        int ini = selection.from_line;
+                        int end = selection.to_line;
+                        for (int i=ini; i<= end; i++)
+                        {
+                            if (text[i][0] == '#')
+                                _remove_text(i,0,i,1);
+                        }
+                    }
+                    else{
+                        if (text[cursor.line][0] == '#')
+                            _remove_text(cursor.line,0,cursor.line,1);
+                    }
+                    update();
+                }
+                break;}
+
+                default: {
+
+                    scancode_handled=false;
+                } break;
 
 			}
 
@@ -3158,7 +3229,7 @@ TextEdit::TextEdit()  {
 
 	current_op.type=TextOperation::TYPE_NONE;
 	undo_enabled=true;
-	undo_stack_pos=NULL;
+    undo_stack_pos=NULL;
 	setting_text=false;
 	last_dblclk=0;
 	current_op.version=0;

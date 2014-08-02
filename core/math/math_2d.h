@@ -90,7 +90,8 @@ struct Vector2 {
 	float distance_to(const Vector2& p_vector2) const; 
 	float distance_squared_to(const Vector2& p_vector2) const;
 	float angle_to(const Vector2& p_vector2) const;
-	
+	float angle_to_point(const Vector2& p_vector2) const;
+
 	float dot(const Vector2& p_other) const;
 	float cross(const Vector2& p_other) const;
 	Vector2 cross(real_t p_other) const;

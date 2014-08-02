@@ -25,7 +25,7 @@ SConscript("etc1/SCsub")
 if (env["builtin_zlib"]=="yes"):
 	SConscript("builtin_zlib/SCsub");
 if (env["openssl"]=="builtin"):
-	SConscript("builtin_openssl/SCsub");
+	SConscript("builtin_openssl2/SCsub");
 
 SConscript("rtaudio/SCsub");
 SConscript("nedmalloc/SCsub");

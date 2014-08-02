@@ -196,6 +196,9 @@
 #include "scene/3d/spatial_sample_player.h"
 #include "scene/3d/spatial_stream_player.h"
 #include "scene/3d/proximity_group.h"
+#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/navigation.h"
+
 #endif
 
 #include "scene/scene_binds.h"
@@ -388,6 +391,9 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Particles>();
 	ObjectTypeDB::register_type<Position3D>();
 	ObjectTypeDB::register_type<Quad>();
+	ObjectTypeDB::register_type<NavigationMeshInstance>();
+	ObjectTypeDB::register_type<NavigationMesh>();
+	ObjectTypeDB::register_type<Navigation>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

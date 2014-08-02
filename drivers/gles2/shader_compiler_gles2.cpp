@@ -190,6 +190,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 
 			}
 
+			if (vnode->name==vname_time) {
+				uses_time=true;
+			}
 			code=replace_string(vnode->name);
 
 		} break;
@@ -522,6 +525,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_discard=false;
 	uses_screen_uv=false;
 	uses_light=false;
+	uses_time=false;
 	vertex_code_writes_vertex=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
@@ -551,6 +555,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_discard=uses_discard;
 	r_flags.uses_screen_uv=uses_screen_uv;
 	r_flags.uses_light=uses_light;
+	r_flags.uses_time=uses_time;
 	r_code_line=code;
 	r_globals_line=global_code;
 	return OK;
@@ -692,5 +697,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_var2_interp="VAR2";
 	vname_vertex="VERTEX";
 	vname_light="LIGHT";
+	vname_time="TIME";
 
 }

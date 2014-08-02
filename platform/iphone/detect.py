@@ -104,6 +104,12 @@ def configure(env):
 		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
 		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
+	elif env["target"] == "release_debug":
+		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])
+		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
+		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
+		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
+
 	elif (env["target"]=="debug"):
 
 		env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-Wall', '-O0', '-DDEBUG_ENABLED'])

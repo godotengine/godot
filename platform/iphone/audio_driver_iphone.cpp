@@ -99,7 +99,16 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 	AudioBuffer *abuf;
 	AudioDriverIphone* ad = (AudioDriverIphone*)inRefCon;
 
-	if (!ad->active) {
+	bool mix = true;
+
+	if (!ad_active)
+		mix = false;
+	else {
+		mix = mutex->try_lock() == OK;
+	};
+
+
+	if (!mix) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			abuf = &ioData->mBuffers[i];
 			zeromem(abuf->mData, abuf->mDataByteSize);
@@ -147,11 +156,28 @@ AudioDriverSW::OutputFormat AudioDriverIphone::get_output_format() const {
 	return OUTPUT_STEREO;
 };
 
-void AudioDriverIphone::lock() {};
-void AudioDriverIphone::unlock() {};
+void AudioDriverIphone::lock() {
+
+	if (active && mutex)
+		mutex->lock();
+};
+
+void AudioDriverIphone::unlock() {
+	if (active && mutex)
+		mutex->unlock();
+};
 
 void AudioDriverIphone::finish() {
 
 	memdelete_arr(samples_in);
 };
 
+
+AudioDriverIphone::AudioDriverIphone() {
+
+	mutex=Mutex::create();//NULL;
+};
+
+AudioDriverIphone::~AudioDriverIphone() {
+
+};
