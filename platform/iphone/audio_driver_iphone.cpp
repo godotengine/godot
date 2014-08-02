@@ -101,10 +101,10 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 
 	bool mix = true;
 
-	if (!ad_active)
+	if (!ad->active)
 		mix = false;
-	else {
-		mix = mutex->try_lock() == OK;
+	else if (ad->mutex) {
+		mix = ad->mutex->try_lock() == OK;
 	};
 
 
@@ -127,9 +127,9 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 		while (frames_left) {
 
 			int frames = MIN(frames_left, ad->buffer_frames);
-			ad->lock();
+			//ad->lock();
 			ad->audio_server_process(frames, ad->samples_in);
-			ad->unlock();
+			//ad->unlock();
 
 			for(int i = 0; i < frames * ad->channels; i++) {
 
@@ -140,6 +140,9 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 			out += frames * ad->channels;
 		};
 	};
+
+	if (ad->mutex)
+		ad->mutex->unlock();
 
 	return 0;
 };
