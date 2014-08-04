@@ -108,7 +108,9 @@
  * Hudson (tjh@cryptsoft.com).
  *
  */
-
+#ifdef _WIN32
+#include <WinSock2.h>
+#endif // _WIN32
 #include <stdio.h>
 #include <openssl/objects.h>
 #include <openssl/evp.h>
