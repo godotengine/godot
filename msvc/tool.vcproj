@@ -765,6 +765,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\tools\editor\io_plugins\editor_scene_importer_fbxconv.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\io_plugins\editor_scene_importer_fbxconv.h"
+						>
+					</File>
+					<File
 						RelativePath="..\tools\editor\io_plugins\editor_texture_import_plugin.cpp"
 						>
 					</File>
@@ -1705,6 +1713,18 @@
 						</Filter>
 					</Filter>
 				</Filter>
+			</Filter>
+			<Filter
+				Name="pck"
+				>
+				<File
+					RelativePath="..\tools\pck\pck_packer.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\tools\pck\pck_packer.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter

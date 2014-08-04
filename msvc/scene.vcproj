@@ -582,6 +582,38 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\3d\navigation.cpp"
+					>
+					<FileConfiguration
+						Name="Shipping|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							Optimization="0"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\scene\3d\navigation.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\navigation_agent.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\navigation_agent.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\navigation_mesh.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\navigation_mesh.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\3d\optimized_spatial_scene.cpp"
 					>
 				</File>

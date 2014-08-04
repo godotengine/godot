@@ -537,7 +537,6 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R(Image,get_height);
 	VCALL_PTR0R(Image,empty);
 	VCALL_PTR3R(Image,get_pixel);
-	VCALL_PTR4(Image, put_pixel);
 	VCALL_PTR4(Image,put_pixel);
 	VCALL_PTR0R(Image,get_used_rect);
 	VCALL_PTR3R(Image,brushed);

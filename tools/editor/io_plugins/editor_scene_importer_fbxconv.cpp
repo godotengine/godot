@@ -308,7 +308,7 @@ void EditorSceneImporterFBXConv::_add_surface(State& state,Ref<Mesh>& m,const Di
 		int idx = m->get_surface_count();
 
 		Array array = state.surface_cache[id].array;
-		DVector<float> indices = array[Mesh::ARRAY_BONES];
+		DVector<real_t> indices = array[Mesh::ARRAY_BONES];
 		if (indices.size() && part.has("bones")) {
 
 
@@ -333,7 +333,7 @@ void EditorSceneImporterFBXConv::_add_surface(State& state,Ref<Mesh>& m,const Di
 
 			int ilen=indices.size();
 			{
-				DVector<float>::Write iw=indices.write();
+				DVector<real_t>::Write iw=indices.write();
 				for(int j=0;j<ilen;j++) {
 					int b = iw[j];
 					ERR_CONTINUE(!index_map.has(b));
@@ -673,12 +673,12 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 						if (binormal_ofs<0)
 							break;
 
-						DVector<float> tangents;
+						DVector<real_t> tangents;
 						tangents.resize(array.size()*4);
 						{
 							int len=array.size();
 
-							DVector<float>::Write w = tangents.write();
+							DVector<real_t>::Write w = tangents.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
@@ -747,14 +747,14 @@ void EditorSceneImporterFBXConv::_parse_surfaces(State& state) {
 					case Mesh::ARRAY_BONES:
 					case Mesh::ARRAY_WEIGHTS: {
 
-						DVector<float> arr;
+						DVector<real_t> arr;
 						arr.resize(array.size()*4);
 						int po=k==Mesh::ARRAY_WEIGHTS?1:0;
 						lofs=ofs[Mesh::ARRAY_BONES];
 						{
 							int len=array.size();
 
-							DVector<float>::Write w = arr.write();
+							DVector<real_t>::Write w = arr.write();
 							for(int l=0;l<len;l++) {
 
 								int pos = array[l];
