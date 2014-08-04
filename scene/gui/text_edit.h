@@ -162,7 +162,7 @@ class TextEdit : public Control  {
 	TextOperation current_op;
 
 	List<TextOperation> undo_stack;
-	List<TextOperation>::Element *undo_stack_pos;
+    List<TextOperation>::Element *undo_stack_pos;
 
 	void _clear_redo();
 	void _do_text_op(const TextOperation& p_op, bool p_reverse);
@@ -208,6 +208,7 @@ class TextEdit : public Control  {
 	bool line_numbers;
 	
 	bool auto_brace_completion_enabled;
+	bool cut_copy_line;
 
 	uint64_t last_dblclk;
 
@@ -340,7 +341,7 @@ public:
 
 	bool is_selection_active() const;
 	int get_selection_from_line() const;
-	int get_selection_from_column() const;
+    int get_selection_from_column() const;
 	int get_selection_to_line() const;
 	int get_selection_to_column() const;
 	String get_selection_text() const;
@@ -351,7 +352,7 @@ public:
 
 	void undo();
 	void redo();
-	void clear_undo_history();
+    void clear_undo_history();
 
 
 	void set_draw_tabs(bool p_draw);

@@ -180,6 +180,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool has_screen_uv;
 		bool writes_vertex;
 		bool uses_discard;
+		bool uses_time;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
@@ -201,6 +202,7 @@ class RasterizerGLES2 : public Rasterizer {
 			has_screen_uv=false;
 			writes_vertex=false;
 			uses_discard=false;
+			uses_time=false;
 		}
 
 

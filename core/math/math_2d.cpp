@@ -77,6 +77,11 @@ float Vector2::angle_to(const Vector2& p_vector2) const  {
 	return Math::atan2( tangent().dot(p_vector2), dot(p_vector2) );
 }
 
+float Vector2::angle_to_point(const Vector2& p_vector2) const  {
+
+	return Math::atan2( x-p_vector2.x, y - p_vector2.y );
+}
+
 float Vector2::dot(const Vector2& p_other) const {
 	
 	return x*p_other.x + y*p_other.y;

@@ -68,6 +68,7 @@ public:
 	real_t get_area() const;
 
         Vector3 get_median_point() const;
+	Vector3 get_closest_point_to(const Vector3& p_point) const;
 
 	bool intersects_ray(const Vector3& p_from,const Vector3& p_dir,Vector3 * p_intersection=0) const;
 	bool intersects_segment(const Vector3& p_from,const Vector3& p_dir,Vector3 * p_intersection=0) const;

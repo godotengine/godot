@@ -1,4 +1,4 @@
-﻿EnsureSConsVersion(0,14);
+EnsureSConsVersion(0,14);
 
 import string
 import os
@@ -231,12 +231,10 @@ for p in platform_list:
 
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
-
-	if (env['openssl']!='no'):
-		env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
-		if (env['openssl']=="builtin"):
-			env.Append(CPPPATH=['#drivers/builtin_openssl'])
-
+        if (env['openssl']!='no'):
+            env.Append(CPPFLAGS=['-DOPENSSL_ENABLED']);
+            if (env['openssl']=="builtin"):
+                env.Append(CPPPATH=['#drivers/builtin_openssl2'])
 
 	if (env["old_scenes"]=='yes'):
 		env.Append(CPPFLAGS=['-DOLD_SCENE_FORMAT_ENABLED'])

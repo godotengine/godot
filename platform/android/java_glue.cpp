@@ -767,7 +767,7 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 	int cmdlen=0;
 	bool use_apk_expansion=false;
 	if (p_cmdline) {
-		int cmdlen = env->GetArrayLength(p_cmdline);
+		cmdlen = env->GetArrayLength(p_cmdline);
 		if (cmdlen) {
 			cmdline = (const char**)malloc((env->GetArrayLength(p_cmdline)+1)*sizeof(const char*));
 			cmdline[cmdlen]=NULL;
@@ -789,6 +789,8 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 			}
 		}
 	}
+
+	__android_log_print(ANDROID_LOG_INFO,"godot","CMDLINE LEN %i - APK EXPANSION %I\n",cmdlen,int(use_apk_expansion));
 
 	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _play_video, _is_video_playing, _pause_video, _stop_video,use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
@@ -1567,7 +1569,9 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_callobject(JNIEnv * env, 
 	for (int i=0; i<count; i++) {
 
 		jobject obj = env->GetObjectArrayElement(params, i);
-		Variant v = _jobject_to_variant(env, obj);
+		Variant v;
+		if (obj)
+			v=_jobject_to_variant(env, obj);
 		memnew_placement(&vlist[i], Variant);
 		vlist[i] = v;
 		vptr[i] = &vlist[i];
@@ -1593,7 +1597,8 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env
 	for (int i=0; i<MIN(count,VARIANT_ARG_MAX); i++) {
 
 		jobject obj = env->GetObjectArrayElement(params, i);
-		args[i] = _jobject_to_variant(env, obj);
+		if (obj)
+			args[i] = _jobject_to_variant(env, obj);
 		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 
 	};

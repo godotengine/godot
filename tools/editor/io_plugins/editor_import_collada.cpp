@@ -82,8 +82,8 @@ struct ColladaImport {
 	Error _create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data);
 	Error load(const String& p_path, int p_flags, bool p_force_make_tangents=false);
 	void _fix_param_animation_tracks();
-	void create_animation(int p_clip=-1);
-	void create_animations();
+	void create_animation(int p_clip,bool p_make_tracks_in_all_bones);
+	void create_animations(bool p_make_tracks_in_all_bones);
 
 	Set<String> tracks_in_clips;
 	Vector<String> missing_textures;
@@ -1088,7 +1088,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 				DVector<Vector3>::Write uv2arrayw = uv2array.write();
 
 				for(int k=0;k<vlen;k++) {
-					uv2arrayw[k]=vertex_array[k].uv;
+					uv2arrayw[k]=vertex_array[k].uv2;
 				}
 
 				uv2arrayw = DVector<Vector3>::Write();
@@ -1705,7 +1705,7 @@ void ColladaImport::_fix_param_animation_tracks() {
 
 }
 
-void ColladaImport::create_animations() {
+void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
 
 	print_line("-=-=-=-=-PRE CA");
 	_fix_param_animation_tracks();
@@ -1737,14 +1737,14 @@ void ColladaImport::create_animations() {
 
 	}
 
-	create_animation();
+	create_animation(-1,p_make_tracks_in_all_bones);
 	print_line("clipcount: "+itos(collada.state.animation_clips.size()));
 	for(int i=0;i<collada.state.animation_clips.size();i++)
-		create_animation(i);
+		create_animation(i,p_make_tracks_in_all_bones);
 
 }
 
-void ColladaImport::create_animation(int p_clip) {
+void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones) {
 
 	Ref<Animation> animation = Ref<Animation>( memnew( Animation ));
 
@@ -1980,46 +1980,48 @@ void ColladaImport::create_animation(int p_clip) {
 
 	}
 
+	if (p_make_tracks_in_all_bones) {
 
-	//some bones may lack animation, but since we don't store pose as a property, we must add keyframes!
-	for(Map<String,bool>::Element *E=bones_with_animation.front();E;E=E->next()) {
+		//some bones may lack animation, but since we don't store pose as a property, we must add keyframes!
+		for(Map<String,bool>::Element *E=bones_with_animation.front();E;E=E->next()) {
 
-		if (E->get())
-			continue;
+			if (E->get())
+				continue;
 
-		//print_line("BONE LACKS ANIM: "+E->key());
+			//print_line("BONE LACKS ANIM: "+E->key());
 
-		NodeMap &nm = node_map[E->key()];
-		String path = scene->get_path_to(nm.node);
-		ERR_CONTINUE( nm.bone <0 );
-		Skeleton *sk = static_cast<Skeleton*>(nm.node);
-		String name = sk->get_bone_name(nm.bone);
-		path=path+":"+name;
+			NodeMap &nm = node_map[E->key()];
+			String path = scene->get_path_to(nm.node);
+			ERR_CONTINUE( nm.bone <0 );
+			Skeleton *sk = static_cast<Skeleton*>(nm.node);
+			String name = sk->get_bone_name(nm.bone);
+			path=path+":"+name;
 
-		Collada::Node *cn = collada.state.scene_map[E->key()];
-		if (cn->ignore_anim) {
-			print_line("warning, ignoring animation on node: "+path);
-			continue;
+			Collada::Node *cn = collada.state.scene_map[E->key()];
+			if (cn->ignore_anim) {
+				print_line("warning, ignoring animation on node: "+path);
+				continue;
+			}
+
+			animation->add_track(Animation::TYPE_TRANSFORM);
+			int track = animation->get_track_count() -1;
+			animation->track_set_path( track , path );
+
+
+			Transform xform = cn->compute_transform(collada);
+			xform = collada.fix_transform(xform) * cn->post_transform;
+
+			xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
+
+			Quat q = xform.basis;
+			q.normalize();
+			Vector3 s = xform.basis.get_scale();
+			Vector3 l = xform.origin;
+
+			animation->transform_track_insert_key(track,0,l,q,s);
+
+			tracks_found=true;
 		}
-
-		animation->add_track(Animation::TYPE_TRANSFORM);
-		int track = animation->get_track_count() -1;
-		animation->track_set_path( track , path );
-
-
-		Transform xform = cn->compute_transform(collada);
-		xform = collada.fix_transform(xform) * cn->post_transform;
-
-		xform = sk->get_bone_rest(nm.bone).affine_inverse() * xform;
-
-		Quat q = xform.basis;
-		q.normalize();
-		Vector3 s = xform.basis.get_scale();
-		Vector3 l = xform.origin;
-
-		animation->transform_track_insert_key(track,0,l,q,s);
-
-		tracks_found=true;
 	}
 
 
@@ -2149,7 +2151,7 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 
 	if (p_flags&IMPORT_ANIMATION) {
 
-		state.create_animations();
+		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_TRACKS_IN_ALL_BONES);
 		AnimationPlayer *ap = memnew( AnimationPlayer );
 		for(int i=0;i<state.animations.size();i++) {
 			String name;
@@ -2188,7 +2190,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String& p_path
 	ERR_FAIL_COND_V(err!=OK,RES());
 
 
-	state.create_animations();
+	state.create_animations(p_flags&EditorSceneImporter::IMPORT_ANIMATION_FORCE_TRACKS_IN_ALL_BONES);
 	if (state.scene)
 		memdelete(state.scene);
 

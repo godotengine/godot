@@ -65,6 +65,7 @@ public:
 	void erase_message(const StringName& p_src_text);
 
 	void get_message_list(List<StringName> *r_messages) const;
+	int get_message_count() const;
 
 	Translation();
 };
@@ -107,6 +108,8 @@ public:
 	static Vector<String> get_all_locale_names();
 
 	void setup();
+
+	void clear();
 
 	void load_translations();
 

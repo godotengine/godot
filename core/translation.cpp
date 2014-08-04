@@ -476,6 +476,11 @@ void Translation::get_message_list(List<StringName> *r_messages) const {
 
 }
 
+int Translation::get_message_count() const {
+
+	return translation_map.size();
+};
+
 
 void Translation::_bind_methods() {
 
@@ -485,6 +490,7 @@ void Translation::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_message","src_message"),&Translation::get_message);
 	ObjectTypeDB::bind_method(_MD("erase_message","src_message"),&Translation::erase_message);
 	ObjectTypeDB::bind_method(_MD("get_message_list"),&Translation::_get_message_list);
+	ObjectTypeDB::bind_method(_MD("get_message_count"),&Translation::get_message_count);
 	ObjectTypeDB::bind_method(_MD("_set_messages"),&Translation::_set_messages);
 	ObjectTypeDB::bind_method(_MD("_get_messages"),&Translation::_get_messages);
 
@@ -524,6 +530,11 @@ void TranslationServer::remove_translation(const Ref<Translation> &p_translation
 
 	translations.erase(p_translation);
 }
+
+void TranslationServer::clear() {
+
+	translations.clear();
+};
 
 StringName TranslationServer::translate(const StringName& p_message) const {
 
@@ -619,6 +630,9 @@ void TranslationServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_translation"),&TranslationServer::add_translation);
 	ObjectTypeDB::bind_method(_MD("remove_translation"),&TranslationServer::remove_translation);
+
+	ObjectTypeDB::bind_method(_MD("clear"),&TranslationServer::clear);
+
 }
 
 void TranslationServer::load_translations() {

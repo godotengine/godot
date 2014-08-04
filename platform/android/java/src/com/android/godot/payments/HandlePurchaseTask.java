@@ -64,7 +64,7 @@ abstract public class HandlePurchaseTask {
 				pc.setConsumableFlag("block", productId, true);
 				pc.setConsumableValue("token", productId, purchaseToken);
 				
-				success(productId, dataSignature);
+				success(productId, dataSignature, purchaseData);
 				return;
 			}	catch (JSONException e) {
 				error(e.getMessage());
@@ -74,7 +74,7 @@ abstract public class HandlePurchaseTask {
 		}
 	}
 
-	abstract protected void success(String ticket, String signature);
+	abstract protected void success(String sku, String signature, String ticket);
 	abstract protected void error(String message);
 	abstract protected void canceled();
 

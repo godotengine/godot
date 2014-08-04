@@ -64,31 +64,7 @@ abstract public class PurchaseTask {
 			canceled();
 			return ;
 		}
-		if(responseCode == 7){
-			new ConsumeTask(mService, context) {
-				
-				@Override
-				protected void success(String ticket) {
-//					Log.d("XXX", "Product was erroniously purchased!");
-					if(isLooping){
-//						Log.d("XXX", "It is looping");
-						error("Error while purchasing product");
-						return;
-					}
-					isLooping=true;
-					PurchaseTask.this.purchase(sku, transactionId);
-					
-				}
-				
-				@Override
-				protected void error(String message) {
-					PurchaseTask.this.error(message);
-					
-				}
-			}.consume(sku);
-			return;
-		}
-		
+			
 		
 		PendingIntent pendingIntent = buyIntentBundle.getParcelable("BUY_INTENT");
 		pc.setConsumableValue("validation_hash", sku, hash);
