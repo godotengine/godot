@@ -132,7 +132,10 @@ bool FileAccessMemory::eof_reached() const {
 
 uint8_t FileAccessMemory::get_8() const {
 
-	uint8_t ret;
+	ERR_FAIL_COND(!data);
+	ERR_FAIL_COND(pos >= length);
+
+	uint8_t ret = 0;
 	if (pos < length) {
 		ret = data[pos];
 	};
