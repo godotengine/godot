@@ -51,6 +51,7 @@ private:
 	float edge_damp;
 	float normal_damp;
 	int bounces;
+	bool transfer_only_uv2;
 	Format format;
 	bool flags[BAKE_MAX];
 
@@ -103,6 +104,9 @@ public:
 
 	void set_format(Format p_margin);
 	Format get_format() const;
+
+	void set_transfer_lightmaps_only_to_uv2(bool p_enable);
+	bool get_transfer_lightmaps_only_to_uv2() const;
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;

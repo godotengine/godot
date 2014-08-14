@@ -1443,7 +1443,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 	}
 
 
-	print_line("Script: "+p_script->get_path()+" indices: "+itos(p_script->member_indices.size()));
+	//print_line("Script: "+p_script->get_path()+" indices: "+itos(p_script->member_indices.size()));
 
 
 	for(int i=0;i<p_class->variables.size();i++) {

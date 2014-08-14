@@ -507,6 +507,7 @@ public:
 		float octree_lattice_size;
 		float octree_lattice_divide;
 		float texture_multiplier;
+		float lightmap_multiplier;
 		int octree_steps;
 		Vector2 octree_tex_pixel_size;
 	};
@@ -520,6 +521,7 @@ public:
 		Vector<float> morph_values;
 		BakedLightData *baked_light;
 		Transform *baked_light_octree_xform;
+		int baked_lightmap_id;
 		bool mirror :8;
 		bool depth_scale :8;
 		bool billboard :8;

@@ -157,7 +157,7 @@ class VisualServerRaster : public VisualServer {
 		float draw_range_begin;
 		float draw_range_end;
 		float extra_margin;
-		int lightmap_texture_index;
+
 
 
 		Rasterizer::InstanceData data;
@@ -267,6 +267,7 @@ class VisualServerRaster : public VisualServer {
 			data.billboard_y=false;
 			data.baked_light=NULL;
 			data.baked_light_octree_xform=NULL;
+			data.baked_lightmap_id=-1;
 			version=1;
 			room_info=NULL;
 			room=NULL;
@@ -278,7 +279,7 @@ class VisualServerRaster : public VisualServer {
 			draw_range_end=0;
 			extra_margin=0;
 			visible_in_all_rooms=false;
-			lightmap_texture_index=-1;
+
 			baked_light=NULL;
 			baked_light_info=NULL;
 			BLE=NULL;
@@ -941,6 +942,9 @@ public:
 
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree);
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const;
+
+	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier);
+	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const;
 
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id);
 	virtual void baked_light_clear_lightmaps(RID p_baked_light);

@@ -237,6 +237,14 @@ Transform Skeleton::get_bone_transform(int p_bone) const {
 	return bones[p_bone].pose_global * bones[p_bone].rest_global_inverse;
 }
 
+Transform Skeleton::get_bone_global_pose(int p_bone) const {
+
+	ERR_FAIL_INDEX_V(p_bone,bones.size(),Transform());
+	if (dirty)
+		const_cast<Skeleton*>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	return bones[p_bone].pose_global;
+}
+
 RID Skeleton::get_skeleton() const {
 
 	return skeleton;
@@ -510,6 +518,8 @@ void Skeleton::_bind_methods() {
 	
 	ObjectTypeDB::bind_method(_MD("get_bone_pose","bone_idx"),&Skeleton::get_bone_pose);
 	ObjectTypeDB::bind_method(_MD("set_bone_pose","bone_idx","pose"),&Skeleton::set_bone_pose);
+
+	ObjectTypeDB::bind_method(_MD("get_bone_global_pose","bone_idx"),&Skeleton::get_bone_global_pose);
 
 	ObjectTypeDB::bind_method(_MD("get_bone_custom_pose","bone_idx"),&Skeleton::get_bone_custom_pose);
 	ObjectTypeDB::bind_method(_MD("set_bone_custom_pose","bone_idx","custom_pose"),&Skeleton::set_bone_custom_pose);

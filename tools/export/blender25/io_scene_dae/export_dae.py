@@ -293,6 +293,9 @@ class DaeExporter:
 			self.writel(S_FX,6,'</bump>')
 
 		self.writel(S_FX,5,'</technique>')
+		self.writel(S_FX,5,'<technique profile="GOOGLEEARTH">')
+		self.writel(S_FX,6,'<double_sided>'+["0","1"][double_sided_hint]+"</double_sided>")
+		self.writel(S_FX,5,'</technique>')
 		self.writel(S_FX,4,'</extra>')
 
 		self.writel(S_FX,3,'</technique>')
@@ -359,7 +362,7 @@ class DaeExporter:
 					mat= None
 
 				if (mat!=None):
-					materials[f.material_index]=self.export_material( mat )
+					materials[f.material_index]=self.export_material( mat,mesh.show_double_sided )
 				else:
 					materials[f.material_index]=None #weird, has no material?
 
@@ -730,7 +733,7 @@ class DaeExporter:
 		self.writel(S_LAMPS,2,'<optics>')
 		self.writel(S_LAMPS,3,'<technique_common>')
 
-		if (light.type=="POINT" or light.type=="HEMI"):
+		if (light.type=="POINT"):
 			self.writel(S_LAMPS,4,'<point>')
 			self.writel(S_LAMPS,5,'<color>'+strarr(light.color)+'</color>')
 			att_by_distance = 2.0 / light.distance # convert to linear attenuation

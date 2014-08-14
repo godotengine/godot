@@ -109,6 +109,7 @@ private:
 	int baked_light_texture_id;
 
 	void _baked_light_changed();
+	void _update_visibility();
 protected:
 
 	void _notification(int p_what);

@@ -148,7 +148,7 @@ String VisualServerRaster::shader_get_fragment_code(RID p_shader) const{
 
 String VisualServerRaster::shader_get_light_code(RID p_shader) const{
 
-	return rasterizer->shader_get_fragment_code(p_shader);
+	return rasterizer->shader_get_light_code(p_shader);
 }
 
 void VisualServerRaster::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
@@ -1038,6 +1038,7 @@ RID VisualServerRaster::baked_light_create() {
 	baked_light->data.octree_lattice_size=0;
 	baked_light->data.octree_lattice_divide=0;
 	baked_light->data.octree_steps=1;
+	baked_light->data.lightmap_multiplier=1.0;
 
 	return baked_light_owner.make_rid( baked_light );
 
@@ -1062,6 +1063,26 @@ VisualServer::BakedLightMode VisualServerRaster::baked_light_get_mode(RID p_bake
 	return baked_light->data.mode;
 
 }
+
+void VisualServerRaster::baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.lightmap_multiplier=p_multiplier;
+
+}
+
+float VisualServerRaster::baked_light_get_lightmap_multiplier(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light,0);
+
+	return baked_light->data.lightmap_multiplier;
+
+}
+
 
 void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree){
 
@@ -2568,7 +2589,7 @@ void VisualServerRaster::instance_geometry_set_baked_light_texture_index(RID p_i
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
 
-	instance->lightmap_texture_index=p_tex_id;
+	instance->data.baked_lightmap_id=p_tex_id;
 
 
 }
@@ -2577,7 +2598,7 @@ int VisualServerRaster::instance_geometry_get_baked_light_texture_index(RID p_in
 	const Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND_V( !instance,0 );
 
-	return instance->lightmap_texture_index;
+	return instance->data.baked_lightmap_id;
 
 }
 

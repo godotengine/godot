@@ -45,7 +45,7 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 }
 
 
-void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_mat_override,const Transform& p_xform) {
+void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_mat_override,const Transform& p_xform,int p_baked_texture) {
 
 
 	for(int i=0;i<p_mesh->get_surface_count();i++) {
@@ -55,6 +55,7 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 		Ref<Material> mat = p_mat_override.is_valid()?p_mat_override:p_mesh->surface_get_material(i);
 
 		MeshMaterial *matptr=NULL;
+		int baked_tex=p_baked_texture;
 
 		if (mat.is_valid()) {
 
@@ -112,6 +113,8 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 		DVector<Vector3>::Read vr=vertices.read();
 		DVector<Vector2> uv;
 		DVector<Vector2>::Read uvr;
+		DVector<Vector2> uv2;
+		DVector<Vector2>::Read uv2r;
 		DVector<Vector3> normal;
 		DVector<Vector3>::Read normalr;
 		bool read_uv=false;
@@ -122,6 +125,18 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 			uv=a[Mesh::ARRAY_TEX_UV];
 			uvr=uv.read();
 			read_uv=true;
+
+			if (mat.is_valid() && mat->get_flag(Material::FLAG_LIGHTMAP_ON_UV2) && p_mesh->surface_get_format(i)&Mesh::ARRAY_FORMAT_TEX_UV2) {
+
+				uv2=a[Mesh::ARRAY_TEX_UV2];
+				uv2r=uv2.read();
+
+			} else {
+				uv2r=uv.read();
+				if (baked_light->get_transfer_lightmaps_only_to_uv2()) {
+					baked_tex=-1;
+				}
+			}
 		}
 
 		if (p_mesh->surface_get_format(i)&Mesh::ARRAY_FORMAT_NORMAL) {
@@ -145,11 +160,16 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 				t.vertices[1]=p_xform.xform(vr[ ir[i*3+1] ]);
 				t.vertices[2]=p_xform.xform(vr[ ir[i*3+2] ]);
 				t.material=matptr;
+				t.baked_texture=baked_tex;
 				if (read_uv) {
 
 					t.uvs[0]=uvr[ ir[i*3+0] ];
 					t.uvs[1]=uvr[ ir[i*3+1] ];
 					t.uvs[2]=uvr[ ir[i*3+2] ];
+
+					t.bake_uvs[0]=uv2r[ ir[i*3+0] ];
+					t.bake_uvs[1]=uv2r[ ir[i*3+1] ];
+					t.bake_uvs[2]=uv2r[ ir[i*3+2] ];
 				}
 				if (read_normal) {
 
@@ -167,11 +187,17 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 				t.vertices[1]=p_xform.xform(vr[ i*3+1 ]);
 				t.vertices[2]=p_xform.xform(vr[ i*3+2 ]);
 				t.material=matptr;
+				t.baked_texture=baked_tex;
 				if (read_uv) {
 
 					t.uvs[0]=uvr[ i*3+0 ];
 					t.uvs[1]=uvr[ i*3+1 ];
 					t.uvs[2]=uvr[ i*3+2 ];
+
+					t.bake_uvs[0]=uv2r[ i*3+0 ];
+					t.bake_uvs[1]=uv2r[ i*3+1 ];
+					t.bake_uvs[2]=uv2r[ i*3+2 ];
+
 				}
 				if (read_normal) {
 
@@ -193,7 +219,7 @@ void BakedLightBaker::_parse_geometry(Node* p_node) {
 		MeshInstance *meshi=p_node->cast_to<MeshInstance>();
 		Ref<Mesh> mesh=meshi->get_mesh();
 		if (mesh.is_valid()) {
-			_add_mesh(mesh,meshi->get_material_override(),base_inv * meshi->get_global_transform());
+			_add_mesh(mesh,meshi->get_material_override(),base_inv * meshi->get_global_transform(),meshi->get_baked_light_texture_id());
 		}
 	} else if (p_node->cast_to<Light>()) {
 
@@ -214,9 +240,11 @@ void BakedLightBaker::_parse_geometry(Node* p_node) {
 			dirl.spot_angle=dl->get_parameter(DirectionalLight::PARAM_SPOT_ANGLE);
 			dirl.spot_attenuation=dl->get_parameter(DirectionalLight::PARAM_SPOT_ATTENUATION);
 			dirl.attenuation=dl->get_parameter(DirectionalLight::PARAM_ATTENUATION);
+			dirl.darkening=dl->get_parameter(DirectionalLight::PARAM_SHADOW_DARKENING);
 			dirl.radius=dl->get_parameter(DirectionalLight::PARAM_RADIUS);
 			dirl.bake_direct=dl->get_bake_mode()==Light::BAKE_MODE_FULL;
 			dirl.rays_thrown=0;
+			dirl.bake_shadow=dl->get_bake_mode()==Light::BAKE_MODE_INDIRECT_AND_SHADOWS;
 			lights.push_back(dirl);
 		}
 
@@ -720,7 +748,7 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 					float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
 					float damp = Math::abs(p_plane.normal.dot(Vector3(octant.normal_accum[i][0],octant.normal_accum[i][1],octant.normal_accum[i][2])));
 					intensity*=pow(damp,edge_damp);
-					intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
+					//intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
 					octant.light[p_light_index].accum[i][0]+=p_light.r*intensity;
 					octant.light[p_light_index].accum[i][1]+=p_light.g*intensity;
 					octant.light[p_light_index].accum[i][2]+=p_light.b*intensity;
@@ -1310,7 +1338,7 @@ double BakedLightBaker::get_normalization(int p_light_idx) const {
 	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
 	nrg*=dl.constant;
 	//nrg*=5;
-	print_line("CS: "+rtos(cell_size));
+
 
 	return nrg;
 }
@@ -1460,6 +1488,13 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 	normal_damp=baked_light->get_normal_damp();
 	octree_extra_margin=baked_light->get_cell_extra_margin();
 
+	baked_textures.clear();
+	for(int i=0;i<baked_light->get_lightmaps_count();i++) {
+		BakeTexture bt;
+		bt.width=baked_light->get_lightmap_gen_size(i).x;
+		bt.height=baked_light->get_lightmap_gen_size(i).y;
+		baked_textures.push_back(bt);
+	}
 
 
 	ep.step("Parsing Geometry",0);
@@ -1690,6 +1725,484 @@ void BakedLightBaker::_stop_thread() {
 	thread=NULL;
 }
 
+void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int height, uint8_t *image, const Vector3& p_pos,const Vector3& p_normal,double *p_norm_ptr,float mult,float gamma) {
+
+
+	uint8_t *ptr = &image[(y*width+x)*4];
+	int lc = lights.size();
+
+
+	Color color;
+
+	Octant *octants=octant_pool.ptr();
+
+
+	int octant_idx=0;
+
+
+	while(true) {
+
+		Octant &octant=octants[octant_idx];
+
+		if (octant.leaf) {
+
+			Vector3 lpos = p_pos-octant.aabb.pos;
+			lpos/=octant.aabb.size;
+
+			Vector3 cols[8];
+
+			for(int i=0;i<8;i++) {
+
+				for(int j=0;j<lc;j++) {
+					cols[i].x+=octant.light[j].accum[i][0]*p_norm_ptr[j];
+					cols[i].y+=octant.light[j].accum[i][1]*p_norm_ptr[j];
+					cols[i].z+=octant.light[j].accum[i][2]*p_norm_ptr[j];
+				}
+			}
+
+
+			/*Vector3 final = (cols[0] + (cols[1] - cols[0]) * lpos.y);
+			final = final + ((cols[2] + (cols[3] - cols[2]) * lpos.y) - final)*lpos.x;
+
+			Vector3 final2 = (cols[4+0] + (cols[4+1] - cols[4+0]) * lpos.y);
+			final2 = final2 + ((cols[4+2] + (cols[4+3] - cols[4+2]) * lpos.y) - final2)*lpos.x;*/
+
+			Vector3 finala = cols[0].linear_interpolate(cols[1],lpos.x);
+			Vector3 finalb = cols[2].linear_interpolate(cols[3],lpos.x);
+			Vector3 final = finala.linear_interpolate(finalb,lpos.y);
+
+			Vector3 final2a = cols[4+0].linear_interpolate(cols[4+1],lpos.x);
+			Vector3 final2b = cols[4+2].linear_interpolate(cols[4+3],lpos.x);
+			Vector3 final2 = final2a.linear_interpolate(final2b,lpos.y);
+
+			final = final.linear_interpolate(final2,lpos.z);
+			if (baked_light->get_format()==BakedLight::FORMAT_HDR8)
+				final*=8.0;
+
+
+			color.r=pow(final.x*mult,gamma);
+			color.g=pow(final.y*mult,gamma);
+			color.b=pow(final.z*mult,gamma);
+			color.a=1.0;
+
+			int lc = lights.size();
+			LightData *lv = lights.ptr();
+			for(int i=0;i<lc;i++) {
+				//shadow baking
+				if (!lv[i].bake_shadow)
+					continue;
+				Vector3 from = p_pos+p_normal*0.01;
+				Vector3 to;
+				float att=0;
+				switch(lv[i].type) {
+					case VS::LIGHT_DIRECTIONAL: {
+						to=from-lv[i].dir*lv[i].length;
+					} break;
+					case VS::LIGHT_OMNI: {
+						to=lv[i].pos;
+						float d = MIN(lv[i].radius,to.distance_to(from))/lv[i].radius;
+						att=d;//1.0-d;
+					} break;
+					default: continue;
+				}
+
+				uint32_t* stack = ray_stack;
+				BVH **bstack = bvh_stack;
+
+				enum {
+					TEST_RAY_BIT=0,
+					VISIT_LEFT_BIT=1,
+					VISIT_RIGHT_BIT=2,
+					VISIT_DONE_BIT=3,
+
+
+				};
+
+				bool intersected=false;
+
+				int level=0;
+
+				Vector3 n = (to-from);
+				float len=n.length();
+				if (len==0)
+					continue;
+				n/=len;
+
+				const BVH *bvhptr = bvh;
+
+				bstack[0]=bvh;
+				stack[0]=TEST_RAY_BIT;
+
+
+				while(!intersected) {
+
+					uint32_t mode = stack[level];
+					const BVH &b = *bstack[level];
+					bool done=false;
+
+					switch(mode) {
+						case TEST_RAY_BIT: {
+
+							if (b.leaf) {
+
+
+								Face3 f3(b.leaf->vertices[0],b.leaf->vertices[1],b.leaf->vertices[2]);
+
+
+								Vector3 res;
+
+								if (f3.intersects_segment(from,to)) {
+									intersected=true;
+									done=true;
+								}
+
+								stack[level]=VISIT_DONE_BIT;
+							} else {
+
+
+								bool valid = b.aabb.smits_intersect_ray(from,n,0,len);
+								//bool valid = b.aabb.intersects_segment(p_begin,p_end);
+				//				bool valid = b.aabb.intersects(ray_aabb);
+
+								if (!valid) {
+
+									stack[level]=VISIT_DONE_BIT;
+
+								} else {
+
+									stack[level]=VISIT_LEFT_BIT;
+								}
+							}
+
+						} continue;
+						case VISIT_LEFT_BIT: {
+
+							stack[level]=VISIT_RIGHT_BIT;
+							bstack[level+1]=b.children[0];
+							stack[level+1]=TEST_RAY_BIT;
+							level++;
+
+						} continue;
+						case VISIT_RIGHT_BIT: {
+
+							stack[level]=VISIT_DONE_BIT;
+							bstack[level+1]=b.children[1];
+							stack[level+1]=TEST_RAY_BIT;
+							level++;
+						} continue;
+						case VISIT_DONE_BIT: {
+
+							if (level==0) {
+								done=true;
+								break;
+							} else
+								level--;
+
+						} continue;
+					}
+
+
+					if (done)
+						break;
+				}
+
+
+
+				if (intersected) {
+
+					color.a=Math::lerp(MAX(0.01,lv[i].darkening),1.0,att);
+				}
+
+			}
+
+			break;
+		} else {
+
+			Vector3 lpos = p_pos - octant.aabb.pos;
+			Vector3 half = octant.aabb.size * 0.5;
+
+			int ofs=0;
+
+			if (lpos.x >= half.x)
+				ofs|=1;
+			if (lpos.y >= half.y)
+				ofs|=2;
+			if (lpos.z >= half.z)
+				ofs|=4;
+
+			octant_idx = octant.children[ofs];
+
+			if (octant_idx==0)
+				return;
+
+		}
+	}
+
+	ptr[0]=CLAMP(color.r*255.0,0,255);
+	ptr[1]=CLAMP(color.g*255.0,0,255);
+	ptr[2]=CLAMP(color.b*255.0,0,255);
+	ptr[3]=CLAMP(color.a*255.0,0,255);
+
+}
+
+
+Error BakedLightBaker::transfer_to_lightmaps() {
+
+	if (!triangles.size() || baked_textures.size()==0)
+		return ERR_UNCONFIGURED;
+
+	EditorProgress ep("transfer_to_lightmaps","Transfer to Lightmaps:",baked_textures.size()*2+triangles.size());
+
+	for(int i=0;i<baked_textures.size();i++) {
+
+		ERR_FAIL_COND_V( baked_textures[i].width<=0 || baked_textures[i].height<=0,ERR_UNCONFIGURED );
+
+		baked_textures[i].data.resize( baked_textures[i].width*baked_textures[i].height*4 );
+		zeromem(baked_textures[i].data.ptr(),baked_textures[i].data.size());
+		ep.step("Allocating Texture #"+itos(i+1),i);
+	}
+
+	Vector<double> norm_arr;
+	norm_arr.resize(lights.size());
+
+	for(int i=0;i<lights.size();i++) {
+		norm_arr[i] =  1.0/get_normalization(i);
+	}
+	float gamma = baked_light->get_gamma_adjust();
+	float mult = baked_light->get_energy_multiplier();
+
+
+	const double *normptr=norm_arr.ptr();
+	for(int i=0;i<triangles.size();i++) {
+
+		if (i%200==0) {
+			ep.step("Baking Triangle #"+itos(i),i+baked_textures.size());
+		}
+		Triangle &t=triangles[i];
+		if (t.baked_texture<0 || t.baked_texture>=baked_textures.size())
+			continue;
+
+		BakeTexture &bt=baked_textures[t.baked_texture];
+		Vector3 normal = Plane(t.vertices[0],t.vertices[1],t.vertices[2]).normal;
+
+
+		int x[3];
+		int y[3];
+
+		Vector3 vertices[3]={
+			t.vertices[0],
+			t.vertices[1],
+			t.vertices[2]
+		};
+
+		for(int j=0;j<3;j++) {
+
+			x[j]=t.bake_uvs[j].x*bt.width;
+			y[j]=t.bake_uvs[j].y*bt.height;
+			x[j]=CLAMP(x[j],0,bt.width-1);
+			y[j]=CLAMP(y[j],0,bt.height-1);
+		}
+
+
+		{
+
+			// sort the points vertically
+			if (y[1] > y[2])  {
+				SWAP(x[1], x[2]);
+				SWAP(y[1], y[2]);
+				SWAP(vertices[1],vertices[2]);
+			}
+			if (y[0] > y[1]) {
+				SWAP(x[0], x[1]);
+				SWAP(y[0], y[1]);
+				SWAP(vertices[0],vertices[1]);
+			}
+			if (y[1] > y[2]) {
+				SWAP(x[1], x[2]);
+				SWAP(y[1], y[2]);
+				SWAP(vertices[1],vertices[2]);
+			}
+
+			double dx_far = double(x[2] - x[0]) / (y[2] - y[0] + 1);
+			double dx_upper = double(x[1] - x[0]) / (y[1] - y[0] + 1);
+			double dx_low = double(x[2] - x[1]) / (y[2] - y[1] + 1);
+			double xf = x[0];
+			double xt = x[0] + dx_upper; // if y[0] == y[1], special case
+			for (int yi = y[0]; yi <= (y[2] > bt.height-1 ? bt.height-1 : y[2]); yi++)
+			{
+				if (yi >= 0) {
+					for (int xi = (xf > 0 ? int(xf) : 0); xi <= (xt < bt.width ? xt : bt.width-1) ; xi++) {
+						//pixels[int(x + y * width)] = color;
+
+						Vector2 v0 = Vector2(x[1]-x[0],y[1]-y[0]);
+						Vector2 v1 = Vector2(x[2]-x[0],y[2]-y[0]);
+						//vertices[2] - vertices[0];
+						Vector2 v2 = Vector2(xi-x[0],yi-y[0]);
+						float d00 = v0.dot( v0);
+						float d01 = v0.dot( v1);
+						float d11 = v1.dot( v1);
+						float d20 = v2.dot( v0);
+						float d21 = v2.dot( v1);
+						float denom = (d00 * d11 - d01 * d01);
+						Vector3 pos;
+						if (denom==0) {
+							pos=t.vertices[0];
+						} else {
+							float v = (d11 * d20 - d01 * d21) / denom;
+							float w = (d00 * d21 - d01 * d20) / denom;
+							float u = 1.0f - v - w;
+							pos = vertices[0]*u + vertices[1]*v  + vertices[2]*w;
+						}
+						_plot_pixel_to_lightmap(xi,yi,bt.width,bt.height,bt.data.ptr(),pos,normal,norm_arr.ptr(),mult,gamma);
+
+					}
+
+					for (int xi = (xf < bt.width ? int(xf) : bt.width-1); xi >= (xt > 0 ? xt : 0); xi--) {
+						//pixels[int(x + y * width)] = color;
+						Vector2 v0 = Vector2(x[1]-x[0],y[1]-y[0]);
+						Vector2 v1 = Vector2(x[2]-x[0],y[2]-y[0]);
+						//vertices[2] - vertices[0];
+						Vector2 v2 = Vector2(xi-x[0],yi-y[0]);
+						float d00 = v0.dot( v0);
+						float d01 = v0.dot( v1);
+						float d11 = v1.dot( v1);
+						float d20 = v2.dot( v0);
+						float d21 = v2.dot( v1);
+						float denom = (d00 * d11 - d01 * d01);
+						Vector3 pos;
+						if (denom==0) {
+							pos=t.vertices[0];
+						} else {
+							float v = (d11 * d20 - d01 * d21) / denom;
+							float w = (d00 * d21 - d01 * d20) / denom;
+							float u = 1.0f - v - w;
+							pos = vertices[0]*u + vertices[1]*v  + vertices[2]*w;
+						}
+
+						_plot_pixel_to_lightmap(xi,yi,bt.width,bt.height,bt.data.ptr(),pos,normal,norm_arr.ptr(),mult,gamma);
+
+					}
+				}
+				xf += dx_far;
+				if (yi < y[1])
+					xt += dx_upper;
+				else
+					xt += dx_low;
+			}
+		}
+
+	}
+
+
+	for(int i=0;i<baked_textures.size();i++) {
+
+
+		{
+
+			ep.step("Post-Processing Texture #"+itos(i),i+baked_textures.size()+triangles.size());
+
+			BakeTexture &bt=baked_textures[i];
+
+			Vector<uint8_t> copy_data=bt.data;
+			uint8_t *data=bt.data.ptr();
+			uint8_t *src_data=copy_data.ptr();
+			const int max_radius=8;
+			const int shadow_radius=2;
+			const int max_dist=0x7FFFFFFF;
+
+			for(int x=0;x<bt.width;x++) {
+
+				for(int y=0;y<bt.height;y++) {
+
+
+					uint8_t a = copy_data[(y*bt.width+x)*4+3];
+
+					if (a>0) {
+						//blur shadow
+
+						int from_x = MAX(0,x-shadow_radius);
+						int to_x = MIN(bt.width-1,x+shadow_radius);
+						int from_y = MAX(0,y-shadow_radius);
+						int to_y = MIN(bt.height-1,y+shadow_radius);
+
+						int sum=0;
+						int sumc=0;
+
+						for(int k=from_y;k<=to_y;k++) {
+							for(int l=from_x;l<=to_x;l++) {
+
+								const uint8_t * rp = &copy_data[(k*bt.width+l)<<2];
+
+								sum+=rp[3];
+								sumc++;
+							}
+						}
+
+						sum/=sumc;
+						data[(y*bt.width+x)*4+3]=sum;
+
+					} else {
+
+						int closest_dist=max_dist;
+						uint8_t closest_color[4];
+
+						int from_x = MAX(0,x-max_radius);
+						int to_x = MIN(bt.width-1,x+max_radius);
+						int from_y = MAX(0,y-max_radius);
+						int to_y = MIN(bt.height-1,y+max_radius);
+
+						for(int k=from_y;k<=to_y;k++) {
+							for(int l=from_x;l<=to_x;l++) {
+
+								int dy = y-k;
+								int dx = x-l;
+								int dist = dy*dy+dx*dx;
+								if (dist>=closest_dist)
+									continue;
+
+								const uint8_t * rp = &copy_data[(k*bt.width+l)<<2];
+
+								if (rp[3]==0)
+									continue;
+
+								closest_dist=dist;
+								closest_color[0]=rp[0];
+								closest_color[1]=rp[1];
+								closest_color[2]=rp[2];
+								closest_color[3]=rp[3];
+							}
+						}
+
+
+						if (closest_dist!=max_dist) {
+
+							data[(y*bt.width+x)*4+0]=closest_color[0];
+							data[(y*bt.width+x)*4+1]=closest_color[1];
+							data[(y*bt.width+x)*4+2]=closest_color[2];
+							data[(y*bt.width+x)*4+3]=closest_color[3];
+						}
+					}
+				}
+			}
+		}
+
+		DVector<uint8_t> dv;
+		dv.resize(baked_textures[i].data.size());
+		{
+			DVector<uint8_t>::Write w = dv.write();
+			copymem(w.ptr(),baked_textures[i].data.ptr(),baked_textures[i].data.size());
+		}
+
+		Image img(baked_textures[i].width,baked_textures[i].height,0,Image::FORMAT_RGBA,dv);
+		Ref<ImageTexture> tex = memnew( ImageTexture );
+		tex->create_from_image(img);
+		baked_light->set_lightmap_texture(i,tex);
+	}
+
+
+	return OK;
+}
+
 void BakedLightBaker::clear() {
 
 
@@ -1711,7 +2224,14 @@ void BakedLightBaker::clear() {
 	for(int i=0;i<octant_pool.size();i++) {
 		if (octant_pool[i].leaf) {
 			memdelete_arr( octant_pool[i].light );
+		}	Vector<double> norm_arr;
+		norm_arr.resize(lights.size());
+
+		for(int i=0;i<lights.size();i++) {
+			norm_arr[i] =  1.0/get_normalization(i);
 		}
+
+		const double *normptr=norm_arr.ptr();
 	}
 	octant_pool.clear();
 	octant_pool_size=0;

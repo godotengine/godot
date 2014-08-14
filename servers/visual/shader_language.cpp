@@ -1005,6 +1005,11 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 
 const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 
+	{ "SRC_VERTEX", TYPE_VEC3},
+	{ "SRC_NORMAL", TYPE_VEC3},
+	{ "SRC_TANGENT", TYPE_VEC3},
+	{ "SRC_BINORMALF", TYPE_FLOAT},
+
 	{ "VERTEX", TYPE_VEC3},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
@@ -1023,6 +1028,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 	{ "WORLD_MATRIX", TYPE_MAT4},
 	{ "INV_CAMERA_MATRIX", TYPE_MAT4},
 	{ "PROJECTION_MATRIX", TYPE_MAT4},
+	{ "MODELVIEW_MATRIX", TYPE_MAT4},
 	{ "INSTANCE_ID", TYPE_FLOAT},
 	{ "TIME", TYPE_FLOAT},
 	{ NULL, TYPE_VOID},

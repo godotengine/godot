@@ -94,11 +94,13 @@ public:
 
 	struct Triangle {
 
-		AABB aabb;
+		AABB aabb;	
 		Vector3 vertices[3];
 		Vector2 uvs[3];
+		Vector2 bake_uvs[3];
 		Vector3 normals[3];
 		MeshMaterial *material;
+		int baked_texture;
 
 		_FORCE_INLINE_ Vector2 get_uv(const Vector3& p_pos) {
 
@@ -180,6 +182,12 @@ public:
 		}
 	};
 
+	struct BakeTexture {
+
+		Vector<uint8_t> data;
+		int width,height;
+	};
+
 
 	struct LightData {
 
@@ -194,10 +202,12 @@ public:
 		float energy;
 		float length;
 		int rays_thrown;
+		bool bake_shadow;
 
 		float radius;
 		float attenuation;
 		float spot_angle;
+		float darkening;
 		float spot_attenuation;
 		float area;
 
@@ -220,6 +230,7 @@ public:
 	int octant_pool_size;
 	BVH*bvh;
 	Vector<Triangle> triangles;
+	Vector<BakeTexture> baked_textures;
 	Transform base_inv;
 	int leaf_list;
 	int octree_depth;
@@ -255,13 +266,14 @@ public:
 
 
 	MeshTexture* _get_mat_tex(const Ref<Texture>& p_tex);
-	void _add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_mat_override,const Transform& p_xform);
+	void _add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_mat_override,const Transform& p_xform,int p_baked_texture=-1);
 	void _parse_geometry(Node* p_node);
 	BVH* _parse_bvh(BVH** p_children,int p_size,int p_depth,int& max_depth);
 	void _make_bvh();
 	void _make_octree();
 	void _make_octree_texture();
 	void _octree_insert(int p_octant, Triangle* p_triangle, int p_depth);
+	_FORCE_INLINE_ void _plot_pixel_to_lightmap(int x, int y, int width, int height, uint8_t *image, const Vector3& p_pos,const Vector3& p_normal,double *p_norm_ptr,float mult,float gamma);
 
 
 	void _free_bvh(BVH* p_bvh);
@@ -301,6 +313,8 @@ public:
 	void set_pause(bool p_pause);
 	bool is_paused();
 	int get_rays_sec() { return rays_sec; }
+
+	Error transfer_to_lightmaps();
 
 	void update_octree_image(DVector<uint8_t> &p_image);
 

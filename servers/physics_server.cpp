@@ -85,6 +85,7 @@ void PhysicsDirectBodyState::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_transform"),&PhysicsDirectBodyState::get_transform);
 
 	ObjectTypeDB::bind_method(_MD("add_force","force","pos"),&PhysicsDirectBodyState::add_force);
+	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","j"),&PhysicsDirectBodyState::apply_impulse);
 
 	ObjectTypeDB::bind_method(_MD("set_sleep_state","enabled"),&PhysicsDirectBodyState::set_sleep_state);
 	ObjectTypeDB::bind_method(_MD("is_sleeping"),&PhysicsDirectBodyState::is_sleeping);

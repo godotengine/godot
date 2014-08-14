@@ -460,7 +460,7 @@ void Light::_bind_methods() {
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "params/enabled"), _SCS("set_enabled"), _SCS("is_enabled"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/bake_mode",PROPERTY_HINT_ENUM,"Disabled,Indirect,Full"), _SCS("set_bake_mode"), _SCS("get_bake_mode"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/bake_mode",PROPERTY_HINT_ENUM,"Disabled,Indirect,Indirect+Shadows,Full"), _SCS("set_bake_mode"), _SCS("get_bake_mode"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/energy", PROPERTY_HINT_EXP_RANGE, "0,64,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_ENERGY );
 	/*
 	if (type == VisualServer::LIGHT_OMNI || type == VisualServer::LIGHT_SPOT) {
@@ -477,7 +477,7 @@ void Light::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "colors/diffuse"), _SCS("set_color"), _SCS("get_color"),COLOR_DIFFUSE);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "colors/specular"), _SCS("set_color"), _SCS("get_color"),COLOR_SPECULAR);
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "shadow/shadow"), _SCS("set_project_shadows"), _SCS("has_project_shadows"));
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/darkening", PROPERTY_HINT_RANGE, "0,64,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_DARKENING );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/darkening", PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_DARKENING );
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/z_offset", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_Z_OFFSET);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/z_slope_scale", PROPERTY_HINT_RANGE, "0,128,0.001"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_Z_SLOPE_SCALE);
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "shadow/esm_multiplier", PROPERTY_HINT_RANGE, "1.0,512.0,0.1"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SHADOW_ESM_MULTIPLIER);
@@ -497,6 +497,12 @@ void Light::_bind_methods() {
 
 	BIND_CONSTANT( COLOR_DIFFUSE );
 	BIND_CONSTANT( COLOR_SPECULAR );	
+
+	BIND_CONSTANT( BAKE_MODE_DISABLED );
+	BIND_CONSTANT( BAKE_MODE_INDIRECT );
+	BIND_CONSTANT( BAKE_MODE_INDIRECT_AND_SHADOWS );
+	BIND_CONSTANT( BAKE_MODE_FULL );
+
 
 }
 

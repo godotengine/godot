@@ -786,6 +786,19 @@ bool Viewport::get_render_target_filter() const{
 	return (render_target_texture->get_flags()&Texture::FLAG_FILTER)!=0;
 }
 
+void Viewport::set_render_target_gen_mipmaps(bool p_enable) {
+
+	//render_target_texture->set_flags(p_enable?int(Texture::FLAG_FILTER):int(0));
+	render_target_gen_mipmaps=p_enable;
+
+}
+
+bool Viewport::get_render_target_gen_mipmaps() const{
+
+	//return (render_target_texture->get_flags()&Texture::FLAG_FILTER)!=0;
+	return render_target_gen_mipmaps;
+}
+
 
 Matrix32 Viewport::_get_input_pre_xform() const {
 
@@ -1007,6 +1020,9 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_render_target_filter","enable"), &Viewport::set_render_target_filter);
 	ObjectTypeDB::bind_method(_MD("get_render_target_filter"), &Viewport::get_render_target_filter);
 
+	ObjectTypeDB::bind_method(_MD("set_render_target_gen_mipmaps","enable"), &Viewport::set_render_target_gen_mipmaps);
+	ObjectTypeDB::bind_method(_MD("get_render_target_gen_mipmaps"), &Viewport::get_render_target_gen_mipmaps);
+
 	ObjectTypeDB::bind_method(_MD("set_render_target_update_mode","mode"), &Viewport::set_render_target_update_mode);
 	ObjectTypeDB::bind_method(_MD("get_render_target_update_mode"), &Viewport::get_render_target_update_mode);
 
@@ -1038,6 +1054,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/enabled"), _SCS("set_as_render_target"), _SCS("is_set_as_render_target") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/v_flip"), _SCS("set_render_target_vflip"), _SCS("get_render_target_vflip") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/filter"), _SCS("set_render_target_filter"), _SCS("get_render_target_filter") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/gen_mipmaps"), _SCS("set_render_target_gen_mipmaps"), _SCS("get_render_target_gen_mipmaps") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_render_target_update_mode"), _SCS("get_render_target_update_mode") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
@@ -1070,6 +1087,7 @@ Viewport::Viewport() {
 	size_override=false;
 	size_override_stretch=false;
 	size_override_size=Size2(1,1);
+	render_target_gen_mipmaps=false;
 	render_target=false;
 	render_target_vflip=false;
 	render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE;

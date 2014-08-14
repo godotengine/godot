@@ -585,6 +585,9 @@ public:
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree)=0;
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const=0;
 
+	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier)=0;
+	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const=0;
+
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id)=0;
 	virtual void baked_light_clear_lightmaps(RID p_baked_light)=0;
 

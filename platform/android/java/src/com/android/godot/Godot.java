@@ -349,12 +349,12 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		io.unique_id = Secure.getString(getContentResolver(), Secure.ANDROID_ID);
 		GodotLib.io=io;
 		Log.d("GODOT", "command_line is null? " + ((command_line == null)?"yes":"no"));
-		if(command_line != null){
+		/*if(command_line != null){
 		    Log.d("GODOT", "Command Line:");
 		    for(int w=0;w <command_line.length;w++){
 		        Log.d("GODOT","   " + command_line[w]);
 		    }
-		}
+		}*/
 		GodotLib.initialize(this,io.needsReloadHooks(),command_line);
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -418,12 +418,10 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 
 			if (new_args.isEmpty()){
-        			Log.d("GODOT", "new_args is empty");
 				command_line=null;
 			}else{
-        			Log.d("GODOT", "new_args is not empty");
+
 				command_line = new_args.toArray(new String[new_args.size()]);
-        			Log.d("GODOT", "command line is null? " + ( (command_line == null) ? "yes":"no"));
                         }
 			if (use_apk_expansion && main_pack_md5!=null && main_pack_key!=null) {
 				//check that environment is ok!
@@ -461,7 +459,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				}
 
 				if (!pack_valid) {
-					Log.d("GODOT", "Tengo que bajarme el apk");
+					Log.d("GODOT", "Pack Invalid, try re-downloading.");
 					
 					Intent notifierIntent = new Intent(this, this.getClass());
 					notifierIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
@@ -472,7 +470,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 					
 			        int startResult;
 					try {
-						Log.d("GODOT", "INICIANDO DOWNLOAD SERVICE");
+						Log.d("GODOT", "INITIALIZING DOWNLOAD");
 						startResult = DownloaderClientMarshaller.startDownloadServiceIfRequired(
 								getApplicationContext(), 
 								pendingIntent, 

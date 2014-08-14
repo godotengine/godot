@@ -82,6 +82,8 @@
 
 #endif
 
+static RasterizerGLES2* _singleton = NULL;
+
 static const GLenum prim_type[]={GL_POINTS,GL_LINES,GL_TRIANGLES,GL_TRIANGLE_FAN};
 
 _FORCE_INLINE_ static void _set_color_attrib(const Color& p_color) {
@@ -381,39 +383,96 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		} break;
 		case Image::FORMAT_BC1: {
 
-			r_gl_components=1; //doesn't matter much
-			r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-			r_compressed=true;
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+
+				r_gl_components=1; //doesn't matter much
+				r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC2: {
-			r_gl_components=1; //doesn't matter much
-			r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-			r_has_alpha_cache=true;
-			r_compressed=true;
+
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+				r_gl_components=1; //doesn't matter much
+				r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+				r_has_alpha_cache=true;
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC3: {
 
-			r_gl_components=1; //doesn't matter much
-			r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			r_has_alpha_cache=true;
-			r_compressed=true;
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+				r_gl_components=1; //doesn't matter much
+				r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				r_has_alpha_cache=true;
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC4: {
 
-			r_gl_format=_EXT_COMPRESSED_RED_RGTC1;
-			r_gl_components=1; //doesn't matter much
-			r_compressed=true;
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+
+				r_gl_format=_EXT_COMPRESSED_RED_RGTC1;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC5: {
 
+			if (!s3tc_supported) {
 
-			r_gl_format=_EXT_COMPRESSED_RG_RGTC2;
-			r_gl_components=1; //doesn't matter much
-			r_compressed=true;
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+				r_gl_format=_EXT_COMPRESSED_RG_RGTC2;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			};
 		} break;
 		case Image::FORMAT_PVRTC2: {
 
@@ -1076,6 +1135,15 @@ void RasterizerGLES2::texture_set_reload_hook(RID p_texture,ObjectID p_owner,con
 			texture->image[i]=Image();
 	}
 }
+
+
+GLuint RasterizerGLES2::_texture_get_name(RID p_tex) {
+
+	Texture * texture = texture_owner.get(p_tex);
+	ERR_FAIL_COND_V(!texture, 0);
+
+	return texture->tex_id;
+};
 
 
 /* SHADER API */
@@ -3995,17 +4063,17 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	if (p_shader->mode==VS::SHADER_MATERIAL) {
 		//print_line("setting code to id.. "+itos(p_shader->custom_code_id));
 		Vector<const char*> enablers;
-		if (fragment_flags.use_color_interp)
+		if (fragment_flags.use_color_interp || vertex_flags.use_color_interp)
 			enablers.push_back("#define ENABLE_COLOR_INTERP\n");
-		if (fragment_flags.use_uv_interp)
+		if (fragment_flags.use_uv_interp || vertex_flags.use_uv_interp)
 			enablers.push_back("#define ENABLE_UV_INTERP\n");
-		if (fragment_flags.use_uv2_interp)
+		if (fragment_flags.use_uv2_interp || vertex_flags.use_uv2_interp)
 			enablers.push_back("#define ENABLE_UV2_INTERP\n");
-		if (fragment_flags.use_tangent_interp)
+		if (fragment_flags.use_tangent_interp || vertex_flags.use_tangent_interp)
 			enablers.push_back("#define ENABLE_TANGENT_INTERP\n");
-		if (fragment_flags.use_var1_interp)
+		if (fragment_flags.use_var1_interp || vertex_flags.use_var1_interp)
 			enablers.push_back("#define ENABLE_VAR1_INTERP\n");
-		if (fragment_flags.use_var2_interp)
+		if (fragment_flags.use_var2_interp || vertex_flags.use_var2_interp)
 			enablers.push_back("#define ENABLE_VAR2_INTERP\n");
 		if (fragment_flags.uses_texscreen) {
 			enablers.push_back("#define ENABLE_TEXSCREEN\n");
@@ -4444,6 +4512,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,shadow_filter==SHADOW_FILTER_PCF5 || shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,shadow_filter==SHADOW_FILTER_ESM);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_LIGHTMAP_ON_UV2,p_material->flags[VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2]);
 
 	if (p_opaque_pass && p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA && p_material->shader_cache && p_material->shader_cache->has_alpha) {
 
@@ -4716,7 +4785,8 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 
 			}
 			//print_line("shadow split: "+rtos(li->shadow_split));
-		} else
+		}
+
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_DARKENING,li->base->vars[VS::LIGHT_PARAM_SHADOW_DARKENING]);
 		//matrix
 
@@ -5545,6 +5615,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	const Skeleton *prev_skeleton =NULL;
 	uint8_t prev_sort_flags=0xFF;
 	const BakedLightData *prev_baked_light=NULL;
+	RID prev_baked_light_texture;
 
 	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
@@ -5561,6 +5632,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,false);
 		material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,false);
 		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
+		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
 //		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_TEXTURE,false);
 
 	}
@@ -5585,6 +5657,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		bool rebind=false;
 		bool bind_baked_light_octree=false;
+		bool bind_baked_lightmap=false;
 		bool additive=false;
 
 
@@ -5704,7 +5777,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
-//			material_shader.set_conditional(MaterialShaderGLES2::USE_AMBIENT_TEXTURE,false);
+			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
 
 			if (!additive && baked_light) {
 
@@ -5722,7 +5795,37 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					}
 				} else if (baked_light->mode==VS::BAKED_LIGHT_LIGHTMAPS) {
 
-					//material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_TEXTURE,true);
+
+					int lightmap_idx = e->instance->baked_lightmap_id;
+
+					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
+					bind_baked_lightmap=false;
+
+
+					if (baked_light->lightmaps.has(lightmap_idx)) {
+
+
+						RID texid = baked_light->lightmaps[lightmap_idx];
+
+						if (prev_baked_light!=baked_light || texid!=prev_baked_light_texture) {
+
+
+							Texture *tex = texture_owner.get(texid);
+							if (tex) {
+
+								glActiveTexture(GL_TEXTURE5);
+								glBindTexture(tex->target,tex->tex_id); //bind the texture
+							}
+
+							prev_baked_light_texture=texid;
+						}
+
+						if (texid.is_valid()) {
+							material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,true);
+							bind_baked_lightmap=true;
+						}
+
+					}
 				}
 			}
 
@@ -5792,6 +5895,14 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 
 		}
+
+		if (bind_baked_lightmap && (baked_light!=prev_baked_light || rebind)) {
+
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP, 5);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP_MULTIPLIER, baked_light->lightmap_multiplier);
+
+		}
+
 
 		_set_cull(e->mirror,p_reverse_cull);
 
@@ -8212,9 +8323,13 @@ void RasterizerGLES2::_update_framebuffer() {
 
 }
 
-void RasterizerGLES2::set_base_framebuffer(GLuint p_id) {
+void RasterizerGLES2::set_base_framebuffer(GLuint p_id, Vector2 p_size) {
 
 	base_framebuffer=p_id;
+
+	if (p_size.x != 0) {
+		window_size = p_size;
+	};
 }
 
 #if 0
@@ -8753,7 +8868,14 @@ void RasterizerGLES2::set_use_framebuffers(bool p_use) {
 	use_framebuffers=p_use;
 }
 
+RasterizerGLES2* RasterizerGLES2::get_singleton() {
+
+	return _singleton;
+};
+
 RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,bool p_default_fragment_lighting,bool p_use_reload_hooks) {
+
+	_singleton = this;
 
 	keep_copies=p_keep_ram_copy;
 	use_reload_hooks=p_use_reload_hooks;
