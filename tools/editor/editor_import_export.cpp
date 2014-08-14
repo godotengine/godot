@@ -1032,7 +1032,7 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 	if (!dst) {
 
 		EditorNode::add_io_error("Can't copy executable file to:\n "+p_path);
-		return ERR_FILE_CANT_READ;
+		return ERR_FILE_CANT_WRITE;
 	}
 
 	uint8_t buff[32768];
@@ -1061,7 +1061,7 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 		if (!dst) {
 
 			EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
-			return ERR_FILE_CANT_READ;
+			return ERR_FILE_CANT_WRITE;
 		}
 	}
 
