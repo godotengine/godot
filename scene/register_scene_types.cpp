@@ -185,6 +185,7 @@
 #include "scene/resources/environment.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/car_body.h"
+#include "scene/3d/vehicle_body.h"
 #include "scene/3d/body_shape.h"
 #include "scene/3d/area.h"
 #include "scene/3d/physics_joint.h"
@@ -406,6 +407,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<RigidBody>();
 	ObjectTypeDB::register_type<CarBody>();
 	ObjectTypeDB::register_type<CarWheel>();
+	ObjectTypeDB::register_type<VehicleBody>();
+	ObjectTypeDB::register_type<VehicleWheel>();
 	ObjectTypeDB::register_type<Area>();
 	ObjectTypeDB::register_type<ProximityGroup>();
 	ObjectTypeDB::register_type<CollisionShape>();

@@ -2382,8 +2382,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 		bool use = d["show_grid"];
 
 		if (use!=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID))) {
-			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), use );
-			grid_enabled=use;
+			_menu_item_pressed(MENU_VIEW_GRID);
 		}
 	}
 
@@ -2689,6 +2688,13 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(p_option) );
 
 			grid_enabled=!is_checked;
+
+			for(int i=0;i<3;++i) {
+				if (grid_enable[i]) {
+					VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,grid_enabled);
+					grid_visible[i]=grid_enabled;
+				}
+			}
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(p_option), grid_enabled );
 

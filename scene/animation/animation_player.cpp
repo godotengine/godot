@@ -637,14 +637,15 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				play(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
+				end_notify=false;
 				emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 			} else {
                 //stop();
 				playing = false;
 				_set_process(false);
+				end_notify=false;
 				emit_signal(SceneStringNames::get_singleton()->finished);
 			}
-
 		}
 
 	} else {
@@ -912,7 +913,8 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 	c.current.speed_scale=p_custom_scale;
 	c.assigned=p_name;
 
-	queued.clear();
+	if (!end_notify)
+		queued.clear();
 	_set_process(true); // always process when starting an animation
 	playing = true;
 

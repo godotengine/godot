@@ -436,8 +436,10 @@ void ShaderEditor::save_external_data() {
 void ShaderEditor::apply_shaders()  {
 
 
-	if (shader.is_valid())
+	if (shader.is_valid()) {
 		shader->set_code(vertex_editor->get_text_edit()->get_text(),fragment_editor->get_text_edit()->get_text(),light_editor->get_text_edit()->get_text(),0,0);
+		shader->set_edited(true);
+	}
 }
 
 void ShaderEditor::_close_callback() {

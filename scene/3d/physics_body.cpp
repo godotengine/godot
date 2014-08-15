@@ -43,6 +43,20 @@ void PhysicsBody::_notification(int p_what) {
 	*/
 }
 
+Vector3 PhysicsBody::get_linear_velocity() const {
+
+	return Vector3();
+}
+Vector3 PhysicsBody::get_angular_velocity() const {
+
+	return Vector3();
+}
+
+float PhysicsBody::get_inverse_mass() const {
+
+	return 0;
+}
+
 PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) : CollisionObject( PhysicsServer::get_singleton()->body_create(p_mode), false) {
 
 

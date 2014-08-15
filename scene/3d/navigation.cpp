@@ -180,7 +180,7 @@ void Navigation::navmesh_remove(int p_id){
 
 }
 
-Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector3& p_end) {
+Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector3& p_end, bool p_optimize) {
 
 
 	Polygon *begin_poly=NULL;
@@ -332,24 +332,112 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 
 	if (found_route) {
 
-		//use midpoints for now
-		Polygon *p=end_poly;
 		Vector<Vector3> path;
-		path.push_back(end_point);
-		while(true) {
-			int prev = p->prev_edge;
-			int prev_n = (p->prev_edge+1)%p->edges.size();
-			Vector3 point = (_get_vertex(p->edges[prev].point) + _get_vertex(p->edges[prev_n].point))*0.5;
-			path.push_back(point);
-			p = p->edges[prev].C;
-			if (p==begin_poly)
-				break;
+
+		if (p_optimize) {
+			//string pulling
+
+			Polygon *apex_poly=end_poly;
+			Vector3 apex_point=end_point;
+			Vector3 portal_left=apex_point;
+			Vector3 portal_right=apex_point;
+			Polygon *left_poly=end_poly;
+			Polygon *right_poly=end_poly;
+			Polygon *p=end_poly;
+			path.push_back(end_point);
+
+			while(p) {
+
+				Vector3 left;
+				Vector3 right;
+
+#define CLOCK_TANGENT(m_a,m_b,m_c) ( ((m_a)-(m_c)).cross((m_a)-(m_b)) )
+
+				if (p==begin_poly) {
+					left=begin_point;
+					right=begin_point;
+				} else {
+					int prev = p->prev_edge;
+					int prev_n = (p->prev_edge+1)%p->edges.size();
+					left = _get_vertex(p->edges[prev].point);
+					right = _get_vertex(p->edges[prev_n].point);
+
+					if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5).dot(up) < 0){
+						SWAP(left,right);
+					}
+				}
+
+				bool skip=false;
+
+
+				if (CLOCK_TANGENT(apex_point,portal_left,left).dot(up) >= 0){
+					//process
+					if (portal_left==apex_point || CLOCK_TANGENT(apex_point,left,portal_right).dot(up) > 0) {
+						left_poly=p;
+						portal_left=left;
+					} else {
+
+						apex_point=portal_right;
+						p=right_poly;
+						left_poly=p;
+						portal_left=apex_point;
+						portal_right=apex_point;
+						path.push_back(apex_point);
+						skip=true;
+					}
+				}
+
+				if (!skip && CLOCK_TANGENT(apex_point,portal_right,right).dot(up) <= 0){
+					//process
+					if (portal_right==apex_point || CLOCK_TANGENT(apex_point,right,portal_left).dot(up) < 0) {
+						right_poly=p;
+						portal_right=right;
+					} else {
+
+						apex_point=portal_left;
+						p=left_poly;
+						right_poly=p;
+						portal_right=apex_point;
+						portal_left=apex_point;
+						path.push_back(apex_point);
+					}
+				}
+
+				if (p!=begin_poly)
+					p=p->edges[p->prev_edge].C;
+				else
+					p=NULL;
+
+			}
+
+			if (path[path.size()-1]!=begin_point)
+				path.push_back(begin_point);
+
+			path.invert();
+
+
+
+
+		} else {
+			//midpoints
+			Polygon *p=end_poly;
+
+			path.push_back(end_point);
+			while(true) {
+				int prev = p->prev_edge;
+				int prev_n = (p->prev_edge+1)%p->edges.size();
+				Vector3 point = (_get_vertex(p->edges[prev].point) + _get_vertex(p->edges[prev_n].point))*0.5;
+				path.push_back(point);
+				p = p->edges[prev].C;
+				if (p==begin_poly)
+					break;
+			}
+
+			path.push_back(begin_point);
+
+
+			path.invert();;
 		}
-
-		path.push_back(begin_point);
-
-
-		path.invert();;
 
 		return path;
 	}
@@ -475,17 +563,33 @@ Vector3 Navigation::get_closest_point_normal(const Vector3& p_point){
 }
 
 
+void Navigation::set_up_vector(const Vector3& p_up) {
+
+
+	up=p_up;
+}
+
+Vector3 Navigation::get_up_vector() const{
+
+	return up;
+}
+
+
 void Navigation::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("navmesh_create","mesh:NavigationMesh","xform"),&Navigation::navmesh_create);
 	ObjectTypeDB::bind_method(_MD("navmesh_set_transform","id","xform"),&Navigation::navmesh_set_transform);
 	ObjectTypeDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
 
-	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end"),&Navigation::get_simple_path);
+	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","start","end"),&Navigation::get_closest_point_to_segment);
 	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation::get_closest_point);
 	ObjectTypeDB::bind_method(_MD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
 
+	ObjectTypeDB::bind_method(_MD("set_up_vector","up"),&Navigation::set_up_vector);
+	ObjectTypeDB::bind_method(_MD("get_up_vector"),&Navigation::get_up_vector);
+
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"up_vector"),_SCS("set_up_vector"),_SCS("get_up_vector"));
 }
 
 Navigation::Navigation() {
@@ -493,5 +597,7 @@ Navigation::Navigation() {
 	ERR_FAIL_COND( sizeof(Point)!=8 );
 	cell_size=0.01; //one centimeter
 	last_id=1;
+	up=Vector3(0,1,0);
 }
+
 

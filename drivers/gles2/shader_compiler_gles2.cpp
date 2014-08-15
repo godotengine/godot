@@ -150,6 +150,26 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_vertex && p_assign_left) {
 					vertex_code_writes_vertex=true;
 				}
+				if (vnode->name==vname_color_interp) {
+					flags->use_color_interp=true;
+				}
+				if (vnode->name==vname_uv_interp) {
+					flags->use_uv_interp=true;
+				}
+				if (vnode->name==vname_uv2_interp) {
+					flags->use_uv2_interp=true;
+				}
+				if (vnode->name==vname_var1_interp) {
+					flags->use_var1_interp=true;
+				}
+				if (vnode->name==vname_var2_interp) {
+					flags->use_var2_interp=true;
+				}
+				if (vnode->name==vname_tangent_interp || vnode->name==vname_binormal_interp) {
+					flags->use_tangent_interp=true;
+				}
+
+
 			}
 			if (type==ShaderLanguage::SHADER_MATERIAL_FRAGMENT) {
 
@@ -614,6 +634,11 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["texscreen"]= "texscreen";
 	replace_table["texpos"]= "texpos";
 
+	mode_replace_table[0]["SRC_VERTEX"]="vertex_in.xyz";
+	mode_replace_table[0]["SRC_NORMAL"]="normal_in";
+	mode_replace_table[0]["SRC_TANGENT"]="tangent_in";
+	mode_replace_table[0]["SRC_BINORMALF"]="binormalf";
+
 	mode_replace_table[0]["VERTEX"]="vertex_interp";
 	mode_replace_table[0]["NORMAL"]="normal_interp";
 	mode_replace_table[0]["TANGENT"]="tangent_interp";
@@ -626,6 +651,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[0]["WORLD_MATRIX"]="world_transform";
 	mode_replace_table[0]["INV_CAMERA_MATRIX"]="camera_inverse_transform";
 	mode_replace_table[0]["PROJECTION_MATRIX"]="projection_transform";
+	mode_replace_table[0]["MODELVIEW_MATRIX"]="modelview";
 	mode_replace_table[0]["POINT_SIZE"]="gl_PointSize";
 	mode_replace_table[0]["VAR1"]="var1_interp";
 	mode_replace_table[0]["VAR2"]="var2_interp";

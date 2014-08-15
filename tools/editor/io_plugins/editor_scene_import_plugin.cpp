@@ -407,6 +407,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	rim->add_source(EditorImportPlugin::validate_source_path(import_path->get_text()));
 	rim->set_option("flags",flags);
+	print_line("GET FLAGS: "+itos(texture_options->get_flags()));
 	rim->set_option("texture_flags",texture_options->get_flags());
 	rim->set_option("texture_format",texture_options->get_format());
 	rim->set_option("texture_quality",texture_options->get_quality());
@@ -640,6 +641,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,"Materials","Set Alpha in Materials (-alpha)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,"Materials","Set Vert. Color in Materials (-vcol)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES,"Actions","SRGB->Linear Of Diffuse Textures",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS,"Actions","Set Material Lightmap to UV2 if Tex2Array Exists",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,"Create","Create Collisions (-col},-colonly)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,"Create","Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,"Create","Create Rooms (-room)",true},
@@ -1036,7 +1038,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	}
 
 
-	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR) && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR|SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS) && p_node->cast_to<MeshInstance>()) {
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 
@@ -1059,6 +1061,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 					mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
 					mat->set_name(_fixstr(mat->get_name(),"vcol"));
+				}
+
+				if (p_flags&SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS && m->surface_get_format(i)&Mesh::ARRAY_FORMAT_TEX_UV2) {
+					mat->set_flag(Material::FLAG_LIGHTMAP_ON_UV2,true);
 				}
 
 			}
@@ -1224,13 +1230,13 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		col->set_name("col");
 		p_node->add_child(col);
 
-
-		StaticBody *sb = col->cast_to<StaticBody>();
+		StaticBody *sb=col->cast_to<StaticBody>();
 		CollisionShape *colshape = memnew( CollisionShape);
 		colshape->set_shape(sb->get_shape(0));
 		colshape->set_name("shape");
-		sb->add_child(colshape);
+		col->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
+		sb->set_owner(p_node->get_owner());
 
 	} else if (p_flags&SCENE_FLAG_CREATE_NAVMESH &&_teststr(name,"navmesh") && p_node->cast_to<MeshInstance>()) {
 
@@ -1892,8 +1898,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			print_line("flags: "+itos(image_flags));
 			uint32_t flags = image_flags;
-			if (E->get())
-				flags|=EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_TO_LINEAR;
+
 			imd->set_option("flags",flags);
 			imd->set_option("format",image_format);
 			imd->set_option("quality",image_quality);

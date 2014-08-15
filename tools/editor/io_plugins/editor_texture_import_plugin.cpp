@@ -726,6 +726,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 	bool atlas = from->get_option("atlas");
 
 	int flags=from->get_option("flags");
+	print_line("GET FLAGS: "+itos(flags));
 	uint32_t tex_flags=0;
 
 	if (flags&EditorTextureImportPlugin::IMAGE_FLAG_REPEAT)
@@ -1002,6 +1003,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 
 		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
 
+			print_line("CONVERT BECAUSE: "+itos(flags));
 			image.srgb_to_linear();
 		}
 

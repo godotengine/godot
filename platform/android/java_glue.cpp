@@ -1592,14 +1592,14 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env
 	int count = env->GetArrayLength(params);
 	Variant args[VARIANT_ARG_MAX];
 
-	print_line("Java->GD call: "+obj->get_type()+"::"+str_method+" argc "+itos(count));
+//	print_line("Java->GD call: "+obj->get_type()+"::"+str_method+" argc "+itos(count));
 
 	for (int i=0; i<MIN(count,VARIANT_ARG_MAX); i++) {
 
 		jobject obj = env->GetObjectArrayElement(params, i);
 		if (obj)
 			args[i] = _jobject_to_variant(env, obj);
-		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
+//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
 
 	};
 

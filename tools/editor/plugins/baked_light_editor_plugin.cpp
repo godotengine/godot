@@ -38,6 +38,7 @@ void BakedLightEditor::_notification(int p_option) {
 
 		button_bake->set_icon(get_icon("Bake","EditorIcons"));
 		button_reset->set_icon(get_icon("Reload","EditorIcons"));
+		button_make_lightmaps->set_icon(get_icon("LightMap","EditorIcons"));
 	}
 
 	if (p_option==NOTIFICATION_PROCESS) {
@@ -148,7 +149,7 @@ void BakedLightEditor::_menu_option(int p_option) {
 			ERR_FAIL_COND(!node);
 			ERR_FAIL_COND(node->get_baked_light().is_null());
 			baker->bake(node->get_baked_light(),node);
-
+			node->get_baked_light()->set_mode(BakedLight::MODE_OCTREE);
 			update_timeout=0;
 			set_process(true);
 
@@ -180,14 +181,19 @@ void BakedLightEditor::_bake_pressed() {
 
 			set_process(false);
 			bake_info->set_text("");
+			button_reset->show();
+			button_make_lightmaps->show();
+
 		} else {
 
 			update_timeout=0;
 			set_process(true);
+			button_make_lightmaps->hide();
+			button_reset->hide();
 		}
-
 	} else {
 		baker->bake(node->get_baked_light(),node);
+		node->get_baked_light()->set_mode(BakedLight::MODE_OCTREE);
 		update_timeout=0;
 		set_process(true);
 	}
@@ -216,13 +222,27 @@ void BakedLightEditor::edit(BakedLightInstance *p_baked_light) {
 
 }
 
+void BakedLightEditor::_bake_lightmaps() {
 
+	Error err = baker->transfer_to_lightmaps();
+	if (err) {
+
+		err_dialog->set_text("Error baking to lightmaps!\nMake sure that a bake has just\n happened and that lightmaps are\n configured. ");
+		err_dialog->popup_centered(Size2(350,70));
+		return;
+	}
+
+	node->get_baked_light()->set_mode(BakedLight::MODE_LIGHTMAPS);
+
+
+}
 
 void BakedLightEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_menu_option",&BakedLightEditor::_menu_option);
 	ObjectTypeDB::bind_method("_bake_pressed",&BakedLightEditor::_bake_pressed);
 	ObjectTypeDB::bind_method("_clear_pressed",&BakedLightEditor::_clear_pressed);
+	ObjectTypeDB::bind_method("_bake_lightmaps",&BakedLightEditor::_bake_lightmaps);
 }
 
 BakedLightEditor::BakedLightEditor() {
@@ -233,6 +253,11 @@ BakedLightEditor::BakedLightEditor() {
 	button_bake->set_text("Bake!");
 	button_bake->set_toggle_mode(true);
 	button_reset = memnew( Button );
+	button_make_lightmaps = memnew( Button );
+	button_bake->set_tooltip("Start/Unpause the baking process.\nThis bakes lighting into the lightmap octree.");
+	button_make_lightmaps ->set_tooltip("Convert the lightmap octree to lightmap textures\n(must have set up UV/Lightmaps properly before!).");
+
+
 	bake_info = memnew( Label );
 	bake_hbox->add_child( button_bake );
 	bake_hbox->add_child( button_reset );
@@ -243,8 +268,15 @@ BakedLightEditor::BakedLightEditor() {
 	node=NULL;
 	baker = memnew( BakedLightBaker );
 
+	bake_hbox->add_child(button_make_lightmaps);
+	button_make_lightmaps->hide();
+
 	button_bake->connect("pressed",this,"_bake_pressed");
 	button_reset->connect("pressed",this,"_clear_pressed");
+	button_make_lightmaps->connect("pressed",this,"_bake_lightmaps");
+	button_reset->hide();
+	button_reset->set_tooltip("Reset the lightmap octree baking process (start over).");
+
 
 	update_timeout=0;
 

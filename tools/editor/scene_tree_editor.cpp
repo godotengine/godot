@@ -67,11 +67,19 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 	} else if (p_id==BUTTON_VISIBILITY) {
 
 
-		if (n->is_type("GeometryInstance")) {
-			bool v = n->call("get_flag",VS::INSTANCE_FLAG_VISIBLE);
-			undo_redo->create_action("Toggle Geometry Visible");
-			undo_redo->add_do_method(n,"set_flag",VS::INSTANCE_FLAG_VISIBLE,!v);
-			undo_redo->add_undo_method(n,"set_flag",VS::INSTANCE_FLAG_VISIBLE,v);
+		if (n->is_type("Spatial")) {
+
+			Spatial *ci = n->cast_to<Spatial>();
+			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
+				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
+				error->popup_centered_minsize(Size2(400,80));
+				return;
+			}
+
+			bool v = !bool(n->call("is_hidden"));
+			undo_redo->create_action("Toggle Spatial Visible");
+			undo_redo->add_do_method(n,"_set_visible_",!v);
+			undo_redo->add_undo_method(n,"_set_visible_",v);
 			undo_redo->commit_action();
 		} else if (n->is_type("CanvasItem")) {
 
@@ -190,9 +198,9 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			if (!p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 				p_node->connect("visibility_changed",this,"_node_visibility_changed",varray(p_node));
 
-		} else if (p_node->is_type("GeometryInstance")) {
+		} else if (p_node->is_type("Spatial")) {
 
-			bool h = !p_node->call("get_flag",VS::INSTANCE_FLAG_VISIBLE);
+			bool h = p_node->call("is_hidden");
 			if (h)
 				item->add_button(0,get_icon("Hidden","EditorIcons"),BUTTON_VISIBILITY);
 			else
@@ -234,7 +242,16 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 
 void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
+
+	if (p_node!=get_scene_node() && !p_node->get_owner()) {
+
+		return;
+	}
 	TreeItem* item=p_node?_find(tree->get_root(),p_node->get_path()):NULL;
+	if (!item) {
+
+		return;
+	}
 	int idx=item->get_button_by_id(0,BUTTON_VISIBILITY);
 	ERR_FAIL_COND(idx==-1);
 
@@ -242,10 +259,9 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	if (p_node->is_type("CanvasItem")) {
 		visible = !p_node->call("is_hidden");
-	} else if (p_node->is_type("GeometryInstance")) {
-		visible = p_node->call("get_flag",VS::INSTANCE_FLAG_VISIBLE);
+	} else if (p_node->is_type("Spatial")) {
+		visible = !p_node->call("is_hidden");
 	}
-
 
 	if (!visible)
 		item->set_button(0,idx,get_icon("Hidden","EditorIcons"));
@@ -282,7 +298,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 	if (p_node->is_connected("script_changed",this,"_node_script_changed"))
 		p_node->disconnect("script_changed",this,"_node_script_changed");
 
-	if (p_node->is_type("GeometryInstance") || p_node->is_type("CanvasItem")) {
+	if (p_node->is_type("Spatial") || p_node->is_type("CanvasItem")) {
 		if (p_node->is_connected("visibility_changed",this,"_node_visibility_changed"))
 			p_node->disconnect("visibility_changed",this,"_node_visibility_changed");
 	}

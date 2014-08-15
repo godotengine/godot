@@ -782,7 +782,7 @@ bool ConvexPolygonShapeSW::intersect_segment(const Vector3& p_begin,const Vector
 
 		for(int j=1;j<ic-1;j++) {
 
-			Face3 f(vertices[ind[0]],vertices[ind[i]],vertices[ind[i+1]]);
+			Face3 f(vertices[ind[0]],vertices[ind[j]],vertices[ind[j+1]]);
 			Vector3 result;
 			if (f.intersects_segment(p_begin,p_end,&result)) {
 				float d = n.dot(result);

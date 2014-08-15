@@ -58,6 +58,7 @@ public:
 	virtual Transform get_transform() const=0;
 
 	virtual void add_force(const Vector3& p_force, const Vector3& p_pos)=0;
+	virtual void apply_impulse(const Vector3& p_pos, const Vector3& p_j)=0;
 
 	virtual void set_sleep_state(bool p_enable)=0;
 	virtual bool is_sleeping() const=0;

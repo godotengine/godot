@@ -116,6 +116,7 @@ public:
 	void set_bone_rest(int p_bone, const Transform& p_rest);
 	Transform get_bone_rest(int p_bone) const;
 	Transform get_bone_transform(int p_bone) const;
+	Transform get_bone_global_pose(int p_bone) const;
 
 	void set_bone_enabled(int p_bone, bool p_enabled);
 	bool is_bone_enabled(int p_bone) const;

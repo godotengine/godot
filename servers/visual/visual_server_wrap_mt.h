@@ -909,6 +909,8 @@ public:
 	FUNC2(baked_light_set_octree,RID,DVector<uint8_t>);
 	FUNC1RC(DVector<uint8_t>,baked_light_get_octree,RID);
 
+	FUNC2(baked_light_set_lightmap_multiplier,RID,float);
+	FUNC1RC(float,baked_light_get_lightmap_multiplier,RID);
 
 	FUNC3(baked_light_add_lightmap,RID,RID,int);
 	FUNC1(baked_light_clear_lightmaps,RID);

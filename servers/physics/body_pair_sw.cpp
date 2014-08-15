@@ -227,6 +227,7 @@ bool BodyPairSW::setup(float p_step) {
 		Vector3 global_A = xform_Au.xform(c.local_A);
 		Vector3 global_B = xform_Bu.xform(c.local_B);
 
+
 		real_t depth = c.normal.dot(global_A - global_B);
 
 		if (depth<=0) {

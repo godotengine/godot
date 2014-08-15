@@ -103,6 +103,8 @@ class Navigation : public Spatial {
 		return Vector3(p_point.x,p_point.y,p_point.z)*cell_size;
 	}
 
+
+
 	void _navmesh_link(int p_id);
 	void _navmesh_unlink(int p_id);
 
@@ -110,18 +112,23 @@ class Navigation : public Spatial {
 	Map<int,NavMesh> navmesh_map;
 	int last_id;
 
+	Vector3 up;
+
 protected:
 
 	static void _bind_methods();
 
 public:
 
+	void set_up_vector(const Vector3& p_up);
+	Vector3 get_up_vector() const;
+
 	//API should be as dynamic as possible
 	int navmesh_create(const Ref<NavigationMesh>& p_mesh,const Transform& p_xform);
 	void navmesh_set_transform(int p_id, const Transform& p_xform);
 	void navmesh_remove(int p_id);
 
-	Vector<Vector3> get_simple_path(const Vector3& p_start, const Vector3& p_end);
+	Vector<Vector3> get_simple_path(const Vector3& p_start, const Vector3& p_end,bool p_optimize=true);
 	Vector3 get_closest_point_to_segment(const Vector3& p_from,const Vector3& p_to);
 	Vector3 get_closest_point(const Vector3& p_point);
 	Vector3 get_closest_point_normal(const Vector3& p_point);

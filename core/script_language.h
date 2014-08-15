@@ -248,7 +248,7 @@ public:
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
 
 	ScriptDebugger();
-	virtual ~ScriptDebugger() {}
+	virtual ~ScriptDebugger() {singleton=NULL;}
 
 };
 

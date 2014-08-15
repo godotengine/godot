@@ -5,6 +5,7 @@ void BakedLight::set_mode(Mode p_mode) {
 
 	mode=p_mode;
 	VS::get_singleton()->baked_light_set_mode(baked_light,(VS::BakedLightMode(p_mode)));
+
 }
 
 BakedLight::Mode BakedLight::get_mode() const{
@@ -123,7 +124,7 @@ void BakedLight::_set_lightmap_data(Array p_array){
 
 		Size2 size = p_array[i];
 		Ref<Texture> tex = p_array[i+1];
-		ERR_CONTINUE(tex.is_null());
+//		ERR_CONTINUE(tex.is_null());
 		LightMap lm;
 		lm.gen_size=size;
 		lm.texture=tex;
@@ -228,13 +229,24 @@ bool BakedLight::get_bake_flag(BakeFlags p_flags) const{
 void BakedLight::set_format(Format p_format) {
 
 	format=p_format;
-
+	VS::get_singleton()->baked_light_set_lightmap_multiplier(baked_light,format==FORMAT_HDR8?8.0:1.0);
 }
 
 BakedLight::Format BakedLight::get_format() const{
 
 	return format;
 }
+
+void BakedLight::set_transfer_lightmaps_only_to_uv2(bool p_enable) {
+
+	transfer_only_uv2=p_enable;
+}
+
+bool BakedLight::get_transfer_lightmaps_only_to_uv2() const{
+
+	return transfer_only_uv2;
+}
+
 
 bool BakedLight::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -348,6 +360,11 @@ void BakedLight::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_format","format"),&BakedLight::set_format);
 	ObjectTypeDB::bind_method(_MD("get_format"),&BakedLight::get_format);
 
+	ObjectTypeDB::bind_method(_MD("set_transfer_lightmaps_only_to_uv2","enable"),&BakedLight::set_transfer_lightmaps_only_to_uv2);
+	ObjectTypeDB::bind_method(_MD("get_transfer_lightmaps_only_to_uv2"),&BakedLight::get_transfer_lightmaps_only_to_uv2);
+
+
+
 
 	ObjectTypeDB::bind_method(_MD("set_energy_multiplier","energy_multiplier"),&BakedLight::set_energy_multiplier);
 	ObjectTypeDB::bind_method(_MD("get_energy_multiplier"),&BakedLight::get_energy_multiplier);
@@ -371,6 +388,7 @@ void BakedLight::_bind_methods(){
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/specular"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_SPECULAR);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/translucent"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_TRANSLUCENT);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/conserve_energy"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_CONSERVE_ENERGY);
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"lightmap/use_only_uv2"),_SCS("set_transfer_lightmaps_only_to_uv2"),_SCS("get_transfer_lightmaps_only_to_uv2"));
 
 	ADD_PROPERTY( PropertyInfo(Variant::RAW_ARRAY,"octree",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_octree"),_SCS("get_octree"));
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"lightmaps",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_lightmap_data"),_SCS("_get_lightmap_data"));
@@ -403,6 +421,7 @@ BakedLight::BakedLight() {
 	edge_damp=0.0;
 	normal_damp=0.0;
 	format=FORMAT_RGB;
+	transfer_only_uv2=false;
 
 	flags[BAKE_DIFFUSE]=true;
 	flags[BAKE_SPECULAR]=false;

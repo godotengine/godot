@@ -8,6 +8,9 @@
 precision mediump float;
 precision mediump int;
 #endif
+
+
+
 /*
 from VisualServer:
 
@@ -21,6 +24,26 @@ ARRAY_BONES=6,
 ARRAY_WEIGHTS=7,
 ARRAY_INDEX=8,
 */
+
+//hack to use uv if no uv present so it works with lightmap
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+#ifdef USE_LIGHTMAP_ON_UV2
+
+#ifndef ENABLE_UV2_INTERP
+#define ENABLE_UV2_INTERP
+#endif
+
+#else
+
+#ifndef ENABLE_UV_INTERP
+#define ENABLE_UV_INTERP
+#endif
+
+#endif
+
+#endif
+
 
 /* INPUT ATTRIBS */
 
@@ -238,6 +261,7 @@ void main() {
 #if defined(ENABLE_TANGENT_INTERP)
 	vec3 tangent_in = tangent_attrib.xyz;
 	tangent_in*=normal_mult;
+	float binormalf = tangent_attrib.a;
 #endif
 
 #ifdef USE_SKELETON
@@ -272,7 +296,7 @@ void main() {
 
 #if defined(ENABLE_TANGENT_INTERP)
 	tangent_interp=normalize(tangent_in);
-	binormal_interp = normalize( cross(normal_interp,tangent_interp) * tangent_attrib.a );
+	binormal_interp = normalize( cross(normal_interp,tangent_interp) * binormalf );
 #endif
 
 #if defined(ENABLE_UV_INTERP)
@@ -453,6 +477,27 @@ precision mediump int;
 
 #endif
 
+
+//hack to use uv if no uv present so it works with lightmap
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+#ifdef USE_LIGHTMAP_ON_UV2
+
+#ifndef ENABLE_UV2_INTERP
+#define ENABLE_UV2_INTERP
+#endif
+
+#else
+
+#ifndef ENABLE_UV_INTERP
+#define ENABLE_UV_INTERP
+#endif
+
+#endif
+
+#endif
+
+
 /* Varyings */
 
 #if defined(ENABLE_COLOR_INTERP)
@@ -542,6 +587,13 @@ uniform highp float ambient_octree_lattice_divide;
 uniform highp sampler2D ambient_octree_tex;
 uniform float ambient_octree_multiplier;
 uniform int ambient_octree_steps;
+
+#endif
+
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+uniform highp sampler2D ambient_lightmap;
+uniform float ambient_lightmap_multiplier;
 
 #endif
 
@@ -783,6 +835,34 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+	float shadow_attenuation = 1.0;
+
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+	vec3 ambientmap_color = vec3(0.0,0.0,0.0);
+	vec2 ambientmap_uv = vec2(0.0,0.0);
+
+#ifdef USE_LIGHTMAP_ON_UV2
+
+	ambientmap_uv = uv2_interp;
+
+#else
+
+	ambientmap_uv = uv_interp;
+
+#endif
+
+	vec4 amcol = texture2D(ambient_lightmap,ambientmap_uv);
+	shadow_attenuation=amcol.a;
+	ambientmap_color = amcol.rgb;
+	ambientmap_color*=ambient_lightmap_multiplier;
+	ambientmap_color*=diffuse.rgb;
+
+
+
+#endif
+
+
 #ifdef ENABLE_AMBIENT_OCTREE
 
 	vec3 ambientmap_color = vec3(0.0,0.0,0.0);
@@ -828,7 +908,7 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-        float shadow_attenuation = 1.0;
+
 
 
 
@@ -1120,7 +1200,7 @@ LIGHT_SHADER_CODE
 #endif
 
 
-#ifdef ENABLE_AMBIENT_OCTREE
+#if defined(ENABLE_AMBIENT_OCTREE) || defined(ENABLE_AMBIENT_LIGHTMAP)
 
 	diffuse.rgb+=ambientmap_color;
 #endif
