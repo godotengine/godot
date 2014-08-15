@@ -1780,9 +1780,9 @@ void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int heigh
 				final*=8.0;
 
 
-			color.r=pow(final.x*mult,gamma);
-			color.g=pow(final.y*mult,gamma);
-			color.b=pow(final.z*mult,gamma);
+			color.r=pow((float)final.x*mult,gamma);
+			color.g=pow((float)final.y*mult,gamma);
+			color.b=pow((float)final.z*mult,gamma);
 			color.a=1.0;
 
 			int lc = lights.size();

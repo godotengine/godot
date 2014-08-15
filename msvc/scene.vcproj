@@ -774,6 +774,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\3d\vehicle_body.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\vehicle_body.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\3d\visibility_notifier.cpp"
 					>
 				</File>
