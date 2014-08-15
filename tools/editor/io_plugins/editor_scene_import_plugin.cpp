@@ -1571,14 +1571,13 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 							}
 						}
 
-						// Append function callbacks
+						// Append function callbacks and values
 						for (int x = 0; x < found->get_track_count(); x++) {
-							if (found->track_get_type(x) == Animation::TYPE_METHOD)
-								candidate->add_track(Animation::TYPE_METHOD, candidate->get_track_count());
+							if (found->track_get_type(x) == Animation::TYPE_METHOD || found->track_get_type(x) == Animation::TYPE_VALUE)
+								candidate->add_track(found->track_get_type(x), candidate->get_track_count());
 
-							for (int k = 0; k < found->track_get_key_count(x); k++) {
+							for (int k = 0; k < found->track_get_key_count(x); k++)
 								candidate->track_insert_key(x, found->track_get_key_time(x, k), found->track_get_key_value(x, k), found->track_get_key_transition(x, k));
-							}
 						}
 					}
 
