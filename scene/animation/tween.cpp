@@ -123,13 +123,13 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tween_process_mode"),&Tween::get_tween_process_mode);
 
 	ObjectTypeDB::bind_method(_MD("start"),&Tween::start );
-	ObjectTypeDB::bind_method(_MD("reset","object,key"),&Tween::reset );
+	ObjectTypeDB::bind_method(_MD("reset","object","key"),&Tween::reset );
 	ObjectTypeDB::bind_method(_MD("reset_all"),&Tween::reset_all );
-	ObjectTypeDB::bind_method(_MD("stop","object,key"),&Tween::stop );
+	ObjectTypeDB::bind_method(_MD("stop","object","key"),&Tween::stop );
 	ObjectTypeDB::bind_method(_MD("stop_all"),&Tween::stop_all );
-	ObjectTypeDB::bind_method(_MD("resume"),&Tween::resume );
+	ObjectTypeDB::bind_method(_MD("resume","object","key"),&Tween::resume );
 	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
-	ObjectTypeDB::bind_method(_MD("remove"),&Tween::remove );
+	ObjectTypeDB::bind_method(_MD("remove","object","key"),&Tween::remove );
 	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
 	ObjectTypeDB::bind_method(_MD("seek"),&Tween::seek );
 
@@ -140,6 +140,7 @@ void Tween::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("tween_step", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key"), PropertyInfo( Variant::REAL,"elapsed"), PropertyInfo( Variant::OBJECT,"value")) );
 	ADD_SIGNAL( MethodInfo("tween_complete", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
 
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_tween_process_mode"), _SCS("get_tween_process_mode"));
 	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "activate"), _SCS("set_active"), _SCS("is_active"));
 
 	BIND_CONSTANT(TRANS_LINEAR);
