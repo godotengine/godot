@@ -382,7 +382,6 @@ void OS_X11::finalize() {
 
 void OS_X11::set_mouse_mode(MouseMode p_mode) {
 
-	print_line("WUTF "+itos(p_mode)+" old "+itos(mouse_mode));
 	if (p_mode==mouse_mode)
 		return;
 
