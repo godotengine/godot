@@ -150,7 +150,7 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 	Variant result;
 
 #define APPLY_EQUATION(element)\
-	r.##element## = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed, i.##element##, d.##element##, p_data.times_in_sec);
+	r.element = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed, i.element, d.element, p_data.times_in_sec);
 
 	switch(initial_val.get_type())
 	{
@@ -164,8 +164,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 
 	case Variant::VECTOR2:
 		{
-			Vector2 i = (Vector2) initial_val;
-			Vector2 d = (Vector2) delta_val;
+			Vector2 i = initial_val;
+			Vector2 d = delta_val;
 			Vector2 r;
 
 			APPLY_EQUATION(x);
@@ -177,8 +177,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 
 	case Variant::VECTOR3:
 		{
-			Vector3 i = (Vector3) initial_val;
-			Vector3 d = (Vector3) delta_val;
+			Vector3 i = initial_val;
+			Vector3 d = delta_val;
 			Vector3 r;
 
 			APPLY_EQUATION(x);
@@ -191,8 +191,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 
 	case Variant::MATRIX3:
 		{
-			Matrix3 i = (Matrix3) initial_val;
-			Matrix3 d = (Matrix3) delta_val;
+			Matrix3 i = initial_val;
+			Matrix3 d = delta_val;
 			Matrix3 r;
 
 			APPLY_EQUATION(elements[0][0]);
@@ -211,8 +211,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 
 	case Variant::MATRIX32:
 		{
-			Matrix3 i = (Matrix3) initial_val;
-			Matrix3 d = (Matrix3) delta_val;
+			Matrix3 i = initial_val;
+			Matrix3 d = delta_val;
 			Matrix3 r;
 
 			APPLY_EQUATION(elements[0][0]);
@@ -227,8 +227,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 	break;
 	case Variant::QUAT:
 		{
-			Quat i = (Quat) initial_val;
-			Quat d = (Quat) delta_val;
+			Quat i = initial_val;
+			Quat d = delta_val;
 			Quat r;
 
 			APPLY_EQUATION(x);
@@ -241,8 +241,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 		break;
 	case Variant::_AABB:
 		{
-			AABB i = (AABB) initial_val;
-			AABB d = (AABB) delta_val;
+			AABB i = initial_val;
+			AABB d = delta_val;
 			AABB r;
 
 			APPLY_EQUATION(pos.x);
@@ -257,8 +257,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 		break;
 	case Variant::TRANSFORM:
 		{
-			Transform i = (Transform) initial_val;
-			Transform d = (Transform) delta_val;
+			Transform i = initial_val;
+			Transform d = delta_val;
 			Transform r;
 
 			APPLY_EQUATION(basis.elements[0][0]);
@@ -279,8 +279,8 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 		break;
 	case Variant::COLOR:
 		{
-			Color i = (Color) initial_val;
-			Color d = (Color) delta_val;
+			Color i = initial_val;
+			Color d = delta_val;
 			Color r;
 
 			APPLY_EQUATION(r);
@@ -501,17 +501,17 @@ bool Tween::_calc_delta_val(InterpolateData& p_data) {
 			break;
 
 		case Variant::VECTOR2:
-			delta_val = (Vector2) final_val - (Vector2) initial_val;
+			delta_val = final_val.operator Vector2() - initial_val.operator Vector2();
 			break;
 
 		case Variant::VECTOR3:
-			delta_val = (Vector3) final_val - (Vector3) initial_val;
+			delta_val = final_val.operator Vector3() - initial_val.operator Vector3();
 			break;
 
 		case Variant::MATRIX3:
 			{
-				Matrix3 i = (Matrix3) initial_val;
-				Matrix3 f = (Matrix3) final_val;
+				Matrix3 i = initial_val;
+				Matrix3 f = final_val;
 				delta_val = Matrix3(f.elements[0][0] - i.elements[0][0],
 					f.elements[0][1] - i.elements[0][1],
 					f.elements[0][2] - i.elements[0][2],
@@ -527,8 +527,8 @@ bool Tween::_calc_delta_val(InterpolateData& p_data) {
 
 		case Variant::MATRIX32:
 			{
-				Matrix32 i = (Matrix32) initial_val;
-				Matrix32 f = (Matrix32) final_val;
+				Matrix32 i = initial_val;
+				Matrix32 f = final_val;
 				Matrix32 d = Matrix32();
 				d[0][0] = f.elements[0][0] - i.elements[0][0];
 				d[0][1] = f.elements[0][1] - i.elements[0][1];
@@ -540,19 +540,19 @@ bool Tween::_calc_delta_val(InterpolateData& p_data) {
 			}
 			break;
 		case Variant::QUAT:
-			delta_val = (Quat) final_val - (Quat) initial_val;
+			delta_val = final_val.operator Quat() - initial_val.operator Quat();
 			break;
 		case Variant::_AABB:
 			{
-				AABB i = (AABB) initial_val;
-				AABB f = (AABB) final_val;
+				AABB i = initial_val;
+				AABB f = final_val;
 				delta_val = AABB(f.pos - i.pos, f.size - i.size);
 			}
 			break;
 		case Variant::TRANSFORM:
 			{
-				Transform i = (Transform) initial_val;
-				Transform f = (Transform) final_val;
+				Transform i = initial_val;
+				Transform f = final_val;
 				Transform d;
 				d.set(f.basis.elements[0][0] - i.basis.elements[0][0],
 					f.basis.elements[0][1] - i.basis.elements[0][1],
@@ -573,8 +573,8 @@ bool Tween::_calc_delta_val(InterpolateData& p_data) {
 			break;
 		case Variant::COLOR:
 			{
-				Color i = (Color) initial_val;
-				Color f = (Color) final_val;
+				Color i = initial_val;
+				Color f = final_val;
 				delta_val = Color(f.r - i.r, f.g - i.g, f.b - i.b, f.a - i.a);
 			}
 			break;
