@@ -833,6 +833,18 @@
 					RelativePath="..\scene\animation\transitioner.h"
 					>
 				</File>
+				<File
+					RelativePath="..\scene\animation\tween.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\animation\tween.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\animation\tween_interpolaters.cpp"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="audio"
