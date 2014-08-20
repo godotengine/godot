@@ -14261,7 +14261,21 @@
 			<argument index="0" name="path" type="NodePath">
 			</argument>
 			<description>
-			Fetch a node. "path" must be valid (or else error will occur) and can be either the name of a child node, a relative path (from the current node to another node), or an absolute path to a node.[br] Examples ofa paths are: get_node("Sword") , get_node("../Swamp/Alligator") , get_node("/MyGame"). [br]Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_scene]).
+                Fetch a node. NodePath must be valid (or else error will occur) and can be either the path to child node, a relative path (from the current node to another node), or an absolute path to a node.[br] Note: fetching absolute paths only works when the node is inside the scene tree (see [method is_inside_scene]). Examples. Assume your current node is Character and following tree:[br]
+    root/[br]
+    root/Character[br]
+    root/Character/Sword[br]
+    root/Character/Backpack/Dagger[br]
+    root/MyGame[br]
+    root/Swamp/Alligator[br]
+    root/Swamp/Mosquito[br]
+    root/Swamp/Goblin[br]
+[br]
+    Possible paths are:[br]
+    - get_node("Sword")[br]
+    - get_node("Backpack/Dagger")[br]
+    - get_node("../Swamp/Alligator")[br]
+    - get_node("/root/MyGame")[br]
 			</description>
 		</method>
 		<method name="get_parent" qualifiers="const" >
