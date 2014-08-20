@@ -130,6 +130,8 @@ public:
 	bool stop_all();
 	bool resume(Variant p_object, String p_key);
 	bool resume_all();
+	bool remove(Variant p_object, String p_key);
+	bool remove_all();
 
 	bool interpolate_property(Variant p_object
 		, String p_property

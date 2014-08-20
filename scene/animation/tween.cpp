@@ -115,6 +115,10 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("reset_all"),&Tween::reset_all );
 	ObjectTypeDB::bind_method(_MD("stop","object,key"),&Tween::stop );
 	ObjectTypeDB::bind_method(_MD("stop_all"),&Tween::stop_all );
+	ObjectTypeDB::bind_method(_MD("resume"),&Tween::resume );
+	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
+	ObjectTypeDB::bind_method(_MD("remove"),&Tween::remove );
+	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
 
 	ObjectTypeDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type"),&Tween::interpolate_property );
 	ObjectTypeDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type"),&Tween::interpolate_method );
@@ -484,6 +488,29 @@ bool Tween::resume_all() {
 	}
 	return true;
 }
+
+bool Tween::remove(Variant p_object, String p_key) {
+
+	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
+
+		InterpolateData& data = E->get();
+		if(data.object == p_object && data.key == p_key) {
+
+			interpolates.erase(E);
+			return true;
+		}
+	}
+	return true;
+}
+
+bool Tween::remove_all() {
+
+	set_active(false);
+	_set_process(false);
+	interpolates.clear();
+	return true;
+}
+
 
 bool Tween::_calc_delta_val(InterpolateData& p_data) {
 
