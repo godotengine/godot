@@ -108,6 +108,7 @@
 
 #include "scene/animation/animation_player.h"
 #include "scene/animation/animation_tree_player.h"
+#include "scene/animation/tween.h"
 #include "scene/main/scene_main_loop.h"
 #include "scene/main/resource_preloader.h"
 #include "scene/resources/packed_scene.h"
@@ -369,6 +370,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Spatial>();
 	ObjectTypeDB::register_type<Skeleton>();
 	ObjectTypeDB::register_type<AnimationPlayer>();
+	ObjectTypeDB::register_type<Tween>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
