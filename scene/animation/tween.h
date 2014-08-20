@@ -88,6 +88,7 @@ private:
 	TweenProcessMode tween_process_mode;
 	bool processing;
 	bool active;
+	bool repeat;
 	float speed_scale;
 
 	List<InterpolateData> interpolates;
@@ -117,6 +118,9 @@ public:
 	bool is_active() const;
 	void set_active(bool p_active);
 
+	bool is_repeat() const;
+	void set_repeat(bool p_repeat);
+
 	void set_tween_process_mode(TweenProcessMode p_mode);
 	TweenProcessMode get_tween_process_mode() const;
 
@@ -132,6 +136,8 @@ public:
 	bool resume_all();
 	bool remove(Variant p_object, String p_key);
 	bool remove_all();
+
+	bool seek(real_t p_time);
 
 	bool interpolate_property(Variant p_object
 		, String p_property

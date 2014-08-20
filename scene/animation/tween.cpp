@@ -37,6 +37,10 @@ bool Tween::_set(const StringName& p_name, const Variant& p_value) {
 
 	} else if (name=="playback/active") {
 		set_active(p_value);
+
+	} else if (name=="playback/repeat") {
+		set_repeat(p_value);
+
 	}
 	return true;
 }
@@ -51,13 +55,18 @@ bool Tween::_get(const StringName& p_name,Variant &r_ret) const {
 	} else if (name=="playback/active") {
 
 		r_ret=is_active();
+	} else if(name=="playback/repeat") {
+
+		r_ret=is_repeat();
 	}
+
 	return true;
 }
 
 void Tween::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::BOOL, "playback/active", PROPERTY_HINT_NONE,"" ) );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "playback/repeat", PROPERTY_HINT_NONE,"" ) );
 	p_list->push_back( PropertyInfo( Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01") );
 }
 
@@ -104,6 +113,9 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_active"),&Tween::is_active );
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&Tween::set_active );
 
+	ObjectTypeDB::bind_method(_MD("is_repeat"),&Tween::is_repeat );
+	ObjectTypeDB::bind_method(_MD("set_repeat","repeat"),&Tween::set_repeat );
+
 	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&Tween::set_speed);
 	ObjectTypeDB::bind_method(_MD("get_speed"),&Tween::get_speed);
 
@@ -119,13 +131,14 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
 	ObjectTypeDB::bind_method(_MD("remove"),&Tween::remove );
 	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
+	ObjectTypeDB::bind_method(_MD("seek"),&Tween::seek );
 
 	ObjectTypeDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type"),&Tween::interpolate_property );
 	ObjectTypeDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type"),&Tween::interpolate_method );
 
 	ADD_SIGNAL( MethodInfo("tween_start", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
-	ADD_SIGNAL( MethodInfo("tween_step", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key"), PropertyInfo( Variant::OBJECT,"value")) );
-	ADD_SIGNAL( MethodInfo("tween_complete", PropertyInfo( Variant::INT,"id")) );
+	ADD_SIGNAL( MethodInfo("tween_step", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key"), PropertyInfo( Variant::REAL,"elapsed"), PropertyInfo( Variant::OBJECT,"value")) );
+	ADD_SIGNAL( MethodInfo("tween_complete", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
 
 	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "activate"), _SCS("set_active"), _SCS("is_active"));
 
@@ -334,8 +347,14 @@ void Tween::_tween_process(float p_delta) {
 	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
 
 		InterpolateData& data = E->get();
-		if(!data.active || data.elapsed == data.times_in_sec)
+		if(!data.active)
 			continue;
+		if(data.elapsed == data.times_in_sec) {
+
+			if(!repeat)
+				continue;
+			data.elapsed = 0;
+		}
 
 		if(data.elapsed == 0)
 			emit_signal("tween_start",data.object,data.key);
@@ -345,7 +364,7 @@ void Tween::_tween_process(float p_delta) {
 			data.elapsed = data.times_in_sec;
 
 		Variant result = _run_equation(data);
-		emit_signal("tween_step",data.object,data.key,result);
+		emit_signal("tween_step",data.object,data.key,data.elapsed,result);
 
 		_apply_tween_value(data, result);
 
@@ -398,6 +417,16 @@ void Tween::set_active(bool p_active) {
 
 	active=p_active;
 	_set_process(processing,true);
+}
+
+bool Tween::is_repeat() const {
+
+	return repeat;
+}
+
+void Tween::set_repeat(bool p_repeat) {
+
+	repeat = p_repeat;
 }
 
 void Tween::set_speed(float p_speed) {
@@ -511,6 +540,22 @@ bool Tween::remove_all() {
 	return true;
 }
 
+bool Tween::seek(real_t p_time) {
+
+	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
+
+		InterpolateData& data = E->get();
+
+		data.elapsed = p_time;
+		if(data.elapsed > data.times_in_sec)
+			data.elapsed = data.times_in_sec;
+
+		Variant result = _run_equation(data);
+
+		_apply_tween_value(data, result);
+	}
+	return true;
+}
 
 bool Tween::_calc_delta_val(InterpolateData& p_data) {
 
@@ -703,6 +748,7 @@ Tween::Tween() {
 	tween_process_mode=TWEEN_PROCESS_IDLE;
 	processing=false;
 	active=false;
+	repeat=false;
 	speed_scale=1;
 }
 
