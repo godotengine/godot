@@ -464,7 +464,8 @@ bool Tween::reset(Variant p_object, String p_key) {
 
 			data.elapsed = 0;
 			data.finish = false;
-			_apply_tween_value(data, data.initial_val);
+			if(data.delay == 0)
+				_apply_tween_value(data, data.initial_val);
 		}
 	}
 	return true;
@@ -477,7 +478,8 @@ bool Tween::reset_all() {
 		InterpolateData& data = E->get();
 		data.elapsed = 0;
 		data.finish = false;
-		_apply_tween_value(data, data.initial_val);
+		if(data.delay == 0)
+			_apply_tween_value(data, data.initial_val);
 	}
 	return true;
 }
