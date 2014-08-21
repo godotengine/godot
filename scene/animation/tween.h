@@ -72,6 +72,7 @@ private:
 	struct InterpolateData {
 		bool active;
 		bool is_method;
+		bool finish;
 		real_t elapsed;
 
 		Variant object;
@@ -82,6 +83,7 @@ private:
 		real_t times_in_sec;
 		TransitionType trans_type;
 		EaseType ease_type;
+		real_t delay;
 	};
 
 	String autoplay;
@@ -138,6 +140,7 @@ public:
 	bool remove_all();
 
 	bool seek(real_t p_time);
+	real_t get_runtime();
 
 	bool interpolate_property(Variant p_object
 		, String p_property
@@ -146,6 +149,7 @@ public:
 		, real_t p_times_in_sec
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
+		, real_t p_delay = 0
 	);
 
 	bool interpolate_method(Variant p_object
@@ -155,6 +159,7 @@ public:
 		, real_t p_times_in_sec
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
+		, real_t p_delay = 0
 	);
 
 	Tween();

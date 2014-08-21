@@ -132,9 +132,10 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("remove","object","key"),&Tween::remove );
 	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
 	ObjectTypeDB::bind_method(_MD("seek"),&Tween::seek );
+	ObjectTypeDB::bind_method(_MD("get_runtime"),&Tween::get_runtime );
 
-	ObjectTypeDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type"),&Tween::interpolate_property );
-	ObjectTypeDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type"),&Tween::interpolate_method );
+	ObjectTypeDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_property, DEFVAL(0) );
+	ObjectTypeDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_method, DEFVAL(0) );
 
 	ADD_SIGNAL( MethodInfo("tween_start", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key")) );
 	ADD_SIGNAL( MethodInfo("tween_step", PropertyInfo( Variant::OBJECT,"object"), PropertyInfo( Variant::STRING,"key"), PropertyInfo( Variant::REAL,"elapsed"), PropertyInfo( Variant::OBJECT,"value")) );
@@ -168,16 +169,16 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 	Variant result;
 
 #define APPLY_EQUATION(element)\
-	r.element = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed, i.element, d.element, p_data.times_in_sec);
+	r.element = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, i.element, d.element, p_data.times_in_sec);
 
 	switch(initial_val.get_type())
 	{
 	case Variant::INT:
-		result = (int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed, (int) initial_val, (int) delta_val, p_data.times_in_sec);
+		result = (int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec);
 		break;
 
 	case Variant::REAL:
-		result = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed, (real_t) initial_val, (real_t) delta_val, p_data.times_in_sec);
+		result = _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (real_t) initial_val, (real_t) delta_val, p_data.times_in_sec);
 		break;
 
 	case Variant::VECTOR2:
@@ -350,26 +351,33 @@ void Tween::_tween_process(float p_delta) {
 		InterpolateData& data = E->get();
 		if(!data.active)
 			continue;
-		if(data.elapsed == data.times_in_sec) {
 
+		if(data.finish) {
 			if(!repeat)
 				continue;
 			data.elapsed = 0;
+			data.finish = false;
 		}
 
-		if(data.elapsed == 0)
+		bool prev_delaying = data.elapsed <= data.delay;
+		data.elapsed += p_delta;
+		if(data.elapsed < data.delay)
+			continue;
+		else if(prev_delaying)
 			emit_signal("tween_start",data.object,data.key);
 
-		data.elapsed += p_delta;
-		if(data.elapsed > data.times_in_sec)
-			data.elapsed = data.times_in_sec;
+		if(data.elapsed > (data.delay + data.times_in_sec)) {
+
+			data.elapsed = data.delay + data.times_in_sec;
+			data.finish = true;
+		}
 
 		Variant result = _run_equation(data);
 		emit_signal("tween_step",data.object,data.key,data.elapsed,result);
 
 		_apply_tween_value(data, result);
 
-		if(data.elapsed == data.times_in_sec)
+		if(data.finish)
 			emit_signal("tween_complete",data.object,data.key);
 	}
 }
@@ -452,8 +460,12 @@ bool Tween::reset(Variant p_object, String p_key) {
 	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
 
 		InterpolateData& data = E->get();
-		if(data.object == p_object && data.key == p_key)
+		if(data.object == p_object && data.key == p_key) {
+
+			data.elapsed = 0;
+			data.finish = false;
 			_apply_tween_value(data, data.initial_val);
+		}
 	}
 	return true;
 }
@@ -463,6 +475,8 @@ bool Tween::reset_all() {
 	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
 
 		InterpolateData& data = E->get();
+		data.elapsed = 0;
+		data.finish = false;
 		_apply_tween_value(data, data.initial_val);
 	}
 	return true;
@@ -548,14 +562,29 @@ bool Tween::seek(real_t p_time) {
 		InterpolateData& data = E->get();
 
 		data.elapsed = p_time;
-		if(data.elapsed > data.times_in_sec)
-			data.elapsed = data.times_in_sec;
+		if(data.elapsed < data.delay)
+			continue;
+		else if(data.elapsed > (data.delay + data.times_in_sec))
+			data.elapsed = (data.delay + data.times_in_sec);
 
 		Variant result = _run_equation(data);
 
 		_apply_tween_value(data, result);
 	}
 	return true;
+}
+
+real_t Tween::get_runtime() {
+
+	real_t runtime = 0;
+	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
+
+		InterpolateData& data = E->get();
+		real_t t = data.delay + data.times_in_sec;
+		if(t > runtime)
+			runtime = t;
+	}
+	return runtime;
 }
 
 bool Tween::_calc_delta_val(InterpolateData& p_data) {
@@ -666,11 +695,18 @@ bool Tween::interpolate_property(Variant p_object
 	, real_t p_times_in_sec
 	, TransitionType p_trans_type
 	, EaseType p_ease_type
+	, real_t p_delay
 ) {
+	// convert INT to REAL is better for interpolaters
+	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
+	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object.get_type() != Variant::OBJECT, false);
 	ERR_FAIL_COND_V(p_initial_val.get_type() != p_final_val.get_type(), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
+	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
+	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
+	ERR_FAIL_COND_V(p_delay < 0, false);
 
 	bool prop_found = false;
 	Object *obj = (Object *) p_object;
@@ -690,6 +726,7 @@ bool Tween::interpolate_property(Variant p_object
 	InterpolateData data;
 	data.active = true;
 	data.is_method = false;
+	data.finish = false;
 	data.elapsed = 0;
 
 	data.object = p_object;
@@ -699,6 +736,7 @@ bool Tween::interpolate_property(Variant p_object
 	data.times_in_sec = p_times_in_sec;
 	data.trans_type = p_trans_type;
 	data.ease_type = p_ease_type;
+	data.delay = p_delay;
 
 	if(!_calc_delta_val(data))
 		return false;
@@ -714,11 +752,18 @@ bool Tween::interpolate_method(Variant p_object
 	, real_t p_times_in_sec
 	, TransitionType p_trans_type
 	, EaseType p_ease_type
+	, real_t p_delay
 ) {
+	// convert INT to REAL is better for interpolaters
+	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
+	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
 	ERR_FAIL_COND_V(p_object.get_type() != Variant::OBJECT, false);
 	ERR_FAIL_COND_V(p_initial_val.get_type() != p_final_val.get_type(), false);
 	ERR_FAIL_COND_V(p_times_in_sec <= 0, false);
+	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false);
+	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
+	ERR_FAIL_COND_V(p_delay < 0, false);
 
 	Object *obj = (Object *) p_object;
 	ERR_FAIL_COND_V(!obj->has_method(p_method), false);
@@ -726,6 +771,7 @@ bool Tween::interpolate_method(Variant p_object
 	InterpolateData data;
 	data.active = true;
 	data.is_method = true;
+	data.finish = false;
 	data.elapsed = 0;
 
 	data.object = p_object;
@@ -735,6 +781,7 @@ bool Tween::interpolate_method(Variant p_object
 	data.times_in_sec = p_times_in_sec;
 	data.trans_type = p_trans_type;
 	data.ease_type = p_ease_type;
+	data.delay = p_delay;
 
 	if(!_calc_delta_val(data))
 		return false;
