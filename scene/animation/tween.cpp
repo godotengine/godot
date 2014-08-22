@@ -131,7 +131,8 @@ void Tween::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("resume_all"),&Tween::resume_all );
 	ObjectTypeDB::bind_method(_MD("remove","node","key"),&Tween::remove );
 	ObjectTypeDB::bind_method(_MD("remove_all"),&Tween::remove_all );
-	ObjectTypeDB::bind_method(_MD("seek"),&Tween::seek );
+	ObjectTypeDB::bind_method(_MD("seek","time"),&Tween::seek );
+	ObjectTypeDB::bind_method(_MD("tell"),&Tween::tell );
 	ObjectTypeDB::bind_method(_MD("get_runtime"),&Tween::get_runtime );
 
 	ObjectTypeDB::bind_method(_MD("interpolate_property","node","property","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_property, DEFVAL(0) );
@@ -615,10 +616,17 @@ bool Tween::seek(real_t p_time) {
 		InterpolateData& data = E->get();
 
 		data.elapsed = p_time;
-		if(data.elapsed < data.delay)
+		if(data.elapsed < data.delay) {
+
+			data.finish = false;
 			continue;
-		else if(data.elapsed > (data.delay + data.times_in_sec))
+		}
+		else if(data.elapsed >= (data.delay + data.times_in_sec)) {
+
+			data.finish = true;
 			data.elapsed = (data.delay + data.times_in_sec);
+		} else
+			data.finish = false;
 
 		switch(data.type)
 		{
@@ -636,12 +644,24 @@ bool Tween::seek(real_t p_time) {
 	return true;
 }
 
-real_t Tween::get_runtime() {
+real_t Tween::tell() const {
+
+	real_t pos = 0;
+	for(const List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
+
+		const InterpolateData& data = E->get();
+		if(data.elapsed > pos)
+			pos = data.elapsed;
+	}
+	return pos;
+}
+
+real_t Tween::get_runtime() const {
 
 	real_t runtime = 0;
-	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
+	for(const List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
 
-		InterpolateData& data = E->get();
+		const InterpolateData& data = E->get();
 		real_t t = data.delay + data.times_in_sec;
 		if(t > runtime)
 			runtime = t;

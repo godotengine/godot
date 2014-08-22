@@ -147,7 +147,8 @@ public:
 	bool remove_all();
 
 	bool seek(real_t p_time);
-	real_t get_runtime();
+	real_t tell() const;
+	real_t get_runtime() const;
 
 	bool interpolate_property(Node *p_node
 		, String p_property
