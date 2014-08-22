@@ -7,7 +7,7 @@ extends Control
 
 var trans = ["linear", "sine", "quint", "quart", "quad", "expo", "elastic", "cubic", "circ", "bounce", "back"]
 var eases = ["in", "out", "in_out", "out_in"]
-var modes = ["move", "color", "scale", "rotate", "repeat", "pause"]
+var modes = ["move", "color", "scale", "rotate", "callback", "repeat", "pause"]
 
 var state = {
 	trans = Tween.TRANS_LINEAR,
@@ -105,6 +105,10 @@ func reset_tween():
 		tween.interpolate_method(sprite, "set_rot", 0, 6.28, 2, state.trans, state.eases)
 		tween.interpolate_method(sprite, "set_rot", 6.28, 0, 2, state.trans, state.eases, 2)
 	
+	if get_node("modes/callback").is_pressed():
+		tween.interpolate_callback(self, "on_callback", 0.5, "0.5 second's after")
+		tween.interpolate_callback(self, "on_callback", 1.2, "1.2 second's after")
+	
 	tween.set_repeat(get_node("modes/repeat").is_pressed())
 	tween.start()
 	
@@ -134,3 +138,5 @@ func _on_timeline_value_changed( value ):
 	var runtime = tween.get_runtime()
 	tween.seek(runtime * value / 100)
 	
+func on_callback(arg):
+	print("on_callback -> ", arg)
