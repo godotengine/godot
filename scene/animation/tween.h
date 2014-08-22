@@ -68,14 +68,20 @@ public:
     };
 
 private:
+	enum InterpolateType {
+
+		INTER_PROPERTY,
+		INTER_METHOD,
+		INTER_CALLBACK,
+	};
 
 	struct InterpolateData {
 		bool active;
-		bool is_method;
+		InterpolateType type;
 		bool finish;
 		real_t elapsed;
 
-		Variant object;
+		NodePath path;
 		String key;
 		Variant initial_val;
 		Variant delta_val;
@@ -84,6 +90,7 @@ private:
 		TransitionType trans_type;
 		EaseType ease_type;
 		real_t delay;
+		Variant args;
 	};
 
 	String autoplay;
@@ -130,19 +137,19 @@ public:
 	float get_speed() const;
 
 	bool start();
-	bool reset(Variant p_object, String p_key);
+	bool reset(Node *p_node, String p_key);
 	bool reset_all();
-	bool stop(Variant p_object, String p_key);
+	bool stop(Node *p_node, String p_key);
 	bool stop_all();
-	bool resume(Variant p_object, String p_key);
+	bool resume(Node *p_node, String p_key);
 	bool resume_all();
-	bool remove(Variant p_object, String p_key);
+	bool remove(Node *p_node, String p_key);
 	bool remove_all();
 
 	bool seek(real_t p_time);
 	real_t get_runtime();
 
-	bool interpolate_property(Variant p_object
+	bool interpolate_property(Node *p_node
 		, String p_property
 		, Variant p_initial_val
 		, Variant p_final_val
@@ -152,7 +159,7 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool interpolate_method(Variant p_object
+	bool interpolate_method(Node *p_node
 		, String p_method
 		, Variant p_initial_val
 		, Variant p_final_val
@@ -160,6 +167,12 @@ public:
 		, TransitionType p_trans_type
 		, EaseType p_ease_type
 		, real_t p_delay = 0
+	);
+
+	bool interpolate_callback(Node *p_node
+		, String p_callback
+		, real_t p_times_in_sec
+		, Variant p_args = Variant()
 	);
 
 	Tween();
