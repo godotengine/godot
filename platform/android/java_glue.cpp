@@ -581,6 +581,8 @@ static Vector3 accelerometer;
 static HashMap<String,JNISingleton*> jni_singletons;
 static jobject godot_io;
 
+static Vector<int> joy_device_ids;
+
 typedef void (*GFXInitFunc)(void *ud,bool gl2);
 
 static jmethodID _on_video_init=0;
@@ -747,8 +749,36 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 	}
 
 
+	const char ** cmdline=NULL;
+	int cmdlen=0;
+	bool use_apk_expansion=false;
+	if (p_cmdline) {
+		cmdlen = env->GetArrayLength(p_cmdline);
+		if (cmdlen) {
+			cmdline = (const char**)malloc((env->GetArrayLength(p_cmdline)+1)*sizeof(const char*));
+			cmdline[cmdlen]=NULL;
 
-	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _play_video, _is_video_playing, _pause_video, _stop_video);
+			for (int i=0; i<cmdlen; i++) {
+
+				jstring string = (jstring) env->GetObjectArrayElement(p_cmdline, i);
+				const char *rawString = env->GetStringUTFChars(string, 0);
+				if (!rawString) {
+					__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is null\n",i);
+				} else {
+		//			__android_log_print(ANDROID_LOG_INFO,"godot","cmdline arg %i is: %s\n",i,rawString);
+
+					if (strcmp(rawString,"-main_pack")==0)
+						use_apk_expansion=true;
+				}
+
+				cmdline[i]=rawString;
+			}
+		}
+	}
+
+	__android_log_print(ANDROID_LOG_INFO,"godot","CMDLINE LEN %i - APK EXPANSION %I\n",cmdlen,int(use_apk_expansion));
+
+	os_android = new OS_Android(_gfx_init_func,env,_open_uri,_get_data_dir,_get_locale, _get_model,_show_vk, _hide_vk,_set_screen_orient,_get_unique_id, _play_video, _is_video_playing, _pause_video, _stop_video,use_apk_expansion);
 	os_android->set_need_reload_hooks(p_need_reload_hook);
 
 	char wd[500];
@@ -759,16 +789,6 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**SETUP");
 
-	const char ** cmdline=NULL;
-	int cmdlen = env->GetArrayLength(p_cmdline);
-	cmdline = (const char**)malloc((env->GetArrayLength(p_cmdline)+1)*sizeof(const char*));
-	cmdline[cmdlen]=NULL;
-	for (int i=0; i<cmdlen; i++) {
-
-		jstring string = (jstring) env->GetObjectArrayElement(p_cmdline, i);
-		const char *rawString = env->GetStringUTFChars(string, 0);
-		cmdline[i]=rawString;
-	}
 
 #if 0
 	char *args[]={"-test","render",NULL};
@@ -833,6 +853,7 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_quit(JNIEnv * env, jobjec
 
 	input_mutex->lock();
 	quit_request=true;
+	print_line("BACK PRESSED");
 	input_mutex->unlock();
 
 }
@@ -1262,6 +1283,49 @@ static unsigned int android_get_keysym(unsigned int p_code) {
 	return KEY_UNKNOWN;
 }
 
+static int find_device(int p_device) {
+
+	for (int i=0; i<joy_device_ids.size(); i++) {
+
+		if (joy_device_ids[i] == p_device) {
+			//print_line("found device at "+String::num(i));
+			return i;
+		};
+	};
+
+	//print_line("adding a device at" + String::num(joy_device_ids.size()));
+	joy_device_ids.push_back(p_device);
+
+	return joy_device_ids.size() - 1;
+};
+
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_joybutton(JNIEnv * env, jobject obj, jint p_device, jint p_button, jboolean p_pressed) {
+
+	InputEvent ievent;
+	ievent.type = InputEvent::JOYSTICK_BUTTON;
+	ievent.device = find_device(p_device);
+	ievent.joy_button.button_index = p_button;
+	ievent.joy_button.pressed = p_pressed;
+
+	input_mutex->lock();
+	key_events.push_back(ievent);
+	input_mutex->unlock();
+};
+
+JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_joyaxis(JNIEnv * env, jobject obj, jint p_device, jint p_axis, jfloat p_value) {
+
+	InputEvent ievent;
+	ievent.type = InputEvent::JOYSTICK_MOTION;
+	ievent.device = find_device(p_device);
+	ievent.joy_motion.axis = p_axis;
+	ievent.joy_motion.axis_value = p_value;
+
+	input_mutex->lock();
+	key_events.push_back(ievent);
+	input_mutex->unlock();
+};
+
+
 JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_key(JNIEnv * env, jobject obj, jint p_scancode, jint p_unicode_char, jboolean p_pressed) {
 
 	InputEvent ievent;
@@ -1289,7 +1353,10 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_key(JNIEnv * env, jobject
 	} else if (val == 61453) {
 		ievent.key.scancode = KEY_ENTER;
 		ievent.key.unicode = KEY_ENTER;
-	}
+	} else if (p_scancode==4) {
+
+	    quit_request=true;
+    }
 
 	input_mutex->lock();
 	key_events.push_back(ievent);
@@ -1390,7 +1457,7 @@ static Variant::Type get_jni_type(const String& p_type) {
 
 static const char* get_jni_sig(const String& p_type) {
 
-	print_line("getting sig for " + p_type);
+
 	static struct {
 		const char *name;
 		const char *sig;
@@ -1487,7 +1554,9 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_callobject(JNIEnv * env, 
 	for (int i=0; i<count; i++) {
 
 		jobject obj = env->GetObjectArrayElement(params, i);
-		Variant v = _jobject_to_variant(env, obj);
+		Variant v;
+		if (obj)
+			v=_jobject_to_variant(env, obj);
 		memnew_placement(&vlist[i], Variant);
 		vlist[i] = v;
 		vptr[i] = &vlist[i];
@@ -1508,11 +1577,17 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env
 	int count = env->GetArrayLength(params);
 	Variant args[VARIANT_ARG_MAX];
 
+//	print_line("Java->GD call: "+obj->get_type()+"::"+str_method+" argc "+itos(count));
+
 	for (int i=0; i<MIN(count,VARIANT_ARG_MAX); i++) {
 
 		jobject obj = env->GetObjectArrayElement(params, i);
-		args[i] = _jobject_to_variant(env, obj);
+		if (obj)
+			args[i] = _jobject_to_variant(env, obj);
+//		print_line("\targ"+itos(i)+": "+Variant::get_type_name(args[i].get_type()));
+
 	};
+
 
 
 	obj->call_deferred(str_method, args[0],args[1],args[2],args[3],args[4]);

@@ -115,6 +115,9 @@ protected:
 
 	virtual void _resource_path_changed();
 	static void _bind_methods();
+
+	void _set_path(const String& p_path);
+	void _take_over_path(const String& p_path);
 public:
 	
 	virtual bool can_reload_from_file();
@@ -126,7 +129,7 @@ public:
 	void set_name(const String& p_name);
 	String get_name() const;
 
-	void set_path(const String& p_path);
+	void set_path(const String& p_path,bool p_take_over=false);
 	String get_path() const;
 
 	Ref<Resource> duplicate(bool p_subresources=false);

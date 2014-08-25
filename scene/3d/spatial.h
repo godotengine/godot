@@ -91,6 +91,8 @@ class Spatial : public Node {
 		
 		bool ignore_notification;
 
+		bool visible;
+
 #ifdef TOOLS_ENABLED
 		Ref<SpatialGizmo> gizmo;
 		bool gizmo_disabled;
@@ -109,6 +111,8 @@ class Spatial : public Node {
 	void _set_rotation_deg(const Vector3& p_deg);
 	Vector3 _get_rotation_deg() const;
 
+	void _propagate_visibility_changed();
+
 
 protected:
 
@@ -118,7 +122,9 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
-	
+
+	void _set_visible_(bool p_visible);
+	bool _is_visible_() const;
 public:
 
 	enum {
@@ -126,6 +132,7 @@ public:
 		NOTIFICATION_TRANSFORM_CHANGED=SceneMainLoop::NOTIFICATION_TRANSFORM_CHANGED,
 		NOTIFICATION_ENTER_WORLD=41,
 		NOTIFICATION_EXIT_WORLD=42,
+		NOTIFICATION_VISIBILITY_CHANGED=43,
 	};
 
 	Spatial *get_parent_spatial() const;
@@ -158,6 +165,11 @@ public:
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 
 	Transform get_relative_transform(const Node *p_parent) const;
+
+	void show();
+	void hide();
+	bool is_visible() const;
+	bool is_hidden() const;
 
 #ifdef TOOLS_ENABLED
 	void set_import_transform(const Transform& p_transform)	;

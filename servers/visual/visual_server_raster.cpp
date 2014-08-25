@@ -130,10 +130,10 @@ VisualServer::ShaderMode VisualServerRaster::shader_get_mode(RID p_shader) const
 }
 
 
-void VisualServerRaster::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs,int p_fragment_ofs) {
+void VisualServerRaster::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs,int p_fragment_ofs,int p_light_ofs) {
 
 	VS_CHANGED;
-	rasterizer->shader_set_code(p_shader,p_vertex,p_fragment,p_vertex_ofs,p_fragment_ofs);
+	rasterizer->shader_set_code(p_shader,p_vertex,p_fragment,p_light,p_vertex_ofs,p_fragment_ofs,p_light_ofs);
 }
 
 String VisualServerRaster::shader_get_vertex_code(RID p_shader) const{
@@ -144,6 +144,11 @@ String VisualServerRaster::shader_get_vertex_code(RID p_shader) const{
 String VisualServerRaster::shader_get_fragment_code(RID p_shader) const{
 
 	return rasterizer->shader_get_fragment_code(p_shader);
+}
+
+String VisualServerRaster::shader_get_light_code(RID p_shader) const{
+
+	return rasterizer->shader_get_light_code(p_shader);
 }
 
 void VisualServerRaster::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
@@ -187,27 +192,16 @@ void VisualServerRaster::material_set_flag(RID p_material, MaterialFlag p_flag,b
 	rasterizer->material_set_flag(p_material,p_flag,p_enabled);
 }
 
-void VisualServerRaster::material_set_hint(RID p_material, MaterialHint p_hint,bool p_enabled) {
+void VisualServerRaster::material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode) {
 
 	VS_CHANGED;
-	rasterizer->material_set_hint(p_material,p_hint,p_enabled);
-}
-
-bool VisualServerRaster::material_get_hint(RID p_material,MaterialHint p_hint) const {
-
-	return rasterizer->material_get_hint(p_material,p_hint);
+	rasterizer->material_set_depth_draw_mode(p_material,p_mode);
 
 }
 
-void VisualServerRaster::material_set_shade_model(RID p_material, MaterialShadeModel p_model) {
-	VS_CHANGED;
-	rasterizer->material_set_shade_model(p_material,p_model);
-}
+VS::MaterialDepthDrawMode VisualServerRaster::material_get_depth_draw_mode(RID p_material) const {
 
-VisualServer::MaterialShadeModel VisualServerRaster::material_get_shade_model(RID p_material) const {
-
-	return rasterizer->material_get_shade_model(p_material);
-
+	return rasterizer->material_get_depth_draw_mode(p_material);
 }
 
 
@@ -273,17 +267,6 @@ RID VisualServerRaster::fixed_material_get_texture(RID p_material,FixedMaterialP
 }
 
 
-void VisualServerRaster::fixed_material_set_detail_blend_mode(RID p_material,MaterialBlendMode p_mode) {
-	VS_CHANGED;
-	rasterizer->fixed_material_set_detail_blend_mode(p_material,p_mode);
-}
-
-VS::MaterialBlendMode VisualServerRaster::fixed_material_get_detail_blend_mode(RID p_material) const {
-
-	return rasterizer->fixed_material_get_detail_blend_mode(p_material);
-}
-
-
 
 
 void VisualServerRaster::fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode) {
@@ -316,6 +299,18 @@ void VisualServerRaster::fixed_material_set_uv_transform(RID p_material,const Tr
 Transform VisualServerRaster::fixed_material_get_uv_transform(RID p_material) const {
 
 	return rasterizer->fixed_material_get_uv_transform(p_material);
+}
+
+void VisualServerRaster::fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader) {
+
+	VS_CHANGED;
+	rasterizer->fixed_material_set_light_shader(p_material,p_shader);
+
+}
+
+VisualServerRaster::FixedMaterialLightShader VisualServerRaster::fixed_material_get_light_shader(RID p_material) const{
+
+	return rasterizer->fixed_material_get_light_shader(p_material);
 }
 
 
@@ -1043,6 +1038,7 @@ RID VisualServerRaster::baked_light_create() {
 	baked_light->data.octree_lattice_size=0;
 	baked_light->data.octree_lattice_divide=0;
 	baked_light->data.octree_steps=1;
+	baked_light->data.lightmap_multiplier=1.0;
 
 	return baked_light_owner.make_rid( baked_light );
 
@@ -1067,6 +1063,26 @@ VisualServer::BakedLightMode VisualServerRaster::baked_light_get_mode(RID p_bake
 	return baked_light->data.mode;
 
 }
+
+void VisualServerRaster::baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->data.lightmap_multiplier=p_multiplier;
+
+}
+
+float VisualServerRaster::baked_light_get_lightmap_multiplier(RID p_baked_light) const{
+
+	const BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light,0);
+
+	return baked_light->data.lightmap_multiplier;
+
+}
+
 
 void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree){
 
@@ -2573,7 +2589,7 @@ void VisualServerRaster::instance_geometry_set_baked_light_texture_index(RID p_i
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
 
-	instance->lightmap_texture_index=p_tex_id;
+	instance->data.baked_lightmap_id=p_tex_id;
 
 
 }
@@ -2582,7 +2598,7 @@ int VisualServerRaster::instance_geometry_get_baked_light_texture_index(RID p_in
 	const Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND_V( !instance,0 );
 
-	return instance->lightmap_texture_index;
+	return instance->data.baked_lightmap_id;
 
 }
 
@@ -3437,7 +3453,7 @@ void VisualServerRaster::canvas_item_add_triangle_array(RID p_item, const Vector
 	ERR_FAIL_COND(!canvas_item);
 
 	int ps = p_points.size();
-	ERR_FAIL_COND(!p_colors.empty() && p_colors.size()!=ps);
+	ERR_FAIL_COND(!p_colors.empty() && p_colors.size()!=ps && p_colors.size()!=1);
 	ERR_FAIL_COND(!p_uvs.empty() && p_uvs.size()!=ps);
 
 	Vector<int> indices = p_indices;

@@ -2276,6 +2276,24 @@ String String::md5_text() const {
 	return String::md5(ctx.digest);
 }
 
+Vector<uint8_t> String::md5_buffer() const {
+
+	CharString cs=utf8();
+	MD5_CTX ctx;
+	MD5Init(&ctx);
+	MD5Update(&ctx,(unsigned char*)cs.ptr(),cs.length());
+	MD5Final(&ctx);
+
+	Vector<uint8_t> ret;
+	ret.resize(16);
+	for (int i=0; i<16; i++) {
+		ret[i] = ctx.digest[i];
+	};
+
+	return ret;
+};
+
+
 String String::insert(int p_at_pos,String p_string) const {
 
 	if (p_at_pos<0)

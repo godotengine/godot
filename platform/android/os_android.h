@@ -88,6 +88,7 @@ private:
 
 	bool use_gl2;
 	bool use_reload_hooks;
+	bool use_apk_expansion;
 
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
@@ -213,7 +214,7 @@ public:
     virtual void native_video_pause();
     virtual void native_video_stop();
 
-	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func);
+	OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func,bool p_use_apk_expansion);
 	~OS_Android();
 
 };

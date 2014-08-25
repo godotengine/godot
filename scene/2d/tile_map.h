@@ -98,6 +98,8 @@ class TileMap : public Node2D {
 	Rect2 rect_cache;
 	bool rect_cache_dirty;
 	float fp_adjust;
+	float friction;
+	float bounce;
 	uint32_t collision_layer;
 
 
@@ -148,6 +150,12 @@ public:
 
 	void set_collision_layer_mask(uint32_t p_layer);
 	uint32_t get_collision_layer_mask() const;
+
+	void set_collision_friction(float p_friction);
+	float get_collision_friction() const;
+
+	void set_collision_bounce(float p_bounce);
+	float get_collision_bounce() const;
 
 	void clear();
 

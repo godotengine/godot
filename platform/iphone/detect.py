@@ -35,7 +35,7 @@ def get_flags():
 
 	return [
 		('lua', 'no'),
-		('tools', 'yes'),
+		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('webp', 'yes'),
 		('openssl','builtin'), #use builtin openssl
@@ -104,10 +104,17 @@ def configure(env):
 		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
 		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
+	elif env["target"] == "release_debug":
+		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])
+		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
+		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
+		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
+		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
+
 	elif (env["target"]=="debug"):
 
 		env.Append(CCFLAGS=['-D_DEBUG', '-DDEBUG=1', '-gdwarf-2', '-Wall', '-O0', '-DDEBUG_ENABLED'])
-		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
+		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
 
 	elif (env["target"]=="profile"):
 

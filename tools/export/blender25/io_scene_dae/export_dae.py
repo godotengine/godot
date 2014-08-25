@@ -293,6 +293,9 @@ class DaeExporter:
 			self.writel(S_FX,6,'</bump>')
 
 		self.writel(S_FX,5,'</technique>')
+		self.writel(S_FX,5,'<technique profile="GOOGLEEARTH">')
+		self.writel(S_FX,6,'<double_sided>'+["0","1"][double_sided_hint]+"</double_sided>")
+		self.writel(S_FX,5,'</technique>')
 		self.writel(S_FX,4,'</extra>')
 
 		self.writel(S_FX,3,'</technique>')
@@ -359,7 +362,7 @@ class DaeExporter:
 					mat= None
 
 				if (mat!=None):
-					materials[f.material_index]=self.export_material( mat )
+					materials[f.material_index]=self.export_material( mat,mesh.show_double_sided )
 				else:
 					materials[f.material_index]=None #weird, has no material?
 
@@ -730,7 +733,7 @@ class DaeExporter:
 		self.writel(S_LAMPS,2,'<optics>')
 		self.writel(S_LAMPS,3,'<technique_common>')
 
-		if (light.type=="POINT" or light.type=="HEMI"):
+		if (light.type=="POINT"):
 			self.writel(S_LAMPS,4,'<point>')
 			self.writel(S_LAMPS,5,'<color>'+strarr(light.color)+'</color>')
 			att_by_distance = 2.0 / light.distance # convert to linear attenuation
@@ -1030,7 +1033,7 @@ class DaeExporter:
 		return [anim_id]
 
 
-	def export_animation(self,start,end):
+	def export_animation(self,start,end,allowed=None):
 
 		#Blender -> Collada frames needs a little work
 		#Collada starts from 0, blender usually from 1
@@ -1047,7 +1050,7 @@ class DaeExporter:
 		# Change frames first, export objects last
 		# This improves performance enormously
 
-		print("anim from: "+str(start)+" to "+str(end))
+		print("anim from: "+str(start)+" to "+str(end)+" allowed: "+str(allowed))
 		for t in range(start,end+1):
 			self.scene.frame_set(t)
 			key = t * frame_len - frame_sub
@@ -1056,6 +1059,8 @@ class DaeExporter:
 			for node in self.scene.objects:
 
 				if (not node in self.valid_nodes):
+					continue
+				if (allowed!=None and not (node in allowed)):
 					continue
 
 				if (node.type=="MESH" and node.parent and node.parent.type=="ARMATURE"):
@@ -1080,6 +1085,7 @@ class DaeExporter:
 						bone_name=self.skeleton_info[node]["bone_ids"][bone]
 
 						if (not (bone_name in xform_cache)):
+							print("has bone: "+bone_name)
 							xform_cache[bone_name]=[]
 
 						posebone = node.pose.bones[bone.name]
@@ -1113,12 +1119,33 @@ class DaeExporter:
 			for x in bpy.data.actions[:]:
 				if x in self.action_constraints:
 					continue
+
+				bones=[]
+				#find bones used
+				for p in x.fcurves:
+					dp = str(p.data_path)
+					base = "pose.bones[\""
+					if (dp.find(base)==0):
+						dp=dp[len(base):]
+						if (dp.find('"')!=-1):
+							dp=dp[:dp.find('"')]
+							if (not dp in bones):
+								bones.append(dp)
+
+				allowed_skeletons=[]
 				for y in self.skeletons:
 					if (y.animation_data):
+						for z in y.pose.bones:
+							if (z.bone.name in bones):
+								if (not y in allowed_skeletons):
+									allowed_skeletons.append(y)
 						y.animation_data.action=x;
 
 
-				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]))
+
+				print(str(x))
+
+				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]),allowed_skeletons)
 				framelen=(1.0/self.scene.render.fps)
 				start = x.frame_range[0]*framelen
 				end = x.frame_range[1]*framelen

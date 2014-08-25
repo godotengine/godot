@@ -243,11 +243,26 @@ bool Globals::_load_resource_pack(const String& p_pack) {
 	return true;
 }
 
-Error Globals::setup(const String& p_path) {
+Error Globals::setup(const String& p_path,const String & p_main_pack) {
 
 	//an absolute mess of a function, must be cleaned up and reorganized somehow at some point
 	
 	//_load_settings(p_path+"/override.cfg");
+
+	if (p_main_pack!="") {
+
+		bool ok = _load_resource_pack(p_main_pack);
+		ERR_FAIL_COND_V(!ok,ERR_CANT_OPEN);
+
+		if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
+
+			_load_settings("res://override.cfg");
+
+		}
+
+		return OK;
+
+	}
 
 	if (OS::get_singleton()->get_executable_path()!="") {
 
@@ -1343,6 +1358,7 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
 	ObjectTypeDB::bind_method(_MD("has_singleton"),&Globals::has_singleton);
 	ObjectTypeDB::bind_method(_MD("get_singleton"),&Globals::get_singleton_object);
+	ObjectTypeDB::bind_method(_MD("load_resource_pack"),&Globals::_load_resource_pack);
 }
 
 Globals::Globals() {
@@ -1364,6 +1380,7 @@ Globals::Globals() {
 	set("application/name","" );
 	set("application/main_scene","");
 	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"xml,res,scn,xscn");
+	set("application/disable_stdout",false);
 
 
 	key.key.scancode=KEY_RETURN;

@@ -195,6 +195,7 @@ void GeometryInstance::_notification(int p_what) {
 			_find_baked_light();
 		}
 
+		_update_visibility();
 
 	} else if (p_what==NOTIFICATION_EXIT_WORLD) {
 
@@ -207,7 +208,12 @@ void GeometryInstance::_notification(int p_what) {
 			_baked_light_changed();
 
 		}
+
+	} if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+
+		_update_visibility();
 	}
+
 
 }
 
@@ -241,6 +247,15 @@ void GeometryInstance::_find_baked_light() {
 	_baked_light_changed();
 }
 
+void GeometryInstance::_update_visibility() {
+
+	if (!is_inside_scene())
+		return;
+
+	_change_notify("geometry/visible");
+	VS::get_singleton()->instance_geometry_set_flag(get_instance(),VS::INSTANCE_FLAG_VISIBLE,is_visible() && flags[FLAG_VISIBLE]);
+}
+
 void GeometryInstance::set_flag(Flags p_flag,bool p_value) {
 
 	ERR_FAIL_INDEX(p_flag,FLAG_MAX);
@@ -250,8 +265,7 @@ void GeometryInstance::set_flag(Flags p_flag,bool p_value) {
 	flags[p_flag]=p_value;
 	VS::get_singleton()->instance_geometry_set_flag(get_instance(),(VS::InstanceFlags)p_flag,p_value);
 	if (p_flag==FLAG_VISIBLE) {
-		_change_notify("geometry/visible");
-		emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+		_update_visibility();
 	}
 	if (p_flag==FLAG_USE_BAKED_LIGHT) {
 
@@ -276,6 +290,18 @@ bool GeometryInstance::get_flag(Flags p_flag) const{
 
 }
 
+void GeometryInstance::set_baked_light_texture_id(int p_id) {
+
+	baked_light_texture_id=p_id;
+	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),baked_light_texture_id);
+
+}
+
+int GeometryInstance::get_baked_light_texture_id() const{
+
+	return baked_light_texture_id;
+}
+
 
 void GeometryInstance::_bind_methods() {
 
@@ -291,6 +317,9 @@ void GeometryInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_draw_range_end","mode"), &GeometryInstance::set_draw_range_end);
 	ObjectTypeDB::bind_method(_MD("get_draw_range_end"), &GeometryInstance::get_draw_range_end);
 
+	ObjectTypeDB::bind_method(_MD("set_baked_light_texture_id","id"), &GeometryInstance::set_baked_light_texture_id);
+	ObjectTypeDB::bind_method(_MD("get_baked_light_texture_id"), &GeometryInstance::get_baked_light_texture_id);
+
 	ObjectTypeDB::bind_method(_MD("_baked_light_changed"), &GeometryInstance::_baked_light_changed);
 
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE);
@@ -304,8 +333,9 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible_in_all_rooms"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE_IN_ALL_ROOMS);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/use_baked_light"), _SCS("set_flag"), _SCS("get_flag"),FLAG_USE_BAKED_LIGHT);
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/baked_light_tex_id"), _SCS("set_baked_light_texture_id"), _SCS("get_baked_light_texture_id"));
 
-	ADD_SIGNAL( MethodInfo("visibility_changed"));
+//	ADD_SIGNAL( MethodInfo("visibility_changed"));
 
 	BIND_CONSTANT(FLAG_VISIBLE );
 	BIND_CONSTANT(FLAG_CAST_SHADOW );
@@ -329,6 +359,8 @@ GeometryInstance::GeometryInstance() {
 	flags[FLAG_DEPH_SCALE]=false;
 	flags[FLAG_VISIBLE_IN_ALL_ROOMS]=false;
 	baked_light_instance=NULL;
+	baked_light_texture_id=0;
+	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 
 
 }

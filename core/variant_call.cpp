@@ -263,6 +263,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,ord_at);
 	//VCALL_LOCALMEM2R(String,erase);
 	VCALL_LOCALMEM0R(String,hash);
+	VCALL_LOCALMEM0R(String,md5_text);
+	VCALL_LOCALMEM0R(String,md5_buffer);
 	VCALL_LOCALMEM0R(String,empty);
 	VCALL_LOCALMEM0R(String,is_abs_path);
 	VCALL_LOCALMEM0R(String,is_rel_path);
@@ -290,6 +292,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,distance_to);
 	VCALL_LOCALMEM1R(Vector2,distance_squared_to);
 	VCALL_LOCALMEM1R(Vector2,angle_to);
+	VCALL_LOCALMEM1R(Vector2,angle_to_point);
 	VCALL_LOCALMEM2R(Vector2,linear_interpolate);
 	VCALL_LOCALMEM4R(Vector2,cubic_interpolate);
 	VCALL_LOCALMEM1R(Vector2,rotated);
@@ -300,6 +303,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(Vector2,dot);
 	VCALL_LOCALMEM1R(Vector2,slide);
 	VCALL_LOCALMEM1R(Vector2,reflect);
+	VCALL_LOCALMEM0R(Vector2,atan2);
 //	VCALL_LOCALMEM1R(Vector2,cross);
 
 	VCALL_LOCALMEM0R(Rect2,get_area);
@@ -520,7 +524,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 #define VCALL_PTR3R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2]); }
 #define VCALL_PTR4(m_type,m_method)\
-static void _call_##m_type##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3]); }
+static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3]); }
 #define VCALL_PTR4R(m_type,m_method)\
 static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Variant** p_args) { r_ret=reinterpret_cast<m_type*>(p_self._data._ptr)->m_method(*p_args[0],*p_args[1],*p_args[2],*p_args[3]); }
 #define VCALL_PTR5(m_type,m_method)\
@@ -533,6 +537,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR0R(Image,get_height);
 	VCALL_PTR0R(Image,empty);
 	VCALL_PTR3R(Image,get_pixel);
+	VCALL_PTR4(Image, put_pixel);
 	VCALL_PTR0R(Image,get_used_rect);
 	VCALL_PTR3R(Image,brushed);
 	VCALL_PTR1R(Image,load);
@@ -552,6 +557,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR1R( AABB, merge );
 	VCALL_PTR1R( AABB, intersection );
 	VCALL_PTR1R( AABB, intersects_plane );
+	VCALL_PTR2R( AABB, intersects_segment );
 	VCALL_PTR1R( AABB, has_point );
 	VCALL_PTR1R( AABB, get_support );
 	VCALL_PTR0R( AABB, get_longest_axis );
@@ -1162,6 +1168,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(STRING,STRING,String,ord_at,INT,"at",varray());
 //	ADDFUNC2(STRING,String,erase,INT,INT,varray());
 	ADDFUNC0(STRING,INT,String,hash,varray());
+	ADDFUNC0(STRING,STRING,String,md5_text,varray());
+	ADDFUNC0(STRING,RAW_ARRAY,String,md5_buffer,varray());
 	ADDFUNC0(STRING,BOOL,String,empty,varray());
 	ADDFUNC0(STRING,BOOL,String,is_abs_path,varray());
 	ADDFUNC0(STRING,BOOL,String,is_rel_path,varray());
@@ -1184,10 +1192,12 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,normalized,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,length,varray());
+	ADDFUNC0(VECTOR2,REAL,Vector2,atan2,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,length_squared,varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,distance_to,VECTOR2,"to",varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,distance_squared_to,VECTOR2,"to",varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,angle_to,VECTOR2,"to",varray());
+	ADDFUNC1(VECTOR2,REAL,Vector2,angle_to_point,VECTOR2,"to",varray());
 	ADDFUNC2(VECTOR2,VECTOR2,Vector2,linear_interpolate,VECTOR2,"b",REAL,"t",varray());
 	ADDFUNC4(VECTOR2,VECTOR2,Vector2,cubic_interpolate,VECTOR2,"b",VECTOR2,"pre_a",VECTOR2,"post_b",REAL,"t",varray());
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,rotated,REAL,"phi",varray());
@@ -1261,6 +1271,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(IMAGE, INT, Image, get_height, varray());
 	ADDFUNC0(IMAGE, BOOL, Image, empty, varray());
 	ADDFUNC3(IMAGE, COLOR, Image, get_pixel, INT, "x", INT, "y", INT, "mipmap_level", varray(0));
+	ADDFUNC4(IMAGE, NIL, Image, put_pixel, INT, "x", INT, "y", COLOR, "color", INT, "mipmap_level", varray(0));
 	ADDFUNC3(IMAGE, IMAGE, Image, brushed, IMAGE, "src", IMAGE, "brush", VECTOR2, "pos", varray(0));
 	ADDFUNC1(IMAGE, INT, Image, load, STRING, "path", varray(0));
 	ADDFUNC3(IMAGE, NIL, Image, brush_transfer, IMAGE, "src", IMAGE, "brush", VECTOR2, "pos", varray(0));
@@ -1364,6 +1375,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(_AABB,_AABB,AABB,merge,_AABB,"with",varray());
 	ADDFUNC1(_AABB,_AABB,AABB,intersection,_AABB,"with",varray());
 	ADDFUNC1(_AABB,BOOL,AABB,intersects_plane,PLANE,"plane",varray());
+	ADDFUNC2(_AABB,BOOL,AABB,intersects_segment,VECTOR3,"from",VECTOR3,"to",varray());
 	ADDFUNC1(_AABB,BOOL,AABB,has_point,VECTOR3,"point",varray());
 	ADDFUNC1(_AABB,VECTOR3,AABB,get_support,VECTOR3,"dir",varray());
 	ADDFUNC0(_AABB,VECTOR3,AABB,get_longest_axis,varray());

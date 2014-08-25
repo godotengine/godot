@@ -183,7 +183,8 @@ public:
 	uint32_t hash() const; /* hash the string */
 	uint64_t hash64() const; /* hash the string */	
 	String md5_text() const;
-	
+	Vector<uint8_t> md5_buffer() const;
+
 	inline bool empty() const { return length() == 0; }	
 
 	// path functions

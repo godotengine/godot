@@ -35,6 +35,7 @@
 #include "scene/animation/animation_player.h"
 #include "io/resource_saver.h"
 #include "scene/3d/mesh_instance.h"
+#include "scene/3d/navigation.h"
 #include "scene/3d/room_instance.h"
 #include "scene/3d/body_shape.h"
 #include "scene/3d/physics_body.h"
@@ -173,9 +174,10 @@ public:
 
 
 static const char *anim_flag_names[]={
-	"Detect Loop",
+	"Detect Loop (-loop,-cycle)",
 	"Keep Value Tracks",
 	"Optimize",
+	"Force Tracks in All Bones",
 	NULL
 };
 
@@ -183,6 +185,7 @@ static const char *anim_flag_descript[]={
 	"Set loop flag for animation names that\ncontain 'cycle' or 'loop' in the name.",
 	"When merging an existing aimation,\nkeep the user-created value-tracks.",
 	"Remove redundant keyframes in\n transform tacks.",
+	"Some exporters will rely on default pose for some bones.\nThis forces those bones to have at least one animation key.",
 	NULL
 };
 
@@ -404,6 +407,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 
 	rim->add_source(EditorImportPlugin::validate_source_path(import_path->get_text()));
 	rim->set_option("flags",flags);
+	print_line("GET FLAGS: "+itos(texture_options->get_flags()));
 	rim->set_option("texture_flags",texture_options->get_flags());
 	rim->set_option("texture_format",texture_options->get_format());
 	rim->set_option("texture_quality",texture_options->get_quality());
@@ -637,6 +641,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,"Materials","Set Alpha in Materials (-alpha)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,"Materials","Set Vert. Color in Materials (-vcol)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES,"Actions","SRGB->Linear Of Diffuse Textures",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS,"Actions","Set Material Lightmap to UV2 if Tex2Array Exists",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,"Create","Create Collisions (-col},-colonly)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,"Create","Create Portals (-portal)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_ROOMS,"Create","Create Rooms (-room)",true},
@@ -680,7 +685,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	import_choose->connect("pressed", this,"_browse");
 
 	hbc = memnew( HBoxContainer );
-	vbc->add_margin_child("Target Scene:",hbc);
+	vbc->add_margin_child("Target Path:",hbc);
 
 	save_path = memnew( LineEdit );
 	save_path->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -806,7 +811,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	animation_options = memnew( EditorImportAnimationOptions );
 	ovb->add_child(animation_options);
 	animation_options->set_v_size_flags(SIZE_EXPAND_FILL);
-	animation_options->set_flags(EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP|EditorSceneAnimationImportPlugin::ANIMATION_KEEP_VALUE_TRACKS|EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE);
+	animation_options->set_flags(EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP|EditorSceneAnimationImportPlugin::ANIMATION_KEEP_VALUE_TRACKS|EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE|EditorSceneAnimationImportPlugin::ANIMATION_FORCE_TRACKS_IN_ALL_BONES);
 
 
 	confirm_import = memnew( ConfirmationDialog );
@@ -1024,7 +1029,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 					if (fm.is_valid()) {
 						fm->set_flag(Material::FLAG_UNSHADED,true);
 						fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-						fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+						fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 						fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 					}
 				}
@@ -1033,7 +1038,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	}
 
 
-	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR) && p_node->cast_to<MeshInstance>()) {
+	if (p_flags&(SCENE_FLAG_DETECT_ALPHA|SCENE_FLAG_DETECT_VCOLOR|SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS) && p_node->cast_to<MeshInstance>()) {
 
 		MeshInstance *mi = p_node->cast_to<MeshInstance>();
 
@@ -1056,6 +1061,10 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 
 					mat->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
 					mat->set_name(_fixstr(mat->get_name(),"vcol"));
+				}
+
+				if (p_flags&SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS && m->surface_get_format(i)&Mesh::ARRAY_FORMAT_TEX_UV2) {
+					mat->set_flag(Material::FLAG_LIGHTMAP_ON_UV2,true);
 				}
 
 			}
@@ -1129,7 +1138,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 							if (fm.is_valid()) {
 								fm->set_flag(Material::FLAG_UNSHADED,true);
 								fm->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-								fm->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+								fm->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 								fm->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
 							}
 						}
@@ -1221,13 +1230,34 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		col->set_name("col");
 		p_node->add_child(col);
 
-
-		StaticBody *sb = col->cast_to<StaticBody>();
+		StaticBody *sb=col->cast_to<StaticBody>();
 		CollisionShape *colshape = memnew( CollisionShape);
 		colshape->set_shape(sb->get_shape(0));
 		colshape->set_name("shape");
-		sb->add_child(colshape);
+		col->add_child(colshape);
 		colshape->set_owner(p_node->get_owner());
+		sb->set_owner(p_node->get_owner());
+
+	} else if (p_flags&SCENE_FLAG_CREATE_NAVMESH &&_teststr(name,"navmesh") && p_node->cast_to<MeshInstance>()) {
+
+		if (isroot)
+			return p_node;
+
+		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+
+		Ref<Mesh> mesh=mi->get_mesh();
+		ERR_FAIL_COND_V(mesh.is_null(),NULL);
+		NavigationMeshInstance *nmi = memnew(  NavigationMeshInstance );
+
+
+		nmi->set_name(_fixstr(name,"navmesh"));
+		Ref<NavigationMesh> nmesh = memnew( NavigationMesh);
+		nmesh->create_from_mesh(mesh);
+		nmi->set_navigation_mesh(nmesh);
+		nmi->cast_to<Spatial>()->set_transform(mi->get_transform());
+		p_node->replace_by(nmi);
+		memdelete(p_node);
+		p_node=nmi;
 
 	} else if (p_flags&SCENE_FLAG_CREATE_ROOMS && _teststr(name,"room") && p_node->cast_to<MeshInstance>()) {
 
@@ -1501,6 +1531,37 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 
 				room_node->set_room( room_imported->get_room() );
 
+			} else if (p_node->get_type()=="Skeleton") {
+				//for paths, overwrite path
+
+				Skeleton *skeleton_imported =imported_node->cast_to<Skeleton>();
+				Skeleton *skeleton_node =p_node->cast_to<Skeleton>();
+
+				//use imported bones, obviously
+				skeleton_node->clear_bones();
+				for(int i=0;i<skeleton_imported->get_bone_count();i++) {
+
+					skeleton_node->add_bone(skeleton_imported->get_bone_name(i));
+					skeleton_node->set_bone_parent(i,skeleton_imported->get_bone_parent(i));
+					skeleton_node->set_bone_rest(i,skeleton_imported->get_bone_rest(i));
+					skeleton_node->set_bone_pose(i,skeleton_imported->get_bone_pose(i));
+				}
+			} else if (p_node->get_type()=="AnimationPlayer") {
+				//for paths, overwrite path
+
+				AnimationPlayer *aplayer_imported =imported_node->cast_to<AnimationPlayer>();
+				AnimationPlayer *aplayer_node =p_node->cast_to<AnimationPlayer>();
+
+				//use imported bones, obviously
+				List<StringName> anims;
+				aplayer_imported->get_animation_list(&anims);
+				//use imported animations, could merge some stuff though
+				for (List<StringName>::Element *E=anims.front();E;E=E->next()) {
+
+
+					aplayer_node->add_animation(E->get(),aplayer_imported->get_animation(E->get()));
+				}
+
 			} else if (p_node->get_type()=="CollisionShape") {
 				//for paths, overwrite path
 
@@ -1706,10 +1767,12 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_DETECT_LOOP;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_OPTIMIZE;
+	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_FORCE_TRACKS_IN_ALL_BONES)
+		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_FORCE_TRACKS_IN_ALL_BONES;
 	if (scene_flags&SCENE_FLAG_IMPORT_ANIMATIONS)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION;
-//	if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
-//		import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
+	//if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
+	//	import_flags|=EditorSceneImporter::IMPORT_FAIL_ON_MISSING_DEPENDENCIES;
 	if (scene_flags&SCENE_FLAG_GENERATE_TANGENT_ARRAYS)
 		import_flags|=EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS;
 
@@ -1835,8 +1898,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			print_line("flags: "+itos(image_flags));
 			uint32_t flags = image_flags;
-			if (E->get())
-				flags|=EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_TO_LINEAR;
+
 			imd->set_option("flags",flags);
 			imd->set_option("format",image_format);
 			imd->set_option("quality",image_quality);
@@ -1877,14 +1939,14 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	if (merge) {
 
-		print_line("MERGING?????");
+
 		progress.step("Merging..",103);
 
 		FileAccess *fa = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-		print_line("OPEN IN FS: "+p_dest_path);
+
 		if (fa->file_exists(p_dest_path)) {
 
-			print_line("TRY REALLY TO MERGE?");
+
 			//try to merge
 
 			Ref<PackedScene> s = ResourceLoader::load(p_dest_path);
@@ -1915,7 +1977,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	packer->set_import_metadata(from);
 
 	print_line("SAVING TO: "+p_dest_path);
-	err = ResourceSaver::save(p_dest_path,packer);
+	err = ResourceSaver::save(p_dest_path,packer,ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS);
 
 	//EditorFileSystem::get_singleton()->update_resource(packer);
 

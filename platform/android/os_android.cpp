@@ -87,11 +87,17 @@ void OS_Android::initialize_core() {
 
 #else
 
-	FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid> >(FileAccess::ACCESS_RESOURCES);
+	if (use_apk_expansion)
+		FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
+	else
+		FileAccess::make_default<FileAccessBufferedFA<FileAccessJAndroid> >(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_FILESYSTEM);
 	//FileAccessBufferedFA<FileAccessUnix>::make_default();
-	DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
+	if (use_apk_expansion)
+		DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_RESOURCES);
+	else
+		DirAccess::make_default<DirAccessJAndroid>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
@@ -698,9 +704,10 @@ void OS_Android::native_video_stop() {
 		video_stop_func();
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetDataDirFunc p_get_data_dir_func,GetLocaleFunc p_get_locale_func,GetModelFunc p_get_model_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk,  SetScreenOrientationFunc p_screen_orient,GetUniqueIDFunc p_get_unique_id, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func,bool p_use_apk_expansion) {
 
 
+	use_apk_expansion=p_use_apk_expansion;
 	default_videomode.width=800;
 	default_videomode.height=600;
 	default_videomode.fullscreen=true;
@@ -720,10 +727,10 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func,void*p_gfx_init_ud, OpenURIFu
 	get_model_func=p_get_model_func;
 	get_unique_id_func=p_get_unique_id;
     
-    video_play_func = p_video_play_func;
-    video_is_playing_func = p_video_is_playing_func;
-    video_pause_func = p_video_pause_func;
-    video_stop_func = p_video_stop_func;
+	video_play_func = p_video_play_func;
+	video_is_playing_func = p_video_is_playing_func;
+	video_pause_func = p_video_pause_func;
+	video_stop_func = p_video_stop_func;
 
 	show_virtual_keyboard_func = p_show_vk;
 	hide_virtual_keyboard_func = p_hide_vk;

@@ -859,7 +859,20 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"mix",TYPE_VEC4,{TYPE_VEC4,TYPE_VEC4,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_VEC4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
 	{"step",TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"step",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
 	{"step",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
+	{"step",TYPE_VEC4,{TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
+	{"step",TYPE_VEC2,{TYPE_FLOAT,TYPE_VEC2,TYPE_VOID}},
+	{"step",TYPE_VEC3,{TYPE_FLOAT,TYPE_VEC3,TYPE_VOID}},
+	{"step",TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC4,TYPE_VOID}},
+	{"smoothstep",TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"smoothstep",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
+	{"smoothstep",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
+	{"smoothstep",TYPE_VEC4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
+	{"smoothstep",TYPE_VEC2,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VEC2,TYPE_VOID}},
+	{"smoothstep",TYPE_VEC3,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VEC3,TYPE_VOID}},
+	{"smoothstep",TYPE_VEC4,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VEC4,TYPE_VOID}},
+
 	//intrinsics - geometric
 	{"length",TYPE_FLOAT,{TYPE_VEC2,TYPE_VOID}},
 	{"length",TYPE_FLOAT,{TYPE_VEC3,TYPE_VOID}},
@@ -992,6 +1005,11 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 
 const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 
+	{ "SRC_VERTEX", TYPE_VEC3},
+	{ "SRC_NORMAL", TYPE_VEC3},
+	{ "SRC_TANGENT", TYPE_VEC3},
+	{ "SRC_BINORMALF", TYPE_FLOAT},
+
 	{ "VERTEX", TYPE_VEC3},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
@@ -1010,6 +1028,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 	{ "WORLD_MATRIX", TYPE_MAT4},
 	{ "INV_CAMERA_MATRIX", TYPE_MAT4},
 	{ "PROJECTION_MATRIX", TYPE_MAT4},
+	{ "MODELVIEW_MATRIX", TYPE_MAT4},
 	{ "INSTANCE_ID", TYPE_FLOAT},
 	{ "TIME", TYPE_FLOAT},
 	{ NULL, TYPE_VOID},
@@ -1045,6 +1064,27 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::fragment_builtins_defs[]={
 	{ NULL, TYPE_VOID}
 
 };
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::light_builtins_defs[]={
+
+	{ "NORMAL", TYPE_VEC3},
+	{ "LIGHT_DIR", TYPE_VEC3},
+	{ "LIGHT_DIFFUSE", TYPE_VEC3},
+	{ "LIGHT_SPECULAR", TYPE_VEC3},
+	{ "EYE_VEC", TYPE_VEC3},
+	{ "DIFFUSE", TYPE_VEC3},
+	{ "SPECULAR", TYPE_VEC3},
+	{ "SPECULAR_EXP", TYPE_FLOAT},
+	{ "SHADE_PARAM", TYPE_FLOAT},
+	{ "LIGHT", TYPE_VEC3},
+	{ "POINT_COORD", TYPE_VEC2},
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
 const ShaderLanguage::BuiltinsDef ShaderLanguage::postprocess_fragment_builtins_defs[]={
 
 	{ "IN_COLOR", TYPE_VEC3},
@@ -2286,6 +2326,13 @@ Error ShaderLanguage::parse(const Vector<Token>& p_tokens,ShaderType p_type,Comp
 				idx++;
 			}
 		} break;
+		case SHADER_MATERIAL_LIGHT: {
+			int idx=0;
+			while (light_builtins_defs[idx].name) {
+				parser.program->builtin_variables[light_builtins_defs[idx].name]=light_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
 		case SHADER_POST_PROCESS: {
 			int idx=0;
 			while (postprocess_fragment_builtins_defs[idx].name) {
@@ -2306,8 +2353,9 @@ Error ShaderLanguage::parse(const Vector<Token>& p_tokens,ShaderType p_type,Comp
 
 	t = OS::get_singleton()->get_ticks_usec();
 
-	if (p_compile_func)
-		p_compile_func(p_userdata,parser.program);
+	if (p_compile_func) {
+		err = p_compile_func(p_userdata,parser.program);
+	}
 
 	tf = (OS::get_singleton()->get_ticks_usec()-t)/1000.0;
 	//print_line("compile time: "+rtos(tf));
@@ -2318,7 +2366,7 @@ Error ShaderLanguage::parse(const Vector<Token>& p_tokens,ShaderType p_type,Comp
 		memdelete( parser.nodegc.front()->get() );
 		parser.nodegc.pop_front();
 	}
-	return OK;
+	return err;
 }
 
 Error ShaderLanguage::compile(const String& p_code,ShaderType p_type,CompileFunc p_compile_func,void *p_userdata,String *r_error,int *r_err_line,int *r_err_column) {
@@ -2369,6 +2417,13 @@ void ShaderLanguage::get_keyword_list(ShaderType p_type, List<String> *p_keyword
 			idx=0;
 			while (fragment_builtins_defs[idx].name) {
 				p_keywords->push_back(fragment_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_MATERIAL_LIGHT: {
+			idx=0;
+			while (light_builtins_defs[idx].name) {
+				p_keywords->push_back(light_builtins_defs[idx].name);
 				idx++;
 			}
 		} break;

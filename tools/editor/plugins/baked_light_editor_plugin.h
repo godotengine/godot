@@ -30,6 +30,7 @@ class BakedLightEditor : public Control {
 	HBoxContainer *bake_hbox;
 	Button *button_bake;
 	Button *button_reset;
+	Button *button_make_lightmaps;
 	Label *bake_info;
 
 
@@ -40,6 +41,8 @@ class BakedLightEditor : public Control {
 		MENU_OPTION_BAKE,
 		MENU_OPTION_CLEAR
 	};
+
+	void _bake_lightmaps();
 
 	void _bake_pressed();
 	void _clear_pressed();

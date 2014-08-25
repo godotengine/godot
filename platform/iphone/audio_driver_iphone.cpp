@@ -99,7 +99,16 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 	AudioBuffer *abuf;
 	AudioDriverIphone* ad = (AudioDriverIphone*)inRefCon;
 
-	if (!ad->active) {
+	bool mix = true;
+
+	if (!ad->active)
+		mix = false;
+	else if (ad->mutex) {
+		mix = ad->mutex->try_lock() == OK;
+	};
+
+
+	if (!mix) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			abuf = &ioData->mBuffers[i];
 			zeromem(abuf->mData, abuf->mDataByteSize);
@@ -118,9 +127,9 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 		while (frames_left) {
 
 			int frames = MIN(frames_left, ad->buffer_frames);
-			ad->lock();
+			//ad->lock();
 			ad->audio_server_process(frames, ad->samples_in);
-			ad->unlock();
+			//ad->unlock();
 
 			for(int i = 0; i < frames * ad->channels; i++) {
 
@@ -131,6 +140,9 @@ OSStatus AudioDriverIphone::output_callback(void *inRefCon,
 			out += frames * ad->channels;
 		};
 	};
+
+	if (ad->mutex)
+		ad->mutex->unlock();
 
 	return 0;
 };
@@ -147,11 +159,28 @@ AudioDriverSW::OutputFormat AudioDriverIphone::get_output_format() const {
 	return OUTPUT_STEREO;
 };
 
-void AudioDriverIphone::lock() {};
-void AudioDriverIphone::unlock() {};
+void AudioDriverIphone::lock() {
+
+	if (active && mutex)
+		mutex->lock();
+};
+
+void AudioDriverIphone::unlock() {
+	if (active && mutex)
+		mutex->unlock();
+};
 
 void AudioDriverIphone::finish() {
 
 	memdelete_arr(samples_in);
 };
 
+
+AudioDriverIphone::AudioDriverIphone() {
+
+	mutex=Mutex::create();//NULL;
+};
+
+AudioDriverIphone::~AudioDriverIphone() {
+
+};

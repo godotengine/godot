@@ -11,6 +11,7 @@ SConscript('collada/SCsub');
 SConscript('docdump/SCsub');
 SConscript('freetype/SCsub');
 SConscript('doc/SCsub');
+SConscript('pck/SCsub');
 
 lib = env.Library("tool",env.tool_sources, LIBSUFFIX=env['platform_libsuffix'])
 

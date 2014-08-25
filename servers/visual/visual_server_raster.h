@@ -157,7 +157,7 @@ class VisualServerRaster : public VisualServer {
 		float draw_range_begin;
 		float draw_range_end;
 		float extra_margin;
-		int lightmap_texture_index;
+
 
 
 		Rasterizer::InstanceData data;
@@ -267,6 +267,7 @@ class VisualServerRaster : public VisualServer {
 			data.billboard_y=false;
 			data.baked_light=NULL;
 			data.baked_light_octree_xform=NULL;
+			data.baked_lightmap_id=-1;
 			version=1;
 			room_info=NULL;
 			room=NULL;
@@ -278,7 +279,7 @@ class VisualServerRaster : public VisualServer {
 			draw_range_end=0;
 			extra_margin=0;
 			visible_in_all_rooms=false;
-			lightmap_texture_index=-1;
+
 			baked_light=NULL;
 			baked_light_info=NULL;
 			BLE=NULL;
@@ -691,9 +692,10 @@ public:
 	virtual void shader_set_mode(RID p_shader,ShaderMode p_mode);
 	virtual ShaderMode shader_get_mode(RID p_shader) const;
 
-	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs=0,int p_fragment_ofs=0);
+	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs=0,int p_fragment_ofs=0,int p_light_ofs=0);
 	virtual String shader_get_vertex_code(RID p_shader) const;
 	virtual String shader_get_fragment_code(RID p_shader) const;
+	virtual String shader_get_light_code(RID p_shader) const;
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
@@ -710,11 +712,8 @@ public:
 	virtual void material_set_flag(RID p_material, MaterialFlag p_flag,bool p_enabled);
 	virtual bool material_get_flag(RID p_material,MaterialFlag p_flag) const;
 
-	virtual void material_set_hint(RID p_material, MaterialHint p_hint,bool p_enabled);
-	virtual bool material_get_hint(RID p_material,MaterialHint p_hint) const;
-
-	virtual void material_set_shade_model(RID p_material, MaterialShadeModel p_model);
-	virtual MaterialShadeModel material_get_shade_model(RID p_material) const;
+	virtual void material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode);
+	virtual MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const;
 
 	virtual void material_set_blend_mode(RID p_material,MaterialBlendMode p_mode);
 	virtual MaterialBlendMode material_get_blend_mode(RID p_material) const;
@@ -736,15 +735,15 @@ public:
 	virtual void fixed_material_set_texture(RID p_material,FixedMaterialParam p_parameter, RID p_texture);
 	virtual RID fixed_material_get_texture(RID p_material,FixedMaterialParam p_parameter) const;
 
-	virtual void fixed_material_set_detail_blend_mode(RID p_material,MaterialBlendMode p_mode);
-	virtual MaterialBlendMode fixed_material_get_detail_blend_mode(RID p_material) const;
-
-
 	virtual void fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode);
 	virtual FixedMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,FixedMaterialParam p_parameter) const;
 
+
 	virtual void fixed_material_set_uv_transform(RID p_material,const Transform& p_transform);
 	virtual Transform fixed_material_get_uv_transform(RID p_material) const;
+
+	virtual void fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader);
+	virtual FixedMaterialLightShader fixed_material_get_light_shader(RID p_material) const;
 
 	virtual void fixed_material_set_point_size(RID p_material,float p_size);
 	virtual float fixed_material_get_point_size(RID p_material) const;
@@ -943,6 +942,9 @@ public:
 
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree);
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const;
+
+	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier);
+	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const;
 
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id);
 	virtual void baked_light_clear_lightmaps(RID p_baked_light);

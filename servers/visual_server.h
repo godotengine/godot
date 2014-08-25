@@ -142,9 +142,10 @@ public:
 	virtual void shader_set_mode(RID p_shader,ShaderMode p_mode)=0;
 	virtual ShaderMode shader_get_mode(RID p_shader) const=0;
 
-	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs=0,int p_fragment_ofs=0)=0;
+	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light, int p_vertex_ofs=0,int p_fragment_ofs=0,int p_light_ofs=0)=0;
 	virtual String shader_get_fragment_code(RID p_shader) const=0;
 	virtual String shader_get_vertex_code(RID p_shader) const=0;
+	virtual String shader_get_light_code(RID p_shader) const=0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const=0;
 
 
@@ -164,39 +165,22 @@ public:
 		MATERIAL_FLAG_INVERT_FACES, ///< Invert front/back of the object
 		MATERIAL_FLAG_UNSHADED,
 		MATERIAL_FLAG_ONTOP,
-		MATERIAL_FLAG_WIREFRAME,
-		MATERIAL_FLAG_BILLBOARD,
+		MATERIAL_FLAG_LIGHTMAP_ON_UV2,
 		MATERIAL_FLAG_MAX,
 	};
 
 	virtual void material_set_flag(RID p_material, MaterialFlag p_flag,bool p_enabled)=0;
 	virtual bool material_get_flag(RID p_material,MaterialFlag p_flag) const=0;
 
-	enum MaterialShadeModel {
-		MATERIAL_SHADE_MODEL_LAMBERT,
-		MATERIAL_SHADE_MODEL_LAMBERT_WRAP,
-		MATERIAL_SHADE_MODEL_TOON
+	enum MaterialDepthDrawMode {
+		MATERIAL_DEPTH_DRAW_ALWAYS,
+		MATERIAL_DEPTH_DRAW_OPAQUE_ONLY,
+		MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA,
+		MATERIAL_DEPTH_DRAW_NEVER
 	};
 
-	/* FIXED MATERIAL */
-
-
-
-	virtual void material_set_shade_model(RID p_material, MaterialShadeModel p_model)=0;
-	virtual MaterialShadeModel material_get_shade_model(RID p_material) const=0;
-
-	enum MaterialHint {
-
-		MATERIAL_HINT_DECAL,
-		MATERIAL_HINT_OPAQUE_PRE_PASS,
-		MATERIAL_HINT_NO_SHADOW,
-		MATERIAL_HINT_NO_DEPTH_DRAW,
-		MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA,
-		MATERIAL_HINT_MAX
-	};
-
-	virtual void material_set_hint(RID p_material, MaterialHint p_hint,bool p_enabled)=0;
-	virtual bool material_get_hint(RID p_material,MaterialHint p_hint) const=0;
+	virtual void material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode)=0;
+	virtual MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const=0;
 
 	enum MaterialBlendMode {
 		MATERIAL_BLEND_MODE_MIX, //default
@@ -258,8 +242,19 @@ public:
 	virtual void fixed_material_set_texture(RID p_material,FixedMaterialParam p_parameter, RID p_texture)=0;
 	virtual RID fixed_material_get_texture(RID p_material,FixedMaterialParam p_parameter) const=0;
 
-	virtual void fixed_material_set_detail_blend_mode(RID p_material,MaterialBlendMode p_mode)=0;
-	virtual MaterialBlendMode fixed_material_get_detail_blend_mode(RID p_material) const=0;
+
+	enum FixedMaterialLightShader {
+
+		FIXED_MATERIAL_LIGHT_SHADER_LAMBERT,
+		FIXED_MATERIAL_LIGHT_SHADER_WRAP,
+		FIXED_MATERIAL_LIGHT_SHADER_VELVET,
+		FIXED_MATERIAL_LIGHT_SHADER_TOON,
+
+	};
+
+
+	virtual void fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader)=0;
+	virtual FixedMaterialLightShader fixed_material_get_light_shader(RID p_material) const=0;
 
 	virtual void fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode)=0;
 	virtual FixedMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,FixedMaterialParam p_parameter) const=0;
@@ -464,9 +459,7 @@ public:
 		LIGHT_SPOT
 	};
 
-	enum LightColor {
-		
-		LIGHT_COLOR_AMBIENT,
+	enum LightColor {		
 		LIGHT_COLOR_DIFFUSE,
 		LIGHT_COLOR_SPECULAR
 	};
@@ -591,6 +584,9 @@ public:
 
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree)=0;
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const=0;
+
+	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier)=0;
+	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const=0;
 
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id)=0;
 	virtual void baked_light_clear_lightmaps(RID p_baked_light)=0;
@@ -724,6 +720,7 @@ public:
 	virtual Variant environment_get_background_param(RID p_env,EnvironmentBGParam p_param) const=0;
 
 	enum EnvironmentFx {
+		ENV_FX_AMBIENT_LIGHT,
 		ENV_FX_FXAA,
 		ENV_FX_GLOW,
 		ENV_FX_DOF_BLUR,
@@ -745,7 +742,16 @@ public:
 		ENV_FX_BLUR_BLEND_MODE_SOFTLIGHT,
 	};
 
+	enum EnvironmentFxHDRToneMapper {
+		ENV_FX_HDR_TONE_MAPPER_LINEAR,
+		ENV_FX_HDR_TONE_MAPPER_LOG,
+		ENV_FX_HDR_TONE_MAPPER_REINHARDT,
+		ENV_FX_HDR_TONE_MAPPER_REINHARDT_AUTOWHITE,
+	};
+
 	enum EnvironmentFxParam {
+		ENV_FX_PARAM_AMBIENT_LIGHT_COLOR,
+		ENV_FX_PARAM_AMBIENT_LIGHT_ENERGY,
 		ENV_FX_PARAM_GLOW_BLUR_PASSES,
 		ENV_FX_PARAM_GLOW_BLUR_SCALE,
 		ENV_FX_PARAM_GLOW_BLUR_STRENGTH,
@@ -755,8 +761,9 @@ public:
 		ENV_FX_PARAM_DOF_BLUR_PASSES,
 		ENV_FX_PARAM_DOF_BLUR_BEGIN,
 		ENV_FX_PARAM_DOF_BLUR_RANGE,
+		ENV_FX_PARAM_HDR_TONEMAPPER,
 		ENV_FX_PARAM_HDR_EXPOSURE,
-		ENV_FX_PARAM_HDR_SCALAR,
+		ENV_FX_PARAM_HDR_WHITE,
 		ENV_FX_PARAM_HDR_GLOW_TRESHOLD,
 		ENV_FX_PARAM_HDR_GLOW_SCALE,
 		ENV_FX_PARAM_HDR_MIN_LUMINANCE,

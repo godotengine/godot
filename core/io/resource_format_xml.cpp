@@ -2505,6 +2505,10 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	relative_paths=p_flags&ResourceSaver::FLAG_RELATIVE_PATHS;
 	skip_editor=p_flags&ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
 	bundle_resources=p_flags&ResourceSaver::FLAG_BUNDLE_RESOURCES;
+	takeover_paths=p_flags&ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
+	if (!p_path.begins_with("res://")) {
+		takeover_paths=false;
+	}
 	depth=0;
 
 	// save resources
@@ -2541,8 +2545,14 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 			enter_tag("main_resource",""); //bundled
 		else if (res->get_path().length() && res->get_path().find("::") == -1 )
 			enter_tag("resource","type=\""+res->get_type()+"\" path=\""+res->get_path()+"\""); //bundled
-		else
-			enter_tag("resource","type=\""+res->get_type()+"\" path=\"local://"+itos(resource_map[res])+"\"");
+		else {
+			int idx = resource_map[res];
+			enter_tag("resource","type=\""+res->get_type()+"\" path=\"local://"+itos(idx)+"\"");
+			if (takeover_paths) {
+				res->set_path(p_path+"::"+itos(idx),true);
+			}
+
+		}
 		write_string("\n",false);
 
 

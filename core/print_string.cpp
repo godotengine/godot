@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 static PrintHandlerList *print_handler_list=NULL;
-
+bool _print_line_enabled=true;
 
 void add_print_handler(PrintHandlerList *p_handler) {
 
@@ -74,6 +74,9 @@ void remove_print_handler(PrintHandlerList *p_handler) {
 
 
 void print_line(String p_string) {
+
+	if (!_print_line_enabled)
+		return;
 
 	OS::get_singleton()->print("%s\n",p_string.utf8().get_data());
 

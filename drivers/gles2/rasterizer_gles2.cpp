@@ -84,6 +84,7 @@
 #endif
 
 // todo: scaler for rect->square
+static RasterizerGLES2* _singleton = NULL;
 
 static const GLenum prim_type[]={GL_POINTS,GL_LINES,GL_TRIANGLES,GL_TRIANGLE_FAN};
 
@@ -384,39 +385,96 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		} break;
 		case Image::FORMAT_BC1: {
 
-			r_gl_components=1; //doesn't matter much
-			r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-			r_compressed=true;
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+
+				r_gl_components=1; //doesn't matter much
+				r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC2: {
-			r_gl_components=1; //doesn't matter much
-			r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-			r_has_alpha_cache=true;
-			r_compressed=true;
+
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+				r_gl_components=1; //doesn't matter much
+				r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+				r_has_alpha_cache=true;
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC3: {
 
-			r_gl_components=1; //doesn't matter much
-			r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-			r_has_alpha_cache=true;
-			r_compressed=true;
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+				r_gl_components=1; //doesn't matter much
+				r_gl_format=_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				r_has_alpha_cache=true;
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC4: {
 
-			r_gl_format=_EXT_COMPRESSED_RED_RGTC1;
-			r_gl_components=1; //doesn't matter much
-			r_compressed=true;
+			if (!s3tc_supported) {
+
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+
+				r_gl_format=_EXT_COMPRESSED_RED_RGTC1;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			};
 
 		} break;
 		case Image::FORMAT_BC5: {
 
+			if (!s3tc_supported) {
 
-			r_gl_format=_EXT_COMPRESSED_RG_RGTC2;
-			r_gl_components=1; //doesn't matter much
-			r_compressed=true;
+				if (!image.empty()) {
+					image.decompress();
+				}
+				r_gl_components=4;
+				r_gl_format=GL_RGBA;
+				r_has_alpha_cache=true;
+
+			} else {
+				r_gl_format=_EXT_COMPRESSED_RG_RGTC2;
+				r_gl_components=1; //doesn't matter much
+				r_compressed=true;
+			};
 		} break;
 		case Image::FORMAT_PVRTC2: {
 
@@ -1194,6 +1252,15 @@ void RasterizerGLES2::texture_set_reload_hook(RID p_texture,ObjectID p_owner,con
 }
 
 
+GLuint RasterizerGLES2::_texture_get_name(RID p_tex) {
+
+	Texture * texture = texture_owner.get(p_tex);
+	ERR_FAIL_COND_V(!texture, 0);
+
+	return texture->tex_id;
+};
+
+
 /* SHADER API */
 
 RID RasterizerGLES2::shader_create(VS::ShaderMode p_mode) {
@@ -1248,20 +1315,22 @@ VS::ShaderMode RasterizerGLES2::shader_get_mode(RID p_shader) const {
 }
 
 
+void RasterizerGLES2::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs,int p_fragment_ofs,int p_light_ofs) {
 
-void RasterizerGLES2::shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs,int p_fragment_ofs) {
 
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
 
 #ifdef DEBUG_ENABLED
-	if (shader->vertex_code==p_vertex && shader->fragment_code==p_fragment)
+	if (shader->vertex_code==p_vertex && shader->fragment_code==p_fragment && shader->light_code==p_light)
 		return;
 #endif
 	shader->fragment_code=p_fragment;
 	shader->vertex_code=p_vertex;
+	shader->light_code=p_light;
 	shader->fragment_line=p_fragment_ofs;
 	shader->vertex_line=p_vertex_ofs;
+	shader->light_line=p_light_ofs;
 	_shader_make_dirty(shader);
 
 }
@@ -1279,6 +1348,14 @@ String RasterizerGLES2::shader_get_fragment_code(RID p_shader) const {
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND_V(!shader,String());
 	return shader->fragment_code;
+
+}
+
+String RasterizerGLES2::shader_get_light_code(RID p_shader) const {
+
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,String());
+	return shader->light_code;
 
 }
 
@@ -1450,38 +1527,22 @@ bool RasterizerGLES2::material_get_flag(RID p_material,VS::MaterialFlag p_flag) 
 
 }
 
-void RasterizerGLES2::material_set_hint(RID p_material, VS::MaterialHint p_hint,bool p_enabled) {
+void RasterizerGLES2::material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode) {
 
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
-	ERR_FAIL_INDEX(p_hint,VS::MATERIAL_HINT_MAX);
-	material->hints[p_hint]=p_enabled;
+	material->depth_draw_mode=p_mode;
 
 }
 
-bool RasterizerGLES2::material_get_hint(RID p_material,VS::MaterialHint p_hint) const {
+VS::MaterialDepthDrawMode RasterizerGLES2::material_get_depth_draw_mode(RID p_material) const {
 
 	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,false);
-	ERR_FAIL_INDEX_V(p_hint,VS::MATERIAL_HINT_MAX,false);
-	return material->hints[p_hint];
+	ERR_FAIL_COND_V(!material,VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+	return material->depth_draw_mode;
 
 }
 
-void RasterizerGLES2::material_set_shade_model(RID p_material, VS::MaterialShadeModel p_model) {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND(!material);
-	material->shade_model=p_model;
-
-};
-
-VS::MaterialShadeModel RasterizerGLES2::material_get_shade_model(RID p_material) const {
-
-	Material *material = material_owner.get(p_material);
-	ERR_FAIL_COND_V(!material,VS::MATERIAL_SHADE_MODEL_LAMBERT);
-	return material->shade_model;
-};
 
 
 void RasterizerGLES2::material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode) {
@@ -3571,14 +3632,21 @@ RID RasterizerGLES2::viewport_data_create() {
 	glGenFramebuffers(1, &vd->lum_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, vd->lum_fbo);
 
+	GLuint format_luminance = use_fp16_fb?_GL_RG_EXT:GL_RGBA;
+	GLuint format_luminance_type = use_fp16_fb?(full_float_fb_supported?GL_FLOAT:_GL_HALF_FLOAT_OES):GL_UNSIGNED_BYTE;
+	GLuint format_luminance_components = use_fp16_fb?_GL_RG_EXT:GL_RGBA;
+
 	glGenTextures(1, &vd->lum_color);
 	glBindTexture(GL_TEXTURE_2D, vd->lum_color);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
-		     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0,
+	//	     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	glTexImage2D(GL_TEXTURE_2D, 0, format_luminance, 1, 1, 0,
+		     format_luminance_components, format_luminance_type, NULL);
+
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 			       GL_TEXTURE_2D, vd->lum_color, 0);
 
@@ -4050,10 +4118,12 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 
 	String vertex_code;
 	String vertex_globals;
-	ShaderCompilerGLES2::Flags flags;
+	ShaderCompilerGLES2::Flags vertex_flags;
+	ShaderCompilerGLES2::Flags fragment_flags;
+	ShaderCompilerGLES2::Flags light_flags;
 
 	if (p_shader->mode==VS::SHADER_MATERIAL) {
-		Error err = shader_precompiler.compile(p_shader->vertex_code,ShaderLanguage::SHADER_MATERIAL_VERTEX,vertex_code,vertex_globals,flags,&p_shader->uniforms);
+		Error err = shader_precompiler.compile(p_shader->vertex_code,ShaderLanguage::SHADER_MATERIAL_VERTEX,vertex_code,vertex_globals,vertex_flags,&p_shader->uniforms);
 		if (err) {
 			return; //invalid
 		}
@@ -4066,10 +4136,25 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	String fragment_code;
 	String fragment_globals;
 
-	Error err = shader_precompiler.compile(p_shader->fragment_code,(p_shader->mode==VS::SHADER_MATERIAL?ShaderLanguage::SHADER_MATERIAL_FRAGMENT:ShaderLanguage::SHADER_POST_PROCESS),fragment_code,fragment_globals,flags,&p_shader->uniforms);
+	Error err = shader_precompiler.compile(p_shader->fragment_code,(p_shader->mode==VS::SHADER_MATERIAL?ShaderLanguage::SHADER_MATERIAL_FRAGMENT:ShaderLanguage::SHADER_POST_PROCESS),fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
 	if (err) {
 		return; //invalid
 	}
+
+
+	String light_code;
+	String light_globals;
+
+	if (p_shader->mode==VS::SHADER_MATERIAL) {
+
+		Error err = shader_precompiler.compile(p_shader->light_code,(ShaderLanguage::SHADER_MATERIAL_LIGHT),light_code,light_globals,light_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+	}
+
+	fragment_globals+=light_globals; //both fragment anyway
+
 
 	//print_line("compiled fragment: "+fragment_code);
 	//	("compiled fragment globals: "+fragment_globals);
@@ -4088,43 +4173,53 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 	}
 
+	bool uses_time=false;
+
 	if (p_shader->mode==VS::SHADER_MATERIAL) {
 		//print_line("setting code to id.. "+itos(p_shader->custom_code_id));
 		Vector<const char*> enablers;
-		if (flags.use_color_interp)
+		if (fragment_flags.use_color_interp || vertex_flags.use_color_interp)
 			enablers.push_back("#define ENABLE_COLOR_INTERP\n");
-		if (flags.use_uv_interp)
+		if (fragment_flags.use_uv_interp || vertex_flags.use_uv_interp)
 			enablers.push_back("#define ENABLE_UV_INTERP\n");
-		if (flags.use_uv2_interp)
+		if (fragment_flags.use_uv2_interp || vertex_flags.use_uv2_interp)
 			enablers.push_back("#define ENABLE_UV2_INTERP\n");
-		if (flags.use_tangent_interp)
+		if (fragment_flags.use_tangent_interp || vertex_flags.use_tangent_interp)
 			enablers.push_back("#define ENABLE_TANGENT_INTERP\n");
-		if (flags.use_var1_interp)
+		if (fragment_flags.use_var1_interp || vertex_flags.use_var1_interp)
 			enablers.push_back("#define ENABLE_VAR1_INTERP\n");
-		if (flags.use_var2_interp)
+		if (fragment_flags.use_var2_interp || vertex_flags.use_var2_interp)
 			enablers.push_back("#define ENABLE_VAR2_INTERP\n");
-		if (flags.uses_texscreen) {
+		if (fragment_flags.uses_texscreen) {
 			enablers.push_back("#define ENABLE_TEXSCREEN\n");
 		}
-		if (flags.uses_screen_uv) {
+		if (fragment_flags.uses_screen_uv) {
 			enablers.push_back("#define ENABLE_SCREEN_UV\n");
 		}
-		if (flags.uses_discard) {
+		if (fragment_flags.uses_discard) {
 			enablers.push_back("#define ENABLE_DISCARD\n");
 		}
+		if (light_flags.uses_light) {
+			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
+		}
+		if (light_flags.uses_time || fragment_flags.uses_time || vertex_flags.uses_time) {
+			enablers.push_back("#define USE_TIME\n");
+			uses_time=true;
+		}
 
-		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, fragment_globals,uniform_names,enablers);
+		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 	} else {
 		//postprocess_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, fragment_globals,uniform_names);
 	}
 
 	p_shader->valid=true;
-	p_shader->has_alpha=flags.uses_alpha || flags.uses_texscreen;
-	p_shader->writes_vertex=flags.vertex_code_writes_vertex;
-	p_shader->uses_discard=flags.uses_discard;
-	p_shader->has_texscreen=flags.uses_texscreen;
-	p_shader->has_screen_uv=flags.uses_screen_uv;
-	p_shader->can_zpass=!flags.uses_discard && !flags.vertex_code_writes_vertex;
+	p_shader->has_alpha=fragment_flags.uses_alpha || fragment_flags.uses_texscreen;
+	p_shader->writes_vertex=vertex_flags.vertex_code_writes_vertex;
+	p_shader->uses_discard=fragment_flags.uses_discard;
+	p_shader->has_texscreen=fragment_flags.uses_texscreen;
+	p_shader->has_screen_uv=fragment_flags.uses_screen_uv;
+	p_shader->can_zpass=!fragment_flags.uses_discard && !vertex_flags.vertex_code_writes_vertex;
+	p_shader->uses_time=uses_time;
 	p_shader->version++;
 
 }
@@ -4178,7 +4273,6 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 	}
 
 
-	LightInstance *lights[RenderList::MAX_LIGHTS];
 
 	RenderList *render_list=NULL;
 
@@ -4189,10 +4283,10 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 
 	if (shadow) {
 
-		if (has_blend_alpha || (has_base_alpha && !m->hints[VS::MATERIAL_HINT_OPAQUE_PRE_PASS]))
+		if (has_blend_alpha || (has_base_alpha && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA))
 			return; //bye
 
-		if (m->shader_cache && !m->shader_cache->writes_vertex && !m->shader_cache->uses_discard && !m->hints[VS::MATERIAL_HINT_OPAQUE_PRE_PASS]) {
+		if (m->shader_cache && !m->shader_cache->writes_vertex && !m->shader_cache->uses_discard && m->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA) {
 			//shader does not use discard and does not write a vertex position, use generic material
 			m = shadow_mat_ptr;
 			if (m->last_pass!=frame) {
@@ -4275,7 +4369,7 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 	e->light_type=0xFF; // no lights!
 	e->light=0xFFFF;
 
-	if (!shadow && !has_blend_alpha && has_alpha && m->hints[VS::MATERIAL_HINT_OPAQUE_PRE_PASS]) {
+	if (!shadow && !has_blend_alpha && has_alpha && m->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA) {
 
 		//if nothing exists, add this element as opaque too
 		RenderList::Element *oe = opaque_render_list.add_element();
@@ -4292,25 +4386,35 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 		e->light_type=0x7F; //unshaded is zero
 	} else {
 
-		//setup lights
-		uint16_t light_count=0;
-		uint16_t sort_key[4];
-		uint8_t light_types[4];
+		bool duplicate=false;
 
-		int dlc = MIN(directional_light_count,RenderList::MAX_LIGHTS);;
-		light_count=dlc;
 
-		for(int i=0;i<dlc;i++) {
-			sort_key[i]=directional_lights[i]->sort_key;
-			light_types[i]=VS::LIGHT_DIRECTIONAL;
+		for(int i=0;i<directional_light_count;i++) {
+			uint16_t sort_key = directional_lights[i]->sort_key;
+			uint8_t light_type = VS::LIGHT_DIRECTIONAL;
 			if (directional_lights[i]->base->shadow_enabled) {
-				light_types[i]|=0x8;
+				light_type|=0x8;
 				if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS)
-					light_types[i]|=0x10;
+					light_type|=0x10;
 				else if (directional_lights[i]->base->directional_shadow_mode==VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS)
-					light_types[i]|=0x30;
+					light_type|=0x30;
 
 			}
+
+			RenderList::Element *ec;
+			if (duplicate) {
+
+				ec = render_list->add_element();
+				memcpy(ec,e,sizeof(RenderList::Element));
+			} else {
+
+				ec=e;
+				duplicate=true;
+			}
+
+			ec->light_type=light_type;
+			ec->light=sort_key;
+			ec->additive_ptr=&e->additive;
 
 		}
 
@@ -4322,36 +4426,33 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 
 		for(int i=0;i<ilc;i++) {
 
-			if (light_count>=RenderList::MAX_LIGHTS)
-				break;
-
 			LightInstance *li=light_instance_owner.get( liptr[i] );
 			if (!li || li->last_pass!=scene_pass) //lit by light not in visible scene
 				continue;
-			light_types[light_count]=li->base->type;
-			if (li->base->shadow_enabled)
-				light_types[light_count]|=0x8;
-			sort_key[light_count++]=li->sort_key;
-
-
-		}
-
-		for(int i=0;i<light_count;i++) {
+			uint8_t light_type=li->base->type|0x40; //penalty to ensure directionals always go first
+			if (li->base->shadow_enabled) {
+				light_type|=0x8;
+			}
+			uint16_t sort_key =li->sort_key;
 
 			RenderList::Element *ec;
-			if (i>0) {
+			if (duplicate) {
 
 				ec = render_list->add_element();
 				memcpy(ec,e,sizeof(RenderList::Element));
 			} else {
 
+				duplicate=true;
 				ec=e;
 			}
 
-			ec->light_type=light_types[i];
-			ec->light=sort_key[i];
+			ec->light_type=light_type;
+			ec->light=sort_key;
 			ec->additive_ptr=&e->additive;
+
 		}
+
+
 
 	}
 
@@ -4526,8 +4627,9 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF,shadow_filter==SHADOW_FILTER_PCF5 || shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,shadow_filter==SHADOW_FILTER_ESM);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_LIGHTMAP_ON_UV2,p_material->flags[VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2]);
 
-	if (p_opaque_pass && p_material->hints[VS::MATERIAL_HINT_OPAQUE_PRE_PASS] && p_material->shader_cache && p_material->shader_cache->has_alpha) {
+	if (p_opaque_pass && p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA && p_material->shader_cache && p_material->shader_cache->has_alpha) {
 
 		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_CLIP_ALPHA,true);
 	} else {
@@ -4539,7 +4641,8 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 	if (!shadow) {
 
 		bool depth_test=!p_material->flags[VS::MATERIAL_FLAG_ONTOP];
-		bool depth_write=!p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW] && (p_opaque_pass || !p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA]);
+		bool depth_write=p_material->depth_draw_mode!=VS::MATERIAL_DEPTH_DRAW_NEVER && (p_opaque_pass || p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_ALWAYS);
+		//bool depth_write=!p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW] && (p_opaque_pass || !p_material->hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA]);
 
 		if (current_depth_mask!=depth_write) {
 			current_depth_mask=depth_write;
@@ -4645,6 +4748,13 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		}
 		DEBUG_TEST_ERROR("Material arameters");
 
+		if (p_material->shader_cache->uses_time) {
+			material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,300.0));
+			draw_next_frame=true;
+		}
+			//if uses TIME - draw_next_frame=true
+
+
 	} else {
 
 		material_shader.set_custom_shader(0);
@@ -4687,7 +4797,8 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		material_shader.set_uniform(MaterialShaderGLES2::FOG_COLOR_END,Vector3(col_end.r,col_end.g,col_end.b));
 	}
 
-	material_shader.set_uniform(MaterialShaderGLES2::CONST_LIGHT_MULT,p_no_const_light?0.0:1.0);
+
+
 	//material_shader.set_uniform(MaterialShaderGLES2::TIME,Math::fmod(last_time,300.0));
 	//if uses TIME - draw_next_frame=true
 
@@ -4710,7 +4821,6 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 		VL_LIGHT_DIR,
 		VL_LIGHT_ATTENUATION,
 		VL_LIGHT_SPOT_ATTENUATION,
-		VL_LIGHT_AMBIENT,
 		VL_LIGHT_DIFFUSE,
 		VL_LIGHT_SPECULAR,
 		VL_LIGHT_MAX
@@ -4721,7 +4831,6 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 		MaterialShaderGLES2::LIGHT_DIRECTION,
 		MaterialShaderGLES2::LIGHT_ATTENUATION,
 		MaterialShaderGLES2::LIGHT_SPOT_ATTENUATION,
-		MaterialShaderGLES2::LIGHT_AMBIENT,
 		MaterialShaderGLES2::LIGHT_DIFFUSE,
 		MaterialShaderGLES2::LIGHT_SPECULAR,
 	};
@@ -4733,12 +4842,10 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 	LightInstance *li=light_instances[p_light];
 	Light *l=li->base;
 
-	Color col_ambient=_convert_color(l->colors[VS::LIGHT_COLOR_AMBIENT]);
 	Color col_diffuse=_convert_color(l->colors[VS::LIGHT_COLOR_DIFFUSE]);
 	Color col_specular=_convert_color(l->colors[VS::LIGHT_COLOR_SPECULAR]);
 
 	for(int j=0;j<3;j++) {
-		light_data[VL_LIGHT_AMBIENT][j]=col_ambient[j];
 		light_data[VL_LIGHT_DIFFUSE][j]=col_diffuse[j];
 		light_data[VL_LIGHT_SPECULAR][j]=col_specular[j];
 	}
@@ -4793,7 +4900,8 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 
 			}
 			//print_line("shadow split: "+rtos(li->shadow_split));
-		} else
+		}
+
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_DARKENING,li->base->vars[VS::LIGHT_PARAM_SHADOW_DARKENING]);
 		//matrix
 
@@ -5622,6 +5730,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 	const Skeleton *prev_skeleton =NULL;
 	uint8_t prev_sort_flags=0xFF;
 	const BakedLightData *prev_baked_light=NULL;
+	RID prev_baked_light_texture;
 
 	Geometry::Type prev_geometry_type=Geometry::GEOMETRY_INVALID;
 
@@ -5638,6 +5747,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		material_shader.set_conditional(MaterialShaderGLES2::LIGHT_USE_PSSM4,false);
 		material_shader.set_conditional(MaterialShaderGLES2::SHADELESS,false);
 		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
+		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
 //		material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_TEXTURE,false);
 
 	}
@@ -5645,6 +5755,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 
 	bool stores_glow = !shadow && (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) && !p_alpha_pass;
+
 
 	bool prev_blend=false;
 	glDisable(GL_BLEND);
@@ -5661,6 +5772,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		bool rebind=false;
 		bool bind_baked_light_octree=false;
+		bool bind_baked_lightmap=false;
 		bool additive=false;
 
 
@@ -5718,6 +5830,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				additive=true;
 			}
 
+
 			if (stores_glow)
 				material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,!additive);
 
@@ -5759,7 +5872,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					 case VS::MATERIAL_BLEND_MODE_ADD: {
 
 						glBlendEquation(GL_FUNC_ADD);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+						glBlendFunc(p_alpha_pass?GL_SRC_ALPHA:GL_ONE,GL_ONE);
 
 					 } break;
 					 case VS::MATERIAL_BLEND_MODE_SUB: {
@@ -5779,7 +5892,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			}
 
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
-//			material_shader.set_conditional(MaterialShaderGLES2::USE_AMBIENT_TEXTURE,false);
+			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
 
 			if (!additive && baked_light) {
 
@@ -5797,7 +5910,37 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					}
 				} else if (baked_light->mode==VS::BAKED_LIGHT_LIGHTMAPS) {
 
-					//material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_TEXTURE,true);
+
+					int lightmap_idx = e->instance->baked_lightmap_id;
+
+					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
+					bind_baked_lightmap=false;
+
+
+					if (baked_light->lightmaps.has(lightmap_idx)) {
+
+
+						RID texid = baked_light->lightmaps[lightmap_idx];
+
+						if (prev_baked_light!=baked_light || texid!=prev_baked_light_texture) {
+
+
+							Texture *tex = texture_owner.get(texid);
+							if (tex) {
+
+								glActiveTexture(GL_TEXTURE5);
+								glBindTexture(tex->target,tex->tex_id); //bind the texture
+							}
+
+							prev_baked_light_texture=texid;
+						}
+
+						if (texid.is_valid()) {
+							material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,true);
+							bind_baked_lightmap=true;
+						}
+
+					}
 				}
 			}
 
@@ -5850,7 +5993,8 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		if (i==0 || light!=prev_light || rebind) {			
 			if (e->light!=0xFFFF) {
-				_setup_light(e->light&0x3);
+				_setup_light(e->light);
+
 			}
 		}
 
@@ -5867,6 +6011,14 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		}
 
+		if (bind_baked_lightmap && (baked_light!=prev_baked_light || rebind)) {
+
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP, 5);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP_MULTIPLIER, baked_light->lightmap_multiplier);
+
+		}
+
+
 		_set_cull(e->mirror,p_reverse_cull);
 
 
@@ -5877,6 +6029,17 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 				//material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,6);
 				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE,skeleton->pixel_size);
 			}
+			if (!shadow) {
+
+				if (!additive && current_env && current_env->fx_enabled[VS::ENV_FX_AMBIENT_LIGHT]) {
+					Color ambcolor = current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_COLOR];
+					float ambnrg =  current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_ENERGY];
+					material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHT,Vector3(ambcolor.r*ambnrg,ambcolor.g*ambnrg,ambcolor.b*ambnrg));
+				} else {
+					material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHT,Vector3());
+				}
+			}
+
 			_rinfo.shader_change_count++;
 		}
 
@@ -5910,6 +6073,9 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		} else {
 			material_shader.set_uniform(MaterialShaderGLES2::WORLD_TRANSFORM, e->instance->transform);
 		}
+
+		material_shader.set_uniform(MaterialShaderGLES2::NORMAL_MULT, e->mirror?-1.0:1.0);
+		material_shader.set_uniform(MaterialShaderGLES2::CONST_LIGHT_MULT,additive?0.0:1.0);
 
 
 		_render(e->geometry, material, skeleton,e->owner,e->instance->transform);
@@ -6024,6 +6190,8 @@ void RasterizerGLES2::_process_glow_bloom() {
 		glBindTexture(GL_TEXTURE_2D, current_vd->lum_color );
 		glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::HDR_SOURCE),2);
 		copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_EXPOSURE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]));
+		copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_WHITE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_WHITE]));
+//		copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_WHITE,1.0);
 		copy_shader.set_uniform(CopyShaderGLES2::HDR_GLOW_TRESHOLD,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_GLOW_TRESHOLD]));
 		copy_shader.set_uniform(CopyShaderGLES2::HDR_GLOW_SCALE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_GLOW_SCALE]));
 
@@ -6103,7 +6271,7 @@ void RasterizerGLES2::_process_hdr() {
 	_copy_screen_quad();
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_HDR_COPY,false);
-	int passes = current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_PASSES];
+//	int passes = current_env->fx_param[VS::ENV_FX_PARAM_GLOW_BLUR_PASSES];
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_HDR_REDUCE,true);
 	copy_shader.bind();
@@ -6171,6 +6339,9 @@ void RasterizerGLES2::_draw_tex_bg() {
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+	glDisable(GL_BLEND);
+	glColorMask(1,1,1,1);
+
 
 	RID texture;
 
@@ -6205,6 +6376,7 @@ void RasterizerGLES2::_draw_tex_bg() {
 	}
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA,true);
+
 
 	copy_shader.bind();
 
@@ -6424,6 +6596,7 @@ void RasterizerGLES2::end_scene() {
 	_render_list_forward(&opaque_render_list,camera_transform,camera_transform_inverse,camera_projection,false,fragment_lighting);
 
 	if (draw_tex_background) {
+
 		//most 3D vendors recommend drawing a texture bg or skybox here,
 		//after opaque geometry has been drawn
 		//so the zbuffer can get rid of most pixels
@@ -6467,6 +6640,28 @@ void RasterizerGLES2::end_scene() {
 		glDepthMask(false);
 
 		if (current_env && current_env->fx_enabled[VS::ENV_FX_HDR]) {
+
+			int hdr_tm = current_env->fx_param[VS::ENV_FX_PARAM_HDR_TONEMAPPER];
+			switch(hdr_tm) {
+				case VS::ENV_FX_HDR_TONE_MAPPER_LINEAR: {
+
+
+				} break;
+				case VS::ENV_FX_HDR_TONE_MAPPER_LOG: {
+					copy_shader.set_conditional(CopyShaderGLES2::USE_LOG_TONEMAPPER,true);
+
+				} break;
+				case VS::ENV_FX_HDR_TONE_MAPPER_REINHARDT: {
+					copy_shader.set_conditional(CopyShaderGLES2::USE_REINHARDT_TONEMAPPER,true);
+				} break;
+				case VS::ENV_FX_HDR_TONE_MAPPER_REINHARDT_AUTOWHITE: {
+
+					copy_shader.set_conditional(CopyShaderGLES2::USE_REINHARDT_TONEMAPPER,true);
+					copy_shader.set_conditional(CopyShaderGLES2::USE_AUTOWHITE,true);
+				} break;
+			}
+
+
 			_process_hdr();
 		}
 		if (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) {
@@ -6516,6 +6711,7 @@ void RasterizerGLES2::end_scene() {
 			glBindTexture(GL_TEXTURE_2D, current_vd->lum_color );
 			glUniform1i(copy_shader.get_uniform_location(CopyShaderGLES2::HDR_SOURCE),2);
 			copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_EXPOSURE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]));
+			copy_shader.set_uniform(CopyShaderGLES2::TONEMAP_WHITE,float(current_env->fx_param[VS::ENV_FX_PARAM_HDR_WHITE]));
 
 		}
 
@@ -6546,6 +6742,9 @@ void RasterizerGLES2::end_scene() {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_FXAA,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SCREEN,false);
 		copy_shader.set_conditional(CopyShaderGLES2::USE_GLOW_SOFTLIGHT,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_REINHARDT_TONEMAPPER,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_AUTOWHITE,false);
+		copy_shader.set_conditional(CopyShaderGLES2::USE_LOG_TONEMAPPER,false);
 
 		material_shader.set_conditional(MaterialShaderGLES2::USE_8BIT_HDR,false);
 
@@ -6560,6 +6759,7 @@ void RasterizerGLES2::end_scene() {
 	if (GLOBAL_DEF("rasterizer/debug_shadow_maps",false)) {
 		_debug_shadows();
 	}
+//	_debug_luminances();
 
 
 }
@@ -6929,7 +7129,7 @@ void RasterizerGLES2::_debug_draw_shadows_type(Vector<ShadowBuffer>& p_shadows,P
 
 void RasterizerGLES2::_debug_luminances() {
 
-	canvas_shader.set_conditional(CanvasShaderGLES2::DEBUG_ENCODED_32,true);
+	canvas_shader.set_conditional(CanvasShaderGLES2::DEBUG_ENCODED_32,!use_fp16_fb);
 	canvas_begin();
 	glDisable(GL_BLEND);
 	canvas_shader.bind();
@@ -6937,10 +7137,17 @@ void RasterizerGLES2::_debug_luminances() {
 	Size2 debug_size(128,128);
 	Size2 ofs;
 
-	for (int i=0;i<framebuffer.luminance.size();i++) {
 
-		_debug_draw_shadow(framebuffer.luminance[i].color, Rect2( ofs, debug_size ));
-		ofs.x+=debug_size.x;
+	for (int i=0;i<=framebuffer.luminance.size();i++) {
+
+		if (i==framebuffer.luminance.size()) {
+			if (!current_vd)
+				break;
+			_debug_draw_shadow(current_vd->lum_color, Rect2( ofs, debug_size ));
+		} else {
+			_debug_draw_shadow(framebuffer.luminance[i].color, Rect2( ofs, debug_size ));
+		}
+		ofs.x+=debug_size.x/2;
 		if ( (ofs.x+debug_size.x) > viewport.width ) {
 
 			ofs.x=0;
@@ -7069,7 +7276,7 @@ void RasterizerGLES2::canvas_set_blend_mode(VS::MaterialBlendMode p_mode) {
 		 } break;
 		case VS::MATERIAL_BLEND_MODE_MUL: {
 			glBlendEquation(GL_FUNC_ADD);
-			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			glBlendFunc(GL_DST_COLOR,GL_ZERO);
 		} break;
 		case VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA: {
 			glBlendEquation(GL_FUNC_ADD);
@@ -8052,9 +8259,14 @@ void RasterizerGLES2::_update_framebuffer() {
 	GLuint format_rgba = GL_RGBA;
 	GLuint format_rgb = use_fp16_fb?_GL_RGB16F_EXT:GL_RGB;
 	GLuint format_type = use_fp16_fb?_GL_HALF_FLOAT_OES:GL_UNSIGNED_BYTE;
-	GLuint format_luminance = use_fp16_fb?_GL_RED_EXT:GL_RGBA;
+	/*GLuint format_luminance = use_fp16_fb?GL_RGB16F:GL_RGBA;
+	GLuint format_luminance_type = use_fp16_fb?(use_fu_GL_HALF_FLOAT_OES):GL_UNSIGNED_BYTE;
+	GLuint format_luminance_components = use_fp16_fb?GL_RGB:GL_RGBA;*/
+
+	GLuint format_luminance = use_fp16_fb?_GL_RG_EXT:GL_RGBA;
 	GLuint format_luminance_type = use_fp16_fb?(full_float_fb_supported?GL_FLOAT:_GL_HALF_FLOAT_OES):GL_UNSIGNED_BYTE;
-	GLuint format_luminance_components = use_fp16_fb?_GL_RED_EXT:GL_RGBA;
+	GLuint format_luminance_components = use_fp16_fb?_GL_RG_EXT:GL_RGBA;
+
 
 
 
@@ -8198,8 +8410,8 @@ void RasterizerGLES2::_update_framebuffer() {
 
 			glGenTextures(1, &lb.color);
 			glBindTexture(GL_TEXTURE_2D, lb.color);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 			glTexImage2D(GL_TEXTURE_2D, 0, format_luminance, lb.size, lb.size, 0,
@@ -8226,9 +8438,13 @@ void RasterizerGLES2::_update_framebuffer() {
 
 }
 
-void RasterizerGLES2::set_base_framebuffer(GLuint p_id) {
+void RasterizerGLES2::set_base_framebuffer(GLuint p_id, Vector2 p_size) {
 
 	base_framebuffer=p_id;
+
+	if (p_size.x != 0) {
+		window_size = p_size;
+	};
 }
 
 #if 0
@@ -8767,7 +8983,14 @@ void RasterizerGLES2::set_use_framebuffers(bool p_use) {
 	use_framebuffers=p_use;
 }
 
+RasterizerGLES2* RasterizerGLES2::get_singleton() {
+
+	return _singleton;
+};
+
 RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,bool p_default_fragment_lighting,bool p_use_reload_hooks) {
+
+	_singleton = this;
 
 	keep_copies=p_keep_ram_copy;
 	use_reload_hooks=p_use_reload_hooks;

@@ -1,5 +1,9 @@
 package com.android.godot.payments;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.os.RemoteException;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -7,7 +11,13 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.util.Log;
+import android.os.Bundle;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONStringer;
+
+import com.android.godot.Dictionary;
 import com.android.godot.Godot;
 import com.android.godot.GodotPaymentV3;
 import com.android.vending.billing.IInAppBillingService;
@@ -23,7 +33,6 @@ public class PaymentsManager {
 	private Activity activity;
 	IInAppBillingService mService;
 
-	
 	public void setActivity(Activity activity){
 		this.activity = activity;
 	}
@@ -81,18 +90,39 @@ public class PaymentsManager {
 
 	}
 
+	public void consumeUnconsumedPurchases(){
+		new ReleaseAllConsumablesTask(mService, activity) {
+			
+			@Override
+			protected void success(String sku, String receipt, String signature, String token) {
+				godotPaymentV3.callbackSuccessProductMassConsumed(receipt, signature, sku);
+			}
+			
+			@Override
+			protected void error(String message) {
+				godotPaymentV3.callbackFail();
+				
+			}
+
+			@Override
+			protected void notRequired() {
+				godotPaymentV3.callbackSuccessNoUnconsumedPurchases();
+				
+			}
+		}.consumeItAll();
+	}
+	
 	public void processPurchaseResponse(int resultCode, Intent data) {
 		new HandlePurchaseTask(activity){
 
 			@Override
-			protected void success(final String sku, final String signature) {
+			protected void success(final String sku, final String signature, final String ticket) {
+				godotPaymentV3.callbackSuccess(ticket, signature);
 				new ConsumeTask(mService, activity) {
 					
 					@Override
 					protected void success(String ticket) {
 //						godotPaymentV3.callbackSuccess("");
-						Log.d("XXX", "calling success:" + signature);
-						godotPaymentV3.callbackSuccess(ticket, signature);
 					}
 					
 					@Override
@@ -103,7 +133,7 @@ public class PaymentsManager {
 				}.consume(sku);
 
 				
-				
+//				godotPaymentV3.callbackSuccess(new PaymentsCache(activity).getConsumableValue("ticket", sku),signature);
 //			    godotPaymentV3.callbackSuccess(ticket);
 			    //validatePurchase(purchaseToken, sku);
 			}
@@ -166,5 +196,6 @@ public class PaymentsManager {
 		this.godotPaymentV3 = godotPaymentV3;
 		
 	}
+
 }
 

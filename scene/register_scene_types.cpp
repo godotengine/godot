@@ -82,6 +82,7 @@
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/sprite.h"
 #include "scene/2d/animated_sprite.h"
+#include "scene/2d/polygon_2d.h"
 
 
 #include "scene/2d/visibility_notifier_2d.h"
@@ -184,6 +185,7 @@
 #include "scene/resources/environment.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/car_body.h"
+#include "scene/3d/vehicle_body.h"
 #include "scene/3d/body_shape.h"
 #include "scene/3d/area.h"
 #include "scene/3d/physics_joint.h"
@@ -195,6 +197,9 @@
 #include "scene/3d/spatial_sample_player.h"
 #include "scene/3d/spatial_stream_player.h"
 #include "scene/3d/proximity_group.h"
+#include "scene/3d/navigation_mesh.h"
+#include "scene/3d/navigation.h"
+
 #endif
 
 #include "scene/scene_binds.h"
@@ -387,6 +392,9 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Particles>();
 	ObjectTypeDB::register_type<Position3D>();
 	ObjectTypeDB::register_type<Quad>();
+	ObjectTypeDB::register_type<NavigationMeshInstance>();
+	ObjectTypeDB::register_type<NavigationMesh>();
+	ObjectTypeDB::register_type<Navigation>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -395,6 +403,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<RigidBody>();
 	ObjectTypeDB::register_type<CarBody>();
 	ObjectTypeDB::register_type<CarWheel>();
+	ObjectTypeDB::register_type<VehicleBody>();
+	ObjectTypeDB::register_type<VehicleWheel>();
 	ObjectTypeDB::register_type<Area>();
 	ObjectTypeDB::register_type<ProximityGroup>();
 	ObjectTypeDB::register_type<CollisionShape>();
@@ -468,6 +478,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<RayCast2D>();
 	ObjectTypeDB::register_type<VisibilityNotifier2D>();
 	ObjectTypeDB::register_type<VisibilityEnabler2D>();
+	ObjectTypeDB::register_type<Polygon2D>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
@@ -562,6 +573,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<ConcavePolygonShape2D>();
 	ObjectTypeDB::register_type<Curve2D>();
 	ObjectTypeDB::register_type<Path2D>();
+	ObjectTypeDB::register_type<PathFollow2D>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

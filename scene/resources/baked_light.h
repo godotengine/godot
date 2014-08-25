@@ -33,7 +33,13 @@ private:
 
 	RID baked_light;
 	Mode mode;
-	Map<int,Ref<Texture> > lightmaps;
+	struct LightMap {
+		Size2i gen_size;
+		Ref<Texture> texture;
+	};
+
+
+	Vector< LightMap> lightmaps;
 
 	//bake vars
 	int cell_subdiv;
@@ -45,6 +51,7 @@ private:
 	float edge_damp;
 	float normal_damp;
 	int bounces;
+	bool transfer_only_uv2;
 	Format format;
 	bool flags[BAKE_MAX];
 
@@ -54,6 +61,13 @@ private:
 
 	Array _get_lightmap_data() const;
 	void _set_lightmap_data(Array p_array);
+
+protected:
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
+
 	static void _bind_methods();
 
 public:
@@ -91,16 +105,22 @@ public:
 	void set_format(Format p_margin);
 	Format get_format() const;
 
+	void set_transfer_lightmaps_only_to_uv2(bool p_enable);
+	bool get_transfer_lightmaps_only_to_uv2() const;
+
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
 	void set_octree(const DVector<uint8_t>& p_octree);
 	DVector<uint8_t> get_octree() const;
 
-	void add_lightmap(const Ref<Texture> p_texture,int p_id);
-	void erase_lightmap(int p_id);
-	void get_lightmaps(List<int> *r_lightmaps);
-	Ref<Texture> get_lightmap_texture(int p_id);
+	void add_lightmap(const Ref<Texture> &p_texture,Size2 p_gen_size=Size2(256,256));
+	void set_lightmap_gen_size(int p_idx,const Size2& p_size);
+	Size2 get_lightmap_gen_size(int p_idx) const;
+	void set_lightmap_texture(int p_idx,const Ref<Texture> &p_texture);
+	Ref<Texture> get_lightmap_texture(int p_idx) const;
+	void erase_lightmap(int p_idx);
+	int  get_lightmaps_count() const;
 	void clear_lightmaps();
 
 	virtual RID get_rid() const;

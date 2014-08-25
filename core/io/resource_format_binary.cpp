@@ -1751,7 +1751,10 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	skip_editor=p_flags&ResourceSaver::FLAG_OMIT_EDITOR_PROPERTIES;
 	bundle_resources=p_flags&ResourceSaver::FLAG_BUNDLE_RESOURCES;
 	big_endian=p_flags&ResourceSaver::FLAG_SAVE_BIG_ENDIAN;
+	takeover_paths=p_flags&ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
+	if (!p_path.begins_with("res://"))
+		takeover_paths=false;
 
 	local_path=p_path.get_base_dir();
 	//bin_meta_idx = get_string_index("__bin_meta__"); //is often used, so create
@@ -1841,9 +1844,12 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
 
 		RES r = E->get();
-		if (r->get_path()=="" || r->get_path().find("::")!=-1)
+		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
 			save_unicode_string("local://"+itos(ofs_pos.size()));
-		else
+			if (takeover_paths) {
+				r->set_path(p_path+"::"+itos(ofs_pos.size()),true);
+			}
+		} else
 			save_unicode_string(r->get_path()); //actual external
 		ofs_pos.push_back(f->get_pos());
 		f->store_64(0); //offset in 64 bits
