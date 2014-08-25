@@ -7,7 +7,7 @@ extends Control
 
 var trans = ["linear", "sine", "quint", "quart", "quad", "expo", "elastic", "cubic", "circ", "bounce", "back"]
 var eases = ["in", "out", "in_out", "out_in"]
-var modes = ["move", "color", "scale", "rotate", "callback", "repeat", "pause"]
+var modes = ["move", "color", "scale", "rotate", "callback", "follow", "repeat", "pause"]
 
 var state = {
 	trans = Tween.TRANS_LINEAR,
@@ -82,35 +82,54 @@ func on_color_changed(color):
 	
 func reset_tween():
 	var tween = get_node("tween")
+	var pos = tween.tell()
 	tween.reset_all()
 	tween.remove_all()
 	
 	var sprite = get_node("tween/area/sprite")
+	var follow = get_node("tween/area/follow")
+	var follow_2 = get_node("tween/area/follow_2")
 	
 	if get_node("modes/move").is_pressed():
 		tween.interpolate_method(sprite, "set_pos", Vector2(0,0), Vector2(736, 184), 2, state.trans, state.eases)
-		tween.interpolate_method(sprite, "set_pos", Vector2(736,184), Vector2(0, 0), 2, state.trans, state.eases, 2)
+		tween.interpolate_property(sprite, "transform/pos", Vector2(736,184), Vector2(0, 0), 2, state.trans, state.eases, 2)
 	
 	if get_node("modes/color").is_pressed():
 		tween.interpolate_method(sprite, "set_modulate", get_node("color/color_from").get_color(), get_node("color/color_to").get_color(), 2, state.trans, state.eases)
-		tween.interpolate_method(sprite, "set_modulate", get_node("color/color_to").get_color(), get_node("color/color_from").get_color(), 2, state.trans, state.eases, 2)
+		tween.interpolate_property(sprite, "modulate", get_node("color/color_to").get_color(), get_node("color/color_from").get_color(), 2, state.trans, state.eases, 2)
 	else:
 		sprite.set_modulate(Color(1, 1, 1, 1))
 	
 	if get_node("modes/scale").is_pressed():
 		tween.interpolate_method(sprite, "set_scale", Vector2(0.5,0.5), Vector2(1.5, 1.5), 2, state.trans, state.eases)
-		tween.interpolate_method(sprite, "set_scale", Vector2(1.5,1.5), Vector2(0.5, 0.5), 2, state.trans, state.eases, 2)
+		tween.interpolate_property(sprite, "transform/scale", Vector2(1.5,1.5), Vector2(0.5, 0.5), 2, state.trans, state.eases, 2)
+	else:
+		sprite.set_scale(Vector2(1, 1))
 	
 	if get_node("modes/rotate").is_pressed():
 		tween.interpolate_method(sprite, "set_rot", 0, 6.28, 2, state.trans, state.eases)
-		tween.interpolate_method(sprite, "set_rot", 6.28, 0, 2, state.trans, state.eases, 2)
+		tween.interpolate_property(sprite, "transform/rot", 6.28, 0, 2, state.trans, state.eases, 2)
 	
 	if get_node("modes/callback").is_pressed():
 		tween.interpolate_callback(self, "on_callback", 0.5, "0.5 second's after")
 		tween.interpolate_callback(self, "on_callback", 1.2, "1.2 second's after")
 	
+	if get_node("modes/follow").is_pressed():
+		follow.show()
+		follow_2.show()
+		
+		tween.follow_method(follow, "set_pos", Vector2(0, 184), sprite, "get_pos", 2, state.trans, state.eases)
+		tween.targeting_method(follow, "set_pos", sprite, "get_pos", Vector2(0, 184), 2, state.trans, state.eases, 2)
+		
+		tween.targeting_property(follow_2, "transform/pos", sprite, "transform/pos", Vector2(736, 0), 2, state.trans, state.eases)
+		tween.follow_property(follow_2, "transform/pos", Vector2(736, 0), sprite, "transform/pos", 2, state.trans, state.eases, 2)
+	else:
+		follow.hide()
+		follow_2.hide()
+	
 	tween.set_repeat(get_node("modes/repeat").is_pressed())
 	tween.start()
+	tween.seek(pos)
 	
 	if get_node("modes/pause").is_pressed():
 		tween.stop_all()
