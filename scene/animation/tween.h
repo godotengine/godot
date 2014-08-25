@@ -72,6 +72,10 @@ private:
 
 		INTER_PROPERTY,
 		INTER_METHOD,
+		FOLLOW_PROPERTY,
+		FOLLOW_METHOD,
+		TARGETING_PROPERTY,
+		TARGETING_METHOD,
 		INTER_CALLBACK,
 	};
 
@@ -80,17 +84,18 @@ private:
 		InterpolateType type;
 		bool finish;
 		real_t elapsed;
-
 		NodePath path;
-		String key;
+		StringName key;
 		Variant initial_val;
 		Variant delta_val;
 		Variant final_val;
+		NodePath target;
+		StringName target_key;
 		real_t times_in_sec;
 		TransitionType trans_type;
 		EaseType ease_type;
 		real_t delay;
-		Variant args;
+		Variant arg;
 	};
 
 	String autoplay;
@@ -106,8 +111,10 @@ private:
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
 
 	real_t _run_equation(TransitionType p_trans_type, EaseType p_ease_type, real_t t, real_t b, real_t c, real_t d);
+	Variant& _get_delta_val(InterpolateData& p_data);
+	Variant& _get_initial_val(InterpolateData& p_data);
 	Variant _run_equation(InterpolateData& p_data);
-	bool _calc_delta_val(InterpolateData& p_data);
+	bool _calc_delta_val(const Variant& p_initial_val, const Variant& p_final_val, Variant& p_delta_val);
 	bool _apply_tween_value(InterpolateData& p_data, Variant& value);
 
 	void _tween_process(float p_delta);
@@ -173,7 +180,51 @@ public:
 	bool interpolate_callback(Node *p_node
 		, String p_callback
 		, real_t p_times_in_sec
-		, Variant p_args = Variant()
+		, Variant p_arg = Variant()
+	);
+
+	bool follow_property(Node *p_node
+		, String p_property
+		, Variant p_initial_val
+		, Node *p_target
+		, String p_target_property
+		, real_t p_times_in_sec
+		, TransitionType p_trans_type
+		, EaseType p_ease_type
+		, real_t p_delay = 0
+	);
+
+	bool follow_method(Node *p_node
+		, String p_method
+		, Variant p_initial_val
+		, Node *p_target
+		, String p_target_method
+		, real_t p_times_in_sec
+		, TransitionType p_trans_type
+		, EaseType p_ease_type
+		, real_t p_delay = 0
+	);
+
+	bool targeting_property(Node *p_node
+		, String p_property
+		, Node *p_initial
+		, String p_initial_property
+		, Variant p_final_val
+		, real_t p_times_in_sec
+		, TransitionType p_trans_type
+		, EaseType p_ease_type
+		, real_t p_delay = 0
+	);
+
+	bool targeting_method(Node *p_node
+		, String p_method
+		, Node *p_initial
+		, String p_initial_method
+		, Variant p_final_val
+		, real_t p_times_in_sec
+		, TransitionType p_trans_type
+		, EaseType p_ease_type
+		, real_t p_delay = 0
 	);
 
 	Tween();
