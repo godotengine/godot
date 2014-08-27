@@ -36,7 +36,7 @@ void Timer::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			if (autostart)
+			if (!get_scene()->is_editor_hint() && autostart)
 				start();
 		} break;
 		case NOTIFICATION_PROCESS: {
