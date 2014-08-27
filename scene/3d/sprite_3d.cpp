@@ -479,6 +479,7 @@ void Sprite3D::set_frame(int p_frame) {
 	if (frame != p_frame)
 
 	frame=p_frame;
+	_queue_update();
 }
 
 int Sprite3D::get_frame() const {

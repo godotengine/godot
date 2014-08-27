@@ -70,7 +70,22 @@ class ScrollBar : public Range {
 	double get_grabber_offset() const;
 	
 	static void set_can_focus_by_default(bool p_can_focus); 
-	
+
+	Node* drag_slave;
+	NodePath drag_slave_path;
+
+	Vector2 drag_slave_speed;
+	Vector2 drag_slave_accum;
+	Vector2 drag_slave_from;
+	Vector2 last_drag_slave_accum;
+	float last_drag_slave_time;
+	float time_since_motion;
+	bool drag_slave_touching;
+	bool drag_slave_touching_deaccel;
+	bool click_handled;
+
+	void _drag_slave_exit();
+	void _drag_slave_input(const InputEvent& p_input);
 	
 	void _input_event(InputEvent p_event);
 protected:	
@@ -82,6 +97,9 @@ public:
 
 	void set_custom_step(float p_custom_step);
 	float get_custom_step() const;
+
+	void set_drag_slave(const NodePath& p_path);
+	NodePath get_drag_slave() const;
 
 	virtual Size2 get_minimum_size() const;	 	
 	ScrollBar(Orientation p_orientation=VERTICAL);	

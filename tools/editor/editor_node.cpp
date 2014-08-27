@@ -41,6 +41,7 @@
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
 #include "io_plugins/editor_import_collada.h"
+#include "io_plugins/editor_scene_importer_fbxconv.h"
 #include "globals.h"
 #include <stdio.h>
 #include "object_type_db.h"
@@ -86,6 +87,7 @@
 #include "plugins/tile_set_editor_plugin.h"
 #include "plugins/animation_player_editor_plugin.h"
 #include "plugins/baked_light_editor_plugin.h"
+#include "plugins/polygon_2d_editor_plugin.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -734,6 +736,7 @@ void EditorNode::_save_scene(String p_file) {
 		flg|=ResourceSaver::FLAG_COMPRESS;
 	if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
 		flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+	flg|=ResourceSaver::FLAG_REPLACE_SUBRESOURCE_PATHS;
 
 
 	err = ResourceSaver::save(p_file,sdata,flg);
@@ -1321,6 +1324,7 @@ void EditorNode::_edit_current() {
 	}
 
 	/* Take care of PLUGIN EDITOR */
+
 
 	EditorPlugin *main_plugin = editor_data.get_editor(current_obj);
 
@@ -2262,6 +2266,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 				if (!E->get()->can_reload_from_file())
 					continue;
+				if (!FileAccess::exists(E->get()->get_path()))
+					continue;
 				uint64_t mt = FileAccess::get_modified_time(E->get()->get_path());
 				if (mt!=E->get()->get_last_modified_time()) {
 					E->get()->reload_from_file();
@@ -2727,10 +2733,10 @@ Error EditorNode::load_scene(const String& p_scene) {
 	}
 */
 	set_edited_scene(new_scene);
-	scene_tree_dock->set_selected(new_scene);
+	_get_scene_metadata();
+	scene_tree_dock->set_selected(new_scene, true);
 	property_editor->edit(new_scene);
 	scene_import_metadata = sdata->get_import_metadata();
-	_get_scene_metadata();
 
 	editor_data.get_undo_redo().clear_history();
 	saved_version=editor_data.get_undo_redo().get_version();
@@ -2756,7 +2762,7 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	top_pallete->set_current_tab(0); //always go to scene
 
-	//push_item(new_scene);
+	push_item(new_scene);
 
 	return OK;
 }
@@ -3046,6 +3052,33 @@ void EditorNode::_load_error_notify(void* p_ud,const String& p_text) {
 
 }
 
+
+bool EditorNode::_find_scene_in_use(Node* p_node,const String& p_path) const {
+
+	if (p_node->get_filename()==p_path) {
+		return true;
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+
+		if (_find_scene_in_use(p_node->get_child(i),p_path)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+bool EditorNode::is_scene_in_use(const String& p_path) {
+
+	Node *es = get_edited_scene();
+	if (es)
+		return _find_scene_in_use(es,p_path);
+	return false;
+
+}
+
 void EditorNode::register_editor_types() {
 
 	ObjectTypeDB::register_type<EditorPlugin>();
@@ -3210,6 +3243,7 @@ Error EditorNode::export_platform(const String& p_platform, const String& p_path
 
 	return OK;
 }
+
 
 
 EditorNode::EditorNode() {
@@ -4015,6 +4049,8 @@ EditorNode::EditorNode() {
 	Ref<EditorSceneImportPlugin> _scene_import =  memnew(EditorSceneImportPlugin(this) );
 	Ref<EditorSceneImporterCollada> _collada_import = memnew( EditorSceneImporterCollada);
 	_scene_import->add_importer(_collada_import);
+	Ref<EditorSceneImporterFBXConv> _fbxconv_import = memnew( EditorSceneImporterFBXConv);
+	_scene_import->add_importer(_fbxconv_import);
 	editor_import_export->add_import_plugin( _scene_import);
 	editor_import_export->add_import_plugin( Ref<EditorSceneAnimationImportPlugin>( memnew(EditorSceneAnimationImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorMeshImportPlugin>( memnew(EditorMeshImportPlugin(this))));
@@ -4057,6 +4093,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( Path2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
 	add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
+	add_editor_plugin( memnew( Polygon2DEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );
@@ -4067,7 +4104,7 @@ EditorNode::EditorNode() {
 
 
 	import_menu->get_popup()->add_separator();
-	import_menu->get_popup()->add_item("Import Settings",SETTINGS_IMPORT);
+	import_menu->get_popup()->add_item("Re-Import..",SETTINGS_IMPORT);
 
 	editor_plugin_screen=NULL;
 	editor_plugin_over=NULL;

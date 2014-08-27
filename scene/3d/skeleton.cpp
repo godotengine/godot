@@ -237,6 +237,14 @@ Transform Skeleton::get_bone_transform(int p_bone) const {
 	return bones[p_bone].pose_global * bones[p_bone].rest_global_inverse;
 }
 
+Transform Skeleton::get_bone_global_pose(int p_bone) const {
+
+	ERR_FAIL_INDEX_V(p_bone,bones.size(),Transform());
+	if (dirty)
+		const_cast<Skeleton*>(this)->notification(NOTIFICATION_UPDATE_SKELETON);
+	return bones[p_bone].pose_global;
+}
+
 RID Skeleton::get_skeleton() const {
 
 	return skeleton;
@@ -445,7 +453,7 @@ RES Skeleton::_get_gizmo_geometry() const {
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	mat->set_flag(Material::FLAG_UNSHADED,true);
 	mat->set_flag(Material::FLAG_ONTOP,true);
-	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 	surface_tool->begin(Mesh::PRIMITIVE_LINES);
 	surface_tool->set_material(mat);
@@ -510,6 +518,8 @@ void Skeleton::_bind_methods() {
 	
 	ObjectTypeDB::bind_method(_MD("get_bone_pose","bone_idx"),&Skeleton::get_bone_pose);
 	ObjectTypeDB::bind_method(_MD("set_bone_pose","bone_idx","pose"),&Skeleton::set_bone_pose);
+
+	ObjectTypeDB::bind_method(_MD("get_bone_global_pose","bone_idx"),&Skeleton::get_bone_global_pose);
 
 	ObjectTypeDB::bind_method(_MD("get_bone_custom_pose","bone_idx"),&Skeleton::get_bone_custom_pose);
 	ObjectTypeDB::bind_method(_MD("set_bone_custom_pose","bone_idx","custom_pose"),&Skeleton::set_bone_custom_pose);

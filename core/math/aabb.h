@@ -73,6 +73,8 @@ public:
 	AABB intersection(const AABB& p_aabb) const; ///get box where two intersect, empty if no intersection occurs
 	bool intersects_segment(const Vector3& p_from, const Vector3& p_to,Vector3* r_clip=NULL,Vector3* r_normal=NULL) const;
 	bool intersects_ray(const Vector3& p_from, const Vector3& p_dir,Vector3* r_clip=NULL,Vector3* r_normal=NULL) const;
+	_FORCE_INLINE_ bool smits_intersect_ray(const Vector3 &from,const Vector3& p_dir, float t0, float t1) const;
+
 	_FORCE_INLINE_ bool intersects_convex_shape(const Plane *p_plane, int p_plane_count) const;
 	bool intersects_plane(const Plane &p_plane) const;
 
@@ -89,7 +91,7 @@ public:
 	_FORCE_INLINE_ real_t get_shortest_axis_size() const;
 
 	AABB grow(real_t p_by) const;
-	void grow_by(real_t p_amount);
+	_FORCE_INLINE_ void grow_by(real_t p_amount);
 
 	void get_edge(int p_edge,Vector3& r_from,Vector3& r_to) const;
 	_FORCE_INLINE_ Vector3 get_endpoint(int p_point) const;
@@ -312,6 +314,63 @@ inline real_t AABB::get_shortest_axis_size() const {
 	}
 
 	return max_size;
+}
+
+bool AABB::smits_intersect_ray(const Vector3 &from,const Vector3& dir, float t0, float t1) const {
+
+	float divx=1.0/dir.x;
+	float divy=1.0/dir.y;
+	float divz=1.0/dir.z;
+
+	Vector3 upbound=pos+size;
+	float tmin, tmax, tymin, tymax, tzmin, tzmax;
+	if (dir.x >= 0) {
+		tmin = (pos.x - from.x) * divx;
+		tmax = (upbound.x - from.x) * divx;
+	}
+	else {
+		tmin = (upbound.x - from.x) * divx;
+		tmax = (pos.x - from.x) * divx;
+	}
+	if (dir.y >= 0) {
+		tymin = (pos.y - from.y) * divy;
+		tymax = (upbound.y - from.y) * divy;
+	}
+	else {
+		tymin = (upbound.y - from.y) * divy;
+		tymax = (pos.y - from.y) * divy;
+	}
+	if ( (tmin > tymax) || (tymin > tmax) )
+		return false;
+	if (tymin > tmin)
+			tmin = tymin;
+	if (tymax < tmax)
+		tmax = tymax;
+	if (dir.z >= 0) {
+		tzmin = (pos.z - from.z) * divz;
+		tzmax = (upbound.z - from.z) * divz;
+	}
+	else {
+		tzmin = (upbound.z - from.z) * divz;
+		tzmax = (pos.z - from.z) * divz;
+	}
+	if ( (tmin > tzmax) || (tzmin > tmax) )
+		return false;
+	if (tzmin > tmin)
+		tmin = tzmin;
+	if (tzmax < tmax)
+		tmax = tzmax;
+	return ( (tmin < t1) && (tmax > t0) );
+}
+
+void AABB::grow_by(real_t p_amount) {
+
+	pos.x-=p_amount;
+	pos.y-=p_amount;
+	pos.z-=p_amount;
+	size.x+=2.0*p_amount;
+	size.y+=2.0*p_amount;
+	size.z+=2.0*p_amount;
 }
 
 typedef AABB Rect3;

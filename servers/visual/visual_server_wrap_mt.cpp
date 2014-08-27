@@ -165,6 +165,7 @@ void VisualServerWrapMT::finish() {
 
 
 		texture_free_cached_ids();
+		mesh_free_cached_ids();
 
 		thread=NULL;
 	} else {
@@ -187,6 +188,7 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer* p_contained,bool p_create_t
 	draw_thread_up=false;
 	alloc_mutex=Mutex::create();
 	texture_pool_max_size=GLOBAL_DEF("render/thread_textures_prealloc",20);
+	mesh_pool_max_size=GLOBAL_DEF("render/thread_meshes_prealloc",20);
 	if (!p_create_thread) {
 		server_thread=Thread::get_caller_ID();
 	} else {

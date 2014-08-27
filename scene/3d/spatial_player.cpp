@@ -98,7 +98,7 @@ RES SpatialPlayer::_get_gizmo_geometry() const {
 	mat->set_parameter( FixedMaterial::PARAM_EMISSION,Color(0.5,0.7,0.8) );
 	mat->set_blend_mode( Material::BLEND_MODE_ADD );
 	mat->set_flag(Material::FLAG_DOUBLE_SIDED,true);
-	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+//	mat->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
 
 
 	surface_tool->begin(Mesh::PRIMITIVE_TRIANGLES);

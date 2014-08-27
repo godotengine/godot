@@ -98,6 +98,7 @@ private:
 		String vertex_globals;
 		String fragment;
 		String fragment_globals;
+		String light;
 		uint32_t version;
 		Vector<StringName> custom_uniforms;
 		Vector<const char*> custom_defines;
@@ -157,6 +158,7 @@ private:
 	CharString fragment_code0;
 	CharString fragment_code1;
 	CharString fragment_code2;
+	CharString fragment_code3;
 
 	CharString vertex_code0;
 	CharString vertex_code1;
@@ -292,7 +294,7 @@ public:
 	void clear_caches();
 
 	uint32_t create_custom_shader();
-	void set_custom_shader_code(uint32_t p_id,const String& p_vertex, const String& p_vertex_globals,const String& p_fragment, const String& p_fragment_globals,const Vector<StringName>& p_uniforms,const Vector<const char*> &p_custom_defines);
+	void set_custom_shader_code(uint32_t p_id,const String& p_vertex, const String& p_vertex_globals,const String& p_fragment,const String& p_p_light,const String& p_fragment_globals,const Vector<StringName>& p_uniforms,const Vector<const char*> &p_custom_defines);
 	void set_custom_shader(uint32_t p_id);
 	void free_custom_shader(uint32_t p_id);
 
@@ -307,6 +309,8 @@ public:
 		}
 		uniforms_dirty = true;
 	};
+
+	uint32_t get_version() const { return new_conditional_version.version; }
 
 	void set_uniform_camera(int p_idx, const CameraMatrix& p_mat) {
 

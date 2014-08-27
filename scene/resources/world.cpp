@@ -225,17 +225,22 @@ struct SpatialIndexer {
 
 void World::_register_camera(Camera* p_camera) {
 
+#ifndef _3D_DISABLED
 	indexer->_add_camera(p_camera);
+#endif
 }
 
 void World::_update_camera(Camera* p_camera){
 
+#ifndef _3D_DISABLED
 	indexer->_update_camera(p_camera);
-
+#endif
 }
 void World::_remove_camera(Camera* p_camera){
 
+#ifndef _3D_DISABLED
 	indexer->_remove_camera(p_camera);
+#endif
 }
 
 
@@ -243,26 +248,31 @@ void World::_remove_camera(Camera* p_camera){
 
 void World::_register_notifier(VisibilityNotifier* p_notifier,const AABB& p_rect){
 
-
+#ifndef _3D_DISABLED
 	indexer->_notifier_add(p_notifier,p_rect);
+#endif
 }
 
 void World::_update_notifier(VisibilityNotifier* p_notifier,const AABB& p_rect){
 
-
+#ifndef _3D_DISABLED
 	indexer->_notifier_update(p_notifier,p_rect);
+#endif
 }
 
 void World::_remove_notifier(VisibilityNotifier* p_notifier){
 
-
+#ifndef _3D_DISABLED
 	indexer->_notifier_remove(p_notifier);
+#endif
 }
 
 
 void World::_update(uint64_t p_frame) {
 
+#ifndef _3D_DISABLED
 	indexer->_update(p_frame);
+#endif
 }
 
 

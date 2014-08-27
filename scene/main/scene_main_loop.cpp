@@ -580,6 +580,7 @@ void SceneMainLoop::_notification(int p_notification) {
 				break;
 			}
 		} break;
+		case NOTIFICATION_OS_MEMORY_WARNING:
 		case NOTIFICATION_WM_FOCUS_IN:
 		case NOTIFICATION_WM_FOCUS_OUT: {
 

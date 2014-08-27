@@ -704,11 +704,11 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 
 			int flags=0;
 
-			if (Globals::get_singleton()->get("texture_import/filter"))
+			if (Globals::get_singleton()->get("image_loader/filter"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_FILTER;
-			if (!Globals::get_singleton()->get("texture_import/gen_mipmaps"))
+			if (!Globals::get_singleton()->get("image_loader/gen_mipmaps"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS;
-			if (!Globals::get_singleton()->get("texture_import/repeat"))
+			if (!Globals::get_singleton()->get("image_loader/repeat"))
 				flags|=EditorTextureImportPlugin::IMAGE_FLAG_REPEAT;
 
 			flags|=EditorTextureImportPlugin::IMAGE_FLAG_FIX_BORDER_ALPHA;
@@ -1032,7 +1032,7 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 	if (!dst) {
 
 		EditorNode::add_io_error("Can't copy executable file to:\n "+p_path);
-		return ERR_FILE_CANT_READ;
+		return ERR_FILE_CANT_WRITE;
 	}
 
 	uint8_t buff[32768];
@@ -1061,7 +1061,7 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 		if (!dst) {
 
 			EditorNode::add_io_error("Can't write data pack to:\n "+p_path);
-			return ERR_FILE_CANT_READ;
+			return ERR_FILE_CANT_WRITE;
 		}
 	}
 
@@ -1533,6 +1533,26 @@ void EditorImportExport::load_config() {
 	}
 
 
+	if (cf->has_section("script")) {
+
+		if (cf->has_section_key("script","action")) {
+
+			String action = cf->get_value("script","action");
+			if (action=="compile")
+				script_action=SCRIPT_ACTION_COMPILE;
+			else if (action=="encrypt")
+				script_action=SCRIPT_ACTION_ENCRYPT;
+			else
+				script_action=SCRIPT_ACTION_NONE;
+
+		}
+
+		if (cf->has_section_key("script","encrypt_key")) {
+
+			script_key = cf->get_value("script","encrypt_key");
+		}
+	}
+
 }
 
 
@@ -1634,9 +1654,38 @@ void EditorImportExport::save_config() {
 		cf->set_value("image_group_files","files",igfsave);
 	}
 
+	switch(script_action) {
+		case SCRIPT_ACTION_NONE: cf->set_value("script","action","none"); break;
+		case SCRIPT_ACTION_COMPILE: cf->set_value("script","action","compile"); break;
+		case SCRIPT_ACTION_ENCRYPT: cf->set_value("script","action","encrypt"); break;
+	}
+
+	cf->set_value("script","encrypt_key",script_key);
+
 	cf->save("res://export.cfg");
 
 }
+
+
+void EditorImportExport::script_set_action(ScriptAction p_action) {
+
+	script_action=p_action;
+}
+
+EditorImportExport::ScriptAction EditorImportExport::script_get_action() const{
+
+	return script_action;
+}
+
+void EditorImportExport::script_set_encryption_key(const String& p_key){
+
+	script_key=p_key;
+}
+String EditorImportExport::script_get_encryption_key() const{
+
+	return script_key;
+}
+
 
 void EditorImportExport::_bind_methods() {
 
@@ -1649,6 +1698,11 @@ void EditorImportExport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("image_export_group_get_make_atlas"),&EditorImportExport::image_export_group_get_make_atlas);
 	ObjectTypeDB::bind_method(_MD("image_export_group_get_shrink"),&EditorImportExport::image_export_group_get_shrink);
 	ObjectTypeDB::bind_method(_MD("image_add_to_export_group"),&EditorImportExport::image_add_to_export_group);
+	ObjectTypeDB::bind_method(_MD("script_set_action"),&EditorImportExport::script_set_action);
+	ObjectTypeDB::bind_method(_MD("script_set_encryption_key"),&EditorImportExport::script_set_encryption_key);
+	ObjectTypeDB::bind_method(_MD("script_get_action"),&EditorImportExport::script_get_action);
+	ObjectTypeDB::bind_method(_MD("script_get_encryption_key"),&EditorImportExport::script_get_encryption_key);
+
 }
 
 EditorImportExport::EditorImportExport() {
@@ -1659,6 +1713,9 @@ EditorImportExport::EditorImportExport() {
 	image_action_compress_quality=0.7;
 	image_formats.insert("png");
 	image_shrink=1;
+
+	script_action=SCRIPT_ACTION_COMPILE;
+
 }
 
 

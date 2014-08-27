@@ -3,15 +3,17 @@
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
-#include "scene/3d/baked_light.h"
+#include "tools/editor/plugins/baked_light_baker.h"
 #include "scene/gui/spin_box.h"
+
+
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
 
-class BakedLightBaker;
+
 class MeshInstance;
 
 class BakedLightEditor : public Control {
@@ -20,20 +22,19 @@ class BakedLightEditor : public Control {
 
 
 	float update_timeout;
-	DVector<Color> colors;
-	DVector<Vector3> vertices;
-	Ref<Mesh> mesh;
-	Ref<FixedMaterial> material;
+	DVector<uint8_t> octree_texture;
 
-	Thread *bake_thread;
-	bool bake_thread_exit;
-
-	MeshInstance *preview;
 	BakedLightBaker *baker;
 	AcceptDialog *err_dialog;
 
-	MenuButton * options;
-	BakedLight *node;
+	HBoxContainer *bake_hbox;
+	Button *button_bake;
+	Button *button_reset;
+	Button *button_make_lightmaps;
+	Label *bake_info;
+
+
+	BakedLightInstance *node;
 
 	enum Menu {
 
@@ -41,7 +42,11 @@ class BakedLightEditor : public Control {
 		MENU_OPTION_CLEAR
 	};
 
-	static void _bake_thread_func(void *arg);
+	void _bake_lightmaps();
+
+	void _bake_pressed();
+	void _clear_pressed();
+
 	void _end_baking();
 	void _menu_option(int);
 
@@ -52,7 +57,7 @@ protected:
 	void _notification(int p_what);
 public:
 
-	void edit(BakedLight *p_baked_light);
+	void edit(BakedLightInstance *p_baked_light);
 	BakedLightEditor();
 	~BakedLightEditor();
 };

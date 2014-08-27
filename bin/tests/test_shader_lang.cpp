@@ -264,12 +264,14 @@ static String dump_node_code(SL::Node *p_node,int p_level) {
 
 }
 
-static void recreate_code(void *p_str,SL::ProgramNode *p_program) {
+static Error recreate_code(void *p_str,SL::ProgramNode *p_program) {
 
 	print_line("recr");
 	String *str=(String*)p_str;
 
 	*str=dump_node_code(p_program,0);
+
+	return OK;
 
 
 }

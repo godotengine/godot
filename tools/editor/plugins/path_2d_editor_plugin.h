@@ -51,6 +51,24 @@ class Path2DEditor : public HBoxContainer {
 	Panel *panel;
 	Path2D *node;
 
+	HBoxContainer *base_hb;
+	Separator *sep;
+
+	enum Mode {
+		MODE_CREATE,
+		MODE_EDIT,
+		MODE_EDIT_CURVE,
+		MODE_DELETE,
+		ACTION_CLOSE
+	};
+
+	Mode mode;
+	ToolButton *curve_create;
+	ToolButton *curve_edit;
+	ToolButton *curve_edit_curve;
+	ToolButton *curve_del;
+	ToolButton *curve_close;
+
 	enum Action {
 
 		ACTION_NONE,
@@ -65,10 +83,11 @@ class Path2DEditor : public HBoxContainer {
 	Point2 moving_from;
 	Point2 moving_screen_from;
 
+	void _mode_selected(int p_mode);
 
 	void _canvas_draw();
 	void _node_visibility_changed();
-
+friend class Path2DEditorPlugin;
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);

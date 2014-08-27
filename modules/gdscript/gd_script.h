@@ -183,6 +183,7 @@ class GDScript : public Script {
 	bool valid;
 
 
+
 friend class GDInstance;
 friend class GDFunction;
 friend class GDCompiler;

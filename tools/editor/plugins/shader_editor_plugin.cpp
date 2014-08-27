@@ -57,7 +57,9 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader>& p_shader,ShaderLangu
 
 	_load_theme_settings();
 
-	if (p_type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
+	if (p_type==ShaderLanguage::SHADER_MATERIAL_LIGHT)
+		get_text_edit()->set_text(shader->get_light_code());
+	else if (p_type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
 		get_text_edit()->set_text(shader->get_vertex_code());
 	else
 		get_text_edit()->set_text(shader->get_fragment_code());
@@ -129,7 +131,9 @@ void ShaderTextEditor::_validate_script() {
 	int line,col;
 
 	String code;
-	if (type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
+	if (type==ShaderLanguage::SHADER_MATERIAL_LIGHT)
+		code=get_text_edit()->get_text();
+	else if (type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
 		code=get_text_edit()->get_text();
 	else
 		code=get_text_edit()->get_text();
@@ -364,6 +368,7 @@ void ShaderEditor::_params_changed() {
 
 	fragment_editor->_validate_script();
 	vertex_editor->_validate_script();
+	light_editor->_validate_script();
 }
 
 
@@ -400,6 +405,7 @@ void ShaderEditor::edit(const Ref<Shader>& p_shader) {
 
 	if (shader->get_mode()==Shader::MODE_MATERIAL) {
 		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_MATERIAL_FRAGMENT);
+		light_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_LIGHT);
 		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), true);
 		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), false);
 	} else {
@@ -430,8 +436,10 @@ void ShaderEditor::save_external_data() {
 void ShaderEditor::apply_shaders()  {
 
 
-	if (shader.is_valid())
-		shader->set_code(vertex_editor->get_text_edit()->get_text(),fragment_editor->get_text_edit()->get_text(),0,0);
+	if (shader.is_valid()) {
+		shader->set_code(vertex_editor->get_text_edit()->get_text(),fragment_editor->get_text_edit()->get_text(),light_editor->get_text_edit()->get_text(),0,0);
+		shader->set_edited(true);
+	}
 }
 
 void ShaderEditor::_close_callback() {
@@ -514,11 +522,16 @@ ShaderEditor::ShaderEditor() {
 	tab_container->add_child(fragment_editor);
 	fragment_editor->set_name("Fragment");
 
+	light_editor = memnew( ShaderTextEditor );
+	tab_container->add_child(light_editor);
+	light_editor->set_name("Lighting");
+
 	tab_container->set_current_tab(1);
 
 
 	vertex_editor->connect("script_changed", this,"apply_shaders");
 	fragment_editor->connect("script_changed", this,"apply_shaders");
+	light_editor->connect("script_changed", this,"apply_shaders");
 }
 
 

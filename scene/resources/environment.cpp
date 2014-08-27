@@ -101,6 +101,11 @@ void Environment::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("fx_set_param","param","value"),&Environment::fx_set_param);
 	ObjectTypeDB::bind_method(_MD("fx_get_param","param"),&Environment::fx_get_param);
 
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"ambient_light/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_AMBIENT_LIGHT);
+	ADD_PROPERTYI( PropertyInfo(Variant::COLOR,"ambient_light/color",PROPERTY_HINT_COLOR_NO_ALPHA),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_AMBIENT_LIGHT_COLOR);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"ambient_light/energy",PROPERTY_HINT_RANGE,"0,64,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_AMBIENT_LIGHT_ENERGY);
+
+
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"fxaa/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_FXAA);
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Keep,Default Color,Color,Texture,Cubemap,Texture RGBE,Cubemap RGBE"),_SCS("set_background"),_SCS("get_background"));
@@ -123,8 +128,9 @@ void Environment::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"dof_blur/begin",PROPERTY_HINT_RANGE,"0,4096,0.1"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_DOF_BLUR_BEGIN);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"dof_blur/range",PROPERTY_HINT_RANGE,"0,4096,0.1"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_DOF_BLUR_RANGE);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"hdr/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_HDR);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/tonemapper",PROPERTY_HINT_ENUM,"Linear,Log,Reinhardt,ReinhardtAutoWhite"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_TONEMAPPER);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/exposure",PROPERTY_HINT_RANGE,"0.01,16,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_EXPOSURE);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/scalar",PROPERTY_HINT_RANGE,"0.01,16,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_SCALAR);
+	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/white",PROPERTY_HINT_RANGE,"0.01,16,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_WHITE);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/glow_treshold",PROPERTY_HINT_RANGE,"0.00,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_GLOW_TRESHOLD);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/glow_scale",PROPERTY_HINT_RANGE,"0.00,16,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_GLOW_SCALE);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"hdr/min_luminance",PROPERTY_HINT_RANGE,"0.01,64,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_HDR_MIN_LUMINANCE);
@@ -140,8 +146,8 @@ void Environment::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"bcs/brightness",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_BCS_BRIGHTNESS);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"bcs/contrast",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_BCS_CONTRAST);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"bcs/saturation",PROPERTY_HINT_RANGE,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_BCS_SATURATION);
-	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"gamma/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_GAMMA);
-	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"gamma/gamma",PROPERTY_HINT_EXP_EASING,"0.01,8,0.01"),_SCS("fx_set_param"),_SCS("fx_get_param"), FX_PARAM_GAMMA);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"srgb/enabled"),_SCS("set_enable_fx"),_SCS("is_fx_enabled"), FX_SRGB);
+
 
 
 
@@ -153,7 +159,7 @@ void Environment::_bind_methods() {
 		FX_PARAM_DOF_BLUR_BEGIN=VS::ENV_FX_PARAM_DOF_BLUR_BEGIN,
 		FX_PARAM_DOF_BLUR_END=VS::ENV_FX_PARAM_DOF_BLUR_END,
 		FX_PARAM_HDR_EXPOSURE=VS::ENV_FX_PARAM_HDR_EXPOSURE,
-		FX_PARAM_HDR_SCALAR=VS::ENV_FX_PARAM_HDR_SCALAR,
+		FX_PARAM_HDR_WHITE=VS::ENV_FX_PARAM_HDR_WHITE,
 		FX_PARAM_HDR_GLOW_TRESHOLD=VS::ENV_FX_PARAM_HDR_GLOW_TRESHOLD,
 		FX_PARAM_HDR_GLOW_SCALE=VS::ENV_FX_PARAM_HDR_GLOW_SCALE,
 		FX_PARAM_HDR_MIN_LUMINANCE=VS::ENV_FX_PARAM_HDR_MIN_LUMINANCE,
@@ -188,13 +194,14 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( BG_PARAM_MAX );
 
 
+	BIND_CONSTANT( FX_AMBIENT_LIGHT );
 	BIND_CONSTANT( FX_FXAA );
 	BIND_CONSTANT( FX_GLOW );
 	BIND_CONSTANT( FX_DOF_BLUR );
 	BIND_CONSTANT( FX_HDR );
 	BIND_CONSTANT( FX_FOG );
 	BIND_CONSTANT( FX_BCS);
-	BIND_CONSTANT( FX_GAMMA );
+	BIND_CONSTANT( FX_SRGB );
 	BIND_CONSTANT( FX_MAX );
 
 
@@ -202,6 +209,13 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( FX_BLUR_BLEND_MODE_SCREEN );
 	BIND_CONSTANT( FX_BLUR_BLEND_MODE_SOFTLIGHT );
 
+	BIND_CONSTANT( FX_HDR_TONE_MAPPER_LINEAR );
+	BIND_CONSTANT( FX_HDR_TONE_MAPPER_LOG );
+	BIND_CONSTANT( FX_HDR_TONE_MAPPER_REINHARDT );
+	BIND_CONSTANT( FX_HDR_TONE_MAPPER_REINHARDT_AUTOWHITE );
+
+	BIND_CONSTANT( FX_PARAM_AMBIENT_LIGHT_COLOR );
+	BIND_CONSTANT( FX_PARAM_AMBIENT_LIGHT_ENERGY );
 	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_PASSES );
 	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_SCALE );
 	BIND_CONSTANT( FX_PARAM_GLOW_BLUR_STRENGTH );
@@ -211,8 +225,9 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( FX_PARAM_DOF_BLUR_PASSES );
 	BIND_CONSTANT( FX_PARAM_DOF_BLUR_BEGIN );
 	BIND_CONSTANT( FX_PARAM_DOF_BLUR_RANGE );
+	BIND_CONSTANT( FX_PARAM_HDR_TONEMAPPER);
 	BIND_CONSTANT( FX_PARAM_HDR_EXPOSURE );
-	BIND_CONSTANT( FX_PARAM_HDR_SCALAR );
+	BIND_CONSTANT( FX_PARAM_HDR_WHITE );
 	BIND_CONSTANT( FX_PARAM_HDR_GLOW_TRESHOLD );
 	BIND_CONSTANT( FX_PARAM_HDR_GLOW_SCALE );
 	BIND_CONSTANT( FX_PARAM_HDR_MIN_LUMINANCE );
@@ -226,7 +241,6 @@ void Environment::_bind_methods() {
 	BIND_CONSTANT( FX_PARAM_BCS_BRIGHTNESS );
 	BIND_CONSTANT( FX_PARAM_BCS_CONTRAST );
 	BIND_CONSTANT( FX_PARAM_BCS_SATURATION );
-	BIND_CONSTANT( FX_PARAM_GAMMA );
 	BIND_CONSTANT( FX_PARAM_MAX );
 
 }
@@ -246,6 +260,8 @@ Environment::Environment() {
 	for(int i=0;i<FX_MAX;i++)
 		set_enable_fx(Fx(i),false);
 
+	fx_set_param(FX_PARAM_AMBIENT_LIGHT_COLOR,Color(0,0,0));
+	fx_set_param(FX_PARAM_AMBIENT_LIGHT_ENERGY,1.0);
 	fx_set_param(FX_PARAM_GLOW_BLUR_PASSES,1);
 	fx_set_param(FX_PARAM_GLOW_BLUR_SCALE,1);
 	fx_set_param(FX_PARAM_GLOW_BLUR_STRENGTH,1);
@@ -254,8 +270,9 @@ Environment::Environment() {
 	fx_set_param(FX_PARAM_DOF_BLUR_PASSES,1);
 	fx_set_param(FX_PARAM_DOF_BLUR_BEGIN,100.0);
 	fx_set_param(FX_PARAM_DOF_BLUR_RANGE,10.0);
+	fx_set_param(FX_PARAM_HDR_TONEMAPPER,FX_HDR_TONE_MAPPER_LINEAR);
 	fx_set_param(FX_PARAM_HDR_EXPOSURE,0.4);
-	fx_set_param(FX_PARAM_HDR_SCALAR,1.0);
+	fx_set_param(FX_PARAM_HDR_WHITE,1.0);
 	fx_set_param(FX_PARAM_HDR_GLOW_TRESHOLD,0.95);
 	fx_set_param(FX_PARAM_HDR_GLOW_SCALE,0.2);
 	fx_set_param(FX_PARAM_HDR_MIN_LUMINANCE,0.4);
@@ -269,7 +286,7 @@ Environment::Environment() {
 	fx_set_param(FX_PARAM_BCS_BRIGHTNESS,1.0);
 	fx_set_param(FX_PARAM_BCS_CONTRAST,1.0);
 	fx_set_param(FX_PARAM_BCS_SATURATION,1.0);
-	fx_set_param(FX_PARAM_GAMMA,1.0);
+
 }
 Environment::~Environment() {
 

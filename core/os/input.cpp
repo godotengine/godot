@@ -53,6 +53,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_joy_button_pressed","device","button"),&Input::is_joy_button_pressed);
 	ObjectTypeDB::bind_method(_MD("is_action_pressed","action"),&Input::is_action_pressed);
 	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
+	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
 	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
 	ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos);
 	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
@@ -64,6 +65,7 @@ void Input::_bind_methods() {
 	BIND_CONSTANT( MOUSE_MODE_HIDDEN );
 	BIND_CONSTANT( MOUSE_MODE_CAPTURED );
 
+	ADD_SIGNAL( MethodInfo("joy_connection_changed", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "connected")) );
 }
 
 Input::Input() {
@@ -192,6 +194,20 @@ float InputDefault::get_joy_axis(int p_device,int p_axis) {
 		return 0;
 	}
 }
+
+String InputDefault::get_joy_name(int p_idx) {
+
+	_THREAD_SAFE_METHOD_
+	return joy_names[p_idx];
+};
+
+void InputDefault::joy_connection_changed(int p_idx, bool p_connected, String p_name) {
+
+	_THREAD_SAFE_METHOD_
+	joy_names[p_idx] = p_connected ? p_name : "";
+
+	emit_signal("joy_connection_changed", p_idx, p_connected);
+};
 
 Vector3 InputDefault::get_accelerometer() {
 

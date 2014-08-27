@@ -673,7 +673,7 @@ static const int caps_table[CAPS_LEN][2]={
 {0xFF5A,0xFF3A},
 };
 
-static const int reverse_caps_table[CAPS_LEN][2]={
+static const int reverse_caps_table[CAPS_LEN-1][2]={
 {0x41,0x61},
 {0x42,0x62},
 {0x43,0x63},
@@ -755,7 +755,7 @@ static const int reverse_caps_table[CAPS_LEN][2]={
 {0x12a,0x12b},
 {0x12c,0x12d},
 {0x12e,0x12f},
-{0x49,0x131},
+//{0x49,0x131},
 {0x132,0x133},
 {0x134,0x135},
 {0x136,0x137},
@@ -1370,7 +1370,7 @@ static int _find_lower(int ch)  {
 
 
 	int low = 0;
-	int high = CAPS_LEN -1;
+	int high = CAPS_LEN -2;
 	int middle;
 
 	while( low <= high )

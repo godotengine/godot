@@ -35,7 +35,7 @@ if env['ios_appirater'] == "yes":
 obj = env_ios.Object('godot_iphone.cpp')
 
 prog = None
-if env["target"]=="release":
+if env["target"]=="release" or env["target"] == "release_debug":
 	prog = env_ios.Program('#bin/godot_opt', [obj] + iphone_lib)
 	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
 	#env.AddPostAction(prog, action)

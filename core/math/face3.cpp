@@ -247,7 +247,7 @@ bool Face3::intersects_aabb(const AABB& p_aabb) const {
 		p_aabb.get_edge(i,from,to);
 		Vector3 e1=from-to;
 		for (int j=0;j<3;j++) {
-			Vector3 e2=edge_norms[i];
+			Vector3 e2=edge_norms[j];
 
 			Vector3 axis=vec3_cross( e1, e2 );
 
@@ -356,4 +356,100 @@ void Face3::get_support(const Vector3& p_normal,const Transform& p_transform,Vec
 }
 
 
+Vector3 Face3::get_closest_point_to(const Vector3& p_point) const {
 
+	    Vector3 edge0 = vertex[1] - vertex[0];
+	    Vector3 edge1 = vertex[2] - vertex[0];
+	    Vector3 v0 = vertex[0] - p_point;
+
+	    float a = edge0.dot( edge0 );
+	    float b = edge0.dot( edge1 );
+	    float c = edge1.dot( edge1 );
+	    float d = edge0.dot( v0 );
+	    float e = edge1.dot( v0 );
+
+	    float det = a*c - b*b;
+	    float s = b*e - c*d;
+	    float t = b*d - a*e;
+
+	    if ( s + t < det )
+	    {
+		if ( s < 0.f )
+		{
+		    if ( t < 0.f )
+		    {
+			if ( d < 0.f )
+			{
+			    s = CLAMP( -d/a, 0.f, 1.f );
+			    t = 0.f;
+			}
+			else
+			{
+			    s = 0.f;
+			    t = CLAMP( -e/c, 0.f, 1.f );
+			}
+		    }
+		    else
+		    {
+			s = 0.f;
+			t = CLAMP( -e/c, 0.f, 1.f );
+		    }
+		}
+		else if ( t < 0.f )
+		{
+		    s = CLAMP( -d/a, 0.f, 1.f );
+		    t = 0.f;
+		}
+		else
+		{
+		    float invDet = 1.f / det;
+		    s *= invDet;
+		    t *= invDet;
+		}
+	    }
+	    else
+	    {
+		if ( s < 0.f )
+		{
+		    float tmp0 = b+d;
+		    float tmp1 = c+e;
+		    if ( tmp1 > tmp0 )
+		    {
+			float numer = tmp1 - tmp0;
+			float denom = a-2*b+c;
+			s = CLAMP( numer/denom, 0.f, 1.f );
+			t = 1-s;
+		    }
+		    else
+		    {
+			t = CLAMP( -e/c, 0.f, 1.f );
+			s = 0.f;
+		    }
+		}
+		else if ( t < 0.f )
+		{
+		    if ( a+d > b+e )
+		    {
+			float numer = c+e-b-d;
+			float denom = a-2*b+c;
+			s = CLAMP( numer/denom, 0.f, 1.f );
+			t = 1-s;
+		    }
+		    else
+		    {
+			s = CLAMP( -e/c, 0.f, 1.f );
+			t = 0.f;
+		    }
+		}
+		else
+		{
+		    float numer = c+e-b-d;
+		    float denom = a-2*b+c;
+		    s = CLAMP( numer/denom, 0.f, 1.f );
+		    t = 1.f - s;
+		}
+	    }
+
+	    return vertex[0] + s * edge0 + t * edge1;
+
+}

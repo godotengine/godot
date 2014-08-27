@@ -1561,8 +1561,9 @@ RichTextLabel::RichTextLabel() {
 	scroll_active=true;
 	scroll_w=0;
 
-	vscroll = memnew( VScrollBar );
+	vscroll = memnew( VScrollBar );	
 	add_child(vscroll);
+	vscroll->set_drag_slave(String(".."));
 	vscroll->set_step(1);
 	vscroll->set_anchor_and_margin( MARGIN_TOP, ANCHOR_BEGIN, 0);
 	vscroll->set_anchor_and_margin( MARGIN_BOTTOM, ANCHOR_END, 0);

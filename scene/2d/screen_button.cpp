@@ -129,6 +129,9 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 	if (!get_scene())
 		return;
 
+	if (p_event.device != 0)
+		return;
+
 	if (passby_press) {
 
 		if (p_event.type==InputEvent::SCREEN_TOUCH && !p_event.screen_touch.pressed && finger_pressed==p_event.screen_touch.index) {
