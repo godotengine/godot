@@ -32,7 +32,6 @@
 #include "os/os.h"
 #include "globals.h"
 #include <stdio.h>
-#include <stdlib.h>
 #include "servers/visual/shader_language.h"
 #include "servers/visual/particle_system_sw.h"
 #include "gl_context/context_gl.h"
@@ -83,7 +82,6 @@
 
 #endif
 
-// todo: scaler for rect->square
 static RasterizerGLES2* _singleton = NULL;
 
 static const GLenum prim_type[]={GL_POINTS,GL_LINES,GL_TRIANGLES,GL_TRIANGLE_FAN};
@@ -679,19 +677,6 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	int po2_width =  nearest_power_of_2(p_width);
 	int po2_height =  nearest_power_of_2(p_height);
     
-    /*if (po2_width != po2_height) {
-        print_line("make po2 square!");
-        printf("%d x %d\n",po2_width,po2_height);
-        if (po2_width < po2_height) {
-            po2_width = po2_height;
-        } else {
-            po2_height = po2_width;
-        }
-    } else {
-        printf("texture size:\nop2: %d x %d\n     %d x %d\n",p_width,p_height,po2_width,po2_height);
-    }*/
-    
-
 	if (p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 		p_flags&=~VS::TEXTURE_FLAG_MIPMAPS; // no mipies for video
 	}
@@ -709,15 +694,6 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 
 	bool scale_textures = !compressed && !(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && (!npo2_textures_available || p_flags&VS::TEXTURE_FLAG_MIPMAPS);
 
-    /*if (texture->width != texture->height) {
-        print_line("make square!");
-        printf("%d x %d\n",texture->width,texture->height);
-        if (texture->width < texture->height) {
-            texture->width = texture->height;
-        } else {
-            texture->height = texture->width;
-        }
-    }*/
 
 	if (scale_textures) {
 		texture->alloc_width = po2_width;
@@ -729,9 +705,6 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 		texture->alloc_height = texture->height;
 	};
     
-    /*texture->width = texture->alloc_width;
-    texture->height = texture->alloc_height;
-    printf("alloc: %d x %d\n",texture->alloc_width,texture->alloc_height);*/
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
@@ -769,7 +742,6 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	GLenum format;
 	bool alpha;
 	bool compressed;
-    bool minfilter_mipmap = false;
 
 	if (keep_copies && !(texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && !(use_reload_hooks && texture->reloader)) {
 		texture->image[p_cube_side]=p_image;
@@ -801,11 +773,9 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	texture->ignore_mipmaps = compressed && img.get_mipmaps()==0;
 
-	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps && (img.get_mipmaps()>0 || texture->target == GL_TEXTURE_CUBE_MAP)) {
+	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps && (img.get_mipmaps()>0 || texture->target == GL_TEXTURE_CUBE_MAP))
 		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
-        print_line("MIN_FILTER uses ...MIPMAP...");
-        minfilter_mipmap = true;
-	} else
+	else
 		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
 
 	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
@@ -832,20 +802,6 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	int mipmaps= (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && img.get_mipmaps()>0) ? img.get_mipmaps() +1 : 1;
     
-    /*if (mipmaps > 1) {
-        print_line("have mipmaps");
-    } else {
-        print_line("have no mipmaps");
-        if (minfilter_mipmap) {
-            if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
-                print_line("change minfilter to linear");
-                glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-            } else {
-                print_line("change minfilter to nearest");
-                glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
-            }
-        }
-    }*/
 
 	int w=img.get_width();
 	int h=img.get_height();
@@ -865,67 +821,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 			if (texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 				glTexSubImage2D( blit_target, i, 0,0,w,h,format,GL_UNSIGNED_BYTE,&read[ofs] );
 			} else {
-                // todo: make square
-                int *squared;
-                if ( w != h ) {
-                    //print_line("stretch to square!");
-                    //printf("%d x %d\n",w,h);
-                    if (w < h) {
-                        squared = (int *) malloc(sizeof(int)*h*h); // todo: currently I assume RGBA or any other format using 32bit(int) colors
-                        for ( int i = 0; i<h; i++) { // i is line
-                            int n = h/w; // n is amount of copies per collum
-                            for (int m = 0; m<w; m++) {// m is collum
-                                for ( int o = 0; o<n; o++) {
-                                    if (format == GL_RGBA) squared[h*i+n*m+o] = ((int *)&read[ofs])[w*i+m];
-                                    else {
-                                        ((char *)squared)[(h*i+n*m+o)*2] = ((char *)&read[ofs])[(w*i+m)*2];
-                                        ((char *)squared)[(h*i+n*m+o)*2+1] = ((char *)&read[ofs])[(w*i+m)*2+1];
-                                    }
-                                }
-                            }
-                        }
-                        w=h;
-                    } else {
-                        squared = (int *) malloc(sizeof(int)*w*w); // todo: currently I assume RGBA or any other format using 32bit(int) colors
-                        for ( int i = 0; i<h; i++) { // i is line
-                            int n = w/h; // n is amount of copies per line
-                            for (int m = 0; m<w; m++) {// m is collum
-                                for ( int o = 0; o<n; o++) {
-                                    if (format == GL_RGBA) squared[n*w*i+o*w+m] = ((int *)&read[ofs])[w*i+m];//read[w*i+m];
-                                    else {
-                                        ((char *)squared)[(n*w*i+o*w+m)*2] = ((char *)&read[ofs])[(w*i+m)*2];
-                                        ((char *)squared)[(n*w*i+o*w+m)*2+1] = ((char *)&read[ofs])[(w*i+m)*2+1];
-                                    }
-                                }
-                            }
-                        }
-                        h=w;
-                    }
-                    if (format == GL_LUMINANCE_ALPHA && false) {
-                        print_line("alphatex");
-                        for (int z = 0; z<w*h; z++) {
-                            squared[z] = 0xff88ff88;
-                        }
-                        print_line("replace");
-                        glTexImage2D(blit_target, i, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,(void *)squared);
-                        printf("replaced with %d x %d texture\n",w,h);
-                    }
-                    glTexImage2D(blit_target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE,(void *)squared);
-                } else {
-                    //print_line("already  square!");
-                    //printf("%d x %d\n",w,h);
-                    squared = (int *) malloc(sizeof(int)*w*h);
-                    if (format == GL_LUMINANCE_ALPHA && false) {
-                        print_line("alphatex");
-                        for (int z = 0; z<w*h; z++) {
-                            squared[z] = 0xff88ff88;
-                        }
-                        print_line("replace");
-                        glTexImage2D(blit_target, i, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE,(void *)squared);
-                        printf("replaced with %d x %d texture\n",w,h);
-                    }
-                    glTexImage2D(blit_target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
-                }
+				glTexImage2D(blit_target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
 			}
 
 		}
@@ -1218,17 +1114,6 @@ void RasterizerGLES2::texture_set_size_override(RID p_texture,int p_width, int p
 
 	ERR_FAIL_COND(p_width<=0 || p_width>16384);
 	ERR_FAIL_COND(p_height<=0 || p_height>16384);
-	//real texture size is in alloc width and height
-    
-    if (p_width != p_height) {
-        print_line("make override square!");
-        printf("%d x %d\n",p_width,p_height);
-        if (p_width < p_height) {
-            p_width = p_height;
-        } else {
-            p_height = p_width;
-        }
-    }
     
 	texture->width=p_width;
 	texture->height=p_height;
