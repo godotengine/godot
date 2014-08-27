@@ -65,6 +65,11 @@ void Button::_notification(int p_what) {
 		Size2 size=get_size();
 		Color color;
 
+		Color font_color_shadow = get_color("font_color_shadow");
+		bool use_outlinde = get_constant("shadow_as_outline");
+		Point2 shadow_ofs(get_constant("shadow_offset_x"),get_constant("shadow_offset_y"));
+		Point2 press_ofs(get_constant("font_press_offset_x"),get_constant("font_press_offset_y"));
+
 		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(get_draw_mode()));
 		
 		switch( get_draw_mode() ) {
@@ -126,6 +131,20 @@ void Button::_notification(int p_what) {
 
 
 		text_ofs.y+=font->get_ascent();
+
+		if(get_draw_mode()==DRAW_PRESSED)
+			text_ofs+=press_ofs;
+
+		if (font_color_shadow.a>0) {
+
+			font->draw( ci, text_ofs.floor() + shadow_ofs, text, font_color_shadow,clip_text?text_clip:-1);
+			if (use_outlinde) {
+
+				font->draw( ci, text_ofs.floor() + Vector2(-shadow_ofs.x,shadow_ofs.y), text, font_color_shadow,clip_text?text_clip:-1);
+				font->draw( ci, text_ofs.floor() + Vector2(shadow_ofs.x,-shadow_ofs.y), text, font_color_shadow,clip_text?text_clip:-1);
+				font->draw( ci, text_ofs.floor() + Vector2(-shadow_ofs.x,-shadow_ofs.y), text, font_color_shadow,clip_text?text_clip:-1);
+			}
+		}
 		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
 		if (!_icon.is_null()) {
 		

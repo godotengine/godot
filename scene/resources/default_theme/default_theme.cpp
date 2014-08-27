@@ -294,6 +294,12 @@ void make_default_theme() {
 	t->set_color("font_color_pressed","Button", control_font_color_pressed );
 	t->set_color("font_color_hover","Button", control_font_color_hover );
 	t->set_color("font_color_disabled","Button", control_font_color_disabled );
+	t->set_color("font_color_shadow","Button", Color(0,0,0,0) );
+	t->set_constant("font_press_offset_x","Button", 0 );
+	t->set_constant("font_press_offset_y","Button", 0 );
+	t->set_constant("shadow_offset_x","Button", 1 );
+	t->set_constant("shadow_offset_y","Button", 1 );
+	t->set_constant("shadow_as_outline","Button", 0 );
 	t->set_constant("hseparation","Button", 2 );
 
 
@@ -307,6 +313,12 @@ void make_default_theme() {
 	t->set_color("font_color_pressed","ColorPickerButton", Color(0.8,0.8,0.8,1) );
 	t->set_color("font_color_hover","ColorPickerButton", Color(1,1,1,1) );
 	t->set_color("font_color_disabled","ColorPickerButton", Color(0.9,0.9,0.9,0.6) );
+	t->set_color("font_color_shadow","ColorPickerButton", Color(0,0,0,0) );
+	t->set_constant("font_press_offset_x","ColorPickerButton", 0 );
+	t->set_constant("font_press_offset_y","ColorPickerButton", 0 );
+	t->set_constant("shadow_offset_x","ColorPickerButton", 1 );
+	t->set_constant("shadow_offset_y","ColorPickerButton", 1 );
+	t->set_constant("shadow_as_outline","ColorPickerButton", 0 );
 	t->set_constant("hseparation","ColorPickerButton", 2 );
 
 	t->set_stylebox("normal","ToolButton", make_empty_stylebox(5,3,5,3) );
@@ -321,6 +333,12 @@ void make_default_theme() {
 	t->set_color("font_color_pressed","ToolButton", control_font_color_pressed );
 	t->set_color("font_color_hover","ToolButton", control_font_color_hover );
 	t->set_color("font_color_disabled","ToolButton", Color(0.9,0.95,1,0.6) );
+	t->set_color("font_color_shadow","ToolButton", Color(0,0,0,0) );
+	t->set_constant("font_press_offset_x","ToolButton", 0 );
+	t->set_constant("font_press_offset_y","ToolButton", 0 );
+	t->set_constant("shadow_offset_x","ToolButton", 1 );
+	t->set_constant("shadow_offset_y","ToolButton", 1 );
+	t->set_constant("shadow_as_outline","ToolButton", 0 );
 	t->set_constant("hseparation","ToolButton", 2 );
 
 	t->set_stylebox("normal","OptionButton", make_stylebox( option_button_normal_png,4,4,20,5,8,3,20,4) );
@@ -336,6 +354,12 @@ void make_default_theme() {
 	t->set_color("font_color_pressed","OptionButton", control_font_color_pressed );
 	t->set_color("font_color_hover","OptionButton", control_font_color_hover );
 	t->set_color("font_color_disabled","OptionButton", control_font_color_disabled );
+	t->set_color("font_color_shadow","OptionButton", Color(0,0,0,0) );
+	t->set_constant("font_press_offset_x","OptionButton", 0 );
+	t->set_constant("font_press_offset_y","OptionButton", 0 );
+	t->set_constant("shadow_offset_x","OptionButton", 1 );
+	t->set_constant("shadow_offset_y","OptionButton", 1 );
+	t->set_constant("shadow_as_outline","OptionButton", 0 );
 
 	t->set_constant("hseparation","OptionButton", 2 );
 
@@ -348,6 +372,12 @@ void make_default_theme() {
 	t->set_color("font_color_pressed","MenuButton", control_font_color_pressed );
 	t->set_color("font_color_hover","MenuButton", control_font_color_hover );
 	t->set_color("font_color_disabled","MenuButton", Color(1,1,1,0.3) );
+	t->set_color("font_color_shadow","MenuButton", Color(0,0,0,0) );
+	t->set_constant("font_press_offset_x","MenuButton", 0 );
+	t->set_constant("font_press_offset_y","MenuButton", 0 );
+	t->set_constant("shadow_offset_x","MenuButton", 1 );
+	t->set_constant("shadow_offset_y","MenuButton", 1 );
+	t->set_constant("shadow_as_outline","MenuButton", 0 );
 	t->set_stylebox("focus","OptionButton", Ref<StyleBox>( memnew( StyleBoxEmpty )) );
 
 	t->set_constant("hseparation","MenuButton", 2 );
@@ -366,6 +396,12 @@ void make_default_theme() {
 	t->set_color("font_color_pressed","CheckButton", control_font_color_pressed );
 	t->set_color("font_color_hover","CheckButton", control_font_color_hover );
 	t->set_color("font_color_disabled","CheckButton", control_font_color_disabled );
+	t->set_color("font_color_shadow","CheckButton", Color(0,0,0,0) );
+	t->set_constant("font_press_offset_x","CheckButton", 0 );
+	t->set_constant("font_press_offset_y","CheckButton", 0 );
+	t->set_constant("shadow_offset_x","CheckButton", 1 );
+	t->set_constant("shadow_offset_y","CheckButton", 1 );
+	t->set_constant("shadow_as_outline","CheckButton", 0 );
 	t->set_icon("on","CheckButton", make_icon(toggle_on_png) );
 	t->set_icon("off","CheckButton", make_icon(toggle_off_png));
 	t->set_stylebox("focus","CheckButton", focus );
