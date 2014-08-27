@@ -53,15 +53,25 @@ public:
 		PARAM_SHADOW_DARKENING=VisualServer::LIGHT_PARAM_SHADOW_DARKENING,
 		PARAM_SHADOW_Z_OFFSET=VisualServer::LIGHT_PARAM_SHADOW_Z_OFFSET,
 		PARAM_SHADOW_Z_SLOPE_SCALE=VisualServer::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,
+		PARAM_SHADOW_ESM_MULTIPLIER=VisualServer::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER,
+		PARAM_SHADOW_BLUR_PASSES=VisualServer::LIGHT_PARAM_SHADOW_BLUR_PASSES,
 		PARAM_MAX=VisualServer::LIGHT_PARAM_MAX
 	};
 	
 	
 	enum LightColor {
 	
-		COLOR_AMBIENT=VisualServer::LIGHT_COLOR_AMBIENT,
 		COLOR_DIFFUSE=VisualServer::LIGHT_COLOR_DIFFUSE,
 		COLOR_SPECULAR=VisualServer::LIGHT_COLOR_SPECULAR
+	};
+
+	enum BakeMode {
+
+		BAKE_MODE_DISABLED,
+		BAKE_MODE_INDIRECT,
+		BAKE_MODE_INDIRECT_AND_SHADOWS,
+		BAKE_MODE_FULL
+
 	};
 
 
@@ -78,8 +88,10 @@ private:
 	Color colors[3];
 	
 	
+	BakeMode bake_mode;
 	VisualServer::LightType type;
 	bool shadows;
+	bool enabled;
 	Operator op;
 	
 // bind helpers
@@ -114,6 +126,12 @@ public:
 	void set_operator(Operator p_op);
 	Operator get_operator() const;
 
+	void set_bake_mode(BakeMode p_bake_mode);
+	BakeMode get_bake_mode() const;
+
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
+
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;
 
@@ -127,6 +145,7 @@ public:
 VARIANT_ENUM_CAST( Light::Parameter );
 VARIANT_ENUM_CAST( Light::LightColor );
 VARIANT_ENUM_CAST( Light::Operator );
+VARIANT_ENUM_CAST( Light::BakeMode);
 
 
 class DirectionalLight : public Light {

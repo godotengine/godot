@@ -68,6 +68,7 @@ public:
 	real_t get_area() const;
 
         Vector3 get_median_point() const;
+	Vector3 get_closest_point_to(const Vector3& p_point) const;
 
 	bool intersects_ray(const Vector3& p_from,const Vector3& p_dir,Vector3 * p_intersection=0) const;
 	bool intersects_segment(const Vector3& p_from,const Vector3& p_dir,Vector3 * p_intersection=0) const;
@@ -86,12 +87,181 @@ public:
         }
 
         bool intersects_aabb(const AABB& p_aabb) const;
+	_FORCE_INLINE_ bool intersects_aabb2(const AABB& p_aabb) const;
 	operator String() const;
 
         inline Face3() {}
         inline Face3(const Vector3 &p_v1,const Vector3 &p_v2,const Vector3 &p_v3) { vertex[0]=p_v1; vertex[1]=p_v2; vertex[2]=p_v3; }
 
 };
+
+
+bool Face3::intersects_aabb2(const AABB& p_aabb) const {
+
+	Vector3 perp = (vertex[0]-vertex[2]).cross(vertex[0]-vertex[1]);
+
+	Vector3 half_extents = p_aabb.size * 0.5;
+	Vector3 ofs = p_aabb.pos + half_extents;
+
+	Vector3 sup =Vector3(
+			(perp.x>0) ? -half_extents.x : half_extents.x,
+			(perp.y>0) ? -half_extents.y : half_extents.y,
+			(perp.z>0) ? -half_extents.z : half_extents.z
+		);
+
+	float d = perp.dot(vertex[0]);
+	float dist_a = perp.dot(ofs+sup)-d;
+	float dist_b = perp.dot(ofs-sup)-d;
+
+	if (dist_a*dist_b > 0)
+		return false; //does not intersect the plane
+
+
+#define TEST_AXIS(m_ax)\
+	{\
+		float aabb_min=p_aabb.pos.m_ax;\
+		float aabb_max=p_aabb.pos.m_ax+p_aabb.size.m_ax;\
+		float tri_min,tri_max;\
+		for (int i=0;i<3;i++) {\
+			if (i==0 || vertex[i].m_ax > tri_max)\
+				tri_max=vertex[i].m_ax;\
+			if (i==0 || vertex[i].m_ax < tri_min)\
+				tri_min=vertex[i].m_ax;\
+		}\
+\
+		if (tri_max<aabb_min || aabb_max<tri_min)\
+			return false;\
+	}
+
+	TEST_AXIS(x);
+	TEST_AXIS(y);
+	TEST_AXIS(z);
+
+#undef TEST_AXIS
+
+
+	Vector3 edge_norms[3]={
+		vertex[0]-vertex[1],
+		vertex[1]-vertex[2],
+		vertex[2]-vertex[0],
+	};
+
+	for (int i=0;i<12;i++) {
+
+		Vector3 from,to;
+		switch(i) {
+
+			case 0:{
+
+				from=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y		, p_aabb.pos.z		);
+				to=Vector3( p_aabb.pos.x	, p_aabb.pos.y		, p_aabb.pos.z		);
+			} break;
+			case 1:{
+
+				from=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y		, p_aabb.pos.z+p_aabb.size.z	);
+				to=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y		, p_aabb.pos.z		);
+			} break;
+			case 2:{
+				from=Vector3( p_aabb.pos.x	, p_aabb.pos.y		, p_aabb.pos.z+p_aabb.size.z	);
+				to=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y		, p_aabb.pos.z+p_aabb.size.z	);
+
+			} break;
+			case 3:{
+
+				from=Vector3( p_aabb.pos.x	, p_aabb.pos.y		, p_aabb.pos.z		);
+				to=Vector3( p_aabb.pos.x	, p_aabb.pos.y		, p_aabb.pos.z+p_aabb.size.z	);
+
+			} break;
+			case 4:{
+
+				from=Vector3( p_aabb.pos.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z		);
+				to=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z		);
+			} break;
+			case 5:{
+
+				from=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z		);
+				to=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z+p_aabb.size.z	);
+			} break;
+			case 6:{
+				from=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z+p_aabb.size.z	);
+				to=Vector3( p_aabb.pos.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z+p_aabb.size.z	);
+
+			} break;
+			case 7:{
+
+				from=Vector3( p_aabb.pos.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z+p_aabb.size.z	);
+				to=Vector3( p_aabb.pos.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z		);
+
+			} break;
+			case 8:{
+
+				from=Vector3( p_aabb.pos.x	, p_aabb.pos.y		, p_aabb.pos.z+p_aabb.size.z	);
+				to=Vector3( p_aabb.pos.x	, p_aabb.pos.y+p_aabb.size.y		, p_aabb.pos.z+p_aabb.size.z	);
+
+			} break;
+			case 9:{
+
+				from=Vector3( p_aabb.pos.x	, p_aabb.pos.y		, p_aabb.pos.z		);
+				to=Vector3( p_aabb.pos.x	, p_aabb.pos.y+p_aabb.size.y	, p_aabb.pos.z		);
+
+			} break;
+			case 10:{
+
+				from=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y		, p_aabb.pos.z		);
+				to=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y+p_aabb.size.y	, p_aabb.pos.z		);
+
+			} break;
+			case 11:{
+
+				from=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y		, p_aabb.pos.z+p_aabb.size.z		);
+				to=Vector3( p_aabb.pos.x+p_aabb.size.x	, p_aabb.pos.y+p_aabb.size.y	, p_aabb.pos.z+p_aabb.size.z		);
+
+			} break;
+
+		}
+
+		Vector3 e1=from-to;
+		for (int j=0;j<3;j++) {
+			Vector3 e2=edge_norms[j];
+
+			Vector3 axis=vec3_cross( e1, e2 );
+
+			if (axis.length_squared()<0.0001)
+				continue; // coplanar
+			//axis.normalize();
+
+			Vector3 sup2 =Vector3(
+					(axis.x>0) ? -half_extents.x : half_extents.x,
+					(axis.y>0) ? -half_extents.y : half_extents.y,
+					(axis.z>0) ? -half_extents.z : half_extents.z
+				);
+
+			float maxB = axis.dot(ofs+sup2);
+			float minB = axis.dot(ofs-sup2);
+			if (minB>maxB) {
+				SWAP(maxB,minB);
+			}
+
+			float minT=1e20,maxT=-1e20;
+			for (int k=0;k<3;k++) {
+
+				float d=axis.dot(vertex[k]);
+
+				if (d > maxT)
+					maxT=d;
+
+				if (d < minT)
+					minT=d;
+			}
+
+			if (maxB<minT || maxT<minB)
+				return false;
+		}
+	}
+	return true;
+
+
+}
 
 
 #endif // FACE3_H

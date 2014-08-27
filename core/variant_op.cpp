@@ -2907,7 +2907,7 @@ bool Variant::iter_init(Variant& r_iter,bool &valid) const {
 			ref.push_back(r_iter);
 			Variant vref=ref;
 			const Variant *refp[]={&vref};
-			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_next,refp,1,ce);
+			Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->_iter_init,refp,1,ce);
 
 			if (ref.size()!=1 || ce.error!=Variant::CallError::CALL_OK) {
 				valid=false;
@@ -3354,7 +3354,59 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case INT_ARRAY:{   r_dst=a;    } return;
 		case REAL_ARRAY:{   r_dst=a;    } return;
 		case STRING_ARRAY:{   r_dst=a;    } return;
-		case VECTOR3_ARRAY:{  r_dst=a;     } return;
+		case VECTOR2_ARRAY:{
+			const DVector<Vector2> *arr_a=reinterpret_cast<const DVector<Vector2>* >(a._data._mem);
+			const DVector<Vector2> *arr_b=reinterpret_cast<const DVector<Vector2>* >(b._data._mem);
+			int sz = arr_a->size();
+			if (sz==0 || arr_b->size()!=sz) {
+
+				r_dst=a;
+			} else {
+
+				DVector<Vector2> v;
+				v.resize(sz);
+				{
+					DVector<Vector2>::Write vw=v.write();
+					DVector<Vector2>::Read ar=arr_a->read();
+					DVector<Vector2>::Read br=arr_b->read();
+
+					for(int i=0;i<sz;i++) {
+						vw[i]=ar[i].linear_interpolate(br[i],c);
+					}
+				}
+				r_dst=v;
+
+			}
+
+
+		} return;
+		case VECTOR3_ARRAY:{
+
+
+			const DVector<Vector3> *arr_a=reinterpret_cast<const DVector<Vector3>* >(a._data._mem);
+			const DVector<Vector3> *arr_b=reinterpret_cast<const DVector<Vector3>* >(b._data._mem);
+			int sz = arr_a->size();
+			if (sz==0 || arr_b->size()!=sz) {
+
+				r_dst=a;
+			} else {
+
+				DVector<Vector3> v;
+				v.resize(sz);
+				{
+					DVector<Vector3>::Write vw=v.write();
+					DVector<Vector3>::Read ar=arr_a->read();
+					DVector<Vector3>::Read br=arr_b->read();
+
+					for(int i=0;i<sz;i++) {
+						vw[i]=ar[i].linear_interpolate(br[i],c);
+					}
+				}
+				r_dst=v;
+
+			}
+
+		} return;
 		case COLOR_ARRAY:{  r_dst=a;     } return;
 		default: {
 

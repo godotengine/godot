@@ -323,6 +323,7 @@ public:
 	virtual Transform get_transform() const {  return body->get_transform();  }
 
 	virtual void add_force(const Vector3& p_force, const Vector3& p_pos) {  body->add_force(p_force,p_pos); }
+	virtual void apply_impulse(const Vector3& p_pos, const Vector3& p_j) { body->apply_impulse(p_pos,p_j); }
 
 	virtual void set_sleep_state(bool p_enable) {  body->set_active(!p_enable);  }
 	virtual bool is_sleeping() const {  return !body->is_active();  }

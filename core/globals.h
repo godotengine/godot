@@ -110,7 +110,7 @@ public:
 	int get_order(const String& p_name) const;
 	void set_order(const String& p_name, int p_order);
 	
-	Error setup(const String& p_path);
+	Error setup(const String& p_path, const String &p_main_pack);
 
 	Error save_custom(const String& p_path="",const CustomMap& p_custom=CustomMap(),const Set<String>& p_ignore_masks=Set<String>());
 	Error save();

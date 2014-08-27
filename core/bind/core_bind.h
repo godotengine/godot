@@ -124,7 +124,8 @@ public:
 	bool is_in_low_processor_usage_mode() const;
 
 	String get_executable_path() const;
-	int execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking);
+	int execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking,Array p_output=Array());
+
 	Error kill(int p_pid);
 	Error shell_open(String p_uri);
 
@@ -174,6 +175,7 @@ public:
 	};
 */
 
+	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
 	Dictionary get_date() const;

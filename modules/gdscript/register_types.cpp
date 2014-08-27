@@ -14,6 +14,8 @@
 #include "gd_script.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
+#include "io/file_access_encrypted.h"
+
 
 
 GDScriptLanguage *script_language_gd=NULL;
@@ -25,6 +27,7 @@ ResourceFormatSaverGDScript *resource_saver_gd=NULL;
 #include "tools/editor/editor_import_export.h"
 #include "gd_tokenizer.h"
 #include "tools/editor/editor_node.h"
+#include "tools/editor/editor_settings.h"
 
 class EditorExportGDScript : public EditorExportPlugin {
 
@@ -34,20 +37,69 @@ public:
 
 	virtual Vector<uint8_t> custom_export(String& p_path,const Ref<EditorExportPlatform> &p_platform) {
 		//compile gdscript to bytecode
-		if (p_path.ends_with(".gd")) {
-			Vector<uint8_t> file = FileAccess::get_file_as_array(p_path);
-			if (file.empty())
-				return file;
-			String txt;
-			txt.parse_utf8((const char*)file.ptr(),file.size());
-			file = GDTokenizerBuffer::parse_code_string(txt);
-			if (!file.empty()) {
-				print_line("PREV: "+p_path);
-				p_path=p_path.basename()+".gdc";
-				print_line("NOW: "+p_path);
-				return file;
-			}
 
+		if (EditorImportExport::get_singleton()->script_get_action()!=EditorImportExport::SCRIPT_ACTION_NONE) {
+
+			if (p_path.ends_with(".gd")) {
+				Vector<uint8_t> file = FileAccess::get_file_as_array(p_path);
+				if (file.empty())
+					return file;
+				String txt;
+				txt.parse_utf8((const char*)file.ptr(),file.size());
+				file = GDTokenizerBuffer::parse_code_string(txt);
+
+				if (!file.empty()) {
+
+					if (EditorImportExport::get_singleton()->script_get_action()==EditorImportExport::SCRIPT_ACTION_ENCRYPT) {
+
+						String tmp_path=EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/script.gde");
+						FileAccess *fa = FileAccess::open(tmp_path,FileAccess::WRITE);
+						String skey=EditorImportExport::get_singleton()->script_get_encryption_key().to_lower();
+						Vector<uint8_t> key;
+						key.resize(32);
+						for(int i=0;i<32;i++) {
+							int v=0;
+							if (i*2<skey.length()) {
+								CharType ct = skey[i*2];
+								if (ct>='0' && ct<='9')
+									ct=ct-'0';
+								else if (ct>='a' && ct<='f')
+									ct=10+ct-'a';
+								v|=ct<<4;
+							}
+
+							if (i*2+1<skey.length()) {
+								CharType ct = skey[i*2+1];
+								if (ct>='0' && ct<='9')
+									ct=ct-'0';
+								else if (ct>='a' && ct<='f')
+									ct=10+ct-'a';
+								v|=ct;
+							}
+							key[i]=v;
+						}
+						FileAccessEncrypted *fae=memnew(FileAccessEncrypted);
+						Error err = fae->open_and_parse(fa,key,FileAccessEncrypted::MODE_WRITE_AES256);
+						if (err==OK) {
+
+							fae->store_buffer(file.ptr(),file.size());
+							p_path=p_path.basename()+".gde";
+						}
+
+						memdelete(fae);
+
+						file=FileAccess::get_file_as_array(tmp_path);
+						return file;
+
+
+					} else {
+
+						p_path=p_path.basename()+".gdc";
+						return file;
+					}
+				}
+
+			}
 		}
 
 		return Vector<uint8_t>();

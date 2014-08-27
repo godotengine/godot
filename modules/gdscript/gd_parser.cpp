@@ -29,6 +29,7 @@
 #include "gd_parser.h"
 #include "print_string.h"
 #include "io/resource_loader.h"
+#include "os/file_access.h"
 /* TODO:
 
    *Property reduce constant expressions
@@ -224,12 +225,23 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			String path = tokenizer->get_token_constant();
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
-            path = path.replace("///","//");
+			path = path.replace("///","//");
 
-			Ref<Resource> res = ResourceLoader::load(path);
-			if (!res.is_valid()) {
-				_set_error("Can't preload resource at path: "+path);
-				return NULL;
+			Ref<Resource> res;
+			if (!validating) {
+
+				//this can be too slow for just validating code
+				res = ResourceLoader::load(path);
+				if (!res.is_valid()) {
+					_set_error("Can't preload resource at path: "+path);
+					return NULL;
+				}
+			} else {
+
+				if (!FileAccess::exists(path)) {
+					_set_error("Can't preload resource at path: "+path);
+					return NULL;
+				}
 			}
 
 			tokenizer->advance();
@@ -2468,12 +2480,13 @@ Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p
 }
 
 
-Error GDParser::parse(const String& p_code,const String& p_base_path) {
+Error GDParser::parse(const String& p_code,const String& p_base_path,bool p_just_validate) {
 
 
 	GDTokenizerText *tt = memnew( GDTokenizerText );
 	tt->set_code(p_code);
 
+	validating=p_just_validate;
 	tokenizer=tt;
 	Error ret = _parse(p_base_path);
 	memdelete(tt);
@@ -2498,6 +2511,7 @@ void GDParser::clear() {
 	head=NULL;
 	list=NULL;
 
+	validating=false;
 	error_set=false;
 	tab_level.clear();
 	tab_level.push_back(0);

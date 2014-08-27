@@ -38,6 +38,8 @@
 //should scale better with hardware that supports instancing
 
 
+class BakedLightInstance;
+
 class GridMap : public Spatial {
 
 
@@ -202,6 +204,14 @@ class GridMap : public Spatial {
 
 	void _clear_internal(bool p_keep_areas=false);
 
+	BakedLightInstance *baked_light_instance;
+	bool use_baked_light;
+	void _find_baked_light();
+	void _baked_light_changed();
+
+
+	Array _get_baked_light_meshes();
+
 protected:
 
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -210,6 +220,7 @@ protected:
 
 	void _notification(int p_what);
 	static void _bind_methods();
+
 
 public:
 
@@ -262,6 +273,8 @@ public:
 
 	void bake_geometry();
 
+	void set_use_baked_light(bool p_use);
+	bool is_using_baked_light() const;
 	void clear();
 
 	GridMap();

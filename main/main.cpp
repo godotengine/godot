@@ -57,6 +57,7 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 #include "tools/editor/console.h"
+#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -211,6 +212,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	while (I) {
 
 		I->get()=unescape_cmdline(I->get().strip_escapes());
+//		print_line("CMD: "+I->get());
 		I=I->next();
 	}
 
@@ -223,6 +225,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	String game_path=".";
 	String debug_mode;
 	String debug_host;
+	String main_pack;
+	bool quiet_stdout=false;
 	int rtm=-1;
 
 	String remotefs;
@@ -237,9 +241,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 
 	I=args.front();
 
-    packed_data = PackedData::get_singleton();
-    if (!packed_data)
-        packed_data = memnew(PackedData);
+	packed_data = PackedData::get_singleton();
+	if (!packed_data)
+		packed_data = memnew(PackedData);
 
 #ifdef MINIZIP_ENABLED
 	packed_data->add_pack_source(ZipArchive::get_singleton());
@@ -371,6 +375,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get()=="-quiet") { // fullscreen
+
+			quiet_stdout=true;
 		} else if (I->get()=="-v") { // fullscreen
 			OS::get_singleton()->_verbose_stdout=true;
 		} else if (I->get()=="-path") { // resolution
@@ -419,6 +426,17 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			if (I->next()) {
 
 				pack_list.push_back(I->next()->get());
+				N = I->next()->next();
+			} else {
+
+				goto error;
+			};
+
+		} else if (I->get() == "-main_pack") {
+
+			if (I->next()) {
+
+				main_pack=I->next()->get();
 				N = I->next()->next();
 			} else {
 
@@ -541,7 +559,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 #endif
 
 
-	if (globals->setup(game_path)!=OK) {
+	if (globals->setup(game_path,main_pack)!=OK) {
 		
 #ifdef TOOLS_ENABLED
 		editor=false;
@@ -556,6 +574,13 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		main_args.push_back("-editor");
 		use_custom_res=false;
 	}
+
+	if (bool(Globals::get_singleton()->get("application/disable_stdout"))) {
+		quiet_stdout=true;
+	}
+
+	if (quiet_stdout)
+		_print_line_enabled=false;
 
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
@@ -764,6 +789,7 @@ Error Main::setup2() {
 
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
+	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
 #endif
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");

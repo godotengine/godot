@@ -407,7 +407,7 @@ public:
 		RID cylinder_material = vs->fixed_material_create();
 		vs->fixed_material_set_param( cylinder_material, VisualServer::FIXED_MATERIAL_PARAM_DIFFUSE, Color(0.8,0.2,0.9));
 		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_ONTOP,true);
-		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_WIREFRAME,true);
+		//vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_WIREFRAME,true);
 		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_DOUBLE_SIDED,true);
 		vs->material_set_flag( cylinder_material, VisualServer::MATERIAL_FLAG_UNSHADED,true);
 
@@ -429,7 +429,7 @@ public:
 		light = vs->instance_create2( lightaux );
 		*/
 		RID lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
-		vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
+		//vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		//vs->light_set_shadow( lightaux, true );
 		RID light = vs->instance_create2( lightaux,scenario );
 

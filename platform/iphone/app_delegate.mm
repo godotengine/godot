@@ -37,6 +37,12 @@
 #include "modules/FacebookScorer_ios/FacebookScorer.h"
 #endif
 
+#ifdef MODULE_GAME_ANALYTICS_ENABLED
+#import "modules/game_analytics/ios/MobileAppTracker.framework/Headers/MobileAppTracker.h"
+//#import "modules/game_analytics/ios/MobileAppTracker.h"
+#import <AdSupport/AdSupport.h>
+#endif
+
 #define kFilteringFactor                        0.1
 #define kRenderingFrequency						60
 #define kAccelerometerFrequency         100.0 // Hz
@@ -210,7 +216,36 @@ static int frame_count = 0;
 	//OSIPhone::screen_width = rect.size.width - rect.origin.x;
 	//OSIPhone::screen_height = rect.size.height - rect.origin.y;
 	
-	mainViewController = view_controller;	
+	mainViewController = view_controller;
+    
+#ifdef MODULE_GAME_ANALYTICS_ENABLED
+    printf("********************* didFinishLaunchingWithOptions\n");
+    if(!Globals::get_singleton()->has("mobileapptracker/advertiser_id"))
+    {
+        return;
+    }
+    if(!Globals::get_singleton()->has("mobileapptracker/conversion_key"))
+    {
+        return;
+    }
+        
+    String adid = GLOBAL_DEF("mobileapptracker/advertiser_id","");
+    String convkey = GLOBAL_DEF("mobileapptracker/conversion_key","");
+        
+    NSString * advertiser_id = [NSString stringWithUTF8String:adid.utf8().get_data()];
+    NSString * conversion_key = [NSString stringWithUTF8String:convkey.utf8().get_data()];
+        
+    // Account Configuration info - must be set
+    [MobileAppTracker initializeWithMATAdvertiserId:advertiser_id
+                                    MATConversionKey:conversion_key];
+        
+    // Used to pass us the IFA, enables highly accurate 1-to-1 attribution.
+    // Required for many advertising networks.
+    [MobileAppTracker setAppleAdvertisingIdentifier:[[ASIdentifierManager sharedManager] advertisingIdentifier]
+        advertisingTrackingEnabled:[[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled]];
+        
+#endif
+    
 };
 
 - (void)applicationWillTerminate:(UIApplication*)application {
@@ -240,6 +275,10 @@ static int frame_count = 0;
 - (void) applicationDidBecomeActive:(UIApplication *)application
 {
 	printf("********************* did become active\n");
+#ifdef MODULE_GAME_ANALYTICS_ENABLED
+    printf("********************* mobile app tracker found\n");
+	[MobileAppTracker measureSession];
+#endif
 	[view_controller.view startAnimation]; // FIXME: resume seems to be recommended elsewhere
 }
 

@@ -47,6 +47,10 @@ void CollisionObject2D::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_SCENE: {
 
+			if (area)
+				Physics2DServer::get_singleton()->area_set_transform(rid,get_global_transform());
+			else
+				Physics2DServer::get_singleton()->body_set_state(rid,Physics2DServer::BODY_STATE_TRANSFORM,get_global_transform());
 
 			RID space = get_world_2d()->get_space();
 			if (area) {

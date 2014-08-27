@@ -29,7 +29,7 @@
 #include "scroll_bar.h"
 #include "os/keyboard.h"
 #include "print_string.h"
-
+#include "os/os.h"
 bool ScrollBar::focus_by_default=false;
 
 
@@ -293,6 +293,117 @@ void ScrollBar::_notification(int p_what) {
 		
 	}
 	
+	if (p_what==NOTIFICATION_ENTER_SCENE) {
+
+
+		if (has_node(drag_slave_path)) {
+			Node *n = get_node(drag_slave_path);
+			drag_slave=n->cast_to<Control>();
+		}
+
+		if (drag_slave) {
+			drag_slave->connect("input_event",this,"_drag_slave_input");
+			drag_slave->connect("exit_scene",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+		}
+
+
+	}
+	if (p_what==NOTIFICATION_EXIT_SCENE) {
+
+		if (drag_slave) {
+			drag_slave->disconnect("input_event",this,"_drag_slave_input");
+			drag_slave->disconnect("exit_scene",this,"_drag_slave_exit");
+		}
+
+		drag_slave=NULL;
+
+	}
+
+	if (p_what==NOTIFICATION_FIXED_PROCESS) {
+
+		if (drag_slave_touching)  {
+
+			if (drag_slave_touching_deaccel) {
+
+				Vector2 pos = Vector2(orientation==HORIZONTAL?get_val():0,orientation==VERTICAL?get_val():0);
+				pos+=drag_slave_speed*get_fixed_process_delta_time();
+
+				bool turnoff=false;
+
+				if (orientation==HORIZONTAL) {
+
+					if (pos.x<0) {
+						pos.x=0;
+						turnoff=true;
+					}
+
+					if (pos.x > (get_max()-get_page())) {
+						pos.x=get_max()-get_page();
+						turnoff=true;
+					}
+
+					set_val(pos.x);
+
+					float sgn_x = drag_slave_speed.x<0? -1 : 1;
+					float val_x = Math::abs(drag_slave_speed.x);
+					val_x-=1000*get_fixed_process_delta_time();
+
+					if (val_x<0) {
+						turnoff=true;
+					}
+
+					drag_slave_speed.x=sgn_x*val_x;
+
+				} else {
+
+
+					if (pos.y<0) {
+						pos.y=0;
+						turnoff=true;
+					}
+
+					if (pos.y > (get_max()-get_page())) {
+						pos.y=get_max()-get_page();
+						turnoff=true;
+					}
+
+					set_val(pos.y);
+
+					float sgn_y = drag_slave_speed.y<0? -1 : 1;
+					float val_y = Math::abs(drag_slave_speed.y);
+					val_y-=1000*get_fixed_process_delta_time();
+
+					if (val_y<0) {
+						turnoff=true;
+					}
+					drag_slave_speed.y=sgn_y*val_y;
+				}
+
+
+				if (turnoff) {
+					set_fixed_process(false);
+					drag_slave_touching=false;
+					drag_slave_touching_deaccel=false;
+				}
+
+
+			} else {
+
+
+				if (time_since_motion==0 || time_since_motion>0.1) {
+
+					Vector2 diff = drag_slave_accum - last_drag_slave_accum;
+					last_drag_slave_accum=drag_slave_accum;
+					drag_slave_speed=diff/get_fixed_process_delta_time();
+				}
+
+				time_since_motion+=get_fixed_process_delta_time();
+			}
+		}
+
+
+	}
+
 	if (p_what==NOTIFICATION_MOUSE_EXIT) {
 	
 		hilite=HILITE_NONE;
@@ -430,6 +541,131 @@ float ScrollBar::get_custom_step() const {
 
 	return custom_step;
 }
+
+
+void ScrollBar::_drag_slave_exit() {
+
+	if (drag_slave) {
+		drag_slave->disconnect("input_event",this,"_drag_slave_input");
+	}
+	drag_slave=NULL;
+}
+
+
+void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
+
+	switch(p_input.type) {
+
+		case InputEvent::MOUSE_BUTTON: {
+
+			const InputEventMouseButton &mb=p_input.mouse_button;
+
+			if (mb.button_index!=1)
+				break;
+
+			if (mb.pressed) {
+
+				if (drag_slave_touching) {
+					set_fixed_process(false);
+					drag_slave_touching_deaccel=false;
+					drag_slave_touching=false;
+					drag_slave_speed=Vector2();
+					drag_slave_accum=Vector2();
+					last_drag_slave_accum=Vector2();
+					drag_slave_from=Vector2();
+				}
+
+				if (true) {
+					drag_slave_speed=Vector2();
+					drag_slave_accum=Vector2();
+					last_drag_slave_accum=Vector2();
+					//drag_slave_from=Vector2(h_scroll->get_val(),v_scroll->get_val());
+					drag_slave_from= Vector2(orientation==HORIZONTAL?get_val():0,orientation==VERTICAL?get_val():0);
+
+					drag_slave_touching=OS::get_singleton()->has_touchscreen_ui_hint();
+					drag_slave_touching_deaccel=false;
+					time_since_motion=0;
+					if (drag_slave_touching) {
+						set_fixed_process(true);
+						time_since_motion=0;
+
+					}
+				}
+
+			} else {
+
+				if (drag_slave_touching) {
+
+					if (drag_slave_speed==Vector2()) {
+						drag_slave_touching_deaccel=false;
+						drag_slave_touching=false;
+						set_fixed_process(false);
+					} else {
+
+						drag_slave_touching_deaccel=true;
+					}
+				}
+			}
+		} break;
+		case InputEvent::MOUSE_MOTION: {
+
+			const InputEventMouseMotion &mm=p_input.mouse_motion;
+
+			if (drag_slave_touching && ! drag_slave_touching_deaccel) {
+
+				Vector2 motion = Vector2(mm.relative_x,mm.relative_y);
+
+				drag_slave_accum-=motion;
+				Vector2 diff = drag_slave_from+drag_slave_accum;
+
+				if (orientation==HORIZONTAL)
+					set_val(diff.x);
+				//else
+				//	drag_slave_accum.x=0;
+				if (orientation==VERTICAL)
+					set_val(diff.y);
+				//else
+				//	drag_slave_accum.y=0;
+				time_since_motion=0;
+			}
+
+		} break;
+	}
+}
+
+void ScrollBar::set_drag_slave(const NodePath& p_path) {
+
+	if (is_inside_scene()) {
+
+		if (drag_slave) {
+			drag_slave->disconnect("input_event",this,"_drag_slave_input");
+			drag_slave->disconnect("exit_scene",this,"_drag_slave_exit");
+		}
+	}
+
+	drag_slave=NULL;
+	drag_slave_path=p_path;
+
+	if (is_inside_scene()) {
+
+		if (has_node(p_path)) {
+			Node *n = get_node(p_path);
+			drag_slave=n->cast_to<Control>();
+		}
+
+		if (drag_slave) {
+			drag_slave->connect("input_event",this,"_drag_slave_input");
+			drag_slave->connect("exit_scene",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+		}
+	}
+}
+
+NodePath ScrollBar::get_drag_slave() const{
+
+
+	return drag_slave_path;
+}
+
 
 
 #if 0
@@ -571,6 +807,8 @@ void ScrollBar::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&ScrollBar::_input_event);
 	ObjectTypeDB::bind_method(_MD("set_custom_step","step"),&ScrollBar::set_custom_step);
 	ObjectTypeDB::bind_method(_MD("get_custom_step"),&ScrollBar::get_custom_step);
+	ObjectTypeDB::bind_method(_MD("_drag_slave_input"),&ScrollBar::_drag_slave_input);
+	ObjectTypeDB::bind_method(_MD("_drag_slave_exit"),&ScrollBar::_drag_slave_exit);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"custom_step",PROPERTY_HINT_RANGE,"-1,4096"), _SCS("set_custom_step"),_SCS("get_custom_step"));
 
@@ -584,9 +822,14 @@ ScrollBar::ScrollBar(Orientation p_orientation)
 	orientation=p_orientation;
 	hilite=HILITE_NONE;
 	custom_step=-1;
+	drag_slave=NULL;
 		
 	drag.active=false;
-	
+
+	drag_slave_speed=Vector2();
+	drag_slave_touching=false;
+	drag_slave_touching_deaccel=false;
+
 	if (focus_by_default)
 		set_focus_mode( FOCUS_ALL );
 

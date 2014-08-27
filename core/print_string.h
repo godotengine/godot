@@ -47,9 +47,11 @@ struct PrintHandlerList {
 };
 
 
+
 void add_print_handler(PrintHandlerList *p_handler);
 void remove_print_handler(PrintHandlerList *p_handler);
 
+extern bool _print_line_enabled;
 extern void print_line(String p_string);
 
 #endif

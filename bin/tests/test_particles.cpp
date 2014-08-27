@@ -87,7 +87,7 @@ public:
 		light = vs->instance_create2( lightaux );
 		*/
 		RID lightaux = vs->light_create( VisualServer::LIGHT_DIRECTIONAL );
-		vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
+	//	vs->light_set_color( lightaux, VisualServer::LIGHT_COLOR_AMBIENT, Color(0.0,0.0,0.0) );
 		light = vs->instance_create2( lightaux, scenario );
 		
 		ofs=0;

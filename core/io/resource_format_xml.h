@@ -68,7 +68,7 @@ friend class ResourceFormatLoaderXML;
 	List<RES> resource_cache;
 	Tag* parse_tag(bool* r_exit=NULL,bool p_printerr=true);
 	Error close_tag(const String& p_name);
-	void unquote(String& p_str);
+	_FORCE_INLINE_ void unquote(String& p_str);
 	Error goto_end_of_tag();
 	Error parse_property_data(String &r_data);
 	Error parse_property(Variant& r_v, String &r_name);
@@ -117,6 +117,7 @@ class ResourceFormatSaverXMLInstance  {
 
 
 
+	bool takeover_paths;
 	bool relative_paths;
 	bool bundle_resources;
 	bool skip_editor;

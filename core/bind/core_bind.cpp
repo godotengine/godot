@@ -176,6 +176,11 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+void _OS::set_use_file_access_save_and_swap(bool p_enable) {
+
+	FileAccess::set_backup_save(p_enable);
+}
+
 bool _OS::is_video_mode_resizable(int p_screen) const {
 
 	OS::VideoMode vm;
@@ -235,7 +240,7 @@ Error _OS::shell_open(String p_uri) {
 };
 
 
-int _OS::execute(const String& p_path, const Vector<String> & p_arguments,bool p_blocking) {
+int _OS::execute(const String& p_path, const Vector<String> & p_arguments, bool p_blocking, Array p_output) {
 
 	OS::ProcessID pid;
 	List<String> args;
@@ -243,6 +248,8 @@ int _OS::execute(const String& p_path, const Vector<String> & p_arguments,bool p
 		args.push_back(p_arguments[i]);
 	String pipe;
 	Error err = OS::get_singleton()->execute(p_path,args,p_blocking,&pid, &pipe);
+	p_output.clear();
+	p_output.push_back(pipe);
 	if (err != OK)
 		return -1;
 	else
@@ -616,7 +623,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_processor_count"),&_OS::get_processor_count);
 
 	ObjectTypeDB::bind_method(_MD("get_executable_path"),&_OS::get_executable_path);
-	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking"),&_OS::execute);
+	ObjectTypeDB::bind_method(_MD("execute","path","arguments","blocking","output"),&_OS::execute,DEFVAL(Array()));
 	ObjectTypeDB::bind_method(_MD("kill","pid"),&_OS::kill);
 	ObjectTypeDB::bind_method(_MD("shell_open","uri"),&_OS::shell_open);
 	ObjectTypeDB::bind_method(_MD("get_process_ID"),&_OS::get_process_ID);
@@ -671,6 +678,10 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+
+
+	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
+
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -1634,7 +1645,7 @@ String _Marshalls::variant_to_base64(const Variant& p_var) {
 	err = encode_variant(p_var,&w[0],len);
 	ERR_FAIL_COND_V( err != OK, "" );
 
-	int b64len = len / 3 * 4 + 4;
+	int b64len = len / 3 * 4 + 4 + 1;
 	DVector<uint8_t> b64buff;
 	b64buff.resize(b64len);
 	DVector<uint8_t>::Write w64 = b64buff.write();
@@ -1653,7 +1664,7 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	CharString cstr = p_str.ascii();
 
 	DVector<uint8_t> buf;
-	buf.resize(strlen / 4 * 3);
+	buf.resize(strlen / 4 * 3 + 1);
 	DVector<uint8_t>::Write w = buf.write();
 
 	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);

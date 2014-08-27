@@ -1,831 +1,19 @@
 #include "baked_light_editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
-#include "scene/3d/light.h"
+#include "io/marshalls.h"
+#include "io/resource_saver.h"
 
-
-class BakedLightBaker {
-public:
-
-	enum {
-
-		ATTENUATION_CURVE_LEN=256
-	};
-
-	struct Octant {
-		bool leaf;
-		union {
-			struct {
-				float light_accum[3];
-				float surface_area;
-				Octant *next_leaf;
-				float offset[3];
-			};
-			Octant* children[8];
-		};
-	};
-
-	struct Triangle {
-
-		Vector3 vertices[3];
-		Vector2 uv[3];
-	};
-
-
-	struct BVH {
-
-		AABB aabb;
-		Vector3 center;
-		Triangle *leaf;
-		BVH*children[2];
-	};
-
-
-	struct BVHCmpX {
-
-		bool operator()(const BVH* p_left, const BVH* p_right) const {
-
-			return p_left->center.x < p_right->center.x;
-		}
-	};
-
-	struct BVHCmpY {
-
-		bool operator()(const BVH* p_left, const BVH* p_right) const {
-
-			return p_left->center.y < p_right->center.y;
-		}
-	};
-	struct BVHCmpZ {
-
-		bool operator()(const BVH* p_left, const BVH* p_right) const {
-
-			return p_left->center.z < p_right->center.z;
-		}
-	};
-
-
-	struct DirLight {
-
-
-		Vector3 pos;
-		Vector3 up;
-		Vector3 left;
-		Vector3 dir;
-		Color diffuse;
-		Color specular;
-		float energy;
-		float length;
-		int rays_thrown;
-
-	};
-
-	AABB octree_aabb;
-	Octant *octree;
-	BVH*bvh;
-	Vector<Triangle> triangles;
-	Transform base_inv;
-	Octant *leaf_list;
-	int octree_depth;
-	int cell_count;
-	uint32_t *ray_stack;
-	BVH **bvh_stack;
-	float cell_size;
-	float plot_size; //multiplied by cell size
-	Vector<DirLight> directional_lights;
-	int max_bounces;
-
-
-
-	void _add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_mat_override,const Transform& p_xform);
-	void _parse_geometry(Node* p_node);
-	BVH* _parse_bvh(BVH** p_children,int p_size,int p_depth,int& max_depth);
-	void _make_bvh();
-	void _make_octree();
-	void _octree_insert(const AABB& p_aabb,Octant *p_octant,Triangle* p_triangle, int p_depth);
-
-	void _free_octree(Octant *p_octant) {
-
-		if (!p_octant->leaf) {
-
-			for(int i=0;i<8;i++) {
-				if (p_octant->children[i])
-					_free_octree(p_octant->children[i]);
-			}
-		}
-
-		memdelete(p_octant);
-	}
-
-	void _free_bvh(BVH* p_bvh) {
-
-		if (!p_bvh->leaf) {
-			if (p_bvh->children[0])
-				_free_bvh(p_bvh->children[0]);
-			if (p_bvh->children[1])
-				_free_bvh(p_bvh->children[1]);
-		}
-
-		memdelete(p_bvh);
-
-	}
-
-	void _fix_lights();
-
-
-	void _plot_light(const Vector3& p_plot_pos,const AABB& p_plot_aabb, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
-	void _plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
-
-	void _throw_ray(const Vector3& p_from, const Vector3& p_to,const Color& p_light,float *p_att_curve,float p_att_curve_len,int p_bounces);
-
-
-	void throw_rays(int p_amount);
-	float get_normalization() const;
-
-
-	void bake(Node *p_base);
-
-
-	void clear() {
-
-		if (octree)
-			_free_octree(octree);
-		if (bvh)
-			_free_bvh(bvh);
-
-		if (ray_stack)
-			memdelete_arr(ray_stack);
-		if (bvh_stack)
-			memdelete_arr(bvh_stack);
-
-		octree=NULL;
-		bvh=NULL;
-		leaf_list=NULL;
-		cell_count=0;
-		ray_stack=NULL;
-		bvh_stack=NULL;
-	}
-
-	BakedLightBaker() {
-		octree_depth=6;
-		octree=NULL;
-		bvh=NULL;
-		leaf_list=NULL;
-		cell_count=0;
-		ray_stack=NULL;
-		bvh_stack=NULL;
-		plot_size=2;
-		max_bounces=3;
-	}
-
-	~BakedLightBaker() {
-
-		clear();
-	}
-
-};
-
-
-void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_mat_override,const Transform& p_xform) {
-
-
-	for(int i=0;i<p_mesh->get_surface_count();i++) {
-
-		if (p_mesh->surface_get_primitive_type(i)!=Mesh::PRIMITIVE_TRIANGLES)
-			continue;
-		Ref<Material> mat = p_mat_override.is_valid()?p_mat_override:p_mesh->surface_get_material(i);
-
-		int facecount=0;
-
-
-		if (p_mesh->surface_get_format(i)&Mesh::ARRAY_FORMAT_INDEX) {
-
-			facecount=p_mesh->surface_get_array_index_len(i);
-		} else {
-
-			facecount=p_mesh->surface_get_array_len(i);
-		}
-
-		ERR_CONTINUE((facecount==0 || (facecount%3)!=0));
-
-		facecount/=3;
-
-		int tbase=triangles.size();
-		triangles.resize(facecount+tbase);
-
-
-		Array a = p_mesh->surface_get_arrays(i);
-
-		DVector<Vector3> vertices = a[Mesh::ARRAY_VERTEX];
-		DVector<Vector3>::Read vr=vertices.read();
-
-		if (p_mesh->surface_get_format(i)&Mesh::ARRAY_FORMAT_INDEX) {
-
-			DVector<int> indices = a[Mesh::ARRAY_INDEX];
-			DVector<int>::Read ir = indices.read();
-
-			for(int i=0;i<facecount;i++) {
-				Triangle &t=triangles[tbase+i];
-				t.vertices[0]=p_xform.xform(vr[ ir[i*3+0] ]);
-				t.vertices[1]=p_xform.xform(vr[ ir[i*3+1] ]);
-				t.vertices[2]=p_xform.xform(vr[ ir[i*3+2] ]);
-			}
-
-		} else {
-
-			for(int i=0;i<facecount;i++) {
-				Triangle &t=triangles[tbase+i];
-				t.vertices[0]=p_xform.xform(vr[ i*3+0 ]);
-				t.vertices[1]=p_xform.xform(vr[ i*3+1 ]);
-				t.vertices[2]=p_xform.xform(vr[ i*3+2 ]);
-			}
-		}
-	}
-
-}
-
-
-void BakedLightBaker::_parse_geometry(Node* p_node) {
-
-	if (p_node->cast_to<MeshInstance>()) {
-
-		MeshInstance *meshi=p_node->cast_to<MeshInstance>();
-		Ref<Mesh> mesh=meshi->get_mesh();
-		if (mesh.is_valid()) {
-			_add_mesh(mesh,meshi->get_material_override(),base_inv * meshi->get_global_transform());
-		}
-	}
-
-	if (p_node->cast_to<DirectionalLight>()) {
-
-		DirectionalLight *dl=p_node->cast_to<DirectionalLight>();
-
-		DirLight dirl;
-		dirl.diffuse=dl->get_color(DirectionalLight::COLOR_DIFFUSE);
-		dirl.specular=dl->get_color(DirectionalLight::COLOR_SPECULAR);
-		dirl.energy=dl->get_parameter(DirectionalLight::PARAM_ENERGY);
-		dirl.pos=dl->get_global_transform().origin;
-		dirl.up=dl->get_global_transform().basis.get_axis(1).normalized();
-		dirl.left=dl->get_global_transform().basis.get_axis(0).normalized();
-		dirl.dir=-dl->get_global_transform().basis.get_axis(2).normalized();
-		dirl.rays_thrown=0;
-		directional_lights.push_back(dirl);
-
-	}
-
-	for(int i=0;i<p_node->get_child_count();i++) {
-
-		_parse_geometry(p_node->get_child(i));
-	}
-}
-
-
-void BakedLightBaker::_fix_lights() {
-
-
-	for(int i=0;i<directional_lights.size();i++) {
-
-		DirLight &dl=directional_lights[i];
-		float up_max=-1e10;
-		float dir_max=-1e10;
-		float left_max=-1e10;
-		float up_min=1e10;
-		float dir_min=1e10;
-		float left_min=1e10;
-
-		for(int j=0;j<triangles.size();j++) {
-
-			for(int k=0;k<3;k++) {
-
-				Vector3 v = triangles[j].vertices[j];
-
-				float up_d = dl.up.dot(v);
-				float dir_d = dl.dir.dot(v);
-				float left_d = dl.left.dot(v);
-
-				if (up_d>up_max)
-					up_max=up_d;
-				if (up_d<up_min)
-					up_min=up_d;
-
-				if (left_d>left_max)
-					left_max=left_d;
-				if (left_d<left_min)
-					left_min=left_d;
-
-				if (dir_d>dir_max)
-					dir_max=dir_d;
-				if (dir_d<dir_min)
-					dir_min=dir_d;
-
-			}
-		}
-
-		//make a center point, then the upvector and leftvector
-		dl.pos = dl.left*( left_max+left_min )*0.5 + dl.up*( up_max+up_min )*0.5 + dl.dir*(dir_min-(dir_max-dir_min));
-		dl.left*=(left_max-left_min)*0.5;
-		dl.up*=(up_max-up_min)*0.5;
-		dl.length = (dir_max - dir_min)*10; //arbitrary number to keep it in scale
-
-	}
-}
-
-BakedLightBaker::BVH* BakedLightBaker::_parse_bvh(BVH** p_children, int p_size, int p_depth, int &max_depth) {
-
-	if (p_depth>max_depth) {
-		max_depth=p_depth;
-	}
-
-	if (p_size==1) {
-
-		return p_children[0];
-	} else if (p_size==0) {
-
-		return NULL;
-	}
-
-
-	AABB aabb;
-	aabb=p_children[0]->aabb;
-	for(int i=1;i<p_size;i++) {
-
-		aabb.merge_with(p_children[i]->aabb);
-	}
-
-	int li=aabb.get_longest_axis_index();
-
-	switch(li) {
-
-		case Vector3::AXIS_X: {
-			SortArray<BVH*,BVHCmpX> sort_x;
-			sort_x.nth_element(0,p_size,p_size/2,p_children);
-			//sort_x.sort(&p_bb[p_from],p_size);
-		} break;
-		case Vector3::AXIS_Y: {
-			SortArray<BVH*,BVHCmpY> sort_y;
-			sort_y.nth_element(0,p_size,p_size/2,p_children);
-			//sort_y.sort(&p_bb[p_from],p_size);
-		} break;
-		case Vector3::AXIS_Z: {
-			SortArray<BVH*,BVHCmpZ> sort_z;
-			sort_z.nth_element(0,p_size,p_size/2,p_children);
-			//sort_z.sort(&p_bb[p_from],p_size);
-
-		} break;
-	}
-
-
-	BVH* left = _parse_bvh(p_children,p_size/2,p_depth+1,max_depth);
-	BVH* right = _parse_bvh(&p_children[p_size/2],p_size-p_size/2,p_depth+1,max_depth);
-
-	BVH *_new = memnew(BVH);
-	_new->aabb=aabb;
-	_new->center=aabb.pos+aabb.size*0.5;
-	_new->children[0]=left;
-	_new->children[1]=right;
-	_new->leaf=NULL;
-
-	return _new;
-}
-
-void BakedLightBaker::_make_bvh() {
-
-	Vector<BVH*> bases;
-	bases.resize(triangles.size());
-	int max_depth=0;
-	for(int i=0;i<triangles.size();i++) {
-		bases[i]=memnew( BVH );
-		bases[i]->leaf=&triangles[i];
-		bases[i]->aabb.pos=triangles[i].vertices[0];
-		bases[i]->aabb.expand_to(triangles[i].vertices[1]);
-		bases[i]->aabb.expand_to(triangles[i].vertices[2]);
-		bases[i]->center=bases[i]->aabb.pos+bases[i]->aabb.size*0.5;
-	}
-
-	bvh=_parse_bvh(bases.ptr(),bases.size(),1,max_depth);
-	ray_stack = memnew_arr(uint32_t,max_depth);
-	bvh_stack = memnew_arr(BVH*,max_depth);
-}
-
-void BakedLightBaker::_octree_insert(const AABB& p_aabb,Octant *p_octant,Triangle* p_triangle, int p_depth) {
-
-	if (p_octant->leaf) {
-#if 0
-		if (p_aabb.has_point(p_triangle->vertices[0]) && p_aabb.has_point(p_triangle->vertices[1]) &&p_aabb.has_point(p_triangle->vertices[2])) {
-			//face is completely enclosed, add area
-			p_octant->surface_area+=Face3(p_triangle->vertices[0],p_triangle->vertices[1],p_triangle->vertices[2]).get_area();
-		} else {
-			//not completely enclosed, will need to be clipped..
-			Vector<Vector3> poly;
-			poly.push_back(p_triangle->vertices[0]);
-			poly.push_back(p_triangle->vertices[1]);
-			poly.push_back(p_triangle->vertices[2]);
-
-			//clip
-			for(int i=0;i<3;i++) {
-
-				//top plane
-				Plane p(0,0,0,0);
-				p.normal[i]=1.0;
-				p.d=p_aabb.pos[i]+p_aabb.size[i];
-				poly=Geometry::clip_polygon(poly,p);
-
-				//bottom plane
-				p.normal[i]=-1.0;
-				p.d=-p_aabb.pos[i];
-				poly=Geometry::clip_polygon(poly,p);
-			}
-
-
-			//calculate area
-			float clipped_area=0;
-			for(int i=2;i<poly.size();i++) {
-				clipped_area+=Face3(poly[0],poly[i-1],poly[i]).get_area();
-			}
-
-			print_line(itos(poly.size())+" Base: "+rtos(Face3(p_triangle->vertices[0],p_triangle->vertices[1],p_triangle->vertices[2]).get_area())+" clipped: "+rtos(clipped_area));
-			p_octant->surface_area+=clipped_area;
-		}
-#endif
-	} else {
-
-
-		for(int i=0;i<8;i++) {
-
-			AABB aabb=p_aabb;
-			aabb.size*=0.5;
-			if (i&1)
-				aabb.pos.x+=aabb.size.x;
-			if (i&2)
-				aabb.pos.y+=aabb.size.y;
-			if (i&4)
-				aabb.pos.z+=aabb.size.z;
-
-			AABB fit_aabb=aabb;
-			//fit_aabb=fit_aabb.grow(bvh->aabb.size.x*0.0001);
-
-			if (!Face3(p_triangle->vertices[0],p_triangle->vertices[1],p_triangle->vertices[2]).intersects_aabb(fit_aabb))
-				continue;
-
-			if (!p_octant->children[i]) {
-				p_octant->children[i]=memnew(Octant);
-				if (p_depth==0) {
-					p_octant->children[i]->leaf=true;
-					p_octant->children[i]->light_accum[0]=0;
-					p_octant->children[i]->light_accum[1]=0;
-					p_octant->children[i]->light_accum[2]=0;
-					p_octant->children[i]->offset[0]=aabb.pos.x+aabb.size.x*0.5;
-					p_octant->children[i]->offset[1]=aabb.pos.y+aabb.size.y*0.5;
-					p_octant->children[i]->offset[2]=aabb.pos.z+aabb.size.z*0.5;
-					p_octant->children[i]->surface_area=0;
-					p_octant->children[i]->next_leaf=leaf_list;
-					leaf_list=p_octant->children[i];
-					cell_count++;
-				} else {
-
-					p_octant->children[i]->leaf=false;
-					for(int j=0;j<8;j++) {
-						p_octant->children[i]->children[j]=0;
-					}
-				}
-			}
-
-			_octree_insert(aabb,p_octant->children[i],p_triangle,p_depth-1);
-		}
-	}
-}
-
-
-void BakedLightBaker::_make_octree() {
-
-	AABB base = bvh->aabb;
-	float lal=base.get_longest_axis_size();
-	//must be square because we want square blocks
-	base.size.x=lal;
-	base.size.y=lal;
-	base.size.z=lal;
-	base.grow_by(lal*0.001); //for precision
-	octree_aabb=base;
-
-	cell_size=base.size.x;
-	for(int i=0;i<octree_depth;i++)
-		cell_size/=2.0;
-
-	octree = memnew( Octant );
-	octree->leaf=false;
-	for(int i=0;i<8;i++)
-		octree->children[i]=NULL;
-
-	for(int i=0;i<triangles.size();i++) {
-
-		_octree_insert(octree_aabb,octree,&triangles[i],octree_depth-1);
-	}
-
-}
-
-
-void BakedLightBaker::_plot_light(const Vector3& p_plot_pos,const AABB& p_plot_aabb, Octant *p_octant, const AABB& p_aabb,const Color& p_light) {
-
-
-	if (p_octant->leaf) {
-
-		float r=cell_size*plot_size;
-		Vector3 center=p_aabb.pos+p_aabb.size*0.5;
-		float d = p_plot_pos.distance_to(center);
-		if (d>r)
-			return; //oh crap! outside radius
-		float intensity = 1.0;// - (d/r)*(d/r); //not gauss but..
-		p_octant->light_accum[0]+=p_light.r*intensity;
-		p_octant->light_accum[1]+=p_light.g*intensity;
-		p_octant->light_accum[2]+=p_light.b*intensity;
-
-	} else {
-
-		for(int i=0;i<8;i++) {
-
-			if (!p_octant->children[i])
-				continue;
-
-			AABB aabb=p_aabb;
-			aabb.size*=0.5;
-			if (i&1)
-				aabb.pos.x+=aabb.size.x;
-			if (i&2)
-				aabb.pos.y+=aabb.size.y;
-			if (i&4)
-				aabb.pos.z+=aabb.size.z;
-
-
-			if (!aabb.intersects(p_plot_aabb))
-				continue;
-
-			_plot_light(p_plot_pos,p_plot_aabb,p_octant->children[i],aabb,p_light);
-
-		}
-
-	}
-}
-
-void BakedLightBaker::_plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light) {
-
-
-	if (p_octant->leaf) {
-
-		p_octant->light_accum[0]+=p_light.r;
-		p_octant->light_accum[1]+=p_light.g;
-		p_octant->light_accum[2]+=p_light.b;
-
-	} else {
-
-		for(int i=0;i<8;i++) {
-
-			if (!p_octant->children[i])
-				continue;
-
-			AABB aabb=p_aabb;
-			aabb.size*=0.5;
-			if (i&1)
-				aabb.pos.x+=aabb.size.x;
-			if (i&2)
-				aabb.pos.y+=aabb.size.y;
-			if (i&4)
-				aabb.pos.z+=aabb.size.z;
-
-
-			if (!aabb.has_point(p_plot_pos))
-				continue;
-
-			_plot_light_point(p_plot_pos,p_octant->children[i],aabb,p_light);
-
-		}
-
-	}
-}
-
-
-void BakedLightBaker::_throw_ray(const Vector3& p_begin, const Vector3& p_end,const Color& p_light,float *p_att_curve,float p_att_curve_len,int p_bounces) {
-
-
-	uint32_t* stack = ray_stack;
-	BVH **bstack = bvh_stack;
-
-	enum {
-		TEST_AABB_BIT=0,
-		VISIT_LEFT_BIT=1,
-		VISIT_RIGHT_BIT=2,
-		VISIT_DONE_BIT=3,
-
-
-	};
-
-	Vector3 n = (p_end-p_begin).normalized();
-	real_t d=1e10;
-	bool inters=false;
-	Vector3 r_normal;
-	Vector3 r_point;
-
-	//for(int i=0;i<max_depth;i++)
-	//	stack[i]=0;
-
-	int level=0;
-	//AABB ray_aabb;
-	//ray_aabb.pos=p_begin;
-	//ray_aabb.expand_to(p_end);
-
-
-	const BVH *bvhptr = bvh;
-
-	bstack[0]=bvh;
-	stack[0]=TEST_AABB_BIT;
-
-
-	while(true) {
-
-		uint32_t mode = stack[level];
-		const BVH &b = *bstack[level];
-		bool done=false;
-
-		switch(mode) {
-			case TEST_AABB_BIT: {
-
-				if (b.leaf) {
-
-
-					Face3 f3(b.leaf->vertices[0],b.leaf->vertices[1],b.leaf->vertices[2]);
-
-
-					Vector3 res;
-
-					if (f3.intersects_segment(p_begin,p_end,&res)) {
-
-
-						float nd = n.dot(res);
-						if (nd<d) {
-
-							d=nd;
-							r_point=res;
-							r_normal=f3.get_plane().get_normal();
-							inters=true;
-						}
-
-					}
-
-					stack[level]=VISIT_DONE_BIT;
-				} else {
-
-
-					bool valid = b.aabb.intersects_segment(p_begin,p_end);
-	//				bool valid = b.aabb.intersects(ray_aabb);
-
-					if (!valid) {
-
-						stack[level]=VISIT_DONE_BIT;
-
-					} else {
-
-						stack[level]=VISIT_LEFT_BIT;
-					}
-				}
-
-			} continue;
-			case VISIT_LEFT_BIT: {
-
-				stack[level]=VISIT_RIGHT_BIT;
-				bstack[level+1]=b.children[0];
-				stack[level+1]=TEST_AABB_BIT;
-				level++;
-
-			} continue;
-			case VISIT_RIGHT_BIT: {
-
-				stack[level]=VISIT_DONE_BIT;
-				bstack[level+1]=b.children[1];
-				stack[level+1]=TEST_AABB_BIT;
-				level++;
-			} continue;
-			case VISIT_DONE_BIT: {
-
-				if (level==0) {
-					done=true;
-					break;
-				} else
-					level--;
-
-			} continue;
-		}
-
-
-		if (done)
-			break;
-	}
-
-
-	if (inters) {
-
-		//print_line("collision!");
-		if (n.dot(r_normal)>0)
-			r_normal=-r_normal;
-
-		//ok...
-		Color diffuse_at_point(0.8,0.8,0.8);
-		Color specular_at_point(0.8,0.8,0.8);
-
-		AABB aabb;
-		aabb.pos=r_point;
-		aabb.pos-=Vector3(1,1,1)*cell_size*plot_size;
-		aabb.size=Vector3(2,2,2)*cell_size*plot_size;
-
-		_plot_light(r_point,aabb,octree,octree_aabb,p_light);
-//		_plot_light_point(r_point,octree,octree_aabb,p_light);
-
-	}
-
-}
-
-
-
-
-
-
-float BakedLightBaker::get_normalization() const {
-
-	float nrg=0;
-	for(int i=0;i<directional_lights.size();i++) {
-
-		const DirLight &dl=directional_lights[i];
-		float total_area = dl.left.length()*2*dl.up.length()*2;
-		float cell_area = cell_size*cell_size;;
-		nrg+= dl.energy * (dl.rays_thrown * cell_area / total_area);
-		nrg*=5;
-	}
-
-	return nrg;
-}
-
-void BakedLightBaker::throw_rays(int p_amount) {
-
-
-
-	for(int i=0;i<directional_lights.size();i++) {
-
-		DirLight &dl=directional_lights[i];
-
-		float sr = Math::sqrt(p_amount);
-		float aspect = dl.up.length()/dl.left.length();
-
-
-		for(int j=0;j<p_amount;j++) {
-			Vector3 from = dl.pos;
-			from+=dl.up*(Math::randf()*2.0-1.0);
-			from+=dl.left*(Math::randf()*2.0-1.0);
-			Vector3 to = from+dl.dir*dl.length;
-			Color col=dl.diffuse;
-			col.r*=dl.energy;
-			col.g*=dl.energy;
-			col.b*=dl.energy;
-			dl.rays_thrown++;
-			_throw_ray(from,to,col,NULL,0,max_bounces);
-		}
-
-
-	}
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-void BakedLightBaker::bake(Node* p_node) {
-
-	cell_count=0;
-
-	_parse_geometry(p_node);
-	_fix_lights();
-	_make_bvh();
-	_make_octree();
-
-}
 
 
 
 
 void BakedLightEditor::_end_baking() {
 
-	if (!bake_thread)
-		return;
-
-	bake_thread_exit=true;
-	Thread::wait_to_finish(bake_thread);
-	bake_thread=NULL;
-	bake_thread_exit=false;
+	baker->clear();
+	set_process(false);
+	button_bake->set_pressed(false);
+	bake_info->set_text("");
 }
 
 void BakedLightEditor::_node_removed(Node *p_node) {
@@ -833,71 +21,84 @@ void BakedLightEditor::_node_removed(Node *p_node) {
 	if(p_node==node) {
 		_end_baking();
 		node=NULL;
-		p_node->remove_child(preview);
-		preview->set_mesh(Ref<Mesh>());
+
 		hide();
 	}
 
 }
 
 
-void BakedLightEditor::_bake_thread_func(void *arg) {
-
-	BakedLightEditor *ble = (BakedLightEditor*)arg;
-
-	while(!ble->bake_thread_exit) {
-
-		ble->baker->throw_rays(1000);
-	}
-
-}
 
 
 
 void BakedLightEditor::_notification(int p_option) {
 
 
+	if (p_option==NOTIFICATION_ENTER_SCENE) {
+
+		button_bake->set_icon(get_icon("Bake","EditorIcons"));
+		button_reset->set_icon(get_icon("Reload","EditorIcons"));
+		button_make_lightmaps->set_icon(get_icon("LightMap","EditorIcons"));
+	}
+
 	if (p_option==NOTIFICATION_PROCESS) {
 
-		if (bake_thread) {
+		if (baker->is_baking() && !baker->is_paused()) {
 
 			update_timeout-=get_process_delta_time();
 			if (update_timeout<0) {
 
+				if (baker->get_baked_light()!=node->get_baked_light()) {
+					_end_baking();
+					return;
+				}
 
+				uint64_t t = OS::get_singleton()->get_ticks_msec();
 
-				float norm =  baker->get_normalization();
+#ifdef DEBUG_CUBES
+				double norm =  baker->get_normalization();
 				float max_lum=0;
+
 				{
 					DVector<Color>::Write cw=colors.write();
-					BakedLightBaker::Octant *oct = baker->leaf_list;
+					BakedLightBaker::Octant *octants=baker->octant_pool.ptr();
+					BakedLightBaker::Octant *oct = &octants[baker->leaf_list];
 					int vert_idx=0;
 
 					while(oct) {
 
-						Color color;
 
 
-						color.r=oct->light_accum[0]/norm;
-						color.g=oct->light_accum[1]/norm;
-						color.b=oct->light_accum[2]/norm;
-						float lum = color.get_v();
-						//if (lum<0.05)
-						//	color.a=0;
-						if (lum>max_lum)
-							max_lum=lum;
+						Color colors[8];
+						for(int i=0;i<8;i++) {
 
+							colors[i].r=oct->light_accum[i][0]/norm;
+							colors[i].g=oct->light_accum[i][1]/norm;
+							colors[i].b=oct->light_accum[i][2]/norm;
+
+							float lum = colors[i].get_v();
+							//if (lum<0.05)
+							//	color.a=0;
+							if (lum>max_lum)
+								max_lum=lum;
+
+						}
+						static const int vert2cub[36]={7,3,1,1,5,7,7,6,2,2,3,7,7,5,4,4,6,7,2,6,4,4,0,2,4,5,1,1,0,4,1,3,2,2,0,1};
 						for (int i=0;i<36;i++) {
 
 
-							cw[vert_idx++]=color;
+							cw[vert_idx++]=colors[vert2cub[i]];
 						}
 
-						oct=oct->next_leaf;
+						if (oct->next_leaf)
+							oct=&octants[oct->next_leaf];
+						else
+							oct=NULL;
 
 					}
 				}
-
+				print_line("MSCOL: "+itos(OS::get_singleton()->get_ticks_msec()-t));
+				t = OS::get_singleton()->get_ticks_msec();
 
 				Array a;
 				a.resize(Mesh::ARRAY_MAX);
@@ -907,8 +108,30 @@ void BakedLightEditor::_notification(int p_option) {
 					mesh->surface_remove(0);
 				mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
 				mesh->surface_set_material(0,material);
+#endif
+				ERR_FAIL_COND(node->get_baked_light().is_null());
 
-				update_timeout=1;
+				baker->update_octree_image(octree_texture);
+#if 1
+//debug
+				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA,octree_texture);
+				Ref<ImageTexture> it = memnew( ImageTexture );
+				it->create_from_image(img);
+				ResourceSaver::save("baked_octree.png",it);
+
+
+#endif
+				bake_info->set_text("rays/s: "+itos(baker->get_rays_sec()));
+				update_timeout=1;				
+				print_line("MSUPDATE: "+itos(OS::get_singleton()->get_ticks_msec()-t));
+				t=OS::get_singleton()->get_ticks_msec();
+				node->get_baked_light()->set_octree(octree_texture);
+				node->get_baked_light()->set_edited(true);
+
+				print_line("MSSET: "+itos(OS::get_singleton()->get_ticks_msec()-t));
+
+
+
 			}
 		}
 	}
@@ -924,89 +147,11 @@ void BakedLightEditor::_menu_option(int p_option) {
 		case MENU_OPTION_BAKE: {
 
 			ERR_FAIL_COND(!node);
-			preview->set_mesh(Ref<Mesh>());
-			baker->base_inv=node->get_global_transform().affine_inverse();
-			baker->bake(node);
-
-			print_line("CELLS: "+itos(baker->cell_count));
-			print_line("cell size: "+rtos(baker->cell_size));
-			colors.resize(baker->cell_count*36);
-			vertices.resize(baker->cell_count*36);
-
-
-			{
-				DVector<Color>::Write cw=colors.write();
-				DVector<Vector3>::Write vw=vertices.write();
-				BakedLightBaker::Octant *oct = baker->leaf_list;
-				int vert_idx=0;
-
-				while(oct) {
-
-					Color color;
-
-					for (int i=0;i<6;i++) {
-
-
-						Vector3 face_points[4];
-						for (int j=0;j<4;j++) {
-
-							float v[3];
-							v[0]=1.0;
-							v[1]=1-2*((j>>1)&1);
-							v[2]=v[1]*(1-2*(j&1));
-
-							for (int k=0;k<3;k++) {
-
-								if (i<3)
-									face_points[j][(i+k)%3]=v[k]*(i>=3?-1:1);
-								else
-									face_points[3-j][(i+k)%3]=v[k]*(i>=3?-1:1);
-							}
-						}
-
-						for(int j=0;j<4;j++) {
-							face_points[j]*=baker->cell_size*0.5;
-							face_points[j]+=Vector3(oct->offset[0],oct->offset[1],oct->offset[2]);
-						}
-
-#define ADD_VTX(m_idx) \
-	vw[vert_idx]=face_points[m_idx]; \
-	cw[vert_idx]=color; \
-	vert_idx++;
-
-					//tri 1
-						ADD_VTX(0);
-						ADD_VTX(1);
-						ADD_VTX(2);
-					//tri 2
-						ADD_VTX(2);
-						ADD_VTX(3);
-						ADD_VTX(0);
-
-#undef ADD_VTX
-
-					}
-
-					oct=oct->next_leaf;
-				}
-
-
-			}
-
-			Array a;
-			a.resize(Mesh::ARRAY_MAX);
-			a[Mesh::ARRAY_VERTEX]=vertices;
-			a[Mesh::ARRAY_COLOR]=colors;
-			while(mesh->get_surface_count())
-				mesh->surface_remove(0);
-			mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
-			mesh->surface_set_material(0,material);
-
-			bake_thread_exit=false;
+			ERR_FAIL_COND(node->get_baked_light().is_null());
+			baker->bake(node->get_baked_light(),node);
+			node->get_baked_light()->set_mode(BakedLight::MODE_OCTREE);
 			update_timeout=0;
 			set_process(true);
-			bake_thread=Thread::create(_bake_thread_func,this);
-			preview->set_mesh(mesh);
 
 
 		} break;
@@ -1019,57 +164,122 @@ void BakedLightEditor::_menu_option(int p_option) {
 	}
 }
 
+void BakedLightEditor::_bake_pressed() {
 
-void BakedLightEditor::edit(BakedLight *p_baked_light) {
-
-	if (node==p_baked_light)
+	ERR_FAIL_COND(!node);
+	if (node->get_baked_light().is_null()) {
+		err_dialog->set_text("BakedLightInstance does not contain a BakedLight resource.");
+		err_dialog->popup_centered(Size2(350,70));
+		button_bake->set_pressed(false);
 		return;
-	if (node) {
-		node->remove_child(preview);
 	}
 
-	node=p_baked_light;
-	_end_baking();
+	if (baker->is_baking()) {
 
-	if (node)
-		node->add_child(preview);
+		baker->set_pause(!button_bake->is_pressed());
+		if (baker->is_paused()) {
+
+			set_process(false);
+			bake_info->set_text("");
+			button_reset->show();
+			button_make_lightmaps->show();
+
+		} else {
+
+			update_timeout=0;
+			set_process(true);
+			button_make_lightmaps->hide();
+			button_reset->hide();
+		}
+	} else {
+		baker->bake(node->get_baked_light(),node);
+		node->get_baked_light()->set_mode(BakedLight::MODE_OCTREE);
+		update_timeout=0;
+		set_process(true);
+	}
 
 }
 
+void BakedLightEditor::_clear_pressed(){
 
+	baker->clear();
+	button_bake->set_pressed(false);
+	bake_info->set_text("");
+
+}
+
+void BakedLightEditor::edit(BakedLightInstance *p_baked_light) {
+
+	if (p_baked_light==NULL || node==p_baked_light) {
+		return;
+	}
+	if (node && node!=p_baked_light)
+		_end_baking();
+
+
+	node=p_baked_light;
+	//_end_baking();
+
+}
+
+void BakedLightEditor::_bake_lightmaps() {
+
+	Error err = baker->transfer_to_lightmaps();
+	if (err) {
+
+		err_dialog->set_text("Error baking to lightmaps!\nMake sure that a bake has just\n happened and that lightmaps are\n configured. ");
+		err_dialog->popup_centered(Size2(350,70));
+		return;
+	}
+
+	node->get_baked_light()->set_mode(BakedLight::MODE_LIGHTMAPS);
+
+
+}
 
 void BakedLightEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_menu_option",&BakedLightEditor::_menu_option);
+	ObjectTypeDB::bind_method("_bake_pressed",&BakedLightEditor::_bake_pressed);
+	ObjectTypeDB::bind_method("_clear_pressed",&BakedLightEditor::_clear_pressed);
+	ObjectTypeDB::bind_method("_bake_lightmaps",&BakedLightEditor::_bake_lightmaps);
 }
 
 BakedLightEditor::BakedLightEditor() {
 
 
-	options = memnew( MenuButton );
+	bake_hbox = memnew( HBoxContainer );
+	button_bake = memnew( ToolButton );
+	button_bake->set_text("Bake!");
+	button_bake->set_toggle_mode(true);
+	button_reset = memnew( Button );
+	button_make_lightmaps = memnew( Button );
+	button_bake->set_tooltip("Start/Unpause the baking process.\nThis bakes lighting into the lightmap octree.");
+	button_make_lightmaps ->set_tooltip("Convert the lightmap octree to lightmap textures\n(must have set up UV/Lightmaps properly before!).");
 
-	options->set_text("BakedLight");
-	options->get_popup()->add_item("Bake..",MENU_OPTION_BAKE);
-	options->get_popup()->add_item("Clear",MENU_OPTION_CLEAR);
-	options->get_popup()->connect("item_pressed", this,"_menu_option");
 
+	bake_info = memnew( Label );
+	bake_hbox->add_child( button_bake );
+	bake_hbox->add_child( button_reset );
+	bake_hbox->add_child( bake_info );
 
 	err_dialog = memnew( AcceptDialog );
 	add_child(err_dialog);
 	node=NULL;
 	baker = memnew( BakedLightBaker );
-	preview = memnew( MeshInstance );
-	bake_thread=NULL;
+
+	bake_hbox->add_child(button_make_lightmaps);
+	button_make_lightmaps->hide();
+
+	button_bake->connect("pressed",this,"_bake_pressed");
+	button_reset->connect("pressed",this,"_clear_pressed");
+	button_make_lightmaps->connect("pressed",this,"_bake_lightmaps");
+	button_reset->hide();
+	button_reset->set_tooltip("Reset the lightmap octree baking process (start over).");
+
+
 	update_timeout=0;
 
-	material = Ref<FixedMaterial> ( memnew( FixedMaterial ) );
-	material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY,true);
-	material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA,true);
-	material->set_flag(FixedMaterial::FLAG_UNSHADED,true);
-	material->set_flag(FixedMaterial::FLAG_DOUBLE_SIDED,true);
-	material->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1));
-
-	mesh = Ref<Mesh>( memnew( Mesh ));
 
 
 }
@@ -1081,28 +291,24 @@ BakedLightEditor::~BakedLightEditor() {
 
 void BakedLightEditorPlugin::edit(Object *p_object) {
 
-	baked_light_editor->edit(p_object->cast_to<BakedLight>());
+	baked_light_editor->edit(p_object->cast_to<BakedLightInstance>());
 }
 
 bool BakedLightEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("BakedLight");
+	return p_object->is_type("BakedLightInstance");
 }
 
 void BakedLightEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		baked_light_editor->show();
-		baked_light_editor->options->show();
+		baked_light_editor->bake_hbox->show();
 	} else {
 
 		baked_light_editor->hide();
-		baked_light_editor->options->show();
+		baked_light_editor->bake_hbox->hide();
 		baked_light_editor->edit(NULL);
-		if (baked_light_editor->node) {
-			baked_light_editor->node->remove_child(baked_light_editor->preview);
-			baked_light_editor->node=NULL;
-		}
 	}
 
 }
@@ -1112,9 +318,9 @@ BakedLightEditorPlugin::BakedLightEditorPlugin(EditorNode *p_node) {
 	editor=p_node;
 	baked_light_editor = memnew( BakedLightEditor );
 	editor->get_viewport()->add_child(baked_light_editor);
-	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU,baked_light_editor->options);
+	add_custom_control(CONTAINER_SPATIAL_EDITOR_MENU,baked_light_editor->bake_hbox);
 	baked_light_editor->hide();
-	baked_light_editor->options->hide();
+	baked_light_editor->bake_hbox->hide();
 }
 
 

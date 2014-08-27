@@ -1078,6 +1078,18 @@ void Node::remove_from_group(const StringName& p_identifier) {
 
 }
 
+Array Node::_get_groups() const {
+
+	Array groups;
+	List<GroupInfo> gi;
+	get_groups(&gi);
+	for (List<GroupInfo>::Element *E=gi.front();E;E=E->next()) {
+		groups.push_back(E->get().name);
+	}
+
+	return groups;
+}
+
 void Node::get_groups(List<GroupInfo> *p_groups) const {
 
 	const StringName *K=NULL;
@@ -1686,6 +1698,20 @@ Array Node::_get_children() const {
 	return arr;
 }
 
+#ifdef TOOLS_ENABLED
+void Node::set_import_path(const NodePath& p_import_path) {
+
+
+	data.import_path=p_import_path;
+}
+
+NodePath Node::get_import_path() const {
+
+	return data.import_path;
+}
+
+#endif
+
 
 void Node::_bind_methods() {
 
@@ -1712,6 +1738,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
 	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
 	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);
+	ObjectTypeDB::bind_method(_MD("get_groups"),&Node::_get_groups);
 	ObjectTypeDB::bind_method(_MD("raise"),&Node::raise);
 	ObjectTypeDB::bind_method(_MD("set_owner","owner:Node"),&Node::set_owner);
 	ObjectTypeDB::bind_method(_MD("get_owner:Node"),&Node::get_owner);
@@ -1747,6 +1774,12 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
 
 	ObjectTypeDB::bind_method(_MD("queue_free"),&Node::queue_delete);
+#ifdef TOOLS_ENABLED
+	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
+	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
+	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
+
+#endif
 
 	BIND_CONSTANT( NOTIFICATION_ENTER_SCENE );
 	BIND_CONSTANT( NOTIFICATION_EXIT_SCENE );

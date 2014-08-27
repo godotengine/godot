@@ -51,9 +51,9 @@ bool Node2D::edit_has_pivot() const {
 Variant Node2D::edit_get_state() const {
 
 	Array state;
-	state.push_back(pos);
-	state.push_back(angle);
-	state.push_back(scale);
+	state.push_back(get_pos());
+	state.push_back(get_rot());
+	state.push_back(get_scale());
 
 	return state;
 

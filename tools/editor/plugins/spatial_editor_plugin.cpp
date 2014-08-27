@@ -1166,7 +1166,6 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 							Transform r;
 							r.basis.scale(Vector3(scale,scale,scale));
 
-
 							List<Node*> &selection = editor_selection->get_selected_node_list();
 
 							for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
@@ -1519,7 +1518,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 				} break;
 
 				case KEY_F: {
-					_menu_option(VIEW_CENTER_TO_SELECTION);
+
+					if (k.pressed && k.mod.shift && k.mod.control) {
+						_menu_option(VIEW_ALIGN_SELECTION_WITH_VIEW);
+					} else if (k.pressed) {
+						_menu_option(VIEW_CENTER_TO_SELECTION);
+					}
+
 				} break;
 
 				case KEY_SPACE: {
@@ -1818,6 +1823,34 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.pos=center;
 		} break;
+		case VIEW_ALIGN_SELECTION_WITH_VIEW: {
+
+			if (!get_selected_count())
+				break;
+
+			Transform camera_transform = camera->get_global_transform();
+
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+
+			undo_redo->create_action("Align with view");
+			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+				Spatial *sp = E->get()->cast_to<Spatial>();
+				if (!sp)
+					continue;
+
+				SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
+				if (!se)
+					continue;
+
+				Vector3 original_scale = sp->get_scale();
+				sp->set_global_transform(camera_transform);
+				sp->set_scale(original_scale);
+				undo_redo->add_do_method(sp,"set_global_transform",sp->get_global_transform());
+				undo_redo->add_undo_method(sp,"set_global_transform",se->original);
+			}
+			undo_redo->commit_action();
+		} break;
 		case VIEW_ENVIRONMENT: {
 
 			int idx = view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT);
@@ -2060,7 +2093,8 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_item("Environment",VIEW_ENVIRONMENT);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT),true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_item("Selection",VIEW_CENTER_TO_SELECTION);
+	view_menu->get_popup()->add_item("Selection (F)",VIEW_CENTER_TO_SELECTION);
+	view_menu->get_popup()->add_item("Align with view (Ctrl+Shift+F)",VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
 	preview_camera = memnew( Button );
@@ -2311,8 +2345,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 		bool use = d["show_grid"];
 
 		if (use!=view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID))) {
-			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), use );
-			grid_enabled=use;
+			_menu_item_pressed(MENU_VIEW_GRID);
 		}
 	}
 
@@ -2618,6 +2651,13 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			bool is_checked = view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(p_option) );
 
 			grid_enabled=!is_checked;
+
+			for(int i=0;i<3;++i) {
+				if (grid_enable[i]) {
+					VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,grid_enabled);
+					grid_visible[i]=grid_enabled;
+				}
+			}
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(p_option), grid_enabled );
 

@@ -45,9 +45,9 @@ Shader::Mode Shader::get_mode() const {
 	return (Mode)VisualServer::get_singleton()->shader_get_mode(shader);
 }
 
-void Shader::set_code( const String& p_vertex, const String& p_fragment, int p_vertex_ofs,int p_fragment_ofs) {
+void Shader::set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs,int p_light_ofs) {
 
-	VisualServer::get_singleton()->shader_set_code(shader,p_vertex,p_fragment,p_vertex_ofs,p_fragment_ofs);
+	VisualServer::get_singleton()->shader_set_code(shader,p_vertex,p_fragment,p_light,0,p_fragment_ofs,p_light_ofs);
 	params_cache_dirty=true;
 	emit_signal(SceneStringNames::get_singleton()->changed);
 }
@@ -64,6 +64,11 @@ String Shader::get_fragment_code() const {
 
 }
 
+String Shader::get_light_code() const {
+
+	return VisualServer::get_singleton()->shader_get_light_code(shader);
+
+}
 
 bool Shader::has_param(const StringName& p_param) const {
 
@@ -106,12 +111,15 @@ Dictionary Shader::_get_code() {
 
 	String fs = VisualServer::get_singleton()->shader_get_fragment_code(shader);
 	String vs = VisualServer::get_singleton()->shader_get_vertex_code(shader);
+	String ls = VisualServer::get_singleton()->shader_get_light_code(shader);
 
 	Dictionary c;
 	c["fragment"]=fs;
 	c["fragment_ofs"]=0;
 	c["vertex"]=vs;
 	c["vertex_ofs"]=0;
+	c["light"]=ls;
+	c["light_ofs"]=0;
 	return c;
 }
 
@@ -119,8 +127,11 @@ void Shader::_set_code(const Dictionary& p_string) {
 
 	ERR_FAIL_COND(!p_string.has("fragment"));
 	ERR_FAIL_COND(!p_string.has("vertex"));
+	String light;
+	if (p_string.has("light"))
+		light=p_string["light"];
 
-	set_code(p_string["vertex"],p_string["fragment"]);
+	set_code(p_string["vertex"],p_string["fragment"],light);
 }
 
 void Shader::_bind_methods() {
@@ -128,9 +139,10 @@ void Shader::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&Shader::set_mode);
 	ObjectTypeDB::bind_method(_MD("get_mode"),&Shader::get_mode);
 
-	ObjectTypeDB::bind_method(_MD("set_code","vcode","fcode","vofs","fofs"),&Shader::set_code,DEFVAL(0),DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("set_code","vcode","fcode","lcode","fofs","lofs"),&Shader::set_code,DEFVAL(0),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_vertex_code"),&Shader::get_vertex_code);
 	ObjectTypeDB::bind_method(_MD("get_fragment_code"),&Shader::get_fragment_code);
+	ObjectTypeDB::bind_method(_MD("get_light_code"),&Shader::get_light_code);
 
 	ObjectTypeDB::bind_method(_MD("has_param","name"),&Shader::has_param);
 
@@ -169,6 +181,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path,const String& p_origin
 
 	String fragment_code;
 	String vertex_code;
+	String light_code;
 
 	int mode=-1;
 
@@ -377,7 +390,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path,const String& p_origin
 		}
 	}
 
-	shader->set_code(vertex_code,fragment_code);
+	shader->set_code(vertex_code,fragment_code,light_code);
 
 	f->close();
 	memdelete(f);

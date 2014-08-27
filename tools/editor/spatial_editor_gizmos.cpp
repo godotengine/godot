@@ -2100,6 +2100,101 @@ VisibilityNotifierGizmo::VisibilityNotifierGizmo(VisibilityNotifier* p_notifier)
 	set_spatial_node(p_notifier);
 }
 
+////////
+
+
+
+void NavigationMeshSpatialGizmo::redraw() {
+
+	clear();
+	Ref<NavigationMesh> navmeshie = navmesh->get_navigation_mesh();
+	if (navmeshie.is_null())
+		return;
+
+	DVector<Vector3> vertices = navmeshie->get_vertices();
+	DVector<Vector3>::Read vr=vertices.read();
+	List<Face3> faces;
+	for(int i=0;i<navmeshie->get_polygon_count();i++) {
+		Vector<int> p = navmeshie->get_polygon(i);
+
+		for(int j=2;j<p.size();j++) {
+			Face3 f;
+			f.vertex[0]=vr[p[0]];
+			f.vertex[1]=vr[p[j-1]];
+			f.vertex[2]=vr[p[j]];
+
+			faces.push_back(f);
+		}
+	}
+
+
+	Map<_EdgeKey,bool> edge_map;
+	DVector<Vector3> tmeshfaces;
+	tmeshfaces.resize(faces.size()*3);
+
+	{
+		DVector<Vector3>::Write tw=tmeshfaces.write();
+		int tidx=0;
+
+
+		for(List<Face3>::Element *E=faces.front();E;E=E->next()) {
+
+			const Face3 &f = E->get();
+
+			for(int j=0;j<3;j++) {
+
+				tw[tidx++]=f.vertex[j];
+				_EdgeKey ek;
+				ek.from=f.vertex[j].snapped(CMP_EPSILON);
+				ek.to=f.vertex[(j+1)%3].snapped(CMP_EPSILON);
+				if (ek.from<ek.to)
+					SWAP(ek.from,ek.to);
+
+				Map<_EdgeKey,bool>::Element *E=edge_map.find(ek);
+
+				if (E) {
+
+					E->get()=false;
+
+				} else {
+
+					edge_map[ek]=true;
+				}
+
+			}
+		}
+	}
+	Vector<Vector3> lines;
+
+	for(Map<_EdgeKey,bool>::Element *E=edge_map.front();E;E=E->next()) {
+
+		if (E->get()) {
+			lines.push_back(E->key().from);
+			lines.push_back(E->key().to);
+		}
+	}
+
+	Ref<TriangleMesh> tmesh = memnew( TriangleMesh);
+	tmesh->create(tmeshfaces);
+
+	add_lines(lines,navmesh->is_enabled()?SpatialEditorGizmos::singleton->navmesh_edge_material:SpatialEditorGizmos::singleton->navmesh_edge_material_disabled);
+	add_collision_triangles(tmesh);
+	Ref<Mesh> m = memnew( Mesh );
+	Array a;
+	a.resize(Mesh::ARRAY_MAX);
+	a[0]=tmeshfaces;
+	m->add_surface(Mesh::PRIMITIVE_TRIANGLES,a);
+	m->surface_set_material(0,navmesh->is_enabled()?SpatialEditorGizmos::singleton->navmesh_solid_material:SpatialEditorGizmos::singleton->navmesh_solid_material_disabled);
+	add_mesh(m);
+	add_collision_segments(lines);
+
+}
+
+NavigationMeshSpatialGizmo::NavigationMeshSpatialGizmo(NavigationMeshInstance *p_navmesh){
+
+	set_spatial_node(p_navmesh);
+	navmesh=p_navmesh;
+}
 
 
 ////////
@@ -2141,6 +2236,12 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 	if (p_spatial->cast_to<Room>()) {
 
 		Ref<RoomSpatialGizmo> misg = memnew( RoomSpatialGizmo(p_spatial->cast_to<Room>()) );
+		return misg;
+	}
+
+	if (p_spatial->cast_to<NavigationMeshInstance>()) {
+
+		Ref<NavigationMeshSpatialGizmo> misg = memnew( NavigationMeshSpatialGizmo(p_spatial->cast_to<NavigationMeshInstance>()) );
 		return misg;
 	}
 
@@ -2209,6 +2310,17 @@ Ref<FixedMaterial> SpatialEditorGizmos::create_line_material(const Color& p_base
 
 }
 
+Ref<FixedMaterial> SpatialEditorGizmos::create_solid_material(const Color& p_base_color) {
+
+	Ref<FixedMaterial> line_material = Ref<FixedMaterial>( memnew( FixedMaterial ));
+	line_material->set_flag(Material::FLAG_UNSHADED, true);
+	line_material->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
+	line_material->set_parameter(FixedMaterial::PARAM_DIFFUSE,p_base_color);
+
+	return line_material;
+
+}
+
 SpatialEditorGizmos::SpatialEditorGizmos() {
 
 	singleton=this;
@@ -2232,7 +2344,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_omni_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	light_material_omni_icon->set_flag(Material::FLAG_UNSHADED, true);
 	light_material_omni_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	light_material_omni_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	light_material_omni_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	light_material_omni_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	light_material_omni_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	light_material_omni_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoLight","EditorIcons"));
@@ -2241,7 +2353,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	light_material_directional_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	light_material_directional_icon->set_flag(Material::FLAG_UNSHADED, true);
 	light_material_directional_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	light_material_directional_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	light_material_directional_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	light_material_directional_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	light_material_directional_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	light_material_directional_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight","EditorIcons"));
@@ -2249,11 +2361,21 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	camera_material = create_line_material(Color(1.0,0.5,1.0));
 
 
+	navmesh_edge_material = create_line_material(Color(0.1,0.8,1.0));
+	navmesh_solid_material = create_solid_material(Color(0.1,0.8,1.0,0.4));
+	navmesh_edge_material->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, false);
+	navmesh_solid_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+
+	navmesh_edge_material_disabled = create_line_material(Color(1.0,0.8,0.1));
+	navmesh_solid_material_disabled = create_solid_material(Color(1.0,0.8,0.1,0.4));
+	navmesh_edge_material_disabled->set_fixed_flag(FixedMaterial::FLAG_USE_COLOR_ARRAY, false);
+	navmesh_solid_material_disabled->set_flag(Material::FLAG_DOUBLE_SIDED,true);
+
 	skeleton_material = create_line_material(Color(0.6,1.0,0.3));
 	skeleton_material->set_flag(Material::FLAG_DOUBLE_SIDED,true);
 	skeleton_material->set_flag(Material::FLAG_UNSHADED,true);
 	skeleton_material->set_flag(Material::FLAG_ONTOP,true);
-	skeleton_material->set_hint(Material::HINT_NO_DEPTH_DRAW,true);
+	skeleton_material->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 
 	//position 3D Shared mesh
 
@@ -2293,7 +2415,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	sample_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	sample_player_icon->set_flag(Material::FLAG_UNSHADED, true);
 	sample_player_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	sample_player_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	sample_player_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	sample_player_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	sample_player_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	sample_player_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoSpatialSamplePlayer","EditorIcons"));
@@ -2307,7 +2429,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	stream_player_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	stream_player_icon->set_flag(Material::FLAG_UNSHADED, true);
 	stream_player_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	stream_player_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	stream_player_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	stream_player_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	stream_player_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	stream_player_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("GizmoSpatialStreamPlayer","EditorIcons"));
@@ -2315,7 +2437,7 @@ SpatialEditorGizmos::SpatialEditorGizmos() {
 	visibility_notifier_icon = Ref<FixedMaterial>( memnew( FixedMaterial ));
 	visibility_notifier_icon->set_flag(Material::FLAG_UNSHADED, true);
 	visibility_notifier_icon->set_flag(Material::FLAG_DOUBLE_SIDED, true);
-	visibility_notifier_icon->set_hint(Material::HINT_NO_DEPTH_DRAW, true);
+	visibility_notifier_icon->set_depth_draw_mode(Material::DEPTH_DRAW_NEVER);
 	visibility_notifier_icon->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 	visibility_notifier_icon->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.9));
 	visibility_notifier_icon->set_texture(FixedMaterial::PARAM_DIFFUSE,SpatialEditor::get_singleton()->get_icon("Visible","EditorIcons"));

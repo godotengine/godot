@@ -150,6 +150,26 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_vertex && p_assign_left) {
 					vertex_code_writes_vertex=true;
 				}
+				if (vnode->name==vname_color_interp) {
+					flags->use_color_interp=true;
+				}
+				if (vnode->name==vname_uv_interp) {
+					flags->use_uv_interp=true;
+				}
+				if (vnode->name==vname_uv2_interp) {
+					flags->use_uv2_interp=true;
+				}
+				if (vnode->name==vname_var1_interp) {
+					flags->use_var1_interp=true;
+				}
+				if (vnode->name==vname_var2_interp) {
+					flags->use_var2_interp=true;
+				}
+				if (vnode->name==vname_tangent_interp || vnode->name==vname_binormal_interp) {
+					flags->use_tangent_interp=true;
+				}
+
+
 			}
 			if (type==ShaderLanguage::SHADER_MATERIAL_FRAGMENT) {
 
@@ -182,7 +202,17 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				}
 
 			}
+			if (type==ShaderLanguage::SHADER_MATERIAL_LIGHT) {
 
+				if (vnode->name==vname_light) {
+					uses_light=true;
+				}
+
+			}
+
+			if (vnode->name==vname_time) {
+				uses_time=true;
+			}
 			code=replace_string(vnode->name);
 
 		} break;
@@ -410,7 +440,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 }
 
 
-void ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
+Error ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 
 	// feed the local replace table and global code
 	global_code="";
@@ -423,8 +453,15 @@ void ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 	for(Map<StringName,SL::Uniform>::Element *E=p_program->uniforms.front();E;E=E->next()) {
 
 		String uline="uniform "+_typestr(E->get().type)+" _"+E->key().operator String()+";"ENDL;
+
 		global_code+=uline;
 		if (uniforms) {
+			//if (uniforms->has(E->key())) {
+			//	//repeated uniform, error
+		//		ERR_EXPLAIN("Uniform already exists from other shader: "+String(E->key()));
+		//		ERR_FAIL_COND_V(uniforms->has(E->key()),ERR_ALREADY_EXISTS);
+//
+//			}
 			SL::Uniform u = E->get();
 			u.order+=ubase;
 			uniforms->insert(E->key(),u);
@@ -474,12 +511,14 @@ void ShaderCompilerGLES2::compile_node(SL::ProgramNode *p_program) {
 	print_line(code);
 	code=code.replace("\n","");
 #endif
+
+	return OK;
 }
 
-void ShaderCompilerGLES2::create_glsl_120_code(void *p_str,SL::ProgramNode *p_program) {
+Error ShaderCompilerGLES2::create_glsl_120_code(void *p_str,SL::ProgramNode *p_program) {
 
 	ShaderCompilerGLES2 *compiler=(ShaderCompilerGLES2*)p_str;
-	compiler->compile_node(p_program);
+	return compiler->compile_node(p_program);
 }
 
 
@@ -505,6 +544,8 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_alpha=false;
 	uses_discard=false;
 	uses_screen_uv=false;
+	uses_light=false;
+	uses_time=false;
 	vertex_code_writes_vertex=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
@@ -533,6 +574,8 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.vertex_code_writes_vertex=vertex_code_writes_vertex;
 	r_flags.uses_discard=uses_discard;
 	r_flags.uses_screen_uv=uses_screen_uv;
+	r_flags.uses_light=uses_light;
+	r_flags.uses_time=uses_time;
 	r_code_line=code;
 	r_globals_line=global_code;
 	return OK;
@@ -577,6 +620,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["clamp"]= "clamp";
 	replace_table["mix"  ]= "mix";
 	replace_table["step" ]= "step";
+	replace_table["smoothstep" ]= "smoothstep";
 	replace_table["length"]= "length";
 	replace_table["distance"]= "distance";
 	replace_table["dot" ]=  "dot";
@@ -590,6 +634,11 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["texscreen"]= "texscreen";
 	replace_table["texpos"]= "texpos";
 
+	mode_replace_table[0]["SRC_VERTEX"]="vertex_in.xyz";
+	mode_replace_table[0]["SRC_NORMAL"]="normal_in";
+	mode_replace_table[0]["SRC_TANGENT"]="tangent_in";
+	mode_replace_table[0]["SRC_BINORMALF"]="binormalf";
+
 	mode_replace_table[0]["VERTEX"]="vertex_interp";
 	mode_replace_table[0]["NORMAL"]="normal_interp";
 	mode_replace_table[0]["TANGENT"]="tangent_interp";
@@ -602,6 +651,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[0]["WORLD_MATRIX"]="world_transform";
 	mode_replace_table[0]["INV_CAMERA_MATRIX"]="camera_inverse_transform";
 	mode_replace_table[0]["PROJECTION_MATRIX"]="projection_transform";
+	mode_replace_table[0]["MODELVIEW_MATRIX"]="modelview";
 	mode_replace_table[0]["POINT_SIZE"]="gl_PointSize";
 	mode_replace_table[0]["VAR1"]="var1_interp";
 	mode_replace_table[0]["VAR2"]="var2_interp";
@@ -628,6 +678,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[1]["DIFFUSE_ALPHA"]="diffuse";
 	mode_replace_table[1]["SPECULAR"]="specular";
 	mode_replace_table[1]["EMISSION"]="emission";
+	mode_replace_table[1]["SHADE_PARAM"]="shade_param";
 	mode_replace_table[1]["SPEC_EXP"]="specular_exp";
 	mode_replace_table[1]["GLOW"]="glow";
 	mode_replace_table[1]["DISCARD"]="discard_";
@@ -637,6 +688,26 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	//mode_replace_table[1]["SCREEN_POS"]="SCREEN_POS";
 	//mode_replace_table[1]["SCREEN_TEXEL_SIZE"]="SCREEN_TEXEL_SIZE";
 	mode_replace_table[1]["TIME"]="time";
+
+	//////////////
+
+	mode_replace_table[2]["NORMAL"]="normal";
+	//mode_replace_table[2]["POSITION"]="IN_POSITION";
+	mode_replace_table[2]["LIGHT_DIR"]="light_dir";
+	mode_replace_table[2]["LIGHT_DIFFUSE"]="light_diffuse";
+	mode_replace_table[2]["LIGHT_SPECULAR"]="light_specular";
+	mode_replace_table[2]["EYE_VEC"]="eye_vec";
+	mode_replace_table[2]["DIFFUSE"]="mdiffuse";
+	mode_replace_table[2]["SPECULAR"]="specular";
+	mode_replace_table[2]["SPECULAR_EXP"]="specular_exp";
+	mode_replace_table[2]["SHADE_PARAM"]="shade_param";
+	mode_replace_table[2]["LIGHT"]="light";
+	mode_replace_table[2]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[2]["TIME"]="time";
+
+	//mode_replace_table[2]["SCREEN_POS"]="SCREEN_POS";
+	//mode_replace_table[2]["SCREEN_TEXEL_SIZE"]="SCREEN_TEXEL_SIZE";
+
 
 	out_vertex_name="VERTEX";
 
@@ -651,5 +722,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_var1_interp="VAR1";
 	vname_var2_interp="VAR2";
 	vname_vertex="VERTEX";
+	vname_light="LIGHT";
+	vname_time="TIME";
 
 }

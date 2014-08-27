@@ -79,7 +79,9 @@ class RasterizerGLES2 : public Rasterizer {
 	bool npo2_textures_available;
 	bool read_depth_supported;
 	bool use_framebuffers;
+	bool full_float_fb_supported;
 	bool use_shadow_mapping;
+	bool use_fp16_fb;
 	ShadowFilterTechnique shadow_filter;
 
 	bool use_shadow_esm;
@@ -89,6 +91,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_texture_instancing;
 	bool use_attribute_instancing;
 	bool use_rgba_shadowmaps;
+
 	bool use_half_float;
 
 
@@ -160,8 +163,10 @@ class RasterizerGLES2 : public Rasterizer {
 
 		String vertex_code;
 		String fragment_code;
+		String light_code;
 		int vertex_line;
 		int fragment_line;
+		int light_line;
 		VS::ShaderMode mode;
 
 		uint32_t custom_code_id;
@@ -175,6 +180,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool has_screen_uv;
 		bool writes_vertex;
 		bool uses_discard;
+		bool uses_time;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
@@ -190,11 +196,13 @@ class RasterizerGLES2 : public Rasterizer {
 			version=1;
 			vertex_line=0;
 			fragment_line=0;
+			light_line=0;
 			can_zpass=true;
 			has_texscreen=false;
 			has_screen_uv=false;
 			writes_vertex=false;
 			uses_discard=false;
+			uses_time=false;
 		}
 
 
@@ -208,10 +216,9 @@ class RasterizerGLES2 : public Rasterizer {
 	struct Material {
 
 		bool flags[VS::MATERIAL_FLAG_MAX];
-		bool hints[VS::MATERIAL_HINT_MAX];
 
-		VS::MaterialShadeModel shade_model;
 		VS::MaterialBlendMode blend_mode;
+		VS::MaterialDepthDrawMode depth_draw_mode;
 
 		float line_width;
 		bool has_alpha;
@@ -238,12 +245,10 @@ class RasterizerGLES2 : public Rasterizer {
 			for(int i=0;i<VS::MATERIAL_FLAG_MAX;i++)
 				flags[i]=false;
 			flags[VS::MATERIAL_FLAG_VISIBLE]=true;
-			for(int i=0;i<VS::MATERIAL_HINT_MAX;i++)
-				hints[i]=false;
-			hints[VS::MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA]=true;
 
 			line_width=1;
 			has_alpha=false;
+			depth_draw_mode=VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY;
 			blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 			last_pass = 0;
 			shader_version=0;
@@ -585,7 +590,8 @@ class RasterizerGLES2 : public Rasterizer {
 			vars[VS::LIGHT_PARAM_SHADOW_DARKENING]=0.0;
 			vars[VS::LIGHT_PARAM_SHADOW_Z_OFFSET]=0.2;
 			vars[VS::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE]=1.4;
-			colors[VS::LIGHT_COLOR_AMBIENT]=Color(0,0,0);
+			vars[VS::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER]=60.0;
+			vars[VS::LIGHT_PARAM_SHADOW_BLUR_PASSES]=1;
 			colors[VS::LIGHT_COLOR_DIFFUSE]=Color(1,1,1);
 			colors[VS::LIGHT_COLOR_SPECULAR]=Color(1,1,1);
 			shadow_enabled=false;
@@ -630,8 +636,9 @@ class RasterizerGLES2 : public Rasterizer {
 			fx_param[VS::ENV_FX_PARAM_DOF_BLUR_PASSES]=1;
 			fx_param[VS::ENV_FX_PARAM_DOF_BLUR_BEGIN]=100.0;
 			fx_param[VS::ENV_FX_PARAM_DOF_BLUR_RANGE]=10.0;
+			fx_param[VS::ENV_FX_PARAM_HDR_TONEMAPPER]=VS::ENV_FX_HDR_TONE_MAPPER_LINEAR;
 			fx_param[VS::ENV_FX_PARAM_HDR_EXPOSURE]=0.4;
-			fx_param[VS::ENV_FX_PARAM_HDR_SCALAR]=1.0;
+			fx_param[VS::ENV_FX_PARAM_HDR_WHITE]=1.0;
 			fx_param[VS::ENV_FX_PARAM_HDR_GLOW_TRESHOLD]=0.95;
 			fx_param[VS::ENV_FX_PARAM_HDR_GLOW_SCALE]=0.2;
 			fx_param[VS::ENV_FX_PARAM_HDR_MIN_LUMINANCE]=0.4;
@@ -645,7 +652,6 @@ class RasterizerGLES2 : public Rasterizer {
 			fx_param[VS::ENV_FX_PARAM_BCS_BRIGHTNESS]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_CONTRAST]=1.0;
 			fx_param[VS::ENV_FX_PARAM_BCS_SATURATION]=1.0;
-			fx_param[VS::ENV_FX_PARAM_GAMMA]=1.0;
 
 		}
 
@@ -777,9 +783,22 @@ class RasterizerGLES2 : public Rasterizer {
 			bool *additive_ptr;
 			bool additive;
 			bool mirror;
-			uint16_t light;
-			uint8_t light_type;
-			uint8_t sort_flags;
+			union {
+#ifdef BIG_ENDIAN_ENABLED
+				struct {
+					uint8_t sort_flags;
+					uint8_t light_type;
+					uint16_t light;
+				};
+#else
+				struct {
+					uint16_t light;
+					uint8_t light_type;
+					uint8_t sort_flags;
+				};
+#endif
+				uint32_t sort_key;
+			};
 		};
 
 
@@ -892,27 +911,22 @@ class RasterizerGLES2 : public Rasterizer {
 
 			_FORCE_INLINE_ bool operator()(const Element* A,  const Element* B ) const {
 
-				if (A->sort_flags == B->sort_flags) {
-					if (A->light_type == B->light_type) {
-						if (A->material->shader_cache == B->material->shader_cache) {
-							if (A->material == B->material) {
+				if (A->sort_key == B->sort_key) {
+					if (A->material->shader_cache == B->material->shader_cache) {
+						if (A->material == B->material) {
 
-								return (A->geometry_cmp < B->geometry_cmp);
-							} else {
-
-								return (A->material < B->material);
-							}
+							return (A->geometry_cmp < B->geometry_cmp);
 						} else {
 
-							return (A->material->shader_cache < B->material->shader_cache);
+							return (A->material < B->material);
 						}
 					} else {
 
-						return A->light_type < B->light_type;
+						return (A->material->shader_cache < B->material->shader_cache);
 					}
 				} else {
 
-					return A->sort_flags < B->sort_flags; //one is null and one is not
+					return A->sort_key < B->sort_key; //one is null and one is not
 				}
 			}
 		};
@@ -998,6 +1012,8 @@ class RasterizerGLES2 : public Rasterizer {
 	};
 
 	Vector<ShadowBuffer> near_shadow_buffers;
+	ShadowBuffer blur_shadow_buffer;
+
 	Vector<ShadowBuffer> far_shadow_buffers;
 
 	LightInstance *shadow;
@@ -1100,6 +1116,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool cull_front;
 	bool lights_use_shadow;
 	_FORCE_INLINE_ void _set_cull(bool p_front,bool p_reverse_cull=false);
+	_FORCE_INLINE_ Color _convert_color(const Color& p_color);
 
 	void _process_glow_bloom();
 	void _process_hdr();
@@ -1158,6 +1175,8 @@ public:
 	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height);
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const;
 
+	GLuint _texture_get_name(RID p_tex);
+
 	/* SHADER API */
 
 	virtual RID shader_create(VS::ShaderMode p_mode=VS::SHADER_MATERIAL);
@@ -1165,9 +1184,11 @@ public:
 	virtual void shader_set_mode(RID p_shader,VS::ShaderMode p_mode);
 	virtual VS::ShaderMode shader_get_mode(RID p_shader) const;
 
-	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs=0,int p_fragment_ofs=0);
+	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs=0,int p_fragment_ofs=0,int p_light_ofs=0);
 	virtual String shader_get_fragment_code(RID p_shader) const;
 	virtual String shader_get_vertex_code(RID p_shader) const;
+	virtual String shader_get_light_code(RID p_shader) const;
+
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
@@ -1185,11 +1206,8 @@ public:
 	virtual void material_set_flag(RID p_material, VS::MaterialFlag p_flag,bool p_enabled);
 	virtual bool material_get_flag(RID p_material,VS::MaterialFlag p_flag) const;
 
-	virtual void material_set_hint(RID p_material, VS::MaterialHint p_hint,bool p_enabled);
-	virtual bool material_get_hint(RID p_material,VS::MaterialHint p_hint) const;
-
-	virtual void material_set_shade_model(RID p_material, VS::MaterialShadeModel p_model);
-	virtual VS::MaterialShadeModel material_get_shade_model(RID p_material) const;
+	virtual void material_set_depth_draw_mode(RID p_material, VS::MaterialDepthDrawMode p_mode);
+	virtual VS::MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const;
 
 	virtual void material_set_blend_mode(RID p_material,VS::MaterialBlendMode p_mode);
 	virtual VS::MaterialBlendMode material_get_blend_mode(RID p_material) const;
@@ -1376,6 +1394,7 @@ public:
 
 	virtual ShadowType light_instance_get_shadow_type(RID p_light_instance,bool p_far=false) const;
 	virtual int light_instance_get_shadow_passes(RID p_light_instance) const;
+	virtual bool light_instance_get_pssm_shadow_overlap(RID p_light_instance) const;
 	virtual void light_instance_set_shadow_transform(RID p_light_instance, int p_index, const CameraMatrix& p_camera, const Transform& p_transform, float p_split_near=0,float p_split_far=0);
 	virtual int light_instance_get_shadow_size(RID p_light_instance, int p_index=0) const;
 
@@ -1491,7 +1510,7 @@ public:
 
 	virtual int get_render_info(VS::RenderInfo p_info);
 
-	void set_base_framebuffer(GLuint p_id);
+	void set_base_framebuffer(GLuint p_id, Vector2 p_size = Vector2(0, 0));
 
 	virtual void flush_frame(); //not necesary in most cases
 	void set_extensions(const char *p_strings);
@@ -1503,6 +1522,7 @@ public:
 
 	virtual bool has_feature(VS::Features p_feature) const;
 
+	static RasterizerGLES2* get_singleton();
 
 	RasterizerGLES2(bool p_compress_arrays=false,bool p_keep_ram_copy=true,bool p_default_fragment_lighting=true,bool p_use_reload_hooks=false);
 	virtual ~RasterizerGLES2();

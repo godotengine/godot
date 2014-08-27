@@ -61,6 +61,9 @@ public:
 	virtual bool is_action_pressed(const StringName& p_action)=0;
 
 	virtual float get_joy_axis(int p_device,int p_axis)=0;
+	virtual String get_joy_name(int p_idx)=0;
+	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name)=0;
+
 
 	virtual Point2 get_mouse_pos() const=0;
 	virtual Point2 get_mouse_speed() const=0;
@@ -70,6 +73,7 @@ public:
 
 	virtual void action_press(const StringName& p_action)=0;
 	virtual void action_release(const StringName& p_action)=0;
+
 
 	Input();
 };
@@ -86,6 +90,7 @@ class InputDefault : public Input {
 	Set<int> joy_buttons_pressed;
 	Map<int,float> joy_axis;
 	Map<StringName,int> custom_action_press;
+	Map<int, String> joy_names;
 	Vector3 accelerometer;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
@@ -108,14 +113,14 @@ class InputDefault : public Input {
 
 public:
 
-
-
 	virtual bool is_key_pressed(int p_scancode);
 	virtual bool is_mouse_button_pressed(int p_button);
 	virtual bool is_joy_button_pressed(int p_device, int p_button);
 	virtual bool is_action_pressed(const StringName& p_action);
 
 	virtual float get_joy_axis(int p_device,int p_axis);
+	String get_joy_name(int p_idx);
+	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
 
 	virtual Vector3 get_accelerometer();
 

@@ -1046,8 +1046,9 @@ void AnimationTreePlayer::timescale_node_set_scale(const StringName& p_node,floa
 void AnimationTreePlayer::timeseek_node_seek(const StringName& p_node,float p_pos) {
 
 
-//	GET_NODE( NODE_TIMESEEK, TimeSeekNode );
-//hmm
+	GET_NODE( NODE_TIMESEEK, TimeSeekNode );
+	n->seek_pos=p_pos;
+
 }
 void AnimationTreePlayer::transition_node_set_input_count(const StringName& p_node, int p_inputs) {
 

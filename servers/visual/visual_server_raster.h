@@ -87,6 +87,14 @@ class VisualServerRaster : public VisualServer {
 		Portal() { enabled=true; disable_distance=50; disable_color=Color(); connect_range=0.8; }
 	};
 
+	struct BakedLight {
+
+		Rasterizer::BakedLightData data;
+		AABB octree_aabb;
+		Size2i octree_tex_size;
+
+	};
+
 
 	struct Camera  {
  
@@ -151,6 +159,7 @@ class VisualServerRaster : public VisualServer {
 		float extra_margin;
 
 
+
 		Rasterizer::InstanceData data;
 
 		
@@ -158,6 +167,8 @@ class VisualServerRaster : public VisualServer {
 		Set<Instance*> valid_auto_rooms;
 		Instance *room;
 		List<Instance*>::Element *RE;
+		Instance *baked_light;
+		List<Instance*>::Element *BLE;
 		bool exterior;
 
 		uint64_t last_render_pass;
@@ -205,6 +216,7 @@ class VisualServerRaster : public VisualServer {
 			uint64_t last_add_pass;
 			List<RID>::Element *D; // directional light in scenario
 			InstanceSet affected;
+			bool enabled;
 			float dtc; //distance to camera, used for sorting
 
 			
@@ -213,7 +225,15 @@ class VisualServerRaster : public VisualServer {
 				D=NULL;	
 				light_set_index=-1;
 				last_add_pass=0;
+				enabled=true;
 			}
+		};
+
+		struct BakedLightInfo {
+
+			BakedLight *baked_light;
+			Transform affine_inverse;
+			List<Instance*> owned_instances;
 		};
 		
 		struct ParticlesInfo {
@@ -226,6 +246,7 @@ class VisualServerRaster : public VisualServer {
 		LightInfo *light_info;
 		ParticlesInfo *particles_info;
 		PortalInfo * portal_info;
+		BakedLightInfo * baked_light_info;
 
 
 		Instance() { 
@@ -244,6 +265,9 @@ class VisualServerRaster : public VisualServer {
 			data.depth_scale=false;
 			data.billboard=false;
 			data.billboard_y=false;
+			data.baked_light=NULL;
+			data.baked_light_octree_xform=NULL;
+			data.baked_lightmap_id=-1;
 			version=1;
 			room_info=NULL;
 			room=NULL;
@@ -255,6 +279,10 @@ class VisualServerRaster : public VisualServer {
 			draw_range_end=0;
 			extra_margin=0;
 			visible_in_all_rooms=false;
+
+			baked_light=NULL;
+			baked_light_info=NULL;
+			BLE=NULL;
 
 			light_cache_dirty=true;
 
@@ -270,6 +298,8 @@ class VisualServerRaster : public VisualServer {
 				memdelete(room_info);
 			if (portal_info)
 				memdelete(portal_info);
+			if (baked_light_info)
+				memdelete(baked_light_info);
 		};
 	};
 	
@@ -570,6 +600,7 @@ class VisualServerRaster : public VisualServer {
 	bool light_discard_enabled;
 	bool shadows_enabled;
 	int black_margin[4];
+	RID black_image[4];
 
 	Vector<Vector3> aabb_random_points;
 	Vector<Vector3> transformed_aabb_random_points;
@@ -596,7 +627,9 @@ class VisualServerRaster : public VisualServer {
 	
 	mutable RID_Owner<Room> room_owner;
 	mutable RID_Owner<Portal> portal_owner;
-	
+
+	mutable RID_Owner<BakedLight> baked_light_owner;
+
 	mutable RID_Owner<Camera> camera_owner;
 	mutable RID_Owner<Viewport> viewport_owner;
 	
@@ -659,9 +692,10 @@ public:
 	virtual void shader_set_mode(RID p_shader,ShaderMode p_mode);
 	virtual ShaderMode shader_get_mode(RID p_shader) const;
 
-	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,int p_vertex_ofs=0,int p_fragment_ofs=0);
+	virtual void shader_set_code(RID p_shader, const String& p_vertex, const String& p_fragment,const String& p_light,int p_vertex_ofs=0,int p_fragment_ofs=0,int p_light_ofs=0);
 	virtual String shader_get_vertex_code(RID p_shader) const;
 	virtual String shader_get_fragment_code(RID p_shader) const;
+	virtual String shader_get_light_code(RID p_shader) const;
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
@@ -678,11 +712,8 @@ public:
 	virtual void material_set_flag(RID p_material, MaterialFlag p_flag,bool p_enabled);
 	virtual bool material_get_flag(RID p_material,MaterialFlag p_flag) const;
 
-	virtual void material_set_hint(RID p_material, MaterialHint p_hint,bool p_enabled);
-	virtual bool material_get_hint(RID p_material,MaterialHint p_hint) const;
-
-	virtual void material_set_shade_model(RID p_material, MaterialShadeModel p_model);
-	virtual MaterialShadeModel material_get_shade_model(RID p_material) const;
+	virtual void material_set_depth_draw_mode(RID p_material, MaterialDepthDrawMode p_mode);
+	virtual MaterialDepthDrawMode material_get_depth_draw_mode(RID p_material) const;
 
 	virtual void material_set_blend_mode(RID p_material,MaterialBlendMode p_mode);
 	virtual MaterialBlendMode material_get_blend_mode(RID p_material) const;
@@ -704,15 +735,15 @@ public:
 	virtual void fixed_material_set_texture(RID p_material,FixedMaterialParam p_parameter, RID p_texture);
 	virtual RID fixed_material_get_texture(RID p_material,FixedMaterialParam p_parameter) const;
 
-	virtual void fixed_material_set_detail_blend_mode(RID p_material,MaterialBlendMode p_mode);
-	virtual MaterialBlendMode fixed_material_get_detail_blend_mode(RID p_material) const;
-
-
 	virtual void fixed_material_set_texcoord_mode(RID p_material,FixedMaterialParam p_parameter, FixedMaterialTexCoordMode p_mode);
 	virtual FixedMaterialTexCoordMode fixed_material_get_texcoord_mode(RID p_material,FixedMaterialParam p_parameter) const;
 
+
 	virtual void fixed_material_set_uv_transform(RID p_material,const Transform& p_transform);
 	virtual Transform fixed_material_get_uv_transform(RID p_material) const;
+
+	virtual void fixed_material_set_light_shader(RID p_material,FixedMaterialLightShader p_shader);
+	virtual FixedMaterialLightShader fixed_material_get_light_shader(RID p_material) const;
 
 	virtual void fixed_material_set_point_size(RID p_material,float p_size);
 	virtual float fixed_material_get_point_size(RID p_material) const;
@@ -902,8 +933,22 @@ public:
 	virtual void portal_set_connect_range(RID p_portal, float p_range);
 	virtual float portal_get_connect_range(RID p_portal) const;
 
+	/* BAKED LIGHT */
 
-			
+	virtual RID baked_light_create();
+
+	virtual void baked_light_set_mode(RID p_baked_light,BakedLightMode p_mode);
+	virtual BakedLightMode baked_light_get_mode(RID p_baked_light) const;
+
+	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree);
+	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const;
+
+	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier);
+	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const;
+
+	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id);
+	virtual void baked_light_clear_lightmaps(RID p_baked_light);
+
 	/* CAMERA API */
 	
 	virtual RID camera_create();
@@ -1036,6 +1081,15 @@ public:
 	virtual float instance_geometry_get_draw_range_max(RID p_instance) const;
 	virtual float instance_geometry_get_draw_range_min(RID p_instance) const;
 
+	virtual void instance_geometry_set_baked_light(RID p_instance,RID p_baked_light);
+	virtual RID instance_geometry_get_baked_light(RID p_instance) const;
+
+	virtual void instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id);
+	virtual int instance_geometry_get_baked_light_texture_index(RID p_instance) const;
+
+	virtual void instance_light_set_enabled(RID p_instance,bool p_enabled);
+	virtual bool instance_light_is_enabled(RID p_instance) const;
+
 	/* CANVAS (2D) */
 	
 	virtual RID canvas_create();
@@ -1093,6 +1147,7 @@ public:
 	/* BLACK BARS */
 
 	virtual void black_bars_set_margins(int p_left, int p_top, int p_right, int p_bottom);
+	virtual void black_bars_set_images(RID p_left, RID p_top, RID p_right, RID p_bottom);
 
 	/* FREE */
 	

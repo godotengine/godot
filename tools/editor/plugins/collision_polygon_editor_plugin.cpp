@@ -96,8 +96,8 @@ void CollisionPolygonEditor::_wip_close() {
 	undo_redo->create_action("Create Poly");
 	undo_redo->add_undo_method(node,"set_polygon",node->get_polygon());
 	undo_redo->add_do_method(node,"set_polygon",wip);
-	undo_redo->add_do_method(canvas_item_editor,"update");
-	undo_redo->add_undo_method(canvas_item_editor,"update");
+	undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
+	undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 	undo_redo->commit_action();
 	wip.clear();
 	wip_active=false;
@@ -186,8 +186,8 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 									undo_redo->add_undo_method(node,"set_polygon",poly);
 									poly.push_back(cpoint);
 									undo_redo->add_do_method(node,"set_polygon",poly);
-									undo_redo->add_do_method(canvas_item_editor,"update");
-									undo_redo->add_undo_method(canvas_item_editor,"update");
+									undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
+									undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 									undo_redo->commit_action();
 									return true;
 								}
@@ -265,8 +265,8 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 								undo_redo->create_action("Edit Poly");
 								undo_redo->add_do_method(node,"set_polygon",poly);
 								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
-								undo_redo->add_do_method(canvas_item_editor,"update");
-								undo_redo->add_undo_method(canvas_item_editor,"update");
+								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
+								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 								undo_redo->commit_action();
 
 								edited_point=-1;
@@ -300,8 +300,8 @@ bool CollisionPolygonEditor::forward_input_event(const InputEvent& p_event) {
 							undo_redo->add_undo_method(node,"set_polygon",poly);
 							poly.remove(closest_idx);
 							undo_redo->add_do_method(node,"set_polygon",poly);
-							undo_redo->add_do_method(canvas_item_editor,"update");
-							undo_redo->add_undo_method(canvas_item_editor,"update");
+							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
+							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 							undo_redo->commit_action();
 							return true;
 						}

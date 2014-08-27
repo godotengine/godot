@@ -53,22 +53,9 @@ public:
 		FLAG_INVERT_FACES = VS::MATERIAL_FLAG_INVERT_FACES,
 		FLAG_UNSHADED = VS::MATERIAL_FLAG_UNSHADED,
 		FLAG_ONTOP = VS::MATERIAL_FLAG_ONTOP,
-		FLAG_WIREFRAME = VS::MATERIAL_FLAG_WIREFRAME,
-		FLAG_BILLBOARD_TOGGLE = VS::MATERIAL_FLAG_BILLBOARD,
+		FLAG_LIGHTMAP_ON_UV2 = VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2,
 		FLAG_MAX = VS::MATERIAL_FLAG_MAX
 	};
-
-	enum ShadeModel {
-		SHADE_MODEL_LAMBERT,
-		SHADE_MODEL_LAMBERT_WRAP,
-		SHADE_MODEL_FRESNEL,
-		SHADE_MODEL_TOON,
-		SHADE_MODEL_CUSTOM_0,
-		SHADE_MODEL_CUSTOM_1,
-		SHADE_MODEL_CUSTOM_2,
-		SHADE_MODEL_CUSTOM_3
-	};
-
 
 	enum BlendMode {
 		BLEND_MODE_MIX = VS::MATERIAL_BLEND_MODE_MIX,
@@ -79,23 +66,20 @@ public:
 
 	};
 
-	enum Hint {
-
-		HINT_DECAL=VS::MATERIAL_HINT_DECAL,
-		HINT_OPAQUE_PRE_PASS=VS::MATERIAL_HINT_OPAQUE_PRE_PASS,
-		HINT_NO_SHADOW=VS::MATERIAL_HINT_NO_SHADOW,
-		HINT_NO_DEPTH_DRAW=VS::MATERIAL_HINT_NO_DEPTH_DRAW,
-		HINT_NO_DEPTH_DRAW_FOR_ALPHA=VS::MATERIAL_HINT_NO_DEPTH_DRAW_FOR_ALPHA,
-		HINT_MAX=VS::MATERIAL_HINT_MAX
+	enum DepthDrawMode {
+		DEPTH_DRAW_ALWAYS = VS::MATERIAL_DEPTH_DRAW_ALWAYS,
+		DEPTH_DRAW_OPAQUE_ONLY = VS::MATERIAL_DEPTH_DRAW_OPAQUE_ONLY,
+		DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA = VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA,
+		DEPTH_DRAW_NEVER = VS::MATERIAL_DEPTH_DRAW_NEVER
 	};
+
 
 
 private:
 	BlendMode blend_mode;
 	bool flags[VS::MATERIAL_FLAG_MAX];
-	bool hints[VS::MATERIAL_HINT_MAX];
-	ShadeModel shade_model;
 	float line_width;
+	DepthDrawMode depth_draw_mode;
 protected:
 	RID material;
 
@@ -105,17 +89,14 @@ public:
 	void set_flag(Flag p_flag,bool p_enabled);
 	bool get_flag(Flag p_flag) const;
 
-	void set_hint(Hint p_hint,bool p_enabled);
-	bool get_hint(Hint p_hint) const;
-
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
 
+	void set_depth_draw_mode(DepthDrawMode p_depth_draw_mode);
+	DepthDrawMode get_depth_draw_mode() const;
+
 	void set_line_width(float p_width);
 	float get_line_width() const;
-
-	void set_shade_model(ShadeModel p_model);
-	ShadeModel get_shade_model() const;
 
 	virtual RID get_rid() const;
 
@@ -124,8 +105,8 @@ public:
 };
 
 VARIANT_ENUM_CAST( Material::Flag );
-VARIANT_ENUM_CAST( Material::Hint );
-VARIANT_ENUM_CAST( Material::ShadeModel);
+VARIANT_ENUM_CAST( Material::DepthDrawMode );
+
 VARIANT_ENUM_CAST( Material::BlendMode );
 
 
@@ -163,6 +144,14 @@ public:
 		FLAG_DISCARD_ALPHA=VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA
 	};
 
+	enum LightShader {
+
+		LIGHT_SHADER_LAMBERT=VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT,
+		LIGHT_SHADER_WRAP=VS::FIXED_MATERIAL_LIGHT_SHADER_WRAP,
+		LIGHT_SHADER_VELVET=VS::FIXED_MATERIAL_LIGHT_SHADER_VELVET,
+		LIGHT_SHADER_TOON=VS::FIXED_MATERIAL_LIGHT_SHADER_TOON
+	};
+
 private:
 
 
@@ -173,10 +162,10 @@ private:
 		int tex;
 	};
 
-	BlendMode detail_blend_mode;
 	Variant param[PARAM_MAX];
 	Ref<Texture> texture_param[PARAM_MAX];
 	TexCoordMode texture_texcoord[PARAM_MAX];
+	LightShader light_shader;
 	bool fixed_flags[3];
 	float point_size;
 
@@ -203,14 +192,14 @@ public:
 	void set_texcoord_mode(Parameter p_parameter, TexCoordMode p_mode);
 	TexCoordMode get_texcoord_mode(Parameter p_parameter) const;
 
+	void set_light_shader(LightShader p_shader);
+	LightShader get_light_shader() const;
+
 	void set_uv_transform(const Transform& p_transform);
 	Transform get_uv_transform() const;
 
 	void set_point_size(float p_transform);
 	float get_point_size() const;
-
-	void set_detail_blend_mode(BlendMode p_mode);
-	BlendMode get_detail_blend_mode() const;
 
 	FixedMaterial();
 	~FixedMaterial();
@@ -222,6 +211,7 @@ public:
 VARIANT_ENUM_CAST( FixedMaterial::Parameter );
 VARIANT_ENUM_CAST( FixedMaterial::TexCoordMode );
 VARIANT_ENUM_CAST( FixedMaterial::FixedFlag );
+VARIANT_ENUM_CAST( FixedMaterial::LightShader );
 
 class ShaderMaterial : public Material {
 
