@@ -70,10 +70,10 @@ func on_modes_changed(name):
 	if name == "pause":
 		if get_node("modes/pause").is_pressed():
 			tween.stop_all()
-			get_node("timeline").show()
+			get_node("timeline").set_ignore_mouse(false)
 		else:
 			tween.resume_all()
-			get_node("timeline").hide()
+			get_node("timeline").set_ignore_mouse(true)
 	else:
 		reset_tween()
 	
@@ -89,10 +89,11 @@ func reset_tween():
 	var sprite = get_node("tween/area/sprite")
 	var follow = get_node("tween/area/follow")
 	var follow_2 = get_node("tween/area/follow_2")
-	
+	var size = get_node("tween/area").get_size()
+
 	if get_node("modes/move").is_pressed():
-		tween.interpolate_method(sprite, "set_pos", Vector2(0,0), Vector2(736, 184), 2, state.trans, state.eases)
-		tween.interpolate_property(sprite, "transform/pos", Vector2(736,184), Vector2(0, 0), 2, state.trans, state.eases, 2)
+		tween.interpolate_method(sprite, "set_pos", Vector2(0,0), Vector2(size.width, size.height), 2, state.trans, state.eases)
+		tween.interpolate_property(sprite, "transform/pos", Vector2(size.width,size.height), Vector2(0, 0), 2, state.trans, state.eases, 2)
 	
 	if get_node("modes/color").is_pressed():
 		tween.interpolate_method(sprite, "set_modulate", get_node("color/color_from").get_color(), get_node("color/color_to").get_color(), 2, state.trans, state.eases)
@@ -107,8 +108,8 @@ func reset_tween():
 		sprite.set_scale(Vector2(1, 1))
 	
 	if get_node("modes/rotate").is_pressed():
-		tween.interpolate_method(sprite, "set_rot", 0, 6.28, 2, state.trans, state.eases)
-		tween.interpolate_property(sprite, "transform/rot", 6.28, 0, 2, state.trans, state.eases, 2)
+		tween.interpolate_method(sprite, "_set_rotd", 0, 360, 2, state.trans, state.eases)
+		tween.interpolate_property(sprite, "transform/rot", 360, 0, 2, state.trans, state.eases, 2)
 	
 	if get_node("modes/callback").is_pressed():
 		tween.interpolate_callback(self, "on_callback", 0.5, "0.5 second's after")
@@ -118,11 +119,11 @@ func reset_tween():
 		follow.show()
 		follow_2.show()
 		
-		tween.follow_method(follow, "set_pos", Vector2(0, 184), sprite, "get_pos", 2, state.trans, state.eases)
-		tween.targeting_method(follow, "set_pos", sprite, "get_pos", Vector2(0, 184), 2, state.trans, state.eases, 2)
+		tween.follow_method(follow, "set_pos", Vector2(0, size.height), sprite, "get_pos", 2, state.trans, state.eases)
+		tween.targeting_method(follow, "set_pos", sprite, "get_pos", Vector2(0, size.height), 2, state.trans, state.eases, 2)
 		
-		tween.targeting_property(follow_2, "transform/pos", sprite, "transform/pos", Vector2(736, 0), 2, state.trans, state.eases)
-		tween.follow_property(follow_2, "transform/pos", Vector2(736, 0), sprite, "transform/pos", 2, state.trans, state.eases, 2)
+		tween.targeting_property(follow_2, "transform/pos", sprite, "transform/pos", Vector2(size.width, 0), 2, state.trans, state.eases)
+		tween.follow_property(follow_2, "transform/pos", Vector2(size.width, 0), sprite, "transform/pos", 2, state.trans, state.eases, 2)
 	else:
 		follow.hide()
 		follow_2.hide()
@@ -133,13 +134,14 @@ func reset_tween():
 	
 	if get_node("modes/pause").is_pressed():
 		tween.stop_all()
-		get_node("timeline").show()
+		get_node("timeline").set_ignore_mouse(false)
 		get_node("timeline").set_value(0)
 	else:
 		tween.resume_all()
-		get_node("timeline").hide()
+		get_node("timeline").set_ignore_mouse(true)
 	
 func _on_tween_step( object, key, elapsed, value ):
+
 	var timeline = get_node("timeline")
 
 	var tween = get_node("tween")
@@ -158,4 +160,5 @@ func _on_timeline_value_changed( value ):
 	tween.seek(runtime * value / 100)
 	
 func on_callback(arg):
-	print("on_callback -> ", arg)
+	var label = get_node("tween/area/label")
+	label.add_text("on_callback -> " + arg + "\n")
