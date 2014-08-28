@@ -137,7 +137,7 @@ void Tween::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("interpolate_property","node","property","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_property, DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("interpolate_method","node","method","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_method, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("interpolate_callback","node","callback","times_in_sec","args"),&Tween::interpolate_callback, DEFVAL(Variant()) );
+	ObjectTypeDB::bind_method(_MD("interpolate_callback","node","times_in_sec","callback","args"),&Tween::interpolate_callback, DEFVAL(Variant()) );
 	ObjectTypeDB::bind_method(_MD("follow_property","node","property","initial_val","target","target_property","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_property, DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("follow_method","node","method","initial_val","target","target_method","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_method, DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("targeting_property","node","property","initial","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_property, DEFVAL(0) );
@@ -148,7 +148,9 @@ void Tween::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("tween_complete", PropertyInfo( Variant::OBJECT,"node"), PropertyInfo( Variant::STRING,"key")) );
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_tween_process_mode"), _SCS("get_tween_process_mode"));
-	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "activate"), _SCS("set_active"), _SCS("is_active"));
+
+	BIND_CONSTANT(TWEEN_PROCESS_FIXED);
+	BIND_CONSTANT(TWEEN_PROCESS_IDLE);
 
 	BIND_CONSTANT(TRANS_LINEAR);
 	BIND_CONSTANT(TRANS_SINE);
@@ -963,8 +965,8 @@ bool Tween::interpolate_method(Node *p_node
 }
 
 bool Tween::interpolate_callback(Node *p_node
-	, String p_callback
 	, real_t p_times_in_sec
+	, String p_callback
 	, Variant p_arg
 ) {
 

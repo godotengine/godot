@@ -178,8 +178,8 @@ public:
 	);
 
 	bool interpolate_callback(Node *p_node
-		, String p_callback
 		, real_t p_times_in_sec
+		, String p_callback
 		, Variant p_arg = Variant()
 	);
 
