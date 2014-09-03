@@ -47,6 +47,11 @@ friend class Physics2DDirectSpaceStateSW;
 	bool doing_sync;
 	real_t last_step;
 
+	int island_count;
+	int active_objects;
+	int collision_pairs;
+
+
 	Step2DSW *stepper;
 	Set<const Space2DSW*> active_spaces;
 
@@ -222,6 +227,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	int get_process_info(ProcessInfo p_info);
 
 	Physics2DServerSW();
 	~Physics2DServerSW();

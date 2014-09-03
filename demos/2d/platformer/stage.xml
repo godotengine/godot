@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resource_file type="PackedScene" subresource_count="9" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
-	<ext_resource path="res://music.ogg" type="AudioStream"></ext_resource>
 	<ext_resource path="res://tileset.xml" type="TileSet"></ext_resource>
+	<ext_resource path="res://music.ogg" type="AudioStream"></ext_resource>
 	<ext_resource path="res://coin.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://player.xml" type="PackedScene"></ext_resource>
-	<ext_resource path="res://moving_platform.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://seesaw.xml" type="PackedScene"></ext_resource>
+	<ext_resource path="res://moving_platform.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://enemy.xml" type="PackedScene"></ext_resource>
 	<ext_resource path="res://parallax_bg.xml" type="PackedScene"></ext_resource>
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
-			<string_array  len="119">
+			<string_array  len="122">
 				<string> "stage" </string>
 				<string> "Node" </string>
+				<string> "_import_path" </string>
 				<string> "__meta__" </string>
 				<string> "tile_map" </string>
 				<string> "TileMap" </string>
@@ -28,7 +29,9 @@
 				<string> "quadrant_size" </string>
 				<string> "tile_set" </string>
 				<string> "tile_data" </string>
-				<string> "collision_layers" </string>
+				<string> "collision/friction" </string>
+				<string> "collision/bounce" </string>
+				<string> "collision/layers" </string>
 				<string> "coins" </string>
 				<string> "coin" </string>
 				<string> "Area2D" </string>
@@ -140,6 +143,7 @@
 			<int> 66 </int>
 			<string> "variants" </string>
 			<array  len="96" shared="false">
+				<node_path> "" </node_path>
 				<dictionary  shared="false">
 					<string> "__editor_plugin_states__" </string>
 					<dictionary  shared="false">
@@ -164,7 +168,7 @@
 							<string> "use_snap" </string>
 							<bool> False </bool>
 							<string> "ofs" </string>
-							<vector2> 418.81, 615.088 </vector2>
+							<vector2> -177.089, 415.221 </vector2>
 							<string> "snap" </string>
 							<int> 10 </int>
 						</dictionary>
@@ -318,7 +322,7 @@
 				<vector2> 4236.75, 541.058 </vector2>
 				<vector2> 4172.75, 541.058 </vector2>
 				<resource  resource_type="PackedScene" path="res://player.xml">  </resource>
-				<vector2> 236.879, 1051.15 </vector2>
+				<vector2> 251.684, 1045.6 </vector2>
 				<resource  resource_type="PackedScene" path="res://moving_platform.xml">  </resource>
 				<vector2> 1451.86, 742.969 </vector2>
 				<vector2> 0, 140 </vector2>
@@ -349,16 +353,15 @@
 				<real> -202 </real>
 				<real> 358 </real>
 				<real> -10 </real>
-				<node_path> "" </node_path>
 				<int> 2 </int>
-				<real> 14 </real>
+				<real> 7 </real>
 				<real> 14.769231 </real>
-				<string> "This is a simple demo on how to make a platformer game with Godot.&#10;This version uses physics and the 2D physics engine for motion and collision.&#10;&#10;The demo also shows the benefits of using the scene system, where coins,&#10;enemies and the player are edited separatedly and instanced in the stage.&#10;&#10;To edit the base tiles for the  tileset, open the tileset_edit.xml file and follow &#10;instructions.&#10;" </string>
+				<string> "This is a simple demo on how to make a platformer game with Godot.&#22;This version uses physics and the 2D physics engine for motion and collision.&#22;&#22;The demo also shows the benefits of using the scene system, where coins,&#22;enemies and the player are edited separatedly and instanced in the stage.&#22;&#22;To edit the base tiles for the  tileset, open the tileset_edit.xml file and follow &#22;instructions.&#22;" </string>
 				<int> 0 </int>
 				<real> -1 </real>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="690"> 				-1, -1, 1, 0, -1, 1, 2, 0, 0, 0, 0, 4, 3, -1, 13, 5, 1, 6, 2, 7, 2, 8, 3, 9, 4, 10, 5, 11, 6, 12, 7, 13, 8, 14, 9, 15, 10, 16, 11, 2, 12, 0, 0, 0, 1, 17, -1, 1, 2, 13, 0, 2, 0, 19, 18, 14, 1, 9, 15, 0, 2, 0, 19, 20, 14, 1, 9, 16, 0, 2, 0, 19, 21, 14, 1, 9, 17, 0, 2, 0, 19, 22, 14, 1, 9, 18, 0, 2, 0, 19, 23, 14, 1, 9, 19, 0, 2, 0, 19, 24, 14, 1, 9, 20, 0, 2, 0, 19, 25, 14, 1, 9, 21, 0, 2, 0, 19, 26, 14, 1, 9, 22, 0, 2, 0, 19, 27, 14, 1, 9, 23, 0, 2, 0, 19, 28, 14, 1, 9, 24, 0, 2, 0, 19, 29, 14, 1, 9, 25, 0, 2, 0, 19, 30, 14, 1, 9, 26, 0, 2, 0, 19, 31, 14, 1, 9, 27, 0, 2, 0, 19, 32, 14, 1, 9, 28, 0, 2, 0, 19, 33, 14, 1, 9, 29, 0, 2, 0, 19, 34, 14, 1, 9, 30, 0, 2, 0, 19, 35, 14, 1, 9, 31, 0, 2, 0, 19, 36, 14, 1, 9, 32, 0, 2, 0, 19, 37, 14, 1, 9, 33, 0, 2, 0, 19, 38, 14, 1, 9, 34, 0, 2, 0, 19, 39, 14, 1, 9, 35, 0, 2, 0, 19, 40, 14, 1, 9, 36, 0, 2, 0, 19, 41, 14, 1, 9, 37, 0, 2, 0, 19, 42, 14, 1, 9, 38, 0, 2, 0, 19, 43, 14, 1, 9, 39, 0, 2, 0, 19, 44, 14, 1, 9, 40, 0, 2, 0, 19, 45, 14, 1, 9, 41, 0, 2, 0, 19, 46, 14, 1, 9, 42, 0, 2, 0, 19, 47, 14, 1, 9, 43, 0, 2, 0, 19, 48, 14, 1, 9, 44, 0, 2, 0, 19, 49, 14, 1, 9, 45, 0, 2, 0, 19, 50, 14, 1, 9, 46, 0, 2, 0, 19, 51, 14, 1, 9, 47, 0, 2, 0, 19, 52, 14, 1, 9, 48, 0, 2, 0, 19, 53, 14, 1, 9, 49, 0, 2, 0, 19, 54, 14, 1, 9, 50, 0, 2, 0, 19, 55, 14, 1, 9, 51, 0, 2, 0, 19, 56, 14, 1, 9, 52, 0, 2, 0, 19, 57, 14, 1, 9, 53, 0, 2, 0, 19, 58, 14, 1, 9, 54, 0, 2, 0, 19, 59, 14, 1, 9, 55, 0, 2, 0, 19, 60, 14, 1, 9, 56, 0, 0, 0, 62, 61, 57, 1, 9, 58, 0, 0, 0, 1, 63, -1, 0, 0, 46, 0, 65, 64, 59, 3, 9, 60, 66, 61, 67, 62, 0, 46, 0, 65, 68, 59, 3, 9, 63, 66, 64, 67, 65, 0, 46, 0, 65, 69, 59, 3, 9, 66, 66, 67, 67, 65, 0, 46, 0, 65, 70, 68, 1, 9, 69, 0, 0, 0, 72, 71, -1, 6, 73, 70, 74, 3, 75, 1, 76, 71, 77, 1, 78, 3, 0, 0, 0, 1, 79, -1, 0, 0, 52, 0, 62, 80, 72, 1, 9, 73, 0, 52, 0, 62, 81, 72, 1, 9, 74, 0, 52, 0, 62, 82, 72, 1, 9, 75, 0, 52, 0, 62, 83, 72, 1, 9, 76, 0, 52, 0, 62, 84, 72, 1, 9, 77, 0, 52, 0, 62, 85, 72, 1, 9, 78, 0, 52, 0, 62, 86, 72, 1, 9, 79, 0, 52, 0, 62, 87, 72, 1, 9, 80, 0, 52, 0, 62, 88, 72, 1, 9, 81, 0, 52, 0, 62, 89, 72, 1, 9, 82, 0, 52, 0, 62, 90, 72, 1, 9, 83, 0, 0, 0, 92, 91, 84, 0, 0, 0, 0, 93, 93, -1, 29, 5, 1, 6, 2, 7, 2, 8, 3, 94, 85, 95, 86, 96, 87, 97, 88, 98, 89, 99, 89, 100, 89, 101, 89, 102, 1, 103, 1, 104, 90, 105, 2, 106, 5, 107, 91, 108, 2, 109, 92, 110, 5, 111, 3, 112, 3, 113, 93, 114, 94, 115, 94, 116, 1, 117, 3, 118, 95, 0 </int_array>
+			<int_array  len="708"> 				-1, -1, 1, 0, -1, 2, 2, 0, 3, 1, 0, 0, 0, 5, 4, -1, 16, 2, 0, 6, 2, 7, 3, 8, 3, 9, 4, 10, 5, 11, 6, 12, 7, 13, 8, 14, 9, 15, 10, 16, 11, 17, 3, 18, 6, 19, 12, 3, 13, 0, 0, 0, 1, 20, -1, 2, 2, 0, 3, 14, 0, 2, 0, 22, 21, 15, 1, 10, 16, 0, 2, 0, 22, 23, 15, 1, 10, 17, 0, 2, 0, 22, 24, 15, 1, 10, 18, 0, 2, 0, 22, 25, 15, 1, 10, 19, 0, 2, 0, 22, 26, 15, 1, 10, 20, 0, 2, 0, 22, 27, 15, 1, 10, 21, 0, 2, 0, 22, 28, 15, 1, 10, 22, 0, 2, 0, 22, 29, 15, 1, 10, 23, 0, 2, 0, 22, 30, 15, 1, 10, 24, 0, 2, 0, 22, 31, 15, 1, 10, 25, 0, 2, 0, 22, 32, 15, 1, 10, 26, 0, 2, 0, 22, 33, 15, 1, 10, 27, 0, 2, 0, 22, 34, 15, 1, 10, 28, 0, 2, 0, 22, 35, 15, 1, 10, 29, 0, 2, 0, 22, 36, 15, 1, 10, 30, 0, 2, 0, 22, 37, 15, 1, 10, 31, 0, 2, 0, 22, 38, 15, 1, 10, 32, 0, 2, 0, 22, 39, 15, 1, 10, 33, 0, 2, 0, 22, 40, 15, 1, 10, 34, 0, 2, 0, 22, 41, 15, 1, 10, 35, 0, 2, 0, 22, 42, 15, 1, 10, 36, 0, 2, 0, 22, 43, 15, 1, 10, 37, 0, 2, 0, 22, 44, 15, 1, 10, 38, 0, 2, 0, 22, 45, 15, 1, 10, 39, 0, 2, 0, 22, 46, 15, 1, 10, 40, 0, 2, 0, 22, 47, 15, 1, 10, 41, 0, 2, 0, 22, 48, 15, 1, 10, 42, 0, 2, 0, 22, 49, 15, 1, 10, 43, 0, 2, 0, 22, 50, 15, 1, 10, 44, 0, 2, 0, 22, 51, 15, 1, 10, 45, 0, 2, 0, 22, 52, 15, 1, 10, 46, 0, 2, 0, 22, 53, 15, 1, 10, 47, 0, 2, 0, 22, 54, 15, 1, 10, 48, 0, 2, 0, 22, 55, 15, 1, 10, 49, 0, 2, 0, 22, 56, 15, 1, 10, 50, 0, 2, 0, 22, 57, 15, 1, 10, 51, 0, 2, 0, 22, 58, 15, 1, 10, 52, 0, 2, 0, 22, 59, 15, 1, 10, 53, 0, 2, 0, 22, 60, 15, 1, 10, 54, 0, 2, 0, 22, 61, 15, 1, 10, 55, 0, 2, 0, 22, 62, 15, 1, 10, 56, 0, 2, 0, 22, 63, 15, 1, 10, 57, 0, 0, 0, 65, 64, 58, 1, 10, 59, 0, 0, 0, 1, 66, -1, 1, 2, 0, 0, 46, 0, 68, 67, 60, 3, 10, 61, 69, 62, 70, 63, 0, 46, 0, 68, 71, 60, 3, 10, 64, 69, 65, 70, 66, 0, 46, 0, 68, 72, 60, 3, 10, 67, 69, 68, 70, 66, 0, 46, 0, 68, 73, 69, 1, 10, 70, 0, 0, 0, 75, 74, -1, 7, 2, 0, 76, 71, 77, 4, 78, 2, 79, 72, 80, 2, 81, 4, 0, 0, 0, 1, 82, -1, 1, 2, 0, 0, 52, 0, 65, 83, 73, 1, 10, 74, 0, 52, 0, 65, 84, 73, 1, 10, 75, 0, 52, 0, 65, 85, 73, 1, 10, 76, 0, 52, 0, 65, 86, 73, 1, 10, 77, 0, 52, 0, 65, 87, 73, 1, 10, 78, 0, 52, 0, 65, 88, 73, 1, 10, 79, 0, 52, 0, 65, 89, 73, 1, 10, 80, 0, 52, 0, 65, 90, 73, 1, 10, 81, 0, 52, 0, 65, 91, 73, 1, 10, 82, 0, 52, 0, 65, 92, 73, 1, 10, 83, 0, 52, 0, 65, 93, 73, 1, 10, 84, 0, 0, 0, 95, 94, 85, 0, 0, 0, 0, 96, 96, -1, 30, 2, 0, 6, 2, 7, 3, 8, 3, 9, 4, 97, 86, 98, 87, 99, 88, 100, 89, 101, 0, 102, 0, 103, 0, 104, 0, 105, 2, 106, 2, 107, 90, 108, 3, 109, 6, 110, 91, 111, 3, 112, 92, 113, 6, 114, 4, 115, 4, 116, 93, 117, 94, 118, 94, 119, 2, 120, 4, 121, 95, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>

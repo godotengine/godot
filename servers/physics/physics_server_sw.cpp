@@ -568,6 +568,25 @@ bool PhysicsServerSW::body_is_continuous_collision_detection_enabled(RID p_body)
 	return body->is_continuous_collision_detection_enabled();
 }
 
+void PhysicsServerSW::body_set_layer_mask(RID p_body, uint32_t p_mask) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+
+	body->set_layer_mask(p_mask);
+
+}
+
+uint32_t PhysicsServerSW::body_get_layer_mask(RID p_body, uint32_t p_mask) const{
+
+	const BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,0);
+
+	return body->get_layer_mask();
+
+}
+
+
 void PhysicsServerSW::body_attach_object_instance_ID(RID p_body,uint32_t p_ID) {
 
 	BodySW *body = body_owner.get(p_body);
@@ -618,13 +637,6 @@ float PhysicsServerSW::body_get_param(RID p_body, BodyParameter p_param) const {
 };
 
 
-void PhysicsServerSW::body_static_simulate_motion(RID p_body,const Transform& p_new_transform) {
-
-	BodySW *body = body_owner.get(p_body);
-	ERR_FAIL_COND(!body);
-	body->simulate_motion(p_new_transform,last_step);
-
-};
 
 void PhysicsServerSW::body_set_state(RID p_body, BodyState p_state, const Variant& p_variant) {
 
@@ -1021,11 +1033,18 @@ void PhysicsServerSW::step(float p_step) {
 	last_step=p_step;
 	PhysicsDirectBodyStateSW::singleton->step=p_step;
 
+	island_count=0;
+	active_objects=0;
+	collision_pairs=0;
 	for( Set<const SpaceSW*>::Element *E=active_spaces.front();E;E=E->next()) {
 
 		stepper->step((SpaceSW*)E->get(),p_step,iterations);
+		island_count+=E->get()->get_island_count();
+		active_objects+=E->get()->get_active_objects();
+		collision_pairs+=E->get()->get_collision_pairs();
 	}
-};
+
+}
 
 void PhysicsServerSW::sync() {
 
@@ -1054,9 +1073,72 @@ void PhysicsServerSW::finish() {
 };
 
 
+int PhysicsServerSW::get_process_info(ProcessInfo p_info) {
+
+	switch(p_info) {
+
+		case INFO_ACTIVE_OBJECTS: {
+
+			return active_objects;
+		} break;
+		case INFO_COLLISION_PAIRS: {
+			return collision_pairs;
+		} break;
+		case INFO_ISLAND_COUNT: {
+
+			return island_count;
+		} break;
+
+	}
+
+	return 0;
+}
+
+
+void PhysicsServerSW::_shape_col_cbk(const Vector3& p_point_A,const Vector3& p_point_B,void *p_userdata) {
+
+
+	CollCbkData *cbk=(CollCbkData *)p_userdata;
+
+	if (cbk->max==0)
+		return;
+
+	if (cbk->amount == cbk->max) {
+		//find least deep
+		float min_depth=1e20;
+		int min_depth_idx=0;
+		for(int i=0;i<cbk->amount;i++) {
+
+			float d = cbk->ptr[i*2+0].distance_squared_to(cbk->ptr[i*2+1]);
+			if (d<min_depth) {
+				min_depth=d;
+				min_depth_idx=i;
+			}
+
+		}
+
+		float d = p_point_A.distance_squared_to(p_point_B);
+		if (d<min_depth)
+			return;
+		cbk->ptr[min_depth_idx*2+0]=p_point_A;
+		cbk->ptr[min_depth_idx*2+1]=p_point_B;
+
+
+	} else {
+
+		cbk->ptr[cbk->amount*2+0]=p_point_A;
+		cbk->ptr[cbk->amount*2+1]=p_point_B;
+		cbk->amount++;
+	}
+}
+
+
 PhysicsServerSW::PhysicsServerSW() {
 
 	BroadPhaseSW::create_func=BroadPhaseOctree::_create;
+	island_count=0;
+	active_objects=0;
+	collision_pairs=0;
 
 	active=true;
 

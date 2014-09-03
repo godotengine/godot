@@ -32,7 +32,11 @@
 
 extern "C" {
 #import <StoreKit/StoreKit.h>
+#import <Foundation/Foundation.h>
 };
+
+bool auto_finish_transactions = true;
+NSMutableDictionary* pending_transactions = [NSMutableDictionary dictionary];
 
 @interface SKProduct (LocalizedPrice)
 @property (nonatomic, readonly) NSString *localizedPrice;
@@ -63,6 +67,8 @@ void InAppStore::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&InAppStore::get_pending_event_count);
 	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&InAppStore::pop_pending_event);
+	ObjectTypeDB::bind_method(_MD("finish_transaction"),&InAppStore::finish_transaction);
+	ObjectTypeDB::bind_method(_MD("set_auto_finish_transaction"),&InAppStore::set_auto_finish_transaction);
 };
 
 @interface ProductsDelegate : NSObject<SKProductsRequestDelegate> {
@@ -162,11 +168,13 @@ Error InAppStore::request_product_info(Variant p_params) {
 		case SKPaymentTransactionStatePurchased: {
             printf("status purchased!\n");
 			String pid = String::utf8([transaction.payment.productIdentifier UTF8String]);
+            String transactionId = String::utf8([transaction.transactionIdentifier UTF8String]);
 			InAppStore::get_singleton()->_record_purchase(pid);
 			Dictionary ret;
 			ret["type"] = "purchase";
 			ret["result"] = "ok";
 			ret["product_id"] = pid;
+            ret["transaction_id"] = transactionId;
             
             NSData* receipt = nil;
             int sdk_version = 6;
@@ -207,7 +215,13 @@ Error InAppStore::request_product_info(Variant p_params) {
             ret["receipt"] = receipt_ret;
             
 			InAppStore::get_singleton()->_post_event(ret);
-			[[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+            
+            if (auto_finish_transactions){
+                [[SKPaymentQueue defaultQueue] finishTransaction:transaction];
+            }
+            else{
+                [pending_transactions setObject:transaction forKey:transaction.payment.productIdentifier];
+            }
 		} break;
 		case SKPaymentTransactionStateFailed: {
             printf("status transaction failed!\n");
@@ -290,10 +304,25 @@ InAppStore* InAppStore::get_singleton() {
 InAppStore::InAppStore() {
 	ERR_FAIL_COND(instance != NULL);
 	instance = this;
+	auto_finish_transactions = false;
 
 	TransObserver* observer = [[TransObserver alloc] init];
 	[[SKPaymentQueue defaultQueue] addTransactionObserver:observer];
+    //pending_transactions = [NSMutableDictionary dictionary];
 };
+
+void InAppStore::finish_transaction(String product_id){
+    NSString* prod_id = [NSString stringWithCString:product_id.utf8().get_data() encoding:NSUTF8StringEncoding];
+    
+	if ([pending_transactions objectForKey:prod_id]){
+		[[SKPaymentQueue defaultQueue] finishTransaction:[pending_transactions objectForKey:prod_id]];
+        [pending_transactions removeObjectForKey:prod_id];
+	}
+};
+
+void InAppStore::set_auto_finish_transaction(bool b){
+    auto_finish_transactions = b;
+}
 
 InAppStore::~InAppStore() {
 

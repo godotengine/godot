@@ -51,7 +51,7 @@ def get_flags():
 
 	return [
 		('freetype','builtin'), #use builtin freetype
-                ('openssl','builtin'), #use builtin openssl
+		('openssl','builtin'), #use builtin openssl
         ]
 			
 
@@ -166,6 +166,7 @@ def configure(env):
 			env.Append(CCFLAGS=['-O3','-ffast-math','-fomit-frame-pointer','-msse2'])
 			env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
 			env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
+			env.Append(LINKFLAGS=['-Wl,--subsystem,windows'])
 		elif (env["target"]=="release_debug"):
 
 			env.Append(CCFLAGS=['-O2','-DDEBUG_ENABLED'])

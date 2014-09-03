@@ -2787,7 +2787,7 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 
 		ofs+=compute_item_height(it)+cache.vseparation;
 
-		if (it->childs) {
+		if (it->childs && !it->collapsed) {
 
 			it=it->childs;
 

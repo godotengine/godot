@@ -47,6 +47,10 @@ friend class PhysicsDirectSpaceStateSW;
 	bool doing_sync;
 	real_t last_step;
 
+	int island_count;
+	int active_objects;
+	int collision_pairs;
+
 	StepSW *stepper;
 	Set<const SpaceSW*> active_spaces;
 
@@ -60,6 +64,15 @@ friend class PhysicsDirectSpaceStateSW;
 
 //	void _clear_query(QuerySW *p_query);
 public:
+
+	struct CollCbkData {
+
+		int max;
+		int amount;
+		Vector3 *ptr;
+	};
+
+	static void _shape_col_cbk(const Vector3& p_point_A,const Vector3& p_point_B,void *p_userdata);
 
 	virtual RID shape_create(ShapeType p_shape);
 	virtual void shape_set_data(RID p_shape, const Variant& p_data);
@@ -146,14 +159,14 @@ public:
 	virtual void body_set_enable_continuous_collision_detection(RID p_body,bool p_enable);
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const;
 
+	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
+
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags);
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
-
-	//advanced simulation
-	virtual void body_static_simulate_motion(RID p_body,const Transform& p_new_transform);
 
 	virtual void body_set_state(RID p_body, BodyState p_state, const Variant& p_variant);
 	virtual Variant body_get_state(RID p_body, BodyState p_state) const;
@@ -208,6 +221,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	int get_process_info(ProcessInfo p_info);
 
 	PhysicsServerSW();
 	~PhysicsServerSW();

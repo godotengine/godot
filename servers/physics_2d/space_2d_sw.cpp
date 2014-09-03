@@ -323,7 +323,7 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Matrix32& p_s
 }
 
 
-struct _RestCallbackData {
+struct _RestCallbackData2D {
 
 	const CollisionObject2DSW *object;
 	const CollisionObject2DSW *best_object;
@@ -337,7 +337,7 @@ struct _RestCallbackData {
 static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,void *p_userdata) {
 
 
-	_RestCallbackData *rd=(_RestCallbackData*)p_userdata;
+	_RestCallbackData2D *rd=(_RestCallbackData2D*)p_userdata;
 
 	Vector2 contact_rel = p_point_B - p_point_A;
 	float len = contact_rel.length();
@@ -365,7 +365,7 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Matrix32& p_shape
 
 	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
 
-	_RestCallbackData rcd;
+	_RestCallbackData2D rcd;
 	rcd.best_len=0;
 	rcd.best_object=NULL;
 	rcd.best_shape=0;
@@ -443,6 +443,7 @@ void* Space2DSW::_broadphase_pair(CollisionObject2DSW *A,int p_subindex_A,Collis
 	}
 
 	Space2DSW *self = (Space2DSW*)p_self;
+	self->collision_pairs++;
 
 	if (type_A==CollisionObject2DSW::TYPE_AREA) {
 
@@ -468,8 +469,8 @@ void* Space2DSW::_broadphase_pair(CollisionObject2DSW *A,int p_subindex_A,Collis
 void Space2DSW::_broadphase_unpair(CollisionObject2DSW *A,int p_subindex_A,CollisionObject2DSW *B,int p_subindex_B,void *p_data,void *p_self) {
 
 
-
 	Space2DSW *self = (Space2DSW*)p_self;
+	self->collision_pairs--;
 	Constraint2DSW *c = (Constraint2DSW*)p_data;
 	memdelete(c);
 }
@@ -645,6 +646,10 @@ Physics2DDirectSpaceStateSW *Space2DSW::get_direct_state() {
 
 Space2DSW::Space2DSW() {
 
+
+	collision_pairs=0;
+	active_objects=0;
+	island_count=0;
 
 	locked=false;
 	contact_recycle_radius=0.01;
