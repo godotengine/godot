@@ -71,11 +71,12 @@ class BodySW : public CollisionObjectSW {
 	VSet<RID> exceptions;
 	bool omit_force_integration;
 	bool active;
-	bool simulated_motion;
+
 	bool continuous_cd;
 	bool can_sleep;
 	void _update_inertia();
 	virtual void _shapes_changed();
+	Transform new_transform;
 
 	Map<ConstraintSW*,int> constraint_map;
 
@@ -235,7 +236,7 @@ public:
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 
-	void simulate_motion(const Transform& p_xform,real_t p_step);
+	//void simulate_motion(const Transform& p_xform,real_t p_step);
 	void call_queries();
 	void wakeup_neighbours();
 

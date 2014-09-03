@@ -137,6 +137,8 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 		active_count++;
 	}
 
+	p_space->set_active_objects(active_count);
+
 	/* GENERATE CONSTRAINT ISLANDS */
 
 	Body2DSW *island_list=NULL;
@@ -167,6 +169,8 @@ void Step2DSW::step(Space2DSW* p_space,float p_delta,int p_iterations) {
 		}
 		b=b->next();
 	}
+
+	p_space->set_island_count(island_count);
 
 	const SelfList<Area2DSW>::List &aml = p_space->get_moved_area_list();
 

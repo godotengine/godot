@@ -111,6 +111,12 @@ struct Vector3 {
         _FORCE_INLINE_ real_t distance_to(const Vector3& p_b) const;
         _FORCE_INLINE_ real_t distance_squared_to(const Vector3& p_b) const;
 
+
+
+	_FORCE_INLINE_ Vector3 slide(const Vector3& p_vec) const;
+	_FORCE_INLINE_ Vector3 reflect(const Vector3& p_vec) const;
+
+
         /* Operators */
 
         _FORCE_INLINE_ Vector3& operator+=(const Vector3& p_v);
@@ -366,6 +372,16 @@ Vector3 Vector3::inverse() const {
 void Vector3::zero() {
 
 	x=y=z=0;
+}
+
+Vector3 Vector3::slide(const Vector3& p_vec) const {
+
+	return p_vec - *this * this->dot(p_vec);
+}
+Vector3 Vector3::reflect(const Vector3& p_vec) const {
+
+	return p_vec - *this * this->dot(p_vec) * 2.0;
+
 }
 
 #endif

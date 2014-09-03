@@ -29,7 +29,7 @@
 #include "body_pair_sw.h"
 #include "collision_solver_sw.h"
 #include "space_sw.h"
-
+#include "os/os.h"
 
 /*
 #define NO_ACCUMULATE_IMPULSES
@@ -174,6 +174,11 @@ void BodyPairSW::validate_contacts() {
 
 bool BodyPairSW::setup(float p_step) {
 
+	//cannot collide
+	if (A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {
+		collided=false;
+		return false;
+	}
 
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
@@ -197,10 +202,6 @@ bool BodyPairSW::setup(float p_step) {
 		return false;
 
 
-	//cannot collide
-	if (A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {
-		return false;
-	}
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
@@ -215,6 +216,7 @@ bool BodyPairSW::setup(float p_step) {
 		else
 			bias=(shape_B_ptr->get_custom_bias()+shape_A_ptr->get_custom_bias())*0.5;
 	}
+
 
 
 	real_t inv_dt = 1.0/p_step;

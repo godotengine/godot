@@ -115,6 +115,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _import_subscene();
 
+	bool _validate_no_foreign();
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
 
