@@ -322,7 +322,7 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform&
 		     float axis_scale = 1.0/axis.length();
 		     axis*=axis_scale;
 
-		     float smin,smax;
+		     real_t smin,smax;
 
 		     if (use_cc_hint) {
 			     cc_hint_aabb.project_range_in_plane(Plane(axis,0),smin,smax);

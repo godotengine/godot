@@ -2804,8 +2804,6 @@ int Tree::get_item_offset(TreeItem *p_item, bool p_as_expanded, bool p_expand_an
 
 		if (it->childs && !it->collapsed) {
 
-		if (use_childs) {
-
 			it=it->childs;
 		} else if (it->next) {
 

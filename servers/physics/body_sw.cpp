@@ -389,7 +389,7 @@ void BodySW::integrate_forces(real_t p_step) {
 		//compute a FAKE angular velocity, not so easy
 		Matrix3 rot=new_transform.basis.orthonormalized().transposed() * get_transform().basis.orthonormalized();
 		Vector3 axis;
-		float angle;
+		real_t angle;
 
 		rot.get_axis_and_angle(axis,angle);
 		axis.normalize();
