@@ -934,7 +934,7 @@ class DaeExporter:
 		if shapename==None:
 			for x in node.children:
 				self.export_node(x,il)
-			if node.type=="MESH":
+			if node.type=="MESH" and self.config["export_shapekeys"]:
 				for k in range(0,len(node.data.shape_keys.key_blocks)):
 					shape = node.data.shape_keys.key_blocks[k]
 					shape.value = 1.0
