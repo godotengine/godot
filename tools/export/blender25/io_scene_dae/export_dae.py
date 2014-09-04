@@ -937,6 +937,7 @@ class DaeExporter:
 			if node.type=="MESH" and self.config["export_shapekeys"]:
 				for k in range(0,len(node.data.shape_keys.key_blocks)):
 					shape = node.data.shape_keys.key_blocks[k]
+					oldval = shape.value
 					shape.value = 1.0
 					node.active_shape_key_index = k
 					p = node.data
@@ -945,6 +946,7 @@ class DaeExporter:
 					self.export_node(node,il,shape.name)
 					node.data = p
 					node.data.update()
+					shape.value = oldval
 		il-=1
 		self.writel(S_NODES,il,'</node>')
 
