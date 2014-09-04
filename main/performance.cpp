@@ -29,6 +29,8 @@
 #include "performance.h"
 #include "os/os.h"
 #include "servers/visual_server.h"
+#include "servers/physics_2d_server.h"
+#include "servers/physics_server.h"
 #include "message_queue.h"
 #include "scene/main/scene_main_loop.h"
 Performance *Performance::singleton=NULL;
@@ -62,6 +64,13 @@ void Performance::_bind_methods() {
 	BIND_CONSTANT( RENDER_VIDEO_MEM_USED );
 	BIND_CONSTANT( RENDER_TEXTURE_MEM_USED );
 	BIND_CONSTANT( RENDER_VERTEX_MEM_USED );
+	BIND_CONSTANT( PHYSICS_2D_ACTIVE_OBJECTS );
+	BIND_CONSTANT( PHYSICS_2D_COLLISION_PAIRS );
+	BIND_CONSTANT( PHYSICS_2D_ISLAND_COUNT );
+	BIND_CONSTANT( PHYSICS_3D_ACTIVE_OBJECTS );
+	BIND_CONSTANT( PHYSICS_3D_COLLISION_PAIRS );
+	BIND_CONSTANT( PHYSICS_3D_ISLAND_COUNT );
+
 	BIND_CONSTANT( MONITOR_MAX );
 
 }
@@ -92,7 +101,14 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		"video/video_mem",
 		"video/texure_mem",
 		"video/vertex_mem",
-		"render/mem_max"
+		"video/video_mem_max",
+		"physics_2d/active_objects",
+		"physics_2d/collision_pairs",
+		"physics_2d/islands",
+		"physics_3d/active_objects",
+		"physics_3d/collision_pairs",
+		"physics_3d/islands",
+
 	};
 
 	return names[p_monitor];
@@ -136,6 +152,13 @@ float Performance::get_monitor(Monitor p_monitor) const {
 		case RENDER_TEXTURE_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED);
 		case RENDER_VERTEX_MEM_USED: return VS::get_singleton()->get_render_info(VS::INFO_VERTEX_MEM_USED);
 		case RENDER_USAGE_VIDEO_MEM_TOTAL: return VS::get_singleton()->get_render_info(VS::INFO_USAGE_VIDEO_MEM_TOTAL);
+		case PHYSICS_2D_ACTIVE_OBJECTS: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ACTIVE_OBJECTS);
+		case PHYSICS_2D_COLLISION_PAIRS: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_COLLISION_PAIRS);
+		case PHYSICS_2D_ISLAND_COUNT: return Physics2DServer::get_singleton()->get_process_info(Physics2DServer::INFO_ISLAND_COUNT);
+		case PHYSICS_3D_ACTIVE_OBJECTS: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ACTIVE_OBJECTS);
+		case PHYSICS_3D_COLLISION_PAIRS: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_COLLISION_PAIRS);
+		case PHYSICS_3D_ISLAND_COUNT: return PhysicsServer::get_singleton()->get_process_info(PhysicsServer::INFO_ISLAND_COUNT);
+
 		default: {}
 	}
 

@@ -160,6 +160,10 @@ class OS_Windows : public OS {
 
 	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
 
+	void _drag_event(int idx,UINT uMsg, WPARAM	wParam,	LPARAM	lParam);
+	void _touch_event(int idx, UINT uMsg, WPARAM	wParam,	LPARAM	lParam);
+
+
 	// functions used by main to initialize/deintialize the OS
 protected:	
 	virtual int get_video_driver_count() const;

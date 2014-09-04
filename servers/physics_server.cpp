@@ -113,6 +113,112 @@ PhysicsDirectBodyState::PhysicsDirectBodyState() {}
 
 
 
+void PhysicsShapeQueryParameters::set_shape(const RES &p_shape) {
+
+	ERR_FAIL_COND(p_shape.is_null());
+	shape=p_shape->get_rid();
+}
+
+void PhysicsShapeQueryParameters::set_shape_rid(const RID& p_shape) {
+
+	shape=p_shape;
+}
+
+RID PhysicsShapeQueryParameters::get_shape_rid() const {
+
+	return shape;
+}
+
+void PhysicsShapeQueryParameters::set_transform(const Matrix32& p_transform){
+
+	transform=p_transform;
+}
+Matrix32 PhysicsShapeQueryParameters::get_transform() const{
+
+	return transform;
+}
+
+void PhysicsShapeQueryParameters::set_margin(float p_margin){
+
+	margin=p_margin;
+}
+
+float PhysicsShapeQueryParameters::get_margin() const{
+
+	return margin;
+}
+
+void PhysicsShapeQueryParameters::set_layer_mask(int p_layer_mask){
+
+	layer_mask=p_layer_mask;
+}
+int PhysicsShapeQueryParameters::get_layer_mask() const{
+
+	return layer_mask;
+}
+
+
+void PhysicsShapeQueryParameters::set_object_type_mask(int p_object_type_mask){
+
+	object_type_mask=p_object_type_mask;
+}
+int PhysicsShapeQueryParameters::get_object_type_mask() const{
+
+	return object_type_mask;
+}
+void PhysicsShapeQueryParameters::set_exclude(const Vector<RID>& p_exclude) {
+
+	exclude.clear();;
+	for(int i=0;i<p_exclude.size();i++)
+		exclude.insert(p_exclude[i]);
+
+}
+
+Vector<RID> PhysicsShapeQueryParameters::get_exclude() const{
+
+	Vector<RID> ret;
+	ret.resize(exclude.size());
+	int idx=0;
+	for(Set<RID>::Element *E=exclude.front();E;E=E->next()) {
+		ret[idx]=E->get();
+	}
+	return ret;
+}
+
+void PhysicsShapeQueryParameters::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_shape","shape:Shape"),&PhysicsShapeQueryParameters::set_shape);
+	ObjectTypeDB::bind_method(_MD("set_shape_rid","shape"),&PhysicsShapeQueryParameters::set_shape_rid);
+	ObjectTypeDB::bind_method(_MD("get_shape_rid"),&PhysicsShapeQueryParameters::get_shape_rid);
+
+	ObjectTypeDB::bind_method(_MD("set_transform","transform"),&PhysicsShapeQueryParameters::set_transform);
+	ObjectTypeDB::bind_method(_MD("get_transform"),&PhysicsShapeQueryParameters::get_transform);
+
+	ObjectTypeDB::bind_method(_MD("set_margin","margin"),&PhysicsShapeQueryParameters::set_margin);
+	ObjectTypeDB::bind_method(_MD("get_margin"),&PhysicsShapeQueryParameters::get_margin);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","layer_mask"),&PhysicsShapeQueryParameters::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsShapeQueryParameters::get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_object_type_mask","object_type_mask"),&PhysicsShapeQueryParameters::set_object_type_mask);
+	ObjectTypeDB::bind_method(_MD("get_object_type_mask"),&PhysicsShapeQueryParameters::get_object_type_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_exclude","exclude"),&PhysicsShapeQueryParameters::set_exclude);
+	ObjectTypeDB::bind_method(_MD("get_exclude"),&PhysicsShapeQueryParameters::get_exclude);
+
+
+}
+
+PhysicsShapeQueryParameters::PhysicsShapeQueryParameters() {
+
+	margin=0;
+	layer_mask=0x7FFFFFFF;
+	object_type_mask=PhysicsDirectSpaceState::TYPE_MASK_COLLISION;
+}
+
+
+
+/////////////////////////////////////
 Variant PhysicsDirectSpaceState::_intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
 
 	RayResult inters;
@@ -150,7 +256,7 @@ Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Tran
 
 	ShapeResult *res=(ShapeResult*)alloca(p_result_max*sizeof(ShapeResult));
 
-	int rc = intersect_shape(p_shape,p_xform,res,p_result_max,exclude,p_user_mask);
+	int rc = intersect_shape(p_shape,p_xform,0,res,p_result_max,exclude);
 
 	if (rc==0)
 		return Variant();
@@ -308,8 +414,6 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_param","body","param","value"),&PhysicsServer::body_set_param);
 	ObjectTypeDB::bind_method(_MD("body_get_param","body","param"),&PhysicsServer::body_get_param);
 
-	ObjectTypeDB::bind_method(_MD("body_static_simulate_motion","body","new_xform"),&PhysicsServer::body_static_simulate_motion);
-
 	ObjectTypeDB::bind_method(_MD("body_set_state","body","state","value"),&PhysicsServer::body_set_state);
 	ObjectTypeDB::bind_method(_MD("body_get_state","body","state"),&PhysicsServer::body_get_state);
 
@@ -354,6 +458,8 @@ void PhysicsServer::_bind_methods() {
 //	ObjectTypeDB::bind_method(_MD("sync"),&PhysicsServer::sync);
 	//ObjectTypeDB::bind_method(_MD("flush_queries"),&PhysicsServer::flush_queries);
 
+
+	ObjectTypeDB::bind_method(_MD("get_process_info"),&PhysicsServer::get_process_info);
 
 	BIND_CONSTANT( SHAPE_PLANE );
 	BIND_CONSTANT( SHAPE_RAY );
@@ -406,6 +512,11 @@ void PhysicsServer::_bind_methods() {
 
 	BIND_CONSTANT( AREA_BODY_ADDED );
 	BIND_CONSTANT( AREA_BODY_REMOVED );
+
+	BIND_CONSTANT( INFO_ACTIVE_OBJECTS );
+	BIND_CONSTANT( INFO_COLLISION_PAIRS );
+	BIND_CONSTANT( INFO_ISLAND_COUNT );
+
 
 
 }

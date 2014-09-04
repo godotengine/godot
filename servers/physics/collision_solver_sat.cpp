@@ -43,7 +43,9 @@ struct _CollectorCallback {
 	_FORCE_INLINE_ void call(const Vector3& p_point_A, const Vector3& p_point_B) {
 
 		//if (normal.dot(p_point_A) >= normal.dot(p_point_B))
-		// return;
+		//	return;
+//		print_line("** A: "+p_point_A+" B: "+p_point_B+" D: "+rtos(p_point_A.distance_to(p_point_B)));
+
 		if (swap)
 			callback(p_point_B,p_point_A,userdata);
 		else
@@ -231,10 +233,13 @@ static void _generate_contacts_face_face(const Vector3 * p_points_A,int p_point_
 	for (int i=0;i<clipbuf_len;i++) {
 
 		float d = plane_B.distance_to(clipbuf_src[i]);
-		if (d>CMP_EPSILON)
-			continue;
+		//if (d>CMP_EPSILON)
+		//	continue;
 
 		Vector3 closest_B=clipbuf_src[i] - plane_B.normal*d;
+
+		if (p_callback->normal.dot(clipbuf_src[i]) >= p_callback->normal.dot(closest_B))
+			continue;
 
 		p_callback->call(clipbuf_src[i],closest_B);
 		added++;
@@ -301,7 +306,7 @@ static void _generate_contacts_from_supports(const Vector3 * p_points_A,int p_po
 
 
 
-template<class ShapeA, class ShapeB>
+template<class ShapeA, class ShapeB, bool withMargin=false>
 class SeparatorAxisTest {
 
 	const ShapeA *shape_A;
@@ -311,7 +316,8 @@ class SeparatorAxisTest {
 	real_t best_depth;
 	Vector3 best_axis;
 	_CollectorCallback *callback;
-
+	real_t margin_A;
+	real_t margin_B;
 	Vector3 separator_axis;
 
 public:
@@ -339,6 +345,13 @@ public:
 
 		shape_A->project_range(axis,*transform_A,min_A,max_A);
 		shape_B->project_range(axis,*transform_B,min_B,max_B);
+
+		if (withMargin) {
+			min_A-=margin_A;
+			max_A+=margin_A;
+			min_B-=margin_B;
+			max_B+=margin_B;
+		}
 
 		min_B -= ( max_A - min_A ) * 0.5;
 		max_B += ( max_A - min_A ) * 0.5;
@@ -394,6 +407,14 @@ public:
 			supports_A[i] = transform_A->xform(supports_A[i]);
 		}
 
+		if (withMargin) {
+
+			for(int i=0;i<support_count_A;i++) {
+				supports_A[i]+=-best_axis*margin_A;
+			}
+
+		}
+
 
 		Vector3 supports_B[max_supports];
 		int support_count_B;
@@ -401,8 +422,16 @@ public:
 		for(int i=0;i<support_count_B;i++) {
 			supports_B[i] = transform_B->xform(supports_B[i]);
 		}
+
+		if (withMargin) {
+
+			for(int i=0;i<support_count_B;i++) {
+				supports_B[i]+=best_axis*margin_B;
+			}
+		}
 /*
 		print_line("best depth: "+rtos(best_depth));
+		print_line("best axis: "+(best_axis));
 		for(int i=0;i<support_count_A;i++) {
 
 			print_line("A-"+itos(i)+": "+supports_A[i]);
@@ -423,13 +452,16 @@ public:
 
 	}
 
-	_FORCE_INLINE_ SeparatorAxisTest(const ShapeA *p_shape_A,const Transform& p_transform_A, const ShapeB *p_shape_B,const Transform& p_transform_B,_CollectorCallback *p_callback) {
+	_FORCE_INLINE_ SeparatorAxisTest(const ShapeA *p_shape_A,const Transform& p_transform_A, const ShapeB *p_shape_B,const Transform& p_transform_B,_CollectorCallback *p_callback,real_t p_margin_A=0,real_t p_margin_B=0) {
 		best_depth=1e15;
 		shape_A=p_shape_A;
 		shape_B=p_shape_B;
 		transform_A=&p_transform_A;
 		transform_B=&p_transform_B;
 		callback=p_callback;
+		margin_A=p_margin_A;
+		margin_B=p_margin_B;
+
 	}
 
 };
@@ -440,16 +472,17 @@ public:
 /****** SAT TESTS *******/
 
 
-typedef void (*CollisionFunc)(const ShapeSW*,const Transform&,const ShapeSW*,const Transform&,_CollectorCallback *p_callback);
+typedef void (*CollisionFunc)(const ShapeSW*,const Transform&,const ShapeSW*,const Transform&,_CollectorCallback *p_callback,float,float);
 
 
-static void _collision_sphere_sphere(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_sphere_sphere(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const SphereShapeSW *sphere_B = static_cast<const SphereShapeSW*>(p_b);
 
-	SeparatorAxisTest<SphereShapeSW,SphereShapeSW> separator(sphere_A,p_transform_a,sphere_B,p_transform_b,p_collector);
+	SeparatorAxisTest<SphereShapeSW,SphereShapeSW,withMargin> separator(sphere_A,p_transform_a,sphere_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	// previous axis
 
@@ -462,13 +495,14 @@ static void _collision_sphere_sphere(const ShapeSW *p_a,const Transform &p_trans
 	separator.generate_contacts();
 }
 
-static void _collision_sphere_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_sphere_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const BoxShapeSW *box_B = static_cast<const BoxShapeSW*>(p_b);
 
-	SeparatorAxisTest<SphereShapeSW,BoxShapeSW> separator(sphere_A,p_transform_a,box_B,p_transform_b,p_collector);
+	SeparatorAxisTest<SphereShapeSW,BoxShapeSW,withMargin> separator(sphere_A,p_transform_a,box_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -516,13 +550,13 @@ static void _collision_sphere_box(const ShapeSW *p_a,const Transform &p_transfor
 
 }
 
-
-static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW*>(p_b);
 
-	SeparatorAxisTest<SphereShapeSW,CapsuleShapeSW> separator(sphere_A,p_transform_a,capsule_B,p_transform_b,p_collector);
+	SeparatorAxisTest<SphereShapeSW,CapsuleShapeSW,withMargin> separator(sphere_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -540,7 +574,7 @@ static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_tran
 
 	Vector3 capsule_ball_2 = p_transform_b.origin - capsule_axis;
 
-	if (!separator.test_axis( (capsule_ball_1 - p_transform_a.origin).normalized() ) )
+	if (!separator.test_axis( (capsule_ball_2 - p_transform_a.origin).normalized() ) )
 		return;
 
 	//capsule edge, sphere
@@ -556,13 +590,14 @@ static void _collision_sphere_capsule(const ShapeSW *p_a,const Transform &p_tran
 	separator.generate_contacts();
 }
 
-static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW*>(p_b);
 
-	SeparatorAxisTest<SphereShapeSW,ConvexPolygonShapeSW> separator(sphere_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector);
+	SeparatorAxisTest<SphereShapeSW,ConvexPolygonShapeSW,withMargin> separator(sphere_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 
 	if (!separator.test_previous_axis())
@@ -626,14 +661,15 @@ static void _collision_sphere_convex_polygon(const ShapeSW *p_a,const Transform 
 
 }
 
-static void _collision_sphere_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b, _CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_sphere_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 	const SphereShapeSW *sphere_A = static_cast<const SphereShapeSW*>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW*>(p_b);
 
 
 
-	SeparatorAxisTest<SphereShapeSW,FaceShapeSW> separator(sphere_A,p_transform_a,face_B,p_transform_b,p_collector);
+	SeparatorAxisTest<SphereShapeSW,FaceShapeSW,withMargin> separator(sphere_A,p_transform_a,face_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 
 	Vector3 vertex[3]={
@@ -669,16 +705,14 @@ static void _collision_sphere_face(const ShapeSW *p_a,const Transform &p_transfo
 }
 
 
-
-
-
-static void _collision_box_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_box_box(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
 	const BoxShapeSW *box_B = static_cast<const BoxShapeSW*>(p_b);
 
-	SeparatorAxisTest<BoxShapeSW,BoxShapeSW> separator(box_A,p_transform_a,box_B,p_transform_b,p_collector);
+	SeparatorAxisTest<BoxShapeSW,BoxShapeSW,withMargin> separator(box_A,p_transform_a,box_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -723,18 +757,69 @@ static void _collision_box_box(const ShapeSW *p_a,const Transform &p_transform_a
 		}
 	}
 
+	if (withMargin) {
+		//add endpoint test between closest vertices and edges
+
+		// calculate closest point to sphere
+
+		Vector3 ab_vec = p_transform_b.origin - p_transform_a.origin;
+
+		Vector3 cnormal_a=p_transform_a.basis.xform_inv( ab_vec );
+
+		Vector3 support_a=p_transform_a.xform( Vector3(
+
+			(cnormal_a.x<0) ? -box_A->get_half_extents().x : box_A->get_half_extents().x,
+			(cnormal_a.y<0) ? -box_A->get_half_extents().y : box_A->get_half_extents().y,
+			(cnormal_a.z<0) ? -box_A->get_half_extents().z : box_A->get_half_extents().z
+		) );
+
+
+		Vector3 cnormal_b=p_transform_b.basis.xform_inv( -ab_vec );
+
+		Vector3 support_b=p_transform_b.xform( Vector3(
+
+			(cnormal_b.x<0) ? -box_B->get_half_extents().x : box_B->get_half_extents().x,
+			(cnormal_b.y<0) ? -box_B->get_half_extents().y : box_B->get_half_extents().y,
+			(cnormal_b.z<0) ? -box_B->get_half_extents().z : box_B->get_half_extents().z
+		) );
+
+		Vector3 axis_ab = (support_a-support_b);
+
+		if (!separator.test_axis( axis_ab.normalized()  )) {
+			return;
+		}
+
+		//now try edges, which become cylinders!
+
+		for(int i=0;i<3;i++) {
+
+			//a ->b
+			Vector3 axis_a = p_transform_a.basis.get_axis(i);
+
+			if (!separator.test_axis( axis_ab.cross(axis_a).cross(axis_a).normalized() ))
+				return;
+
+			//b ->a
+			Vector3 axis_b = p_transform_b.basis.get_axis(i);
+
+			if (!separator.test_axis( axis_ab.cross(axis_b).cross(axis_b).normalized() ))
+				return;
+
+		}
+	}
+
 	separator.generate_contacts();
 
 
 }
 
-
-static void _collision_box_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_box_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW*>(p_b);
 
-	SeparatorAxisTest<BoxShapeSW,CapsuleShapeSW> separator(box_A,p_transform_a,capsule_B,p_transform_b,p_collector);
+	SeparatorAxisTest<BoxShapeSW,CapsuleShapeSW,withMargin> separator(box_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -828,15 +913,15 @@ static void _collision_box_capsule(const ShapeSW *p_a,const Transform &p_transfo
 	separator.generate_contacts();
 }
 
-
-static void _collision_box_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_box_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW*>(p_b);
 
-	SeparatorAxisTest<BoxShapeSW,ConvexPolygonShapeSW> separator(box_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector);
+	SeparatorAxisTest<BoxShapeSW,ConvexPolygonShapeSW,withMargin> separator(box_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -886,18 +971,84 @@ static void _collision_box_convex_polygon(const ShapeSW *p_a,const Transform &p_
 		}
 	}
 
+	if (withMargin) {
+
+		// calculate closest points between vertices and box edges
+		for(int v=0;v<vertex_count;v++) {
+
+
+			Vector3 vtxb = p_transform_b.xform(vertices[v]);
+			Vector3 ab_vec = vtxb - p_transform_a.origin;
+
+			Vector3 cnormal_a=p_transform_a.basis.xform_inv( ab_vec );
+
+			Vector3 support_a=p_transform_a.xform( Vector3(
+
+				(cnormal_a.x<0) ? -box_A->get_half_extents().x : box_A->get_half_extents().x,
+				(cnormal_a.y<0) ? -box_A->get_half_extents().y : box_A->get_half_extents().y,
+				(cnormal_a.z<0) ? -box_A->get_half_extents().z : box_A->get_half_extents().z
+			) );
+
+
+			Vector3 axis_ab = support_a-vtxb;
+
+			if (!separator.test_axis( axis_ab.normalized()  )) {
+				return;
+			}
+
+			//now try edges, which become cylinders!
+
+			for(int i=0;i<3;i++) {
+
+				//a ->b
+				Vector3 axis_a = p_transform_a.basis.get_axis(i);
+
+				if (!separator.test_axis( axis_ab.cross(axis_a).cross(axis_a).normalized() ))
+					return;
+			}
+		}
+
+		//convex edges and box points
+		for (int i=0;i<2;i++) {
+			for (int j=0;j<2;j++) {
+				for (int k=0;k<2;k++) {
+					Vector3 he = box_A->get_half_extents();
+					he.x*=(i*2-1);
+					he.y*=(j*2-1);
+					he.z*=(k*2-1);
+					Vector3 point=p_transform_a.origin;
+					for(int l=0;l<3;l++)
+						point+=p_transform_a.basis.get_axis(l)*he[l];
+
+					for(int e=0;e<edge_count;e++) {
+
+						Vector3 p1=p_transform_b.xform(vertices[edges[e].a]);
+						Vector3 p2=p_transform_b.xform(vertices[edges[e].b]);
+						Vector3 n = (p2-p1);
+
+
+						if (!separator.test_axis( (point-p2).cross(n).cross(n).normalized() ))
+							return;
+					}
+				}
+			}
+		}
+	}
+
 	separator.generate_contacts();
 
 
 }
 
-static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b, _CollectorCallback *p_collector) {
+
+template<bool withMargin>
+static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const BoxShapeSW *box_A = static_cast<const BoxShapeSW*>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW*>(p_b);
 
-	SeparatorAxisTest<BoxShapeSW,FaceShapeSW> separator(box_A,p_transform_a,face_B,p_transform_b,p_collector);
+	SeparatorAxisTest<BoxShapeSW,FaceShapeSW,withMargin> separator(box_A,p_transform_a,face_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	Vector3 vertex[3]={
 		p_transform_b.xform( face_B->vertex[0] ),
@@ -918,16 +1069,81 @@ static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_
 	}
 
 	// combined edges
+
 	for(int i=0;i<3;i++) {
 
 		Vector3 e=vertex[i]-vertex[(i+1)%3];
 
-		for (int i=0;i<3;i++) {
+		for (int j=0;j<3;j++) {
 
-			Vector3 axis = p_transform_a.basis.get_axis(i);
+			Vector3 axis = p_transform_a.basis.get_axis(j);
 
 			if (!separator.test_axis( e.cross(axis).normalized() ))
 				return;
+		}
+
+	}
+
+	if (withMargin) {
+
+		// calculate closest points between vertices and box edges
+		for(int v=0;v<3;v++) {
+
+
+			Vector3 ab_vec = vertex[v] - p_transform_a.origin;
+
+			Vector3 cnormal_a=p_transform_a.basis.xform_inv( ab_vec );
+
+			Vector3 support_a=p_transform_a.xform( Vector3(
+
+				(cnormal_a.x<0) ? -box_A->get_half_extents().x : box_A->get_half_extents().x,
+				(cnormal_a.y<0) ? -box_A->get_half_extents().y : box_A->get_half_extents().y,
+				(cnormal_a.z<0) ? -box_A->get_half_extents().z : box_A->get_half_extents().z
+			) );
+
+
+			Vector3 axis_ab = support_a-vertex[v];
+
+			if (!separator.test_axis( axis_ab.normalized()  )) {
+				return;
+			}
+
+			//now try edges, which become cylinders!
+
+			for(int i=0;i<3;i++) {
+
+				//a ->b
+				Vector3 axis_a = p_transform_a.basis.get_axis(i);
+
+				if (!separator.test_axis( axis_ab.cross(axis_a).cross(axis_a).normalized() ))
+					return;
+			}
+		}
+
+		//convex edges and box points, there has to be a way to speed up this (get closest point?)
+		for (int i=0;i<2;i++) {
+			for (int j=0;j<2;j++) {
+				for (int k=0;k<2;k++) {
+					Vector3 he = box_A->get_half_extents();
+					he.x*=(i*2-1);
+					he.y*=(j*2-1);
+					he.z*=(k*2-1);
+					Vector3 point=p_transform_a.origin;
+					for(int l=0;l<3;l++)
+						point+=p_transform_a.basis.get_axis(l)*he[l];
+
+					for(int e=0;e<3;e++) {
+
+						Vector3 p1=vertex[e];
+						Vector3 p2=vertex[(e+1)%3];
+
+						Vector3 n = (p2-p1);
+
+						if (!separator.test_axis( (point-p2).cross(n).cross(n).normalized() ))
+							return;
+					}
+				}
+			}
 		}
 
 	}
@@ -936,12 +1152,14 @@ static void _collision_box_face(const ShapeSW *p_a,const Transform &p_transform_
 
 }
 
-static void _collision_capsule_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+
+template<bool withMargin>
+static void _collision_capsule_capsule(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW*>(p_a);
 	const CapsuleShapeSW *capsule_B = static_cast<const CapsuleShapeSW*>(p_b);
 
-	SeparatorAxisTest<CapsuleShapeSW,CapsuleShapeSW> separator(capsule_A,p_transform_a,capsule_B,p_transform_b,p_collector);
+	SeparatorAxisTest<CapsuleShapeSW,CapsuleShapeSW,withMargin> separator(capsule_A,p_transform_a,capsule_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -993,13 +1211,14 @@ static void _collision_capsule_capsule(const ShapeSW *p_a,const Transform &p_tra
 
 }
 
-static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW*>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW*>(p_b);
 
-	SeparatorAxisTest<CapsuleShapeSW,ConvexPolygonShapeSW> separator(capsule_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector);
+	SeparatorAxisTest<CapsuleShapeSW,ConvexPolygonShapeSW,withMargin> separator(capsule_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -1063,12 +1282,14 @@ static void _collision_capsule_convex_polygon(const ShapeSW *p_a,const Transform
 
 }
 
-static void _collision_capsule_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b, _CollectorCallback *p_collector) {
+
+template<bool withMargin>
+static void _collision_capsule_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 	const CapsuleShapeSW *capsule_A = static_cast<const CapsuleShapeSW*>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW*>(p_b);
 
-	SeparatorAxisTest<CapsuleShapeSW,FaceShapeSW> separator(capsule_A,p_transform_a,face_B,p_transform_b,p_collector);
+	SeparatorAxisTest<CapsuleShapeSW,FaceShapeSW,withMargin> separator(capsule_A,p_transform_a,face_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 
 
@@ -1125,13 +1346,14 @@ static void _collision_capsule_face(const ShapeSW *p_a,const Transform &p_transf
 }
 
 
-static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector) {
+template<bool withMargin>
+static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Transform &p_transform_a,const ShapeSW *p_b,const Transform &p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const ConvexPolygonShapeSW *convex_polygon_A = static_cast<const ConvexPolygonShapeSW*>(p_a);
 	const ConvexPolygonShapeSW *convex_polygon_B = static_cast<const ConvexPolygonShapeSW*>(p_b);
 
-	SeparatorAxisTest<ConvexPolygonShapeSW,ConvexPolygonShapeSW> separator(convex_polygon_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector);
+	SeparatorAxisTest<ConvexPolygonShapeSW,ConvexPolygonShapeSW,withMargin> separator(convex_polygon_A,p_transform_a,convex_polygon_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	if (!separator.test_previous_axis())
 		return;
@@ -1192,17 +1414,70 @@ static void _collision_convex_polygon_convex_polygon(const ShapeSW *p_a,const Tr
 		}
 	}
 
+	if (withMargin) {
+
+		//vertex-vertex
+		for(int i=0;i<vertex_count_A;i++) {
+
+			Vector3 va = p_transform_a.xform(vertices_A[i]);
+
+			for(int j=0;j<vertex_count_B;j++) {
+
+				if (!separator.test_axis( (va-p_transform_b.xform(vertices_B[j])).normalized() ))
+					return;
+
+			}
+		}
+		//edge-vertex( hsell)
+
+		for (int i=0;i<edge_count_A;i++) {
+
+			Vector3 e1=p_transform_a.basis.xform( vertices_A[ edges_A[i].a] );
+			Vector3 e2=p_transform_a.basis.xform( vertices_A[ edges_A[i].b] );
+			Vector3 n = (e2-e1);
+
+			for(int j=0;j<vertex_count_B;j++) {
+
+				Vector3 e3=p_transform_b.xform(vertices_B[j]);
+
+
+				if (!separator.test_axis( (e1-e3).cross(n).cross(n).normalized() ))
+					return;
+			}
+		}
+
+		for (int i=0;i<edge_count_B;i++) {
+
+			Vector3 e1=p_transform_b.basis.xform( vertices_B[ edges_B[i].a] );
+			Vector3 e2=p_transform_b.basis.xform( vertices_B[ edges_B[i].b] );
+			Vector3 n = (e2-e1);
+
+			for(int j=0;j<vertex_count_A;j++) {
+
+				Vector3 e3=p_transform_a.xform(vertices_A[j]);
+
+
+				if (!separator.test_axis( (e1-e3).cross(n).cross(n).normalized() ))
+					return;
+			}
+		}
+
+
+	}
+
 	separator.generate_contacts();
 
 }
 
-static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b, _CollectorCallback *p_collector) {
+
+template<bool withMargin>
+static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p_transform_a, const ShapeSW *p_b,const Transform& p_transform_b,_CollectorCallback *p_collector,float p_margin_a,float p_margin_b) {
 
 
 	const ConvexPolygonShapeSW *convex_polygon_A = static_cast<const ConvexPolygonShapeSW*>(p_a);
 	const FaceShapeSW *face_B = static_cast<const FaceShapeSW*>(p_b);
 
-	SeparatorAxisTest<ConvexPolygonShapeSW,FaceShapeSW> separator(convex_polygon_A,p_transform_a,face_B,p_transform_b,p_collector);
+	SeparatorAxisTest<ConvexPolygonShapeSW,FaceShapeSW,withMargin> separator(convex_polygon_A,p_transform_a,face_B,p_transform_b,p_collector,p_margin_a,p_margin_b);
 
 	const Geometry::MeshData &mesh = convex_polygon_A->get_mesh();
 
@@ -1252,12 +1527,62 @@ static void _collision_convex_polygon_face(const ShapeSW *p_a,const Transform &p
 		}
 	}
 
+
+	if (withMargin) {
+
+		//vertex-vertex
+		for(int i=0;i<vertex_count;i++) {
+
+			Vector3 va = p_transform_a.xform(vertices[i]);
+
+			for(int j=0;j<3;j++) {
+
+				if (!separator.test_axis( (va-vertex[j]).normalized() ))
+					return;
+
+			}
+		}
+		//edge-vertex( hsell)
+
+		for (int i=0;i<edge_count;i++) {
+
+			Vector3 e1=p_transform_a.basis.xform( vertices[ edges[i].a] );
+			Vector3 e2=p_transform_a.basis.xform( vertices[ edges[i].b] );
+			Vector3 n = (e2-e1);
+
+			for(int j=0;j<3;j++) {
+
+				Vector3 e3=vertex[j];
+
+
+				if (!separator.test_axis( (e1-e3).cross(n).cross(n).normalized() ))
+					return;
+			}
+		}
+
+		for (int i=0;i<3;i++) {
+
+			Vector3 e1=vertex[i];
+			Vector3 e2=vertex[(i+1)%3];
+			Vector3 n = (e2-e1);
+
+			for(int j=0;j<vertex_count;j++) {
+
+				Vector3 e3=p_transform_a.xform(vertices[j]);
+
+
+				if (!separator.test_axis( (e1-e3).cross(n).cross(n).normalized() ))
+					return;
+			}
+		}
+	}
+
 	separator.generate_contacts();
 
 }
 
 
-bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, CollisionSolverSW::CallbackResult p_result_callback,void *p_userdata,bool p_swap,Vector3* r_prev_axis) {
+bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_transform_A, const ShapeSW *p_shape_B, const Transform& p_transform_B, CollisionSolverSW::CallbackResult p_result_callback,void *p_userdata,bool p_swap,Vector3* r_prev_axis,float p_margin_a,float p_margin_b) {
 
 	PhysicsServer::ShapeType type_A=p_shape_A->get_type();
 
@@ -1273,26 +1598,54 @@ bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_tran
 
 
 	static const CollisionFunc collision_table[5][5]={
-		{_collision_sphere_sphere,
-		 _collision_sphere_box,
-		 _collision_sphere_capsule,
-		 _collision_sphere_convex_polygon,
-		 _collision_sphere_face},
+		{_collision_sphere_sphere<false>,
+		 _collision_sphere_box<false>,
+		 _collision_sphere_capsule<false>,
+		 _collision_sphere_convex_polygon<false>,
+		 _collision_sphere_face<false>},
 		{0,
-		 _collision_box_box,
-		 _collision_box_capsule,
-		 _collision_box_convex_polygon,
-		 _collision_box_face},
-		{0,
-		 0,
-		 _collision_capsule_capsule,
-		 _collision_capsule_convex_polygon,
-		 _collision_capsule_face},
+		 _collision_box_box<false>,
+		 _collision_box_capsule<false>,
+		 _collision_box_convex_polygon<false>,
+		 _collision_box_face<false>},
 		{0,
 		 0,
+		 _collision_capsule_capsule<false>,
+		 _collision_capsule_convex_polygon<false>,
+		 _collision_capsule_face<false>},
+		{0,
 		 0,
-		 _collision_convex_polygon_convex_polygon,
-		 _collision_convex_polygon_face},
+		 0,
+		 _collision_convex_polygon_convex_polygon<false>,
+		 _collision_convex_polygon_face<false>},
+		{0,
+		 0,
+		 0,
+		 0,
+		 0},
+	};
+
+	static const CollisionFunc collision_table_margin[5][5]={
+		{_collision_sphere_sphere<true>,
+		 _collision_sphere_box<true>,
+		 _collision_sphere_capsule<true>,
+		 _collision_sphere_convex_polygon<true>,
+		 _collision_sphere_face<true>},
+		{0,
+		 _collision_box_box<true>,
+		 _collision_box_capsule<true>,
+		 _collision_box_convex_polygon<true>,
+		 _collision_box_face<true>},
+		{0,
+		 0,
+		 _collision_capsule_capsule<true>,
+		 _collision_capsule_convex_polygon<true>,
+		 _collision_capsule_face<true>},
+		{0,
+		 0,
+		 0,
+		 _collision_convex_polygon_convex_polygon<true>,
+		 _collision_convex_polygon_face<true>},
 		{0,
 		 0,
 		 0,
@@ -1311,20 +1664,30 @@ bool sat_calculate_penetration(const ShapeSW *p_shape_A, const Transform& p_tran
 	const ShapeSW *B=p_shape_B;
 	const Transform *transform_A=&p_transform_A;
 	const Transform *transform_B=&p_transform_B;
+	float margin_A=p_margin_a;
+	float margin_B=p_margin_b;
 
 	if (type_A > type_B) {
 		SWAP(A,B);
 		SWAP(transform_A,transform_B);
 		SWAP(type_A,type_B);
+		SWAP(margin_A,margin_B);
 		callback.swap = !callback.swap;
 	}
 
 
-	CollisionFunc collision_func = collision_table[type_A-2][type_B-2];
+	CollisionFunc collision_func;
+	if (margin_A!=0.0 || margin_B!=0.0) {
+		collision_func = collision_table_margin[type_A-2][type_B-2];
+
+	} else {
+		collision_func = collision_table[type_A-2][type_B-2];
+
+	}
 	ERR_FAIL_COND_V(!collision_func,false);
 
 
-	collision_func(A,*transform_A,B,*transform_B,&callback);
+	collision_func(A,*transform_A,B,*transform_B,&callback,margin_A,margin_B);
 
 	return callback.collided;
 

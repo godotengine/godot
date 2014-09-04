@@ -209,6 +209,54 @@ bool OS_Windows::can_draw() const {
 	return !minimized;
 };
 
+#define MI_WP_SIGNATURE 0xFF515700
+#define SIGNATURE_MASK 0xFFFFFF00
+#define IsPenEvent(dw) (((dw) & SIGNATURE_MASK) == MI_WP_SIGNATURE)
+
+
+void OS_Windows::_touch_event(int idx, UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+
+	InputEvent event;
+	event.type = InputEvent::SCREEN_TOUCH;
+	event.ID=++last_id;
+	event.screen_touch.index = idx;
+
+	switch (uMsg) {
+		case WM_LBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+		case WM_RBUTTONDOWN: {
+
+			event.screen_touch.pressed = true;
+		} break;
+
+		case WM_LBUTTONUP:
+		case WM_MBUTTONUP:
+		case WM_RBUTTONUP: {
+			event.screen_touch.pressed = false;
+		} break;
+	};
+
+	event.screen_touch.x=GET_X_LPARAM(lParam);
+	event.screen_touch.y=GET_Y_LPARAM(lParam);
+
+	if (main_loop) {
+		input->parse_input_event(event);
+	}
+};
+
+void OS_Windows::_drag_event(int idx,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+
+	InputEvent event;
+	event.type = InputEvent::SCREEN_DRAG;
+	event.ID=++last_id;
+	event.screen_drag.index = idx;
+
+	event.screen_drag.x=GET_X_LPARAM(lParam);
+	event.screen_drag.y=GET_Y_LPARAM(lParam);
+
+	if (main_loop)
+		input->parse_input_event(event);
+};
 
 LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
@@ -296,6 +344,18 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			}
 
+			LPARAM extra = GetMessageExtraInfo();
+			if (IsPenEvent(extra)) {
+
+				int idx = extra & 0x7f;
+				_drag_event(idx, uMsg, wParam, lParam);
+				if (idx != 0) {
+					return 0;
+				};
+				// fallthrough for mouse event
+			};
+
+
 			InputEvent event;
 			event.type=InputEvent::MOUSE_MOTION;
 			event.ID=++last_id;
@@ -375,6 +435,17 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_LBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
+
+			LPARAM extra = GetMessageExtraInfo();
+			if (IsPenEvent(extra)) {
+
+				int idx = extra & 0x7f;
+				_touch_event(idx, uMsg, wParam, lParam);
+				if (idx != 0) {
+					return 0;
+				};
+				// fallthrough for mouse event
+			};
 
 			InputEvent event;
 			event.type=InputEvent::MOUSE_BUTTON;

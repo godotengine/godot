@@ -582,5 +582,6 @@ public:
 
 };
 
+#undef DEFAULT_PROJECT_RANGE_CAST
 
 #endif // SHAPE_2D_2DSW_H

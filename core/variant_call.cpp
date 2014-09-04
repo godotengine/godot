@@ -331,6 +331,9 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0R(Vector3, abs);
 	VCALL_LOCALMEM1R(Vector3, distance_to);
 	VCALL_LOCALMEM1R(Vector3, distance_squared_to);
+	VCALL_LOCALMEM1R(Vector3, slide);
+	VCALL_LOCALMEM1R(Vector3, reflect);
+
 
 	VCALL_LOCALMEM0R(Plane,normalized);
 	VCALL_LOCALMEM0R(Plane,center);
@@ -1239,6 +1242,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(VECTOR3,VECTOR3,Vector3,abs,varray());
 	ADDFUNC1(VECTOR3,REAL,Vector3,distance_to,VECTOR3,"b",varray());
 	ADDFUNC1(VECTOR3,REAL,Vector3,distance_squared_to,VECTOR3,"b",varray());
+	ADDFUNC1(VECTOR3,VECTOR3,Vector3,slide,VECTOR3,"by",varray());
+	ADDFUNC1(VECTOR3,VECTOR3,Vector3,reflect,VECTOR3,"by",varray());
 
 	ADDFUNC0(PLANE,PLANE,Plane,normalized,varray());
 	ADDFUNC0(PLANE,VECTOR3,Plane,center,varray());

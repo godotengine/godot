@@ -208,8 +208,9 @@ for p in platform_list:
 
 	flag_list = platform_flags[p]
 	for f in flag_list:
-		env[f[0]] = f[1]
-		print(f[0]+":"+f[1])
+		if not (f[0] in ARGUMENTS): # allow command line to override platform flags
+			env[f[0]] = f[1]
+			print(f[0]+":"+f[1])
 
 	env.module_list=[]
 

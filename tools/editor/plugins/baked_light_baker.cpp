@@ -338,7 +338,7 @@ void BakedLightBaker::_fix_lights() {
 				}
 				if (dl.type==VS::LIGHT_OMNI) {
 
-					dl.area=4.0*Math_PI*Math::pow(dl.radius,2.0);
+					dl.area=4.0*Math_PI*pow(dl.radius,2.0f);
 					dl.constant=1.0/3.5;
 				} else {
 

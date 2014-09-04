@@ -14,6 +14,8 @@ friend class VehicleBody;
 
 	Transform m_worldTransform;
 	Transform local_xform;
+	bool engine_traction;
+	bool steers;
 
 
 	Vector3	m_chassisConnectionPointCS; //const
@@ -39,7 +41,7 @@ friend class VehicleBody;
 	real_t	m_rotation;
 	real_t	m_deltaRotation;
 	real_t	m_rollInfluence;
-	real_t	m_engineForce;
+	//real_t	m_engineForce;
 	real_t	m_brake;
 
 	real_t	m_clippedInvContactDotSuspension;
@@ -69,6 +71,35 @@ protected:
 
 public:
 
+	void set_radius(float p_radius);
+	float get_radius() const;
+
+	void set_suspension_rest_length(float p_length);
+	float get_suspension_rest_length() const;
+
+	void set_suspension_travel(float p_length);
+	float get_suspension_travel() const;
+
+	void set_suspension_stiffness(float p_value);
+	float get_suspension_stiffness() const;
+
+	void set_suspension_max_force(float p_value);
+	float get_suspension_max_force() const;
+
+	void set_damping_compression(float p_value);
+	float get_damping_compression() const;
+
+	void set_damping_relaxation(float p_value);
+	float get_damping_relaxation() const;
+
+	void set_friction_slip(float p_value);
+	float get_friction_slip() const;
+
+	void set_use_as_traction(bool p_enable);
+	bool is_used_as_traction() const;
+
+	void set_use_as_steering(bool p_enabled);
+	bool is_used_as_steering() const;
 
 	VehicleWheel();
 
@@ -81,6 +112,9 @@ class VehicleBody : public PhysicsBody {
 
 	real_t mass;
 	real_t friction;
+
+	float engine_force;
+	float brake;
 
 	Vector3 linear_velocity;
 	Vector3  angular_velocity;
@@ -134,6 +168,15 @@ public:
 
 	void set_friction(real_t p_friction);
 	real_t get_friction() const;
+
+	void set_engine_force(float p_engine_force);
+	float get_engine_force() const;
+
+	void set_brake(float p_force);
+	float get_brake() const;
+
+	void set_steering(float p_steering);
+	float get_steering() const;
 
 
 	VehicleBody();

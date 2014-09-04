@@ -1086,9 +1086,15 @@ void Physics2DServerSW::step(float p_step) {
 
 	last_step=p_step;
 	Physics2DDirectBodyStateSW::singleton->step=p_step;
+	island_count=0;
+	active_objects=0;
+	collision_pairs=0;
 	for( Set<const Space2DSW*>::Element *E=active_spaces.front();E;E=E->next()) {
 
 		stepper->step((Space2DSW*)E->get(),p_step,iterations);
+		island_count+=E->get()->get_island_count();
+		active_objects+=E->get()->get_active_objects();
+		collision_pairs+=E->get()->get_collision_pairs();
 	}
 };
 
@@ -1118,6 +1124,27 @@ void Physics2DServerSW::finish() {
 	memdelete(direct_state);
 };
 
+int Physics2DServerSW::get_process_info(ProcessInfo p_info) {
+
+	switch(p_info) {
+
+		case INFO_ACTIVE_OBJECTS: {
+
+			return active_objects;
+		} break;
+		case INFO_COLLISION_PAIRS: {
+			return collision_pairs;
+		} break;
+		case INFO_ISLAND_COUNT: {
+
+			return island_count;
+		} break;
+
+	}
+
+	return 0;
+}
+
 
 Physics2DServerSW::Physics2DServerSW() {
 
@@ -1125,7 +1152,12 @@ Physics2DServerSW::Physics2DServerSW() {
 //	BroadPhase2DSW::create_func=BroadPhase2DBasic::_create;
 
 	active=true;
+	island_count=0;
+	active_objects=0;
+	collision_pairs=0;
+
 };
+
 
 Physics2DServerSW::~Physics2DServerSW() {
 

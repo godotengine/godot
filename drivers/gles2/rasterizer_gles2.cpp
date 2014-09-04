@@ -1534,6 +1534,23 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 
 	ERR_FAIL_COND((format&VS::ARRAY_FORMAT_VERTEX)==0); // mandatory
 
+	ERR_FAIL_COND( mesh->morph_target_count!=p_blend_shapes.size() );
+	if (mesh->morph_target_count) {
+		//validate format for morphs
+		for(int i=0;i<p_blend_shapes.size();i++) {
+
+			uint32_t bsformat=0;
+			Array arr = p_blend_shapes[i];
+			for(int j=0;j<arr.size();j++) {
+
+
+				if (arr[j].get_type()!=Variant::NIL)
+					bsformat|=(1<<j);
+			}
+
+			ERR_FAIL_COND( (bsformat)!=(format&(VS::ARRAY_FORMAT_BONES-1)));
+		}
+	}
 
 	Surface *surface = memnew( Surface );
 	ERR_FAIL_COND( !surface );
@@ -1731,7 +1748,9 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 	surface->array_len=array_len;
 	surface->format=format;
 	surface->primitive=p_primitive;
+	surface->morph_target_count=mesh->morph_target_count;
 	surface->configured_format=0;
+	surface->mesh=mesh;
 	if (keep_copies) {
 		surface->data=p_arrays;
 		surface->morph_data=p_blend_shapes;
@@ -1764,6 +1783,17 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 		if (surface->index_array_len) {
 			surface->index_array_local = (uint8_t*)memalloc(index_array_len*surface->array[VS::ARRAY_INDEX].size);
 			index_array_ptr=(uint8_t*)surface->index_array_local;
+		}
+
+		if (mesh->morph_target_count) {
+
+			surface->morph_targets_local = memnew_arr(Surface::MorphTarget,mesh->morph_target_count);
+			for(int i=0;i<mesh->morph_target_count;i++) {
+
+				surface->morph_targets_local[i].array=memnew_arr(uint8_t,surface->local_stride*surface->array_len);
+				surface->morph_targets_local[i].configured_format=surface->morph_format;
+				_surface_set_arrays(surface,surface->morph_targets_local[i].array,NULL,p_blend_shapes[i],false);
+			}
 		}
 	}
 
@@ -4976,7 +5006,10 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 				/* compute morphs */
 
+
 				if (p_morphs && surf->morph_target_count && can_copy_to_local) {
+
+
 
 					base = skinned_buffer;
 					stride=surf->local_stride;
@@ -7812,9 +7845,9 @@ void RasterizerGLES2::free(const RID& p_rid) {
 
 				for(int i=0;i<mesh->morph_target_count;i++) {
 
-					memfree(surface->morph_targets_local[i].array);
+					memdelete_arr(surface->morph_targets_local[i].array);
 				}
-				memfree(surface->morph_targets_local);
+				memdelete_arr(surface->morph_targets_local);
 				surface->morph_targets_local=NULL;
 			}
 

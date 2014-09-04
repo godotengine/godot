@@ -808,7 +808,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	//print_line("margin: "+rtos(margin));
 	do {
 
-		//fill exclude list..
+		//motion recover
 		for(int i=0;i<get_shape_count();i++) {
 
 

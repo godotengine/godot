@@ -47,6 +47,7 @@ private:
 	Type type;
 	RID self;
 	ObjectID instance_id;
+	uint32_t layer_mask;
 
 	struct Shape {
 
@@ -71,7 +72,7 @@ protected:
 	void _update_shapes_with_motion(const Vector3& p_motion);
 	void _unregister_shapes();
 
-	_FORCE_INLINE_ void _set_transform(const Transform& p_transform) { transform=p_transform; _update_shapes(); }
+	_FORCE_INLINE_ void _set_transform(const Transform& p_transform,bool p_update_shapes=true) { transform=p_transform; if (p_update_shapes) _update_shapes(); }
 	_FORCE_INLINE_ void _set_inv_transform(const Transform& p_transform) { inv_transform=p_transform; }
 	void _set_static(bool p_static);
 
@@ -104,6 +105,8 @@ public:
 	_FORCE_INLINE_ SpaceSW* get_space() const { return space; }
 
 
+	_FORCE_INLINE_ void set_layer_mask(uint32_t p_mask) { layer_mask=p_mask; }
+	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }
 
 	void remove_shape(ShapeSW *p_shape);
 	void remove_shape(int p_index);

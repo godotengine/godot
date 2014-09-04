@@ -2802,10 +2802,7 @@ int Tree::get_item_offset(TreeItem *p_item, bool p_as_expanded, bool p_expand_an
 
 		ofs+=compute_item_height(it)+cache.vseparation;
 
-		bool use_childs = it->childs;
-		//print_line("use childs: " + itos(use_childs));
-		if (use_childs && it->collapsed && !p_as_expanded) use_childs = false;
-		if (use_childs && it->collapsed && p_as_expanded && p_expand_ancestor_only && !ancestors.has(it)) use_childs = false;
+		if (it->childs && !it->collapsed) {
 
 		if (use_childs) {
 

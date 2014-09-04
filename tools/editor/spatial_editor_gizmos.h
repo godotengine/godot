@@ -45,6 +45,7 @@
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/car_body.h"
+#include "scene/3d/vehicle_body.h"
 
 
 class Camera;
@@ -324,6 +325,20 @@ public:
 
 	void redraw();
 	CarWheelSpatialGizmo(CarWheel* p_car_wheel=NULL);
+
+};
+
+
+class VehicleWheelSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(VehicleWheelSpatialGizmo,SpatialGizmoTool);
+
+	VehicleWheel* car_wheel;
+
+public:
+
+	void redraw();
+	VehicleWheelSpatialGizmo(VehicleWheel* p_car_wheel=NULL);
 
 };
 

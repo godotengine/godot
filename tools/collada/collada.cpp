@@ -1388,8 +1388,11 @@ void Collada::_parse_morph_controller(XMLParser& parser, String p_id) {
 	state.morph_controller_data_map[p_id]=MorphControllerData();
 	MorphControllerData &morphdata = state.morph_controller_data_map[p_id];
 
+	print_line("morph source: "+parser.get_attribute_value("source")+" id: "+p_id);
 	morphdata.mesh=_uri_to_id(parser.get_attribute_value("source"));
+	print_line("morph source2: "+morphdata.mesh);
 	morphdata.mode=parser.get_attribute_value("method");
+	printf("JJmorph: %p\n",&morphdata);
 	String current_source;
 
 	while(parser.read()==OK) {

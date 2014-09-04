@@ -1157,6 +1157,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			if (p_value.type!=Variant::VECTOR3)
 				return;
 
+
 			if (p_index.get_type()==Variant::STRING) {
 				//scalar name
 
@@ -1191,6 +1192,24 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					valid=true;
 					v->set_axis(index,p_value);
+					return;
+				}
+			} else if (p_index.get_type()==Variant::STRING) {
+
+				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
+				Matrix3 *v=_data._matrix3;
+
+				if (*str=="x") {
+					valid=true;
+					v->set_axis(0,p_value);
+					return;
+				} else if (*str=="y" ) {
+					valid=true;
+					v->set_axis(1,p_value);
+					return;
+				} else if (*str=="z" ) {
+					valid=true;
+					v->set_axis(2,p_value);
 					return;
 				}
 			}
@@ -2032,6 +2051,21 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 					valid=true;
 					return v->get_axis(index);
+				}
+			} else if (p_index.get_type()==Variant::STRING) {
+
+				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
+				const Matrix3 *v=_data._matrix3;
+
+				if (*str=="x") {
+					valid=true;
+					return v->get_axis(0);
+				} else if (*str=="y" ) {
+					valid=true;
+					return v->get_axis(1);
+				} else if (*str=="z" ) {
+					valid=true;
+					return v->get_axis(2);
 				}
 			}
 
