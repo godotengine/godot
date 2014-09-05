@@ -158,6 +158,16 @@ void ScriptDebugger::set_depth(int p_depth) {
         get_break_language()->debug_status_changed();
 }
 
+void ScriptDebugger::set_disabled(bool p_disabled) {
+
+	disabled = p_disabled;
+}
+
+bool ScriptDebugger::is_disabled() const {
+
+	return disabled;
+}
+
 int ScriptDebugger::get_depth() const {
 
 	return depth;
@@ -253,6 +263,7 @@ ScriptDebugger::ScriptDebugger() {
 	lines_left=-1;
 	depth=-1;
 	break_lang=NULL;
+	disabled=false;
 }
 
 

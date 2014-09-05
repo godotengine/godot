@@ -260,10 +260,65 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> *
 
     //no globals are really reachable in gdscript
 }
-String GDScriptLanguage::debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems,int p_max_depth) {
+
+static String _build_script(const String& p_text,bool p_return) {
+	String script_text = "var this\n"
+		"func set_this(p_this):\n"
+		"	this=p_this\n"
+		"func e():\n";
+	script_text += p_return ? "	return " : " ";
+	script_text += p_text.strip_edges();
+	script_text += "\n";
+	return script_text;
+}
+
+String GDScriptLanguage::debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems,int p_max_depth,bool p_return) {
 
 	if (_debug_parse_err_line>=0)
 		return "";
+	_debug_error="";
+
+	ERR_FAIL_INDEX_V(p_level,_debug_call_stack_pos,"");
+	int l = _debug_call_stack_pos - p_level -1;
+
+	GDInstance *instance = _call_stack[l].instance;
+	if (!instance)
+		return "";
+
+	ScriptDebugger::get_singleton()->set_disabled(true);
+
+	Ref<Script> script= Ref<Script>(create_script());
+	script->set_source_code(_build_script(p_expression,p_return));
+	Error err = script->reload();
+	if (err) {
+		_debug_error="";
+		_debug_parse_err_line=-1;
+		print_line("[GDScriptLanguage::debug_parse_stack_level_expression] Error loading script for expression: " + p_expression);
+		ScriptDebugger::get_singleton()->set_disabled(false);
+		return "";
+	}
+
+	Object dummy;
+	ScriptInstance *script_instance = script->instance_create(&dummy);
+
+	Variant::CallError call_err;
+	script_instance->call("set_this",instance->owner);
+	Variant result = script_instance->call("e", NULL, 0, call_err );
+	if (_debug_error!="") {
+		print_line(_debug_error);
+		_debug_error="";
+		_debug_parse_err_line=-1;
+		return "";
+	}
+	if (call_err.error == Variant::CallError::CALL_OK) {
+		ScriptDebugger::get_singleton()->set_disabled(false);
+		return result.operator String();
+	}
+	print_line("[GDScriptLanguage::debug_parse_stack_level_expression]: Error eval! Error code: " + itos(call_err.error));
+
+	memdelete(script_instance);
+
+	ScriptDebugger::get_singleton()->set_disabled(false);
 	return "";
 }
 

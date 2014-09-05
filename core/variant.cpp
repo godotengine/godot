@@ -1212,6 +1212,7 @@ Variant::operator String() const {
 					sp.value="\""+sp.value+"\"";
 				sp.value.replace("\n","\\n");
 				sp.value.replace("\t","\\t");
+				sp.value.replace("\"","\\\"");
 				pairs.push_back(sp);
 			}
 
@@ -1289,8 +1290,27 @@ Variant::operator String() const {
 		} break;
 		case OBJECT: {
 
-			if (_get_obj().obj)
-				return "["+_get_obj().obj->get_type()+":"+itos(_get_obj().obj->get_instance_ID())+"]";
+			if (_get_obj().obj) {
+				Object *obj = _get_obj().obj;
+				return "["+obj->get_type()+":"+itos(obj->get_instance_ID())+"]";
+
+				//String str = "["+obj->get_type()+":"+itos(obj->get_instance_ID())+"]";
+				//List<PropertyInfo> p_list;
+				//obj->get_property_list(&p_list);
+				//Dictionary d;
+				//for(List<PropertyInfo>::Element *E=p_list.front();E;E=E->next()) {
+
+				//	PropertyInfo& prop=E->get();
+				//	bool valid = false;
+				//	Variant value = obj->get(prop.name, &valid);
+				//	if(!valid)
+				//		continue;
+				//	d[prop.name]=value;
+				//}
+				//if(d.empty())
+				//	return str;
+				//return str+" : "+Variant(d);
+			}
 			else
 				return "[Object:null]";
 

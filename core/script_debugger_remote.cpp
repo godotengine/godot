@@ -104,6 +104,9 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 		ERR_FAIL();
 	}
 
+	if(is_disabled())
+		return;
+
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);
 	packet_peer_stream->put_var(p_can_continue);

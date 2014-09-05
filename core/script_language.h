@@ -153,7 +153,7 @@ public:
 	virtual void debug_get_stack_level_locals(int p_level,List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1)=0;
 	virtual void debug_get_stack_level_members(int p_level,List<String> *p_members, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1)=0;
 	virtual void debug_get_globals(List<String> *p_locals, List<Variant> *p_values, int p_max_subitems=-1,int p_max_depth=-1)=0;
-	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1)=0;
+	virtual String debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems=-1,int p_max_depth=-1,bool p_return=true)=0;
     virtual void debug_status_changed() = 0;
 
 	/* LOADER FUNCTIONS */
@@ -209,6 +209,7 @@ class ScriptDebugger {
 
 	int lines_left;
 	int depth;
+	bool disabled;
 
 	static ScriptDebugger * singleton;
 	Map<int,Set<StringName>  > breakpoints;
@@ -224,6 +225,9 @@ public:
 
 	void set_depth(int p_depth);
 	int get_depth() const;
+
+	void set_disabled(bool p_disabled);
+	bool is_disabled() const;
 
 	String breakpoint_find_source(const String& p_source) const;
 	void insert_breakpoint(int p_line, const StringName& p_source);

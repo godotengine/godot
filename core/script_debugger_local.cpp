@@ -65,6 +65,8 @@ void ScriptDebuggerLocal::print_source(ScriptLanguage *p_script,int p_frame,bool
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
+	if(is_disabled())
+		return;
 	print_line("Debugger Break, Reason: '"+p_script->debug_get_error()+"'");
 	print_source(p_script,0,true);
 	//print_line("Enter \"help\" for assistance.");
@@ -145,9 +147,21 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 				print_line("Usage: print <expre>");
 			} else {
 
-				String expr = line.get_slice(" ",1);
+				String expr = line.substr(line.find(" "), line.length());
 				String res = p_script->debug_parse_stack_level_expression(current_frame,expr);
 				print_line(res);
+			}
+
+		} else if (line.begins_with("e") || line.begins_with("exec")) {
+
+			if (line.get_slice_count(" ")<1) {
+				print_line("Usage: exec <statement>");
+			} else {
+
+				String expr = line.substr(line.find(" "), line.length());
+				String res = p_script->debug_parse_stack_level_expression(current_frame,expr,-1,-1,false);
+				if(!res.empty())
+					print_line(res);
 			}
 
 		} else if (line=="s" || line=="step") {
@@ -207,6 +221,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			print_line("\tmv,members :\t\t Show member variables for \"this\" in frame.");
 			print_line("\tgv,globals :\t\t Show global variables.");
 			print_line("\tp,print <expr> :\t Execute and print variable in expression.");
+			print_line("\te,exec <statment> :\t Execute script statement.");
 			print_line("\ts,step :\t\t Step to next line.");
 			print_line("\tn,next :\t\t Next line.");
 			print_line("\tbr,break source:line :\t Place a breakpoint.");
