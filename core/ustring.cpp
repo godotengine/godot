@@ -755,6 +755,14 @@ String String::md5(const uint8_t *p_md5) {
 
 }
 
+String String::rep(const String& p_str, int p_rep) {
+
+	String str;
+	while(p_rep--)
+		str+=p_str;
+	return str;
+}
+
 String String::chr(CharType p_char) {
 		
 	CharType c[2]={p_char,0};

@@ -1166,6 +1166,8 @@ struct _VariantStrPair {
 
 Variant::operator String() const {
 
+	static int tab=0;
+
 	switch( type ) {
 	
 		case NIL: return ""; 
@@ -1189,89 +1191,100 @@ Variant::operator String() const {
 		case DICTIONARY: {
 			
 			const Dictionary &d =*reinterpret_cast<const Dictionary*>(_data._mem);
+			if(d.empty())
+				return "{}";
 			//const String *K=NULL;
-			String str;
+			String str="{";
 			List<Variant> keys;
 			d.get_key_list(&keys);
 
 			Vector<_VariantStrPair> pairs;
+
+			tab++;
 
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 				_VariantStrPair sp;
 				sp.key=String(E->get());
 				sp.value=d[E->get()];
+				const Variant &value=d[E->get()];
+				if(value.get_type()==Variant::STRING)
+					sp.value="\""+sp.value+"\"";
+				sp.value.replace("\n","\\n");
+				sp.value.replace("\t","\\t");
 				pairs.push_back(sp);
 			}
 
 			pairs.sort();
 
 			for(int i=0;i<pairs.size();i++) {
-				if (i>0)
-					str+=", ";
-				str+="("+pairs[i].key+":"+pairs[i].value+")";
+				str+=(i>0)?",\n":"\n";
+				str+=String::rep("  ",tab)+pairs[i].key+" = "+pairs[i].value;
 			}
+			tab--;
 			
-			return str;
+			return str+"\n"+String::rep("  ",tab)+"}";
 		} break;
 		case VECTOR3_ARRAY: { 
 		
 			DVector<Vector3> vec = operator DVector<Vector3>();
-			String str;
+			String str="[";
 			for(int i=0;i<vec.size();i++) {
 			
 				if (i>0)
 					str+=", ";
 				str=str+Variant( vec[i] );
 			}
-			return str;
+			return str+"]";
 		} break;
 		case STRING_ARRAY: {
 
 			DVector<String> vec = operator DVector<String>();
-			String str;
+			String str="[";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+vec[i];
 			}
-			return str;
+			return str+"]";
 		} break;
 		case INT_ARRAY: {
 
 			DVector<int> vec = operator DVector<int>();
-			String str;
+			String str="[";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+itos(vec[i]);
 			}
-			return str;
+			return str+"]";
 		} break;
 		case REAL_ARRAY: {
 
 			DVector<real_t> vec = operator DVector<real_t>();
-			String str;
+			String str="[";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+rtos(vec[i]);
 			}
-			return str;
+			return str+"]";
 		} break;
 		case ARRAY: {
 
 			Array arr = operator Array();
-			String str;
+			String str="[";
+			tab++;
 			for (int i=0; i<arr.size(); i++) {
 				if (i)
 					str+=", ";
 				str += String(arr[i]);
 			};
-			return str;
+			tab--;
+			return str+"]";
 
 		} break;
 		case OBJECT: {

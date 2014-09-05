@@ -32,6 +32,9 @@
 #include "script_language.h"
 
 class ScriptDebuggerLocal : public ScriptDebugger {
+private:
+	void print_source(ScriptLanguage *p_script,int p_frame,bool p_list_source=false);
+
 public:
 
 	void debug(ScriptLanguage *p_script,bool p_can_continue);

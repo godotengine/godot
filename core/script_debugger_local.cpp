@@ -28,12 +28,43 @@
 /*************************************************************************/
 #include "script_debugger_local.h"
 #include "os/os.h"
+#include "os/file_access.h"
+
+void ScriptDebuggerLocal::print_source(ScriptLanguage *p_script,int p_frame,bool p_list_source) {
+	String source=p_script->debug_get_stack_level_source(p_frame);
+	int line=p_script->debug_get_stack_level_line(p_frame);
+
+	print_line("*Frame "+itos(0)+" - "+source+":"+itos(line)+" in function '"+p_script->debug_get_stack_level_function(p_frame)+"'");
+
+	Error err;
+	FileAccess *f=FileAccess::open(source,FileAccess::READ,&err);
+	if(f!=NULL) {
+
+		// Read source lines
+		Vector<String> lines;
+		while(!f->eof_reached())
+			lines.push_back(f->get_line());
+		f->close();
+
+		int line_from=line;
+		int line_to=line;
+
+		if(p_list_source) {
+			line_from = MAX(1, line - 5);
+			line_to = MIN(line + 5, lines.size());
+		}
+
+		for(int n = line_from; n <= line_to; n++) {
+			print_line(((n==line)?"-> ":"   ")+String::num(n)+":"+lines[n - 1]);
+		}
+	}
+}
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 	print_line("Debugger Break, Reason: '"+p_script->debug_get_error()+"'");
-	print_line("*Frame "+itos(0)+" - "+p_script->debug_get_stack_level_source(0)+":"+itos(p_script->debug_get_stack_level_line(0))+" in function '"+p_script->debug_get_stack_level_function(0)+"'");
-	print_line("Enter \"help\" for assistance.");
+	print_source(p_script,0);
+	//print_line("Enter \"help\" for assistance.");
 	int current_frame=0;
 	int total_frames=p_script->debug_get_stack_level_count();
 	while(true) {
@@ -43,29 +74,32 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 		if (line=="") {
 			print_line("Debugger Break, Reason: '"+p_script->debug_get_error()+"'");
-			print_line("*Frame "+itos(current_frame)+" - "+p_script->debug_get_stack_level_source(current_frame)+":"+itos(p_script->debug_get_stack_level_line(current_frame))+" in function '"+p_script->debug_get_stack_level_function(current_frame)+"'");
-			print_line("Enter \"help\" for assistance.");
+			print_source(p_script,current_frame);
+			//print_line("Enter \"help\" for assistance.");
 		} else if (line=="c" || line=="continue")
 			break;
+		else if (line=="l" || line=="list") {
+			print_source(p_script,current_frame,true);
+		}
 		else if (line=="bt" || line=="breakpoint") {
 
 			for(int i=0;i<total_frames;i++) {
 
 				String cfi=(current_frame==i)?"*":" "; //current frame indicator
-				print_line(cfi+"Frame "+itos(i)+" - "+p_script->debug_get_stack_level_source(i)+":"+itos(p_script->debug_get_stack_level_line(i))+" in function '"+p_script->debug_get_stack_level_function(i)+"'");
+				print_source(p_script,i);
 			}
 
 		} else if (line.begins_with("fr") || line.begins_with("frame")) {
 
 			if (line.get_slice_count(" ")==1) {
-				print_line("*Frame "+itos(current_frame)+" - "+p_script->debug_get_stack_level_source(current_frame)+":"+itos(p_script->debug_get_stack_level_line(current_frame))+" in function '"+p_script->debug_get_stack_level_function(current_frame)+"'");
+				print_source(p_script,current_frame);
 			} else {
 				int frame = line.get_slice(" ",1).to_int();
 				if (frame<0 || frame >=total_frames) {
 					print_line("Error: Invalid frame.");
 				} else {
 					current_frame=frame;
-					print_line("*Frame "+itos(frame)+" - "+p_script->debug_get_stack_level_source(frame)+":"+itos(p_script->debug_get_stack_level_line(frame))+" in function '"+p_script->debug_get_stack_level_function(frame)+"'");
+					print_source(p_script,frame);
 				}
 			}
 
@@ -165,6 +199,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			print_line("\tc,continue :\t\t Continue execution.");
 			print_line("\tbt,backtrace :\t\t Show stack trace (frames).");
 			print_line("\tfr,frame <frame>:\t Change current frame.");
+			print_line("\tl,list:\t List current source codes.");
 			print_line("\tlv,locals :\t\t Show local variables for current frame.");
 			print_line("\tmv,members :\t\t Show member variables for \"this\" in frame.");
 			print_line("\tgv,globals :\t\t Show global variables.");

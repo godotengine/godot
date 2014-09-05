@@ -93,6 +93,7 @@ public:
 		HASH,
 		PRINT_STACK,
 		AUTOLOAD,
+		DEB,
 		FUNC_MAX
 
 	};

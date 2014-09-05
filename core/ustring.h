@@ -134,6 +134,7 @@ public:
 	static String num_int64(int64_t p_num);
 	static String chr(CharType p_char);
 	static String md5(const uint8_t *p_md5);
+	static String rep(const String& p_str, int p_rep);
 	bool is_numeric() const;
 	double to_double() const;
 	float to_float() const;

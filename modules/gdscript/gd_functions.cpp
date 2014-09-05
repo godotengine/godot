@@ -99,6 +99,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"hash",
 		"print_stack",
 		"autoload",
+		"deb",
 	};
 
 	return _names[p_func];
@@ -934,6 +935,14 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 		}; break;
 
+		case DEB: {
+
+			VALIDATE_ARG_COUNT(0);
+			GDScriptLanguage::get_singleton()->debug_break("Deb",true);
+			r_ret=Variant();
+
+		}; break;
+
 		case FUNC_MAX: {
 
 			ERR_FAIL_V();
@@ -1324,6 +1333,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("autoload",PropertyInfo(Variant::STRING,"path"));
 			mi.return_val.type=Variant::OBJECT;
+			return mi;
+		} break;
+
+		case DEB: {
+			MethodInfo mi("deb");
+			mi.return_val.type=Variant::NIL;
 			return mi;
 		} break;
 

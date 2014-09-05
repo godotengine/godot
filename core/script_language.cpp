@@ -190,6 +190,14 @@ bool ScriptDebugger::is_breakpoint(int p_line,const StringName& p_source) const 
 
 	if (!breakpoints.has(p_line))
 		return false;
+
+	for(Set<StringName>::Element *E=breakpoints[p_line].front();E;E=E->next()) {
+
+		const StringName& p_path=E->get();
+		if(((String)p_source).find((String)p_path) != -1)
+			return true;
+	}
+
 	return breakpoints[p_line].has(p_source);
 
 }
