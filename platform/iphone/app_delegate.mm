@@ -257,18 +257,21 @@ static int frame_count = 0;
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
 	printf("********************* did enter background\n");
+	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	[view_controller.view stopAnimation];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
 {
 	printf("********************* did enter foreground\n");
+	//OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	[view_controller.view startAnimation];
 }
 
 - (void) applicationWillResignActive:(UIApplication *)application
 {
 	printf("********************* will resign active\n");
+	//OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	[view_controller.view stopAnimation]; // FIXME: pause seems to be recommended elsewhere
 }
 
@@ -279,6 +282,7 @@ static int frame_count = 0;
     printf("********************* mobile app tracker found\n");
 	[MobileAppTracker measureSession];
 #endif
+	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	[view_controller.view startAnimation]; // FIXME: resume seems to be recommended elsewhere
 }
 

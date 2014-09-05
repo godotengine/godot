@@ -38,7 +38,10 @@
 #include "globals.h"
 #include "thread_jandroid.h"
 #include "core/os/keyboard.h"
+#include "java_class_wrapper.h"
 
+
+static JavaClassWrapper *java_class_wrapper=NULL;
 static OS_Android *os_android=NULL;
 
 
@@ -934,6 +937,8 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_step(JNIEnv * env, jobjec
 		// ugly hack to initialize the rest of the engine
 		// because of the way android forces you to do everything with threads
 
+		java_class_wrapper = memnew( JavaClassWrapper(_godot_instance ));
+		Globals::get_singleton()->add_singleton(Globals::Singleton("JavaClassWrapper",java_class_wrapper));
 		_initialize_java_modules();
 
 		Main::setup2();

@@ -401,6 +401,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<CollisionObject>();
 	ObjectTypeDB::register_type<StaticBody>();
 	ObjectTypeDB::register_type<RigidBody>();
+	ObjectTypeDB::register_type<KinematicBody>();
 	ObjectTypeDB::register_type<CarBody>();
 	ObjectTypeDB::register_type<CarWheel>();
 	ObjectTypeDB::register_type<VehicleBody>();

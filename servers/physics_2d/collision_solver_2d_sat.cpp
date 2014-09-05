@@ -593,8 +593,8 @@ static void _collision_segment_segment(const Shape2DSW* p_a,const Matrix32& p_tr
 	//this collision is kind of pointless
 
 
-	if (!separator.test_previous_axis())
-		return;
+	//if (!separator.test_previous_axis())
+	//	return;
 
 	if (!separator.test_cast())
 		return;

@@ -30,7 +30,7 @@
 #define PHYSICS_SERVER_H
 
 #include "object.h"
-#include "reference.h"
+#include "resource.h"
 
 class PhysicsDirectSpaceState;
 
@@ -87,6 +87,45 @@ public:
 
 class PhysicsShapeQueryResult;
 
+class PhysicsShapeQueryParameters : public Reference {
+
+	OBJ_TYPE(PhysicsShapeQueryParameters, Reference);
+friend class PhysicsDirectSpaceState;
+	RID shape;
+	Matrix32 transform;
+	float margin;
+	Set<RID> exclude;
+	uint32_t layer_mask;
+	uint32_t object_type_mask;
+protected:
+	static void _bind_methods();
+public:
+
+
+	void set_shape(const RES& p_shape);
+	void set_shape_rid(const RID& p_shape);
+	RID get_shape_rid() const;
+
+	void set_transform(const Matrix32& p_transform);
+	Matrix32 get_transform() const;
+
+	void set_margin(float p_margin);
+	float get_margin() const;
+
+	void set_layer_mask(int p_layer_mask);
+	int get_layer_mask() const;
+
+	void set_object_type_mask(int p_object_type_mask);
+	int get_object_type_mask() const;
+
+	void set_exclude(const Vector<RID>& p_exclude);
+	Vector<RID> get_exclude() const;
+
+	PhysicsShapeQueryParameters();
+
+};
+
+
 
 class PhysicsDirectSpaceState : public Object {
 
@@ -101,6 +140,15 @@ protected:
 
 public:
 
+	enum ObjectTypeMask {
+		TYPE_MASK_STATIC_BODY=1<<0,
+		TYPE_MASK_KINEMATIC_BODY=1<<1,
+		TYPE_MASK_RIGID_BODY=1<<2,
+		TYPE_MASK_CHARACTER_BODY=1<<3,
+		TYPE_MASK_AREA=1<<4,
+		TYPE_MASK_COLLISION=TYPE_MASK_STATIC_BODY|TYPE_MASK_CHARACTER_BODY|TYPE_MASK_KINEMATIC_BODY|TYPE_MASK_RIGID_BODY
+	};
+
 	struct RayResult {
 
 		Vector3 position;
@@ -111,7 +159,7 @@ public:
 		int shape;
 	};
 
-	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
 	struct ShapeResult {
 
@@ -122,7 +170,25 @@ public:
 
 	};
 
-	virtual int intersect_shape(const RID& p_shape, const Transform& p_xform,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0)=0;
+	virtual int intersect_shape(const RID& p_shape, const Transform& p_xform,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
+
+	struct ShapeRestInfo {
+
+		Vector3 point;
+		Vector3 normal;
+		RID rid;
+		ObjectID collider_id;
+		int shape;
+		Vector3 linear_velocity; //velocity at contact point
+
+	};
+
+	virtual bool cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,ShapeRestInfo *r_info=NULL)=0;
+
+	virtual bool collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
+
+	virtual bool rest_info(RID p_shape, const Transform& p_shape_xform,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
+
 
 	PhysicsDirectSpaceState();
 };
@@ -303,6 +369,9 @@ public:
 	virtual void body_set_enable_continuous_collision_detection(RID p_body,bool p_enable)=0;
 	virtual bool body_is_continuous_collision_detection_enabled(RID p_body) const=0;
 
+	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask)=0;
+	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const=0;
+
 	virtual void body_set_user_flags(RID p_body, uint32_t p_flags)=0;
 	virtual uint32_t body_get_user_flags(RID p_body, uint32_t p_flags) const=0;
 
@@ -317,8 +386,6 @@ public:
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value)=0;
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const=0;
 
-	//advanced simulation
-	virtual void body_static_simulate_motion(RID p_body,const Transform& p_new_transform)=0;
 
 	//state
 	enum BodyState {
@@ -420,6 +487,15 @@ public:
 	virtual void flush_queries()=0;
 	virtual void finish()=0;
 
+	enum ProcessInfo {
+
+		INFO_ACTIVE_OBJECTS,
+		INFO_COLLISION_PAIRS,
+		INFO_ISLAND_COUNT
+	};
+
+	virtual int get_process_info(ProcessInfo p_info)=0;
+
 	PhysicsServer();
 	~PhysicsServer();
 };
@@ -437,5 +513,6 @@ VARIANT_ENUM_CAST( PhysicsServer::BodyAxisLock );
 //VARIANT_ENUM_CAST( PhysicsServer::DampedStringParam );
 //VARIANT_ENUM_CAST( PhysicsServer::ObjectType );
 VARIANT_ENUM_CAST( PhysicsServer::AreaBodyStatus );
+VARIANT_ENUM_CAST( PhysicsServer::ProcessInfo );
 
 #endif
