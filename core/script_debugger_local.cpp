@@ -30,11 +30,14 @@
 #include "os/os.h"
 #include "os/file_access.h"
 
-void ScriptDebuggerLocal::print_source(ScriptLanguage *p_script,int p_frame,bool p_list_source) {
+void ScriptDebuggerLocal::print_source(ScriptLanguage *p_script,int p_frame,bool p_print_source,bool p_list_source) {
 	String source=p_script->debug_get_stack_level_source(p_frame);
 	int line=p_script->debug_get_stack_level_line(p_frame);
 
-	print_line("*Frame "+itos(0)+" - "+source+":"+itos(line)+" in function '"+p_script->debug_get_stack_level_function(p_frame)+"'");
+	print_line("*Frame "+itos(p_frame)+" - "+source+":"+itos(line)+" in function '"+p_script->debug_get_stack_level_function(p_frame)+"'");
+
+	if(!p_print_source)
+		return;
 
 	Error err;
 	FileAccess *f=FileAccess::open(source,FileAccess::READ,&err);
@@ -63,7 +66,7 @@ void ScriptDebuggerLocal::print_source(ScriptLanguage *p_script,int p_frame,bool
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 	print_line("Debugger Break, Reason: '"+p_script->debug_get_error()+"'");
-	print_source(p_script,0);
+	print_source(p_script,0,true);
 	//print_line("Enter \"help\" for assistance.");
 	int current_frame=0;
 	int total_frames=p_script->debug_get_stack_level_count();
@@ -74,32 +77,32 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 		if (line=="") {
 			print_line("Debugger Break, Reason: '"+p_script->debug_get_error()+"'");
-			print_source(p_script,current_frame);
+			print_source(p_script,current_frame,true);
 			//print_line("Enter \"help\" for assistance.");
 		} else if (line=="c" || line=="continue")
 			break;
 		else if (line=="l" || line=="list") {
-			print_source(p_script,current_frame,true);
+			print_source(p_script,current_frame,true,true);
 		}
 		else if (line=="bt" || line=="breakpoint") {
 
 			for(int i=0;i<total_frames;i++) {
 
 				String cfi=(current_frame==i)?"*":" "; //current frame indicator
-				print_source(p_script,i);
+				print_source(p_script,i,false);
 			}
 
 		} else if (line.begins_with("fr") || line.begins_with("frame")) {
 
 			if (line.get_slice_count(" ")==1) {
-				print_source(p_script,current_frame);
+				print_source(p_script,current_frame,true);
 			} else {
 				int frame = line.get_slice(" ",1).to_int();
 				if (frame<0 || frame >=total_frames) {
 					print_line("Error: Invalid frame.");
 				} else {
 					current_frame=frame;
-					print_source(p_script,frame);
+					print_source(p_script,frame,true);
 				}
 			}
 
