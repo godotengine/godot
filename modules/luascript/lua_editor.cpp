@@ -409,7 +409,7 @@ void LuaScriptLanguage::debug_get_globals(List<String> *p_locals, List<Variant> 
     //no globals are really reachable in lua script
 }
 
-String LuaScriptLanguage::debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems,int p_max_depth) {
+String LuaScriptLanguage::debug_parse_stack_level_expression(int p_level,const String& p_expression,int p_max_subitems,int p_max_depth,bool p_return) {
 
 	if (_debug_parse_err_line>=0)
 		return "";
