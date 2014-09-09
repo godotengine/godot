@@ -58,6 +58,10 @@ class ScrollContainer : public Container {
 	bool scroll_h;
 	bool scroll_v;
 
+	bool show_scroll_h;
+	bool show_scroll_v;
+	bool scroll_enable_v;
+
 	void _cancel_drag();
 
 protected:
@@ -84,6 +88,12 @@ public:
 
 	void set_enable_v_scroll(bool p_enable);
 	bool is_v_scroll_enabled() const;
+	//
+	void set_show_scroll_h(bool p_show);
+	bool is_show_scroll_h() const;
+
+	void set_show_scroll_v(bool p_show);
+	bool is_show_scroll_v() const;
 
 	virtual bool clips_input() const;
 	ScrollContainer();

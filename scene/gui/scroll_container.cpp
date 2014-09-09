@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "scroll_container.h"
 #include "os/os.h"
+
 bool ScrollContainer::clips_input() const {
 
 	return true;
@@ -58,12 +59,12 @@ void ScrollContainer::_input_event(const InputEvent& p_input_event) {
 
 			const InputEventMouseButton &mb=p_input_event.mouse_button;
 
-			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed && v_scroll->is_visible()) {
+			if (mb.button_index==BUTTON_WHEEL_UP && mb.pressed && scroll_enable_v) {
 
 				v_scroll->set_val( v_scroll->get_val()-v_scroll->get_page()/8 );
 			}
 
-			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed && v_scroll->is_visible()) {
+			if (mb.button_index==BUTTON_WHEEL_DOWN && mb.pressed && scroll_enable_v) {
 
 				v_scroll->set_val( v_scroll->get_val()+v_scroll->get_page()/8 );
 			}
@@ -303,11 +304,13 @@ void ScrollContainer::update_scrollbars() {
 
 	if (!scroll_v || min.height <= size.height - hmin.height) {
 
+		scroll_enable_v = false;
 		v_scroll->hide();
 		scroll.y=0;
 	} else {
 
-		v_scroll->show();
+		scroll_enable_v = true;
+		show_scroll_v ? v_scroll->show() : v_scroll->hide();
 		scroll.y=v_scroll->get_val();
 
 	}
@@ -321,12 +324,12 @@ void ScrollContainer::update_scrollbars() {
 		h_scroll->hide();
 		scroll.x=0;
 	} else {
-
-		h_scroll->show();
-		h_scroll->set_max(min.width);
-		h_scroll->set_page(size.width - vmin.width);
+		show_scroll_h ? h_scroll->show() : h_scroll->hide();
 		scroll.x=h_scroll->get_val();
 	}
+
+	h_scroll->set_max(min.width);
+	h_scroll->set_page(size.width - vmin.width);
 }
 
 void ScrollContainer::_scroll_moved(float) {
@@ -336,6 +339,7 @@ void ScrollContainer::_scroll_moved(float) {
 	queue_sort();
 
 	update();
+	emit_signal("scroll_moved");
 };
 
 
@@ -383,6 +387,25 @@ void ScrollContainer::set_h_scroll(int p_pos) {
 
 }
 
+void ScrollContainer::set_show_scroll_h(bool p_show) {
+	show_scroll_h = p_show;
+	queue_sort();
+}
+
+bool ScrollContainer::is_show_scroll_h() const {
+	return show_scroll_h;
+}
+
+void ScrollContainer::set_show_scroll_v(bool p_show) {
+
+	show_scroll_v = p_show;
+	queue_sort();
+}
+
+bool ScrollContainer::is_show_scroll_v() const {
+
+	return show_scroll_v;
+}
 
 void ScrollContainer::_bind_methods() {
 
@@ -397,14 +420,21 @@ void ScrollContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_h_scroll"),&ScrollContainer::get_h_scroll);
 	ObjectTypeDB::bind_method(_MD("set_v_scroll","val"),&ScrollContainer::set_v_scroll);
 	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&ScrollContainer::get_v_scroll);
+	ObjectTypeDB::bind_method(_MD("set_show_scroll_h","show"),&ScrollContainer::set_show_scroll_h);
+	ObjectTypeDB::bind_method(_MD("is_show_scroll_h"),&ScrollContainer::is_show_scroll_h);
+	ObjectTypeDB::bind_method(_MD("set_show_scroll_v","show"),&ScrollContainer::set_show_scroll_v);
+	ObjectTypeDB::bind_method(_MD("is_show_scroll_v"),&ScrollContainer::is_show_scroll_v);
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll/horizontal"), _SCS("set_enable_h_scroll"),_SCS("is_h_scroll_enabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll/vertical"), _SCS("set_enable_v_scroll"),_SCS("is_v_scroll_enabled"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_bar/show_scroll_h"), _SCS("set_show_scroll_h"),_SCS("is_show_scroll_h"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "scroll_bar/show_scroll_v"), _SCS("set_show_scroll_v"),_SCS("is_show_scroll_v"));
 
+	ADD_SIGNAL( MethodInfo("scroll_moved") );
 };
 
-ScrollContainer::ScrollContainer() {
-
+ScrollContainer::ScrollContainer()
+{
 	h_scroll = memnew(HScrollBar);
 	h_scroll->set_name("_h_scroll");
 	add_child(h_scroll);
@@ -413,8 +443,8 @@ ScrollContainer::ScrollContainer() {
 	v_scroll->set_name("_v_scroll");
 	add_child(v_scroll);
 
-	h_scroll->connect("value_changed", this,"_scroll_moved");
-	v_scroll->connect("value_changed", this,"_scroll_moved");
+	h_scroll->connect("value_changed", this, "_scroll_moved");
+	v_scroll->connect("value_changed", this, "_scroll_moved");
 
 	drag_speed=Vector2();
 	drag_touching=false;
@@ -422,6 +452,8 @@ ScrollContainer::ScrollContainer() {
 	scroll_h=true;
 	scroll_v=true;
 
-
+	scroll_enable_v = true;
+	show_scroll_h = false;
+	show_scroll_v = false;
 };
 
