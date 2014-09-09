@@ -1894,21 +1894,35 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		//instance a fake script for editing the values
 
 		Vector<_GDScriptMemberSort> msort;
-		for(Map<StringName,PropertyInfo>::Element *E=sptr->member_info.front();E;E=E->next()) {
+		const Map<StringName,int>& mi = sptr->debug_get_member_indices();
+		for(const Map<StringName,int>::Element *E=mi.front();E;E=E->next()) {
 
 			_GDScriptMemberSort ms;
 			ERR_CONTINUE(!sptr->member_indices.has(E->key()));
 			ms.index=sptr->member_indices[E->key()];
 			ms.name=E->key();
 			msort.push_back(ms);
-
+		//p_members->push_back(E->key());
+		//p_values->push_back( instance->debug_get_member_by_index(E->get()));
 		}
+		//for(Map<StringName,PropertyInfo>::Element *E=sptr->member_info.front();E;E=E->next()) {
+
+		//	_GDScriptMemberSort ms;
+		//	ERR_CONTINUE(!sptr->member_indices.has(E->key()));
+		//	ms.index=sptr->member_indices[E->key()];
+		//	ms.name=E->key();
+		//	msort.push_back(ms);
+
+		//}
 
 		msort.sort();
 		msort.invert();
 		for(int i=0;i<msort.size();i++) {
 
-			props.push_front(sptr->member_info[msort[i].name]);
+			Variant var;
+			if(get(msort[i].name,var))
+				props.push_front(PropertyInfo(var.get_type(),msort[i].name));
+			//props.push_front(sptr->member_info[msort[i].name]);
 
 		}
 #if 0

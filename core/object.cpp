@@ -1048,6 +1048,108 @@ DVector<String> Object::_get_meta_list_bind() const {
 
 	return _metaret;
 }
+
+static String _methodinfo_string(const MethodInfo& mi) {
+
+	String result = (mi.return_val.type == Variant::NIL ? "void" : Variant::get_type_name(mi.return_val.type))
+			+ " " + mi.name + "(";
+
+	for(int i=0;i<mi.arguments.size();i++) {
+
+		const PropertyInfo &pi = mi.arguments[i];
+		if (pi.type==Variant::NIL)
+			result += "var";
+		else
+			result += Variant::get_type_name(pi.type);
+		result += " " + pi.name;
+		int defarg = mi.default_arguments.size() - mi.arguments.size() + i;
+		if (defarg >=0)
+			result += "=" + mi.default_arguments[defarg].operator String();
+		if (i < mi.arguments.size() - 1)
+			result += ", ";
+	}
+
+	result += ")\n";
+	return result;
+
+}
+
+String Object::_dump(const String& p_filter) const {
+
+	String result = "";
+
+	List<MethodInfo> methods;
+	this->get_method_list(&methods);
+
+	result += "Methods:\n";
+	for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
+
+		MethodInfo& mi = E->get();
+		if(!p_filter.empty() && mi.name.find(p_filter) == -1)
+			continue;
+
+		result += "\t" + _methodinfo_string(mi);
+	}
+
+	List<PropertyInfo> propertys;
+	this->get_property_list(&propertys);
+	if(!propertys.empty()) {
+		result += "Propertys:\n";
+		for(List<PropertyInfo>::Element *E=propertys.front();E;E=E->next()) {
+
+			PropertyInfo& pi = E->get();
+
+			if(!p_filter.empty() && pi.name.find(p_filter) == -1)
+				continue;
+
+			result += "\t" + (pi.type == Variant::NIL ? "var" : Variant::get_type_name(pi.type)) + " \"" + pi.name + "\"";
+
+			switch(pi.type) {
+				case Variant::DICTIONARY:
+				case Variant::ARRAY:
+				case Variant::RAW_ARRAY:
+				case Variant::INT_ARRAY:
+				case Variant::REAL_ARRAY:
+				case Variant::STRING_ARRAY:
+				case Variant::VECTOR2_ARRAY:
+				case Variant::VECTOR3_ARRAY:
+				case Variant::COLOR_ARRAY:
+					result += "\n";
+					continue;
+			}
+
+			bool valid = false;
+			Variant value = get(pi.name, &valid);
+			switch(pi.type) {
+				case Variant::NIL:
+				case Variant::OBJECT:
+					if(value.is_zero()) {
+						result += "\n";
+						continue;
+					}
+					break;
+			};
+			result += " = " + value.operator String() + "\n";
+		}
+	}
+
+	List<MethodInfo> signals;
+	this->get_signal_list(&signals);
+	if(!signals.empty()) {
+		result += "Signals:\n";
+		for(List<MethodInfo>::Element *E=signals.front();E;E=E->next()) {
+
+			MethodInfo& mi = E->get();
+
+			if(!p_filter.empty() && mi.name.find(p_filter) == -1)
+				continue;
+
+			result += "\t" + _methodinfo_string(mi);
+		}
+	}
+
+	return result;
+}
 void Object::get_meta_list(List<String> *p_list) const {
 
 	List<Variant> keys;
@@ -1457,6 +1559,8 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_meta","name","value"),&Object::get_meta);
 	ObjectTypeDB::bind_method(_MD("has_meta","name"),&Object::has_meta);
 	ObjectTypeDB::bind_method(_MD("get_meta_list"),&Object::_get_meta_list_bind);
+
+	ObjectTypeDB::bind_method(_MD("dump","filter"),&Object::_dump,"");
 
 	//todo reimplement this per language so all 5 arguments can be called
 

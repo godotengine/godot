@@ -444,6 +444,7 @@ protected:
 
 	DVector<String> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
+	String _dump(const String& p_filter="") const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();
