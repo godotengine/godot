@@ -1207,6 +1207,16 @@ Variant::operator String() const {
 				_VariantStrPair sp;
 				sp.key=String(E->get());
 				sp.value=d[E->get()];
+
+				switch(E->get().get_type()) {
+				case STRING:
+					break;
+
+				default:
+					sp.key="["+sp.key+"]";
+					break;
+
+				}
 				const Variant &value=d[E->get()];
 				if(value.get_type()==Variant::STRING)
 					sp.value="\""+sp.value+"\"";
