@@ -265,6 +265,11 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 
 	switch(initial_val.get_type())
 	{
+
+	case Variant::BOOL:
+		result = (int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec) >= 0.5;
+		break;
+
 	case Variant::INT:
 		result = (int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec);
 		break;
@@ -780,6 +785,11 @@ bool Tween::_calc_delta_val(const Variant& p_initial_val, const Variant& p_final
 	Variant& delta_val = p_delta_val;
 
 	switch(initial_val.get_type()) {
+
+		case Variant::BOOL:
+			delta_val = p_final_val;
+			break;
+
 		case Variant::INT:
 			delta_val = (int) final_val - (int) initial_val;
 			break;
