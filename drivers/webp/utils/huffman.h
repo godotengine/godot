@@ -13,7 +13,7 @@
 #define WEBP_UTILS_HUFFMAN_H_
 
 #include <assert.h>
-#include "../webp/types.h"
+#include "../types.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
