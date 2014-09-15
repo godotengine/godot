@@ -101,6 +101,8 @@ class SpaceSW {
 	int active_objects;
 	int collision_pairs;
 
+	RID static_global_body;
+
 friend class PhysicsDirectSpaceStateSW;
 
 public:
@@ -163,6 +165,11 @@ public:
 	int get_collision_pairs() const { return collision_pairs; }
 
 	PhysicsDirectSpaceStateSW *get_direct_state();
+
+
+	void set_static_global_body(RID p_body) { static_global_body=p_body; }
+	RID get_static_global_body() { return static_global_body; }
+
 
 	SpaceSW();
 	~SpaceSW();

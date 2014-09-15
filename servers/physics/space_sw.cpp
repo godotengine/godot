@@ -76,6 +76,9 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
+		if (space->intersection_query_results[i]->get_type()==CollisionObjectSW::TYPE_AREA && !(static_cast<AreaSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+			continue;
+
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
 			continue;
 
@@ -90,6 +93,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		const ShapeSW *shape = col_obj->get_shape(shape_idx);
 
 		Vector3 shape_point,shape_normal;
+
 
 		if (shape->intersect_segment(local_from,local_to,shape_point,shape_normal)) {
 
@@ -154,6 +158,7 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
+		//area cant be picked by ray (default)
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
 			continue;

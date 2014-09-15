@@ -255,6 +255,17 @@ bool Area::is_monitoring_enabled() const {
 }
 
 
+void Area::set_ray_pickable(bool p_ray_pickable) {
+
+	ray_pickable=p_ray_pickable;
+	PhysicsServer::get_singleton()->area_set_ray_pickable(get_rid(),p_ray_pickable);
+}
+
+bool Area::is_ray_pickable() const {
+
+	return ray_pickable;
+}
+
 void Area::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_body_enter_scene","id"),&Area::_body_enter_scene);
@@ -278,6 +289,9 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area::get_priority);
 
+	ObjectTypeDB::bind_method(_MD("set_ray_pickable","ray_pickable"),&Area::set_ray_pickable);
+	ObjectTypeDB::bind_method(_MD("is_ray_pickable"),&Area::is_ray_pickable);
+
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area::is_monitoring_enabled);
 
@@ -296,6 +310,7 @@ void Area::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"density",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_density"),_SCS("get_density"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"ray_pickable"),_SCS("set_ray_pickable"),_SCS("is_ray_pickable"));
 
 }
 
@@ -308,6 +323,8 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	density=0.1;
 	priority=0;
 	monitoring=false;
+	ray_pickable=false;
+	set_enable_monitoring(true);
 
 }
 

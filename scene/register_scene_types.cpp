@@ -444,8 +444,16 @@ void register_scene_types() {
 	//ObjectTypeDB::register_type<BodyVolumeBox>();
 	//ObjectTypeDB::register_type<BodyVolumeCylinder>();
 	//ObjectTypeDB::register_type<BodyVolumeCapsule>();
-	//ObjectTypeDB::register_virtual_type<PhysicsJoint>();
 	//ObjectTypeDB::register_type<PhysicsJointPin>();
+
+
+	ObjectTypeDB::register_virtual_type<Joint>();
+	ObjectTypeDB::register_type<PinJoint>();
+	ObjectTypeDB::register_type<HingeJoint>();
+	ObjectTypeDB::register_type<SliderJoint>();
+	ObjectTypeDB::register_type<ConeTwistJoint>();
+	ObjectTypeDB::register_type<Generic6DOFJoint>();
+
 
 	ObjectTypeDB::register_type<StreamPlayer>();
 	ObjectTypeDB::register_type<EventPlayer>();

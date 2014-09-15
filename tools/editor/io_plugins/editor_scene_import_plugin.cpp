@@ -418,7 +418,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	List<String> missing;
 	Error err = plugin->import1(rim,&scene,&missing);
 
-	if (err) {
+	if (err || !scene) {
 
 		error_dialog->set_text("Error importing scene.");
 		error_dialog->popup_centered(Size2(200,100));
@@ -878,6 +878,8 @@ static bool _teststr(const String& p_what,const String& p_str) {
 		return true;
 	if (p_what.to_lower().ends_with("-"+p_str)) //collada only supports "_" and "-" besides letters
 		return true;
+	if (p_what.to_lower().ends_with("_"+p_str)) //collada only supports "_" and "-" besides letters
+		return true;
 	return false;
 }
 
@@ -886,6 +888,8 @@ static String _fixstr(const String& p_what,const String& p_str) {
 	if (p_what.findn("$"+p_str)!=-1) //blender and other stuff
 		return p_what.replace("$"+p_str,"");
 	if (p_what.to_lower().ends_with("-"+p_str)) //collada only supports "_" and "-" besides letters
+		return p_what.substr(0,p_what.length()-(p_str.length()+1));
+	if (p_what.to_lower().ends_with("_"+p_str)) //collada only supports "_" and "-" besides letters
 		return p_what.substr(0,p_what.length()-(p_str.length()+1));
 	return p_what;
 }

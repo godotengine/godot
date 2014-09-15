@@ -322,7 +322,7 @@ void Collada::_parse_image(XMLParser& parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path);
+			image.path=Globals::get_singleton()->localize_path(state.local_path.get_base_dir()+"/"+path.percent_decode());
 
 		}
 	} else {
@@ -338,7 +338,7 @@ void Collada::_parse_image(XMLParser& parser) {
 				if (name=="init_from") {
 
 					parser.read();
-					String path = parser.get_node_data().strip_edges();
+					String path = parser.get_node_data().strip_edges().percent_decode();
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
@@ -1683,6 +1683,10 @@ Collada::Node* Collada::_parse_visual_scene_node(XMLParser& parser) {
 		} else if (state.idref_joints.has(name))
 			joint->sid=name; //kind of a cheat but..
 
+		if (joint->sid!="") {
+			state.sid_to_node_map[joint->sid]=id;
+		}
+
 		node=joint;
 
 
@@ -2243,6 +2247,8 @@ void Collada::_create_skeletons(Collada::Node **p_node) {
 
 	Node *node = *p_node;
 
+
+
 	if (node->type==Node::TYPE_JOINT) {
 
 		// ohohohoohoo it's a joint node, time to work!
@@ -2346,6 +2352,79 @@ void Collada::_merge_skeletons(VisualScene *p_vscene,Node *p_node) {
 	for(int i=0;i<p_node->children.size();i++) {
 		_merge_skeletons(p_vscene,p_node->children[i]);
 	}
+
+}
+
+
+void Collada::_merge_skeletons2(VisualScene *p_vscene) {
+
+	for (Map<String,SkinControllerData>::Element *E=state.skin_controller_data_map.front();E;E=E->next()) {
+
+		SkinControllerData &cd=E->get();
+
+		NodeSkeleton *skeleton=NULL;
+
+		for (Map<String,Transform>::Element *F=cd.bone_rest_map.front();F;F=F->next()) {
+
+			String name;
+
+			if (!state.sid_to_node_map.has(F->key())) {
+				continue;
+			}
+
+			name = state.sid_to_node_map[F->key()];
+
+			if (!state.scene_map.has(name)) {
+				print_line("no foundie node for: "+name);
+			}
+
+			ERR_CONTINUE( !state.scene_map.has(name) );
+
+			Node *node=state.scene_map[name];
+			ERR_CONTINUE( node->type!=Node::TYPE_JOINT );
+			if (node->type!=Node::TYPE_JOINT)
+				continue;
+			NodeSkeleton *sk=NULL;
+
+			while(node && !sk) {
+
+				if (node->type==Node::TYPE_SKELETON) {
+					sk=static_cast<NodeSkeleton*>(node);
+				}
+				node=node->parent;
+			}
+			ERR_CONTINUE( !sk );
+
+			if (!sk)
+				continue; //bleh
+
+			if (!skeleton) {
+				skeleton=sk;
+				continue;
+			}
+
+			if (skeleton!=sk) {
+				//whoa.. wtf, merge.
+				print_line("MERGED BONES!!");
+
+				//NodeSkeleton *merged = E->get();
+				_remove_node(p_vscene,sk);
+				for(int i=0;i<sk->children.size();i++) {
+
+					_joint_set_owner(sk->children[i],skeleton);
+					skeleton->children.push_back( sk->children[i] );
+					sk->children[i]->parent=skeleton;
+
+
+				}
+
+				sk->children.clear(); //take children from it
+				memdelete( sk );
+			}
+		}
+	}
+
+
 
 }
 
@@ -2539,6 +2618,9 @@ void Collada::_optimize() {
 		for(int i=0;i<vs.root_nodes.size();i++) {
 			_merge_skeletons(&vs,vs.root_nodes[i]);
 		}
+
+		_merge_skeletons2(&vs);
+
 
 		for(int i=0;i<vs.root_nodes.size();i++) {
 			_optimize_skeletons(&vs,vs.root_nodes[i]);
