@@ -38,7 +38,7 @@
 #include "tools/editor/editor_settings.h"
 #include "scene/resources/surface_tool.h"
 #include "tools/editor/spatial_editor_gizmos.h"
-
+#include "globals.h"
 #define DISTANCE_DEFAULT 4
 
 
@@ -1753,6 +1753,41 @@ void SpatialEditorViewport::_draw() {
 
 	}
 
+	if (previewing) {
+
+
+		Size2 ss = Size2( Globals::get_singleton()->get("display/width"), Globals::get_singleton()->get("display/height") );
+		float aspect = ss.get_aspect();
+		Size2 s = get_size();
+
+		Rect2 draw_rect;
+
+
+		switch(previewing->get_keep_aspect_mode()) {
+			case Camera::KEEP_WIDTH: {
+
+				draw_rect.size = Size2(s.width,s.width/aspect);
+				draw_rect.pos.x=0;
+				draw_rect.pos.y=(s.height-draw_rect.size.y)*0.5;
+
+			} break;
+			case Camera::KEEP_HEIGHT: {
+
+				draw_rect.size = Size2(s.height*aspect,s.height);
+				draw_rect.pos.y=0;
+				draw_rect.pos.x=(s.width-draw_rect.size.x)*0.5;
+
+			} break;
+		}
+
+		draw_rect = Rect2(Vector2(),s).clip(draw_rect);
+
+		surface->draw_line(draw_rect.pos,draw_rect.pos+Vector2(draw_rect.size.x,0),Color(0.6,0.6,0.1,0.5),2.0);
+		surface->draw_line(draw_rect.pos+Vector2(draw_rect.size.x,0),draw_rect.pos+draw_rect.size,Color(0.6,0.6,0.1,0.5),2.0);
+		surface->draw_line(draw_rect.pos+draw_rect.size,draw_rect.pos+Vector2(0,draw_rect.size.y),Color(0.6,0.6,0.1,0.5),2.0);
+		surface->draw_line(draw_rect.pos,draw_rect.pos+Vector2(0,draw_rect.size.y),Color(0.6,0.6,0.1,0.5),2.0);
+	}
+
 }
 
 
@@ -1936,6 +1971,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 		if (!preview)
 			preview_camera->hide();
 		view_menu->show();
+		surface->update();
 
 	} else {
 
@@ -1943,6 +1979,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 		previewing->connect("exit_scene",this,"_preview_exited_scene");
 		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), preview->get_camera() ); //replace
 		view_menu->hide();
+		surface->update();
 
 	}
 }

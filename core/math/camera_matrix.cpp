@@ -67,9 +67,10 @@ Plane CameraMatrix::xform4(const Plane& p_vec4) {
 
 void CameraMatrix::set_perspective(float p_fovy_degrees, float p_aspect, float p_z_near, float p_z_far,bool p_flip_fov) {
 
-	if (p_flip_fov)
-		p_fovy_degrees=get_fovy(p_fovy_degrees,p_aspect);
+	if (p_flip_fov) {
+		p_fovy_degrees=get_fovy(p_fovy_degrees,1.0/p_aspect);
 
+	}
 
 	float sine, cotangent, deltaZ;
 	float radians = p_fovy_degrees / 2.0 * Math_PI / 180.0;
@@ -110,7 +111,7 @@ void CameraMatrix::set_orthogonal(float p_left, float p_right, float p_bottom, f
 
 void CameraMatrix::set_orthogonal(float p_size, float p_aspect, float p_znear, float p_zfar,bool p_flip_fov) {
 
-	if (p_flip_fov) {
+	if (!p_flip_fov) {
 		p_size*=p_aspect;
 	}
 
