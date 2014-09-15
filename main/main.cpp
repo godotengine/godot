@@ -605,12 +605,22 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (use_custom_res && globals->has("display/resizable"))
 		video_mode.resizable=globals->get("display/resizable");
 
+	if (!force_res && use_custom_res && globals->has("display/test_width") && globals->has("display/test_height")) {
+		int tw = globals->get("display/test_width");
+		int th = globals->get("display/test_height");
+		if (tw>0 && th>0) {
+			video_mode.width=tw;
+			video_mode.height=th;
+		}
+	}
 
 
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
+	GLOBAL_DEF("display/test_width",0);
+	GLOBAL_DEF("display/test_height",0);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
 	}

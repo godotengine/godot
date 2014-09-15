@@ -43,6 +43,7 @@ void Area2DSW::set_transform(const Matrix32& p_transform) {
 		get_space()->area_add_to_moved_list(&moved_list);
 
 	_set_transform(p_transform);
+	_set_inv_transform(p_transform.affine_inverse());
 }
 
 void Area2DSW::set_space(Space2DSW *p_space) {

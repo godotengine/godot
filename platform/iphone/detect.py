@@ -28,7 +28,7 @@ def get_opts():
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
 		('ios_GLES1_override', 'Force legacy GLES (1.1) on iOS', 'no'),
 		('ios_appirater', 'Enable Appirater', 'no'),
-		('ios_exceptions', 'Use exceptions when compiling on playbook', 'no'),
+		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
 	]
 
 def get_flags():

@@ -125,6 +125,9 @@ public:
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const;
 	virtual Transform area_get_transform(RID p_area) const;
 
+	virtual void area_set_ray_pickable(RID p_area,bool p_enable);
+	virtual bool area_is_ray_pickable(RID p_area) const;
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 
 
@@ -199,6 +202,48 @@ public:
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
 
 	/* JOINT API */
+
+	virtual RID joint_create_pin(RID p_body_A,const Vector3& p_local_A,RID p_body_B,const Vector3& p_local_B);
+
+	virtual void pin_joint_set_param(RID p_joint,PinJointParam p_param, float p_value);
+	virtual float pin_joint_get_param(RID p_joint,PinJointParam p_param) const;
+
+	virtual void pin_joint_set_local_A(RID p_joint, const Vector3& p_A);
+	virtual Vector3 pin_joint_get_local_A(RID p_joint) const;
+
+	virtual void pin_joint_set_local_B(RID p_joint, const Vector3& p_B);
+	virtual Vector3 pin_joint_get_local_B(RID p_joint) const;
+
+	virtual RID joint_create_hinge(RID p_body_A,const Transform& p_frame_A,RID p_body_B,const Transform& p_frame_B);
+	virtual RID joint_create_hinge_simple(RID p_body_A,const Vector3& p_pivot_A,const Vector3& p_axis_A,RID p_body_B,const Vector3& p_pivot_B,const Vector3& p_axis_B);
+
+	virtual void hinge_joint_set_param(RID p_joint,HingeJointParam p_param, float p_value);
+	virtual float hinge_joint_get_param(RID p_joint,HingeJointParam p_param) const;
+
+	virtual void hinge_joint_set_flag(RID p_joint,HingeJointFlag p_flag, bool p_value);
+	virtual bool hinge_joint_get_flag(RID p_joint,HingeJointFlag p_flag) const;
+
+
+	virtual RID joint_create_slider(RID p_body_A,const Transform& p_local_frame_A,RID p_body_B,const Transform& p_local_frame_B); //reference frame is A
+
+	virtual void slider_joint_set_param(RID p_joint,SliderJointParam p_param, float p_value);
+	virtual float slider_joint_get_param(RID p_joint,SliderJointParam p_param) const;
+
+	virtual RID joint_create_cone_twist(RID p_body_A,const Transform& p_local_frame_A,RID p_body_B,const Transform& p_local_frame_B); //reference frame is A
+
+	virtual void cone_twist_joint_set_param(RID p_joint,ConeTwistJointParam p_param, float p_value);
+	virtual float cone_twist_joint_get_param(RID p_joint,ConeTwistJointParam p_param) const;
+
+	virtual RID joint_create_generic_6dof(RID p_body_A,const Transform& p_local_frame_A,RID p_body_B,const Transform& p_local_frame_B); //reference frame is A
+
+	virtual void generic_6dof_joint_set_param(RID p_joint,Vector3::Axis,G6DOFJointAxisParam p_param, float p_value);
+	virtual float generic_6dof_joint_get_param(RID p_joint,Vector3::Axis,G6DOFJointAxisParam p_param);
+
+	virtual void generic_6dof_joint_set_flag(RID p_joint,Vector3::Axis,G6DOFJointAxisFlag p_flag, bool p_enable);
+	virtual bool generic_6dof_joint_get_flag(RID p_joint,Vector3::Axis,G6DOFJointAxisFlag p_flag);
+
+	virtual JointType joint_get_type(RID p_joint) const;
+
 #if 0
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value);
 	virtual real_t joint_get_param(RID p_joint,JointParam p_param) const;

@@ -183,7 +183,7 @@ static String _get_var_type(const Variant* p_type) {
 
 }
 
-Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err) {
+Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError& r_err, CallState *p_state) {
 
 
 	if (!_code_ptr) {
@@ -205,76 +205,90 @@ Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_ar
 
 #endif
 
-	if (p_argcount!=_argument_count) {
+	uint32_t alloca_size=0;
+	GDScript *_class;
+	int ip=0;
+	int line=_initial_line;
 
-		if (p_argcount>_argument_count) {
+	if (p_state) {
+		//use existing (supplied) state (yielded)
+		stack=(Variant*)p_state->stack.ptr();
+		call_args=(Variant**)&p_state->stack[sizeof(Variant)*p_state->stack_size];
+		line=p_state->line;
+		ip=p_state->ip;
+		alloca_size=p_state->stack.size();
+		_class=p_state->_class;
+		p_instance=p_state->instance;
+		defarg=p_state->defarg;
+		self=p_state->self;
+		//stack[p_state->result_pos]=p_state->result; //assign stack with result
 
-			r_err.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
-			r_err.argument=_argument_count;
+	} else {
 
-			return Variant();
-		} else if (p_argcount < _argument_count - _default_arg_count) {
+		if (p_argcount!=_argument_count) {
 
-			r_err.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_err.argument=_argument_count - _default_arg_count;
-			return Variant();
-		} else {
+			if (p_argcount>_argument_count) {
 
-			defarg=_argument_count-p_argcount;
+				r_err.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+				r_err.argument=_argument_count;
+
+				return Variant();
+			} else if (p_argcount < _argument_count - _default_arg_count) {
+
+				r_err.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_err.argument=_argument_count - _default_arg_count;
+				return Variant();
+			} else {
+
+				defarg=_argument_count-p_argcount;
+			}
 		}
-	}
 
-	uint32_t alloca_size = sizeof(Variant*)*_call_size + sizeof(Variant)*_stack_size;
+		alloca_size = sizeof(Variant*)*_call_size + sizeof(Variant)*_stack_size;
 
-	if (alloca_size) {
+		if (alloca_size) {
 
-		uint8_t *aptr = (uint8_t*)alloca(alloca_size);
+			uint8_t *aptr = (uint8_t*)alloca(alloca_size);
 
-		if (_stack_size) {
+			if (_stack_size) {
 
-			stack=(Variant*)aptr;
-			for(int i=0;i<p_argcount;i++)
-				memnew_placement(&stack[i],Variant(*p_args[i]));
-			for(int i=p_argcount;i<_stack_size;i++)
-				memnew_placement(&stack[i],Variant);
+				stack=(Variant*)aptr;
+				for(int i=0;i<p_argcount;i++)
+					memnew_placement(&stack[i],Variant(*p_args[i]));
+				for(int i=p_argcount;i<_stack_size;i++)
+					memnew_placement(&stack[i],Variant);
+			} else {
+				stack=NULL;
+			}
+
+			if (_call_size) {
+
+				call_args = (Variant**)&aptr[sizeof(Variant)*_stack_size];
+			} else {
+
+				call_args=NULL;
+			}
+
+
 		} else {
 			stack=NULL;
-		}
-
-		if (_call_size) {
-
-			call_args = (Variant**)&aptr[sizeof(Variant)*_stack_size];
-		} else {
-
 			call_args=NULL;
 		}
 
+		if (p_instance) {
+			if (p_instance->base_ref && static_cast<Reference*>(p_instance->owner)->is_referenced()) {
 
-	} else {
-		stack=NULL;
-		call_args=NULL;
-	}
-
-
-	GDScript *_class;
-
-	if (p_instance) {
-		if (p_instance->base_ref && static_cast<Reference*>(p_instance->owner)->is_referenced()) {
-
-			self=REF(static_cast<Reference*>(p_instance->owner));
+				self=REF(static_cast<Reference*>(p_instance->owner));
+			} else {
+				self=p_instance->owner;
+			}
+			_class=p_instance->script.ptr();
 		} else {
-			self=p_instance->owner;
+			_class=_script;
 		}
-		_class=p_instance->script.ptr();
-	} else {
-		_class=_script;
 	}
 
-	int ip=0;
-	int line=_initial_line;
 	String err_text;
-
-
 
 #ifdef DEBUG_ENABLED
 
@@ -784,6 +798,97 @@ Variant GDFunction::call(GDInstance *p_instance,const Variant **p_args, int p_ar
 				ip+=4+argc;
 
 			} continue;
+			case OPCODE_YIELD:
+			case OPCODE_YIELD_SIGNAL: {
+
+				int ipofs=1;
+				if (_code_ptr[ip]==OPCODE_YIELD_SIGNAL) {
+					CHECK_SPACE(4);
+					ipofs+=2;
+				} else {
+					CHECK_SPACE(2);
+
+				}
+
+				Ref<GDFunctionState> gdfs = memnew( GDFunctionState );
+				gdfs->function=this;
+
+				gdfs->state.stack.resize(alloca_size);
+				//copy variant stack
+				for(int i=0;i<_stack_size;i++) {
+					memnew_placement(&stack[sizeof(Variant)*i],Variant(stack[i]));
+				}
+				gdfs->state.stack_size=_stack_size;
+				gdfs->state.self=self;
+				gdfs->state.alloca_size=alloca_size;
+				gdfs->state._class=_class;
+				gdfs->state.ip=ip+ipofs;
+				gdfs->state.line=line;
+				//gdfs->state.result_pos=ip+ipofs-1;
+				gdfs->state.defarg=defarg;
+				gdfs->state.instance=p_instance;
+				gdfs->function=this;
+
+				retvalue=gdfs;
+
+				if (_code_ptr[ip]==OPCODE_YIELD_SIGNAL) {
+					GET_VARIANT_PTR(argobj,1);
+					GET_VARIANT_PTR(argname,2);
+					//do the oneshot connect
+
+					if (argobj->get_type()!=Variant::OBJECT) {
+						err_text="First argument of yield() not of type object.";
+						break;
+					}
+					if (argname->get_type()!=Variant::STRING) {
+						err_text="Second argument of yield() not a string (for signal name).";
+						break;
+					}
+					Object *obj=argobj->operator Object *();
+					String signal = argname->operator String();
+#ifdef DEBUG_ENABLED
+
+					if (!obj) {
+						err_text="First argument of yield() is null.";
+						break;
+					}
+					if (ScriptDebugger::get_singleton()) {
+						if (!ObjectDB::instance_validate(obj)) {
+							err_text="First argument of yield() is a previously freed instance.";
+							break;
+						}
+					}
+					if (signal.length()==0) {
+
+						err_text="Second argument of yield() is an empty string (for signal name).";
+						break;
+					}
+
+#endif
+					Error err = obj->connect(signal,gdfs.ptr(),"_signal_callback",varray(gdfs),Object::CONNECT_ONESHOT);
+					if (err!=OK) {
+						err_text="Error connecting to signal: "+signal+" during yield().";
+						break;
+					}
+
+
+				}
+
+				exit_ok=true;
+
+			} break;
+			case OPCODE_YIELD_RESUME: {
+
+				CHECK_SPACE(2);
+				if (!p_state) {
+					err_text=("Invalid Resume (bug?)");
+					break;
+				}
+				GET_VARIANT_PTR(result,1);
+				*result=p_state->result;
+				ip+=2;
+
+			} continue;
 			case OPCODE_JUMP: {
 
 				CHECK_SPACE(2);
@@ -1167,6 +1272,93 @@ GDFunction::GDFunction() {
 #endif
 
 }
+
+/////////////////////
+
+
+Variant GDFunctionState::_signal_callback(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	Variant arg;
+	r_error.error=Variant::CallError::CALL_OK;
+
+	ERR_FAIL_COND_V(!function,Variant());
+
+	if (p_argcount==0) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=1;
+		return Variant();
+	} else if (p_argcount==1) {
+		//noooneee
+	} else if (p_argcount==2) {
+		arg=*p_args[0];
+	} else {
+		Array extra_args;
+		for(int i=0;i<p_argcount-1;i++) {
+			extra_args.push_back(*p_args[i]);
+		}
+		arg=extra_args;
+	}
+
+	Ref<GDFunctionState> self = *p_args[p_argcount-1];
+
+	if (self.is_null()) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=p_argcount-1;
+		r_error.expected=Variant::OBJECT;
+		return Variant();
+	}
+
+	state.result=arg;
+	Variant ret = function->call(NULL,NULL,0,r_error,&state);
+	function=NULL; //cleaned up;
+	state.result=Variant();
+	return ret;
+}
+
+
+bool GDFunctionState::is_valid() const {
+
+	return function!=NULL;
+}
+
+Variant GDFunctionState::resume(const Variant& p_arg) {
+
+	ERR_FAIL_COND_V(!function,Variant());
+
+	state.result=p_arg;
+	Variant::CallError err;
+	Variant ret = function->call(NULL,NULL,0,err,&state);
+	function=NULL; //cleaned up;
+	state.result=Variant();
+	return ret;
+}
+
+
+void GDFunctionState::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("resume:var","arg"),&GDFunctionState::resume,DEFVAL(Variant()));
+	ObjectTypeDB::bind_method(_MD("is_valid"),&GDFunctionState::is_valid);
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"_signal_callback",&GDFunctionState::_signal_callback,MethodInfo("_signal_callback"));
+
+}
+
+GDFunctionState::GDFunctionState() {
+
+	function=NULL;
+}
+
+GDFunctionState::~GDFunctionState() {
+
+	if (function!=NULL) {
+		//never called, deinitialize stack
+		for(int i=0;i<state.stack_size;i++) {
+			Variant *v=(Variant*)&state.stack[sizeof(Variant)*i];
+			v->~Variant();
+		}
+	}
+}
+
+///////////////////////////
 
 GDNativeClass::GDNativeClass(const StringName& p_name) {
 
@@ -2183,6 +2375,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"or",
 		"export",
 		"assert",
+		"yield",
+		"static",
 	0};
 
 

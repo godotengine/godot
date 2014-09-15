@@ -183,6 +183,7 @@ public:
 			//call/constructor operator
 			OP_CALL,
 			OP_PARENT_CALL,
+			OP_YIELD,
 			OP_EXTENDS,
 			//indexing operator
 			OP_INDEX,
@@ -225,7 +226,7 @@ public:
 			OP_ASSIGN_BIT_XOR,
 			OP_BIT_AND,
 			OP_BIT_OR,
-			OP_BIT_XOR
+			OP_BIT_XOR,
 		};
 
 		Operator op;
@@ -258,6 +259,7 @@ public:
 		Node* condition;
 		AssertNode() { type=TYPE_ASSERT; }
 	};
+
 	struct NewLineNode : public Node {
 		int line;
 		NewLineNode() { type=TYPE_NEWLINE; }

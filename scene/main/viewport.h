@@ -116,6 +116,13 @@ friend class RenderTargetTexture;
 	bool render_target_filter;
 	bool render_target_gen_mipmaps;
 
+	bool physics_object_picking;
+	List<InputEvent> physics_picking_events;
+	ObjectID physics_object_capture;
+	ObjectID physics_object_over;
+	Vector2 physics_last_mousepos;
+	void _test_new_mouseover(ObjectID new_collider);
+
 	void _update_rect();
 
 	void _parent_resized();
@@ -233,6 +240,9 @@ public:
 
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
+
+	void set_physics_object_picking(bool p_enable);
+	bool get_physics_object_picking();
 
 	Viewport();	
 	~Viewport();

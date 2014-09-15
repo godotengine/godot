@@ -129,11 +129,11 @@ RID PhysicsShapeQueryParameters::get_shape_rid() const {
 	return shape;
 }
 
-void PhysicsShapeQueryParameters::set_transform(const Matrix32& p_transform){
+void PhysicsShapeQueryParameters::set_transform(const Transform& p_transform){
 
 	transform=p_transform;
 }
-Matrix32 PhysicsShapeQueryParameters::get_transform() const{
+Transform PhysicsShapeQueryParameters::get_transform() const{
 
 	return transform;
 }
@@ -219,29 +219,8 @@ PhysicsShapeQueryParameters::PhysicsShapeQueryParameters() {
 
 
 /////////////////////////////////////
-Variant PhysicsDirectSpaceState::_intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
 
-	RayResult inters;
-	Set<RID> exclude;
-	for(int i=0;i<p_exclude.size();i++)
-		exclude.insert(p_exclude[i]);
-
-	bool res = intersect_ray(p_from,p_to,inters,exclude,p_user_mask);
-
-	if (!res)
-		return Variant();
-
-	Dictionary d;
-	d["position"]=inters.position;
-	d["normal"]=inters.normal;
-	d["collider_id"]=inters.collider_id;
-	d["collider"]=inters.collider;
-	d["shape"]=inters.shape;
-	d["rid"]=inters.rid;
-
-	return d;
-}
-
+/*
 Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
 
 
@@ -269,8 +248,98 @@ Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Tran
 	return result;
 
 }
+*/
 
 
+Dictionary PhysicsDirectSpaceState::_intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude,uint32_t p_layers,uint32_t p_object_type_mask) {
+
+	RayResult inters;
+	Set<RID> exclude;
+	for(int i=0;i<p_exclude.size();i++)
+		exclude.insert(p_exclude[i]);
+
+	bool res = intersect_ray(p_from,p_to,inters,exclude,p_layers,p_object_type_mask);
+
+	if (!res)
+		return Dictionary(true);
+
+	Dictionary d(true);
+	d["position"]=inters.position;
+	d["normal"]=inters.normal;
+	d["collider_id"]=inters.collider_id;
+	d["collider"]=inters.collider;
+	d["shape"]=inters.shape;
+	d["rid"]=inters.rid;
+
+	return d;
+}
+
+Array PhysicsDirectSpaceState::_intersect_shape(const Ref<PhysicsShapeQueryParameters> &psq, int p_max_results) {
+
+	Vector<ShapeResult> sr;
+	sr.resize(p_max_results);
+	int rc = intersect_shape(psq->shape,psq->transform,psq->margin,sr.ptr(),sr.size(),psq->exclude,psq->layer_mask,psq->object_type_mask);
+	Array ret;
+	ret.resize(rc);
+	for(int i=0;i<rc;i++) {
+
+		Dictionary d;
+		d["rid"]=sr[i].rid;
+		d["collider_id"]=sr[i].collider_id;
+		d["collider"]=sr[i].collider;
+		d["shape"]=sr[i].shape;
+		ret[i]=d;
+	}
+
+	return ret;
+}
+
+Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameters> &psq,const Vector3& p_motion){
+
+	float closest_safe,closest_unsafe;
+	bool res = cast_motion(psq->shape,psq->transform,p_motion,psq->margin,closest_safe,closest_unsafe,psq->exclude,psq->layer_mask,psq->object_type_mask);
+	if (!res)
+		return Array();
+	Array ret(true);
+	ret.resize(2);
+	ret[0]=closest_safe;
+	ret[0]=closest_unsafe;
+	return ret;
+
+}
+Array PhysicsDirectSpaceState::_collide_shape(const Ref<PhysicsShapeQueryParameters> &psq, int p_max_results){
+
+	Vector<Vector3> ret;
+	ret.resize(p_max_results*2);
+	int rc=0;
+	bool res = collide_shape(psq->shape,psq->transform,psq->margin,ret.ptr(),p_max_results,rc,psq->exclude,psq->layer_mask,psq->object_type_mask);
+	if (!res)
+		return Array();
+	Array r;
+	r.resize(rc*2);
+	for(int i=0;i<rc*2;i++)
+		r[i]=ret[i];
+	return r;
+
+}
+Dictionary PhysicsDirectSpaceState::_get_rest_info(const Ref<PhysicsShapeQueryParameters> &psq){
+
+	ShapeRestInfo sri;
+
+	bool res = rest_info(psq->shape,psq->transform,psq->margin,&sri,psq->exclude,psq->layer_mask,psq->object_type_mask);
+	Dictionary r(true);
+	if (!res)
+		return r;
+
+	r["point"]=sri.point;
+	r["normal"]=sri.normal;
+	r["rid"]=sri.rid;
+	r["collider_id"]=sri.collider_id;
+	r["shape"]=sri.shape;
+	r["linear_velocity"]=sri.linear_velocity;
+
+	return r;
+}
 
 
 
@@ -284,8 +353,22 @@ PhysicsDirectSpaceState::PhysicsDirectSpaceState() {
 void PhysicsDirectSpaceState::_bind_methods() {
 
 
-	ObjectTypeDB::bind_method(_MD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
+//	ObjectTypeDB::bind_method(_MD("intersect_ray","from","to","exclude","umask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0));
+//	ObjectTypeDB::bind_method(_MD("intersect_shape:PhysicsShapeQueryResult","shape","xform","result_max","exclude","umask"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(Array()),DEFVAL(0));
+
+	ObjectTypeDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","layer_mask","type_mask"),&PhysicsDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
+	ObjectTypeDB::bind_method(_MD("intersect_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_intersect_shape,DEFVAL(32));
+	ObjectTypeDB::bind_method(_MD("cast_motion","shape:PhysicsShapeQueryParameters","motion"),&PhysicsDirectSpaceState::_cast_motion);
+	ObjectTypeDB::bind_method(_MD("collide_shape","shape:PhysicsShapeQueryParameters","max_results"),&PhysicsDirectSpaceState::_collide_shape,DEFVAL(32));
+	ObjectTypeDB::bind_method(_MD("get_rest_info","shape:PhysicsShapeQueryParameters"),&PhysicsDirectSpaceState::_get_rest_info);
+
+
+	BIND_CONSTANT( TYPE_MASK_STATIC_BODY );
+	BIND_CONSTANT( TYPE_MASK_KINEMATIC_BODY );
+	BIND_CONSTANT( TYPE_MASK_RIGID_BODY );
+	BIND_CONSTANT( TYPE_MASK_CHARACTER_BODY );
+	BIND_CONSTANT( TYPE_MASK_AREA );
+	BIND_CONSTANT( TYPE_MASK_COLLISION );
 
 }
 
@@ -326,7 +409,6 @@ void PhysicsShapeQueryResult::_bind_methods() {
 
 
 }
-
 
 
 
@@ -380,6 +462,9 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_get_object_instance_ID","area"),&PhysicsServer::area_get_object_instance_ID);
 
 	ObjectTypeDB::bind_method(_MD("area_set_monitor_callback","receiver","method"),&PhysicsServer::area_set_monitor_callback);
+
+	ObjectTypeDB::bind_method(_MD("area_set_ray_pickable","area","enable"),&PhysicsServer::area_set_ray_pickable);
+	ObjectTypeDB::bind_method(_MD("area_is_ray_pickable","area"),&PhysicsServer::area_is_ray_pickable);
 
 	ObjectTypeDB::bind_method(_MD("body_create","mode","init_sleeping"),&PhysicsServer::body_create,DEFVAL(BODY_MODE_RIGID),DEFVAL(false));
 
@@ -436,6 +521,121 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&PhysicsServer::body_set_force_integration_callback,DEFVAL(Variant()));
 
 	/* JOINT API */
+
+	BIND_CONSTANT( JOINT_PIN );
+	BIND_CONSTANT( JOINT_HINGE );
+	BIND_CONSTANT( JOINT_SLIDER );
+	BIND_CONSTANT( JOINT_CONE_TWIST );
+	BIND_CONSTANT( JOINT_6DOF );
+
+	ObjectTypeDB::bind_method(_MD("joint_create_pin","body_A","local_A","body_B","local_B"),&PhysicsServer::joint_create_pin);
+	ObjectTypeDB::bind_method(_MD("pin_joint_set_param","joint","param","value"),&PhysicsServer::pin_joint_set_param);
+	ObjectTypeDB::bind_method(_MD("pin_joint_get_param","joint","param"),&PhysicsServer::pin_joint_get_param);
+
+	ObjectTypeDB::bind_method(_MD("pin_joint_set_local_A","joint","local_A"),&PhysicsServer::pin_joint_set_local_A);
+	ObjectTypeDB::bind_method(_MD("pin_joint_get_local_A","joint"),&PhysicsServer::pin_joint_get_local_A);
+
+	ObjectTypeDB::bind_method(_MD("pin_joint_set_local_B","joint","local_B"),&PhysicsServer::pin_joint_set_local_B);
+	ObjectTypeDB::bind_method(_MD("pin_joint_get_local_B","joint"),&PhysicsServer::pin_joint_get_local_B);
+
+	BIND_CONSTANT(PIN_JOINT_BIAS );
+	BIND_CONSTANT(PIN_JOINT_DAMPING );
+	BIND_CONSTANT(PIN_JOINT_IMPULSE_CLAMP );
+
+
+	BIND_CONSTANT(HINGE_JOINT_BIAS);
+	BIND_CONSTANT(HINGE_JOINT_LIMIT_UPPER);
+	BIND_CONSTANT(HINGE_JOINT_LIMIT_LOWER);
+	BIND_CONSTANT(HINGE_JOINT_LIMIT_BIAS);
+	BIND_CONSTANT(HINGE_JOINT_LIMIT_SOFTNESS);
+	BIND_CONSTANT(HINGE_JOINT_LIMIT_RELAXATION);
+	BIND_CONSTANT(HINGE_JOINT_MOTOR_TARGET_VELOCITY);
+	BIND_CONSTANT(HINGE_JOINT_MOTOR_MAX_IMPULSE);
+	BIND_CONSTANT(HINGE_JOINT_FLAG_USE_LIMIT);
+	BIND_CONSTANT(HINGE_JOINT_FLAG_ENABLE_MOTOR);
+
+	ObjectTypeDB::bind_method(_MD("joint_create_hinge","body_A","hinge_A","body_B","hinge_B"),&PhysicsServer::joint_create_hinge);
+
+	ObjectTypeDB::bind_method(_MD("hinge_joint_set_param","joint","param","value"),&PhysicsServer::hinge_joint_set_param);
+	ObjectTypeDB::bind_method(_MD("hinge_joint_get_param","joint","param"),&PhysicsServer::hinge_joint_get_param);
+
+	ObjectTypeDB::bind_method(_MD("hinge_joint_set_flag","joint","flag","enabled"),&PhysicsServer::hinge_joint_set_flag);
+	ObjectTypeDB::bind_method(_MD("hinge_joint_get_flag","joint","flag"),&PhysicsServer::hinge_joint_get_flag);
+
+	ObjectTypeDB::bind_method(_MD("joint_create_slider","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_slider);
+
+	ObjectTypeDB::bind_method(_MD("slider_joint_set_param","joint","param","value"),&PhysicsServer::slider_joint_set_param);
+	ObjectTypeDB::bind_method(_MD("slider_joint_get_param","joint","param"),&PhysicsServer::slider_joint_get_param);
+
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_UPPER );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_LOWER );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_RESTITUTION );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_LIMIT_DAMPING );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_MOTION_SOFTNESS );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_MOTION_RESTITUTION );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_MOTION_DAMPING );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_ORTHOGONAL_SOFTNESS );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_ORTHOGONAL_RESTITUTION );
+	BIND_CONSTANT( SLIDER_JOINT_LINEAR_ORTHOGONAL_DAMPING );
+
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_LIMIT_UPPER );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_LIMIT_LOWER );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_LIMIT_SOFTNESS );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_LIMIT_RESTITUTION );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_LIMIT_DAMPING );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_MOTION_SOFTNESS );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_MOTION_RESTITUTION );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_MOTION_DAMPING );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION );
+	BIND_CONSTANT( SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING );
+	BIND_CONSTANT( SLIDER_JOINT_MAX );
+
+
+	ObjectTypeDB::bind_method(_MD("joint_create_cone_twist","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_cone_twist);
+
+	ObjectTypeDB::bind_method(_MD("cone_twist_joint_set_param","joint","param","value"),&PhysicsServer::cone_twist_joint_set_param);
+	ObjectTypeDB::bind_method(_MD("cone_twist_joint_get_param","joint","param"),&PhysicsServer::cone_twist_joint_get_param);
+
+	BIND_CONSTANT( CONE_TWIST_JOINT_SWING_SPAN );
+	BIND_CONSTANT( CONE_TWIST_JOINT_TWIST_SPAN );
+	BIND_CONSTANT( CONE_TWIST_JOINT_BIAS );
+	BIND_CONSTANT( CONE_TWIST_JOINT_SOFTNESS );
+	BIND_CONSTANT( CONE_TWIST_JOINT_RELAXATION );
+
+
+	BIND_CONSTANT( G6DOF_JOINT_LINEAR_LOWER_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_LINEAR_UPPER_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS );
+	BIND_CONSTANT( G6DOF_JOINT_LINEAR_RESTITUTION );
+	BIND_CONSTANT( G6DOF_JOINT_LINEAR_DAMPING );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_LOWER_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_UPPER_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_DAMPING );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_RESTITUTION );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_FORCE_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_ERP );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY );
+	BIND_CONSTANT( G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT );
+
+
+	BIND_CONSTANT( G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT );
+	BIND_CONSTANT( G6DOF_JOINT_FLAG_ENABLE_MOTOR );
+
+	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
+
+	ObjectTypeDB::bind_method(_MD("joint_create_generic_6dof","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_generic_6dof);
+
+	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_set_param","joint","axis","param","value"),&PhysicsServer::generic_6dof_joint_set_param);
+	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_get_param","joint","axis","param"),&PhysicsServer::generic_6dof_joint_get_param);
+
+	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_set_flag","joint","axis","flag","enable"),&PhysicsServer::generic_6dof_joint_set_flag);
+	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_get_flag","joint","axis","flag"),&PhysicsServer::generic_6dof_joint_get_flag);
+
+
 /*
 	ObjectTypeDB::bind_method(_MD("joint_set_param","joint","param","value"),&PhysicsServer::joint_set_param);
 	ObjectTypeDB::bind_method(_MD("joint_get_param","joint","param"),&PhysicsServer::joint_get_param);

@@ -256,6 +256,55 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			tokenizer->advance();
 
 			expr=constant;
+		} else if (tokenizer->get_token()==GDTokenizer::TK_PR_YIELD) {
+
+			//constant defined by tokenizer
+
+			tokenizer->advance();
+			if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_OPEN) {
+				_set_error("Expected '(' after 'yield'");
+				return NULL;
+			}
+
+			tokenizer->advance();
+
+			OperatorNode *yield = alloc_node<OperatorNode>();
+			yield->op=OperatorNode::OP_YIELD;
+
+			if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
+				expr=yield;
+				tokenizer->advance();
+			} else {
+
+				Node *object = _parse_and_reduce_expression(p_parent,p_static);
+				if (!object)
+					return NULL;
+				yield->arguments.push_back(object);
+
+				if (tokenizer->get_token()!=GDTokenizer::TK_COMMA) {
+
+					_set_error("Expected ',' after first argument of 'yield'");
+					return NULL;
+				}
+
+				tokenizer->advance();
+
+				Node *signal = _parse_and_reduce_expression(p_parent,p_static);
+				if (!signal)
+					return NULL;
+				yield->arguments.push_back(signal);
+
+				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+
+					_set_error("Expected ')' after second argument of 'yield'");
+					return NULL;
+				}
+
+				tokenizer->advance();
+
+				expr=yield;
+			}
+
 
 		} else if (tokenizer->get_token()==GDTokenizer::TK_SELF) {
 
@@ -1067,6 +1116,10 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 				}
 
 				return op; //don't reduce yet
+
+			} else if (op->op==OperatorNode::OP_YIELD) {
+				return op;
+
 			} else if (op->op==OperatorNode::OP_INDEX) {
 				//can reduce indices into constant arrays or dictionaries
 

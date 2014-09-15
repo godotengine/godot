@@ -298,6 +298,17 @@ bool BodyPairSW::setup(float p_step) {
 		A->apply_bias_impulse( c.rA, -jb_vec );
 		B->apply_bias_impulse( c.rB, jb_vec );
 
+		c.bounce = MAX(A->get_bounce(),B->get_bounce());
+		if (c.bounce) {
+
+			Vector3 crA = A->get_angular_velocity().cross( c.rA );
+			Vector3 crB = B->get_angular_velocity().cross( c.rB );
+			Vector3 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
+			//normal impule
+			c.bounce = c.bounce * dv.dot(c.normal);
+		}
+
+
 	}
 
 	return true;
@@ -350,8 +361,7 @@ void BodyPairSW::solve(float p_step) {
 
 		if (Math::abs(vn)>MIN_VELOCITY) {
 
-			real_t bounce=0;
-			real_t jn = (-bounce -vn)*c.mass_normal;
+			real_t jn = -(c.bounce + vn)*c.mass_normal;
 			real_t jnOld = c.acc_normal_impulse;
 			c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
 

@@ -37,6 +37,8 @@
 class GDInstance;
 class GDScript;
 
+
+
 class GDFunction {
 public:
 
@@ -58,6 +60,9 @@ public:
 		OPCODE_CALL_BUILT_IN,
 		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
+		OPCODE_YIELD,
+		OPCODE_YIELD_SIGNAL,
+		OPCODE_YIELD_RESUME,
 		OPCODE_JUMP,
 		OPCODE_JUMP_IF,
 		OPCODE_JUMP_IF_NOT,
@@ -132,6 +137,20 @@ friend class GDCompiler;
 
 public:
 
+	struct CallState {
+
+		GDInstance *instance;
+		Vector<uint8_t> stack;
+		int stack_size;
+		Variant self;
+		uint32_t alloca_size;
+		GDScript *_class;
+		int ip;
+		int line;
+		int defarg;
+		Variant result;
+
+	};
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 
@@ -150,9 +169,27 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
 
 	int get_argument_count() const { return _argument_count; }
-	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err);
+	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
 	GDFunction();
+};
+
+
+class GDFunctionState : public Reference {
+
+	OBJ_TYPE(GDFunctionState,Reference);
+friend class GDFunction;
+	GDFunction *function;
+	GDFunction::CallState state;
+	Variant _signal_callback(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+protected:
+	static void _bind_methods();
+public:
+
+	bool is_valid() const;
+	Variant resume(const Variant& p_arg=Variant());
+	GDFunctionState();
+	~GDFunctionState();
 };
 
 

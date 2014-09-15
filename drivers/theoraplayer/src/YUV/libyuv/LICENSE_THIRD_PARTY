@@ -1,0 +1,8 @@
+This source tree contains third party source code which is governed by third
+party licenses. This file contains references to files which are under other
+licenses than the one provided in the LICENSE file in the root of the source
+tree.
+
+Files governed by third party licenses:
+source/x86inc.asm
+
