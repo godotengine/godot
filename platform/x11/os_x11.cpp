@@ -170,6 +170,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
+		// needed for lxde/openbox, possibly others
+		Hints hints;
+		Atom property;
+		hints.flags = 2;
+		hints.decorations = 0;
+		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+		XMapRaised(x11_display, x11_window);
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+
+		// code for netwm-compliants
 		XEvent xev;
 		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
