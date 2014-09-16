@@ -192,9 +192,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		xsh = XAllocSizeHints();
 		xsh->flags = PMinSize | PMaxSize;
 		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display,x11_window,&xwa);
 		if (current_videomode.fullscreen) {
-			XGetWindowAttributes(x11_display,xwa.root,&xwa);
+			XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+		} else {
+			XGetWindowAttributes(x11_display,x11_window,&xwa);
 		}
 		xsh->min_width = xwa.width; 
 		xsh->max_width = xwa.width;
