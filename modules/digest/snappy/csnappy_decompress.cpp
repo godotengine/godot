@@ -7,14 +7,14 @@ modification, are permitted provided that the following conditions are
 met:
 
   * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
+notice, _this list of conditions and the following disclaimer.
   * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
+copyright notice, _this list of conditions and the following disclaimer
 in the documentation and/or other materials provided with the
 distribution.
   * Neither the name of Google Inc. nor the names of its
 contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
+_this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
@@ -194,7 +194,7 @@ static const uint16_t char_table[256] = {
  * After IncrementalCopy(src, op, len), the result will have
  * eleven copies of "ab"
  *    ababababababababababab
- * Note that this does not match the semantics of either memcpy()
+ * Note that _this does not match the semantics of either memcpy()
  * or memmove().
  */
 static INLINE void IncrementalCopy(const char *src, char *op, int len)
@@ -209,11 +209,11 @@ static INLINE void IncrementalCopy(const char *src, char *op, int len)
  * Equivalent to IncrementalCopy except that it can write up to ten extra
  * bytes after the end of the copy, and that it is faster.
  *
- * The main part of this loop is a simple copy of eight bytes at a time until
+ * The main part of _this loop is a simple copy of eight bytes at a time until
  * we've copied (at least) the requested amount of bytes.  However, if op and
  * src are less than eight bytes apart (indicating a repeating pattern of
  * length < 8), we first need to expand the pattern in order to get the correct
- * results. For instance, if the buffer looks like this, with the eight-byte
+ * results. For instance, if the buffer looks like _this, with the eight-byte
  * <src> and <op> patterns marked as intervals:
  *
  *    abxxxxxxxxxxxx
@@ -262,11 +262,11 @@ struct SnappyArrayWriter {
 };
 
 static INLINE int
-SAW__AppendFastPath(struct SnappyArrayWriter *this,
+SAW__AppendFastPath(struct SnappyArrayWriter *_this,
 		    const char *ip, uint32_t len)
 {
-	char *op = this->op;
-	const int space_left = this->op_limit - op;
+	char *op = _this->op;
+	const int space_left = _this->op_limit - op;
 	if (likely(space_left >= 16)) {
 		UnalignedCopy64(ip, op);
 		UnalignedCopy64(ip + 8, op + 8);
@@ -275,31 +275,31 @@ SAW__AppendFastPath(struct SnappyArrayWriter *this,
 			return CSNAPPY_E_OUTPUT_OVERRUN;
 		memcpy(op, ip, len);
 	}
-	this->op = op + len;
+	_this->op = op + len;
 	return CSNAPPY_E_OK;
 }
 
 static INLINE int
-SAW__Append(struct SnappyArrayWriter *this,
+SAW__Append(struct SnappyArrayWriter *_this,
 	    const char *ip, uint32_t len)
 {
-	char *op = this->op;
-	const int space_left = this->op_limit - op;
+	char *op = _this->op;
+	const int space_left = _this->op_limit - op;
         if (unlikely(space_left < (int32_t)len))
 		return CSNAPPY_E_OUTPUT_OVERRUN;
 	memcpy(op, ip, len);
-	this->op = op + len;
+	_this->op = op + len;
 	return CSNAPPY_E_OK;
 }
 
 static INLINE int
-SAW__AppendFromSelf(struct SnappyArrayWriter *this,
+SAW__AppendFromSelf(struct SnappyArrayWriter *_this,
 		    uint32_t offset, uint32_t len)
 {
-	char *op = this->op;
-	const int space_left = this->op_limit - op;
+	char *op = _this->op;
+	const int space_left = _this->op_limit - op;
 	/* -1u catches offset==0 */
-	if (op - this->base <= offset - 1u)
+	if (op - _this->base <= offset - 1u)
 		return CSNAPPY_E_DATA_MALFORMED;
 	/* Fast path, used for the majority (70-80%) of dynamic invocations. */
 	if (len <= 16 && offset >= 8 && space_left >= 16) {
@@ -312,7 +312,7 @@ SAW__AppendFromSelf(struct SnappyArrayWriter *this,
 			return CSNAPPY_E_OUTPUT_OVERRUN;
 		IncrementalCopy(op - offset, op, len);
 	}
-	this->op = op + len;
+	_this->op = op + len;
 	return CSNAPPY_E_OK;
 }
 

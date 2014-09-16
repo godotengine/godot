@@ -204,7 +204,7 @@ bool	ConeTwistJointSW::setup(float p_step) {
 	return true;
 }
 
-void	ConeTwistJointSW::solve(real_t	timeStep)
+void	ConeTwistJointSW::solve(float timeStep)
 {
 
 	Vector3 pivotAInW = A->get_transform().xform(m_rbAFrame.origin);

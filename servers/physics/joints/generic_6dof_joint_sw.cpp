@@ -406,7 +406,7 @@ bool Generic6DOFJointSW::setup(float p_step) {
 }
 
 
-void Generic6DOFJointSW::solve(real_t	timeStep)
+void Generic6DOFJointSW::solve(float timeStep)
 {
     m_timeStep = timeStep;
 

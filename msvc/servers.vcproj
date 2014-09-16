@@ -485,6 +485,58 @@
 					RelativePath="..\servers\physics\step_sw.h"
 					>
 				</File>
+				<Filter
+					Name="joints"
+					>
+					<File
+						RelativePath="..\servers\physics\joints\cone_twist_joint_sw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\cone_twist_joint_sw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\generic_6dof_joint_sw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\generic_6dof_joint_sw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\hinge_joint_sw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\hinge_joint_sw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\jacobian_entry_sw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\jacobian_entry_sw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\pin_joint_sw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\pin_joint_sw.h"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\slider_joint_sw.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\servers\physics\joints\slider_joint_sw.h"
+						>
+					</File>
+				</Filter>
 			</Filter>
 			<Filter
 				Name="physics_2d"

@@ -136,7 +136,7 @@ bool SliderJointSW::setup(float p_step)
 
 //-----------------------------------------------------------------------------
 
-void SliderJointSW::solve(real_t p_step) {
+void SliderJointSW::solve(float p_step) {
 
     int i;
     // linear

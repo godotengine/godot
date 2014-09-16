@@ -473,11 +473,11 @@
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\csnappy_compress.c"
+						RelativePath="..\modules\digest\snappy\csnappy_compress.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\modules\digest\snappy\csnappy_decompress.c"
+						RelativePath="..\modules\digest\snappy\csnappy_decompress.cpp"
 						>
 					</File>
 					<File
