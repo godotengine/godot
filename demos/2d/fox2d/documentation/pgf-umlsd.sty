@@ -1,0 +1,329 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Start of pgf-umlsd.sty
+%
+% Some macros for UML Sequence Diagrams.
+% Home page of project: http://pgf-umlsd.googlecode.com/
+% Author: Xu Yuan <xuyuan.cn@gmail.com>, Southeast University, China
+% Contributor: Nobel Huang <nobel1984@gmail.com>, Southeast University, China
+%
+% History:
+% v0.7 2012/03/05
+%      - unify interface of call and callself
+%      - non-instantaneous message
+%      - bugfix: conflits with tikz library backgrounds
+% v0.6 2011/07/27
+%      - Fix Issue 6 reported by frankmorgner@gmail.com
+%        - diagram without a thread
+%        - allows empty diagram
+%      - New manual
+% v0.5 2009/09/30 Fix Issue 2 reported by vlado.handziski
+%      - Nested callself is supported
+%      - Rename sdloop and sdframe to sdblock
+% v0.4 2008/12/08  Fix Issue 1 reported by MathStuf:
+%      Nested sdloop environment hides outer loop
+% v0.3 2008/11/10 in Berlin, fix for the PGF cvs version:
+%      - the list items in \foreach are not evaluated by default now,
+%      the `evaluate' opinion should be used
+% v0.2 2008/03/20 create project at http://pgf-umlsd.googlecode.com/
+%      - use `shadows' library
+%      Thanks for Dr. Ludger Humbert's <humbert@uni-wuppertal.de> feedback!
+%      - reduce the parameter numbers, the user can write the content
+%      of instance (such as no colon)
+%      - the user can redefine the `inststyle'
+%      - new option: switch underlining of the instance text
+%      - new option: switch rounded corners
+% v0.1 2008/01/25 first release at http://www.fauskes.net/pgftikzexamples/
+%
+
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{pgf-umlsd}[2011/07/27 v0.6 Some LaTeX macros for UML
+Sequence Diagrams.]
+
+\RequirePackage{tikz}
+\usetikzlibrary{arrows,shadows}
+
+\RequirePackage{ifthen}
+
+% Options
+% ? the instance name under line ?
+\newif\ifpgfumlsdunderline\pgfumlsdunderlinetrue
+\DeclareOption{underline}{\pgfumlsdunderlinetrue}
+\DeclareOption{underline=true}{\pgfumlsdunderlinetrue}
+\DeclareOption{underline=false}{\pgfumlsdunderlinefalse}
+% ? the instance box with rounded corners ?
+\newif\ifpgfumlsdroundedcorners\pgfumlsdroundedcornersfalse
+\DeclareOption{roundedcorners}{\pgfumlsdroundedcornerstrue}
+\DeclareOption{roundedcorners=true}{\pgfumlsdroundedcornerstrue}
+\DeclareOption{roundedcorners=false}{\pgfumlsdroundedcornersfalse}
+\ProcessOptions
+
+% new counters
+\newcounter{preinst}
+\newcounter{instnum}
+\newcounter{threadnum}
+\newcounter{seqlevel} % level
+\newcounter{callevel}
+\newcounter{callselflevel}
+\newcounter{blocklevel}
+
+% new an instance
+% Example:
+% \newinst[edge distance]{var}{name:class}
+\newcommand{\newinst}[3][0.2]{
+  \stepcounter{instnum}
+  \path (inst\thepreinst.east)+(#1,0) node[inststyle] (inst\theinstnum)
+  {\ifpgfumlsdunderline
+    \underline{#3}
+  \else
+  #3
+  \fi};
+  \path (inst\theinstnum)+(0,-0.5*\unitfactor) node (#2) {};
+  \tikzstyle{instcolor#2}=[]
+  \stepcounter{preinst}
+}
+
+% new an instance thread
+% Example:
+% \newinst[color]{var}{name}{class}
+\newcommand{\newthread}[3][gray!30]{
+  \newinst{#2}{#3}
+  \stepcounter{threadnum}
+  \node[below of=inst\theinstnum,node distance=0.8cm] (thread\thethreadnum) {};
+  \tikzstyle{threadcolor\thethreadnum}=[fill=#1]
+  \tikzstyle{instcolor#2}=[fill=#1]
+}
+
+% draw running (thick) line, should not call directly
+\newcommand*{\drawthread}[2]{
+  \begin{pgfonlayer}{umlsd@threadlayer}
+    \draw[threadstyle] (#1.west) -- (#1.east) -- (#2.east) -- (#2.west) -- cycle;
+  \end{pgfonlayer}
+}
+
+% a function call
+% Example:
+% \begin{call}[height]{caller}{function}{callee}{return}
+% \end{call}
+\newenvironment{call}[5][1]{
+\ifthenelse{\equal{#2}{#4}}
+{
+  \begin{callself}[#1]{#2}{#3}{#5}
+}
+{
+  \begin{callanother}[#1]{#2}{#3}{#4}{#5}
+}
+}
+{
+\ifthenelse{\equal{\f\thecallevel}{\t\thecallevel}}
+{
+  \end{callself}
+}
+{
+  \end{callanother}
+}
+}
+
+% function call to another instance
+% interal use only
+\newenvironment*{callanother}[5][1]{
+  \stepcounter{seqlevel}
+  \stepcounter{callevel} % push
+  \path
+  (#2)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (cf\thecallevel) {}
+  (#4.\threadbias)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (ct\thecallevel) {};
+  
+  \draw[->,>=triangle 60] ({cf\thecallevel}) -- (ct\thecallevel)
+  node[midway, above] {#3};
+  \def\l\thecallevel{#1}
+  \def\f\thecallevel{#2}
+  \def\t\thecallevel{#4}
+  \def\returnvalue{#5}
+  \tikzstyle{threadstyle}+=[instcolor#2]
+}
+{
+  \addtocounter{seqlevel}{\l\thecallevel}
+  \path
+  (\f\thecallevel)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (rf\thecallevel) {}
+  (\t\thecallevel.\threadbias)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (rt\thecallevel) {};
+  \draw[dashed,->,>=angle 60] ({rt\thecallevel}) -- (rf\thecallevel)
+  node[midway, above]{\returnvalue};
+  \drawthread{ct\thecallevel}{rt\thecallevel}
+  \addtocounter{callevel}{-1} % pop
+}
+
+% a function do not need call others
+% interal use only
+% Example:
+% \begin{callself}[height]{caller}{function}{return}
+% \end{callself}
+\newenvironment*{callself}[4][1]{
+  \stepcounter{seqlevel}
+  \stepcounter{callevel} % push
+  \stepcounter{callselflevel}
+
+  \path
+  (#2)+(\thecallselflevel*0.1-0.1,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (sc\thecallevel) {}
+  ({sc\thecallevel}.east)+(0,-0.33*\unitfactor) node (scb\thecallevel) {};
+
+  \draw[->,>=triangle 60] ({sc\thecallevel}.east) -- ++(0.8,0)
+  node[near start, above right] {#3} -- ++(0,-0.33*\unitfactor)
+  -- (scb\thecallevel); 
+  \def\l\thecallevel{#1}
+  \def\f\thecallevel{#2}
+  \def\t\thecallevel{#2}
+  \def\returnvalue{#4}
+  \tikzstyle{threadstyle}+=[instcolor#2]
+}{
+  \addtocounter{seqlevel}{\l\thecallevel}
+  \path (\f\thecallevel)+(\thecallselflevel*0.1-0.1,-\theseqlevel*\unitfactor-0.33*\unitfactor) node
+  (sct\thecallevel) {};
+
+  \draw[dashed,->,>=angle 60] ({sct\thecallevel}.east) node
+  (sce\thecallevel) {} -- ++(0.8,0) -- node[midway, right]{\returnvalue} ++(0,-0.33*\unitfactor) -- ++(-0.8,0);
+  \drawthread{scb\thecallevel}{sce\thecallevel}
+  \addtocounter{callevel}{-1} % pop
+  \addtocounter{callselflevel}{-1}
+}
+
+% message between threads
+% Example:
+% \mess[delay]{sender}{message content}{receiver}
+\newcommand{\mess}[4][0]{
+  \stepcounter{seqlevel}
+  \path
+  (#2)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (mess from) {};
+  \addtocounter{seqlevel}{#1}
+  \path
+  (#4)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (mess to) {};
+  \draw[->,>=angle 60] (mess from) -- (mess to) node[midway, above]
+  {#3};
+
+  \node (#3 from) at (mess from) {};
+  \node (#3 to) at (mess to) {};
+}
+
+\newenvironment{messcall}[4][1]{
+  \stepcounter{seqlevel}
+  \stepcounter{callevel} % push
+  \path
+  (#2)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (cf\thecallevel) {}
+  (#4.\threadbias)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (ct\thecallevel) {};
+  
+  \draw[->,>=angle 60] ({cf\thecallevel}) -- (ct\thecallevel)
+  node[midway, above] {#3};
+  \def\l\thecallevel{#1}
+  \def\f\thecallevel{#2}
+  \def\t\thecallevel{#4}
+  \tikzstyle{threadstyle}+=[instcolor#2]
+}
+{
+  \addtocounter{seqlevel}{\l\thecallevel}
+  \path
+  (\f\thecallevel)+(0,-\theseqlevel*\unitfactor-0.7*\unitfactor) node (rf\thecallevel) {}
+  (\t\thecallevel.\threadbias)+(0,-\theseqlevel*\unitfactor-0.3*\unitfactor) node (rt\thecallevel) {};
+  \drawthread{ct\thecallevel}{rt\thecallevel}
+  \addtocounter{callevel}{-1} % pop
+}
+
+% In the situation of multi-threads, some objects are called at the
+% same time. Currently, we have to adjust the bias of thread line
+% manually. Possible parameters are: center, west, east
+\newcommand{\setthreadbias}[1]{\global\def\threadbias{#1}}
+
+% This function makes the call earlier.
+\newcommand{\prelevel}{\addtocounter{seqlevel}{-1}}
+
+% This function makes the call later.
+\newcommand{\postlevel}{\addtocounter{seqlevel}{+1}}
+
+% a block box with caption
+% \begin{sdblock}[caption background color]{caption}{comments}
+% \end{sdblock}
+\newenvironment{sdblock}[3][white]{
+  \stepcounter{seqlevel}
+  \stepcounter{blocklevel} % push
+  \coordinate (blockbeg\theblocklevel) at (0,-\theseqlevel*\unitfactor-\unitfactor);
+  \stepcounter{seqlevel}
+  \def\blockcolor\theblocklevel{#1}
+  \def\blockname\theblocklevel{#2}
+  \def\blockcomm\theblocklevel{#3}
+  \begin{pgfinterruptboundingbox}
+}{
+  \coordinate (blockend) at (0,-\theseqlevel*\unitfactor-2*\unitfactor);
+  \path (current bounding box.east)+(0.2,0) node (boxeast) {}
+  (current bounding box.west |- {blockbeg\theblocklevel}) + (-0.2,0)
+  node (nw) {};
+  \path (boxeast |- blockend) node (se) {};
+
+  % % title
+  \node[blockstyle] (blocktitle) at (nw) {\blockname\theblocklevel};
+  \path (blocktitle.south east) + (0,0.2) node (set) {}
+  (blocktitle.south east) + (-0.2,0) node (seb) {}
+  (blocktitle.north east) + (0.2,0) node (comm) {};
+  \draw[fill=\blockcolor\theblocklevel] (blocktitle.north west) -- (blocktitle.north east) --
+  (set.center) -- (seb.center) -- (blocktitle.south west) -- cycle;
+  \node[blockstyle] (blocktitle) at (nw) {\blockname\theblocklevel};
+  \node[blockcommentstyle] (blockcomment) at (comm) {\blockcomm\theblocklevel};
+
+  \coordinate (se) at (current bounding box.south east);
+  \end{pgfinterruptboundingbox}
+
+  \draw (se) rectangle (nw);
+
+  \addtocounter{blocklevel}{-1} % pop
+  \stepcounter{seqlevel}
+}
+
+% the environment of sequence diagram
+\newenvironment{sequencediagram}{
+  % declare layers
+  \pgfdeclarelayer{umlsd@background}
+  \pgfdeclarelayer{umlsd@threadlayer}
+  \pgfsetlayers{umlsd@background,umlsd@threadlayer,main}
+
+  \begin{tikzpicture}
+    \setlength{\unitlength}{1cm}
+    \tikzstyle{sequence}=[coordinate]
+    \tikzstyle{inststyle}=[rectangle, draw, anchor=west, minimum
+    height=0.8cm, minimum width=1.6cm, fill=white, 
+    drop shadow={opacity=1,fill=black}]
+    \ifpgfumlsdroundedcorners
+    \tikzstyle{inststyle}+=[rounded corners=3mm]
+    \fi
+    \tikzstyle{blockstyle}=[anchor=north west]
+    \tikzstyle{blockcommentstyle}=[anchor=north west, font=\small]
+    \tikzstyle{dot}=[inner sep=0pt,fill=black,circle,minimum size=0.2pt]
+    \global\def\unitfactor{0.6}
+    \global\def\threadbias{center}
+    % reset counters
+    \setcounter{preinst}{0}
+    \setcounter{instnum}{0}
+    \setcounter{threadnum}{0}
+    \setcounter{seqlevel}{0}
+    \setcounter{callevel}{0}
+    \setcounter{callselflevel}{0}
+    \setcounter{blocklevel}{0}
+
+    % origin
+    \node[coordinate] (inst0) {};
+}
+{
+  \begin{pgfonlayer}{umlsd@background}
+    \ifnum\c@instnum > 0
+    \foreach \t [evaluate=\t] in {1,...,\theinstnum}{
+      \draw[dotted] (inst\t) -- ++(0,-\theseqlevel*\unitfactor-2.2*\unitfactor);
+    }
+    \fi
+    \ifnum\c@threadnum > 0
+    \foreach \t [evaluate=\t] in {1,...,\thethreadnum}{
+      \path (thread\t)+(0,-\theseqlevel*\unitfactor-0.1*\unitfactor) node (threadend) {};
+      \tikzstyle{threadstyle}+=[threadcolor\t]
+      \drawthread{thread\t}{threadend}
+    }
+    \fi
+  \end{pgfonlayer}
+\end{tikzpicture}}
+
+
+%%% End of pgf-umlsd.sty
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

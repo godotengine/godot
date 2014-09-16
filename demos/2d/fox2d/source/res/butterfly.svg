@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="48"
+   height="36"
+   id="svg2"
+   version="1.1"
+   inkscape:version="0.48.4 r9939"
+   sodipodi:docname="butterfly.svg"
+   inkscape:export-filename="/home/edwin/apps/godot/workspace/test2d/res/butterfly.png"
+   inkscape:export-xdpi="90.056984"
+   inkscape:export-ydpi="90.056984">
+  <defs
+     id="defs4" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="5.6"
+     inkscape:cx="54.811932"
+     inkscape:cy="-0.33324454"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer2"
+     showgrid="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:window-width="1582"
+     inkscape:window-height="972"
+     inkscape:window-x="214"
+     inkscape:window-y="68"
+     inkscape:window-maximized="0" />
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-264.57144,-742.93359)"
+     sodipodi:insensitive="true"
+     style="display:none">
+    <image
+       y="742.93359"
+       x="264.57144"
+       id="image2993"
+       xlink:href="file:///home/edwin/apps/godot/workspace/test2d/butterfly.png"
+       height="36"
+       width="48" />
+  </g>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer">
+    <path
+       style="fill:#00ffeb;fill-opacity:0.46808514;fill-rule:nonzero;stroke:#000000;stroke-opacity:1"
+       d="m 31.785714,22.607143 c 0,0 -9.734264,-6.452409 -6.071428,-16.2500002 C 28.090342,0.0015137 32.696737,-0.70757522 37.5,8.6785714 41.226993,15.961557 35.714286,22.964286 35.714286,22.964286 c 0,0 4.758953,-9.841021 10.892857,-0.178572 5.542661,8.731093 -4.464286,11.071429 -4.464286,11.071429"
+       id="path3777"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="csscsc" />
+    <path
+       style="fill:#00ffeb;fill-opacity:0.46808514;fill-rule:nonzero;stroke:#000000;stroke-opacity:1"
+       d="M 38.214286,26 C 36.794652,28.292382 27.516923,22.499342 26.071428,19.928572 24.625933,17.357802 23.234697,8.9745016 28.75,9.9285714 c 5.515303,0.9540696 11.384416,7.6642646 9.107143,14.2857146 0,0 3.328981,-8.224151 8.75,-0.892857 5.421019,7.331294 -2.321429,9.464285 -2.321429,9.464285"
+       id="path3775"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="czzczc" />
+    <path
+       style="fill:#00ffeb;fill-opacity:0.46808511000000003;fill-rule:nonzero;opacity:1;stroke:#000000;stroke-opacity:1"
+       d="M 5.8928572,23.678571 C -4.0139056,10.199762 10.221312,0.48192042 14.464286,5.8214285 18.707259,11.160937 18.035623,17.997943 8.3928572,26.892857 13.883905,21.354301 19.41772,14.669151 22.678571,22.964286 c 3.260851,8.295135 -3.041537,9.110655 -9.464285,9.464285"
+       id="path3773"
+       inkscape:connector-curvature="0"
+       sodipodi:nodetypes="czczc" />
+    <path
+       sodipodi:type="arc"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       id="path3001"
+       sodipodi:cx="98.660713"
+       sodipodi:cy="24.839285"
+       sodipodi:rx="29.017857"
+       sodipodi:ry="29.017857"
+       d="m 127.67857,24.839285 a 29.017857,29.017857 0 1 1 -58.035713,0 29.017857,29.017857 0 1 1 58.035713,0 z"
+       transform="matrix(0.12940229,-0.07613586,0.21669065,0.24200507,-10.292224,29.643244)" />
+    <path
+       transform="matrix(0.12940229,-0.07613586,0.21669065,0.24200507,19.707776,29.643244)"
+       d="m 127.67857,24.839285 a 29.017857,29.017857 0 1 1 -58.035713,0 29.017857,29.017857 0 1 1 58.035713,0 z"
+       sodipodi:ry="29.017857"
+       sodipodi:rx="29.017857"
+       sodipodi:cy="24.839285"
+       sodipodi:cx="98.660713"
+       id="path3771"
+       style="fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       sodipodi:type="arc" />
+  </g>
+</svg>

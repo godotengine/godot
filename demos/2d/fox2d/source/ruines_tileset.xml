@@ -1,0 +1,1804 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="TileSet" subresource_count="222" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://res/ruins/tiles/0201.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0154.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0177.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0106.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0143.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0081.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0155.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0203.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0142.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0047.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0153.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0186.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0134.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0164.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0141.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0131.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0059.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0078.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0009.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0166.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0058.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0172.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0099.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0125.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0119.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0197.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0173.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0129.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0146.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0185.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0013.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0190.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0149.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0133.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0074.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0087.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0167.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0092.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0103.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0095.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0090.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0036.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0030.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0163.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0028.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0007.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0071.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0180.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0135.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0079.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0083.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0104.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0045.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0130.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0075.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0025.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0165.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0184.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0182.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0023.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0067.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0192.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0205.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0026.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0152.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0022.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0021.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0151.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0040.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0206.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0027.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0115.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0140.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0137.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0068.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0042.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0077.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0209.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0139.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0044.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0168.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0116.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0175.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0113.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0070.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0148.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0111.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0187.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0160.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0048.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0105.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0156.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0138.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0102.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0049.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0069.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0109.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0178.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0086.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0198.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0065.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0112.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0202.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0100.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0157.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0108.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0145.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0122.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0038.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0019.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0057.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0024.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0098.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0094.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0162.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0144.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0188.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0091.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0010.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0120.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0052.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0208.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0195.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0161.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0118.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0200.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0082.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0006.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0204.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0117.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0085.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0193.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0110.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0073.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0189.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0158.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0035.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0032.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0123.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0169.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0199.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0107.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0014.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0194.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0132.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0136.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0196.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0041.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0016.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0126.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0043.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0033.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0002.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0072.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0096.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0061.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0055.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0088.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0012.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0066.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0127.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0029.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0121.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0183.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0174.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0054.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0089.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0084.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0114.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0062.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0211.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0176.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0080.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0170.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0076.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0159.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0097.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0060.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0063.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0212.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0053.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0150.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0128.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0101.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0191.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0034.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0011.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0147.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0207.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0210.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0008.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0015.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0004.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0017.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0046.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0031.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0051.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0181.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0171.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0018.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0093.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0001.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0124.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0064.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0179.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0020.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0005.png" type="Texture"></ext_resource>
+	<ext_resource path="res://res/ruins/tiles/0003.png" type="Texture"></ext_resource>
+	<resource type="ConvexPolygonShape2D" path="local://1">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://2">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="5"> 			0, 48, 0, 0, 16, 0, 48, 32, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://3">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://4">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://5">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 12, 0, 0, 48, 0, 48, 12 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://6">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://7">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://8">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://9">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="5"> 			0, 48, 0, 0, 16, 0, 48, 32, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://10">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://11">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 48, 0, 0, 48, 0, 48, 48 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://12">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 24, 0, 0, 48, 0, 48, 24 </vector2_array>
+
+	</resource>
+	<resource type="ConvexPolygonShape2D" path="local://13">
+		<real name="custom_solver_bias"> 0 </real>
+		<vector2_array name="points" len="4"> 			0, 24, 0, 0, 48, 0, 48, 24 </vector2_array>
+
+	</resource>
+	<main_resource>
+		<string name="0/name"> "Sprite" </string>
+		<resource name="0/texture" resource_type="Texture" path="res://res/ruins/tiles/0001.png">  </resource>
+		<vector2 name="0/tex_offset"> 0, 0 </vector2>
+		<vector2 name="0/shape_offset"> -0, -0 </vector2>
+		<rect2 name="0/region"> 0, 0, 0, 0 </rect2>
+		<array name="0/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="1/name"> "Sprite 2" </string>
+		<resource name="1/texture" resource_type="Texture" path="res://res/ruins/tiles/0002.png">  </resource>
+		<vector2 name="1/tex_offset"> 0, 0 </vector2>
+		<vector2 name="1/shape_offset"> -0, -0 </vector2>
+		<rect2 name="1/region"> 0, 0, 0, 0 </rect2>
+		<array name="1/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="2/name"> "Sprite 3" </string>
+		<resource name="2/texture" resource_type="Texture" path="res://res/ruins/tiles/0003.png">  </resource>
+		<vector2 name="2/tex_offset"> 0, 0 </vector2>
+		<vector2 name="2/shape_offset"> -0, -0 </vector2>
+		<rect2 name="2/region"> 0, 0, 0, 0 </rect2>
+		<array name="2/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="3/name"> "Sprite 3 2" </string>
+		<resource name="3/texture" resource_type="Texture" path="res://res/ruins/tiles/0004.png">  </resource>
+		<vector2 name="3/tex_offset"> 0, 0 </vector2>
+		<vector2 name="3/shape_offset"> -0, -0 </vector2>
+		<rect2 name="3/region"> 0, 0, 0, 0 </rect2>
+		<array name="3/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://2">  </resource>
+		</array>
+		<string name="4/name"> "Sprite 4" </string>
+		<resource name="4/texture" resource_type="Texture" path="res://res/ruins/tiles/0005.png">  </resource>
+		<vector2 name="4/tex_offset"> 0, 0 </vector2>
+		<vector2 name="4/shape_offset"> -0, -0 </vector2>
+		<rect2 name="4/region"> 0, 0, 0, 0 </rect2>
+		<array name="4/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://3">  </resource>
+		</array>
+		<string name="5/name"> "Sprite 4 2" </string>
+		<resource name="5/texture" resource_type="Texture" path="res://res/ruins/tiles/0006.png">  </resource>
+		<vector2 name="5/tex_offset"> 0, 0 </vector2>
+		<vector2 name="5/shape_offset"> -0, -0 </vector2>
+		<rect2 name="5/region"> 0, 0, 0, 0 </rect2>
+		<array name="5/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://3">  </resource>
+		</array>
+		<string name="6/name"> "Sprite 3 3" </string>
+		<resource name="6/texture" resource_type="Texture" path="res://res/ruins/tiles/0007.png">  </resource>
+		<vector2 name="6/tex_offset"> 0, 0 </vector2>
+		<vector2 name="6/shape_offset"> -0, -0 </vector2>
+		<rect2 name="6/region"> 0, 0, 0, 0 </rect2>
+		<array name="6/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://3">  </resource>
+		</array>
+		<string name="7/name"> "Sprite 4 3" </string>
+		<resource name="7/texture" resource_type="Texture" path="res://res/ruins/tiles/0008.png">  </resource>
+		<vector2 name="7/tex_offset"> 0, 0 </vector2>
+		<vector2 name="7/shape_offset"> -0, -0 </vector2>
+		<rect2 name="7/region"> 0, 0, 0, 0 </rect2>
+		<array name="7/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://3">  </resource>
+		</array>
+		<string name="8/name"> "Sprite 5" </string>
+		<resource name="8/texture" resource_type="Texture" path="res://res/ruins/tiles/0009.png">  </resource>
+		<vector2 name="8/tex_offset"> 0, 0 </vector2>
+		<vector2 name="8/shape_offset"> -0, -0 </vector2>
+		<rect2 name="8/region"> 0, 0, 0, 0 </rect2>
+		<array name="8/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://3">  </resource>
+		</array>
+		<string name="9/name"> "Sprite 5 2" </string>
+		<resource name="9/texture" resource_type="Texture" path="res://res/ruins/tiles/0010.png">  </resource>
+		<vector2 name="9/tex_offset"> 0, 0 </vector2>
+		<vector2 name="9/shape_offset"> -0, -0 </vector2>
+		<rect2 name="9/region"> 0, 0, 0, 0 </rect2>
+		<array name="9/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://4">  </resource>
+		</array>
+		<string name="10/name"> "Sprite 3 4" </string>
+		<resource name="10/texture" resource_type="Texture" path="res://res/ruins/tiles/0011.png">  </resource>
+		<vector2 name="10/tex_offset"> 0, 0 </vector2>
+		<vector2 name="10/shape_offset"> -0, -0 </vector2>
+		<rect2 name="10/region"> 0, 0, 0, 0 </rect2>
+		<array name="10/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://5">  </resource>
+		</array>
+		<string name="11/name"> "Sprite 5 3" </string>
+		<resource name="11/texture" resource_type="Texture" path="res://res/ruins/tiles/0012.png">  </resource>
+		<vector2 name="11/tex_offset"> 0, 0 </vector2>
+		<vector2 name="11/shape_offset"> -0, -0 </vector2>
+		<rect2 name="11/region"> 0, 0, 0, 0 </rect2>
+		<array name="11/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://5">  </resource>
+		</array>
+		<string name="12/name"> "Sprite 4 4" </string>
+		<resource name="12/texture" resource_type="Texture" path="res://res/ruins/tiles/0013.png">  </resource>
+		<vector2 name="12/tex_offset"> 0, 0 </vector2>
+		<vector2 name="12/shape_offset"> -0, -0 </vector2>
+		<rect2 name="12/region"> 0, 0, 0, 0 </rect2>
+		<array name="12/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://5">  </resource>
+		</array>
+		<string name="13/name"> "Sprite 5 4" </string>
+		<resource name="13/texture" resource_type="Texture" path="res://res/ruins/tiles/0014.png">  </resource>
+		<vector2 name="13/tex_offset"> 0, 0 </vector2>
+		<vector2 name="13/shape_offset"> -0, -0 </vector2>
+		<rect2 name="13/region"> 0, 0, 0, 0 </rect2>
+		<array name="13/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://6">  </resource>
+		</array>
+		<string name="14/name"> "Sprite 3 4 2" </string>
+		<resource name="14/texture" resource_type="Texture" path="res://res/ruins/tiles/0015.png">  </resource>
+		<vector2 name="14/tex_offset"> 0, 0 </vector2>
+		<vector2 name="14/shape_offset"> -0, -0 </vector2>
+		<rect2 name="14/region"> 0, 0, 0, 0 </rect2>
+		<array name="14/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://7">  </resource>
+		</array>
+		<string name="15/name"> "Sprite 4 4 2" </string>
+		<resource name="15/texture" resource_type="Texture" path="res://res/ruins/tiles/0016.png">  </resource>
+		<vector2 name="15/tex_offset"> 0, 0 </vector2>
+		<vector2 name="15/shape_offset"> -0, -0 </vector2>
+		<rect2 name="15/region"> 0, 0, 0, 0 </rect2>
+		<array name="15/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://8">  </resource>
+		</array>
+		<string name="16/name"> "Sprite 6" </string>
+		<resource name="16/texture" resource_type="Texture" path="res://res/ruins/tiles/0017.png">  </resource>
+		<vector2 name="16/tex_offset"> 0, 0 </vector2>
+		<vector2 name="16/shape_offset"> -0, -0 </vector2>
+		<rect2 name="16/region"> 0, 0, 0, 0 </rect2>
+		<array name="16/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="17/name"> "Sprite 6 2" </string>
+		<resource name="17/texture" resource_type="Texture" path="res://res/ruins/tiles/0018.png">  </resource>
+		<vector2 name="17/tex_offset"> 0, 0 </vector2>
+		<vector2 name="17/shape_offset"> -0, -0 </vector2>
+		<rect2 name="17/region"> 0, 0, 0, 0 </rect2>
+		<array name="17/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="18/name"> "Sprite 3 5" </string>
+		<resource name="18/texture" resource_type="Texture" path="res://res/ruins/tiles/0019.png">  </resource>
+		<vector2 name="18/tex_offset"> 0, 0 </vector2>
+		<vector2 name="18/shape_offset"> 0, 0 </vector2>
+		<rect2 name="18/region"> 0, 0, 0, 0 </rect2>
+		<array name="18/shapes" len="0" shared="false">
+		</array>
+		<string name="19/name"> "Sprite 6 3" </string>
+		<resource name="19/texture" resource_type="Texture" path="res://res/ruins/tiles/0020.png">  </resource>
+		<vector2 name="19/tex_offset"> 0, 0 </vector2>
+		<vector2 name="19/shape_offset"> -0, -0 </vector2>
+		<rect2 name="19/region"> 0, 0, 0, 0 </rect2>
+		<array name="19/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://9">  </resource>
+		</array>
+		<string name="20/name"> "Sprite 4 5" </string>
+		<resource name="20/texture" resource_type="Texture" path="res://res/ruins/tiles/0021.png">  </resource>
+		<vector2 name="20/tex_offset"> 0, 0 </vector2>
+		<vector2 name="20/shape_offset"> -0, -0 </vector2>
+		<rect2 name="20/region"> 0, 0, 0, 0 </rect2>
+		<array name="20/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="21/name"> "Sprite 6 4" </string>
+		<resource name="21/texture" resource_type="Texture" path="res://res/ruins/tiles/0022.png">  </resource>
+		<vector2 name="21/tex_offset"> 0, 0 </vector2>
+		<vector2 name="21/shape_offset"> -0, -0 </vector2>
+		<rect2 name="21/region"> 0, 0, 0, 0 </rect2>
+		<array name="21/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="22/name"> "Sprite 3 5 2" </string>
+		<resource name="22/texture" resource_type="Texture" path="res://res/ruins/tiles/0023.png">  </resource>
+		<vector2 name="22/tex_offset"> 0, 0 </vector2>
+		<vector2 name="22/shape_offset"> -0, -0 </vector2>
+		<rect2 name="22/region"> 0, 0, 0, 0 </rect2>
+		<array name="22/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://10">  </resource>
+		</array>
+		<string name="23/name"> "Sprite 4 5 2" </string>
+		<resource name="23/texture" resource_type="Texture" path="res://res/ruins/tiles/0024.png">  </resource>
+		<vector2 name="23/tex_offset"> 0, 0 </vector2>
+		<vector2 name="23/shape_offset"> 0, 0 </vector2>
+		<rect2 name="23/region"> 0, 0, 0, 0 </rect2>
+		<array name="23/shapes" len="0" shared="false">
+		</array>
+		<string name="24/name"> "Sprite 6 5" </string>
+		<resource name="24/texture" resource_type="Texture" path="res://res/ruins/tiles/0025.png">  </resource>
+		<vector2 name="24/tex_offset"> 0, 0 </vector2>
+		<vector2 name="24/shape_offset"> 0, 0 </vector2>
+		<rect2 name="24/region"> 0, 0, 0, 0 </rect2>
+		<array name="24/shapes" len="0" shared="false">
+		</array>
+		<string name="25/name"> "Sprite 5 5" </string>
+		<resource name="25/texture" resource_type="Texture" path="res://res/ruins/tiles/0026.png">  </resource>
+		<vector2 name="25/tex_offset"> 0, 0 </vector2>
+		<vector2 name="25/shape_offset"> 0, 0 </vector2>
+		<rect2 name="25/region"> 0, 0, 0, 0 </rect2>
+		<array name="25/shapes" len="0" shared="false">
+		</array>
+		<string name="26/name"> "Sprite 3 5 3" </string>
+		<resource name="26/texture" resource_type="Texture" path="res://res/ruins/tiles/0027.png">  </resource>
+		<vector2 name="26/tex_offset"> 0, 0 </vector2>
+		<vector2 name="26/shape_offset"> 0, 0 </vector2>
+		<rect2 name="26/region"> 0, 0, 0, 0 </rect2>
+		<array name="26/shapes" len="0" shared="false">
+		</array>
+		<string name="27/name"> "Sprite 5 5 2" </string>
+		<resource name="27/texture" resource_type="Texture" path="res://res/ruins/tiles/0028.png">  </resource>
+		<vector2 name="27/tex_offset"> 0, 0 </vector2>
+		<vector2 name="27/shape_offset"> 0, 0 </vector2>
+		<rect2 name="27/region"> 0, 0, 0, 0 </rect2>
+		<array name="27/shapes" len="0" shared="false">
+		</array>
+		<string name="28/name"> "Sprite 4 5 3" </string>
+		<resource name="28/texture" resource_type="Texture" path="res://res/ruins/tiles/0029.png">  </resource>
+		<vector2 name="28/tex_offset"> 0, 0 </vector2>
+		<vector2 name="28/shape_offset"> 0, 0 </vector2>
+		<rect2 name="28/region"> 0, 0, 0, 0 </rect2>
+		<array name="28/shapes" len="0" shared="false">
+		</array>
+		<string name="29/name"> "Sprite 5 5 3" </string>
+		<resource name="29/texture" resource_type="Texture" path="res://res/ruins/tiles/0030.png">  </resource>
+		<vector2 name="29/tex_offset"> 0, 0 </vector2>
+		<vector2 name="29/shape_offset"> 0, 0 </vector2>
+		<rect2 name="29/region"> 0, 0, 0, 0 </rect2>
+		<array name="29/shapes" len="0" shared="false">
+		</array>
+		<string name="30/name"> "Sprite 3 4 3" </string>
+		<resource name="30/texture" resource_type="Texture" path="res://res/ruins/tiles/0031.png">  </resource>
+		<vector2 name="30/tex_offset"> 0, 0 </vector2>
+		<vector2 name="30/shape_offset"> -0, -0 </vector2>
+		<rect2 name="30/region"> 0, 0, 0, 0 </rect2>
+		<array name="30/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="31/name"> "Sprite 4 4 3" </string>
+		<resource name="31/texture" resource_type="Texture" path="res://res/ruins/tiles/0032.png">  </resource>
+		<vector2 name="31/tex_offset"> 0, 0 </vector2>
+		<vector2 name="31/shape_offset"> -0, -0 </vector2>
+		<rect2 name="31/region"> 0, 0, 0, 0 </rect2>
+		<array name="31/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="32/name"> "Sprite 7" </string>
+		<resource name="32/texture" resource_type="Texture" path="res://res/ruins/tiles/0033.png">  </resource>
+		<vector2 name="32/tex_offset"> 0, 0 </vector2>
+		<vector2 name="32/shape_offset"> -0, -0 </vector2>
+		<rect2 name="32/region"> 0, 0, 0, 0 </rect2>
+		<array name="32/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://5">  </resource>
+		</array>
+		<string name="33/name"> "Sprite 7 2" </string>
+		<resource name="33/texture" resource_type="Texture" path="res://res/ruins/tiles/0034.png">  </resource>
+		<vector2 name="33/tex_offset"> 0, 0 </vector2>
+		<vector2 name="33/shape_offset"> -0, -0 </vector2>
+		<rect2 name="33/region"> 0, 0, 0, 0 </rect2>
+		<array name="33/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://5">  </resource>
+		</array>
+		<string name="34/name"> "Sprite 3 6" </string>
+		<resource name="34/texture" resource_type="Texture" path="res://res/ruins/tiles/0035.png">  </resource>
+		<vector2 name="34/tex_offset"> 0, 0 </vector2>
+		<vector2 name="34/shape_offset"> 0, 0 </vector2>
+		<rect2 name="34/region"> 0, 0, 0, 0 </rect2>
+		<array name="34/shapes" len="0" shared="false">
+		</array>
+		<string name="35/name"> "Sprite 7 3" </string>
+		<resource name="35/texture" resource_type="Texture" path="res://res/ruins/tiles/0036.png">  </resource>
+		<vector2 name="35/tex_offset"> 0, 0 </vector2>
+		<vector2 name="35/shape_offset"> -0, -0 </vector2>
+		<rect2 name="35/region"> 0, 0, 0, 0 </rect2>
+		<array name="35/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://1">  </resource>
+		</array>
+		<string name="36/name"> "Sprite 3 6 2" </string>
+		<resource name="36/texture" resource_type="Texture" path="res://res/ruins/tiles/0038.png">  </resource>
+		<vector2 name="36/tex_offset"> 0, 0 </vector2>
+		<vector2 name="36/shape_offset"> 0, 0 </vector2>
+		<rect2 name="36/region"> 0, 0, 0, 0 </rect2>
+		<array name="36/shapes" len="0" shared="false">
+		</array>
+		<string name="37/name"> "Sprite 4 6" </string>
+		<resource name="37/texture" resource_type="Texture" path="res://res/ruins/tiles/0040.png">  </resource>
+		<vector2 name="37/tex_offset"> 0, 0 </vector2>
+		<vector2 name="37/shape_offset"> 0, 0 </vector2>
+		<rect2 name="37/region"> 0, 0, 0, 0 </rect2>
+		<array name="37/shapes" len="0" shared="false">
+		</array>
+		<string name="38/name"> "Sprite 6 6 3" </string>
+		<resource name="38/texture" resource_type="Texture" path="res://res/ruins/tiles/0041.png">  </resource>
+		<vector2 name="38/tex_offset"> 0, 0 </vector2>
+		<vector2 name="38/shape_offset"> 0, 0 </vector2>
+		<rect2 name="38/region"> 0, 0, 0, 0 </rect2>
+		<array name="38/shapes" len="0" shared="false">
+		</array>
+		<string name="39/name"> "Sprite 3 5 4" </string>
+		<resource name="39/texture" resource_type="Texture" path="res://res/ruins/tiles/0042.png">  </resource>
+		<vector2 name="39/tex_offset"> 0, 0 </vector2>
+		<vector2 name="39/shape_offset"> 0, 0 </vector2>
+		<rect2 name="39/region"> 0, 0, 0, 0 </rect2>
+		<array name="39/shapes" len="0" shared="false">
+		</array>
+		<string name="40/name"> "Sprite 4 5 4" </string>
+		<resource name="40/texture" resource_type="Texture" path="res://res/ruins/tiles/0043.png">  </resource>
+		<vector2 name="40/tex_offset"> 0, 0 </vector2>
+		<vector2 name="40/shape_offset"> 0, 0 </vector2>
+		<rect2 name="40/region"> 0, 0, 0, 0 </rect2>
+		<array name="40/shapes" len="0" shared="false">
+		</array>
+		<string name="41/name"> "Sprite 6 6 4" </string>
+		<resource name="41/texture" resource_type="Texture" path="res://res/ruins/tiles/0044.png">  </resource>
+		<vector2 name="41/tex_offset"> 0, 0 </vector2>
+		<vector2 name="41/shape_offset"> 0, 0 </vector2>
+		<rect2 name="41/region"> 0, 0, 0, 0 </rect2>
+		<array name="41/shapes" len="0" shared="false">
+		</array>
+		<string name="42/name"> "Sprite 5 6" </string>
+		<resource name="42/texture" resource_type="Texture" path="res://res/ruins/tiles/0045.png">  </resource>
+		<vector2 name="42/tex_offset"> 0, 0 </vector2>
+		<vector2 name="42/shape_offset"> 0, 0 </vector2>
+		<rect2 name="42/region"> 0, 0, 0, 0 </rect2>
+		<array name="42/shapes" len="0" shared="false">
+		</array>
+		<string name="43/name"> "Sprite 3 5 4 2" </string>
+		<resource name="43/texture" resource_type="Texture" path="res://res/ruins/tiles/0046.png">  </resource>
+		<vector2 name="43/tex_offset"> 0, 0 </vector2>
+		<vector2 name="43/shape_offset"> 0, 0 </vector2>
+		<rect2 name="43/region"> 0, 0, 0, 0 </rect2>
+		<array name="43/shapes" len="0" shared="false">
+		</array>
+		<string name="44/name"> "Sprite 5 5 4" </string>
+		<resource name="44/texture" resource_type="Texture" path="res://res/ruins/tiles/0047.png">  </resource>
+		<vector2 name="44/tex_offset"> 0, 0 </vector2>
+		<vector2 name="44/shape_offset"> 0, 0 </vector2>
+		<rect2 name="44/region"> 0, 0, 0, 0 </rect2>
+		<array name="44/shapes" len="0" shared="false">
+		</array>
+		<string name="45/name"> "Sprite 4 5 4 2" </string>
+		<resource name="45/texture" resource_type="Texture" path="res://res/ruins/tiles/0048.png">  </resource>
+		<vector2 name="45/tex_offset"> 0, 0 </vector2>
+		<vector2 name="45/shape_offset"> 0, 0 </vector2>
+		<rect2 name="45/region"> 0, 0, 0, 0 </rect2>
+		<array name="45/shapes" len="0" shared="false">
+		</array>
+		<string name="46/name"> "Sprite 5 5 4 2" </string>
+		<resource name="46/texture" resource_type="Texture" path="res://res/ruins/tiles/0049.png">  </resource>
+		<vector2 name="46/tex_offset"> 0, 0 </vector2>
+		<vector2 name="46/shape_offset"> 0, 0 </vector2>
+		<rect2 name="46/region"> 0, 0, 0, 0 </rect2>
+		<array name="46/shapes" len="0" shared="false">
+		</array>
+		<string name="47/name"> "Sprite 4 4 4" </string>
+		<resource name="47/texture" resource_type="Texture" path="res://res/ruins/tiles/0051.png">  </resource>
+		<vector2 name="47/tex_offset"> 0, 0 </vector2>
+		<vector2 name="47/shape_offset"> 0, 0 </vector2>
+		<rect2 name="47/region"> 0, 0, 0, 0 </rect2>
+		<array name="47/shapes" len="0" shared="false">
+		</array>
+		<string name="48/name"> "Sprite 7 4" </string>
+		<resource name="48/texture" resource_type="Texture" path="res://res/ruins/tiles/0052.png">  </resource>
+		<vector2 name="48/tex_offset"> 0, 0 </vector2>
+		<vector2 name="48/shape_offset"> 0, 0 </vector2>
+		<rect2 name="48/region"> 0, 0, 0, 0 </rect2>
+		<array name="48/shapes" len="0" shared="false">
+		</array>
+		<string name="49/name"> "Sprite 4 6 2" </string>
+		<resource name="49/texture" resource_type="Texture" path="res://res/ruins/tiles/0053.png">  </resource>
+		<vector2 name="49/tex_offset"> 0, 0 </vector2>
+		<vector2 name="49/shape_offset"> 0, 0 </vector2>
+		<rect2 name="49/region"> 0, 0, 0, 0 </rect2>
+		<array name="49/shapes" len="0" shared="false">
+		</array>
+		<string name="50/name"> "Sprite 7 5" </string>
+		<resource name="50/texture" resource_type="Texture" path="res://res/ruins/tiles/0054.png">  </resource>
+		<vector2 name="50/tex_offset"> 0, 0 </vector2>
+		<vector2 name="50/shape_offset"> 0, 0 </vector2>
+		<rect2 name="50/region"> 0, 0, 0, 0 </rect2>
+		<array name="50/shapes" len="0" shared="false">
+		</array>
+		<string name="51/name"> "Sprite 3 6 3" </string>
+		<resource name="51/texture" resource_type="Texture" path="res://res/ruins/tiles/0055.png">  </resource>
+		<vector2 name="51/tex_offset"> 0, 0 </vector2>
+		<vector2 name="51/shape_offset"> 0, 0 </vector2>
+		<rect2 name="51/region"> 0, 0, 0, 0 </rect2>
+		<array name="51/shapes" len="0" shared="false">
+		</array>
+		<string name="52/name"> "Sprite 7 6" </string>
+		<resource name="52/texture" resource_type="Texture" path="res://res/ruins/tiles/0057.png">  </resource>
+		<vector2 name="52/tex_offset"> 0, 0 </vector2>
+		<vector2 name="52/shape_offset"> 0, 0 </vector2>
+		<rect2 name="52/region"> 0, 0, 0, 0 </rect2>
+		<array name="52/shapes" len="0" shared="false">
+		</array>
+		<string name="53/name"> "Sprite 5 6 2" </string>
+		<resource name="53/texture" resource_type="Texture" path="res://res/ruins/tiles/0058.png">  </resource>
+		<vector2 name="53/tex_offset"> 0, 0 </vector2>
+		<vector2 name="53/shape_offset"> 0, 0 </vector2>
+		<rect2 name="53/region"> 0, 0, 0, 0 </rect2>
+		<array name="53/shapes" len="0" shared="false">
+		</array>
+		<string name="54/name"> "Sprite 3 6 4" </string>
+		<resource name="54/texture" resource_type="Texture" path="res://res/ruins/tiles/0059.png">  </resource>
+		<vector2 name="54/tex_offset"> 0, 0 </vector2>
+		<vector2 name="54/shape_offset"> 0, 0 </vector2>
+		<rect2 name="54/region"> 0, 0, 0, 0 </rect2>
+		<array name="54/shapes" len="0" shared="false">
+		</array>
+		<string name="55/name"> "Sprite 5 6 3" </string>
+		<resource name="55/texture" resource_type="Texture" path="res://res/ruins/tiles/0060.png">  </resource>
+		<vector2 name="55/tex_offset"> 0, 0 </vector2>
+		<vector2 name="55/shape_offset"> 0, 0 </vector2>
+		<rect2 name="55/region"> 0, 0, 0, 0 </rect2>
+		<array name="55/shapes" len="0" shared="false">
+		</array>
+		<string name="56/name"> "Sprite 4 6 4" </string>
+		<resource name="56/texture" resource_type="Texture" path="res://res/ruins/tiles/0061.png">  </resource>
+		<vector2 name="56/tex_offset"> 0, 0 </vector2>
+		<vector2 name="56/shape_offset"> 0, 0 </vector2>
+		<rect2 name="56/region"> 0, 0, 0, 0 </rect2>
+		<array name="56/shapes" len="0" shared="false">
+		</array>
+		<string name="57/name"> "Sprite 5 6 4" </string>
+		<resource name="57/texture" resource_type="Texture" path="res://res/ruins/tiles/0062.png">  </resource>
+		<vector2 name="57/tex_offset"> 0, 0 </vector2>
+		<vector2 name="57/shape_offset"> 0, 0 </vector2>
+		<rect2 name="57/region"> 0, 0, 0, 0 </rect2>
+		<array name="57/shapes" len="0" shared="false">
+		</array>
+		<string name="58/name"> "Sprite 3 4 4 2" </string>
+		<resource name="58/texture" resource_type="Texture" path="res://res/ruins/tiles/0063.png">  </resource>
+		<vector2 name="58/tex_offset"> 0, 0 </vector2>
+		<vector2 name="58/shape_offset"> 0, 0 </vector2>
+		<rect2 name="58/region"> 0, 0, 0, 0 </rect2>
+		<array name="58/shapes" len="0" shared="false">
+		</array>
+		<string name="59/name"> "Sprite 4 4 4 2" </string>
+		<resource name="59/texture" resource_type="Texture" path="res://res/ruins/tiles/0064.png">  </resource>
+		<vector2 name="59/tex_offset"> 0, 0 </vector2>
+		<vector2 name="59/shape_offset"> 0, 0 </vector2>
+		<rect2 name="59/region"> 0, 0, 0, 0 </rect2>
+		<array name="59/shapes" len="0" shared="false">
+		</array>
+		<string name="60/name"> "Sprite 8" </string>
+		<resource name="60/texture" resource_type="Texture" path="res://res/ruins/tiles/0065.png">  </resource>
+		<vector2 name="60/tex_offset"> 0, 0 </vector2>
+		<vector2 name="60/shape_offset"> 0, 0 </vector2>
+		<rect2 name="60/region"> 0, 0, 0, 0 </rect2>
+		<array name="60/shapes" len="0" shared="false">
+		</array>
+		<string name="61/name"> "Sprite 8 2" </string>
+		<resource name="61/texture" resource_type="Texture" path="res://res/ruins/tiles/0066.png">  </resource>
+		<vector2 name="61/tex_offset"> 0, 0 </vector2>
+		<vector2 name="61/shape_offset"> 0, 0 </vector2>
+		<rect2 name="61/region"> 0, 0, 0, 0 </rect2>
+		<array name="61/shapes" len="0" shared="false">
+		</array>
+		<string name="62/name"> "Sprite 3 7" </string>
+		<resource name="62/texture" resource_type="Texture" path="res://res/ruins/tiles/0067.png">  </resource>
+		<vector2 name="62/tex_offset"> 0, 0 </vector2>
+		<vector2 name="62/shape_offset"> 0, 0 </vector2>
+		<rect2 name="62/region"> 0, 0, 0, 0 </rect2>
+		<array name="62/shapes" len="0" shared="false">
+		</array>
+		<string name="63/name"> "Sprite 8 3" </string>
+		<resource name="63/texture" resource_type="Texture" path="res://res/ruins/tiles/0068.png">  </resource>
+		<vector2 name="63/tex_offset"> 0, 0 </vector2>
+		<vector2 name="63/shape_offset"> 0, 0 </vector2>
+		<rect2 name="63/region"> 0, 0, 0, 0 </rect2>
+		<array name="63/shapes" len="0" shared="false">
+		</array>
+		<string name="64/name"> "Sprite 6 7" </string>
+		<resource name="64/texture" resource_type="Texture" path="res://res/ruins/tiles/0069.png">  </resource>
+		<vector2 name="64/tex_offset"> 0, 0 </vector2>
+		<vector2 name="64/shape_offset"> 0, 0 </vector2>
+		<rect2 name="64/region"> 0, 0, 0, 0 </rect2>
+		<array name="64/shapes" len="0" shared="false">
+		</array>
+		<string name="65/name"> "Sprite 3 7 2" </string>
+		<resource name="65/texture" resource_type="Texture" path="res://res/ruins/tiles/0070.png">  </resource>
+		<vector2 name="65/tex_offset"> 0, 0 </vector2>
+		<vector2 name="65/shape_offset"> 0, 0 </vector2>
+		<rect2 name="65/region"> 0, 0, 0, 0 </rect2>
+		<array name="65/shapes" len="0" shared="false">
+		</array>
+		<string name="66/name"> "Sprite 6 7 2" </string>
+		<resource name="66/texture" resource_type="Texture" path="res://res/ruins/tiles/0071.png">  </resource>
+		<vector2 name="66/tex_offset"> 0, 0 </vector2>
+		<vector2 name="66/shape_offset"> 0, 0 </vector2>
+		<rect2 name="66/region"> 0, 0, 0, 0 </rect2>
+		<array name="66/shapes" len="0" shared="false">
+		</array>
+		<string name="67/name"> "Sprite 4 7" </string>
+		<resource name="67/texture" resource_type="Texture" path="res://res/ruins/tiles/0072.png">  </resource>
+		<vector2 name="67/tex_offset"> 0, 0 </vector2>
+		<vector2 name="67/shape_offset"> 0, 0 </vector2>
+		<rect2 name="67/region"> 0, 0, 0, 0 </rect2>
+		<array name="67/shapes" len="0" shared="false">
+		</array>
+		<string name="68/name"> "Sprite 6 7 3" </string>
+		<resource name="68/texture" resource_type="Texture" path="res://res/ruins/tiles/0073.png">  </resource>
+		<vector2 name="68/tex_offset"> 0, 0 </vector2>
+		<vector2 name="68/shape_offset"> 0, 0 </vector2>
+		<rect2 name="68/region"> 0, 0, 0, 0 </rect2>
+		<array name="68/shapes" len="0" shared="false">
+		</array>
+		<string name="69/name"> "Sprite 3 5 5" </string>
+		<resource name="69/texture" resource_type="Texture" path="res://res/ruins/tiles/0074.png">  </resource>
+		<vector2 name="69/tex_offset"> 0, 0 </vector2>
+		<vector2 name="69/shape_offset"> 0, 0 </vector2>
+		<rect2 name="69/region"> 0, 0, 0, 0 </rect2>
+		<array name="69/shapes" len="0" shared="false">
+		</array>
+		<string name="70/name"> "Sprite 4 5 5" </string>
+		<resource name="70/texture" resource_type="Texture" path="res://res/ruins/tiles/0075.png">  </resource>
+		<vector2 name="70/tex_offset"> 0, 0 </vector2>
+		<vector2 name="70/shape_offset"> 0, 0 </vector2>
+		<rect2 name="70/region"> 0, 0, 0, 0 </rect2>
+		<array name="70/shapes" len="0" shared="false">
+		</array>
+		<string name="71/name"> "Sprite 6 7 4" </string>
+		<resource name="71/texture" resource_type="Texture" path="res://res/ruins/tiles/0076.png">  </resource>
+		<vector2 name="71/tex_offset"> 0, 0 </vector2>
+		<vector2 name="71/shape_offset"> 0, 0 </vector2>
+		<rect2 name="71/region"> 0, 0, 0, 0 </rect2>
+		<array name="71/shapes" len="0" shared="false">
+		</array>
+		<string name="72/name"> "Sprite 5 7" </string>
+		<resource name="72/texture" resource_type="Texture" path="res://res/ruins/tiles/0077.png">  </resource>
+		<vector2 name="72/tex_offset"> 0, 0 </vector2>
+		<vector2 name="72/shape_offset"> 0, 0 </vector2>
+		<rect2 name="72/region"> 0, 0, 0, 0 </rect2>
+		<array name="72/shapes" len="0" shared="false">
+		</array>
+		<string name="73/name"> "Sprite 3 5 5 2" </string>
+		<resource name="73/texture" resource_type="Texture" path="res://res/ruins/tiles/0078.png">  </resource>
+		<vector2 name="73/tex_offset"> 0, 0 </vector2>
+		<vector2 name="73/shape_offset"> 0, 0 </vector2>
+		<rect2 name="73/region"> 0, 0, 0, 0 </rect2>
+		<array name="73/shapes" len="0" shared="false">
+		</array>
+		<string name="74/name"> "Sprite 5 5 5" </string>
+		<resource name="74/texture" resource_type="Texture" path="res://res/ruins/tiles/0079.png">  </resource>
+		<vector2 name="74/tex_offset"> 0, 0 </vector2>
+		<vector2 name="74/shape_offset"> 0, 0 </vector2>
+		<rect2 name="74/region"> 0, 0, 0, 0 </rect2>
+		<array name="74/shapes" len="0" shared="false">
+		</array>
+		<string name="75/name"> "Sprite 4 5 5 2" </string>
+		<resource name="75/texture" resource_type="Texture" path="res://res/ruins/tiles/0080.png">  </resource>
+		<vector2 name="75/tex_offset"> 0, 0 </vector2>
+		<vector2 name="75/shape_offset"> 0, 0 </vector2>
+		<rect2 name="75/region"> 0, 0, 0, 0 </rect2>
+		<array name="75/shapes" len="0" shared="false">
+		</array>
+		<string name="76/name"> "Sprite 5 6 5" </string>
+		<resource name="76/texture" resource_type="Texture" path="res://res/ruins/tiles/0081.png">  </resource>
+		<vector2 name="76/tex_offset"> 0, 0 </vector2>
+		<vector2 name="76/shape_offset"> 0, 0 </vector2>
+		<rect2 name="76/region"> 0, 0, 0, 0 </rect2>
+		<array name="76/shapes" len="0" shared="false">
+		</array>
+		<string name="77/name"> "Sprite 5 5 5 2" </string>
+		<resource name="77/texture" resource_type="Texture" path="res://res/ruins/tiles/0082.png">  </resource>
+		<vector2 name="77/tex_offset"> 0, 0 </vector2>
+		<vector2 name="77/shape_offset"> 0, 0 </vector2>
+		<rect2 name="77/region"> 0, 0, 0, 0 </rect2>
+		<array name="77/shapes" len="0" shared="false">
+		</array>
+		<string name="78/name"> "Sprite 3 4 5" </string>
+		<resource name="78/texture" resource_type="Texture" path="res://res/ruins/tiles/0083.png">  </resource>
+		<vector2 name="78/tex_offset"> 0, 0 </vector2>
+		<vector2 name="78/shape_offset"> 0, 0 </vector2>
+		<rect2 name="78/region"> 0, 0, 0, 0 </rect2>
+		<array name="78/shapes" len="0" shared="false">
+		</array>
+		<string name="79/name"> "Sprite 4 4 5" </string>
+		<resource name="79/texture" resource_type="Texture" path="res://res/ruins/tiles/0084.png">  </resource>
+		<vector2 name="79/tex_offset"> 0, 0 </vector2>
+		<vector2 name="79/shape_offset"> 0, 0 </vector2>
+		<rect2 name="79/region"> 0, 0, 0, 0 </rect2>
+		<array name="79/shapes" len="0" shared="false">
+		</array>
+		<string name="80/name"> "Sprite 8 4" </string>
+		<resource name="80/texture" resource_type="Texture" path="res://res/ruins/tiles/0085.png">  </resource>
+		<vector2 name="80/tex_offset"> 0, 0 </vector2>
+		<vector2 name="80/shape_offset"> 0, 0 </vector2>
+		<rect2 name="80/region"> 0, 0, 0, 0 </rect2>
+		<array name="80/shapes" len="0" shared="false">
+		</array>
+		<string name="81/name"> "Sprite 4 7 2" </string>
+		<resource name="81/texture" resource_type="Texture" path="res://res/ruins/tiles/0086.png">  </resource>
+		<vector2 name="81/tex_offset"> 0, 0 </vector2>
+		<vector2 name="81/shape_offset"> 0, 0 </vector2>
+		<rect2 name="81/region"> 0, 0, 0, 0 </rect2>
+		<array name="81/shapes" len="0" shared="false">
+		</array>
+		<string name="82/name"> "Sprite 8 5" </string>
+		<resource name="82/texture" resource_type="Texture" path="res://res/ruins/tiles/0087.png">  </resource>
+		<vector2 name="82/tex_offset"> 0, 0 </vector2>
+		<vector2 name="82/shape_offset"> 0, 0 </vector2>
+		<rect2 name="82/region"> 0, 0, 0, 0 </rect2>
+		<array name="82/shapes" len="0" shared="false">
+		</array>
+		<string name="83/name"> "Sprite 3 7 3" </string>
+		<resource name="83/texture" resource_type="Texture" path="res://res/ruins/tiles/0088.png">  </resource>
+		<vector2 name="83/tex_offset"> 0, 0 </vector2>
+		<vector2 name="83/shape_offset"> 0, 0 </vector2>
+		<rect2 name="83/region"> 0, 0, 0, 0 </rect2>
+		<array name="83/shapes" len="0" shared="false">
+		</array>
+		<string name="84/name"> "Sprite 4 7 3" </string>
+		<resource name="84/texture" resource_type="Texture" path="res://res/ruins/tiles/0089.png">  </resource>
+		<vector2 name="84/tex_offset"> 0, 0 </vector2>
+		<vector2 name="84/shape_offset"> 0, 0 </vector2>
+		<rect2 name="84/region"> 0, 0, 0, 0 </rect2>
+		<array name="84/shapes" len="0" shared="false">
+		</array>
+		<string name="85/name"> "Sprite 8 6" </string>
+		<resource name="85/texture" resource_type="Texture" path="res://res/ruins/tiles/0090.png">  </resource>
+		<vector2 name="85/tex_offset"> 0, 0 </vector2>
+		<vector2 name="85/shape_offset"> 0, 0 </vector2>
+		<rect2 name="85/region"> 0, 0, 0, 0 </rect2>
+		<array name="85/shapes" len="0" shared="false">
+		</array>
+		<string name="86/name"> "Sprite 7 7" </string>
+		<resource name="86/texture" resource_type="Texture" path="res://res/ruins/tiles/0091.png">  </resource>
+		<vector2 name="86/tex_offset"> 0, 0 </vector2>
+		<vector2 name="86/shape_offset"> 0, 0 </vector2>
+		<rect2 name="86/region"> 0, 0, 0, 0 </rect2>
+		<array name="86/shapes" len="0" shared="false">
+		</array>
+		<string name="87/name"> "Sprite 3 7 4" </string>
+		<resource name="87/texture" resource_type="Texture" path="res://res/ruins/tiles/0092.png">  </resource>
+		<vector2 name="87/tex_offset"> 0, 0 </vector2>
+		<vector2 name="87/shape_offset"> 0, 0 </vector2>
+		<rect2 name="87/region"> 0, 0, 0, 0 </rect2>
+		<array name="87/shapes" len="0" shared="false">
+		</array>
+		<string name="88/name"> "Sprite 7 7 2" </string>
+		<resource name="88/texture" resource_type="Texture" path="res://res/ruins/tiles/0093.png">  </resource>
+		<vector2 name="88/tex_offset"> 0, 0 </vector2>
+		<vector2 name="88/shape_offset"> 0, 0 </vector2>
+		<rect2 name="88/region"> 0, 0, 0, 0 </rect2>
+		<array name="88/shapes" len="0" shared="false">
+		</array>
+		<string name="89/name"> "Sprite 6 7 5" </string>
+		<resource name="89/texture" resource_type="Texture" path="res://res/ruins/tiles/0094.png">  </resource>
+		<vector2 name="89/tex_offset"> 0, 0 </vector2>
+		<vector2 name="89/shape_offset"> 0, 0 </vector2>
+		<rect2 name="89/region"> 0, 0, 0, 0 </rect2>
+		<array name="89/shapes" len="0" shared="false">
+		</array>
+		<string name="90/name"> "Sprite 3 6 5" </string>
+		<resource name="90/texture" resource_type="Texture" path="res://res/ruins/tiles/0095.png">  </resource>
+		<vector2 name="90/tex_offset"> 0, 0 </vector2>
+		<vector2 name="90/shape_offset"> 0, 0 </vector2>
+		<rect2 name="90/region"> 0, 0, 0, 0 </rect2>
+		<array name="90/shapes" len="0" shared="false">
+		</array>
+		<string name="91/name"> "Sprite 6 6 5" </string>
+		<resource name="91/texture" resource_type="Texture" path="res://res/ruins/tiles/0096.png">  </resource>
+		<vector2 name="91/tex_offset"> 0, 0 </vector2>
+		<vector2 name="91/shape_offset"> 0, 0 </vector2>
+		<rect2 name="91/region"> 0, 0, 0, 0 </rect2>
+		<array name="91/shapes" len="0" shared="false">
+		</array>
+		<string name="92/name"> "Sprite 4 7 4" </string>
+		<resource name="92/texture" resource_type="Texture" path="res://res/ruins/tiles/0097.png">  </resource>
+		<vector2 name="92/tex_offset"> 0, 0 </vector2>
+		<vector2 name="92/shape_offset"> 0, 0 </vector2>
+		<rect2 name="92/region"> 0, 0, 0, 0 </rect2>
+		<array name="92/shapes" len="0" shared="false">
+		</array>
+		<string name="93/name"> "Sprite 6 6 5 2" </string>
+		<resource name="93/texture" resource_type="Texture" path="res://res/ruins/tiles/0098.png">  </resource>
+		<vector2 name="93/tex_offset"> 0, 0 </vector2>
+		<vector2 name="93/shape_offset"> 0, 0 </vector2>
+		<rect2 name="93/region"> 0, 0, 0, 0 </rect2>
+		<array name="93/shapes" len="0" shared="false">
+		</array>
+		<string name="94/name"> "Sprite 3 5 5 3" </string>
+		<resource name="94/texture" resource_type="Texture" path="res://res/ruins/tiles/0099.png">  </resource>
+		<vector2 name="94/tex_offset"> 0, 0 </vector2>
+		<vector2 name="94/shape_offset"> 0, 0 </vector2>
+		<rect2 name="94/region"> 0, 0, 0, 0 </rect2>
+		<array name="94/shapes" len="0" shared="false">
+		</array>
+		<string name="95/name"> "Sprite 4 5 5 3" </string>
+		<resource name="95/texture" resource_type="Texture" path="res://res/ruins/tiles/0100.png">  </resource>
+		<vector2 name="95/tex_offset"> 0, 0 </vector2>
+		<vector2 name="95/shape_offset"> 0, 0 </vector2>
+		<rect2 name="95/region"> 0, 0, 0, 0 </rect2>
+		<array name="95/shapes" len="0" shared="false">
+		</array>
+		<string name="96/name"> "Sprite 6 6 5 3" </string>
+		<resource name="96/texture" resource_type="Texture" path="res://res/ruins/tiles/0101.png">  </resource>
+		<vector2 name="96/tex_offset"> 0, 0 </vector2>
+		<vector2 name="96/shape_offset"> 0, 0 </vector2>
+		<rect2 name="96/region"> 0, 0, 0, 0 </rect2>
+		<array name="96/shapes" len="0" shared="false">
+		</array>
+		<string name="97/name"> "Sprite 5 7 2" </string>
+		<resource name="97/texture" resource_type="Texture" path="res://res/ruins/tiles/0102.png">  </resource>
+		<vector2 name="97/tex_offset"> 0, 0 </vector2>
+		<vector2 name="97/shape_offset"> -0, -0 </vector2>
+		<rect2 name="97/region"> 0, 0, 0, 0 </rect2>
+		<array name="97/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="98/name"> "Sprite 3 5 4 3" </string>
+		<resource name="98/texture" resource_type="Texture" path="res://res/ruins/tiles/0103.png">  </resource>
+		<vector2 name="98/tex_offset"> 0, 0 </vector2>
+		<vector2 name="98/shape_offset"> -0, -0 </vector2>
+		<rect2 name="98/region"> 0, 0, 0, 0 </rect2>
+		<array name="98/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="99/name"> "Sprite 5 5 5 3" </string>
+		<resource name="99/texture" resource_type="Texture" path="res://res/ruins/tiles/0104.png">  </resource>
+		<vector2 name="99/tex_offset"> 0, 0 </vector2>
+		<vector2 name="99/shape_offset"> -0, -0 </vector2>
+		<rect2 name="99/region"> 0, 0, 0, 0 </rect2>
+		<array name="99/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="100/name"> "Sprite 4 5 4 3" </string>
+		<resource name="100/texture" resource_type="Texture" path="res://res/ruins/tiles/0105.png">  </resource>
+		<vector2 name="100/tex_offset"> 0, 0 </vector2>
+		<vector2 name="100/shape_offset"> -0, -0 </vector2>
+		<rect2 name="100/region"> 0, 0, 0, 0 </rect2>
+		<array name="100/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="101/name"> "Sprite 5 5 4 3" </string>
+		<resource name="101/texture" resource_type="Texture" path="res://res/ruins/tiles/0106.png">  </resource>
+		<vector2 name="101/tex_offset"> 0, 0 </vector2>
+		<vector2 name="101/shape_offset"> -0, -0 </vector2>
+		<rect2 name="101/region"> 0, 0, 0, 0 </rect2>
+		<array name="101/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="102/name"> "Sprite 3 4 5 2" </string>
+		<resource name="102/texture" resource_type="Texture" path="res://res/ruins/tiles/0107.png">  </resource>
+		<vector2 name="102/tex_offset"> 0, 0 </vector2>
+		<vector2 name="102/shape_offset"> -0, -0 </vector2>
+		<rect2 name="102/region"> 0, 0, 0, 0 </rect2>
+		<array name="102/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="103/name"> "Sprite 4 4 5 2" </string>
+		<resource name="103/texture" resource_type="Texture" path="res://res/ruins/tiles/0108.png">  </resource>
+		<vector2 name="103/tex_offset"> 0, 0 </vector2>
+		<vector2 name="103/shape_offset"> -0, -0 </vector2>
+		<rect2 name="103/region"> 0, 0, 0, 0 </rect2>
+		<array name="103/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="104/name"> "Sprite 7 7 3" </string>
+		<resource name="104/texture" resource_type="Texture" path="res://res/ruins/tiles/0109.png">  </resource>
+		<vector2 name="104/tex_offset"> 0, 0 </vector2>
+		<vector2 name="104/shape_offset"> -0, -0 </vector2>
+		<rect2 name="104/region"> 0, 0, 0, 0 </rect2>
+		<array name="104/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="105/name"> "Sprite 4 6 5" </string>
+		<resource name="105/texture" resource_type="Texture" path="res://res/ruins/tiles/0110.png">  </resource>
+		<vector2 name="105/tex_offset"> 0, 0 </vector2>
+		<vector2 name="105/shape_offset"> -0, -0 </vector2>
+		<rect2 name="105/region"> 0, 0, 0, 0 </rect2>
+		<array name="105/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="106/name"> "Sprite 7 7 4" </string>
+		<resource name="106/texture" resource_type="Texture" path="res://res/ruins/tiles/0111.png">  </resource>
+		<vector2 name="106/tex_offset"> 0, 0 </vector2>
+		<vector2 name="106/shape_offset"> -0, -0 </vector2>
+		<rect2 name="106/region"> 0, 0, 0, 0 </rect2>
+		<array name="106/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="107/name"> "Sprite 3 6 5 2" </string>
+		<resource name="107/texture" resource_type="Texture" path="res://res/ruins/tiles/0112.png">  </resource>
+		<vector2 name="107/tex_offset"> 0, 0 </vector2>
+		<vector2 name="107/shape_offset"> -0, -0 </vector2>
+		<rect2 name="107/region"> 0, 0, 0, 0 </rect2>
+		<array name="107/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="108/name"> "Sprite 4 6 5 2" </string>
+		<resource name="108/texture" resource_type="Texture" path="res://res/ruins/tiles/0113.png">  </resource>
+		<vector2 name="108/tex_offset"> 0, 0 </vector2>
+		<vector2 name="108/shape_offset"> -0, -0 </vector2>
+		<rect2 name="108/region"> 0, 0, 0, 0 </rect2>
+		<array name="108/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="109/name"> "Sprite 7 7 5" </string>
+		<resource name="109/texture" resource_type="Texture" path="res://res/ruins/tiles/0114.png">  </resource>
+		<vector2 name="109/tex_offset"> 0, 0 </vector2>
+		<vector2 name="109/shape_offset"> -0, -0 </vector2>
+		<rect2 name="109/region"> 0, 0, 0, 0 </rect2>
+		<array name="109/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="110/name"> "Sprite 3 6 5 3" </string>
+		<resource name="110/texture" resource_type="Texture" path="res://res/ruins/tiles/0115.png">  </resource>
+		<vector2 name="110/tex_offset"> 0, 0 </vector2>
+		<vector2 name="110/shape_offset"> -0, -0 </vector2>
+		<rect2 name="110/region"> 0, 0, 0, 0 </rect2>
+		<array name="110/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="111/name"> "Sprite 5 6 5 2" </string>
+		<resource name="111/texture" resource_type="Texture" path="res://res/ruins/tiles/0116.png">  </resource>
+		<vector2 name="111/tex_offset"> 0, 0 </vector2>
+		<vector2 name="111/shape_offset"> -0, -0 </vector2>
+		<rect2 name="111/region"> 0, 0, 0, 0 </rect2>
+		<array name="111/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="112/name"> "Sprite 4 6 5 3" </string>
+		<resource name="112/texture" resource_type="Texture" path="res://res/ruins/tiles/0117.png">  </resource>
+		<vector2 name="112/tex_offset"> 0, 0 </vector2>
+		<vector2 name="112/shape_offset"> -0, -0 </vector2>
+		<rect2 name="112/region"> 0, 0, 0, 0 </rect2>
+		<array name="112/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="113/name"> "Sprite 5 6 5 3" </string>
+		<resource name="113/texture" resource_type="Texture" path="res://res/ruins/tiles/0118.png">  </resource>
+		<vector2 name="113/tex_offset"> 0, 0 </vector2>
+		<vector2 name="113/shape_offset"> -0, -0 </vector2>
+		<rect2 name="113/region"> 0, 0, 0, 0 </rect2>
+		<array name="113/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="114/name"> "Sprite 3 4 4 3" </string>
+		<resource name="114/texture" resource_type="Texture" path="res://res/ruins/tiles/0119.png">  </resource>
+		<vector2 name="114/tex_offset"> 0, 0 </vector2>
+		<vector2 name="114/shape_offset"> -0, -0 </vector2>
+		<rect2 name="114/region"> 0, 0, 0, 0 </rect2>
+		<array name="114/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="115/name"> "Sprite 4 4 4 3" </string>
+		<resource name="115/texture" resource_type="Texture" path="res://res/ruins/tiles/0120.png">  </resource>
+		<vector2 name="115/tex_offset"> 0, 0 </vector2>
+		<vector2 name="115/shape_offset"> -0, -0 </vector2>
+		<rect2 name="115/region"> 0, 0, 0, 0 </rect2>
+		<array name="115/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="116/name"> "Sprite 8 7" </string>
+		<resource name="116/texture" resource_type="Texture" path="res://res/ruins/tiles/0121.png">  </resource>
+		<vector2 name="116/tex_offset"> 0, 0 </vector2>
+		<vector2 name="116/shape_offset"> -0, -0 </vector2>
+		<rect2 name="116/region"> 0, 0, 0, 0 </rect2>
+		<array name="116/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="117/name"> "Sprite 5 7 3" </string>
+		<resource name="117/texture" resource_type="Texture" path="res://res/ruins/tiles/0122.png">  </resource>
+		<vector2 name="117/tex_offset"> 0, 0 </vector2>
+		<vector2 name="117/shape_offset"> -0, -0 </vector2>
+		<rect2 name="117/region"> 0, 0, 0, 0 </rect2>
+		<array name="117/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="118/name"> "Sprite 3 7 5" </string>
+		<resource name="118/texture" resource_type="Texture" path="res://res/ruins/tiles/0123.png">  </resource>
+		<vector2 name="118/tex_offset"> 0, 0 </vector2>
+		<vector2 name="118/shape_offset"> -0, -0 </vector2>
+		<rect2 name="118/region"> 0, 0, 0, 0 </rect2>
+		<array name="118/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="119/name"> "Sprite 5 7 4" </string>
+		<resource name="119/texture" resource_type="Texture" path="res://res/ruins/tiles/0124.png">  </resource>
+		<vector2 name="119/tex_offset"> 0, 0 </vector2>
+		<vector2 name="119/shape_offset"> -0, -0 </vector2>
+		<rect2 name="119/region"> 0, 0, 0, 0 </rect2>
+		<array name="119/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="120/name"> "Sprite 4 7 5" </string>
+		<resource name="120/texture" resource_type="Texture" path="res://res/ruins/tiles/0125.png">  </resource>
+		<vector2 name="120/tex_offset"> 0, 0 </vector2>
+		<vector2 name="120/shape_offset"> -0, -0 </vector2>
+		<rect2 name="120/region"> 0, 0, 0, 0 </rect2>
+		<array name="120/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="121/name"> "Sprite 5 7 5" </string>
+		<resource name="121/texture" resource_type="Texture" path="res://res/ruins/tiles/0126.png">  </resource>
+		<vector2 name="121/tex_offset"> 0, 0 </vector2>
+		<vector2 name="121/shape_offset"> -0, -0 </vector2>
+		<rect2 name="121/region"> 0, 0, 0, 0 </rect2>
+		<array name="121/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="122/name"> "Sprite 3 4 5 3" </string>
+		<resource name="122/texture" resource_type="Texture" path="res://res/ruins/tiles/0127.png">  </resource>
+		<vector2 name="122/tex_offset"> 0, 0 </vector2>
+		<vector2 name="122/shape_offset"> -0, -0 </vector2>
+		<rect2 name="122/region"> 0, 0, 0, 0 </rect2>
+		<array name="122/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="123/name"> "Sprite 4 4 5 3" </string>
+		<resource name="123/texture" resource_type="Texture" path="res://res/ruins/tiles/0128.png">  </resource>
+		<vector2 name="123/tex_offset"> 0, 0 </vector2>
+		<vector2 name="123/shape_offset"> -0, -0 </vector2>
+		<rect2 name="123/region"> 0, 0, 0, 0 </rect2>
+		<array name="123/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="124/name"> "Sprite 9" </string>
+		<resource name="124/texture" resource_type="Texture" path="res://res/ruins/tiles/0129.png">  </resource>
+		<vector2 name="124/tex_offset"> 0, 0 </vector2>
+		<vector2 name="124/shape_offset"> -0, -0 </vector2>
+		<rect2 name="124/region"> 0, 0, 0, 0 </rect2>
+		<array name="124/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="125/name"> "Sprite 9 2" </string>
+		<resource name="125/texture" resource_type="Texture" path="res://res/ruins/tiles/0130.png">  </resource>
+		<vector2 name="125/tex_offset"> 0, 0 </vector2>
+		<vector2 name="125/shape_offset"> -0, -0 </vector2>
+		<rect2 name="125/region"> 0, 0, 0, 0 </rect2>
+		<array name="125/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="126/name"> "Sprite 3 8" </string>
+		<resource name="126/texture" resource_type="Texture" path="res://res/ruins/tiles/0131.png">  </resource>
+		<vector2 name="126/tex_offset"> 0, 0 </vector2>
+		<vector2 name="126/shape_offset"> -0, -0 </vector2>
+		<rect2 name="126/region"> 0, 0, 0, 0 </rect2>
+		<array name="126/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="127/name"> "Sprite 9 3" </string>
+		<resource name="127/texture" resource_type="Texture" path="res://res/ruins/tiles/0132.png">  </resource>
+		<vector2 name="127/tex_offset"> 0, 0 </vector2>
+		<vector2 name="127/shape_offset"> -0, -0 </vector2>
+		<rect2 name="127/region"> 0, 0, 0, 0 </rect2>
+		<array name="127/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="128/name"> "Sprite 8 8" </string>
+		<resource name="128/texture" resource_type="Texture" path="res://res/ruins/tiles/0133.png">  </resource>
+		<vector2 name="128/tex_offset"> 0, 0 </vector2>
+		<vector2 name="128/shape_offset"> -0, -0 </vector2>
+		<rect2 name="128/region"> 0, 0, 0, 0 </rect2>
+		<array name="128/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="129/name"> "Sprite 3 8 2" </string>
+		<resource name="129/texture" resource_type="Texture" path="res://res/ruins/tiles/0134.png">  </resource>
+		<vector2 name="129/tex_offset"> 0, 0 </vector2>
+		<vector2 name="129/shape_offset"> -0, -0 </vector2>
+		<rect2 name="129/region"> 0, 0, 0, 0 </rect2>
+		<array name="129/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="130/name"> "Sprite 8 8 2" </string>
+		<resource name="130/texture" resource_type="Texture" path="res://res/ruins/tiles/0135.png">  </resource>
+		<vector2 name="130/tex_offset"> 0, 0 </vector2>
+		<vector2 name="130/shape_offset"> -0, -0 </vector2>
+		<rect2 name="130/region"> 0, 0, 0, 0 </rect2>
+		<array name="130/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="131/name"> "Sprite 6 8" </string>
+		<resource name="131/texture" resource_type="Texture" path="res://res/ruins/tiles/0136.png">  </resource>
+		<vector2 name="131/tex_offset"> 0, 0 </vector2>
+		<vector2 name="131/shape_offset"> -0, -0 </vector2>
+		<rect2 name="131/region"> 0, 0, 0, 0 </rect2>
+		<array name="131/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="132/name"> "Sprite 3 7 6" </string>
+		<resource name="132/texture" resource_type="Texture" path="res://res/ruins/tiles/0137.png">  </resource>
+		<vector2 name="132/tex_offset"> 0, 0 </vector2>
+		<vector2 name="132/shape_offset"> -0, -0 </vector2>
+		<rect2 name="132/region"> 0, 0, 0, 0 </rect2>
+		<array name="132/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="133/name"> "Sprite 6 7 6" </string>
+		<resource name="133/texture" resource_type="Texture" path="res://res/ruins/tiles/0138.png">  </resource>
+		<vector2 name="133/tex_offset"> 0, 0 </vector2>
+		<vector2 name="133/shape_offset"> 0, 0 </vector2>
+		<rect2 name="133/region"> 0, 0, 0, 0 </rect2>
+		<array name="133/shapes" len="0" shared="false">
+		</array>
+		<string name="134/name"> "Sprite 8 8 3" </string>
+		<resource name="134/texture" resource_type="Texture" path="res://res/ruins/tiles/0139.png">  </resource>
+		<vector2 name="134/tex_offset"> 0, 0 </vector2>
+		<vector2 name="134/shape_offset"> -0, -0 </vector2>
+		<rect2 name="134/region"> 0, 0, 0, 0 </rect2>
+		<array name="134/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="135/name"> "Sprite 4 7 6" </string>
+		<resource name="135/texture" resource_type="Texture" path="res://res/ruins/tiles/0140.png">  </resource>
+		<vector2 name="135/tex_offset"> 0, 0 </vector2>
+		<vector2 name="135/shape_offset"> -0, -0 </vector2>
+		<rect2 name="135/region"> 0, 0, 0, 0 </rect2>
+		<array name="135/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="136/name"> "Sprite 8 8 4" </string>
+		<resource name="136/texture" resource_type="Texture" path="res://res/ruins/tiles/0141.png">  </resource>
+		<vector2 name="136/tex_offset"> 0, 0 </vector2>
+		<vector2 name="136/shape_offset"> -0, -0 </vector2>
+		<rect2 name="136/region"> 0, 0, 0, 0 </rect2>
+		<array name="136/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://11">  </resource>
+		</array>
+		<string name="137/name"> "Sprite 3 7 6 2" </string>
+		<resource name="137/texture" resource_type="Texture" path="res://res/ruins/tiles/0142.png">  </resource>
+		<vector2 name="137/tex_offset"> 0, 0 </vector2>
+		<vector2 name="137/shape_offset"> -0, -0 </vector2>
+		<rect2 name="137/region"> 0, 0, 0, 0 </rect2>
+		<array name="137/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://12">  </resource>
+		</array>
+		<string name="138/name"> "Sprite 4 7 6 2" </string>
+		<resource name="138/texture" resource_type="Texture" path="res://res/ruins/tiles/0143.png">  </resource>
+		<vector2 name="138/tex_offset"> 0, 0 </vector2>
+		<vector2 name="138/shape_offset"> -0, -0 </vector2>
+		<rect2 name="138/region"> 0, 0, 0, 0 </rect2>
+		<array name="138/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://13">  </resource>
+		</array>
+		<string name="139/name"> "Sprite 8 8 6" </string>
+		<resource name="139/texture" resource_type="Texture" path="res://res/ruins/tiles/0144.png">  </resource>
+		<vector2 name="139/tex_offset"> 0, 0 </vector2>
+		<vector2 name="139/shape_offset"> -0, -0 </vector2>
+		<rect2 name="139/region"> 0, 0, 0, 0 </rect2>
+		<array name="139/shapes" len="1" shared="false">
+			<resource  resource_type="Shape2D" path="local://13">  </resource>
+		</array>
+		<string name="140/name"> "Sprite 5 7 6 2" </string>
+		<resource name="140/texture" resource_type="Texture" path="res://res/ruins/tiles/0145.png">  </resource>
+		<vector2 name="140/tex_offset"> 0, 0 </vector2>
+		<vector2 name="140/shape_offset"> 0, 0 </vector2>
+		<rect2 name="140/region"> 0, 0, 0, 0 </rect2>
+		<array name="140/shapes" len="0" shared="false">
+		</array>
+		<string name="141/name"> "Sprite 3 7 6 4" </string>
+		<resource name="141/texture" resource_type="Texture" path="res://res/ruins/tiles/0146.png">  </resource>
+		<vector2 name="141/tex_offset"> 0, 0 </vector2>
+		<vector2 name="141/shape_offset"> 0, 0 </vector2>
+		<rect2 name="141/region"> 0, 0, 0, 0 </rect2>
+		<array name="141/shapes" len="0" shared="false">
+		</array>
+		<string name="142/name"> "Sprite 5 7 6 3" </string>
+		<resource name="142/texture" resource_type="Texture" path="res://res/ruins/tiles/0147.png">  </resource>
+		<vector2 name="142/tex_offset"> 0, 0 </vector2>
+		<vector2 name="142/shape_offset"> 0, 0 </vector2>
+		<rect2 name="142/region"> 0, 0, 0, 0 </rect2>
+		<array name="142/shapes" len="0" shared="false">
+		</array>
+		<string name="143/name"> "Sprite 4 7 6 4" </string>
+		<resource name="143/texture" resource_type="Texture" path="res://res/ruins/tiles/0148.png">  </resource>
+		<vector2 name="143/tex_offset"> 0, 0 </vector2>
+		<vector2 name="143/shape_offset"> 0, 0 </vector2>
+		<rect2 name="143/region"> 0, 0, 0, 0 </rect2>
+		<array name="143/shapes" len="0" shared="false">
+		</array>
+		<string name="144/name"> "Sprite 5 7 6 4" </string>
+		<resource name="144/texture" resource_type="Texture" path="res://res/ruins/tiles/0149.png">  </resource>
+		<vector2 name="144/tex_offset"> 0, 0 </vector2>
+		<vector2 name="144/shape_offset"> 0, 0 </vector2>
+		<rect2 name="144/region"> 0, 0, 0, 0 </rect2>
+		<array name="144/shapes" len="0" shared="false">
+		</array>
+		<string name="145/name"> "Sprite 3 4 5 4 2" </string>
+		<resource name="145/texture" resource_type="Texture" path="res://res/ruins/tiles/0150.png">  </resource>
+		<vector2 name="145/tex_offset"> 0, 0 </vector2>
+		<vector2 name="145/shape_offset"> 0, 0 </vector2>
+		<rect2 name="145/region"> 0, 0, 0, 0 </rect2>
+		<array name="145/shapes" len="0" shared="false">
+		</array>
+		<string name="146/name"> "Sprite 4 4 5 4 2" </string>
+		<resource name="146/texture" resource_type="Texture" path="res://res/ruins/tiles/0151.png">  </resource>
+		<vector2 name="146/tex_offset"> 0, 0 </vector2>
+		<vector2 name="146/shape_offset"> 0, 0 </vector2>
+		<rect2 name="146/region"> 0, 0, 0, 0 </rect2>
+		<array name="146/shapes" len="0" shared="false">
+		</array>
+		<string name="147/name"> "Sprite 9 4" </string>
+		<resource name="147/texture" resource_type="Texture" path="res://res/ruins/tiles/0152.png">  </resource>
+		<vector2 name="147/tex_offset"> 0, 0 </vector2>
+		<vector2 name="147/shape_offset"> 0, 0 </vector2>
+		<rect2 name="147/region"> 0, 0, 0, 0 </rect2>
+		<array name="147/shapes" len="0" shared="false">
+		</array>
+		<string name="148/name"> "Sprite 6 8 2" </string>
+		<resource name="148/texture" resource_type="Texture" path="res://res/ruins/tiles/0153.png">  </resource>
+		<vector2 name="148/tex_offset"> 0, 0 </vector2>
+		<vector2 name="148/shape_offset"> 0, 0 </vector2>
+		<rect2 name="148/region"> 0, 0, 0, 0 </rect2>
+		<array name="148/shapes" len="0" shared="false">
+		</array>
+		<string name="149/name"> "Sprite 3 8 3" </string>
+		<resource name="149/texture" resource_type="Texture" path="res://res/ruins/tiles/0154.png">  </resource>
+		<vector2 name="149/tex_offset"> 0, 0 </vector2>
+		<vector2 name="149/shape_offset"> 0, 0 </vector2>
+		<rect2 name="149/region"> 0, 0, 0, 0 </rect2>
+		<array name="149/shapes" len="0" shared="false">
+		</array>
+		<string name="150/name"> "Sprite 6 8 3" </string>
+		<resource name="150/texture" resource_type="Texture" path="res://res/ruins/tiles/0155.png">  </resource>
+		<vector2 name="150/tex_offset"> 0, 0 </vector2>
+		<vector2 name="150/shape_offset"> 0, 0 </vector2>
+		<rect2 name="150/region"> 0, 0, 0, 0 </rect2>
+		<array name="150/shapes" len="0" shared="false">
+		</array>
+		<string name="151/name"> "Sprite 4 8 2" </string>
+		<resource name="151/texture" resource_type="Texture" path="res://res/ruins/tiles/0156.png">  </resource>
+		<vector2 name="151/tex_offset"> 0, 0 </vector2>
+		<vector2 name="151/shape_offset"> 0, 0 </vector2>
+		<rect2 name="151/region"> 0, 0, 0, 0 </rect2>
+		<array name="151/shapes" len="0" shared="false">
+		</array>
+		<string name="152/name"> "Sprite 6 8 4" </string>
+		<resource name="152/texture" resource_type="Texture" path="res://res/ruins/tiles/0157.png">  </resource>
+		<vector2 name="152/tex_offset"> 0, 0 </vector2>
+		<vector2 name="152/shape_offset"> 0, 0 </vector2>
+		<rect2 name="152/region"> 0, 0, 0, 0 </rect2>
+		<array name="152/shapes" len="0" shared="false">
+		</array>
+		<string name="153/name"> "Sprite 3 5 6 2" </string>
+		<resource name="153/texture" resource_type="Texture" path="res://res/ruins/tiles/0158.png">  </resource>
+		<vector2 name="153/tex_offset"> 0, 0 </vector2>
+		<vector2 name="153/shape_offset"> 0, 0 </vector2>
+		<rect2 name="153/region"> 0, 0, 0, 0 </rect2>
+		<array name="153/shapes" len="0" shared="false">
+		</array>
+		<string name="154/name"> "Sprite 4 5 6 2" </string>
+		<resource name="154/texture" resource_type="Texture" path="res://res/ruins/tiles/0159.png">  </resource>
+		<vector2 name="154/tex_offset"> 0, 0 </vector2>
+		<vector2 name="154/shape_offset"> 0, 0 </vector2>
+		<rect2 name="154/region"> 0, 0, 0, 0 </rect2>
+		<array name="154/shapes" len="0" shared="false">
+		</array>
+		<string name="155/name"> "Sprite 6 8 5" </string>
+		<resource name="155/texture" resource_type="Texture" path="res://res/ruins/tiles/0160.png">  </resource>
+		<vector2 name="155/tex_offset"> 0, 0 </vector2>
+		<vector2 name="155/shape_offset"> 0, 0 </vector2>
+		<rect2 name="155/region"> 0, 0, 0, 0 </rect2>
+		<array name="155/shapes" len="0" shared="false">
+		</array>
+		<string name="156/name"> "Sprite 5 8 2" </string>
+		<resource name="156/texture" resource_type="Texture" path="res://res/ruins/tiles/0161.png">  </resource>
+		<vector2 name="156/tex_offset"> 0, 0 </vector2>
+		<vector2 name="156/shape_offset"> 0, 0 </vector2>
+		<rect2 name="156/region"> 0, 0, 0, 0 </rect2>
+		<array name="156/shapes" len="0" shared="false">
+		</array>
+		<string name="157/name"> "Sprite 3 5 6 3" </string>
+		<resource name="157/texture" resource_type="Texture" path="res://res/ruins/tiles/0162.png">  </resource>
+		<vector2 name="157/tex_offset"> 0, 0 </vector2>
+		<vector2 name="157/shape_offset"> 0, 0 </vector2>
+		<rect2 name="157/region"> 0, 0, 0, 0 </rect2>
+		<array name="157/shapes" len="0" shared="false">
+		</array>
+		<string name="158/name"> "Sprite 5 5 6 2" </string>
+		<resource name="158/texture" resource_type="Texture" path="res://res/ruins/tiles/0163.png">  </resource>
+		<vector2 name="158/tex_offset"> 0, 0 </vector2>
+		<vector2 name="158/shape_offset"> 0, 0 </vector2>
+		<rect2 name="158/region"> 0, 0, 0, 0 </rect2>
+		<array name="158/shapes" len="0" shared="false">
+		</array>
+		<string name="159/name"> "Sprite 4 5 6 3" </string>
+		<resource name="159/texture" resource_type="Texture" path="res://res/ruins/tiles/0164.png">  </resource>
+		<vector2 name="159/tex_offset"> 0, 0 </vector2>
+		<vector2 name="159/shape_offset"> 0, 0 </vector2>
+		<rect2 name="159/region"> 0, 0, 0, 0 </rect2>
+		<array name="159/shapes" len="0" shared="false">
+		</array>
+		<string name="160/name"> "Sprite 5 6 6 2" </string>
+		<resource name="160/texture" resource_type="Texture" path="res://res/ruins/tiles/0165.png">  </resource>
+		<vector2 name="160/tex_offset"> 0, 0 </vector2>
+		<vector2 name="160/shape_offset"> 0, 0 </vector2>
+		<rect2 name="160/region"> 0, 0, 0, 0 </rect2>
+		<array name="160/shapes" len="0" shared="false">
+		</array>
+		<string name="161/name"> "Sprite 5 5 6 3" </string>
+		<resource name="161/texture" resource_type="Texture" path="res://res/ruins/tiles/0166.png">  </resource>
+		<vector2 name="161/tex_offset"> 0, 0 </vector2>
+		<vector2 name="161/shape_offset"> 0, 0 </vector2>
+		<rect2 name="161/region"> 0, 0, 0, 0 </rect2>
+		<array name="161/shapes" len="0" shared="false">
+		</array>
+		<string name="162/name"> "Sprite 3 4 6 2" </string>
+		<resource name="162/texture" resource_type="Texture" path="res://res/ruins/tiles/0167.png">  </resource>
+		<vector2 name="162/tex_offset"> 0, 0 </vector2>
+		<vector2 name="162/shape_offset"> 0, 0 </vector2>
+		<rect2 name="162/region"> 0, 0, 0, 0 </rect2>
+		<array name="162/shapes" len="0" shared="false">
+		</array>
+		<string name="163/name"> "Sprite 4 4 6 2" </string>
+		<resource name="163/texture" resource_type="Texture" path="res://res/ruins/tiles/0168.png">  </resource>
+		<vector2 name="163/tex_offset"> 0, 0 </vector2>
+		<vector2 name="163/shape_offset"> 0, 0 </vector2>
+		<rect2 name="163/region"> 0, 0, 0, 0 </rect2>
+		<array name="163/shapes" len="0" shared="false">
+		</array>
+		<string name="164/name"> "Sprite 9 5" </string>
+		<resource name="164/texture" resource_type="Texture" path="res://res/ruins/tiles/0169.png">  </resource>
+		<vector2 name="164/tex_offset"> 0, 0 </vector2>
+		<vector2 name="164/shape_offset"> 0, 0 </vector2>
+		<rect2 name="164/region"> 0, 0, 0, 0 </rect2>
+		<array name="164/shapes" len="0" shared="false">
+		</array>
+		<string name="165/name"> "Sprite 4 8 3" </string>
+		<resource name="165/texture" resource_type="Texture" path="res://res/ruins/tiles/0170.png">  </resource>
+		<vector2 name="165/tex_offset"> 0, 0 </vector2>
+		<vector2 name="165/shape_offset"> 0, 0 </vector2>
+		<rect2 name="165/region"> 0, 0, 0, 0 </rect2>
+		<array name="165/shapes" len="0" shared="false">
+		</array>
+		<string name="166/name"> "Sprite 9 6" </string>
+		<resource name="166/texture" resource_type="Texture" path="res://res/ruins/tiles/0171.png">  </resource>
+		<vector2 name="166/tex_offset"> 0, 0 </vector2>
+		<vector2 name="166/shape_offset"> 0, 0 </vector2>
+		<rect2 name="166/region"> 0, 0, 0, 0 </rect2>
+		<array name="166/shapes" len="0" shared="false">
+		</array>
+		<string name="167/name"> "Sprite 3 8 4" </string>
+		<resource name="167/texture" resource_type="Texture" path="res://res/ruins/tiles/0172.png">  </resource>
+		<vector2 name="167/tex_offset"> 0, 0 </vector2>
+		<vector2 name="167/shape_offset"> 0, 0 </vector2>
+		<rect2 name="167/region"> 0, 0, 0, 0 </rect2>
+		<array name="167/shapes" len="0" shared="false">
+		</array>
+		<string name="168/name"> "Sprite 4 8 4" </string>
+		<resource name="168/texture" resource_type="Texture" path="res://res/ruins/tiles/0173.png">  </resource>
+		<vector2 name="168/tex_offset"> 0, 0 </vector2>
+		<vector2 name="168/shape_offset"> 0, 0 </vector2>
+		<rect2 name="168/region"> 0, 0, 0, 0 </rect2>
+		<array name="168/shapes" len="0" shared="false">
+		</array>
+		<string name="169/name"> "Sprite 9 7" </string>
+		<resource name="169/texture" resource_type="Texture" path="res://res/ruins/tiles/0174.png">  </resource>
+		<vector2 name="169/tex_offset"> 0, 0 </vector2>
+		<vector2 name="169/shape_offset"> 0, 0 </vector2>
+		<rect2 name="169/region"> 0, 0, 0, 0 </rect2>
+		<array name="169/shapes" len="0" shared="false">
+		</array>
+		<string name="170/name"> "Sprite 7 8 2" </string>
+		<resource name="170/texture" resource_type="Texture" path="res://res/ruins/tiles/0175.png">  </resource>
+		<vector2 name="170/tex_offset"> 0, 0 </vector2>
+		<vector2 name="170/shape_offset"> 0, 0 </vector2>
+		<rect2 name="170/region"> 0, 0, 0, 0 </rect2>
+		<array name="170/shapes" len="0" shared="false">
+		</array>
+		<string name="171/name"> "Sprite 3 8 5" </string>
+		<resource name="171/texture" resource_type="Texture" path="res://res/ruins/tiles/0176.png">  </resource>
+		<vector2 name="171/tex_offset"> 0, 0 </vector2>
+		<vector2 name="171/shape_offset"> 0, 0 </vector2>
+		<rect2 name="171/region"> 0, 0, 0, 0 </rect2>
+		<array name="171/shapes" len="0" shared="false">
+		</array>
+		<string name="172/name"> "Sprite 7 8 3" </string>
+		<resource name="172/texture" resource_type="Texture" path="res://res/ruins/tiles/0177.png">  </resource>
+		<vector2 name="172/tex_offset"> 0, 0 </vector2>
+		<vector2 name="172/shape_offset"> 0, 0 </vector2>
+		<rect2 name="172/region"> 0, 0, 0, 0 </rect2>
+		<array name="172/shapes" len="0" shared="false">
+		</array>
+		<string name="173/name"> "Sprite 6 8 6" </string>
+		<resource name="173/texture" resource_type="Texture" path="res://res/ruins/tiles/0178.png">  </resource>
+		<vector2 name="173/tex_offset"> 0, 0 </vector2>
+		<vector2 name="173/shape_offset"> 0, 0 </vector2>
+		<rect2 name="173/region"> 0, 0, 0, 0 </rect2>
+		<array name="173/shapes" len="0" shared="false">
+		</array>
+		<string name="174/name"> "Sprite 3 6 6 2" </string>
+		<resource name="174/texture" resource_type="Texture" path="res://res/ruins/tiles/0179.png">  </resource>
+		<vector2 name="174/tex_offset"> 0, 0 </vector2>
+		<vector2 name="174/shape_offset"> 0, 0 </vector2>
+		<rect2 name="174/region"> 0, 0, 0, 0 </rect2>
+		<array name="174/shapes" len="0" shared="false">
+		</array>
+		<string name="175/name"> "Sprite 6 6 6 2" </string>
+		<resource name="175/texture" resource_type="Texture" path="res://res/ruins/tiles/0180.png">  </resource>
+		<vector2 name="175/tex_offset"> 0, 0 </vector2>
+		<vector2 name="175/shape_offset"> 0, 0 </vector2>
+		<rect2 name="175/region"> 0, 0, 0, 0 </rect2>
+		<array name="175/shapes" len="0" shared="false">
+		</array>
+		<string name="176/name"> "Sprite 4 8 5" </string>
+		<resource name="176/texture" resource_type="Texture" path="res://res/ruins/tiles/0181.png">  </resource>
+		<vector2 name="176/tex_offset"> 0, 0 </vector2>
+		<vector2 name="176/shape_offset"> 0, 0 </vector2>
+		<rect2 name="176/region"> 0, 0, 0, 0 </rect2>
+		<array name="176/shapes" len="0" shared="false">
+		</array>
+		<string name="177/name"> "Sprite 6 6 6 3" </string>
+		<resource name="177/texture" resource_type="Texture" path="res://res/ruins/tiles/0182.png">  </resource>
+		<vector2 name="177/tex_offset"> 0, 0 </vector2>
+		<vector2 name="177/shape_offset"> 0, 0 </vector2>
+		<rect2 name="177/region"> 0, 0, 0, 0 </rect2>
+		<array name="177/shapes" len="0" shared="false">
+		</array>
+		<string name="178/name"> "Sprite 3 5 6 4" </string>
+		<resource name="178/texture" resource_type="Texture" path="res://res/ruins/tiles/0183.png">  </resource>
+		<vector2 name="178/tex_offset"> 0, 0 </vector2>
+		<vector2 name="178/shape_offset"> 0, 0 </vector2>
+		<rect2 name="178/region"> 0, 0, 0, 0 </rect2>
+		<array name="178/shapes" len="0" shared="false">
+		</array>
+		<string name="179/name"> "Sprite 4 5 6 4" </string>
+		<resource name="179/texture" resource_type="Texture" path="res://res/ruins/tiles/0184.png">  </resource>
+		<vector2 name="179/tex_offset"> 0, 0 </vector2>
+		<vector2 name="179/shape_offset"> 0, 0 </vector2>
+		<rect2 name="179/region"> 0, 0, 0, 0 </rect2>
+		<array name="179/shapes" len="0" shared="false">
+		</array>
+		<string name="180/name"> "Sprite 6 6 6 4" </string>
+		<resource name="180/texture" resource_type="Texture" path="res://res/ruins/tiles/0185.png">  </resource>
+		<vector2 name="180/tex_offset"> 0, 0 </vector2>
+		<vector2 name="180/shape_offset"> 0, 0 </vector2>
+		<rect2 name="180/region"> 0, 0, 0, 0 </rect2>
+		<array name="180/shapes" len="0" shared="false">
+		</array>
+		<string name="181/name"> "Sprite 5 8 3" </string>
+		<resource name="181/texture" resource_type="Texture" path="res://res/ruins/tiles/0186.png">  </resource>
+		<vector2 name="181/tex_offset"> 0, 0 </vector2>
+		<vector2 name="181/shape_offset"> 0, 0 </vector2>
+		<rect2 name="181/region"> 0, 0, 0, 0 </rect2>
+		<array name="181/shapes" len="0" shared="false">
+		</array>
+		<string name="182/name"> "Sprite 3 5 4 4 2" </string>
+		<resource name="182/texture" resource_type="Texture" path="res://res/ruins/tiles/0187.png">  </resource>
+		<vector2 name="182/tex_offset"> 0, 0 </vector2>
+		<vector2 name="182/shape_offset"> 0, 0 </vector2>
+		<rect2 name="182/region"> 0, 0, 0, 0 </rect2>
+		<array name="182/shapes" len="0" shared="false">
+		</array>
+		<string name="183/name"> "Sprite 5 5 6 4" </string>
+		<resource name="183/texture" resource_type="Texture" path="res://res/ruins/tiles/0188.png">  </resource>
+		<vector2 name="183/tex_offset"> 0, 0 </vector2>
+		<vector2 name="183/shape_offset"> 0, 0 </vector2>
+		<rect2 name="183/region"> 0, 0, 0, 0 </rect2>
+		<array name="183/shapes" len="0" shared="false">
+		</array>
+		<string name="184/name"> "Sprite 4 5 4 4 2" </string>
+		<resource name="184/texture" resource_type="Texture" path="res://res/ruins/tiles/0189.png">  </resource>
+		<vector2 name="184/tex_offset"> 0, 0 </vector2>
+		<vector2 name="184/shape_offset"> 0, 0 </vector2>
+		<rect2 name="184/region"> 0, 0, 0, 0 </rect2>
+		<array name="184/shapes" len="0" shared="false">
+		</array>
+		<string name="185/name"> "Sprite 5 5 4 4 2" </string>
+		<resource name="185/texture" resource_type="Texture" path="res://res/ruins/tiles/0190.png">  </resource>
+		<vector2 name="185/tex_offset"> 0, 0 </vector2>
+		<vector2 name="185/shape_offset"> 0, 0 </vector2>
+		<rect2 name="185/region"> 0, 0, 0, 0 </rect2>
+		<array name="185/shapes" len="0" shared="false">
+		</array>
+		<string name="186/name"> "Sprite 3 4 6 3" </string>
+		<resource name="186/texture" resource_type="Texture" path="res://res/ruins/tiles/0191.png">  </resource>
+		<vector2 name="186/tex_offset"> 0, 0 </vector2>
+		<vector2 name="186/shape_offset"> 0, 0 </vector2>
+		<rect2 name="186/region"> 0, 0, 0, 0 </rect2>
+		<array name="186/shapes" len="0" shared="false">
+		</array>
+		<string name="187/name"> "Sprite 4 4 6 3" </string>
+		<resource name="187/texture" resource_type="Texture" path="res://res/ruins/tiles/0192.png">  </resource>
+		<vector2 name="187/tex_offset"> 0, 0 </vector2>
+		<vector2 name="187/shape_offset"> 0, 0 </vector2>
+		<rect2 name="187/region"> 0, 0, 0, 0 </rect2>
+		<array name="187/shapes" len="0" shared="false">
+		</array>
+		<string name="188/name"> "Sprite 7 8 4" </string>
+		<resource name="188/texture" resource_type="Texture" path="res://res/ruins/tiles/0193.png">  </resource>
+		<vector2 name="188/tex_offset"> 0, 0 </vector2>
+		<vector2 name="188/shape_offset"> 0, 0 </vector2>
+		<rect2 name="188/region"> 0, 0, 0, 0 </rect2>
+		<array name="188/shapes" len="0" shared="false">
+		</array>
+		<string name="189/name"> "Sprite 4 6 6 2" </string>
+		<resource name="189/texture" resource_type="Texture" path="res://res/ruins/tiles/0194.png">  </resource>
+		<vector2 name="189/tex_offset"> 0, 0 </vector2>
+		<vector2 name="189/shape_offset"> 0, 0 </vector2>
+		<rect2 name="189/region"> 0, 0, 0, 0 </rect2>
+		<array name="189/shapes" len="0" shared="false">
+		</array>
+		<string name="190/name"> "Sprite 7 8 5" </string>
+		<resource name="190/texture" resource_type="Texture" path="res://res/ruins/tiles/0195.png">  </resource>
+		<vector2 name="190/tex_offset"> 0, 0 </vector2>
+		<vector2 name="190/shape_offset"> 0, 0 </vector2>
+		<rect2 name="190/region"> 0, 0, 0, 0 </rect2>
+		<array name="190/shapes" len="0" shared="false">
+		</array>
+		<string name="191/name"> "Sprite 3 6 6 3" </string>
+		<resource name="191/texture" resource_type="Texture" path="res://res/ruins/tiles/0196.png">  </resource>
+		<vector2 name="191/tex_offset"> 0, 0 </vector2>
+		<vector2 name="191/shape_offset"> 0, 0 </vector2>
+		<rect2 name="191/region"> 0, 0, 0, 0 </rect2>
+		<array name="191/shapes" len="0" shared="false">
+		</array>
+		<string name="192/name"> "Sprite 4 6 6 3" </string>
+		<resource name="192/texture" resource_type="Texture" path="res://res/ruins/tiles/0197.png">  </resource>
+		<vector2 name="192/tex_offset"> 0, 0 </vector2>
+		<vector2 name="192/shape_offset"> 0, 0 </vector2>
+		<rect2 name="192/region"> 0, 0, 0, 0 </rect2>
+		<array name="192/shapes" len="0" shared="false">
+		</array>
+		<string name="193/name"> "Sprite 7 8 6" </string>
+		<resource name="193/texture" resource_type="Texture" path="res://res/ruins/tiles/0198.png">  </resource>
+		<vector2 name="193/tex_offset"> 0, 0 </vector2>
+		<vector2 name="193/shape_offset"> 0, 0 </vector2>
+		<rect2 name="193/region"> 0, 0, 0, 0 </rect2>
+		<array name="193/shapes" len="0" shared="false">
+		</array>
+		<string name="194/name"> "Sprite 3 6 6 4" </string>
+		<resource name="194/texture" resource_type="Texture" path="res://res/ruins/tiles/0199.png">  </resource>
+		<vector2 name="194/tex_offset"> 0, 0 </vector2>
+		<vector2 name="194/shape_offset"> 0, 0 </vector2>
+		<rect2 name="194/region"> 0, 0, 0, 0 </rect2>
+		<array name="194/shapes" len="0" shared="false">
+		</array>
+		<string name="195/name"> "Sprite 5 6 6 3" </string>
+		<resource name="195/texture" resource_type="Texture" path="res://res/ruins/tiles/0200.png">  </resource>
+		<vector2 name="195/tex_offset"> 0, 0 </vector2>
+		<vector2 name="195/shape_offset"> 0, 0 </vector2>
+		<rect2 name="195/region"> 0, 0, 0, 0 </rect2>
+		<array name="195/shapes" len="0" shared="false">
+		</array>
+		<string name="196/name"> "Sprite 4 6 6 4" </string>
+		<resource name="196/texture" resource_type="Texture" path="res://res/ruins/tiles/0201.png">  </resource>
+		<vector2 name="196/tex_offset"> 0, 0 </vector2>
+		<vector2 name="196/shape_offset"> 0, 0 </vector2>
+		<rect2 name="196/region"> 0, 0, 0, 0 </rect2>
+		<array name="196/shapes" len="0" shared="false">
+		</array>
+		<string name="197/name"> "Sprite 5 6 6 4" </string>
+		<resource name="197/texture" resource_type="Texture" path="res://res/ruins/tiles/0202.png">  </resource>
+		<vector2 name="197/tex_offset"> 0, 0 </vector2>
+		<vector2 name="197/shape_offset"> 0, 0 </vector2>
+		<rect2 name="197/region"> 0, 0, 0, 0 </rect2>
+		<array name="197/shapes" len="0" shared="false">
+		</array>
+		<string name="198/name"> "Sprite 3 4 4 4 2" </string>
+		<resource name="198/texture" resource_type="Texture" path="res://res/ruins/tiles/0203.png">  </resource>
+		<vector2 name="198/tex_offset"> 0, 0 </vector2>
+		<vector2 name="198/shape_offset"> 0, 0 </vector2>
+		<rect2 name="198/region"> 0, 0, 0, 0 </rect2>
+		<array name="198/shapes" len="0" shared="false">
+		</array>
+		<string name="199/name"> "Sprite 4 4 4 4 2" </string>
+		<resource name="199/texture" resource_type="Texture" path="res://res/ruins/tiles/0204.png">  </resource>
+		<vector2 name="199/tex_offset"> 0, 0 </vector2>
+		<vector2 name="199/shape_offset"> 0, 0 </vector2>
+		<rect2 name="199/region"> 0, 0, 0, 0 </rect2>
+		<array name="199/shapes" len="0" shared="false">
+		</array>
+		<string name="200/name"> "Sprite 9 8" </string>
+		<resource name="200/texture" resource_type="Texture" path="res://res/ruins/tiles/0205.png">  </resource>
+		<vector2 name="200/tex_offset"> 0, 0 </vector2>
+		<vector2 name="200/shape_offset"> 0, 0 </vector2>
+		<rect2 name="200/region"> 0, 0, 0, 0 </rect2>
+		<array name="200/shapes" len="0" shared="false">
+		</array>
+		<string name="201/name"> "Sprite 5 8 4" </string>
+		<resource name="201/texture" resource_type="Texture" path="res://res/ruins/tiles/0206.png">  </resource>
+		<vector2 name="201/tex_offset"> 0, 0 </vector2>
+		<vector2 name="201/shape_offset"> 0, 0 </vector2>
+		<rect2 name="201/region"> 0, 0, 0, 0 </rect2>
+		<array name="201/shapes" len="0" shared="false">
+		</array>
+		<string name="202/name"> "Sprite 3 8 6" </string>
+		<resource name="202/texture" resource_type="Texture" path="res://res/ruins/tiles/0207.png">  </resource>
+		<vector2 name="202/tex_offset"> 0, 0 </vector2>
+		<vector2 name="202/shape_offset"> 0, 0 </vector2>
+		<rect2 name="202/region"> 0, 0, 0, 0 </rect2>
+		<array name="202/shapes" len="0" shared="false">
+		</array>
+		<string name="203/name"> "Sprite 5 8 5" </string>
+		<resource name="203/texture" resource_type="Texture" path="res://res/ruins/tiles/0208.png">  </resource>
+		<vector2 name="203/tex_offset"> 0, 0 </vector2>
+		<vector2 name="203/shape_offset"> 0, 0 </vector2>
+		<rect2 name="203/region"> 0, 0, 0, 0 </rect2>
+		<array name="203/shapes" len="0" shared="false">
+		</array>
+		<string name="204/name"> "Sprite 4 8 6" </string>
+		<resource name="204/texture" resource_type="Texture" path="res://res/ruins/tiles/0209.png">  </resource>
+		<vector2 name="204/tex_offset"> 0, 0 </vector2>
+		<vector2 name="204/shape_offset"> 0, 0 </vector2>
+		<rect2 name="204/region"> 0, 0, 0, 0 </rect2>
+		<array name="204/shapes" len="0" shared="false">
+		</array>
+		<string name="205/name"> "Sprite 5 8 6" </string>
+		<resource name="205/texture" resource_type="Texture" path="res://res/ruins/tiles/0210.png">  </resource>
+		<vector2 name="205/tex_offset"> 0, 0 </vector2>
+		<vector2 name="205/shape_offset"> 0, 0 </vector2>
+		<rect2 name="205/region"> 0, 0, 0, 0 </rect2>
+		<array name="205/shapes" len="0" shared="false">
+		</array>
+		<string name="206/name"> "Sprite 3 4 6 4" </string>
+		<resource name="206/texture" resource_type="Texture" path="res://res/ruins/tiles/0211.png">  </resource>
+		<vector2 name="206/tex_offset"> 0, 0 </vector2>
+		<vector2 name="206/shape_offset"> 0, 0 </vector2>
+		<rect2 name="206/region"> 0, 0, 0, 0 </rect2>
+		<array name="206/shapes" len="0" shared="false">
+		</array>
+		<string name="207/name"> "Sprite 4 4 6 4" </string>
+		<resource name="207/texture" resource_type="Texture" path="res://res/ruins/tiles/0212.png">  </resource>
+		<vector2 name="207/tex_offset"> 0, 0 </vector2>
+		<vector2 name="207/shape_offset"> 0, 0 </vector2>
+		<rect2 name="207/region"> 0, 0, 0, 0 </rect2>
+		<array name="207/shapes" len="0" shared="false">
+		</array>
+
+	</main_resource>
+</resource_file>
