@@ -179,9 +179,25 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XMapRaised(x11_display, x11_window);
 		// get the window root, then the res for the root
 		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display,x11_window,&xwa);
-		XGetWindowAttributes(x11_display,xwa.root,&xwa);
+		XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+		//XGetWindowAttributes(x11_display,x11_window,&xwa);
+		//XGetWindowAttributes(x11_display,xwa.root,&xwa);
 		XMoveResizeWindow(x11_display, x11_window ,0 ,0 , xwa.width, xwa.height);
+		// NETWM-compliant code:
+		XEvent xev;
+		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+
+		memset(&xev, 0, sizeof(xev));
+		xev.type = ClientMessage;
+		xev.xclient.window = x11_window;
+		xev.xclient.message_type = wm_state;
+		xev.xclient.format = 32;
+		xev.xclient.data.l[0] = 1;
+		xev.xclient.data.l[1] = fullscreen;
+		xev.xclient.data.l[2] = 0;
+
+		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
 	}
 
 	// disable resizeable window
@@ -193,6 +209,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XGetWindowAttributes(x11_display,x11_window,&xwa);
 		if (current_videomode.fullscreen) {
 			XGetWindowAttributes(x11_display,xwa.root,&xwa);
+			printf (" Screen:  width = %d, height = %d \n", xwa.width,xwa.height);
 		}
 		xsh->min_width = xwa.width; 
 		xsh->max_width = xwa.width;
