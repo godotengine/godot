@@ -35,6 +35,8 @@ def get_flags():
 		#('lua', 'yes'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
+		('theora', 'no'),
+		
 	]
 
 def configure(env):

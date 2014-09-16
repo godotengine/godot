@@ -46,6 +46,7 @@
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/car_body.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/3d/physics_joint.h"
 
 
 class Camera;
@@ -368,6 +369,74 @@ public:
 };
 
 
+class PinJointSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(PinJointSpatialGizmo,SpatialGizmoTool);
+
+	PinJoint* p3d;
+
+public:
+
+	void redraw();
+	PinJointSpatialGizmo(PinJoint* p_p3d=NULL);
+
+};
+
+
+class HingeJointSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(HingeJointSpatialGizmo,SpatialGizmoTool);
+
+	HingeJoint* p3d;
+
+public:
+
+	void redraw();
+	HingeJointSpatialGizmo(HingeJoint* p_p3d=NULL);
+
+};
+
+class SliderJointSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(SliderJointSpatialGizmo,SpatialGizmoTool);
+
+	SliderJoint* p3d;
+
+public:
+
+	void redraw();
+	SliderJointSpatialGizmo(SliderJoint* p_p3d=NULL);
+
+};
+
+class ConeTwistJointSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(ConeTwistJointSpatialGizmo,SpatialGizmoTool);
+
+	ConeTwistJoint* p3d;
+
+public:
+
+	void redraw();
+	ConeTwistJointSpatialGizmo(ConeTwistJoint* p_p3d=NULL);
+
+};
+
+
+class Generic6DOFJointSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(Generic6DOFJointSpatialGizmo,SpatialGizmoTool);
+
+	Generic6DOFJoint* p3d;
+
+public:
+
+	void redraw();
+	Generic6DOFJointSpatialGizmo(Generic6DOFJoint* p_p3d=NULL);
+
+};
+
+
 class SpatialEditorGizmos  {
 public:
 
@@ -385,6 +454,7 @@ public:
 	Ref<FixedMaterial> raycast_material;
 	Ref<FixedMaterial> visibility_notifier_material;
 	Ref<FixedMaterial> car_wheel_material;
+	Ref<FixedMaterial> joint_material;
 
 	Ref<FixedMaterial> navmesh_edge_material;
 	Ref<FixedMaterial> navmesh_solid_material;

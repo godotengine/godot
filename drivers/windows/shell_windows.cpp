@@ -27,6 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #ifdef WINDOWS_ENABLED
+
+#ifdef WINRT_ENABLED
+
+// Use Launcher class on windows 8
+
+#else
+
 //
 // C++ Implementation: shell_windows
 //
@@ -57,5 +64,7 @@ ShellWindows::ShellWindows()
 ShellWindows::~ShellWindows()
 {
 }
+
+#endif
 
 #endif

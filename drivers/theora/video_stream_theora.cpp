@@ -1,5 +1,5 @@
 #ifdef THEORA_ENABLED
-
+#if 0
 #include "video_stream_theora.h"
 #include "os/os.h"
 #include "yuv2rgb.h"
@@ -677,4 +677,5 @@ String ResourceFormatLoaderVideoStreamTheora::get_resource_type(const String &p_
 	return "";
 }
 
+#endif
 #endif

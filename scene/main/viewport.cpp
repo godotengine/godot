@@ -36,6 +36,7 @@
 #include "scene/gui/control.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/spatial_indexer.h"
+#include "scene/3d/collision_object.h"
 
 
 
@@ -94,6 +95,8 @@ void Viewport::_update_stretch_transform() {
 
 	if (size_override_stretch && size_override) {
 
+		print_line("sive override size "+size_override_size);
+		print_line("rect size "+rect.size);
 		stretch_transform=Matrix32();
 		Size2 scale = rect.size/(size_override_size+size_override_margin*2);
 		stretch_transform.scale(scale);
@@ -233,6 +236,40 @@ void Viewport::update_worlds() {
 	find_world()->_update(get_scene()->get_frame());
 }
 
+
+void Viewport::_test_new_mouseover(ObjectID new_collider) {
+
+	if (new_collider!=physics_object_over) {
+
+		if (physics_object_over) {
+			Object *obj = ObjectDB::get_instance(physics_object_over);
+			if (obj) {
+				CollisionObject *co = obj->cast_to<CollisionObject>();
+				if (co) {
+					co->_mouse_exit();
+				}
+			}
+		}
+
+		if (new_collider) {
+			Object *obj = ObjectDB::get_instance(new_collider);
+			if (obj) {
+				CollisionObject *co = obj->cast_to<CollisionObject>();
+				if (co) {
+					co->_mouse_enter();
+
+				}
+			}
+
+		}
+
+		physics_object_over=new_collider;
+
+	}
+
+
+}
+
 void Viewport::_notification(int p_what) {
 	
 
@@ -308,6 +345,155 @@ void Viewport::_notification(int p_what) {
 			SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport,current_canvas);
 			remove_from_group("_viewports");
+
+		} break;
+		case NOTIFICATION_FIXED_PROCESS: {
+
+			if (physics_object_picking) {
+
+				Vector2 last_pos(1e20,1e20);
+				CollisionObject *last_object;
+				ObjectID last_id=0;
+				PhysicsDirectSpaceState::RayResult result;
+
+				bool motion_tested=false;
+
+				while(physics_picking_events.size()) {
+
+					InputEvent ev = physics_picking_events.front()->get();
+					physics_picking_events.pop_front();
+
+					Vector2 pos;
+					switch(ev.type) {
+						case InputEvent::MOUSE_MOTION: {
+							pos.x=ev.mouse_motion.x;
+							pos.y=ev.mouse_motion.y;
+							motion_tested=true;
+							physics_last_mousepos=pos;
+						} break;
+						case InputEvent::MOUSE_BUTTON: {
+							pos.x=ev.mouse_button.x;
+							pos.y=ev.mouse_button.y;
+
+						} break;
+						case InputEvent::SCREEN_DRAG: {
+							pos.x=ev.screen_drag.x;
+							pos.y=ev.screen_drag.y;
+						} break;
+						case InputEvent::SCREEN_TOUCH: {
+							pos.x=ev.screen_touch.x;
+							pos.y=ev.screen_touch.y;
+						} break;
+
+					}
+
+					bool captured=false;
+
+					if (physics_object_capture!=0) {
+
+
+						Object *obj = ObjectDB::get_instance(physics_object_capture);
+						if (obj) {
+							CollisionObject *co = obj->cast_to<CollisionObject>();
+							if (co) {
+								co->_input_event(ev,Vector3(),Vector3(),0);
+								captured=true;
+								if (ev.type==InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index==1 && !ev.mouse_button.pressed) {
+									physics_object_capture=0;
+								}
+
+							} else {
+								physics_object_capture=0;
+							}
+						} else {
+							physics_object_capture=0;
+						}
+					}
+
+
+					if (captured) {
+						//none
+					} else if (pos==last_pos) {
+
+						if (last_id) {
+							if (ObjectDB::get_instance(last_id)) {
+								//good, exists
+								last_object->_input_event(ev,result.position,result.normal,result.shape);
+								if (last_object->get_capture_input_on_drag() && ev.type==InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index==1 && ev.mouse_button.pressed) {
+									physics_object_capture=last_id;
+								}
+
+
+							}
+						}
+					} else {
+
+
+
+
+						if (camera) {
+
+							Vector3 from = camera->project_ray_origin(pos);
+							Vector3 dir = camera->project_ray_normal(pos);
+
+							PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
+							if (space) {
+
+								bool col = space->intersect_ray(from,from+dir*10000,result,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
+								ObjectID new_collider=0;
+								if (col) {
+									if (result.collider) {
+										CollisionObject *co = result.collider->cast_to<CollisionObject>();
+										if (co) {
+											co->_input_event(ev,result.position,result.normal,result.shape);
+											last_object=co;
+											last_id=result.collider_id;
+											new_collider=last_id;
+											if (co->get_capture_input_on_drag() && ev.type==InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index==1 && ev.mouse_button.pressed) {
+												physics_object_capture=last_id;
+											}
+
+										}
+									}
+								}
+
+								if (ev.type==InputEvent::MOUSE_MOTION) {
+									_test_new_mouseover(new_collider);
+								}
+							}
+
+							last_pos=pos;
+						}
+					}
+				}
+
+				if (!motion_tested && camera && physics_last_mousepos!=Vector2(1e20,1e20)) {
+
+					//test anyway for mouseenter/exit because objects might move
+					Vector3 from = camera->project_ray_origin(physics_last_mousepos);
+					Vector3 dir = camera->project_ray_normal(physics_last_mousepos);
+
+					PhysicsDirectSpaceState *space = PhysicsServer::get_singleton()->space_get_direct_state(find_world()->get_space());
+					if (space) {
+
+						bool col = space->intersect_ray(from,from+dir*10000,result,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
+						ObjectID new_collider=0;
+						if (col) {
+							if (result.collider) {
+								CollisionObject *co = result.collider->cast_to<CollisionObject>();
+								if (co) {
+									new_collider=result.collider_id;
+
+								}
+							}
+						}
+
+						_test_new_mouseover(new_collider);
+
+					}
+
+				}
+			}
 
 		} break;
 	}
@@ -890,7 +1076,8 @@ void Viewport::_vp_input(const InputEvent& p_ev) {
 
 void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
-	if (render_target)
+
+	if (render_target && to_screen_rect==Rect2())
 		return; //if render target, can't get input events
 
 	//this one handles system input, p_ev are in system coordinates
@@ -919,6 +1106,15 @@ void Viewport::unhandled_input(const InputEvent& p_event) {
 		get_scene()->_call_input_pause(unhandled_key_input_group,"_unhandled_key_input",p_event);
 		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
 	}
+
+
+	if (physics_object_picking && !get_scene()->input_handled) {
+
+		if (p_event.type==InputEvent::MOUSE_BUTTON || p_event.type==InputEvent::MOUSE_MOTION || p_event.type==InputEvent::SCREEN_DRAG || p_event.type==InputEvent::SCREEN_TOUCH) {
+			physics_picking_events.push_back(p_event);
+		}
+	}
+
 }
 
 void Viewport::set_use_own_world(bool p_world) {
@@ -973,6 +1169,22 @@ void Viewport::set_render_target_to_screen_rect(const Rect2& p_rect) {
 Rect2 Viewport::get_render_target_to_screen_rect() const{
 
 	return to_screen_rect;
+}
+
+void Viewport::set_physics_object_picking(bool p_enable) {
+
+	physics_object_picking=p_enable;
+	set_fixed_process(physics_object_picking);
+	if (!physics_object_picking)
+		physics_picking_events.clear();
+
+
+}
+
+bool Viewport::get_physics_object_picking() {
+
+
+	return physics_object_picking;
 }
 
 
@@ -1030,6 +1242,9 @@ void Viewport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_render_target_texture:RenderTargetTexture"), &Viewport::get_render_target_texture);
 
+	ObjectTypeDB::bind_method(_MD("set_physics_object_picking","enable"), &Viewport::set_physics_object_picking);
+	ObjectTypeDB::bind_method(_MD("get_physics_object_picking"), &Viewport::get_physics_object_picking);
+
 	ObjectTypeDB::bind_method(_MD("get_viewport"), &Viewport::get_viewport);
 	ObjectTypeDB::bind_method(_MD("input","local_event"), &Viewport::input);
 	ObjectTypeDB::bind_method(_MD("unhandled_input","local_event"), &Viewport::unhandled_input);
@@ -1060,6 +1275,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_render_target_update_mode"), _SCS("get_render_target_update_mode") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_2d"), _SCS("set_as_audio_listener_2d"), _SCS("is_audio_listener_2d") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"audio_listener/enable_3d"), _SCS("set_as_audio_listener"), _SCS("is_audio_listener") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"physics/object_picking"), _SCS("set_physics_object_picking"), _SCS("get_physics_object_picking") );
 
 	ADD_SIGNAL(MethodInfo("size_changed"));
 
@@ -1094,6 +1310,11 @@ Viewport::Viewport() {
 	render_target_vflip=false;
 	render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE;
 	render_target_texture = Ref<RenderTargetTexture>( memnew( RenderTargetTexture(this) ) );
+
+	physics_object_picking=false;
+	physics_object_capture=0;
+	physics_object_over=0;
+	physics_last_mousepos=Vector2(1e20,1e20);
 
 
 	String id=itos(get_instance_ID());

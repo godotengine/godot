@@ -1528,6 +1528,10 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					for(int i=0;i<bone_remap.size();i++) {
 
 						String str = joint_src->sarray[i];
+						if (!bone_remap_map.has(str)) {
+							print_line("bone not found for remap: "+str);
+							print_line("in skeleton: "+skname);
+						}
 						ERR_FAIL_COND_V( !bone_remap_map.has(str), ERR_INVALID_DATA );
 						bone_remap[i]=bone_remap_map[str];
 					}

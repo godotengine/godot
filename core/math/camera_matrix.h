@@ -60,7 +60,7 @@ struct CameraMatrix {
 
 	static float get_fovy(float p_fovx,float p_aspect) {
 
-		return Math::atan(p_aspect * Math::tan(p_fovx * 0.5))*2.0;
+		return Math::rad2deg(Math::atan(p_aspect * Math::tan(Math::deg2rad(p_fovx) * 0.5))*2.0);
 	}
 
 	float get_z_far() const;

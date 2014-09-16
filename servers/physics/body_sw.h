@@ -236,6 +236,28 @@ public:
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
 
+	_FORCE_INLINE_ Vector3 get_velocity_in_local_point(const Vector3& rel_pos) const {
+
+		return linear_velocity + angular_velocity.cross(rel_pos);
+	}
+
+	_FORCE_INLINE_ real_t compute_impulse_denominator(const Vector3& p_pos, const Vector3& p_normal) const {
+
+		 Vector3 r0 = p_pos - get_transform().origin;
+
+		 Vector3 c0 = (r0).cross(p_normal);
+
+		 Vector3 vec = (_inv_inertia_tensor.xform_inv(c0)).cross(r0);
+
+		 return _inv_mass + p_normal.dot(vec);
+
+	 }
+
+	_FORCE_INLINE_ real_t compute_angular_impulse_denominator(const Vector3& p_axis) const {
+
+		return p_axis.dot( _inv_inertia_tensor.xform_inv(p_axis) );
+	 }
+
 	//void simulate_motion(const Transform& p_xform,real_t p_step);
 	void call_queries();
 	void wakeup_neighbours();

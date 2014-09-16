@@ -64,6 +64,22 @@ public:
 	Quat operator*(const Quat& q) const;
 
 
+
+	Quat operator*(const Vector3& v) const
+	{
+		return Quat( w * v.x + y * v.z - z * v.y,
+			w * v.y + z * v.x - x * v.z,
+			w * v.z + x * v.y - y * v.x,
+			-x * v.x - y * v.y - z * v.z);
+	}
+
+	_FORCE_INLINE_ Vector3 xform(const Vector3& v) {
+
+		Quat q = *this * v;
+		q *= this->inverse();
+		return Vector3(q.x,q.y,q.z);
+	}
+
 	_FORCE_INLINE_ void operator+=(const Quat& q);
 	_FORCE_INLINE_ void operator-=(const Quat& q);
 	_FORCE_INLINE_ void operator*=(const real_t& s);
@@ -87,6 +103,29 @@ public:
 		x=p_x; y=p_y; z=p_z; w=p_w;	
 	}
 	Quat(const Vector3& axis, const real_t& angle);
+
+	Quat(const Vector3& v0, const Vector3& v1) // shortest arc
+	{
+		Vector3 c = v0.cross(v1);
+		real_t  d = v0.dot(v1);
+
+		if (d < -1.0 + CMP_EPSILON) {
+			x=0;
+			y=1;
+			z=0;
+			w=0;
+		} else {
+
+			real_t  s = Math::sqrt((1.0f + d) * 2.0f);
+			real_t rs = 1.0f / s;
+
+			x=c.x*rs;
+			y=c.y*rs;
+			z=c.z*rs;
+			w=s * 0.5;
+		}
+	}
+
 	inline Quat() {x=y=z=0; w=1; }
 	
 

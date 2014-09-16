@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "collision_object.h"
 #include "servers/physics_server.h"
-
+#include "scene/scene_string_names.h"
 void CollisionObject::_update_shapes_from_children() {
 
 	shapes.resize(0);
@@ -165,6 +165,34 @@ void CollisionObject::_get_property_list( List<PropertyInfo> *p_list) const {
 	}
 }
 
+
+void CollisionObject::_input_event(const InputEvent& p_input_event,const Vector3& p_pos, const Vector3& p_normal, int p_shape) {
+
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event,p_input_event,p_pos,p_normal,p_shape);
+	}
+	emit_signal(SceneStringNames::get_singleton()->input_event,p_input_event,p_pos,p_normal,p_shape);
+}
+
+void CollisionObject::_mouse_enter() {
+
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+}
+
+
+void CollisionObject::_mouse_exit() {
+
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+
+}
+
+
 void CollisionObject::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_shape","shape:Shape","transform"),&CollisionObject::add_shape,DEFVAL(Transform()));
@@ -178,8 +206,16 @@ void CollisionObject::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject::get_shape_transform);
 	ObjectTypeDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject::remove_shape);
 	ObjectTypeDB::bind_method(_MD("clear_shapes"),&CollisionObject::clear_shapes);
+	ObjectTypeDB::bind_method(_MD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
+	ObjectTypeDB::bind_method(_MD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
 	ObjectTypeDB::bind_method(_MD("get_rid"),&CollisionObject::get_rid);
+	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
 
+	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
+	ADD_SIGNAL( MethodInfo("mouse_enter"));
+	ADD_SIGNAL( MethodInfo("mouse_exit"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input/capture_on_drag"),_SCS("set_capture_input_on_drag"),_SCS("get_capture_input_on_drag"));
 }
 
 
@@ -269,9 +305,22 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 
 }
 
+void CollisionObject::set_capture_input_on_drag(bool p_capture) {
+
+	capture_input_on_drag=p_capture;
+
+}
+
+bool CollisionObject::get_capture_input_on_drag() const {
+
+	return capture_input_on_drag;
+}
+
 
 CollisionObject::CollisionObject() {
 
+
+	capture_input_on_drag=false;
 
 	//owner=
 

@@ -48,6 +48,7 @@ class AreaSW : public CollisionObjectSW{
 	float point_attenuation;
 	float density;
 	int priority;
+	bool ray_pickable;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
@@ -137,6 +138,11 @@ public:
 	_FORCE_INLINE_ void add_constraint( ConstraintSW* p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint( ConstraintSW* p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<ConstraintSW*>& get_constraints() const { return constraints; }
+
+	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable=p_enable; }
+	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
+
+
 
 	void set_transform(const Transform& p_transform);
 

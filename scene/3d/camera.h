@@ -46,6 +46,11 @@ public:
 		PROJECTION_ORTHOGONAL
 	};
 
+	enum KeepAspect {
+		KEEP_WIDTH,
+		KEEP_HEIGHT
+	};
+
 private:
 
 	bool force_change;
@@ -56,7 +61,7 @@ private:
 	float fov;
 	float size;
 	float near,far;
-	bool vaspect;
+	KeepAspect keep_aspect;
 	
 	RID camera;
 	RID scenario_id;
@@ -126,8 +131,8 @@ public:
 	void set_environment(const Ref<Environment>& p_environment);
 	Ref<Environment> get_environment() const;
 
-	void set_use_vertical_aspect(bool p_enable);
-	bool is_using_vertical_aspect() const;
+	void set_keep_aspect_mode(KeepAspect p_aspect);
+	KeepAspect get_keep_aspect_mode() const;
 
 	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
 	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
@@ -140,5 +145,6 @@ public:
 
 
 VARIANT_ENUM_CAST( Camera::Projection );
+VARIANT_ENUM_CAST( Camera::KeepAspect );
 
 #endif

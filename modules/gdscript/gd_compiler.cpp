@@ -60,7 +60,8 @@ bool GDCompiler::_create_unary_operator(CodeGen& codegen,const GDParser::Operato
 	codegen.opcodes.push_back(GDFunction::OPCODE_OPERATOR); // perform operator
 	codegen.opcodes.push_back(op); //which operator
 	codegen.opcodes.push_back(src_address_a); // argument 1
-	codegen.opcodes.push_back(GDFunction::ADDR_TYPE_NIL); // argument 2 (unary only takes one parameter)
+	codegen.opcodes.push_back(src_address_a); // argument 2 (repeated)
+	//codegen.opcodes.push_back(GDFunction::ADDR_TYPE_NIL); // argument 2 (unary only takes one parameter)
 	return true;
 }
 
@@ -507,6 +508,34 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							codegen.opcodes.push_back(arguments[i]);
 					}
 				} break;
+				case GDParser::OperatorNode::OP_YIELD: {
+
+
+					ERR_FAIL_COND_V(on->arguments.size() && on->arguments.size()!=2,-1);
+
+					Vector<int> arguments;
+					int slevel = p_stack_level;
+					for(int i=0;i<on->arguments.size();i++) {
+
+						int ret = _parse_expression(codegen,on->arguments[i],slevel);
+						if (ret<0)
+							return ret;
+						if (ret&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+							slevel++;
+							codegen.alloc_stack(slevel);
+						}
+						arguments.push_back(ret);
+					}
+
+					//push call bytecode
+					codegen.opcodes.push_back(arguments.size()==0?GDFunction::OPCODE_YIELD:GDFunction::OPCODE_YIELD_SIGNAL); // basic type constructor
+					for(int i=0;i<arguments.size();i++)
+						codegen.opcodes.push_back(arguments[i]); //arguments
+					codegen.opcodes.push_back(GDFunction::OPCODE_YIELD_RESUME);
+					//next will be where to place the result :)
+
+				} break;
+
 				//indexing operator
 				case GDParser::OperatorNode::OP_INDEX:
 				case GDParser::OperatorNode::OP_INDEX_NAMED: {
@@ -644,8 +673,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 				case GDParser::OperatorNode::OP_BIT_OR: { if (!_create_binary_operator(codegen,on,Variant::OP_BIT_OR,p_stack_level)) return -1;} break;
 				case GDParser::OperatorNode::OP_BIT_XOR: { if (!_create_binary_operator(codegen,on,Variant::OP_BIT_XOR,p_stack_level)) return -1;} break;
                 //shift
-                case GDParser::OperatorNode::OP_SHIFT_LEFT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_LEFT,p_stack_level)) return -1;} break;
-                case GDParser::OperatorNode::OP_SHIFT_RIGHT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_RIGHT,p_stack_level)) return -1;} break;
+				case GDParser::OperatorNode::OP_SHIFT_LEFT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_LEFT,p_stack_level)) return -1;} break;
+				case GDParser::OperatorNode::OP_SHIFT_RIGHT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_RIGHT,p_stack_level)) return -1;} break;
 				//assignment operators
 				case GDParser::OperatorNode::OP_ASSIGN_ADD:
 				case GDParser::OperatorNode::OP_ASSIGN_SUB:

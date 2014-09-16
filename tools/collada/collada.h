@@ -544,6 +544,7 @@ public:
 		Map<String,VisualScene> visual_scene_map;
 		Map<String,Node*> scene_map;
 		Set<String> idref_joints;
+		Map<String,String> sid_to_node_map;
 		//Map<String,NodeJoint*> bone_map;
 
 		Map<String,Transform> bone_rest_map;
@@ -616,6 +617,7 @@ private: // private stuff
 	void _find_morph_nodes(VisualScene *p_vscene,Node *p_node);
 	bool _remove_node(Node *p_parent,Node *p_node);
 	void _remove_node(VisualScene *p_vscene,Node *p_node);
+	void _merge_skeletons2(VisualScene *p_vscene);
 	void _merge_skeletons(VisualScene *p_vscene,Node *p_node);
 	bool _optimize_skeletons(VisualScene *p_vscene,Node *p_node);
 

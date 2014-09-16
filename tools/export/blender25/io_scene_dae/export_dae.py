@@ -317,13 +317,13 @@ class DaeExporter:
 
 	def export_mesh(self,node,armature=None):
 
+		if (node.data in self.mesh_cache):
+			return self.mesh_cache[mesh]
+
 		if (len(node.modifiers) and self.config["use_mesh_modifiers"]):
 			mesh=node.to_mesh(self.scene,True,"RENDER") #is this allright?
 		else:
 			mesh=node.data
-
-		if (mesh in self.mesh_cache):
-			return self.mesh_cache[mesh]
 
 		mesh.update(calc_tessface=True)
 		vertices=[]
@@ -519,7 +519,7 @@ class DaeExporter:
 		meshdata={}
 		meshdata["id"]=meshid
 		meshdata["material_assign"]=mat_assign
-		self.mesh_cache[mesh]=meshdata
+		self.mesh_cache[node.data]=meshdata
 
 
 		# Export armature data (if armature exists)
@@ -1094,7 +1094,14 @@ class DaeExporter:
 						mtx = posebone.matrix.copy()
 						if (bone.parent):
 							parent_posebone=node.pose.bones[bone.parent.name]
-							mtx = parent_posebone.matrix.inverted() * mtx
+							parent_invisible=False
+
+							for i in range(3):
+								if (parent_posebone.scale[i]==0.0):
+								    parent_invisible=True
+
+							if (not parent_invisible):
+								mtx = parent_posebone.matrix.inverted() * mtx
 
 
 						xform_cache[bone_name].append( (key,mtx) )

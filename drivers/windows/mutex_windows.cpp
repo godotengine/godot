@@ -81,7 +81,11 @@ MutexWindows::MutexWindows() {
 #ifdef WINDOWS_USE_MUTEX
 	mutex = CreateMutex( NULL, FALSE, NULL );
 #else
-    InitializeCriticalSection( &mutex );
+	#ifdef WINRT_ENABLED
+    InitializeCriticalSectionEx( &mutex, 0, 0 );
+	#else
+	InitializeCriticalSection( &mutex );
+	#endif
 #endif
 
 }

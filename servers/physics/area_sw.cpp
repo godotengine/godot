@@ -43,6 +43,7 @@ void AreaSW::set_transform(const Transform& p_transform) {
 		get_space()->area_add_to_moved_list(&moved_list);
 
 	_set_transform(p_transform);
+	_set_inv_transform(p_transform.affine_inverse());
 }
 
 void AreaSW::set_space(SpaceSW *p_space) {
@@ -181,6 +182,7 @@ AreaSW::AreaSW() : CollisionObjectSW(TYPE_AREA), monitor_query_list(this),  move
 	point_attenuation=1;
 	density=0.1;
 	priority=0;
+	ray_pickable=false;
 
 
 }

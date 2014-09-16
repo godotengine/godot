@@ -267,7 +267,9 @@ ShaderGLES2::Version* ShaderGLES2::get_current_version() {
 	/* SETUP CONDITIONALS */
 	
 	Vector<const char*> strings;
-	//strings.push_back("#version 120\n"); //ATI requieres this before anything
+#ifdef GLEW_ENABLED
+	strings.push_back("#version 120\n"); //ATI requieres this before anything
+#endif
 	int define_line_ofs=1;
 
 	for(int j=0;j<conditional_count;j++) {

@@ -36,22 +36,12 @@
 
 class JointSW : public ConstraintSW {
 
-	real_t max_force;
-	real_t bias;
-	real_t max_bias;
+
 public:
 
-	_FORCE_INLINE_ void set_max_force(real_t p_force) { max_force=p_force; }
-	_FORCE_INLINE_ real_t get_max_force() const { return max_force; }
-
-	_FORCE_INLINE_ void set_bias(real_t p_bias) { bias=p_bias; }
-	_FORCE_INLINE_ real_t get_bias() const { return bias; }
-
-	_FORCE_INLINE_ void set_max_bias(real_t p_bias) { max_bias=p_bias; }
-	_FORCE_INLINE_ real_t get_max_bias() const { return max_bias; }
-
-//	virtual PhysicsServer::JointType get_type() const=0;
-	JointSW(BodySW **p_body_ptr=NULL,int p_body_count=0) : ConstraintSW(p_body_ptr,p_body_count) { bias=0; max_force=max_bias=3.40282e+38; };
+	virtual PhysicsServer::JointType get_type() const=0;
+	_FORCE_INLINE_ JointSW(BodySW **p_body_ptr=NULL,int p_body_count=0) : ConstraintSW(p_body_ptr,p_body_count) {
+	}
 
 };
 
