@@ -179,12 +179,12 @@ void make_default_theme() {
 
 	t->set_stylebox("panel","Panel", make_stylebox( panel_bg_png,0,0,0,0) );
 
-	Color control_font_color = Color::html("cfc9d5");
-	Color control_font_color_low = Color::html("bab4c1");
+	Color control_font_color = Color::html("d5d5d5");
+	Color control_font_color_low = Color::html("c1c1c1");
 	Color control_font_color_hover = Color::html("ffffff");
 	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.6);
-	Color control_font_color_pressed = Color::html("bfb9c5");
-	Color font_color_selection = Color::html("715e7d");
+	Color control_font_color_pressed = Color::html("c5c5c5");
+	Color font_color_selection = Color::html("7d7d7d");
 	Ref<Texture> empty_icon = memnew( ImageTexture );
 
 	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,5,5,5,5,8,3,8,4) );
