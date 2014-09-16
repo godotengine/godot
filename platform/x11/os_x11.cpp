@@ -170,20 +170,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		XMapRaised(x11_display, x11_window);
-		// get the window root, then the res for the root
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
-		//XGetWindowAttributes(x11_display,x11_window,&xwa);
-		//XGetWindowAttributes(x11_display,xwa.root,&xwa);
-		XMoveResizeWindow(x11_display, x11_window ,0 ,0 , xwa.width, xwa.height);
-		// NETWM-compliant code:
 		XEvent xev;
 		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
@@ -209,7 +195,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XGetWindowAttributes(x11_display,x11_window,&xwa);
 		if (current_videomode.fullscreen) {
 			XGetWindowAttributes(x11_display,xwa.root,&xwa);
-			printf (" Screen:  width = %d, height = %d \n", xwa.width,xwa.height);
 		}
 		xsh->min_width = xwa.width; 
 		xsh->max_width = xwa.width;
