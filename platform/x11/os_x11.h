@@ -49,7 +49,15 @@
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
 
-//bitch
+// Hints for X11 fullscreen
+typedef struct {
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	long inputMode;
+	unsigned long status;
+} Hints;
+
 #undef CursorShape
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
