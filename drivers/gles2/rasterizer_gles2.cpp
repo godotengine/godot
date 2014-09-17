@@ -1746,6 +1746,9 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 			iaw = index_array_pre_vbo.write();
 			index_array_ptr=iaw.ptr();
 		}
+
+		_surface_set_arrays(surface,array_ptr,index_array_ptr,p_arrays,true);
+
 	} else {
 
 		surface->array_local = (uint8_t*)memalloc(surface->array_len*surface->stride);
@@ -1754,6 +1757,8 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 			surface->index_array_local = (uint8_t*)memalloc(index_array_len*surface->array[VS::ARRAY_INDEX].size);
 			index_array_ptr=(uint8_t*)surface->index_array_local;
 		}
+
+		_surface_set_arrays(surface,array_ptr,index_array_ptr,p_arrays,true);
 
 		if (mesh->morph_target_count) {
 
@@ -1769,7 +1774,6 @@ void RasterizerGLES2::mesh_add_surface(RID p_mesh,VS::PrimitiveType p_primitive,
 
 
 
-	_surface_set_arrays(surface,array_ptr,index_array_ptr,p_arrays,true);
 
 
 	/* create buffers!! */
@@ -2167,6 +2171,67 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 		p_surface->configured_format|=(1<<ai);
 	}
 
+	if (p_surface->format&VS::ARRAY_FORMAT_BONES) {
+		//create AABBs for each detected bone
+		int total_bones = p_surface->max_bone+1;
+		if (p_main) {
+			p_surface->skeleton_bone_aabb.resize(total_bones);
+			p_surface->skeleton_bone_used.resize(total_bones);
+			for(int i=0;i<total_bones;i++)
+				p_surface->skeleton_bone_used[i]=false;
+		}
+		DVector<Vector3> vertices = p_arrays[VS::ARRAY_VERTEX];
+		DVector<int> bones = p_arrays[VS::ARRAY_BONES];
+		DVector<float> weights = p_arrays[VS::ARRAY_WEIGHTS];
+
+		bool any_valid=false;
+
+		if (vertices.size() && bones.size()==vertices.size()*4 && weights.size()==bones.size()) {
+			//print_line("MAKING SKELETHONG");
+			int vs = vertices.size();
+			DVector<Vector3>::Read rv =vertices.read();
+			DVector<int>::Read rb=bones.read();
+			DVector<float>::Read rw=weights.read();
+
+			Vector<bool> first;
+			first.resize(total_bones);
+			for(int i=0;i<total_bones;i++) {
+				first[i]=p_main;
+			}
+			AABB *bptr = p_surface->skeleton_bone_aabb.ptr();
+			bool *fptr=first.ptr();
+			bool *usedptr=p_surface->skeleton_bone_used.ptr();
+
+			for(int i=0;i<vs;i++) {
+
+				Vector3 v = rv[i];
+				for(int j=0;j<4;j++) {
+
+					int idx = rb[i*4+j];
+					float w = rw[i*4+j];
+					if (w==0)
+						continue;//break;
+					ERR_FAIL_INDEX_V(idx,total_bones,ERR_INVALID_DATA);
+
+					if (fptr[idx]) {
+						bptr[idx].pos=v;
+						fptr[idx]=false;
+						any_valid=true;
+					} else {
+						bptr[idx].expand_to(v);
+					}
+					usedptr[idx]=true;
+				}
+			}
+		}
+
+		if (p_main && !any_valid) {
+
+			p_surface->skeleton_bone_aabb.clear();
+			p_surface->skeleton_bone_used.clear();
+		}
+	}
+
 	return OK;
 }
 
@@ -2343,7 +2408,7 @@ int RasterizerGLES2::mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
-AABB RasterizerGLES2::mesh_get_aabb(RID p_mesh) const {
+AABB RasterizerGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 
 	Mesh *mesh = mesh_owner.get( p_mesh );
 	ERR_FAIL_COND_V(!mesh,AABB());
@@ -2351,14 +2416,62 @@ AABB RasterizerGLES2::mesh_get_aabb(RID p_mesh) const {
 	if (mesh->custom_aabb!=AABB())
 		return mesh->custom_aabb;
 
+	Skeleton *sk=NULL;
+	if (p_skeleton.is_valid())
+		sk=skeleton_owner.get(p_skeleton);
+
 	AABB aabb;
+	if (sk) {
 
-	for (int i=0;i<mesh->surfaces.size();i++) {
 
-		if (i==0)
-			aabb=mesh->surfaces[i]->aabb;
-		else
-			aabb.merge_with(mesh->surfaces[i]->aabb);
+		for (int i=0;i<mesh->surfaces.size();i++) {
+
+			AABB laabb;
+			if (mesh->surfaces[i]->format&VS::ARRAY_FORMAT_BONES && mesh->surfaces[i]->skeleton_bone_aabb.size()) {
+
+
+				int bs = mesh->surfaces[i]->skeleton_bone_aabb.size();
+				const AABB *skbones = mesh->surfaces[i]->skeleton_bone_aabb.ptr();
+				const bool *skused = mesh->surfaces[i]->skeleton_bone_used.ptr();
+
+				int sbs = sk->bones.size();
+				ERR_CONTINUE(bs>sbs);
+				Skeleton::Bone *skb = sk->bones.ptr();
+
+				bool first=true;
+				for(int j=0;j<bs;j++) {
+
+					if (!skused[j])
+						continue;
+					AABB baabb = skb[ j ].transform_aabb ( skbones[j] );
+					if (first) {
+						laabb=baabb;
+						first=false;
+					} else {
+						laabb.merge_with(baabb);
+					}
+				}
+
+			} else {
+
+				laabb=mesh->surfaces[i]->aabb;
+			}
+
+			if (i==0)
+				aabb=laabb;
+			else
+				aabb.merge_with(laabb);
+		}
+	} else {
+
+		for (int i=0;i<mesh->surfaces.size();i++) {
+
+			if (i==0)
+				aabb=mesh->surfaces[i]->aabb;
+			else
+				aabb.merge_with(mesh->surfaces[i]->aabb);
+		}
+
 	}
 
 	return aabb;

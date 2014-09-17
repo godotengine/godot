@@ -312,6 +312,8 @@ class RasterizerGLES2 : public Rasterizer {
 		// no support for the above, array in localmem.
 		uint8_t *array_local;
 		uint8_t *index_array_local;
+		Vector<AABB> skeleton_bone_aabb;
+		Vector<bool> skeleton_bone_used;
 
 		//bool packed;
 
@@ -546,6 +548,42 @@ class RasterizerGLES2 : public Rasterizer {
 				r_dst[0]+=((mtx[0][0]*p_src[0] ) + ( mtx[1][0]*p_src[1] ) + ( mtx[2][0]*p_src[2] ) )*p_weight;
 				r_dst[1]+=((mtx[0][1]*p_src[0] ) + ( mtx[1][1]*p_src[1] ) + ( mtx[2][1]*p_src[2] ) )*p_weight;
 				r_dst[2]+=((mtx[0][2]*p_src[0] ) + ( mtx[1][2]*p_src[1] ) + ( mtx[2][2]*p_src[2] ) )*p_weight;
+			}
+
+			_ALWAYS_INLINE_ AABB transform_aabb(const AABB& p_aabb) const {
+
+				float vertices[8][3]={
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y,		p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y,		p_aabb.pos.z},
+					{p_aabb.pos.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z},
+					{p_aabb.pos.x,	p_aabb.pos.y,		p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x,	p_aabb.pos.y,		p_aabb.pos.z}
+				};
+
+
+				AABB ret;
+
+
+
+				for (int i=0;i<8;i++) {
+
+					Vector3 xv(
+
+						((mtx[0][0]*vertices[i][0] ) + ( mtx[1][0]*vertices[i][1] ) + ( mtx[2][0]*vertices[i][2] ) + mtx[3][0] ),
+						((mtx[0][1]*vertices[i][0] ) + ( mtx[1][1]*vertices[i][1] ) + ( mtx[2][1]*vertices[i][2] ) + mtx[3][1] ),
+						((mtx[0][2]*vertices[i][0] ) + ( mtx[1][2]*vertices[i][1] ) + ( mtx[2][2]*vertices[i][2] ) + mtx[3][2] )
+						);
+
+					if (i==0)
+						ret.pos=xv;
+					else
+						ret.expand_to(xv);
+				}
+
+				return ret;
 			}
 		};
 
@@ -1242,7 +1280,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;

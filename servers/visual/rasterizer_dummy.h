@@ -471,7 +471,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;

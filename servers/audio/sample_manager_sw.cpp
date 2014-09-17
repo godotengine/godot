@@ -146,6 +146,38 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 		dst[i]=src[i];
 	}
 
+	switch(s->format) {
+
+		case AS::SAMPLE_FORMAT_PCM8: {
+
+			if (s->stereo) {
+				dst[s->length]=dst[s->length-2];
+				dst[s->length+1]=dst[s->length-1];
+			} else {
+
+				dst[s->length]=dst[s->length-1];
+			}
+
+		} break;
+		case AS::SAMPLE_FORMAT_PCM16: {
+
+			if (s->stereo) {
+				dst[s->length]=dst[s->length-4];
+				dst[s->length+1]=dst[s->length-3];
+				dst[s->length+2]=dst[s->length-2];
+				dst[s->length+3]=dst[s->length-1];
+			} else {
+
+				dst[s->length]=dst[s->length-2];
+				dst[s->length+1]=dst[s->length-1];
+			}
+
+		} break;
+
+	}
+
+
+
 }
 
 const DVector<uint8_t> SampleManagerMallocSW::sample_get_data(RID p_sample) const {
