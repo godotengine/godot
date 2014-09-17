@@ -153,6 +153,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 
 	ERR_FAIL_INDEX(p_mode,2);
 	build_mode=p_mode;
+	_update_parent();
 }
 
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const{
@@ -174,7 +175,7 @@ void CollisionPolygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_build_mode"),&CollisionPolygon2D::set_build_mode);
 	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Automatic,Segments,Solids"),_SCS("set_build_mode"),_SCS("get_build_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Segments"),_SCS("set_build_mode"),_SCS("get_build_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 }
 
