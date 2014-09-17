@@ -86,6 +86,10 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2);
 MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3);
 MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4);
 MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9);
 
 #else
 
