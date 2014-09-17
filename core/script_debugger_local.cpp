@@ -216,7 +216,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			print_line("\tc,continue :\t\t Continue execution.");
 			print_line("\tbt,backtrace :\t\t Show stack trace (frames).");
 			print_line("\tfr,frame <frame>:\t Change current frame.");
-			print_line("\tl,list:\t List current source codes.");
+			print_line("\tl,list:\t\t\t List current source codes.");
 			print_line("\tlv,locals :\t\t Show local variables for current frame.");
 			print_line("\tmv,members :\t\t Show member variables for \"this\" in frame.");
 			print_line("\tgv,globals :\t\t Show global variables.");
@@ -225,7 +225,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script,bool p_can_continue) {
 			print_line("\ts,step :\t\t Step to next line.");
 			print_line("\tn,next :\t\t Next line.");
 			print_line("\tbr,break source:line :\t Place a breakpoint.");
-			print_line("\tdelete [source:line]:\t\t Delete one/all breakpoints.");
+			print_line("\tdelete [source:line]:\t Delete one/all breakpoints.");
 		} else {
 			print_line("Error: Invalid command, enter \"help\" for assistance.");
 		}
