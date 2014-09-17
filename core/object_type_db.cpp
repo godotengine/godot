@@ -124,7 +124,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
-	md.args.resize(6);
+	md.args.resize(67;
 	md.args[0]=StaticCString::create(p_arg1);
 	md.args[1]=StaticCString::create(p_arg2);
 	md.args[2]=StaticCString::create(p_arg3);
@@ -139,7 +139,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
-	md.args.resize(6);
+	md.args.resize(8);
 	md.args[0]=StaticCString::create(p_arg1);
 	md.args[1]=StaticCString::create(p_arg2);
 	md.args[2]=StaticCString::create(p_arg3);
@@ -155,7 +155,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
-	md.args.resize(6);
+	md.args.resize(9);
 	md.args[0]=StaticCString::create(p_arg1);
 	md.args[1]=StaticCString::create(p_arg2);
 	md.args[2]=StaticCString::create(p_arg3);
@@ -172,7 +172,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 	MethodDefinition md;
 	md.name=StaticCString::create(p_name);
-	md.args.resize(6);
+	md.args.resize(10);
 	md.args[0]=StaticCString::create(p_arg1);
 	md.args[1]=StaticCString::create(p_arg2);
 	md.args[2]=StaticCString::create(p_arg3);
