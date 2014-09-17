@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tween.h"
+#include "method_bind_ext.inc"
 
 bool Tween::_set(const StringName& p_name, const Variant& p_value) {
 

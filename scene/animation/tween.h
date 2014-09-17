@@ -54,17 +54,15 @@ public:
         TRANS_CIRC,
         TRANS_BOUNCE,
         TRANS_BACK,
-
-		TRANS_COUNT,
+	TRANS_COUNT,
     };
         
     enum EaseType {
         EASE_IN,
         EASE_OUT,
         EASE_IN_OUT,
-		EASE_OUT_IN,
-
-		EASE_COUNT,
+	EASE_OUT_IN,
+	EASE_COUNT,
     };
 
 private:

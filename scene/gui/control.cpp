@@ -1738,9 +1738,9 @@ float Control::_a2s(float p_val, AnchorType p_anchor,float p_range) const {
 		case ANCHOR_RATIO: {
 			return Math::floor(p_range*p_val);
 		} break;			
-        case ANCHOR_CENTER: {
-            return Math::floor((p_range/2)-p_val);
-        } break;
+		case ANCHOR_CENTER: {
+		    return Math::floor((p_range/2)-p_val);
+		} break;
 	}
 	return 0;
 }
