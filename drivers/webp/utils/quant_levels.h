@@ -14,7 +14,7 @@
 
 #include <stdlib.h>
 
-#include "../webp/types.h"
+#include "../types.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
