@@ -4,6 +4,7 @@
 #ifdef USE_GLES_OVER_GL
 #define mediump
 #define highp
+#define roundfix( m_val ) floor( (m_val) + 0.5 )
 #else
 precision mediump float;
 precision mediump int;
@@ -470,6 +471,7 @@ VERTEX_SHADER_CODE
 #ifdef USE_GLES_OVER_GL
 #define mediump
 #define highp
+#define roundfix( m_val ) floor( (m_val) + 0.5 )
 #else
 
 precision mediump float;

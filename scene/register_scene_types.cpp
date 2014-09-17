@@ -200,7 +200,7 @@
 #include "scene/3d/proximity_group.h"
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/navigation.h"
-
+#include "scene/3d/collision_polygon.h"
 #endif
 
 #include "scene/scene_binds.h"
@@ -415,6 +415,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Area>();
 	ObjectTypeDB::register_type<ProximityGroup>();
 	ObjectTypeDB::register_type<CollisionShape>();
+	ObjectTypeDB::register_type<CollisionPolygon>();
 	ObjectTypeDB::register_type<RayCast>();
 	ObjectTypeDB::register_virtual_type<EditableShape>();
 	ObjectTypeDB::register_type<EditableSphere>();

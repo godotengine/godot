@@ -611,7 +611,11 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["sign"]=  "sign";
 	replace_table["floor"]= "floor";
 	replace_table["trunc"]= "trunc";
+#ifdef GLEW_ENABLED
+	replace_table["round"]= "roundfix";
+#else
 	replace_table["round"]= "round";
+#endif
 	replace_table["ceil" ]= "ceil";
 	replace_table["fract"]= "fract";
 	replace_table["mod"  ]= "mod";

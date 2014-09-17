@@ -2066,7 +2066,39 @@ CollisionShapeSpatialGizmo::CollisionShapeSpatialGizmo(CollisionShape* p_cs) {
 
 
 
+/////
 
+
+void CollisionPolygonSpatialGizmo::redraw() {
+
+	clear();
+
+	Vector<Vector2> points = polygon->get_polygon();
+	float depth = polygon->get_depth()*0.5;
+
+	Vector<Vector3> lines;
+	for(int i=0;i<points.size();i++) {
+
+		int n = (i+1)%points.size();
+		lines.push_back(Vector3(points[i].x,points[i].y,depth));
+		lines.push_back(Vector3(points[n].x,points[n].y,depth));
+		lines.push_back(Vector3(points[i].x,points[i].y,-depth));
+		lines.push_back(Vector3(points[n].x,points[n].y,-depth));
+		lines.push_back(Vector3(points[i].x,points[i].y,depth));
+		lines.push_back(Vector3(points[i].x,points[i].y,-depth));
+
+	}
+
+	add_lines(lines,SpatialEditorGizmos::singleton->shape_material);
+	add_collision_segments(lines);
+}
+
+CollisionPolygonSpatialGizmo::CollisionPolygonSpatialGizmo(CollisionPolygon* p_polygon){
+
+	set_spatial_node(p_polygon);
+	polygon=p_polygon;
+}
+///
 
 
 String VisibilityNotifierGizmo::get_handle_name(int p_idx) const {
@@ -2900,6 +2932,13 @@ Ref<SpatialEditorGizmo> SpatialEditorGizmos::get_gizmo(Spatial *p_spatial) {
 		Ref<Generic6DOFJointSpatialGizmo> misg = memnew( Generic6DOFJointSpatialGizmo(p_spatial->cast_to<Generic6DOFJoint>()) );
 		return misg;
 	}
+
+	if (p_spatial->cast_to<CollisionPolygon>()) {
+
+		Ref<CollisionPolygonSpatialGizmo> misg = memnew( CollisionPolygonSpatialGizmo(p_spatial->cast_to<CollisionPolygon>()) );
+		return misg;
+	}
+
 
 	return Ref<SpatialEditorGizmo>();
 }

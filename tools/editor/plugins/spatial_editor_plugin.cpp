@@ -691,10 +691,16 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 				case BUTTON_WHEEL_UP: {
 
+
 					cursor.distance/=1.08;
+					if (cursor.distance<0.001)
+						cursor.distance=0.001;
+
 				} break;
 				case BUTTON_WHEEL_DOWN: {
 
+					if (cursor.distance<0.001)
+						cursor.distance=0.001;
 					cursor.distance*=1.08;
 
 				} break;
