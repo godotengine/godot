@@ -126,6 +126,10 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             default=True,
             options={'HIDDEN'},
             )
+    export_shapekeys = BoolProperty(
+            name="Export Shape Keys",
+            default=False,
+            )
    
     @property
     def check_extension(self):
