@@ -610,7 +610,7 @@ class VisualServerRaster : public VisualServer {
 	void _portal_disconnect(Instance *p_portal,bool p_cleanup=false);
 	void _portal_attempt_connect(Instance *p_portal);
 	void _dependency_queue_update(RID p_rid,bool p_update_aabb=false);
-	void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false);	
+	_FORCE_INLINE_ void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false);
 	void _update_instances();
 	void _update_instance_aabb(Instance *p_instance);
 	void _update_instance(Instance *p_instance);
@@ -640,7 +640,8 @@ class VisualServerRaster : public VisualServer {
 	mutable RID_Owner<CanvasItem> canvas_item_owner;
 
 	Map< RID, Set<RID> > instance_dependency_map;
-	
+	Map< RID, Set<Instance*> > skeleton_dependency_map;
+
 	
 	ViewportRect viewport_rect;
 	_FORCE_INLINE_ void _instance_draw(Instance *p_instance);

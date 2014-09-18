@@ -76,8 +76,9 @@ Ref<EventStream> EventPlayer::get_stream() const {
 void EventPlayer::play() {
 
 	ERR_FAIL_COND(!is_inside_scene());
-	if (playback.is_null())
+	if (playback.is_null()) {
 		return;
+	}
 	if (playback->is_playing()) {
 		AudioServer::get_singleton()->lock();
 		stop();

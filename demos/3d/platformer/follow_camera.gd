@@ -42,7 +42,7 @@ func _fixed_process(dt):
 	
 	
 	var col_left = ds.intersect_ray(target,target+Matrix3(up,deg2rad(autoturn_ray_aperture)).xform(delta),collision_exception)
-	var col = ds.intersect_ray(target,target,collision_exception)
+	var col = ds.intersect_ray(target,target+delta,collision_exception)
 	var col_right = ds.intersect_ray(target,target+Matrix3(up,deg2rad(-autoturn_ray_aperture)).xform(delta),collision_exception)
 	
 	if (!col.empty()):
@@ -59,6 +59,9 @@ func _fixed_process(dt):
 		pass
 	
 	#apply lookat
+	if (delta==Vector3()):
+		delta = (pos - target).normalized() * 0.0001
+
 	pos = target + delta
 	
 	look_at_from_pos(pos,target,up)

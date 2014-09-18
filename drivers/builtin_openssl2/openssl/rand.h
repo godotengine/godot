@@ -64,6 +64,7 @@
 #include <openssl/e_os2.h>
 
 #if defined(OPENSSL_SYS_WINDOWS)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #ifdef OCSP_RESPONSE
 #undef OCSP_RESPONSE

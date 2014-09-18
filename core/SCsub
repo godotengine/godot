@@ -53,7 +53,7 @@ env.add_source_files(env.core_sources,"*.cpp")
 Export('env')
 
 import make_binders
-env.Command('method_bind.inc', 'make_binders.py', make_binders.run)
+env.Command(['method_bind.inc','method_bind_ext.inc'], 'make_binders.py', make_binders.run)
 
 SConscript('os/SCsub');
 SConscript('math/SCsub');

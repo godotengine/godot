@@ -502,6 +502,7 @@ void AudioServerSW::voice_set_reverb(RID p_voice, ReverbRoomType p_room_type, fl
 	cmd.voice=p_voice;
 	cmd.reverb.room=p_room_type;
 	cmd.reverb.send=p_reverb;
+
 	voice_rb.push_command(cmd);
 
 }

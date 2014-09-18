@@ -55,7 +55,7 @@ public:
 		ANCHOR_BEGIN,
 		ANCHOR_END,
 		ANCHOR_RATIO,
-        ANCHOR_CENTER,
+		ANCHOR_CENTER,
 	};
 	
 	enum FocusMode {

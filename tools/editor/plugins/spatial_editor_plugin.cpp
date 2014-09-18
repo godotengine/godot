@@ -2699,6 +2699,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false );
 
 		} break;
 		case MENU_VIEW_DISPLAY_WIREFRAME: {
@@ -2707,6 +2708,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false );
 
 		} break;
 		case MENU_VIEW_DISPLAY_OVERDRAW: {
@@ -2715,6 +2717,16 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), true );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false );
+
+		} break;
+		case MENU_VIEW_DISPLAY_SHADELESS: {
+
+			VisualServer::get_singleton()->scenario_set_debug( get_scene()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), true );
 
 		} break;
 		case MENU_VIEW_ORIGIN: {
@@ -2886,11 +2898,13 @@ void SpatialEditor::_init_indicators() {
 		//move gizmo
 
 
+		float gizmo_alph = EditorSettings::get_singleton()->get("3d_editor/manipulator_gizmo_opacity");
+
 		gizmo_hl = Ref<FixedMaterial>( memnew( FixedMaterial ) );
 		gizmo_hl->set_flag(Material::FLAG_UNSHADED, true);
 		gizmo_hl->set_flag(Material::FLAG_ONTOP, true);
 		gizmo_hl->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
-		gizmo_hl->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,0.4));
+		gizmo_hl->set_parameter(FixedMaterial::PARAM_DIFFUSE,Color(1,1,1,gizmo_alph+0.2f));
 
 		for(int i=0;i<3;i++) {
 
@@ -2904,7 +2918,7 @@ void SpatialEditor::_init_indicators() {
 			mat->set_fixed_flag(FixedMaterial::FLAG_USE_ALPHA, true);
 			Color col;
 			col[i]=1.0;
-			col.a=0.2;
+			col.a= gizmo_alph;
 			mat->set_parameter(FixedMaterial::PARAM_DIFFUSE,col);
 			gizmo_color[i]=mat;
 
@@ -3401,6 +3415,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item(_TR("Display Normal"),MENU_VIEW_DISPLAY_NORMAL);
 	p->add_check_item(_TR("Display Wireframe"),MENU_VIEW_DISPLAY_WIREFRAME);
 	p->add_check_item(_TR("Display Overdraw"),MENU_VIEW_DISPLAY_OVERDRAW);
+	p->add_check_item("Display Shadeless",MENU_VIEW_DISPLAY_SHADELESS);
 	p->add_separator();
 	p->add_check_item(_TR("View Origin"),MENU_VIEW_ORIGIN);
 	p->add_check_item(_TR("View Grid"),MENU_VIEW_GRID);
@@ -3593,6 +3608,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	EDITOR_DEF("3d_editor/manipulator_gizmo_size",80);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT,"3d_editor/manipulator_gizmo_size",PROPERTY_HINT_RANGE,"16,1024,1"));
+	EDITOR_DEF("3d_editor/manipulator_gizmo_opacity",0.2);
 
 	over_gizmo_handle=-1;
 }

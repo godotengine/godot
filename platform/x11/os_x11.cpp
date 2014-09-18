@@ -168,6 +168,55 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
+	// borderless fullscreen window mode
+	if (current_videomode.fullscreen) {
+		// needed for lxde/openbox, possibly others
+		Hints hints;
+		Atom property;
+		hints.flags = 2;
+		hints.decorations = 0;
+		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+		XMapRaised(x11_display, x11_window);
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+
+		// code for netwm-compliants
+		XEvent xev;
+		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+
+		memset(&xev, 0, sizeof(xev));
+		xev.type = ClientMessage;
+		xev.xclient.window = x11_window;
+		xev.xclient.message_type = wm_state;
+		xev.xclient.format = 32;
+		xev.xclient.data.l[0] = 1;
+		xev.xclient.data.l[1] = fullscreen;
+		xev.xclient.data.l[2] = 0;
+
+		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	}
+
+	// disable resizeable window
+	if (!current_videomode.resizable) {
+		XSizeHints *xsh;
+		xsh = XAllocSizeHints();
+		xsh->flags = PMinSize | PMaxSize;
+		XWindowAttributes xwa;
+		if (current_videomode.fullscreen) {
+			XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+		} else {
+			XGetWindowAttributes(x11_display,x11_window,&xwa);
+		}
+		xsh->min_width = xwa.width; 
+		xsh->max_width = xwa.width;
+		xsh->min_height = xwa.height;
+		xsh->max_height = xwa.height;
+		XSetWMNormalHints(x11_display, x11_window, xsh);
+	}
+
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
@@ -382,7 +431,6 @@ void OS_X11::finalize() {
 
 void OS_X11::set_mouse_mode(MouseMode p_mode) {
 
-	print_line("WUTF "+itos(p_mode)+" old "+itos(mouse_mode));
 	if (p_mode==mouse_mode)
 		return;
 

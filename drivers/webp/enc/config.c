@@ -9,7 +9,7 @@
 //
 // Author: Skal (pascal.massimino@gmail.com)
 
-#include "../webp/encode.h"
+#include "../encode.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

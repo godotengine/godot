@@ -126,8 +126,8 @@ bool EditorExportPlatformJavaScript::_get(const StringName& p_name,Variant &r_re
 }
 void EditorExportPlatformJavaScript::_get_property_list( List<PropertyInfo> *p_list) const{
 
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_FILE,"zip"));
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_FILE,"zip"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE,"zip"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE,"zip"));
 	p_list->push_back( PropertyInfo( Variant::INT, "options/memory_size",PROPERTY_HINT_ENUM,"32mb,64mb,128mb,256mb,512mb,1024mb"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "browser/enable_run"));
 

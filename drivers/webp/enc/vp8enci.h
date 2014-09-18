@@ -13,7 +13,7 @@
 #define WEBP_ENC_VP8ENCI_H_
 
 #include <string.h>     // for memcpy()
-#include "../webp/encode.h"
+#include "../encode.h"
 #include "../dsp/dsp.h"
 #include "../utils/bit_writer.h"
 
