@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "tween.h"
+#include "method_bind_ext.inc"
 
 bool Tween::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -267,7 +268,7 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 	{
 
 	case Variant::BOOL:
-		result = (int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec) >= 0.5;
+		result = ((int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec)) >= 0.5;
 		break;
 
 	case Variant::INT:
@@ -787,7 +788,8 @@ bool Tween::_calc_delta_val(const Variant& p_initial_val, const Variant& p_final
 	switch(initial_val.get_type()) {
 
 		case Variant::BOOL:
-			delta_val = p_final_val;
+			//delta_val = p_final_val;
+			delta_val = (int) p_final_val - (int) p_initial_val;
 			break;
 
 		case Variant::INT:

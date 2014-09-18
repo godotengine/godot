@@ -2212,7 +2212,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 		}
 		DVector<Vector3> vertices = p_arrays[VS::ARRAY_VERTEX];
 		DVector<int> bones = p_arrays[VS::ARRAY_BONES];
-		DVector<float> weights = p_arrays[VS::ARRAY_WEIGHTS];
+		DVector<real_t> weights = p_arrays[VS::ARRAY_WEIGHTS];
 
 		bool any_valid=false;
 
@@ -2221,7 +2221,7 @@ Error RasterizerGLES2::_surface_set_arrays(Surface *p_surface, uint8_t *p_mem,ui
 			int vs = vertices.size();
 			DVector<Vector3>::Read rv =vertices.read();
 			DVector<int>::Read rb=bones.read();
-			DVector<float>::Read rw=weights.read();
+			DVector<real_t>::Read rw=weights.read();
 
 			Vector<bool> first;
 			first.resize(total_bones);
