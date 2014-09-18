@@ -369,7 +369,17 @@ void AudioMixerSW::mix_channel(Channel& c) {
 	AS::SampleLoopFormat loop_format=sample_manager->sample_get_loop_format(c.sample);
 	AS::SampleFormat format=sample_manager->sample_get_format(c.sample);
 
-	bool use_fx=fx_enabled && (c.mix.old_reverb_vol || c.mix.reverb_vol || c.mix.old_chorus_vol || c.mix.chorus_vol );
+	bool use_fx=false;
+
+	if (fx_enabled) {
+
+		for(int i=0;i<mix_channels;i++) {
+			if (c.mix.old_reverb_vol[i] || c.mix.reverb_vol[i] || c.mix.old_chorus_vol[i] || c.mix.chorus_vol[i] ) {
+				use_fx=true;
+				break;
+			}
+		}
+	}
 
 	/* audio data */
 
@@ -547,8 +557,8 @@ void AudioMixerSW::mix_channel(Channel& c) {
 		}
 
 		c.mix.offset+=rstate.pos;
-		dst_buff+=target*2;
-
+		dst_buff+=target*mix_channels;
+		rstate.reverb_buffer+=target*mix_channels;
 	}
 
 	c.filter.old_coefs=c.filter.coefs;

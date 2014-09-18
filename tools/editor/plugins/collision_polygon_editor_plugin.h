@@ -31,7 +31,9 @@
 
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
-#include "scene/2d/collision_polygon_2d.h"
+#include "scene/3d/collision_polygon.h"
+#include "scene/3d/immediate_geometry.h"
+#include "scene/3d/mesh_instance.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
 
@@ -57,10 +59,17 @@ class CollisionPolygonEditor : public HBoxContainer {
 	ToolButton *button_create;
 	ToolButton *button_edit;
 
-	CanvasItemEditor *canvas_item_editor;
+
+	Ref<FixedMaterial> line_material;
+	Ref<FixedMaterial> handle_material;
+
 	EditorNode *editor;
 	Panel *panel;
-	CollisionPolygon2D *node;
+	CollisionPolygon *node;
+	ImmediateGeometry *imgeom;
+	MeshInstance *pointsm;
+	Ref<Mesh> m;
+
 	MenuButton *options;
 
 	int edited_point;
@@ -69,9 +78,10 @@ class CollisionPolygonEditor : public HBoxContainer {
 	Vector<Vector2> wip;
 	bool wip_active;
 
+	float prev_depth;
 
 	void _wip_close();
-	void _canvas_draw();
+	void _polygon_draw();
 	void _menu_option(int p_option);
 
 protected:
@@ -81,9 +91,10 @@ protected:
 public:
 
 	Vector2 snap_point(const Vector2& p_point) const;
-	bool forward_input_event(const InputEvent& p_event);
+	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygonEditor(EditorNode *p_editor);
+	~CollisionPolygonEditor();
 };
 
 class CollisionPolygonEditorPlugin : public EditorPlugin {
@@ -95,7 +106,7 @@ class CollisionPolygonEditorPlugin : public EditorPlugin {
 
 public:
 
-	virtual bool forward_input_event(const InputEvent& p_event) { return collision_polygon_editor->forward_input_event(p_event); }
+	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) { return collision_polygon_editor->forward_spatial_input_event(p_camera,p_event); }
 
 	virtual String get_name() const { return "CollisionPolygon"; }
 	bool has_main_screen() const { return false; }

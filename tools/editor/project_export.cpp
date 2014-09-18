@@ -1336,6 +1336,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	file_export = memnew( FileDialog );
 	add_child(file_export);
 	file_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 
 	file_export->set_title("Export Project");
 	file_export->connect("file_selected", this,"_export_action");
@@ -1353,6 +1354,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	pck_export = memnew( FileDialog );
 	pck_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	pck_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 	pck_export->set_title("Export Project PCK");
 	pck_export->connect("file_selected", this,"_export_action_pck");
 	pck_export->add_filter("*.pck ; Data Pack");

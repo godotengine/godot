@@ -500,20 +500,24 @@ ByteArray HTTPClient::read_response_body_chunk() {
 		}
 
 	} else {
-		ByteArray::Write r = tmp_read.write();
-		int rec=0;
-		err = connection->get_partial_data(r.ptr(),MIN(body_left,tmp_read.size()),rec);
-		if (rec>0) {
-			ByteArray ret;
-			ret.resize(rec);
-			ByteArray::Write w = ret.write();
-			copymem(w.ptr(),r.ptr(),rec);
-			body_left-=rec;
-			if (body_left==0) {
-				status=STATUS_CONNECTED;
+		ByteArray ret;
+		ret.resize(MAX(body_left,tmp_read.size()));
+		ByteArray::Write w = ret.write();
+		int _offset = 0;
+		while (body_left > 0) {
+			ByteArray::Write r = tmp_read.write();
+			int rec=0;
+			err = connection->get_partial_data(r.ptr(),MIN(body_left,tmp_read.size()),rec);
+			if (rec>0) {
+				copymem(w.ptr()+_offset,r.ptr(),rec);
+				body_left-=rec;
+				_offset += rec;
 			}
-			return ret;
 		}
+		if (body_left==0) {
+			status=STATUS_CONNECTED;
+		}
+		return ret;
 
 	}
 

@@ -561,7 +561,7 @@ int RasterizerDummy::mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
-AABB RasterizerDummy::mesh_get_aabb(RID p_mesh) const {
+AABB RasterizerDummy::mesh_get_aabb(RID p_mesh,RID p_skeleton) const {
 
 	Mesh *mesh = mesh_owner.get( p_mesh );
 	ERR_FAIL_COND_V(!mesh,AABB());

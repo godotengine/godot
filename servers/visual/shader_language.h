@@ -38,7 +38,65 @@
 
 
 class ShaderLanguage  {
+
+
+
 public:
+
+	enum TokenType {
+
+		TK_EMPTY,
+		TK_INDENTIFIER,
+		TK_TRUE,
+		TK_FALSE,
+		TK_REAL_CONSTANT,
+		TK_TYPE_VOID,
+		TK_TYPE_BOOL,
+		TK_TYPE_FLOAT,
+		TK_TYPE_VEC2,
+		TK_TYPE_VEC3,
+		TK_TYPE_VEC4,
+		TK_TYPE_MAT3,
+		TK_TYPE_MAT4,
+		TK_TYPE_TEXTURE,
+		TK_TYPE_CUBEMAP,
+		TK_TYPE_COLOR,
+		TK_OP_EQUAL,
+		TK_OP_NOT_EQUAL,
+		TK_OP_LESS,
+		TK_OP_LESS_EQUAL,
+		TK_OP_GREATER,
+		TK_OP_GREATER_EQUAL,
+		TK_OP_AND,
+		TK_OP_OR,
+		TK_OP_NOT,
+		TK_OP_ADD,
+		TK_OP_SUB,
+		TK_OP_MUL,
+		TK_OP_DIV,
+		TK_OP_NEG,
+		TK_OP_ASSIGN,
+		TK_OP_ASSIGN_ADD,
+		TK_OP_ASSIGN_SUB,
+		TK_OP_ASSIGN_MUL,
+		TK_OP_ASSIGN_DIV,
+		TK_CF_IF,
+		TK_CF_ELSE,
+		TK_CF_RETURN,
+		TK_BRACKET_OPEN,
+		TK_BRACKET_CLOSE,
+		TK_CURLY_BRACKET_OPEN,
+		TK_CURLY_BRACKET_CLOSE,
+		TK_PARENTHESIS_OPEN,
+		TK_PARENTHESIS_CLOSE,
+		TK_COMMA,
+		TK_SEMICOLON,
+		TK_PERIOD,
+		TK_UNIFORM,
+		TK_ERROR,
+		TK_MAX
+	};
+
 
 
 	/* COMPILER */
@@ -216,6 +274,16 @@ public:
 		ProgramNode() { type=TYPE_PROGRAM; }
 	};
 
+
+	struct Expression {
+
+		bool is_op;
+		union {
+			TokenType op;
+			Node *node;
+		};
+	};
+
 	typedef Error (*CompileFunc)(void*,ProgramNode*);
 
 	struct VarInfo {
@@ -227,60 +295,6 @@ public:
 private:
 
 
-
-	enum TokenType {
-
-		TK_EMPTY,
-		TK_INDENTIFIER,
-		TK_TRUE,
-		TK_FALSE,
-		TK_REAL_CONSTANT,
-		TK_TYPE_VOID,
-		TK_TYPE_BOOL,
-		TK_TYPE_FLOAT,
-		TK_TYPE_VEC2,
-		TK_TYPE_VEC3,
-		TK_TYPE_VEC4,
-		TK_TYPE_MAT3,
-		TK_TYPE_MAT4,
-		TK_TYPE_TEXTURE,
-		TK_TYPE_CUBEMAP,
-		TK_TYPE_COLOR,
-		TK_OP_EQUAL,
-		TK_OP_NOT_EQUAL,
-		TK_OP_LESS,
-		TK_OP_LESS_EQUAL,
-		TK_OP_GREATER,
-		TK_OP_GREATER_EQUAL,
-		TK_OP_AND,
-		TK_OP_OR,
-		TK_OP_NOT,
-		TK_OP_ADD,
-		TK_OP_SUB,
-		TK_OP_MUL,
-		TK_OP_DIV,
-		TK_OP_NEG,
-		TK_OP_ASSIGN,
-		TK_OP_ASSIGN_ADD,
-		TK_OP_ASSIGN_SUB,
-		TK_OP_ASSIGN_MUL,
-		TK_OP_ASSIGN_DIV,
-		TK_CF_IF,
-		TK_CF_ELSE,
-		TK_CF_RETURN,
-		TK_BRACKET_OPEN,
-		TK_BRACKET_CLOSE,
-		TK_CURLY_BRACKET_OPEN,
-		TK_CURLY_BRACKET_CLOSE,
-		TK_PARENTHESIS_OPEN,
-		TK_PARENTHESIS_CLOSE,
-		TK_COMMA,
-		TK_SEMICOLON,
-		TK_PERIOD,
-		TK_UNIFORM,
-		TK_ERROR,		
-		TK_MAX
-	};
 
 	static const char * token_names[TK_MAX];
 

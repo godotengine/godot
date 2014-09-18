@@ -888,8 +888,17 @@ int VisualServerRaster::skeleton_get_bone_count(RID p_skeleton) const {
 
 void VisualServerRaster::skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform) {
 	VS_CHANGED;
-	return rasterizer->skeleton_bone_set_transform(p_skeleton,p_bone,p_transform);
+	rasterizer->skeleton_bone_set_transform(p_skeleton,p_bone,p_transform);
 
+	Map< RID, Set<Instance*> >::Element *E=skeleton_dependency_map.find(p_skeleton);
+
+	if (E) {
+		//detach skeletons
+		for (Set<Instance*>::Element *F=E->get().front();F;F=F->next()) {
+
+			_instance_queue_update( F->get() , true);
+		}
+	}
 }
 
 Transform VisualServerRaster::skeleton_bone_get_transform(RID p_skeleton,int p_bone) {
@@ -2113,7 +2122,16 @@ void VisualServerRaster::instance_attach_skeleton(RID p_instance,RID p_skeleton)
 	VS_CHANGED;
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
+
+	if (instance->data.skeleton.is_valid()) {
+		skeleton_dependency_map[instance->data.skeleton].erase(instance);
+	}
+
 	instance->data.skeleton=p_skeleton;
+
+	if (instance->data.skeleton.is_valid()) {
+		skeleton_dependency_map[instance->data.skeleton].insert(instance);
+	}
 
 }
 
@@ -2773,7 +2791,7 @@ void VisualServerRaster::_update_instance_aabb(Instance *p_instance) {
 		} break;
 		case VisualServer::INSTANCE_MESH: {
 		
-			new_aabb = rasterizer->mesh_get_aabb(p_instance->base_rid);
+			new_aabb = rasterizer->mesh_get_aabb(p_instance->base_rid,p_instance->data.skeleton);
 			
 		} break;
 		case VisualServer::INSTANCE_MULTIMESH: {
@@ -3673,10 +3691,23 @@ void VisualServerRaster::free( RID p_rid ) {
 
 	VS_CHANGED;
 
-	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) || rasterizer->is_skeleton(p_rid) || rasterizer->is_shader(p_rid)) {
+	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) ||  rasterizer->is_shader(p_rid)) {
 	
 		rasterizer->free(p_rid);
-	
+	} else if (rasterizer->is_skeleton(p_rid)) {
+
+		Map< RID, Set<Instance*> >::Element *E=skeleton_dependency_map.find(p_rid);
+
+		if (E) {
+			//detach skeletons
+			for (Set<Instance*>::Element *F=E->get().front();F;F=F->next()) {
+
+				F->get()->data.skeleton=RID();
+			}
+			skeleton_dependency_map.erase(E);
+		}
+
+		rasterizer->free(p_rid);
 	} else if (rasterizer->is_mesh(p_rid) || rasterizer->is_multimesh(p_rid) || rasterizer->is_light(p_rid) || rasterizer->is_particles(p_rid) ) {
 		//delete the resource
 	
@@ -3763,6 +3794,8 @@ void VisualServerRaster::free( RID p_rid ) {
 		instance_set_scenario(p_rid,RID());
 		instance_geometry_set_baked_light(p_rid,RID());
 		instance_set_base(p_rid,RID());
+		if (instance->data.skeleton.is_valid())
+			instance_attach_skeleton(p_rid,RID());
 
 		instance_owner.free(p_rid);
 		memdelete(instance);

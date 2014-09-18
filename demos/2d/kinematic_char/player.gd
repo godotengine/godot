@@ -1,18 +1,18 @@
 
 extends KinematicBody2D
 
-# This is a simple collision demo showing how
-# the kinematic cotroller works.
-# move() will allow to move the node, and will
-# always move it to a non-colliding spot, 
-# as long as it starts from a non-colliding spot too.
+#This is a simple collision demo showing how
+#the kinematic cotroller works.
+#move() will allow to move the node, and will
+#always move it to a non-colliding spot, 
+#as long as it starts from a non-colliding spot too.
 
 
 #pixels / second
 const GRAVITY = 500.0
 
-# Angle in degrees towards either side that the player can 
-# consider "floor".
+#Angle in degrees towards either side that the player can 
+#consider "floor".
 const FLOOR_ANGLE_TOLERANCE = 40
 const WALK_FORCE = 600
 const WALK_MAX_SPEED = 200
@@ -68,7 +68,6 @@ func _fixed_process(delta):
 	var motion = velocity * delta
 
 	#move and consume motion
-#
 	motion = move(motion)
 
 
@@ -85,9 +84,9 @@ func _fixed_process(delta):
 			floor_velocity=get_collider_velocity()
 			#velocity.y=0 
 			
-		# But we were moving and our motion was interrupted, 
-		# so try to complete the motion by "sliding"
-		# by the normal
+		#But we were moving and our motion was interrupted, 
+		#so try to complete the motion by "sliding"
+		#by the normal
 		motion = n.slide(motion)
 		velocity = n.slide(velocity)
 		
@@ -109,7 +108,7 @@ func _fixed_process(delta):
 	prev_jump_pressed=jump	
 
 func _ready():
-	# Initalization here
+	#Initalization here
 	set_fixed_process(true)
 	pass
 

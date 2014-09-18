@@ -46,6 +46,7 @@
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/car_body.h"
 #include "scene/3d/vehicle_body.h"
+#include "scene/3d/collision_polygon.h"
 #include "scene/3d/physics_joint.h"
 
 
@@ -301,6 +302,21 @@ public:
 	CollisionShapeSpatialGizmo(CollisionShape* p_cs=NULL);
 
 };
+
+
+class CollisionPolygonSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(CollisionPolygonSpatialGizmo,SpatialGizmoTool);
+
+	CollisionPolygon* polygon;
+
+public:
+
+	void redraw();
+	CollisionPolygonSpatialGizmo(CollisionPolygon* p_polygon=NULL);
+
+};
+
 
 class RayCastSpatialGizmo  : public SpatialGizmoTool {
 

@@ -79,6 +79,7 @@
 #include "plugins/path_editor_plugin.h"
 #include "plugins/rich_text_editor_plugin.h"
 #include "plugins/collision_polygon_editor_plugin.h"
+#include "plugins/collision_polygon_2d_editor_plugin.h"
 #include "plugins/script_editor_plugin.h"
 #include "plugins/path_2d_editor_plugin.h"
 #include "plugins/particles_editor_plugin.h"
@@ -1795,6 +1796,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			bool relpaths = (scene->has_meta("__editor_relpaths__") && scene->get_meta("__editor_relpaths__").operator bool());
+
+			file->set_mode(FileDialog::MODE_SAVE_FILE);
 
 			file->set_current_path(cpath);
 			file->set_title("Save Translatable Strings");
@@ -4086,6 +4089,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ItemListEditorPlugin(this) ) );
 	add_editor_plugin( memnew( RichTextEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CollisionPolygonEditorPlugin(this) ) );
+	add_editor_plugin( memnew( CollisionPolygon2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileSetEditorPlugin(this) ) );
 	add_editor_plugin( memnew( TileMapEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SpriteFramesEditorPlugin(this) ) );
