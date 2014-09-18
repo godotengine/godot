@@ -33,6 +33,7 @@
 #include "message_queue.h"
 #include "core_string_names.h"
 #include "translation.h"
+#include "scene/main/node.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -1848,7 +1849,29 @@ void ObjectDB::cleanup() {
 	    const uint32_t *K=NULL;
     	while((K=instances.next(K))) {
             Object *o = instances[*K];
-            print_line(" >> " + o->get_type());
+			Node *node = dynamic_cast<Node *>(o);
+			Resource *res = dynamic_cast<Resource *>(o);
+			if(node != NULL) {
+
+				String msg = " >> " + node->get_type();
+				msg += " \"" + node->get_name().operator String() + "\"";
+
+				ScriptInstance *instance = node->get_script_instance();
+				if(instance != NULL)
+					msg += " [" + node->get_path() + ":" + instance->get_script()->get_path() + "]";
+				else
+					msg += " [" + node->get_path() + "]";
+
+				print_line(msg);
+			} else if(res != NULL) {
+
+				String msg = " >> " + res->get_type();
+				msg += " [" + res->get_path() + "]";
+
+				print_line(msg);
+
+			} else
+				print_line(" >> " + o->get_type());
 	    }
 	}
 	instances.clear();
