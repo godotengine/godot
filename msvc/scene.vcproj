@@ -526,6 +526,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scene\3d\collision_polygon.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\3d\collision_polygon.h"
+					>
+				</File>
+				<File
 					RelativePath="..\scene\3d\editable_shape.cpp"
 					>
 				</File>

@@ -286,6 +286,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\tools\editor\plugins\collision_polygon_2d_editor_plugin.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\tools\editor\plugins\collision_polygon_2d_editor_plugin.h"
+					>
+				</File>
+				<File
 					RelativePath="..\tools\editor\connections_dialog.cpp"
 					>
 				</File>
