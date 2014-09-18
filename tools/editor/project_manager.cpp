@@ -828,6 +828,7 @@ ProjectManager::ProjectManager() {
 	panel->add_child(vb);
 	vb->set_area_as_parent_rect(20);
 
+	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME)" - Project Manager");
 
 	Label *l = memnew( Label );
 	l->set_text(_MKSTR(VERSION_NAME)" - Project Manager");
@@ -938,7 +939,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	l->set_text(cp+" 2008-2012 Juan Linietsky, Ariel Manzur.");
+	l->set_text(cp+" 2008-2014 Juan Linietsky, Ariel Manzur.");
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 
