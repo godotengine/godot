@@ -179,18 +179,18 @@ void make_default_theme() {
 
 	t->set_stylebox("panel","Panel", make_stylebox( panel_bg_png,0,0,0,0) );
 
-	Color control_font_color = Color::html("d5d5d5");
-	Color control_font_color_low = Color::html("c1c1c1");
-	Color control_font_color_hover = Color::html("ffffff");
-	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.6);
-	Color control_font_color_pressed = Color::html("c5c5c5");
+	Color control_font_color = Color::html("e0e0e0");
+	Color control_font_color_low = Color::html("b0b0b0");
+	Color control_font_color_hover = Color::html("f0f0f0");
+	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.2);
+	Color control_font_color_pressed = Color::html("ffffff");
 	Color font_color_selection = Color::html("7d7d7d");
 	Ref<Texture> empty_icon = memnew( ImageTexture );
 
-	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,5,5,5,5,8,3,8,4) );
-	t->set_stylebox("pressed","Button", make_stylebox( button_pressed_png,5,5,5,5,3,3,3,3) );
-	t->set_stylebox("hover","Button", make_stylebox( button_hover_png,5,5,5,5,3,0,3,0) );
-	t->set_stylebox("disabled","Button", make_stylebox( button_disabled_png,5,5,5,5,3,3,3,3) );
+	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,5,5,5,5,16,4,16,4) );
+	t->set_stylebox("pressed","Button", make_stylebox( button_pressed_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("hover","Button", make_stylebox( button_hover_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("disabled","Button", make_stylebox( button_disabled_png,5,5,5,5,2,2,2,2) );
 	Ref<StyleBoxTexture> focus = make_stylebox( focus_png,6,6,6,6,3,3,3,3);
 	for(int i=0;i<4;i++) {
 		focus->set_expand_margin_size(Margin(i),2);
@@ -204,36 +204,36 @@ void make_default_theme() {
 	t->set_constant("hseparation","Button", 2 );
 
 
-	t->set_stylebox("normal","ColorPickerButton", make_stylebox( button_normal_png,7,7,7,7,8,3,8,3) );
-	t->set_stylebox("pressed","ColorPickerButton", make_stylebox( button_pressed_png,5,5,5,5,3,3,3,3) );
-	t->set_stylebox("hover","ColorPickerButton", make_stylebox( button_hover_png,4,4,4,4,3,3,3,3) );
-	t->set_stylebox("disabled","ColorPickerButton", make_stylebox( button_disabled_png,4,4,4,4,3,3,3,3) );
+	t->set_stylebox("normal","ColorPickerButton", make_stylebox( button_normal_png,7,7,7,7,4,4,4,4) );
+	t->set_stylebox("pressed","ColorPickerButton", make_stylebox( button_pressed_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("hover","ColorPickerButton", make_stylebox( button_hover_png,4,4,4,4,2,2,2,2) );
+	t->set_stylebox("disabled","ColorPickerButton", make_stylebox( button_disabled_png,4,4,4,4,2,2,2,2) );
 	t->set_stylebox("focus","ColorPickerButton", make_stylebox( focus_png,5,5,5,5,3,3,3,3) );
 	t->set_font("font","ColorPickerButton", default_font );
 	t->set_color("font_color","ColorPickerButton", Color(1,1,1,1) );
 	t->set_color("font_color_pressed","ColorPickerButton", Color(0.8,0.8,0.8,1) );
 	t->set_color("font_color_hover","ColorPickerButton", Color(1,1,1,1) );
-	t->set_color("font_color_disabled","ColorPickerButton", Color(0.9,0.9,0.9,0.6) );
+	t->set_color("font_color_disabled","ColorPickerButton", Color(0.9,0.9,0.9,0.3) );
 	t->set_constant("hseparation","ColorPickerButton", 2 );
 
-	t->set_stylebox("normal","ToolButton", make_empty_stylebox(5,3,5,3) );
-	t->set_stylebox("pressed","ToolButton", make_stylebox( button_pressed_png,5,5,5,5,3,3,3,3) );
+	t->set_stylebox("normal","ToolButton", make_empty_stylebox(5,5,5,5) );
+	t->set_stylebox("pressed","ToolButton", make_stylebox( button_pressed_png,5,5,5,5,4,4,4,4) );
 
-	t->set_stylebox("hover","ToolButton", make_stylebox( button_normal_png,5,5,5,5,3,3,3,3) );
+	t->set_stylebox("hover","ToolButton", make_stylebox( button_normal_png,5,5,5,5,4,4,4,4) );
 	//t->set_stylebox("disabled","ToolButton", make_stylebox( button_disabled_png,5,5,5,5,3,3,3,3) );
-	t->set_stylebox("disabled","ToolButton", make_empty_stylebox(3,3,3,3) );
+	t->set_stylebox("disabled","ToolButton", make_empty_stylebox(4,4,4,4) );
 	t->set_stylebox("focus","ToolButton", make_stylebox( focus_png,5,5,5,5,3,3,3,3) );
 	t->set_font("font","ToolButton", default_font );
 	t->set_color("font_color","ToolButton", control_font_color );
 	t->set_color("font_color_pressed","ToolButton", control_font_color_pressed );
 	t->set_color("font_color_hover","ToolButton", control_font_color_hover );
-	t->set_color("font_color_disabled","ToolButton", Color(0.9,0.95,1,0.6) );
+	t->set_color("font_color_disabled","ToolButton", Color(0.9,0.95,1,0.3) );
 	t->set_constant("hseparation","ToolButton", 2 );
 
-	t->set_stylebox("normal","OptionButton", make_stylebox( option_button_normal_png,4,4,20,5,8,3,20,4) );
-	t->set_stylebox("pressed","OptionButton", make_stylebox( option_button_pressed_png,4,4,20,5,3,3,3,3) );
-	t->set_stylebox("hover","OptionButton", make_stylebox( option_button_hover_png,4,4,20,5,3,3,3,3) );
-	t->set_stylebox("disabled","OptionButton", make_stylebox( option_button_disabled_png,4,4,20,5,3,3,3,3) );
+	t->set_stylebox("normal","OptionButton", make_stylebox( option_button_normal_png,5,5,21,5,8,3,20,4) );
+	t->set_stylebox("pressed","OptionButton", make_stylebox( option_button_pressed_png,5,5,21,5,3,3,3,3) );
+	t->set_stylebox("hover","OptionButton", make_stylebox( option_button_hover_png,5,5,21,5,3,3,3,3) );
+	t->set_stylebox("disabled","OptionButton", make_stylebox( option_button_disabled_png,5,5,21,5,3,3,3,3) );
 	t->set_stylebox("focus","OptionButton", focus );
 	t->set_constant("arrow_margin","OptionButton", 1 );
 	t->set_icon("arrow","OptionButton", make_icon( option_arrow_png ) );
@@ -246,9 +246,9 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","OptionButton", 2 );
 
-	t->set_stylebox("normal","MenuButton", make_stylebox( button_normal_png,6,6,6,6,3,3,3,3) );
-	t->set_stylebox("pressed","MenuButton", make_stylebox( tool_button_pressed_png ,6,6,6,6,3,3,3,3) );
-	t->set_stylebox("hover","MenuButton", make_stylebox( button_normal_png,6,6,6,6,3,3,3,3) );
+	t->set_stylebox("normal","MenuButton", make_stylebox( button_normal_png,5,5,5,5,8,4,8,4) );
+	t->set_stylebox("pressed","MenuButton", make_stylebox( tool_button_pressed_png ,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("hover","MenuButton", make_stylebox( button_normal_png,5,5,5,5,2,2,2,2) );
 	t->set_stylebox("disabled","MenuButton", make_empty_stylebox(0,0,0,0) );
 	t->set_font("font","MenuButton", default_font );
 	t->set_color("font_color","MenuButton", control_font_color );
@@ -275,7 +275,8 @@ void make_default_theme() {
 	t->set_color("font_color_disabled","CheckButton", control_font_color_disabled );
 	t->set_icon("on","CheckButton", make_icon(toggle_on_png) );
 	t->set_icon("off","CheckButton", make_icon(toggle_off_png));
-	t->set_stylebox("focus","CheckButton", focus );
+//	t->set_stylebox("focus","CheckButton", focus );
+	t->set_stylebox("focus","CheckButton", make_empty_stylebox(0,0,0,0) );
 	t->set_constant("hseparation","CheckButton",4);
 	t->set_constant("check_vadjust","CheckButton",0);
 
@@ -287,7 +288,7 @@ void make_default_theme() {
 	t->set_constant("shadow_offset_y","Label", 1 );
 	t->set_constant("shadow_as_outline","Label", 0 );
 
-	t->set_stylebox("normal","LineEdit", make_stylebox( line_edit_png,4,4,4,4,3,4,3,4) );
+	t->set_stylebox("normal","LineEdit", make_stylebox( line_edit_png,4,4,4,4,3,3,3,3) );
 	t->set_stylebox("focus","LineEdit", focus );
 	t->set_stylebox("read_only","LineEdit", make_stylebox( line_edit_disabled_png,6,6,6,6,4,4,4,4) );
 	Image n(line_edit_png);
@@ -302,18 +303,18 @@ void make_default_theme() {
 	t->set_color("selection_color","LineEdit", font_color_selection );
 	t->set_constant("minimum_spaces","LineEdit", 8 );
 
-	t->set_stylebox("bg","ProgressBar", make_stylebox( progress_bar_png,5,5,5,5,0,0,0,0) );
-	t->set_stylebox("fg","ProgressBar", make_stylebox( progress_fill_png,5,5,5,5,2,2,2,2) );
+	t->set_stylebox("bg","ProgressBar", make_stylebox( progress_bar_png,4,4,4,4,0,0,0,0) );
+	t->set_stylebox("fg","ProgressBar", make_stylebox( progress_fill_png,5,5,5,5,3,3,3,3) );
 	t->set_font("font","ProgressBar", default_font );
-	t->set_color("font_color","ProgressBar", control_font_color );
+	t->set_color("font_color","ProgressBar", control_font_color_hover );
 	t->set_color("font_color_shadow","ProgressBar", Color(0,0,0) );
 
 	t->set_icon("tab","TextEdit", make_icon( tab_png) );
 
-	t->set_stylebox("normal","TextEdit", make_stylebox( tree_bg_png,12,12,12,12,3,3,3,3) );
+	t->set_stylebox("normal","TextEdit", make_stylebox( tree_bg_png,2,2,2,2,3,3,3,3) );
 	t->set_stylebox("focus","TextEdit", focus );
 
-	t->set_stylebox("completion","TextEdit", make_stylebox( tree_bg_png,4,4,4,5,3,3,3,3) );
+	t->set_stylebox("completion","TextEdit", make_stylebox( tree_bg_png,2,2,2,2,3,3,3,3) );
 	t->set_constant("completion_lines","TextEdit", 7 );
 	t->set_constant("completion_max_width","TextEdit", 50 );
 	t->set_constant("completion_scroll_width","TextEdit", 3 );
@@ -327,16 +328,16 @@ void make_default_theme() {
 	t->set_color("font_color_selected","TextEdit", Color(0,0,0) );
 	t->set_color("selection_color","TextEdit", font_color_selection );
 	t->set_color("mark_color","TextEdit", Color(1.0,0.4,0.4,0.4) );
-	t->set_color("breakpoint_color","TextEdit", Color(0.8,0.8,0.4,0.4) );
-	t->set_color("current_line_color","TextEdit", Color(0.3,0.5,0.8,0.15) );
+	t->set_color("breakpoint_color","TextEdit", Color(0.8,0.8,0.4,0.2) );
+	t->set_color("current_line_color","TextEdit", Color(0.25,0.25,0.26,0.8) );
 	t->set_color("cursor_color","TextEdit", control_font_color );
 	t->set_color("symbol_color","TextEdit", control_font_color_hover );
-	t->set_constant("line_spacing","TextEdit",1 );
+	t->set_constant("line_spacing","TextEdit",4 );
 
-	t->set_stylebox("scroll","HScrollBar", make_stylebox( hscroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("scroll_focus","HScrollBar", make_stylebox( hscroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("grabber","HScrollBar", make_stylebox( hscroll_grabber_png,3,3,3,3,2,2,2,2) );
-	t->set_stylebox("grabber_hilite","HScrollBar", make_stylebox( hscroll_grabber_hl_png,3,3,3,3,2,2,2,2) );
+	t->set_stylebox("scroll","HScrollBar", make_stylebox( hscroll_bg_png,3,3,3,3) );
+	t->set_stylebox("scroll_focus","HScrollBar", make_stylebox( hscroll_bg_png,3,3,3,3) );
+	t->set_stylebox("grabber","HScrollBar", make_stylebox( hscroll_grabber_png,3,3,3,3) );
+	t->set_stylebox("grabber_hilite","HScrollBar", make_stylebox( hscroll_grabber_hl_png,3,3,3,3) );
 
 	t->set_icon("increment","HScrollBar",empty_icon);
 	t->set_icon("increment_hilite","HScrollBar",empty_icon);
@@ -344,10 +345,10 @@ void make_default_theme() {
 	t->set_icon("decrement_hilite","HScrollBar",empty_icon);
 
 
-	t->set_stylebox("scroll","VScrollBar", make_stylebox( vscroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("scroll_focus","VScrollBar", make_stylebox( vscroll_bg_png,3,3,3,3,0,0,0,0) );
-	t->set_stylebox("grabber","VScrollBar", make_stylebox( vscroll_grabber_png,3,3,3,3,2,2,2,2) );
-	t->set_stylebox("grabber_hilite","VScrollBar", make_stylebox( vscroll_grabber_hl_png,3,3,3,3,2,2,2,2) );
+	t->set_stylebox("scroll","VScrollBar", make_stylebox( vscroll_bg_png,3,3,3,3) );
+	t->set_stylebox("scroll_focus","VScrollBar", make_stylebox( vscroll_bg_png,3,3,3,3) );
+	t->set_stylebox("grabber","VScrollBar", make_stylebox( vscroll_grabber_png,3,3,3,3) );
+	t->set_stylebox("grabber_hilite","VScrollBar", make_stylebox( vscroll_grabber_hl_png,3,3,3,3) );
 	t->set_icon("increment","VScrollBar",empty_icon);
 	t->set_icon("increment_hilite","VScrollBar",empty_icon);
 	t->set_icon("decrement","VScrollBar",empty_icon);
@@ -387,7 +388,7 @@ void make_default_theme() {
 	t->set_constant("close_v_ofs","WindowDialog", 20 );
 
 
-	Ref<StyleBoxTexture> style_pp = make_stylebox( popup_bg_png,6,19,6,7,8,8,8,8);
+	Ref<StyleBoxTexture> style_pp = make_stylebox( popup_bg_png,4,4,4,4,8,8,8,8);
 	style_pp->set_expand_margin_size(MARGIN_LEFT,2);
 	style_pp->set_expand_margin_size(MARGIN_TOP,3);
 	style_pp->set_expand_margin_size(MARGIN_RIGHT,2);
@@ -431,10 +432,10 @@ void make_default_theme() {
 
 	t->set_stylebox("cursor","Tree", focus );
 	t->set_stylebox("cursor_unfocused","Tree", focus );
-	t->set_stylebox("button_pressed","Tree",make_stylebox( button_pressed_png,5,5,5,5,3,3,3,3));
+	t->set_stylebox("button_pressed","Tree",make_stylebox( button_pressed_png,4,4,4,4,3,3,3,3));
 	t->set_font("font","Tree", default_font );
 	t->set_color("font_color","Tree", control_font_color_low );
-	t->set_color("font_color_selected","Tree", control_font_color );
+	t->set_color("font_color_selected","Tree", control_font_color_pressed );
 	t->set_color("selection_color","Tree", Color(0.1,0.1,1,0.8) );
 	t->set_color("cursor_color","Tree", Color(0,0,0) );
 	t->set_color("guide_color","Tree", Color(0,0,0,0.1) );
@@ -460,7 +461,7 @@ void make_default_theme() {
 
 	t->set_stylebox("tab_fg","TabContainer", make_stylebox( tab_current_png,5,5,5,5,8,3,8,3) );
 	t->set_stylebox("tab_bg","TabContainer", make_stylebox( tab_behind_png,5,5,5,5,8,4,8,3) );
-	Ref<StyleBoxTexture> tc_sb = make_stylebox( tab_container_bg_png,6,19,6,7);
+	Ref<StyleBoxTexture> tc_sb = make_stylebox( tab_container_bg_png,4,4,4,4);
 	for(int i=0;i<4;i++) {
 		tc_sb->set_default_margin(Margin(i),7);
 		tc_sb->set_expand_margin_size(Margin(i),2);
@@ -476,23 +477,23 @@ void make_default_theme() {
 
 	t->set_font("font","TabContainer", default_font );
 	t->set_color("font_color_fg","TabContainer", control_font_color_hover );
-	t->set_color("font_color_bg","TabContainer", control_font_color );
+	t->set_color("font_color_bg","TabContainer", control_font_color_low );
 	t->set_constant("side_margin","TabContainer", 5 );
 	t->set_constant("top_margin","TabContainer", 24);
 	t->set_constant("label_valign_fg","TabContainer", 4);
 	t->set_constant("label_valign_bg","TabContainer", 5);
 	t->set_constant("hseparation","TabContainer", 2);
 
-	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,5,5,5,5,8,3,8,3) );
-	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,5,5,5,5,8,4,8,3) );
-	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,3,3,3,3) );
+	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,5,5,5,5,16,3,16,3) );
+	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,5,5,5,5,16,4,16,3) );
+	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,4,4,4,4,6,6,6,6) );
 	t->set_font("font","Tabs", default_font );
 	t->set_color("font_color_fg","Tabs", control_font_color_hover );
-	t->set_color("font_color_bg","Tabs", control_font_color );
+	t->set_color("font_color_bg","Tabs", control_font_color_low );
 	t->set_constant("top_margin","Tabs", 24);
 	t->set_constant("label_valign_fg","Tabs", 4);
 	t->set_constant("label_valign_bg","Tabs", 5);
-	t->set_constant("hseparation","Tabs", 2);
+	t->set_constant("hseparation","Tabs", 0);
 
 	t->set_stylebox("separator","HSeparator", make_stylebox( vseparator_png,3,3,3,3) );
 	t->set_constant("separation","HSeparator", 7);
@@ -552,25 +553,25 @@ void make_default_theme() {
 	t->set_stylebox("bg","VSplitContainer", make_stylebox( vsplit_bg_png,1,1,1,1,1,1,1,1) );
 	t->set_stylebox("bg","HSplitContainer", make_stylebox( hsplit_bg_png,1,1,1,1,1,1,1,1) );
 
-	t->set_stylebox("normal","HButtonArray", make_stylebox( button_normal_png,2,2,2,2,3,3,3,3) );
+	t->set_stylebox("normal","HButtonArray", make_stylebox( button_normal_png,5,5,5,5,3,3,3,3) );
 	t->set_stylebox("selected","HButtonArray", make_stylebox( button_pressed_png,5,5,5,5,3,3,3,3) );
 	t->set_stylebox("hover","HButtonArray", make_stylebox( button_hover_png,5,5,5,5,3,3,3,3) );
 	t->set_stylebox("focus","HButtonArray", make_stylebox( focus_png,5,5,5,5,3,3,3,3) );
 	t->set_font("font","HButtonArray", default_font);
 	t->set_font("font_selected","HButtonArray", default_font);
-	t->set_color("font_color","HButtonArray", Color(1,1,1,1) );
-	t->set_color("font_color_selected","HButtonArray", Color(0.7,0.7,0.7,1) );
+	t->set_color("font_color","HButtonArray", control_font_color_low );
+	t->set_color("font_color_selected","HButtonArray", control_font_color_hover );
 	t->set_constant("icon_separator","HButtonArray", 2 );
 	t->set_constant("button_separator","HButtonArray", 3 );
 
-	t->set_stylebox("normal","VButtonArray", make_stylebox( button_normal_png,2,2,2,2,3,3,3,3) );
+	t->set_stylebox("normal","VButtonArray", make_stylebox( button_normal_png,5,5,5,5,3,3,3,3) );
 	t->set_stylebox("selected","VButtonArray", make_stylebox( button_pressed_png,5,5,5,5,3,3,3,3) );
 	t->set_stylebox("hover","VButtonArray", make_stylebox( button_hover_png,5,5,5,5,3,3,3,3) );
 	t->set_stylebox("focus","VButtonArray", make_stylebox( focus_png,5,5,5,5,3,3,3,3) );
 	t->set_font("font","VButtonArray", default_font);
 	t->set_font("font_selected","VButtonArray", default_font);
-	t->set_color("font_color","VButtonArray", Color(1,1,1,1) );
-	t->set_color("font_color_selected","VButtonArray", Color(0.7,0.7,0.7,1) );
+	t->set_color("font_color","VButtonArray", control_font_color_low );
+	t->set_color("font_color_selected","VButtonArray", control_font_color_hover );
 	t->set_constant("icon_separator","VButtonArray", 2 );
 	t->set_constant("button_separator","VButtonArray", 3 );
 
