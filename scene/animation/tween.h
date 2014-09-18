@@ -54,15 +54,17 @@ public:
         TRANS_CIRC,
         TRANS_BOUNCE,
         TRANS_BACK,
-	TRANS_COUNT,
+
+		TRANS_COUNT,
     };
         
     enum EaseType {
         EASE_IN,
         EASE_OUT,
         EASE_IN_OUT,
-	EASE_OUT_IN,
-	EASE_COUNT,
+		EASE_OUT_IN,
+
+		EASE_COUNT,
     };
 
 private:
@@ -176,8 +178,8 @@ public:
 	);
 
 	bool interpolate_callback(Node *p_node
-		, String p_callback
 		, real_t p_times_in_sec
+		, String p_callback
 		, Variant p_arg = Variant()
 	);
 
