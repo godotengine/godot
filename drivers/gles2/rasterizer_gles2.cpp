@@ -2421,7 +2421,7 @@ AABB RasterizerGLES2::mesh_get_aabb(RID p_mesh, RID p_skeleton) const {
 		sk=skeleton_owner.get(p_skeleton);
 
 	AABB aabb;
-	if (sk) {
+	if (sk && sk->bones.size()!=0) {
 
 
 		for (int i=0;i<mesh->surfaces.size();i++) {
@@ -4409,7 +4409,7 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 		oe->additive_ptr=&oe->additive;
 	}
 
-	if (shadow || m->flags[VS::MATERIAL_FLAG_UNSHADED]) {
+	if (shadow || m->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug==VS::SCENARIO_DEBUG_SHADELESS) {
 
 		e->light_type=0x7F; //unshaded is zero
 	} else {
@@ -5831,7 +5831,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 			if (light_type!=prev_light_type) {
 
-				if (material->flags[VS::MATERIAL_FLAG_UNSHADED]) {
+				if (material->flags[VS::MATERIAL_FLAG_UNSHADED] || current_debug==VS::SCENARIO_DEBUG_SHADELESS) {
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_DIRECTIONAL,false);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_OMNI,false);
 					material_shader.set_conditional(MaterialShaderGLES2::LIGHT_TYPE_SPOT,false);

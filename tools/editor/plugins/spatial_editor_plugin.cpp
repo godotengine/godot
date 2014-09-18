@@ -2662,6 +2662,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false );
 
 		} break;
 		case MENU_VIEW_DISPLAY_WIREFRAME: {
@@ -2670,6 +2671,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false );
 
 		} break;
 		case MENU_VIEW_DISPLAY_OVERDRAW: {
@@ -2678,6 +2680,16 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), true );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), false );
+
+		} break;
+		case MENU_VIEW_DISPLAY_SHADELESS: {
+
+			VisualServer::get_singleton()->scenario_set_debug( get_scene()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_SHADELESS), true );
 
 		} break;
 		case MENU_VIEW_ORIGIN: {
@@ -3366,6 +3378,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item("Display Normal",MENU_VIEW_DISPLAY_NORMAL);
 	p->add_check_item("Display Wireframe",MENU_VIEW_DISPLAY_WIREFRAME);
 	p->add_check_item("Display Overdraw",MENU_VIEW_DISPLAY_OVERDRAW);
+	p->add_check_item("Display Shadeless",MENU_VIEW_DISPLAY_SHADELESS);
 	p->add_separator();
 	p->add_check_item("View Origin",MENU_VIEW_ORIGIN);
 	p->add_check_item("View Grid",MENU_VIEW_GRID);
