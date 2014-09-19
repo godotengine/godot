@@ -1835,7 +1835,11 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			return (OS::get_singleton()->get_environment("APPDATA")+"\\"+an).replace("\\","/"); // windows path to unix path to be consistent with get_resource_path
+			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			if (use_godot)
+				return (OS::get_singleton()->get_environment("APPDATA")+"/"+an).replace("\\","/");
+			else
+				return (OS::get_singleton()->get_environment("APPDATA")+"/Godot/app_userdata/"+an).replace("\\","/");
 		}
 	}
 

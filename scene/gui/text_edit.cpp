@@ -1184,7 +1184,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						if (k.mod.shift) {
 
 							for(int i=0;i<txt.length();i++) {
-								if (((i>0 && txt[i-1]=='\n') || (i==0 && selection.from_column==0)) && (txt[i]=='\t' || txt[i]==' ')) {
+								if (((i>0 && txt[i-1]=='\n') || (i==0 /*&& selection.from_column==0*/)) && (txt[i]=='\t' || txt[i]==' ')) {
 									txt.remove(i);
 									//i--;
 								}
@@ -1193,7 +1193,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 							for(int i=0;i<txt.length();i++) {
 
-								if (((i>0 && txt[i-1]=='\n') || (i==0 && selection.from_column==0))) {
+								if (((i>0 && txt[i-1]=='\n') || (i==0 /*&& selection.from_column==0*/))) {
 									txt=txt.insert(i,"\t");
 									//i--;
 								}

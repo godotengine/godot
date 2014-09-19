@@ -386,7 +386,7 @@ void OS::_ensure_data_dir() {
 	}
 
 	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = da->make_dir(dd);
+	Error err = da->make_dir_recursive(dd);
 	if (err!=OK) {
 		ERR_EXPLAIN("Error attempting to create data dir: "+dd);
 	}

@@ -565,22 +565,21 @@ void GDTokenizerText::_advance() {
 							case '\'': res='\''; break;
 							case '\"': res='\"'; break;
 							case '\\': res='\\'; break;
-							case 'x': {
-								//hexnumbarh - oct is deprecated
+							case '/': res='/'; break; //wtf
 
-								int read=0;
+							case 'u': {
+								//hexnumbarh - oct is deprecated
+								i+=1;
 								for(int j=0;j<4;j++) {
 									CharType c = GETCHAR(i+j);
 									if (c==0) {
 										_make_error("Unterminated String");
 										return;
 									}
-									if (!_is_hex(c)) {
-										if (j==0 || !(j&1)) {
-											_make_error("Malformed hex constant in string");
-											return;
-										} else
-											break;
+									if (!((c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F'))) {
+
+										_make_error("Malformed hex constant in string");
+										return;
 									}
 									CharType v;
 									if (c>='0' && c<='9') {
@@ -599,10 +598,9 @@ void GDTokenizerText::_advance() {
 									res<<=4;
 									res|=v;
 
-									read++;
-								}
-								i+=read-1;
 
+								}
+								i+=3;
 
 							} break;
 							default: {

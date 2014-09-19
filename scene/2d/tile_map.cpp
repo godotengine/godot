@@ -269,6 +269,20 @@ void TileMap::_update_dirty_quadrants() {
 
 	pending_update=false;
 
+	if (quadrant_order_dirty) {
+
+		for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+			Quadrant &q=E->get();
+			if (q.canvas_item.is_valid()) {
+				VS::get_singleton()->canvas_item_raise(q.canvas_item);
+			}
+
+		}
+
+		quadrant_order_dirty=false;
+	}
+
 	_recompute_rect_cache();
 
 }
@@ -329,6 +343,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.pos=Vector2(p_qk.x,p_qk.y)*quadrant_size*cell_size;
 
 	rect_cache_dirty=true;
+	quadrant_order_dirty=true;
 	return quadrant_map.insert(p_qk,q);
 }
 
@@ -387,8 +402,9 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
 
 	if (!E) {
 		E=tile_map.insert(pk,Cell());
-		if (!Q)
+		if (!Q) {
 			Q=_create_quadrant(qk);
+		}
 		Quadrant &q=Q->get();
 		q.cells.insert(pk);
 	} else {
@@ -510,6 +526,7 @@ void TileMap::_set_tile_data(const DVector<int>& p_data) {
 //		if (x<-20 || y <-20 || x>4000 || y>4000)
 //			continue;
 		set_cell(x,y,v,flip_h,flip_v);
+
 	}
 
 }
@@ -658,6 +675,7 @@ TileMap::TileMap() {
 
 	rect_cache_dirty=true;
 	pending_update=false;
+	quadrant_order_dirty=false;
 	quadrant_size=16;
 	cell_size=64;
 	center_x=false;
