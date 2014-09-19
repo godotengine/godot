@@ -315,7 +315,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExW(p_file.c_str(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
 
 		return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
@@ -324,7 +324,7 @@ bool DirAccessWindows::file_exists(String p_file) {
 		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExA(p_file.ascii().get_data(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
 
 		return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
