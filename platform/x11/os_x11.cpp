@@ -461,6 +461,19 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 
 }
 
+void OS_X11::warp_mouse_pos(const Point2& p_to) {
+
+	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		last_mouse_pos=p_to;
+	} else {
+
+		XWarpPointer(x11_display, None, x11_window,
+			      0,0,0,0, (int)p_to.x, (int)p_to.y);
+	}
+
+}
+
 OS::MouseMode OS_X11::get_mouse_mode() const {
 
 	return mouse_mode;

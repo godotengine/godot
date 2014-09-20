@@ -1323,10 +1323,24 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
 
+
 	return mouse_mode;
 }
 
 
+
+void OS_Windows::warp_mouse_pos(const Point2& p_to) {
+
+	if (p_mode==MOUSE_MODE_CAPTURED) {
+
+		old_x=p_to.x;
+		old_y=p_to.y;
+	} else {
+
+		SetCursorPos(p_to.x, p_to.y);
+	}
+
+}
 
 Point2 OS_Windows::get_mouse_pos() const {
 
@@ -1836,7 +1850,7 @@ String OS_Windows::get_data_dir() const {
 		if (has_environment("APPDATA")) {
 
 			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
-			if (use_godot)
+			if (!use_godot)
 				return (OS::get_singleton()->get_environment("APPDATA")+"/"+an).replace("\\","/");
 			else
 				return (OS::get_singleton()->get_environment("APPDATA")+"/Godot/app_userdata/"+an).replace("\\","/");

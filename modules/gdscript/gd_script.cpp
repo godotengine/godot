@@ -510,7 +510,11 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = src->get_named(*index,&valid);
 
 				if (!valid) {
-					err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"').";
+					if (src->has_method(*index)) {
+						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"'). Did you mean '."+index->operator String()+"()' ?";
+					} else {
+						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"').";
+					}
 					break;
 				}
 

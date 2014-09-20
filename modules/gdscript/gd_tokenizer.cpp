@@ -284,7 +284,8 @@ void GDTokenizerText::_advance() {
 				while(GETCHAR(0)!='\n') {
 					code_pos++;
 					if (GETCHAR(0)==0) { //end of file
-						_make_error("Unterminated Comment");
+						//_make_error("Unterminated Comment");
+						_make_token(TK_EOF);
 						return;
 					}
 				}

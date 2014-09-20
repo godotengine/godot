@@ -155,7 +155,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 		full_dir=dir;
 	}
 
-	int slices = full_dir.get_slice_count("/");
+	//int slices = full_dir.get_slice_count("/");
 
 	int pos = 0;
 	while (pos < full_dir.length()) {
