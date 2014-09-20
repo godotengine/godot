@@ -27,11 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_graph.h"
-#if 0
 
 
 
-void Shader::_set(const String& p_name, const Variant& p_value) {
+# if 0
+void ShaderGraph::_set(const String& p_name, const Variant& p_value) {
 
 	if (p_name.begins_with("nodes/")) {
 		int idx=p_name.get_slice("/",1).to_int();
@@ -39,11 +39,12 @@ void Shader::_set(const String& p_name, const Variant& p_value) {
 
 		ERR_FAIL_COND(!data.has("type"));
 		String type=data["type"];
-		VS::ShaderNodeType node_type=VS::NODE_TYPE_MAX;
+
+		VS::NodeType node_type=VS::NODE_TYPE_MAX;
 		for(int i=0;i<NODE_TYPE_MAX;i++) {
 
-			if (type==VisualServer::shader_node_get_type_info((VS::ShaderNodeType)i).name)
-				node_type=(VS::ShaderNodeType)i;
+			if (type==VisualServer::shader_node_get_type_info((VS::NodeType)i).name)
+				node_type=(VS::NodeType)i;
 		}
 
 		ERR_FAIL_COND(node_type==VS::NODE_TYPE_MAX);
@@ -65,13 +66,14 @@ void Shader::_set(const String& p_name, const Variant& p_value) {
 		connect(data["src_id"],data["src_slot"],data["dst_id"],data["dst_slot"]);
 	}
 
+	return false;
 }
-Variant Shader::_get(const String& p_name) const {
+Variant ShaderGraph::_get(const String& p_name) const {
 
 	if (p_name.begins_with("nodes/")) {
 		int idx=p_name.get_slice("/",1).to_int();
 		Dictionary data;
-		data["type"]=VisualServer::shader_node_get_type_info((VS::ShaderNodeType)node_get_type(idx)).name;
+		data["type"]=VisualServer::shader_node_get_type_info((VS::NodeType)node_get_type(idx)).name;
 		data["pos"]=node_get_pos(idx);
 		data["param"]=node_get_param(idx);
 		return data;
@@ -94,7 +96,7 @@ Variant Shader::_get(const String& p_name) const {
 
 	return Variant();
 }
-void Shader::_get_property_list( List<PropertyInfo> *p_list) const {
+void ShaderGraph::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	List<int> nodes;
 	get_node_list(&nodes);
@@ -114,7 +116,9 @@ void Shader::_get_property_list( List<PropertyInfo> *p_list) const {
 
 }
 
-Array Shader::_get_connections_helper() const {
+#endif
+#if 0
+Array ShaderGraph::_get_connections_helper() const {
 
 	Array connections_ret;
 	List<Connection> connections;
@@ -136,23 +140,23 @@ Array Shader::_get_connections_helper() const {
 	return connections_ret;
 }
 
-void Shader::_bind_methods() {
+void ShaderGraph::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("node_add"),&Shader::node_add );
-	ObjectTypeDB::bind_method(_MD("node_remove"),&Shader::node_remove );
-	ObjectTypeDB::bind_method(_MD("node_set_param"),&Shader::node_set_param );
-	ObjectTypeDB::bind_method(_MD("node_set_pos"),&Shader::node_set_pos );
+	ObjectTypeDB::bind_method(_MD("node_add"),&ShaderGraph::node_add );
+	ObjectTypeDB::bind_method(_MD("node_remove"),&ShaderGraph::node_remove );
+	ObjectTypeDB::bind_method(_MD("node_set_param"),&ShaderGraph::node_set_param );
+	ObjectTypeDB::bind_method(_MD("node_set_pos"),&ShaderGraph::node_set_pos );
 
-	ObjectTypeDB::bind_method(_MD("node_get_pos"),&Shader::node_get_pos );
-	ObjectTypeDB::bind_method(_MD("node_get_param"),&Shader::node_get_type);
-	ObjectTypeDB::bind_method(_MD("node_get_type"),&Shader::node_get_param);
+	ObjectTypeDB::bind_method(_MD("node_get_pos"),&ShaderGraph::node_get_pos );
+	ObjectTypeDB::bind_method(_MD("node_get_param"),&ShaderGraph::node_get_type);
+	ObjectTypeDB::bind_method(_MD("node_get_type"),&ShaderGraph::node_get_param);
 
-	ObjectTypeDB::bind_method(_MD("connect"),&Shader::connect );
-	ObjectTypeDB::bind_method(_MD("disconnect"),&Shader::disconnect );
+	ObjectTypeDB::bind_method(_MD("connect"),&ShaderGraph::connect );
+	ObjectTypeDB::bind_method(_MD("disconnect"),&ShaderGraph::disconnect );
 
-	ObjectTypeDB::bind_method(_MD("get_connections"),&Shader::_get_connections_helper );
+	ObjectTypeDB::bind_method(_MD("get_connections"),&ShaderGraph::_get_connections_helper );
 
-	ObjectTypeDB::bind_method(_MD("clear"),&Shader::clear );
+	ObjectTypeDB::bind_method(_MD("clear"),&ShaderGraph::clear );
 
 	BIND_CONSTANT( NODE_IN ); ///< param 0: name
 	BIND_CONSTANT( NODE_OUT ); ///< param 0: name
@@ -210,57 +214,221 @@ void Shader::_bind_methods() {
 	BIND_CONSTANT( NODE_TYPE_MAX );
 }
 
-void Shader::node_add(NodeType p_type,int p_id) {
+void ShaderGraph::node_add(NodeType p_type,int p_id) {
 
-	VisualServer::get_singleton()->shader_node_add(shader,(VS::ShaderNodeType)p_type,p_id);
-#ifdef TOOLS_ENABLED
-	positions[p_id]=Point2();
-#endif
+
+	ERR_FAIL_COND( node_map.has(p_id ) );
+	ERR_FAIL_INDEX( p_type, NODE_TYPE_MAX );
+	Node node;
+
+	node.type=p_type;
+	node.id=p_id;
+	node.x=0;
+	node.y=0;
+
+	node_map[p_id]=node;
+
+}
+
+void ShaderGraph::node_set_pos(int p_id, const Vector2& p_pos) {
+
+	ERR_FAIL_COND(!node_map.has(p_id));
+	node_map[p_id].x=p_pos.x;
+	node_map[p_id].y=p_pos.y;
+}
+Vector2 ShaderGraph::node_get_pos(int p_id) const {
+
+	ERR_FAIL_COND_V(!node_map.has(p_id),Vector2());
+	return Vector2(node_map[p_id].x,node_map[p_id].y);
+}
+
+
+void ShaderGraph::node_remove(int p_id) {
+
+	ERR_FAIL_COND(!node_map.has(p_id));
+
+	//erase connections associated with node
+	List<Connection>::Element *N,*E=connections.front();
+	while(E) {
+		N=E->next();
+		const Connection &c = E->get();
+		if (c.src_id==p_id || c.dst_id==p_id) {
+
+			connections.erase(E);
+		}
+		E=N;
+	}
+
+	node_map.erase(p_id);
+}
+
+void ShaderGraph::node_change_type(int p_id, NodeType p_type) {
+
+	ERR_FAIL_COND(!node_map.has(p_id));
+	node_map[p_id].type=p_type;
+	node_map[p_id].param=Variant();
+
+}
+
+void ShaderGraph::node_set_param(int p_id, const Variant& p_value) {
+
+	ERR_FAIL_COND(!node_map.has(p_id));
+	node_map[p_id].param=p_value;
+}
+
+void ShaderGraph::get_node_list(List<int> *p_node_list) const {
+
+	Map<int,Node>::Element *E = node_map.front();
+
+	while(E) {
+
+		p_node_list->push_back(E->key());
+		E=E->next();
+	}
+}
+
+
+ShaderGraph::NodeType ShaderGraph::node_get_type(int p_id) const {
+
+	ERR_FAIL_COND_V(!node_map.has(p_id),NODE_TYPE_MAX);
+	return node_map[p_id].type;
+}
+
+Variant ShaderGraph::node_get_param(int p_id) const {
+
+	ERR_FAIL_COND_V(!node_map.has(p_id),Variant());
+	return node_map[p_id].param;
+}
+
+
+Error ShaderGraph::connect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
+
+	ERR_FAIL_COND_V(p_src_id==p_dst_id, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!node_map.has(p_src_id), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(!node_map.has(p_dst_id), ERR_INVALID_PARAMETER);
+	NodeType type_src=node_map[p_src_id].type;
+	NodeType type_dst=node_map[p_dst_id].type;
+	//ERR_FAIL_INDEX_V( p_src_slot, VisualServer::shader_get_output_count(type_src), ERR_INVALID_PARAMETER );
+	//ERR_FAIL_INDEX_V( p_dst_slot, VisualServer::shader_get_input_count(type_dst), ERR_INVALID_PARAMETER );
+	//ERR_FAIL_COND_V(VisualServer::shader_is_output_vector(type_src,p_src_slot) != VisualServer::shader_is_input_vector(type_dst,p_dst_slot), ERR_INVALID_PARAMETER );
+
+
+	List<Connection>::Element *E=connections.front();
+	while(E) {
+		const Connection &c = E->get();
+		ERR_FAIL_COND_V(c.dst_slot==p_dst_slot && c.dst_id == p_dst_id, ERR_ALREADY_EXISTS);
+
+		E=E->next();
+	}
+
+	Connection c;
+	c.src_slot=p_src_slot;
+	c.src_id=p_src_id;
+	c.dst_slot=p_dst_slot;
+	c.dst_id=p_dst_id;
+
+	connections.push_back(c);
+
+	return OK;
+}
+
+bool ShaderGraph::is_connected(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) const {
+
+	const List<Connection>::Element *E=connections.front();
+	while(E) {
+		const Connection &c = E->get();
+		if (c.dst_slot==p_dst_slot && c.dst_id == p_dst_id && c.src_slot==p_src_slot && c.src_id == p_src_id)
+			return true;
+
+		E=E->next();
+	}
+
+	return false;
+}
+
+void ShaderGraph::disconnect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
+
+	List<Connection>::Element *N,*E=connections.front();
+	while(E) {
+		N=E->next();
+		const Connection &c = E->get();
+		if (c.src_slot==p_src_slot && c.src_id==p_src_id && c.dst_slot==p_dst_slot && c.dst_id == p_dst_id) {
+
+			connections.erase(E);
+		}
+		E=N;
+	}
+
+
+}
+
+void ShaderGraph::get_connections(List<Connection> *p_connections) const {
+
+	const List<Connection>::Element*E=connections.front();
+	while(E) {
+		p_connections->push_back(E->get());
+		E=E->next();
+	}
+
+
+}
+
+
+void ShaderGraph::clear() {
+
+	connections.clear();
+	node_map.clear();
+}
+
+
+#if 0
+void ShaderGraph::node_add(NodeType p_type,int p_id) {
+
+	ShaderNode sn;
+	sn.type=p_type;
+	nodes[p_id]=sn;
 	version++;
 }
-void Shader::node_remove(int p_id) {
+void ShaderGraph::node_remove(int p_id) {
 
-	VisualServer::get_singleton()->shader_node_remove(shader,p_id);
-#ifdef TOOLS_ENABLED
-	positions.erase(p_id);
-#endif
+	nodes.erase(p_id);
 
 }
-void Shader::node_set_param( int p_id, const Variant& p_value) {
+void ShaderGraph::node_set_param( int p_id, const Variant& p_value) {
 
 	VisualServer::get_singleton()->shader_node_set_param(shader,p_id,p_value);
 	version++;
 }
 
-void Shader::get_node_list(List<int> *p_node_list) const {
+void ShaderGraph::get_node_list(List<int> *p_node_list) const {
 
 	VisualServer::get_singleton()->shader_get_node_list(shader,p_node_list);
 }
-Shader::NodeType Shader::node_get_type(int p_id) const {
+ShaderGraph::NodeType ShaderGraph::node_get_type(int p_id) const {
 
 	return (NodeType)VisualServer::get_singleton()->shader_node_get_type(shader,p_id);
 }
-Variant Shader::node_get_param(int p_id) const {
+Variant ShaderGraph::node_get_param(int p_id) const {
 
 	return VisualServer::get_singleton()->shader_node_get_param(shader,p_id);
 }
 
-void Shader::connect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
+void ShaderGraph::connect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
 
 	VisualServer::get_singleton()->shader_connect(shader,p_src_id,p_src_slot,p_dst_id,p_dst_slot);
 	version++;
 }
-void Shader::disconnect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
+void ShaderGraph::disconnect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
 
 	VisualServer::get_singleton()->shader_disconnect(shader,p_src_id,p_src_slot,p_dst_id,p_dst_slot);
 	version++;
 }
 
-void Shader::get_connections(List<Connection> *p_connections) const {
+void ShaderGraph::get_connections(List<Connection> *p_connections) const {
 
-	List<VS::ShaderConnection> connections;
+	List<VS::ShaderGraphConnection> connections;
 	VisualServer::get_singleton()->shader_get_connections(shader,&connections);
-	for( List<VS::ShaderConnection>::Element *E=connections.front();E;E=E->next()) {
+	for( List<VS::ShaderGraphConnection>::Element *E=connections.front();E;E=E->next()) {
 
 		Connection c;
 		c.src_id=E->get().src_id;
@@ -271,7 +439,7 @@ void Shader::get_connections(List<Connection> *p_connections) const {
 	}
 }
 
-void Shader::node_set_pos(int p_id,const Point2& p_pos) {
+void ShaderGraph::node_set_pos(int p_id,const Point2& p_pos) {
 
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND(!positions.has(p_id));
@@ -279,36 +447,33 @@ void Shader::node_set_pos(int p_id,const Point2& p_pos) {
 #endif
 }
 
-Point2 Shader::node_get_pos(int p_id) const {
+Point2 ShaderGraph::node_get_pos(int p_id) const {
 #ifdef TOOLS_ENABLED
 	ERR_FAIL_COND_V(!positions.has(p_id),Point2());
 	return positions[p_id];
 #endif
 }
 
-void Shader::clear() {
+void ShaderGraph::clear() {
 
 	VisualServer::get_singleton()->shader_clear(shader);
 	version++;
 }
+#endif
 
-Shader::Shader() {
+ShaderGraph::ShaderGraph() {
 
-	shader = VisualServer::get_singleton()->shader_create();
+	//shader = VisualServer::get_singleton()->shader_create();
 	version = 1;
 }
 
-Shader::~Shader() {
+ShaderGraph::~ShaderGraph() {
 
-	VisualServer::get_singleton()->free(shader);
+	//VisualServer::get_singleton()->free(shader);
 }
 
-ShaderGraph::ShaderGraph()
-{
-}
-
-
-void VisualServer::shader_get_default_input_nodes(ShaderType p_type,List<PropertyInfo> *p_inputs) {
+#if 0
+void ShaderGraph::shader_get_default_input_nodes(Mode p_type,List<PropertyInfo> *p_inputs) {
 
 	switch(p_type) {
 
@@ -341,7 +506,7 @@ void VisualServer::shader_get_default_input_nodes(ShaderType p_type,List<Propert
 	}
 
 }
-void VisualServer::shader_get_default_output_nodes(ShaderType p_type,List<PropertyInfo> *p_outputs) {
+void ShaderGraph::shader_get_default_output_nodes(ShaderGraphType p_type,List<PropertyInfo> *p_outputs) {
 
 	switch(p_type) {
 
@@ -377,7 +542,7 @@ void VisualServer::shader_get_default_output_nodes(ShaderType p_type,List<Proper
 }
 
 
-PropertyInfo VisualServer::shader_node_get_type_info(ShaderNodeType p_type) {
+PropertyInfo ShaderGraph::shader_node_get_type_info(NodeType p_type) {
 
 	switch(p_type) {
 
@@ -446,7 +611,7 @@ PropertyInfo VisualServer::shader_node_get_type_info(ShaderNodeType p_type) {
 
 	ERR_FAIL_V( PropertyInfo(Variant::NIL,"error") );
 }
-int VisualServer::shader_get_input_count(ShaderNodeType p_type) {
+int ShaderGraph::shader_get_input_count(NodeType p_type) {
 
 	switch(p_type) {
 		case NODE_IN: return 0;
@@ -511,7 +676,7 @@ int VisualServer::shader_get_input_count(ShaderNodeType p_type) {
 	}
 	ERR_FAIL_V( 0 );
 }
-int VisualServer::shader_get_output_count(ShaderNodeType p_type) {
+int ShaderGraph::shader_get_output_count(NodeType p_type) {
 
 	switch(p_type) {
 		case NODE_IN: return 1;
@@ -585,7 +750,7 @@ int VisualServer::shader_get_output_count(ShaderNodeType p_type) {
 
 #define RET5(m_a,m_b,m_c,m_d,m_e)	if (p_idx==0) return m_a; else if (p_idx==1) return m_b; else if (p_idx==2) return m_c; else if (p_idx==3) return m_d; else if (p_idx==4) return m_e; else return "";
 
-String VisualServer::shader_get_input_name(ShaderNodeType p_type,int p_idx) {
+String ShaderGraph::shader_get_input_name(NodeType p_type,int p_idx) {
 
 	switch(p_type) {
 
@@ -653,7 +818,7 @@ String VisualServer::shader_get_input_name(ShaderNodeType p_type,int p_idx) {
 
 	ERR_FAIL_V("");
 }
-String VisualServer::shader_get_output_name(ShaderNodeType p_type,int p_idx) {
+String ShaderGraph::shader_get_output_name(NodeType p_type,int p_idx) {
 
 	switch(p_type) {
 
@@ -721,7 +886,7 @@ String VisualServer::shader_get_output_name(ShaderNodeType p_type,int p_idx) {
 
 	ERR_FAIL_V("");
 }
-bool VisualServer::shader_is_input_vector(ShaderNodeType p_type,int p_input) {
+bool ShaderGraph::shader_is_input_vector(NodeType p_type,int p_input) {
 
 	switch(p_type) {
 
@@ -789,7 +954,7 @@ bool VisualServer::shader_is_input_vector(ShaderNodeType p_type,int p_input) {
 
 	ERR_FAIL_V(false);
 }
-bool VisualServer::shader_is_output_vector(ShaderNodeType p_type,int p_input) {
+bool ShaderGraph::shader_is_output_vector(NodeType p_type,int p_input) {
 
 	switch(p_type) {
 
@@ -858,5 +1023,5 @@ bool VisualServer::shader_is_output_vector(ShaderNodeType p_type,int p_input) {
 	ERR_FAIL_V("");
 }
 
-
+#endif
 #endif

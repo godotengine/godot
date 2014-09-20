@@ -438,8 +438,12 @@ Ref<SpatialGizmo> Spatial::get_gizmo() const {
 void Spatial::_update_gizmo() {
 
 	data.gizmo_dirty=false;
-	if (data.gizmo.is_valid())
-		data.gizmo->redraw();
+	if (data.gizmo.is_valid()) {
+		if (is_visible())
+			data.gizmo->redraw();
+		else
+			data.gizmo->clear();
+	}
 }
 
 
@@ -511,6 +515,10 @@ void Spatial::_propagate_visibility_changed() {
 	notification(NOTIFICATION_VISIBILITY_CHANGED);
 	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 	_change_notify("visibility/visible");
+#ifdef TOOLS_ENABLED
+	if (data.gizmo.is_valid())
+		_update_gizmo();
+#endif
 
 	for (List<Spatial*>::Element*E=data.children.front();E;E=E->next()) {
 

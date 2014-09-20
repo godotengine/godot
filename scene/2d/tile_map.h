@@ -50,12 +50,13 @@ class TileMap : public Node2D {
 			int16_t x;
 			int16_t y;
 		};
-
 		uint32_t key;
-		bool operator<(const PosKey& pk) const { return key<pk.key; }
+
+		//using a more precise comparison so the regions can be sorted later
+		bool operator<(const PosKey& p_k) const { return (y==p_k.y) ? x < p_k.x : y < p_k.y;  }
 
 		PosKey(int16_t p_x, int16_t p_y) { x=p_x; y=p_y; }
-		PosKey() { key=0; }
+		PosKey() { x=0; y=0; }
 
 	};
 
@@ -97,6 +98,7 @@ class TileMap : public Node2D {
 
 	Rect2 rect_cache;
 	bool rect_cache_dirty;
+	bool quadrant_order_dirty;
 	float fp_adjust;
 	float friction;
 	float bounce;

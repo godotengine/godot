@@ -180,6 +180,7 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A,const Transform& 
 	}
 
 	concave_B->cull(local_aabb,concave_callback,&cinfo);
+	//print_line("COL AABB TESTS: "+itos(cinfo.aabb_tests));
 
 	return cinfo.collided;
 }
@@ -345,6 +346,8 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform&
 			r_point_B=cinfo.close_B;
 
 		}
+
+		//print_line("DIST AABB TESTS: "+itos(cinfo.aabb_tests));
 
 		return !cinfo.collided;
 	} else {
