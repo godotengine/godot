@@ -201,6 +201,8 @@ public:
 
 	String get_data_dir() const;
 
+	void print_line(String p_string, bool new_line = true);
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

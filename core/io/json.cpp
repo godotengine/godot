@@ -109,6 +109,21 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 				idx++;
 				break;
 			};
+			case '/': {
+				// skip comment
+				if (p_str[idx]=='/'&&p_str[idx+1]=='/') {
+					while(p_str[idx]!='\r'&&p_str[idx]!='\n')
+						idx++;
+					while(p_str[idx]=='\r'||p_str[idx]=='\n')
+						idx++;
+					line++;
+				} else {
+					r_err_str="Invalid comment.";
+					return ERR_PARSE_ERROR;
+				}
+				break;
+			};
+
 			case 0: {
 				r_token.type=TK_EOF;
 				return OK;

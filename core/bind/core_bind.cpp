@@ -594,6 +594,11 @@ String _OS::get_custom_level() const {
 }
 _OS *_OS::singleton=NULL;
 
+void _OS::print_line(String p_string, bool new_line) {
+
+	return ::print_line(p_string);
+}
+
 void _OS::_bind_methods() {
 
 	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&_OS::get_mouse_pos);
@@ -673,6 +678,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
 	ObjectTypeDB::bind_method(_MD("print_resources_by_type"),&_OS::print_resources_by_type);
+
+	ObjectTypeDB::bind_method(_MD("print_line"),&_OS::print_line,DEFVAL(true));
 
 	ObjectTypeDB::bind_method(_MD("native_video_play"),&_OS::native_video_play);
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
