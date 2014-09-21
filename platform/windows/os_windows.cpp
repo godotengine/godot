@@ -1331,7 +1331,7 @@ OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
 
 void OS_Windows::warp_mouse_pos(const Point2& p_to) {
 
-	if (p_mode==MOUSE_MODE_CAPTURED) {
+	if (mouse_mode==MOUSE_MODE_CAPTURED) {
 
 		old_x=p_to.x;
 		old_y=p_to.y;

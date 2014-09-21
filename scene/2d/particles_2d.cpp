@@ -484,7 +484,7 @@ void Particles2D::_notification(int p_what) {
 
 			Particle *pdata=&particles[0];
 			int particle_count=particles.size();
-			Rect2 r(Point2(),size);
+
 			RID texrid;
 
 			if (texture.is_valid())
@@ -606,9 +606,10 @@ void Particles2D::_notification(int p_what) {
 
 				if (texrid.is_valid()) {
 
-					VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
+					texture->draw(ci,Point2(),color);
+					//VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
 				} else {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,r,color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2(),size),color);
 
 				}
 

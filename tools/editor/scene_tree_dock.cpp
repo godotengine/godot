@@ -484,6 +484,16 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 
 	}
 
+
+	List<Node::GroupInfo> group_info;
+	p_node->get_groups(&group_info);
+	for (List<Node::GroupInfo>::Element *E=group_info.front();E;E=E->next()) {
+
+		if (E->get().persistent)
+			node->add_to_group(E->get().name,true);
+	}
+
+
 	node->set_name(p_node->get_name());
 	duplimap[p_node]=node;
 

@@ -5748,7 +5748,7 @@ void RasterizerGLES2::_setup_skeleton(const Skeleton *p_skeleton) {
 void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Transform& p_view_transform, const Transform& p_view_transform_inverse,const CameraMatrix& p_projection,bool p_reverse_cull,bool p_fragment_light,bool p_alpha_pass) {
 
 	if (current_rt && current_rt_vflip) {
-		p_reverse_cull=!p_reverse_cull;
+		//p_reverse_cull=!p_reverse_cull;
 		glFrontFace(GL_CCW);
 
 	}
@@ -5881,10 +5881,12 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 				if (desired_blend) {
 					glEnable(GL_BLEND);
-					glColorMask(1,1,1,0);
+					if (!current_rt || !current_rt_transparent)
+						glColorMask(1,1,1,0);
 				} else {
 					glDisable(GL_BLEND);
 					glColorMask(1,1,1,1);
+
 				}
 
 				prev_blend=desired_blend;
@@ -5892,8 +5894,8 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 			if (desired_blend && desired_blend_mode!=current_blend_mode) {
 
-				switch(desired_blend_mode) {
 
+				switch(desired_blend_mode) {
 
 					 case VS::MATERIAL_BLEND_MODE_MIX: {
 						glBlendEquation(GL_FUNC_ADD);

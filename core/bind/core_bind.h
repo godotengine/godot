@@ -201,6 +201,9 @@ public:
 
 	String get_data_dir() const;
 
+	void set_time_scale(float p_scale);
+	float get_time_scale();
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

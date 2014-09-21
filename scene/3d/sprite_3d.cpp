@@ -399,6 +399,20 @@ void Sprite3D::_draw() {
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
 
+	if (axis!=Vector3::AXIS_Z) {
+		SWAP(x_axis,y_axis);
+
+		for(int i=0;i<4;i++) {
+			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			//SWAP(vertices[i].x,vertices[i].y);
+			if (axis==Vector3::AXIS_Y) {
+				vertices[i].y = - vertices[i].y;
+			} else if (axis==Vector3::AXIS_X) {
+				vertices[i].x = - vertices[i].x;
+			}
+		}
+	}
+
 	AABB aabb;
 
 	for(int i=0;i<4;i++) {
@@ -407,8 +421,8 @@ void Sprite3D::_draw() {
 		VS::get_singleton()->immediate_uv(immediate,uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis]=vertices[i][x_axis];
-		vtx[y_axis]=vertices[i][y_axis];
+		vtx[x_axis]=vertices[i][0];
+		vtx[y_axis]=vertices[i][1];
 		VS::get_singleton()->immediate_vertex(immediate,vtx);
 		if (i==0) {
 			aabb.pos=vtx;
@@ -661,6 +675,20 @@ void AnimatedSprite3D::_draw() {
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
 
+	if (axis!=Vector3::AXIS_Z) {
+		SWAP(x_axis,y_axis);
+
+		for(int i=0;i<4;i++) {
+			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			//SWAP(vertices[i].x,vertices[i].y);
+			if (axis==Vector3::AXIS_Y) {
+				vertices[i].y = - vertices[i].y;
+			} else if (axis==Vector3::AXIS_X) {
+				vertices[i].x = - vertices[i].x;
+			}
+		}
+	}
+
 	AABB aabb;
 
 	for(int i=0;i<4;i++) {
@@ -669,8 +697,8 @@ void AnimatedSprite3D::_draw() {
 		VS::get_singleton()->immediate_uv(immediate,uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis]=vertices[i][x_axis];
-		vtx[y_axis]=vertices[i][y_axis];
+		vtx[x_axis]=vertices[i][0];
+		vtx[y_axis]=vertices[i][1];
 		VS::get_singleton()->immediate_vertex(immediate,vtx);
 		if (i==0) {
 			aabb.pos=vtx;

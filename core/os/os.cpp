@@ -474,6 +474,16 @@ OS::MouseMode OS::get_mouse_mode() const{
 	return MOUSE_MODE_VISIBLE;
 }
 
+void OS::set_time_scale(float p_scale) {
+
+	_time_scale=p_scale;
+}
+
+float OS::get_time_scale() const {
+
+	return _time_scale;
+}
+
 
 OS::OS() {
 	last_error=NULL;
@@ -489,6 +499,7 @@ OS::OS() {
 	_fps=1;
 	_target_fps=0;
 	_render_thread_mode=RENDER_THREAD_SAFE;
+	_time_scale=1.0;
 	Math::seed(1234567);
 }
 

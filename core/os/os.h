@@ -55,6 +55,7 @@ class OS {
 	int _orientation;
 	float _fps;
 	int _target_fps;
+	float _time_scale;
 
 	char *last_error;
 
@@ -331,6 +332,10 @@ public:
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object* p_obj, String p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);
+
+
+	void set_time_scale(float p_scale);
+	float get_time_scale() const;
 
 	OS();	
 	virtual ~OS();
