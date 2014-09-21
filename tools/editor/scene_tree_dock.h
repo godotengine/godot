@@ -104,6 +104,7 @@ class SceneTreeDock : public VBoxContainer {
 
 
 	void _node_selected();
+	void _node_renamed();
 	void _script_created(Ref<Script> p_script);
 
 	void _delete_confirm();
