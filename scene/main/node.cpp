@@ -1107,7 +1107,7 @@ void Node::get_groups(List<GroupInfo> *p_groups) const {
 
 void Node::_print_tree(const Node *p_node) {
 
-	printf("%ls\n", String(p_node->get_path_to(this)).c_str());
+	print_line(String(p_node->get_path_to(this)));
 	for (int i=0;i<data.children.size();i++)
 		data.children[i]->_print_tree(p_node);
 }

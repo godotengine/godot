@@ -9,6 +9,11 @@ func goto_scene(scene):
 	var s = ResourceLoader.load(scene)
 	#queue erasing old (don't use free because that scene is calling this method)
 	current_scene.queue_free()
+	# Remove the scene before loading the previous one.
+	# The node is removed when deleted anyway, but this will fix issues that 
+	# might arise if both have a root node with the same name,
+        # as adding both together will cause the second to be renamed. (not usually a problem, but you might be wanting to look for the node later and not find it)
+	get_scene().get_root().remove(current_scene)
 	#instance the new scene
 	current_scene = s.instance()
 	#add it to the active scene, as child of root

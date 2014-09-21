@@ -329,6 +329,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	VisualServer::get_singleton()->canvas_item_set_parent( q.canvas_item, get_canvas_item() );
 	VisualServer::get_singleton()->canvas_item_set_transform( q.canvas_item, xform );
 	q.static_body=Physics2DServer::get_singleton()->body_create(Physics2DServer::BODY_MODE_STATIC);
+	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.static_body,get_instance_ID());
 	Physics2DServer::get_singleton()->body_set_layer_mask(q.static_body,collision_layer);
 	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_FRICTION,friction);
 	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);

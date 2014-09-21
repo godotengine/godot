@@ -2611,20 +2611,53 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 	int line=-1;
 	int pos=-1;
 
+	line=p_from_line;
+
 	for(int i=0;i<text.size()+1;i++) {
 		//backwards is broken...
-		int idx=(p_search_flags&SEARCH_BACKWARDS)?(text.size()-i):i; //do backwards seearch
-		line = (idx+p_from_line)%text.size();
+		//int idx=(p_search_flags&SEARCH_BACKWARDS)?(text.size()-i):i; //do backwards seearch
+
+
+		if (line<0) {
+			line=text.size()-1;
+		}
+		if (line==text.size()) {
+			line=0;
+		}
 
 		String text_line = text[line];
-		int from_column=(idx==0)?p_from_column:0;
-		if (idx==text.size()) {
-			text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
+		int from_column=0;
+		if (line==p_from_line) {
+
+			if (i==text.size()) {
+				//wrapped
+
+				if (p_search_flags&SEARCH_BACKWARDS) {
+					text_line=text_line.substr(from_column,text_line.length());
+					from_column=text_line.length();
+				} else {
+					text_line=text_line.substr(0,from_column);
+					from_column=0;
+				}
+
+			} else {
+
+				from_column=p_from_column;
+			}
+
+
+		} else {
+			//text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
+			if (p_search_flags&SEARCH_BACKWARDS)
+				from_column=text_line.length()-1;
+			else
+				from_column=0;
 		}
 
 		pos=-1;
 
 		if (!(p_search_flags&SEARCH_BACKWARDS)) {
+
 			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,from_column):text_line.findn(p_key,from_column);
 		} else {
 
@@ -2641,6 +2674,11 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 		if (pos!=-1)
 			break;
+
+		if (p_search_flags&SEARCH_BACKWARDS)
+			line--;
+		else
+			line++;
 
 	}
 

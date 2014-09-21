@@ -2117,9 +2117,15 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										break;
 									}
 
-								};
+								}; //fallthrough to use the same
 								case Variant::REAL: {
 
+									float sign=1.0;
+
+									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
+										sign=-1;
+										tokenizer->advance();
+									}
 									if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
 										current_export=PropertyInfo();
@@ -2130,7 +2136,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										//enumeration
 									current_export.hint=PROPERTY_HINT_RANGE;
 
-									current_export.hint_string=tokenizer->get_token_constant().operator String();
+									current_export.hint_string=rtos(sign*double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
 									if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -2147,6 +2153,12 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 									tokenizer->advance();
 
+									sign=1.0;
+									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
+										sign=-1;
+										tokenizer->advance();
+									}
+
 									if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
 										current_export=PropertyInfo();
@@ -2154,7 +2166,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										return;
 									}
 
-									current_export.hint_string+=","+tokenizer->get_token_constant().operator String();
+									current_export.hint_string+=","+rtos(sign*double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
 									if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE)
@@ -2168,6 +2180,11 @@ void GDParser::_parse_class(ClassNode *p_class) {
 									}
 
 									tokenizer->advance();
+									sign=1.0;
+									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
+										sign=-1;
+										tokenizer->advance();
+									}
 
 									if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
@@ -2176,7 +2193,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										return;
 									}
 
-									current_export.hint_string+=","+tokenizer->get_token_constant().operator String();
+									current_export.hint_string+=","+rtos(sign*double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
 								} break;

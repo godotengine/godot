@@ -197,7 +197,7 @@ protected:
 public:
 
 
-	OmniLight() : Light( VisualServer::LIGHT_OMNI ) {}
+	OmniLight() : Light( VisualServer::LIGHT_OMNI ) { set_parameter(PARAM_SHADOW_Z_OFFSET,0.001);}
 };
 
 class SpotLight : public Light {
