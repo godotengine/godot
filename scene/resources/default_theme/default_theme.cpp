@@ -250,7 +250,7 @@ void make_default_theme() {
 	tb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
 	t->set_stylebox("normal","ToolButton", tb_empty);
-	t->set_stylebox("pressed","ToolButton", make_stylebox( button_pressed_png,4,4,4,4) );
+	t->set_stylebox("pressed","ToolButton", make_stylebox( button_pressed_png,4,4,4,4,8) );
 	t->set_stylebox("hover","ToolButton", make_stylebox( button_normal_png,4,4,4,4) );
 	t->set_stylebox("disabled","ToolButton", make_empty_stylebox(4,4,4,4) );
 	t->set_stylebox("focus","ToolButton", focus );
@@ -361,7 +361,7 @@ void make_default_theme() {
 	t->set_color("cursor_color","LineEdit", control_font_color_hover );
 	t->set_color("selection_color","LineEdit", font_color_selection );
 
-	t->set_constant("minimum_spaces","LineEdit", 8 );
+	t->set_constant("minimum_spaces","LineEdit", 12 );
 
 
 
@@ -595,8 +595,8 @@ void make_default_theme() {
 	tc_sb->set_expand_margin_size(MARGIN_TOP,2);
 	tc_sb->set_default_margin(MARGIN_TOP,8);
 
-	t->set_stylebox("tab_fg","TabContainer", make_stylebox( tab_current_png,4,4,4,4,8,4,8,4) );
-	t->set_stylebox("tab_bg","TabContainer", make_stylebox( tab_behind_png,4,4,4,4,8,6,8,4) );
+	t->set_stylebox("tab_fg","TabContainer", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
+	t->set_stylebox("tab_bg","TabContainer", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
 	t->set_stylebox("panel","TabContainer", tc_sb );
 
 	t->set_icon("increment","TabContainer",make_icon( scroll_button_right_png));
@@ -619,8 +619,8 @@ void make_default_theme() {
 
 	// Tabs
 
-	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,4,4,4,4) );
-	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,4,4,4,4) );
+	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
+	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
 	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,4,4,4,4) );
 
 	t->set_font("font","Tabs", default_font );
