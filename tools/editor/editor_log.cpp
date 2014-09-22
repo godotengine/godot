@@ -216,6 +216,8 @@ EditorLog::EditorLog() {
 
 	log = memnew( RichTextLabel );
 	log->set_scroll_follow(true);
+	log->set_selection_enabled(true);
+	log->set_focus_mode(FOCUS_CLICK);
 	pc->add_child(log);
 	add_message(VERSION_FULL_NAME" (c) 2008-2014 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.

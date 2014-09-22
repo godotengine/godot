@@ -69,6 +69,29 @@ uint32_t PhysicsBody::get_layer_mask() const {
 	return layer_mask;
 }
 
+void PhysicsBody::add_collision_exception_with(Node* p_node) {
+
+	ERR_FAIL_NULL(p_node);
+	PhysicsBody *physics_body = p_node->cast_to<PhysicsBody>();
+	if (!physics_body) {
+		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
+	}
+	ERR_FAIL_COND(!physics_body);
+	PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(),physics_body->get_rid());
+
+}
+
+void PhysicsBody::remove_collision_exception_with(Node* p_node) {
+
+	ERR_FAIL_NULL(p_node);
+	PhysicsBody *physics_body = p_node->cast_to<PhysicsBody>();
+	if (!physics_body) {
+		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
+	}
+	ERR_FAIL_COND(!physics_body);
+	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(),physics_body->get_rid());
+}
+
 void PhysicsBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
@@ -145,6 +168,9 @@ void StaticBody::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_bounce","bounce"),&StaticBody::set_bounce);
 	ObjectTypeDB::bind_method(_MD("get_bounce"),&StaticBody::get_bounce);
+
+	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody"),&PhysicsBody::add_collision_exception_with);
+	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody"),&PhysicsBody::remove_collision_exception_with);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
@@ -368,7 +394,7 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 	set_global_transform(state->get_transform());
 	linear_velocity=state->get_linear_velocity();
 	angular_velocity=state->get_angular_velocity();
-	active=!state->is_sleeping();
+	sleeping=state->is_sleeping();
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces",state);
 	set_ignore_transform_notification(false);
@@ -519,10 +545,10 @@ bool RigidBody::is_using_custom_integrator(){
 	return custom_integrator;
 }
 
-void RigidBody::set_active(bool p_active) {
+void RigidBody::set_sleeping(bool p_sleeping) {
 
-	active=p_active;
-	PhysicsServer::get_singleton()->body_set_state(get_rid(),PhysicsServer::BODY_STATE_SLEEPING,!active);
+	sleeping=p_sleeping;
+	PhysicsServer::get_singleton()->body_set_state(get_rid(),PhysicsServer::BODY_STATE_SLEEPING,sleeping);
 
 }
 
@@ -537,9 +563,9 @@ bool RigidBody::is_able_to_sleep() const {
 	return can_sleep;
 }
 
-bool RigidBody::is_active() const {
+bool RigidBody::is_sleeping() const {
 
-	return active;
+	return sleeping;
 }
 
 void RigidBody::set_max_contacts_reported(int p_amount) {
@@ -647,8 +673,8 @@ void RigidBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_axis_velocity","axis_velocity"),&RigidBody::set_axis_velocity);
 	ObjectTypeDB::bind_method(_MD("apply_impulse","pos","impulse"),&RigidBody::apply_impulse);
 
-	ObjectTypeDB::bind_method(_MD("set_active","active"),&RigidBody::set_active);
-	ObjectTypeDB::bind_method(_MD("is_active"),&RigidBody::is_active);
+	ObjectTypeDB::bind_method(_MD("set_sleeping","sleeping"),&RigidBody::set_sleeping);
+	ObjectTypeDB::bind_method(_MD("is_sleeping"),&RigidBody::is_sleeping);
 
 	ObjectTypeDB::bind_method(_MD("set_can_sleep","able_to_sleep"),&RigidBody::set_can_sleep);
 	ObjectTypeDB::bind_method(_MD("is_able_to_sleep"),&RigidBody::is_able_to_sleep);
@@ -671,7 +697,7 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"continuous_cd"),_SCS("set_use_continuous_collision_detection"),_SCS("is_using_continuous_collision_detection"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"contacts_reported"),_SCS("set_max_contacts_reported"),_SCS("get_max_contacts_reported"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"contact_monitor"),_SCS("set_contact_monitor"),_SCS("is_contact_monitor_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"active"),_SCS("set_active"),_SCS("is_active"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"sleeping"),_SCS("set_sleeping"),_SCS("is_sleeping"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"can_sleep"),_SCS("set_can_sleep"),_SCS("is_able_to_sleep"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"axis_lock",PROPERTY_HINT_ENUM,"Disabled,Lock X,Lock Y,Lock Z"),_SCS("set_axis_lock"),_SCS("get_axis_lock"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"velocity/linear"),_SCS("set_linear_velocity"),_SCS("get_linear_velocity"));
@@ -699,7 +725,7 @@ RigidBody::RigidBody() : PhysicsBody(PhysicsServer::BODY_MODE_RIGID) {
 	state=NULL;
 
 	//angular_velocity=0;
-	active=true;
+	sleeping=false;
 	ccd=false;
 
 	custom_integrator=false;

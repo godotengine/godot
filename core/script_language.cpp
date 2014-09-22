@@ -283,8 +283,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties,co
 		to_remove.pop_front();
 	}
 
-	if (owner && owner->get_script_instance()==this)
+	if (owner && owner->get_script_instance()==this) {
+
 		owner->_change_notify();
+	}
 	//change notify
 }
 
