@@ -227,6 +227,13 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				path=base_path+"/"+path;
 			path = path.replace("///","//");
 
+			int at = path.find("//");
+			// path check, invalid path like: res://assets/images//avatar.png (REMAP should be failure!!!)
+			if(path.find("//", at + 1) != -1) {
+				_set_error("Invalid path, plz do not contain '//' : " + path);
+				return NULL;
+			}
+
 			Ref<Resource> res;
 			if (!validating) {
 
