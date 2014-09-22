@@ -92,6 +92,8 @@ public:
 
 	virtual ScriptLanguage *get_language() const=0;
 
+	virtual void update_exports() {} //editor tool
+
 	
 	Script() {}
 };

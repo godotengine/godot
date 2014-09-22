@@ -53,6 +53,8 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
+	void add_collision_exception_with(Node* p_node); //must be physicsbody
+	void remove_collision_exception_with(Node* p_node);
 
 	PhysicsBody();
 
@@ -125,7 +127,7 @@ private:
 
 	Vector3 linear_velocity;
 	Vector3  angular_velocity;
-	bool active;
+	bool sleeping;
 	bool ccd;
 
 	AxisLock axis_lock;
@@ -216,8 +218,8 @@ public:
 	void set_use_custom_integrator(bool p_enable);
 	bool is_using_custom_integrator();
 
-	void set_active(bool p_active);
-	bool is_active() const;
+	void set_sleeping(bool p_sleeping);
+	bool is_sleeping() const;
 
 	void set_can_sleep(bool p_active);
 	bool is_able_to_sleep() const;

@@ -247,10 +247,10 @@ void VisibilityEnabler::_change_node_state(Node* p_node,bool p_enabled) {
 			if (p_enabled) {
 				RigidBody::Mode mode = RigidBody::Mode(nodes[p_node].operator int());
 				//rb->set_mode(mode);
-				rb->set_active(true);
+				rb->set_sleeping(false);
 			} else {
 				//rb->set_mode(RigidBody::MODE_STATIC);
-				rb->set_active(false);
+				rb->set_sleeping(true);
 			}
 		}
 	}

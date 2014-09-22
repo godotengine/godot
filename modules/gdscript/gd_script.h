@@ -299,6 +299,8 @@ public:
 	virtual bool has_source_code() const;
 	virtual String get_source_code() const;
 	virtual void set_source_code(const String& p_code);
+	virtual void update_exports();
+
 	virtual Error reload();
 
 	virtual String get_node_type() const;
