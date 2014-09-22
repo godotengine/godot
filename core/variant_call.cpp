@@ -1015,6 +1015,32 @@ Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int
 	return Variant();
 }
 
+
+bool Variant::has_method(const StringName& p_method) const {
+
+
+	if (type==OBJECT) {
+		Object *obj = operator Object*();
+		if (!obj)
+			return false;
+#ifdef DEBUG_ENABLED
+		if (ScriptDebugger::get_singleton()) {
+			if (ObjectDB::instance_validate(obj)) {
+#endif
+				return obj->has_method(p_method);
+#ifdef DEBUG_ENABLED
+
+			}
+		}
+#endif
+	}
+
+
+	const _VariantCall::TypeFunc &fd = _VariantCall::type_funcs[type];
+	return fd.functions.has(p_method);
+
+}
+
 void Variant::get_method_list(List<MethodInfo> *p_list) const {
 
 

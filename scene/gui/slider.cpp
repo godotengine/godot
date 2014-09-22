@@ -49,7 +49,10 @@ void Slider::_input_event(InputEvent p_event) {
 			if (mb.pressed)	{
 				grab.pos=orientation==VERTICAL?mb.y:mb.x;
 				double max = orientation==VERTICAL ? get_size().height : get_size().width ;
-				set_val( ( ( (double)grab.pos / max) * ( get_max() - get_min() ) ) + get_min() ); 
+				if (orientation==VERTICAL)
+					set_val( ( ( -(double)grab.pos / max) * ( get_max() - get_min() ) ) + get_max() );
+				else
+					set_val( ( ( (double)grab.pos / max) * ( get_max() - get_min() ) ) + get_min() );
 				grab.active=true;
 				grab.uvalue=get_unit_value();
 			} else {

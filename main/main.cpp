@@ -157,6 +157,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print("\t-d,-debug : Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("\t-rdebug ADDRESS : Remote debug (<ip>:<port> host address).\n");
 	OS::get_singleton()->print("\t-fdelay [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
+	OS::get_singleton()->print("\t-timescale [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
 	OS::get_singleton()->print("\t-bp : breakpoint list as source::line comma separated pairs, no spaces (%%20,%%2C,etc instead).\n");
 	OS::get_singleton()->print("\t-v : Verbose stdout mode\n");
 	OS::get_singleton()->print("\t-lang [locale]: Use a specific locale\n");
@@ -418,6 +419,17 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			if (I->next()) {
 
 				OS::get_singleton()->set_frame_delay(I->next()->get().to_int());
+				N=I->next()->next();
+			} else {
+				goto error;
+
+			}
+
+		} else if (I->get()=="-timescale") { // resolution
+
+			if (I->next()) {
+
+				OS::get_singleton()->set_time_scale(I->next()->get().to_double());
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -1298,6 +1310,8 @@ bool Main::iteration() {
 
 	time_accum+=step;
 
+	float time_scale = OS::get_singleton()->get_time_scale();
+
 	bool exit=false;
 
 
@@ -1313,15 +1327,15 @@ bool Main::iteration() {
 		Physics2DServer::get_singleton()->sync();
 		Physics2DServer::get_singleton()->flush_queries();
 
-		if (OS::get_singleton()->get_main_loop()->iteration( frame_slice )) {
+		if (OS::get_singleton()->get_main_loop()->iteration( frame_slice*time_scale )) {
 			exit=true;
 			break;
 		}
 
 		message_queue->flush();
 
-		PhysicsServer::get_singleton()->step(frame_slice);
-		Physics2DServer::get_singleton()->step(frame_slice);
+		PhysicsServer::get_singleton()->step(frame_slice*time_scale);
+		Physics2DServer::get_singleton()->step(frame_slice*time_scale);
 
 		time_accum-=frame_slice;
 		message_queue->flush();
@@ -1334,13 +1348,13 @@ bool Main::iteration() {
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	OS::get_singleton()->get_main_loop()->idle( step );
+	OS::get_singleton()->get_main_loop()->idle( step*time_scale );
 	message_queue->flush();
 
 	if (SpatialSoundServer::get_singleton())
-		SpatialSoundServer::get_singleton()->update( step );
+		SpatialSoundServer::get_singleton()->update( step*time_scale );
 	if (SpatialSound2DServer::get_singleton())
-		SpatialSound2DServer::get_singleton()->update( step );
+		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
 	if (OS::get_singleton()->can_draw()) {

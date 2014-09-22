@@ -2123,7 +2123,19 @@ void SpatialEditorViewport::_bind_methods(){
 }
 
 
+void SpatialEditorViewport::reset() {
 
+	orthogonal=false;
+	message_time=0;
+	message="";
+	last_message="";
+
+	cursor.x_rot=0;
+	cursor.y_rot=0;
+	cursor.distance=4;
+	cursor.region_select=false;
+
+}
 
 SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
 
@@ -3309,6 +3321,34 @@ void SpatialEditor::_bind_methods() {
 
 }
 
+void SpatialEditor::clear() {
+
+	settings_fov->set_text(EDITOR_DEF("3d_editor/default_fov",60.0));
+	settings_znear->set_text(EDITOR_DEF("3d_editor/default_z_near",0.1));
+	settings_zfar->set_text(EDITOR_DEF("3d_editor/default_z_far",1500.0));
+
+	for(int i=0;i<4;i++) {
+		viewports[i]->reset();
+	}
+
+	_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
+	_menu_item_pressed(MENU_VIEW_DISPLAY_NORMAL);
+
+
+	VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_VISIBLE,true);
+	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_ORIGIN), true);
+	for(int i=0;i<3;++i) {
+		if (grid_enable[i]) {
+			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,true);
+			grid_visible[i]=true;
+		}
+	}
+
+	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), true );
+
+
+}
+
 SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 
@@ -3538,7 +3578,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	settings_zfar->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	settings_zfar->set_begin( Point2(15,102) );
 	settings_zfar->set_end( Point2(15,115) );
-	settings_zfar->set_text(EDITOR_DEF("3d_editor/default_z_far",500.0));
+	settings_zfar->set_text(EDITOR_DEF("3d_editor/default_z_far",1500.0));
 	settings_dialog->add_child(settings_zfar);
 
 	//settings_dialog->get_cancel()->hide();

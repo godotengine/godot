@@ -306,6 +306,16 @@ MainLoop *_OS::get_main_loop() const {
 
 	return OS::get_singleton()->get_main_loop();
 }
+
+void _OS::set_time_scale(float p_scale) {
+	OS::get_singleton()->set_time_scale(p_scale);
+}
+
+float _OS::get_time_scale() {
+
+	return OS::get_singleton()->get_time_scale();
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -622,6 +632,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
 	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
+
+	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&_OS::set_time_scale);
+	ObjectTypeDB::bind_method(_MD("get_time_scale"),&_OS::get_time_scale);
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 

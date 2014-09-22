@@ -55,6 +55,7 @@ class OS {
 	int _orientation;
 	float _fps;
 	int _target_fps;
+	float _time_scale;
 
 	char *last_error;
 
@@ -136,6 +137,7 @@ public:
 	virtual MouseMode get_mouse_mode() const;
 
 
+	virtual void warp_mouse_pos(const Point2& p_to)  {}
 	virtual Point2 get_mouse_pos() const=0;
 	virtual int get_mouse_button_state() const=0;
 	virtual void set_window_title(const String& p_title)=0;
@@ -330,6 +332,10 @@ public:
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object* p_obj, String p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);
+
+
+	void set_time_scale(float p_scale);
+	float get_time_scale() const;
 
 	OS();	
 	virtual ~OS();

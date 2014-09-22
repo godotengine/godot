@@ -223,6 +223,7 @@ public:
 	void set_can_preview(Camera* p_preview);
 	void set_state(const Dictionary& p_state);
 	Dictionary get_state() const;
+	void reset();
 
 
 
@@ -479,6 +480,7 @@ public:
 
 	Camera *get_camera() { return NULL; }
 	void edit(Spatial *p_spatial);
+	void clear();
 	SpatialEditor(EditorNode *p_editor);
 	~SpatialEditor();
 };
@@ -504,6 +506,7 @@ public:
 
 	virtual Dictionary get_state() const;
 	virtual void set_state(const Dictionary& p_state);
+	virtual void clear() { spatial_editor->clear(); }
 
 
 	SpatialEditorPlugin(EditorNode *p_node);

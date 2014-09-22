@@ -388,6 +388,7 @@ public:
 	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
+	bool has_method(const StringName& p_method) const;
 
 	void set_named(const StringName& p_index, const Variant& p_value, bool *r_valid=NULL);
 	Variant get_named(const StringName& p_index, bool *r_valid=NULL) const;

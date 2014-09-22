@@ -204,6 +204,9 @@ public:
 
 	void print_line(String p_string, bool new_line = true);
 
+	void set_time_scale(float p_scale);
+	float get_time_scale();
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

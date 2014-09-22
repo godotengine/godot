@@ -79,8 +79,14 @@ void EditorPath::_notification(int p_what) {
 					} else if (obj->cast_to<Node>()) {
 
 						name=obj->cast_to<Node>()->get_name();
-					} else
+					} else if (obj->cast_to<Resource>() && obj->cast_to<Resource>()->get_name()!="") {
+						name=obj->cast_to<Resource>()->get_name();
+					} else {
 						name=obj->get_type();
+					}
+
+					set_tooltip(obj->get_type());
+
 
 					label_font->draw(ci,Point2i(ofs,(size.height-label_font->get_height())/2+label_font->get_ascent()),name,Color(1,1,1),left);
 				} else {

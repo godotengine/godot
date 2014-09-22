@@ -1645,10 +1645,12 @@ void Object::_bind_methods() {
 	BIND_VMETHOD( miget );
 
 	MethodInfo plget("_get_property_list");
+
 	plget.return_val.type=Variant::ARRAY;
 	BIND_VMETHOD( plget );
 
 #endif
+	BIND_VMETHOD( MethodInfo("_init") );
 
 
 

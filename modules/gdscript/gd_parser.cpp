@@ -2089,6 +2089,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 												current_export=PropertyInfo();
 												_set_error("Expected a string constant in enumeration hint.");
+												return;
 											}
 
 											String c = tokenizer->get_token_constant();
@@ -2106,6 +2107,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 											if (tokenizer->get_token()!=GDTokenizer::TK_COMMA) {
 												current_export=PropertyInfo();
 												_set_error("Expected ')' or ',' in enumeration hint.");
+												return;
 											}
 
 											tokenizer->advance();
@@ -2115,19 +2117,26 @@ void GDParser::_parse_class(ClassNode *p_class) {
 										break;
 									}
 
-								};
+								}; //fallthrough to use the same
 								case Variant::REAL: {
 
+									float sign=1.0;
+
+									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
+										sign=-1;
+										tokenizer->advance();
+									}
 									if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
 										current_export=PropertyInfo();
 										_set_error("Expected a range in numeric hint.");
+										return;
 
 									}
 										//enumeration
 									current_export.hint=PROPERTY_HINT_RANGE;
 
-									current_export.hint_string=tokenizer->get_token_constant().operator String();
+									current_export.hint_string=rtos(sign*double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
 									if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
@@ -2139,17 +2148,25 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 										current_export=PropertyInfo();
 										_set_error("Expected ',' or ')' in numeric range hint.");
+										return;
 									}
 
 									tokenizer->advance();
+
+									sign=1.0;
+									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
+										sign=-1;
+										tokenizer->advance();
+									}
 
 									if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
 										current_export=PropertyInfo();
 										_set_error("Expected a number as upper bound in numeric range hint.");
+										return;
 									}
 
-									current_export.hint_string+=","+tokenizer->get_token_constant().operator String();
+									current_export.hint_string+=","+rtos(sign*double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
 									if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE)
@@ -2159,17 +2176,24 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 										current_export=PropertyInfo();
 										_set_error("Expected ',' or ')' in numeric range hint.");
+										return;
 									}
 
 									tokenizer->advance();
+									sign=1.0;
+									if (tokenizer->get_token()==GDTokenizer::TK_OP_SUB) {
+										sign=-1;
+										tokenizer->advance();
+									}
 
 									if (tokenizer->get_token()!=GDTokenizer::TK_CONSTANT || !tokenizer->get_token_constant().is_num()) {
 
 										current_export=PropertyInfo();
 										_set_error("Expected a number as step in numeric range hint.");
+										return;
 									}
 
-									current_export.hint_string+=","+tokenizer->get_token_constant().operator String();
+									current_export.hint_string+=","+rtos(sign*double(tokenizer->get_token_constant()));
 									tokenizer->advance();
 
 								} break;
@@ -2185,6 +2209,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 												current_export=PropertyInfo();
 												_set_error("Expected a string constant in enumeration hint.");
+												return;
 											}
 
 											String c = tokenizer->get_token_constant();

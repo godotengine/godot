@@ -45,6 +45,7 @@ public:
 
 	virtual void create()=0;
 	virtual void transform()=0;
+	virtual void clear()=0;
 	virtual void redraw()=0;
 	virtual void free()=0;
 

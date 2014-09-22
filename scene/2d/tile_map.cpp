@@ -269,6 +269,20 @@ void TileMap::_update_dirty_quadrants() {
 
 	pending_update=false;
 
+	if (quadrant_order_dirty) {
+
+		for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+			Quadrant &q=E->get();
+			if (q.canvas_item.is_valid()) {
+				VS::get_singleton()->canvas_item_raise(q.canvas_item);
+			}
+
+		}
+
+		quadrant_order_dirty=false;
+	}
+
 	_recompute_rect_cache();
 
 }
@@ -315,6 +329,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	VisualServer::get_singleton()->canvas_item_set_parent( q.canvas_item, get_canvas_item() );
 	VisualServer::get_singleton()->canvas_item_set_transform( q.canvas_item, xform );
 	q.static_body=Physics2DServer::get_singleton()->body_create(Physics2DServer::BODY_MODE_STATIC);
+	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.static_body,get_instance_ID());
 	Physics2DServer::get_singleton()->body_set_layer_mask(q.static_body,collision_layer);
 	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_FRICTION,friction);
 	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);
@@ -329,6 +344,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.pos=Vector2(p_qk.x,p_qk.y)*quadrant_size*cell_size;
 
 	rect_cache_dirty=true;
+	quadrant_order_dirty=true;
 	return quadrant_map.insert(p_qk,q);
 }
 
@@ -387,8 +403,9 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
 
 	if (!E) {
 		E=tile_map.insert(pk,Cell());
-		if (!Q)
+		if (!Q) {
 			Q=_create_quadrant(qk);
+		}
 		Quadrant &q=Q->get();
 		q.cells.insert(pk);
 	} else {
@@ -510,6 +527,7 @@ void TileMap::_set_tile_data(const DVector<int>& p_data) {
 //		if (x<-20 || y <-20 || x>4000 || y>4000)
 //			continue;
 		set_cell(x,y,v,flip_h,flip_v);
+
 	}
 
 }
@@ -658,6 +676,7 @@ TileMap::TileMap() {
 
 	rect_cache_dirty=true;
 	pending_update=false;
+	quadrant_order_dirty=false;
 	quadrant_size=16;
 	cell_size=64;
 	center_x=false;

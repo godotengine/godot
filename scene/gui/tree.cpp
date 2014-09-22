@@ -3038,20 +3038,23 @@ TreeItem* Tree::_find_item_at_pos(TreeItem*p_item, const Point2& p_pos,int& r_co
 String Tree::get_tooltip(const Point2& p_pos) const {
 
 	if (root) {
+
 		Point2 pos=p_pos;
 		pos -= cache.bg->get_offset();
 		pos.y-=_get_title_button_height();
 		if (pos.y<0)
 			return Control::get_tooltip(p_pos);
 
-		pos.x+=h_scroll->get_val();
-		pos.y+=v_scroll->get_val();
+		if (h_scroll->is_visible())
+			pos.x+=h_scroll->get_val();
+		if (v_scroll->is_visible())
+			pos.y+=v_scroll->get_val();
 
 		int col,h;
 		TreeItem *it = _find_item_at_pos(root,pos,col,h);
 
-		if (it) {
 
+		if (it) {
 
 			String ret;
 			if (it->get_tooltip(col)=="")

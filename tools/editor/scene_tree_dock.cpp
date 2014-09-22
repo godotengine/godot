@@ -624,6 +624,11 @@ void SceneTreeDock::_node_selected() {
 	editor->push_item(node);
 }
 
+void SceneTreeDock::_node_renamed() {
+
+	_node_selected();
+}
+
 Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 
 	Node *node=NULL;
@@ -657,6 +662,16 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 		node->set( name, p_node->get(name) );
 
 	}
+
+
+	List<Node::GroupInfo> group_info;
+	p_node->get_groups(&group_info);
+	for (List<Node::GroupInfo>::Element *E=group_info.front();E;E=E->next()) {
+
+		if (E->get().persistent)
+			node->add_to_group(E->get().name,true);
+	}
+
 
 	node->set_name(p_node->get_name());
 	duplimap[p_node]=node;
@@ -1299,6 +1314,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_node_reparent"),&SceneTreeDock::_node_reparent);
 	ObjectTypeDB::bind_method(_MD("_set_owners"),&SceneTreeDock::_set_owners);
 	ObjectTypeDB::bind_method(_MD("_node_selected"),&SceneTreeDock::_node_selected);
+	ObjectTypeDB::bind_method(_MD("_node_renamed"),&SceneTreeDock::_node_renamed);
 	ObjectTypeDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
 	ObjectTypeDB::bind_method(_MD("_load_request"),&SceneTreeDock::_load_request);
 	ObjectTypeDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);

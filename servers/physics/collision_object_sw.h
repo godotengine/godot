@@ -34,6 +34,9 @@
 #include "self_list.h"
 #include "broad_phase_sw.h"
 
+#define MAX_OBJECT_DISTANCE 10000000
+#define MAX_OBJECT_DISTANCE_X2 (MAX_OBJECT_DISTANCE*MAX_OBJECT_DISTANCE)
+
 class SpaceSW;
 
 class CollisionObjectSW : public ShapeOwnerSW {
@@ -72,7 +75,19 @@ protected:
 	void _update_shapes_with_motion(const Vector3& p_motion);
 	void _unregister_shapes();
 
-	_FORCE_INLINE_ void _set_transform(const Transform& p_transform,bool p_update_shapes=true) { transform=p_transform; if (p_update_shapes) _update_shapes(); }
+	_FORCE_INLINE_ void _set_transform(const Transform& p_transform,bool p_update_shapes=true) {
+
+#ifdef DEBUG_ENABLED
+
+		if (p_transform.origin.length_squared() > MAX_OBJECT_DISTANCE_X2) {
+			ERR_EXPLAIN("Object went too far away (more than "+itos(MAX_OBJECT_DISTANCE)+"mts from origin).");
+			ERR_FAIL();
+		}
+#endif
+
+		transform=p_transform; if (p_update_shapes) _update_shapes();
+
+	}
 	_FORCE_INLINE_ void _set_inv_transform(const Transform& p_transform) { inv_transform=p_transform; }
 	void _set_static(bool p_static);
 
