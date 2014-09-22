@@ -1144,7 +1144,7 @@ class DaeExporter:
 			self.writel(S_ANIM_CLIPS,0,'<library_animation_clips>')
 
 			for x in bpy.data.actions[:]:
-				if x in self.action_constraints:
+				if x.users==0 or x in self.action_constraints:
 					continue
 
 				bones=[]
