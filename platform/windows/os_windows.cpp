@@ -211,45 +211,32 @@ bool OS_Windows::can_draw() const {
 #define IsPenEvent(dw) (((dw) & SIGNATURE_MASK) == MI_WP_SIGNATURE)
 
 
-void OS_Windows::_touch_event(int idx, UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_TOUCH;
 	event.ID=++last_id;
 	event.screen_touch.index = idx;
 
-	switch (uMsg) {
-		case WM_LBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-		case WM_RBUTTONDOWN: {
+	event.screen_touch.pressed = p_pressed;
 
-			event.screen_touch.pressed = true;
-		} break;
-
-		case WM_LBUTTONUP:
-		case WM_MBUTTONUP:
-		case WM_RBUTTONUP: {
-			event.screen_touch.pressed = false;
-		} break;
-	};
-
-	event.screen_touch.x=GET_X_LPARAM(lParam);
-	event.screen_touch.y=GET_Y_LPARAM(lParam);
+	event.screen_touch.x=p_x;
+	event.screen_touch.y=p_y;
 
 	if (main_loop) {
 		input->parse_input_event(event);
 	}
 };
 
-void OS_Windows::_drag_event(int idx,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_DRAG;
 	event.ID=++last_id;
 	event.screen_drag.index = idx;
 
-	event.screen_drag.x=GET_X_LPARAM(lParam);
-	event.screen_drag.y=GET_Y_LPARAM(lParam);
+	event.screen_drag.x=p_x;
+	event.screen_drag.y=p_y;
 
 	if (main_loop)
 		input->parse_input_event(event);
@@ -341,6 +328,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			}
 
+			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
 
@@ -351,6 +339,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				};
 				// fallthrough for mouse event
 			};
+			*/
 
 
 			InputEvent event;
@@ -421,6 +410,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
 
+			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
 
@@ -431,6 +421,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				};
 				// fallthrough for mouse event
 			};
+			*/
 
 			InputEvent event;
 			event.type=InputEvent::MOUSE_BUTTON;
@@ -621,6 +612,43 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			print_line("input lang change");
 		} break;
+
+		#if WINVER >= 0x0700 // for windows 7
+		case WM_TOUCH: {
+
+			BOOL bHandled = FALSE;
+			UINT cInputs = LOWORD(wParam);
+			PTOUCHINPUT pInputs = memnew_arr(TOUCHINPUT, cInputs);
+			if (pInputs){
+				if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT))){
+					for (UINT i=0; i < cInputs; i++){
+						TOUCHINPUT ti = pInputs[i];
+						//do something with each touch input entry
+						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
+
+							_drag_event(ti.x / 100, ti.y / 100, ti.dwID);
+						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
+
+							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN != 0, ti.x / 100, ti.y / 100, ti.dwID);
+						};
+					}
+					bHandled = TRUE;
+				}else{
+					 /* handle the error here */
+				}
+				memdelete_arr(pInputs);
+			}else{
+				/* handle the error here, probably out of memory */
+			}
+			if (bHandled) {
+				CloseTouchInputHandle((HTOUCHINPUT)lParam);
+				return 0;
+			};
+
+		} break;
+
+		#endif
+
 		default: {
 
 			if (user_proc) {
@@ -1106,6 +1134,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	tme.dwHoverTime=HOVER_DEFAULT;
 	TrackMouseEvent(&tme);
 
+	//RegisterTouchWindow(hWnd, 0); // Windows 7
 
 	_ensure_data_dir();
 

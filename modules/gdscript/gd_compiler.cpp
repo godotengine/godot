@@ -724,6 +724,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							return prev_pos;
 						int retval=prev_pos;
 
+						//print_line("retval: "+itos(retval));
+
 						if (retval&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
 							slevel++;
 							codegen.alloc_stack(slevel);
@@ -731,6 +733,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 
 						Vector<int> setchain;
+
+						int prev_key_idx=-1;
 
 						for(List<GDParser::OperatorNode*>::Element *E=chain.back();E;E=E->prev()) {
 
@@ -743,15 +747,22 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							if (named) {
 
-								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);
+								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);								
+								//printf("named key %x\n",key_idx);
+
 							} else {
 
-								GDParser::Node *key = E->get()->arguments[1];
-								key_idx = _parse_expression(codegen,key,slevel);
-								if (retval&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+								if (prev_pos&(GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS)) {
 									slevel++;
 									codegen.alloc_stack(slevel);
 								}
+
+								GDParser::Node *key = E->get()->arguments[1];
+								key_idx = _parse_expression(codegen,key,slevel);
+								//printf("expr key %x\n",key_idx);
+
+
+								//stack was raised here if retval was stack but..
 
 							}
 
@@ -764,6 +775,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							slevel++;
 							codegen.alloc_stack(slevel);
 							int dst_pos = (GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS)|slevel;
+
 							codegen.opcodes.push_back(dst_pos);
 
 							//add in reverse order, since it will be reverted
@@ -773,6 +785,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							setchain.push_back(named ? GDFunction::OPCODE_SET_NAMED : GDFunction::OPCODE_SET);
 
 							prev_pos=dst_pos;
+							prev_key_idx=key_idx;
 
 						}
 

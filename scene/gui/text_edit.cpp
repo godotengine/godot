@@ -935,16 +935,40 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (!_get_mouse_pos(Point2i(mb.x,mb.y), row,col))
 						return;
 
+					int prev_col=cursor.column;
+					int prev_line=cursor.line;
+
+
+
 					cursor_set_line( row );
 					cursor_set_column( col );
+
+					if (mb.mod.shift && (cursor.column!=prev_col || cursor.line!=prev_line)) {
+
+						selection.active=true;
+						selection.selecting_mode=Selection::MODE_POINTER;
+						selection.from_column=prev_col;
+						selection.from_line=prev_line;
+						selection.to_column=cursor.column;
+						selection.to_line=cursor.line;
+						if (selection.from_column>selection.to_column) {
+							SWAP(selection.from_column,selection.to_column);
+							SWAP(selection.from_line,selection.to_line);
+						}
+						selection.selecting_line=prev_line;
+						selection.selecting_column=prev_col;
+						update();
+
+					} else {
 
 					//if sel active and dblick last time < something
 
 					//else
-					selection.active=false;
-					selection.selecting_mode=Selection::MODE_POINTER;
-					selection.selecting_line=row;
-					selection.selecting_column=col;
+						selection.active=false;
+						selection.selecting_mode=Selection::MODE_POINTER;
+						selection.selecting_line=row;
+						selection.selecting_column=col;
+					}
 
 
 					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {

@@ -1492,7 +1492,9 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 
 bool GDScript::can_instance() const {
 
-	return valid; //any script in GDscript can instance
+	//return valid; //any script in GDscript can instance
+	return valid || (!tool && !ScriptServer::is_scripting_enabled());
+
 }
 
 StringName GDScript::get_instance_base_type() const {
@@ -1565,7 +1567,9 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 #endif
 ScriptInstance* GDScript::instance_create(Object *p_this) {
 
+
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
+
 
 #ifdef TOOLS_ENABLED
 
@@ -1620,7 +1624,48 @@ String GDScript::get_source_code() const {
 void GDScript::set_source_code(const String& p_code) {
 
 	source=p_code;
+}
 
+void GDScript::update_exports() {
+
+#ifdef TOOLS_ENABLED
+	String basedir=path;
+
+	if (basedir=="")
+		basedir=get_path();
+
+	if (basedir!="")
+		basedir=basedir.get_base_dir();
+
+	GDParser parser;
+	Error err = parser.parse(source,basedir,true);
+	if (err)
+		return; //do none
+
+	const GDParser::Node* root = parser.get_parse_tree();
+	ERR_FAIL_COND(root->type!=GDParser::Node::TYPE_CLASS);
+
+	const GDParser::ClassNode *c = static_cast<const GDParser::ClassNode*>(root);
+
+	List<PropertyInfo> plist;
+
+	Map<StringName,Variant> default_values;
+
+	for(int i=0;i<c->variables.size();i++) {
+		if (c->variables[i]._export.type==Variant::NIL)
+			continue;
+
+		plist.push_back(c->variables[i]._export);
+		default_values[c->variables[i].identifier]=c->variables[i].default_value;
+	}
+
+
+	for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
+
+		E->get()->update(plist,default_values);
+	}
+
+#endif
 }
 
 void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {

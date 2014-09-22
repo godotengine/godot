@@ -160,9 +160,8 @@ class OS_Windows : public OS {
 
 	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
 
-	void _drag_event(int idx,UINT uMsg, WPARAM	wParam,	LPARAM	lParam);
-	void _touch_event(int idx, UINT uMsg, WPARAM	wParam,	LPARAM	lParam);
-
+	void _drag_event(int p_x, int p_y, int idx);
+	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
 
 	// functions used by main to initialize/deintialize the OS
 protected:	
