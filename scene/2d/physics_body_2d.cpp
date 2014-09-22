@@ -400,10 +400,7 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 		set_global_transform(state->get_transform());
 	linear_velocity=state->get_linear_velocity();
 	angular_velocity=state->get_angular_velocity();
-	bool is_active = !state->is_sleeping();
-	if (active != is_active)
-		emit_signal("active_state_changed", is_active);
-	active=is_active;
+	sleeping=state->is_sleeping();
 	if (get_script_instance())
 		get_script_instance()->call("_integrate_forces",state);
 	set_block_transform_notify(false); // want it back
@@ -555,10 +552,9 @@ bool RigidBody2D::is_using_custom_integrator(){
 
 void RigidBody2D::set_sleeping(bool p_sleeping) {
 
-	if (active != p_active)
-		emit_signal("active_state_changed", p_active);
-	active=p_active;
-	Physics2DServer::get_singleton()->body_set_state(get_rid(),Physics2DServer::BODY_STATE_SLEEPING,!active);
+	sleeping=p_sleeping;
+	Physics2DServer::get_singleton()->body_set_state(get_rid(),Physics2DServer::BODY_STATE_SLEEPING,sleeping);
+
 }
 
 void RigidBody2D::set_can_sleep(bool p_active) {
@@ -716,7 +712,6 @@ void RigidBody2D::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
-	ADD_SIGNAL( MethodInfo("active_state_changed",PropertyInfo(Variant::BOOL,"active")));
 
 	BIND_CONSTANT( MODE_STATIC );
 	BIND_CONSTANT( MODE_KINEMATIC );
