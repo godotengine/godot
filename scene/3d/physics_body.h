@@ -53,6 +53,8 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
+	void add_collision_exception_with(Node* p_node); //must be physicsbody
+	void remove_collision_exception_with(Node* p_node);
 
 	PhysicsBody();
 

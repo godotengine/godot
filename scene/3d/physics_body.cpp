@@ -69,6 +69,29 @@ uint32_t PhysicsBody::get_layer_mask() const {
 	return layer_mask;
 }
 
+void PhysicsBody::add_collision_exception_with(Node* p_node) {
+
+	ERR_FAIL_NULL(p_node);
+	PhysicsBody *physics_body = p_node->cast_to<PhysicsBody>();
+	if (!physics_body) {
+		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
+	}
+	ERR_FAIL_COND(!physics_body);
+	PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(),physics_body->get_rid());
+
+}
+
+void PhysicsBody::remove_collision_exception_with(Node* p_node) {
+
+	ERR_FAIL_NULL(p_node);
+	PhysicsBody *physics_body = p_node->cast_to<PhysicsBody>();
+	if (!physics_body) {
+		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
+	}
+	ERR_FAIL_COND(!physics_body);
+	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(),physics_body->get_rid());
+}
+
 void PhysicsBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
@@ -145,6 +168,9 @@ void StaticBody::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_bounce","bounce"),&StaticBody::set_bounce);
 	ObjectTypeDB::bind_method(_MD("get_bounce"),&StaticBody::get_bounce);
+
+	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody"),&PhysicsBody::add_collision_exception_with);
+	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody"),&PhysicsBody::remove_collision_exception_with);
 
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
