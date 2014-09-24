@@ -1059,6 +1059,8 @@ class DaeExporter:
 		#Collada starts from 0, blender usually from 1
 		#The last frame must be included also
 
+		frame_orig = self.scene.frame_current
+
 		frame_len = 1.0 / self.scene.render.fps
 		frame_total = end - start + 1
 		frame_sub = 0
@@ -1126,6 +1128,7 @@ class DaeExporter:
 
 						xform_cache[bone_name].append( (key,mtx) )
 
+		self.scene.frame_set(frame_orig)
 
 		#export animation xml
 		for nid in xform_cache:
@@ -1140,6 +1143,13 @@ class DaeExporter:
 
 
 		if (self.config["use_anim_action_all"] and len(self.skeletons)):
+
+			cached_actions = {}
+
+			for s in self.skeletons:
+				if s.animation_data and s.animation_data.action:
+					cached_actions[s] = s.animation_data.action.name
+
 
 			self.writel(S_ANIM_CLIPS,0,'<library_animation_clips>')
 
@@ -1185,6 +1195,11 @@ class DaeExporter:
 
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
 
+			for s in self.skeletons:
+				if s in cached_actions:
+					s.animation_data.action = bpy.data.actions[cached_actions[s]]
+				else:
+					s.animation_data.action = None
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
 
