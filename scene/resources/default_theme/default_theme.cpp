@@ -368,8 +368,8 @@ void make_default_theme() {
 
 	// ProgressBar
 
-	t->set_stylebox("bg","ProgressBar", make_stylebox( progress_bar_png,5,5,5,5) );
-	t->set_stylebox("fg","ProgressBar", make_stylebox( progress_fill_png,6,6,6,6) );
+	t->set_stylebox("bg","ProgressBar", make_stylebox( progress_bar_png,4,4,4,4,0,0,0,0) );
+	t->set_stylebox("fg","ProgressBar", make_stylebox( progress_fill_png,6,6,6,6,2,1,2,1) );
 
 	t->set_font("font","ProgressBar", default_font );
 
