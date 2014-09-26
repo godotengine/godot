@@ -1100,7 +1100,20 @@ bool OS_OSX::is_mouse_grab_enabled() const {
 
 void OS_OSX::warp_mouse_pos(const Point2& p_to) {
 
-//not done, must be done
+    //copied from windows impl with osx native calls
+    if (mouse_mode == MOUSE_MODE_CAPTURED){
+        mouse_x = p_to.x;
+        mouse_y = p_to.y;
+    }
+    else{ //set OS position
+        CGPoint lMouseWarpPos = {p_to.x, p_to.y};
+        
+        CGEventSourceRef lEventRef = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+        CGEventSourceSetLocalEventsSuppressionInterval(lEventRef, 0.0);
+        CGAssociateMouseAndMouseCursorPosition(false);
+        CGWarpMouseCursorPosition(lMouseWarpPos);
+        CGAssociateMouseAndMouseCursorPosition(true);
+    }
 }
 
 Point2 OS_OSX::get_mouse_pos() const {
