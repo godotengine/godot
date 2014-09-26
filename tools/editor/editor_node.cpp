@@ -3892,13 +3892,13 @@ EditorNode::EditorNode() {
 		prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		prop_pallete->set_area_as_parent_rect();
 
-		// scenes_dock
-		scenes_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-		prop_pallete->add_child(scenes_dock);
-
 		// prop_editor_base
 		prop_editor_base->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		prop_pallete->add_child(prop_editor_base);
+
+		// scenes_dock
+		scenes_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+		prop_pallete->add_child(scenes_dock);
 
 		editor_spacer = memnew( EmptyControl );
 		editor_spacer->set_minsize(Size2(260,200));

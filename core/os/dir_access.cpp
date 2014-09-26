@@ -170,10 +170,10 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 			String to_create = full_dir.substr(0, pos -1);
 			//print_line("MKDIR: "+to_create);
 			Error err = make_dir(to_create);
-			//if (err != OK && err != ERR_ALREADY_EXISTS) {
+			if (err != OK && err != ERR_ALREADY_EXISTS) {
 
-			//	ERR_FAIL_V(err);
-			//};
+				ERR_FAIL_V(err);
+			};
 		};
 	};
 
