@@ -32,6 +32,7 @@
 #include "resource.h"
 #include "scene/resources/texture.h"
 #include "map.h"
+#include "ttf_font.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -40,7 +41,17 @@ class Font : public Resource {
 	OBJ_TYPE( Font, Resource );
 	RES_BASE_EXTENSION("fnt");
 	
-	Vector< Ref<Texture> > textures;
+	mutable Vector< Ref<Texture> > textures;
+
+    friend class TtfFont;
+    Vector<Image *> atlas_images;
+    Ref<TtfFont> ttf_font;
+    Dictionary ttf_options;
+    int atlas_x, atlas_y, atlas_height;
+    int atlas_dirty_index;
+    mutable bool atlas_dirty;
+
+    void update_atlas() const;
 
 public:
 	struct Character {
@@ -104,6 +115,8 @@ public:
 	int get_character_count() const;
 	Vector<CharType> get_char_keys() const;
 	Character get_character(CharType p_char) const;
+	const Character *get_character_p(CharType p_char) const;
+    bool create_character(CharType p_char);
 
 	int get_texture_count() const;
 	Ref<Texture> get_texture(int p_idx) const;
@@ -114,6 +127,12 @@ public:
 
 	_FORCE_INLINE_ Size2 get_char_size(CharType p_char,CharType p_next=0) const;
 	Size2 get_string_size(const String& p_string) const;
+
+    bool set_ttf_path(const String& p_path, int p_size);
+    void set_ttf_font(const Ref<TtfFont>& p_font);
+    Ref<TtfFont> get_ttf_font() const;
+    void set_ttf_options(const Dictionary& p_options);
+    const Dictionary& get_ttf_options() const;
 	
 	void clear();
 	
@@ -128,7 +147,7 @@ public:
 
 Size2 Font::get_char_size(CharType p_char,CharType p_next) const {
 
-	const Character * c = char_map.getptr(p_char);
+	const Character * c = get_character_p(p_char);
 
 	if (!c)
 		return Size2();

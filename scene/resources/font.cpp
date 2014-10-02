@@ -332,11 +332,36 @@ Vector<CharType> Font::get_char_keys() const {
 Font::Character Font::get_character(CharType p_char) const {
 
 	if (!char_map.has(p_char)) {
-		ERR_FAIL_V(Character());
+		ERR_FAIL_COND_V(!(const_cast<Font *>(this))->create_character(p_char),Character());
 	};
 
 	return char_map[p_char];
 };
+
+const Font::Character *Font::get_character_p(CharType p_char) const {
+
+    if (p_char=='\r'||p_char=='\n')
+        return NULL;
+
+	if (!char_map.has(p_char)) {
+		ERR_FAIL_COND_V(!(const_cast<Font *>(this))->create_character(p_char),NULL);
+	};
+
+	return &char_map[p_char];
+}
+
+bool Font::create_character(CharType p_char) {
+
+    if(!ttf_font.is_valid())
+        return false;
+
+    if(ttf_font->render_char(p_char, *this)) {
+        atlas_dirty=true;
+        return true;
+    }
+
+    return false;
+}
 
 void Font::add_char(CharType p_char, int p_texture_idx, const Rect2& p_rect, const Size2& p_align, float p_advance) {
 
@@ -406,6 +431,16 @@ void Font::clear() {
 	char_map.clear();
 	textures.clear();
 	kerning_map.clear();
+
+    atlas_x=0;
+    atlas_y=0;
+    atlas_height=0;
+    atlas_dirty_index=0;
+    atlas_dirty=false;
+    for(int i=0;i<atlas_images.size();i++) {
+        memdelete(atlas_images[i]);
+    }
+    atlas_images.clear();
 }
 
 Size2 Font::get_string_size(const String& p_string) const {
@@ -450,13 +485,16 @@ void Font::draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,fl
 
 void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, const Color& p_modulate,int p_clip_w) const {
 		
+
+    update_atlas();
+
 	Point2 pos=p_pos;
 	float ofs=0;
 	VisualServer *vs = VisualServer::get_singleton();
 	
 	for (int i=0;i<p_text.length();i++) {
 
-		const Character * c = char_map.getptr(p_text[i]);
+		const Character * c = get_character_p(p_text[i]);
 
 		if (!c)
 			continue;
@@ -480,11 +518,14 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 
 float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_char,const CharType& p_next,const Color& p_modulate) const {
 	
-	const Character * c = char_map.getptr(p_char);
+	const Character * c = get_character_p(p_char);
 	
 	if (!c)
 		return 0;
-	
+
+
+    update_atlas();
+
 	Point2 cpos=p_pos;
 	cpos.x+=c->h_align;
 	cpos.y-=ascent;
@@ -494,6 +535,105 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx]->get_rid(),c->rect, p_modulate );
 	
 	return get_char_size(p_char,p_next).width;
+}
+
+void Font::update_atlas() const {
+
+    if ((!atlas_dirty)||ttf_font.is_null())
+        return;
+    atlas_dirty=false;
+
+    for (int i=atlas_dirty_index;i<atlas_images.size();i++) {
+        Image& img = *atlas_images[i];
+        Ref<ImageTexture> tex;
+        if (textures.size()==i) {
+            tex=Ref<Texture>(memnew( ImageTexture ));
+
+            bool filter_enabled = ttf_options["filter/enabled"];
+            tex->create_from_image( img );
+            if (!filter_enabled)
+                tex->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
+            tex->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
+
+            textures.push_back(tex);
+        } else {
+            tex=textures[i];
+            if (tex.is_valid()) {
+                tex->set_data( img );
+            }
+        }
+    }
+}
+
+bool Font::set_ttf_path(const String& p_path, int p_size) {
+    RES res=ResourceLoader::load(p_path);
+    Ref<TtfFont> ttf_font=res;
+    if(!ttf_font.is_valid())
+        return false;
+
+    int height=0;
+    int ascent=0;
+    int max_up,max_down;
+    ERR_EXPLAIN("Error calc font height/ascent.");
+    ERR_FAIL_COND_V( !ttf_font->calc_size(p_size, height, ascent, max_up, max_down), false );
+
+    Dictionary options;
+    options["font/size"]=p_size;
+    options["meta/height"]=height;
+    options["meta/ascent"]=ascent;
+    options["meta/max_up"]=max_up;
+    options["meta/max_down"]=max_down;
+
+    clear();
+    set_ttf_font(ttf_font);
+    set_ttf_options(options);
+    set_height(height);
+    set_ascent(ascent);
+
+    return true;
+}
+
+void Font::set_ttf_font(const Ref<TtfFont>& p_font) {
+
+	if (p_font==ttf_font)
+		return;
+    //clear();
+	char_map.clear();
+	textures.clear();
+
+    atlas_x=0;
+    atlas_y=0;
+    atlas_height=0;
+    atlas_dirty_index=0;
+    atlas_dirty=false;
+    for(int i=0;i<atlas_images.size();i++) {
+        memdelete(atlas_images[i]);
+    }
+    atlas_images.clear();
+
+	ttf_font=p_font;
+    if (!ttf_options.empty()) {
+        kerning_map.clear();
+        ttf_font->gen_kerning(this);
+    }
+}
+
+Ref<TtfFont> Font::get_ttf_font() const {
+
+	return ttf_font;
+}
+
+void Font::set_ttf_options(const Dictionary& p_options) {
+
+    ttf_options=p_options;
+    if (kerning_map.empty()&&ttf_font.is_valid()) {
+        ttf_font->gen_kerning(this);
+    }
+}
+
+const Dictionary& Font::get_ttf_options() const {
+
+    return ttf_options;
 }
 
 void Font::_bind_methods() {
@@ -536,6 +676,13 @@ void Font::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "height", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_height"), _SCS("get_height") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "ascent", PROPERTY_HINT_RANGE,"-1024,1024,1" ), _SCS("set_ascent"), _SCS("get_ascent") );
 
+    ObjectTypeDB::bind_method(_MD("set_ttf_options"),&Font::set_ttf_options);
+	ObjectTypeDB::bind_method(_MD("get_ttf_options"),&Font::get_ttf_options);
+    ADD_PROPERTY( PropertyInfo( Variant::DICTIONARY, "data", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_STORAGE), _SCS("set_ttf_options"),_SCS("get_ttf_options"));
+
+	ObjectTypeDB::bind_method(_MD("set_ttf_font","font:TtfFont"),&Font::set_ttf_font);
+	ObjectTypeDB::bind_method(_MD("get_ttf_font:TtfFont"),&Font::get_ttf_font);
+	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE,"TtfFont"), _SCS("set_ttf_font"),_SCS("get_ttf_font"));
 }
 
 Font::Font() {
