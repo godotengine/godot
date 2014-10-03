@@ -148,8 +148,6 @@ void AreaSW::call_queries() {
 			return;
 		}
 
-
-
 		for (Map<BodyKey,BodyState>::Element *E=monitored_bodies.front();E;E=E->next()) {
 
 			if (E->get().state==0)
@@ -182,8 +180,8 @@ AreaSW::AreaSW() : CollisionObjectSW(TYPE_AREA), monitor_query_list(this),  move
 	point_attenuation=1;
 	density=0.1;
 	priority=0;
-	ray_pickable=false;
-
+	set_ray_pickable(false);
+	monitor_callback_id=0;
 
 }
 

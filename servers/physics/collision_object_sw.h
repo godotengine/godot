@@ -94,6 +94,9 @@ protected:
 	virtual void _shapes_changed()=0;
 	void _set_space(SpaceSW *space);
 
+	bool ray_pickable;
+
+
 	CollisionObjectSW(Type p_type);
 public:
 
@@ -118,6 +121,9 @@ public:
 	_FORCE_INLINE_ Transform get_transform() const { return transform; }
 	_FORCE_INLINE_ Transform get_inv_transform() const { return inv_transform; }
 	_FORCE_INLINE_ SpaceSW* get_space() const { return space; }
+
+	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable=p_enable; }
+	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
 
 	_FORCE_INLINE_ void set_layer_mask(uint32_t p_mask) { layer_mask=p_mask; }

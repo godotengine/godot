@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "step_sw.h"
-
+#include "joints_sw.h"
 
 void StepSW::_populate_island(BodySW* p_body,BodySW** p_island,ConstraintSW **p_constraint_island) {
 
@@ -68,14 +68,41 @@ void StepSW::_setup_island(ConstraintSW *p_island,float p_delta) {
 
 void StepSW::_solve_island(ConstraintSW *p_island,int p_iterations,float p_delta){
 
-	for(int i=0;i<p_iterations;i++) {
+	int at_priority=1;
 
-		ConstraintSW *ci=p_island;
-		while(ci) {
-			ci->solve(p_delta);
-			ci=ci->get_island_next();
+	while(p_island) {
+
+		for(int i=0;i<p_iterations;i++) {
+
+			ConstraintSW *ci=p_island;
+			while(ci) {
+				ci->solve(p_delta);
+				ci=ci->get_island_next();
+			}
+		}
+
+		at_priority++;
+
+		{
+			ConstraintSW *ci=p_island;
+			ConstraintSW *prev=NULL;
+			while(ci) {
+				if (ci->get_priority()<at_priority) {
+					if (prev) {
+						prev->set_island_next(ci->get_island_next()); //remove
+					} else {
+						p_island=ci->get_island_next();
+					}
+				} else {
+
+					prev=ci;
+				}
+
+				ci=ci->get_island_next();
+			}
 		}
 	}
+
 }
 
 void StepSW::_check_suspend(BodySW *p_island,float p_delta) {

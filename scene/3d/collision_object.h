@@ -51,9 +51,10 @@ class CollisionObject : public Spatial {
 	};
 
 	bool capture_input_on_drag;
-
+	bool ray_pickable;
 	Vector<ShapeData> shapes;
 
+	void _update_pickable();
 	void _update_shapes();
 
 friend class CollisionShape;
@@ -69,7 +70,7 @@ protected:
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
 friend class Viewport;
-	virtual void _input_event(const InputEvent& p_input_event,const Vector3& p_pos, const Vector3& p_normal, int p_shape);
+	virtual void _input_event(Node* p_camera,const InputEvent& p_input_event,const Vector3& p_pos, const Vector3& p_normal, int p_shape);
 	virtual void _mouse_enter();
 	virtual void _mouse_exit();
 
@@ -87,8 +88,12 @@ public:
 	void set_shape_as_trigger(int p_shape_idx, bool p_trigger);
 	bool is_shape_set_as_trigger(int p_shape_idx) const;
 
+	void set_ray_pickable(bool p_ray_pickable);
+	bool is_ray_pickable() const;
+
 	void set_capture_input_on_drag(bool p_capture);
 	bool get_capture_input_on_drag() const;
+
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

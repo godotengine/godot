@@ -879,8 +879,11 @@ void SpatialSoundServerSW::update(float p_delta) {
 		float volume_attenuation = 0.0;
 		float air_absorption_hf_cutoff = 0.0;
 		float air_absorption = 0.0;
-		float pitch_scale=0.0;
+		float pitch_scale=1.0;
 		Vector3 panning;
+
+
+		//print_line("listeners: "+itos(space->listeners.size()));
 
 
 		for(Set<RID>::Element *L=space->listeners.front();L;L=L->next()) {
@@ -899,9 +902,11 @@ void SpatialSoundServerSW::update(float p_delta) {
 			float attenuation_exp=source->params[SOURCE_PARAM_ATTENUATION_DISTANCE_EXP];
 			float attenuation=1;
 
+			//print_line("DIST MIN: "+rtos(distance_min));
+			//print_line("DIST MAX: "+rtos(distance_max));
 			if (distance_max>0) {
 				distance = CLAMP(distance,distance_min,distance_max);
-				attenuation = Math::pow(1.0 - ((distance - distance_min)/distance_max),CLAMP(attenuation_exp,0.001,16));
+				attenuation = Math::pow(1.0 - ((distance - distance_min)/(distance_max-distance_min)),CLAMP(attenuation_exp,0.001,16));
 			}
 
 			float hf_attenuation_cutoff = room->params[ROOM_PARAM_ATTENUATION_HF_CUTOFF];
@@ -945,7 +950,7 @@ void SpatialSoundServerSW::update(float p_delta) {
 			air_absorption+=weight*absorption;
 			air_absorption_hf_cutoff+=weight*hf_attenuation_cutoff;
 			panning+=vpanning*weight;
-			pitch_scale+=pscale*weight;
+			//pitch_scale+=pscale*weight;
 
 		}
 
@@ -991,8 +996,8 @@ void SpatialSoundServerSW::update(float p_delta) {
 			reverb_send*=volume_scale;
 			int mix_rate = v.sample_mix_rate*v.pitch_scale*pitch_scale*source->params[SOURCE_PARAM_PITCH_SCALE];
 
-			if (mix_rate<=0) {
 
+			if (mix_rate<=0) {
 				ERR_PRINT("Invalid mix rate for voice (0) check for invalid pitch_scale param.");
 				to_disable.push_back(ActiveVoice(source,voice)); // oh well..
 				continue; //invalid mix rate, disabling

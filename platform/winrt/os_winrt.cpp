@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  os_windows.cpp                                                       */
+/*  os_winrt.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,12 +28,12 @@
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles1/rasterizer_gles1.h"
-#include "os_windows.h"
+#include "os_winrt.h"
 #include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
 #include "os/memory_pool_dynamic_static.h"
-#include "drivers/windows/thread_windows.h"
-#include "drivers/windows/semaphore_windows.h"
+#include "thread_winrt.h"
+//#include "drivers/windows/semaphore_windows.h"
 #include "drivers/windows/mutex_windows.h"
 #include "main/main.h"
 #include "drivers/windows/file_access_windows.h"
@@ -44,13 +44,21 @@
 #include "servers/audio/audio_server_sw.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
-#include "tcp_server_winsock.h"
-#include "stream_peer_winsock.h"
 #include "os/pc_joystick_map.h"
-#include "lang_table.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+
+#include <wrl.h>
+
+using namespace Windows::ApplicationModel::Core;
+using namespace Windows::ApplicationModel::Activation;
+using namespace Windows::UI::Core;
+using namespace Windows::UI::Input;
+using namespace Windows::Foundation;
+using namespace Windows::Graphics::Display;
+using namespace Microsoft::WRL;
+
 
 int OSWinrt::get_video_driver_count() const {
 
@@ -129,59 +137,18 @@ bool OSWinrt::can_draw() const {
 };
 
 
-void OSWinrt::_touch_event(int idx, UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+void OSWinrt::set_gl_context(ContextEGL* p_context) {
 
-	InputEvent event;
-	event.type = InputEvent::SCREEN_TOUCH;
-	event.ID=++last_id;
-	event.screen_touch.index = idx;
-
-	switch (uMsg) {
-		case WM_LBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-		case WM_RBUTTONDOWN: {
-
-			event.screen_touch.pressed = true;
-		} break;
-
-		case WM_LBUTTONUP:
-		case WM_MBUTTONUP:
-		case WM_RBUTTONUP: {
-			event.screen_touch.pressed = false;
-		} break;
-	};
-
-	event.screen_touch.x=GET_X_LPARAM(lParam);
-	event.screen_touch.y=GET_Y_LPARAM(lParam);
-
-	if (main_loop) {
-		input->parse_input_event(event);
-	}
+	gl_context = p_context;
 };
-
-void OSWinrt::_drag_event(int idx,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
-
-	InputEvent event;
-	event.type = InputEvent::SCREEN_DRAG;
-	event.ID=++last_id;
-	event.screen_drag.index = idx;
-
-	event.screen_drag.x=GET_X_LPARAM(lParam);
-	event.screen_drag.y=GET_Y_LPARAM(lParam);
-
-	if (main_loop)
-		input->parse_input_event(event);
-};
-
 
 void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
-
-
 
     main_loop=NULL;
     outside=true;
 
-	
+	gl_context->initialize();
+
 	visual_server = memnew( VisualServerRaster(rasterizer) );
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
@@ -222,6 +189,7 @@ void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_aud
 
 void OSWinrt::set_clipboard(const String& p_text) {
 
+	/*
 	if (!OpenClipboard(hWnd)) {
 		ERR_EXPLAIN("Unable to open clipboard.");
 		ERR_FAIL();
@@ -255,10 +223,12 @@ void OSWinrt::set_clipboard(const String& p_text) {
 	SetClipboardData(CF_TEXT, mem);
 
 	CloseClipboard();
+	*/
 };
 
 String OSWinrt::get_clipboard() const {
 
+	/*
 	String ret;
 	if (!OpenClipboard(hWnd)) {
 		ERR_EXPLAIN("Unable to open clipboard.");
@@ -295,6 +265,8 @@ String OSWinrt::get_clipboard() const {
 	CloseClipboard();
 
 	return ret;
+	*/
+	return "";
 };
 
 
@@ -327,10 +299,6 @@ void OSWinrt::finalize() {
 	if (rasterizer)
 		memdelete(rasterizer);
 
-	if (user_proc) {
-		SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)user_proc);
-	};
-
 	spatial_sound_server->finish();
 	memdelete(spatial_sound_server);
 	spatial_sound_2d_server->finish();
@@ -355,16 +323,11 @@ void OSWinrt::finalize() {
 }
 void OSWinrt::finalize_core() {
 
-	memdelete(process_map);
-
 	if (mempool_dynamic)
 		memdelete( mempool_dynamic );
 	if (mempool_static)
 		delete mempool_static;
 
-
-	TCPServerWinsock::cleanup();
-	StreamPeerWinsock::cleanup();
 }
 
 void OSWinrt::vprint(const char* p_format, va_list p_list, bool p_stderr) {
@@ -399,10 +362,7 @@ void OSWinrt::vprint(const char* p_format, va_list p_list, bool p_stderr) {
 
 void OSWinrt::alert(const String& p_alert,const String& p_title) {
 
-	if (!is_no_window_mode_enabled())
-		MessageBoxW(NULL,p_alert.c_str(),p_title.c_str(),MB_OK|MB_ICONEXCLAMATION);
-	else
-		print_line("ALERT: "+p_alert);
+	print_line("ALERT: "+p_alert);
 }
 
 void OSWinrt::set_mouse_mode(MouseMode p_mode) {
@@ -445,71 +405,16 @@ void OSWinrt::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) con
 
 void OSWinrt::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 
-	HANDLE hCon=GetStdHandle(STD_OUTPUT_HANDLE);
-	if (!hCon || hCon==INVALID_HANDLE_VALUE) {
-		if (p_rationale && p_rationale[0]) {
+	if (p_rationale && p_rationale[0]) {
 
-			print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
-			print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
+		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_rationale);
+		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
 
-		} else {
-			print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
-			print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
-
-		}
 	} else {
+		print("\E[1;31;40mERROR: %s: \E[1;37;40m%s\n",p_function,p_code);
+		print("\E[0;31;40m   At: %s:%i.\E[0;0;37m\n",p_file,p_line);
 
-		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
-		GetConsoleScreenBufferInfo(hCon,&sbi);
-
-		SetConsoleTextAttribute(hCon,sbi.wAttributes);
-
-
-
-		uint32_t basecol=0;
-		switch(p_type) {
-			case ERR_ERROR: basecol = FOREGROUND_RED; break;
-			case ERR_WARNING: basecol = FOREGROUND_RED|FOREGROUND_GREEN; break;
-			case ERR_SCRIPT: basecol = FOREGROUND_GREEN; break;
-		}
-
-		if (p_rationale && p_rationale[0]) {
-
-			SetConsoleTextAttribute(hCon,basecol|FOREGROUND_INTENSITY);
-
-
-			switch(p_type) {
-				case ERR_ERROR: print("ERROR: "); break;
-				case ERR_WARNING: print("WARNING: "); break;
-				case ERR_SCRIPT: print("SCRIPT ERROR: "); break;
-			}
-
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
-			print(" %s\n",p_rationale);
-			SetConsoleTextAttribute(hCon,basecol);
-			print("At: ");
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN);
-			print(" %s:%i\n",p_file,p_line);
-
-
-		} else {
-			SetConsoleTextAttribute(hCon,basecol|FOREGROUND_INTENSITY);
-			switch(p_type) {
-				case ERR_ERROR: print("ERROR: %s: ",p_function); break;
-				case ERR_WARNING: print("WARNING: %s: ",p_function); break;
-				case ERR_SCRIPT: print("SCRIPT ERROR: %s: ",p_function); break;
-			}
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN|FOREGROUND_INTENSITY);
-			print(" %s\n",p_code);
-			SetConsoleTextAttribute(hCon,basecol);
-			print("At: ");
-			SetConsoleTextAttribute(hCon,FOREGROUND_RED|FOREGROUND_BLUE|FOREGROUND_GREEN);
-			print(" %s:%i\n",p_file,p_line);
-		}
-
-		SetConsoleTextAttribute(hCon,sbi.wAttributes);
 	}
-
 }
 
 
@@ -566,10 +471,10 @@ uint64_t OSWinrt::get_unix_time() const {
 
 void OSWinrt::delay_usec(uint32_t p_usec) const {
 
-        if (p_usec < 1000)
-                Sleep(1);
-        else
-                Sleep(p_usec / 1000);
+	int msec = p_usec < 1000 ? 1 : p_usec / 1000;
+
+	// no Sleep()
+	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
 	
 }
 uint64_t OSWinrt::get_ticks_usec() const {
@@ -607,19 +512,12 @@ Error OSWinrt::kill(const ProcessID& p_pid) {
 
 Error OSWinrt::set_cwd(const String& p_cwd) {
 
-	if (_wchdir(p_cwd.c_str())!=0)
-		return ERR_CANT_OPEN;
-
 	return OK;
 }
 
 String OSWinrt::get_executable_path() const {
 
-	wchar_t bufname[4096];
-	GetModuleFileNameW(NULL,bufname,4096);
-	String s= bufname;
-	print_line("EXEC PATHPó: "+s);
-	return s;
+	return "";
 }
 
 void OSWinrt::set_icon(const Image& p_icon) {
@@ -629,24 +527,15 @@ void OSWinrt::set_icon(const Image& p_icon) {
 
 bool OSWinrt::has_environment(const String& p_var) const {
 
-	return getenv(p_var.utf8().get_data()) != NULL;
+	return false;
 };
 
 String OSWinrt::get_environment(const String& p_var) const {
-
-	char* val = getenv(p_var.utf8().get_data());
-	if (val)
-		return val;
 
 	return "";
 };
 
 String OSWinrt::get_stdin_string(bool p_block) {
-
-	if (p_block) {
-		char buff[1024];
-		return fgets(buff,1024,stdin);
-	};
 
 	return String();
 }
@@ -665,23 +554,22 @@ Error OSWinrt::shell_open(String p_uri) {
 String OSWinrt::get_locale() const {
 
 	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
-	return language.Data();
+	return language->Data();
 }
 
 void OSWinrt::release_rendering_thread() {
 
-	//gl_context->release_current();
-
+	gl_context->release_current();
 }
 
 void OSWinrt::make_rendering_thread() {
 
-	//gl_context->make_current();
+	gl_context->make_current();
 }
 
 void OSWinrt::swap_buffers() {
 
-	//gl_context->swap_buffers();
+	gl_context->swap_buffers();
 }
 
 
@@ -699,6 +587,7 @@ void OSWinrt::run() {
 	
 	while (!force_quit) {
 	
+		CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
 		process_events(); // get rid of pending events
 		if (Main::iteration()==true)
 			break;
@@ -724,7 +613,7 @@ String OSWinrt::get_data_dir() const {
 }
 
 
-OSWinrt::OSWinrt(HINSTANCE _hInstance) {
+OSWinrt::OSWinrt() {
 
 	key_event_pos=0;
 	force_quit=false;
@@ -742,6 +631,8 @@ OSWinrt::OSWinrt(HINSTANCE _hInstance) {
 #ifdef STDOUT_FILE
 	stdo=fopen("stdout.txt","wb");
 #endif
+
+	gl_context = NULL;
 
 }
 

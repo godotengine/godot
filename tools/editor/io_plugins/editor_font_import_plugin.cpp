@@ -92,6 +92,7 @@ public:
 	String gradient_image;
 
 
+	bool disable_filter;
 	bool round_advance;
 
 
@@ -153,6 +154,8 @@ public:
 			color_use_monochrome=p_value;
 		else if (n=="advanced/round_advance")
 			round_advance=p_value;
+		else if (n=="advanced/disable_filter")
+			disable_filter=p_value;
 		else
 			return false;
 
@@ -217,6 +220,8 @@ public:
 			r_ret=color_use_monochrome;
 		else if (n=="advanced/round_advance")
 			r_ret=round_advance;
+		else if (n=="advanced/disable_filter")
+			r_ret=disable_filter;
 		else
 			return false;
 
@@ -265,6 +270,7 @@ public:
 		}
 		p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/round_advance"));
+		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/disable_filter"));
 
 	}
 
@@ -302,6 +308,7 @@ public:
 		color_use_monochrome=false;
 
 		round_advance=true;
+		disable_filter=false;
 
 	}
 
@@ -331,6 +338,7 @@ public:
 		color_use_monochrome=false;
 
 		round_advance=true;
+		disable_filter=false;
 	}
 
 
@@ -1260,6 +1268,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	int space_space = from->get_option("extra_space/space");
 	int top_space = from->get_option("extra_space/top");
 	int bottom_space = from->get_option("extra_space/bottom");
+	bool disable_filter = from->get_option("advanced/disable_filter");
 
 	Ref<Font> font;
 
@@ -1279,7 +1288,12 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	//register texures
 	{
 		Ref<ImageTexture> t = memnew(ImageTexture);
-		t->create_from_image(atlas);
+		int flags;
+		if (disable_filter)
+			flags=0;
+		else
+			flags=Texture::FLAG_FILTER;
+		t->create_from_image(atlas,flags);
 		t->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
 		font->add_texture(t);
 

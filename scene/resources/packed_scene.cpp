@@ -225,22 +225,34 @@ Error PackedScene::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<
 	p_node->get_property_list(&plist);
 	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
 
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 
 		String name = E->get().name;
 		Variant value = p_node->get( E->get().name );
 
-		if (E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())
+		if (E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero()) {
 			continue;
+		}
 
 
 		if (nd.instance>=0) {
 			//only save changed properties in instance
-			if (!instance_state.has(name))
+			/*
+			  // this was commented because it would not save properties created from within script
+			  // done with _get_property_list, that are not in the original node.
+			  // if some property is not saved, check again
+
+			  if (!instance_state.has(name)) {
+				print_line("skip not in instance");
 				continue;
-			if (instance_state[name]==value)
+			}*/
+
+			if (instance_state[name]==value) {
 				continue;
+			}
 
 		}
 

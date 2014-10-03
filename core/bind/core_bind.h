@@ -236,6 +236,8 @@ public:
 
 	Vector<int> triangulate_polygon(const Vector<Vector2>& p_polygon);
 
+	Dictionary make_atlas(const Vector<Size2>& p_rects);
+
 	_Geometry();
 };
 

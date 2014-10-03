@@ -944,6 +944,7 @@ public:
 	virtual void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform)=0;
 	virtual void canvas_item_add_set_blend_mode(RID p_item, MaterialBlendMode p_blend)=0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore)=0;
+	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
 
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;

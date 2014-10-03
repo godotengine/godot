@@ -317,6 +317,7 @@ class DaeExporter:
 
 	def export_mesh(self,node,armature=None,shapename=None):
 
+		mesh = node.data
 		if (node.data in self.mesh_cache) and shapename==None:
 			return self.mesh_cache[mesh]
 
@@ -475,7 +476,12 @@ class DaeExporter:
 			self.writel(S_GEOM,3,'<source id="'+meshid+'-texcoord-'+str(uvi)+'">')
 			float_values=""
 			for v in vertices:
-				float_values+=" "+str(v.uv[uvi].x)+" "+str(v.uv[uvi].y)
+				try:
+					float_values+=" "+str(v.uv[uvi].x)+" "+str(v.uv[uvi].y)
+				except:
+					# I don't understand this weird multi-uv-layer API, but with this it seems to works
+					float_values+=" 0 0 "
+
 			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-texcoord-'+str(uvi)+'-array" count="'+str(len(vertices)*2)+'">'+float_values+'</float_array>')
 			self.writel(S_GEOM,4,'<technique_common>')
 			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-texcoord-'+str(uvi)+'-array" count="'+str(len(vertices))+'" stride="2">')
@@ -1059,6 +1065,8 @@ class DaeExporter:
 		#Collada starts from 0, blender usually from 1
 		#The last frame must be included also
 
+		frame_orig = self.scene.frame_current
+
 		frame_len = 1.0 / self.scene.render.fps
 		frame_total = end - start + 1
 		frame_sub = 0
@@ -1126,6 +1134,7 @@ class DaeExporter:
 
 						xform_cache[bone_name].append( (key,mtx) )
 
+		self.scene.frame_set(frame_orig)
 
 		#export animation xml
 		for nid in xform_cache:
@@ -1141,10 +1150,19 @@ class DaeExporter:
 
 		if (self.config["use_anim_action_all"] and len(self.skeletons)):
 
+			cached_actions = {}
+
+			for s in self.skeletons:
+				if s.animation_data and s.animation_data.action:
+					cached_actions[s] = s.animation_data.action.name
+
+
 			self.writel(S_ANIM_CLIPS,0,'<library_animation_clips>')
 
 			for x in bpy.data.actions[:]:
-				if x in self.action_constraints:
+				if x.users==0 or x in self.action_constraints:
+					continue
+				if (self.config["use_anim_skip_noexp"] and x.name.endswith("-noexp")):
 					continue
 
 				bones=[]
@@ -1185,6 +1203,11 @@ class DaeExporter:
 
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
 
+			for s in self.skeletons:
+				if s in cached_actions:
+					s.animation_data.action = bpy.data.actions[cached_actions[s]]
+				else:
+					s.animation_data.action = None
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
 

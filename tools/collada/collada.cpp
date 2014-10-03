@@ -2144,6 +2144,7 @@ void Collada::_parse_scene(XMLParser& parser) {
 			if (name=="instance_visual_scene") {
 
 				state.root_visual_scene=_uri_to_id(parser.get_attribute_value("url"));
+				print_line("***ROOT VISUAL SCENE: "+state.root_visual_scene);
 			} if (name=="instance_physics_scene") {
 
 				state.root_physics_scene=_uri_to_id(parser.get_attribute_value("url"));
@@ -2513,6 +2514,9 @@ bool Collada::_move_geometry_to_skeletons(VisualScene *p_vscene,Node *p_node,Lis
 			ERR_FAIL_COND_V( !state.scene_map.has( nodeid ), false); //weird, it should have it...
 			NodeJoint *nj = SAFE_CAST<NodeJoint*>(state.scene_map[nodeid]);
 			ERR_FAIL_COND_V(!nj,false);
+			if (!nj->owner) {
+				print_line("Has no owner: "+nj->name);
+			}
 			ERR_FAIL_COND_V( !nj->owner,false ); //weird, node should have a skeleton owner
 
 			NodeSkeleton *sk = nj->owner;

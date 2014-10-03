@@ -856,6 +856,36 @@ Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2>& p_polygon) {
 	return Geometry::triangulate_polygon(p_polygon);
 }
 
+Dictionary _Geometry::make_atlas(const Vector<Size2>& p_rects) {
+
+	Dictionary ret;
+
+	Vector<Size2i> rects;
+	for (int i=0; i<p_rects.size(); i++) {
+
+		rects.push_back(p_rects[i]);
+	};
+
+	Vector<Point2i> result;
+	Size2i size;
+
+	Geometry::make_atlas(rects, result, size);
+
+	Size2 r_size = size;
+	Vector<Point2> r_result;
+	for (int i=0; i<result.size(); i++) {
+
+		r_result.push_back(result[i]);
+	};
+
+
+	ret["points"] = r_result;
+	ret["size"] = r_size;
+
+	return ret;
+};
+
+
 void _Geometry::_bind_methods() {
 
 
@@ -878,6 +908,7 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
+	ObjectTypeDB::bind_method(_MD("make_atlas","sizes"),&_Geometry::make_atlas);
 }
 
 

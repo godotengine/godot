@@ -100,6 +100,7 @@
 #include "scene/2d/sample_player_2d.h"
 #include "scene/2d/screen_button.h"
 #include "scene/2d/remote_transform_2d.h"
+#include "scene/2d/y_sort.h"
 
 #include "scene/2d/position_2d.h"
 #include "scene/2d/tile_map.h"
@@ -491,6 +492,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<VisibilityNotifier2D>();
 	ObjectTypeDB::register_type<VisibilityEnabler2D>();
 	ObjectTypeDB::register_type<Polygon2D>();
+	ObjectTypeDB::register_type<YSort>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);
