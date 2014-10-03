@@ -311,10 +311,11 @@ void TileMap::_recompute_rect_cache() {
 			r_total=r_total.merge(r);
 
 	}
+
 	if (r_total==Rect2()) {
 		rect_cache=Rect2(-10,-10,20,20);
 	} else {
-		rect_cache=r_total;
+		rect_cache=r_total.grow(MAX(cell_size.x,cell_size.y)*quadrant_size);
 	}
 
 	item_rect_changed();

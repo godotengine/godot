@@ -540,6 +540,8 @@ void PhysicsServerSW::body_set_shape_as_trigger(RID p_body, int p_shape_idx,bool
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+	ERR_FAIL_INDEX(p_shape_idx,body->get_shape_count());
+	body->set_shape_as_trigger(p_shape_idx,p_enable);
 
 }
 
@@ -547,10 +549,9 @@ bool PhysicsServerSW::body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) 
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,false);
+	ERR_FAIL_INDEX_V(p_shape_idx,body->get_shape_count(),false);
 
-	// todo ?
-
-	return false;
+	body->is_shape_set_as_trigger(p_shape_idx);
 }
 
 

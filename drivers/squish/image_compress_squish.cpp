@@ -18,18 +18,19 @@ void image_compress_squish(Image *p_image) {
 	if (p_image->get_format()>=Image::FORMAT_BC1)
 		return; //do not compress, already compressed
 
-
-	Image::AlphaMode alpha = p_image->detect_alpha();
-	Image::Format target_format;
 	int shift=0;
 	int squish_comp=squish::kColourRangeFit;
-	switch(alpha) {
+	Image::Format target_format;
 
-		case Image::ALPHA_NONE: target_format = Image::FORMAT_BC1; shift=1; squish_comp|=squish::kDxt1; break;
-		case Image::ALPHA_BIT: target_format = Image::FORMAT_BC2; squish_comp|=squish::kDxt3; break;
-		case Image::ALPHA_BLEND: target_format = Image::FORMAT_BC3; squish_comp|=squish::kDxt5; break;
+	if (p_image->get_format()==Image::FORMAT_GRAYSCALE_ALPHA) {
+		//compressed normalmap
+		target_format = Image::FORMAT_BC3; squish_comp|=squish::kDxt5;;
+	} else if (p_image->detect_alpha()!=Image::ALPHA_NONE) {
+
+		target_format = Image::FORMAT_BC2; squish_comp|=squish::kDxt3;;
+	} else {
+		target_format = Image::FORMAT_BC1; shift=1; squish_comp|=squish::kDxt1;;
 	}
-
 
 	p_image->convert(Image::FORMAT_RGBA); //always expects rgba
 

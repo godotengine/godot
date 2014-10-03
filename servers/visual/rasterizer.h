@@ -56,6 +56,7 @@ protected:
 			bool use_color_array:1;
 			bool use_pointsize:1;
 			bool discard_alpha:1;
+			bool use_xy_normalmap:1;
 			bool valid:1;
 		};
 
@@ -83,6 +84,7 @@ protected:
 		bool use_color_array;
 		bool discard_alpha;
 		bool use_pointsize;
+		bool use_xy_normalmap;
 		float point_size;
 		Transform uv_xform;
 		VS::FixedMaterialLightShader light_shader;
@@ -102,6 +104,7 @@ protected:
 			k.use_alpha=use_alpha;
 			k.use_color_array=use_color_array;
 			k.use_pointsize=use_pointsize;
+			k.use_xy_normalmap=use_xy_normalmap;
 			k.discard_alpha=discard_alpha;
 			k.light_shader=light_shader;
 			k.valid=true;
@@ -123,6 +126,7 @@ protected:
 			use_color_array=false;
 			use_pointsize=false;
 			discard_alpha=false;
+			use_xy_normalmap=false;
 			point_size=1.0;
 			light_shader=VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT;
 			for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
