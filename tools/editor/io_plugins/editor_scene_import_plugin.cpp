@@ -40,6 +40,7 @@
 #include "scene/3d/body_shape.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/portal.h"
+#include "scene/3d/vehicle_body.h"
 #include "os/os.h"
 
 
@@ -649,9 +650,10 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_BILLBOARDS,"Create","Create Billboards (-bb)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_IMPOSTORS,"Create","Create Impostors (-imp:dist)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_LODS,"Create","Create LODs (-lod:dist)",true},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_CARS,"Create","Create Cars (-car)",true},
-	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_WHEELS,"Create","Create Car Wheels (-wheel)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_CARS,"Create","Create Vehicles (-vehicle)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_WHEELS,"Create","Create Vehicle Wheels (-wheel)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_NAVMESH,"Create","Create Navigation Meshes (-navmesh)",true},
+	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_LIGHTMAP_LAYER,"Create","Detect LightMap Layer (-lm:<int>).",true},
 	{-1,NULL,NULL,false}
 };
 
@@ -1199,6 +1201,17 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 	    }
 	}
     }
+
+
+	if (p_flags&SCENE_FLAG_DETECT_LIGHTMAP_LAYER && _teststr(name,"lm") && p_node->cast_to<MeshInstance>()) {
+
+		MeshInstance *mi = p_node->cast_to<MeshInstance>();
+
+		String str=name;
+		int layer = str.substr(str.find("lm")+3,str.length()).to_int();
+		mi->set_baked_light_texture_id(layer);
+	}
+
 	if (p_flags&SCENE_FLAG_CREATE_COLLISIONS && _teststr(name,"colonly") && p_node->cast_to<MeshInstance>()) {
 
 		if (isroot)
@@ -1262,6 +1275,46 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		p_node->replace_by(nmi);
 		memdelete(p_node);
 		p_node=nmi;
+	} else if (p_flags&SCENE_FLAG_CREATE_CARS &&_teststr(name,"vehicle")) {
+
+		if (isroot)
+			return p_node;
+
+		Node *owner = p_node->get_owner();
+		Spatial *s = p_node->cast_to<Spatial>();
+		VehicleBody *bv = memnew( VehicleBody );
+		String n = _fixstr(p_node->get_name(),"vehicle");
+		bv->set_name(n);
+		p_node->replace_by(bv);
+		p_node->set_name(n);
+		bv->add_child(p_node);
+		bv->set_owner(owner);
+		p_node->set_owner(owner);
+		bv->set_transform(s->get_transform());
+		s->set_transform(Transform());
+
+		p_node=bv;
+
+
+	} else if (p_flags&SCENE_FLAG_CREATE_CARS &&_teststr(name,"wheel")) {
+
+		if (isroot)
+			return p_node;
+
+		Node *owner = p_node->get_owner();
+		Spatial *s = p_node->cast_to<Spatial>();
+		VehicleWheel *bv = memnew( VehicleWheel );
+		String n = _fixstr(p_node->get_name(),"wheel");
+		bv->set_name(n);
+		p_node->replace_by(bv);
+		p_node->set_name(n);
+		bv->add_child(p_node);
+		bv->set_owner(owner);
+		p_node->set_owner(owner);
+		bv->set_transform(s->get_transform());
+		s->set_transform(Transform());
+
+		p_node=bv;
 
 	} else if (p_flags&SCENE_FLAG_CREATE_ROOMS && _teststr(name,"room") && p_node->cast_to<MeshInstance>()) {
 

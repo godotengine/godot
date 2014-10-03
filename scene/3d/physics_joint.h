@@ -44,6 +44,8 @@ class Joint : public Spatial {
 	NodePath a;
 	NodePath b;
 
+	int solver_priority;
+
 
 protected:
 
@@ -61,6 +63,9 @@ public:
 
 	void set_node_b(const NodePath& p_node_b);
 	NodePath get_node_b() const;
+
+	void set_solver_priority(int p_priority);
+	int get_solver_priority() const;
 
 	RID get_joint() const { return joint; }
 	Joint();

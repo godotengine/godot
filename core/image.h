@@ -216,6 +216,14 @@ public:
 	 * Convert the image to another format, as close as it can be done.
 	 */
 	void convert( Format p_new_format );
+
+	Image converted(int p_new_format) {
+		ERR_FAIL_INDEX_V(p_new_format, FORMAT_MAX, Image());
+
+		Image ret = *this;
+		ret.convert((Format)p_new_format);
+		return ret;
+	};
 	
 	/**
 	 * Get the current image format.

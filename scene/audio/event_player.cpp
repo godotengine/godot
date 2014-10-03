@@ -280,8 +280,8 @@ float EventPlayer::get_channel_last_note_time(int p_channel) const {
 
 void EventPlayer::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_stream","stream:Stream"),&EventPlayer::set_stream);
-	ObjectTypeDB::bind_method(_MD("get_stream:Stream"),&EventPlayer::get_stream);
+	ObjectTypeDB::bind_method(_MD("set_stream","stream:EventStream"),&EventPlayer::set_stream);
+	ObjectTypeDB::bind_method(_MD("get_stream:EventStream"),&EventPlayer::get_stream);
 
 	ObjectTypeDB::bind_method(_MD("play"),&EventPlayer::play);
 	ObjectTypeDB::bind_method(_MD("stop"),&EventPlayer::stop);

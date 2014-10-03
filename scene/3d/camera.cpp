@@ -262,7 +262,7 @@ void Camera::_notification(int p_what) {
 
 Transform Camera::get_camera_transform() const {
 
-	return get_global_transform();
+	return get_global_transform().orthonormalized();
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -695,7 +695,7 @@ Vector<Plane> Camera::get_frustum() const {
 	else
 		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
-	return cm.get_projection_planes(get_global_transform());
+	return cm.get_projection_planes(get_camera_transform());
 
 }
 
@@ -704,7 +704,7 @@ Vector<Plane> Camera::get_frustum() const {
 void Camera::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
 
 	Transform lookat;
-	lookat.origin=get_global_transform().origin;
+	lookat.origin=get_camera_transform().origin;
 	lookat=lookat.looking_at(p_target,p_up_normal);
 	set_global_transform(lookat);
 }

@@ -57,6 +57,7 @@ void register_server_types() {
 	ObjectTypeDB::register_virtual_type<Physics2DShapeQueryResult>();
 	ObjectTypeDB::register_type<Physics2DShapeQueryParameters>();
 
+	ObjectTypeDB::register_type<PhysicsShapeQueryParameters>();
 	ObjectTypeDB::register_virtual_type<PhysicsDirectBodyState>();
 	ObjectTypeDB::register_virtual_type<PhysicsDirectSpaceState>();
 	ObjectTypeDB::register_virtual_type<PhysicsShapeQueryResult>();

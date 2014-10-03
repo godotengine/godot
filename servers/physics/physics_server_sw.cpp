@@ -836,6 +836,22 @@ void PhysicsServerSW::body_set_force_integration_callback(RID p_body,Object *p_r
 
 }
 
+void PhysicsServerSW::body_set_ray_pickable(RID p_body,bool p_enable) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_ray_pickable(p_enable);
+
+}
+
+bool PhysicsServerSW::body_is_ray_pickable(RID p_body) const{
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,false);
+	return body->is_ray_pickable();
+
+}
+
 
 /* JOINT API */
 
@@ -998,6 +1014,21 @@ bool PhysicsServerSW::hinge_joint_get_flag(RID p_joint,HingeJointFlag p_flag) co
 	ERR_FAIL_COND_V(joint->get_type()!=JOINT_HINGE,false);
 	HingeJointSW *hinge_joint = static_cast<HingeJointSW*>(joint);
 	return hinge_joint->get_flag(p_flag);
+}
+
+void PhysicsServerSW::joint_set_solver_priority(RID p_joint,int p_priority) {
+
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+	joint->set_priority(p_priority);
+}
+
+int PhysicsServerSW::joint_get_solver_priority(RID p_joint) const{
+
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint,0);
+	return joint->get_priority();
+
 }
 
 PhysicsServerSW::JointType PhysicsServerSW::joint_get_type(RID p_joint) const {

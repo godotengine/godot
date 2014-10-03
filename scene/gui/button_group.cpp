@@ -67,6 +67,9 @@ Array ButtonGroup::_get_button_list() const {
 
 	List<BaseButton*> b;
 	get_button_list(&b);
+
+	b.sort_custom<Node::Comparator>();
+
 	Array arr;
 	arr.resize(b.size());
 
