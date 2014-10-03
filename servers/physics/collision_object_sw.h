@@ -59,6 +59,9 @@ private:
 		BroadPhaseSW::ID bpid;
 		AABB aabb_cache; //for rayqueries
 		ShapeSW *shape;
+		bool trigger;
+
+		Shape() { trigger=false; }
 	};
 
 	Vector<Shape> shapes;
@@ -125,6 +128,8 @@ public:
 	_FORCE_INLINE_ void set_ray_pickable(bool p_enable) { ray_pickable=p_enable; }
 	_FORCE_INLINE_ bool is_ray_pickable() const { return ray_pickable; }
 
+	_FORCE_INLINE_ void set_shape_as_trigger(int p_idx,bool p_enable) { shapes[p_idx].trigger=p_enable; }
+	_FORCE_INLINE_ bool is_shape_set_as_trigger(int p_idx) const { return shapes[p_idx].trigger; }
 
 	_FORCE_INLINE_ void set_layer_mask(uint32_t p_mask) { layer_mask=p_mask; }
 	_FORCE_INLINE_ uint32_t get_layer_mask() const { return layer_mask; }

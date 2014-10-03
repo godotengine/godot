@@ -245,7 +245,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 		if (!E) {
 
 			E = contact_monitor->body_map.insert(objid,BodyState());
-			E->get().rc=0;
+			//E->get().rc=0;
 			E->get().in_scene=node && node->is_inside_scene();
 			if (node) {
 				node->connect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene,make_binds(objid));
@@ -256,7 +256,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 			}
 
 		}
-		E->get().rc++;
+		//E->get().rc++;
 		if (node)
 			E->get().shapes.insert(ShapePair(p_body_shape,p_local_shape));
 
@@ -267,24 +267,26 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 
 	} else {
 
-		E->get().rc--;
+		//E->get().rc--;
 
 		if (node)
 			E->get().shapes.erase(ShapePair(p_body_shape,p_local_shape));
 
-		if (E->get().rc==0) {
+		bool in_scene = E->get().in_scene;
+
+		if (E->get().shapes.empty()) {
 
 			if (node) {
 				node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
 				node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
-				if (E->get().in_scene)
+				if (in_scene)
 					emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
 			}
 
 			contact_monitor->body_map.erase(E);
 		}
-		if (node && E->get().in_scene) {
+		if (node && in_scene) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_local_shape);
 		}
 

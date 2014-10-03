@@ -642,6 +642,7 @@ const EditorSceneImportDialog::FlagInfo EditorSceneImportDialog::scene_flag_name
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_ALPHA,"Materials","Set Alpha in Materials (-alpha)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_DETECT_VCOLOR,"Materials","Set Vert. Color in Materials (-vcol)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES,"Actions","SRGB->Linear Of Diffuse Textures",false},
+	{EditorSceneImportPlugin::SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY,"Actions","Convert Normal Maps to XY",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS,"Actions","Set Material Lightmap to UV2 if Tex2Array Exists",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_COLLISIONS,"Create","Create Collisions (-col},-colonly)",true},
 	{EditorSceneImportPlugin::SCENE_FLAG_CREATE_PORTALS,"Create","Create Portals (-portal)",true},
@@ -898,7 +899,7 @@ static String _fixstr(const String& p_what,const String& p_str) {
 
 
 
-void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<ImageTexture>, bool> &image_map) {
+void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<ImageTexture>, TextureRole> &image_map,int p_flags) {
 
 
 	switch(p_var.get_type()) {
@@ -910,7 +911,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 
 				if (res->is_type("Texture") && !image_map.has(res)) {
 
-					image_map.insert(res,false);
+					image_map.insert(res,TEXTURE_ROLE_DEFAULT);
 
 
 				} else {
@@ -926,11 +927,22 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 								Ref<ImageTexture> tex =res->get(E->get().name);
 								if (tex.is_valid()) {
 
-									image_map.insert(tex,true);
+									image_map.insert(tex,TEXTURE_ROLE_DIFFUSE);
 								}
 
+							} else if (E->get().type==Variant::OBJECT && res->cast_to<FixedMaterial>() && (E->get().name=="textures/normal")) {
+
+								Ref<ImageTexture> tex =res->get(E->get().name);
+								if (tex.is_valid()) {
+
+									image_map.insert(tex,TEXTURE_ROLE_NORMALMAP);
+									if (p_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
+										res->cast_to<FixedMaterial>()->set_fixed_flag(FixedMaterial::FLAG_USE_XY_NORMALMAP,true);
+								}
+
+
 							} else {
-								_find_resources(res->get(E->get().name),image_map);
+								_find_resources(res->get(E->get().name),image_map,p_flags);
 							}
 						}
 					}
@@ -949,8 +961,8 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 
-				_find_resources(E->get(),image_map);
-				_find_resources(d[E->get()],image_map);
+				_find_resources(E->get(),image_map,p_flags);
+				_find_resources(d[E->get()],image_map,p_flags);
 
 			}
 
@@ -961,7 +973,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 			Array a = p_var;
 			for(int i=0;i<a.size();i++) {
 
-				_find_resources(a[i],image_map);
+				_find_resources(a[i],image_map,p_flags);
 			}
 
 		} break;
@@ -971,7 +983,7 @@ void EditorSceneImportPlugin::_find_resources(const Variant& p_var, Map<Ref<Imag
 }
 
 
-Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Map<Ref<ImageTexture>,bool >& image_map) {
+Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Map<Ref<ImageTexture>,TextureRole >& image_map) {
 
 	// children first..
 	for(int i=0;i<p_node->get_child_count();i++) {
@@ -1002,7 +1014,7 @@ Node* EditorSceneImportPlugin::_fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>
 		for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
 
 			if (E->get().type==Variant::OBJECT || E->get().type==Variant::ARRAY || E->get().type==Variant::DICTIONARY) {
-				_find_resources(p_node->get(E->get().name),image_map);
+				_find_resources(p_node->get(E->get().name),image_map,p_flags);
 			}
 		}
 
@@ -1925,7 +1937,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 	Ref<ResourceImportMetadata> imd = memnew(ResourceImportMetadata);
 
-	Map< Ref<ImageTexture>,bool > imagemap;
+	Map< Ref<ImageTexture>,TextureRole > imagemap;
 
 	scene=_fix_node(scene,scene,collision_map,scene_flags,imagemap);
 
@@ -1971,7 +1983,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	int image_flags =  from->get_option("texture_flags");
 	float image_quality = from->get_option("texture_quality");
 
-	for (Map< Ref<ImageTexture>,bool >::Element *E=imagemap.front();E;E=E->next()) {
+	for (Map< Ref<ImageTexture>,TextureRole >::Element *E=imagemap.front();E;E=E->next()) {
 
 		//texture could be converted to something more useful for 3D, that could load individual mipmaps and stuff
 		//but not yet..
@@ -2007,6 +2019,11 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			Ref<ResourceImportMetadata> imd = memnew( ResourceImportMetadata );
 			print_line("flags: "+itos(image_flags));
 			uint32_t flags = image_flags;
+			if (E->get()==TEXTURE_ROLE_DIFFUSE && scene_flags&SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES)
+				flags|=EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_TO_LINEAR;
+
+			if (E->get()==TEXTURE_ROLE_NORMALMAP && scene_flags&SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY)
+				flags|=EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_NORMAL_TO_XY;
 
 			imd->set_option("flags",flags);
 			imd->set_option("format",image_format);

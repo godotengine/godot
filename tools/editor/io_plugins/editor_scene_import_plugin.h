@@ -100,8 +100,14 @@ class EditorSceneImportPlugin : public EditorImportPlugin {
 
 	Vector<Ref<EditorSceneImporter> > importers;
 
-	void _find_resources(const Variant& p_var,Map<Ref<ImageTexture>,bool >& image_map);
-	Node* _fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Map<Ref<ImageTexture>,bool >& image_map);
+	enum TextureRole {
+		TEXTURE_ROLE_DEFAULT,
+		TEXTURE_ROLE_DIFFUSE,
+		TEXTURE_ROLE_NORMALMAP
+	};
+
+	void _find_resources(const Variant& p_var,Map<Ref<ImageTexture>,TextureRole >& image_map,int p_flags);
+	Node* _fix_node(Node *p_node,Node *p_root,Map<Ref<Mesh>,Ref<Shape> > &collision_map,uint32_t p_flags,Map<Ref<ImageTexture>,TextureRole >& image_map);
 	void _merge_existing_node(Node *p_node,Node *p_imported_scene,Set<Ref<Resource> >& checked_resources,Set<Node*> &checked_nodes);
 	void _add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Set<Node*> &checked_nodes);
 
@@ -133,6 +139,7 @@ public:
 		SCENE_FLAG_GENERATE_TANGENT_ARRAYS=1<<27,
 		SCENE_FLAG_LINEARIZE_DIFFUSE_TEXTURES=1<<28,
 		SCENE_FLAG_SET_LIGHTMAP_TO_UV2_IF_EXISTS=1<<29,
+		SCENE_FLAG_CONVERT_NORMALMAPS_TO_XY=1<<30,
 	};
 
 
