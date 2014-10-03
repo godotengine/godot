@@ -38,12 +38,13 @@ class ConstraintSW {
 	uint64_t island_step;
 	ConstraintSW *island_next;
 	ConstraintSW *island_list_next;
+	int priority;
 
 
 	RID self;
 
 protected:
-	ConstraintSW(BodySW **p_body_ptr=NULL,int p_body_count=0) { _body_ptr=p_body_ptr; _body_count=p_body_count; island_step=0; }
+	ConstraintSW(BodySW **p_body_ptr=NULL,int p_body_count=0) { _body_ptr=p_body_ptr; _body_count=p_body_count; island_step=0; priority=1; }
 public:
 
 	_FORCE_INLINE_ void set_self(const RID& p_self) { self=p_self; }
@@ -61,6 +62,9 @@ public:
 
 	_FORCE_INLINE_ BodySW **get_body_ptr() const { return _body_ptr; }
 	_FORCE_INLINE_ int get_body_count() const { return _body_count; }
+
+	_FORCE_INLINE_ void set_priority(int p_priority) { priority=p_priority; }
+	_FORCE_INLINE_ int get_priority() const { return priority; }
 
 
 	virtual bool setup(float p_step)=0;

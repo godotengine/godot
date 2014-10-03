@@ -217,4 +217,5 @@ CollisionObjectSW::CollisionObjectSW(Type p_type) {
 	space=NULL;
 	instance_id=0;
 	layer_mask=1;
+	ray_pickable=true;
 }

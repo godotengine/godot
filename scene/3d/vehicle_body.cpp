@@ -179,7 +179,7 @@ void VehicleWheel::set_damping_compression(float p_value){
 }
 float VehicleWheel::get_damping_compression() const{
 
-	return m_wheelsDampingRelaxation;
+	return m_wheelsDampingCompression;
 }
 
 void VehicleWheel::set_damping_relaxation(float p_value){
@@ -745,11 +745,12 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			{
 				if (engine_force != 0.f)
 				{
-					rollingFriction = engine_force* s->get_step();
+					rollingFriction = -engine_force* s->get_step();
 				} else
 				{
 					real_t defaultRollingFrictionImpulse = 0.f;
-					real_t maxImpulse = wheelInfo.m_brake ? wheelInfo.m_brake : defaultRollingFrictionImpulse;
+					float cbrake = MAX(wheelInfo.m_brake,brake);
+					real_t maxImpulse = cbrake ? cbrake : defaultRollingFrictionImpulse;
 					btVehicleWheelContactPoint contactPt(s,wheelInfo.m_raycastInfo.m_groundObject,wheelInfo.m_raycastInfo.m_contactPointWS,m_forwardWS[wheel],maxImpulse);
 					rollingFriction = _calc_rolling_friction(contactPt);
 				}
@@ -1009,9 +1010,9 @@ void VehicleBody::_bind_methods(){
 
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&VehicleBody::_direct_state_changed);
 
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/engine_force",PROPERTY_HINT_RANGE,"0.01,1024.0,0.01"),_SCS("set_engine_force"),_SCS("get_engine_force"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/brake",PROPERTY_HINT_RANGE,"0.01,1024.0,0.01"),_SCS("set_brake"),_SCS("get_brake"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/steering",PROPERTY_HINT_RANGE,"0.01,1024.0,0.01"),_SCS("set_steering"),_SCS("get_steering"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/engine_force",PROPERTY_HINT_RANGE,"0.00,1024.0,0.01"),_SCS("set_engine_force"),_SCS("get_engine_force"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/brake",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_brake"),_SCS("get_brake"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"motion/steering",PROPERTY_HINT_RANGE,"-180,180.0,0.01"),_SCS("set_steering"),_SCS("get_steering"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"body/mass",PROPERTY_HINT_RANGE,"0.01,65536,0.01"),_SCS("set_mass"),_SCS("get_mass"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"body/friction",PROPERTY_HINT_RANGE,"0.01,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
 

@@ -108,6 +108,11 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             description=("Export all actions for the first armature found in separate DAE files"),
             default=False,
             )
+    use_anim_skip_noexp = BoolProperty(
+	    name="Skip (-noexp) Actions",
+	    description="Skip exporting of actions whose name end in (-noexp). Useful to skip control animations.",
+	    default=True,
+	    )
     use_anim_optimize = BoolProperty(
             name="Optimize Keyframes",
             description="Remove double keyframes",

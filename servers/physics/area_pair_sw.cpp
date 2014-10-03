@@ -67,7 +67,6 @@ void AreaPairSW::solve(float p_step) {
 
 AreaPairSW::AreaPairSW(BodySW *p_body,int p_body_shape, AreaSW *p_area,int p_area_shape) {
 
-
 	body=p_body;
 	area=p_area;
 	body_shape=p_body_shape;
@@ -75,6 +74,8 @@ AreaPairSW::AreaPairSW(BodySW *p_body,int p_body_shape, AreaSW *p_area,int p_are
 	colliding=false;
 	body->add_constraint(this,0);
 	area->add_constraint(this);
+	if (p_body->get_mode()==PhysicsServer::BODY_MODE_KINEMATIC)
+		p_body->set_active(true);
 
 }
 

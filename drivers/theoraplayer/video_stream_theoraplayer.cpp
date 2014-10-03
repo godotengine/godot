@@ -86,9 +86,15 @@ public:
 		return fa->get_pos();
 	};
 
-	TPDataFA(String p_path) {
+	TPDataFA(const String& p_path) {
 
 		fa = FileAccess::open(p_path, FileAccess::READ);
+		data_name = "File: " + p_path;
+	};
+
+	TPDataFA(FileAccess* p_fa, const String& p_path) {
+
+		fa = p_fa;
 		data_name = "File: " + p_path;
 	};
 
@@ -366,6 +372,10 @@ void VideoStreamTheoraplayer::update(float p_time) {
 
 void VideoStreamTheoraplayer::set_file(const String& p_file) {
 
+	FileAccess* f = FileAccess::open(p_file, FileAccess::READ);
+	if (!f || !f->is_open())
+		return;
+
 	if (!audio_factory) {
 		audio_factory = memnew(TPAudioGodotFactory);
 	};
@@ -377,10 +387,11 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 		
 		std::string file = p_file.replace("res://", "").utf8().get_data();
 		clip = mgr->createVideoClip(file);
+		memdelete(f);
 
 	} else {
 
-		TheoraDataSource* ds = memnew(TPDataFA(p_file));
+		TheoraDataSource* ds = memnew(TPDataFA(f, p_file));
 
 		try {
 			clip = mgr->createVideoClip(ds);

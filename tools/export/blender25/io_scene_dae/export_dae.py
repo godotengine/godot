@@ -317,6 +317,7 @@ class DaeExporter:
 
 	def export_mesh(self,node,armature=None,shapename=None):
 
+		mesh = node.data
 		if (node.data in self.mesh_cache) and shapename==None:
 			return self.mesh_cache[mesh]
 
@@ -475,7 +476,12 @@ class DaeExporter:
 			self.writel(S_GEOM,3,'<source id="'+meshid+'-texcoord-'+str(uvi)+'">')
 			float_values=""
 			for v in vertices:
-				float_values+=" "+str(v.uv[uvi].x)+" "+str(v.uv[uvi].y)
+				try:
+					float_values+=" "+str(v.uv[uvi].x)+" "+str(v.uv[uvi].y)
+				except:
+					# I don't understand this weird multi-uv-layer API, but with this it seems to works
+					float_values+=" 0 0 "
+
 			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-texcoord-'+str(uvi)+'-array" count="'+str(len(vertices)*2)+'">'+float_values+'</float_array>')
 			self.writel(S_GEOM,4,'<technique_common>')
 			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-texcoord-'+str(uvi)+'-array" count="'+str(len(vertices))+'" stride="2">')
@@ -1155,6 +1161,8 @@ class DaeExporter:
 
 			for x in bpy.data.actions[:]:
 				if x.users==0 or x in self.action_constraints:
+					continue
+				if (self.config["use_anim_skip_noexp"] and x.name.endswith("-noexp")):
 					continue
 
 				bones=[]

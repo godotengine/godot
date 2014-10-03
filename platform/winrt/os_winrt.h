@@ -41,11 +41,10 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 
+#include "gl_context_egl.h"
 
 #include <windows.h>
 
-#include "key_mapping_win.h"
-#include <windowsx.h>
 #include <io.h>
 
 #include <fcntl.h>
@@ -92,6 +91,8 @@ class OSWinrt : public OS {
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
 	int pressrc;
+
+	ContextEGL* gl_context;
 
 	struct Joystick {
 
@@ -223,6 +224,8 @@ public:
 
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
+
+	void set_gl_context(ContextEGL* p_context);
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();

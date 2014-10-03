@@ -180,6 +180,7 @@ Area2DSW::Area2DSW() : CollisionObject2DSW(TYPE_AREA), monitor_query_list(this),
 	gravity_vector=Vector2(0,-1);
 	gravity_is_point=false;
 	point_attenuation=1;
+
 	density=0.1;
 	priority=0;
 	monitor_callback_id=0;

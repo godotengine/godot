@@ -21,6 +21,7 @@ void Navigation::_navmesh_link(int p_id) {
 
 		List<Polygon>::Element *P=nm.polygons.push_back(Polygon());
 		Polygon &p=P->get();
+		p.owner=&nm;
 
 		Vector<int> poly = nm.navmesh->get_polygon(i);
 		int plen=poly.size();
@@ -145,13 +146,14 @@ void Navigation::_navmesh_unlink(int p_id) {
 }
 
 
-int Navigation::navmesh_create(const Ref<NavigationMesh>& p_mesh,const Transform& p_xform) {
+int Navigation::navmesh_create(const Ref<NavigationMesh>& p_mesh, const Transform& p_xform, Object *p_owner) {
 
 	int id = last_id++;
 	NavMesh nm;
 	nm.linked=false;
 	nm.navmesh=p_mesh;
 	nm.xform=p_xform;
+	nm.owner=p_owner;
 	navmesh_map[id]=nm;
 
 	_navmesh_link(id);
@@ -453,6 +455,7 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3& p_from,const Vec
 	bool use_collision=false;
 	Vector3 closest_point;
 	float closest_point_d=1e20;
+	NavMesh *closest_navmesh=NULL;
 
 	for (Map<int,NavMesh>::Element*E=navmesh_map.front();E;E=E->next()) {
 
@@ -471,10 +474,12 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3& p_from,const Vec
 						closest_point=inters;
 						use_collision=true;
 						closest_point_d=p_from.distance_to(inters);
+						closest_navmesh=p.owner;
 					} else if (closest_point_d > inters.distance_to(p_from)){
 
 						closest_point=inters;
 						closest_point_d=p_from.distance_to(inters);
+						closest_navmesh=p.owner;
 					}
 				}
 			}
@@ -492,11 +497,16 @@ Vector3 Navigation::get_closest_point_to_segment(const Vector3& p_from,const Vec
 
 						closest_point_d=d;
 						closest_point=b;
+						closest_navmesh=p.owner;
 					}
 
 				}
 			}
 		}
+	}
+
+	if (closest_navmesh && closest_navmesh->owner) {
+		//print_line("navmesh is: "+closest_navmesh->owner->cast_to<Node>()->get_name());
 	}
 
 	return closest_point;
@@ -577,7 +587,7 @@ Vector3 Navigation::get_up_vector() const{
 
 void Navigation::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("navmesh_create","mesh:NavigationMesh","xform"),&Navigation::navmesh_create);
+	ObjectTypeDB::bind_method(_MD("navmesh_create","mesh:NavigationMesh","xform","owner"),&Navigation::navmesh_create,DEFVAL(Variant()));
 	ObjectTypeDB::bind_method(_MD("navmesh_set_transform","id","xform"),&Navigation::navmesh_set_transform);
 	ObjectTypeDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
 

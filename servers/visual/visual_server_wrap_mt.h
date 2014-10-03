@@ -1107,6 +1107,8 @@ public:
 	FUNC2(canvas_item_add_set_blend_mode,RID, MaterialBlendMode );
 	FUNC2(canvas_item_add_clip_ignore,RID, bool );
 
+	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
+
 	FUNC1(canvas_item_clear,RID);
 	FUNC1(canvas_item_raise,RID);
 
