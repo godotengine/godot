@@ -1998,6 +1998,26 @@ void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
 
 
 
+void Image::normalmap_to_xy() {
+
+	convert(Image::FORMAT_RGBA);
+
+	{
+		int len = data.size()/4;
+		DVector<uint8_t>::Write wp = data.write();
+		unsigned char *data_ptr=wp.ptr();
+
+		for(int i=0;i<len;i++) {
+
+			data_ptr[(i<<2)+3]=data_ptr[(i<<2)+0]; //x to w
+			data_ptr[(i<<2)+0]=data_ptr[(i<<2)+1]; //y to xz
+			data_ptr[(i<<2)+2]=data_ptr[(i<<2)+1];
+		}
+	}
+
+	convert(Image::FORMAT_GRAYSCALE_ALPHA);
+}
+
 void Image::srgb_to_linear() {
 
 	if (data.size()==0)

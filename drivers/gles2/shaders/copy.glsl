@@ -46,6 +46,15 @@ precision mediump int;
 #endif
 
 
+
+float sRGB_gamma_correct(float c){
+    float a = 0.055;
+    if(c < 0.0031308)
+	return 12.92*c;
+    else
+	return (1.0+a)*pow(c, 1.0/2.4) - a;
+}
+
 #define LUM_RANGE 4.0
 
 
@@ -407,15 +416,26 @@ void main() {
 
 #ifdef USE_SRGB
 
+#if 0
+	//this was fast, but was commented out because it looked kind of shitty, might it be fixable?
+
 	{ //i have my doubts about how fast this is
+
 		color.rgb = min(color.rgb,vec3(1.0)); //clamp just in case
 		vec3 S1 = sqrt(color.rgb);
 		vec3 S2 = sqrt(S1);
 		vec3 S3 = sqrt(S2);
 		color.rgb = 0.662002687 * S1 + 0.684122060 * S2 - 0.323583601 * S3 - 0.225411470 * color.rgb;
 	}
+#else
+
+	color.r=sRGB_gamma_correct(color.r);
+	color.g=sRGB_gamma_correct(color.g);
+	color.b=sRGB_gamma_correct(color.b);
+
 #endif
 
+#endif
 
 #ifdef USE_HDR_COPY
 

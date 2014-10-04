@@ -156,7 +156,7 @@ private:
 	};
 	struct BodyState {
 
-		int rc;
+		//int rc;
 		bool in_scene;
 		VSet<ShapePair> shapes;
 	};
