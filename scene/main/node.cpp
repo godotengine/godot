@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "node.h"
 #include "print_string.h"
-#include "scene/io/scene_loader.h"
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 #include "scene/resources/packed_scene.h"

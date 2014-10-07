@@ -27,8 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_core_types.h"
-#include "io/object_format_xml.h"
-#include "io/object_format_binary.h"
 
 #include "io/tcp_server.h"
 #include "io/config_file.h"
@@ -56,14 +54,6 @@
 #ifdef XML_ENABLED
 static ResourceFormatSaverXML *resource_saver_xml=NULL;
 static ResourceFormatLoaderXML *resource_loader_xml=NULL;
-#ifdef OLD_SCENE_FORMAT_ENABLED
-static ObjectFormatSaverInstancerXML *object_format_saver_xml=NULL;
-static ObjectFormatLoaderInstancerXML *object_format_loader_xml=NULL;
-#endif
-#endif
-#ifdef OLD_SCENE_FORMAT_ENABLED
-static ObjectFormatSaverInstancerBinary * object_format_saver_binary = NULL;
-static ObjectFormatLoaderInstancerBinary * object_format_loader_binary = NULL;
 #endif
 static ResourceFormatSaverBinary *resource_saver_binary=NULL;
 static ResourceFormatLoaderBinary *resource_loader_binary=NULL;
@@ -101,23 +91,6 @@ void register_core_types() {
 
 	CoreStringNames::create();
 	
-#ifdef XML_ENABLED
-#ifdef OLD_SCENE_FORMAT_ENABLED
-	object_format_saver_xml = memnew( ObjectFormatSaverInstancerXML );
-	ObjectSaver::add_object_format_saver_instancer( object_format_saver_xml );
-	
-	object_format_loader_xml = memnew( ObjectFormatLoaderInstancerXML );
-	ObjectLoader::add_object_format_loader_instancer( object_format_loader_xml );
-#endif
-#endif
-#ifdef OLD_SCENE_FORMAT_ENABLED
-	object_format_saver_binary = memnew( ObjectFormatSaverInstancerBinary );
-	ObjectSaver::add_object_format_saver_instancer( object_format_saver_binary );
-
-
-	object_format_loader_binary = memnew( ObjectFormatLoaderInstancerBinary );
-	ObjectLoader::add_object_format_loader_instancer( object_format_loader_binary );
-#endif
 	resource_format_po = memnew( TranslationLoaderPO );
 	ResourceLoader::add_resource_format_loader( resource_format_po );
 
@@ -212,10 +185,6 @@ void unregister_core_types() {
 
 	memdelete( _geometry );
 #ifdef XML_ENABLED
-#ifdef OLD_SCENE_FORMAT_ENABLED
-	memdelete( object_format_saver_xml );
-	memdelete( object_format_loader_xml );
-#endif
 	if (resource_saver_xml)
 		memdelete(resource_saver_xml);
 	if (resource_loader_xml)
@@ -228,10 +197,6 @@ void unregister_core_types() {
 		memdelete(resource_loader_binary);
 
 
-#ifdef OLD_SCENE_FORMAT_ENABLED
-	memdelete( object_format_saver_binary );
-	memdelete( object_format_loader_binary );
-#endif
 	memdelete( resource_format_po );
 
 	if (ip)

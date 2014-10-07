@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "scene_preloader.h"
-#include "scene/io/scene_loader.h"
 #include "globals.h"
 
 bool ScenePreloader::can_instance() const {
