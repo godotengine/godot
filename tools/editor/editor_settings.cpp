@@ -30,7 +30,7 @@
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "io/object_format_xml.h"
+
 #include "version.h"
 #include "scene/main/scene_main_loop.h"
 #include "os/os.h"

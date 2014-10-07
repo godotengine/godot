@@ -38,42 +38,30 @@ def configure(env):
 
 	env.Append(CPPPATH=['#platform/osx'])
 
-	if (env["tools"]=="no"):
-		#no tools suffix
-		env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
+	if (env["bits"]=="default"):
+	    env["bits"]="32"
 
 	if (env["target"]=="release"):
 
 		env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer','-ftree-vectorize','-msse2'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="release_debug"):
 
 		env.Append(CCFLAGS=['-O2','-DDEBUG_ENABLED'])
-		env['OBJSUFFIX'] = "_optd"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 
 		env.Append(CCFLAGS=['-g3', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 
-	elif (env["target"]=="profile"):
-		env.Append(CCFLAGS=['-g','-pg'])
-		env.Append(LINKFLAGS=['-pg'])
-
 	if (env["freetype"]!="no"):
 		env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 		env.Append(CPPPATH=['#tools/freetype'])
 		env.Append(CPPPATH=['#tools/freetype/freetype/include'])
 
-	if (env["force_64_bits"]!="no"):
+	if (env["bits"]=="64"):
 		env.Append(CCFLAGS=['-arch', 'x86_64'])
 		env.Append(LINKFLAGS=['-arch', 'x86_64'])
-		env['OBJSUFFIX'] = ".64"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = ".64"+env['LIBSUFFIX']
 	else:
 		env.Append(CCFLAGS=['-arch', 'i386'])
 		env.Append(LINKFLAGS=['-arch', 'i386'])

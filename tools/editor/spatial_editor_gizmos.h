@@ -44,7 +44,7 @@
 #include "scene/3d/portal.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/navigation_mesh.h"
-#include "scene/3d/car_body.h"
+
 #include "scene/3d/vehicle_body.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/physics_joint.h"
@@ -331,19 +331,6 @@ public:
 
 };
 
-
-class CarWheelSpatialGizmo  : public SpatialGizmoTool {
-
-	OBJ_TYPE(CarWheelSpatialGizmo,SpatialGizmoTool);
-
-	CarWheel* car_wheel;
-
-public:
-
-	void redraw();
-	CarWheelSpatialGizmo(CarWheel* p_car_wheel=NULL);
-
-};
 
 
 class VehicleWheelSpatialGizmo  : public SpatialGizmoTool {
