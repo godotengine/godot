@@ -207,7 +207,7 @@ void make_default_theme() {
 
 	// Button
 
-	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,4,4,4,4,16,4,16,4) );
+	t->set_stylebox("normal","Button", make_stylebox( button_normal_png,4,4,4,4,8,4,8,4) );
 	t->set_stylebox("pressed","Button", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("hover","Button", make_stylebox( button_hover_png,4,4,4,4) );
 	t->set_stylebox("disabled","Button", make_stylebox( button_disabled_png,4,4,4,4) );
@@ -251,7 +251,7 @@ void make_default_theme() {
 	tb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
 	t->set_stylebox("normal","ToolButton", tb_empty);
-	t->set_stylebox("pressed","ToolButton", make_stylebox( button_pressed_png,4,4,4,4,8) );
+	t->set_stylebox("pressed","ToolButton", make_stylebox( button_pressed_png,4,4,4,4) );
 	t->set_stylebox("hover","ToolButton", make_stylebox( button_normal_png,4,4,4,4) );
 	t->set_stylebox("disabled","ToolButton", make_empty_stylebox(4,4,4,4) );
 	t->set_stylebox("focus","ToolButton", focus );
