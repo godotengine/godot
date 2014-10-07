@@ -886,6 +886,12 @@ Dictionary _Geometry::make_atlas(const Vector<Size2>& p_rects) {
 };
 
 
+int _Geometry::get_uv84_normal_bit(const Vector3& p_vector) {
+
+	return Geometry::get_uv84_normal_bit(p_vector);
+}
+
+
 void _Geometry::_bind_methods() {
 
 
@@ -899,6 +905,8 @@ void _Geometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_closest_points_between_segments","p1","p2","q1","q2"),&_Geometry::get_closest_points_between_segments);
 
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
+
+	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
 
 	ObjectTypeDB::bind_method(_MD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);

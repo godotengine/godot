@@ -29,6 +29,9 @@
 #include "packed_scene.h"
 #include "globals.h"
 #include "io/resource_loader.h"
+#include "scene/3d/spatial.h"
+#include "scene/gui/control.h"
+#include "scene/2d/node_2d.h"
 
 bool PackedScene::can_instance() const {
 
@@ -80,9 +83,26 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 		} else {
 			//create anew
 			Object * obj = ObjectTypeDB::instance(snames[ n.type ]);
-			ERR_FAIL_COND_V(!obj,NULL);
-			node = obj->cast_to<Node>();
-			ERR_FAIL_COND_V(!node,NULL);
+			if (!obj || !obj->cast_to<Node>()) {
+				if (obj) {
+					memdelete(obj);
+					obj=NULL;
+				}
+				WARN_PRINT(String("Warning node of type "+snames[n.type].operator String()+" does not exist.").ascii().get_data());
+				if (n.parent>=0 && n.parent<nc && ret_nodes[n.parent]) {
+					if (ret_nodes[n.parent]->cast_to<Spatial>()) {
+						obj = memnew( Spatial );
+					} else if (ret_nodes[n.parent]->cast_to<Control>()) {
+						obj = memnew( Control );
+					} else if (ret_nodes[n.parent]->cast_to<Node2D>()) {
+						obj = memnew( Node2D );
+					}
+
+				}
+				if (!obj) {
+					obj = memnew( Node );
+				}
+			}
 
 		}
 

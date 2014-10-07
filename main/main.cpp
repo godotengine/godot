@@ -43,7 +43,7 @@
 #include "io/resource_loader.h"
 #include "scene/main/scene_main_loop.h"
 
-#include "scene/io/scene_loader.h"
+
 #include "script_language.h"
 #include "io/resource_loader.h"
 
@@ -1131,10 +1131,6 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 			if (editor) {
 
-#ifdef OLD_SCENE_FORMAT_ENABLED
-				if (convert_old)
-					editor_node->set_convert_old_scene(true);
-#endif
 
 				if (_import!="") {
 
@@ -1213,14 +1209,6 @@ bool Main::start() {
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
 					scene=scenedata->instance();
-
-#ifdef OLD_SCENE_FORMAT_ENABLED
-
-				if (!scene) {
-					scene = SceneLoader::load(local_game_path,true);
-				}
-
-#endif
 
 				ERR_EXPLAIN("Failed loading scene: "+local_game_path);
 				ERR_FAIL_COND_V(!scene,false)

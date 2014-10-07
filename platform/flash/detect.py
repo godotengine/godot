@@ -11,7 +11,6 @@ def get_name():
 def can_build():
 
 	#import os
-	print(os.environ)
 	if (not os.environ.has_key("FLASCC_ROOT")):
 		return False
 	return True
