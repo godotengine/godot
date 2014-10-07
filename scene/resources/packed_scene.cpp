@@ -104,6 +104,8 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 				}
 			}
 
+			node = obj->cast_to<Node>();
+
 		}
 
 
