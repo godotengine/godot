@@ -73,7 +73,10 @@ class RasterizerGLES2 : public Rasterizer {
 	uint8_t *skinned_buffer;
 	int skinned_buffer_size;
 	bool pvr_supported;
+	bool pvr_srgb_supported;
 	bool s3tc_supported;
+	bool s3tc_srgb_supported;
+	bool latc_supported;
 	bool etc_supported;
 	bool atitc_supported;
 	bool npo2_textures_available;
@@ -82,6 +85,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool full_float_fb_supported;
 	bool use_shadow_mapping;
 	bool use_fp16_fb;
+	bool srgb_supported;
+
 	ShadowFilterTechnique shadow_filter;
 
 	bool use_shadow_esm;
@@ -91,6 +96,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_texture_instancing;
 	bool use_attribute_instancing;
 	bool use_rgba_shadowmaps;
+	bool use_anisotropic_filter;
+	float anisotropic_level;
 
 	bool use_half_float;
 

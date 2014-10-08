@@ -283,6 +283,8 @@ public:
 	float get_current_animation_pos() const;
 	float get_current_animation_length() const;
 
+	void advance(float p_time);
+
 	void set_root(const NodePath& p_root);
 	NodePath get_root() const;
 

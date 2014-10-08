@@ -520,6 +520,9 @@ void PhysicsServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&PhysicsServer::body_set_force_integration_callback,DEFVAL(Variant()));
 
+	ObjectTypeDB::bind_method(_MD("body_set_ray_pickable","body","enable"),&PhysicsServer::body_set_ray_pickable);
+	ObjectTypeDB::bind_method(_MD("body_is_ray_pickable","body"),&PhysicsServer::body_is_ray_pickable);
+
 	/* JOINT API */
 
 	BIND_CONSTANT( JOINT_PIN );
@@ -626,6 +629,9 @@ void PhysicsServer::_bind_methods() {
 	BIND_CONSTANT( G6DOF_JOINT_FLAG_ENABLE_MOTOR );
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
+
+	ObjectTypeDB::bind_method(_MD("joint_set_solver_priority","joint","priority"),&PhysicsServer::joint_set_solver_priority);
+	ObjectTypeDB::bind_method(_MD("joint_get_solver_priority","joint"),&PhysicsServer::joint_get_solver_priority);
 
 	ObjectTypeDB::bind_method(_MD("joint_create_generic_6dof","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_generic_6dof);
 

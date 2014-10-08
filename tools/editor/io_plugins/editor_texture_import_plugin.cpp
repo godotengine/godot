@@ -47,6 +47,8 @@ static const char *flag_names[]={
 	"Filter (Magnifying)",
 	"Premultiply Alpha",
 	"Convert SRGB->Linear",
+	"Convert NormalMap to XY",
+	"Use Anisotropy",
 	NULL
 };
 
@@ -60,6 +62,8 @@ static const char *flag_short_names[]={
 	"Filter",
 	"PMAlpha",
 	"ToLinear",
+	"ToRG",
+	"Anisoropic",
 	NULL
 };
 
@@ -726,7 +730,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 	bool atlas = from->get_option("atlas");
 
 	int flags=from->get_option("flags");
-	print_line("GET FLAGS: "+itos(flags));
+
 	uint32_t tex_flags=0;
 
 	if (flags&EditorTextureImportPlugin::IMAGE_FLAG_REPEAT)
@@ -735,6 +739,10 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		tex_flags|=Texture::FLAG_FILTER;
 	if (!(flags&EditorTextureImportPlugin::IMAGE_FLAG_NO_MIPMAPS))
 		tex_flags|=Texture::FLAG_MIPMAPS;
+	if (flags&EditorTextureImportPlugin::IMAGE_FLAG_CONVERT_TO_LINEAR)
+		tex_flags|=Texture::FLAG_CONVERT_TO_LINEAR;
+	if (flags&EditorTextureImportPlugin::IMAGE_FLAG_USE_ANISOTROPY)
+		tex_flags|=Texture::FLAG_ANISOTROPIC_FILTER;
 
 	print_line("path: "+p_path+" flags: "+itos(tex_flags));
 	int shrink=1;
@@ -939,10 +947,14 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.premultiply_alpha();
 		}
 
-		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
-
-			image.srgb_to_linear();
+		if (flags&IMAGE_FLAG_CONVERT_NORMAL_TO_XY) {
+			image.normalmap_to_xy();
 		}
+
+		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+
+		//	image.srgb_to_linear();
+		//}
 
 		if (shrink>1) {
 
@@ -1001,11 +1013,15 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			image.premultiply_alpha();
 		}
 
-		if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
-
-			print_line("CONVERT BECAUSE: "+itos(flags));
-			image.srgb_to_linear();
+		if (flags&IMAGE_FLAG_CONVERT_NORMAL_TO_XY) {
+			image.normalmap_to_xy();
 		}
+
+		//if ((image.get_format()==Image::FORMAT_RGB || image.get_format()==Image::FORMAT_RGBA) && flags&IMAGE_FLAG_CONVERT_TO_LINEAR) {
+//
+		//	print_line("CONVERT BECAUSE: "+itos(flags));
+		//	image.srgb_to_linear();
+		//}
 
 		int orig_w=image.get_width();
 		int orig_h=image.get_height();
@@ -1030,7 +1046,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		texture->create_from_image(image,tex_flags);
 
 
-		if (shrink>1) {
+		if (shrink>1 || (format!=IMAGE_FORMAT_UNCOMPRESSED && (image.get_width()!=orig_w || image.get_height()!=orig_h))) {
 			texture->set_size_override(Size2(orig_w,orig_h));
 		}
 

@@ -37,12 +37,30 @@
 class TileMap : public Node2D {
 
 	OBJ_TYPE( TileMap, Node2D );
+public:
 
+	enum Mode {
+		MODE_SQUARE,
+		MODE_ISOMETRIC,
+		MODE_CUSTOM
+	};
+
+	enum HalfOffset {
+		HALF_OFFSET_X,
+		HALF_OFFSET_Y,
+		HALF_OFFSET_DISABLED,
+	};
+
+private:
 
 	Ref<TileSet> tile_set;
-	int cell_size;
+	Size2i cell_size;
 	int quadrant_size;
 	bool center_x,center_y;
+	Mode mode;
+	Matrix32 custom_transform;
+	HalfOffset half_offset;
+
 
 	union PosKey {
 
@@ -117,6 +135,12 @@ class TileMap : public Node2D {
 
 	void _set_tile_data(const DVector<int>& p_data);
 	DVector<int> _get_tile_data() const;
+
+	void _set_old_cell_size(int p_size) { set_cell_size(Size2(p_size,p_size)); }
+	int _get_old_cell_size() const { return cell_size.x; }
+
+	_FORCE_INLINE_ Vector2 _map_to_world(int p_x,int p_y,bool p_ignore_ofs=false) const;
+
 protected:
 
 
@@ -132,8 +156,8 @@ public:
 	void set_tileset(const Ref<TileSet>& p_tileset);
 	Ref<TileSet> get_tileset() const;
 
-	void set_cell_size(int p_size);
-	int get_cell_size() const;
+	void set_cell_size(Size2 p_size);
+	Size2 get_cell_size() const;
 
 	void set_quadrant_size(int p_size);
 	int get_quadrant_size() const;
@@ -159,10 +183,28 @@ public:
 	void set_collision_bounce(float p_bounce);
 	float get_collision_bounce() const;
 
+	void set_mode(Mode p_mode);
+	Mode get_mode() const;
+
+	void set_half_offset(HalfOffset p_half_offset);
+	HalfOffset get_half_offset() const;
+
+	void set_custom_transform(const Matrix32& p_xform);
+	Matrix32 get_custom_transform() const;
+
+	Matrix32 get_cell_transform() const;
+	Vector2 get_cell_draw_offset() const;
+
+	Vector2 map_to_world(const Vector2& p_pos, bool p_ignore_ofs=false) const;
+	Vector2 world_to_map(const Vector2& p_pos) const;
+
 	void clear();
 
 	TileMap();
 	~TileMap();
 };
+
+VARIANT_ENUM_CAST(TileMap::Mode);
+VARIANT_ENUM_CAST(TileMap::HalfOffset);
 
 #endif // TILE_MAP_H

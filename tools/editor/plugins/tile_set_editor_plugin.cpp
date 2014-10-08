@@ -45,6 +45,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 	       Node *child = scene->get_child(i);
 
+
 	       if (!child->cast_to<Sprite>()) {
 		       if (child->get_child_count()>0) {
 			       child=child->get_child(0);
@@ -73,7 +74,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 
 	       p_library->tile_set_texture(id,texture);
-	       Vector2 phys_offset = mi->get_offset();
+	       Vector2 phys_offset;
 
 	       Size2 s;
 	       if (mi->is_centered()) {
@@ -121,7 +122,7 @@ void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_me
 
 	       }
 
-	       p_library->tile_set_texture_offset(id,Vector2());
+	       p_library->tile_set_texture_offset(id,mi->get_offset());
 	}
 }
 

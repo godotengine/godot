@@ -106,9 +106,9 @@ Ref<TileSet> TileMap::get_tileset() const {
 	return tile_set;
 }
 
-void TileMap::set_cell_size(int p_size) {
+void TileMap::set_cell_size(Size2 p_size) {
 
-	ERR_FAIL_COND(p_size<1);
+	ERR_FAIL_COND(p_size.x<1 || p_size.y<1);
 
 	_clear_quadrants();
 	cell_size=p_size;
@@ -117,7 +117,7 @@ void TileMap::set_cell_size(int p_size) {
 
 
 }
-int TileMap::get_cell_size() const {
+Size2 TileMap::get_cell_size() const {
 
 	return cell_size;
 }
@@ -171,6 +171,7 @@ void TileMap::_update_dirty_quadrants() {
 
 	VisualServer *vs = VisualServer::get_singleton();
 	Physics2DServer *ps = Physics2DServer::get_singleton();
+	Vector2 tofs = get_cell_draw_offset();
 
 	while (dirty_quadrant_list.first()) {
 
@@ -189,7 +190,7 @@ void TileMap::_update_dirty_quadrants() {
 			Ref<Texture> tex = tile_set->tile_get_texture(c.id);
 			Vector2 tile_ofs = tile_set->tile_get_texture_offset(c.id);
 
-			Vector2 offset = Point2( E->key().x, E->key().y )*cell_size - q.pos;
+			Vector2 offset = _map_to_world(E->key().x, E->key().y) - q.pos + tofs;
 
 			if (!tex.is_valid())
 				continue;
@@ -299,17 +300,22 @@ void TileMap::_recompute_rect_cache() {
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 
-		Rect2 r( Point2(E->key().x, E->key().y)*cell_size*quadrant_size, Size2(1,1)*cell_size*quadrant_size );
+		Rect2 r;
+		r.pos=_map_to_world(E->key().x*quadrant_size, E->key().y*quadrant_size);
+		r.expand_to( _map_to_world(E->key().x*quadrant_size+quadrant_size, E->key().y*quadrant_size) );
+		r.expand_to( _map_to_world(E->key().x*quadrant_size+quadrant_size, E->key().y*quadrant_size+quadrant_size) );
+		r.expand_to( _map_to_world(E->key().x*quadrant_size, E->key().y*quadrant_size+quadrant_size) );
 		if (E==quadrant_map.front())
 			r_total=r;
 		else
 			r_total=r_total.merge(r);
 
 	}
+
 	if (r_total==Rect2()) {
 		rect_cache=Rect2(-10,-10,20,20);
 	} else {
-		rect_cache=r_total;
+		rect_cache=r_total.grow(MAX(cell_size.x,cell_size.y)*quadrant_size);
 	}
 
 	item_rect_changed();
@@ -323,8 +329,10 @@ void TileMap::_recompute_rect_cache() {
 Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const PosKey& p_qk) {
 
 	Matrix32 xform;
-	xform.set_origin(Point2(p_qk.x,p_qk.y)*quadrant_size*cell_size);
+	//xform.set_origin(Point2(p_qk.x,p_qk.y)*cell_size*quadrant_size);
 	Quadrant q;
+	q.pos = _map_to_world(p_qk.x*quadrant_size,p_qk.y*quadrant_size);
+	xform.set_origin( q.pos );
 	q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	VisualServer::get_singleton()->canvas_item_set_parent( q.canvas_item, get_canvas_item() );
 	VisualServer::get_singleton()->canvas_item_set_transform( q.canvas_item, xform );
@@ -341,7 +349,6 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	}
 
 	Physics2DServer::get_singleton()->body_set_state(q.static_body,Physics2DServer::BODY_STATE_TRANSFORM,xform);
-	q.pos=Vector2(p_qk.x,p_qk.y)*quadrant_size*cell_size;
 
 	rect_cache_dirty=true;
 	quadrant_order_dirty=true;
@@ -478,8 +485,11 @@ void TileMap::_recreate_quadrants() {
 		}
 
 		Q->get().cells.insert(E->key());
-
+		_make_quadrant_dirty(Q);
 	}
+
+
+
 }
 
 void TileMap::_clear_quadrants() {
@@ -614,6 +624,152 @@ uint32_t TileMap::get_collision_layer_mask() const {
 	return collision_layer;
 }
 
+void TileMap::set_mode(Mode p_mode) {
+
+	_clear_quadrants();
+	mode=p_mode;
+	_recreate_quadrants();
+	emit_signal("settings_changed");
+}
+
+TileMap::Mode TileMap::get_mode() const {
+	return mode;
+}
+
+void TileMap::set_half_offset(HalfOffset p_half_offset) {
+
+	_clear_quadrants();
+	half_offset=p_half_offset;
+	_recreate_quadrants();
+	emit_signal("settings_changed");
+}
+
+Vector2 TileMap::get_cell_draw_offset() const {
+
+	switch(mode) {
+
+		case MODE_SQUARE: {
+
+			return Vector2();
+		} break;
+		case MODE_ISOMETRIC: {
+
+			return Vector2(-cell_size.x*0.5,0);
+
+		} break;
+		case MODE_CUSTOM: {
+
+			Vector2 min;
+			min.x = MIN(custom_transform[0].x,min.x);
+			min.y = MIN(custom_transform[0].y,min.y);
+			min.x = MIN(custom_transform[1].x,min.x);
+			min.y = MIN(custom_transform[1].y,min.y);
+			return min;
+		} break;
+	}
+
+	return Vector2();
+
+}
+
+TileMap::HalfOffset TileMap::get_half_offset() const {
+	return half_offset;
+}
+
+Matrix32 TileMap::get_cell_transform() const {
+
+	switch(mode) {
+
+		case MODE_SQUARE: {
+
+			Matrix32 m;
+			m[0]*=cell_size.x;
+			m[1]*=cell_size.y;
+			return m;
+		} break;
+		case MODE_ISOMETRIC: {
+
+			//isometric only makes sense when y is positive in both x and y vectors, otherwise
+			//the drawing of tiles will overlap
+			Matrix32 m;
+			m[0]=Vector2(cell_size.x*0.5,cell_size.y*0.5);
+			m[1]=Vector2(-cell_size.x*0.5,cell_size.y*0.5);
+			return m;
+
+		} break;
+		case MODE_CUSTOM: {
+
+			return custom_transform;
+		} break;
+	}
+
+	return Matrix32();
+}
+
+void TileMap::set_custom_transform(const Matrix32& p_xform) {
+
+	_clear_quadrants();
+	custom_transform=p_xform;
+	_recreate_quadrants();
+	emit_signal("settings_changed");
+
+}
+
+Matrix32 TileMap::get_custom_transform() const{
+
+	return custom_transform;
+}
+
+Vector2 TileMap::_map_to_world(int x,int y,bool p_ignore_ofs) const {
+
+	Vector2 ret = get_cell_transform().xform(Vector2(x,y));
+	if (!p_ignore_ofs) {
+		switch(half_offset) {
+
+			case HALF_OFFSET_X: {
+				if (ABS(y)&1) {
+
+					ret+=get_cell_transform()[0]*0.5;
+				}
+			} break;
+			case HALF_OFFSET_Y: {
+				if (ABS(x)&1) {
+					ret+=get_cell_transform()[1]*0.5;
+				}
+			} break;
+			default: {}
+		}
+	}
+	return ret;
+}
+Vector2 TileMap::map_to_world(const Vector2& p_pos,bool p_ignore_ofs) const {
+
+	return _map_to_world(p_pos.x,p_pos.y,p_ignore_ofs);
+}
+Vector2 TileMap::world_to_map(const Vector2& p_pos) const{
+
+	Vector2 ret = get_cell_transform().affine_inverse().xform(p_pos);
+
+
+	switch(half_offset) {
+
+		case HALF_OFFSET_X: {
+			if (int(ret.y)&1) {
+
+				ret.x-=0.5;
+			}
+		} break;
+		case HALF_OFFSET_Y: {
+			if (int(ret.x)&1) {
+				ret.y-=0.5;
+			}
+		} break;
+		default: {}
+	}
+
+	return ret.floor();
+}
+
 
 void TileMap::_bind_methods() {
 
@@ -621,9 +777,20 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_tileset","tileset:TileSet"),&TileMap::set_tileset);
 	ObjectTypeDB::bind_method(_MD("get_tileset:TileSet"),&TileMap::get_tileset);
 
+	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&TileMap::set_mode);
+	ObjectTypeDB::bind_method(_MD("get_mode"),&TileMap::get_mode);
+
+	ObjectTypeDB::bind_method(_MD("set_half_offset","half_offset"),&TileMap::set_half_offset);
+	ObjectTypeDB::bind_method(_MD("get_half_offset"),&TileMap::get_half_offset);
+
+	ObjectTypeDB::bind_method(_MD("set_custom_transform","custom_transform"),&TileMap::set_custom_transform);
+	ObjectTypeDB::bind_method(_MD("get_custom_transform"),&TileMap::get_custom_transform);
 
 	ObjectTypeDB::bind_method(_MD("set_cell_size","size"),&TileMap::set_cell_size);
 	ObjectTypeDB::bind_method(_MD("get_cell_size"),&TileMap::get_cell_size);
+
+	ObjectTypeDB::bind_method(_MD("_set_old_cell_size","size"),&TileMap::_set_old_cell_size);
+	ObjectTypeDB::bind_method(_MD("_get_old_cell_size"),&TileMap::_get_old_cell_size);
 
 	ObjectTypeDB::bind_method(_MD("set_quadrant_size","size"),&TileMap::set_quadrant_size);
 	ObjectTypeDB::bind_method(_MD("get_quadrant_size"),&TileMap::get_quadrant_size);
@@ -650,6 +817,9 @@ void TileMap::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
 
+	ObjectTypeDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);
+
 	ObjectTypeDB::bind_method(_MD("_clear_quadrants"),&TileMap::_clear_quadrants);
 	ObjectTypeDB::bind_method(_MD("_recreate_quadrants"),&TileMap::_recreate_quadrants);
 	ObjectTypeDB::bind_method(_MD("_update_dirty_quadrants"),&TileMap::_update_dirty_quadrants);
@@ -657,17 +827,28 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_set_tile_data"),&TileMap::_set_tile_data);
 	ObjectTypeDB::bind_method(_MD("_get_tile_data"),&TileMap::_get_tile_data);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Square,Isometric,Custom"),_SCS("set_mode"),_SCS("get_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_set",PROPERTY_HINT_RESOURCE_TYPE,"TileSet"),_SCS("set_tileset"),_SCS("get_tileset"));
-	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell_size",PROPERTY_HINT_RANGE,"1,8192,1",0),_SCS("_set_old_cell_size"),_SCS("_get_old_cell_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"cell/size",PROPERTY_HINT_RANGE,"1,8192,1"),_SCS("set_cell_size"),_SCS("get_cell_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell/custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer_mask"),_SCS("get_collision_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
 	BIND_CONSTANT( INVALID_CELL );
+	BIND_CONSTANT( MODE_SQUARE );
+	BIND_CONSTANT( MODE_ISOMETRIC );
+	BIND_CONSTANT( MODE_CUSTOM );
+	BIND_CONSTANT( HALF_OFFSET_X );
+	BIND_CONSTANT( HALF_OFFSET_Y );
+	BIND_CONSTANT( HALF_OFFSET_DISABLED );
+
 }
 
 TileMap::TileMap() {
@@ -678,12 +859,14 @@ TileMap::TileMap() {
 	pending_update=false;
 	quadrant_order_dirty=false;
 	quadrant_size=16;
-	cell_size=64;
+	cell_size=Size2(64,64);
 	center_x=false;
 	center_y=false;
 	collision_layer=1;
 	friction=1;
 	bounce=0;
+	mode=MODE_SQUARE;
+	half_offset=HALF_OFFSET_DISABLED;
 
 	fp_adjust=0.01;
 	fp_adjust=0.01;

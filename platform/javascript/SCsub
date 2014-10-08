@@ -6,8 +6,6 @@ javascript_files = [
 	"javascript_main.cpp"
 ]
 
-#env.Depends('#core/math/vector3.h', 'vector3_psp.h')
-
 #obj = env.SharedObject('godot_javascript.cpp')
 
 env_javascript = env.Clone()
@@ -22,4 +20,4 @@ prog = None
 
 #env_javascript.SharedLibrary("#platform/javascript/libgodot_javascript.so",[javascript_objects])
 
-env.Program('#bin/godot.html', javascript_objects)
+env.Program('#bin/godot',javascript_objects,PROGSUFFIX=env["PROGSUFFIX"]+".html")

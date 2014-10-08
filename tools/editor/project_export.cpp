@@ -31,13 +31,13 @@
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "globals.h"
-#include "scene/io/scene_loader.h"
+
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/os.h"
 #include "scene/gui/box_container.h"
 #include "default_saver.h"
-#include "scene/io/scene_saver.h"
+
 #include "scene/gui/tab_container.h"
 #include "scene/gui/scroll_container.h"
 #include "editor_data.h"

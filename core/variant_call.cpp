@@ -553,7 +553,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_PTR3R(Image, resized);
 	VCALL_PTR0R(Image, get_data);
 	VCALL_PTR3(Image, blit_rect);
-	VCALL_PTR1(Image,convert);
+	VCALL_PTR1R(Image, converted);
 
 	VCALL_PTR0R( AABB, get_area );
 	VCALL_PTR0R( AABB, has_no_area );
@@ -604,6 +604,25 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Vector2()); return;
 			case Variant::RECT2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->xform_inv( p_args[0]->operator Rect2()); return;
+			default: r_ret=Variant();
+		}
+	}
+
+	static void _call_Matrix32_basis_xform(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+
+		switch(p_args[0]->type) {
+
+			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->basis_xform( p_args[0]->operator Vector2()); return;
+			default: r_ret=Variant();
+		}
+
+	}
+
+	static void _call_Matrix32_basis_xform_inv(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+
+		switch(p_args[0]->type) {
+
+			case Variant::VECTOR2: r_ret=reinterpret_cast<Matrix32*>(p_self._data._ptr)->basis_xform_inv( p_args[0]->operator Vector2()); return;
 			default: r_ret=Variant();
 		}
 	}
@@ -1316,7 +1335,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC3(IMAGE, IMAGE, Image, resized, INT, "x", INT, "y", INT, "interpolation", varray(((int)Image::INTERPOLATE_BILINEAR)));
 	ADDFUNC0(IMAGE, RAW_ARRAY, Image, get_data, varray());
 	ADDFUNC3(IMAGE, NIL, Image, blit_rect, IMAGE, "src", RECT2, "src_rect", VECTOR2, "dest", varray(0));
-	ADDFUNC1(IMAGE, NIL, Image, convert, INT, "format", varray());
+	ADDFUNC1(IMAGE, IMAGE, Image, converted, INT, "format", varray(0));
 
 	ADDFUNC0(_RID,INT,RID,get_id,varray());
 
@@ -1437,6 +1456,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,translated,VECTOR2,"offset",varray());
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,xform,NIL,"v",varray());
 	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,xform_inv,NIL,"v",varray());
+	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,basis_xform,NIL,"v",varray());
+	ADDFUNC1(MATRIX32,MATRIX32,Matrix32,basis_xform_inv,NIL,"v",varray());
 	ADDFUNC2(MATRIX32,MATRIX32,Matrix32,interpolate_with,MATRIX32,"m",REAL,"c",varray());
 
 	ADDFUNC0(MATRIX3,MATRIX3,Matrix3,inverse,varray());

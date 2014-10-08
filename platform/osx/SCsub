@@ -8,4 +8,4 @@ files = [
 #	'context_gl_osx.cpp',
 	]
 
-env.Program('#bin/godot_osx',files)
+env.Program('#bin/godot',files)

@@ -96,7 +96,12 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		} else {
 			uv_str=_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_NORMAL);
 		}
-		scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
+		if (p_key.use_xy_normalmap) {
+			scode+="vec2 ywnormal=tex( fmp_normal_tex,"+uv_str+").wy * vec2(2.0,2.0) - vec2(1.0,1.0);\n";
+			scode+="vec3 normal=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n";
+		} else {
+			scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
+		}
 		scode+="NORMAL = mix( NORMAL,mat3(TANGENT,BINORMAL,NORMAL) * normal,  fmp_normal);\n";
 		code+=scode;
 	}
@@ -323,6 +328,7 @@ void Rasterizer::fixed_material_set_flag(RID p_material, VS::FixedMaterialFlags 
 		case VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY: fm.use_color_array=p_enabled; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE: fm.use_pointsize=p_enabled; break;
 		case VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA: fm.discard_alpha=p_enabled; break;
+		case VS::FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP: fm.use_xy_normalmap=p_enabled; break;
 	}
 
 	if (!fm.dirty_list.in_list())
@@ -341,6 +347,8 @@ bool Rasterizer::fixed_material_get_flag(RID p_material, VS::FixedMaterialFlags 
 		case VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY: return fm.use_color_array;; break;
 		case VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE: return fm.use_pointsize;; break;
 		case VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA: return fm.discard_alpha;; break;
+		case VS::FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP: return fm.use_xy_normalmap;; break;
+
 	}
 
 
@@ -609,6 +617,8 @@ Rasterizer::Rasterizer() {
 
 	_fixed_material_uv_xform_name="fmp_uv_xform";
 	_fixed_material_point_size_name="fmp_point_size";
+
+	ERR_FAIL_COND( sizeof(FixedMaterialShaderKey)!=4);
 
 }
 

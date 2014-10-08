@@ -52,7 +52,7 @@ private:
 	real_t density;
 	int priority;
 	bool monitoring;
-	bool ray_pickable;
+
 
 	void _body_inout(int p_status,const RID& p_body, int p_instance, int p_body_shape,int p_area_shape);
 
@@ -108,9 +108,6 @@ public:
 
 	void set_priority(real_t p_priority);
 	real_t get_priority() const;
-
-	void set_ray_pickable(bool p_ray_pickable);
-	bool is_ray_pickable() const;
 
 	void set_enable_monitoring(bool p_enable);
 	bool is_monitoring_enabled() const;

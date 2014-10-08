@@ -1419,9 +1419,12 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
         for(int idx = 0; idx < atlas.size(); idx++)
         {
     		Ref<ImageTexture> t = memnew(ImageTexture);
-    		t->create_from_image(*atlas[idx]);
-            if(!filter_enabled)
-                t->set_flags(Texture::FLAG_MIPMAPS | Texture::FLAG_REPEAT);
+			int flags;
+			if (!filter_enabled)
+				flags=0;
+			else
+				flags=Texture::FLAG_FILTER;
+    		t->create_from_image(*atlas[idx],flags);
     		t->set_storage( ImageTexture::STORAGE_COMPRESS_LOSSLESS );
 	    	font->add_texture(t);
             // free image

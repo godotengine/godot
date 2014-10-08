@@ -60,7 +60,7 @@ SConscript('math/SCsub');
 SConscript('io/SCsub');
 SConscript('bind/SCsub');
 
-lib = env.Library("core",env.core_sources, LIBSUFFIX=env['platform_libsuffix'])
+lib = env.Library("core",env.core_sources)
 
 env.Prepend(LIBS=[lib])
 

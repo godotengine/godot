@@ -33,8 +33,6 @@
 #include "editor_fonts.h"
 
 #include "editor_help.h"
-#include "scene/io/scene_saver.h"
-#include "scene/io/scene_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/resource_loader.h"
 #include "servers/physics_2d_server.h"
@@ -243,25 +241,6 @@ void EditorNode::_notification(int p_what) {
 
 		if (defer_load_scene!="") {
 
-#ifdef OLD_SCENE_FORMAT_ENABLED
-
-			if (convert_old) {
-				get_scene()->quit();
-				Node *scn = SceneLoader::load(defer_load_scene,true);
-				ERR_EXPLAIN("Couldn't load scene: "+defer_load_scene);
-				ERR_FAIL_COND(!scn);
-				Ref<PackedScene> sdata = memnew( PackedScene );
-				Error err = sdata->pack(scn);
-				ERR_EXPLAIN("Couldn't repack scene: "+defer_load_scene);
-				ERR_FAIL_COND(err!=OK);
-				err = ResourceSaver::save(defer_load_scene,sdata);
-				ERR_EXPLAIN("Couldn't resave scene: "+defer_load_scene);
-				ERR_FAIL_COND(err!=OK);
-
-				return;
-			}
-
-#endif
 			load_scene(defer_load_scene);
 			defer_load_scene="";
 		}
@@ -896,65 +875,6 @@ void EditorNode::_dialog_action(String p_file) {
 
 			load_scene(p_file);
 		} break;
-#ifdef OLD_SCENE_FORMAT_ENABLED
-		case FILE_OPEN_OLD_SCENE: {
-
-			String lpath = Globals::get_singleton()->localize_path(p_file);
-			if (!lpath.begins_with("res://")) {
-
-				current_option=-1;
-				//accept->get_cancel()->hide();
-				accept->get_ok()->set_text("Ugh");
-				accept->set_text("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path.");
-				accept->popup_centered(Size2(300,120));
-				return ;
-			}
-
-			Node*new_scene=SceneLoader::load(lpath,true);
-
-			if (!new_scene) {
-
-				current_option=-1;
-				//accept->get_cancel()->hide();
-				accept->get_ok()->set_text("Ugh");
-				accept->set_text("Error loading scene.");
-				accept->popup_centered(Size2(300,70));;
-				return ;
-			}
-
-			Node *old_scene = edited_scene;
-			_hide_top_editors();
-			set_edited_scene(NULL);
-			editor_data.clear_editor_states();
-			if (old_scene) {
-				memdelete(old_scene);
-			}
-
-			set_edited_scene(new_scene);
-			scene_tree_dock->set_selected(new_scene);
-			_get_scene_metadata();
-
-			editor_data.get_undo_redo().clear_history();
-			saved_version=editor_data.get_undo_redo().get_version();
-			_update_title();
-
-			_add_to_recent_scenes(lpath);
-
-			if (new_scene->has_meta("__editor_plugin_screen__")) {
-
-				String editor = new_scene->get_meta("__editor_plugin_screen__");
-				for(int i=0;i<editor_table.size();i++) {
-
-					if (editor_table[i]->get_name()==editor) {
-						_editor_select(i);
-						break;
-					}
-				}
-			}
-
-
-		} break;
-#endif
 
 		case FILE_SAVE_OPTIMIZED: {
 
@@ -1691,28 +1611,6 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			open_request(previous_scenes.back()->get());
 
 		} break;
-#ifdef OLD_SCENE_FORMAT_ENABLED
-		case FILE_OPEN_OLD_SCENE: {
-
-			//print_tree();
-			file->set_mode(FileDialog::MODE_OPEN_FILE);
-			//not for now?
-			file->clear_filters();
-			file->add_filter("*.xml");
-
-
-			//file->set_current_path(current_path);
-			Node *scene = edited_scene;
-			if (scene) {
-				file->set_current_path(scene->get_filename());
-			};
-			file->set_title("Open Scene");
-			file->popup_centered_ratio();
-
-
-		} break;
-
-#endif
 		case FILE_SAVE_SCENE: {
 
 
@@ -3589,9 +3487,6 @@ EditorNode::EditorNode() {
 
 	p=import_menu->get_popup();
 	p->add_item(_TR("Sub-Scene"),FILE_IMPORT_SUBSCENE);
-#ifdef OLD_SCENE_FORMAT_ENABLED
-	p->add_item(_TR("Import Old Scene"),FILE_OPEN_OLD_SCENE);
-#endif
 	p->add_separator();
 	p->connect("item_pressed",this,"_menu_option");
 

@@ -450,6 +450,10 @@ public:
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant())=0;
 
+	virtual void body_set_ray_pickable(RID p_body,bool p_enable)=0;
+	virtual bool body_is_ray_pickable(RID p_body) const=0;
+
+
 	/* JOINT API */
 
 	enum JointType {
@@ -464,6 +468,8 @@ public:
 
 	virtual JointType joint_get_type(RID p_joint) const=0;
 
+	virtual void joint_set_solver_priority(RID p_joint,int p_priority)=0;
+	virtual int joint_get_solver_priority(RID p_joint) const=0;
 
 
 	virtual RID joint_create_pin(RID p_body_A,const Vector3& p_local_A,RID p_body_B,const Vector3& p_local_B)=0;

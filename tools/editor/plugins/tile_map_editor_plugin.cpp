@@ -166,7 +166,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 	Matrix32 xform_inv = xform.affine_inverse();
-	Vector2 snap = Vector2(1,1)*node->get_cell_size();
+	Vector2 snap = node->get_cell_size();
 
 
 	switch(p_event.type) {
@@ -218,7 +218,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 					if (mb.mod.shift) {
 
 						tool=TOOL_SELECTING;
-						selection_begin =(xform_inv.xform(Point2(mb.x,mb.y))/snap).floor();
+						selection_begin =node->world_to_map(xform_inv.xform(Point2(mb.x,mb.y)));
 						selection.pos=selection_begin;
 						selection.size=Point2(0,0);
 						selection_active=true;
@@ -229,7 +229,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 						int id = get_selected_tile();
 						if (id!=TileMap::INVALID_CELL) {
 							tool=TOOL_PAINTING;
-							Point2i local =(xform_inv.xform(Point2(mb.x,mb.y))/snap).floor();
+							Point2i local =node->world_to_map((xform_inv.xform(Point2(mb.x,mb.y))));
 							paint_undo.clear();
 							CellOp op;
 							op.idx = node->get_cell(local.x,local.y);
@@ -278,7 +278,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 				} else if (mb.pressed && tool==TOOL_NONE) {
 
 					tool=TOOL_ERASING;
-					Point2i local =(xform_inv.xform(Point2(mb.x,mb.y))/snap).floor();
+					Point2i local =node->world_to_map(xform_inv.xform(Point2(mb.x,mb.y)));
 					paint_undo.clear();
 					CellOp op;
 					op.idx = node->get_cell(local.x,local.y);
@@ -322,7 +322,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 			const InputEventMouseMotion &mm=p_event.mouse_motion;
 
-			Point2i new_over_tile = (xform_inv.xform(Point2(mm.x,mm.y))/snap).floor();
+			Point2i new_over_tile = node->world_to_map(xform_inv.xform(Point2(mm.x,mm.y)));//(xform_inv.xform(Point2(mm.x,mm.y))/snap).floor();
 			if (new_over_tile!=over_tile) {
 
 				over_tile=new_over_tile;
@@ -469,44 +469,104 @@ void TileMapEditor::_canvas_draw() {
 	if (!node)
 		return;
 
-	int cell_size=node->get_cell_size();
+	Size2 cell_size=node->get_cell_size();
+	Matrix32 cell_xf = node->get_cell_transform();
 
 	Matrix32 xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
 	Matrix32 xform_inv = xform.affine_inverse();
 
 
 	Size2 screen_size=canvas_item_editor->get_size();
-	Rect2 aabb;
-	aabb.pos=xform_inv.xform(Vector2());
-	aabb.expand_to(xform_inv.xform(Vector2(0,screen_size.height)));
-	aabb.expand_to(xform_inv.xform(Vector2(screen_size.width,0)));
-	aabb.expand_to(xform_inv.xform(screen_size));
-	Rect2i si=aabb;
+	{
+		Rect2 aabb;
+		aabb.pos=node->world_to_map(xform_inv.xform(Vector2()));
+		aabb.expand_to(node->world_to_map(xform_inv.xform(Vector2(0,screen_size.height))));
+		aabb.expand_to(node->world_to_map(xform_inv.xform(Vector2(screen_size.width,0))));
+		aabb.expand_to(node->world_to_map(xform_inv.xform(screen_size)));
+		Rect2i si=aabb.grow(1.0);
 
-	for(int i=(si.pos.x/cell_size)-1;i<=(si.pos.x+si.size.x)/cell_size;i++) {
+		if (node->get_half_offset()!=TileMap::HALF_OFFSET_X) {
 
-		int ofs = i*cell_size;
+			for(int i=(si.pos.x)-1;i<=(si.pos.x+si.size.x);i++) {
 
+				Vector2 from = xform.xform(node->map_to_world(Vector2(i,si.pos.y)));
+				Vector2 to = xform.xform(node->map_to_world(Vector2(i,si.pos.y+si.size.y+1)));
+
+				Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
+				canvas_item_editor->draw_line(from,to,col,1);
+
+			}
+		} else {
+
+
+			for(int i=(si.pos.x)-1;i<=(si.pos.x+si.size.x);i++) {
+
+				for(int j=(si.pos.y)-1;j<=(si.pos.y+si.size.y);j++) {
+
+					Vector2 ofs;
+					if (ABS(j)&1) {
+						ofs=cell_xf[0]*0.5;
+					}
+
+					Vector2 from = xform.xform(node->map_to_world(Vector2(i,j),true)+ofs);
+					Vector2 to = xform.xform(node->map_to_world(Vector2(i,j+1),true)+ofs);
+					Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
+					canvas_item_editor->draw_line(from,to,col,1);
+				}
+
+			}
+		}
+
+		if (node->get_half_offset()!=TileMap::HALF_OFFSET_Y) {
+
+			for(int i=(si.pos.y)-1;i<=(si.pos.y+si.size.y);i++) {
+
+				Vector2 from = xform.xform(node->map_to_world(Vector2(si.pos.x,i)));
+				Vector2 to = xform.xform(node->map_to_world(Vector2(si.pos.x+si.size.x+1,i)));
+
+				Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
+				canvas_item_editor->draw_line(from,to,col,1);
+
+			}
+		} else {
+
+
+			for(int i=(si.pos.y)-1;i<=(si.pos.y+si.size.y);i++) {
+
+				for(int j=(si.pos.x)-1;j<=(si.pos.x+si.size.x);j++) {
+
+					Vector2 ofs;
+					if (ABS(j)&1) {
+						ofs=cell_xf[1]*0.5;
+					}
+
+					Vector2 from = xform.xform(node->map_to_world(Vector2(j,i),true)+ofs);
+					Vector2 to = xform.xform(node->map_to_world(Vector2(j+1,i),true)+ofs);
+					Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
+					canvas_item_editor->draw_line(from,to,col,1);
+				}
+
+			}
+
+
+
+		}
+/*
+	for(int i=(si.pos.y/cell_size.y)-1;i<=(si.pos.y+si.size.y)/cell_size.y;i++) {
+
+		int ofs = i*cell_size.y;
 		Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
-		canvas_item_editor->draw_line(xform.xform(Point2(ofs,si.pos.y)),xform.xform(Point2(ofs,si.pos.y+si.size.y)),col,1);
-
-	}
-
-	for(int i=(si.pos.y/cell_size)-1;i<=(si.pos.y+si.size.y)/cell_size;i++) {
-
-		int ofs = i*cell_size;
-		Color col=i==0?Color(1,0.8,0.2,0.5):Color(1,0.3,0.1,0.2);
-		canvas_item_editor->draw_line(xform.xform(Point2(si.pos.x,ofs)),xform.xform(Point2(si.pos.x+si.size.x,ofs)),col,1);
+		canvas_item_editor->draw_line(xform.xform(Point2(si.pos.x,ofs)),xform.xform(Point2(si.pos.x+si.size.x,ofs)),col,1);*/
 	}
 
 
 	if (selection_active) {
 
 		Vector<Vector2> points;
-		points.push_back( xform.xform( selection.pos * cell_size) );
-		points.push_back( xform.xform( (selection.pos+Point2(selection.size.x+1,0)) * cell_size) );
-		points.push_back( xform.xform( (selection.pos+Point2(selection.size.x+1,selection.size.y+1)) * cell_size) );
-		points.push_back( xform.xform( (selection.pos+Point2(0,selection.size.y+1)) * cell_size) );
+		points.push_back( xform.xform( node->map_to_world(( selection.pos ) )));
+		points.push_back( xform.xform( node->map_to_world((selection.pos+Point2(selection.size.x+1,0)) ) ));
+		points.push_back( xform.xform( node->map_to_world((selection.pos+Point2(selection.size.x+1,selection.size.y+1)) ) ));
+		points.push_back( xform.xform( node->map_to_world((selection.pos+Point2(0,selection.size.y+1)) ) ));
 		Color col=Color(0.2,0.8,1,0.4);
 
 		canvas_item_editor->draw_colored_polygon(points,col);
@@ -515,15 +575,22 @@ void TileMapEditor::_canvas_draw() {
 
 	if (mouse_over){
 
-		const Vector2 endpoints[4]={
+		Vector2 endpoints[4]={
 
-			xform.xform( over_tile * cell_size) ,
-			xform.xform( (over_tile+Point2(1,0)) * cell_size) ,
-			xform.xform( (over_tile+Point2(1,1)) * cell_size) ,
-			xform.xform( (over_tile+Point2(0,1)) * cell_size) ,
-
+			( node->map_to_world(over_tile,true) ) ,
+			( node->map_to_world((over_tile+Point2(1,0)),true ) ),
+			( node->map_to_world((over_tile+Point2(1,1)),true ) ),
+			( node->map_to_world((over_tile+Point2(0,1)),true ) )
 
 		};
+
+		for(int i=0;i<4;i++) {
+			if (node->get_half_offset()==TileMap::HALF_OFFSET_X && ABS(over_tile.y)&1)
+				endpoints[i]+=cell_xf[0]*0.5;
+			if (node->get_half_offset()==TileMap::HALF_OFFSET_Y && ABS(over_tile.x)&1)
+				endpoints[i]+=cell_xf[1]*0.5;
+			endpoints[i]=xform.xform(endpoints[i]);
+		}
 		Color col;
 		if (node->get_cell(over_tile.x,over_tile.y)!=TileMap::INVALID_CELL)
 			col=Color(0.2,0.8,1.0,0.8);
@@ -542,10 +609,10 @@ void TileMapEditor::_canvas_draw() {
 
 
 			Vector<Vector2> points;
-			points.push_back( xform.xform( duplicate.pos * cell_size) );
-			points.push_back( xform.xform( (duplicate.pos+Point2(duplicate.size.x+1,0)) * cell_size) );
-			points.push_back( xform.xform( (duplicate.pos+Point2(duplicate.size.x+1,duplicate.size.y+1)) * cell_size) );
-			points.push_back( xform.xform( (duplicate.pos+Point2(0,duplicate.size.y+1)) * cell_size) );
+			points.push_back( xform.xform( node->map_to_world(duplicate.pos ) ));
+			points.push_back( xform.xform( node->map_to_world((duplicate.pos+Point2(duplicate.size.x+1,0)) ) ));
+			points.push_back( xform.xform( node->map_to_world((duplicate.pos+Point2(duplicate.size.x+1,duplicate.size.y+1))) ));
+			points.push_back( xform.xform( node->map_to_world((duplicate.pos+Point2(0,duplicate.size.y+1))) ));
 			Color col=Color(0.2,1.0,0.8,0.4);
 
 			canvas_item_editor->draw_colored_polygon(points,col);
@@ -562,18 +629,19 @@ void TileMapEditor::_canvas_draw() {
 
 					Ref<Texture> t = ts->tile_get_texture(st);
 					if (t.is_valid()) {
-						Rect2 r = ts->tile_get_region(st);
-						Size2 sc = (endpoints[2]-endpoints[0])/cell_size;
+						Vector2 from = xform.xform(ts->tile_get_texture_offset(st)+node->map_to_world(over_tile)+node->get_cell_draw_offset());
+						Rect2 r = ts->tile_get_region(st);												
+						Size2 sc = xform.get_scale();
 						if (mirror_x->is_pressed())
 							sc.x*=-1.0;
 						if (mirror_y->is_pressed())
 							sc.y*=-1.0;
 						if (r==Rect2()) {
 
-							canvas_item_editor->draw_texture_rect(t,Rect2(endpoints[0],t->get_size()*sc),false,Color(1,1,1,0.5));
+							canvas_item_editor->draw_texture_rect(t,Rect2(from,t->get_size()*sc),false,Color(1,1,1,0.5));
 						} else {
 
-							canvas_item_editor->draw_texture_rect_region(t,Rect2(endpoints[0],r.get_size()*sc),r,Color(1,1,1,0.5));
+							canvas_item_editor->draw_texture_rect_region(t,Rect2(from,r.get_size()*sc),r,Color(1,1,1,0.5));
 						}
 					}
 				}

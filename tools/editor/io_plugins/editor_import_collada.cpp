@@ -1829,9 +1829,9 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	if (p_clip>=0 && collada.state.animation_clips[p_clip].end)
 		anim_length=collada.state.animation_clips[p_clip].end;
 
-	while(f<collada.state.animation_length) {
-		if (f>=collada.state.animation_length)
-			f=collada.state.animation_length;
+	while(f<anim_length) {
+		if (f>=anim_length)
+			f=anim_length;
 
 		base_snapshots.push_back(f);
 		f+=snapshot_interval;

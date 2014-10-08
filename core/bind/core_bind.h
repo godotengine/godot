@@ -236,8 +236,11 @@ public:
 	DVector<Vector3> segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius);
 	DVector<Vector3> segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes);
 	real_t segment_intersects_circle(const Vector2& p_from, const Vector2& p_to, const Vector2& p_circle_pos, real_t p_circle_radius);
+	int get_uv84_normal_bit(const Vector3& p_vector);
 
 	Vector<int> triangulate_polygon(const Vector<Vector2>& p_polygon);
+
+	Dictionary make_atlas(const Vector<Size2>& p_rects);
 
 	_Geometry();
 };

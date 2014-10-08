@@ -66,7 +66,7 @@ public:
 class SpatialEditorViewport : public Control {
 
 	OBJ_TYPE( SpatialEditorViewport, Control );
-
+friend class SpatialEditor;
 	enum {
 
 		VIEW_TOP,
@@ -79,7 +79,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_ALIGN_SELECTION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
 		VIEW_ENVIRONMENT,
-		VIEW_ORTHOGONAL
+		VIEW_ORTHOGONAL,
+		VIEW_AUDIO_LISTENER,
 	};
 	enum {
 		GIZMO_BASE_LAYER=25

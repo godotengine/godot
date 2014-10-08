@@ -134,7 +134,8 @@ public:
 	_FORCE_INLINE_ void add_area(Area2DSW *p_area) { areas.insert(AreaCMP(p_area)); }
 	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) { areas.erase(AreaCMP(p_area)); }
 
-	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; }
+	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; if (mode==Physics2DServer::BODY_MODE_KINEMATIC && p_size) set_active(true);}
+
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
 	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }

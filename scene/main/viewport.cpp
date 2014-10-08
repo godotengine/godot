@@ -164,6 +164,9 @@ void Viewport::_parent_visibility_changed() {
 
 		Control *c = parent->cast_to<Control>();
 		VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,c->is_visible());
+
+		_update_listener();
+		_update_listener_2d();
 	}
 
 
@@ -396,7 +399,7 @@ void Viewport::_notification(int p_what) {
 						if (obj) {
 							CollisionObject *co = obj->cast_to<CollisionObject>();
 							if (co) {
-								co->_input_event(ev,Vector3(),Vector3(),0);
+								co->_input_event(camera,ev,Vector3(),Vector3(),0);
 								captured=true;
 								if (ev.type==InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index==1 && !ev.mouse_button.pressed) {
 									physics_object_capture=0;
@@ -418,7 +421,7 @@ void Viewport::_notification(int p_what) {
 						if (last_id) {
 							if (ObjectDB::get_instance(last_id)) {
 								//good, exists
-								last_object->_input_event(ev,result.position,result.normal,result.shape);
+								last_object->_input_event(camera,ev,result.position,result.normal,result.shape);
 								if (last_object->get_capture_input_on_drag() && ev.type==InputEvent::MOUSE_BUTTON && ev.mouse_button.button_index==1 && ev.mouse_button.pressed) {
 									physics_object_capture=last_id;
 								}
@@ -442,10 +445,13 @@ void Viewport::_notification(int p_what) {
 								bool col = space->intersect_ray(from,from+dir*10000,result,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
 								ObjectID new_collider=0;
 								if (col) {
+
 									if (result.collider) {
+
 										CollisionObject *co = result.collider->cast_to<CollisionObject>();
 										if (co) {
-											co->_input_event(ev,result.position,result.normal,result.shape);
+
+											co->_input_event(camera,ev,result.position,result.normal,result.shape);
 											last_object=co;
 											last_id=result.collider_id;
 											new_collider=last_id;
@@ -543,7 +549,7 @@ Rect2 Viewport::get_rect() const {
 
 void Viewport::_update_listener() {
 
-	if (is_inside_scene() && audio_listener && camera) {
+	if (is_inside_scene() && audio_listener && camera && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
 		SpatialSoundServer::get_singleton()->listener_set_space(listener,find_world()->get_sound_space());
 	} else {
 		SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
@@ -554,7 +560,7 @@ void Viewport::_update_listener() {
 
 void Viewport::_update_listener_2d() {
 
-	if (is_inside_scene() && audio_listener_2d)
+	if (is_inside_scene() && audio_listener && camera && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,RID());

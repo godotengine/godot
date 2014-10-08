@@ -1202,7 +1202,7 @@ RID VisualServerRaster::camera_create() {
 }
 
 void VisualServerRaster::camera_set_perspective(RID p_camera,float p_fovy_degrees, float p_z_near, float p_z_far) {
-	VS_CHANGED;
+	VS_CHANGED
 	Camera *camera = camera_owner.get( p_camera );
 	ERR_FAIL_COND(!camera);
 	camera->type=Camera::PERSPECTIVE;
@@ -1226,7 +1226,7 @@ void VisualServerRaster::camera_set_transform(RID p_camera,const Transform& p_tr
 	VS_CHANGED;
 	Camera *camera = camera_owner.get( p_camera );
 	ERR_FAIL_COND(!camera);
-	camera->transform=p_transform;
+	camera->transform=p_transform.orthonormalized();
 	
 
 }
@@ -3531,6 +3531,15 @@ void VisualServerRaster::canvas_item_add_set_blend_mode(RID p_item, MaterialBlen
 	canvas_item->commands.push_back(bm);
 };
 
+void VisualServerRaster::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->sort_y=p_enable;
+}
+
+
 void VisualServerRaster::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
 
 	VS_CHANGED;
@@ -5591,26 +5600,30 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 	float opacity = ci->opacity * p_opacity;
 
-#ifndef ONTOP_DISABLED
-	CanvasItem **child_items = ci->child_items.ptr();
+
 	int child_item_count=ci->child_items.size();
-	int top_item_count=0;
-	CanvasItem **top_items=(CanvasItem**)alloca(child_item_count*sizeof(CanvasItem*));
+	CanvasItem **child_items=(CanvasItem**)alloca(child_item_count*sizeof(CanvasItem*));
+	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
 		rasterizer->canvas_set_clip(true,global_rect);
 		canvas_clip=global_rect;
 	}
 
+	if (ci->sort_y) {
+
+		SortArray<CanvasItem*,CanvasItemPtrSort> sorter;
+		sorter.sort(child_items,child_item_count);
+	}
+
+
 	for(int i=0;i<child_item_count;i++) {
 
 		if (child_items[i]->ontop)
-			top_items[top_item_count++]=child_items[i];
-		else {
-			_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
-		}
+			continue;
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
 	}
-#endif
+
 
 	if (s!=0) {
 
@@ -5746,19 +5759,12 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		rasterizer->canvas_set_clip(true,canvas_clip);
 	}
 
-#ifndef ONTOP_DISABLED
+	for(int i=0;i<child_item_count;i++) {
 
-	for(int i=0;i<top_item_count;i++) {
-
-		_render_canvas_item(top_items[i],xform,p_clip_rect,opacity);
+		if (!child_items[i]->ontop)
+			continue;
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
 	}
-
-#else
-	for(int i=0;i<p_canvas_item->child_items.size();i++) {
-
-		_render_canvas_item(p_canvas_item->child_items[i],xform,p_clip_rect,opacity);
-	}
-#endif
 
 
 	if (ci->clip) {

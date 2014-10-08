@@ -1962,6 +1962,15 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			call_deferred("update_transform_gizmo_view");
 
 		} break;
+		case VIEW_AUDIO_LISTENER: {
+
+			int idx = view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER);
+			bool current = 	view_menu->get_popup()->is_item_checked( idx );
+			current=!current;
+			viewport->set_as_audio_listener(current);
+			view_menu->get_popup()->set_item_checked( idx, current );
+
+		} break;
 
 	}
 
@@ -2092,6 +2101,13 @@ void SpatialEditorViewport::set_state(const Dictionary& p_state) {
 		_menu_option(VIEW_PERSPECTIVE);
 	if (env != camera->get_environment().is_valid())
 		_menu_option(VIEW_ENVIRONMENT);
+	if (p_state.has("listener")) {
+		bool listener = p_state["listener"];
+
+		int idx = view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER);
+		viewport->set_as_audio_listener(listener);
+		view_menu->get_popup()->set_item_checked( idx, listener );
+	}
 
 
 }
@@ -2105,6 +2121,7 @@ Dictionary SpatialEditorViewport::get_state() const {
 	d["distance"]=cursor.distance;
 	d["use_environment"]=camera->get_environment().is_valid();
 	d["use_orthogonal"]=camera->get_projection()==Camera::PROJECTION_ORTHOGONAL;
+	d["listener"]=viewport->is_audio_listener();
 	return d;
 }
 
@@ -2185,7 +2202,10 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_check_item(_TR("Environment"),VIEW_ENVIRONMENT);
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ENVIRONMENT),true);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_item(_TR("Selection"),VIEW_CENTER_TO_SELECTION);
+	view_menu->get_popup()->add_check_item("Audio Listener",VIEW_AUDIO_LISTENER);
+
+	view_menu->get_popup()->add_separator();
+	view_menu->get_popup()->add_item("Selection (F)",VIEW_CENTER_TO_SELECTION);
 	view_menu->get_popup()->add_item("Align with view (Ctrl+Shift+F)",VIEW_ALIGN_SELECTION_WITH_VIEW);
 	view_menu->get_popup()->connect("item_pressed",this,"_menu_option");
 
@@ -2200,6 +2220,12 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	previewing=NULL;
 	preview=NULL;
 	gizmo_scale=1.0;
+
+	if (p_index==0) {
+		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER),true);
+		viewport->set_as_audio_listener(true);
+	}
+
 	EditorSettings::get_singleton()->connect("settings_changed",this,"update_transform_gizmo_view");
 
 }
@@ -3344,6 +3370,11 @@ void SpatialEditor::clear() {
 		}
 	}
 
+	for(int i=0;i<4;i++) {
+
+		viewports[i]->view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(SpatialEditorViewport::VIEW_AUDIO_LISTENER),i==0);
+		viewports[i]->viewport->set_as_audio_listener(i==0);
+	}
 	view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), true );
 
 

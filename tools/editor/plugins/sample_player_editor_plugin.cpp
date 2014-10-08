@@ -65,6 +65,8 @@ void SamplePlayerEditor::_play() {
 		return;
 
 	node->call("play",samples->get_item_text( samples->get_selected() ));
+	stop->set_pressed(false);
+	play->set_pressed(true);
 }
 
 void SamplePlayerEditor::_stop() {
@@ -75,6 +77,9 @@ void SamplePlayerEditor::_stop() {
 		return;
 
 	node->call("stop_all");
+	print_line("STOP ALL!!");
+	stop->set_pressed(true);
+	play->set_pressed(false);
 
 }
 

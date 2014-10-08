@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import string
 
@@ -46,11 +46,7 @@ def get_flags():
 def configure(env):
 
 
-	env.Append(CPPPATH=['#platform/android'])
-
-	env['OBJSUFFIX'] = ".js.o"
-	env['LIBSUFFIX'] = ".js.a"
-	env['PROGSUFFIX'] = ".html"
+	env.Append(CPPPATH=['#platform/javascript'])
 
 	em_path=os.environ["EMSCRIPTEN_ROOT"]
 
@@ -68,17 +64,12 @@ def configure(env):
 	if (env["target"]=="release"):
 
 		env.Append(CCFLAGS=['-O2'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="release_debug"):
 
 		env.Append(CCFLAGS=['-O2','-DDEBUG_ENABLED'])
-		env['OBJSUFFIX'] = "_optd"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
-
 		env.Append(CCFLAGS=['-D_DEBUG', '-Wall', '-O2', '-DDEBUG_ENABLED'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ALLOC'])
 

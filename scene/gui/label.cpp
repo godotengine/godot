@@ -397,6 +397,7 @@ void Label::regenerate_word_cache() {
 				
 			}
 			
+
 			if (current=='\n') {
 				insert_newline=true;
 			} else {
@@ -475,7 +476,7 @@ void Label::regenerate_word_cache() {
 		
 	}
 	
-	total_char_cache -= line_count + 1; // do not count new lines (including the first one)
+	//total_char_cache -= line_count + 1; // do not count new lines (including the first one)
 	
 	if (!autowrap) {
 		
@@ -564,7 +565,7 @@ void Label::set_percent_visible(float p_percent) {
 	if (p_percent<0)
 		set_visible_characters(-1);
 	else
-		set_visible_characters(get_total_character_count()*p_percent);
+		set_visible_characters(get_total_character_count()*p_percent);	
 	percent_visible=p_percent;
 }
 

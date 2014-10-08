@@ -1716,7 +1716,7 @@ void Animation::clear() {
 
 }
 
-void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,float p_alowed_angular_err) {
+void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle) {
 
 	ERR_FAIL_INDEX(p_idx,tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type!=TYPE_TRANSFORM);
@@ -1779,6 +1779,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 
 			} else {
 
+
 				Quat r02 = (q0.inverse() * q2).normalized();
 				Quat r01 = (q0.inverse() * q1).normalized();
 
@@ -1787,6 +1788,9 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 
 				r02.get_axis_and_angle(v02,a02);
 				r01.get_axis_and_angle(v01,a01);
+
+				if (Math::abs(a02)>p_max_optimizable_angle)
+					continue;
 
 				if (v01.dot(v02)<0) {
 					//make sure both rotations go the same way to compare
@@ -1905,7 +1909,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,fl
 
 }
 
-void Animation::optimize(float p_allowed_linear_err,float p_allowed_angular_err) {
+void Animation::optimize(float p_allowed_linear_err,float p_allowed_angular_err,float p_angle_max) {
 
 
 	int total_tt=0;
@@ -1913,7 +1917,7 @@ void Animation::optimize(float p_allowed_linear_err,float p_allowed_angular_err)
 	for(int i=0;i<tracks.size();i++) {
 
 		if (tracks[i]->type==TYPE_TRANSFORM)
-			_transform_track_optimize(i,p_allowed_linear_err,p_allowed_angular_err);
+			_transform_track_optimize(i,p_allowed_linear_err,p_allowed_angular_err,p_angle_max);
 
 	}
 

@@ -316,14 +316,14 @@ Transform FixedMaterial::get_uv_transform() const {
 
 
 void FixedMaterial::set_fixed_flag(FixedFlag p_flag, bool p_value) {
-	ERR_FAIL_INDEX(p_flag,4);
+	ERR_FAIL_INDEX(p_flag,5);
 	fixed_flags[p_flag]=p_value;
 	VisualServer::get_singleton()->fixed_material_set_flag(material,(VS::FixedMaterialFlags)p_flag,p_value);
 
 }
 
 bool FixedMaterial::get_fixed_flag(FixedFlag p_flag) const {
-	ERR_FAIL_INDEX_V(p_flag,4,false);
+	ERR_FAIL_INDEX_V(p_flag,5,false);
 	return fixed_flags[p_flag];
 }
 
@@ -371,6 +371,7 @@ void FixedMaterial::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_color_array" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_COLOR_ARRAY);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_point_size" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_POINT_SIZE);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/discard_alpha" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_DISCARD_ALPHA);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_xy_normalmap" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_XY_NORMALMAP);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/diffuse" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_DIFFUSE);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/specular", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPECULAR );
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/emission", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_EMISSION );
@@ -431,6 +432,9 @@ FixedMaterial::FixedMaterial() : Material(VS::get_singleton()->fixed_material_cr
 	fixed_flags[FLAG_USE_ALPHA]=false;
 	fixed_flags[FLAG_USE_COLOR_ARRAY]=false;
 	fixed_flags[FLAG_USE_POINT_SIZE]=false;
+	fixed_flags[FLAG_USE_XY_NORMALMAP]=false;
+	fixed_flags[FLAG_DISCARD_ALPHA]=false;
+
 
 	for(int i=0;i<PARAM_MAX;i++) {
 
