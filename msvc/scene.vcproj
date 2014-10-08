@@ -231,14 +231,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\scene\scene_binds.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\scene\scene_binds.h"
-				>
-			</File>
-			<File
 				RelativePath="..\scene\scene_string_names.cpp"
 				>
 			</File>
@@ -457,6 +449,14 @@
 					RelativePath="..\scene\2d\visibility_notifier_2d.h"
 					>
 				</File>
+				<File
+					RelativePath="..\scene\2d\y_sort.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\2d\y_sort.h"
+					>
+				</File>
 			</Filter>
 			<Filter
 				Name="3d"
@@ -502,14 +502,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\scene\3d\car_body.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\3d\car_body.h"
-					>
-				</File>
-				<File
 					RelativePath="..\scene\3d\character_camera.cpp"
 					>
 				</File>
@@ -531,14 +523,6 @@
 				</File>
 				<File
 					RelativePath="..\scene\3d\collision_polygon.h"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\3d\editable_shape.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\3d\editable_shape.h"
 					>
 				</File>
 				<File
@@ -1265,38 +1249,6 @@
 					RelativePath="..\scene\io\resource_format_wav.h"
 					>
 				</File>
-				<File
-					RelativePath="..\scene\io\scene_format_object.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_format_object.h"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_format_script.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_format_script.h"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_loader.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_loader.h"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_saver.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\io\scene_saver.h"
-					>
-				</File>
 			</Filter>
 			<Filter
 				Name="main"
@@ -1538,14 +1490,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\scene\resources\image_path_finder.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\resources\image_path_finder.h"
-					>
-				</File>
-				<File
 					RelativePath="..\scene\resources\material.cpp"
 					>
 				</File>
@@ -1575,6 +1519,14 @@
 				</File>
 				<File
 					RelativePath="..\scene\resources\mesh_library.h"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\resources\mikktspace.c"
+					>
+				</File>
+				<File
+					RelativePath="..\scene\resources\mikktspace.h"
 					>
 				</File>
 				<File

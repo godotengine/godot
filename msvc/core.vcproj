@@ -846,46 +846,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\object_format_binary.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_format_binary.h"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_format_xml.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_format_xml.h"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_loader.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_loader.h"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_saver.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_saver.h"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_saver_base.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\core\io\object_saver_base.h"
-					>
-				</File>
-				<File
 					RelativePath="..\core\io\packet_peer.cpp"
 					>
 				</File>

@@ -478,14 +478,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\tools\editor\editor_shape_gizmos.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\tools\editor\editor_shape_gizmos.h"
-					>
-				</File>
-				<File
 					RelativePath="..\tools\editor\editor_sub_scene.cpp"
 					>
 				</File>
