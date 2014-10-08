@@ -10,4 +10,4 @@ common_win=[
 	"stream_peer_winsock.cpp",
 ]
 
-env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"]+".exe")
+env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])
