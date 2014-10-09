@@ -19,14 +19,14 @@
 # <pep8-80 compliant>
 
 bl_info = {
-    "name": "Khronos Collada format",
+    "name": "Better Collada Exporter",
     "author": "Juan Linietsky",
     "blender": (2, 5, 8),
     "api": 38691,
     "location": "File > Import-Export",
-    "description": ("Export DAE Scenes"),
+    "description": ("Export DAE Scenes, This plugin actually works better! otherwise contact me."),
     "warning": "",
-    "wiki_url": ("None"),
+    "wiki_url": ("http://www.godotengine.org"),
     "tracker_url": "",
     "support": 'OFFICIAL',
     "category": "Import-Export"}
@@ -171,7 +171,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
 
 
 def menu_func(self, context):
-    self.layout.operator(ExportDAE.bl_idname, text="Khronos Collada (.dae)")
+    self.layout.operator(ExportDAE.bl_idname, text="Better Collada (.dae)")
 
 
 def register():

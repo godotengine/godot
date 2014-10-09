@@ -694,6 +694,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 		// Must convert to GL/DX format.
 
 		int _prim_ofs=0;
+		int vertidx=0;
 		for(int p_i=0;p_i<p.count;p_i++) {
 
 
@@ -718,6 +719,8 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 				ERR_FAIL_INDEX_V(src,p.indices.size(),ERR_INVALID_DATA);
 
 				Collada::Vertex vertex;
+				if (p_morph_data)
+					vertex.uid=vertidx++;
 
 				int vertex_index=p.indices[src+vertex_ofs]; //used for index field (later used by controllers)
 				int vertex_pos = (vertex_src->stride?vertex_src->stride:3) * vertex_index;
@@ -1670,15 +1673,20 @@ void ColladaImport::_fix_param_animation_tracks() {
 						source=skin.base;
 					} else if (collada.state.morph_controller_data_map.has(source)) {
 
+						print_line("has morph");
 						const Collada::MorphControllerData& morph = collada.state.morph_controller_data_map[source];
+
 						if (morph.targets.has("MORPH_WEIGHT") && morph.targets.has("MORPH_TARGET")) {
+							print_line("weight and target");
 
 							String weights = morph.targets["MORPH_WEIGHT"];
 							String targets = morph.targets["MORPH_TARGET"];
+							//fails here
 
 							if (morph.sources.has(targets) && morph.sources.has(weights)) {
 								const Collada::MorphControllerData::Source &weight_src=morph.sources[weights];
 								const Collada::MorphControllerData::Source &target_src=morph.sources[targets];
+								print_line("sources OK");
 
 								ERR_FAIL_COND(weight_src.array.size() != target_src.sarray.size());
 
@@ -1687,6 +1695,8 @@ void ColladaImport::_fix_param_animation_tracks() {
 									String track_name = weights+"("+itos(i)+")";
 									String mesh_name = target_src.sarray[i];
 									if (collada.state.mesh_name_map.has(mesh_name) && collada.state.referenced_tracks.has(track_name)) {
+										print_line("refe tracks");
+
 
 										const Vector<int>&rt = collada.state.referenced_tracks[track_name];
 
@@ -1731,6 +1741,7 @@ void ColladaImport::create_animations(bool p_make_tracks_in_all_bones) {
 	for(int i=0;i<collada.state.animation_tracks.size();i++) {
 
 		Collada::AnimationTrack &at = collada.state.animation_tracks[i];
+		print_line("CHANNEL: "+at.target+" PARAM: "+at.param);
 		if (!node_map.has(at.target)) {
 			print_line("Coudlnt find node: "+at.target);
 			continue;
