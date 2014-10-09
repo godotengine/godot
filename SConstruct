@@ -1,4 +1,4 @@
-EnsureSConsVersion(0,14);
+﻿EnsureSConsVersion(0,14);
 
 import string
 import os
@@ -8,14 +8,14 @@ import sys
 import methods
 import multiprocessing
 
-# Enable aggresive compile mode if building on a multi core box
-# only is we have not set the number of jobs already or we do
-# not want it
-if ARGUMENTS.get('spawn_jobs', 'no') == 'yes' and \
-	int(GetOption('num_jobs')) <= 1:
-	NUM_JOBS = multiprocessing.cpu_count()
-	if NUM_JOBS > 1:
-		SetOption('num_jobs', NUM_JOBS+1)
+## Enable aggresive compile mode if building on a multi core box
+## only is we have not set the number of jobs already or we do
+## not want it
+#if ARGUMENTS.get('spawn_jobs', 'no') == 'yes' and \
+#	int(GetOption('num_jobs')) <= 1:
+#	NUM_JOBS = multiprocessing.cpu_count()
+#	if NUM_JOBS > 1:
+#		SetOption('num_jobs', NUM_JOBS+1)
 
 methods.update_version()
 
@@ -126,6 +126,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('use_double', 'Use Real type as Double, default is float', "yes")
+opts.Add('lua', 'Lua script support', "no")
 opts.Add('cjk', 'Add CJK language support', "no")
 opts.Add('rfs', 'Fixed rfs')
 
