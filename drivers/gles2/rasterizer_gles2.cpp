@@ -5011,7 +5011,7 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 }
 
 
-template<bool USE_NORMAL, bool USE_TANGENT>
+template<bool USE_NORMAL, bool USE_TANGENT,bool INPLACE>
 void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_stride, uint8_t * p_dst_array, int p_dst_stride, int p_elements,const uint8_t *p_src_bones, const uint8_t *p_src_weights, const Skeleton::Bone *p_bone_xforms) {
 
 	uint32_t basesize = 3;
@@ -5021,6 +5021,8 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 		basesize+=4;
 
 	uint32_t extra=(p_dst_stride-basesize*4);
+	const int dstvec_size=3+(USE_NORMAL?3:0)+(USE_TANGENT?4:0);
+	float dstcopy[dstvec_size];
 
 	for(int i=0;i<p_elements;i++) {
 
@@ -5029,7 +5031,11 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 		const uint16_t *bi = (const uint16_t*)&p_src_bones[ss];
 		const float *bw = (const float *)&p_src_weights[ss];
 		const float *src_vec=(const float *)&p_src_array[ss];
-		float *dst_vec=(float*)&p_dst_array[ds];
+		float *dst_vec;
+		if (INPLACE)
+			dst_vec=dstcopy;
+		else
+			dst_vec=(float*)&p_dst_array[ds];
 
 		dst_vec[0]=0.0;
 		dst_vec[1]=0.0;
@@ -5082,16 +5088,28 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 
 		end:
 
-		//copy extra stuff
-		const uint8_t *esp =(const uint8_t*) &src_vec[basesize];
-		uint8_t *edp =(uint8_t*) &dst_vec[basesize];
+		if (INPLACE) {
+
+			const uint8_t *esp =(const uint8_t*) dstcopy;
+			uint8_t *edp =(uint8_t*)&p_dst_array[ds];
 
 
-		for(uint32_t j=0;j<extra;j++) {
+			for(uint32_t j=0;j<dstvec_size*4;j++) {
 
-			edp[j]=esp[j];
+				edp[j]=esp[j];
+			}
+
+		} else {
+			//copy extra stuff
+			const uint8_t *esp =(const uint8_t*) &src_vec[basesize];
+			uint8_t *edp =(uint8_t*) &dst_vec[basesize];
+
+
+			for(uint32_t j=0;j<extra;j++) {
+
+				edp[j]=esp[j];
+			}
 		}
-
 	}
 }
 
@@ -5166,6 +5184,8 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 					}
 
+					int16_t coeffp = CLAMP(coef*255,0,255);
+
 
 					for(int i=0;i<VS::ARRAY_MAX-1;i++) {
 
@@ -5175,8 +5195,12 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 						int ofs = ad.ofs;
 						int src_stride=surf->stride;
-						int dst_stride=surf->local_stride;
+						int dst_stride=skeleton_valid?surf->stride:surf->local_stride;
 						int count = surf->array_len;
+
+						if (!skeleton_valid && i>=VS::ARRAY_MAX-3)
+							break;
+
 
 						switch(i) {
 
@@ -5193,7 +5217,21 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 									dst[0]= src[0]*coef;
 									dst[1]= src[1]*coef;
 									dst[2]= src[2]*coef;
-								} break;
+								};
+
+							} break;
+							case VS::ARRAY_COLOR: {
+
+								for(int k=0;k<count;k++) {
+
+									const uint8_t *src = (const uint8_t*)&surf->array_local[ofs+k*src_stride];
+									uint8_t *dst = (uint8_t*)&base[ofs+k*dst_stride];
+
+									dst[0]=	(src[0]*coeffp)>>8;
+									dst[1]=	(src[1]*coeffp)>>8;
+									dst[2]=	(src[2]*coeffp)>>8;
+									dst[3]=	(src[3]*coeffp)>>8;
+								}
 
 							} break;
 							case VS::ARRAY_TEX_UV:
@@ -5206,16 +5244,32 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 									dst[0]= src[0]*coef;
 									dst[1]= src[1]*coef;
-								} break;
+								}
 
 							} break;
+							case VS::ARRAY_BONES:
+							case VS::ARRAY_WEIGHTS: {
+
+								for(int k=0;k<count;k++) {
+
+									const float *src = (const float*)&surf->array_local[ofs+k*src_stride];
+									float *dst = (float*)&base[ofs+k*dst_stride];
+
+									dst[0]= src[0];
+									dst[1]= src[1];
+									dst[2]= src[2];
+									dst[3]= src[3];
+								}
+
+							} break;
+
 						}
 					}
 
 
 					for(int j=0;j<surf->morph_target_count;j++) {
 
-						for(int i=0;i<VS::ARRAY_MAX-1;i++) {
+						for(int i=0;i<VS::ARRAY_MAX-3;i++) {
 
 							const Surface::ArrayData& ad=surf->array[i];
 							if (ad.size==0)
@@ -5223,10 +5277,12 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 
 							int ofs = ad.ofs;
-							int dst_stride=surf->local_stride;
+							int src_stride=surf->local_stride;
+							int dst_stride=skeleton_valid?surf->stride:surf->local_stride;
 							int count = surf->array_len;
 							const uint8_t *morph=surf->morph_targets_local[j].array;
 							float w = p_morphs[j];
+							int16_t wfp = CLAMP(w*255,0,255);
 
 							switch(i) {
 
@@ -5237,13 +5293,26 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 									for(int k=0;k<count;k++) {
 
-										const float *src_morph = (const float*)&morph[ofs+k*dst_stride];
+										const float *src_morph = (const float*)&morph[ofs+k*src_stride];
 										float *dst = (float*)&base[ofs+k*dst_stride];
 
 										dst[0]+= src_morph[0]*w;
 										dst[1]+= src_morph[1]*w;
 										dst[2]+= src_morph[2]*w;
-									} break;
+									}
+
+								} break;
+								case VS::ARRAY_COLOR: {
+									for(int k=0;k<count;k++) {
+
+										const uint8_t *src = (const uint8_t*)&morph[ofs+k*src_stride];
+										uint8_t *dst = (uint8_t*)&base[ofs+k*dst_stride];
+
+										dst[0]=	(src[0]*wfp)>>8;
+										dst[1]=	(src[1]*wfp)>>8;
+										dst[2]=	(src[2]*wfp)>>8;
+										dst[3]=	(src[3]*wfp)>>8;
+									}
 
 								} break;
 								case VS::ARRAY_TEX_UV:
@@ -5251,17 +5320,42 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 									for(int k=0;k<count;k++) {
 
-										const float *src_morph = (const float*)&morph[ofs+k*dst_stride];
+										const float *src_morph = (const float*)&morph[ofs+k*src_stride];
 										float *dst = (float*)&base[ofs+k*dst_stride];
 
 										dst[0]+= src_morph[0]*w;
 										dst[1]+= src_morph[1]*w;
-									} break;
+									}
 
 								} break;
 							}
 						}
 					}
+
+
+
+					if (skeleton_valid) {
+
+
+
+						const uint8_t *src_weights=&surf->array_local[surf->array[VS::ARRAY_WEIGHTS].ofs];
+						const uint8_t *src_bones=&surf->array_local[surf->array[VS::ARRAY_BONES].ofs];
+						const Skeleton::Bone *skeleton = &p_skeleton->bones[0];
+
+
+						if (surf->format&VS::ARRAY_FORMAT_NORMAL && surf->format&VS::ARRAY_FORMAT_TANGENT)
+							_skeleton_xform<true,true,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+						else if (surf->format&(VS::ARRAY_FORMAT_NORMAL))
+							_skeleton_xform<true,false,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+						else if (surf->format&(VS::ARRAY_FORMAT_TANGENT))
+							_skeleton_xform<false,true,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+						else
+							_skeleton_xform<false,false,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+
+					}
+
+					stride=skeleton_valid?surf->stride:surf->local_stride;
+
 
 #if 0
 					{
@@ -5356,14 +5450,14 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 					const uint8_t *src_bones=&surf->array_local[surf->array[VS::ARRAY_BONES].ofs];
 					const Skeleton::Bone *skeleton = &p_skeleton->bones[0];
 
-						if (surf->format&VS::ARRAY_FORMAT_NORMAL && surf->format&VS::ARRAY_FORMAT_TANGENT)
-						_skeleton_xform<true,true>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+					if (surf->format&VS::ARRAY_FORMAT_NORMAL && surf->format&VS::ARRAY_FORMAT_TANGENT)
+						_skeleton_xform<true,true,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 					else if (surf->format&(VS::ARRAY_FORMAT_NORMAL))
-						_skeleton_xform<true,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+						_skeleton_xform<true,false,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 					else if (surf->format&(VS::ARRAY_FORMAT_TANGENT))
-						_skeleton_xform<false,true>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+						_skeleton_xform<false,true,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 					else
-						_skeleton_xform<false,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+						_skeleton_xform<false,false,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 
 
 					stride=dst_stride;
