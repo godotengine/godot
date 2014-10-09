@@ -2348,6 +2348,10 @@ Dictionary SpatialEditor::get_state() const {
 		vc=3;
 	else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS) ))
 		vc=4;
+	else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT) ))
+		vc=5;
+	else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT) ))
+		vc=6;
 
 	d["viewport_mode"]=vc;
 	Array vpdata;
@@ -2389,6 +2393,10 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 		_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS);
 	else if (vc==4)
 		_menu_item_pressed(MENU_VIEW_USE_4_VIEWPORTS);
+	else if (vc==5)
+		_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS_ALT);
+	else if (vc==6)
+		_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS_ALT);
 
 	Array vp = d["viewports"];
 	ERR_FAIL_COND(vp.size()>4);
@@ -2619,6 +2627,8 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false );
 
 		} break;
 		case MENU_VIEW_USE_2_VIEWPORTS: {
@@ -2641,6 +2651,32 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false );
+
+		} break;
+		case MENU_VIEW_USE_2_VIEWPORTS_ALT: {
+
+			for(int i=1;i<4;i++) {
+
+				if (i==1 || i==3)
+					viewports[i]->hide();
+				else
+					viewports[i]->show();
+
+
+			}
+			viewports[0]->set_area_as_parent_rect();
+			viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			viewports[2]->set_area_as_parent_rect();
+			viewports[2]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), true );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false );
 
 		} break;
 		case MENU_VIEW_USE_3_VIEWPORTS: {
@@ -2665,6 +2701,34 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false );
+
+		} break;
+		case MENU_VIEW_USE_3_VIEWPORTS_ALT: {
+
+			for(int i=1;i<4;i++) {
+
+				if (i==1)
+					viewports[i]->hide();
+				else
+					viewports[i]->show();
+			}
+			viewports[0]->set_area_as_parent_rect();
+			viewports[0]->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_RATIO,0.5);
+			viewports[0]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			viewports[2]->set_area_as_parent_rect();
+			viewports[2]->set_anchor_and_margin(MARGIN_TOP,ANCHOR_RATIO,0.5);
+			viewports[2]->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_RATIO,0.5);
+			viewports[3]->set_area_as_parent_rect();
+			viewports[3]->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_RATIO,0.5);
+
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), true );
 
 		} break;
 		case MENU_VIEW_USE_4_VIEWPORTS: {
@@ -2690,6 +2754,8 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS), true );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT), false );
+			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT), false );
 
 		} break;
 		case MENU_VIEW_DISPLAY_NORMAL: {
@@ -3159,7 +3225,9 @@ void SpatialEditor::_notification(int p_what) {
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT),get_icon("Panels1","EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS),get_icon("Panels2","EditorIcons"));
+		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT),get_icon("Panels2Alt","EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS),get_icon("Panels3","EditorIcons"));
+		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT),get_icon("Panels3Alt","EditorIcons"));
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS),get_icon("Panels4","EditorIcons"));
 
 		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
@@ -3276,8 +3344,12 @@ void SpatialEditor::_toggle_maximize_view(Object* p_viewport) {
 			_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS) ))
 			_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS);
+		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_2_VIEWPORTS_ALT) ))
+			_menu_item_pressed(MENU_VIEW_USE_2_VIEWPORTS_ALT);
 		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS) ))
 			_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS);
+		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_3_VIEWPORTS_ALT) ))
+			_menu_item_pressed(MENU_VIEW_USE_3_VIEWPORTS_ALT);
 		else if (view_menu->get_popup()->is_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_4_VIEWPORTS) ))
 			_menu_item_pressed(MENU_VIEW_USE_4_VIEWPORTS);
 	}
@@ -3442,7 +3514,9 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT,KEY_MASK_ALT+KEY_1);
 	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS,KEY_MASK_ALT+KEY_2);
+	p->add_check_item("2 Viewports (Alt)",MENU_VIEW_USE_2_VIEWPORTS_ALT,KEY_MASK_SHIFT+KEY_MASK_ALT+KEY_2);
 	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS,KEY_MASK_ALT+KEY_3);
+	p->add_check_item("3 Viewports (Alt)",MENU_VIEW_USE_3_VIEWPORTS_ALT,KEY_MASK_SHIFT+KEY_MASK_ALT+KEY_3);
 	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS,KEY_MASK_ALT+KEY_4);
 	p->add_separator();
 

@@ -5882,6 +5882,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 	if (p_viewport->queue_capture) {
 
 		rasterizer->capture_viewport(&p_viewport->capture);
+		p_viewport->queue_capture = false;
 	}
 
 	//restore

@@ -176,7 +176,6 @@
 #include "scene/3d/camera.h"
 
 #include "scene/3d/interpolated_camera.h"
-#include "scene/3d/follow_camera.h"
 #include "scene/3d/position_3d.h"
 #include "scene/3d/test_cube.h"
 #include "scene/3d/mesh_instance.h"
@@ -353,7 +352,6 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<BoneAttachment>();
 	ObjectTypeDB::register_virtual_type<VisualInstance>();
 	ObjectTypeDB::register_type<Camera>();
-	ObjectTypeDB::register_type<FollowCamera>();
 	ObjectTypeDB::register_type<InterpolatedCamera>();
 	ObjectTypeDB::register_type<TestCube>();
 	ObjectTypeDB::register_type<MeshInstance>();
