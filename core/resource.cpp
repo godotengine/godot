@@ -162,6 +162,8 @@ void Resource::set_path(const String& p_path, bool p_take_over) {
 	if (path_cache==p_path)
 		return;
 		
+	GLOBAL_LOCK_FUNCTION
+
 	if (path_cache!="") {
 		
 		ResourceCache::resources.erase(path_cache);
@@ -331,8 +333,12 @@ Resource::Resource() {
 
 Resource::~Resource() {
 	
-	if (path_cache!="")
+	if (path_cache!="") {
+
+		GLOBAL_LOCK_FUNCTION
 		ResourceCache::resources.erase(path_cache);
+	}
+
 	if (owners.size()) {
 		WARN_PRINT("Resource is still owned");
 	}
