@@ -64,20 +64,20 @@ void Sprite::_notification(int p_what) {
 			break;
 			*/
 
-			Size2i s;
-			Rect2i src_rect;
+			Size2 s;
+			Rect2 src_rect;
 
 			if (region) {
 
 				s=region_rect.size;
 				src_rect=region_rect;
 			} else {
-				s = texture->get_size();
-				s=s/Size2i(hframes,vframes);
+				s = Size2(texture->get_size());
+				s=s/Size2(hframes,vframes);
 
 				src_rect.size=s;
-				src_rect.pos.x+=(frame%hframes)*s.x;
-				src_rect.pos.y+=(frame/hframes)*s.y;
+				src_rect.pos.x+=float(frame%hframes)*s.x;
+				src_rect.pos.y+=float(frame/hframes)*s.y;
 
 			}
 
@@ -85,7 +85,7 @@ void Sprite::_notification(int p_what) {
 			if (centered)
 				ofs-=s/2;
 
-			Rect2i dst_rect(ofs,s);
+			Rect2 dst_rect(ofs,s);
 
 			if (hflip)
 				dst_rect.size.x=-dst_rect.size.x;
