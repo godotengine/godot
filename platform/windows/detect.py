@@ -64,6 +64,7 @@ def get_flags():
 	return [
 		('freetype','builtin'), #use builtin freetype
 		('openssl','builtin'), #use builtin openssl
+		('theora','no'), #use builtin openssl
 	]
 
 def configure(env):
@@ -135,6 +136,8 @@ def configure(env):
 		#build using mingw
 		if (os.name=="nt"):
 			env['ENV']['TMP'] = os.environ['TMP'] #way to go scons, you can be so stupid sometimes
+		else:
+			env["PROGSUFFIX"]=env["PROGSUFFIX"]+".exe"
 
 		mingw_prefix=""
 

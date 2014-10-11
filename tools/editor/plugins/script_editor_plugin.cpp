@@ -1109,6 +1109,8 @@ void ScriptEditor::ensure_select_current() {
 		if (!ste)
 			return;
 		Ref<Script> script = ste->get_edited_script();
+
+		ste->get_text_edit()->grab_focus();
 	}
 }
 

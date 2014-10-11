@@ -51,12 +51,14 @@ S_IMGS=1
 S_FX=2
 S_MATS=3
 S_GEOM=4
-S_CONT=5
-S_CAMS=6
-S_LAMPS=7
-S_ANIM_CLIPS=8
-S_NODES=9
-S_ANIM=10
+S_MORPH=5
+S_SKIN=6
+S_CONT=7
+S_CAMS=8
+S_LAMPS=9
+S_ANIM_CLIPS=10
+S_NODES=11
+S_ANIM=12
 
 CMP_EPSILON=0.0001
 
@@ -123,6 +125,11 @@ class DaeExporter:
 			tup = (self.vertex.x,self.vertex.y,self.vertex.z,self.normal.x,self.normal.y,self.normal.z)
 			for t in self.uv:
 				tup = tup + (t.x,t.y)
+			#for t in self.bones:
+			#	tup = tup + (t)
+			#for t in self.weights:
+			#	tup = tup + (t)
+
 			return tup
 
 		def __init__(self):
@@ -281,9 +288,9 @@ class DaeExporter:
 			self.writel(S_FX,5,'</transparency>')
 
 
-		self.writel(S_FX,5,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
 		self.writel(S_FX,4,'</'+shtype+'>')
+		self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
 		self.writel(S_FX,4,'<extra>')
 		self.writel(S_FX,5,'<technique profile="FCOLLADA">')
@@ -315,13 +322,127 @@ class DaeExporter:
 		return matid
 
 
-	def export_mesh(self,node,armature=None,shapename=None):
+	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None):
 
 		mesh = node.data
-		if (node.data in self.mesh_cache) and shapename==None:
+
+
+		if (node.data in self.mesh_cache):
 			return self.mesh_cache[mesh]
 
-		if (len(node.modifiers) and self.config["use_mesh_modifiers"]) or shapename!=None:
+		if (skeyindex==-1 and mesh.shape_keys!=None and len(mesh.shape_keys.key_blocks)):
+			values=[]
+			morph_targets=[]
+			md=None
+			for k in range(0,len(mesh.shape_keys.key_blocks)):
+			    shape = node.data.shape_keys.key_blocks[k]
+			    values+=[shape.value] #save value
+			    shape.value=0
+
+			mid = self.new_id("morph")
+
+			for k in range(0,len(mesh.shape_keys.key_blocks)):
+
+				shape = node.data.shape_keys.key_blocks[k]
+				node.show_only_shape_key=True
+				node.active_shape_key_index = k
+				shape.value = 1.0
+				mesh.update()
+				"""
+				oldval = shape.value
+				shape.value = 1.0
+
+				"""
+				p = node.data
+				v = node.to_mesh(bpy.context.scene, True, "RENDER")
+				node.data = v
+#				self.export_node(node,il,shape.name)
+				node.data.update()
+				if (armature and k==0):
+					md=self.export_mesh(node,armature,k,mid)
+				else:
+					md=self.export_mesh(node,None,k)
+
+				node.data = p
+				node.data.update()
+				shape.value = 0.0
+				morph_targets.append(md)
+
+				"""
+				shape.value = oldval
+				"""
+			node.show_only_shape_key=False
+			node.active_shape_key_index = 0
+
+
+			self.writel(S_MORPH,1,'<controller id="'+mid+'" name="">')
+			#if ("skin_id" in morph_targets[0]):
+			#	self.writel(S_MORPH,2,'<morph source="#'+morph_targets[0]["skin_id"]+'" method="NORMALIZED">')
+			#else:
+			self.writel(S_MORPH,2,'<morph source="#'+morph_targets[0]["id"]+'" method="NORMALIZED">')
+
+			self.writel(S_MORPH,3,'<source id="'+mid+'-morph-targets">')
+			self.writel(S_MORPH,4,'<IDREF_array id="'+mid+'-morph-targets-array" count="'+str(len(morph_targets)-1)+'">')
+			marr=""
+			warr=""
+			for i in range(len(morph_targets)):
+				if (i==0):
+				    continue
+				elif (i>1):
+					marr+=" "
+
+				if ("skin_id" in morph_targets[i]):
+					marr+=morph_targets[i]["skin_id"]
+				else:
+					marr+=morph_targets[i]["id"]
+
+				warr+=" 0"
+
+			self.writel(S_MORPH,5,marr)
+			self.writel(S_MORPH,4,'</IDREF_array>')
+			self.writel(S_MORPH,4,'<technique_common>')
+			self.writel(S_MORPH,5,'<accessor source="#'+mid+'-morph-targets-array" count="'+str(len(morph_targets)-1)+'" stride="1">')
+			self.writel(S_MORPH,6,'<param name="MORPH_TARGET" type="IDREF"/>')
+			self.writel(S_MORPH,5,'</accessor>')
+			self.writel(S_MORPH,4,'</technique_common>')
+			self.writel(S_MORPH,3,'</source>')
+
+			self.writel(S_MORPH,3,'<source id="'+mid+'-morph-weights">')
+			self.writel(S_MORPH,4,'<float_array id="'+mid+'-morph-weights-array" count="'+str(len(morph_targets)-1)+'" >')
+			self.writel(S_MORPH,5,warr)
+			self.writel(S_MORPH,4,'</float_array>')
+			self.writel(S_MORPH,4,'<technique_common>')
+			self.writel(S_MORPH,5,'<accessor source="#'+mid+'-morph-weights-array" count="'+str(len(morph_targets)-1)+'" stride="1">')
+			self.writel(S_MORPH,6,'<param name="MORPH_WEIGHT" type="float"/>')
+			self.writel(S_MORPH,5,'</accessor>')
+			self.writel(S_MORPH,4,'</technique_common>')
+			self.writel(S_MORPH,3,'</source>')
+
+			self.writel(S_MORPH,3,'<targets>')
+			self.writel(S_MORPH,4,'<input semantic="MORPH_TARGET" source="#'+mid+'-morph-targets"/>')
+			self.writel(S_MORPH,4,'<input semantic="MORPH_WEIGHT" source="#'+mid+'-morph-weights"/>')
+			self.writel(S_MORPH,3,'</targets>')
+			self.writel(S_MORPH,2,'</morph>')
+			self.writel(S_MORPH,1,'</controller>')
+			if (armature!=None):
+
+				self.armature_for_morph[node]=armature
+
+			meshdata={}
+			if (armature):
+				meshdata = morph_targets[0]
+				meshdata["morph_id"]=mid
+			else:
+				meshdata["id"]=morph_targets[0]["id"]
+				meshdata["morph_id"]=mid
+				meshdata["material_assign"]=morph_targets[0]["material_assign"]
+
+
+
+			self.mesh_cache[node.data]=meshdata
+			return meshdata
+
+		if (len(node.modifiers) and self.config["use_mesh_modifiers"]):
 			mesh=node.to_mesh(self.scene,True,"RENDER") #is this allright?
 		else:
 			mesh=node.data
@@ -348,7 +469,6 @@ class DaeExporter:
 
 		for fi in range(len(mesh.tessfaces)):
 			f=mesh.tessfaces[fi]
-
 
 			if (not (f.material_index in surface_indices)):
 				surface_indices[f.material_index]=[]
@@ -419,7 +539,7 @@ class DaeExporter:
 
 				tup = v.get_tup()
 				idx = 0
-				if (tup in vertex_map):
+				if (skeyindex==-1 and tup in vertex_map): #do not optmize if using shapekeys
 					idx = vertex_map[tup]
 				else:
 					idx = len(vertices)
@@ -428,12 +548,9 @@ class DaeExporter:
 
 				indices.append(idx)
 
-		if shapename != None:
-			meshid = self.new_id("mesh_"+shapename)
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'_'+shapename+'">')
-		else:
-			meshid = self.new_id("mesh")
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+
+		meshid = self.new_id("mesh")
+		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 
@@ -526,49 +643,55 @@ class DaeExporter:
 		self.writel(S_GEOM,2,'</mesh>')
 		self.writel(S_GEOM,1,'</geometry>')
 
+
 		meshdata={}
 		meshdata["id"]=meshid
 		meshdata["material_assign"]=mat_assign
-		self.mesh_cache[node.data]=meshdata
+		if (skeyindex==-1):
+			self.mesh_cache[node.data]=meshdata
 
 
 		# Export armature data (if armature exists)
 
-		if (armature!=None):
+		if (armature!=None and (skel_source!=None or skeyindex==-1)):
 
 			contid = self.new_id("controller")
 
-			self.writel(S_CONT,1,'<controller id="'+contid+'">')
-			self.writel(S_CONT,2,'<skin source="'+meshid+'">')
-			self.writel(S_CONT,3,'<bind_shape_matrix>'+strmtx(node.matrix_world)+'</bind_shape_matrix>')
+			self.writel(S_SKIN,1,'<controller id="'+contid+'">')
+			if (skel_source!=None):
+				self.writel(S_SKIN,2,'<skin source="#'+skel_source+'">')
+			else:
+				self.writel(S_SKIN,2,'<skin source="#'+meshid+'">')
+
+			self.writel(S_SKIN,3,'<bind_shape_matrix>'+strmtx(node.matrix_world)+'</bind_shape_matrix>')
 			#Joint Names
-			self.writel(S_CONT,3,'<source id="'+contid+'-joints">')
+			self.writel(S_SKIN,3,'<source id="'+contid+'-joints">')
 			name_values=""
 			for v in si["bone_names"]:
 				name_values+=" "+v
 
-			self.writel(S_CONT,4,'<Name_array id="'+contid+'-joints-array" count="'+str(len(si["bone_names"]))+'">'+name_values+'</Name_array>')
-			self.writel(S_CONT,4,'<technique_common>')
-			self.writel(S_CONT,4,'<accessor source="#'+contid+'-joints-array" count="'+str(len(si["bone_names"]))+'" stride="1">')
-			self.writel(S_CONT,5,'<param name="JOINT" type="Name"/>')
-			self.writel(S_CONT,4,'</accessor>')
-			self.writel(S_CONT,4,'</technique_common>')
-			self.writel(S_CONT,3,'</source>')
+			self.writel(S_SKIN,4,'<Name_array id="'+contid+'-joints-array" count="'+str(len(si["bone_names"]))+'">'+name_values+'</Name_array>')
+			self.writel(S_SKIN,4,'<technique_common>')
+			self.writel(S_SKIN,4,'<accessor source="#'+contid+'-joints-array" count="'+str(len(si["bone_names"]))+'" stride="1">')
+			self.writel(S_SKIN,5,'<param name="JOINT" type="Name"/>')
+			self.writel(S_SKIN,4,'</accessor>')
+			self.writel(S_SKIN,4,'</technique_common>')
+			self.writel(S_SKIN,3,'</source>')
 			#Pose Matrices!
-			self.writel(S_CONT,3,'<source id="'+contid+'-bind_poses">')
+			self.writel(S_SKIN,3,'<source id="'+contid+'-bind_poses">')
 			pose_values=""
 			for v in si["bone_bind_poses"]:
 				pose_values+=" "+strmtx(v)
 
-			self.writel(S_CONT,4,'<float_array id="'+contid+'-bind_poses-array" count="'+str(len(si["bone_bind_poses"])*16)+'">'+pose_values+'</float_array>')
-			self.writel(S_CONT,4,'<technique_common>')
-			self.writel(S_CONT,4,'<accessor source="#'+contid+'-bind_poses-array" count="'+str(len(si["bone_bind_poses"]))+'" stride="16">')
-			self.writel(S_CONT,5,'<param name="TRANSFORM" type="float4x4"/>')
-			self.writel(S_CONT,4,'</accessor>')
-			self.writel(S_CONT,4,'</technique_common>')
-			self.writel(S_CONT,3,'</source>')
+			self.writel(S_SKIN,4,'<float_array id="'+contid+'-bind_poses-array" count="'+str(len(si["bone_bind_poses"])*16)+'">'+pose_values+'</float_array>')
+			self.writel(S_SKIN,4,'<technique_common>')
+			self.writel(S_SKIN,4,'<accessor source="#'+contid+'-bind_poses-array" count="'+str(len(si["bone_bind_poses"]))+'" stride="16">')
+			self.writel(S_SKIN,5,'<param name="TRANSFORM" type="float4x4"/>')
+			self.writel(S_SKIN,4,'</accessor>')
+			self.writel(S_SKIN,4,'</technique_common>')
+			self.writel(S_SKIN,3,'</source>')
 			#Skin Weights!
-			self.writel(S_CONT,3,'<source id="'+contid+'-skin_weights">')
+			self.writel(S_SKIN,3,'<source id="'+contid+'-skin_weights">')
 			skin_weights=""
 			skin_weights_total=0
 			for v in vertices:
@@ -576,22 +699,22 @@ class DaeExporter:
 				for w in v.weights:
 					skin_weights+=" "+str(w)
 
-			self.writel(S_CONT,4,'<float_array id="'+contid+'-skin_weights-array" count="'+str(skin_weights_total)+'">'+skin_weights+'</float_array>')
-			self.writel(S_CONT,4,'<technique_common>')
-			self.writel(S_CONT,4,'<accessor source="#'+contid+'-skin_weights-array" count="'+str(skin_weights_total)+'" stride="1">')
-			self.writel(S_CONT,5,'<param name="WEIGHT" type="float"/>')
-			self.writel(S_CONT,4,'</accessor>')
-			self.writel(S_CONT,4,'</technique_common>')
-			self.writel(S_CONT,3,'</source>')
+			self.writel(S_SKIN,4,'<float_array id="'+contid+'-skin_weights-array" count="'+str(skin_weights_total)+'">'+skin_weights+'</float_array>')
+			self.writel(S_SKIN,4,'<technique_common>')
+			self.writel(S_SKIN,4,'<accessor source="#'+contid+'-skin_weights-array" count="'+str(skin_weights_total)+'" stride="1">')
+			self.writel(S_SKIN,5,'<param name="WEIGHT" type="float"/>')
+			self.writel(S_SKIN,4,'</accessor>')
+			self.writel(S_SKIN,4,'</technique_common>')
+			self.writel(S_SKIN,3,'</source>')
 
 
-			self.writel(S_CONT,3,'<joints>')
-			self.writel(S_CONT,4,'<input semantic="JOINT" source="#'+contid+'-joints"/>')
-			self.writel(S_CONT,4,'<input semantic="INV_BIND_MATRIX" source="#'+contid+'-bind_poses"/>')
-			self.writel(S_CONT,3,'</joints>')
-			self.writel(S_CONT,3,'<vertex_weights count="'+str(len(vertices))+'">')
-			self.writel(S_CONT,4,'<input semantic="JOINT" source="#'+contid+'-joints" offset="0"/>')
-			self.writel(S_CONT,4,'<input semantic="WEIGHT" source="#'+contid+'-skin_weights" offset="1"/>')
+			self.writel(S_SKIN,3,'<joints>')
+			self.writel(S_SKIN,4,'<input semantic="JOINT" source="#'+contid+'-joints"/>')
+			self.writel(S_SKIN,4,'<input semantic="INV_BIND_MATRIX" source="#'+contid+'-bind_poses"/>')
+			self.writel(S_SKIN,3,'</joints>')
+			self.writel(S_SKIN,3,'<vertex_weights count="'+str(len(vertices))+'">')
+			self.writel(S_SKIN,4,'<input semantic="JOINT" source="#'+contid+'-joints" offset="0"/>')
+			self.writel(S_SKIN,4,'<input semantic="WEIGHT" source="#'+contid+'-skin_weights" offset="1"/>')
 			vcounts=""
 			vs=""
 			vcount=0
@@ -601,20 +724,20 @@ class DaeExporter:
 					vs+=" "+str(b)
 					vs+=" "+str(vcount)
 					vcount+=1
-			self.writel(S_CONT,4,'<vcount>'+vcounts+'</vcount>')
-			self.writel(S_CONT,4,'<v>'+vs+'</v>')
-			self.writel(S_CONT,3,'</vertex_weights>')
+			self.writel(S_SKIN,4,'<vcount>'+vcounts+'</vcount>')
+			self.writel(S_SKIN,4,'<v>'+vs+'</v>')
+			self.writel(S_SKIN,3,'</vertex_weights>')
 
 
-			self.writel(S_CONT,2,'</skin>')
-			self.writel(S_CONT,1,'</controller>')
+			self.writel(S_SKIN,2,'</skin>')
+			self.writel(S_SKIN,1,'</controller>')
 			meshdata["skin_id"]=contid
 
 
 		return meshdata
 
 
-	def export_mesh_node(self,node,il,shapename=None):
+	def export_mesh_node(self,node,il):
 
 		if (node.data==None):
 			return
@@ -624,14 +747,19 @@ class DaeExporter:
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
 
-		meshdata = self.export_mesh(node,armature,shapename)
+		meshdata = self.export_mesh(node,armature)
+		close_controller=False
 
-		if (armature==None):
-			self.writel(S_NODES,il,'<instance_geometry url="#'+meshdata["id"]+'">')
-		else:
+		if ("skin_id" in meshdata):
+			close_controller=True
 			self.writel(S_NODES,il,'<instance_controller url="#'+meshdata["skin_id"]+'">')
 			for sn in self.skeleton_info[armature]["skeleton_nodes"]:
 				self.writel(S_NODES,il+1,'<skeleton>#'+sn+'</skeleton>')
+		elif ("morph_id" in meshdata):
+			self.writel(S_NODES,il,'<instance_controller url="#'+meshdata["morph_id"]+'">')
+			close_controller=True
+		elif (armature==None):
+			self.writel(S_NODES,il,'<instance_geometry url="#'+meshdata["id"]+'">')		
 
 
 		if (len(meshdata["material_assign"])>0):
@@ -644,17 +772,17 @@ class DaeExporter:
 			self.writel(S_NODES,il+2,'</technique_common>')
 			self.writel(S_NODES,il+1,'</bind_material>')
 
-		if (armature==None):
-			self.writel(S_NODES,il,'</instance_geometry>')
-		else:
+		if (close_controller):
 			self.writel(S_NODES,il,'</instance_controller>')
+		else:
+			self.writel(S_NODES,il,'</instance_geometry>')
 
 
 	def export_armature_bone(self,bone,il,si):
 		boneid = self.new_id("bone")
 		boneidx = si["bone_count"]
 		si["bone_count"]+=1
-		bonesid = si["name"]+"-"+str(boneidx)
+		bonesid = si["id"]+"-"+str(boneidx)
 		si["bone_index"][bone.name]=boneidx
 		si["bone_ids"][bone]=boneid
 		si["bone_names"].append(bonesid)
@@ -683,7 +811,7 @@ class DaeExporter:
 		self.skeletons.append(node)
 
 		armature = node.data
-		self.skeleton_info[node]={ "bone_count":0, "name":node.name, "bone_index":{},"bone_ids":{},"bone_names":[],"bone_bind_poses":[],"skeleton_nodes":[],"armature_xform":node.matrix_world }
+		self.skeleton_info[node]={ "bone_count":0, "id":self.new_id("skelbones"),"name":node.name, "bone_index":{},"bone_ids":{},"bone_names":[],"bone_bind_poses":[],"skeleton_nodes":[],"armature_xform":node.matrix_world }
 
 
 
@@ -739,7 +867,7 @@ class DaeExporter:
 		light=node.data
 		lightid=self.new_id("light")
 		self.writel(S_LAMPS,1,'<light id="'+lightid+'" name="'+light.name+'">')
-		self.writel(S_LAMPS,2,'<optics>')
+		#self.writel(S_LAMPS,2,'<optics>')
 		self.writel(S_LAMPS,3,'<technique_common>')
 
 		if (light.type=="POINT"):
@@ -767,7 +895,7 @@ class DaeExporter:
 
 
 		self.writel(S_LAMPS,3,'</technique_common>')
-		self.writel(S_LAMPS,2,'</optics>')
+		#self.writel(S_LAMPS,2,'</optics>')
 		self.writel(S_LAMPS,1,'</light>')
 
 
@@ -912,21 +1040,18 @@ class DaeExporter:
 
 
 
-	def export_node(self,node,il,shapename=None):
+	def export_node(self,node,il):
 		if (not self.is_node_valid(node)):
 			return
 		bpy.context.scene.objects.active = node
 
-		if shapename != None:
-			self.writel(S_NODES,il,'<node id="'+self.validate_id(node.name + '_' + shapename)+'" name="'+node.name+'_'+shapename+'" type="NODE">')
-		else:
-			self.writel(S_NODES,il,'<node id="'+self.validate_id(node.name)+'" name="'+node.name+'" type="NODE">')
+		self.writel(S_NODES,il,'<node id="'+self.validate_id(node.name)+'" name="'+node.name+'" type="NODE">')
 		il+=1
 
 		self.writel(S_NODES,il,'<matrix sid="transform">'+strmtx(node.matrix_local)+'</matrix>')
 		print("NODE TYPE: "+node.type+" NAME: "+node.name)
 		if (node.type=="MESH"):
-			self.export_mesh_node(node,il,shapename)
+			self.export_mesh_node(node,il)
 		elif (node.type=="CURVE"):
 			self.export_curve_node(node,il)
 		elif (node.type=="ARMATURE"):
@@ -937,22 +1062,9 @@ class DaeExporter:
 			self.export_lamp_node(node,il)
 
 		self.valid_nodes.append(node)
-		if shapename==None:
-			for x in node.children:
-				self.export_node(x,il)
-			if node.type=="MESH" and self.config["export_shapekeys"]:
-				for k in range(0,len(node.data.shape_keys.key_blocks)):
-					shape = node.data.shape_keys.key_blocks[k]
-					oldval = shape.value
-					shape.value = 1.0
-					node.active_shape_key_index = k
-					p = node.data
-					v = node.to_mesh(bpy.context.scene, True, "RENDER")
-					node.data = v
-					self.export_node(node,il,shape.name)
-					node.data = p
-					node.data.update()
-					shape.value = oldval
+		for x in node.children:
+			self.export_node(x,il)
+
 		il-=1
 		self.writel(S_NODES,il,'</node>')
 
@@ -1003,18 +1115,22 @@ class DaeExporter:
 		self.writel(S_ASSET,0,'</asset>')
 
 
-	def export_animation_transform_channel(self,target,transform_keys):
+	def export_animation_transform_channel(self,target,keys,matrices=True):
 
-		frame_total=len(transform_keys)
+		frame_total=len(keys)
 		anim_id=self.new_id("anim")
 		self.writel(S_ANIM,1,'<animation id="'+anim_id+'">')
 		source_frames = ""
 		source_transforms = ""
 		source_interps = ""
 
-		for k in transform_keys:
+		for k in keys:
 			source_frames += " "+str(k[0])
-			source_transforms += " "+strmtx(k[1])
+			if (matrices):
+				source_transforms += " "+strmtx(k[1])
+			else:
+				source_transforms += " "+str(k[1])
+
 			source_interps +=" LINEAR"
 
 
@@ -1022,27 +1138,38 @@ class DaeExporter:
 		self.writel(S_ANIM,2,'<source id="'+anim_id+'-input">')
 		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-input-array" count="'+str(frame_total)+'">'+source_frames+'</float_array>')
 		self.writel(S_ANIM,3,'<technique_common>')
-		self.writel(S_ANIM,4,'<accessor source="'+anim_id+'-input-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-input-array" count="'+str(frame_total)+'" stride="1">')
 		self.writel(S_ANIM,5,'<param name="TIME" type="float"/>')
 		self.writel(S_ANIM,4,'</accessor>')
 		self.writel(S_ANIM,3,'</technique_common>')
 		self.writel(S_ANIM,2,'</source>')
 
-		# Transform Source
-		self.writel(S_ANIM,2,'<source id="'+anim_id+'-transform-output">')
-		self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-transform-output-array" count="'+str(frame_total*16)+'">'+source_transforms+'</float_array>')
-		self.writel(S_ANIM,3,'<technique_common>')
-		self.writel(S_ANIM,4,'<accessor source="'+anim_id+'-transform-output-array" count="'+str(frame_total)+'" stride="16">')
-		self.writel(S_ANIM,5,'<param name="TRANSFORM" type="float4x4"/>')
-		self.writel(S_ANIM,4,'</accessor>')
-		self.writel(S_ANIM,3,'</technique_common>')
-		self.writel(S_ANIM,2,'</source>')
+		if (matrices):
+			# Transform Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-transform-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-transform-output-array" count="'+str(frame_total*16)+'">'+source_transforms+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-transform-output-array" count="'+str(frame_total)+'" stride="16">')
+			self.writel(S_ANIM,5,'<param name="TRANSFORM" type="float4x4"/>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
+		else:
+			# Value Source
+			self.writel(S_ANIM,2,'<source id="'+anim_id+'-transform-output">')
+			self.writel(S_ANIM,3,'<float_array id="'+anim_id+'-transform-output-array" count="'+str(frame_total)+'">'+source_transforms+'</float_array>')
+			self.writel(S_ANIM,3,'<technique_common>')
+			self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-transform-output-array" count="'+str(frame_total)+'" stride="1">')
+			self.writel(S_ANIM,5,'<param name="X" type="float"/>')
+			self.writel(S_ANIM,4,'</accessor>')
+			self.writel(S_ANIM,3,'</technique_common>')
+			self.writel(S_ANIM,2,'</source>')
 
 		# Interpolation Source
 		self.writel(S_ANIM,2,'<source id="'+anim_id+'-interpolation-output">')
 		self.writel(S_ANIM,3,'<Name_array id="'+anim_id+'-interpolation-output-array" count="'+str(frame_total)+'">'+source_interps+'</Name_array>')
 		self.writel(S_ANIM,3,'<technique_common>')
-		self.writel(S_ANIM,4,'<accessor source="'+anim_id+'-interpolation-output-array" count="'+str(frame_total)+'" stride="1">')
+		self.writel(S_ANIM,4,'<accessor source="#'+anim_id+'-interpolation-output-array" count="'+str(frame_total)+'" stride="1">')
 		self.writel(S_ANIM,5,'<param name="INTERPOLATION" type="Name"/>')
 		self.writel(S_ANIM,4,'</accessor>')
 		self.writel(S_ANIM,3,'</technique_common>')
@@ -1053,7 +1180,10 @@ class DaeExporter:
 		self.writel(S_ANIM,3,'<input semantic="OUTPUT" source="#'+anim_id+'-transform-output"/>')
 		self.writel(S_ANIM,3,'<input semantic="INTERPOLATION" source="#'+anim_id+'-interpolation-output"/>')
 		self.writel(S_ANIM,2,'</sampler>')
-		self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-sampler" target="'+target+'/transform"/>')
+		if (matrices):
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-sampler" target="'+target+'/transform"/>')
+		else:
+			self.writel(S_ANIM,2,'<channel source="#'+anim_id+'-sampler" target="'+target+'"/>')
 		self.writel(S_ANIM,1,'</animation>')
 
 		return [anim_id]
@@ -1075,6 +1205,7 @@ class DaeExporter:
 
 		tcn = []
 		xform_cache={}
+		blend_cache={}
 		# Change frames first, export objects last
 		# This improves performance enormously
 
@@ -1089,9 +1220,26 @@ class DaeExporter:
 				if (not node in self.valid_nodes):
 					continue
 				if (allowed!=None and not (node in allowed)):
-					continue
+					if (node.type=="MESH" and node.data!=None and (node in self.armature_for_morph) and (self.armature_for_morph[node] in allowed)):
+						pass #all good you pass with flying colors for morphs inside of action
+					else:
+						continue
+				if (node.type=="MESH" and node.data!=None and node.data.shape_keys!=None and (node.data in self.mesh_cache) and len(node.data.shape_keys.key_blocks)):
+					target = self.mesh_cache[node.data]["morph_id"]
+					for i in range(len(node.data.shape_keys.key_blocks)):
+
+						if (i==0):
+							continue
+
+						name=target+"-morph-weights("+str(i-1)+")"
+						if (not (name in blend_cache)):
+							blend_cache[name]=[]
+
+						blend_cache[name].append( (key,node.data.shape_keys.key_blocks[i].value) )
+
 
 				if (node.type=="MESH" and node.parent and node.parent.type=="ARMATURE"):
+
 					continue #In Collada, nodes that have skin modifier must not export animation, animate the skin instead.
 
 				if (len(node.constraints)>0 or node.animation_data!=None):
@@ -1108,6 +1256,7 @@ class DaeExporter:
 
 				if (node.type=="ARMATURE"):
 					#All bones exported for now
+
 					for bone in node.data.bones:
 
 						bone_name=self.skeleton_info[node]["bone_ids"][bone]
@@ -1138,7 +1287,9 @@ class DaeExporter:
 
 		#export animation xml
 		for nid in xform_cache:
-			tcn+=self.export_animation_transform_channel(nid,xform_cache[nid])
+			tcn+=self.export_animation_transform_channel(nid,xform_cache[nid],True)
+		for nid in blend_cache:
+			tcn+=self.export_animation_transform_channel(nid,blend_cache[nid],False)
 
 		return tcn
 
@@ -1197,7 +1348,7 @@ class DaeExporter:
 				print("Export anim: "+x.name)
 				self.writel(S_ANIM_CLIPS,1,'<animation_clip name="'+x.name+'" start="'+str(start)+'" end="'+str(end)+'">')
 				for z in tcn:
-					self.writel(S_ANIM_CLIPS,2,'<instance_animation url="#'+z+'">')
+					self.writel(S_ANIM_CLIPS,2,'<instance_animation url="#'+z+'"/>')
 				self.writel(S_ANIM_CLIPS,1,'</animation_clip>')
 
 
@@ -1230,6 +1381,19 @@ class DaeExporter:
 		self.export_scene()
 
 		self.writel(S_GEOM,0,'</library_geometries>')
+
+		#morphs always go before skin controllers
+		if S_MORPH in self.sections:
+			for l in self.sections[S_MORPH]:
+				self.writel(S_CONT,0,l)
+			del self.sections[S_MORPH]
+
+		#morphs always go before skin controllers
+		if S_SKIN in self.sections:
+			for l in self.sections[S_SKIN]:
+				self.writel(S_CONT,0,l)
+			del self.sections[S_SKIN]
+
 		self.writel(S_CONT,0,'</library_controllers>')
 		self.writel(S_CAMS,0,'</library_cameras>')
 		self.writel(S_LAMPS,0,'</library_lights>')
@@ -1276,6 +1440,7 @@ class DaeExporter:
 		self.skeleton_info={}
 		self.config=kwargs
 		self.valid_nodes=[]
+		self.armature_for_morph={}
 
 
 

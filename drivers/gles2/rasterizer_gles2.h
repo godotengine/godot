@@ -608,7 +608,7 @@ class RasterizerGLES2 : public Rasterizer {
 	mutable SelfList<Skeleton>::List _skeleton_dirty_list;
 
 
-	template<bool USE_NORMAL, bool USE_TANGENT>
+	template<bool USE_NORMAL, bool USE_TANGENT,bool INPLACE>
 	void _skeleton_xform(const uint8_t * p_src_array, int p_src_stride, uint8_t * p_dst_array, int p_dst_stride, int p_elements,const uint8_t *p_src_bones, const uint8_t *p_src_weights, const Skeleton::Bone *p_bone_xforms);
 
 	struct Light {
