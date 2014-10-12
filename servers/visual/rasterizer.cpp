@@ -363,12 +363,13 @@ RID Rasterizer::fixed_material_create() {
 	FixedMaterial &fm=*fixed_materials[mat];
 	fm.self=mat;
 	fm.get_key();
+	material_set_flag(mat,VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,true);
 	for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
 
 		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
 	}
 	fixed_material_dirty_list.add(&fm.dirty_list);
-	//print_line("FMC: "+itos(mat.get_id()));
+	//print_line("FMC: "+itos(mat.get_id()));	
 	return mat;
 }
 

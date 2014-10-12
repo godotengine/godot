@@ -292,7 +292,17 @@ void main() {
 	normal_interp = normalize((modelview * vec4(normal_in,0.0)).xyz);
 
 #if defined(ENABLE_COLOR_INTERP)
+#ifdef USE_COLOR_ATTRIB_SRGB_TO_LINEAR
+
+	color_interp = vec4(
+		color_attrib.r<0.04045 ? color_attrib.r * (1.0 / 12.92) : pow((color_attrib.r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.g<0.04045 ? color_attrib.g * (1.0 / 12.92) : pow((color_attrib.g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.b<0.04045 ? color_attrib.b * (1.0 / 12.92) : pow((color_attrib.b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.a
+	);
+#else
 	color_interp = color_attrib;
+#endif
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP)

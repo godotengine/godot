@@ -66,6 +66,8 @@ private:
 	RID camera;
 	RID scenario_id;
 
+	String camera_group;
+
 	uint32_t layers;
 
 	Viewport *viewport_ptr;
@@ -74,6 +76,7 @@ private:
 	virtual bool _can_gizmo_scale() const;
 	virtual RES _get_gizmo_geometry() const;
 
+	void _camera_make_next_current(Node *p_exclude);
 
 
 	//void _camera_make_current(Node *p_camera);

@@ -403,19 +403,55 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (!image.empty())
 				image.convert(Image::FORMAT_RGBA);
 			r_gl_components=4;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+
+			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+				if (srgb_supported) {
+					r_gl_format=_GL_SRGB_ALPHA_EXT;
+				} else {
+					r_gl_format=GL_RGBA;
+					if (!image.empty())
+						image.srgb_to_linear();
+				}
+			} else {
+				r_gl_format=GL_RGBA;
+			}
 			r_has_alpha_cache=true;
 
 		} break;
 		case Image::FORMAT_RGB: {
 
 			r_gl_components=3;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_EXT:GL_RGB;
+
+			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+				if (srgb_supported) {
+					r_gl_format=_GL_SRGB_EXT;
+				} else {
+					r_gl_format=GL_RGB;
+					if (!image.empty())
+						image.srgb_to_linear();
+				}
+			} else {
+				r_gl_format=GL_RGB;
+			}
 		} break;
 		case Image::FORMAT_RGBA: {
 
 			r_gl_components=4;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+				if (srgb_supported) {
+					r_gl_format=_GL_SRGB_ALPHA_EXT;
+				} else {
+					r_gl_format=GL_RGBA;
+					if (!image.empty())
+						image.srgb_to_linear();
+				}
+			} else {
+				r_gl_format=GL_RGBA;
+			}
+
 			r_has_alpha_cache=true;
 		} break;
 		case Image::FORMAT_BC1: {
@@ -426,7 +462,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -445,7 +492,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -465,7 +523,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -484,7 +553,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -503,7 +583,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -520,7 +611,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 
@@ -540,7 +642,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (!image.empty())
 					image.decompress();
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 
@@ -561,7 +674,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (!image.empty())
 					image.decompress();
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 			} else {
 
@@ -578,7 +702,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (!image.empty())
 					image.decompress();
 				r_gl_components=4;
-				r_gl_format=GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -590,12 +725,24 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		} break;
 		case Image::FORMAT_ETC: {
 
-			if (!etc_supported) {
+			if (!etc_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 				if (!image.empty()) {
 					image.decompress();
 				}
 				r_gl_components=3;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_EXT;
+					} else {
+						r_gl_format=GL_RGB;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGB;
+				}
 				r_gl_format=GL_RGB;
 
 
@@ -1458,6 +1605,7 @@ void RasterizerGLES2::material_set_flag(RID p_material, VS::MaterialFlag p_flag,
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
 	ERR_FAIL_INDEX(p_flag,VS::MATERIAL_FLAG_MAX);
+
 	material->flags[p_flag]=p_enabled;
 
 }
@@ -4715,6 +4863,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,shadow_filter==SHADOW_FILTER_ESM);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_LIGHTMAP_ON_UV2,p_material->flags[VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2]);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_COLOR_ATTRIB_SRGB_TO_LINEAR,p_material->flags[VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB] && current_env && current_env->fx_enabled[VS::ENV_FX_SRGB]);
 
 	if (p_opaque_pass && p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA && p_material->shader_cache && p_material->shader_cache->has_alpha) {
 
@@ -6218,7 +6367,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			if (!shadow) {
 
 				if (!additive && current_env && current_env->fx_enabled[VS::ENV_FX_AMBIENT_LIGHT]) {
-					Color ambcolor = current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_COLOR];
+					Color ambcolor = _convert_color(current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_COLOR]);
 					float ambnrg =  current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_ENERGY];
 					material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHT,Vector3(ambcolor.r*ambnrg,ambcolor.g*ambnrg,ambcolor.b*ambnrg));
 				} else {
