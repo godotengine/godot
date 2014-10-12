@@ -32,6 +32,8 @@
 #include "tools/editor/editor_plugin.h"
 #include "tools/editor/editor_node.h"
 #include "scene/3d/visual_instance.h"
+#include "scene/3d/immediate_geometry.h"
+#include "scene/3d/light.h"
 #include "scene/gui/panel_container.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -80,11 +82,14 @@ friend class SpatialEditor;
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL,
 		VIEW_AUDIO_LISTENER,
+		VIEW_GIZMOS,
 	};
+public:
 	enum {
-		GIZMO_BASE_LAYER=25
+		GIZMO_BASE_LAYER=27,
+		GIZMO_EDIT_LAYER=26
 	};
-
+private:
 	int index;
 	void _menu_option(int p_option);
 	Size2 prev_size;
@@ -349,6 +354,7 @@ private:
 		MENU_VIEW_USE_3_VIEWPORTS_ALT,
 		MENU_VIEW_USE_4_VIEWPORTS,
 		MENU_VIEW_USE_DEFAULT_LIGHT,
+		MENU_VIEW_USE_DEFAULT_SRGB,
 		MENU_VIEW_DISPLAY_NORMAL,
 		MENU_VIEW_DISPLAY_WIREFRAME,
 		MENU_VIEW_DISPLAY_OVERDRAW,
@@ -382,14 +388,27 @@ private:
 	LineEdit *xform_scale[3];
 	OptionButton *xform_type;
 
-	LineEdit *settings_fov;
-	LineEdit *settings_znear;
-	LineEdit *settings_zfar;
+	VBoxContainer *settings_vbc;
+	SpinBox *settings_fov;
+	SpinBox *settings_znear;
+	SpinBox *settings_zfar;
+	DirectionalLight *settings_dlight;
+	ImmediateGeometry *settings_sphere;
+	Camera *settings_camera;
+	float settings_default_light_rot_x;
+	float settings_default_light_rot_y;
+
+	Control *settings_light_base;
+	Viewport *settings_light_vp;
+	ColorPickerButton *settings_ambient_color;
+	Image settings_light_dir_image;
+
 
 	void _xform_dialog_action();
 	void _menu_item_pressed(int p_option);
 
 	HBoxContainer *hbc_menu;
+
 
 //
 //
@@ -420,6 +439,10 @@ private:
 	SpatialEditorGizmos *gizmos;
 	SpatialEditor();
 
+	void _update_ambient_light_color(const Color& p_color);
+	void _update_default_light_angle();
+	void _default_light_angle_input(const InputEvent& p_event);
+
 protected:	
 
 
@@ -436,9 +459,9 @@ public:
 	static SpatialEditor *get_singleton() { return singleton; }
 	void snap_cursor_to_plane(const Plane& p_plane);
 
-	float get_znear() const { return settings_znear->get_text().to_double(); }
-	float get_zfar() const { return settings_zfar->get_text().to_double(); }
-	float get_fov() const { return settings_fov->get_text().to_double(); }
+	float get_znear() const { return settings_znear->get_val(); }
+	float get_zfar() const { return settings_zfar->get_val(); }
+	float get_fov() const { return settings_fov->get_val(); }
 
 	Transform get_gizmo_transform() const { return gizmo.transform; }
 	bool is_gizmo_visible() const { return gizmo.visible; }

@@ -36,8 +36,11 @@ void Timer::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
-			if (autostart)
+			if (autostart) {
+				if (get_scene()->is_editor_hint() && get_scene()->get_edited_scene_root() &&  (get_scene()->get_edited_scene_root()==this || get_scene()->get_edited_scene_root()->is_a_parent_of(this)))
+					break;
 				start();
+			}
 		} break;
 		case NOTIFICATION_PROCESS: {
 

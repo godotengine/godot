@@ -1626,9 +1626,11 @@ void GDScript::set_source_code(const String& p_code) {
 	source=p_code;
 }
 
-void GDScript::update_exports() {
+
+void GDScript::_update_exports(Set<PlaceHolderScriptInstance*> *p_instances) {
 
 #ifdef TOOLS_ENABLED
+
 	String basedir=path;
 
 	if (basedir=="")
@@ -1645,7 +1647,19 @@ void GDScript::update_exports() {
 	const GDParser::Node* root = parser.get_parse_tree();
 	ERR_FAIL_COND(root->type!=GDParser::Node::TYPE_CLASS);
 
+
+
 	const GDParser::ClassNode *c = static_cast<const GDParser::ClassNode*>(root);
+
+	if (c->extends_used && String(c->extends_file)!="") {
+
+		Ref<GDScript> bf = ResourceLoader::load(c->extends_file);
+		if (bf.is_valid()) {
+
+			bf->_update_exports(p_instances);
+
+		}
+	}
 
 	List<PropertyInfo> plist;
 
@@ -1660,10 +1674,19 @@ void GDScript::update_exports() {
 	}
 
 
-	for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
+	for (Set<PlaceHolderScriptInstance*>::Element *E=p_instances->front();E;E=E->next()) {
 
 		E->get()->update(plist,default_values);
 	}
+#endif
+}
+
+void GDScript::update_exports() {
+
+#ifdef TOOLS_ENABLED
+
+	_update_exports(&placeholders);
+
 
 #endif
 }

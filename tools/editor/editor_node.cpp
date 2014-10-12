@@ -69,6 +69,7 @@
 #include "plugins/item_list_editor_plugin.h"
 #include "plugins/stream_editor_plugin.h"
 #include "plugins/multimesh_editor_plugin.h"
+#include "plugins/mesh_editor_plugin.h"
 #include "plugins/theme_editor_plugin.h"
 
 #include "plugins/tile_map_editor_plugin.h"
@@ -2336,6 +2337,8 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	if (edited_scene && edited_scene->cast_to<Popup>())
 		edited_scene->cast_to<Popup>()->show(); //show popups
 	scene_tree_dock->set_edited_scene(edited_scene);
+	if (get_scene())
+		get_scene()->set_edited_scene_root(edited_scene);
 
 	if (edited_scene) {
 		if (p_scene->get_parent()!=scene_root)
@@ -3974,6 +3977,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ThemeEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MultiMeshEditorPlugin(this) ) );
+	add_editor_plugin( memnew( MeshInstanceEditorPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationTreeEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SamplePlayerEditorPlugin(this) ) );
 	add_editor_plugin( memnew( MeshLibraryEditorPlugin(this) ) );

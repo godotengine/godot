@@ -428,6 +428,7 @@ Error QuickHull::build(const Vector<Vector3>& p_points, Geometry::MeshData &r_me
 
 			List<Geometry::MeshData::Face>::Element *O = F->get().left == E ? F->get().right : F->get().left;
 			ERR_CONTINUE(O==E);
+			ERR_CONTINUE(O==NULL);
 
 			if (O->get().plane.is_almost_like(f.plane)) {
 				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
