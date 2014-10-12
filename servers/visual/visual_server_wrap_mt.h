@@ -929,6 +929,7 @@ public:
 	FUNC2(camera_set_environment,RID,RID);
 	FUNC1RC(RID,camera_get_environment,RID);
 
+
 	FUNC2(camera_set_use_vertical_aspect,RID,bool);
 	FUNC2RC(bool,camera_is_using_vertical_aspect,RID,bool);
 
@@ -998,6 +999,7 @@ public:
 	FUNC2(scenario_set_debug,RID,ScenarioDebugMode);
 	FUNC2(scenario_set_environment,RID, RID);
 	FUNC2RC(RID,scenario_get_environment,RID, RID);
+	FUNC2(scenario_set_fallback_environment,RID, RID);
 
 
 	/* INSTANCING API */
