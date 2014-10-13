@@ -435,6 +435,7 @@ void Light::_update_visibility() {
 	if (!is_inside_scene())
 		return;
 
+#ifdef TOOLS_ENABLED
 	bool editor_ok=true;
 	if (editor_only) {
 
@@ -444,6 +445,9 @@ void Light::_update_visibility() {
 			editor_ok = (get_scene()->get_edited_scene_root() && (this==get_scene()->get_edited_scene_root() || get_owner()==get_scene()->get_edited_scene_root()));
 		}
 	}
+#else
+  bool editor_ok=false;
+#endif
 
 
 	VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible() && enabled && editor_ok);
