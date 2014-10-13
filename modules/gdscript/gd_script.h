@@ -263,6 +263,9 @@ friend class GDFunctions;
 #endif
 
 
+
+	void _update_exports(Set<PlaceHolderScriptInstance *> *p_instances);
+
 protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	bool _set(const StringName& p_name, const Variant& p_value);

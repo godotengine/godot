@@ -1786,6 +1786,17 @@ void VisualServerRaster::scenario_set_environment(RID p_scenario, RID p_environm
 
 }
 
+void VisualServerRaster::scenario_set_fallback_environment(RID p_scenario, RID p_environment) {
+
+	VS_CHANGED;
+
+	Scenario *scenario = scenario_owner.get(p_scenario);
+	ERR_FAIL_COND(!scenario);
+	scenario->fallback_environment=p_environment;
+
+
+}
+
 RID VisualServerRaster::scenario_get_environment(RID p_scenario, RID p_environment) const{
 
 	const Scenario *scenario = scenario_owner.get(p_scenario);
@@ -5516,8 +5527,10 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 	RID environment;
 	if (p_camera->env.is_valid()) //camera has more environment priority
 		environment=p_camera->env;
-	else
+	else if (p_scenario->environment.is_valid())
 		environment=p_scenario->environment;
+	else
+		environment=p_scenario->fallback_environment;
 
 	rasterizer->begin_scene(p_viewport->viewport_data,environment,p_scenario->debug);
 	rasterizer->set_viewport(viewport_rect);	

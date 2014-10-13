@@ -320,6 +320,7 @@ class VisualServerRaster : public VisualServer {
 			
 		List<RID> directional_lights;
 		RID environment;
+		RID fallback_environment;
 		
 		Instance *dirty_instances;
 
@@ -1038,6 +1039,8 @@ public:
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const;
+	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+
 
 		
 	/* INSTANCING API */

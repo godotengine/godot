@@ -36,7 +36,8 @@ static const char*_flag_names[Material::FLAG_MAX]={
 	"invert_faces",
 	"unshaded",
 	"on_top",
-	"lightmap_on_uv2"
+	"lightmap_on_uv2",
+	"colarray_is_srgb"
 };
 
 
@@ -46,7 +47,8 @@ static const Material::Flag _flag_indices[Material::FLAG_MAX]={
 	Material::FLAG_INVERT_FACES,
 	Material::FLAG_UNSHADED,
 	Material::FLAG_ONTOP,
-	Material::FLAG_LIGHTMAP_ON_UV2
+	Material::FLAG_LIGHTMAP_ON_UV2,
+	Material::FLAG_COLOR_ARRAY_SRGB,
 };
 
 
@@ -132,6 +134,8 @@ void Material::_bind_methods() {
 	BIND_CONSTANT( FLAG_INVERT_FACES );
 	BIND_CONSTANT( FLAG_UNSHADED );
 	BIND_CONSTANT( FLAG_ONTOP );
+	BIND_CONSTANT( FLAG_LIGHTMAP_ON_UV2 );
+	BIND_CONSTANT( FLAG_COLOR_ARRAY_SRGB );
 	BIND_CONSTANT( FLAG_MAX );
 
 	BIND_CONSTANT( DEPTH_DRAW_ALWAYS );
@@ -156,6 +160,8 @@ Material::Material(const RID& p_material) {
 	flags[FLAG_INVERT_FACES]=false;
 	flags[FLAG_UNSHADED]=false;
 	flags[FLAG_ONTOP]=false;
+	flags[FLAG_LIGHTMAP_ON_UV2]=true;
+	flags[FLAG_COLOR_ARRAY_SRGB]=false;
 
 	depth_draw_mode=DEPTH_DRAW_OPAQUE_ONLY;
 
@@ -427,7 +433,7 @@ FixedMaterial::FixedMaterial() : Material(VS::get_singleton()->fixed_material_cr
 	param[PARAM_SHADE_PARAM]=0.5;
 	param[PARAM_DETAIL]=1.0;
 
-
+	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
 
 	fixed_flags[FLAG_USE_ALPHA]=false;
 	fixed_flags[FLAG_USE_COLOR_ARRAY]=false;
@@ -589,6 +595,8 @@ ParticleSystemMaterial::ParticleSystemMaterial() :Material(VisualServer::get_sin
 	set_depth_draw_mode(DEPTH_DRAW_NEVER);
 	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
 	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
+
 }
 
 ParticleSystemMaterial::~ParticleSystemMaterial() {
@@ -659,6 +667,8 @@ UnshadedMaterial::UnshadedMaterial() :Material(VisualServer::get_singleton()->fi
 
 	set_flag(FLAG_UNSHADED,true);
 	set_use_alpha(true);
+	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
+
 }
 
 UnshadedMaterial::~UnshadedMaterial() {
