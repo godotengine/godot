@@ -506,8 +506,13 @@ void Particles2D::_notification(int p_what) {
 				col_count++;
 			}
 
-
-			for(int i=0;i<particle_count;i++) {
+			int start_particle = (int)(time * (float)particle_count / lifetime);
+			
+			for (int id=0;id<particle_count;++id) {
+				int i = start_particle + id;
+				if (i >= particle_count) {
+					i -= particle_count;
+				}
 
 				Particle &p=pdata[i];
 				if (!p.active)
