@@ -526,14 +526,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\scene\3d\follow_camera.cpp"
-					>
-				</File>
-				<File
-					RelativePath="..\scene\3d\follow_camera.h"
-					>
-				</File>
-				<File
 					RelativePath="..\scene\3d\immediate_geometry.cpp"
 					>
 				</File>
