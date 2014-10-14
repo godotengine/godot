@@ -2468,7 +2468,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	}
 
 	if (d.has("default_srgb")) {
-		bool use = d["default_light"];
+		bool use = d["default_srgb"];
 
 		viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
 		view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );

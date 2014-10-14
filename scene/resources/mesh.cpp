@@ -29,6 +29,7 @@
 #include "mesh.h"
 #include "scene/resources/concave_polygon_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
+#include "surface_tool.h"
 
 static const char*_array_name[]={
 	"vertex_array",
@@ -648,6 +649,30 @@ void Mesh::center_geometry() {
 
 }
 
+void Mesh::regen_normalmaps() {
+
+
+	Vector< Ref<SurfaceTool> > surfs;
+	for(int i=0;i<get_surface_count();i++) {
+
+		Ref<SurfaceTool> st = memnew( SurfaceTool );
+		st->create_from(Ref<Mesh>(this),i);
+		surfs.push_back(st);
+	}
+
+	while (get_surface_count()) {
+		surface_remove(0);
+	}
+
+	for(int i=0;i<surfs.size();i++) {
+
+		surfs[i]->generate_tangents();
+		surfs[i]->commit(Ref<Mesh>(this));
+	}
+}
+
+
+
 Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 	if (triangle_mesh.is_valid())
@@ -740,6 +765,8 @@ void Mesh::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("surface_get_name","surf_idx"),&Mesh::surface_get_name);
 	ObjectTypeDB::bind_method(_MD("center_geometry"),&Mesh::center_geometry);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("center_geometry"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::bind_method(_MD("regen_normalmaps"),&Mesh::regen_normalmaps);
+	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("regen_normalmaps"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 
 	ObjectTypeDB::bind_method(_MD("set_custom_aabb","aabb"),&Mesh::set_custom_aabb);
 	ObjectTypeDB::bind_method(_MD("get_custom_aabb"),&Mesh::get_custom_aabb);

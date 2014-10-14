@@ -819,6 +819,10 @@ void main() {
 	vec4 color = color_interp;
 #endif
 
+#if defined(ENABLE_NORMALMAP)
+
+	vec3 normalmap = vec3(0.0);
+#endif
 
 
 
@@ -832,6 +836,11 @@ void main() {
 FRAGMENT_SHADER_CODE
 
 }
+
+#if defined(ENABLE_NORMALMAP)
+
+	normal = normalize( tangent_interp * normalmap.x + binormal_interp * normalmap.y + normal_interp * normalmap.z ) * side;
+#endif
 
 #if defined(ENABLE_DISCARD)
 	if (discard_) {

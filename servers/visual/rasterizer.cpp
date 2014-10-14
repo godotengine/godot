@@ -98,11 +98,10 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		}
 		if (p_key.use_xy_normalmap) {
 			scode+="vec2 ywnormal=tex( fmp_normal_tex,"+uv_str+").wy * vec2(2.0,2.0) - vec2(1.0,1.0);\n";
-			scode+="vec3 normal=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n";
+			scode+="NORMALMAP=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n";
 		} else {
-			scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
+			scode+="NORMALMAP=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
 		}
-		scode+="NORMAL = mix( NORMAL,mat3(TANGENT,BINORMAL,NORMAL) * normal,  fmp_normal);\n";
 		code+=scode;
 	}
 

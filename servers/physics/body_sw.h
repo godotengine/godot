@@ -74,6 +74,7 @@ class BodySW : public CollisionObjectSW {
 
 	bool continuous_cd;
 	bool can_sleep;
+	bool first_time_kinematic;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Transform new_transform;

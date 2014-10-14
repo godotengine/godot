@@ -50,6 +50,7 @@ private:
 	bool uses_discard;
 	bool uses_time;
 	bool uses_screen_uv;
+	bool uses_normalmap;
 	bool vertex_code_writes_vertex;
 	Flags *flags;
 
@@ -66,6 +67,7 @@ private:
 	StringName vname_vertex;
 	StringName vname_light;
 	StringName vname_time;
+	StringName vname_normalmap;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 
@@ -87,6 +89,7 @@ public:
 		bool uses_alpha;
 		bool uses_texscreen;
 		bool uses_texpos;
+		bool uses_normalmap;
 		bool vertex_code_writes_vertex;
 		bool uses_discard;
 		bool uses_screen_uv;
