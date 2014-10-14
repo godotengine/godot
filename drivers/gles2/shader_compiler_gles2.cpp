@@ -176,6 +176,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_discard) {
 					uses_discard=true;
 				}
+				if (vnode->name==vname_normalmap) {
+					uses_normalmap=true;
+				}
 				if (vnode->name==vname_screen_uv) {
 					uses_screen_uv=true;
 				}
@@ -546,6 +549,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_screen_uv=false;
 	uses_light=false;
 	uses_time=false;
+	uses_normalmap=false;
 	vertex_code_writes_vertex=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
@@ -555,6 +559,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.use_tangent_interp=false;
 	r_flags.use_var1_interp=false;
 	r_flags.use_var2_interp=false;
+	r_flags.uses_normalmap=false;
 
 	String error;
 	int errline,errcol;
@@ -576,8 +581,10 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_screen_uv=uses_screen_uv;
 	r_flags.uses_light=uses_light;
 	r_flags.uses_time=uses_time;
+	r_flags.uses_normalmap=uses_normalmap;
 	r_code_line=code;
 	r_globals_line=global_code;
+
 	return OK;
 }
 
@@ -670,6 +677,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[1]["NORMAL"]="normal";
 	mode_replace_table[1]["TANGENT"]="tangent";
 	mode_replace_table[1]["BINORMAL"]="binormal";
+	mode_replace_table[1]["NORMALMAP"]="normalmap";
 	mode_replace_table[1]["VAR1"]="var1_interp";
 	mode_replace_table[1]["VAR2"]="var2_interp";
 	mode_replace_table[1]["UV"]="uv";
@@ -728,5 +736,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_vertex="VERTEX";
 	vname_light="LIGHT";
 	vname_time="TIME";
+	vname_normalmap="NORMALMAP";
 
 }

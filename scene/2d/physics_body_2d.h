@@ -254,7 +254,7 @@ class KinematicBody2D : public PhysicsBody2D {
 	Vector2 normal;
 	Vector2 collider_vel;
 	ObjectID collider;
-
+	int collider_shape;
 
 	Variant _get_collider() const;
 
@@ -273,6 +273,7 @@ public:
 	Vector2 get_collision_normal() const;
 	Vector2 get_collider_velocity() const;
 	ObjectID get_collider() const;
+	int get_collider_shape() const;
 
 	void set_collide_with_static_bodies(bool p_enable);
 	bool can_collide_with_static_bodies() const;

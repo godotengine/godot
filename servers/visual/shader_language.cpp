@@ -1042,6 +1042,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::fragment_builtins_defs[]={
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
 	{ "BINORMAL", TYPE_VEC3},
+	{ "NORMALMAP", TYPE_VEC3},
 	{ "UV", TYPE_VEC2},
 	{ "UV2", TYPE_VEC2},
 	{ "COLOR", TYPE_VEC4},

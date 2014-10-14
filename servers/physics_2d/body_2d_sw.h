@@ -72,6 +72,7 @@ class Body2DSW : public CollisionObject2DSW {
 	bool omit_force_integration;
 	bool active;
 	bool can_sleep;
+	bool first_time_kinematic;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Matrix32 new_transform;

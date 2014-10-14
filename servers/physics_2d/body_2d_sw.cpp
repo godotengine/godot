@@ -176,6 +176,7 @@ float Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 
 void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 
+	Physics2DServer::BodyMode prev=mode;
 	mode=p_mode;
 
 	switch(p_mode) {
@@ -189,6 +190,9 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 			set_active(p_mode==Physics2DServer::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity=Vector2();
 			angular_velocity=0;
+			if (mode==Physics2DServer::BODY_MODE_KINEMATIC && prev!=mode) {
+				first_time_kinematic=true;
+			}
 		} break;
 		case Physics2DServer::BODY_MODE_RIGID: {
 
@@ -226,9 +230,15 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 
 
 			if (mode==Physics2DServer::BODY_MODE_KINEMATIC) {
-				new_transform=p_variant;
+
+				new_transform=p_variant;				
 				//wakeup_neighbours();
 				set_active(true);
+				if (first_time_kinematic) {
+					_set_transform(p_variant);
+					_set_inv_transform(get_transform().affine_inverse());
+					first_time_kinematic=false;
+				}
 			} else if (mode==Physics2DServer::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
@@ -591,6 +601,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	island_next=NULL;
 	island_list_next=NULL;
 	_set_static(false);
+	first_time_kinematic=false;
 	density=0;
 	contact_count=0;
 

@@ -43,6 +43,7 @@ import time
 import math  # math.pi
 import shutil
 import bpy
+import bmesh
 from mathutils import Vector, Matrix
 
 #according to collada spec, order matters
@@ -125,6 +126,12 @@ class DaeExporter:
 			tup = (self.vertex.x,self.vertex.y,self.vertex.z,self.normal.x,self.normal.y,self.normal.z)
 			for t in self.uv:
 				tup = tup + (t.x,t.y)
+			if (self.color!=None):
+				tup = tup + (self.color.x,self.color.y,self.color.z)
+			if (self.tangent!=None):
+				tup = tup + (self.tangent.x,self.tangent.y,self.tangent.z)
+			if (self.bitangent!=None):
+				tup = tup + (self.bitangent.x,self.bitangent.y,self.bitangent.z)
 			#for t in self.bones:
 			#	tup = tup + (t)
 			#for t in self.weights:
@@ -135,7 +142,9 @@ class DaeExporter:
 		def __init__(self):
 			self.vertex = Vector( (0.0,0.0,0.0) )
 			self.normal = Vector( (0.0,0.0,0.0) )
-			self.color = Vector( (0.0,0.0,0.0) )
+			self.tangent = None
+			self.bitangent = None
+			self.color = None
 			self.uv = []
 			self.uv2 = Vector( (0.0,0.0) )
 			self.bones=[]
@@ -442,10 +451,18 @@ class DaeExporter:
 			self.mesh_cache[node.data]=meshdata
 			return meshdata
 
-		if (len(node.modifiers) and self.config["use_mesh_modifiers"]):
-			mesh=node.to_mesh(self.scene,True,"RENDER") #is this allright?
-		else:
-			mesh=node.data
+		apply_modifiers = len(node.modifiers) and self.config["use_mesh_modifiers"]
+
+		mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
+
+		triangulate=self.config["use_triangles"]
+		if (triangulate):
+			bm = bmesh.new()
+			bm.from_mesh(mesh)
+			bmesh.ops.triangulate(bm, faces=bm.faces)
+			bm.to_mesh(mesh)
+			bm.free()
+
 
 		mesh.update(calc_tessface=True)
 		vertices=[]
@@ -462,19 +479,21 @@ class DaeExporter:
 		has_uv=False
 		has_uv2=False
 		has_weights=armature!=None
-		has_colors=False
+		has_tangents=self.config["use_tangent_arrays"] # could detect..
+		has_colors=len(mesh.vertex_colors)
 		mat_assign=[]
 
 		uv_layer_count=len(mesh.uv_textures)
+		mesh.calc_tangents()
 
-		for fi in range(len(mesh.tessfaces)):
-			f=mesh.tessfaces[fi]
+
+		for fi in range(len(mesh.polygons)):
+			f=mesh.polygons[fi]
 
 			if (not (f.material_index in surface_indices)):
 				surface_indices[f.material_index]=[]
 				print("Type: "+str(type(f.material_index)))
 				print("IDX: "+str(f.material_index)+"/"+str(len(mesh.materials)))
-
 
 				try:
 					#Bizarre blender behavior i don't understand, so catching exception
@@ -489,35 +508,42 @@ class DaeExporter:
 
 			indices = surface_indices[f.material_index]
 			vi=[]
-			#make triangles always
+			#vertices always 3
+			"""
 			if (len(f.vertices)==3):
 				vi.append(0)
 				vi.append(1)
 				vi.append(2)
 			elif (len(f.vertices)==4):
+				#todo, should use shortest path
 				vi.append(0)
 				vi.append(1)
 				vi.append(2)
 				vi.append(0)
 				vi.append(2)
 				vi.append(3)
+			"""
 
-			for x in vi:
-				mv = mesh.vertices[f.vertices[x]]
+			for lt in range(f.loop_total):
+				loop_index = f.loop_start + lt
+				ml = mesh.loops[loop_index]
+				mv = mesh.vertices[ml.vertex_index]
 
 				v = self.Vertex()
 				v.vertex = Vector( mv.co )
 
-				for xt in mesh.tessface_uv_textures:
-					d = xt.data[fi]
-					uvsrc = [d.uv1,d.uv2,d.uv3,d.uv4]
-					v.uv.append( Vector( uvsrc[x] ) )
+				for xt in mesh.uv_layers:
+					v.uv.append( Vector( xt.data[loop_index].uv ) )
 
+				if (has_colors):
+					v.color = Vector( mesh.vertex_colors[0].data[loop_index].color )
 
-				if (f.use_smooth):
-					v.normal=Vector( mv.normal )
-				else:
-					v.normal=Vector( f.normal )
+				v.normal = Vector( ml.normal )
+
+				if (has_tangents):
+					v.tangent = Vector( ml.tangent )
+					v.bitangent = Vector( ml.bitangent )
+
 
 			       # if (armature):
 			       #         v.vertex = node.matrix_world * v.vertex
@@ -531,6 +557,7 @@ class DaeExporter:
 							continue;
 						name = node.vertex_groups[vg.group].name
 						if (name in si["bone_index"]):
+							#could still put the weight as 0.0001 maybe
 							if (vg.weight>0.001): #blender has a lot of zero weight stuff
 								v.bones.append(si["bone_index"][name])
 								v.weights.append(vg.weight)
@@ -546,7 +573,11 @@ class DaeExporter:
 					vertices.append(v)
 					vertex_map[tup]=idx
 
-				indices.append(idx)
+				vi.append(idx)
+
+			if (len(vi)>2):
+				#only triangles and above
+				indices.append(vi)
 
 
 		meshid = self.new_id("mesh")
@@ -586,6 +617,37 @@ class DaeExporter:
 		self.writel(S_GEOM,4,'</technique_common>')
 		self.writel(S_GEOM,3,'</source>')
 
+		if (has_tangents):
+			self.writel(S_GEOM,3,'<source id="'+meshid+'-tangents">')
+			float_values=""
+			for v in vertices:
+				float_values+=" "+str(v.tangent.x)+" "+str(v.tangent.y)+" "+str(v.tangent.z)
+			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-tangents-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
+			self.writel(S_GEOM,4,'<technique_common>')
+			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-tangents-array" count="'+str(len(vertices))+'" stride="3">')
+			self.writel(S_GEOM,5,'<param name="X" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Z" type="float"/>')
+			self.writel(S_GEOM,4,'</accessor>')
+			self.writel(S_GEOM,4,'</technique_common>')
+			self.writel(S_GEOM,3,'</source>')
+
+			self.writel(S_GEOM,3,'<source id="'+meshid+'-bitangents">')
+			float_values=""
+			for v in vertices:
+				float_values+=" "+str(v.bitangent.x)+" "+str(v.bitangent.y)+" "+str(v.bitangent.z)
+			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-bitangents-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
+			self.writel(S_GEOM,4,'<technique_common>')
+			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-bitangents-array" count="'+str(len(vertices))+'" stride="3">')
+			self.writel(S_GEOM,5,'<param name="X" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Z" type="float"/>')
+			self.writel(S_GEOM,4,'</accessor>')
+			self.writel(S_GEOM,4,'</technique_common>')
+			self.writel(S_GEOM,3,'</source>')
+
+
+
 		# UV Arrays
 
 		for uvi in range(uv_layer_count):
@@ -608,36 +670,75 @@ class DaeExporter:
 			self.writel(S_GEOM,4,'</technique_common>')
 			self.writel(S_GEOM,3,'</source>')
 
+		# Color Arrays
+
+		if (has_colors):
+			self.writel(S_GEOM,3,'<source id="'+meshid+'-colors">')
+			float_values=""
+			for v in vertices:
+				float_values+=" "+str(v.color.x)+" "+str(v.color.y)+" "+str(v.color.z)
+			self.writel(S_GEOM,4,'<float_array id="'+meshid+'-colors-array" count="'+str(len(vertices)*3)+'">'+float_values+'</float_array>')
+			self.writel(S_GEOM,4,'<technique_common>')
+			self.writel(S_GEOM,4,'<accessor source="#'+meshid+'-colors-array" count="'+str(len(vertices))+'" stride="3">')
+			self.writel(S_GEOM,5,'<param name="X" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Y" type="float"/>')
+			self.writel(S_GEOM,5,'<param name="Z" type="float"/>')
+			self.writel(S_GEOM,4,'</accessor>')
+			self.writel(S_GEOM,4,'</technique_common>')
+			self.writel(S_GEOM,3,'</source>')
+
 		# Triangle Lists
 		self.writel(S_GEOM,3,'<vertices id="'+meshid+'-vertices">')
 		self.writel(S_GEOM,4,'<input semantic="POSITION" source="#'+meshid+'-positions"/>')
 		self.writel(S_GEOM,3,'</vertices>')
 
+		prim_type=""
+		if (triangulate):
+			prim_type="triangles"
+		else:
+			prim_type="polygons"
+
+
 		for m in surface_indices:
 			indices = surface_indices[m]
 			mat = materials[m]
+
 			if (mat!=None):
 				matref = self.new_id("trimat")
-				self.writel(S_GEOM,3,'<triangles count="'+str(int(len(indices)/3))+'" material="'+matref+'">') # todo material
+				self.writel(S_GEOM,3,'<'+prim_type+' count="'+str(int(len(indices)))+'" material="'+matref+'">') # todo material
 				mat_assign.append( (mat,matref) )
 			else:
-				self.writel(S_GEOM,3,'<triangles count="'+str(int(len(indices)/3))+'">') # todo material
-			self.writel(S_GEOM,4,'<input semantic="VERTEX" source="#'+meshid+'-vertices" offset="0"/>')
-			self.writel(S_GEOM,4,'<input semantic="NORMAL" source="#'+meshid+'-normals" offset="1"/>')
-			extra_indices=0
-			for uvi in range(uv_layer_count):
-				self.writel(S_GEOM,4,'<input semantic="TEXCOORD" source="#'+meshid+'-texcoord-'+str(uvi)+'" offset="'+str(2+uvi)+'" set="'+str(uvi)+'"/>')
-				extra_indices+=1
+				self.writel(S_GEOM,3,'<'+prim_type+' count="'+str(int(len(indices)))+'">') # todo material
 
-			int_values="<p>"
-			for i in range(len(indices)):
-				int_values+=" "+str(indices[i]) # vertex index
-				int_values+=" "+str(indices[i]) # normal index
-				for e in range(extra_indices):
-					int_values+=" "+str(indices[i]) # normal index
-			int_values+="</p>"
-			self.writel(S_GEOM,4,int_values)
-			self.writel(S_GEOM,3,'</triangles>')
+
+			self.writel(S_GEOM,4,'<input semantic="VERTEX" source="#'+meshid+'-vertices" offset="0"/>')
+			self.writel(S_GEOM,4,'<input semantic="NORMAL" source="#'+meshid+'-normals" offset="0"/>')
+
+			for uvi in range(uv_layer_count):
+				self.writel(S_GEOM,4,'<input semantic="TEXCOORD" source="#'+meshid+'-texcoord-'+str(uvi)+'" offset="0" set="'+str(uvi)+'"/>')
+
+			if (has_colors):
+				self.writel(S_GEOM,4,'<input semantic="COLOR" source="#'+meshid+'-colors" offset="0"/>')
+			if (has_tangents):
+				self.writel(S_GEOM,4,'<input semantic="TEXTANGENT" source="#'+meshid+'-tangents" offset="0"/>')
+				self.writel(S_GEOM,4,'<input semantic="TEXBINORMAL" source="#'+meshid+'-bitangents" offset="0"/>')
+
+			if (triangulate):
+				int_values="<p>"
+				for p in indices:
+					for i in p:
+						int_values+=" "+str(i)
+				int_values+=" </p>"
+				self.writel(S_GEOM,4,int_values)
+			else:
+				for p in indices:
+					int_values="<p>"
+					for i in p:
+						int_values+=" "+str(i)
+					int_values+=" </p>"
+					self.writel(S_GEOM,4,int_values)
+
+			self.writel(S_GEOM,3,'</'+prim_type+'>')
 
 
 		self.writel(S_GEOM,2,'</mesh>')
@@ -1355,6 +1456,8 @@ class DaeExporter:
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
 
 			for s in self.skeletons:
+				if (s.animation_data==None):
+					continue
 				if s in cached_actions:
 					s.animation_data.action = bpy.data.actions[cached_actions[s]]
 				else:

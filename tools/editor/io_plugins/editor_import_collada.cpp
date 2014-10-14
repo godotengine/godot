@@ -749,7 +749,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 						Vector3 tangent =Vector3(tangent_src->array[tangent_pos+0],tangent_src->array[tangent_pos+1],tangent_src->array[tangent_pos+2]);
 
 						vertex.tangent.normal=tangent;
-						vertex.tangent.d= vertex.normal.cross(tangent).dot(binormal) > 0 ? -1 : 1;
+						vertex.tangent.d= vertex.normal.cross(tangent).dot(binormal) > 0 ? 1 : -1;
 					}
 
 				}
@@ -784,6 +784,8 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 					vertex.vertex.z = -vertex.vertex.z;
 					SWAP( vertex.normal.z, vertex.normal.y );
 					vertex.normal.z = -vertex.normal.z;
+					SWAP( vertex.tangent.normal.z, vertex.tangent.normal.y );
+					vertex.tangent.normal.z = -vertex.tangent.normal.z;
 
 				}
 
