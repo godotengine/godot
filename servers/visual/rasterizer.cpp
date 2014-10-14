@@ -102,6 +102,8 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		} else {
 			scode+="NORMALMAP=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
 		}
+		scode+="NORMALMAP_DEPTH=fmp_normal;\n";
+
 		code+=scode;
 	}
 

@@ -678,6 +678,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[1]["TANGENT"]="tangent";
 	mode_replace_table[1]["BINORMAL"]="binormal";
 	mode_replace_table[1]["NORMALMAP"]="normalmap";
+	mode_replace_table[1]["NORMALMAP_DEPTH"]="normaldepth";
 	mode_replace_table[1]["VAR1"]="var1_interp";
 	mode_replace_table[1]["VAR2"]="var2_interp";
 	mode_replace_table[1]["UV"]="uv";
