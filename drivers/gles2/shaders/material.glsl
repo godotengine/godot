@@ -306,7 +306,7 @@ void main() {
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP)
-	tangent_interp=normalize(tangent_in);
+	tangent_interp=normalize((modelview * vec4(tangent_in,0.0)).xyz);
 	binormal_interp = normalize( cross(normal_interp,tangent_interp) * binormalf );
 #endif
 
