@@ -824,6 +824,8 @@ void main() {
 	vec3 normalmap = vec3(0.0);
 #endif
 
+	float normaldepth=1.0;
+
 
 
 #if defined(ENABLE_DISCARD)
@@ -839,7 +841,8 @@ FRAGMENT_SHADER_CODE
 
 #if defined(ENABLE_NORMALMAP)
 
-	normal = normalize( tangent_interp * normalmap.x + binormal_interp * normalmap.y + normal_interp * normalmap.z ) * side;
+	normal = normalize( mix(normal_interp,tangent_interp * normalmap.x + binormal_interp * normalmap.y + normal_interp * normalmap.z,normaldepth) ) * side;
+
 #endif
 
 #if defined(ENABLE_DISCARD)

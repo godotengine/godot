@@ -189,10 +189,10 @@ Error DirAccessWindows::change_dir(String p_dir) {
 			current_dir=real_current_dir_name; // TODO, utf8 parser
 			current_dir=current_dir.replace("\\","/");
 
-		} else {
+		} //else {
 
 			SetCurrentDirectoryW(prev_dir.c_str());
-		}
+		//}
 
 		return worked?OK:ERR_INVALID_PARAMETER;
 	} else {
@@ -210,10 +210,10 @@ Error DirAccessWindows::change_dir(String p_dir) {
 			current_dir=real_current_dir_name; // TODO, utf8 parser
 			current_dir=current_dir.replace("\\","/");
 
-		} else {
+		}// else {
 
 			SetCurrentDirectoryA(prev_dir.ascii().get_data());
-		}
+		//}
 
 		return worked?OK:ERR_INVALID_PARAMETER;
 
@@ -352,7 +352,7 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExW(p_dir.c_str(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
 
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
@@ -361,7 +361,7 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExA(p_dir.ascii().get_data(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
 
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
