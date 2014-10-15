@@ -484,7 +484,10 @@ class DaeExporter:
 		mat_assign=[]
 
 		uv_layer_count=len(mesh.uv_textures)
-		mesh.calc_tangents()
+		if (len(mesh.uv_textures)):
+			mesh.calc_tangents()
+		else:
+			mesh.calc_normals_split()
 
 
 		for fi in range(len(mesh.polygons)):
