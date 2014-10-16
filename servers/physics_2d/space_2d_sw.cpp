@@ -126,6 +126,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vec
 	if (r_result.collider_id!=0)
 		r_result.collider=ObjectDB::get_instance(r_result.collider_id);
 	r_result.normal=res_normal;
+	r_result.metadata=res_obj->get_shape_metadata(res_shape);
 	r_result.position=res_point;
 	r_result.rid=res_obj->get_self();
 	r_result.shape=res_shape;
@@ -171,6 +172,7 @@ int Physics2DDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Matri
 			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
 		r_results[cc].rid=col_obj->get_self();
 		r_results[cc].shape=shape_idx;
+		r_results[cc].metadata=col_obj->get_shape_metadata(shape_idx);
 
 		cc++;
 
@@ -350,6 +352,7 @@ static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,v
 	rd->best_object=rd->object;
 	rd->best_shape=rd->shape;
 
+
 }
 
 
@@ -399,6 +402,7 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Matrix32& p_shape
 	r_info->normal=rcd.best_normal;
 	r_info->point=rcd.best_contact;
 	r_info->rid=rcd.best_object->get_self();
+	r_info->metadata=rcd.best_object->get_shape_metadata(rcd.best_shape);
 	if (rcd.best_object->get_type()==CollisionObject2DSW::TYPE_BODY) {
 
 		const Body2DSW *body = static_cast<const Body2DSW*>(rcd.best_object);
