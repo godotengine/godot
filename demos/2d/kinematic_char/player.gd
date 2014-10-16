@@ -74,6 +74,9 @@ func _fixed_process(delta):
 	var floor_velocity=Vector2()
 
 	if (is_colliding()):
+		# you can check which tile was collision against with this
+		# print(get_collider_metadata())
+
 		#ran against something, is it the floor? get normal
 		var n = get_collision_normal()
 

@@ -1085,7 +1085,9 @@ SceneMainLoop::SceneMainLoop() {
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/enable_object_picking",true));
 
+#ifdef TOOLS_ENABLED
 	edited_scene_root=NULL;
+#endif
 
 	ADD_SIGNAL( MethodInfo("idle_frame"));
 	ADD_SIGNAL( MethodInfo("fixed_frame"));

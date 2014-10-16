@@ -179,6 +179,7 @@ void TileMap::_update_dirty_quadrants() {
 
 		vs->canvas_item_clear(q.canvas_item);
 		ps->body_clear_shapes(q.static_body);
+		int shape_idx=0;
 
 		for(int i=0;i<q.cells.size();i++) {
 
@@ -259,6 +260,8 @@ void TileMap::_update_dirty_quadrants() {
 
 
 					ps->body_add_shape(q.static_body,shape->get_rid(),xform);
+					ps->body_set_shape_metadata(q.static_body,shape_idx++,Vector2(E->key().x,E->key().y));
+
 				}
 			}
 		}

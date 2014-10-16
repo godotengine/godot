@@ -756,7 +756,8 @@ Camera::Camera() {
 	mode=PROJECTION_PERSPECTIVE;
 	set_perspective(60.0,0.1,100.0);
 	keep_aspect=KEEP_HEIGHT;
-	layers=0xFFFFFFFF;
+	layers=0xfffff;
+	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
 	//active=false;
 }
 

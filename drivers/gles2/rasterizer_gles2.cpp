@@ -4449,7 +4449,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define ENABLE_UV_INTERP\n");
 		if (fragment_flags.use_uv2_interp || vertex_flags.use_uv2_interp)
 			enablers.push_back("#define ENABLE_UV2_INTERP\n");
-		if (fragment_flags.use_tangent_interp || vertex_flags.use_tangent_interp)
+		if (fragment_flags.use_tangent_interp || vertex_flags.use_tangent_interp || fragment_flags.uses_normalmap)
 			enablers.push_back("#define ENABLE_TANGENT_INTERP\n");
 		if (fragment_flags.use_var1_interp || vertex_flags.use_var1_interp)
 			enablers.push_back("#define ENABLE_VAR1_INTERP\n");
@@ -4463,6 +4463,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 		if (fragment_flags.uses_discard) {
 			enablers.push_back("#define ENABLE_DISCARD\n");
+		}
+		if (fragment_flags.uses_normalmap) {
+			enablers.push_back("#define ENABLE_NORMALMAP\n");
 		}
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");

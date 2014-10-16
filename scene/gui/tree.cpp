@@ -1440,8 +1440,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 		if (p_button==BUTTON_LEFT) {
 			/* process selection */
 
-			if (p_doubleclick && (!c.editable || c.mode==TreeItem::CELL_MODE_CUSTOM || c.mode==TreeItem::CELL_MODE_ICON)) {
-
+			if (p_doubleclick && (!c.editable || c.mode==TreeItem::CELL_MODE_CUSTOM || c.mode==TreeItem::CELL_MODE_ICON || c.mode==TreeItem::CELL_MODE_CHECK)) {
 
 				emit_signal("item_activated");
 				return -1;

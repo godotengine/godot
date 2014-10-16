@@ -1986,9 +1986,9 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			bool current = 	view_menu->get_popup()->is_item_checked( idx );
 			current=!current;
 			if (current)
-				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_EDIT_LAYER) );
+				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
 			else
-				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index)) );
+				camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+index))|(1<<GIZMO_GRID_LAYER) );
 			view_menu->get_popup()->set_item_checked( idx, current );
 
 		} break;
@@ -2008,7 +2008,7 @@ void SpatialEditorViewport::_preview_exited_scene() {
 
 void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 
-	uint32_t layer=1<<(GIZMO_BASE_LAYER+p_idx);
+	uint32_t layer=1<<(GIZMO_BASE_LAYER+p_idx)|(1<<GIZMO_GRID_LAYER);
 
 	for(int i=0;i<3;i++) {
 		move_gizmo_instance[i]=VS::get_singleton()->instance_create();
@@ -2200,7 +2200,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	surface->set_area_as_parent_rect();
 	camera = memnew(Camera);
 	camera->set_disable_gizmo(true);
-	camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+p_index))|(1<<GIZMO_EDIT_LAYER) );
+	camera->set_visible_layers( ((1<<20)-1)|(1<<(GIZMO_BASE_LAYER+p_index))|(1<<GIZMO_EDIT_LAYER)|(1<<GIZMO_GRID_LAYER) );
 	//camera->set_environment(SpatialEditor::get_singleton()->get_viewport_environment());
 	viewport->add_child(camera);
 	camera->make_current();
@@ -2505,7 +2505,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 	}
 
 	if (d.has("default_srgb")) {
-		bool use = d["default_light"];
+		bool use = d["default_srgb"];
 
 		viewport_environment->set_enable_fx(Environment::FX_SRGB,use);
 		view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_USE_DEFAULT_SRGB), use );
@@ -2943,6 +2943,7 @@ void SpatialEditor::_init_indicators() {
 	light_instance=VisualServer::get_singleton()->instance_create2(light,get_scene()->get_root()->get_world()->get_scenario());
 
 
+
 	light_transform.rotate(Vector3(1,0,0),Math_PI/5.0);
 	VisualServer::get_singleton()->instance_set_transform(light_instance,light_transform);
 
@@ -3001,10 +3002,12 @@ void SpatialEditor::_init_indicators() {
 			VisualServer::get_singleton()->mesh_add_surface(grid[i],VisualServer::PRIMITIVE_LINES,d);
 			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat);
 			grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i],get_scene()->get_root()->get_world()->get_scenario());
+
 			grid_visible[i]=false;
 			grid_enable[i]=false;
 			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
 			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_CAST_SHADOW,false);
+			VS::get_singleton()->instance_set_layer_mask(grid_instance[i],1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
 
 
 		}
@@ -3023,6 +3026,8 @@ void SpatialEditor::_init_indicators() {
 //		VisualServer::get_singleton()->poly_add_primitive(origin,origin_points,Vector<Vector3>(),origin_colors,Vector<Vector3>());
 //		VisualServer::get_singleton()->poly_set_material(origin,indicator_mat,true);
 		origin_instance = VisualServer::get_singleton()->instance_create2(origin,get_scene()->get_root()->get_world()->get_scenario());
+		VS::get_singleton()->instance_set_layer_mask(origin_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
+
 		VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_CAST_SHADOW,false);
 
 
@@ -3058,6 +3063,8 @@ void SpatialEditor::_init_indicators() {
 		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cmat,true);
 
 		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_scene()->get_root()->get_world()->get_scenario());
+		VS::get_singleton()->instance_set_layer_mask(cursor_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
+
 		VisualServer::get_singleton()->instance_geometry_set_flag(cursor_instance,VS::INSTANCE_FLAG_CAST_SHADOW,false);
 
 
