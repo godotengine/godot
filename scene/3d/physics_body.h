@@ -269,6 +269,7 @@ class KinematicBody : public PhysicsBody {
 	int collider_shape;
 
 
+
 	Variant _get_collider() const;
 
 	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
