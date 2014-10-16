@@ -471,6 +471,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\core\profiler.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\core\profiler.h"
+				>
+			</File>
+			<File
 				RelativePath="..\core\ref_ptr.cpp"
 				>
 			</File>
