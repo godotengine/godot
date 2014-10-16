@@ -443,7 +443,9 @@ void Light::_update_visibility() {
 		if (!get_scene()->is_editor_hint()) {
 			editor_ok=false;
 		} else {
+#ifdef TOOLS_ENABLED
 			editor_ok = (get_scene()->get_edited_scene_root() && (this==get_scene()->get_edited_scene_root() || get_owner()==get_scene()->get_edited_scene_root()));
+#endif
 		}
 	}
 #else

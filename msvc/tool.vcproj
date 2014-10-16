@@ -881,6 +881,14 @@
 						>
 					</File>
 					<File
+						RelativePath="..\tools\editor\plugins\mesh_editor_plugin.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\tools\editor\plugins\mesh_editor_plugin.h"
+						>
+					</File>
+					<File
 						RelativePath="..\tools\editor\plugins\multimesh_editor_plugin.cpp"
 						>
 					</File>
