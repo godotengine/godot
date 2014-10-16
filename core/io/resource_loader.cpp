@@ -32,6 +32,8 @@
 #include "path_remap.h"
 #include "os/file_access.h"
 #include "os/os.h"
+#include "profiler.h"
+
 ResourceFormatLoader *ResourceLoader::loader[MAX_LOADERS];
 
 int ResourceLoader::loader_count=0;
@@ -147,7 +149,6 @@ void ResourceFormatLoader::get_dependencies(const String& p_path,List<String> *p
 
 ///////////////////////////////////
 
-
 RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_no_cache) {
 
 	String local_path = Globals::get_singleton()->localize_path(p_path);
@@ -167,6 +168,8 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 
 	if (OS::get_singleton()->is_stdout_verbose())
 		print_line("load resource: "+remapped_path);
+
+	PROFILER("load " + p_path)
 
 	String extension=remapped_path.extension();
 	bool found=false;

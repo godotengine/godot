@@ -32,6 +32,7 @@
 #include "scene/3d/spatial.h"
 #include "scene/gui/control.h"
 #include "scene/2d/node_2d.h"
+#include "profiler.h"
 
 bool PackedScene::can_instance() const {
 
@@ -40,6 +41,7 @@ bool PackedScene::can_instance() const {
 
 Node *PackedScene::instance(bool p_gen_edit_state) const {
 
+	PROFILER("instance " + get_path());
 	int nc = nodes.size();
 	ERR_FAIL_COND_V(nc==0,NULL);
 
