@@ -396,15 +396,15 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 							cmp=cmp->_base;
 						}
-
-						if(!extends_ok) {
-							extends_ok=ObjectTypeDB::is_type(obj_A->get_type_name(),path);
-						}
-
-						*dst=extends_ok;
-						ip+=4;
-						continue;
 					}
+
+					if(!extends_ok) {
+						extends_ok=ObjectTypeDB::is_type(obj_A->get_type_name(),path);
+					}
+
+					*dst=extends_ok;
+					ip+=4;
+					continue;
 				}
 
 				Object *obj_B = *b;
