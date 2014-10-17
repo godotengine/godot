@@ -458,7 +458,7 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 void SceneMainLoop::init() {
 
 	//_quit=false;
-	accept_quit=true;
+	//accept_quit=true;
 	initialized=true;
 	input_handled=false;
 
@@ -1050,6 +1050,7 @@ void SceneMainLoop::_bind_methods() {
 SceneMainLoop::SceneMainLoop() {
 
 	_quit=false;
+	accept_quit=true;
 	initialized=false;
 	tree_version=1;
 	fixed_process_time=1;
