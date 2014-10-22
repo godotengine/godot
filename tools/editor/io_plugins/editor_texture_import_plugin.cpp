@@ -759,6 +759,7 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 		EditorProgress ep("make_atlas",_TR("Build Atlas For: ")+p_path.get_file(),from->get_source_count()+3);
 
 		print_line("sources: "+itos(from->get_source_count()));
+		Vector< int > removes;
 		for(int i=0;i<from->get_source_count();i++) {
 
 			String path = EditorImportPlugin::expand_source_path(from->get_source_path(i));
@@ -770,13 +771,20 @@ Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<Resourc
 			Error err = ImageLoader::load_image(path,&src);
 			if (err) {
 				EditorNode::add_io_error(_TR("Couldn't load image: ")+path);
-				return err;
+				removes.push_back(i);
+				continue;
+				//return err;
 			}
 
 			if (src.detect_alpha())
 				alpha=true;
 
 			sources.push_back(src);
+		}
+		// remove invalid source path
+		for(int i=removes.size()-1;i>=0;i--) {
+
+			from->remove_source(removes[i]);
 		}
 		ep.step(_TR("Converting Images"),sources.size());
 

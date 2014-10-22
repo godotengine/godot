@@ -1522,16 +1522,34 @@ void EditorImportExport::load_config() {
 
 		}
 
-		if (cf->has_section_key("image_group_files","files")) {
+		if (cf->has_section("image_group_files")) {
 
-			Vector<String> sa=cf->get_value("image_group_files","files");
-			if (sa.size()%2==0) {
-				for(int i=0;i<sa.size();i+=2) {
-					image_group_files[sa[i]]=sa[i+1];
+			List<String> keys;
+			cf->get_section_keys("image_group_files", &keys);
+
+			DirAccess *da=DirAccess::create(DirAccess::ACCESS_RESOURCES);
+
+			for(List<String>::Element *E=keys.front();E;E=E->next()) {
+
+				String& name = E->get();
+				if(!image_groups.has(name))
+					continue;
+				Vector<String> files = cf->get_value("image_group_files",name);
+
+				for(int i=0;i<files.size();i++) {
+
+					String& path=files[i];
+
+					// ignore erased files
+					if(!da->file_exists(path))
+						continue;
+
+					image_group_files[files[i]]=name;
 				}
 			}
-		}
 
+			memdelete(da);
+		}
 	}
 
 
@@ -1645,15 +1663,16 @@ void EditorImportExport::save_config() {
 
 	if (image_groups.size() && image_group_files.size()){
 
-		Vector<String> igfsave;
-		igfsave.resize(image_group_files.size()*2);
-		int idx=0;
+		Map<StringName,Vector<String> > groups;
 		for (Map<StringName,StringName>::Element *E=image_group_files.front();E;E=E->next()) {
 
-			igfsave[idx++]=E->key();
-			igfsave[idx++]=E->get();
+			groups[E->get()].push_back(E->key());
 		}
-		cf->set_value("image_group_files","files",igfsave);
+
+		for (Map<StringName,Vector<String> >::Element *E=groups.front();E;E=E->next()) {
+
+			cf->set_value("image_group_files",E->key(),E->get());
+		}
 	}
 
 	switch(script_action) {
