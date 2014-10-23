@@ -33,6 +33,7 @@
 #include "servers/visual_server.h"
 #include "command_queue_mt.h"
 #include "os/thread.h"
+#include "method_bind_ext.inc"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -616,6 +617,15 @@ public:
 		}\
 	}
 
+#define FUNC8(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7, m_arg8)\
+	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7, m_arg8 p8) { \
+		if (Thread::get_caller_ID()!=server_thread) {\
+			command_queue.push( visual_server, &VisualServer::m_type,p1, p2, p3, p4, p5, p6, p7, p8);\
+		} else {\
+			visual_server->m_type(p1, p2, p3, p4, p5, p6, p7, p8);\
+		}\
+	}
+
 #define FUNC7C(m_type,m_arg1, m_arg2, m_arg3, m_arg4, m_arg5, m_arg6, m_arg7)\
 	virtual void m_type(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5, m_arg6 p6, m_arg7 p7) const { \
 		if (Thread::get_caller_ID()!=server_thread) {\
@@ -1098,7 +1108,7 @@ public:
 	FUNC5(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color& );
 	FUNC5(canvas_item_add_texture_rect_region,RID, const Rect2& , RID ,const Rect2& ,const Color& );
 
-	FUNC7(canvas_item_add_style_box,RID, const Rect2& , RID ,const Vector2& ,const Vector2&, bool ,const Color& );
+	FUNC8(canvas_item_add_style_box,RID, const Rect2& , RID ,const Rect2&,const Vector2& ,const Vector2&, bool ,const Color& );
 	FUNC6(canvas_item_add_primitive,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID ,float );
 	FUNC5(canvas_item_add_polygon,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID );
 	FUNC7(canvas_item_add_triangle_array,RID, const Vector<int>& , const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID , int );
