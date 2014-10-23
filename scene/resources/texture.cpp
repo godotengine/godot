@@ -61,6 +61,11 @@ bool Texture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2
 	return true;
 }
 
+Rect2 Texture::get_region() const {
+
+	return Rect2(Point2(0,0),get_size());
+}
+
 void Texture::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_width"),&Texture::get_width);

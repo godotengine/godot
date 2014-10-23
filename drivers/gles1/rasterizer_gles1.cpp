@@ -4895,7 +4895,7 @@ void RasterizerGLES1::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 
 
 }
-void RasterizerGLES1::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,const float *p_margin, bool p_draw_center,const Color& p_modulate) {
+void RasterizerGLES1::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,const Rect2& p_region,const float *p_margin, bool p_draw_center,const Color& p_modulate) {
 
 	_set_glcoloro( p_modulate,canvas_opacity );
 
@@ -4912,60 +4912,61 @@ void RasterizerGLES1::canvas_draw_style_box(const Rect2& p_rect, RID p_texture,c
 
 	_draw_textured_quad( // top left
 		Rect2( p_rect.pos, Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
-		Rect2( Point2(), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
+		Rect2( Point2()+p_region.pos, Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // top right
 		Rect2( Point2( p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
-		Rect2( Point2(texture->width-p_margin[MARGIN_RIGHT],0), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
+		Rect2( Point2(p_region.size.width-p_margin[MARGIN_RIGHT],0)+p_region.pos, Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 
 	_draw_textured_quad( // bottom left
 		Rect2( Point2(p_rect.pos.x,p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
-		Rect2( Point2(0,texture->height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
+		Rect2( Point2(0,p_region.size.height-p_margin[MARGIN_BOTTOM])+p_region.pos, Size2(p_margin[MARGIN_LEFT],p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // bottom right
 		Rect2( Point2( p_rect.pos.x + p_rect.size.width - p_margin[MARGIN_RIGHT], p_rect.pos.y + p_rect.size.height - p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
-		Rect2( Point2(texture->width-p_margin[MARGIN_RIGHT],texture->height-p_margin[MARGIN_BOTTOM]), Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
+		Rect2( Point2(p_region.size.width-p_margin[MARGIN_RIGHT],p_region.size.height-p_margin[MARGIN_BOTTOM])+p_region.pos, Size2(p_margin[MARGIN_RIGHT],p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	Rect2 rect_center( p_rect.pos+Point2( p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2( p_rect.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], p_rect.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
 
-	Rect2 src_center( Point2( p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2( texture->width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], texture->height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
+	Rect2 src_center( Point2( p_margin[MARGIN_LEFT], p_margin[MARGIN_TOP]), Size2( p_region.size.width - p_margin[MARGIN_LEFT] - p_margin[MARGIN_RIGHT], p_region.size.height - p_margin[MARGIN_TOP] - p_margin[MARGIN_BOTTOM] ));
 
 
 	_draw_textured_quad( // top
 		Rect2( Point2(rect_center.pos.x,p_rect.pos.y),Size2(rect_center.size.width,p_margin[MARGIN_TOP])),
-		Rect2( Point2(p_margin[MARGIN_LEFT],0), Size2(src_center.size.width,p_margin[MARGIN_TOP])),
+		Rect2( Point2(p_margin[MARGIN_LEFT],0)+p_region.pos, Size2(src_center.size.width,p_margin[MARGIN_TOP])),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // bottom
 		Rect2( Point2(rect_center.pos.x,rect_center.pos.y+rect_center.size.height),Size2(rect_center.size.width,p_margin[MARGIN_BOTTOM])),
-		Rect2( Point2(p_margin[MARGIN_LEFT],src_center.pos.y+src_center.size.height), Size2(src_center.size.width,p_margin[MARGIN_BOTTOM])),
+		Rect2( Point2(p_margin[MARGIN_LEFT],src_center.pos.y+src_center.size.height)+p_region.pos, Size2(src_center.size.width,p_margin[MARGIN_BOTTOM])),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // left
 		Rect2( Point2(p_rect.pos.x,rect_center.pos.y),Size2(p_margin[MARGIN_LEFT],rect_center.size.height)),
-		Rect2( Point2(0,p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_LEFT],src_center.size.height)),
+		Rect2( Point2(0,p_margin[MARGIN_TOP])+p_region.pos, Size2(p_margin[MARGIN_LEFT],src_center.size.height)),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	_draw_textured_quad( // right
 		Rect2( Point2(rect_center.pos.x+rect_center.size.width,rect_center.pos.y),Size2(p_margin[MARGIN_RIGHT],rect_center.size.height)),
-		Rect2( Point2(src_center.pos.x+src_center.size.width,p_margin[MARGIN_TOP]), Size2(p_margin[MARGIN_RIGHT],src_center.size.height)),
+		Rect2( Point2(src_center.pos.x+src_center.size.width,p_margin[MARGIN_TOP])+p_region.pos, Size2(p_margin[MARGIN_RIGHT],src_center.size.height)),
 		Size2( texture->width, texture->height ) );
     _rinfo.draw_commands ++;
 
 	if (p_draw_center) {
 
+		src_center.pos += p_region.pos;
 		_draw_textured_quad(
 			rect_center,
 			src_center,
