@@ -786,19 +786,24 @@ void ProjectExportDialog::_image_group_selected() {
 	group_image_preview->set_texture(tex);
 	if(tex.is_valid()) {
 
+		group_image_info->set_text("Size: " + String::num(tex->get_width()) + "x" + String::num(tex->get_height()));
+
+		Size2 preview_size = group_images->get_size();
+		preview_size.width -= group_image_preview->get_size().width;
+		preview_size.height = 200;
+
 		float ratio = 1;
-		if(tex->get_width() > 300)
-			ratio = 300.0 / tex->get_width();
-		else if(tex->get_width() > 600)
-			ratio = 600.0 / tex->get_width();
+		if(tex->get_width() > preview_size.width)
+			ratio = preview_size.width / tex->get_width();
+		if(tex->get_height() > preview_size.height)
+			ratio = preview_size.height / tex->get_height();
 
 		group_image_preview->set_custom_minimum_size(tex->get_size() * ratio);
-		group_image_info->set_text("Size: " + String::num(tex->get_width()) + "x" + String::num(tex->get_height()));
 	}
 	else {
 
-		group_image_preview->set_custom_minimum_size(Size2(0, 0));
 		group_image_info->set_text("");
+		group_image_preview->set_custom_minimum_size(Size2(0, 0));
 	}
 }
 
