@@ -124,6 +124,9 @@ private:
 	OptionButton *group_image_action;
 	Button *group_add;
 	Tree *group_images;
+	TextureFrame *group_image_preview;
+	Label *group_image_info;
+
 	LineEdit *group_images_filter;
 	Button *atlas_preview;
 
@@ -149,6 +152,7 @@ private:
 	void _update_group_tree();
 
 	void _image_filter_changed(String);
+	void _image_group_selected();
 	bool _update_group_treef(TreeItem *p_parent,EditorFileSystemDirectory *p_dir,const Set<String>& p_extensions,const String& p_groups,const Map<StringName,int>& p_group_index);
 	void _group_item_edited();
 	void _group_atlas_preview();

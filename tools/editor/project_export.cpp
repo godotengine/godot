@@ -1,4 +1,4 @@
-/*************************************************************************/
+﻿/*************************************************************************/
 /*  project_export.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -40,6 +40,7 @@
 
 #include "scene/gui/tab_container.h"
 #include "scene/gui/scroll_container.h"
+#include "scene/gui/margin_container.h"
 #include "editor_data.h"
 #include "io/image_loader.h"
 #include "compressed_translation.h"
@@ -768,6 +769,40 @@ void ProjectExportDialog::_group_item_edited() {
 
 }
 
+void ProjectExportDialog::_image_group_selected() {
+
+	TreeItem *item=group_images->get_selected();
+	ERR_FAIL_COND(!item);
+
+	if (_get_selected_group()==String())
+		return;
+
+	StringName path = item->get_metadata(0);
+	Ref<Texture> tex = ResourceLoader::load(path,"Texture");
+	group_image_preview->set_texture(tex);
+	if(tex.is_valid()) {
+
+		group_image_info->set_text("Size: " + String::num(tex->get_width()) + "x" + String::num(tex->get_height()));
+
+		Size2 preview_size = group_images->get_size();
+		preview_size.width -= group_image_preview->get_size().width;
+		preview_size.height = 200;
+
+		float ratio = 1;
+		if(tex->get_width() > preview_size.width)
+			ratio = preview_size.width / tex->get_width();
+		if(tex->get_height() > preview_size.height)
+			ratio = preview_size.height / tex->get_height();
+
+		group_image_preview->set_custom_minimum_size(tex->get_size() * ratio);
+	}
+	else {
+
+		group_image_info->set_text("");
+		group_image_preview->set_custom_minimum_size(Size2(0, 0));
+	}
+}
+
 void ProjectExportDialog::_group_add() {
 
 	String name = group_new_name->get_text();
@@ -1031,6 +1066,7 @@ void ProjectExportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_group_item_edited"),&ProjectExportDialog::_group_item_edited);
 	ObjectTypeDB::bind_method(_MD("_save_export_cfg"),&ProjectExportDialog::_save_export_cfg);
 	ObjectTypeDB::bind_method(_MD("_image_filter_changed"),&ProjectExportDialog::_image_filter_changed);
+	ObjectTypeDB::bind_method(_MD("_image_group_selected"),&ProjectExportDialog::_image_group_selected);
 	ObjectTypeDB::bind_method(_MD("_group_atlas_preview"),&ProjectExportDialog::_group_atlas_preview);
 	ObjectTypeDB::bind_method(_MD("_group_select_all"),&ProjectExportDialog::_group_select_all);
 	ObjectTypeDB::bind_method(_MD("_group_select_none"),&ProjectExportDialog::_group_select_none);
@@ -1254,6 +1290,16 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_images = memnew( Tree );
 	group_images->set_v_size_flags(SIZE_EXPAND_FILL);
 	group_vb_right->add_margin_child("Images:",group_images,true);
+	group_image_preview = memnew (TextureFrame);
+	group_image_info = memnew (Label);
+	group_image_info->set_text("size");
+	group_image_preview->set_expand(true);
+
+	HBoxContainer *preview_hb = memnew (HBoxContainer);
+	preview_hb->add_child(group_image_preview);
+	preview_hb->add_child(group_image_info);
+	MarginContainer *mc = group_vb_right->add_margin_child("Preview:",preview_hb,true);
+	mc->set_stretch_ratio(0);
 
 	Button *filt_select_all = memnew( Button );
 	filt_select_all->set_text("Select All");
@@ -1283,6 +1329,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_images->set_column_title(0,"Image");
 	group_images->set_column_title(1,"Group");
 	group_images->connect("item_edited",this,"_group_item_edited",varray(),CONNECT_DEFERRED);
+	group_images->connect("cell_selected",this,"_image_group_selected",varray(),CONNECT_DEFERRED);
 
 /*	SpinBox *group_shrink;
 	CheckButton *group_atlas;
