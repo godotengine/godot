@@ -246,14 +246,28 @@ bool FindReplaceDialog::_search() {
 	if (is_backwards())
 		flags|=TextEdit::SEARCH_BACKWARDS;
 
-	int line,col;
-	bool found = text_edit->search(text,flags,text_edit->cursor_get_line(),text_edit->cursor_get_column(),line,col);
+	int line=text_edit->cursor_get_line(),col=text_edit->cursor_get_column();
+
+	if (is_backwards()) {
+		col-=1;
+		if (col<0) {
+			line-=1;
+			if (line<0) {
+				line=text_edit->get_line_count()-1;
+			}
+			col=text_edit->get_line(line).length();
+		}
+	}
+	bool found = text_edit->search(text,flags,line,col,line,col);
 
 
 	if (found) {
 		// print_line("found");
 		text_edit->cursor_set_line(line);
-		text_edit->cursor_set_column(col+text.length());
+		if (is_backwards())
+			text_edit->cursor_set_column(col);
+		else
+			text_edit->cursor_set_column(col+text.length());
 		text_edit->select(line,col,line,col+text.length());
 		set_error("");
 		return true;

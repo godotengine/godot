@@ -125,7 +125,7 @@ int64_t CPPlayer::get_channel_last_note_time_usec(int p_channel) const {
 void CPPlayer::set_channel_global_volume(int p_channel,int p_volume) {
 
 	CP_FAIL_INDEX(p_channel,64);
-	control.channel[p_channel].channel_global_volume=p_volume;
+	control.channel[p_channel].channel_global_volume=CLAMP(p_volume,0,255);
 
 }
 

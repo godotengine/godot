@@ -352,7 +352,7 @@ void Particles2D::_process_particles(float p_delta) {
 				p.velocity*=param[PARAM_LINEAR_VELOCITY]+param[PARAM_LINEAR_VELOCITY]*_rand_from_seed(&rand_seed)*randomness[PARAM_LINEAR_VELOCITY];
 				p.velocity+=initial_velocity;
 				p.active=true;
-				p.rot=0;
+				p.rot=Math::deg2rad(param[PARAM_INITIAL_ANGLE]+param[PARAM_INITIAL_ANGLE]*randomness[PARAM_INITIAL_ANGLE]*_rand_from_seed(&rand_seed));
 				active_count++;
 
 
@@ -484,7 +484,7 @@ void Particles2D::_notification(int p_what) {
 
 			Particle *pdata=&particles[0];
 			int particle_count=particles.size();
-			Rect2 r(Point2(),size);
+
 			RID texrid;
 
 			if (texture.is_valid())
@@ -507,7 +507,13 @@ void Particles2D::_notification(int p_what) {
 			}
 
 
-			for(int i=0;i<particle_count;i++) {
+			int start_particle = (int)(time * (float)particle_count / lifetime);
+			
+			for (int id=0;id<particle_count;++id) {
+				int i = start_particle + id;
+				if (i >= particle_count) {
+					i -= particle_count;
+				}
 
 				Particle &p=pdata[i];
 				if (!p.active)
@@ -606,9 +612,10 @@ void Particles2D::_notification(int p_what) {
 
 				if (texrid.is_valid()) {
 
-					VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
+					texture->draw(ci,Point2(),color);
+					//VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
 				} else {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,r,color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2(),size),color);
 
 				}
 
@@ -632,6 +639,7 @@ static const char* _particlesframe_property_names[Particles2D::PARAM_MAX]={
 	"params/radial_accel",
 	"params/tangential_accel",
 	"params/damping",
+	"params/initial_angle",
 	"params/initial_size",
 	"params/final_size",
 	"params/hue_variation"
@@ -647,7 +655,8 @@ static const char* _particlesframe_property_rnames[Particles2D::PARAM_MAX]={
 	"randomness/gravity_strength",
 	"randomness/radial_accel",
 	"randomness/tangential_accel",
-	"randomness/damping",
+	"randomness/damping",	
+	"randomness/initial_angle",
 	"randomness/initial_size",
 	"randomness/final_size",
 	"randomness/hue_variation"
@@ -664,6 +673,7 @@ static const char* _particlesframe_property_ranges[Particles2D::PARAM_MAX]={
 	"-128,128,0.01",
 	"-128,128,0.01",
 	"0,1024,0.001",
+	"0,360,0.01",
 	"0,1024,0.01",
 	"0,1024,0.01",
 	"0,1,0.01"
@@ -1041,6 +1051,7 @@ Particles2D::Particles2D() {
 	set_param(PARAM_GRAVITY_STRENGTH,9.8);
 	set_param(PARAM_RADIAL_ACCEL,0);
 	set_param(PARAM_TANGENTIAL_ACCEL,0);
+	set_param(PARAM_INITIAL_ANGLE,0.0);
 	set_param(PARAM_INITIAL_SIZE,1.0);
 	set_param(PARAM_FINAL_SIZE,1.0);
 

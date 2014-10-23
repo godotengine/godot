@@ -43,7 +43,8 @@ class ParticlesEditor : public Control {
 	OBJ_TYPE(ParticlesEditor, Control );
 
 	Panel *panel;
-	MenuButton * options;
+	MenuButton *options;
+	HBoxContainer *particles_editor_hb;
 	Particles *node;
 
 
@@ -77,6 +78,8 @@ class ParticlesEditor : public Control {
 	void _menu_option(int);
 
 	void _populate();
+
+friend class ParticlesEditorPlugin;
 
 protected:
 

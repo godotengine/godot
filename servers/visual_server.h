@@ -87,6 +87,7 @@ public:
 		MAX_PARTICLE_COLOR_PHASES=4,
 		MAX_PARTICLE_ATTRACTORS=4,
 
+
 		MAX_CURSORS = 8,
 	};
 	
@@ -96,8 +97,10 @@ public:
 		TEXTURE_FLAG_MIPMAPS=1, /// Enable automatic mipmap generation - when available
 		TEXTURE_FLAG_REPEAT=2, /// Repeat texture (Tiling), otherwise Clamping
 		TEXTURE_FLAG_FILTER=4, /// Create texure with linear (or available) filter
-		TEXTURE_FLAG_CUBEMAP=8,
-		TEXTURE_FLAG_VIDEO_SURFACE=16,
+		TEXTURE_FLAG_ANISOTROPIC_FILTER=8,
+		TEXTURE_FLAG_CONVERT_TO_LINEAR=16,
+		TEXTURE_FLAG_CUBEMAP=2048,
+		TEXTURE_FLAG_VIDEO_SURFACE=4096,
 		TEXTURE_FLAGS_DEFAULT=TEXTURE_FLAG_REPEAT|TEXTURE_FLAG_MIPMAPS|TEXTURE_FLAG_FILTER
 	};	
 	
@@ -166,6 +169,7 @@ public:
 		MATERIAL_FLAG_UNSHADED,
 		MATERIAL_FLAG_ONTOP,
 		MATERIAL_FLAG_LIGHTMAP_ON_UV2,
+		MATERIAL_FLAG_COLOR_ARRAY_SRGB,
 		MATERIAL_FLAG_MAX,
 	};
 
@@ -229,6 +233,7 @@ public:
 		FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,
 		FIXED_MATERIAL_FLAG_USE_POINT_SIZE,
 		FIXED_MATERIAL_FLAG_DISCARD_ALPHA,
+		FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP,
 		FIXED_MATERIAL_FLAG_MAX,
 	};
 
@@ -795,6 +800,7 @@ public:
 		SCENARIO_DEBUG_DISABLED,
 		SCENARIO_DEBUG_WIREFRAME,
 		SCENARIO_DEBUG_OVERDRAW,
+		SCENARIO_DEBUG_SHADELESS,
 
 	};
 
@@ -802,7 +808,7 @@ public:
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode)=0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment)=0;
 	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const=0;
-
+	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment)=0;
 
 
 	/* INSTANCING API */
@@ -943,6 +949,7 @@ public:
 	virtual void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform)=0;
 	virtual void canvas_item_add_set_blend_mode(RID p_item, MaterialBlendMode p_blend)=0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore)=0;
+	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
 
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;

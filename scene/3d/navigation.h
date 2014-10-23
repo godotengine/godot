@@ -41,6 +41,8 @@ class Navigation : public Spatial {
 	};
 
 
+	struct NavMesh;
+
 
 	struct Polygon {
 
@@ -57,6 +59,8 @@ class Navigation : public Spatial {
 
 		float distance;
 		int prev_edge;
+
+		NavMesh *owner;
 	};
 
 
@@ -74,6 +78,7 @@ class Navigation : public Spatial {
 
 	struct NavMesh {
 
+		Object *owner;
 		Transform xform;
 		bool linked;
 		Ref<NavigationMesh> navmesh;
@@ -124,7 +129,7 @@ public:
 	Vector3 get_up_vector() const;
 
 	//API should be as dynamic as possible
-	int navmesh_create(const Ref<NavigationMesh>& p_mesh,const Transform& p_xform);
+	int navmesh_create(const Ref<NavigationMesh>& p_mesh,const Transform& p_xform,Object* p_owner=NULL);
 	void navmesh_set_transform(int p_id, const Transform& p_xform);
 	void navmesh_remove(int p_id);
 

@@ -320,6 +320,7 @@ class VisualServerRaster : public VisualServer {
 			
 		List<RID> directional_lights;
 		RID environment;
+		RID fallback_environment;
 		
 		Instance *dirty_instances;
 
@@ -328,7 +329,7 @@ class VisualServerRaster : public VisualServer {
 
 
 
-	
+
 
 	struct CanvasItem {
 		
@@ -446,13 +447,14 @@ class VisualServerRaster : public VisualServer {
 		bool clip;
 		bool visible;
 		bool ontop;
+		bool sort_y;
 		float opacity;
 		float self_opacity;
 		MaterialBlendMode blend_mode;
 		RID viewport;
 
 		mutable bool custom_rect;
-		mutable bool rect_dirty;
+		mutable bool rect_dirty;		
 		mutable Rect2 rect;
 		
 		Vector<Command*> commands;
@@ -460,11 +462,18 @@ class VisualServerRaster : public VisualServer {
 
 		const Rect2& get_rect() const;
 		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true;};
-		CanvasItem() { clip=false; E=NULL; opacity=1; self_opacity=1; blend_mode=MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; }
+		CanvasItem() { clip=false; E=NULL; opacity=1; self_opacity=1; blend_mode=MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; sort_y=false;}
 		~CanvasItem() { clear(); }
 	};
 
 
+	struct CanvasItemPtrSort {
+
+		_FORCE_INLINE_ bool operator()(const CanvasItem* p_left,const CanvasItem* p_right) const {
+
+			return p_left->xform.elements[2].y < p_right->xform.elements[2].y;
+		}
+	};
 
 	struct Canvas {
 
@@ -610,7 +619,7 @@ class VisualServerRaster : public VisualServer {
 	void _portal_disconnect(Instance *p_portal,bool p_cleanup=false);
 	void _portal_attempt_connect(Instance *p_portal);
 	void _dependency_queue_update(RID p_rid,bool p_update_aabb=false);
-	void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false);	
+	_FORCE_INLINE_ void _instance_queue_update(Instance *p_instance,bool p_update_aabb=false);
 	void _update_instances();
 	void _update_instance_aabb(Instance *p_instance);
 	void _update_instance(Instance *p_instance);
@@ -640,7 +649,8 @@ class VisualServerRaster : public VisualServer {
 	mutable RID_Owner<CanvasItem> canvas_item_owner;
 
 	Map< RID, Set<RID> > instance_dependency_map;
-	
+	Map< RID, Set<Instance*> > skeleton_dependency_map;
+
 	
 	ViewportRect viewport_rect;
 	_FORCE_INLINE_ void _instance_draw(Instance *p_instance);
@@ -1029,6 +1039,8 @@ public:
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const;
+	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
+
 
 		
 	/* INSTANCING API */
@@ -1134,6 +1146,7 @@ public:
 	virtual void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform);
 	virtual void canvas_item_add_set_blend_mode(RID p_item, MaterialBlendMode p_blend);
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
+	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 
 	virtual void canvas_item_clear(RID p_item);
 	virtual void canvas_item_raise(RID p_item);

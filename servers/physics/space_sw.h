@@ -46,8 +46,11 @@ public:
 
 	SpaceSW *space;
 
-	bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0);
-	int intersect_shape(const RID& p_shape, const Transform& p_xform,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_user_mask=0);
+	virtual bool intersect_ray(const Vector3& p_from, const Vector3& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual int intersect_shape(const RID& p_shape, const Transform& p_xform,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual bool cast_motion(const RID& p_shape, const Transform& p_xform,const Vector3& p_motion,float p_margin,float &p_closest_safe,float &p_closest_unsafe, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION,ShapeRestInfo *r_info=NULL);
+	virtual bool collide_shape(RID p_shape, const Transform& p_shape_xform,float p_margin,Vector3 *r_results,int p_result_max,int &r_result_count, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
+	virtual bool rest_info(RID p_shape, const Transform& p_shape_xform,float p_margin,ShapeRestInfo *r_info, const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 
 	PhysicsDirectSpaceStateSW();
 };
@@ -93,6 +96,12 @@ class SpaceSW {
 	float body_angular_velocity_damp_ratio;
 
 	bool locked;
+
+	int island_count;
+	int active_objects;
+	int collision_pairs;
+
+	RID static_global_body;
 
 friend class PhysicsDirectSpaceStateSW;
 
@@ -147,7 +156,20 @@ public:
 	void set_param(PhysicsServer::SpaceParameter p_param, real_t p_value);
 	real_t get_param(PhysicsServer::SpaceParameter p_param) const;
 
+	void set_island_count(int p_island_count) { island_count=p_island_count; }
+	int get_island_count() const { return island_count; }
+
+	void set_active_objects(int p_active_objects) { active_objects=p_active_objects; }
+	int get_active_objects() const { return active_objects; }
+
+	int get_collision_pairs() const { return collision_pairs; }
+
 	PhysicsDirectSpaceStateSW *get_direct_state();
+
+
+	void set_static_global_body(RID p_body) { static_global_body=p_body; }
+	RID get_static_global_body() { return static_global_body; }
+
 
 	SpaceSW();
 	~SpaceSW();

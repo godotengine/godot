@@ -278,7 +278,8 @@ void Tabs::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tab_title","tab_idx"),&Tabs::get_tab_title);
 	ObjectTypeDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&Tabs::set_tab_icon);
 	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&Tabs::get_tab_icon);
-	ObjectTypeDB::bind_method(_MD("remove_tab","tab_idx","icon:Texture"),&Tabs::remove_tab);
+	ObjectTypeDB::bind_method(_MD("remove_tab","tab_idx"),&Tabs::remove_tab);
+	ObjectTypeDB::bind_method(_MD("add_tab","title","icon:Texture"),&Tabs::add_tab);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 

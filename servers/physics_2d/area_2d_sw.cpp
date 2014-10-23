@@ -43,6 +43,7 @@ void Area2DSW::set_transform(const Matrix32& p_transform) {
 		get_space()->area_add_to_moved_list(&moved_list);
 
 	_set_transform(p_transform);
+	_set_inv_transform(p_transform.affine_inverse());
 }
 
 void Area2DSW::set_space(Space2DSW *p_space) {
@@ -179,6 +180,7 @@ Area2DSW::Area2DSW() : CollisionObject2DSW(TYPE_AREA), monitor_query_list(this),
 	gravity_vector=Vector2(0,-1);
 	gravity_is_point=false;
 	point_attenuation=1;
+
 	density=0.1;
 	priority=0;
 	monitor_callback_id=0;

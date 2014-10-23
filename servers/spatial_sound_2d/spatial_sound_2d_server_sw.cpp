@@ -904,7 +904,7 @@ void SpatialSound2DServerSW::update(float p_delta) {
 
 			if (distance_max>0) {
 				distance = CLAMP(distance,distance_min,distance_max);
-				attenuation = Math::pow(1.0 - ((distance - distance_min)/distance_max),CLAMP(attenuation_exp,0.001,16));
+				attenuation = Math::pow(1.0 - ((distance - distance_min)/(distance_max-distance_min)),CLAMP(attenuation_exp,0.001,16));
 			}
 
 			float hf_attenuation_cutoff = room->params[ROOM_PARAM_ATTENUATION_HF_CUTOFF];

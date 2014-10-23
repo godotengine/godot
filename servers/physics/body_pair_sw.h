@@ -61,6 +61,7 @@ class BodyPairSW : public ConstraintSW {
 		real_t acc_bias_impulse;	// accumulated normal impulse for position bias (Pnb)
 		real_t mass_normal;
 		real_t bias;
+		real_t bounce;
 
 		real_t depth;
 		bool active;

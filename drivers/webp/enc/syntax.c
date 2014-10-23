@@ -11,7 +11,7 @@
 
 #include <assert.h>
 
-#include "../webp/format_constants.h"
+#include "../format_constants.h"
 #include "./vp8enci.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)

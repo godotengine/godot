@@ -52,9 +52,6 @@ void ColorPicker::_notification(int p_what) {
 
 void ColorPicker::_update_controls() {
 
-
-	int cw = get_constant("color_width");
-
 	if (edit_alpha) {
 		values[3]->show();
 		scroll[3]->show();
@@ -64,8 +61,6 @@ void ColorPicker::_update_controls() {
 		scroll[3]->hide();
 		labels[3]->hide();
 	}
-
-
 
 }
 
@@ -106,8 +101,8 @@ void ColorPicker::_value_changed(double) {
 		} break;
 		case MODE_HSV: {
 
-			color.set_hsv( CLAMP(scroll[0]->get_val()/255,0,0.99), scroll[1]->get_val()/255, scroll[2]->get_val()/255 );
-			color.a=scroll[3]->get_val()/255.0;
+			color.set_hsv( CLAMP(scroll[0]->get_val()/359,0,0.9972), scroll[1]->get_val()/100, scroll[2]->get_val()/100 );
+			color.a=scroll[3]->get_val()/100.0;
 
 		} break;
 		case MODE_RAW: {
@@ -147,29 +142,50 @@ void ColorPicker::_update_color() {
 
 		case MODE_RAW: {
 
+			static const char*_lt[4]={"R","G","B","A"};
+
 			for(int i=0;i<4;i++) {
+				scroll[i]->set_max(255);
 				scroll[i]->set_step(0.01);
 				scroll[i]->set_val(color.components[i]);
+				labels[i]->set_text(_lt[i]);
 			}
 		} break;
 		case MODE_RGB: {
 
+			static const char*_lt[4]={"R","G","B","A"};
+
 			for(int i=0;i<4;i++) {
+				scroll[i]->set_max(255);
 				scroll[i]->set_step(1);
 				scroll[i]->set_val(color.components[i]*255);
+				labels[i]->set_text(_lt[i]);
 			}
 
 		} break;
 		case MODE_HSV: {
 
+			static const char*_lt[4]={"H","S","V","A"};
+
 			for(int i=0;i<4;i++) {
-				scroll[i]->set_step(1);
+				labels[i]->set_text(_lt[i]);
 			}
 
-			scroll[0]->set_val( color.get_h()*255 );
-			scroll[1]->set_val( color.get_s()*255 );
-			scroll[2]->set_val( color.get_v()*255 );
-			scroll[3]->set_val(color.a*255);
+			scroll[0]->set_max(359);
+			scroll[0]->set_step(0.01);
+			scroll[0]->set_val( color.get_h()*359 );
+
+			scroll[1]->set_max(100);
+			scroll[1]->set_step(0.01);
+			scroll[1]->set_val( color.get_s()*100 );
+
+			scroll[2]->set_max(100);
+			scroll[2]->set_step(0.01);
+			scroll[2]->set_val( color.get_v()*100 );
+
+			scroll[3]->set_max(100);
+			scroll[3]->set_step(0.01);
+			scroll[3]->set_val( color.a*100);
 
 		} break;
 	}
@@ -260,9 +276,6 @@ ColorPicker::ColorPicker() {
 		HBoxContainer *hbc = memnew( HBoxContainer );
 
 		labels[i]=memnew( Label );
-		static const char*_lt[4]={"R","G","B","A"};
-		labels[i]->set_text(_lt[i]);
-
 		hbc->add_child(labels[i]);
 
 		scroll[i]=memnew( HSlider );
@@ -274,8 +287,6 @@ ColorPicker::ColorPicker() {
 
 
 		scroll[i]->set_min(0);
-		scroll[i]->set_max(255);
-		scroll[i]->set_step(1);
 		scroll[i]->set_page(0);
 		scroll[i]->set_h_size_flags(SIZE_EXPAND_FILL);
 

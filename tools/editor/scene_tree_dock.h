@@ -104,6 +104,7 @@ class SceneTreeDock : public VBoxContainer {
 
 
 	void _node_selected();
+	void _node_renamed();
 	void _script_created(Ref<Script> p_script);
 
 	void _delete_confirm();
@@ -115,6 +116,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _import_subscene();
 
+	bool _validate_no_foreign();
 
 	void _fill_path_renames(Vector<StringName> base_path,Vector<StringName> new_base_path,Node * p_node, List<Pair<NodePath,NodePath> > *p_renames);
 

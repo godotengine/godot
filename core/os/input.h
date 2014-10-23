@@ -69,6 +69,8 @@ public:
 	virtual Point2 get_mouse_speed() const=0;
 	virtual int get_mouse_button_mask() const=0;
 
+	virtual void warp_mouse_pos(const Vector2& p_to)=0;
+
 	virtual Vector3 get_accelerometer()=0;
 
 	virtual void action_press(const StringName& p_action)=0;
@@ -127,6 +129,9 @@ public:
 	virtual Point2 get_mouse_pos() const;
 	virtual Point2 get_mouse_speed() const;
 	virtual int get_mouse_button_mask() const;
+
+	virtual void warp_mouse_pos(const Vector2& p_to);
+
 
 	void parse_input_event(const InputEvent& p_event);
 	void set_accelerometer(const Vector3& p_accel);

@@ -160,6 +160,9 @@ class OS_Windows : public OS {
 
 	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
 
+	void _drag_event(int p_x, int p_y, int idx);
+	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
+
 	// functions used by main to initialize/deintialize the OS
 protected:	
 	virtual int get_video_driver_count() const;
@@ -205,6 +208,7 @@ public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
+	virtual void warp_mouse_pos(const Point2& p_to);
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);

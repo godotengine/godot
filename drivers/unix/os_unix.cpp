@@ -382,9 +382,15 @@ String OS_Unix::get_data_dir() const {
 	String an = Globals::get_singleton()->get("application/name");
 	if (an!="") {
 
+
+
 		if (has_environment("HOME")) {
 
-			return get_environment("HOME")+"/."+an;
+			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			if (use_godot)
+				return get_environment("HOME")+"/.godot/app_userdata/"+an;
+			else
+				return get_environment("HOME")+"/."+an;
 		}
 	}
 

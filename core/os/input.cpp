@@ -60,6 +60,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
 	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
 	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
+	ObjectTypeDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
 
 	BIND_CONSTANT( MOUSE_MODE_VISIBLE );
 	BIND_CONSTANT( MOUSE_MODE_HIDDEN );
@@ -302,6 +303,11 @@ Point2 InputDefault::get_mouse_speed() const {
 int InputDefault::get_mouse_button_mask() const {
 
 	return OS::get_singleton()->get_mouse_button_state();
+}
+
+void InputDefault::warp_mouse_pos(const Vector2& p_to) {
+
+	OS::get_singleton()->warp_mouse_pos(p_to);
 }
 
 

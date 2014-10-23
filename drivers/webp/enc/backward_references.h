@@ -13,8 +13,8 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "../webp/types.h"
-#include "../webp/format_constants.h"
+#include "../types.h"
+#include "../format_constants.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

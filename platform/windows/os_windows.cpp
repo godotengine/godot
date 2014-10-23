@@ -206,6 +206,41 @@ bool OS_Windows::can_draw() const {
 	return !minimized;
 };
 
+#define MI_WP_SIGNATURE 0xFF515700
+#define SIGNATURE_MASK 0xFFFFFF00
+#define IsPenEvent(dw) (((dw) & SIGNATURE_MASK) == MI_WP_SIGNATURE)
+
+
+void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
+
+	InputEvent event;
+	event.type = InputEvent::SCREEN_TOUCH;
+	event.ID=++last_id;
+	event.screen_touch.index = idx;
+
+	event.screen_touch.pressed = p_pressed;
+
+	event.screen_touch.x=p_x;
+	event.screen_touch.y=p_y;
+
+	if (main_loop) {
+		input->parse_input_event(event);
+	}
+};
+
+void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
+
+	InputEvent event;
+	event.type = InputEvent::SCREEN_DRAG;
+	event.ID=++last_id;
+	event.screen_drag.index = idx;
+
+	event.screen_drag.x=p_x;
+	event.screen_drag.y=p_y;
+
+	if (main_loop)
+		input->parse_input_event(event);
+};
 
 LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
@@ -270,28 +305,43 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		}
 		case WM_MOUSELEAVE: {
 
-                    old_invalid=true;
-                    outside=true;
+			old_invalid=true;
+			outside=true;
 
 		} break;
 		case WM_MOUSEMOVE: {
 
-                    if (outside) {
+			if (outside) {
 
-                        CursorShape c=cursor_shape;
-                        cursor_shape=CURSOR_MAX;
-                        set_cursor_shape(c);
-                        outside=false;
+				CursorShape c=cursor_shape;
+				cursor_shape=CURSOR_MAX;
+				set_cursor_shape(c);
+				outside=false;
 
-			//Once-Off notification, must call again....
-			TRACKMOUSEEVENT tme;
-			tme.cbSize=sizeof(TRACKMOUSEEVENT);
-			tme.dwFlags=TME_LEAVE;
-			tme.hwndTrack=hWnd;
-			tme.dwHoverTime=HOVER_DEFAULT;
-			TrackMouseEvent(&tme);
+				//Once-Off notification, must call again....
+				TRACKMOUSEEVENT tme;
+				tme.cbSize=sizeof(TRACKMOUSEEVENT);
+				tme.dwFlags=TME_LEAVE;
+				tme.hwndTrack=hWnd;
+				tme.dwHoverTime=HOVER_DEFAULT;
+				TrackMouseEvent(&tme);
 
-                    }
+			}
+
+			/*
+			LPARAM extra = GetMessageExtraInfo();
+			if (IsPenEvent(extra)) {
+
+				int idx = extra & 0x7f;
+				_drag_event(idx, uMsg, wParam, lParam);
+				if (idx != 0) {
+					return 0;
+				};
+				// fallthrough for mouse event
+			};
+			*/
+
+
 			InputEvent event;
 			event.type=InputEvent::MOUSE_MOTION;
 			event.ID=++last_id;
@@ -359,6 +409,19 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_LBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
+
+			/*
+			LPARAM extra = GetMessageExtraInfo();
+			if (IsPenEvent(extra)) {
+
+				int idx = extra & 0x7f;
+				_touch_event(idx, uMsg, wParam, lParam);
+				if (idx != 0) {
+					return 0;
+				};
+				// fallthrough for mouse event
+			};
+			*/
 
 			InputEvent event;
 			event.type=InputEvent::MOUSE_BUTTON;
@@ -549,6 +612,43 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			print_line("input lang change");
 		} break;
+
+		#if WINVER >= 0x0700 // for windows 7
+		case WM_TOUCH: {
+
+			BOOL bHandled = FALSE;
+			UINT cInputs = LOWORD(wParam);
+			PTOUCHINPUT pInputs = memnew_arr(TOUCHINPUT, cInputs);
+			if (pInputs){
+				if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT))){
+					for (UINT i=0; i < cInputs; i++){
+						TOUCHINPUT ti = pInputs[i];
+						//do something with each touch input entry
+						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
+
+							_drag_event(ti.x / 100, ti.y / 100, ti.dwID);
+						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
+
+							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN != 0, ti.x / 100, ti.y / 100, ti.dwID);
+						};
+					}
+					bHandled = TRUE;
+				}else{
+					 /* handle the error here */
+				}
+				memdelete_arr(pInputs);
+			}else{
+				/* handle the error here, probably out of memory */
+			}
+			if (bHandled) {
+				CloseTouchInputHandle((HTOUCHINPUT)lParam);
+				return 0;
+			};
+
+		} break;
+
+		#endif
+
 		default: {
 
 			if (user_proc) {
@@ -1034,6 +1134,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	tme.dwHoverTime=HOVER_DEFAULT;
 	TrackMouseEvent(&tme);
 
+	//RegisterTouchWindow(hWnd, 0); // Windows 7
 
 	_ensure_data_dir();
 
@@ -1251,10 +1352,24 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
 
+
 	return mouse_mode;
 }
 
 
+
+void OS_Windows::warp_mouse_pos(const Point2& p_to) {
+
+	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		old_x=p_to.x;
+		old_y=p_to.y;
+	} else {
+
+		SetCursorPos(p_to.x, p_to.y);
+	}
+
+}
 
 Point2 OS_Windows::get_mouse_pos() const {
 
@@ -1763,7 +1878,11 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			return OS::get_singleton()->get_environment("APPDATA")+"\\"+an;
+			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			if (!use_godot)
+				return (OS::get_singleton()->get_environment("APPDATA")+"/"+an).replace("\\","/");
+			else
+				return (OS::get_singleton()->get_environment("APPDATA")+"/Godot/app_userdata/"+an).replace("\\","/");
 		}
 	}
 

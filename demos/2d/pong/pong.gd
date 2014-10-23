@@ -1,9 +1,9 @@
 
 extends Node2D
 
-# member variables here, example:
-# var a=2
-# var b="textvar"
+#member variables here, example:
+#var a=2
+#var b="textvar"
 const INITIAL_BALL_SPEED = 80
 var ball_speed = INITIAL_BALL_SPEED
 var screen_size = Vector2(640,400)
@@ -16,7 +16,7 @@ const PAD_SPEED = 150
 func _process(delta):
 
 
-	# get ball positio and pad rectangles
+	#get ball position and pad rectangles
 	var ball_pos = get_node("ball").get_pos()
 	var left_rect = Rect2( get_node("left").get_pos() - pad_size*0.5, pad_size )
 	var right_rect = Rect2( get_node("right").get_pos() - pad_size*0.5, pad_size )
@@ -44,7 +44,7 @@ func _process(delta):
 						
 	get_node("ball").set_pos(ball_pos)
 
-	#move left pad	
+	#move left pad
 	var left_pos = get_node("left").get_pos()
 	
 	if (left_pos.y > 0 and Input.is_action_pressed("left_move_up")):
@@ -67,7 +67,7 @@ func _process(delta):
 	 
 
 func _ready():
-	screen_size = get_viewport_rect().size # get actual size
+	screen_size = get_viewport_rect().size #get actual size
 	pad_size = get_node("left").get_texture().get_size()
 	set_process(true)
 

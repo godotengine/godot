@@ -1134,8 +1134,8 @@ void FaceShapeSW::get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supp
 	for (int i=0;i<3;i++) {
 
 		int nx=(i+1)%3;
-		//if (i!=vert_support_idx && nx!=vert_support_idx)
-		//	continue;
+		if (i!=vert_support_idx && nx!=vert_support_idx)
+			continue;
 
 	// check if edge is valid as a support
 		float dot=(vertex[i]-vertex[nx]).normalized().dot(n);
@@ -1157,8 +1157,12 @@ bool FaceShapeSW::intersect_segment(const Vector3& p_begin,const Vector3& p_end,
 
 
 	bool c=Geometry::segment_intersects_triangle(p_begin,p_end,vertex[0],vertex[1],vertex[2],&r_result);
-	if (c)
+	if (c) {
 		r_normal=Plane(vertex[0],vertex[1],vertex[2]).normal;
+		if (r_normal.dot(p_end-p_begin)>0) {
+			r_normal=-r_normal;
+		}
+	}
 
 	return c;
 }
@@ -1276,13 +1280,15 @@ void ConcavePolygonShapeSW::_cull_segment(int p_idx,_SegmentCullParams *p_params
 				&res)) {
 
 
-			float d=p_params->normal.dot(res) - p_params->normal.dot(p_params->from);
+			float d=p_params->dir.dot(res) - p_params->dir.dot(p_params->from);
 			//TODO, seems segmen/triangle intersection is broken :(
 			if (d>0 && d<p_params->min_d) {
 
 				p_params->min_d=d;
 				p_params->result=res;
 				p_params->normal=Plane(vertices[0],vertices[1],vertices[2]).normal;
+				if (p_params->normal.dot(p_params->dir)>0)
+					p_params->normal=-p_params->normal;
 				p_params->collisions++;
 			}
 
@@ -1313,7 +1319,7 @@ bool ConcavePolygonShapeSW::intersect_segment(const Vector3& p_begin,const Vecto
 	params.from=p_begin;
 	params.to=p_end;
 	params.collisions=0;
-	params.normal=(p_end-p_begin).normalized();
+	params.dir=(p_end-p_begin).normalized();
 
 	params.faces=fr.ptr();
 	params.vertices=vr.ptr();

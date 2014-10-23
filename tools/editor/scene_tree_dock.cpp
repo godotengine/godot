@@ -108,6 +108,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 		case TOOL_NEW: {
 
+
+			if (!_validate_no_foreign())
+				break;
 			create_dialog->popup_centered_ratio();
 		} break;
 		case TOOL_INSTANCE: {
@@ -123,6 +126,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
+
+			if (!_validate_no_foreign())
+				break;
 
 			file->set_mode(FileDialog::MODE_OPEN_FILE);
 			List<String> extensions;
@@ -147,6 +153,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!current)
 				break;
 
+			if (!_validate_no_foreign())
+				break;
 			connect_dialog->popup_centered_ratio();
 			connect_dialog->set_node(current);
 
@@ -156,6 +164,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *current = scene_tree->get_selected();
 			if (!current)
 				break;
+			if (!_validate_no_foreign())
+				break;
 			groups_editor->set_current(current);
 			groups_editor->popup_centered_ratio();
 		} break;
@@ -163,6 +173,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			Node *selected = scene_tree->get_selected();
 			if (!selected)
+				break;
+
+			if (!_validate_no_foreign())
 				break;
 
 			Ref<Script> existing = selected->get_script();
@@ -183,6 +196,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!scene_tree->get_selected())
 				break;
 
+
 			if (scene_tree->get_selected()==edited_scene) {
 
 
@@ -194,6 +208,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				break;
 			}
 
+
+			if (!_validate_no_foreign())
+				break;
 
 			Node * node=scene_tree->get_selected();
 			ERR_FAIL_COND(!node->get_parent());
@@ -214,6 +231,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!edited_scene)
 				break;
 
+
 			if (editor_selection->is_selected(edited_scene)) {
 
 
@@ -224,6 +242,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
+
+			if (!_validate_no_foreign())
+				break;
 
 			List<Node*> selection = editor_selection->get_selected_node_list();
 
@@ -313,6 +334,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!scene_tree->get_selected())
 				break;
 
+
 			if (editor_selection->is_selected(edited_scene)) {
 
 
@@ -323,6 +345,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				accept->popup_centered(Size2(300,70));;
 				break;
 			}
+
+			if (!_validate_no_foreign())
+				break;
 
 			List<Node*> nodes = editor_selection->get_selected_node_list();
 			Set<Node*> nodeset;
@@ -340,6 +365,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			if (remove_list.empty())
 				return;
+
+			if (!_validate_no_foreign())
+				break;
 
 			if (p_confirm_override) {
 				_delete_confirm();
@@ -422,6 +450,11 @@ void SceneTreeDock::_node_selected() {
 	editor->push_item(node);
 }
 
+void SceneTreeDock::_node_renamed() {
+
+	_node_selected();
+}
+
 Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 
 	Node *node=NULL;
@@ -455,6 +488,16 @@ Node *SceneTreeDock::_duplicate(Node *p_node, Map<Node*,Node*> &duplimap) {
 		node->set( name, p_node->get(name) );
 
 	}
+
+
+	List<Node::GroupInfo> group_info;
+	p_node->get_groups(&group_info);
+	for (List<Node::GroupInfo>::Element *E=group_info.front();E;E=E->next()) {
+
+		if (E->get().persistent)
+			node->add_to_group(E->get().name,true);
+	}
+
 
 	node->set_name(p_node->get_name());
 	duplimap[p_node]=node;
@@ -707,6 +750,25 @@ void SceneTreeDock::_node_prerenamed(Node* p_node, const String& p_new_name) {
 
 }
 
+bool SceneTreeDock::_validate_no_foreign() {
+
+	List<Node*> selection = editor_selection->get_selected_node_list();
+
+	for (List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+		if (E->get()!=edited_scene && E->get()->get_owner()!=edited_scene) {
+
+			accept->get_ok()->set_text("Makes Sense!");
+			accept->set_text("Can't operate on nodes from a foreign scene!");
+			accept->popup_centered(Size2(300,70));;
+			return false;
+
+		}
+	}
+
+	return true;
+}
+
 void SceneTreeDock::_node_reparent(NodePath p_path,bool p_node_only) {
 
 
@@ -894,7 +956,7 @@ void SceneTreeDock::_delete_confirm() {
 void SceneTreeDock::_update_tool_buttons() {
 
 	Node *sel = scene_tree->get_selected();
-	bool disable = !sel;
+	bool disable = !sel || (sel!=edited_scene && sel->get_owner()!=edited_scene);
 	bool disable_root = disable || sel->get_parent()==scene_root;
 
 	tool_buttons[TOOL_INSTANCE]->set_disabled(disable);
@@ -1077,6 +1139,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_node_reparent"),&SceneTreeDock::_node_reparent);
 	ObjectTypeDB::bind_method(_MD("_set_owners"),&SceneTreeDock::_set_owners);
 	ObjectTypeDB::bind_method(_MD("_node_selected"),&SceneTreeDock::_node_selected);
+	ObjectTypeDB::bind_method(_MD("_node_renamed"),&SceneTreeDock::_node_renamed);
 	ObjectTypeDB::bind_method(_MD("_script_created"),&SceneTreeDock::_script_created);
 	ObjectTypeDB::bind_method(_MD("_load_request"),&SceneTreeDock::_load_request);
 	ObjectTypeDB::bind_method(_MD("_script_open_request"),&SceneTreeDock::_script_open_request);

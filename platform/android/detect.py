@@ -27,18 +27,19 @@ def get_opts():
 		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
 		('android_stl','enable STL support in android port (for modules)','no'),
 		('armv6','compile for older phones running arm v6 (instead of v7+neon+smp)','no'),
-		 ('x86','compile for x86','no')
+		 ('x86','Xompile for Android-x86','no')
 
 	]
 
 def get_flags():
 
 	return [
-		('lua', 'no'),
 		('tools', 'no'),
 		('nedmalloc', 'no'),
 		('builtin_zlib', 'no'),
                 ('openssl','builtin'), #use builtin openssl
+		('theora','no'), #use builtin openssl
+
         ]
 
 
@@ -75,13 +76,7 @@ def configure(env):
 	env.Append(CPPPATH=['#platform/android'])
 	
 	if env['x86']=='yes':
-		env['OBJSUFFIX'] = ".android.ox"
-		env['LIBSUFFIX'] = ".android.ax"
-	else:
-		env['OBJSUFFIX'] = ".android.o"
-		env['LIBSUFFIX'] = ".android.a"
-	env['PROGSUFFIX'] = ".android"
-	env['SHLIBSUFFIX'] = ".so"
+		env.extra_suffix=".x86"
 	
 	gcc_path=env["ANDROID_NDK_ROOT"]+"/toolchains/"+env["NDK_TARGET"]+"/prebuilt/";
 	
@@ -126,7 +121,7 @@ def configure(env):
 	ld_path=env["ANDROID_NDK_ROOT"]+"/platforms/"+ndk_platform+"/"+env['ARCH']+"/usr/lib"
 	env.Append(CPPPATH=[gcc_include])
 #	env['CCFLAGS'] = string.split('-DNO_THREADS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__ARM_ARCH_5__ -D__ARM_ARCH_5T__ -D__ARM_ARCH_5E__ -D__ARM_ARCH_5TE__  -Wno-psabi -march=armv5te -mtune=xscale -msoft-float  -fno-exceptions -mthumb -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED ')
-	print("********* armv6", env['armv6'])
+
 	if env['x86']=='yes':
 		env['CCFLAGS'] = string.split('-DNO_STATVFS -MMD -MP -MF -fpic -ffunction-sections -funwind-tables -fstack-protector -D__GLIBC__  -Wno-psabi -ftree-vectorize -funsafe-math-optimizations -fno-strict-aliasing -DANDROID -Wa,--noexecstack -DGLES2_ENABLED -DGLES1_ENABLED')
 	elif env["armv6"]!="no":
@@ -147,23 +142,10 @@ def configure(env):
 	if (env["target"]=="release"):
 
 		env.Append(CCFLAGS=['-O2', '-ffast-math','-fomit-frame-pointer'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="release_debug"):
 
 		env.Append(CCFLAGS=['-O2', '-ffast-math','-DDEBUG_ENABLED'])
-		env['OBJSUFFIX'] = "_optd"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
-
-	elif (env["target"]=="profile"):
-
-		env.Append(CCFLAGS=['-O2', '-ffast-math','-fomit-frame-pointer', '-g1'])
-		env.Append(LIBPATH=['#platform/android/armeabi'])
-		env.Append(LIBS=['andprof'])
-		env['OBJSUFFIX'] = "_prof"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_prof"+env['LIBSUFFIX']
-		env['SHLIBSUFFIX'] = "_prof"+env['SHLIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 
@@ -172,8 +154,10 @@ def configure(env):
 
 	if env["armv6"] == "no" and env['x86'] != 'yes':
 		env['neon_enabled']=True
+
 	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED', '-DNO_FCNTL','-DMPC_FIXED_POINT'])
 #	env.Append(CPPFLAGS=['-DANDROID_ENABLED', '-DUNIX_ENABLED','-DMPC_FIXED_POINT'])
+
 	if (env['android_stl']=='yes'):
 		#env.Append(CCFLAGS=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/system/include"])
 		env.Append(CPPPATH=[env["ANDROID_NDK_ROOT"]+"/sources/cxx-stl/gnu-libstdc++/4.4.3/include"])

@@ -73,7 +73,10 @@ class RasterizerGLES2 : public Rasterizer {
 	uint8_t *skinned_buffer;
 	int skinned_buffer_size;
 	bool pvr_supported;
+	bool pvr_srgb_supported;
 	bool s3tc_supported;
+	bool s3tc_srgb_supported;
+	bool latc_supported;
 	bool etc_supported;
 	bool atitc_supported;
 	bool npo2_textures_available;
@@ -82,6 +85,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool full_float_fb_supported;
 	bool use_shadow_mapping;
 	bool use_fp16_fb;
+	bool srgb_supported;
+
 	ShadowFilterTechnique shadow_filter;
 
 	bool use_shadow_esm;
@@ -91,6 +96,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_texture_instancing;
 	bool use_attribute_instancing;
 	bool use_rgba_shadowmaps;
+	bool use_anisotropic_filter;
+	float anisotropic_level;
 
 	bool use_half_float;
 
@@ -312,6 +319,8 @@ class RasterizerGLES2 : public Rasterizer {
 		// no support for the above, array in localmem.
 		uint8_t *array_local;
 		uint8_t *index_array_local;
+		Vector<AABB> skeleton_bone_aabb;
+		Vector<bool> skeleton_bone_used;
 
 		//bool packed;
 
@@ -547,6 +556,42 @@ class RasterizerGLES2 : public Rasterizer {
 				r_dst[1]+=((mtx[0][1]*p_src[0] ) + ( mtx[1][1]*p_src[1] ) + ( mtx[2][1]*p_src[2] ) )*p_weight;
 				r_dst[2]+=((mtx[0][2]*p_src[0] ) + ( mtx[1][2]*p_src[1] ) + ( mtx[2][2]*p_src[2] ) )*p_weight;
 			}
+
+			_ALWAYS_INLINE_ AABB transform_aabb(const AABB& p_aabb) const {
+
+				float vertices[8][3]={
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y,		p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y,		p_aabb.pos.z},
+					{p_aabb.pos.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z},
+					{p_aabb.pos.x,	p_aabb.pos.y,		p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x,	p_aabb.pos.y,		p_aabb.pos.z}
+				};
+
+
+				AABB ret;
+
+
+
+				for (int i=0;i<8;i++) {
+
+					Vector3 xv(
+
+						((mtx[0][0]*vertices[i][0] ) + ( mtx[1][0]*vertices[i][1] ) + ( mtx[2][0]*vertices[i][2] ) + mtx[3][0] ),
+						((mtx[0][1]*vertices[i][0] ) + ( mtx[1][1]*vertices[i][1] ) + ( mtx[2][1]*vertices[i][2] ) + mtx[3][1] ),
+						((mtx[0][2]*vertices[i][0] ) + ( mtx[1][2]*vertices[i][1] ) + ( mtx[2][2]*vertices[i][2] ) + mtx[3][2] )
+						);
+
+					if (i==0)
+						ret.pos=xv;
+					else
+						ret.expand_to(xv);
+				}
+
+				return ret;
+			}
 		};
 
 		GLuint tex_id;
@@ -563,7 +608,7 @@ class RasterizerGLES2 : public Rasterizer {
 	mutable SelfList<Skeleton>::List _skeleton_dirty_list;
 
 
-	template<bool USE_NORMAL, bool USE_TANGENT>
+	template<bool USE_NORMAL, bool USE_TANGENT,bool INPLACE>
 	void _skeleton_xform(const uint8_t * p_src_array, int p_src_stride, uint8_t * p_dst_array, int p_dst_stride, int p_elements,const uint8_t *p_src_bones, const uint8_t *p_src_weights, const Skeleton::Bone *p_bone_xforms);
 
 	struct Light {
@@ -840,7 +885,7 @@ class RasterizerGLES2 : public Rasterizer {
 					}
 				} else {
 
-					return B->material->shader_cache < B->material->shader_cache;
+					return A->material->shader_cache < B->material->shader_cache;
 				}
 			}
 		};
@@ -1242,7 +1287,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;

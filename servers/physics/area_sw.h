@@ -70,7 +70,7 @@ class AreaSW : public CollisionObjectSW{
 
 					return area_shape < p_key.area_shape;
 				} else
-					return body_shape < p_key.area_shape;
+					return body_shape < p_key.body_shape;
 			} else
 				return rid < p_key.rid;
 
@@ -137,6 +137,9 @@ public:
 	_FORCE_INLINE_ void add_constraint( ConstraintSW* p_constraint) { constraints.insert(p_constraint); }
 	_FORCE_INLINE_ void remove_constraint( ConstraintSW* p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<ConstraintSW*>& get_constraints() const { return constraints; }
+
+
+
 
 	void set_transform(const Transform& p_transform);
 

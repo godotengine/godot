@@ -32,23 +32,31 @@
 
 
 #ifdef WINDOWS_ENABLED
-#define WINVER 0x0600
-#include <ws2tcpip.h>
-#include <winsock2.h>
-#include <windows.h>
-#include <stdio.h>
-#include <iphlpapi.h>
+ #ifdef WINRT_ENABLED
+  #include <ws2tcpip.h>
+  #include <winsock2.h>
+  #include <windows.h>
+  #include <stdio.h>
+ #else
+  #define WINVER 0x0600
+  #include <ws2tcpip.h>
+  #include <winsock2.h>
+  #include <windows.h>
+  #include <stdio.h>
+  #include <iphlpapi.h>
+ #endif
 #else
-#include <netdb.h>
-#ifdef ANDROID_ENABLED
-#include "platform/android/ifaddrs_android.h"
-#else
-#include <ifaddrs.h>
-#endif
-#include <arpa/inet.h>
-#include <sys/socket.h>
+ #include <netdb.h>
+ #ifdef ANDROID_ENABLED
+  #include "platform/android/ifaddrs_android.h"
+ #else
+  #include <ifaddrs.h>
+ #endif
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
 
 #endif
+
 IP_Address IP_Unix::_resolve_hostname(const String& p_hostname) {
 
 	struct hostent *he;
@@ -65,6 +73,14 @@ IP_Address IP_Unix::_resolve_hostname(const String& p_hostname) {
 }
 
 #if defined(WINDOWS_ENABLED)
+
+#if defined(WINRT_ENABLED)
+
+void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
+
+
+};
+#else
 
 void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
@@ -119,6 +135,7 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 	memfree(addrs);
 };
 
+#endif
 
 #else
 

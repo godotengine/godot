@@ -311,6 +311,7 @@ struct ConcavePolygonShapeSW : public ConcaveShapeSW {
 		const Face *faces;
 		const Vector3 *vertices;
 		const BVH *bvh;
+		Vector3 dir;
 
 		Vector3 result;
 		Vector3 normal;
@@ -407,6 +408,46 @@ struct FaceShapeSW : public ShapeSW {
 	FaceShapeSW();
 };
 
+
+struct MotionShapeSW : public ShapeSW {
+
+	ShapeSW *shape;
+	Vector3 motion;
+
+	virtual PhysicsServer::ShapeType get_type() const { return PhysicsServer::SHAPE_CONVEX_POLYGON; }
+
+
+	void project_range(const Vector3& p_normal, const Transform& p_transform, real_t &r_min, real_t &r_max) const {
+
+		Vector3 cast = p_transform.basis.xform(motion);
+		real_t mina,maxa;
+		real_t minb,maxb;
+		Transform ofsb = p_transform;
+		ofsb.origin+=cast;
+		shape->project_range(p_normal,p_transform,mina,maxa);
+		shape->project_range(p_normal,ofsb,minb,maxb);
+		r_min=MIN(mina,minb);
+		r_max=MAX(maxa,maxb);
+	}
+
+	Vector3 get_support(const Vector3& p_normal) const {
+
+		Vector3 support = shape->get_support(p_normal);
+		if (p_normal.dot(motion)>0) {
+			support+=motion;
+		}
+		return support;
+	}
+	virtual void get_supports(const Vector3& p_normal,int p_max,Vector3 *r_supports,int & r_amount) const {}
+	bool intersect_segment(const Vector3& p_begin,const Vector3& p_end,Vector3 &r_result, Vector3 &r_normal) const { return false; }
+
+	Vector3 get_moment_of_inertia(float p_mass) const { return Vector3(); }
+
+	virtual void set_data(const Variant& p_data) {}
+	virtual Variant get_data() const { return Variant(); }
+
+	MotionShapeSW()  { configure(AABB()); }
+};
 
 
 

@@ -6,6 +6,44 @@
 #include "tools/editor/editor_node.h"
 
 
+_FORCE_INLINE_ static uint64_t get_uv_normal_bit(const Vector3& p_vector) {
+
+	int lat = Math::fast_ftoi(Math::floor(Math::acos(p_vector.dot(Vector3(0,1,0)))*6.0/Math_PI+0.5));
+
+	if (lat==0) {
+		return 60;
+	} else if (lat==6) {
+		return 61;
+	}
+
+	int lon = Math::fast_ftoi(Math::floor( (Math_PI+Math::atan2(p_vector.x,p_vector.z))*12.0/(Math_PI*2.0) + 0.5))%12;
+
+	return lon+(lat-1)*12;
+}
+
+
+
+_FORCE_INLINE_ static Vector3 get_bit_normal(int p_bit) {
+
+	if (p_bit==61) {
+		return Vector3(0,1,0);
+	} else if (p_bit==62){
+		return Vector3(0,-1,0);
+	}
+
+	float latang = ((p_bit / 12)+1)*Math_PI/6.0;
+
+	Vector2 latv(Math::sin(latang),Math::cos(latang));
+
+	float lonang = ((p_bit%12)*Math_PI*2.0/12.0)-Math_PI;
+
+	Vector2 lonv(Math::sin(lonang),Math::cos(lonang));
+
+	return Vector3(lonv.x*latv.x,latv.y,lonv.y*latv.x).normalized();
+
+}
+
+
 BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& p_tex) {
 
 	if (!tex_map.has(p_tex)) {
@@ -338,7 +376,7 @@ void BakedLightBaker::_fix_lights() {
 				}
 				if (dl.type==VS::LIGHT_OMNI) {
 
-					dl.area=4.0*Math_PI*pow(dl.radius,2.0);
+					dl.area=4.0*Math_PI*pow(dl.radius,2.0f);
 					dl.constant=1.0/3.5;
 				} else {
 
@@ -533,10 +571,12 @@ void BakedLightBaker::_octree_insert(int p_octant,Triangle* p_triangle, int p_de
 					child->offset[2]=child->aabb.pos.z+child->aabb.size.z*0.5;
 					child->next_leaf=leaf_list;
 
+
 					for(int ci=0;ci<8;ci++) {
 						child->normal_accum[ci][0]=0;
 						child->normal_accum[ci][1]=0;
 						child->normal_accum[ci][2]=0;
+
 					}
 
 					child->bake_neighbour=0;
@@ -593,11 +633,26 @@ void BakedLightBaker::_octree_insert(int p_octant,Triangle* p_triangle, int p_de
 					pos.y=floor((pos.y+cell_size*0.5)/cell_size);
 					pos.z=floor((pos.z+cell_size*0.5)/cell_size);
 
-					Map<Vector3,Vector3>::Element *E=endpoint_normal.find(pos);
-					if (!E) {
-						endpoint_normal[pos]=n;
-					} else {
-						E->get()+=n;
+					{
+						Map<Vector3,Vector3>::Element *E=endpoint_normal.find(pos);
+						if (!E) {
+							endpoint_normal[pos]=n;
+						} else {
+							E->get()+=n;
+						}
+					}
+
+					{
+
+						uint64_t bit = get_uv_normal_bit(n);
+
+						Map<Vector3,uint64_t>::Element *E=endpoint_normal_bits.find(pos);
+						if (!E) {
+							endpoint_normal_bits[pos]=(1<<bit);
+						} else {
+							E->get()|=(1<<bit);
+						}
+
 					}
 
 				}
@@ -677,17 +732,57 @@ void BakedLightBaker::_make_octree() {
 				pos.y=floor((pos.y+cell_size*0.5)/cell_size);
 				pos.z=floor((pos.z+cell_size*0.5)/cell_size);
 
-				Map<Vector3,Vector3>::Element *E=endpoint_normal.find(pos);
-				if (!E) {
-					//?
-					print_line("lolwut?");
-				} else {
-					Vector3 n = E->get().normalized();
-					oct->normal_accum[ci][0]=n.x;
-					oct->normal_accum[ci][1]=n.y;
-					oct->normal_accum[ci][2]=n.z;
+				{
+					Map<Vector3,Vector3>::Element *E=endpoint_normal.find(pos);
+					if (!E) {
+						//?
+						print_line("lolwut?");
+					} else {
+						Vector3 n = E->get().normalized();
+						oct->normal_accum[ci][0]=n.x;
+						oct->normal_accum[ci][1]=n.y;
+						oct->normal_accum[ci][2]=n.z;
+
+					}
 
 				}
+
+				{
+
+					Map<Vector3,uint64_t>::Element *E=endpoint_normal_bits.find(pos);
+					if (!E) {
+						//?
+						print_line("lolwut?");
+					} else {
+
+						float max_aper=0;
+						for(uint64_t i=0;i<62;i++) {
+
+							if (!(E->get()&(1<<i)))
+								continue;
+							Vector3 ang_i = get_bit_normal(i);
+
+							for(uint64_t j=0;j<62;j++) {
+
+								if (i==j)
+									continue;
+								if (!(E->get()&(1<<j)))
+									continue;
+								Vector3 ang_j = get_bit_normal(j);
+								float ang = Math::acos(ang_i.dot(ang_j));
+								if (ang>max_aper)
+									max_aper=ang;
+							}
+						}
+						if (max_aper>0.75*Math_PI) {
+							//angle too wide prevent problems and forget
+							oct->normal_accum[ci][0]=0;
+							oct->normal_accum[ci][1]=0;
+							oct->normal_accum[ci][2]=0;
+						}
+					}
+				}
+
 
 			}
 
@@ -742,13 +837,23 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 
 				float d = p_plot_pos.distance_to(pos);
 
-				if (d<=r) {
+				if ((p_plane.distance_to(pos)>-cell_size*1.75) && d<=r) {
 
 
 					float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
-					float damp = Math::abs(p_plane.normal.dot(Vector3(octant.normal_accum[i][0],octant.normal_accum[i][1],octant.normal_accum[i][2])));
-					intensity*=pow(damp,edge_damp);
+					if (edge_damp>0) {
+						Vector3 normal = Vector3(octant.normal_accum[i][0],octant.normal_accum[i][1],octant.normal_accum[i][2]);
+						if (normal.x>0 || normal.y>0 || normal.z>0) {
+
+							float damp = Math::abs(p_plane.normal.dot(normal));
+							intensity*=pow(damp,edge_damp);
+
+						}
+					}
+
 					//intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
+					//intensity = Math::cos(d*Math_PI*0.5/r);
+
 					octant.light[p_light_index].accum[i][0]+=p_light.r*intensity;
 					octant.light[p_light_index].accum[i][1]+=p_light.g*intensity;
 					octant.light[p_light_index].accum[i][2]+=p_light.b*intensity;
@@ -788,7 +893,7 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 }
 
 
-float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce) {
+float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce,bool p_only_dist) {
 
 
 	uint32_t* stack = ray_stack;
@@ -918,8 +1023,13 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 	}
 
 
+
 	if (inters) {
 
+		if (p_only_dist) {
+
+			return p_begin.distance_to(r_point);
+		}
 
 
 		//should check if there is normals first
@@ -931,6 +1041,9 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		} else {
 
 		}
+
+		if (n.dot(r_normal)>0)
+			return -1;
 
 		if (n.dot(r_normal)>0)
 			r_normal=-r_normal;
@@ -969,6 +1082,20 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		//the multiplication can happen with more detail in the shader
 
 
+
+		if (triangle->material) {
+
+			//triangle->get_uv(r_point);
+
+			diffuse_at_point=triangle->material->diffuse.get_color(uv);
+			specular_at_point=triangle->material->specular.get_color(uv);
+		}
+
+
+		diffuse_at_point.r=res_light.r*diffuse_at_point.r;
+		diffuse_at_point.g=res_light.g*diffuse_at_point.g;
+		diffuse_at_point.b=res_light.b*diffuse_at_point.b;
+
 		float ret=1e6;
 
 		if (p_bounces>0) {
@@ -985,18 +1112,6 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 
 
 
-			if (triangle->material) {
-
-				//triangle->get_uv(r_point);
-
-				diffuse_at_point=triangle->material->diffuse.get_color(uv);
-				specular_at_point=triangle->material->specular.get_color(uv);
-			}
-
-
-			diffuse_at_point.r=res_light.r*diffuse_at_point.r;
-			diffuse_at_point.g=res_light.g*diffuse_at_point.g;
-			diffuse_at_point.b=res_light.b*diffuse_at_point.b;
 
 			specular_at_point.r=res_light.r*specular_at_point.r;
 			specular_at_point.g=res_light.g*specular_at_point.g;
@@ -1043,7 +1158,7 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 //		_plot_light_point(r_point,octree,octree_aabb,p_light);
 
 
-		Color plot_light=res_light;
+		Color plot_light=diffuse_at_point;
 		plot_light.r*=att;
 		plot_light.g*=att;
 		plot_light.b*=att;
@@ -1051,11 +1166,31 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		if (!p_first_bounce) {
 
 
-			float r = plot_size * cell_size*4;
-			if (ret<r) {
+			float r = plot_size * cell_size*2;
+			if (dist<r) {
 				//avoid accumulaiton of light on corners
 				//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
 				plot_light=Color(0,0,0,0);
+
+			} else {
+
+
+				Vector3 c1=r_normal.cross(n).normalized();
+				Vector3 c2=r_normal.cross(c1).normalized();
+				double r1 = double(rand())/RAND_MAX;
+				double r2 = double(rand())/RAND_MAX;
+				double r3 = double(rand())/RAND_MAX;
+				Vector3 rn = ((c1*(r1-0.5)) + (c2*(r2-0.5)) + (r_normal*r3*0.25)).normalized();
+				float d =_throw_ray(p_light_index,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1,false,true);
+				r = plot_size*cell_size*0.7;
+				if (d>0 && d<r) {
+					//avoid accumulaiton of light on corners
+					//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
+					plot_light=Color(0,0,0,0);
+
+				} else {
+					//plot_light=Color(0,0,0,0);
+				}
 			}
 		}
 
@@ -1070,7 +1205,7 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		return dist;
 	}
 
-	return 0;
+	return -1;
 
 }
 
@@ -2248,6 +2383,7 @@ void BakedLightBaker::clear() {
 	lights.clear();
 	triangles.clear();;
 	endpoint_normal.clear();
+	endpoint_normal_bits.clear();
 	baked_octree_texture_w=0;
 	baked_octree_texture_h=0;
 	paused=false;

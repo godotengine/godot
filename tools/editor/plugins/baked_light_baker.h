@@ -239,6 +239,7 @@ public:
 	uint32_t *octant_stack;
 	uint32_t *octantptr_stack;
 	Map<Vector3,Vector3> endpoint_normal;
+	Map<Vector3,uint64_t> endpoint_normal_bits;
 	BVH **bvh_stack;
 	float cell_size;
 	float plot_size; //multiplied by cell size
@@ -287,7 +288,7 @@ public:
 	void _plot_light(int p_light_index,const Vector3& p_plot_pos,const AABB& p_plot_aabb,const Color& p_light,const Plane& p_plane);
 	//void _plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
 
-	float _throw_ray(int p_light_index,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce=false);
+	float _throw_ray(int p_light_index,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce=false,bool p_only_dist=false);
 
 
 	float total_light_area;

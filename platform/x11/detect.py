@@ -47,14 +47,11 @@ def get_opts():
 	return [
 	('use_llvm','Use llvm compiler','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
-	('force_32_bits','Force 32 bits binary','no')
 	]
   
 def get_flags():
 
 	return [
-	('opengl', 'no'),
-	('legacygl', 'yes'),
 	('builtin_zlib', 'no'),
 	("openssl", "yes"),
         ]
@@ -62,6 +59,15 @@ def get_flags():
 
 
 def configure(env):
+
+	is64=sys.maxsize > 2**32
+
+	if (env["bits"]=="default"):
+		if (is64):
+			env["bits"]="64"
+		else:
+			env["bits"]="32"
+
 
 	env.Append(CPPPATH=['#platform/x11'])
 	if (env["use_llvm"]=="yes"):
@@ -74,50 +80,23 @@ def configure(env):
 
 
 
-	if (env["tools"]=="no"):
-		#no tools suffix
-		env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
+	#if (env["tools"]=="no"):
+	#	#no tools suffix
+	#	env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
+	#	env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
 
 
 	if (env["target"]=="release"):
 		
 		env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="release_debug"):
 
 		env.Append(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
-		env['OBJSUFFIX'] = "_optd"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
-
-
-#		env.Append(CCFLAGS=['-Os','-ffast-math','-fomit-frame-pointer'])
-#does not seem to have much effect		
-#		env.Append(CCFLAGS=['-fno-default-inline'])
-#recommended by wxwidgets
-#		env.Append(CCFLAGS=['-ffunction-sections','-fdata-sections'])
-#		env.Append(LINKFLAGS=['-Wl','--gc-sections'])
 
 	elif (env["target"]=="debug"):
-				
+
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
-#does not seem to have much effect		
-#		env.Append(CCFLAGS=['-fno-default-inline'])
-#recommended by wxwidgets
-#		env.Append(CCFLAGS=['-ffunction-sections','-fdata-sections'])
-#		env.Append(LINKFLAGS=['-Wl','--gc-sections'])
-
-	elif (env["target"]=="debug_light"):
-
-		env.Append(CCFLAGS=['-g1', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
-
-
-	elif (env["target"]=="profile"):
-		
-		env.Append(CCFLAGS=['-g','-pg'])
-		env.Append(LINKFLAGS=['-pg'])		
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
@@ -128,18 +107,21 @@ def configure(env):
 	env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 
 	
-	if env['opengl'] == 'yes':
-                env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
-	#env.Append(CPPFLAGS=["-DRTAUDIO_ENABLED"])
+	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
 	env.Append(CPPFLAGS=["-DALSA_ENABLED"])
 	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED','-DGLES1_ENABLED'])
 	env.Append(LIBS=['c','m','stdc++','GLESv2', 'EGL', 'GLES_CM', 'pthread','asound','z','Xau','Xdmcp','Xrender','IMGegl','srv_um','Xfixes']) #TODO detect linux/BSD!
+
 	#env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
-	if (env["force_32_bits"]=="yes"):
+
+#host compiler is default..
+
+	if (is64 and env["bits"]=="32"):
 		env.Append(CPPFLAGS=['-m32'])
 		env.Append(LINKFLAGS=['-m32','-L/usr/lib/i386-linux-gnu'])
-		env['OBJSUFFIX'] = ".32"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = ".32"+env['LIBSUFFIX']
+	elif (not is64 and env["bits"]=="32"):
+		env.Append(CPPFLAGS=['-m64'])
+		env.Append(LINKFLAGS=['-m64','-L/usr/lib/i686-linux-gnu'])
 
 
 	if (env["CXX"]=="clang++"):

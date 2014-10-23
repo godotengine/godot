@@ -25,51 +25,53 @@ def can_build():
 			
 			
 	if (os.name=="posix"):
-	
-		if os.system("i586-mingw32msvc-gcc --version") == 0:
+
+		mingw = "i586-mingw32msvc-"
+		mingw64 = "i686-w64-mingw32-"
+		if (os.getenv("MINGW32_PREFIX")):
+			mingw=os.getenv("MINGW32_PREFIX")
+		if (os.getenv("MINGW64_PREFIX")):
+			mingw64=os.getenv("MINGW64_PREFIX")
+
+		if os.system(mingw+"gcc --version >/dev/null") == 0 or os.system(mingw64+"gcc --version >/dev/null") ==0:
 			return True
+
 
 			
 	return False
 		
 def get_opts():
 
-	mwp=""
-	mwp64=""
+	mingw=""
+	mingw64=""
 	if (os.name!="nt"):
-		mwp="i586-mingw32msvc-"
-		mwp64="x86_64-w64-mingw32-"
+		mingw = "i586-mingw32msvc-"
+		mingw64 = "i686-w64-mingw32-"
+		if (os.getenv("MINGW32_PREFIX")):
+			mingw=os.getenv("MINGW32_PREFIX")
+		if (os.getenv("MINGW64_PREFIX")):
+			mingw64=os.getenv("MINGW64_PREFIX")
+
 
 	return [
-		('force_64_bits','Force 64 bits binary','no'),
-		('force_32_bits','Force 32 bits binary','no'),
-		('mingw_prefix','Mingw Prefix',mwp),
-		('mingw_prefix_64','Mingw Prefix 64 bits',mwp64),
+		('mingw_prefix','Mingw Prefix',mingw),
+		('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
+		('mingw64_for_32','Use Mingw 64 for 32 Bits Build',"no"),
 	]
   
 def get_flags():
 
 	return [
 		('freetype','builtin'), #use builtin freetype
-                ('openssl','builtin'), #use builtin openssl
-        ]
+		('openssl','builtin'), #use builtin openssl
+		('theora','no'), #use builtin openssl
+	]
 			
 
 
 def configure(env):
 
-	if os.name == "posix":
-		env['OBJSUFFIX'] = ".win"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = ".win"+env['LIBSUFFIX']
-
 	env.Append(CPPPATH=['#platform/windows'])
-
-	if (env["tools"]=="no"):
-		#no tools suffix
-		env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
-		#env['LIBSUFFIX'] = ".nt"+env['LIBSUFFIX']
-		env['platform_libsuffix'] = ".nt"+env['LIBSUFFIX']
-
 
 
 	if (os.name=="nt" and os.getenv("VSINSTALLDIR")!=None):
@@ -89,21 +91,17 @@ def configure(env):
 			env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
 			env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
-		elif (env["target"]=="test"):
+		elif (env["target"]=="release_debug"):
 
-			env.Append(CCFLAGS=['/O2','/DDEBUG_ENABLED','/DD3D_DEBUG_INFO'])
+			env.Append(CCFLAGS=['/O2','/DDEBUG_ENABLED'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 
 		elif (env["target"]=="debug"):
 
-			env.Append(CCFLAGS=['/Zi','/DDEBUG_ENABLED','/DD3D_DEBUG_INFO','/O1'])
+			env.Append(CCFLAGS=['/Zi','/DDEBUG_ENABLED','/DDEBUG_MEMORY_ENABLED','/DD3D_DEBUG_INFO','/O1'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
 			env.Append(LINKFLAGS=['/DEBUG'])
 
-		elif (env["target"]=="profile"):
-
-			env.Append(CCFLAGS=['-g','-pg'])
-			env.Append(LINKFLAGS=['-pg'])
 
 		env.Append(CCFLAGS=['/MT','/Gd','/GR','/nologo'])
 		env.Append(CXXFLAGS=['/TP'])
@@ -117,7 +115,8 @@ def configure(env):
 		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
 		env.Append(CCFLAGS=['/DGLES1_ENABLED'])
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
-		env.Append(LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32', 'IPHLPAPI', 'wsock32', 'shell32','advapi32'])
+		LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32', 'IPHLPAPI', 'wsock32', 'shell32','advapi32']
+		env.Append(LINKFLAGS=[p+env["LIBSUFFIX"] for p in LIBS])
 		
 		env.Append(LIBPATH=[os.getenv("WindowsSdkDir")+"/Lib"])
                 if (os.getenv("DXSDK_DIR")):
@@ -139,46 +138,57 @@ def configure(env):
 		#build using mingw
 		if (os.name=="nt"):
 			env['ENV']['TMP'] = os.environ['TMP'] #way to go scons, you can be so stupid sometimes
+		else:
+			env["PROGSUFFIX"]=env["PROGSUFFIX"]+".exe"
 
 		mingw_prefix=""
 
-		if (env["force_32_bits"]!="no"):
-			env['OBJSUFFIX'] = ".32"+env['OBJSUFFIX']
-			env['LIBSUFFIX'] = ".32"+env['LIBSUFFIX']
-			env.Append(CCFLAGS=['-m32'])
-			env.Append(LINKFLAGS=['-m32'])
-			env.Append(LINKFLAGS=['-static-libgcc'])
-			env.Append(LINKFLAGS=['-static-libstdc++'])
+		if (env["bits"]=="default"):
+			env["bits"]="32"
+
+		use64=False
+		if (env["bits"]=="32"):
+
+			if (env["mingw64_for_32"]=="yes"):
+				env.Append(CCFLAGS=['-m32'])
+				env.Append(LINKFLAGS=['-m32'])
+				env.Append(LINKFLAGS=['-static-libgcc'])
+				env.Append(LINKFLAGS=['-static-libstdc++'])
+				mingw_prefix=env["mingw_prefix_64"];
+			else:
+				mingw_prefix=env["mingw_prefix"];
 
 
-
-
-		if (env["force_64_bits"]!="no"):
-			mingw_prefix=env["mingw_prefix_64"];
-			env['OBJSUFFIX'] = ".64"+env['OBJSUFFIX']
-			env['LIBSUFFIX'] = ".64"+env['LIBSUFFIX']
-			env.Append(LINKFLAGS=['-static'])
 		else:
-			mingw_prefix=env["mingw_prefix"];
+			mingw_prefix=env["mingw_prefix_64"];
+			env.Append(LINKFLAGS=['-static'])
+
+		nulstr=""
+
+		if (os.name=="posix"):
+		    nulstr=">/dev/null"
+		else:
+		    nulstr=">nul"
+
+
+
+		if os.system(mingw_prefix+"gcc --version"+nulstr)!=0:
+			#not really super consistent but..
+			print("Can't find Windows compiler: "+mingw_prefix)
+			sys.exit(255)
 
 		if (env["target"]=="release"):
 			
 			env.Append(CCFLAGS=['-O3','-ffast-math','-fomit-frame-pointer','-msse2'])
-			env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-			env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
+			env.Append(LINKFLAGS=['-Wl,--subsystem,windows'])
+
 		elif (env["target"]=="release_debug"):
 
 			env.Append(CCFLAGS=['-O2','-DDEBUG_ENABLED'])
-			env['OBJSUFFIX'] = "_optd"+env['OBJSUFFIX']
-			env['LIBSUFFIX'] = "_optd"+env['LIBSUFFIX']
 
 		elif (env["target"]=="debug"):
 					
-			env.Append(CCFLAGS=['-g', '-Wall','-DDEBUG_ENABLED'])
-		elif (env["target"]=="release_tools"):
-
-			env.Append(CCFLAGS=['-O2','-Wall','-DDEBUG_ENABLED'])
-
+			env.Append(CCFLAGS=['-g', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 		if (env["freetype"]!="no"):
 			env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])

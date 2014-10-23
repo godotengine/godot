@@ -180,6 +180,10 @@ void AnimationPlayer::_get_property_list( List<PropertyInfo> *p_list) const {
 
 }
 
+void AnimationPlayer::advance(float p_time) {
+
+	_animation_process( p_time );
+}
 
 void AnimationPlayer::_notification(int p_what) {
 
@@ -1226,6 +1230,8 @@ void AnimationPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
 	ObjectTypeDB::bind_method(_MD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
+
+	ObjectTypeDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));

@@ -152,6 +152,10 @@ public:
 	StringName baked_light_changed;
 	StringName _baked_light_changed;
 
+	StringName _mouse_enter;
+	StringName _mouse_exit;
+
+
 
 };
 

@@ -28,15 +28,13 @@ def get_opts():
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
 		('ios_GLES1_override', 'Force legacy GLES (1.1) on iOS', 'no'),
 		('ios_appirater', 'Enable Appirater', 'no'),
-		('ios_exceptions', 'Use exceptions when compiling on playbook', 'no'),
+		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
 	]
 
 def get_flags():
 
 	return [
-		('lua', 'no'),
 		('tools', 'no'),
-		('nedmalloc', 'no'),
 		('webp', 'yes'),
 		('openssl','builtin'), #use builtin openssl
 	]
@@ -46,10 +44,6 @@ def get_flags():
 def configure(env):
 
 	env.Append(CPPPATH=['#platform/iphone', '#platform/iphone/include'])
-
-	env['OBJSUFFIX'] = ".iphone.o"
-	env['LIBSUFFIX'] = ".iphone.a"
-	env['PROGSUFFIX'] = ".iphone"
 
 	env['ENV']['PATH'] = env['IPHONEPATH']+"/Developer/usr/bin/:"+env['ENV']['PATH']
 
@@ -101,15 +95,11 @@ def configure(env):
 
 		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall'])
 		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif env["target"] == "release_debug":
 		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])
 		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
 		env.Append(CPPFLAGS=['-DDEBUG_MEMORY_ENABLED'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 
@@ -130,9 +120,10 @@ def configure(env):
 		env.Append(CPPFLAGS=['-fno-exceptions'])
 	#env['neon_enabled']=True
 	env['S_compiler'] = '$IPHONEPATH/Developer/usr/bin/gcc'
-
-	if env['lua'] == "yes":
-		env.Append(CCFLAGS=['-DLUA_USE_FLOAT'])
-
+	
+	import methods
+	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
+	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 
 # /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -x objective-c-header -arch armv7s -fmessage-length=0 -std=gnu99 -fobjc-arc -Wno-trigraphs -fpascal-strings -Os -Wno-missing-field-initializers -Wno-missing-prototypes -Wreturn-type -Wno-implicit-atomic-properties -Wno-receiver-is-weak -Wduplicate-method-match -Wformat -Wno-missing-braces -Wparentheses -Wswitch -Wno-unused-function -Wno-unused-label -Wno-unused-parameter -Wunused-variable -Wunused-value -Wempty-body -Wuninitialized -Wno-unknown-pragmas -Wno-shadow -Wno-four-char-constants -Wno-conversion -Wno-shorten-64-to-32 -Wpointer-sign -Wno-newline-eof -Wno-selector -Wno-strict-selector-match -Wno-undeclared-selector -Wno-deprecated-implementations -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS6.0.sdk -Wprotocol -Wdeprecated-declarations -g -fvisibility=hidden -Wno-sign-conversion "-DIBOutlet=__attribute__((iboutlet))" "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" "-DIBAction=void)__attribute__((ibaction)" -miphoneos-version-min=4.3 -iquote /Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-generated-files.hmap -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-own-target-headers.hmap -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-all-target-headers.hmap -iquote /Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/test-project-headers.hmap -I/Users/lucasgondolo/test/build/Release-iphoneos/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/DerivedSources/armv7s -I/Users/lucasgondolo/test/build/test.build/Release-iphoneos/test.build/DerivedSources -F/Users/lucasgondolo/test/build/Release-iphoneos -DNS_BLOCK_ASSERTIONS=1 --serialize-diagnostics /var/folders/9r/_65jj9457bgb4n4nxcsm0xl80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/test-Prefix-esrzoamhgruxcxbhemvvlrjmmvoh/test-Prefix.pch.dia -c /Users/lucasgondolo/test/test/test-Prefix.pch -o /var/folders/9r/_65jj9457bgb4n4nxcsm0xl80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/test-Prefix-esrzoamhgruxcxbhemvvlrjmmvoh/test-Prefix.pch.pth -MMD -MT dependencies -MF /var/folders/9r/_65jj9457bgb4n4nxcsm0xl80000gn/C/com.apple.Xcode.501/SharedPrecompiledHeaders/test-Prefix-esrzoamhgruxcxbhemvvlrjmmvoh/test-Prefix.pch.d

@@ -95,6 +95,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "var",
 "preload",
 "assert",
+"yield",
 "'['",
 "']'",
 "'{'",
@@ -283,7 +284,8 @@ void GDTokenizerText::_advance() {
 				while(GETCHAR(0)!='\n') {
 					code_pos++;
 					if (GETCHAR(0)==0) { //end of file
-						_make_error("Unterminated Comment");
+						//_make_error("Unterminated Comment");
+						_make_token(TK_EOF);
 						return;
 					}
 				}
@@ -564,22 +566,21 @@ void GDTokenizerText::_advance() {
 							case '\'': res='\''; break;
 							case '\"': res='\"'; break;
 							case '\\': res='\\'; break;
-							case 'x': {
-								//hexnumbarh - oct is deprecated
+							case '/': res='/'; break; //wtf
 
-								int read=0;
+							case 'u': {
+								//hexnumbarh - oct is deprecated
+								i+=1;
 								for(int j=0;j<4;j++) {
 									CharType c = GETCHAR(i+j);
 									if (c==0) {
 										_make_error("Unterminated String");
 										return;
 									}
-									if (!_is_hex(c)) {
-										if (j==0 || !(j&1)) {
-											_make_error("Malformed hex constant in string");
-											return;
-										} else
-											break;
+									if (!((c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F'))) {
+
+										_make_error("Malformed hex constant in string");
+										return;
 									}
 									CharType v;
 									if (c>='0' && c<='9') {
@@ -598,10 +599,9 @@ void GDTokenizerText::_advance() {
 									res<<=4;
 									res|=v;
 
-									read++;
-								}
-								i+=read-1;
 
+								}
+								i+=3;
 
 							} break;
 							default: {
@@ -826,6 +826,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_VAR,"var"},
 								{TK_PR_PRELOAD,"preload"},
 								{TK_PR_ASSERT,"assert"},
+								{TK_PR_YIELD,"yield"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},
@@ -1006,7 +1007,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 1
+#define BYTECODE_VERSION 2
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 
@@ -1016,8 +1017,8 @@ Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 	ERR_FAIL_COND_V( p_buffer.size()<24 || p_buffer[0]!='G' || p_buffer[1]!='D' || p_buffer[2]!='S' || p_buffer[3]!='C',ERR_INVALID_DATA);
 	
 	int version = decode_uint32(&buf[4]);
-	if (version>1) {
-		ERR_EXPLAIN("Bytecode is too New!");
+	if (version>BYTECODE_VERSION) {
+		ERR_EXPLAIN("Bytecode is too New! Please use a newer engine version.");
 		ERR_FAIL_COND_V(version>BYTECODE_VERSION,ERR_INVALID_DATA);
 	}
 	int identifier_count = decode_uint32(&buf[8]);

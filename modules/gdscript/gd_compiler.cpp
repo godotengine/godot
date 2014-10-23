@@ -60,7 +60,8 @@ bool GDCompiler::_create_unary_operator(CodeGen& codegen,const GDParser::Operato
 	codegen.opcodes.push_back(GDFunction::OPCODE_OPERATOR); // perform operator
 	codegen.opcodes.push_back(op); //which operator
 	codegen.opcodes.push_back(src_address_a); // argument 1
-	codegen.opcodes.push_back(GDFunction::ADDR_TYPE_NIL); // argument 2 (unary only takes one parameter)
+	codegen.opcodes.push_back(src_address_a); // argument 2 (repeated)
+	//codegen.opcodes.push_back(GDFunction::ADDR_TYPE_NIL); // argument 2 (unary only takes one parameter)
 	return true;
 }
 
@@ -507,6 +508,34 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							codegen.opcodes.push_back(arguments[i]);
 					}
 				} break;
+				case GDParser::OperatorNode::OP_YIELD: {
+
+
+					ERR_FAIL_COND_V(on->arguments.size() && on->arguments.size()!=2,-1);
+
+					Vector<int> arguments;
+					int slevel = p_stack_level;
+					for(int i=0;i<on->arguments.size();i++) {
+
+						int ret = _parse_expression(codegen,on->arguments[i],slevel);
+						if (ret<0)
+							return ret;
+						if (ret&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+							slevel++;
+							codegen.alloc_stack(slevel);
+						}
+						arguments.push_back(ret);
+					}
+
+					//push call bytecode
+					codegen.opcodes.push_back(arguments.size()==0?GDFunction::OPCODE_YIELD:GDFunction::OPCODE_YIELD_SIGNAL); // basic type constructor
+					for(int i=0;i<arguments.size();i++)
+						codegen.opcodes.push_back(arguments[i]); //arguments
+					codegen.opcodes.push_back(GDFunction::OPCODE_YIELD_RESUME);
+					//next will be where to place the result :)
+
+				} break;
+
 				//indexing operator
 				case GDParser::OperatorNode::OP_INDEX:
 				case GDParser::OperatorNode::OP_INDEX_NAMED: {
@@ -644,8 +673,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 				case GDParser::OperatorNode::OP_BIT_OR: { if (!_create_binary_operator(codegen,on,Variant::OP_BIT_OR,p_stack_level)) return -1;} break;
 				case GDParser::OperatorNode::OP_BIT_XOR: { if (!_create_binary_operator(codegen,on,Variant::OP_BIT_XOR,p_stack_level)) return -1;} break;
                 //shift
-                case GDParser::OperatorNode::OP_SHIFT_LEFT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_LEFT,p_stack_level)) return -1;} break;
-                case GDParser::OperatorNode::OP_SHIFT_RIGHT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_RIGHT,p_stack_level)) return -1;} break;
+				case GDParser::OperatorNode::OP_SHIFT_LEFT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_LEFT,p_stack_level)) return -1;} break;
+				case GDParser::OperatorNode::OP_SHIFT_RIGHT: { if (!_create_binary_operator(codegen,on,Variant::OP_SHIFT_RIGHT,p_stack_level)) return -1;} break;
 				//assignment operators
 				case GDParser::OperatorNode::OP_ASSIGN_ADD:
 				case GDParser::OperatorNode::OP_ASSIGN_SUB:
@@ -695,6 +724,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							return prev_pos;
 						int retval=prev_pos;
 
+						//print_line("retval: "+itos(retval));
+
 						if (retval&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
 							slevel++;
 							codegen.alloc_stack(slevel);
@@ -702,6 +733,8 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 
 						Vector<int> setchain;
+
+						int prev_key_idx=-1;
 
 						for(List<GDParser::OperatorNode*>::Element *E=chain.back();E;E=E->prev()) {
 
@@ -714,15 +747,22 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 							if (named) {
 
-								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);
+								key_idx = codegen.get_name_map_pos(static_cast<const GDParser::IdentifierNode*>(E->get()->arguments[1])->name);								
+								//printf("named key %x\n",key_idx);
+
 							} else {
 
-								GDParser::Node *key = E->get()->arguments[1];
-								key_idx = _parse_expression(codegen,key,slevel);
-								if (retval&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+								if (prev_pos&(GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS)) {
 									slevel++;
 									codegen.alloc_stack(slevel);
 								}
+
+								GDParser::Node *key = E->get()->arguments[1];
+								key_idx = _parse_expression(codegen,key,slevel);
+								//printf("expr key %x\n",key_idx);
+
+
+								//stack was raised here if retval was stack but..
 
 							}
 
@@ -735,6 +775,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							slevel++;
 							codegen.alloc_stack(slevel);
 							int dst_pos = (GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS)|slevel;
+
 							codegen.opcodes.push_back(dst_pos);
 
 							//add in reverse order, since it will be reverted
@@ -744,6 +785,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 							setchain.push_back(named ? GDFunction::OPCODE_SET_NAMED : GDFunction::OPCODE_SET);
 
 							prev_pos=dst_pos;
+							prev_key_idx=key_idx;
 
 						}
 

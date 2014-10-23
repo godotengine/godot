@@ -51,8 +51,15 @@ class SceneTreeEditor : public Control {
 		BUTTON_GROUP=4,
 	};
 
+	enum {
+		SCENE_MENU_SHOW_CHILDREN,
+		SCENE_MENU_OPEN,
+	};
+
 	Tree *tree;
 	Node *selected;
+	PopupMenu *instance_menu;
+	ObjectID instance_node;
 
 	AcceptDialog *error;
 
@@ -78,6 +85,7 @@ class SceneTreeEditor : public Control {
 	bool can_rename;
 	bool can_open_instance;
 	bool updating_tree;
+	bool show_enabled_subscene;
 	
 	void _renamed();
 	UndoRedo *undo_redo;
@@ -95,6 +103,7 @@ class SceneTreeEditor : public Control {
 	void _update_selection(TreeItem *item);
 	void _node_script_changed(Node *p_node);
 	void _node_visibility_changed(Node *p_node);
+	void _subscene_option(int p_idx);
 
 	void _selection_changed();
 	Node *get_scene_node();
@@ -111,6 +120,8 @@ public:
 	Node *get_selected();
 	void set_can_rename(bool p_can_rename) { can_rename=p_can_rename; }
 	void set_editor_selection(EditorSelection *p_selection);
+
+	void set_show_enabled_subscene(bool p_show) { show_enabled_subscene=p_show; }
 
 	void update_tree() { _update_tree(); }
 

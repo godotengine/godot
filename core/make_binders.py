@@ -214,23 +214,34 @@ def make_version(template,nargs,argmax,const,ret):
 
 def run(target, source, env):
 
-	versions=5
+	versions=10
+	versions_ext=6
 	text=""
+	text_ext=""
 
 	for i in range(0,versions+1):
 
-		text+=make_version(template,i,5,False,False)
-		text+=make_version(template_typed,i,5,False,False)
-		text+=make_version(template,i,5,False,True)
-		text+=make_version(template_typed,i,5,False,True)
-		text+=make_version(template,i,5,True,False)
-		text+=make_version(template_typed,i,5,True,False)
-		text+=make_version(template,i,5,True,True)
-		text+=make_version(template_typed,i,5,True,True)
+		t=""
+		t+=make_version(template,i,versions,False,False)
+		t+=make_version(template_typed,i,versions,False,False)
+		t+=make_version(template,i,versions,False,True)
+		t+=make_version(template_typed,i,versions,False,True)
+		t+=make_version(template,i,versions,True,False)
+		t+=make_version(template_typed,i,versions,True,False)
+		t+=make_version(template,i,versions,True,True)
+		t+=make_version(template_typed,i,versions,True,True)
+		if (i>=versions_ext):
+			text_ext+=t
+		else:
+			text+=t
 
 
 	f=open(target[0].path,"w")
 	f.write(text)
+	f.close()
+
+	f=open(target[1].path,"w")
+	f.write(text_ext)
 	f.close()
 
 		

@@ -18,7 +18,7 @@
 #include "../utils/bit_reader.h"
 #include "../utils/color_cache.h"
 #include "../utils/huffman.h"
-#include "../webp/format_constants.h"
+#include "../format_constants.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

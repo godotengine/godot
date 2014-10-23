@@ -888,8 +888,17 @@ int VisualServerRaster::skeleton_get_bone_count(RID p_skeleton) const {
 
 void VisualServerRaster::skeleton_bone_set_transform(RID p_skeleton,int p_bone, const Transform& p_transform) {
 	VS_CHANGED;
-	return rasterizer->skeleton_bone_set_transform(p_skeleton,p_bone,p_transform);
+	rasterizer->skeleton_bone_set_transform(p_skeleton,p_bone,p_transform);
 
+	Map< RID, Set<Instance*> >::Element *E=skeleton_dependency_map.find(p_skeleton);
+
+	if (E) {
+		//detach skeletons
+		for (Set<Instance*>::Element *F=E->get().front();F;F=F->next()) {
+
+			_instance_queue_update( F->get() , true);
+		}
+	}
 }
 
 Transform VisualServerRaster::skeleton_bone_get_transform(RID p_skeleton,int p_bone) {
@@ -1193,7 +1202,7 @@ RID VisualServerRaster::camera_create() {
 }
 
 void VisualServerRaster::camera_set_perspective(RID p_camera,float p_fovy_degrees, float p_z_near, float p_z_far) {
-	VS_CHANGED;
+	VS_CHANGED
 	Camera *camera = camera_owner.get( p_camera );
 	ERR_FAIL_COND(!camera);
 	camera->type=Camera::PERSPECTIVE;
@@ -1217,7 +1226,7 @@ void VisualServerRaster::camera_set_transform(RID p_camera,const Transform& p_tr
 	VS_CHANGED;
 	Camera *camera = camera_owner.get( p_camera );
 	ERR_FAIL_COND(!camera);
-	camera->transform=p_transform;
+	camera->transform=p_transform.orthonormalized();
 	
 
 }
@@ -1777,6 +1786,17 @@ void VisualServerRaster::scenario_set_environment(RID p_scenario, RID p_environm
 
 }
 
+void VisualServerRaster::scenario_set_fallback_environment(RID p_scenario, RID p_environment) {
+
+	VS_CHANGED;
+
+	Scenario *scenario = scenario_owner.get(p_scenario);
+	ERR_FAIL_COND(!scenario);
+	scenario->fallback_environment=p_environment;
+
+
+}
+
 RID VisualServerRaster::scenario_get_environment(RID p_scenario, RID p_environment) const{
 
 	const Scenario *scenario = scenario_owner.get(p_scenario);
@@ -2113,7 +2133,16 @@ void VisualServerRaster::instance_attach_skeleton(RID p_instance,RID p_skeleton)
 	VS_CHANGED;
 	Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND( !instance );
+
+	if (instance->data.skeleton.is_valid()) {
+		skeleton_dependency_map[instance->data.skeleton].erase(instance);
+	}
+
 	instance->data.skeleton=p_skeleton;
+
+	if (instance->data.skeleton.is_valid()) {
+		skeleton_dependency_map[instance->data.skeleton].insert(instance);
+	}
 
 }
 
@@ -2773,7 +2802,7 @@ void VisualServerRaster::_update_instance_aabb(Instance *p_instance) {
 		} break;
 		case VisualServer::INSTANCE_MESH: {
 		
-			new_aabb = rasterizer->mesh_get_aabb(p_instance->base_rid);
+			new_aabb = rasterizer->mesh_get_aabb(p_instance->base_rid,p_instance->data.skeleton);
 			
 		} break;
 		case VisualServer::INSTANCE_MULTIMESH: {
@@ -3513,6 +3542,15 @@ void VisualServerRaster::canvas_item_add_set_blend_mode(RID p_item, MaterialBlen
 	canvas_item->commands.push_back(bm);
 };
 
+void VisualServerRaster::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->sort_y=p_enable;
+}
+
+
 void VisualServerRaster::canvas_item_add_clip_ignore(RID p_item, bool p_ignore) {
 
 	VS_CHANGED;
@@ -3673,10 +3711,23 @@ void VisualServerRaster::free( RID p_rid ) {
 
 	VS_CHANGED;
 
-	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) || rasterizer->is_skeleton(p_rid) || rasterizer->is_shader(p_rid)) {
+	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) ||  rasterizer->is_shader(p_rid)) {
 	
 		rasterizer->free(p_rid);
-	
+	} else if (rasterizer->is_skeleton(p_rid)) {
+
+		Map< RID, Set<Instance*> >::Element *E=skeleton_dependency_map.find(p_rid);
+
+		if (E) {
+			//detach skeletons
+			for (Set<Instance*>::Element *F=E->get().front();F;F=F->next()) {
+
+				F->get()->data.skeleton=RID();
+			}
+			skeleton_dependency_map.erase(E);
+		}
+
+		rasterizer->free(p_rid);
 	} else if (rasterizer->is_mesh(p_rid) || rasterizer->is_multimesh(p_rid) || rasterizer->is_light(p_rid) || rasterizer->is_particles(p_rid) ) {
 		//delete the resource
 	
@@ -3763,6 +3814,8 @@ void VisualServerRaster::free( RID p_rid ) {
 		instance_set_scenario(p_rid,RID());
 		instance_geometry_set_baked_light(p_rid,RID());
 		instance_set_base(p_rid,RID());
+		if (instance->data.skeleton.is_valid())
+			instance_attach_skeleton(p_rid,RID());
 
 		instance_owner.free(p_rid);
 		memdelete(instance);
@@ -5474,8 +5527,10 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 	RID environment;
 	if (p_camera->env.is_valid()) //camera has more environment priority
 		environment=p_camera->env;
-	else
+	else if (p_scenario->environment.is_valid())
 		environment=p_scenario->environment;
+	else
+		environment=p_scenario->fallback_environment;
 
 	rasterizer->begin_scene(p_viewport->viewport_data,environment,p_scenario->debug);
 	rasterizer->set_viewport(viewport_rect);	
@@ -5558,26 +5613,30 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 	float opacity = ci->opacity * p_opacity;
 
-#ifndef ONTOP_DISABLED
-	CanvasItem **child_items = ci->child_items.ptr();
+
 	int child_item_count=ci->child_items.size();
-	int top_item_count=0;
-	CanvasItem **top_items=(CanvasItem**)alloca(child_item_count*sizeof(CanvasItem*));
+	CanvasItem **child_items=(CanvasItem**)alloca(child_item_count*sizeof(CanvasItem*));
+	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
 		rasterizer->canvas_set_clip(true,global_rect);
 		canvas_clip=global_rect;
 	}
 
+	if (ci->sort_y) {
+
+		SortArray<CanvasItem*,CanvasItemPtrSort> sorter;
+		sorter.sort(child_items,child_item_count);
+	}
+
+
 	for(int i=0;i<child_item_count;i++) {
 
 		if (child_items[i]->ontop)
-			top_items[top_item_count++]=child_items[i];
-		else {
-			_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
-		}
+			continue;
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
 	}
-#endif
+
 
 	if (s!=0) {
 
@@ -5713,19 +5772,12 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		rasterizer->canvas_set_clip(true,canvas_clip);
 	}
 
-#ifndef ONTOP_DISABLED
+	for(int i=0;i<child_item_count;i++) {
 
-	for(int i=0;i<top_item_count;i++) {
-
-		_render_canvas_item(top_items[i],xform,p_clip_rect,opacity);
+		if (!child_items[i]->ontop)
+			continue;
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
 	}
-
-#else
-	for(int i=0;i<p_canvas_item->child_items.size();i++) {
-
-		_render_canvas_item(p_canvas_item->child_items[i],xform,p_clip_rect,opacity);
-	}
-#endif
 
 
 	if (ci->clip) {
@@ -5843,6 +5895,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 	if (p_viewport->queue_capture) {
 
 		rasterizer->capture_viewport(&p_viewport->capture);
+		p_viewport->queue_capture = false;
 	}
 
 	//restore

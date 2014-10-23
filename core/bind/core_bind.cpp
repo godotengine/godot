@@ -306,6 +306,16 @@ MainLoop *_OS::get_main_loop() const {
 
 	return OS::get_singleton()->get_main_loop();
 }
+
+void _OS::set_time_scale(float p_scale) {
+	OS::get_singleton()->set_time_scale(p_scale);
+}
+
+float _OS::get_time_scale() {
+
+	return OS::get_singleton()->get_time_scale();
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -613,6 +623,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
 	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
 
+	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&_OS::set_time_scale);
+	ObjectTypeDB::bind_method(_MD("get_time_scale"),&_OS::get_time_scale);
+
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
 
@@ -843,6 +856,42 @@ Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2>& p_polygon) {
 	return Geometry::triangulate_polygon(p_polygon);
 }
 
+Dictionary _Geometry::make_atlas(const Vector<Size2>& p_rects) {
+
+	Dictionary ret;
+
+	Vector<Size2i> rects;
+	for (int i=0; i<p_rects.size(); i++) {
+
+		rects.push_back(p_rects[i]);
+	};
+
+	Vector<Point2i> result;
+	Size2i size;
+
+	Geometry::make_atlas(rects, result, size);
+
+	Size2 r_size = size;
+	Vector<Point2> r_result;
+	for (int i=0; i<result.size(); i++) {
+
+		r_result.push_back(result[i]);
+	};
+
+
+	ret["points"] = r_result;
+	ret["size"] = r_size;
+
+	return ret;
+};
+
+
+int _Geometry::get_uv84_normal_bit(const Vector3& p_vector) {
+
+	return Geometry::get_uv84_normal_bit(p_vector);
+}
+
+
 void _Geometry::_bind_methods() {
 
 
@@ -857,6 +906,8 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
 
+	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
+
 	ObjectTypeDB::bind_method(_MD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
@@ -865,6 +916,7 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
+	ObjectTypeDB::bind_method(_MD("make_atlas","sizes"),&_Geometry::make_atlas);
 }
 
 

@@ -70,7 +70,7 @@ bool _play_video(String p_path, float p_volume) {
 	float player_volume = p_volume * AudioServer::get_singleton()->get_singleton()->get_stream_global_volume_scale();
 	video_previous_volume = [[MPMusicPlayerController applicationMusicPlayer] volume];
 
-	[[MPMusicPlayerController applicationMusicPlayer] setVolume: player_volume];
+	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: player_volume];
 
 	p_path = Globals::get_singleton()->globalize_path(p_path);
 
@@ -113,7 +113,7 @@ void _pause_video() {
 void _stop_video() {
 	[_instance.moviePlayerController stop];
 	[_instance.moviePlayerController.view removeFromSuperview];
-	[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
+	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 	video_playing = false;
 }
 
@@ -554,7 +554,7 @@ static void clear_touches() {
     [_instance.moviePlayerController stop];
     [_instance.moviePlayerController.view removeFromSuperview];
 
-    [[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
+	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 	video_playing = false;
 }
 

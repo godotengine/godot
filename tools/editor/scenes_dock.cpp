@@ -30,7 +30,7 @@
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "globals.h"
-#include "scene/io/scene_loader.h"
+
 #include "io/resource_loader.h"
 #include "os/os.h"
 #include "editor_node.h"
@@ -200,9 +200,11 @@ void ScenesDock::_instance_pressed() {
 }
 
 void ScenesDock::_open_pressed(){
+
 	TreeItem *sel = tree->get_selected();
-	if (!sel)
+	if (!sel) {
 		return;
+	}
 	String path = sel->get_metadata(0);
 
 	if (ResourceLoader::get_resource_type(path)=="PackedScene") {
@@ -300,6 +302,7 @@ ScenesDock::ScenesDock(EditorNode *p_editor) {
 
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->connect("item_edited",this,"_favorite_toggled");
+	tree->connect("item_activated",this,"_open_pressed");
 
 	timer = memnew( Timer );
 	timer->set_one_shot(true);

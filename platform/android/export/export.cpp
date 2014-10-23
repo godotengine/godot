@@ -378,8 +378,8 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 
 void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list) const{
 
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_FILE,"apk"));
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_FILE,"apk"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE,"apk"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE,"apk"));
 	p_list->push_back( PropertyInfo( Variant::STRING, "command_line/extra_args"));
 	p_list->push_back( PropertyInfo( Variant::INT, "version/code", PROPERTY_HINT_RANGE,"1,65535,1"));
 	p_list->push_back( PropertyInfo( Variant::STRING, "version/name") );

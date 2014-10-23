@@ -481,8 +481,10 @@ bool SceneMainLoop::iteration(float p_time) {
 	_flush_transform_notifications();
 
 	MainLoop::iteration(p_time);
-
 	fixed_process_time=p_time;
+
+	emit_signal("fixed_frame");
+
 	_notify_group_pause("fixed_process",Node::NOTIFICATION_FIXED_PROCESS);
 	_flush_ugc();
 	_flush_transform_notifications();
@@ -506,6 +508,8 @@ bool SceneMainLoop::idle(float p_time){
 	MainLoop::idle(p_time);
 
 	idle_process_time=p_time;
+
+	emit_signal("idle_frame");
 
 	_flush_transform_notifications();
 
@@ -964,6 +968,18 @@ void SceneMainLoop::set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect
 }
 
 
+#ifdef TOOLS_ENABLED
+void SceneMainLoop::set_edited_scene_root(Node *p_node) {
+	edited_scene_root=p_node;
+}
+
+Node *SceneMainLoop::get_edited_scene_root() const {
+
+	return edited_scene_root;
+}
+#endif
+
+
 void SceneMainLoop::_bind_methods() {
 
 
@@ -979,6 +995,10 @@ void SceneMainLoop::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_editor_hint","enable"),&SceneMainLoop::set_editor_hint);
 	ObjectTypeDB::bind_method(_MD("is_editor_hint"),&SceneMainLoop::is_editor_hint);
+#ifdef TOOLS_ENABLED
+	ObjectTypeDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneMainLoop::set_edited_scene_root);
+	ObjectTypeDB::bind_method(_MD("get_edited_scene_root"),&SceneMainLoop::get_edited_scene_root);
+#endif
 
 	ObjectTypeDB::bind_method(_MD("set_pause","enable"),&SceneMainLoop::set_pause);
 	ObjectTypeDB::bind_method(_MD("is_paused"),&SceneMainLoop::is_paused);
@@ -1062,6 +1082,15 @@ SceneMainLoop::SceneMainLoop() {
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree,this);
 	}
+
+	root->set_physics_object_picking(GLOBAL_DEF("physics/enable_object_picking",true));
+
+#ifdef TOOLS_ENABLED
+	edited_scene_root=NULL;
+#endif
+
+	ADD_SIGNAL( MethodInfo("idle_frame"));
+	ADD_SIGNAL( MethodInfo("fixed_frame"));
 
 }
 

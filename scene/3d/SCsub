@@ -1,7 +1,6 @@
 Import('env')
 
 
-print("V: "+env["disable_3d"])
 if (env["disable_3d"]=="yes"):
 
 	env.scene_sources.append("3d/spatial.cpp")

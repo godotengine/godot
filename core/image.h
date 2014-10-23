@@ -216,6 +216,14 @@ public:
 	 * Convert the image to another format, as close as it can be done.
 	 */
 	void convert( Format p_new_format );
+
+	Image converted(int p_new_format) {
+		ERR_FAIL_INDEX_V(p_new_format, FORMAT_MAX, Image());
+
+		Image ret = *this;
+		ret.convert((Format)p_new_format);
+		return ret;
+	};
 	
 	/**
 	 * Get the current image format.
@@ -325,6 +333,7 @@ public:
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
+	void normalmap_to_xy();
 
 	void blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& p_dest);
 	void brush_transfer(const Image& p_src, const Image& p_brush, const Point2& p_dest);

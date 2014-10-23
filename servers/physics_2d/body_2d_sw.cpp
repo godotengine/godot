@@ -176,6 +176,7 @@ float Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 
 void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 
+	Physics2DServer::BodyMode prev=mode;
 	mode=p_mode;
 
 	switch(p_mode) {
@@ -186,9 +187,12 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass=0;
 			_set_static(p_mode==Physics2DServer::BODY_MODE_STATIC);
-			//set_active(p_mode==Physics2DServer::BODY_MODE_KINEMATIC);
+			set_active(p_mode==Physics2DServer::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity=Vector2();
 			angular_velocity=0;
+			if (mode==Physics2DServer::BODY_MODE_KINEMATIC && prev!=mode) {
+				first_time_kinematic=true;
+			}
 		} break;
 		case Physics2DServer::BODY_MODE_RIGID: {
 
@@ -226,9 +230,15 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 
 
 			if (mode==Physics2DServer::BODY_MODE_KINEMATIC) {
-				new_transform=p_variant;
+
+				new_transform=p_variant;				
 				//wakeup_neighbours();
 				set_active(true);
+				if (first_time_kinematic) {
+					_set_transform(p_variant);
+					_set_inv_transform(get_transform().affine_inverse());
+					first_time_kinematic=false;
+				}
 			} else if (mode==Physics2DServer::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
 				_set_inv_transform(get_transform().affine_inverse());
@@ -385,10 +395,10 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		motion = new_transform.elements[2] - get_transform().elements[2];
 		do_motion=true;
 
-		for(int i=0;i<get_shape_count();i++) {
-			set_shape_kinematic_advance(i,Vector2());
-			set_shape_kinematic_retreat(i,0);
-		}
+		//for(int i=0;i<get_shape_count();i++) {
+		//	set_shape_kinematic_advance(i,Vector2());
+		//	set_shape_kinematic_retreat(i,0);
+		//}
 
 	} else {
 		if (!omit_force_integration) {
@@ -434,7 +444,7 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	}
 
 	current_area=NULL; // clear the area, so it is set in the next frame
-	contact_count=0;
+	contact_count=0;	
 
 }
 
@@ -449,8 +459,8 @@ void Body2DSW::integrate_velocities(real_t p_step) {
 	if (mode==Physics2DServer::BODY_MODE_KINEMATIC) {
 
 		_set_transform(new_transform,false);
-		_set_inv_transform(new_transform.affine_inverse());				;
-		if (linear_velocity==Vector2() && angular_velocity==0)
+		_set_inv_transform(new_transform.affine_inverse());
+		if (contacts.size()==0 && linear_velocity==Vector2() && angular_velocity==0)
 			set_active(false); //stopped moving, deactivate
 		return;
 	}
@@ -506,6 +516,7 @@ void Body2DSW::call_queries() {
 
 		Variant v=dbs;
 		const Variant *vp[2]={&v,&fi_callback->callback_udata};
+
 
 		Object *obj = ObjectDB::get_instance(fi_callback->id);
 		if (!obj) {
@@ -590,6 +601,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	island_next=NULL;
 	island_list_next=NULL;
 	_set_static(false);
+	first_time_kinematic=false;
 	density=0;
 	contact_count=0;
 

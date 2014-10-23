@@ -38,6 +38,7 @@
 #include "scene/scene_string_names.h"
 #include "editor_settings.h"
 #include "editor_import_export.h"
+#include "editor_node.h"
 
 void CustomPropertyEditor::_notification(int p_what) {
 	
@@ -1619,6 +1620,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	scene_tree = memnew( SceneTreeDialog );
 	add_child(scene_tree);
 	scene_tree->connect("selected", this,"_node_path_selected");
+	scene_tree->get_tree()->set_show_enabled_subscene(true);
 
 	texture_preview = memnew( TextureFrame );
 	add_child( texture_preview);
@@ -2037,6 +2039,17 @@ void PropertyEditor::update_tree() {
 	List<PropertyInfo> plist;
 	obj->get_property_list(&plist,true);
 
+	bool draw_red=false;
+
+	{
+		Node *nod = obj->cast_to<Node>();
+		Node *es = EditorNode::get_singleton()->get_edited_scene();
+		if (nod && es!=nod && nod->get_owner()!=es) {
+			draw_red=true;
+		}
+	}
+
+
 	Color sscolor=get_color("prop_subsection","Editor");
 
 	TreeItem * current_category=NULL;
@@ -2141,11 +2154,16 @@ void PropertyEditor::update_tree() {
 					
 		item->set_metadata( 0, d );
 		item->set_metadata( 1, p.name );
+
+		if (draw_red)
+			item->set_custom_color(0,Color(0.8,0.4,0.20));
+
 		
 		if (p.name==selected_property) {
 
 			item->select(1);
 		}
+
 		
 		//printf("property %s type %i\n",p.name.ascii().get_data(),p.type);
 		switch( p.type ) {

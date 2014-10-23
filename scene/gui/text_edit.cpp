@@ -935,16 +935,40 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (!_get_mouse_pos(Point2i(mb.x,mb.y), row,col))
 						return;
 
+					int prev_col=cursor.column;
+					int prev_line=cursor.line;
+
+
+
 					cursor_set_line( row );
 					cursor_set_column( col );
+
+					if (mb.mod.shift && (cursor.column!=prev_col || cursor.line!=prev_line)) {
+
+						selection.active=true;
+						selection.selecting_mode=Selection::MODE_POINTER;
+						selection.from_column=prev_col;
+						selection.from_line=prev_line;
+						selection.to_column=cursor.column;
+						selection.to_line=cursor.line;
+						if (selection.from_column>selection.to_column) {
+							SWAP(selection.from_column,selection.to_column);
+							SWAP(selection.from_line,selection.to_line);
+						}
+						selection.selecting_line=prev_line;
+						selection.selecting_column=prev_col;
+						update();
+
+					} else {
 
 					//if sel active and dblick last time < something
 
 					//else
-					selection.active=false;
-					selection.selecting_mode=Selection::MODE_POINTER;
-					selection.selecting_line=row;
-					selection.selecting_column=col;
+						selection.active=false;
+						selection.selecting_mode=Selection::MODE_POINTER;
+						selection.selecting_line=row;
+						selection.selecting_column=col;
+					}
 
 
 					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {
@@ -1184,7 +1208,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						if (k.mod.shift) {
 
 							for(int i=0;i<txt.length();i++) {
-								if (((i>0 && txt[i-1]=='\n') || (i==0 && selection.from_column==0)) && (txt[i]=='\t' || txt[i]==' ')) {
+								if (((i>0 && txt[i-1]=='\n') || (i==0 /*&& selection.from_column==0*/)) && (txt[i]=='\t' || txt[i]==' ')) {
 									txt.remove(i);
 									//i--;
 								}
@@ -1193,7 +1217,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 							for(int i=0;i<txt.length();i++) {
 
-								if (((i>0 && txt[i-1]=='\n') || (i==0 && selection.from_column==0))) {
+								if (((i>0 && txt[i-1]=='\n') || (i==0 /*&& selection.from_column==0*/))) {
 									txt=txt.insert(i,"\t");
 									//i--;
 								}
@@ -2611,20 +2635,53 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 	int line=-1;
 	int pos=-1;
 
+	line=p_from_line;
+
 	for(int i=0;i<text.size()+1;i++) {
 		//backwards is broken...
-		int idx=(p_search_flags&SEARCH_BACKWARDS)?(text.size()-i):i; //do backwards seearch
-		line = (idx+p_from_line)%text.size();
+		//int idx=(p_search_flags&SEARCH_BACKWARDS)?(text.size()-i):i; //do backwards seearch
+
+
+		if (line<0) {
+			line=text.size()-1;
+		}
+		if (line==text.size()) {
+			line=0;
+		}
 
 		String text_line = text[line];
-		int from_column=(idx==0)?p_from_column:0;
-		if (idx==text.size()) {
-			text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
+		int from_column=0;
+		if (line==p_from_line) {
+
+			if (i==text.size()) {
+				//wrapped
+
+				if (p_search_flags&SEARCH_BACKWARDS) {
+					text_line=text_line.substr(from_column,text_line.length());
+					from_column=text_line.length();
+				} else {
+					text_line=text_line.substr(0,from_column);
+					from_column=0;
+				}
+
+			} else {
+
+				from_column=p_from_column;
+			}
+
+
+		} else {
+			//text_line=text_line.substr(0,p_from_column); //wrap around for missing begining.
+			if (p_search_flags&SEARCH_BACKWARDS)
+				from_column=text_line.length()-1;
+			else
+				from_column=0;
 		}
 
 		pos=-1;
 
 		if (!(p_search_flags&SEARCH_BACKWARDS)) {
+
 			pos = (p_search_flags&SEARCH_MATCH_CASE)?text_line.find(p_key,from_column):text_line.findn(p_key,from_column);
 		} else {
 
@@ -2641,6 +2698,11 @@ bool TextEdit::search(const String &p_key,uint32_t p_search_flags, int p_from_li
 
 		if (pos!=-1)
 			break;
+
+		if (p_search_flags&SEARCH_BACKWARDS)
+			line--;
+		else
+			line++;
 
 	}
 
