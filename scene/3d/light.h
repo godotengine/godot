@@ -92,8 +92,10 @@ private:
 	VisualServer::LightType type;
 	bool shadows;
 	bool enabled;
+	bool editor_only;
 	Operator op;
-	
+
+	void _update_visibility();
 // bind helpers
 
 protected:	
@@ -104,6 +106,7 @@ protected:
 	virtual RES _get_gizmo_geometry() const;
 	
 	static void _bind_methods();
+	void _notification(int p_what);
 
 	
 	Light(VisualServer::LightType p_type);	
@@ -131,6 +134,9 @@ public:
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_editor_only(bool p_editor_only);
+	bool is_editor_only() const;
 
 	virtual AABB get_aabb() const;
 	virtual DVector<Face3> get_faces(uint32_t p_usage_flags) const;

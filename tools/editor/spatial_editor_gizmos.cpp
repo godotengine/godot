@@ -36,7 +36,7 @@
 #include "scene/resources/ray_shape.h"
 #include "scene/resources/convex_polygon_shape.h"
 #include "scene/resources/plane_shape.h"
-
+#include "quick_hull.h"
 
 // Keep small children away from this file.
 // It's so ugly it will eat them alive
@@ -75,6 +75,7 @@ void SpatialGizmoTool::Instance::create_instance(Spatial *p_base) {
 		VS::get_singleton()->instance_set_extra_visibility_margin(instance,1);
 	VS::get_singleton()->instance_geometry_set_flag(instance,VS::INSTANCE_FLAG_CAST_SHADOW,false);
 	VS::get_singleton()->instance_geometry_set_flag(instance,VS::INSTANCE_FLAG_RECEIVE_SHADOWS,false);
+	VS::get_singleton()->instance_set_layer_mask(instance,1<<SpatialEditorViewport::GIZMO_EDIT_LAYER); //gizmos are 26
 }
 
 
@@ -1237,6 +1238,10 @@ void SkeletonSpatialGizmo::redraw() {
 	weights[0]=1;
 
 
+	AABB aabb;
+
+	Color bonecolor = Color(1.0,0.4,0.4,0.3);
+	Color rootcolor = Color(0.4,1.0,0.4,0.1);
 
 	for (int i=0;i<skel->get_bone_count();i++) {
 
@@ -1247,8 +1252,96 @@ void SkeletonSpatialGizmo::redraw() {
 
 			Vector3 v0 = grests[parent].origin;
 			Vector3 v1 = grests[i].origin;
+			Vector3 d = (v1-v0).normalized();
+			float dist = v0.distance_to(v1);
+
+			//find closest axis
+			int closest=-1;
+			float closest_d;
+			for(int j=0;j<3;j++) {
+				float dp = Math::abs(grests[parent].basis[j].normalized().dot(d));
+				if (j==0 || dp>closest_d)
+					closest=j;
+			}
+
+			//find closest other
+			Vector3 first;
+			Vector3 points[4];
+			int pointidx=0;
+			for(int j=0;j<3;j++) {
+
+				bones[0]=parent;
+				surface_tool->add_bones(bones);
+				surface_tool->add_weights(weights);
+				surface_tool->add_color(rootcolor);
+				surface_tool->add_vertex(v0-grests[parent].basis[j].normalized()*dist*0.05);
+				surface_tool->add_bones(bones);
+				surface_tool->add_weights(weights);
+				surface_tool->add_color(rootcolor);
+				surface_tool->add_vertex(v0+grests[parent].basis[j].normalized()*dist*0.05);
+
+				if (j==closest)
+					continue;
+
+				Vector3 axis;
+				if (first==Vector3()) {
+					axis = d.cross(d.cross(grests[parent].basis[j])).normalized();
+					first=axis;
+				} else {
+					axis = d.cross(first).normalized();
+				}
+
+				for(int k=0;k<2;k++) {
+
+					if (k==1)
+						axis=-axis;
+					Vector3 point = v0+d*dist*0.2;
+					point+=axis*dist*0.1;
 
 
+					bones[0]=parent;
+					surface_tool->add_bones(bones);
+					surface_tool->add_weights(weights);
+					surface_tool->add_color(bonecolor);
+					surface_tool->add_vertex(v0);
+					surface_tool->add_bones(bones);
+					surface_tool->add_weights(weights);
+					surface_tool->add_color(bonecolor);
+					surface_tool->add_vertex(point);
+
+					bones[0]=parent;
+					surface_tool->add_bones(bones);
+					surface_tool->add_weights(weights);
+					surface_tool->add_color(bonecolor);
+					surface_tool->add_vertex(point);
+					bones[0]=i;
+					surface_tool->add_bones(bones);
+					surface_tool->add_weights(weights);
+					surface_tool->add_color(bonecolor);
+					surface_tool->add_vertex(v1);
+					points[pointidx++]=point;
+
+				}
+
+			}
+
+			SWAP( points[1],points[2] );
+			for(int j=0;j<4;j++) {
+
+
+				bones[0]=parent;
+				surface_tool->add_bones(bones);
+				surface_tool->add_weights(weights);
+				surface_tool->add_color(bonecolor);
+				surface_tool->add_vertex(points[j]);
+				surface_tool->add_bones(bones);
+				surface_tool->add_weights(weights);
+				surface_tool->add_color(bonecolor);
+				surface_tool->add_vertex(points[(j+1)%4]);
+			}
+
+
+/*
 			bones[0]=parent;
 			surface_tool->add_bones(bones);
 			surface_tool->add_weights(weights);
@@ -1259,13 +1352,13 @@ void SkeletonSpatialGizmo::redraw() {
 			surface_tool->add_weights(weights);
 			surface_tool->add_color(Color(0.4,1,0.4,0.4));
 			surface_tool->add_vertex(v1);
-
+*/
 		} else {
 
 			grests[i]=skel->get_bone_rest(i);
 			bones[0]=i;
 		}
-
+/*
 		Transform  t = grests[i];
 		t.orthonormalize();
 
@@ -1302,6 +1395,7 @@ void SkeletonSpatialGizmo::redraw() {
 			}
 
 		}
+		*/
 	}
 
 	Ref<Mesh> m = surface_tool->commit();
@@ -1978,6 +2072,34 @@ void CollisionShapeSpatialGizmo::redraw(){
 	}
 
 
+	if (s->cast_to<ConvexPolygonShape>()) {
+
+		DVector<Vector3> points = s->cast_to<ConvexPolygonShape>()->get_points();
+
+		if (points.size()>3) {
+
+			QuickHull qh;
+			Vector<Vector3> varr = Variant(points);
+			Geometry::MeshData md;
+			Error err = qh.build(varr,md);
+			if (err==OK) {
+				Vector<Vector3> points;
+				points.resize(md.edges.size()*2);
+				for(int i=0;i<md.edges.size();i++) {
+					points[i*2+0]=md.vertices[md.edges[i].a];
+					points[i*2+1]=md.vertices[md.edges[i].b];
+				}
+
+
+				add_lines(points,SpatialEditorGizmos::singleton->shape_material);
+				add_collision_segments(points);
+
+			}
+		}
+
+	}
+
+
 	if (s->cast_to<RayShape>()) {
 
 		Ref<RayShape> rs=s;
@@ -2210,7 +2332,8 @@ void NavigationMeshSpatialGizmo::redraw() {
 	Ref<TriangleMesh> tmesh = memnew( TriangleMesh);
 	tmesh->create(tmeshfaces);
 
-	add_lines(lines,navmesh->is_enabled()?SpatialEditorGizmos::singleton->navmesh_edge_material:SpatialEditorGizmos::singleton->navmesh_edge_material_disabled);
+	if (lines.size())
+		add_lines(lines,navmesh->is_enabled()?SpatialEditorGizmos::singleton->navmesh_edge_material:SpatialEditorGizmos::singleton->navmesh_edge_material_disabled);
 	add_collision_triangles(tmesh);
 	Ref<Mesh> m = memnew( Mesh );
 	Array a;

@@ -967,6 +967,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 			normal=rest.normal;
 			collider=rest.collider_id;
 			collider_vel=rest.linear_velocity;
+			collider_shape=rest.shape;
 		}
 	}
 
@@ -1055,7 +1056,12 @@ ObjectID KinematicBody::get_collider() const {
 	ERR_FAIL_COND_V(!colliding,0);
 	return collider;
 }
+int KinematicBody::get_collider_shape() const {
 
+	ERR_FAIL_COND_V(!colliding,-1);
+	return collider_shape;
+
+}
 void KinematicBody::set_collide_with_static_bodies(bool p_enable) {
 
 	collide_static=p_enable;
@@ -1119,6 +1125,7 @@ void KinematicBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_normal"),&KinematicBody::get_collision_normal);
 	ObjectTypeDB::bind_method(_MD("get_collider_velocity"),&KinematicBody::get_collider_velocity);
 	ObjectTypeDB::bind_method(_MD("get_collider:Object"),&KinematicBody::_get_collider);
+	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody::get_collider_shape);
 
 
 	ObjectTypeDB::bind_method(_MD("set_collide_with_static_bodies","enable"),&KinematicBody::set_collide_with_static_bodies);
@@ -1155,6 +1162,7 @@ KinematicBody::KinematicBody() : PhysicsBody(PhysicsServer::BODY_MODE_KINEMATIC)
 	colliding=false;
 	collider=0;
 	margin=0.001;
+	collider_shape=0;
 }
 KinematicBody::~KinematicBody()  {
 

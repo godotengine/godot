@@ -98,11 +98,12 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		}
 		if (p_key.use_xy_normalmap) {
 			scode+="vec2 ywnormal=tex( fmp_normal_tex,"+uv_str+").wy * vec2(2.0,2.0) - vec2(1.0,1.0);\n";
-			scode+="vec3 normal=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n";
+			scode+="NORMALMAP=vec3(ywnormal,sqrt(1 - (ywnormal.x * ywnormal.x) - (ywnormal.y * ywnormal.y) ));\n";
 		} else {
-			scode+="vec3 normal=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
+			scode+="NORMALMAP=tex( fmp_normal_tex,"+uv_str+").xyz * vec3(2.0,2.0,1.0) - vec3(1.0,1.0,0.0);\n";
 		}
-		scode+="NORMAL = mix( NORMAL,mat3(TANGENT,BINORMAL,NORMAL) * normal,  fmp_normal);\n";
+		scode+="NORMALMAP_DEPTH=fmp_normal;\n";
+
 		code+=scode;
 	}
 
@@ -363,12 +364,13 @@ RID Rasterizer::fixed_material_create() {
 	FixedMaterial &fm=*fixed_materials[mat];
 	fm.self=mat;
 	fm.get_key();
+	material_set_flag(mat,VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,true);
 	for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
 
 		material_set_param(mat,_fixed_material_param_names[i],fm.param[i]); //must be there
 	}
 	fixed_material_dirty_list.add(&fm.dirty_list);
-	//print_line("FMC: "+itos(mat.get_id()));
+	//print_line("FMC: "+itos(mat.get_id()));	
 	return mat;
 }
 

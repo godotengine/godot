@@ -403,19 +403,55 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (!image.empty())
 				image.convert(Image::FORMAT_RGBA);
 			r_gl_components=4;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+
+			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+				if (srgb_supported) {
+					r_gl_format=_GL_SRGB_ALPHA_EXT;
+				} else {
+					r_gl_format=GL_RGBA;
+					if (!image.empty())
+						image.srgb_to_linear();
+				}
+			} else {
+				r_gl_format=GL_RGBA;
+			}
 			r_has_alpha_cache=true;
 
 		} break;
 		case Image::FORMAT_RGB: {
 
 			r_gl_components=3;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_EXT:GL_RGB;
+
+			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+				if (srgb_supported) {
+					r_gl_format=_GL_SRGB_EXT;
+				} else {
+					r_gl_format=GL_RGB;
+					if (!image.empty())
+						image.srgb_to_linear();
+				}
+			} else {
+				r_gl_format=GL_RGB;
+			}
 		} break;
 		case Image::FORMAT_RGBA: {
 
 			r_gl_components=4;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+				if (srgb_supported) {
+					r_gl_format=_GL_SRGB_ALPHA_EXT;
+				} else {
+					r_gl_format=GL_RGBA;
+					if (!image.empty())
+						image.srgb_to_linear();
+				}
+			} else {
+				r_gl_format=GL_RGBA;
+			}
+
 			r_has_alpha_cache=true;
 		} break;
 		case Image::FORMAT_BC1: {
@@ -426,7 +462,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -445,7 +492,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -465,7 +523,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -484,7 +553,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -503,7 +583,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -520,7 +611,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 
@@ -540,7 +642,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (!image.empty())
 					image.decompress();
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 
@@ -561,7 +674,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (!image.empty())
 					image.decompress();
 				r_gl_components=4;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 			} else {
 
@@ -578,7 +702,18 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (!image.empty())
 					image.decompress();
 				r_gl_components=4;
-				r_gl_format=GL_RGBA;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_format=GL_RGBA;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGBA;
+				}
 				r_has_alpha_cache=true;
 
 			} else {
@@ -590,12 +725,24 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 		} break;
 		case Image::FORMAT_ETC: {
 
-			if (!etc_supported) {
+			if (!etc_supported || p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 				if (!image.empty()) {
 					image.decompress();
 				}
 				r_gl_components=3;
+				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
+
+					if (srgb_supported) {
+						r_gl_format=_GL_SRGB_EXT;
+					} else {
+						r_gl_format=GL_RGB;
+						if (!image.empty())
+							image.srgb_to_linear();
+					}
+				} else {
+					r_gl_format=GL_RGB;
+				}
 				r_gl_format=GL_RGB;
 
 
@@ -1458,6 +1605,7 @@ void RasterizerGLES2::material_set_flag(RID p_material, VS::MaterialFlag p_flag,
 	Material *material = material_owner.get(p_material);
 	ERR_FAIL_COND(!material);
 	ERR_FAIL_INDEX(p_flag,VS::MATERIAL_FLAG_MAX);
+
 	material->flags[p_flag]=p_enabled;
 
 }
@@ -4271,7 +4419,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define ENABLE_UV_INTERP\n");
 		if (fragment_flags.use_uv2_interp || vertex_flags.use_uv2_interp)
 			enablers.push_back("#define ENABLE_UV2_INTERP\n");
-		if (fragment_flags.use_tangent_interp || vertex_flags.use_tangent_interp)
+		if (fragment_flags.use_tangent_interp || vertex_flags.use_tangent_interp || fragment_flags.uses_normalmap)
 			enablers.push_back("#define ENABLE_TANGENT_INTERP\n");
 		if (fragment_flags.use_var1_interp || vertex_flags.use_var1_interp)
 			enablers.push_back("#define ENABLE_VAR1_INTERP\n");
@@ -4285,6 +4433,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 		if (fragment_flags.uses_discard) {
 			enablers.push_back("#define ENABLE_DISCARD\n");
+		}
+		if (fragment_flags.uses_normalmap) {
+			enablers.push_back("#define ENABLE_NORMALMAP\n");
 		}
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
@@ -4715,6 +4866,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_PCF_HQ,shadow_filter==SHADOW_FILTER_PCF13);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SHADOW_ESM,shadow_filter==SHADOW_FILTER_ESM);
 	material_shader.set_conditional(MaterialShaderGLES2::USE_LIGHTMAP_ON_UV2,p_material->flags[VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2]);
+	material_shader.set_conditional(MaterialShaderGLES2::USE_COLOR_ATTRIB_SRGB_TO_LINEAR,p_material->flags[VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB] && current_env && current_env->fx_enabled[VS::ENV_FX_SRGB]);
 
 	if (p_opaque_pass && p_material->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA && p_material->shader_cache && p_material->shader_cache->has_alpha) {
 
@@ -5011,7 +5163,7 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 }
 
 
-template<bool USE_NORMAL, bool USE_TANGENT>
+template<bool USE_NORMAL, bool USE_TANGENT,bool INPLACE>
 void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_stride, uint8_t * p_dst_array, int p_dst_stride, int p_elements,const uint8_t *p_src_bones, const uint8_t *p_src_weights, const Skeleton::Bone *p_bone_xforms) {
 
 	uint32_t basesize = 3;
@@ -5021,6 +5173,8 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 		basesize+=4;
 
 	uint32_t extra=(p_dst_stride-basesize*4);
+	const int dstvec_size=3+(USE_NORMAL?3:0)+(USE_TANGENT?4:0);
+	float dstcopy[dstvec_size];
 
 	for(int i=0;i<p_elements;i++) {
 
@@ -5029,7 +5183,11 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 		const uint16_t *bi = (const uint16_t*)&p_src_bones[ss];
 		const float *bw = (const float *)&p_src_weights[ss];
 		const float *src_vec=(const float *)&p_src_array[ss];
-		float *dst_vec=(float*)&p_dst_array[ds];
+		float *dst_vec;
+		if (INPLACE)
+			dst_vec=dstcopy;
+		else
+			dst_vec=(float*)&p_dst_array[ds];
 
 		dst_vec[0]=0.0;
 		dst_vec[1]=0.0;
@@ -5082,16 +5240,28 @@ void RasterizerGLES2::_skeleton_xform(const uint8_t * p_src_array, int p_src_str
 
 		end:
 
-		//copy extra stuff
-		const uint8_t *esp =(const uint8_t*) &src_vec[basesize];
-		uint8_t *edp =(uint8_t*) &dst_vec[basesize];
+		if (INPLACE) {
+
+			const uint8_t *esp =(const uint8_t*) dstcopy;
+			uint8_t *edp =(uint8_t*)&p_dst_array[ds];
 
 
-		for(uint32_t j=0;j<extra;j++) {
+			for(uint32_t j=0;j<dstvec_size*4;j++) {
 
-			edp[j]=esp[j];
+				edp[j]=esp[j];
+			}
+
+		} else {
+			//copy extra stuff
+			const uint8_t *esp =(const uint8_t*) &src_vec[basesize];
+			uint8_t *edp =(uint8_t*) &dst_vec[basesize];
+
+
+			for(uint32_t j=0;j<extra;j++) {
+
+				edp[j]=esp[j];
+			}
 		}
-
 	}
 }
 
@@ -5166,6 +5336,8 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 					}
 
+					int16_t coeffp = CLAMP(coef*255,0,255);
+
 
 					for(int i=0;i<VS::ARRAY_MAX-1;i++) {
 
@@ -5175,8 +5347,12 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 						int ofs = ad.ofs;
 						int src_stride=surf->stride;
-						int dst_stride=surf->local_stride;
+						int dst_stride=skeleton_valid?surf->stride:surf->local_stride;
 						int count = surf->array_len;
+
+						if (!skeleton_valid && i>=VS::ARRAY_MAX-3)
+							break;
+
 
 						switch(i) {
 
@@ -5193,7 +5369,21 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 									dst[0]= src[0]*coef;
 									dst[1]= src[1]*coef;
 									dst[2]= src[2]*coef;
-								} break;
+								};
+
+							} break;
+							case VS::ARRAY_COLOR: {
+
+								for(int k=0;k<count;k++) {
+
+									const uint8_t *src = (const uint8_t*)&surf->array_local[ofs+k*src_stride];
+									uint8_t *dst = (uint8_t*)&base[ofs+k*dst_stride];
+
+									dst[0]=	(src[0]*coeffp)>>8;
+									dst[1]=	(src[1]*coeffp)>>8;
+									dst[2]=	(src[2]*coeffp)>>8;
+									dst[3]=	(src[3]*coeffp)>>8;
+								}
 
 							} break;
 							case VS::ARRAY_TEX_UV:
@@ -5206,16 +5396,32 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 									dst[0]= src[0]*coef;
 									dst[1]= src[1]*coef;
-								} break;
+								}
 
 							} break;
+							case VS::ARRAY_BONES:
+							case VS::ARRAY_WEIGHTS: {
+
+								for(int k=0;k<count;k++) {
+
+									const float *src = (const float*)&surf->array_local[ofs+k*src_stride];
+									float *dst = (float*)&base[ofs+k*dst_stride];
+
+									dst[0]= src[0];
+									dst[1]= src[1];
+									dst[2]= src[2];
+									dst[3]= src[3];
+								}
+
+							} break;
+
 						}
 					}
 
 
 					for(int j=0;j<surf->morph_target_count;j++) {
 
-						for(int i=0;i<VS::ARRAY_MAX-1;i++) {
+						for(int i=0;i<VS::ARRAY_MAX-3;i++) {
 
 							const Surface::ArrayData& ad=surf->array[i];
 							if (ad.size==0)
@@ -5223,10 +5429,12 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 
 							int ofs = ad.ofs;
-							int dst_stride=surf->local_stride;
+							int src_stride=surf->local_stride;
+							int dst_stride=skeleton_valid?surf->stride:surf->local_stride;
 							int count = surf->array_len;
 							const uint8_t *morph=surf->morph_targets_local[j].array;
 							float w = p_morphs[j];
+							int16_t wfp = CLAMP(w*255,0,255);
 
 							switch(i) {
 
@@ -5237,13 +5445,26 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 									for(int k=0;k<count;k++) {
 
-										const float *src_morph = (const float*)&morph[ofs+k*dst_stride];
+										const float *src_morph = (const float*)&morph[ofs+k*src_stride];
 										float *dst = (float*)&base[ofs+k*dst_stride];
 
 										dst[0]+= src_morph[0]*w;
 										dst[1]+= src_morph[1]*w;
 										dst[2]+= src_morph[2]*w;
-									} break;
+									}
+
+								} break;
+								case VS::ARRAY_COLOR: {
+									for(int k=0;k<count;k++) {
+
+										const uint8_t *src = (const uint8_t*)&morph[ofs+k*src_stride];
+										uint8_t *dst = (uint8_t*)&base[ofs+k*dst_stride];
+
+										dst[0]=	(src[0]*wfp)>>8;
+										dst[1]=	(src[1]*wfp)>>8;
+										dst[2]=	(src[2]*wfp)>>8;
+										dst[3]=	(src[3]*wfp)>>8;
+									}
 
 								} break;
 								case VS::ARRAY_TEX_UV:
@@ -5251,17 +5472,42 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 
 									for(int k=0;k<count;k++) {
 
-										const float *src_morph = (const float*)&morph[ofs+k*dst_stride];
+										const float *src_morph = (const float*)&morph[ofs+k*src_stride];
 										float *dst = (float*)&base[ofs+k*dst_stride];
 
 										dst[0]+= src_morph[0]*w;
 										dst[1]+= src_morph[1]*w;
-									} break;
+									}
 
 								} break;
 							}
 						}
 					}
+
+
+
+					if (skeleton_valid) {
+
+
+
+						const uint8_t *src_weights=&surf->array_local[surf->array[VS::ARRAY_WEIGHTS].ofs];
+						const uint8_t *src_bones=&surf->array_local[surf->array[VS::ARRAY_BONES].ofs];
+						const Skeleton::Bone *skeleton = &p_skeleton->bones[0];
+
+
+						if (surf->format&VS::ARRAY_FORMAT_NORMAL && surf->format&VS::ARRAY_FORMAT_TANGENT)
+							_skeleton_xform<true,true,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+						else if (surf->format&(VS::ARRAY_FORMAT_NORMAL))
+							_skeleton_xform<true,false,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+						else if (surf->format&(VS::ARRAY_FORMAT_TANGENT))
+							_skeleton_xform<false,true,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+						else
+							_skeleton_xform<false,false,true>(base,surf->stride,base,surf->stride,surf->array_len,src_bones,src_weights,skeleton);
+
+					}
+
+					stride=skeleton_valid?surf->stride:surf->local_stride;
+
 
 #if 0
 					{
@@ -5356,14 +5602,14 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 					const uint8_t *src_bones=&surf->array_local[surf->array[VS::ARRAY_BONES].ofs];
 					const Skeleton::Bone *skeleton = &p_skeleton->bones[0];
 
-						if (surf->format&VS::ARRAY_FORMAT_NORMAL && surf->format&VS::ARRAY_FORMAT_TANGENT)
-						_skeleton_xform<true,true>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+					if (surf->format&VS::ARRAY_FORMAT_NORMAL && surf->format&VS::ARRAY_FORMAT_TANGENT)
+						_skeleton_xform<true,true,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 					else if (surf->format&(VS::ARRAY_FORMAT_NORMAL))
-						_skeleton_xform<true,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+						_skeleton_xform<true,false,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 					else if (surf->format&(VS::ARRAY_FORMAT_TANGENT))
-						_skeleton_xform<false,true>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+						_skeleton_xform<false,true,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 					else
-						_skeleton_xform<false,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
+						_skeleton_xform<false,false,false>(surf->array_local,surf->stride,base,dst_stride,surf->array_len,src_bones,src_weights,skeleton);
 
 
 					stride=dst_stride;
@@ -6124,7 +6370,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			if (!shadow) {
 
 				if (!additive && current_env && current_env->fx_enabled[VS::ENV_FX_AMBIENT_LIGHT]) {
-					Color ambcolor = current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_COLOR];
+					Color ambcolor = _convert_color(current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_COLOR]);
 					float ambnrg =  current_env->fx_param[VS::ENV_FX_PARAM_AMBIENT_LIGHT_ENERGY];
 					material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHT,Vector3(ambcolor.r*ambnrg,ambcolor.g*ambnrg,ambcolor.b*ambnrg));
 				} else {

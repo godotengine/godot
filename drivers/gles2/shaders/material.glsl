@@ -292,11 +292,21 @@ void main() {
 	normal_interp = normalize((modelview * vec4(normal_in,0.0)).xyz);
 
 #if defined(ENABLE_COLOR_INTERP)
+#ifdef USE_COLOR_ATTRIB_SRGB_TO_LINEAR
+
+	color_interp = vec4(
+		color_attrib.r<0.04045 ? color_attrib.r * (1.0 / 12.92) : pow((color_attrib.r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.g<0.04045 ? color_attrib.g * (1.0 / 12.92) : pow((color_attrib.g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.b<0.04045 ? color_attrib.b * (1.0 / 12.92) : pow((color_attrib.b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.a
+	);
+#else
 	color_interp = color_attrib;
+#endif
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP)
-	tangent_interp=normalize(tangent_in);
+	tangent_interp=normalize((modelview * vec4(tangent_in,0.0)).xyz);
 	binormal_interp = normalize( cross(normal_interp,tangent_interp) * binormalf );
 #endif
 
@@ -809,6 +819,12 @@ void main() {
 	vec4 color = color_interp;
 #endif
 
+#if defined(ENABLE_NORMALMAP)
+
+	vec3 normalmap = vec3(0.0);
+#endif
+
+	float normaldepth=1.0;
 
 
 
@@ -822,6 +838,12 @@ void main() {
 FRAGMENT_SHADER_CODE
 
 }
+
+#if defined(ENABLE_NORMALMAP)
+
+	normal = normalize( mix(normal_interp,tangent_interp * normalmap.x + binormal_interp * normalmap.y + normal_interp * normalmap.z,normaldepth) ) * side;
+
+#endif
 
 #if defined(ENABLE_DISCARD)
 	if (discard_) {

@@ -1105,6 +1105,8 @@ void ScriptEditor::ensure_select_current() {
 		if (!ste)
 			return;
 		Ref<Script> script = ste->get_edited_script();
+
+		ste->get_text_edit()->grab_focus();
 	}
 }
 
@@ -1284,7 +1286,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 			continue;
 
 		String code = ste->get_text_edit()->get_text();
-		int pos = script->get_language()->find_function(code,p_function);
+		int pos = script->get_language()->find_function(p_function,code);
 		if (pos==-1) {
 			//does not exist
 

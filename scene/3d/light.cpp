@@ -429,15 +429,58 @@ void Light::approximate_opengl_attenuation(float p_constant, float p_linear, flo
 
 }
 
+
+void Light::_update_visibility() {
+
+	if (!is_inside_scene())
+		return;
+
+
+bool editor_ok=true;
+
+#ifdef TOOLS_ENABLED
+	if (editor_only) {
+		if (!get_scene()->is_editor_hint()) {
+			editor_ok=false;
+		} else {
+			editor_ok = (get_scene()->get_edited_scene_root() && (this==get_scene()->get_edited_scene_root() || get_owner()==get_scene()->get_edited_scene_root()));
+		}
+	}
+#endif
+
+	VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible() && enabled && editor_ok);
+	_change_notify("geometry/visible");
+
+}
+
+
+void Light::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_SCENE || p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+		_update_visibility();
+	}
+}
+
 void Light::set_enabled(bool p_enabled) {
 
 	enabled=p_enabled;
-	VS::get_singleton()->instance_light_set_enabled(get_instance(),enabled);
+	_update_visibility();
 }
 
 bool Light::is_enabled() const{
 
 	return enabled;
+}
+
+void Light::set_editor_only(bool p_editor_only) {
+
+	editor_only=p_editor_only;
+	_update_visibility();
+}
+
+bool Light::is_editor_only() const{
+
+	return editor_only;
 }
 
 
@@ -457,9 +500,12 @@ void Light::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_bake_mode"), &Light::get_bake_mode );
 	ObjectTypeDB::bind_method(_MD("set_enabled","enabled"), &Light::set_enabled );
 	ObjectTypeDB::bind_method(_MD("is_enabled"), &Light::is_enabled );
+	ObjectTypeDB::bind_method(_MD("set_editor_only","editor_only"), &Light::set_editor_only );
+	ObjectTypeDB::bind_method(_MD("is_editor_only"), &Light::is_editor_only );
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "params/enabled"), _SCS("set_enabled"), _SCS("is_enabled"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "params/editor_only"), _SCS("set_editor_only"), _SCS("is_editor_only"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "params/bake_mode",PROPERTY_HINT_ENUM,"Disabled,Indirect,Indirect+Shadows,Full"), _SCS("set_bake_mode"), _SCS("get_bake_mode"));
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/energy", PROPERTY_HINT_EXP_RANGE, "0,64,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_ENERGY );
 	/*
@@ -531,6 +577,7 @@ Light::Light(VisualServer::LightType p_type) {
 	set_project_shadows( false );
 	set_base(light);
 	enabled=true;
+	editor_only=false;
 	bake_mode=BAKE_MODE_DISABLED;
 
 }

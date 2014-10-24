@@ -219,10 +219,13 @@ void Camera::_notification(int p_what) {
 
 			}
 
+			camera_group = "_vp_cameras"+itos(get_viewport()->get_instance_ID());
+			add_to_group(camera_group);
 			if (viewport_ptr)
 				viewport_ptr->cameras.insert(this);
 			if (current)
 				make_current();
+
 
 		} break;			
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -241,6 +244,8 @@ void Camera::_notification(int p_what) {
 			if (viewport_ptr)
 				viewport_ptr->cameras.erase(this);
 			viewport_ptr=NULL;
+			remove_from_group(camera_group);
+
 
 		} break;
 		case NOTIFICATION_BECAME_CURRENT: {
@@ -314,6 +319,20 @@ void Camera::make_current() {
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
+
+void Camera::_camera_make_next_current(Node *p_exclude) {
+
+	if (this==p_exclude)
+		return;
+	if (!is_inside_scene())
+		return;
+	if (get_viewport()->get_camera()!=NULL)
+		return;
+
+	make_current();
+}
+
+
 void Camera::clear_current() {
 
 	current=false;
@@ -321,8 +340,12 @@ void Camera::clear_current() {
 		return;
 
 	if (viewport_ptr) {
-		if (viewport_ptr->get_camera()==this)
+		if (viewport_ptr->get_camera()==this) {
 			viewport_ptr->_set_camera(NULL);
+			//a group is used beause this needs to be in order to be deterministic
+			get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_next_current",this);
+
+		}
 	}
 
 }
@@ -636,6 +659,7 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&Camera::get_environment);
 	ObjectTypeDB::bind_method(_MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode);
 	ObjectTypeDB::bind_method(_MD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode);
+	ObjectTypeDB::bind_method(_MD("_camera_make_next_current"),&Camera::_camera_make_next_current);
 	//ObjectTypeDB::bind_method( _MD("_camera_make_current"),&Camera::_camera_make_current );
 
 	BIND_CONSTANT( PROJECTION_PERSPECTIVE );
@@ -732,7 +756,8 @@ Camera::Camera() {
 	mode=PROJECTION_PERSPECTIVE;
 	set_perspective(60.0,0.1,100.0);
 	keep_aspect=KEEP_HEIGHT;
-	layers=0xFFFFFFFF;
+	layers=0xfffff;
+	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
 	//active=false;
 }
 

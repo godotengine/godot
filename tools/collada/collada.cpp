@@ -443,7 +443,10 @@ Vector<String> Collada::_read_string_array(XMLParser& parser) {
 		if (parser.get_node_type() == XMLParser::NODE_TEXT) {
 			// parse String data
 			String str = parser.get_node_data();
-			array=str.split(" ",false);
+			array=str.split_spaces();
+			//for(int i=0;i<array.size();i++) {
+			//	print_line(itos(i)+": "+array[i]);
+			//}
 		}
 		else
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)
@@ -2065,6 +2068,8 @@ void Collada::_parse_animation(XMLParser& parser) {
 			} else {
 				track.target=target;
 			}
+
+			print_line("TARGET: "+track.target);
 
 			state.animation_tracks.push_back(track);
 

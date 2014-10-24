@@ -169,6 +169,7 @@ public:
 		MATERIAL_FLAG_UNSHADED,
 		MATERIAL_FLAG_ONTOP,
 		MATERIAL_FLAG_LIGHTMAP_ON_UV2,
+		MATERIAL_FLAG_COLOR_ARRAY_SRGB,
 		MATERIAL_FLAG_MAX,
 	};
 
@@ -807,7 +808,7 @@ public:
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode)=0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment)=0;
 	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const=0;
-
+	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment)=0;
 
 
 	/* INSTANCING API */
