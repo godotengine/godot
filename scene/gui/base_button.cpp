@@ -55,6 +55,9 @@ void BaseButton::_input_event(InputEvent p_event) {
 				if (b.pressed) {
 
 					if (!toggle_mode) { //mouse press attempt
+					
+            status.press_attempt=true;
+            status.pressing_inside=true;
 
 						pressed();
 						emit_signal("pressed");
@@ -71,8 +74,15 @@ void BaseButton::_input_event(InputEvent p_event) {
 					}
 
 
+        } else {
+          
+          if (status.press_attempt &&status.pressing_inside) {
+		        pressed();
+		        emit_signal("pressed");
+          }
+          status.press_attempt=false;
 				}
-
+				update();
 				break;
 			}
 
