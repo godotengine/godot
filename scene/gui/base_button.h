@@ -72,6 +72,7 @@ protected:
 	DrawMode get_draw_mode() const;
 	
 	virtual void pressed();
+	virtual void released();
 	virtual void toggled(bool p_pressed);
 	static void _bind_methods();
 	virtual void _input_event(InputEvent p_event);

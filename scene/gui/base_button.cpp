@@ -30,7 +30,7 @@
 #include "os/keyboard.h"
 #include "print_string.h"
 #include "button_group.h"
-
+#include "scene/scene_string_names.h"
 
 void BaseButton::_input_event(InputEvent p_event) {
 
@@ -77,8 +77,8 @@ void BaseButton::_input_event(InputEvent p_event) {
         } else {
           
           if (status.press_attempt) {
-		        pressed();
-		        emit_signal("pressed");
+		        released();
+		        emit_signal("released");
           }
           status.press_attempt=false;
 				}
@@ -127,6 +127,13 @@ void BaseButton::_input_event(InputEvent p_event) {
 				bool last_press_inside=status.pressing_inside;
 				status.pressing_inside=has_point(Point2(p_event.mouse_motion.x,p_event.mouse_motion.y));
 				if (last_press_inside!=status.pressing_inside)
+				  if (status.click_on_press) {
+  				  if( !status.pressing_inside) {
+  				    emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+  				  } else {
+  				    emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+  				  }
+				  }
 					update();
 			}
 		} break;
@@ -239,6 +246,12 @@ void BaseButton::pressed() {
 
 	if (get_script_instance())
 		get_script_instance()->call("pressed");
+}
+
+void BaseButton::released() {
+
+	if (get_script_instance())
+		get_script_instance()->call("released");
 }
 
 void BaseButton::toggled(bool p_pressed) {
@@ -360,6 +373,7 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
+	ADD_SIGNAL( MethodInfo("released" ) );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
