@@ -237,7 +237,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	//colorize engine types
 	Color type_color= EDITOR_DEF("text_editor/engine_type_color",Color(0.0,0.2,0.4));
 
-	List<String> types;
+    List<String> types;
 	ObjectTypeDB::get_type_list(&types);
 
 	for(List<String>::Element *E=types.front();E;E=E->next()) {
@@ -686,6 +686,161 @@ void ScriptEditor::_menu_option(int p_option) {
 			current->get_text_edit()->select_all();
 
 		} break;
+        case EDIT_MOVE_LINE_UP: {
+
+            TextEdit *tx = current->get_text_edit();
+            Ref<Script> scr = current->get_edited_script();
+            if (scr.is_null())
+                return;
+
+            int line_id = tx->cursor_get_line();
+            int next_id = line_id - 1;
+
+            if (line_id == 0 || next_id < 0)
+                return;
+
+            String tmp = tx->get_line(line_id);
+            String tmp2 = tx->get_line(next_id);
+            tx->set_line(next_id, tmp);
+            tx->set_line(line_id, tmp2);
+            tx->update();
+
+        } break;
+        case EDIT_MOVE_LINE_DOWN: {
+
+            TextEdit *tx = current->get_text_edit();
+            Ref<Script> scr = current->get_edited_script();
+            if (scr.is_null())
+                return;
+
+            int line_id = tx->cursor_get_line();
+            int next_id = line_id + 1;
+
+            if (line_id == tx->get_line_count() || next_id > tx->get_line_count())
+                return;
+
+            String tmp = tx->get_line(line_id);
+            String tmp2 = tx->get_line(next_id);
+            tx->set_line(next_id, tmp);
+            tx->set_line(line_id, tmp2);
+            tx->update();
+
+        } break;
+        case EDIT_INDENT_LEFT: {
+
+            TextEdit *tx = current->get_text_edit();
+            Ref<Script> scr = current->get_edited_script();
+            if (scr.is_null())
+                return;
+
+            int begin, end;
+            begin = tx->get_selection_from_line();
+            if (tx->is_selection_active())
+            {
+                end = tx->get_selection_to_line();
+                for (int i = begin; i <= end; i++)
+                {
+                    String line_text = tx->get_line(i);
+                    line_text = line_text.substr(1, line_text.length());
+                    tx->set_line(begin, line_text);
+                }
+            }
+            else
+            {
+                begin = tx->cursor_get_line();
+                String line_text = tx->get_line(begin);
+                line_text = line_text.substr(1, line_text.length());
+                tx->set_line(begin, line_text);
+            }
+            tx->update();
+            tx->deselect();
+
+        } break;
+        case EDIT_CLONE_DOWN: {
+
+            TextEdit *tx = current->get_text_edit();
+            Ref<Script> scr = current->get_edited_script();
+            if (scr.is_null())
+                return;
+            int line = tx->cursor_get_line();
+            int next_line = line + 1;
+
+            if (line == tx->get_line_count() || next_line > tx->get_line_count())
+                return;
+
+            String line_clone = tx->get_line(line);
+            tx->insert_at(line_clone, next_line);
+            tx->update();
+
+        } break;
+        case EDIT_INDENT_RIGHT: {
+
+            TextEdit *tx = current->get_text_edit();
+            Ref<Script> scr = current->get_edited_script();
+            if (scr.is_null())
+                return;
+
+            int begin, end;
+            begin = tx->get_selection_from_line();
+            if (tx->is_selection_active())
+            {
+                end = tx->get_selection_to_line();
+                for (int i = begin; i <= end; i++)
+                {
+                    String line_text = tx->get_line(i);
+                    line_text = '\t' + line_text;
+                    tx->set_line(i, line_text);
+                }
+            }
+            else
+            {
+                begin = tx->cursor_get_line();
+                String line_text = tx->get_line(begin);
+                line_text = '\t' + line_text;
+                tx->set_line(begin, line_text);
+            }
+            tx->update();
+            tx->deselect();
+
+        } break;
+        case EDIT_TOGGLE_COMMENT: {
+
+            TextEdit *tx = current->get_text_edit();
+            Ref<Script> scr = current->get_edited_script();
+            if (scr.is_null())
+                return;
+
+            int begin, end;
+            begin = tx->get_selection_from_line();
+            if (tx->is_selection_active())
+            {
+                end = tx->get_selection_to_line();
+                for (int i = begin; i <= end; i++)
+                {
+                    String line_text = tx->get_line(i);
+
+                    if (line_text.begins_with("#"))
+                        line_text = line_text.strip_edges().substr(1, line_text.length());
+                    else
+                        line_text = "#" + line_text;
+                    tx->set_line(i, line_text);
+                }
+            }
+            else
+            {
+                begin = tx->cursor_get_line();
+                String line_text = tx->get_line(begin);
+
+                if (line_text.begins_with("#"))
+                    line_text = line_text.strip_edges().substr(1, line_text.length());
+                else
+                    line_text = "#" + line_text;
+                tx->set_line(begin, line_text);
+            }
+            tx->update();
+            tx->deselect();
+
+        } break;
 		case EDIT_COMPLETE: {
 
 			current->get_text_edit()->query_code_comple();
@@ -1343,6 +1498,13 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item("Paste",EDIT_PASTE,KEY_MASK_CMD|KEY_V);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
+    edit_menu->get_popup()->add_separator();
+    edit_menu->get_popup()->add_item("Move Line Up",EDIT_MOVE_LINE_UP,KEY_MASK_CMD|KEY_UP);
+    edit_menu->get_popup()->add_item("Move Line Down",EDIT_MOVE_LINE_DOWN,KEY_MASK_CMD|KEY_DOWN);
+    edit_menu->get_popup()->add_item("Indent Left",EDIT_INDENT_LEFT,KEY_MASK_CMD|KEY_LEFT);
+    edit_menu->get_popup()->add_item("Indent Right",EDIT_INDENT_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
+    edit_menu->get_popup()->add_item("Toggle Comment",EDIT_TOGGLE_COMMENT,KEY_MASK_CMD|KEY_SLASH);
+    edit_menu->get_popup()->add_item("Clone Down",EDIT_CLONE_DOWN,KEY_MASK_CMD|KEY_B);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
 	edit_menu->get_popup()->add_item("Auto Indent",EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
