@@ -237,7 +237,9 @@ void GDTokenizerText::_advance() {
 	while (true) {
 
 
-		bool is_node_path=false;
+		bool is_node_path  = false;
+		bool is_string     = false;
+		bool is_string_alt = false;
 
 		switch(GETCHAR(0)) {
 			case 0:
@@ -527,13 +529,17 @@ void GDTokenizerText::_advance() {
 				}
 			} break;
 			case '@':
-				if (CharType(GETCHAR(1))!='"') {
+				if( CharType(GETCHAR(1))!='"' && CharType(GETCHAR(1))!='\'' ) {
 					_make_error("Unexpected '@'");
 					return;
 				}
 				INCPOS(1);
 				is_node_path=true;
+				
+			case '\'':
+			  is_string_alt = true;
 			case '"': {
+			  is_string = is_string_alt ? false : true;
 
 				int i=1;
 				String str;
@@ -542,8 +548,10 @@ void GDTokenizerText::_advance() {
 
 						_make_error("Unterminated String");
 						return;
-					} else if (CharType(GETCHAR(i)=='"')) {
+					} else if( CharType(GETCHAR(i)=='"') && is_string ) {
 						break;
+					} else if( CharType(GETCHAR(i)=='\'') && is_string_alt ) {
+					  break;
 					} else if (CharType(GETCHAR(i)=='\\')) {
 						//escaped characters...
 						i++;
