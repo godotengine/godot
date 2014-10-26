@@ -661,13 +661,10 @@ void ScriptEditor::_menu_option(int p_option) {
 
 		} break;
 		case EDIT_UNDO: {
-
-
 			current->get_text_edit()->undo();
 		} break;
 		case EDIT_REDO: {
 			current->get_text_edit()->redo();
-
 		} break;
 		case EDIT_CUT: {
 
@@ -742,7 +739,7 @@ void ScriptEditor::_menu_option(int p_option) {
                 {
                     String line_text = tx->get_line(i);
                     line_text = line_text.substr(1, line_text.length());
-                    tx->set_line(begin, line_text);
+                    tx->set_line(i, line_text);
                 }
             }
             else
@@ -1490,8 +1487,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu = memnew( MenuButton );
 	menu_hb->add_child(edit_menu);
 	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo");
-	edit_menu->get_popup()->add_item("Redo");
+    edit_menu->get_popup()->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD|KEY_Z);
+    edit_menu->get_popup()->add_item("Redo",EDIT_REDO,KEY_MASK_CMD|KEY_Y);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
 	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
@@ -1499,10 +1496,10 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
     edit_menu->get_popup()->add_separator();
-    edit_menu->get_popup()->add_item("Move Line Up",EDIT_MOVE_LINE_UP,KEY_MASK_CMD|KEY_UP);
-    edit_menu->get_popup()->add_item("Move Line Down",EDIT_MOVE_LINE_DOWN,KEY_MASK_CMD|KEY_DOWN);
-    edit_menu->get_popup()->add_item("Indent Left",EDIT_INDENT_LEFT,KEY_MASK_CMD|KEY_LEFT);
-    edit_menu->get_popup()->add_item("Indent Right",EDIT_INDENT_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
+    edit_menu->get_popup()->add_item("Move Line Up",EDIT_MOVE_LINE_UP);
+    edit_menu->get_popup()->add_item("Move Line Down",EDIT_MOVE_LINE_DOWN);
+    edit_menu->get_popup()->add_item("Indent Left",EDIT_INDENT_LEFT,KEY_MASK_CMD|KEY_COMMA);
+    edit_menu->get_popup()->add_item("Indent Right",EDIT_INDENT_RIGHT,KEY_MASK_CMD|KEY_PERIOD);
     edit_menu->get_popup()->add_item("Toggle Comment",EDIT_TOGGLE_COMMENT,KEY_MASK_CMD|KEY_SLASH);
     edit_menu->get_popup()->add_item("Clone Down",EDIT_CLONE_DOWN,KEY_MASK_CMD|KEY_B);
 	edit_menu->get_popup()->add_separator();
