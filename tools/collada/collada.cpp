@@ -444,9 +444,9 @@ Vector<String> Collada::_read_string_array(XMLParser& parser) {
 			// parse String data
 			String str = parser.get_node_data();
 			array=str.split_spaces();
-			for(int i=0;i<array.size();i++) {
-				print_line(itos(i)+": "+array[i]);
-			}
+			//for(int i=0;i<array.size();i++) {
+			//	print_line(itos(i)+": "+array[i]);
+			//}
 		}
 		else
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT_END)

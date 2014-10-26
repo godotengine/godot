@@ -83,6 +83,17 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             description="Apply modifiers to mesh objects (on a copy!).",
             default=True,
             )
+    use_tangent_arrays = BoolProperty(
+	    name="Tangent Arrays",
+	    description="Export Tangent and Binormal arrays (for normalmapping).",
+	    default=False,
+	    )
+    use_triangles = BoolProperty(
+	    name="Triangulate",
+	    description="Export Triangles instead of Polygons.",
+	    default=False,
+	    )
+
     use_copy_images = BoolProperty(
             name="Copy Images",
             description="Copy Images (create images/ subfolder)",
@@ -118,6 +129,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             description="Remove double keyframes",
             default=True,
             )
+
     anim_optimize_precision = FloatProperty(
             name="Precision",
             description=("Tolerence for comparing double keyframes "
@@ -126,6 +138,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
             soft_min=1, soft_max=16,
             default=6.0,
             )
+
     use_metadata = BoolProperty(
             name="Use Metadata",
             default=True,
