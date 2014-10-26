@@ -142,7 +142,7 @@ void EditorFileSystemDirectory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_file","idx"),&EditorFileSystemDirectory::get_file);
 	ObjectTypeDB::bind_method(_MD("get_file_path","idx"),&EditorFileSystemDirectory::get_file_path);
 	ObjectTypeDB::bind_method(_MD("get_file_types","idx"),&EditorFileSystemDirectory::get_file_type);
-	ObjectTypeDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::get_file_type);
+	ObjectTypeDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::is_missing_sources);
 	ObjectTypeDB::bind_method(_MD("get_name"),&EditorFileSystemDirectory::get_name);
 	ObjectTypeDB::bind_method(_MD("get_parent"),&EditorFileSystemDirectory::get_parent);
 
