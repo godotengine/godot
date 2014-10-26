@@ -293,7 +293,7 @@ void EditorHelpSearch::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
-	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_sbox_input);
+	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
