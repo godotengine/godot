@@ -1489,7 +1489,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_block_signals","enable"),&Object::set_block_signals);
 	ObjectTypeDB::bind_method(_MD("is_blocking_signals"),&Object::is_blocking_signals);
 	ObjectTypeDB::bind_method(_MD("set_message_translation","enable"),&Object::set_message_translation);
-	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::set_message_translation);
+	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::can_translate_messages);
 	ObjectTypeDB::bind_method(_MD("property_list_changed_notify"),&Object::property_list_changed_notify);
 
 	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);

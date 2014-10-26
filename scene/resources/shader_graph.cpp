@@ -148,8 +148,8 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("node_set_pos"),&ShaderGraph::node_set_pos );
 
 	ObjectTypeDB::bind_method(_MD("node_get_pos"),&ShaderGraph::node_get_pos );
-	ObjectTypeDB::bind_method(_MD("node_get_param"),&ShaderGraph::node_get_type);
-	ObjectTypeDB::bind_method(_MD("node_get_type"),&ShaderGraph::node_get_param);
+	ObjectTypeDB::bind_method(_MD("node_get_param"),&ShaderGraph::node_get_param);
+	ObjectTypeDB::bind_method(_MD("node_get_type"),&ShaderGraph::node_get_type);
 
 	ObjectTypeDB::bind_method(_MD("connect"),&ShaderGraph::connect );
 	ObjectTypeDB::bind_method(_MD("disconnect"),&ShaderGraph::disconnect );
