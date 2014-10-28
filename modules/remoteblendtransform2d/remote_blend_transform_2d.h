@@ -57,7 +57,7 @@ public:
 	void set_blend_factor( float factor );
 	float get_blend_factor();
 	
-	void set_remote_transform( Matrix32& m_remote );
+	void set_remote_transform( const Matrix32& m_remote );
 	Matrix32 get_remote_transform() const;
 
 	RemoteBlendTransform2D();

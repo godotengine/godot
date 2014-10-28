@@ -129,7 +129,7 @@ float RemoteBlendTransform2D::get_blend_factor() {
   return blend_factor;
 }
 
-void RemoteBlendTransform2D::set_remote_transform( Matrix32& m_remote ) {
+void RemoteBlendTransform2D::set_remote_transform( const Matrix32& m_remote ) {
 
   remote_mat = m_remote;
 }
