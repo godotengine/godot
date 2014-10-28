@@ -485,9 +485,17 @@ class DaeExporter:
 
 		uv_layer_count=len(mesh.uv_textures)
 		if (len(mesh.uv_textures)):
-			mesh.calc_tangents()
+			try:
+				mesh.calc_tangents()
+			except:
+				print("Warning, blender API is fucked up, not exporting UVs for this object.")
+				uv_layer_count=0
+				mesh.calc_normals_split()
+				has_tangents=False
+
 		else:
 			mesh.calc_normals_split()
+			has_tangents=False
 
 
 		for fi in range(len(mesh.polygons)):

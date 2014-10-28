@@ -394,6 +394,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<VisibilityNotifier>();
 	ObjectTypeDB::register_type<VisibilityEnabler>();
 	ObjectTypeDB::register_type<BakedLightInstance>();
+	ObjectTypeDB::register_type<BakedLightSampler>();
 	ObjectTypeDB::register_type<WorldEnvironment>();
 
 	//scenariofx	

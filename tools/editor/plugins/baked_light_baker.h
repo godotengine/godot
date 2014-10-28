@@ -15,17 +15,19 @@ public:
 		OCTANT_POOL_CHUNK=1000000
 	};
 
-	struct OctantLight {
+	//struct OctantLight {
 
-		double accum[8][3];
-	};
+	//	double accum[8][3];
+	//};
 
 	struct Octant {
 		bool leaf;
 		AABB aabb;
 		uint16_t texture_x;
 		uint16_t texture_y;
+		int sampler_ofs;
 		float normal_accum[8][3];
+		double full_accum[3];
 		int parent;
 		union {
 			struct {
@@ -33,7 +35,7 @@ public:
 				float offset[3];
 				int bake_neighbour;
 				bool first_neighbour;
-				OctantLight *light;
+				double light_accum[8][3];
 			};
 			int children[8];
 		};
@@ -234,32 +236,49 @@ public:
 	Transform base_inv;
 	int leaf_list;
 	int octree_depth;
+	int bvh_depth;
 	int cell_count;
 	uint32_t *ray_stack;
+	BVH **bvh_stack;
 	uint32_t *octant_stack;
 	uint32_t *octantptr_stack;
+
+	struct ThreadStack {
+		uint32_t *octant_stack;
+		uint32_t *octantptr_stack;
+		uint32_t *ray_stack;
+		BVH **bvh_stack;
+	};
+
 	Map<Vector3,Vector3> endpoint_normal;
 	Map<Vector3,uint64_t> endpoint_normal_bits;
-	BVH **bvh_stack;
+
 	float cell_size;
 	float plot_size; //multiplied by cell size
 	float octree_extra_margin;
 
 	int max_bounces;
-	uint64_t total_rays;
+	int64_t total_rays;
 	bool use_diffuse;
 	bool use_specular;
 	bool use_translucency;
+	bool linear_color;
 
 
 	int baked_octree_texture_w;
 	int baked_octree_texture_h;
+	int baked_light_texture_w;
+	int baked_light_texture_h;
 	int lattice_size;
 	float edge_damp;
 	float normal_damp;
+	float tint;
+	float ao_radius;
+	float ao_strength;
 
 	bool paused;
 	bool baking;
+	bool first_bake_to_map;
 
 	Map<Ref<Material>,MeshMaterial*> mat_map;
 	Map<Ref<Texture>,MeshTexture*> tex_map;
@@ -285,19 +304,16 @@ public:
 
 
 	//void _plot_light(const Vector3& p_plot_pos,const AABB& p_plot_aabb,const Color& p_light,int p_octant=0);
-	void _plot_light(int p_light_index,const Vector3& p_plot_pos,const AABB& p_plot_aabb,const Color& p_light,const Plane& p_plane);
+	void _plot_light(ThreadStack& thread_stack,const Vector3& p_plot_pos,const AABB& p_plot_aabb,const Color& p_light,const Color& p_tint_light,bool p_only_full,const Plane& p_plane);
 	//void _plot_light_point(const Vector3& p_plot_pos, Octant *p_octant, const AABB& p_aabb,const Color& p_light);
 
-	float _throw_ray(int p_light_index,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce=false,bool p_only_dist=false);
+	float _throw_ray(ThreadStack& thread_stack,bool p_bake_direct,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce=false,bool p_only_dist=false);
 
 
 	float total_light_area;
-	uint64_t rays_at_snap_time;
-	uint64_t snap_time;
-	int rays_sec;
 
+	Vector<Thread*> threads;
 
-	Thread *thread;
 	bool bake_thread_exit;
 	static void _bake_thread_func(void *arg);
 
@@ -306,18 +322,20 @@ public:
 public:
 
 
-	void throw_rays(int p_amount);
+	void throw_rays(ThreadStack &thread_stack, int p_amount);
 	double get_normalization(int p_light_idx) const;
+	double get_modifier(int p_light_idx) const;
 
 	void bake(const Ref<BakedLight>& p_light,Node *p_base);
 	bool is_baking();
 	void set_pause(bool p_pause);
 	bool is_paused();
-	int get_rays_sec() { return rays_sec; }
+	uint64_t get_rays_thrown() { return total_rays; }
 
 	Error transfer_to_lightmaps();
 
-	void update_octree_image(DVector<uint8_t> &p_image);
+	void update_octree_sampler(DVector<int> &p_sampler);
+	void update_octree_images(DVector<uint8_t> &p_octree,DVector<uint8_t> &p_light);
 
 	Ref<BakedLight> get_baked_light() { return baked_light; }
 

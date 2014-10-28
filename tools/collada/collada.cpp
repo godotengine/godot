@@ -2106,6 +2106,8 @@ void Collada::_parse_animation_clip(XMLParser& parser) {
 
 	if (parser.has_attribute("name"))
 		clip.name=parser.get_attribute_value("name");
+	else if (parser.has_attribute("id"))
+		clip.name=parser.get_attribute_value("id");
 	if (parser.has_attribute("start"))
 		clip.begin=parser.get_attribute_value("start").to_double();
 	if (parser.has_attribute("end"))

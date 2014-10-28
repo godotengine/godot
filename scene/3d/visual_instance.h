@@ -47,6 +47,7 @@ class VisualInstance : public Spatial {
 
 	RID _get_visual_instance_rid() const;
 
+
 protected:
 
 

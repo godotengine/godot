@@ -1041,7 +1041,7 @@ void GridMap::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_clip","enabled","clipabove","floor","axis"),&GridMap::set_clip,DEFVAL(true),DEFVAL(0),DEFVAL(Vector3::AXIS_X));
 
-	ObjectTypeDB::bind_method(_MD("crate_area","id","area"),&GridMap::create_area);
+	ObjectTypeDB::bind_method(_MD("create_area","id","area"),&GridMap::create_area);
 	ObjectTypeDB::bind_method(_MD("area_get_bounds","area","bounds"),&GridMap::area_get_bounds);
 	ObjectTypeDB::bind_method(_MD("area_set_exterior_portal","area","enable"),&GridMap::area_set_exterior_portal);
 	ObjectTypeDB::bind_method(_MD("area_set_name","area","name"),&GridMap::area_set_name);

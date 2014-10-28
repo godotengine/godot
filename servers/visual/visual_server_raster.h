@@ -51,6 +51,7 @@ class VisualServerRaster : public VisualServer {
 		MAX_LIGHTS_CULLED=256,
 		MAX_ROOM_CULL=32,
 		MAX_EXTERIOR_PORTALS=128,
+		MAX_LIGHT_SAMPLERS=256,
 		INSTANCE_ROOMLESS_MASK=(1<<20)
 
 
@@ -90,12 +91,29 @@ class VisualServerRaster : public VisualServer {
 	struct BakedLight {
 
 		Rasterizer::BakedLightData data;
+		DVector<int> sampler;
 		AABB octree_aabb;
 		Size2i octree_tex_size;
+		Size2i light_tex_size;
 
 	};
 
+	struct BakedLightSampler {
 
+		float params[BAKED_LIGHT_SAMPLER_MAX];
+		int resolution;
+		Vector<Vector3> dp_cache;
+
+		BakedLightSampler() {
+			params[BAKED_LIGHT_SAMPLER_STRENGTH]=1.0;
+			params[BAKED_LIGHT_SAMPLER_ATTENUATION]=1.0;
+			params[BAKED_LIGHT_SAMPLER_RADIUS]=1.0;
+			params[BAKED_LIGHT_SAMPLER_DETAIL_RATIO]=0.1;
+			resolution=16;
+		}
+	};
+
+	void _update_baked_light_sampler_dp_cache(BakedLightSampler * blsamp);
 	struct Camera  {
  
 		enum Type {
@@ -169,6 +187,7 @@ class VisualServerRaster : public VisualServer {
 		List<Instance*>::Element *RE;
 		Instance *baked_light;
 		List<Instance*>::Element *BLE;
+		Instance *sampled_light;
 		bool exterior;
 
 		uint64_t last_render_pass;
@@ -178,6 +197,8 @@ class VisualServerRaster : public VisualServer {
 		
 		InstanceSet lights;
 		bool light_cache_dirty;
+
+
 
 		struct RoomInfo {
 
@@ -235,6 +256,23 @@ class VisualServerRaster : public VisualServer {
 			Transform affine_inverse;
 			List<Instance*> owned_instances;
 		};
+
+		struct BakedLightSamplerInfo {
+
+			Set<Instance*> baked_lights;
+			Set<Instance*> owned_instances;
+			BakedLightSampler *sampler;
+			int resolution;
+			Vector<Color> light_bufer;
+			RID sampled_light;
+			uint64_t last_pass;
+			Transform xform; // viewspace normal to lightspace, might not use one.
+			BakedLightSamplerInfo() {
+				sampler=NULL;
+				last_pass=0;
+				resolution=0;
+			}
+		};
 		
 		struct ParticlesInfo {
 			
@@ -247,6 +285,7 @@ class VisualServerRaster : public VisualServer {
 		ParticlesInfo *particles_info;
 		PortalInfo * portal_info;
 		BakedLightInfo * baked_light_info;
+		BakedLightSamplerInfo * baked_light_sampler_info;
 
 
 		Instance() { 
@@ -282,6 +321,8 @@ class VisualServerRaster : public VisualServer {
 
 			baked_light=NULL;
 			baked_light_info=NULL;
+			baked_light_sampler_info=NULL;
+			sampled_light=NULL;
 			BLE=NULL;
 
 			light_cache_dirty=true;
@@ -603,6 +644,9 @@ class VisualServerRaster : public VisualServer {
 	int exterior_portal_cull_count;
 	bool exterior_visited;	
 
+	Instance *light_sampler_cull_result[MAX_LIGHT_SAMPLERS];
+	int light_samplers_culled;
+
 	Instance *room_cull_result[MAX_ROOM_CULL];
 	int room_cull_count;
 	bool room_cull_enabled;
@@ -638,6 +682,7 @@ class VisualServerRaster : public VisualServer {
 	mutable RID_Owner<Portal> portal_owner;
 
 	mutable RID_Owner<BakedLight> baked_light_owner;
+	mutable RID_Owner<BakedLightSampler> baked_light_sampler_owner;
 
 	mutable RID_Owner<Camera> camera_owner;
 	mutable RID_Owner<Viewport> viewport_owner;
@@ -658,6 +703,8 @@ class VisualServerRaster : public VisualServer {
 	bool _test_portal_cull(Camera *p_camera, Instance *p_portal_from, Instance *p_portal_to);
 	void _cull_portal(Camera *p_camera, Instance *p_portal,Instance *p_from_portal);
 	void _cull_room(Camera *p_camera, Instance *p_room,Instance *p_from_portal=NULL);
+	void _process_sampled_light(const Transform &p_camera, Instance *p_sampled_light, bool p_linear_colorspace);
+
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	void _render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect,float p_opacity);
 	void _render_canvas(Canvas *p_canvas,const Matrix32 &p_transform);
@@ -953,11 +1000,27 @@ public:
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree);
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const;
 
+	virtual void baked_light_set_light(RID p_baked_light,const DVector<uint8_t> p_light);
+	virtual DVector<uint8_t> baked_light_get_light(RID p_baked_light) const;
+
+	virtual void baked_light_set_sampler_octree(RID p_baked_light,const DVector<int> &p_sampler);
+	virtual DVector<int> baked_light_get_sampler_octree(RID p_baked_light) const;
+
 	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier);
 	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const;
 
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id);
 	virtual void baked_light_clear_lightmaps(RID p_baked_light);
+
+	/* BAKED LIGHT SAMPLER */
+
+	virtual RID baked_light_sampler_create();
+
+	virtual void baked_light_sampler_set_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param,float p_value);
+	virtual float baked_light_sampler_get_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param) const;
+
+	virtual void baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution);
+	virtual int baked_light_sampler_get_resolution(RID p_baked_light_sampler) const;
 
 	/* CAMERA API */
 	
@@ -1095,6 +1158,9 @@ public:
 
 	virtual void instance_geometry_set_baked_light(RID p_instance,RID p_baked_light);
 	virtual RID instance_geometry_get_baked_light(RID p_instance) const;
+
+	virtual void instance_geometry_set_baked_light_sampler(RID p_instance,RID p_baked_light_sampler);
+	virtual RID instance_geometry_get_baked_light_sampler(RID p_instance) const;
 
 	virtual void instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id);
 	virtual int instance_geometry_get_baked_light_texture_index(RID p_instance) const;

@@ -337,7 +337,7 @@ for file in input_list:
 
 class_names.sort()
 
-make_class_list(class_names, 3)
+make_class_list(class_names, 2)
 
 for cn in class_names:
 	c = classes[cn]

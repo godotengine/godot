@@ -22,7 +22,7 @@ def get_opts():
 	return [
 		('ISIMPLATFORM', 'name of the iphone platform', 'iPhoneSimulator'),
 		('ISIMPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Platforms/${ISIMPLATFORM}.platform'),
-		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}7.0.sdk'),
+		('ISIMSDK', 'path to the iphone SDK', '$ISIMPATH/Developer/SDKs/${ISIMPLATFORM}7.1.sdk'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
@@ -34,9 +34,7 @@ def get_opts():
 def get_flags():
 
 	return [
-		('lua', 'no'),
 		('tools', 'yes'),
-		('nedmalloc', 'no'),
 		('webp', 'yes'),
 	]
 
@@ -45,10 +43,6 @@ def get_flags():
 def configure(env):
 
 	env.Append(CPPPATH=['#platform/iphone'])
-
-	env['OBJSUFFIX'] = ".isim.o"
-	env['LIBSUFFIX'] = ".isim.a"
-	env['PROGSUFFIX'] = ".isim"
 
 	env['ENV']['PATH'] = env['ISIMPATH']+"/Developer/usr/bin/:"+env['ENV']['PATH']
 
@@ -83,8 +77,6 @@ def configure(env):
 
 		env.Append(CCFLAGS=['-O3', '-ffast-math'])
 		env.Append(LINKFLAGS=['-O3', '-ffast-math'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 
@@ -99,8 +91,6 @@ def configure(env):
 
 	env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.6'
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
-	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-fno-exceptions'])
+	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-fexceptions'])
 
-	if env['lua'] == "yes":
-		env.Append(CCFLAGS=['-DLUA_USE_FLOAT'])
 

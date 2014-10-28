@@ -184,6 +184,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	String cmdline;
 	bool _signed;
 	bool apk_expansion;
+	bool remove_prev;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
 	int orientation;
@@ -258,7 +259,9 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 
 	String n=p_name;
 
-	if (n=="custom_package/debug")
+	if (n=="one_click_deploy/clear_previous_install")
+		remove_prev=p_value;
+	else if (n=="custom_package/debug")
 		custom_debug_package=p_value;
 	else if (n=="custom_package/release")
 		custom_release_package=p_value;
@@ -321,7 +324,9 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) const{
 
 	String n=p_name;
-	if (n=="custom_package/debug")
+	if (n=="one_click_deploy/clear_previous_install")
+		r_ret=remove_prev;
+	else if (n=="custom_package/debug")
 		r_ret=custom_debug_package;
 	else if (n=="custom_package/release")
 		r_ret=custom_release_package;
@@ -378,6 +383,7 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 
 void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list) const{
 
+	p_list->push_back( PropertyInfo( Variant::BOOL, "one_click_deploy/clear_previous_install"));
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE,"apk"));
 	p_list->push_back( PropertyInfo( Variant::STRING, "custom_package/release", PROPERTY_HINT_GLOBAL_FILE,"apk"));
 	p_list->push_back( PropertyInfo( Variant::STRING, "command_line/extra_args"));
@@ -1448,16 +1454,20 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 		return err;
 	}
 
-	ep.step("Uninstalling..",1);
-
-	print_line("Uninstalling previous version: "+devices[p_device].name);
 	List<String> args;
-	args.push_back("-s");
-	args.push_back(devices[p_device].id);
-	args.push_back("uninstall");
-	args.push_back(package);
 	int rv;
-	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
+
+	if (remove_prev) {
+		ep.step("Uninstalling..",1);
+
+		print_line("Uninstalling previous version: "+devices[p_device].name);
+
+		args.push_back("-s");
+		args.push_back(devices[p_device].id);
+		args.push_back("uninstall");
+		args.push_back(package);
+
+		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 #if 0
 	if (err || rv!=0) {
 		EditorNode::add_io_error("Could not install to device.");
@@ -1465,6 +1475,8 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 		return ERR_CANT_CREATE;
 	}
 #endif
+	}
+
 	print_line("Installing into device (please wait..): "+devices[p_device].name);
 	ep.step("Installing to Device (please wait..)..",2);
 
@@ -1473,7 +1485,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	args.push_back(devices[p_device].id);
 	args.push_back("install");
 	args.push_back(export_to);
-	rv;
+
 	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 	if (err || rv!=0) {
 		EditorNode::add_io_error("Could not install to device.");
@@ -1515,6 +1527,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	device_lock = Mutex::create();
 	quit_request=false;
 	orientation=0;
+	remove_prev=false;
 
 	device_thread=Thread::create(_device_poll_thread,this);
 	devices_changed=true;
