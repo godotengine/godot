@@ -91,6 +91,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "tool",
 "static",
 "export",
+"setget",
 "const",
 "var",
 "preload",
@@ -831,6 +832,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_TOOL,"tool"},
 								{TK_PR_STATIC,"static"},
 								{TK_PR_EXPORT,"export"},
+								{TK_PR_SETGET,"setget"},
 								{TK_PR_VAR,"var"},
 								{TK_PR_PRELOAD,"preload"},
 								{TK_PR_ASSERT,"assert"},
@@ -1015,7 +1017,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 2
+#define BYTECODE_VERSION 3
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 

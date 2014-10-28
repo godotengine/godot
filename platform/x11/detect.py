@@ -54,6 +54,7 @@ def get_flags():
 	return [
 	('builtin_zlib', 'no'),
 	("openssl", "yes"),
+	("theora","no"),
         ]
 			
 
@@ -77,6 +78,10 @@ def configure(env):
 		if (env["use_sanitizer"]=="yes"):
 			env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
 			env.Append(LINKFLAGS=['-fsanitize=address'])
+			env.extra_suffix=".llvms"
+		else:
+			env.extra_suffix=".llvm"
+
 
 
 

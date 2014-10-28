@@ -2376,80 +2376,113 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				member._export.name=member.identifier;
 				tokenizer->advance();
 
-				p_class->variables.push_back(member);
+				if (tokenizer->get_token()==GDTokenizer::TK_OP_ASSIGN) {
 
-				if (tokenizer->get_token()!=GDTokenizer::TK_OP_ASSIGN) {
+#ifdef DEBUG_ENABLED
+					int line = tokenizer->get_token_line();
+#endif
+					tokenizer->advance();
+
+					Node *subexpr=NULL;
+
+					subexpr = _parse_and_reduce_expression(p_class,false);
+					if (!subexpr)
+						return;
+
+					if (autoexport) {
+						if (subexpr->type==Node::TYPE_ARRAY) {
+
+							member._export.type=Variant::ARRAY;
+
+						} else if (subexpr->type==Node::TYPE_DICTIONARY) {
+
+							member._export.type=Variant::DICTIONARY;
+
+						} else {
+
+							if (subexpr->type!=Node::TYPE_CONSTANT) {
+
+								_set_error("Type-less export needs a constant expression assigned to infer type.");
+								return;
+							}
+
+							ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
+							if (cn->value.get_type()==Variant::NIL) {
+
+								_set_error("Can't accept a null constant expression for infering export type.");
+								return;
+							}
+							member._export.type=cn->value.get_type();
+						}
+					}
+#ifdef TOOLS_ENABLED
+					if (subexpr->type==Node::TYPE_CONSTANT && member._export.type!=Variant::NIL) {
+
+						ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
+						if (cn->value.get_type()!=Variant::NIL) {
+							member.default_value=cn->value;
+						}
+					}
+#endif
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name=member.identifier;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op=OperatorNode::OP_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(subexpr);
+
+#ifdef DEBUG_ENABLED
+					NewLineNode *nl = alloc_node<NewLineNode>();
+					nl->line=line;
+					p_class->initializer->statements.push_back(nl);
+#endif
+					p_class->initializer->statements.push_back(op);
+
+
+
+				} else {
 
 					if (autoexport) {
 
 						_set_error("Type-less export needs a constant expression assigned to infer type.");
 						return;
 					}
-					break;
+
 				}
-#ifdef DEBUG_ENABLED
-				int line = tokenizer->get_token_line();
-#endif
-				tokenizer->advance();
 
-				Node *subexpr=NULL;
+				if (tokenizer->get_token()==GDTokenizer::TK_PR_SETGET) {
 
-				subexpr = _parse_and_reduce_expression(p_class,false);
-				if (!subexpr)
-					return;
 
-				if (autoexport) {
-					if (subexpr->type==Node::TYPE_ARRAY) {
+					tokenizer->advance();
 
-						p_class->variables[p_class->variables.size()-1]._export.type=Variant::ARRAY;
-
-					} else if (subexpr->type==Node::TYPE_DICTIONARY) {
-
-						p_class->variables[p_class->variables.size()-1]._export.type=Variant::DICTIONARY;
-
-					} else {
-
-						if (subexpr->type!=Node::TYPE_CONSTANT) {
-
-							_set_error("Type-less export needs a constant expression assigned to infer type.");
-							return;
+					if (tokenizer->get_token()!=GDTokenizer::TK_COMMA) {
+						//just comma means using only getter
+						if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+							_set_error("Expected identifier for setter function after 'notify'.");
 						}
 
-						ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
-						if (cn->value.get_type()==Variant::NIL) {
+						member.setter=tokenizer->get_token_identifier();
 
-							_set_error("Can't accept a null constant expression for infering export type.");
-							return;
+						tokenizer->advance();
+					}
+
+					if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+						//there is a getter
+						tokenizer->advance();
+
+						if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+							_set_error("Expected identifier for getter function after ','.");
 						}
-						p_class->variables[p_class->variables.size()-1]._export.type=cn->value.get_type();
+
+						member.getter=tokenizer->get_token_identifier();
+						tokenizer->advance();
+
 					}
 				}
-#ifdef TOOLS_ENABLED
-				if (subexpr->type==Node::TYPE_CONSTANT && p_class->variables[p_class->variables.size()-1]._export.type!=Variant::NIL) {
 
-					ConstantNode *cn = static_cast<ConstantNode*>(subexpr);
-					if (cn->value.get_type()!=Variant::NIL) {
-						p_class->variables[p_class->variables.size()-1].default_value=cn->value;
-					}
-				}
-#endif
-
-
-
-				IdentifierNode *id = alloc_node<IdentifierNode>();
-				id->name=member.identifier;
-
-				OperatorNode *op = alloc_node<OperatorNode>();
-				op->op=OperatorNode::OP_ASSIGN;
-				op->arguments.push_back(id);
-				op->arguments.push_back(subexpr);
-
-#ifdef DEBUG_ENABLED
-				NewLineNode *nl = alloc_node<NewLineNode>();
-				nl->line=line;
-				p_class->initializer->statements.push_back(nl);
-#endif
-				p_class->initializer->statements.push_back(op);
+				p_class->variables.push_back(member);
 
 				_end_statement();
 

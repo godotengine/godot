@@ -220,11 +220,18 @@ class GDScript : public Script {
 	bool valid;
 
 
+	struct MemberInfo {
+		int index;
+		StringName setter;
+		StringName getter;
+	};
 
 friend class GDInstance;
 friend class GDFunction;
 friend class GDCompiler;
 friend class GDFunctions;
+friend class GDScriptLanguage;
+
 	Variant _static_ref; //used for static call
 	Ref<GDNativeClass> native;
 	Ref<GDScript> base;
@@ -234,7 +241,7 @@ friend class GDFunctions;
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction> member_functions;
-	Map<StringName,int> member_indices; //members are just indices to the instanced script.
+	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;	
 
 #ifdef TOOLS_ENABLED
@@ -288,7 +295,7 @@ public:
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName,int>& debug_get_member_indices() const { return member_indices; }
+	const Map<StringName,MemberInfo>& debug_get_member_indices() const { return member_indices; }
 	const Map<StringName,GDFunction>& debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 

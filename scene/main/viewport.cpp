@@ -95,8 +95,8 @@ void Viewport::_update_stretch_transform() {
 
 	if (size_override_stretch && size_override) {
 
-		print_line("sive override size "+size_override_size);
-		print_line("rect size "+rect.size);
+		//print_line("sive override size "+size_override_size);
+		//print_line("rect size "+rect.size);
 		stretch_transform=Matrix32();
 		Size2 scale = rect.size/(size_override_size+size_override_margin*2);
 		stretch_transform.scale(scale);
@@ -135,7 +135,9 @@ void Viewport::_update_rect() {
 	}
 	vr.width=rect.size.width;
 	vr.height=rect.size.height;
+
 	VisualServer::get_singleton()->viewport_set_rect(viewport,vr);
+	last_vp_rect=rect;
 
 	if (canvas_item.is_valid()) {
 		VisualServer::get_singleton()->canvas_item_set_custom_rect(canvas_item,true,rect);
@@ -513,6 +515,7 @@ void Viewport::set_rect(const Rect2& p_rect) {
 	if (rect==p_rect)
 		return;
 	rect=p_rect;
+
 	_update_rect();
 	_update_stretch_transform();
 
@@ -1029,13 +1032,16 @@ void Viewport::_make_input_local(InputEvent& ev) {
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
 			Vector2 l = ai.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
-			Vector2 r = ai.xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			Vector2 r = ai.basis_xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			Vector2 s = ai.basis_xform(Vector2(ev.mouse_motion.speed_x,ev.mouse_motion.speed_y));
 			ev.mouse_motion.x=l.x;
 			ev.mouse_motion.y=l.y;
 			ev.mouse_motion.global_x=g.x;
 			ev.mouse_motion.global_y=g.y;
 			ev.mouse_motion.relative_x=r.x;
 			ev.mouse_motion.relative_y=r.y;
+			ev.mouse_motion.speed_x=s.x;
+			ev.mouse_motion.speed_y=s.y;
 
 		} break;
 		case InputEvent::SCREEN_TOUCH: {
@@ -1050,8 +1056,8 @@ void Viewport::_make_input_local(InputEvent& ev) {
 
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 t = ai.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
-			Vector2 r = ai.xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
-			Vector2 s = ai.xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
+			Vector2 r = ai.basis_xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
+			Vector2 s = ai.basis_xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
 			ev.screen_drag.x=t.x;
 			ev.screen_drag.y=t.y;
 			ev.screen_drag.relative_x=r.x;
@@ -1184,6 +1190,21 @@ void Viewport::set_physics_object_picking(bool p_enable) {
 
 
 }
+
+
+Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
+
+	Matrix32 xf = get_final_transform();
+	return xf.xform(p_viewport_coords);
+
+
+}
+
+Vector2 Viewport::get_camera_rect_size() const {
+
+	return last_vp_rect.size;
+}
+
 
 bool Viewport::get_physics_object_picking() {
 

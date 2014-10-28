@@ -6,5 +6,6 @@ ogg_sources = [
 	"ogg/framing.c",
 ]
 
-env.drivers_sources+=ogg_sources
+if env['theora'] != "yes" or env['use_theoraplayer_binary'] != "yes":
+	env.drivers_sources+=ogg_sources
 

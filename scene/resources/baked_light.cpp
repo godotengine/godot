@@ -23,6 +23,27 @@ DVector<uint8_t> BakedLight::get_octree() const {
 	return VS::get_singleton()->baked_light_get_octree(baked_light);
 }
 
+void BakedLight::set_light(const DVector<uint8_t>& p_light) {
+
+	VS::get_singleton()->baked_light_set_light(baked_light,p_light);
+}
+
+DVector<uint8_t> BakedLight::get_light() const {
+
+	return VS::get_singleton()->baked_light_get_light(baked_light);
+}
+
+
+void BakedLight::set_sampler_octree(const DVector<int>& p_sampler_octree) {
+
+	VS::get_singleton()->baked_light_set_sampler_octree(baked_light,p_sampler_octree);
+}
+
+DVector<int> BakedLight::get_sampler_octree() const {
+
+	return VS::get_singleton()->baked_light_get_sampler_octree(baked_light);
+}
+
 
 
 
@@ -199,6 +220,43 @@ float BakedLight::get_normal_damp() const {
 	return normal_damp;
 }
 
+void BakedLight::set_tint(float p_margin) {
+	tint=p_margin;
+}
+
+float BakedLight::get_tint() const {
+
+	return tint;
+}
+
+void BakedLight::set_saturation(float p_margin) {
+	saturation=p_margin;
+}
+
+float BakedLight::get_saturation() const {
+
+	return saturation;
+}
+
+void BakedLight::set_ao_radius(float p_ao_radius) {
+	ao_radius=p_ao_radius;
+}
+
+float BakedLight::get_ao_radius() const {
+	return ao_radius;
+}
+
+void BakedLight::set_ao_strength(float p_ao_strength) {
+
+	ao_strength=p_ao_strength;
+}
+
+float BakedLight::get_ao_strength() const {
+
+	return ao_strength;
+}
+
+
 void BakedLight::set_energy_multiplier(float p_multiplier){
 
 	energy_multiply=p_multiplier;
@@ -329,6 +387,13 @@ void BakedLight::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_octree","octree"),&BakedLight::set_octree);
 	ObjectTypeDB::bind_method(_MD("get_octree"),&BakedLight::get_octree);
 
+	ObjectTypeDB::bind_method(_MD("set_light","light"),&BakedLight::set_light);
+	ObjectTypeDB::bind_method(_MD("get_light"),&BakedLight::get_light);
+
+	ObjectTypeDB::bind_method(_MD("set_sampler_octree","sampler_octree"),&BakedLight::set_sampler_octree);
+	ObjectTypeDB::bind_method(_MD("get_sampler_octree"),&BakedLight::get_sampler_octree);
+
+
 	ObjectTypeDB::bind_method(_MD("add_lightmap","texture:Texture","gen_size"),&BakedLight::add_lightmap);
 	ObjectTypeDB::bind_method(_MD("erase_lightmap","id"),&BakedLight::erase_lightmap);
 	ObjectTypeDB::bind_method(_MD("clear_lightmaps"),&BakedLight::clear_lightmaps);
@@ -357,6 +422,18 @@ void BakedLight::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_normal_damp","normal_damp"),&BakedLight::set_normal_damp);
 	ObjectTypeDB::bind_method(_MD("get_normal_damp"),&BakedLight::get_normal_damp);
 
+	ObjectTypeDB::bind_method(_MD("set_tint","tint"),&BakedLight::set_tint);
+	ObjectTypeDB::bind_method(_MD("get_tint"),&BakedLight::get_tint);
+
+	ObjectTypeDB::bind_method(_MD("set_saturation","saturation"),&BakedLight::set_saturation);
+	ObjectTypeDB::bind_method(_MD("get_saturation"),&BakedLight::get_saturation);
+
+	ObjectTypeDB::bind_method(_MD("set_ao_radius","ao_radius"),&BakedLight::set_ao_radius);
+	ObjectTypeDB::bind_method(_MD("get_ao_radius"),&BakedLight::get_ao_radius);
+
+	ObjectTypeDB::bind_method(_MD("set_ao_strength","ao_strength"),&BakedLight::set_ao_strength);
+	ObjectTypeDB::bind_method(_MD("get_ao_strength"),&BakedLight::get_ao_strength);
+
 	ObjectTypeDB::bind_method(_MD("set_format","format"),&BakedLight::set_format);
 	ObjectTypeDB::bind_method(_MD("get_format"),&BakedLight::get_format);
 
@@ -384,17 +461,24 @@ void BakedLight::_bind_methods(){
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"baking/plot_size",PROPERTY_HINT_RANGE,"1.0,16.0,0.01"),_SCS("set_plot_size"),_SCS("get_plot_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"baking/energy_mult",PROPERTY_HINT_RANGE,"0.01,4096.0,0.01"),_SCS("set_energy_multiplier"),_SCS("get_energy_multiplier"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"baking/gamma_adjust",PROPERTY_HINT_EXP_EASING),_SCS("set_gamma_adjust"),_SCS("get_gamma_adjust"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"baking/saturation",PROPERTY_HINT_RANGE,"0,8,0.01"),_SCS("set_saturation"),_SCS("get_saturation"));
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/diffuse"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_DIFFUSE);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/specular"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_SPECULAR);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/translucent"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_TRANSLUCENT);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/conserve_energy"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_CONSERVE_ENERGY);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"baking_flags/linear_color"),_SCS("set_bake_flag"),_SCS("get_bake_flag"),BAKE_LINEAR_COLOR);
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"lightmap/use_only_uv2"),_SCS("set_transfer_lightmaps_only_to_uv2"),_SCS("get_transfer_lightmaps_only_to_uv2"));
 
 	ADD_PROPERTY( PropertyInfo(Variant::RAW_ARRAY,"octree",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_octree"),_SCS("get_octree"));
+	ADD_PROPERTY( PropertyInfo(Variant::RAW_ARRAY,"light",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_light"),_SCS("get_light"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT_ARRAY,"sampler_octree",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_sampler_octree"),_SCS("get_sampler_octree"));
 	ADD_PROPERTY( PropertyInfo(Variant::ARRAY,"lightmaps",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_lightmap_data"),_SCS("_get_lightmap_data"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/cell_margin",PROPERTY_HINT_RANGE,"0.01,0.8,0.01"),_SCS("set_cell_extra_margin"),_SCS("get_cell_extra_margin"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/edge_damp",PROPERTY_HINT_RANGE,"0.0,8.0,0.1"),_SCS("set_edge_damp"),_SCS("get_edge_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/normal_damp",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_normal_damp"),_SCS("get_normal_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/light_tint",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_tint"),_SCS("get_tint"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/ao_radius",PROPERTY_HINT_RANGE,"0.0,16.0,0.01"),_SCS("set_ao_radius"),_SCS("get_ao_radius"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"advanced/ao_strength",PROPERTY_HINT_RANGE,"0.0,1.0,0.01"),_SCS("set_ao_strength"),_SCS("get_ao_strength"));
 
 	BIND_CONSTANT(  MODE_OCTREE );
 	BIND_CONSTANT(  MODE_LIGHTMAPS );
@@ -415,18 +499,24 @@ BakedLight::BakedLight() {
 	lattice_subdiv=4;
 	plot_size=2.5;
 	bounces=1;
-	energy_multiply=1.0;
-	gamma_adjust=1.0;
+	energy_multiply=2.0;
+	gamma_adjust=0.7;
 	cell_extra_margin=0.05;
 	edge_damp=0.0;
 	normal_damp=0.0;
+	saturation=1;
+	tint=0.0;
+	ao_radius=2.5;
+	ao_strength=0.7;
 	format=FORMAT_RGB;
 	transfer_only_uv2=false;
+
 
 	flags[BAKE_DIFFUSE]=true;
 	flags[BAKE_SPECULAR]=false;
 	flags[BAKE_TRANSLUCENT]=true;
 	flags[BAKE_CONSERVE_ENERGY]=false;
+	flags[BAKE_LINEAR_COLOR]=false;
 
 	mode=MODE_OCTREE;
 	baked_light=VS::get_singleton()->baked_light_create();

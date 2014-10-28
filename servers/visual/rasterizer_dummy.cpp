@@ -1679,6 +1679,18 @@ Variant RasterizerDummy::environment_fx_get_param(RID p_env,VS::EnvironmentFxPar
 
 }
 
+
+RID RasterizerDummy::sampled_light_dp_create(int p_width,int p_height) {
+
+	return sampled_light_owner.make_rid(memnew(SampledLight));
+}
+
+void RasterizerDummy::sampled_light_dp_update(RID p_sampled_light, const Color *p_data, float p_multiplier) {
+
+
+}
+
+
 /*MISC*/
 
 bool RasterizerDummy::is_texture(const RID& p_rid) const {
@@ -1816,6 +1828,14 @@ void RasterizerDummy::free(const RID& p_rid) {
 		Environment *env = environment_owner.get( p_rid );
 		environment_owner.free(p_rid);
 		memdelete( env );
+	} else if (sampled_light_owner.owns(p_rid)) {
+
+		SampledLight *sampled_light = sampled_light_owner.get( p_rid );
+		ERR_FAIL_COND(!sampled_light);
+
+		sampled_light_owner.free(p_rid);
+		memdelete( sampled_light );
+
 	};
 }
 

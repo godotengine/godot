@@ -226,6 +226,9 @@ public:
 
 	void set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize);
 
+	//void change_scene(const String& p_path);
+	//Node *get_loaded_scene();
+
 #ifdef TOOLS_ENABLED
 	void set_edited_scene_root(Node *p_node);
 	Node *get_edited_scene_root() const;

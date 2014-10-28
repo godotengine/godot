@@ -60,7 +60,7 @@ uniform float normal_mult;
 #ifdef USE_SKELETON
 attribute vec4 bone_indices; // attrib:6
 attribute vec4 bone_weights; // attrib:7
-uniform highp sampler2D skeleton_matrices; // texunit:6
+uniform highp sampler2D skeleton_matrices;
 uniform highp float skeltex_pixel_size;
 #endif
 
@@ -76,7 +76,7 @@ attribute highp vec4 instance_row3; // attrib:11
 #ifdef USE_TEXTURE_INSTANCING
 
 attribute highp vec3 instance_uv; // attrib:6
-uniform highp sampler2D instance_matrices; // texunit:6
+uniform highp sampler2D instance_matrices;
 
 #endif
 
@@ -595,8 +595,10 @@ uniform float time;
 varying highp vec3 ambient_octree_coords;
 uniform highp float ambient_octree_lattice_size;
 uniform highp vec2 ambient_octree_pix_size;
+uniform highp vec2 ambient_octree_light_pix_size;
 uniform highp float ambient_octree_lattice_divide;
 uniform highp sampler2D ambient_octree_tex;
+uniform highp sampler2D ambient_octree_light_tex;
 uniform float ambient_octree_multiplier;
 uniform int ambient_octree_steps;
 
@@ -609,6 +611,12 @@ uniform float ambient_lightmap_multiplier;
 
 #endif
 
+#ifdef ENABLE_AMBIENT_DP_SAMPLER
+
+uniform highp sampler2D ambient_dp_sampler;
+uniform float ambient_dp_sampler_multiplier;
+
+#endif
 
 FRAGMENT_SHADER_GLOBALS
 
@@ -918,12 +926,12 @@ FRAGMENT_SHADER_CODE
 		}
 
 		//sample color
-		octant_uv=(octant_uv+0.5)*ambient_octree_pix_size;
+		octant_uv=(octant_uv+0.5)*ambient_octree_light_pix_size;
 		highp vec3 sub=(mod(ambient_octree_coords,ld)/ld);
-		octant_uv.xy+=sub.xy*ambient_octree_pix_size.xy;
-		vec3 col_up=texture2D(ambient_octree_tex,octant_uv).rgb;
-		octant_uv.y+=ambient_octree_pix_size.y*2.0;
-		vec3 col_down=texture2D(ambient_octree_tex,octant_uv).rgb;
+		octant_uv.xy+=sub.xy*ambient_octree_light_pix_size.xy;
+		vec3 col_up=texture2D(ambient_octree_light_tex,octant_uv).rgb;
+		octant_uv.y+=ambient_octree_light_pix_size.y*2.0;
+		vec3 col_down=texture2D(ambient_octree_light_tex,octant_uv).rgb;
 		ambientmap_color=mix(col_up,col_down,sub.z)*ambient_octree_multiplier;
 
 		ambientmap_color*=diffuse.rgb;
@@ -934,6 +942,26 @@ FRAGMENT_SHADER_CODE
 
 
 
+#ifdef ENABLE_AMBIENT_DP_SAMPLER
+
+	vec3 ambientmap_color = vec3(0.0,0.0,0.0);
+
+	{
+
+		vec3 dp_normal = normalize((vec4(normal,0) * camera_inverse_transform).xyz);
+		vec2 ambient_uv = (dp_normal.xy / (1.0+abs(dp_normal.z)))*0.5+0.5; //dual paraboloid
+		ambient_uv.y*=0.5;
+		if (dp_normal.z<0) {
+
+			ambient_uv.y=(0.5-ambient_uv.y)+0.5;
+
+		}
+
+		ambientmap_color = texture2D(ambient_dp_sampler,ambient_uv ).rgb * ambient_dp_sampler_multiplier;
+		ambientmap_color*=diffuse.rgb;
+	}
+
+#endif
 
 
 
@@ -1224,7 +1252,7 @@ LIGHT_SHADER_CODE
 #endif
 
 
-#if defined(ENABLE_AMBIENT_OCTREE) || defined(ENABLE_AMBIENT_LIGHTMAP)
+#if defined(ENABLE_AMBIENT_OCTREE) || defined(ENABLE_AMBIENT_LIGHTMAP) || defined(ENABLE_AMBIENT_DP_SAMPLER)
 
 	diffuse.rgb+=ambientmap_color;
 #endif

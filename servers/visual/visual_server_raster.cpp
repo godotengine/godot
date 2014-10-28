@@ -1109,8 +1109,12 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 
 		int tex_w;
 		int tex_h;
+		int light_tex_w;
+		int light_tex_h;
 		bool is16;
+		bool has_light_tex=false;
 		{
+
 			DVector<uint8_t>::Read r=p_octree.read();
 			tex_w = decode_uint32(&r[0]);
 			tex_h = decode_uint32(&r[4]);
@@ -1123,7 +1127,22 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 			baked_light->data.octree_steps=decode_uint32(&r[16]);
 			baked_light->data.octree_tex_pixel_size.x=1.0/tex_w;
 			baked_light->data.octree_tex_pixel_size.y=1.0/tex_h;
+
 			baked_light->data.texture_multiplier=decode_uint32(&r[20]);
+			light_tex_w=decode_uint16(&r[24]);
+			light_tex_h=decode_uint16(&r[26]);
+			print_line("ltexw "+itos(light_tex_w));
+			print_line("ltexh "+itos(light_tex_h));
+
+			if (light_tex_w>0 && light_tex_h>0) {
+				baked_light->data.light_tex_pixel_size.x=1.0/light_tex_w;
+				baked_light->data.light_tex_pixel_size.y=1.0/light_tex_h;
+				has_light_tex=true;
+			} else {
+				baked_light->data.light_tex_pixel_size=baked_light->data.octree_tex_pixel_size;
+
+			}
+
 
 
 			baked_light->octree_aabb.pos.x=decode_float(&r[32]);
@@ -1141,12 +1160,33 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 
 				rasterizer->free(baked_light->data.octree_texture);
 				baked_light->data.octree_texture=RID();
+				baked_light->octree_tex_size.x=0;
+				baked_light->octree_tex_size.y=0;
+			}
+		}
+
+		if (baked_light->data.light_texture.is_valid()) {
+			if (!has_light_tex || light_tex_w!=baked_light->light_tex_size.x || light_tex_h!=baked_light->light_tex_size.y) {
+				rasterizer->free(baked_light->data.light_texture);
+				baked_light->data.light_texture=RID();
+				baked_light->light_tex_size.x=0;
+				baked_light->light_tex_size.y=0;
 			}
 		}
 
 		if (!baked_light->data.octree_texture.is_valid()) {
 			baked_light->data.octree_texture=rasterizer->texture_create();
 			rasterizer->texture_allocate(baked_light->data.octree_texture,tex_w,tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+			baked_light->octree_tex_size.x=tex_w;
+			baked_light->octree_tex_size.y=tex_h;
+		}
+
+		if (!baked_light->data.light_texture.is_valid() && has_light_tex) {
+			baked_light->data.light_texture=rasterizer->texture_create();
+			rasterizer->texture_allocate(baked_light->data.light_texture,light_tex_w,light_tex_h,Image::FORMAT_RGBA,TEXTURE_FLAG_FILTER);
+			baked_light->light_tex_size.x=light_tex_w;
+			baked_light->light_tex_size.y=light_tex_h;
+
 		}
 
 		Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_octree);
@@ -1158,6 +1198,7 @@ void VisualServerRaster::baked_light_set_octree(RID p_baked_light,const DVector<
 	_dependency_queue_update(p_baked_light,true);
 
 }
+
 
 DVector<uint8_t> VisualServerRaster::baked_light_get_octree(RID p_baked_light) const{
 
@@ -1173,6 +1214,67 @@ DVector<uint8_t> VisualServerRaster::baked_light_get_octree(RID p_baked_light) c
 		return DVector<uint8_t>();
 	}
 }
+
+void VisualServerRaster::baked_light_set_light(RID p_baked_light,const DVector<uint8_t> p_light) {
+
+	VS_CHANGED;
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+	ERR_FAIL_COND(p_light.size()==0);
+
+	int tex_w=baked_light->light_tex_size.x;
+	int tex_h=baked_light->light_tex_size.y;
+
+	ERR_FAIL_COND(tex_w==0 && tex_h==0);
+	ERR_FAIL_COND(!baked_light->data.light_texture.is_valid());
+
+
+
+	print_line("w: "+itos(tex_w)+" h: "+itos(tex_h)+" lightsize: "+itos(p_light.size()));
+
+	Image img(tex_w,tex_h,0,Image::FORMAT_RGBA,p_light);
+	rasterizer->texture_set_data(baked_light->data.light_texture,img);
+
+
+
+}
+
+DVector<uint8_t> VisualServerRaster::baked_light_get_light(RID p_baked_light) const{
+
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light,DVector<uint8_t>());
+
+	if (rasterizer->is_texture(baked_light->data.light_texture)) {
+
+		Image img = rasterizer->texture_get_data(baked_light->data.light_texture);
+		return img.get_data();
+	} else {
+		return DVector<uint8_t>();
+	}
+}
+
+
+
+void VisualServerRaster::baked_light_set_sampler_octree(RID p_baked_light, const DVector<int> &p_sampler) {
+
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND(!baked_light);
+
+	baked_light->sampler=p_sampler;
+
+
+
+}
+
+DVector<int> VisualServerRaster::baked_light_get_sampler_octree(RID p_baked_light) const {
+
+	BakedLight *baked_light = baked_light_owner.get(p_baked_light);
+	ERR_FAIL_COND_V(!baked_light,DVector<int>());
+
+	return baked_light->sampler;
+
+}
+
 
 void VisualServerRaster::baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id){
 
@@ -1191,6 +1293,84 @@ void VisualServerRaster::baked_light_clear_lightmaps(RID p_baked_light){
 
 }
 
+
+/* BAKED LIGHT SAMPLER */
+
+RID VisualServerRaster::baked_light_sampler_create() {
+
+	BakedLightSampler * blsamp = memnew( BakedLightSampler );
+	RID rid = baked_light_sampler_owner.make_rid(blsamp);
+	_update_baked_light_sampler_dp_cache(blsamp);
+	return rid;
+}
+
+void VisualServerRaster::baked_light_sampler_set_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param,float p_value){
+
+	VS_CHANGED;
+	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
+	ERR_FAIL_COND(!blsamp);
+	ERR_FAIL_INDEX(p_param,BAKED_LIGHT_SAMPLER_MAX);
+	blsamp->params[p_param]=p_value;
+	_dependency_queue_update(p_baked_light_sampler,true);
+}
+
+float VisualServerRaster::baked_light_sampler_get_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param) const{
+
+
+	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
+	ERR_FAIL_COND_V(!blsamp,0);
+	ERR_FAIL_INDEX_V(p_param,BAKED_LIGHT_SAMPLER_MAX,0);
+	return blsamp->params[p_param];
+}
+
+void VisualServerRaster::_update_baked_light_sampler_dp_cache(BakedLightSampler * blsamp) {
+
+	int res = blsamp->resolution;
+	blsamp->dp_cache.resize(res*res*2);
+	Vector3 *dp_normals=blsamp->dp_cache.ptr();
+
+	for(int p=0;p<2;p++) {
+		float sign = p==0?1:-1;
+		int ofs = res*res*p;
+		for(int i=0;i<res;i++) {
+			for(int j=0;j<res;j++) {
+
+				Vector2 v(
+					(i/float(res))*2.0-1.0,
+					(j/float(res))*2.0-1.0
+				);
+
+				float l=v.length();
+				if (l>1.0) {
+					v/=l;
+					l=1.0; //clamp to avoid imaginary
+				}
+				v*=(2*l)/(l*l+1); //inverse of the dual paraboloid function
+				Vector3 n = Vector3(v.x,v.y,sign*sqrtf(MAX(1 - v.dot(v),0))); //reconstruction of z
+				n.y*=sign;
+				dp_normals[j*res+i+ofs]=n;
+			}
+		}
+	}
+
+}
+
+void VisualServerRaster::baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution){
+
+	ERR_FAIL_COND(p_resolution<4 && p_resolution>64);
+	VS_CHANGED;
+	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
+	ERR_FAIL_COND(!blsamp);
+	blsamp->resolution=p_resolution;
+	_update_baked_light_sampler_dp_cache(blsamp);
+
+}
+int VisualServerRaster::baked_light_sampler_get_resolution(RID p_baked_light_sampler) const{
+
+	BakedLightSampler * blsamp = baked_light_sampler_owner.get(p_baked_light_sampler);
+	ERR_FAIL_COND_V(!blsamp,0);
+	return blsamp->resolution;
+}
 
 /* CAMERA API */
 
@@ -1943,6 +2123,20 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 
 		}
 
+		if (instance->baked_light_sampler_info) {
+
+			while (instance->baked_light_sampler_info->owned_instances.size()) {
+
+				instance_geometry_set_baked_light_sampler(instance->baked_light_sampler_info->owned_instances.front()->get()->self,RID());
+			}
+
+			if (instance->baked_light_sampler_info->sampled_light.is_valid()) {
+				rasterizer->free(instance->baked_light_sampler_info->sampled_light);
+			}
+			memdelete( instance->baked_light_sampler_info );
+			instance->baked_light_sampler_info=NULL;
+		}
+
 		instance->data.morph_values.clear();
 
 	}
@@ -1992,6 +2186,16 @@ void VisualServerRaster::instance_set_base(RID p_instance, RID p_base) {
 
 			//instance->portal_info = memnew(Instance::PortalInfo);
 			//instance->portal_info->portal=portal_owner.get(p_base);
+		} else if (baked_light_sampler_owner.owns(p_base)) {
+
+
+			instance->base_type=INSTANCE_BAKED_LIGHT_SAMPLER;
+			instance->baked_light_sampler_info=memnew( Instance::BakedLightSamplerInfo);
+			instance->baked_light_sampler_info->sampler=baked_light_sampler_owner.get(p_base);
+
+			//instance->portal_info = memnew(Instance::PortalInfo);
+			//instance->portal_info->portal=portal_owner.get(p_base);
+
 		} else {
 			ERR_EXPLAIN("Invalid base RID for instance!")
 			ERR_FAIL();
@@ -2607,10 +2811,49 @@ RID VisualServerRaster::instance_geometry_get_baked_light(RID p_instance) const{
 	const Instance *instance = instance_owner.get( p_instance );
 	ERR_FAIL_COND_V( !instance,RID() );
 	if (instance->baked_light)
-		instance->baked_light->self;
+		return instance->baked_light->self;
 	return RID();
 
 }
+
+
+void VisualServerRaster::instance_geometry_set_baked_light_sampler(RID p_instance,RID p_baked_light_sampler) {
+
+	VS_CHANGED;
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND( !instance );
+
+	if (instance->sampled_light) {
+		instance->sampled_light->baked_light_sampler_info->owned_instances.erase(instance);
+		instance->data.sampled_light=RID();
+	}
+
+	if(p_baked_light_sampler.is_valid()) {
+		Instance *sampler_instance = instance_owner.get( p_baked_light_sampler );
+		ERR_FAIL_COND( !sampler_instance );
+		ERR_FAIL_COND( sampler_instance->base_type!=INSTANCE_BAKED_LIGHT_SAMPLER );
+		instance->sampled_light=sampler_instance;
+		instance->sampled_light->baked_light_sampler_info->owned_instances.insert(instance);
+	} else {
+		instance->sampled_light=NULL;
+	}
+
+	instance->data.sampled_light=RID();
+
+}
+
+RID VisualServerRaster::instance_geometry_get_baked_light_sampler(RID p_instance) const {
+
+	Instance *instance = instance_owner.get( p_instance );
+	ERR_FAIL_COND_V( !instance,RID() );
+
+	if (instance->sampled_light)
+		return instance->sampled_light->self;
+	else
+		return RID();
+
+}
+
 
 void VisualServerRaster::instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id){
 
@@ -2747,6 +2990,13 @@ void VisualServerRaster::_update_instance(Instance *p_instance) {
 			pairable=true;
 		}
 
+		if (p_instance->base_type == INSTANCE_BAKED_LIGHT_SAMPLER) {
+
+			pairable_mask=(1<<INSTANCE_BAKED_LIGHT);
+			pairable=true;
+		}
+
+
 		if (!p_instance->room && (1<<p_instance->base_type)&INSTANCE_GEOMETRY_MASK) {
 
 			base_type|=INSTANCE_ROOMLESS_MASK;
@@ -2859,6 +3109,16 @@ void VisualServerRaster::_update_instance_aabb(Instance *p_instance) {
 			new_aabb=baked_light->octree_aabb;
 
 		} break;
+		case VisualServer::INSTANCE_BAKED_LIGHT_SAMPLER: {
+
+			BakedLightSampler *baked_light_sampler = baked_light_sampler_owner.get( p_instance->base_rid );
+			ERR_FAIL_COND(!baked_light_sampler);
+			float radius = baked_light_sampler->params[VS::BAKED_LIGHT_SAMPLER_RADIUS];
+
+			new_aabb=AABB(Vector3(-radius,-radius,-radius),Vector3(radius*2,radius*2,radius*2));
+
+		} break;
+
 		default: {}
 	}
 
@@ -3762,6 +4022,17 @@ void VisualServerRaster::free( RID p_rid ) {
 		baked_light_owner.free(p_rid);
 		memdelete(baked_light);
 
+	} else if (baked_light_sampler_owner.owns(p_rid)) {
+
+		_free_attached_instances(p_rid);
+
+		BakedLightSampler *baked_light_sampler = baked_light_sampler_owner.get(p_rid);
+		ERR_FAIL_COND(!baked_light_sampler);
+		//if (baked_light->data.octree_texture.is_valid())
+		//	rasterizer->free(baked_light->data.octree_texture);
+		baked_light_sampler_owner.free(p_rid);
+		memdelete(baked_light_sampler);
+
 	} else if (camera_owner.owns(p_rid)) {
 		// delete te camera
 		
@@ -3813,7 +4084,9 @@ void VisualServerRaster::free( RID p_rid ) {
 		instance_set_room(p_rid,RID());
 		instance_set_scenario(p_rid,RID());
 		instance_geometry_set_baked_light(p_rid,RID());
+		instance_geometry_set_baked_light_sampler(p_rid,RID());
 		instance_set_base(p_rid,RID());
+
 		if (instance->data.skeleton.is_valid())
 			instance_attach_skeleton(p_rid,RID());
 
@@ -4957,6 +5230,15 @@ void* VisualServerRaster::instance_pair(void *p_self, OctreeElementID, Instance 
 		//attempt to conncet portal A (will go through B anyway)
 		//this is a little hackish, but works fine in practice
 
+	} else if (A->base_type==INSTANCE_BAKED_LIGHT || B->base_type==INSTANCE_BAKED_LIGHT) {
+
+		if (B->base_type==INSTANCE_BAKED_LIGHT) {
+			SWAP(A,B);
+		}
+
+		ERR_FAIL_COND_V(B->base_type!=INSTANCE_BAKED_LIGHT_SAMPLER,NULL);
+		B->baked_light_sampler_info->baked_lights.insert(A);
+
 	} else if (A->base_type==INSTANCE_ROOM || B->base_type==INSTANCE_ROOM) {
 
 		if (B->base_type==INSTANCE_ROOM)
@@ -5005,6 +5287,15 @@ void VisualServerRaster::instance_unpair(void *p_self, OctreeElementID, Instance
 		//after disconnecting them, see if they can connect again
 		self->_portal_attempt_connect(A);
 		self->_portal_attempt_connect(B);
+
+	} else if (A->base_type==INSTANCE_BAKED_LIGHT || B->base_type==INSTANCE_BAKED_LIGHT) {
+
+		if (B->base_type==INSTANCE_BAKED_LIGHT) {
+			SWAP(A,B);
+		}
+
+		ERR_FAIL_COND(B->base_type!=INSTANCE_BAKED_LIGHT_SAMPLER);
+		B->baked_light_sampler_info->baked_lights.erase(A);
 
 	} else if (A->base_type==INSTANCE_ROOM || B->base_type==INSTANCE_ROOM) {
 
@@ -5197,6 +5488,308 @@ void VisualServerRaster::_cull_room(Camera *p_camera, Instance *p_room,Instance 
 	
 }
 
+void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instance *p_sampled_light,bool p_linear_colorspace) {
+
+
+	BakedLightSampler *sampler_opts = p_sampled_light->baked_light_sampler_info->sampler;
+	int res = sampler_opts->resolution;
+	int dp_size = res*res*2;
+	Color * dp_map = (Color*)alloca( sizeof(Color)*dp_size); //allocate the dual parabolloid colors
+	Vector3 * dp_normals = (Vector3*)alloca( sizeof(Vector3)*dp_size); //allocate the dual parabolloid normals
+	const Vector3 * dp_src_normals = p_sampled_light->baked_light_sampler_info->sampler->dp_cache.ptr();
+
+
+	if (!p_sampled_light->baked_light_sampler_info->sampled_light.is_valid() || p_sampled_light->baked_light_sampler_info->resolution!=sampler_opts->resolution) {
+		if (p_sampled_light->baked_light_sampler_info->sampled_light.is_valid()) {
+			rasterizer->free(p_sampled_light->baked_light_sampler_info->sampled_light);
+		}
+
+		p_sampled_light->baked_light_sampler_info->resolution=sampler_opts->resolution;
+		p_sampled_light->baked_light_sampler_info->sampled_light=rasterizer->sampled_light_dp_create(sampler_opts->resolution,sampler_opts->resolution*2);
+
+
+	}
+
+
+	zeromem(dp_map,sizeof(Color)*dp_size);
+	bool valid=false;
+	int samples=0;
+
+
+	for(Set<Instance*>::Element *E=p_sampled_light->baked_light_sampler_info->baked_lights.front();E;E=E->next()) {
+
+		Instance *bl = E->get();
+		if (bl->baked_light_info->baked_light->sampler.size()==0)
+			continue; //not usable
+
+
+		Matrix3 norm_xform = bl->baked_light_info->affine_inverse.basis;//.inverse();
+		for(int i=0;i<dp_size;i++) {
+			dp_normals[i]=norm_xform.xform(dp_src_normals[i]).normalized();
+		}
+
+		//normals in place
+
+
+		//sample octree
+
+		float r = sampler_opts->params[VS::BAKED_LIGHT_SAMPLER_RADIUS];
+		float att = sampler_opts->params[VS::BAKED_LIGHT_SAMPLER_ATTENUATION];
+		float str = sampler_opts->params[VS::BAKED_LIGHT_SAMPLER_STRENGTH];
+		Vector3 s = p_sampled_light->data.transform.basis.get_scale();
+
+		r*=MAX(MAX(s.x,s.y),s.z);
+		AABB sample_aabb= bl->data.transform.affine_inverse().xform(AABB(Vector3(-r,-r,-r)+p_sampled_light->data.transform.origin,Vector3(r*2,r*2,r*2)));
+		//ok got octree local AABB
+
+		DVector<int>::Read rp = bl->baked_light_info->baked_light->sampler.read();
+		const int *rptr = rp.ptr();
+
+		int first = rptr[1];
+		int depth = rptr[2];
+		bool islinear = rptr[3]&1;
+		depth+=1;
+
+		AABB aabb;
+		aabb.pos.x=decode_float((const uint8_t*)&rptr[4]);
+		aabb.pos.y=decode_float((const uint8_t*)&rptr[5]);
+		aabb.pos.z=decode_float((const uint8_t*)&rptr[6]);
+		aabb.size.x=decode_float((const uint8_t*)&rptr[7]);
+		aabb.size.y=decode_float((const uint8_t*)&rptr[8]);
+		aabb.size.z=decode_float((const uint8_t*)&rptr[9]);
+
+		uint32_t *stack=(uint32_t*)alloca(depth*sizeof(uint32_t));
+		int *stack_ptr=(int*)alloca(depth*sizeof(int));
+		AABB *aabb_stack=(AABB*)alloca(depth*sizeof(AABB));
+
+		stack[0]=0;
+		stack_ptr[0]=first;
+		aabb_stack[0]=aabb;
+		Vector3 center = sample_aabb.pos + sample_aabb.size * 0.5;
+
+
+		int stack_pos=0;
+		Color max_col;
+
+		//int reso = sampler_opts->params[VS::BAKED_LIGHT_SAMPLER_DETAIL_RATIO];
+
+		int lalimit = sample_aabb.get_longest_axis_index();
+		float limit = sampler_opts->params[VS::BAKED_LIGHT_SAMPLER_DETAIL_RATIO]*sample_aabb.size[lalimit];
+
+
+		while(true) {
+
+
+			bool leaf = (rptr[ stack_ptr[stack_pos] ]>>16)==0;
+
+			if (aabb_stack[stack_pos].size[lalimit]<limit) {
+				leaf=true;
+			}
+
+
+			if (leaf) {
+
+				Vector3 from = aabb_stack[stack_pos].pos + aabb_stack[stack_pos].size * 0.5;
+				Vector3 norm = (from-center).normalized();
+
+
+				Color col;
+				col.r = ((rptr[ stack_ptr[stack_pos] ]&0xFFFF)/256.0);
+				col.g = ((rptr[ stack_ptr[stack_pos]+1 ]>>16)/256.0);
+				col.b = ((rptr[ stack_ptr[stack_pos]+1 ]&0xFFFF)/256.0);
+
+
+				max_col.r = MAX(max_col.r,col.r);
+				max_col.g = MAX(max_col.g,col.g);
+				max_col.b = MAX(max_col.b,col.b);
+
+				if (!islinear && p_linear_colorspace) {
+					col=col.to_linear();
+				}
+
+				float distance;
+
+				if (aabb_stack[stack_pos].has_point(center)) {
+					distance=0;
+				} else {
+
+					Vector3 support = aabb_stack[stack_pos].get_support(norm);
+					distance = Math::absf(norm.dot(support)-norm.dot(center));
+
+				}
+
+				if (distance>r)
+					distance=r;
+
+				float mult = powf(1.0-distance/r,att)*str;
+				if (mult>0) {
+					col.r*=mult;
+					col.g*=mult;
+					col.b*=mult;
+
+
+
+					for(int i=0;i<dp_size;i++) {
+						float mult2 = norm.dot(dp_normals[i]);
+						if (mult2<0)
+							mult2=0;
+						Color col2(col.r*mult2,col.g*mult2,col.b*mult2,1.0);
+						dp_map[i].r=MAX(dp_map[i].r,col2.r);
+						dp_map[i].g=MAX(dp_map[i].g,col2.g);
+						dp_map[i].b=MAX(dp_map[i].b,col2.b);
+					}
+
+				}
+
+				samples++;
+				//nothing is valid unless you hit a leaf
+				valid=true;
+				stack_pos--;
+			} else if ((stack[stack_pos]&0xFF)<8) {
+
+				int i = stack[stack_pos]&0xFF;
+				int base = (stack[stack_pos]>>8);
+
+				if (!((rptr[ stack_ptr[stack_pos] ]>>16)&(1<<i))) {
+					//no bit, no test
+					stack[stack_pos]=(base<<8)+(i+1);
+					continue;
+				}
+
+				stack[stack_pos]=((base+1)<<8)+(i+1);
+
+				AABB child_aabb = aabb_stack[stack_pos];
+				child_aabb.size*=0.5;
+				if (i&1)
+					child_aabb.pos.x+=child_aabb.size.x;
+				if (i&2)
+					child_aabb.pos.y+=child_aabb.size.y;
+				if (i&4)
+					child_aabb.pos.z+=child_aabb.size.z;
+
+				if (!child_aabb.intersects(sample_aabb)) {
+					continue;
+				}
+
+				if (child_aabb.encloses(sample_aabb)) {
+					stack[stack_pos]=(base<<8)|8; //don't test the rest
+				}
+
+				stack_pos++;
+				ERR_FAIL_COND(stack_pos>=depth);
+
+				stack[stack_pos]=0;
+				stack_ptr[stack_pos]=rptr[ stack_ptr[stack_pos-1]+2+base ];
+				aabb_stack[stack_pos]=child_aabb;
+			} else {
+				stack_pos--;
+				if (stack_pos<0)
+					break;
+			}
+		}
+
+
+	}
+
+	//print_line("samples "+itos(samples) );
+
+	if (valid) {
+
+		for(int i=0;i<res;i++) {
+			//average seams to avoid aliasing
+			{
+				//top
+				int ofs1 = i;
+				int ofs2 = dp_size-res+i;
+				Color avg(
+					(dp_map[ofs1].r+dp_map[ofs2].r)*0.5,
+					(dp_map[ofs1].g+dp_map[ofs2].g)*0.5,
+					(dp_map[ofs1].b+dp_map[ofs2].b)*0.5,
+					1.0
+				);
+				dp_map[ofs1]=avg;
+				dp_map[ofs2]=avg;
+			}
+			{
+				//bottom
+				int ofs1 = res*res-res+i;
+				int ofs2 = res*res+i;
+				Color avg(
+					(dp_map[ofs1].r+dp_map[ofs2].r)*0.5,
+					(dp_map[ofs1].g+dp_map[ofs2].g)*0.5,
+					(dp_map[ofs1].b+dp_map[ofs2].b)*0.5,
+					1.0
+				);
+				dp_map[ofs1]=avg;
+				dp_map[ofs2]=avg;
+			}
+			{
+				//left
+				int ofs1 = i*res;
+				int ofs2 = res*res+(res-i-1)*res;
+				Color avg(
+					(dp_map[ofs1].r+dp_map[ofs2].r)*0.5,
+					(dp_map[ofs1].g+dp_map[ofs2].g)*0.5,
+					(dp_map[ofs1].b+dp_map[ofs2].b)*0.5,
+					1.0
+				);
+				dp_map[ofs1]=avg;
+				dp_map[ofs2]=avg;
+			}
+			{
+				//right
+				int ofs1 = i*res+(res-1);
+				int ofs2 = res*res+(res-i-1)*res+(res-1);
+				Color avg(
+					(dp_map[ofs1].r+dp_map[ofs2].r)*0.5,
+					(dp_map[ofs1].g+dp_map[ofs2].g)*0.5,
+					(dp_map[ofs1].b+dp_map[ofs2].b)*0.5,
+					1.0
+				);
+				dp_map[ofs1]=avg;
+				dp_map[ofs2]=avg;
+			}
+
+		}
+
+		rasterizer->sampled_light_dp_update(p_sampled_light->baked_light_sampler_info->sampled_light,dp_map,1.0);
+		for(Set<Instance*>::Element *F=p_sampled_light->baked_light_sampler_info->owned_instances.front();F;F=F->next()) {
+
+			F->get()->data.sampled_light=p_sampled_light->baked_light_sampler_info->sampled_light;
+		}
+
+
+	} else {
+
+		for(Set<Instance*>::Element *F=p_sampled_light->baked_light_sampler_info->owned_instances.front();F;F=F->next()) {
+
+			F->get()->data.sampled_light=RID(); //do not use because nothing close
+		}
+	}
+
+
+
+
+/*
+		highp vec3 vtx = vertex_interp;
+		vtx.z*=dual_paraboloid.y; //side to affect
+		vtx.z+=0.01;
+		dp_clip=vtx.z;
+		highp float len=length( vtx );
+		vtx=normalize(vtx);
+		vtx.xy/=1.0+vtx.z;
+		vtx.z = len*dual_paraboloid.x; // it's a reciprocal(len - z_near) / (z_far - z_near);
+		vtx+=normalize(vtx)*0.025;
+		vtx.z = vtx.z * 2.0 - 1.0; // fit to clipspace
+		vertex_interp=vtx;
+*/
+
+
+
+
+}
+
+
 void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario) {
 
 
@@ -5248,6 +5841,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 	/* STEP 2 - CULL */
 	int cull_count = p_scenario->octree.cull_convex(planes,instance_cull_result,MAX_INSTANCE_CULL);
 	light_cull_count=0;
+	light_samplers_culled=0;
 
 /*	print_line("OT: "+rtos( (OS::get_singleton()->get_ticks_usec()-t)/1000.0));
 	print_line("OTO: "+itos(p_scenario->octree.get_octant_count()));
@@ -5408,6 +6002,8 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 
 					keep=true;
 				}
+
+
 			}
 
 
@@ -5420,6 +6016,13 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 					cull_range.min=min;
 				if (max>cull_range.max)
 					cull_range.max=max;
+
+				if (ins->sampled_light && ins->sampled_light->baked_light_sampler_info->last_pass!=render_pass) {
+					if (light_samplers_culled<MAX_LIGHT_SAMPLERS) {
+						light_sampler_cull_result[light_samplers_culled++]=ins->sampled_light;
+						ins->sampled_light->baked_light_sampler_info->last_pass=render_pass;
+					}
+				}
 			}
 			
 		}
@@ -5499,7 +6102,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 		
 	}
 
-	{
+	{ //this should eventually change to
 		//assign shadows by distance to camera
 		SortArray<Instance*,_InstanceLightsort> sorter;
 		sorter.sort(light_cull_result,light_cull_count);
@@ -5520,10 +6123,8 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 		}
 	}
 
+	/* ENVIRONMENT */
 
-
-	/* STEP 6 - PROCESS GEOMETRY AND DRAW SCENE*/
-		
 	RID environment;
 	if (p_camera->env.is_valid()) //camera has more environment priority
 		environment=p_camera->env;
@@ -5531,6 +6132,22 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 		environment=p_scenario->environment;
 	else
 		environment=p_scenario->fallback_environment;
+
+
+	/* STEP 6 - SAMPLE BAKED LIGHT */
+
+	bool islinear =false;
+	if (environment.is_valid()) {
+		islinear = rasterizer->environment_is_fx_enabled(environment,VS::ENV_FX_SRGB);
+	}
+
+	for(int i=0;i<light_samplers_culled;i++) {
+
+		_process_sampled_light(p_camera->transform,light_sampler_cull_result[i],islinear);
+	}
+
+	/* STEP 7 - PROCESS GEOMETRY AND DRAW SCENE*/
+		
 
 	rasterizer->begin_scene(p_viewport->viewport_data,environment,p_scenario->debug);
 	rasterizer->set_viewport(viewport_rect);	
@@ -5838,6 +6455,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 	desired_rect.x+=p_ofs_x;
 	desired_rect.y+=p_ofs_y;
 
+
 	// if the viewport is different than the actual one, change it
 
 	if ( p_viewport->render_target.is_valid() || viewport_rect.x != desired_rect.x ||
@@ -5847,7 +6465,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 
 		viewport_rect=desired_rect;
-		rasterizer->set_viewport(viewport_rect);		
+		rasterizer->set_viewport(viewport_rect);
 
 	}
 
@@ -5995,7 +6613,14 @@ void VisualServerRaster::_draw_viewports() {
 		int window_w = OS::get_singleton()->get_video_mode(E->get()).width;
 		int window_h = OS::get_singleton()->get_video_mode(E->get()).height;
 
-		_draw_viewport(vp,0,0,window_w,window_h);
+		Rect2 r(0,0,vp->rect.width,vp->rect.height);
+		if (r.size.width==0)
+			r.size.width=window_w;
+		if (r.size.height==0)
+			r.size.height=window_w;
+
+
+		_draw_viewport(vp,r.pos.x,r.pos.y,r.size.width,r.size.height);
 	}
 
 

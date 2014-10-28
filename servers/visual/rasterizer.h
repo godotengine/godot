@@ -503,6 +503,7 @@ public:
 
 		VS::BakedLightMode mode;
 		RID octree_texture;
+		RID light_texture;
 		float color_multiplier; //used for both lightmaps and octree
 		Transform octree_transform;
 		Map<int,RID> lightmaps;
@@ -514,6 +515,7 @@ public:
 		float lightmap_multiplier;
 		int octree_steps;
 		Vector2 octree_tex_pixel_size;
+		Vector2 light_tex_pixel_size;
 	};
 
 	struct InstanceData {
@@ -521,6 +523,7 @@ public:
 		Transform transform;
 		RID skeleton;
 		RID material_override;
+		RID sampled_light;
 		Vector<RID> light_instances;
 		Vector<float> morph_values;
 		BakedLightData *baked_light;
@@ -585,6 +588,10 @@ public:
 
 	virtual void environment_fx_set_param(RID p_env,VS::EnvironmentFxParam p_param,const Variant& p_value)=0;
 	virtual Variant environment_fx_get_param(RID p_env,VS::EnvironmentFxParam p_param) const=0;
+
+	/* SAMPLED LIGHT */
+	virtual RID sampled_light_dp_create(int p_width,int p_height)=0;
+	virtual void sampled_light_dp_update(RID p_sampled_light,const Color *p_data,float p_multiplier)=0;
 
 		
 	/*MISC*/

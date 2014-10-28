@@ -4,7 +4,16 @@
 #include <cmath>
 #include "io/marshalls.h"
 #include "tools/editor/editor_node.h"
+#include "tools/editor/editor_settings.h"
 
+
+void baked_light_baker_add_64f(double *dst,double value);
+void baked_light_baker_add_64i(int64_t *dst,int64_t value);
+
+//-separar en 2 testuras?
+//*mejorar performance y threads
+//*modos lineales
+//*saturacion
 
 _FORCE_INLINE_ static uint64_t get_uv_normal_bit(const Vector3& p_vector) {
 
@@ -66,6 +75,12 @@ BakedLightBaker::MeshTexture* BakedLightBaker::_get_mat_tex(const Ref<Texture>& 
 				image.convert(Image::FORMAT_RGBA);
 		}
 
+		if (imgtex->get_flags()&Texture::FLAG_CONVERT_TO_LINEAR) {
+			Image copy = image;
+			copy.srgb_to_linear();
+			image=copy;
+		}
+
 		DVector<uint8_t> dvt=image.get_data();
 		DVector<uint8_t>::Read r=dvt.read();
 		MeshTexture mt;
@@ -105,8 +120,13 @@ void BakedLightBaker::_add_mesh(const Ref<Mesh>& p_mesh,const Ref<Material>& p_m
 				if (fm.is_valid()) {
 					//fixed route
 					mm.diffuse.color=fm->get_parameter(FixedMaterial::PARAM_DIFFUSE);
+					if (linear_color)
+						mm.diffuse.color=mm.diffuse.color.to_linear();
 					mm.diffuse.tex=_get_mat_tex(fm->get_texture(FixedMaterial::PARAM_DIFFUSE));
 					mm.specular.color=fm->get_parameter(FixedMaterial::PARAM_SPECULAR);
+					if (linear_color)
+						mm.specular.color=mm.specular.color.to_linear();
+
 					mm.specular.tex=_get_mat_tex(fm->get_texture(FixedMaterial::PARAM_SPECULAR));
 				} else {
 
@@ -270,6 +290,11 @@ void BakedLightBaker::_parse_geometry(Node* p_node) {
 			dirl.type=VS::LightType(dl->get_light_type());
 			dirl.diffuse=dl->get_color(DirectionalLight::COLOR_DIFFUSE);
 			dirl.specular=dl->get_color(DirectionalLight::COLOR_SPECULAR);
+			if (linear_color)
+				dirl.diffuse=dirl.diffuse.to_linear();
+			if (linear_color)
+				dirl.specular=dirl.specular.to_linear();
+
 			dirl.energy=dl->get_parameter(DirectionalLight::PARAM_ENERGY);
 			dirl.pos=dl->get_global_transform().origin;
 			dirl.up=dl->get_global_transform().basis.get_axis(1).normalized();
@@ -472,8 +497,11 @@ void BakedLightBaker::_make_bvh() {
 	}
 
 	bvh=_parse_bvh(bases.ptr(),bases.size(),1,max_depth);
+
 	ray_stack = memnew_arr(uint32_t,max_depth);
 	bvh_stack = memnew_arr(BVH*,max_depth);
+
+	bvh_depth = max_depth;
 }
 
 void BakedLightBaker::_octree_insert(int p_octant,Triangle* p_triangle, int p_depth) {
@@ -563,6 +591,12 @@ void BakedLightBaker::_octree_insert(int p_octant,Triangle* p_triangle, int p_de
 					child->aabb.pos.z+=child->aabb.size.z;
 
 
+				child->full_accum[0]=0;
+				child->full_accum[1]=0;
+				child->full_accum[2]=0;
+				child->sampler_ofs=0;
+
+
 
 				if (stack_pos==octree_depth-1) {
 					child->leaf=true;
@@ -585,14 +619,10 @@ void BakedLightBaker::_octree_insert(int p_octant,Triangle* p_triangle, int p_de
 					cell_count++;
 
 					int lz = lights.size();
-					child->light = memnew_arr(OctantLight,lz);
-
-					for(int li=0;li<lz;li++) {
-						for(int ci=0;ci<8;ci++) {
-							child->light[li].accum[ci][0]=0;
-							child->light[li].accum[ci][1]=0;
-							child->light[li].accum[ci][2]=0;
-						}
+					for(int ci=0;ci<8;ci++) {
+						child->light_accum[ci][0]=0;
+						child->light_accum[ci][1]=0;
+						child->light_accum[ci][2]=0;
 					}
 
 					child->parent=ptr_stack[stack_pos];
@@ -797,12 +827,12 @@ void BakedLightBaker::_make_octree() {
 
 
 
-void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, const AABB& p_plot_aabb, const Color& p_light, const Plane& p_plane) {
+void BakedLightBaker::_plot_light(ThreadStack& thread_stack,const Vector3& p_plot_pos, const AABB& p_plot_aabb, const Color& p_light,const Color& p_tint_light,bool p_only_full, const Plane& p_plane) {
 
 	//stackless version
 
-	uint32_t *stack=octant_stack;
-	uint32_t *ptr_stack=octantptr_stack;
+	uint32_t *stack=thread_stack.octant_stack;
+	uint32_t *ptr_stack=thread_stack.octantptr_stack;
 	Octant *octants=octant_pool.ptr();
 
 	stack[0]=0;
@@ -815,6 +845,29 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 
 		Octant &octant=octants[ptr_stack[stack_pos]];
 
+		if (stack[stack_pos]==0) {
+
+
+			Vector3 pos = octant.aabb.pos + octant.aabb.size*0.5;
+			float md = 1<<(octree_depth - stack_pos );
+			float r=cell_size*plot_size*md;
+			float div = 1.0/(md*md*md);
+			//div=1.0;
+
+
+			float d = p_plot_pos.distance_to(pos);
+
+			if ((p_plane.distance_to(pos)>-cell_size*1.75*md) && d<=r) {
+
+
+				float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
+
+				baked_light_baker_add_64f(&octant.full_accum[0],p_tint_light.r*intensity*div);
+				baked_light_baker_add_64f(&octant.full_accum[1],p_tint_light.g*intensity*div);
+				baked_light_baker_add_64f(&octant.full_accum[2],p_tint_light.b*intensity*div);
+			}
+		}
+
 		if (octant.leaf) {
 
 
@@ -822,41 +875,44 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 			//if (p_plane.normal.dot(octant.aabb.get_support(p_plane.normal)) < p_plane.d-CMP_EPSILON) { //octants behind are no go
 
 
-
-			float r=cell_size*plot_size;
-			for(int i=0;i<8;i++) {
-				Vector3 pos=octant.aabb.pos;
-				if (i&1)
-					pos.x+=octant.aabb.size.x;
-				if (i&2)
-					pos.y+=octant.aabb.size.y;
-				if (i&4)
-					pos.z+=octant.aabb.size.z;
-
-
-
-				float d = p_plot_pos.distance_to(pos);
-
-				if ((p_plane.distance_to(pos)>-cell_size*1.75) && d<=r) {
+			if (!p_only_full) {
+				float r=cell_size*plot_size;
+				for(int i=0;i<8;i++) {
+					Vector3 pos=octant.aabb.pos;
+					if (i&1)
+						pos.x+=octant.aabb.size.x;
+					if (i&2)
+						pos.y+=octant.aabb.size.y;
+					if (i&4)
+						pos.z+=octant.aabb.size.z;
 
 
-					float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
-					if (edge_damp>0) {
-						Vector3 normal = Vector3(octant.normal_accum[i][0],octant.normal_accum[i][1],octant.normal_accum[i][2]);
-						if (normal.x>0 || normal.y>0 || normal.z>0) {
 
-							float damp = Math::abs(p_plane.normal.dot(normal));
-							intensity*=pow(damp,edge_damp);
+					float d = p_plot_pos.distance_to(pos);
 
+					if ((p_plane.distance_to(pos)>-cell_size*1.75) && d<=r) {
+
+
+						float intensity = 1.0 - (d/r)*(d/r); //not gauss but..
+						if (edge_damp>0) {
+							Vector3 normal = Vector3(octant.normal_accum[i][0],octant.normal_accum[i][1],octant.normal_accum[i][2]);
+							if (normal.x>0 || normal.y>0 || normal.z>0) {
+
+								float damp = Math::abs(p_plane.normal.dot(normal));
+								intensity*=pow(damp,edge_damp);
+
+							}
 						}
+
+						//intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
+						//intensity = Math::cos(d*Math_PI*0.5/r);
+
+						baked_light_baker_add_64f(&octant.light_accum[i][0],p_light.r*intensity);
+						baked_light_baker_add_64f(&octant.light_accum[i][1],p_light.g*intensity);
+						baked_light_baker_add_64f(&octant.light_accum[i][2],p_light.b*intensity);
+
+
 					}
-
-					//intensity*=1.0-Math::abs(p_plane.distance_to(pos))/(plot_size*cell_size);
-					//intensity = Math::cos(d*Math_PI*0.5/r);
-
-					octant.light[p_light_index].accum[i][0]+=p_light.r*intensity;
-					octant.light[p_light_index].accum[i][1]+=p_light.g*intensity;
-					octant.light[p_light_index].accum[i][2]+=p_light.b*intensity;
 				}
 			}
 
@@ -893,11 +949,11 @@ void BakedLightBaker::_plot_light(int p_light_index, const Vector3& p_plot_pos, 
 }
 
 
-float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce,bool p_only_dist) {
+float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,const Vector3& p_begin, const Vector3& p_end,float p_rest,const Color& p_light,float *p_att_curve,float p_att_pos,int p_att_curve_len,int p_bounces,bool p_first_bounce,bool p_only_dist) {
 
 
-	uint32_t* stack = ray_stack;
-	BVH **bstack = bvh_stack;
+	uint32_t* stack = thread_stack.ray_stack;
+	BVH **bstack = thread_stack.bvh_stack;
 
 	enum {
 		TEST_AABB_BIT=0,
@@ -913,6 +969,7 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 	if (len==0)
 		return 0;
 	n/=len;
+
 
 
 	real_t d=1e10;
@@ -1139,7 +1196,7 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 #endif
 
 
-				ret=_throw_ray(p_light_index,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
+				ret=_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
 			}
 
 			if (use_specular && (specular_at_point.r>CMP_EPSILON || specular_at_point.g>CMP_EPSILON || specular_at_point.b>CMP_EPSILON)) {
@@ -1150,7 +1207,7 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 
 				Vector3 rn = n - r_normal *r_normal.dot(n) * 2.0;
 
-				_throw_ray(p_light_index,r_point,r_point+rn*p_rest,p_rest,specular_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
+				_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,specular_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1);
 			}
 		}
 
@@ -1158,19 +1215,25 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 //		_plot_light_point(r_point,octree,octree_aabb,p_light);
 
 
-		Color plot_light=diffuse_at_point;
+		Color plot_light=res_light.linear_interpolate(diffuse_at_point,tint);
 		plot_light.r*=att;
 		plot_light.g*=att;
 		plot_light.b*=att;
+		Color tint_light=diffuse_at_point;
+		tint_light.r*=att;
+		tint_light.g*=att;
+		tint_light.b*=att;
 
-		if (!p_first_bounce) {
+		bool skip=false;
+
+		if (!p_first_bounce || p_bake_direct) {
 
 
 			float r = plot_size * cell_size*2;
 			if (dist<r) {
 				//avoid accumulaiton of light on corners
 				//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
-				plot_light=Color(0,0,0,0);
+				skip-true;
 
 			} else {
 
@@ -1181,12 +1244,12 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 				double r2 = double(rand())/RAND_MAX;
 				double r3 = double(rand())/RAND_MAX;
 				Vector3 rn = ((c1*(r1-0.5)) + (c2*(r2-0.5)) + (r_normal*r3*0.25)).normalized();
-				float d =_throw_ray(p_light_index,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1,false,true);
-				r = plot_size*cell_size*0.7;
+				float d =_throw_ray(thread_stack,p_bake_direct,r_point,r_point+rn*p_rest,p_rest,diffuse_at_point,p_att_curve,p_att_pos,p_att_curve_len,p_bounces-1,false,true);
+				r = plot_size*cell_size*ao_radius;
 				if (d>0 && d<r) {
 					//avoid accumulaiton of light on corners
 					//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
-					plot_light=Color(0,0,0,0);
+					skip=true;
 
 				} else {
 					//plot_light=Color(0,0,0,0);
@@ -1195,11 +1258,9 @@ float BakedLightBaker::_throw_ray(int p_light_index,const Vector3& p_begin, cons
 		}
 
 
-		if (!p_first_bounce || lights[p_light_index].bake_direct) {
-			Plane plane(r_point,r_normal);
-			//print_line(String(plot_light)+String(" ")+rtos(att));
-			_plot_light(p_light_index,r_point,aabb,plot_light,plane);
-		}
+		Plane plane(r_point,r_normal);
+		if (!skip)
+			_plot_light(thread_stack,r_point,aabb,plot_light,tint_light,!(!p_first_bounce || p_bake_direct),plane);
 
 
 		return dist;
@@ -1305,9 +1366,87 @@ void BakedLightBaker::_make_octree_texture() {
 
 	//ok let's try to just create a texture
 
+	int otex_w=256;
+
+	while (true) {
+
+
+
+		uint32_t oct_idx=leaf_list;
+
+		int row=0;
+
+
+		print_line("begin at row "+itos(row));
+		int longest_line_reused=0;
+		int col=0;
+		int processed=0;
+
+		//reset
+		while(oct_idx) {
+
+			BakedLightBaker::Octant *oct = &octants[oct_idx];
+			oct->texture_x=0;
+			oct->texture_y=0;
+			oct_idx=oct->next_leaf;
+
+		}
+
+		oct_idx=leaf_list;
+		//assign
+		while(oct_idx) {
+
+			BakedLightBaker::Octant *oct = &octants[oct_idx];
+			if (oct->first_neighbour && oct->texture_x==0 && oct->texture_y==0) {
+				//was not processed
+				uint32_t current_idx=oct_idx;
+				int reused=0;
+
+				while(current_idx) {
+					BakedLightBaker::Octant *o = &octants[current_idx];
+					if (col+1 >= otex_w) {
+						col=0;
+						row+=4;
+					}
+					o->texture_x=col;
+					o->texture_y=row;
+					processed++;
+
+					if (o->bake_neighbour) {
+						reused++;
+					}
+					col+=o->bake_neighbour ? 1 : 2; //reuse neighbour
+					current_idx=o->bake_neighbour;
+				}
+
+				if (reused>longest_line_reused) {
+					longest_line_reused=reused;
+				}
+			}
+			oct_idx=oct->next_leaf;
+		}
+
+		row+=4;
+
+		if (otex_w < row) {
+
+			otex_w*=2;
+		} else {
+
+			baked_light_texture_w=otex_w;
+			baked_light_texture_h=nearest_power_of_2(row);
+			print_line("w: "+itos(otex_w));
+			print_line("h: "+itos(row));
+			break;
+		}
+
+
+	}
+
+
 	{
 
-		int otex_w=(1<<lattice_size)*(1<<lattice_size)*2; //make sure lattice fits horizontally
+		otex_w=(1<<lattice_size)*(1<<lattice_size)*2; //make sure lattice fits horizontally
 		Vector3 lattice_cell_size=octree_aabb.size;
 		for(int i=0;i<lattice_size;i++) {
 
@@ -1320,64 +1459,7 @@ void BakedLightBaker::_make_octree_texture() {
 
 			//let's plot the leafs first, given the octree is not so obvious which size it will have
 			int row=4+4*(1<<lattice_size);
-
-
-			uint32_t oct_idx=leaf_list;
-
-			//untag
-			while(oct_idx) {
-
-				BakedLightBaker::Octant *oct = &octants[oct_idx];
-				//0,0 also means unprocessed
-				oct->texture_x=0;
-				oct->texture_y=0;
-				oct_idx=oct->next_leaf;
-
-			}
-
-			oct_idx=leaf_list;
-
-
-			print_line("begin at row "+itos(row));
-			int longest_line_reused=0;
 			int col=0;
-			int processed=0;
-
-			while(oct_idx) {
-
-				BakedLightBaker::Octant *oct = &octants[oct_idx];
-				if (oct->first_neighbour && oct->texture_x==0 && oct->texture_y==0) {
-					//was not processed
-					uint32_t current_idx=oct_idx;
-					int reused=0;
-
-					while(current_idx) {
-						BakedLightBaker::Octant *o = &octants[current_idx];
-						if (col+1 >= otex_w) {
-							col=0;
-							row+=4;
-						}
-						o->texture_x=col;
-						o->texture_y=row;
-						processed++;
-
-						if (o->bake_neighbour) {
-							reused++;
-						}
-						col+=o->bake_neighbour ? 1 : 2; //reuse neighbour
-						current_idx=o->bake_neighbour;
-					}
-
-					if (reused>longest_line_reused) {
-						longest_line_reused=reused;
-					}
-				}
-				oct_idx=oct->next_leaf;
-			}
-
-			print_line("processed "+itos(processed));
-
-			print_line("longest reused: "+itos(longest_line_reused));
 
 			col=0;
 			row+=4;
@@ -1478,7 +1560,25 @@ double BakedLightBaker::get_normalization(int p_light_idx) const {
 	return nrg;
 }
 
-void BakedLightBaker::throw_rays(int p_amount) {
+
+
+double BakedLightBaker::get_modifier(int p_light_idx) const {
+
+	double nrg=0;
+
+	const LightData &dl=lights[p_light_idx];
+	double cell_area = cell_size*cell_size;;
+	//nrg+= /*dl.energy */ (dl.rays_thrown * cell_area / dl.area);
+	nrg=cell_area;
+	nrg*=(Math_PI*plot_size*plot_size)*0.5; // damping of radial linear gradient kernel
+	nrg*=dl.constant;
+	//nrg*=5;
+
+
+	return nrg;
+}
+
+void BakedLightBaker::throw_rays(ThreadStack& thread_stack,int p_amount) {
 
 
 
@@ -1488,6 +1588,8 @@ void BakedLightBaker::throw_rays(int p_amount) {
 
 
 		int amount = p_amount * total_light_area / dl.area;
+		double mod = 1.0/double(get_modifier(i));
+		mod*=p_amount/float(amount);
 
 		switch(dl.type) {
 
@@ -1502,12 +1604,15 @@ void BakedLightBaker::throw_rays(int p_amount) {
 					from+=dl.left*(r2*2.0-1.0);
 					Vector3 to = from+dl.dir*dl.length;
 					Color col=dl.diffuse;
-					col.r*=dl.energy;
-					col.g*=dl.energy;
-					col.b*=dl.energy;
+					float m = mod*dl.energy;
+					col.r*=m;
+					col.g*=m;
+					col.b*=m;
+
 					dl.rays_thrown++;
-					total_rays++;
-					_throw_ray(i,from,to,dl.length,col,NULL,0,0,max_bounces,true);
+					baked_light_baker_add_64i(&total_rays,1);
+
+					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.length,col,NULL,0,0,max_bounces,true);
 				}
 			} break;
 			case VS::LIGHT_OMNI: {
@@ -1543,13 +1648,14 @@ void BakedLightBaker::throw_rays(int p_amount) {
 #endif
 					Vector3 to = dl.pos+dir*dl.radius;
 					Color col=dl.diffuse;
-					col.r*=dl.energy;
-					col.g*=dl.energy;
-					col.b*=dl.energy;
+					float m = mod*dl.energy;
+					col.r*=m;
+					col.g*=m;
+					col.b*=m;
 
 					dl.rays_thrown++;
-					total_rays++;
-					_throw_ray(i,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
+					baked_light_baker_add_64i(&total_rays,1);
+					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
 //					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
@@ -1574,13 +1680,14 @@ void BakedLightBaker::throw_rays(int p_amount) {
 
 					Vector3 to = dl.pos+dir*dl.radius;
 					Color col=dl.diffuse;
-					col.r*=dl.energy;
-					col.g*=dl.energy;
-					col.b*=dl.energy;
+					float m = mod*dl.energy;
+					col.r*=m;
+					col.g*=m;
+					col.b*=m;
 
 					dl.rays_thrown++;
-					total_rays++;
-					_throw_ray(i,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
+					baked_light_baker_add_64i(&total_rays,1);
+					_throw_ray(thread_stack,dl.bake_direct,from,to,dl.radius,col,dl.attenuation_table.ptr(),0,dl.radius,max_bounces,true);
 	//					_throw_ray(i,from,to,dl.radius,col,NULL,0,dl.radius,max_bounces,true);
 				}
 
@@ -1622,6 +1729,10 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 	edge_damp=baked_light->get_edge_damp();
 	normal_damp=baked_light->get_normal_damp();
 	octree_extra_margin=baked_light->get_cell_extra_margin();
+	tint=baked_light->get_tint();
+	ao_radius=baked_light->get_ao_radius();
+	ao_strength=baked_light->get_ao_strength();
+	linear_color=baked_light->get_bake_flag(BakedLight::BAKE_LINEAR_COLOR);
 
 	baked_textures.clear();
 	for(int i=0;i<baked_light->get_lightmaps_count();i++) {
@@ -1651,13 +1762,134 @@ void BakedLightBaker::bake(const Ref<BakedLight> &p_light, Node* p_node) {
 }
 
 
-void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
+void BakedLightBaker::update_octree_sampler(DVector<int> &p_sampler) {
+
+	BakedLightBaker::Octant *octants=octant_pool.ptr();
+	double norm = 1.0/double(total_rays);
+
+
+
+	if (p_sampler.size()==0 || first_bake_to_map) {
+
+		Vector<int> tmp_smp;
+		tmp_smp.resize(32); //32 for header
+
+		for(int i=0;i<32;i++) {
+			tmp_smp[i]=0;
+		}
+
+		for(int i=octant_pool_size-1;i>=0;i--) {
+
+			if (i==0)
+				tmp_smp[1]=tmp_smp.size();
+
+			Octant &octant=octants[i];
+			octant.sampler_ofs = tmp_smp.size();
+			int idxcol[2]={0,0};
+
+			int r = CLAMP((octant.full_accum[0]*norm)*2048,0,32767);
+			int g = CLAMP((octant.full_accum[1]*norm)*2048,0,32767);
+			int b = CLAMP((octant.full_accum[2]*norm)*2048,0,32767);
+
+			idxcol[0]|=r;
+			idxcol[1]|=(g<<16)|b;
+
+			if (octant.leaf) {
+				tmp_smp.push_back(idxcol[0]);
+				tmp_smp.push_back(idxcol[1]);
+			} else {
+
+				for(int j=0;j<8;j++) {
+					if (octant.children[j]) {
+						idxcol[0]|=(1<<(j+16));
+					}
+				}
+				tmp_smp.push_back(idxcol[0]);
+				tmp_smp.push_back(idxcol[1]);
+				for(int j=0;j<8;j++) {
+					if (octant.children[j]) {
+						tmp_smp.push_back(octants[octant.children[j]].sampler_ofs);
+						if (octants[octant.children[j]].sampler_ofs==0) {
+							print_line("FUUUUUUUUCK");
+						}
+					}
+				}
+			}
+
+		}
+
+		p_sampler.resize(tmp_smp.size());
+		DVector<int>::Write w = p_sampler.write();
+		int ss = tmp_smp.size();
+		for(int i=0;i<ss;i++) {
+			w[i]=tmp_smp[i];
+		}
+
+		first_bake_to_map=false;
+
+	}
+
+	double gamma = baked_light->get_gamma_adjust();
+	double mult = baked_light->get_energy_multiplier();
+	float saturation = baked_light->get_saturation();
+
+	DVector<int>::Write w = p_sampler.write();
+
+	encode_uint32(octree_depth,(uint8_t*)&w[2]);
+	encode_uint32(linear_color,(uint8_t*)&w[3]);
+
+	encode_float(octree_aabb.pos.x,(uint8_t*)&w[4]);
+	encode_float(octree_aabb.pos.y,(uint8_t*)&w[5]);
+	encode_float(octree_aabb.pos.z,(uint8_t*)&w[6]);
+	encode_float(octree_aabb.size.x,(uint8_t*)&w[7]);
+	encode_float(octree_aabb.size.y,(uint8_t*)&w[8]);
+	encode_float(octree_aabb.size.z,(uint8_t*)&w[9]);
+
+	//norm*=multiplier;
+
+	for(int i=octant_pool_size-1;i>=0;i--) {
+
+		Octant &octant=octants[i];
+		int idxcol[2]={w[octant.sampler_ofs],w[octant.sampler_ofs+1]};
+
+		double rf=pow(octant.full_accum[0]*norm*mult,gamma);
+		double gf=pow(octant.full_accum[1]*norm*mult,gamma);
+		double bf=pow(octant.full_accum[2]*norm*mult,gamma);
+
+		double gray = (rf+gf+bf)/3.0;
+		rf = gray + (rf-gray)*saturation;
+		gf = gray + (gf-gray)*saturation;
+		bf = gray + (bf-gray)*saturation;
+
+
+		int r = CLAMP((rf)*2048,0,32767);
+		int g = CLAMP((gf)*2048,0,32767);
+		int b = CLAMP((bf)*2048,0,32767);
+
+		idxcol[0]=((idxcol[0]>>16)<<16)|r;
+		idxcol[1]=(g<<16)|b;
+		w[octant.sampler_ofs]=idxcol[0];
+		w[octant.sampler_ofs+1]=idxcol[1];
+	}
+
+}
+
+void BakedLightBaker::update_octree_images(DVector<uint8_t> &p_octree,DVector<uint8_t> &p_light) {
 
 
 	int len = baked_octree_texture_w*baked_octree_texture_h*4;
-	p_image.resize(len);
-	DVector<uint8_t>::Write w = p_image.write();
+	p_octree.resize(len);
+
+	int ilen = baked_light_texture_w*baked_light_texture_h*4;
+	p_light.resize(ilen);
+
+
+	DVector<uint8_t>::Write w = p_octree.write();
 	zeromem(w.ptr(),len);
+
+	DVector<uint8_t>::Write iw = p_light.write();
+	zeromem(iw.ptr(),ilen);
+
 	float gamma = baked_light->get_gamma_adjust();
 	float mult = baked_light->get_energy_multiplier();
 
@@ -1666,6 +1898,13 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 		w[i+1]=0;
 		w[i+2]=0xFF;
 		w[i+3]=0xFF;
+	}
+
+	for(int i=0;i<ilen;i+=4) {
+		iw[i+0]=0xFF;
+		iw[i+1]=0;
+		iw[i+2]=0xFF;
+		iw[i+3]=0xFF;
 	}
 
 	float multiplier=1.0;
@@ -1678,6 +1917,9 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 	encode_float(1<<lattice_size,&w[12]);
 	encode_uint32(octree_depth-lattice_size,&w[16]);
 	encode_uint32(multiplier,&w[20]);
+	encode_uint16(baked_light_texture_w,&w[24]); //if present, use the baked light texture
+	encode_uint16(baked_light_texture_h,&w[26]);
+	encode_uint32(0,&w[28]); //baked light texture format
 
 	encode_float(octree_aabb.pos.x,&w[32]);
 	encode_float(octree_aabb.pos.y,&w[36]);
@@ -1690,6 +1932,7 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 	BakedLightBaker::Octant *octants=octant_pool.ptr();
 	int octant_count=octant_pool_size;
 	uint8_t *ptr = w.ptr();
+	uint8_t *lptr = iw.ptr();
 
 
 	int child_offsets[8]={
@@ -1703,7 +1946,18 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 		baked_octree_texture_w*8+baked_octree_texture_w*4+4,
 	};
 
-	Vector<double> norm_arr;
+	int lchild_offsets[8]={
+		0,
+		4,
+		baked_light_texture_w*4,
+		baked_light_texture_w*4+4,
+		baked_light_texture_w*8+0,
+		baked_light_texture_w*8+4,
+		baked_light_texture_w*8+baked_light_texture_w*4,
+		baked_light_texture_w*8+baked_light_texture_w*4+4,
+	};
+
+	/*Vector<double> norm_arr;
 	norm_arr.resize(lights.size());
 
 	for(int i=0;i<lights.size();i++) {
@@ -1711,38 +1965,42 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 	}
 
 	const double *normptr=norm_arr.ptr();
-
+*/
+	double norm = 1.0/double(total_rays);
 	int lz=lights.size();
 	mult/=multiplier;
+	double saturation = baked_light->get_saturation();
 
 	for(int i=0;i<octant_count;i++) {
 
 		Octant &oct=octants[i];
 		if (oct.texture_x==0 && oct.texture_y==0)
 			continue;
-		int ofs = (oct.texture_y * baked_octree_texture_w + oct.texture_x)<<2;
+
 
 		if (oct.leaf) {
 
+			int ofs = (oct.texture_y * baked_light_texture_w + oct.texture_x)<<2;
+			ERR_CONTINUE(ofs<0 || ofs >ilen);
 			//write colors
 			for(int j=0;j<8;j++) {
 
 				//if (!oct.children[j])
 				//	continue;
-				uint8_t *iptr=&ptr[ofs+child_offsets[j]];
-				float r=0;
-				float g=0;
-				float b=0;
+				uint8_t *iptr=&lptr[ofs+lchild_offsets[j]];
 
-				for(int k=0;k<lz;k++) {
-					r+=oct.light[k].accum[j][0]*normptr[k];
-					g+=oct.light[k].accum[j][1]*normptr[k];
-					b+=oct.light[k].accum[j][2]*normptr[k];
-				}
+				float r=oct.light_accum[j][0]*norm;
+				float g=oct.light_accum[j][1]*norm;
+				float b=oct.light_accum[j][2]*norm;
 
 				r=pow(r*mult,gamma);
 				g=pow(g*mult,gamma);
 				b=pow(b*mult,gamma);
+
+				double gray = (r+g+b)/3.0;
+				r = gray + (r-gray)*saturation;
+				g = gray + (g-gray)*saturation;
+				b = gray + (b-gray)*saturation;
 
 				float ic[3]={
 					r,
@@ -1757,6 +2015,8 @@ void BakedLightBaker::update_octree_image(DVector<uint8_t> &p_image) {
 
 		} else {
 
+			int ofs = (oct.texture_y * baked_octree_texture_w + oct.texture_x)<<2;
+			ERR_CONTINUE(ofs<0 || ofs >len);
 
 			//write indices
 			for(int j=0;j<8;j++) {
@@ -1822,49 +2082,61 @@ void BakedLightBaker::_bake_thread_func(void *arg) {
 
 	BakedLightBaker *ble = (BakedLightBaker*)arg;
 
-	ble->rays_at_snap_time=ble->total_rays;
-	ble->snap_time=OS::get_singleton()->get_ticks_usec();
+
+
+	ThreadStack thread_stack;
+
+	thread_stack.ray_stack = memnew_arr(uint32_t,ble->bvh_depth);
+	thread_stack.bvh_stack = memnew_arr(BVH*,ble->bvh_depth);
+	thread_stack.octant_stack = memnew_arr(uint32_t,ble->octree_depth*2 );
+	thread_stack.octantptr_stack = memnew_arr(uint32_t,ble->octree_depth*2 );
 
 	while(!ble->bake_thread_exit) {
 
-		ble->throw_rays(1000);
-		uint64_t t=OS::get_singleton()->get_ticks_usec();
-		if (t-ble->snap_time>1000000) {
-
-			double time = (t-ble->snap_time)/1000000.0;
-
-			int rays=ble->total_rays-ble->rays_at_snap_time;
-			ble->rays_sec=int(rays/time);
-			ble->snap_time=OS::get_singleton()->get_ticks_usec();
-			ble->rays_at_snap_time=ble->total_rays;
-		}
+		ble->throw_rays(thread_stack,1000);
 	}
+
+	memdelete_arr(thread_stack.ray_stack );
+	memdelete_arr(thread_stack.bvh_stack );
+	memdelete_arr(thread_stack.octant_stack );
+	memdelete_arr(thread_stack.octantptr_stack );
 
 }
 
 void BakedLightBaker::_start_thread() {
 
-	if (thread!=NULL)
+	if (threads.size()!=0)
 		return;
 	bake_thread_exit=false;
-	thread=Thread::create(_bake_thread_func,this);
 
+	int thread_count = EDITOR_DEF("light_baker/custom_bake_threads",0);
+	if (thread_count<=0 || thread_count>64)
+		thread_count=OS::get_singleton()->get_processor_count();
+
+	//thread_count=1;
+	threads.resize(thread_count);
+	for(int i=0;i<threads.size();i++) {
+		threads[i]=Thread::create(_bake_thread_func,this);
+	}
 }
 
 void BakedLightBaker::_stop_thread() {
 
-	if (thread==NULL)
+	if (threads.size()==0)
 		return;
 	bake_thread_exit=true;
-	Thread::wait_to_finish(thread);
-	thread=NULL;
+	for(int i=0;i<threads.size();i++) {
+		Thread::wait_to_finish(threads[i]);
+	}
+	threads.clear();
 }
 
 void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int height, uint8_t *image, const Vector3& p_pos,const Vector3& p_normal,double *p_norm_ptr,float mult,float gamma) {
 
 
 	uint8_t *ptr = &image[(y*width+x)*4];
-	int lc = lights.size();
+	//int lc = lights.size();
+	double norm = 1.0/double(total_rays);
 
 
 	Color color;
@@ -1888,11 +2160,9 @@ void BakedLightBaker::_plot_pixel_to_lightmap(int x, int y, int width, int heigh
 
 			for(int i=0;i<8;i++) {
 
-				for(int j=0;j<lc;j++) {
-					cols[i].x+=octant.light[j].accum[i][0]*p_norm_ptr[j];
-					cols[i].y+=octant.light[j].accum[i][1]*p_norm_ptr[j];
-					cols[i].z+=octant.light[j].accum[i][2]*p_norm_ptr[j];
-				}
+				cols[i].x+=octant.light_accum[i][0]*norm;
+				cols[i].y+=octant.light_accum[i][1]*norm;
+				cols[i].z+=octant.light_accum[i][2]*norm;
 			}
 
 
@@ -2355,12 +2625,13 @@ void BakedLightBaker::clear() {
 		memdelete_arr(octantptr_stack);
 	if (bvh_stack)
 		memdelete_arr(bvh_stack);
-
+/*
+ * ???
 	for(int i=0;i<octant_pool.size();i++) {
-		if (octant_pool[i].leaf) {
-			memdelete_arr( octant_pool[i].light );
-		}	Vector<double> norm_arr;
-		norm_arr.resize(lights.size());
+		//if (octant_pool[i].leaf) {
+		//	memdelete_arr( octant_pool[i].light );
+		//}	Vector<double> norm_arr;
+		//norm_arr.resize(lights.size());
 
 		for(int i=0;i<lights.size();i++) {
 			norm_arr[i] =  1.0/get_normalization(i);
@@ -2368,6 +2639,7 @@ void BakedLightBaker::clear() {
 
 		const double *normptr=norm_arr.ptr();
 	}
+*/
 	octant_pool.clear();
 	octant_pool_size=0;
 	bvh=NULL;
@@ -2388,8 +2660,9 @@ void BakedLightBaker::clear() {
 	baked_octree_texture_h=0;
 	paused=false;
 	baking=false;
-	thread=NULL;
+
 	bake_thread_exit=false;
+	first_bake_to_map=true;
 	baked_light=Ref<BakedLight>();
 	total_rays=0;
 
@@ -2414,12 +2687,11 @@ BakedLightBaker::BakedLightBaker() {
 	baked_octree_texture_h=0;
 	paused=false;
 	baking=false;
-	thread=NULL;
+
 	bake_thread_exit=false;
-	rays_at_snap_time=0;
-	snap_time=0;
-	rays_sec=0;
 	total_rays=0;
+	first_bake_to_map=true;
+	linear_color=false;
 
 }
 

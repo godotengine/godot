@@ -5365,6 +5365,18 @@ Variant RasterizerGLES1::environment_fx_get_param(RID p_env,VS::EnvironmentFxPar
 
 }
 
+/* SAMPLED LIGHT */
+
+RID RasterizerGLES1::sampled_light_dp_create(int p_width,int p_height) {
+
+	return sampled_light_owner.make_rid(memnew(SampledLight));
+}
+
+void RasterizerGLES1::sampled_light_dp_update(RID p_sampled_light, const Color *p_data, float p_multiplier) {
+
+
+}
+
 /*MISC*/
 
 bool RasterizerGLES1::is_texture(const RID& p_rid) const {
@@ -5559,6 +5571,13 @@ void RasterizerGLES1::free(const RID& p_rid) {
 
 		environment_owner.free(p_rid);
 		memdelete( env );
+	} else if (sampled_light_owner.owns(p_rid)) {
+
+		SampledLight *sampled_light = sampled_light_owner.get( p_rid );
+		ERR_FAIL_COND(!sampled_light);
+
+		sampled_light_owner.free(p_rid);
+		memdelete( sampled_light );
 	};
 }
 

@@ -909,12 +909,26 @@ public:
 	FUNC2(baked_light_set_octree,RID,DVector<uint8_t>);
 	FUNC1RC(DVector<uint8_t>,baked_light_get_octree,RID);
 
+	FUNC2(baked_light_set_light,RID,DVector<uint8_t>);
+	FUNC1RC(DVector<uint8_t>,baked_light_get_light,RID);
+
+	FUNC2(baked_light_set_sampler_octree,RID,const DVector<int>&);
+	FUNC1RC(DVector<int>,baked_light_get_sampler_octree,RID);
+
 	FUNC2(baked_light_set_lightmap_multiplier,RID,float);
 	FUNC1RC(float,baked_light_get_lightmap_multiplier,RID);
 
 	FUNC3(baked_light_add_lightmap,RID,RID,int);
 	FUNC1(baked_light_clear_lightmaps,RID);
 
+
+	FUNC0R(RID,baked_light_sampler_create);
+
+	FUNC3(baked_light_sampler_set_param,RID, BakedLightSamplerParam , float );
+	FUNC2RC(float,baked_light_sampler_get_param,RID, BakedLightSamplerParam );
+
+	FUNC2(baked_light_sampler_set_resolution,RID,int);
+	FUNC1RC(int,baked_light_sampler_get_resolution,RID);
 
 	/* CAMERA API */
 
@@ -1054,6 +1068,9 @@ public:
 
 	FUNC2(instance_geometry_set_baked_light,RID, RID );
 	FUNC1RC(RID,instance_geometry_get_baked_light,RID);
+
+	FUNC2(instance_geometry_set_baked_light_sampler,RID, RID );
+	FUNC1RC(RID,instance_geometry_get_baked_light_sampler,RID);
 
 	FUNC2(instance_geometry_set_baked_light_texture_index,RID, int);
 	FUNC1RC(int,instance_geometry_get_baked_light_texture_index,RID);

@@ -5108,7 +5108,7 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 
 	if (li->near_shadow_buffer) {
 
-		glActiveTexture(GL_TEXTURE7);
+		glActiveTexture(GL_TEXTURE0+max_texture_units-1);
 		//if (read_depth_supported) {
 
 			glBindTexture(GL_TEXTURE_2D,li->near_shadow_buffer->depth);
@@ -5119,7 +5119,7 @@ void RasterizerGLES2::_setup_light(uint16_t p_light) {
 
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_MATRIX,li->shadow_projection[0]);
 		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXEL_SIZE,Vector2(1.0,1.0)/li->near_shadow_buffer->size);
-		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXTURE,7);
+		material_shader.set_uniform(MaterialShaderGLES2::SHADOW_TEXTURE,max_texture_units-1);
 		if (shadow_filter==SHADOW_FILTER_ESM)
 			material_shader.set_uniform(MaterialShaderGLES2::ESM_MULTIPLIER,float(li->base->vars[VS::LIGHT_PARAM_SHADOW_ESM_MULTIPLIER]));
 
@@ -5739,9 +5739,10 @@ void RasterizerGLES2::_render(const Geometry *p_geometry,const Material *p_mater
 				float twd=(1.0/mm->tw)*4.0;
 				float thd=1.0/mm->th;
 				float parm[3]={0.0,01.0,(1.0f/mm->tw)};
-				glActiveTexture(GL_TEXTURE6);
+				glActiveTexture(GL_TEXTURE0+max_texture_units-2);
 				glDisableVertexAttribArray(6);
 				glBindTexture(GL_TEXTURE_2D,mm->tex_id);
+				material_shader.set_uniform(MaterialShaderGLES2::INSTANCE_MATRICES,GL_TEXTURE0+max_texture_units-2);
 
 				if (s->index_array_len>0) {
 
@@ -6042,7 +6043,7 @@ void RasterizerGLES2::_setup_skeleton(const Skeleton *p_skeleton) {
 	material_shader.set_conditional(MaterialShaderGLES2::USE_SKELETON,p_skeleton!=NULL);
 	if (p_skeleton && p_skeleton->tex_id) {
 
-		glActiveTexture(GL_TEXTURE6);
+		glActiveTexture(GL_TEXTURE0+max_texture_units-2);
 		glBindTexture(GL_TEXTURE_2D,p_skeleton->tex_id);
 	}
 
@@ -6091,7 +6092,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 
 	bool stores_glow = !shadow && (current_env && current_env->fx_enabled[VS::ENV_FX_GLOW]) && !p_alpha_pass;
-
+	float sampled_light_dp_multiplier=1.0;
 
 	bool prev_blend=false;
 	glDisable(GL_BLEND);
@@ -6110,6 +6111,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 		bool bind_baked_light_octree=false;
 		bool bind_baked_lightmap=false;
 		bool additive=false;
+		bool bind_dp_sampler=false;
 
 
 		if (!shadow) {
@@ -6231,6 +6233,22 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_OCTREE,false);
 			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_LIGHTMAP,false);
+			material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_DP_SAMPLER,false);
+
+			if (e->instance->sampled_light.is_valid()) {
+
+				SampledLight *sl = sampled_light_owner.get(e->instance->sampled_light);
+				if (sl) {
+
+					baked_light=NULL; //can't mix
+					material_shader.set_conditional(MaterialShaderGLES2::ENABLE_AMBIENT_DP_SAMPLER,true);
+					glActiveTexture(GL_TEXTURE0+max_texture_units-3);
+					glBindTexture(GL_TEXTURE_2D,sl->texture); //bind the texture
+					sampled_light_dp_multiplier=sl->multiplier;
+					bind_dp_sampler=true;
+				}
+			}
+
 
 			if (!additive && baked_light) {
 
@@ -6241,8 +6259,15 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 						Texture *tex=texture_owner.get(baked_light->octree_texture);
 						if (tex) {
 
-							glActiveTexture(GL_TEXTURE5);
+							glActiveTexture(GL_TEXTURE0+max_texture_units-3);
 							glBindTexture(tex->target,tex->tex_id); //bind the texture
+						}
+						if (baked_light->light_texture.is_valid()) {
+							Texture *texl=texture_owner.get(baked_light->light_texture);
+							if (texl) {
+								glActiveTexture(GL_TEXTURE0+max_texture_units-4);
+								glBindTexture(texl->target,texl->tex_id); //bind the light texture
+							}
 						}
 
 					}
@@ -6266,7 +6291,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 							Texture *tex = texture_owner.get(texid);
 							if (tex) {
 
-								glActiveTexture(GL_TEXTURE5);
+								glActiveTexture(GL_TEXTURE0+max_texture_units-3);
 								glBindTexture(tex->target,tex->tex_id); //bind the texture
 							}
 
@@ -6342,7 +6367,15 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LATTICE_SIZE, baked_light->octree_lattice_size);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LATTICE_DIVIDE, baked_light->octree_lattice_divide);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_STEPS, baked_light->octree_steps);
-			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_TEX,5);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_TEX,max_texture_units-3);
+			if (baked_light->light_texture.is_valid()) {
+
+				material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LIGHT_TEX,max_texture_units-4);
+				material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LIGHT_PIX_SIZE,baked_light->light_tex_pixel_size);
+			} else {
+				material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LIGHT_TEX,max_texture_units-3);
+				material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_LIGHT_PIX_SIZE,baked_light->octree_tex_pixel_size);
+			}
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_MULTIPLIER,baked_light->texture_multiplier);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_OCTREE_PIX_SIZE,baked_light->octree_tex_pixel_size);
 
@@ -6351,11 +6384,16 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 		if (bind_baked_lightmap && (baked_light!=prev_baked_light || rebind)) {
 
-			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP, 5);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP, max_texture_units-3);
 			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_LIGHTMAP_MULTIPLIER, baked_light->lightmap_multiplier);
 
 		}
 
+		if (bind_dp_sampler) {
+
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_DP_SAMPLER_MULTIPLIER,sampled_light_dp_multiplier);
+			material_shader.set_uniform(MaterialShaderGLES2::AMBIENT_DP_SAMPLER,max_texture_units-3);
+		}
 
 		_set_cull(e->mirror,p_reverse_cull);
 
@@ -6364,7 +6402,7 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 			material_shader.set_uniform(MaterialShaderGLES2::CAMERA_INVERSE_TRANSFORM, p_view_transform_inverse);
 			material_shader.set_uniform(MaterialShaderGLES2::PROJECTION_TRANSFORM, p_projection);
 			if (skeleton && use_hw_skeleton_xform) {
-				//material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,6);
+				material_shader.set_uniform(MaterialShaderGLES2::SKELETON_MATRICES,GL_TEXTURE0+max_texture_units-2);
 				material_shader.set_uniform(MaterialShaderGLES2::SKELTEX_PIXEL_SIZE,skeleton->pixel_size);
 			}
 			if (!shadow) {
@@ -7098,6 +7136,7 @@ void RasterizerGLES2::end_scene() {
 		_debug_shadows();
 	}
 //	_debug_luminances();
+	_debug_samplers();
 
 
 }
@@ -7498,6 +7537,38 @@ void RasterizerGLES2::_debug_luminances() {
 }
 
 
+void RasterizerGLES2::_debug_samplers() {
+	canvas_shader.set_conditional(CanvasShaderGLES2::DEBUG_ENCODED_32,false);
+	canvas_begin();
+	glDisable(GL_BLEND);
+	_set_color_attrib(Color(1,1,1,1));
+	canvas_shader.bind();
+
+
+	List<RID> samplers;
+	sampled_light_owner.get_owned_list(&samplers);
+
+	Size2 debug_size(128,128);
+	Size2 ofs;
+
+
+	for (List<RID>::Element *E=samplers.front();E;E=E->next()) {
+
+		SampledLight *sl=sampled_light_owner.get(E->get());
+
+		_debug_draw_shadow(sl->texture, Rect2( ofs, debug_size ));
+
+		ofs.x+=debug_size.x/2;
+		if ( (ofs.x+debug_size.x) > viewport.width ) {
+
+			ofs.x=0;
+			ofs.y+=debug_size.y;
+		}
+	}
+
+
+
+}
 void RasterizerGLES2::_debug_shadows() {
 
 	canvas_begin();
@@ -8115,6 +8186,78 @@ Variant RasterizerGLES2::environment_fx_get_param(RID p_env,VS::EnvironmentFxPar
 
 }
 
+
+
+RID RasterizerGLES2::sampled_light_dp_create(int p_width,int p_height) {
+
+	SampledLight *slight = memnew(SampledLight);
+	slight->w=p_width;
+	slight->h=p_height;
+	slight->multiplier=1.0;
+	slight->is_float=float_linear_supported;
+
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1,&slight->texture);
+	glBindTexture(GL_TEXTURE_2D, slight->texture);
+// for debug, but glitchy
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	// Remove artifact on the edges of the shadowmap
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+
+	if (slight->is_float) {
+#ifdef GLEW_ENABLED
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_width, p_height, 0, GL_RGBA, GL_FLOAT,NULL);
+#else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_width, p_height, 0, GL_RGBA, GL_FLOAT,NULL);
+#endif
+	} else {
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, p_width, p_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+	}
+
+	return sampled_light_owner.make_rid(slight);
+}
+
+void RasterizerGLES2::sampled_light_dp_update(RID p_sampled_light, const Color *p_data, float p_multiplier) {
+
+	SampledLight *slight = sampled_light_owner.get(p_sampled_light);
+	ERR_FAIL_COND(!slight);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, slight->texture);
+
+	if (slight->is_float) {
+
+#ifdef GLEW_ENABLED
+		glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,slight->w, slight->h, GL_RGBA, GL_FLOAT,p_data);
+#else
+		glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,slight->w, slight->h, GL_RGBA, GL_FLOAT,p_data);
+#endif
+
+	} else {
+		//convert to bytes
+		uint8_t *tex8 = (uint8_t*)alloca(slight->w*slight->h*4);
+		const float* src=(const float*)p_data;
+
+		for(int i=0;i<slight->w*slight->h*4;i++) {
+
+			tex8[i]=Math::fast_ftoi(CLAMP(src[i]*255.0,0.0,255.0));
+		}
+
+		glTexSubImage2D(GL_TEXTURE_2D, 0,0,0,slight->w, slight->h, GL_RGBA, GL_UNSIGNED_BYTE,p_data);
+	}
+
+	slight->multiplier=p_multiplier;
+
+}
+
 /*MISC*/
 
 bool RasterizerGLES2::is_texture(const RID& p_rid) const {
@@ -8334,6 +8477,13 @@ void RasterizerGLES2::free(const RID& p_rid) {
 		memdelete(render_target->texture_ptr);
 		render_target_owner.free(p_rid);
 		memdelete( render_target );
+	} else if (sampled_light_owner.owns(p_rid)) {
+
+		SampledLight *sampled_light = sampled_light_owner.get( p_rid );
+		ERR_FAIL_COND(!sampled_light);
+		glDeleteTextures(1,&sampled_light->texture);
+		sampled_light_owner.free(p_rid);
+		memdelete( sampled_light );
 
 	};
 }
@@ -8926,6 +9076,9 @@ void RasterizerGLES2::init() {
 	latc_supported=true;
 	s3tc_srgb_supported=true;
 	use_anisotropic_filter=true;
+	float_linear_supported=true;
+	float_supported=true;
+
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT,&anisotropic_level);
 	anisotropic_level=MIN(anisotropic_level,float(GLOBAL_DEF("rasterizer/anisotropic_filter_level",4.0)));
 #ifdef OSX_ENABLED
@@ -8970,7 +9123,10 @@ void RasterizerGLES2::init() {
 
 	GLint vtf;
 	glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,&vtf);
-	use_hw_skeleton_xform=vtf>0 && extensions.has("GL_OES_texture_float");
+	float_supported = extensions.has("GL_OES_texture_float");
+	use_hw_skeleton_xform=vtf>0 && float_supported;
+	float_linear_supported = extensions.has("GL_OES_texture_float_linear");
+
 	//if (extensions.has("GL_QCOM_tiled_rendering"))
 	//	use_hw_skeleton_xform=false;
 	GLint mva;
@@ -9008,7 +9164,7 @@ void RasterizerGLES2::init() {
 
 
 
-
+	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &max_texture_units);
 	//read_depth_supported=false;
 
 	{

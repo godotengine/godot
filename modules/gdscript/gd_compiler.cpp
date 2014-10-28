@@ -179,7 +179,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 				//static function
 				if (codegen.script->member_indices.has(identifier)) {
 
-					int idx = codegen.script->member_indices[identifier];
+					int idx = codegen.script->member_indices[identifier].index;
 					return idx|(GDFunction::ADDR_TYPE_MEMBER<<GDFunction::ADDR_BITS); //argument (stack root)
 				}
 			}
@@ -1507,8 +1507,12 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 #endif
 		}
 
-		int new_idx = p_script->member_indices.size();
-		p_script->member_indices[name]=new_idx;
+		//int new_idx = p_script->member_indices.size();
+		GDScript::MemberInfo minfo;
+		minfo.index = p_script->member_indices.size();
+		minfo.setter = p_class->variables[i].setter;
+		minfo.getter = p_class->variables[i].getter;
+		p_script->member_indices[name]=minfo;
 		p_script->members.insert(name);
 
 	}
