@@ -266,3 +266,5 @@ $RECYCLE.BIN/
 logo.h
 
 *.d
+
+core/method_bind_ext.inc

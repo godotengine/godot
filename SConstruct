@@ -130,6 +130,7 @@ opts.Add('use_double', 'Use Real type as Double, default is float', "yes")
 opts.Add('lua', 'Lua script support', "no")
 opts.Add('cjk', 'Add CJK language support', "no")
 opts.Add('rfs', 'Fixed rfs')
+opts.Add('sdk', "Third-Party SDK", "")
 
 # add platform specific options
 

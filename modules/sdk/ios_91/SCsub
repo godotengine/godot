@@ -1,0 +1,36 @@
+﻿Import('env')
+
+env.add_source_files(env.modules_sources,"*.cpp")
+env.add_source_files(env.modules_sources,"*.mm")
+
+env.Append(CPPFLAGS=[
+	"-F", "modules/sdk/ios_91/SDK",
+	"-F", "modules/sdk/ios_91/SDK/framework",
+])
+
+env.Append(LINKFLAGS=["-ObjC",
+	"-framework", "AddressBook",
+	"-weak_framework", "CoreTelephony",
+	"-framework", "MessageUI",
+	"-framework", "AssetsLibrary",
+	"-framework", "AdSupport",
+	"-framework", "NdComPlatform",
+	"-framework", "NdComPlatformInt",
+	"-framework", "ATSMS",
+	"-framework", "Encrypt",
+	"-framework", "Log",
+	"-framework", "NDJSON",
+	"-framework", "NDUtility",
+	"-framework", "NetEngine",
+	"-F", "modules/sdk/ios_91/SDK",
+	"-F", "modules/sdk/ios_91/SDK/framework",
+])
+
+env.Append(LIBS=[
+	"z",
+	"sqlite3",
+])
+
+Export('env')
+
+

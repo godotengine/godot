@@ -1,0 +1,20 @@
+Import('env')
+
+
+p = env['platform']
+
+if p in ['iphone', 'isim']:
+	if env['sdk'] == '91':
+		SConscript("ios_91/SCsub")
+	else:
+		SConscript("fake/SCsub")
+elif p in ['android']:
+	pass
+else:
+	SConscript("fake/SCsub")
+
+env.add_source_files(env.modules_sources,"*.cpp")
+
+Export('env')
+
+
