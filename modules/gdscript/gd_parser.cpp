@@ -372,10 +372,26 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 		} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
 			//identifier (reference)
 
-			IdentifierNode *id = alloc_node<IdentifierNode>();
-			id->name=tokenizer->get_token_identifier();
-			tokenizer->advance();
-			expr=id;
+			const ClassNode* cln = static_cast<const ClassNode*>(get_parse_tree());
+		  bool             bfn = false;
+		  StringName       idn( tokenizer->get_token_identifier() );
+		  
+		  for( int i=0; i<cln->constant_expressions.size(); ++i ) {
+		  
+		    if( cln->constant_expressions[i].identifier == idn ) {
+		      tokenizer->advance();
+		      expr = cln->constant_expressions[i].expression;
+		      bfn  = true;
+		      break;
+		    }
+		  }
+		  
+		  if( !bfn ) {
+  			IdentifierNode *id = alloc_node<IdentifierNode>();
+  			id->name = idn;
+  			tokenizer->advance();
+  			expr = id;
+		  }
 
 		} else if (/*tokenizer->get_token()==GDTokenizer::TK_OP_ADD ||*/ tokenizer->get_token()==GDTokenizer::TK_OP_SUB || tokenizer->get_token()==GDTokenizer::TK_OP_NOT || tokenizer->get_token()==GDTokenizer::TK_OP_BIT_INVERT) {
 
@@ -1179,7 +1195,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 				case OperatorNode::OP_ASSIGN_BIT_XOR: {
 
 					if (op->arguments[0]->type==Node::TYPE_CONSTANT) {
-						_set_error("Can't assign to constant");
+						_set_error("Can't assign to constant",tokenizer->get_token_line()-1);
 						return op;
 					}
 
