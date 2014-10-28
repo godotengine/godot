@@ -281,7 +281,7 @@ void GDTokenizerText::_advance() {
 				_make_newline(i);
 				return;
 			}
-#if 1 //py style tokenizer
+
 			case '#': { // line comment skip
 
 				while(GETCHAR(0)!='\n') {
@@ -303,57 +303,10 @@ void GDTokenizerText::_advance() {
 				return;
 
 			} break;
-#endif
+
 			case '/': {
 
 				switch(GETCHAR(1)) {
-#if 0 // c style tokenizer
-					case '*': { // block comment
-						int pos = code_pos+2;
-						int new_line=line;
-						int new_col=column+2;
-
-						while(true) {
-							if (_code[pos]=='0') {
-								_make_error("Unterminated Comment");
-								code_pos=pos;
-								return;
-							}
-							if (_code[pos]=='*' && _code[pos+1]=='/') {
-								new_col+=2;
-								pos+=2; //compensate
-								break;
-							} else if (_code[pos]=='\n') {
-								new_line++;
-								new_col=0;
-							} else {
-								new_col++;
-							}
-							pos++;
-						}
-
-						column=new_col;
-						line=new_line;
-						code_pos=pos;
-						continue;
-
-					} break;
-					case '/': { // line comment skip
-
-						while(GETCHAR(0)!='\n') {
-							code_pos++;
-							if (GETCHAR(0)==0) { //end of file
-								_make_error("Unterminated Comment");
-								return;
-							}
-						}
-						INCPOS(1);
-						column=0;
-						line++;
-						continue;
-
-					} break;
-#endif
 					case '=': { // diveq
 
 						_make_token(TK_OP_ASSIGN_DIV);
@@ -540,13 +493,48 @@ void GDTokenizerText::_advance() {
 			case '\'':
 			  is_string_alt = true;
 			case '"': {
-			  is_string = is_string_alt ? false : true;
+			
+			  // ---[ Python Style Multilines Comment With """ ]--------------------
+			  if( !is_string_alt ) {
+			    if( GETCHAR(1)=='"' && GETCHAR(2)=='"' ) { // block comment
+
+			      int pos      = code_pos+3;
+			      int new_line = line;
+			      int new_col  = column+3;
+			      
+			      while(true) {
+							if( _code[pos]=='0' || _code[pos+1]=='0' || _code[pos+2]=='0' ) {
+								_make_error("Unterminated Comment");
+								code_pos = pos;
+								return;
+							}
+							if( _code[pos]=='"' && _code[pos+1]=='"' && _code[pos+2]=='"' ) {
+							  new_col += 3;
+							  pos     += 3; //compensate
+							  break;
+							} else if( _code[pos]=='\n' ) {
+							  new_line++;
+							  new_col = 0;
+							} else {
+							  new_col++;
+							}
+							pos++;
+			      }
+			      
+						column   = new_col;
+						line     = new_line;
+						code_pos = pos;
+						continue;
+			    }
+			  }
+			  // -------------------------------------------------------------------
+			
+			  is_string = !is_string_alt;
 
 				int i=1;
 				String str;
 				while(true) {
 					if (CharType(GETCHAR(i)==0)) {
-
 						_make_error("Unterminated String");
 						return;
 					} else if( CharType(GETCHAR(i)=='"') && is_string ) {
