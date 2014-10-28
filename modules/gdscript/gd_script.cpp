@@ -2172,8 +2172,8 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 		//instance a fake script for editing the values
 
 		Vector<_GDScriptMemberSort> msort;
-		const Map<StringName,int>& mi = sptr->debug_get_member_indices();
-		for(const Map<StringName,int>::Element *E=mi.front();E;E=E->next()) {
+		const Map<StringName,GDScript::MemberInfo>& mi = sptr->debug_get_member_indices();
+		for(const Map<StringName,GDScript::MemberInfo>::Element *E=mi.front();E;E=E->next()) {
 
 			_GDScriptMemberSort ms;
 			ERR_CONTINUE(!sptr->member_indices.has(E->key()));
