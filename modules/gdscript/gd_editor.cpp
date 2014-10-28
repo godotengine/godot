@@ -250,12 +250,12 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *p
     ERR_FAIL_COND( script.is_null() );
 
 
-    const Map<StringName,int>& mi = script->debug_get_member_indices();
+    const Map<StringName,GDScript::MemberInfo>& mi = script->debug_get_member_indices();
 
-    for(const Map<StringName,int>::Element *E=mi.front();E;E=E->next()) {
+    for(const Map<StringName,GDScript::MemberInfo>::Element *E=mi.front();E;E=E->next()) {
 
 	p_members->push_back(E->key());
-	p_values->push_back( instance->debug_get_member_by_index(E->get()));
+	p_values->push_back( instance->debug_get_member_by_index(E->get().index));
     }
 
 }

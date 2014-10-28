@@ -927,7 +927,7 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 
 
 	StringName next=animation_get_next(p_name);
-	if (next!=StringName()) {
+	if (next!=StringName() && animation_set.has(next)) {
 		queue(next);
 	}
 }

@@ -34,11 +34,4 @@ if env['ios_appirater'] == "yes":
 obj = env_ios.Object('#platform/iphone/godot_iphone.cpp')
 
 prog = None
-if env["target"]=="release":
-	prog = env_ios.Program('#bin/godot_opt', [obj] + iphone_lib)
-	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
-	#env.AddPostAction(prog, action)
-else:
-	prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)
-	#action = "dsymutil "+File(prog)[0].path+" -o ../build/script_exec/build/Debug-iphoneos/script_exec.app.dSYM"
-	#env.AddPostAction(prog, action)
+prog = env_ios.Program('#bin/godot', [obj] + iphone_lib)

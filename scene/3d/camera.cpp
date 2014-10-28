@@ -467,7 +467,15 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
 	}
 
+
+#if 0
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Vector2 cpos = p_pos;
+#else
+
+	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
+	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+#endif
 
 	Vector3 ray;
 
@@ -479,9 +487,8 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 		float screen_w,screen_h;
 		cm.get_viewport_size(screen_w,screen_h);
-		ray=Vector3( ((p_pos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(p_pos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
+		ray=Vector3( ((cpos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(cpos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
 	}
-
 
 	return ray;
 };
@@ -494,8 +501,14 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
 	}
 
+#if 0
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Vector2 cpos = p_pos;
+#else
 
+	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
+	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+#endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
 //	float aspect = viewport_size.x / viewport_size.y;
@@ -505,7 +518,7 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 		return get_camera_transform().origin;
 	} else {
 
-		Vector2 pos = p_pos / viewport_size;
+		Vector2 pos = cpos / viewport_size;
 		float vsize,hsize;
 		if (keep_aspect==KEEP_WIDTH) {
 			vsize = size/viewport_size.get_aspect();

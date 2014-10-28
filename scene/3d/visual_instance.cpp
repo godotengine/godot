@@ -50,15 +50,22 @@ void VisualInstance::_notification(int p_what) {
 			// CHECK ROOM
 			Spatial * parent = get_parent_spatial();
 			Room *room=NULL;
+			bool is_geom = cast_to<GeometryInstance>();
 
 			while(parent) {
 
 				room = parent->cast_to<Room>();
 				if (room)
 					break;
-				else
-					parent=parent->get_parent_spatial();
+
+				if (is_geom && parent->cast_to<BakedLightSampler>()) {
+					VS::get_singleton()->instance_geometry_set_baked_light_sampler(get_instance(),parent->cast_to<BakedLightSampler>()->get_instance());
+					break;
+				}
+
+				parent=parent->get_parent_spatial();
 			}
+
 
 
 			if (room) {
@@ -85,6 +92,7 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_set_scenario( instance, RID() );
 			VisualServer::get_singleton()->instance_set_room(instance,RID());
 			VisualServer::get_singleton()->instance_attach_skeleton( instance, RID() );
+			VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
 
 		} break;

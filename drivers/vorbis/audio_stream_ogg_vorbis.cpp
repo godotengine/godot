@@ -215,7 +215,7 @@ AudioStreamOGGVorbis::UpdateMode AudioStreamOGGVorbis::get_update_mode() const {
 bool AudioStreamOGGVorbis::is_playing() const {
 
 
-	return playing;
+	return playing || (get_total() - get_todo() -1 > 0);
 }
 
 float AudioStreamOGGVorbis::get_pos() const {

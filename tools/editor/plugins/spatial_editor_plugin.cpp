@@ -2008,7 +2008,7 @@ void SpatialEditorViewport::_preview_exited_scene() {
 
 void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 
-	uint32_t layer=1<<(GIZMO_BASE_LAYER+p_idx)|(1<<GIZMO_GRID_LAYER);
+	uint32_t layer=1<<(GIZMO_BASE_LAYER+p_idx);//|(1<<GIZMO_GRID_LAYER);
 
 	for(int i=0;i<3;i++) {
 		move_gizmo_instance[i]=VS::get_singleton()->instance_create();

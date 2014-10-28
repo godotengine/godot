@@ -26,6 +26,7 @@ public:
 		BAKE_SPECULAR,
 		BAKE_TRANSLUCENT,
 		BAKE_CONSERVE_ENERGY,
+		BAKE_LINEAR_COLOR,
 		BAKE_MAX
 	};
 
@@ -50,6 +51,10 @@ private:
 	float cell_extra_margin;
 	float edge_damp;
 	float normal_damp;
+	float tint;
+	float ao_radius;
+	float ao_strength;
+	float saturation;
 	int bounces;
 	bool transfer_only_uv2;
 	Format format;
@@ -99,6 +104,18 @@ public:
 	void set_normal_damp(float p_margin);
 	float get_normal_damp() const;
 
+	void set_tint(float p_margin);
+	float get_tint() const;
+
+	void set_saturation(float p_saturation);
+	float get_saturation() const;
+
+	void set_ao_radius(float p_ao_radius);
+	float get_ao_radius() const;
+
+	void set_ao_strength(float p_ao_strength);
+	float get_ao_strength() const;
+
 	void set_bake_flag(BakeFlags p_flags,bool p_enable);
 	bool get_bake_flag(BakeFlags p_flags) const;
 
@@ -113,6 +130,14 @@ public:
 
 	void set_octree(const DVector<uint8_t>& p_octree);
 	DVector<uint8_t> get_octree() const;
+
+	void set_light(const DVector<uint8_t>& p_light);
+	DVector<uint8_t> get_light() const;
+
+	void set_sampler_octree(const DVector<int>& p_sampler_octree);
+	DVector<int> get_sampler_octree() const;
+
+
 
 	void add_lightmap(const Ref<Texture> &p_texture,Size2 p_gen_size=Size2(256,256));
 	void set_lightmap_gen_size(int p_idx,const Size2& p_size);

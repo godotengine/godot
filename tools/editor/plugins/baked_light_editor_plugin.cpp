@@ -111,7 +111,10 @@ void BakedLightEditor::_notification(int p_option) {
 #endif
 				ERR_FAIL_COND(node->get_baked_light().is_null());
 
-				baker->update_octree_image(octree_texture);
+				baker->update_octree_images(octree_texture,light_texture);
+				baker->update_octree_sampler(octree_sampler);
+			//	print_line("sampler size: "+itos(octree_sampler.size()*4));
+
 #if 1
 //debug
 				Image img(baker->baked_octree_texture_w,baker->baked_octree_texture_h,0,Image::FORMAT_RGBA,octree_texture);
@@ -121,11 +124,19 @@ void BakedLightEditor::_notification(int p_option) {
 
 
 #endif
-				bake_info->set_text("rays/s: "+itos(baker->get_rays_sec()));
+
+
+				uint64_t rays_snap = baker->get_rays_thrown();
+				int rays_sec = (rays_snap-last_rays_time)*1.0-(update_timeout);
+				last_rays_time=rays_snap;
+
+				bake_info->set_text("rays/s: "+itos(rays_sec));
 				update_timeout=1;				
 				print_line("MSUPDATE: "+itos(OS::get_singleton()->get_ticks_msec()-t));
 				t=OS::get_singleton()->get_ticks_msec();
 				node->get_baked_light()->set_octree(octree_texture);
+				node->get_baked_light()->set_light(light_texture);
+				node->get_baked_light()->set_sampler_octree(octree_sampler);
 				node->get_baked_light()->set_edited(true);
 
 				print_line("MSSET: "+itos(OS::get_singleton()->get_ticks_msec()-t));
@@ -195,6 +206,9 @@ void BakedLightEditor::_bake_pressed() {
 		baker->bake(node->get_baked_light(),node);
 		node->get_baked_light()->set_mode(BakedLight::MODE_OCTREE);
 		update_timeout=0;
+
+		last_rays_time=0;
+
 		set_process(true);
 	}
 

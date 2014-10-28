@@ -590,12 +590,35 @@ public:
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree)=0;
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const=0;
 
+	virtual void baked_light_set_light(RID p_baked_light,const DVector<uint8_t> p_light)=0;
+	virtual DVector<uint8_t> baked_light_get_light(RID p_baked_light) const=0;
+
+	virtual void baked_light_set_sampler_octree(RID p_baked_light,const DVector<int> &p_sampler)=0;
+	virtual DVector<int> baked_light_get_sampler_octree(RID p_baked_light) const=0;
+
 	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier)=0;
 	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const=0;
 
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id)=0;
 	virtual void baked_light_clear_lightmaps(RID p_baked_light)=0;
 
+	/* BAKED LIGHT SAMPLER */
+
+	virtual RID baked_light_sampler_create()=0;
+
+	enum BakedLightSamplerParam {
+		BAKED_LIGHT_SAMPLER_RADIUS,
+		BAKED_LIGHT_SAMPLER_STRENGTH,
+		BAKED_LIGHT_SAMPLER_ATTENUATION,
+		BAKED_LIGHT_SAMPLER_DETAIL_RATIO,
+		BAKED_LIGHT_SAMPLER_MAX
+	};
+
+	virtual void baked_light_sampler_set_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param,float p_value)=0;
+	virtual float baked_light_sampler_get_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param) const=0;
+
+	virtual void baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution)=0;
+	virtual int baked_light_sampler_get_resolution(RID p_baked_light_sampler) const=0;
 
 	/* CAMERA API */
 	
@@ -824,7 +847,8 @@ public:
 		INSTANCE_ROOM,
 		INSTANCE_PORTAL,
 		INSTANCE_BAKED_LIGHT,
-		
+		INSTANCE_BAKED_LIGHT_SAMPLER,
+
 		INSTANCE_GEOMETRY_MASK=(1<<INSTANCE_MESH)|(1<<INSTANCE_MULTIMESH)|(1<<INSTANCE_IMMEDIATE)|(1<<INSTANCE_PARTICLES)
 	};
 	
@@ -898,8 +922,12 @@ public:
 	virtual void instance_geometry_set_baked_light(RID p_instance,RID p_baked_light)=0;
 	virtual RID instance_geometry_get_baked_light(RID p_instance) const=0;
 
+	virtual void instance_geometry_set_baked_light_sampler(RID p_instance,RID p_baked_light_sampler)=0;
+	virtual RID instance_geometry_get_baked_light_sampler(RID p_instance) const=0;
+
 	virtual void instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id)=0;
 	virtual int instance_geometry_get_baked_light_texture_index(RID p_instance) const=0;
+
 
 	virtual void instance_light_set_enabled(RID p_instance,bool p_enabled)=0;
 	virtual bool instance_light_is_enabled(RID p_instance) const=0;

@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 
 
@@ -36,7 +36,6 @@ def get_flags():
 	return [
 		#('lua', 'yes'),
 		('tools', 'yes'),
-		('nedmalloc', 'no'),
 		('webp', 'yes'),
 	]
 
@@ -45,10 +44,6 @@ def get_flags():
 def configure(env):
 
 	env.Append(CPPPATH=['#platform/iphone'])
-
-	env['OBJSUFFIX'] = ".isim.o"
-	env['LIBSUFFIX'] = ".isim.a"
-	env['PROGSUFFIX'] = ".isim"
 
 	env['ENV']['PATH'] = env['ISIMPATH']+"/Developer/usr/bin/:"+env['ENV']['PATH']
 
@@ -83,8 +78,6 @@ def configure(env):
 
 		env.Append(CCFLAGS=['-O3', '-ffast-math'])
 		env.Append(LINKFLAGS=['-O3', '-ffast-math'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 
@@ -99,8 +92,6 @@ def configure(env):
 
 	env['ENV']['MACOSX_DEPLOYMENT_TARGET'] = '10.6'
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
-	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-fno-exceptions'])
+	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-fexceptions'])
 
-	if env['lua'] == "yes":
-		env.Append(CCFLAGS=['-DLUA_USE_FLOAT'])
 

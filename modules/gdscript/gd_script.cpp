@@ -1568,7 +1568,7 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 			_GDScriptMemberSort ms;
 			ERR_CONTINUE(!scr->member_indices.has(E->key()));
-			ms.index=scr->member_indices[E->key()];
+			ms.index=scr->member_indices[E->key()].index;
 			ms.name=E->key();
 
 			msort.push_back(ms);
@@ -1992,9 +1992,9 @@ const Map<StringName,GDFunction>& GDScript::debug_get_member_functions() const {
 StringName GDScript::debug_get_member_by_index(int p_idx) const {
 
 
-	for(const Map<StringName,int>::Element *E=member_indices.front();E;E=E->next()) {
+	for(const Map<StringName,MemberInfo>::Element *E=member_indices.front();E;E=E->next()) {
 
-		if (E->get()==p_idx)
+		if (E->get().index==p_idx)
 			return E->key();
 	}
 
@@ -2033,11 +2033,18 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 
 	//member
 	{
-		const Map<StringName,int>::Element *E = script->member_indices.find(p_name);
+		const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			members[E->get()]=p_value;
+			members[E->get().index]=p_value;
+			if (E->get().setter) {
+				const Variant *val=&p_value;
+				Variant::CallError err;
+				call(E->get().setter,&val,1,err);
+				if (err.error==Variant::CallError::CALL_OK) {
+					return true; //function exists, call was successful
+				}
+			}
 			return true;
-
 		}
 	}
 
@@ -2070,9 +2077,16 @@ bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 	while(sptr) {
 
 		{
-			const Map<StringName,int>::Element *E = script->member_indices.find(p_name);
+			const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 			if (E) {
-				r_ret=members[E->get()];
+				if (E->get().getter) {
+					Variant::CallError err;
+					r_ret=const_cast<GDInstance*>(this)->call(E->get().getter,NULL,0,err);
+					if (err.error==Variant::CallError::CALL_OK) {
+						return true;
+					}
+				}
+				r_ret=members[E->get().index];
 				return true; //index found
 
 			}
@@ -2163,7 +2177,7 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 			_GDScriptMemberSort ms;
 			ERR_CONTINUE(!sptr->member_indices.has(E->key()));
-			ms.index=sptr->member_indices[E->key()];
+			ms.index=sptr->member_indices[E->key()].index;
 			ms.name=E->key();
 			msort.push_back(ms);
 		//p_members->push_back(E->key());
@@ -2486,6 +2500,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"false"	,
 		"tool",
 		"var",
+		"setget",
 		"pass",
 		"and",
 		"or",

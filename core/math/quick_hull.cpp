@@ -63,7 +63,7 @@ Error QuickHull::build(const Vector<Vector3>& p_points, Geometry::MeshData &r_me
 		Vector3 sp = p_points[i].snapped(0.0001);
 		if (valid_cache.has(sp)) {
 			valid_points[i]=false;
-			print_line("INVALIDATED: "+itos(i));
+			//print_line("INVALIDATED: "+itos(i));
 		}else {
 			valid_points[i]=true;
 			valid_cache.insert(sp);

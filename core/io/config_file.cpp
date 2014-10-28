@@ -471,9 +471,12 @@ static Variant _decode_variant(const String& p_string) {
 		ERR_FAIL_COND_V(params.size()!=1 && params.size()!=2,Variant());
 		int scode=0;
 
-		if (params[0].is_numeric())
+		if (params[0].is_numeric()) {
 			scode=params[0].to_int();
-		else
+			if (scode < 10) {
+				scode=KEY_0+scode;
+			}
+		} else
 			scode=find_keycode(params[0]);
 
 		InputEvent ie;

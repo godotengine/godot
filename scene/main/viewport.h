@@ -110,6 +110,7 @@ friend class RenderTargetTexture;
 	Size2 size_override_size;
 	Size2 size_override_margin;
 
+	Rect2 last_vp_rect;
 
 	bool transparent_bg;
 	bool render_target_vflip;
@@ -228,6 +229,10 @@ public:
 	void set_render_target_update_mode(RenderTargetUpdateMode p_mode);
 	RenderTargetUpdateMode get_render_target_update_mode() const;
 	Ref<RenderTargetTexture> get_render_target_texture() const;
+
+
+	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
+	Vector2 get_camera_rect_size() const;
 
 	void queue_screen_capture();
 	Image get_screen_capture() const;

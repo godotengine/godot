@@ -86,6 +86,8 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_shadow_mapping;
 	bool use_fp16_fb;
 	bool srgb_supported;
+	bool float_supported;
+	bool float_linear_supported;
 
 	ShadowFilterTechnique shadow_filter;
 
@@ -704,6 +706,18 @@ class RasterizerGLES2 : public Rasterizer {
 
 	mutable RID_Owner<Environment> environment_owner;
 
+
+	struct SampledLight {
+
+		int w,h;
+		GLuint texture;
+		float multiplier;
+		bool is_float;
+	};
+
+	mutable RID_Owner<SampledLight> sampled_light_owner;
+
+
 	struct ViewportData {
 
 		//1x1 fbo+texture for storing previous HDR value
@@ -801,6 +815,7 @@ class RasterizerGLES2 : public Rasterizer {
 	RID shadow_material;
 	Material *shadow_mat_ptr;
 
+	int max_texture_units;
 	GLuint base_framebuffer;
 
 	GLuint gui_quad_buffer;
@@ -1071,6 +1086,8 @@ class RasterizerGLES2 : public Rasterizer {
 	void _debug_draw_shadows_type(Vector<ShadowBuffer>& p_shadows,Point2& ofs);
 	void _debug_shadows();
 	void _debug_luminances();
+	void _debug_samplers();
+
 
 
 	/***********/
@@ -1531,6 +1548,9 @@ public:
 	virtual void environment_fx_set_param(RID p_env,VS::EnvironmentFxParam p_param,const Variant& p_value);
 	virtual Variant environment_fx_get_param(RID p_env,VS::EnvironmentFxParam p_param) const;
 
+	/* SAMPLED LIGHT */
+	virtual RID sampled_light_dp_create(int p_width,int p_height);
+	virtual void sampled_light_dp_update(RID p_sampled_light, const Color *p_data, float p_multiplier);
 
 	/*MISC*/
 

@@ -436,9 +436,9 @@ void Light::_update_visibility() {
 		return;
 
 
+bool editor_ok=true;
 
 #ifdef TOOLS_ENABLED
-	bool editor_ok=true;
 	if (editor_only) {
 		if (!get_scene()->is_editor_hint()) {
 			editor_ok=false;
@@ -448,10 +448,7 @@ void Light::_update_visibility() {
 #endif
 		}
 	}
-#else
-	bool editor_ok=false;
 #endif
-
 
 	VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible() && enabled && editor_ok);
 	_change_notify("geometry/visible");

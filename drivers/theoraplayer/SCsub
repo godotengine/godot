@@ -59,7 +59,6 @@ src/YUV/C/yuv420_grey_c.c
 src/YUV/C/yuv420_yuv_c.c
 src/YUV/C/yuv420_rgb_c.c
 src/TheoraVideoFrame.cpp
-video_stream_theoraplayer.cpp
 """)
 
 if env["platform"] == "iphone":
@@ -79,7 +78,18 @@ if env["platform"] == "android":
 env_theora.Append(CPPPATH=["#drivers/theoraplayer/include/theoraplayer", "#drivers/theoraplayer/src/YUV", "#drivers/theoraplayer/src/YUV/libyuv/include", "#drivers/theoraplayer/src/Theora", "#drivers/theoraplayer/src/AVFoundation"])
 
 objs = []
-env_theora.add_source_files(objs, sources)
+
+env_theora.add_source_files(objs, ["video_stream_theoraplayer.cpp"])
+
+if env['use_theoraplayer_binary'] == "yes":
+	if env["platform"] == "iphone":
+		env.Append(LIBPATH=['#drivers/theoraplayer/lib/ios'])
+		env.Append(LIBS=['theoraplayer', 'ogg', 'theora', 'tremor'])
+	if env["platform"] == "windows":
+		env.Append(LIBPATH=['#drivers/theoraplayer/lib/windows'])
+		env.Append(LINKFLAGS=['libtheoraplayer_static.lib', 'libogg.lib', 'libtheora.lib', 'libvorbis.lib'])
+else:
+	env_theora.add_source_files(objs, sources)
 
 env.drivers_sources += objs
 

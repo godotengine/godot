@@ -82,6 +82,8 @@ public:
 			Variant default_value;
 #endif
 			StringName identifier;
+			StringName setter;
+			StringName getter;
 		};
 		struct Constant {
 			StringName identifier;
