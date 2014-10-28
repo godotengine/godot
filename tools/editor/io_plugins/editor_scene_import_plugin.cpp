@@ -148,6 +148,7 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	void _browse_target();
 	void _browse_script();
 	void _import(bool p_and_open=false);
+	void _import_();
 	void _import_confirm();
 
 	Ref<ResourceImportMetadata> wip_rimd;
@@ -336,6 +337,10 @@ void EditorSceneImportDialog::_open_and_import() {
 	} else {
 		_import(true);
 	}
+}
+
+void EditorSceneImportDialog::_import_() {
+	_import(false);
 }
 
 void EditorSceneImportDialog::_import(bool p_and_open) {
@@ -620,6 +625,7 @@ void EditorSceneImportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method("_choose_save_file",&EditorSceneImportDialog::_choose_save_file);
 	ObjectTypeDB::bind_method("_choose_script",&EditorSceneImportDialog::_choose_script);
 	ObjectTypeDB::bind_method("_import",&EditorSceneImportDialog::_import);
+	ObjectTypeDB::bind_method("_import_",&EditorSceneImportDialog::_import_);
 	ObjectTypeDB::bind_method("_browse",&EditorSceneImportDialog::_browse);
 	ObjectTypeDB::bind_method("_browse_target",&EditorSceneImportDialog::_browse_target);
 	ObjectTypeDB::bind_method("_browse_script",&EditorSceneImportDialog::_browse_script);
@@ -725,7 +731,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	//save_select->set_mode(FileDialog::MODE_SAVE_FILE);
 	save_select->connect("dir_selected", this,"_choose_save_file");
 
-	get_ok()->connect("pressed", this,"_import");
+	get_ok()->connect("pressed",this,"_import_");
 	get_ok()->set_text("Import");
 
 	TreeItem *root = import_options->create_item(NULL);
