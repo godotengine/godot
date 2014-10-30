@@ -266,7 +266,7 @@ String Platform91::on_request(const String& p_type, const Dictionary& p_params) 
 
 		ERR_FAIL_COND_V(!p_params.has("enabled"), "invalid_param");
 		bool enabled = p_params["enabled"];
-		[[NdComPlatform defaultPlatform] NdSetAutoRotation:enabled ? NO : YES];
+		[[NdComPlatform defaultPlatform] NdSetAutoRotation:enabled ? YES : NO];
 	}
 	else if(p_type == "set_screen_orientation") {
 
