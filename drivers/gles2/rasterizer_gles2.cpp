@@ -360,7 +360,7 @@ void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, c
 
 /* TEXTURE API */
 
-Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
+Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
 
 	r_has_alpha_cache=false;
 	r_compressed=false;
@@ -454,6 +454,33 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 
 			r_has_alpha_cache=true;
 		} break;
+        case Image::FORMAT_RGBA_4444: {
+			r_gl_components=2;
+			r_gl_format=GL_RGBA;
+            r_gl_type=GL_UNSIGNED_SHORT_4_4_4_4;
+			r_has_alpha_cache=true;
+        } break;
+        case Image::FORMAT_RGBA_5551: {
+			r_gl_components=2;
+			r_gl_format=GL_RGBA;
+            r_gl_type=GL_UNSIGNED_SHORT_5_5_5_1;
+			r_has_alpha_cache=true;
+        } break;
+        case Image::FORMAT_RGB_565: {
+			r_gl_components=2;
+			r_gl_format=GL_RGB;
+            r_gl_type=GL_UNSIGNED_SHORT_5_6_5;
+        } break;
+   //     case Image::FORMAT_RGB_555: {
+			//r_gl_components=2;
+			//r_gl_format=GL_RGB;
+   //         r_gl_type=GL_UNSIGNED_SHORT_5_5_5;
+   //     } break;
+   //     case Image::FORMAT_BGRA_8888: {
+			//r_gl_components=4;
+			//r_gl_format=GL_BGRA;
+			//r_has_alpha_cache=true;
+   //     } break;
 		case Image::FORMAT_BC1: {
 
 			if (!s3tc_supported || (!s3tc_srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)) {
@@ -858,6 +885,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	bool has_alpha_cache;
 	int components;
 	GLenum format;
+    GLenum type = GL_UNSIGNED_BYTE;
 	bool compressed;
 
 	int po2_width =  nearest_power_of_2(p_width);
@@ -876,7 +904,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	texture->flags=p_flags;
 	texture->target = (p_flags & VS::TEXTURE_FLAG_CUBEMAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,components,has_alpha_cache,compressed);
+	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,type,components,has_alpha_cache,compressed);
 
 	bool scale_textures = !compressed && !(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && (!npo2_textures_available || p_flags&VS::TEXTURE_FLAG_MIPMAPS);
 
@@ -908,7 +936,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 
 	if (p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 		//prealloc if video
-		glTexImage2D(texture->target, 0, format, p_width, p_height, 0, format, GL_UNSIGNED_BYTE,NULL);
+		glTexImage2D(texture->target, 0, format, p_width, p_height, 0, format, type,NULL);
 	}
 
 	texture->active=true;
@@ -926,6 +954,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	int components;
 	GLenum format;
+    GLenum type = GL_UNSIGNED_BYTE;
 	bool alpha;
 	bool compressed;
 
@@ -933,7 +962,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		texture->image[p_cube_side]=p_image;
 	}
 
-	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,components,alpha,compressed);
+	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,type,components,alpha,compressed);
 
 	if (texture->alloc_width != img.get_width() || texture->alloc_height != img.get_height()) {
 
@@ -1015,9 +1044,9 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
-				glTexSubImage2D( blit_target, i, 0,0,w,h,format,GL_UNSIGNED_BYTE,&read[ofs] );
+				glTexSubImage2D( blit_target, i, 0,0,w,h,format,type,&read[ofs] );
 			} else {
-				glTexImage2D(blit_target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
+				glTexImage2D(blit_target, i, format, w, h, 0, format, type,&read[ofs]);
 			}
 
 		}

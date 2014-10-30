@@ -76,6 +76,55 @@ void Image::_put_pixelw(int p_x,int p_y, int p_width, const BColor& p_color, uns
 			p_data[ofs*4+3]=p_color.a;
 
 		} break;
+        case FORMAT_RGBA_4444: {
+            typedef struct {
+                uint8_t r:4;
+                uint8_t g:4;
+                uint8_t b:4;
+                uint8_t a:4;
+            } pixel;
+
+            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            p->r = p_color.r;
+            p->g = p_color.g;
+            p->b = p_color.b;
+            p->a = p_color.a;
+        } break;
+        case FORMAT_RGBA_5551: {
+
+            typedef struct {
+                uint8_t r:5;
+                uint8_t g:5;
+                uint8_t b:5;
+                uint8_t a:1;
+            } pixel;
+
+            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            p->r = p_color.r;
+            p->g = p_color.g;
+            p->b = p_color.b;
+            p->a = p_color.a;
+        } break;
+        case FORMAT_RGB_565: {
+
+            typedef struct {
+                uint8_t r:5;
+                uint8_t g:6;
+                uint8_t b:5;
+            } pixel;
+
+            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            p->r = p_color.r;
+            p->g = p_color.g;
+            p->b = p_color.b;
+        } break;
+        case FORMAT_BGRA_8888: {
+
+			p_data[ofs*4+0]=p_color.b;
+			p_data[ofs*4+1]=p_color.g;
+			p_data[ofs*4+2]=p_color.r;
+			p_data[ofs*4+3]=p_color.a;
+        } break;
 		case FORMAT_INDEXED:
 		case FORMAT_INDEXED_ALPHA: {
 
@@ -181,6 +230,45 @@ Image::BColor Image::_get_pixelw(int p_x,int p_y,int p_width,const unsigned char
 
 			result=BColor(p_data[ofs*4],p_data[ofs*4+1],p_data[ofs*4+2],p_data[ofs*4+3]);
 		} break;
+        case FORMAT_RGBA_4444: {
+
+            typedef struct {
+                uint8_t r:4;
+                uint8_t g:4;
+                uint8_t b:4;
+                uint8_t a:4;
+            } pixel;
+
+            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            result=BColor(p->r, p->g, p->b, p->a);
+        } break;
+        case FORMAT_RGBA_5551: {
+
+            typedef struct {
+                uint8_t r:5;
+                uint8_t g:5;
+                uint8_t b:5;
+                uint8_t a:1;
+            } pixel;
+
+            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            result=BColor(p->r, p->g, p->b, p->a);
+        } break;
+        case FORMAT_RGB_565: {
+
+            typedef struct {
+                uint8_t r:5;
+                uint8_t g:6;
+                uint8_t b:5;
+            } pixel;
+
+            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            result=BColor(p->r, p->g, p->b, 255);
+        } break;
+        case FORMAT_BGRA_8888: {
+
+			result=BColor(p_data[ofs*4+2],p_data[ofs*4+1],p_data[ofs*4],p_data[ofs*4+3]);
+        } break;
 		case FORMAT_INDEXED_ALPHA: {
 
 			int pitch = 4;
@@ -710,6 +798,10 @@ bool Image::_can_modify(Format p_format) const {
 		case FORMAT_GRAYSCALE_ALPHA:
 		case FORMAT_RGB:
 		case FORMAT_RGBA:
+        case FORMAT_RGBA_4444:
+        case FORMAT_RGBA_5551:
+        case FORMAT_RGB_565:
+        case FORMAT_BGRA_8888:
 			return true;
 		default:
 			return false;
@@ -1167,8 +1259,29 @@ Image::AlphaMode Image::detect_alpha() const {
 			for(int i=0;i<(len>>2);i++) {
 				DETECT_ALPHA(data_ptr[(i<<2)+3])
 			}
-
 		} break;
+        case FORMAT_RGBA_4444: {
+
+			for(int i=0;i<(len>>1);i++) {
+				DETECT_ALPHA(data_ptr[(i<<1)+1] >> 4)
+			}
+        } break;
+        case FORMAT_RGBA_5551: {
+
+			for(int i=0;i<(len>>1);i++) {
+				DETECT_ALPHA(data_ptr[(i<<1)+1] >> 7)
+			}
+        } break;
+        case FORMAT_RGB_565: {
+
+            return ALPHA_NONE;
+        } break;
+        case FORMAT_BGRA_8888: {
+
+			for(int i=0;i<(len>>2);i++) {
+				DETECT_ALPHA(data_ptr[(i<<2)+3])
+			}
+        } break;
 		case FORMAT_INDEXED: {
 
 			return ALPHA_NONE;
@@ -1234,6 +1347,22 @@ int Image::get_format_pixel_size(Format p_format) {
 
 			return 4;
 		} break;
+        case FORMAT_RGBA_4444: {
+
+            return 2;
+        } break;
+        case FORMAT_RGBA_5551: {
+
+            return 2;
+        } break;
+        case FORMAT_RGB_565: {
+
+            return 2;
+        } break;
+        case FORMAT_BGRA_8888: {
+
+            return 4;
+        } break;
 		case FORMAT_INDEXED: {
 
 			return 1;
@@ -1385,6 +1514,22 @@ int Image::get_format_pallete_size(Format p_format) {
 
 			return 0;
 		} break;
+        case FORMAT_RGBA_4444: {
+
+            return 0;
+        } break;
+        case FORMAT_RGBA_5551: {
+
+            return 0;
+        } break;
+        case FORMAT_RGB_565: {
+
+            return 0;
+        } break;
+        case FORMAT_BGRA_8888: {
+
+            return 0;
+        } break;
 		case FORMAT_INDEXED: {
 
 			return 3*256;

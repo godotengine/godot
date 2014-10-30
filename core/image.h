@@ -58,6 +58,12 @@ public:
 		FORMAT_RGBA, ///< one byte R, one byte G, one byte B, one byte A 
 		FORMAT_INDEXED, ///< index byte 0-256, and after image end, 256*3 bytes of palette 
 		FORMAT_INDEXED_ALPHA, ///< index byte 0-256, and after image end, 256*4 bytes of palette (alpha)
+        FORMAT_RGBA_4444,
+        FORMAT_RGBA_5551,
+        FORMAT_RGB_565,
+        //FORMAT_RGB_555,
+        FORMAT_BGRA_8888,
+        FORMAT_ALPHA_8,
 		FORMAT_YUV_422,
 		FORMAT_YUV_444,
 		FORMAT_BC1, // DXT1
