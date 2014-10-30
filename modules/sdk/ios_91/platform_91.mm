@@ -88,6 +88,7 @@ extern "C" {
 
 	Dictionary event;
 	event["type"] = "login";
+	event["result"] = success ? true : false;
 	// login succes
 	if([[NdComPlatform defaultPlatform] isLogined] && success) {
 		
@@ -155,7 +156,7 @@ extern "C" {
 	Dictionary event;
 	event["type"] = "buy_result";
 	event["error"] = Platform91::error_to_string([[dic objectForKey:@"error"] intValue]);
-	event["result"] = [[dic objectForKey:@"result"] boolValue];
+	event["result"] = [[dic objectForKey:@"result"] boolValue] ? true : false;
 
 	NdBuyInfo* buyInfo = (NdBuyInfo*)[dic objectForKey:@"buyInfo"];
 	event["product_id"] = [buyInfo.productId UTF8String];
@@ -189,7 +190,7 @@ extern "C" {
 	event["type"] = "check_pay";
 	event["error"] = "ok";
 	event["order_serial"] = [cooOrderSerial UTF8String];
-	event["success"] = bSuccess;
+	event["success"] = bSuccess ? true : false;
 	Platform91::get_singleton()->post_event(event);
 }
 
