@@ -36,202 +36,310 @@ const char *Platform91::error_to_string(int p_error) {
 		case ND_COM_PLATFORM_NO_ERROR:
 			return "ok";
 		case ND_COM_PLATFORM_ERROR_UNKNOWN:
-			return "unknown_error";
+			return "error_unknown";
 		case ND_COM_PLATFORM_ERROR_NETWORK_FAIL:
-			return "network_fail";
+			return "error_network_fail";
 		case ND_COM_PLATFORM_ERROR_PACKAGE_INVALID:
-			return "package_invalid";
+			return "error_package_invalid";
 		case ND_COM_PLATFORM_ERROR_SESSIONID_INVALID:
-			return "session_invalid";
+			return "error_session_invalid";
+		case ND_COM_PLATFORM_ERROR_PARAM:
+			rerurn "error_param";
+		case ND_COM_PLATFORM_ERROR_CLIENT_APP_ID_INVALID:
+			rerurn "error_client_app_id_invalid";
+		case ND_COM_PLATFORM_ERROR_NETWORK_ERROR:
+			rerurn "error_network_error";
+		case ND_COM_PLATFORM_ERROR_APP_KEY_INVALID:
+			rerurn "error_app_key_invalid";
+		case ND_COM_PLATFORM_ERROR_NO_SIM:
+			rerurn "error_no_sim";
+		case ND_COM_PLATFORM_ERROR_SERVER_RETURN_ERROR:
+			rerurn "error_server_return_error";
+		case ND_COM_PLATFORM_ERROR_NOT_LOGINED:
+			rerurn "error_not_logined";
+		case ND_COM_PLATFORM_ERROR_USER_CANCEL:
+			rerurn "error_user_cancel";
+		case ND_COM_PLATFORM_ERROR_BUSINESS_SYSTEM_UNCHECKED:
+			rerurn "error_business_system_unchecked";
+		case ND_COM_PLATFORM_ERROR_SDK_VERSION_INVALID:
+			rerurn "error_sdk_version_invalid";
+		case ND_COM_PLATFORM_ERROR_NOT_PERMITTED:
+			rerurn "error_not_permitted";
+
+		case ND_COM_PLATFORM_ERROR_ACCOUNT_INVALID:
+			rerurn "error_account_invalid";
+		case ND_COM_PLATFORM_ERROR_PASSWORD_INVALID:
+			rerurn "error_password_invalid";
+		case ND_COM_PLATFORM_ERROR_LOGIN_FAIL:
+			rerurn "error_login_fail";
+		case ND_COM_PLATFORM_ERROR_ACCOUNT_NOT_EXIST:
+			rerurn "error_account_not_exist";
+		case ND_COM_PLATFORM_ERROR_ACCOUNT_PASSWORD_ERROR:
+			rerurn "error_account_password_error";
+		case ND_COM_PLATFORM_ERROR_TOO_MUCH_ACCOUNT_REGISTED:
+			rerurn "error_too_much_account_registed";
+		case ND_COM_PLATFORM_ERROR_REGIST_FAIL:
+			rerurn "error_regist_fail";
+		case ND_COM_PLATFORM_ERROR_ACCOUNT_HAS_EXIST:
+			rerurn "error_account_has_exist";
+		case ND_COM_PLATFORM_ERROR_VERIFY_ACCOUNT_FAIL:
+			rerurn "error_verify_account_fail";
+		case ND_COM_PLATFORM_ERROR_PARAM_INVALID:
+			rerurn "error_param_invalid";
+		case ND_COM_PLATFORM_ERROR_IGNORE_CONTACT_LIST:
+			rerurn "error_ignore_contact_list";
+		case ND_COM_PLATFORM_ERROR_DEVICE_NEVER_LOGINED:
+			rerurn "error_device_never_logined";
+		case ND_COM_PLATFORM_ERROR_DEVICE_CANNOT_AUTO_LOGIN:
+			rerurn "error_device_cannot_auto_login";
+		case ND_COM_PLATFORM_ERROR_ACCOUNT_PRESERVED:
+			rerurn "error_account_preserved";
+		case ND_COM_PLATFORM_ERROR_AUTO_LOGIN_SIGN_INVALID:
+			rerurn "error_auto_login_sign_invalid";
+
+		case ND_COM_PLATFORM_ERROR_NICKNAME_INVALID:
+			rerurn "error_nickname_invalid";
+
+		case ND_COM_PLATFORM_ERROR_NEW_PASSWORD_INVALID:
+			rerurn "error_new_password_invalid";
+		case ND_COM_PLATFORM_ERROR_OLD_PASSWORD_INVALID:
+			rerurn "error_old_password_invalid";
+		case ND_COM_PLATFORM_ERROR_OLD_PASSWORD_ERROR:
+			rerurn "error_old_password_error";
+
+		case ND_COM_PLATFORM_ERROR_HAS_SET_PHONE_NUM:
+			rerurn "error_has_set_phone_num";
+		case ND_COM_PLATFORM_ERROR_PHONE_NUM_BE_REGISTERED:
+			rerurn "error_phone_num_be_registered";
+		case ND_COM_PLATFORM_ERROR_PHONE_NUM_REPEAT_CHECK:
+			rerurn "error_phone_num_repeat_check";
+		case ND_COM_PLATFORM_ERROR_PHONE_CHECK_CODE_INVALID:
+			rerurn "error_phone_check_code_invalid";
+
+		case ND_COM_PLATFORM_ERROR_TRUE_NAME_INVALID:
+			rerurn "error_true_name_invalid";
+
+		case ND_COM_PLATFORM_ERROR_EMOTION_LENGTH_TOO_LONG:
+			rerurn "error_emotion_length_too_long";
+		case ND_COM_PLATFORM_ERROR_CONTENT_INVALID:
+			rerurn "error_content_invalid";
+
+		case ND_COM_PLATFORM_ERROR_PERMISSION_NOT_ENOUGH:
+			rerurn "error_permission_not_enough";
+
+		case ND_COM_PLATFORM_ERROR_IMAGE_SIZE_TOO_LARGE:
+			rerurn "error_image_size_too_large";
+		case ND_COM_PLATFORM_ERROR_IMAGE_DATA_INVALID:
+			rerurn "error_image_data_invalid";
+
+		case ND_COM_PLATFORM_ERROR_PHOTO_NOT_CHANGED:
+			rerurn "error_photo_not_changed";
+		case ND_COM_PLATFORM_ERROR_NO_CUSTOM_PHOTO:
+			rerurn "error_no_custom_photo";
+
+		case ND_COM_PLATFORM_ERROR_APP_NOT_EXIST:
+			rerurn "error_app_not_exist";
+		case ND_COM_PLATFORM_ERROR_ICON_NOT_CHANGED:
+			rerurn "error_icon_not_changed";
+		case ND_COM_PLATFORM_ERROR_NO_CUSTOM_ICON:
+			rerurn "error_no_custom_icon";
+		case ND_COM_PLATFORM_ERROR_ICON_NOT_EXIST:
+			rerurn "error_icon_not_exist";
+
+		case ND_COM_PLATFORM_ERROR_PAY_PASSWORD_ERROR:
+			rerurn "error_pay_password_error";
+		case ND_COM_PLATFORM_ERROR_PAY_ACCOUNT_NOT_ACTIVED:
+			rerurn "error_pay_account_not_actived";
+		case ND_COM_PLATFORM_ERROR_PAY_PASSWORD_NOT_SET:
+			rerurn "error_pay_password_not_set";
+
+		case ND_COM_PLATFORM_ERROR_PAY_PASSWORD_NOT_VERIFY:
+			rerurn "error_pay_password_not_verify";
+		case ND_COM_PLATFORM_ERROR_BALANCE_NOT_ENOUGH:
+			rerurn "error_balance_not_enough";
+		case ND_COM_PLATFORM_ERROR_ORDER_SERIAL_DUPLICATE:
+			rerurn "error_order_serial_duplicate";
+		case ND_COM_PLATFORM_ERROR_ORDER_SERIAL_SUBMITTED:
+			rerurn "error_order_serial_submitted";
+
+		case ND_COM_PLATFORM_ERROR_PAGE_REQUIRED_NOT_VALID:
+			rerurn "error_page_required_not_valid";
+
+		case ND_COM_PLATFORM_ERROR_RECHARGE_MONEY_INVALID:
+			rerurn "error_recharge_money_invalid";
+		case ND_COM_PLATFORM_ERROR_SMS_RECHARGE_ACCOUNT_INVALID:
+			rerurn "error_sms_recharge_account_invalid";
+		case ND_COM_PLATFORM_ERROR_NO_PHONE_NUM:
+			rerurn "error_no_phone_num";
+
+		case ND_COM_PLATFORM_ERROR_RECHARGE_CARD_NUMBER_ERROR:
+			rerurn "error_recharge_card_number_error";
+		case ND_COM_PLATFORM_ERROR_RECHARGE_CARD_PASSWORD_ERROR:
+			rerurn "error_recharge_card_password_error";
+		case ND_COM_PLATFORM_ERROR_RECHARGE_CARD_TYPE_NOT_SUPPORT:
+			rerurn "error_recharge_card_type_not_support";
+
+		case ND_COM_PLATFORM_ERROR_USER_NOT_EXIST:
+			rerurn "error_user_not_exist";
+		case ND_COM_PLATFORM_ERROR_FRIEND_NOT_EXIST:
+			rerurn "error_friend_not_exist";
+
+		case ND_COM_PLATFORM_ERROR_ALREADY_BE_YOUR_FRIEND:
+			rerurn "error_already_be_your_friend";
+		case ND_COM_PLATFORM_ERROR_NOTE_LENGTH_INVALID:
+			rerurn "error_note_length_invalid";
+		case ND_COM_PLATFORM_ERROR_ARRIVE_MAX_FRIEND_NUM:
+			rerurn "error_arrive_max_friend_num";
+
+		case ND_COM_PLATFORM_ERROR_APP_ID_INVALID:
+			rerurn "error_app_id_invalid";
+		case ND_COM_PLATFORM_ERROR_ACTIVITY_TYPE_INVALID:
+			rerurn "error_activity_type_invalid";
+
+		case ND_COM_PLATFORM_ERROR_MSG_NOT_EXIST:
+			rerurn "error_msg_not_exist";
+
+		case ND_COM_PLATFORM_ERROR_CONTENT_LENGTH_INVALID:
+			rerurn "error_content_length_invalid";
+		case ND_COM_PLATFORM_ERROR_NOT_ALLOWED_TO_SEND_MSG:
+			rerurn "error_not_allowed_to_send_msg";
+		case ND_COM_PLATFORM_ERROR_CAN_NOT_SEND_MSG_TO_SELF:
+			rerurn "error_can_not_send_msg_to_self";
+
+		case ND_COM_PLATFORM_ERROR_CLIENT_TAG:
+			rerurn "error_client_tag";
+		case ND_COM_PLATFORM_ERROR_INVALID_COMMAND_TAG:
+			rerurn "error_invalid_command_tag";
+		case ND_COM_PLATFORM_ERROR_INVALID_CONTENT_TAG:
+			rerurn "error_invalid_content_tag";
+		case ND_COM_PLATFORM_ERROR_CUSTOM_TAG_ARG_NOT_ENOUGH:
+			rerurn "error_custom_tag_arg_not_enough";
+		case ND_COM_PLATFORM_ERROR_CUSTOM_TAG_INVALID:
+			rerurn "error_custom_tag_invalid";
+
+		case ND_COM_PLATFORM_ERROR_FEEDBACK_ID_INVALID:
+			rerurn "error_feedback_id_invalid";
+
+		case ND_COM_PLATFORM_ERROR_TEMPLATEID_INVALID:
+			rerurn "error_templateid_invalid";
+		case ND_COM_PLATFORM_ERROR_TEMPLATE_PARAMLIST_ERROR:
+			rerurn "error_template_paramlist_error";
+		case ND_COM_PLATFORM_ERROR_PAY_FAILED:
+			rerurn "error_pay_failed";
+		case ND_COM_PLATFORM_ERROR_PAY_CANCELED:
+			rerurn "error_pay_canceled";
+
+		case ND_COM_PLATFORM_ERROR_LEADERBOARD_NOT_EXIST:
+			rerurn "error_leaderboard_not_exist";
+		case ND_COM_PLATFORM_ERROR_LEADERBOARD_USERLIST_NOT_EXIST:
+			rerurn "error_leaderboard_userlist_not_exist";
+		case ND_COM_PLATFORM_ERROR_FRIENDS_NOBODY_PLAYING:
+			rerurn "error_friends_nobody_playing";
+		case ND_COM_PLATFORM_ERROR_ACHIEVEMENT_NOT_EXIST:
+			rerurn "error_achievement_not_exist";
+
+		case ND_COM_PLATFORM_ERROR_91_HAS_NOT_BIND_3RD:
+			rerurn "error_91_has_not_bind_3rd";
+		case ND_COM_PLATFORM_ERROR_3RD_SHARED_CONTENT_REPEAT:
+			rerurn "error_3rd_shared_content_repeat";
+		case ND_COM_PLATFORM_ERROR_PAY_ORDER_NOT_EXIST:
+			rerurn "error_pay_order_not_exist";
+		case ND_COM_PLATFORM_ERROR_NOT_MY_REQUEST_FOR_PAY:
+			rerurn "error_not_my_request_for_pay";
+		case ND_COM_PLATFORM_ERROR_NOT_MY_FRIEND_ANYMORE:
+			rerurn "error_not_my_friend_anymore";
+
+		case ND_COM_PLATFORM_ERROR_3RD_ACCOUNT_HAS_NO_FRIENDS:
+			rerurn "error_3rd_account_has_no_friends";
+		case ND_COM_PLATFORM_ERROR_91_HAS_BIND_3RD:
+			rerurn "error_91_has_bind_3rd";
+		case ND_COM_PLATFORM_ERROR_3RD_HAS_BIND_OTHER_91:
+			rerurn "error_3rd_has_bind_other_91";
+		case ND_COM_PLATFORM_ERROR_3RD_HAS_BIND_91:
+			rerurn "error_3rd_has_bind_91";
+		case ND_COM_PLATFORM_ERROR_3RD_ACCOUNT_INFO_LOST:
+			rerurn "error_3rd_account_info_lost";
+		case ND_COM_PLATFORM_ERROR_CAN_NOT_VERIFY_3RD_ACCOUNT:
+			rerurn "error_can_not_verify_3rd_account";
+		case ND_COM_PLATFORM_ERROR_91_ACCOUNT_EXCEPTION:
+			rerurn "error_91_account_exception";
+
+		case ND_COM_PLATFORM_ERROR_3RD_SESSION_ID_INVALID:
+			rerurn "error_3rd_session_id_invalid";
+
+		case ND_COM_PLATFORM_ERROR_VG_CATEGORY_INVALID:
+			rerurn "error_vg_category_invalid";
+		case ND_COM_PLATFORM_ERROR_VG_FEE_TYPE_INVALID:
+			rerurn "error_vg_fee_type_invalid";
+
+		case ND_COM_PLATFORM_ERROR_3RD_INFO_INVALID:
+			rerurn "error_3rd_info_invalid";
+		case ND_COM_PLATFORM_ERROR_CANNOT_UNBIND_LOGINED_3RD_ACCOUNT:
+			rerurn "error_cannot_unbind_logined_3rd_account";
+		case ND_COM_PLATFORM_ERROR_VERFIER_INVALID:
+			rerurn "error_verfier_invalid";
+
+		case ND_COM_PLATFORM_ERROR_REPEAT_SENDING:
+			rerurn "error_repeat_sending";
+		case ND_COM_PLATFORM_ERROR_PAY_REQUEST_TIMEOUT:
+			rerurn "error_pay_request_timeout";
+		case ND_COM_PLATFORM_ERROR_VG_PRODUCT_USE_SIGN_INVALID:
+			rerurn "error_vg_product_use_sign_invalid";
+		case ND_COM_PLATFORM_ERROR_VG_PRODUCT_ID_INVALID:
+			rerurn "error_vg_product_id_invalid";
+
+		case ND_COM_PLATFORM_ERROR_VG_MONEY_TYPE_FAILED:
+			rerurn "error_vg_money_type_failed";
+		case ND_COM_PLATFORM_ERROR_VG_ORDER_FAILED:
+			rerurn "error_vg_order_failed";
+		case ND_COM_PLATFORM_ERROR_VG_BACK_FROM_RECHARGE:
+			rerurn "error_vg_back_from_recharge";
+
+		case ND_COM_PLATFORM_ERROR_BD_INVALID_PHONE_NUM:
+			rerurn "error_bd_invalid_phone_num";
+		case ND_COM_PLATFORM_ERROR_BD_ACCOUNT_HAS_BIND_PHONE_NUM:
+			rerurn "error_bd_account_has_bind_phone_num";
+		case ND_COM_PLATFORM_ERROR_BD_PHONE_NUM_HAS_BIND_ACCOUNT:
+			rerurn "error_bd_phone_num_has_bind_account";
+		case ND_COM_PLATFORM_ERROR_BD_PHONE_NUM_DIDNOT_BIND:
+			rerurn "error_bd_phone_num_didnot_bind";
+		case ND_COM_PLATFORM_ERROR_BD_WRONG_BIND_PHONE_NUM:
+			rerurn "error_bd_wrong_bind_phone_num";
+		case ND_COM_PLATFORM_ERROR_BD_WRONG_SMS_VERIFY_CODE:
+			rerurn "error_bd_wrong_sms_verify_code";
+		case ND_COM_PLATFORM_ERROR_BD_SMS_VERIFY_CODE_OUT_EXPIRE:
+			rerurn "error_bd_sms_verify_code_out_expire";
+		case ND_COM_PLATFORM_ERROR_BD_PHONE_VERIFY_FAIL:
+			rerurn "error_bd_phone_verify_fail";
+		case ND_COM_PLATFORM_ERROR_BD_UNFIT_LOTTERY_CONDITION:
+			rerurn "error_bd_unfit_lottery_condition";
+		case ND_COM_PLATFORM_ERROR_BD_HAS_LOTTERY:
+			rerurn "error_bd_has_lottery";
+		case ND_COM_PLATFORM_ERROR_BD_OUT_NUM_SMS_SENDED:
+			rerurn "error_bd_out_num_sms_sended";
+		case ND_COM_PLATFORM_ERROR_BD_VIP_CANNOT_RESTE_ON_PHONE:
+			rerurn "error_bd_vip_cannot_reste_on_phone";
+		case ND_COM_PLATFORM_ERROR_BD_DIFFERENT_PHONE_NUM:
+			rerurn "error_bd_different_phone_num";
+
+		case ND_COM_PLATFORM_ERROR_HAS_ASSOCIATE_91:
+			rerurn "error_has_associate_91";
+		case ND_COM_PLATFORM_ERROR_NO_NEED_BECOME_REGULAR:
+			rerurn "error_no_need_become_regular";
+		case ND_COM_PLATFORM_ERROR_UIN_INVALID:
+			rerurn "error_uin_invalid";
+		case ND_COM_PLATFORM_ERROR_GUEST_NOT_PERMITTED:
+			rerurn "error_guest_not_permitted";
+
+		case ND_COM_PLATFORM_ERROR_HIGH_FREQUENT_OPERATION:
+			rerurn "error_high_frequent_operation";
+		case ND_COM_PLATFORM_ERROR_PROMOTED_APP_NOT_TOUCHED:
+			rerurn "error_promoted_app_not_touched";
+
+		case ND_COM_PLATFORM_ERROR_3RD_AUTH_FAILED:
+			rerurn "error_3rd_auth_failed";
+		case ND_COM_PLATFORM_ERROR_3RD_REAUTH_FAILDED:
+			rerurn "error_3rd_reauth_failded";
 	}
-
-// #define ND_COM_PLATFORM_NO_ERROR								0					/**<  */
-// #define ND_COM_PLATFORM_ERROR_UNKNOWN							-1					/**< 未知错误 */
-// #define ND_COM_PLATFORM_ERROR_NETWORK_FAIL						-2					/**< 网络连接错误 */
-// #define ND_COM_PLATFORM_ERROR_PACKAGE_INVALID					-3					/**< 数据包不全、丢失或无效*/
-// #define ND_COM_PLATFORM_ERROR_SESSIONID_INVALID					-4					/**< SessionId（用户的会话标识）无效 */
-// #define ND_COM_PLATFORM_ERROR_PARAM								-5					/**< 参数值错误或非法，请检查参数值是否有效 */
-// #define ND_COM_PLATFORM_ERROR_CLIENT_APP_ID_INVALID				-6					/**< 无效的应用ID接入 */
-// #define ND_COM_PLATFORM_ERROR_NETWORK_ERROR						-7					/**< 网络通信发生错误 */
-// #define ND_COM_PLATFORM_ERROR_APP_KEY_INVALID					-8					/**< 该用户未授权接入（AppKey无效）*/
-// #define ND_COM_PLATFORM_ERROR_NO_SIM							-9					/**< 未检测到SIM卡 */
-// #define ND_COM_PLATFORM_ERROR_SERVER_RETURN_ERROR				-10					/**< 服务器处理发生错误，请求无法完成 */
-// #define ND_COM_PLATFORM_ERROR_NOT_LOGINED						-11					/**< 未登录 */
-// #define ND_COM_PLATFORM_ERROR_USER_CANCEL						-12					/**< 用户取消 */
-// #define ND_COM_PLATFORM_ERROR_BUSINESS_SYSTEM_UNCHECKED			-13					/**< 业务系统未通过审核 */
-// #define ND_COM_PLATFORM_ERROR_SDK_VERSION_INVALID				-14					/**< SDK版本号无效 */
-// #define ND_COM_PLATFORM_ERROR_NOT_PERMITTED						-15					/**< 接口不允许调用（比如，游客权限不足) */
-
-// #define ND_COM_PLATFORM_ERROR_ACCOUNT_INVALID					-100				/**< 账号格式不合法，合法账号为4－70个字符，仅允许小写字母及数字，支持邮箱注册 */
-// #define ND_COM_PLATFORM_ERROR_PASSWORD_INVALID					-101				/**< 密码格式不合法，密码不能为空，长度为6－12个字符，由字母和数字组成，大小写敏感 */
-// #define ND_COM_PLATFORM_ERROR_LOGIN_FAIL						-102				/**< 登录失败 */
-// #define ND_COM_PLATFORM_ERROR_ACCOUNT_NOT_EXIST					-103				/**< 91通行证账号不存在或者停用 */
-// #define ND_COM_PLATFORM_ERROR_ACCOUNT_PASSWORD_ERROR			-104				/**< 91通行证账号密码错误 */
-// #define ND_COM_PLATFORM_ERROR_TOO_MUCH_ACCOUNT_REGISTED			-105				/**< 该手机注册的账号数目已达到上限，无法再注册 */
-// #define ND_COM_PLATFORM_ERROR_REGIST_FAIL						-106				/**< 注册失败 */
-// #define ND_COM_PLATFORM_ERROR_ACCOUNT_HAS_EXIST					-107				/**< 该91通行证账号已经被注册 */
-// #define ND_COM_PLATFORM_ERROR_VERIFY_ACCOUNT_FAIL				-108				/**< 账号验证失败 */
-// #define ND_COM_PLATFORM_ERROR_PARAM_INVALID						-109				/**< 参数无效 */
-// #define ND_COM_PLATFORM_ERROR_IGNORE_CONTACT_LIST				-110				/**< 相同的通讯录已经上传，忽略此次上传 */
-// #define ND_COM_PLATFORM_ERROR_DEVICE_NEVER_LOGINED				-111				/**< 该设备没有登录过用户 */
-// #define ND_COM_PLATFORM_ERROR_DEVICE_CANNOT_AUTO_LOGIN			-112				/**< 该设备不能自动登录 */
-// #define ND_COM_PLATFORM_ERROR_ACCOUNT_PRESERVED					-113				/**< 账号无效（可能被保留） */
-// #define ND_COM_PLATFORM_ERROR_AUTO_LOGIN_SIGN_INVALID			-114				/**< 自动登录凭据失效，请重新输入密码登录 */
-
-// #define ND_COM_PLATFORM_ERROR_NICKNAME_INVALID					-201				/**< 昵称不合法，合法昵称由1－16个非空字符构成，请勿使用敏感词汇 */
-
-// #define ND_COM_PLATFORM_ERROR_NEW_PASSWORD_INVALID				-301				/**< 新密码格式非法，密码不能为空，长度为6－12个字符，由字母和数字组成，大小写敏感 */
-// #define ND_COM_PLATFORM_ERROR_OLD_PASSWORD_INVALID				-302				/**< 旧密码格式非法，不能为空*/
-// #define ND_COM_PLATFORM_ERROR_OLD_PASSWORD_ERROR				-303				/**< 原密码错误 */
-
-// #define ND_COM_PLATFORM_ERROR_HAS_SET_PHONE_NUM					-401				/**< 该用户已经设定了手机号码 */
-// #define ND_COM_PLATFORM_ERROR_PHONE_NUM_BE_REGISTERED			-402				/**< 该手机号已经被注册 */
-// #define ND_COM_PLATFORM_ERROR_PHONE_NUM_REPEAT_CHECK			-403				/**< 指定时间内不能重复发送（手机号注册短信验证） */
-// #define ND_COM_PLATFORM_ERROR_PHONE_CHECK_CODE_INVALID			-404				/**< 手机短信验证码无效 */
-
-// #define ND_COM_PLATFORM_ERROR_TRUE_NAME_INVALID					-501				/**< 真实姓名不合法 */
-
-// #define ND_COM_PLATFORM_ERROR_EMOTION_LENGTH_TOO_LONG			-601				/**< 心情长度太长，不能超过140个字符 */
-// #define ND_COM_PLATFORM_ERROR_CONTENT_INVALID					-602				/**< 内容不合法 */
-
-// #define ND_COM_PLATFORM_ERROR_PERMISSION_NOT_ENOUGH				-701				/**< 权限不足 */
-
-// #define ND_COM_PLATFORM_ERROR_IMAGE_SIZE_TOO_LARGE				-801				/**< 发送的图片数据超过了服务器允许的大小 */
-// #define ND_COM_PLATFORM_ERROR_IMAGE_DATA_INVALID				-802				/**< 发送的图片数据内容不合法 */
-
-// #define ND_COM_PLATFORM_ERROR_PHOTO_NOT_CHANGED					-1001				/**< 头像没有变更 */
-// #define ND_COM_PLATFORM_ERROR_NO_CUSTOM_PHOTO					-1002				/**< 该用户没有自定义头像 */
-
-// #define ND_COM_PLATFORM_ERROR_APP_NOT_EXIST						-2001				/**< 该应用不存在 */
-// #define ND_COM_PLATFORM_ERROR_ICON_NOT_CHANGED					-2002				/**< 图标没有变更 */
-// #define ND_COM_PLATFORM_ERROR_NO_CUSTOM_ICON					-2003				/**< 无自定义图标 */
-// #define ND_COM_PLATFORM_ERROR_ICON_NOT_EXIST					-2004				/**< 该图标不存在 */
-
-// #define ND_COM_PLATFORM_ERROR_PAY_PASSWORD_ERROR				-3001				/**< 支付密码错误 */
-// #define ND_COM_PLATFORM_ERROR_PAY_ACCOUNT_NOT_ACTIVED			-3002				/**< 该账号未在商城开户 */
-// #define ND_COM_PLATFORM_ERROR_PAY_PASSWORD_NOT_SET				-3003				/**< 支付密码未设置 */
-
-// #define ND_COM_PLATFORM_ERROR_PAY_PASSWORD_NOT_VERIFY			-4001				/**< 支付密码未验证 */
-// #define ND_COM_PLATFORM_ERROR_BALANCE_NOT_ENOUGH				-4002				/**< 余额不足，无法支付 */
-// #define ND_COM_PLATFORM_ERROR_ORDER_SERIAL_DUPLICATE			-4003				/**< 订单号重复 */
-// #define ND_COM_PLATFORM_ERROR_ORDER_SERIAL_SUBMITTED			-4004				/**< 订单已提交 */
-
-// #define ND_COM_PLATFORM_ERROR_PAGE_REQUIRED_NOT_VALID			-5001				/**< 页码超过范围 */
-
-// #define ND_COM_PLATFORM_ERROR_RECHARGE_MONEY_INVALID			-6001				/**< 充值面额非法 */
-// #define ND_COM_PLATFORM_ERROR_SMS_RECHARGE_ACCOUNT_INVALID		-6002				/**< 短信支付账号无效 */
-// #define ND_COM_PLATFORM_ERROR_NO_PHONE_NUM						-6003				/**< 没有手机号码，账号未绑定手机号 */
-
-// #define ND_COM_PLATFORM_ERROR_RECHARGE_CARD_NUMBER_ERROR		-7001				/**< 充值卡卡号无效 */
-// #define ND_COM_PLATFORM_ERROR_RECHARGE_CARD_PASSWORD_ERROR		-7002				/**< 充值卡密码无效 */
-// #define ND_COM_PLATFORM_ERROR_RECHARGE_CARD_TYPE_NOT_SUPPORT	-7003				/**< 充值卡类型不支持 */
-
-// #define ND_COM_PLATFORM_ERROR_USER_NOT_EXIST					-10011				/**< 该用户不存在 */
-// #define ND_COM_PLATFORM_ERROR_FRIEND_NOT_EXIST					-10012				/**< 该好友不存在 */
-
-// #define ND_COM_PLATFORM_ERROR_ALREADY_BE_YOUR_FRIEND			-11002				/**< 用户已经是您的好友 */
-// #define ND_COM_PLATFORM_ERROR_NOTE_LENGTH_INVALID				-11003				/**< 备注长度不合法 */
-// #define ND_COM_PLATFORM_ERROR_ARRIVE_MAX_FRIEND_NUM				-11004				/**< 到达好友个数上限，需要删除好友 */
-
-// #define ND_COM_PLATFORM_ERROR_APP_ID_INVALID					-13001				/**< 应用Id不合法 */
-// #define ND_COM_PLATFORM_ERROR_ACTIVITY_TYPE_INVALID				-13002				/**< 动态类型不合法 */
-
-// #define ND_COM_PLATFORM_ERROR_MSG_NOT_EXIST						-14001				/**< 没有该条消息 */
-
-// #define ND_COM_PLATFORM_ERROR_CONTENT_LENGTH_INVALID			-15001				/**< 内容长度不合法 */
-// #define ND_COM_PLATFORM_ERROR_NOT_ALLOWED_TO_SEND_MSG			-15002				/**< 发送者被禁止发消息 */
-// #define ND_COM_PLATFORM_ERROR_CAN_NOT_SEND_MSG_TO_SELF			-15003				/**< 不能给自己发送短消息 */
-
-// #define ND_COM_PLATFORM_ERROR_CLIENT_TAG						-16001				/**< 该标签为客户端标签 */
-// #define ND_COM_PLATFORM_ERROR_INVALID_COMMAND_TAG				-16002				/**< 无效的标签指令 */
-// #define ND_COM_PLATFORM_ERROR_INVALID_CONTENT_TAG				-16003				/**< 无效的标签文本 */
-// #define ND_COM_PLATFORM_ERROR_CUSTOM_TAG_ARG_NOT_ENOUGH			-16004				/**< 自定义标签参数不足 */
-// #define ND_COM_PLATFORM_ERROR_CUSTOM_TAG_INVALID				-16005				/**< 自定义标签参数无效 */
-
-// #define ND_COM_PLATFORM_ERROR_FEEDBACK_ID_INVALID				-17001				/**< 反馈类型ID无效 */
-
-// #define ND_COM_PLATFORM_ERROR_TEMPLATEID_INVALID				-18001				/**< 模板ID无效 */
-// #define ND_COM_PLATFORM_ERROR_TEMPLATE_PARAMLIST_ERROR			-18002				/**< 模板参数错误 */
-// #define ND_COM_PLATFORM_ERROR_PAY_FAILED						-18003				/**< 支付失败 */
-// #define ND_COM_PLATFORM_ERROR_PAY_CANCELED						-18004				/**< 取消支付 */
-
-// #define ND_COM_PLATFORM_ERROR_LEADERBOARD_NOT_EXIST				-19001				/**< 该排行榜不存在 */
-// #define ND_COM_PLATFORM_ERROR_LEADERBOARD_USERLIST_NOT_EXIST	-19002				/**< 用户排行列表不存在 */
-// #define ND_COM_PLATFORM_ERROR_FRIENDS_NOBODY_PLAYING			-19003				/**< 该用户没有好友在玩 */
-// #define ND_COM_PLATFORM_ERROR_ACHIEVEMENT_NOT_EXIST				-19004				/**< 成就不存在 */
-
-// #define ND_COM_PLATFORM_ERROR_91_HAS_NOT_BIND_3RD				-19030				/**< 用户没有绑定第三方账号 */
-// #define ND_COM_PLATFORM_ERROR_3RD_SHARED_CONTENT_REPEAT			-19031				/**< 内容重复 */
-// #define ND_COM_PLATFORM_ERROR_PAY_ORDER_NOT_EXIST				-19032				/**< 无此订单 */
-// #define ND_COM_PLATFORM_ERROR_NOT_MY_REQUEST_FOR_PAY			-19033				/**< 该代付订单的代付人不是当前用户 */
-// #define ND_COM_PLATFORM_ERROR_NOT_MY_FRIEND_ANYMORE				-19034				/**< 不是你的好友 */
-
-// #define ND_COM_PLATFORM_ERROR_3RD_ACCOUNT_HAS_NO_FRIENDS		-19040				/**< 该第三方账号没有好友 */
-// #define ND_COM_PLATFORM_ERROR_91_HAS_BIND_3RD					-19041				/**< 已经绑定指定类型的第三方账号 */
-// #define ND_COM_PLATFORM_ERROR_3RD_HAS_BIND_OTHER_91				-19042				/**< 第三方账号已经绑定其他91账号 */
-// #define ND_COM_PLATFORM_ERROR_3RD_HAS_BIND_91					-19043				/**< 已经绑定91账号 */
-// #define ND_COM_PLATFORM_ERROR_3RD_ACCOUNT_INFO_LOST				-19044				/**< 第三方登陆信息丢失 */
-// #define ND_COM_PLATFORM_ERROR_CAN_NOT_VERIFY_3RD_ACCOUNT		-19045				/**< 无法验证第三方账号密码 */
-// #define ND_COM_PLATFORM_ERROR_91_ACCOUNT_EXCEPTION				-19046				/**< 第三方账号绑定的91账号异常（停用等） */
-
-// #define ND_COM_PLATFORM_ERROR_3RD_SESSION_ID_INVALID			-20001				/**< ThirdSessionId无效 */
-
-// #define ND_COM_PLATFORM_ERROR_VG_CATEGORY_INVALID				-21001				/**< 商品类别无效 */
-// #define ND_COM_PLATFORM_ERROR_VG_FEE_TYPE_INVALID				-21002				/**< 商品计费类型无效 */
-
-// #define ND_COM_PLATFORM_ERROR_3RD_INFO_INVALID					-22001				/**< 第三方信息不存在 */
-// #define ND_COM_PLATFORM_ERROR_CANNOT_UNBIND_LOGINED_3RD_ACCOUNT	-22002				/**< 不能解除当前登录的第三方帐号绑定 */
-// #define ND_COM_PLATFORM_ERROR_VERFIER_INVALID					-22003				/**< 校验码错误 */
-
-// #define ND_COM_PLATFORM_ERROR_REPEAT_SENDING					-23001				/**< 重复发送 */
-// #define ND_COM_PLATFORM_ERROR_PAY_REQUEST_TIMEOUT				-23002				/**< 支付超时，请稍候重试 */
-// #define ND_COM_PLATFORM_ERROR_VG_PRODUCT_USE_SIGN_INVALID		-23003				/**< 虚拟商品使用标志无效 */
-// #define ND_COM_PLATFORM_ERROR_VG_PRODUCT_ID_INVALID				-23004				/**< 虚拟商品ID无效 */
-
-// #define ND_COM_PLATFORM_ERROR_VG_MONEY_TYPE_FAILED				-24001				/**< 查询虚拟商品币种失败 */
-// #define ND_COM_PLATFORM_ERROR_VG_ORDER_FAILED					-24002				/**< 获取虚拟商品订单号失败 */
-// #define ND_COM_PLATFORM_ERROR_VG_BACK_FROM_RECHARGE				-24003				/**< 退出充值界面（购买游戏币虚拟商品时） */
-
-// #define ND_COM_PLATFORM_ERROR_BD_INVALID_PHONE_NUM				-25001				/**< 手机号码格式无效 */
-// #define	ND_COM_PLATFORM_ERROR_BD_ACCOUNT_HAS_BIND_PHONE_NUM		-25002				/**< 重复绑定，账号已经绑定其他手机号 */
-// #define	ND_COM_PLATFORM_ERROR_BD_PHONE_NUM_HAS_BIND_ACCOUNT		-25003				/**< 手机号已经绑定其他账号 */
-// #define	ND_COM_PLATFORM_ERROR_BD_PHONE_NUM_DIDNOT_BIND			-25004				/**< 账号未绑定任何手机号 */
-// #define	ND_COM_PLATFORM_ERROR_BD_WRONG_BIND_PHONE_NUM			-25005				/**< 手机号码与绑定手机号码不一致 */
-// #define	ND_COM_PLATFORM_ERROR_BD_WRONG_SMS_VERIFY_CODE			-25006				/**< 短信验证码错误 */
-// #define	ND_COM_PLATFORM_ERROR_BD_SMS_VERIFY_CODE_OUT_EXPIRE		-25007				/**< 短信验证码过期 */
-// #define	ND_COM_PLATFORM_ERROR_BD_PHONE_VERIFY_FAIL				-25008				/**< 未通过手机号码验证(重置密码时) */
-// #define	ND_COM_PLATFORM_ERROR_BD_UNFIT_LOTTERY_CONDITION		-25009				/**< 不符合抽奖条件 */
-// #define	ND_COM_PLATFORM_ERROR_BD_HAS_LOTTERY					-25010				/**< 已经抽过奖 */
-// #define	ND_COM_PLATFORM_ERROR_BD_OUT_NUM_SMS_SENDED				-25011				/**< 短信发送次数过多 */
-// #define ND_COM_PLATFORM_ERROR_BD_VIP_CANNOT_RESTE_ON_PHONE		-25012				/**< VIP用户无法使用手机找回密码 */
-// #define ND_COM_PLATFORM_ERROR_BD_DIFFERENT_PHONE_NUM			-25013				/**< 手机号码前后不一致 */
-
-// #define ND_COM_PLATFORM_ERROR_HAS_ASSOCIATE_91                  -26001				/**< 有关联的91账号，不能以游客方式登录 */
-// #define ND_COM_PLATFORM_ERROR_NO_NEED_BECOME_REGULAR			-26002				/**< 非游客登录状态 */
-// #define ND_COM_PLATFORM_ERROR_UIN_INVALID                       -26003              /**< Uin不合法*/
-// #define ND_COM_PLATFORM_ERROR_GUEST_NOT_PERMITTED				-26004				/**< 游客权限不够，需要注册91账号 */
-
-// #define ND_COM_PLATFORM_ERROR_HIGH_FREQUENT_OPERATION			-27001				/**< 操作过于频繁 */
-// #define ND_COM_PLATFORM_ERROR_PROMOTED_APP_NOT_TOUCHED			-27002				/**< 该应用在推广墙上未被点击 */
-
-// #define ND_COM_PLATFORM_ERROR_3RD_AUTH_FAILED					-28001				/**< 验证第三方账号授权失败 */
-// #define ND_COM_PLATFORM_ERROR_3RD_REAUTH_FAILDED				-28002				/**< 验证第三方绑定信息失败 */
-	return "ok";
+	return "unknow_error_code";
 }
-
-
-// /*
-//  *  NdComPlatformError.h
-//  *  NdComPlatform
-//  *
-//  *  Created by Sie Kensou on 10-8-12.
-//  *  Copyright 2010 NetDragon WebSoft Inc.. All rights reserved.
-//  *
-//  */
-
-// /*!
-//  该头文件定义的返回的错误代码编号
-//  */
-
-
-
