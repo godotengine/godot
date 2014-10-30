@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,26 +26,5 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PLATFORM_91_H
-#define PLATFORM_91_H
-
-#include "core/object.h"
-#include "modules/sdk/platform.h"
-
-class Platform91 : public Platform {
-
-    OBJ_TYPE(Platform91, Platform);
-
-protected:
-	virtual String on_request(const String& p_type, const Dictionary& p_params);
-
-public:
-    Platform91();
-    virtual ~Platform91();
-
-	static const char *error_to_string(int p_error);
-};
-
-
-#endif
-
+void register_sdk_types();
+void unregister_sdk_types();

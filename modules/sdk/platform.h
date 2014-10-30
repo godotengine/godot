@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,26 +26,40 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PLATFORM_91_H
-#define PLATFORM_91_H
+#ifdef MODULE_SDK_ENABLED
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 #include "core/object.h"
-#include "modules/sdk/platform.h"
 
-class Platform91 : public Platform {
+class Platform : public Object {
 
-    OBJ_TYPE(Platform91, Platform);
+	OBJ_TYPE(Platform, Object);
+
+	static Platform* instance;
+
+	List<Variant> pending_events;
 
 protected:
+	static void _bind_methods();
+
 	virtual String on_request(const String& p_type, const Dictionary& p_params);
 
 public:
-    Platform91();
-    virtual ~Platform91();
 
-	static const char *error_to_string(int p_error);
+	// request an sdk operation, and return error code(string), ok = success
+	String request(Variant p_params);
+
+	int get_pending_event_count();
+	Variant pop_pending_event();
+	void post_event(Variant p_event);
+
+	static Platform* get_singleton();
+
+	Platform();
+	virtual ~Platform();
 };
 
-
-#endif
+#endif // PLATFORM_H
+#endif // MODULE_SDK_ENABLED
 

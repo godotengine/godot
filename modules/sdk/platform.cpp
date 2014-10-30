@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,26 +26,66 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PLATFORM_91_H
-#define PLATFORM_91_H
+#ifdef MODULE_SDK_ENABLED
 
-#include "core/object.h"
-#include "modules/sdk/platform.h"
+#include "platform.h"
 
-class Platform91 : public Platform {
-
-    OBJ_TYPE(Platform91, Platform);
-
-protected:
-	virtual String on_request(const String& p_type, const Dictionary& p_params);
-
-public:
-    Platform91();
-    virtual ~Platform91();
-
-	static const char *error_to_string(int p_error);
-};
+Platform *Platform::instance = NULL;
 
 
-#endif
+void Platform::_bind_methods() {
 
+ 	ObjectTypeDB::bind_method(_MD("request"),&Platform::request);
+ 	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&Platform::get_pending_event_count);
+ 	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&Platform::pop_pending_event);
+}
+
+String Platform::request(Variant p_params) {
+
+	Dictionary params = p_params;
+	ERR_FAIL_COND_V(!params.has("type"), "invalid_param");
+
+	String type = params["type"];
+
+	return on_request(type, params);
+}
+
+String Platform::on_request(const String& p_type, const Dictionary& p_params) {
+
+	return "ok";
+}
+
+void Platform::post_event(Variant p_event) {
+
+ 	pending_events.push_back(p_event);
+}
+
+int Platform::get_pending_event_count() {
+
+	return pending_events.size();
+}
+
+Variant Platform::pop_pending_event() {
+
+	Variant front = pending_events.front()->get();
+	pending_events.pop_front();
+	return front;
+}
+
+Platform *Platform::get_singleton() {
+
+	return instance;
+}
+
+Platform::Platform() {
+
+	instance = this;
+}
+
+Platform::~Platform() {
+
+	instance = NULL;
+}
+
+
+#endif // MODULE_SDK_ENABLED

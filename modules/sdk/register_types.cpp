@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  game_center.h                                                        */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,26 +26,37 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef PLATFORM_91_H
-#define PLATFORM_91_H
+#ifdef MODULE_SDK_ENABLED
 
-#include "core/object.h"
-#include "modules/sdk/platform.h"
+#include "object_type_db.h"
+#include "core/globals.h"
+#include "register_types.h"
 
-class Platform91 : public Platform {
-
-    OBJ_TYPE(Platform91, Platform);
-
-protected:
-	virtual String on_request(const String& p_type, const Dictionary& p_params);
-
-public:
-    Platform91();
-    virtual ~Platform91();
-
-	static const char *error_to_string(int p_error);
-};
-
-
+#include "platform.h"
+#ifdef PLATFORM_IOS_91_ENABLED
+#include "ios_91/platform_91.h"
 #endif
 
+void register_sdk_types() {
+
+	Platform *platform = NULL;
+#if defined(PLATFORM_IOS_91_ENABLED)
+	platform = memnew(Platform91);
+#elif defined(PLATFROM_IOS_360_ENABLED)
+#else
+	platform = memnew(Platform);
+#endif
+
+	Globals::get_singleton()->add_singleton(Globals::Singleton("Platform", platform));
+}
+
+void unregister_sdk_types() {
+
+}
+
+#else
+
+void register_sdk_types() {}
+void unregister_sdk_types() {}
+
+#endif // MODULE_SDK_ENABLED

@@ -1,9 +1,10 @@
 ﻿Import('env')
+Import('env_modules')
 
-env.add_source_files(env.modules_sources,"*.cpp")
-env.add_source_files(env.modules_sources,"*.mm")
+env_modules.add_source_files(env.modules_sources,"*.cpp")
+env_modules.add_source_files(env.modules_sources,"*.mm")
 
-env.Append(CPPFLAGS=[
+env_modules.Append(CPPFLAGS=[
 	"-F", "modules/sdk/ios_91/SDK",
 	"-F", "modules/sdk/ios_91/SDK/framework",
 ])
