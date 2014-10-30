@@ -1,4 +1,4 @@
-import os
+﻿import os
 
 def add_source_files(self, sources, filetype, lib_env = None, shared = False):
 	import glob;
@@ -1209,12 +1209,21 @@ def detect_modules():
 	register_cpp=""
 	unregister_cpp=""
 
+	script_module_list=[]
+
 	for x in glob.glob("modules/*"):
 		if (not os.path.isdir(x)):
 			continue
 		x=x.replace("modules/","") # rest of world
 		x=x.replace("modules\\","") # win32
-		module_list.append(x)
+		if x.find("script") == -1:
+			module_list.append(x)
+		else:
+			script_module_list.append(x)
+
+	module_list += script_module_list
+
+	for x in module_list:
 		try:
 			with open("modules/"+x+"/register_types.h"):
 				includes_cpp+='#include "modules/'+x+'/register_types.h"\n'
