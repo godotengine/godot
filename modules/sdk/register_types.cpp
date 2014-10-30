@@ -37,21 +37,25 @@
 #include "ios_91/platform_91.h"
 #endif
 
+static Platform *_platform = NULL;
+
 void register_sdk_types() {
 
-	Platform *platform = NULL;
+	ObjectTypeDB::register_type<Platform>();
+
 #if defined(PLATFORM_IOS_91_ENABLED)
-	platform = memnew(Platform91);
+	ObjectTypeDB::register_type<Platform91>();
+	_platform = memnew(Platform91);
 #elif defined(PLATFROM_IOS_360_ENABLED)
 #else
-	platform = memnew(Platform);
+	_platform = memnew(Platform);
 #endif
-
-	Globals::get_singleton()->add_singleton(Globals::Singleton("Platform", platform));
+	Globals::get_singleton()->add_singleton( Globals::Singleton("Platform",_platform ) );
 }
 
 void unregister_sdk_types() {
 
+	memdelete(_platform);
 }
 
 #else
