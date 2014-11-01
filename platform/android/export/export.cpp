@@ -398,8 +398,9 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_normal") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_large") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_xlarge") );
-	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release",PROPERTY_HINT_FILE,"keystore") );
+	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release",PROPERTY_HINT_GLOBAL_FILE,"keystore") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release_user" ) );
+	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release_password" ) );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "apk_expansion/enable" ) );
 	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/SALT" ) );
 	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/public_key",PROPERTY_HINT_MULTILINE_TEXT ) );
