@@ -360,17 +360,19 @@ void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, c
 
 /* TEXTURE API */
 
-Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
+Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
 
 	r_has_alpha_cache=false;
 	r_compressed=false;
+	r_gl_format=0;
 	Image image=p_image;
 
 	switch(p_format) {
 
 		case Image::FORMAT_GRAYSCALE: {
 			r_gl_components=1;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_SLUMINANCE_NV:GL_LUMINANCE;
+			r_gl_format=GL_LUMINANCE;
+			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_SLUMINANCE_NV:GL_LUMINANCE;
 
 		} break;
 		case Image::FORMAT_INTENSITY: {
@@ -378,14 +380,16 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (!image.empty())
 				image.convert(Image::FORMAT_RGBA);
 			r_gl_components=4;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
+			r_gl_format=GL_RGBA;
+			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_ALPHA_EXT:GL_RGBA;
 			r_has_alpha_cache=true;
 		} break;
 		case Image::FORMAT_GRAYSCALE_ALPHA: {
 
 			//image.convert(Image::FORMAT_RGBA);
 			r_gl_components=2;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_SLUMINANCE_ALPHA_NV:GL_LUMINANCE_ALPHA;
+			r_gl_format=GL_LUMINANCE_ALPHA;
+			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_SLUMINANCE_ALPHA_NV:GL_LUMINANCE_ALPHA;
 			r_has_alpha_cache=true;
 		} break;
 
@@ -394,7 +398,8 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (!image.empty())
 				image.convert(Image::FORMAT_RGB);
 			r_gl_components=3;
-			r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_EXT:GL_RGB;
+			r_gl_format=GL_RGB;
+			r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_GL_SRGB_EXT:GL_RGB;
 
 		} break;
 
@@ -407,14 +412,15 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 				if (srgb_supported) {
-					r_gl_format=_GL_SRGB_ALPHA_EXT;
-				} else {
 					r_gl_format=GL_RGBA;
+					r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+				} else {
+					r_gl_internal_format=GL_RGBA;
 					if (!image.empty())
 						image.srgb_to_linear();
 				}
 			} else {
-				r_gl_format=GL_RGBA;
+				r_gl_internal_format=GL_RGBA;
 			}
 			r_has_alpha_cache=true;
 
@@ -426,14 +432,15 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 				if (srgb_supported) {
-					r_gl_format=_GL_SRGB_EXT;
-				} else {
+					r_gl_internal_format=_GL_SRGB_EXT;
 					r_gl_format=GL_RGB;
+				} else {
+					r_gl_internal_format=GL_RGB;
 					if (!image.empty())
 						image.srgb_to_linear();
 				}
 			} else {
-				r_gl_format=GL_RGB;
+				r_gl_internal_format=GL_RGB;
 			}
 		} break;
 		case Image::FORMAT_RGBA: {
@@ -442,14 +449,16 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 			if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 				if (srgb_supported) {
-					r_gl_format=_GL_SRGB_ALPHA_EXT;
-				} else {
+					r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
 					r_gl_format=GL_RGBA;
+					//r_gl_internal_format=GL_RGBA;
+				} else {
+					r_gl_internal_format=GL_RGBA;
 					if (!image.empty())
 						image.srgb_to_linear();
 				}
 			} else {
-				r_gl_format=GL_RGBA;
+				r_gl_internal_format=GL_RGBA;
 			}
 
 			r_has_alpha_cache=true;
@@ -465,21 +474,22 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 			} else {
 
 				r_gl_components=1; //doesn't matter much
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 				r_compressed=true;
 			};
 
@@ -495,20 +505,21 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 			} else {
 				r_gl_components=1; //doesn't matter much
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 
 				r_has_alpha_cache=true;
 				r_compressed=true;
@@ -526,20 +537,21 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 			} else {
 				r_gl_components=1; //doesn't matter much
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_NV:_EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 				r_has_alpha_cache=true;
 				r_compressed=true;
 			};
@@ -556,20 +568,21 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 			} else {
 
-				r_gl_format=_EXT_COMPRESSED_LUMINANCE_LATC1_EXT;
+				r_gl_internal_format=_EXT_COMPRESSED_LUMINANCE_LATC1_EXT;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			};
@@ -586,19 +599,20 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 			} else {
-				r_gl_format=_EXT_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
+				r_gl_internal_format=_EXT_COMPRESSED_LUMINANCE_ALPHA_LATC2_EXT;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			};
@@ -614,21 +628,22 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 
 			} else {
 
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT:_EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_PVRTC_2BPPV1_EXT:_EXT_COMPRESSED_RGB_PVRTC_2BPPV1_IMG;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 
@@ -645,22 +660,23 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 
 			} else {
 
-				r_gl_format=_EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:_EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+				r_gl_internal_format=_EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_PVRTC_2BPPV1_EXT:_EXT_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 
@@ -677,19 +693,20 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 			} else {
 
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:_EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_PVRTC_4BPPV1_EXT:_EXT_COMPRESSED_RGB_PVRTC_4BPPV1_IMG;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			}
@@ -705,19 +722,20 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_ALPHA_EXT;
-					} else {
 						r_gl_format=GL_RGBA;
+						r_gl_internal_format=_GL_SRGB_ALPHA_EXT;
+					} else {
+						r_gl_internal_format=GL_RGBA;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGBA;
+					r_gl_internal_format=GL_RGBA;
 				}
 				r_has_alpha_cache=true;
 
 			} else {
-				r_gl_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:_EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
+				r_gl_internal_format=(srgb_supported && p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR)?_EXT_COMPRESSED_SRGB_ALPHA_PVRTC_4BPPV1_EXT:_EXT_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			}
@@ -734,21 +752,22 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 				if (p_flags&VS::TEXTURE_FLAG_CONVERT_TO_LINEAR) {
 
 					if (srgb_supported) {
-						r_gl_format=_GL_SRGB_EXT;
-					} else {
 						r_gl_format=GL_RGB;
+						r_gl_internal_format=_GL_SRGB_EXT;
+					} else {
+						r_gl_internal_format=GL_RGB;
 						if (!image.empty())
 							image.srgb_to_linear();
 					}
 				} else {
-					r_gl_format=GL_RGB;
+					r_gl_internal_format=GL_RGB;
 				}
-				r_gl_format=GL_RGB;
+				r_gl_internal_format=GL_RGB;
 
 
 			} else {
 
-				r_gl_format=_EXT_ETC1_RGB8_OES;
+				r_gl_internal_format=_EXT_ETC1_RGB8_OES;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			}
@@ -762,12 +781,12 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=3;
-				r_gl_format=GL_RGB;
+				r_gl_internal_format=GL_RGB;
 
 
 			} else {
 
-				r_gl_format=_EXT_ATC_RGB_AMD;
+				r_gl_internal_format=_EXT_ATC_RGB_AMD;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			}
@@ -781,12 +800,12 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=GL_RGBA;
+				r_gl_internal_format=GL_RGBA;
 
 
 			} else {
 
-				r_gl_format=_EXT_ATC_RGBA_EXPLICIT_ALPHA_AMD;
+				r_gl_internal_format=_EXT_ATC_RGBA_EXPLICIT_ALPHA_AMD;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			}
@@ -800,12 +819,12 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 					image.decompress();
 				}
 				r_gl_components=4;
-				r_gl_format=GL_RGBA;
+				r_gl_internal_format=GL_RGBA;
 
 
 			} else {
 
-				r_gl_format=_EXT_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
+				r_gl_internal_format=_EXT_ATC_RGBA_INTERPOLATED_ALPHA_AMD;
 				r_gl_components=1; //doesn't matter much
 				r_compressed=true;
 			}
@@ -816,7 +835,7 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 
 			if (!image.empty())
 				image.convert(Image::FORMAT_RGB);
-			r_gl_format=GL_RGB;
+			r_gl_internal_format=GL_RGB;
 			r_gl_components=3;
 
 		} break;
@@ -825,6 +844,10 @@ Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::For
 
 			ERR_FAIL_V(Image());
 		}
+	}
+
+	if (r_gl_format==0) {
+		r_gl_format=r_gl_internal_format;
 	}
 
 	return image;
@@ -858,6 +881,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	bool has_alpha_cache;
 	int components;
 	GLenum format;
+	GLenum internal_format;
 	bool compressed;
 
 	int po2_width =  nearest_power_of_2(p_width);
@@ -876,7 +900,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	texture->flags=p_flags;
 	texture->target = (p_flags & VS::TEXTURE_FLAG_CUBEMAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,components,has_alpha_cache,compressed);
+	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,internal_format,components,has_alpha_cache,compressed);
 
 	bool scale_textures = !compressed && !(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && (!npo2_textures_available || p_flags&VS::TEXTURE_FLAG_MIPMAPS);
 
@@ -894,6 +918,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 
 	texture->gl_components_cache=components;
 	texture->gl_format_cache=format;
+	texture->gl_internal_format_cache=internal_format;
 	texture->format_has_alpha=has_alpha_cache;
 	texture->compressed=compressed;
 	texture->has_alpha=false; //by default it doesn't have alpha unless something with alpha is blitteds
@@ -908,7 +933,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 
 	if (p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 		//prealloc if video
-		glTexImage2D(texture->target, 0, format, p_width, p_height, 0, format, GL_UNSIGNED_BYTE,NULL);
+		glTexImage2D(texture->target, 0, internal_format, p_width, p_height, 0, format, GL_UNSIGNED_BYTE,NULL);
 	}
 
 	texture->active=true;
@@ -926,6 +951,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	int components;
 	GLenum format;
+	GLenum internal_format;
 	bool alpha;
 	bool compressed;
 
@@ -933,7 +959,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		texture->image[p_cube_side]=p_image;
 	}
 
-	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,components,alpha,compressed);
+	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,internal_format,components,alpha,compressed);
 
 	if (texture->alloc_width != img.get_width() || texture->alloc_height != img.get_height()) {
 
@@ -1017,7 +1043,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 			if (texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 				glTexSubImage2D( blit_target, i, 0,0,w,h,format,GL_UNSIGNED_BYTE,&read[ofs] );
 			} else {
-				glTexImage2D(blit_target, i, format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
+				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
 			}
 
 		}

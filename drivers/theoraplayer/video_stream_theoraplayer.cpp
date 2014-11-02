@@ -306,18 +306,28 @@ int VideoStreamTheoraplayer::get_pending_frame_count() const {
 	if (!clip)
 		return 0;
 
-	if (!frame.empty())
-		return 1;
+	TheoraVideoFrame* f = clip->getNextFrame();
+	return f ? 1 : 0;
+};
+
+
+void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 
 	TheoraVideoFrame* f = clip->getNextFrame();
-	if (!f)
-		return 0;
+	if (!f) {
+		return;
+	};
+
+#ifdef GLES2_ENABLED
+//	RasterizerGLES2* r = RasterizerGLES2::get_singleton();
+//	r->_texture_set_data(p_tex, f->mBpp == 3 ? Image::Format_RGB : Image::Format_RGBA, f->mBpp, w, h, f->getBuffer());
+
+#endif
 
 	float w=clip->getWidth(),h=clip->getHeight();
     int imgsize = w * h * f->mBpp;
 
 	int size = f->getStride() * f->getHeight() * f->mBpp;
-	DVector<uint8_t> data;
 	data.resize(imgsize);
 	DVector<uint8_t>::Write wr = data.write();
     uint8_t* ptr = wr.ptr();
@@ -329,24 +339,32 @@ int VideoStreamTheoraplayer::get_pending_frame_count() const {
         copymem(ptr + dstofs, f->getBuffer() + dstofs, w * f->mBpp);
     };
      */
-	frame = Image();
+	Image frame = Image();
 	frame.create(w, h, 0, f->mBpp == 3 ? Image::FORMAT_RGB : Image::FORMAT_RGBA, data);
 
 	clip->popFrame();
 
-	return 1;
+	if (p_tex->get_width() == 0) {
+		p_tex->create(frame.get_width(),frame.get_height(),frame.get_format(),Texture::FLAG_VIDEO_SURFACE|Texture::FLAG_FILTER);
+		p_tex->set_data(frame);
+	} else {
+
+		p_tex->set_data(frame);
+	};
 };
 
+/*
 Image VideoStreamTheoraplayer::pop_frame() {
 
 	Image ret = frame;
 	frame = Image();
 	return ret;
 };
+*/
 
 Image VideoStreamTheoraplayer::peek_frame() const {
 
-	return frame;
+	return Image();
 };
 
 void VideoStreamTheoraplayer::update(float p_time) {
@@ -386,7 +404,7 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 	if (p_file.find(".mp4") != -1) {
 		
 		std::string file = p_file.replace("res://", "").utf8().get_data();
-		clip = mgr->createVideoClip(file);
+		clip = mgr->createVideoClip(file, TH_BGRX, 16);
 		memdelete(f);
 
 	} else {

@@ -2429,7 +2429,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					id->name=member.identifier;
 
 					OperatorNode *op = alloc_node<OperatorNode>();
-					op->op=OperatorNode::OP_ASSIGN;
+					op->op=OperatorNode::OP_INIT_ASSIGN;
 					op->arguments.push_back(id);
 					op->arguments.push_back(subexpr);
 

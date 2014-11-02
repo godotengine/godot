@@ -243,7 +243,7 @@ void Viewport::update_worlds() {
 
 
 void Viewport::_test_new_mouseover(ObjectID new_collider) {
-
+#ifndef _3D_DISABLED
 	if (new_collider!=physics_object_over) {
 
 		if (physics_object_over) {
@@ -271,7 +271,7 @@ void Viewport::_test_new_mouseover(ObjectID new_collider) {
 		physics_object_over=new_collider;
 
 	}
-
+#endif
 
 }
 
@@ -353,7 +353,7 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_FIXED_PROCESS: {
 
 			if (physics_object_picking) {
-
+#ifndef _3D_DISABLED
 				Vector2 last_pos(1e20,1e20);
 				CollisionObject *last_object;
 				ObjectID last_id=0;
@@ -499,6 +499,7 @@ void Viewport::_notification(int p_what) {
 					}
 
 				}
+#endif
 			}
 
 		} break;

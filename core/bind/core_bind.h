@@ -154,6 +154,8 @@ public:
 
 	bool has_touchscreen_ui_hint() const;
 
+	bool is_debug_build() const;
+
 	String get_unique_ID() const;
 
 	/*

@@ -272,6 +272,10 @@ Error PackedScene::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<
 				continue;
 			}*/
 
+			if (E->get().usage & PROPERTY_USAGE_NO_INSTANCE_STATE) {
+				continue;
+			}
+
 			if (instance_state[name]==value) {
 				continue;
 			}

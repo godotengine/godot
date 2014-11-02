@@ -50,7 +50,7 @@ void InterpolatedCamera::_notification(int p_what) {
 
 				float delta = speed*get_process_delta_time();
 				Transform target_xform = node->get_global_transform();
-				Transform local_transform = get_transform();
+				Transform local_transform = get_global_transform();
 				local_transform = local_transform.interpolate_with(target_xform,delta);
 				set_global_transform(local_transform);
 
@@ -136,7 +136,7 @@ void InterpolatedCamera::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_target_path","target_path"),&InterpolatedCamera::set_target_path);
 	ObjectTypeDB::bind_method(_MD("get_target_path"),&InterpolatedCamera::get_target_path);
-	ObjectTypeDB::bind_method(_MD("set_target","target"),&InterpolatedCamera::_set_target);
+	ObjectTypeDB::bind_method(_MD("set_target","target:Camera"),&InterpolatedCamera::_set_target);
 
 	ObjectTypeDB::bind_method(_MD("set_speed","speed"),&InterpolatedCamera::set_speed);
 	ObjectTypeDB::bind_method(_MD("get_speed"),&InterpolatedCamera::get_speed);

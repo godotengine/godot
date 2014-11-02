@@ -20,7 +20,11 @@ class MeshInstanceEditor : public Node {
 		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE,
 		MENU_OPTION_CREATE_NAVMESH,
+		MENU_OPTION_CREATE_OUTLINE_MESH,
 	};
+
+	ConfirmationDialog *outline_dialog;
+	SpinBox *outline_size;
 
 	AcceptDialog *err_dialog;
 
@@ -33,6 +37,8 @@ class MeshInstanceEditor : public Node {
 
 
 	void _menu_option(int p_option);
+	void _create_outline_mesh();
+
 friend class MeshInstanceEditorPlugin;
 	MenuButton * options;
 

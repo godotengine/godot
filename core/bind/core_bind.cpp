@@ -597,7 +597,15 @@ void _OS::native_video_stop() {
 	OS::get_singleton()->native_video_stop();
 };
 
+bool _OS::is_debug_build() const {
 
+#ifdef DEBUG_ENABLED
+	return true;
+#else
+	return false;
+#endif
+
+}
 String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
@@ -667,6 +675,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_stdout_verbose"),&_OS::is_stdout_verbose);
 
 	ObjectTypeDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
+
+	ObjectTypeDB::bind_method(_MD("is_debug_build"),&_OS::is_debug_build);
 
 	//ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 

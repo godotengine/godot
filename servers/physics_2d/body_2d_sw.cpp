@@ -65,7 +65,13 @@ void Body2DSW::update_inertias() {
 
 				float mass = area * this->mass / total_area;
 
-				_inertia += shape->get_moment_of_inertia(mass) + mass * get_shape_transform(i).get_origin().length_squared();
+				Matrix32 mtx = get_shape_transform(i);
+				Vector2 scale = mtx.get_scale();
+				_inertia += shape->get_moment_of_inertia(mass,scale) + mass * mtx.get_origin().length_squared();
+				//Rect2 ab = get_shape_aabb(i);
+				//_inertia+=mass*ab.size.dot(ab.size)/12.0f;
+
+
 
 			}
 
