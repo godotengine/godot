@@ -386,6 +386,8 @@ void EditorSettings::_load_defaults() {
 
 	set("global/font","");
 	hints["global/font"]=PropertyInfo(Variant::STRING,"global/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
+	set("global/autoscan_project_path","");
+	hints["global/autoscan_project_path"]=PropertyInfo(Variant::STRING,"global/autoscan_project_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/default_project_path","");
 	hints["global/default_project_path"]=PropertyInfo(Variant::STRING,"global/default_project_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/default_project_export_path","");

@@ -973,6 +973,11 @@ ProjectManager::ProjectManager() {
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();
+
+	if ( EditorSettings::get_singleton()->get("global/autoscan_project_path") ) {
+		_scan_begin( EditorSettings::get_singleton()->get("global/autoscan_project_path") );
+	}
+
 	//get_ok()->set_text("Open");
 	//get_ok()->set_text("Exit");
 
