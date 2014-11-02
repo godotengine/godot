@@ -529,6 +529,8 @@ void ProjectExportDialog::_group_selected() {
 
 
 	_update_group(); //?
+
+	_update_group_tree();
 }
 
 String ProjectExportDialog::_get_selected_group() {
@@ -738,6 +740,8 @@ void ProjectExportDialog::_group_changed(Variant v) {
 	EditorNode::get_undo_redo()->add_undo_method(this,"_save_export_cfg");
 	EditorNode::get_undo_redo()->commit_action();
 	updating=false;
+	// update atlas preview button
+	_update_group();
 }
 
 void ProjectExportDialog::_group_item_edited() {
