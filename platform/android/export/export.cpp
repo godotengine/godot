@@ -1238,6 +1238,11 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back("SHA1");
 		args.push_back("-sigalg");
 		args.push_back("MD5withRSA");
+		String tsa_url=EditorSettings::get_singleton()->get("android/timestamping_authority_url");
+		if (tsa_url != "") {
+			args.push_back("-tsa");
+			args.push_back(tsa_url);
+		}
 		args.push_back("-verbose");
 		args.push_back("-keystore");
 		args.push_back(keystore);
@@ -1627,6 +1632,7 @@ void register_android_exporter() {
 	//EDITOR_DEF("android/release_keystore","");
 	//EDITOR_DEF("android/release_username","");
 	//EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/release_keystore",PROPERTY_HINT_GLOBAL_FILE,"*.keystore"));
+	EDITOR_DEF("android/timestamping_authority_url","");
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);
