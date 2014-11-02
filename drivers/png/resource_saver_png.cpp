@@ -30,6 +30,7 @@
 #include "scene/resources/texture.h"
 #include "drivers/png/png.h"
 #include "os/file_access.h"
+#include "globals.h"
 
 static void _write_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {
 
@@ -163,6 +164,42 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 
 	png_write_end(png_ptr, NULL);
 	memdelete(f);
+
+
+	if (true) {
+
+		bool global_filter = Globals::get_singleton()->get("image_loader/filter");
+		bool global_mipmaps = Globals::get_singleton()->get("image_loader/gen_mipmaps");
+		bool global_repeat = Globals::get_singleton()->get("image_loader/repeat");
+
+		String text;
+
+		if (global_filter!=bool(texture->get_flags()&Texture::FLAG_FILTER)) {
+			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"filter=true\n":"filter=false\n";
+		}
+		if (global_mipmaps!=bool(texture->get_flags()&Texture::FLAG_MIPMAPS)) {
+			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"gen_mipmaps=true\n":"gen_mipmaps=false\n";
+		}
+		if (global_repeat!=bool(texture->get_flags()&Texture::FLAG_REPEAT)) {
+			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"repeat=true\n":"repeat=false\n";
+		}
+		if (bool(texture->get_flags()&Texture::FLAG_ANISOTROPIC_FILTER)) {
+			text+="anisotropic=true\n";
+		}
+		if (bool(texture->get_flags()&Texture::FLAG_CONVERT_TO_LINEAR)) {
+			text+="tolinear=true\n";
+		}
+
+		if (text!="" || FileAccess::exists(p_path+".flags")) {
+
+			f = FileAccess::open(p_path+".flags",FileAccess::WRITE);
+			if (f) {
+
+				f->store_string(text);
+				memdelete(f);
+			}
+		}
+	}
 
 
 	/* cleanup heap allocation */

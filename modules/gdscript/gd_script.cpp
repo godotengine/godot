@@ -2448,6 +2448,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"if"	,
 		"in"	,
 		"null"	,
+		"not"	,
 		"return"	,
 		"self"	,
 		"while"	,

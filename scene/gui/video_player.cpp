@@ -45,20 +45,15 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 			if (paused)
 				return;
+			if (!stream->is_playing())
+				return;
 
 			stream->update(get_scene()->get_idle_process_time());
-			while (stream->get_pending_frame_count()) {
-
-				Image img = stream->pop_frame();
-				if (texture->get_width() == 0) {
-					texture->create(img.get_width(),img.get_height(),img.get_format(),Texture::FLAG_VIDEO_SURFACE|Texture::FLAG_FILTER);
-					update();
-					minimum_size_changed();
-				} else {
-
-					if (stream->get_pending_frame_count() == 0)
-						texture->set_data(img);
-				};
+			int prev_width = texture->get_width();
+			stream->pop_frame(texture);
+			if (prev_width == 0) {
+				update();
+				minimum_size_changed();
 			};
 
 		} break;
@@ -257,9 +252,9 @@ void VideoPlayer::_bind_methods() {
 VideoPlayer::VideoPlayer() {
 
 	volume=1;
-	loops=false;
-	paused=false;
-	autoplay=false;
+	loops = false;
+	paused = false;
+	autoplay = false;
 	expand = true;
 	loops = false;
 };

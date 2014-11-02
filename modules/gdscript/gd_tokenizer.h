@@ -122,6 +122,13 @@ public:
 	};
 
 protected:
+
+	enum StringMode {
+		STRING_SINGLE_QUOTE,
+		STRING_DOUBLE_QUOTE,
+		STRING_MULTILINE
+	};
+
 	static const char* token_names[TK_MAX];
 public:
 	static const char *get_token_name(Token p_token);

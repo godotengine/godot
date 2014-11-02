@@ -239,8 +239,7 @@ void GDTokenizerText::_advance() {
 
 
 		bool is_node_path  = false;
-		bool is_string     = false;
-		bool is_string_alt = false;
+		StringMode string_mode=STRING_DOUBLE_QUOTE;
 
 		switch(GETCHAR(0)) {
 			case 0:
@@ -538,22 +537,35 @@ void GDTokenizerText::_advance() {
 				is_node_path=true;
 				
 			case '\'':
-			  is_string_alt = true;
+				string_mode=STRING_SINGLE_QUOTE;
 			case '"': {
-			  is_string = is_string_alt ? false : true;
 
 				int i=1;
+				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
+					i+=2;
+					string_mode=STRING_MULTILINE;
+
+				}
+
+
 				String str;
 				while(true) {
-					if (CharType(GETCHAR(i)==0)) {
+					if (CharType(GETCHAR(i))==0) {
 
 						_make_error("Unterminated String");
 						return;
-					} else if( CharType(GETCHAR(i)=='"') && is_string ) {
+					} else if( string_mode==STRING_DOUBLE_QUOTE && CharType(GETCHAR(i))=='"' ) {
 						break;
-					} else if( CharType(GETCHAR(i)=='\'') && is_string_alt ) {
-					  break;
-					} else if (CharType(GETCHAR(i)=='\\')) {
+					} else if( string_mode==STRING_SINGLE_QUOTE && CharType(GETCHAR(i))=='\'' ) {
+						break;
+					} else if( string_mode==STRING_MULTILINE && CharType(GETCHAR(i))=='\"' &&  CharType(GETCHAR(i+1))=='\"' && CharType(GETCHAR(i+2))=='\"') {
+						i+=2;
+						break;
+					} else if( string_mode!=STRING_MULTILINE && CharType(GETCHAR(i))=='\n') {
+						_make_error("Unexpected EOL at String.");
+						return;
+
+					} else if (CharType(GETCHAR(i))=='\\') {
 						//escaped characters...
 						i++;
 						CharType next = GETCHAR(i);

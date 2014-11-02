@@ -166,6 +166,8 @@ public:
 	Ref<Shape> create_trimesh_shape() const;
 	Ref<Shape> create_convex_shape() const;
 
+	Ref<Mesh> create_outline(float p_margin) const;
+
 	void center_geometry();
 	void regen_normalmaps();
 

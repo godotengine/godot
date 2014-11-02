@@ -1310,6 +1310,8 @@ void EditorNode::_edit_current() {
 	p->add_item("Copy Params",OBJECT_COPY_PARAMS);
 	p->add_item("Set Params",OBJECT_PASTE_PARAMS);
 	p->add_separator();
+	p->add_item("Make Resources Unique",OBJECT_UNIQUE_RESOURCES);
+	p->add_separator();
 	p->add_icon_item(gui_base->get_icon("Help","EditorIcons"),"Class Reference",OBJECT_REQUEST_HELP);
 	List<MethodInfo> methods;
 	current_obj->get_method_list(&methods);
@@ -2022,6 +2024,47 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (current)
 				editor_data.paste_object_params(current);
 			editor_data.get_undo_redo().clear_history();
+		} break;
+		case OBJECT_UNIQUE_RESOURCES: {
+
+			editor_data.apply_changes_in_editors();;
+			if (current) {
+				List<PropertyInfo> props;
+				current->get_property_list(&props);
+				Map<RES,RES> duplicates;
+				for (List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+					if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+						continue;
+
+					Variant v = current->get(E->get().name);
+					if (v.is_ref()) {
+						REF ref = v;
+						if (ref.is_valid()) {
+
+							RES res = ref;
+							if (res.is_valid()) {
+
+								if (!duplicates.has(res)) {
+									duplicates[res]=res->duplicate();
+								}
+								res=duplicates[res];
+
+								current->set(E->get().name,res);
+							}
+
+						}
+					}
+
+				}
+			}
+
+			editor_data.get_undo_redo().clear_history();
+			if (editor_plugin_screen) { //reload editor plugin
+				editor_plugin_over->edit(NULL);
+				editor_plugin_over->edit(current);
+			}
+
 		} break;
 		case OBJECT_CALL_METHOD: {
 		
@@ -3950,8 +3993,8 @@ EditorNode::EditorNode() {
 	Ref<EditorSceneImportPlugin> _scene_import =  memnew(EditorSceneImportPlugin(this) );
 	Ref<EditorSceneImporterCollada> _collada_import = memnew( EditorSceneImporterCollada);
 	_scene_import->add_importer(_collada_import);
-	Ref<EditorSceneImporterFBXConv> _fbxconv_import = memnew( EditorSceneImporterFBXConv);
-	_scene_import->add_importer(_fbxconv_import);
+//	Ref<EditorSceneImporterFBXConv> _fbxconv_import = memnew( EditorSceneImporterFBXConv);
+//	_scene_import->add_importer(_fbxconv_import);
 	editor_import_export->add_import_plugin( _scene_import);
 	editor_import_export->add_import_plugin( Ref<EditorSceneAnimationImportPlugin>( memnew(EditorSceneAnimationImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorMeshImportPlugin>( memnew(EditorMeshImportPlugin(this))));

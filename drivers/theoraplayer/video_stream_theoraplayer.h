@@ -3,6 +3,7 @@
 
 #include "scene/resources/video_stream.h"
 #include "io/resource_loader.h"
+#include "scene/resources/texture.h"
 
 class TheoraVideoManager;
 class TheoraVideoClip;
@@ -11,7 +12,7 @@ class VideoStreamTheoraplayer : public VideoStream {
 
 	OBJ_TYPE(VideoStreamTheoraplayer,VideoStream);
 
-	mutable Image frame;
+	mutable DVector<uint8_t> data;
 	TheoraVideoManager* mgr;
 	TheoraVideoClip* clip;
 	bool started;
@@ -37,7 +38,7 @@ public:
 	virtual float get_length() const;
 
 	virtual int get_pending_frame_count() const;
-	virtual Image pop_frame();
+	virtual void pop_frame(Ref<ImageTexture> p_tex);
 	virtual Image peek_frame() const;
 
 	void update(float p_time);
