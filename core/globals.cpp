@@ -566,9 +566,11 @@ static Variant _decode_variant(const String& p_string) {
 		ERR_FAIL_COND_V(params.size()!=1 && params.size()!=2,Variant());
 		int scode=0;
 
-		if (params[0].is_numeric())
+		if (params[0].is_numeric()) {
 			scode=params[0].to_int();
-		else
+			if (scode<10)
+				scode+=KEY_0;
+		} else
 			scode=find_keycode(params[0]);
 
 		InputEvent ie;
@@ -1358,6 +1360,7 @@ void Globals::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("save"),&Globals::save);
 	ObjectTypeDB::bind_method(_MD("has_singleton"),&Globals::has_singleton);
 	ObjectTypeDB::bind_method(_MD("get_singleton"),&Globals::get_singleton_object);
+	ObjectTypeDB::bind_method(_MD("load_resource_pack"),&Globals::_load_resource_pack);
 }
 
 Globals::Globals() {
@@ -1379,6 +1382,8 @@ Globals::Globals() {
 	set("application/name","" );
 	set("application/main_scene","");
 	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"xml,res,scn,xscn");
+	set("application/disable_stdout",false);
+	set("application/use_shared_user_dir",true);
 
 
 	key.key.scancode=KEY_RETURN;

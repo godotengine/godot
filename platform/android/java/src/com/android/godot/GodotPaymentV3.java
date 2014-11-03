@@ -1,8 +1,6 @@
 package com.android.godot;
 
-
-import org.json.JSONObject;
-
+import com.android.godot.Dictionary;
 import android.app.Activity;
 import android.util.Log;
 
@@ -44,10 +42,20 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	
 	public GodotPaymentV3(Activity p_activity) {
 
-		registerClass("GodotPayments", new String[] {"purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix", "setTransactionId", "getSignature"});
+		registerClass("GodotPayments", new String[] {"purchase", "setPurchaseCallbackId", "setPurchaseValidationUrlPrefix", "setTransactionId", "getSignature", "consumeUnconsumedPurchases"});
 		activity=(Godot) p_activity;
 	}
 
+	public void consumeUnconsumedPurchases(){
+		activity.getPaymentsManager().setBaseSingleton(this);
+		activity.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				activity.getPaymentsManager().consumeUnconsumedPurchases();				
+			}
+		});
+		
+	}
 
 	private String signature;
 	public String getSignature(){
@@ -56,9 +64,19 @@ public class GodotPaymentV3 extends Godot.SingletonBase {
 	
 	
 	public void callbackSuccess(String ticket, String signature){
-	        Log.d(this.getClass().getName(), "PRE-Send callback to purchase success");
-            GodotLib.calldeferred(purchaseCallbackId, "purchase_success", new Object[]{ticket, signature});
-        	Log.d(this.getClass().getName(), "POST-Send callback to purchase success");
+//        Log.d(this.getClass().getName(), "PRE-Send callback to purchase success");
+        GodotLib.callobject(purchaseCallbackId, "purchase_success", new Object[]{ticket, signature});
+//    	Log.d(this.getClass().getName(), "POST-Send callback to purchase success");
+}
+
+	public void callbackSuccessProductMassConsumed(String ticket, String signature, String sku){
+//        Log.d(this.getClass().getName(), "PRE-Send callback to consume success");
+        GodotLib.calldeferred(purchaseCallbackId, "consume_success", new Object[]{ticket, signature, sku});
+//    	Log.d(this.getClass().getName(), "POST-Send callback to consume success");
+	}
+
+	public void callbackSuccessNoUnconsumedPurchases(){
+        GodotLib.calldeferred(purchaseCallbackId, "no_validation_required", new Object[]{});
 	}
 	
 	public void callbackFail(){

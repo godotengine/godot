@@ -87,6 +87,7 @@ public:
 		MAX_PARTICLE_COLOR_PHASES=4,
 		MAX_PARTICLE_ATTRACTORS=4,
 
+
 		MAX_CURSORS = 8,
 	};
 	
@@ -96,8 +97,10 @@ public:
 		TEXTURE_FLAG_MIPMAPS=1, /// Enable automatic mipmap generation - when available
 		TEXTURE_FLAG_REPEAT=2, /// Repeat texture (Tiling), otherwise Clamping
 		TEXTURE_FLAG_FILTER=4, /// Create texure with linear (or available) filter
-		TEXTURE_FLAG_CUBEMAP=8,
-		TEXTURE_FLAG_VIDEO_SURFACE=16,
+		TEXTURE_FLAG_ANISOTROPIC_FILTER=8,
+		TEXTURE_FLAG_CONVERT_TO_LINEAR=16,
+		TEXTURE_FLAG_CUBEMAP=2048,
+		TEXTURE_FLAG_VIDEO_SURFACE=4096,
 		TEXTURE_FLAGS_DEFAULT=TEXTURE_FLAG_REPEAT|TEXTURE_FLAG_MIPMAPS|TEXTURE_FLAG_FILTER
 	};	
 	
@@ -166,6 +169,7 @@ public:
 		MATERIAL_FLAG_UNSHADED,
 		MATERIAL_FLAG_ONTOP,
 		MATERIAL_FLAG_LIGHTMAP_ON_UV2,
+		MATERIAL_FLAG_COLOR_ARRAY_SRGB,
 		MATERIAL_FLAG_MAX,
 	};
 
@@ -229,6 +233,7 @@ public:
 		FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,
 		FIXED_MATERIAL_FLAG_USE_POINT_SIZE,
 		FIXED_MATERIAL_FLAG_DISCARD_ALPHA,
+		FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP,
 		FIXED_MATERIAL_FLAG_MAX,
 	};
 
@@ -585,9 +590,35 @@ public:
 	virtual void baked_light_set_octree(RID p_baked_light,const DVector<uint8_t> p_octree)=0;
 	virtual DVector<uint8_t> baked_light_get_octree(RID p_baked_light) const=0;
 
+	virtual void baked_light_set_light(RID p_baked_light,const DVector<uint8_t> p_light)=0;
+	virtual DVector<uint8_t> baked_light_get_light(RID p_baked_light) const=0;
+
+	virtual void baked_light_set_sampler_octree(RID p_baked_light,const DVector<int> &p_sampler)=0;
+	virtual DVector<int> baked_light_get_sampler_octree(RID p_baked_light) const=0;
+
+	virtual void baked_light_set_lightmap_multiplier(RID p_baked_light,float p_multiplier)=0;
+	virtual float baked_light_get_lightmap_multiplier(RID p_baked_light) const=0;
+
 	virtual void baked_light_add_lightmap(RID p_baked_light,const RID p_texture,int p_id)=0;
 	virtual void baked_light_clear_lightmaps(RID p_baked_light)=0;
 
+	/* BAKED LIGHT SAMPLER */
+
+	virtual RID baked_light_sampler_create()=0;
+
+	enum BakedLightSamplerParam {
+		BAKED_LIGHT_SAMPLER_RADIUS,
+		BAKED_LIGHT_SAMPLER_STRENGTH,
+		BAKED_LIGHT_SAMPLER_ATTENUATION,
+		BAKED_LIGHT_SAMPLER_DETAIL_RATIO,
+		BAKED_LIGHT_SAMPLER_MAX
+	};
+
+	virtual void baked_light_sampler_set_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param,float p_value)=0;
+	virtual float baked_light_sampler_get_param(RID p_baked_light_sampler,BakedLightSamplerParam p_param) const=0;
+
+	virtual void baked_light_sampler_set_resolution(RID p_baked_light_sampler,int p_resolution)=0;
+	virtual int baked_light_sampler_get_resolution(RID p_baked_light_sampler) const=0;
 
 	/* CAMERA API */
 	
@@ -792,6 +823,7 @@ public:
 		SCENARIO_DEBUG_DISABLED,
 		SCENARIO_DEBUG_WIREFRAME,
 		SCENARIO_DEBUG_OVERDRAW,
+		SCENARIO_DEBUG_SHADELESS,
 
 	};
 
@@ -799,7 +831,7 @@ public:
 	virtual void scenario_set_debug(RID p_scenario,ScenarioDebugMode p_debug_mode)=0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment)=0;
 	virtual RID scenario_get_environment(RID p_scenario, RID p_environment) const=0;
-
+	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment)=0;
 
 
 	/* INSTANCING API */
@@ -815,7 +847,8 @@ public:
 		INSTANCE_ROOM,
 		INSTANCE_PORTAL,
 		INSTANCE_BAKED_LIGHT,
-		
+		INSTANCE_BAKED_LIGHT_SAMPLER,
+
 		INSTANCE_GEOMETRY_MASK=(1<<INSTANCE_MESH)|(1<<INSTANCE_MULTIMESH)|(1<<INSTANCE_IMMEDIATE)|(1<<INSTANCE_PARTICLES)
 	};
 	
@@ -889,8 +922,12 @@ public:
 	virtual void instance_geometry_set_baked_light(RID p_instance,RID p_baked_light)=0;
 	virtual RID instance_geometry_get_baked_light(RID p_instance) const=0;
 
+	virtual void instance_geometry_set_baked_light_sampler(RID p_instance,RID p_baked_light_sampler)=0;
+	virtual RID instance_geometry_get_baked_light_sampler(RID p_instance) const=0;
+
 	virtual void instance_geometry_set_baked_light_texture_index(RID p_instance,int p_tex_id)=0;
 	virtual int instance_geometry_get_baked_light_texture_index(RID p_instance) const=0;
+
 
 	virtual void instance_light_set_enabled(RID p_instance,bool p_enabled)=0;
 	virtual bool instance_light_is_enabled(RID p_instance) const=0;
@@ -940,6 +977,7 @@ public:
 	virtual void canvas_item_add_set_transform(RID p_item,const Matrix32& p_transform)=0;
 	virtual void canvas_item_add_set_blend_mode(RID p_item, MaterialBlendMode p_blend)=0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore)=0;
+	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
 
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;

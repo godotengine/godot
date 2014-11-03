@@ -353,6 +353,13 @@ class RasterizerDummy : public Rasterizer {
 
 	mutable RID_Owner<Environment> environment_owner;
 
+	struct SampledLight {
+
+		int w,h;
+	};
+
+	mutable RID_Owner<SampledLight> sampled_light_owner;
+
 	struct ShadowBuffer;
 
 	struct LightInstance {
@@ -471,7 +478,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
@@ -712,6 +719,10 @@ public:
 
 	virtual void environment_fx_set_param(RID p_env,VS::EnvironmentFxParam p_param,const Variant& p_value);
 	virtual Variant environment_fx_get_param(RID p_env,VS::EnvironmentFxParam p_param) const;
+
+	/* SAMPLED LIGHT */
+	virtual RID sampled_light_dp_create(int p_width,int p_height);
+	virtual void sampled_light_dp_update(RID p_sampled_light,const Color *p_data,float p_multiplier);
 
 
 	/*MISC*/

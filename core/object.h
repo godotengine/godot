@@ -81,6 +81,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_BUNDLE=128, //used for optimized bundles
 	PROPERTY_USAGE_CATEGORY=256,
 	PROPERTY_USAGE_STORE_IF_NONZERO=512, //only store if nonzero
+	PROPERTY_USAGE_NO_INSTANCE_STATE=1024,
 
 	PROPERTY_USAGE_DEFAULT=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK|PROPERTY_USAGE_INTERNATIONALIZED,
@@ -571,7 +572,7 @@ public:
 	void get_signal_list(List<MethodInfo> *p_signals ) const;
 	void get_signal_connection_list(const StringName& p_signal,List<Connection> *p_connections) const;
 
-	void connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds=Vector<Variant>(),uint32_t p_flags=0);
+	Error connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds=Vector<Variant>(),uint32_t p_flags=0);
 	void disconnect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method);
 	bool is_connected(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method) const;
 

@@ -204,7 +204,7 @@ private:
 		return idxr;
 	}
 
-	void _transform_track_optimize(int p_idx,float p_allowed_err=0.05);
+	void _transform_track_optimize(int p_idx, float p_allowed_err=0.05, float p_alowed_angular_err=0.01,float p_max_optimizable_angle=Math_PI*0.125);
 
 protected:	
 
@@ -271,7 +271,7 @@ public:
 
 	void clear();
 
-	void optimize(float p_allowed_err=0.05);
+	void optimize(float p_allowed_linear_err=0.05,float p_allowed_angular_err=0.01,float p_max_optimizable_angle=Math_PI*0.125);
 
 	Animation();	
 	~Animation();

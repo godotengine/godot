@@ -47,6 +47,7 @@ class VisualInstance : public Spatial {
 
 	RID _get_visual_instance_rid() const;
 
+
 protected:
 
 
@@ -106,8 +107,10 @@ private:
 	float draw_end;
 	void _find_baked_light();
 	BakedLightInstance *baked_light_instance;
+	int baked_light_texture_id;
 
 	void _baked_light_changed();
+	void _update_visibility();
 protected:
 
 	void _notification(int p_what);
@@ -125,6 +128,9 @@ public:
 
 	void set_material_override(const Ref<Material>& p_material);
 	Ref<Material> get_material_override() const;
+
+	void set_baked_light_texture_id(int p_id);
+	int get_baked_light_texture_id() const;
 
 	GeometryInstance();
 };

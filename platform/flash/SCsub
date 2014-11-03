@@ -8,7 +8,6 @@ common_flash=[\
 	#"dir_access_flash.cpp",
 ]
 
-print("** path is ", env['ENV']['PATH'])
 
 abc = env.Command('#platform/flash/Console.abc', '#platform/flash/Console.as',
 				"""

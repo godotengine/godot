@@ -38,11 +38,23 @@ class PhysicsBody : public CollisionObject {
 
 	OBJ_TYPE(PhysicsBody,CollisionObject);
 
+	uint32_t layer_mask;
 protected:
 
+	static void _bind_methods();
 	void _notification(int p_what);
 	PhysicsBody(PhysicsServer::BodyMode p_mode);
 public:
+
+	virtual Vector3 get_linear_velocity() const;
+	virtual Vector3 get_angular_velocity() const;
+	virtual float get_inverse_mass() const;
+
+	void set_layer_mask(uint32_t p_mask);
+	uint32_t get_layer_mask() const;
+
+	void add_collision_exception_with(Node* p_node); //must be physicsbody
+	void remove_collision_exception_with(Node* p_node);
 
 	PhysicsBody();
 
@@ -52,25 +64,26 @@ class StaticBody : public PhysicsBody {
 
 	OBJ_TYPE(StaticBody,PhysicsBody);
 
-	Transform *pre_xform;
-	//RID query;
-	bool setting;
-	bool pending;
-	bool simulating_motion;
 	Vector3 constant_linear_velocity;
 	Vector3 constant_angular_velocity;
-	void _update_xform();
-	void _state_notify(Object *p_object);
+
+	real_t bounce;
+	real_t friction;
+
 
 protected:
 
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:
 
-	void set_simulate_motion(bool p_enable);
-	bool is_simulating_motion() const;
+
+	void set_friction(real_t p_friction);
+	real_t get_friction() const;
+
+	void set_bounce(real_t p_bounce);
+	real_t get_bounce() const;
+
 
 	void set_constant_linear_velocity(const Vector3& p_vel);
 	void set_constant_angular_velocity(const Vector3& p_vel);
@@ -114,7 +127,7 @@ private:
 
 	Vector3 linear_velocity;
 	Vector3  angular_velocity;
-	bool active;
+	bool sleeping;
 	bool ccd;
 
 	AxisLock axis_lock;
@@ -149,7 +162,7 @@ private:
 	};
 	struct BodyState {
 
-		int rc;
+		//int rc;
 		bool in_scene;
 		VSet<ShapePair> shapes;
 	};
@@ -183,6 +196,8 @@ public:
 	void set_mass(real_t p_mass);
 	real_t get_mass() const;
 
+	virtual float get_inverse_mass() const { return 1.0/mass; }
+
 	void set_weight(real_t p_weight);
 	real_t get_weight() const;
 
@@ -203,8 +218,8 @@ public:
 	void set_use_custom_integrator(bool p_enable);
 	bool is_using_custom_integrator();
 
-	void set_active(bool p_active);
-	bool is_active() const;
+	void set_sleeping(bool p_sleeping);
+	bool is_sleeping() const;
 
 	void set_can_sleep(bool p_active);
 	bool is_able_to_sleep() const;
@@ -231,4 +246,73 @@ public:
 
 VARIANT_ENUM_CAST(RigidBody::Mode);
 VARIANT_ENUM_CAST(RigidBody::AxisLock);
+
+
+
+
+
+class KinematicBody : public PhysicsBody {
+
+	OBJ_TYPE(KinematicBody,PhysicsBody);
+
+	float margin;
+	bool collide_static;
+	bool collide_rigid;
+	bool collide_kinematic;
+	bool collide_character;
+
+	bool colliding;
+	Vector3 collision;
+	Vector3 normal;
+	Vector3 collider_vel;
+	ObjectID collider;
+	int collider_shape;
+
+
+
+	Variant _get_collider() const;
+
+	_FORCE_INLINE_ bool _ignores_mode(PhysicsServer::BodyMode) const;
+protected:
+
+	static void _bind_methods();
+public:
+
+	enum {
+		SLIDE_FLAG_FLOOR,
+		SLIDE_FLAG_WALL,
+		SLIDE_FLAG_ROOF
+	};
+
+	Vector3 move(const Vector3& p_motion);
+	Vector3 move_to(const Vector3& p_position);
+
+	bool can_move_to(const Vector3& p_position,bool p_discrete=false);
+	bool is_colliding() const;
+	Vector3 get_collision_pos() const;
+	Vector3 get_collision_normal() const;
+	Vector3 get_collider_velocity() const;
+	ObjectID get_collider() const;
+	int get_collider_shape() const;
+
+	void set_collide_with_static_bodies(bool p_enable);
+	bool can_collide_with_static_bodies() const;
+
+	void set_collide_with_rigid_bodies(bool p_enable);
+	bool can_collide_with_rigid_bodies() const;
+
+	void set_collide_with_kinematic_bodies(bool p_enable);
+	bool can_collide_with_kinematic_bodies() const;
+
+	void set_collide_with_character_bodies(bool p_enable);
+	bool can_collide_with_character_bodies() const;
+
+	void set_collision_margin(float p_margin);
+	float get_collision_margin() const;
+
+	KinematicBody();
+	~KinematicBody();
+
+};
+
 #endif // PHYSICS_BODY__H

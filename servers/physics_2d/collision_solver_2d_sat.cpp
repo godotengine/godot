@@ -593,8 +593,8 @@ static void _collision_segment_segment(const Shape2DSW* p_a,const Matrix32& p_tr
 	//this collision is kind of pointless
 
 
-	if (!separator.test_previous_axis())
-		return;
+	//if (!separator.test_previous_axis())
+	//	return;
 
 	if (!separator.test_cast())
 		return;
@@ -1085,6 +1085,7 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Matri
 	const ConvexPolygonShape2DSW *convex_B = static_cast<const ConvexPolygonShape2DSW*>(p_b);
 
 	SeparatorAxisTest2D<RectangleShape2DSW,ConvexPolygonShape2DSW,castA,castB,withMargin> separator(rectangle_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b,p_margin_A,p_margin_B);
+
 
 	if (!separator.test_previous_axis())
 		return;

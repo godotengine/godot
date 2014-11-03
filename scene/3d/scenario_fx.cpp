@@ -35,20 +35,35 @@ void WorldEnvironment::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_WORLD) {
 
-		get_world()->set_environment(environment);
+		if (environment.is_valid()) {
+			if (get_world()->get_environment().is_valid()) {
+				WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
+			}
+			get_world()->set_environment(environment);
+		}
+
 	} else if (p_what==NOTIFICATION_EXIT_WORLD) {
 
-		get_world()->set_environment(Ref<Environment>());
+		if (environment.is_valid() && get_world()->get_environment()==environment)
+			get_world()->set_environment(Ref<Environment>());
 	}
 }
 
 void WorldEnvironment::set_environment(const Ref<Environment>& p_environment) {
 
-	environment=p_environment;
-	if (is_inside_world()) {
-		get_world()->set_environment(environment);
+	if (is_inside_world() && environment.is_valid() && get_world()->get_environment()==environment) {
+		get_world()->set_environment(Ref<Environment>());
+		//clean up
 	}
 
+
+	environment=p_environment;
+	if (is_inside_world() && environment.is_valid()) {
+		if (get_world()->get_environment().is_valid()) {
+			WARN_PRINT("World already has an environment (Another WorldEnvironment?), overriding.");
+		}
+		get_world()->set_environment(environment);
+	}
 }
 
 Ref<Environment> WorldEnvironment::get_environment() const {

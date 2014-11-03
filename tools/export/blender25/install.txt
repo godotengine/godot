@@ -5,19 +5,7 @@ Godot Author's Own Collada Exporter
    scripts/addons folder (You will see many other io_scene_blahblah like
    folders). Copy the entire dir, not just the contents, make it just like
    the others.
-2) Go to Blender settings and enable the "Khronos Collada" plugin
+2) Go to Blender settings and enable the "Better Collada" plugin
 3) Enjoy proper Collada export.
-4) If it's broken, you can:
-   a) Flame the Blender developers in their mailing list for changing 
-      the API every month.
-   b) Flame the Blender developers for not giving a home to this script
-      and mantaining it themselves, instead choosing to use the huge,
-      bloated and buggy OpenCollada based implementation that is as big 
-      as Blender itself, while this script is a little over 1000 lines 
-      of code, works better and has more features.
-   c) Cry to the poor Godot developers who are busy enough to fix it,
-      because they are good people and will fix it for you anyway (submit 
-      an issue to github).
-   d) Be a Hero, save the day, fix it yourself and submit a pull request to
-      github with the changes.
+4) If it's broken, contact us.
    

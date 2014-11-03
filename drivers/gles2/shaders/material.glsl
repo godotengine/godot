@@ -4,10 +4,14 @@
 #ifdef USE_GLES_OVER_GL
 #define mediump
 #define highp
+#define roundfix( m_val ) floor( (m_val) + 0.5 )
 #else
 precision mediump float;
 precision mediump int;
 #endif
+
+
+
 /*
 from VisualServer:
 
@@ -21,6 +25,26 @@ ARRAY_BONES=6,
 ARRAY_WEIGHTS=7,
 ARRAY_INDEX=8,
 */
+
+//hack to use uv if no uv present so it works with lightmap
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+#ifdef USE_LIGHTMAP_ON_UV2
+
+#ifndef ENABLE_UV2_INTERP
+#define ENABLE_UV2_INTERP
+#endif
+
+#else
+
+#ifndef ENABLE_UV_INTERP
+#define ENABLE_UV_INTERP
+#endif
+
+#endif
+
+#endif
+
 
 /* INPUT ATTRIBS */
 
@@ -36,7 +60,7 @@ uniform float normal_mult;
 #ifdef USE_SKELETON
 attribute vec4 bone_indices; // attrib:6
 attribute vec4 bone_weights; // attrib:7
-uniform highp sampler2D skeleton_matrices; // texunit:6
+uniform highp sampler2D skeleton_matrices;
 uniform highp float skeltex_pixel_size;
 #endif
 
@@ -52,7 +76,7 @@ attribute highp vec4 instance_row3; // attrib:11
 #ifdef USE_TEXTURE_INSTANCING
 
 attribute highp vec3 instance_uv; // attrib:6
-uniform highp sampler2D instance_matrices; // texunit:6
+uniform highp sampler2D instance_matrices;
 
 #endif
 
@@ -238,6 +262,7 @@ void main() {
 #if defined(ENABLE_TANGENT_INTERP)
 	vec3 tangent_in = tangent_attrib.xyz;
 	tangent_in*=normal_mult;
+	float binormalf = tangent_attrib.a;
 #endif
 
 #ifdef USE_SKELETON
@@ -267,12 +292,22 @@ void main() {
 	normal_interp = normalize((modelview * vec4(normal_in,0.0)).xyz);
 
 #if defined(ENABLE_COLOR_INTERP)
+#ifdef USE_COLOR_ATTRIB_SRGB_TO_LINEAR
+
+	color_interp = vec4(
+		color_attrib.r<0.04045 ? color_attrib.r * (1.0 / 12.92) : pow((color_attrib.r + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.g<0.04045 ? color_attrib.g * (1.0 / 12.92) : pow((color_attrib.g + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.b<0.04045 ? color_attrib.b * (1.0 / 12.92) : pow((color_attrib.b + 0.055) * (1.0 / (1 + 0.055)), 2.4),
+		color_attrib.a
+	);
+#else
 	color_interp = color_attrib;
+#endif
 #endif
 
 #if defined(ENABLE_TANGENT_INTERP)
-	tangent_interp=normalize(tangent_in);
-	binormal_interp = normalize( cross(normal_interp,tangent_interp) * tangent_attrib.a );
+	tangent_interp=normalize((modelview * vec4(tangent_in,0.0)).xyz);
+	binormal_interp = normalize( cross(normal_interp,tangent_interp) * binormalf );
 #endif
 
 #if defined(ENABLE_UV_INTERP)
@@ -446,12 +481,34 @@ VERTEX_SHADER_CODE
 #ifdef USE_GLES_OVER_GL
 #define mediump
 #define highp
+#define roundfix( m_val ) floor( (m_val) + 0.5 )
 #else
 
 precision mediump float;
 precision mediump int;
 
 #endif
+
+
+//hack to use uv if no uv present so it works with lightmap
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+#ifdef USE_LIGHTMAP_ON_UV2
+
+#ifndef ENABLE_UV2_INTERP
+#define ENABLE_UV2_INTERP
+#endif
+
+#else
+
+#ifndef ENABLE_UV_INTERP
+#define ENABLE_UV_INTERP
+#endif
+
+#endif
+
+#endif
+
 
 /* Varyings */
 
@@ -538,13 +595,28 @@ uniform float time;
 varying highp vec3 ambient_octree_coords;
 uniform highp float ambient_octree_lattice_size;
 uniform highp vec2 ambient_octree_pix_size;
+uniform highp vec2 ambient_octree_light_pix_size;
 uniform highp float ambient_octree_lattice_divide;
 uniform highp sampler2D ambient_octree_tex;
+uniform highp sampler2D ambient_octree_light_tex;
 uniform float ambient_octree_multiplier;
 uniform int ambient_octree_steps;
 
 #endif
 
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+uniform highp sampler2D ambient_lightmap;
+uniform float ambient_lightmap_multiplier;
+
+#endif
+
+#ifdef ENABLE_AMBIENT_DP_SAMPLER
+
+uniform highp sampler2D ambient_dp_sampler;
+uniform float ambient_dp_sampler_multiplier;
+
+#endif
 
 FRAGMENT_SHADER_GLOBALS
 
@@ -755,6 +827,12 @@ void main() {
 	vec4 color = color_interp;
 #endif
 
+#if defined(ENABLE_NORMALMAP)
+
+	vec3 normalmap = vec3(0.0);
+#endif
+
+	float normaldepth=1.0;
 
 
 
@@ -769,6 +847,12 @@ FRAGMENT_SHADER_CODE
 
 }
 
+#if defined(ENABLE_NORMALMAP)
+
+	normal = normalize( mix(normal_interp,tangent_interp * normalmap.x + binormal_interp * normalmap.y + normal_interp * normalmap.z,normaldepth) ) * side;
+
+#endif
+
 #if defined(ENABLE_DISCARD)
 	if (discard_) {
 	//easy to eliminate dead code
@@ -782,6 +866,34 @@ FRAGMENT_SHADER_CODE
 		discard;
 	}
 #endif
+
+	float shadow_attenuation = 1.0;
+
+#ifdef ENABLE_AMBIENT_LIGHTMAP
+
+	vec3 ambientmap_color = vec3(0.0,0.0,0.0);
+	vec2 ambientmap_uv = vec2(0.0,0.0);
+
+#ifdef USE_LIGHTMAP_ON_UV2
+
+	ambientmap_uv = uv2_interp;
+
+#else
+
+	ambientmap_uv = uv_interp;
+
+#endif
+
+	vec4 amcol = texture2D(ambient_lightmap,ambientmap_uv);
+	shadow_attenuation=amcol.a;
+	ambientmap_color = amcol.rgb;
+	ambientmap_color*=ambient_lightmap_multiplier;
+	ambientmap_color*=diffuse.rgb;
+
+
+
+#endif
+
 
 #ifdef ENABLE_AMBIENT_OCTREE
 
@@ -814,12 +926,12 @@ FRAGMENT_SHADER_CODE
 		}
 
 		//sample color
-		octant_uv=(octant_uv+0.5)*ambient_octree_pix_size;
+		octant_uv=(octant_uv+0.5)*ambient_octree_light_pix_size;
 		highp vec3 sub=(mod(ambient_octree_coords,ld)/ld);
-		octant_uv.xy+=sub.xy*ambient_octree_pix_size.xy;
-		vec3 col_up=texture2D(ambient_octree_tex,octant_uv).rgb;
-		octant_uv.y+=ambient_octree_pix_size.y*2.0;
-		vec3 col_down=texture2D(ambient_octree_tex,octant_uv).rgb;
+		octant_uv.xy+=sub.xy*ambient_octree_light_pix_size.xy;
+		vec3 col_up=texture2D(ambient_octree_light_tex,octant_uv).rgb;
+		octant_uv.y+=ambient_octree_light_pix_size.y*2.0;
+		vec3 col_down=texture2D(ambient_octree_light_tex,octant_uv).rgb;
 		ambientmap_color=mix(col_up,col_down,sub.z)*ambient_octree_multiplier;
 
 		ambientmap_color*=diffuse.rgb;
@@ -828,8 +940,28 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
-        float shadow_attenuation = 1.0;
 
+
+#ifdef ENABLE_AMBIENT_DP_SAMPLER
+
+	vec3 ambientmap_color = vec3(0.0,0.0,0.0);
+
+	{
+
+		vec3 dp_normal = normalize((vec4(normal,0) * camera_inverse_transform).xyz);
+		vec2 ambient_uv = (dp_normal.xy / (1.0+abs(dp_normal.z)))*0.5+0.5; //dual paraboloid
+		ambient_uv.y*=0.5;
+		if (dp_normal.z<0) {
+
+			ambient_uv.y=(0.5-ambient_uv.y)+0.5;
+
+		}
+
+		ambientmap_color = texture2D(ambient_dp_sampler,ambient_uv ).rgb * ambient_dp_sampler_multiplier;
+		ambientmap_color*=diffuse.rgb;
+	}
+
+#endif
 
 
 
@@ -1060,7 +1192,19 @@ LIGHT_SHADER_CODE
 			light+=specular * light_specular * pow( eye_light, specular_exp );
 		}
 #endif
-		diffuse.rgb = ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
+		diffuse.rgb = const_light_mult * ambient_light *diffuse.rgb + light * attenuation * shadow_attenuation;
+
+#ifdef USE_FOG
+
+		diffuse.rgb = mix(diffuse.rgb,fog_interp.rgb,fog_interp.a);
+
+# if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
+		diffuse.rgb = mix(mix(vec3(0.0),diffuse.rgb,attenuation),diffuse.rgb,const_light_mult);
+# endif
+
+
+#endif
+
 
 	}
 
@@ -1084,9 +1228,10 @@ LIGHT_SHADER_CODE
 
 #ifdef USE_VERTEX_LIGHTING
 
-	vec3 ambient = ambient_light*diffuse.rgb;
+	vec3 ambient = const_light_mult*ambient_light*diffuse.rgb;
 # if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
 	ambient*=diffuse_interp.a; //attenuation affects ambient too
+
 # endif
 
 //	diffuse.rgb=(diffuse.rgb * diffuse_interp.rgb + specular * specular_interp)*shadow_attenuation + ambient;
@@ -1094,10 +1239,20 @@ LIGHT_SHADER_CODE
 	diffuse.rgb=(diffuse.rgb * diffuse_interp.rgb + specular * specular_interp)*shadow_attenuation + ambient;
 	diffuse.rgb+=emission * const_light_mult;
 
+#ifdef USE_FOG
+
+	diffuse.rgb = mix(diffuse.rgb,fog_interp.rgb,fog_interp.a);
+
+# if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
+	diffuse.rgb = mix(mix(vec3(0.0),diffuse.rgb,diffuse_interp.a),diffuse.rgb,const_light_mult);
+# endif
+
+#endif
+
 #endif
 
 
-#ifdef ENABLE_AMBIENT_OCTREE
+#if defined(ENABLE_AMBIENT_OCTREE) || defined(ENABLE_AMBIENT_LIGHTMAP) || defined(ENABLE_AMBIENT_DP_SAMPLER)
 
 	diffuse.rgb+=ambientmap_color;
 #endif
@@ -1120,10 +1275,7 @@ LIGHT_SHADER_CODE
 
 #else
 
-#ifdef USE_FOG
 
-	diffuse.rgb = mix(diffuse.rgb,fog_interp.rgb,fog_interp.a);
-#endif
 
 #ifdef USE_GLOW
 

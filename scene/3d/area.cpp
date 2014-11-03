@@ -255,6 +255,7 @@ bool Area::is_monitoring_enabled() const {
 }
 
 
+
 void Area::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_body_enter_scene","id"),&Area::_body_enter_scene);
@@ -277,6 +278,7 @@ void Area::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area::get_priority);
+
 
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area::is_monitoring_enabled);
@@ -308,6 +310,8 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	density=0.1;
 	priority=0;
 	monitoring=false;
+	set_ray_pickable(false);
+	set_enable_monitoring(true);
 
 }
 

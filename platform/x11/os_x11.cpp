@@ -168,6 +168,55 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
+	// borderless fullscreen window mode
+	if (current_videomode.fullscreen) {
+		// needed for lxde/openbox, possibly others
+		Hints hints;
+		Atom property;
+		hints.flags = 2;
+		hints.decorations = 0;
+		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+		XMapRaised(x11_display, x11_window);
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+
+		// code for netwm-compliants
+		XEvent xev;
+		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+
+		memset(&xev, 0, sizeof(xev));
+		xev.type = ClientMessage;
+		xev.xclient.window = x11_window;
+		xev.xclient.message_type = wm_state;
+		xev.xclient.format = 32;
+		xev.xclient.data.l[0] = 1;
+		xev.xclient.data.l[1] = fullscreen;
+		xev.xclient.data.l[2] = 0;
+
+		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	}
+
+	// disable resizeable window
+	if (!current_videomode.resizable) {
+		XSizeHints *xsh;
+		xsh = XAllocSizeHints();
+		xsh->flags = PMinSize | PMaxSize;
+		XWindowAttributes xwa;
+		if (current_videomode.fullscreen) {
+			XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+		} else {
+			XGetWindowAttributes(x11_display,x11_window,&xwa);
+		}
+		xsh->min_width = xwa.width; 
+		xsh->max_width = xwa.width;
+		xsh->min_height = xwa.height;
+		xsh->max_height = xwa.height;
+		XSetWMNormalHints(x11_display, x11_window, xsh);
+	}
+
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
@@ -382,7 +431,6 @@ void OS_X11::finalize() {
 
 void OS_X11::set_mouse_mode(MouseMode p_mode) {
 
-	print_line("WUTF "+itos(p_mode)+" old "+itos(mouse_mode));
 	if (p_mode==mouse_mode)
 		return;
 
@@ -409,6 +457,19 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 		center.y = current_videomode.height/2;
 		XWarpPointer(x11_display, None, x11_window,
 			      0,0,0,0, (int)center.x, (int)center.y);
+	}
+
+}
+
+void OS_X11::warp_mouse_pos(const Point2& p_to) {
+
+	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		last_mouse_pos=p_to;
+	} else {
+
+		XWarpPointer(x11_display, None, x11_window,
+			      0,0,0,0, (int)p_to.x, (int)p_to.y);
 	}
 
 }
@@ -1046,10 +1107,12 @@ void OS_X11::close_joystick(int p_id) {
 		close(joysticks[p_id].fd);
 		joysticks[p_id].fd = -1;
 	};
+	input->joy_connection_changed(p_id, false, "");
 };
 
 void OS_X11::probe_joystick(int p_id) {
 	#ifndef __FreeBSD__
+
 	if (p_id == -1) {
 
 		for (int i=0; i<JOYSTICKS_MAX; i++) {
@@ -1059,7 +1122,8 @@ void OS_X11::probe_joystick(int p_id) {
 		return;
 	};
 
-	close_joystick(p_id);
+	if (joysticks[p_id].fd != -1)
+		close_joystick(p_id);
 
 	const char *joy_names[] = {
 		"/dev/input/js%d",
@@ -1072,12 +1136,22 @@ void OS_X11::probe_joystick(int p_id) {
 
 		char fname[64];
 		sprintf(fname, joy_names[i], p_id);
-		int fd = open(fname, O_RDONLY);
+		int fd = open(fname, O_RDONLY|O_NONBLOCK);
 		if (fd != -1) {
 
-			fcntl( fd, F_SETFL, O_NONBLOCK );
+			//fcntl( fd, F_SETFL, O_NONBLOCK );
 			joysticks[p_id] = Joystick(); // this will reset the axis array
 			joysticks[p_id].fd = fd;
+
+			String name;
+			char namebuf[255] = {0};
+			if (ioctl(fd, JSIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
+				name = namebuf;
+			} else {
+				name = "error";
+			};
+
+			input->joy_connection_changed(p_id, true, name);
 			break; // don't try the next name
 		};
 
@@ -1098,8 +1172,11 @@ void OS_X11::process_joysticks() {
 	InputEvent ievent;
 	for (int i=0; i<JOYSTICKS_MAX; i++) {
 
-		if (joysticks[i].fd == -1)
-			continue;
+		if (joysticks[i].fd == -1) {
+			probe_joystick(i);
+			if (joysticks[i].fd == -1)
+				continue;
+		};
 		ievent.device = i;
 
 		while ( (bytes = read(joysticks[i].fd, &events, sizeof(events))) > 0) {
@@ -1117,8 +1194,9 @@ void OS_X11::process_joysticks() {
 
 				case JS_EVENT_AXIS:
 
-					if (joysticks[i].last_axis[event.number] != event.value) {
+					//if (joysticks[i].last_axis[event.number] != event.value) {
 
+						/*
 						if (event.number==5 || event.number==6) {
 
 							int axis=event.number-5;
@@ -1165,17 +1243,19 @@ void OS_X11::process_joysticks() {
 							dpad_last[axis]=val;
 
 						}
+						*/
 						//print_line("ev: "+itos(event.number)+" val: "+ rtos((float)event.value / (float)MAX_JOY_AXIS));
-						if (event.number >= JOY_AXIS_MAX)
-							break;
+						//if (event.number >= JOY_AXIS_MAX)
+						//	break;
 						//ERR_FAIL_COND(event.number >= JOY_AXIS_MAX);
 						ievent.type = InputEvent::JOYSTICK_MOTION;
 						ievent.ID = ++event_id;
-						ievent.joy_motion.axis = _pc_joystick_get_native_axis(event.number);
+						ievent.joy_motion.axis = event.number; //_pc_joystick_get_native_axis(event.number);
 						ievent.joy_motion.axis_value = (float)event.value / (float)MAX_JOY_AXIS;
-						joysticks[i].last_axis[event.number] = event.value;
+						if (event.number < JOY_AXIS_MAX)
+							joysticks[i].last_axis[event.number] = event.value;
 						input->parse_input_event( ievent );
-					};
+					//};
 					break;
 
 				case JS_EVENT_BUTTON:
@@ -1183,12 +1263,15 @@ void OS_X11::process_joysticks() {
 
 					ievent.type = InputEvent::JOYSTICK_BUTTON;
 					ievent.ID = ++event_id;
-					ievent.joy_button.button_index = _pc_joystick_get_native_button(event.number);
+					ievent.joy_button.button_index = event.number; // _pc_joystick_get_native_button(event.number);
 					ievent.joy_button.pressed = event.value;
 					input->parse_input_event( ievent );
 					break;
 				};
 			};
+		};
+		if (bytes == 0 || (bytes < 0 && errno != EAGAIN)) {
+			close_joystick(i);
 		};
 	};
 	#endif

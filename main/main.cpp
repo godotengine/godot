@@ -43,7 +43,7 @@
 #include "io/resource_loader.h"
 #include "scene/main/scene_main_loop.h"
 
-#include "scene/io/scene_loader.h"
+
 #include "script_language.h"
 #include "io/resource_loader.h"
 
@@ -57,6 +57,7 @@
 #include "tools/editor/editor_node.h"
 #include "tools/editor/project_manager.h"
 #include "tools/editor/console.h"
+#include "tools/pck/pck_packer.h"
 #endif
 
 #include "io/file_access_network.h"
@@ -152,6 +153,7 @@ void Main::print_help(const char* p_binary) {
 	OS::get_singleton()->print("\t-d,-debug : Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("\t-rdebug ADDRESS : Remote debug (<ip>:<port> host address).\n");
 	OS::get_singleton()->print("\t-fdelay [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
+	OS::get_singleton()->print("\t-timescale [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
 	OS::get_singleton()->print("\t-bp : breakpoint list as source::line comma separated pairs, no spaces (%%20,%%2C,etc instead).\n");
 	OS::get_singleton()->print("\t-v : Verbose stdout mode\n");
 	OS::get_singleton()->print("\t-lang [locale]: Use a specific locale\n");
@@ -225,6 +227,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	String debug_mode;
 	String debug_host;
 	String main_pack;
+	bool quiet_stdout=false;
 	int rtm=-1;
 
 	String remotefs;
@@ -373,6 +376,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
+		} else if (I->get()=="-quiet") { // fullscreen
+
+			quiet_stdout=true;
 		} else if (I->get()=="-v") { // fullscreen
 			OS::get_singleton()->_verbose_stdout=true;
 		} else if (I->get()=="-path") { // resolution
@@ -409,6 +415,17 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			if (I->next()) {
 
 				OS::get_singleton()->set_frame_delay(I->next()->get().to_int());
+				N=I->next()->next();
+			} else {
+				goto error;
+
+			}
+
+		} else if (I->get()=="-timescale") { // resolution
+
+			if (I->next()) {
+
+				OS::get_singleton()->set_time_scale(I->next()->get().to_double());
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -570,6 +587,13 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		use_custom_res=false;
 	}
 
+	if (bool(Globals::get_singleton()->get("application/disable_stdout"))) {
+		quiet_stdout=true;
+	}
+
+	if (quiet_stdout)
+		_print_line_enabled=false;
+
 	OS::get_singleton()->set_cmdline(execpath, main_args);
 
 #ifdef TOOLS_ENABLED
@@ -593,12 +617,22 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (use_custom_res && globals->has("display/resizable"))
 		video_mode.resizable=globals->get("display/resizable");
 
+	if (!force_res && use_custom_res && globals->has("display/test_width") && globals->has("display/test_height")) {
+		int tw = globals->get("display/test_width");
+		int th = globals->get("display/test_height");
+		if (tw>0 && th>0) {
+			video_mode.width=tw;
+			video_mode.height=th;
+		}
+	}
 
 
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);
 	GLOBAL_DEF("display/resizable",video_mode.resizable);
+	GLOBAL_DEF("display/test_width",0);
+	GLOBAL_DEF("display/test_height",0);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
 	}
@@ -777,6 +811,7 @@ Error Main::setup2() {
 
 #ifdef TOOLS_ENABLED
 	EditorNode::register_editor_types();
+	ObjectTypeDB::register_type<PCKPacker>(); // todo: move somewhere else
 #endif
 
 	MAIN_PRINT("Main: Load Scripts, Modules, Drivers");
@@ -1096,10 +1131,6 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 			if (editor) {
 
-#ifdef OLD_SCENE_FORMAT_ENABLED
-				if (convert_old)
-					editor_node->set_convert_old_scene(true);
-#endif
 
 				if (_import!="") {
 
@@ -1178,14 +1209,6 @@ bool Main::start() {
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
 					scene=scenedata->instance();
-
-#ifdef OLD_SCENE_FORMAT_ENABLED
-
-				if (!scene) {
-					scene = SceneLoader::load(local_game_path,true);
-				}
-
-#endif
 
 				ERR_EXPLAIN("Failed loading scene: "+local_game_path);
 				ERR_FAIL_COND_V(!scene,false)
@@ -1269,6 +1292,8 @@ bool Main::iteration() {
 
 	time_accum+=step;
 
+	float time_scale = OS::get_singleton()->get_time_scale();
+
 	bool exit=false;
 
 
@@ -1284,15 +1309,15 @@ bool Main::iteration() {
 		Physics2DServer::get_singleton()->sync();
 		Physics2DServer::get_singleton()->flush_queries();
 
-		if (OS::get_singleton()->get_main_loop()->iteration( frame_slice )) {
+		if (OS::get_singleton()->get_main_loop()->iteration( frame_slice*time_scale )) {
 			exit=true;
 			break;
 		}
 
 		message_queue->flush();
 
-		PhysicsServer::get_singleton()->step(frame_slice);
-		Physics2DServer::get_singleton()->step(frame_slice);
+		PhysicsServer::get_singleton()->step(frame_slice*time_scale);
+		Physics2DServer::get_singleton()->step(frame_slice*time_scale);
 
 		time_accum-=frame_slice;
 		message_queue->flush();
@@ -1305,13 +1330,13 @@ bool Main::iteration() {
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	OS::get_singleton()->get_main_loop()->idle( step );
+	OS::get_singleton()->get_main_loop()->idle( step*time_scale );
 	message_queue->flush();
 
 	if (SpatialSoundServer::get_singleton())
-		SpatialSoundServer::get_singleton()->update( step );
+		SpatialSoundServer::get_singleton()->update( step*time_scale );
 	if (SpatialSound2DServer::get_singleton())
-		SpatialSound2DServer::get_singleton()->update( step );
+		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
 	if (OS::get_singleton()->can_draw()) {

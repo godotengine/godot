@@ -33,6 +33,7 @@
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
 	p_delimiters->push_back("#");
+	p_delimiters->push_back("\"\"\"");
 
 }
 void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
@@ -114,6 +115,7 @@ int GDScriptLanguage::find_function(const String& p_function,const String& p_cod
 		if (tokenizer.get_token()==GDTokenizer::TK_NEWLINE) {
 			indent=tokenizer.get_token_line_indent();
 		}
+		//print_line("TOKEN: "+String(GDTokenizer::get_token_name(tokenizer.get_token())));
 		if (indent==0 && tokenizer.get_token()==GDTokenizer::TK_PR_FUNCTION && tokenizer.get_token(1)==GDTokenizer::TK_IDENTIFIER) {
 
 			String identifier = tokenizer.get_token_identifier(1);
@@ -122,6 +124,8 @@ int GDScriptLanguage::find_function(const String& p_function,const String& p_cod
 			}
 		}
 		tokenizer.advance();
+		//print_line("NEXT: "+String(GDTokenizer::get_token_name(tokenizer.get_token())));
+
 	}
 	return -1;
 }
@@ -247,12 +251,12 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level,List<String> *p
     ERR_FAIL_COND( script.is_null() );
 
 
-    const Map<StringName,int>& mi = script->debug_get_member_indices();
+    const Map<StringName,GDScript::MemberInfo>& mi = script->debug_get_member_indices();
 
-    for(const Map<StringName,int>::Element *E=mi.front();E;E=E->next()) {
+    for(const Map<StringName,GDScript::MemberInfo>::Element *E=mi.front();E;E=E->next()) {
 
 	p_members->push_back(E->key());
-	p_values->push_back( instance->debug_get_member_by_index(E->get()));
+	p_values->push_back( instance->debug_get_member_by_index(E->get().index));
     }
 
 }

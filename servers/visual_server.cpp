@@ -486,7 +486,7 @@ void VisualServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("instances_cull_aabb"),&VisualServer::instances_cull_aabb);
 	ObjectTypeDB::bind_method(_MD("instances_cull_ray"),&VisualServer::instances_cull_ray);
-	ObjectTypeDB::bind_method(_MD("instances_cull_convex"),&VisualServer::instances_cull_ray);
+	ObjectTypeDB::bind_method(_MD("instances_cull_convex"),&VisualServer::instances_cull_convex);
 
 
 
@@ -534,6 +534,7 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("mesh_add_surface_from_planes"),&VisualServer::mesh_add_surface_from_planes);
 
 	ObjectTypeDB::bind_method(_MD("draw"),&VisualServer::draw);
+	ObjectTypeDB::bind_method(_MD("flush"),&VisualServer::flush);
 	ObjectTypeDB::bind_method(_MD("free"),&VisualServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_default_clear_color"),&VisualServer::set_default_clear_color);

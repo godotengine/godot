@@ -150,6 +150,7 @@ public:
 	String get_slice(String p_splitter,int p_slice) const;
 
 	Vector<String> split(const String &p_splitter,bool p_allow_empty=true) const;
+	Vector<String> split_spaces() const;
 	Vector<float> split_floats(const String &p_splitter,bool p_allow_empty=true) const;
 	Vector<float> split_floats_mk(const Vector<String> &p_splitters,bool p_allow_empty=true) const;
 	Vector<int> split_ints(const String &p_splitter,bool p_allow_empty=true) const;
@@ -183,7 +184,8 @@ public:
 	uint32_t hash() const; /* hash the string */
 	uint64_t hash64() const; /* hash the string */	
 	String md5_text() const;
-	
+	Vector<uint8_t> md5_buffer() const;
+
 	inline bool empty() const { return length() == 0; }	
 
 	// path functions

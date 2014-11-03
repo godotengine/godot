@@ -50,6 +50,9 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
+	void add_collision_exception_with(Node* p_node); //must be physicsbody
+	void remove_collision_exception_with(Node* p_node);
+
 	PhysicsBody2D();
 
 };
@@ -119,7 +122,7 @@ private:
 
 	Vector2 linear_velocity;
 	real_t angular_velocity;
-	bool active;
+	bool sleeping;
 
 
 	int max_contacts_reported;
@@ -153,7 +156,7 @@ private:
 	};
 	struct BodyState {
 
-		int rc;
+		//int rc;
 		bool in_scene;
 		VSet<ShapePair> shapes;
 	};
@@ -206,8 +209,8 @@ public:
 	void set_use_custom_integrator(bool p_enable);
 	bool is_using_custom_integrator();
 
-	void set_active(bool p_active);
-	bool is_active() const;
+	void set_sleeping(bool p_sleeping);
+	bool is_sleeping() const;
 
 	void set_can_sleep(bool p_active);
 	bool is_able_to_sleep() const;
@@ -251,7 +254,8 @@ class KinematicBody2D : public PhysicsBody2D {
 	Vector2 normal;
 	Vector2 collider_vel;
 	ObjectID collider;
-
+	int collider_shape;
+	Variant collider_metadata;
 
 	Variant _get_collider() const;
 
@@ -270,6 +274,8 @@ public:
 	Vector2 get_collision_normal() const;
 	Vector2 get_collider_velocity() const;
 	ObjectID get_collider() const;
+	int get_collider_shape() const;
+	Variant get_collider_metadata() const;
 
 	void set_collide_with_static_bodies(bool p_enable);
 	bool can_collide_with_static_bodies() const;

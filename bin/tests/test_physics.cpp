@@ -92,7 +92,7 @@ protected:
 		RID mesh_instance = vs->instance_create2(type_mesh_map[p_shape],scenario);
 		RID body = ps->body_create(p_body,!p_active_default);		
 		ps->body_set_space(body,space);
-		ps->body_set_param(body,PhysicsServer::BODY_PARAM_BOUNCE,0.5);
+		ps->body_set_param(body,PhysicsServer::BODY_PARAM_BOUNCE,0.0);
 		//todo set space
 		ps->body_add_shape(body,type_shape_map[p_shape]);		
 		ps->body_set_force_integration_callback(body,this,"body_changed_transform",mesh_instance);

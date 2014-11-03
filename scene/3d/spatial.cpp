@@ -438,8 +438,12 @@ Ref<SpatialGizmo> Spatial::get_gizmo() const {
 void Spatial::_update_gizmo() {
 
 	data.gizmo_dirty=false;
-	if (data.gizmo.is_valid())
-		data.gizmo->redraw();
+	if (data.gizmo.is_valid()) {
+		if (is_visible())
+			data.gizmo->redraw();
+		else
+			data.gizmo->clear();
+	}
 }
 
 
@@ -506,6 +510,90 @@ Transform Spatial::get_import_transform() const {
 #endif
 
 
+void Spatial::_propagate_visibility_changed() {
+
+	notification(NOTIFICATION_VISIBILITY_CHANGED);
+	emit_signal(SceneStringNames::get_singleton()->visibility_changed);
+	_change_notify("visibility/visible");
+#ifdef TOOLS_ENABLED
+	if (data.gizmo.is_valid())
+		_update_gizmo();
+#endif
+
+	for (List<Spatial*>::Element*E=data.children.front();E;E=E->next()) {
+
+		Spatial *c=E->get();
+		if (!c || !c->data.visible)
+			continue;
+		c->_propagate_visibility_changed();
+	}
+}
+
+
+void Spatial::show() {
+
+	if (data.visible)
+		return;
+
+	data.visible=true;
+
+	if (!is_inside_scene())
+		return;
+
+	if (!data.parent || is_visible()) {
+
+		_propagate_visibility_changed();
+	}
+}
+
+void Spatial::hide(){
+
+	if (!data.visible)
+		return;
+
+	bool was_visible = is_visible();
+	data.visible=false;
+
+	if (!data.parent || was_visible) {
+
+		_propagate_visibility_changed();
+	}
+
+}
+bool Spatial::is_visible() const{
+
+	const Spatial *s=this;
+
+	while(s) {
+		if (!s->data.visible) {
+			return false;
+		}
+		s=s->data.parent;
+	}
+
+	return true;
+}
+
+
+bool Spatial::is_hidden() const{
+
+	return !data.visible;
+}
+
+void Spatial::_set_visible_(bool p_visible) {
+
+	if (p_visible)
+		show();
+	else
+		hide();
+}
+
+bool Spatial::_is_visible_() const {
+
+	return !is_hidden();
+}
+
+
 void Spatial::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_transform","local"), &Spatial::set_transform);
@@ -537,9 +625,18 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_gizmo","gizmo:SpatialGizmo"), &Spatial::set_gizmo);
 	ObjectTypeDB::bind_method(_MD("get_gizmo:SpatialGizmo"), &Spatial::get_gizmo);
 
+	ObjectTypeDB::bind_method(_MD("show"), &Spatial::show);
+	ObjectTypeDB::bind_method(_MD("hide"), &Spatial::hide);
+	ObjectTypeDB::bind_method(_MD("is_visible"), &Spatial::is_visible);
+	ObjectTypeDB::bind_method(_MD("is_hidden"), &Spatial::is_hidden);
+
+	ObjectTypeDB::bind_method(_MD("_set_visible_"), &Spatial::_set_visible_);
+	ObjectTypeDB::bind_method(_MD("_is_visible_"), &Spatial::_is_visible_);
+
 	BIND_CONSTANT( NOTIFICATION_TRANSFORM_CHANGED );
 	BIND_CONSTANT( NOTIFICATION_ENTER_WORLD );
 	BIND_CONSTANT( NOTIFICATION_EXIT_WORLD );
+	BIND_CONSTANT( NOTIFICATION_VISIBILITY_CHANGED );
 
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/global",PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR ), _SCS("set_global_transform"), _SCS("get_global_transform") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::TRANSFORM,"transform/local",PROPERTY_HINT_NONE,""), _SCS("set_transform"), _SCS("get_transform") );
@@ -547,7 +644,10 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("_set_rotation_deg"), _SCS("_get_rotation_deg") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation_rad",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), _SCS("set_transform"), _SCS("get_transform") );
+
+	ADD_SIGNAL( MethodInfo("visibility_changed" ) );
 
 }
 
@@ -564,6 +664,7 @@ Spatial::Spatial() : xform_change(this)
 	data.scale=Vector3(1,1,1);
 	data.viewport=NULL;
 	data.inside_world=false;
+	data.visible=true;
 #ifdef TOOLS_ENABLED
 	data.gizmo_disabled=false;
 	data.gizmo_dirty=false;

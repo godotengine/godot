@@ -29,7 +29,7 @@
 #include "body_pair_sw.h"
 #include "collision_solver_sw.h"
 #include "space_sw.h"
-
+#include "os/os.h"
 
 /*
 #define NO_ACCUMULATE_IMPULSES
@@ -174,6 +174,11 @@ void BodyPairSW::validate_contacts() {
 
 bool BodyPairSW::setup(float p_step) {
 
+	//cannot collide
+	if (A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && A->get_max_contacts_reported()==0 && B->get_max_contacts_reported()==0)) {
+		collided=false;
+		return false;
+	}
 
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
@@ -197,10 +202,6 @@ bool BodyPairSW::setup(float p_step) {
 		return false;
 
 
-	//cannot collide
-	if (A->has_exception(B->get_self()) || B->has_exception(A->get_self()) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {
-		return false;
-	}
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
 
@@ -217,6 +218,7 @@ bool BodyPairSW::setup(float p_step) {
 	}
 
 
+
 	real_t inv_dt = 1.0/p_step;
 
 	for(int i=0;i<contact_count;i++) {
@@ -226,6 +228,7 @@ bool BodyPairSW::setup(float p_step) {
 
 		Vector3 global_A = xform_Au.xform(c.local_A);
 		Vector3 global_B = xform_Bu.xform(c.local_B);
+
 
 		real_t depth = c.normal.dot(global_A - global_B);
 
@@ -264,6 +267,14 @@ bool BodyPairSW::setup(float p_step) {
 			B->add_contact(global_B,c.normal,depth,shape_B,global_A,shape_A,A->get_instance_id(),A->get_self(),crA);
 		}
 
+		if (A->is_shape_set_as_trigger(shape_A) || B->is_shape_set_as_trigger(shape_B) || (A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC)) {
+			c.active=false;
+			collided=false;
+			continue;
+
+		}
+
+
 		c.active=true;
 
 		// Precompute normal mass, tangent mass, and bias.
@@ -294,6 +305,17 @@ bool BodyPairSW::setup(float p_step) {
 		Vector3 jb_vec = c.normal * c.acc_bias_impulse;
 		A->apply_bias_impulse( c.rA, -jb_vec );
 		B->apply_bias_impulse( c.rB, jb_vec );
+
+		c.bounce = MAX(A->get_bounce(),B->get_bounce());
+		if (c.bounce) {
+
+			Vector3 crA = A->get_angular_velocity().cross( c.rA );
+			Vector3 crB = B->get_angular_velocity().cross( c.rB );
+			Vector3 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
+			//normal impule
+			c.bounce = c.bounce * dv.dot(c.normal);
+		}
+
 
 	}
 
@@ -347,8 +369,7 @@ void BodyPairSW::solve(float p_step) {
 
 		if (Math::abs(vn)>MIN_VELOCITY) {
 
-			real_t bounce=0;
-			real_t jn = (-bounce -vn)*c.mass_normal;
+			real_t jn = -(c.bounce + vn)*c.mass_normal;
 			real_t jnOld = c.acc_normal_impulse;
 			c.acc_normal_impulse = MAX(jnOld + jn, 0.0f);
 

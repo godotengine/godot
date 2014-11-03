@@ -1286,16 +1286,16 @@ void Object::get_signal_connection_list(const StringName& p_signal,List<Connecti
 }
 
 
-void Object::connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds,uint32_t p_flags) {
+Error Object::connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds,uint32_t p_flags) {
 
-	ERR_FAIL_NULL(p_to_object);
+	ERR_FAIL_NULL_V(p_to_object,ERR_INVALID_PARAMETER);
 
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
 		if (!signal_is_valid) {
 			ERR_EXPLAIN("Attempt to connect to unexisting signal: "+p_signal);
-			ERR_FAIL_COND(!signal_is_valid);
+			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();
 		s=&signal_map[p_signal];
@@ -1304,7 +1304,7 @@ void Object::connect(const StringName& p_signal, Object *p_to_object, const Stri
 	Signal::Target target(p_to_object->get_instance_ID(),p_to_method);
 	if (s->slot_map.has(target)) {
 		ERR_EXPLAIN("Signal '"+p_signal+"'' already connected to given method '"+p_to_method+"' in that object.");
-		ERR_FAIL_COND(s->slot_map.has(target));
+		ERR_FAIL_COND_V(s->slot_map.has(target),ERR_INVALID_PARAMETER);
 	}
 
 	Signal::Slot slot;
@@ -1319,6 +1319,8 @@ void Object::connect(const StringName& p_signal, Object *p_to_object, const Stri
 	slot.conn=conn;
 	slot.cE=p_to_object->connections.push_back(conn);
 	s->slot_map[target]=slot;
+
+	return OK;
 }
 
 bool Object::is_connected(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method) const {
@@ -1487,7 +1489,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_block_signals","enable"),&Object::set_block_signals);
 	ObjectTypeDB::bind_method(_MD("is_blocking_signals"),&Object::is_blocking_signals);
 	ObjectTypeDB::bind_method(_MD("set_message_translation","enable"),&Object::set_message_translation);
-	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::set_message_translation);
+	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::can_translate_messages);
 	ObjectTypeDB::bind_method(_MD("property_list_changed_notify"),&Object::property_list_changed_notify);
 
 	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
@@ -1503,10 +1505,12 @@ void Object::_bind_methods() {
 	BIND_VMETHOD( miget );
 
 	MethodInfo plget("_get_property_list");
+
 	plget.return_val.type=Variant::ARRAY;
 	BIND_VMETHOD( plget );
 
 #endif
+	BIND_VMETHOD( MethodInfo("_init") );
 
 
 

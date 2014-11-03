@@ -121,11 +121,12 @@ static void register_editor_plugin() {
 
 void register_gdscript_types() {
 
+	ObjectTypeDB::register_type<GDScript>();
+	ObjectTypeDB::register_virtual_type<GDFunctionState>();
 
 	script_language_gd=memnew( GDScriptLanguage );
 	script_language_gd->init();
 	ScriptServer::register_language(script_language_gd);
-	ObjectTypeDB::register_type<GDScript>();
 	resource_loader_gd=memnew( ResourceFormatLoaderGDScript );
 	ResourceLoader::add_resource_format_loader(resource_loader_gd);
 	resource_saver_gd=memnew( ResourceFormatSaverGDScript );

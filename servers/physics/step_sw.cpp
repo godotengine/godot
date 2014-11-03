@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "step_sw.h"
-
+#include "joints_sw.h"
 
 void StepSW::_populate_island(BodySW* p_body,BodySW** p_island,ConstraintSW **p_constraint_island) {
 
@@ -49,7 +49,7 @@ void StepSW::_populate_island(BodySW* p_body,BodySW** p_island,ConstraintSW **p_
 			if (i==E->get())
 				continue;
 			BodySW *b = c->get_body_ptr()[i];
-			if (b->get_island_step()==_step || b->get_mode()==PhysicsServer::BODY_MODE_STATIC)
+			if (b->get_island_step()==_step || b->get_mode()==PhysicsServer::BODY_MODE_STATIC || b->get_mode()==PhysicsServer::BODY_MODE_KINEMATIC)
 				continue; //no go
 			_populate_island(c->get_body_ptr()[i],p_island,p_constraint_island);
 		}
@@ -68,14 +68,41 @@ void StepSW::_setup_island(ConstraintSW *p_island,float p_delta) {
 
 void StepSW::_solve_island(ConstraintSW *p_island,int p_iterations,float p_delta){
 
-	for(int i=0;i<p_iterations;i++) {
+	int at_priority=1;
 
-		ConstraintSW *ci=p_island;
-		while(ci) {
-			ci->solve(p_delta);
-			ci=ci->get_island_next();
+	while(p_island) {
+
+		for(int i=0;i<p_iterations;i++) {
+
+			ConstraintSW *ci=p_island;
+			while(ci) {
+				ci->solve(p_delta);
+				ci=ci->get_island_next();
+			}
+		}
+
+		at_priority++;
+
+		{
+			ConstraintSW *ci=p_island;
+			ConstraintSW *prev=NULL;
+			while(ci) {
+				if (ci->get_priority()<at_priority) {
+					if (prev) {
+						prev->set_island_next(ci->get_island_next()); //remove
+					} else {
+						p_island=ci->get_island_next();
+					}
+				} else {
+
+					prev=ci;
+				}
+
+				ci=ci->get_island_next();
+			}
 		}
 	}
+
 }
 
 void StepSW::_check_suspend(BodySW *p_island,float p_delta) {
@@ -86,8 +113,10 @@ void StepSW::_check_suspend(BodySW *p_island,float p_delta) {
 	BodySW *b = p_island;
 	while(b) {
 
-		if (b->get_mode()==PhysicsServer::BODY_MODE_STATIC)
+		if (b->get_mode()==PhysicsServer::BODY_MODE_STATIC || b->get_mode()==PhysicsServer::BODY_MODE_KINEMATIC) {
+			b=b->get_island_next();
 			continue; //ignore for static
+		}
 
 		if (!b->sleep_test(p_delta))
 			can_sleep=false;
@@ -100,8 +129,10 @@ void StepSW::_check_suspend(BodySW *p_island,float p_delta) {
 	b = p_island;
 	while(b) {
 
-		if (b->get_mode()==PhysicsServer::BODY_MODE_STATIC)
+		if (b->get_mode()==PhysicsServer::BODY_MODE_STATIC || b->get_mode()==PhysicsServer::BODY_MODE_KINEMATIC) {
+			b=b->get_island_next();
 			continue; //ignore for static
+		}
 
 		bool active = b->is_active();
 
@@ -131,6 +162,7 @@ void StepSW::step(SpaceSW* p_space,float p_delta,int p_iterations) {
 		active_count++;
 	}
 
+	p_space->set_active_objects(active_count);
 
 
 	/* GENERATE CONSTRAINT ISLANDS */
@@ -163,6 +195,8 @@ void StepSW::step(SpaceSW* p_space,float p_delta,int p_iterations) {
 		}
 		b=b->next();
 	}
+
+	p_space->set_island_count(island_count);
 
 	const SelfList<AreaSW>::List &aml = p_space->get_moved_area_list();
 
@@ -207,9 +241,9 @@ void StepSW::step(SpaceSW* p_space,float p_delta,int p_iterations) {
 
 	b = body_list->first();
 	while(b) {
-
+		const SelfList<BodySW>*n=b->next();
 		b->self()->integrate_velocities(p_delta);
-		b=b->next();
+		b=n;
 	}
 
 	/* SLEEP / WAKE UP ISLANDS */

@@ -19,8 +19,8 @@
 #include <string.h>
 
 #include "./backward_references.h"
-#include "../webp/format_constants.h"
-#include "../webp/types.h"
+#include "../format_constants.h"
+#include "../types.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

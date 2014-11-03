@@ -72,6 +72,9 @@ void CollisionShape2D::_notification(int p_what) {
 
 	switch(p_what) {
 
+		case NOTIFICATION_ENTER_SCENE: {
+			unparenting=false;
+		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
 			if (!is_inside_scene())

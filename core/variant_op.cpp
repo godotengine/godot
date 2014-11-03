@@ -1145,6 +1145,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 			if (p_value.type!=Variant::VECTOR3)
 				return;
 
+
 			if (p_index.get_type()==Variant::STRING) {
 				//scalar name
 
@@ -1179,6 +1180,24 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					valid=true;
 					v->set_axis(index,p_value);
+					return;
+				}
+			} else if (p_index.get_type()==Variant::STRING) {
+
+				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
+				Matrix3 *v=_data._matrix3;
+
+				if (*str=="x") {
+					valid=true;
+					v->set_axis(0,p_value);
+					return;
+				} else if (*str=="y" ) {
+					valid=true;
+					v->set_axis(1,p_value);
+					return;
+				} else if (*str=="z" ) {
+					valid=true;
+					v->set_axis(2,p_value);
 					return;
 				}
 			}
@@ -2020,6 +2039,21 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 
 					valid=true;
 					return v->get_axis(index);
+				}
+			} else if (p_index.get_type()==Variant::STRING) {
+
+				const String *str=reinterpret_cast<const String*>(p_index._data._mem);
+				const Matrix3 *v=_data._matrix3;
+
+				if (*str=="x") {
+					valid=true;
+					return v->get_axis(0);
+				} else if (*str=="y" ) {
+					valid=true;
+					return v->get_axis(1);
+				} else if (*str=="z" ) {
+					valid=true;
+					return v->get_axis(2);
 				}
 			}
 
@@ -3354,7 +3388,59 @@ void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r
 		case INT_ARRAY:{   r_dst=a;    } return;
 		case REAL_ARRAY:{   r_dst=a;    } return;
 		case STRING_ARRAY:{   r_dst=a;    } return;
-		case VECTOR3_ARRAY:{  r_dst=a;     } return;
+		case VECTOR2_ARRAY:{
+			const DVector<Vector2> *arr_a=reinterpret_cast<const DVector<Vector2>* >(a._data._mem);
+			const DVector<Vector2> *arr_b=reinterpret_cast<const DVector<Vector2>* >(b._data._mem);
+			int sz = arr_a->size();
+			if (sz==0 || arr_b->size()!=sz) {
+
+				r_dst=a;
+			} else {
+
+				DVector<Vector2> v;
+				v.resize(sz);
+				{
+					DVector<Vector2>::Write vw=v.write();
+					DVector<Vector2>::Read ar=arr_a->read();
+					DVector<Vector2>::Read br=arr_b->read();
+
+					for(int i=0;i<sz;i++) {
+						vw[i]=ar[i].linear_interpolate(br[i],c);
+					}
+				}
+				r_dst=v;
+
+			}
+
+
+		} return;
+		case VECTOR3_ARRAY:{
+
+
+			const DVector<Vector3> *arr_a=reinterpret_cast<const DVector<Vector3>* >(a._data._mem);
+			const DVector<Vector3> *arr_b=reinterpret_cast<const DVector<Vector3>* >(b._data._mem);
+			int sz = arr_a->size();
+			if (sz==0 || arr_b->size()!=sz) {
+
+				r_dst=a;
+			} else {
+
+				DVector<Vector3> v;
+				v.resize(sz);
+				{
+					DVector<Vector3>::Write vw=v.write();
+					DVector<Vector3>::Read ar=arr_a->read();
+					DVector<Vector3>::Read br=arr_b->read();
+
+					for(int i=0;i<sz;i++) {
+						vw[i]=ar[i].linear_interpolate(br[i],c);
+					}
+				}
+				r_dst=v;
+
+			}
+
+		} return;
 		case COLOR_ARRAY:{  r_dst=a;     } return;
 		default: {
 

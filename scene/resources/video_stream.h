@@ -30,21 +30,39 @@
 #define VIDEO_STREAM_H
 
 #include "audio_stream_resampled.h"
+#include "scene/resources/texture.h"
 
 
+class VideoStream : public Resource {
 
-class VideoStream : public AudioStreamResampled {
-
-	OBJ_TYPE(VideoStream,AudioStreamResampled);
+	OBJ_TYPE(VideoStream,Resource);
 
 protected:
 	static void _bind_methods();
 
 public:
 
+	virtual void stop()=0;
+	virtual void play()=0;
+
+	virtual bool is_playing() const=0;
+
+	virtual void set_paused(bool p_paused)=0;
+	virtual bool is_paused(bool p_paused) const=0;
+
+	virtual void set_loop(bool p_enable)=0;
+	virtual bool has_loop() const=0;
+
+	virtual float get_length() const=0;
+
+	virtual float get_pos() const=0;
+	virtual void seek_pos(float p_time)=0;
+
 	virtual int get_pending_frame_count() const=0;
-	virtual Image pop_frame()=0;
+	virtual void pop_frame(Ref<ImageTexture> p_tex)=0;
 	virtual Image peek_frame() const=0;
+
+	virtual void update(float p_time)=0;
 
 	VideoStream();
 };

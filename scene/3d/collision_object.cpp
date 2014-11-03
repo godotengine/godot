@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "collision_object.h"
 #include "servers/physics_server.h"
-
+#include "scene/scene_string_names.h"
 void CollisionObject::_update_shapes_from_children() {
 
 	shapes.resize(0);
@@ -53,8 +53,9 @@ void CollisionObject::_notification(int p_what) {
 			} else
 				PhysicsServer::get_singleton()->body_set_space(rid,space);
 
+			_update_pickable();
 		//get space
-		}
+		};
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
@@ -62,6 +63,11 @@ void CollisionObject::_notification(int p_what) {
 				PhysicsServer::get_singleton()->area_set_transform(rid,get_global_transform());
 			else
 				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform());
+
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+
+			_update_pickable();
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -91,11 +97,11 @@ void CollisionObject::_update_shapes() {
 			continue;
 		if (area)
 			PhysicsServer::get_singleton()->area_add_shape(rid,shapes[i].shape->get_rid(),shapes[i].xform);
-        else {
+		else {
 			PhysicsServer::get_singleton()->body_add_shape(rid,shapes[i].shape->get_rid(),shapes[i].xform);
-            if (shapes[i].trigger)
-                PhysicsServer::get_singleton()->body_set_shape_as_trigger(rid,i,shapes[i].trigger);
-        }
+			if (shapes[i].trigger)
+				PhysicsServer::get_singleton()->body_set_shape_as_trigger(rid,i,shapes[i].trigger);
+		}
 	}
 }
 
@@ -154,16 +160,66 @@ bool CollisionObject::_get(const StringName& p_name,Variant &r_ret) const {
 
 void CollisionObject::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR) );
+	p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
 
 	for(int i=0;i<shapes.size();i++) {
 		String path="shapes/"+itos(i)+"/";
-		p_list->push_back( PropertyInfo(Variant::OBJECT,path+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape",PROPERTY_USAGE_NOEDITOR) );
-		p_list->push_back( PropertyInfo(Variant::TRANSFORM,path+"transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
-        p_list->push_back( PropertyInfo(Variant::BOOL,path+"trigger",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
+		p_list->push_back( PropertyInfo(Variant::OBJECT,path+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
+		p_list->push_back( PropertyInfo(Variant::TRANSFORM,path+"transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
+		p_list->push_back( PropertyInfo(Variant::BOOL,path+"trigger",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
 
 	}
 }
+
+
+void CollisionObject::_input_event(Node *p_camera, const InputEvent& p_input_event, const Vector3& p_pos, const Vector3& p_normal, int p_shape) {
+
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_input_event,p_camera,p_input_event,p_pos,p_normal,p_shape);
+	}
+	emit_signal(SceneStringNames::get_singleton()->input_event,p_camera,p_input_event,p_pos,p_normal,p_shape);
+}
+
+void CollisionObject::_mouse_enter() {
+
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_enter);
+}
+
+
+void CollisionObject::_mouse_exit() {
+
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_exit);
+
+}
+
+void CollisionObject::_update_pickable() {
+	if (!is_inside_scene())
+		return;
+	bool pickable = ray_pickable && is_inside_scene() && is_visible();
+	if (area)
+		PhysicsServer::get_singleton()->area_set_ray_pickable(rid,pickable);
+	else
+		PhysicsServer::get_singleton()->body_set_ray_pickable(rid,pickable);
+}
+
+void CollisionObject::set_ray_pickable(bool p_ray_pickable) {
+
+	ray_pickable=p_ray_pickable;
+	_update_pickable();
+
+}
+
+bool CollisionObject::is_ray_pickable() const {
+
+	return ray_pickable;
+}
+
 
 void CollisionObject::_bind_methods() {
 
@@ -178,8 +234,19 @@ void CollisionObject::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shape_transform","shape_idx"),&CollisionObject::get_shape_transform);
 	ObjectTypeDB::bind_method(_MD("remove_shape","shape_idx"),&CollisionObject::remove_shape);
 	ObjectTypeDB::bind_method(_MD("clear_shapes"),&CollisionObject::clear_shapes);
+	ObjectTypeDB::bind_method(_MD("set_ray_pickable","ray_pickable"),&CollisionObject::set_ray_pickable);
+	ObjectTypeDB::bind_method(_MD("is_ray_pickable"),&CollisionObject::is_ray_pickable);
+	ObjectTypeDB::bind_method(_MD("set_capture_input_on_drag","enable"),&CollisionObject::set_capture_input_on_drag);
+	ObjectTypeDB::bind_method(_MD("get_capture_input_on_drag"),&CollisionObject::get_capture_input_on_drag);
 	ObjectTypeDB::bind_method(_MD("get_rid"),&CollisionObject::get_rid);
+	BIND_VMETHOD( MethodInfo("_input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
 
+	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::OBJECT,"camera"),PropertyInfo(Variant::INPUT_EVENT,"event"),PropertyInfo(Variant::VECTOR3,"click_pos"),PropertyInfo(Variant::VECTOR3,"click_normal"),PropertyInfo(Variant::INT,"shape_idx")));
+	ADD_SIGNAL( MethodInfo("mouse_enter"));
+	ADD_SIGNAL( MethodInfo("mouse_exit"));
+
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"input/ray_pickable"),_SCS("set_ray_pickable"),_SCS("is_ray_pickable"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"input/capture_on_drag"),_SCS("set_capture_input_on_drag"),_SCS("get_capture_input_on_drag"));
 }
 
 
@@ -260,6 +327,8 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 
 	rid=p_rid;
 	area=p_area;
+	capture_input_on_drag=false;
+	ray_pickable=true;
 	if (p_area) {
 		PhysicsServer::get_singleton()->area_attach_object_instance_ID(rid,get_instance_ID());
 	} else {
@@ -269,9 +338,23 @@ CollisionObject::CollisionObject(RID p_rid, bool p_area) {
 
 }
 
+void CollisionObject::set_capture_input_on_drag(bool p_capture) {
+
+	capture_input_on_drag=p_capture;
+
+}
+
+bool CollisionObject::get_capture_input_on_drag() const {
+
+	return capture_input_on_drag;
+}
+
 
 CollisionObject::CollisionObject() {
 
+
+	capture_input_on_drag=false;
+	ray_pickable=true;
 
 	//owner=
 

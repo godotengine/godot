@@ -29,28 +29,15 @@
 #ifndef SHADER_GRAPH_H
 #define SHADER_GRAPH_H
 
-
-#include "map.h"
-
 #if 0
 
-class Shader : public Resource {
+#include "map.h"
+#include "scene/resources/shader.h"
 
-	OBJ_TYPE( Shader, Resource );
+class ShaderGraph : public Resource {
+
+	OBJ_TYPE( ShaderGraph, Resource );
 	RES_BASE_EXTENSION("sgp");
-	RID shader;
-	Map<int,Point2> positions;
-	uint64_t version;
-
-protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-
-	static void _bind_methods();
-
-	Array _get_connections_helper() const;
 
 public:
 
@@ -116,18 +103,13 @@ public:
 		NODE_TYPE_MAX
 	};
 
-	void node_add(NodeType p_type,int p_id);
-	void node_remove(int p_id);
-	void node_set_param( int p_id, const Variant& p_value);
-	void node_set_pos(int p_id,const Point2& p_pos);
-	Point2 node_get_pos(int p_id) const;
+	enum ShaderType {
+		SHADER_VERTEX,
+		SHADER_FRAGMENT,
+		SHADER_LIGHT
+	};
 
-	void get_node_list(List<int> *p_node_list) const;
-	NodeType node_get_type(int p_id) const;
-	Variant node_get_param(int p_id) const;
-
-	void connect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
-	void disconnect(int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
+private:
 
 	struct Connection {
 
@@ -137,40 +119,79 @@ public:
 		int dst_slot;
 	};
 
-	void get_connections(List<Connection> *p_connections) const;
+	struct Node {
+
+		int16_t x,y;
+		NodeType type;
+		Variant param;
+		int id;
+		mutable int order; // used for sorting
+		mutable bool out_valid;
+		mutable bool in_valid;
+	};
+
+	struct ShaderData {
+		Map<int,Node> node_map;
+		List<Connection> connections;
+	} shader[3];
+	uint64_t version;
+
+protected:
+
+/*	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;*/
+
+	static void _bind_methods();
+
+	Array _get_connections_helper() const;
+
+public:
+
+
+	void node_add(ShaderType p_which, NodeType p_type,int p_id);
+	void node_remove(ShaderType p_which,int p_id);
+	void node_set_param(ShaderType p_which, int p_id, const Variant& p_value);
+	void node_set_pos(ShaderType p_which,int p_id,const Point2& p_pos);
+	void node_change_type(ShaderType p_which,int p_id, NodeType p_type);
+	Point2 node_get_pos(ShaderType p_which,int p_id) const;
+
+	void get_node_list(ShaderType p_which,List<int> *p_node_list) const;
+	NodeType node_get_type(ShaderType p_which,int p_id) const;
+	Variant node_get_param(ShaderType p_which,int p_id) const;
+
+	Error connect(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
+	bool is_connected(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) const;
+	void disconnect(ShaderType p_which,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot);
+
+	void get_connections(ShaderType p_which,List<Connection> *p_connections) const;
 
 	void clear();
 
-	virtual RID get_rid() const { return shader; }
-
 	uint64_t get_version() const { return version; }
 
-	Shader();
-	~Shader();
+	static void get_default_input_nodes(Mode p_type,List<PropertyInfo> *p_inputs);
+	static void get_default_output_nodes(Mode p_type,List<PropertyInfo> *p_outputs);
+
+	static PropertyInfo node_get_type_info(NodeType p_type);
+	static int get_input_count(NodeType p_type);
+	static int get_output_count(NodeType p_type);
+	static String get_input_name(NodeType p_type,int p_input);
+	static String get_output_name(NodeType p_type,int p_output);
+	static bool is_input_vector(NodeType p_type,int p_input);
+	static bool is_output_vector(NodeType p_type,int p_input);
+
+
+	ShaderGraph();
+	~ShaderGraph();
 };
 
-enum ShaderType {
-	SHADER_VERTEX,
-	SHADER_FRAGMENT,
-	SHADER_POST_PROCESS
-};
 //helper functions
 
-static void shader_get_default_input_nodes(ShaderType p_type,List<PropertyInfo> *p_inputs);
-static void shader_get_default_output_nodes(ShaderType p_type,List<PropertyInfo> *p_outputs);
-
-static PropertyInfo shader_node_get_type_info(ShaderNodeType p_type);
-static int shader_get_input_count(ShaderNodeType p_type);
-static int shader_get_output_count(ShaderNodeType p_type);
-static String shader_get_input_name(ShaderNodeType p_type,int p_input);
-static String shader_get_output_name(ShaderNodeType p_type,int p_output);
-static bool shader_is_input_vector(ShaderNodeType p_type,int p_input);
-static bool shader_is_output_vector(ShaderNodeType p_type,int p_input);
 
 
-VARIANT_ENUM_CAST( Shader::NodeType );
 
+VARIANT_ENUM_CAST( ShaderGraph::NodeType );
 
 #endif
-
 #endif // SHADER_GRAPH_H

@@ -49,7 +49,15 @@
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
 
-//bitch
+// Hints for X11 fullscreen
+typedef struct {
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	long inputMode;
+	unsigned long status;
+} Hints;
+
 #undef CursorShape
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -171,6 +179,7 @@ public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
+	virtual void warp_mouse_pos(const Point2& p_to);
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);

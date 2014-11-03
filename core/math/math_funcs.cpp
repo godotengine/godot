@@ -76,7 +76,7 @@ void Math::seed(uint32_t x) {
 void Math::randomize() {
 
 	OS::Time time = OS::get_singleton()->get_time();
-	seed(OS::get_singleton()->get_ticks_usec()*time.hour*time.min*time.sec*rand()); /* *OS::get_singleton()->get_time().sec); // windows doesn't have get_time(), returns always 0 */
+	seed(OS::get_singleton()->get_ticks_usec()*(time.hour+1)*(time.min+1)*(time.sec+1)*rand()); /* *OS::get_singleton()->get_time().sec); // windows doesn't have get_time(), returns always 0 */
 }
 
 uint32_t Math::rand() {

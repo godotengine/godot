@@ -14,8 +14,8 @@
 
 #include "./histogram.h"
 #include "../utils/bit_writer.h"
-#include "../webp/encode.h"
-#include "../webp/format_constants.h"
+#include "../encode.h"
+#include "../format_constants.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

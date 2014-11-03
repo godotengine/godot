@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "node.h"
 #include "print_string.h"
-#include "scene/io/scene_loader.h"
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 #include "scene/resources/packed_scene.h"
@@ -1107,7 +1106,7 @@ void Node::get_groups(List<GroupInfo> *p_groups) const {
 
 void Node::_print_tree(const Node *p_node) {
 
-	printf("%ls\n", String(p_node->get_path_to(this)).c_str());
+	print_line(String(p_node->get_path_to(this)));
 	for (int i=0;i<data.children.size();i++)
 		data.children[i]->_print_tree(p_node);
 }
@@ -1235,7 +1234,7 @@ void Node::generate_instance_state() {
 	for( List<PropertyInfo>::Element *E=properties.front();E;E=E->next() ) {
 
 		PropertyInfo &pi=E->get();
-		if (!(pi.usage&PROPERTY_USAGE_EDITOR) || !(pi.usage&PROPERTY_USAGE_STORAGE))
+		if ((pi.usage&PROPERTY_USAGE_NO_INSTANCE_STATE) || !(pi.usage&PROPERTY_USAGE_EDITOR) || !(pi.usage&PROPERTY_USAGE_STORAGE))
 			continue;
 
 		data.instance_state[pi.name]=get(pi.name);
@@ -1424,6 +1423,20 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 	ERR_FAIL_COND_V(!node,NULL);
 
 	node->set_name(get_name());
+
+	List<PropertyInfo> plist;
+
+	get_property_list(&plist);
+
+	for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+			continue;
+		String name = E->get().name;
+		node->set( name, get(name) );
+
+	}
+
 
 	for(int i=0;i<get_child_count();i++) {
 

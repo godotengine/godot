@@ -84,7 +84,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const=0;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const=0;
-	virtual real_t get_moment_of_inertia(float p_mass) const=0;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const=0;
 
 	virtual void set_data(const Variant& p_data)=0;
 	virtual Variant get_data() const=0;
@@ -173,7 +173,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -215,7 +215,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -262,7 +262,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -299,7 +299,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -338,20 +338,25 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
 
 	_FORCE_INLINE_ void project_range(const Vector2& p_normal, const Matrix32& p_transform, real_t &r_min, real_t &r_max) const {
 		// no matter the angle, the box is mirrored anyway
-		Vector2 local_normal=p_transform.basis_xform_inv(p_normal);
+		r_max=-1e20;
+		r_min=1e20;
+		for(int i=0;i<4;i++) {
 
-		float length = local_normal.abs().dot(half_extents);
-		float distance = p_normal.dot( p_transform.get_origin() );
+			real_t d=p_normal.dot(p_transform.xform(Vector2( ((i&1)*2-1)*half_extents.x, ((i>>1)*2-1)*half_extents.y )));
 
-		r_min = distance - length;
-		r_max = distance + length;
+			if (d>r_max)
+				r_max=d;
+			if (d<r_min)
+				r_min=d;
+
+		}
 	}
 
 
@@ -420,7 +425,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -482,7 +487,7 @@ public:
 	virtual void get_supports(const Vector2& p_normal,Vector2 *r_supports,int & r_amount) const;
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
-	virtual real_t get_moment_of_inertia(float p_mass) const;
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const;
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -570,7 +575,7 @@ public:
 
 	virtual bool intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const;
 
-	virtual real_t get_moment_of_inertia(float p_mass) const { return 0; }
+	virtual real_t get_moment_of_inertia(float p_mass,const Vector2& p_scale) const { return 0; }
 
 	virtual void set_data(const Variant& p_data);
 	virtual Variant get_data() const;
@@ -582,5 +587,6 @@ public:
 
 };
 
+#undef DEFAULT_PROJECT_RANGE_CAST
 
 #endif // SHAPE_2D_2DSW_H

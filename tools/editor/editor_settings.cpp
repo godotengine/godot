@@ -30,7 +30,7 @@
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "io/object_format_xml.h"
+
 #include "version.h"
 #include "scene/main/scene_main_loop.h"
 #include "os/os.h"
@@ -386,6 +386,12 @@ void EditorSettings::_load_defaults() {
 
 	set("global/font","");
 	hints["global/font"]=PropertyInfo(Variant::STRING,"global/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
+	set("global/autoscan_project_path","");
+	hints["global/autoscan_project_path"]=PropertyInfo(Variant::STRING,"global/autoscan_project_path",PROPERTY_HINT_GLOBAL_DIR);
+	set("global/default_project_path","");
+	hints["global/default_project_path"]=PropertyInfo(Variant::STRING,"global/default_project_path",PROPERTY_HINT_GLOBAL_DIR);
+	set("global/default_project_export_path","");
+	hints["global/default_project_export_path"]=PropertyInfo(Variant::STRING,"global/default_project_export_path",PROPERTY_HINT_GLOBAL_DIR);
 
 	set("text_editor/background_color",Color::html("3b000000"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
@@ -402,8 +408,8 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_seconds",60);
 	set("text_editor/font","");
-	set("text_editor/auto_brace_complete", false);
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
+	set("text_editor/auto_brace_complete", false);
 
 
 	set("3d_editor/default_fov",45.0);
@@ -418,6 +424,12 @@ void EditorSettings::_load_defaults() {
 	hints["3d_editor/pan_modifier"]=PropertyInfo(Variant::INT,"3d_editor/pan_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 	set("3d_editor/zoom_modifier",4);
 	hints["3d_editor/zoom_modifier"]=PropertyInfo(Variant::INT,"3d_editor/zoom_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
+
+	set("2d_editor/bone_width",5);
+	set("2d_editor/bone_color1",Color(1.0,1.0,1.0,0.9));
+	set("2d_editor/bone_color2",Color(0.75,0.75,0.75,0.9));
+	set("2d_editor/bone_selected_color",Color(0.9,0.45,0.45,0.9));
+	set("2d_editor/bone_ik_color",Color(0.9,0.9,0.45,0.9));
 
 	set("on_save/compress_binary_resources",true);
 	set("on_save/save_modified_external_resources",true);

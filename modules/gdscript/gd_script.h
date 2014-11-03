@@ -37,6 +37,8 @@
 class GDInstance;
 class GDScript;
 
+
+
 class GDFunction {
 public:
 
@@ -58,6 +60,9 @@ public:
 		OPCODE_CALL_BUILT_IN,
 		OPCODE_CALL_SELF,
 		OPCODE_CALL_SELF_BASE,
+		OPCODE_YIELD,
+		OPCODE_YIELD_SIGNAL,
+		OPCODE_YIELD_RESUME,
 		OPCODE_JUMP,
 		OPCODE_JUMP_IF,
 		OPCODE_JUMP_IF_NOT,
@@ -132,6 +137,20 @@ friend class GDCompiler;
 
 public:
 
+	struct CallState {
+
+		GDInstance *instance;
+		Vector<uint8_t> stack;
+		int stack_size;
+		Variant self;
+		uint32_t alloca_size;
+		GDScript *_class;
+		int ip;
+		int line;
+		int defarg;
+		Variant result;
+
+	};
 
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 
@@ -150,9 +169,27 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
 
 	int get_argument_count() const { return _argument_count; }
-	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err);
+	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
 	GDFunction();
+};
+
+
+class GDFunctionState : public Reference {
+
+	OBJ_TYPE(GDFunctionState,Reference);
+friend class GDFunction;
+	GDFunction *function;
+	GDFunction::CallState state;
+	Variant _signal_callback(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+protected:
+	static void _bind_methods();
+public:
+
+	bool is_valid() const;
+	Variant resume(const Variant& p_arg=Variant());
+	GDFunctionState();
+	~GDFunctionState();
 };
 
 
@@ -183,11 +220,18 @@ class GDScript : public Script {
 	bool valid;
 
 
+	struct MemberInfo {
+		int index;
+		StringName setter;
+		StringName getter;
+	};
 
 friend class GDInstance;
 friend class GDFunction;
 friend class GDCompiler;
 friend class GDFunctions;
+friend class GDScriptLanguage;
+
 	Variant _static_ref; //used for static call
 	Ref<GDNativeClass> native;
 	Ref<GDScript> base;
@@ -197,7 +241,7 @@ friend class GDFunctions;
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction> member_functions;
-	Map<StringName,int> member_indices; //members are just indices to the instanced script.
+	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;	
 
 #ifdef TOOLS_ENABLED
@@ -226,6 +270,9 @@ friend class GDFunctions;
 #endif
 
 
+
+	void _update_exports(Set<PlaceHolderScriptInstance *> *p_instances);
+
 protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	bool _set(const StringName& p_name, const Variant& p_value);
@@ -248,7 +295,7 @@ public:
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName,int>& debug_get_member_indices() const { return member_indices; }
+	const Map<StringName,MemberInfo>& debug_get_member_indices() const { return member_indices; }
 	const Map<StringName,GDFunction>& debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
@@ -262,6 +309,8 @@ public:
 	virtual bool has_source_code() const;
 	virtual String get_source_code() const;
 	virtual void set_source_code(const String& p_code);
+	virtual void update_exports();
+
 	virtual Error reload();
 
 	virtual String get_node_type() const;

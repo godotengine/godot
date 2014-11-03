@@ -15,7 +15,9 @@ android_files = [
 	'audio_driver_jandroid.cpp',
 	'ifaddrs_android.cpp',
 	'android_native_app_glue.c',
-	'java_glue.cpp'
+	'java_glue.cpp',
+	'cpu-features.c',
+	'java_class_wrapper.cpp'
 ]
 
 #env.Depends('#core/math/vector3.h', 'vector3_psp.h')
@@ -64,6 +66,6 @@ for x in env.android_module_libraries:
 	shutil.copy(x,abspath+"/java/libs")	
 
 
-env_android.SharedLibrary("#platform/android/libgodot_android.so",[android_objects])
+env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
-env.Command('#bin/libgodot_android.so', '#platform/android/libgodot_android.so', Copy('bin/libgodot_android.so', 'platform/android/libgodot_android.so'))
+#env.Command('#bin/libgodot_android.so', '#platform/android/libgodot_android.so', Copy('bin/libgodot_android.so', 'platform/android/libgodot_android.so'))

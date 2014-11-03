@@ -51,9 +51,9 @@ bool Node2D::edit_has_pivot() const {
 Variant Node2D::edit_get_state() const {
 
 	Array state;
-	state.push_back(pos);
-	state.push_back(angle);
-	state.push_back(scale);
+	state.push_back(get_pos());
+	state.push_back(get_rot());
+	state.push_back(get_scale());
 
 	return state;
 
@@ -253,6 +253,18 @@ Point2 Node2D::get_global_pos() const {
 	return get_global_transform().get_origin();
 }
 
+void Node2D::set_global_pos(const Point2& p_pos) {
+
+	Matrix32 inv;
+	CanvasItem *pi = get_parent_item();
+	if (pi) {
+		inv = pi->get_global_transform().affine_inverse();
+		set_pos(inv.xform(p_pos));
+	} else {
+		set_pos(p_pos);
+	}
+}
+
 void Node2D::set_transform(const Matrix32& p_transform) {
 
 	_mat=p_transform;
@@ -297,6 +309,7 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
+	ObjectTypeDB::bind_method(_MD("set_global_pos"),&Node2D::set_global_pos);
 
 	ObjectTypeDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);

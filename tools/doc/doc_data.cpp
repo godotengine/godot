@@ -997,8 +997,8 @@ Error DocData::save(const String& p_path) {
 
 		_write_string(f,1,"</constants>");
 
-		_write_string(f,1,"<theme_items>");
 		if (c.theme_properties.size()) {
+			_write_string(f,1,"<theme_items>");
 			for(int i=0;i<c.theme_properties.size();i++) {
 
 
@@ -1007,9 +1007,10 @@ Error DocData::save(const String& p_path) {
 				_write_string(f,2,"</theme_item>");
 
 			}
+			_write_string(f,1,"</theme_items>");
 		}
 
-		_write_string(f,0,"</theme_items>");
+		_write_string(f,0,"</class>");
 
 	}
 

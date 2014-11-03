@@ -47,6 +47,11 @@ friend class Physics2DDirectSpaceStateSW;
 	bool doing_sync;
 	real_t last_step;
 
+	int island_count;
+	int active_objects;
+	int collision_pairs;
+
+
 	Step2DSW *stepper;
 	Set<const Space2DSW*> active_spaces;
 
@@ -144,10 +149,14 @@ public:
 	virtual void body_add_shape(RID p_body, RID p_shape, const Matrix32& p_transform=Matrix32());
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape);
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Matrix32& p_transform);
+	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant& p_metadata);
+
 
 	virtual int body_get_shape_count(RID p_body) const;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const;
 	virtual Matrix32 body_get_shape_transform(RID p_body, int p_shape_idx) const;
+	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const;
+
 
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
@@ -222,6 +231,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	int get_process_info(ProcessInfo p_info);
 
 	Physics2DServerSW();
 	~Physics2DServerSW();

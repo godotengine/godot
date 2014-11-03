@@ -32,9 +32,11 @@
 Error EventStreamPlayback::play() {
 	if (stream.is_valid())
 		stop();
+
 	Error err = _play();
 	if (err)
 		return err;
+
 
 	playing=true;
 	AudioServer::get_singleton()->stream_set_active(stream,true);

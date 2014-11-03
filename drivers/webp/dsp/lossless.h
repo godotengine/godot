@@ -13,8 +13,8 @@
 #ifndef WEBP_DSP_LOSSLESS_H_
 #define WEBP_DSP_LOSSLESS_H_
 
-#include "../webp/types.h"
-#include "../webp/decode.h"
+#include "../types.h"
+#include "../decode.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

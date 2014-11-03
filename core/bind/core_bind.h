@@ -154,6 +154,8 @@ public:
 
 	bool has_touchscreen_ui_hint() const;
 
+	bool is_debug_build() const;
+
 	String get_unique_ID() const;
 
 	/*
@@ -174,6 +176,7 @@ public:
 	};
 */
 
+	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
 	Dictionary get_date() const;
@@ -199,6 +202,9 @@ public:
 	int get_processor_count() const;
 
 	String get_data_dir() const;
+
+	void set_time_scale(float p_scale);
+	float get_time_scale();
 
 	static _OS *get_singleton() { return singleton; }
 
@@ -229,8 +235,11 @@ public:
 	DVector<Vector3> segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius);
 	DVector<Vector3> segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes);
 	real_t segment_intersects_circle(const Vector2& p_from, const Vector2& p_to, const Vector2& p_circle_pos, real_t p_circle_radius);
+	int get_uv84_normal_bit(const Vector3& p_vector);
 
 	Vector<int> triangulate_polygon(const Vector<Vector2>& p_polygon);
+
+	Dictionary make_atlas(const Vector<Size2>& p_rects);
 
 	_Geometry();
 };

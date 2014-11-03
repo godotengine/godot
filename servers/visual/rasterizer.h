@@ -56,6 +56,7 @@ protected:
 			bool use_color_array:1;
 			bool use_pointsize:1;
 			bool discard_alpha:1;
+			bool use_xy_normalmap:1;
 			bool valid:1;
 		};
 
@@ -83,6 +84,7 @@ protected:
 		bool use_color_array;
 		bool discard_alpha;
 		bool use_pointsize;
+		bool use_xy_normalmap;
 		float point_size;
 		Transform uv_xform;
 		VS::FixedMaterialLightShader light_shader;
@@ -102,6 +104,7 @@ protected:
 			k.use_alpha=use_alpha;
 			k.use_color_array=use_color_array;
 			k.use_pointsize=use_pointsize;
+			k.use_xy_normalmap=use_xy_normalmap;
 			k.discard_alpha=discard_alpha;
 			k.light_shader=light_shader;
 			k.valid=true;
@@ -123,6 +126,7 @@ protected:
 			use_color_array=false;
 			use_pointsize=false;
 			discard_alpha=false;
+			use_xy_normalmap=false;
 			point_size=1.0;
 			light_shader=VS::FIXED_MATERIAL_LIGHT_SHADER_LAMBERT;
 			for(int i=0;i<VS::FIXED_MATERIAL_PARAM_MAX;i++) {
@@ -275,7 +279,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index)=0;
 	virtual int mesh_get_surface_count(RID p_mesh) const=0;
 		
-	virtual AABB mesh_get_aabb(RID p_mesh) const=0;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const=0;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb)=0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const=0;
@@ -499,6 +503,7 @@ public:
 
 		VS::BakedLightMode mode;
 		RID octree_texture;
+		RID light_texture;
 		float color_multiplier; //used for both lightmaps and octree
 		Transform octree_transform;
 		Map<int,RID> lightmaps;
@@ -507,8 +512,10 @@ public:
 		float octree_lattice_size;
 		float octree_lattice_divide;
 		float texture_multiplier;
+		float lightmap_multiplier;
 		int octree_steps;
 		Vector2 octree_tex_pixel_size;
+		Vector2 light_tex_pixel_size;
 	};
 
 	struct InstanceData {
@@ -516,10 +523,12 @@ public:
 		Transform transform;
 		RID skeleton;
 		RID material_override;
+		RID sampled_light;
 		Vector<RID> light_instances;
 		Vector<float> morph_values;
 		BakedLightData *baked_light;
 		Transform *baked_light_octree_xform;
+		int baked_lightmap_id;
 		bool mirror :8;
 		bool depth_scale :8;
 		bool billboard :8;
@@ -579,6 +588,10 @@ public:
 
 	virtual void environment_fx_set_param(RID p_env,VS::EnvironmentFxParam p_param,const Variant& p_value)=0;
 	virtual Variant environment_fx_get_param(RID p_env,VS::EnvironmentFxParam p_param) const=0;
+
+	/* SAMPLED LIGHT */
+	virtual RID sampled_light_dp_create(int p_width,int p_height)=0;
+	virtual void sampled_light_dp_update(RID p_sampled_light,const Color *p_data,float p_multiplier)=0;
 
 		
 	/*MISC*/

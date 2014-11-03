@@ -112,6 +112,7 @@ SceneStringNames::SceneStringNames() {
 	offset=StaticCString::create("offset");
 	unit_offset=StaticCString::create("unit_offset");
 	rotation_mode=StaticCString::create("rotation_mode");
+	rotate=StaticCString::create("rotate");
 	h_offset=StaticCString::create("h_offset");
 	v_offset=StaticCString::create("v_offset");
 
@@ -143,5 +144,7 @@ SceneStringNames::SceneStringNames() {
 	baked_light_changed = StaticCString::create("baked_light_changed");
 	_baked_light_changed = StaticCString::create("_baked_light_changed");
 
+	_mouse_enter=StaticCString::create("_mouse_enter");
+	_mouse_exit=StaticCString::create("_mouse_exit");
 
 }

@@ -139,12 +139,44 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 	DVector<uint8_t>::Read buffer_r=p_buffer.read();
 	const uint8_t *src = buffer_r.ptr();
 	uint8_t *dst = (uint8_t*)s->data;
-	print_line("set data: "+itos(s->length_bytes));
+	//print_line("set data: "+itos(s->length_bytes));
 
 	for(int i=0;i<s->length_bytes;i++) {
 
 		dst[i]=src[i];
 	}
+
+	switch(s->format) {
+
+		case AS::SAMPLE_FORMAT_PCM8: {
+
+			if (s->stereo) {
+				dst[s->length]=dst[s->length-2];
+				dst[s->length+1]=dst[s->length-1];
+			} else {
+
+				dst[s->length]=dst[s->length-1];
+			}
+
+		} break;
+		case AS::SAMPLE_FORMAT_PCM16: {
+
+			if (s->stereo) {
+				dst[s->length]=dst[s->length-4];
+				dst[s->length+1]=dst[s->length-3];
+				dst[s->length+2]=dst[s->length-2];
+				dst[s->length+3]=dst[s->length-1];
+			} else {
+
+				dst[s->length]=dst[s->length-2];
+				dst[s->length+1]=dst[s->length-1];
+			}
+
+		} break;
+
+	}
+
+
 
 }
 

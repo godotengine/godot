@@ -48,7 +48,9 @@ private:
 	bool uses_texpos;
 	bool uses_alpha;
 	bool uses_discard;
+	bool uses_time;
 	bool uses_screen_uv;
+	bool uses_normalmap;
 	bool vertex_code_writes_vertex;
 	Flags *flags;
 
@@ -64,6 +66,8 @@ private:
 	StringName vname_var2_interp;
 	StringName vname_vertex;
 	StringName vname_light;
+	StringName vname_time;
+	StringName vname_normalmap;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 
@@ -85,6 +89,7 @@ public:
 		bool uses_alpha;
 		bool uses_texscreen;
 		bool uses_texpos;
+		bool uses_normalmap;
 		bool vertex_code_writes_vertex;
 		bool uses_discard;
 		bool uses_screen_uv;
@@ -95,6 +100,7 @@ public:
 		bool use_var1_interp;
 		bool use_var2_interp;
 		bool uses_light;
+		bool uses_time;
 	};
 
 	Error compile(const String& p_code, ShaderLanguage::ShaderType p_type, String& r_code_line, String& r_globals_line, Flags& r_flags, Map<StringName,ShaderLanguage::Uniform> *r_uniforms=NULL);

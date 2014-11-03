@@ -180,6 +180,10 @@ void AnimationPlayer::_get_property_list( List<PropertyInfo> *p_list) const {
 
 }
 
+void AnimationPlayer::advance(float p_time) {
+
+	_animation_process( p_time );
+}
 
 void AnimationPlayer::_notification(int p_what) {
 
@@ -637,14 +641,15 @@ void AnimationPlayer::_animation_process(float p_delta) {
 				play(queued.front()->get());
 				String new_name = playback.assigned;
 				queued.pop_front();
+				end_notify=false;
 				emit_signal(SceneStringNames::get_singleton()->animation_changed, old, new_name);
 			} else {
                 //stop();
 				playing = false;
 				_set_process(false);
+				end_notify=false;
 				emit_signal(SceneStringNames::get_singleton()->finished);
 			}
-
 		}
 
 	} else {
@@ -912,7 +917,8 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 	c.current.speed_scale=p_custom_scale;
 	c.assigned=p_name;
 
-	queued.clear();
+	if (!end_notify)
+		queued.clear();
 	_set_process(true); // always process when starting an animation
 	playing = true;
 
@@ -921,7 +927,7 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 
 
 	StringName next=animation_get_next(p_name);
-	if (next!=StringName()) {
+	if (next!=StringName() && animation_set.has(next)) {
 		queue(next);
 	}
 }
@@ -1224,6 +1230,8 @@ void AnimationPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
 	ObjectTypeDB::bind_method(_MD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
+
+	ObjectTypeDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));

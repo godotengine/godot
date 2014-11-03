@@ -106,13 +106,16 @@ class OS_Windows : public OS {
 
 	struct Joystick {
 
+		int id;
 		bool attached;
 
 		DWORD last_axis[JOY_AXIS_COUNT];
 		DWORD last_buttons;
 		DWORD last_pov;
+		String name;
 
 		Joystick() {
+			id = -1;
 			attached = false;
 			for (int i=0; i<JOY_AXIS_COUNT; i++) {
 
@@ -123,6 +126,7 @@ class OS_Windows : public OS {
 		};
 	};
 
+	List<Joystick> joystick_change_queue;
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
 	
@@ -155,6 +159,9 @@ class OS_Windows : public OS {
 #endif
 
 	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
+
+	void _drag_event(int p_x, int p_y, int idx);
+	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
 
 	// functions used by main to initialize/deintialize the OS
 protected:	
@@ -201,6 +208,7 @@ public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
+	virtual void warp_mouse_pos(const Point2& p_to);
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);

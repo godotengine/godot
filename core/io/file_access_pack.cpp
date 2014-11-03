@@ -48,7 +48,10 @@ Error PackedData::add_pack(const String& p_path) {
 
 void PackedData::add_path(const String& pkg_path, const String& path, uint64_t ofs, uint64_t size,const uint8_t* p_md5, PackSource* p_src) {
 
-	bool exists = files.has(path);
+	PathMD5 pmd5(path.md5_buffer());
+	//printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
+
+	bool exists = files.has(pmd5);
 
 	PackedFile pf;
 	pf.pack=pkg_path;
@@ -58,7 +61,7 @@ void PackedData::add_path(const String& pkg_path, const String& path, uint64_t o
 		pf.md5[i]=p_md5[i];
 	pf.src = p_src;
 
-	files[path]=pf;
+	files[pmd5]=pf;
 
 	if (!exists) {
 		//search for dir
@@ -112,6 +115,8 @@ bool PackedSourcePCK::try_open_pack(const String& p_path) {
 	FileAccess *f = FileAccess::open(p_path,FileAccess::READ);
 	if (!f)
 		return false;
+
+	//printf("try open %ls!\n", p_path.c_str());
 
 	uint32_t magic= f->get_32();
 

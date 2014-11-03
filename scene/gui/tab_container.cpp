@@ -113,7 +113,7 @@ void TabContainer::_input_event(const InputEvent& p_event) {
 				break;
 			}
 
-			String s = c->has_meta("_tab_title")?String(XL_MESSAGE(String(c->get_meta("_tab_title")))):String(c->get_name());
+			String s = c->has_meta("_tab_name")?String(XL_MESSAGE(String(c->get_meta("_tab_name")))):String(c->get_name());
 			int tab_width=font->get_string_size(s).width;
 
             if (c->has_meta("_tab_icon")) {
@@ -220,7 +220,7 @@ void TabContainer::_notification(int p_what) {
 					continue;
 
 
-				String s = c->has_meta("_tab_title")?String(XL_MESSAGE(String(c->get_meta("_tab_title")))):String(c->get_name());
+				String s = c->has_meta("_tab_name")?String(XL_MESSAGE(String(c->get_meta("_tab_name")))):String(c->get_name());
 				w+=font->get_string_size(s).width;
 				if (c->has_meta("_tab_icon")) {
 					Ref<Texture> icon = c->get_meta("_tab_icon");
@@ -284,7 +284,7 @@ void TabContainer::_notification(int p_what) {
 					continue;
 				}
 
-				String s = c->has_meta("_tab_title")?String(c->get_meta("_tab_title")):String(c->get_name());
+				String s = c->has_meta("_tab_name")?String(c->get_meta("_tab_name")):String(c->get_name());
 				int w=font->get_string_size(s).width;
 				Ref<Texture> icon;
 				if (c->has_meta("_tab_icon")) {

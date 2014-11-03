@@ -128,6 +128,7 @@ public:
 	StringName offset;
 	StringName unit_offset;
 	StringName rotation_mode;
+	StringName rotate;
 	StringName v_offset;
 	StringName h_offset;
 
@@ -150,6 +151,10 @@ public:
 
 	StringName baked_light_changed;
 	StringName _baked_light_changed;
+
+	StringName _mouse_enter;
+	StringName _mouse_exit;
+
 
 
 };

@@ -37,19 +37,23 @@ class CollisionShape : public Spatial {
 	OBJ_TYPE( CollisionShape, Spatial );
 	OBJ_CATEGORY("3D Physics Nodes");
 
+	Ref<Shape> shape;
+
+	/*
 	RID _get_visual_instance_rid() const;
 
-	Ref<Shape> shape;
 
 	void _update_indicator();
 
 	RID material;
 	RID indicator;
 	RID indicator_instance;
+	*/
 
 	void resource_changed(RES res);
 
 	bool updating_body;
+	bool unparenting;
 	bool trigger;
 
 	void _update_body();

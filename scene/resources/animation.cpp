@@ -1266,7 +1266,7 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 		} 		
 	
 	} else { // no loop 
-	
+
 		if (idx>=0) {
 		
 			if ((idx+1) < len) {
@@ -1716,7 +1716,7 @@ void Animation::clear() {
 
 }
 
-void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
+void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle) {
 
 	ERR_FAIL_INDEX(p_idx,tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type!=TYPE_TRANSFORM);
@@ -1756,7 +1756,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 				Vector3 s[2]={ v0, v2 };
 				real_t d =Geometry::get_closest_point_to_segment(v1,s).distance_to(v1);
 
-				if (d>pd.length()*p_allowed_err) {
+				if (d>pd.length()*p_alowed_linear_err) {
 					continue; //beyond allowed error for colinearity
 				}
 
@@ -1779,6 +1779,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 
 			} else {
 
+
 				Quat r02 = (q0.inverse() * q2).normalized();
 				Quat r01 = (q0.inverse() * q1).normalized();
 
@@ -1788,6 +1789,9 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 				r02.get_axis_and_angle(v02,a02);
 				r01.get_axis_and_angle(v01,a01);
 
+				if (Math::abs(a02)>p_max_optimizable_angle)
+					continue;
+
 				if (v01.dot(v02)<0) {
 					//make sure both rotations go the same way to compare
 					v02=-v02;
@@ -1795,7 +1799,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 				}
 
 				real_t err_01 = Math::acos(v01.normalized().dot(v02.normalized()))/Math_PI;
-				if (err_01>p_allowed_err) {
+				if (err_01>p_alowed_angular_err) {
 					//not rotating in the same axis
 					continue;
 				}
@@ -1841,7 +1845,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 				Vector3 s[2]={ v0, v2 };
 				real_t d =Geometry::get_closest_point_to_segment(v1,s).distance_to(v1);
 
-				if (d>pd.length()*p_allowed_err) {
+				if (d>pd.length()*p_alowed_linear_err) {
 					continue; //beyond allowed error for colinearity
 				}
 
@@ -1866,7 +1870,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 						if (t[k]==-1)
 							continue;
 
-						if (Math::abs(lt-t[k])>p_allowed_err) {
+						if (Math::abs(lt-t[k])>p_alowed_linear_err) {
 							erase=false;
 							break;
 						}
@@ -1879,7 +1883,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 
 			if (erase) {
 
-				if (Math::abs(lt-c)>p_allowed_err) {
+				if (Math::abs(lt-c)>p_alowed_linear_err) {
 					//todo, evaluate changing the transition if this fails?
 					//this could be done as a second pass and would be
 					//able to optimize more
@@ -1905,7 +1909,7 @@ void Animation::_transform_track_optimize(int p_idx,float p_allowed_err) {
 
 }
 
-void Animation::optimize(float p_allowed_err) {
+void Animation::optimize(float p_allowed_linear_err,float p_allowed_angular_err,float p_angle_max) {
 
 
 	int total_tt=0;
@@ -1913,7 +1917,7 @@ void Animation::optimize(float p_allowed_err) {
 	for(int i=0;i<tracks.size();i++) {
 
 		if (tracks[i]->type==TYPE_TRANSFORM)
-			_transform_track_optimize(i,p_allowed_err);
+			_transform_track_optimize(i,p_allowed_linear_err,p_allowed_angular_err,p_angle_max);
 
 	}
 

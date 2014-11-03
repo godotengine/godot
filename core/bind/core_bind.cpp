@@ -176,6 +176,11 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+void _OS::set_use_file_access_save_and_swap(bool p_enable) {
+
+	FileAccess::set_backup_save(p_enable);
+}
+
 bool _OS::is_video_mode_resizable(int p_screen) const {
 
 	OS::VideoMode vm;
@@ -301,6 +306,16 @@ MainLoop *_OS::get_main_loop() const {
 
 	return OS::get_singleton()->get_main_loop();
 }
+
+void _OS::set_time_scale(float p_scale) {
+	OS::get_singleton()->set_time_scale(p_scale);
+}
+
+float _OS::get_time_scale() {
+
+	return OS::get_singleton()->get_time_scale();
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -582,7 +597,15 @@ void _OS::native_video_stop() {
 	OS::get_singleton()->native_video_stop();
 };
 
+bool _OS::is_debug_build() const {
 
+#ifdef DEBUG_ENABLED
+	return true;
+#else
+	return false;
+#endif
+
+}
 String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
@@ -607,6 +630,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
 	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
+
+	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&_OS::set_time_scale);
+	ObjectTypeDB::bind_method(_MD("get_time_scale"),&_OS::get_time_scale);
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
@@ -650,6 +676,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
 
+	ObjectTypeDB::bind_method(_MD("is_debug_build"),&_OS::is_debug_build);
+
 	//ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
 	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
@@ -673,6 +701,10 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_is_playing"),&_OS::native_video_is_playing);
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
+
+
+	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
+
 
 
 	BIND_CONSTANT( DAY_SUNDAY );
@@ -834,6 +866,42 @@ Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2>& p_polygon) {
 	return Geometry::triangulate_polygon(p_polygon);
 }
 
+Dictionary _Geometry::make_atlas(const Vector<Size2>& p_rects) {
+
+	Dictionary ret;
+
+	Vector<Size2i> rects;
+	for (int i=0; i<p_rects.size(); i++) {
+
+		rects.push_back(p_rects[i]);
+	};
+
+	Vector<Point2i> result;
+	Size2i size;
+
+	Geometry::make_atlas(rects, result, size);
+
+	Size2 r_size = size;
+	Vector<Point2> r_result;
+	for (int i=0; i<result.size(); i++) {
+
+		r_result.push_back(result[i]);
+	};
+
+
+	ret["points"] = r_result;
+	ret["size"] = r_size;
+
+	return ret;
+};
+
+
+int _Geometry::get_uv84_normal_bit(const Vector3& p_vector) {
+
+	return Geometry::get_uv84_normal_bit(p_vector);
+}
+
+
 void _Geometry::_bind_methods() {
 
 
@@ -848,6 +916,8 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
 
+	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
+
 	ObjectTypeDB::bind_method(_MD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
@@ -856,6 +926,7 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
+	ObjectTypeDB::bind_method(_MD("make_atlas","sizes"),&_Geometry::make_atlas);
 }
 
 

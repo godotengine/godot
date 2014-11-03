@@ -63,7 +63,7 @@ public class LicenseChecker implements ServiceConnection {
     private static final int TIMEOUT_MS = 10 * 1000;
 
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final boolean DEBUG_LICENSE_ERROR = false;
+    private static final boolean DEBUG_LICENSE_ERROR = true;
 
     private ILicensingService mService;
 

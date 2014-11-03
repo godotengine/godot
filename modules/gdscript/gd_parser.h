@@ -82,6 +82,8 @@ public:
 			Variant default_value;
 #endif
 			StringName identifier;
+			StringName setter;
+			StringName getter;
 		};
 		struct Constant {
 			StringName identifier;
@@ -183,6 +185,7 @@ public:
 			//call/constructor operator
 			OP_CALL,
 			OP_PARENT_CALL,
+			OP_YIELD,
 			OP_EXTENDS,
 			//indexing operator
 			OP_INDEX,
@@ -212,6 +215,7 @@ public:
 			OP_MOD,
 			OP_SHIFT_LEFT,
 			OP_SHIFT_RIGHT,
+			OP_INIT_ASSIGN,
 			OP_ASSIGN,
 			OP_ASSIGN_ADD,
 			OP_ASSIGN_SUB,
@@ -225,7 +229,7 @@ public:
 			OP_ASSIGN_BIT_XOR,
 			OP_BIT_AND,
 			OP_BIT_OR,
-			OP_BIT_XOR
+			OP_BIT_XOR,
 		};
 
 		Operator op;
@@ -258,6 +262,7 @@ public:
 		Node* condition;
 		AssertNode() { type=TYPE_ASSERT; }
 	};
+
 	struct NewLineNode : public Node {
 		int line;
 		NewLineNode() { type=TYPE_NEWLINE; }

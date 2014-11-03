@@ -110,10 +110,19 @@ friend class RenderTargetTexture;
 	Size2 size_override_size;
 	Size2 size_override_margin;
 
+	Rect2 last_vp_rect;
 
 	bool transparent_bg;
 	bool render_target_vflip;
 	bool render_target_filter;
+	bool render_target_gen_mipmaps;
+
+	bool physics_object_picking;
+	List<InputEvent> physics_picking_events;
+	ObjectID physics_object_capture;
+	ObjectID physics_object_over;
+	Vector2 physics_last_mousepos;
+	void _test_new_mouseover(ObjectID new_collider);
 
 	void _update_rect();
 
@@ -214,9 +223,16 @@ public:
 	void set_render_target_filter(bool p_enable);
 	bool get_render_target_filter() const;
 
+	void set_render_target_gen_mipmaps(bool p_enable);
+	bool get_render_target_gen_mipmaps() const;
+
 	void set_render_target_update_mode(RenderTargetUpdateMode p_mode);
 	RenderTargetUpdateMode get_render_target_update_mode() const;
 	Ref<RenderTargetTexture> get_render_target_texture() const;
+
+
+	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
+	Vector2 get_camera_rect_size() const;
 
 	void queue_screen_capture();
 	Image get_screen_capture() const;
@@ -229,6 +245,9 @@ public:
 
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
+
+	void set_physics_object_picking(bool p_enable);
+	bool get_physics_object_picking();
 
 	Viewport();	
 	~Viewport();
