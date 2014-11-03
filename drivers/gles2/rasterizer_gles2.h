@@ -106,8 +106,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 	Vector<real_t> skel_default;
 
-	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
-	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
+	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
 	class RenderTarget;
 

@@ -361,8 +361,7 @@ void RasterizerGLES2::_draw_primitive(int p_points, const Vector3 *p_vertices, c
 
 /* TEXTURE API */
 
-Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
-Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
+Image RasterizerGLES2::_get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_type,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed) {
 
 	r_has_alpha_cache=false;
 	r_compressed=false;
@@ -930,8 +929,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 	texture->flags=p_flags;
 	texture->target = (p_flags & VS::TEXTURE_FLAG_CUBEMAP) ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D;
 
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,type,components,has_alpha_cache,compressed);
-	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,internal_format,components,has_alpha_cache,compressed);
+	_get_gl_image_and_format(Image(),texture->format,texture->flags,format,type,internal_format,components,has_alpha_cache,compressed);
 
 	bool scale_textures = !compressed && !(p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && (!npo2_textures_available || p_flags&VS::TEXTURE_FLAG_MIPMAPS);
 
@@ -964,8 +962,7 @@ void RasterizerGLES2::texture_allocate(RID p_texture,int p_width, int p_height,I
 
 	if (p_flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 		//prealloc if video
-		glTexImage2D(texture->target, 0, format, p_width, p_height, 0, format, type,NULL);
-		glTexImage2D(texture->target, 0, internal_format, p_width, p_height, 0, format, GL_UNSIGNED_BYTE,NULL);
+		glTexImage2D(texture->target, 0, internal_format, p_width, p_height, 0, format, type,NULL);
 	}
 
 	texture->active=true;
@@ -992,8 +989,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 		texture->image[p_cube_side]=p_image;
 	}
 
-	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,type,components,alpha,compressed);
-	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,internal_format,components,alpha,compressed);
+	Image img = _get_gl_image_and_format(p_image, p_image.get_format(),texture->flags,format,type,internal_format,components,alpha,compressed);
 
 	if (texture->alloc_width != img.get_width() || texture->alloc_height != img.get_height()) {
 
@@ -1077,8 +1073,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 			if (texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
 				glTexSubImage2D( blit_target, i, 0,0,w,h,format,type,&read[ofs] );
 			} else {
-				glTexImage2D(blit_target, i, format, w, h, 0, format, type,&read[ofs]);
-				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
+				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type,&read[ofs]);
 			}
 
 		}
