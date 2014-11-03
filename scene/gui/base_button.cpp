@@ -348,6 +348,8 @@ bool BaseButton::get_click_on_press() const {
 }
 
 
+
+
 void BaseButton::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
@@ -360,6 +362,7 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_disabled"),&BaseButton::is_disabled);
 	ObjectTypeDB::bind_method(_MD("set_click_on_press","enable"),&BaseButton::set_click_on_press);
 	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
+	ObjectTypeDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
 
 	ADD_SIGNAL( MethodInfo("pressed" ) );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
@@ -368,6 +371,11 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
+
+	BIND_CONSTANT( DRAW_NORMAL );
+	BIND_CONSTANT( DRAW_PRESSED );
+	BIND_CONSTANT( DRAW_HOVER );
+	BIND_CONSTANT( DRAW_DISABLED );
 
 }
 

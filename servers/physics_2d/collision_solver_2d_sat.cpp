@@ -1086,6 +1086,7 @@ static void _collision_rectangle_convex_polygon(const Shape2DSW* p_a,const Matri
 
 	SeparatorAxisTest2D<RectangleShape2DSW,ConvexPolygonShape2DSW,castA,castB,withMargin> separator(rectangle_A,p_transform_a,convex_B,p_transform_b,p_collector,p_motion_a,p_motion_b,p_margin_A,p_margin_B);
 
+
 	if (!separator.test_previous_axis())
 		return;
 

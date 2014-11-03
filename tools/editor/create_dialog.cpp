@@ -289,8 +289,8 @@ CreateDialog::CreateDialog() {
 	search_box->connect("text_changed",this,"_text_changed");
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
-	vbc->add_margin_child(_TR("Matches:"),search_options,true);
-	get_ok()->set_text(_TR("Open"));
+	vbc->add_margin_child("Matches:",search_options,true);
+	get_ok()->set_text("Create");
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

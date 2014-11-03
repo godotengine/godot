@@ -61,6 +61,7 @@ struct ColladaImport {
 	Color ambient;
 	bool found_directional;
 	bool force_make_tangents;
+	float bake_fps;
 
 
 
@@ -95,6 +96,7 @@ struct ColladaImport {
 		found_ambient=false;
 		found_directional=false;
 		force_make_tangents=false;
+		bake_fps=15;
 
 	}
 };
@@ -1835,7 +1837,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 	Vector<real_t> base_snapshots;
 
 	float f=0;
-	float snapshot_interval = 1.0/20.0; //should be customizable somewhere...
+	float snapshot_interval = 1.0/bake_fps; //should be customizable somewhere...
 
 	float anim_length=collada.state.animation_length;
 	if (p_clip>=0 && collada.state.animation_clips[p_clip].end)
@@ -2142,14 +2144,14 @@ void EditorSceneImporterCollada::get_extensions(List<String> *r_extensions) cons
 
 	r_extensions->push_back("dae");
 }
-Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_flags, List<String> *r_missing_deps, Error* r_err) {
-
+Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_flags,int p_bake_fps, List<String> *r_missing_deps, Error* r_err) {
 
 	ColladaImport state;
 	uint32_t flags=Collada::IMPORT_FLAG_SCENE;
 	if (p_flags&IMPORT_ANIMATION)
 		flags|=Collada::IMPORT_FLAG_ANIMATION;
 
+	state.bake_fps=p_bake_fps;
 
 	Error err = state.load(p_path,flags,p_flags&EditorSceneImporter::IMPORT_GENERATE_TANGENT_ARRAYS);
 
@@ -2174,7 +2176,7 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 
 	if (p_flags&IMPORT_ANIMATION) {
 
-		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_TRACKS_IN_ALL_BONES);
+		state.create_animations(p_flags&IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
 		AnimationPlayer *ap = memnew( AnimationPlayer );
 		for(int i=0;i<state.animations.size();i++) {
 			String name;
@@ -2213,7 +2215,7 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String& p_path
 	ERR_FAIL_COND_V(err!=OK,RES());
 
 
-	state.create_animations(p_flags&EditorSceneImporter::IMPORT_ANIMATION_FORCE_TRACKS_IN_ALL_BONES);
+	state.create_animations(p_flags&EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
 	if (state.scene)
 		memdelete(state.scene);
 

@@ -102,6 +102,9 @@ Error ImageLoaderPNG::_load_image(void *rf_up,png_rw_ptr p_func,Image *p_image) 
 	png_read_info(png, info);
 	png_get_IHDR(png, info, &width, &height, &depth, &color, NULL, NULL, NULL);
 
+	png_textp t;
+	//https://svn.gov.pt/projects/ccidadao/repository/middleware-offline/trunk/_src/eidmw/FreeImagePTEiD/Source/FreeImage/PluginPNG.cpp
+	//png_get_text(png,info,)
 	/*
 	printf("Image width:%i\n", width);
 	printf("Image Height:%i\n", height);

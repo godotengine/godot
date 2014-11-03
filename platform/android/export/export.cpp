@@ -398,8 +398,9 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_normal") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_large") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_xlarge") );
-	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release",PROPERTY_HINT_FILE,"keystore") );
+	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release",PROPERTY_HINT_GLOBAL_FILE,"keystore") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release_user" ) );
+	p_list->push_back( PropertyInfo( Variant::STRING, "keystore/release_password" ) );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "apk_expansion/enable" ) );
 	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/SALT" ) );
 	p_list->push_back( PropertyInfo( Variant::STRING, "apk_expansion/public_key",PROPERTY_HINT_MULTILINE_TEXT ) );
@@ -1237,6 +1238,11 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		args.push_back("SHA1");
 		args.push_back("-sigalg");
 		args.push_back("MD5withRSA");
+		String tsa_url=EditorSettings::get_singleton()->get("android/timestamping_authority_url");
+		if (tsa_url != "") {
+			args.push_back("-tsa");
+			args.push_back(tsa_url);
+		}
 		args.push_back("-verbose");
 		args.push_back("-keystore");
 		args.push_back(keystore);
@@ -1626,6 +1632,7 @@ void register_android_exporter() {
 	//EDITOR_DEF("android/release_keystore","");
 	//EDITOR_DEF("android/release_username","");
 	//EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"android/release_keystore",PROPERTY_HINT_GLOBAL_FILE,"*.keystore"));
+	EDITOR_DEF("android/timestamping_authority_url","");
 
 	Ref<EditorExportPlatformAndroid> exporter = Ref<EditorExportPlatformAndroid>( memnew(EditorExportPlatformAndroid) );
 	EditorImportExport::get_singleton()->add_export_platform(exporter);

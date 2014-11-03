@@ -243,6 +243,11 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 			case Operation::TYPE_PROPERTY: {
 
 				obj->set(op.name,op.args[0]);
+#ifdef TOOLS_ENABLED
+				Resource* res = obj->cast_to<Resource>();
+				if (res)
+					res->set_edited(true);
+#endif
 			} break;
 			case Operation::TYPE_REFERENCE: {
 				//do nothing

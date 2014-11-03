@@ -160,13 +160,13 @@ bool CollisionObject::_get(const StringName& p_name,Variant &r_ret) const {
 
 void CollisionObject::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR) );
+	p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
 
 	for(int i=0;i<shapes.size();i++) {
 		String path="shapes/"+itos(i)+"/";
-		p_list->push_back( PropertyInfo(Variant::OBJECT,path+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape",PROPERTY_USAGE_NOEDITOR) );
-		p_list->push_back( PropertyInfo(Variant::TRANSFORM,path+"transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
-		p_list->push_back( PropertyInfo(Variant::BOOL,path+"trigger",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR) );
+		p_list->push_back( PropertyInfo(Variant::OBJECT,path+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
+		p_list->push_back( PropertyInfo(Variant::TRANSFORM,path+"transform",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
+		p_list->push_back( PropertyInfo(Variant::BOOL,path+"trigger",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
 
 	}
 }

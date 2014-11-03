@@ -1266,7 +1266,7 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 		} 		
 	
 	} else { // no loop 
-	
+
 		if (idx>=0) {
 		
 			if ((idx+1) < len) {

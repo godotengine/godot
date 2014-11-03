@@ -322,6 +322,7 @@ public:
 		fdialog = memnew( FileDialog );
 		add_child(fdialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+		fdialog->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_path") );
 		project_name->connect("text_changed", this,"_text_changed");
 		project_path->connect("text_changed", this,"_path_text_changed");
 		fdialog->connect("dir_selected", this,"_path_selected");
@@ -980,6 +981,11 @@ ProjectManager::ProjectManager() {
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();
+
+	if ( EditorSettings::get_singleton()->get("global/autoscan_project_path") ) {
+		_scan_begin( EditorSettings::get_singleton()->get("global/autoscan_project_path") );
+	}
+
 	//get_ok()->set_text("Open");
 	//get_ok()->set_text("Exit");
 

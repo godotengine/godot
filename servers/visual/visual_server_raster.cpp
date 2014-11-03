@@ -5622,7 +5622,7 @@ void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instan
 				if (distance>r)
 					distance=r;
 
-				float mult = powf(1.0-distance/r,att)*str;
+				float mult = Math::pow(1.0-distance/r,att)*str;
 				if (mult>0) {
 					col.r*=mult;
 					col.g*=mult;

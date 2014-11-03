@@ -213,6 +213,16 @@ def configure(env):
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLES1_ENABLED','-DGLEW_ENABLED'])
 		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','wsock32','kernel32'])
+
+		if (env["bits"]=="32" and env["mingw64_for_32"]!="yes"):
+#			env.Append(LIBS=['gcc_s'])
+			#--with-arch=i686
+			env.Append(CPPFLAGS=['-march=i686'])
+			env.Append(LINKFLAGS=['-march=i686'])
+
+
+
+
 		#'d3dx9d'
 		env.Append(CPPFLAGS=['-DMINGW_ENABLED'])
 		env.Append(LINKFLAGS=['-g'])

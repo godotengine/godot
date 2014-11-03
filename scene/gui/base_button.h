@@ -61,15 +61,8 @@ class BaseButton : public Control {
 		
 protected:
 
-	enum DrawMode {
-		DRAW_NORMAL,
-		DRAW_PRESSED,
-		DRAW_HOVER,
-		DRAW_DISABLED,
-	};
 
 
-	DrawMode get_draw_mode() const;
 	
 	virtual void pressed();
 	virtual void toggled(bool p_pressed);
@@ -78,7 +71,16 @@ protected:
 	void _notification(int p_what);
 
 public:
-	
+
+	enum DrawMode {
+		DRAW_NORMAL,
+		DRAW_PRESSED,
+		DRAW_HOVER,
+		DRAW_DISABLED,
+	};
+
+	DrawMode get_draw_mode() const;
+
 	/* Signals */
 	
 	bool is_pressed() const; ///< return wether button is pressed (toggled in)
@@ -100,5 +102,7 @@ public:
 	~BaseButton();
 
 };
+
+VARIANT_ENUM_CAST( BaseButton::DrawMode );
 
 #endif
