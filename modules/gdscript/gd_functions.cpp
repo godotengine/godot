@@ -922,7 +922,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 				break;
 			}
 
-			SceneMainLoop *sml = dynamic_cast<SceneMainLoop *> (OS::get_singleton()->get_main_loop());
+			SceneTree *sml = dynamic_cast<SceneTree *> (OS::get_singleton()->get_main_loop());
 			if (sml != NULL) {
 				Viewport *root = sml->get_root();
 				if (root != NULL)

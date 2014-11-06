@@ -444,7 +444,6 @@ bool editor_ok=true;
 			editor_ok=false;
 		} else {
 			editor_ok = (get_tree()->get_edited_scene_root() && (this==get_tree()->get_edited_scene_root() || get_owner()==get_tree()->get_edited_scene_root()));
-#endif
 		}
 	}
 #endif

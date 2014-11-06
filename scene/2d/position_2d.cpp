@@ -52,7 +52,7 @@ void Position2D::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			if (!is_inside_tree())
 				break;
-			if (get_tree()->is_editor_hint() || always_show)
+			if (get_tree()->is_editor_hint() || alway_show)
 				_draw_cross();
 
 		} break;
