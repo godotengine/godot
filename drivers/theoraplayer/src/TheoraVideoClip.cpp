@@ -75,7 +75,7 @@ TheoraVideoClip::~TheoraVideoClip()
 	if (mAudioInterface)
 	{
 		mAudioMutex->lock(); // ensure a thread isn't using this mutex
-		memdelete(mAudioInterface); // notify audio interface it's time to call it a day
+		delete mAudioInterface; // notify audio interface it's time to call it a day
 		mAudioMutex ->unlock();
 		delete mAudioMutex;
 	}

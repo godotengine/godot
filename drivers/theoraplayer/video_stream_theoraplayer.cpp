@@ -240,6 +240,11 @@ public:
 		owner->setTimer(this);
 	};
 
+	void stop() {
+
+		stream->stop();
+	};
+
 	void update(float time_increase)
 	{
 		mTime = (float)(stream->get_total_wrote() / channels) / freq;
@@ -257,7 +262,7 @@ public:
 	TheoraAudioInterface* createInstance(TheoraVideoClip* owner, int nChannels, int freq) {
 
 		printf("************** creating audio output\n");
-		TheoraAudioInterface* ta = memnew(TPAudioGodot(owner, nChannels, freq));
+		TheoraAudioInterface* ta = new TPAudioGodot(owner, nChannels, freq);
 		return ta;
 	};
 };
@@ -267,13 +272,16 @@ static TPAudioGodotFactory* audio_factory = NULL;
 void VideoStreamTheoraplayer::stop() {
 
 	playing = false;
-	if (clip)
+	if (clip) {
+		clip->stop();
 		clip->seek(0);
+	};
 };
 
 void VideoStreamTheoraplayer::play() {
 
 	playing = true;
+	started = true;
 };
 
 bool VideoStreamTheoraplayer::is_playing() const {
@@ -452,12 +460,14 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 
 VideoStreamTheoraplayer::~VideoStreamTheoraplayer() {
 
-	//if (mgr) {
+	stop();
+	//if (mgr) { // this should be a singleton or static or something
 	//	memdelete(mgr);
 	//};
 	//mgr = NULL;
 	if (clip) {
-		delete clip; // created by video manager with new
+		mgr->destroyVideoClip(clip);
+		clip = NULL;
 	};
 };
 
