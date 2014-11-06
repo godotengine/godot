@@ -445,7 +445,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			step->set_icon( get_icon("DebugStep","EditorIcons"));
 			next->set_icon( get_icon("DebugNext","EditorIcons"));
@@ -785,7 +785,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	inspector = memnew( PropertyEditor );
 	inspector->set_h_size_flags(SIZE_EXPAND_FILL);
 	inspector->hide_top_label();
-	inspector->get_tree()->set_column_title(0,_TR("Variable"));
+	inspector->get_scene_tree()->set_column_title(0,"Variable");
 	inspector->set_capitalize_paths(false);
 	inspector->set_read_only(true);
 	sc->add_child(inspector);

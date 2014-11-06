@@ -152,7 +152,7 @@ void EditorImportTextureOptions::_bind_methods() {
 
 void EditorImportTextureOptions::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		flags->connect("item_edited",this,"_changed");
 		format->connect("item_selected",this,"_changedp");
@@ -430,7 +430,7 @@ void EditorTextureImportDialog::popup_import(const String& p_from) {
 void EditorTextureImportDialog::_notification(int p_what) {
 
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 
 		List<String> extensions;

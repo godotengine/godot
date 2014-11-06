@@ -38,7 +38,7 @@
 
 bool CanvasItem::is_visible() const {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return false;
 
 	const CanvasItem *p=this;
@@ -102,7 +102,7 @@ void CanvasItem::show() {
 	hidden=false;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,true);
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (is_visible()) {
@@ -116,11 +116,11 @@ void CanvasItem::hide() {
 	if (hidden)
 		return;
 
-	bool propagate=is_inside_scene() && is_visible();
+	bool propagate=is_inside_tree() && is_visible();
 	hidden=true;
 	VisualServer::get_singleton()->canvas_item_set_visible(canvas_item,false);
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (propagate)
 		_propagate_visibility_changed(false);
@@ -157,7 +157,7 @@ void CanvasItem::_update_callback() {
 
 
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		pending_update=false;
 		return;
 	}
@@ -235,7 +235,7 @@ void CanvasItem::_sort_children() {
 
 	pending_children_sort=false;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	for(int i=0;i<get_child_count();i++) {
@@ -253,7 +253,7 @@ void CanvasItem::_sort_children() {
 
 void CanvasItem::_raise_self() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	VisualServer::get_singleton()->canvas_item_raise(canvas_item);
@@ -293,7 +293,7 @@ void CanvasItem::_enter_canvas() {
 		group = "root_canvas"+itos(canvas.get_id());
 
 		add_to_group(group);
-		get_scene()->call_group(SceneMainLoop::GROUP_CALL_UNIQUE,group,"_raise_self");
+		get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_raise_self");
 
 	} else {
 
@@ -323,7 +323,7 @@ void CanvasItem::_notification(int p_what) {
 
 
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			first_draw=true;
 			pending_children_sort=false;
@@ -334,14 +334,14 @@ void CanvasItem::_notification(int p_what) {
 			}
 			_enter_canvas();
 			if (!block_transform_notify && !xform_change.in_list()) {
-				get_scene()->xform_change_list.add(&xform_change);
+				get_tree()->xform_change_list.add(&xform_change);
 			}
 		} break;
 		case NOTIFICATION_MOVED_IN_PARENT: {
 
 
 			if (group!="") {
-				get_scene()->call_group(SceneMainLoop::GROUP_CALL_UNIQUE,group,"_raise_self");
+				get_tree()->call_group(SceneTree::GROUP_CALL_UNIQUE,group,"_raise_self");
 			} else {
 				CanvasItem *p = get_parent_item();
 				ERR_FAIL_COND(!p);
@@ -350,9 +350,9 @@ void CanvasItem::_notification(int p_what) {
 
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (xform_change.in_list())
-				get_scene()->xform_change_list.remove(&xform_change);
+				get_tree()->xform_change_list.remove(&xform_change);
 			_exit_canvas();
 			if (C) {
 				get_parent()->cast_to<CanvasItem>()->children_items.erase(C);
@@ -389,7 +389,7 @@ bool CanvasItem::_is_visible_() const {
 
 void CanvasItem::update() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (pending_update)
 		return;
@@ -416,7 +416,7 @@ void CanvasItem::set_as_toplevel(bool p_toplevel) {
 	if (toplevel==p_toplevel)
 		return;
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		toplevel=p_toplevel;
 		return;
 	}
@@ -640,8 +640,8 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 	if (!p_node->xform_change.in_list()) {
 		if (!p_node->block_transform_notify) {
-			if (p_node->is_inside_scene())
-				get_scene()->xform_change_list.add(&p_node->xform_change);
+			if (p_node->is_inside_tree())
+				get_tree()->xform_change_list.add(&p_node->xform_change);
 		}
 	}
 
@@ -658,13 +658,13 @@ void CanvasItem::_notify_transform(CanvasItem *p_node) {
 
 Rect2 CanvasItem::get_viewport_rect() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),Rect2());
+	ERR_FAIL_COND_V(!is_inside_tree(),Rect2());
 	return get_viewport()->get_visible_rect();
 }
 
 RID CanvasItem::get_canvas() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),RID());
+	ERR_FAIL_COND_V(!is_inside_tree(),RID());
 
 	if (canvas_layer)
 		return canvas_layer->get_world_2d()->get_canvas();
@@ -687,7 +687,7 @@ CanvasItem *CanvasItem::get_toplevel() const {
 
 Ref<World2D> CanvasItem::get_world_2d() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),Ref<World2D>());
+	ERR_FAIL_COND_V(!is_inside_tree(),Ref<World2D>());
 
 	CanvasItem *tl=get_toplevel();
 
@@ -703,7 +703,7 @@ Ref<World2D> CanvasItem::get_world_2d() const {
 
 RID CanvasItem::get_viewport_rid() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),RID());
+	ERR_FAIL_COND_V(!is_inside_tree(),RID());
 	return get_viewport()->get_viewport();
 }
 
@@ -836,7 +836,7 @@ void CanvasItem::_bind_methods() {
 
 Matrix32 CanvasItem::get_canvas_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),Matrix32());
+	ERR_FAIL_COND_V(!is_inside_tree(),Matrix32());
 
 	if (canvas_layer)
 		return canvas_layer->get_transform();
@@ -847,7 +847,7 @@ Matrix32 CanvasItem::get_canvas_transform() const {
 
 Matrix32 CanvasItem::get_viewport_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),Matrix32());
+	ERR_FAIL_COND_V(!is_inside_tree(),Matrix32());
 
 	if (canvas_layer) {
 

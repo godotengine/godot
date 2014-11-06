@@ -143,7 +143,7 @@ void Particles2DEditorPlugin::_menu_callback(int p_idx) {
 
 void Particles2DEditorPlugin::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		menu->get_popup()->connect("item_pressed",this,"_menu_callback");
 		file->connect("file_selected",this,"_file_selected");

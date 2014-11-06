@@ -33,7 +33,7 @@
 void RayCast::set_cast_to(const Vector3& p_point) {
 
 	cast_to=p_point;
-	if (is_inside_scene() && get_scene()->is_editor_hint())
+	if (is_inside_tree() && get_tree()->is_editor_hint())
 		update_gizmo();
 
 }
@@ -72,7 +72,7 @@ Vector3 RayCast::get_collision_normal() const{
 void RayCast::set_enabled(bool p_enabled) {
 
 	enabled=p_enabled;
-	if (is_inside_scene() && !get_scene()->is_editor_hint())
+	if (is_inside_tree() && !get_tree()->is_editor_hint())
 		set_fixed_process(p_enabled);
 	if (!p_enabled)
 		collided=false;
@@ -91,9 +91,9 @@ void RayCast::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
-			if (enabled && !get_scene()->is_editor_hint()) {
+			if (enabled && !get_tree()->is_editor_hint()) {
 				set_fixed_process(true);
 				Node *p = get_parent();
 				while( p && p->cast_to<Spatial>() ) {
@@ -113,7 +113,7 @@ void RayCast::_notification(int p_what) {
 
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (enabled) {
 				set_fixed_process(false);

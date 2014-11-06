@@ -56,8 +56,8 @@ public:
 	StringName _input_event;
 	StringName item_rect_changed;
 	StringName shader_shader;
-	StringName enter_scene;
-	StringName exit_scene;
+	StringName enter_tree;
+	StringName exit_tree;
 	StringName size_flags_changed;
 	StringName minimum_size_changed;
 	StringName idle;
@@ -89,8 +89,8 @@ public:
 	StringName _process;
 	StringName _enter_world;
 	StringName _exit_world;
-	StringName _enter_scene;
-	StringName _exit_scene;
+	StringName _enter_tree;
+	StringName _exit_tree;
 	StringName _draw;
 	StringName _input;
 	StringName _ready;
@@ -116,8 +116,8 @@ public:
 	StringName enter_camera;
 	StringName exit_camera;
 
-	StringName _body_enter_scene;
-	StringName _body_exit_scene;
+	StringName _body_enter_tree;
+	StringName _body_exit_tree;
 
 	StringName changed;
 	StringName _shader_changed;

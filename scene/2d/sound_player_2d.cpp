@@ -39,7 +39,7 @@ void SoundPlayer2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 			//find the sound space
 
 			source_rid = SpatialSound2DServer::get_singleton()->source_create(get_world_2d()->get_sound_space());
@@ -56,7 +56,7 @@ void SoundPlayer2D::_notification(int p_what) {
 			SpatialSound2DServer::get_singleton()->source_set_transform(source_rid,get_global_transform());
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (source_rid.is_valid())
 				SpatialSound2DServer::get_singleton()->free(source_rid);

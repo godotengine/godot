@@ -74,7 +74,7 @@ Ref<AudioStream> SpatialStreamPlayer::get_stream() const {
 
 void SpatialStreamPlayer::play() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (stream.is_null())
 		return;
@@ -89,7 +89,7 @@ void SpatialStreamPlayer::play() {
 
 void SpatialStreamPlayer::stop() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (stream.is_null())
 		return;

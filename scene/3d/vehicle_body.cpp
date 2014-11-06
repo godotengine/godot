@@ -57,7 +57,7 @@ public:
 void VehicleWheel::_notification(int p_what) {
 
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		if (!get_parent())
 			return;
@@ -73,7 +73,7 @@ void VehicleWheel::_notification(int p_what) {
 		m_wheelAxleCS = get_transform().basis.get_axis(Vector3::AXIS_X).normalized();
 
 	}
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		if (!get_parent())
 			return;

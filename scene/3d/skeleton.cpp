@@ -243,10 +243,10 @@ void Skeleton::set_bone_global_pose(int p_bone,const Transform& p_pose) {
 	ERR_FAIL_INDEX(p_bone,bones.size());
 	if (bones[p_bone].parent==-1) {
 
-		set_bone_pose(p_bone,bones[p_bone].rest.inverse() * p_pose);
+		set_bone_pose(p_bone,bones[p_bone].rest_global_inverse * p_pose); //fast
 	} else {
 
-		set_bone_pose(p_bone, bones[p_bone].rest.inverse() * (get_bone_global_pose(bones[p_bone].parent).affine_inverse() * p_pose));
+		set_bone_pose(p_bone, bones[p_bone].rest.affine_inverse() * (get_bone_global_pose(bones[p_bone].parent).affine_inverse() * p_pose)); //slow
 
 	}
 
@@ -404,7 +404,7 @@ void Skeleton::clear_bones() {
 void Skeleton::set_bone_pose(int p_bone, const Transform& p_pose) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	ERR_FAIL_COND( !is_inside_scene() );
+	ERR_FAIL_COND( !is_inside_tree() );
 	
 
 	bones[p_bone].pose=p_pose;
@@ -442,7 +442,7 @@ void Skeleton::_make_dirty() {
 	if (dirty)
 		return;
 		
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		dirty=true;
 		return;
 	}

@@ -64,7 +64,7 @@ void VisibilityNotifier2D::_exit_viewport(Viewport* p_viewport){
 void VisibilityNotifier2D::set_rect(const Rect2& p_rect){
 
 	rect=p_rect;
-	if (is_inside_scene())
+	if (is_inside_tree())
 		get_world_2d()->_update_notifier(this,get_global_transform().xform(rect));
 
 	_change_notify("rect");
@@ -85,7 +85,7 @@ void VisibilityNotifier2D::_notification(int p_what) {
 
 
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			//get_world_2d()->
 			get_world_2d()->_register_notifier(this,get_global_transform().xform(rect));
@@ -97,12 +97,12 @@ void VisibilityNotifier2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (get_scene()->is_editor_hint()) {
+			if (get_tree()->is_editor_hint()) {
 
 				draw_rect(rect,Color(1,0.5,1,0.2));
 			}
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			get_world_2d()->_remove_notifier(this);
 		} break;
@@ -190,7 +190,7 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	if (add) {
 
-		p_node->connect(SceneStringNames::get_singleton()->exit_scene,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
+		p_node->connect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
 		nodes[p_node]=meta;
 		_change_node_state(p_node,false);
 	}
@@ -207,9 +207,9 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 void VisibilityEnabler2D::_notification(int p_what){
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		if (get_scene()->is_editor_hint())
+		if (get_tree()->is_editor_hint())
 			return;
 
 
@@ -222,9 +222,9 @@ void VisibilityEnabler2D::_notification(int p_what){
 
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
-		if (get_scene()->is_editor_hint())
+		if (get_tree()->is_editor_hint())
 			return;
 
 
@@ -235,7 +235,7 @@ void VisibilityEnabler2D::_notification(int p_what){
 
 			if (!visible)
 				_change_node_state(E->key(),true);
-			E->key()->disconnect(SceneStringNames::get_singleton()->exit_scene,this,"_node_removed");
+			E->key()->disconnect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed");
 		}
 
 		nodes.clear();

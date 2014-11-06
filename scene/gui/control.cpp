@@ -209,7 +209,7 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 
 void Control::_update_minimum_size() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	data.pending_min_size_update=false;
@@ -367,7 +367,7 @@ void Control::_notification(int p_notification) {
 
 	switch(p_notification) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			if (data.window==this) {
 
@@ -391,7 +391,7 @@ void Control::_notification(int p_notification) {
 				window->drag_attempted=false;
 				window->drag_preview=NULL;
 
-				if (get_scene()->is_editor_hint()) {
+				if (get_tree()->is_editor_hint()) {
 
 					Node *n = this;
 					while(n) {
@@ -411,7 +411,7 @@ void Control::_notification(int p_notification) {
 			_size_changed();
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (data.window) {
 
@@ -657,7 +657,7 @@ void Control::_notification(int p_notification) {
 			}
 
 		} break;
-		case SceneMainLoop::NOTIFICATION_WM_UNFOCUS_REQUEST: {
+		case SceneTree::NOTIFICATION_WM_UNFOCUS_REQUEST: {
 
 			if (!window)
 				return;
@@ -737,7 +737,7 @@ void Control::drop_data(const Point2& p_point,const Variant& p_data){
 
 void Control::force_drag(const Variant& p_data,Control *p_control) {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!data.window);
 	ERR_FAIL_COND(p_data.get_type()==Variant::NIL);
 
@@ -755,8 +755,8 @@ void Control::set_drag_preview(Control *p_control) {
 
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND( !((Object*)p_control)->cast_to<Control>());
-	ERR_FAIL_COND(!is_inside_scene() || !data.window);
-	ERR_FAIL_COND(p_control->is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree() || !data.window);
+	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent()!=NULL);
 
 	if (data.window->window->drag_preview) {
@@ -1000,8 +1000,8 @@ void Control::_window_input_event(InputEvent p_event) {
 
 						if (top->data.modal_exclusive) {
 							//cancel event, sorry, modal exclusive EATS UP ALL
-							get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
-							get_scene()->set_input_as_handled();
+							get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+							get_tree()->set_input_as_handled();
 							return; // no one gets the event if exclusive NO ONE
 						}
 
@@ -1071,8 +1071,8 @@ void Control::_window_input_event(InputEvent p_event) {
 					_window_call_input(window->mouse_focus,p_event);
 				}
 				
-				get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
-				get_scene()->set_input_as_handled();
+				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+				get_tree()->set_input_as_handled();
 
 			} else {
 
@@ -1116,8 +1116,8 @@ void Control::_window_input_event(InputEvent p_event) {
 				}
 
 
-				get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
-				get_scene()->set_input_as_handled();
+				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+				get_tree()->set_input_as_handled();
 
 			}
 		} break;
@@ -1184,7 +1184,7 @@ void Control::_window_input_event(InputEvent p_event) {
 			
 			window->mouse_over=over;
 
-			get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_tooltip");
+			get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_tooltip");
 
 			if (window->drag_preview) {
 				window->drag_preview->set_pos(pos);
@@ -1240,8 +1240,8 @@ void Control::_window_input_event(InputEvent p_event) {
 
 
 			
-			get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
-			get_scene()->set_input_as_handled();
+			get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+			get_tree()->set_input_as_handled();
 
 
 			if (window->drag_data.get_type()!=Variant::NIL && p_event.mouse_motion.button_mask&BUTTON_MASK_LEFT) {
@@ -1267,7 +1267,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 				if (window->key_event_accepted) {
 
-					get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+					get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 					break;
 				}
 			}
@@ -1327,7 +1327,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 				if (next) {
 					next->grab_focus();
-					get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+					get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				}
 			}
 
@@ -1342,7 +1342,7 @@ Control *Control::get_window() const {
 
 bool Control::is_window() const {
 
-	return (is_inside_scene() && window);
+	return (is_inside_tree() && window);
 }
 
 
@@ -1644,7 +1644,7 @@ bool Control::has_constant(const StringName& p_name,const StringName& p_type) co
 
 Size2 Control::get_parent_area_size() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),Size2());
+	ERR_FAIL_COND_V(!is_inside_tree(),Size2());
 
 	Size2 parent_size;
 
@@ -1661,7 +1661,7 @@ Size2 Control::get_parent_area_size() const {
 
 void Control::_size_changed() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Size2 parent_size = get_parent_area_size();
@@ -1716,7 +1716,7 @@ void Control::_size_changed() {
 
 float Control::_get_parent_range(int p_idx) const {
 	
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 	
 		return 1.0;
 		
@@ -1787,7 +1787,7 @@ float Control::_a2s(float p_val, AnchorType p_anchor,float p_range) const {
 
 void Control::set_anchor(Margin p_margin,AnchorType p_anchor) {
 	
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		
 		data.anchor[p_margin]=p_anchor;
 	} else {
@@ -2059,7 +2059,7 @@ void Control::add_constant_override(const StringName& p_name, int p_constant) {
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 
-	if (is_inside_scene() && p_focus_mode == FOCUS_NONE && data.focus_mode!=FOCUS_NONE && has_focus())
+	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode!=FOCUS_NONE && has_focus())
 		release_focus();
 
 	data.focus_mode=p_focus_mode;
@@ -2257,7 +2257,7 @@ bool Control::has_focus() const {
 
 void Control::grab_focus() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!data.window);
 	
 	if (data.focus_mode==FOCUS_NONE)
@@ -2267,7 +2267,7 @@ void Control::grab_focus() {
 	if (data.window->window->key_focus && data.window->window->key_focus==this)
 		return;
 		
-	get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_window_remove_focus");	
+	get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_window_remove_focus");	
 	data.window->window->key_focus=this;
 	notification(NOTIFICATION_FOCUS_ENTER);
 #ifdef DEBUG_ENABLED
@@ -2281,13 +2281,13 @@ void Control::grab_focus() {
 
 void Control::release_focus() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!data.window);
 
 	if (!has_focus())
 		return;
 
-	get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,"windows","_window_remove_focus");
+	get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_window_remove_focus");
 	//data.window->window->key_focus=this;
 	//notification(NOTIFICATION_FOCUS_ENTER);
 	update();
@@ -2296,12 +2296,12 @@ void Control::release_focus() {
 
 bool Control::is_toplevel_control() const {
 
-	return is_inside_scene() && (!data.parent_canvas_item && !window && is_set_as_toplevel());
+	return is_inside_tree() && (!data.parent_canvas_item && !window && is_set_as_toplevel());
 }
 
 void Control::show_modal(bool p_exclusive) {
 	
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND(!data.SI && data.window!=this);
 	ERR_FAIL_COND(!data.window);
 
@@ -2361,7 +2361,7 @@ void Control::_modal_stack_remove() {
 			if (!pfoc)
 				return;
 
-			if (!pfoc->is_inside_scene() || !pfoc->is_visible())
+			if (!pfoc->is_inside_tree() || !pfoc->is_visible())
 				return;
 			pfoc->grab_focus();
 		} else {
@@ -2411,13 +2411,13 @@ void Control::set_theme(const Ref<Theme>& p_theme) {
 void Control::_window_accept_event() {
 
 	window->key_event_accepted=true;
-	if (is_inside_scene())
-		get_scene()->set_input_as_handled();
+	if (is_inside_tree())
+		get_tree()->set_input_as_handled();
 
 }
 void Control::accept_event() {
 
-	if (is_inside_scene() && get_window())
+	if (is_inside_tree() && get_window())
 		get_window()->_window_accept_event();
 
 }
@@ -2665,7 +2665,7 @@ float Control::get_stretch_ratio() const {
 
 void Control::grab_click_focus() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 
 	if (data.window && data.window->window->mouse_focus) {
 
@@ -2700,7 +2700,7 @@ void Control::grab_click_focus() {
 
 void Control::minimum_size_changed() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (data.pending_min_size_update)
@@ -2743,7 +2743,7 @@ bool Control::is_stopping_mouse() const {
 
 Control *Control::get_focus_owner() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),NULL);
+	ERR_FAIL_COND_V(!is_inside_tree(),NULL);
 	ERR_FAIL_COND_V(!window,NULL);
 	return window->key_focus;
 }

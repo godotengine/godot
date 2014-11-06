@@ -33,7 +33,7 @@
 void RayCast2D::set_cast_to(const Vector2& p_point) {
 
 	cast_to=p_point;
-	if (is_inside_scene() && get_scene()->is_editor_hint())
+	if (is_inside_tree() && get_tree()->is_editor_hint())
 		update();
 
 }
@@ -82,7 +82,7 @@ Vector2 RayCast2D::get_collision_normal() const{
 void RayCast2D::set_enabled(bool p_enabled) {
 
 	enabled=p_enabled;
-	if (is_inside_scene() && !get_scene()->is_editor_hint())
+	if (is_inside_tree() && !get_tree()->is_editor_hint())
 		set_fixed_process(p_enabled);
 	if (!p_enabled)
 		collided=false;
@@ -101,15 +101,15 @@ void RayCast2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
-			if (enabled && !get_scene()->is_editor_hint())
+			if (enabled && !get_tree()->is_editor_hint())
 				set_fixed_process(true);
 			else
 				set_fixed_process(false);
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (enabled)
 				set_fixed_process(false);
@@ -118,7 +118,7 @@ void RayCast2D::_notification(int p_what) {
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_DRAW: {
 
-			if (!get_scene()->is_editor_hint())
+			if (!get_tree()->is_editor_hint())
 				break;
 			Matrix32 xf;
 			xf.rotate(cast_to.atan2());

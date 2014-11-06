@@ -360,7 +360,7 @@ void TextEdit::_update_scrollbars() {
 void TextEdit::_notification(int p_what) {
 
 	switch(p_what) {
-		 case NOTIFICATION_ENTER_SCENE: {
+		 case NOTIFICATION_ENTER_TREE: {
 
 			_update_caches();
 			if (cursor_changed_dirty)
@@ -1868,7 +1868,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char,const String& p_text,int
 
 	if (!text_changed_dirty && !setting_text) {
 
-		if (is_inside_scene())
+		if (is_inside_tree())
 			MessageQueue::get_singleton()->push_call(this,"_text_changed_emit");
 		text_changed_dirty=true;
 	}
@@ -1921,7 +1921,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column,int p_to_lin
 
 	if (!text_changed_dirty && !setting_text) {
 
-		if (is_inside_scene())
+		if (is_inside_tree())
 			MessageQueue::get_singleton()->push_call(this,"_text_changed_emit");
 		text_changed_dirty=true;
 	}
@@ -2133,7 +2133,7 @@ void TextEdit::cursor_set_column(int p_col) {
 
 	if (!cursor_changed_dirty) {
 
-		if (is_inside_scene())
+		if (is_inside_tree())
 			MessageQueue::get_singleton()->push_call(this,"_cursor_changed_emit");
 		cursor_changed_dirty=true;
 	}
@@ -2165,7 +2165,7 @@ void TextEdit::cursor_set_line(int p_row) {
 
 	if (!cursor_changed_dirty) {
 
-		if (is_inside_scene())
+		if (is_inside_tree())
 			MessageQueue::get_singleton()->push_call(this,"_cursor_changed_emit");
 		cursor_changed_dirty=true;
 	}

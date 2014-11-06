@@ -150,7 +150,7 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 
 void EditorNode::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 		editor_data.save_editor_external_data();
 
 		log->deinit(); // do not get messages anymore
@@ -223,13 +223,13 @@ void EditorNode::_notification(int p_what) {
 		}
 	
 	}
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		//MessageQueue::get_singleton()->push_call(this,"_get_scene_metadata");
-		get_scene()->set_editor_hint(true);				
-		get_scene()->get_root()->set_as_audio_listener(false);
-		get_scene()->get_root()->set_as_audio_listener_2d(false);
-		get_scene()->set_auto_accept_quit(false);
+		get_tree()->set_editor_hint(true);				
+		get_tree()->get_root()->set_as_audio_listener(false);
+		get_tree()->get_root()->set_as_audio_listener_2d(false);
+		get_tree()->set_auto_accept_quit(false);
 				//VisualServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport(),false);
 
 		//import_monitor->scan_changes();
@@ -252,7 +252,7 @@ void EditorNode::_notification(int p_what) {
 			if (ok!=OK)
 				OS::get_singleton()->set_exit_code(255);
 			defer_translatable="";
-			get_scene()->quit();
+			get_tree()->quit();
 		}
 
 /*
@@ -1243,7 +1243,7 @@ void EditorNode::_edit_current() {
 
 		Node * current_node = current_obj->cast_to<Node>();
 		ERR_FAIL_COND(!current_node);
-		ERR_FAIL_COND(!current_node->is_inside_scene());
+		ERR_FAIL_COND(!current_node->is_inside_tree());
 
 
 
@@ -1914,7 +1914,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			_menu_option_confirm(RUN_STOP,true);
-			get_scene()->quit();
+			get_tree()->quit();
 				
 		} break;
 		case FILE_EXTERNAL_OPEN_SCENE: {
@@ -2134,7 +2134,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				break;
 			}
 
-			get_scene()->quit();
+			get_tree()->quit();
 			String exec = OS::get_singleton()->get_executable_path();
 
 			List<String> args;
@@ -2392,8 +2392,8 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 	if (edited_scene && edited_scene->cast_to<Popup>())
 		edited_scene->cast_to<Popup>()->show(); //show popups
 	scene_tree_dock->set_edited_scene(edited_scene);
-	if (get_scene())
-		get_scene()->set_edited_scene_root(edited_scene);
+	if (get_tree())
+		get_tree()->set_edited_scene_root(edited_scene);
 
 	if (edited_scene) {
 		if (p_scene->get_parent()!=scene_root)
@@ -2437,7 +2437,7 @@ void EditorNode::_fetch_translatable_strings(const Object *p_object,Set<StringNa
 
 Error EditorNode::save_translatable_strings(const String& p_to_file) {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		defer_translatable=p_to_file;
 		return OK;
 	}
@@ -2631,7 +2631,7 @@ Error EditorNode::save_optimized_copy(const String& p_scene,const String& p_pres
 
 Error EditorNode::load_scene(const String& p_scene) {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		defer_load_scene = p_scene;
 		return OK;
 	}

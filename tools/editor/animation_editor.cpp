@@ -2310,7 +2310,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );				
 				//menu_track->set_icon(get_icon("AddTrack","EditorIcons"));
@@ -2466,12 +2466,12 @@ void AnimationKeyEditor::set_animation(const Ref<Animation>& p_anim) {
 void AnimationKeyEditor::set_root(Node *p_root) {
 
 	if (root)
-		root->disconnect("exit_scene",this,"_root_removed");
+		root->disconnect("exit_tree",this,"_root_removed");
 
 	root=p_root;
 
 	if (root)
-		root->connect("exit_scene",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
+		root->connect("exit_tree",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
 
 
 }

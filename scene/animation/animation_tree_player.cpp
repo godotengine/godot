@@ -1586,7 +1586,7 @@ void AnimationTreePlayer::_update_sources() {
 
 	if (master==NodePath())
 		return;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Node *m = get_node(master);

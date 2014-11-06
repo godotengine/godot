@@ -30,7 +30,7 @@
 
 
 
-void AnimationCache::_node_exit_scene(Node *p_node) {
+void AnimationCache::_node_exit_tree(Node *p_node) {
 
 	//it is one shot, so it disconnects upon arrival
 
@@ -59,7 +59,7 @@ void AnimationCache::_clear_cache() {
 
 	while(connected_nodes.size()) {
 
-		connected_nodes.front()->get()->disconnect("exit_scene",this,"_node_exit_scene");
+		connected_nodes.front()->get()->disconnect("exit_tree",this,"_node_exit_tree");
 		connected_nodes.erase(connected_nodes.front());
 	}
 	path_cache.clear();;
@@ -73,7 +73,7 @@ void AnimationCache::_update_cache() {
 	cache_valid=false;
 
 	ERR_FAIL_COND(!root);
-	ERR_FAIL_COND(!root->is_inside_scene());
+	ERR_FAIL_COND(!root->is_inside_tree());
 	ERR_FAIL_COND(animation.is_null());
 
 	for(int i=0;i<animation->get_track_count();i++) {
@@ -206,7 +206,7 @@ void AnimationCache::_update_cache() {
 
 		if (!connected_nodes.has(path.node)) {
 			connected_nodes.insert(path.node);
-			path.node->connect("exit_scene",this,"_node_exit_scene",Node::make_binds(path.node),CONNECT_ONESHOT);
+			path.node->connect("exit_tree",this,"_node_exit_tree",Node::make_binds(path.node),CONNECT_ONESHOT);
 		}
 
 
@@ -368,7 +368,7 @@ void AnimationCache::set_animation(const Ref<Animation>& p_animation) {
 
 void AnimationCache::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_node_exit_scene"),&AnimationCache::_node_exit_scene);
+	ObjectTypeDB::bind_method(_MD("_node_exit_tree"),&AnimationCache::_node_exit_tree);
 	ObjectTypeDB::bind_method(_MD("_animation_changed"),&AnimationCache::_animation_changed);
 }
 

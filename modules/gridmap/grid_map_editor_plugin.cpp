@@ -974,7 +974,7 @@ void GridMapEditor::update_grid() {
 
 void GridMapEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		theme_pallete->connect("cell_selected", this,"_item_selected_cbk");
 		edit_mode->connect("item_selected", this,"_edit_mode_changed");
@@ -983,16 +983,16 @@ void GridMapEditor::_notification(int p_what) {
 		for(int i=0;i<3;i++) {
 
 			grid[i]=VS::get_singleton()->mesh_create();
-			grid_instance[i]=VS::get_singleton()->instance_create2(grid[i],get_scene()->get_root()->get_world()->get_scenario());
+			grid_instance[i]=VS::get_singleton()->instance_create2(grid[i],get_tree()->get_root()->get_world()->get_scenario());
 		}
 
-		selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh,get_scene()->get_root()->get_world()->get_scenario());
-		duplicate_instance = VisualServer::get_singleton()->instance_create2(duplicate_mesh,get_scene()->get_root()->get_world()->get_scenario());
+		selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh,get_tree()->get_root()->get_world()->get_scenario());
+		duplicate_instance = VisualServer::get_singleton()->instance_create2(duplicate_mesh,get_tree()->get_root()->get_world()->get_scenario());
 
 		_update_selection_transform();
 		_update_duplicate_indicator();
 
-	} else if (p_what==NOTIFICATION_EXIT_SCENE) {
+	} else if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		for(int i=0;i<3;i++) {
 
@@ -1025,7 +1025,7 @@ void GridMapEditor::_notification(int p_what) {
 
 		if (lock_view) {
 
-			EditorNode*editor = get_scene()->get_root()->get_child(0)->cast_to<EditorNode>();
+			EditorNode*editor = get_tree()->get_root()->get_child(0)->cast_to<EditorNode>();
 
 			Plane p;
 			p.normal[edit_axis]=1.0;
@@ -1055,7 +1055,7 @@ void GridMapEditor::_update_cursor_instance() {
 			Ref<Mesh> mesh = node->get_theme()->get_item_mesh(selected_pallete);
 			if (!mesh.is_null() && mesh->get_rid().is_valid()) {
 
-				cursor_instance=VisualServer::get_singleton()->instance_create2(mesh->get_rid(),get_scene()->get_root()->get_world()->get_scenario());
+				cursor_instance=VisualServer::get_singleton()->instance_create2(mesh->get_rid(),get_tree()->get_root()->get_world()->get_scenario());
 				VisualServer::get_singleton()->instance_set_transform(cursor_instance,cursor_transform);
 			}
 		}

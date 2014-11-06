@@ -500,7 +500,7 @@ void PathEditorPlugin::_close_curve() {
 
 void PathEditorPlugin::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		curve_create->connect("pressed",this,"_mode_changed",make_binds(0));
 		curve_edit->connect("pressed",this,"_mode_changed",make_binds(1));

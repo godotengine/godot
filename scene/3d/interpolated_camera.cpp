@@ -32,9 +32,9 @@
 void InterpolatedCamera::_notification(int p_what) {
 
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
-			if (get_scene()->is_editor_hint() && enabled)
+			if (get_tree()->is_editor_hint() && enabled)
 				set_fixed_process(false);
 
 		} break;
@@ -109,7 +109,7 @@ void InterpolatedCamera::set_interpolation_enabled(bool p_enable) {
 		return;
 	enabled=p_enable;
 	if (p_enable) {
-		if (is_inside_scene() && get_scene()->is_editor_hint())
+		if (is_inside_tree() && get_tree()->is_editor_hint())
 			return;
 		set_process(true);
 	} else

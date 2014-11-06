@@ -13,7 +13,7 @@ void CollisionPolygon2DEditor::_notification(int p_what) {
 			button_create->set_icon( get_icon("Edit","EditorIcons"));
 			button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
 			button_edit->set_pressed(true);
-			get_scene()->connect("node_removed",this,"_node_removed");
+			get_tree()->connect("node_removed",this,"_node_removed");
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {

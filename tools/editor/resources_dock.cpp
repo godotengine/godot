@@ -116,7 +116,7 @@ void ResourcesDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			button_new->set_icon(get_icon("New","EditorIcons"));
 			button_open->set_icon(get_icon("Folder","EditorIcons"));

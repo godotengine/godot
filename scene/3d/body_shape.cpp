@@ -320,7 +320,7 @@ void CollisionShape::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 			unparenting=false;
 
 			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
@@ -331,7 +331,7 @@ void CollisionShape::_notification(int p_what) {
 				_update_body();
 			}
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 		/*	if (indicator_instance.is_valid()) {
 				VisualServer::get_singleton()->free(indicator_instance);
 				indicator_instance=RID();

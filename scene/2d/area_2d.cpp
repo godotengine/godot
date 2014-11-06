@@ -94,7 +94,7 @@ real_t Area2D::get_priority() const{
 }
 
 
-void Area2D::_body_enter_scene(ObjectID p_id) {
+void Area2D::_body_enter_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
@@ -102,9 +102,9 @@ void Area2D::_body_enter_scene(ObjectID p_id) {
 
 	Map<ObjectID,BodyState>::Element *E=body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_scene);
+	ERR_FAIL_COND(E->get().in_tree);
 
-	E->get().in_scene=true;
+	E->get().in_tree=true;
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 	for(int i=0;i<E->get().shapes.size();i++) {
 
@@ -113,15 +113,15 @@ void Area2D::_body_enter_scene(ObjectID p_id) {
 
 }
 
-void Area2D::_body_exit_scene(ObjectID p_id) {
+void Area2D::_body_exit_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 	ERR_FAIL_COND(!node);
 	Map<ObjectID,BodyState>::Element *E=body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_scene);
-	E->get().in_scene=false;
+	ERR_FAIL_COND(!E->get().in_tree);
+	E->get().in_tree=false;
 	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
 	for(int i=0;i<E->get().shapes.size();i++) {
 
@@ -147,11 +147,11 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 
 			E = body_map.insert(objid,BodyState());
 			E->get().rc=0;
-			E->get().in_scene=node && node->is_inside_scene();
+			E->get().in_tree=node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene,make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene,make_binds(objid));
-				if (E->get().in_scene) {
+				node->connect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree,make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree,make_binds(objid));
+				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 				}
 			}
@@ -162,7 +162,7 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 			E->get().shapes.insert(ShapePair(p_body_shape,p_area_shape));
 
 
-		if (E->get().in_scene) {
+		if (E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_enter_shape,objid,node,p_body_shape,p_area_shape);
 		}
 
@@ -178,9 +178,9 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 		if (E->get().rc==0) {
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
-				node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
-				if (E->get().in_scene)
+				node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+				node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
+				if (E->get().in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
 			}
@@ -188,7 +188,7 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 			eraseit=true;
 
 		}
-		if (node && E->get().in_scene) {
+		if (node && E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_area_shape);
 		}
 
@@ -212,7 +212,7 @@ void Area2D::_clear_monitoring() {
 		Object *obj = ObjectDB::get_instance(E->key());
 		Node *node = obj ? obj->cast_to<Node>() : NULL;
 		ERR_CONTINUE(!node);
-		if (!E->get().in_scene)
+		if (!E->get().in_tree)
 			continue;
 
 		for(int i=0;i<E->get().shapes.size();i++) {
@@ -222,8 +222,8 @@ void Area2D::_clear_monitoring() {
 
 		emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
-		node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
-		node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
+		node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+		node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
 	}
 
 }
@@ -232,7 +232,7 @@ void Area2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			_clear_monitoring();
 		} break;
@@ -266,8 +266,8 @@ bool Area2D::is_monitoring_enabled() const {
 
 void Area2D::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_body_enter_scene","id"),&Area2D::_body_enter_scene);
-	ObjectTypeDB::bind_method(_MD("_body_exit_scene","id"),&Area2D::_body_exit_scene);
+	ObjectTypeDB::bind_method(_MD("_body_enter_tree","id"),&Area2D::_body_enter_tree);
+	ObjectTypeDB::bind_method(_MD("_body_exit_tree","id"),&Area2D::_body_exit_tree);
 
 	ObjectTypeDB::bind_method(_MD("set_space_override_mode","enable"),&Area2D::set_space_override_mode);
 	ObjectTypeDB::bind_method(_MD("get_space_override_mode"),&Area2D::get_space_override_mode);

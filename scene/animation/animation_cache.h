@@ -58,7 +58,7 @@ class AnimationCache : public Object {
 	bool cache_dirty;
 	bool cache_valid;
 
-	void _node_exit_scene(Node *p_node);
+	void _node_exit_tree(Node *p_node);
 
 	void _clear_cache();
 	void _update_cache();

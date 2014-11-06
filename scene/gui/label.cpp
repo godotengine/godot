@@ -339,7 +339,7 @@ int Label::get_longest_line_width() const {
 
 int Label::get_line_count() const {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return 1;
 	if (word_cache_dirty)
 		const_cast<Label*>(this)->regenerate_word_cache();

@@ -258,7 +258,7 @@ void ShaderEditor::_tab_changed(int p_which) {
 
 void ShaderEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		close->set_normal_texture( get_icon("Close","EditorIcons"));
 		close->set_hover_texture( get_icon("CloseHover","EditorIcons"));

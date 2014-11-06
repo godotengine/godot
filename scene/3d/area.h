@@ -56,8 +56,8 @@ private:
 
 	void _body_inout(int p_status,const RID& p_body, int p_instance, int p_body_shape,int p_area_shape);
 
-	void _body_enter_scene(ObjectID p_id);
-	void _body_exit_scene(ObjectID p_id);
+	void _body_enter_tree(ObjectID p_id);
+	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
 
@@ -77,7 +77,7 @@ private:
 	struct BodyState {
 
 		int rc;
-		bool in_scene;
+		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 

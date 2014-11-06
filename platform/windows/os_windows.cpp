@@ -953,7 +953,7 @@ void OS_Windows::process_joysticks() {
 
 			if ( (joysticks[i].last_buttons & (1<<j)) != (jinfo.dwButtons & (1<<j)) ) {
 
-				ievent.joy_button.button_index = _pc_joystick_get_native_button(j);
+				ievent.joy_button.button_index = j; //_pc_joystick_get_native_button(j);
 				ievent.joy_button.pressed = jinfo.dwButtons & 1<<j;
 				ievent.ID = ++last_id;
 				input->parse_input_event(ievent);

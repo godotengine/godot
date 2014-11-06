@@ -110,7 +110,7 @@ protected:
 
 
 
-	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_scene()) return; _notify_transform(this); if (!block_transform_notify) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
+	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
 	void item_rect_changed();
 
@@ -120,7 +120,7 @@ public:
 
 
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED=SceneMainLoop::NOTIFICATION_TRANSFORM_CHANGED, //unique
+		NOTIFICATION_TRANSFORM_CHANGED=SceneTree::NOTIFICATION_TRANSFORM_CHANGED, //unique
 		NOTIFICATION_DRAW=30,
 		NOTIFICATION_VISIBILITY_CHANGED=31,
 		NOTIFICATION_ENTER_CANVAS=32,

@@ -572,7 +572,7 @@ void LineEdit::set_cursor_pos(int p_pos) {
 //	set_window_pos(cursor_pos-get_window_lengt//h());
 //	}
 	
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		
 		window_pos=cursor_pos;
 		return;

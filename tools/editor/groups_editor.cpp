@@ -37,7 +37,7 @@
 
 void GroupsEditor::_notification(int p_what) {
 	
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 		connect("confirmed", this,"_close");
 	}	
 }

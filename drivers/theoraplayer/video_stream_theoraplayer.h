@@ -13,7 +13,6 @@ class VideoStreamTheoraplayer : public VideoStream {
 	OBJ_TYPE(VideoStreamTheoraplayer,VideoStream);
 
 	mutable DVector<uint8_t> data;
-	TheoraVideoManager* mgr;
 	TheoraVideoClip* clip;
 	bool started;
 	bool playing;

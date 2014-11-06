@@ -677,7 +677,7 @@ void GridMap::_octant_clear_baked(const OctantKey &p_key) {
 	g.bake_instance=RID();
 	g.baked=Ref<Mesh>();
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_octant_enter_world(p_key);
 	g.dirty=true;
 	_queue_dirty_map();
