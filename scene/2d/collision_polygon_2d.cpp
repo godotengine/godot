@@ -95,7 +95,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 	switch(p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
-			if (!is_inside_scene())
+			if (!is_inside_tree())
 				break;
 			_update_parent();
 

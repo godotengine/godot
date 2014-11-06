@@ -102,12 +102,12 @@ void BoneAttachment::_check_unbind() {
 
 void BoneAttachment::set_bone_name(const String& p_name) {
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_check_unbind();
 
 	bone_name=p_name;
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_check_bind();
 }
 
@@ -120,11 +120,11 @@ void BoneAttachment::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_check_bind();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			_check_unbind();
 		} break;

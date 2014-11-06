@@ -141,11 +141,11 @@ InputEvent::operator String() const {
 	return "";
 }
 
-void InputEvent::set_as_action(const String& p_action) {
+void InputEvent::set_as_action(const String& p_action, bool p_pressed) {
 
 	type=ACTION;
 	action.action=InputMap::get_singleton()->get_action_id(p_action);
-	action.pressed=false;
+	action.pressed=p_pressed;
 }
 
 bool InputEvent::is_pressed() const {

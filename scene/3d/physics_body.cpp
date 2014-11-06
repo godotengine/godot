@@ -193,7 +193,7 @@ StaticBody::~StaticBody() {
 
 
 
-void RigidBody::_body_enter_scene(ObjectID p_id) {
+void RigidBody::_body_enter_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
@@ -201,9 +201,9 @@ void RigidBody::_body_enter_scene(ObjectID p_id) {
 
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_scene);
+	ERR_FAIL_COND(E->get().in_tree);
 
-	E->get().in_scene=true;
+	E->get().in_tree=true;
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 
 	for(int i=0;i<E->get().shapes.size();i++) {
@@ -213,15 +213,15 @@ void RigidBody::_body_enter_scene(ObjectID p_id) {
 
 }
 
-void RigidBody::_body_exit_scene(ObjectID p_id) {
+void RigidBody::_body_exit_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 	ERR_FAIL_COND(!node);
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_scene);
-	E->get().in_scene=false;
+	ERR_FAIL_COND(!E->get().in_tree);
+	E->get().in_tree=false;
 	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
 	for(int i=0;i<E->get().shapes.size();i++) {
 
@@ -246,11 +246,11 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 
 			E = contact_monitor->body_map.insert(objid,BodyState());
 			//E->get().rc=0;
-			E->get().in_scene=node && node->is_inside_scene();
+			E->get().in_tree=node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene,make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene,make_binds(objid));
-				if (E->get().in_scene) {
+				node->connect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree,make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree,make_binds(objid));
+				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 				}
 			}
@@ -261,7 +261,7 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 			E->get().shapes.insert(ShapePair(p_body_shape,p_local_shape));
 
 
-		if (E->get().in_scene) {
+		if (E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_enter_shape,objid,node,p_body_shape,p_local_shape);
 		}
 
@@ -272,21 +272,21 @@ void RigidBody::_body_inout(int p_status, ObjectID p_instance, int p_body_shape,
 		if (node)
 			E->get().shapes.erase(ShapePair(p_body_shape,p_local_shape));
 
-		bool in_scene = E->get().in_scene;
+		bool in_tree = E->get().in_tree;
 
 		if (E->get().shapes.empty()) {
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
-				node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
-				if (in_scene)
+				node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+				node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
+				if (in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
 			}
 
 			contact_monitor->body_map.erase(E);
 		}
-		if (node && in_scene) {
+		if (node && in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_local_shape);
 		}
 
@@ -682,8 +682,8 @@ void RigidBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_able_to_sleep"),&RigidBody::is_able_to_sleep);
 
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&RigidBody::_direct_state_changed);
-	ObjectTypeDB::bind_method(_MD("_body_enter_scene"),&RigidBody::_body_enter_scene);
-	ObjectTypeDB::bind_method(_MD("_body_exit_scene"),&RigidBody::_body_exit_scene);
+	ObjectTypeDB::bind_method(_MD("_body_enter_tree"),&RigidBody::_body_enter_tree);
+	ObjectTypeDB::bind_method(_MD("_body_exit_tree"),&RigidBody::_body_exit_tree);
 
 	ObjectTypeDB::bind_method(_MD("set_axis_lock","axis_lock"),&RigidBody::set_axis_lock);
 	ObjectTypeDB::bind_method(_MD("get_axis_lock"),&RigidBody::get_axis_lock);
@@ -792,7 +792,7 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 
 
 	colliding=false;
-	ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+	ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(get_world()->get_space());
 	ERR_FAIL_COND_V(!dss,Vector3());
 	const int max_shapes=32;
@@ -989,7 +989,7 @@ Vector3 KinematicBody::move_to(const Vector3& p_position) {
 
 bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),false);
+	ERR_FAIL_COND_V(!is_inside_tree(),false);
 	PhysicsDirectSpaceState *dss = PhysicsServer::get_singleton()->space_get_direct_state(get_world()->get_space());
 	ERR_FAIL_COND_V(!dss,false);
 
@@ -1029,7 +1029,7 @@ bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
 
 bool KinematicBody::is_colliding() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),false);
+	ERR_FAIL_COND_V(!is_inside_tree(),false);
 
 	return colliding;
 }

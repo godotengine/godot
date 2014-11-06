@@ -33,13 +33,13 @@ void EventPlayer::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			//set_idle_process(false); //don't annoy
-			if (playback.is_valid() && autoplay && !get_scene()->is_editor_hint())
+			if (playback.is_valid() && autoplay && !get_tree()->is_editor_hint())
 				play();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			stop(); //wathever it may be doing, stop
 		} break;
@@ -75,7 +75,7 @@ Ref<EventStream> EventPlayer::get_stream() const {
 
 void EventPlayer::play() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	if (playback.is_null()) {
 		return;
 	}
@@ -93,7 +93,7 @@ void EventPlayer::play() {
 
 void EventPlayer::stop() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (playback.is_null())
 		return;
@@ -241,7 +241,7 @@ bool EventPlayer::is_paused() const {
 void EventPlayer::_set_play(bool p_play) {
 
 	_play=p_play;
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		if(_play)
 			play();
 		else

@@ -89,7 +89,7 @@ void SamplePlayer2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			SpatialSound2DServer::get_singleton()->source_set_polyphony(get_source_rid(),polyphony);
 

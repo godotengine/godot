@@ -32,10 +32,10 @@ void VideoPlayer::_notification(int p_notification) {
 
 	switch (p_notification) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			//set_idle_process(false); //don't annoy
-			if (stream.is_valid() && autoplay && !get_scene()->is_editor_hint())
+			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
 				play();
 		} break;
 
@@ -48,7 +48,7 @@ void VideoPlayer::_notification(int p_notification) {
 			if (!stream->is_playing())
 				return;
 
-			stream->update(get_scene()->get_idle_process_time());
+			stream->update(get_tree()->get_idle_process_time());
 			int prev_width = texture->get_width();
 			stream->pop_frame(texture);
 			if (prev_width == 0) {
@@ -118,7 +118,7 @@ Ref<VideoStream> VideoPlayer::get_stream() const {
 
 void VideoPlayer::play() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	if (stream.is_null())
 		return;
 	stream->play();
@@ -127,7 +127,7 @@ void VideoPlayer::play() {
 
 void VideoPlayer::stop() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (stream.is_null())
 		return;

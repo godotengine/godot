@@ -45,7 +45,7 @@ void CollisionObject2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			if (area)
 				Physics2DServer::get_singleton()->area_set_transform(rid,get_global_transform());
@@ -69,7 +69,7 @@ void CollisionObject2D::_notification(int p_what) {
 				Physics2DServer::get_singleton()->body_set_state(rid,Physics2DServer::BODY_STATE_TRANSFORM,get_global_transform());
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (area) {
 				Physics2DServer::get_singleton()->area_set_space(rid,RID());

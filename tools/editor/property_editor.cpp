@@ -1863,11 +1863,11 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 void PropertyEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		get_scene()->connect("node_removed",this,"_node_removed");
+		get_tree()->connect("node_removed",this,"_node_removed");
 	}
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		edit(NULL);
 	}
@@ -2919,7 +2919,7 @@ void PropertyEditor::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("property_edited",PropertyInfo( Variant::STRING, "property")));
 }
 
-Tree *PropertyEditor::get_tree() {
+Tree *PropertyEditor::get_scene_tree() {
 
 	return tree;
 }

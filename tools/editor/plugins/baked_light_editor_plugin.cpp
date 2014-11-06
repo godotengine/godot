@@ -34,7 +34,7 @@ void BakedLightEditor::_node_removed(Node *p_node) {
 void BakedLightEditor::_notification(int p_option) {
 
 
-	if (p_option==NOTIFICATION_ENTER_SCENE) {
+	if (p_option==NOTIFICATION_ENTER_TREE) {
 
 		button_bake->set_icon(get_icon("Bake","EditorIcons"));
 		button_reset->set_icon(get_icon("Reload","EditorIcons"));

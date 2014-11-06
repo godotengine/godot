@@ -31,7 +31,7 @@
 
 void Path2D::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_scene() && get_scene()->is_editor_hint()) {
+	if (p_what==NOTIFICATION_DRAW && curve.is_valid() && is_inside_tree() && get_tree()->is_editor_hint()) {
 		//draw the curve!!
 
 		for(int i=0;i<curve->get_point_count();i++) {
@@ -52,7 +52,7 @@ void Path2D::_notification(int p_what) {
 void Path2D::_curve_changed() {
 
 
-	if (is_inside_scene() && get_scene()->is_editor_hint())
+	if (is_inside_tree() && get_tree()->is_editor_hint())
 		update();
 
 }
@@ -135,7 +135,7 @@ void PathFollow2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			Node *parent=get_parent();
 			if (parent) {
@@ -147,7 +147,7 @@ void PathFollow2D::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 
 			path=NULL;

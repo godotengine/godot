@@ -249,7 +249,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2& p_pos, bool p_append,b
 	Vector3 ray=_get_ray(p_pos);
 	Vector3 pos=_get_ray_pos(p_pos);
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_scene()->get_root()->get_world()->get_scenario() );
+	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(pos,ray,get_tree()->get_root()->get_world()->get_scenario() );
 	Set<Ref<SpatialEditorGizmo> > found_gizmos;
 
 	//uint32_t closest=0;
@@ -449,7 +449,7 @@ void SpatialEditorViewport::_select_region() {
 
 	frustum.push_back( far );
 
-	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_convex(frustum,get_scene()->get_root()->get_world()->get_scenario());
+	Vector<RID> instances=VisualServer::get_singleton()->instances_cull_convex(frustum,get_tree()->get_root()->get_world()->get_scenario());
 
 
 	for (int i=0;i<instances.size();i++) {
@@ -724,7 +724,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 						if (b.mod.control) {
 
-							Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(ray_origin,ray_dir,get_scene()->get_root()->get_world()->get_scenario() );
+							Vector<RID> instances=VisualServer::get_singleton()->instances_cull_ray(ray_origin,ray_dir,get_tree()->get_root()->get_world()->get_scenario() );
 
 							Plane p(ray_origin,_get_camera_normal());
 
@@ -1711,7 +1711,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		surface->connect("draw",this,"_draw");
 		surface->connect("input_event",this,"_sinput");
@@ -1976,7 +1976,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 	for(int i=0;i<3;i++) {
 		move_gizmo_instance[i]=VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(move_gizmo_instance[i],spatial_editor->get_move_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(move_gizmo_instance[i],get_scene()->get_root()->get_world()->get_scenario());
+		VS::get_singleton()->instance_set_scenario(move_gizmo_instance[i],get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
 		//VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
 		VS::get_singleton()->instance_geometry_set_flag(move_gizmo_instance[i],VS::INSTANCE_FLAG_CAST_SHADOW,false);
@@ -1984,7 +1984,7 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 
 		rotate_gizmo_instance[i]=VS::get_singleton()->instance_create();
 		VS::get_singleton()->instance_set_base(rotate_gizmo_instance[i],spatial_editor->get_rotate_gizmo(i)->get_rid());
-		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i],get_scene()->get_root()->get_world()->get_scenario());
+		VS::get_singleton()->instance_set_scenario(rotate_gizmo_instance[i],get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
 		//VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_DEPH_SCALE,true);
 		VS::get_singleton()->instance_geometry_set_flag(rotate_gizmo_instance[i],VS::INSTANCE_FLAG_CAST_SHADOW,false);
@@ -2001,7 +2001,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 	if (!p_activate) {
 
-		previewing->disconnect("exit_scene",this,"_preview_exited_scene");
+		previewing->disconnect("exit_tree",this,"_preview_exited_scene");
 		previewing=NULL;
 		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), camera->get_camera() ); //restore
 		if (!preview)
@@ -2012,7 +2012,7 @@ void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 	} else {
 
 		previewing=preview;
-		previewing->connect("exit_scene",this,"_preview_exited_scene");
+		previewing->connect("exit_tree",this,"_preview_exited_scene");
 		VS::get_singleton()->viewport_attach_camera( viewport->get_viewport(), preview->get_camera() ); //replace
 		view_menu->hide();
 		surface->update();
@@ -2313,7 +2313,7 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 //		si->aabb = VisualServer::get_singleton()->instance_get_base_aabb(inst);
 
 
-	if (get_scene()->is_editor_hint())
+	if (get_tree()->is_editor_hint())
 		editor->call("edit_node",sp);
 
 
@@ -2454,7 +2454,7 @@ void SpatialEditor::set_state(const Dictionary& p_state) {
 				VisualServer::get_singleton()->free(light_instance);
 				light_instance=RID();
 			} else {
-				light_instance=VisualServer::get_singleton()->instance_create2(light,get_scene()->get_root()->get_world()->get_scenario());
+				light_instance=VisualServer::get_singleton()->instance_create2(light,get_tree()->get_root()->get_world()->get_scenario());
 				VisualServer::get_singleton()->instance_set_transform(light_instance,light_transform);
 
 			}
@@ -2656,7 +2656,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 				VisualServer::get_singleton()->free(light_instance);
 				light_instance=RID();
 			} else {
-				light_instance=VisualServer::get_singleton()->instance_create2(light,get_scene()->get_root()->get_world()->get_scenario());
+				light_instance=VisualServer::get_singleton()->instance_create2(light,get_tree()->get_root()->get_world()->get_scenario());
 				VisualServer::get_singleton()->instance_set_transform(light_instance,light_transform);
 
 				_update_default_light_angle();
@@ -2828,7 +2828,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		case MENU_VIEW_DISPLAY_NORMAL: {
 
 
-			VisualServer::get_singleton()->scenario_set_debug( get_scene()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_DISABLED );
+			VisualServer::get_singleton()->scenario_set_debug( get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_DISABLED );
 
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
@@ -2838,7 +2838,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_DISPLAY_WIREFRAME: {
 
-			VisualServer::get_singleton()->scenario_set_debug( get_scene()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_WIREFRAME );
+			VisualServer::get_singleton()->scenario_set_debug( get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_WIREFRAME );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), true );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
@@ -2847,7 +2847,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_DISPLAY_OVERDRAW: {
 
-			VisualServer::get_singleton()->scenario_set_debug( get_scene()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_OVERDRAW );
+			VisualServer::get_singleton()->scenario_set_debug( get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_OVERDRAW );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), true );
@@ -2856,7 +2856,7 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 		} break;
 		case MENU_VIEW_DISPLAY_SHADELESS: {
 
-			VisualServer::get_singleton()->scenario_set_debug( get_scene()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS );
+			VisualServer::get_singleton()->scenario_set_debug( get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_NORMAL), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_WIREFRAME), false );
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(MENU_VIEW_DISPLAY_OVERDRAW), false );
@@ -2903,7 +2903,7 @@ void SpatialEditor::_init_indicators() {
 	//make sure that the camera indicator is not selectable
 	light=VisualServer::get_singleton()->light_create( VisualServer::LIGHT_DIRECTIONAL );
 	//VisualServer::get_singleton()->light_set_shadow( light, true );
-	light_instance=VisualServer::get_singleton()->instance_create2(light,get_scene()->get_root()->get_world()->get_scenario());
+	light_instance=VisualServer::get_singleton()->instance_create2(light,get_tree()->get_root()->get_world()->get_scenario());
 
 
 
@@ -2964,7 +2964,7 @@ void SpatialEditor::_init_indicators() {
 			d[VisualServer::ARRAY_COLOR]=grid_colors[i];
 			VisualServer::get_singleton()->mesh_add_surface(grid[i],VisualServer::PRIMITIVE_LINES,d);
 			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat);
-			grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i],get_scene()->get_root()->get_world()->get_scenario());
+			grid_instance[i] = VisualServer::get_singleton()->instance_create2(grid[i],get_tree()->get_root()->get_world()->get_scenario());
 
 			grid_visible[i]=false;
 			grid_enable[i]=false;
@@ -2988,7 +2988,7 @@ void SpatialEditor::_init_indicators() {
 //		origin = VisualServer::get_singleton()->poly_create();
 //		VisualServer::get_singleton()->poly_add_primitive(origin,origin_points,Vector<Vector3>(),origin_colors,Vector<Vector3>());
 //		VisualServer::get_singleton()->poly_set_material(origin,indicator_mat,true);
-		origin_instance = VisualServer::get_singleton()->instance_create2(origin,get_scene()->get_root()->get_world()->get_scenario());
+		origin_instance = VisualServer::get_singleton()->instance_create2(origin,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(origin_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
 
 		VisualServer::get_singleton()->instance_geometry_set_flag(origin_instance,VS::INSTANCE_FLAG_CAST_SHADOW,false);
@@ -3025,7 +3025,7 @@ void SpatialEditor::_init_indicators() {
 		VisualServer::get_singleton()->mesh_add_surface(cursor_mesh,VS::PRIMITIVE_LINES,d);
 		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cmat,true);
 
-		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_scene()->get_root()->get_world()->get_scenario());
+		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(cursor_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
 
 		VisualServer::get_singleton()->instance_geometry_set_flag(cursor_instance,VS::INSTANCE_FLAG_CAST_SHADOW,false);
@@ -3306,19 +3306,19 @@ void SpatialEditor::_notification(int p_what) {
 
 		_menu_item_pressed(MENU_VIEW_USE_1_VIEWPORT);
 
-		get_scene()->connect("node_removed",this,"_node_removed");
+		get_tree()->connect("node_removed",this,"_node_removed");
 		VS::get_singleton()->scenario_set_fallback_environment(get_viewport()->find_world()->get_scenario(),viewport_environment->get_rid());
 
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		gizmos = memnew( SpatialEditorGizmos );
 		_init_indicators();
 		_update_default_light_angle();
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		_finish_indicators();
 		memdelete( gizmos );

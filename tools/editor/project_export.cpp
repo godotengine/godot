@@ -256,7 +256,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 
 			CenterContainer *cc = memnew( CenterContainer );
@@ -320,7 +320,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			_update_group_tree();
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 		} break;
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
@@ -482,7 +482,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 		return ERR_CANT_CREATE;
 	} else {
 		if (p_quit_after) {
-			get_scene()->quit();
+			get_tree()->quit();
 		}
 	}
 

@@ -293,7 +293,7 @@ void ScrollBar::_notification(int p_what) {
 		
 	}
 	
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 
 		if (has_node(drag_slave_path)) {
@@ -303,16 +303,16 @@ void ScrollBar::_notification(int p_what) {
 
 		if (drag_slave) {
 			drag_slave->connect("input_event",this,"_drag_slave_input");
-			drag_slave->connect("exit_scene",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+			drag_slave->connect("exit_tree",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
 		}
 
 
 	}
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		if (drag_slave) {
 			drag_slave->disconnect("input_event",this,"_drag_slave_input");
-			drag_slave->disconnect("exit_scene",this,"_drag_slave_exit");
+			drag_slave->disconnect("exit_tree",this,"_drag_slave_exit");
 		}
 
 		drag_slave=NULL;
@@ -635,18 +635,18 @@ void ScrollBar::_drag_slave_input(const InputEvent& p_input) {
 
 void ScrollBar::set_drag_slave(const NodePath& p_path) {
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 
 		if (drag_slave) {
 			drag_slave->disconnect("input_event",this,"_drag_slave_input");
-			drag_slave->disconnect("exit_scene",this,"_drag_slave_exit");
+			drag_slave->disconnect("exit_tree",this,"_drag_slave_exit");
 		}
 	}
 
 	drag_slave=NULL;
 	drag_slave_path=p_path;
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 
 		if (has_node(p_path)) {
 			Node *n = get_node(p_path);
@@ -655,7 +655,7 @@ void ScrollBar::set_drag_slave(const NodePath& p_path) {
 
 		if (drag_slave) {
 			drag_slave->connect("input_event",this,"_drag_slave_input");
-			drag_slave->connect("exit_scene",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
+			drag_slave->connect("exit_tree",this,"_drag_slave_exit",varray(),CONNECT_ONESHOT);
 		}
 	}
 }

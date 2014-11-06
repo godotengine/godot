@@ -87,7 +87,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		updating = false;
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		editor->connect("hide_animation_player_editors",this,"_hide_anim_editors");
 		add_anim->set_icon( get_icon("New","EditorIcons") );
@@ -119,7 +119,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-		get_scene()->connect("node_removed",this,"_node_removed");
+		get_tree()->connect("node_removed",this,"_node_removed");
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {

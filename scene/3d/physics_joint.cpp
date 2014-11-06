@@ -42,7 +42,7 @@ void Joint::_update_joint(bool p_only_free) {
 		bb=RID();
 	}
 
-	if (p_only_free || !is_inside_scene())
+	if (p_only_free || !is_inside_tree())
 		return;
 
 	Node *node_a = has_node( get_node_a() ) ? get_node( get_node_a() ) : (Node*)NULL;
@@ -131,7 +131,7 @@ void Joint::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			_update_joint();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_update_joint(true);
 				PhysicsServer::get_singleton()->free(joint);

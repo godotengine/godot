@@ -41,8 +41,8 @@ SceneStringNames::SceneStringNames() {
 	visibility_changed=StaticCString::create("visibility_changed");
 	input_event=StaticCString::create("input_event");
 	shader_shader=StaticCString::create("shader/shader");
-	enter_scene=StaticCString::create("enter_scene");
-	exit_scene=StaticCString::create("exit_scene");
+	enter_tree=StaticCString::create("enter_tree");
+	exit_tree=StaticCString::create("exit_tree");
 	item_rect_changed=StaticCString::create("item_rect_changed");
 	size_flags_changed=StaticCString::create("size_flags_changed");
 	minimum_size_changed=StaticCString::create("minimum_size_changed");
@@ -74,8 +74,8 @@ SceneStringNames::SceneStringNames() {
 	_fixed_process=StaticCString::create("_fixed_process");
 	_process=StaticCString::create("_process");
 
-	_enter_scene=StaticCString::create("_enter_scene");
-	_exit_scene=StaticCString::create("_exit_scene");
+	_enter_tree=StaticCString::create("_enter_tree");
+	_exit_tree=StaticCString::create("_exit_tree");
 	_enter_world=StaticCString::create("_enter_world");
 	_exit_world=StaticCString::create("_exit_world");
 	_ready=StaticCString::create("_ready");
@@ -98,8 +98,8 @@ SceneStringNames::SceneStringNames() {
 	enter_camera=StaticCString::create("enter_camera");
 	exit_camera=StaticCString::create("exit_camera");
 
-	_body_enter_scene = StaticCString::create("_body_enter_scene");
-	_body_exit_scene = StaticCString::create("_body_exit_scene");
+	_body_enter_tree = StaticCString::create("_body_enter_tree");
+	_body_exit_tree = StaticCString::create("_body_exit_tree");
 
 	_input_event=StaticCString::create("_input_event");
 

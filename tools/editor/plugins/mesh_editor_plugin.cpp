@@ -47,7 +47,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			CollisionShape *cshape = memnew( CollisionShape );
 			cshape->set_shape(shape);
 			body->add_child(cshape);
-			Node *owner = node==get_scene()->get_edited_scene_root() ? node : node->get_owner();
+			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action("Create Static Trimesh");
@@ -68,7 +68,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			CollisionShape *cshape = memnew( CollisionShape );
 			cshape->set_shape(shape);
 			body->add_child(cshape);
-			Node *owner = node==get_scene()->get_edited_scene_root() ? node : node->get_owner();
+			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action("Create Static Trimesh");
@@ -83,7 +83,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE: {
 
 
-			if (node==get_scene()->get_edited_scene_root()) {
+			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
 				err_dialog->popup_centered(Size2(100,50));
 				return;
@@ -109,7 +109,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_CONVEX_COLLISION_SHAPE: {
 
 
-			if (node==get_scene()->get_edited_scene_root()) {
+			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
 				err_dialog->popup_centered(Size2(100,50));
 				return;
@@ -146,7 +146,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 			NavigationMeshInstance *nmi = memnew(  NavigationMeshInstance );
 			nmi->set_navigation_mesh(nmesh);
 
-			Node *owner = node==get_scene()->get_edited_scene_root() ? node : node->get_owner();
+			Node *owner = node==get_tree()->get_edited_scene_root() ? node : node->get_owner();
 
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action("Create Navigation Mesh");
@@ -186,7 +186,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 	MeshInstance *mi = memnew( MeshInstance );
 	mi->set_mesh(mesho);
 	Node *owner=node->get_owner();
-	if (get_scene()->get_edited_scene_root()==node) {
+	if (get_tree()->get_edited_scene_root()==node) {
 		owner=node;
 	}
 

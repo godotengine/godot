@@ -628,7 +628,7 @@ void ProjectManager::_open_project_confirm() {
 		ERR_FAIL_COND(err);
 	}
 
-	get_scene()->quit();
+	get_tree()->quit();
 }
 
 void ProjectManager::_open_project() {
@@ -786,7 +786,7 @@ void ProjectManager::_erase_project()  {
 
 void ProjectManager::_exit_dialog()  {
 
-	get_scene()->quit();
+	get_tree()->quit();
 }
 
 void ProjectManager::_bind_methods() {
@@ -1033,7 +1033,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 
 void ProjectListFilter::_notification(int p_what) {
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 			clear_search_button->set_icon(get_icon("CloseHover","EditorIcons"));
 		} break;
 	}

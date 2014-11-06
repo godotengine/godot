@@ -211,7 +211,7 @@ void BaseButton::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		CanvasItem *ci=this;
 		while(ci) {
@@ -227,7 +227,7 @@ void BaseButton::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		if (group)
 			group->_remove_button(this);

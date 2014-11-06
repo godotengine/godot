@@ -257,7 +257,7 @@ void GeometryInstance::_find_baked_light() {
 
 void GeometryInstance::_update_visibility() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	_change_notify("geometry/visible");

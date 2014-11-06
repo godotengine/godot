@@ -159,8 +159,8 @@ friend class RenderTargetTexture;
 
 	_FORCE_INLINE_ Matrix32 _get_input_pre_xform() const;
 
-	void _vp_enter_scene();
-	void _vp_exit_scene();
+	void _vp_enter_tree();
+	void _vp_exit_tree();
 
 	void _vp_input(const InputEvent& p_ev);
 	void _vp_unhandled_input(const InputEvent& p_ev);
