@@ -37,7 +37,7 @@ void SpriteBase3D::_propagate_color_changed() {
 
 void SpriteBase3D::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		if (!pending_update)
 			_im_update();
@@ -52,7 +52,7 @@ void SpriteBase3D::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 
 		if (parent_sprite) {

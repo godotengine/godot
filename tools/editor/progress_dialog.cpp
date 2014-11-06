@@ -182,6 +182,7 @@ void ProgressDialog::add_task(const String& p_task,const String& p_label,int p_s
 	t.progress->set_val(p_steps);
 	vb2->add_child(t.progress);
 	t.state=memnew( Label );
+	t.state->set_clip_text(true);
 	vb2->add_child(t.state);
 	main->add_child(t.vb);
 

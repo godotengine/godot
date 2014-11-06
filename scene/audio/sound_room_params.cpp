@@ -53,7 +53,7 @@ void SoundRoomParams::_notification(int p_what) {
 	switch(p_what) {
 
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 #if 0
 			Node *n=this;
 			Room *room_instance=NULL;
@@ -81,7 +81,7 @@ void SoundRoomParams::_notification(int p_what) {
 #endif
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			room=RID();
 

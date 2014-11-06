@@ -529,7 +529,7 @@ public:
 
 	void _notification(int p_what) {
 
-		if (p_what==NOTIFICATION_ENTER_SCENE) {
+		if (p_what==NOTIFICATION_ENTER_TREE) {
 			prop_edit->edit(options);
 			_update_text();
 		}

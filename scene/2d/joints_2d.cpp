@@ -32,7 +32,7 @@
 
 void Joint2D::_update_joint() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (joint.is_valid()) {
@@ -86,7 +86,7 @@ void Joint2D::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			_update_joint();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 
 				Physics2DServer::get_singleton()->free(joint);
@@ -145,7 +145,7 @@ void PinJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_scene() && get_scene()->is_editor_hint()) {
+			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
 				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
 				draw_line(Point2(0,-10),Point2(0,+10),Color(0.7,0.6,0.0,0.5),3);
@@ -197,7 +197,7 @@ void GrooveJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_scene() && get_scene()->is_editor_hint()) {
+			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
 				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
 				draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);
@@ -291,7 +291,7 @@ void DampedSpringJoint2D::_notification(int p_what) {
 
 	switch(p_what) {
 		case NOTIFICATION_DRAW: {
-			if (is_inside_scene() && get_scene()->is_editor_hint()) {
+			if (is_inside_tree() && get_tree()->is_editor_hint()) {
 
 				draw_line(Point2(-10,0),Point2(+10,0),Color(0.7,0.6,0.0,0.5),3);
 				draw_line(Point2(-10,length),Point2(+10,length),Color(0.7,0.6,0.0,0.5),3);

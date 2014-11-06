@@ -1158,7 +1158,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 					cn->value=v;
 					return cn;
 
-				} else if (op->arguments[0]->type==Node::TYPE_CONSTANT && op->arguments[1]->type==Node::TYPE_IDENTIFIER) {
+				} /*else if (op->arguments[0]->type==Node::TYPE_CONSTANT && op->arguments[1]->type==Node::TYPE_IDENTIFIER) {
 
 					ConstantNode *ca = static_cast<ConstantNode*>(op->arguments[0]);
 					IdentifierNode *ib = static_cast<IdentifierNode*>(op->arguments[1]);
@@ -1173,10 +1173,31 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 					ConstantNode *cn = alloc_node<ConstantNode>();
 					cn->value=v;
 					return cn;
+				}*/
 
+				return op;
+
+			} else if (op->op==OperatorNode::OP_INDEX_NAMED) {
+
+				if (op->arguments[0]->type==Node::TYPE_CONSTANT && op->arguments[1]->type==Node::TYPE_IDENTIFIER) {
+
+					ConstantNode *ca = static_cast<ConstantNode*>(op->arguments[0]);
+					IdentifierNode *ib = static_cast<IdentifierNode*>(op->arguments[1]);
+
+					bool valid;
+					Variant v = ca->value.get_named(ib->name,&valid);
+					if (!valid) {
+						_set_error("invalid index '"+String(ib->name)+"' in constant expression");
+						return op;
+					}
+
+					ConstantNode *cn = alloc_node<ConstantNode>();
+					cn->value=v;
+					return cn;
 				}
 
 				return op;
+
 			}
 
 			//validate assignment (don't assign to cosntant expression

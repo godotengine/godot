@@ -961,7 +961,7 @@ bool Main::start() {
 
 	MainLoop *main_loop=NULL;
 	if (editor) {
-		main_loop = memnew(SceneMainLoop);
+		main_loop = memnew(SceneTree);
 	};
 
 	if (test!="") {
@@ -979,7 +979,7 @@ bool Main::start() {
 		ERR_EXPLAIN("Can't load script: "+script);
 		ERR_FAIL_COND_V(script_res.is_null(),false);
 		
-		if( script_res->can_instance() /*&& script_res->inherits_from("SceneMainLoopScripted")*/) {
+		if( script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
 		
 
 			StringName instance_type=script_res->get_instance_base_type();
@@ -1005,7 +1005,7 @@ bool Main::start() {
 	}
 	
 	if (!main_loop && main_loop_type=="")
-		main_loop_type="SceneMainLoop";
+		main_loop_type="SceneTree";
 	
 	if (!main_loop) {
 		if (!ObjectTypeDB::type_exists(main_loop_type)) {
@@ -1030,9 +1030,9 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_type("SceneMainLoop")) {
+	if (main_loop->is_type("SceneTree")) {
 		
-		SceneMainLoop *sml = main_loop->cast_to<SceneMainLoop>();
+		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
 #ifdef TOOLS_ENABLED
 
@@ -1060,19 +1060,19 @@ bool Main::start() {
 			String stretch_aspect = GLOBAL_DEF("display/stretch_aspect","ignore");
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/width",0),GLOBAL_DEF("display/height",0));
 
-			SceneMainLoop::StretchMode sml_sm=SceneMainLoop::STRETCH_MODE_DISABLED;
+			SceneTree::StretchMode sml_sm=SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode=="2d")
-				sml_sm=SceneMainLoop::STRETCH_MODE_2D;
+				sml_sm=SceneTree::STRETCH_MODE_2D;
 			else if (stretch_mode=="viewport")
-				sml_sm=SceneMainLoop::STRETCH_MODE_VIEWPORT;
+				sml_sm=SceneTree::STRETCH_MODE_VIEWPORT;
 
-			SceneMainLoop::StretchAspect sml_aspect=SceneMainLoop::STRETCH_ASPECT_IGNORE;
+			SceneTree::StretchAspect sml_aspect=SceneTree::STRETCH_ASPECT_IGNORE;
 			if (stretch_aspect=="keep")
-				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP;
+				sml_aspect=SceneTree::STRETCH_ASPECT_KEEP;
 			else if (stretch_aspect=="keep_width")
-				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP_WIDTH;
+				sml_aspect=SceneTree::STRETCH_ASPECT_KEEP_WIDTH;
 			else if (stretch_aspect=="keep_height")
-				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP_HEIGHT;
+				sml_aspect=SceneTree::STRETCH_ASPECT_KEEP_HEIGHT;
 
 			sml->set_screen_stretch(sml_sm,sml_aspect,stretch_size);
 

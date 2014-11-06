@@ -348,7 +348,7 @@ void EditorImportAnimationOptions::_bind_methods() {
 
 void EditorImportAnimationOptions::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		flags->connect("item_edited",this,"_changed");
 		clips_tree->connect("item_edited",this,"_item_edited");
@@ -807,7 +807,7 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 void EditorSceneImportDialog::_notification(int p_what) {
 
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 
 		List<String> extensions;
@@ -2366,6 +2366,28 @@ void EditorSceneImportPlugin::_create_clips(Node *scene, const Array& p_clips,bo
 	anim->remove_animation("default"); //remove default (no longer needed)
 }
 
+void EditorSceneImportPlugin::_filter_anim_tracks(Ref<Animation> anim,Set<String> &keep) {
+
+	Ref<Animation> a = anim;
+	ERR_FAIL_COND(!a.is_valid());
+
+	print_line("From Anim "+anim->get_name()+":");
+
+	for(int j=0;j<a->get_track_count();j++) {
+
+		String path = a->track_get_path(j);
+
+		if (!keep.has(path)) {
+
+			print_line("Remove: "+path);
+			a->remove_track(j);
+			j--;
+		}
+
+	}
+}
+
+
 void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) {
 
 	if (!scene->has_node(String("AnimationPlayer")))
@@ -2383,11 +2405,15 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 
 	List<StringName> anim_names;
 	anim->get_animation_list(&anim_names);
-	Set<String> keep;
 	for(List<StringName>::Element *E=anim_names.front();E;E=E->next()) {
 
 		String name = E->get();
 		bool valid_for_this=false;
+		bool valid=false;
+
+		Set<String> keep;
+		Set<String> keep_local;
+
 
 		for(int i=0;i<strings.size();i++) {
 
@@ -2395,12 +2421,15 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 			if (strings[i].begins_with("@")) {
 
 				valid_for_this=false;
-				keep.clear();
+				for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
+					keep.insert(F->get());
+				}
+				keep_local.clear();
 
 				Vector<String> filters=strings[i].substr(1,strings[i].length()).split(",");
 				for(int j=0;j<filters.size();j++) {
 
-					String fname = filters[i].strip_edges();
+					String fname = filters[j].strip_edges();
 					if (fname=="")
 						continue;
 					int fc = fname[0];
@@ -2418,6 +2447,10 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 						continue;
 					valid_for_this=plus;
 				}
+
+				if (valid_for_this)
+					valid=true;
+
 			} else if (valid_for_this) {
 
 				Ref<Animation> a = anim->get_animation(name);
@@ -2446,19 +2479,26 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 						continue;
 
 					if (plus)
-						keep.insert(path);
+						keep_local.insert(path);
 					else if (!keep.has(path)) {
-						a->remove_track(j);
-						j--;
+						keep_local.erase(path);
 					}
-
 				}
 
 			}
 
 		}
 
+		if (valid) {
+			for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
+				keep.insert(F->get());
+			}
+
+			_filter_anim_tracks(anim->get_animation(name),keep);
+		}
+
 	}
+
 
 
 }

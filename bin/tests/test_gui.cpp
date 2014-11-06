@@ -58,7 +58,7 @@
 namespace TestGUI {
 
 
-class TestMainLoop : public SceneMainLoop {
+class TestMainLoop : public SceneTree {
 
 
 	Control *control;
@@ -72,7 +72,7 @@ public:
 	}
 	virtual void init() {
 	
-		SceneMainLoop::init();
+		SceneTree::init();
 
 
 #if 0

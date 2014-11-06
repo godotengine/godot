@@ -34,14 +34,14 @@ void ParticleAttractor2D::_notification(int p_what) {
 
 	switch(p_what)	 {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_update_owner();
 
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (!get_scene()->is_editor_hint())
+			if (!get_tree()->is_editor_hint())
 				return;
 
 			Vector2 pv;
@@ -58,7 +58,7 @@ void ParticleAttractor2D::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (owner) {
 				_set_owner(NULL);
 			}
@@ -76,7 +76,7 @@ void ParticleAttractor2D::_owner_exited() {
 
 void ParticleAttractor2D::_update_owner() {
 
-	if (!is_inside_scene() || !has_node(path)) {
+	if (!is_inside_tree() || !has_node(path)) {
 		_set_owner(NULL);
 		return;
 	}
@@ -98,7 +98,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 		return;
 
 	if (owner) {
-		owner->disconnect("exit_scene",this,"_owner_exited");
+		owner->disconnect("exit_tree",this,"_owner_exited");
 		owner->attractors.erase(this);
 		owner=NULL;
 	}
@@ -106,7 +106,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 
 	if (owner) {
 
-		owner->connect("exit_scene",this,"_owner_exited",varray(),CONNECT_ONESHOT);
+		owner->connect("exit_tree",this,"_owner_exited",varray(),CONNECT_ONESHOT);
 		owner->attractors.insert(this);
 	}
 }
@@ -457,7 +457,7 @@ void Particles2D::_notification(int p_what) {
 			_process_particles( get_process_delta_time() );
 		} break;
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			float ppt=preprocess;
 			while(ppt>0) {

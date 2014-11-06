@@ -33,13 +33,13 @@ void StreamPlayer::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			//set_idle_process(false); //don't annoy
-			if (stream.is_valid() && autoplay && !get_scene()->is_editor_hint())
+			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
 				play();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			stop(); //wathever it may be doing, stop
 		} break;
@@ -75,7 +75,7 @@ Ref<AudioStream> StreamPlayer::get_stream() const {
 
 void StreamPlayer::play() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	if (stream.is_null())
 		return;
 	if (stream->is_playing())
@@ -91,7 +91,7 @@ void StreamPlayer::play() {
 
 void StreamPlayer::stop() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (stream.is_null())
 		return;
@@ -214,7 +214,7 @@ bool StreamPlayer::is_paused() const {
 void StreamPlayer::_set_play(bool p_play) {
 
 	_play=p_play;
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		if(_play)
 			play();
 		else

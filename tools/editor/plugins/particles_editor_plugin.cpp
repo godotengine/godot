@@ -110,7 +110,7 @@ void ParticlesEditor::_populate() {
 
 void ParticlesEditor::_notification(int p_notification) {
 
-	if (p_notification==NOTIFICATION_ENTER_SCENE) {
+	if (p_notification==NOTIFICATION_ENTER_TREE) {
 
 	}
 }

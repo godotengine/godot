@@ -245,7 +245,7 @@ public:
 	void _notification(int p_what) {
 
 
-		if (p_what==NOTIFICATION_ENTER_SCENE) {
+		if (p_what==NOTIFICATION_ENTER_TREE) {
 
 			option_editor->edit(options);
 		}

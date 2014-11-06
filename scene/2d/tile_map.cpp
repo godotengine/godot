@@ -33,7 +33,7 @@ void TileMap::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			pending_update=true;
 			_update_dirty_quadrants();
@@ -43,7 +43,7 @@ void TileMap::_notification(int p_what) {
 
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			_update_quadrant_space(RID());
 
@@ -68,7 +68,7 @@ void TileMap::_update_quadrant_space(const RID& p_space) {
 
 void TileMap::_update_quadrant_transform() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Matrix32 global_transform = get_global_transform();
@@ -164,7 +164,7 @@ void TileMap::_update_dirty_quadrants() {
 
 	if (!pending_update)
 		return;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (!tile_set.is_valid())
 		return;
@@ -345,7 +345,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_FRICTION,friction);
 	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		xform = get_global_transform() * xform;
 		RID space = get_world_2d()->get_space();
 		Physics2DServer::get_singleton()->body_set_space(q.static_body,space);
@@ -379,7 +379,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey,Quadrant>::Element *Q) {
 	if (pending_update)
 		return;
 	pending_update=true;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	call_deferred("_update_dirty_quadrants");
 }

@@ -185,7 +185,11 @@ class DaeExporter:
 
 		else:
 			#export relative, always, no one wants absolute paths.
-			imgpath = os.path.relpath(imgpath,os.path.dirname(self.path)).replace("\\","/") # export unix compatible always
+			try:
+				imgpath = os.path.relpath(imgpath,os.path.dirname(self.path)).replace("\\","/") # export unix compatible always
+			except:
+				pass #fails sometimes, not sure why
+
 
 
 		imgid = self.new_id("image")

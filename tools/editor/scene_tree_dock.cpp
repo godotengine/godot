@@ -393,7 +393,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			static const char* button_names[TOOL_BUTTON_MAX]={
 				"New",
@@ -913,7 +913,7 @@ void SceneTreeDock::_delete_confirm() {
 		//delete from animation
 		for(List<Node*>::Element *E=remove_list.front();E;E=E->next()) {
 			Node *n = E->get();
-			if (!n->is_inside_scene() || !n->get_parent())
+			if (!n->is_inside_tree() || !n->get_parent())
 				continue;
 
 			fill_path_renames(n,NULL,&path_renames);
@@ -924,7 +924,7 @@ void SceneTreeDock::_delete_confirm() {
 		//delete for read
 		for(List<Node*>::Element *E=remove_list.front();E;E=E->next()) {
 			Node *n = E->get();
-			if (!n->is_inside_scene() || !n->get_parent())
+			if (!n->is_inside_tree() || !n->get_parent())
 				continue;
 
 			List<Node*> owned;

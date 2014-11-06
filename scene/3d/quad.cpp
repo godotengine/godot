@@ -31,7 +31,7 @@
 
 void Quad::_update() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Vector3 normal;
@@ -171,14 +171,14 @@ void Quad::_notification(int p_what) {
 
 	switch(p_what)	 {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			if (pending_update)
 				_update();
 
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			pending_update=true;
 

@@ -681,12 +681,12 @@ void EditorFileSystem::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_load_type_cache();
 			    scan();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (use_threads && thread) {
 				//abort thread if in progress
 				abort_scan=true;

@@ -76,7 +76,7 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 
 void EditorLog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		log->add_color_override("default_color",get_color("font_color","Tree"));
 		tb->set_normal_texture( get_icon("Collapse","EditorIcons"));

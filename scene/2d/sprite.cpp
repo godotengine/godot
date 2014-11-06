@@ -365,7 +365,7 @@ void ViewportSprite::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			if (!viewport_path.is_empty()) {
 
@@ -380,7 +380,7 @@ void ViewportSprite::_notification(int p_what) {
 				item_rect_changed();
 			}
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (texture.is_valid()) {
 
@@ -422,7 +422,7 @@ void ViewportSprite::set_viewport_path(const NodePath& p_viewport) {
 
 	viewport_path=p_viewport;
 	update();
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (texture.is_valid()) {

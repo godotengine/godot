@@ -163,7 +163,7 @@ private:
 	struct BodyState {
 
 		//int rc;
-		bool in_scene;
+		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
@@ -176,8 +176,8 @@ private:
 
 
 	ContactMonitor *contact_monitor;
-	void _body_enter_scene(ObjectID p_id);
-	void _body_exit_scene(ObjectID p_id);
+	void _body_enter_tree(ObjectID p_id);
+	void _body_exit_tree(ObjectID p_id);
 
 
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape);

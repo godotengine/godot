@@ -115,7 +115,7 @@ void ScriptEditorQuickOpen::_confirmed() {
 
 void ScriptEditorQuickOpen::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed",this,"_confirmed");
 	}
@@ -977,7 +977,7 @@ void ScriptEditor::_tab_changed(int p_which) {
 
 void ScriptEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		editor->connect("play_pressed",this,"_editor_play");
 		editor->connect("pause_pressed",this,"_editor_pause");
@@ -992,7 +992,7 @@ void ScriptEditor::_notification(int p_what) {
 		_update_window_menu();
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		editor->disconnect("play_pressed",this,"_editor_play");
 		editor->disconnect("pause_pressed",this,"_editor_pause");
@@ -1050,7 +1050,7 @@ Dictionary ScriptEditor::get_state() const {
 		} else {
 
 
-			const Node *owner = _find_node_with_script(get_scene()->get_root(),script.get_ref_ptr());
+			const Node *owner = _find_node_with_script(get_tree()->get_root(),script.get_ref_ptr());
 			if (owner)
 				paths.push_back(owner->get_path());
 
@@ -1086,7 +1086,7 @@ void ScriptEditor::set_state(const Dictionary& p_state) {
 		if (source.get_type()==Variant::NODE_PATH) {
 
 
-			Node *owner=get_scene()->get_root()->get_node(source);
+			Node *owner=get_tree()->get_root()->get_node(source);
 			if (!owner)
 				continue;
 

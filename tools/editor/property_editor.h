@@ -197,7 +197,7 @@ public:
 
 	String get_selected_path() const;
 
-	Tree *get_tree();
+	Tree *get_scene_tree();
 	Label* get_top_label();
 	void hide_top_label();
 	void update_tree();

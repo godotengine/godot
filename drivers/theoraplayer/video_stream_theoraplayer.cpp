@@ -37,6 +37,9 @@
 #include "include/theoraplayer/TheoraException.h"
 
 #include "core/ring_buffer.h"
+#include "core/os/thread_safe.h"
+
+static TheoraVideoManager* mgr = NULL;
 
 class TPDataFA : public TheoraDataSource {
 
@@ -107,6 +110,8 @@ public:
 
 class AudioStreamInput : public AudioStreamResampled {
 
+	_THREAD_SAFE_CLASS_;
+
 	int channels;
 	int freq;
 
@@ -114,16 +119,28 @@ class AudioStreamInput : public AudioStreamResampled {
 	mutable RingBuffer<float> rb;
 	int rb_power;
 	int total_wrote;
+	bool playing;
 
 public:
 
 	virtual void play() {
+
+		_THREAD_SAFE_METHOD_
 		_setup(channels, freq, 256);
 		stream_rid=AudioServer::get_singleton()->audio_stream_create(get_audio_stream());
 		AudioServer::get_singleton()->stream_set_active(stream_rid,true);
 		AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,1);
+		playing = true;
 	};
-	virtual void stop() {};
+	virtual void stop() {
+
+		_THREAD_SAFE_METHOD_
+
+		AudioServer::get_singleton()->stream_set_active(stream_rid,false);
+		//_clear_stream();
+		playing=false;
+		_clear();
+	};
 	virtual bool is_playing() const { return true; };
 
 	virtual void set_paused(bool p_paused) {};
@@ -141,12 +158,13 @@ public:
 	virtual float get_pos() const { return 0; };
 	virtual void seek_pos(float p_time) {};
 
-	virtual UpdateMode get_update_mode() const { return UPDATE_IDLE; };
+	virtual UpdateMode get_update_mode() const { return UPDATE_THREAD; };
 
 	virtual bool _can_mix() const { return true; };
 
 	void input(float* p_data, int p_samples) {
 
+		_THREAD_SAFE_METHOD_;
 		if (rb.space_left() < p_samples) {
 			rb_power += 1;
 			rb.resize(rb_power);
@@ -156,6 +174,7 @@ public:
 
 	void update() {
 
+		_THREAD_SAFE_METHOD_;
 		int todo = get_todo();
 		int16_t* buffer = get_write_buffer();
 		int samples = rb.data_left();
@@ -181,11 +200,17 @@ public:
 
 	AudioStreamInput(int p_channels, int p_freq) {
 
+		playing = false;
 		channels = p_channels;
 		freq = p_freq;
 		total_wrote = 0;
 		rb_power = 12;
 		rb.resize(rb_power);
+	};
+
+	~AudioStreamInput() {
+
+		stop();
 	};
 };
 
@@ -398,8 +423,10 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 		audio_factory = memnew(TPAudioGodotFactory);
 	};
 
-	mgr = memnew(TheoraVideoManager);
-	mgr->setAudioInterfaceFactory(audio_factory);
+	if (mgr == NULL) {
+		mgr = memnew(TheoraVideoManager);
+		mgr->setAudioInterfaceFactory(audio_factory);
+	};
 
 	if (p_file.find(".mp4") != -1) {
 		
@@ -425,15 +452,18 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 
 VideoStreamTheoraplayer::~VideoStreamTheoraplayer() {
 
-	if (mgr) {
-		memdelete(mgr);
+	//if (mgr) {
+	//	memdelete(mgr);
+	//};
+	//mgr = NULL;
+	if (clip) {
+		delete clip; // created by video manager with new
 	};
-	mgr = NULL;
 };
 
 VideoStreamTheoraplayer::VideoStreamTheoraplayer() {
 
-	mgr = NULL;
+	//mgr = NULL;
 	clip = NULL;
 	started = false;
 	playing = false;

@@ -41,16 +41,16 @@
 */
 
 
-class SceneMainLoop;
+class SceneTree;
 
 class Node;
 class Viewport;
 
-class SceneMainLoop : public MainLoop {
+class SceneTree : public MainLoop {
 
 	_THREAD_SAFE_CLASS_
 
-	OBJ_TYPE( SceneMainLoop, MainLoop );	
+	OBJ_TYPE( SceneTree, MainLoop );
 public:
 
 
@@ -234,14 +234,14 @@ public:
 	Node *get_edited_scene_root() const;
 #endif
 
-	SceneMainLoop();
-	~SceneMainLoop();
+	SceneTree();
+	~SceneTree();
 
 };
 
 
-VARIANT_ENUM_CAST( SceneMainLoop::StretchMode );
-VARIANT_ENUM_CAST( SceneMainLoop::StretchAspect );
+VARIANT_ENUM_CAST( SceneTree::StretchMode );
+VARIANT_ENUM_CAST( SceneTree::StretchAspect );
 
 
 

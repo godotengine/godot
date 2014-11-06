@@ -224,7 +224,7 @@ void ImportSettingsDialog::update_tree() {
 
 void ImportSettingsDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"update_tree");
 	}
