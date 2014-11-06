@@ -128,6 +128,7 @@ void register_core_types() {
 
 	ObjectTypeDB::register_virtual_type<ResourceInteractiveLoader>();
 
+	ObjectTypeDB::register_type<_ByteArray>();
 	ObjectTypeDB::register_type<_File>();
 	ObjectTypeDB::register_type<_Directory>();
 	ObjectTypeDB::register_type<_Thread>();

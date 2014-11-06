@@ -29,6 +29,7 @@
 #include "texture.h"
 #include "io/image_loader.h"
 #include "core/os/os.h"
+#include "os/bytesbuffer.h"
 
 
 
@@ -258,6 +259,34 @@ void ImageTexture::load(const String& p_path) {
 
 }
 
+void ImageTexture::load_image_buffer(const DVector<uint8_t>& p_buffer, uint8_t type){
+    Image img;
+    BytesBuffer db;
+    String imagetype =  "";
+    switch(type){
+        case 0:
+                imagetype="_.jpg";
+            break;
+        case 1:
+                imagetype="_.png";
+            break;
+        case 2:
+                imagetype="_.webp";
+            break;
+        default:
+            return;
+    }
+
+    int len = p_buffer.size();
+    ERR_FAIL_COND(len==0);
+    DVector<uint8_t>::Read r = p_buffer.read();
+    db.seek(0);
+    db.store_buffer(&r[0],len);
+    img.load_image_buffer(imagetype,&db);
+    create_from_image(img);
+    db.close();
+}
+
 void ImageTexture::set_data(const Image& p_image) {
 	
 	VisualServer::get_singleton()->texture_set_data(texture,p_image);
@@ -398,6 +427,7 @@ void ImageTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("create_from_image","image","flags"),&ImageTexture::create_from_image,DEFVAL(FLAGS_DEFAULT));
 	ObjectTypeDB::bind_method(_MD("get_format"),&ImageTexture::get_format);
 	ObjectTypeDB::bind_method(_MD("load","path"),&ImageTexture::load);
+    ObjectTypeDB::bind_method(_MD("load_image_buffer","buffer","type"),&ImageTexture::load_image_buffer);
 	ObjectTypeDB::bind_method(_MD("set_data","image"),&ImageTexture::set_data);
 	ObjectTypeDB::bind_method(_MD("get_data","cube_side"),&ImageTexture::get_data);
 	ObjectTypeDB::bind_method(_MD("set_storage","mode"),&ImageTexture::set_storage);
@@ -416,6 +446,9 @@ void ImageTexture::_bind_methods() {
 	BIND_CONSTANT( STORAGE_COMPRESS_LOSSY  );
 	BIND_CONSTANT( STORAGE_COMPRESS_LOSSLESS );
 
+    BIND_CONSTANT( JPEG );
+    BIND_CONSTANT( PNG  );
+    BIND_CONSTANT( WEBP );
 
 }
 
@@ -614,6 +647,23 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
         ofs.y = -(ofs.y + my);
     }
 	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
+
+    if(p_rect.size.x<0){
+           if (p_src_rect.pos.x==0){
+               dr.pos.x -= p_rect.size.x-dr.size.x;
+           }else{
+               float vx = src_c.size.x + dr.pos.x;
+               dr.pos.x+= src_c.size.x - Math::abs(vx)*2;
+           }
+      }
+      if(p_rect.size.y<0){
+          if (p_src_rect.pos.y==0){
+              dr.pos.y -= p_rect.size.y-dr.size.y;
+          }else{
+              float vy = src_c.size.y + dr.pos.y;
+              dr.pos.y-=  src_c.size.y - (src_c.size.y - Math::abs(vy))*2;
+          }
+      }
 
 	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate);
 }
