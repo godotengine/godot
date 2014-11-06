@@ -162,7 +162,7 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 			E->get().shapes.insert(ShapePair(p_body_shape,p_area_shape));
 
 
-		if (E->get().in_tree) {
+		if (!node || E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_enter_shape,objid,node,p_body_shape,p_area_shape);
 		}
 
@@ -188,7 +188,7 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 			eraseit=true;
 
 		}
-		if (node && E->get().in_tree) {
+		if (!node || E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_area_shape);
 		}
 
