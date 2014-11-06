@@ -137,10 +137,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			r_v=int(f->get_32());
 		} break;
 		case VARIANT_REAL: {
-			if(use_real64)
-				r_v=f->get_double();
-			else
-				r_v=f->get_real();
+			r_v=f->get_real();
 		} break;
 		case VARIANT_STRING: {
 
@@ -579,7 +576,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 				break;
 			}
 			if (sizeof(Vector2)==8) {
-				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(real_t)*2);
+				f->get_buffer((uint8_t*)w.ptr(),len*sizeof(float)*2);
 #ifdef BIG_ENDIAN_ENABLED
 			{
 				uint32_t *ptr=(uint32_t*)w.ptr();
