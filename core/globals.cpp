@@ -674,7 +674,7 @@ static Variant _decode_variant(const String& p_string) {
 		int w=params[2].to_int();
 		int h=params[3].to_int();
 
-		if (w == 0 && w == 0) {
+		if (w == 0 && h == 0) {
 			//r_v = Image(w, h, imgformat);
 			return Image();
 		};
