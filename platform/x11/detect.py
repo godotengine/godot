@@ -120,10 +120,10 @@ def configure(env):
 
 #host compiler is default..
 
-	if (is64 and env["bits"]=="32"):
+	if (env["bits"]=="32"):
 		env.Append(CPPFLAGS=['-m32'])
 		env.Append(LINKFLAGS=['-m32','-L/usr/lib/i386-linux-gnu'])
-	elif (not is64 and env["bits"]=="32"):
+	elif (env["bits"]=="64"):
 		env.Append(CPPFLAGS=['-m64'])
 		env.Append(LINKFLAGS=['-m64','-L/usr/lib/i686-linux-gnu'])
 
