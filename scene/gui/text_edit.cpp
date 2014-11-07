@@ -1265,7 +1265,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					case KEY_PAGEDOWN:
 					case KEY_HOME:
 					case KEY_END:
-						if (k.mod.shift) // if selecting ignore
+						// ignore arrows if any modifiers are held (shift = selecting, others may be used for editor hotkeys)
+						if (k.mod.command || k.mod.shift || k.mod.alt || k.mod.command)
 							break;
 						unselect=true;
 						break;
@@ -1360,7 +1361,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					} else if (k.mod.alt) {
 
 #else
-					if (k.mod.command) {
+					if (k.mod.alt) {
+						break;
+					} else if (k.mod.command) {
 #endif
 						bool prev_char=false;
 						int cc=cursor.column;
@@ -1378,13 +1381,12 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 						cursor_set_column(cc);
 
-                    } else if (cursor.column==0) {
-
+					} else if (cursor.column==0) {
 						if (cursor.line>0) {
 							cursor_set_line(cursor.line-1);
 							cursor_set_column(text[cursor.line].length());
 						}
-                    } else {
+					} else {
 						cursor_set_column(cursor_get_column()-1);
 					}
 
@@ -1402,7 +1404,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 						cursor_set_column(text[cursor.line].length());
 					} else if (k.mod.alt) {
 #else
-					if (k.mod.command) {
+					if (k.mod.alt) {
+						break;
+					} else if (k.mod.command) {
 #endif
 						bool prev_char=false;
 						int cc=cursor.column;
@@ -1436,7 +1440,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 					if (k.mod.shift)
 						_pre_shift_selection();
-
+					if (k.mod.alt)
+						break;
 #ifdef APPLE_STYLE_KEYS
 					if (k.mod.command)
 						cursor_set_line(0);
@@ -1453,6 +1458,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (k.mod.shift)
 						_pre_shift_selection();
 
+					if (k.mod.alt)
+						break;
 #ifdef APPLE_STYLE_KEYS
 					if (k.mod.command)
 						cursor_set_line(text.size()-1);
