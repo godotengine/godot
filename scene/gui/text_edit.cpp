@@ -1760,8 +1760,11 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				}
 			}
 			
-			if (!scancode_handled && !k.mod.command && !k.mod.alt) {
-			
+#ifdef APPLE_STYLE_KEYS
+            if (!scancode_handled && !k.mod.command) {
+#else
+            if (!scancode_handled && !k.mod.command && !k.mod.alt) {
+#endif
 				if (k.unicode>=32) {
 
 					if (readonly)
