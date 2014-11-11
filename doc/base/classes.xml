@@ -2747,7 +2747,7 @@
 			types of nodes have different amount of inputs.
 			</description>
 		</method>
-		<method name="node_get_input_sourcre" qualifiers="const" >
+		<method name="node_get_input_source" qualifiers="const" >
 			<return type="String">
 			</return>
 			<argument index="0" name="id" type="String">
