@@ -92,6 +92,11 @@ static CharType _get_right_pair_symbol(CharType c) {
 	return 0;
 }
 
+void TextEdit::insert_at(const String &p_text, int at)
+{
+    text.insert(at, p_text);
+}
+
 void TextEdit::Text::set_font(const Ref<Font>& p_font) {
 
 	font=p_font;
@@ -2338,6 +2343,14 @@ String TextEdit::get_line(int line) const {
 
 };
 
+void TextEdit::set_line(int line, String new_text)
+{
+    if (line < 0 || line >= text.size())
+        return;
+
+    text.set(line, new_text);
+}
+
 void TextEdit::_clear() {
 
 	clear_undo_history();
@@ -2500,7 +2513,6 @@ void TextEdit::select_all() {
 	update();
 
 }
-
 
 void TextEdit::deselect() {
 
