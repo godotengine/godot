@@ -138,7 +138,7 @@ class TextEdit : public Control  {
 		int size() const { return text.size(); }
 		void clear();
 		void clear_caches();
-		_FORCE_INLINE_ const String& operator[](int p_line) const { return text[p_line].data; }
+        _FORCE_INLINE_ const String& operator[](int p_line) const { return text[p_line].data; }
 		Text() { tab_size=4; }
        };
 
@@ -299,6 +299,7 @@ public:
 
 	void set_text(String p_text);
 	void insert_text_at_cursor(const String& p_text);
+    void insert_at(const String& p_text, int at);
 	int get_line_count() const;
 	void set_line_as_marked(int p_line,bool p_marked);
 	void set_line_as_breakpoint(int p_line,bool p_breakpoint);
@@ -306,6 +307,7 @@ public:
 	void get_breakpoints(List<int> *p_breakpoints) const;
 	String get_text();
 	String get_line(int line) const;
+    void set_line(int line, String new_text);
 	void backspace_at_cursor();
 	
 	inline void set_auto_brace_completion(bool p_enabled) {
