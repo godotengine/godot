@@ -1261,7 +1261,11 @@ void ScriptEditor::_update_window_menu() {
 		String n = ste->get_name();
 		uint32_t accel=0;
 		if (idx<9) {
-			accel=KEY_MASK_ALT|(KEY_1+idx);
+#ifdef APPLE_STYLE_KEYS
+            accel=KEY_MASK_CMD|(KEY_1+idx);
+#else
+            accel=KEY_MASK_ALT|(KEY_1+idx);
+#endif
 		}
 		window_menu->get_popup()->add_item(n,WINDOW_SELECT_BASE+idx,accel);
 		idx++;
@@ -1327,16 +1331,21 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(file_menu);
 	file_menu->set_text("File");
 	file_menu->get_popup()->add_item("Open",FILE_OPEN);
+#ifdef APPLE_STYLE_KEYS
+    file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_CMD|KEY_S);
+    file_menu->get_popup()->add_item("Save As..",FILE_SAVE_AS,KEY_MASK_CMD|KEY_MASK_ALT|KEY_S);
+#else
 	file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_ALT|KEY_S);
 	file_menu->get_popup()->add_item("Save As..",FILE_SAVE_AS);
+#endif
 	file_menu->get_popup()->add_item("Save All",FILE_SAVE_ALL,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_S);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	edit_menu = memnew( MenuButton );
 	menu_hb->add_child(edit_menu);
 	edit_menu->set_text("Edit");
-	edit_menu->get_popup()->add_item("Undo");
-	edit_menu->get_popup()->add_item("Redo");
+    edit_menu->get_popup()->add_item("Undo", EDIT_UNDO, KEY_MASK_CMD|KEY_Z);
+    edit_menu->get_popup()->add_item("Redo", EDIT_REDO, KEY_MASK_CMD|KEY_Y);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Cut",EDIT_CUT,KEY_MASK_CMD|KEY_X);
 	edit_menu->get_popup()->add_item("Copy",EDIT_COPY,KEY_MASK_CMD|KEY_C);
