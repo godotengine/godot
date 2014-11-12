@@ -1457,7 +1457,7 @@ class DaeExporter:
 
 				print(str(x))
 
-				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]),allowed_skeletons)
+				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]+0.5),allowed_skeletons)
 				framelen=(1.0/self.scene.render.fps)
 				start = x.frame_range[0]*framelen
 				end = x.frame_range[1]*framelen

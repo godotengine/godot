@@ -332,6 +332,7 @@ void AudioServerSW::driver_process_chunk(int p_frames,int32_t *p_buffer) {
 void AudioServerSW::driver_process(int p_frames,int32_t *p_buffer) {
 
 
+	_output_delay=p_frames/double(AudioDriverSW::get_singleton()->get_mix_rate());
 	//process in chunks to make sure to never process more than INTERNAL_BUFFER_SIZE
 	int todo=p_frames;
 	while(todo) {
@@ -795,6 +796,8 @@ void AudioServerSW::init() {
 	mixer = memnew( AudioMixerSW( sample_manager, latency, AudioDriverSW::get_singleton()->get_mix_rate(),mix_chans,mixer_use_fx,mixer_interp,_mixer_callback,this ) );
 	mixer_step_usecs=mixer->get_step_usecs();
 
+	_output_delay=0;
+
 	stream_volume=0.3;
 	// start the audio driver
 	if (AudioDriverSW::get_singleton())
@@ -909,6 +912,11 @@ void AudioServerSW::set_event_voice_global_volume_scale(float p_volume) {
 float AudioServerSW::get_event_voice_global_volume_scale() const {
 
 	return event_voice_volume_scale;
+}
+
+double AudioServerSW::get_output_delay() const {
+
+	return _output_delay;
 }
 
 double AudioServerSW::get_mix_time() const {

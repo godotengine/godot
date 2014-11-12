@@ -39,6 +39,8 @@
 #include "core/ring_buffer.h"
 #include "core/os/thread_safe.h"
 
+#include "core/globals.h"
+
 static TheoraVideoManager* mgr = NULL;
 
 class TPDataFA : public TheoraDataSource {
@@ -141,6 +143,7 @@ public:
 		playing=false;
 		_clear();
 	};
+
 	virtual bool is_playing() const { return true; };
 
 	virtual void set_paused(bool p_paused) {};
@@ -164,12 +167,16 @@ public:
 
 	void input(float* p_data, int p_samples) {
 
+
 		_THREAD_SAFE_METHOD_;
+		//printf("input %i samples from %p\n", p_samples, p_data);
 		if (rb.space_left() < p_samples) {
 			rb_power += 1;
 			rb.resize(rb_power);
 		}
 		rb.write(p_data, p_samples);
+
+		update(); //update too here for less latency
 	};
 
 	void update() {
@@ -177,15 +184,16 @@ public:
 		_THREAD_SAFE_METHOD_;
 		int todo = get_todo();
 		int16_t* buffer = get_write_buffer();
-		int samples = rb.data_left();
-		const int to_write = MIN(todo, samples);
+		int frames = rb.data_left()/channels;
+		const int to_write = MIN(todo, frames);
 
-		for (int i=0; i<to_write; i++) {
+		for (int i=0; i<to_write*channels; i++) {
 
-			uint16_t sample = uint16_t(rb.read() * 32767);
+			int v = rb.read() * 32767;
+			int16_t sample = CLAMP(v,-32768,32767);
 			buffer[i] = sample;
 		};
-		write(to_write/channels);
+		write(to_write);
 		total_wrote += to_write;
 	};
 
@@ -231,7 +239,7 @@ public:
 	TPAudioGodot(TheoraVideoClip* owner, int nChannels, int p_freq)
 		: TheoraAudioInterface(owner, nChannels, p_freq), TheoraTimer() {
 
-		printf("***************** audio interface constructor\n");
+		printf("***************** audio interface constructor freq %i\n", p_freq);
 		channels = nChannels;
 		freq = p_freq;
 		stream = Ref<AudioStreamInput>(memnew(AudioStreamInput(nChannels, p_freq)));
@@ -247,12 +255,13 @@ public:
 
 	void update(float time_increase)
 	{
-		mTime = (float)(stream->get_total_wrote() / channels) / freq;
+		//mTime = (float)(stream->get_total_wrote()) / freq;
+		//mTime = MAX(0,mTime-AudioServer::get_singleton()->get_output_delay());
 		//mTime = (float)sample_count / channels / freq;
-		//mTime += time_increase;
+		mTime += time_increase;
 		//float duration=mClip->getDuration();
 		//if (mTime > duration) mTime=duration;
-		//printf("time at timer is %f, samples %i\n", mTime, sample_count);
+		//printf("time at timer is %f, %f, samples %i\n", mTime, time_increase, sample_count);
 	}
 };
 
@@ -358,13 +367,15 @@ void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 #endif
 
 	float w=clip->getWidth(),h=clip->getHeight();
-    int imgsize = w * h * f->mBpp;
+	int imgsize = w * h * f->mBpp;
 
 	int size = f->getStride() * f->getHeight() * f->mBpp;
 	data.resize(imgsize);
-	DVector<uint8_t>::Write wr = data.write();
-    uint8_t* ptr = wr.ptr();
-    copymem(ptr, f->getBuffer(), imgsize);
+	{
+		DVector<uint8_t>::Write wr = data.write();
+		uint8_t* ptr = wr.ptr();
+		memcpy(ptr, f->getBuffer(), imgsize);
+	}
     /*
     for (int i=0; i<h; i++) {
         int dstofs = i * w * f->mBpp;
@@ -421,6 +432,13 @@ void VideoStreamTheoraplayer::update(float p_time) {
 	mgr->update(p_time);
 };
 
+
+void VideoStreamTheoraplayer::set_audio_track(int p_idx) {
+	audio_track=p_idx;
+	if (clip)
+		clip->set_audio_track(audio_track);
+}
+
 void VideoStreamTheoraplayer::set_file(const String& p_file) {
 
 	FileAccess* f = FileAccess::open(p_file, FileAccess::READ);
@@ -436,10 +454,13 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 		mgr->setAudioInterfaceFactory(audio_factory);
 	};
 
+	int track = GLOBAL_DEF("theora/audio_track", 0); // hack
+
 	if (p_file.find(".mp4") != -1) {
 		
 		std::string file = p_file.replace("res://", "").utf8().get_data();
-		clip = mgr->createVideoClip(file, TH_BGRX, 16);
+		clip = mgr->createVideoClip(file, TH_RGBX, 2, false, track);
+		//clip->set_audio_track(audio_track);
 		memdelete(f);
 
 	} else {
@@ -448,6 +469,7 @@ void VideoStreamTheoraplayer::set_file(const String& p_file) {
 
 		try {
 			clip = mgr->createVideoClip(ds);
+			clip->set_audio_track(audio_track);
 		} catch (_TheoraGenericException e) {
 			printf("exception ocurred! %s\n", e.repr().c_str());
 			clip = NULL;
@@ -478,6 +500,7 @@ VideoStreamTheoraplayer::VideoStreamTheoraplayer() {
 	started = false;
 	playing = false;
 	loop = false;
+	audio_track=0;
 };
 
 

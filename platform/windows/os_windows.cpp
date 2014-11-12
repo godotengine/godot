@@ -45,6 +45,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 
 #include "tcp_server_winsock.h"
+#include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "os/pc_joystick_map.h"
 #include "lang_table.h"
@@ -173,6 +174,7 @@ void OS_Windows::initialize_core() {
 
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
+	PacketPeerUDPWinsock::make_default();
 	
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1

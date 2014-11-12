@@ -65,9 +65,9 @@ func _ready():
 	
 func _exit_tree():
 	for b in bullets:
-		Physics2DServer.free(b.body)
+		Physics2DServer.free_rid(b.body)
 	
-	Physics2DServer.free(shape)
+	Physics2DServer.free_rid(shape)
 	# Initalization here
 	bullets.clear()
 	

@@ -271,7 +271,8 @@ void TheoraVideoClip_AVFoundation::load(TheoraDataSource* source)
 	AVAssetTrack *videoTrack = [tracks objectAtIndex:0];
 
 	NSArray* audioTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
-	AVAssetTrack *audioTrack = audioTracks.count > 0 ? [audioTracks objectAtIndex:0] : NULL;
+	AVAssetTrack *audioTrack = audioTracks.count > 0 ? [audioTracks objectAtIndex:audio_track] : NULL;
+	printf("*********** using audio track %i\n", audio_track);
 	
 #ifdef _AVFOUNDATION_BGRX
 	bool yuv_output = (mOutputMode != TH_BGRX && mOutputMode != TH_RGBA);

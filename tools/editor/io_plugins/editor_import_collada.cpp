@@ -1844,12 +1844,15 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 		anim_length=collada.state.animation_clips[p_clip].end;
 
 	while(f<anim_length) {
-		if (f>=anim_length)
-			f=anim_length;
 
 		base_snapshots.push_back(f);
 		f+=snapshot_interval;
+
+		if (f>=anim_length) {
+			base_snapshots.push_back(anim_length);
+		}
 	}
+
 	//print_line("anim len: "+rtos(anim_length));
 	animation->set_length(anim_length);
 
@@ -1893,6 +1896,8 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 			snapshots.clear();
 			for(int i=0;i<at.keys.size();i++)
 				snapshots.push_back(at.keys[i].time);
+
+			print_line("using anim snapshots");
 
 		}
 
@@ -2185,8 +2190,6 @@ Node* EditorSceneImporterCollada::import_scene(const String& p_path, uint32_t p_
 			else
 				name=state.animations[i]->get_name();
 
-			if (p_flags&IMPORT_ANIMATION_OPTIMIZE)
-				state.animations[i]->optimize();
 			if (p_flags&IMPORT_ANIMATION_DETECT_LOOP) {
 
 				if (name.begins_with("loop") || name.ends_with("loop") || name.begins_with("cycle") || name.ends_with("cycle")) {
@@ -2232,8 +2235,6 @@ Ref<Animation> EditorSceneImporterCollada::import_animation(const String& p_path
 		}
 	}
 
-	if (p_flags&IMPORT_ANIMATION_OPTIMIZE)
-		anim->optimize();
 
 	return anim;
 }

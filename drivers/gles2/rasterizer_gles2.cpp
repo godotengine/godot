@@ -4173,6 +4173,9 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 	pixels.resize(viewport.width*viewport.height*4);
 	DVector<uint8_t>::Write w = pixels.write();
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
+
+	uint64_t time = OS::get_singleton()->get_ticks_usec();
+
 	if (current_rt) {
 #ifdef GLEW_ENABLED
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -4182,11 +4185,13 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 		// back?
 		glReadPixels( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height,GL_RGBA,GL_UNSIGNED_BYTE,w.ptr());
 	}
+	printf("readpixels time %i\n", (int)(OS::get_singleton()->get_ticks_usec() - time));
 	w=DVector<uint8_t>::Write();
 
 	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA,pixels);
 	r_capture->flip_y();
 
+	printf("total time %i\n", (int)(OS::get_singleton()->get_ticks_usec() - time));
 
 #endif
 

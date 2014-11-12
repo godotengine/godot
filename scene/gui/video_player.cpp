@@ -192,7 +192,7 @@ String VideoPlayer::get_stream_name() const {
 	return stream->get_name();
 };
 
-float VideoPlayer::get_pos() const {
+float VideoPlayer::get_stream_pos() const {
 
 	if (stream.is_null())
 		return 0;
@@ -231,7 +231,7 @@ void VideoPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_stream_name"),&VideoPlayer::get_stream_name);
 
-	ObjectTypeDB::bind_method(_MD("get_pos"),&VideoPlayer::get_pos);
+	ObjectTypeDB::bind_method(_MD("get_stream_pos"),&VideoPlayer::get_stream_pos);
 
 	ObjectTypeDB::bind_method(_MD("set_autoplay","enabled"),&VideoPlayer::set_autoplay);
 	ObjectTypeDB::bind_method(_MD("has_autoplay"),&VideoPlayer::has_autoplay);

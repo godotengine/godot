@@ -62,6 +62,8 @@ public:
 	virtual void pop_frame(Ref<ImageTexture> p_tex)=0;
 	virtual Image peek_frame() const=0;
 
+	virtual void set_audio_track(int p_idx) =0;
+
 	virtual void update(float p_time)=0;
 
 	VideoStream();

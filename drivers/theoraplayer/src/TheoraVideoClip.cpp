@@ -51,6 +51,8 @@ TheoraVideoClip::TheoraVideoClip(TheoraDataSource* data_source,
 	mWaitingForCache(false),
 	mOutputMode(TH_UNDEFINED)
 {
+
+	audio_track=0;
 	mAudioMutex = NULL;
 	mThreadAccessMutex = new TheoraMutex();
 	mTimer = mDefaultTimer = new TheoraTimer();

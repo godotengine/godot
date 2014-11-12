@@ -18,6 +18,8 @@ class VideoStreamTheoraplayer : public VideoStream {
 	bool playing;
 	bool loop;
 
+	int audio_track;
+
 public:
 
 	virtual void stop();
@@ -43,6 +45,7 @@ public:
 	void update(float p_time);
 
 	void set_file(const String& p_file);
+	void set_audio_track(int p_idx);
 
 	~VideoStreamTheoraplayer();
 	VideoStreamTheoraplayer();
