@@ -4,7 +4,7 @@
 
 int PacketPeerUDPWinsock::get_available_packet_count() const {
 
-	Error err = const_cast<PacketPeerUDPWinsock*>(this)->poll();
+	Error err = const_cast<PacketPeerUDPWinsock*>(this)->_poll(false);
 	if (err!=OK)
 		return 0;
 
@@ -13,16 +13,16 @@ int PacketPeerUDPWinsock::get_available_packet_count() const {
 
 Error PacketPeerUDPWinsock::get_packet(const uint8_t **r_buffer,int &r_buffer_size) const{
 
-	Error err = const_cast<PacketPeerUDPWinsock*>(this)->poll();
+	Error err = const_cast<PacketPeerUDPWinsock*>(this)->_poll(false);
 	if (err!=OK)
 		return err;
 	if (queue_count==0)
 		return ERR_UNAVAILABLE;
 
 	uint32_t size;
-	rb.read((uint8_t*)&size,4,true);
 	rb.read((uint8_t*)&packet_ip.host,4,true);
 	rb.read((uint8_t*)&packet_port,4,true);
+	rb.read((uint8_t*)&size,4,true);
 	rb.read(packet_buffer,size,true);
 	--queue_count;
 	*r_buffer=packet_buffer;
@@ -38,6 +38,9 @@ Error PacketPeerUDPWinsock::put_packet(const uint8_t *p_buffer,int p_buffer_size
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(peer_port);
 	addr.sin_addr = *((struct in_addr*)&peer_addr.host);
+
+
+	_set_blocking(true);
 
 	errno = 0;
 	int err;
@@ -56,6 +59,21 @@ int PacketPeerUDPWinsock::get_max_packet_size() const{
 	return 512; // uhm maybe not
 }
 
+
+void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
+
+	if (blocking==p_blocking)
+		return;
+
+	blocking=p_blocking;
+	unsigned long par = blocking?0:1;
+	if (ioctlsocket(sockfd, FIONBIO, &par)) {
+		perror("setting non-block mode");
+		//close();
+		//return -1;
+	};
+}
+
 Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size){
 
 	close();
@@ -70,8 +88,11 @@ Error PacketPeerUDPWinsock::listen(int p_port, int p_recv_buffer_size){
 		close();
 		return ERR_UNAVAILABLE;
 	}
+
+	blocking=true;
+
 	printf("UDP Connection listening on port %i\n", p_port);
-	rb.resize(nearest_power_of_2(p_recv_buffer_size));
+	rb.resize(nearest_shift(p_recv_buffer_size));
 	return OK;
 }
 
@@ -84,7 +105,16 @@ void PacketPeerUDPWinsock::close(){
 	queue_count=0;
 }
 
-Error PacketPeerUDPWinsock::poll() {
+
+Error PacketPeerUDPWinsock::wait() {
+
+	return _poll(true);
+}
+Error PacketPeerUDPWinsock::_poll(bool p_wait) {
+
+
+	_set_blocking(p_wait);
+
 
 	struct sockaddr_in from = {0};
 	int len = sizeof(struct sockaddr_in);
@@ -100,13 +130,16 @@ Error PacketPeerUDPWinsock::poll() {
 		++queue_count;
 	};
 
+
 	if (ret == 0 || (ret == SOCKET_ERROR && WSAGetLastError() != WSAEWOULDBLOCK) ) {
 		close();
 		return FAILED;
 	};
 
+
 	return OK;
 }
+
 bool PacketPeerUDPWinsock::is_listening() const{
 
 	return sockfd!=-1;

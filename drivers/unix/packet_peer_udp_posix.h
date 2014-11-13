@@ -27,6 +27,7 @@ class PacketPeerUDPPosix : public PacketPeerUDP {
 	_FORCE_INLINE_ int _get_socket();
 
 	static PacketPeerUDP* _create();
+	virtual Error _poll(bool p_block);
 
 public:
 
@@ -38,7 +39,7 @@ public:
 
 	virtual Error listen(int p_port,int p_recv_buffer_size=65536);
 	virtual void close();
-	virtual Error poll();
+	virtual Error wait();
 	virtual bool is_listening() const;
 
 	virtual IP_Address get_packet_address() const;

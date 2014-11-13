@@ -819,6 +819,8 @@ Error Main::setup2() {
 	register_module_types();
 	register_driver_types();
 
+	ScriptServer::init_languages();
+
 	MAIN_PRINT("Main: Load Translations");
 
 	translation_server->setup(); //register translations, load them, etc.

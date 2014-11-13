@@ -26,6 +26,11 @@ class PacketPeerUDPWinsock : public PacketPeerUDP {
 
 	static PacketPeerUDP* _create();
 
+	bool blocking;
+	void _set_blocking(bool p_blocking);
+
+	Error _poll(bool p_wait);
+
 public:
 
 	virtual int get_available_packet_count() const;
@@ -36,7 +41,7 @@ public:
 
 	virtual Error listen(int p_port,int p_recv_buffer_size=65536);
 	virtual void close();
-	virtual Error poll();
+	virtual Error wait();
 	virtual bool is_listening() const;
 
 	virtual IP_Address get_packet_address() const;

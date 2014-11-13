@@ -34,6 +34,7 @@
 #include "print_string.h"
 #include <stdio.h>
 
+SavePNGFunc Image::save_png_func = NULL;
 
 void Image::_put_pixel(int p_x,int p_y, const BColor& p_color, unsigned char *p_data) {
 
@@ -1199,6 +1200,14 @@ Error Image::load(const String& p_path) {
 
 	return ImageLoader::load_image(p_path, this);
 }
+
+Error Image::save_png(const String& p_path) {
+
+	if (save_png_func == NULL)
+		return ERR_UNAVAILABLE;
+
+	return save_png_func(p_path, *this);
+};
 
 bool Image::operator==(const Image& p_image) const {
 

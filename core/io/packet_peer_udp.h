@@ -15,11 +15,13 @@ protected:
 	int _get_packet_address() const;
 	String _get_packet_ip() const;
 
+	virtual Error _set_send_address(const String& p_address,int p_port);
+
 public:
 
 	virtual Error listen(int p_port,int p_recv_buffer_size=65536)=0;
 	virtual void close()=0;
-	virtual Error poll()=0;
+	virtual Error wait()=0;
 	virtual bool is_listening() const=0;
 	virtual IP_Address get_packet_address() const=0;
 	virtual int get_packet_port() const=0;

@@ -85,6 +85,13 @@ void ScriptServer::register_language(ScriptLanguage *p_language) {
 	_languages[_language_count++]=p_language;
 }
 
+void ScriptServer::init_languages() {
+
+	for(int i=0;i<_language_count;i++) {
+		_languages[i]->init();
+	}
+}
+
 Variant ScriptInstance::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;

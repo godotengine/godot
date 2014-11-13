@@ -25,7 +25,7 @@
 
 int PacketPeerUDPPosix::get_available_packet_count() const {
 
-	Error err = const_cast<PacketPeerUDPPosix*>(this)->poll();
+	Error err = const_cast<PacketPeerUDPPosix*>(this)->_poll(false);
 	if (err!=OK)
 		return 0;
 
@@ -34,16 +34,16 @@ int PacketPeerUDPPosix::get_available_packet_count() const {
 
 Error PacketPeerUDPPosix::get_packet(const uint8_t **r_buffer,int &r_buffer_size) const{
 
-	Error err = const_cast<PacketPeerUDPPosix*>(this)->poll();
+	Error err = const_cast<PacketPeerUDPPosix*>(this)->_poll(false);
 	if (err!=OK)
 		return err;
 	if (queue_count==0)
 		return ERR_UNAVAILABLE;
 
 	uint32_t size;
-	rb.read((uint8_t*)&size,4,true);
 	rb.read((uint8_t*)&packet_ip.host,4,true);
 	rb.read((uint8_t*)&packet_port,4,true);
+	rb.read((uint8_t*)&size,4,true);
 	rb.read(packet_buffer,size,true);
 	--queue_count;
 	*r_buffer=packet_buffer;
@@ -62,6 +62,7 @@ Error PacketPeerUDPPosix::put_packet(const uint8_t *p_buffer,int p_buffer_size){
 
 	errno = 0;
 	int err;
+
 	while ( (err = sendto(sock, p_buffer, p_buffer_size, 0, (struct sockaddr*)&addr, sizeof(addr))) != p_buffer_size) {
 
 		if (errno != EAGAIN) {
@@ -91,8 +92,8 @@ Error PacketPeerUDPPosix::listen(int p_port, int p_recv_buffer_size){
 		close();
 		return ERR_UNAVAILABLE;
 	}
-	printf("UDP Connection listening on port %i\n", p_port);
-	rb.resize(nearest_power_of_2(p_recv_buffer_size));
+	printf("UDP Connection listening on port %i  bufsize %i \n", p_port,p_recv_buffer_size);
+	rb.resize(nearest_shift(p_recv_buffer_size));
 	return OK;
 }
 
@@ -105,18 +106,23 @@ void PacketPeerUDPPosix::close(){
 	queue_count=0;
 }
 
-Error PacketPeerUDPPosix::poll() {
+
+Error PacketPeerUDPPosix::wait() {
+
+	return _poll(true);
+}
+
+Error PacketPeerUDPPosix::_poll(bool p_wait) {
 
 	struct sockaddr_in from = {0};
 	socklen_t len = sizeof(struct sockaddr_in);
 	int ret;
-	while ( (ret = recvfrom(sockfd, recv_buffer, MIN(sizeof(recv_buffer),rb.data_left()-12), MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
+	while ( (ret = recvfrom(sockfd, recv_buffer, MIN(sizeof(recv_buffer),rb.data_left()-12), p_wait?0:MSG_DONTWAIT, (struct sockaddr*)&from, &len)) > 0) {
 		rb.write((uint8_t*)&from.sin_addr, 4);
 		uint32_t port = ntohs(from.sin_port);
 		rb.write((uint8_t*)&port, 4);
 		rb.write((uint8_t*)&ret, 4);
 		rb.write(recv_buffer, ret);
-
 		len = sizeof(struct sockaddr_in);
 		++queue_count;
 	};

@@ -112,6 +112,8 @@ public:
 	void set_enable_monitoring(bool p_enable);
 	bool is_monitoring_enabled() const;
 
+	Array get_overlapping_bodies() const;
+
 
 	Area();
 	~Area();

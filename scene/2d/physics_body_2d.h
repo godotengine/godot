@@ -229,6 +229,8 @@ public:
 	void set_applied_force(const Vector2& p_force);
 	Vector2 get_applied_force() const;
 
+	Array get_colliding_bodies() const; //function for script
+
 	RigidBody2D();
 	~RigidBody2D();
 
