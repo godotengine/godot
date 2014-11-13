@@ -1360,6 +1360,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
 #else
                     if (k.mod.alt) {
+                        scancode_handled=false;
                         break;
                     } else if (k.mod.command) {
 #endif
@@ -1404,6 +1405,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                     } else if (k.mod.alt) {
 #else
                     if (k.mod.alt) {
+                        scancode_handled=false;
                         break;
                     } else if (k.mod.command) {
 #endif
@@ -1439,8 +1441,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
                     if (k.mod.shift)
                         _pre_shift_selection();
-                    if (k.mod.alt)
+                    if (k.mod.alt) {
+                        scancode_handled=false;
                         break;
+                    }
 #ifdef APPLE_STYLE_KEYS
                     if (k.mod.command)
                         cursor_set_line(0);
@@ -1456,8 +1460,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
                     if (k.mod.shift)
                         _pre_shift_selection();
-                    if (k.mod.alt)
+                    if (k.mod.alt) {
+                        scancode_handled=false;
                         break;
+                    }
 #ifdef APPLE_STYLE_KEYS
                     if (k.mod.command)
                         cursor_set_line(text.size()-1);
