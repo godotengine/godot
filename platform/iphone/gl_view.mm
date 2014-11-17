@@ -65,6 +65,7 @@ void _hide_keyboard() {
 	keyboard_text = "";
 };
 
+/*
 bool _play_video(String p_path, float p_volume) {
 	
 	float player_volume = p_volume * AudioServer::get_singleton()->get_singleton()->get_stream_global_volume_scale();
@@ -96,24 +97,87 @@ bool _play_video(String p_path, float p_volume) {
 
 	return true;
 }
+*/
+
+bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
+	p_path = Globals::get_singleton()->globalize_path(p_path);
+
+	NSString* file_path = [[[NSString alloc] initWithUTF8String:p_path.utf8().get_data()] autorelease];
+	//NSURL *file_url = [NSURL fileURLWithPath:file_path];
+
+	_instance.avAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:file_path]];
+	_instance.avPlayerItem =[[AVPlayerItem alloc]initWithAsset:_instance.avAsset];
+    _instance.avPlayer = [[AVPlayer alloc]initWithPlayerItem:_instance.avPlayerItem];
+    _instance.avPlayerLayer =[AVPlayerLayer playerLayerWithPlayer:_instance.avPlayer];
+
+    [_instance.avPlayer addObserver:_instance forKeyPath:@"status" options:0 context:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:_instance
+                                        selector:@selector(playerItemDidReachEnd:)
+                                               name:AVPlayerItemDidPlayToEndTimeNotification
+                                             object:[_instance.avPlayer currentItem]];
+
+    [_instance.avPlayerLayer setFrame:_instance.bounds];
+    [_instance.layer addSublayer:_instance.avPlayerLayer];
+    [_instance.avPlayer play];
+
+	AVMediaSelectionGroup *audioGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+
+	for (id track in audioGroup.options)
+	{
+		NSString* language = [[track locale] localeIdentifier];
+		NSLog(@"subtitle lang: %@", language);
+        
+        if ([language isEqualToString:[NSString stringWithUTF8String:p_audio_track.utf8()]])
+        {
+            [_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: audioGroup];
+            break;
+        }
+	}
+
+	AVMediaSelectionGroup *subtitlesGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicLegible];
+	NSArray *useableTracks = [AVMediaSelectionGroup mediaSelectionOptionsFromArray:subtitlesGroup.options withoutMediaCharacteristics:[NSArray arrayWithObject:AVMediaCharacteristicContainsOnlyForcedSubtitles]];
+
+	for (id track in useableTracks)
+	{
+		NSString* language = [[track locale] localeIdentifier];
+		NSLog(@"subtitle lang: %@", language);
+        
+        if ([language isEqualToString:[NSString stringWithUTF8String:p_subtitle_track.utf8()]])
+        {
+            [_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: subtitlesGroup];
+            break;
+        }
+	}
+
+    video_playing = true;
+
+	return true;
+}
 
 bool _is_video_playing() {
 	//NSInteger playback_state = _instance.moviePlayerController.playbackState;
-	return video_playing || _instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying;
+	//return video_playing || _instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying;
 	//if (video_found_error)
 	//	return false;
 	//return (_instance.moviePlayerController.playbackState == MPMoviePlaybackStatePlaying);
+
+	return video_playing || (_instance.avPlayer.rate > 0 && !_instance.avPlayer.error);
 }
 
 void _pause_video() {
-	[_instance.moviePlayerController pause];
+	//[_instance.moviePlayerController pause];
+	[_instance.avPlayer pause];
 	video_playing = false;
 }
 
 void _stop_video() {
-	[_instance.moviePlayerController stop];
-	[_instance.moviePlayerController.view removeFromSuperview];
+	//[_instance.moviePlayerController stop];
+	//[_instance.moviePlayerController.view removeFromSuperview];
 	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
+
+	[_instance.avPlayer pause];
+	[_instance.avPlayerLayer removeFromSuperlayer];
+	_instance.avPlayer = nil;
 	video_playing = false;
 }
 
@@ -523,6 +587,21 @@ static void clear_touches() {
 	[super dealloc];
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
+                        change:(NSDictionary *)change context:(void *)context {
+    if (object == _instance.avPlayer && [keyPath isEqualToString:@"status"]) {
+        if (_instance.avPlayer.status == AVPlayerStatusFailed) {
+        	_stop_video();
+            video_found_error = true;
+        }
+    }
+}
+
+- (void)playerItemDidReachEnd:(NSNotification *)notification {
+    _stop_video();
+}
+
+/*
 - (void)moviePlayBackDidFinish:(NSNotification*)notification {
     
 
@@ -557,5 +636,6 @@ static void clear_touches() {
 	//[[MPMusicPlayerController applicationMusicPlayer] setVolume: video_previous_volume];
 	video_playing = false;
 }
+*/
 
 @end

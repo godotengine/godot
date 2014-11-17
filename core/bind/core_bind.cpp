@@ -577,9 +577,9 @@ float _OS::get_frames_per_second() const {
 	return OS::get_singleton()->get_frames_per_second();
 }
 
-Error _OS::native_video_play(String p_path, float p_volume) {
+Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 
-	return OS::get_singleton()->native_video_play(p_path, p_volume);
+	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
 };
 
 bool _OS::native_video_is_playing() {

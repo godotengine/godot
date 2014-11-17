@@ -61,6 +61,8 @@ int PacketPeerUDPWinsock::get_max_packet_size() const{
 
 
 void PacketPeerUDPWinsock::_set_blocking(bool p_blocking) {
+	//am no windows expert
+	//hope this is the right thing
 
 	if (blocking==p_blocking)
 		return;

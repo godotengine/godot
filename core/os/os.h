@@ -323,7 +323,7 @@ public:
 
 	virtual String get_unique_ID() const;
 
-	virtual Error native_video_play(String p_path, float p_volume);
+	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	virtual bool native_video_is_playing() const;
 	virtual void native_video_pause();
 	virtual void native_video_stop();
