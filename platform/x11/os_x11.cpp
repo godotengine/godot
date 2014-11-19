@@ -32,6 +32,7 @@
 #include "key_mapping_x11.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
 #include "errno.h"
