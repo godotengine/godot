@@ -1673,7 +1673,7 @@ void OS_X11::close_joystick(int p_id) {
 };
 
 void OS_X11::probe_joystick(int p_id) {
-	#ifndef __FreeBSD__
+	#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
 
 	if (p_id == -1) {
 
@@ -1728,7 +1728,7 @@ void OS_X11::move_window_to_foreground() {
 }
 
 void OS_X11::process_joysticks() {
-	#ifndef __FreeBSD__
+	#if !defined(__FreeBSD__) && !defined(__OpenBSD__)
 	int bytes;
 	js_event events[32];
 	InputEvent ievent;
