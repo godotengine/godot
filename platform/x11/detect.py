@@ -1,6 +1,7 @@
 
 import os
 import sys	
+import platform
 
 
 def is_active():
@@ -145,7 +146,9 @@ def configure(env):
 
 	
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
-	env.Append(CPPFLAGS=["-DALSA_ENABLED"])
+	if platform.platform() == 'Linux':
+		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
+		env.Append(LIBS=['asound'])
 
 	if (env["pulseaudio"]=="yes"):
 		if not os.system("pkg-config --exists libpulse-simple"):
@@ -156,7 +159,7 @@ def configure(env):
 			print("PulseAudio development libraries not found, disabling driver")
 
 	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED','-DGLES_OVER_GL'])
-	env.Append(LIBS=['GL', 'GLU', 'pthread','asound','z']) #TODO detect linux/BSD!
+	env.Append(LIBS=['GL', 'GLU', 'pthread', 'z'])
 	#env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
 
 #host compiler is default..
