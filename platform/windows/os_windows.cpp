@@ -1494,7 +1494,7 @@ OS::Date OS_Windows::get_date() const {
 OS::Time OS_Windows::get_time() const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;

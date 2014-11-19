@@ -271,6 +271,8 @@ void TheoraVideoClip_AVFoundation::load(TheoraDataSource* source)
 	AVAssetTrack *videoTrack = [tracks objectAtIndex:0];
 
 	NSArray* audioTracks = [asset tracksWithMediaType:AVMediaTypeAudio];
+	if (audio_track >= audioTracks.count)
+		audio_track = 0;
 	AVAssetTrack *audioTrack = audioTracks.count > 0 ? [audioTracks objectAtIndex:audio_track] : NULL;
 	printf("*********** using audio track %i\n", audio_track);
 	

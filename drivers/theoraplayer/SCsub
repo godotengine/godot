@@ -67,10 +67,13 @@ if env["platform"] == "iphone":
 
 env_theora = env.Clone()
 
-env_theora.Append(CPPFLAGS=["-D_YUV_C", "-D__THEORA", "-D_LIB"])
+env_theora.Append(CPPFLAGS=["-D_YUV_C", "-D_LIB", "-D__THEORA"])
 
 if env["platform"] == "iphone":
 	env_theora.Append(CPPFLAGS=["-D__AVFOUNDATION"])
+else:
+	pass
+	#env_theora.Append(CPPFLAGS=["-D__FFMPEG"])
 
 if env["platform"] == "android":
 	env_theora.Append(CPPFLAGS=["-D_ANDROID"])

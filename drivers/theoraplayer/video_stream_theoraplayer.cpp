@@ -122,6 +122,7 @@ class AudioStreamInput : public AudioStreamResampled {
 	int rb_power;
 	int total_wrote;
 	bool playing;
+	bool paused;
 
 public:
 
@@ -133,6 +134,7 @@ public:
 		AudioServer::get_singleton()->stream_set_active(stream_rid,true);
 		AudioServer::get_singleton()->stream_set_volume_scale(stream_rid,1);
 		playing = true;
+		paused = false;
 	};
 	virtual void stop() {
 
@@ -146,8 +148,8 @@ public:
 
 	virtual bool is_playing() const { return true; };
 
-	virtual void set_paused(bool p_paused) {};
-	virtual bool is_paused(bool p_paused) const { return false; };
+	virtual void set_paused(bool p_paused) { paused = p_paused; };
+	virtual bool is_paused(bool p_paused) const { return paused; };
 
 	virtual void set_loop(bool p_enable) {};
 	virtual bool has_loop() const { return false; };
@@ -209,6 +211,7 @@ public:
 	AudioStreamInput(int p_channels, int p_freq) {
 
 		playing = false;
+		paused = true;
 		channels = p_channels;
 		freq = p_freq;
 		total_wrote = 0;
@@ -285,12 +288,12 @@ void VideoStreamTheoraplayer::stop() {
 		clip->stop();
 		clip->seek(0);
 	};
+	started = true;
 };
 
 void VideoStreamTheoraplayer::play() {
-
-	playing = true;
-	started = true;
+	if (clip)
+		playing = true;
 };
 
 bool VideoStreamTheoraplayer::is_playing() const {
@@ -300,7 +303,13 @@ bool VideoStreamTheoraplayer::is_playing() const {
 
 void VideoStreamTheoraplayer::set_paused(bool p_paused) {
 
-	playing = false;
+	paused = p_paused;
+	if (paused) {
+		clip->pause();
+	} else {
+		if (clip && playing && !started)
+			clip->play();
+	}
 };
 
 bool VideoStreamTheoraplayer::is_paused(bool p_paused) const {
@@ -355,6 +364,9 @@ int VideoStreamTheoraplayer::get_pending_frame_count() const {
 
 void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 
+	if (!clip)
+		return;
+
 	TheoraVideoFrame* f = clip->getNextFrame();
 	if (!f) {
 		return;
@@ -374,7 +386,7 @@ void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 	{
 		DVector<uint8_t>::Write wr = data.write();
 		uint8_t* ptr = wr.ptr();
-		memcpy(ptr, f->getBuffer(), imgsize);
+		copymem(ptr, f->getBuffer(), imgsize);
 	}
     /*
     for (int i=0; i<h; i++) {
@@ -414,6 +426,12 @@ Image VideoStreamTheoraplayer::peek_frame() const {
 void VideoStreamTheoraplayer::update(float p_time) {
 
 	if (!mgr)
+		return;
+
+	if (!clip)
+		return;
+
+	if (!playing || paused)
 		return;
 
 	//printf("video update!\n");
@@ -499,6 +517,7 @@ VideoStreamTheoraplayer::VideoStreamTheoraplayer() {
 	clip = NULL;
 	started = false;
 	playing = false;
+	paused = false;
 	loop = false;
 	audio_track=0;
 };

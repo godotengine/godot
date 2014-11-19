@@ -17,6 +17,7 @@ class VideoStreamTheoraplayer : public VideoStream {
 	bool started;
 	bool playing;
 	bool loop;
+	bool paused;
 
 	int audio_track;
 
