@@ -111,6 +111,11 @@ def configure(env):
 	env.ParseConfig('pkg-config freetype2 --cflags --libs')
 	env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 
+
+	if env['ao'] == 'yes':
+		env.ParseConfig('pkg-config ao --cflags --libs')
+		env.Append(CPPFLAGS=['-DAO_ENABLED'])
+
 	
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
 	env.Append(CPPFLAGS=["-DALSA_ENABLED"])

@@ -1384,6 +1384,10 @@ OS_X11::OS_X11() {
 	AudioDriverManagerSW::add_driver(&driver_alsa);
 #endif
 
+#ifdef AO_ENABLED
+	AudioDriverManagerSW::add_driver(&driver_ao);
+#endif
+
 	minimized = false;
 	xim_style=NULL;
 	mouse_mode=MOUSE_MODE_VISIBLE;
