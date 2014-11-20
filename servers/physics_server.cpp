@@ -655,7 +655,7 @@ void PhysicsServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
 */
-	ObjectTypeDB::bind_method(_MD("free","rid"),&PhysicsServer::free);
+	ObjectTypeDB::bind_method(_MD("free_rid","rid"),&PhysicsServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&PhysicsServer::set_active);
 

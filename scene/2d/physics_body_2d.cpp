@@ -618,6 +618,26 @@ RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() cons
 }
 
 
+Array RigidBody2D::get_colliding_bodies() const {
+
+	ERR_FAIL_COND_V(!contact_monitor,Array());
+
+	Array ret;
+	ret.resize(contact_monitor->body_map.size());
+	int idx=0;
+	for (const Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
+		Object *obj = ObjectDB::get_instance(E->key());
+		if (!obj) {
+			ret.resize( ret.size() -1 ); //ops
+		} else {
+			ret[idx++]=obj;
+		}
+
+	}
+
+	return ret;
+}
+
 void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 	if (p_enabled==is_contact_monitor_enabled())
@@ -696,6 +716,8 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&RigidBody2D::_direct_state_changed);
 	ObjectTypeDB::bind_method(_MD("_body_enter_tree"),&RigidBody2D::_body_enter_tree);
 	ObjectTypeDB::bind_method(_MD("_body_exit_tree"),&RigidBody2D::_body_exit_tree);
+
+	ObjectTypeDB::bind_method(_MD("get_colliding_bodies"),&RigidBody2D::get_colliding_bodies);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:Physics2DDirectBodyState")));
 

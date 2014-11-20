@@ -514,7 +514,7 @@ void Physics2DServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&Physics2DServer::joint_get_type);
 
-	ObjectTypeDB::bind_method(_MD("free","rid"),&Physics2DServer::free);
+	ObjectTypeDB::bind_method(_MD("free_rid","rid"),&Physics2DServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&Physics2DServer::set_active);
 

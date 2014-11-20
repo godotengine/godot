@@ -637,6 +637,27 @@ RigidBody::AxisLock RigidBody::get_axis_lock() const {
 }
 
 
+Array RigidBody::get_colliding_bodies() const {
+
+	ERR_FAIL_COND_V(!contact_monitor,Array());
+
+	Array ret;
+	ret.resize(contact_monitor->body_map.size());
+	int idx=0;
+	for (const Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
+		Object *obj = ObjectDB::get_instance(E->key());
+		if (!obj) {
+			ret.resize( ret.size() -1 ); //ops
+		} else {
+			ret[idx++]=obj;
+		}
+
+	}
+
+	return ret;
+}
+
+
 void RigidBody::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&RigidBody::set_mode);
@@ -687,6 +708,8 @@ void RigidBody::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_axis_lock","axis_lock"),&RigidBody::set_axis_lock);
 	ObjectTypeDB::bind_method(_MD("get_axis_lock"),&RigidBody::get_axis_lock);
+
+	ObjectTypeDB::bind_method(_MD("get_colliding_bodies"),&RigidBody::get_colliding_bodies);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:PhysicsDirectBodyState")));
 

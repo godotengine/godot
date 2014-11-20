@@ -80,16 +80,24 @@ class EditorImportAnimationOptions : public VBoxContainer {
 
 
 	TreeItem *fps;
+	TreeItem* optimize_linear_error;
+	TreeItem* optimize_angular_error;
+	TreeItem* optimize_max_angle;
+
 	TreeItem *clips_base;
+
 	TextEdit *filters;
 	Vector<TreeItem*> clips;
 
 	Tree *flags;
 	Tree *clips_tree;
+	Tree *optimization_tree;
 	Vector<TreeItem*> items;
 
 	bool updating;
 	bool validating;
+
+
 
 	void _changed();
 	void _item_edited();
@@ -106,6 +114,15 @@ public:
 
 	void set_fps(int p_fps);
 	int get_fps() const;
+
+	void set_optimize_linear_error(float p_error);
+	float get_optimize_linear_error() const;
+
+	void set_optimize_angular_error(float p_error);
+	float get_optimize_angular_error() const;
+
+	void set_optimize_max_angle(float p_error);
+	float get_optimize_max_angle() const;
 
 	void setup_clips(const Array& p_clips);
 	Array get_clips() const;
@@ -453,9 +470,41 @@ EditorImportAnimationOptions::EditorImportAnimationOptions() {
 	fps = flags->create_item(fps_base);
 	fps->set_cell_mode(0,TreeItem::CELL_MODE_RANGE);
 	fps->set_editable(0,true);
-	fps->set_range(0,15);
 	fps->set_range_config(0,1,120,1);
+	fps->set_range(0,15);
 
+	optimization_tree = memnew( Tree );
+	optimization_tree->set_columns(2);
+	tab->add_child(optimization_tree);
+	optimization_tree->set_name("Optimizer");
+	optimization_tree->set_column_expand(0,true);
+	optimization_tree->set_column_expand(1,false);
+	optimization_tree->set_column_min_width(1,80);
+	optimization_tree->set_hide_root(true);
+
+
+	TreeItem *optimize_root = optimization_tree->create_item();
+
+	optimize_linear_error = optimization_tree->create_item(optimize_root);
+	optimize_linear_error->set_text(0,"Max Linear Error");
+	optimize_linear_error->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+	optimize_linear_error->set_editable(1,true);
+	optimize_linear_error->set_range_config(1,0,1,0.001);
+	optimize_linear_error->set_range(1,0.05);
+
+	optimize_angular_error = optimization_tree->create_item(optimize_root);
+	optimize_angular_error->set_text(0,"Max Angular Error");
+	optimize_angular_error->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+	optimize_angular_error->set_editable(1,true);
+	optimize_angular_error->set_range_config(1,0,1,0.001);
+	optimize_angular_error->set_range(1,0.01);
+
+	optimize_max_angle = optimization_tree->create_item(optimize_root);
+	optimize_max_angle->set_text(0,"Max Angle");
+	optimize_max_angle->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+	optimize_max_angle->set_editable(1,true);
+	optimize_max_angle->set_range_config(1,0,360,0.001);
+	optimize_max_angle->set_range(1,int(180*0.125));
 
 	clips_tree = memnew( Tree );
 	clips_tree->set_hide_root(true);
@@ -497,6 +546,38 @@ int EditorImportAnimationOptions::get_fps() const {
 
 	return fps->get_range(0);
 }
+
+
+void EditorImportAnimationOptions::set_optimize_linear_error(float p_optimize_linear_error) {
+
+	optimize_linear_error->set_range(1,p_optimize_linear_error);
+}
+
+float EditorImportAnimationOptions::get_optimize_linear_error() const {
+
+	return optimize_linear_error->get_range(1);
+}
+
+void EditorImportAnimationOptions::set_optimize_angular_error(float p_optimize_angular_error) {
+
+	optimize_angular_error->set_range(1,p_optimize_angular_error);
+}
+
+float EditorImportAnimationOptions::get_optimize_angular_error() const {
+
+	return optimize_angular_error->get_range(1);
+}
+
+void EditorImportAnimationOptions::set_optimize_max_angle(float p_optimize_max_angle) {
+
+	optimize_max_angle->set_range(1,p_optimize_max_angle);
+}
+
+float EditorImportAnimationOptions::get_optimize_max_angle() const {
+
+	return optimize_max_angle->get_range(1);
+}
+
 
 void EditorImportAnimationOptions::set_filter(const String& p_filter) {
 
@@ -543,6 +624,17 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 #if 0
 	}
 #endif
+
+	if (p_path!=String()) {
+
+		String from_path = EditorFileSystem::get_singleton()->find_resource_from_source(EditorImportPlugin::validate_source_path(p_path));
+		print_line("from path.."+from_path);
+		if (from_path!=String()) {
+			popup_import(from_path);
+
+		}
+	}
+
 
 	import_path->set_text(p_path);
 
@@ -650,6 +742,9 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("texture_quality",texture_options->get_quality());
 	rim->set_option("animation_flags",animation_options->get_flags());
 	rim->set_option("animation_bake_fps",animation_options->get_fps());
+	rim->set_option("animation_optimizer_linear_error",animation_options->get_optimize_linear_error());
+	rim->set_option("animation_optimizer_angular_error",animation_options->get_optimize_angular_error());
+	rim->set_option("animation_optimizer_max_angle",animation_options->get_optimize_max_angle());
 	rim->set_option("animation_filters",animation_options->get_filter());
 	rim->set_option("animation_clips",animation_options->get_clips());
 	rim->set_option("post_import_script",script_path->get_text()!=String()?EditorImportPlugin::validate_source_path(script_path->get_text()):String());
@@ -791,6 +886,13 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 			animation_options->set_filter(rimd->get_option("animation_filters"));
 		if (rimd->has_option("animation_bake_fps"))
 			animation_options->set_fps(rimd->get_option("animation_bake_fps"));
+		if (rimd->has_option("animation_optimizer_linear_error"))
+			animation_options->set_optimize_linear_error(rimd->get_option("animation_optimizer_linear_error"));
+		if (rimd->has_option("animation_optimizer_angular_error"))
+			animation_options->set_optimize_angular_error(rimd->get_option("animation_optimizer_angular_error"));
+		if (rimd->has_option("animation_optimizer_max_angle"))
+			animation_options->set_optimize_max_angle(rimd->get_option("animation_optimizer_max_angle"));
+
 		script_path->set_text(rimd->get_option("post_import_script"));
 		if (rimd->has_option("import_this_time"))
 			this_import->select(rimd->get_option("import_this_time"));
@@ -2223,6 +2325,8 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	int fps = 24;
 	if (from->has_option("animation_bake_fps"))
 		fps=from->get_option("animation_bake_fps");
+
+
 	Array clips;
 	if (from->has_option("animation_clips"))
 		clips=from->get_option("animation_clips");
@@ -2503,6 +2607,26 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 
 }
 
+void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_error,float p_max_ang_error,float p_max_angle) {
+
+	if (!scene->has_node(String("AnimationPlayer")))
+		return;
+		Node* n = scene->get_node(String("AnimationPlayer"));
+	ERR_FAIL_COND(!n);
+	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	ERR_FAIL_COND(!anim);
+
+
+	List<StringName> anim_names;
+	anim->get_animation_list(&anim_names);
+	for(List<StringName>::Element *E=anim_names.front();E;E=E->next()) {
+
+		Ref<Animation> a = anim->get_animation(E->get());
+		a->optimize(p_max_lin_error,p_max_ang_error,Math::deg2rad(p_max_angle));
+	}
+}
+
+
 Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, const Ref<ResourceImportMetadata>& p_from) {
 
 	Error err=OK;
@@ -2512,6 +2636,16 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Array animation_clips = p_from->get_option("animation_clips");
 	String animation_filter = p_from->get_option("animation_filters");
 	int scene_flags = from->get_option("flags");
+	float anim_optimizer_linerr=0.05;
+	float anim_optimizer_angerr=0.01;
+	float anim_optimizer_maxang=22;
+
+	if (from->has_option("animation_optimizer_linear_error"))
+		anim_optimizer_linerr=from->get_option("animation_optimizer_linear_error");
+	if (from->has_option("animation_optimizer_angular_error"))
+		anim_optimizer_angerr=from->get_option("animation_optimizer_angular_error");
+	if (from->has_option("animation_optimizer_max_angle"))
+		anim_optimizer_maxang=from->get_option("animation_optimizer_max_angle");
 
 	EditorProgress progress("import","Import Scene",104);
 	progress.step("Importing Scene..",2);
@@ -2536,6 +2670,8 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Map< Ref<ImageTexture>,TextureRole > imagemap;
 
 	scene=_fix_node(scene,scene,collision_map,scene_flags,imagemap);
+	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE)
+		_optimize_animations(scene,anim_optimizer_linerr,anim_optimizer_angerr,anim_optimizer_maxang);
 	if (animation_clips.size())
 		_create_clips(scene,animation_clips,animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
 

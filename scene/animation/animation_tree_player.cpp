@@ -1662,7 +1662,7 @@ void AnimationTreePlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("node_get_type","id"),&AnimationTreePlayer::node_get_type);
 	ObjectTypeDB::bind_method(_MD("node_get_input_count","id"),&AnimationTreePlayer::node_get_input_count);
-	ObjectTypeDB::bind_method(_MD("node_get_input_sourcre","id","idx"),&AnimationTreePlayer::node_get_input_source);
+	ObjectTypeDB::bind_method(_MD("node_get_input_source","id","idx"),&AnimationTreePlayer::node_get_input_source);
 
 	ObjectTypeDB::bind_method(_MD("animation_node_set_animation","id","animation:Animation"),&AnimationTreePlayer::animation_node_set_animation);
 	ObjectTypeDB::bind_method(_MD("animation_node_get_animation:Animation","id"),&AnimationTreePlayer::animation_node_get_animation);

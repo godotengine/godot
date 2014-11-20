@@ -485,13 +485,13 @@ String OSIPhone::get_locale() const {
 	return locale_code;
 }
 
-extern bool _play_video(String p_path, float p_volume);
+extern bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 extern bool _is_video_playing();
 extern void _pause_video();
 extern void _stop_video();
 
-Error OSIPhone::native_video_play(String p_path, float p_volume) {
-    if ( _play_video(p_path, p_volume) )
+Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
+    if ( _play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
 		return OK;
 	return FAILED;
 }

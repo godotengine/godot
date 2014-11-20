@@ -319,7 +319,7 @@
 			<argument index="1" name="animation" type="Object">
 			</argument>
 			<description>
-			Add an animation resource to the player, which will be later referenced by the &quot;name&quot; arguemnt.
+			Add an animation resource to the player, which will be later referenced by the &quot;name&quot; argument.
 			</description>
 		</method>
 		<method name="remove_animation"  >

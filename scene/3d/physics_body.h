@@ -236,6 +236,7 @@ public:
 	void set_axis_lock(AxisLock p_lock);
 	AxisLock get_axis_lock() const;
 
+	Array get_colliding_bodies() const;
 
 	void apply_impulse(const Vector3& p_pos, const Vector3& p_impulse);
 

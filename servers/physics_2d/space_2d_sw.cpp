@@ -437,6 +437,7 @@ Physics2DDirectSpaceStateSW::Physics2DDirectSpaceStateSW() {
 
 void* Space2DSW::_broadphase_pair(CollisionObject2DSW *A,int p_subindex_A,CollisionObject2DSW *B,int p_subindex_B,void *p_self) {
 
+
 	CollisionObject2DSW::Type type_A=A->get_type();
 	CollisionObject2DSW::Type type_B=B->get_type();
 	if (type_A>type_B) {
@@ -450,7 +451,6 @@ void* Space2DSW::_broadphase_pair(CollisionObject2DSW *A,int p_subindex_A,Collis
 	self->collision_pairs++;
 
 	if (type_A==CollisionObject2DSW::TYPE_AREA) {
-
 
 		ERR_FAIL_COND_V(type_B!=CollisionObject2DSW::TYPE_BODY,NULL);
 		Area2DSW *area=static_cast<Area2DSW*>(A);

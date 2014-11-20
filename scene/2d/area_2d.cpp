@@ -162,7 +162,7 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 			E->get().shapes.insert(ShapePair(p_body_shape,p_area_shape));
 
 
-		if (E->get().in_tree) {
+		if (!node || E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_enter_shape,objid,node,p_body_shape,p_area_shape);
 		}
 
@@ -188,7 +188,7 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 			eraseit=true;
 
 		}
-		if (node && E->get().in_tree) {
+		if (!node || E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_area_shape);
 		}
 
@@ -263,6 +263,25 @@ bool Area2D::is_monitoring_enabled() const {
 	return monitoring;
 }
 
+Array Area2D::get_overlapping_bodies() const {
+
+	ERR_FAIL_COND_V(!monitoring,Array());
+	Array ret;
+	ret.resize(body_map.size());
+	int idx=0;
+	for (const Map<ObjectID,BodyState>::Element *E=body_map.front();E;E=E->next()) {
+		Object *obj = ObjectDB::get_instance(E->key());
+		if (!obj) {
+			ret.resize( ret.size() -1 ); //ops
+		} else {
+			ret[idx++]=obj;
+		}
+
+	}
+
+	return ret;
+}
+
 
 void Area2D::_bind_methods() {
 
@@ -289,6 +308,8 @@ void Area2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area2D::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area2D::is_monitoring_enabled);
+
+	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area2D::get_overlapping_bodies);
 
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area2D::_body_inout);
 

@@ -182,6 +182,41 @@ void Navigation::navmesh_remove(int p_id){
 
 }
 
+void Navigation::_clip_path(Vector<Vector3>& path, Polygon *from_poly, const Vector3& p_to_point, Polygon* p_to_poly) {
+
+	Vector3 from = path[path.size()-1];
+
+	if (from.distance_to(p_to_point)<CMP_EPSILON)
+		return;
+	Plane cut_plane;
+	cut_plane.normal = (from-p_to_point).cross(up);
+	if (cut_plane.normal==Vector3())
+		return;
+	cut_plane.normal.normalize();
+	cut_plane.d = cut_plane.normal.dot(from);
+
+
+	while(from_poly!=p_to_poly) {
+
+		int pe = from_poly->prev_edge;
+		Vector3 a = _get_vertex(from_poly->edges[pe].point);
+		Vector3 b = _get_vertex(from_poly->edges[(pe+1)%from_poly->edges.size()].point);
+
+		from_poly=from_poly->edges[pe].C;
+		ERR_FAIL_COND(!from_poly);
+
+		if (a.distance_to(b)>CMP_EPSILON) {
+
+			Vector3 inters;
+			if (cut_plane.intersects_segment(a,b,&inters)) {
+				if (inters.distance_to(p_to_point)>CMP_EPSILON && inters.distance_to(path[path.size()-1])>CMP_EPSILON) {
+					path.push_back(inters);
+				}
+			}
+		}
+	}
+}
+
 Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector3& p_end, bool p_optimize) {
 
 
@@ -379,9 +414,12 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 						portal_left=left;
 					} else {
 
-						apex_point=portal_right;
+						_clip_path(path,apex_poly,portal_right,right_poly);
+
+						apex_point=portal_right;						
 						p=right_poly;
 						left_poly=p;
+						apex_poly=p;
 						portal_left=apex_point;
 						portal_right=apex_point;
 						path.push_back(apex_point);
@@ -396,9 +434,12 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 						portal_right=right;
 					} else {
 
+						_clip_path(path,apex_poly,portal_left,left_poly);
+
 						apex_point=portal_left;
 						p=left_poly;
 						right_poly=p;
+						apex_poly=p;
 						portal_right=apex_point;
 						portal_left=apex_point;
 						path.push_back(apex_point);

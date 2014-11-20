@@ -992,6 +992,35 @@ void EditorFileSystem::_resource_saved(const String& p_path){
 	EditorFileSystem::get_singleton()->update_file(p_path);
 }
 
+String EditorFileSystem::_find_first_from_source(EditorFileSystemDirectory* p_dir,const String &p_src) const {
+
+	for(int i=0;i<p_dir->files.size();i++) {
+		for(int j=0;j<p_dir->files[i].meta.sources.size();j++) {
+
+			if (p_dir->files[i].meta.sources[j].path==p_src)
+				return p_dir->get_file_path(i);
+		}
+	}
+
+	for(int i=0;i<p_dir->subdirs.size();i++) {
+
+		String ret = _find_first_from_source(p_dir->subdirs[i],p_src);
+		if (ret.length()>0)
+			return ret;
+	}
+
+	return String();
+}
+
+
+String EditorFileSystem::find_resource_from_source(const String& p_path) const {
+
+
+	if (filesystem)
+		return _find_first_from_source(filesystem,p_path);
+	return String();
+}
+
 void EditorFileSystem::update_file(const String& p_file) {
 
     EditorFileSystemDirectory *fs=NULL;

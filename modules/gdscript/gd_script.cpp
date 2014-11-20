@@ -2509,6 +2509,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"assert",
 		"yield",
 		"static",
+		"float",
+		"int",
 	0};
 
 

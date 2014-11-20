@@ -688,9 +688,7 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 
 		case TRACK_MENU_OPTIMIZE: {
 
-			animation->optimize();
-
-			track_editor->update();
+			optimize_dialog->popup_centered(Size2(250,180));
 		} break;
 
 
@@ -698,6 +696,18 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 	}
 
 }
+
+
+void AnimationKeyEditor::_animation_optimize()  {
+
+
+	print_line("OPTIMIZE!");
+	animation->optimize(optimize_linear_error->get_val(),optimize_angular_error->get_val(),optimize_max_angle->get_val());
+	track_editor->update();
+	undo_redo->clear_history();
+
+}
+
 
 float AnimationKeyEditor::_get_zoom_scale() const {
 
@@ -2336,11 +2346,12 @@ void AnimationKeyEditor::_notification(int p_what) {
 				tpp->add_item(_TR("Out-In"),TRACK_MENU_SET_ALL_TRANS_OUTIN);
 				tpp->set_name("Transitions");
 				tpp->connect("item_pressed",this,"_menu_track");
+				optimize_dialog->connect("confirmed",this,"_animation_optimize");
 
 				menu_track->get_popup()->add_child(tpp);
 				menu_track->get_popup()->add_submenu_item(_TR("Set Transitions.."),"Transitions");
-				//menu_track->get_popup()->add_separator();
-				//menu_track->get_popup()->add_item("Optimize Animation",TRACK_MENU_OPTIMIZE);
+				menu_track->get_popup()->add_separator();
+				menu_track->get_popup()->add_item("Optimize Animation",TRACK_MENU_OPTIMIZE);
 
 
 
@@ -3100,6 +3111,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_len_update"),&AnimationKeyEditor::_animation_len_update);
 
 	ObjectTypeDB::bind_method(_MD("set_animation"),&AnimationKeyEditor::set_animation);
+	ObjectTypeDB::bind_method(_MD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
 
 
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
@@ -3224,6 +3236,37 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	remove_button->set_focus_mode(FOCUS_NONE);
 	remove_button->set_disabled(true);
 	remove_button->set_tooltip(_TR("Remove selected track."));
+
+
+	optimize_dialog = memnew( ConfirmationDialog );
+	add_child(optimize_dialog);
+	optimize_dialog->set_title("Anim. Optimizer");
+	VBoxContainer *optimize_vb = memnew( VBoxContainer );
+	optimize_dialog->add_child(optimize_vb);
+	optimize_dialog->set_child_rect(optimize_vb);
+	optimize_linear_error = memnew( SpinBox );
+	optimize_linear_error->set_max(1.0);
+	optimize_linear_error->set_min(0.001);
+	optimize_linear_error->set_step(0.001);
+	optimize_linear_error->set_val(0.05);
+	optimize_vb->add_margin_child("Max. Linear Error:",optimize_linear_error);
+	optimize_angular_error = memnew( SpinBox );
+	optimize_angular_error->set_max(1.0);
+	optimize_angular_error->set_min(0.001);
+	optimize_angular_error->set_step(0.001);
+	optimize_angular_error->set_val(0.01);
+
+	optimize_vb->add_margin_child("Max. Angular Error:",optimize_angular_error);
+	optimize_max_angle = memnew( SpinBox );
+	optimize_vb->add_margin_child("Max Optimizable Angle:",optimize_max_angle);
+	optimize_max_angle->set_max(360.0);
+	optimize_max_angle->set_min(0.0);
+	optimize_max_angle->set_step(0.1);
+	optimize_max_angle->set_val(22);
+
+	optimize_dialog->get_ok()->set_text("Optimize");
+
+
 
 	/*keying = memnew( Button );
 	keying->set_toggle_mode(true);

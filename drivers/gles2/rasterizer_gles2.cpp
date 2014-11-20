@@ -4203,6 +4203,9 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 	pixels.resize(viewport.width*viewport.height*4);
 	DVector<uint8_t>::Write w = pixels.write();
 	glPixelStorei(GL_PACK_ALIGNMENT, 4);
+
+//	uint64_t time = OS::get_singleton()->get_ticks_usec();
+
 	if (current_rt) {
 #ifdef GLEW_ENABLED
 		glReadBuffer(GL_COLOR_ATTACHMENT0);
@@ -4212,10 +4215,25 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 		// back?
 		glReadPixels( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height,GL_RGBA,GL_UNSIGNED_BYTE,w.ptr());
 	}
+
+	uint32_t *imgptr = (uint32_t*)w.ptr();
+	for(int y=0;y<(viewport.height/2);y++) {
+
+		uint32_t *ptr1 = &imgptr[y*viewport.width];
+		uint32_t *ptr2 = &imgptr[(viewport.height-y-1)*viewport.width];
+
+		for(int x=0;x<viewport.width;x++) {
+
+			uint32_t tmp = ptr1[x];
+			ptr1[x]=ptr2[x];
+			ptr2[x]=tmp;
+		}
+	}
+
 	w=DVector<uint8_t>::Write();
 
 	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA,pixels);
-	r_capture->flip_y();
+	//r_capture->flip_y();
 
 
 #endif

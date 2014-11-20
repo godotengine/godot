@@ -1533,7 +1533,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	device_lock = Mutex::create();
 	quit_request=false;
 	orientation=0;
-	remove_prev=false;
+	remove_prev=true;
 
 	device_thread=Thread::create(_device_poll_thread,this);
 	devices_changed=true;
