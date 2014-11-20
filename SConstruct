@@ -111,6 +111,7 @@ opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
+opts.Add('ao', 'Enable libao audio driver (yes/no)', 'no')
 opts.Add("CXX", "Compiler");
 opts.Add("CCFLAGS", "Custom flags for the C++ compiler");
 opts.Add("CFLAGS", "Custom flags for the C compiler");
