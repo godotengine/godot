@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ENABLED;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="1"
@@ -120,7 +120,7 @@
 				Optimization="0"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -202,7 +202,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -269,67 +269,67 @@
 				Name="windows"
 				>
 				<File
-					RelativePath="..\platform\windows\context_gl_win.cpp"
+					RelativePath="..\..\platform\windows\context_gl_win.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\context_gl_win.h"
+					RelativePath="..\..\platform\windows\context_gl_win.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\ctxgl_procaddr.cpp"
+					RelativePath="..\..\platform\windows\ctxgl_procaddr.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\ctxgl_procaddr.h"
+					RelativePath="..\..\platform\windows\ctxgl_procaddr.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\godot_win.cpp"
+					RelativePath="..\..\platform\windows\godot_win.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\key_mapping_win.cpp"
+					RelativePath="..\..\platform\windows\key_mapping_win.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\key_mapping_win.h"
+					RelativePath="..\..\platform\windows\key_mapping_win.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\lang_table.h"
+					RelativePath="..\..\platform\windows\lang_table.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\logo.h"
+					RelativePath="..\..\platform\windows\logo.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\os_windows.cpp"
+					RelativePath="..\..\platform\windows\os_windows.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\os_windows.h"
+					RelativePath="..\..\platform\windows\os_windows.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\platform_config.h"
+					RelativePath="..\..\platform\windows\platform_config.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\stream_peer_winsock.cpp"
+					RelativePath="..\..\platform\windows\stream_peer_winsock.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\stream_peer_winsock.h"
+					RelativePath="..\..\platform\windows\stream_peer_winsock.h"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\tcp_server_winsock.cpp"
+					RelativePath="..\..\platform\windows\tcp_server_winsock.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\platform\windows\tcp_server_winsock.h"
+					RelativePath="..\..\platform\windows\tcp_server_winsock.h"
 					>
 				</File>
 			</Filter>

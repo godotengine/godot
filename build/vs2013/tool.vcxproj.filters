@@ -1,0 +1,1224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="tools">
+      <UniqueIdentifier>{1056146f-24c5-4e22-b4ca-141e4ca98a25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\collada">
+      <UniqueIdentifier>{efce39b3-8133-4570-80d3-8c4950a939e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\doc">
+      <UniqueIdentifier>{32c57b28-2826-4d6f-be47-8d9cc38a2246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\docdump">
+      <UniqueIdentifier>{aa912fb6-d02e-4597-88bb-4f7f5381d9cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\editor">
+      <UniqueIdentifier>{e93dc091-704b-42f1-862e-3d4367c9a7dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\editor\fileserver">
+      <UniqueIdentifier>{6b73d1b7-6bf4-46a8-b924-b4a36693aaf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\editor\io_plugins">
+      <UniqueIdentifier>{eee9284e-773f-48fe-9f4a-b24634a28bb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\editor\plugins">
+      <UniqueIdentifier>{62bb706b-4033-4056-865a-2e5edda85293}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype">
+      <UniqueIdentifier>{c313ba75-696e-4809-a9cb-50812ec1d185}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype">
+      <UniqueIdentifier>{74105249-27bc-44a6-a511-be47024d16db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\include">
+      <UniqueIdentifier>{8a7623f6-a207-4a21-9541-37c25032bf28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\include\freetype">
+      <UniqueIdentifier>{4e133f29-abc1-49dd-9767-402a60ee8374}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\include\freetype\config">
+      <UniqueIdentifier>{95193eed-da9e-4f65-b1e6-cf89d079f926}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\include\freetype\internal">
+      <UniqueIdentifier>{6504438e-8ed2-4db9-8671-fdef1e40fa3b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\include\freetype\internal\services">
+      <UniqueIdentifier>{aff1480f-0496-4c6c-8362-3cb4f3376a99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src">
+      <UniqueIdentifier>{8262c8ed-019c-4bb0-a16f-f6db9876a964}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\autofit">
+      <UniqueIdentifier>{e67411dd-41f5-4ac4-8f39-aba5f1c1b42f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\base">
+      <UniqueIdentifier>{66f92ac4-27e2-49f8-8aeb-87ef498f957c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\bdf">
+      <UniqueIdentifier>{1a11527b-69bd-4214-bf23-ca9b8d4af9a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\cache">
+      <UniqueIdentifier>{7bc72a3b-f5af-4197-88db-8064a5174cc4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\cff">
+      <UniqueIdentifier>{79ce0490-5c36-410b-9728-776d6b5290a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\cid">
+      <UniqueIdentifier>{70a370b7-3f59-403c-ac51-b20f44300e70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\gxvalid">
+      <UniqueIdentifier>{741ba7f9-90d9-44b7-a934-5e08469c4574}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\otvalid">
+      <UniqueIdentifier>{55ad55f2-e47b-41bb-af01-a8b3433a73ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\pcf">
+      <UniqueIdentifier>{86d96721-a289-480b-aba3-f7bb5065f976}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\pfr">
+      <UniqueIdentifier>{fcd5a71b-e191-46bf-8953-31b9d5bdb535}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\psaux">
+      <UniqueIdentifier>{17f8b959-47d0-4147-9cef-0658c0156824}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\pshinter">
+      <UniqueIdentifier>{a48f961a-05fd-4d3d-b06a-99f6c9d2e458}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\psnames">
+      <UniqueIdentifier>{e8894a4c-1a8c-43eb-914f-b5f2ec2053fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\raster">
+      <UniqueIdentifier>{97479584-bffa-4f7f-a1b6-3e0ee2b3e0ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\sfnt">
+      <UniqueIdentifier>{195ef555-e4ce-4f45-81f9-c6edba9aa381}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\smooth">
+      <UniqueIdentifier>{611d4fb5-ba1c-4d2a-8d4d-30cf69d15ff1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\truetype">
+      <UniqueIdentifier>{44b9bee9-9695-458b-aa08-9f3a48934ca1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\type1">
+      <UniqueIdentifier>{c465cfd4-6c14-4740-a20e-1fd194ccdcab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\type42">
+      <UniqueIdentifier>{1f88097a-1912-44ed-a17f-75a3ebbf105e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\freetype\freetype\src\winfonts">
+      <UniqueIdentifier>{29d82bdf-6f90-47e4-a2c4-cb7be3522e41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tools\pck">
+      <UniqueIdentifier>{431098f1-6afc-4138-97a9-0a19933e17bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{787bff56-d243-4c44-8af0-5c9417817caf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\android">
+      <UniqueIdentifier>{4c9f5ae8-7532-4117-9af3-2352e3afdba4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\android\export">
+      <UniqueIdentifier>{dce5c687-8d31-4007-bf72-693faad89bb4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\bb10">
+      <UniqueIdentifier>{7319f881-1b09-4fee-b1ad-1741e99844dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\bb10\export">
+      <UniqueIdentifier>{c00c7f51-fc6a-4ea8-bcc3-9806673514c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\javascript">
+      <UniqueIdentifier>{b7ac1b8e-4847-4db1-91ca-b33876975ab9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\javascript\export">
+      <UniqueIdentifier>{e88919a8-91c4-41f1-b1ae-3d998273d0fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\osx">
+      <UniqueIdentifier>{d2042dbd-f056-4314-98cb-2c8f0477cd5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\osx\export">
+      <UniqueIdentifier>{d449729a-0b5d-454e-9845-df90775215e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\windows">
+      <UniqueIdentifier>{e52a1fda-6819-4b7d-ab6e-b1edd7c75a62}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\windows\export">
+      <UniqueIdentifier>{5b6f2231-a86d-4a7f-96aa-2c57b8e991f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\x11">
+      <UniqueIdentifier>{3087a74b-187b-44d5-867e-48060039c53d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\x11\export">
+      <UniqueIdentifier>{1800122f-cecb-41f7-8b05-db1c929c3fb5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tools\collada\collada.cpp">
+      <Filter>tools\collada</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\doc\doc_data.cpp">
+      <Filter>tools\doc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\docdump\doc_dump.cpp">
+      <Filter>tools\docdump</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\animation_editor.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\call_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\code_editor.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\collision_polygon_2d_editor_plugin.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\connections_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\console.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\create_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\default_saver.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_data.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_dir_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_file_system.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_fonts.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_help.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_icons.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_import_export.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_log.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_node.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_path.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_plugin.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_reimport_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_run.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_run_native.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_run_script.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_selection.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_settings.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_sub_scene.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_vu.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\file_type_cache.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\groups_editor.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\import_settings.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\optimized_save_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\output_strings.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\pane_drag.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\progress_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\project_export.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\project_manager.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\project_settings.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\property_editor.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\pvrtc_compress.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\quick_open.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\register_exporters.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\reparent_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\resources_dock.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\run_settings_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\scene_tree_dock.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\scene_tree_editor.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\scenes.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\scenes_dock.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\script_create_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\script_editor_debugger.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\settings_config_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\spatial_editor_gizmos.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\fileserver\editor_file_server.cpp">
+      <Filter>tools\editor\fileserver</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_atlas.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_export_res.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_font_import_plugin.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_import_collada.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_mesh_import_plugin.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_sample_import_plugin.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_scene_import_plugin.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_scene_importer_fbxconv.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_texture_import_plugin.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\io_plugins\editor_translation_import_plugin.cpp">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\animation_data_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\animation_player_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\animation_tree_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\baked_light_baker.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\baked_light_baker_cmpxchg.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\baked_light_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\camera_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\canvas_item_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\collision_polygon_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\control_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\item_list_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\mesh_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\multimesh_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\particles_2d_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\particles_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\path_2d_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\path_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\polygon_2d_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\resource_preloader_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\rich_text_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\sample_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\sample_library_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\sample_player_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\script_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\shader_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\shader_graph_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\spatial_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\sprite_frames_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\stream_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\style_box_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\theme_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\tile_map_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\tile_set_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\autofit\autofit.c">
+      <Filter>tools\freetype\freetype\src\autofit</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftapi.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftbase.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftbbox.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftbdf.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftbitmap.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftcid.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftdebug.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftfstype.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftgasp.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftglyph.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftgxval.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftinit.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftlcdfil.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftmm.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftotval.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftpatent.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftpfr.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftpic.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftstroke.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftsynth.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftsystem.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\fttype1.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftwinfnt.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\base\ftxf86.c">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\bdf\bdf.c">
+      <Filter>tools\freetype\freetype\src\bdf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\cache\ftcache.c">
+      <Filter>tools\freetype\freetype\src\cache</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\cff\cff.c">
+      <Filter>tools\freetype\freetype\src\cff</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\cid\type1cid.c">
+      <Filter>tools\freetype\freetype\src\cid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\gxvalid\gxvalid.c">
+      <Filter>tools\freetype\freetype\src\gxvalid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\otvalid\otvalid.c">
+      <Filter>tools\freetype\freetype\src\otvalid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\pcf\pcf.c">
+      <Filter>tools\freetype\freetype\src\pcf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\pfr\pfr.c">
+      <Filter>tools\freetype\freetype\src\pfr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\psaux\psaux.c">
+      <Filter>tools\freetype\freetype\src\psaux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\pshinter\pshinter.c">
+      <Filter>tools\freetype\freetype\src\pshinter</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\psnames\psnames.c">
+      <Filter>tools\freetype\freetype\src\psnames</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\raster\raster.c">
+      <Filter>tools\freetype\freetype\src\raster</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\sfnt\sfnt.c">
+      <Filter>tools\freetype\freetype\src\sfnt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\smooth\smooth.c">
+      <Filter>tools\freetype\freetype\src\smooth</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\truetype\truetype.c">
+      <Filter>tools\freetype\freetype\src\truetype</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\type1\type1.c">
+      <Filter>tools\freetype\freetype\src\type1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\type42\type42.c">
+      <Filter>tools\freetype\freetype\src\type42</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\freetype\freetype\src\winfonts\winfnt.c">
+      <Filter>tools\freetype\freetype\src\winfonts</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\pck\pck_packer.cpp">
+      <Filter>tools\pck</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\android\export\export.cpp">
+      <Filter>platform\android\export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\bb10\export\export.cpp">
+      <Filter>platform\bb10\export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\javascript\export\export.cpp">
+      <Filter>platform\javascript\export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\osx\export\export.cpp">
+      <Filter>platform\osx\export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\export\export.cpp">
+      <Filter>platform\windows\export</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\x11\export\export.cpp">
+      <Filter>platform\x11\export</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tools\collada\collada.h">
+      <Filter>tools\collada</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\doc\doc_data.h">
+      <Filter>tools\doc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\docdump\doc_dump.h">
+      <Filter>tools\docdump</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\animation_editor.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\call_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\code_editor.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\collision_polygon_2d_editor_plugin.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\connections_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\console.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\create_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\default_saver.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\doc_code_font.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\doc_data_compressed.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\doc_font.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\doc_title_font.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_data.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_dir_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_file_system.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_fonts.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_help.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_icons.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_import_export.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_log.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_node.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_path.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_plugin.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_reimport_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_run.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_run_native.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_run_script.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_selection.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_settings.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_sub_scene.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_vu.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\file_type_cache.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\groups_editor.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\import_settings.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\optimized_save_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\output_strings.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\pane_drag.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\progress_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\project_export.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\project_manager.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\project_settings.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\property_editor.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\pvrtc_compress.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\quick_open.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\register_exporters.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\reparent_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\resources_dock.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\run_settings_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\scene_tree_dock.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\scene_tree_editor.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\scenes.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\scenes_dock.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\script_create_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\script_editor_debugger.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\settings_config_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\spatial_editor_gizmos.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\fileserver\editor_file_server.h">
+      <Filter>tools\editor\fileserver</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_atlas.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_export_res.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_font_import_plugin.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_import_collada.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_mesh_import_plugin.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_sample_import_plugin.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_scene_import_plugin.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_scene_importer_fbxconv.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_texture_import_plugin.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\io_plugins\editor_translation_import_plugin.h">
+      <Filter>tools\editor\io_plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\animation_data_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\animation_player_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\animation_tree_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\baked_light_baker.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\baked_light_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\camera_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\canvas_item_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\collision_polygon_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\control_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\item_list_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\mesh_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\multimesh_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\particles_2d_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\particles_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\path_2d_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\path_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\polygon_2d_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\resource_preloader_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\rich_text_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\sample_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\sample_library_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\sample_player_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\script_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\shader_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\shader_graph_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\spatial_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\sprite_frames_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\stream_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\style_box_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\theme_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\tile_map_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\tile_set_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\ft2build.h">
+      <Filter>tools\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\ftoption.h">
+      <Filter>tools\freetype\freetype\include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\freetype.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftadvanc.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftautoh.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftbbox.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftbdf.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftbitmap.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftbzip2.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftcache.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftcffdrv.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftchapters.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftcid.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\fterrdef.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\fterrors.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftgasp.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftglyph.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftgxval.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftgzip.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftimage.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftincrem.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftlcdfil.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftlist.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftlzw.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftmac.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftmm.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftmodapi.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftmoderr.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftotval.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftoutln.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftpfr.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftrender.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftsizes.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftsnames.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftstroke.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftsynth.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftsystem.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\fttrigon.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftttdrv.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\fttypes.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftwinfnt.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ftxf86.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\t1tables.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ttnameid.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\tttables.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\tttags.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\ttunpat.h">
+      <Filter>tools\freetype\freetype\include\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\config\ftconfig.h">
+      <Filter>tools\freetype\freetype\include\freetype\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\config\ftheader.h">
+      <Filter>tools\freetype\freetype\include\freetype\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\config\ftmodule.h">
+      <Filter>tools\freetype\freetype\include\freetype\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\config\ftoption.h">
+      <Filter>tools\freetype\freetype\include\freetype\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\config\ftstdlib.h">
+      <Filter>tools\freetype\freetype\include\freetype\config</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\autohint.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftcalc.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftdebug.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftdriver.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftgloadr.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftmemory.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftobjs.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftpic.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftrfork.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftserv.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftstream.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\fttrace.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\ftvalid.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\internal.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\psaux.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\pshints.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\sfnt.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\t1types.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\tttypes.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svbdf.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svcid.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svgldict.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svgxval.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svkern.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svmm.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svotval.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svpfr.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svpostnm.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svprop.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svpscmap.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svpsinfo.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svsfnt.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svttcmap.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svtteng.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svttglyf.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svwinfnt.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\include\freetype\internal\services\svxf86nm.h">
+      <Filter>tools\freetype\freetype\include\freetype\internal\services</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\src\base\ftbase.h">
+      <Filter>tools\freetype\freetype\src\base</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\src\bdf\bdf.h">
+      <Filter>tools\freetype\freetype\src\bdf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\src\gxvalid\gxvalid.h">
+      <Filter>tools\freetype\freetype\src\gxvalid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\src\otvalid\otvalid.h">
+      <Filter>tools\freetype\freetype\src\otvalid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\src\pcf\pcf.h">
+      <Filter>tools\freetype\freetype\src\pcf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\freetype\freetype\src\winfonts\winfnt.h">
+      <Filter>tools\freetype\freetype\src\winfonts</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\pck\pck_packer.h">
+      <Filter>tools\pck</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\android\export\export.h">
+      <Filter>platform\android\export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\bb10\export\export.h">
+      <Filter>platform\bb10\export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\javascript\export\export.h">
+      <Filter>platform\javascript\export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\osx\export\export.h">
+      <Filter>platform\osx\export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\export\export.h">
+      <Filter>platform\windows\export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\x11\export\export.h">
+      <Filter>platform\x11\export</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

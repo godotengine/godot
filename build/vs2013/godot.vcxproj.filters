@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="platform">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="platform\windows">
+      <UniqueIdentifier>{df9c6bad-bc61-428c-ae1e-8884915cea77}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\platform\windows\context_gl_win.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\ctxgl_procaddr.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\godot_win.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\key_mapping_win.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\os_windows.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\stream_peer_winsock.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\tcp_server_winsock.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\windows\packet_peer_udp_winsock.cpp">
+      <Filter>platform\windows</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\platform\windows\context_gl_win.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\ctxgl_procaddr.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\key_mapping_win.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\lang_table.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\logo.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\os_windows.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\platform_config.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\stream_peer_winsock.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\tcp_server_winsock.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\windows\packet_peer_udp_winsock.h">
+      <Filter>platform\windows</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

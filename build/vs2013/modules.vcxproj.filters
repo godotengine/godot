@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="modules">
+      <UniqueIdentifier>{d6f8f641-ec13-47ec-8b04-f5187de1a458}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\gdscript">
+      <UniqueIdentifier>{01960baf-ed68-4c1a-b0f0-f37a953d0efb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\gridmap">
+      <UniqueIdentifier>{734e183f-4def-4d9a-bfe3-ea0666ca16b7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\luascript">
+      <UniqueIdentifier>{1728af2f-7708-4a89-9e64-4d363f815bd9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\digest">
+      <UniqueIdentifier>{4b7c5b8c-724d-4489-95a1-5fcb35010832}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\digest\snappy">
+      <UniqueIdentifier>{b43898a9-846e-4efd-b89b-d33c6fa4c3d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\sdk">
+      <UniqueIdentifier>{991f34f3-82b6-4613-85e6-f8184feb60b8}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\modules\register_module_types.cpp">
+      <Filter>modules</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_compiler.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_editor.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_functions.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_parser.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_pretty_print.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_script.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\gd_tokenizer.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gdscript\register_types.cpp">
+      <Filter>modules\gdscript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gridmap\grid_map.cpp">
+      <Filter>modules\gridmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gridmap\grid_map_editor_plugin.cpp">
+      <Filter>modules\gridmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gridmap\register_types.cpp">
+      <Filter>modules\gridmap</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\luascript\lua_editor.cpp">
+      <Filter>modules\luascript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\luascript\lua_instance.cpp">
+      <Filter>modules\luascript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\luascript\lua_script.cpp">
+      <Filter>modules\luascript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\luascript\lua_variant.cpp">
+      <Filter>modules\luascript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\luascript\register_types.cpp">
+      <Filter>modules\luascript</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\register_types.cpp">
+      <Filter>modules\digest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\snappy\csnappy_compress.cpp">
+      <Filter>modules\digest\snappy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\snappy\csnappy_decompress.cpp">
+      <Filter>modules\digest\snappy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\sdk\platform.cpp">
+      <Filter>modules\sdk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\sdk\register_types.cpp">
+      <Filter>modules\sdk</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\modules\register_module_types.h">
+      <Filter>modules</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\gd_compiler.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\gd_functions.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\gd_parser.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\gd_pretty_print.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\gd_script.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\gd_tokenizer.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gdscript\register_types.h">
+      <Filter>modules\gdscript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gridmap\grid_map.h">
+      <Filter>modules\gridmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gridmap\grid_map_editor_plugin.h">
+      <Filter>modules\gridmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\gridmap\register_types.h">
+      <Filter>modules\gridmap</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\luascript\lua_script.h">
+      <Filter>modules\luascript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\luascript\register_types.h">
+      <Filter>modules\luascript</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\register_types.h">
+      <Filter>modules\digest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy.h">
+      <Filter>modules\digest\snappy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy_compat.h">
+      <Filter>modules\digest\snappy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy_internal.h">
+      <Filter>modules\digest\snappy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy_internal_userspace.h">
+      <Filter>modules\digest\snappy</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\sdk\platform.h">
+      <Filter>modules\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\sdk\register_types.h">
+      <Filter>modules\sdk</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

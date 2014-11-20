@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ENABLED;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="1"
@@ -109,7 +109,7 @@
 				Optimization="0"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -176,7 +176,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -223,462 +223,462 @@
 			Name="core"
 			>
 			<File
-				RelativePath="..\core\allocators.h"
+				RelativePath="..\..\core\allocators.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\array.cpp"
+				RelativePath="..\..\core\array.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\array.h"
+				RelativePath="..\..\core\array.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\balloon_allocator.h"
+				RelativePath="..\..\core\balloon_allocator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\color.cpp"
+				RelativePath="..\..\core\color.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\color.h"
+				RelativePath="..\..\core\color.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\command_queue_mt.cpp"
+				RelativePath="..\..\core\command_queue_mt.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\command_queue_mt.h"
+				RelativePath="..\..\core\command_queue_mt.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\compressed_translation.cpp"
+				RelativePath="..\..\core\compressed_translation.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\compressed_translation.h"
+				RelativePath="..\..\core\compressed_translation.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\core_string_names.cpp"
+				RelativePath="..\..\core\core_string_names.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\core_string_names.h"
+				RelativePath="..\..\core\core_string_names.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\dictionary.cpp"
+				RelativePath="..\..\core\dictionary.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\dictionary.h"
+				RelativePath="..\..\core\dictionary.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\dvector.cpp"
+				RelativePath="..\..\core\dvector.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\dvector.h"
+				RelativePath="..\..\core\dvector.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\error_list.h"
+				RelativePath="..\..\core\error_list.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\error_macros.cpp"
+				RelativePath="..\..\core\error_macros.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\error_macros.h"
+				RelativePath="..\..\core\error_macros.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\event_queue.cpp"
+				RelativePath="..\..\core\event_queue.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\event_queue.h"
+				RelativePath="..\..\core\event_queue.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\fpstr.cpp"
+				RelativePath="..\..\core\fpstr.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\fpstr.h"
+				RelativePath="..\..\core\fpstr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\func_ref.cpp"
+				RelativePath="..\..\core\func_ref.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\func_ref.h"
+				RelativePath="..\..\core\func_ref.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\global_constants.cpp"
+				RelativePath="..\..\core\global_constants.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\global_constants.h"
+				RelativePath="..\..\core\global_constants.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\global_defaults.cpp"
+				RelativePath="..\..\core\global_defaults.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\globals.cpp"
+				RelativePath="..\..\core\globals.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\globals.h"
+				RelativePath="..\..\core\globals.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\hash_map.h"
+				RelativePath="..\..\core\hash_map.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\hashfuncs.h"
+				RelativePath="..\..\core\hashfuncs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\image.cpp"
+				RelativePath="..\..\core\image.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\image.h"
+				RelativePath="..\..\core\image.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\image_quantize.cpp"
+				RelativePath="..\..\core\image_quantize.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\input_map.cpp"
+				RelativePath="..\..\core\input_map.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\input_map.h"
+				RelativePath="..\..\core\input_map.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\int_types.h"
+				RelativePath="..\..\core\int_types.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\list.h"
+				RelativePath="..\..\core\list.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\map.h"
+				RelativePath="..\..\core\map.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\message_queue.cpp"
+				RelativePath="..\..\core\message_queue.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\message_queue.h"
+				RelativePath="..\..\core\message_queue.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\method_bind.cpp"
+				RelativePath="..\..\core\method_bind.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\method_bind.h"
+				RelativePath="..\..\core\method_bind.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\method_bind.inc"
+				RelativePath="..\..\core\method_bind.inc"
 				>
 			</File>
 			<File
-				RelativePath="..\core\multi_bucket_array.h"
+				RelativePath="..\..\core\multi_bucket_array.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\object.cpp"
+				RelativePath="..\..\core\object.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\object.h"
+				RelativePath="..\..\core\object.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\object_type_db.cpp"
+				RelativePath="..\..\core\object_type_db.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\object_type_db.h"
+				RelativePath="..\..\core\object_type_db.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\packed_data_container.cpp"
+				RelativePath="..\..\core\packed_data_container.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\packed_data_container.h"
+				RelativePath="..\..\core\packed_data_container.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\pair.cpp"
+				RelativePath="..\..\core\pair.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\pair.h"
+				RelativePath="..\..\core\pair.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\path_db.cpp"
+				RelativePath="..\..\core\path_db.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\path_db.h"
+				RelativePath="..\..\core\path_db.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\path_remap.cpp"
+				RelativePath="..\..\core\path_remap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\path_remap.h"
+				RelativePath="..\..\core\path_remap.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\pool_allocator.cpp"
+				RelativePath="..\..\core\pool_allocator.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\pool_allocator.h"
+				RelativePath="..\..\core\pool_allocator.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\print_string.cpp"
+				RelativePath="..\..\core\print_string.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\print_string.h"
+				RelativePath="..\..\core\print_string.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\profiler.cpp"
+				RelativePath="..\..\core\profiler.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\profiler.h"
+				RelativePath="..\..\core\profiler.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\ref_ptr.cpp"
+				RelativePath="..\..\core\ref_ptr.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\ref_ptr.h"
+				RelativePath="..\..\core\ref_ptr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\reference.cpp"
+				RelativePath="..\..\core\reference.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\reference.h"
+				RelativePath="..\..\core\reference.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\register_core_types.cpp"
+				RelativePath="..\..\core\register_core_types.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\register_core_types.h"
+				RelativePath="..\..\core\register_core_types.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\res_ptr.cpp"
+				RelativePath="..\..\core\res_ptr.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\res_ptr.h"
+				RelativePath="..\..\core\res_ptr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\resource.cpp"
+				RelativePath="..\..\core\resource.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\resource.h"
+				RelativePath="..\..\core\resource.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\rid.cpp"
+				RelativePath="..\..\core\rid.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\rid.h"
+				RelativePath="..\..\core\rid.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\ring_buffer.h"
+				RelativePath="..\..\core\ring_buffer.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\safe_refcount.cpp"
+				RelativePath="..\..\core\safe_refcount.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\safe_refcount.h"
+				RelativePath="..\..\core\safe_refcount.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_debugger_debugger.cpp"
+				RelativePath="..\..\core\script_debugger_debugger.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_debugger_local.cpp"
+				RelativePath="..\..\core\script_debugger_local.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_debugger_local.h"
+				RelativePath="..\..\core\script_debugger_local.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_debugger_remote.cpp"
+				RelativePath="..\..\core\script_debugger_remote.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_debugger_remote.h"
+				RelativePath="..\..\core\script_debugger_remote.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_encryption_key.cpp"
+				RelativePath="..\..\core\script_encryption_key.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_language.cpp"
+				RelativePath="..\..\core\script_language.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\script_language.h"
+				RelativePath="..\..\core\script_language.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\self_list.h"
+				RelativePath="..\..\core\self_list.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\set.h"
+				RelativePath="..\..\core\set.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\simple_type.h"
+				RelativePath="..\..\core\simple_type.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\sort.h"
+				RelativePath="..\..\core\sort.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\string_db.cpp"
+				RelativePath="..\..\core\string_db.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\string_db.h"
+				RelativePath="..\..\core\string_db.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\translation.cpp"
+				RelativePath="..\..\core\translation.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\translation.h"
+				RelativePath="..\..\core\translation.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\typedefs.h"
+				RelativePath="..\..\core\typedefs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\ucaps.h"
+				RelativePath="..\..\core\ucaps.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\undo_redo.cpp"
+				RelativePath="..\..\core\undo_redo.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\undo_redo.h"
+				RelativePath="..\..\core\undo_redo.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\ustring.cpp"
+				RelativePath="..\..\core\ustring.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\ustring.h"
+				RelativePath="..\..\core\ustring.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\variant.cpp"
+				RelativePath="..\..\core\variant.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\variant.h"
+				RelativePath="..\..\core\variant.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\variant_call.cpp"
+				RelativePath="..\..\core\variant_call.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\variant_call_bind.h"
+				RelativePath="..\..\core\variant_call_bind.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\variant_op.cpp"
+				RelativePath="..\..\core\variant_op.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\vector.h"
+				RelativePath="..\..\core\vector.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\version.h"
+				RelativePath="..\..\core\version.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\vmap.cpp"
+				RelativePath="..\..\core\vmap.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\vmap.h"
+				RelativePath="..\..\core\vmap.h"
 				>
 			</File>
 			<File
-				RelativePath="..\core\vset.cpp"
+				RelativePath="..\..\core\vset.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\core\vset.h"
+				RelativePath="..\..\core\vset.h"
 				>
 			</File>
 			<Filter
 				Name="bind"
 				>
 				<File
-					RelativePath="..\core\bind\core_bind.cpp"
+					RelativePath="..\..\core\bind\core_bind.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\bind\core_bind.h"
+					RelativePath="..\..\core\bind\core_bind.h"
 					>
 				</File>
 			</Filter>
@@ -686,279 +686,279 @@
 				Name="io"
 				>
 				<File
-					RelativePath="..\core\io\aes256.cpp"
+					RelativePath="..\..\core\io\aes256.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\aes256.h"
+					RelativePath="..\..\core\io\aes256.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\base64.c"
+					RelativePath="..\..\core\io\base64.c"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\base64.h"
+					RelativePath="..\..\core\io\base64.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\compression.cpp"
+					RelativePath="..\..\core\io\compression.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\compression.h"
+					RelativePath="..\..\core\io\compression.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\config_file.cpp"
+					RelativePath="..\..\core\io\config_file.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\config_file.h"
+					RelativePath="..\..\core\io\config_file.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\crypt.h"
+					RelativePath="..\..\core\io\crypt.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\fastlz.c"
+					RelativePath="..\..\core\io\fastlz.c"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\fastlz.h"
+					RelativePath="..\..\core\io\fastlz.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_buffered.cpp"
+					RelativePath="..\..\core\io\file_access_buffered.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_buffered.h"
+					RelativePath="..\..\core\io\file_access_buffered.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_buffered_fa.h"
+					RelativePath="..\..\core\io\file_access_buffered_fa.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_compressed.cpp"
+					RelativePath="..\..\core\io\file_access_compressed.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_compressed.h"
+					RelativePath="..\..\core\io\file_access_compressed.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_encrypted.cpp"
+					RelativePath="..\..\core\io\file_access_encrypted.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_encrypted.h"
+					RelativePath="..\..\core\io\file_access_encrypted.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_memory.cpp"
+					RelativePath="..\..\core\io\file_access_memory.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_memory.h"
+					RelativePath="..\..\core\io\file_access_memory.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_network.cpp"
+					RelativePath="..\..\core\io\file_access_network.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_network.h"
+					RelativePath="..\..\core\io\file_access_network.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_pack.cpp"
+					RelativePath="..\..\core\io\file_access_pack.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_pack.h"
+					RelativePath="..\..\core\io\file_access_pack.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_zip.cpp"
+					RelativePath="..\..\core\io\file_access_zip.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\file_access_zip.h"
+					RelativePath="..\..\core\io\file_access_zip.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\http_client.cpp"
+					RelativePath="..\..\core\io\http_client.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\http_client.h"
+					RelativePath="..\..\core\io\http_client.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\image_loader.cpp"
+					RelativePath="..\..\core\io\image_loader.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\image_loader.h"
+					RelativePath="..\..\core\io\image_loader.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\ioapi.c"
+					RelativePath="..\..\core\io\ioapi.c"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\ioapi.h"
+					RelativePath="..\..\core\io\ioapi.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\ip.cpp"
+					RelativePath="..\..\core\io\ip.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\ip.h"
+					RelativePath="..\..\core\io\ip.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\ip_address.cpp"
+					RelativePath="..\..\core\io\ip_address.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\ip_address.h"
+					RelativePath="..\..\core\io\ip_address.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\json.cpp"
+					RelativePath="..\..\core\io\json.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\json.h"
+					RelativePath="..\..\core\io\json.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\marshalls.cpp"
+					RelativePath="..\..\core\io\marshalls.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\marshalls.h"
+					RelativePath="..\..\core\io\marshalls.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\md5.cpp"
+					RelativePath="..\..\core\io\md5.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\md5.h"
+					RelativePath="..\..\core\io\md5.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\packet_peer.cpp"
+					RelativePath="..\..\core\io\packet_peer.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\packet_peer.h"
+					RelativePath="..\..\core\io\packet_peer.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_format_binary.cpp"
+					RelativePath="..\..\core\io\resource_format_binary.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_format_binary.h"
+					RelativePath="..\..\core\io\resource_format_binary.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_format_xml.cpp"
+					RelativePath="..\..\core\io\resource_format_xml.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_format_xml.h"
+					RelativePath="..\..\core\io\resource_format_xml.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_loader.cpp"
+					RelativePath="..\..\core\io\resource_loader.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_loader.h"
+					RelativePath="..\..\core\io\resource_loader.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_saver.cpp"
+					RelativePath="..\..\core\io\resource_saver.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\resource_saver.h"
+					RelativePath="..\..\core\io\resource_saver.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\stream_peer.cpp"
+					RelativePath="..\..\core\io\stream_peer.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\stream_peer.h"
+					RelativePath="..\..\core\io\stream_peer.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\stream_peer_ssl.cpp"
+					RelativePath="..\..\core\io\stream_peer_ssl.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\stream_peer_ssl.h"
+					RelativePath="..\..\core\io\stream_peer_ssl.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\stream_peer_tcp.cpp"
+					RelativePath="..\..\core\io\stream_peer_tcp.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\stream_peer_tcp.h"
+					RelativePath="..\..\core\io\stream_peer_tcp.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\tcp_server.cpp"
+					RelativePath="..\..\core\io\tcp_server.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\tcp_server.h"
+					RelativePath="..\..\core\io\tcp_server.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\translation_loader_po.cpp"
+					RelativePath="..\..\core\io\translation_loader_po.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\translation_loader_po.h"
+					RelativePath="..\..\core\io\translation_loader_po.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\unzip.c"
+					RelativePath="..\..\core\io\unzip.c"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\unzip.h"
+					RelativePath="..\..\core\io\unzip.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\xml_parser.cpp"
+					RelativePath="..\..\core\io\xml_parser.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\xml_parser.h"
+					RelativePath="..\..\core\io\xml_parser.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\zip.c"
+					RelativePath="..\..\core\io\zip.c"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\zip.h"
+					RelativePath="..\..\core\io\zip.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\io\zip_io.h"
+					RelativePath="..\..\core\io\zip_io.h"
 					>
 				</File>
 			</Filter>
@@ -966,143 +966,143 @@
 				Name="math"
 				>
 				<File
-					RelativePath="..\core\math\aabb.cpp"
+					RelativePath="..\..\core\math\aabb.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\aabb.h"
+					RelativePath="..\..\core\math\aabb.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\bezier_curve.cpp"
+					RelativePath="..\..\core\math\bezier_curve.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\bezier_curve.h"
+					RelativePath="..\..\core\math\bezier_curve.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\bsp_tree.cpp"
+					RelativePath="..\..\core\math\bsp_tree.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\bsp_tree.h"
+					RelativePath="..\..\core\math\bsp_tree.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\camera_matrix.cpp"
+					RelativePath="..\..\core\math\camera_matrix.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\camera_matrix.h"
+					RelativePath="..\..\core\math\camera_matrix.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\face3.cpp"
+					RelativePath="..\..\core\math\face3.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\face3.h"
+					RelativePath="..\..\core\math\face3.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\geometry.cpp"
+					RelativePath="..\..\core\math\geometry.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\geometry.h"
+					RelativePath="..\..\core\math\geometry.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\math_2d.cpp"
+					RelativePath="..\..\core\math\math_2d.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\math_2d.h"
+					RelativePath="..\..\core\math\math_2d.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\math_defs.cpp"
+					RelativePath="..\..\core\math\math_defs.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\math_defs.h"
+					RelativePath="..\..\core\math\math_defs.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\math_funcs.cpp"
+					RelativePath="..\..\core\math\math_funcs.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\math_funcs.h"
+					RelativePath="..\..\core\math\math_funcs.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\matrix3.cpp"
+					RelativePath="..\..\core\math\matrix3.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\matrix3.h"
+					RelativePath="..\..\core\math\matrix3.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\octree.h"
+					RelativePath="..\..\core\math\octree.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\plane.cpp"
+					RelativePath="..\..\core\math\plane.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\plane.h"
+					RelativePath="..\..\core\math\plane.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\quat.cpp"
+					RelativePath="..\..\core\math\quat.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\quat.h"
+					RelativePath="..\..\core\math\quat.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\quick_hull.cpp"
+					RelativePath="..\..\core\math\quick_hull.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\quick_hull.h"
+					RelativePath="..\..\core\math\quick_hull.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\transform.cpp"
+					RelativePath="..\..\core\math\transform.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\transform.h"
+					RelativePath="..\..\core\math\transform.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\triangle_mesh.cpp"
+					RelativePath="..\..\core\math\triangle_mesh.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\triangle_mesh.h"
+					RelativePath="..\..\core\math\triangle_mesh.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\triangulate.cpp"
+					RelativePath="..\..\core\math\triangulate.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\triangulate.h"
+					RelativePath="..\..\core\math\triangulate.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\vector3.cpp"
+					RelativePath="..\..\core\math\vector3.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\math\vector3.h"
+					RelativePath="..\..\core\math\vector3.h"
 					>
 				</File>
 			</Filter>
@@ -1110,159 +1110,159 @@
 				Name="os"
 				>
 				<File
-					RelativePath="..\core\os\copymem.cpp"
+					RelativePath="..\..\core\os\copymem.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\copymem.h"
+					RelativePath="..\..\core\os\copymem.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\dir_access.cpp"
+					RelativePath="..\..\core\os\dir_access.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\dir_access.h"
+					RelativePath="..\..\core\os\dir_access.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\file_access.cpp"
+					RelativePath="..\..\core\os\file_access.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\file_access.h"
+					RelativePath="..\..\core\os\file_access.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\input.cpp"
+					RelativePath="..\..\core\os\input.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\input.h"
+					RelativePath="..\..\core\os\input.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\input_event.cpp"
+					RelativePath="..\..\core\os\input_event.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\input_event.h"
+					RelativePath="..\..\core\os\input_event.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\keyboard.cpp"
+					RelativePath="..\..\core\os\keyboard.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\keyboard.h"
+					RelativePath="..\..\core\os\keyboard.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\main_loop.cpp"
+					RelativePath="..\..\core\os\main_loop.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\main_loop.h"
+					RelativePath="..\..\core\os\main_loop.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory.cpp"
+					RelativePath="..\..\core\os\memory.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory.h"
+					RelativePath="..\..\core\os\memory.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_dynamic.cpp"
+					RelativePath="..\..\core\os\memory_pool_dynamic.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_dynamic.h"
+					RelativePath="..\..\core\os\memory_pool_dynamic.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_dynamic_prealloc.cpp"
+					RelativePath="..\..\core\os\memory_pool_dynamic_prealloc.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_dynamic_prealloc.h"
+					RelativePath="..\..\core\os\memory_pool_dynamic_prealloc.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_dynamic_static.cpp"
+					RelativePath="..\..\core\os\memory_pool_dynamic_static.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_dynamic_static.h"
+					RelativePath="..\..\core\os\memory_pool_dynamic_static.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_static.cpp"
+					RelativePath="..\..\core\os\memory_pool_static.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\memory_pool_static.h"
+					RelativePath="..\..\core\os\memory_pool_static.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\mutex.cpp"
+					RelativePath="..\..\core\os\mutex.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\mutex.h"
+					RelativePath="..\..\core\os\mutex.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\os.cpp"
+					RelativePath="..\..\core\os\os.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\os.h"
+					RelativePath="..\..\core\os\os.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\pc_joystick_map.h"
+					RelativePath="..\..\core\os\pc_joystick_map.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\semaphore.cpp"
+					RelativePath="..\..\core\os\semaphore.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\semaphore.h"
+					RelativePath="..\..\core\os\semaphore.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\shell.cpp"
+					RelativePath="..\..\core\os\shell.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\shell.h"
+					RelativePath="..\..\core\os\shell.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\thread.cpp"
+					RelativePath="..\..\core\os\thread.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\thread.h"
+					RelativePath="..\..\core\os\thread.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\thread_dummy.cpp"
+					RelativePath="..\..\core\os\thread_dummy.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\thread_dummy.h"
+					RelativePath="..\..\core\os\thread_dummy.h"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\thread_safe.cpp"
+					RelativePath="..\..\core\os\thread_safe.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\core\os\thread_safe.h"
+					RelativePath="..\..\core\os\thread_safe.h"
 					>
 				</File>
 			</Filter>
@@ -1270,7 +1270,7 @@
 				Name="helper"
 				>
 				<File
-					RelativePath="..\core\helper\value_evaluator.h"
+					RelativePath="..\..\core\helper\value_evaluator.h"
 					>
 				</File>
 			</Filter>
@@ -1285,7 +1285,7 @@
 					Name="globals"
 					>
 					<File
-						RelativePath="..\platform\android\globals\global_defaults.cpp"
+						RelativePath="..\..\platform\android\globals\global_defaults.cpp"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -1313,7 +1313,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\platform\android\globals\global_defaults.h"
+						RelativePath="..\..\platform\android\globals\global_defaults.h"
 						>
 					</File>
 				</Filter>
@@ -1325,7 +1325,7 @@
 					Name="globals"
 					>
 					<File
-						RelativePath="..\platform\iphone\globals\global_defaults.cpp"
+						RelativePath="..\..\platform\iphone\globals\global_defaults.cpp"
 						>
 						<FileConfiguration
 							Name="Debug|Win32"
@@ -1353,7 +1353,7 @@
 						</FileConfiguration>
 					</File>
 					<File
-						RelativePath="..\platform\iphone\globals\global_defaults.h"
+						RelativePath="..\..\platform\iphone\globals\global_defaults.h"
 						>
 					</File>
 				</Filter>

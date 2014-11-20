@@ -75,7 +75,6 @@ platform/android/libs/play_licensing/gen/*
 [Dd]ebugPublic/
 [Rr]elease/
 x64/
-build/
 bld/
 
 !bin/

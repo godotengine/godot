@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ENABLED;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="1"
@@ -109,7 +109,7 @@
 				Optimization="0"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -176,7 +176,7 @@
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\core;..\core\math;..\tools;..\drivers;..;..\platform\windows;..\platform\windows\include;..\tools\freetype;..\tools\freetype\freetype\include;..\drivers\builtin_zlib\zlib;..\platform\windows\vorbis"
+				AdditionalIncludeDirectories="..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis"
 				PreprocessorDefinitions="WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -223,126 +223,126 @@
 			Name="server"
 			>
 			<File
-				RelativePath="..\servers\audio_server.cpp"
+				RelativePath="..\..\servers\audio_server.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\audio_server.h"
+				RelativePath="..\..\servers\audio_server.h"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\physics_2d_server.cpp"
+				RelativePath="..\..\servers\physics_2d_server.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\physics_2d_server.h"
+				RelativePath="..\..\servers\physics_2d_server.h"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\physics_server.cpp"
+				RelativePath="..\..\servers\physics_server.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\physics_server.h"
+				RelativePath="..\..\servers\physics_server.h"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\register_server_types.cpp"
+				RelativePath="..\..\servers\register_server_types.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\register_server_types.h"
+				RelativePath="..\..\servers\register_server_types.h"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\spatial_sound_2d_server.cpp"
+				RelativePath="..\..\servers\spatial_sound_2d_server.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\spatial_sound_2d_server.h"
+				RelativePath="..\..\servers\spatial_sound_2d_server.h"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\spatial_sound_server.cpp"
+				RelativePath="..\..\servers\spatial_sound_server.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\spatial_sound_server.h"
+				RelativePath="..\..\servers\spatial_sound_server.h"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\visual_server.cpp"
+				RelativePath="..\..\servers\visual_server.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\servers\visual_server.h"
+				RelativePath="..\..\servers\visual_server.h"
 				>
 			</File>
 			<Filter
 				Name="audio"
 				>
 				<File
-					RelativePath="..\servers\audio\audio_driver_dummy.cpp"
+					RelativePath="..\..\servers\audio\audio_driver_dummy.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_driver_dummy.h"
+					RelativePath="..\..\servers\audio\audio_driver_dummy.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_filter_sw.cpp"
+					RelativePath="..\..\servers\audio\audio_filter_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_filter_sw.h"
+					RelativePath="..\..\servers\audio\audio_filter_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_mixer_sw.cpp"
+					RelativePath="..\..\servers\audio\audio_mixer_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_mixer_sw.h"
+					RelativePath="..\..\servers\audio\audio_mixer_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_server_sw.cpp"
+					RelativePath="..\..\servers\audio\audio_server_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\audio_server_sw.h"
+					RelativePath="..\..\servers\audio\audio_server_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\reverb_buffers_sw.cpp"
+					RelativePath="..\..\servers\audio\reverb_buffers_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\reverb_buffers_sw.h"
+					RelativePath="..\..\servers\audio\reverb_buffers_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\reverb_sw.cpp"
+					RelativePath="..\..\servers\audio\reverb_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\reverb_sw.h"
+					RelativePath="..\..\servers\audio\reverb_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\sample_manager_sw.cpp"
+					RelativePath="..\..\servers\audio\sample_manager_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\sample_manager_sw.h"
+					RelativePath="..\..\servers\audio\sample_manager_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\voice_rb_sw.cpp"
+					RelativePath="..\..\servers\audio\voice_rb_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\audio\voice_rb_sw.h"
+					RelativePath="..\..\servers\audio\voice_rb_sw.h"
 					>
 				</File>
 			</Filter>
@@ -350,190 +350,190 @@
 				Name="physics"
 				>
 				<File
-					RelativePath="..\servers\physics\area_pair_sw.cpp"
+					RelativePath="..\..\servers\physics\area_pair_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\area_pair_sw.h"
+					RelativePath="..\..\servers\physics\area_pair_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\area_sw.cpp"
+					RelativePath="..\..\servers\physics\area_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\area_sw.h"
+					RelativePath="..\..\servers\physics\area_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\body_pair_sw.cpp"
+					RelativePath="..\..\servers\physics\body_pair_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\body_pair_sw.h"
+					RelativePath="..\..\servers\physics\body_pair_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\body_sw.cpp"
+					RelativePath="..\..\servers\physics\body_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\body_sw.h"
+					RelativePath="..\..\servers\physics\body_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\broad_phase_basic.cpp"
+					RelativePath="..\..\servers\physics\broad_phase_basic.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\broad_phase_basic.h"
+					RelativePath="..\..\servers\physics\broad_phase_basic.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\broad_phase_octree.cpp"
+					RelativePath="..\..\servers\physics\broad_phase_octree.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\broad_phase_octree.h"
+					RelativePath="..\..\servers\physics\broad_phase_octree.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\broad_phase_sw.cpp"
+					RelativePath="..\..\servers\physics\broad_phase_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\broad_phase_sw.h"
+					RelativePath="..\..\servers\physics\broad_phase_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\collision_object_sw.cpp"
+					RelativePath="..\..\servers\physics\collision_object_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\collision_object_sw.h"
+					RelativePath="..\..\servers\physics\collision_object_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\collision_solver_sat.cpp"
+					RelativePath="..\..\servers\physics\collision_solver_sat.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\collision_solver_sat.h"
+					RelativePath="..\..\servers\physics\collision_solver_sat.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\collision_solver_sw.cpp"
+					RelativePath="..\..\servers\physics\collision_solver_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\collision_solver_sw.h"
+					RelativePath="..\..\servers\physics\collision_solver_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\constraint_sw.cpp"
+					RelativePath="..\..\servers\physics\constraint_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\constraint_sw.h"
+					RelativePath="..\..\servers\physics\constraint_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\gjk_epa.cpp"
+					RelativePath="..\..\servers\physics\gjk_epa.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\gjk_epa.h"
+					RelativePath="..\..\servers\physics\gjk_epa.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\joints_sw.cpp"
+					RelativePath="..\..\servers\physics\joints_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\joints_sw.h"
+					RelativePath="..\..\servers\physics\joints_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\physics_server_sw.cpp"
+					RelativePath="..\..\servers\physics\physics_server_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\physics_server_sw.h"
+					RelativePath="..\..\servers\physics\physics_server_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\shape_sw.cpp"
+					RelativePath="..\..\servers\physics\shape_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\shape_sw.h"
+					RelativePath="..\..\servers\physics\shape_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\space_sw.cpp"
+					RelativePath="..\..\servers\physics\space_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\space_sw.h"
+					RelativePath="..\..\servers\physics\space_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\step_sw.cpp"
+					RelativePath="..\..\servers\physics\step_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics\step_sw.h"
+					RelativePath="..\..\servers\physics\step_sw.h"
 					>
 				</File>
 				<Filter
 					Name="joints"
 					>
 					<File
-						RelativePath="..\servers\physics\joints\cone_twist_joint_sw.cpp"
+						RelativePath="..\..\servers\physics\joints\cone_twist_joint_sw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\cone_twist_joint_sw.h"
+						RelativePath="..\..\servers\physics\joints\cone_twist_joint_sw.h"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\generic_6dof_joint_sw.cpp"
+						RelativePath="..\..\servers\physics\joints\generic_6dof_joint_sw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\generic_6dof_joint_sw.h"
+						RelativePath="..\..\servers\physics\joints\generic_6dof_joint_sw.h"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\hinge_joint_sw.cpp"
+						RelativePath="..\..\servers\physics\joints\hinge_joint_sw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\hinge_joint_sw.h"
+						RelativePath="..\..\servers\physics\joints\hinge_joint_sw.h"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\jacobian_entry_sw.cpp"
+						RelativePath="..\..\servers\physics\joints\jacobian_entry_sw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\jacobian_entry_sw.h"
+						RelativePath="..\..\servers\physics\joints\jacobian_entry_sw.h"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\pin_joint_sw.cpp"
+						RelativePath="..\..\servers\physics\joints\pin_joint_sw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\pin_joint_sw.h"
+						RelativePath="..\..\servers\physics\joints\pin_joint_sw.h"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\slider_joint_sw.cpp"
+						RelativePath="..\..\servers\physics\joints\slider_joint_sw.cpp"
 						>
 					</File>
 					<File
-						RelativePath="..\servers\physics\joints\slider_joint_sw.h"
+						RelativePath="..\..\servers\physics\joints\slider_joint_sw.h"
 						>
 					</File>
 				</Filter>
@@ -542,131 +542,131 @@
 				Name="physics_2d"
 				>
 				<File
-					RelativePath="..\servers\physics_2d\area_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\area_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\area_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\area_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\area_pair_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\area_pair_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\area_pair_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\area_pair_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\body_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\body_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\body_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\body_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\body_pair_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\body_pair_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\body_pair_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\body_pair_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\broad_phase_2d_basic.cpp"
+					RelativePath="..\..\servers\physics_2d\broad_phase_2d_basic.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\broad_phase_2d_basic.h"
+					RelativePath="..\..\servers\physics_2d\broad_phase_2d_basic.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\broad_phase_2d_hash_grid.cpp"
+					RelativePath="..\..\servers\physics_2d\broad_phase_2d_hash_grid.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\broad_phase_2d_hash_grid.h"
+					RelativePath="..\..\servers\physics_2d\broad_phase_2d_hash_grid.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\broad_phase_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\broad_phase_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\broad_phase_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\broad_phase_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\collision_object_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\collision_object_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\collision_object_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\collision_object_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\collision_solver_2d_sat.cpp"
+					RelativePath="..\..\servers\physics_2d\collision_solver_2d_sat.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\collision_solver_2d_sat.h"
+					RelativePath="..\..\servers\physics_2d\collision_solver_2d_sat.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\collision_solver_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\collision_solver_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\collision_solver_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\collision_solver_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\constraint_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\constraint_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\constraint_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\constraint_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\joints_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\joints_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\joints_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\joints_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\physics_2d_server_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\physics_2d_server_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\physics_2d_server_sw.h"
+					RelativePath="..\..\servers\physics_2d\physics_2d_server_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\shape_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\shape_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\shape_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\shape_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\space_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\space_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\space_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\space_2d_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\step_2d_sw.cpp"
+					RelativePath="..\..\servers\physics_2d\step_2d_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\physics_2d\step_2d_sw.h"
+					RelativePath="..\..\servers\physics_2d\step_2d_sw.h"
 					>
 				</File>
 			</Filter>
@@ -674,11 +674,11 @@
 				Name="spatial_sound"
 				>
 				<File
-					RelativePath="..\servers\spatial_sound\spatial_sound_server_sw.cpp"
+					RelativePath="..\..\servers\spatial_sound\spatial_sound_server_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\spatial_sound\spatial_sound_server_sw.h"
+					RelativePath="..\..\servers\spatial_sound\spatial_sound_server_sw.h"
 					>
 				</File>
 			</Filter>
@@ -686,11 +686,11 @@
 				Name="spatial_sound_2d"
 				>
 				<File
-					RelativePath="..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.cpp"
+					RelativePath="..\..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.h"
+					RelativePath="..\..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.h"
 					>
 				</File>
 			</Filter>
@@ -698,67 +698,67 @@
 				Name="visual"
 				>
 				<File
-					RelativePath="..\servers\visual\particle_system_sw.cpp"
+					RelativePath="..\..\servers\visual\particle_system_sw.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\particle_system_sw.h"
+					RelativePath="..\..\servers\visual\particle_system_sw.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\rasterizer.cpp"
+					RelativePath="..\..\servers\visual\rasterizer.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\rasterizer.h"
+					RelativePath="..\..\servers\visual\rasterizer.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\rasterizer_dummy.cpp"
+					RelativePath="..\..\servers\visual\rasterizer_dummy.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\rasterizer_dummy.h"
+					RelativePath="..\..\servers\visual\rasterizer_dummy.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\shader_compiler.cpp"
+					RelativePath="..\..\servers\visual\shader_compiler.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\shader_compiler.h"
+					RelativePath="..\..\servers\visual\shader_compiler.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\shader_graph.cpp"
+					RelativePath="..\..\servers\visual\shader_graph.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\shader_graph.h"
+					RelativePath="..\..\servers\visual\shader_graph.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\shader_language.cpp"
+					RelativePath="..\..\servers\visual\shader_language.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\shader_language.h"
+					RelativePath="..\..\servers\visual\shader_language.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\visual_server_raster.cpp"
+					RelativePath="..\..\servers\visual\visual_server_raster.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\visual_server_raster.h"
+					RelativePath="..\..\servers\visual\visual_server_raster.h"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\visual_server_wrap_mt.cpp"
+					RelativePath="..\..\servers\visual\visual_server_wrap_mt.cpp"
 					>
 				</File>
 				<File
-					RelativePath="..\servers\visual\visual_server_wrap_mt.h"
+					RelativePath="..\..\servers\visual\visual_server_wrap_mt.h"
 					>
 				</File>
 			</Filter>

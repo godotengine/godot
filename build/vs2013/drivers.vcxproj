@@ -1,0 +1,1792 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Shipping|Win32">
+      <Configuration>Shipping</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{29D00E36-7337-4E41-84D9-FFAC894BA070}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\drivers\webp;..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_openssl2;..\..\drivers\builtin_openssl2\crypto;..\..\drivers\builtin_openssl2\crypto\evp;..\..\drivers\builtin_openssl2\crypto\asn1;..\..\drivers\builtin_openssl2\crypto\modes;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;..\..\drivers/theoraplayer/include/theoraplayer;..\..\drivers/theoraplayer/src/YUV;..\..\drivers/theoraplayer/src/YUV/libyuv/include;..\..\drivers/theoraplayer/src/Theora;..\..\drivers/theoraplayer/src/AVFoundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ENABLED;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;_YUV_C;__THEORA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\drivers\webp;..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_openssl2;..\..\drivers\builtin_openssl2\crypto;..\..\drivers\builtin_openssl2\crypto\evp;..\..\drivers\builtin_openssl2\crypto\asn1;..\..\drivers\builtin_openssl2\crypto\modes;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;..\..\drivers/theoraplayer/include/theoraplayer;..\..\drivers/theoraplayer/src/YUV;..\..\drivers/theoraplayer/src/YUV/libyuv/include;..\..\drivers/theoraplayer/src/Theora;..\..\drivers/theoraplayer/src/AVFoundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;_YUV_C;__THEORA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\drivers\webp;..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_openssl2;..\..\drivers\builtin_openssl2\crypto;..\..\drivers\builtin_openssl2\crypto\evp;..\..\drivers\builtin_openssl2\crypto\asn1;..\..\drivers\builtin_openssl2\crypto\modes;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;..\..\drivers/theoraplayer/include/theoraplayer;..\..\drivers/theoraplayer/src/YUV;..\..\drivers/theoraplayer/src/YUV/libyuv/include;..\..\drivers/theoraplayer/src/Theora;..\..\drivers/theoraplayer/src/AVFoundation;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;_YUV_C;__THEORA;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\drivers\alsa\audio_driver_alsa.cpp" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_cfb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_core.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_ctr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_ige.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_misc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_ofb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_wrap.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_x86core.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\ameth_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1_gen.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1_par.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn_mime.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn_moid.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn_pack.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_bitstr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_bool.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_bytes.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_d2i_fp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_digest.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_dup.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_enum.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_gentm.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_i2d_fp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_int.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_mbstr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_object.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_octet.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_print.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_set.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_strex.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_strnid.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_time.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_type.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_utctm.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_utf8.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\a_verify.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\bio_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\bio_ndef.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\d2i_pr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\d2i_pu.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\evp_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\f_enum.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\f_int.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\f_string.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\i2d_pr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\i2d_pu.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\nsseq.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\n_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\p5_pbe.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\p5_pbev2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\p8_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_dec.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_fre.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_new.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_typ.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\tasn_utl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_bitst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_crl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_req.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_spki.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_x509.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\t_x509a.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_algor.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_attrib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_bignum.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_crl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_exten.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_info.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_long.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_name.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_nx509.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_pubkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_req.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_sig.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_spki.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_val.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_x509.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\asn1\x_x509a.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_cfb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_ofb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_skey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bf_buff.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bf_lbuf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bf_nbio.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bf_null.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bio_cb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bio_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bio_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_acpt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_bio.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_conn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_dgram.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_fd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_file.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_log.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_mem.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_null.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\bss_sock.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\b_dump.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\b_print.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bio\b_sock.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_add.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_asm.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_blind.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_const.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_ctx.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_depr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_div.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_exp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_exp2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_gcd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_gf2m.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_kron.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_mod.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_mont.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_mpi.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_mul.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_nist.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_prime.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_print.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_rand.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_recp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_shift.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_sqr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_sqrt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_word.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_x931p.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\bn\vms-helper.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\buffer\buffer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)buffer_ssl.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)buffer_ssl.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)buffer_ssl.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\buffer\buf_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\buffer\buf_str.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\camellia.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_cfb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_ctr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_misc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_ofb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_utl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cast\c_cfb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cast\c_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cast\c_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cast\c_ofb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cast\c_skey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cmac\cmac.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cmac\cm_ameth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cmac\cm_pmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_att.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_cd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_dd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_env.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_ess.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_io.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_pwri.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_sd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_smime.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\comp\comp_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\comp\comp_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\comp\c_rle.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\comp\c_zlib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_api.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_def.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_mall.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_mod.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_sap.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cpt_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cryptlib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\cversion.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\cbc3_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\cbc_cksm.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\cbc_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\cfb64ede.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\cfb64enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\cfb_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\des_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\des_old.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\des_old2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\ecb3_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\ecb_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\ede_cbcm_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\enc_read.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\enc_writ.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\fcrypt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\fcrypt_b.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\ofb64ede.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\ofb64enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\ofb_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\pcbc_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\qud_cksm.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\rand_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\read2pwd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\rpc_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\set_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\str2key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\des\xcbc_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_ameth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_check.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_depr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_gen.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_pmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dh\dh_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_ameth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_depr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_gen.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_ossl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_pmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_vrf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_beos.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_dl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_dlfcn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_null.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_openssl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_vms.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\dso\dso_win32.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ebcdic.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdh\ech_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdh\ech_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdh\ech_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdh\ech_ossl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_ossl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_vrf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec2_mult.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec2_oct.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec2_smpl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\eck_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_mont.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_nist.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_nistp224.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_nistp256.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_nistp521.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_nistputil.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_oct.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ecp_smpl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_ameth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_check.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_curve.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_cvt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_mult.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_oct.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_pmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_print.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_all.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_cnf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_cryptodev.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_ctrl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_dyn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_fat.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_init.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_list.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_openssl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_rdrand.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_rsax.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_table.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_asnmth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_cipher.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_dh.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_digest.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_dsa.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_ecdh.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_ecdsa.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_pkmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_rand.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_rsa.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\engine\tb_store.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\err\err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\err\err_all.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\err\err_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\bio_b64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\bio_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\bio_md.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\bio_ok.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\c_all.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\c_allc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\c_alld.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\digest.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\encode.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_acnf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_cnf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_fips.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_pbe.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_aes.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_aes_cbc_hmac_sha1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_bf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_camellia.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_cast.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_des.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_des3.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_dsa.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_idea.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_null.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_old.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_rc2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_rc4.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_rc4_hmac_md5.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_rc5.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_seed.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\e_xcbc_d.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_dss.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_dss1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_ecdsa.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_md2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_md4.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_md5.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_mdc2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_null.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_ripemd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_sha.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_sha1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_sigver.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\m_wp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\names.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\openbsd_hw.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p5_crpt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p5_crpt2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\pmeth_fn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\pmeth_gn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\pmeth_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_dec.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_open.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_seal.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\evp\p_verify.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ex_data.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\fips_ers.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\hmac\hmac.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\hmac\hm_ameth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\hmac\hm_pmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\idea\i_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\idea\i_cfb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\idea\i_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\idea\i_ofb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\idea\i_skey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\krb5\krb5_asn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\lhash\lhash.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\lhash\lh_stats.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\md4\md4_dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\md4\md4_one.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\md5\md5_dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\md5\md5_one.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\mdc2\mdc2dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\mdc2\mdc2_one.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\mem.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\mem_clr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\mem_dbg.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\cbc128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\ccm128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\cfb128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\ctr128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\cts128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\gcm128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\ofb128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\modes\xts128.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_dat.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_xref.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\objects\o_names.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_asn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_cl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_ext.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_ht.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_srv.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp_vfy.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\o_dir.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\o_fips.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\o_init.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\o_str.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\o_time.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_all.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_info.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_oth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_pk8.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_pkey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_seal.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_x509.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pem_xaux.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pem\pvkfmt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_add.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_asn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_attr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_crpt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_crt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_decr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_init.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_key.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_kiss.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_mutl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_npas.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_p8d.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_p8e.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\p12_utl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\pk12err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\bio_pk7.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\example.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)example_pk7.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)example_pk7.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)example_pk7.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_attr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_doit.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_mime.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pk7_smime.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pkcs7err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\pqueue\pqueue.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\md_rand.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\randfile.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_egd.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_nw.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_os2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_unix.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_vms.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_win.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2cfb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2ofb64.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2_skey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc4\rc4_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc4\rc4_skey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rc4\rc4_utl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ripemd\rmd_dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ripemd\rmd_one.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_ameth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_chk.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_crpt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_depr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_eay.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_gen.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_none.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_null.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_oaep.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_pk1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_pmeth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_pss.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_saos.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_ssl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_x931.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\seed\seed.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\seed\seed_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\seed\seed_cfb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\seed\seed_ecb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\seed\seed_ofb.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\sha\sha1dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\sha\sha1_one.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\sha\sha256.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\sha\sha512.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\sha\sha_dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\sha\sha_one.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\srp\srp_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\srp\srp_vfy.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\stack\stack.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\threads\th-lock.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_conf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_req_print.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_req_utils.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_rsp_print.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_rsp_sign.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_rsp_utils.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_rsp_verify.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ts\ts_verify_ctx.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\txt_db\txt_db.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\uid.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_compat.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_openssl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_util.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\whrlpool\wp_block.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\whrlpool\wp_dgst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_cache.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_data.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_map.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_node.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_tree.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_addr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_akey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_akeya.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_alt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_asid.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_bcons.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_bitst.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_conf.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_cpols.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_crld.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_enum.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_extku.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_genn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_ia5.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_info.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_int.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_ncons.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_ocsp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_pci.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_pcia.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_pcons.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_pku.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_pmaps.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_prn.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_purp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_skey.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_sxnet.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509v3\v3_utl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\by_dir.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\by_file.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509cset.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509name.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509rset.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509spki.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509type.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_att.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_cmp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_d2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_def.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_ext.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_lu.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_obj.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_r2x.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_req.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_set.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_trs.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_txt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_v3.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_vfy.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_vpm.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\crypto\x509\x_all.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\bio_ssl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_both.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_clnt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_meth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_pkt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_srtp.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\d1_srvr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\kssl.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s23_clnt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s23_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s23_meth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s23_pkt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s23_srvr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s2_clnt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s2_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s2_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s2_meth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s2_pkt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s2_srvr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_both.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_cbc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_clnt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_meth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_pkt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\s3_srvr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_algs.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_asn1.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_cert.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_ciph.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_err.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_err2.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_rsa.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_sess.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_stat.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\ssl_txt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\t1_clnt.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\t1_enc.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\t1_lib.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\t1_meth.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\t1_reneg.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\t1_srvr.c" />
+    <ClCompile Include="..\..\drivers\builtin_openssl2\ssl\tls_srp.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\adler32.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\compress.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\crc32.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\deflate.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\infback.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\inffast.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\inflate.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\inftrees.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\trees.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\uncompr.c" />
+    <ClCompile Include="..\..\drivers\builtin_zlib\zlib\zutil.c" />
+    <ClCompile Include="..\..\drivers\chibi\cp_envelope.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_file_access_wrapper.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_instrument.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_it.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_it_info.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_it_instruments.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_it_patterns.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_it_samples.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_mod.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_s3m.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_loader_xm.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_pattern.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_control.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_effects.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_envelopes.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_events.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_filter.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_nna.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_notes.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_reserved.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_player_data_utils.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_sample.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_sample_manager.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_song.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\cp_tables.cpp" />
+    <ClCompile Include="..\..\drivers\chibi\event_stream_chibi.cpp" />
+    <ClCompile Include="..\..\drivers\convex_decomp\b2d_decompose.cpp" />
+    <ClCompile Include="..\..\drivers\convex_decomp\b2Polygon.cpp" />
+    <ClCompile Include="..\..\drivers\convex_decomp\b2Triangle.cpp" />
+    <ClCompile Include="..\..\drivers\dds\texture_loader_dds.cpp" />
+    <ClCompile Include="..\..\drivers\etc1\image_etc.cpp" />
+    <ClCompile Include="..\..\drivers\etc1\rg_etc1.cpp" />
+    <ClCompile Include="..\..\drivers\gles1\rasterizer_gles1.cpp" />
+    <ClCompile Include="..\..\drivers\gles2\rasterizer_gles2.cpp" />
+    <ClCompile Include="..\..\drivers\gles2\rasterizer_instance_gles2.cpp" />
+    <ClCompile Include="..\..\drivers\gles2\shader_compiler_gles2.cpp" />
+    <ClCompile Include="..\..\drivers\gles2\shader_gles2.cpp" />
+    <ClCompile Include="..\..\drivers\gl_context\context_gl.cpp" />
+    <ClCompile Include="..\..\drivers\gl_context\glew.c" />
+    <ClCompile Include="..\..\drivers\jpg\image_loader_jpg.cpp" />
+    <ClCompile Include="..\..\drivers\jpg\jidctflt.c" />
+    <ClCompile Include="..\..\drivers\jpg\tinyjpeg.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lapi.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lauxlib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lbaselib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lcode.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ldblib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ldebug.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ldo.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ldump.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lfunc.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lgc.c" />
+    <ClCompile Include="..\..\drivers\lua\src\linit.c" />
+    <ClCompile Include="..\..\drivers\lua\src\liolib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\llex.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lmathlib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lmem.c" />
+    <ClCompile Include="..\..\drivers\lua\src\loadlib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lobject.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lopcodes.c" />
+    <ClCompile Include="..\..\drivers\lua\src\loslib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lparser.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lstate.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lstring.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lstrlib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ltable.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ltablib.c" />
+    <ClCompile Include="..\..\drivers\lua\src\ltm.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lundump.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lvm.c" />
+    <ClCompile Include="..\..\drivers\lua\src\lzio.c" />
+    <ClCompile Include="..\..\drivers\lua\src\print.c" />
+    <ClCompile Include="..\..\drivers\mpc\audio_stream_mpc.cpp" />
+    <ClCompile Include="..\..\drivers\mpc\huffman.c" />
+    <ClCompile Include="..\..\drivers\mpc\mpc_bits_reader.c" />
+    <ClCompile Include="..\..\drivers\mpc\mpc_decoder.c" />
+    <ClCompile Include="..\..\drivers\mpc\mpc_demux.c" />
+    <ClCompile Include="..\..\drivers\mpc\mpc_reader.c" />
+    <ClCompile Include="..\..\drivers\mpc\requant.c" />
+    <ClCompile Include="..\..\drivers\mpc\streaminfo.c" />
+    <ClCompile Include="..\..\drivers\mpc\synth_filter.c" />
+    <ClCompile Include="..\..\drivers\nedmalloc\memory_pool_static_nedmalloc.cpp" />
+    <ClCompile Include="..\..\drivers\nedmalloc\nedmalloc.cpp" />
+    <ClCompile Include="..\..\drivers\ogg\bitwise.c" />
+    <ClCompile Include="..\..\drivers\ogg\framing.c" />
+    <ClCompile Include="..\..\drivers\openssl\curl_hostcheck.c" />
+    <ClCompile Include="..\..\drivers\openssl\register_openssl.cpp" />
+    <ClCompile Include="..\..\drivers\openssl\stream_peer_openssl.cpp" />
+    <ClCompile Include="..\..\drivers\png\example.c" />
+    <ClCompile Include="..\..\drivers\png\image_loader_png.cpp" />
+    <ClCompile Include="..\..\drivers\png\png.c" />
+    <ClCompile Include="..\..\drivers\png\pngerror.c" />
+    <ClCompile Include="..\..\drivers\png\pngget.c" />
+    <ClCompile Include="..\..\drivers\png\pngmem.c" />
+    <ClCompile Include="..\..\drivers\png\pngpread.c" />
+    <ClCompile Include="..\..\drivers\png\pngread.c" />
+    <ClCompile Include="..\..\drivers\png\pngrio.c" />
+    <ClCompile Include="..\..\drivers\png\pngrtran.c" />
+    <ClCompile Include="..\..\drivers\png\pngrutil.c" />
+    <ClCompile Include="..\..\drivers\png\pngset.c" />
+    <ClCompile Include="..\..\drivers\png\pngtrans.c" />
+    <ClCompile Include="..\..\drivers\png\pngwio.c" />
+    <ClCompile Include="..\..\drivers\png\pngwrite.c" />
+    <ClCompile Include="..\..\drivers\png\pngwtran.c" />
+    <ClCompile Include="..\..\drivers\png\pngwutil.c" />
+    <ClCompile Include="..\..\drivers\png\resource_saver_png.cpp" />
+    <ClCompile Include="..\..\drivers\pvr\texture_loader_pvr.cpp" />
+    <ClCompile Include="..\..\drivers\register_driver_types.cpp" />
+    <ClCompile Include="..\..\drivers\rtaudio\audio_driver_rtaudio.cpp" />
+    <ClCompile Include="..\..\drivers\rtaudio\RtAudio.cpp" />
+    <ClCompile Include="..\..\drivers\speex\audio_stream_speex.cpp" />
+    <ClCompile Include="..\..\drivers\speex\bits.c" />
+    <ClCompile Include="..\..\drivers\speex\buffer.c" />
+    <ClCompile Include="..\..\drivers\speex\cb_search.c" />
+    <ClCompile Include="..\..\drivers\speex\exc_10_16_table.c" />
+    <ClCompile Include="..\..\drivers\speex\exc_10_32_table.c" />
+    <ClCompile Include="..\..\drivers\speex\exc_20_32_table.c" />
+    <ClCompile Include="..\..\drivers\speex\exc_5_256_table.c" />
+    <ClCompile Include="..\..\drivers\speex\exc_5_64_table.c" />
+    <ClCompile Include="..\..\drivers\speex\exc_8_128_table.c" />
+    <ClCompile Include="..\..\drivers\speex\fftwrap.c" />
+    <ClCompile Include="..\..\drivers\speex\filterbank.c" />
+    <ClCompile Include="..\..\drivers\speex\filters.c" />
+    <ClCompile Include="..\..\drivers\speex\gain_table.c" />
+    <ClCompile Include="..\..\drivers\speex\gain_table_lbr.c" />
+    <ClCompile Include="..\..\drivers\speex\hexc_10_32_table.c" />
+    <ClCompile Include="..\..\drivers\speex\hexc_table.c" />
+    <ClCompile Include="..\..\drivers\speex\high_lsp_tables.c" />
+    <ClCompile Include="..\..\drivers\speex\jitter.c" />
+    <ClCompile Include="..\..\drivers\speex\kiss_fft.c" />
+    <ClCompile Include="..\..\drivers\speex\kiss_fftr.c" />
+    <ClCompile Include="..\..\drivers\speex\lpc.c" />
+    <ClCompile Include="..\..\drivers\speex\lsp.c" />
+    <ClCompile Include="..\..\drivers\speex\lsp_tables_nb.c" />
+    <ClCompile Include="..\..\drivers\speex\ltp.c" />
+    <ClCompile Include="..\..\drivers\speex\mdf.c" />
+    <ClCompile Include="..\..\drivers\speex\modes.c" />
+    <ClCompile Include="..\..\drivers\speex\modes_wb.c" />
+    <ClCompile Include="..\..\drivers\speex\nb_celp.c" />
+    <ClCompile Include="..\..\drivers\speex\preprocess.c" />
+    <ClCompile Include="..\..\drivers\speex\quant_lsp.c" />
+    <ClCompile Include="..\..\drivers\speex\resample.c" />
+    <ClCompile Include="..\..\drivers\speex\sb_celp.c" />
+    <ClCompile Include="..\..\drivers\speex\scal.c" />
+    <ClCompile Include="..\..\drivers\speex\smallft.c" />
+    <ClCompile Include="..\..\drivers\speex\speex.c" />
+    <ClCompile Include="..\..\drivers\speex\speex_callbacks.c" />
+    <ClCompile Include="..\..\drivers\speex\speex_header.c" />
+    <ClCompile Include="..\..\drivers\speex\stereo.c" />
+    <ClCompile Include="..\..\drivers\speex\vbr.c" />
+    <ClCompile Include="..\..\drivers\speex\vq.c" />
+    <ClCompile Include="..\..\drivers\speex\window.c" />
+    <ClCompile Include="..\..\drivers\squish\alpha.cpp" />
+    <ClCompile Include="..\..\drivers\squish\clusterfit.cpp" />
+    <ClCompile Include="..\..\drivers\squish\colourblock.cpp" />
+    <ClCompile Include="..\..\drivers\squish\colourfit.cpp" />
+    <ClCompile Include="..\..\drivers\squish\colourset.cpp" />
+    <ClCompile Include="..\..\drivers\squish\image_compress_squish.cpp" />
+    <ClCompile Include="..\..\drivers\squish\maths.cpp" />
+    <ClCompile Include="..\..\drivers\squish\rangefit.cpp" />
+    <ClCompile Include="..\..\drivers\squish\singlecolourfit.cpp" />
+    <ClCompile Include="..\..\drivers\squish\squish.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\FFmpeg\TheoraVideoClip_FFmpeg.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraAsync.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraAudioInterface.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraAudioPacketQueue.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraDataSource.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraException.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraFrameQueue.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraTimer.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraUtil.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraVideoClip.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraVideoFrame.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraVideoManager.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\TheoraWorkerThread.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\Theora\TheoraVideoClip_Theora.cpp" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\android\cpu-features.c" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\C\yuv420_grey_c.c" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\C\yuv420_rgb_c.c" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\C\yuv420_yuv_c.c" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\compare.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\compare_common.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\compare_neon.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\compare_posix.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\compare_win.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert_argb.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert_from.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert_from_argb.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert_jpeg.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert_to_argb.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\convert_to_i420.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\cpu_id.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\format_conversion.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\mjpeg_decoder.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\mjpeg_validate.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\planar_functions.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\rotate.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\rotate_argb.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\rotate_mips.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\rotate_neon.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_any.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_common.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_mips.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_neon.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_posix.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_win.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_argb.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_argb_neon.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_common.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_mips.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_neon.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_posix.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\scale_win.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\video_common.cc" />
+    <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\yuv_util.c" />
+    <ClCompile Include="..\..\drivers\theoraplayer\video_stream_theoraplayer.cpp" />
+    <ClCompile Include="..\..\drivers\theora\analyze.c" />
+    <ClCompile Include="..\..\drivers\theora\apiwrapper.c" />
+    <ClCompile Include="..\..\drivers\theora\bitpack.c" />
+    <ClCompile Include="..\..\drivers\theora\cpu.c" />
+    <ClCompile Include="..\..\drivers\theora\decapiwrapper.c" />
+    <ClCompile Include="..\..\drivers\theora\decinfo.c" />
+    <ClCompile Include="..\..\drivers\theora\decode.c" />
+    <ClCompile Include="..\..\drivers\theora\dequant.c" />
+    <ClCompile Include="..\..\drivers\theora\encapiwrapper.c" />
+    <ClCompile Include="..\..\drivers\theora\encfrag.c" />
+    <ClCompile Include="..\..\drivers\theora\encinfo.c" />
+    <ClCompile Include="..\..\drivers\theora\encode.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)encode_theora.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)encode_theora.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)encode_theora.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\theora\enquant.c" />
+    <ClCompile Include="..\..\drivers\theora\fdct.c" />
+    <ClCompile Include="..\..\drivers\theora\fragment.c" />
+    <ClCompile Include="..\..\drivers\theora\huffdec.c" />
+    <ClCompile Include="..\..\drivers\theora\huffenc.c" />
+    <ClCompile Include="..\..\drivers\theora\idct.c" />
+    <ClCompile Include="..\..\drivers\theora\info.c" />
+    <ClCompile Include="..\..\drivers\theora\internal.c" />
+    <ClCompile Include="..\..\drivers\theora\mathops.c" />
+    <ClCompile Include="..\..\drivers\theora\mcenc.c" />
+    <ClCompile Include="..\..\drivers\theora\quant.c" />
+    <ClCompile Include="..\..\drivers\theora\rate.c" />
+    <ClCompile Include="..\..\drivers\theora\state.c" />
+    <ClCompile Include="..\..\drivers\theora\tokenize.c" />
+    <ClCompile Include="..\..\drivers\theora\video_stream_theora.cpp" />
+    <ClCompile Include="..\..\drivers\trex\regex.cpp" />
+    <ClCompile Include="..\..\drivers\trex\trex.c" />
+    <ClCompile Include="..\..\drivers\unix\dir_access_unix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\file_access_unix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\ip_unix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\memory_pool_static_malloc.cpp" />
+    <ClCompile Include="..\..\drivers\unix\mutex_posix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\os_unix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\semaphore_posix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\stream_peer_tcp_posix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\tcp_server_posix.cpp" />
+    <ClCompile Include="..\..\drivers\unix\thread_posix.cpp" />
+    <ClCompile Include="..\..\drivers\vorbis\analysis.c" />
+    <ClCompile Include="..\..\drivers\vorbis\audio_stream_ogg_vorbis.cpp" />
+    <ClCompile Include="..\..\drivers\vorbis\bitrate.c" />
+    <ClCompile Include="..\..\drivers\vorbis\block.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)block_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)block_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)block_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\vorbis\codebook.c" />
+    <ClCompile Include="..\..\drivers\vorbis\envelope.c" />
+    <ClCompile Include="..\..\drivers\vorbis\floor0.c" />
+    <ClCompile Include="..\..\drivers\vorbis\floor1.c" />
+    <ClCompile Include="..\..\drivers\vorbis\info.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)info_vorbis.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)info_vorbis.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)info_vorbis.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\vorbis\lookup.c" />
+    <ClCompile Include="..\..\drivers\vorbis\lpc.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)lpc_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)lpc_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)lpc_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\vorbis\lsp.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)lsp_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)lsp_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)lsp_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\vorbis\mapping0.c" />
+    <ClCompile Include="..\..\drivers\vorbis\mdct.c" />
+    <ClCompile Include="..\..\drivers\vorbis\psy.c" />
+    <ClCompile Include="..\..\drivers\vorbis\registry.c" />
+    <ClCompile Include="..\..\drivers\vorbis\res0.c" />
+    <ClCompile Include="..\..\drivers\vorbis\sharedbook.c" />
+    <ClCompile Include="..\..\drivers\vorbis\smallft.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)smallft_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)smallft_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)smallft_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\vorbis\synthesis.c" />
+    <ClCompile Include="..\..\drivers\vorbis\tone.c" />
+    <ClCompile Include="..\..\drivers\vorbis\vorbisenc.c" />
+    <ClCompile Include="..\..\drivers\vorbis\vorbisfile.c" />
+    <ClCompile Include="..\..\drivers\vorbis\window.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)window_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)window_voribs.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)window_voribs.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\alpha.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)alpha_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)alpha_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)alpha_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\buffer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)buffer_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)buffer_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)buffer_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\frame.c" />
+    <ClCompile Include="..\..\drivers\webp\dec\idec.c" />
+    <ClCompile Include="..\..\drivers\webp\dec\io.c" />
+    <ClCompile Include="..\..\drivers\webp\dec\layer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)layer_dec.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)layer_dec.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)layer_dec.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\quant.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)quant_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)quant_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)quant_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\tree.c" />
+    <ClCompile Include="..\..\drivers\webp\dec\vp8.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)vp8_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)vp8_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)vp8_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\vp8l.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)vp8l_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)vp8l_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)vp8l_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dec\webp.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\cpu.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)cpu__webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)cpu__webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)cpu__webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\dsp\dec.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\dec_neon.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\dec_sse2.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\enc.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\enc_sse2.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\lossless.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\upsampling.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\upsampling_sse2.c" />
+    <ClCompile Include="..\..\drivers\webp\dsp\yuv.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\alpha.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)alpha_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)alpha_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)alpha_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\analysis.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)analysis_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)analysis_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)analysis_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\backward_references.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\config.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\cost.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\filter.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)filter_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)filter_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)filter_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\frame.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)frame_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)frame_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)frame_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\histogram.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\iterator.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\layer.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)layer_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)layer_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)layer_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\picture.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\quant.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)quant_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)quant_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)quant_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\syntax.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\tree.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)tree_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)tree_webp_enc.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)tree_webp_enc.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\enc\vp8l.c" />
+    <ClCompile Include="..\..\drivers\webp\enc\webpenc.c" />
+    <ClCompile Include="..\..\drivers\webp\image_loader_webp.cpp" />
+    <ClCompile Include="..\..\drivers\webp\mux\demux.c" />
+    <ClCompile Include="..\..\drivers\webp\mux\muxedit.c" />
+    <ClCompile Include="..\..\drivers\webp\mux\muxinternal.c" />
+    <ClCompile Include="..\..\drivers\webp\mux\muxread.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\bit_reader.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\bit_writer.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\color_cache.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\filters.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)filters_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)filters_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)filters_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\utils\huffman.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)huffman_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)huffman_webp.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)huffman_webp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\webp\utils\huffman_encode.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\quant_levels.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\rescaler.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\thread.c" />
+    <ClCompile Include="..\..\drivers\webp\utils\utils.c" />
+    <ClCompile Include="..\..\drivers\windows\dir_access_windows.cpp" />
+    <ClCompile Include="..\..\drivers\windows\file_access_windows.cpp" />
+    <ClCompile Include="..\..\drivers\windows\mutex_windows.cpp" />
+    <ClCompile Include="..\..\drivers\windows\semaphore_windows.cpp" />
+    <ClCompile Include="..\..\drivers\windows\shell_windows.cpp" />
+    <ClCompile Include="..\..\drivers\windows\thread_windows.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\drivers\alsa\audio_driver_alsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\aes\aes.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\aes\aes_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\arm_arch.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1t.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\asn1\asn1_mac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\asn1\charmap.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bf\bf_pi.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bf\blowfish.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bio\bio.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bio\bio_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bn\bn.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\bn\bn_prime.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\buffer\buffer.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\camellia\camellia.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\camellia\cmll_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cast\cast.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cast\cast_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cast\cast_s.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cmac\cmac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cms\cms.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cms\cms_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\comp\comp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\conf\conf.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_api.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\conf\conf_def.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\cryptlib.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\crypto.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\des\des.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\des\des_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\des\des_old.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\des\des_ver.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\des\rpc_des.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\des\spr.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\dh\dh.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\dsa\dsa_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\dso\dso.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ebcdic.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ecdh\ecdh.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ecdh\ech_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecdsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ecdsa\ecs_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ec\ec.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ec\ec_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\engine\eng_int.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\err\err.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\evp\evp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\evp\evp_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\fips_err.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\hmac\hmac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\idea\idea.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\idea\idea_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\jpake\jpake.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\krb5\krb5_asn.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\lhash\lhash.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\md2\md2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\md32_common.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\md4\md4.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\md4\md4_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\md5\md5.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\md5\md5_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\mdc2\mdc2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\modes\modes.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\modes\modes_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\objects\objects.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_dat.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_mac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\objects\obj_xref.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ocsp\ocsp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\opensslconf.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\opensslv.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ossl_typ.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\o_dir.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\o_str.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\o_time.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\pem\pem.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\pem\pem2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\pkcs12\pkcs12.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\example.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\pkcs7\pkcs7.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\pqueue\pqueue.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rand\rand.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rand\rand_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rc2\rc2_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rc4\rc4.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rc4\rc4_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rc5\rc5.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rc5\rc5_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ripemd\ripemd.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ripemd\rmdconst.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ripemd\rmd_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\rsa\rsa_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\seed\seed.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\seed\seed_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\sha\sha.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\sha\sha_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\srp\srp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\srp\srp_grps.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\srp\srp_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\stack\safestack.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\stack\stack.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\store\store.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\store\str_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\symhacks.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ts\ts.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\txt_db\txt_db.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ui\ui.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_compat.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\ui\ui_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\vms_rms.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\whrlpool\whrlpool.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\whrlpool\wp_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\x509v3\ext_dat.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\x509v3\pcy_int.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\x509v3\x509v3.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\x509\x509.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\crypto\x509\x509_vfy.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\aes.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\asn1.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\asn1t.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\asn1_mac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\bio.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\blowfish.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\bn.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\buffer.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\camellia.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\cast.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\cmac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\cms.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\comp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\conf.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\conf_api.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\crypto.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\des.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\des_old.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\dh.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\dsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\dso.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\dtls1.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ebcdic.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ec.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ecdh.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ecdsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\engine.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\err.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\evp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\e_os2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\hmac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\idea.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\krb5_asn.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\kssl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\lhash.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\md4.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\md5.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\mdc2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\modes.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\objects.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\obj_mac.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ocsp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\opensslconf.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\opensslv.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ossl_typ.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\pem.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\pem2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\pkcs12.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\pkcs7.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\pqueue.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\rand.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\rc2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\rc4.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ripemd.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\rsa.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\safestack.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\seed.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\sha.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\srp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\srtp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ssl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ssl2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ssl23.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ssl3.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\stack.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\symhacks.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\tls1.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ts.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\txt_db.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ui.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\ui_compat.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\whrlpool.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\x509.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\x509v3.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\openssl\x509_vfy.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\dtls1.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\kssl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\kssl_lcl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\srtp.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\ssl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\ssl2.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\ssl23.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\ssl3.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\ssl_locl.h" />
+    <ClInclude Include="..\..\drivers\builtin_openssl2\ssl\tls1.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\crc32.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\deflate.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\inffast.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\inffixed.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\inflate.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\inftrees.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\trees.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\zconf.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\zconf.in.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\zlib.h" />
+    <ClInclude Include="..\..\drivers\builtin_zlib\zlib\zutil.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_config.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_envelope.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_file_access_wrapper.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_instrument.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_loader.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_loader_it.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_loader_mod.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_loader_s3m.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_loader_xm.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_mixer.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_note.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_order.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_pattern.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_player_data.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_sample.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_sample_defs.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_sample_manager.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_song.h" />
+    <ClInclude Include="..\..\drivers\chibi\cp_tables.h" />
+    <ClInclude Include="..\..\drivers\chibi\event_stream_chibi.h" />
+    <ClInclude Include="..\..\drivers\convex_decomp\b2d_decompose.h" />
+    <ClInclude Include="..\..\drivers\convex_decomp\b2Glue.h" />
+    <ClInclude Include="..\..\drivers\convex_decomp\b2Polygon.h" />
+    <ClInclude Include="..\..\drivers\convex_decomp\b2Triangle.h" />
+    <ClInclude Include="..\..\drivers\dds\texture_loader_dds.h" />
+    <ClInclude Include="..\..\drivers\etc1\image_etc.h" />
+    <ClInclude Include="..\..\drivers\etc1\rg_etc1.h" />
+    <ClInclude Include="..\..\drivers\gles1\rasterizer_gles1.h" />
+    <ClInclude Include="..\..\drivers\gles2\rasterizer_gles2.h" />
+    <ClInclude Include="..\..\drivers\gles2\rasterizer_instance_gles2.h" />
+    <ClInclude Include="..\..\drivers\gles2\shaders\blur.glsl.h" />
+    <ClInclude Include="..\..\drivers\gles2\shaders\canvas.glsl.h" />
+    <ClInclude Include="..\..\drivers\gles2\shaders\copy.glsl.h" />
+    <ClInclude Include="..\..\drivers\gles2\shaders\material.glsl.h" />
+    <ClInclude Include="..\..\drivers\gles2\shader_compiler_gles2.h" />
+    <ClInclude Include="..\..\drivers\gles2\shader_gles2.h" />
+    <ClInclude Include="..\..\drivers\gl_context\context_gl.h" />
+    <ClInclude Include="..\..\drivers\gl_context\glew.h" />
+    <ClInclude Include="..\..\drivers\gl_context\glxew.h" />
+    <ClInclude Include="..\..\drivers\gl_context\wglew.h" />
+    <ClInclude Include="..\..\drivers\jpg\image_loader_jpg.h" />
+    <ClInclude Include="..\..\drivers\jpg\tinyjpeg-internal.h" />
+    <ClInclude Include="..\..\drivers\jpg\tinyjpeg.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lapi.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lauxlib.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lcode.h" />
+    <ClInclude Include="..\..\drivers\lua\src\ldebug.h" />
+    <ClInclude Include="..\..\drivers\lua\src\ldo.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lfunc.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lgc.h" />
+    <ClInclude Include="..\..\drivers\lua\src\llex.h" />
+    <ClInclude Include="..\..\drivers\lua\src\llimits.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lmem.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lobject.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lopcodes.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lparser.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lstate.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lstring.h" />
+    <ClInclude Include="..\..\drivers\lua\src\ltable.h" />
+    <ClInclude Include="..\..\drivers\lua\src\ltm.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lua.h" />
+    <ClInclude Include="..\..\drivers\lua\src\luaconf.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lualib.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lundump.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lvm.h" />
+    <ClInclude Include="..\..\drivers\lua\src\lzio.h" />
+    <ClInclude Include="..\..\drivers\mpc\audio_stream_mpc.h" />
+    <ClInclude Include="..\..\drivers\mpc\datatypes.h" />
+    <ClInclude Include="..\..\drivers\mpc\decoder.h" />
+    <ClInclude Include="..\..\drivers\mpc\huffman.h" />
+    <ClInclude Include="..\..\drivers\mpc\internal.h" />
+    <ClInclude Include="..\..\drivers\mpc\minimax.h" />
+    <ClInclude Include="..\..\drivers\mpc\mpcdec.h" />
+    <ClInclude Include="..\..\drivers\mpc\mpcdec_math.h" />
+    <ClInclude Include="..\..\drivers\mpc\mpcmath.h" />
+    <ClInclude Include="..\..\drivers\mpc\mpc_bits_reader.h" />
+    <ClInclude Include="..\..\drivers\mpc\mpc_types.h" />
+    <ClInclude Include="..\..\drivers\mpc\reader.h" />
+    <ClInclude Include="..\..\drivers\mpc\requant.h" />
+    <ClInclude Include="..\..\drivers\mpc\streaminfo.h" />
+    <ClInclude Include="..\..\drivers\nedmalloc\malloc.c.h" />
+    <ClInclude Include="..\..\drivers\nedmalloc\memory_pool_static_nedmalloc.h" />
+    <ClInclude Include="..\..\drivers\nedmalloc\nedmalloc.h" />
+    <ClInclude Include="..\..\drivers\ogg\config_types.h" />
+    <ClInclude Include="..\..\drivers\ogg\ogg.h" />
+    <ClInclude Include="..\..\drivers\ogg\os_types.h" />
+    <ClInclude Include="..\..\drivers\openssl\curl_hostcheck.h" />
+    <ClInclude Include="..\..\drivers\openssl\register_openssl.h" />
+    <ClInclude Include="..\..\drivers\openssl\stream_peer_openssl.h" />
+    <ClInclude Include="..\..\drivers\png\image_loader_png.h" />
+    <ClInclude Include="..\..\drivers\png\png.h" />
+    <ClInclude Include="..\..\drivers\png\pngconf.h" />
+    <ClInclude Include="..\..\drivers\png\pngdebug.h" />
+    <ClInclude Include="..\..\drivers\png\pnginfo.h" />
+    <ClInclude Include="..\..\drivers\png\pnglibconf.h" />
+    <ClInclude Include="..\..\drivers\png\pngpriv.h" />
+    <ClInclude Include="..\..\drivers\png\pngstruct.h" />
+    <ClInclude Include="..\..\drivers\png\resource_saver_png.h" />
+    <ClInclude Include="..\..\drivers\pvr\texture_loader_pvr.h" />
+    <ClInclude Include="..\..\drivers\register_driver_types.h" />
+    <ClInclude Include="..\..\drivers\rtaudio\audio_driver_rtaudio.h" />
+    <ClInclude Include="..\..\drivers\rtaudio\RtAudio.h" />
+    <ClInclude Include="..\..\drivers\rtaudio\RtError.h" />
+    <ClInclude Include="..\..\drivers\speex\arch.h" />
+    <ClInclude Include="..\..\drivers\speex\audio_stream_speex.h" />
+    <ClInclude Include="..\..\drivers\speex\cb_search.h" />
+    <ClInclude Include="..\..\drivers\speex\cb_search_arm4.h" />
+    <ClInclude Include="..\..\drivers\speex\cb_search_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\cb_search_sse.h" />
+    <ClInclude Include="..\..\drivers\speex\config.h" />
+    <ClInclude Include="..\..\drivers\speex\fftwrap.h" />
+    <ClInclude Include="..\..\drivers\speex\filterbank.h" />
+    <ClInclude Include="..\..\drivers\speex\filters.h" />
+    <ClInclude Include="..\..\drivers\speex\filters_arm4.h" />
+    <ClInclude Include="..\..\drivers\speex\filters_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\filters_sse.h" />
+    <ClInclude Include="..\..\drivers\speex\fixed_arm4.h" />
+    <ClInclude Include="..\..\drivers\speex\fixed_arm5e.h" />
+    <ClInclude Include="..\..\drivers\speex\fixed_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\fixed_debug.h" />
+    <ClInclude Include="..\..\drivers\speex\fixed_generic.h" />
+    <ClInclude Include="..\..\drivers\speex\kiss_fft.h" />
+    <ClInclude Include="..\..\drivers\speex\kiss_fftr.h" />
+    <ClInclude Include="..\..\drivers\speex\lpc.h" />
+    <ClInclude Include="..\..\drivers\speex\lpc_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\lsp.h" />
+    <ClInclude Include="..\..\drivers\speex\lsp_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\ltp.h" />
+    <ClInclude Include="..\..\drivers\speex\ltp_arm4.h" />
+    <ClInclude Include="..\..\drivers\speex\ltp_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\ltp_sse.h" />
+    <ClInclude Include="..\..\drivers\speex\math_approx.h" />
+    <ClInclude Include="..\..\drivers\speex\misc_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\modes.h" />
+    <ClInclude Include="..\..\drivers\speex\nb_celp.h" />
+    <ClInclude Include="..\..\drivers\speex\os_support.h" />
+    <ClInclude Include="..\..\drivers\speex\pseudofloat.h" />
+    <ClInclude Include="..\..\drivers\speex\quant_lsp.h" />
+    <ClInclude Include="..\..\drivers\speex\quant_lsp_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\resample_sse.h" />
+    <ClInclude Include="..\..\drivers\speex\sb_celp.h" />
+    <ClInclude Include="..\..\drivers\speex\smallft.h" />
+    <ClInclude Include="..\..\drivers\speex\speex.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_bits.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_buffer.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_callbacks.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_config_types.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_echo.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_header.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_jitter.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_preprocess.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_resampler.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_stereo.h" />
+    <ClInclude Include="..\..\drivers\speex\speex_types.h" />
+    <ClInclude Include="..\..\drivers\speex\stack_alloc.h" />
+    <ClInclude Include="..\..\drivers\speex\vbr.h" />
+    <ClInclude Include="..\..\drivers\speex\vorbis_psy.h" />
+    <ClInclude Include="..\..\drivers\speex\vq.h" />
+    <ClInclude Include="..\..\drivers\speex\vq_arm4.h" />
+    <ClInclude Include="..\..\drivers\speex\vq_bfin.h" />
+    <ClInclude Include="..\..\drivers\speex\vq_sse.h" />
+    <ClInclude Include="..\..\drivers\speex\_kiss_fft_guts.h" />
+    <ClInclude Include="..\..\drivers\squish\alpha.h" />
+    <ClInclude Include="..\..\drivers\squish\clusterfit.h" />
+    <ClInclude Include="..\..\drivers\squish\colourblock.h" />
+    <ClInclude Include="..\..\drivers\squish\colourfit.h" />
+    <ClInclude Include="..\..\drivers\squish\colourset.h" />
+    <ClInclude Include="..\..\drivers\squish\config.h" />
+    <ClInclude Include="..\..\drivers\squish\image_compress_squish.h" />
+    <ClInclude Include="..\..\drivers\squish\maths.h" />
+    <ClInclude Include="..\..\drivers\squish\rangefit.h" />
+    <ClInclude Include="..\..\drivers\squish\simd.h" />
+    <ClInclude Include="..\..\drivers\squish\simd_float.h" />
+    <ClInclude Include="..\..\drivers\squish\simd_sse.h" />
+    <ClInclude Include="..\..\drivers\squish\simd_ve.h" />
+    <ClInclude Include="..\..\drivers\squish\singlecolourfit.h" />
+    <ClInclude Include="..\..\drivers\squish\squish.h" />
+    <ClInclude Include="..\..\drivers\stb\stb_truetype.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraAsync.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraAudioInterface.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraAudioPacketQueue.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraDataSource.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraException.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraExport.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraFrameQueue.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraPixelTransform.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraPlayer.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraTimer.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraUtil.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraVideoClip.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraVideoFrame.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraVideoManager.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\include\theoraplayer\TheoraWorkerThread.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\FFmpeg\TheoraVideoClip_FFmpeg.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\Theora\TheoraVideoClip_Theora.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\android\cpu-features.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\basic_types.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\compare.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\convert.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\convert_argb.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\convert_from.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\convert_from_argb.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\cpu_id.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\format_conversion.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\mjpeg_decoder.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\planar_functions.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\rotate.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\rotate_argb.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\row.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\scale.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\scale_argb.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\scale_row.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\version.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\video_common.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\yuv_util.h" />
+    <ClInclude Include="..\..\drivers\theoraplayer\video_stream_theoraplayer.h" />
+    <ClInclude Include="..\..\drivers\theora\apiwrapper.h" />
+    <ClInclude Include="..\..\drivers\theora\bitpack.h" />
+    <ClInclude Include="..\..\drivers\theora\codec.h" />
+    <ClInclude Include="..\..\drivers\theora\cpu.h" />
+    <ClInclude Include="..\..\drivers\theora\dct.h" />
+    <ClInclude Include="..\..\drivers\theora\decint.h" />
+    <ClInclude Include="..\..\drivers\theora\dequant.h" />
+    <ClInclude Include="..\..\drivers\theora\encint.h" />
+    <ClInclude Include="..\..\drivers\theora\enquant.h" />
+    <ClInclude Include="..\..\drivers\theora\huffdec.h" />
+    <ClInclude Include="..\..\drivers\theora\huffenc.h" />
+    <ClInclude Include="..\..\drivers\theora\huffman.h" />
+    <ClInclude Include="..\..\drivers\theora\internal.h" />
+    <ClInclude Include="..\..\drivers\theora\mathops.h" />
+    <ClInclude Include="..\..\drivers\theora\modedec.h" />
+    <ClInclude Include="..\..\drivers\theora\ocintrin.h" />
+    <ClInclude Include="..\..\drivers\theora\quant.h" />
+    <ClInclude Include="..\..\drivers\theora\theora.h" />
+    <ClInclude Include="..\..\drivers\theora\theoradec.h" />
+    <ClInclude Include="..\..\drivers\theora\theoraenc.h" />
+    <ClInclude Include="..\..\drivers\theora\video_stream_theora.h" />
+    <ClInclude Include="..\..\drivers\theora\yuv2rgb.h" />
+    <ClInclude Include="..\..\drivers\trex\regex.h" />
+    <ClInclude Include="..\..\drivers\trex\trex.h" />
+    <ClInclude Include="..\..\drivers\trex\TRexpp.h" />
+    <ClInclude Include="..\..\drivers\unix\dir_access_unix.h" />
+    <ClInclude Include="..\..\drivers\unix\file_access_unix.h" />
+    <ClInclude Include="..\..\drivers\unix\ip_unix.h" />
+    <ClInclude Include="..\..\drivers\unix\memory_pool_static_malloc.h" />
+    <ClInclude Include="..\..\drivers\unix\mutex_posix.h" />
+    <ClInclude Include="..\..\drivers\unix\os_unix.h" />
+    <ClInclude Include="..\..\drivers\unix\semaphore_posix.h" />
+    <ClInclude Include="..\..\drivers\unix\stream_peer_tcp_posix.h" />
+    <ClInclude Include="..\..\drivers\unix\tcp_server_posix.h" />
+    <ClInclude Include="..\..\drivers\unix\thread_posix.h" />
+    <ClInclude Include="..\..\drivers\vorbis\audio_stream_ogg_vorbis.h" />
+    <ClInclude Include="..\..\drivers\vorbis\backends.h" />
+    <ClInclude Include="..\..\drivers\vorbis\bitrate.h" />
+    <ClInclude Include="..\..\drivers\vorbis\books\coupled\res_books_51.h" />
+    <ClInclude Include="..\..\drivers\vorbis\books\coupled\res_books_stereo.h" />
+    <ClInclude Include="..\..\drivers\vorbis\books\floor\floor_books.h" />
+    <ClInclude Include="..\..\drivers\vorbis\books\uncoupled\res_books_uncoupled.h" />
+    <ClInclude Include="..\..\drivers\vorbis\codebook.h" />
+    <ClInclude Include="..\..\drivers\vorbis\codec.h" />
+    <ClInclude Include="..\..\drivers\vorbis\codec_internal.h" />
+    <ClInclude Include="..\..\drivers\vorbis\envelope.h" />
+    <ClInclude Include="..\..\drivers\vorbis\highlevel.h" />
+    <ClInclude Include="..\..\drivers\vorbis\lookup.h" />
+    <ClInclude Include="..\..\drivers\vorbis\lookup_data.h" />
+    <ClInclude Include="..\..\drivers\vorbis\lpc.h" />
+    <ClInclude Include="..\..\drivers\vorbis\lsp.h" />
+    <ClInclude Include="..\..\drivers\vorbis\masking.h" />
+    <ClInclude Include="..\..\drivers\vorbis\mdct.h" />
+    <ClInclude Include="..\..\drivers\vorbis\misc.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\floor_all.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\psych_11.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\psych_16.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\psych_44.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\psych_8.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\residue_16.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\residue_44.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\residue_44p51.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\residue_44u.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\residue_8.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_11.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_16.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_22.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_32.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_44.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_44p51.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_44u.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_8.h" />
+    <ClInclude Include="..\..\drivers\vorbis\modes\setup_X.h" />
+    <ClInclude Include="..\..\drivers\vorbis\os.h" />
+    <ClInclude Include="..\..\drivers\vorbis\psy.h" />
+    <ClInclude Include="..\..\drivers\vorbis\registry.h" />
+    <ClInclude Include="..\..\drivers\vorbis\scales.h" />
+    <ClInclude Include="..\..\drivers\vorbis\smallft.h" />
+    <ClInclude Include="..\..\drivers\vorbis\vorbisenc.h" />
+    <ClInclude Include="..\..\drivers\vorbis\vorbisfile.h" />
+    <ClInclude Include="..\..\drivers\vorbis\window.h" />
+    <ClInclude Include="..\..\drivers\webp\decode.h" />
+    <ClInclude Include="..\..\drivers\webp\dec\decode_vp8.h" />
+    <ClInclude Include="..\..\drivers\webp\dec\vp8i.h" />
+    <ClInclude Include="..\..\drivers\webp\dec\vp8li.h" />
+    <ClInclude Include="..\..\drivers\webp\dec\webpi.h" />
+    <ClInclude Include="..\..\drivers\webp\dsp\dsp.h" />
+    <ClInclude Include="..\..\drivers\webp\dsp\lossless.h" />
+    <ClInclude Include="..\..\drivers\webp\dsp\yuv.h" />
+    <ClInclude Include="..\..\drivers\webp\encode.h" />
+    <ClInclude Include="..\..\drivers\webp\enc\backward_references.h" />
+    <ClInclude Include="..\..\drivers\webp\enc\cost.h" />
+    <ClInclude Include="..\..\drivers\webp\enc\histogram.h" />
+    <ClInclude Include="..\..\drivers\webp\enc\vp8enci.h" />
+    <ClInclude Include="..\..\drivers\webp\enc\vp8li.h" />
+    <ClInclude Include="..\..\drivers\webp\format_constants.h" />
+    <ClInclude Include="..\..\drivers\webp\image_loader_webp.h" />
+    <ClInclude Include="..\..\drivers\webp\mux.h" />
+    <ClInclude Include="..\..\drivers\webp\mux\muxi.h" />
+    <ClInclude Include="..\..\drivers\webp\types.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\bit_reader.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\bit_writer.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\color_cache.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\filters.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\huffman.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\huffman_encode.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\quant_levels.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\rescaler.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\thread.h" />
+    <ClInclude Include="..\..\drivers\webp\utils\utils.h" />
+    <ClInclude Include="..\..\drivers\windows\dir_access_windows.h" />
+    <ClInclude Include="..\..\drivers\windows\file_access_windows.h" />
+    <ClInclude Include="..\..\drivers\windows\mutex_windows.h" />
+    <ClInclude Include="..\..\drivers\windows\semaphore_windows.h" />
+    <ClInclude Include="..\..\drivers\windows\shell_windows.h" />
+    <ClInclude Include="..\..\drivers\windows\thread_windows.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\drivers\gles2\shaders\blur.glsl" />
+    <None Include="..\..\drivers\gles2\shaders\canvas.glsl" />
+    <None Include="..\..\drivers\gles2\shaders\copy.glsl" />
+    <None Include="..\..\drivers\gles2\shaders\material.glsl" />
+    <None Include="..\..\drivers\squish\singlecolourlookup.inl" />
+    <None Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\row_x86.asm" />
+    <None Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\x86inc.asm" />
+    <None Include="..\..\drivers\theora\theora.exp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
