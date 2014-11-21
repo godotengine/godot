@@ -40,6 +40,8 @@ class AudioDriverAO : public AudioDriverSW {
 	Thread* thread;
 	Mutex* mutex;
 
+	ao_device* device;
+
 	int32_t* samples_in;
 
 	static void thread_func(void* p_udata);
