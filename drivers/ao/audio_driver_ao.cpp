@@ -118,12 +118,12 @@ void AudioDriverAO::finish() {
 };
 
 AudioDriverAO::AudioDriverAO() {
-
 	mutex = NULL;
 	thread = NULL;
 
+	ao_initialize();
 };
 
 AudioDriverAO::~AudioDriverAO() {
-
+	ao_shutdown();
 };
