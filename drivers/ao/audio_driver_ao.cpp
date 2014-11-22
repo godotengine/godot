@@ -54,10 +54,10 @@ Error AudioDriverAO::init() {
 	device = ao_open_live(ao_default_driver_id(), &format, 0);
 	ERR_FAIL_COND_V(device == 0, ERR_CANT_OPEN);
 
-	int latency = GLOBAL_DEF("audio/output_latency",25);
+	int latency = GLOBAL_DEF("audio/output_latency", 25);
 	buffer_size = nearest_power_of_2( latency * mix_rate / 1000 );
 
-	samples_in = memnew_arr(int32_t, buffer_size*channels);
+	samples_in = memnew_arr(int32_t, buffer_size * channels);
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverAO::thread_func, this);
@@ -66,10 +66,9 @@ Error AudioDriverAO::init() {
 };
 
 void AudioDriverAO::thread_func(void* p_udata) {
-
 	AudioDriverAO* ad = (AudioDriverAO*)p_udata;
 
-	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate))*1000000;
+	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
 
 	while (!ad->exit_thread) {
 		if (!ad->active) {
@@ -78,13 +77,12 @@ void AudioDriverAO::thread_func(void* p_udata) {
 			ad->lock();
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
 			ad->unlock();
-
 		};
 
 		OS::get_singleton()->delay_usec(usdelay);
 	};
 
-	ad->thread_exited=true;
+	ad->thread_exited = true;
 };
 
 void AudioDriverAO::start() {
