@@ -78,8 +78,11 @@ void AudioDriverAO::thread_func(void* p_udata) {
 		if (ad->exit_thread)
 			break;
 
-		ao_play(ad->device, reinterpret_cast<char*>(ad->samples_in),
-			ad->buffer_size * ad->channels * sizeof(int32_t));
+		if (!ao_play(ad->device, reinterpret_cast<char*>(ad->samples_in),
+				ad->buffer_size * ad->channels * sizeof(int32_t)))
+		{
+			ERR_PRINT("ao_play() failed");
+		}
 	};
 
 	ad->thread_exited = true;
