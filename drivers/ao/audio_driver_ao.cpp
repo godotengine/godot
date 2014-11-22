@@ -45,7 +45,7 @@ Error AudioDriverAO::init() {
 
 	ao_sample_format format;
 
-	format.bits = 16;
+	format.bits = 32;
 	format.rate = mix_rate;
 	format.channels = channels;
 	format.byte_format = AO_FMT_LITTLE;
@@ -68,18 +68,18 @@ Error AudioDriverAO::init() {
 void AudioDriverAO::thread_func(void* p_udata) {
 	AudioDriverAO* ad = (AudioDriverAO*)p_udata;
 
-	uint64_t usdelay = (ad->buffer_size / float(ad->mix_rate)) * 1000000;
-
 	while (!ad->exit_thread) {
-		if (!ad->active) {
-
-		} else {
+		if (ad->active) {
 			ad->lock();
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
 			ad->unlock();
 		};
 
-		OS::get_singleton()->delay_usec(usdelay);
+		if (ad->exit_thread)
+			break;
+
+		ao_play(ad->device, reinterpret_cast<char*>(ad->samples_in),
+			ad->buffer_size * ad->channels * sizeof(int32_t));
 	};
 
 	ad->thread_exited = true;
