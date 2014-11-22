@@ -31,6 +31,8 @@
 #include "globals.h"
 #include "os/os.h"
 
+#include <cstring>
+
 Error AudioDriverAO::init() {
 
 	active = false;
@@ -68,7 +70,8 @@ Error AudioDriverAO::init() {
 void AudioDriverAO::thread_func(void* p_udata) {
 	AudioDriverAO* ad = (AudioDriverAO*)p_udata;
 
-	int16_t* samples_out = samples_in; // Overwrite samples on conversion
+	// Overwrite samples on conversion
+	int16_t* samples_out = reinterpret_cast<int16_t*>(ad->samples_in);
 	unsigned int n_samples = ad->buffer_size * ad->channels;
 	unsigned int n_bytes = n_samples * sizeof(int16_t);
 
@@ -88,7 +91,7 @@ void AudioDriverAO::thread_func(void* p_udata) {
 		if (ad->exit_thread)
 			break;
 
-		if (!ao_play(ad->device, reinterpret_cast<char*>(samples_out), n_bytes) {
+		if (!ao_play(ad->device, reinterpret_cast<char*>(samples_out), n_bytes)) {
 			ERR_PRINT("ao_play() failed");
 		}
 	};
