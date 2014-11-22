@@ -68,7 +68,7 @@ Error AudioDriverAO::init() {
 void AudioDriverAO::thread_func(void* p_udata) {
 	AudioDriverAO* ad = (AudioDriverAO*)p_udata;
 
-	int16_t* samples_out = samples_in; // Overwrite samples on conversion
+	int16_t* samples_out = ad->samples_in; // Overwrite samples on conversion
 	unsigned int n_samples = ad->buffer_size * ad->channels;
 	unsigned int n_bytes = n_samples * sizeof(int16_t);
 
