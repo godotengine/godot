@@ -51,8 +51,8 @@ Error AudioDriverAO::init() {
 	format.byte_format = AO_FMT_LITTLE;
 	format.matrix = "L,R";
 
-	device = ao_open_live(ao_default_driver_id(), &format, 0);
-	ERR_FAIL_COND_V(device == 0, ERR_CANT_OPEN);
+	device = ao_open_live(ao_default_driver_id(), &format, NULL);
+	ERR_FAIL_COND_V(device == NULL, ERR_CANT_OPEN);
 
 	int latency = GLOBAL_DEF("audio/output_latency", 25);
 	buffer_size = nearest_power_of_2( latency * mix_rate / 1000 );
