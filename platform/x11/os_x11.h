@@ -43,6 +43,7 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/ao/audio_driver_ao.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 
 #include <X11/keysym.h>
@@ -127,6 +128,10 @@ class OS_X11 : public OS_Unix {
 
 #ifdef ALSA_ENABLED
 	AudioDriverALSA driver_alsa;
+#endif
+
+#ifdef AO_ENABLED
+	AudioDriverAO driver_ao;
 #endif
 
 	enum {
