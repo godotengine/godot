@@ -45,7 +45,7 @@ Error AudioDriverAO::init() {
 
 	ao_sample_format format;
 
-	format.bits = 32;
+	format.bits = 16;
 	format.rate = mix_rate;
 	format.channels = channels;
 	format.byte_format = AO_FMT_LITTLE;
@@ -68,19 +68,27 @@ Error AudioDriverAO::init() {
 void AudioDriverAO::thread_func(void* p_udata) {
 	AudioDriverAO* ad = (AudioDriverAO*)p_udata;
 
+	int16_t* samples_out = samples_in; // Overwrite samples on conversion
+	unsigned int n_samples = ad->buffer_size * ad->channels;
+	unsigned int n_bytes = n_samples * sizeof(int16_t);
+
 	while (!ad->exit_thread) {
 		if (ad->active) {
 			ad->lock();
 			ad->audio_server_process(ad->buffer_size, ad->samples_in);
 			ad->unlock();
-		};
+
+			for (unsigned int i = 0; i < n_samples; i++) {
+				samples_out[i] = ad->samples_in[i] >> 16;
+			}
+		} else {
+			memset(samples_out, 0, n_bytes);
+		}
 
 		if (ad->exit_thread)
 			break;
 
-		if (!ao_play(ad->device, reinterpret_cast<char*>(ad->samples_in),
-				ad->buffer_size * ad->channels * sizeof(int32_t)))
-		{
+		if (!ao_play(ad->device, reinterpret_cast<char*>(samples_out), n_bytes) {
 			ERR_PRINT("ao_play() failed");
 		}
 	};
