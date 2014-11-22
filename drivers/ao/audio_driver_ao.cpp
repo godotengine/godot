@@ -31,6 +31,8 @@
 #include "globals.h"
 #include "os/os.h"
 
+#include <cstring>
+
 Error AudioDriverAO::init() {
 
 	active = false;
