@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="7" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<ext_resource path="res://graphics/ui/gruen.png" type="Texture"></ext_resource>
+	<ext_resource path="res://graphics/ui/left_background.png" type="Texture"></ext_resource>
+	<ext_resource path="res://graphics/ui/touch_jump.png" type="Texture"></ext_resource>
+	<ext_resource path="res://graphics/ui/touch_left.png" type="Texture"></ext_resource>
+	<ext_resource path="res://graphics/ui/touch_right.png" type="Texture"></ext_resource>
+	<ext_resource path="res://scripts/touch_controls.gd" type="Script"></ext_resource>
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="46">
+				<string> "Touch_Controls" </string>
+				<string> "CanvasLayer" </string>
+				<string> "_import_path" </string>
+				<string> "layer" </string>
+				<string> "offset" </string>
+				<string> "rotation" </string>
+				<string> "scale" </string>
+				<string> "script/script" </string>
+				<string> "__meta__" </string>
+				<string> "Left_Input" </string>
+				<string> "Node2D" </string>
+				<string> "visibility/visible" </string>
+				<string> "visibility/opacity" </string>
+				<string> "visibility/self_opacity" </string>
+				<string> "visibility/behind_parent" </string>
+				<string> "transform/pos" </string>
+				<string> "transform/rot" </string>
+				<string> "transform/scale" </string>
+				<string> "Touch_BG" </string>
+				<string> "TouchScreenButton" </string>
+				<string> "normal" </string>
+				<string> "pressed" </string>
+				<string> "bitmask" </string>
+				<string> "passby_press" </string>
+				<string> "action" </string>
+				<string> "visibility_mode" </string>
+				<string> "left 2" </string>
+				<string> "Sprite" </string>
+				<string> "texture" </string>
+				<string> "centered" </string>
+				<string> "flip_h" </string>
+				<string> "flip_v" </string>
+				<string> "vframes" </string>
+				<string> "hframes" </string>
+				<string> "frame" </string>
+				<string> "modulate" </string>
+				<string> "region" </string>
+				<string> "region_rect" </string>
+				<string> "right 2" </string>
+				<string> "left" </string>
+				<string> "process/pause_mode" </string>
+				<string> "right" </string>
+				<string> "Right_Input" </string>
+				<string> "Touch_BG 2" </string>
+				<string> "jump" </string>
+				<string> "jump_02" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 0 </int>
+			<string> "node_count" </string>
+			<int> 11 </int>
+			<string> "variants" </string>
+			<array  len="39" shared="false">
+				<node_path> "" </node_path>
+				<int> 1 </int>
+				<vector2> 0, 0 </vector2>
+				<real> 0 </real>
+				<vector2> 1, 1 </vector2>
+				<resource  resource_type="Script" path="res://scripts/touch_controls.gd">  </resource>
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "pixel_snap" </string>
+							<bool> False </bool>
+							<string> "zoom" </string>
+							<real> 0.81451 </real>
+							<string> "use_snap" </string>
+							<bool> True </bool>
+							<string> "ofs" </string>
+							<vector2> -384.331, -557.574 </vector2>
+							<string> "snap" </string>
+							<int> 10 </int>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "deflight_rot_y" </string>
+							<real> 0.628319 </real>
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 45 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> True </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> True </bool>
+							<string> "ambient_light_color" </string>
+							<color> 0.15, 0.15, 0.15, 1 </color>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+							<string> "default_srgb" </string>
+							<bool> False </bool>
+							<string> "deflight_rot_x" </string>
+							<real> 0.942478 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "Script" </string>
+				</dictionary>
+				<bool> True </bool>
+				<real> 1 </real>
+				<bool> False </bool>
+				<real> 0.3 </real>
+				<vector2> 51.0233, -293.136 </vector2>
+				<vector2> 0.4, 0.4 </vector2>
+				<resource  resource_type="Texture" path="res://graphics/ui/left_background.png">  </resource>
+				<resource name=""></resource>				<string> "" </string>
+				<real> 0.2 </real>
+				<vector2> 116, -228 </vector2>
+				<resource  resource_type="Texture" path="res://graphics/ui/touch_left.png">  </resource>
+				<int> 0 </int>
+				<color> 1, 1, 1, 1 </color>
+				<rect2> 0, 0, 0, 0 </rect2>
+				<vector2> 244, -110 </vector2>
+				<resource  resource_type="Texture" path="res://graphics/ui/touch_right.png">  </resource>
+				<int> 2 </int>
+				<vector2> -284.021, -265.12 </vector2>
+				<real> 45 </real>
+				<vector2> 8, 6 </vector2>
+				<resource  resource_type="Texture" path="res://graphics/ui/gruen.png">  </resource>
+				<string> "ui_left" </string>
+				<vector2> -3.6169, 16.836 </vector2>
+				<string> "ui_right" </string>
+				<vector2> -64.3196, -290.919 </vector2>
+				<vector2> -0.4, 0.4 </vector2>
+				<vector2> -157.6, -157.6 </vector2>
+				<resource  resource_type="Texture" path="res://graphics/ui/touch_jump.png">  </resource>
+				<vector2> -107.961, 153.568 </vector2>
+				<real> -225 </real>
+				<string> "ui_jump" </string>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="383"> 				-1, -1, 1, 0, -1, 7, 2, 0, 3, 1, 4, 2, 5, 3, 6, 4, 7, 5, 8, 6, 0, 0, 0, 10, 9, -1, 8, 2, 0, 11, 7, 12, 8, 13, 8, 14, 9, 15, 2, 16, 3, 17, 4, 0, 1, 0, 19, 18, -1, 14, 2, 0, 11, 9, 12, 10, 13, 8, 14, 9, 15, 11, 16, 3, 17, 12, 20, 13, 21, 14, 22, 14, 23, 9, 24, 15, 25, 1, 0, 1, 0, 27, 26, -1, 19, 2, 0, 11, 7, 12, 8, 13, 16, 14, 9, 15, 17, 16, 3, 17, 12, 28, 18, 29, 7, 4, 2, 30, 9, 31, 9, 32, 1, 33, 1, 34, 19, 35, 20, 36, 9, 37, 21, 0, 1, 0, 27, 38, -1, 19, 2, 0, 11, 7, 12, 8, 13, 16, 14, 9, 15, 22, 16, 3, 17, 12, 28, 23, 29, 7, 4, 2, 30, 9, 31, 9, 32, 1, 33, 1, 34, 19, 35, 20, 36, 9, 37, 21, 0, 1, 0, 19, 39, -1, 15, 2, 0, 40, 24, 11, 9, 12, 8, 13, 8, 14, 9, 15, 25, 16, 26, 17, 27, 20, 28, 21, 14, 22, 14, 23, 7, 24, 29, 25, 19, 0, 1, 0, 19, 41, -1, 15, 2, 0, 40, 24, 11, 9, 12, 8, 13, 8, 14, 9, 15, 30, 16, 26, 17, 27, 20, 28, 21, 14, 22, 14, 23, 7, 24, 31, 25, 19, 0, 0, 0, 10, 42, -1, 8, 2, 0, 11, 7, 12, 8, 13, 8, 14, 9, 15, 2, 16, 3, 17, 4, 0, 7, 0, 19, 43, -1, 14, 2, 0, 11, 9, 12, 10, 13, 8, 14, 9, 15, 32, 16, 3, 17, 33, 20, 13, 21, 14, 22, 14, 23, 9, 24, 15, 25, 1, 0, 7, 0, 27, 44, -1, 19, 2, 0, 11, 7, 12, 8, 13, 16, 14, 9, 15, 34, 16, 3, 17, 12, 28, 35, 29, 7, 4, 2, 30, 9, 31, 9, 32, 1, 33, 1, 34, 19, 35, 20, 36, 9, 37, 21, 0, 7, 0, 19, 45, -1, 15, 2, 0, 40, 24, 11, 9, 12, 8, 13, 8, 14, 9, 15, 36, 16, 37, 17, 27, 20, 28, 21, 14, 22, 14, 23, 7, 24, 38, 25, 19, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="0"> 				 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>
