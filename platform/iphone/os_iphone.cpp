@@ -234,6 +234,7 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 		ev.mouse_button.x = ev.mouse_button.global_x = p_x;
 		ev.mouse_button.y = ev.mouse_button.global_y = p_y;
 
+		input->set_mouse_pos(Point2(ev.mouse_motion.x,ev.mouse_motion.y));
 		ev.mouse_button.button_index = BUTTON_LEFT;
 		ev.mouse_button.doubleclick = p_doubleclick;
 		ev.mouse_button.pressed = p_pressed;
@@ -488,6 +489,7 @@ String OSIPhone::get_locale() const {
 extern bool _play_video(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 extern bool _is_video_playing();
 extern void _pause_video();
+extern void _unpause_video();
 extern void _stop_video();
 
 Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
@@ -504,6 +506,11 @@ void OSIPhone::native_video_pause() {
 	if (native_video_is_playing())
     	_pause_video();
 }
+
+void OSIPhone::native_video_unpause() {
+	_unpause_video();
+};
+
 
 void OSIPhone::native_video_stop() {
 	if (native_video_is_playing())

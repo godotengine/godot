@@ -863,6 +863,20 @@ class DaeExporter:
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
 
+		if (node.data.shape_keys!=None):
+				sk = node.data.shape_keys
+				if (sk.animation_data):
+					print("HAS ANIM")
+					print("DRIVERS: "+str(len(sk.animation_data.drivers)))
+					for d in sk.animation_data.drivers:
+						if (d.driver):
+							for v in d.driver.variables:
+								for t in v.targets:
+									if (t.id!=None and t.id.name in self.scene.objects):
+										print("LINKING "+str(node)+" WITH "+str(t.id.name))
+										self.armature_for_morph[node]=self.scene.objects[t.id.name]
+
+
 		meshdata = self.export_mesh(node,armature)
 		close_controller=False
 
@@ -1339,6 +1353,7 @@ class DaeExporter:
 					if (node.type=="MESH" and node.data!=None and (node in self.armature_for_morph) and (self.armature_for_morph[node] in allowed)):
 						pass #all good you pass with flying colors for morphs inside of action
 					else:
+						#print("fail "+str((node in self.armature_for_morph)))
 						continue
 				if (node.type=="MESH" and node.data!=None and node.data.shape_keys!=None and (node.data in self.mesh_cache) and len(node.data.shape_keys.key_blocks)):
 					target = self.mesh_cache[node.data]["morph_id"]
@@ -1453,7 +1468,7 @@ class DaeExporter:
 									allowed_skeletons.append(y)
 						y.animation_data.action=x;
 
-
+				print("allowed skeletons "+str(allowed_skeletons))
 
 				print(str(x))
 
@@ -1559,6 +1574,7 @@ class DaeExporter:
 		self.config=kwargs
 		self.valid_nodes=[]
 		self.armature_for_morph={}
+
 
 
 

@@ -52,6 +52,7 @@ static GLView* _instance = NULL;
 static bool video_found_error = false;
 static bool video_playing = false;
 static float video_previous_volume = 0.0f;
+static CMTime video_current_time;
 
 void _show_keyboard(String p_existing) {
 	keyboard_text = p_existing;
@@ -107,6 +108,8 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 
 	_instance.avAsset = [AVAsset assetWithURL:[NSURL fileURLWithPath:file_path]];
 	_instance.avPlayerItem =[[AVPlayerItem alloc]initWithAsset:_instance.avAsset];
+	[_instance.avPlayerItem addObserver:_instance forKeyPath:@"status" options:0 context:nil];
+
     _instance.avPlayer = [[AVPlayer alloc]initWithPlayerItem:_instance.avPlayerItem];
     _instance.avPlayerLayer =[AVPlayerLayer playerLayerWithPlayer:_instance.avPlayer];
 
@@ -166,9 +169,17 @@ bool _is_video_playing() {
 
 void _pause_video() {
 	//[_instance.moviePlayerController pause];
+	video_current_time = _instance.avPlayer.currentTime;
 	[_instance.avPlayer pause];
 	video_playing = false;
 }
+
+void _unpause_video() {
+	[_instance.avPlayer play];
+	video_playing = true;
+
+	//video_current_time = kCMTimeZero;
+};
 
 void _stop_video() {
 	//[_instance.moviePlayerController stop];
@@ -390,6 +401,11 @@ static void clear_touches() {
 	active = TRUE;
 	printf("start animation!\n");
 	animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+
+	if (video_playing)
+	{
+		_unpause_video();
+	}
 }
 
 - (void)stopAnimation
@@ -401,6 +417,11 @@ static void clear_touches() {
 	[animationTimer invalidate];
 	animationTimer = nil;
 	clear_touches();
+
+	if (video_playing)
+	{
+		// save position
+	}
 }
 
 - (void)setAnimationInterval:(NSTimeInterval)interval
@@ -439,9 +460,11 @@ static void clear_touches() {
 	glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 	[context presentRenderbuffer:GL_RENDERBUFFER_OES];
 	
+#ifdef DEBUG_ENABLED
 	GLenum err = glGetError();
 	if(err)
 		NSLog(@"%x error", err);
+#endif
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -589,11 +612,22 @@ static void clear_touches() {
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object
                         change:(NSDictionary *)change context:(void *)context {
-    if (object == _instance.avPlayer && [keyPath isEqualToString:@"status"]) {
-        if (_instance.avPlayer.status == AVPlayerStatusFailed) {
+
+	if (object == _instance.avPlayerItem && [keyPath isEqualToString:@"status"]) {
+        if (_instance.avPlayerItem.status == AVPlayerStatusFailed || _instance.avPlayer.status == AVPlayerStatusFailed) {
         	_stop_video();
             video_found_error = true;
         }
+
+        if(_instance.avPlayer.status == AVPlayerStatusReadyToPlay && 
+        	_instance.avPlayerItem.status == AVPlayerItemStatusReadyToPlay && 
+        	CMTIME_COMPARE_INLINE(video_current_time, ==, kCMTimeZero)) {
+
+        	//NSLog(@"time: %@", video_current_time);
+
+    		[_instance.avPlayer seekToTime:video_current_time];
+    		video_current_time = kCMTimeZero;
+		}
     }
 }
 
