@@ -1,5 +1,9 @@
 ![GODOT](/logo.png)
 
+### Info
+https://github.com/okamstudio/godot/pull/194
+this is cjk
+
 ### The Engine
 
 Godot is a fully featured, open source, MIT licensed, game engine. It focuses on having great tools, and a visual oriented workflow that can export to PC, Mobile and Web platforms with no hassle.
