@@ -31,5 +31,7 @@ http://www.godotengine.org
 
 ### Compiling from Source
 
+scons platform=windows
+
 Compilation instructions for every platform can be found in the Wiki:
 https://github.com/okamstudio/godot/wiki/advanced
