@@ -1,0 +1,146 @@
+
+hero-mesh.png
+size: 1024,256
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+body
+  rotate: false
+  xy: 324, 81
+  size: 97, 95
+  orig: 97, 95
+  offset: 0, 0
+  index: -1
+cape
+  rotate: false
+  xy: 176, 88
+  size: 146, 159
+  orig: 146, 159
+  offset: 0, 0
+  index: -1
+eyes
+  rotate: false
+  xy: 604, 216
+  size: 82, 31
+  orig: 82, 31
+  offset: 0, 0
+  index: -1
+fingers
+  rotate: true
+  xy: 643, 183
+  size: 31, 33
+  orig: 31, 33
+  offset: 0, 0
+  index: -1
+foot1
+  rotate: false
+  xy: 863, 205
+  size: 50, 42
+  orig: 50, 42
+  offset: 0, 0
+  index: -1
+foot2
+  rotate: false
+  xy: 915, 209
+  size: 53, 38
+  orig: 53, 38
+  offset: 0, 0
+  index: -1
+forearm1
+  rotate: true
+  xy: 970, 206
+  size: 41, 49
+  orig: 41, 49
+  offset: 0, 0
+  index: -1
+forearm2
+  rotate: true
+  xy: 423, 79
+  size: 31, 32
+  orig: 31, 32
+  offset: 0, 0
+  index: -1
+hand1
+  rotate: false
+  xy: 140, 24
+  size: 37, 48
+  orig: 37, 48
+  offset: 0, 0
+  index: -1
+hand2
+  rotate: true
+  xy: 604, 183
+  size: 31, 37
+  orig: 31, 37
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 2, 74
+  size: 172, 173
+  orig: 172, 173
+  offset: 0, 0
+  index: -1
+mantles
+  rotate: false
+  xy: 2, 17
+  size: 136, 55
+  orig: 136, 55
+  offset: 0, 0
+  index: -1
+mouth
+  rotate: false
+  xy: 2, 2
+  size: 61, 13
+  orig: 61, 13
+  offset: 0, 0
+  index: -1
+shin1
+  rotate: false
+  xy: 482, 119
+  size: 53, 57
+  orig: 53, 57
+  offset: 0, 0
+  index: -1
+shin2
+  rotate: true
+  xy: 807, 196
+  size: 51, 54
+  orig: 51, 54
+  offset: 0, 0
+  index: -1
+sword
+  rotate: false
+  xy: 324, 178
+  size: 216, 69
+  orig: 216, 69
+  offset: 0, 0
+  index: -1
+thigh1
+  rotate: false
+  xy: 542, 184
+  size: 60, 63
+  orig: 60, 63
+  offset: 0, 0
+  index: -1
+thigh2
+  rotate: false
+  xy: 423, 112
+  size: 57, 64
+  orig: 57, 64
+  offset: 0, 0
+  index: -1
+upperarm1
+  rotate: true
+  xy: 749, 197
+  size: 50, 56
+  orig: 50, 56
+  offset: 0, 0
+  index: -1
+upperarm2
+  rotate: true
+  xy: 688, 208
+  size: 39, 59
+  orig: 39, 59
+  offset: 0, 0
+  index: -1

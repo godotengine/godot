@@ -1,0 +1,14 @@
+﻿Import('env')
+Import('env_modules')
+
+env_modules.add_source_files(env.modules_sources,"src/spine/*.c")
+env_modules.add_source_files(env.modules_sources,"*.cpp")
+
+env_modules.Append(CPPFLAGS=[
+	"-I", "modules/spine/include",
+])
+
+Export('env_modules')
+Export('env')
+
+
