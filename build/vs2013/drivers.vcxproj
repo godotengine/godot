@@ -54,15 +54,15 @@
     <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>bin\$(Configuration)\</OutDir>
+    <OutDir>lib\$(Configuration)\</OutDir>
     <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>bin\$(Configuration)\</OutDir>
+    <OutDir>lib\$(Configuration)\</OutDir>
     <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
-    <OutDir>bin\$(Configuration)\</OutDir>
+    <OutDir>lib\$(Configuration)\</OutDir>
     <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -877,7 +877,11 @@
     <ClCompile Include="..\..\drivers\openssl\curl_hostcheck.c" />
     <ClCompile Include="..\..\drivers\openssl\register_openssl.cpp" />
     <ClCompile Include="..\..\drivers\openssl\stream_peer_openssl.cpp" />
-    <ClCompile Include="..\..\drivers\png\example.c" />
+    <ClCompile Include="..\..\drivers\png\example.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)example_png.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)example_png.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)example_png.obj</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="..\..\drivers\png\image_loader_png.cpp" />
     <ClCompile Include="..\..\drivers\png\png.c" />
     <ClCompile Include="..\..\drivers\png\pngerror.c" />

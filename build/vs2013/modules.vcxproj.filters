@@ -22,6 +22,12 @@
     <Filter Include="modules\sdk">
       <UniqueIdentifier>{991f34f3-82b6-4613-85e6-f8184feb60b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\spine">
+      <UniqueIdentifier>{ee95dd2b-aeb6-40d2-86ea-24363fbef2a9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\spine\spine-c">
+      <UniqueIdentifier>{8acea1bf-4bd0-458b-a1a6-24601cf4fdd0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\modules\register_module_types.cpp">
@@ -90,6 +96,93 @@
     <ClCompile Include="..\..\modules\sdk\register_types.cpp">
       <Filter>modules\sdk</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Animation.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\AnimationState.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\AnimationStateData.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Atlas.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\AtlasAttachmentLoader.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Attachment.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\AttachmentLoader.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Bone.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\BoneData.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\BoundingBoxAttachment.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Event.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\EventData.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\extension.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\IkConstraint.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\IkConstraintData.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Json.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\MeshAttachment.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\RegionAttachment.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Skeleton.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\SkeletonBounds.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\SkeletonData.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\SkeletonJson.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Skin.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\SkinnedMeshAttachment.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\Slot.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\src\spine\SlotData.c">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\register_types.cpp">
+      <Filter>modules\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\spine.cpp">
+      <Filter>modules\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\spine_batcher.cpp">
+      <Filter>modules\spine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\modules\register_module_types.h">
@@ -151,6 +244,96 @@
     </ClInclude>
     <ClInclude Include="..\..\modules\sdk\register_types.h">
       <Filter>modules\sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Animation.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\AnimationState.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\AnimationStateData.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Atlas.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\AtlasAttachmentLoader.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Attachment.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\AttachmentLoader.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Bone.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\BoneData.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\BoundingBoxAttachment.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Event.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\EventData.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\extension.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\IkConstraint.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\IkConstraintData.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\MeshAttachment.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\RegionAttachment.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Skeleton.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\SkeletonBounds.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\SkeletonData.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\SkeletonJson.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Skin.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\SkinnedMeshAttachment.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\Slot.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\SlotData.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\include\spine\spine.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\src\spine\Json.h">
+      <Filter>modules\spine\spine-c</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\spine.h">
+      <Filter>modules\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\register_types.h">
+      <Filter>modules\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\spine\spine_batcher.h">
+      <Filter>modules\spine</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
