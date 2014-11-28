@@ -29,6 +29,8 @@
 /*************************************************************************/
 #include "audio_driver_ao.h"
 
+#ifdef AO_ENABLED
+
 #include "globals.h"
 #include "os/os.h"
 
@@ -155,3 +157,5 @@ AudioDriverAO::AudioDriverAO() {
 AudioDriverAO::~AudioDriverAO() {
 	ao_shutdown();
 };
+
+#endif
