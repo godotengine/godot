@@ -6,6 +6,7 @@
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
 /* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014 Anton Yabchinskiy.                                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "audio_driver_ao.h"
+
+#ifdef AO_ENABLED
 
 #include "globals.h"
 #include "os/os.h"
@@ -154,3 +157,5 @@ AudioDriverAO::AudioDriverAO() {
 AudioDriverAO::~AudioDriverAO() {
 	ao_shutdown();
 };
+
+#endif
