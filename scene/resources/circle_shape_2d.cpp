@@ -54,9 +54,7 @@ void CircleShape2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_radius","radius"),&CircleShape2D::set_radius);
 	ObjectTypeDB::bind_method(_MD("get_radius"),&CircleShape2D::get_radius);
 
-
-
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius"),_SCS("set_radius"),_SCS("get_radius") );
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"radius",PROPERTY_HINT_RANGE,"0.01,16384,0.5"),_SCS("set_radius"),_SCS("get_radius") );
 
 }
 
