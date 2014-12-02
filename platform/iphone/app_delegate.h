@@ -31,11 +31,13 @@
 #import "view_controller.h"
 
 @interface AppDelegate : NSObject <UIApplicationDelegate, UIAccelerometerDelegate, GLViewDelegate> {
-	UIWindow *window;
+	//@property (strong, nonatomic) UIWindow *window;
 	ViewController* view_controller;
 	UIAccelerationValue accel[3];
 	UIAccelerationValue last_accel[3];
 };
+
+@property (strong, nonatomic) UIWindow *window;
 
 + (ViewController*)getViewController;
 

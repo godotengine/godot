@@ -188,6 +188,7 @@ public:
     virtual bool native_video_is_playing() const;
     virtual void native_video_pause();
 	virtual void native_video_unpause();
+	virtual void native_video_focus_out();
     virtual void native_video_stop();
 
 	OSIPhone(int width, int height);

@@ -374,7 +374,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 
 
 				Error err = a->transform_track_interpolate(i,p_time,&loc,&rot,&scale);
-				ERR_CONTINUE(err!=OK); //used for testing, should be removed
+				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 
 				if (err!=OK)

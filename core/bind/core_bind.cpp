@@ -606,6 +606,12 @@ bool _OS::is_debug_build() const {
 #endif
 
 }
+
+String _OS::get_system_dir(SystemDir p_dir) const {
+
+	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
+}
+
 String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
@@ -690,6 +696,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
 
 	ObjectTypeDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
+	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
 
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
@@ -728,6 +735,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
 
+	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
+	BIND_CONSTANT( SYSTEM_DIR_DCIM );
+	BIND_CONSTANT( SYSTEM_DIR_DOCUMENTS );
+	BIND_CONSTANT( SYSTEM_DIR_DOWNLOADS );
+	BIND_CONSTANT( SYSTEM_DIR_MOVIES );
+	BIND_CONSTANT( SYSTEM_DIR_MUSIC );
+	BIND_CONSTANT( SYSTEM_DIR_PICTURES );
+	BIND_CONSTANT( SYSTEM_DIR_RINGTONES );
 
 }
 

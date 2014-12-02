@@ -1171,7 +1171,7 @@ class DaeExporter:
 
 
 	def export_node(self,node,il):
-		if (not self.is_node_valid(node)):
+		if (not node in self.valid_nodes):
 			return
 		bpy.context.scene.objects.active = node
 
@@ -1191,7 +1191,6 @@ class DaeExporter:
 		elif (node.type=="LAMP"):
 			self.export_lamp_node(node,il)
 
-		self.valid_nodes.append(node)
 		for x in node.children:
 			self.export_node(x,il)
 
@@ -1203,6 +1202,7 @@ class DaeExporter:
 			return False
 		if (self.config["use_active_layers"]):
 			valid=False
+			print("NAME: "+node.name)
 			for i in range(20):
 				if (node.layers[i] and  self.scene.layers[i]):
 					valid=True
@@ -1222,8 +1222,21 @@ class DaeExporter:
 		self.writel(S_NODES,0,'<library_visual_scenes>')
 		self.writel(S_NODES,1,'<visual_scene id="'+self.scene_name+'" name="scene">')
 
+		#validate nodes
 		for obj in self.scene.objects:
-			if (obj.parent==None):
+			if (obj in self.valid_nodes):
+				continue
+			if (self.is_node_valid(obj)):
+				n = obj
+				while (n!=None):
+					if (not n in self.valid_nodes):
+						self.valid_nodes.append(n)
+					n=n.parent
+
+
+
+		for obj in self.scene.objects:
+			if (obj in self.valid_nodes and obj.parent==None):
 				self.export_node(obj,2)
 
 		self.writel(S_NODES,1,'</visual_scene>')

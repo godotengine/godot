@@ -40,6 +40,7 @@
 #include "audio_driver_iphone.h"
 
 #include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "core/globals.h"
 
 #include "sem_iphone.h"
@@ -77,7 +78,7 @@ void OSIPhone::set_data_dir(String p_dir) {
 	DirAccess* da = DirAccess::open(p_dir);
 
 	data_dir = da->get_current_dir();
-
+	printf("setting data dir to %ls from %ls\n", data_dir.c_str(), p_dir.c_str());
 	memdelete(da);
 };
 
@@ -211,14 +212,16 @@ void OSIPhone::key(uint32_t p_key, bool p_pressed) {
 
 void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_doubleclick, bool p_use_as_mouse) {
 
-	InputEvent ev;
-	ev.type = InputEvent::SCREEN_TOUCH;
-	ev.ID = ++last_event_id;
-	ev.screen_touch.index=p_idx;
-	ev.screen_touch.pressed=p_pressed;
-	ev.screen_touch.x=p_x;
-	ev.screen_touch.y=p_y;
-	queue_event(ev);
+	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+		InputEvent ev;
+		ev.type = InputEvent::SCREEN_TOUCH;
+		ev.ID = ++last_event_id;
+		ev.screen_touch.index=p_idx;
+		ev.screen_touch.pressed=p_pressed;
+		ev.screen_touch.x=p_x;
+		ev.screen_touch.y=p_y;
+		queue_event(ev);
+	};
 
 	if (p_use_as_mouse) {
 
@@ -247,15 +250,18 @@ void OSIPhone::mouse_button(int p_idx, int p_x, int p_y, bool p_pressed, bool p_
 
 void OSIPhone::mouse_move(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, bool p_use_as_mouse) {
 
-	InputEvent ev;
-	ev.type=InputEvent::SCREEN_DRAG;
-	ev.ID = ++last_event_id;
-	ev.screen_drag.index=p_idx;
-	ev.screen_drag.x=p_x;
-	ev.screen_drag.y=p_y;
-	ev.screen_drag.relative_x = p_x - p_prev_x;
-	ev.screen_drag.relative_y = p_y - p_prev_y;
-	queue_event(ev);
+	if (!GLOBAL_DEF("debug/disable_touch", false)) {
+
+		InputEvent ev;
+		ev.type=InputEvent::SCREEN_DRAG;
+		ev.ID = ++last_event_id;
+		ev.screen_drag.index=p_idx;
+		ev.screen_drag.x=p_x;
+		ev.screen_drag.y=p_y;
+		ev.screen_drag.relative_x = p_x - p_prev_x;
+		ev.screen_drag.relative_y = p_y - p_prev_y;
+		queue_event(ev);
+	};
 
 	if (p_use_as_mouse) {
 		InputEvent ev;
@@ -491,8 +497,16 @@ extern bool _is_video_playing();
 extern void _pause_video();
 extern void _unpause_video();
 extern void _stop_video();
+extern void _focus_out_video();
 
 Error OSIPhone::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
+	FileAccess* f = FileAccess::open(p_path, FileAccess::READ);
+	bool exists = f && f->is_open();
+	printf("file exists for %ls, %i, %p\n", p_path.c_str(), (int)exists, f);
+	if (f)
+		memdelete(f);
+	if (!exists)
+		return FAILED;
     if ( _play_video(p_path, p_volume, p_audio_track, p_subtitle_track) )
 		return OK;
 	return FAILED;
@@ -511,6 +525,9 @@ void OSIPhone::native_video_unpause() {
 	_unpause_video();
 };
 
+void OSIPhone::native_video_focus_out() {
+	_focus_out_video();
+};
 
 void OSIPhone::native_video_stop() {
 	if (native_video_is_playing())

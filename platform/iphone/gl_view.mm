@@ -125,6 +125,7 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
 
 	AVMediaSelectionGroup *audioGroup = [_instance.avAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
 
+	NSMutableArray *allAudioParams = [NSMutableArray array];
 	for (id track in audioGroup.options)
 	{
 		NSString* language = [[track locale] localeIdentifier];
@@ -132,7 +133,17 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
         
         if ([language isEqualToString:[NSString stringWithUTF8String:p_audio_track.utf8()]])
         {
-            [_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: audioGroup];
+			AVMutableAudioMixInputParameters *audioInputParams = [AVMutableAudioMixInputParameters audioMixInputParameters];
+			[audioInputParams setVolume:p_volume atTime:kCMTimeZero];
+			[audioInputParams setTrackID:[track trackID]];
+			[allAudioParams addObject:audioInputParams];
+
+			AVMutableAudioMix *audioMix = [AVMutableAudioMix audioMix];
+			[audioMix setInputParameters:allAudioParams];
+
+			[_instance.avPlayer.currentItem selectMediaOption:track inMediaSelectionGroup: audioGroup];
+			[_instance.avPlayer.currentItem setAudioMix:audioMix];
+
             break;
         }
 	}
@@ -174,7 +185,13 @@ void _pause_video() {
 	video_playing = false;
 }
 
+void _focus_out_video() {
+	printf("focus out pausing video\n");
+	[_instance.avPlayer pause];
+};
+
 void _unpause_video() {
+
 	[_instance.avPlayer play];
 	video_playing = true;
 

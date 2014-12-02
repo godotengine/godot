@@ -249,6 +249,8 @@ public:
 
 	virtual void move_window_to_foreground();
 	virtual String get_data_dir() const;
+	virtual String get_system_dir(SystemDir p_dir) const;
+
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
