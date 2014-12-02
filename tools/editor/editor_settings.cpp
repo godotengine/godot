@@ -456,6 +456,7 @@ void EditorSettings::_load_defaults() {
 
 
 	set("run/auto_save_before_running",true);
+	set("run/notify_when_debugging_stops",true);
 	set("resources/save_compressed_resources",true);
 	set("resources/auto_reload_modified_images",true);
 }
