@@ -569,7 +569,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 			int w=width.to_int();
 			int h=height.to_int();
 
-			if (w == 0 && w == 0) {
+			if (w == 0 && h == 0) {
 				//r_v = Image(w, h, imgformat);
 				r_v=Image();
 				String sdfsdfg;

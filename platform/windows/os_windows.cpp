@@ -54,8 +54,9 @@
 #include "io/marshalls.h"
 
 #include<Iphlpapi.h>  
-
+#include "shlobj.h"
 static const WORD MAX_CONSOLE_LINES = 1500;
+
 
 //#define STDOUT_FILE
 
@@ -1936,7 +1937,46 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+String OS_Windows::get_system_dir(SystemDir p_dir) const {
 
+
+	int id;
+
+
+
+	switch(p_dir) {
+		case SYSTEM_DIR_DESKTOP: {
+			id=CSIDL_DESKTOPDIRECTORY;
+		} break;
+		case SYSTEM_DIR_DCIM: {
+			id=CSIDL_MYPICTURES;
+		} break;
+		case SYSTEM_DIR_DOCUMENTS: {
+			id=0x000C;
+		} break;
+		case SYSTEM_DIR_DOWNLOADS: {
+			id=0x000C ;
+		} break;
+		case SYSTEM_DIR_MOVIES: {
+			id=CSIDL_MYVIDEO;
+		} break;
+		case SYSTEM_DIR_MUSIC: {
+			id=CSIDL_MYMUSIC;
+		} break;
+		case SYSTEM_DIR_PICTURES: {
+			id=CSIDL_MYPICTURES;
+		} break;
+		case SYSTEM_DIR_RINGTONES: {
+			id=CSIDL_MYMUSIC;
+		} break;
+	}
+
+	WCHAR szPath[MAX_PATH];
+	HRESULT res = SHGetFolderPathW(NULL,id,NULL,0,szPath);
+	ERR_FAIL_COND_V(res!=S_OK,String());
+	return String(szPath);
+
+}
 String OS_Windows::get_data_dir() const {
 
 	String an = Globals::get_singleton()->get("application/name");

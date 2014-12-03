@@ -95,6 +95,9 @@ public:
 	StringName _input;
 	StringName _ready;
 
+	StringName _pressed;
+	StringName _toggled;
+
 	StringName _update_scroll;
 	StringName _update_xform;
 

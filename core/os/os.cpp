@@ -280,6 +280,12 @@ String OS::get_resource_dir() const {
 	return Globals::get_singleton()->get_resource_path();
 }
 
+
+String OS::get_system_dir(SystemDir p_dir) const {
+
+	return ".";
+}
+
 String OS::get_data_dir() const {
 
 	return ".";

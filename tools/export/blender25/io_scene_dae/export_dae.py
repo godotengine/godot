@@ -863,6 +863,20 @@ class DaeExporter:
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
 
+		if (node.data.shape_keys!=None):
+				sk = node.data.shape_keys
+				if (sk.animation_data):
+					print("HAS ANIM")
+					print("DRIVERS: "+str(len(sk.animation_data.drivers)))
+					for d in sk.animation_data.drivers:
+						if (d.driver):
+							for v in d.driver.variables:
+								for t in v.targets:
+									if (t.id!=None and t.id.name in self.scene.objects):
+										print("LINKING "+str(node)+" WITH "+str(t.id.name))
+										self.armature_for_morph[node]=self.scene.objects[t.id.name]
+
+
 		meshdata = self.export_mesh(node,armature)
 		close_controller=False
 
@@ -1157,7 +1171,7 @@ class DaeExporter:
 
 
 	def export_node(self,node,il):
-		if (not self.is_node_valid(node)):
+		if (not node in self.valid_nodes):
 			return
 		bpy.context.scene.objects.active = node
 
@@ -1177,7 +1191,6 @@ class DaeExporter:
 		elif (node.type=="LAMP"):
 			self.export_lamp_node(node,il)
 
-		self.valid_nodes.append(node)
 		for x in node.children:
 			self.export_node(x,il)
 
@@ -1189,6 +1202,7 @@ class DaeExporter:
 			return False
 		if (self.config["use_active_layers"]):
 			valid=False
+			print("NAME: "+node.name)
 			for i in range(20):
 				if (node.layers[i] and  self.scene.layers[i]):
 					valid=True
@@ -1208,8 +1222,21 @@ class DaeExporter:
 		self.writel(S_NODES,0,'<library_visual_scenes>')
 		self.writel(S_NODES,1,'<visual_scene id="'+self.scene_name+'" name="scene">')
 
+		#validate nodes
 		for obj in self.scene.objects:
-			if (obj.parent==None):
+			if (obj in self.valid_nodes):
+				continue
+			if (self.is_node_valid(obj)):
+				n = obj
+				while (n!=None):
+					if (not n in self.valid_nodes):
+						self.valid_nodes.append(n)
+					n=n.parent
+
+
+
+		for obj in self.scene.objects:
+			if (obj in self.valid_nodes and obj.parent==None):
 				self.export_node(obj,2)
 
 		self.writel(S_NODES,1,'</visual_scene>')
@@ -1339,6 +1366,7 @@ class DaeExporter:
 					if (node.type=="MESH" and node.data!=None and (node in self.armature_for_morph) and (self.armature_for_morph[node] in allowed)):
 						pass #all good you pass with flying colors for morphs inside of action
 					else:
+						#print("fail "+str((node in self.armature_for_morph)))
 						continue
 				if (node.type=="MESH" and node.data!=None and node.data.shape_keys!=None and (node.data in self.mesh_cache) and len(node.data.shape_keys.key_blocks)):
 					target = self.mesh_cache[node.data]["morph_id"]
@@ -1453,7 +1481,7 @@ class DaeExporter:
 									allowed_skeletons.append(y)
 						y.animation_data.action=x;
 
-
+				print("allowed skeletons "+str(allowed_skeletons))
 
 				print(str(x))
 
@@ -1559,6 +1587,7 @@ class DaeExporter:
 		self.config=kwargs
 		self.valid_nodes=[]
 		self.armature_for_morph={}
+
 
 
 
