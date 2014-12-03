@@ -271,7 +271,7 @@ void Node::move_child(Node *p_child,int p_pos) {
 		data.children[i]->data.pos=i;
 	}
 	// notification second
-    move_child_notify(p_child);
+	move_child_notify(p_child);
 	for (int i=0;i<data.children.size();i++) {
 		data.children[i]->notification( NOTIFICATION_MOVED_IN_PARENT );
 
