@@ -1,0 +1,774 @@
+/*************************************************************************/
+/*  register_types.h                                                     */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                    http://www.godotengine.org                         */
+/*************************************************************************/
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+#ifdef MODULE_SPINE_ENABLED
+
+#include "spine.h"
+#include <spine/spine.h>
+#include <spine/extension.h>
+
+void Spine::spine_animation_callback(spAnimationState* p_state, int p_track, spEventType p_type, spEvent* p_event, int loop_count) {
+
+	((Spine*)p_state->rendererObject)->_on_animation_state_event(p_track, p_type, p_event, loop_count);
+}
+
+void Spine::_on_animation_state_event(int p_track, spEventType p_type, spEvent *p_event, int p_loop_count) {
+
+	switch (p_type) {
+	case SP_ANIMATION_START:
+		emit_signal("animation_start", p_track);
+		break;
+	case SP_ANIMATION_COMPLETE:
+		emit_signal("animation_complete", p_track, p_loop_count);
+		break;
+	case SP_ANIMATION_EVENT: {
+			Dictionary event;
+			event["int"] = p_event->intValue;
+			event["float"] = p_event->floatValue;
+			event["string"] = p_event->stringValue ? p_event->stringValue : "";
+			emit_signal("animation_event", p_track, event);
+		}
+		break;
+	case SP_ANIMATION_END:
+		emit_signal("animation_end", p_track);
+		break;
+	}
+}
+
+void Spine::_spine_dispose() {
+
+	if (state) {
+		spAnimationStateData_dispose(state->data);
+		spAnimationState_dispose(state);
+	}
+	if (atlas)
+		spAtlas_dispose(atlas);
+
+	if (skeleton) {
+		spSkeletonData_dispose(skeleton->data);
+		spSkeleton_dispose(skeleton);
+	}
+
+	state = NULL;
+	atlas = NULL;
+	skeleton = NULL;
+}
+
+static Ref<Texture> spine_get_texture(spRegionAttachment* attachment) {
+
+	Ref<Texture> *ref = static_cast<Ref<Texture> *>(
+		((spAtlasRegion*)attachment->rendererObject)->page->rendererObject
+	);
+	return *ref;
+}
+
+static Ref<Texture> spine_get_texture(spMeshAttachment* attachment) {
+
+	Ref<Texture> *ref = static_cast<Ref<Texture> *>(
+		((spAtlasRegion*)attachment->rendererObject)->page->rendererObject
+		);
+	return *ref;
+}
+
+static Ref<Texture> spine_get_texture(spSkinnedMeshAttachment* attachment) {
+
+	Ref<Texture> *ref = static_cast<Ref<Texture> *>(
+		((spAtlasRegion*)attachment->rendererObject)->page->rendererObject
+		);
+	return *ref;
+}
+
+void Spine::_animation_draw() {
+
+	if (skeleton == NULL)
+		return;
+
+	skeleton->r = modulate.r;
+	skeleton->g = modulate.g;
+	skeleton->b = modulate.b;
+	skeleton->a = modulate.a;
+
+	int additive = -1;
+	Color color;
+	const float *uvs = NULL;
+	int verties_count = 0;
+	const int *triangles = NULL;
+	int triangles_count = 0;
+	float r = 0, g = 0, b = 0, a = 0;
+
+	RID ci = this->get_canvas_item();
+	VisualServer::get_singleton()->canvas_item_add_set_blend_mode(ci, VS::MaterialBlendMode(get_blend_mode()));
+	batcher.reset();
+
+	for (int i = 0, n = skeleton->slotsCount; i < n; i++) {
+
+		spSlot* slot = skeleton->drawOrder[i];
+		if (!slot->attachment) continue;
+		Ref<Texture> texture;
+		switch (slot->attachment->type) {
+
+			case SP_ATTACHMENT_REGION: {
+
+				spRegionAttachment* attachment = (spRegionAttachment*)slot->attachment;
+				spRegionAttachment_computeWorldVertices(attachment, slot->bone, world_verts.ptr());
+				texture = spine_get_texture(attachment);
+				uvs = attachment->uvs;
+				verties_count = 8;
+				static const int quadTriangles[6] = { 0, 1, 2, 2, 3, 0 };
+				triangles = quadTriangles;
+				triangles_count = 6;
+				r = attachment->r;
+				g = attachment->g;
+				b = attachment->b;
+				a = attachment->a;
+				break;
+			}
+			case SP_ATTACHMENT_MESH: {
+
+				spMeshAttachment* attachment = (spMeshAttachment*)slot->attachment;
+				spMeshAttachment_computeWorldVertices(attachment, slot, world_verts.ptr());
+				texture = spine_get_texture(attachment);
+				uvs = attachment->uvs;
+				verties_count = attachment->verticesCount;
+				triangles = attachment->triangles;
+				triangles_count = attachment->trianglesCount;
+				r = attachment->r;
+				g = attachment->g;
+				b = attachment->b;
+				a = attachment->a;
+				break;
+			}
+			case SP_ATTACHMENT_SKINNED_MESH: {
+
+				spSkinnedMeshAttachment* attachment = (spSkinnedMeshAttachment*)slot->attachment;
+				spSkinnedMeshAttachment_computeWorldVertices(attachment, slot, world_verts.ptr());
+				texture = spine_get_texture(attachment);
+				uvs = attachment->uvs;
+				verties_count = attachment->uvsCount;
+				triangles = attachment->triangles;
+				triangles_count = attachment->trianglesCount;
+				r = attachment->r;
+				g = attachment->g;
+				b = attachment->b;
+				a = attachment->a;
+				break;
+			}
+		}
+		if (texture.is_null())
+			continue;
+
+		if (slot->data->additiveBlending != additive) {
+
+			batcher.flush();
+	
+			VisualServer::get_singleton()->canvas_item_add_set_blend_mode(ci,
+				slot->data->additiveBlending ? VisualServer::MATERIAL_BLEND_MODE_ADD : VS::MaterialBlendMode(get_blend_mode())
+			);
+			additive = slot->data->additiveBlending;
+		}
+		color.a = skeleton->a * slot->a * a;
+		color.r = skeleton->r * slot->r * r;
+		color.g = skeleton->g * slot->g * g;
+		color.b = skeleton->b * slot->b * b;
+
+		batcher.add(texture, world_verts.ptr(), uvs, verties_count, triangles, triangles_count, &color);
+
+		//canvas_item_add_triangle_array_ptr
+
+		//Vector<Vector2> p_points;
+		//Vector<Vector2> p_uvs;
+		//p_points.resize(verties_count / 2);
+		//p_uvs.resize(verties_count / 2);
+		//for (int i = 0; i < p_points.size(); i++) {
+
+		//	p_points[i].x = world_verts[i * 2];
+		//	p_points[i].y = -world_verts[i * 2 + 1];
+		//	p_uvs[i].x = uvs[i * 2];
+		//	p_uvs[i].y = uvs[i * 2 + 1];
+		//}
+		//draw_colored_polygon(p_points, color, p_uvs, texture);
+	}
+	batcher.flush();
+
+	if (debug_slots) {
+		// Slots.
+		Color color(0, 0, 1, 1);
+		Vector<Point2> points;
+		points.resize(4);
+		for (int i = 0, n = skeleton->slotsCount; i < n; i++) {
+
+			spSlot* slot = skeleton->drawOrder[i];
+			if (!slot->attachment || slot->attachment->type != SP_ATTACHMENT_REGION) continue;
+			spRegionAttachment* attachment = (spRegionAttachment*)slot->attachment;
+			spRegionAttachment_computeWorldVertices(attachment, slot->bone, world_verts.ptr());
+			points[0] = Point2(world_verts[0], -world_verts[1]);
+			points[1] = Point2(world_verts[2], -world_verts[3]);
+			points[2] = Point2(world_verts[4], -world_verts[5]);
+			points[3] = Point2(world_verts[6], -world_verts[7]);
+			//draw_colored_polygon(points, Color(0, 0, 1, 1));
+			draw_line(points[0], points[1], color);
+			draw_line(points[1], points[2], color);
+			draw_line(points[2], points[3], color);
+			draw_line(points[3], points[0], color);
+		}
+	}
+	if (debug_bones) {
+		// Bone lengths.
+		for (int i = 0; i < skeleton->bonesCount; i++) {
+			spBone *bone = skeleton->bones[i];
+			float x = bone->data->length * bone->m00 + bone->worldX;
+			float y = bone->data->length * bone->m10 + bone->worldY;
+			draw_line(Point2(bone->worldX, -bone->worldY), Point2(x, -y), Color(1, 0, 0, 1), 2);
+		}
+		// Bone origins.
+		for (int i = 0, n = skeleton->bonesCount; i < n; i++) {
+			spBone *bone = skeleton->bones[i];
+			draw_rect(Rect2(bone->worldX - 1, -bone->worldY - 1, 3, 3), (i == 0) ? Color(0, 1, 0, 1) : Color(0, 0, 1, 1));
+		}
+	}
+}
+
+void Spine::_animation_process(float p_delta) {
+
+	if (speed_scale == 0)
+		return;
+	p_delta *= speed_scale;
+
+	spAnimationState_update(state, p_delta);
+	spAnimationState_apply(state, skeleton);
+	spSkeleton_updateWorldTransform(skeleton);
+	update();
+}
+
+void Spine::_set_process(bool p_process, bool p_force) {
+
+	if (processing == p_process && !p_force)
+		return;
+
+	switch (animation_process_mode) {
+
+	case ANIMATION_PROCESS_FIXED: set_fixed_process(p_process && active); break;
+	case ANIMATION_PROCESS_IDLE: set_process(p_process && active); break;
+	}
+
+	processing = p_process;
+}
+
+bool Spine::_set(const StringName& p_name, const Variant& p_value) {
+
+	String name = p_name;
+
+	if (name.begins_with("playback/play")) {
+
+		String which = p_value;
+		if (which == "[stop]")
+			stop();
+		else if (has(which))
+			play(which, 1, loop);
+	}
+	else if (name.begins_with("playback/loop")) {
+
+		loop = p_value;
+		if (has(current_animation))
+			play(current_animation, 1, loop);
+	}
+	else if (name.begins_with("playback/skin")) {
+
+		skin = p_value;
+		set_skin(skin);
+	}
+	return true;
+}
+
+bool Spine::_get(const StringName& p_name, Variant &r_ret) const {
+
+	String name = p_name;
+
+	if (name == "playback/play") {
+
+		if (is_active() && is_playing())
+			r_ret = current_animation;
+		else
+			r_ret = "[stop]";
+
+	}
+	else if (name.begins_with("playback/loop")) {
+
+		r_ret = loop;
+	}
+	else if (name.begins_with("playback/skin")) {
+
+		r_ret = skin;
+	}
+	return true;
+}
+
+void Spine::_get_property_list(List<PropertyInfo> *p_list) const {
+
+	List<String> names;
+
+	if (state != NULL) {
+
+		for (int i = 0; i < state->data->skeletonData->animationsCount; i++) {
+
+			names.push_back(state->data->skeletonData->animations[i]->name);
+		}
+	}
+	{
+		names.sort();
+		names.push_front("[stop]");
+		String hint;
+		for (List<String>::Element *E = names.front(); E; E = E->next()) {
+
+			if (E != names.front())
+				hint += ",";
+			hint += E->get();
+		}
+
+		p_list->push_back(PropertyInfo(Variant::STRING, "playback/play", PROPERTY_HINT_ENUM, hint));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "playback/loop", PROPERTY_HINT_NONE));
+	}
+
+	names.clear();
+	{
+		if (state != NULL) {
+
+			for (int i = 0; i < state->data->skeletonData->skinsCount; i++) {
+
+				names.push_back(state->data->skeletonData->skins[i]->name);
+			}
+		}
+
+		String hint;
+		for (List<String>::Element *E = names.front(); E; E = E->next()) {
+
+			if (E != names.front())
+				hint += ",";
+			hint += E->get();
+		}
+
+		p_list->push_back(PropertyInfo(Variant::STRING, "playback/skin", PROPERTY_HINT_ENUM, hint));
+	}
+}
+
+void Spine::_notification(int p_what) {
+
+	switch (p_what) {
+
+	case NOTIFICATION_ENTER_TREE: {
+
+		if (!processing) {
+			//make sure that a previous process state was not saved
+			//only process if "processing" is set
+			set_fixed_process(false);
+			set_process(false);
+		}
+	} break;
+	case NOTIFICATION_READY: {
+
+		if (!get_tree()->is_editor_hint() && has(autoplay)) {
+			play(autoplay);
+		}
+	} break;
+	case NOTIFICATION_PROCESS: {
+		if (animation_process_mode == ANIMATION_PROCESS_FIXED)
+			break;
+
+		if (processing)
+			_animation_process(get_process_delta_time());
+	} break;
+	case NOTIFICATION_FIXED_PROCESS: {
+
+		if (animation_process_mode == ANIMATION_PROCESS_IDLE)
+			break;
+
+		if (processing)
+			_animation_process(get_fixed_process_delta_time());
+	} break;
+
+	case NOTIFICATION_DRAW: {
+
+		_animation_draw();
+	} break;
+
+	case NOTIFICATION_EXIT_TREE: {
+
+		stop_all();
+	} break;
+	}
+}
+
+int Spine::load(const String& p_json, const String& p_atlas, real_t p_scale) {
+
+	// cleanup
+	_spine_dispose();
+
+	atlas = spAtlas_createFromFile(p_atlas.utf8().get_data(), 0);
+	ERR_FAIL_COND_V(atlas == NULL, ERR_FILE_CORRUPT);
+	spSkeletonJson *json = spSkeletonJson_create(atlas);
+	ERR_FAIL_COND_V(json == NULL, ERR_FILE_CORRUPT);
+	json->scale = p_scale;
+
+	spSkeletonData* skeletonData = spSkeletonJson_readSkeletonDataFile(json, p_json.utf8().get_data());
+	ERR_FAIL_COND_V(skeletonData == NULL, ERR_FILE_CORRUPT);
+	spSkeletonJson_dispose(json);
+
+	skeleton = spSkeleton_create(skeletonData);
+	root_bone = skeleton->bones[0];
+
+	state = spAnimationState_create(spAnimationStateData_create(skeleton->data));
+	state->rendererObject = this;
+	state->listener = spine_animation_callback;
+
+	loop = false;
+	current_animation = "";
+	skin = "";
+
+	_change_notify();
+
+	return OK;
+}
+
+void Spine::set_path(const String& p_path) {
+
+	if (path_cache == p_path)
+		return;
+
+	String atlas = p_path.replace(".json", ".atlas");
+	if (load(p_path, atlas) != OK) {
+
+		if (!path.empty()) {
+
+			path_cache = "";
+			set_path(path);
+		}
+		return;
+	}
+	path_cache = p_path;
+	path = p_path;
+}
+
+String Spine::get_path() const {
+
+	return path;
+}
+
+bool Spine::has(const String& p_name) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	spAnimation* animation = spSkeletonData_findAnimation(skeleton->data, p_name.utf8().get_data());
+	return animation != NULL;
+}
+
+void Spine::mix(const String& p_from, const String& p_to, real_t p_duration) {
+
+	ERR_FAIL_COND(state == NULL);
+	spAnimationStateData_setMixByName(state->data, p_from.utf8().get_data(), p_to.utf8().get_data(), p_duration);
+}
+
+void Spine::play(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
+
+	ERR_FAIL_COND(skeleton == NULL);
+	spAnimation* animation = spSkeletonData_findAnimation(skeleton->data, p_name.utf8().get_data());
+	ERR_FAIL_COND(animation == NULL);
+	spTrackEntry *entry = spAnimationState_setAnimation(state, p_track, animation, p_loop);
+	entry->delay = p_delay;
+	current_animation = p_name;
+
+	_set_process(true);
+	playing = true;
+}
+
+void Spine::add(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
+
+	ERR_FAIL_COND(skeleton == NULL);
+	spAnimation* animation = spSkeletonData_findAnimation(skeleton->data, p_name.utf8().get_data());
+	ERR_FAIL_COND(animation == NULL);
+	spTrackEntry *entry = spAnimationState_addAnimation(state, p_track, animation, p_loop, p_delay);
+
+	_set_process(true);
+	playing = true;
+}
+
+void Spine::clear(int p_track) {
+
+	ERR_FAIL_COND(state == NULL);
+	if (p_track == -1)
+		spAnimationState_clearTracks(state);
+	else
+		spAnimationState_clearTrack(state, p_track);
+}
+
+void Spine::stop() {
+
+	_set_process(false);
+	playing = false;
+}
+
+bool Spine::is_playing() const {
+
+	return playing;
+}
+
+String Spine::get_current_animation(int p_track) const {
+
+	ERR_FAIL_COND_V(state == NULL, "");
+	spTrackEntry *entry = spAnimationState_getCurrent(state, p_track);
+	return entry->animation->name;
+}
+
+void Spine::stop_all() {
+
+	stop();
+
+	_set_process(false); // always process when starting an animation
+}
+
+void Spine::reset() {
+
+	ERR_FAIL_COND(skeleton == NULL);
+	spSkeleton_setToSetupPose(skeleton);
+}
+
+void Spine::set_active(bool p_active) {
+
+	if (active == p_active)
+		return;
+
+	active = p_active;
+	_set_process(processing, true);
+}
+
+bool Spine::is_active() const {
+
+	return active;
+}
+
+void Spine::set_speed(float p_speed) {
+
+	speed_scale = p_speed;
+}
+
+float Spine::get_speed() const {
+
+	return speed_scale;
+}
+
+void Spine::set_autoplay(const String& p_name) {
+
+	autoplay = p_name;
+}
+
+String Spine::get_autoplay() const {
+
+	return autoplay;
+}
+
+void Spine::set_modulate(const Color& p_color) {
+
+	modulate = p_color;
+	update();
+}
+
+Color Spine::get_modulate() const{
+
+	return modulate;
+}
+
+bool Spine::set_skin(const String& p_name) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	return spSkeleton_setSkinByName(skeleton, p_name.utf8().get_data()) ? true : false;
+}
+
+void Spine::set_animation_process_mode(Spine::AnimationProcessMode p_mode) {
+
+	if (animation_process_mode == p_mode)
+		return;
+
+	bool pr = processing;
+	if (pr)
+		_set_process(false);
+	animation_process_mode = p_mode;
+	if (pr)
+		_set_process(true);
+}
+
+Spine::AnimationProcessMode Spine::get_animation_process_mode() const {
+
+	return animation_process_mode;
+}
+
+void Spine::set_debug_bones(bool p_enable) {
+
+	debug_bones = p_enable;
+	update();
+}
+
+bool Spine::is_debug_bones() const {
+
+	return debug_bones;
+}
+
+void Spine::set_debug_slots(bool p_enable) {
+
+	debug_slots = p_enable;
+	update();
+}
+
+bool Spine::is_debug_slots() const {
+
+	return debug_slots;
+}
+
+void Spine::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("load", "json", "atlas", "scale"), &Spine::load, 1);
+	ObjectTypeDB::bind_method(_MD("set_path", "path"), &Spine::set_path);
+	ObjectTypeDB::bind_method(_MD("get_path", "path"), &Spine::get_path);
+
+	ObjectTypeDB::bind_method(_MD("has", "name"), &Spine::has);
+	ObjectTypeDB::bind_method(_MD("mix", "from", "to", "duration"), &Spine::mix, 0);
+	ObjectTypeDB::bind_method(_MD("play", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::play, 0, 0, false, 1.0f);
+	ObjectTypeDB::bind_method(_MD("add", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::add, 0, 0, false, 1.0f);
+	ObjectTypeDB::bind_method(_MD("clear", "track"), &Spine::clear, -1);
+	ObjectTypeDB::bind_method(_MD("stop"), &Spine::stop);
+	ObjectTypeDB::bind_method(_MD("is_playing"), &Spine::is_playing);
+	ObjectTypeDB::bind_method(_MD("get_current_animation"), &Spine::get_current_animation);
+	ObjectTypeDB::bind_method(_MD("stop_all"), &Spine::stop_all);
+	ObjectTypeDB::bind_method(_MD("reset"), &Spine::reset);
+	ObjectTypeDB::bind_method(_MD("set_active", "active"), &Spine::set_active);
+	ObjectTypeDB::bind_method(_MD("is_active"), &Spine::is_active);
+	ObjectTypeDB::bind_method(_MD("set_speed", "speed"), &Spine::set_speed);
+	ObjectTypeDB::bind_method(_MD("get_speed"), &Spine::get_speed);
+	ObjectTypeDB::bind_method(_MD("set_modulate", "modulate"), &Spine::set_modulate);
+	ObjectTypeDB::bind_method(_MD("get_modulate"), &Spine::get_modulate);
+	ObjectTypeDB::bind_method(_MD("set_skin", "skin"), &Spine::set_skin);
+
+	ObjectTypeDB::bind_method(_MD("set_debug_bones", "enable"), &Spine::set_debug_bones);
+	ObjectTypeDB::bind_method(_MD("is_debug_bones"), &Spine::is_debug_bones);
+	ObjectTypeDB::bind_method(_MD("set_debug_slots", "enable"), &Spine::set_debug_slots);
+	ObjectTypeDB::bind_method(_MD("is_debug_slots"), &Spine::is_debug_slots);
+
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), _SCS("set_speed"), _SCS("get_speed"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback/active"), _SCS("set_active"), _SCS("is_active"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug/bones"), _SCS("set_debug_bones"), _SCS("is_debug_bones"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug/slots"), _SCS("set_debug_slots"), _SCS("is_debug_slots"));
+
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE, "json"), _SCS("set_path"), _SCS("get_path"));
+
+	ADD_SIGNAL(MethodInfo("animation_start", PropertyInfo(Variant::INT, "track")));
+	ADD_SIGNAL(MethodInfo("animation_complete", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::INT, "loop_count")));
+	ADD_SIGNAL(MethodInfo("animation_event", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::DICTIONARY, "event")));
+	ADD_SIGNAL(MethodInfo("animation_end", PropertyInfo(Variant::INT, "track")));
+
+	BIND_CONSTANT(ANIMATION_PROCESS_FIXED);
+	BIND_CONSTANT(ANIMATION_PROCESS_IDLE);
+}
+
+Rect2 Spine::get_item_rect() const {
+
+	if (skeleton == NULL)
+		return Node2D::get_item_rect();
+
+	float minX = 65535, minY = 65535, maxX = -65535, maxY = -65535;
+	bool attached = false;
+	for (int i = 0; i < skeleton->slotsCount; ++i) {
+
+		spSlot* slot = skeleton->slots[i];
+		if (!slot->attachment) continue;
+		int verticesCount;
+		if (slot->attachment->type == SP_ATTACHMENT_REGION) {
+			spRegionAttachment* attachment = (spRegionAttachment*)slot->attachment;
+			spRegionAttachment_computeWorldVertices(attachment, slot->bone, world_verts.ptr());
+			verticesCount = 8;
+		}
+		else if (slot->attachment->type == SP_ATTACHMENT_MESH) {
+			spMeshAttachment* mesh = (spMeshAttachment*)slot->attachment;
+			spMeshAttachment_computeWorldVertices(mesh, slot, world_verts.ptr());
+			verticesCount = mesh->verticesCount;
+		}
+		else if (slot->attachment->type == SP_ATTACHMENT_SKINNED_MESH) {
+			spSkinnedMeshAttachment* mesh = (spSkinnedMeshAttachment*)slot->attachment;
+			spSkinnedMeshAttachment_computeWorldVertices(mesh, slot, world_verts.ptr());
+			verticesCount = mesh->uvsCount;
+		}
+		else
+			continue;
+
+		attached = true;
+
+		for (int ii = 0; ii < verticesCount; ii += 2) {
+			float x = world_verts[ii] * 1, y = world_verts[ii + 1] * 1;
+			minX = MIN(minX, x);
+			minY = MIN(minY, y);
+			maxX = MAX(maxX, x);
+			maxY = MAX(maxY, y);
+		}
+	}
+
+	int h = maxY - minY;
+	return attached ? Rect2(minX, -minY - h, maxX - minX, h) : Node2D::get_item_rect();
+}
+
+Spine::Spine()
+	: batcher(this)
+{
+
+	path = "";
+	path_cache = "";
+
+	skeleton = NULL;
+	root_bone = NULL;
+	state = NULL;
+	atlas = NULL;
+	world_verts.resize(1000); // Max number of vertices per mesh.
+
+	speed_scale = 1;
+	autoplay = "";
+	animation_process_mode = ANIMATION_PROCESS_IDLE;
+	processing = false;
+	active = false;
+	playing = false;
+
+	debug_slots = false;
+	debug_bones = false;
+	loop = true;
+
+	modulate = Color(1, 1, 1, 1);
+}
+
+Spine::~Spine() {
+
+	// cleanup
+	_spine_dispose();
+}
+
+#endif // MODULE_SPINE_ENABLED

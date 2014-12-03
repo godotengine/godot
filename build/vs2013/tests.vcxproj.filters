@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="bin">
+      <UniqueIdentifier>{8c773db0-da19-4b33-8507-68d9117f0079}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bin\tests">
+      <UniqueIdentifier>{4a0649a2-3e92-4219-a8cb-afd8d4fa572a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\bin\tests\test_compression.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_containers.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_detailer.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_gdscript.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_gui.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_image.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_io.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_main.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_math.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_misc.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_particles.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_physics.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_physics_2d.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_python.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_render.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_shader_lang.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_sound.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\bin\tests\test_string.cpp">
+      <Filter>bin\tests</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\bin\tests\test_compression.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_containers.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_detailer.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_gdscript.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_gui.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_image.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_io.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_main.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_math.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_misc.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_particles.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_physics.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_physics_2d.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_python.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_render.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_shader_lang.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_sound.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\bin\tests\test_string.h">
+      <Filter>bin\tests</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

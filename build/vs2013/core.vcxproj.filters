@@ -1,0 +1,836 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="core">
+      <UniqueIdentifier>{cdd8686e-9038-41df-b753-8deccef1bee3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\bind">
+      <UniqueIdentifier>{beb8fb46-d899-48b0-8178-811cdc72950b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\io">
+      <UniqueIdentifier>{33b39e2c-4f11-4b8b-9a95-74101b1e489a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\math">
+      <UniqueIdentifier>{d7d5eec6-0377-4353-b9bf-59a253d9383a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\os">
+      <UniqueIdentifier>{759a2a3f-b150-4853-af9f-f11d0399dbbb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core\helper">
+      <UniqueIdentifier>{883a245a-ac54-4815-b832-e27253e8a6d5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{b4f265be-d970-4791-bab2-8653d650a596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\android">
+      <UniqueIdentifier>{5ea9ecff-b55f-40a5-b98f-85f4990f6117}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\android\globals">
+      <UniqueIdentifier>{0226365f-6301-405c-8d3c-ccc4a7c60b96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\iphone">
+      <UniqueIdentifier>{b795687f-951b-4b4d-92ca-19705700f582}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\iphone\globals">
+      <UniqueIdentifier>{dd24d1ef-1f42-4757-aca5-e61ebbbab4ff}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\core\allocators.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\array.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\balloon_allocator.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\color.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\command_queue_mt.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\compressed_translation.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\core_string_names.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\dictionary.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\dvector.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\error_list.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\error_macros.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\event_queue.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\fpstr.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\func_ref.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\global_constants.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\globals.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\hash_map.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\hashfuncs.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\image.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\input_map.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\int_types.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\list.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\map.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\message_queue.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\method_bind.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\multi_bucket_array.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\object.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\object_type_db.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\packed_data_container.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\pair.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\path_db.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\path_remap.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\pool_allocator.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\print_string.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\profiler.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\ref_ptr.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\reference.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\register_core_types.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\res_ptr.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\resource.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\rid.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\ring_buffer.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\safe_refcount.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\script_debugger_local.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\script_debugger_remote.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\script_language.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\self_list.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\set.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\simple_type.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\sort.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\string_db.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\translation.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\typedefs.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\ucaps.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\undo_redo.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\ustring.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\variant.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\variant_call_bind.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\vector.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\version.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\vmap.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\vset.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\bind\core_bind.h">
+      <Filter>core\bind</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\aes256.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\base64.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\compression.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\config_file.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\crypt.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\fastlz.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_buffered.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_buffered_fa.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_compressed.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_encrypted.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_memory.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_network.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_pack.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\file_access_zip.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\http_client.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\image_loader.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\ioapi.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\ip.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\ip_address.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\json.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\marshalls.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\md5.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\packet_peer.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\resource_format_binary.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\resource_format_xml.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\resource_loader.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\resource_saver.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\stream_peer.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\stream_peer_ssl.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\stream_peer_tcp.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\tcp_server.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\translation_loader_po.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\unzip.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\xml_parser.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\zip.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\zip_io.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\aabb.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\bezier_curve.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\bsp_tree.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\camera_matrix.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\face3.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\geometry.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\math_2d.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\math_defs.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\math_funcs.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\matrix3.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\octree.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\plane.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\quat.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\quick_hull.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\transform.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\triangle_mesh.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\triangulate.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\math\vector3.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\copymem.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\dir_access.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\file_access.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\input.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\input_event.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\keyboard.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\main_loop.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\memory.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\memory_pool_dynamic.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\memory_pool_dynamic_prealloc.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\memory_pool_dynamic_static.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\memory_pool_static.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\mutex.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\os.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\pc_joystick_map.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\semaphore.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\shell.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\thread.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\thread_dummy.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\os\thread_safe.h">
+      <Filter>core\os</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\helper\value_evaluator.h">
+      <Filter>core\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\android\globals\global_defaults.h">
+      <Filter>platform\android\globals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\iphone\globals\global_defaults.h">
+      <Filter>platform\iphone\globals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\core\io\packet_peer_udp.h">
+      <Filter>core\io</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\core\array.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\color.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\command_queue_mt.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\compressed_translation.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\core_string_names.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\dictionary.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\dvector.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\error_macros.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\event_queue.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\fpstr.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\func_ref.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\global_constants.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\global_defaults.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\globals.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\image.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\image_quantize.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\input_map.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\message_queue.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\method_bind.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\object.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\object_type_db.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\packed_data_container.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\pair.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\path_db.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\path_remap.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\pool_allocator.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\print_string.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\profiler.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\ref_ptr.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\reference.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\register_core_types.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\res_ptr.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\resource.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\rid.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\safe_refcount.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\script_debugger_debugger.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\script_debugger_local.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\script_debugger_remote.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\script_encryption_key.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\script_language.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\string_db.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\translation.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\undo_redo.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\ustring.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\variant.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\variant_call.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\variant_op.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\vmap.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\vset.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\bind\core_bind.cpp">
+      <Filter>core\bind</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\aes256.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\base64.c">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\compression.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\config_file.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\fastlz.c">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_buffered.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_compressed.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_encrypted.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_memory.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_network.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_pack.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\file_access_zip.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\http_client.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\image_loader.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\ioapi.c">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\ip.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\ip_address.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\json.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\marshalls.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\md5.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\packet_peer.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\resource_format_binary.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\resource_format_xml.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\resource_loader.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\resource_saver.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\stream_peer.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\stream_peer_ssl.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\stream_peer_tcp.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\tcp_server.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\translation_loader_po.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\unzip.c">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\xml_parser.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\zip.c">
+      <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\aabb.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\bezier_curve.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\bsp_tree.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\camera_matrix.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\face3.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\geometry.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\math_2d.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\math_defs.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\math_funcs.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\matrix3.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\plane.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\quat.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\quick_hull.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\transform.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\triangle_mesh.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\triangulate.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\vector3.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\copymem.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\dir_access.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\file_access.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\input.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\input_event.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\keyboard.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\main_loop.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\memory.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\memory_pool_dynamic.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\memory_pool_dynamic_prealloc.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\memory_pool_dynamic_static.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\memory_pool_static.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\mutex.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\os.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\semaphore.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\shell.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\thread.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\thread_dummy.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\os\thread_safe.cpp">
+      <Filter>core\os</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\android\globals\global_defaults.cpp">
+      <Filter>platform\android\globals</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\iphone\globals\global_defaults.cpp">
+      <Filter>platform\iphone\globals</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\io\packet_peer_udp.cpp">
+      <Filter>core\io</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\core\method_bind.inc">
+      <Filter>core</Filter>
+    </None>
+  </ItemGroup>
+</Project>

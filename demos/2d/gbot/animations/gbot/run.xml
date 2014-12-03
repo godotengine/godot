@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="Animation" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<main_resource>
+		<string name="resource/name"> "warrior_run_without_sword" </string>
+		<real name="length"> 1 </real>
+		<bool name="loop"> True </bool>
+		<real name="step"> 0.05 </real>
+		<string name="tracks/0/type"> "value" </string>
+		<node_path name="tracks/0/path"> "body_tiles/rotation/robo_scale/root/hip/leg_r/shin_r/foot_r:transform/rot" </node_path>
+		<int name="tracks/0/interp"> 2 </int>
+		<dictionary name="tracks/0/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="7"> 				1, 1, 1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="7" shared="false">
+				<real> -29.299999 </real>
+				<real> -36.4048 </real>
+				<real> 5.78849 </real>
+				<real> -18.409521 </real>
+				<real> 18.463211 </real>
+				<real> 23.902328 </real>
+				<real> -29.299999 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="7"> 				0, 0.25, 0.5, 0.6, 0.65, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/1/type"> "value" </string>
+		<node_path name="tracks/1/path"> "body_tiles/rotation/robo_scale/root/hip/leg_r/shin_r:transform/rot" </node_path>
+		<int name="tracks/1/interp"> 2 </int>
+		<dictionary name="tracks/1/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<real> -62.099586 </real>
+				<real> -159.699768 </real>
+				<real> -6.493253 </real>
+				<real> -79.173698 </real>
+				<real> -62.099586 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/2/type"> "value" </string>
+		<node_path name="tracks/2/path"> "body_tiles/rotation/robo_scale/root/hip/leg_r:transform/rot" </node_path>
+		<int name="tracks/2/interp"> 2 </int>
+		<dictionary name="tracks/2/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<real> -22.81645 </real>
+				<real> 114.050293 </real>
+				<real> 74.158875 </real>
+				<real> 48.767586 </real>
+				<real> -22.81645 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/3/type"> "value" </string>
+		<node_path name="tracks/3/path"> "body_tiles/rotation/robo_scale/root/hip/leg_l:transform/rot" </node_path>
+		<int name="tracks/3/interp"> 2 </int>
+		<dictionary name="tracks/3/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<real> 52.109974 </real>
+				<real> 33.296906 </real>
+				<real> -35.142273 </real>
+				<real> 72.956375 </real>
+				<real> 52.109974 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/4/type"> "value" </string>
+		<node_path name="tracks/4/path"> "body_tiles/rotation/robo_scale/root/hip/leg_l/shin_l/foot_l:transform/rot" </node_path>
+		<int name="tracks/4/interp"> 2 </int>
+		<dictionary name="tracks/4/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="6"> 				1, 1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="6" shared="false">
+				<real> 2.504374 </real>
+				<real> -15.111545 </real>
+				<real> 13.797544 </real>
+				<real> -43.521133 </real>
+				<real> -29.281584 </real>
+				<real> 2.504374 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="6"> 				0, 0.1, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/5/type"> "value" </string>
+		<node_path name="tracks/5/path"> "body_tiles/rotation/robo_scale/root/hip/leg_l/shin_l:transform/rot" </node_path>
+		<int name="tracks/5/interp"> 2 </int>
+		<dictionary name="tracks/5/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<real> 15.12421 </real>
+				<real> -50.327286 </real>
+				<real> -38.583992 </real>
+				<real> -136.609711 </real>
+				<real> 15.12421 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/6/type"> "value" </string>
+		<node_path name="tracks/6/path"> "body_tiles/rotation/robo_scale/root/body:transform/rot" </node_path>
+		<int name="tracks/6/interp"> 2 </int>
+		<dictionary name="tracks/6/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="3"> 				1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="3" shared="false">
+				<real> -13.066232 </real>
+				<real> -13.066232 </real>
+				<real> -13.066232 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="3"> 				0, 0.5, 1 </real_array>
+		</dictionary>
+		<string name="tracks/7/type"> "value" </string>
+		<node_path name="tracks/7/path"> "body_tiles/rotation/robo_scale/root/body/arm_r:transform/rot" </node_path>
+		<int name="tracks/7/interp"> 2 </int>
+		<dictionary name="tracks/7/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="4"> 				1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="4" shared="false">
+				<real> 71.475174 </real>
+				<real> -46.022038 </real>
+				<real> -25.279615 </real>
+				<real> 71.475174 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="4"> 				0, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/8/type"> "value" </string>
+		<node_path name="tracks/8/path"> "body_tiles/rotation/robo_scale/root/body/arm_r/forearm_r:transform/rot" </node_path>
+		<int name="tracks/8/interp"> 2 </int>
+		<dictionary name="tracks/8/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="4"> 				1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="4" shared="false">
+				<real> 31.902925 </real>
+				<real> 7.641339 </real>
+				<real> 90.976784 </real>
+				<real> 31.902925 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="4"> 				0, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/9/type"> "value" </string>
+		<node_path name="tracks/9/path"> "body_tiles/rotation/robo_scale/root/body/arm_l:transform/rot" </node_path>
+		<int name="tracks/9/interp"> 2 </int>
+		<dictionary name="tracks/9/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="3"> 				1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="3" shared="false">
+				<real> -67.003242 </real>
+				<real> 47.940536 </real>
+				<real> -67.003242 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="3"> 				0, 0.5, 1 </real_array>
+		</dictionary>
+		<string name="tracks/10/type"> "value" </string>
+		<node_path name="tracks/10/path"> "body_tiles/rotation/robo_scale/root/body/arm_l/forearm_l:transform/rot" </node_path>
+		<int name="tracks/10/interp"> 2 </int>
+		<dictionary name="tracks/10/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<real> 19.503271 </real>
+				<real> 94.51368 </real>
+				<real> 83.77462 </real>
+				<real> -0.979832 </real>
+				<real> 19.503271 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/11/type"> "value" </string>
+		<node_path name="tracks/11/path"> "body_tiles/rotation/robo_scale/root/body/head:transform/rot" </node_path>
+		<int name="tracks/11/interp"> 2 </int>
+		<dictionary name="tracks/11/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="2"> 				1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="2" shared="false">
+				<real> 7.762703 </real>
+				<real> 7.762703 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="2"> 				0, 1 </real_array>
+		</dictionary>
+		<string name="tracks/12/type"> "value" </string>
+		<node_path name="tracks/12/path"> "body_tiles/rotation/robo_scale/root/body/head/jaw:transform/rot" </node_path>
+		<int name="tracks/12/interp"> 2 </int>
+		<dictionary name="tracks/12/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="2"> 				1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="2" shared="false">
+				<real> 0 </real>
+				<real> 0 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="2"> 				0, 1 </real_array>
+		</dictionary>
+		<string name="tracks/13/type"> "value" </string>
+		<node_path name="tracks/13/path"> "body_tiles/rotation/robo_scale/root/body:transform/pos" </node_path>
+		<int name="tracks/13/interp"> 2 </int>
+		<dictionary name="tracks/13/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="7"> 				1, 1, 1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="7" shared="false">
+				<vector2> -19.102, 108.264 </vector2>
+				<vector2> -24.8607, 97.5381 </vector2>
+				<vector2> -19.102, 108.264 </vector2>
+				<vector2> -24.8607, 97.5381 </vector2>
+				<vector2> -19.102, 108.264 </vector2>
+				<vector2> -24.8607, 97.5381 </vector2>
+				<vector2> -19.102, 108.264 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="7"> 				-0.3, -0.05, 0.2, 0.45, 0.7, 0.95, 1.2 </real_array>
+		</dictionary>
+		<string name="tracks/14/type"> "value" </string>
+		<node_path name="tracks/14/path"> "body_tiles/rotation/robo_scale/root/body/head:transform/pos" </node_path>
+		<int name="tracks/14/interp"> 2 </int>
+		<dictionary name="tracks/14/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="7"> 				1, 1, 1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="7" shared="false">
+				<vector2> 16.018, -149.543 </vector2>
+				<vector2> 14.3135, -182.331 </vector2>
+				<vector2> 14.6791, -165.046 </vector2>
+				<vector2> 14.3135, -182.331 </vector2>
+				<vector2> 16.018, -149.543 </vector2>
+				<vector2> 14.3135, -182.331 </vector2>
+				<vector2> 16.018, -149.543 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="7"> 				-0.25, 0, 0.25, 0.5, 0.75, 1, 1.25 </real_array>
+		</dictionary>
+		<string name="tracks/15/type"> "value" </string>
+		<node_path name="tracks/15/path"> "body_tiles/rotation/robo_scale/root/hip:transform/pos" </node_path>
+		<int name="tracks/15/interp"> 2 </int>
+		<dictionary name="tracks/15/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<vector2> -24.0019, 123.364 </vector2>
+				<vector2> -24.0019, 150.382 </vector2>
+				<vector2> -24.0019, 123.364 </vector2>
+				<vector2> -24.0019, 150.382 </vector2>
+				<vector2> -24.0019, 123.364 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/16/type"> "value" </string>
+		<node_path name="tracks/16/path"> "body_tiles/rotation/robo_scale/root/body/arm_r:transform/pos" </node_path>
+		<int name="tracks/16/interp"> 2 </int>
+		<dictionary name="tracks/16/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="3"> 				1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="3" shared="false">
+				<vector2> -23.2191, -104.458 </vector2>
+				<vector2> -89.8369, -125.748 </vector2>
+				<vector2> -23.2191, -104.458 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="3"> 				0, 0.5, 1 </real_array>
+		</dictionary>
+		<string name="tracks/17/type"> "value" </string>
+		<node_path name="tracks/17/path"> "body_tiles/rotation/robo_scale/root/body/arm_l:transform/pos" </node_path>
+		<int name="tracks/17/interp"> 2 </int>
+		<dictionary name="tracks/17/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="4"> 				1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="4" shared="false">
+				<vector2> 3.88488, -131.652 </vector2>
+				<vector2> 41.0609, -135.836 </vector2>
+				<vector2> 78.2369, -140.021 </vector2>
+				<vector2> 3.88488, -131.652 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="4"> 				0, 0.25, 0.5, 1 </real_array>
+		</dictionary>
+		<string name="tracks/18/type"> "value" </string>
+		<node_path name="tracks/18/path"> "body_tiles/rotation/robo_scale/root/hip:transform/rot" </node_path>
+		<int name="tracks/18/interp"> 2 </int>
+		<dictionary name="tracks/18/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="2"> 				1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="2" shared="false">
+				<real> 0 </real>
+				<real> 0 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="2"> 				0, 1 </real_array>
+		</dictionary>
+		<string name="tracks/19/type"> "value" </string>
+		<node_path name="tracks/19/path"> "body_tiles/rotation/robo_scale/root:transform/pos" </node_path>
+		<int name="tracks/19/interp"> 2 </int>
+		<dictionary name="tracks/19/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="5"> 				1, 1, 1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="5" shared="false">
+				<vector2> 0, 0 </vector2>
+				<vector2> -1.98608, 33.7632 </vector2>
+				<vector2> 0, 0 </vector2>
+				<vector2> -1.98608, 33.7632 </vector2>
+				<vector2> 0, 0 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="5"> 				0, 0.25, 0.5, 0.75, 1 </real_array>
+		</dictionary>
+		<string name="tracks/20/type"> "value" </string>
+		<node_path name="tracks/20/path"> "body_tiles/rotation/robo_scale/root/body/head:transform/scale" </node_path>
+		<int name="tracks/20/interp"> 2 </int>
+		<dictionary name="tracks/20/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="2"> 				1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="2" shared="false">
+				<vector2> 1, 1 </vector2>
+				<vector2> 1, 1 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="2"> 				0, 1 </real_array>
+		</dictionary>
+		<string name="tracks/21/type"> "value" </string>
+		<node_path name="tracks/21/path"> "body_tiles/rotation/robo_scale/root/hip/leg_r:transform/pos" </node_path>
+		<int name="tracks/21/interp"> 2 </int>
+		<dictionary name="tracks/21/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="3"> 				1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="3" shared="false">
+				<vector2> -39.2345, 48.7582 </vector2>
+				<vector2> -4.02431, 53.1595 </vector2>
+				<vector2> -39.2345, 48.7582 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="3"> 				0, 0.5, 1 </real_array>
+		</dictionary>
+		<string name="tracks/22/type"> "value" </string>
+		<node_path name="tracks/22/path"> "body_tiles/rotation/robo_scale/root/hip/leg_l:transform/pos" </node_path>
+		<int name="tracks/22/interp"> 2 </int>
+		<dictionary name="tracks/22/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="3"> 				1, 1, 1 </real_array>
+			<string> "values" </string>
+			<array  len="3" shared="false">
+				<vector2> 61.5139, 34.4272 </vector2>
+				<vector2> 15.3006, 36.6278 </vector2>
+				<vector2> 61.5139, 34.4272 </vector2>
+			</array>
+			<string> "times" </string>
+			<real_array  len="3"> 				0, 0.5, 1 </real_array>
+		</dictionary>
+		<string name="tracks/23/type"> "value" </string>
+		<node_path name="tracks/23/path"> "body_tiles/rotation/robo_scale/root/body/arm_r/forearm_r/sword:transform/rot" </node_path>
+		<int name="tracks/23/interp"> 1 </int>
+		<dictionary name="tracks/23/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="1"> 				1 </real_array>
+			<string> "values" </string>
+			<array  len="1" shared="false">
+				<real> 0 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="1"> 				0 </real_array>
+		</dictionary>
+		<string name="tracks/24/type"> "value" </string>
+		<node_path name="tracks/24/path"> "body_tiles/rotation/robo_scale/Sprites/head/head_eyes_closed:visibility/visible" </node_path>
+		<int name="tracks/24/interp"> 1 </int>
+		<dictionary name="tracks/24/keys" shared="false">
+			<string> "cont" </string>
+			<bool> False </bool>
+			<string> "transitions" </string>
+			<real_array  len="1"> 				1 </real_array>
+			<string> "values" </string>
+			<array  len="1" shared="false">
+				<bool> False </bool>
+			</array>
+			<string> "times" </string>
+			<real_array  len="1"> 				0 </real_array>
+		</dictionary>
+		<string name="tracks/25/type"> "value" </string>
+		<node_path name="tracks/25/path"> "body_tiles/rotation/robo_scale/Sprites/sword/sword_trail:visibility/opacity" </node_path>
+		<int name="tracks/25/interp"> 1 </int>
+		<dictionary name="tracks/25/keys" shared="false">
+			<string> "cont" </string>
+			<bool> True </bool>
+			<string> "transitions" </string>
+			<real_array  len="1"> 				1 </real_array>
+			<string> "values" </string>
+			<array  len="1" shared="false">
+				<real> 0 </real>
+			</array>
+			<string> "times" </string>
+			<real_array  len="1"> 				0 </real_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

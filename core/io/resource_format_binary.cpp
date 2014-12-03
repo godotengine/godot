@@ -566,11 +566,11 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector2> array;
 			array.resize(len);
 			DVector<Vector2>::Write w = array.write();
-			if(use_real64)
+			if (use_real64 || sizeof(Vector2) != 8)
 			{
 				for(uint32_t idx=0;idx<len;idx++) {
-					w[idx].x=f->get_double();
-					w[idx].y=f->get_double();
+					w[idx].x=f->get_real();
+					w[idx].y=f->get_real();
 				}
 				r_v=array;
 				break;
@@ -603,12 +603,12 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Vector3> array;
 			array.resize(len);
 			DVector<Vector3>::Write w = array.write();
-			if(use_real64)
+			if (use_real64 || sizeof(Vector3) != 12)
 			{
 				for(uint32_t idx=0;idx<len;idx++) {
-					w[idx].x=f->get_double();
-					w[idx].y=f->get_double();
-					w[idx].z=f->get_double();
+					w[idx].x=f->get_real();
+					w[idx].y=f->get_real();
+					w[idx].z=f->get_real();
 				}
 				r_v=array;
 				break;
@@ -641,13 +641,13 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 			DVector<Color> array;
 			array.resize(len);
 			DVector<Color>::Write w = array.write();
-			if(use_real64)
+			if (use_real64 || sizeof(Color) != 16)
 			{
 				for(uint32_t idx=0;idx<len;idx++) {
-					w[idx].r=f->get_double();
-					w[idx].g=f->get_double();
-					w[idx].b=f->get_double();
-					w[idx].a=f->get_double();
+					w[idx].r=f->get_real();
+					w[idx].g=f->get_real();
+					w[idx].b=f->get_real();
+					w[idx].a=f->get_real();
 				}
 				r_v=array;
 				break;

@@ -1,0 +1,256 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Shipping|Win32">
+      <Configuration>Shipping</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{70555339-D0FD-4778-B2C7-9F427C04EDAB}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;..\..\modules\spine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ENABLED;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;MODULE_GDSCRIPT_ENABLED;MODULE_GRIDMAP_ENABLED;MODULE_LUASCRIPT_ENABLED;MODULE_DIGEST_ENABLED;MODULE_SDK_ENABLED;MODULE_SPINE_ENABLED;LUASCRIPT_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;..\..\modules\spine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;MODULE_GDSCRIPT_ENABLED;MODULE_GRIDMAP_ENABLED;MODULE_LUASCRIPT_ENABLED;MODULE_DIGEST_ENABLED;MODULE_SDK_ENABLED;MODULE_SPINE_ENABLED;LUASCRIPT_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;..\..\modules\spine\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;MODULE_GDSCRIPT_ENABLED;MODULE_GRIDMAP_ENABLED;MODULE_LUASCRIPT_ENABLED;MODULE_DIGEST_ENABLED;MODULE_SDK_ENABLED;MODULE_SPINE_ENABLED;LUASCRIPT_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\modules\digest\register_types.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_digest.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_digest.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_digest.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\snappy\csnappy_compress.cpp" />
+    <ClCompile Include="..\..\modules\digest\snappy\csnappy_decompress.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_compiler.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_editor.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_functions.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_parser.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_pretty_print.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_script.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\gd_tokenizer.cpp" />
+    <ClCompile Include="..\..\modules\gdscript\register_types.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_gdscript.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_gdscript.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_gdscript.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\gridmap\grid_map.cpp" />
+    <ClCompile Include="..\..\modules\gridmap\grid_map_editor_plugin.cpp" />
+    <ClCompile Include="..\..\modules\gridmap\register_types.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_gridmap.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_gridmap.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_gridmap.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\luascript\lua_editor.cpp" />
+    <ClCompile Include="..\..\modules\luascript\lua_instance.cpp" />
+    <ClCompile Include="..\..\modules\luascript\lua_script.cpp" />
+    <ClCompile Include="..\..\modules\luascript\lua_variant.cpp" />
+    <ClCompile Include="..\..\modules\luascript\register_types.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_luascript.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_luascript.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_luascript.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\register_module_types.cpp" />
+    <ClCompile Include="..\..\modules\sdk\platform.cpp" />
+    <ClCompile Include="..\..\modules\sdk\register_types.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_sdk.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_sdk.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_sdk.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\register_types.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_spine.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_spine.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_spine.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\spine\spine.cpp" />
+    <ClCompile Include="..\..\modules\spine\spine_batcher.cpp" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Animation.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\AnimationState.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\AnimationStateData.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Atlas.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\AtlasAttachmentLoader.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Attachment.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\AttachmentLoader.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Bone.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\BoneData.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\BoundingBoxAttachment.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Event.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\EventData.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\extension.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\IkConstraint.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\IkConstraintData.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Json.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\MeshAttachment.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\RegionAttachment.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Skeleton.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\SkeletonBounds.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\SkeletonData.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\SkeletonJson.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Skin.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\SkinnedMeshAttachment.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\Slot.c" />
+    <ClCompile Include="..\..\modules\spine\src\spine\SlotData.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\modules\digest\register_types.h" />
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy.h" />
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy_compat.h" />
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy_internal.h" />
+    <ClInclude Include="..\..\modules\digest\snappy\csnappy_internal_userspace.h" />
+    <ClInclude Include="..\..\modules\gdscript\gd_compiler.h" />
+    <ClInclude Include="..\..\modules\gdscript\gd_functions.h" />
+    <ClInclude Include="..\..\modules\gdscript\gd_parser.h" />
+    <ClInclude Include="..\..\modules\gdscript\gd_pretty_print.h" />
+    <ClInclude Include="..\..\modules\gdscript\gd_script.h" />
+    <ClInclude Include="..\..\modules\gdscript\gd_tokenizer.h" />
+    <ClInclude Include="..\..\modules\gdscript\register_types.h" />
+    <ClInclude Include="..\..\modules\gridmap\grid_map.h" />
+    <ClInclude Include="..\..\modules\gridmap\grid_map_editor_plugin.h" />
+    <ClInclude Include="..\..\modules\gridmap\register_types.h" />
+    <ClInclude Include="..\..\modules\luascript\lua_script.h" />
+    <ClInclude Include="..\..\modules\luascript\register_types.h" />
+    <ClInclude Include="..\..\modules\register_module_types.h" />
+    <ClInclude Include="..\..\modules\sdk\platform.h" />
+    <ClInclude Include="..\..\modules\sdk\register_types.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Animation.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\AnimationState.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\AnimationStateData.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Atlas.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\AtlasAttachmentLoader.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Attachment.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\AttachmentLoader.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Bone.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\BoneData.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\BoundingBoxAttachment.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Event.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\EventData.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\extension.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\IkConstraint.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\IkConstraintData.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\MeshAttachment.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\RegionAttachment.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Skeleton.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\SkeletonBounds.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\SkeletonData.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\SkeletonJson.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Skin.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\SkinnedMeshAttachment.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\Slot.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\SlotData.h" />
+    <ClInclude Include="..\..\modules\spine\include\spine\spine.h" />
+    <ClInclude Include="..\..\modules\spine\register_types.h" />
+    <ClInclude Include="..\..\modules\spine\spine.h" />
+    <ClInclude Include="..\..\modules\spine\spine_batcher.h" />
+    <ClInclude Include="..\..\modules\spine\src\spine\Json.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

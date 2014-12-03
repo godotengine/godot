@@ -1,0 +1,405 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Shipping|Win32">
+      <Configuration>Shipping</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{80A78AE6-934F-4926-974C-CAFA5BD4A497}</ProjectGuid>
+    <RootNamespace>godot</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <OutDir>bin\$(Configuration)\</OutDir>
+    <IntDir>obj\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;DEBUG_MEMORY_ENABLED;SCI_NAMESPACE;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>StackFrameRuntimeCheck</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\core;..\..\core\math;..\..\tools;..\..\drivers;..\..;..\..\platform\windows;..\..\platform\windows\include;..\..\tools\freetype;..\..\tools\freetype\freetype\include;..\..\drivers\builtin_zlib\zlib;..\..\platform\windows\vorbis;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;FREETYPE_ENABLED;DEBUG_ENABLED;D3D_DEBUG_INFO;WINDOWS_ENABLED;RTAUDIO_ENABLED;TYPED_METHOD_BIND;GLES2_ENABLED;GLES1_ENABLED;GLEW_ENABLED;MSVC;MUSEPACK_ENABLED;OLD_SCENE_FORMAT_ENABLED;SQUISH_ENABLED;VORBIS_ENABLED;THEORA_ENABLED;PNG_ENABLED;DDS_ENABLED;PVR_ENABLED;JPG_ENABLED;WEBP_ENABLED;SPEEX_ENABLED;TOOLS_ENABLED;GDSCRIPT_ENABLED;MINIZIP_ENABLED;XML_ENABLED;REAL_T_IS_DOUBLE;OPENSSL_ENABLED;OPENSSL_NO_ASM;OPENSSL_THREADS;L_ENDIAN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).pdb</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4244;4996;4291;4305;4800;4018;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib>
+      <OutputFile>lib\$(Configuration)\$(ProjectName).lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\core\allocators.h" />
+    <ClInclude Include="..\..\core\array.h" />
+    <ClInclude Include="..\..\core\balloon_allocator.h" />
+    <ClInclude Include="..\..\core\bind\core_bind.h" />
+    <ClInclude Include="..\..\core\color.h" />
+    <ClInclude Include="..\..\core\command_queue_mt.h" />
+    <ClInclude Include="..\..\core\compressed_translation.h" />
+    <ClInclude Include="..\..\core\core_string_names.h" />
+    <ClInclude Include="..\..\core\dictionary.h" />
+    <ClInclude Include="..\..\core\dvector.h" />
+    <ClInclude Include="..\..\core\error_list.h" />
+    <ClInclude Include="..\..\core\error_macros.h" />
+    <ClInclude Include="..\..\core\event_queue.h" />
+    <ClInclude Include="..\..\core\fpstr.h" />
+    <ClInclude Include="..\..\core\func_ref.h" />
+    <ClInclude Include="..\..\core\globals.h" />
+    <ClInclude Include="..\..\core\global_constants.h" />
+    <ClInclude Include="..\..\core\hashfuncs.h" />
+    <ClInclude Include="..\..\core\hash_map.h" />
+    <ClInclude Include="..\..\core\helper\value_evaluator.h" />
+    <ClInclude Include="..\..\core\image.h" />
+    <ClInclude Include="..\..\core\input_map.h" />
+    <ClInclude Include="..\..\core\int_types.h" />
+    <ClInclude Include="..\..\core\io\aes256.h" />
+    <ClInclude Include="..\..\core\io\base64.h" />
+    <ClInclude Include="..\..\core\io\compression.h" />
+    <ClInclude Include="..\..\core\io\config_file.h" />
+    <ClInclude Include="..\..\core\io\crypt.h" />
+    <ClInclude Include="..\..\core\io\fastlz.h" />
+    <ClInclude Include="..\..\core\io\file_access_buffered.h" />
+    <ClInclude Include="..\..\core\io\file_access_buffered_fa.h" />
+    <ClInclude Include="..\..\core\io\file_access_compressed.h" />
+    <ClInclude Include="..\..\core\io\file_access_encrypted.h" />
+    <ClInclude Include="..\..\core\io\file_access_memory.h" />
+    <ClInclude Include="..\..\core\io\file_access_network.h" />
+    <ClInclude Include="..\..\core\io\file_access_pack.h" />
+    <ClInclude Include="..\..\core\io\file_access_zip.h" />
+    <ClInclude Include="..\..\core\io\http_client.h" />
+    <ClInclude Include="..\..\core\io\image_loader.h" />
+    <ClInclude Include="..\..\core\io\ioapi.h" />
+    <ClInclude Include="..\..\core\io\ip.h" />
+    <ClInclude Include="..\..\core\io\ip_address.h" />
+    <ClInclude Include="..\..\core\io\json.h" />
+    <ClInclude Include="..\..\core\io\marshalls.h" />
+    <ClInclude Include="..\..\core\io\md5.h" />
+    <ClInclude Include="..\..\core\io\packet_peer.h" />
+    <ClInclude Include="..\..\core\io\packet_peer_udp.h" />
+    <ClInclude Include="..\..\core\io\resource_format_binary.h" />
+    <ClInclude Include="..\..\core\io\resource_format_xml.h" />
+    <ClInclude Include="..\..\core\io\resource_loader.h" />
+    <ClInclude Include="..\..\core\io\resource_saver.h" />
+    <ClInclude Include="..\..\core\io\stream_peer.h" />
+    <ClInclude Include="..\..\core\io\stream_peer_ssl.h" />
+    <ClInclude Include="..\..\core\io\stream_peer_tcp.h" />
+    <ClInclude Include="..\..\core\io\tcp_server.h" />
+    <ClInclude Include="..\..\core\io\translation_loader_po.h" />
+    <ClInclude Include="..\..\core\io\unzip.h" />
+    <ClInclude Include="..\..\core\io\xml_parser.h" />
+    <ClInclude Include="..\..\core\io\zip.h" />
+    <ClInclude Include="..\..\core\io\zip_io.h" />
+    <ClInclude Include="..\..\core\list.h" />
+    <ClInclude Include="..\..\core\map.h" />
+    <ClInclude Include="..\..\core\math\aabb.h" />
+    <ClInclude Include="..\..\core\math\bezier_curve.h" />
+    <ClInclude Include="..\..\core\math\bsp_tree.h" />
+    <ClInclude Include="..\..\core\math\camera_matrix.h" />
+    <ClInclude Include="..\..\core\math\face3.h" />
+    <ClInclude Include="..\..\core\math\geometry.h" />
+    <ClInclude Include="..\..\core\math\math_2d.h" />
+    <ClInclude Include="..\..\core\math\math_defs.h" />
+    <ClInclude Include="..\..\core\math\math_funcs.h" />
+    <ClInclude Include="..\..\core\math\matrix3.h" />
+    <ClInclude Include="..\..\core\math\octree.h" />
+    <ClInclude Include="..\..\core\math\plane.h" />
+    <ClInclude Include="..\..\core\math\quat.h" />
+    <ClInclude Include="..\..\core\math\quick_hull.h" />
+    <ClInclude Include="..\..\core\math\transform.h" />
+    <ClInclude Include="..\..\core\math\triangle_mesh.h" />
+    <ClInclude Include="..\..\core\math\triangulate.h" />
+    <ClInclude Include="..\..\core\math\vector3.h" />
+    <ClInclude Include="..\..\core\message_queue.h" />
+    <ClInclude Include="..\..\core\method_bind.h" />
+    <ClInclude Include="..\..\core\multi_bucket_array.h" />
+    <ClInclude Include="..\..\core\object.h" />
+    <ClInclude Include="..\..\core\object_type_db.h" />
+    <ClInclude Include="..\..\core\os\copymem.h" />
+    <ClInclude Include="..\..\core\os\dir_access.h" />
+    <ClInclude Include="..\..\core\os\file_access.h" />
+    <ClInclude Include="..\..\core\os\input.h" />
+    <ClInclude Include="..\..\core\os\input_event.h" />
+    <ClInclude Include="..\..\core\os\keyboard.h" />
+    <ClInclude Include="..\..\core\os\main_loop.h" />
+    <ClInclude Include="..\..\core\os\memory.h" />
+    <ClInclude Include="..\..\core\os\memory_pool_dynamic.h" />
+    <ClInclude Include="..\..\core\os\memory_pool_dynamic_prealloc.h" />
+    <ClInclude Include="..\..\core\os\memory_pool_dynamic_static.h" />
+    <ClInclude Include="..\..\core\os\memory_pool_static.h" />
+    <ClInclude Include="..\..\core\os\mutex.h" />
+    <ClInclude Include="..\..\core\os\os.h" />
+    <ClInclude Include="..\..\core\os\pc_joystick_map.h" />
+    <ClInclude Include="..\..\core\os\semaphore.h" />
+    <ClInclude Include="..\..\core\os\shell.h" />
+    <ClInclude Include="..\..\core\os\thread.h" />
+    <ClInclude Include="..\..\core\os\thread_dummy.h" />
+    <ClInclude Include="..\..\core\os\thread_safe.h" />
+    <ClInclude Include="..\..\core\packed_data_container.h" />
+    <ClInclude Include="..\..\core\pair.h" />
+    <ClInclude Include="..\..\core\path_db.h" />
+    <ClInclude Include="..\..\core\path_remap.h" />
+    <ClInclude Include="..\..\core\pool_allocator.h" />
+    <ClInclude Include="..\..\core\print_string.h" />
+    <ClInclude Include="..\..\core\profiler.h" />
+    <ClInclude Include="..\..\core\reference.h" />
+    <ClInclude Include="..\..\core\ref_ptr.h" />
+    <ClInclude Include="..\..\core\register_core_types.h" />
+    <ClInclude Include="..\..\core\resource.h" />
+    <ClInclude Include="..\..\core\res_ptr.h" />
+    <ClInclude Include="..\..\core\rid.h" />
+    <ClInclude Include="..\..\core\ring_buffer.h" />
+    <ClInclude Include="..\..\core\safe_refcount.h" />
+    <ClInclude Include="..\..\core\script_debugger_local.h" />
+    <ClInclude Include="..\..\core\script_debugger_remote.h" />
+    <ClInclude Include="..\..\core\script_language.h" />
+    <ClInclude Include="..\..\core\self_list.h" />
+    <ClInclude Include="..\..\core\set.h" />
+    <ClInclude Include="..\..\core\simple_type.h" />
+    <ClInclude Include="..\..\core\sort.h" />
+    <ClInclude Include="..\..\core\string_db.h" />
+    <ClInclude Include="..\..\core\translation.h" />
+    <ClInclude Include="..\..\core\typedefs.h" />
+    <ClInclude Include="..\..\core\ucaps.h" />
+    <ClInclude Include="..\..\core\undo_redo.h" />
+    <ClInclude Include="..\..\core\ustring.h" />
+    <ClInclude Include="..\..\core\variant.h" />
+    <ClInclude Include="..\..\core\variant_call_bind.h" />
+    <ClInclude Include="..\..\core\vector.h" />
+    <ClInclude Include="..\..\core\version.h" />
+    <ClInclude Include="..\..\core\vmap.h" />
+    <ClInclude Include="..\..\core\vset.h" />
+    <ClInclude Include="..\..\platform\android\globals\global_defaults.h" />
+    <ClInclude Include="..\..\platform\iphone\globals\global_defaults.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\core\array.cpp" />
+    <ClCompile Include="..\..\core\bind\core_bind.cpp" />
+    <ClCompile Include="..\..\core\color.cpp" />
+    <ClCompile Include="..\..\core\command_queue_mt.cpp" />
+    <ClCompile Include="..\..\core\compressed_translation.cpp" />
+    <ClCompile Include="..\..\core\core_string_names.cpp" />
+    <ClCompile Include="..\..\core\dictionary.cpp" />
+    <ClCompile Include="..\..\core\dvector.cpp" />
+    <ClCompile Include="..\..\core\error_macros.cpp" />
+    <ClCompile Include="..\..\core\event_queue.cpp" />
+    <ClCompile Include="..\..\core\fpstr.cpp" />
+    <ClCompile Include="..\..\core\func_ref.cpp" />
+    <ClCompile Include="..\..\core\globals.cpp" />
+    <ClCompile Include="..\..\core\global_constants.cpp" />
+    <ClCompile Include="..\..\core\global_defaults.cpp" />
+    <ClCompile Include="..\..\core\image.cpp" />
+    <ClCompile Include="..\..\core\image_quantize.cpp" />
+    <ClCompile Include="..\..\core\input_map.cpp" />
+    <ClCompile Include="..\..\core\io\aes256.cpp" />
+    <ClCompile Include="..\..\core\io\base64.c" />
+    <ClCompile Include="..\..\core\io\compression.cpp" />
+    <ClCompile Include="..\..\core\io\config_file.cpp" />
+    <ClCompile Include="..\..\core\io\fastlz.c" />
+    <ClCompile Include="..\..\core\io\file_access_buffered.cpp" />
+    <ClCompile Include="..\..\core\io\file_access_compressed.cpp" />
+    <ClCompile Include="..\..\core\io\file_access_encrypted.cpp" />
+    <ClCompile Include="..\..\core\io\file_access_memory.cpp" />
+    <ClCompile Include="..\..\core\io\file_access_network.cpp" />
+    <ClCompile Include="..\..\core\io\file_access_pack.cpp" />
+    <ClCompile Include="..\..\core\io\file_access_zip.cpp" />
+    <ClCompile Include="..\..\core\io\http_client.cpp" />
+    <ClCompile Include="..\..\core\io\image_loader.cpp" />
+    <ClCompile Include="..\..\core\io\ioapi.c" />
+    <ClCompile Include="..\..\core\io\ip.cpp" />
+    <ClCompile Include="..\..\core\io\ip_address.cpp" />
+    <ClCompile Include="..\..\core\io\json.cpp" />
+    <ClCompile Include="..\..\core\io\marshalls.cpp" />
+    <ClCompile Include="..\..\core\io\md5.cpp" />
+    <ClCompile Include="..\..\core\io\packet_peer.cpp" />
+    <ClCompile Include="..\..\core\io\packet_peer_udp.cpp" />
+    <ClCompile Include="..\..\core\io\resource_format_binary.cpp" />
+    <ClCompile Include="..\..\core\io\resource_format_xml.cpp" />
+    <ClCompile Include="..\..\core\io\resource_loader.cpp" />
+    <ClCompile Include="..\..\core\io\resource_saver.cpp" />
+    <ClCompile Include="..\..\core\io\stream_peer.cpp" />
+    <ClCompile Include="..\..\core\io\stream_peer_ssl.cpp" />
+    <ClCompile Include="..\..\core\io\stream_peer_tcp.cpp" />
+    <ClCompile Include="..\..\core\io\tcp_server.cpp" />
+    <ClCompile Include="..\..\core\io\translation_loader_po.cpp" />
+    <ClCompile Include="..\..\core\io\unzip.c" />
+    <ClCompile Include="..\..\core\io\xml_parser.cpp" />
+    <ClCompile Include="..\..\core\io\zip.c" />
+    <ClCompile Include="..\..\core\math\aabb.cpp" />
+    <ClCompile Include="..\..\core\math\bezier_curve.cpp" />
+    <ClCompile Include="..\..\core\math\bsp_tree.cpp" />
+    <ClCompile Include="..\..\core\math\camera_matrix.cpp" />
+    <ClCompile Include="..\..\core\math\face3.cpp" />
+    <ClCompile Include="..\..\core\math\geometry.cpp" />
+    <ClCompile Include="..\..\core\math\math_2d.cpp" />
+    <ClCompile Include="..\..\core\math\math_defs.cpp" />
+    <ClCompile Include="..\..\core\math\math_funcs.cpp" />
+    <ClCompile Include="..\..\core\math\matrix3.cpp" />
+    <ClCompile Include="..\..\core\math\plane.cpp" />
+    <ClCompile Include="..\..\core\math\quat.cpp" />
+    <ClCompile Include="..\..\core\math\quick_hull.cpp" />
+    <ClCompile Include="..\..\core\math\transform.cpp" />
+    <ClCompile Include="..\..\core\math\triangle_mesh.cpp" />
+    <ClCompile Include="..\..\core\math\triangulate.cpp" />
+    <ClCompile Include="..\..\core\math\vector3.cpp" />
+    <ClCompile Include="..\..\core\message_queue.cpp" />
+    <ClCompile Include="..\..\core\method_bind.cpp" />
+    <ClCompile Include="..\..\core\object.cpp" />
+    <ClCompile Include="..\..\core\object_type_db.cpp" />
+    <ClCompile Include="..\..\core\os\copymem.cpp" />
+    <ClCompile Include="..\..\core\os\dir_access.cpp" />
+    <ClCompile Include="..\..\core\os\file_access.cpp" />
+    <ClCompile Include="..\..\core\os\input.cpp" />
+    <ClCompile Include="..\..\core\os\input_event.cpp" />
+    <ClCompile Include="..\..\core\os\keyboard.cpp" />
+    <ClCompile Include="..\..\core\os\main_loop.cpp" />
+    <ClCompile Include="..\..\core\os\memory.cpp" />
+    <ClCompile Include="..\..\core\os\memory_pool_dynamic.cpp" />
+    <ClCompile Include="..\..\core\os\memory_pool_dynamic_prealloc.cpp" />
+    <ClCompile Include="..\..\core\os\memory_pool_dynamic_static.cpp" />
+    <ClCompile Include="..\..\core\os\memory_pool_static.cpp" />
+    <ClCompile Include="..\..\core\os\mutex.cpp" />
+    <ClCompile Include="..\..\core\os\os.cpp" />
+    <ClCompile Include="..\..\core\os\semaphore.cpp" />
+    <ClCompile Include="..\..\core\os\shell.cpp" />
+    <ClCompile Include="..\..\core\os\thread.cpp" />
+    <ClCompile Include="..\..\core\os\thread_dummy.cpp" />
+    <ClCompile Include="..\..\core\os\thread_safe.cpp" />
+    <ClCompile Include="..\..\core\packed_data_container.cpp" />
+    <ClCompile Include="..\..\core\pair.cpp" />
+    <ClCompile Include="..\..\core\path_db.cpp" />
+    <ClCompile Include="..\..\core\path_remap.cpp" />
+    <ClCompile Include="..\..\core\pool_allocator.cpp" />
+    <ClCompile Include="..\..\core\print_string.cpp" />
+    <ClCompile Include="..\..\core\profiler.cpp" />
+    <ClCompile Include="..\..\core\reference.cpp" />
+    <ClCompile Include="..\..\core\ref_ptr.cpp" />
+    <ClCompile Include="..\..\core\register_core_types.cpp" />
+    <ClCompile Include="..\..\core\resource.cpp" />
+    <ClCompile Include="..\..\core\res_ptr.cpp" />
+    <ClCompile Include="..\..\core\rid.cpp" />
+    <ClCompile Include="..\..\core\safe_refcount.cpp" />
+    <ClCompile Include="..\..\core\script_debugger_debugger.cpp" />
+    <ClCompile Include="..\..\core\script_debugger_local.cpp" />
+    <ClCompile Include="..\..\core\script_debugger_remote.cpp" />
+    <ClCompile Include="..\..\core\script_encryption_key.cpp" />
+    <ClCompile Include="..\..\core\script_language.cpp" />
+    <ClCompile Include="..\..\core\string_db.cpp" />
+    <ClCompile Include="..\..\core\translation.cpp" />
+    <ClCompile Include="..\..\core\undo_redo.cpp" />
+    <ClCompile Include="..\..\core\ustring.cpp" />
+    <ClCompile Include="..\..\core\variant.cpp" />
+    <ClCompile Include="..\..\core\variant_call.cpp" />
+    <ClCompile Include="..\..\core\variant_op.cpp" />
+    <ClCompile Include="..\..\core\vmap.cpp" />
+    <ClCompile Include="..\..\core\vset.cpp" />
+    <ClCompile Include="..\..\platform\android\globals\global_defaults.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)global_defaults_android.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)global_defaults_android.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)global_defaults_android.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\iphone\globals\global_defaults.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)global_defaults_iphone.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)global_defaults_iphone.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)global_defaults_iphone.obj</ObjectFileName>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\core\method_bind.inc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

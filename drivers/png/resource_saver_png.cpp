@@ -208,6 +208,7 @@ Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
 	}
 
 	png_write_end(png_ptr, NULL);
+	png_destroy_write_struct(&png_ptr, &info_ptr);
 	memdelete(f);
 
 	/* cleanup heap allocation */

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="PackedScene" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.3917-beta1">
+	<main_resource>
+		<dictionary name="_bundled" shared="false">
+			<string> "names" </string>
+			<string_array  len="28">
+				<string> "spine" </string>
+				<string> "Node2D" </string>
+				<string> "_import_path" </string>
+				<string> "visibility/visible" </string>
+				<string> "visibility/opacity" </string>
+				<string> "visibility/self_opacity" </string>
+				<string> "visibility/behind_parent" </string>
+				<string> "transform/pos" </string>
+				<string> "transform/rot" </string>
+				<string> "transform/scale" </string>
+				<string> "__meta__" </string>
+				<string> "hero" </string>
+				<string> "Spine" </string>
+				<string> "playback/speed" </string>
+				<string> "playback/active" </string>
+				<string> "debug/bones" </string>
+				<string> "debug/slots" </string>
+				<string> "modulate" </string>
+				<string> "path" </string>
+				<string> "playback/play" </string>
+				<string> "playback/loop" </string>
+				<string> "playback/skin" </string>
+				<string> "here-mesh" </string>
+				<string> "raptor" </string>
+				<string> "spineboy" </string>
+				<string> "goblin" </string>
+				<string> "gobline-girl" </string>
+				<string> "powerup" </string>
+			</string_array>
+			<string> "version" </string>
+			<int> 1 </int>
+			<string> "conn_count" </string>
+			<int> 0 </int>
+			<string> "node_count" </string>
+			<int> 8 </int>
+			<string> "variants" </string>
+			<array  len="36" shared="false">
+				<node_path> "" </node_path>
+				<bool> True </bool>
+				<real> 1 </real>
+				<bool> False </bool>
+				<vector2> 0, 0 </vector2>
+				<real> 0 </real>
+				<vector2> 1, 1 </vector2>
+				<dictionary  shared="false">
+					<string> "__editor_plugin_states__" </string>
+					<dictionary  shared="false">
+						<string> "2D" </string>
+						<dictionary  shared="false">
+							<string> "pixel_snap" </string>
+							<bool> False </bool>
+							<string> "zoom" </string>
+							<real> 0.9025 </real>
+							<string> "use_snap" </string>
+							<bool> False </bool>
+							<string> "ofs" </string>
+							<vector2> -259.536, -104.432 </vector2>
+							<string> "snap" </string>
+							<int> 10 </int>
+						</dictionary>
+						<string> "3D" </string>
+						<dictionary  shared="false">
+							<string> "deflight_rot_y" </string>
+							<real> 0.628319 </real>
+							<string> "zfar" </string>
+							<real> 500 </real>
+							<string> "fov" </string>
+							<real> 45 </real>
+							<string> "viewports" </string>
+							<array  len="4" shared="false">
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> True </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+								<dictionary  shared="false">
+									<string> "distance" </string>
+									<real> 4 </real>
+									<string> "x_rot" </string>
+									<real> 0 </real>
+									<string> "y_rot" </string>
+									<real> 0 </real>
+									<string> "listener" </string>
+									<bool> False </bool>
+									<string> "use_environment" </string>
+									<bool> False </bool>
+									<string> "use_orthogonal" </string>
+									<bool> False </bool>
+									<string> "pos" </string>
+									<vector3> 0, 0, 0 </vector3>
+								</dictionary>
+							</array>
+							<string> "viewport_mode" </string>
+							<int> 1 </int>
+							<string> "default_light" </string>
+							<bool> True </bool>
+							<string> "ambient_light_color" </string>
+							<color> 0.15, 0.15, 0.15, 1 </color>
+							<string> "show_grid" </string>
+							<bool> True </bool>
+							<string> "show_origin" </string>
+							<bool> True </bool>
+							<string> "znear" </string>
+							<real> 0.1 </real>
+							<string> "default_srgb" </string>
+							<bool> False </bool>
+							<string> "deflight_rot_x" </string>
+							<real> 0.942478 </real>
+						</dictionary>
+					</dictionary>
+					<string> "__editor_run_settings__" </string>
+					<dictionary  shared="false">
+						<string> "custom_args" </string>
+						<string> "-l $scene" </string>
+						<string> "run_mode" </string>
+						<int> 0 </int>
+					</dictionary>
+					<string> "__editor_plugin_screen__" </string>
+					<string> "2D" </string>
+				</dictionary>
+				<vector2> 120, 349 </vector2>
+				<color> 1, 1, 1, 1 </color>
+				<string> "res://spine/hero/hero.json" </string>
+				<string> "Walk" </string>
+				<string> "White" </string>
+				<vector2> 657.139, 365.267 </vector2>
+				<vector2> -1, 1 </vector2>
+				<string> "res://spine/hero/hero-mesh.json" </string>
+				<string> "Run" </string>
+				<vector2> 359.523, 544.818 </vector2>
+				<vector2> 0.3, 0.3 </vector2>
+				<string> "res://spine/raptor/raptor.json" </string>
+				<string> "walk" </string>
+				<string> "" </string>
+				<vector2> 672.833, 579.012 </vector2>
+				<string> "res://spine/spineboy/spineboy.json" </string>
+				<string> "run" </string>
+				<vector2> 169, 573 </vector2>
+				<vector2> 0.5, 0.6 </vector2>
+				<string> "res://spine/goblins/goblins-ffd.json" </string>
+				<string> "goblin" </string>
+				<vector2> 67.7961, 569.584 </vector2>
+				<vector2> 0.5, 0.5 </vector2>
+				<string> "goblingirl" </string>
+				<vector2> 333.518, 238.227 </vector2>
+				<vector2> 0.5, 0.5 </vector2>
+				<string> "res://spine/powerup/powerup.json" </string>
+				<string> "animation" </string>
+			</array>
+			<string> "nodes" </string>
+			<int_array  len="312"> 				-1, -1, 1, 0, -1, 9, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 0, 0, 0, 12, 11, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 8, 8, 5, 9, 6, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 10, 19, 11, 20, 1, 21, 12, 0, 0, 0, 12, 22, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 13, 8, 5, 9, 14, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 15, 19, 16, 20, 1, 21, 12, 0, 0, 0, 12, 23, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 17, 8, 5, 9, 18, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 19, 19, 20, 20, 1, 21, 21, 0, 0, 0, 12, 24, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 22, 8, 5, 9, 18, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 23, 19, 24, 20, 1, 21, 21, 0, 0, 0, 12, 25, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 25, 8, 5, 9, 26, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 27, 19, 20, 20, 1, 21, 28, 0, 0, 0, 12, 26, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 29, 8, 5, 9, 30, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 27, 19, 20, 20, 1, 21, 31, 0, 0, 0, 12, 27, -1, 17, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 32, 8, 5, 9, 33, 13, 2, 14, 1, 15, 3, 16, 3, 17, 9, 18, 34, 19, 35, 20, 1, 21, 21, 0 </int_array>
+			<string> "conns" </string>
+			<int_array  len="0"> 				 </int_array>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

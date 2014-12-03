@@ -118,6 +118,10 @@ Vector<uint8_t> EditorExportResources::custom_export(String& p_path,const Ref<Ed
 
 		FileAccess *f=FileAccess::open(p_path,FileAccess::READ);
 		ERR_FAIL_COND_V( f == NULL, Vector<uint8_t>() );
+		// ignore spine json file
+		if (f->file_exists(p_path.replace(".json", ".atlas")))
+			return Vector<uint8_t>();
+
 		String text;
 		String l="";
 
