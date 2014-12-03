@@ -61,6 +61,7 @@ struct ColladaImport {
 	Color ambient;
 	bool found_directional;
 	bool force_make_tangents;
+	bool apply_mesh_xform_to_vertices;
 	float bake_fps;
 
 
@@ -69,6 +70,7 @@ struct ColladaImport {
 	Map<String, Ref<Mesh> > mesh_cache;
 	Map<String, Ref<Curve3D> > curve_cache;
 	Map<String, Ref<Material> > material_cache;
+	Map<Collada::Node*,Skeleton*> skeleton_map;
 
 	Map< Skeleton*, Map< String, int> > skeleton_bone_map;
 
@@ -77,6 +79,7 @@ struct ColladaImport {
 	Map<String,bool> bones_with_animation;
 
 	Error _populate_skeleton(Skeleton *p_skeleton,Collada::Node *p_node, int &r_bone, int p_parent);
+	Error _create_scene_skeletons(Collada::Node *p_node);
 	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
 	Error _create_resources(Collada::Node *p_node);
 	Error _create_material(const String& p_material);
@@ -96,6 +99,7 @@ struct ColladaImport {
 		found_ambient=false;
 		found_directional=false;
 		force_make_tangents=false;
+		apply_mesh_xform_to_vertices=true;
 		bake_fps=15;
 
 	}
@@ -110,7 +114,7 @@ Error ColladaImport::_populate_skeleton(Skeleton *p_skeleton,Collada::Node *p_no
 
 	Collada::NodeJoint *joint = static_cast<Collada::NodeJoint*>(p_node);
 
-
+	print_line("populating joint "+joint->name);
 	p_skeleton->add_bone(p_node->name);
 	if (p_parent>=0)
 		p_skeleton->set_bone_parent(r_bone,p_parent);
@@ -169,6 +173,34 @@ void ColladaImport::_pre_process_lights(Collada::Node *p_node) {
 	for(int i=0;i<p_node->children.size();i++)
 		_pre_process_lights(p_node->children[i]);
 }
+
+Error ColladaImport::_create_scene_skeletons(Collada::Node *p_node) {
+
+
+	if (p_node->type==Collada::Node::TYPE_SKELETON) {
+
+		Skeleton *sk = memnew( Skeleton );
+		int bone = 0;
+
+		for(int i=0;i<p_node->children.size();i++) {
+
+			_populate_skeleton(sk,p_node->children[i],bone,-1);
+		}
+		sk->localize_rests(); //after creating skeleton, rests must be localized...!
+		skeleton_map[p_node]=sk;
+	}
+
+
+	for(int i=0;i<p_node->children.size();i++) {
+
+		Error err = _create_scene_skeletons(p_node->children[i]);
+		if (err)
+			return err;
+	}
+	return OK;
+
+}
+
 
 Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
@@ -297,15 +329,8 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 		} break;
 		case Collada::Node::TYPE_SKELETON: {
 
-			Skeleton *sk = memnew( Skeleton );
-			int bone = 0;
-
-			for(int i=0;i<p_node->children.size();i++) {
-
-				_populate_skeleton(sk,p_node->children[i],bone,-1);
-			}
-			sk->localize_rests(); //after creating skeleton, rests must be localized...!
-
+			ERR_FAIL_COND_V(!skeleton_map.has(p_node),ERR_CANT_CREATE);
+			Skeleton *sk = skeleton_map[p_node];
 			node=sk;
 		} break;
 
@@ -1502,6 +1527,9 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					ERR_FAIL_COND_V( skeletons.empty(), ERR_INVALID_DATA );
 
 					String skname = skeletons[0];
+					if (!node_map.has(skname)) {
+						print_line("no node for skeleton "+skname);
+					}
 					ERR_FAIL_COND_V( !node_map.has(skname), ERR_INVALID_DATA );
 					NodeMap nmsk = node_map[skname];
 					Skeleton *sk = nmsk.node->cast_to<Skeleton>();
@@ -1518,8 +1546,12 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 						meshid=morph->mesh;
 					}
 
-					apply_xform=collada.fix_transform(p_node->default_transform);
-					node->set_transform(Transform());
+					if (apply_mesh_xform_to_vertices) {
+						apply_xform=collada.fix_transform(p_node->default_transform);
+						node->set_transform(Transform());
+					} else {
+						apply_xform=Transform();
+					}
 
 					Collada::SkinControllerData::Source *joint_src=NULL;
 
@@ -1615,6 +1647,16 @@ Error ColladaImport::load(const String& p_path,int p_flags,bool p_force_make_tan
 
 	}
 	//import scene
+
+	for(int i=0;i<vs.root_nodes.size();i++) {
+
+		Error err = _create_scene_skeletons(vs.root_nodes[i]);
+		if (err!=OK)  {
+			memdelete(scene);
+			ERR_FAIL_COND_V(err,err);
+		}
+	}
+
 	for(int i=0;i<vs.root_nodes.size();i++) {
 
 		Error err = _create_scene(vs.root_nodes[i],scene);

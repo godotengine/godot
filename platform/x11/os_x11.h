@@ -202,6 +202,8 @@ public:
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
 
+	virtual String get_system_dir(SystemDir p_dir) const;
+
 	virtual Error shell_open(String p_uri);
 
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);

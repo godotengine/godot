@@ -30,7 +30,7 @@
 #include "os/keyboard.h"
 #include "print_string.h"
 #include "button_group.h"
-
+#include "scene/scene_string_names.h"
 
 void BaseButton::_input_event(InputEvent p_event) {
 
@@ -60,12 +60,21 @@ void BaseButton::_input_event(InputEvent p_event) {
 						status.pressing_inside=true;
 
 						pressed();
+						if (get_script_instance()) {
+							Variant::CallError ce;
+							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed,NULL,0,ce);
+						}
+
 						emit_signal("pressed");
 
 					} else {
 
 						status.pressed=!status.pressed;
 						pressed();
+						if (get_script_instance()) {
+							Variant::CallError ce;
+							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed,NULL,0,ce);
+						}
 						emit_signal("pressed");
 
 						toggled(status.pressed);
@@ -99,6 +108,11 @@ void BaseButton::_input_event(InputEvent p_event) {
 					if (!toggle_mode) { //mouse press attempt
 
 						pressed();
+						if (get_script_instance()) {
+							Variant::CallError ce;
+							get_script_instance()->call(SceneStringNames::get_singleton()->_pressed,NULL,0,ce);
+						}
+
 						emit_signal("pressed");
 						
 					} else {
@@ -110,6 +124,10 @@ void BaseButton::_input_event(InputEvent p_event) {
 						
 						toggled(status.pressed);
 						emit_signal("toggled",status.pressed);
+						if (get_script_instance()) {
+							get_script_instance()->call(SceneStringNames::get_singleton()->_toggled,status.pressed);
+						}
+
 
 					}
 
@@ -177,6 +195,9 @@ void BaseButton::_input_event(InputEvent p_event) {
 						emit_signal("pressed");
 						
 						toggled(status.pressed);
+						if (get_script_instance()) {
+							get_script_instance()->call(SceneStringNames::get_singleton()->_toggled,status.pressed);
+						}
 						emit_signal("toggled",status.pressed);
 					}
 				}
@@ -362,12 +383,16 @@ void BaseButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_click_on_press"),&BaseButton::get_click_on_press);
 	ObjectTypeDB::bind_method(_MD("get_draw_mode"),&BaseButton::get_draw_mode);
 
+	BIND_VMETHOD(MethodInfo("_pressed"));
+	BIND_VMETHOD(MethodInfo("_toggled",PropertyInfo(Variant::BOOL,"pressed")));
+
 	ADD_SIGNAL( MethodInfo("pressed" ) );
 	ADD_SIGNAL( MethodInfo("released" ) );
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
+
 
 	BIND_CONSTANT( DRAW_NORMAL );
 	BIND_CONSTANT( DRAW_PRESSED );

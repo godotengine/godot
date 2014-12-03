@@ -201,6 +201,20 @@ public:
 
 	int get_processor_count() const;
 
+	enum SystemDir {
+		SYSTEM_DIR_DESKTOP,
+		SYSTEM_DIR_DCIM,
+		SYSTEM_DIR_DOCUMENTS,
+		SYSTEM_DIR_DOWNLOADS,
+		SYSTEM_DIR_MOVIES,
+		SYSTEM_DIR_MUSIC,
+		SYSTEM_DIR_PICTURES,
+		SYSTEM_DIR_RINGTONES,
+	};
+
+	String get_system_dir(SystemDir p_dir) const;
+
+
 	String get_data_dir() const;
 
 	void set_time_scale(float p_scale);
@@ -210,6 +224,9 @@ public:
 
 	_OS();
 };
+
+VARIANT_ENUM_CAST(_OS::SystemDir);
+
 
 class _Geometry : public Object {
 

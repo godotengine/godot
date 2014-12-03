@@ -21,8 +21,7 @@ def get_opts():
 	return [
 		('IPHONEPLATFORM', 'name of the iphone platform', 'iPhoneOS'),
 		('IPHONEPATH', 'the path to iphone toolchain', '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain'),
-		#('IOS_SDK_VERSION', 'The SDK version', 'iPhoneOS7.0'),
-		('IOS_SDK_VERSION', 'The SDK version', 'iPhoneOS8.1'),
+		('IOS_SDK_VERSION', 'The SDK version', 'iPhoneOS'),
 		('IPHONESDK', 'path to the iphone SDK', '/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/${IOS_SDK_VERSION}.sdk/'),
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
@@ -81,6 +80,7 @@ def configure(env):
 							#'-framework', 'AdSupport',
 							'-framework', 'MediaPlayer',
 							'-framework', 'AVFoundation',
+							'-framework', 'CoreMedia',
 							])
 
 	if env['game_center'] == 'yes':
@@ -95,8 +95,8 @@ def configure(env):
 
 	if (env["target"]=="release"):
 
-		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall'])
-		env.Append(LINKFLAGS=['-Os', '-ffast-math'])
+		env.Append(CCFLAGS=['-O3', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall'])
+		env.Append(LINKFLAGS=['-O3', '-ffast-math'])
 
 	elif env["target"] == "release_debug":
 		env.Append(CCFLAGS=['-Os', '-ffast-math', '-DNS_BLOCK_ASSERTIONS=1','-Wall','-DDEBUG_ENABLED'])

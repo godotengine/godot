@@ -1089,7 +1089,73 @@ String OS_X11::get_name() {
 
 Error OS_X11::shell_open(String p_uri) {
 
-	return ERR_UNAVAILABLE;
+	Error ok;
+	List<String> args;
+	args.push_back(p_uri);
+	ok = execute("/usr/bin/xdg-open",args,false);
+	if (ok==OK)
+		return OK;
+	ok = execute("gnome-open",args,false);
+	if (ok==OK)
+		return OK;
+	ok = execute("kde-open",args,false);
+	return ok;
+}
+
+String OS_X11::get_system_dir(SystemDir p_dir) const {
+
+
+	String xdgparam;
+
+	switch(p_dir) {
+		case SYSTEM_DIR_DESKTOP: {
+
+			xdgparam="DESKTOP";
+		} break;
+		case SYSTEM_DIR_DCIM: {
+
+			xdgparam="PICTURES";
+
+		} break;
+		case SYSTEM_DIR_DOCUMENTS: {
+
+			xdgparam="DOCUMENTS";
+
+		} break;
+		case SYSTEM_DIR_DOWNLOADS: {
+
+			xdgparam="DOWNLOAD";
+
+		} break;
+		case SYSTEM_DIR_MOVIES: {
+
+			xdgparam="VIDEOS";
+
+		} break;
+		case SYSTEM_DIR_MUSIC: {
+
+			xdgparam="MUSIC";
+
+		} break;
+		case SYSTEM_DIR_PICTURES: {
+
+			xdgparam="PICTURES";
+
+		} break;
+		case SYSTEM_DIR_RINGTONES: {
+
+			xdgparam="MUSIC";
+
+		} break;
+	}
+
+	String pipe;
+	List<String> arg;
+	arg.push_back(xdgparam);
+	Error err = const_cast<OS_X11*>(this)->execute("/usr/bin/xdg-user-dir",arg,true,NULL,&pipe);
+	if (err!=OK)
+		return ".";
+	return pipe.strip_edges();
 }
 
 
