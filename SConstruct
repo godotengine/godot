@@ -6,7 +6,6 @@ import os.path
 import glob
 import sys
 import methods
-import multiprocessing
 
 methods.update_version()
 
