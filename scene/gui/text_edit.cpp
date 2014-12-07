@@ -3150,12 +3150,18 @@ void TextEdit::set_line(int line, String new_text)
 {
     if (line < 0 || line > text.size())
         return;
-    text.set(line, new_text);
+    text.remove(line); // TODO: Make this Undo/Redoable....
+    insert_at(new_text, line);
+    //text.set(line, new_text);
 }
 
 void TextEdit::insert_at(const String &p_text, int at)
 {
-    text.insert(at, p_text);
+    cursor_set_column(0);
+    cursor_set_line(at);
+    _insert_text(at, 0, p_text+"\n");
+    //_insert_text_at_cursor(p_text);
+    //old: text.insert(at, p_text);
 }
 
 void TextEdit::set_show_line_numbers(bool p_show) {

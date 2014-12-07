@@ -608,6 +608,16 @@ bool ScriptEditor::_test_script_times_on_disk() {
 	return all_ok;
 }
 
+void ScriptEditor::swap_lines(TextEdit *tx, int line1, int line2)
+{
+    String tmp = tx->get_line(line1);
+    String tmp2 = tx->get_line(line2);
+    tx->set_line(line2, tmp);
+    tx->set_line(line1, tmp2);
+
+    tx->cursor_set_line(line2);
+}
+
 void ScriptEditor::_menu_option(int p_option) {
 
 
@@ -690,18 +700,38 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int line_id = tx->cursor_get_line();
-            int next_id = line_id - 1;
+            if (tx->is_selection_active())
+            {
+                int from_line = tx->get_selection_from_line();
+                int from_col  = tx->get_selection_from_column();
+                int to_line   = tx->get_selection_to_line();
+                int to_column = tx->get_selection_to_column();
 
-            if (line_id == 0 || next_id < 0)
-                return;
+                for (int i = from_line; i <= to_line; i++)
+                {
+                    int line_id = i;
+                    int next_id = i - 1;
 
-            String tmp = tx->get_line(line_id);
-            String tmp2 = tx->get_line(next_id);
-            tx->set_line(next_id, tmp);
-            tx->set_line(line_id, tmp2);
+                    if (line_id == 0 || next_id < 0)
+                        return;
+
+                    swap_lines(tx, line_id, next_id);
+                }
+                int from_line_up = from_line > 0 ? from_line-1 : from_line;
+                int to_line_up   = to_line   > 0 ? to_line-1   : to_line;
+                tx->select(from_line_up, from_col, to_line_up, to_column);
+            }
+            else
+            {
+                int line_id = tx->cursor_get_line();
+                int next_id = line_id - 1;
+
+                if (line_id == 0 || next_id < 0)
+                    return;
+
+                swap_lines(tx, line_id, next_id);
+            }
             tx->update();
-            tx->cursor_set_line(next_id);
 
         } break;
         case EDIT_MOVE_LINE_DOWN: {
@@ -711,18 +741,38 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int line_id = tx->cursor_get_line();
-            int next_id = line_id + 1;
+            if (tx->is_selection_active())
+            {
+                int from_line = tx->get_selection_from_line();
+                int from_col  = tx->get_selection_from_column();
+                int to_line   = tx->get_selection_to_line();
+                int to_column = tx->get_selection_to_column();
 
-            if (line_id == tx->get_line_count() || next_id > tx->get_line_count())
-                return;
+                for (int i = to_line; i >= from_line; i--)
+                {
+                    int line_id = i;
+                    int next_id = i + 1;
 
-            String tmp = tx->get_line(line_id);
-            String tmp2 = tx->get_line(next_id);
-            tx->set_line(next_id, tmp);
-            tx->set_line(line_id, tmp2);
+                    if (line_id == tx->get_line_count()-1 || next_id > tx->get_line_count())
+                        return;
+
+                    swap_lines(tx, line_id, next_id);
+                }
+                int from_line_down = from_line < tx->get_line_count() ? from_line+1 : from_line;
+                int to_line_down   = to_line   < tx->get_line_count() ? to_line+1   : to_line;
+                tx->select(from_line_down, from_col, to_line_down, to_column);
+            }
+            else
+            {
+                int line_id = tx->cursor_get_line();
+                int next_id = line_id + 1;
+
+                if (line_id == tx->get_line_count()-1 || next_id > tx->get_line_count())
+                    return;
+
+                swap_lines(tx, line_id, next_id);
+            }
             tx->update();
-            tx->cursor_set_line(next_id);
 
         } break;
         case EDIT_INDENT_LEFT: {
@@ -740,19 +790,39 @@ void ScriptEditor::_menu_option(int p_option) {
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
-                    line_text = line_text.substr(1, line_text.length());
-                    tx->set_line(i, line_text);
+                    // begins with tab
+                    if (line_text.begins_with("\t"))
+                    {
+                        line_text = line_text.substr(1, line_text.length());
+                        tx->set_line(i, line_text);
+                    }
+                    // begins with 4 spaces
+                    else if (line_text.begins_with("    "))
+                    {
+                        line_text = line_text.substr(4, line_text.length());
+                        tx->set_line(i, line_text);
+                    }
                 }
             }
             else
             {
                 begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
-                line_text = line_text.substr(1, line_text.length());
-                tx->set_line(begin, line_text);
+                // begins with tab
+                if (line_text.begins_with("\t"))
+                {
+                    line_text = line_text.substr(1, line_text.length());
+                    tx->set_line(begin, line_text);
+                }
+                // begins with 4 spaces
+                else if (line_text.begins_with("    "))
+                {
+                    line_text = line_text.substr(4, line_text.length());
+                    tx->set_line(begin, line_text);
+                }
             }
             tx->update();
-            tx->deselect();
+            //tx->deselect();
 
         } break;
         case EDIT_INDENT_RIGHT: {
@@ -782,7 +852,7 @@ void ScriptEditor::_menu_option(int p_option) {
                 tx->set_line(begin, line_text);
             }
             tx->update();
-            tx->deselect();
+            //tx->deselect();
 
         } break;
         case EDIT_CLONE_DOWN: {
@@ -837,7 +907,7 @@ void ScriptEditor::_menu_option(int p_option) {
                 tx->set_line(begin, line_text);
             }
             tx->update();
-            tx->deselect();
+            //tx->deselect();
 
         } break;
 		case EDIT_COMPLETE: {
@@ -1498,8 +1568,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Select All",EDIT_SELECT_ALL,KEY_MASK_CMD|KEY_A);
     edit_menu->get_popup()->add_separator();
-    edit_menu->get_popup()->add_item("Move Line Up",EDIT_MOVE_LINE_UP,KEY_MASK_ALT|KEY_UP);
-    edit_menu->get_popup()->add_item("Move Line Down",EDIT_MOVE_LINE_DOWN,KEY_MASK_ALT|KEY_DOWN);
+    edit_menu->get_popup()->add_item("Move Up",EDIT_MOVE_LINE_UP,KEY_MASK_ALT|KEY_UP);
+    edit_menu->get_popup()->add_item("Move Down",EDIT_MOVE_LINE_DOWN,KEY_MASK_ALT|KEY_DOWN);
     edit_menu->get_popup()->add_item("Indent Left",EDIT_INDENT_LEFT,KEY_MASK_ALT|KEY_LEFT);
     edit_menu->get_popup()->add_item("Indent Right",EDIT_INDENT_RIGHT,KEY_MASK_ALT|KEY_RIGHT);
     edit_menu->get_popup()->add_item("Toggle Comment",EDIT_TOGGLE_COMMENT,KEY_MASK_CMD|KEY_SLASH);
