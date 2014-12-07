@@ -2034,7 +2034,9 @@ Error GDScript::load_source_code(const String& p_path) {
 	}
 
 	source=s;
+#ifdef TOOLS_ENABLED
 	source_changed_cache=true;
+#endif
 	//print_line("LSC :"+get_path());
 	path=p_path;
 	return OK;
