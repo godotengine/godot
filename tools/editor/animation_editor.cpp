@@ -2513,12 +2513,19 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 
 	if (insert_frame!=OS::get_singleton()->get_frames_drawn()) {
+		//clear insert list for the frame if frame changed
 		if (insert_confirm->is_visible())
 			return; //do nothing
 		insert_data.clear();
 		insert_query=false;
 	}
 	insert_frame=OS::get_singleton()->get_frames_drawn();
+
+	for (List<InsertData>::Element *E=insert_data.front();E;E=E->next()) {
+		//prevent insertion of multiple tracks
+		if (E->get().path==p_id.path)
+			return; //already inserted a track for this on this frame
+	}
 
 	insert_data.push_back(p_id);
 

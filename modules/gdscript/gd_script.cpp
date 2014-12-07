@@ -1523,6 +1523,7 @@ void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
 
+/*
 void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 
@@ -1563,7 +1564,7 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 	p_placeholder->update(plist,default_values);
 
-}
+}*/
 #endif
 ScriptInstance* GDScript::instance_create(Object *p_this) {
 
@@ -1582,7 +1583,8 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		}*/
 		PlaceHolderScriptInstance *si = memnew( PlaceHolderScriptInstance(GDScriptLanguage::get_singleton(),Ref<Script>(this),p_this) );
 		placeholders.insert(si);
-		_update_placeholder(si);
+		//_update_placeholder(si);
+		_update_exports();
 		return si;
 #else
 		return NULL;
@@ -1623,61 +1625,136 @@ String GDScript::get_source_code() const {
 }
 void GDScript::set_source_code(const String& p_code) {
 
+	if (source==p_code)
+		return;
 	source=p_code;
+#ifdef TOOLS_ENABLED
+	source_changed_cache=true;
+	//print_line("SC CHANGED "+get_path());
+#endif
+
 }
 
+#ifdef TOOLS_ENABLED
+void GDScript::_update_exports_values(Map<StringName,Variant>& values, List<PropertyInfo> &propnames) {
 
-void GDScript::_update_exports(Set<PlaceHolderScriptInstance*> *p_instances) {
+	if (base_cache.is_valid()) {
+		base_cache->_update_exports_values(values,propnames);
+	}
+
+	for(Map<StringName,Variant>::Element *E=member_default_values_cache.front();E;E=E->next()) {
+		values[E->key()]=E->get();
+	}
+
+	for (List<PropertyInfo>::Element *E=members_cache.front();E;E=E->next()) {
+		propnames.push_back(E->get());
+	}
+
+}
+#endif
+
+bool GDScript::_update_exports() {
 
 #ifdef TOOLS_ENABLED
 
-	String basedir=path;
+	bool changed=false;
 
-	if (basedir=="")
-		basedir=get_path();
+	if (source_changed_cache) {
+		//print_line("updating source for "+get_path());
+		source_changed_cache=false;
+		changed=true;
 
-	if (basedir!="")
-		basedir=basedir.get_base_dir();
+		String basedir=path;
 
-	GDParser parser;
-	Error err = parser.parse(source,basedir,true);
-	if (err)
-		return; //do none
+		if (basedir=="")
+			basedir=get_path();
 
-	const GDParser::Node* root = parser.get_parse_tree();
-	ERR_FAIL_COND(root->type!=GDParser::Node::TYPE_CLASS);
+		if (basedir!="")
+			basedir=basedir.get_base_dir();
+
+		GDParser parser;
+		Error err = parser.parse(source,basedir,true,path);
+
+		if (err==OK) {
+
+			const GDParser::Node* root = parser.get_parse_tree();
+			ERR_FAIL_COND_V(root->type!=GDParser::Node::TYPE_CLASS,false);
+
+			const GDParser::ClassNode *c = static_cast<const GDParser::ClassNode*>(root);
+
+			if (base_cache.is_valid()) {
+				base_cache->inheriters_cache.erase(get_instance_ID());
+				base_cache=Ref<GDScript>();
+			}
 
 
+			if (c->extends_used && String(c->extends_file)!="") {
 
-	const GDParser::ClassNode *c = static_cast<const GDParser::ClassNode*>(root);
+				String path = c->extends_file;
+				if (path.is_rel_path()) {
 
-	if (c->extends_used && String(c->extends_file)!="") {
+					String base = get_path();
+					if (base=="" || base.is_rel_path()) {
 
-		Ref<GDScript> bf = ResourceLoader::load(c->extends_file);
-		if (bf.is_valid()) {
+						ERR_PRINT(("Could not resolve relative path for parent class: "+path).utf8().get_data());
+					} else {
+						path=base.get_base_dir().plus_file(path);
+					}
+				}
 
-			bf->_update_exports(p_instances);
+				Ref<GDScript> bf = ResourceLoader::load(path);
 
+				if (bf.is_valid()) {
+
+					//print_line("parent is: "+bf->get_path());
+					base_cache=bf;
+					bf->inheriters_cache.insert(get_instance_ID());
+
+					//bf->_update_exports(p_instances,true,false);
+
+				}
+			}
+
+			members_cache.clear();;
+			member_default_values_cache.clear();
+
+			for(int i=0;i<c->variables.size();i++) {
+				if (c->variables[i]._export.type==Variant::NIL)
+					continue;
+
+				members_cache.push_back(c->variables[i]._export);
+				//print_line("found "+c->variables[i]._export.name);
+				member_default_values_cache[c->variables[i].identifier]=c->variables[i].default_value;
+			}
+		}
+	} else {
+		//print_line("unchaged is "+get_path());
+
+	}
+
+	if (base_cache.is_valid()) {
+		if (base_cache->_update_exports()) {
+			changed = true;
 		}
 	}
 
-	List<PropertyInfo> plist;
+	if (/*changed &&*/ placeholders.size()) { //hm :(
 
-	Map<StringName,Variant> default_values;
+		//print_line("updating placeholders for "+get_path());
 
-	for(int i=0;i<c->variables.size();i++) {
-		if (c->variables[i]._export.type==Variant::NIL)
-			continue;
+		//update placeholders if any
+		Map<StringName,Variant> values;
+		List<PropertyInfo> propnames;
+		_update_exports_values(values,propnames);
 
-		plist.push_back(c->variables[i]._export);
-		default_values[c->variables[i].identifier]=c->variables[i].default_value;
+		for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
+
+			E->get()->update(propnames,values);
+		}
 	}
 
+	return changed;
 
-	for (Set<PlaceHolderScriptInstance*>::Element *E=p_instances->front();E;E=E->next()) {
-
-		E->get()->update(plist,default_values);
-	}
 #endif
 }
 
@@ -1685,8 +1762,20 @@ void GDScript::update_exports() {
 
 #ifdef TOOLS_ENABLED
 
-	_update_exports(&placeholders);
+	_update_exports();
 
+	Set<ObjectID> copy=inheriters_cache; //might get modified
+
+	//print_line("update exports for "+get_path()+" ic: "+itos(copy.size()));
+	for(Set<ObjectID>::Element *E=copy.front();E;E=E->next()) {
+		Object *id=ObjectDB::get_instance(E->get());
+		if (!id)
+			continue;
+		GDScript *s=id->cast_to<GDScript>();
+		if (!s)
+			continue;
+		s->update_exports();
+	}
 
 #endif
 }
@@ -1718,7 +1807,7 @@ Error GDScript::reload() {
 
 	valid=false;
 	GDParser parser;
-	Error err = parser.parse(source,basedir);
+	Error err = parser.parse(source,basedir,false,path);
 	if (err) {
 		if (ScriptDebugger::get_singleton()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),parser.get_error_line(),"Parser Error: "+parser.get_error());
@@ -1746,10 +1835,10 @@ Error GDScript::reload() {
 	}
 
 #ifdef TOOLS_ENABLED
-	for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
+	/*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
 
 		_update_placeholder(E->get());
-	}
+	}*/
 #endif
 	return OK;
 }
@@ -1892,7 +1981,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 
 	valid=false;
 	GDParser parser;
-	Error err = parser.parse_bytecode(bytecode,basedir);
+	Error err = parser.parse_bytecode(bytecode,basedir,get_path());
 	if (err) {
 		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
 		ERR_FAIL_V(ERR_PARSE_ERROR);
@@ -1945,6 +2034,8 @@ Error GDScript::load_source_code(const String& p_path) {
 	}
 
 	source=s;
+	source_changed_cache=true;
+	//print_line("LSC :"+get_path());
 	path=p_path;
 	return OK;
 
@@ -1986,6 +2077,9 @@ GDScript::GDScript() {
 	_base=NULL;
 	_owner=NULL;
 	tool=false;
+#ifdef TOOLS_ENABLED
+	source_changed_cache=false;
+#endif
 
 }
 

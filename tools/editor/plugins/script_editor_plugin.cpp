@@ -1443,7 +1443,7 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 		int pos = script->get_language()->find_function(p_function,code);
 		if (pos==-1) {
 			//does not exist
-
+			ste->get_text_edit()->deselect();
 			pos=ste->get_text_edit()->get_line_count()+2;
 			String func = script->get_language()->make_function("",p_function,p_args);
 			//code=code+func;

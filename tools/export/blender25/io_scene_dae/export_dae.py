@@ -1438,9 +1438,14 @@ class DaeExporter:
 		return tcn
 
 	def export_animations(self):
-
+		tmp_mat = []												# workaround by ndee					
+		for s in self.skeletons:									# workaround by ndee
+			tmp_bone_mat = []										# workaround by ndee
+			for bone in s.pose.bones:								# workaround by ndee
+				tmp_bone_mat.append(Matrix(bone.matrix_basis))		# workaround by ndee
+			tmp_mat.append([Matrix(s.matrix_local),tmp_bone_mat])	# workaround by ndee -> stores skeleton and bone transformations
+			
 		self.writel(S_ANIM,0,'<library_animations>')
-
 
 
 		if (self.config["use_anim_action_all"] and len(self.skeletons)):
@@ -1473,13 +1478,18 @@ class DaeExporter:
 								bones.append(dp)
 
 				allowed_skeletons=[]
-				for y in self.skeletons:
+				for i,y in enumerate(self.skeletons):				# workaround by ndee
 					if (y.animation_data):
 						for z in y.pose.bones:
 							if (z.bone.name in bones):
 								if (not y in allowed_skeletons):
 									allowed_skeletons.append(y)
 						y.animation_data.action=x;
+						
+						y.matrix_local = tmp_mat[i][0]				# workaround by ndee -> resets the skeleton transformation. 
+						for j,bone in enumerate(s.pose.bones):		# workaround by ndee
+							bone.matrix_basis = Matrix()			# workaround by ndee -> resets the bone transformations. Important if bones in follwing actions miss keyframes
+							
 
 				print("allowed skeletons "+str(allowed_skeletons))
 
@@ -1498,16 +1508,20 @@ class DaeExporter:
 
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
 
-			for s in self.skeletons:
+			for i,s in enumerate(self.skeletons):					# workaround by ndee
 				if (s.animation_data==None):
 					continue
 				if s in cached_actions:
 					s.animation_data.action = bpy.data.actions[cached_actions[s]]
 				else:
 					s.animation_data.action = None
+					for j,bone in enumerate(s.pose.bones):			# workaround by ndee
+						bone.matrix_basis = tmp_mat[i][1][j]		# workaround by ndee  -> resets the bone transformation to what they were before exporting.
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
-
+		
+			
+		
 		self.writel(S_ANIM,0,'</library_animations>')
 
 	def export(self):

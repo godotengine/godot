@@ -245,7 +245,16 @@ friend class GDScriptLanguage;
 	Map<StringName,Ref<GDScript> > subclasses;	
 
 #ifdef TOOLS_ENABLED
+
 	Map<StringName,Variant> member_default_values;
+
+	List<PropertyInfo> members_cache;
+	Map<StringName,Variant> member_default_values_cache;
+	Ref<GDScript> base_cache;
+	Set<ObjectID> inheriters_cache;
+	bool source_changed_cache;
+	void _update_exports_values(Map<StringName,Variant>& values, List<PropertyInfo> &propnames);
+
 #endif
 	Map<StringName,PropertyInfo> member_info;
 
@@ -265,13 +274,13 @@ friend class GDScriptLanguage;
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance*> placeholders;
-	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
 
 
-	void _update_exports(Set<PlaceHolderScriptInstance *> *p_instances);
+	bool _update_exports();
 
 protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;

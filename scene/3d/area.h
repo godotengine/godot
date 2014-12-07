@@ -52,6 +52,7 @@ private:
 	real_t density;
 	int priority;
 	bool monitoring;
+	bool locked;
 
 
 	void _body_inout(int p_status,const RID& p_body, int p_instance, int p_body_shape,int p_area_shape);

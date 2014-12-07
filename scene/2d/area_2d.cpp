@@ -142,6 +142,8 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 
 	ERR_FAIL_COND(!body_in && !E);
 
+	locked=true;
+
 	if (body_in) {
 		if (!E) {
 
@@ -197,11 +199,18 @@ void Area2D::_body_inout(int p_status,const RID& p_body, int p_instance, int p_b
 
 	}
 
+	locked=false;
+
+
 }
 
 
 void Area2D::_clear_monitoring() {
 
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
 
 	Map<ObjectID,BodyState> bmcopy = body_map;
 	body_map.clear();
@@ -242,6 +251,11 @@ void Area2D::_notification(int p_what) {
 
 
 void Area2D::set_enable_monitoring(bool p_enable) {
+
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
 
 	if (p_enable==monitoring)
 		return;
@@ -336,6 +350,7 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	set_gravity_vector(Vector2(0,1));
 	gravity_is_point=false;
 	density=0.1;
+	locked=true;
 	priority=0;
 	monitoring=false;
 	set_enable_monitoring(true);

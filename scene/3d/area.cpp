@@ -115,6 +115,7 @@ void Area::_body_enter_tree(ObjectID p_id) {
 
 void Area::_body_exit_tree(ObjectID p_id) {
 
+
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 	ERR_FAIL_COND(!node);
@@ -132,6 +133,7 @@ void Area::_body_exit_tree(ObjectID p_id) {
 
 void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_body_shape,int p_area_shape) {
 
+
 	bool body_in = p_status==PhysicsServer::AREA_BODY_ADDED;
 	ObjectID objid=p_instance;
 
@@ -141,6 +143,8 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 	Map<ObjectID,BodyState>::Element *E=body_map.find(objid);
 
 	ERR_FAIL_COND(!body_in && !E);
+
+	locked=true;
 
 	if (body_in) {
 		if (!E) {
@@ -197,10 +201,18 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 
 	}
 
+	locked=false;
+
+
 }
 
 
 void Area::_clear_monitoring() {
+
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
 
 	Map<ObjectID,BodyState> bmcopy = body_map;
 	body_map.clear();
@@ -234,6 +246,11 @@ void Area::_notification(int p_what) {
 }
 
 void Area::set_enable_monitoring(bool p_enable) {
+
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
 
 	if (p_enable==monitoring)
 		return;
@@ -325,6 +342,7 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 
 	space_override=SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);;
+	locked=false;
 	set_gravity_vector(Vector3(0,-1,0));
 	gravity_is_point=false;
 	density=0.1;

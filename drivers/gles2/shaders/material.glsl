@@ -1214,7 +1214,7 @@ LIGHT_SHADER_CODE
 # if !defined(LIGHT_TYPE_DIRECTIONAL) && !defined(LIGHT_TYPE_OMNI) && !defined (LIGHT_TYPE_SPOT)
 //none
 #ifndef SHADELESS
-	diffuse.rgb=vec3(0.0,0.0,0.0);
+	diffuse.rgb=ambient_light *diffuse.rgb;
 #endif
 
 # endif

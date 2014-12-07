@@ -150,4 +150,6 @@ SceneStringNames::SceneStringNames() {
 	_pressed=StaticCString::create("_pressed");
 	_toggled=StaticCString::create("_toggled");
 
+	frame_changed=StaticCString::create("frame_changed");
+
 }
