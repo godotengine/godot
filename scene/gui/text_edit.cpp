@@ -1747,16 +1747,16 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                 }
                 break;}
 
-                default: {
+		default: {
 
-                    scancode_handled=false;
-                } break;
+		    scancode_handled=false;
+		} break;
 
             }
 
             if (scancode_handled)
                 accept_event();
-
+/*
             if (!scancode_handled && !k.mod.command && !k.mod.alt) {
 
                 if (k.unicode>=32) {
@@ -1770,8 +1770,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                     break;
                 }
             }
-
-            if (!scancode_handled && !k.mod.command && !k.mod.alt) {
+*/
+	    if (!scancode_handled && !k.mod.command && !k.mod.alt) { //for german kbds
 
                 if (k.unicode>=32) {
 
