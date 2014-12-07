@@ -350,7 +350,7 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	set_gravity_vector(Vector2(0,1));
 	gravity_is_point=false;
 	density=0.1;
-	locked=true;
+	locked=false;
 	priority=0;
 	monitoring=false;
 	set_enable_monitoring(true);
