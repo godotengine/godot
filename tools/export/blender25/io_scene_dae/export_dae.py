@@ -187,7 +187,10 @@ class DaeExporter:
 			else:
 				### if file is not found save it as png file in the destination folder
 				img_tmp_path = image.filepath	
-				image.filepath = basedir+"/"+image.name+".png"
+				if img_tmp_path.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
+					image.filepath = basedir+"/"+os.path.basename(img_tmp_path)
+				else:	
+					image.filepath = basedir+"/"+image.name+".png"
 					
 				dstfile=basedir+"/"+os.path.basename(image.filepath)
 				
