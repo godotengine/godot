@@ -421,8 +421,235 @@ static bool _parse_completion_variant(const Variant& p_var,List<String>* r_optio
 
 }
 
+struct GDCompletionIdentifier {
 
-static void _parse_expression_node(const GDParser::Node *p_node,List<String>* r_options,List<String>::Element *p_indices) {
+	StringName obj_type;
+	Variant::Type type;
+};
+
+
+static GDCompletionIdentifier _guess_identifier_type(const GDParser::ClassNode *p_class,int p_line,const StringName& p_identifier);
+
+
+static bool _guess_identifier_type_in_expression(const GDParser::ClassNode *p_class,const GDParser::Node *p_node,int p_line,GDCompletionIdentifier &r_type) {
+
+
+	if (p_node->type==GDParser::Node::TYPE_CONSTANT) {
+
+		const GDParser::ConstantNode *cn=static_cast<const GDParser::ConstantNode *>(p_node);
+
+		r_type.type=cn->value.get_type();
+		if (r_type.type==Variant::OBJECT) {
+			Object *obj = cn->value;
+			if (obj) {
+				r_type.obj_type=obj->get_type();
+			}
+		}
+
+		return true;
+	} else if (p_node->type==GDParser::Node::TYPE_DICTIONARY) {
+
+		r_type.type=Variant::DICTIONARY;
+		return true;
+	} else if (p_node->type==GDParser::Node::TYPE_ARRAY) {
+
+		r_type.type=Variant::ARRAY;
+		return true;
+
+	} else if (p_node->type==GDParser::Node::TYPE_BUILT_IN_FUNCTION) {
+
+		MethodInfo mi = GDFunctions::get_info(static_cast<const GDParser::BuiltInFunctionNode*>(p_node)->function);
+		r_type.type=mi.return_val.type;
+		if (mi.return_val.hint==PROPERTY_HINT_RESOURCE_TYPE) {
+			r_type.obj_type=mi.return_val.hint_string;
+		}
+		return true;
+	} else if (p_node->type==GDParser::Node::TYPE_IDENTIFIER) {
+
+
+		r_type=_guess_identifier_type(p_class,p_line,static_cast<const GDParser::IdentifierNode *>(p_node)->name);
+		return true;
+	} else if (p_node->type==GDParser::Node::TYPE_SELF) {
+		//eeh...
+		return false;
+
+	} else if (p_node->type==GDParser::Node::TYPE_OPERATOR) {
+		const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(p_node);
+		if (op->op==GDParser::OperatorNode::OP_CALL) {
+
+			if (op->arguments[0]->type==GDParser::Node::TYPE_TYPE) {
+
+				const GDParser::TypeNode *tn = static_cast<const GDParser::TypeNode *>(op->arguments[0]);
+				r_type.type=tn->vtype;
+				return true;
+			} else if (op->arguments[0]->type==GDParser::Node::TYPE_BUILT_IN_FUNCTION) {
+
+
+				const GDParser::BuiltInFunctionNode *bin = static_cast<const GDParser::BuiltInFunctionNode *>(op->arguments[0]);
+				return _guess_identifier_type_in_expression(p_class,bin,p_line,r_type);
+
+			} else if (op->arguments.size()>1 && op->arguments[1]->type==GDParser::Node::TYPE_IDENTIFIER) {
+
+				GDCompletionIdentifier base;
+				if (!_guess_identifier_type_in_expression(p_class,op->arguments[0],p_line,base))
+					return false;
+				StringName id = static_cast<const GDParser::IdentifierNode *>(p_node)->name;
+				if (base.type==Variant::OBJECT) {
+
+					if (ObjectTypeDB::has_method(base.obj_type,id)) {
+						MethodBind *mb = ObjectTypeDB::get_method(base.obj_type,id);
+						PropertyInfo pi = mb->get_argument_info(-1);
+						r_type.type=pi.type;
+						if (pi.hint==PROPERTY_HINT_RESOURCE_TYPE) {
+							r_type.obj_type=pi.hint_string;
+						}
+					} else {
+						return false;
+					}
+				} else {
+					//method for some variant..
+					Variant::CallError ce;
+					Variant v = Variant::construct(base.type,NULL,0,ce);
+					List<MethodInfo> mi;
+					v.get_method_list(&mi);
+					for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
+
+						if (E->get().name==id.operator String()) {
+
+							MethodInfo mi = E->get();
+							r_type.type=mi.return_val.type;
+							if (mi.return_val.hint==PROPERTY_HINT_RESOURCE_TYPE) {
+								r_type.obj_type=mi.return_val.hint_string;
+							}
+							return true;
+						}
+					}
+
+				}
+
+
+			}
+		} else {
+
+			Variant::Operator vop = Variant::OP_MAX;
+			switch(op->op) {
+				case GDParser::OperatorNode::OP_ASSIGN_ADD: vop=Variant::OP_ADD; break;
+				case GDParser::OperatorNode::OP_ASSIGN_SUB: vop=Variant::OP_SUBSTRACT; break;
+				case GDParser::OperatorNode::OP_ASSIGN_MUL: vop=Variant::OP_MULTIPLY; break;
+				case GDParser::OperatorNode::OP_ASSIGN_DIV: vop=Variant::OP_DIVIDE; break;
+				case GDParser::OperatorNode::OP_ASSIGN_MOD: vop=Variant::OP_MODULE; break;
+				case GDParser::OperatorNode::OP_ASSIGN_SHIFT_LEFT: vop=Variant::OP_SHIFT_LEFT; break;
+				case GDParser::OperatorNode::OP_ASSIGN_SHIFT_RIGHT: vop=Variant::OP_SHIFT_RIGHT; break;
+				case GDParser::OperatorNode::OP_ASSIGN_BIT_AND: vop=Variant::OP_BIT_AND; break;
+				case GDParser::OperatorNode::OP_ASSIGN_BIT_OR: vop=Variant::OP_BIT_OR; break;
+				case GDParser::OperatorNode::OP_ASSIGN_BIT_XOR: vop=Variant::OP_BIT_XOR; break;
+				default:{}
+
+			}
+
+			if (vop==Variant::OP_MAX)
+				return false;
+
+			GDCompletionIdentifier p1;
+			GDCompletionIdentifier p2;
+
+			if (op->arguments[0]) {
+				if (!_guess_identifier_type_in_expression(p_class,op->arguments[0],p_line,p1))
+					return false;
+			}
+
+			if (op->arguments.size()>1) {
+				if (!_guess_identifier_type_in_expression(p_class,op->arguments[1],p_line,p2))
+					return false;
+			}
+
+			Variant::CallError ce;
+			Variant v1 = Variant::construct(p1.type,NULL,0,ce);
+			Variant v2 = Variant::construct(p2.type,NULL,0,ce);
+			// avoid potential invalid ops
+			if ((vop==Variant::OP_DIVIDE || vop==Variant::OP_MODULE) && v2.get_type()==Variant::INT) {
+				v2=1;
+			}
+			if (vop==Variant::OP_DIVIDE && v2.get_type()==Variant::REAL) {
+				v2=1.0;
+			}
+
+			Variant r;
+			bool valid;
+			Variant::evaluate(vop,v1,v2,r,valid);
+			if (!valid)
+				return false;
+			r_type.type=r.get_type();
+			return true;
+
+		}
+
+	}
+
+	return false;
+}
+
+static bool _guess_identifier_type_in_block(const GDParser::ClassNode *p_class,const GDParser::BlockNode *p_block,int p_line,const StringName& p_identifier,GDCompletionIdentifier &r_type) {
+
+
+	for(int i=0;i<p_block->sub_blocks.size();i++) {
+		//parse inner first
+		if (p_line>=p_block->sub_blocks[i]->line && (p_line<=p_block->sub_blocks[i]->end_line || p_block->sub_blocks[i]->end_line==-1)) {
+			if (_guess_identifier_type_in_block(p_class,p_block->sub_blocks[i],p_line,p_identifier,r_type))
+				return true;
+		}
+	}
+
+
+
+	const GDParser::Node *last_assign=NULL;
+	int last_assign_line=-1;
+
+	for (int i=0;i<p_block->statements.size();i++) {
+
+		if (p_block->statements[i]->line>p_line)
+			break;
+
+
+		if (p_block->statements[i]->type==GDParser::BlockNode::TYPE_LOCAL_VAR) {
+
+			const GDParser::LocalVarNode *lv=static_cast<const GDParser::LocalVarNode *>(p_block->statements[i]);
+			if (lv->assign && lv->name==p_identifier) {
+				last_assign=lv->assign;
+				last_assign_line=p_block->statements[i]->line;
+			}
+		}
+
+		if (p_block->statements[i]->type==GDParser::BlockNode::TYPE_OPERATOR) {
+			const GDParser::OperatorNode *op = static_cast<const GDParser::OperatorNode *>(p_block->statements[i]);
+			if (op->op==GDParser::OperatorNode::OP_ASSIGN) {
+
+				if (op->arguments.size() && op->arguments[0]->type==GDParser::Node::TYPE_IDENTIFIER) {
+					const GDParser::IdentifierNode *id = static_cast<const GDParser::IdentifierNode *>(op->arguments[0]);
+					if (id->name==p_identifier) {
+						last_assign=op->arguments[1];
+						last_assign_line=p_block->statements[i]->line;
+					}
+				}
+			}
+		}
+	}
+
+	//use the last assignment, (then backwards?)
+	if (last_assign) {
+		return _guess_identifier_type_in_expression(p_class,last_assign,last_assign_line-1,r_type);
+	}
+
+	return false;
+}
+
+static GDCompletionIdentifier _guess_identifier_type(const GDParser::ClassNode *p_class,int p_line,const StringName& p_identifier) {
+
+
+	return GDCompletionIdentifier();
+}
+
+static void _parse_expression_node(const GDParser::ClassNode *p_class,const GDParser::Node *p_node,int p_line,List<String>* r_options,List<String>::Element *p_indices) {
 
 
 
@@ -433,7 +660,7 @@ static void _parse_expression_node(const GDParser::Node *p_node,List<String>* r_
 	} else if (p_node->type==GDParser::Node::TYPE_DICTIONARY) {
 
 		const GDParser::DictionaryNode *dn=static_cast<const GDParser::DictionaryNode*>(p_node);
-		for(int i=0;i<dn->elements.size();i++) {
+		for (int i=0;i<dn->elements.size();i++) {
 
 			if (dn->elements[i].key->type==GDParser::Node::TYPE_CONSTANT) {
 
@@ -444,7 +671,7 @@ static void _parse_expression_node(const GDParser::Node *p_node,List<String>* r_
 					if (p_indices) {
 
 						if (str==p_indices->get()) {
-							_parse_expression_node(dn->elements[i].value,r_options,p_indices->next());
+							_parse_expression_node(p_class,dn->elements[i].value,p_line,r_options,p_indices->next());
 							return;
 						}
 
@@ -454,15 +681,28 @@ static void _parse_expression_node(const GDParser::Node *p_node,List<String>* r_
 				}
 			}
 		}
+	} else if (p_node->type==GDParser::Node::TYPE_BUILT_IN_FUNCTION) {
+
+		MethodInfo mi = GDFunctions::get_info(static_cast<const GDParser::BuiltInFunctionNode*>(p_node)->function);
+
+		Variant::CallError ce;
+		_parse_completion_variant(Variant::construct(mi.return_val.type,NULL,0,ce),r_options,p_indices?p_indices->next():NULL);
+	} else if (p_node->type==GDParser::Node::TYPE_IDENTIFIER) {
+
+		GDCompletionIdentifier idt = _guess_identifier_type(p_class,p_line-1,static_cast<const GDParser::IdentifierNode *>(p_node)->name);
+		//Variant::CallError ce;
+		//_parse_completion_variant(Variant::construct(mi.return_val.type,NULL,0,ce),r_options,p_indices?p_indices->next():NULL);
 	}
 }
 
-static bool _parse_completion_block(const GDParser::BlockNode *p_block,int p_line,List<String>* r_options,List<String>::Element *p_indices) {
+static bool _parse_completion_block(const GDParser::ClassNode *p_class,const GDParser::BlockNode *p_block,int p_line,List<String>* r_options,List<String>::Element *p_indices) {
+
+	print_line("COMPLETION BLOCK "+itos(p_block->line)+" -> "+itos(p_block->end_line));
 
 	for(int i=0;i<p_block->sub_blocks.size();i++) {
 		//parse inner first
 		if (p_line>=p_block->sub_blocks[i]->line && (p_line<=p_block->sub_blocks[i]->end_line || p_block->sub_blocks[i]->end_line==-1)) {
-			if (_parse_completion_block(p_block->sub_blocks[i],p_line,r_options,p_indices))
+			if (_parse_completion_block(p_class,p_block->sub_blocks[i],p_line,r_options,p_indices))
 				return true;
 		}
 	}
@@ -470,29 +710,39 @@ static bool _parse_completion_block(const GDParser::BlockNode *p_block,int p_lin
 	if (p_indices) {
 
 		//parse indices in expressions :|
+
+		const GDParser::Node *last_assign=NULL;
+		int last_assign_line=-1;
+
 		for (int i=0;i<p_block->statements.size();i++) {
 
 			if (p_block->statements[i]->line>p_line)
 				break;
 
+
 			if (p_block->statements[i]->type==GDParser::BlockNode::TYPE_LOCAL_VAR) {
 
-				const GDParser::LocalVarNode *lv=static_cast<const GDParser::LocalVarNode *>(p_block->statements[i]);
+				const GDParser::LocalVarNode *lv=static_cast<const GDParser::LocalVarNode *>(p_block->statements[i]);				
 				if (lv->assign && String(lv->name)==p_indices->get()) {
-
-					_parse_expression_node(lv->assign,r_options,p_indices->next());
-					return true;
+					last_assign=lv->assign;
+					last_assign_line=p_block->statements[i]->line;
 				}
 			}
 		}
 
+		//use the last assignment, (then backwards?)
+		if (last_assign) {
+			_parse_expression_node(p_class,last_assign,last_assign_line,r_options,p_indices->next());
+			return true;
+		}
+
 	} else {
+		//no indices, just add all variables and continue
 		for(int i=0;i<p_block->variables.size();i++) {
 			//parse variables second
 			if (p_line>=p_block->variable_lines[i]) {
 				r_options->push_back(p_block->variables[i]);
-			}
-			else break;
+			} else break;
 
 		}
 	}
@@ -545,13 +795,15 @@ static bool _parse_script_symbols(const Ref<GDScript>& p_script,bool p_static,Li
 
 static bool _parse_completion_class(const String& p_base_path,const GDParser::ClassNode *p_class,int p_line,List<String>* r_options,List<String>::Element *p_indices) {
 
-
-	static const char*_type_names[Variant::VARIANT_MAX]={
-		"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Trasnform",
-		"Color","Image","NodePath","RID","Object","InputEvent","Dictionary","Array","RawArray","IntArray","FloatArray","StringArray",
-		"Vector2Array","Vector3Array","ColorArray"};
+	//checks known classes or built-in types for completion
 
 	if (p_indices && !p_indices->next()) {
+		//built-in types do not have sub-classes, try these first if no sub-indices exist.
+		static const char*_type_names[Variant::VARIANT_MAX]={
+			"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Trasnform",
+			"Color","Image","NodePath","RID","Object","InputEvent","Dictionary","Array","RawArray","IntArray","FloatArray","StringArray",
+			"Vector2Array","Vector3Array","ColorArray"};
+
 		for(int i=0;i<Variant::VARIANT_MAX;i++) {
 
 			if (p_indices->get()==_type_names[i]) {
@@ -567,12 +819,12 @@ static bool _parse_completion_class(const String& p_base_path,const GDParser::Cl
 		}
 	}
 
-
+	// check the sub-classes of current class
 
 	for(int i=0;i<p_class->subclasses.size();i++) {
 
 		if (p_line>=p_class->subclasses[i]->line && (p_line<=p_class->subclasses[i]->end_line || p_class->subclasses[i]->end_line==-1)) {
-
+			// if OK in sub-classes, try completing the sub-class
 			if (_parse_completion_class(p_base_path,p_class->subclasses[i],p_line,r_options,p_indices))
 				return true;
 		}
@@ -586,7 +838,7 @@ static bool _parse_completion_class(const String& p_base_path,const GDParser::Cl
 
 		if (p_line>=fu->body->line && (p_line<=fu->body->end_line || fu->body->end_line==-1)) {
 			//if in function, first block stuff from outer to inner
-			if (_parse_completion_block(fu->body,p_line,r_options,p_indices))
+			if (_parse_completion_block(p_class,fu->body,p_line,r_options,p_indices))
 				return true;
 			//then function arguments
 			if (!p_indices) {
@@ -606,7 +858,7 @@ static bool _parse_completion_class(const String& p_base_path,const GDParser::Cl
 		if (p_line>=fu->body->line && (p_line<=fu->body->end_line || fu->body->end_line==-1)) {
 
 			//if in function, first block stuff from outer to inne
-			if (_parse_completion_block(fu->body,p_line,r_options,p_indices))
+			if (_parse_completion_block(p_class,fu->body,p_line,r_options,p_indices))
 				return true;
 			//then function arguments
 			if (!p_indices) {
@@ -757,24 +1009,30 @@ static bool _parse_completion_class(const String& p_base_path,const GDParser::Cl
 
 Error GDScriptLanguage::complete_keyword(const String& p_code, int p_line, const String& p_base_path, const String& p_base, List<String>* r_options) {
 
+
+
 	GDParser p;
 	Error err = p.parse(p_code,p_base_path);
 	// don't care much about error I guess
 	const GDParser::Node* root = p.get_parse_tree();
 	ERR_FAIL_COND_V(root->type!=GDParser::Node::TYPE_CLASS,ERR_INVALID_DATA);
 
+	print_line("BASE: "+p_base);
 	const GDParser::ClassNode *cl = static_cast<const GDParser::ClassNode*>(root);
 
 	List<String> indices;
 	Vector<String> spl = p_base.split(".");
 
 	for(int i=0;i<spl.size()-1;i++) {
+		print_line("INDEX "+itos(i)+":  "+spl[i]);
 		indices.push_back(spl[i]);
 	}
 
+	//parse completion inside of the class first
 	if (_parse_completion_class(p_base,cl,p_line,r_options,indices.front()))
 		return OK;
-	//and the globals x_x?
+
+	//if parsing completion inside of the class fails (none found), try using globals for completion
 	for(Map<StringName,int>::Element *E=globals.front();E;E=E->next()) {
 		if (!indices.empty()) {
 			if (String(E->key())==indices.front()->get()) {

@@ -335,7 +335,7 @@ class DaeExporter:
 		return matid
 
 
-	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None):
+	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None,custom_name=None):
 
 		mesh = node.data
 
@@ -372,9 +372,9 @@ class DaeExporter:
 #				self.export_node(node,il,shape.name)
 				node.data.update()
 				if (armature and k==0):
-					md=self.export_mesh(node,armature,k,mid)
+					md=self.export_mesh(node,armature,k,mid,shape.name)
 				else:
-					md=self.export_mesh(node,None,k)
+					md=self.export_mesh(node,None,k,None,shape.name)
 
 				node.data = p
 				node.data.update()
@@ -596,7 +596,10 @@ class DaeExporter:
 
 
 		meshid = self.new_id("mesh")
-		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+		if (custom_name!=None):
+			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
+		else:
+			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 

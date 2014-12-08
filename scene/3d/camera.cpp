@@ -529,6 +529,8 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 
 		}
 
+
+
 		Vector3 ray;
 		ray.x = pos.x * (hsize) - hsize/2;
 		ray.y = (1.0 - pos.y) * (vsize) - vsize/2;
