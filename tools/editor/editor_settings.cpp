@@ -440,6 +440,7 @@ void EditorSettings::_load_defaults() {
 
 
 	set("animation/autorename_animation_tracks",true);
+	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
 	set("help/doc_path","");
