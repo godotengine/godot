@@ -333,7 +333,7 @@ class godot_export_groups(bpy.types.PropertyGroup):
     name = StringProperty(name="Group Name")
     export_name = StringProperty(name="scene_name")
     nodes = CollectionProperty(type=godot_node_list)
-    export_path = StringProperty(subtype="FILE_PATH")
+    export_path = StringProperty(subtype="DIR_PATH")
     active = BoolProperty(default=True,description="Export Group")
     
     object_types = EnumProperty(name="Object Types",options={'ENUM_FLAG'},items=(('EMPTY', "Empty", ""),('CAMERA', "Camera", ""),('LAMP', "Lamp", ""),('ARMATURE', "Armature", ""),('MESH', "Mesh", ""),('CURVE', "Curve", ""),),default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH','CURVE'})
