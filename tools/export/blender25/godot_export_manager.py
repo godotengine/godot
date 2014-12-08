@@ -260,8 +260,11 @@ class export_group(bpy.types.Operator):
                 path = os.path.join(path,group[self.idx].export_name)
             else:    
                 path = os.path.join(path,group[self.idx].export_name+".dae")
-                
+            
+                hide_select = []   
             for object in context.scene.objects:
+                hide_select.append(object.hide_select)
+                object.hide_select = False
                 object.select = False
             context.scene.objects.active = None
             
@@ -274,8 +277,9 @@ class export_group(bpy.types.Operator):
             bpy.ops.export_scene.dae(check_existing=True, filepath=path, filter_glob="*.dae", object_types=group[self.idx].object_types, use_export_selected=group[self.idx].use_export_selected, use_mesh_modifiers=group[self.idx].use_mesh_modifiers, use_tangent_arrays=group[self.idx].use_tangent_arrays, use_triangles=group[self.idx].use_triangles, use_copy_images=group[self.idx].use_copy_images, use_active_layers=group[self.idx].use_active_layers, use_exclude_ctrl_bones=group[self.idx].use_exclude_ctrl_bones, use_anim=group[self.idx].use_anim, use_anim_action_all=group[self.idx].use_anim_action_all, use_anim_skip_noexp=group[self.idx].use_anim_skip_noexp, use_anim_optimize=group[self.idx].use_anim_optimize, anim_optimize_precision=group[self.idx].anim_optimize_precision, use_metadata=group[self.idx].use_metadata)    
             
             ### restore objects selection    
-            for object in context.scene.objects:
+            for i,object in enumerate(context.scene.objects):
                 object.select = False
+                object.hide_select = hide_select[i]
             for object in selected_objects:
                 object.select = True
             scene.objects.active = active_object
