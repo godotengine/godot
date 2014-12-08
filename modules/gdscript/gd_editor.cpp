@@ -497,12 +497,17 @@ static bool _guess_identifier_type_in_expression(const GDParser::ClassNode *p_cl
 				if (base.type==Variant::OBJECT) {
 
 					if (ObjectTypeDB::has_method(base.obj_type,id)) {
+#ifdef TOOLS_ENABLED
 						MethodBind *mb = ObjectTypeDB::get_method(base.obj_type,id);
 						PropertyInfo pi = mb->get_argument_info(-1);
+
 						r_type.type=pi.type;
 						if (pi.hint==PROPERTY_HINT_RESOURCE_TYPE) {
 							r_type.obj_type=pi.hint_string;
 						}
+#else
+						return false;
+#endif
 					} else {
 						return false;
 					}
@@ -689,7 +694,7 @@ static void _parse_expression_node(const GDParser::ClassNode *p_class,const GDPa
 		_parse_completion_variant(Variant::construct(mi.return_val.type,NULL,0,ce),r_options,p_indices?p_indices->next():NULL);
 	} else if (p_node->type==GDParser::Node::TYPE_IDENTIFIER) {
 
-		GDCompletionIdentifier idt = _guess_identifier_type(p_class,p_line-1,static_cast<const GDParser::IdentifierNode *>(p_node)->name);
+		//GDCompletionIdentifier idt = _guess_identifier_type(p_class,p_line-1,static_cast<const GDParser::IdentifierNode *>(p_node)->name);
 		//Variant::CallError ce;
 		//_parse_completion_variant(Variant::construct(mi.return_val.type,NULL,0,ce),r_options,p_indices?p_indices->next():NULL);
 	}
