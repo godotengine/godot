@@ -34,6 +34,7 @@ import bpy
 from bpy.props import StringProperty, BoolProperty, EnumProperty, FloatProperty, FloatVectorProperty, IntProperty, CollectionProperty, PointerProperty
 import os
 from bpy.app.handlers import persistent
+from mathutils import Vector, Matrix
 
 class godot_export_manager(bpy.types.Panel):
     bl_label = "Godot Export Manager"
@@ -91,6 +92,14 @@ class godot_export_manager(bpy.types.Panel):
             row = layout.row()
             col = row.column()
             col.label(text="Export Settings:")
+            
+            col = col.row(align=True)
+            col.prop(group,"apply_loc",toggle=True,icon="MAN_TRANS")
+            col.prop(group,"apply_rot",toggle=True,icon="MAN_ROT")
+            col.prop(group,"apply_scale",toggle=True,icon="MAN_SCALE")
+            
+            row = layout.row()
+            col = row.column()
             
             col.prop(group,"use_mesh_modifiers")
             col.prop(group,"use_tangent_arrays")
@@ -234,6 +243,42 @@ class export_group(bpy.types.Operator):
     
     idx = IntProperty(default=0)
     
+    def copy_object_recursive(self,ob,parent,single_user = True):
+        new_ob = bpy.data.objects[ob.name].copy()
+        if single_user or ob.type=="ARMATURE":
+            new_mesh_data = new_ob.data.copy()
+            new_ob.data = new_mesh_data
+        bpy.context.scene.objects.link(new_ob)
+        
+        if ob != parent:
+           new_ob.parent = parent
+        else:
+            new_ob.parent = None   
+             
+        for child in ob.children:        
+            self.copy_object_recursive(child,new_ob,single_user)
+        new_ob.select = True    
+        return new_ob
+    
+    def delete_object(self,ob):
+        if ob != None:
+            for child in ob.children:
+                self.delete_object(child)
+            bpy.context.scene.objects.unlink(ob)
+            bpy.data.objects.remove(ob) 
+    
+    def convert_group_to_node(self,group):
+        if group.dupli_group != None:
+            for object in group.dupli_group.objects:
+                if object.parent == None:
+                    object = self.copy_object_recursive(object,object,True)
+                    matrix = Matrix(object.matrix_local)
+                    object.matrix_local = Matrix()
+                    object.matrix_local *= group.matrix_local
+                    object.matrix_local *= matrix
+        
+            self.delete_object(group)   
+    
     def execute(self,context):
         scene = context.scene
         group = context.scene.godot_export_groups
@@ -246,22 +291,16 @@ class export_group(bpy.types.Operator):
         
         ### if path exists and group export name is set the group will be exported  
         if os.path.exists(path) and  group[self.idx].export_name != "":
-            active_layers = []
-            for layer in context.scene.layers:    
-                active_layers.append(layer)
+            
             context.scene.layers = [True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True,True]
-                
-            selected_objects=[]
-            active_object = scene.objects.active
-            for object in context.selected_objects:
-                selected_objects.append(object)
+            
             
             if group[self.idx].export_name.endswith(".dae"):
                 path = os.path.join(path,group[self.idx].export_name)
             else:    
                 path = os.path.join(path,group[self.idx].export_name+".dae")
             
-                hide_select = []   
+            hide_select = []    
             for object in context.scene.objects:
                 hide_select.append(object.hide_select)
                 object.hide_select = False
@@ -269,27 +308,23 @@ class export_group(bpy.types.Operator):
             context.scene.objects.active = None
             
             for i,object in enumerate(group[self.idx].nodes):
+                
                 if object.name in bpy.data.objects:
-                    bpy.data.objects[object.name].select = True
-                else: # if object is not in the scene anymore it will be removed from the group
-                    group[self.idx].nodes.remove(i)
-            
-            bpy.ops.export_scene.dae(check_existing=True, filepath=path, filter_glob="*.dae", object_types=group[self.idx].object_types, use_export_selected=group[self.idx].use_export_selected, use_mesh_modifiers=group[self.idx].use_mesh_modifiers, use_tangent_arrays=group[self.idx].use_tangent_arrays, use_triangles=group[self.idx].use_triangles, use_copy_images=group[self.idx].use_copy_images, use_active_layers=group[self.idx].use_active_layers, use_exclude_ctrl_bones=group[self.idx].use_exclude_ctrl_bones, use_anim=group[self.idx].use_anim, use_anim_action_all=group[self.idx].use_anim_action_all, use_anim_skip_noexp=group[self.idx].use_anim_skip_noexp, use_anim_optimize=group[self.idx].use_anim_optimize, anim_optimize_precision=group[self.idx].anim_optimize_precision, use_metadata=group[self.idx].use_metadata)    
-            
-            ### restore objects selection    
-            for i,object in enumerate(context.scene.objects):
-                object.select = False
-                object.hide_select = hide_select[i]
-            for object in selected_objects:
-                object.select = True
-            scene.objects.active = active_object
-            
-            context.scene.layers = [active_layers[0],active_layers[1],active_layers[2],active_layers[3],active_layers[4],active_layers[5],active_layers[6],active_layers[7],active_layers[8],active_layers[9],active_layers[10],active_layers[11],active_layers[12],active_layers[13],active_layers[14],active_layers[15],active_layers[16],active_layers[17],active_layers[18],active_layers[19]]
+                    if bpy.data.objects[object.name].type == "EMPTY":
+                        self.convert_group_to_node(bpy.data.objects[object.name])
+                    else:    
+                        bpy.data.objects[object.name].select = True
 
-            
+                else: # if object is not in the scene anymore it will be removed from the group
+                    group[self.idx].nodes.remove(i)        
+            bpy.ops.object.transform_apply(location=group[self.idx].apply_loc, rotation=group[self.idx].apply_rot, scale=group[self.idx].apply_scale)
+            bpy.ops.export_scene.dae(check_existing=True, filepath=path, filter_glob="*.dae", object_types=group[self.idx].object_types, use_export_selected=group[self.idx].use_export_selected, use_mesh_modifiers=group[self.idx].use_mesh_modifiers, use_tangent_arrays=group[self.idx].use_tangent_arrays, use_triangles=group[self.idx].use_triangles, use_copy_images=group[self.idx].use_copy_images, use_active_layers=group[self.idx].use_active_layers, use_exclude_ctrl_bones=group[self.idx].use_exclude_ctrl_bones, use_anim=group[self.idx].use_anim, use_anim_action_all=group[self.idx].use_anim_action_all, use_anim_skip_noexp=group[self.idx].use_anim_skip_noexp, use_anim_optimize=group[self.idx].use_anim_optimize, anim_optimize_precision=group[self.idx].anim_optimize_precision, use_metadata=group[self.idx].use_metadata)    
+          
                       
             self.report({'INFO'}, '"'+group[self.idx].name+'"' + " Group exported." )  
             msg = "Export Group "+group[self.idx].name
+            bpy.ops.ed.undo_push(message="")
+            bpy.ops.ed.undo()
             bpy.ops.ed.undo_push(message=msg)
         else:
             self.report({'INFO'}, "Define Export Name and Export Path." )  
@@ -341,7 +376,11 @@ class godot_export_groups(bpy.types.PropertyGroup):
     active = BoolProperty(default=True,description="Export Group")
     
     object_types = EnumProperty(name="Object Types",options={'ENUM_FLAG'},items=(('EMPTY', "Empty", ""),('CAMERA', "Camera", ""),('LAMP', "Lamp", ""),('ARMATURE', "Armature", ""),('MESH', "Mesh", ""),('CURVE', "Curve", ""),),default={'EMPTY', 'CAMERA', 'LAMP', 'ARMATURE', 'MESH','CURVE'})
-
+    
+    apply_scale = BoolProperty(name="Apply Scale",description="Apply Scale before export.",default=False)
+    apply_rot = BoolProperty(name="Apply Rotation",description="Apply Rotation before export.",default=False)
+    apply_loc = BoolProperty(name="Apply Location",description="Apply Location before export.",default=False)
+    
     use_export_selected = BoolProperty(name="Selected Objects",description="Export only selected objects (and visible in active layers if that applies).",default=True)
     use_mesh_modifiers = BoolProperty(name="Apply Modifiers",description="Apply modifiers to mesh objects (on a copy!).",default=True)
     use_tangent_arrays = BoolProperty(name="Tangent Arrays",description="Export Tangent and Binormal arrays (for normalmapping).",default=False)
