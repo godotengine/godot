@@ -1747,16 +1747,16 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                 }
                 break;}
 
-                default: {
+		default: {
 
-                    scancode_handled=false;
-                } break;
+		    scancode_handled=false;
+		} break;
 
             }
 
             if (scancode_handled)
                 accept_event();
-
+/*
             if (!scancode_handled && !k.mod.command && !k.mod.alt) {
 
                 if (k.unicode>=32) {
@@ -1770,8 +1770,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                     break;
                 }
             }
-
-            if (!scancode_handled && !k.mod.command && !k.mod.alt) {
+*/
+	    if (!scancode_handled && !k.mod.command && !k.mod.alt) { //for german kbds
 
                 if (k.unicode>=32) {
 
@@ -3150,12 +3150,15 @@ void TextEdit::set_line(int line, String new_text)
 {
     if (line < 0 || line > text.size())
         return;
-    text.set(line, new_text);
+    _remove_text(line, 0, line, text[line].length());
+    _insert_text(line, 0, new_text);
 }
 
 void TextEdit::insert_at(const String &p_text, int at)
 {
-    text.insert(at, p_text);
+	cursor_set_column(0);
+	cursor_set_line(at);
+	_insert_text(at, 0, p_text+"\n");
 }
 
 void TextEdit::set_show_line_numbers(bool p_show) {

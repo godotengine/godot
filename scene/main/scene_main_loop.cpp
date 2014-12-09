@@ -333,6 +333,9 @@ void SceneTree::input_text( const String& p_text ) {
 void SceneTree::input_event( const InputEvent& p_event ) {
 
 
+	if (is_editor_hint() && (p_event.type==InputEvent::JOYSTICK_MOTION || p_event.type==InputEvent::JOYSTICK_BUTTON))
+		return; //avoid joy input on editor
+
 	root_lock++;
 	//last_id=p_event.ID;
 

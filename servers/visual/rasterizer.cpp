@@ -79,7 +79,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 	if (texcoords_used&(1<<VS::FIXED_MATERIAL_TEXCOORD_UV_TRANSFORM)) {
 
 		code+="uniform mat4 fmp_uv_xform;\n";
-		code+="vec2 uv_xform = fmp_uv_xform * UV;\n";
+		code+="vec2 uv_xform = (fmp_uv_xform * vec4(UV,0,1)).xy;\n";
 	}
 
 	/* HANDLE NORMAL MAPPING */

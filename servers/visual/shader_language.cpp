@@ -436,7 +436,10 @@ ShaderLanguage::Token ShaderLanguage::read_token(const CharType* p_text,int p_le
 				return Token(TK_INDENTIFIER,str);
 			}
 
-			return Token(TK_ERROR,"Unknown character");
+			if (GETCHAR(0)>32)
+				return Token(TK_ERROR,"Tokenizer: Unknown character #"+itos(GETCHAR(0))+": '"+String::chr(GETCHAR(0))+"'");
+			else
+				return Token(TK_ERROR,"Tokenizer: Unknown character #"+itos(GETCHAR(0)));
 
 		} break;
 	}
@@ -463,9 +466,9 @@ Error ShaderLanguage::tokenize(const String& p_text,Vector<Token> *p_tokens,Stri
 		if (t.type==TK_ERROR) {
 
 			if (r_error) {
-				return ERR_COMPILATION_FAILED;
 				*r_error=t.text;
 				*r_err_line=line;
+				return ERR_COMPILATION_FAILED;
 			}
 		}
 
@@ -952,10 +955,16 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_ASSIGN_ADD,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN_ADD,TYPE_VOID,{TYPE_VEC3,TYPE_VEC3}},
 	{OP_ASSIGN_ADD,TYPE_VOID,{TYPE_VEC4,TYPE_VEC4}},
+	{OP_ASSIGN_ADD,TYPE_VOID,{TYPE_VEC2,TYPE_FLOAT}},
+	{OP_ASSIGN_ADD,TYPE_VOID,{TYPE_VEC3,TYPE_FLOAT}},
+	{OP_ASSIGN_ADD,TYPE_VOID,{TYPE_VEC4,TYPE_FLOAT}},
 	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_FLOAT,TYPE_FLOAT}},
 	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_VEC3,TYPE_VEC3}},
 	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_VEC4,TYPE_VEC4}},
+	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_VEC2,TYPE_FLOAT}},
+	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_VEC3,TYPE_FLOAT}},
+	{OP_ASSIGN_SUB,TYPE_VOID,{TYPE_VEC4,TYPE_FLOAT}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_FLOAT,TYPE_FLOAT}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_FLOAT}},
@@ -2485,6 +2494,9 @@ Error ShaderLanguage::compile(const String& p_code,ShaderType p_type,CompileFunc
 	uint64_t t = OS::get_singleton()->get_ticks_usec();
 
 	Error err = tokenize(p_code,&tokens,r_error,r_err_line,r_err_column);
+	if (err!=OK) {
+		print_line("tokenizer error!");
+	}
 
 	double tf = (OS::get_singleton()->get_ticks_usec()-t)/1000.0;
 	//print_line("tokenize time: "+rtos(tf));

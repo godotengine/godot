@@ -187,6 +187,8 @@ void Polygon2DEditor::_wip_close() {
 
 bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
+	if (node==NULL)
+		return false;
 
 	switch(p_event.type) {
 
@@ -701,11 +703,16 @@ void Polygon2DEditor::edit(Node *p_collision_polygon) {
 		node=p_collision_polygon->cast_to<Polygon2D>();
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
+		node->connect("exit_tree",this,"_node_removed",varray(),CONNECT_ONESHOT);
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
 
 	} else {
+
+		if (node)
+			node->disconnect("exit_tree",this,"_node_removed");
+
 		node=NULL;
 
 		if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
@@ -723,12 +730,14 @@ void Polygon2DEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_uv_draw"),&Polygon2DEditor::_uv_draw);
 	ObjectTypeDB::bind_method(_MD("_uv_input"),&Polygon2DEditor::_uv_input);
 	ObjectTypeDB::bind_method(_MD("_uv_scroll_changed"),&Polygon2DEditor::_uv_scroll_changed);
+	ObjectTypeDB::bind_method(_MD("_node_removed"),&Polygon2DEditor::_node_removed);
 
 
 }
 
 Polygon2DEditor::Polygon2DEditor(EditorNode *p_editor) {
 
+	node=NULL;
 	canvas_item_editor=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();

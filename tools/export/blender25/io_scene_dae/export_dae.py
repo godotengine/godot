@@ -335,7 +335,7 @@ class DaeExporter:
 		return matid
 
 
-	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None):
+	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None,custom_name=None):
 
 		mesh = node.data
 
@@ -372,9 +372,9 @@ class DaeExporter:
 #				self.export_node(node,il,shape.name)
 				node.data.update()
 				if (armature and k==0):
-					md=self.export_mesh(node,armature,k,mid)
+					md=self.export_mesh(node,armature,k,mid,shape.name)
 				else:
-					md=self.export_mesh(node,None,k)
+					md=self.export_mesh(node,None,k,None,shape.name)
 
 				node.data = p
 				node.data.update()
@@ -596,7 +596,10 @@ class DaeExporter:
 
 
 		meshid = self.new_id("mesh")
-		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+		if (custom_name!=None):
+			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
+		else:
+			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 
@@ -1438,9 +1441,14 @@ class DaeExporter:
 		return tcn
 
 	def export_animations(self):
-
+		tmp_mat = []												# workaround by ndee					
+		for s in self.skeletons:									# workaround by ndee
+			tmp_bone_mat = []										# workaround by ndee
+			for bone in s.pose.bones:								# workaround by ndee
+				tmp_bone_mat.append(Matrix(bone.matrix_basis))		# workaround by ndee
+			tmp_mat.append([Matrix(s.matrix_local),tmp_bone_mat])	# workaround by ndee -> stores skeleton and bone transformations
+			
 		self.writel(S_ANIM,0,'<library_animations>')
-
 
 
 		if (self.config["use_anim_action_all"] and len(self.skeletons)):
@@ -1473,13 +1481,18 @@ class DaeExporter:
 								bones.append(dp)
 
 				allowed_skeletons=[]
-				for y in self.skeletons:
+				for i,y in enumerate(self.skeletons):				# workaround by ndee
 					if (y.animation_data):
 						for z in y.pose.bones:
 							if (z.bone.name in bones):
 								if (not y in allowed_skeletons):
 									allowed_skeletons.append(y)
 						y.animation_data.action=x;
+						
+						y.matrix_local = tmp_mat[i][0]				# workaround by ndee -> resets the skeleton transformation. 
+						for j,bone in enumerate(s.pose.bones):		# workaround by ndee
+							bone.matrix_basis = Matrix()			# workaround by ndee -> resets the bone transformations. Important if bones in follwing actions miss keyframes
+							
 
 				print("allowed skeletons "+str(allowed_skeletons))
 
@@ -1498,16 +1511,20 @@ class DaeExporter:
 
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
 
-			for s in self.skeletons:
+			for i,s in enumerate(self.skeletons):					# workaround by ndee
 				if (s.animation_data==None):
 					continue
 				if s in cached_actions:
 					s.animation_data.action = bpy.data.actions[cached_actions[s]]
 				else:
 					s.animation_data.action = None
+					for j,bone in enumerate(s.pose.bones):			# workaround by ndee
+						bone.matrix_basis = tmp_mat[i][1][j]		# workaround by ndee  -> resets the bone transformation to what they were before exporting.
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
-
+		
+			
+		
 		self.writel(S_ANIM,0,'</library_animations>')
 
 	def export(self):

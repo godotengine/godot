@@ -225,7 +225,14 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			String path = tokenizer->get_token_constant();
 			if (!path.is_abs_path() && base_path!="")
 				path=base_path+"/"+path;
-			path = path.replace("///","//");
+			path = path.replace("///","//").simplify_path();
+			if (path==self_path) {
+
+				_set_error("Can't preload itself (use 'get_script()').");
+				return NULL;
+
+			}
+
 
 			Ref<Resource> res;
 			if (!validating) {
@@ -2616,8 +2623,9 @@ Error GDParser::_parse(const String& p_base_path) {
 	return OK;
 }
 
-Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path) {
+Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path, const String &p_self_path) {
 
+	self_path=p_self_path;
 	GDTokenizerBuffer *tb = memnew( GDTokenizerBuffer );
 	tb->set_code_buffer(p_bytecode);
 	tokenizer=tb;
@@ -2628,9 +2636,9 @@ Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p
 }
 
 
-Error GDParser::parse(const String& p_code,const String& p_base_path,bool p_just_validate) {
+Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_just_validate, const String &p_self_path) {
 
-
+	self_path=p_self_path;
 	GDTokenizerText *tt = memnew( GDTokenizerText );
 	tt->set_code(p_code);
 

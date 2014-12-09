@@ -34,6 +34,7 @@
 void Sprite::edit_set_pivot(const Point2& p_pivot) {
 
 	set_offset(p_pivot);
+
 }
 
 Point2 Sprite::edit_get_pivot() const {
@@ -136,6 +137,7 @@ void Sprite::set_offset(const Point2& p_offset) {
 	offset=p_offset;
 	update();
 	item_rect_changed();
+	_change_notify("offset");
 }
 Point2 Sprite::get_offset() const {
 
@@ -199,6 +201,8 @@ void Sprite::set_frame(int p_frame) {
 		item_rect_changed();
 
 	frame=p_frame;
+
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
 int Sprite::get_frame() const {
@@ -306,6 +310,8 @@ void Sprite::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"),&Sprite::set_modulate);
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&Sprite::get_modulate);
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));

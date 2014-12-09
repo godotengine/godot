@@ -1229,7 +1229,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		}
 
 		if (!FileAccess::exists(keystore)) {
-			EditorNode::add_io_error("Could not find keytore, unable to export.");
+			EditorNode::add_io_error("Could not find keystore, unable to export.");
 			return ERR_FILE_CANT_OPEN;
 		}
 

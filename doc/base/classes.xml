@@ -3281,6 +3281,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_overlapping_bodies" qualifiers="const" >
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="body_enter">
@@ -3414,6 +3420,12 @@
 		</method>
 		<method name="is_monitoring_enabled" qualifiers="const" >
 			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_overlapping_bodies" qualifiers="const" >
+			<return type="Array">
 			</return>
 			<description>
 			</description>
@@ -4828,6 +4840,10 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="released">
+			<description>
+			</description>
+		</signal>
 		<signal name="toggled">
 			<argument index="0" name="pressed" type="bool">
 			</argument>
@@ -11647,6 +11663,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="save_png"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="path" type="String" default="0">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="COMPRESS_BC" value="0">
@@ -15474,14 +15498,12 @@
         Finally, when a node is freed, it will free all its children nodes too.
 	</description>
 	<methods>
-		<method name="_enter_scene" qualifiers="virtual" >
+		<method name="_enter_tree" qualifiers="virtual" >
 			<description>
-			Called when entered the scene.
 			</description>
 		</method>
-		<method name="_exit_scene" qualifiers="virtual" >
+		<method name="_exit_tree" qualifiers="virtual" >
 			<description>
-			Called when being removed from the scene.
 			</description>
 		</method>
 		<method name="_fixed_process" qualifiers="virtual" >
@@ -15634,11 +15656,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="is_inside_scene" qualifiers="const" >
+		<method name="is_inside_tree" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
-			Return wether the node is inside a scene tree (a tree where the topmost node is a [RootNode])
 			</description>
 		</method>
 		<method name="is_a_parent_of" qualifiers="const" >
@@ -15882,11 +15903,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_scene" qualifiers="const" >
-			<return type="SceneMainLoop">
+		<method name="get_tree" qualifiers="const" >
+			<return type="SceneTree">
 			</return>
 			<description>
-			Get the current SceneMainLoop. Only returned if the node is inside the scene, else returns null.
 			</description>
 		</method>
 		<method name="duplicate" qualifiers="const" >
@@ -15917,28 +15937,24 @@
 		</method>
 	</methods>
 	<signals>
-		<signal name="enter_scene">
-			<description>
-			Emitted when the node enters the scene.
-			</description>
-		</signal>
 		<signal name="renamed">
 			<description>
 			Emitted when the node is renamed.
 			</description>
 		</signal>
-		<signal name="exit_scene">
+		<signal name="enter_tree">
 			<description>
-			Emitted when the node exits the scene.
+			</description>
+		</signal>
+		<signal name="exit_tree">
+			<description>
 			</description>
 		</signal>
 	</signals>
 	<constants>
-		<constant name="NOTIFICATION_ENTER_SCENE" value="10">
-			Notification received when the node enters the Scene Tree and gains access to the [RootNode]. Note that children nodes will not have received the notification at that time yet.
+		<constant name="NOTIFICATION_ENTER_TREE" value="10">
 		</constant>
-		<constant name="NOTIFICATION_EXIT_SCENE" value="11">
-			Notification received when the node exits the Scene Tree and loses access to the [RootNode]. Note that parent nodes will not have received the notification at that time yet.
+		<constant name="NOTIFICATION_EXIT_TREE" value="11">
 		</constant>
 		<constant name="NOTIFICATION_MOVED_IN_PARENT" value="12">
 		</constant>
@@ -16553,6 +16569,10 @@
 			<argument index="0" name="arg0" type="String">
 			</argument>
 			<argument index="1" name="arg1" type="float">
+			</argument>
+			<argument index="2" name="arg2" type="int">
+			</argument>
+			<argument index="3" name="arg3" type="int">
 			</argument>
 			<description>
 			</description>
@@ -17334,7 +17354,7 @@
 		<method name="put_var"  >
 			<return type="int">
 			</return>
-			<argument index="0" name="var" type="Variant">
+			<argument index="0" name="var" type="var">
 			</argument>
 			<description>
 			</description>
@@ -17362,6 +17382,70 @@
 			</argument>
 			<description>
 			Set the StreamPeer object to be wrapped
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
+<class name="PacketPeerUDP" inherits="PacketPeer" category="Core">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<methods>
+		<method name="listen"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="port" type="int">
+			</argument>
+			<argument index="1" name="recv_buf_size" type="int" default="65536">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="close"  >
+			<description>
+			</description>
+		</method>
+		<method name="wait"  >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="is_listening" qualifiers="const" >
+			<return type="bool">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_packet_ip" qualifiers="const" >
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_packet_address" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_packet_port" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_send_address"  >
+			<return type="int">
+			</return>
+			<argument index="0" name="host" type="String">
+			</argument>
+			<argument index="1" name="port" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -18039,6 +18123,30 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_h_frames"  >
+			<argument index="0" name="enable" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_h_frames" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_v_frames"  >
+			<argument index="0" name="enable" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_v_frames" qualifiers="const" >
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="set_emission_half_extents"  >
 			<argument index="0" name="extents" type="Vector2">
 			</argument>
@@ -18173,7 +18281,7 @@
 		</constant>
 		<constant name="PARAM_HUE_VARIATION" value="13">
 		</constant>
-		<constant name="PARAM_MAX" value="14">
+		<constant name="PARAM_MAX" value="16">
 		</constant>
 		<constant name="MAX_COLOR_PHASES" value="4">
 		</constant>
@@ -19534,7 +19642,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="free"  >
+		<method name="free_rid"  >
 			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
@@ -20994,7 +21102,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="free"  >
+		<method name="free_rid"  >
 			<argument index="0" name="rid" type="RID">
 			</argument>
 			<description>
@@ -24091,6 +24199,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_colliding_bodies" qualifiers="const" >
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<signals>
 		<signal name="body_enter">
@@ -24362,6 +24476,12 @@
 			</return>
 			<description>
 			Return true if the body has the ability to fall asleep when not moving. See [set_can_sleep].
+			</description>
+		</method>
+		<method name="get_colliding_bodies" qualifiers="const" >
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 	</methods>
@@ -25275,13 +25395,10 @@
 		</constant>
 	</constants>
 </class>
-<class name="SceneMainLoop" inherits="MainLoop" category="Core">
+<class name="SceneTree" inherits="MainLoop" category="Core">
 	<brief_description>
-	Scene-Based implementation of the MainLoop.
 	</brief_description>
 	<description>
-	Scene implementation of the MainLoop. All scenes edited using the editor are loaded with this main loop, which provides the base for the scene system.[br]
-	All group operations (get nodes, call, etc) is performed here. All nodes in a group can be called a specific functions, set a property or notified. This happens in scene-order.
 	</description>
 	<methods>
 		<method name="notify_group"  >
@@ -25292,7 +25409,6 @@
 			<argument index="2" name="notification" type="int">
 			</argument>
 			<description>
-			Call a notification in all the nodes belonging to a given group. See GROUP_CALL_* enum for options.
 			</description>
 		</method>
 		<method name="set_group"  >
@@ -25305,7 +25421,6 @@
 			<argument index="3" name="value" type="var">
 			</argument>
 			<description>
-			Set a property in all the nodes belonging to a given group. See GROUP_CALL_* enum for options.
 			</description>
 		</method>
 		<method name="get_nodes_in_group"  >
@@ -25314,7 +25429,6 @@
 			<argument index="0" name="arg0" type="String">
 			</argument>
 			<description>
-			Get all the nods belonging to a given group.
 			</description>
 		</method>
 		<method name="get_root" qualifiers="const" >
@@ -25327,21 +25441,18 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-			Set to true if the application will quit automatically when quit is requested (Alt-f4 or ctrl-c).
 			</description>
 		</method>
 		<method name="set_editor_hint"  >
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set to true to tell nodes and the scene that it is being edited. This is used by editors, not release.
 			</description>
 		</method>
 		<method name="is_editor_hint" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
-			Return true if the scene is being run inside an editor.
 			</description>
 		</method>
 		<method name="set_edited_scene_root"  >
@@ -25360,19 +25471,16 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-			Set pause. The built-in pause system is very basic and only meant to avoid processing nodes not allowed to work in pause mode.
 			</description>
 		</method>
 		<method name="is_paused" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
-			Return true if the scene is paused.
 			</description>
 		</method>
 		<method name="set_input_as_handled"  >
 			<description>
-			Handle a current input event (avoid further processing of it).
 			</description>
 		</method>
 		<method name="get_node_count" qualifiers="const" >
@@ -25385,12 +25493,10 @@
 			<return type="int">
 			</return>
 			<description>
-			Return the frame index (how many frames were drawn).
 			</description>
 		</method>
 		<method name="quit"  >
 			<description>
-			Quit the application.
 			</description>
 		</method>
 		<method name="set_screen_stretch"  >
@@ -25407,7 +25513,6 @@
 			<argument index="0" name="obj" type="Object">
 			</argument>
 			<description>
-			Queue an object for deletion next time the loop goes idle.
 			</description>
 		</method>
 		<method name="call_group"  >
@@ -25428,41 +25533,33 @@
 			<argument index="7" name="arg4" type="var" default="NULL">
 			</argument>
 			<description>
-			Call a function for all the nodes in a given group.
 			</description>
 		</method>
 	</methods>
 	<signals>
 		<signal name="screen_resized">
 			<description>
-			Emitted when the screen changes size.
 			</description>
 		</signal>
 		<signal name="node_removed">
 			<argument index="0" name="node" type="Object">
 			</argument>
 			<description>
-			Emitted when a node is removed from the scene.
 			</description>
 		</signal>
 		<signal name="tree_changed">
 			<description>
-			Emitted when the scene tree changed (nodes added/removed/moved/etc)
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="GROUP_CALL_DEFAULT" value="0">
-			Regular group call flag (no flags).
 		</constant>
 		<constant name="GROUP_CALL_REVERSE" value="1">
-			Call a group in inverse-scene order.
 		</constant>
 		<constant name="GROUP_CALL_REALTIME" value="2">
-			Call a group immediately (usually calls are delivered on idle).
 		</constant>
 		<constant name="GROUP_CALL_UNIQUE" value="4">
-			Call a group only once, even if call is performed many times.
 		</constant>
 		<constant name="STRETCH_MODE_DISABLED" value="0">
 		</constant>
@@ -32543,7 +32640,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_pos" qualifiers="const" >
+		<method name="get_stream_pos" qualifiers="const" >
 			<return type="float">
 			</return>
 			<description>
@@ -32598,6 +32695,12 @@
 		<method name="peek_frame" qualifiers="const" >
 			<return type="Image">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="set_audio_track"  >
+			<argument index="0" name="idx" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>

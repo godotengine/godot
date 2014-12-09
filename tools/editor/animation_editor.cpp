@@ -2513,6 +2513,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 
 	if (insert_frame!=OS::get_singleton()->get_frames_drawn()) {
+		//clear insert list for the frame if frame changed
 		if (insert_confirm->is_visible())
 			return; //do nothing
 		insert_data.clear();
@@ -2520,19 +2521,29 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 	}
 	insert_frame=OS::get_singleton()->get_frames_drawn();
 
+	for (List<InsertData>::Element *E=insert_data.front();E;E=E->next()) {
+		//prevent insertion of multiple tracks
+		if (E->get().path==p_id.path)
+			return; //already inserted a track for this on this frame
+	}
+
 	insert_data.push_back(p_id);
 
 	if (p_id.track_idx==-1) {
-		//potential new key, does not exist		
-		if (insert_data.size()==1)
-			insert_confirm->set_text("Create NEW track for "+p_id.query+" and insert key?");
-		else
-			insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
+		if (bool(EDITOR_DEF("animation/confirm_insert_track",true))) {
+			//potential new key, does not exist		
+			if (insert_data.size()==1)
+				insert_confirm->set_text("Create NEW track for "+p_id.query+" and insert key?");
+			else
+				insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
 
-		insert_confirm->get_ok()->set_text("Create");
-		insert_confirm->popup_centered(Size2(300,100));
-		insert_query=true;
-
+			insert_confirm->get_ok()->set_text("Create");
+			insert_confirm->popup_centered(Size2(300,100));
+			insert_query=true;
+		} else {
+			call_deferred("_insert_delay");
+			insert_queue=true;
+		}
 
 	} else {
 		if (!insert_query && !insert_queue) {
@@ -3143,7 +3154,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	//add_child(menu);
 
 	menu_track = memnew( MenuButton );
-	menu_track->set_text("Tracks..");
+	menu_track->set_text("Tracks");
 	hb->add_child(menu_track);
 	menu_track->get_popup()->connect("item_pressed",this,"_menu_track");
 
@@ -3340,8 +3351,6 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	insert_confirm = memnew( ConfirmationDialog );
 	add_child(insert_confirm);
 	insert_confirm->connect("confirmed",this,"_confirm_insert_list");
-
-	EDITOR_DEF("animation_editor/confirm_insert_key",true);
 
 	click.click=ClickOver::CLICK_NONE;
 

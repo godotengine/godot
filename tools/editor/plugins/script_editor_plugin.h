@@ -218,7 +218,7 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
-
+    void swap_lines(TextEdit *tx, int line1, int line2);
 
 	void save_external_data();
 
