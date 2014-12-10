@@ -642,7 +642,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
-
+	ObjectTypeDB::bind_method(_MD("set_window_title","title"),&_OS::set_window_title);
 
 	ObjectTypeDB::bind_method(_MD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
 	ObjectTypeDB::bind_method(_MD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
