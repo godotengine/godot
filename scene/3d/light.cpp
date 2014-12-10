@@ -415,11 +415,11 @@ void Light::approximate_opengl_attenuation(float p_constant, float p_linear, flo
 
 	float energy=1.0;
 
-	if (p_constant>0)
+	/*if (p_constant>0)
 		energy=1.0/p_constant; //energy is this
 	else
 		energy=8.0; // some high number..
-
+*/
 
 	if (radius==10000)
 		radius=100; //bug?

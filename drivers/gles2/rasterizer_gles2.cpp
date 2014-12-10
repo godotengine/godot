@@ -4678,7 +4678,8 @@ void RasterizerGLES2::_add_geometry( const Geometry* p_geometry, const InstanceD
 	if (m->flags[VS::MATERIAL_FLAG_INVERT_FACES])
 		e->mirror=!e->mirror;
 
-	e->light_type=0xFF; // no lights!
+	//e->light_type=0xFF; // no lights!
+	e->light_type=3; //light type 3 is no light?
 	e->light=0xFFFF;
 
 	if (!shadow && !has_blend_alpha && has_alpha && m->depth_draw_mode==VS::MATERIAL_DEPTH_DRAW_OPAQUE_PRE_PASS_ALPHA) {
@@ -9162,6 +9163,7 @@ void RasterizerGLES2::init() {
 	use_anisotropic_filter=true;
 	float_linear_supported=true;
 	float_supported=true;
+	use_rgba_shadowmaps=false;
 
 	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT,&anisotropic_level);
 	anisotropic_level=MIN(anisotropic_level,float(GLOBAL_DEF("rasterizer/anisotropic_filter_level",4.0)));

@@ -275,6 +275,44 @@ void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_c
 }
 
 
+
+bool CollisionSolverSW::solve_distance_plane(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,Vector3& r_point_A,Vector3& r_point_B) {
+
+	const PlaneShapeSW *plane = static_cast<const PlaneShapeSW*>(p_shape_A);
+	if (p_shape_B->get_type()==PhysicsServer::SHAPE_PLANE)
+		return false;
+	Plane p = p_transform_A.xform(plane->get_plane());
+
+	static const int max_supports = 16;
+	Vector3 supports[max_supports];
+	int support_count;
+
+	p_shape_B->get_supports(p_transform_B.basis.xform_inv(-p.normal).normalized(),max_supports,supports,support_count);
+
+	bool collided=false;
+	Vector3 closest;
+	float closest_d;
+
+
+	for(int i=0;i<support_count;i++) {
+
+		supports[i] = p_transform_B.xform( supports[i] );
+		real_t d = p.distance_to(supports[i]);
+		if (i==0 || d<closest_d) {
+			closest=supports[i];
+			closest_d=d;
+			if (d<=0)
+				collided=true;
+		}
+
+	}
+
+	r_point_A=p.project(closest);
+	r_point_B=closest;
+
+	return collided;
+}
+
 bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform& p_transform_A,const ShapeSW *p_shape_B,const Transform& p_transform_B,Vector3& r_point_A,Vector3& r_point_B,const AABB& p_concave_hint,Vector3 *r_sep_axis) {
 
 	if (p_shape_A->is_concave())
@@ -282,7 +320,11 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A,const Transform&
 
 	if (p_shape_B->get_type()==PhysicsServer::SHAPE_PLANE) {
 
-		return false; //unsupported
+		Vector3 a,b;
+		bool col = solve_distance_plane(p_shape_B,p_transform_B,p_shape_A,p_transform_A,a,b);
+		r_point_A=b;
+		r_point_B=a;
+		return !col;
 
 	} else if (p_shape_B->is_concave()) {
 

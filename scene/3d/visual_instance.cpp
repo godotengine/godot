@@ -359,13 +359,13 @@ void GeometryInstance::_bind_methods() {
 GeometryInstance::GeometryInstance() {
 	draw_begin=0;
 	draw_end=0;
+	for(int i=0;i<FLAG_MAX;i++) {
+		flags[i]=false;
+	}
+
 	flags[FLAG_VISIBLE]=true;
 	flags[FLAG_CAST_SHADOW]=true;
 	flags[FLAG_RECEIVE_SHADOWS]=true;
-	flags[FLAG_BILLBOARD]=false;
-	flags[FLAG_BILLBOARD_FIX_Y]=false;
-	flags[FLAG_DEPH_SCALE]=false;
-	flags[FLAG_VISIBLE_IN_ALL_ROOMS]=false;
 	baked_light_instance=NULL;
 	baked_light_texture_id=0;
 	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);

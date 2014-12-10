@@ -158,6 +158,7 @@ public:
 	StringName _mouse_enter;
 	StringName _mouse_exit;
 
+	StringName frame_changed;
 
 
 };

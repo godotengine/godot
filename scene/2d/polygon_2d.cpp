@@ -359,5 +359,6 @@ Polygon2D::Polygon2D() {
 	tex_rot=0;
 	tex_tile=true;
 	tex_scale=Vector2(1,1);
+	color=Color(1,1,1);
 	rect_cache_dirty=true;
 }

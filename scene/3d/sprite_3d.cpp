@@ -275,6 +275,9 @@ void SpriteBase3D::_bind_methods() {
 	BIND_CONSTANT( ALPHA_CUT_DISABLED );
 	BIND_CONSTANT( ALPHA_CUT_DISCARD );
 	BIND_CONSTANT( ALPHA_CUT_OPAQUE_PREPASS );
+
+
+
 }
 
 
@@ -494,6 +497,8 @@ void Sprite3D::set_frame(int p_frame) {
 
 	frame=p_frame;
 	_queue_update();
+	ADD_SIGNAL(MethodInfo("frame_changed"));
+
 }
 
 int Sprite3D::get_frame() const {
@@ -578,6 +583,8 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 }
 
@@ -722,6 +729,8 @@ void AnimatedSprite3D::_bind_methods(){
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
 
+	ADD_SIGNAL(MethodInfo("frame_changed"));
+
 }
 
 
@@ -764,6 +773,7 @@ void AnimatedSprite3D::set_frame(int p_frame){
 
 	frame=p_frame;
 	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 
 }
 int AnimatedSprite3D::get_frame() const{
