@@ -305,6 +305,8 @@ public:
 
 	virtual bool has_touchscreen_ui_hint() const;
 
+	virtual bool is_editor_hint() const;
+
 	enum ScreenOrientation {
 
 		SCREEN_LANDSCAPE,

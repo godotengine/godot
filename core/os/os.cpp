@@ -357,8 +357,14 @@ Error OS::set_cwd(const String& p_cwd) {
 
 bool OS::has_touchscreen_ui_hint() const {
 
-	//return false;
+	if (is_editor_hint())
+		return false;
 	return GLOBAL_DEF("display/emulate_touchscreen",false);
+}
+
+bool OS::is_editor_hint() const {
+
+	return false;
 }
 
 int OS::get_free_static_memory() const {
