@@ -1787,6 +1787,7 @@ bool GDScript::_update_exports() {
 	return changed;
 
 #endif
+	return false;
 }
 
 void GDScript::update_exports() {

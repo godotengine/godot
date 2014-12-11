@@ -196,7 +196,7 @@ void ResourceInteractiveLoaderXML::unquote(String& p_str) {
 
 	p_str=p_str.strip_edges().replace("\"","").xml_unescape();
 
-	/*p_str=p_str.strip_edges();
+	//p_str=p_str.strip_edges();
 	p_str=p_str.replace("\"","");
 	p_str=p_str.replace("&gt;","<");
 	p_str=p_str.replace("&lt;",">");
