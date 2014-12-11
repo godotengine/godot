@@ -1220,77 +1220,29 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 	int next;
 	float c=0;	
 	// prepare for all cases of interpolation
+	if (idx>=0) {
 	
-	if (loop) {
-	// loop
-		if (idx>=0) {
+		if ((idx+1) < len) {
 		
-			if ((idx+1) < len) {
-			
-				next=idx+1;
-				float delta=p_keys[next].time - p_keys[idx].time;
-				float from=p_time-p_keys[idx].time;
-
-				if (Math::absf(delta)>CMP_EPSILON)
-					c=from/delta;
-				else 
-					c=0;
-			
-			} else {
-			
-				next=0;
-				float delta=(length - p_keys[idx].time) + p_keys[next].time;
-				float from=p_time-p_keys[idx].time;
-				
-				if (Math::absf(delta)>CMP_EPSILON)
-					c=from/delta;			
-				else 
-					c=0;
-				
-			}
-			
-		} else {
-			// on loop, behind first key
-			idx=len-1;
-			next=0;
-			float endtime=(length - p_keys[idx].time);
-			if (endtime<0) // may be keys past the end
-				endtime=0;
-			float delta=endtime + p_keys[next].time;
-			float from=endtime+p_time;
+			next=idx+1;
+			float delta=p_keys[next].time - p_keys[idx].time;
+			float from=p_time - p_keys[idx].time;
 			
 			if (Math::absf(delta)>CMP_EPSILON)
-				c=from/delta;			
-			else 
+				c=from/delta;
+			else
 				c=0;
-		} 		
-	
-	} else { // no loop 
-
-		if (idx>=0) {
 		
-			if ((idx+1) < len) {
-			
-				next=idx+1;
-				float delta=p_keys[next].time - p_keys[idx].time;
-				float from=p_time - p_keys[idx].time;
-				
-				if (Math::absf(delta)>CMP_EPSILON)
-					c=from/delta;
-				else
-					c=0;
-			
-			} else {
-			
-				next=idx;
-			}
-			
-		} else if (idx<0) {
+		} else {
 		
-			idx=next=0;
-		} 		
+			next=idx;
+		}
+		
+	} else if (idx<0) {
 	
-	}
+		idx=next=0;
+	} 		
+	
 	
 	float tr = p_keys[idx].transition;
 
