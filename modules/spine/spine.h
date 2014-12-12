@@ -34,6 +34,8 @@
 #include <spine/spine.h>
 #include "spine_batcher.h"
 
+class CollisionObject2D;
+
 class Spine : public Node2D {
 
 	OBJ_TYPE(Spine, Node2D);
@@ -41,6 +43,12 @@ public:
 	enum AnimationProcessMode {
 		ANIMATION_PROCESS_FIXED,
 		ANIMATION_PROCESS_IDLE,
+	};
+	enum DebugAttachmentMode {
+		DEBUG_ATTACHMENT_REGION,
+		DEBUG_ATTACHMENT_MESH,
+		DEBUG_ATTACHMENT_SKINNED_MESH,
+		DEBUG_ATTACHMENT_BOUNDING_BOX,
 	};
 
 private:
@@ -60,14 +68,28 @@ private:
 	bool processing;
 	bool active;
 	bool playing;
-	bool debug_slots;
 	bool debug_bones;
+	bool debug_attachment_region;
+	bool debug_attachment_mesh;
+	bool debug_attachment_skinned_mesh;
+	bool debug_attachment_bounding_box;
 	String current_animation;
 	bool loop;
 	String skin;
 
 	Color modulate;
 	SpineBatcher batcher;
+
+	typedef struct AttachmentNode {
+		List<AttachmentNode>::Element *E;
+		spBone *bone;
+		WeakRef *ref;
+		Vector2 ofs;
+		Vector2 scale;
+		real_t rot;
+	} AttachmentNode;
+	typedef List<AttachmentNode> AttachmentNodes;
+	AttachmentNodes attachment_nodes;
 
 	static void spine_animation_callback(spAnimationState* p_state, int p_track, spEventType p_type, spEvent* p_event, int loop_count);
 	void _on_animation_state_event(int p_track, spEventType p_type, spEvent *p_event, int p_loop_count);
@@ -84,13 +106,6 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-
-
-	//void setSkeletonData(spSkeletonData* skeletonData, bool ownsSkeletonData);
-
-	//virtual cocos2d::CCTexture2D* getTexture(spRegionAttachment* attachment) const;
-	//virtual cocos2d::CCTexture2D* getTexture(spMeshAttachment* attachment) const;
-	//virtual cocos2d::CCTexture2D* getTexture(spSkinnedMeshAttachment* attachment) const;
 
 public:
 
@@ -128,12 +143,34 @@ public:
 	void set_animation_process_mode(AnimationProcessMode p_mode);
 	AnimationProcessMode get_animation_process_mode() const;
 
+	/* Sets the skin used to look up attachments not found in the SkeletonData defaultSkin. Attachments from the new skin are
+	* attached if the corresponding attachment from the old skin was attached. If there was no old skin, each slot's setup mode
+	* attachment is attached from the new skin. Returns false if the skin was not found.
+	* @param skin May be 0.*/
 	bool set_skin(const String& p_name);
+
+	//spAttachment* get_attachment(const char* slotName, const char* attachmentName) const;
+	Variant get_skeleton() const;
+	/* Returns null if the slot or attachment was not found. */
+	Variant get_attachment(const String& p_slot_name, const String& p_attachment_name) const;
+	/* Returns null if the bone was not found. */
+	Variant get_bone(const String& p_bone_name) const;
+	/* Returns null if the slot was not found. */
+	Variant get_slot(const String& p_slot_name) const;
+	/* Returns false if the slot or attachment was not found. */
+	bool set_attachment(const String& p_slot_name, const Variant& p_attachment);
+	// bind node to bone, auto update pos/rotate/scale
+	bool has_attachment_node(const String& p_bone_name, const Variant& p_node);
+	bool add_attachment_node(const String& p_bone_name, const Variant& p_node, const Vector2& p_ofs = Vector2(0, 0), const Vector2& p_scale = Vector2(1, 1), const real_t p_rot = 0);
+	bool remove_attachment_node(const String& p_bone_name, const Variant& p_node);
+	// bind collision object 2d to spine bounding box
+	bool add_bounding_box(const String& p_bone_name, const String& p_slot_name, const String& p_attachment_name, const Variant& p_node, const Vector2& p_ofs = Vector2(0, 0), const Vector2& p_scale = Vector2(1, 1), const real_t p_rot = 0);
+	bool remove_bounding_box(const String& p_bone_name, const Variant& p_node);
 
 	void set_debug_bones(bool p_enable);
 	bool is_debug_bones() const;
-	void set_debug_slots(bool p_enable);
-	bool is_debug_slots() const;
+	void set_debug_attachment(DebugAttachmentMode p_mode, bool p_enable);
+	bool is_debug_attachment(DebugAttachmentMode p_mode) const;
 
 	//void seek(float p_time, bool p_update = false);
 	//void seek_delta(float p_time, float p_delta);
@@ -142,34 +179,6 @@ public:
 
 	//void advance(float p_time);
 
-	//// --- Convenience methods for common Skeleton_* functions.
-	//void updateWorldTransform();
-
-	//void setToSetupPose();
-	//void setBonesToSetupPose();
-	//void setSlotsToSetupPose();
-
-	///* Returns 0 if the bone was not found. */
-	//spBone* findBone(const char* boneName) const;
-	///* Returns 0 if the slot was not found. */
-	//spSlot* findSlot(const char* slotName) const;
-
-	///* Sets the skin used to look up attachments not found in the SkeletonData defaultSkin. Attachments from the new skin are
-	//* attached if the corresponding attachment from the old skin was attached. If there was no old skin, each slot's setup mode
-	//* attachment is attached from the new skin. Returns false if the skin was not found.
-	//* @param skin May be 0.*/
-	//bool setSkin(const char* skinName);
-
-	///* Returns 0 if the slot or attachment was not found. */
-	//spAttachment* getAttachment(const char* slotName, const char* attachmentName) const;
-	///* Returns false if the slot or attachment was not found. */
-	//bool setAttachment(const char* slotName, const char* attachmentName);
-
-	//// --- BlendProtocol
-	//CC_PROPERTY(cocos2d::ccBlendFunc, blendFunc, BlendFunc);
-	//virtual void setOpacityModifyRGB(bool value);
-	//virtual bool isOpacityModifyRGB();
-
 	virtual Rect2 get_item_rect() const;
 	
 	Spine();
@@ -177,6 +186,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Spine::AnimationProcessMode);
+VARIANT_ENUM_CAST(Spine::DebugAttachmentMode);
 
 #endif // SPINE_H
 #endif // MODULE_SPINE_ENABLED

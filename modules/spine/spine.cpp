@@ -28,6 +28,10 @@
 /*************************************************************************/
 #ifdef MODULE_SPINE_ENABLED
 
+#include "scene/2d/collision_object_2d.h"
+#include "scene/resources/convex_polygon_shape_2d.h"
+#include "method_bind_ext.inc"
+
 #include "spine.h"
 #include <spine/spine.h>
 #include <spine/extension.h>
@@ -77,6 +81,13 @@ void Spine::_spine_dispose() {
 	state = NULL;
 	atlas = NULL;
 	skeleton = NULL;
+
+	for (AttachmentNodes::Element *E = attachment_nodes.front(); E; E = E->next()) {
+		
+		AttachmentNode& node = E->get();
+		memdelete(node.ref);
+	}
+	attachment_nodes.clear();
 }
 
 static Ref<Texture> spine_get_texture(spRegionAttachment* attachment) {
@@ -178,6 +189,11 @@ void Spine::_animation_draw() {
 				a = attachment->a;
 				break;
 			}
+
+			case SP_ATTACHMENT_BOUNDING_BOX: {
+
+				continue;
+			}
 		}
 		if (texture.is_null())
 			continue;
@@ -197,46 +213,104 @@ void Spine::_animation_draw() {
 		color.b = skeleton->b * slot->b * b;
 
 		batcher.add(texture, world_verts.ptr(), uvs, verties_count, triangles, triangles_count, &color);
-
-		//canvas_item_add_triangle_array_ptr
-
-		//Vector<Vector2> p_points;
-		//Vector<Vector2> p_uvs;
-		//p_points.resize(verties_count / 2);
-		//p_uvs.resize(verties_count / 2);
-		//for (int i = 0; i < p_points.size(); i++) {
-
-		//	p_points[i].x = world_verts[i * 2];
-		//	p_points[i].y = -world_verts[i * 2 + 1];
-		//	p_uvs[i].x = uvs[i * 2];
-		//	p_uvs[i].y = uvs[i * 2 + 1];
-		//}
-		//draw_colored_polygon(p_points, color, p_uvs, texture);
 	}
 	batcher.flush();
 
-	if (debug_slots) {
-		// Slots.
+	// Slots.
+	if (debug_attachment_region || debug_attachment_mesh || debug_attachment_skinned_mesh || debug_attachment_bounding_box) {
+
 		Color color(0, 0, 1, 1);
-		Vector<Point2> points;
-		points.resize(4);
 		for (int i = 0, n = skeleton->slotsCount; i < n; i++) {
 
 			spSlot* slot = skeleton->drawOrder[i];
-			if (!slot->attachment || slot->attachment->type != SP_ATTACHMENT_REGION) continue;
-			spRegionAttachment* attachment = (spRegionAttachment*)slot->attachment;
-			spRegionAttachment_computeWorldVertices(attachment, slot->bone, world_verts.ptr());
-			points[0] = Point2(world_verts[0], -world_verts[1]);
-			points[1] = Point2(world_verts[2], -world_verts[3]);
-			points[2] = Point2(world_verts[4], -world_verts[5]);
-			points[3] = Point2(world_verts[6], -world_verts[7]);
-			//draw_colored_polygon(points, Color(0, 0, 1, 1));
-			draw_line(points[0], points[1], color);
-			draw_line(points[1], points[2], color);
-			draw_line(points[2], points[3], color);
-			draw_line(points[3], points[0], color);
+			if (!slot->attachment)
+				continue;
+			switch (slot->attachment->type) {
+
+				case SP_ATTACHMENT_REGION:
+				{
+					if (!debug_attachment_region)
+						continue;
+					spRegionAttachment* attachment = (spRegionAttachment*)slot->attachment;
+					verties_count = 8;
+					spRegionAttachment_computeWorldVertices(attachment, slot->bone, world_verts.ptr());
+					color = Color(0, 0, 1, 1);
+					triangles = NULL;
+					triangles_count = 0;
+					break;
+				}
+				case SP_ATTACHMENT_MESH: {
+
+					if (!debug_attachment_mesh)
+						continue;
+					spMeshAttachment* attachment = (spMeshAttachment*)slot->attachment;
+					spMeshAttachment_computeWorldVertices(attachment, slot, world_verts.ptr());
+					verties_count = attachment->verticesCount;
+					color = Color(0, 1, 1, 1);
+					triangles = attachment->triangles;
+					triangles_count = attachment->trianglesCount;
+					break;
+				}
+				case SP_ATTACHMENT_SKINNED_MESH: {
+
+					if (!debug_attachment_skinned_mesh)
+						continue;
+					spSkinnedMeshAttachment* attachment = (spSkinnedMeshAttachment*)slot->attachment;
+					spSkinnedMeshAttachment_computeWorldVertices(attachment, slot, world_verts.ptr());
+					verties_count = attachment->uvsCount;
+					color = Color(1, 0, 1, 1);
+					triangles = attachment->triangles;
+					triangles_count = attachment->trianglesCount;
+					break;
+				}
+				case SP_ATTACHMENT_BOUNDING_BOX: {
+
+					if (!debug_attachment_bounding_box)
+						continue;
+					spBoundingBoxAttachment* attachment = (spBoundingBoxAttachment*)slot->attachment;
+					spBoundingBoxAttachment_computeWorldVertices(attachment, slot->bone, world_verts.ptr());
+					verties_count = attachment->verticesCount;
+					color = Color(0, 1, 0, 1);
+					triangles = NULL;
+					triangles_count = 0;
+					break;
+				}
+			}
+
+			Point2 *points = (Point2 *)world_verts.ptr();
+			int points_size = verties_count / 2;
+
+			for (int idx = 0; idx < points_size; idx++) {
+
+				Point2& pt = points[idx];
+				pt.y = -pt.y;
+			}
+
+			if (triangles == NULL || triangles_count == 0) {
+
+				for (int idx = 0; idx < points_size; idx++) {
+
+					if (idx == points_size - 1)
+						draw_line(points[idx], points[0], color);
+					else
+						draw_line(points[idx], points[idx + 1], color);
+				}
+			} else {
+
+				for (int idx = 0; idx < triangles_count - 2; idx += 3) {
+
+					int a = triangles[idx];
+					int b = triangles[idx + 1];
+					int c = triangles[idx + 2];
+
+					draw_line(points[a], points[b], color);
+					draw_line(points[b], points[c], color);
+					draw_line(points[c], points[a], color);
+				}
+			}
 		}
 	}
+
 	if (debug_bones) {
 		// Bone lengths.
 		for (int i = 0; i < skeleton->bonesCount; i++) {
@@ -262,6 +336,27 @@ void Spine::_animation_process(float p_delta) {
 	spAnimationState_update(state, p_delta);
 	spAnimationState_apply(state, skeleton);
 	spSkeleton_updateWorldTransform(skeleton);
+
+	for (AttachmentNodes::Element *E = attachment_nodes.front(); E; E = E->next()) {
+
+		AttachmentNode& info = E->get();
+		WeakRef *ref = info.ref;
+		Object *obj = ref->get_ref();
+		Node2D *node = (obj != NULL) ? obj->cast_to<Node2D>() : NULL;
+		if (obj == NULL || node == NULL) {
+
+			AttachmentNodes::Element *NEXT = E->next();
+			attachment_nodes.erase(E);
+			E = NEXT;
+			if (E == NULL)
+				break;
+			continue;
+		}
+		const spBone *bone = info.bone;
+		node->set_pos(Vector2(bone->worldX + bone->skeleton->x, -bone->worldY + bone->skeleton->y) + info.ofs);
+		node->set_scale(Vector2(bone->worldScaleX, bone->worldScaleY) * info.scale);
+		node->set_rot(Math::deg2rad(bone->worldRotation + info.rot));
+	}
 	update();
 }
 
@@ -283,7 +378,7 @@ bool Spine::_set(const StringName& p_name, const Variant& p_value) {
 
 	String name = p_name;
 
-	if (name.begins_with("playback/play")) {
+	if (name == "playback/play") {
 
 		String which = p_value;
 		if (which == "[stop]")
@@ -291,17 +386,26 @@ bool Spine::_set(const StringName& p_name, const Variant& p_value) {
 		else if (has(which))
 			play(which, 1, loop);
 	}
-	else if (name.begins_with("playback/loop")) {
+	else if (name == "playback/loop") {
 
 		loop = p_value;
 		if (has(current_animation))
 			play(current_animation, 1, loop);
 	}
-	else if (name.begins_with("playback/skin")) {
+	else if (name == "playback/skin") {
 
 		skin = p_value;
 		set_skin(skin);
 	}
+	else if (name == "debug/region")
+		set_debug_attachment(DEBUG_ATTACHMENT_REGION, p_value);
+	else if (name == "debug/mesh")
+		set_debug_attachment(DEBUG_ATTACHMENT_MESH, p_value);
+	else if (name == "debug/skinned_mesh")
+		set_debug_attachment(DEBUG_ATTACHMENT_SKINNED_MESH, p_value);
+	else if (name == "debug/bounding_box")
+		set_debug_attachment(DEBUG_ATTACHMENT_BOUNDING_BOX, p_value);
+
 	return true;
 }
 
@@ -311,20 +415,25 @@ bool Spine::_get(const StringName& p_name, Variant &r_ret) const {
 
 	if (name == "playback/play") {
 
-		if (is_active() && is_playing())
-			r_ret = current_animation;
-		else
-			r_ret = "[stop]";
+		//if (is_active() && is_playing())
+		r_ret = current_animation;
+		//else
+		//	r_ret = "[stop]";
 
 	}
-	else if (name.begins_with("playback/loop")) {
-
+	else if (name == "playback/loop")
 		r_ret = loop;
-	}
-	else if (name.begins_with("playback/skin")) {
-
+	else if (name == "playback/skin")
 		r_ret = skin;
-	}
+	else if (name == "debug/region")
+		r_ret = is_debug_attachment(DEBUG_ATTACHMENT_REGION);
+	else if (name == "debug/mesh")
+		r_ret = is_debug_attachment(DEBUG_ATTACHMENT_MESH);
+	else if (name == "debug/skinned_mesh")
+		r_ret = is_debug_attachment(DEBUG_ATTACHMENT_SKINNED_MESH);
+	else if (name == "debug/bounding_box")
+		r_ret = is_debug_attachment(DEBUG_ATTACHMENT_BOUNDING_BOX);
+
 	return true;
 }
 
@@ -374,6 +483,10 @@ void Spine::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		p_list->push_back(PropertyInfo(Variant::STRING, "playback/skin", PROPERTY_HINT_ENUM, hint));
 	}
+	p_list->push_back(PropertyInfo(Variant::BOOL, "debug/region", PROPERTY_HINT_NONE));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "debug/mesh", PROPERTY_HINT_NONE));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "debug/skinned_mesh", PROPERTY_HINT_NONE));
+	p_list->push_back(PropertyInfo(Variant::BOOL, "debug/bounding_box", PROPERTY_HINT_NONE));
 }
 
 void Spine::_notification(int p_what) {
@@ -449,6 +562,7 @@ int Spine::load(const String& p_json, const String& p_atlas, real_t p_scale) {
 	current_animation = "";
 	skin = "";
 
+	reset();
 	_change_notify();
 
 	return OK;
@@ -502,6 +616,9 @@ void Spine::play(const String& p_name, real_t p_cunstom_scale, bool p_loop, int 
 
 	_set_process(true);
 	playing = true;
+	// update frame
+	if (!is_active())
+		_animation_process(0);
 }
 
 void Spine::add(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
@@ -528,6 +645,8 @@ void Spine::stop() {
 
 	_set_process(false);
 	playing = false;
+	current_animation = "[stop]";
+	reset();
 }
 
 bool Spine::is_playing() const {
@@ -553,6 +672,9 @@ void Spine::reset() {
 
 	ERR_FAIL_COND(skeleton == NULL);
 	spSkeleton_setToSetupPose(skeleton);
+	// reset frame
+	if (!is_active())
+		_animation_process(0);
 }
 
 void Spine::set_active(bool p_active) {
@@ -606,6 +728,231 @@ bool Spine::set_skin(const String& p_name) {
 	return spSkeleton_setSkinByName(skeleton, p_name.utf8().get_data()) ? true : false;
 }
 
+Variant Spine::get_skeleton() const {
+
+	ERR_FAIL_COND_V(skeleton == NULL, Variant());
+	Dictionary dict;
+
+	dict["bonesCount"] = skeleton->bonesCount;
+	dict["slotCount"] = skeleton->slotsCount;
+	dict["ikConstraintsCount"] = skeleton->ikConstraintsCount;
+	dict["time"] = skeleton->time;
+	dict["flipX"] = skeleton->flipX;
+	dict["flipY"] = skeleton->flipY;
+	dict["x"] = skeleton->x;
+	dict["y"] = skeleton->y;
+
+	return dict;
+}
+
+Variant Spine::get_attachment(const String& p_slot_name, const String& p_attachment_name) const {
+
+	ERR_FAIL_COND_V(skeleton == NULL, Variant());
+	spAttachment *attachment = spSkeleton_getAttachmentForSlotName(skeleton, p_slot_name.utf8().get_data(), p_attachment_name.utf8().get_data());
+	ERR_FAIL_COND_V(attachment == NULL, Variant());
+
+	Dictionary dict;
+	dict["name"] = attachment->name;
+
+	switch (attachment->type) {
+		case SP_ATTACHMENT_REGION: {
+
+			spRegionAttachment *info = (spRegionAttachment *)attachment;
+			dict["type"] = "region";
+			dict["path"] = info->path;
+			dict["x"] = info->x;
+			dict["y"] = info->y;
+			dict["scaleX"] = info->scaleX;
+			dict["scaleY"] = info->scaleY;
+			dict["rotation"] = info->rotation;
+			dict["width"] = info->width;
+			dict["height"] = info->height;
+			dict["color"] = Color(info->r, info->g, info->b, info->a);
+			dict["region"] = Rect2(info->regionOffsetX, info->regionOffsetY, info->regionWidth, info->regionHeight);
+			dict["region_original_size"] = Size2(info->regionOriginalWidth, info->regionOriginalHeight);
+
+			Vector2Array offset, uvs;
+			for (int idx = 0; idx < 4; idx++) {
+				offset.push_back(Vector2(info->offset[idx * 2], info->offset[idx * 2 + 1]));
+				uvs.push_back(Vector2(info->uvs[idx * 2], info->uvs[idx * 2 + 1]));
+			}
+			dict["offset"] = offset;
+			dict["uvs"] = uvs;
+
+		} break;
+
+		case SP_ATTACHMENT_BOUNDING_BOX: {
+
+			spBoundingBoxAttachment *info = (spBoundingBoxAttachment *)attachment;
+			dict["type"] = "bounding_box";
+
+			Vector2Array vertices;
+			for (int idx = 0; idx < info->verticesCount / 2; idx++)
+				vertices.append(Vector2(info->vertices[idx * 2], info->vertices[idx * 2 + 1]));
+			dict["vertices"] = vertices;
+		} break;
+
+		case SP_ATTACHMENT_MESH:  {
+
+			spMeshAttachment *info = (spMeshAttachment *)attachment;
+			dict["type"] = "mesh";
+			dict["path"] = info->path;
+			dict["color"] = Color(info->r, info->g, info->b, info->a);
+		} break;
+
+		case SP_ATTACHMENT_SKINNED_MESH:  {
+
+			spSkinnedMeshAttachment *info = (spSkinnedMeshAttachment *)attachment;
+			dict["type"] = "skinned_mesh";
+			dict["path"] = info->path;
+			dict["color"] = Color(info->r, info->g, info->b, info->a);
+		} break;
+	}
+	return dict;
+}
+
+Variant Spine::get_bone(const String& p_bone_name) const {
+
+	ERR_FAIL_COND_V(skeleton == NULL, Variant());
+	spBone *bone = spSkeleton_findBone(skeleton, p_bone_name.utf8().get_data());
+	ERR_FAIL_COND_V(bone == NULL, Variant());
+	Dictionary dict;
+	dict["x"] = bone->x;
+	dict["y"] = bone->y;
+	dict["rotation"] = bone->rotation;
+	dict["rotationIK"] = bone->rotationIK;
+	dict["scaleX"] = bone->scaleX;
+	dict["scaleY"] = bone->scaleY;
+	dict["flipX"] = bone->flipX;
+	dict["flipY"] = bone->flipY;
+	dict["m00"] = bone->m00;
+	dict["m01"] = bone->m01;
+	dict["m10"] = bone->m10;
+	dict["m11"] = bone->m11;
+	dict["worldX"] = bone->worldX;
+	dict["worldY"] = bone->worldY;
+	dict["worldRotation"] = bone->worldRotation;
+	dict["worldScaleX"] = bone->worldScaleX;
+	dict["worldScaleY"] = bone->worldScaleY;
+	dict["worldFlipX"] = bone->worldFlipX;
+	dict["worldFlipY"] = bone->worldFlipY;
+
+	return dict;
+}
+
+Variant Spine::get_slot(const String& p_slot_name) const {
+
+	ERR_FAIL_COND_V(skeleton == NULL, Variant());
+	spSlot *slot = spSkeleton_findSlot(skeleton, p_slot_name.utf8().get_data());
+	ERR_FAIL_COND_V(slot == NULL, Variant());
+	Dictionary dict;
+	dict["color"] = Color(slot->r, slot->g, slot->b, slot->a);
+	return dict;
+}
+
+bool Spine::set_attachment(const String& p_slot_name, const Variant& p_attachment) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	if (p_attachment.get_type() == Variant::STRING)
+		return spSkeleton_setAttachment(skeleton, p_slot_name.utf8().get_data(), ((const String)p_attachment).utf8().get_data()) != 0;
+	else
+		return spSkeleton_setAttachment(skeleton, p_slot_name.utf8().get_data(), NULL) != 0;
+}
+
+bool Spine::has_attachment_node(const String& p_bone_name, const Variant& p_node) {
+
+	return false;
+}
+
+bool Spine::add_attachment_node(const String& p_bone_name, const Variant& p_node, const Vector2& p_ofs, const Vector2& p_scale, const real_t p_rot) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	spBone *bone = spSkeleton_findBone(skeleton, p_bone_name.utf8().get_data());
+	ERR_FAIL_COND_V(bone == NULL, false);
+	Object *obj = p_node;
+	ERR_FAIL_COND_V(obj == NULL, false);
+	Node2D *node = obj->cast_to<Node2D>();
+	ERR_FAIL_COND_V(node == NULL, false);
+
+	if (obj->has_meta("spine_meta")) {
+
+		AttachmentNode *info = (AttachmentNode *) ((size_t) obj->get_meta("spine_meta"));
+		if (info->bone != bone) {
+			// add to different bone, remove first
+			remove_attachment_node(info->bone->data->name, p_node);
+		} else {
+			// add to same bone, update params
+			info->ofs = p_ofs;
+			info->scale = p_scale;
+			info->rot = p_rot;
+			return true;
+		}
+	}
+	attachment_nodes.push_back(AttachmentNode());
+	AttachmentNode& info = attachment_nodes.back()->get();
+	info.E = attachment_nodes.back();
+	info.bone = bone;
+	info.ref = memnew(WeakRef);
+	info.ref->set_obj(node);
+	info.ofs = p_ofs;
+	info.scale = p_scale;
+	info.rot = p_rot;
+	obj->set_meta("spine_meta", (size_t) &info);
+
+	return true;
+}
+
+bool Spine::remove_attachment_node(const String& p_bone_name, const Variant& p_node) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	spBone *bone = spSkeleton_findBone(skeleton, p_bone_name.utf8().get_data());
+	ERR_FAIL_COND_V(bone == NULL, false);
+	Object *obj = p_node;
+	ERR_FAIL_COND_V(obj == NULL, false);
+	Node2D *node = obj->cast_to<Node2D>();
+	ERR_FAIL_COND_V(node == NULL, false);
+
+	if (!obj->has_meta("spine_meta"))
+		return false;
+
+	AttachmentNode *info = (AttachmentNode *)((size_t)obj->get_meta("spine_meta"));
+	ERR_FAIL_COND_V(info->bone != bone, false);
+	obj->set_meta("spine_meta", NULL);
+	memdelete(info->ref);
+	attachment_nodes.erase(info->E);
+
+	return false;
+}
+
+bool Spine::add_bounding_box(const String& p_bone_name, const String& p_slot_name, const String& p_attachment_name, const Variant& p_node, const Vector2& p_ofs, const Vector2& p_scale, const real_t p_rot) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	Object *obj = p_node;
+	ERR_FAIL_COND_V(obj == NULL, false);
+	CollisionObject2D *node = obj->cast_to<CollisionObject2D>();
+	ERR_FAIL_COND_V(node == NULL, false);
+	spAttachment *attachment = spSkeleton_getAttachmentForSlotName(skeleton, p_slot_name.utf8().get_data(), p_attachment_name.utf8().get_data());
+	ERR_FAIL_COND_V(attachment == NULL, false);
+	ERR_FAIL_COND_V(attachment->type != SP_ATTACHMENT_BOUNDING_BOX, false);
+	spBoundingBoxAttachment *info = (spBoundingBoxAttachment *)attachment;
+
+	Vector<Vector2> points;
+	points.resize(info->verticesCount / 2);
+	for (int idx = 0; idx < info->verticesCount / 2; idx++)
+		points[idx] = Vector2(info->vertices[idx * 2], info->vertices[idx * 2 + 1]);
+
+	ConvexPolygonShape2D *shape = memnew(ConvexPolygonShape2D);
+	shape->set_points(points);
+	node->add_shape(shape);
+
+	return add_attachment_node(p_bone_name, p_node);
+}
+
+bool Spine::remove_bounding_box(const String& p_bone_name, const Variant& p_node) {
+
+	return remove_attachment_node(p_bone_name, p_node);
+}
+
 void Spine::set_animation_process_mode(Spine::AnimationProcessMode p_mode) {
 
 	if (animation_process_mode == p_mode)
@@ -635,15 +982,40 @@ bool Spine::is_debug_bones() const {
 	return debug_bones;
 }
 
-void Spine::set_debug_slots(bool p_enable) {
+void Spine::set_debug_attachment(DebugAttachmentMode p_mode, bool p_enable) {
 
-	debug_slots = p_enable;
+	switch (p_mode) {
+
+	case DEBUG_ATTACHMENT_REGION:
+		debug_attachment_region = p_enable;
+		break;
+	case DEBUG_ATTACHMENT_MESH:
+		debug_attachment_mesh = p_enable;
+		break;
+	case DEBUG_ATTACHMENT_SKINNED_MESH:
+		debug_attachment_skinned_mesh = p_enable;
+		break;
+	case DEBUG_ATTACHMENT_BOUNDING_BOX:
+		debug_attachment_bounding_box = p_enable;
+		break;
+	};
 	update();
 }
 
-bool Spine::is_debug_slots() const {
+bool Spine::is_debug_attachment(DebugAttachmentMode p_mode) const {
 
-	return debug_slots;
+	switch (p_mode) {
+
+		case DEBUG_ATTACHMENT_REGION:
+			return debug_attachment_region;
+		case DEBUG_ATTACHMENT_MESH:
+			return debug_attachment_mesh;
+		case DEBUG_ATTACHMENT_SKINNED_MESH:
+			return debug_attachment_skinned_mesh;
+		case DEBUG_ATTACHMENT_BOUNDING_BOX:
+			return debug_attachment_bounding_box;
+	};
+	return false;
 }
 
 void Spine::_bind_methods() {
@@ -654,9 +1026,9 @@ void Spine::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("has", "name"), &Spine::has);
 	ObjectTypeDB::bind_method(_MD("mix", "from", "to", "duration"), &Spine::mix, 0);
-	ObjectTypeDB::bind_method(_MD("play", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::play, 0, 0, false, 1.0f);
-	ObjectTypeDB::bind_method(_MD("add", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::add, 0, 0, false, 1.0f);
-	ObjectTypeDB::bind_method(_MD("clear", "track"), &Spine::clear, -1);
+	ObjectTypeDB::bind_method(_MD("play", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::play, 1.0f, false, 0, 0);
+	ObjectTypeDB::bind_method(_MD("add", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::add, 1.0f, false, 0, 0);
+	ObjectTypeDB::bind_method(_MD("clear", "track"), &Spine::clear);
 	ObjectTypeDB::bind_method(_MD("stop"), &Spine::stop);
 	ObjectTypeDB::bind_method(_MD("is_playing"), &Spine::is_playing);
 	ObjectTypeDB::bind_method(_MD("get_current_animation"), &Spine::get_current_animation);
@@ -669,17 +1041,26 @@ void Spine::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_modulate", "modulate"), &Spine::set_modulate);
 	ObjectTypeDB::bind_method(_MD("get_modulate"), &Spine::get_modulate);
 	ObjectTypeDB::bind_method(_MD("set_skin", "skin"), &Spine::set_skin);
+	ObjectTypeDB::bind_method(_MD("get_skeleton"), &Spine::get_skeleton);
+	ObjectTypeDB::bind_method(_MD("get_attachment", "slot_name", "attachment_name"), &Spine::get_attachment);
+	ObjectTypeDB::bind_method(_MD("get_bone", "bone_name"), &Spine::get_bone);
+	ObjectTypeDB::bind_method(_MD("get_slot", "slot_name"), &Spine::get_slot);
+	ObjectTypeDB::bind_method(_MD("set_attachment", "slot_name", "attachment"), &Spine::set_attachment);
+	ObjectTypeDB::bind_method(_MD("has_attachment_node", "bone_name", "node"), &Spine::has_attachment_node);
+	ObjectTypeDB::bind_method(_MD("add_attachment_node", "bone_name", "node", "ofs", "scale", "rot"), &Spine::add_attachment_node, Vector2(0, 0), Vector2(1, 1), 0);
+	ObjectTypeDB::bind_method(_MD("remove_attachment_node", "p_bone_name", "node"), &Spine::remove_attachment_node);
+	ObjectTypeDB::bind_method(_MD("add_bounding_box", "bone_name", "slot_name", "attachment_name", "collision_object_2d", "ofs", "scale", "rot"), &Spine::add_bounding_box, Vector2(0, 0), Vector2(1, 1), 0);
+	ObjectTypeDB::bind_method(_MD("remove_bounding_box", "bone_name", "collision_object_2d"), &Spine::remove_bounding_box);
 
 	ObjectTypeDB::bind_method(_MD("set_debug_bones", "enable"), &Spine::set_debug_bones);
 	ObjectTypeDB::bind_method(_MD("is_debug_bones"), &Spine::is_debug_bones);
-	ObjectTypeDB::bind_method(_MD("set_debug_slots", "enable"), &Spine::set_debug_slots);
-	ObjectTypeDB::bind_method(_MD("is_debug_slots"), &Spine::is_debug_slots);
+	ObjectTypeDB::bind_method(_MD("set_debug_attachment", "mode", "enable"), &Spine::set_debug_attachment);
+	ObjectTypeDB::bind_method(_MD("is_debug_attachment", "mode"), &Spine::is_debug_attachment);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), _SCS("set_speed"), _SCS("get_speed"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback/active"), _SCS("set_active"), _SCS("is_active"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug/bones"), _SCS("set_debug_bones"), _SCS("is_debug_bones"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug/slots"), _SCS("set_debug_slots"), _SCS("is_debug_slots"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE, "json"), _SCS("set_path"), _SCS("get_path"));
@@ -691,6 +1072,11 @@ void Spine::_bind_methods() {
 
 	BIND_CONSTANT(ANIMATION_PROCESS_FIXED);
 	BIND_CONSTANT(ANIMATION_PROCESS_IDLE);
+
+	BIND_CONSTANT(DEBUG_ATTACHMENT_REGION);
+	BIND_CONSTANT(DEBUG_ATTACHMENT_MESH);
+	BIND_CONSTANT(DEBUG_ATTACHMENT_SKINNED_MESH);
+	BIND_CONSTANT(DEBUG_ATTACHMENT_BOUNDING_BOX);
 }
 
 Rect2 Spine::get_item_rect() const {
@@ -738,6 +1124,9 @@ Rect2 Spine::get_item_rect() const {
 	return attached ? Rect2(minX, -minY - h, maxX - minX, h) : Node2D::get_item_rect();
 }
 
+// CollisionObject2D
+
+
 Spine::Spine()
 	: batcher(this)
 {
@@ -758,8 +1147,11 @@ Spine::Spine()
 	active = false;
 	playing = false;
 
-	debug_slots = false;
 	debug_bones = false;
+	debug_attachment_region = false;
+	debug_attachment_mesh = false;
+	debug_attachment_skinned_mesh = false;
+	debug_attachment_bounding_box = false;
 	loop = true;
 
 	modulate = Color(1, 1, 1, 1);
