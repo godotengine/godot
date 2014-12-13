@@ -52,12 +52,13 @@ private:
 	real_t density;
 	int priority;
 	bool monitoring;
+	bool locked;
 
 
 	void _body_inout(int p_status,const RID& p_body, int p_instance, int p_body_shape,int p_area_shape);
 
-	void _body_enter_scene(ObjectID p_id);
-	void _body_exit_scene(ObjectID p_id);
+	void _body_enter_tree(ObjectID p_id);
+	void _body_exit_tree(ObjectID p_id);
 
 	struct ShapePair {
 
@@ -77,7 +78,7 @@ private:
 	struct BodyState {
 
 		int rc;
-		bool in_scene;
+		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
@@ -111,6 +112,8 @@ public:
 
 	void set_enable_monitoring(bool p_enable);
 	bool is_monitoring_enabled() const;
+
+	Array get_overlapping_bodies() const;
 
 
 	Area();

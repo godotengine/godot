@@ -53,7 +53,7 @@ void Path::_notification(int p_what) {
 void Path::_curve_changed() {
 
 
-	if (is_inside_scene() && get_scene()->is_editor_hint())
+	if (is_inside_tree() && get_tree()->is_editor_hint())
 		update_gizmo();
 }
 
@@ -159,7 +159,7 @@ void PathFollow::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			Node *parent=get_parent();
 			if (parent) {
@@ -171,7 +171,7 @@ void PathFollow::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 
 			path=NULL;

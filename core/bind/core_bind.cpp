@@ -577,9 +577,9 @@ float _OS::get_frames_per_second() const {
 	return OS::get_singleton()->get_frames_per_second();
 }
 
-Error _OS::native_video_play(String p_path, float p_volume) {
+Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 
-	return OS::get_singleton()->native_video_play(p_path, p_volume);
+	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
 };
 
 bool _OS::native_video_is_playing() {
@@ -597,6 +597,20 @@ void _OS::native_video_stop() {
 	OS::get_singleton()->native_video_stop();
 };
 
+bool _OS::is_debug_build() const {
+
+#ifdef DEBUG_ENABLED
+	return true;
+#else
+	return false;
+#endif
+
+}
+
+String _OS::get_system_dir(SystemDir p_dir) const {
+
+	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
+}
 
 String _OS::get_custom_level() const {
 
@@ -668,6 +682,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
 
+	ObjectTypeDB::bind_method(_MD("is_debug_build"),&_OS::is_debug_build);
+
 	//ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
 	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
@@ -680,6 +696,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
 
 	ObjectTypeDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
+	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
 
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
@@ -718,6 +735,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
 
+	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
+	BIND_CONSTANT( SYSTEM_DIR_DCIM );
+	BIND_CONSTANT( SYSTEM_DIR_DOCUMENTS );
+	BIND_CONSTANT( SYSTEM_DIR_DOWNLOADS );
+	BIND_CONSTANT( SYSTEM_DIR_MOVIES );
+	BIND_CONSTANT( SYSTEM_DIR_MUSIC );
+	BIND_CONSTANT( SYSTEM_DIR_PICTURES );
+	BIND_CONSTANT( SYSTEM_DIR_RINGTONES );
 
 }
 

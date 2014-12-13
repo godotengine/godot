@@ -415,11 +415,11 @@ void Light::approximate_opengl_attenuation(float p_constant, float p_linear, flo
 
 	float energy=1.0;
 
-	if (p_constant>0)
+	/*if (p_constant>0)
 		energy=1.0/p_constant; //energy is this
 	else
 		energy=8.0; // some high number..
-
+*/
 
 	if (radius==10000)
 		radius=100; //bug?
@@ -432,7 +432,7 @@ void Light::approximate_opengl_attenuation(float p_constant, float p_linear, flo
 
 void Light::_update_visibility() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 
@@ -440,10 +440,10 @@ bool editor_ok=true;
 
 #ifdef TOOLS_ENABLED
 	if (editor_only) {
-		if (!get_scene()->is_editor_hint()) {
+		if (!get_tree()->is_editor_hint()) {
 			editor_ok=false;
 		} else {
-			editor_ok = (get_scene()->get_edited_scene_root() && (this==get_scene()->get_edited_scene_root() || get_owner()==get_scene()->get_edited_scene_root()));
+			editor_ok = (get_tree()->get_edited_scene_root() && (this==get_tree()->get_edited_scene_root() || get_owner()==get_tree()->get_edited_scene_root()));
 		}
 	}
 #endif
@@ -456,7 +456,7 @@ bool editor_ok=true;
 
 void Light::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE || p_what==NOTIFICATION_VISIBILITY_CHANGED) {
+	if (p_what==NOTIFICATION_ENTER_TREE || p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 		_update_visibility();
 	}
 }

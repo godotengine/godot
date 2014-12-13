@@ -416,8 +416,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_set_space_override_mode","area","mode"),&Physics2DServer::area_set_space_override_mode);
 	ObjectTypeDB::bind_method(_MD("area_get_space_override_mode","area"),&Physics2DServer::area_get_space_override_mode);
 
-	ObjectTypeDB::bind_method(_MD("area_add_shape","area","shape","transform"),&Physics2DServer::area_set_shape,DEFVAL(Matrix32()));
-	ObjectTypeDB::bind_method(_MD("area_set_shape","area","shape_idx","shape"),&Physics2DServer::area_get_shape);
+	ObjectTypeDB::bind_method(_MD("area_add_shape","area","shape","transform"),&Physics2DServer::area_add_shape,DEFVAL(Matrix32()));
+	ObjectTypeDB::bind_method(_MD("area_set_shape","area","shape_idx","shape"),&Physics2DServer::area_set_shape);
 	ObjectTypeDB::bind_method(_MD("area_set_shape_transform","area","shape_idx","transform"),&Physics2DServer::area_set_shape_transform);
 
 	ObjectTypeDB::bind_method(_MD("area_get_shape_count","area"),&Physics2DServer::area_get_shape_count);
@@ -514,7 +514,7 @@ void Physics2DServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&Physics2DServer::joint_get_type);
 
-	ObjectTypeDB::bind_method(_MD("free","rid"),&Physics2DServer::free);
+	ObjectTypeDB::bind_method(_MD("free_rid","rid"),&Physics2DServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&Physics2DServer::set_active);
 

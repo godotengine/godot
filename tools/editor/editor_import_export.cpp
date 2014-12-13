@@ -938,7 +938,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	dst->store_32(0); //pack version
 	dst->store_32(VERSION_MAJOR);
 	dst->store_32(VERSION_MINOR);
-	dst->store_32(VERSION_REVISION);
+	dst->store_32(0); //hmph
 	for(int i=0;i<16;i++) {
 		//reserved
 		dst->store_32(0);

@@ -12,12 +12,12 @@ func goto_scene(scene):
 	#instance the new scene
 	current_scene = s.instance()
 	#add it to the active scene, as child of root
-	get_scene().get_root().add_child(current_scene)
+	get_tree().get_root().add_child(current_scene)
 
 
 func _ready():
 	# get the current scene
 	# it is always the last child of root,
 	# after the autoloaded nodes
-	var root = get_scene().get_root()
+	var root = get_tree().get_root()
 	current_scene = root.get_child( root.get_child_count() -1 )

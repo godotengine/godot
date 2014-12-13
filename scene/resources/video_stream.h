@@ -30,7 +30,7 @@
 #define VIDEO_STREAM_H
 
 #include "audio_stream_resampled.h"
-
+#include "scene/resources/texture.h"
 
 
 class VideoStream : public Resource {
@@ -59,8 +59,10 @@ public:
 	virtual void seek_pos(float p_time)=0;
 
 	virtual int get_pending_frame_count() const=0;
-	virtual Image pop_frame()=0;
+	virtual void pop_frame(Ref<ImageTexture> p_tex)=0;
 	virtual Image peek_frame() const=0;
+
+	virtual void set_audio_track(int p_idx) =0;
 
 	virtual void update(float p_time)=0;
 

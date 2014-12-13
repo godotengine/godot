@@ -126,7 +126,7 @@ void MeshInstance::_resolve_skeleton_path(){
 void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
 
 	skeleton_path = p_skeleton;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	_resolve_skeleton_path();
 }
@@ -226,7 +226,7 @@ void MeshInstance::create_convex_collision() {
 
 void MeshInstance::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 		_resolve_skeleton_path();
 	}
 }

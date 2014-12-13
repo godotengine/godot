@@ -30,6 +30,8 @@
 #include "scene/resources/texture.h"
 #include "drivers/png/png.h"
 #include "os/file_access.h"
+#include "globals.h"
+#include "core/image.h"
 
 static void _write_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {
 
@@ -45,12 +47,56 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 	ERR_EXPLAIN("Can't save empty texture as PNG");
 	ERR_FAIL_COND_V(!texture->get_width() || !texture->get_height(),ERR_INVALID_PARAMETER);
 
+
 	Image img = texture->get_data();
-	if (img.get_format() > Image::FORMAT_INDEXED_ALPHA)
-		img.decompress();
+
+	Error err = save_image(p_path, img);
+
+	if (err == OK) {
+
+		bool global_filter = Globals::get_singleton()->get("image_loader/filter");
+		bool global_mipmaps = Globals::get_singleton()->get("image_loader/gen_mipmaps");
+		bool global_repeat = Globals::get_singleton()->get("image_loader/repeat");
+
+		String text;
+
+		if (global_filter!=bool(texture->get_flags()&Texture::FLAG_FILTER)) {
+			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"filter=true\n":"filter=false\n";
+		}
+		if (global_mipmaps!=bool(texture->get_flags()&Texture::FLAG_MIPMAPS)) {
+			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"gen_mipmaps=true\n":"gen_mipmaps=false\n";
+		}
+		if (global_repeat!=bool(texture->get_flags()&Texture::FLAG_REPEAT)) {
+			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"repeat=true\n":"repeat=false\n";
+		}
+		if (bool(texture->get_flags()&Texture::FLAG_ANISOTROPIC_FILTER)) {
+			text+="anisotropic=true\n";
+		}
+		if (bool(texture->get_flags()&Texture::FLAG_CONVERT_TO_LINEAR)) {
+			text+="tolinear=true\n";
+		}
+
+		if (text!="" || FileAccess::exists(p_path+".flags")) {
+
+			FileAccess* f = FileAccess::open(p_path+".flags",FileAccess::WRITE);
+			if (f) {
+
+				f->store_string(text);
+				memdelete(f);
+			}
+		}
+	}
 
 
-	ERR_FAIL_COND_V(img.get_format() > Image::FORMAT_INDEXED_ALPHA, ERR_INVALID_PARAMETER);
+	return err;
+};
+
+Error ResourceSaverPNG::save_image(const String &p_path, Image &p_img) {
+
+	if (p_img.get_format() > Image::FORMAT_INDEXED_ALPHA)
+		p_img.decompress();
+
+	ERR_FAIL_COND_V(p_img.get_format() > Image::FORMAT_INDEXED_ALPHA, ERR_INVALID_PARAMETER);
 
 	png_structp png_ptr;
 	png_infop info_ptr;
@@ -88,7 +134,7 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 	int cs=0;
 
 
-	switch(img.get_format()) {
+	switch(p_img.get_format()) {
 
 		case Image::FORMAT_GRAYSCALE: {
 
@@ -112,14 +158,14 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 		} break;
 		default: {
 
-			if (img.detect_alpha()) {
+			if (p_img.detect_alpha()) {
 
-				img.convert(Image::FORMAT_RGBA);
+				p_img.convert(Image::FORMAT_RGBA);
 				pngf=PNG_COLOR_TYPE_RGB_ALPHA;
 				cs=4;
 			} else {
 
-				img.convert(Image::FORMAT_RGB);
+				p_img.convert(Image::FORMAT_RGB);
 				pngf=PNG_COLOR_TYPE_RGB;
 				cs=3;
 			}
@@ -127,8 +173,8 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 		}
 	}
 
-	int w = img.get_width();
-	int h = img.get_height();
+	int w = p_img.get_width();
+	int h = p_img.get_height();
 	png_set_IHDR(png_ptr, info_ptr, w,h,
 		     8, pngf, PNG_INTERLACE_NONE,
 		     PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
@@ -143,7 +189,7 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 	}
 
 
-	DVector<uint8_t>::Read r = img.get_data().read();
+	DVector<uint8_t>::Read r = p_img.get_data().read();
 
 	row_pointers = (png_bytep*)memalloc(sizeof(png_bytep)*h);
 	for(int i=0;i<h;i++) {
@@ -164,7 +210,6 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 	png_write_end(png_ptr, NULL);
 	memdelete(f);
 
-
 	/* cleanup heap allocation */
 
 	return OK;
@@ -181,3 +226,8 @@ void ResourceSaverPNG::get_recognized_extensions(const RES& p_resource,List<Stri
 	}
 
 }
+
+ResourceSaverPNG::ResourceSaverPNG() {
+
+	Image::save_png_func = &save_image;
+};

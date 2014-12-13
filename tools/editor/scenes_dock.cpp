@@ -115,7 +115,7 @@ void ScenesDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 
 			EditorFileSystem::get_singleton()->connect("filesystem_changed",this,"_update_tree");
@@ -145,7 +145,7 @@ void ScenesDock::_notification(int p_what) {
 
 			_update_tree(); //maybe it finished already
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -383,7 +383,7 @@ void ScenesDockFilter::_file_filter_selected(int p_idx) {
 
 void ScenesDockFilter::_notification(int p_what) {
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 			clear_search_button->set_icon(get_icon("CloseHover","EditorIcons"));
 		} break;
 	}

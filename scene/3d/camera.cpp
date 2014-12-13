@@ -121,7 +121,7 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= int(keep_aspect);
 	else if (p_name=="current") {
 
-		if (is_inside_scene() && get_scene()->is_editor_hint()) {
+		if (is_inside_tree() && get_tree()->is_editor_hint()) {
 			r_ret=current;
 		} else {
 			r_ret=is_current();
@@ -182,7 +182,7 @@ void Camera::_update_camera() {
 //	if (viewport_ptr && is_inside_scene() && is_current())
 //		viewport_ptr->_camera_transform_changed_notify();
 
-	if (is_inside_scene() && is_current()) {
+	if (is_inside_tree() && is_current()) {
 		if (viewport_ptr) {
 			viewport_ptr->_camera_transform_changed_notify();
 		}
@@ -309,7 +309,7 @@ void Camera::make_current() {
 
 	current=true;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (viewport_ptr) {
@@ -324,7 +324,7 @@ void Camera::_camera_make_next_current(Node *p_exclude) {
 
 	if (this==p_exclude)
 		return;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (get_viewport()->get_camera()!=NULL)
 		return;
@@ -336,14 +336,14 @@ void Camera::_camera_make_next_current(Node *p_exclude) {
 void Camera::clear_current() {
 
 	current=false;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (viewport_ptr) {
 		if (viewport_ptr->get_camera()==this) {
 			viewport_ptr->_set_camera(NULL);
 			//a group is used beause this needs to be in order to be deterministic
-			get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_next_current",this);
+			get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,camera_group,"_camera_make_next_current",this);
 
 		}
 	}
@@ -352,7 +352,7 @@ void Camera::clear_current() {
 
 bool Camera::is_current() const {
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		if (viewport_ptr)
 			return viewport_ptr->get_camera()==this;
 	} else
@@ -462,12 +462,20 @@ Vector3 Camera::project_ray_normal(const Point2& p_pos) const {
 
 Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
+
+#if 0
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Vector2 cpos = p_pos;
+#else
+
+	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
+	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+#endif
 
 	Vector3 ray;
 
@@ -479,9 +487,8 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 		float screen_w,screen_h;
 		cm.get_viewport_size(screen_w,screen_h);
-		ray=Vector3( ((p_pos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(p_pos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
+		ray=Vector3( ((cpos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(cpos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
 	}
-
 
 	return ray;
 };
@@ -489,13 +496,19 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 
 Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
+#if 0
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Vector2 cpos = p_pos;
+#else
 
+	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
+	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+#endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
 //	float aspect = viewport_size.x / viewport_size.y;
@@ -505,7 +518,7 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 		return get_camera_transform().origin;
 	} else {
 
-		Vector2 pos = p_pos / viewport_size;
+		Vector2 pos = cpos / viewport_size;
 		float vsize,hsize;
 		if (keep_aspect==KEEP_WIDTH) {
 			vsize = size/viewport_size.get_aspect();
@@ -515,6 +528,8 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 			vsize = size;
 
 		}
+
+
 
 		Vector3 ray;
 		ray.x = pos.x * (hsize) - hsize/2;
@@ -527,9 +542,9 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 
 Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector2());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector2());
 	}
 
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
@@ -558,9 +573,9 @@ Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 Vector3 Camera::project_position(const Point2& p_point) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;

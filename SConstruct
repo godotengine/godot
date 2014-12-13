@@ -6,7 +6,6 @@ import os.path
 import glob
 import sys
 import methods
-import multiprocessing
 
 methods.update_version()
 
@@ -99,6 +98,7 @@ opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
 opts.Add('squish','Squish BC Texture Compression in editor (yes/no)','yes')
 opts.Add('theora','Theora Video (yes/no)','yes')
+opts.Add('use_theoraplayer_binary', "Use precompiled binaries from libtheoraplayer for ogg/theora/vorbis (yes/no)", "no")
 opts.Add('freetype','Freetype support in editor','yes')
 opts.Add('speex','Speex Audio (yes/no)','yes')
 opts.Add('xml','XML Save/Load support (yes/no)','yes')

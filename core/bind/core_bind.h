@@ -108,7 +108,7 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
-	Error native_video_play(String p_path, float p_volume);
+	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
 	void native_video_pause();
 	void native_video_stop();
@@ -153,6 +153,8 @@ public:
 	void print_resources_by_type(const Vector<String>& p_types);
 
 	bool has_touchscreen_ui_hint() const;
+
+	bool is_debug_build() const;
 
 	String get_unique_ID() const;
 
@@ -199,6 +201,20 @@ public:
 
 	int get_processor_count() const;
 
+	enum SystemDir {
+		SYSTEM_DIR_DESKTOP,
+		SYSTEM_DIR_DCIM,
+		SYSTEM_DIR_DOCUMENTS,
+		SYSTEM_DIR_DOWNLOADS,
+		SYSTEM_DIR_MOVIES,
+		SYSTEM_DIR_MUSIC,
+		SYSTEM_DIR_PICTURES,
+		SYSTEM_DIR_RINGTONES,
+	};
+
+	String get_system_dir(SystemDir p_dir) const;
+
+
 	String get_data_dir() const;
 
 	void set_time_scale(float p_scale);
@@ -208,6 +224,9 @@ public:
 
 	_OS();
 };
+
+VARIANT_ENUM_CAST(_OS::SystemDir);
+
 
 class _Geometry : public Object {
 

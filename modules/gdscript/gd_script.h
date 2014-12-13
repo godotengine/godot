@@ -220,11 +220,18 @@ class GDScript : public Script {
 	bool valid;
 
 
+	struct MemberInfo {
+		int index;
+		StringName setter;
+		StringName getter;
+	};
 
 friend class GDInstance;
 friend class GDFunction;
 friend class GDCompiler;
 friend class GDFunctions;
+friend class GDScriptLanguage;
+
 	Variant _static_ref; //used for static call
 	Ref<GDNativeClass> native;
 	Ref<GDScript> base;
@@ -234,11 +241,20 @@ friend class GDFunctions;
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction> member_functions;
-	Map<StringName,int> member_indices; //members are just indices to the instanced script.
+	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;	
 
 #ifdef TOOLS_ENABLED
+
 	Map<StringName,Variant> member_default_values;
+
+	List<PropertyInfo> members_cache;
+	Map<StringName,Variant> member_default_values_cache;
+	Ref<GDScript> base_cache;
+	Set<ObjectID> inheriters_cache;
+	bool source_changed_cache;
+	void _update_exports_values(Map<StringName,Variant>& values, List<PropertyInfo> &propnames);
+
 #endif
 	Map<StringName,PropertyInfo> member_info;
 
@@ -258,13 +274,13 @@ friend class GDFunctions;
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance*> placeholders;
-	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
 
 
-	void _update_exports(Set<PlaceHolderScriptInstance *> *p_instances);
+	bool _update_exports();
 
 protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -288,7 +304,7 @@ public:
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName,int>& debug_get_member_indices() const { return member_indices; }
+	const Map<StringName,MemberInfo>& debug_get_member_indices() const { return member_indices; }
 	const Map<StringName,GDFunction>& debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 

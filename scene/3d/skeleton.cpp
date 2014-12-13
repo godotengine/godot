@@ -237,6 +237,21 @@ Transform Skeleton::get_bone_transform(int p_bone) const {
 	return bones[p_bone].pose_global * bones[p_bone].rest_global_inverse;
 }
 
+
+void Skeleton::set_bone_global_pose(int p_bone,const Transform& p_pose) {
+
+	ERR_FAIL_INDEX(p_bone,bones.size());
+	if (bones[p_bone].parent==-1) {
+
+		set_bone_pose(p_bone,bones[p_bone].rest_global_inverse * p_pose); //fast
+	} else {
+
+		set_bone_pose(p_bone, bones[p_bone].rest.affine_inverse() * (get_bone_global_pose(bones[p_bone].parent).affine_inverse() * p_pose)); //slow
+
+	}
+
+}
+
 Transform Skeleton::get_bone_global_pose(int p_bone) const {
 
 	ERR_FAIL_INDEX_V(p_bone,bones.size(),Transform());
@@ -389,7 +404,7 @@ void Skeleton::clear_bones() {
 void Skeleton::set_bone_pose(int p_bone, const Transform& p_pose) {
 
 	ERR_FAIL_INDEX( p_bone, bones.size() );
-	ERR_FAIL_COND( !is_inside_scene() );
+	ERR_FAIL_COND( !is_inside_tree() );
 	
 
 	bones[p_bone].pose=p_pose;
@@ -427,7 +442,7 @@ void Skeleton::_make_dirty() {
 	if (dirty)
 		return;
 		
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		dirty=true;
 		return;
 	}
@@ -519,6 +534,7 @@ void Skeleton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_bone_pose","bone_idx"),&Skeleton::get_bone_pose);
 	ObjectTypeDB::bind_method(_MD("set_bone_pose","bone_idx","pose"),&Skeleton::set_bone_pose);
 
+	ObjectTypeDB::bind_method(_MD("set_bone_global_pose","bone_idx","pose"),&Skeleton::set_bone_global_pose);
 	ObjectTypeDB::bind_method(_MD("get_bone_global_pose","bone_idx"),&Skeleton::get_bone_global_pose);
 
 	ObjectTypeDB::bind_method(_MD("get_bone_custom_pose","bone_idx"),&Skeleton::get_bone_custom_pose);

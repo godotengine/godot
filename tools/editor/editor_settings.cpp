@@ -386,6 +386,8 @@ void EditorSettings::_load_defaults() {
 
 	set("global/font","");
 	hints["global/font"]=PropertyInfo(Variant::STRING,"global/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
+	set("global/autoscan_project_path","");
+	hints["global/autoscan_project_path"]=PropertyInfo(Variant::STRING,"global/autoscan_project_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/default_project_path","");
 	hints["global/default_project_path"]=PropertyInfo(Variant::STRING,"global/default_project_path",PROPERTY_HINT_GLOBAL_DIR);
 	set("global/default_project_export_path","");
@@ -438,6 +440,7 @@ void EditorSettings::_load_defaults() {
 
 
 	set("animation/autorename_animation_tracks",true);
+	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
 	set("help/doc_path","");
@@ -462,10 +465,10 @@ void EditorSettings::notify_changes() {
 
 	_THREAD_SAFE_METHOD_
 
-	SceneMainLoop *sml=NULL;
+	SceneTree *sml=NULL;
 
 	if (OS::get_singleton()->get_main_loop())
-		sml = OS::get_singleton()->get_main_loop()->cast_to<SceneMainLoop>();
+		sml = OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
 
 	if (!sml) {
 		print_line("not SML");

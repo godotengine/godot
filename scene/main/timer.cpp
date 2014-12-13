@@ -38,9 +38,10 @@ void Timer::_notification(int p_what) {
 
 			if (autostart) {
 #ifdef TOOLS_ENABLED
-				if (get_scene()->is_editor_hint() && get_scene()->get_edited_scene_root() && (get_scene()->get_edited_scene_root()==this || get_scene()->get_edited_scene_root()->is_a_parent_of(this)))
+				if (get_tree()->is_editor_hint() && get_tree()->get_edited_scene_root() && (get_tree()->get_edited_scene_root()==this || get_tree()->get_edited_scene_root()->is_a_parent_of(this)))
 					break;
-#endif				start();
+#endif
+				start();
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {

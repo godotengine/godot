@@ -94,7 +94,7 @@ real_t Area::get_priority() const{
 }
 
 
-void Area::_body_enter_scene(ObjectID p_id) {
+void Area::_body_enter_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
@@ -102,9 +102,9 @@ void Area::_body_enter_scene(ObjectID p_id) {
 
 	Map<ObjectID,BodyState>::Element *E=body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(E->get().in_scene);
+	ERR_FAIL_COND(E->get().in_tree);
 
-	E->get().in_scene=true;
+	E->get().in_tree=true;
 	emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 	for(int i=0;i<E->get().shapes.size();i++) {
 
@@ -113,15 +113,16 @@ void Area::_body_enter_scene(ObjectID p_id) {
 
 }
 
-void Area::_body_exit_scene(ObjectID p_id) {
+void Area::_body_exit_tree(ObjectID p_id) {
+
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
 	ERR_FAIL_COND(!node);
 	Map<ObjectID,BodyState>::Element *E=body_map.find(p_id);
 	ERR_FAIL_COND(!E);
-	ERR_FAIL_COND(!E->get().in_scene);
-	E->get().in_scene=false;
+	ERR_FAIL_COND(!E->get().in_tree);
+	E->get().in_tree=false;
 	emit_signal(SceneStringNames::get_singleton()->body_exit,node);
 	for(int i=0;i<E->get().shapes.size();i++) {
 
@@ -131,6 +132,7 @@ void Area::_body_exit_scene(ObjectID p_id) {
 }
 
 void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_body_shape,int p_area_shape) {
+
 
 	bool body_in = p_status==PhysicsServer::AREA_BODY_ADDED;
 	ObjectID objid=p_instance;
@@ -142,16 +144,18 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 
 	ERR_FAIL_COND(!body_in && !E);
 
+	locked=true;
+
 	if (body_in) {
 		if (!E) {
 
 			E = body_map.insert(objid,BodyState());
 			E->get().rc=0;
-			E->get().in_scene=node && node->is_inside_scene();
+			E->get().in_tree=node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene,make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene,make_binds(objid));
-				if (E->get().in_scene) {
+				node->connect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree,make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree,make_binds(objid));
+				if (E->get().in_tree) {
 					emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 				}
 			}
@@ -162,7 +166,7 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 			E->get().shapes.insert(ShapePair(p_body_shape,p_area_shape));
 
 
-		if (E->get().in_scene) {
+		if (E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_enter_shape,objid,node,p_body_shape,p_area_shape);
 		}
 
@@ -178,9 +182,9 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 		if (E->get().rc==0) {
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
-				node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
-				if (E->get().in_scene)
+				node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+				node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
+				if (E->get().in_tree)
 					emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
 			}
@@ -188,7 +192,7 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 			eraseit=true;
 
 		}
-		if (node && E->get().in_scene) {
+		if (node && E->get().in_tree) {
 			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,objid,obj,p_body_shape,p_area_shape);
 		}
 
@@ -197,10 +201,18 @@ void Area::_body_inout(int p_status,const RID& p_body, int p_instance, int p_bod
 
 	}
 
+	locked=false;
+
+
 }
 
 
 void Area::_clear_monitoring() {
+
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
 
 	Map<ObjectID,BodyState> bmcopy = body_map;
 	body_map.clear();
@@ -211,7 +223,7 @@ void Area::_clear_monitoring() {
 		Object *obj = ObjectDB::get_instance(E->key());
 		Node *node = obj ? obj->cast_to<Node>() : NULL;
 		ERR_CONTINUE(!node);
-		if (!E->get().in_scene)
+		if (!E->get().in_tree)
 			continue;
 
 		for(int i=0;i<E->get().shapes.size();i++) {
@@ -221,19 +233,24 @@ void Area::_clear_monitoring() {
 
 		emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
-		node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
-		node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
+		node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+		node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
 	}
 
 }
 void Area::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 		_clear_monitoring();
 	}
 }
 
 void Area::set_enable_monitoring(bool p_enable) {
+
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
 
 	if (p_enable==monitoring)
 		return;
@@ -255,11 +272,29 @@ bool Area::is_monitoring_enabled() const {
 }
 
 
+Array Area::get_overlapping_bodies() const {
+
+	ERR_FAIL_COND_V(!monitoring,Array());
+	Array ret;
+	ret.resize(body_map.size());
+	int idx=0;
+	for (const Map<ObjectID,BodyState>::Element *E=body_map.front();E;E=E->next()) {
+		Object *obj = ObjectDB::get_instance(E->key());
+		if (!obj) {
+			ret.resize( ret.size() -1 ); //ops
+		} else {
+			ret[idx++]=obj;
+		}
+
+	}
+
+	return ret;
+}
 
 void Area::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_body_enter_scene","id"),&Area::_body_enter_scene);
-	ObjectTypeDB::bind_method(_MD("_body_exit_scene","id"),&Area::_body_exit_scene);
+	ObjectTypeDB::bind_method(_MD("_body_enter_tree","id"),&Area::_body_enter_tree);
+	ObjectTypeDB::bind_method(_MD("_body_exit_tree","id"),&Area::_body_exit_tree);
 
 	ObjectTypeDB::bind_method(_MD("set_space_override_mode","enable"),&Area::set_space_override_mode);
 	ObjectTypeDB::bind_method(_MD("get_space_override_mode"),&Area::get_space_override_mode);
@@ -283,6 +318,8 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area::is_monitoring_enabled);
 
+	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area::get_overlapping_bodies);
+
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area::_body_inout);
 
 
@@ -305,6 +342,7 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 
 	space_override=SPACE_OVERRIDE_DISABLED;
 	set_gravity(9.8);;
+	locked=false;
 	set_gravity_vector(Vector3(0,-1,0));
 	gravity_is_point=false;
 	density=0.1;

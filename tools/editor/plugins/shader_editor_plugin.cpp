@@ -144,10 +144,13 @@ void ShaderTextEditor::_validate_script() {
 	Error err = ShaderLanguage::compile(code,type,NULL,NULL,&errortxt,&line,&col);
 
 	if (err!=OK) {
-		String error_text="error("+itos(line)+","+itos(col)+"): "+errortxt;
+		String error_text="error("+itos(line+1)+","+itos(col)+"): "+errortxt;
 		set_error(error_text);
+		get_text_edit()->set_line_as_marked(line,true);
 
 	} else {
+		for(int i=0;i<get_text_edit()->get_line_count();i++)
+			get_text_edit()->set_line_as_marked(i,false);
 		set_error("");
 	}
 
@@ -258,7 +261,7 @@ void ShaderEditor::_tab_changed(int p_which) {
 
 void ShaderEditor::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		close->set_normal_texture( get_icon("Close","EditorIcons"));
 		close->set_hover_texture( get_icon("CloseHover","EditorIcons"));

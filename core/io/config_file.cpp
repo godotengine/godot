@@ -471,9 +471,12 @@ static Variant _decode_variant(const String& p_string) {
 		ERR_FAIL_COND_V(params.size()!=1 && params.size()!=2,Variant());
 		int scode=0;
 
-		if (params[0].is_numeric())
+		if (params[0].is_numeric()) {
 			scode=params[0].to_int();
-		else
+			if (scode < 10) {
+				scode=KEY_0+scode;
+			}
+		} else
 			scode=find_keycode(params[0]);
 
 		InputEvent ie;
@@ -577,7 +580,7 @@ static Variant _decode_variant(const String& p_string) {
 		int w=params[2].to_int();
 		int h=params[3].to_int();
 
-		if (w == 0 && w == 0) {
+		if (w == 0 && h == 0) {
 			//r_v = Image(w, h, imgformat);
 			return Image();
 		};

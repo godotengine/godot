@@ -117,7 +117,7 @@ BaseButton *ButtonGroup::get_focused_button() const{
 int ButtonGroup::get_pressed_button_index() const {
 	//in tree order, this is bizarre
 
-	ERR_FAIL_COND_V(!is_inside_scene(),0);
+	ERR_FAIL_COND_V(!is_inside_tree(),0);
 
 	BaseButton *pressed = get_pressed_button();
 	if (!pressed)

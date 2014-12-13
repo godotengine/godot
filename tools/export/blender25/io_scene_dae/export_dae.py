@@ -185,7 +185,11 @@ class DaeExporter:
 
 		else:
 			#export relative, always, no one wants absolute paths.
-			imgpath = os.path.relpath(imgpath,os.path.dirname(self.path)).replace("\\","/") # export unix compatible always
+			try:
+				imgpath = os.path.relpath(imgpath,os.path.dirname(self.path)).replace("\\","/") # export unix compatible always
+			except:
+				pass #fails sometimes, not sure why
+
 
 
 		imgid = self.new_id("image")
@@ -331,7 +335,7 @@ class DaeExporter:
 		return matid
 
 
-	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None):
+	def export_mesh(self,node,armature=None,skeyindex=-1,skel_source=None,custom_name=None):
 
 		mesh = node.data
 
@@ -368,9 +372,9 @@ class DaeExporter:
 #				self.export_node(node,il,shape.name)
 				node.data.update()
 				if (armature and k==0):
-					md=self.export_mesh(node,armature,k,mid)
+					md=self.export_mesh(node,armature,k,mid,shape.name)
 				else:
-					md=self.export_mesh(node,None,k)
+					md=self.export_mesh(node,None,k,None,shape.name)
 
 				node.data = p
 				node.data.update()
@@ -485,9 +489,17 @@ class DaeExporter:
 
 		uv_layer_count=len(mesh.uv_textures)
 		if (len(mesh.uv_textures)):
-			mesh.calc_tangents()
+			try:
+				mesh.calc_tangents()
+			except:
+				print("Warning, blender API is fucked up, not exporting UVs for this object.")
+				uv_layer_count=0
+				mesh.calc_normals_split()
+				has_tangents=False
+
 		else:
 			mesh.calc_normals_split()
+			has_tangents=False
 
 
 		for fi in range(len(mesh.polygons)):
@@ -584,7 +596,10 @@ class DaeExporter:
 
 
 		meshid = self.new_id("mesh")
-		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+		if (custom_name!=None):
+			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
+		else:
+			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 
@@ -850,6 +865,20 @@ class DaeExporter:
 		if (node.parent!=None):
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
+
+		if (node.data.shape_keys!=None):
+				sk = node.data.shape_keys
+				if (sk.animation_data):
+					print("HAS ANIM")
+					print("DRIVERS: "+str(len(sk.animation_data.drivers)))
+					for d in sk.animation_data.drivers:
+						if (d.driver):
+							for v in d.driver.variables:
+								for t in v.targets:
+									if (t.id!=None and t.id.name in self.scene.objects):
+										print("LINKING "+str(node)+" WITH "+str(t.id.name))
+										self.armature_for_morph[node]=self.scene.objects[t.id.name]
+
 
 		meshdata = self.export_mesh(node,armature)
 		close_controller=False
@@ -1145,7 +1174,7 @@ class DaeExporter:
 
 
 	def export_node(self,node,il):
-		if (not self.is_node_valid(node)):
+		if (not node in self.valid_nodes):
 			return
 		bpy.context.scene.objects.active = node
 
@@ -1165,7 +1194,6 @@ class DaeExporter:
 		elif (node.type=="LAMP"):
 			self.export_lamp_node(node,il)
 
-		self.valid_nodes.append(node)
 		for x in node.children:
 			self.export_node(x,il)
 
@@ -1177,6 +1205,7 @@ class DaeExporter:
 			return False
 		if (self.config["use_active_layers"]):
 			valid=False
+			print("NAME: "+node.name)
 			for i in range(20):
 				if (node.layers[i] and  self.scene.layers[i]):
 					valid=True
@@ -1196,8 +1225,21 @@ class DaeExporter:
 		self.writel(S_NODES,0,'<library_visual_scenes>')
 		self.writel(S_NODES,1,'<visual_scene id="'+self.scene_name+'" name="scene">')
 
+		#validate nodes
 		for obj in self.scene.objects:
-			if (obj.parent==None):
+			if (obj in self.valid_nodes):
+				continue
+			if (self.is_node_valid(obj)):
+				n = obj
+				while (n!=None):
+					if (not n in self.valid_nodes):
+						self.valid_nodes.append(n)
+					n=n.parent
+
+
+
+		for obj in self.scene.objects:
+			if (obj in self.valid_nodes and obj.parent==None):
 				self.export_node(obj,2)
 
 		self.writel(S_NODES,1,'</visual_scene>')
@@ -1327,6 +1369,7 @@ class DaeExporter:
 					if (node.type=="MESH" and node.data!=None and (node in self.armature_for_morph) and (self.armature_for_morph[node] in allowed)):
 						pass #all good you pass with flying colors for morphs inside of action
 					else:
+						#print("fail "+str((node in self.armature_for_morph)))
 						continue
 				if (node.type=="MESH" and node.data!=None and node.data.shape_keys!=None and (node.data in self.mesh_cache) and len(node.data.shape_keys.key_blocks)):
 					target = self.mesh_cache[node.data]["morph_id"]
@@ -1398,9 +1441,14 @@ class DaeExporter:
 		return tcn
 
 	def export_animations(self):
-
+		tmp_mat = []												# workaround by ndee					
+		for s in self.skeletons:									# workaround by ndee
+			tmp_bone_mat = []										# workaround by ndee
+			for bone in s.pose.bones:								# workaround by ndee
+				tmp_bone_mat.append(Matrix(bone.matrix_basis))		# workaround by ndee
+			tmp_mat.append([Matrix(s.matrix_local),tmp_bone_mat])	# workaround by ndee -> stores skeleton and bone transformations
+			
 		self.writel(S_ANIM,0,'<library_animations>')
-
 
 
 		if (self.config["use_anim_action_all"] and len(self.skeletons)):
@@ -1433,19 +1481,24 @@ class DaeExporter:
 								bones.append(dp)
 
 				allowed_skeletons=[]
-				for y in self.skeletons:
+				for i,y in enumerate(self.skeletons):				# workaround by ndee
 					if (y.animation_data):
 						for z in y.pose.bones:
 							if (z.bone.name in bones):
 								if (not y in allowed_skeletons):
 									allowed_skeletons.append(y)
 						y.animation_data.action=x;
+						
+						y.matrix_local = tmp_mat[i][0]				# workaround by ndee -> resets the skeleton transformation. 
+						for j,bone in enumerate(s.pose.bones):		# workaround by ndee
+							bone.matrix_basis = Matrix()			# workaround by ndee -> resets the bone transformations. Important if bones in follwing actions miss keyframes
+							
 
-
+				print("allowed skeletons "+str(allowed_skeletons))
 
 				print(str(x))
 
-				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]),allowed_skeletons)
+				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]+0.5),allowed_skeletons)
 				framelen=(1.0/self.scene.render.fps)
 				start = x.frame_range[0]*framelen
 				end = x.frame_range[1]*framelen
@@ -1458,16 +1511,20 @@ class DaeExporter:
 
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
 
-			for s in self.skeletons:
+			for i,s in enumerate(self.skeletons):					# workaround by ndee
 				if (s.animation_data==None):
 					continue
 				if s in cached_actions:
 					s.animation_data.action = bpy.data.actions[cached_actions[s]]
 				else:
 					s.animation_data.action = None
+					for j,bone in enumerate(s.pose.bones):			# workaround by ndee
+						bone.matrix_basis = tmp_mat[i][1][j]		# workaround by ndee  -> resets the bone transformation to what they were before exporting.
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
-
+		
+			
+		
 		self.writel(S_ANIM,0,'</library_animations>')
 
 	def export(self):
@@ -1547,6 +1604,7 @@ class DaeExporter:
 		self.config=kwargs
 		self.valid_nodes=[]
 		self.armature_for_morph={}
+
 
 
 

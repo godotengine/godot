@@ -118,6 +118,7 @@ class Navigation : public Spatial {
 	int last_id;
 
 	Vector3 up;
+	void _clip_path(Vector<Vector3>& path,Polygon *from_poly, const Vector3& p_to_point, Polygon* p_to_poly);
 
 protected:
 

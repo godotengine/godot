@@ -95,8 +95,8 @@ void Viewport::_update_stretch_transform() {
 
 	if (size_override_stretch && size_override) {
 
-		print_line("sive override size "+size_override_size);
-		print_line("rect size "+rect.size);
+		//print_line("sive override size "+size_override_size);
+		//print_line("rect size "+rect.size);
 		stretch_transform=Matrix32();
 		Size2 scale = rect.size/(size_override_size+size_override_margin*2);
 		stretch_transform.scale(scale);
@@ -113,7 +113,7 @@ void Viewport::_update_stretch_transform() {
 
 void Viewport::_update_rect() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Node *parent = get_parent();
@@ -135,7 +135,9 @@ void Viewport::_update_rect() {
 	}
 	vr.width=rect.size.width;
 	vr.height=rect.size.height;
+
 	VisualServer::get_singleton()->viewport_set_rect(viewport,vr);
+	last_vp_rect=rect;
 
 	if (canvas_item.is_valid()) {
 		VisualServer::get_singleton()->canvas_item_set_custom_rect(canvas_item,true,rect);
@@ -173,7 +175,7 @@ void Viewport::_parent_visibility_changed() {
 }
 
 
-void Viewport::_vp_enter_scene() {
+void Viewport::_vp_enter_tree() {
 
 	Node *parent = get_parent();
 		//none?
@@ -198,7 +200,7 @@ void Viewport::_vp_enter_scene() {
 
 }
 
-void Viewport::_vp_exit_scene() {
+void Viewport::_vp_exit_tree() {
 
 	Node *parent = get_parent();
 	if (parent && parent->cast_to<Control>()) {
@@ -229,19 +231,19 @@ void Viewport::_vp_exit_scene() {
 
 void Viewport::update_worlds() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Rect2 xformed_rect = (global_canvas_transform * canvas_transform).affine_inverse().xform(get_visible_rect());
 	find_world_2d()->_update_viewport(this,xformed_rect);
 	find_world_2d()->_update();
 
-	find_world()->_update(get_scene()->get_frame());
+	find_world()->_update(get_tree()->get_frame());
 }
 
 
 void Viewport::_test_new_mouseover(ObjectID new_collider) {
-
+#ifndef _3D_DISABLED
 	if (new_collider!=physics_object_over) {
 
 		if (physics_object_over) {
@@ -269,7 +271,7 @@ void Viewport::_test_new_mouseover(ObjectID new_collider) {
 		physics_object_over=new_collider;
 
 	}
-
+#endif
 
 }
 
@@ -278,11 +280,11 @@ void Viewport::_notification(int p_what) {
 
 	switch( p_what ) {
 		
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 
 			if (!render_target)
-				_vp_enter_scene();
+				_vp_enter_tree();
 
 			this->parent=NULL;
 			Node *parent=get_parent();
@@ -332,7 +334,7 @@ void Viewport::_notification(int p_what) {
 			}
 #endif
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 
 
@@ -340,7 +342,7 @@ void Viewport::_notification(int p_what) {
 				world_2d->_remove_viewport(this);
 
 			if (!render_target)
-				_vp_exit_scene();
+				_vp_exit_tree();
 
 			VisualServer::get_singleton()->viewport_set_scenario(viewport,RID());
 			SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
@@ -351,7 +353,7 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_FIXED_PROCESS: {
 
 			if (physics_object_picking) {
-
+#ifndef _3D_DISABLED
 				Vector2 last_pos(1e20,1e20);
 				CollisionObject *last_object;
 				ObjectID last_id=0;
@@ -497,6 +499,7 @@ void Viewport::_notification(int p_what) {
 					}
 
 				}
+#endif
 			}
 
 		} break;
@@ -513,6 +516,7 @@ void Viewport::set_rect(const Rect2& p_rect) {
 	if (rect==p_rect)
 		return;
 	rect=p_rect;
+
 	_update_rect();
 	_update_stretch_transform();
 
@@ -547,7 +551,7 @@ Rect2 Viewport::get_rect() const {
 
 void Viewport::_update_listener() {
 
-	if (is_inside_scene() && audio_listener && camera && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
+	if (is_inside_tree() && audio_listener && camera && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))  {
 		SpatialSoundServer::get_singleton()->listener_set_space(listener,find_world()->get_sound_space());
 	} else {
 		SpatialSoundServer::get_singleton()->listener_set_space(listener,RID());
@@ -558,7 +562,7 @@ void Viewport::_update_listener() {
 
 void Viewport::_update_listener_2d() {
 
-	if (is_inside_scene() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
+	if (is_inside_tree() && audio_listener && (!get_parent() || (get_parent()->cast_to<Control>() && get_parent()->cast_to<Control>()->is_visible())))
 		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,find_world_2d()->get_sound_space());
 	else
 		SpatialSound2DServer::get_singleton()->listener_set_space(listener_2d,RID());
@@ -737,7 +741,7 @@ void Viewport::_propagate_enter_world(Node *p_node) {
 
 	if (p_node!=this) {
 
-		if (!p_node->is_inside_scene()) //may not have entered scene yet
+		if (!p_node->is_inside_tree()) //may not have entered scene yet
 			return;
 
 		Spatial *s = p_node->cast_to<Spatial>();
@@ -766,7 +770,7 @@ void Viewport::_propagate_exit_world(Node *p_node) {
 
 	if (p_node!=this) {
 
-		if (!p_node->is_inside_scene()) //may have exited scene already
+		if (!p_node->is_inside_tree()) //may have exited scene already
 			return;
 
 		Spatial *s = p_node->cast_to<Spatial>();
@@ -797,7 +801,7 @@ void Viewport::set_world(const Ref<World>& p_world) {
 	if (world==p_world)
 		return;
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_propagate_exit_world(this);
 
 #ifndef _3D_DISABLED
@@ -807,7 +811,7 @@ void Viewport::set_world(const Ref<World>& p_world) {
 
 	world=p_world;
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_propagate_enter_world(this);
 
 #ifndef _3D_DISABLED
@@ -817,7 +821,7 @@ void Viewport::set_world(const Ref<World>& p_world) {
 
 	//propagate exit
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		VisualServer::get_singleton()->viewport_set_scenario(viewport,find_world()->get_scenario());
 	}
 
@@ -905,12 +909,12 @@ void Viewport::set_as_render_target(bool p_enable){
 	render_target=p_enable;
 
 	VS::get_singleton()->viewport_set_as_render_target(viewport,p_enable);
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 
 		if (p_enable)
-			_vp_exit_scene();
+			_vp_exit_tree();
 		else
-			_vp_enter_scene();
+			_vp_enter_tree();
 	}
 
 	if (p_enable) {
@@ -1029,13 +1033,16 @@ void Viewport::_make_input_local(InputEvent& ev) {
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 g = ai.xform(Vector2(ev.mouse_motion.global_x,ev.mouse_motion.global_y));
 			Vector2 l = ai.xform(Vector2(ev.mouse_motion.x,ev.mouse_motion.y));
-			Vector2 r = ai.xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			Vector2 r = ai.basis_xform(Vector2(ev.mouse_motion.relative_x,ev.mouse_motion.relative_y));
+			Vector2 s = ai.basis_xform(Vector2(ev.mouse_motion.speed_x,ev.mouse_motion.speed_y));
 			ev.mouse_motion.x=l.x;
 			ev.mouse_motion.y=l.y;
 			ev.mouse_motion.global_x=g.x;
 			ev.mouse_motion.global_y=g.y;
 			ev.mouse_motion.relative_x=r.x;
 			ev.mouse_motion.relative_y=r.y;
+			ev.mouse_motion.speed_x=s.x;
+			ev.mouse_motion.speed_y=s.y;
 
 		} break;
 		case InputEvent::SCREEN_TOUCH: {
@@ -1050,8 +1057,8 @@ void Viewport::_make_input_local(InputEvent& ev) {
 
 			Matrix32 ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
 			Vector2 t = ai.xform(Vector2(ev.screen_drag.x,ev.screen_drag.y));
-			Vector2 r = ai.xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
-			Vector2 s = ai.xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
+			Vector2 r = ai.basis_xform(Vector2(ev.screen_drag.relative_x,ev.screen_drag.relative_y));
+			Vector2 s = ai.basis_xform(Vector2(ev.screen_drag.speed_x,ev.screen_drag.speed_y));
 			ev.screen_drag.x=t.x;
 			ev.screen_drag.y=t.y;
 			ev.screen_drag.relative_x=r.x;
@@ -1095,24 +1102,24 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
 void Viewport::input(const InputEvent& p_event) {
 
-	ERR_FAIL_COND(!is_inside_scene());
-	get_scene()->_call_input_pause(input_group,"_input",p_event);
-	get_scene()->call_group(SceneMainLoop::GROUP_CALL_REVERSE|SceneMainLoop::GROUP_CALL_REALTIME|SceneMainLoop::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
+	ERR_FAIL_COND(!is_inside_tree());
+	get_tree()->_call_input_pause(input_group,"_input",p_event);
+	get_tree()->call_group(SceneTree::GROUP_CALL_REVERSE|SceneTree::GROUP_CALL_REALTIME|SceneTree::GROUP_CALL_MULIILEVEL,gui_input_group,"_gui_input",p_event); //special one for GUI, as controls use their own process check
 }
 
 void Viewport::unhandled_input(const InputEvent& p_event) {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 
-	get_scene()->_call_input_pause(unhandled_input_group,"_unhandled_input",p_event);
+	get_tree()->_call_input_pause(unhandled_input_group,"_unhandled_input",p_event);
 	//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_input","_unhandled_input",ev);
-	if (!get_scene()->input_handled && p_event.type==InputEvent::KEY) {
-		get_scene()->_call_input_pause(unhandled_key_input_group,"_unhandled_key_input",p_event);
+	if (!get_tree()->input_handled && p_event.type==InputEvent::KEY) {
+		get_tree()->_call_input_pause(unhandled_key_input_group,"_unhandled_key_input",p_event);
 		//call_group(GROUP_CALL_REVERSE|GROUP_CALL_REALTIME|GROUP_CALL_MULIILEVEL,"unhandled_key_input","_unhandled_key_input",ev);
 	}
 
 
-	if (physics_object_picking && !get_scene()->input_handled) {
+	if (physics_object_picking && !get_tree()->input_handled) {
 
 		if (p_event.type==InputEvent::MOUSE_BUTTON || p_event.type==InputEvent::MOUSE_MOTION || p_event.type==InputEvent::SCREEN_DRAG || p_event.type==InputEvent::SCREEN_TOUCH) {
 			physics_picking_events.push_back(p_event);
@@ -1127,7 +1134,7 @@ void Viewport::set_use_own_world(bool p_world) {
 		return;
 
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_propagate_exit_world(this);
 
 #ifndef _3D_DISABLED
@@ -1140,7 +1147,7 @@ void Viewport::set_use_own_world(bool p_world) {
 	else
 		own_world=Ref<World>( memnew( World ));
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_propagate_enter_world(this);
 
 #ifndef _3D_DISABLED
@@ -1150,7 +1157,7 @@ void Viewport::set_use_own_world(bool p_world) {
 
 	//propagate exit
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		VisualServer::get_singleton()->viewport_set_scenario(viewport,find_world()->get_scenario());
 	}
 
@@ -1184,6 +1191,21 @@ void Viewport::set_physics_object_picking(bool p_enable) {
 
 
 }
+
+
+Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
+
+	Matrix32 xf = get_final_transform();
+	return xf.xform(p_viewport_coords);
+
+
+}
+
+Vector2 Viewport::get_camera_rect_size() const {
+
+	return last_vp_rect.size;
+}
+
 
 bool Viewport::get_physics_object_picking() {
 

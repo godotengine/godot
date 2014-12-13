@@ -36,11 +36,11 @@
 
 Node *SceneTreeEditor::get_scene_node() {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),NULL);
-	if (get_scene()->get_root()->get_child_count() && get_scene()->get_root()->get_child(0)->cast_to<EditorNode>())
-		return get_scene()->get_root()->get_child(0)->cast_to<EditorNode>()->get_edited_scene();
+	ERR_FAIL_COND_V(!is_inside_tree(),NULL);
+	if (get_tree()->get_root()->get_child_count() && get_tree()->get_root()->get_child(0)->cast_to<EditorNode>())
+		return get_tree()->get_root()->get_child(0)->cast_to<EditorNode>()->get_edited_scene();
 	else
-		return get_scene()->get_root();
+		return get_tree()->get_root();
 
 	return NULL;
 }
@@ -367,7 +367,7 @@ void SceneTreeEditor::_node_removed(Node *p_node) {
 void SceneTreeEditor::_update_tree() {
 
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		tree_dirty=false;
 		return;
 	}
@@ -403,7 +403,7 @@ void SceneTreeEditor::_test_update_tree() {
 
 	pending_test_update=false;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if(tree_dirty)
@@ -483,10 +483,10 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object,int p_cell,bool p_se
 
 void SceneTreeEditor::_notification(int p_what) {
 	
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		get_scene()->connect("tree_changed",this,"_tree_changed");
-		get_scene()->connect("node_removed",this,"_node_removed");
+		get_tree()->connect("tree_changed",this,"_tree_changed");
+		get_tree()->connect("node_removed",this,"_node_removed");
 		instance_menu->set_item_icon(2,get_icon("Load","EditorIcons"));
 		tree->connect("item_collapsed",this,"_cell_collapsed");
 
@@ -494,10 +494,10 @@ void SceneTreeEditor::_notification(int p_what) {
 //		get_scene()->connect("node_removed",this,"_node_removed",Vector<Variant>(),CONNECT_DEFERRED);
 		_update_tree();
 	}
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
-		get_scene()->disconnect("tree_changed",this,"_tree_changed");
-		get_scene()->disconnect("node_removed",this,"_node_removed");
+		get_tree()->disconnect("tree_changed",this,"_tree_changed");
+		get_tree()->disconnect("node_removed",this,"_node_removed");
 		_update_tree();
 	}
 
@@ -806,7 +806,7 @@ SceneTreeEditor::~SceneTreeEditor() {
 
 void SceneTreeDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 		connect("confirmed", this,"_select");
 
 	}

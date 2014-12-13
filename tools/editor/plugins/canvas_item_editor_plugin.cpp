@@ -1055,7 +1055,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				editor_selection->clear();
 				editor_selection->add_node(c);
 				//reselect
-				if (get_scene()->is_editor_hint()) {
+				if (get_tree()->is_editor_hint()) {
 					editor->call("edit_node",c);
 				}
 
@@ -1791,7 +1791,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		select_sb->set_texture( get_icon("EditorRect2D","EditorIcons") );
 		for(int i=0;i<4;i++) {
@@ -1814,7 +1814,7 @@ void CanvasItemEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
 
-		get_scene()->connect("node_removed",this,"_node_removed");
+		get_tree()->connect("node_removed",this,"_node_removed");
 	}
 
 	if (p_what==NOTIFICATION_DRAW) {

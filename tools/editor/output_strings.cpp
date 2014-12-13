@@ -129,7 +129,7 @@ void OutputStrings::_notification(int p_what) {
 
 		} break;
 
-		case NOTIFICATION_ENTER_SCENE:
+		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_RESIZED: {
 
 

@@ -198,7 +198,7 @@ StaticBody2D::~StaticBody2D() {
 
 
 
-void RigidBody2D::_body_enter_scene(ObjectID p_id) {
+void RigidBody2D::_body_enter_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
@@ -218,7 +218,7 @@ void RigidBody2D::_body_enter_scene(ObjectID p_id) {
 
 }
 
-void RigidBody2D::_body_exit_scene(ObjectID p_id) {
+void RigidBody2D::_body_exit_tree(ObjectID p_id) {
 
 	Object *obj = ObjectDB::get_instance(p_id);
 	Node *node = obj ? obj->cast_to<Node>() : NULL;
@@ -251,10 +251,10 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 			E = contact_monitor->body_map.insert(objid,BodyState());
 //			E->get().rc=0;
-			E->get().in_scene=node && node->is_inside_scene();
+			E->get().in_scene=node && node->is_inside_tree();
 			if (node) {
-				node->connect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene,make_binds(objid));
-				node->connect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene,make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree,make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree,make_binds(objid));
 				if (E->get().in_scene) {
 					emit_signal(SceneStringNames::get_singleton()->body_enter,node);
 				}
@@ -283,8 +283,8 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 		if (E->get().shapes.empty()) {
 
 			if (node) {
-				node->disconnect(SceneStringNames::get_singleton()->enter_scene,this,SceneStringNames::get_singleton()->_body_enter_scene);
-				node->disconnect(SceneStringNames::get_singleton()->exit_scene,this,SceneStringNames::get_singleton()->_body_exit_scene);
+				node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+				node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
 				if (in_scene)
 					emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
 
@@ -618,6 +618,26 @@ RigidBody2D::CCDMode RigidBody2D::get_continuous_collision_detection_mode() cons
 }
 
 
+Array RigidBody2D::get_colliding_bodies() const {
+
+	ERR_FAIL_COND_V(!contact_monitor,Array());
+
+	Array ret;
+	ret.resize(contact_monitor->body_map.size());
+	int idx=0;
+	for (const Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.front();E;E=E->next()) {
+		Object *obj = ObjectDB::get_instance(E->key());
+		if (!obj) {
+			ret.resize( ret.size() -1 ); //ops
+		} else {
+			ret[idx++]=obj;
+		}
+
+	}
+
+	return ret;
+}
+
 void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 	if (p_enabled==is_contact_monitor_enabled())
@@ -694,8 +714,10 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_able_to_sleep"),&RigidBody2D::is_able_to_sleep);
 
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&RigidBody2D::_direct_state_changed);
-	ObjectTypeDB::bind_method(_MD("_body_enter_scene"),&RigidBody2D::_body_enter_scene);
-	ObjectTypeDB::bind_method(_MD("_body_exit_scene"),&RigidBody2D::_body_exit_scene);
+	ObjectTypeDB::bind_method(_MD("_body_enter_tree"),&RigidBody2D::_body_enter_tree);
+	ObjectTypeDB::bind_method(_MD("_body_exit_tree"),&RigidBody2D::_body_exit_tree);
+
+	ObjectTypeDB::bind_method(_MD("get_colliding_bodies"),&RigidBody2D::get_colliding_bodies);
 
 	BIND_VMETHOD(MethodInfo("_integrate_forces",PropertyInfo(Variant::OBJECT,"state:Physics2DDirectBodyState")));
 
@@ -803,7 +825,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 
 	colliding=false;
-	ERR_FAIL_COND_V(!is_inside_scene(),Vector2());
+	ERR_FAIL_COND_V(!is_inside_tree(),Vector2());
 	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
 	ERR_FAIL_COND_V(!dss,Vector2());
 	const int max_shapes=32;
@@ -947,7 +969,7 @@ Vector2 KinematicBody2D::move_to(const Vector2& p_position) {
 
 bool KinematicBody2D::can_move_to(const Vector2& p_position, bool p_discrete) {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),false);
+	ERR_FAIL_COND_V(!is_inside_tree(),false);
 	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
 	ERR_FAIL_COND_V(!dss,false);
 
@@ -987,7 +1009,7 @@ bool KinematicBody2D::can_move_to(const Vector2& p_position, bool p_discrete) {
 
 bool KinematicBody2D::is_colliding() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(),false);
+	ERR_FAIL_COND_V(!is_inside_tree(),false);
 
 	return colliding;
 }

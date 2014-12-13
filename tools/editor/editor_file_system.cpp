@@ -142,7 +142,7 @@ void EditorFileSystemDirectory::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_file","idx"),&EditorFileSystemDirectory::get_file);
 	ObjectTypeDB::bind_method(_MD("get_file_path","idx"),&EditorFileSystemDirectory::get_file_path);
 	ObjectTypeDB::bind_method(_MD("get_file_types","idx"),&EditorFileSystemDirectory::get_file_type);
-	ObjectTypeDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::get_file_type);
+	ObjectTypeDB::bind_method(_MD("is_missing_sources","idx"),&EditorFileSystemDirectory::is_missing_sources);
 	ObjectTypeDB::bind_method(_MD("get_name"),&EditorFileSystemDirectory::get_name);
 	ObjectTypeDB::bind_method(_MD("get_parent"),&EditorFileSystemDirectory::get_parent);
 
@@ -681,12 +681,12 @@ void EditorFileSystem::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_load_type_cache();
 			    scan();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (use_threads && thread) {
 				//abort thread if in progress
 				abort_scan=true;
@@ -990,6 +990,35 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 void EditorFileSystem::_resource_saved(const String& p_path){
 
 	EditorFileSystem::get_singleton()->update_file(p_path);
+}
+
+String EditorFileSystem::_find_first_from_source(EditorFileSystemDirectory* p_dir,const String &p_src) const {
+
+	for(int i=0;i<p_dir->files.size();i++) {
+		for(int j=0;j<p_dir->files[i].meta.sources.size();j++) {
+
+			if (p_dir->files[i].meta.sources[j].path==p_src)
+				return p_dir->get_file_path(i);
+		}
+	}
+
+	for(int i=0;i<p_dir->subdirs.size();i++) {
+
+		String ret = _find_first_from_source(p_dir->subdirs[i],p_src);
+		if (ret.length()>0)
+			return ret;
+	}
+
+	return String();
+}
+
+
+String EditorFileSystem::find_resource_from_source(const String& p_path) const {
+
+
+	if (filesystem)
+		return _find_first_from_source(filesystem,p_path);
+	return String();
 }
 
 void EditorFileSystem::update_file(const String& p_file) {

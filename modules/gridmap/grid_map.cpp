@@ -677,7 +677,7 @@ void GridMap::_octant_clear_baked(const OctantKey &p_key) {
 	g.bake_instance=RID();
 	g.baked=Ref<Mesh>();
 
-	if (is_inside_scene())
+	if (is_inside_tree())
 		_octant_enter_world(p_key);
 	g.dirty=true;
 	_queue_dirty_map();
@@ -1041,7 +1041,7 @@ void GridMap::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_clip","enabled","clipabove","floor","axis"),&GridMap::set_clip,DEFVAL(true),DEFVAL(0),DEFVAL(Vector3::AXIS_X));
 
-	ObjectTypeDB::bind_method(_MD("crate_area","id","area"),&GridMap::create_area);
+	ObjectTypeDB::bind_method(_MD("create_area","id","area"),&GridMap::create_area);
 	ObjectTypeDB::bind_method(_MD("area_get_bounds","area","bounds"),&GridMap::area_get_bounds);
 	ObjectTypeDB::bind_method(_MD("area_set_exterior_portal","area","enable"),&GridMap::area_set_exterior_portal);
 	ObjectTypeDB::bind_method(_MD("area_set_name","area","name"),&GridMap::area_set_name);

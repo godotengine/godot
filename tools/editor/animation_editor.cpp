@@ -687,9 +687,7 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 
 		case TRACK_MENU_OPTIMIZE: {
 
-			animation->optimize();
-
-			track_editor->update();
+			optimize_dialog->popup_centered(Size2(250,180));
 		} break;
 
 
@@ -697,6 +695,18 @@ void AnimationKeyEditor::_menu_track(int p_type) {
 	}
 
 }
+
+
+void AnimationKeyEditor::_animation_optimize()  {
+
+
+	print_line("OPTIMIZE!");
+	animation->optimize(optimize_linear_error->get_val(),optimize_angular_error->get_val(),optimize_max_angle->get_val());
+	track_editor->update();
+	undo_redo->clear_history();
+
+}
+
 
 float AnimationKeyEditor::_get_zoom_scale() const {
 
@@ -2309,7 +2319,7 @@ void AnimationKeyEditor::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 				zoomicon->set_texture( get_icon("Zoom","EditorIcons") );				
 				//menu_track->set_icon(get_icon("AddTrack","EditorIcons"));
@@ -2335,11 +2345,12 @@ void AnimationKeyEditor::_notification(int p_what) {
 				tpp->add_item("Out-In",TRACK_MENU_SET_ALL_TRANS_OUTIN);
 				tpp->set_name("Transitions");
 				tpp->connect("item_pressed",this,"_menu_track");
+				optimize_dialog->connect("confirmed",this,"_animation_optimize");
 
 				menu_track->get_popup()->add_child(tpp);
 				menu_track->get_popup()->add_submenu_item("Set Transitions..","Transitions");
-				//menu_track->get_popup()->add_separator();
-				//menu_track->get_popup()->add_item("Optimize Animation",TRACK_MENU_OPTIMIZE);
+				menu_track->get_popup()->add_separator();
+				menu_track->get_popup()->add_item("Optimize Animation",TRACK_MENU_OPTIMIZE);
 
 
 
@@ -2465,12 +2476,12 @@ void AnimationKeyEditor::set_animation(const Ref<Animation>& p_anim) {
 void AnimationKeyEditor::set_root(Node *p_root) {
 
 	if (root)
-		root->disconnect("exit_scene",this,"_root_removed");
+		root->disconnect("exit_tree",this,"_root_removed");
 
 	root=p_root;
 
 	if (root)
-		root->connect("exit_scene",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
+		root->connect("exit_tree",this,"_root_removed",make_binds(),CONNECT_ONESHOT);
 
 
 }
@@ -2502,6 +2513,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 
 
 	if (insert_frame!=OS::get_singleton()->get_frames_drawn()) {
+		//clear insert list for the frame if frame changed
 		if (insert_confirm->is_visible())
 			return; //do nothing
 		insert_data.clear();
@@ -2509,19 +2521,29 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 	}
 	insert_frame=OS::get_singleton()->get_frames_drawn();
 
+	for (List<InsertData>::Element *E=insert_data.front();E;E=E->next()) {
+		//prevent insertion of multiple tracks
+		if (E->get().path==p_id.path)
+			return; //already inserted a track for this on this frame
+	}
+
 	insert_data.push_back(p_id);
 
 	if (p_id.track_idx==-1) {
-		//potential new key, does not exist		
-		if (insert_data.size()==1)
-			insert_confirm->set_text("Create NEW track for "+p_id.query+" and insert key?");
-		else
-			insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
+		if (bool(EDITOR_DEF("animation/confirm_insert_track",true))) {
+			//potential new key, does not exist		
+			if (insert_data.size()==1)
+				insert_confirm->set_text("Create NEW track for "+p_id.query+" and insert key?");
+			else
+				insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
 
-		insert_confirm->get_ok()->set_text("Create");
-		insert_confirm->popup_centered(Size2(300,100));
-		insert_query=true;
-
+			insert_confirm->get_ok()->set_text("Create");
+			insert_confirm->popup_centered(Size2(300,100));
+			insert_query=true;
+		} else {
+			call_deferred("_insert_delay");
+			insert_queue=true;
+		}
 
 	} else {
 		if (!insert_query && !insert_queue) {
@@ -3099,6 +3121,7 @@ void AnimationKeyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_animation_len_update"),&AnimationKeyEditor::_animation_len_update);
 
 	ObjectTypeDB::bind_method(_MD("set_animation"),&AnimationKeyEditor::set_animation);
+	ObjectTypeDB::bind_method(_MD("_animation_optimize"),&AnimationKeyEditor::_animation_optimize);
 
 
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
@@ -3131,7 +3154,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	//add_child(menu);
 
 	menu_track = memnew( MenuButton );
-	menu_track->set_text("Tracks..");
+	menu_track->set_text("Tracks");
 	hb->add_child(menu_track);
 	menu_track->get_popup()->connect("item_pressed",this,"_menu_track");
 
@@ -3224,6 +3247,37 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	remove_button->set_disabled(true);
 	remove_button->set_tooltip("Remove selected track.");
 
+
+	optimize_dialog = memnew( ConfirmationDialog );
+	add_child(optimize_dialog);
+	optimize_dialog->set_title("Anim. Optimizer");
+	VBoxContainer *optimize_vb = memnew( VBoxContainer );
+	optimize_dialog->add_child(optimize_vb);
+	optimize_dialog->set_child_rect(optimize_vb);
+	optimize_linear_error = memnew( SpinBox );
+	optimize_linear_error->set_max(1.0);
+	optimize_linear_error->set_min(0.001);
+	optimize_linear_error->set_step(0.001);
+	optimize_linear_error->set_val(0.05);
+	optimize_vb->add_margin_child("Max. Linear Error:",optimize_linear_error);
+	optimize_angular_error = memnew( SpinBox );
+	optimize_angular_error->set_max(1.0);
+	optimize_angular_error->set_min(0.001);
+	optimize_angular_error->set_step(0.001);
+	optimize_angular_error->set_val(0.01);
+
+	optimize_vb->add_margin_child("Max. Angular Error:",optimize_angular_error);
+	optimize_max_angle = memnew( SpinBox );
+	optimize_vb->add_margin_child("Max Optimizable Angle:",optimize_max_angle);
+	optimize_max_angle->set_max(360.0);
+	optimize_max_angle->set_min(0.0);
+	optimize_max_angle->set_step(0.1);
+	optimize_max_angle->set_val(22);
+
+	optimize_dialog->get_ok()->set_text("Optimize");
+
+
+
 	/*keying = memnew( Button );
 	keying->set_toggle_mode(true);
 	//keying->set_text("Keys");
@@ -3297,8 +3351,6 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	insert_confirm = memnew( ConfirmationDialog );
 	add_child(insert_confirm);
 	insert_confirm->connect("confirmed",this,"_confirm_insert_list");
-
-	EDITOR_DEF("animation_editor/confirm_insert_key",true);
 
 	click.click=ClickOver::CLICK_NONE;
 

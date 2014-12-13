@@ -45,13 +45,17 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 
 #include "tcp_server_winsock.h"
+#include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "os/pc_joystick_map.h"
 #include "lang_table.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+
+#include "shlobj.h"
 static const WORD MAX_CONSOLE_LINES = 1500;
+
 
 //#define STDOUT_FILE
 
@@ -173,6 +177,7 @@ void OS_Windows::initialize_core() {
 
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
+	PacketPeerUDPWinsock::make_default();
 	
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
@@ -928,7 +933,7 @@ void OS_Windows::process_joysticks() {
 
 			if ( (joysticks[i].last_buttons & (1<<j)) != (jinfo.dwButtons & (1<<j)) ) {
 
-				ievent.joy_button.button_index = _pc_joystick_get_native_button(j);
+				ievent.joy_button.button_index = j; //_pc_joystick_get_native_button(j);
 				ievent.joy_button.pressed = jinfo.dwButtons & 1<<j;
 				ievent.ID = ++last_id;
 				input->parse_input_event(ievent);
@@ -982,8 +987,11 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		DEVMODE current;
 		memset(&current,0,sizeof(current));
 		EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &current);
+		
+		WindowRect.right  = current.dmPelsWidth;
+		WindowRect.bottom = current.dmPelsHeight;
 
-		DEVMODE dmScreenSettings;
+/*  DEVMODE dmScreenSettings;
 		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
 		dmScreenSettings.dmSize=sizeof(dmScreenSettings);
 		dmScreenSettings.dmPelsWidth	= video_mode.width;
@@ -995,7 +1003,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		if (err!=DISP_CHANGE_SUCCESSFUL) {
 
 			video_mode.fullscreen=false;
-		}
+		}*/
 	}
 
 	DWORD		dwExStyle;
@@ -1489,7 +1497,7 @@ OS::Date OS_Windows::get_date() const {
 OS::Time OS_Windows::get_time() const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
@@ -1870,7 +1878,46 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+String OS_Windows::get_system_dir(SystemDir p_dir) const {
 
+
+	int id;
+
+
+
+	switch(p_dir) {
+		case SYSTEM_DIR_DESKTOP: {
+			id=CSIDL_DESKTOPDIRECTORY;
+		} break;
+		case SYSTEM_DIR_DCIM: {
+			id=CSIDL_MYPICTURES;
+		} break;
+		case SYSTEM_DIR_DOCUMENTS: {
+			id=0x000C;
+		} break;
+		case SYSTEM_DIR_DOWNLOADS: {
+			id=0x000C ;
+		} break;
+		case SYSTEM_DIR_MOVIES: {
+			id=CSIDL_MYVIDEO;
+		} break;
+		case SYSTEM_DIR_MUSIC: {
+			id=CSIDL_MYMUSIC;
+		} break;
+		case SYSTEM_DIR_PICTURES: {
+			id=CSIDL_MYPICTURES;
+		} break;
+		case SYSTEM_DIR_RINGTONES: {
+			id=CSIDL_MYMUSIC;
+		} break;
+	}
+
+	WCHAR szPath[MAX_PATH];
+	HRESULT res = SHGetFolderPathW(NULL,id,NULL,0,szPath);
+	ERR_FAIL_COND_V(res!=S_OK,String());
+	return String(szPath);
+
+}
 String OS_Windows::get_data_dir() const {
 
 	String an = Globals::get_singleton()->get("application/name");

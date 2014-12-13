@@ -54,6 +54,8 @@ public:
 	static int get_language_count();
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
+
+	static void init_languages();
 };
 
 

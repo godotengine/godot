@@ -78,12 +78,31 @@ class EditorImportAnimationOptions : public VBoxContainer {
 	OBJ_TYPE( EditorImportAnimationOptions, VBoxContainer );
 
 
+
+	TreeItem *fps;
+	TreeItem* optimize_linear_error;
+	TreeItem* optimize_angular_error;
+	TreeItem* optimize_max_angle;
+
+	TreeItem *clips_base;
+
+	TextEdit *filters;
+	Vector<TreeItem*> clips;
+
 	Tree *flags;
+	Tree *clips_tree;
+	Tree *optimization_tree;
 	Vector<TreeItem*> items;
 
 	bool updating;
+	bool validating;
+
+
 
 	void _changed();
+	void _item_edited();
+	void _button_action(Object *p_obj,int p_col,int p_id);
+
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
@@ -93,6 +112,23 @@ public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 
+	void set_fps(int p_fps);
+	int get_fps() const;
+
+	void set_optimize_linear_error(float p_error);
+	float get_optimize_linear_error() const;
+
+	void set_optimize_angular_error(float p_error);
+	float get_optimize_angular_error() const;
+
+	void set_optimize_max_angle(float p_error);
+	float get_optimize_max_angle() const;
+
+	void setup_clips(const Array& p_clips);
+	Array get_clips() const;
+
+	void set_filter(const String& p_filter);
+	String get_filter() const;
 
 	EditorImportAnimationOptions();
 
@@ -141,6 +177,9 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	Map<Ref<Mesh>,Ref<Shape> > collision_map;
 	ConfirmationDialog *error_dialog;
 
+	OptionButton *this_import;
+	OptionButton *next_import;
+
 	void _choose_file(const String& p_path);
 	void _choose_save_file(const String& p_path);
 	void _choose_script(const String& p_path);
@@ -178,7 +217,7 @@ static const char *anim_flag_names[]={
 	"Detect Loop (-loop,-cycle)",
 	"Keep Value Tracks",
 	"Optimize",
-	"Force Tracks in All Bones",
+	"Force All Tracks in All Clips",
 	NULL
 };
 
@@ -223,9 +262,101 @@ void EditorImportAnimationOptions::_changed() {
 }
 
 
+void EditorImportAnimationOptions::_button_action(Object *p_obj,int p_col,int p_id) {
+
+	memdelete(p_obj);
+
+}
+
+
+void EditorImportAnimationOptions::_item_edited() {
+
+	if (validating)
+		return;
+
+	if (clips.size()==0)
+		return;
+	validating=true;
+	print_line("edited");
+	TreeItem *item = clips_tree->get_edited();
+	if (item==clips[clips.size()-1]) {
+		//add new
+		print_line("islast");
+		if (item->get_text(0).find("<")!=-1 || item->get_text(0).find(">")!=-1) {
+			validating=false;
+			return; //fuckit
+		}
+
+		item->set_editable(1,true);
+		item->set_editable(2,true);
+		item->add_button(0,EditorNode::get_singleton()->get_gui_base()->get_icon("Del","EditorIcons"));
+		item->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+		item->set_range_config(1,0,3600,0.01);
+		item->set_range(1,0);
+		item->set_editable(1,true);
+		item->set_cell_mode(2,TreeItem::CELL_MODE_RANGE);
+		item->set_range_config(2,0,3600,0.01);
+		item->set_range(2,0);
+		item->set_cell_mode(3,TreeItem::CELL_MODE_CHECK);
+		item->set_editable(3,true);
+
+		TreeItem *newclip = clips_tree->create_item(clips_base);
+		newclip->set_text(0,"<new clip>");
+		newclip->set_editable(0,true);
+		newclip->set_editable(1,false);
+		newclip->set_editable(2,false);
+		clips.push_back(newclip);
+
+
+
+	}
+
+
+	//make name unique JUST IN CASE
+	String name = item->get_text(0);
+	name=name.replace("/","_").replace(":","_").strip_edges();
+	if (name=="")
+		name="New Clip";
+
+	if (clips.size()>2) {
+		int index=1;
+		while(true) {
+			bool valid = true;
+			String try_name=name;
+			if (index>1)
+				try_name+=" "+itos(index);
+
+			for(int i=0;i<clips.size()-1;i++) {
+
+				if (clips[i]==item)
+					continue;
+				if (clips[i]->get_text(0)==try_name) {
+					index++;
+					valid=false;
+					break;
+				}
+			}
+
+			if (valid) {
+				name=try_name;
+				break;
+			}
+
+		}
+	}
+
+	if (item->get_text(0)!=name)
+		item->set_text(0,name);
+
+	validating=false;
+
+}
+
 void EditorImportAnimationOptions::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_changed",&EditorImportAnimationOptions::_changed);
+	ObjectTypeDB::bind_method("_item_edited",&EditorImportAnimationOptions::_item_edited);
+	ObjectTypeDB::bind_method("_button_action",&EditorImportAnimationOptions::_button_action);
 //	ObjectTypeDB::bind_method("_changedp",&EditorImportAnimationOptions::_changedp);
 
 	ADD_SIGNAL(MethodInfo("changed"));
@@ -234,20 +365,87 @@ void EditorImportAnimationOptions::_bind_methods() {
 
 void EditorImportAnimationOptions::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		flags->connect("item_edited",this,"_changed");
+		clips_tree->connect("item_edited",this,"_item_edited");
+		clips_tree->connect("button_pressed",this,"_button_action",varray(),CONNECT_DEFERRED);
 //		format->connect("item_selected",this,"_changedp");
 	}
 }
+
+
+Array EditorImportAnimationOptions::get_clips()  const {
+
+	Array arr;
+	for(int i=0;i<clips.size()-1;i++) {
+
+		arr.push_back(clips[i]->get_text(0));
+		arr.push_back(clips[i]->get_range(1));
+		arr.push_back(clips[i]->get_range(2));
+		arr.push_back(clips[i]->is_checked(3));
+	}
+
+	return arr;
+}
+
+
+void EditorImportAnimationOptions::setup_clips(const Array& p_clips) {
+
+	ERR_FAIL_COND(p_clips.size()%4!=0);
+	for(int i=0;i<clips.size();i++) {
+
+		memdelete(clips[i]);
+	}
+
+
+	clips.clear();
+
+	for(int i=0;i<p_clips.size();i+=4) {
+
+		TreeItem *clip = clips_tree->create_item(clips_base);
+		clip->set_text(0,p_clips[i]);
+		clip->add_button(0,EditorNode::get_singleton()->get_gui_base()->get_icon("Del","EditorIcons"));
+		clip->set_editable(0,true);
+		clip->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+		clip->set_range_config(1,0,3600,0.01);
+		clip->set_range(1,p_clips[i+1]);
+		clip->set_editable(1,true);
+		clip->set_cell_mode(2,TreeItem::CELL_MODE_RANGE);
+		clip->set_range_config(2,0,3600,0.01);
+		clip->set_range(2,p_clips[i+2]);
+		clip->set_editable(2,true);
+		clip->set_cell_mode(3,TreeItem::CELL_MODE_CHECK);
+		clip->set_editable(3,true);
+		clip->set_checked(3,p_clips[i+3]);
+		clips.push_back(clip);
+
+	}
+
+	TreeItem *newclip = clips_tree->create_item(clips_base);
+	newclip->set_text(0,"<new clip>");
+	newclip->set_editable(0,true);
+	newclip->set_editable(1,false);
+	newclip->set_editable(2,false);
+	newclip->set_editable(3,false);
+	clips.push_back(newclip);
+
+}
+
 
 EditorImportAnimationOptions::EditorImportAnimationOptions() {
 
 
 	updating=false;
+	validating=false;
+
+	TabContainer *tab= memnew(TabContainer);
+	add_margin_child("Animation Options",tab,true);
 
 	flags = memnew( Tree );
 	flags->set_hide_root(true);
+	tab->add_child(flags);
+	flags->set_name("Flags");
 	TreeItem *root = flags->create_item();
 
 	const char ** fname=anim_flag_names;
@@ -263,14 +461,133 @@ EditorImportAnimationOptions::EditorImportAnimationOptions() {
 		items.push_back(ti);
 		fname++;
 		fdescr++;
-	}
+	}	
 
 
-	add_margin_child("Animation Options",flags,true);
+	TreeItem *fps_base = flags->create_item(root);
+	fps_base->set_text(0,"Bake FPS:");
+	fps_base->set_editable(0,false);
+	fps = flags->create_item(fps_base);
+	fps->set_cell_mode(0,TreeItem::CELL_MODE_RANGE);
+	fps->set_editable(0,true);
+	fps->set_range_config(0,1,120,1);
+	fps->set_range(0,15);
 
+	optimization_tree = memnew( Tree );
+	optimization_tree->set_columns(2);
+	tab->add_child(optimization_tree);
+	optimization_tree->set_name("Optimizer");
+	optimization_tree->set_column_expand(0,true);
+	optimization_tree->set_column_expand(1,false);
+	optimization_tree->set_column_min_width(1,80);
+	optimization_tree->set_hide_root(true);
+
+
+	TreeItem *optimize_root = optimization_tree->create_item();
+
+	optimize_linear_error = optimization_tree->create_item(optimize_root);
+	optimize_linear_error->set_text(0,"Max Linear Error");
+	optimize_linear_error->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+	optimize_linear_error->set_editable(1,true);
+	optimize_linear_error->set_range_config(1,0,1,0.001);
+	optimize_linear_error->set_range(1,0.05);
+
+	optimize_angular_error = optimization_tree->create_item(optimize_root);
+	optimize_angular_error->set_text(0,"Max Angular Error");
+	optimize_angular_error->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+	optimize_angular_error->set_editable(1,true);
+	optimize_angular_error->set_range_config(1,0,1,0.001);
+	optimize_angular_error->set_range(1,0.01);
+
+	optimize_max_angle = optimization_tree->create_item(optimize_root);
+	optimize_max_angle->set_text(0,"Max Angle");
+	optimize_max_angle->set_cell_mode(1,TreeItem::CELL_MODE_RANGE);
+	optimize_max_angle->set_editable(1,true);
+	optimize_max_angle->set_range_config(1,0,360,0.001);
+	optimize_max_angle->set_range(1,int(180*0.125));
+
+	clips_tree = memnew( Tree );
+	clips_tree->set_hide_root(true);
+	tab->add_child(clips_tree);
+	clips_tree->set_name("Clips");
+
+	clips_tree->set_columns(4);
+	clips_tree->set_column_expand(0,1);
+	clips_tree->set_column_expand(1,0);
+	clips_tree->set_column_expand(2,0);
+	clips_tree->set_column_expand(3,0);
+	clips_tree->set_column_min_width(1,60);
+	clips_tree->set_column_min_width(2,60);
+	clips_tree->set_column_min_width(3,40);
+	clips_tree->set_column_titles_visible(true);
+	clips_tree->set_column_title(0,"Name");
+	clips_tree->set_column_title(1,"Start(s)");
+	clips_tree->set_column_title(2,"End(s)");
+	clips_tree->set_column_title(3,"Loop");
+	clips_base =clips_tree->create_item(0);
+
+
+	setup_clips(Array());
+
+
+	filters = memnew( TextEdit );
+	tab->add_child(filters);
+	filters->set_name("Filters");
 }
 
 
+
+void EditorImportAnimationOptions::set_fps(int p_fps) {
+
+	fps->set_range(0,p_fps);
+}
+
+int EditorImportAnimationOptions::get_fps() const {
+
+	return fps->get_range(0);
+}
+
+
+void EditorImportAnimationOptions::set_optimize_linear_error(float p_optimize_linear_error) {
+
+	optimize_linear_error->set_range(1,p_optimize_linear_error);
+}
+
+float EditorImportAnimationOptions::get_optimize_linear_error() const {
+
+	return optimize_linear_error->get_range(1);
+}
+
+void EditorImportAnimationOptions::set_optimize_angular_error(float p_optimize_angular_error) {
+
+	optimize_angular_error->set_range(1,p_optimize_angular_error);
+}
+
+float EditorImportAnimationOptions::get_optimize_angular_error() const {
+
+	return optimize_angular_error->get_range(1);
+}
+
+void EditorImportAnimationOptions::set_optimize_max_angle(float p_optimize_max_angle) {
+
+	optimize_max_angle->set_range(1,p_optimize_max_angle);
+}
+
+float EditorImportAnimationOptions::get_optimize_max_angle() const {
+
+	return optimize_max_angle->get_range(1);
+}
+
+
+void EditorImportAnimationOptions::set_filter(const String& p_filter) {
+
+	filters->set_text(p_filter);
+}
+
+String EditorImportAnimationOptions::get_filter() const {
+
+	return filters->get_text();
+}
 
 
 
@@ -307,6 +624,17 @@ void EditorSceneImportDialog::_choose_file(const String& p_path) {
 #if 0
 	}
 #endif
+
+	if (p_path!=String()) {
+
+		String from_path = EditorFileSystem::get_singleton()->find_resource_from_source(EditorImportPlugin::validate_source_path(p_path));
+		print_line("from path.."+from_path);
+		if (from_path!=String()) {
+			popup_import(from_path);
+
+		}
+	}
+
 
 	import_path->set_text(p_path);
 
@@ -413,7 +741,15 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("texture_format",texture_options->get_format());
 	rim->set_option("texture_quality",texture_options->get_quality());
 	rim->set_option("animation_flags",animation_options->get_flags());
+	rim->set_option("animation_bake_fps",animation_options->get_fps());
+	rim->set_option("animation_optimizer_linear_error",animation_options->get_optimize_linear_error());
+	rim->set_option("animation_optimizer_angular_error",animation_options->get_optimize_angular_error());
+	rim->set_option("animation_optimizer_max_angle",animation_options->get_optimize_max_angle());
+	rim->set_option("animation_filters",animation_options->get_filter());
+	rim->set_option("animation_clips",animation_options->get_clips());
 	rim->set_option("post_import_script",script_path->get_text()!=String()?EditorImportPlugin::validate_source_path(script_path->get_text()):String());
+	rim->set_option("import_this_time",this_import->get_selected());
+	rim->set_option("import_next_time",next_import->get_selected());
 	rim->set_option("reimport",true);
 
 	List<String> missing;
@@ -526,7 +862,7 @@ void EditorSceneImportDialog::_browse_script() {
 
 void EditorSceneImportDialog::popup_import(const String &p_from) {
 
-	popup_centered(Size2(700,500));
+	popup_centered(Size2(750,550));
 	if (p_from!="") {
 		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_from);
 		if (rimd.is_null())
@@ -544,7 +880,24 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 		texture_options->set_format(EditorTextureImportPlugin::ImageFormat(int(rimd->get_option("texture_format"))));
 		texture_options->set_quality(rimd->get_option("texture_quality"));
 		animation_options->set_flags(rimd->get_option("animation_flags"));
+		if (rimd->has_option("animation_clips"))
+			animation_options->setup_clips(rimd->get_option("animation_clips"));
+		if (rimd->has_option("animation_filters"))
+			animation_options->set_filter(rimd->get_option("animation_filters"));
+		if (rimd->has_option("animation_bake_fps"))
+			animation_options->set_fps(rimd->get_option("animation_bake_fps"));
+		if (rimd->has_option("animation_optimizer_linear_error"))
+			animation_options->set_optimize_linear_error(rimd->get_option("animation_optimizer_linear_error"));
+		if (rimd->has_option("animation_optimizer_angular_error"))
+			animation_options->set_optimize_angular_error(rimd->get_option("animation_optimizer_angular_error"));
+		if (rimd->has_option("animation_optimizer_max_angle"))
+			animation_options->set_optimize_max_angle(rimd->get_option("animation_optimizer_max_angle"));
+
 		script_path->set_text(rimd->get_option("post_import_script"));
+		if (rimd->has_option("import_this_time"))
+			this_import->select(rimd->get_option("import_this_time"));
+		if (rimd->has_option("import_next_time"))
+			next_import->select(rimd->get_option("import_next_time"));
 
 		save_path->set_text(p_from.get_base_dir());
 		import_path->set_text(EditorImportPlugin::expand_source_path(rimd->get_source_path(0)));
@@ -556,7 +909,7 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 void EditorSceneImportDialog::_notification(int p_what) {
 
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 
 		List<String> extensions;
@@ -619,7 +972,7 @@ void EditorSceneImportDialog::_bind_methods() {
 	ObjectTypeDB::bind_method("_choose_file",&EditorSceneImportDialog::_choose_file);
 	ObjectTypeDB::bind_method("_choose_save_file",&EditorSceneImportDialog::_choose_save_file);
 	ObjectTypeDB::bind_method("_choose_script",&EditorSceneImportDialog::_choose_script);
-	ObjectTypeDB::bind_method("_import",&EditorSceneImportDialog::_import);
+	ObjectTypeDB::bind_method("_import",&EditorSceneImportDialog::_import,DEFVAL(false));
 	ObjectTypeDB::bind_method("_browse",&EditorSceneImportDialog::_browse);
 	ObjectTypeDB::bind_method("_browse_target",&EditorSceneImportDialog::_browse_target);
 	ObjectTypeDB::bind_method("_browse_script",&EditorSceneImportDialog::_browse_script);
@@ -792,6 +1145,20 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	error_dialog->get_ok()->set_text("Accept");
 //	error_dialog->get_cancel()->hide();
 
+	this_import = memnew( OptionButton );
+	this_import->add_item("Overwrite Existing Scene");
+	this_import->add_item("Owerwrite Existing, Keep Materials");
+	this_import->add_item("Keep Existing, Merge with New");
+	this_import->add_item("Keep Existing, Ignore New");
+	vbc->add_margin_child("This Time:",this_import);
+
+	next_import = memnew( OptionButton );
+	next_import->add_item("Overwrite Existing Scene");
+	next_import->add_item("Owerwrite Existing, Keep Materials");
+	next_import->add_item("Keep Existing, Merge with New");
+	next_import->add_item("Keep Existing, Ignore New");
+	vbc->add_margin_child("Next Time:",next_import);
+
 	set_hide_on_ok(false);
 
 	GLOBAL_DEF("import/shared_textures","res://");
@@ -814,7 +1181,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	animation_options = memnew( EditorImportAnimationOptions );
 	ovb->add_child(animation_options);
 	animation_options->set_v_size_flags(SIZE_EXPAND_FILL);
-	animation_options->set_flags(EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP|EditorSceneAnimationImportPlugin::ANIMATION_KEEP_VALUE_TRACKS|EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE|EditorSceneAnimationImportPlugin::ANIMATION_FORCE_TRACKS_IN_ALL_BONES);
+	animation_options->set_flags(EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP|EditorSceneAnimationImportPlugin::ANIMATION_KEEP_VALUE_TRACKS|EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE|EditorSceneAnimationImportPlugin::ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
 
 
 	confirm_import = memnew( ConfirmationDialog );
@@ -1815,6 +2182,79 @@ void EditorSceneImportPlugin::_merge_scenes(Node *p_node,Node *p_imported) {
 }
 
 
+void EditorSceneImportPlugin::_scan_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials) {
+
+	if (!p_base && p_node->get_owner()!=p_base)
+		return;
+	MeshInstance *mi=p_node->cast_to<MeshInstance>();
+
+	if (mi) {
+		if (mi->get_material_override().is_valid()) {
+			String path = p_base->get_path_to(p_node);
+			override_materials[path]=mi->get_material_override();
+		}
+		Ref<Mesh> mesh = mi->get_mesh();
+		if (mesh.is_valid()) {
+
+			for(int i=0;i<mesh->get_surface_count();i++) {
+
+				String name = mesh->get_name()+":"+mesh->surface_get_name(i);
+				if (!mesh_materials.has(name)) {
+					mesh_materials[name]=mesh->surface_get_material(i);
+				}
+			}
+		}
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+		_scan_materials(p_base,p_node->get_child(i),mesh_materials,override_materials);
+	}
+}
+
+
+void EditorSceneImportPlugin::_apply_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials,Set<Ref<Mesh> >& meshes_processed) {
+
+	if (!p_base && p_node->get_owner()!=p_base)
+		return;
+
+	MeshInstance *mi=p_node->cast_to<MeshInstance>();
+
+	if (mi) {
+
+		String path = p_base->get_path_to(p_node);
+		if (override_materials.has(path))
+			mi->set_material_override(override_materials[path]);
+
+		Ref<Mesh> mesh = mi->get_mesh();
+		if (mesh.is_valid() && !meshes_processed.has(mesh)) {
+			meshes_processed.insert(mesh);
+			for(int i=0;i<mesh->get_surface_count();i++) {
+
+				String name = mesh->get_name()+":"+mesh->surface_get_name(i);
+				if (mesh_materials.has(name)) {
+
+					Ref<Material> mat = mesh_materials[name];
+					mesh->surface_set_material(i,mat);
+				}
+			}
+		}
+	}
+
+	for(int i=0;i<p_node->get_child_count();i++) {
+		_apply_materials(p_base,p_node->get_child(i),mesh_materials,override_materials,meshes_processed);
+	}
+}
+
+void EditorSceneImportPlugin::_merge_materials(Node *p_node,Node *p_imported) {
+
+	Map<String,Ref<Material> > mesh_materials;
+	Map<String,Ref<Material> > override_materials;
+
+	_scan_materials(p_node,p_node,mesh_materials,override_materials);
+	Set<Ref<Mesh> > mp;
+	_apply_materials(p_imported,p_imported,mesh_materials,override_materials,mp);
+
+}
 
 #if 0
 
@@ -1882,14 +2322,22 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 	int animation_flags=p_from->get_option("animation_flags");
 	int scene_flags = from->get_option("flags");
+	int fps = 24;
+	if (from->has_option("animation_bake_fps"))
+		fps=from->get_option("animation_bake_fps");
+
+
+	Array clips;
+	if (from->has_option("animation_clips"))
+		clips=from->get_option("animation_clips");
 
 	uint32_t import_flags=0;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_DETECT_LOOP)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_DETECT_LOOP;
 	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_OPTIMIZE;
-	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_FORCE_TRACKS_IN_ALL_BONES)
-		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_FORCE_TRACKS_IN_ALL_BONES;
+	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS)
+		import_flags|=EditorSceneImporter::IMPORT_ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS;
 	if (scene_flags&SCENE_FLAG_IMPORT_ANIMATIONS)
 		import_flags|=EditorSceneImporter::IMPORT_ANIMATION;
 	//if (scene_flags&SCENE_FLAG_FAIL_ON_MISSING_IMAGES)
@@ -1902,7 +2350,7 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 
 
 	Error err=OK;
-	Node *scene = importer->import_scene(src_path,import_flags,r_missing,&err);	
+	Node *scene = importer->import_scene(src_path,import_flags,fps,r_missing,&err);
 	if (!scene || err!=OK) {
 		return err;
 	}
@@ -1913,19 +2361,301 @@ Error EditorSceneImportPlugin::import1(const Ref<ResourceImportMetadata>& p_from
 	return OK;
 }
 
+
+void EditorSceneImportPlugin::_create_clips(Node *scene, const Array& p_clips,bool p_bake_all) {
+
+	if (!scene->has_node(String("AnimationPlayer")))
+		return;
+
+	Node* n = scene->get_node(String("AnimationPlayer"));
+	ERR_FAIL_COND(!n);
+	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	ERR_FAIL_COND(!anim);
+
+	if (!anim->has_animation("default"))
+		return;
+
+
+	Ref<Animation> default_anim = anim->get_animation("default");
+
+	for(int i=0;i<p_clips.size();i+=4) {
+
+		String name = p_clips[i];
+		float from=p_clips[i+1];
+		float to=p_clips[i+2];
+		bool loop=p_clips[i+3];
+		if (from>=to)
+			continue;
+
+		Ref<Animation> new_anim = memnew( Animation );
+
+		for(int j=0;j<default_anim->get_track_count();j++) {
+
+
+			List<float> keys;
+			int kc = default_anim->track_get_key_count(j);
+			int dtrack=-1;
+			for(int k=0;k<kc;k++) {
+
+				float kt = default_anim->track_get_key_time(j,k);
+				if (kt>=from && kt<to) {
+
+					//found a key within range, so create track
+					if (dtrack==-1) {
+						new_anim->add_track(default_anim->track_get_type(j));
+						dtrack = new_anim->get_track_count()-1;
+						new_anim->track_set_path(dtrack,default_anim->track_get_path(j));
+
+						if (kt>(from+0.01) && k>0) {
+
+							if (default_anim->track_get_type(j)==Animation::TYPE_TRANSFORM) {
+								Quat q;
+								Vector3 p;
+								Vector3 s;
+								default_anim->transform_track_interpolate(j,from,&p,&q,&s);
+								new_anim->transform_track_insert_key(dtrack,0,p,q,s);
+							}
+						}
+
+					}
+
+					if (default_anim->track_get_type(j)==Animation::TYPE_TRANSFORM) {
+						Quat q;
+						Vector3 p;
+						Vector3 s;
+						default_anim->transform_track_get_key(j,k,&p,&q,&s);
+						new_anim->transform_track_insert_key(dtrack,kt-from,p,q,s);
+					}
+
+				}
+
+				if (dtrack!=-1 && kt>=to) {
+
+					if (default_anim->track_get_type(j)==Animation::TYPE_TRANSFORM) {
+						Quat q;
+						Vector3 p;
+						Vector3 s;
+						default_anim->transform_track_interpolate(j,to,&p,&q,&s);
+						new_anim->transform_track_insert_key(dtrack,to-from,p,q,s);
+					}
+				}
+
+			}
+
+			if (dtrack==-1 && p_bake_all) {
+				new_anim->add_track(default_anim->track_get_type(j));
+				dtrack = new_anim->get_track_count()-1;
+				new_anim->track_set_path(dtrack,default_anim->track_get_path(j));
+				if (default_anim->track_get_type(j)==Animation::TYPE_TRANSFORM) {
+
+
+					Quat q;
+					Vector3 p;
+					Vector3 s;
+					default_anim->transform_track_interpolate(j,from,&p,&q,&s);
+					new_anim->transform_track_insert_key(dtrack,0,p,q,s);
+					default_anim->transform_track_interpolate(j,to,&p,&q,&s);
+					new_anim->transform_track_insert_key(dtrack,to-from,p,q,s);
+				}
+
+			}
+		}
+
+
+		new_anim->set_loop(loop);
+		new_anim->set_length(to-from);
+		anim->add_animation(name,new_anim);
+	}
+
+	anim->remove_animation("default"); //remove default (no longer needed)
+}
+
+void EditorSceneImportPlugin::_filter_anim_tracks(Ref<Animation> anim,Set<String> &keep) {
+
+	Ref<Animation> a = anim;
+	ERR_FAIL_COND(!a.is_valid());
+
+	print_line("From Anim "+anim->get_name()+":");
+
+	for(int j=0;j<a->get_track_count();j++) {
+
+		String path = a->track_get_path(j);
+
+		if (!keep.has(path)) {
+
+			print_line("Remove: "+path);
+			a->remove_track(j);
+			j--;
+		}
+
+	}
+}
+
+
+void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) {
+
+	if (!scene->has_node(String("AnimationPlayer")))
+		return;
+		Node* n = scene->get_node(String("AnimationPlayer"));
+	ERR_FAIL_COND(!n);
+	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	ERR_FAIL_COND(!anim);
+
+	Vector<String> strings = p_text.split("\n");
+	for(int i=0;i<strings.size();i++) {
+
+		strings[i]=strings[i].strip_edges();
+	}
+
+	List<StringName> anim_names;
+	anim->get_animation_list(&anim_names);
+	for(List<StringName>::Element *E=anim_names.front();E;E=E->next()) {
+
+		String name = E->get();
+		bool valid_for_this=false;
+		bool valid=false;
+
+		Set<String> keep;
+		Set<String> keep_local;
+
+
+		for(int i=0;i<strings.size();i++) {
+
+
+			if (strings[i].begins_with("@")) {
+
+				valid_for_this=false;
+				for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
+					keep.insert(F->get());
+				}
+				keep_local.clear();
+
+				Vector<String> filters=strings[i].substr(1,strings[i].length()).split(",");
+				for(int j=0;j<filters.size();j++) {
+
+					String fname = filters[j].strip_edges();
+					if (fname=="")
+						continue;
+					int fc = fname[0];
+					bool plus;
+					if (fc=='+')
+						plus=true;
+					else if (fc=='-')
+						 plus=false;
+					else
+						continue;
+
+					String filter=fname.substr(1,fname.length()).strip_edges();
+
+					if (!name.matchn(filter))
+						continue;
+					valid_for_this=plus;
+				}
+
+				if (valid_for_this)
+					valid=true;
+
+			} else if (valid_for_this) {
+
+				Ref<Animation> a = anim->get_animation(name);
+				if (!a.is_valid())
+					continue;
+
+				for(int j=0;j<a->get_track_count();j++) {
+
+					String path = a->track_get_path(j);
+
+					String tname = strings[i];
+					if (tname=="")
+						continue;
+					int fc = tname[0];
+					bool plus;
+					if (fc=='+')
+						plus=true;
+					else if (fc=='-')
+						 plus=false;
+					else
+						continue;
+
+					String filter=tname.substr(1,tname.length()).strip_edges();
+
+					if (!path.matchn(filter))
+						continue;
+
+					if (plus)
+						keep_local.insert(path);
+					else if (!keep.has(path)) {
+						keep_local.erase(path);
+					}
+				}
+
+			}
+
+		}
+
+		if (valid) {
+			for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
+				keep.insert(F->get());
+			}
+
+			_filter_anim_tracks(anim->get_animation(name),keep);
+		}
+
+	}
+
+
+
+}
+
+void EditorSceneImportPlugin::_optimize_animations(Node *scene, float p_max_lin_error,float p_max_ang_error,float p_max_angle) {
+
+	if (!scene->has_node(String("AnimationPlayer")))
+		return;
+		Node* n = scene->get_node(String("AnimationPlayer"));
+	ERR_FAIL_COND(!n);
+	AnimationPlayer *anim = n->cast_to<AnimationPlayer>();
+	ERR_FAIL_COND(!anim);
+
+
+	List<StringName> anim_names;
+	anim->get_animation_list(&anim_names);
+	for(List<StringName>::Element *E=anim_names.front();E;E=E->next()) {
+
+		Ref<Animation> a = anim->get_animation(E->get());
+		a->optimize(p_max_lin_error,p_max_ang_error,Math::deg2rad(p_max_angle));
+	}
+}
+
+
 Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, const Ref<ResourceImportMetadata>& p_from) {
 
 	Error err=OK;
 	Ref<ResourceImportMetadata> from=p_from;
 	String src_path=EditorImportPlugin::expand_source_path(from->get_source_path(0));
 	int animation_flags=p_from->get_option("animation_flags");
+	Array animation_clips = p_from->get_option("animation_clips");
+	String animation_filter = p_from->get_option("animation_filters");
 	int scene_flags = from->get_option("flags");
+	float anim_optimizer_linerr=0.05;
+	float anim_optimizer_angerr=0.01;
+	float anim_optimizer_maxang=22;
+
+	if (from->has_option("animation_optimizer_linear_error"))
+		anim_optimizer_linerr=from->get_option("animation_optimizer_linear_error");
+	if (from->has_option("animation_optimizer_angular_error"))
+		anim_optimizer_angerr=from->get_option("animation_optimizer_angular_error");
+	if (from->has_option("animation_optimizer_max_angle"))
+		anim_optimizer_maxang=from->get_option("animation_optimizer_max_angle");
 
 	EditorProgress progress("import","Import Scene",104);
 	progress.step("Importing Scene..",2);
 
 
-	bool merge = !bool(from->get_option("reimport"));
+	bool reimport = bool(from->get_option("reimport"));
+	int this_time_action = from->get_option("import_this_time");
+	int next_time_action = from->get_option("import_next_time");
+
+	int import_action = reimport?this_time_action:next_time_action;
 
 	from->set_source_md5(0,FileAccess::get_md5(src_path));
 	from->set_editor(get_name());
@@ -1940,6 +2670,13 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Map< Ref<ImageTexture>,TextureRole > imagemap;
 
 	scene=_fix_node(scene,scene,collision_map,scene_flags,imagemap);
+	if (animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_OPTIMIZE)
+		_optimize_animations(scene,anim_optimizer_linerr,anim_optimizer_angerr,anim_optimizer_maxang);
+	if (animation_clips.size())
+		_create_clips(scene,animation_clips,animation_flags&EditorSceneAnimationImportPlugin::ANIMATION_FORCE_ALL_TRACKS_IN_ALL_CLIPS);
+
+	_filter_tracks(scene,animation_filter);
+
 
 
 	/// BEFORE ANYTHING, RUN SCRIPT
@@ -2063,7 +2800,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	/// BEFORE SAVING - MERGE
 
 
-	if (merge) {
+	if (import_action!=SCENE_UPDATE_REPLACE_WITH_NEW) {
 
 
 		progress.step("Merging..",103);
@@ -2082,10 +2819,30 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 
 				if (existing) {
 
-					_merge_scenes(existing,scene);
 
-					memdelete(scene);
-					scene=existing;
+					switch(import_action) {
+
+						case SCENE_UPDATE_REPLACE_WITH_NEW: break;
+						case SCENE_UPDATE_REPLACE_WITH_NEW_KEEP_MATERIALS: {
+
+							_merge_materials(existing,scene);
+							memdelete(existing);
+
+						} break;
+						case SCENE_UPDATE_KEEP_OLD_MERGE_CHANGES: {
+
+							_merge_scenes(existing,scene);
+							memdelete(scene);
+							scene=existing;
+
+						} break;
+						case SCENE_UPDATE_KEEP_OLD: {
+
+							memdelete(scene);
+							scene=existing;
+						} break;
+					}
+
 				}
 			}
 

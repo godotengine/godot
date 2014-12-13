@@ -23,6 +23,8 @@ class BakedLightEditor : public Control {
 
 	float update_timeout;
 	DVector<uint8_t> octree_texture;
+	DVector<uint8_t> light_texture;
+	DVector<int> octree_sampler;
 
 	BakedLightBaker *baker;
 	AcceptDialog *err_dialog;
@@ -32,6 +34,9 @@ class BakedLightEditor : public Control {
 	Button *button_reset;
 	Button *button_make_lightmaps;
 	Label *bake_info;
+
+	uint64_t last_rays_time;
+
 
 
 	BakedLightInstance *node;

@@ -66,6 +66,6 @@ for x in env.android_module_libraries:
 	shutil.copy(x,abspath+"/java/libs")	
 
 
-env_android.SharedLibrary("#bin/libgodot_android",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])
+env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
 #env.Command('#bin/libgodot_android.so', '#platform/android/libgodot_android.so', Copy('bin/libgodot_android.so', 'platform/android/libgodot_android.so'))

@@ -76,7 +76,7 @@ void Spatial::_notify_dirty() {
 
 	if (!data.ignore_notification && !xform_change.in_list()) {
 
-		get_scene()->xform_change_list.add(&xform_change);
+		get_tree()->xform_change_list.add(&xform_change);
 	}
 }
 
@@ -91,7 +91,7 @@ void Spatial::_update_local_transform() const {
 }
 void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		return;
 	}
 
@@ -110,7 +110,7 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 
 	if (!data.ignore_notification && !xform_change.in_list()) {
 
-		get_scene()->xform_change_list.add(&xform_change);
+		get_tree()->xform_change_list.add(&xform_change);
 
 	}
 	data.dirty|=DIRTY_GLOBAL;
@@ -121,7 +121,7 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 void Spatial::_notification(int p_what) {
 
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			Node *p = get_parent();
 			if (p)
@@ -132,7 +132,7 @@ void Spatial::_notification(int p_what) {
 			else
 				data.C=NULL;
 
-			if (data.toplevel && !get_scene()->is_editor_hint()) {
+			if (data.toplevel && !get_tree()->is_editor_hint()) {
 
 				if (data.parent) {
 					data.local_transform = data.parent->get_global_transform() * get_transform();
@@ -147,11 +147,11 @@ void Spatial::_notification(int p_what) {
 			notification(NOTIFICATION_ENTER_WORLD);
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			notification(NOTIFICATION_EXIT_WORLD,true);
 			if (xform_change.in_list())
-				get_scene()->xform_change_list.remove(&xform_change);
+				get_tree()->xform_change_list.remove(&xform_change);
 			if (data.C)
 				data.parent->data.children.erase(data.C);
 			data.parent=NULL;
@@ -177,10 +177,10 @@ void Spatial::_notification(int p_what) {
 				get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_enter_world,NULL,0);
 			}
 #ifdef TOOLS_ENABLED
-			if (get_scene()->is_editor_hint()) {
+			if (get_tree()->is_editor_hint()) {
 
 //				get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
-				get_scene()->call_group(0,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
+				get_tree()->call_group(0,SceneStringNames::get_singleton()->_spatial_editor_group,SceneStringNames::get_singleton()->_request_gizmo,this);
 				if (!data.gizmo_disabled) {
 
 					if (data.gizmo.is_valid())
@@ -257,7 +257,7 @@ Transform Spatial::get_transform() const {
 }
 Transform Spatial::get_global_transform() const {
 
-	ERR_FAIL_COND_V(!is_inside_scene(), Transform());
+	ERR_FAIL_COND_V(!is_inside_tree(), Transform());
 
 	if (data.dirty & DIRTY_GLOBAL) {
 
@@ -460,7 +460,7 @@ void Spatial::set_as_toplevel(bool p_enabled) {
 
 	if (data.toplevel==p_enabled)
 		return;
-	if (is_inside_scene() && !get_scene()->is_editor_hint()) {
+	if (is_inside_tree() && !get_tree()->is_editor_hint()) {
 
 		if (p_enabled)
 			set_transform(get_global_transform());
@@ -537,7 +537,7 @@ void Spatial::show() {
 
 	data.visible=true;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (!data.parent || is_visible()) {

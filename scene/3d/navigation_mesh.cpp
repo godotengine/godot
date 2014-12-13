@@ -114,7 +114,7 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 		return;
 	enabled=p_enabled;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (!enabled) {
@@ -152,7 +152,7 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			Spatial *c=this;
 			while(c) {
@@ -178,7 +178,7 @@ void NavigationMeshInstance::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (navigation) {
 

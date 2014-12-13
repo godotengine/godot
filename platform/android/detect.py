@@ -61,6 +61,7 @@ def configure(env):
 		import methods
 		env.Tool('gcc')
 		env['SPAWN'] = methods.win32_spawn
+		env['SHLIBSUFFIX'] = '.so'
 
 #	env.android_source_modules.append("../libs/apk_expansion")	
 	env.android_source_modules.append("../libs/google_play_services")	

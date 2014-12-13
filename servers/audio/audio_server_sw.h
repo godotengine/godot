@@ -92,6 +92,8 @@ class AudioServerSW : public AudioServer {
 	float peak_left,peak_right;
 	uint32_t max_peak;
 
+	double _output_delay;
+
 	VoiceRBSW voice_rb;
 
 	bool exit_update_thread;
@@ -205,6 +207,9 @@ public:
 	virtual uint32_t read_output_peak() const;
 
 	virtual double get_mix_time() const; //useful for video -> audio sync
+
+	virtual double get_output_delay() const;
+
 
 	AudioServerSW(SampleManagerSW *p_sample_manager);
 	~AudioServerSW();

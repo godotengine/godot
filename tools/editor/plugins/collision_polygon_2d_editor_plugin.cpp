@@ -13,7 +13,7 @@ void CollisionPolygon2DEditor::_notification(int p_what) {
 			button_create->set_icon( get_icon("Edit","EditorIcons"));
 			button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
 			button_edit->set_pressed(true);
-
+			get_tree()->connect("node_removed",this,"_node_removed");
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
@@ -28,6 +28,7 @@ void CollisionPolygon2DEditor::_node_removed(Node *p_node) {
 	if(p_node==node) {
 		node=NULL;
 		hide();
+		canvas_item_editor->get_viewport_control()->update();
 	}
 
 }
@@ -82,6 +83,9 @@ void CollisionPolygon2DEditor::_wip_close() {
 
 bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
+
+	if (!node)
+		return false;
 
 	switch(p_event.type) {
 
@@ -379,6 +383,7 @@ void CollisionPolygon2DEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_menu_option"),&CollisionPolygon2DEditor::_menu_option);
 	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&CollisionPolygon2DEditor::_canvas_draw);
+	ObjectTypeDB::bind_method(_MD("_node_removed"),&CollisionPolygon2DEditor::_node_removed);
 
 }
 

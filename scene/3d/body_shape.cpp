@@ -44,7 +44,6 @@
 void CollisionShape::_update_body() {
 
 
-
 	if (get_parent() && get_parent()->cast_to<CollisionObject>())
 		get_parent()->cast_to<CollisionObject>()->_update_shapes_from_children();
 
@@ -72,7 +71,7 @@ void CollisionShape::make_convex_from_brothers() {
 	}
 
 }
-
+/*
 
 void CollisionShape::_update_indicator() {
 
@@ -300,8 +299,11 @@ void CollisionShape::_update_indicator() {
 
 }
 
-
+*/
 void CollisionShape::_add_to_collision_object(Object* p_cshape) {
+
+	if (unparenting)
+		return;
 
 	CollisionObject *co=p_cshape->cast_to<CollisionObject>();
 	ERR_FAIL_COND(!co);
@@ -318,22 +320,25 @@ void CollisionShape::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_WORLD: {
-			indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
+		case NOTIFICATION_ENTER_TREE: {
+			unparenting=false;
+
+			//indicator_instance = VisualServer::get_singleton()->instance_create2(indicator,get_world()->get_scenario());
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
+		//	VisualServer::get_singleton()->instance_set_transform(indicator_instance,get_global_transform());
 			if (updating_body) {
 				_update_body();
 			}
 		} break;
-		case NOTIFICATION_EXIT_WORLD: {
-			if (indicator_instance.is_valid()) {
+		case NOTIFICATION_EXIT_TREE: {
+		/*	if (indicator_instance.is_valid()) {
 				VisualServer::get_singleton()->free(indicator_instance);
 				indicator_instance=RID();
-			}
+			}*/
 		} break;
 		case NOTIFICATION_UNPARENTED: {
+			unparenting=true;
 			if (updating_body)
 				_update_body();
 		} break;
@@ -411,15 +416,16 @@ bool CollisionShape::is_trigger() const{
 
 CollisionShape::CollisionShape() {
 
-	indicator = VisualServer::get_singleton()->mesh_create();
+	//indicator = VisualServer::get_singleton()->mesh_create();
 	updating_body=true;
+	unparenting=false;
     trigger=false;
 }
 
 CollisionShape::~CollisionShape() {
 	if (!shape.is_null())
 		shape->unregister_owner(this);
-	VisualServer::get_singleton()->free(indicator);
+	//VisualServer::get_singleton()->free(indicator);
 }
 
 #if 0

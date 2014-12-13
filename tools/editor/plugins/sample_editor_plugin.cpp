@@ -46,7 +46,7 @@ void SampleEditor::_notification(int p_what) {
 
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 		play->set_icon( get_icon("Play","EditorIcons") );
 		stop->set_icon( get_icon("Stop","EditorIcons") );
 	}

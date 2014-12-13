@@ -82,6 +82,8 @@ public:
 			Variant default_value;
 #endif
 			StringName identifier;
+			StringName setter;
+			StringName getter;
 		};
 		struct Constant {
 			StringName identifier;
@@ -213,6 +215,7 @@ public:
 			OP_MOD,
 			OP_SHIFT_LEFT,
 			OP_SHIFT_RIGHT,
+			OP_INIT_ASSIGN,
 			OP_ASSIGN,
 			OP_ASSIGN_ADD,
 			OP_ASSIGN_SUB,
@@ -370,6 +373,7 @@ private:
 	List<int> tab_level;
 
 	String base_path;
+	String self_path;
 
 	PropertyInfo current_export;
 
@@ -395,8 +399,8 @@ public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false);
-	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="");
+	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="");
+	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="",const String& p_self_path="");
 
 	const Node *get_parse_tree() const;
 

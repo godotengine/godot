@@ -43,13 +43,13 @@
 #include "viewport.h"
 
 
-void SceneMainLoop::tree_changed() {
+void SceneTree::tree_changed() {
 
 	tree_version++;
 	emit_signal(tree_changed_name);
 }
 
-void SceneMainLoop::node_removed(Node *p_node) {
+void SceneTree::node_removed(Node *p_node) {
 
 	emit_signal(node_removed_name,p_node);
 	if (call_lock>0)
@@ -59,7 +59,7 @@ void SceneMainLoop::node_removed(Node *p_node) {
 }
 
 
-void SceneMainLoop::add_to_group(const StringName& p_group, Node *p_node) {
+void SceneTree::add_to_group(const StringName& p_group, Node *p_node) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E) {
@@ -74,7 +74,7 @@ void SceneMainLoop::add_to_group(const StringName& p_group, Node *p_node) {
 	E->get().last_tree_version=0;
 }
 
-void SceneMainLoop::remove_from_group(const StringName& p_group, Node *p_node) {
+void SceneTree::remove_from_group(const StringName& p_group, Node *p_node) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	ERR_FAIL_COND(!E);
@@ -85,7 +85,7 @@ void SceneMainLoop::remove_from_group(const StringName& p_group, Node *p_node) {
 		group_map.erase(E);
 }
 
-void SceneMainLoop::_flush_transform_notifications() {
+void SceneTree::_flush_transform_notifications() {
 
 	SelfList<Node>* n = xform_change_list.first();
 	while(n) {
@@ -98,7 +98,7 @@ void SceneMainLoop::_flush_transform_notifications() {
 	}
 }
 
-void SceneMainLoop::_flush_ugc() {
+void SceneTree::_flush_ugc() {
 
 	ugc_locked=true;
 
@@ -118,7 +118,7 @@ void SceneMainLoop::_flush_ugc() {
 	ugc_locked=false;
 }
 
-void SceneMainLoop::_update_group_order(Group& g) {
+void SceneTree::_update_group_order(Group& g) {
 
 	if (g.last_tree_version==tree_version)
 		return;
@@ -134,7 +134,7 @@ void SceneMainLoop::_update_group_order(Group& g) {
 }
 
 
-void SceneMainLoop::call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
+void SceneTree::call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,VARIANT_ARG_DECLARE) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -216,7 +216,7 @@ void SceneMainLoop::call_group(uint32_t p_call_flags,const StringName& p_group,c
 		call_skip.clear();
 }
 
-void SceneMainLoop::notify_group(uint32_t p_call_flags,const StringName& p_group,int p_notification) {
+void SceneTree::notify_group(uint32_t p_call_flags,const StringName& p_group,int p_notification) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -266,7 +266,7 @@ void SceneMainLoop::notify_group(uint32_t p_call_flags,const StringName& p_group
 		call_skip.clear();
 }
 
-void SceneMainLoop::set_group(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value) {
+void SceneTree::set_group(uint32_t p_call_flags,const StringName& p_group,const String& p_name,const Variant& p_value) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -316,12 +316,12 @@ void SceneMainLoop::set_group(uint32_t p_call_flags,const StringName& p_group,co
 		call_skip.clear();
 }
 
-void SceneMainLoop::set_input_as_handled() {
+void SceneTree::set_input_as_handled() {
 
 	input_handled=true;
 }
 
-void SceneMainLoop::input_text( const String& p_text ) {
+void SceneTree::input_text( const String& p_text ) {
 
 	root_lock++;
 
@@ -330,16 +330,20 @@ void SceneMainLoop::input_text( const String& p_text ) {
 
 }
 
-void SceneMainLoop::input_event( const InputEvent& p_event ) {
+void SceneTree::input_event( const InputEvent& p_event ) {
 
+
+	if (is_editor_hint() && (p_event.type==InputEvent::JOYSTICK_MOTION || p_event.type==InputEvent::JOYSTICK_BUTTON))
+		return; //avoid joy input on editor
 
 	root_lock++;
-	last_id=p_event.ID;
+	//last_id=p_event.ID;
 
 	input_handled=false;
 
 
 	InputEvent ev = p_event;
+	ev.ID=++last_id; //this should work better
 #if 0
 	switch(ev.type) {
 
@@ -393,7 +397,7 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 
 #endif
 
-	MainLoop::input_event(p_event);
+	MainLoop::input_event(ev);
 #if 0
 	_call_input_pause("input","_input",ev);
 
@@ -415,7 +419,7 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 	//transform for the rest
 #else
 
-	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input",p_event); //special one for GUI, as controls use their own process check
+	call_group(GROUP_CALL_REALTIME,"_viewports","_vp_input",ev); //special one for GUI, as controls use their own process check
 
 #endif
 	if (ScriptDebugger::get_singleton() && ScriptDebugger::get_singleton()->is_remote() && ev.type==InputEvent::KEY && ev.key.pressed && !ev.key.echo && ev.key.scancode==KEY_F8) {
@@ -440,7 +444,7 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 		}
 #else
 
-		call_group(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",p_event); //special one for GUI, as controls use their own process check
+		call_group(GROUP_CALL_REALTIME,"_viewports","_vp_unhandled_input",ev); //special one for GUI, as controls use their own process check
 
 #endif
 		input_handled=true;
@@ -455,7 +459,7 @@ void SceneMainLoop::input_event( const InputEvent& p_event ) {
 
 }
 
-void SceneMainLoop::init() {
+void SceneTree::init() {
 
 	//_quit=false;
 	accept_quit=true;
@@ -466,12 +470,12 @@ void SceneMainLoop::init() {
 	editor_hint=false;
 	pause=false;
 
-	root->_set_scene(this);
+	root->_set_tree(this);
 	MainLoop::init();
 
 }
 
-bool SceneMainLoop::iteration(float p_time) {
+bool SceneTree::iteration(float p_time) {
 
 
 	root_lock++;
@@ -496,7 +500,7 @@ bool SceneMainLoop::iteration(float p_time) {
 	return _quit;
 }
 
-bool SceneMainLoop::idle(float p_time){
+bool SceneTree::idle(float p_time){
 
 
 //	print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
@@ -538,7 +542,7 @@ bool SceneMainLoop::idle(float p_time){
 	return _quit;
 }
 
-void SceneMainLoop::finish() {
+void SceneTree::finish() {
 
 	_flush_delete_queue();
 
@@ -549,7 +553,7 @@ void SceneMainLoop::finish() {
 	MainLoop::finish();
 
 	if (root) {
-		root->_set_scene(NULL);
+		root->_set_tree(NULL);
 		memdelete(root); //delete root
 	}
 
@@ -564,12 +568,12 @@ void SceneMainLoop::finish() {
 }
 
 
-void SceneMainLoop::quit() {
+void SceneTree::quit() {
 
 	_quit=true;
 }
 
-void SceneMainLoop::_notification(int p_notification) {
+void SceneTree::_notification(int p_notification) {
 
 
 
@@ -602,22 +606,22 @@ void SceneMainLoop::_notification(int p_notification) {
 };
 
 
-void SceneMainLoop::set_auto_accept_quit(bool p_enable) {
+void SceneTree::set_auto_accept_quit(bool p_enable) {
 
 	accept_quit=p_enable;
 }
 
-void SceneMainLoop::set_editor_hint(bool p_enabled) {
+void SceneTree::set_editor_hint(bool p_enabled) {
 
 	editor_hint=p_enabled;
 }
 
-bool SceneMainLoop::is_editor_hint() const {
+bool SceneTree::is_editor_hint() const {
 
 	return editor_hint;
 }
 
-void SceneMainLoop::set_pause(bool p_enabled) {
+void SceneTree::set_pause(bool p_enabled) {
 
 	if (p_enabled==pause)
 		return;
@@ -628,12 +632,12 @@ void SceneMainLoop::set_pause(bool p_enabled) {
 		get_root()->propagate_notification(p_enabled ? Node::NOTIFICATION_PAUSED : Node::NOTIFICATION_UNPAUSED);
 }
 
-bool SceneMainLoop::is_paused() const {
+bool SceneTree::is_paused() const {
 
 	return pause;
 }
 
-void SceneMainLoop::_call_input_pause(const StringName& p_group,const StringName& p_method,const InputEvent& p_input) {
+void SceneTree::_call_input_pause(const StringName& p_group,const StringName& p_method,const InputEvent& p_input) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -678,7 +682,7 @@ void SceneMainLoop::_call_input_pause(const StringName& p_group,const StringName
 		call_skip.clear();
 }
 
-void SceneMainLoop::_notify_group_pause(const StringName& p_group,int p_notification) {
+void SceneTree::_notify_group_pause(const StringName& p_group,int p_notification) {
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
 	if (!E)
@@ -728,13 +732,13 @@ void SceneMainLoop::_update_listener_2d() {
 }
 */
 
-uint32_t SceneMainLoop::get_last_event_id() const {
+uint32_t SceneTree::get_last_event_id() const {
 
 	return last_id;
 }
 
 
-Variant SceneMainLoop::_call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+Variant SceneTree::_call_group(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
 
 	r_error.error=Variant::CallError::CALL_OK;
@@ -759,13 +763,13 @@ Variant SceneMainLoop::_call_group(const Variant** p_args, int p_argcount, Varia
 }
 
 
-int64_t SceneMainLoop::get_frame() const {
+int64_t SceneTree::get_frame() const {
 
 	return current_frame;
 }
 
 
-Array SceneMainLoop::_get_nodes_in_group(const StringName& p_group) {
+Array SceneTree::_get_nodes_in_group(const StringName& p_group) {
 
 	Array ret;
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
@@ -788,7 +792,7 @@ Array SceneMainLoop::_get_nodes_in_group(const StringName& p_group) {
 	return ret;
 }
 
-void SceneMainLoop::get_nodes_in_group(const StringName& p_group,List<Node*> *p_list) {
+void SceneTree::get_nodes_in_group(const StringName& p_group,List<Node*> *p_list) {
 
 
 	Map<StringName,Group>::Element *E=group_map.find(p_group);
@@ -818,9 +822,9 @@ static void _fill_array(Node *p_node, Array& array, int p_level) {
 	}
 }
 
-void SceneMainLoop::_debugger_request_tree(void *self) {
+void SceneTree::_debugger_request_tree(void *self) {
 
-	SceneMainLoop *sml = (SceneMainLoop *)self;
+	SceneTree *sml = (SceneTree *)self;
 
 	Array arr;
 	_fill_array(sml->root,arr,0);
@@ -828,7 +832,7 @@ void SceneMainLoop::_debugger_request_tree(void *self) {
 }
 
 
-void SceneMainLoop::_flush_delete_queue() {
+void SceneTree::_flush_delete_queue() {
 
 	_THREAD_SAFE_METHOD_
 
@@ -842,7 +846,7 @@ void SceneMainLoop::_flush_delete_queue() {
 	}
 }
 
-void SceneMainLoop::queue_delete(Object *p_object) {
+void SceneTree::queue_delete(Object *p_object) {
 
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_NULL(p_object);
@@ -850,13 +854,13 @@ void SceneMainLoop::queue_delete(Object *p_object) {
 }
 
 
-int SceneMainLoop::get_node_count() const {
+int SceneTree::get_node_count() const {
 
 	return node_count;
 }
 
 
-void SceneMainLoop::_update_root_rect() {
+void SceneTree::_update_root_rect() {
 
 
 	if (stretch_mode==STRETCH_MODE_DISABLED) {
@@ -959,7 +963,7 @@ void SceneMainLoop::_update_root_rect() {
 
 }
 
-void SceneMainLoop::set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize) {
+void SceneTree::set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect,const Size2 p_minsize) {
 
 	stretch_mode=p_mode;
 	stretch_aspect=p_aspect;
@@ -969,50 +973,50 @@ void SceneMainLoop::set_screen_stretch(StretchMode p_mode,StretchAspect p_aspect
 
 
 #ifdef TOOLS_ENABLED
-void SceneMainLoop::set_edited_scene_root(Node *p_node) {
+void SceneTree::set_edited_scene_root(Node *p_node) {
 	edited_scene_root=p_node;
 }
 
-Node *SceneMainLoop::get_edited_scene_root() const {
+Node *SceneTree::get_edited_scene_root() const {
 
 	return edited_scene_root;
 }
 #endif
 
 
-void SceneMainLoop::_bind_methods() {
+void SceneTree::_bind_methods() {
 
 
 	//ObjectTypeDB::bind_method(_MD("call_group","call_flags","group","method","arg1","arg2"),&SceneMainLoop::_call_group,DEFVAL(Variant()),DEFVAL(Variant()));
-	ObjectTypeDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneMainLoop::notify_group);
-	ObjectTypeDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneMainLoop::set_group);
+	ObjectTypeDB::bind_method(_MD("notify_group","call_flags","group","notification"),&SceneTree::notify_group);
+	ObjectTypeDB::bind_method(_MD("set_group","call_flags","group","property","value"),&SceneTree::set_group);
 
-	ObjectTypeDB::bind_method(_MD("get_nodes_in_group"),&SceneMainLoop::_get_nodes_in_group);
+	ObjectTypeDB::bind_method(_MD("get_nodes_in_group"),&SceneTree::_get_nodes_in_group);
 
-	ObjectTypeDB::bind_method(_MD("get_root:Viewport"),&SceneMainLoop::get_root);
+	ObjectTypeDB::bind_method(_MD("get_root:Viewport"),&SceneTree::get_root);
 
-	ObjectTypeDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneMainLoop::set_auto_accept_quit);
+	ObjectTypeDB::bind_method(_MD("set_auto_accept_quit","enabled"),&SceneTree::set_auto_accept_quit);
 
-	ObjectTypeDB::bind_method(_MD("set_editor_hint","enable"),&SceneMainLoop::set_editor_hint);
-	ObjectTypeDB::bind_method(_MD("is_editor_hint"),&SceneMainLoop::is_editor_hint);
+	ObjectTypeDB::bind_method(_MD("set_editor_hint","enable"),&SceneTree::set_editor_hint);
+	ObjectTypeDB::bind_method(_MD("is_editor_hint"),&SceneTree::is_editor_hint);
 #ifdef TOOLS_ENABLED
-	ObjectTypeDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneMainLoop::set_edited_scene_root);
-	ObjectTypeDB::bind_method(_MD("get_edited_scene_root"),&SceneMainLoop::get_edited_scene_root);
+	ObjectTypeDB::bind_method(_MD("set_edited_scene_root","scene"),&SceneTree::set_edited_scene_root);
+	ObjectTypeDB::bind_method(_MD("get_edited_scene_root"),&SceneTree::get_edited_scene_root);
 #endif
 
-	ObjectTypeDB::bind_method(_MD("set_pause","enable"),&SceneMainLoop::set_pause);
-	ObjectTypeDB::bind_method(_MD("is_paused"),&SceneMainLoop::is_paused);
-	ObjectTypeDB::bind_method(_MD("set_input_as_handled"),&SceneMainLoop::set_input_as_handled);
+	ObjectTypeDB::bind_method(_MD("set_pause","enable"),&SceneTree::set_pause);
+	ObjectTypeDB::bind_method(_MD("is_paused"),&SceneTree::is_paused);
+	ObjectTypeDB::bind_method(_MD("set_input_as_handled"),&SceneTree::set_input_as_handled);
 
 
-	ObjectTypeDB::bind_method(_MD("get_node_count"),&SceneMainLoop::get_node_count);
-	ObjectTypeDB::bind_method(_MD("get_frame"),&SceneMainLoop::get_frame);
-	ObjectTypeDB::bind_method(_MD("quit"),&SceneMainLoop::quit);
+	ObjectTypeDB::bind_method(_MD("get_node_count"),&SceneTree::get_node_count);
+	ObjectTypeDB::bind_method(_MD("get_frame"),&SceneTree::get_frame);
+	ObjectTypeDB::bind_method(_MD("quit"),&SceneTree::quit);
 
-	ObjectTypeDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneMainLoop::set_screen_stretch);
+	ObjectTypeDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneTree::set_screen_stretch);
 
 
-	ObjectTypeDB::bind_method(_MD("queue_delete","obj"),&SceneMainLoop::queue_delete);
+	ObjectTypeDB::bind_method(_MD("queue_delete","obj"),&SceneTree::queue_delete);
 
 
 	MethodInfo mi;
@@ -1026,7 +1030,7 @@ void SceneMainLoop::_bind_methods() {
 		defargs.push_back(Variant());
 	}
 
-	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneMainLoop::_call_group,mi,defargs);
+	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi,defargs);
 
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
@@ -1047,14 +1051,14 @@ void SceneMainLoop::_bind_methods() {
 
 }
 
-SceneMainLoop::SceneMainLoop() {
+SceneTree::SceneTree() {
 
 	_quit=false;
 	initialized=false;
 	tree_version=1;
 	fixed_process_time=1;
 	idle_process_time=1;
-	last_id=0;
+	last_id=1;
 	root=NULL;
 	current_frame=0;
 	tree_changed_name="tree_changed";
@@ -1095,7 +1099,7 @@ SceneMainLoop::SceneMainLoop() {
 }
 
 
-SceneMainLoop::~SceneMainLoop() {
+SceneTree::~SceneTree() {
 
 
 }

@@ -724,6 +724,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 		class_list[name]=ClassDoc();
 		ClassDoc& c = class_list[name];
 
+//		print_line("class: "+name);
 		c.name=name;
 		if (parser->has_attribute("inherits"))
 			c.inherits = parser->get_attribute_value("inherits");
@@ -809,7 +810,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								ERR_FAIL_V(ERR_FILE_CORRUPT);
 							}
 
-						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name()=="members")
+						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name()=="theme_items")
 							break; //end of <constants>
 					}
 

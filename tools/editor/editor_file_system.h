@@ -75,6 +75,7 @@ class EditorFileSystemDirectory : public Object {
 
 	static void _bind_methods();
 
+
 friend class EditorFileSystem;
 public:
 
@@ -180,6 +181,7 @@ class EditorFileSystem : public Node {
 	List<String> sources_changed;
 
 	static void _resource_saved(const String& p_path);
+	String _find_first_from_source(EditorFileSystemDirectory* p_dir,const String &p_src) const;
 
 protected:
 
@@ -197,6 +199,7 @@ public:
 	void scan_sources();
 	void get_changed_sources(List<String> *r_changed);
 	void update_file(const String& p_file);
+	String find_resource_from_source(const String& p_path) const;
 	EditorFileSystemDirectory *get_path(const String& p_path);
 	String get_file_type(const String& p_file) const;
 	EditorFileSystem();

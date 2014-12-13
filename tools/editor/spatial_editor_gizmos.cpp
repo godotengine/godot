@@ -1779,7 +1779,7 @@ void CollisionShapeSpatialGizmo::set_handle(int p_idx,Camera *p_camera, const Po
 		Ref<CapsuleShape> cs = s;
 		Vector3 ra,rb;
 		Geometry::get_closest_points_between_segments(Vector3(),axis*4096,sg[0],sg[1],ra,rb);
-		float d = ra[p_idx];
+		float d = axis.dot(ra);
 		if (p_idx==1)
 			d-=cs->get_radius();
 		if (d<0.001)

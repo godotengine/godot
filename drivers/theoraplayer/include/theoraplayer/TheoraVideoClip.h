@@ -87,6 +87,7 @@ protected:
     std::string mName;
 	int mWidth, mHeight, mStride;
 	int mNumFrames;
+	int audio_track;
 
 	int mSubFrameWidth, mSubFrameHeight, mSubFrameOffsetX, mSubFrameOffsetY;
 	float mAudioGain; //! multiplier for audio samples. between 0 and 1
@@ -233,6 +234,7 @@ public:
 	bool getAutoRestart() { return mAutoRestart; }
 
 
+	void set_audio_track(int p_track) { audio_track=p_track; }
 
 	/**
 	    TODO: user priority. Useful only when more than one video is being decoded

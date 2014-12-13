@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "animated_sprite.h"
-
+#include "scene/scene_string_names.h"
 void AnimatedSprite::edit_set_pivot(const Point2& p_pivot) {
 
 	set_offset(p_pivot);
@@ -207,7 +207,7 @@ void AnimatedSprite::set_frame(int p_frame) {
 	frame=p_frame;
 	update();
 	_change_notify("frame");
-
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 
 }
 int AnimatedSprite::get_frame() const {
@@ -233,6 +233,7 @@ void AnimatedSprite::set_offset(const Point2& p_offset) {
 	offset=p_offset;
 	update();
 	item_rect_changed();
+	_change_notify("offset");
 }
 Point2 AnimatedSprite::get_offset() const {
 
@@ -324,6 +325,8 @@ void AnimatedSprite::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("_res_changed"),&AnimatedSprite::_res_changed);
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));

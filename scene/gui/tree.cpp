@@ -1499,7 +1499,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 			case TreeItem::CELL_MODE_STRING: {
 				//nothing in particular
 
-				if (select_mode==SELECT_MULTI && (get_scene()->get_last_event_id() == focus_in_id || !already_cursor)) {
+				if (select_mode==SELECT_MULTI && (get_tree()->get_last_event_id() == focus_in_id || !already_cursor)) {
 					bring_up_editor=false;
 				}
 
@@ -1575,7 +1575,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 
 						editor_text=String::num( p_item->cells[col].val, Math::decimals( p_item->cells[col].step ) );
 						bring_up_value_editor=false;
-						if (select_mode==SELECT_MULTI && get_scene()->get_last_event_id() == focus_in_id)
+						if (select_mode==SELECT_MULTI && get_tree()->get_last_event_id() == focus_in_id)
 							bring_up_editor=false;
 
 					}	
@@ -1693,6 +1693,13 @@ void Tree::text_editor_enter(String p_text) {
 		case TreeItem::CELL_MODE_RANGE: {
 
 			c.val=p_text.to_double();
+			if (c.step>0)
+				c.val=Math::stepify(c.val,c.step);
+			if (c.val<c.min)
+				c.val=c.min;
+			else if (c.val>c.max)
+				c.val=c.max;
+
 			//popup_edited_item->edited_signal.call( popup_edited_item_col );
 		} break;
 	default: { ERR_FAIL(); }
@@ -2343,7 +2350,7 @@ void Tree::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_FOCUS_ENTER) {
 
-		focus_in_id=get_scene()->get_last_event_id();
+		focus_in_id=get_tree()->get_last_event_id();
 	}
 	if (p_what==NOTIFICATION_MOUSE_EXIT) {
 
@@ -2353,7 +2360,7 @@ void Tree::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		update_cache();;
 	}
@@ -2811,7 +2818,7 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 
 void Tree::ensure_cursor_is_visible() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	TreeItem *selected = get_selected();

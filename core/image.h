@@ -40,7 +40,9 @@
  * Images can be loaded from a file, or registered into the Render object as textures.
 */
 
+class Image;
 
+typedef Error (*SavePNGFunc)(const String &p_path, Image& p_img);
 
 class Image {
 
@@ -49,6 +51,8 @@ class Image {
 		MAX_HEIGHT=16384// force a limit somehow
 	};
 public:
+
+	static SavePNGFunc save_png_func;
 
 	enum Format {
 		FORMAT_GRAYSCALE, ///< one byte per pixel, 0-255 
@@ -278,6 +282,7 @@ public:
 	DVector<uint8_t> get_data() const;
 	
 	Error load(const String& p_path);
+	Error save_png(const String& p_path);
 	
 	/** 
 	 * create an empty image

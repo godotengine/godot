@@ -36,13 +36,13 @@ void ParallaxBackground::_notification(int p_what) {
 	switch(p_what) {
 
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			group_name = "__cameras_"+itos(get_viewport().get_id());
 			add_to_group(group_name);
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			remove_from_group(group_name);
 		} break;
@@ -78,7 +78,7 @@ void ParallaxBackground::set_scroll_offset(const Point2& p_ofs) {
 
 void ParallaxBackground::_update_scroll() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	Vector2 ofs = base_offset+offset*base_scale;

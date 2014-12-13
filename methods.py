@@ -1083,44 +1083,13 @@ def build_gles2_headers( target, source, env ):
 
 def update_version():
 
-	rev = 0
+	rev = "custom_build"
 	
-	try:
-		f = open("custom_version.txt","rb")
-		rev = int( f.readline().strip() )
-	except:
-		pass
-			
-	if (rev==0):	
-		try:							
-			f = open(".svn/entries")
-			line = f.readline();
-			next_rev = False
-			while line != "":
-				line = line.rstrip('\r\n')
-				if next_rev:
-					rev = line
-					break
-				if line == "dir":
-					next_rev = True
-				line = f.readline();
-				
-			if rev != 0:
-				f = open("version.py")
-				ver = f.read()
-				import re
-				ver = re.sub(r'\$Rev: \d* \$', '$Rev: '+str(rev)+' $', ver)
-				f = open("version.py", "wb")
-				f.write(ver)
-				f.close()
-				
-		except:
-			pass
-
+	if (os.getenv("BUILD_REVISION")!=None):
+		rev=os.getenv("BUILD_REVISION")
+		print("Using custom revision: "+rev)
 	import version
-
-	rev=version.revision
-	rev=rev[5:-1].strip()
+	
 
 	f=open("core/version.h","wb")
 	f.write("#define VERSION_SHORT_NAME "+str(version.short_name)+"\n")

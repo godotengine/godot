@@ -1266,7 +1266,7 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 		} 		
 	
 	} else { // no loop 
-	
+
 		if (idx>=0) {
 		
 			if ((idx+1) < len) {
@@ -1716,189 +1716,222 @@ void Animation::clear() {
 
 }
 
+
+
+bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0,const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle) {
+
+
+	real_t c = (t1.time-t0.time)/(t2.time-t0.time);
+	real_t t[3]={-1,-1,-1};
+
+	{ //translation
+
+		const Vector3 &v0=t0.value.loc;
+		const Vector3 &v1=t1.value.loc;
+		const Vector3 &v2=t2.value.loc;
+
+		if (v0.distance_to(v2)<CMP_EPSILON) {
+			//0 and 2 are close, let's see if 1 is close
+			if (v0.distance_to(v1)>CMP_EPSILON) {
+				//not close, not optimizable
+				return false;
+			}
+
+		} else {
+
+			Vector3 pd = (v2-v0);
+			float d0 = pd.dot(v0);
+			float d1 = pd.dot(v1);
+			float d2 = pd.dot(v2);
+			if (d1<d0 || d1>d2) {
+				return false;
+			}
+
+			Vector3 s[2]={ v0, v2 };
+			real_t d =Geometry::get_closest_point_to_segment(v1,s).distance_to(v1);
+
+			if (d>pd.length()*p_alowed_linear_err) {
+				return false; //beyond allowed error for colinearity
+			}
+
+			t[0] = (d1-d0)/(d2-d0);
+		}
+	}
+
+	{ //rotation
+
+		const Quat &q0=t0.value.rot;
+		const Quat &q1=t1.value.rot;
+		const Quat &q2=t2.value.rot;
+
+		//localize both to rotation from q0
+
+		if ((q0-q2).length() < CMP_EPSILON) {
+
+			if ((q0-q1).length() > CMP_EPSILON)
+				return false;
+
+		} else {
+
+
+			Quat r02 = (q0.inverse() * q2).normalized();
+			Quat r01 = (q0.inverse() * q1).normalized();
+
+			Vector3 v02,v01;
+			real_t a02,a01;
+
+			r02.get_axis_and_angle(v02,a02);
+			r01.get_axis_and_angle(v01,a01);
+
+			if (Math::abs(a02)>p_max_optimizable_angle)
+				return false;
+
+			if (v01.dot(v02)<0) {
+				//make sure both rotations go the same way to compare
+				v02=-v02;
+				a02=-a02;
+			}
+
+			real_t err_01 = Math::acos(v01.normalized().dot(v02.normalized()))/Math_PI;
+			if (err_01>p_alowed_angular_err) {
+				//not rotating in the same axis
+				return false;
+			}
+
+			if (a01*a02 < 0 ) {
+				//not rotating in the same direction
+				return false;
+			}
+
+			real_t tr = a01/a02;
+			if (tr<0 || tr>1)
+				return false; //rotating too much or too less
+
+			t[1]=tr;
+
+		}
+
+	}
+
+	{ //scale
+
+		const Vector3 &v0=t0.value.scale;
+		const Vector3 &v1=t1.value.scale;
+		const Vector3 &v2=t2.value.scale;
+
+		if (v0.distance_to(v2)<CMP_EPSILON) {
+			//0 and 2 are close, let's see if 1 is close
+			if (v0.distance_to(v1)>CMP_EPSILON) {
+				//not close, not optimizable
+				return false;
+			}
+
+		} else {
+
+			Vector3 pd = (v2-v0);
+			float d0 = pd.dot(v0);
+			float d1 = pd.dot(v1);
+			float d2 = pd.dot(v2);
+			if (d1<d0 || d1>d2) {
+				return false; //beyond segment range
+			}
+
+			Vector3 s[2]={ v0, v2 };
+			real_t d =Geometry::get_closest_point_to_segment(v1,s).distance_to(v1);
+
+			if (d>pd.length()*p_alowed_linear_err) {
+				return false; //beyond allowed error for colinearity
+			}
+
+			t[2] = (d1-d0)/(d2-d0);
+		}
+	}
+
+	bool erase=false;
+	if (t[0]==-1 && t[1]==-1 && t[2]==-1) {
+
+		erase=true;
+	} else {
+
+		erase=true;
+		real_t lt=-1;
+		for(int j=0;j<3;j++) {
+			//search for t on first, one must be it
+			if (t[j]!=-1) {
+				lt=t[j]; //official t
+				//validate rest
+				for(int k=j+1;k<3;k++) {
+					if (t[k]==-1)
+						continue;
+
+					if (Math::abs(lt-t[k])>p_alowed_linear_err) {
+						erase=false;
+						break;
+					}
+				}
+				break;
+			}
+		}
+
+		ERR_FAIL_COND_V( lt==-1,false );
+
+		if (erase) {
+
+			if (Math::abs(lt-c)>p_alowed_linear_err) {
+				//todo, evaluate changing the transition if this fails?
+				//this could be done as a second pass and would be
+				//able to optimize more
+				erase=false;
+			} else {
+
+				//print_line(itos(i)+"because of interp");
+			}
+		}
+
+	}
+
+
+	return erase;
+
+
+}
+
+
 void Animation::_transform_track_optimize(int p_idx,float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle) {
 
 	ERR_FAIL_INDEX(p_idx,tracks.size());
 	ERR_FAIL_COND(tracks[p_idx]->type!=TYPE_TRANSFORM);
 	TransformTrack *tt= static_cast<TransformTrack*>(tracks[p_idx]);
+	bool prev_erased=false;
+	TKey<TransformKey> first_erased;
+
 	for(int i=1;i<tt->transforms.size()-1;i++) {
 
 		TKey<TransformKey> &t0 = tt->transforms[i-1];
 		TKey<TransformKey> &t1 = tt->transforms[i];
 		TKey<TransformKey> &t2 = tt->transforms[i+1];
 
-		real_t c = (t1.time-t0.time)/(t2.time-t0.time);
-		real_t t[3]={-1,-1,-1};
+		bool erase = _transform_track_optimize_key(t0,t1,t2,p_alowed_linear_err,p_alowed_angular_err,p_max_optimizable_angle);
 
-		{ //translation
 
-			const Vector3 &v0=t0.value.loc;
-			const Vector3 &v1=t1.value.loc;
-			const Vector3 &v2=t2.value.loc;
-
-			if (v0.distance_to(v2)<CMP_EPSILON) {
-				//0 and 2 are close, let's see if 1 is close
-				if (v0.distance_to(v1)>CMP_EPSILON) {
-					//not close, not optimizable
-					continue;
-				}
-
-			} else {
-
-				Vector3 pd = (v2-v0);
-				float d0 = pd.dot(v0);
-				float d1 = pd.dot(v1);
-				float d2 = pd.dot(v2);
-				if (d1<d0 || d1>d2) {
-					continue; //beyond segment range
-				}
-
-				Vector3 s[2]={ v0, v2 };
-				real_t d =Geometry::get_closest_point_to_segment(v1,s).distance_to(v1);
-
-				if (d>pd.length()*p_alowed_linear_err) {
-					continue; //beyond allowed error for colinearity
-				}
-
-				t[0] = (d1-d0)/(d2-d0);
-			}
+		if (prev_erased && !_transform_track_optimize_key(t0,first_erased,t2,p_alowed_linear_err,p_alowed_angular_err,p_max_optimizable_angle)) {
+			 //avoid error to go beyond first erased key
+			erase=false;
 		}
 
-		{ //rotation
-
-			const Quat &q0=t0.value.rot;
-			const Quat &q1=t1.value.rot;
-			const Quat &q2=t2.value.rot;
-
-			//localize both to rotation from q0
-
-			if ((q0-q2).length() < CMP_EPSILON) {
-
-				if ((q0-q1).length() > CMP_EPSILON)
-					continue;
-
-			} else {
-
-
-				Quat r02 = (q0.inverse() * q2).normalized();
-				Quat r01 = (q0.inverse() * q1).normalized();
-
-				Vector3 v02,v01;
-				real_t a02,a01;
-
-				r02.get_axis_and_angle(v02,a02);
-				r01.get_axis_and_angle(v01,a01);
-
-				if (Math::abs(a02)>p_max_optimizable_angle)
-					continue;
-
-				if (v01.dot(v02)<0) {
-					//make sure both rotations go the same way to compare
-					v02=-v02;
-					a02=-a02;
-				}
-
-				real_t err_01 = Math::acos(v01.normalized().dot(v02.normalized()))/Math_PI;
-				if (err_01>p_alowed_angular_err) {
-					//not rotating in the same axis
-					continue;
-				}
-
-				if (a01*a02 < 0 ) {
-					//not rotating in the same direction
-					continue;
-				}
-
-				real_t tr = a01/a02;
-				if (tr<0 || tr>1)
-					continue; //rotating too much or too less
-
-				t[1]=tr;
-
-			}
-
-		}
-
-		{ //scale
-
-			const Vector3 &v0=t0.value.scale;
-			const Vector3 &v1=t1.value.scale;
-			const Vector3 &v2=t2.value.scale;
-
-			if (v0.distance_to(v2)<CMP_EPSILON) {
-				//0 and 2 are close, let's see if 1 is close
-				if (v0.distance_to(v1)>CMP_EPSILON) {
-					//not close, not optimizable
-					continue;
-				}
-
-			} else {
-
-				Vector3 pd = (v2-v0);
-				float d0 = pd.dot(v0);
-				float d1 = pd.dot(v1);
-				float d2 = pd.dot(v2);
-				if (d1<d0 || d1>d2) {
-					continue; //beyond segment range
-				}
-
-				Vector3 s[2]={ v0, v2 };
-				real_t d =Geometry::get_closest_point_to_segment(v1,s).distance_to(v1);
-
-				if (d>pd.length()*p_alowed_linear_err) {
-					continue; //beyond allowed error for colinearity
-				}
-
-				t[2] = (d1-d0)/(d2-d0);
-			}
-		}
-
-		bool erase=false;
-		if (t[0]==-1 && t[1]==-1 && t[2]==-1) {
-
-			erase=true;
-		} else {
-
-			erase=true;
-			real_t lt=-1;
-			for(int j=0;j<3;j++) {
-				//search for t on first, one must be it
-				if (t[j]!=-1) {
-					lt=t[j]; //official t
-					//validate rest
-					for(int k=j+1;k<3;k++) {
-						if (t[k]==-1)
-							continue;
-
-						if (Math::abs(lt-t[k])>p_alowed_linear_err) {
-							erase=false;
-							break;
-						}
-					}
-					break;
-				}
-			}
-
-			ERR_CONTINUE( lt==-1 );
-
-			if (erase) {
-
-				if (Math::abs(lt-c)>p_alowed_linear_err) {
-					//todo, evaluate changing the transition if this fails?
-					//this could be done as a second pass and would be
-					//able to optimize more
-					erase=false;
-				} else {
-
-					//print_line(itos(i)+"because of interp");
-				}
-			}
-
-		}
 
 		if (erase) {
+
+			if (!prev_erased) {
+				first_erased=t1;
+				prev_erased=true;
+			}
+
 			tt->transforms.remove(i);
 			i--;
+
+		} else {
+			prev_erased=false;
 		}
 
 

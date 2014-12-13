@@ -130,7 +130,7 @@ void Node2D::_update_transform() {
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),_mat);
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 
@@ -272,7 +272,7 @@ void Node2D::set_transform(const Matrix32& p_transform) {
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),_mat);
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	_notify_transform();

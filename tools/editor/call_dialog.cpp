@@ -76,7 +76,7 @@ void CallDialog::_notification(int p_what) {
 		_update_method_list();
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 		call->disconnect("pressed", this,"_call");
 		cancel->disconnect("pressed", this,"_cancel");
@@ -285,7 +285,7 @@ CallDialog::CallDialog() {
 	property_editor->set_anchor_and_margin( MARGIN_TOP, ANCHOR_BEGIN, 50 );
 	property_editor->set_anchor_and_margin( MARGIN_LEFT, ANCHOR_RATIO, 0.55 );
 	property_editor->set_anchor_and_margin( MARGIN_BOTTOM, ANCHOR_END, 90 );
-	property_editor->get_tree()->set_hide_root( true );
+	property_editor->get_scene_tree()->set_hide_root( true );
 	property_editor->hide_top_label();
 	
 	add_child(property_editor);

@@ -110,6 +110,7 @@ friend class RenderTargetTexture;
 	Size2 size_override_size;
 	Size2 size_override_margin;
 
+	Rect2 last_vp_rect;
 
 	bool transparent_bg;
 	bool render_target_vflip;
@@ -158,8 +159,8 @@ friend class RenderTargetTexture;
 
 	_FORCE_INLINE_ Matrix32 _get_input_pre_xform() const;
 
-	void _vp_enter_scene();
-	void _vp_exit_scene();
+	void _vp_enter_tree();
+	void _vp_exit_tree();
 
 	void _vp_input(const InputEvent& p_ev);
 	void _vp_unhandled_input(const InputEvent& p_ev);
@@ -228,6 +229,10 @@ public:
 	void set_render_target_update_mode(RenderTargetUpdateMode p_mode);
 	RenderTargetUpdateMode get_render_target_update_mode() const;
 	Ref<RenderTargetTexture> get_render_target_texture() const;
+
+
+	Vector2 get_camera_coords(const Vector2& p_viewport_coords) const;
+	Vector2 get_camera_rect_size() const;
 
 	void queue_screen_capture();
 	Image get_screen_capture() const;

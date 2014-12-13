@@ -75,7 +75,7 @@ void Tween::_notification(int p_what) {
 
 	switch(p_what) {
 	
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			if (!processing) {
 				//make sure that a previous process state was not saved
@@ -102,7 +102,7 @@ void Tween::_notification(int p_what) {
 			if (processing)
 				_tween_process( get_fixed_process_delta_time() );
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 		
 			stop_all();
 		} break;

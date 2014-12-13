@@ -221,8 +221,8 @@ void AnimationTreeEditor::_edit_dialog_animation_changed() {
 
 void AnimationTreeEditor::_edit_dialog_edit_animation() {
 
-	if (get_scene()->is_editor_hint()) {
-		get_scene()->get_root()->get_child(0)->call("_resource_selected", property_editor->get_variant().operator RefPtr());
+	if (get_tree()->is_editor_hint()) {
+		get_tree()->get_root()->get_child(0)->call("_resource_selected", property_editor->get_variant().operator RefPtr());
 	};
 };
 
@@ -936,7 +936,7 @@ void AnimationTreeEditor::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			play_button->set_icon( get_icon("Play","EditorIcons") );
 			add_menu->set_icon( get_icon("Add","EditorIcons") );

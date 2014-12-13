@@ -245,7 +245,7 @@ public:
 	void _notification(int p_what) {
 
 
-		if (p_what==NOTIFICATION_ENTER_SCENE) {
+		if (p_what==NOTIFICATION_ENTER_TREE) {
 
 			option_editor->edit(options);
 		}
@@ -425,7 +425,7 @@ Error EditorMeshImportPlugin::import(const String& p_path, const Ref<ResourceImp
 			ERR_FAIL_COND_V(v.size()<3,ERR_INVALID_DATA);
 			Vector2 uv;
 			uv.x=v[1].to_float();
-			uv.y=v[2].to_float();
+			uv.y=1.0-v[2].to_float();
 			uvs.push_back(uv);
 
 		} else if (l.begins_with("vn ")) {
