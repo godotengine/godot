@@ -2,7 +2,7 @@
 #include "typedefs.h"
 
 
-#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 40100
+#if (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) > 40100 && !defined(NEON)
 
 void baked_light_baker_add_64f(double *dst,double value) {
 
