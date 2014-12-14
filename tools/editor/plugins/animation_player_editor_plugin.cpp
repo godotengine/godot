@@ -942,6 +942,14 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	load_anim->set_tooltip("Load an animation from disk.");
 	hb->add_child(load_anim);
 
+	remove_anim = memnew( Button );
+	hb->add_child(remove_anim);
+	remove_anim->set_tooltip("Remove Animation");
+
+	rename_anim = memnew( Button );
+	hb->add_child(rename_anim);
+	rename_anim->set_tooltip("Rename Animation");
+
 	duplicate_anim = memnew( Button );
 	hb->add_child(duplicate_anim);
 	duplicate_anim->set_tooltip("Duplicate Animation");
@@ -955,20 +963,9 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	hb->add_child(autoplay);
 	autoplay->set_tooltip("Autoplay On Load");
 
-
-	rename_anim = memnew( Button );
-	hb->add_child(rename_anim);
-	rename_anim->set_tooltip("Rename Animation");
-
-	remove_anim = memnew( Button );
-
-	hb->add_child(remove_anim);
-	remove_anim->set_tooltip("Remove Animation");
-
 	blend_anim = memnew( Button );
 	hb->add_child(blend_anim);
 	blend_anim->set_tooltip("Edit Target Blend Times");
-
 
 
 	edit_anim = memnew( Button );
@@ -982,7 +979,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 
 	play = memnew( Button );
 	play->set_tooltip("Play selected animation.");
-
 	hb->add_child(play);
 
 	stop = memnew( Button );
