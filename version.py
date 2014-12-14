@@ -3,5 +3,3 @@ name="Godot Engine"
 major=1
 minor=0
 status="rc2"
-
-
