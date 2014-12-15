@@ -31,7 +31,7 @@
 #include "os/semaphore.h"
 #include "hash_map.h"
 
-
+VARIANT_ENUM_CAST(IP::ResolverStatus);
 
 /************* RESOLVER ******************/
 

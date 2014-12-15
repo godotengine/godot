@@ -29,6 +29,8 @@
 #include "http_client.h"
 #include "io/stream_peer_ssl.h"
 
+VARIANT_ENUM_CAST(HTTPClient::Status);
+
 Error HTTPClient::connect_url(const String& p_url) {
 
 	return OK;
