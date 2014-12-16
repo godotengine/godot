@@ -52,6 +52,7 @@ void Spine::_on_animation_state_event(int p_track, spEventType p_type, spEvent *
 		break;
 	case SP_ANIMATION_EVENT: {
 			Dictionary event;
+			event["name"] = p_event->data->name;
 			event["int"] = p_event->intValue;
 			event["float"] = p_event->floatValue;
 			event["string"] = p_event->stringValue ? p_event->stringValue : "";
