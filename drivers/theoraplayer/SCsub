@@ -78,6 +78,9 @@ else:
 if env["platform"] == "android":
 	env_theora.Append(CPPFLAGS=["-D_ANDROID"])
 
+if env["platform"] == "winrt":
+		env_theora.Append(CPPFLAGS=["-D_WINRT"])
+
 env_theora.Append(CPPPATH=["#drivers/theoraplayer/include/theoraplayer", "#drivers/theoraplayer/src/YUV", "#drivers/theoraplayer/src/YUV/libyuv/include", "#drivers/theoraplayer/src/Theora", "#drivers/theoraplayer/src/AVFoundation"])
 
 objs = []

@@ -106,6 +106,7 @@ String DirAccessWindows::get_next() {
 		return name;
 	} else {
 
+#ifndef WINRT_ENABLED
 		_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 
 		String name=p->f.cFileName;
@@ -117,7 +118,8 @@ String DirAccessWindows::get_next() {
 		}
 
 		return name;
-
+#endif
+		return "";
 	}
 }
 
@@ -358,6 +360,7 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	} else {
+#ifndef WINRT_ENABLED
 		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExA(p_dir.ascii().get_data(), GetFileExInfoStandard, &fileInfo);
@@ -366,8 +369,8 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
+#endif
 	}
-
 	return false;
 }
 

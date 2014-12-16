@@ -3458,10 +3458,10 @@ EditorNode::EditorNode() {
 
 	file_menu->set_tooltip("Operations with scene files.");
 	p=file_menu->get_popup();
-	p->add_item(_TR("New Scene"),FILE_NEW_SCENE);
-	p->add_item(_TR("Open Scene.."),FILE_OPEN_SCENE,KEY_MASK_CMD+KEY_O);
-	p->add_item(_TR("Save Scene"),FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);
-	p->add_item(_TR("Save Scene As.."),FILE_SAVE_AS_SCENE);
+	p->add_item("New Scene",FILE_NEW_SCENE);
+	p->add_item("Open Scene..",FILE_OPEN_SCENE,KEY_MASK_CMD+KEY_O);
+	p->add_item("Save Scene",FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);
+	p->add_item("Save Scene As..",FILE_SAVE_AS_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S);
 	p->add_separator();
 	p->add_item(_TR("Goto Prev. Scene"),FILE_OPEN_PREV,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_P);
 	p->add_submenu_item(_TR("Open Recent"),"RecentScenes",FILE_OPEN_RECENT);
