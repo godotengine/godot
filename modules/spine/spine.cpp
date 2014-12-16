@@ -356,7 +356,7 @@ void Spine::_animation_process(float p_delta) {
 		const spBone *bone = info.bone;
 		node->set_pos(Vector2(bone->worldX + bone->skeleton->x, -bone->worldY + bone->skeleton->y) + info.ofs);
 		node->set_scale(Vector2(bone->worldScaleX, bone->worldScaleY) * info.scale);
-		node->set_rot(Math::deg2rad(bone->worldRotation + info.rot));
+		node->set_rot(Math::atan2(bone->m10, bone->m11) + Math::deg2rad(info.rot));
 	}
 	update();
 }
@@ -789,7 +789,7 @@ Variant Spine::get_attachment(const String& p_slot_name, const String& p_attachm
 
 			Vector2Array vertices;
 			for (int idx = 0; idx < info->verticesCount / 2; idx++)
-				vertices.append(Vector2(info->vertices[idx * 2], info->vertices[idx * 2 + 1]));
+				vertices.append(Vector2(info->vertices[idx * 2], -info->vertices[idx * 2 + 1]));
 			dict["vertices"] = vertices;
 		} break;
 
@@ -925,13 +925,9 @@ bool Spine::remove_attachment_node(const String& p_bone_name, const Variant& p_n
 	return false;
 }
 
-bool Spine::add_bounding_box(const String& p_bone_name, const String& p_slot_name, const String& p_attachment_name, const Variant& p_node, const Vector2& p_ofs, const Vector2& p_scale, const real_t p_rot) {
+Ref<Shape2D> Spine::get_bounding_box(const String& p_slot_name, const String& p_attachment_name) {
 
 	ERR_FAIL_COND_V(skeleton == NULL, false);
-	Object *obj = p_node;
-	ERR_FAIL_COND_V(obj == NULL, false);
-	CollisionObject2D *node = obj->cast_to<CollisionObject2D>();
-	ERR_FAIL_COND_V(node == NULL, false);
 	spAttachment *attachment = spSkeleton_getAttachmentForSlotName(skeleton, p_slot_name.utf8().get_data(), p_attachment_name.utf8().get_data());
 	ERR_FAIL_COND_V(attachment == NULL, false);
 	ERR_FAIL_COND_V(attachment->type != SP_ATTACHMENT_BOUNDING_BOX, false);
@@ -940,10 +936,22 @@ bool Spine::add_bounding_box(const String& p_bone_name, const String& p_slot_nam
 	Vector<Vector2> points;
 	points.resize(info->verticesCount / 2);
 	for (int idx = 0; idx < info->verticesCount / 2; idx++)
-		points[idx] = Vector2(info->vertices[idx * 2], info->vertices[idx * 2 + 1]);
+		points[idx] = Vector2(info->vertices[idx * 2], -info->vertices[idx * 2 + 1]);
 
 	ConvexPolygonShape2D *shape = memnew(ConvexPolygonShape2D);
 	shape->set_points(points);
+
+	return shape;
+}
+
+bool Spine::add_bounding_box(const String& p_bone_name, const String& p_slot_name, const String& p_attachment_name, const Variant& p_node, const Vector2& p_ofs, const Vector2& p_scale, const real_t p_rot) {
+
+	ERR_FAIL_COND_V(skeleton == NULL, false);
+	Object *obj = p_node;
+	ERR_FAIL_COND_V(obj == NULL, false);
+	CollisionObject2D *node = obj->cast_to<CollisionObject2D>();
+	ERR_FAIL_COND_V(node == NULL, false);
+	Ref<Shape2D> shape = get_bounding_box(p_slot_name, p_attachment_name);
 	node->add_shape(shape);
 
 	return add_attachment_node(p_bone_name, p_node);
@@ -1050,6 +1058,7 @@ void Spine::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_attachment_node", "bone_name", "node"), &Spine::has_attachment_node);
 	ObjectTypeDB::bind_method(_MD("add_attachment_node", "bone_name", "node", "ofs", "scale", "rot"), &Spine::add_attachment_node, Vector2(0, 0), Vector2(1, 1), 0);
 	ObjectTypeDB::bind_method(_MD("remove_attachment_node", "p_bone_name", "node"), &Spine::remove_attachment_node);
+	ObjectTypeDB::bind_method(_MD("get_bounding_box", "slot_name", "attachment_name"), &Spine::get_bounding_box);
 	ObjectTypeDB::bind_method(_MD("add_bounding_box", "bone_name", "slot_name", "attachment_name", "collision_object_2d", "ofs", "scale", "rot"), &Spine::add_bounding_box, Vector2(0, 0), Vector2(1, 1), 0);
 	ObjectTypeDB::bind_method(_MD("remove_bounding_box", "bone_name", "collision_object_2d"), &Spine::remove_bounding_box);
 

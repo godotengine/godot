@@ -31,6 +31,7 @@
 #define SPINE_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/resources/shape_2d.h"
 #include <spine/spine.h>
 #include "spine_batcher.h"
 
@@ -163,6 +164,8 @@ public:
 	bool has_attachment_node(const String& p_bone_name, const Variant& p_node);
 	bool add_attachment_node(const String& p_bone_name, const Variant& p_node, const Vector2& p_ofs = Vector2(0, 0), const Vector2& p_scale = Vector2(1, 1), const real_t p_rot = 0);
 	bool remove_attachment_node(const String& p_bone_name, const Variant& p_node);
+	// get spine bounding box
+	Ref<Shape2D> Spine::get_bounding_box(const String& p_slot_name, const String& p_attachment_name);
 	// bind collision object 2d to spine bounding box
 	bool add_bounding_box(const String& p_bone_name, const String& p_slot_name, const String& p_attachment_name, const Variant& p_node, const Vector2& p_ofs = Vector2(0, 0), const Vector2& p_scale = Vector2(1, 1), const real_t p_rot = 0);
 	bool remove_bounding_box(const String& p_bone_name, const Variant& p_node);
