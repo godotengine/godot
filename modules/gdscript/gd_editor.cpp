@@ -312,6 +312,7 @@ String GDScriptLanguage::make_function(const String& p_class,const String& p_nam
 
 }
 
+#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
 struct GDCompletionIdentifier {
 
@@ -1011,7 +1012,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 		}
 	}
 
-	//globals
+
 
 	for(Map<StringName,int>::Element *E=GDScriptLanguage::get_singleton()->get_global_map().front();E;E=E->next()) {
 		if (E->key()==p_identifier) {
@@ -1080,6 +1081,8 @@ static void _find_identifiers_in_class(GDCompletionContext& context,bool p_stati
 				result.insert(context._class->functions[i]->name.operator String()+"()");
 		}
 	}
+
+	//globals
 
 	Ref<Reference> base = _get_parent_class(context);
 
@@ -1176,6 +1179,15 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 	for(int i=0;i<GDFunctions::FUNC_MAX;i++) {
 
 		result.insert(GDFunctions::get_func_name(GDFunctions::Function(i)));
+	}
+
+	static const char*_type_names[Variant::VARIANT_MAX]={
+		"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Trasnform",
+		"Color","Image","NodePath","RID","Object","InputEvent","Dictionary","Array","RawArray","IntArray","FloatArray","StringArray",
+		"Vector2Array","Vector3Array","ColorArray"};
+
+	for(int i=0;i<Variant::VARIANT_MAX;i++) {
+		result.insert(_type_names[i]);
 	}
 
 	for(const Map<StringName,int>::Element *E=GDScriptLanguage::get_singleton()->get_global_map().front();E;E=E->next()) {
@@ -1286,6 +1298,7 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 		}
 
 		arghint = _get_visual_datatype(m->get_argument_info(-1))+" "+p_method.operator String()+String("(");
+
 		for(int i=0;i<m->get_argument_count();i++) {
 			if (i>0)
 				arghint+=", ";
@@ -1729,42 +1742,17 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 	for(Set<String>::Element *E=options.front();E;E=E->next()) {
 		r_options->push_back(E->get());
 	}
-#if 0
-	// don't care much about error I guess
-	const GDParser::Node* root = p.get_parse_tree();
-	ERR_FAIL_COND_V(root->type!=GDParser::Node::TYPE_CLASS,ERR_INVALID_DATA);
 
-	print_line("BASE: "+p_base);
-	const GDParser::ClassNode *cl = static_cast<const GDParser::ClassNode*>(root);
-
-	List<String> indices;
-	Vector<String> spl = p_base.split(".");
-
-	for(int i=0;i<spl.size()-1;i++) {
-		print_line("INDEX "+itos(i)+":  "+spl[i]);
-		indices.push_back(spl[i]);
-	}
-
-	//parse completion inside of the class first
-	if (_parse_completion_class(p_base,cl,p_line,r_options,indices.front()))
-		return OK;
-
-	//if parsing completion inside of the class fails (none found), try using globals for completion
-	for(Map<StringName,int>::Element *E=globals.front();E;E=E->next()) {
-		if (!indices.empty()) {
-			if (String(E->key())==indices.front()->get()) {
-
-				_parse_completion_variant(global_array[E->get()],r_options,indices.front()->next());
-
-				return OK;
-			}
-		} else {
-			r_options->push_back(E->key());
-		}
-	}
-#endif
 	return OK;
 }
+
+#else
+
+Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base_path, Object*p_owner, List<String>* r_options, String &r_call_hint) {
+	return OK;
+}
+
+#endif
 
 
 void GDScriptLanguage::auto_indent_code(String& p_code,int p_from_line,int p_to_line) const {

@@ -374,7 +374,7 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 				completion_built_in_constant=bi_type;
 			}
 
-			if (identifier!=StringName()) {
+			if (identifier==StringName()) {
 
 				_set_error("Built-in type constant expected after '.'");
 				return NULL;
