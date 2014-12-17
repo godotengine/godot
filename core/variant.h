@@ -415,6 +415,8 @@ public:
 	static bool has_numeric_constant(Variant::Type p_type, const StringName& p_value);
 	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value);
 
+	String get_construct_string() const;
+
 	void operator=(const Variant& p_variant); // only this is enough for all the other types
 	Variant(const Variant& p_variant);
 	_FORCE_INLINE_ Variant() { type=NIL; }

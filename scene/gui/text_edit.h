@@ -185,6 +185,8 @@ class TextEdit : public Control  {
 	int completion_index;
 	Rect2i completion_rect;
 	int completion_line_ofs;
+	String completion_hint;
+	int completion_hint_offset;
 
 	bool setting_text;
 
@@ -261,6 +263,7 @@ class TextEdit : public Control  {
 
 	void _clear();
 	void _cancel_completion();
+	void _cancel_code_hint();
 	void _confirm_completion();
 	void _update_completion_candidates();
 
@@ -350,7 +353,7 @@ public:
 
 	void undo();
 	void redo();
-    void clear_undo_history();
+	void clear_undo_history();
 
 
 	void set_draw_tabs(bool p_draw);
@@ -376,9 +379,12 @@ public:
 
 	void set_tooltip_request_func(Object *p_obj, const StringName& p_function, const Variant& p_udata);
 
-	void set_completion(bool p_enabled,const Vector<String>& p_prefixes);
+	void set_completion(bool p_enabled,const Vector<String>& p_prefixes);	
 	void code_complete(const Vector<String> &p_strings);
+	void set_code_hint(const String& p_hint);
 	void query_code_comple();
+
+	String get_text_for_completion();
 
 	TextEdit();
 	~TextEdit();

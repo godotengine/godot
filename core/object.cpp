@@ -1694,6 +1694,11 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 }
 
 
+void Object::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+
+}
+
 int ObjectDB::get_object_count() {
 
 	GLOBAL_LOCK_FUNCTION;
