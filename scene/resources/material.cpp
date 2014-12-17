@@ -458,6 +458,8 @@ FixedMaterial::~FixedMaterial() {
 }
 
 
+
+
 bool ShaderMaterial::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (p_name==SceneStringNames::get_singleton()->shader_shader) {
@@ -558,7 +560,21 @@ void ShaderMaterial::_bind_methods() {
 }
 
 
+void ShaderMaterial::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
 
+	String f = p_function.operator String();
+	if ((f=="get_shader_param" || f=="set_shader_param") && p_idx==0) {
+
+		if (shader.is_valid()) {
+			List<PropertyInfo> pl;
+			shader->get_param_list(&pl);
+			for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+				r_options->push_back(E->get().name);
+			}
+		}
+	}
+	Material::get_argument_options(p_function,p_idx,r_options);
+}
 
 ShaderMaterial::ShaderMaterial() :Material(VisualServer::get_singleton()->material_create()){
 

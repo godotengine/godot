@@ -284,6 +284,7 @@ public:
 	NodePath get_import_path() const;
 #endif
 
+	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 

@@ -9,7 +9,7 @@ var gray_mat = FixedMaterial.new()
 
 var selected=false
 
-func _input_event(event,pos,normal,shape):
+func _input_event(camera,event,pos,normal,shape):
 	if (event.type==InputEvent.MOUSE_BUTTON and event.pressed):
 		if (not selected):
 			get_node("mesh").set_material_override(gray_mat)

@@ -129,6 +129,10 @@ friend class GDCompiler;
 	const char*_func_cname;
 #endif
 
+#ifdef TOOLS_ENABLED
+	Vector<StringName> arg_names;
+#endif
+
 	List<StackDebug> stack_debug;
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
@@ -169,6 +173,19 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
 
 	int get_argument_count() const { return _argument_count; }
+	StringName get_argument_name(int p_idx) const {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_INDEX_V(p_idx,arg_names.size(),StringName());
+		return arg_names[p_idx];
+#endif
+		return StringName();
+
+	}
+	Variant get_default_argument(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx,default_arguments.size(),Variant());
+		return default_arguments[p_idx];
+	}
+
 	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
 	GDFunction();
@@ -293,6 +310,7 @@ protected:
 	static void _bind_methods();
 public:
 
+	bool is_valid() const { return valid; }
 
 	const Map<StringName,Ref<GDScript> >& get_subclasses() const { return subclasses; }
 	const Map<StringName,Variant >& get_constants() const { return constants; }
@@ -488,7 +506,7 @@ public:
 	virtual bool has_named_classes() const;
 	virtual int find_function(const String& p_function,const String& p_code) const;
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
-	virtual Error complete_keyword(const String& p_code, int p_line, const String& p_base_path,const String& p_keyword, List<String>* r_options);
+	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 
 	/* DEBUGGER FUNCTIONS */

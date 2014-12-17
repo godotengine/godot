@@ -87,7 +87,9 @@ Vector<StringName> MethodBind::get_argument_names() const {
 
 
 void MethodBind::set_default_arguments(const Vector<Variant>& p_defargs) {
-	default_arguments=p_defargs; default_argument_count=default_arguments.size();
+	default_arguments=p_defargs;
+	default_argument_count=default_arguments.size();
+
 }
 
 #ifdef DEBUG_METHODS_ENABLED

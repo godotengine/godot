@@ -120,6 +120,8 @@ void CollisionPolygonEditor::_wip_close() {
 
 bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
 
+	if (!node)
+		return false;
 
 	Transform gt = node->get_global_transform();
 	float depth = node->get_depth()*0.5;

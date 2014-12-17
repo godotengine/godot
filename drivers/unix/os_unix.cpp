@@ -332,6 +332,12 @@ Error OS_Unix::execute(const String& p_path, const List<String>& p_arguments,boo
 Error OS_Unix::kill(const ProcessID& p_pid) {
 
 	int ret = ::kill(p_pid,SIGKILL);
+	if (!ret) {
+		//avoid zombie process
+		int st;
+		::waitpid(p_pid,&st,0);
+
+	}
 	return ret?ERR_INVALID_PARAMETER:OK;
 }
 

@@ -34,7 +34,7 @@ VARIANT_ENUM_CAST(XMLParser::NodeType);
 
 static bool _equalsn(const CharType* str1, const CharType* str2, int len) {
 	int i;
-	for(i=0; str1[i] && str2[i] && i < len; ++i)
+	for(i=0; i < len && str1[i] && str2[i] ; ++i)
 	     if (str1[i] != str2[i])
 		     return false;
 

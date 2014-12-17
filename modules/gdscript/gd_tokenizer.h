@@ -118,6 +118,7 @@ public:
 		TK_NEWLINE,
 		TK_ERROR,
 		TK_EOF,
+		TK_CURSOR, //used for code completion
 		TK_MAX
 	};
 
