@@ -79,6 +79,7 @@ class TextEdit : public Control  {
 		Color mark_color;
 		Color breakpoint_color;
 		Color current_line_color;
+		Color brace_mismatch_color;
 
 		int row_height;
 		int line_spacing;
@@ -210,6 +211,7 @@ class TextEdit : public Control  {
 	bool line_numbers;
 	
 	bool auto_brace_completion_enabled;
+	bool brace_matching_enabled;
 	bool cut_copy_line;
 
 	uint64_t last_dblclk;
@@ -316,7 +318,11 @@ public:
 	inline void set_auto_brace_completion(bool p_enabled) {
 		auto_brace_completion_enabled = p_enabled;
 	}
-	
+	inline void set_brace_matching(bool p_enabled) {
+		brace_matching_enabled=p_enabled;
+		update();
+	}
+
 	void cursor_set_column(int p_col);
 	void cursor_set_line(int p_row);
 

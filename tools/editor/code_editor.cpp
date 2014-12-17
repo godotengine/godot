@@ -601,6 +601,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_margin(MARGIN_BOTTOM,20);
 	text_editor->add_font_override("font",get_font("source","Fonts"));
 	text_editor->set_show_line_numbers(true);
+	text_editor->set_brace_matching(true);
 
 	line_col = memnew( Label );
 	add_child(line_col);

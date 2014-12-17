@@ -462,6 +462,119 @@ void TextEdit::_notification(int p_what) {
 				}
 			}
 
+			int brace_open_match_line=-1;
+			int brace_open_match_column=-1;
+			bool brace_open_matching=false;
+			bool brace_open_mismatch=false;
+			int brace_close_match_line=-1;
+			int brace_close_match_column=-1;
+			bool brace_close_matching=false;
+			bool brace_close_mismatch=false;
+
+
+			if (brace_matching_enabled) {
+
+				if (cursor.column<text[cursor.line].length()) {
+					//check for open
+					CharType c = text[cursor.line][cursor.column];
+					CharType closec=0;
+
+					if (c=='[') {
+						closec=']';
+					} else if (c=='{') {
+						closec='}';
+					} else if (c=='(') {
+						closec=')';
+					}
+
+					if (closec!=0) {
+
+						int stack=1;
+
+
+						for(int i=cursor.line;i<text.size();i++) {
+
+							int from = i==cursor.line?cursor.column+1:0;
+							for(int j=from;j<text[i].length();j++) {
+
+								CharType cc = text[i][j];
+								if (cc==c)
+									stack++;
+								else if (cc==closec)
+									stack--;
+
+								if (stack==0) {
+									brace_open_match_line=i;
+									brace_open_match_column=j;
+									brace_open_matching=true;
+
+									break;
+								}
+							}
+							if (brace_open_match_line!=-1)
+								break;
+						}
+
+						if (!brace_open_matching)
+							brace_open_mismatch=true;
+
+
+					}
+				}
+
+				if (cursor.column>0) {
+					CharType c = text[cursor.line][cursor.column-1];
+					CharType closec=0;
+
+
+
+					if (c==']') {
+						closec='[';
+					} else if (c=='}') {
+						closec='{';
+					} else if (c==')') {
+						closec='(';
+					}
+
+					if (closec!=0) {
+
+						int stack=1;
+
+
+						for(int i=cursor.line;i>=0;i--) {
+
+							int from = i==cursor.line?cursor.column-2:text[i].length()-1;
+							for(int j=from;j>=0;j--) {
+
+								CharType cc = text[i][j];
+								if (cc==c)
+									stack++;
+								else if (cc==closec)
+									stack--;
+
+								if (stack==0) {
+									brace_close_match_line=i;
+									brace_close_match_column=j;
+									brace_close_matching=true;
+
+									break;
+								}
+							}
+							if (brace_close_match_line!=-1)
+								break;
+						}
+
+						if (!brace_close_matching)
+							brace_close_mismatch=true;
+
+
+					}
+
+
+				}
+			}
+
+
 			int deregion=0; //force it to clear inrgion
 			Point2 cursor_pos;
 
@@ -621,9 +734,32 @@ void TextEdit::_notification(int p_what) {
 					}
 
 
+					if (brace_matching_enabled) {
+						if ( (brace_open_match_line==line && brace_open_match_column==j) ||
+						    (cursor.column==j && cursor.line==line && (brace_open_matching||brace_open_mismatch))) {
+
+							if (brace_open_mismatch)
+								color=cache.brace_mismatch_color;
+							cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),'_',str[j+1],in_selection?cache.font_selected_color:color);
+
+						}
+
+						if (
+						     (brace_close_match_line==line && brace_close_match_column==j) ||
+						     (cursor.column==j+1 && cursor.line==line && (brace_close_matching||brace_close_mismatch))) {
+
+
+							if (brace_close_mismatch)
+								color=cache.brace_mismatch_color;
+							cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),'_',str[j+1],in_selection?cache.font_selected_color:color);
+
+						}
+					}
+
 
 					if (str[j]>=32)
 						cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),str[j],str[j+1],in_selection?cache.font_selected_color:color);
+
 					else if (draw_tabs && str[j]=='\t') {
 						int yofs= (get_row_height() - cache.tab_icon->get_height())/2;
 						cache.tab_icon->draw(ci, Point2(char_ofs+char_margin,ofs_y+yofs),in_selection?cache.font_selected_color:color);
@@ -2488,6 +2624,7 @@ void TextEdit::_update_caches() {
     cache.mark_color=get_color("mark_color");
     cache.current_line_color=get_color("current_line_color");
     cache.breakpoint_color=get_color("breakpoint_color");
+    cache.brace_mismatch_color=get_color("brace_mismatch_color");
     cache.line_spacing=get_constant("line_spacing");
     cache.row_height = cache.font->get_height() + cache.line_spacing;
     cache.tab_icon=get_icon("tab");
@@ -3428,6 +3565,8 @@ TextEdit::TextEdit()  {
     line_numbers=false;
     next_operation_is_complex=false;
     auto_brace_completion_enabled=false;
+    brace_matching_enabled=false;
+
 }
 
 TextEdit::~TextEdit()
