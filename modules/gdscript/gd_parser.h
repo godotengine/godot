@@ -121,8 +121,8 @@ public:
 
 	struct BlockNode : public Node {
 
-		ClassNode *parent_class=NULL;
-		BlockNode *parent_block=NULL;
+		ClassNode *parent_class;
+		BlockNode *parent_block;
 		Map<StringName,int> locals;
 		List<Node*> statements;
 		Vector<StringName> variables;
