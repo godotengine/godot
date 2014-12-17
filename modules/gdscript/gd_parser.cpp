@@ -2757,6 +2757,9 @@ Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p
 	completion_class=NULL;
 	completion_function=NULL;
 	completion_block=NULL;
+	current_block=NULL;
+	current_class=NULL;
+	current_function=NULL;
 
 	self_path=p_self_path;
 	GDTokenizerBuffer *tb = memnew( GDTokenizerBuffer );
@@ -2776,6 +2779,10 @@ Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_ju
 	completion_class=NULL;
 	completion_function=NULL;
 	completion_block=NULL;
+	current_block=NULL;
+	current_class=NULL;
+
+	current_function=NULL;
 
 	self_path=p_self_path;
 	GDTokenizerText *tt = memnew( GDTokenizerText );
@@ -2811,6 +2818,10 @@ void GDParser::clear() {
 	completion_class=NULL;
 	completion_function=NULL;
 	completion_block=NULL;
+	current_block=NULL;
+	current_class=NULL;
+
+	current_function=NULL;
 
 	validating=false;
 	error_set=false;

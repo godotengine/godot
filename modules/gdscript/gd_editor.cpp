@@ -1165,7 +1165,7 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 
 	const GDParser::ClassNode *clss=context._class;
 
-	bool _static=context.function->_static;
+	bool _static=context.function && context.function->_static;
 
 	while(clss) {
 		GDCompletionContext c = context;
