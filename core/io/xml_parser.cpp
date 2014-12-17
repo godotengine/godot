@@ -30,6 +30,8 @@
 #include "print_string.h"
 //#define DEBUG_XML
 
+VARIANT_ENUM_CAST(XMLParser::NodeType);
+
 static bool _equalsn(const CharType* str1, const CharType* str2, int len) {
 	int i;
 	for(i=0; str1[i] && str2[i] && i < len; ++i)

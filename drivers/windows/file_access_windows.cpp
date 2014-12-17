@@ -54,7 +54,6 @@ void FileAccessWindows::check_errors() const {
 Error FileAccessWindows::_open(const String& p_filename, int p_mode_flags) {
 
 	String filename=fix_path(p_filename);
-
 	if (f)
 		close();
 

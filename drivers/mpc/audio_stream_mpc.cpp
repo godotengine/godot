@@ -275,7 +275,7 @@ void AudioStreamMPC::stop()  {
 }
 bool AudioStreamMPC::is_playing() const  {
 
-	return active;
+	return active || (get_total() - get_todo() -1 > 0);
 }
 
 void AudioStreamMPC::set_paused(bool p_paused)  {
