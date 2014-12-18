@@ -1168,6 +1168,7 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	codegen.current_line=0;
 	codegen.call_max=0;
 	codegen.debug_stack=ScriptDebugger::get_singleton()!=NULL;
+	Vector<StringName> argnames;
 
 	int stack_level=0;
 
@@ -1175,6 +1176,9 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 		for(int i=0;i<p_func->arguments.size();i++) {
 			int idx = i;
 			codegen.add_stack_identifier(p_func->arguments[i],i);
+#ifdef TOOLS_ENABLED
+			argnames.push_back(p_func->arguments[i]);
+#endif
 		}
 		stack_level=p_func->arguments.size();
 	}
@@ -1249,6 +1253,9 @@ Error GDCompiler::_parse_function(GDScript *p_script,const GDParser::ClassNode *
 	if (p_func)
 		gdfunc->_static=p_func->_static;
 
+#ifdef TOOLS_ENABLED
+	gdfunc->arg_names=argnames;
+#endif
 	//constants
 	if (codegen.constant_map.size()) {
 		gdfunc->_constant_count=codegen.constant_map.size();

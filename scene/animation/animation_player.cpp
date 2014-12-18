@@ -1178,6 +1178,19 @@ NodePath AnimationPlayer::get_root() const {
 	return root;
 }
 
+void AnimationPlayer::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+	String pf = p_function;
+	if (p_function=="play" || p_function=="remove_animation" || p_function=="has_animation" || p_function=="queue") {
+		List<StringName> al;
+		get_animation_list(&al);
+		for (List<StringName>::Element *E=al.front();E;E=E->next()) {
+
+			r_options->push_back("\""+String(E->get())+"\"");
+		}
+	}
+	Node::get_argument_options(p_function,p_idx,r_options);
+}
 
 void AnimationPlayer::_bind_methods() {
 

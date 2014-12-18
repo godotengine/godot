@@ -84,6 +84,8 @@ public:
 			StringName identifier;
 			StringName setter;
 			StringName getter;
+			int line;
+			Node *expression;
 		};
 		struct Constant {
 			StringName identifier;
@@ -96,10 +98,11 @@ public:
 		Vector<FunctionNode*> functions;
 		Vector<FunctionNode*> static_functions;
 		BlockNode *initializer;
+		ClassNode *owner;
 		//Vector<Node*> initializers;
 		int end_line;
 
-		ClassNode() { tool=false; type=TYPE_CLASS; extends_used=false; end_line=-1;}
+		ClassNode() { tool=false; type=TYPE_CLASS; extends_used=false; end_line=-1; owner=NULL;}
 	};
 
 
@@ -118,6 +121,8 @@ public:
 
 	struct BlockNode : public Node {
 
+		ClassNode *parent_class;
+		BlockNode *parent_block;
 		Map<StringName,int> locals;
 		List<Node*> statements;
 		Vector<StringName> variables;
@@ -126,7 +131,7 @@ public:
 		//the following is useful for code completion
 		List<BlockNode*> sub_blocks;
 		int end_line;
-		BlockNode() { type=TYPE_BLOCK; end_line=-1;}
+		BlockNode() { type=TYPE_BLOCK; end_line=-1; parent_block=NULL; parent_class=NULL; }
 	};
 
 	struct TypeNode : public Node {
@@ -349,6 +354,18 @@ public:
 	};
 */
 
+	enum CompletionType {
+		COMPLETION_NONE,
+		COMPLETION_BUILT_IN_TYPE_CONSTANT,
+		COMPLETION_FUNCTION,
+		COMPLETION_IDENTIFIER,
+		COMPLETION_PARENT_FUNCTION,
+		COMPLETION_METHOD,
+		COMPLETION_CALL_ARGUMENTS,
+		COMPLETION_INDEX,
+	};
+
+
 
 private:
 
@@ -375,12 +392,31 @@ private:
 	String base_path;
 	String self_path;
 
+
+	ClassNode *current_class;
+	FunctionNode *current_function;
+	BlockNode *current_block;
+
+	bool _get_completable_identifier(CompletionType p_type,StringName& identifier);
+	void _make_completable_call(int p_arg);
+
+	CompletionType completion_type;
+	StringName completion_cursor;
+	bool completion_static;
+	Variant::Type completion_built_in_constant;
+	Node *completion_node;
+	ClassNode *completion_class;
+	FunctionNode *completion_function;
+	BlockNode *completion_block;
+	int completion_line;
+	int completion_argument;
+
 	PropertyInfo current_export;
 
 	void _set_error(const String& p_error, int p_line=-1, int p_column=-1);
 
 
-	bool _parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_static);
+	bool _parse_arguments(Node* p_parent, Vector<Node*>& p_args, bool p_static, bool p_can_codecomplete=false);
 	bool _enter_indent_block(BlockNode *p_block=NULL);
 	bool _parse_newline();
 	Node* _parse_expression(Node *p_parent,bool p_static,bool p_allow_assign=false);
@@ -403,6 +439,19 @@ public:
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="",const String& p_self_path="");
 
 	const Node *get_parse_tree() const;
+
+	//completion info
+
+	CompletionType get_completion_type();
+	StringName get_completion_cursor();
+	int get_completion_line();
+	Variant::Type get_completion_built_in_constant();
+	Node *get_completion_node();
+	ClassNode *get_completion_class();
+	BlockNode *get_completion_block();
+	FunctionNode *get_completion_function();
+	int get_completion_argument_index();
+
 
 	void clear();
 	GDParser();

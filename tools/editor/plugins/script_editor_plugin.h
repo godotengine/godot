@@ -85,7 +85,7 @@ protected:
 
 
 	virtual void _validate_script();
-	virtual void _code_complete_script(const String& p_code,const String& p_keyword, int p_line, List<String>* r_options);
+	virtual void _code_complete_script(const String& p_code, List<String>* r_options);
 	virtual void _load_theme_settings();
 	void _notification(int p_what);
 

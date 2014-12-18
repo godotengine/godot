@@ -1419,17 +1419,9 @@ void OS_Windows::set_window_title(const String& p_title) {
 
 void OS_Windows::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
-	int dx=p_video_mode.width-video_mode.width;
-	int dy=p_video_mode.height-video_mode.height;
 
-	video_mode=p_video_mode;
-
-	if (dx != 0 || dy != 0) {
-		RECT rt;
-		GetWindowRect(hWnd, &rt);
-		MoveWindow(hWnd, rt.left, rt.top, (rt.right-rt.left)+dx, (rt.bottom-rt.top)+dy, true);
-	}
 }
+
 OS::VideoMode OS_Windows::get_video_mode(int p_screen) const {
 
 	return video_mode;
