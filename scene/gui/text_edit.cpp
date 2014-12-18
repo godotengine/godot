@@ -793,6 +793,7 @@ void TextEdit::_notification(int p_what) {
 				int maxlines = get_constant("completion_lines");
 				int cmax_width = get_constant("completion_max_width")*cache.font->get_char_size('x').x;
 				Color existing = get_color("completion_existing");
+				existing.a=0.2;
 				int scrollw = get_constant("completion_scroll_width");
 				Color scrollc = get_color("completion_scroll_color");
 
@@ -841,11 +842,20 @@ void TextEdit::_notification(int p_what) {
 
 				draw_rect(Rect2(completion_rect.pos,Size2(nofs,completion_rect.size.height)),existing);
 
+
+
+
 				for(int i=0;i<lines;i++) {
 
 					int l = line_from + i;
 					ERR_CONTINUE( l < 0 || l>= completion_options.size());
-					draw_string(cache.font,Point2(completion_rect.pos.x,completion_rect.pos.y+i*get_row_height()+cache.font->get_ascent()),completion_options[l],cache.font_color,completion_rect.size.width);
+					Color text_color = cache.font_color;
+					for(int j=0;j<color_regions.size();j++) {
+						if (completion_options[l].begins_with(color_regions[j].begin_key)) {
+							text_color=color_regions[j].color;
+						}
+					}
+					draw_string(cache.font,Point2(completion_rect.pos.x,completion_rect.pos.y+i*get_row_height()+cache.font->get_ascent()),completion_options[l],text_color,completion_rect.size.width);
 				}
 
 				if (scrollw) {

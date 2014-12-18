@@ -1625,12 +1625,6 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 }
 
 Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base_path, Object*p_owner, List<String>* r_options, String &r_call_hint) {
-/* bugs:
-  a[0].<complete> does not work
-  functions should end in (
-  when completing virtuals, ask for full back
-
- */
 	//print_line( p_code.replace(String::chr(0xFFFF),"<cursor>"));
 
 	GDParser p;
@@ -1700,29 +1694,82 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 
 					}
 				} else {
-					if (t.value.get_type()==Variant::NIL) {
-						Variant::CallError ce;
-						t.value=Variant::construct(t.type,NULL,0,ce);
-					}
 
-					if (!isfunction) {
-						List<PropertyInfo> pl;
-						t.value.get_property_list(&pl);
-						for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+					if (t.type==Variant::INPUT_EVENT) {
 
-							if (E->get().name.find("/")==-1)
-								options.insert(E->get().name);
+						//this is hardcoded otherwise it's not obvious
+						Set<String> exclude;
+
+						for(int i=0;i<InputEvent::TYPE_MAX;i++) {
+
+							InputEvent ie;
+							ie.type=InputEvent::Type(i);
+							static const char*evnames[]={
+								"# Common",
+								"# Key",
+								"# MouseMotion",
+								"# MouseButton",
+								"# JoyMotion",
+								"# JoyButton",
+								"# ScreenTouch",
+								"# ScreenDrag",
+								"# Action"
+							};
+
+							r_options->push_back(evnames[i]);
+
+							Variant v = ie;
+
+							if (i==0) {
+								List<MethodInfo> mi;
+								v.get_method_list(&mi);
+								for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
+									r_options->push_back(E->get().name+"(");
+
+								}
+
+							}
+
+							List<PropertyInfo> pi;
+							v.get_property_list(&pi);
+
+							for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
+
+								if (i==0)
+									exclude.insert(E->get().name);
+								else if (exclude.has(E->get().name))
+									continue;
+
+								r_options->push_back(E->get().name);
+							}
 						}
-					}
+						return OK;
+					} else {
+						if (t.value.get_type()==Variant::NIL) {
+							Variant::CallError ce;
+							t.value=Variant::construct(t.type,NULL,0,ce);
+						}
 
-					List<MethodInfo> mi;
-					t.value.get_method_list(&mi);
-					for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
-						if (E->get().arguments.size())
-							options.insert(E->get().name+"(");
-						else
-							options.insert(E->get().name+"()");
 
+						if (!isfunction) {
+							List<PropertyInfo> pl;
+							t.value.get_property_list(&pl);
+							for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+
+								if (E->get().name.find("/")==-1)
+									options.insert(E->get().name);
+							}
+						}
+
+						List<MethodInfo> mi;
+						t.value.get_method_list(&mi);
+						for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
+							if (E->get().arguments.size())
+								options.insert(E->get().name+"(");
+							else
+								options.insert(E->get().name+"()");
+
+						}
 					}
 				}
 			}
