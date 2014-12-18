@@ -212,18 +212,51 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign())
 				break;
 
-			Node * node=scene_tree->get_selected();
-			ERR_FAIL_COND(!node->get_parent());
-			int current_pos = node->get_index();
-			int next_pos = current_pos + ((p_tool==TOOL_MOVE_DOWN)?1:-1);
+			bool action = false;
+			bool MOVING_DOWN = (p_tool == TOOL_MOVE_DOWN);
+			bool MOVING_UP = !MOVING_DOWN;
 
-			if (next_pos< 0 || next_pos>=node->get_parent()->get_child_count())
-				break; // invalid position
+			List<Node*> selection = editor_selection->get_selected_node_list();
+			selection.sort_custom<Node::Comparator>();  // sort by index
+			if (MOVING_DOWN)
+				selection.invert();
 
-			editor_data->get_undo_redo().create_action("Move Node In Parent");
-			editor_data->get_undo_redo().add_do_method(node->get_parent(),"move_child",node,next_pos);
-			editor_data->get_undo_redo().add_undo_method(node->get_parent(),"move_child",node,current_pos);
-			editor_data->get_undo_redo().commit_action();
+			int lowest_id, highest_id;
+			for (List<Node*>::Element *E = selection.front(); E; E = E->next()) {
+				int index = E->get()->get_index();
+
+				if (index > highest_id)
+					highest_id = index;
+				if (index < lowest_id)
+					lowest_id = index;
+			}
+
+			if (MOVING_DOWN && highest_id >= scene_tree->get_selected()->get_parent()->get_child_count() - 1 || MOVING_UP && lowest_id == 0)
+				break; // one or more node can not be moved
+
+			for (int i = 0; i < selection.size(); i++) {
+				Node *top_node = selection[i];
+				Node *bottom_node = selection[selection.size() - 1 - i];
+
+				ERR_FAIL_COND(!top_node->get_parent());
+				ERR_FAIL_COND(!bottom_node->get_parent());
+
+				int top_node_pos = top_node->get_index();
+				int bottom_node_pos = bottom_node->get_index();
+
+				int top_node_pos_next = top_node_pos + (MOVING_DOWN ? 1 : -1);
+				int bottom_node_pos_next = bottom_node_pos + (MOVING_DOWN ? 1 : -1);
+
+				if (!action && selection.size() == 1) editor_data->get_undo_redo().create_action("Move Node In Parent");
+				if (!action && selection.size() > 1) editor_data->get_undo_redo().create_action("Move Nodes In Parent");
+
+				editor_data->get_undo_redo().add_do_method(top_node->get_parent(), "move_child", top_node, top_node_pos_next);
+				editor_data->get_undo_redo().add_undo_method(bottom_node->get_parent(), "move_child", bottom_node, bottom_node_pos);
+
+				action = true;
+			}
+
+			if (action) editor_data->get_undo_redo().commit_action();
 
 		} break;
 		case TOOL_DUPLICATE: {
