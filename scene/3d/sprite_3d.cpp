@@ -292,7 +292,7 @@ SpriteBase3D::SpriteBase3D() {
 	parent_sprite=NULL;
 	pI=NULL;
 
-	for(int i=0;i<4;i++)
+	for(int i=0;i<FLAG_MAX;i++)
 		flags[i]=i==FLAG_TRANSPARENT;
 
 	axis=Vector3::AXIS_Z;
