@@ -216,28 +216,31 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			bool MOVING_DOWN = (p_tool == TOOL_MOVE_DOWN);
 			bool MOVING_UP = !MOVING_DOWN;
 
+			Node *common_parent = scene_tree->get_selected()->get_parent();
 			List<Node*> selection = editor_selection->get_selected_node_list();
 			selection.sort_custom<Node::Comparator>();  // sort by index
 			if (MOVING_DOWN)
 				selection.invert();
 
-			int lowest_id, highest_id;
+			int lowest_id = common_parent->get_child_count() - 1;
+			int highest_id = 0;
 			for (List<Node*>::Element *E = selection.front(); E; E = E->next()) {
 				int index = E->get()->get_index();
 
-				if (index > highest_id)
-					highest_id = index;
-				if (index < lowest_id)
-					lowest_id = index;
+				if (index > highest_id) highest_id = index;
+				if (index < lowest_id) lowest_id = index;
+
+				if (E->get()->get_parent() != common_parent)
+					common_parent = NULL;
 			}
 
-			if (MOVING_DOWN && highest_id >= scene_tree->get_selected()->get_parent()->get_child_count() - 1 || MOVING_UP && lowest_id == 0)
-				break; // one or more node can not be moved
+			if (!common_parent || (MOVING_DOWN && highest_id >= common_parent->get_child_count() - MOVING_DOWN) || (MOVING_UP && lowest_id == 0))
+				break; // one or more nodes can not be moved
 
 			for (int i = 0; i < selection.size(); i++) {
 				Node *top_node = selection[i];
 				Node *bottom_node = selection[selection.size() - 1 - i];
-
+				 
 				ERR_FAIL_COND(!top_node->get_parent());
 				ERR_FAIL_COND(!bottom_node->get_parent());
 
