@@ -1440,8 +1440,8 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	if (err.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
+		instance->owner->set_script_instance(NULL);
 		instances.erase(p_owner);
-		memdelete(instance);
 		ERR_FAIL_COND_V(err.error!=Variant::CallError::CALL_OK, NULL); //error consrtucting
 	}
 
