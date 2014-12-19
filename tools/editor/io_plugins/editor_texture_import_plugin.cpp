@@ -223,7 +223,7 @@ EditorImportTextureOptions::EditorImportTextureOptions() {
 
 	notice_for_2d = memnew( Label );
 	notice_for_2d->set_text(_TR("NOTICE: You are not forced to import textures for 2D projects. Just copy your .jpg or .png files to your project, and change export options later. Atlases can be generated on export too."));
-	notice_for_2d->set_custom_minimum_size(Size2(0,50));
+	notice_for_2d->set_custom_minimum_size(Size2(0,60));
 	notice_for_2d->set_autowrap(true);
 	add_child(notice_for_2d);
 	notice_for_2d->hide();
@@ -407,7 +407,7 @@ void EditorTextureImportDialog::_browse_target() {
 
 void EditorTextureImportDialog::popup_import(const String& p_from) {
 
-	popup_centered(Size2(400,400));
+	popup_centered(Size2(400,480));
 	if (p_from!="") {
 		Ref<ResourceImportMetadata> rimd = ResourceLoader::load_import_metadata(p_from);
 		ERR_FAIL_COND(!rimd.is_valid());
