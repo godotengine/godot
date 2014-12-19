@@ -194,13 +194,6 @@ void make_default_theme() {
 
 	t->set_stylebox("panel","Panel", make_stylebox( panel_bg_png,0,0,0,0) );
 
-	Color control_font_color = Color::html("cfc9d5");
-	Color control_font_color_low = Color::html("bab4c1");
-	Color control_font_color_hover = Color::html("ffffff");
-	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.6);
-	Color control_font_color_pressed = Color::html("bfb9c5");
-	Color font_color_selection = Color::html("715e7d");
-	Ref<Texture> empty_icon = memnew( ImageTexture );
 
 
 	// Focus
