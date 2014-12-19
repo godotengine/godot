@@ -89,7 +89,7 @@ private:
 		Variant initial_val;
 		Variant delta_val;
 		Variant final_val;
-		NodePath target;
+		ObjectID target_id;
 		StringName target_key;
 		real_t times_in_sec;
 		TransitionType trans_type;
@@ -145,20 +145,20 @@ public:
 	float get_speed() const;
 
 	bool start();
-	bool reset(Node *p_node, String p_key);
+	bool reset(Object *p_node, String p_key);
 	bool reset_all();
-	bool stop(Node *p_node, String p_key);
+	bool stop(Object *p_node, String p_key);
 	bool stop_all();
-	bool resume(Node *p_node, String p_key);
+	bool resume(Object *p_node, String p_key);
 	bool resume_all();
-	bool remove(Node *p_node, String p_key);
+	bool remove(Object *p_node, String p_key);
 	bool remove_all();
 
 	bool seek(real_t p_time);
 	real_t tell() const;
 	real_t get_runtime() const;
 
-	bool interpolate_property(Node *p_node
+	bool interpolate_property(Object *p_node
 		, String p_property
 		, Variant p_initial_val
 		, Variant p_final_val
@@ -168,7 +168,7 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool interpolate_method(Node *p_node
+	bool interpolate_method(Object *p_node
 		, String p_method
 		, Variant p_initial_val
 		, Variant p_final_val
@@ -178,16 +178,16 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool interpolate_callback(Node *p_node
+	bool interpolate_callback(Object *p_node
 		, real_t p_times_in_sec
 		, String p_callback
 		, Variant p_arg = Variant()
 	);
 
-	bool follow_property(Node *p_node
+	bool follow_property(Object *p_node
 		, String p_property
 		, Variant p_initial_val
-		, Node *p_target
+		, Object *p_target
 		, String p_target_property
 		, real_t p_times_in_sec
 		, TransitionType p_trans_type
@@ -195,10 +195,10 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool follow_method(Node *p_node
+	bool follow_method(Object *p_node
 		, String p_method
 		, Variant p_initial_val
-		, Node *p_target
+		, Object *p_target
 		, String p_target_method
 		, real_t p_times_in_sec
 		, TransitionType p_trans_type
@@ -206,9 +206,9 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool targeting_property(Node *p_node
+	bool targeting_property(Object *p_node
 		, String p_property
-		, Node *p_initial
+		, Object *p_initial
 		, String p_initial_property
 		, Variant p_final_val
 		, real_t p_times_in_sec
@@ -217,9 +217,9 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool targeting_method(Node *p_node
+	bool targeting_method(Object *p_node
 		, String p_method
-		, Node *p_initial
+		, Object *p_initial
 		, String p_initial_method
 		, Variant p_final_val
 		, real_t p_times_in_sec
