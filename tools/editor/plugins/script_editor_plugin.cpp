@@ -1604,7 +1604,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item("Move Down",EDIT_MOVE_LINE_DOWN,KEY_MASK_ALT|KEY_DOWN);
 	edit_menu->get_popup()->add_item("Indent Left",EDIT_INDENT_LEFT,KEY_MASK_ALT|KEY_LEFT);
 	edit_menu->get_popup()->add_item("Indent Right",EDIT_INDENT_RIGHT,KEY_MASK_ALT|KEY_RIGHT);
-	edit_menu->get_popup()->add_item("Toggle Comment",EDIT_TOGGLE_COMMENT,KEY_MASK_CMD|KEY_SLASH);
+	edit_menu->get_popup()->add_item("Toggle Comment",EDIT_TOGGLE_COMMENT,KEY_MASK_CMD|KEY_K);
 	edit_menu->get_popup()->add_item("Clone Down",EDIT_CLONE_DOWN,KEY_MASK_CMD|KEY_B);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
