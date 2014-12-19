@@ -84,7 +84,7 @@ private:
 		InterpolateType type;
 		bool finish;
 		real_t elapsed;
-		NodePath path;
+		ObjectID id;
 		StringName key;
 		Variant initial_val;
 		Variant delta_val;
@@ -104,6 +104,7 @@ private:
 	bool active;
 	bool repeat;
 	float speed_scale;
+	mutable int pending_update;
 
 	List<InterpolateData> interpolates;
 
