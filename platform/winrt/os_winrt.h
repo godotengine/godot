@@ -228,6 +228,7 @@ public:
 	virtual String get_data_dir() const;
 
 	void set_gl_context(ContextEGL* p_context);
+	void screen_size_changed();
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();

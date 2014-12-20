@@ -870,6 +870,9 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 		for(int j=0;j<8;j++) {
 			for(int i=0;i<res_shapes;i++) {
 
+				if (is_shape_set_as_trigger(i))
+					continue;
+
 				Vector3 a = sr[i*2+0];
 				Vector3 b = sr[i*2+1];
 				//print_line(String()+a+" -> "+b);
@@ -930,6 +933,8 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 	for(int i=0;i<get_shape_count();i++) {
 
 
+		if (is_shape_set_as_trigger(i))
+			continue;
 
 		float lsafe,lunsafe;
 		PhysicsDirectSpaceState::ShapeRestInfo lrest;
@@ -1041,6 +1046,8 @@ bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
 	//fill exclude list..
 	for(int i=0;i<get_shape_count();i++) {
 
+		if (is_shape_set_as_trigger(i))
+			continue;
 
 		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,0,exclude,get_layer_mask(),mask);
 		if (col)

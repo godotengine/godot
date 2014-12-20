@@ -136,7 +136,7 @@ public:
 
 		static int b;
 
-#if defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603 // windows 8?
+#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
 		b = (int)((a>0.0f) ? (a + 0.5f):(a -0.5f));
 
 #elif defined(_MSC_VER) && _MSC_VER < 1800
