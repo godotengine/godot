@@ -142,6 +142,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 			if (d<closest_dist) {
 				ignore_from_edge=E->get();
 				closest_dist=d;
+				closest_point=closest;
 			}
 		}
 
@@ -168,6 +169,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2& p_from, const Vector
 			if (d<closest_dist) {
 				ignore_to_edge=E->get();
 				closest_dist=d;
+				closest_point=closest;
 			}
 		}
 
@@ -529,7 +531,7 @@ Vector2 PolygonPathFinder::get_closest_point(const Vector2& p_point) const {
 
 		float d = p_point.distance_squared_to(points[i].pos);
 		if (d<closest_dist) {
-			d=closest_dist;
+			closest_dist=d;
 			closest_idx=i;
 		}
 
