@@ -1921,27 +1921,6 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
                 } break;
 
-                case KEY_K:{
-                    if (!k.mod.command || k.mod.shift || k.mod.alt) {
-                        scancode_handled=false;
-                        break;
-                    }
-                    else {
-                        if (selection.active) {
-                            int ini = selection.from_line;
-                            int end = selection.to_line;
-                            for (int i=ini; i<= end; i++)
-                            {
-                                _insert_text(i,0,"#");
-                            }
-                        }
-                        else{
-                            _insert_text(cursor.line,0,"#");
-                        }
-                        update();
-                    }
-                    break;}
-
             case KEY_U:{
                 if (!k.mod.command || k.mod.shift || k.mod.alt) {
                     scancode_handled=false;
