@@ -31,7 +31,7 @@
 
 #include "resource.h"
 #include "io/resource_loader.h"
-
+#include "scene/resources/texture.h"
 class Shader : public Resource {
 
 	OBJ_TYPE(Shader,Resource);
@@ -48,6 +48,7 @@ class Shader : public Resource {
 	// convertion fast and save memory.
 	mutable bool params_cache_dirty;
 	mutable Map<StringName,StringName> params_cache; //map a shader param to a material param..
+	Map<StringName,Ref<Texture> > default_textures;
 
 protected:
 
@@ -71,6 +72,10 @@ public:
 
 	void get_param_list(List<PropertyInfo> *p_params) const;
 	bool has_param(const StringName& p_param) const;
+
+	void set_default_texture_param(const StringName& p_param, const Ref<Texture> &p_texture);
+	Ref<Texture> get_default_texture_param(const StringName& p_param) const;
+	void get_default_texture_param_list(List<StringName>* r_textures) const;
 
 	virtual RID get_rid() const;
 

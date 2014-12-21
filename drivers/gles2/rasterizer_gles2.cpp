@@ -1539,6 +1539,29 @@ void RasterizerGLES2::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_
 
 }
 
+void RasterizerGLES2::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture) {
+
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND(!shader);
+	ERR_FAIL_COND(!texture_owner.owns(p_texture));
+
+	if (p_texture.is_valid())
+		shader->default_textures[p_name]=p_texture;
+	else
+		shader->default_textures.erase(p_name);
+
+}
+
+RID RasterizerGLES2::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const{
+	const Shader *shader=shader_owner.get(p_shader);
+
+	const Map<StringName,RID>::Element *E=shader->default_textures.find(p_name);
+	if (!E)
+		return RID();
+	return E->get();
+}
+
+
 
 /* COMMON MATERIAL API */
 
@@ -4991,9 +5014,26 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 				Texture *t=NULL;
 				if (rid.is_valid()) {
 
+
 					t=texture_owner.get(rid);
-					if (!t)
+					if (!t) {
 						E->get().value=RID(); //nullify, invalid texture
+						rid=RID();
+					}
+				} else {
+
+
+				}
+
+				if (!rid.is_valid()) {
+					//use from default textures
+					Map<StringName,RID>::Element *F=p_material->shader_cache->default_textures.find(E->key());
+					if (F) {
+						t=texture_owner.get(F->get());
+						if (!t) {
+							p_material->shader_cache->default_textures.erase(E->key());
+						}
+					}
 				}
 
 
@@ -5017,6 +5057,13 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 			} else {
 				material_shader.set_custom_uniform(E->get().index,E->get().value);
 			}
+
+		}
+
+		for (Map<StringName,RID>::Element *E=p_material->shader_cache->default_textures.front();E;E=E->next()) {
+			if (p_material->shader_params.has(E->key()))
+				continue;
+
 
 		}
 

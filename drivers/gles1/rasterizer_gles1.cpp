@@ -1021,6 +1021,16 @@ void RasterizerGLES1::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_
 
 }
 
+
+void RasterizerGLES1::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture) {
+
+}
+
+RID RasterizerGLES1::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const {
+
+	return RID();
+}
+
 /* COMMON MATERIAL API */
 
 
