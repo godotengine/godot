@@ -142,6 +142,11 @@ void OSWinrt::set_gl_context(ContextEGL* p_context) {
 	gl_context = p_context;
 };
 
+void OSWinrt::screen_size_changed() {
+
+	gl_context->reset();
+};
+
 void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
     main_loop=NULL;
@@ -568,8 +573,12 @@ Error OSWinrt::shell_open(String p_uri) {
 
 String OSWinrt::get_locale() const {
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
+	return "en";
+#else
 	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return language->Data();
+#endif
 }
 
 void OSWinrt::release_rendering_thread() {
