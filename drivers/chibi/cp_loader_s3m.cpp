@@ -163,8 +163,8 @@ CPLoader::Error  CPLoader_S3M::load_sample(CPSample *p_sample) {
 		p_sample->set_name(name);
 		
 		char scrs[4];
-		file->get_byte_array((uint8_t*)scrs,4);
-		scrs[4]=0;
+		file->get_byte_array((uint8_t*)scrs,3);
+		scrs[3]=0;
 
 		
 
