@@ -1121,6 +1121,7 @@ String _File::get_as_text() const {
 		text+=l+"\n";
 		l = get_line();
 	}
+	text+=l;
 
 	return text;
 
