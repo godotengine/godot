@@ -135,7 +135,7 @@ private:
 	Status status;
 	IP::ResolverID resolving;
 	int conn_port;
-	int verify_mode;
+	int verify_mode = 1;
 	String conn_host;
 	bool ssl;
 	bool ssl_verify_host;
