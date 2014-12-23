@@ -58,7 +58,6 @@ protected:
 	static void _bind_methods();
 public:
 
-
 	virtual Error accept(Ref<StreamPeer> p_base);
 	virtual Error connect(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String());
 	virtual Status get_status() const;

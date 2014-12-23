@@ -9,9 +9,19 @@ StreamPeerSSL *StreamPeerSSL::create() {
 	return _create();
 }
 
+void StreamPeerSSL::set_verify_mode(int mode) {
+	verify_mode = mode;
+}
+int StreamPeerSSL::get_verify_mode() const{
+	return verify_mode;
+}
+
 
 void StreamPeerSSL::_bind_methods() {
 
+
+	ObjectTypeDB::bind_method(_MD("set_verify_mode", "mode"),&StreamPeerSSL::set_verify_mode);
+	ObjectTypeDB::bind_method(_MD("get_verify_mode"),&StreamPeerSSL::get_verify_mode);
 
 	ObjectTypeDB::bind_method(_MD("accept:Error","stream:StreamPeer"),&StreamPeerSSL::accept);
 	ObjectTypeDB::bind_method(_MD("connect:Error","stream:StreamPeer","validate_certs","for_hostname"),&StreamPeerSSL::connect,DEFVAL(false),DEFVAL(String()));

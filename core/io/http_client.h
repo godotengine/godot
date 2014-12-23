@@ -135,6 +135,7 @@ private:
 	Status status;
 	IP::ResolverID resolving;
 	int conn_port;
+	int verify_mode;
 	String conn_host;
 	bool ssl;
 	bool ssl_verify_host;
@@ -185,6 +186,8 @@ public:
 	void set_blocking_mode(bool p_enable); //useful mostly if running in a thread
 	bool is_blocking_mode_enabled() const;
 
+	void set_verify_mode(int mode);
+	int get_verify_mode() const;
 
 	Error poll();
 

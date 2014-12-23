@@ -272,7 +272,6 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 	if (connected)
 		disconnect();
 
-
 	hostname=p_for_hostname;
 	status=STATUS_DISCONNECTED;
 
@@ -356,6 +355,7 @@ Error StreamPeerOpenSSL::connect(Ref<StreamPeer> p_base, bool p_validate_certs, 
 	use_blocking=true; // let handshake use blocking
 	// Set the SSL to automatically retry on failure.
 	SSL_set_mode(ssl, SSL_MODE_AUTO_RETRY);
+	ssl->verify_mode = verify_mode;
 
 	// Same as before, try to connect.
 	int result = SSL_connect( ssl );
@@ -517,7 +517,6 @@ StreamPeerOpenSSL::~StreamPeerOpenSSL() {
 }
 
 StreamPeerSSL* StreamPeerOpenSSL::_create_func() {
-
 	return memnew( StreamPeerOpenSSL );
 }
 

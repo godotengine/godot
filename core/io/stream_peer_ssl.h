@@ -8,6 +8,7 @@ class StreamPeerSSL : public StreamPeer {
 protected:
 	static StreamPeerSSL* (*_create)();
 	static void _bind_methods();
+	int verify_mode;
 public:
 
 	enum Status {
@@ -16,6 +17,8 @@ public:
 		STATUS_ERROR_NO_CERTIFICATE,
 		STATUS_ERROR_HOSTNAME_MISMATCH
 	};
+	void set_verify_mode(int mode);
+	int get_verify_mode() const;
 
 	virtual Error accept(Ref<StreamPeer> p_base)=0;
 	virtual Error connect(Ref<StreamPeer> p_base,bool p_validate_certs=false,const String& p_for_hostname=String())=0;
