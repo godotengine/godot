@@ -140,6 +140,7 @@ public:
 		SHADER_POST_PROCESS,
 	};
 
+
 	virtual RID shader_create(ShaderMode p_mode=SHADER_MATERIAL)=0;
 
 	virtual void shader_set_mode(RID p_shader,ShaderMode p_mode)=0;
@@ -150,6 +151,9 @@ public:
 	virtual String shader_get_vertex_code(RID p_shader) const=0;
 	virtual String shader_get_light_code(RID p_shader) const=0;
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const=0;
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture)=0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const=0;
 
 
 	/* COMMON MATERIAL API */

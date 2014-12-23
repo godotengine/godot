@@ -40,6 +40,7 @@
 #include "servers/spatial_sound/spatial_sound_server_sw.h"
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/audio/audio_driver_dummy.h"
 
 #include "gl_context_egl.h"
 
@@ -124,6 +125,7 @@ class OSWinrt : public OS {
 
 	MainLoop *main_loop;
 
+	AudioDriverDummy audio_driver;
 	AudioServerSW *audio_server;
 	SampleManagerMallocSW *sample_manager;
 	SpatialSoundServerSW *spatial_sound_server;
@@ -226,16 +228,21 @@ public:
 	virtual String get_data_dir() const;
 
 	void set_gl_context(ContextEGL* p_context);
+	void screen_size_changed();
 
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
+
+	virtual bool has_touchscreen_ui_hint() const { return true; };
 
 	virtual Error shell_open(String p_uri);
 
 	void run();
 
 	virtual bool get_swap_ok_cancel() { return true; }
+
+	void input_event(InputEvent &p_event);
 
 	OSWinrt();
 	~OSWinrt();

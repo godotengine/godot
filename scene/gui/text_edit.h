@@ -79,6 +79,7 @@ class TextEdit : public Control  {
 		Color mark_color;
 		Color breakpoint_color;
 		Color current_line_color;
+		Color brace_mismatch_color;
 
 		int row_height;
 		int line_spacing;
@@ -185,6 +186,8 @@ class TextEdit : public Control  {
 	int completion_index;
 	Rect2i completion_rect;
 	int completion_line_ofs;
+	String completion_hint;
+	int completion_hint_offset;
 
 	bool setting_text;
 
@@ -208,6 +211,7 @@ class TextEdit : public Control  {
 	bool line_numbers;
 	
 	bool auto_brace_completion_enabled;
+	bool brace_matching_enabled;
 	bool cut_copy_line;
 
 	uint64_t last_dblclk;
@@ -261,6 +265,7 @@ class TextEdit : public Control  {
 
 	void _clear();
 	void _cancel_completion();
+	void _cancel_code_hint();
 	void _confirm_completion();
 	void _update_completion_candidates();
 
@@ -313,7 +318,11 @@ public:
 	inline void set_auto_brace_completion(bool p_enabled) {
 		auto_brace_completion_enabled = p_enabled;
 	}
-	
+	inline void set_brace_matching(bool p_enabled) {
+		brace_matching_enabled=p_enabled;
+		update();
+	}
+
 	void cursor_set_column(int p_col);
 	void cursor_set_line(int p_row);
 
@@ -350,7 +359,7 @@ public:
 
 	void undo();
 	void redo();
-    void clear_undo_history();
+	void clear_undo_history();
 
 
 	void set_draw_tabs(bool p_draw);
@@ -376,9 +385,12 @@ public:
 
 	void set_tooltip_request_func(Object *p_obj, const StringName& p_function, const Variant& p_udata);
 
-	void set_completion(bool p_enabled,const Vector<String>& p_prefixes);
+	void set_completion(bool p_enabled,const Vector<String>& p_prefixes);	
 	void code_complete(const Vector<String> &p_strings);
+	void set_code_hint(const String& p_hint);
 	void query_code_comple();
+
+	String get_text_for_completion();
 
 	TextEdit();
 	~TextEdit();

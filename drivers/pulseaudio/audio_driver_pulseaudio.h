@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  method_bind.cpp                                                      */
+/*  audio_driver_pulseaudio.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,104 +26,54 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "object.h"
-#include "method_bind.h"
+#include "servers/audio/audio_server_sw.h"
 
+#ifdef PULSEAUDIO_ENABLED
 
-#ifdef DEBUG_METHODS_ENABLED
-PropertyInfo MethodBind::get_argument_info(int p_argument) const {
+#include "core/os/thread.h"
+#include "core/os/mutex.h"
 
+#include <pulse/simple.h>
 
-	if (p_argument>=0) {
+class AudioDriverPulseAudio : public AudioDriverSW {
 
-		String name = (p_argument<arg_names.size())?String(arg_names[p_argument]):String("arg"+itos(p_argument));
-		PropertyInfo pi( get_argument_type(p_argument), name );
-		if ((pi.type==Variant::OBJECT) && name.find(":")!=-1) {
-			pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string=name.get_slice(":",1);
-			pi.name=name.get_slice(":",0);
-		}
-		return pi;
+	Thread* thread;
+	Mutex* mutex;
 
-	} else {
+    pa_simple* pulse;
 
-		Variant::Type at = get_argument_type(-1);
-		if (at==Variant::OBJECT && ret_type)
-			return PropertyInfo( at, "ret", PROPERTY_HINT_RESOURCE_TYPE, ret_type );
-		else
-			return PropertyInfo( at, "ret" );
-	}
+	int32_t* samples_in;
+	int16_t* samples_out;
 
+	static void thread_func(void* p_udata);
 
-	return PropertyInfo();
-}
+	unsigned int mix_rate;
+	OutputFormat output_format;
 
-#endif
-void MethodBind::_set_const(bool p_const) {
+    unsigned int buffer_size;
+	int channels;
 
-	_const=p_const;
-}
+	bool active;
+	bool thread_exited;
+	mutable bool exit_thread;
+	bool pcm_open;
 
-StringName MethodBind::get_name() const {
-	return name;
-}
-void MethodBind::set_name(const StringName& p_name) {
-	name=p_name;
-}
+public:
 
-#ifdef DEBUG_METHODS_ENABLED
-void MethodBind::set_argument_names(const Vector<StringName>& p_names) {
+	const char* get_name() const {
+        return "PulseAudio";
+	};
 
-	arg_names=p_names;
+	virtual Error init();
+	virtual void start();
+	virtual int get_mix_rate() const;
+	virtual OutputFormat get_output_format() const;
+	virtual void lock();
+	virtual void unlock();
+	virtual void finish();
 
-}
-Vector<StringName> MethodBind::get_argument_names() const {
-
-	return arg_names;
-}
+    AudioDriverPulseAudio();
+    ~AudioDriverPulseAudio();
+};
 
 #endif
-
-
-
-void MethodBind::set_default_arguments(const Vector<Variant>& p_defargs) {
-	default_arguments=p_defargs;
-	default_argument_count=default_arguments.size();
-
-}
-
-#ifdef DEBUG_METHODS_ENABLED
-void MethodBind::_generate_argument_types(int p_count) {
-
-
-	set_argument_count(p_count);
-	Variant::Type *argt = memnew_arr(Variant::Type,p_count+1);
-	argt[0]=_gen_argument_type(-1);
-	for(int i=0;i<p_count;i++) {
-		argt[i+1]=_gen_argument_type(i);
-	}
-	set_argument_types(argt);
-
-}
-
-#endif
-
-MethodBind::MethodBind() {
-	static int last_id=0;
-	method_id=last_id++;
-	hint_flags=METHOD_FLAGS_DEFAULT;
-	argument_count=0;
-	default_argument_count=0;
-#ifdef DEBUG_METHODS_ENABLED
-	argument_types=NULL;
-#endif
-	_const=false;
-}
-
-MethodBind::~MethodBind() {
-#ifdef DEBUG_METHODS_ENABLED
-	if (argument_types)
-		memdelete_arr(argument_types);
-#endif
-}
-

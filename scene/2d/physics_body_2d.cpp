@@ -858,7 +858,8 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 		//motion recover
 		for(int i=0;i<get_shape_count();i++) {
 
-
+			if (is_shape_set_as_trigger(i))
+				continue;
 			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),Vector2(),margin,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask))
 				collided=true;
 
@@ -902,6 +903,8 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 	for(int i=0;i<get_shape_count();i++) {
 
+		if (is_shape_set_as_trigger(i))
+			continue;
 
 		float lsafe,lunsafe;
 		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,get_layer_mask(),mask);

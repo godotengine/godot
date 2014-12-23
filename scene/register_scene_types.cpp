@@ -75,6 +75,7 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/video_player.h"
 #include "scene/gui/reference_frame.h"
+#include "scene/gui/graph_node.h"
 #include "scene/resources/video_stream.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
@@ -303,6 +304,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<SplitContainer>();
 	ObjectTypeDB::register_type<HSplitContainer>();
 	ObjectTypeDB::register_type<VSplitContainer>();
+	ObjectTypeDB::register_type<GraphNode>();
 
 	OS::get_singleton()->yield(); //may take time to init
 

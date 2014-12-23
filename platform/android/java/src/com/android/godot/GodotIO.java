@@ -438,8 +438,26 @@ public class GodotIO {
 
 		try {
 			Log.v("MyApp", "TRYING TO OPEN URI: " + p_uri);
-			Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(p_uri));
-			activity.startActivity(myIntent);
+			String path = p_uri;
+			String type="";
+			if (path.startsWith("/")) {
+				//absolute path to filesystem, prepend file://
+				path="file://"+path;
+				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
+
+					type="image/*";
+				}
+			}
+
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_VIEW);
+			if (!type.equals("")) {
+				intent.setDataAndType(Uri.parse(path), type);
+			} else {
+				intent.setData(Uri.parse(path));
+			}
+
+			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
 

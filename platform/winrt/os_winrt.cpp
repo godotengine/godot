@@ -71,7 +71,7 @@ const char * OSWinrt::get_video_driver_name(int p_driver) const {
 
 OS::VideoMode OSWinrt::get_default_video_mode() const {
 
-	return VideoMode(800,600,false);	
+	return video_mode;
 }
 
 int OSWinrt::get_audio_driver_count() const {
@@ -142,12 +142,27 @@ void OSWinrt::set_gl_context(ContextEGL* p_context) {
 	gl_context = p_context;
 };
 
+void OSWinrt::screen_size_changed() {
+
+	gl_context->reset();
+};
+
 void OSWinrt::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
     main_loop=NULL;
     outside=true;
 
 	gl_context->initialize();
+	VideoMode vm;
+	vm.width = gl_context->get_window_width();
+	vm.height = gl_context->get_window_height();
+	vm.fullscreen = true;
+	vm.resizable = false;
+
+	set_video_mode(vm);
+
+	gl_context->make_current();
+	rasterizer = memnew( RasterizerGLES2 );
 
 	visual_server = memnew( VisualServerRaster(rasterizer) );
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
@@ -269,6 +284,11 @@ String OSWinrt::get_clipboard() const {
 	return "";
 };
 
+
+void OSWinrt::input_event(InputEvent &p_event) {
+	p_event.ID = ++last_id;
+	input->parse_input_event(p_event);
+};
 
 void OSWinrt::delete_main_loop() {
 
@@ -392,7 +412,7 @@ void OSWinrt::set_window_title(const String& p_title) {
 
 void OSWinrt::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
-	
+	video_mode = p_video_mode;
 }
 OS::VideoMode OSWinrt::get_video_mode(int p_screen) const {
 
@@ -512,7 +532,7 @@ Error OSWinrt::kill(const ProcessID& p_pid) {
 
 Error OSWinrt::set_cwd(const String& p_cwd) {
 
-	return OK;
+	return FAILED;
 }
 
 String OSWinrt::get_executable_path() const {
@@ -553,8 +573,12 @@ Error OSWinrt::shell_open(String p_uri) {
 
 String OSWinrt::get_locale() const {
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // this should work on phone 8.1, but it doesn't
+	return "en";
+#else
 	Platform::String ^language = Windows::Globalization::Language::CurrentInputMethodLanguageTag;
 	return language->Data();
+#endif
 }
 
 void OSWinrt::release_rendering_thread() {
@@ -634,6 +658,7 @@ OSWinrt::OSWinrt() {
 
 	gl_context = NULL;
 
+	AudioDriverManagerSW::add_driver(&audio_driver);
 }
 
 

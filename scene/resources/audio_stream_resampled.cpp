@@ -38,15 +38,18 @@ int AudioStreamResampled::get_channel_count() const {
 
 
 template<int C>
-void AudioStreamResampled::_resample(int32_t *p_dest,int p_todo,int32_t p_increment) {
+uint32_t AudioStreamResampled::_resample(int32_t *p_dest,int p_todo,int32_t p_increment) {
+
+	uint32_t read=offset&MIX_FRAC_MASK;
 
 	for (int i=0;i<p_todo;i++) {
 
 		offset = (offset + p_increment)&(((1<<(rb_bits+MIX_FRAC_BITS))-1));
+		read+=p_increment;
 		uint32_t pos = offset >> MIX_FRAC_BITS;
 		uint32_t frac = offset & MIX_FRAC_MASK;
 #ifndef FAST_AUDIO
-		ERR_FAIL_COND(pos>=rb_len);
+		ERR_FAIL_COND_V(pos>=rb_len,0);
 #endif
 		uint32_t pos_next = (pos+1)&rb_mask;
 		//printf("rb pos %i\n",pos);
@@ -151,7 +154,7 @@ void AudioStreamResampled::_resample(int32_t *p_dest,int p_todo,int32_t p_increm
 	}
 
 
-	rb_read_pos=offset>>MIX_FRAC_BITS;
+	return read>>MIX_FRAC_BITS;//rb_read_pos=offset>>MIX_FRAC_BITS;
 
 }
 
@@ -173,10 +176,10 @@ bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
 
 	} else if (rb_read_pos<write_pos_cache) {
 
-		rb_todo=write_pos_cache-rb_read_pos-1;
+		rb_todo=write_pos_cache-rb_read_pos; //-1?
 	} else {
 
-		rb_todo=(rb_len-rb_read_pos)+write_pos_cache-1;
+		rb_todo=(rb_len-rb_read_pos)+write_pos_cache; //-1?
 	}
 
 	int todo = MIN( ((int64_t(rb_todo)<<MIX_FRAC_BITS)/increment)+1, p_frames );
@@ -220,12 +223,21 @@ bool AudioStreamResampled::mix(int32_t *p_dest, int p_frames) {
 #endif
 	{
 
+		uint32_t read=0;
 		switch(channels) {
-			case 1: _resample<1>(p_dest,todo,increment); break;
-			case 2: _resample<2>(p_dest,todo,increment); break;
-			case 4: _resample<4>(p_dest,todo,increment); break;
-			case 6: _resample<6>(p_dest,todo,increment); break;
+			case 1: read=_resample<1>(p_dest,todo,increment); break;
+			case 2: read=_resample<2>(p_dest,todo,increment); break;
+			case 4: read=_resample<4>(p_dest,todo,increment); break;
+			case 6: read=_resample<6>(p_dest,todo,increment); break;
 		}
+
+		if (read>rb_todo)
+			read=rb_todo;
+
+		rb_read_pos = (rb_read_pos+read)&rb_mask;
+
+
+
 
 	}
 

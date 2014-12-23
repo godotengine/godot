@@ -359,385 +359,591 @@ void TextEdit::_update_scrollbars() {
 
 void TextEdit::_notification(int p_what) {
 
-    switch(p_what) {
-         case NOTIFICATION_ENTER_TREE: {
+	switch(p_what) {
+		case NOTIFICATION_ENTER_TREE: {
 
-            _update_caches();
-            if (cursor_changed_dirty)
-                MessageQueue::get_singleton()->push_call(this,"_cursor_changed_emit");
-            if (text_changed_dirty)
-                MessageQueue::get_singleton()->push_call(this,"_text_changed_emit");
+			_update_caches();
+			if (cursor_changed_dirty)
+				MessageQueue::get_singleton()->push_call(this,"_cursor_changed_emit");
+			if (text_changed_dirty)
+				MessageQueue::get_singleton()->push_call(this,"_text_changed_emit");
 
-        } break;
-        case NOTIFICATION_RESIZED: {
+		} break;
+		case NOTIFICATION_RESIZED: {
 
-            cache.size=get_size();
-            adjust_viewport_to_cursor();
+			cache.size=get_size();
+			adjust_viewport_to_cursor();
 
 
-        } break;
-        case NOTIFICATION_THEME_CHANGED: {
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
 
-            _update_caches();
-        };
-        case NOTIFICATION_DRAW: {
+			_update_caches();
+		};
+		case NOTIFICATION_DRAW: {
 
-            int line_number_char_count=0;
+			int line_number_char_count=0;
 
-            {
-                int lc=text.size()+1;
-                cache.line_number_w=0;
-                while(lc) {
-                    cache.line_number_w+=1;
-                    lc/=10;
-                };
+			{
+				int lc=text.size()+1;
+				cache.line_number_w=0;
+				while(lc) {
+					cache.line_number_w+=1;
+					lc/=10;
+				};
 
-                if (line_numbers) {
+				if (line_numbers) {
 
-                    line_number_char_count=cache.line_number_w;
-                    cache.line_number_w=(cache.line_number_w+1)*cache.font->get_char_size('0').width;
-                } else {
-                    cache.line_number_w=0;
-                }
+					line_number_char_count=cache.line_number_w;
+					cache.line_number_w=(cache.line_number_w+1)*cache.font->get_char_size('0').width;
+				} else {
+					cache.line_number_w=0;
+				}
 
 
-            }
-            _update_scrollbars();
+			}
+			_update_scrollbars();
 
 
-            RID ci = get_canvas_item();
-            int xmargin_beg=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w;
-            int xmargin_end=cache.size.width-cache.style_normal->get_margin(MARGIN_RIGHT);
-            //let's do it easy for now:
-            cache.style_normal->draw(ci,Rect2(Point2(),cache.size));
-            if (has_focus())
-                cache.style_focus->draw(ci,Rect2(Point2(),cache.size));
+			RID ci = get_canvas_item();
+			int xmargin_beg=cache.style_normal->get_margin(MARGIN_LEFT)+cache.line_number_w;
+			int xmargin_end=cache.size.width-cache.style_normal->get_margin(MARGIN_RIGHT);
+			//let's do it easy for now:
+			cache.style_normal->draw(ci,Rect2(Point2(),cache.size));
+			if (has_focus())
+				cache.style_focus->draw(ci,Rect2(Point2(),cache.size));
 
 
-            int ascent=cache.font->get_ascent();
+			int ascent=cache.font->get_ascent();
 
-            int visible_rows = get_visible_rows();
+			int visible_rows = get_visible_rows();
 
-            int tab_w = cache.font->get_char_size(' ').width*tab_size;
+			int tab_w = cache.font->get_char_size(' ').width*tab_size;
 
-            Color color = cache.font_color;
-            int in_region=-1;
+			Color color = cache.font_color;
+			int in_region=-1;
 
-            if (syntax_coloring) {
+			if (syntax_coloring) {
 
-                if (custom_bg_color.a>0.01) {
+				if (custom_bg_color.a>0.01) {
 
-                    Point2i ofs = Point2i(cache.style_normal->get_offset())/2.0;
-                    VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(ofs, get_size()-cache.style_normal->get_minimum_size()+ofs),custom_bg_color);
-                }
-                //compute actual region to start (may be inside say, a comment).
-                //slow in very large documments :( but ok for source!
+					Point2i ofs = Point2i(cache.style_normal->get_offset())/2.0;
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(ofs, get_size()-cache.style_normal->get_minimum_size()+ofs),custom_bg_color);
+				}
+				//compute actual region to start (may be inside say, a comment).
+				//slow in very large documments :( but ok for source!
 
-                for(int i=0;i<cursor.line_ofs;i++) {
+				for(int i=0;i<cursor.line_ofs;i++) {
 
-                    const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(i);
+					const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(i);
 
-                    if (in_region>=0 && color_regions[in_region].line_only) {
-                        in_region=-1; //reset regions that end at end of line
-                    }
+					if (in_region>=0 && color_regions[in_region].line_only) {
+						in_region=-1; //reset regions that end at end of line
+					}
 
-                    for( const Map<int,Text::ColorRegionInfo>::Element* E= cri_map.front();E;E=E->next() ) {
+					for( const Map<int,Text::ColorRegionInfo>::Element* E= cri_map.front();E;E=E->next() ) {
 
-                        const Text::ColorRegionInfo &cri=E->get();
+						const Text::ColorRegionInfo &cri=E->get();
 
-                        if (in_region==-1) {
+						if (in_region==-1) {
 
-                            if (!cri.end) {
+							if (!cri.end) {
 
-                                in_region=cri.region;
-                            }
-                        } else if (in_region==cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
+								in_region=cri.region;
+							}
+						} else if (in_region==cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
 
-                            if (cri.end || color_regions[cri.region].eq) {
+							if (cri.end || color_regions[cri.region].eq) {
 
-                                in_region=-1;
-                            }
-                        }
-                    }
-                }
-            }
+								in_region=-1;
+							}
+						}
+					}
+				}
+			}
 
-            int deregion=0; //force it to clear inrgion
-            Point2 cursor_pos;
+			int brace_open_match_line=-1;
+			int brace_open_match_column=-1;
+			bool brace_open_matching=false;
+			bool brace_open_mismatch=false;
+			int brace_close_match_line=-1;
+			int brace_close_match_column=-1;
+			bool brace_close_matching=false;
+			bool brace_close_mismatch=false;
 
-            for (int i=0;i<visible_rows;i++) {
 
-                int line=i+cursor.line_ofs;
+			if (brace_matching_enabled) {
 
-                if (line<0 || line>=(int)text.size())
-                    continue;
+				if (cursor.column<text[cursor.line].length()) {
+					//check for open
+					CharType c = text[cursor.line][cursor.column];
+					CharType closec=0;
 
-                const String &str=text[line];
+					if (c=='[') {
+						closec=']';
+					} else if (c=='{') {
+						closec='}';
+					} else if (c=='(') {
+						closec=')';
+					}
 
-                int char_margin=xmargin_beg-cursor.x_ofs;
-                int char_ofs=0;
-                int ofs_y=i*get_row_height()+cache.line_spacing/2;
-                bool prev_is_char=false;
-                bool in_keyword=false;
-                Color keyword_color;
+					if (closec!=0) {
 
-                if (cache.line_number_w) {
-                    Color fcol = cache.font_color;
-                    fcol.a*=0.4;
-                    String fc = String::num(line+1);
-                    while (fc.length() < line_number_char_count) {
-                        fc="0"+fc;
-                    }
+						int stack=1;
 
-                    cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT),ofs_y+cache.font->get_ascent()),fc,fcol);
-                }
 
-                const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(line);
+						for(int i=cursor.line;i<text.size();i++) {
 
+							int from = i==cursor.line?cursor.column+1:0;
+							for(int j=from;j<text[i].length();j++) {
 
-                if (text.is_marked(line)) {
+								CharType cc = text[i][j];
+								if (cc==c)
+									stack++;
+								else if (cc==closec)
+									stack--;
 
-                    VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.mark_color);
-                }
+								if (stack==0) {
+									brace_open_match_line=i;
+									brace_open_match_column=j;
+									brace_open_matching=true;
 
-                if (text.is_breakpoint(line)) {
+									break;
+								}
+							}
+							if (brace_open_match_line!=-1)
+								break;
+						}
 
-                    VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.breakpoint_color);
-                }
+						if (!brace_open_matching)
+							brace_open_mismatch=true;
 
 
-                if (line==cursor.line) {
+					}
+				}
 
-                    VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.current_line_color);
+				if (cursor.column>0) {
+					CharType c = text[cursor.line][cursor.column-1];
+					CharType closec=0;
 
-                }
-                for (int j=0;j<str.length();j++) {
 
-                    //look for keyword
 
-                    if (deregion>0) {
-                        deregion--;
-                        if (deregion==0)
-                            in_region=-1;
-                    }
-                    if (syntax_coloring && deregion==0) {
+					if (c==']') {
+						closec='[';
+					} else if (c=='}') {
+						closec='{';
+					} else if (c==')') {
+						closec='(';
+					}
 
+					if (closec!=0) {
 
-                        color = cache.font_color; //reset
-                        //find keyword
-                        bool is_char = _is_text_char(str[j]);
-                        bool is_symbol=_is_symbol(str[j]);
+						int stack=1;
 
-                        if (j==0 && in_region>=0 && color_regions[in_region].line_only) {
-                            in_region=-1; //reset regions that end at end of line
-                        }
 
-                        if (is_symbol && cri_map.has(j)) {
+						for(int i=cursor.line;i>=0;i--) {
 
+							int from = i==cursor.line?cursor.column-2:text[i].length()-1;
+							for(int j=from;j>=0;j--) {
 
-                            const Text::ColorRegionInfo &cri=cri_map[j];
+								CharType cc = text[i][j];
+								if (cc==c)
+									stack++;
+								else if (cc==closec)
+									stack--;
 
-                            if (in_region==-1) {
+								if (stack==0) {
+									brace_close_match_line=i;
+									brace_close_match_column=j;
+									brace_close_matching=true;
 
-                                if (!cri.end) {
+									break;
+								}
+							}
+							if (brace_close_match_line!=-1)
+								break;
+						}
 
-                                    in_region=cri.region;
-                                }
-                            } else if (in_region==cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
+						if (!brace_close_matching)
+							brace_close_mismatch=true;
 
-                                if (cri.end || color_regions[cri.region].eq) {
 
-                                    deregion=color_regions[cri.region].eq?color_regions[cri.region].begin_key.length():color_regions[cri.region].end_key.length();
-                                }
-                            }
-                        }
+					}
 
-                        if (!is_char)
-                            in_keyword=false;
 
-                        if (in_region==-1 && !in_keyword && is_char && !prev_is_char) {
+				}
+			}
 
-                            int to=j;
-                            while(_is_text_char(str[to]) && to<str.length())
-                                to++;
 
-                            uint32_t hash = String::hash(&str[j],to-j);
-                            StrRange range(&str[j],to-j);
+			int deregion=0; //force it to clear inrgion
+			Point2 cursor_pos;
 
-                            const Color *col=keywords.custom_getptr(range,hash);
+			for (int i=0;i<visible_rows;i++) {
 
-                            if (col) {
+				int line=i+cursor.line_ofs;
 
-                                in_keyword=true;
-                                keyword_color=*col;
-                            }
-                        }
+				if (line<0 || line>=(int)text.size())
+					continue;
 
+				const String &str=text[line];
 
-                        if (in_region>=0)
-                            color=color_regions[in_region].color;
-                        else if (in_keyword)
-                            color=keyword_color;
-                        else if (is_symbol)
-                            color=symbol_color;
+				int char_margin=xmargin_beg-cursor.x_ofs;
+				int char_ofs=0;
+				int ofs_y=i*get_row_height()+cache.line_spacing/2;
+				bool prev_is_char=false;
+				bool in_keyword=false;
+				Color keyword_color;
 
-                        prev_is_char=is_char;
+				if (cache.line_number_w) {
+					Color fcol = cache.font_color;
+					fcol.a*=0.4;
+					String fc = String::num(line+1);
+					while (fc.length() < line_number_char_count) {
+						fc="0"+fc;
+					}
 
-                    }
-                    int char_w;
+					cache.font->draw(ci,Point2(cache.style_normal->get_margin(MARGIN_LEFT),ofs_y+cache.font->get_ascent()),fc,fcol);
+				}
 
-                    //handle tabulator
+				const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(line);
 
 
-                    if (str[j]=='\t') {
-                        int left = char_ofs%tab_w;
-                        if (left==0)
-                            char_w=tab_w;
-                        else
-                            char_w=tab_w-char_ofs%tab_w; // is right...
+				if (text.is_marked(line)) {
 
-                    } else {
-                        char_w=cache.font->get_char_size(str[j],str[j+1]).width;
-                    }
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.mark_color);
+				}
 
-                    if ( (char_ofs+char_margin)<xmargin_beg) {
-                        char_ofs+=char_w;
-                        continue;
-                    }
+				if (text.is_breakpoint(line)) {
 
-                    if ( (char_ofs+char_margin+char_w)>=xmargin_end) {
-                        if (syntax_coloring)
-                            continue;
-                        else
-                            break;
-                    }
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.breakpoint_color);
+				}
 
-                    bool in_selection = (selection.active && line>=selection.from_line && line<=selection.to_line && (line>selection.from_line || j>=selection.from_column) && (line<selection.to_line || j<selection.to_column));
 
+				if (line==cursor.line) {
 
-                    if (in_selection) {
-                        //inside selection!
-                        VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,get_row_height())),cache.selection_color);
-                    }
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(xmargin_beg, ofs_y,xmargin_end-xmargin_beg,get_row_height()),cache.current_line_color);
 
+				}
+				for (int j=0;j<str.length();j++) {
 
+					//look for keyword
 
-                    if (str[j]>=32)
-                        cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),str[j],str[j+1],in_selection?cache.font_selected_color:color);
-                    else if (draw_tabs && str[j]=='\t') {
-                        int yofs= (get_row_height() - cache.tab_icon->get_height())/2;
-                        cache.tab_icon->draw(ci, Point2(char_ofs+char_margin,ofs_y+yofs),in_selection?cache.font_selected_color:color);
-                    }
+					if (deregion>0) {
+						deregion--;
+						if (deregion==0)
+							in_region=-1;
+					}
+					if (syntax_coloring && deregion==0) {
 
 
-                    if (cursor.column==j && cursor.line==line) {
+						color = cache.font_color; //reset
+						//find keyword
+						bool is_char = _is_text_char(str[j]);
+						bool is_symbol=_is_symbol(str[j]);
 
-                        cursor_pos = Point2i( char_ofs+char_margin, ofs_y );
-                        VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+						if (j==0 && in_region>=0 && color_regions[in_region].line_only) {
+							in_region=-1; //reset regions that end at end of line
+						}
 
+						if (is_symbol && cri_map.has(j)) {
 
-                    }
-                    char_ofs+=char_w;
 
-                }
+							const Text::ColorRegionInfo &cri=cri_map[j];
 
-                if (cursor.column==str.length() && cursor.line==line) {
+							if (in_region==-1) {
 
-                    cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
-                    VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+								if (!cri.end) {
 
-                }
-            }
+									in_region=cri.region;
+								}
+							} else if (in_region==cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
 
-            if (completion_active) {
-                // code completion box
-                Ref<StyleBox> csb = get_stylebox("completion");
-                Ref<StyleBox> csel = get_stylebox("completion_selected");
-                int maxlines = get_constant("completion_lines");
-                int cmax_width = get_constant("completion_max_width")*cache.font->get_char_size('x').x;
-                Color existing = get_color("completion_existing");
-                int scrollw = get_constant("completion_scroll_width");
-                Color scrollc = get_color("completion_scroll_color");
+								if (cri.end || color_regions[cri.region].eq) {
 
+									deregion=color_regions[cri.region].eq?color_regions[cri.region].begin_key.length():color_regions[cri.region].end_key.length();
+								}
+							}
+						}
 
+						if (!is_char)
+							in_keyword=false;
 
-                int lines = MIN(completion_options.size(),maxlines);
-                int w=0;
-                int h=lines*get_row_height();
-                int nofs = cache.font->get_string_size(completion_base).width;
+						if (in_region==-1 && !in_keyword && is_char && !prev_is_char) {
 
+							int to=j;
+							while(_is_text_char(str[to]) && to<str.length())
+								to++;
 
-                if (completion_options.size() < 50) {
-                    for(int i=0;i<completion_options.size();i++) {
-                        int w2=MIN(cache.font->get_string_size(completion_options[i]).x,cmax_width);
-                        if (w2>w)
-                            w=w2;
-                    }
-                } else {
-                    w=cmax_width;
-                }
+							uint32_t hash = String::hash(&str[j],to-j);
+							StrRange range(&str[j],to-j);
 
-                int th = h + csb->get_minimum_size().y;
-                if (cursor_pos.y+get_row_height()+th > get_size().height) {
-                    completion_rect.pos.y=cursor_pos.y-th;
-                } else {
-                    completion_rect.pos.y=cursor_pos.y+get_row_height()+csb->get_offset().y;
-                }
+							const Color *col=keywords.custom_getptr(range,hash);
 
-                if (cursor_pos.x-nofs+w+scrollw  > get_size().width) {
-                    completion_rect.pos.x=get_size().width-w-scrollw;
-                } else {
-                    completion_rect.pos.x=cursor_pos.x-nofs;
-                }
+							if (col) {
 
-                completion_rect.size.width=w;
-                completion_rect.size.height=h;
-                if (completion_options.size()<=maxlines)
-                    scrollw=0;
+								in_keyword=true;
+								keyword_color=*col;
+							}
+						}
 
-                draw_style_box(csb,Rect2(completion_rect.pos-csb->get_offset(),completion_rect.size+csb->get_minimum_size()+Size2(scrollw,0)));
 
+						if (in_region>=0)
+							color=color_regions[in_region].color;
+						else if (in_keyword)
+							color=keyword_color;
+						else if (is_symbol)
+							color=symbol_color;
 
-                int line_from = CLAMP(completion_index - lines/2, 0, completion_options.size() - lines);
-                draw_style_box(csel,Rect2(Point2(completion_rect.pos.x,completion_rect.pos.y+(completion_index-line_from)*get_row_height()),Size2(completion_rect.size.width,get_row_height())));
+						prev_is_char=is_char;
 
-                draw_rect(Rect2(completion_rect.pos,Size2(nofs,completion_rect.size.height)),existing);
+					}
+					int char_w;
 
-                for(int i=0;i<lines;i++) {
+					//handle tabulator
 
-                    int l = line_from + i;
-                    ERR_CONTINUE( l < 0 || l>= completion_options.size());
-                    draw_string(cache.font,Point2(completion_rect.pos.x,completion_rect.pos.y+i*get_row_height()+cache.font->get_ascent()),completion_options[l],cache.font_color,completion_rect.size.width);
-                }
 
-                if (scrollw) {
-                    //draw a small scroll rectangle to show a position in the options
-                    float r = maxlines / (float)completion_options.size();
-                    float o = line_from / (float)completion_options.size();
-                    draw_rect(Rect2(completion_rect.pos.x+completion_rect.size.width,completion_rect.pos.y+o*completion_rect.size.y,scrollw,completion_rect.size.y*r),scrollc);
-                }
+					if (str[j]=='\t') {
+						int left = char_ofs%tab_w;
+						if (left==0)
+							char_w=tab_w;
+						else
+							char_w=tab_w-char_ofs%tab_w; // is right...
 
-                completion_line_ofs=line_from;
+					} else {
+						char_w=cache.font->get_char_size(str[j],str[j+1]).width;
+					}
 
-            }
+					if ( (char_ofs+char_margin)<xmargin_beg) {
+						char_ofs+=char_w;
+						continue;
+					}
 
+					if ( (char_ofs+char_margin+char_w)>=xmargin_end) {
+						if (syntax_coloring)
+							continue;
+						else
+							break;
+					}
 
+					bool in_selection = (selection.active && line>=selection.from_line && line<=selection.to_line && (line>selection.from_line || j>=selection.from_column) && (line<selection.to_line || j<selection.to_column));
 
-        } break;
-        case NOTIFICATION_FOCUS_ENTER: {
 
-            if (OS::get_singleton()->has_virtual_keyboard())
-                OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
+					if (in_selection) {
+						//inside selection!
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2i( char_ofs+char_margin, ofs_y ), Size2i(char_w,get_row_height())),cache.selection_color);
+					}
 
-        } break;
-        case NOTIFICATION_FOCUS_EXIT: {
 
-            if (OS::get_singleton()->has_virtual_keyboard())
-                OS::get_singleton()->hide_virtual_keyboard();
+					if (brace_matching_enabled) {
+						if ( (brace_open_match_line==line && brace_open_match_column==j) ||
+						    (cursor.column==j && cursor.line==line && (brace_open_matching||brace_open_mismatch))) {
 
-        } break;
+							if (brace_open_mismatch)
+								color=cache.brace_mismatch_color;
+							cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),'_',str[j+1],in_selection?cache.font_selected_color:color);
 
-    }
+						}
+
+						if (
+						     (brace_close_match_line==line && brace_close_match_column==j) ||
+						     (cursor.column==j+1 && cursor.line==line && (brace_close_matching||brace_close_mismatch))) {
+
+
+							if (brace_close_mismatch)
+								color=cache.brace_mismatch_color;
+							cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),'_',str[j+1],in_selection?cache.font_selected_color:color);
+
+						}
+					}
+
+
+					if (str[j]>=32)
+						cache.font->draw_char(ci,Point2i( char_ofs+char_margin, ofs_y+ascent),str[j],str[j+1],in_selection?cache.font_selected_color:color);
+
+					else if (draw_tabs && str[j]=='\t') {
+						int yofs= (get_row_height() - cache.tab_icon->get_height())/2;
+						cache.tab_icon->draw(ci, Point2(char_ofs+char_margin,ofs_y+yofs),in_selection?cache.font_selected_color:color);
+					}
+
+
+					if (cursor.column==j && cursor.line==line) {
+
+						cursor_pos = Point2i( char_ofs+char_margin, ofs_y );
+						VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+
+
+					}
+					char_ofs+=char_w;
+
+				}
+
+				if (cursor.column==str.length() && cursor.line==line) {
+
+					cursor_pos=Point2i( char_ofs+char_margin, ofs_y );
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(cursor_pos, Size2i(1,get_row_height())),cache.font_color);
+
+				}
+			}
+
+
+			if (completion_active) {
+				// code completion box
+				Ref<StyleBox> csb = get_stylebox("completion");
+				Ref<StyleBox> csel = get_stylebox("completion_selected");
+				int maxlines = get_constant("completion_lines");
+				int cmax_width = get_constant("completion_max_width")*cache.font->get_char_size('x').x;
+				Color existing = get_color("completion_existing");
+				existing.a=0.2;
+				int scrollw = get_constant("completion_scroll_width");
+				Color scrollc = get_color("completion_scroll_color");
+
+
+
+				int lines = MIN(completion_options.size(),maxlines);
+				int w=0;
+				int h=lines*get_row_height();
+				int nofs = cache.font->get_string_size(completion_base).width;
+
+
+				if (completion_options.size() < 50) {
+					for(int i=0;i<completion_options.size();i++) {
+						int w2=MIN(cache.font->get_string_size(completion_options[i]).x,cmax_width);
+						if (w2>w)
+							w=w2;
+					}
+				} else {
+					w=cmax_width;
+				}
+
+				int th = h + csb->get_minimum_size().y;
+				if (cursor_pos.y+get_row_height()+th > get_size().height) {
+					completion_rect.pos.y=cursor_pos.y-th;
+				} else {
+					completion_rect.pos.y=cursor_pos.y+get_row_height()+csb->get_offset().y;
+
+				}
+
+				if (cursor_pos.x-nofs+w+scrollw  > get_size().width) {
+					completion_rect.pos.x=get_size().width-w-scrollw;
+				} else {
+					completion_rect.pos.x=cursor_pos.x-nofs;
+				}
+
+				completion_rect.size.width=w;
+				completion_rect.size.height=h;
+				if (completion_options.size()<=maxlines)
+					scrollw=0;
+
+				draw_style_box(csb,Rect2(completion_rect.pos-csb->get_offset(),completion_rect.size+csb->get_minimum_size()+Size2(scrollw,0)));
+
+
+				int line_from = CLAMP(completion_index - lines/2, 0, completion_options.size() - lines);
+				draw_style_box(csel,Rect2(Point2(completion_rect.pos.x,completion_rect.pos.y+(completion_index-line_from)*get_row_height()),Size2(completion_rect.size.width,get_row_height())));
+
+				draw_rect(Rect2(completion_rect.pos,Size2(nofs,completion_rect.size.height)),existing);
+
+
+
+
+				for(int i=0;i<lines;i++) {
+
+					int l = line_from + i;
+					ERR_CONTINUE( l < 0 || l>= completion_options.size());
+					Color text_color = cache.font_color;
+					for(int j=0;j<color_regions.size();j++) {
+						if (completion_options[l].begins_with(color_regions[j].begin_key)) {
+							text_color=color_regions[j].color;
+						}
+					}
+					draw_string(cache.font,Point2(completion_rect.pos.x,completion_rect.pos.y+i*get_row_height()+cache.font->get_ascent()),completion_options[l],text_color,completion_rect.size.width);
+				}
+
+				if (scrollw) {
+					//draw a small scroll rectangle to show a position in the options
+					float r = maxlines / (float)completion_options.size();
+					float o = line_from / (float)completion_options.size();
+					draw_rect(Rect2(completion_rect.pos.x+completion_rect.size.width,completion_rect.pos.y+o*completion_rect.size.y,scrollw,completion_rect.size.y*r),scrollc);
+				}
+
+				completion_line_ofs=line_from;
+
+			}
+
+			if (completion_hint!="") {
+
+				Ref<StyleBox> sb = get_stylebox("panel","TooltipPanel");
+				Ref<Font> font = cache.font;
+				Color font_color = get_color("font_color","TooltipLabel");
+
+
+				int max_w=0;
+				int sc = completion_hint.get_slice_count("\n");
+				int offset=0;
+				int spacing=0;
+				for(int i=0;i<sc;i++) {
+
+					String l = completion_hint.get_slice("\n",i);
+					int len  = font->get_string_size(l).x;
+					max_w = MAX(len,max_w);
+					if (i==0) {
+						offset = font->get_string_size(l.substr(0,l.find(String::chr(0xFFFF)))).x;
+					} else {
+						spacing+=cache.line_spacing;
+					}
+
+
+				}
+
+
+
+				Size2 size = Size2(max_w,sc*font->get_height()+spacing);
+				Size2 minsize = size+sb->get_minimum_size();
+
+
+				if (completion_hint_offset==-0xFFFF) {
+					completion_hint_offset=cursor_pos.x-offset;
+				}
+
+
+				Point2 hint_ofs = Vector2(completion_hint_offset,cursor_pos.y-minsize.y);
+				draw_style_box(sb,Rect2(hint_ofs,minsize));
+
+				spacing=0;
+				for(int i=0;i<sc;i++) {
+					int begin=0;
+					int end=0;
+					String l = completion_hint.get_slice("\n",i);
+
+					if (l.find(String::chr(0xFFFF))!=-1) {
+						begin = font->get_string_size(l.substr(0,l.find(String::chr(0xFFFF)))).x;
+						end = font->get_string_size(l.substr(0,l.rfind(String::chr(0xFFFF)))).x;
+					}
+
+					draw_string(font,hint_ofs+sb->get_offset()+Vector2(0,font->get_ascent()+font->get_height()*i+spacing),l.replace(String::chr(0xFFFF),""),font_color);
+					if (end>0) {
+						Vector2 b = hint_ofs+sb->get_offset()+Vector2(begin,font->get_height()+font->get_height()*i+spacing-1);
+						draw_line(b,b+Vector2(end-begin,0),font_color);
+					}
+					spacing+=cache.line_spacing;
+				}
+			}
+
+
+		} break;
+		case NOTIFICATION_FOCUS_ENTER: {
+
+			if (OS::get_singleton()->has_virtual_keyboard())
+				OS::get_singleton()->show_virtual_keyboard(get_text(),get_global_rect());
+
+		} break;
+		case NOTIFICATION_FOCUS_EXIT: {
+
+			if (OS::get_singleton()->has_virtual_keyboard())
+				OS::get_singleton()->hide_virtual_keyboard();
+
+		} break;
+
+	}
 }
 
 void TextEdit::_consume_pair_symbol(CharType ch) {
@@ -918,6 +1124,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                 return;
             } else {
                 _cancel_completion();
+		_cancel_code_hint();
             }
 
             if (mb.pressed) {
@@ -1172,6 +1379,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                 }
 
                 _cancel_completion();
+
             }
 
             /* TEST CONTROL FIRST!! */
@@ -1268,6 +1476,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                             break;
                         unselect=true;
                         break;
+
                     default:
                         if (k.unicode>=32 && !k.mod.command && !k.mod.alt && !k.mod.meta)
                             clear=true;
@@ -1318,6 +1527,13 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                     _push_current_op();
 
                 } break;
+		    case KEY_ESCAPE: {
+			    if (completion_hint!="") {
+				    completion_hint="";
+				    update();
+
+			    }
+		    } break;
                 case KEY_TAB: {
 
                     if (readonly)
@@ -1454,6 +1670,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
                     if (k.mod.shift)
                         _post_shift_selection();
+		    _cancel_code_hint();
 
                 } break;
                 case KEY_DOWN: {
@@ -1473,6 +1690,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
                     if (k.mod.shift)
                         _post_shift_selection();
+		    _cancel_code_hint();
 
                 } break;
 
@@ -1702,27 +1920,6 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                     }
 
                 } break;
-
-                case KEY_K:{
-                    if (!k.mod.command || k.mod.shift || k.mod.alt) {
-                        scancode_handled=false;
-                        break;
-                    }
-                    else {
-                        if (selection.active) {
-                            int ini = selection.from_line;
-                            int end = selection.to_line;
-                            for (int i=ini; i<= end; i++)
-                            {
-                                _insert_text(i,0,"#");
-                            }
-                        }
-                        else{
-                            _insert_text(cursor.line,0,"#");
-                        }
-                        update();
-                    }
-                    break;}
 
             case KEY_U:{
                 if (!k.mod.command || k.mod.shift || k.mod.alt) {
@@ -2333,6 +2530,30 @@ String TextEdit::get_text() {
 
 };
 
+String TextEdit::get_text_for_completion() {
+
+    String longthing;
+    int len = text.size();
+    for (int i=0;i<len;i++) {
+
+	if (i==cursor.line) {
+		longthing+=text[i].substr(0,cursor.column);
+		longthing+=String::chr(0xFFFF); //not unicode, represents the cursor
+		longthing+=text[i].substr(cursor.column,text[i].size());
+	} else {
+
+		longthing+=text[i];
+	}
+
+
+	if (i!=len-1)
+	    longthing+="\n";
+    }
+
+    return longthing;
+
+};
+
 
 String TextEdit::get_line(int line) const {
 
@@ -2392,6 +2613,7 @@ void TextEdit::_update_caches() {
     cache.mark_color=get_color("mark_color");
     cache.current_line_color=get_color("current_line_color");
     cache.breakpoint_color=get_color("breakpoint_color");
+    cache.brace_mismatch_color=get_color("brace_mismatch_color");
     cache.line_spacing=get_constant("line_spacing");
     cache.row_height = cache.font->get_height() + cache.line_spacing;
     cache.tab_icon=get_icon("tab");
@@ -2966,10 +3188,21 @@ void TextEdit::_confirm_completion() {
 
     if (same)
         cursor_set_column(cursor.column+remaining.length());
-    else
+    else {
         insert_text_at_cursor(remaining);
+	if (remaining.ends_with("(") && auto_brace_completion_enabled) {
+		insert_text_at_cursor(")");
+		cursor.column--;
+	}
+    }
 
     _cancel_completion();
+}
+
+
+void TextEdit::_cancel_code_hint() {
+	completion_hint="";
+	update();
 }
 
 void TextEdit::_cancel_completion() {
@@ -2977,21 +3210,33 @@ void TextEdit::_cancel_completion() {
     if (!completion_active)
         return;
 
-    completion_active=false;
+    completion_active=false;    
     update();
 
 }
+
+static bool _is_completable(CharType c) {
+
+	return !_is_symbol(c) || c=='"' || c=='\'';
+}
+
 
 void TextEdit::_update_completion_candidates() {
 
     String l = text[cursor.line];
     int cofs = CLAMP(cursor.column,0,l.length());
 
+
     String s;
-    while(cofs>0 && l[cofs-1]>32 && !_is_symbol(l[cofs-1])) {
-        s=String::chr(l[cofs-1])+s;
+
+    while(cofs>0 && l[cofs-1]>32 && _is_completable(l[cofs-1])) {
+        s=String::chr(l[cofs-1])+s;	
+	if (l[cofs-1]=='\'' || l[cofs-1]=='"')
+		break;
+
         cofs--;
     }
+
 
     update();
 
@@ -3055,36 +3300,24 @@ void TextEdit::_update_completion_candidates() {
     completion_enabled=true;
 }
 
+
+
 void TextEdit::query_code_comple() {
 
-    String l = text[cursor.line];
-    int ofs = CLAMP(cursor.column,0,l.length());
-    String cs;
-    while(ofs>0 && l[ofs-1]>32) {
+	String l = text[cursor.line];
+	int ofs = CLAMP(cursor.column,0,l.length());
 
-        if (_is_symbol(l[ofs-1])) {
-            String s;
-            while(ofs>0 && l[ofs-1]>32 && _is_symbol(l[ofs-1])) {
-                s=String::chr(l[ofs-1])+s;
-                ofs--;
-            }
-            if (completion_prefixes.has(s))
-                cs=s+cs;
-            else
-                break;
-        } else {
+	if (ofs>0 && (_is_completable(l[ofs-1]) || completion_prefixes.has(String::chr(l[ofs-1]))))
+		emit_signal("request_completion");
 
-            cs=String::chr(l[ofs-1])+cs;
-            ofs--;
-        }
+}
 
-    }
 
-    if (cs!="") {
-        emit_signal("request_completion",cs,cursor.line);
+void TextEdit::set_code_hint(const String& p_hint) {
 
-    }
-
+	completion_hint=p_hint;
+	completion_hint_offset=-0xFFFF;
+	update();
 }
 
 void TextEdit::code_complete(const Vector<String> &p_strings) {
@@ -3236,7 +3469,7 @@ void TextEdit::_bind_methods() {
 
     ADD_SIGNAL(MethodInfo("cursor_changed"));
     ADD_SIGNAL(MethodInfo("text_changed"));
-    ADD_SIGNAL(MethodInfo("request_completion",PropertyInfo(Variant::STRING,"keyword"),PropertyInfo(Variant::INT,"line")));
+    ADD_SIGNAL(MethodInfo("request_completion"));
 
 }
 
@@ -3321,6 +3554,8 @@ TextEdit::TextEdit()  {
     line_numbers=false;
     next_operation_is_complex=false;
     auto_brace_completion_enabled=false;
+    brace_matching_enabled=false;
+
 }
 
 TextEdit::~TextEdit()

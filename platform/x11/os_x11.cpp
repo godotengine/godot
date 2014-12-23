@@ -75,6 +75,18 @@ OS::VideoMode OS_X11::get_default_video_mode() const {
 	return OS::VideoMode(800,600,false);
 }
 
+int OS_X11::get_audio_driver_count() const {
+
+    return AudioDriverManagerSW::get_driver_count();
+}
+
+const char *OS_X11::get_audio_driver_name(int p_driver) const {
+
+    AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+    ERR_FAIL_COND_V( !driver, "" );
+    return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+}
+
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 	last_button_state=0;
@@ -1445,6 +1457,10 @@ OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+#endif
+
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverManagerSW::add_driver(&driver_pulseaudio);
 #endif
 
 #ifdef ALSA_ENABLED
