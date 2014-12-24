@@ -208,7 +208,7 @@ void Spine::_animation_draw() {
 			);
 			additive = slot->data->additiveBlending;
 		}
-		color.a = skeleton->a * slot->a * a;
+		color.a = skeleton->a * slot->a * a * get_opacity();
 		color.r = skeleton->r * slot->r * r;
 		color.g = skeleton->g * slot->g * g;
 		color.b = skeleton->b * slot->b * b;
@@ -659,6 +659,8 @@ String Spine::get_current_animation(int p_track) const {
 
 	ERR_FAIL_COND_V(state == NULL, "");
 	spTrackEntry *entry = spAnimationState_getCurrent(state, p_track);
+	if (entry == NULL || entry->animation == NULL)
+		return "";
 	return entry->animation->name;
 }
 
@@ -729,7 +731,7 @@ bool Spine::set_skin(const String& p_name) {
 	return spSkeleton_setSkinByName(skeleton, p_name.utf8().get_data()) ? true : false;
 }
 
-Variant Spine::get_skeleton() const {
+Dictionary Spine::get_skeleton() const {
 
 	ERR_FAIL_COND_V(skeleton == NULL, Variant());
 	Dictionary dict;
@@ -746,7 +748,7 @@ Variant Spine::get_skeleton() const {
 	return dict;
 }
 
-Variant Spine::get_attachment(const String& p_slot_name, const String& p_attachment_name) const {
+Dictionary Spine::get_attachment(const String& p_slot_name, const String& p_attachment_name) const {
 
 	ERR_FAIL_COND_V(skeleton == NULL, Variant());
 	spAttachment *attachment = spSkeleton_getAttachmentForSlotName(skeleton, p_slot_name.utf8().get_data(), p_attachment_name.utf8().get_data());
@@ -812,7 +814,7 @@ Variant Spine::get_attachment(const String& p_slot_name, const String& p_attachm
 	return dict;
 }
 
-Variant Spine::get_bone(const String& p_bone_name) const {
+Dictionary Spine::get_bone(const String& p_bone_name) const {
 
 	ERR_FAIL_COND_V(skeleton == NULL, Variant());
 	spBone *bone = spSkeleton_findBone(skeleton, p_bone_name.utf8().get_data());
@@ -841,7 +843,7 @@ Variant Spine::get_bone(const String& p_bone_name) const {
 	return dict;
 }
 
-Variant Spine::get_slot(const String& p_slot_name) const {
+Dictionary Spine::get_slot(const String& p_slot_name) const {
 
 	ERR_FAIL_COND_V(skeleton == NULL, Variant());
 	spSlot *slot = spSkeleton_findSlot(skeleton, p_slot_name.utf8().get_data());
@@ -927,10 +929,10 @@ bool Spine::remove_attachment_node(const String& p_bone_name, const Variant& p_n
 
 Ref<Shape2D> Spine::get_bounding_box(const String& p_slot_name, const String& p_attachment_name) {
 
-	ERR_FAIL_COND_V(skeleton == NULL, false);
+	ERR_FAIL_COND_V(skeleton == NULL, Ref<Shape2D>());
 	spAttachment *attachment = spSkeleton_getAttachmentForSlotName(skeleton, p_slot_name.utf8().get_data(), p_attachment_name.utf8().get_data());
-	ERR_FAIL_COND_V(attachment == NULL, false);
-	ERR_FAIL_COND_V(attachment->type != SP_ATTACHMENT_BOUNDING_BOX, false);
+	ERR_FAIL_COND_V(attachment == NULL, Ref<Shape2D>());
+	ERR_FAIL_COND_V(attachment->type != SP_ATTACHMENT_BOUNDING_BOX, Ref<Shape2D>());
 	spBoundingBoxAttachment *info = (spBoundingBoxAttachment *)attachment;
 
 	Vector<Vector2> points;
@@ -952,6 +954,8 @@ bool Spine::add_bounding_box(const String& p_bone_name, const String& p_slot_nam
 	CollisionObject2D *node = obj->cast_to<CollisionObject2D>();
 	ERR_FAIL_COND_V(node == NULL, false);
 	Ref<Shape2D> shape = get_bounding_box(p_slot_name, p_attachment_name);
+	if (shape.is_null())
+		return false;
 	node->add_shape(shape);
 
 	return add_attachment_node(p_bone_name, p_node);
@@ -1050,6 +1054,8 @@ void Spine::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_modulate", "modulate"), &Spine::set_modulate);
 	ObjectTypeDB::bind_method(_MD("get_modulate"), &Spine::get_modulate);
 	ObjectTypeDB::bind_method(_MD("set_skin", "skin"), &Spine::set_skin);
+	ObjectTypeDB::bind_method(_MD("set_animation_process_mode","mode"),&Spine::set_animation_process_mode);
+	ObjectTypeDB::bind_method(_MD("get_animation_process_mode"),&Spine::get_animation_process_mode);
 	ObjectTypeDB::bind_method(_MD("get_skeleton"), &Spine::get_skeleton);
 	ObjectTypeDB::bind_method(_MD("get_attachment", "slot_name", "attachment_name"), &Spine::get_attachment);
 	ObjectTypeDB::bind_method(_MD("get_bone", "bone_name"), &Spine::get_bone);
@@ -1067,6 +1073,7 @@ void Spine::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_debug_attachment", "mode", "enable"), &Spine::set_debug_attachment);
 	ObjectTypeDB::bind_method(_MD("is_debug_attachment", "mode"), &Spine::is_debug_attachment);
 
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "playback/speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), _SCS("set_speed"), _SCS("get_speed"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback/active"), _SCS("set_active"), _SCS("is_active"));
 

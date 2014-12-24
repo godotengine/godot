@@ -151,13 +151,13 @@ public:
 	bool set_skin(const String& p_name);
 
 	//spAttachment* get_attachment(const char* slotName, const char* attachmentName) const;
-	Variant get_skeleton() const;
+	Dictionary get_skeleton() const;
 	/* Returns null if the slot or attachment was not found. */
-	Variant get_attachment(const String& p_slot_name, const String& p_attachment_name) const;
+	Dictionary get_attachment(const String& p_slot_name, const String& p_attachment_name) const;
 	/* Returns null if the bone was not found. */
-	Variant get_bone(const String& p_bone_name) const;
+	Dictionary get_bone(const String& p_bone_name) const;
 	/* Returns null if the slot was not found. */
-	Variant get_slot(const String& p_slot_name) const;
+	Dictionary get_slot(const String& p_slot_name) const;
 	/* Returns false if the slot or attachment was not found. */
 	bool set_attachment(const String& p_slot_name, const Variant& p_attachment);
 	// bind node to bone, auto update pos/rotate/scale
