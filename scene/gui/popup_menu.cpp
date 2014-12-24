@@ -855,7 +855,7 @@ void PopupMenu::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_item","label","id","accel"),&PopupMenu::add_item,DEFVAL(-1),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("add_icon_check_item","texture","label","id","accel"),&PopupMenu::add_icon_check_item,DEFVAL(-1),DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("add_check_item","label","id","accel"),&PopupMenu::add_check_item,DEFVAL(-1),DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("add_submenu_item","label","submenu","id"),&PopupMenu::add_check_item,DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("add_submenu_item","label","submenu","id"),&PopupMenu::add_submenu_item,DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&PopupMenu::set_item_text);
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon"),&PopupMenu::set_item_icon);
 	ObjectTypeDB::bind_method(_MD("set_item_accelerator","idx","accel"),&PopupMenu::set_item_accelerator);

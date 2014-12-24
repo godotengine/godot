@@ -69,36 +69,8 @@ void ResourcesDock::_tool_selected(int p_tool) {
 			TreeItem *ti = resources->get_selected();
 			if (!ti)
 				break;
-			Ref<Resource> current_res = ti->get_metadata(0);
 
-			RES res(current_res);
-
-			List<String> extensions;
-			ResourceSaver::get_recognized_extensions(res,&extensions);
-			file->set_mode(FileDialog::MODE_SAVE_FILE);
-			//not for now?
-
-			if (current_res->get_path()!="" && current_res->get_path().find("::")==-1) {
-
-				file->set_current_path(current_res->get_path());
-			} else {
-
-				String existing;
-				if (extensions.size()) {
-					existing="new_"+res->get_type().to_lower()+"."+extensions.front()->get().to_lower();
-				}
-
-				file->set_current_file(existing);
-			}
-
-			file->clear_filters();
-			for(int i=0;i<extensions.size();i++) {
-
-				file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
-			}
-
-			//file->set_current_path(current_path);
-			file->popup_centered_ratio();
+			save_resource_as(ti->get_metadata(0));
 
 
 		} break;
@@ -134,7 +106,7 @@ void ResourcesDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			button_new->set_icon(get_icon("New","EditorIcons"));
 			button_open->set_icon(get_icon("Folder","EditorIcons"));
@@ -174,33 +146,34 @@ void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_re
 
 void ResourcesDock::save_resource_as(const Ref<Resource>& p_resource) {
 
+	current_action=TOOL_SAVE_AS;
 
-	add_resource(p_resource);
-	TreeItem *root=resources->get_root();
-	ERR_FAIL_COND(!root);
+	RES res(p_resource);
 
-	TreeItem *existing=root->get_children();
+	List<String> extensions;
+	ResourceSaver::get_recognized_extensions(res,&extensions);
+	file->set_mode(FileDialog::MODE_SAVE_FILE);
 
-	while(existing) {
+	if (p_resource->get_path()!="" && p_resource->get_path().find("::")==-1) {
 
-		Ref<Resource> r = existing->get_metadata(0);
-		if (r==p_resource) {
-			//existing->move_to_top();
-			existing->select(0);
-			resources->ensure_cursor_is_visible();
-			return; // existing
+		file->set_current_path(p_resource->get_path());
+	} else {
+
+		String existing;
+		if (extensions.size()) {
+			existing="new_"+res->get_type().to_lower()+"."+extensions.front()->get().to_lower();
 		}
-		existing=existing->get_next();
+
+		file->set_current_file(existing);
 	}
 
-	ERR_FAIL_COND(!existing);
+	file->clear_filters();
+	for(int i=0;i<extensions.size();i++) {
 
-	existing->select(0);
+		file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
+	}
 
-	_tool_selected(TOOL_SAVE_AS);
-
-
-
+	file->popup_centered_ratio();
 
 }
 

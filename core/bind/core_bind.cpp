@@ -12,9 +12,9 @@ Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p
 	return ResourceLoader::load_interactive(p_path,p_type_hint);
 }
 
-RES _ResourceLoader::load(const String &p_path,const String& p_type_hint) {
+RES _ResourceLoader::load(const String &p_path,const String& p_type_hint, bool p_no_cache) {
 
-	RES ret =  ResourceLoader::load(p_path,p_type_hint);
+	RES ret =  ResourceLoader::load(p_path,p_type_hint, p_no_cache);
 	return ret;
 }
 
@@ -59,7 +59,7 @@ void _ResourceLoader::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint"),&_ResourceLoader::load,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
 	ObjectTypeDB::bind_method(_MD("get_dependencies"),&_ResourceLoader::get_dependencies);
@@ -306,6 +306,16 @@ MainLoop *_OS::get_main_loop() const {
 
 	return OS::get_singleton()->get_main_loop();
 }
+
+void _OS::set_time_scale(float p_scale) {
+	OS::get_singleton()->set_time_scale(p_scale);
+}
+
+float _OS::get_time_scale() {
+
+	return OS::get_singleton()->get_time_scale();
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -567,9 +577,9 @@ float _OS::get_frames_per_second() const {
 	return OS::get_singleton()->get_frames_per_second();
 }
 
-Error _OS::native_video_play(String p_path, float p_volume) {
+Error _OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 
-	return OS::get_singleton()->native_video_play(p_path, p_volume);
+	return OS::get_singleton()->native_video_play(p_path, p_volume, p_audio_track, p_subtitle_track);
 };
 
 bool _OS::native_video_is_playing() {
@@ -587,6 +597,20 @@ void _OS::native_video_stop() {
 	OS::get_singleton()->native_video_stop();
 };
 
+bool _OS::is_debug_build() const {
+
+#ifdef DEBUG_ENABLED
+	return true;
+#else
+	return false;
+#endif
+
+}
+
+String _OS::get_system_dir(SystemDir p_dir) const {
+
+	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
+}
 
 String _OS::get_custom_level() const {
 
@@ -612,6 +636,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
 	ObjectTypeDB::bind_method(_MD("get_target_fps"),&_OS::get_target_fps);
+
+	ObjectTypeDB::bind_method(_MD("set_time_scale","time_scale"),&_OS::set_time_scale);
+	ObjectTypeDB::bind_method(_MD("get_time_scale"),&_OS::get_time_scale);
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
@@ -655,6 +682,8 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("can_use_threads"),&_OS::can_use_threads);
 
+	ObjectTypeDB::bind_method(_MD("is_debug_build"),&_OS::is_debug_build);
+
 	//ObjectTypeDB::bind_method(_MD("get_mouse_button_state"),&_OS::get_mouse_button_state);
 
 	ObjectTypeDB::bind_method(_MD("dump_memory_to_file","file"),&_OS::dump_memory_to_file);
@@ -667,6 +696,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_dynamic_memory_usage"),&_OS::get_dynamic_memory_usage);
 
 	ObjectTypeDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
+	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
 
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
@@ -705,6 +735,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
 
+	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
+	BIND_CONSTANT( SYSTEM_DIR_DCIM );
+	BIND_CONSTANT( SYSTEM_DIR_DOCUMENTS );
+	BIND_CONSTANT( SYSTEM_DIR_DOWNLOADS );
+	BIND_CONSTANT( SYSTEM_DIR_MOVIES );
+	BIND_CONSTANT( SYSTEM_DIR_MUSIC );
+	BIND_CONSTANT( SYSTEM_DIR_PICTURES );
+	BIND_CONSTANT( SYSTEM_DIR_RINGTONES );
 
 }
 
@@ -843,6 +881,42 @@ Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2>& p_polygon) {
 	return Geometry::triangulate_polygon(p_polygon);
 }
 
+Dictionary _Geometry::make_atlas(const Vector<Size2>& p_rects) {
+
+	Dictionary ret;
+
+	Vector<Size2i> rects;
+	for (int i=0; i<p_rects.size(); i++) {
+
+		rects.push_back(p_rects[i]);
+	};
+
+	Vector<Point2i> result;
+	Size2i size;
+
+	Geometry::make_atlas(rects, result, size);
+
+	Size2 r_size = size;
+	Vector<Point2> r_result;
+	for (int i=0; i<result.size(); i++) {
+
+		r_result.push_back(result[i]);
+	};
+
+
+	ret["points"] = r_result;
+	ret["size"] = r_size;
+
+	return ret;
+};
+
+
+int _Geometry::get_uv84_normal_bit(const Vector3& p_vector) {
+
+	return Geometry::get_uv84_normal_bit(p_vector);
+}
+
+
 void _Geometry::_bind_methods() {
 
 
@@ -857,6 +931,8 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","point","s1","s2"),&_Geometry::get_closest_point_to_segment);
 
+	ObjectTypeDB::bind_method(_MD("get_uv84_normal_bit","normal"),&_Geometry::get_uv84_normal_bit);
+
 	ObjectTypeDB::bind_method(_MD("ray_intersects_triangle","from","dir","a","b","c"),&_Geometry::ray_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_triangle","from","to","a","b","c"),&_Geometry::segment_intersects_triangle);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
@@ -865,6 +941,7 @@ void _Geometry::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
+	ObjectTypeDB::bind_method(_MD("make_atlas","sizes"),&_Geometry::make_atlas);
 }
 
 
@@ -1044,6 +1121,7 @@ String _File::get_as_text() const {
 		text+=l+"\n";
 		l = get_line();
 	}
+	text+=l;
 
 	return text;
 

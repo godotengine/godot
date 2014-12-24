@@ -1489,7 +1489,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_block_signals","enable"),&Object::set_block_signals);
 	ObjectTypeDB::bind_method(_MD("is_blocking_signals"),&Object::is_blocking_signals);
 	ObjectTypeDB::bind_method(_MD("set_message_translation","enable"),&Object::set_message_translation);
-	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::set_message_translation);
+	ObjectTypeDB::bind_method(_MD("can_translate_messages"),&Object::can_translate_messages);
 	ObjectTypeDB::bind_method(_MD("property_list_changed_notify"),&Object::property_list_changed_notify);
 
 	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
@@ -1505,10 +1505,12 @@ void Object::_bind_methods() {
 	BIND_VMETHOD( miget );
 
 	MethodInfo plget("_get_property_list");
+
 	plget.return_val.type=Variant::ARRAY;
 	BIND_VMETHOD( plget );
 
 #endif
+	BIND_VMETHOD( MethodInfo("_init") );
 
 
 
@@ -1691,6 +1693,11 @@ void ObjectDB::debug_objects(DebugFunc p_func) {
 	}
 }
 
+
+void Object::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+
+}
 
 int ObjectDB::get_object_count() {
 

@@ -566,9 +566,11 @@ static Variant _decode_variant(const String& p_string) {
 		ERR_FAIL_COND_V(params.size()!=1 && params.size()!=2,Variant());
 		int scode=0;
 
-		if (params[0].is_numeric())
+		if (params[0].is_numeric()) {
 			scode=params[0].to_int();
-		else
+			if (scode<10)
+				scode+=KEY_0;
+		} else
 			scode=find_keycode(params[0]);
 
 		InputEvent ie;
@@ -672,7 +674,7 @@ static Variant _decode_variant(const String& p_string) {
 		int w=params[2].to_int();
 		int h=params[3].to_int();
 
-		if (w == 0 && w == 0) {
+		if (w == 0 && h == 0) {
 			//r_v = Image(w, h, imgformat);
 			return Image();
 		};
@@ -1381,6 +1383,7 @@ Globals::Globals() {
 	set("application/main_scene","");
 	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"xml,res,scn,xscn");
 	set("application/disable_stdout",false);
+	set("application/use_shared_user_dir",true);
 
 
 	key.key.scancode=KEY_RETURN;

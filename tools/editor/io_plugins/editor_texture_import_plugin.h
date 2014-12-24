@@ -93,7 +93,9 @@ public:
 		IMAGE_FLAG_REPEAT=32, //usually disabled in 2D
 		IMAGE_FLAG_FILTER=64, //almost always enabled
 		IMAGE_FLAG_PREMULT_ALPHA=128,//almost always enabled
-		IMAGE_FLAG_CONVERT_TO_LINEAR=256 //convert image to linear
+		IMAGE_FLAG_CONVERT_TO_LINEAR=256, //convert image to linear
+		IMAGE_FLAG_CONVERT_NORMAL_TO_XY=512, //convert image to linear
+		IMAGE_FLAG_USE_ANISOTROPY=1024, //convert image to linear
 	};
 
 	virtual String get_name() const;

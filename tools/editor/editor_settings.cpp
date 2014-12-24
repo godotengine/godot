@@ -30,7 +30,7 @@
 #include "os/os.h"
 #include "os/dir_access.h"
 #include "os/file_access.h"
-#include "io/object_format_xml.h"
+
 #include "version.h"
 #include "scene/main/scene_main_loop.h"
 #include "os/os.h"
@@ -386,6 +386,12 @@ void EditorSettings::_load_defaults() {
 
 	set("global/font","");
 	hints["global/font"]=PropertyInfo(Variant::STRING,"global/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
+	set("global/autoscan_project_path","");
+	hints["global/autoscan_project_path"]=PropertyInfo(Variant::STRING,"global/autoscan_project_path",PROPERTY_HINT_GLOBAL_DIR);
+	set("global/default_project_path","");
+	hints["global/default_project_path"]=PropertyInfo(Variant::STRING,"global/default_project_path",PROPERTY_HINT_GLOBAL_DIR);
+	set("global/default_project_export_path","");
+	hints["global/default_project_export_path"]=PropertyInfo(Variant::STRING,"global/default_project_export_path",PROPERTY_HINT_GLOBAL_DIR);
 
 	set("text_editor/background_color",Color::html("3b000000"));
 	set("text_editor/text_color",Color::html("aaaaaa"));
@@ -397,13 +403,14 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/string_color",Color::html("ef6ebe"));
 	set("text_editor/symbol_color",Color::html("badfff"));
 	set("text_editor/selection_color",Color::html("7b5dbe"));
+	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_seconds",60);
 	set("text_editor/font","");
-	set("text_editor/auto_brace_complete", false);
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
+	set("text_editor/auto_brace_complete", false);
 
 
 	set("3d_editor/default_fov",45.0);
@@ -434,6 +441,7 @@ void EditorSettings::_load_defaults() {
 
 
 	set("animation/autorename_animation_tracks",true);
+	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
 	set("help/doc_path","");
@@ -458,10 +466,10 @@ void EditorSettings::notify_changes() {
 
 	_THREAD_SAFE_METHOD_
 
-	SceneMainLoop *sml=NULL;
+	SceneTree *sml=NULL;
 
 	if (OS::get_singleton()->get_main_loop())
-		sml = OS::get_singleton()->get_main_loop()->cast_to<SceneMainLoop>();
+		sml = OS::get_singleton()->get_main_loop()->cast_to<SceneTree>();
 
 	if (!sml) {
 		print_line("not SML");

@@ -55,10 +55,9 @@ private:
 		BroadPhase2DSW::ID bpid;
 		Rect2 aabb_cache; //for rayqueries
 		Shape2DSW *shape;
-		Vector2 kinematic_advance;
-		float kinematic_retreat;
+		Variant metadata;
 		bool trigger;
-		Shape() { trigger=false; kinematic_retreat=0; }
+		Shape() { trigger=false; }
 	};
 
 	Vector<Shape> shapes;
@@ -99,17 +98,15 @@ public:
 	void add_shape(Shape2DSW *p_shape,const Matrix32& p_transform=Matrix32());
 	void set_shape(int p_index,Shape2DSW *p_shape);
 	void set_shape_transform(int p_index,const Matrix32& p_transform);
+	void set_shape_metadata(int p_index,const Variant& p_metadata);
+
+
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
 	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const { return shapes[p_index].shape; }
 	_FORCE_INLINE_ const Matrix32& get_shape_transform(int p_index) const { return shapes[p_index].xform; }
 	_FORCE_INLINE_ const Matrix32& get_shape_inv_transform(int p_index) const { return shapes[p_index].xform_inv; }
 	_FORCE_INLINE_ const Rect2& get_shape_aabb(int p_index) const { return shapes[p_index].aabb_cache; }
-
-	_FORCE_INLINE_ void set_shape_kinematic_advance(int p_index,const Vector2& p_advance) { shapes[p_index].kinematic_advance=p_advance; }
-	_FORCE_INLINE_ Vector2 get_shape_kinematic_advance(int p_index) const { return shapes[p_index].kinematic_advance; }
-
-	_FORCE_INLINE_ void set_shape_kinematic_retreat(int p_index,float p_retreat) { shapes[p_index].kinematic_retreat=p_retreat; }
-	_FORCE_INLINE_ float get_shape_kinematic_retreat(int p_index) const { return shapes[p_index].kinematic_retreat; }
+	_FORCE_INLINE_ const Variant& get_shape_metadata(int p_index) const { return shapes[p_index].metadata; }
 
 	_FORCE_INLINE_ Matrix32 get_transform() const { return transform; }
 	_FORCE_INLINE_ Matrix32 get_inv_transform() const { return inv_transform; }

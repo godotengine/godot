@@ -45,6 +45,7 @@ public:
 
 	virtual void create()=0;
 	virtual void transform()=0;
+	virtual void clear()=0;
 	virtual void redraw()=0;
 	virtual void free()=0;
 
@@ -129,7 +130,7 @@ public:
 
 	enum {
 	
-		NOTIFICATION_TRANSFORM_CHANGED=SceneMainLoop::NOTIFICATION_TRANSFORM_CHANGED,
+		NOTIFICATION_TRANSFORM_CHANGED=SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
 		NOTIFICATION_ENTER_WORLD=41,
 		NOTIFICATION_EXIT_WORLD=42,
 		NOTIFICATION_VISIBILITY_CHANGED=43,

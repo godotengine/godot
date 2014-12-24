@@ -166,7 +166,10 @@ public:
 	Ref<Shape> create_trimesh_shape() const;
 	Ref<Shape> create_convex_shape() const;
 
+	Ref<Mesh> create_outline(float p_margin) const;
+
 	void center_geometry();
+	void regen_normalmaps();
 
 	DVector<Face3> get_faces() const;
 	Ref<TriangleMesh> generate_triangle_mesh() const;

@@ -67,7 +67,7 @@ void Container::remove_child_notify(Node *p_child) {
 
 void Container::_sort_children() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	notification(NOTIFICATION_SORT_CHILDREN);
@@ -101,7 +101,7 @@ void Container::fit_child_in_rect(Control *p_child,const Rect2& p_rect) {
 
 void Container::queue_sort() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (pending_sort)
@@ -115,7 +115,7 @@ void Container::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 			pending_sort=false;
 			queue_sort();
 		} break;

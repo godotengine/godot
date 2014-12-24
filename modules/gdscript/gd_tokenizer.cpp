@@ -91,6 +91,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "tool",
 "static",
 "export",
+"setget",
 "const",
 "var",
 "preload",
@@ -109,7 +110,8 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "':'",
 "'\\n'",
 "Error",
-"EOF"};
+"EOF",
+"Cursor"};
 
 const char *GDTokenizer::get_token_name(Token p_token) {
 
@@ -237,7 +239,8 @@ void GDTokenizerText::_advance() {
 	while (true) {
 
 
-		bool is_node_path=false;
+		bool is_node_path  = false;
+		StringMode string_mode=STRING_DOUBLE_QUOTE;
 
 		switch(GETCHAR(0)) {
 			case 0:
@@ -284,7 +287,8 @@ void GDTokenizerText::_advance() {
 				while(GETCHAR(0)!='\n') {
 					code_pos++;
 					if (GETCHAR(0)==0) { //end of file
-						_make_error("Unterminated Comment");
+						//_make_error("Unterminated Comment");
+						_make_token(TK_EOF);
 						return;
 					}
 				}
@@ -526,24 +530,43 @@ void GDTokenizerText::_advance() {
 				}
 			} break;
 			case '@':
-				if (CharType(GETCHAR(1))!='"') {
+				if( CharType(GETCHAR(1))!='"' && CharType(GETCHAR(1))!='\'' ) {
 					_make_error("Unexpected '@'");
 					return;
 				}
 				INCPOS(1);
 				is_node_path=true;
+				
+			case '\'':
+				string_mode=STRING_SINGLE_QUOTE;
 			case '"': {
 
 				int i=1;
+				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
+					i+=2;
+					string_mode=STRING_MULTILINE;
+
+				}
+
+
 				String str;
 				while(true) {
-					if (CharType(GETCHAR(i)==0)) {
+					if (CharType(GETCHAR(i))==0) {
 
 						_make_error("Unterminated String");
 						return;
-					} else if (CharType(GETCHAR(i)=='"')) {
+					} else if( string_mode==STRING_DOUBLE_QUOTE && CharType(GETCHAR(i))=='"' ) {
 						break;
-					} else if (CharType(GETCHAR(i)=='\\')) {
+					} else if( string_mode==STRING_SINGLE_QUOTE && CharType(GETCHAR(i))=='\'' ) {
+						break;
+					} else if( string_mode==STRING_MULTILINE && CharType(GETCHAR(i))=='\"' &&  CharType(GETCHAR(i+1))=='\"' && CharType(GETCHAR(i+2))=='\"') {
+						i+=2;
+						break;
+					} else if( string_mode!=STRING_MULTILINE && CharType(GETCHAR(i))=='\n') {
+						_make_error("Unexpected EOL at String.");
+						return;
+
+					} else if (CharType(GETCHAR(i))=='\\') {
 						//escaped characters...
 						i++;
 						CharType next = GETCHAR(i);
@@ -565,22 +588,21 @@ void GDTokenizerText::_advance() {
 							case '\'': res='\''; break;
 							case '\"': res='\"'; break;
 							case '\\': res='\\'; break;
-							case 'x': {
-								//hexnumbarh - oct is deprecated
+							case '/': res='/'; break; //wtf
 
-								int read=0;
+							case 'u': {
+								//hexnumbarh - oct is deprecated
+								i+=1;
 								for(int j=0;j<4;j++) {
 									CharType c = GETCHAR(i+j);
 									if (c==0) {
 										_make_error("Unterminated String");
 										return;
 									}
-									if (!_is_hex(c)) {
-										if (j==0 || !(j&1)) {
-											_make_error("Malformed hex constant in string");
-											return;
-										} else
-											break;
+									if (!((c>='0' && c<='9') || (c>='a' && c<='f') || (c>='A' && c<='F'))) {
+
+										_make_error("Malformed hex constant in string");
+										return;
 									}
 									CharType v;
 									if (c>='0' && c<='9') {
@@ -599,10 +621,9 @@ void GDTokenizerText::_advance() {
 									res<<=4;
 									res|=v;
 
-									read++;
-								}
-								i+=read-1;
 
+								}
+								i+=3;
 
 							} break;
 							default: {
@@ -627,6 +648,9 @@ void GDTokenizerText::_advance() {
 					_make_constant(str);
 				}
 
+			} break;
+			case 0xFFFF: {
+				_make_token(TK_CURSOR);
 			} break;
 			default: {
 
@@ -824,6 +848,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_TOOL,"tool"},
 								{TK_PR_STATIC,"static"},
 								{TK_PR_EXPORT,"export"},
+								{TK_PR_SETGET,"setget"},
 								{TK_PR_VAR,"var"},
 								{TK_PR_PRELOAD,"preload"},
 								{TK_PR_ASSERT,"assert"},
@@ -1008,7 +1033,7 @@ void GDTokenizerText::advance(int p_amount) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define BYTECODE_VERSION 2
+#define BYTECODE_VERSION 3
 
 Error GDTokenizerBuffer::set_code_buffer(const Vector<uint8_t> & p_buffer) {
 

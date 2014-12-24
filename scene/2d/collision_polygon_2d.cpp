@@ -41,7 +41,6 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 
 	bool solids=build_mode==BUILD_SOLIDS;
 
-
 	if (solids) {
 
 		//here comes the sun, lalalala
@@ -51,6 +50,8 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 			Ref<ConvexPolygonShape2D> convex = memnew( ConvexPolygonShape2D );
 			convex->set_points(decomp[i]);
 			co->add_shape(convex,get_transform());
+			if (trigger)
+				co->set_shape_as_trigger(co->get_shape_count()-1,true);
 
 		}
 
@@ -71,6 +72,8 @@ void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
 		concave->set_segments(segments);
 
 		co->add_shape(concave,get_transform());
+		if (trigger)
+			co->set_shape_as_trigger(co->get_shape_count()-1,true);
 
 	}
 
@@ -95,7 +98,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 	switch(p_what) {
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
-			if (!is_inside_scene())
+			if (!is_inside_tree())
 				break;
 			_update_parent();
 
@@ -153,6 +156,7 @@ void CollisionPolygon2D::set_build_mode(BuildMode p_mode) {
 
 	ERR_FAIL_INDEX(p_mode,2);
 	build_mode=p_mode;
+	_update_parent();
 }
 
 CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const{
@@ -165,6 +169,18 @@ Rect2 CollisionPolygon2D::get_item_rect() const {
 	return aabb;
 }
 
+void CollisionPolygon2D::set_trigger(bool p_trigger) {
+
+	trigger=p_trigger;
+	_update_parent();
+}
+
+bool CollisionPolygon2D::is_trigger() const{
+
+	return trigger;
+}
+
+
 void CollisionPolygon2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_add_to_collision_object"),&CollisionPolygon2D::_add_to_collision_object);
@@ -174,14 +190,19 @@ void CollisionPolygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_build_mode"),&CollisionPolygon2D::set_build_mode);
 	ObjectTypeDB::bind_method(_MD("get_build_mode"),&CollisionPolygon2D::get_build_mode);
 
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Automatic,Segments,Solids"),_SCS("set_build_mode"),_SCS("get_build_mode"));
+	ObjectTypeDB::bind_method(_MD("set_trigger"),&CollisionPolygon2D::set_trigger);
+	ObjectTypeDB::bind_method(_MD("is_trigger"),&CollisionPolygon2D::is_trigger);
+
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"build_mode",PROPERTY_HINT_ENUM,"Solids,Segments"),_SCS("set_build_mode"),_SCS("get_build_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"trigger"),_SCS("set_trigger"),_SCS("is_trigger"));
 }
 
 CollisionPolygon2D::CollisionPolygon2D() {
 
 	aabb=Rect2(-10,-10,20,20);
 	build_mode=BUILD_SOLIDS;
+	trigger=false;
 
 
 }

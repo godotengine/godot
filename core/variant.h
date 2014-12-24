@@ -167,13 +167,17 @@ public:
 	static String get_type_name(Variant::Type p_type);
 	static bool can_convert(Type p_type_from,Type p_type_to);
 
+
+
 	template<class T>
 	static Type get_type_for() {
 		
 		GetSimpleType<T> t;
 		Variant v(t.type);
-		return v.get_type();
+		Type r = v.get_type();
+		return r;
 	}
+
 
 	bool is_ref() const;
 	_FORCE_INLINE_ bool is_num() const { return type==INT || type==REAL; };
@@ -358,7 +362,7 @@ public:
 
 	static String get_operator_name(Operator p_op);
 	static void evaluate(const Operator& p_op,const Variant& p_a, const Variant& p_b,Variant &r_ret,bool &r_valid);
-	static _FORCE_INLINE_ Variant evaluate(Operator& p_op,const Variant& p_a, const Variant& p_b) {
+	static _FORCE_INLINE_ Variant evaluate(const Operator& p_op,const Variant& p_a, const Variant& p_b) {
 
 		bool valid=true;
 		Variant res;
@@ -387,6 +391,7 @@ public:
 	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
+	bool has_method(const StringName& p_method) const;
 
 	void set_named(const StringName& p_index, const Variant& p_value, bool *r_valid=NULL);
 	Variant get_named(const StringName& p_index, bool *r_valid=NULL) const;
@@ -413,6 +418,8 @@ public:
 	static void get_numeric_constants_for_type(Variant::Type p_type, List<StringName> *p_constants);
 	static bool has_numeric_constant(Variant::Type p_type, const StringName& p_value);
 	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value);
+
+	String get_construct_string() const;
 
 	void operator=(const Variant& p_variant); // only this is enough for all the other types
 	Variant(const Variant& p_variant);

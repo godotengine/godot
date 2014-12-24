@@ -53,8 +53,8 @@ void SoundRoomParams::_notification(int p_what) {
 	switch(p_what) {
 
 
-		case NOTIFICATION_ENTER_SCENE: {
-#if 0
+		case NOTIFICATION_ENTER_TREE: {
+//#if 0
 			Node *n=this;
 			Room *room_instance=NULL;
 			while(n) {
@@ -74,14 +74,14 @@ void SoundRoomParams::_notification(int p_what) {
 			if (room_instance) {
 				room=room_instance->get_sound_room();
 			} else {
-				room=get_scene()->get_default_world()->get_sound_space();
+				room=get_viewport()->find_world()->get_sound_space();
 			}
 
 			_update_sound_room();
-#endif
+//#endif
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			room=RID();
 

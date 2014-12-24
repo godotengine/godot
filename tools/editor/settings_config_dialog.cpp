@@ -246,7 +246,7 @@ void EditorSettingsDialog::_update_plugins() {
 
 void EditorSettingsDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		rescan_plugins->set_icon(get_icon("Reload","EditorIcons"));
 		_update_plugins();

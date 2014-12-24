@@ -246,14 +246,28 @@ bool FindReplaceDialog::_search() {
 	if (is_backwards())
 		flags|=TextEdit::SEARCH_BACKWARDS;
 
-	int line,col;
-	bool found = text_edit->search(text,flags,text_edit->cursor_get_line(),text_edit->cursor_get_column(),line,col);
+	int line=text_edit->cursor_get_line(),col=text_edit->cursor_get_column();
+
+	if (is_backwards()) {
+		col-=1;
+		if (col<0) {
+			line-=1;
+			if (line<0) {
+				line=text_edit->get_line_count()-1;
+			}
+			col=text_edit->get_line(line).length();
+		}
+	}
+	bool found = text_edit->search(text,flags,line,col,line,col);
 
 
 	if (found) {
 		// print_line("found");
 		text_edit->cursor_set_line(line);
-		text_edit->cursor_set_column(col+text.length());
+		if (is_backwards())
+			text_edit->cursor_set_column(col);
+		else
+			text_edit->cursor_set_column(col+text.length());
 		text_edit->select(line,col,line,col+text.length());
 		set_error("");
 		return true;
@@ -473,6 +487,7 @@ FindReplaceDialog::FindReplaceDialog() {
 
 	vb->add_child(error_label);
 
+
 	set_hide_on_ok(false);
 
 }
@@ -493,15 +508,19 @@ void CodeTextEditor::_text_changed() {
 }
 
 void CodeTextEditor::_code_complete_timer_timeout() {
+	if (!is_visible())
+		return;
 	if (enable_complete_timer)
 		text_editor->query_code_comple();
 }
 
-void CodeTextEditor::_complete_request(const String& p_request, int p_line) {
+void CodeTextEditor::_complete_request() {
 
 	List<String> entries;
-	_code_complete_script(text_editor->get_text(),p_request,p_line,&entries);
+	_code_complete_script(text_editor->get_text_for_completion(),&entries);
 	// print_line("COMPLETE: "+p_request);
+	if (entries.size()==0)
+		return;
 	Vector<String> strs;
 	strs.resize(entries.size());
 	int i=0;
@@ -541,7 +560,7 @@ void CodeTextEditor::_on_settings_change() {
 	
 	// AUTO BRACE COMPLETION 
 	text_editor->set_auto_brace_completion(
-		EDITOR_DEF("text_editor/auto_brace_complete", false)
+		EDITOR_DEF("text_editor/auto_brace_complete", true)
 	);
 
 	code_complete_timer->set_wait_time(
@@ -582,6 +601,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->set_margin(MARGIN_BOTTOM,20);
 	text_editor->add_font_override("font",get_font("source","Fonts"));
 	text_editor->set_show_line_numbers(true);
+	text_editor->set_brace_matching(true);
 
 	line_col = memnew( Label );
 	add_child(line_col);
@@ -618,6 +638,8 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("request_completion", this,"_complete_request");
 	Vector<String> cs;
 	cs.push_back(".");
+	cs.push_back(",");
+	cs.push_back("(");
 	text_editor->set_completion(true,cs);
 	idle->connect("timeout", this,"_text_changed_idle_timeout");
 

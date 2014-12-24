@@ -40,7 +40,9 @@
  * Images can be loaded from a file, or registered into the Render object as textures.
 */
 
+class Image;
 
+typedef Error (*SavePNGFunc)(const String &p_path, Image& p_img);
 
 class Image {
 
@@ -49,6 +51,8 @@ class Image {
 		MAX_HEIGHT=16384// force a limit somehow
 	};
 public:
+
+	static SavePNGFunc save_png_func;
 
 	enum Format {
 		FORMAT_GRAYSCALE, ///< one byte per pixel, 0-255 
@@ -216,6 +220,14 @@ public:
 	 * Convert the image to another format, as close as it can be done.
 	 */
 	void convert( Format p_new_format );
+
+	Image converted(int p_new_format) {
+		ERR_FAIL_INDEX_V(p_new_format, FORMAT_MAX, Image());
+
+		Image ret = *this;
+		ret.convert((Format)p_new_format);
+		return ret;
+	};
 	
 	/**
 	 * Get the current image format.
@@ -270,6 +282,7 @@ public:
 	DVector<uint8_t> get_data() const;
 	
 	Error load(const String& p_path);
+	Error save_png(const String& p_path);
 	
 	/** 
 	 * create an empty image
@@ -325,6 +338,7 @@ public:
 	void fix_alpha_edges();
 	void premultiply_alpha();
 	void srgb_to_linear();
+	void normalmap_to_xy();
 
 	void blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& p_dest);
 	void brush_transfer(const Image& p_src, const Image& p_brush, const Point2& p_dest);

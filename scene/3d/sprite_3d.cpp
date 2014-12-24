@@ -37,7 +37,7 @@ void SpriteBase3D::_propagate_color_changed() {
 
 void SpriteBase3D::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		if (!pending_update)
 			_im_update();
@@ -52,7 +52,7 @@ void SpriteBase3D::_notification(int p_what) {
 		}
 	}
 
-	if (p_what==NOTIFICATION_EXIT_SCENE) {
+	if (p_what==NOTIFICATION_EXIT_TREE) {
 
 
 		if (parent_sprite) {
@@ -275,6 +275,9 @@ void SpriteBase3D::_bind_methods() {
 	BIND_CONSTANT( ALPHA_CUT_DISABLED );
 	BIND_CONSTANT( ALPHA_CUT_DISCARD );
 	BIND_CONSTANT( ALPHA_CUT_OPAQUE_PREPASS );
+
+
+
 }
 
 
@@ -399,6 +402,20 @@ void Sprite3D::_draw() {
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
 
+	if (axis!=Vector3::AXIS_Z) {
+		SWAP(x_axis,y_axis);
+
+		for(int i=0;i<4;i++) {
+			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			//SWAP(vertices[i].x,vertices[i].y);
+			if (axis==Vector3::AXIS_Y) {
+				vertices[i].y = - vertices[i].y;
+			} else if (axis==Vector3::AXIS_X) {
+				vertices[i].x = - vertices[i].x;
+			}
+		}
+	}
+
 	AABB aabb;
 
 	for(int i=0;i<4;i++) {
@@ -407,8 +424,8 @@ void Sprite3D::_draw() {
 		VS::get_singleton()->immediate_uv(immediate,uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis]=vertices[i][x_axis];
-		vtx[y_axis]=vertices[i][y_axis];
+		vtx[x_axis]=vertices[i][0];
+		vtx[y_axis]=vertices[i][1];
 		VS::get_singleton()->immediate_vertex(immediate,vtx);
 		if (i==0) {
 			aabb.pos=vtx;
@@ -480,6 +497,8 @@ void Sprite3D::set_frame(int p_frame) {
 
 	frame=p_frame;
 	_queue_update();
+	ADD_SIGNAL(MethodInfo("frame_changed"));
+
 }
 
 int Sprite3D::get_frame() const {
@@ -564,6 +583,8 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 }
 
@@ -661,6 +682,20 @@ void AnimatedSprite3D::_draw() {
 	int x_axis = ((axis + 1) % 3);
 	int y_axis = ((axis + 2) % 3);
 
+	if (axis!=Vector3::AXIS_Z) {
+		SWAP(x_axis,y_axis);
+
+		for(int i=0;i<4;i++) {
+			//uvs[i] = Vector2(1.0,1.0)-uvs[i];
+			//SWAP(vertices[i].x,vertices[i].y);
+			if (axis==Vector3::AXIS_Y) {
+				vertices[i].y = - vertices[i].y;
+			} else if (axis==Vector3::AXIS_X) {
+				vertices[i].x = - vertices[i].x;
+			}
+		}
+	}
+
 	AABB aabb;
 
 	for(int i=0;i<4;i++) {
@@ -669,8 +704,8 @@ void AnimatedSprite3D::_draw() {
 		VS::get_singleton()->immediate_uv(immediate,uvs[i]);
 
 		Vector3 vtx;
-		vtx[x_axis]=vertices[i][x_axis];
-		vtx[y_axis]=vertices[i][y_axis];
+		vtx[x_axis]=vertices[i][0];
+		vtx[y_axis]=vertices[i][1];
 		VS::get_singleton()->immediate_vertex(immediate,vtx);
 		if (i==0) {
 			aabb.pos=vtx;
@@ -693,6 +728,8 @@ void AnimatedSprite3D::_bind_methods(){
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
+
+	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 }
 
@@ -736,6 +773,7 @@ void AnimatedSprite3D::set_frame(int p_frame){
 
 	frame=p_frame;
 	_queue_update();
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 
 }
 int AnimatedSprite3D::get_frame() const{

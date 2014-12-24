@@ -7,7 +7,8 @@ common_win=[
 	"ctxgl_procaddr.cpp",
 	"key_mapping_win.cpp",
 	"tcp_server_winsock.cpp",
+	"packet_peer_udp_winsock.cpp",
 	"stream_peer_winsock.cpp",
 ]
 
-env.Program('#bin/godot.exe',['godot_win.cpp']+common_win)
+env.Program('#bin/godot',['godot_win.cpp']+common_win,PROGSUFFIX=env["PROGSUFFIX"])

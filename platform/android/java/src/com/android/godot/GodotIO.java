@@ -438,8 +438,26 @@ public class GodotIO {
 
 		try {
 			Log.v("MyApp", "TRYING TO OPEN URI: " + p_uri);
-			Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(p_uri));
-			activity.startActivity(myIntent);
+			String path = p_uri;
+			String type="";
+			if (path.startsWith("/")) {
+				//absolute path to filesystem, prepend file://
+				path="file://"+path;
+				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
+
+					type="image/*";
+				}
+			}
+
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_VIEW);
+			if (!type.equals("")) {
+				intent.setDataAndType(Uri.parse(path), type);
+			} else {
+				intent.setData(Uri.parse(path));
+			}
+
+			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
 
@@ -555,6 +573,58 @@ public class GodotIO {
 			mediaPlayer.release();
 			mediaPlayer = null;
 		}
+	}
+
+
+	public static final int SYSTEM_DIR_DESKTOP=0;
+	public static final int SYSTEM_DIR_DCIM=1;
+	public static final int SYSTEM_DIR_DOCUMENTS=2;
+	public static final int SYSTEM_DIR_DOWNLOADS=3;
+	public static final int SYSTEM_DIR_MOVIES=4;
+	public static final int SYSTEM_DIR_MUSIC=5;
+	public static final int SYSTEM_DIR_PICTURES=6;
+	public static final int SYSTEM_DIR_RINGTONES=7;
+
+
+	public String getSystemDir(int idx) {
+
+		String what="";
+		switch(idx) {
+			case SYSTEM_DIR_DESKTOP: {
+				//what=Environment.DIRECTORY_DOCUMENTS;
+				what=Environment.DIRECTORY_DOWNLOADS;
+			} break;
+			case SYSTEM_DIR_DCIM: {
+				what=Environment.DIRECTORY_DCIM;
+
+			} break;
+			case SYSTEM_DIR_DOCUMENTS: {
+				what=Environment.DIRECTORY_DOWNLOADS;
+				//what=Environment.DIRECTORY_DOCUMENTS;
+			} break;
+			case SYSTEM_DIR_DOWNLOADS: {
+				what=Environment.DIRECTORY_DOWNLOADS;
+
+			} break;
+			case SYSTEM_DIR_MOVIES: {
+				what=Environment.DIRECTORY_MOVIES;
+
+			} break;
+			case SYSTEM_DIR_MUSIC: {
+				what=Environment.DIRECTORY_MUSIC;
+			} break;
+			case SYSTEM_DIR_PICTURES: {
+				what=Environment.DIRECTORY_PICTURES;
+			} break;
+			case SYSTEM_DIR_RINGTONES: {
+				what=Environment.DIRECTORY_RINGTONES;
+
+			} break;
+		}
+
+		if (what.equals(""))
+			return "";
+		return Environment.getExternalStoragePublicDirectory(what).getAbsolutePath();
 	}
 
 	protected static final String PREFS_FILE = "device_id.xml";

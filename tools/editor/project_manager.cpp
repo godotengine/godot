@@ -321,6 +321,7 @@ public:
 		fdialog = memnew( FileDialog );
 		add_child(fdialog);
 		fdialog->set_access(FileDialog::ACCESS_FILESYSTEM);
+		fdialog->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_path") );
 		project_name->connect("text_changed", this,"_text_changed");
 		project_path->connect("text_changed", this,"_path_text_changed");
 		fdialog->connect("dir_selected", this,"_path_selected");
@@ -627,7 +628,7 @@ void ProjectManager::_open_project_confirm() {
 		ERR_FAIL_COND(err);
 	}
 
-	get_scene()->quit();
+	get_tree()->quit();
 }
 
 void ProjectManager::_open_project() {
@@ -785,7 +786,7 @@ void ProjectManager::_erase_project()  {
 
 void ProjectManager::_exit_dialog()  {
 
-	get_scene()->quit();
+	get_tree()->quit();
 }
 
 void ProjectManager::_bind_methods() {
@@ -828,6 +829,7 @@ ProjectManager::ProjectManager() {
 	panel->add_child(vb);
 	vb->set_area_as_parent_rect(20);
 
+	OS::get_singleton()->set_window_title(_MKSTR(VERSION_NAME)" - Project Manager");
 
 	Label *l = memnew( Label );
 	l->set_text(_MKSTR(VERSION_NAME)" - Project Manager");
@@ -900,6 +902,7 @@ ProjectManager::ProjectManager() {
 	scan_dir = memnew( FileDialog );
 	scan_dir->set_access(FileDialog::ACCESS_FILESYSTEM);
 	scan_dir->set_mode(FileDialog::MODE_OPEN_DIR);
+	scan_dir->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_path") );
 	add_child(scan_dir);
 	scan_dir->connect("dir_selected",this,"_scan_begin");
 
@@ -937,7 +940,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	l->set_text(cp+" 2008-2012 Juan Linietsky, Ariel Manzur.");
+	l->set_text(cp+" 2008-2014 Juan Linietsky, Ariel Manzur.");
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 
@@ -971,6 +974,11 @@ ProjectManager::ProjectManager() {
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
 	_load_recent_projects();
+
+	if ( EditorSettings::get_singleton()->get("global/autoscan_project_path") ) {
+		_scan_begin( EditorSettings::get_singleton()->get("global/autoscan_project_path") );
+	}
+
 	//get_ok()->set_text("Open");
 	//get_ok()->set_text("Exit");
 
@@ -1025,7 +1033,7 @@ void ProjectListFilter::_filter_option_selected(int p_idx) {
 
 void ProjectListFilter::_notification(int p_what) {
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 			clear_search_button->set_icon(get_icon("CloseHover","EditorIcons"));
 		} break;
 	}

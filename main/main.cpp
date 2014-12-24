@@ -43,7 +43,7 @@
 #include "io/resource_loader.h"
 #include "scene/main/scene_main_loop.h"
 
-#include "scene/io/scene_loader.h"
+
 #include "script_language.h"
 #include "io/resource_loader.h"
 
@@ -111,7 +111,7 @@ static String unescape_cmdline(const String& p_str) {
 
 void Main::print_help(const char* p_binary) {
 
-	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2010 Juan Linietsky, Ariel Manzur.\n");
+	OS::get_singleton()->print(VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.\n");
 	OS::get_singleton()->print("Usage: %s [options] [scene]\n",p_binary);
 	OS::get_singleton()->print("Options:\n");
 	OS::get_singleton()->print("\t-path [dir] : Path to a game, containing engine.cfg\n");
@@ -147,12 +147,14 @@ void Main::print_help(const char* p_binary) {
 			OS::get_singleton()->print(", ");
 		OS::get_singleton()->print("%s",OS::get_singleton()->get_audio_driver_name(i));
 	}
+    OS::get_singleton()->print(")\n");
 	OS::get_singleton()->print("\t-rthread <mode>\t : Render Thread Mode ('unsafe', 'safe', 'separate).");
 	OS::get_singleton()->print(")\n");
 	OS::get_singleton()->print("\t-s,-script [script] : Run a script.\n");	
 	OS::get_singleton()->print("\t-d,-debug : Debug (local stdout debugger).\n");
 	OS::get_singleton()->print("\t-rdebug ADDRESS : Remote debug (<ip>:<port> host address).\n");
 	OS::get_singleton()->print("\t-fdelay [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
+	OS::get_singleton()->print("\t-timescale [msec]: Simulate high CPU load (delay each frame by [msec]).\n");
 	OS::get_singleton()->print("\t-bp : breakpoint list as source::line comma separated pairs, no spaces (%%20,%%2C,etc instead).\n");
 	OS::get_singleton()->print("\t-v : Verbose stdout mode\n");
 	OS::get_singleton()->print("\t-lang [locale]: Use a specific locale\n");
@@ -414,6 +416,17 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 			if (I->next()) {
 
 				OS::get_singleton()->set_frame_delay(I->next()->get().to_int());
+				N=I->next()->next();
+			} else {
+				goto error;
+
+			}
+
+		} else if (I->get()=="-timescale") { // resolution
+
+			if (I->next()) {
+
+				OS::get_singleton()->set_time_scale(I->next()->get().to_double());
 				N=I->next()->next();
 			} else {
 				goto error;
@@ -807,6 +820,8 @@ Error Main::setup2() {
 	register_module_types();
 	register_driver_types();
 
+	ScriptServer::init_languages();
+
 	MAIN_PRINT("Main: Load Translations");
 
 	translation_server->setup(); //register translations, load them, etc.
@@ -949,7 +964,7 @@ bool Main::start() {
 
 	MainLoop *main_loop=NULL;
 	if (editor) {
-		main_loop = memnew(SceneMainLoop);
+		main_loop = memnew(SceneTree);
 	};
 
 	if (test!="") {
@@ -967,7 +982,7 @@ bool Main::start() {
 		ERR_EXPLAIN("Can't load script: "+script);
 		ERR_FAIL_COND_V(script_res.is_null(),false);
 		
-		if( script_res->can_instance() /*&& script_res->inherits_from("SceneMainLoopScripted")*/) {
+		if( script_res->can_instance() /*&& script_res->inherits_from("SceneTreeScripted")*/) {
 		
 
 			StringName instance_type=script_res->get_instance_base_type();
@@ -993,7 +1008,7 @@ bool Main::start() {
 	}
 	
 	if (!main_loop && main_loop_type=="")
-		main_loop_type="SceneMainLoop";
+		main_loop_type="SceneTree";
 	
 	if (!main_loop) {
 		if (!ObjectTypeDB::type_exists(main_loop_type)) {
@@ -1018,9 +1033,9 @@ bool Main::start() {
 		}
 	}
 
-	if (main_loop->is_type("SceneMainLoop")) {
+	if (main_loop->is_type("SceneTree")) {
 		
-		SceneMainLoop *sml = main_loop->cast_to<SceneMainLoop>();
+		SceneTree *sml = main_loop->cast_to<SceneTree>();
 
 #ifdef TOOLS_ENABLED
 
@@ -1048,19 +1063,19 @@ bool Main::start() {
 			String stretch_aspect = GLOBAL_DEF("display/stretch_aspect","ignore");
 			Size2i stretch_size = Size2(GLOBAL_DEF("display/width",0),GLOBAL_DEF("display/height",0));
 
-			SceneMainLoop::StretchMode sml_sm=SceneMainLoop::STRETCH_MODE_DISABLED;
+			SceneTree::StretchMode sml_sm=SceneTree::STRETCH_MODE_DISABLED;
 			if (stretch_mode=="2d")
-				sml_sm=SceneMainLoop::STRETCH_MODE_2D;
+				sml_sm=SceneTree::STRETCH_MODE_2D;
 			else if (stretch_mode=="viewport")
-				sml_sm=SceneMainLoop::STRETCH_MODE_VIEWPORT;
+				sml_sm=SceneTree::STRETCH_MODE_VIEWPORT;
 
-			SceneMainLoop::StretchAspect sml_aspect=SceneMainLoop::STRETCH_ASPECT_IGNORE;
+			SceneTree::StretchAspect sml_aspect=SceneTree::STRETCH_ASPECT_IGNORE;
 			if (stretch_aspect=="keep")
-				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP;
+				sml_aspect=SceneTree::STRETCH_ASPECT_KEEP;
 			else if (stretch_aspect=="keep_width")
-				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP_WIDTH;
+				sml_aspect=SceneTree::STRETCH_ASPECT_KEEP_WIDTH;
 			else if (stretch_aspect=="keep_height")
-				sml_aspect=SceneMainLoop::STRETCH_ASPECT_KEEP_HEIGHT;
+				sml_aspect=SceneTree::STRETCH_ASPECT_KEEP_HEIGHT;
 
 			sml->set_screen_stretch(sml_sm,sml_aspect,stretch_size);
 
@@ -1119,10 +1134,6 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 			if (editor) {
 
-#ifdef OLD_SCENE_FORMAT_ENABLED
-				if (convert_old)
-					editor_node->set_convert_old_scene(true);
-#endif
 
 				if (_import!="") {
 
@@ -1201,14 +1212,6 @@ bool Main::start() {
 				Ref<PackedScene> scenedata = ResourceLoader::load(local_game_path);
 				if (scenedata.is_valid())
 					scene=scenedata->instance();
-
-#ifdef OLD_SCENE_FORMAT_ENABLED
-
-				if (!scene) {
-					scene = SceneLoader::load(local_game_path,true);
-				}
-
-#endif
 
 				ERR_EXPLAIN("Failed loading scene: "+local_game_path);
 				ERR_FAIL_COND_V(!scene,false)
@@ -1292,6 +1295,8 @@ bool Main::iteration() {
 
 	time_accum+=step;
 
+	float time_scale = OS::get_singleton()->get_time_scale();
+
 	bool exit=false;
 
 
@@ -1307,15 +1312,15 @@ bool Main::iteration() {
 		Physics2DServer::get_singleton()->sync();
 		Physics2DServer::get_singleton()->flush_queries();
 
-		if (OS::get_singleton()->get_main_loop()->iteration( frame_slice )) {
+		if (OS::get_singleton()->get_main_loop()->iteration( frame_slice*time_scale )) {
 			exit=true;
 			break;
 		}
 
 		message_queue->flush();
 
-		PhysicsServer::get_singleton()->step(frame_slice);
-		Physics2DServer::get_singleton()->step(frame_slice);
+		PhysicsServer::get_singleton()->step(frame_slice*time_scale);
+		Physics2DServer::get_singleton()->step(frame_slice*time_scale);
 
 		time_accum-=frame_slice;
 		message_queue->flush();
@@ -1328,13 +1333,13 @@ bool Main::iteration() {
 
 	uint64_t idle_begin = OS::get_singleton()->get_ticks_usec();
 
-	OS::get_singleton()->get_main_loop()->idle( step );
+	OS::get_singleton()->get_main_loop()->idle( step*time_scale );
 	message_queue->flush();
 
 	if (SpatialSoundServer::get_singleton())
-		SpatialSoundServer::get_singleton()->update( step );
+		SpatialSoundServer::get_singleton()->update( step*time_scale );
 	if (SpatialSound2DServer::get_singleton())
-		SpatialSound2DServer::get_singleton()->update( step );
+		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
 	if (OS::get_singleton()->can_draw()) {

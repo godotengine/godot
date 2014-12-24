@@ -147,7 +147,7 @@ void Room::set_room( const Ref<RoomBounds>& p_room ) {
 		set_base(RID());
 	}
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 

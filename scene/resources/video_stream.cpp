@@ -33,6 +33,7 @@ void VideoStream::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_pending_frame_count"),&VideoStream::get_pending_frame_count);
 	ObjectTypeDB::bind_method(_MD("pop_frame"),&VideoStream::pop_frame);
 	ObjectTypeDB::bind_method(_MD("peek_frame"),&VideoStream::peek_frame);
+	ObjectTypeDB::bind_method(_MD("set_audio_track","idx"),&VideoStream::set_audio_track);
 };
 
 

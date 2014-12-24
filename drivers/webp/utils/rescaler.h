@@ -16,7 +16,7 @@
 extern "C" {
 #endif
 
-#include "../webp/types.h"
+#include "../types.h"
 
 // Structure used for on-the-fly rescaling
 typedef struct {

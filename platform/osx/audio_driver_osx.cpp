@@ -101,7 +101,16 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 	AudioBuffer *abuf;
 	AudioDriverOSX* ad = (AudioDriverOSX*)inRefCon;
 
-	if (!ad->active) {
+	bool mix = true;
+
+	if (!ad->active)
+		mix = false;
+	else if (ad->mutex) {
+		mix = ad->mutex->try_lock() == OK;
+	};
+
+
+	if (!mix) {
 		for (unsigned int i = 0; i < ioData->mNumberBuffers; i++) {
 			abuf = &ioData->mBuffers[i];
 			zeromem(abuf->mData, abuf->mDataByteSize);
@@ -120,9 +129,9 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 		while (frames_left) {
 
 			int frames = MIN(frames_left, ad->buffer_frames);
-			ad->lock();
+			//ad->lock();
 			ad->audio_server_process(frames, ad->samples_in);
-			ad->unlock();
+			//ad->unlock();
 
 			for(int i = 0; i < frames * ad->channels; i++) {
 
@@ -133,6 +142,9 @@ OSStatus AudioDriverOSX::output_callback(void *inRefCon,
 			out += frames * ad->channels;
 		};
 	};
+
+	if (ad->mutex)
+		ad->mutex->unlock();
 
 	return 0;
 };
@@ -149,12 +161,27 @@ AudioDriverSW::OutputFormat AudioDriverOSX::get_output_format() const {
 	return OUTPUT_STEREO;
 };
 
-void AudioDriverOSX::lock() {};
-void AudioDriverOSX::unlock() {};
+void AudioDriverOSX::lock() {
+	if (active && mutex)
+		mutex->lock();
+};
+void AudioDriverOSX::unlock() {
+	if (active && mutex)
+		mutex->unlock();
+};
 
 void AudioDriverOSX::finish() {
 
 	memdelete_arr(samples_in);
+};
+
+AudioDriverOSX::AudioDriverOSX() {
+
+	mutex=Mutex::create();//NULL;
+};
+
+AudioDriverOSX::~AudioDriverOSX() {
+
 };
 
 #endif

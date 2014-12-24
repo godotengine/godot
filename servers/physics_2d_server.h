@@ -71,6 +71,7 @@ public:
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const=0;
 	virtual Object* get_contact_collider_object(int p_contact_idx) const;
 	virtual int get_contact_collider_shape(int p_contact_idx) const=0;
+	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const=0;
 	virtual Vector2 get_contact_collider_velocity_at_pos(int p_contact_idx) const=0;
 
 	virtual real_t get_step() const=0;
@@ -163,6 +164,7 @@ public:
 		ObjectID collider_id;
 		Object *collider;
 		int shape;
+		Variant metadata;
 	};
 
 	virtual bool intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
@@ -173,6 +175,8 @@ public:
 		ObjectID collider_id;
 		Object *collider;
 		int shape;
+		Variant metadata;
+
 
 	};
 
@@ -190,6 +194,7 @@ public:
 		ObjectID collider_id;
 		int shape;
 		Vector2 linear_velocity; //velocity at contact point
+		Variant metadata;
 
 	};
 
@@ -360,10 +365,12 @@ public:
 	virtual void body_add_shape(RID p_body, RID p_shape, const Matrix32& p_transform=Matrix32())=0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx,RID p_shape)=0;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Matrix32& p_transform)=0;
+	virtual void body_set_shape_metadata(RID p_body, int p_shape_idx, const Variant& p_metadata)=0;
 
 	virtual int body_get_shape_count(RID p_body) const=0;
 	virtual RID body_get_shape(RID p_body, int p_shape_idx) const=0;
 	virtual Matrix32 body_get_shape_transform(RID p_body, int p_shape_idx) const=0;
+	virtual Variant body_get_shape_metadata(RID p_body, int p_shape_idx) const=0;
 
 	virtual void body_set_shape_as_trigger(RID p_body, int p_shape_idx,bool p_enable)=0;
 	virtual bool body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) const=0;

@@ -353,6 +353,13 @@ class RasterizerDummy : public Rasterizer {
 
 	mutable RID_Owner<Environment> environment_owner;
 
+	struct SampledLight {
+
+		int w,h;
+	};
+
+	mutable RID_Owner<SampledLight> sampled_light_owner;
+
 	struct ShadowBuffer;
 
 	struct LightInstance {
@@ -422,6 +429,10 @@ public:
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
+
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create();
@@ -471,7 +482,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
@@ -712,6 +723,10 @@ public:
 
 	virtual void environment_fx_set_param(RID p_env,VS::EnvironmentFxParam p_param,const Variant& p_value);
 	virtual Variant environment_fx_get_param(RID p_env,VS::EnvironmentFxParam p_param) const;
+
+	/* SAMPLED LIGHT */
+	virtual RID sampled_light_dp_create(int p_width,int p_height);
+	virtual void sampled_light_dp_update(RID p_sampled_light,const Color *p_data,float p_multiplier);
 
 
 	/*MISC*/

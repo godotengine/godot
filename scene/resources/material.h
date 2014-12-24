@@ -54,6 +54,7 @@ public:
 		FLAG_UNSHADED = VS::MATERIAL_FLAG_UNSHADED,
 		FLAG_ONTOP = VS::MATERIAL_FLAG_ONTOP,
 		FLAG_LIGHTMAP_ON_UV2 = VS::MATERIAL_FLAG_LIGHTMAP_ON_UV2,
+		FLAG_COLOR_ARRAY_SRGB = VS::MATERIAL_FLAG_COLOR_ARRAY_SRGB,
 		FLAG_MAX = VS::MATERIAL_FLAG_MAX
 	};
 
@@ -141,7 +142,9 @@ public:
 		FLAG_USE_ALPHA=VS::FIXED_MATERIAL_FLAG_USE_ALPHA,
 		FLAG_USE_COLOR_ARRAY=VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,
 		FLAG_USE_POINT_SIZE=VS::FIXED_MATERIAL_FLAG_USE_POINT_SIZE,
-		FLAG_DISCARD_ALPHA=VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA
+		FLAG_DISCARD_ALPHA=VS::FIXED_MATERIAL_FLAG_DISCARD_ALPHA,
+		FLAG_USE_XY_NORMALMAP=VS::FIXED_MATERIAL_FLAG_USE_XY_NORMALMAP,
+		FLAG_MAX=VS::FIXED_MATERIAL_FLAG_MAX
 	};
 
 	enum LightShader {
@@ -166,7 +169,7 @@ private:
 	Ref<Texture> texture_param[PARAM_MAX];
 	TexCoordMode texture_texcoord[PARAM_MAX];
 	LightShader light_shader;
-	bool fixed_flags[3];
+	bool fixed_flags[FLAG_MAX];
 	float point_size;
 
 
@@ -240,6 +243,7 @@ public:
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
 
+	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	ShaderMaterial();
 };

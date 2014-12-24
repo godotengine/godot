@@ -76,7 +76,7 @@ void EditorLog::_error_handler(void *p_self, const char*p_func, const char*p_fil
 
 void EditorLog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		log->add_color_override("default_color",get_color("font_color","Tree"));
 		tb->set_normal_texture( get_icon("Collapse","EditorIcons"));
@@ -216,6 +216,8 @@ EditorLog::EditorLog() {
 
 	log = memnew( RichTextLabel );
 	log->set_scroll_follow(true);
+	log->set_selection_enabled(true);
+	log->set_focus_mode(FOCUS_CLICK);
 	pc->add_child(log);
 	add_message(VERSION_FULL_NAME" (c) 2008-2014 Juan Linietsky, Ariel Manzur.");
 	//log->add_text("Initialization Complete.\n"); //because it looks cool.

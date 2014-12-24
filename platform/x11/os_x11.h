@@ -43,13 +43,22 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
+#include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xcursor/Xcursor.h>
 
-//bitch
+// Hints for X11 fullscreen
+typedef struct {
+	unsigned long flags;
+	unsigned long functions;
+	unsigned long decorations;
+	long inputMode;
+	unsigned long status;
+} Hints;
+
 #undef CursorShape
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -121,6 +130,10 @@ class OS_X11 : public OS_Unix {
 	AudioDriverALSA driver_alsa;
 #endif
 
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverPulseAudio driver_pulseaudio;
+#endif
+
 	enum {
 		JOYSTICKS_MAX = 8,
 		MAX_JOY_AXIS = 32768, // I've no idea
@@ -152,7 +165,10 @@ protected:
 	virtual int get_video_driver_count() const;
 	virtual const char * get_video_driver_name(int p_driver) const;	
 	virtual VideoMode get_default_video_mode() const;
-	
+
+    virtual int get_audio_driver_count() const;
+    virtual const char * get_audio_driver_name(int p_driver) const;
+
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
 	virtual void finalize();
 
@@ -171,6 +187,7 @@ public:
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
 
+	virtual void warp_mouse_pos(const Point2& p_to);
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);
@@ -187,6 +204,8 @@ public:
 	virtual void release_rendering_thread();
 	virtual void make_rendering_thread();
 	virtual void swap_buffers();
+
+	virtual String get_system_dir(SystemDir p_dir) const;
 
 	virtual Error shell_open(String p_uri);
 

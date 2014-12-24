@@ -73,7 +73,10 @@ class RasterizerGLES2 : public Rasterizer {
 	uint8_t *skinned_buffer;
 	int skinned_buffer_size;
 	bool pvr_supported;
+	bool pvr_srgb_supported;
 	bool s3tc_supported;
+	bool s3tc_srgb_supported;
+	bool latc_supported;
 	bool etc_supported;
 	bool atitc_supported;
 	bool npo2_textures_available;
@@ -82,6 +85,10 @@ class RasterizerGLES2 : public Rasterizer {
 	bool full_float_fb_supported;
 	bool use_shadow_mapping;
 	bool use_fp16_fb;
+	bool srgb_supported;
+	bool float_supported;
+	bool float_linear_supported;
+
 	ShadowFilterTechnique shadow_filter;
 
 	bool use_shadow_esm;
@@ -91,13 +98,15 @@ class RasterizerGLES2 : public Rasterizer {
 	bool use_texture_instancing;
 	bool use_attribute_instancing;
 	bool use_rgba_shadowmaps;
+	bool use_anisotropic_filter;
+	float anisotropic_level;
 
 	bool use_half_float;
 
 
 	Vector<float> skel_default;
 
-	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
+	Image _get_gl_image_and_format(const Image& p_image, Image::Format p_format, uint32_t p_flags,GLenum& r_gl_format,GLenum& r_gl_internal_format,int &r_gl_components,bool &r_has_alpha_cache,bool &r_compressed);
 
 	class RenderTarget;
 
@@ -110,6 +119,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 		GLenum target;
 		GLenum gl_format_cache;
+		GLenum gl_internal_format_cache;
 		int gl_components_cache;
 		int data_size; //original data size, useful for retrieving back
 		bool has_alpha;
@@ -185,6 +195,7 @@ class RasterizerGLES2 : public Rasterizer {
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
 
+		Map<StringName,RID> default_textures;
 
 		SelfList<Shader> dirty_list;
 
@@ -312,6 +323,8 @@ class RasterizerGLES2 : public Rasterizer {
 		// no support for the above, array in localmem.
 		uint8_t *array_local;
 		uint8_t *index_array_local;
+		Vector<AABB> skeleton_bone_aabb;
+		Vector<bool> skeleton_bone_used;
 
 		//bool packed;
 
@@ -547,6 +560,42 @@ class RasterizerGLES2 : public Rasterizer {
 				r_dst[1]+=((mtx[0][1]*p_src[0] ) + ( mtx[1][1]*p_src[1] ) + ( mtx[2][1]*p_src[2] ) )*p_weight;
 				r_dst[2]+=((mtx[0][2]*p_src[0] ) + ( mtx[1][2]*p_src[1] ) + ( mtx[2][2]*p_src[2] ) )*p_weight;
 			}
+
+			_ALWAYS_INLINE_ AABB transform_aabb(const AABB& p_aabb) const {
+
+				float vertices[8][3]={
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y,		p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x+p_aabb.size.x,	p_aabb.pos.y,		p_aabb.pos.z},
+					{p_aabb.pos.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x,	p_aabb.pos.y+p_aabb.size.y,	p_aabb.pos.z},
+					{p_aabb.pos.x,	p_aabb.pos.y,		p_aabb.pos.z+p_aabb.size.z},
+					{p_aabb.pos.x,	p_aabb.pos.y,		p_aabb.pos.z}
+				};
+
+
+				AABB ret;
+
+
+
+				for (int i=0;i<8;i++) {
+
+					Vector3 xv(
+
+						((mtx[0][0]*vertices[i][0] ) + ( mtx[1][0]*vertices[i][1] ) + ( mtx[2][0]*vertices[i][2] ) + mtx[3][0] ),
+						((mtx[0][1]*vertices[i][0] ) + ( mtx[1][1]*vertices[i][1] ) + ( mtx[2][1]*vertices[i][2] ) + mtx[3][1] ),
+						((mtx[0][2]*vertices[i][0] ) + ( mtx[1][2]*vertices[i][1] ) + ( mtx[2][2]*vertices[i][2] ) + mtx[3][2] )
+						);
+
+					if (i==0)
+						ret.pos=xv;
+					else
+						ret.expand_to(xv);
+				}
+
+				return ret;
+			}
 		};
 
 		GLuint tex_id;
@@ -563,7 +612,7 @@ class RasterizerGLES2 : public Rasterizer {
 	mutable SelfList<Skeleton>::List _skeleton_dirty_list;
 
 
-	template<bool USE_NORMAL, bool USE_TANGENT>
+	template<bool USE_NORMAL, bool USE_TANGENT,bool INPLACE>
 	void _skeleton_xform(const uint8_t * p_src_array, int p_src_stride, uint8_t * p_dst_array, int p_dst_stride, int p_elements,const uint8_t *p_src_bones, const uint8_t *p_src_weights, const Skeleton::Bone *p_bone_xforms);
 
 	struct Light {
@@ -658,6 +707,18 @@ class RasterizerGLES2 : public Rasterizer {
 	};
 
 	mutable RID_Owner<Environment> environment_owner;
+
+
+	struct SampledLight {
+
+		int w,h;
+		GLuint texture;
+		float multiplier;
+		bool is_float;
+	};
+
+	mutable RID_Owner<SampledLight> sampled_light_owner;
+
 
 	struct ViewportData {
 
@@ -756,6 +817,7 @@ class RasterizerGLES2 : public Rasterizer {
 	RID shadow_material;
 	Material *shadow_mat_ptr;
 
+	int max_texture_units;
 	GLuint base_framebuffer;
 
 	GLuint gui_quad_buffer;
@@ -1026,6 +1088,8 @@ class RasterizerGLES2 : public Rasterizer {
 	void _debug_draw_shadows_type(Vector<ShadowBuffer>& p_shadows,Point2& ofs);
 	void _debug_shadows();
 	void _debug_luminances();
+	void _debug_samplers();
+
 
 
 	/***********/
@@ -1192,6 +1256,8 @@ public:
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
 
 	/* COMMON MATERIAL API */
 
@@ -1242,7 +1308,7 @@ public:
 	virtual void mesh_remove_surface(RID p_mesh,int p_index);
 	virtual int mesh_get_surface_count(RID p_mesh) const;
 
-	virtual AABB mesh_get_aabb(RID p_mesh) const;
+	virtual AABB mesh_get_aabb(RID p_mesh,RID p_skeleton=RID()) const;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh,const AABB& p_aabb);
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
@@ -1486,6 +1552,9 @@ public:
 	virtual void environment_fx_set_param(RID p_env,VS::EnvironmentFxParam p_param,const Variant& p_value);
 	virtual Variant environment_fx_get_param(RID p_env,VS::EnvironmentFxParam p_param) const;
 
+	/* SAMPLED LIGHT */
+	virtual RID sampled_light_dp_create(int p_width,int p_height);
+	virtual void sampled_light_dp_update(RID p_sampled_light, const Color *p_data, float p_multiplier);
 
 	/*MISC*/
 

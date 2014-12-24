@@ -212,7 +212,7 @@ void LineEdit::_input_event(InputEvent p_event) {
 
 						emit_signal( "text_entered",text );
                         // notify to hide soft keyboard
-                        notification(NOTIFICATION_FOCUS_EXIT);
+						   notification(NOTIFICATION_FOCUS_EXIT);
 						return;
 					} break;
 
@@ -572,7 +572,7 @@ void LineEdit::set_cursor_pos(int p_pos) {
 //	set_window_pos(cursor_pos-get_window_lengt//h());
 //	}
 	
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		
 		window_pos=cursor_pos;
 		return;
@@ -677,6 +677,7 @@ void LineEdit::selection_delete() {
 		
 		undo_text = text;
 		text.erase(selection.begin,selection.end-selection.begin);
+		cursor_pos-=CLAMP( cursor_pos-selection.begin, 0, selection.end-selection.begin);
 		
 		if (cursor_pos>=text.length()) {
 			

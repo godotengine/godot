@@ -36,7 +36,8 @@ static const char*_flag_names[Material::FLAG_MAX]={
 	"invert_faces",
 	"unshaded",
 	"on_top",
-	"lightmap_on_uv2"
+	"lightmap_on_uv2",
+	"colarray_is_srgb"
 };
 
 
@@ -46,7 +47,8 @@ static const Material::Flag _flag_indices[Material::FLAG_MAX]={
 	Material::FLAG_INVERT_FACES,
 	Material::FLAG_UNSHADED,
 	Material::FLAG_ONTOP,
-	Material::FLAG_LIGHTMAP_ON_UV2
+	Material::FLAG_LIGHTMAP_ON_UV2,
+	Material::FLAG_COLOR_ARRAY_SRGB,
 };
 
 
@@ -132,6 +134,8 @@ void Material::_bind_methods() {
 	BIND_CONSTANT( FLAG_INVERT_FACES );
 	BIND_CONSTANT( FLAG_UNSHADED );
 	BIND_CONSTANT( FLAG_ONTOP );
+	BIND_CONSTANT( FLAG_LIGHTMAP_ON_UV2 );
+	BIND_CONSTANT( FLAG_COLOR_ARRAY_SRGB );
 	BIND_CONSTANT( FLAG_MAX );
 
 	BIND_CONSTANT( DEPTH_DRAW_ALWAYS );
@@ -156,6 +160,8 @@ Material::Material(const RID& p_material) {
 	flags[FLAG_INVERT_FACES]=false;
 	flags[FLAG_UNSHADED]=false;
 	flags[FLAG_ONTOP]=false;
+	flags[FLAG_LIGHTMAP_ON_UV2]=true;
+	flags[FLAG_COLOR_ARRAY_SRGB]=false;
 
 	depth_draw_mode=DEPTH_DRAW_OPAQUE_ONLY;
 
@@ -316,14 +322,14 @@ Transform FixedMaterial::get_uv_transform() const {
 
 
 void FixedMaterial::set_fixed_flag(FixedFlag p_flag, bool p_value) {
-	ERR_FAIL_INDEX(p_flag,4);
+	ERR_FAIL_INDEX(p_flag,5);
 	fixed_flags[p_flag]=p_value;
 	VisualServer::get_singleton()->fixed_material_set_flag(material,(VS::FixedMaterialFlags)p_flag,p_value);
 
 }
 
 bool FixedMaterial::get_fixed_flag(FixedFlag p_flag) const {
-	ERR_FAIL_INDEX_V(p_flag,4,false);
+	ERR_FAIL_INDEX_V(p_flag,5,false);
 	return fixed_flags[p_flag];
 }
 
@@ -371,6 +377,7 @@ void FixedMaterial::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_color_array" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_COLOR_ARRAY);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_point_size" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_POINT_SIZE);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/discard_alpha" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_DISCARD_ALPHA);
+	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "fixed_flags/use_xy_normalmap" ), _SCS("set_fixed_flag"), _SCS("get_fixed_flag"), FLAG_USE_XY_NORMALMAP);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/diffuse" ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_DIFFUSE);
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/specular", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPECULAR );
 	ADD_PROPERTYI( PropertyInfo( Variant::COLOR, "params/emission", PROPERTY_HINT_COLOR_NO_ALPHA ), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_EMISSION );
@@ -426,11 +433,14 @@ FixedMaterial::FixedMaterial() : Material(VS::get_singleton()->fixed_material_cr
 	param[PARAM_SHADE_PARAM]=0.5;
 	param[PARAM_DETAIL]=1.0;
 
-
+	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
 
 	fixed_flags[FLAG_USE_ALPHA]=false;
 	fixed_flags[FLAG_USE_COLOR_ARRAY]=false;
 	fixed_flags[FLAG_USE_POINT_SIZE]=false;
+	fixed_flags[FLAG_USE_XY_NORMALMAP]=false;
+	fixed_flags[FLAG_DISCARD_ALPHA]=false;
+
 
 	for(int i=0;i<PARAM_MAX;i++) {
 
@@ -446,6 +456,8 @@ FixedMaterial::FixedMaterial() : Material(VS::get_singleton()->fixed_material_cr
 FixedMaterial::~FixedMaterial() {
 
 }
+
+
 
 
 bool ShaderMaterial::_set(const StringName& p_name, const Variant& p_value) {
@@ -540,11 +552,29 @@ void ShaderMaterial::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_shader","shader:Shader"), &ShaderMaterial::set_shader );
 	ObjectTypeDB::bind_method(_MD("get_shader:Shader"), &ShaderMaterial::get_shader );
+
+	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value:var"), &ShaderMaterial::set_shader_param);
+	ObjectTypeDB::bind_method(_MD("get_shader_param:var","param"), &ShaderMaterial::get_shader_param);
+
 	ObjectTypeDB::bind_method(_MD("_shader_changed"), &ShaderMaterial::_shader_changed );
 }
 
 
+void ShaderMaterial::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
 
+	String f = p_function.operator String();
+	if ((f=="get_shader_param" || f=="set_shader_param") && p_idx==0) {
+
+		if (shader.is_valid()) {
+			List<PropertyInfo> pl;
+			shader->get_param_list(&pl);
+			for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+				r_options->push_back(E->get().name);
+			}
+		}
+	}
+	Material::get_argument_options(p_function,p_idx,r_options);
+}
 
 ShaderMaterial::ShaderMaterial() :Material(VisualServer::get_singleton()->material_create()){
 
@@ -585,6 +615,8 @@ ParticleSystemMaterial::ParticleSystemMaterial() :Material(VisualServer::get_sin
 	set_depth_draw_mode(DEPTH_DRAW_NEVER);
 	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
 	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
+
 }
 
 ParticleSystemMaterial::~ParticleSystemMaterial() {
@@ -655,6 +687,8 @@ UnshadedMaterial::UnshadedMaterial() :Material(VisualServer::get_singleton()->fi
 
 	set_flag(FLAG_UNSHADED,true);
 	set_use_alpha(true);
+	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
+
 }
 
 UnshadedMaterial::~UnshadedMaterial() {

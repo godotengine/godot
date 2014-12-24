@@ -439,8 +439,8 @@ bool EditorExportPlatformPC::_get(const StringName& p_name,Variant &r_ret) const
 
 void EditorExportPlatformPC::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/debug", PROPERTY_HINT_FILE,binary_extension));
-	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/release", PROPERTY_HINT_FILE,binary_extension));
+	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/debug", PROPERTY_HINT_GLOBAL_FILE,binary_extension));
+	p_list->push_back( PropertyInfo( Variant::STRING, "custom_binary/release", PROPERTY_HINT_GLOBAL_FILE,binary_extension));
 	p_list->push_back( PropertyInfo( Variant::INT, "resources/pack_mode", PROPERTY_HINT_ENUM,"Single Exec.,Exec+Pack (.pck),Copy,Bundles (Optical)"));
 	p_list->push_back( PropertyInfo( Variant::BOOL, "binary/64_bits"));
 }
@@ -938,7 +938,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	dst->store_32(0); //pack version
 	dst->store_32(VERSION_MAJOR);
 	dst->store_32(VERSION_MINOR);
-	dst->store_32(VERSION_REVISION);
+	dst->store_32(0); //hmph
 	for(int i=0;i<16;i++) {
 		//reserved
 		dst->store_32(0);
@@ -1009,15 +1009,15 @@ Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug,
 	String exe_path = EditorSettings::get_singleton()->get_settings_path()+"/templates/";
 	if (use64) {
 		if (p_debug)
-			exe_path+=custom_debug_binary!=""?custom_debug_binary:debug_binary64;
+			exe_path=custom_debug_binary!=""?custom_debug_binary:exe_path+debug_binary64;
 		else
-			exe_path+=custom_release_binary!=""?custom_release_binary:release_binary64;
+			exe_path=custom_release_binary!=""?custom_release_binary:exe_path+release_binary64;
 	} else {
 
 		if (p_debug)
-			exe_path+=custom_debug_binary!=""?custom_debug_binary:debug_binary32;
+			exe_path=custom_debug_binary!=""?custom_debug_binary:exe_path+debug_binary32;
 		else
-			exe_path+=custom_release_binary!=""?custom_release_binary:release_binary32;
+			exe_path=custom_release_binary!=""?custom_release_binary:exe_path+release_binary32;
 
 	}
 

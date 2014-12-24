@@ -77,7 +77,7 @@ public:
 	float get_volume_db() const;
 
 	String get_stream_name() const;
-	float get_pos() const;
+	float get_stream_pos() const;
 
 	void set_autoplay(bool p_vol);
 	bool has_autoplay() const;

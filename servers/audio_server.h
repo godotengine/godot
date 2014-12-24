@@ -274,6 +274,7 @@ public:
 	static AudioServer *get_singleton();
 
 	virtual double get_mix_time() const=0; //useful for video -> audio sync
+	virtual double get_output_delay() const=0;
 
 	AudioServer();
 	virtual ~AudioServer();

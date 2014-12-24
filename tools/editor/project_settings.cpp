@@ -57,7 +57,7 @@ static const char* _button_names[JOY_BUTTON_MAX]={
 
 void ProjectSettings::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		translation_list->connect("button_pressed",this,"_translation_delete");
 		_update_actions();
@@ -504,7 +504,7 @@ void ProjectSettings::popup_project_settings() {
 void ProjectSettings::_item_selected() {
 
 
-	TreeItem *ti = globals_editor->get_tree()->get_selected();
+	TreeItem *ti = globals_editor->get_scene_tree()->get_selected();
 	if (!ti)
 		return;
 	if (!ti->get_parent())
@@ -1212,7 +1212,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	globals_editor->set_anchor_and_margin(MARGIN_LEFT,ANCHOR_BEGIN, 5 );
 	globals_editor->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END, 5 );
 	globals_editor->set_capitalize_paths(false);
-	globals_editor->get_tree()->connect("cell_selected",this,"_item_selected");
+	globals_editor->get_scene_tree()->connect("cell_selected",this,"_item_selected");
 	globals_editor->connect("property_toggled",this,"_item_checked");
 	globals_editor->connect("property_edited",this,"_settings_prop_edited");
 

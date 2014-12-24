@@ -555,6 +555,42 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 }
 
+
+Vector<String> String::split_spaces() const {
+
+	Vector<String> ret;
+	int from=0;
+	int i=0;
+	int len = length();
+	bool inside=false;
+
+	while(true) {
+
+		bool empty=operator[](i)<33;
+
+		if (i==0)
+			inside=!empty;
+
+		if (!empty && !inside) {
+			inside=true;
+			from=i;
+		}
+
+		if (empty && inside) {
+
+			ret.push_back(substr(from,i-from));
+			inside=false;
+		}
+
+		if (i==len)
+			break;
+		i++;
+	}
+
+	return ret;
+
+}
+
 Vector<String> String::split(const String &p_splitter,bool p_allow_empty) const {
 
 	Vector<String> ret;
@@ -2467,13 +2503,8 @@ int String::findn(String p_str,int p_from) const {
 			};
 
 
-			CharType src=srcd[read_pos];
-			CharType dst=p_str[j];
-
-			if (src>='a' && src<='z')
-				src-='a'-'A';
-			if (dst>='a' && dst<='z')
-				dst-='a'-'A';
+			CharType src=_find_lower(srcd[read_pos]);
+			CharType dst=_find_lower(p_str[j]);
 
 			if (src!=dst) {
 				found=false;
@@ -2490,9 +2521,100 @@ int String::findn(String p_str,int p_from) const {
 
 int String::rfind(String p_str,int p_from) const {
 
+	//stabilish a limit
+	int limit = length()-p_str.length();
+	if (limit<0)
+		return -1;
+
+	//stabilish a starting point
+	if (p_from<0)
+		p_from=limit;
+	else if (p_from>limit)
+		p_from=limit;
+
+	int src_len=p_str.length();
+	int len=length();
+
+	if(src_len==0 || len==0)
+		return -1; //wont find anything!
+
+
+	const CharType *src = c_str();
+
+	for (int i=p_from;i>=0;i--) {
+
+		bool found=true;
+		for (int j=0;j<src_len;j++) {
+
+			int read_pos=i+j;
+
+			if (read_pos>=len) {
+
+				ERR_PRINT("read_pos>=len");
+				return -1;
+			};
+
+
+			if (src[read_pos]!=p_str[j]) {
+				found=false;
+				break;
+			}
+		}
+
+		if (found)
+			return i;
+	}
+
 	return -1;
 }
 int String::rfindn(String p_str,int p_from) const {
+
+	//stabilish a limit
+	int limit = length()-p_str.length();
+	if (limit<0)
+		return -1;
+
+	//stabilish a starting point
+	if (p_from<0)
+		p_from=limit;
+	else if (p_from>limit)
+		p_from=limit;
+
+	int src_len=p_str.length();
+	int len=length();
+
+	if(src_len==0 || len==0)
+		return -1; //wont find anything!
+
+
+	const CharType *src = c_str();
+
+	for (int i=p_from;i>=0;i--) {
+
+		bool found=true;
+		for (int j=0;j<src_len;j++) {
+
+			int read_pos=i+j;
+
+			if (read_pos>=len) {
+
+				ERR_PRINT("read_pos>=len");
+				return -1;
+			};
+
+			CharType srcc=_find_lower(src[read_pos]);
+			CharType dstc=_find_lower(p_str[j]);
+
+
+			if (srcc!=dstc) {
+				found=false;
+				break;
+			}
+		}
+
+		if (found)
+			return i;
+	}
 
 	return -1;
 }

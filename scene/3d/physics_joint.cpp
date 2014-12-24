@@ -42,7 +42,7 @@ void Joint::_update_joint(bool p_only_free) {
 		bb=RID();
 	}
 
-	if (p_only_free || !is_inside_scene())
+	if (p_only_free || !is_inside_tree())
 		return;
 
 	Node *node_a = has_node( get_node_a() ) ? get_node( get_node_a() ) : (Node*)NULL;
@@ -65,6 +65,9 @@ void Joint::_update_joint(bool p_only_free) {
 	}
 
 	joint = _configure_joint(body_a,body_b);
+
+	if (joint.is_valid())
+		PhysicsServer::get_singleton()->joint_set_solver_priority(joint,solver_priority);
 
 	if (body_b && joint.is_valid()) {
 
@@ -107,6 +110,20 @@ NodePath Joint::get_node_b() const{
 }
 
 
+void Joint::set_solver_priority(int p_priority) {
+
+	solver_priority=p_priority;
+	if (joint.is_valid())
+		PhysicsServer::get_singleton()->joint_set_solver_priority(joint,solver_priority);
+
+}
+
+int Joint::get_solver_priority() const {
+
+	return solver_priority;
+}
+
+
 void Joint::_notification(int p_what) {
 
 	switch(p_what) {
@@ -114,11 +131,9 @@ void Joint::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			_update_joint();
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (joint.is_valid()) {
 				_update_joint(true);
-
-
 				PhysicsServer::get_singleton()->free(joint);
 				joint=RID();
 			}
@@ -138,9 +153,13 @@ void Joint::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("set_node_b","node"), &Joint::set_node_b );
 	ObjectTypeDB::bind_method( _MD("get_node_b"), &Joint::get_node_b );
 
+	ObjectTypeDB::bind_method( _MD("set_solver_priority","priority"), &Joint::set_solver_priority );
+	ObjectTypeDB::bind_method( _MD("get_solver_priority"), &Joint::get_solver_priority );
 
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "nodes/node_a"), _SCS("set_node_a"),_SCS("get_node_a") );
 	ADD_PROPERTY( PropertyInfo( Variant::NODE_PATH, "nodes/node_b"), _SCS("set_node_b"),_SCS("get_node_b") );
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "solver/priority",PROPERTY_HINT_RANGE,"1,8,1"), _SCS("set_solver_priority"),_SCS("get_solver_priority") );
+
 
 }
 
@@ -148,7 +167,7 @@ void Joint::_bind_methods() {
 
 Joint::Joint() {
 
-
+	solver_priority=1;
 }
 
 

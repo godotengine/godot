@@ -81,6 +81,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_BUNDLE=128, //used for optimized bundles
 	PROPERTY_USAGE_CATEGORY=256,
 	PROPERTY_USAGE_STORE_IF_NONZERO=512, //only store if nonzero
+	PROPERTY_USAGE_NO_INSTANCE_STATE=1024,
 
 	PROPERTY_USAGE_DEFAULT=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL=PROPERTY_USAGE_STORAGE|PROPERTY_USAGE_EDITOR|PROPERTY_USAGE_NETWORK|PROPERTY_USAGE_INTERNATIONALIZED,
@@ -582,6 +583,7 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
+	virtual void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)

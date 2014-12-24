@@ -169,6 +169,11 @@ class AnimationKeyEditor : public VBoxContainer  {
 	ToolButton *move_down_button;
 	ToolButton *remove_button;
 
+	ConfirmationDialog *optimize_dialog;
+	SpinBox *optimize_linear_error;
+	SpinBox *optimize_angular_error;
+	SpinBox *optimize_max_angle;
+
 	SpinBox *step;
 
 	MenuButton *menu_track;
@@ -257,6 +262,7 @@ class AnimationKeyEditor : public VBoxContainer  {
 	StringName alc;
 
 	void _animation_changed();
+	void _animation_optimize();
 
 	void _scroll_changed(double);
 

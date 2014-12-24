@@ -221,6 +221,16 @@ void RasterizerDummy::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_
 
 }
 
+
+void RasterizerDummy::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture) {
+
+}
+
+RID RasterizerDummy::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const {
+
+	return RID();
+}
+
 /* COMMON MATERIAL API */
 
 
@@ -561,7 +571,7 @@ int RasterizerDummy::mesh_get_surface_count(RID p_mesh) const {
 	return mesh->surfaces.size();
 }
 
-AABB RasterizerDummy::mesh_get_aabb(RID p_mesh) const {
+AABB RasterizerDummy::mesh_get_aabb(RID p_mesh,RID p_skeleton) const {
 
 	Mesh *mesh = mesh_owner.get( p_mesh );
 	ERR_FAIL_COND_V(!mesh,AABB());
@@ -1679,6 +1689,18 @@ Variant RasterizerDummy::environment_fx_get_param(RID p_env,VS::EnvironmentFxPar
 
 }
 
+
+RID RasterizerDummy::sampled_light_dp_create(int p_width,int p_height) {
+
+	return sampled_light_owner.make_rid(memnew(SampledLight));
+}
+
+void RasterizerDummy::sampled_light_dp_update(RID p_sampled_light, const Color *p_data, float p_multiplier) {
+
+
+}
+
+
 /*MISC*/
 
 bool RasterizerDummy::is_texture(const RID& p_rid) const {
@@ -1816,6 +1838,14 @@ void RasterizerDummy::free(const RID& p_rid) {
 		Environment *env = environment_owner.get( p_rid );
 		environment_owner.free(p_rid);
 		memdelete( env );
+	} else if (sampled_light_owner.owns(p_rid)) {
+
+		SampledLight *sampled_light = sampled_light_owner.get( p_rid );
+		ERR_FAIL_COND(!sampled_light);
+
+		sampled_light_owner.free(p_rid);
+		memdelete( sampled_light );
+
 	};
 }
 

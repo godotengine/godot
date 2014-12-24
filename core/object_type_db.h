@@ -86,6 +86,11 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2);
 MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3);
 MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4);
 MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9);
+MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,const char *p_arg3,const char *p_arg4,const char *p_arg5,const char *p_arg6,const char *p_arg7,const char *p_arg8,const char *p_arg9,const char *p_arg10);
 
 #else
 
@@ -369,7 +374,7 @@ public:
 		return bind_methodfi(METHOD_FLAGS_DEFAULT,bind,p_method_name,ptr,4);
 	}
 
-	template<class N, class M>
+	 template<class N, class M>
 	 static MethodBind* bind_method(N p_method_name, M p_method,const Variant& p_def1,const Variant& p_def2,const Variant& p_def3,const Variant& p_def4,const Variant& p_def5) {
 
 		MethodBind *bind = create_method_bind(p_method);
@@ -377,6 +382,16 @@ public:
 
 		return bind_methodfi(METHOD_FLAGS_DEFAULT,bind,p_method_name,ptr,5);
 	}
+
+	 template<class N, class M>
+	 static MethodBind* bind_method(N p_method_name, M p_method,const Variant& p_def1,const Variant& p_def2,const Variant& p_def3,const Variant& p_def4,const Variant& p_def5,const Variant& p_def6) {
+
+		MethodBind *bind = create_method_bind(p_method);
+		const Variant* ptr[6]={&p_def1,&p_def2,&p_def3,&p_def4,&p_def5,&p_def6};
+
+		return bind_methodfi(METHOD_FLAGS_DEFAULT,bind,p_method_name,ptr,6);
+	}
+
 #if 0
 	template<class N, class M>
 	static MethodBind* bind_methodf(uint32_t p_flags, N p_method_name, M p_method,
@@ -453,7 +468,7 @@ public:
 	static MethodBind *get_method(StringName p_type, StringName p_name);
 
 	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method );
-	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods );
+	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
 	
 	static void bind_integer_constant(const StringName& p_type, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName& p_type, List<String> *p_constants, bool p_no_inheritance=false);

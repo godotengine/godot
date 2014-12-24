@@ -280,6 +280,12 @@ String OS::get_resource_dir() const {
 	return Globals::get_singleton()->get_resource_path();
 }
 
+
+String OS::get_system_dir(SystemDir p_dir) const {
+
+	return ".";
+}
+
 String OS::get_data_dir() const {
 
 	return ".";
@@ -386,7 +392,7 @@ void OS::_ensure_data_dir() {
 	}
 
 	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	Error err = da->make_dir(dd);
+	Error err = da->make_dir_recursive(dd);
 	if (err!=OK) {
 		ERR_EXPLAIN("Error attempting to create data dir: "+dd);
 	}
@@ -438,7 +444,7 @@ int OS::get_processor_count() const {
 	return 1;
 }
 
-Error OS::native_video_play(String p_path, float p_volume) {
+Error OS::native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track) {
 
 	return FAILED;
 };
@@ -474,6 +480,16 @@ OS::MouseMode OS::get_mouse_mode() const{
 	return MOUSE_MODE_VISIBLE;
 }
 
+void OS::set_time_scale(float p_scale) {
+
+	_time_scale=p_scale;
+}
+
+float OS::get_time_scale() const {
+
+	return _time_scale;
+}
+
 
 OS::OS() {
 	last_error=NULL;
@@ -489,6 +505,7 @@ OS::OS() {
 	_fps=1;
 	_target_fps=0;
 	_render_thread_mode=RENDER_THREAD_SAFE;
+	_time_scale=1.0;
 	Math::seed(1234567);
 }
 

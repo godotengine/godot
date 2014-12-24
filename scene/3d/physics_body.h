@@ -53,6 +53,8 @@ public:
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
 
+	void add_collision_exception_with(Node* p_node); //must be physicsbody
+	void remove_collision_exception_with(Node* p_node);
 
 	PhysicsBody();
 
@@ -125,7 +127,7 @@ private:
 
 	Vector3 linear_velocity;
 	Vector3  angular_velocity;
-	bool active;
+	bool sleeping;
 	bool ccd;
 
 	AxisLock axis_lock;
@@ -160,8 +162,8 @@ private:
 	};
 	struct BodyState {
 
-		int rc;
-		bool in_scene;
+		//int rc;
+		bool in_tree;
 		VSet<ShapePair> shapes;
 	};
 
@@ -174,8 +176,8 @@ private:
 
 
 	ContactMonitor *contact_monitor;
-	void _body_enter_scene(ObjectID p_id);
-	void _body_exit_scene(ObjectID p_id);
+	void _body_enter_tree(ObjectID p_id);
+	void _body_exit_tree(ObjectID p_id);
 
 
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape);
@@ -216,8 +218,8 @@ public:
 	void set_use_custom_integrator(bool p_enable);
 	bool is_using_custom_integrator();
 
-	void set_active(bool p_active);
-	bool is_active() const;
+	void set_sleeping(bool p_sleeping);
+	bool is_sleeping() const;
 
 	void set_can_sleep(bool p_active);
 	bool is_able_to_sleep() const;
@@ -234,6 +236,7 @@ public:
 	void set_axis_lock(AxisLock p_lock);
 	AxisLock get_axis_lock() const;
 
+	Array get_colliding_bodies() const;
 
 	void apply_impulse(const Vector3& p_pos, const Vector3& p_impulse);
 
@@ -264,6 +267,8 @@ class KinematicBody : public PhysicsBody {
 	Vector3 normal;
 	Vector3 collider_vel;
 	ObjectID collider;
+	int collider_shape;
+
 
 
 	Variant _get_collider() const;
@@ -289,6 +294,7 @@ public:
 	Vector3 get_collision_normal() const;
 	Vector3 get_collider_velocity() const;
 	ObjectID get_collider() const;
+	int get_collider_shape() const;
 
 	void set_collide_with_static_bodies(bool p_enable);
 	bool can_collide_with_static_bodies() const;

@@ -34,6 +34,7 @@
 #include "print_string.h"
 #include <stdio.h>
 
+SavePNGFunc Image::save_png_func = NULL;
 
 void Image::_put_pixel(int p_x,int p_y, const BColor& p_color, unsigned char *p_data) {
 
@@ -1200,6 +1201,14 @@ Error Image::load(const String& p_path) {
 	return ImageLoader::load_image(p_path, this);
 }
 
+Error Image::save_png(const String& p_path) {
+
+	if (save_png_func == NULL)
+		return ERR_UNAVAILABLE;
+
+	return save_png_func(p_path, *this);
+};
+
 bool Image::operator==(const Image& p_image) const {
 
 	if (data.size() == 0 && p_image.data.size() == 0)
@@ -1997,6 +2006,26 @@ void Image::set_compress_bc_func(void (*p_compress_func)(Image *)) {
 }
 
 
+
+void Image::normalmap_to_xy() {
+
+	convert(Image::FORMAT_RGBA);
+
+	{
+		int len = data.size()/4;
+		DVector<uint8_t>::Write wp = data.write();
+		unsigned char *data_ptr=wp.ptr();
+
+		for(int i=0;i<len;i++) {
+
+			data_ptr[(i<<2)+3]=data_ptr[(i<<2)+0]; //x to w
+			data_ptr[(i<<2)+0]=data_ptr[(i<<2)+1]; //y to xz
+			data_ptr[(i<<2)+2]=data_ptr[(i<<2)+1];
+		}
+	}
+
+	convert(Image::FORMAT_GRAYSCALE_ALPHA);
+}
 
 void Image::srgb_to_linear() {
 

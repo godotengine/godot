@@ -45,14 +45,14 @@ void Position2D::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			update();
 		} break;
 		case NOTIFICATION_DRAW: {
-			if (!is_inside_scene())
+			if (!is_inside_tree())
 				break;
-			if (get_scene()->is_editor_hint())
+			if (get_tree()->is_editor_hint())
 				_draw_cross();
 
 		} break;

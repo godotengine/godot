@@ -32,6 +32,7 @@
 #import <OpenGLES/ES1/gl.h>
 #import <OpenGLES/ES1/glext.h>
 #import <MediaPlayer/MediaPlayer.h>
+#import <AVFoundation/AVFoundation.h>
 
 @protocol GLViewDelegate;
 
@@ -66,6 +67,13 @@
 
 @property(nonatomic, assign) id<GLViewDelegate> delegate;
 
+// AVPlayer-related properties
+@property(strong, nonatomic) AVAsset *avAsset;
+@property(strong, nonatomic) AVPlayerItem *avPlayerItem;
+@property(strong, nonatomic) AVPlayer *avPlayer;
+@property(strong, nonatomic) AVPlayerLayer *avPlayerLayer;
+
+// Old videoplayer properties
 @property(strong, nonatomic) MPMoviePlayerController *moviePlayerController;
 @property(strong, nonatomic) UIWindow *backgroundWindow;
 

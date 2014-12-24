@@ -71,12 +71,13 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 	real_t min_d=1e10;
 
 
+
 	for(int i=0;i<amount;i++) {
 
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
-		if (space->intersection_query_results[i]->get_type()==CollisionObjectSW::TYPE_AREA && !(static_cast<AreaSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (!(static_cast<AreaSW*>(space->intersection_query_results[i])->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -96,6 +97,8 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 
 
 		if (shape->intersect_segment(local_from,local_to,shape_point,shape_normal)) {
+
+
 
 			Transform xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point=xform.xform(shape_point);
@@ -123,6 +126,8 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 	r_result.collider_id=res_obj->get_instance_id();
 	if (r_result.collider_id!=0)
 		r_result.collider=ObjectDB::get_instance(r_result.collider_id);
+	else
+		r_result.collider=NULL;
 	r_result.normal=res_normal;
 	r_result.position=res_point;
 	r_result.rid=res_obj->get_self();
@@ -173,6 +178,8 @@ int PhysicsDirectSpaceStateSW::intersect_shape(const RID& p_shape, const Transfo
 		r_results[cc].collider_id=col_obj->get_instance_id();
 		if (r_results[cc].collider_id!=0)
 			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
+		else
+			r_results[cc].collider=NULL;
 		r_results[cc].rid=col_obj->get_self();
 		r_results[cc].shape=shape_idx;
 

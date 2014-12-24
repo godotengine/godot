@@ -50,15 +50,22 @@ void VisualInstance::_notification(int p_what) {
 			// CHECK ROOM
 			Spatial * parent = get_parent_spatial();
 			Room *room=NULL;
+			bool is_geom = cast_to<GeometryInstance>();
 
 			while(parent) {
 
 				room = parent->cast_to<Room>();
 				if (room)
 					break;
-				else
-					parent=parent->get_parent_spatial();
+
+				if (is_geom && parent->cast_to<BakedLightSampler>()) {
+					VS::get_singleton()->instance_geometry_set_baked_light_sampler(get_instance(),parent->cast_to<BakedLightSampler>()->get_instance());
+					break;
+				}
+
+				parent=parent->get_parent_spatial();
 			}
+
 
 
 			if (room) {
@@ -85,6 +92,7 @@ void VisualInstance::_notification(int p_what) {
 			VisualServer::get_singleton()->instance_set_scenario( instance, RID() );
 			VisualServer::get_singleton()->instance_set_room(instance,RID());
 			VisualServer::get_singleton()->instance_attach_skeleton( instance, RID() );
+			VS::get_singleton()->instance_geometry_set_baked_light_sampler(instance, RID() );
 
 
 		} break;
@@ -249,7 +257,7 @@ void GeometryInstance::_find_baked_light() {
 
 void GeometryInstance::_update_visibility() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	_change_notify("geometry/visible");
@@ -351,13 +359,13 @@ void GeometryInstance::_bind_methods() {
 GeometryInstance::GeometryInstance() {
 	draw_begin=0;
 	draw_end=0;
+	for(int i=0;i<FLAG_MAX;i++) {
+		flags[i]=false;
+	}
+
 	flags[FLAG_VISIBLE]=true;
 	flags[FLAG_CAST_SHADOW]=true;
 	flags[FLAG_RECEIVE_SHADOWS]=true;
-	flags[FLAG_BILLBOARD]=false;
-	flags[FLAG_BILLBOARD_FIX_Y]=false;
-	flags[FLAG_DEPH_SCALE]=false;
-	flags[FLAG_VISIBLE_IN_ALL_ROOMS]=false;
 	baked_light_instance=NULL;
 	baked_light_texture_id=0;
 	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);

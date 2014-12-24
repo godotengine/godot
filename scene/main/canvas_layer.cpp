@@ -144,7 +144,7 @@ void CanvasLayer::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			Node *n = this;
 			vp=NULL;
@@ -169,7 +169,7 @@ void CanvasLayer::_notification(int p_what) {
 
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			VisualServer::get_singleton()->viewport_remove_canvas(viewport,canvas->get_canvas());
 			viewport=RID();
@@ -180,7 +180,7 @@ void CanvasLayer::_notification(int p_what) {
 
 Size2 CanvasLayer::get_viewport_size() const {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return Size2(1,1);
 
 	Rect2 r = vp->get_visible_rect();

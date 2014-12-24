@@ -30,7 +30,7 @@
 
 #include "skeleton.h"
 #include "physics_body.h"
-
+#include "body_shape.h"
 
 
 bool MeshInstance::_set(const StringName& p_name, const Variant& p_value) {
@@ -126,7 +126,7 @@ void MeshInstance::_resolve_skeleton_path(){
 void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
 
 	skeleton_path = p_skeleton;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	_resolve_skeleton_path();
 }
@@ -181,6 +181,11 @@ void MeshInstance::create_trimesh_collision() {
 	add_child(static_body);
 	if (get_owner())
 		static_body->set_owner( get_owner() );
+	CollisionShape *cshape = memnew( CollisionShape );
+	cshape->set_shape(static_body->get_shape(0));
+	static_body->add_child(cshape);
+	if (get_owner())
+		cshape->set_owner( get_owner() );
 
 }
 
@@ -210,12 +215,18 @@ void MeshInstance::create_convex_collision() {
 	add_child(static_body);
 	if (get_owner())
 		static_body->set_owner( get_owner() );
+	CollisionShape *cshape = memnew( CollisionShape );
+	cshape->set_shape(static_body->get_shape(0));
+	static_body->add_child(cshape);
+	if (get_owner())
+		cshape->set_owner( get_owner() );
+
 
 }
 
 void MeshInstance::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 		_resolve_skeleton_path();
 	}
 }
@@ -229,9 +240,9 @@ void MeshInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_skeleton_path:NodePath"),&MeshInstance::get_skeleton_path);
 	ObjectTypeDB::bind_method(_MD("get_aabb"),&MeshInstance::get_aabb);
 	ObjectTypeDB::bind_method(_MD("create_trimesh_collision"),&MeshInstance::create_trimesh_collision);
-	ObjectTypeDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::set_method_flags("MeshInstance","create_trimesh_collision",METHOD_FLAGS_DEFAULT);
 	ObjectTypeDB::bind_method(_MD("create_convex_collision"),&MeshInstance::create_convex_collision);
-	ObjectTypeDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::set_method_flags("MeshInstance","create_convex_collision",METHOD_FLAGS_DEFAULT);
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "mesh/mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh" ), _SCS("set_mesh"), _SCS("get_mesh"));
 	ADD_PROPERTY( PropertyInfo (Variant::NODE_PATH, "mesh/skeleton"), _SCS("set_skeleton_path"), _SCS("get_skeleton_path"));
 }

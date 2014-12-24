@@ -540,6 +540,8 @@ void PhysicsServerSW::body_set_shape_as_trigger(RID p_body, int p_shape_idx,bool
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+	ERR_FAIL_INDEX(p_shape_idx,body->get_shape_count());
+	body->set_shape_as_trigger(p_shape_idx,p_enable);
 
 }
 
@@ -547,10 +549,9 @@ bool PhysicsServerSW::body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) 
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,false);
+	ERR_FAIL_INDEX_V(p_shape_idx,body->get_shape_count(),false);
 
-	// todo ?
-
-	return false;
+	body->is_shape_set_as_trigger(p_shape_idx);
 }
 
 
@@ -836,6 +837,22 @@ void PhysicsServerSW::body_set_force_integration_callback(RID p_body,Object *p_r
 
 }
 
+void PhysicsServerSW::body_set_ray_pickable(RID p_body,bool p_enable) {
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_ray_pickable(p_enable);
+
+}
+
+bool PhysicsServerSW::body_is_ray_pickable(RID p_body) const{
+
+	BodySW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,false);
+	return body->is_ray_pickable();
+
+}
+
 
 /* JOINT API */
 
@@ -998,6 +1015,21 @@ bool PhysicsServerSW::hinge_joint_get_flag(RID p_joint,HingeJointFlag p_flag) co
 	ERR_FAIL_COND_V(joint->get_type()!=JOINT_HINGE,false);
 	HingeJointSW *hinge_joint = static_cast<HingeJointSW*>(joint);
 	return hinge_joint->get_flag(p_flag);
+}
+
+void PhysicsServerSW::joint_set_solver_priority(RID p_joint,int p_priority) {
+
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+	joint->set_priority(p_priority);
+}
+
+int PhysicsServerSW::joint_get_solver_priority(RID p_joint) const{
+
+	JointSW *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint,0);
+	return joint->get_priority();
+
 }
 
 PhysicsServerSW::JointType PhysicsServerSW::joint_get_type(RID p_joint) const {

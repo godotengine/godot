@@ -133,7 +133,7 @@ float Performance::get_monitor(Monitor p_monitor) const {
 			MainLoop *ml = OS::get_singleton()->get_main_loop();
 			if (!ml)
 				return 0;
-			SceneMainLoop *sml = ml->cast_to<SceneMainLoop>();
+			SceneTree *sml = ml->cast_to<SceneTree>();
 			if (!sml)
 				return 0;
 			return sml->get_node_count();

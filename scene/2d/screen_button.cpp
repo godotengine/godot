@@ -69,9 +69,9 @@ void TouchScreenButton::_notification(int p_what) {
 
 		case NOTIFICATION_DRAW: {
 
-			if (!is_inside_scene())
+			if (!is_inside_tree())
 				return;
-			if (!get_scene()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility==VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!get_tree()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility==VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 
 			if (finger_pressed!=-1) {
@@ -87,12 +87,15 @@ void TouchScreenButton::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
-			if (!get_scene()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility==VISIBILITY_TOUCHSCREEN_ONLY)
+			if (!get_tree()->is_editor_hint() && !OS::get_singleton()->has_touchscreen_ui_hint() && visibility==VISIBILITY_TOUCHSCREEN_ONLY)
 				return;
 			update();
-			set_process_input(true);
+
+			if (!get_tree()->is_editor_hint())
+				set_process_input(true);
+
 			if (action.operator String()!="" && InputMap::get_singleton()->has_action(action)) {
 				action_id=InputMap::get_singleton()->get_action_id(action);
 			} else {
@@ -126,7 +129,7 @@ String TouchScreenButton::get_action() const {
 
 void TouchScreenButton::_input(const InputEvent& p_event) {
 
-	if (!get_scene())
+	if (!get_tree())
 		return;
 
 	if (p_event.device != 0)
@@ -146,7 +149,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 				ie.ID=0;
 				ie.action.action=action_id;
 				ie.action.pressed=false;
-				get_scene()->input_event(ie);
+				get_tree()->input_event(ie);
 			}
 			finger_pressed=-1;
 
@@ -170,7 +173,8 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 					}
 				} else {
 
-					touched=Rect2(Point2(),texture->get_size()).has_point(coord);
+					if (texture.is_valid())
+						touched=Rect2(Point2(),texture->get_size()).has_point(coord);
 				}
 
 
@@ -189,7 +193,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 							ie.ID=0;
 							ie.action.action=action_id;
 							ie.action.pressed=true;
-							get_scene()->input_event(ie);
+							get_tree()->input_event(ie);
 						}
 
 						update();
@@ -209,7 +213,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 							ie.ID=0;
 							ie.action.action=action_id;
 							ie.action.pressed=false;
-							get_scene()->input_event(ie);
+							get_tree()->input_event(ie);
 						}
 						finger_pressed=-1;
 
@@ -264,7 +268,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 						ie.ID=0;
 						ie.action.action=action_id;
 						ie.action.pressed=true;
-						get_scene()->input_event(ie);
+						get_tree()->input_event(ie);
 					}
 					update();
 
@@ -285,7 +289,7 @@ void TouchScreenButton::_input(const InputEvent& p_event) {
 						ie.ID=0;
 						ie.action.action=action_id;
 						ie.action.pressed=false;
-						get_scene()->input_event(ie);
+						get_tree()->input_event(ie);
 					}
 					finger_pressed=-1;
 					update();

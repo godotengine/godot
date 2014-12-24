@@ -7,6 +7,7 @@ Export('env')
 
 SConscript('unix/SCsub');
 SConscript('alsa/SCsub');
+SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gles1/SCsub');
@@ -82,7 +83,7 @@ if len(list) > 0:
 
 drivers_base=[]
 env.add_source_files(drivers_base,"*.cpp")
-lib_list.insert(0, env.Library("drivers", drivers_base, LIBSUFFIX=env['platform_libsuffix']))
+lib_list.insert(0, env.Library("drivers", drivers_base))
 
 env.Prepend(LIBS=lib_list)
 

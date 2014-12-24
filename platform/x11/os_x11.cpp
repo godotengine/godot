@@ -74,6 +74,18 @@ OS::VideoMode OS_X11::get_default_video_mode() const {
 	return OS::VideoMode(800,600,false);
 }
 
+int OS_X11::get_audio_driver_count() const {
+
+    return AudioDriverManagerSW::get_driver_count();
+}
+
+const char *OS_X11::get_audio_driver_name(int p_driver) const {
+
+    AudioDriverSW* driver = AudioDriverManagerSW::get_driver(p_driver);
+    ERR_FAIL_COND_V( !driver, "" );
+    return AudioDriverManagerSW::get_driver(p_driver)->get_name();
+}
+
 void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 	last_button_state=0;
@@ -166,6 +178,55 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	if (get_render_thread_mode()!=RENDER_THREAD_UNSAFE) {
 
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
+	}
+
+	// borderless fullscreen window mode
+	if (current_videomode.fullscreen) {
+		// needed for lxde/openbox, possibly others
+		Hints hints;
+		Atom property;
+		hints.flags = 2;
+		hints.decorations = 0;
+		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+		XMapRaised(x11_display, x11_window);
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+
+		// code for netwm-compliants
+		XEvent xev;
+		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+
+		memset(&xev, 0, sizeof(xev));
+		xev.type = ClientMessage;
+		xev.xclient.window = x11_window;
+		xev.xclient.message_type = wm_state;
+		xev.xclient.format = 32;
+		xev.xclient.data.l[0] = 1;
+		xev.xclient.data.l[1] = fullscreen;
+		xev.xclient.data.l[2] = 0;
+
+		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	}
+
+	// disable resizeable window
+	if (!current_videomode.resizable) {
+		XSizeHints *xsh;
+		xsh = XAllocSizeHints();
+		xsh->flags = PMinSize | PMaxSize;
+		XWindowAttributes xwa;
+		if (current_videomode.fullscreen) {
+			XGetWindowAttributes(x11_display,DefaultRootWindow(x11_display),&xwa);
+		} else {
+			XGetWindowAttributes(x11_display,x11_window,&xwa);
+		}
+		xsh->min_width = xwa.width; 
+		xsh->max_width = xwa.width;
+		xsh->min_height = xwa.height;
+		xsh->max_height = xwa.height;
+		XSetWMNormalHints(x11_display, x11_window, xsh);
 	}
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
@@ -382,7 +443,6 @@ void OS_X11::finalize() {
 
 void OS_X11::set_mouse_mode(MouseMode p_mode) {
 
-	print_line("WUTF "+itos(p_mode)+" old "+itos(mouse_mode));
 	if (p_mode==mouse_mode)
 		return;
 
@@ -409,6 +469,19 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 		center.y = current_videomode.height/2;
 		XWarpPointer(x11_display, None, x11_window,
 			      0,0,0,0, (int)center.x, (int)center.y);
+	}
+
+}
+
+void OS_X11::warp_mouse_pos(const Point2& p_to) {
+
+	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		last_mouse_pos=p_to;
+	} else {
+
+		XWarpPointer(x11_display, None, x11_window,
+			      0,0,0,0, (int)p_to.x, (int)p_to.y);
 	}
 
 }
@@ -1027,7 +1100,73 @@ String OS_X11::get_name() {
 
 Error OS_X11::shell_open(String p_uri) {
 
-	return ERR_UNAVAILABLE;
+	Error ok;
+	List<String> args;
+	args.push_back(p_uri);
+	ok = execute("/usr/bin/xdg-open",args,false);
+	if (ok==OK)
+		return OK;
+	ok = execute("gnome-open",args,false);
+	if (ok==OK)
+		return OK;
+	ok = execute("kde-open",args,false);
+	return ok;
+}
+
+String OS_X11::get_system_dir(SystemDir p_dir) const {
+
+
+	String xdgparam;
+
+	switch(p_dir) {
+		case SYSTEM_DIR_DESKTOP: {
+
+			xdgparam="DESKTOP";
+		} break;
+		case SYSTEM_DIR_DCIM: {
+
+			xdgparam="PICTURES";
+
+		} break;
+		case SYSTEM_DIR_DOCUMENTS: {
+
+			xdgparam="DOCUMENTS";
+
+		} break;
+		case SYSTEM_DIR_DOWNLOADS: {
+
+			xdgparam="DOWNLOAD";
+
+		} break;
+		case SYSTEM_DIR_MOVIES: {
+
+			xdgparam="VIDEOS";
+
+		} break;
+		case SYSTEM_DIR_MUSIC: {
+
+			xdgparam="MUSIC";
+
+		} break;
+		case SYSTEM_DIR_PICTURES: {
+
+			xdgparam="PICTURES";
+
+		} break;
+		case SYSTEM_DIR_RINGTONES: {
+
+			xdgparam="MUSIC";
+
+		} break;
+	}
+
+	String pipe;
+	List<String> arg;
+	arg.push_back(xdgparam);
+	Error err = const_cast<OS_X11*>(this)->execute("/usr/bin/xdg-user-dir",arg,true,NULL,&pipe);
+	if (err!=OK)
+		return ".";
+	return pipe.strip_edges();
 }
 
 
@@ -1317,6 +1456,10 @@ OS_X11::OS_X11() {
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverManagerSW::add_driver(&driver_rtaudio);
+#endif
+
+#ifdef PULSEAUDIO_ENABLED
+	AudioDriverManagerSW::add_driver(&driver_pulseaudio);
 #endif
 
 #ifdef ALSA_ENABLED

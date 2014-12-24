@@ -146,6 +146,7 @@ void CPPlayer::Voice_Control::reset() {
 
 void CPPlayer::Channel_Control::reset() {
 
+	int prev_gv =channel_global_volume;
 	cp_memzero(this,sizeof(*this));
 
 	slave_voice=NULL;
@@ -162,6 +163,7 @@ void CPPlayer::Channel_Control::reset() {
 	reserved=false;	
 	carry.maybe=false;
 	last_event_usecs=-1;
+	channel_global_volume=prev_gv;
 }
 
 void CPPlayer::Voice_Control::update_info_from_master_channel() {
@@ -316,6 +318,15 @@ void CPPlayer::update_mixer() {
 
 		}
 
+		/*printf("fadeout %i\n",(int)v.fadeout_volume);
+		printf("channel %i\n",(int)v.channel_volume);
+		printf("output %i\n",(int)v.output_volume);
+		printf("env %i\n",(int)tmp_volenv_value);
+		printf("cgb %i\n",(int)v.master_channel->channel_global_volume);
+*/
+
+
+		int cv=v.master_channel->channel_global_volume;
 		
 		tmpvol=(uint64_t)v.fadeout_volume;    /* max 1024 - 10 bits */
 		tmpvol*=(uint64_t)v.channel_volume;    /* * max 64 - 6 bits */
@@ -340,6 +351,7 @@ void CPPlayer::update_mixer() {
 		//printf("volume check - fade %i, channel %i, output %i, env %i, mix %i, global %i -- final %i\n",v.fadeout_volume, v.channel_volume,v.output_volume,tmp_volenv_value, song->get_mixing_volume(),control.global_volume,tmpvol);
 		
 		v.total_volume=tmpvol;
+
 
 		if ((v.master_channel!=NULL) && song->is_channel_mute( v.master_channel_index ) && !v.master_channel->reserved) {
 
@@ -518,7 +530,7 @@ void CPPlayer::update_mixer() {
                 }
 	}
 	
-	
+
 	switch(song->get_reverb_mode()) {
 		
 		case CPSong::REVERB_MODE_ROOM: {
@@ -569,6 +581,8 @@ void CPPlayer::update_mixer() {
 	}
 	
 	mixer->set_chorus_params(song->get_chorus_delay_ms(),song->get_chorus_separation_ms(),song->get_chorus_depth_ms10(),song->get_chorus_speed_hz10() );
+
+
 }
 
 

@@ -653,6 +653,10 @@ public:
 	FUNC1RC(String,shader_get_light_code,RID);
 	FUNC2SC(shader_get_param_list,RID,List<PropertyInfo>*);
 
+	FUNC3(shader_set_default_texture_param,RID,const StringName&,RID);
+	FUNC2RC(RID,shader_get_default_texture_param,RID,const StringName&);
+
+
 	/*virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) {
 		if (Thread::get_caller_ID()!=server_thread) {
 			command_queue.push_and_sync( visual_server, &VisualServer::shader_get_param_list,p_shader,p_param_list);
@@ -909,12 +913,26 @@ public:
 	FUNC2(baked_light_set_octree,RID,DVector<uint8_t>);
 	FUNC1RC(DVector<uint8_t>,baked_light_get_octree,RID);
 
+	FUNC2(baked_light_set_light,RID,DVector<uint8_t>);
+	FUNC1RC(DVector<uint8_t>,baked_light_get_light,RID);
+
+	FUNC2(baked_light_set_sampler_octree,RID,const DVector<int>&);
+	FUNC1RC(DVector<int>,baked_light_get_sampler_octree,RID);
+
 	FUNC2(baked_light_set_lightmap_multiplier,RID,float);
 	FUNC1RC(float,baked_light_get_lightmap_multiplier,RID);
 
 	FUNC3(baked_light_add_lightmap,RID,RID,int);
 	FUNC1(baked_light_clear_lightmaps,RID);
 
+
+	FUNC0R(RID,baked_light_sampler_create);
+
+	FUNC3(baked_light_sampler_set_param,RID, BakedLightSamplerParam , float );
+	FUNC2RC(float,baked_light_sampler_get_param,RID, BakedLightSamplerParam );
+
+	FUNC2(baked_light_sampler_set_resolution,RID,int);
+	FUNC1RC(int,baked_light_sampler_get_resolution,RID);
 
 	/* CAMERA API */
 
@@ -928,6 +946,7 @@ public:
 
 	FUNC2(camera_set_environment,RID,RID);
 	FUNC1RC(RID,camera_get_environment,RID);
+
 
 	FUNC2(camera_set_use_vertical_aspect,RID,bool);
 	FUNC2RC(bool,camera_is_using_vertical_aspect,RID,bool);
@@ -998,6 +1017,7 @@ public:
 	FUNC2(scenario_set_debug,RID,ScenarioDebugMode);
 	FUNC2(scenario_set_environment,RID, RID);
 	FUNC2RC(RID,scenario_get_environment,RID, RID);
+	FUNC2(scenario_set_fallback_environment,RID, RID);
 
 
 	/* INSTANCING API */
@@ -1053,6 +1073,9 @@ public:
 	FUNC2(instance_geometry_set_baked_light,RID, RID );
 	FUNC1RC(RID,instance_geometry_get_baked_light,RID);
 
+	FUNC2(instance_geometry_set_baked_light_sampler,RID, RID );
+	FUNC1RC(RID,instance_geometry_get_baked_light_sampler,RID);
+
 	FUNC2(instance_geometry_set_baked_light_texture_index,RID, int);
 	FUNC1RC(int,instance_geometry_get_baked_light_texture_index,RID);
 
@@ -1106,6 +1129,8 @@ public:
 	FUNC2(canvas_item_add_set_transform,RID,const Matrix32& );
 	FUNC2(canvas_item_add_set_blend_mode,RID, MaterialBlendMode );
 	FUNC2(canvas_item_add_clip_ignore,RID, bool );
+
+	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
 
 	FUNC1(canvas_item_clear,RID);
 	FUNC1(canvas_item_raise,RID);

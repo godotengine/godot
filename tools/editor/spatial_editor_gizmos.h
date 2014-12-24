@@ -44,8 +44,9 @@
 #include "scene/3d/portal.h"
 #include "scene/3d/ray_cast.h"
 #include "scene/3d/navigation_mesh.h"
-#include "scene/3d/car_body.h"
+
 #include "scene/3d/vehicle_body.h"
+#include "scene/3d/collision_polygon.h"
 #include "scene/3d/physics_joint.h"
 
 
@@ -93,7 +94,6 @@ class SpatialGizmoTool  : public SpatialEditorGizmo {
 	Vector<Instance> instances;
 	Spatial *spatial_node;
 protected:
-	void clear();
 	void add_lines(const Vector<Vector3> &p_lines,const Ref<Material>& p_material,bool p_billboard=false);
 	void add_mesh(const Ref<Mesh>& p_mesh,bool p_billboard=false,const RID& p_skeleton=RID());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
@@ -109,6 +109,7 @@ public:
 	virtual bool intersect_frustum(const Camera *p_camera,const Vector<Plane> &p_frustum);
 	virtual bool intersect_ray(const Camera *p_camera,const Point2& p_point,  Vector3& r_pos, Vector3& r_normal,int *r_gizmo_handle=NULL,bool p_sec_first=false);
 
+	void clear();
 	void create();
 	void transform();
 	//void redraw();
@@ -302,6 +303,21 @@ public:
 
 };
 
+
+class CollisionPolygonSpatialGizmo  : public SpatialGizmoTool {
+
+	OBJ_TYPE(CollisionPolygonSpatialGizmo,SpatialGizmoTool);
+
+	CollisionPolygon* polygon;
+
+public:
+
+	void redraw();
+	CollisionPolygonSpatialGizmo(CollisionPolygon* p_polygon=NULL);
+
+};
+
+
 class RayCastSpatialGizmo  : public SpatialGizmoTool {
 
 	OBJ_TYPE(RayCastSpatialGizmo,SpatialGizmoTool);
@@ -315,19 +331,6 @@ public:
 
 };
 
-
-class CarWheelSpatialGizmo  : public SpatialGizmoTool {
-
-	OBJ_TYPE(CarWheelSpatialGizmo,SpatialGizmoTool);
-
-	CarWheel* car_wheel;
-
-public:
-
-	void redraw();
-	CarWheelSpatialGizmo(CarWheel* p_car_wheel=NULL);
-
-};
 
 
 class VehicleWheelSpatialGizmo  : public SpatialGizmoTool {

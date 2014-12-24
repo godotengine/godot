@@ -32,10 +32,10 @@ void VideoPlayer::_notification(int p_notification) {
 
 	switch (p_notification) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			//set_idle_process(false); //don't annoy
-			if (stream.is_valid() && autoplay && !get_scene()->is_editor_hint())
+			if (stream.is_valid() && autoplay && !get_tree()->is_editor_hint())
 				play();
 		} break;
 
@@ -45,20 +45,15 @@ void VideoPlayer::_notification(int p_notification) {
 				return;
 			if (paused)
 				return;
+			if (!stream->is_playing())
+				return;
 
-			stream->update(get_scene()->get_idle_process_time());
-			while (stream->get_pending_frame_count()) {
-
-				Image img = stream->pop_frame();
-				if (texture->get_width() == 0) {
-					texture->create(img.get_width(),img.get_height(),img.get_format(),Texture::FLAG_VIDEO_SURFACE|Texture::FLAG_FILTER);
-					update();
-					minimum_size_changed();
-				} else {
-
-					if (stream->get_pending_frame_count() == 0)
-						texture->set_data(img);
-				};
+			stream->update(get_tree()->get_idle_process_time());
+			int prev_width = texture->get_width();
+			stream->pop_frame(texture);
+			if (prev_width == 0) {
+				update();
+				minimum_size_changed();
 			};
 
 		} break;
@@ -123,7 +118,7 @@ Ref<VideoStream> VideoPlayer::get_stream() const {
 
 void VideoPlayer::play() {
 
-	ERR_FAIL_COND(!is_inside_scene());
+	ERR_FAIL_COND(!is_inside_tree());
 	if (stream.is_null())
 		return;
 	stream->play();
@@ -132,7 +127,7 @@ void VideoPlayer::play() {
 
 void VideoPlayer::stop() {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 	if (stream.is_null())
 		return;
@@ -197,7 +192,7 @@ String VideoPlayer::get_stream_name() const {
 	return stream->get_name();
 };
 
-float VideoPlayer::get_pos() const {
+float VideoPlayer::get_stream_pos() const {
 
 	if (stream.is_null())
 		return 0;
@@ -236,7 +231,7 @@ void VideoPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_stream_name"),&VideoPlayer::get_stream_name);
 
-	ObjectTypeDB::bind_method(_MD("get_pos"),&VideoPlayer::get_pos);
+	ObjectTypeDB::bind_method(_MD("get_stream_pos"),&VideoPlayer::get_stream_pos);
 
 	ObjectTypeDB::bind_method(_MD("set_autoplay","enabled"),&VideoPlayer::set_autoplay);
 	ObjectTypeDB::bind_method(_MD("has_autoplay"),&VideoPlayer::has_autoplay);
@@ -257,9 +252,9 @@ void VideoPlayer::_bind_methods() {
 VideoPlayer::VideoPlayer() {
 
 	volume=1;
-	loops=false;
-	paused=false;
-	autoplay=false;
+	loops = false;
+	paused = false;
+	autoplay = false;
 	expand = true;
 	loops = false;
 };

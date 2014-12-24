@@ -54,6 +54,8 @@ public:
 	static int get_language_count();
 	static ScriptLanguage *get_language(int p_idx);
 	static void register_language(ScriptLanguage *p_language);
+
+	static void init_languages();
 };
 
 
@@ -91,6 +93,8 @@ public:
 	virtual String get_node_type() const=0;
 
 	virtual ScriptLanguage *get_language() const=0;
+
+	virtual void update_exports() {} //editor tool
 
 	
 	Script() {}
@@ -140,7 +144,7 @@ public:
 	virtual bool has_named_classes() const=0;
 	virtual int find_function(const String& p_function,const String& p_code) const=0;
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const=0;
-	virtual Error complete_keyword(const String& p_code, int p_line, const String& p_base_path, const String& p_keyword, List<String>* r_options) { return ERR_UNAVAILABLE; }
+	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint) { return ERR_UNAVAILABLE; }
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const=0;
 
 	/* DEBUGGER FUNCTIONS */

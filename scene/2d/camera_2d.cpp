@@ -33,10 +33,10 @@
 void Camera2D::_update_scroll() {
 
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
-	if (get_scene()->is_editor_hint()) {
+	if (get_tree()->is_editor_hint()) {
 		update(); //will just be drawn
 		return;
 	}
@@ -48,7 +48,7 @@ void Camera2D::_update_scroll() {
 		if (viewport) {
 		       viewport->set_canvas_transform( xform );
 		}
-		get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,group_name,"_camera_moved",xform);
+		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_camera_moved",xform);
 	};
 
 }
@@ -67,7 +67,7 @@ Vector2 Camera2D::get_zoom() const {
 
 Matrix32 Camera2D::get_camera_transform()  {
 
-	if (!get_scene())
+	if (!get_tree())
 		return Matrix32();
 
 	Size2 screen_size = get_viewport_rect().size;
@@ -213,7 +213,7 @@ void Camera2D::_notification(int p_what) {
 				_update_scroll();
 
 		} break;
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			viewport = NULL;
 			Node *n=this;
@@ -239,7 +239,7 @@ void Camera2D::_notification(int p_what) {
 
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (is_current()) {
 				if (viewport) {
@@ -316,10 +316,10 @@ bool Camera2D::is_current() const {
 
 void Camera2D::make_current() {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		current=true;
 	} else {
-		get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,group_name,"_make_current",this);
+		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",this);
 	}
 }
 

@@ -93,7 +93,7 @@ void WindowDialog::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			close_button->set_normal_texture( get_icon("close","WindowDialog"));
 			close_button->set_pressed_texture( get_icon("close","WindowDialog"));
@@ -297,7 +297,7 @@ void AcceptDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
 	ObjectTypeDB::bind_method(_MD("set_hide_on_ok","enabled"),&AcceptDialog::set_hide_on_ok);
 	ObjectTypeDB::bind_method(_MD("get_hide_on_ok"),&AcceptDialog::get_hide_on_ok);
-	ObjectTypeDB::bind_method(_MD("add_button:Button","text","right","action"),&AcceptDialog::add_cancel,DEFVAL(false),DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("add_button:Button","text","right","action"),&AcceptDialog::add_button,DEFVAL(false),DEFVAL(""));
 	ObjectTypeDB::bind_method(_MD("add_cancel:Button","name"),&AcceptDialog::add_cancel);
 	ObjectTypeDB::bind_method(_MD("_builtin_text_entered"),&AcceptDialog::_builtin_text_entered);
 	ObjectTypeDB::bind_method(_MD("register_text_enter:LineEdit","line_edit"),&AcceptDialog::register_text_enter);

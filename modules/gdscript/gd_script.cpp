@@ -510,7 +510,11 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				*dst = src->get_named(*index,&valid);
 
 				if (!valid) {
-					err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"').";
+					if (src->has_method(*index)) {
+						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"'). Did you mean '."+index->operator String()+"()' ?";
+					} else {
+						err_text="Invalid get index '"+index->operator String()+"' (on base: '"+_get_var_type(src)+"').";
+					}
 					break;
 				}
 
@@ -1436,8 +1440,8 @@ GDInstance* GDScript::_create_instance(const Variant** p_args,int p_argcount,Obj
 
 	if (err.error!=Variant::CallError::CALL_OK) {
 		instance->script=Ref<GDScript>();
+		instance->owner->set_script_instance(NULL);
 		instances.erase(p_owner);
-		memdelete(instance);
 		ERR_FAIL_COND_V(err.error!=Variant::CallError::CALL_OK, NULL); //error consrtucting
 	}
 
@@ -1488,7 +1492,9 @@ Variant GDScript::_new(const Variant** p_args,int p_argcount,Variant::CallError&
 
 bool GDScript::can_instance() const {
 
-	return valid; //any script in GDscript can instance
+	//return valid; //any script in GDscript can instance
+	return valid || (!tool && !ScriptServer::is_scripting_enabled());
+
 }
 
 StringName GDScript::get_instance_base_type() const {
@@ -1517,6 +1523,7 @@ void GDScript::_placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {
 	placeholders.erase(p_placeholder);
 }
 
+/*
 void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 
@@ -1531,7 +1538,7 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 			_GDScriptMemberSort ms;
 			ERR_CONTINUE(!scr->member_indices.has(E->key()));
-			ms.index=scr->member_indices[E->key()];
+			ms.index=scr->member_indices[E->key()].index;
 			ms.name=E->key();
 
 			msort.push_back(ms);
@@ -1557,11 +1564,13 @@ void GDScript::_update_placeholder(PlaceHolderScriptInstance *p_placeholder) {
 
 	p_placeholder->update(plist,default_values);
 
-}
+}*/
 #endif
 ScriptInstance* GDScript::instance_create(Object *p_this) {
 
+
 	if (!tool && !ScriptServer::is_scripting_enabled()) {
+
 
 #ifdef TOOLS_ENABLED
 
@@ -1574,7 +1583,8 @@ ScriptInstance* GDScript::instance_create(Object *p_this) {
 		}*/
 		PlaceHolderScriptInstance *si = memnew( PlaceHolderScriptInstance(GDScriptLanguage::get_singleton(),Ref<Script>(this),p_this) );
 		placeholders.insert(si);
-		_update_placeholder(si);
+		//_update_placeholder(si);
+		_update_exports();
 		return si;
 #else
 		return NULL;
@@ -1615,8 +1625,160 @@ String GDScript::get_source_code() const {
 }
 void GDScript::set_source_code(const String& p_code) {
 
+	if (source==p_code)
+		return;
 	source=p_code;
+#ifdef TOOLS_ENABLED
+	source_changed_cache=true;
+	//print_line("SC CHANGED "+get_path());
+#endif
 
+}
+
+#ifdef TOOLS_ENABLED
+void GDScript::_update_exports_values(Map<StringName,Variant>& values, List<PropertyInfo> &propnames) {
+
+	if (base_cache.is_valid()) {
+		base_cache->_update_exports_values(values,propnames);
+	}
+
+	for(Map<StringName,Variant>::Element *E=member_default_values_cache.front();E;E=E->next()) {
+		values[E->key()]=E->get();
+	}
+
+	for (List<PropertyInfo>::Element *E=members_cache.front();E;E=E->next()) {
+		propnames.push_back(E->get());
+	}
+
+}
+#endif
+
+bool GDScript::_update_exports() {
+
+#ifdef TOOLS_ENABLED
+
+	bool changed=false;
+
+	if (source_changed_cache) {
+		//print_line("updating source for "+get_path());
+		source_changed_cache=false;
+		changed=true;
+
+		String basedir=path;
+
+		if (basedir=="")
+			basedir=get_path();
+
+		if (basedir!="")
+			basedir=basedir.get_base_dir();
+
+		GDParser parser;
+		Error err = parser.parse(source,basedir,true,path);
+
+		if (err==OK) {
+
+			const GDParser::Node* root = parser.get_parse_tree();
+			ERR_FAIL_COND_V(root->type!=GDParser::Node::TYPE_CLASS,false);
+
+			const GDParser::ClassNode *c = static_cast<const GDParser::ClassNode*>(root);
+
+			if (base_cache.is_valid()) {
+				base_cache->inheriters_cache.erase(get_instance_ID());
+				base_cache=Ref<GDScript>();
+			}
+
+
+			if (c->extends_used && String(c->extends_file)!="") {
+
+				String path = c->extends_file;
+				if (path.is_rel_path()) {
+
+					String base = get_path();
+					if (base=="" || base.is_rel_path()) {
+
+						ERR_PRINT(("Could not resolve relative path for parent class: "+path).utf8().get_data());
+					} else {
+						path=base.get_base_dir().plus_file(path);
+					}
+				}
+
+				Ref<GDScript> bf = ResourceLoader::load(path);
+
+				if (bf.is_valid()) {
+
+					//print_line("parent is: "+bf->get_path());
+					base_cache=bf;
+					bf->inheriters_cache.insert(get_instance_ID());
+
+					//bf->_update_exports(p_instances,true,false);
+
+				}
+			}
+
+			members_cache.clear();;
+			member_default_values_cache.clear();
+
+			for(int i=0;i<c->variables.size();i++) {
+				if (c->variables[i]._export.type==Variant::NIL)
+					continue;
+
+				members_cache.push_back(c->variables[i]._export);
+				//print_line("found "+c->variables[i]._export.name);
+				member_default_values_cache[c->variables[i].identifier]=c->variables[i].default_value;
+			}
+		}
+	} else {
+		//print_line("unchaged is "+get_path());
+
+	}
+
+	if (base_cache.is_valid()) {
+		if (base_cache->_update_exports()) {
+			changed = true;
+		}
+	}
+
+	if (/*changed &&*/ placeholders.size()) { //hm :(
+
+		//print_line("updating placeholders for "+get_path());
+
+		//update placeholders if any
+		Map<StringName,Variant> values;
+		List<PropertyInfo> propnames;
+		_update_exports_values(values,propnames);
+
+		for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
+
+			E->get()->update(propnames,values);
+		}
+	}
+
+	return changed;
+
+#endif
+	return false;
+}
+
+void GDScript::update_exports() {
+
+#ifdef TOOLS_ENABLED
+
+	_update_exports();
+
+	Set<ObjectID> copy=inheriters_cache; //might get modified
+
+	//print_line("update exports for "+get_path()+" ic: "+itos(copy.size()));
+	for(Set<ObjectID>::Element *E=copy.front();E;E=E->next()) {
+		Object *id=ObjectDB::get_instance(E->get());
+		if (!id)
+			continue;
+		GDScript *s=id->cast_to<GDScript>();
+		if (!s)
+			continue;
+		s->update_exports();
+	}
+
+#endif
 }
 
 void GDScript::_set_subclass_path(Ref<GDScript>& p_sc,const String& p_path) {
@@ -1646,7 +1808,7 @@ Error GDScript::reload() {
 
 	valid=false;
 	GDParser parser;
-	Error err = parser.parse(source,basedir);
+	Error err = parser.parse(source,basedir,false,path);
 	if (err) {
 		if (ScriptDebugger::get_singleton()) {
 			GDScriptLanguage::get_singleton()->debug_break_parse(get_path(),parser.get_error_line(),"Parser Error: "+parser.get_error());
@@ -1674,10 +1836,10 @@ Error GDScript::reload() {
 	}
 
 #ifdef TOOLS_ENABLED
-	for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
+	/*for (Set<PlaceHolderScriptInstance*>::Element *E=placeholders.front();E;E=E->next()) {
 
 		_update_placeholder(E->get());
-	}
+	}*/
 #endif
 	return OK;
 }
@@ -1820,7 +1982,7 @@ Error GDScript::load_byte_code(const String& p_path) {
 
 	valid=false;
 	GDParser parser;
-	Error err = parser.parse_bytecode(bytecode,basedir);
+	Error err = parser.parse_bytecode(bytecode,basedir,get_path());
 	if (err) {
 		_err_print_error("GDScript::load_byte_code",path.empty()?"built-in":(const char*)path.utf8().get_data(),parser.get_error_line(),("Parse Error: "+parser.get_error()).utf8().get_data());
 		ERR_FAIL_V(ERR_PARSE_ERROR);
@@ -1873,6 +2035,10 @@ Error GDScript::load_source_code(const String& p_path) {
 	}
 
 	source=s;
+#ifdef TOOLS_ENABLED
+	source_changed_cache=true;
+#endif
+	//print_line("LSC :"+get_path());
 	path=p_path;
 	return OK;
 
@@ -1889,9 +2055,9 @@ const Map<StringName,GDFunction>& GDScript::debug_get_member_functions() const {
 StringName GDScript::debug_get_member_by_index(int p_idx) const {
 
 
-	for(const Map<StringName,int>::Element *E=member_indices.front();E;E=E->next()) {
+	for(const Map<StringName,MemberInfo>::Element *E=member_indices.front();E;E=E->next()) {
 
-		if (E->get()==p_idx)
+		if (E->get().index==p_idx)
 			return E->key();
 	}
 
@@ -1914,6 +2080,9 @@ GDScript::GDScript() {
 	_base=NULL;
 	_owner=NULL;
 	tool=false;
+#ifdef TOOLS_ENABLED
+	source_changed_cache=false;
+#endif
 
 }
 
@@ -1930,11 +2099,18 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 
 	//member
 	{
-		const Map<StringName,int>::Element *E = script->member_indices.find(p_name);
+		const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			members[E->get()]=p_value;
+			members[E->get().index]=p_value;
+			if (E->get().setter) {
+				const Variant *val=&p_value;
+				Variant::CallError err;
+				call(E->get().setter,&val,1,err);
+				if (err.error==Variant::CallError::CALL_OK) {
+					return true; //function exists, call was successful
+				}
+			}
 			return true;
-
 		}
 	}
 
@@ -1967,9 +2143,16 @@ bool GDInstance::get(const StringName& p_name, Variant &r_ret) const {
 	while(sptr) {
 
 		{
-			const Map<StringName,int>::Element *E = script->member_indices.find(p_name);
+			const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 			if (E) {
-				r_ret=members[E->get()];
+				if (E->get().getter) {
+					Variant::CallError err;
+					r_ret=const_cast<GDInstance*>(this)->call(E->get().getter,NULL,0,err);
+					if (err.error==Variant::CallError::CALL_OK) {
+						return true;
+					}
+				}
+				r_ret=members[E->get().index];
 				return true; //index found
 
 			}
@@ -2059,7 +2242,7 @@ void GDInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
 			_GDScriptMemberSort ms;
 			ERR_CONTINUE(!sptr->member_indices.has(E->key()));
-			ms.index=sptr->member_indices[E->key()];
+			ms.index=sptr->member_indices[E->key()].index;
 			ms.name=E->key();
 			msort.push_back(ms);
 
@@ -2361,8 +2544,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"func"	,
 		"if"	,
 		"in"	,
-		"varl",
 		"null"	,
+		"not"	,
 		"return"	,
 		"self"	,
 		"while"	,
@@ -2370,6 +2553,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"false"	,
 		"tool",
 		"var",
+		"setget",
 		"pass",
 		"and",
 		"or",
@@ -2377,6 +2561,8 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"assert",
 		"yield",
 		"static",
+		"float",
+		"int",
 	0};
 
 

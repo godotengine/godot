@@ -185,6 +185,7 @@ float BodySW::get_param(PhysicsServer::BodyParameter p_param) const {
 
 void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 
+	PhysicsServer::BodyMode prev=mode;
 	mode=p_mode;
 
 	switch(p_mode) {
@@ -196,8 +197,13 @@ void BodySW::set_mode(PhysicsServer::BodyMode p_mode) {
 			_inv_mass=0;
 			_set_static(p_mode==PhysicsServer::BODY_MODE_STATIC);
 			//set_active(p_mode==PhysicsServer::BODY_MODE_KINEMATIC);
+			set_active(p_mode==PhysicsServer::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity=Vector3();
 			angular_velocity=Vector3();
+			if (mode==PhysicsServer::BODY_MODE_KINEMATIC && prev!=mode) {
+				first_time_kinematic=true;
+			}
+
 		} break;
 		case PhysicsServer::BODY_MODE_RIGID: {
 
@@ -237,6 +243,11 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 				new_transform=p_variant;
 				//wakeup_neighbours();
 				set_active(true);
+				if (first_time_kinematic) {
+					_set_transform(p_variant);
+					_set_inv_transform(get_transform().affine_inverse());
+					first_time_kinematic=false;
+				}
 
 			} else if (mode==PhysicsServer::BODY_MODE_STATIC) {
 				_set_transform(p_variant);
@@ -460,8 +471,8 @@ void BodySW::integrate_velocities(real_t p_step) {
 	if (mode==PhysicsServer::BODY_MODE_KINEMATIC) {
 
 		_set_transform(new_transform,false);
-		_set_inv_transform(new_transform.affine_inverse());				;
-		if (linear_velocity==Vector3() && angular_velocity==Vector3())
+		_set_inv_transform(new_transform.affine_inverse());
+		if (contacts.size()==0 && linear_velocity==Vector3() && angular_velocity==Vector3())
 			set_active(false); //stopped moving, deactivate
 
 		return;
@@ -668,6 +679,7 @@ BodySW::BodySW() : CollisionObjectSW(TYPE_BODY), active_list(this), inertia_upda
 	island_step=0;
 	island_next=NULL;
 	island_list_next=NULL;
+	first_time_kinematic=false;
 	_set_static(false);
 	density=0;
 	contact_count=0;

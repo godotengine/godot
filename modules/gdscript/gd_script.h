@@ -129,6 +129,10 @@ friend class GDCompiler;
 	const char*_func_cname;
 #endif
 
+#ifdef TOOLS_ENABLED
+	Vector<StringName> arg_names;
+#endif
+
 	List<StackDebug> stack_debug;
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address,GDInstance *p_instance,GDScript *p_script,Variant &self,Variant *p_stack,String& r_error) const;
@@ -169,6 +173,19 @@ public:
 	_FORCE_INLINE_ bool is_empty() const { return _code_size==0; }
 
 	int get_argument_count() const { return _argument_count; }
+	StringName get_argument_name(int p_idx) const {
+#ifdef TOOLS_ENABLED
+		ERR_FAIL_INDEX_V(p_idx,arg_names.size(),StringName());
+		return arg_names[p_idx];
+#endif
+		return StringName();
+
+	}
+	Variant get_default_argument(int p_idx) const {
+		ERR_FAIL_INDEX_V(p_idx,default_arguments.size(),Variant());
+		return default_arguments[p_idx];
+	}
+
 	Variant call(GDInstance *p_instance,const Variant **p_args, int p_argcount,Variant::CallError& r_err,CallState *p_state=NULL);
 
 	GDFunction();
@@ -220,11 +237,18 @@ class GDScript : public Script {
 	bool valid;
 
 
+	struct MemberInfo {
+		int index;
+		StringName setter;
+		StringName getter;
+	};
 
 friend class GDInstance;
 friend class GDFunction;
 friend class GDCompiler;
 friend class GDFunctions;
+friend class GDScriptLanguage;
+
 	Variant _static_ref; //used for static call
 	Ref<GDNativeClass> native;
 	Ref<GDScript> base;
@@ -234,11 +258,20 @@ friend class GDFunctions;
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName,Variant> constants;
 	Map<StringName,GDFunction> member_functions;
-	Map<StringName,int> member_indices; //members are just indices to the instanced script.
+	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;	
 
 #ifdef TOOLS_ENABLED
+
 	Map<StringName,Variant> member_default_values;
+
+	List<PropertyInfo> members_cache;
+	Map<StringName,Variant> member_default_values_cache;
+	Ref<GDScript> base_cache;
+	Set<ObjectID> inheriters_cache;
+	bool source_changed_cache;
+	void _update_exports_values(Map<StringName,Variant>& values, List<PropertyInfo> &propnames);
+
 #endif
 	Map<StringName,PropertyInfo> member_info;
 
@@ -258,10 +291,13 @@ friend class GDFunctions;
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance*> placeholders;
-	void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
+	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
+
+
+	bool _update_exports();
 
 protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -274,6 +310,7 @@ protected:
 	static void _bind_methods();
 public:
 
+	bool is_valid() const { return valid; }
 
 	const Map<StringName,Ref<GDScript> >& get_subclasses() const { return subclasses; }
 	const Map<StringName,Variant >& get_constants() const { return constants; }
@@ -285,7 +322,7 @@ public:
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName,int>& debug_get_member_indices() const { return member_indices; }
+	const Map<StringName,MemberInfo>& debug_get_member_indices() const { return member_indices; }
 	const Map<StringName,GDFunction>& debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
@@ -299,6 +336,8 @@ public:
 	virtual bool has_source_code() const;
 	virtual String get_source_code() const;
 	virtual void set_source_code(const String& p_code);
+	virtual void update_exports();
+
 	virtual Error reload();
 
 	virtual String get_node_type() const;
@@ -467,7 +506,7 @@ public:
 	virtual bool has_named_classes() const;
 	virtual int find_function(const String& p_function,const String& p_code) const;
 	virtual String make_function(const String& p_class,const String& p_name,const StringArray& p_args) const;
-	virtual Error complete_keyword(const String& p_code, int p_line, const String& p_base_path,const String& p_keyword, List<String>* r_options);
+	virtual Error complete_code(const String& p_code, const String& p_base_path, Object*p_owner,List<String>* r_options,String& r_call_hint);
 	virtual void auto_indent_code(String& p_code,int p_from_line,int p_to_line) const;
 
 	/* DEBUGGER FUNCTIONS */

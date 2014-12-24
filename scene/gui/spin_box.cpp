@@ -122,7 +122,7 @@ void SpinBox::_notification(int p_what) {
 
 
 		//_value_changed(0);
-	} else if (p_what==NOTIFICATION_ENTER_SCENE) {
+	} else if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		_value_changed(0);
 	}

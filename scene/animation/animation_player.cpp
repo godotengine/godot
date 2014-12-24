@@ -180,12 +180,16 @@ void AnimationPlayer::_get_property_list( List<PropertyInfo> *p_list) const {
 
 }
 
+void AnimationPlayer::advance(float p_time) {
+
+	_animation_process( p_time );
+}
 
 void AnimationPlayer::_notification(int p_what) {
 
 	switch(p_what) {
 	
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			if (!processing) {
 				//make sure that a previous process state was not saved
@@ -198,7 +202,7 @@ void AnimationPlayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_READY: {
 
-			if (!get_scene()->is_editor_hint() && animation_set.has(autoplay)) {
+			if (!get_tree()->is_editor_hint() && animation_set.has(autoplay)) {
 				play(autoplay);
 			}
 		} break;
@@ -217,7 +221,7 @@ void AnimationPlayer::_notification(int p_what) {
 			if (processing)
 				_animation_process( get_fixed_process_delta_time() );
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 		
 			stop_all();
 			clear_caches();
@@ -257,8 +261,8 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 		}
 		
 		{
-			if (!child->is_connected("exit_scene",this,"_node_removed"))
-				child->connect("exit_scene",this,"_node_removed",make_binds(child),CONNECT_ONESHOT);
+			if (!child->is_connected("exit_tree",this,"_node_removed"))
+				child->connect("exit_tree",this,"_node_removed",make_binds(child),CONNECT_ONESHOT);
 		}
 
 		TrackNodeCacheKey key;
@@ -344,7 +348,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 	
 
 	Animation *a=p_anim->animation.operator->();
-	bool can_call = is_inside_scene() && !get_scene()->is_editor_hint();
+	bool can_call = is_inside_tree() && !get_tree()->is_editor_hint();
 	
 	for (int i=0;i<a->get_track_count();i++) {
 	
@@ -370,7 +374,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData* p_anim,float p
 
 
 				Error err = a->transform_track_interpolate(i,p_time,&loc,&rot,&scale);
-				ERR_CONTINUE(err!=OK); //used for testing, should be removed
+				//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
 
 				if (err!=OK)
@@ -918,12 +922,12 @@ void AnimationPlayer::play(const StringName& p_name, float p_custom_blend, float
 	_set_process(true); // always process when starting an animation
 	playing = true;
 
-	if (is_inside_scene() &&  get_scene()->is_editor_hint())
+	if (is_inside_tree() &&  get_tree()->is_editor_hint())
 		return; // no next in this case
 
 
 	StringName next=animation_get_next(p_name);
-	if (next!=StringName()) {
+	if (next!=StringName() && animation_set.has(next)) {
 		queue(next);
 	}
 }
@@ -1174,6 +1178,19 @@ NodePath AnimationPlayer::get_root() const {
 	return root;
 }
 
+void AnimationPlayer::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+	String pf = p_function;
+	if (p_function=="play" || p_function=="remove_animation" || p_function=="has_animation" || p_function=="queue") {
+		List<StringName> al;
+		get_animation_list(&al);
+		for (List<StringName>::Element *E=al.front();E;E=E->next()) {
+
+			r_options->push_back("\""+String(E->get())+"\"");
+		}
+	}
+	Node::get_argument_options(p_function,p_idx,r_options);
+}
 
 void AnimationPlayer::_bind_methods() {
 
@@ -1226,6 +1243,8 @@ void AnimationPlayer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_current_animation_pos"),&AnimationPlayer::get_current_animation_pos);
 	ObjectTypeDB::bind_method(_MD("get_current_animation_length"),&AnimationPlayer::get_current_animation_length);
+
+	ObjectTypeDB::bind_method(_MD("advance","delta"),&AnimationPlayer::advance);
 
 
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "playback/process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_animation_process_mode"), _SCS("get_animation_process_mode"));

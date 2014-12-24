@@ -31,13 +31,13 @@
 #include "os/dir_access.h"
 #include "os/file_access.h"
 #include "globals.h"
-#include "scene/io/scene_loader.h"
+
 #include "io/resource_loader.h"
 #include "io/resource_saver.h"
 #include "os/os.h"
 #include "scene/gui/box_container.h"
 #include "default_saver.h"
-#include "scene/io/scene_saver.h"
+
 #include "scene/gui/tab_container.h"
 #include "scene/gui/scroll_container.h"
 #include "editor_data.h"
@@ -256,7 +256,7 @@ void ProjectExportDialog::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 
 			CenterContainer *cc = memnew( CenterContainer );
@@ -320,7 +320,7 @@ void ProjectExportDialog::_notification(int p_what) {
 			_update_group_tree();
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 		} break;
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
@@ -482,7 +482,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 		return ERR_CANT_CREATE;
 	} else {
 		if (p_quit_after) {
-			get_scene()->quit();
+			get_tree()->quit();
 		}
 	}
 
@@ -529,6 +529,8 @@ void ProjectExportDialog::_group_selected() {
 
 
 	_update_group(); //?
+
+	_update_group_tree();
 }
 
 String ProjectExportDialog::_get_selected_group() {
@@ -738,6 +740,8 @@ void ProjectExportDialog::_group_changed(Variant v) {
 	EditorNode::get_undo_redo()->add_undo_method(this,"_save_export_cfg");
 	EditorNode::get_undo_redo()->commit_action();
 	updating=false;
+	// update atlas preview button
+	_update_group();
 }
 
 void ProjectExportDialog::_group_item_edited() {
@@ -1336,6 +1340,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	file_export = memnew( FileDialog );
 	add_child(file_export);
 	file_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 
 	file_export->set_title("Export Project");
 	file_export->connect("file_selected", this,"_export_action");
@@ -1353,6 +1358,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 
 	pck_export = memnew( FileDialog );
 	pck_export->set_access(FileDialog::ACCESS_FILESYSTEM);
+	pck_export->set_current_dir( EditorSettings::get_singleton()->get("global/default_project_export_path") );
 	pck_export->set_title("Export Project PCK");
 	pck_export->connect("file_selected", this,"_export_action_pck");
 	pck_export->add_filter("*.pck ; Data Pack");

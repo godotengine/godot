@@ -21,7 +21,7 @@ public:
 
 	static _ResourceLoader *get_singleton() { return singleton; }
 	Ref<ResourceInteractiveLoader> load_interactive(const String& p_path,const String& p_type_hint="");
-	RES load(const String &p_path,const String& p_type_hint="");
+	RES load(const String &p_path,const String& p_type_hint="", bool p_no_cache = false);
 	DVector<String> get_recognized_extensions_for_type(const String& p_type);
 	void set_abort_on_missing_resources(bool p_abort);
 	StringArray get_dependencies(const String& p_path);
@@ -108,7 +108,7 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
-	Error native_video_play(String p_path, float p_volume);
+	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
 	void native_video_pause();
 	void native_video_stop();
@@ -153,6 +153,8 @@ public:
 	void print_resources_by_type(const Vector<String>& p_types);
 
 	bool has_touchscreen_ui_hint() const;
+
+	bool is_debug_build() const;
 
 	String get_unique_ID() const;
 
@@ -199,12 +201,32 @@ public:
 
 	int get_processor_count() const;
 
+	enum SystemDir {
+		SYSTEM_DIR_DESKTOP,
+		SYSTEM_DIR_DCIM,
+		SYSTEM_DIR_DOCUMENTS,
+		SYSTEM_DIR_DOWNLOADS,
+		SYSTEM_DIR_MOVIES,
+		SYSTEM_DIR_MUSIC,
+		SYSTEM_DIR_PICTURES,
+		SYSTEM_DIR_RINGTONES,
+	};
+
+	String get_system_dir(SystemDir p_dir) const;
+
+
 	String get_data_dir() const;
+
+	void set_time_scale(float p_scale);
+	float get_time_scale();
 
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
 };
+
+VARIANT_ENUM_CAST(_OS::SystemDir);
+
 
 class _Geometry : public Object {
 
@@ -230,8 +252,11 @@ public:
 	DVector<Vector3> segment_intersects_cylinder( const Vector3& p_from, const Vector3& p_to, float p_height,float p_radius);
 	DVector<Vector3> segment_intersects_convex(const Vector3& p_from, const Vector3& p_to,const Vector<Plane>& p_planes);
 	real_t segment_intersects_circle(const Vector2& p_from, const Vector2& p_to, const Vector2& p_circle_pos, real_t p_circle_radius);
+	int get_uv84_normal_bit(const Vector3& p_vector);
 
 	Vector<int> triangulate_polygon(const Vector<Vector2>& p_polygon);
+
+	Dictionary make_atlas(const Vector<Size2>& p_rects);
 
 	_Geometry();
 };

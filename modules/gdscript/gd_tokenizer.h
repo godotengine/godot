@@ -98,6 +98,7 @@ public:
 		TK_PR_TOOL,
 		TK_PR_STATIC,
 		TK_PR_EXPORT,
+		TK_PR_SETGET,
 		TK_PR_CONST,
 		TK_PR_VAR,
 		TK_PR_PRELOAD,
@@ -117,10 +118,18 @@ public:
 		TK_NEWLINE,
 		TK_ERROR,
 		TK_EOF,
+		TK_CURSOR, //used for code completion
 		TK_MAX
 	};
 
 protected:
+
+	enum StringMode {
+		STRING_SINGLE_QUOTE,
+		STRING_DOUBLE_QUOTE,
+		STRING_MULTILINE
+	};
+
 	static const char* token_names[TK_MAX];
 public:
 	static const char *get_token_name(Token p_token);

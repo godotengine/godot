@@ -85,6 +85,13 @@ void ScriptServer::register_language(ScriptLanguage *p_language) {
 	_languages[_language_count++]=p_language;
 }
 
+void ScriptServer::init_languages() {
+
+	for(int i=0;i<_language_count;i++) {
+		_languages[i]->init();
+	}
+}
+
 Variant ScriptInstance::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 
 	VARIANT_ARGPTRS;
@@ -283,8 +290,10 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties,co
 		to_remove.pop_front();
 	}
 
-	if (owner && owner->get_script_instance()==this)
+	if (owner && owner->get_script_instance()==this) {
+
 		owner->_change_notify();
+	}
 	//change notify
 }
 

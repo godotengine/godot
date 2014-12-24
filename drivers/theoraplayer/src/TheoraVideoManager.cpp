@@ -35,6 +35,8 @@ extern "C"
 	void initYUVConversionModule();
 }
 
+#include "core/os/memory.h"
+
 //#define _DECODING_BENCHMARK //uncomment to test average decoding time on a given device
 
 
@@ -184,16 +186,18 @@ TheoraAudioInterfaceFactory* TheoraVideoManager::getAudioInterfaceFactory()
 TheoraVideoClip* TheoraVideoManager::createVideoClip(std::string filename,
 													 TheoraOutputMode output_mode,
 													 int numPrecachedOverride,
-													 bool usePower2Stride)
+													 bool usePower2Stride,
+													 int p_track)
 {
-	TheoraDataSource* src=new TheoraFileDataSource(filename);
-	return createVideoClip(src,output_mode,numPrecachedOverride,usePower2Stride);
+	TheoraDataSource* src=memnew(TheoraFileDataSource(filename));
+	return createVideoClip(src,output_mode,numPrecachedOverride,usePower2Stride, p_track);
 }
 
 TheoraVideoClip* TheoraVideoManager::createVideoClip(TheoraDataSource* data_source,
 													 TheoraOutputMode output_mode,
 													 int numPrecachedOverride,
-													 bool usePower2Stride)
+													 bool usePower2Stride,
+													 int p_audio_track)
 {
 	mWorkMutex->lock();
 
@@ -226,6 +230,8 @@ TheoraVideoClip* TheoraVideoManager::createVideoClip(TheoraDataSource* data_sour
 #ifdef __FFMPEG
 		clip = new TheoraVideoClip_FFmpeg(data_source, output_mode, nPrecached, usePower2Stride);
 #endif
+
+	clip->set_audio_track(p_audio_track);
 	clip->load(data_source);
 	clip->decodeNextFrame(); // ensure the first frame is always preloaded and have the main thread do it to prevent potential thread starvatio
 

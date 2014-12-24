@@ -121,7 +121,7 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= int(keep_aspect);
 	else if (p_name=="current") {
 
-		if (is_inside_scene() && get_scene()->is_editor_hint()) {
+		if (is_inside_tree() && get_tree()->is_editor_hint()) {
 			r_ret=current;
 		} else {
 			r_ret=is_current();
@@ -182,7 +182,7 @@ void Camera::_update_camera() {
 //	if (viewport_ptr && is_inside_scene() && is_current())
 //		viewport_ptr->_camera_transform_changed_notify();
 
-	if (is_inside_scene() && is_current()) {
+	if (is_inside_tree() && is_current()) {
 		if (viewport_ptr) {
 			viewport_ptr->_camera_transform_changed_notify();
 		}
@@ -219,10 +219,13 @@ void Camera::_notification(int p_what) {
 
 			}
 
+			camera_group = "_vp_cameras"+itos(get_viewport()->get_instance_ID());
+			add_to_group(camera_group);
 			if (viewport_ptr)
 				viewport_ptr->cameras.insert(this);
 			if (current)
 				make_current();
+
 
 		} break;			
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -241,6 +244,8 @@ void Camera::_notification(int p_what) {
 			if (viewport_ptr)
 				viewport_ptr->cameras.erase(this);
 			viewport_ptr=NULL;
+			remove_from_group(camera_group);
+
 
 		} break;
 		case NOTIFICATION_BECAME_CURRENT: {
@@ -262,7 +267,7 @@ void Camera::_notification(int p_what) {
 
 Transform Camera::get_camera_transform() const {
 
-	return get_global_transform();
+	return get_global_transform().orthonormalized();
 }
 
 void Camera::set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far) {
@@ -304,7 +309,7 @@ void Camera::make_current() {
 
 	current=true;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (viewport_ptr) {
@@ -314,22 +319,40 @@ void Camera::make_current() {
 	//get_scene()->call_group(SceneMainLoop::GROUP_CALL_REALTIME,camera_group,"_camera_make_current",this);
 }
 
+
+void Camera::_camera_make_next_current(Node *p_exclude) {
+
+	if (this==p_exclude)
+		return;
+	if (!is_inside_tree())
+		return;
+	if (get_viewport()->get_camera()!=NULL)
+		return;
+
+	make_current();
+}
+
+
 void Camera::clear_current() {
 
 	current=false;
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (viewport_ptr) {
-		if (viewport_ptr->get_camera()==this)
+		if (viewport_ptr->get_camera()==this) {
 			viewport_ptr->_set_camera(NULL);
+			//a group is used beause this needs to be in order to be deterministic
+			get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,camera_group,"_camera_make_next_current",this);
+
+		}
 	}
 
 }
 
 bool Camera::is_current() const {
 
-	if (is_inside_scene()) {
+	if (is_inside_tree()) {
 		if (viewport_ptr)
 			return viewport_ptr->get_camera()==this;
 	} else
@@ -439,12 +462,20 @@ Vector3 Camera::project_ray_normal(const Point2& p_pos) const {
 
 Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
+
+#if 0
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Vector2 cpos = p_pos;
+#else
+
+	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
+	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+#endif
 
 	Vector3 ray;
 
@@ -456,9 +487,8 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 		cm.set_perspective(fov,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 		float screen_w,screen_h;
 		cm.get_viewport_size(screen_w,screen_h);
-		ray=Vector3( ((p_pos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(p_pos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
+		ray=Vector3( ((cpos.x/viewport_size.width)*2.0-1.0)*screen_w, ((1.0-(cpos.y/viewport_size.height))*2.0-1.0)*screen_h,-near).normalized();
 	}
-
 
 	return ray;
 };
@@ -466,13 +496,19 @@ Vector3 Camera::project_local_ray_normal(const Point2& p_pos) const {
 
 Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
+#if 0
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
+	Vector2 cpos = p_pos;
+#else
 
+	Size2 viewport_size = viewport_ptr->get_camera_rect_size();
+	Vector2 cpos = viewport_ptr->get_camera_coords(p_pos);
+#endif
 
 	ERR_FAIL_COND_V( viewport_size.y == 0, Vector3() );
 //	float aspect = viewport_size.x / viewport_size.y;
@@ -482,7 +518,7 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 		return get_camera_transform().origin;
 	} else {
 
-		Vector2 pos = p_pos / viewport_size;
+		Vector2 pos = cpos / viewport_size;
 		float vsize,hsize;
 		if (keep_aspect==KEEP_WIDTH) {
 			vsize = size/viewport_size.get_aspect();
@@ -492,6 +528,8 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 			vsize = size;
 
 		}
+
+
 
 		Vector3 ray;
 		ray.x = pos.x * (hsize) - hsize/2;
@@ -504,9 +542,9 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 
 Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector2());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector2());
 	}
 
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
@@ -535,9 +573,9 @@ Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 Vector3 Camera::project_position(const Point2& p_point) const {
 
-	if (!is_inside_scene()) {
+	if (!is_inside_tree()) {
 		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_scene(),Vector3());
+		ERR_FAIL_COND_V(!is_inside_tree(),Vector3());
 	}
 
 	Size2 viewport_size = viewport_ptr->get_visible_rect().size;
@@ -636,6 +674,7 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&Camera::get_environment);
 	ObjectTypeDB::bind_method(_MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode);
 	ObjectTypeDB::bind_method(_MD("get_keep_aspect_mode"),&Camera::get_keep_aspect_mode);
+	ObjectTypeDB::bind_method(_MD("_camera_make_next_current"),&Camera::_camera_make_next_current);
 	//ObjectTypeDB::bind_method( _MD("_camera_make_current"),&Camera::_camera_make_current );
 
 	BIND_CONSTANT( PROJECTION_PERSPECTIVE );
@@ -695,7 +734,7 @@ Vector<Plane> Camera::get_frustum() const {
 	else
 		cm.set_orthogonal(size,viewport_size.get_aspect(),near,far,keep_aspect==KEEP_WIDTH);
 
-	return cm.get_projection_planes(get_global_transform());
+	return cm.get_projection_planes(get_camera_transform());
 
 }
 
@@ -704,7 +743,7 @@ Vector<Plane> Camera::get_frustum() const {
 void Camera::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
 
 	Transform lookat;
-	lookat.origin=get_global_transform().origin;
+	lookat.origin=get_camera_transform().origin;
 	lookat=lookat.looking_at(p_target,p_up_normal);
 	set_global_transform(lookat);
 }
@@ -732,7 +771,8 @@ Camera::Camera() {
 	mode=PROJECTION_PERSPECTIVE;
 	set_perspective(60.0,0.1,100.0);
 	keep_aspect=KEEP_HEIGHT;
-	layers=0xFFFFFFFF;
+	layers=0xfffff;
+	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
 	//active=false;
 }
 

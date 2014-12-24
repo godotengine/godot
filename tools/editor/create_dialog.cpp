@@ -225,7 +225,7 @@ void CreateDialog::_confirmed() {
 
 void CreateDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed",this,"_confirmed");
 		_update_search();
@@ -289,7 +289,7 @@ CreateDialog::CreateDialog() {
 	search_box->connect("input_event",this,"_sbox_input");
 	search_options = memnew( Tree );
 	vbc->add_margin_child("Matches:",search_options,true);
-	get_ok()->set_text("Open");
+	get_ok()->set_text("Create");
 	get_ok()->set_disabled(true);
 	register_text_enter(search_box);
 	set_hide_on_ok(false);

@@ -34,14 +34,14 @@ void ParticleAttractor2D::_notification(int p_what) {
 
 	switch(p_what)	 {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_update_owner();
 
 		} break;
 		case NOTIFICATION_DRAW: {
 
-			if (!get_scene()->is_editor_hint())
+			if (!get_tree()->is_editor_hint())
 				return;
 
 			Vector2 pv;
@@ -58,7 +58,7 @@ void ParticleAttractor2D::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 			if (owner) {
 				_set_owner(NULL);
 			}
@@ -76,7 +76,7 @@ void ParticleAttractor2D::_owner_exited() {
 
 void ParticleAttractor2D::_update_owner() {
 
-	if (!is_inside_scene() || !has_node(path)) {
+	if (!is_inside_tree() || !has_node(path)) {
 		_set_owner(NULL);
 		return;
 	}
@@ -98,7 +98,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 		return;
 
 	if (owner) {
-		owner->disconnect("exit_scene",this,"_owner_exited");
+		owner->disconnect("exit_tree",this,"_owner_exited");
 		owner->attractors.erase(this);
 		owner=NULL;
 	}
@@ -106,7 +106,7 @@ void ParticleAttractor2D::_set_owner(Particles2D* p_owner) {
 
 	if (owner) {
 
-		owner->connect("exit_scene",this,"_owner_exited",varray(),CONNECT_ONESHOT);
+		owner->connect("exit_tree",this,"_owner_exited",varray(),CONNECT_ONESHOT);
 		owner->attractors.insert(this);
 	}
 }
@@ -352,8 +352,10 @@ void Particles2D::_process_particles(float p_delta) {
 				p.velocity*=param[PARAM_LINEAR_VELOCITY]+param[PARAM_LINEAR_VELOCITY]*_rand_from_seed(&rand_seed)*randomness[PARAM_LINEAR_VELOCITY];
 				p.velocity+=initial_velocity;
 				p.active=true;
-				p.rot=0;
+				p.rot=Math::deg2rad(param[PARAM_INITIAL_ANGLE]+param[PARAM_INITIAL_ANGLE]*randomness[PARAM_INITIAL_ANGLE]*_rand_from_seed(&rand_seed));
 				active_count++;
+
+				p.frame=Math::fmod(param[PARAM_ANIM_INITIAL_POS]+randomness[PARAM_ANIM_INITIAL_POS]*_rand_from_seed(&rand_seed),1.0);
 
 
 			} else {
@@ -426,6 +428,8 @@ void Particles2D::_process_particles(float p_delta) {
 
 			p.pos+=p.velocity*frame_time;
 			p.rot+=Math::lerp(param[PARAM_SPIN_VELOCITY],param[PARAM_SPIN_VELOCITY]*randomness[PARAM_SPIN_VELOCITY]*_rand_from_seed(&rand_seed),randomness[PARAM_SPIN_VELOCITY])*frame_time;
+			float anim_spd=param[PARAM_ANIM_SPEED_SCALE]+param[PARAM_ANIM_SPEED_SCALE]*randomness[PARAM_ANIM_SPEED_SCALE]*_rand_from_seed(&rand_seed);
+			p.frame=Math::fposmod(p.frame+(frame_time/lifetime)*anim_spd,1.0);
 
 			active_count++;
 
@@ -457,7 +461,7 @@ void Particles2D::_notification(int p_what) {
 			_process_particles( get_process_delta_time() );
 		} break;
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			float ppt=preprocess;
 			while(ppt>0) {
@@ -474,9 +478,13 @@ void Particles2D::_notification(int p_what) {
 			RID ci=get_canvas_item();
 			Size2 size(1,1);
 			Point2 center;
+			int total_frames=1;
 
 			if (!texture.is_null()) {
 				size=texture->get_size();
+				size.x/=h_frames;
+				size.y/=v_frames;
+				total_frames=h_frames*v_frames;
 			}
 
 
@@ -484,7 +492,7 @@ void Particles2D::_notification(int p_what) {
 
 			Particle *pdata=&particles[0];
 			int particle_count=particles.size();
-			Rect2 r(Point2(),size);
+
 			RID texrid;
 
 			if (texture.is_valid())
@@ -507,7 +515,13 @@ void Particles2D::_notification(int p_what) {
 			}
 
 
-			for(int i=0;i<particle_count;i++) {
+			int start_particle = (int)(time * (float)particle_count / lifetime);
+			
+			for (int id=0;id<particle_count;++id) {
+				int i = start_particle + id;
+				if (i >= particle_count) {
+					i -= particle_count;
+				}
 
 				Particle &p=pdata[i];
 				if (!p.active)
@@ -606,9 +620,20 @@ void Particles2D::_notification(int p_what) {
 
 				if (texrid.is_valid()) {
 
-					VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
+					Rect2 src_rect;
+					src_rect.size=size;
+
+					if (total_frames>1) {
+						int frame = Math::fast_ftoi(Math::floor(p.frame*total_frames)) % total_frames;
+						src_rect.pos.x = size.x * (frame%h_frames);
+						src_rect.pos.y = size.y * (frame/h_frames);
+					}
+
+
+					texture->draw_rect_region(ci,Rect2(Point2(),size),src_rect,color);
+					//VisualServer::get_singleton()->canvas_item_add_texture_rect(ci,r,texrid,false,color);
 				} else {
-					VisualServer::get_singleton()->canvas_item_add_rect(ci,r,color);
+					VisualServer::get_singleton()->canvas_item_add_rect(ci,Rect2(Point2(),size),color);
 
 				}
 
@@ -632,9 +657,12 @@ static const char* _particlesframe_property_names[Particles2D::PARAM_MAX]={
 	"params/radial_accel",
 	"params/tangential_accel",
 	"params/damping",
+	"params/initial_angle",
 	"params/initial_size",
 	"params/final_size",
-	"params/hue_variation"
+	"params/hue_variation",
+	"params/anim_speed_scale",
+	"params/anim_initial_pos",
 };
 
 static const char* _particlesframe_property_rnames[Particles2D::PARAM_MAX]={
@@ -647,10 +675,13 @@ static const char* _particlesframe_property_rnames[Particles2D::PARAM_MAX]={
 	"randomness/gravity_strength",
 	"randomness/radial_accel",
 	"randomness/tangential_accel",
-	"randomness/damping",
+	"randomness/damping",	
+	"randomness/initial_angle",
 	"randomness/initial_size",
 	"randomness/final_size",
-	"randomness/hue_variation"
+	"randomness/hue_variation",
+	"randomness/anim_speed_scale",
+	"randomness/anim_initial_pos",
 };
 
 static const char* _particlesframe_property_ranges[Particles2D::PARAM_MAX]={
@@ -664,9 +695,12 @@ static const char* _particlesframe_property_ranges[Particles2D::PARAM_MAX]={
 	"-128,128,0.01",
 	"-128,128,0.01",
 	"0,1024,0.001",
+	"0,360,0.01",
 	"0,1024,0.01",
 	"0,1024,0.01",
-	"0,1,0.01"
+	"0,1,0.01",
+	"0,128,0.01",
+	"0,1,0.01",
 };
 
 
@@ -899,6 +933,28 @@ bool Particles2D::is_flipped_v() const{
 	return flip_v;
 }
 
+void Particles2D::set_h_frames(int p_frames) {
+
+	ERR_FAIL_COND(p_frames<1);
+	h_frames=p_frames;
+}
+
+int Particles2D::get_h_frames() const{
+
+	return h_frames;
+}
+
+void Particles2D::set_v_frames(int p_frames){
+
+	ERR_FAIL_COND(p_frames<1);
+	v_frames=p_frames;
+}
+int Particles2D::get_v_frames() const{
+
+	return v_frames;
+}
+
+
 
 void Particles2D::set_emission_points(const DVector<Vector2>& p_points) {
 
@@ -948,6 +1004,12 @@ void Particles2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_flip_v","enable"),&Particles2D::set_flip_v);
 	ObjectTypeDB::bind_method(_MD("is_flipped_v"),&Particles2D::is_flipped_v);
 
+	ObjectTypeDB::bind_method(_MD("set_h_frames","enable"),&Particles2D::set_h_frames);
+	ObjectTypeDB::bind_method(_MD("get_h_frames"),&Particles2D::get_h_frames);
+
+	ObjectTypeDB::bind_method(_MD("set_v_frames","enable"),&Particles2D::set_v_frames);
+	ObjectTypeDB::bind_method(_MD("get_v_frames"),&Particles2D::get_v_frames);
+
 	ObjectTypeDB::bind_method(_MD("set_emission_half_extents","extents"),&Particles2D::set_emission_half_extents);
 	ObjectTypeDB::bind_method(_MD("get_emission_half_extents"),&Particles2D::get_emission_half_extents);
 
@@ -987,6 +1049,9 @@ void Particles2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/flip_h"),_SCS("set_flip_h"),_SCS("is_flipped_h"));
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/flip_v"),_SCS("set_flip_v"),_SCS("is_flipped_v"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"config/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/h_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_h_frames"),_SCS("get_h_frames"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/v_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_v_frames"),_SCS("get_v_frames"));
+
 
 
 	for(int i=0;i<PARAM_MAX;i++) {
@@ -1041,8 +1106,10 @@ Particles2D::Particles2D() {
 	set_param(PARAM_GRAVITY_STRENGTH,9.8);
 	set_param(PARAM_RADIAL_ACCEL,0);
 	set_param(PARAM_TANGENTIAL_ACCEL,0);
+	set_param(PARAM_INITIAL_ANGLE,0.0);
 	set_param(PARAM_INITIAL_SIZE,1.0);
 	set_param(PARAM_FINAL_SIZE,1.0);
+	set_param(PARAM_ANIM_SPEED_SCALE,1.0);
 
 
 	time=0;
@@ -1070,6 +1137,8 @@ Particles2D::Particles2D() {
 	flip_h=false;
 	flip_v=false;
 
+	v_frames=1;
+	h_frames=1;
 
 	emit_timeout = 0;
 	time_to_live = 0;

@@ -42,16 +42,16 @@ func _fixed_process(dt):
 	
 	
 	var col_left = ds.intersect_ray(target,target+Matrix3(up,deg2rad(autoturn_ray_aperture)).xform(delta),collision_exception)
-	var col = ds.intersect_ray(target,target,collision_exception)
+	var col = ds.intersect_ray(target,target+delta,collision_exception)
 	var col_right = ds.intersect_ray(target,target+Matrix3(up,deg2rad(-autoturn_ray_aperture)).xform(delta),collision_exception)
 	
-	if (col!=null):
+	if (!col.empty()):
 		#if main ray was occluded, get camera closer, this is the worst case scenario
 		delta = col.position - target	
-	elif (col_left!=null and col_right==null):
+	elif (!col_left.empty() and col_right.empty()):
 		#if only left ray is occluded, turn the camera around to the right
 		delta = Matrix3(up,deg2rad(-dt*autoturn_speed)).xform(delta)
-	elif (col_left==null and col_right!=null):
+	elif (col_left.empty() and !col_right.empty()):
 		#if only right ray is occluded, turn the camera around to the left
 		delta = Matrix3(up,deg2rad(dt*autoturn_speed)).xform(delta)
 	else:
@@ -59,6 +59,9 @@ func _fixed_process(dt):
 		pass
 	
 	#apply lookat
+	if (delta==Vector3()):
+		delta = (pos - target).normalized() * 0.0001
+
 	pos = target + delta
 	
 	look_at_from_pos(pos,target,up)

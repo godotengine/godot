@@ -69,7 +69,7 @@ void EditorDirDialog::reload() {
 
 void EditorDirDialog::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 		reload();
 		tree->connect("item_collapsed",this,"_item_collapsed",varray(),CONNECT_DEFERRED);
 	}

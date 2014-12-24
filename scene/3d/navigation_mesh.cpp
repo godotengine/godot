@@ -114,7 +114,7 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 		return;
 	enabled=p_enabled;
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
 
 	if (!enabled) {
@@ -129,7 +129,7 @@ void NavigationMeshInstance::set_enabled(bool p_enabled) {
 
 			if (navmesh.is_valid()) {
 
-				nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation));
+				nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 			}
 		}
 
@@ -152,7 +152,7 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 
 	switch(p_what) {
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			Spatial *c=this;
 			while(c) {
@@ -162,7 +162,7 @@ void NavigationMeshInstance::_notification(int p_what) {
 
 					if (enabled && navmesh.is_valid()) {
 
-						nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation));
+						nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 					}
 					break;
 				}
@@ -178,7 +178,7 @@ void NavigationMeshInstance::_notification(int p_what) {
 			}
 
 		} break;
-		case NOTIFICATION_EXIT_SCENE: {
+		case NOTIFICATION_EXIT_TREE: {
 
 			if (navigation) {
 
@@ -205,7 +205,7 @@ void NavigationMeshInstance::set_navigation_mesh(const Ref<NavigationMesh>& p_na
 	navmesh=p_navmesh;
 
 	if (navigation && navmesh.is_valid() && enabled) {
-		nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation));
+		nav_id = navigation->navmesh_create(navmesh,get_relative_transform(navigation),this);
 	}
 	update_gizmo();
 

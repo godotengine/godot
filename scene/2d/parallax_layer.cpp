@@ -74,7 +74,7 @@ void ParallaxLayer::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_SCENE: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			orig_offset=get_pos();
 			orig_scale=get_scale();
@@ -85,9 +85,9 @@ void ParallaxLayer::_notification(int p_what) {
 
 void ParallaxLayer::set_base_offset_and_scale(const Point2& p_offset,float p_scale) {
 
-	if (!is_inside_scene())
+	if (!is_inside_tree())
 		return;
-	if (get_scene()->is_editor_hint())
+	if (get_tree()->is_editor_hint())
 		return;
 	Point2 new_ofs = ((orig_offset+p_offset)*motion_scale)*p_scale;
 

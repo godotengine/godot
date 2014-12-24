@@ -29,6 +29,9 @@
 #include "packed_scene.h"
 #include "globals.h"
 #include "io/resource_loader.h"
+#include "scene/3d/spatial.h"
+#include "scene/gui/control.h"
+#include "scene/2d/node_2d.h"
 
 bool PackedScene::can_instance() const {
 
@@ -80,9 +83,28 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 		} else {
 			//create anew
 			Object * obj = ObjectTypeDB::instance(snames[ n.type ]);
-			ERR_FAIL_COND_V(!obj,NULL);
+			if (!obj || !obj->cast_to<Node>()) {
+				if (obj) {
+					memdelete(obj);
+					obj=NULL;
+				}
+				WARN_PRINT(String("Warning node of type "+snames[n.type].operator String()+" does not exist.").ascii().get_data());
+				if (n.parent>=0 && n.parent<nc && ret_nodes[n.parent]) {
+					if (ret_nodes[n.parent]->cast_to<Spatial>()) {
+						obj = memnew( Spatial );
+					} else if (ret_nodes[n.parent]->cast_to<Control>()) {
+						obj = memnew( Control );
+					} else if (ret_nodes[n.parent]->cast_to<Node2D>()) {
+						obj = memnew( Node2D );
+					}
+
+				}
+				if (!obj) {
+					obj = memnew( Node );
+				}
+			}
+
 			node = obj->cast_to<Node>();
-			ERR_FAIL_COND_V(!node,NULL);
 
 		}
 
@@ -225,22 +247,38 @@ Error PackedScene::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<
 	p_node->get_property_list(&plist);
 	for (List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
 
-		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
+
+		if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
 			continue;
+		}
 
 		String name = E->get().name;
 		Variant value = p_node->get( E->get().name );
 
-		if (E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())
+		if (E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero()) {
 			continue;
+		}
 
 
 		if (nd.instance>=0) {
 			//only save changed properties in instance
-			if (!instance_state.has(name))
+			/*
+			  // this was commented because it would not save properties created from within script
+			  // done with _get_property_list, that are not in the original node.
+			  // if some property is not saved, check again
+
+			  if (!instance_state.has(name)) {
+				print_line("skip not in instance");
 				continue;
-			if (instance_state[name]==value)
+			}*/
+
+			if (E->get().usage & PROPERTY_USAGE_NO_INSTANCE_STATE) {
 				continue;
+			}
+
+			if (instance_state[name]==value) {
+				continue;
+			}
 
 		}
 

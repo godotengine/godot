@@ -15,7 +15,7 @@
 #include "./vp8enci.h"
 #include "../utils/filters.h"
 #include "../utils/quant_levels.h"
-#include "../webp/format_constants.h"
+#include "../format_constants.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {

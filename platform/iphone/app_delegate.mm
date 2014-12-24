@@ -65,6 +65,8 @@ Error _shell_open(String p_uri) {
 
 @implementation AppDelegate
 
+@synthesize window;
+
 extern int gargc;
 extern char** gargv;
 extern int iphone_main(int, int, int, char**);
@@ -127,7 +129,7 @@ static int frame_count = 0;
 
 		OSIPhone::get_singleton()->set_unique_ID(String::utf8([uuid UTF8String]));
 
-	}; // break;
+	}; break;
 /*
 	case 1: {
 		++frame_count;
@@ -154,7 +156,7 @@ static int frame_count = 0;
 		[Appirater appLaunched:YES app_id:aid];
 		#endif
 
-	}; //  break; fallthrough
+	}; break; // no fallthrough
 
 	default: {
 
@@ -257,8 +259,12 @@ static int frame_count = 0;
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
 	printf("********************* did enter background\n");
-	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+	if (OS::get_singleton()->get_main_loop())
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 	[view_controller.view stopAnimation];
+	if (OS::get_singleton()->native_video_is_playing()) {
+		OSIPhone::get_singleton()->native_video_focus_out();
+	};
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application
@@ -282,8 +288,12 @@ static int frame_count = 0;
     printf("********************* mobile app tracker found\n");
 	[MobileAppTracker measureSession];
 #endif
-	OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	if (OS::get_singleton()->get_main_loop())
+		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 	[view_controller.view startAnimation]; // FIXME: resume seems to be recommended elsewhere
+	if (OSIPhone::get_singleton()->native_video_is_playing()) {
+		OSIPhone::get_singleton()->native_video_unpause();
+	};
 }
 
 - (void)accelerometer:(UIAccelerometer*)accelerometer didAccelerate:(UIAcceleration*)acceleration {

@@ -486,7 +486,7 @@ void VisualServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("instances_cull_aabb"),&VisualServer::instances_cull_aabb);
 	ObjectTypeDB::bind_method(_MD("instances_cull_ray"),&VisualServer::instances_cull_ray);
-	ObjectTypeDB::bind_method(_MD("instances_cull_convex"),&VisualServer::instances_cull_ray);
+	ObjectTypeDB::bind_method(_MD("instances_cull_convex"),&VisualServer::instances_cull_convex);
 
 
 

@@ -106,6 +106,7 @@ String DirAccessWindows::get_next() {
 		return name;
 	} else {
 
+#ifndef WINRT_ENABLED
 		_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
 
 		String name=p->f.cFileName;
@@ -117,7 +118,8 @@ String DirAccessWindows::get_next() {
 		}
 
 		return name;
-
+#endif
+		return "";
 	}
 }
 
@@ -189,9 +191,10 @@ Error DirAccessWindows::change_dir(String p_dir) {
 			current_dir=real_current_dir_name; // TODO, utf8 parser
 			current_dir=current_dir.replace("\\","/");
 
-		}
+		} //else {
 
-		SetCurrentDirectoryW(prev_dir.c_str());
+			SetCurrentDirectoryW(prev_dir.c_str());
+		//}
 
 		return worked?OK:ERR_INVALID_PARAMETER;
 	} else {
@@ -209,9 +212,10 @@ Error DirAccessWindows::change_dir(String p_dir) {
 			current_dir=real_current_dir_name; // TODO, utf8 parser
 			current_dir=current_dir.replace("\\","/");
 
-		}
+		}// else {
 
-		SetCurrentDirectoryA(prev_dir.ascii().get_data());
+			SetCurrentDirectoryA(prev_dir.ascii().get_data());
+		//}
 
 		return worked?OK:ERR_INVALID_PARAMETER;
 
@@ -299,8 +303,9 @@ bool DirAccessWindows::file_exists(String p_file) {
 
 	GLOBAL_LOCK_FUNCTION
 
-        if (!p_file.is_abs_path())
-            p_file=get_current_dir()+"/"+p_file;
+	if (!p_file.is_abs_path())
+		p_file=get_current_dir()+"/"+p_file;
+
 	p_file=fix_path(p_file);
 	
 	p_file.replace("/","\\");
@@ -309,21 +314,22 @@ bool DirAccessWindows::file_exists(String p_file) {
 
 	if (unicode) {
 
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExW(p_file.c_str(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
 
-                return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
+		return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	} else {
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExA(p_file.ascii().get_data(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
-                return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
+
+		return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	}
 
@@ -334,8 +340,9 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 	GLOBAL_LOCK_FUNCTION
 
-		if (!p_dir.is_abs_path())
-			p_dir=get_current_dir()+"/"+p_dir;
+	if (!p_dir.is_abs_path())
+		p_dir=get_current_dir()+"/"+p_dir;
+
 	p_dir=fix_path(p_dir);
 
 	p_dir.replace("/","\\");
@@ -344,24 +351,26 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 
 	if (unicode) {
 
-		DWORD       fileAttr;
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExW(p_dir.c_str(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
 
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 	} else {
-		DWORD       fileAttr;
+#ifndef WINRT_ENABLED
+		DWORD fileAttr;
 
 		fileAttr = GetFileAttributesExA(p_dir.ascii().get_data(), GetFileExInfoStandard, &fileInfo);
-		if (0xFFFFFFFF == fileAttr)
+		if (0 == fileAttr)
 			return false;
+
 		return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
+#endif
 	}
-
 	return false;
 }
 

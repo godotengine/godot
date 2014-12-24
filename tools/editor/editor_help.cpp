@@ -270,7 +270,7 @@ void EditorHelpSearch::_confirmed() {
 
 void EditorHelpSearch::_notification(int p_what) {
 
-	if (p_what==NOTIFICATION_ENTER_SCENE) {
+	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 		connect("confirmed",this,"_confirmed");
 		_update_search();
@@ -293,7 +293,7 @@ void EditorHelpSearch::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_text_changed"),&EditorHelpSearch::_text_changed);
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&EditorHelpSearch::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&EditorHelpSearch::_sbox_input);
-	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_sbox_input);
+	ObjectTypeDB::bind_method(_MD("_update_search"),&EditorHelpSearch::_update_search);
 
 	ADD_SIGNAL(MethodInfo("go_to_help"));
 
@@ -418,7 +418,6 @@ void EditorHelp::_class_list_select(const String& p_select) {
 void EditorHelp::_class_desc_select(const String& p_select) {
 
 	if (p_select.begins_with("#")) {
-
 		_goto_desc(p_select.substr(1,p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
@@ -481,9 +480,11 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 
 	if (tree_item_map.has(p_class)) {
+		select_locked = true;
 		tree_item_map[p_class]->select(0);
 		class_list->ensure_cursor_is_visible();
 	}
+
 	class_desc->show();
 	//tabs->set_current_tab(PAGE_CLASS_DESC);
 	edited_class->set_pressed(true);
@@ -509,7 +510,6 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 
 	class_desc->clear();
 	method_line.clear();
-
 	edited_class->set_text(p_class);
 	//edited_class->show();
 
@@ -923,7 +923,7 @@ Error EditorHelp::_goto_desc(const String& p_class,bool p_update_history,int p_v
 	return OK;
 }
 
-void EditorHelp::_request_help(const String& p_string) {	
+void EditorHelp::_request_help(const String& p_string) {
 	Error err = _goto_desc(p_string);
 	if (err==OK) {
 		editor->call("_editor_select",3);
@@ -1288,8 +1288,10 @@ void EditorHelp::_notification(int p_what) {
 
 void EditorHelp::_tree_item_selected() {
 
-	if (select_locked)
+	if (select_locked) {
+		select_locked = false;
 		return;
+	}
 	TreeItem *s=class_list->get_selected();
 	if (!s)
 		return;
@@ -1337,7 +1339,6 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 	edited_class->hide();
 	b->set_toggle_mode(true);
 	b->connect("pressed",this,"_button_pressed",make_binds(PAGE_CLASS_DESC));
-	edited_class->hide();
 
 	b = memnew( Button );
 	b->set_text("Search in Classes");

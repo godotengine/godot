@@ -54,7 +54,7 @@ func _fixed_process(delta):
 	var original_vel = vel
 
 
-	var floor_velocity=Vector2()
+	var floor_velocity=Vector3()
 
 	var attempts=4
 	

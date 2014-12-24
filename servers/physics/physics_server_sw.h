@@ -201,6 +201,9 @@ public:
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
 
+	virtual void body_set_ray_pickable(RID p_body,bool p_enable);
+	virtual bool body_is_ray_pickable(RID p_body) const;
+
 	/* JOINT API */
 
 	virtual RID joint_create_pin(RID p_body_A,const Vector3& p_local_A,RID p_body_B,const Vector3& p_local_B);
@@ -243,6 +246,9 @@ public:
 	virtual bool generic_6dof_joint_get_flag(RID p_joint,Vector3::Axis,G6DOFJointAxisFlag p_flag);
 
 	virtual JointType joint_get_type(RID p_joint) const;
+
+	virtual void joint_set_solver_priority(RID p_joint,int p_priority);
+	virtual int joint_get_solver_priority(RID p_joint) const;
 
 #if 0
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value);

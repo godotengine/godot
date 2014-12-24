@@ -55,6 +55,7 @@ class OS {
 	int _orientation;
 	float _fps;
 	int _target_fps;
+	float _time_scale;
 
 	char *last_error;
 
@@ -136,6 +137,7 @@ public:
 	virtual MouseMode get_mouse_mode() const;
 
 
+	virtual void warp_mouse_pos(const Point2& p_to)  {}
 	virtual Point2 get_mouse_pos() const=0;
 	virtual int get_mouse_button_state() const=0;
 	virtual void set_window_title(const String& p_title)=0;
@@ -284,6 +286,20 @@ public:
 	virtual String get_data_dir() const;
 	virtual String get_resource_dir() const;
 
+	enum SystemDir {
+		SYSTEM_DIR_DESKTOP,
+		SYSTEM_DIR_DCIM,
+		SYSTEM_DIR_DOCUMENTS,
+		SYSTEM_DIR_DOWNLOADS,
+		SYSTEM_DIR_MOVIES,
+		SYSTEM_DIR_MUSIC,
+		SYSTEM_DIR_PICTURES,
+		SYSTEM_DIR_RINGTONES,
+	};
+
+	virtual String get_system_dir(SystemDir p_dir) const;
+
+
 	virtual void set_no_window_mode(bool p_enable);
 	virtual bool is_no_window_mode_enabled() const;
 
@@ -321,7 +337,7 @@ public:
 
 	virtual String get_unique_ID() const;
 
-	virtual Error native_video_play(String p_path, float p_volume);
+	virtual Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	virtual bool native_video_is_playing() const;
 	virtual void native_video_pause();
 	virtual void native_video_stop();
@@ -330,6 +346,10 @@ public:
 
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object* p_obj, String p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);
+
+
+	void set_time_scale(float p_scale);
+	float get_time_scale() const;
 
 	OS();	
 	virtual ~OS();

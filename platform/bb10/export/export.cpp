@@ -147,7 +147,7 @@ void EditorExportPlatformBB10::_get_property_list( List<PropertyInfo> *p_list) c
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/name") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/description",PROPERTY_HINT_MULTILINE_TEXT) );
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/icon",PROPERTY_HINT_FILE,"png") );
-	p_list->push_back( PropertyInfo( Variant::STRING, "package/custom_template", PROPERTY_HINT_FILE,"zip"));
+	p_list->push_back( PropertyInfo( Variant::STRING, "package/custom_template", PROPERTY_HINT_GLOBAL_FILE,"zip"));
 	p_list->push_back( PropertyInfo( Variant::STRING, "release/author") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "release/author_id") );
 

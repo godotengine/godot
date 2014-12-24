@@ -45,13 +45,17 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 
 #include "tcp_server_winsock.h"
+#include "packet_peer_udp_winsock.h"
 #include "stream_peer_winsock.h"
 #include "os/pc_joystick_map.h"
 #include "lang_table.h"
 #include "os/memory_pool_dynamic_prealloc.h"
 #include "globals.h"
 #include "io/marshalls.h"
+
+#include "shlobj.h"
 static const WORD MAX_CONSOLE_LINES = 1500;
+
 
 //#define STDOUT_FILE
 
@@ -173,6 +177,7 @@ void OS_Windows::initialize_core() {
 
 	TCPServerWinsock::make_default();
 	StreamPeerWinsock::make_default();
+	PacketPeerUDPWinsock::make_default();
 	
 	mempool_static = new MemoryPoolStaticMalloc;
 #if 1
@@ -211,45 +216,32 @@ bool OS_Windows::can_draw() const {
 #define IsPenEvent(dw) (((dw) & SIGNATURE_MASK) == MI_WP_SIGNATURE)
 
 
-void OS_Windows::_touch_event(int idx, UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+void OS_Windows::_touch_event(bool p_pressed, int p_x, int p_y, int idx) {
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_TOUCH;
 	event.ID=++last_id;
 	event.screen_touch.index = idx;
 
-	switch (uMsg) {
-		case WM_LBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-		case WM_RBUTTONDOWN: {
+	event.screen_touch.pressed = p_pressed;
 
-			event.screen_touch.pressed = true;
-		} break;
-
-		case WM_LBUTTONUP:
-		case WM_MBUTTONUP:
-		case WM_RBUTTONUP: {
-			event.screen_touch.pressed = false;
-		} break;
-	};
-
-	event.screen_touch.x=GET_X_LPARAM(lParam);
-	event.screen_touch.y=GET_Y_LPARAM(lParam);
+	event.screen_touch.x=p_x;
+	event.screen_touch.y=p_y;
 
 	if (main_loop) {
 		input->parse_input_event(event);
 	}
 };
 
-void OS_Windows::_drag_event(int idx,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
+void OS_Windows::_drag_event(int p_x, int p_y, int idx) {
 
 	InputEvent event;
 	event.type = InputEvent::SCREEN_DRAG;
 	event.ID=++last_id;
 	event.screen_drag.index = idx;
 
-	event.screen_drag.x=GET_X_LPARAM(lParam);
-	event.screen_drag.y=GET_Y_LPARAM(lParam);
+	event.screen_drag.x=p_x;
+	event.screen_drag.y=p_y;
 
 	if (main_loop)
 		input->parse_input_event(event);
@@ -341,6 +333,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			}
 
+			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
 
@@ -351,6 +344,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				};
 				// fallthrough for mouse event
 			};
+			*/
 
 
 			InputEvent event;
@@ -421,6 +415,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
 
+			/*
 			LPARAM extra = GetMessageExtraInfo();
 			if (IsPenEvent(extra)) {
 
@@ -431,6 +426,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				};
 				// fallthrough for mouse event
 			};
+			*/
 
 			InputEvent event;
 			event.type=InputEvent::MOUSE_BUTTON;
@@ -621,6 +617,43 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			print_line("input lang change");
 		} break;
+
+		#if WINVER >= 0x0700 // for windows 7
+		case WM_TOUCH: {
+
+			BOOL bHandled = FALSE;
+			UINT cInputs = LOWORD(wParam);
+			PTOUCHINPUT pInputs = memnew_arr(TOUCHINPUT, cInputs);
+			if (pInputs){
+				if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT))){
+					for (UINT i=0; i < cInputs; i++){
+						TOUCHINPUT ti = pInputs[i];
+						//do something with each touch input entry
+						if (ti.dwFlags & TOUCHEVENTF_MOVE) {
+
+							_drag_event(ti.x / 100, ti.y / 100, ti.dwID);
+						} else if (ti.dwFlags & (TOUCHEVENTF_UP | TOUCHEVENTF_DOWN)) {
+
+							_touch_event(ti.dwFlags & TOUCHEVENTF_DOWN != 0, ti.x / 100, ti.y / 100, ti.dwID);
+						};
+					}
+					bHandled = TRUE;
+				}else{
+					 /* handle the error here */
+				}
+				memdelete_arr(pInputs);
+			}else{
+				/* handle the error here, probably out of memory */
+			}
+			if (bHandled) {
+				CloseTouchInputHandle((HTOUCHINPUT)lParam);
+				return 0;
+			};
+
+		} break;
+
+		#endif
+
 		default: {
 
 			if (user_proc) {
@@ -900,7 +933,7 @@ void OS_Windows::process_joysticks() {
 
 			if ( (joysticks[i].last_buttons & (1<<j)) != (jinfo.dwButtons & (1<<j)) ) {
 
-				ievent.joy_button.button_index = _pc_joystick_get_native_button(j);
+				ievent.joy_button.button_index = j; //_pc_joystick_get_native_button(j);
 				ievent.joy_button.pressed = jinfo.dwButtons & 1<<j;
 				ievent.ID = ++last_id;
 				input->parse_input_event(ievent);
@@ -954,8 +987,11 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		DEVMODE current;
 		memset(&current,0,sizeof(current));
 		EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &current);
+		
+		WindowRect.right  = current.dmPelsWidth;
+		WindowRect.bottom = current.dmPelsHeight;
 
-		DEVMODE dmScreenSettings;
+/*  DEVMODE dmScreenSettings;
 		memset(&dmScreenSettings,0,sizeof(dmScreenSettings));
 		dmScreenSettings.dmSize=sizeof(dmScreenSettings);
 		dmScreenSettings.dmPelsWidth	= video_mode.width;
@@ -967,7 +1003,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		if (err!=DISP_CHANGE_SUCCESSFUL) {
 
 			video_mode.fullscreen=false;
-		}
+		}*/
 	}
 
 	DWORD		dwExStyle;
@@ -1106,6 +1142,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	tme.dwHoverTime=HOVER_DEFAULT;
 	TrackMouseEvent(&tme);
 
+	//RegisterTouchWindow(hWnd, 0); // Windows 7
 
 	_ensure_data_dir();
 
@@ -1323,10 +1360,24 @@ void OS_Windows::set_mouse_mode(MouseMode p_mode) {
 
 OS_Windows::MouseMode OS_Windows::get_mouse_mode() const{
 
+
 	return mouse_mode;
 }
 
 
+
+void OS_Windows::warp_mouse_pos(const Point2& p_to) {
+
+	if (mouse_mode==MOUSE_MODE_CAPTURED) {
+
+		old_x=p_to.x;
+		old_y=p_to.y;
+	} else {
+
+		SetCursorPos(p_to.x, p_to.y);
+	}
+
+}
 
 Point2 OS_Windows::get_mouse_pos() const {
 
@@ -1345,8 +1396,9 @@ void OS_Windows::set_window_title(const String& p_title) {
 
 void OS_Windows::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
-	
+
 }
+
 OS::VideoMode OS_Windows::get_video_mode(int p_screen) const {
 
 	return video_mode;
@@ -1446,7 +1498,7 @@ OS::Date OS_Windows::get_date() const {
 OS::Time OS_Windows::get_time() const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
@@ -1827,7 +1879,46 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+String OS_Windows::get_system_dir(SystemDir p_dir) const {
 
+
+	int id;
+
+
+
+	switch(p_dir) {
+		case SYSTEM_DIR_DESKTOP: {
+			id=CSIDL_DESKTOPDIRECTORY;
+		} break;
+		case SYSTEM_DIR_DCIM: {
+			id=CSIDL_MYPICTURES;
+		} break;
+		case SYSTEM_DIR_DOCUMENTS: {
+			id=0x000C;
+		} break;
+		case SYSTEM_DIR_DOWNLOADS: {
+			id=0x000C ;
+		} break;
+		case SYSTEM_DIR_MOVIES: {
+			id=CSIDL_MYVIDEO;
+		} break;
+		case SYSTEM_DIR_MUSIC: {
+			id=CSIDL_MYMUSIC;
+		} break;
+		case SYSTEM_DIR_PICTURES: {
+			id=CSIDL_MYPICTURES;
+		} break;
+		case SYSTEM_DIR_RINGTONES: {
+			id=CSIDL_MYMUSIC;
+		} break;
+	}
+
+	WCHAR szPath[MAX_PATH];
+	HRESULT res = SHGetFolderPathW(NULL,id,NULL,0,szPath);
+	ERR_FAIL_COND_V(res!=S_OK,String());
+	return String(szPath);
+
+}
 String OS_Windows::get_data_dir() const {
 
 	String an = Globals::get_singleton()->get("application/name");
@@ -1835,7 +1926,11 @@ String OS_Windows::get_data_dir() const {
 
 		if (has_environment("APPDATA")) {
 
-			return OS::get_singleton()->get_environment("APPDATA")+"\\"+an;
+			bool use_godot = Globals::get_singleton()->get("application/use_shared_user_dir");
+			if (!use_godot)
+				return (OS::get_singleton()->get_environment("APPDATA")+"/"+an).replace("\\","/");
+			else
+				return (OS::get_singleton()->get_environment("APPDATA")+"/Godot/app_userdata/"+an).replace("\\","/");
 		}
 	}
 

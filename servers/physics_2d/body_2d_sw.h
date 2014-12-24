@@ -72,6 +72,7 @@ class Body2DSW : public CollisionObject2DSW {
 	bool omit_force_integration;
 	bool active;
 	bool can_sleep;
+	bool first_time_kinematic;
 	void _update_inertia();
 	virtual void _shapes_changed();
 	Matrix32 new_transform;
@@ -134,7 +135,8 @@ public:
 	_FORCE_INLINE_ void add_area(Area2DSW *p_area) { areas.insert(AreaCMP(p_area)); }
 	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) { areas.erase(AreaCMP(p_area)); }
 
-	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; }
+	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; if (mode==Physics2DServer::BODY_MODE_KINEMATIC && p_size) set_active(true);}
+
 	_FORCE_INLINE_ int get_max_contacts_reported() const { return contacts.size(); }
 
 	_FORCE_INLINE_ bool can_report_contacts() const { return !contacts.empty(); }
@@ -334,6 +336,8 @@ public:
 	virtual Vector2 get_contact_collider_pos(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Vector2());   return body->contacts[p_contact_idx].collider_pos;  }
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,0);   return body->contacts[p_contact_idx].collider_instance_id;   }
 	virtual int get_contact_collider_shape(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,0); return body->contacts[p_contact_idx].collider_shape;  }
+	virtual Variant get_contact_collider_shape_metadata(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Variant()); return body->get_shape_metadata(body->contacts[p_contact_idx].collider_shape);  }
+
 	virtual Vector2 get_contact_collider_velocity_at_pos(int p_contact_idx) const {  ERR_FAIL_INDEX_V(p_contact_idx,body->contact_count,Vector2()); return body->contacts[p_contact_idx].collider_velocity_at_pos;  }
 
 	virtual Physics2DDirectSpaceState* get_space_state();

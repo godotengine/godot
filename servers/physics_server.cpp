@@ -440,8 +440,8 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_set_space_override_mode","area","mode"),&PhysicsServer::area_set_space_override_mode);
 	ObjectTypeDB::bind_method(_MD("area_get_space_override_mode","area"),&PhysicsServer::area_get_space_override_mode);
 
-	ObjectTypeDB::bind_method(_MD("area_add_shape","area","shape","transform"),&PhysicsServer::area_set_shape,DEFVAL(Transform()));
-	ObjectTypeDB::bind_method(_MD("area_set_shape","area","shape_idx","shape"),&PhysicsServer::area_get_shape);
+	ObjectTypeDB::bind_method(_MD("area_add_shape","area","shape","transform"),&PhysicsServer::area_add_shape,DEFVAL(Transform()));
+	ObjectTypeDB::bind_method(_MD("area_set_shape","area","shape_idx","shape"),&PhysicsServer::area_set_shape);
 	ObjectTypeDB::bind_method(_MD("area_set_shape_transform","area","shape_idx","transform"),&PhysicsServer::area_set_shape_transform);
 
 	ObjectTypeDB::bind_method(_MD("area_get_shape_count","area"),&PhysicsServer::area_get_shape_count);
@@ -452,8 +452,8 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&PhysicsServer::area_clear_shapes);
 
 
-	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&PhysicsServer::area_get_param);
-	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&PhysicsServer::area_get_transform);
+	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&PhysicsServer::area_set_param);
+	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&PhysicsServer::area_set_transform);
 
 	ObjectTypeDB::bind_method(_MD("area_get_param","area","param"),&PhysicsServer::area_get_param);
 	ObjectTypeDB::bind_method(_MD("area_get_transform","area"),&PhysicsServer::area_get_transform);
@@ -506,7 +506,7 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_axis_velocity","body","axis_velocity"),&PhysicsServer::body_set_axis_velocity);
 
 	ObjectTypeDB::bind_method(_MD("body_set_axis_lock","body","axis"),&PhysicsServer::body_set_axis_lock);
-	ObjectTypeDB::bind_method(_MD("body_get_axis_lock","body"),&PhysicsServer::body_set_axis_lock);
+	ObjectTypeDB::bind_method(_MD("body_get_axis_lock","body"),&PhysicsServer::body_get_axis_lock);
 
 	ObjectTypeDB::bind_method(_MD("body_add_collision_exception","body","excepted_body"),&PhysicsServer::body_add_collision_exception);
 	ObjectTypeDB::bind_method(_MD("body_remove_collision_exception","body","excepted_body"),&PhysicsServer::body_remove_collision_exception);
@@ -519,6 +519,9 @@ void PhysicsServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_is_omitting_force_integration","body"),&PhysicsServer::body_is_omitting_force_integration);
 
 	ObjectTypeDB::bind_method(_MD("body_set_force_integration_callback","body","receiver","method","userdata"),&PhysicsServer::body_set_force_integration_callback,DEFVAL(Variant()));
+
+	ObjectTypeDB::bind_method(_MD("body_set_ray_pickable","body","enable"),&PhysicsServer::body_set_ray_pickable);
+	ObjectTypeDB::bind_method(_MD("body_is_ray_pickable","body"),&PhysicsServer::body_is_ray_pickable);
 
 	/* JOINT API */
 
@@ -627,6 +630,9 @@ void PhysicsServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
 
+	ObjectTypeDB::bind_method(_MD("joint_set_solver_priority","joint","priority"),&PhysicsServer::joint_set_solver_priority);
+	ObjectTypeDB::bind_method(_MD("joint_get_solver_priority","joint"),&PhysicsServer::joint_get_solver_priority);
+
 	ObjectTypeDB::bind_method(_MD("joint_create_generic_6dof","body_A","local_ref_A","body_B","local_ref_B"),&PhysicsServer::joint_create_generic_6dof);
 
 	ObjectTypeDB::bind_method(_MD("generic_6dof_joint_set_param","joint","axis","param","value"),&PhysicsServer::generic_6dof_joint_set_param);
@@ -649,7 +655,7 @@ void PhysicsServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("joint_get_type","joint"),&PhysicsServer::joint_get_type);
 */
-	ObjectTypeDB::bind_method(_MD("free","rid"),&PhysicsServer::free);
+	ObjectTypeDB::bind_method(_MD("free_rid","rid"),&PhysicsServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_active","active"),&PhysicsServer::set_active);
 
