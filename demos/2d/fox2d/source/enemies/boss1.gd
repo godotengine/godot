@@ -45,7 +45,7 @@ func hit():
 
 # Die event called by animation. Also tells the level to change active camera and update the HUD
 func _die():
-	get_scene().get_nodes_in_group("player")[0].focusCamera()
+	get_tree().get_nodes_in_group("player")[0].focusCamera()
 	get_node("/root/gamedata").set_boss_bar_visibility(false)
 	queue_free()
 

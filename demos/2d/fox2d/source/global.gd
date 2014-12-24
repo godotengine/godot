@@ -18,7 +18,7 @@ var player_class = preload("res://player.res")
 
 # initialize pointers to nodes
 func _ready():
-	var _root=get_scene().get_root()
+	var _root=get_tree().get_root()
 	root = _root.get_child(_root.get_child_count()-1)
 	main_scene = root.get_node("MapLayer")
 
@@ -37,7 +37,7 @@ func goto_cinematic_scene(scene):
 	# load scene
 	_goto_scene(scene)
 	# hide the HUD
-	get_scene().get_nodes_in_group("HUDroot")[0].hide()
+	get_tree().get_nodes_in_group("HUDroot")[0].hide()
 	
 
 # loads a playable scene. HUD will be shown.
@@ -47,12 +47,12 @@ func goto_playable_scene(scene,entry_point):
 	# load scene
 	_goto_scene(scene)
 	# show the HUD
-	get_scene().get_nodes_in_group("HUDroot")[0].show()
+	get_tree().get_nodes_in_group("HUDroot")[0].show()
 	
 	# move the player to the entry point.
 	# First, search both nodes
-	var player_nodes=get_scene().get_nodes_in_group("player") # keep in mind that the player of the old scene is maybe still not gone by the garbage collector.
-	var entry_nodes=get_scene().get_nodes_in_group("entries")
+	var player_nodes=get_tree().get_nodes_in_group("player") # keep in mind that the player of the old scene is maybe still not gone by the garbage collector.
+	var entry_nodes=get_tree().get_nodes_in_group("entries")
 	
 	var entry_node=null
 	for e in entry_nodes:

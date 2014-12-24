@@ -54,7 +54,7 @@ func restore_player_life():
 
 # tells the HUD to display the new value of player's life
 func _update_player_life():
-	var lifeBar=get_scene().get_nodes_in_group("lifeBar")[0]
+	var lifeBar=get_tree().get_nodes_in_group("lifeBar")[0]
 	lifeBar.set_life(playerData.life)
 
 # changes the player's score and display it
@@ -69,7 +69,7 @@ func reset_player_score():
 
 # tells the HUD to display the new value of player's score
 func _update_player_score():
-	var scoreLabel=get_scene().get_nodes_in_group("score")[0]
+	var scoreLabel=get_tree().get_nodes_in_group("score")[0]
 	scoreLabel.set_text(str(playerData.score))
 
 # removes one continue to the player.
@@ -92,7 +92,7 @@ func reset_player_continue():
 
 # displays the change of the player's continues
 func _update_player_continues():
-	var continuesLabel=get_scene().get_nodes_in_group("continues")[0]
+	var continuesLabel=get_tree().get_nodes_in_group("continues")[0]
 	var strContinues=str(playerData.continues)
 	if(playerData.continues<10):
 		strContinues="0"+strContinues
@@ -104,13 +104,13 @@ func _update_player_continues():
 # setter for boss life
 func set_boss_life(life):
 	bossLife=life
-	var lifeBar=get_scene().get_nodes_in_group("bossLifeBar")[0]
+	var lifeBar=get_tree().get_nodes_in_group("bossLifeBar")[0]
 	lifeBar.set_life(bossLife)
 
 # remove 1 point of life to boss' life
 func dec_boss_life():
 	bossLife-=1
-	var lifeBar=get_scene().get_nodes_in_group("bossLifeBar")[0]
+	var lifeBar=get_tree().get_nodes_in_group("bossLifeBar")[0]
 	lifeBar.set_life(bossLife)
 
 # getter for boss' life
@@ -119,8 +119,8 @@ func get_boss_life():
 
 # display or hide the life of the boss in the HUD. When hidden, the score of the player is displayed instead.
 func set_boss_bar_visibility(visible):
-	var bossBar=get_scene().get_nodes_in_group("bossBar")[0]
-	var scoreBar=get_scene().get_nodes_in_group("scoreBar")[0]
+	var bossBar=get_tree().get_nodes_in_group("bossBar")[0]
+	var scoreBar=get_tree().get_nodes_in_group("scoreBar")[0]
 	if(visible):
 		bossBar.show()
 		scoreBar.hide()
