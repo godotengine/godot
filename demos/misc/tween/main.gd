@@ -1,4 +1,4 @@
-﻿
+
 extends Control
 
 # member variables here, example:

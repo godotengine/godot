@@ -44,7 +44,7 @@ void BoxContainer::_resort() {
 
 	Size2i new_size=get_size();;
 
-	int sep=get_constant("separation",vertical?"VBoxContainer":"HBoxContainer");
+	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 	bool center_sep=get_constant("center_separation",vertical?"VBoxContainer":"HBoxContainer") != 0;
 
 	bool first=true;
@@ -210,7 +210,7 @@ Size2 BoxContainer::get_minimum_size() const {
 	/* Calculate MINIMUM SIZE */
 
 	Size2i minimum;
-	int sep=get_constant("separation",vertical?"VBoxContainer":"HBoxContainer");
+	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 	bool center_sep=get_constant("center_separation",vertical?"VBoxContainer":"HBoxContainer") != 0;
 
 	bool first=true;

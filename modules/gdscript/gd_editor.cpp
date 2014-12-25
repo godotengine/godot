@@ -661,6 +661,16 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 
 				if (base.type==Variant::OBJECT) {
 
+					if (id.operator String()=="new" && base.value.get_type()==Variant::OBJECT) {
+						Object *obj = base.value;
+						if (obj && obj->cast_to<GDNativeClass>()) {
+							GDNativeClass *gdnc = obj->cast_to<GDNativeClass>();
+							r_type.type=Variant::OBJECT;
+							r_type.value=Variant();
+							r_type.obj_type=gdnc->get_name();
+							return true;
+						}
+					}
 
 					if (ObjectTypeDB::has_method(base.obj_type,id)) {
 
@@ -732,7 +742,8 @@ static bool _guess_expression_type(GDCompletionContext& context,const GDParser::
 					v.get_method_list(&mi);
 					for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
 
-						if (E->get().name==id.operator String()) {
+						if (!E->get().name.begins_with("_") && E->get().name==id.operator String()) {
+
 
 							MethodInfo mi = E->get();
 							r_type.type=mi.return_val.type;
@@ -989,7 +1000,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 		block=block->parent_block;
 	}
 
-	//TODO guess identifier type of arguments (ONLY if this is a virtual function)
+	//guess from argument if virtual
 	if (context.function && context.function->name!=StringName()) {
 
 		int argindex = -1;
@@ -1050,7 +1061,7 @@ static bool _guess_identifier_type(GDCompletionContext& context,int p_line,const
 		}
 	}
 
-	if (context.function && !context.function->_static) {
+	if (!(context.function && context.function->_static)) {
 
 		for(int i=0;i<context._class->variables.size();i++) {
 
@@ -1191,6 +1202,8 @@ static void _find_identifiers_in_class(GDCompletionContext& context,bool p_stati
 				List<MethodInfo> methods;
 				ObjectTypeDB::get_method_list(type,&methods);
 				for(List<MethodInfo>::Element *E=methods.front();E;E=E->next()) {
+					if (E->get().name.begins_with("_"))
+						continue;
 					if (E->get().arguments.size())
 						result.insert(E->get().name+"(");
 					else
@@ -1251,7 +1264,7 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 }
 
 
-static String _get_visual_datatype(const PropertyInfo& p_info) {
+static String _get_visual_datatype(const PropertyInfo& p_info,bool p_isarg=true) {
 
 	String n = p_info.name;
 	int idx = n.find(":");
@@ -1261,8 +1274,12 @@ static String _get_visual_datatype(const PropertyInfo& p_info) {
 
 	if (p_info.type==Variant::OBJECT && p_info.hint==PROPERTY_HINT_RESOURCE_TYPE)
 		return p_info.hint_string;
-	if (p_info.type==Variant::NIL)
-		return "void";
+	if (p_info.type==Variant::NIL) {
+		if (p_isarg)
+			return "var";
+		else
+			return "void";
+	}
 
 	return Variant::get_type_name(p_info.type);
 }
@@ -1352,7 +1369,7 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 
 		}
 
-		arghint = _get_visual_datatype(m->get_argument_info(-1))+" "+p_method.operator String()+String("(");
+		arghint = _get_visual_datatype(m->get_argument_info(-1),false)+" "+p_method.operator String()+String("(");
 
 		for(int i=0;i<m->get_argument_count();i++) {
 			if (i>0)
@@ -1416,7 +1433,7 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 		const GDParser::BuiltInFunctionNode *fn = static_cast<const GDParser::BuiltInFunctionNode*>(op->arguments[0]);
 		MethodInfo mi = GDFunctions::get_info(fn->function);
 
-		arghint = _get_visual_datatype(mi.return_val)+" "+GDFunctions::get_func_name(fn->function)+String("(");
+		arghint = _get_visual_datatype(mi.return_val,false)+" "+GDFunctions::get_func_name(fn->function)+String("(");
 		for(int i=0;i<mi.arguments.size();i++) {
 			if (i>0)
 				arghint+=", ";
@@ -1680,12 +1697,6 @@ static void _find_call_arguments(GDCompletionContext& context,const GDParser::No
 }
 
 Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base_path, Object*p_owner, List<String>* r_options, String &r_call_hint) {
-/* bugs:
-  a[0].<complete> does not work
-  functions should end in (
-  when completing virtuals, ask for full back
-
- */
 	//print_line( p_code.replace(String::chr(0xFFFF),"<cursor>"));
 
 	GDParser p;
@@ -1729,7 +1740,6 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			isfunction=true;
 		case GDParser::COMPLETION_INDEX: {
 
-			print_line("index");
 			const GDParser::Node *node = p.get_completion_node();
 			if (node->type!=GDParser::Node::TYPE_OPERATOR)
 				break;
@@ -1741,12 +1751,41 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 			if (_guess_expression_type(context,static_cast<const GDParser::OperatorNode *>(node)->arguments[0],p.get_completion_line(),t)) {
 
 				if (t.type==Variant::OBJECT && t.obj_type!=StringName()) {
+
+
+					if (t.value.get_type()) {
+						Object *obj=t.value;
+						if (obj) {
+							GDScript *scr = obj->cast_to<GDScript>();
+							while (scr) {
+
+								if (!isfunction) {
+									for (const Map<StringName,Variant>::Element *E=scr->get_constants().front();E;E=E->next()) {
+										options.insert(E->key());
+									}
+								}
+								for (const Map<StringName,GDFunction>::Element *E=scr->get_member_functions().front();E;E=E->next()) {
+									options.insert(E->key());
+								}
+
+								if (scr->get_base().is_valid())
+									scr=scr->get_base().ptr();
+								else
+									scr=NULL;
+							}
+						}
+					}
+
+
 					if (!isfunction) {
 						ObjectTypeDB::get_integer_constant_list(t.obj_type,r_options);
 					}
 					List<MethodInfo> mi;
 					ObjectTypeDB::get_method_list(t.obj_type,&mi);
 					for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
+
+						if (E->get().name.begins_with("_"))
+							continue;
 
 						if (E->get().arguments.size())
 							options.insert(E->get().name+"(");
@@ -1755,33 +1794,86 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 
 					}
 				} else {
-					if (t.value.get_type()==Variant::NIL) {
-						Variant::CallError ce;
-						t.value=Variant::construct(t.type,NULL,0,ce);
-					}
 
-					if (!isfunction) {
-						List<PropertyInfo> pl;
-						t.value.get_property_list(&pl);
-						for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
 
-							if (E->get().name.find("/")==-1)
-								options.insert(E->get().name);
+					if (t.type==Variant::INPUT_EVENT) {
+
+						//this is hardcoded otherwise it's not obvious
+						Set<String> exclude;
+
+						for(int i=0;i<InputEvent::TYPE_MAX;i++) {
+
+							InputEvent ie;
+							ie.type=InputEvent::Type(i);
+							static const char*evnames[]={
+								"# Common",
+								"# Key",
+								"# MouseMotion",
+								"# MouseButton",
+								"# JoyMotion",
+								"# JoyButton",
+								"# ScreenTouch",
+								"# ScreenDrag",
+								"# Action"
+							};
+
+							r_options->push_back(evnames[i]);
+
+							Variant v = ie;
+
+							if (i==0) {
+								List<MethodInfo> mi;
+								v.get_method_list(&mi);
+								for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
+									r_options->push_back(E->get().name+"(");
+
+								}
+
+							}
+
+							List<PropertyInfo> pi;
+							v.get_property_list(&pi);
+
+							for (List<PropertyInfo>::Element *E=pi.front();E;E=E->next()) {
+
+								if (i==0)
+									exclude.insert(E->get().name);
+								else if (exclude.has(E->get().name))
+									continue;
+
+								r_options->push_back(E->get().name);
+							}
 						}
-					}
+						return OK;
+					} else {
+						if (t.value.get_type()==Variant::NIL) {
+							Variant::CallError ce;
+							t.value=Variant::construct(t.type,NULL,0,ce);
+						}
 
-					List<MethodInfo> mi;
-					t.value.get_method_list(&mi);
-					for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
-						if (E->get().arguments.size())
-							options.insert(E->get().name+"(");
-						else
-							options.insert(E->get().name+"()");
 
+						if (!isfunction) {
+							List<PropertyInfo> pl;
+							t.value.get_property_list(&pl);
+							for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+
+								if (E->get().name.find("/")==-1)
+									options.insert(E->get().name);
+							}
+						}
+
+						List<MethodInfo> mi;
+						t.value.get_method_list(&mi);
+						for (List<MethodInfo>::Element *E=mi.front();E;E=E->next()) {
+							if (E->get().arguments.size())
+								options.insert(E->get().name+"(");
+							else
+								options.insert(E->get().name+"()");
+
+						}
 					}
 				}
 			}
-
 
 
 		} break;

@@ -157,6 +157,16 @@ void VisualServerRaster::shader_get_param_list(RID p_shader, List<PropertyInfo> 
 }
 
 
+void VisualServerRaster::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture) {
+
+	rasterizer->shader_set_default_texture_param(p_shader,p_name,p_texture);
+}
+
+RID VisualServerRaster::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const{
+
+	return rasterizer->shader_get_default_texture_param(p_shader,p_name);
+}
+
 
 /* Material */
 
