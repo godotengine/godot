@@ -507,6 +507,12 @@ void make_default_theme() {
 	t->set_constant("separation","HSeparator", 7);
 	t->set_stylebox("separator","VSeparator", make_stylebox( hseparator_png,3,3,3,3) );
 	t->set_constant("separation","VSeparator", 7);
+	t->set_stylebox("separator","CollapsibleVSeparator", make_stylebox( hseparator_png,3,3,3,3) );
+	t->set_constant("separation","CollapsibleVSeparator", 7);
+	t->set_color("color_expanded","CollapsibleVSeparator", Color(1.0,1.0,1.0,0.3));
+	t->set_color("color_collapsed","CollapsibleVSeparator", Color(1.0,1.0,1.0,0.7));
+	t->set_color("color_hover","CollapsibleVSeparator", control_font_color_hover);
+
 
 	t->set_icon("close","Icons", make_icon(icon_close_png));
 	t->set_font("source","Fonts", source_font);
