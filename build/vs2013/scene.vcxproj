@@ -214,6 +214,7 @@
     <ClCompile Include="..\..\scene\gui\dialogs.cpp" />
     <ClCompile Include="..\..\scene\gui\empty_control.cpp" />
     <ClCompile Include="..\..\scene\gui\file_dialog.cpp" />
+    <ClCompile Include="..\..\scene\gui\graph_node.cpp" />
     <ClCompile Include="..\..\scene\gui\grid_container.cpp" />
     <ClCompile Include="..\..\scene\gui\label.cpp" />
     <ClCompile Include="..\..\scene\gui\line_edit.cpp" />
@@ -406,6 +407,7 @@
     <ClInclude Include="..\..\scene\gui\dialogs.h" />
     <ClInclude Include="..\..\scene\gui\empty_control.h" />
     <ClInclude Include="..\..\scene\gui\file_dialog.h" />
+    <ClInclude Include="..\..\scene\gui\graph_node.h" />
     <ClInclude Include="..\..\scene\gui\grid_container.h" />
     <ClInclude Include="..\..\scene\gui\label.h" />
     <ClInclude Include="..\..\scene\gui\line_edit.h" />

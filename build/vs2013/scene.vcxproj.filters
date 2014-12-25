@@ -594,6 +594,9 @@
     <ClCompile Include="..\..\scene\resources\default_theme\default_theme.cpp">
       <Filter>scene\resources\default_theme</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\scene\gui\graph_node.cpp">
+      <Filter>scene\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\scene\register_scene_types.h">
@@ -1156,6 +1159,9 @@
     </ClInclude>
     <ClInclude Include="..\..\scene\resources\default_theme\theme_data.h">
       <Filter>scene\resources\default_theme</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\gui\graph_node.h">
+      <Filter>scene\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
