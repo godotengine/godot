@@ -3238,7 +3238,7 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	move_down_button->connect("pressed",this,"_menu_track",make_binds(TRACK_MENU_MOVE_DOWN));
 	move_down_button->set_focus_mode(FOCUS_NONE);
 	move_down_button->set_disabled(true);
-	move_down_button->set_tooltip("Move current track dosn.");
+	move_down_button->set_tooltip("Move current track down.");
 
 	remove_button = memnew( ToolButton );
 	hb->add_child(remove_button);
