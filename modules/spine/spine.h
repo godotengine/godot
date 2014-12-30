@@ -52,15 +52,26 @@ public:
 		DEBUG_ATTACHMENT_BOUNDING_BOX,
 	};
 
+	class SpineResource : public Resource {
+
+		OBJ_TYPE(SpineResource, Resource);
+
+	public:
+		SpineResource();
+		~SpineResource();
+
+		spAtlas *atlas;
+		spSkeletonData *data;
+	};
+
 private:
 
-	String path;
-	String path_cache;
-	
+
+	Ref<SpineResource> res;
+
 	spSkeleton* skeleton;
 	spBone* root_bone;
 	spAnimationState* state;
-	spAtlas* atlas;
 	mutable Vector<float> world_verts;
 
 	float speed_scale;
@@ -110,12 +121,9 @@ protected:
 
 public:
 
-	// create spine from json/file
-	int load(const String& p_json, const String& p_atlas, real_t p_scale = 1);
-
-	// auto load path(.json file) and replace path (.json -> .atlas) to load atlas
-	void set_path(const String& p_path);
-	String get_path() const;
+	// set/get spine resource
+	void set_resource(Ref<SpineResource> p_data);
+	Ref<SpineResource> get_resource();
 
 	bool has(const String& p_name);
 	void mix(const String& p_from, const String& p_to, real_t p_duration);

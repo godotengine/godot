@@ -28,6 +28,7 @@
 /*************************************************************************/
 #ifdef MODULE_SPINE_ENABLED
 
+#include "core/io/resource_loader.h"
 #include "scene/2d/collision_object_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "method_bind_ext.inc"
@@ -35,6 +36,24 @@
 #include "spine.h"
 #include <spine/spine.h>
 #include <spine/extension.h>
+
+typedef Ref<Texture> TextureRef;
+
+Spine::SpineResource::SpineResource() {
+
+	atlas = NULL;
+	data = NULL;
+}
+
+Spine::SpineResource::~SpineResource() {
+
+	if (atlas != NULL)
+		spAtlas_dispose(atlas);
+
+	if (data != NULL)
+		spSkeletonData_dispose(data);
+}
+
 
 void Spine::spine_animation_callback(spAnimationState* p_state, int p_track, spEventType p_type, spEvent* p_event, int loop_count) {
 
@@ -68,20 +87,17 @@ void Spine::_on_animation_state_event(int p_track, spEventType p_type, spEvent *
 void Spine::_spine_dispose() {
 
 	if (state) {
+
 		spAnimationStateData_dispose(state->data);
 		spAnimationState_dispose(state);
 	}
-	if (atlas)
-		spAtlas_dispose(atlas);
 
-	if (skeleton) {
-		spSkeletonData_dispose(skeleton->data);
+	if (skeleton)
 		spSkeleton_dispose(skeleton);
-	}
 
 	state = NULL;
-	atlas = NULL;
 	skeleton = NULL;
+	res = RES();
 
 	for (AttachmentNodes::Element *E = attachment_nodes.front(); E; E = E->next()) {
 		
@@ -537,22 +553,16 @@ void Spine::_notification(int p_what) {
 	}
 }
 
-int Spine::load(const String& p_json, const String& p_atlas, real_t p_scale) {
+void Spine::set_resource(Ref<Spine::SpineResource> p_data) {
 
 	// cleanup
 	_spine_dispose();
 
-	atlas = spAtlas_createFromFile(p_atlas.utf8().get_data(), 0);
-	ERR_FAIL_COND_V(atlas == NULL, ERR_FILE_CORRUPT);
-	spSkeletonJson *json = spSkeletonJson_create(atlas);
-	ERR_FAIL_COND_V(json == NULL, ERR_FILE_CORRUPT);
-	json->scale = p_scale;
+	res = p_data;
+	if (res.is_null())
+		return;
 
-	spSkeletonData* skeletonData = spSkeletonJson_readSkeletonDataFile(json, p_json.utf8().get_data());
-	ERR_FAIL_COND_V(skeletonData == NULL, ERR_FILE_CORRUPT);
-	spSkeletonJson_dispose(json);
-
-	skeleton = spSkeleton_create(skeletonData);
+	skeleton = spSkeleton_create(res->data);
 	root_bone = skeleton->bones[0];
 
 	state = spAnimationState_create(spAnimationStateData_create(skeleton->data));
@@ -565,32 +575,11 @@ int Spine::load(const String& p_json, const String& p_atlas, real_t p_scale) {
 
 	reset();
 	_change_notify();
-
-	return OK;
 }
 
-void Spine::set_path(const String& p_path) {
+Ref<Spine::SpineResource> Spine::get_resource() {
 
-	if (path_cache == p_path)
-		return;
-
-	String atlas = p_path.replace(".json", ".atlas");
-	if (load(p_path, atlas) != OK) {
-
-		if (!path.empty()) {
-
-			path_cache = "";
-			set_path(path);
-		}
-		return;
-	}
-	path_cache = p_path;
-	path = p_path;
-}
-
-String Spine::get_path() const {
-
-	return path;
+	return res;
 }
 
 bool Spine::has(const String& p_name) {
@@ -1033,9 +1022,8 @@ bool Spine::is_debug_attachment(DebugAttachmentMode p_mode) const {
 
 void Spine::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("load", "json", "atlas", "scale"), &Spine::load, 1);
-	ObjectTypeDB::bind_method(_MD("set_path", "path"), &Spine::set_path);
-	ObjectTypeDB::bind_method(_MD("get_path", "path"), &Spine::get_path);
+	ObjectTypeDB::bind_method(_MD("set_resource", "spine"), &Spine::set_resource);
+	ObjectTypeDB::bind_method(_MD("get_resource"), &Spine::get_resource);
 
 	ObjectTypeDB::bind_method(_MD("has", "name"), &Spine::has);
 	ObjectTypeDB::bind_method(_MD("mix", "from", "to", "duration"), &Spine::mix, 0);
@@ -1080,7 +1068,7 @@ void Spine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug/bones"), _SCS("set_debug_bones"), _SCS("is_debug_bones"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "path", PROPERTY_HINT_FILE, "json"), _SCS("set_path"), _SCS("get_path"));
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "SpineResource"), _SCS("set_resource"), _SCS("get_resource")); //, PROPERTY_USAGE_NOEDITOR));
 
 	ADD_SIGNAL(MethodInfo("animation_start", PropertyInfo(Variant::INT, "track")));
 	ADD_SIGNAL(MethodInfo("animation_complete", PropertyInfo(Variant::INT, "track"), PropertyInfo(Variant::INT, "loop_count")));
@@ -1141,20 +1129,14 @@ Rect2 Spine::get_item_rect() const {
 	return attached ? Rect2(minX, -minY - h, maxX - minX, h) : Node2D::get_item_rect();
 }
 
-// CollisionObject2D
-
-
 Spine::Spine()
 	: batcher(this)
 {
 
-	path = "";
-	path_cache = "";
-
 	skeleton = NULL;
 	root_bone = NULL;
 	state = NULL;
-	atlas = NULL;
+	res = RES();
 	world_verts.resize(1000); // Max number of vertices per mesh.
 
 	speed_scale = 1;

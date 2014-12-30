@@ -84,14 +84,65 @@ static void spine_free(void *ptr) {
 	memfree(ptr);
 }
 
+class ResourceFormatLoaderSpine : public ResourceFormatLoader {
+public:
+
+	virtual RES load(const String &p_path, const String& p_original_path = "") {
+
+		Spine::SpineResource *res = memnew(Spine::SpineResource);
+		Ref<Spine::SpineResource> ref(res);
+
+		String p_atlas = p_path.replace(".json", ".atlas");
+		res->atlas = spAtlas_createFromFile(p_atlas.utf8().get_data(), 0);
+		ERR_FAIL_COND_V(res->atlas == NULL, RES());
+		spSkeletonJson *json = spSkeletonJson_create(res->atlas);
+		ERR_FAIL_COND_V(json == NULL, RES());
+		json->scale = 1;
+
+		res->data = spSkeletonJson_readSkeletonDataFile(json, p_path.utf8().get_data());
+		ERR_FAIL_COND_V(res->data == NULL, RES());
+		spSkeletonJson_dispose(json);
+
+		res->set_path(p_path);
+		return ref;
+	}
+
+	virtual void get_recognized_extensions(List<String> *p_extensions) const {
+
+		p_extensions->push_back("json");
+	}
+
+	virtual bool handles_type(const String& p_type) const {
+
+		return p_type=="SpineResource";
+	}
+
+	virtual String get_resource_type(const String &p_path) const {
+
+		String el = p_path.extension().to_lower();
+		if (el=="json")
+			return "SpineResource";
+		return "";
+	}
+};
+
+static ResourceFormatLoaderSpine *resource_loader_spine = NULL;
+
 void register_spine_types() {
 
 	ObjectTypeDB::register_type<Spine>();
+	ObjectTypeDB::register_type<Spine::SpineResource>();
+	resource_loader_spine = memnew( ResourceFormatLoaderSpine );
+	ResourceLoader::add_resource_format_loader(resource_loader_spine);
+
 	_setMalloc(spine_malloc);
 	_setFree(spine_free);
 }
 
 void unregister_spine_types() {
+
+	if (resource_loader_spine)
+		memdelete(resource_loader_spine);
 
 }
 
