@@ -364,7 +364,7 @@ bool OS::has_touchscreen_ui_hint() const {
 
 bool OS::is_editor_hint() const {
 
-	return false;
+	return get_main_loop()->is_editor_hint();
 }
 
 int OS::get_free_static_memory() const {

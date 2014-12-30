@@ -64,6 +64,8 @@ public:
 
 	void set_init_script(const Ref<Script>& p_init_script);
 
+	virtual bool is_editor_hint() const { return false; }
+
 	MainLoop();
 	virtual ~MainLoop();
 
