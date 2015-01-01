@@ -57,7 +57,7 @@ class AudioStreamResampled : public AudioStream {
 
 
 	template<int C>
-	void _resample(int32_t *p_dest,int p_todo,int32_t p_increment);
+	uint32_t _resample(int32_t *p_dest,int p_todo,int32_t p_increment);
 
 
 protected:
@@ -97,7 +97,7 @@ protected:
 	_FORCE_INLINE_ int16_t *get_write_buffer() { return read_buf; }
 	_FORCE_INLINE_ void write(uint32_t p_frames) {
 
-		ERR_FAIL_COND(p_frames > rb_len);
+		ERR_FAIL_COND(p_frames >= rb_len);
 
 		switch(channels) {
 			case 1: {

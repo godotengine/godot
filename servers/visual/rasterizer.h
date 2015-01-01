@@ -187,6 +187,7 @@ public:
 	virtual bool texture_has_alpha(RID p_texture) const=0;
 	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height)=0;
 
+
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const=0;
 
 	/* SHADER API */
@@ -202,6 +203,9 @@ public:
 	virtual String shader_get_light_code(RID p_shader) const=0;
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const=0;
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture)=0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const=0;
 
 	/* COMMON MATERIAL API */
 

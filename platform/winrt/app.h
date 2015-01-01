@@ -32,6 +32,12 @@ namespace $ext_safeprojectname$
         void OnVisibilityChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::VisibilityChangedEventArgs^ args);
         void OnWindowClosed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CoreWindowEventArgs^ args);
 
+		void pointer_event(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args, bool p_pressed);
+		void OnPointerPressed(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+		void OnPointerReleased(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+		void OnPointerMoved(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::PointerEventArgs^ args);
+
+
         void UpdateWindowSize(Windows::Foundation::Size size);
         void InitializeEGL(Windows::UI::Core::CoreWindow^ window);
         void CleanupEGL();
@@ -44,8 +50,12 @@ namespace $ext_safeprojectname$
         EGLDisplay mEglDisplay;
         EGLContext mEglContext;
         EGLSurface mEglSurface;
-        
+
+		CoreWindow^ window;
 		OSWinrt* os;
-    };
+
+		int last_touch_x[32]; // 20 fingers, index 31 reserved for the mouse
+		int last_touch_y[32];
+	};
 
 }

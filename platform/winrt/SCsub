@@ -8,4 +8,4 @@ files = [
 	'os_winrt.cpp',
 ]
 
-env.Program('#bin/godot_rt', files)
+env.Program('#bin/godot', files)

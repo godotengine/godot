@@ -805,12 +805,25 @@ void ObjectTypeDB::add_virtual_method(const StringName& p_type,const MethodInfo&
 
 }
 
-void ObjectTypeDB::get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods ) {
+void ObjectTypeDB::get_virtual_methods(const StringName& p_type, List<MethodInfo> * p_methods , bool p_no_inheritance) {
 
 	ERR_FAIL_COND(!types.has(p_type));
 
 #ifdef DEBUG_METHODS_ENABLED
-	*p_methods=types[p_type].virtual_methods;
+
+	TypeInfo *type=types.getptr(p_type);
+	TypeInfo *check=type;
+	while(check) {
+
+		for(List<MethodInfo>::Element *E=check->virtual_methods.front();E;E=E->next()) {
+			p_methods->push_back(E->get());
+		}
+
+		if (p_no_inheritance)
+			return;
+		check=check->inherits_ptr;
+	}
+
 #endif
 
 }

@@ -120,6 +120,13 @@ Dictionary Shader::_get_code() {
 	c["vertex_ofs"]=0;
 	c["light"]=ls;
 	c["light_ofs"]=0;
+	Array arr;
+	for(const Map<StringName,Ref<Texture> >::Element *E=default_textures.front();E;E=E->next()) {
+		arr.push_back(E->key());
+		arr.push_back(E->get());
+	}
+	if (arr.size())
+		c["default_tex"]=arr;
 	return c;
 }
 
@@ -132,7 +139,40 @@ void Shader::_set_code(const Dictionary& p_string) {
 		light=p_string["light"];
 
 	set_code(p_string["vertex"],p_string["fragment"],light);
+	if (p_string.has("default_tex")) {
+		Array arr=p_string["default_tex"];
+		if ((arr.size()&1)==0) {
+			for(int i=0;i<arr.size();i+=2)
+				set_default_texture_param(arr[i],arr[i+1]);
+		}
+	}
 }
+
+void Shader::set_default_texture_param(const StringName& p_param,const Ref<Texture>& p_texture) {
+
+	if (p_texture.is_valid())
+		default_textures[p_param]=p_texture;
+	else
+		default_textures.erase(p_param);
+}
+
+Ref<Texture> Shader::get_default_texture_param(const StringName& p_param) const{
+
+	if (default_textures.has(p_param))
+		return default_textures[p_param];
+	else
+		return Ref<Texture>();
+}
+
+void Shader::get_default_texture_param_list(List<StringName>* r_textures) const{
+
+	for(const Map<StringName,Ref<Texture> >::Element *E=default_textures.front();E;E=E->next()) {
+
+		r_textures->push_back(E->key());
+	}
+
+}
+
 
 void Shader::_bind_methods() {
 
@@ -143,6 +183,9 @@ void Shader::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_vertex_code"),&Shader::get_vertex_code);
 	ObjectTypeDB::bind_method(_MD("get_fragment_code"),&Shader::get_fragment_code);
 	ObjectTypeDB::bind_method(_MD("get_light_code"),&Shader::get_light_code);
+
+	ObjectTypeDB::bind_method(_MD("set_default_texture_param","param","texture:Texture"),&Shader::set_default_texture_param);
+	ObjectTypeDB::bind_method(_MD("get_default_texture_param:Texture","param"),&Shader::get_default_texture_param);
 
 	ObjectTypeDB::bind_method(_MD("has_param","name"),&Shader::has_param);
 

@@ -136,7 +136,10 @@ public:
 
 		static int b;
 
-#if defined(_MSC_VER) && _MSC_VER < 1800
+#if (defined(_WIN32_WINNT) && _WIN32_WINNT >= 0x0603) || WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP // windows 8 phone?
+		b = (int)((a>0.0f) ? (a + 0.5f):(a -0.5f));
+
+#elif defined(_MSC_VER) && _MSC_VER < 1800
 		__asm fld a
 		__asm fistp b
 /*#elif defined( __GNUC__ ) && ( defined( __i386__ ) || defined( __x86_64__ ) )
@@ -147,6 +150,7 @@ public:
 		"fistpl %0      \n\t"
 		: "=m" (b)
 		: "m" (a));*/
+
 #else
 		b=lrintf(a); //assuming everything but msvc 2012 or earlier has lrint
 #endif

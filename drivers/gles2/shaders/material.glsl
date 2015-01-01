@@ -1230,7 +1230,7 @@ LIGHT_SHADER_CODE
 
 	vec3 ambient = const_light_mult*ambient_light*diffuse.rgb;
 # if defined(LIGHT_TYPE_OMNI) || defined (LIGHT_TYPE_SPOT)
-	ambient*=diffuse_interp.a; //attenuation affects ambient too
+//	ambient*=diffuse_interp.a; //attenuation affects ambient too
 
 # endif
 

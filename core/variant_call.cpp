@@ -757,6 +757,11 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 		r_ret=Quat(*p_args[0],*p_args[1],*p_args[2],*p_args[3]);
 	}
 
+    static void Quat_init2(Variant& r_ret,const Variant** p_args) {
+
+        r_ret=Quat(((Vector3)(*p_args[0])),((float)(*p_args[1])));
+    }
+
 	static void Color_init1(Variant& r_ret,const Variant** p_args) {
 
 		r_ret=Color(*p_args[0],*p_args[1],*p_args[2],*p_args[3]);
@@ -1509,6 +1514,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constructor(_VariantCall::Plane_init3,Variant::PLANE,"normal",Variant::VECTOR3,"d",Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::Quat_init1,Variant::QUAT,"x",Variant::REAL,"y",Variant::REAL,"z",Variant::REAL,"w",Variant::REAL);
+    _VariantCall::add_constructor(_VariantCall::Quat_init2,Variant::QUAT,"axis",Variant::VECTOR3,"angle",Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1,Variant::COLOR,"r",Variant::REAL,"g",Variant::REAL,"b",Variant::REAL,"a",Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2,Variant::COLOR,"r",Variant::REAL,"g",Variant::REAL,"b",Variant::REAL);
