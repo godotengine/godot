@@ -32,7 +32,7 @@ StreamPeerTCP* (*StreamPeerTCP::_create)()=NULL;
 
 void StreamPeerTCP::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("connect","host","ip"),&StreamPeerTCP::connect);
+	ObjectTypeDB::bind_method(_MD("connect","host","port"),&StreamPeerTCP::connect);
 	ObjectTypeDB::bind_method(_MD("is_connected"),&StreamPeerTCP::is_connected);
 	ObjectTypeDB::bind_method(_MD("get_status"),&StreamPeerTCP::get_status);
 	ObjectTypeDB::bind_method(_MD("get_connected_host"),&StreamPeerTCP::get_connected_host);
