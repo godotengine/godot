@@ -8189,7 +8189,14 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 
 	if (p_indices) {
 
-		glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_INT, p_indices );
+		static const int _max_draw_poly_indices = 8*1024; // change this size if needed!!!
+		ERR_FAIL_COND(p_vertex_count > _max_draw_poly_indices);
+		static uint16_t _draw_poly_indices[_max_draw_poly_indices];
+		for (int i=0; i<p_vertex_count; i++) {
+			_draw_poly_indices[i] = p_indices[i];
+		};
+		glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_SHORT, _draw_poly_indices );
+		//glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_INT, p_indices );
 	} else {
 		glDrawArrays(GL_TRIANGLES,0,p_vertex_count);
 	}
