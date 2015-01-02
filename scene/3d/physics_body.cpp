@@ -852,6 +852,8 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 		//motion recover
 		for(int i=0;i<get_shape_count();i++) {
 
+			if (is_shape_set_as_trigger(i))
+				continue;
 
 			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),m,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask)) {
 				collided=true;
@@ -869,9 +871,6 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 		bool all_outside=true;
 		for(int j=0;j<8;j++) {
 			for(int i=0;i<res_shapes;i++) {
-
-				if (is_shape_set_as_trigger(i))
-					continue;
 
 				Vector3 a = sr[i*2+0];
 				Vector3 b = sr[i*2+1];
