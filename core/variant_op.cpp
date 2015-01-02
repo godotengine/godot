@@ -922,20 +922,30 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 		case REAL: {  return;  } break;
 		case STRING: {
 
-			if (p_value.type!=Variant::STRING)
-				return;
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-				//string index
 
-				int idx=p_index;
-				String *str=reinterpret_cast<String*>(_data._mem);
-				if (idx >=0 && idx<str->length()) {
-					String chr = p_value;
-					*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
-					valid=true;
-					return;
-				}
+			if (p_index.type!=Variant::INT && p_index.type!=Variant::REAL)
+				return;
+
+			int idx=p_index;
+			String *str=reinterpret_cast<String*>(_data._mem);
+			if (idx <0 || idx>=str->length())
+				return;
+
+			String chr;
+			if (p_value.type==Variant::INT || p_value.type==Variant::REAL) {
+
+				chr = String::chr(p_value);
+			} else if (p_value.type==Variant::STRING) {
+
+				chr = p_value;
+			} else {
+				return;
 			}
+
+			*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
+			valid=true;
+			return;
+
 
 		} break;
 		case VECTOR2: {
