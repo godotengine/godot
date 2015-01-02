@@ -961,7 +961,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					Vector2 *v=reinterpret_cast<Vector2*>(_data._mem);
 					valid=true;
-					v[idx]=p_value;
+					(*v)[idx]=p_value;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::STRING) {
@@ -1055,7 +1055,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					Vector3 *v=reinterpret_cast<Vector3*>(_data._mem);
 					valid=true;
-					v[idx]=p_value;
+					(*v)[idx]=p_value;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::STRING) {
