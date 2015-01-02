@@ -358,7 +358,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		GodotLib.initialize(this,io.needsReloadHooks(),command_line);
 		mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 
 		result_callback = null;
 
