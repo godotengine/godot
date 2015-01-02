@@ -498,6 +498,7 @@ bool SamplePlayer::is_active() const {
 void SamplePlayer::set_sample_library(const Ref<SampleLibrary>& p_library) {
 
 	library=p_library;
+	_change_notify();
 }
 
 Ref<SampleLibrary> SamplePlayer::get_sample_library() const {
