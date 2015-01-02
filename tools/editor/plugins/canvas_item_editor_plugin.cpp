@@ -2683,6 +2683,11 @@ void CanvasItemEditor::add_control_to_menu_panel(Control *p_control) {
 	hb->add_child(p_control);
 }
 
+HSplitContainer *CanvasItemEditor::get_palette_split() {
+
+	return palette_split;
+}
+
 CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	tool = TOOL_SELECT;
@@ -2697,14 +2702,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	add_child( hb );
 	hb->set_area_as_parent_rect();
 
+	palette_split = memnew( HSplitContainer);
+	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(palette_split);
+
 	Control *vp_base = memnew (Control);
-	add_child(vp_base);
 	vp_base->set_v_size_flags(SIZE_EXPAND_FILL);
+	palette_split->add_child(vp_base);
 
 	Control *vp = memnew (Control);
 	vp_base->add_child(vp);
 	vp->set_area_as_parent_rect();
 	vp->add_child(p_editor->get_scene_root());
+
 
 	viewport = memnew( Control );
 	vp_base->add_child(viewport);

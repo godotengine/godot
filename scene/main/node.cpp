@@ -382,6 +382,8 @@ bool Node::can_process() const {
 
 	if (get_tree()->is_paused()) {
 
+		if (data.pause_mode==PAUSE_MODE_STOP)
+			return false;
 		if (data.pause_mode==PAUSE_MODE_PROCESS)
 			return true;
 		if (data.pause_mode==PAUSE_MODE_INHERIT) {
@@ -391,6 +393,9 @@ bool Node::can_process() const {
 
 			if (data.pause_owner->data.pause_mode==PAUSE_MODE_PROCESS)
 				return true;
+
+			if (data.pause_owner->data.pause_mode==PAUSE_MODE_STOP)
+				return false;
 		}
 
 	}

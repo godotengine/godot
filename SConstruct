@@ -133,8 +133,8 @@ Help(opts.GenerateHelpText(env_base)) # generate help
 # add default include paths
 
 env_base.Append(CPPPATH=['#core','#core/math','#tools','#drivers','#'])
-	
-# configure ENV for platform	
+
+# configure ENV for platform
 env_base.platform_exporters=platform_exporters
 
 """
@@ -169,6 +169,26 @@ if selected_platform in platform_list:
 		env = detect.create(env_base)
 	else:
 		env = env_base.Clone()
+
+	# Workaround for MinGW. See:
+	# http://www.scons.org/wiki/LongCmdLinesOnWin32
+	if (os.name=="nt"):
+		import subprocess
+		def mySpawn(sh, escape, cmd, args, env):
+				newargs = ' '.join(args[1:])
+				cmdline = cmd + " " + newargs
+				startupinfo = subprocess.STARTUPINFO()
+				startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+				proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+					stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
+				data, err = proc.communicate()
+				rv = proc.wait()
+				if rv:
+					print "====="
+					print err
+					print "====="
+				return rv
+		env['SPAWN'] = mySpawn
 
 	env.extra_suffix=""
 
