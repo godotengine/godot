@@ -2307,7 +2307,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		} break;
 		case ANIM_INSERT_ROT: {
 
-			key_pos = key_rot_button->is_pressed();
+			key_rot = key_rot_button->is_pressed();
 		} break;
 		case ANIM_INSERT_SCALE: {
 
