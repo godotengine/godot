@@ -829,7 +829,7 @@ void TextEdit::_notification(int p_what) {
 					completion_rect.pos.x=cursor_pos.x-nofs;
 				}
 
-				completion_rect.size.width=w;
+				completion_rect.size.width=w+2;
 				completion_rect.size.height=h;
 				if (completion_options.size()<=maxlines)
 					scrollw=0;
@@ -1034,6 +1034,8 @@ void TextEdit::_consume_backspace_for_pair_symbol(int prev_line, int prev_column
 }
 
 void TextEdit::backspace_at_cursor() {
+    if (readonly)
+	   return;
 
     if (cursor.column==0 && cursor.line==0)
         return;
@@ -1251,6 +1253,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
                 return;
 
             if (completion_active) {
+		  if (readonly)
+		     break;
 
                 bool valid=true;
                 if (k.mod.command || k.mod.alt || k.mod.meta)
@@ -1400,6 +1404,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
             if (selection.active) {
 
+		    if (readonly)
+		       break;
+
                 bool clear=false;
                 bool unselect=false;
                 bool dobreak=false;
@@ -1512,6 +1519,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 
                 case KEY_ENTER:
                 case KEY_RETURN: {
+
+			    if (readonly)
+			       break;
 
                     String ins="\n";
 
