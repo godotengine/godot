@@ -2909,11 +2909,11 @@ void AnimationKeyEditor::set_anim_pos(float p_pos) {
 
 void AnimationKeyEditor::_pane_drag(const Point2& p_delta) {
 
-	Size2 ecs = ec->get_minsize();
+	Size2 ecs = ec->get_custom_minimum_size();
 	ecs.y-=p_delta.y;
 	if (ecs.y<100)
 		ecs.y=100;
-	ec->set_minsize(ecs);;
+	ec->set_custom_minimum_size(ecs);;
 
 }
 
@@ -3296,8 +3296,8 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 
 //	menu->get_popup()->connect("item_pressed",this,"_menu_callback");
 
-	ec = memnew (EmptyControl);
-	ec->set_minsize(Size2(0,50));
+	ec = memnew (Control);
+	ec->set_custom_minimum_size(Size2(0,50));
 	add_child(ec);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 

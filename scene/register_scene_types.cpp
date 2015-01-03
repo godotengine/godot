@@ -39,7 +39,6 @@
 #include "scene/main/viewport.h"
 #include "scene/gui/control.h"
 #include "scene/gui/texture_progress.h"
-#include "scene/gui/empty_control.h"
 #include "scene/gui/button.h"
 #include "scene/gui/button_array.h"
 #include "scene/gui/button_group.h"
@@ -272,7 +271,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<Control>();
-	ObjectTypeDB::register_type<EmptyControl>();
+//	ObjectTypeDB::register_type<EmptyControl>();
+	ObjectTypeDB::add_compatibility_type("EmptyControl","control");
 	ObjectTypeDB::register_type<Button>();
 	ObjectTypeDB::register_type<Label>();
 	ObjectTypeDB::register_type<HScrollBar>();

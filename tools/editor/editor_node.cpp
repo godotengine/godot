@@ -3309,13 +3309,13 @@ EditorNode::EditorNode() {
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
 	HBoxContainer *srth = memnew( HBoxContainer );
 	srt->add_child( srth );
-	EmptyControl *tec = memnew( EmptyControl );
-	tec->set_minsize(Size2(100,0));
+	Control *tec = memnew( Control );
+	tec->set_custom_minimum_size(Size2(100,0));
 	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	srth->add_child(tec);
 	srth->add_child(main_editor_tabs);
-	tec = memnew( EmptyControl );
-	tec->set_minsize(Size2(100,0));
+	tec = memnew( Control );
+	tec->set_custom_minimum_size(Size2(100,0));
 	srth->add_child(tec);
 	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -3675,8 +3675,8 @@ EditorNode::EditorNode() {
 	top_pallete->add_child(resources_dock);
 	top_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	EmptyControl *editor_spacer = memnew( EmptyControl );
-	editor_spacer->set_minsize(Size2(260,200));
+	Control *editor_spacer = memnew( Control );
+	editor_spacer->set_custom_minimum_size(Size2(260,200));
 	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor_vsplit->add_child( editor_spacer );
 	editor_spacer->add_child( top_pallete );
@@ -3687,8 +3687,8 @@ EditorNode::EditorNode() {
 
 	prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	editor_spacer = memnew( EmptyControl );
-	editor_spacer->set_minsize(Size2(260,200));
+	editor_spacer = memnew( Control );
+	editor_spacer->set_custom_minimum_size(Size2(260,200));
 	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor_vsplit->add_child( editor_spacer );
 	editor_spacer->add_child( prop_pallete );

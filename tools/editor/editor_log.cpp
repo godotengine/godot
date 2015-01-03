@@ -203,9 +203,9 @@ EditorLog::EditorLog() {
 	tb->connect("pressed",this,"_close_request");
 
 
-	ec = memnew( EmptyControl);
+	ec = memnew( Control);
 	vb->add_child(ec);
-	ec->set_minsize(Size2(0,100));
+	ec->set_custom_minimum_size(Size2(0,100));
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 
 

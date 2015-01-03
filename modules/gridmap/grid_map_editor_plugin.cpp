@@ -1192,8 +1192,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	undo_redo=p_editor->get_undo_redo();
 
 	int mw = EDITOR_DEF("grid_map/palette_min_width",230);
-	EmptyControl *ec = memnew( EmptyControl);
-	ec->set_minsize(Size2(mw,0));
+	Control *ec = memnew( Control);
+	ec->set_custom_minimum_size(Size2(mw,0));
 	add_child(ec);
 
 
