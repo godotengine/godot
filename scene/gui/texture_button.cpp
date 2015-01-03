@@ -53,6 +53,10 @@ Size2 TextureButton::get_minimum_size() const {
 
 bool TextureButton::has_point(const Point2& p_point) const {
 
+	if (scale[0] <= 0 || scale[1] <= 0) {
+		return false;
+	}
+
 	Point2 ppos = p_point/scale;
 
 	if (click_mask.is_valid()) {
@@ -159,7 +163,7 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 
 }
@@ -228,15 +232,14 @@ void TextureButton::set_focused_texture(const Ref<Texture>& p_focused) {
 	focused = p_focused;
 };
 
-void TextureButton::set_scale(float p_scale) {
+void TextureButton::set_scale(Size2 p_scale) {
 
-	ERR_FAIL_COND(p_scale<=0);
 	scale=p_scale;
 	minimum_size_changed();
 	update();
 }
 
-float TextureButton::get_scale() const{
+Size2 TextureButton::get_scale() const{
 
 	return scale;
 }
@@ -252,6 +255,6 @@ Color TextureButton::get_modulate() const {
 
 
 TextureButton::TextureButton() {
-	scale=1.0;
+	scale=Size2(1.0, 1.0);
 	modulate=Color(1,1,1);
 }
