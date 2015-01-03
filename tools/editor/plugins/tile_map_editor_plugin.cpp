@@ -728,7 +728,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	add_child(palette);
 
 	// Add menu items
-	HBoxContainer *canvas_item_editor_hb = memnew( HBoxContainer );
+	canvas_item_editor_hb = memnew( HBoxContainer );
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(canvas_item_editor_hb);
 	canvas_item_editor_hb->add_child( memnew( VSeparator ));
 	mirror_x = memnew( ToolButton );
@@ -741,6 +741,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	mirror_y->set_tooltip("Mirror Y (S)");
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	canvas_item_editor_hb->add_child(mirror_y);
+	canvas_item_editor_hb->hide();
 
 	tool=TOOL_NONE;
 	selection_active=false;
@@ -762,10 +763,12 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		tile_map_editor->show();
+		tile_map_editor->get_canvas_item_editor_hb()->show();
 
 	} else {
 
 		tile_map_editor->hide();
+		tile_map_editor->get_canvas_item_editor_hb()->hide();
 		tile_map_editor->edit(NULL);
 	}
 

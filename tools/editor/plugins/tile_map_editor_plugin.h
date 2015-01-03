@@ -73,6 +73,8 @@ class TileMapEditor : public VBoxContainer {
 	ToolButton *mirror_x;
 	ToolButton *mirror_y;
 
+	HBoxContainer *canvas_item_editor_hb;
+
 
 	struct CellOp {
 		int idx;
@@ -102,6 +104,7 @@ protected:
 	static void _bind_methods();
 public:
 
+	HBoxContainer *get_canvas_item_editor_hb() const { return canvas_item_editor_hb; }
 	Vector2 snap_point(const Vector2& p_point) const;
 	bool forward_input_event(const InputEvent& p_event);
 	void edit(Node *p_tile_map);
@@ -114,6 +117,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 	TileMapEditor *tile_map_editor;
 	EditorNode *editor;
+
 
 public:
 
