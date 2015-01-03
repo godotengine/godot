@@ -446,6 +446,7 @@ void EditorSettings::_load_defaults() {
 	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
+	set("property_editor/auto_refresh_interval",0.3);
 	set("help/doc_path","");
 
 	set("import/ask_save_before_reimport",false);

@@ -2684,8 +2684,8 @@ bool Control::is_stopping_mouse() const {
 Control *Control::get_focus_owner() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),NULL);
-	ERR_FAIL_COND_V(!window,NULL);
-	return window->key_focus;
+	ERR_FAIL_COND_V(!data.window,NULL);
+	return data.window->window->key_focus;
 }
 
 void Control::_bind_methods() {
