@@ -768,12 +768,6 @@ Control* Control::_find_control_at_pos(CanvasItem* p_node,const Point2& p_global
 
 		c->_window_sort_subwindows(); // sort them
 
-		int idx=0;
-		for (List<Control*>::Element *E=c->window->subwindows.front();E;E=E->next()) {
-
-			if (!E->get()->is_visible())
-				continue;
-		}
 		for (List<Control*>::Element *E=c->window->subwindows.back();E;E=E->prev()) {
 
 			Control *sw = E->get();
