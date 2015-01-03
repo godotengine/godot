@@ -768,6 +768,12 @@ Control* Control::_find_control_at_pos(CanvasItem* p_node,const Point2& p_global
 
 		c->_window_sort_subwindows(); // sort them
 
+		int idx=0;
+		for (List<Control*>::Element *E=c->window->subwindows.front();E;E=E->next()) {
+
+			if (!E->get()->is_visible())
+				continue;
+		}
 		for (List<Control*>::Element *E=c->window->subwindows.back();E;E=E->prev()) {
 
 			Control *sw = E->get();
@@ -1125,6 +1131,7 @@ void Control::_window_input_event(InputEvent p_event) {
 
 				over = _find_control_at_pos(this,pos,parent_xform,window->focus_inv_xform);
 			}
+
 
 			if (window->drag_data.get_type()==Variant::NIL && over && !window->modal_stack.empty()) {
 
@@ -2267,6 +2274,7 @@ void Control::_window_sort_subwindows() {
 		return;
 
 	window->modal_stack.sort_custom<CComparator>();
+	window->subwindows.sort_custom<CComparator>();
 	window->subwindow_order_dirty=false;
 
 }
