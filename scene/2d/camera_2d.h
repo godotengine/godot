@@ -85,7 +85,8 @@ public:
 
 	void set_limit(Margin p_margin,int p_limit);
 	int get_limit(Margin p_margin) const;
-
+	
+	void shake(float intensity_x, float intensity_y);
 
 	void set_h_drag_enabled(bool p_enabled);
 	bool is_h_drag_enabled() const;
