@@ -969,7 +969,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 
 
-	if (img.detect_alpha()==Image::ALPHA_BLEND) {
+	if ((!texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && img.detect_alpha()==Image::ALPHA_BLEND) {
 		texture->has_alpha=true;
 	}
 
@@ -4224,7 +4224,6 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 	}
 
 	w=DVector<uint8_t>::Write();
-
 	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA,pixels);
 	//r_capture->flip_y();
 

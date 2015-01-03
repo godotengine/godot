@@ -8,6 +8,7 @@ Error AudioStreamMPC::_open_file() {
 		f=NULL;
 	}
 	Error err;
+	//printf("mpc open file %ls\n", file.c_str());
 	f=FileAccess::open(file,FileAccess::READ,&err);
 
 	if (err) {
@@ -16,9 +17,10 @@ Error AudioStreamMPC::_open_file() {
 		return err;
 	}
 
-	f->seek_end(0);
-	streamlen=f->get_pos();
-	f->seek(0);
+	//printf("file size is %i\n", f->get_len());
+	//f->seek_end(0);
+	streamlen=f->get_len();
+	//f->seek(0);
 	if (streamlen<=0) {
 		memdelete(f);
 		f=NULL;

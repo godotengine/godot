@@ -75,6 +75,7 @@
 #include "plugins/tile_map_editor_plugin.h"
 #include "plugins/cube_grid_theme_editor_plugin.h"
 #include "plugins/shader_editor_plugin.h"
+#include "plugins/shader_graph_editor_plugin.h"
 #include "plugins/path_editor_plugin.h"
 #include "plugins/rich_text_editor_plugin.h"
 #include "plugins/collision_polygon_editor_plugin.h"
@@ -3245,7 +3246,7 @@ EditorNode::EditorNode() {
 	gui_base->set_area_as_parent_rect();
 
 
-	Ref<Theme> theme( memnew( Theme ) );
+	theme = Ref<Theme>( memnew( Theme ) );
 	gui_base->set_theme( theme );
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
@@ -4016,6 +4017,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
+	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );

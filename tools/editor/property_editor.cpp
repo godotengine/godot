@@ -142,7 +142,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					String orig_type = res_orig->get_type();
-					print_line("orig type: "+orig_type);
+
 					Object *inst = ObjectTypeDB::instance( orig_type );
 
 					Ref<Resource> res = Ref<Resource>( inst->cast_to<Resource>() );
@@ -186,6 +186,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 
 					ERR_FAIL_COND( inheritors_array.empty() );
+
 
 					String intype=inheritors_array[p_which-TYPE_BASE_ID];
 
@@ -603,6 +604,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 
 			if (hint_text!="") {
+				int idx=0;
 
 				for(int i=0;i<hint_text.get_slice_count(",");i++) {
 
@@ -620,19 +622,19 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 						E=E->next();
 					}
 
-					int idx=0;
 					for(Set<String>::Element *E=valid_inheritors.front();E;E=E->next()) {
 						String t = E->get();
 						if (!ObjectTypeDB::can_instance(t))
 							continue;
 						inheritors_array.push_back(t);
 
+						int id = TYPE_BASE_ID+idx;
 						if (has_icon(t,"EditorIcons")) {
 
-							menu->add_icon_item(get_icon(t,"EditorIcons"),"New "+t,TYPE_BASE_ID+idx);
+							menu->add_icon_item(get_icon(t,"EditorIcons"),"New "+t,id);
 						} else {
 
-							menu->add_item("New "+t,TYPE_BASE_ID+idx);
+							menu->add_item("New "+t,id);
 						}
 
 						idx++;
@@ -970,9 +972,11 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		
 			if (p_which==0) {
 			
+
 				ERR_FAIL_COND( inheritors_array.empty() );
 
 				String intype=inheritors_array[0];
+
 				
 				if (hint==PROPERTY_HINT_RESOURCE_TYPE) {
 				

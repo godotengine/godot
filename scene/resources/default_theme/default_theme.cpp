@@ -417,12 +417,18 @@ void make_default_theme() {
 	t->set_constant("hseparation","PopupMenu",2);
 	t->set_constant("vseparation","PopupMenu",1);
 
-	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,21,6,5,16,21,16,5);
+	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,16,24,16,5);
 	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
 	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
 	t->set_stylebox("frame","GraphNode", graphsb );
 	t->set_constant("separation","GraphNode", 1 );
 	t->set_icon("port","GraphNode", make_icon( graph_port_png ) );
+	t->set_icon("close","GraphNode", make_icon( graph_node_close_png ) );
+	t->set_font("title_font","GraphNode", default_font );
+	t->set_color("title_color","GraphNode", Color(0,0,0,1));
+	t->set_constant("title_offset","GraphNode", 18);
+	t->set_constant("close_offset","GraphNode", 18);
+	t->set_constant("port_offset","GraphNode", 3);
 
 
 	t->set_stylebox("bg","Tree", make_stylebox( tree_bg_png,4,4,4,5,3,3,3,3) );
