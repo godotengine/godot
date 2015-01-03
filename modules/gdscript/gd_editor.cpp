@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "gd_script.h"
 #include "gd_compiler.h"
-
+#include "globals.h"
 
 void GDScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
 
@@ -1276,7 +1276,23 @@ static void _make_function_hint(const GDParser::FunctionNode* p_func,int p_argid
 static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const StringName& p_method,const GDCompletionIdentifier& id, int p_argidx, Set<String>& result, String& arghint) {
 
 
-	if (id.type==Variant::OBJECT && id.obj_type!=StringName()) {
+	if (id.type==Variant::INPUT_EVENT && String(p_method)=="is_action" && p_argidx==0) {
+
+		List<PropertyInfo> pinfo;
+		Globals::get_singleton()->get_property_list(&pinfo);
+
+		for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+			const PropertyInfo &pi=E->get();
+
+			if (!pi.name.begins_with("input/"))
+				continue;
+
+			String name = pi.name.substr(pi.name.find("/")+1,pi.name.length());
+			result.insert("\""+name+"\"");
+		}
+
+
+	} else if (id.type==Variant::OBJECT && id.obj_type!=StringName()) {
 
 
 		MethodBind *m = ObjectTypeDB::get_method(id.obj_type,p_method);
@@ -1299,7 +1315,7 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 				const GDParser::OperatorNode *op=static_cast<const GDParser::OperatorNode *>(p_node);
 				if (op->arguments.size()>)
 
-			}*/
+			}*/		
 		} else {
 
 			Object *obj=id.value;
@@ -1825,6 +1841,37 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 		case GDParser::COMPLETION_CALL_ARGUMENTS: {
 
 			_find_call_arguments(context,p.get_completion_node(),p.get_completion_line(),p.get_completion_argument_index(),options,r_call_hint);
+		} break;
+		case GDParser::COMPLETION_VIRTUAL_FUNC: {
+
+			GDCompletionIdentifier cid = _get_native_class(context);
+
+			if (cid.obj_type!=StringName()) {
+				List<MethodInfo> vm;
+				ObjectTypeDB::get_virtual_methods(cid.obj_type,&vm);
+				for(List<MethodInfo>::Element *E=vm.front();E;E=E->next()) {
+
+					MethodInfo &mi=E->get();
+					String m = mi.name;
+					if (m.find(":")!=-1)
+						m=m.substr(0,m.find(":"));
+					m+="(";
+
+					if (mi.arguments.size()) {
+						for(int i=0;i<mi.arguments.size();i++) {
+							if (i>0)
+								m+=", ";
+							String n =mi.arguments[i].name;
+							if (n.find(":")!=-1)
+								n=n.substr(0,n.find(":"));
+							m+=n;
+						}
+					}
+					m+="):";
+
+					options.insert(m);
+				}
+			}
 		} break;
 
 

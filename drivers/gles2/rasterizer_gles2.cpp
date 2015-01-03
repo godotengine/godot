@@ -145,7 +145,7 @@ static _FORCE_INLINE_ uint16_t make_half_float(float f) {
 
 	hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
 	*/
-	hf=0; //denormals do not work for 3D
+	hf=0; //denormals do not work for 3D, convert to zero
     }
     else
     {
