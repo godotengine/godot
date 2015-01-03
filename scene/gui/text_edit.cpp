@@ -3274,19 +3274,41 @@ void TextEdit::_update_completion_candidates() {
 	
 	
 	String s;
-	
-	while(cofs>0 && l[cofs-1]>32 && _is_completable(l[cofs-1])) {
-		s=String::chr(l[cofs-1])+s;
-		if (l[cofs-1]=='\'' || l[cofs-1]=='"')
-			break;
-		
-		cofs--;
+
+	//look for keywords first
+
+	bool pre_keyword=false;
+
+	if (cofs>0 && l[cofs-1]==' ') {
+		int kofs=cofs-1;
+		String kw;
+		while (kofs>=0 && l[kofs]==' ')
+			kofs--;
+
+		while(kofs>=0 && l[kofs]>32 && _is_completable(l[kofs])) {
+			kw=String::chr(l[kofs])+kw;
+			kofs--;
+		}
+
+		pre_keyword=keywords.has(kw);
+		print_line("KW "+kw+"? "+itos(pre_keyword));
+
+	} else {
+
+
+		while(cofs>0 && l[cofs-1]>32 && _is_completable(l[cofs-1])) {
+			s=String::chr(l[cofs-1])+s;
+			if (l[cofs-1]=='\'' || l[cofs-1]=='"')
+				break;
+
+			cofs--;
+		}
 	}
-	
+
 	
 	update();
 	
-	if (s=="" && (cofs==0 || !completion_prefixes.has(String::chr(l[cofs-1])))) {
+	if (!pre_keyword && s=="" && (cofs==0 || !completion_prefixes.has(String::chr(l[cofs-1])))) {
 		//none to complete, cancel
 		_cancel_completion();
 		return;

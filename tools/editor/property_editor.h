@@ -156,6 +156,7 @@ class PropertyEditor : public Control {
 	bool keying;
 	bool read_only;
 	bool show_categories;
+	float refresh_countdown;
 
 	HashMap<String,String> pending;
 	String selected_property;
@@ -185,6 +186,7 @@ class PropertyEditor : public Control {
 	void _draw_flags(Object *ti,const Rect2& p_rect);
 
 	Node *get_instanced_node();
+	void _refresh_item(TreeItem *p_item);
 
 	UndoRedo *undo_redo;
 protected:
@@ -202,6 +204,8 @@ public:
 	void hide_top_label();
 	void update_tree();
 	void update_property(const String& p_prop);
+
+	void refresh();
 
 	void edit(Object* p_object);
 
