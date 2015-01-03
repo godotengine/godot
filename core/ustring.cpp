@@ -655,8 +655,6 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters,bool p_a
 		}
 
 		if (p_allow_empty || (end>from)) {
-			double d = String::to_double(&c_str()[from]);
-			print_line("get db: "+rtos(d));
 			ret.push_back(String::to_double(&c_str()[from]));
 		}
 
