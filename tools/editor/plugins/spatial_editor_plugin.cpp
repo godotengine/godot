@@ -690,10 +690,11 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 				case BUTTON_WHEEL_UP: {
 
-
 					cursor.distance/=1.08;
-					if (cursor.distance<0.001)
-						cursor.distance=0.001;
+					if (cursor.distance<0.028) {
+						cursor.distance=10.0;
+						cursor.pos += cursor.distance*_get_camera_normal();
+					}
 
 				} break;
 				case BUTTON_WHEEL_DOWN: {
@@ -1396,6 +1397,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						nav_mode = NAVIGATION_ZOOM;
 					else if (mod == _get_key_modifier("3d_editor/orbit_modifier"))
 						nav_mode = NAVIGATION_ORBIT;
+					else if (mod == _get_key_modifier("3d_editor/dolly_modifier"))
+						nav_mode = NAVIGATION_DOLLY;
 
 				} else if (nav_scheme == NAVIGATION_MAYA) {
 					if (m.mod.alt)
@@ -1406,20 +1409,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 			switch(nav_mode) {
 				case NAVIGATION_PAN:{
 
-					real_t pan_speed = 1/150.0;
-					int pan_speed_modifier = 10;
-					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
-						pan_speed *= pan_speed_modifier;
+					Vector3 v1 = _get_screen_to_space(Vector3(m.x, m.y, 0))-(cursor.pos-_get_camera_normal()*cursor.distance);
+					v1*=cursor.distance/get_znear();
 
-					Transform camera_transform;
+					Vector3 v2 = _get_screen_to_space(Vector3(m.x+m.relative_x, m.y+m.relative_y, 0))-(cursor.pos-_get_camera_normal()*cursor.distance);
+					v2*=cursor.distance/get_znear();
 
-					camera_transform.translate(cursor.pos);
-					camera_transform.basis.rotate(Vector3(0,1,0),cursor.y_rot);
-					camera_transform.basis.rotate(Vector3(1,0,0),cursor.x_rot);
-					Vector3 translation(-m.relative_x*pan_speed,m.relative_y*pan_speed,0);
-					translation*=cursor.distance/DISTANCE_DEFAULT;
-					camera_transform.translate(translation);
-					cursor.pos=camera_transform.origin;
+					cursor.pos+=v1-v2;
 
 				} break;
 
@@ -1431,8 +1427,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					if ( m.relative_y > 0)
 						cursor.distance*=1+m.relative_y*zoom_speed;
-					else if (m.relative_y < 0)
+					else if (m.relative_y < 0) {
 						cursor.distance/=1-m.relative_y*zoom_speed;
+						if (cursor.distance<0.005) {
+							cursor.distance=10.0;
+							cursor.pos += cursor.distance*_get_camera_normal();
+						}
+					}
 
 				} break;
 
@@ -1443,6 +1444,22 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						cursor.x_rot=Math_PI/2.0;
 					if (cursor.x_rot<-Math_PI/2.0)
 						cursor.x_rot=-Math_PI/2.0;
+				} break;
+
+				case NAVIGATION_DOLLY: {
+					real_t dolly_speed = 1/80.0;
+					int dolly_speed_modifier = 10;
+					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
+						dolly_speed *= dolly_speed_modifier;
+
+					cursor.distance-=m.relative_y*dolly_speed;
+
+					if (cursor.distance<0.1) {
+						real_t d = 0.1 - cursor.distance;
+						cursor.distance += d;
+						cursor.pos += d*_get_camera_normal();
+					}
+
 				} break;
 
 				default: {}
