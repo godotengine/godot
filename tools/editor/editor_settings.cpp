@@ -427,6 +427,8 @@ void EditorSettings::_load_defaults() {
 	hints["3d_editor/pan_modifier"]=PropertyInfo(Variant::INT,"3d_editor/pan_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 	set("3d_editor/zoom_modifier",4);
 	hints["3d_editor/zoom_modifier"]=PropertyInfo(Variant::INT,"3d_editor/zoom_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
+	set("3d_editor/dolly_modifier",2);
+	hints["3d_editor/dolly_modifier"]=PropertyInfo(Variant::INT,"3d_editor/dolly_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 
 	set("2d_editor/bone_width",5);
 	set("2d_editor/bone_color1",Color(1.0,1.0,1.0,0.9));
