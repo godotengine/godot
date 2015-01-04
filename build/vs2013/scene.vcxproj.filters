@@ -303,9 +303,6 @@
     <ClCompile Include="..\..\scene\gui\dialogs.cpp">
       <Filter>scene\gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\scene\gui\empty_control.cpp">
-      <Filter>scene\gui</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\scene\gui\file_dialog.cpp">
       <Filter>scene\gui</Filter>
     </ClCompile>
@@ -597,6 +594,9 @@
     <ClCompile Include="..\..\scene\gui\graph_node.cpp">
       <Filter>scene\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\scene\gui\graph_edit.cpp">
+      <Filter>scene\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\scene\register_scene_types.h">
@@ -864,9 +864,6 @@
       <Filter>scene\gui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\scene\gui\dialogs.h">
-      <Filter>scene\gui</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\scene\gui\empty_control.h">
       <Filter>scene\gui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\scene\gui\file_dialog.h">
@@ -1161,6 +1158,9 @@
       <Filter>scene\resources\default_theme</Filter>
     </ClInclude>
     <ClInclude Include="..\..\scene\gui\graph_node.h">
+      <Filter>scene\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\gui\graph_edit.h">
       <Filter>scene\gui</Filter>
     </ClInclude>
   </ItemGroup>
