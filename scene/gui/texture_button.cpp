@@ -71,29 +71,6 @@ bool TextureButton::has_point(const Point2& p_point) const {
 	return Control::has_point(p_point);
 }
 
-void TextureButton::set_modulate(const Color& p_tex) {
-
-	modulate=p_tex;
-	update();
-}
-
-Color TextureButton::get_modulate() const{
-
-	return modulate;
-}
-
-
-void TextureButton::set_expand(bool p_expand) {
-
-	expand=p_expand;
-	update();
-	minimum_size_changed();
-}
-bool TextureButton::has_expand() const {
-
-	return expand;
-}
-
 void TextureButton::_notification(int p_what) {
 
 	switch( p_what ) {
@@ -179,11 +156,6 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&TextureButton::get_scale);
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
-
-	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"), & TextureButton::set_modulate );
-	ObjectTypeDB::bind_method(_MD("get_modulate"), & TextureButton::get_modulate );
-	ObjectTypeDB::bind_method(_MD("set_expand","enable"), & TextureButton::set_expand );
-	ObjectTypeDB::bind_method(_MD("has_expand"), & TextureButton::has_expand );
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/pressed",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_pressed_texture"), _SCS("get_pressed_texture"));

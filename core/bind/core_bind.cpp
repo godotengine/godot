@@ -1129,10 +1129,10 @@ DVector<uint8_t> _File::get_buffer(int p_length) const{
 String _File::get_as_text() const {
 
 	String text;
-	String l="";
+	String l = get_line();
 	while(!eof_reached()) {
-		l = get_line();
 		text+=l+"\n";
+		l = get_line();
 	}
 	text+=l;
 
