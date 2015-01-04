@@ -70,6 +70,8 @@ class PopupMenu : public Popup {
 	void _activate_submenu(int over);
 	void _submenu_timeout();
 
+	bool invalidated_click;
+	Vector2 moved;
 
 	Array _get_items() const;
 	void _set_items(const Array& p_items);
@@ -133,6 +135,8 @@ public:
 
 	void add_autohide_area(const Rect2& p_area);
 	void clear_autohide_areas();
+
+	void set_invalidate_click_until_motion();
 
 	PopupMenu();	
 	~PopupMenu();

@@ -53,11 +53,14 @@ var enemy
 
 func _integrate_forces(s):
 
+	
+
 	var lv = s.get_linear_velocity()
 	var step = s.get_step()
 	
 	var new_anim=anim
 	var new_siding_left=siding_left
+	
 	
 	# Get the controls
 	var move_left = Input.is_action_pressed("move_left")

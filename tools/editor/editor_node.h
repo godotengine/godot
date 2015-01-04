@@ -210,6 +210,7 @@ class EditorNode : public Node {
 	AcceptDialog *load_error_dialog;
 
 	Control *scene_root_base;
+	Ref<Theme> theme;
 
 	PopupMenu *recent_scenes;
 	Button *property_back;
@@ -481,6 +482,9 @@ public:
 	void notify_child_process_exited();
 
 	void stop_child_process();
+
+	Ref<Theme> get_editor_theme() const { return theme; }
+
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
 

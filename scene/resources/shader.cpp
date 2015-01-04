@@ -33,12 +33,6 @@
 #include "scene/scene_string_names.h"
 
 
-void Shader::set_mode(Mode p_mode) {
-
-	ERR_FAIL_INDEX(p_mode,2);
-	VisualServer::get_singleton()->shader_set_mode(shader,VisualServer::ShaderMode(p_mode));
-	emit_signal(SceneStringNames::get_singleton()->changed);
-}
 
 Shader::Mode Shader::get_mode() const {
 
@@ -176,7 +170,6 @@ void Shader::get_default_texture_param_list(List<StringName>* r_textures) const{
 
 void Shader::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&Shader::set_mode);
 	ObjectTypeDB::bind_method(_MD("get_mode"),&Shader::get_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_code","vcode","fcode","lcode","fofs","lofs"),&Shader::set_code,DEFVAL(0),DEFVAL(0));
@@ -203,9 +196,9 @@ void Shader::_bind_methods() {
 
 }
 
-Shader::Shader() {
+Shader::Shader(Mode p_mode) {
 
-	shader = VisualServer::get_singleton()->shader_create();
+	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
 	params_cache_dirty=true;
 }
 
@@ -237,7 +230,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path,const String& p_origin
 	String base_path = p_path.get_base_dir();
 
 
-	Ref<Shader> shader( memnew( Shader ) );
+	Ref<Shader> shader;//( memnew( Shader ) );
 
 	int line=0;
 

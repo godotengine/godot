@@ -31,31 +31,37 @@
 
 Size2 TextureButton::get_minimum_size() const {
 
-	if (expand)
-		return Size2();
-
+	Size2 rscale;
 	if (normal.is_null()) {
 		if (pressed.is_null()) {
 			if (hover.is_null())
 				if (click_mask.is_null())
-					return Size2();
+					rscale= Size2();
 				else
-					return click_mask->get_size();
+					rscale= click_mask->get_size();
 			else
-				return hover->get_size();
+				rscale= hover->get_size();
 		} else
-			return pressed->get_size();
+			rscale= pressed->get_size()*scale;
 
 	} else
-		return normal->get_size();
+		rscale= normal->get_size();
+
+	return rscale*scale;
 }
 
 
 bool TextureButton::has_point(const Point2& p_point) const {
 
+	if (scale[0] <= 0 || scale[1] <= 0) {
+		return false;
+	}
+
+	Point2 ppos = p_point/scale;
+
 	if (click_mask.is_valid()) {
 
-		Point2i p =p_point;
+		Point2i p =ppos;
 		if (p.x<0 || p.x>=click_mask->get_size().width || p.y<0 || p.y>=click_mask->get_size().height)
 			return false;
 
@@ -97,54 +103,57 @@ void TextureButton::_notification(int p_what) {
 			DrawMode draw_mode = get_draw_mode();
 //			if (normal.is_null())
 //				break;
-			Ref<Texture> tex;
+
+			Ref<Texture> texdraw;
+
 			switch (draw_mode) {
 				case DRAW_NORMAL: {
 
 					if (normal.is_valid())
-						tex=normal;
+						texdraw=normal;
 				} break;
 				case DRAW_PRESSED: {
 
 					if (pressed.is_null()) {
 						if (hover.is_null()) {
 							if (normal.is_valid())
-								tex=normal;
+								texdraw=normal;
 						} else
-							tex=hover;
+							texdraw=hover;
 
 					} else
-						tex=pressed;
+						texdraw=pressed;
 				} break;
 				case DRAW_HOVER: {
 
 					if (hover.is_null()) {
 						if (pressed.is_valid() && is_pressed())
-							tex=pressed;
+							texdraw=pressed;
 						else if (normal.is_valid())
-							tex=normal;
+							texdraw=normal;
 					} else
-						tex=hover;
+						texdraw=hover;
 				} break;
 				case DRAW_DISABLED: {
 
 					if (disabled.is_null()) {
 						if (normal.is_valid())
-							tex=normal;
+							texdraw=normal;
 					} else
-						tex=disabled;
+						texdraw=disabled;
 				} break;
 			}
 
-			if (!tex.is_null()) {
-				Size2 s=expand?get_size():tex->get_size();
-				draw_texture_rect(tex,Rect2(Point2(),s),false,modulate);
-			}
+			if (texdraw.is_valid()) {
+				Rect2 drect(Point2(),texdraw->get_size()*scale);
+				draw_texture_rect(texdraw,drect,false,modulate);
 
+			}
 			if (has_focus() && focused.is_valid()) {
 
-				Size2 s=expand?get_size():focused->get_size();
-				draw_texture_rect(focused,Rect2(Point2(),s),false,modulate);
+				Rect2 drect(Point2(),focused->get_size()*scale);
+				draw_texture_rect(focused,drect,false,modulate);
+
 			};
 
 		} break;
@@ -159,6 +168,8 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
 	ObjectTypeDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
 	ObjectTypeDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
+	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&TextureButton::set_scale);
+	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&TextureButton::set_modulate);
 
 	ObjectTypeDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
 	ObjectTypeDB::bind_method(_MD("get_pressed_texture:Texture"),&TextureButton::get_pressed_texture);
@@ -166,6 +177,8 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
 	ObjectTypeDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
 	ObjectTypeDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
+	ObjectTypeDB::bind_method(_MD("get_scale"),&TextureButton::get_scale);
+	ObjectTypeDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
 
 	ObjectTypeDB::bind_method(_MD("set_modulate","modulate"), & TextureButton::set_modulate );
 	ObjectTypeDB::bind_method(_MD("get_modulate"), & TextureButton::get_modulate );
@@ -178,8 +191,8 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 
 }
 
@@ -247,8 +260,29 @@ void TextureButton::set_focused_texture(const Ref<Texture>& p_focused) {
 	focused = p_focused;
 };
 
+void TextureButton::set_scale(Size2 p_scale) {
+
+	scale=p_scale;
+	minimum_size_changed();
+	update();
+}
+
+Size2 TextureButton::get_scale() const{
+
+	return scale;
+}
+
+void TextureButton::set_modulate(const Color& p_modulate) {
+	modulate=p_modulate;
+	update();
+}
+
+Color TextureButton::get_modulate() const {
+	return modulate;
+}
+
 
 TextureButton::TextureButton() {
-	expand=false;
-	modulate=Color(1,1,1,1);
+	scale=Size2(1.0, 1.0);
+	modulate=Color(1,1,1);
 }

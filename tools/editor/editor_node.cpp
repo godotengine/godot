@@ -75,6 +75,7 @@
 #include "plugins/tile_map_editor_plugin.h"
 #include "plugins/cube_grid_theme_editor_plugin.h"
 #include "plugins/shader_editor_plugin.h"
+#include "plugins/shader_graph_editor_plugin.h"
 #include "plugins/path_editor_plugin.h"
 #include "plugins/rich_text_editor_plugin.h"
 #include "plugins/collision_polygon_editor_plugin.h"
@@ -3284,7 +3285,7 @@ EditorNode::EditorNode() {
 	gui_base->set_area_as_parent_rect();
 
 
-	Ref<Theme> theme( memnew( Theme ) );
+	theme = Ref<Theme>( memnew( Theme ) );
 	gui_base->set_theme( theme );
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
@@ -3347,13 +3348,13 @@ EditorNode::EditorNode() {
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
 	HBoxContainer *srth = memnew( HBoxContainer );
 	srt->add_child( srth );
-	EmptyControl *tec = memnew( EmptyControl );
-	tec->set_minsize(Size2(100,0));
+	Control *tec = memnew( Control );
+	tec->set_custom_minimum_size(Size2(100,0));
 	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	srth->add_child(tec);
 	srth->add_child(main_editor_tabs);
-	tec = memnew( EmptyControl );
-	tec->set_minsize(Size2(100,0));
+	tec = memnew( Control );
+	tec->set_custom_minimum_size(Size2(100,0));
 	srth->add_child(tec);
 	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -3703,6 +3704,25 @@ EditorNode::EditorNode() {
 
 	resources_dock = memnew( ResourcesDock(this) );
 	resources_dock->set_name(_TR("Resources"));
+
+	Control *editor_spacer = memnew( Control );
+	editor_spacer->set_custom_minimum_size(Size2(260,200));
+	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	editor_vsplit->add_child( editor_spacer );
+	editor_spacer->add_child( top_pallete );
+	top_pallete->set_area_as_parent_rect();
+
+
+	prop_pallete = memnew( TabContainer );
+
+	prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	editor_spacer = memnew( Control );
+	editor_spacer->set_custom_minimum_size(Size2(260,200));
+	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	editor_vsplit->add_child( editor_spacer );
+	editor_spacer->add_child( prop_pallete );
+	prop_pallete->set_area_as_parent_rect();
 
 	VBoxContainer *prop_editor_base = memnew( VBoxContainer );
 	prop_editor_base->set_name(_TR("Inspector")); // Properties?
@@ -4126,6 +4146,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
+	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );

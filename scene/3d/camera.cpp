@@ -86,6 +86,10 @@ bool Camera::_set(const StringName& p_name, const Variant& p_value) {
 		set_keep_aspect_mode(KeepAspect(int(p_value)));
 	else if (p_name=="vaspect")
 		set_keep_aspect_mode(p_value?KEEP_WIDTH:KEEP_HEIGHT);
+	else if (p_name=="h_offset")
+		h_offset=p_value;
+	else if (p_name=="v_offset")
+		v_offset=p_value;
 	else if (p_name=="current") {
 		if (p_value.operator bool()) {
 			make_current();
@@ -128,6 +132,10 @@ bool Camera::_get(const StringName& p_name,Variant &r_ret) const {
 		}
 	} else if (p_name=="visible_layers") {
 		r_ret=get_visible_layers();
+	} else if (p_name=="h_offset") {
+		r_ret=get_h_offset();
+	} else if (p_name=="v_offset") {
+		r_ret=get_v_offset();
 	} else if (p_name=="environment") {
 		r_ret=get_environment();
 	} else
@@ -170,12 +178,16 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	p_list->push_back( PropertyInfo( Variant::BOOL, "current" ) );
 	p_list->push_back( PropertyInfo( Variant::INT, "visible_layers",PROPERTY_HINT_ALL_FLAGS ) );
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "environment",PROPERTY_HINT_RESOURCE_TYPE,"Environment" ) );
+	p_list->push_back( PropertyInfo( Variant::REAL, "h_offset" ) );
+	p_list->push_back( PropertyInfo( Variant::REAL, "v_offset" ) );
 
 }
 
 void Camera::_update_camera() {
 
 	Transform tr = get_camera_transform();
+	tr.origin+=tr.basis.get_axis(1)*v_offset;
+	tr.origin+=tr.basis.get_axis(0)*h_offset;
 	VisualServer::get_singleton()->camera_set_transform( camera, tr );
 
 // here goes listener stuff
@@ -757,6 +769,27 @@ void Camera::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, cons
 
 }
 
+void Camera::set_v_offset(float p_offset) {
+
+	v_offset=p_offset;
+	_update_camera();;
+}
+
+float Camera::get_v_offset() const {
+
+	return v_offset;
+}
+
+void Camera::set_h_offset(float p_offset) {
+	h_offset=p_offset;
+	_update_camera();
+}
+
+float Camera::get_h_offset() const {
+
+	return h_offset;
+}
+
 
 Camera::Camera() {
 
@@ -772,6 +805,8 @@ Camera::Camera() {
 	set_perspective(60.0,0.1,100.0);
 	keep_aspect=KEEP_HEIGHT;
 	layers=0xfffff;
+	v_offset=0;
+	h_offset=0;
 	VisualServer::get_singleton()->camera_set_visible_layers(camera,layers);
 	//active=false;
 }

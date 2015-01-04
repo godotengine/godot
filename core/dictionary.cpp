@@ -186,10 +186,12 @@ Error Dictionary::parse_json(const String& p_json) {
 
 	String errstr;
 	int errline=0;
+	if (p_json != ""){
 	Error err = JSON::parse(p_json,*this,errstr,errline);
 	if (err!=OK) {
 		ERR_EXPLAIN("Error parsing JSON: "+errstr+" at line: "+itos(errline));
 		ERR_FAIL_COND_V(err!=OK,err);
+		}
 	}
 
 	return OK;

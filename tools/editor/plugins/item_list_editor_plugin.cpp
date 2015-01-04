@@ -210,6 +210,7 @@ void ItemListEditor::_bind_methods() {
 }
 
 bool ItemListEditor::handles(Object *p_object) const {
+	return false;
 	for(int i=0;i<item_plugins.size();i++)  {
 		if (item_plugins[i]->handles(p_object)) {
 			return true;
