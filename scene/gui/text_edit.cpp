@@ -1957,7 +1957,11 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					update();
 				} break;
 				case KEY_SPACE: {
+#ifdef OSX_ENABLED
+					if (completion_enabled && k.mod.meta) { //cmd-space is spotlight shortcut in OSX
+#else
 					if (completion_enabled && k.mod.command) {
+#endif
 						
 						query_code_comple();
 						scancode_handled=true;

@@ -550,7 +550,7 @@ StringName TranslationServer::translate(const StringName& p_message) const {
 			continue; // locale not match
 
 		//near match
-		bool match = (l!=lptr);
+		bool match = (l!=locale);
 
 		if (near_match && !match)
 			continue; //only near-match once
@@ -569,6 +569,42 @@ StringName TranslationServer::translate(const StringName& p_message) const {
 			near_match=true;
 
 	}
+
+	if (!res) {
+		//try again with fallback
+		if (fallback.length()>=2) {
+
+			const CharType *fptr=&fallback[0];
+			bool near_match=false;
+			for (const Set< Ref<Translation> >::Element *E=translations.front();E;E=E->next()) {
+
+				const Ref<Translation>& t = E->get();
+				String l = t->get_locale();
+				if (fptr[0]!=l[0] || fptr[1]!=l[1])
+					continue; // locale not match
+
+				//near match
+				bool match = (l!=fallback);
+
+				if (near_match && !match)
+					continue; //only near-match once
+
+				StringName r=t->get_message(p_message);
+
+				if (!r)
+					continue;
+
+				res=r;
+
+				if (match)
+					break;
+				else
+					near_match=true;
+
+			}
+		}
+	}
+
 
 	if (!res)
 		return p_message;
@@ -604,9 +640,27 @@ bool TranslationServer::_load_translations(const String& p_from) {
 
 void TranslationServer::setup() {
 
+	String test = GLOBAL_DEF("locale/test","");
+	test=test.strip_edges();
+	if (test!="")
+		set_locale( test );
+	else
+		set_locale( OS::get_singleton()->get_locale() );
+	fallback = GLOBAL_DEF("locale/fallback","en");
+#ifdef TOOLS_ENABLED
 
-	set_locale( GLOBAL_DEF("locale/default",OS::get_singleton()->get_locale()) );
-	fallback = GLOBAL_DEF("locale/fallback","");
+	{
+		String options="";
+		int idx=0;
+		while(locale_list[idx]) {
+			if (idx>0)
+				options+=", ";
+			options+=locale_list[idx];
+			idx++;
+		}
+		Globals::get_singleton()->set_custom_property_info("locale/fallback",PropertyInfo(Variant::STRING,"locale/fallback",PROPERTY_HINT_ENUM,options));
+	}
+#endif
 	//load translations
 
 }
@@ -629,6 +683,7 @@ void TranslationServer::load_translations() {
 
 	String locale = get_locale();
 	bool found = _load_translations("locale/translations"); //all
+
 	if (_load_translations("locale/translations_"+locale.substr(0,2)))
 		found=true;
 	if ( locale.substr(0,2) != locale ) {
@@ -636,17 +691,6 @@ void TranslationServer::load_translations() {
 			found=true;
 	}
 
-
-	if (!found && fallback!="") { //none found anywhere, use fallback
-
-		_load_translations("locale/translations_"+fallback.substr(0,2));
-		if ( fallback.substr(0,2) != fallback ) {
-			_load_translations("locale/translations_"+fallback);
-		}
-
-		this->locale=fallback;
-
-	}
 
 }
 
