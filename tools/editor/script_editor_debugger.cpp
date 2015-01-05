@@ -40,6 +40,7 @@
 #include "property_editor.h"
 #include "globals.h"
 #include "editor_node.h"
+#include "editor_settings.h"
 #include "main/performance.h"
 
 class ScriptEditorDebuggerVariables : public Object {
@@ -478,8 +479,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (!connection->is_connected()) {
 				stop();
 				editor->notify_child_process_exited(); //somehow, exited
-				msgdialog->set_text("Process being debugged exited.");
-				msgdialog->popup_centered(Size2(250,100));
+				if (bool(EDITOR_DEF("run/notify_when_debugging_stops",true))) {
+					msgdialog->set_text("Process being debugged exited.");
+					msgdialog->popup_centered(Size2(250,100));
+				}
 				break;
 			};
 
