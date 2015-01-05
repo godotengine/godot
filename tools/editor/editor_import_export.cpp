@@ -292,7 +292,11 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 			_add_filter_to_list(exported,"*");
 		} else {
 			_add_to_list(EditorFileSystem::get_singleton()->get_filesystem(),exported);
-			_add_filter_to_list(exported,EditorImportExport::get_singleton()->get_export_custom_filter());
+			String cf = EditorImportExport::get_singleton()->get_export_custom_filter();
+			if (cf!="")
+				cf+=",";
+			cf+="*.flags";
+			_add_filter_to_list(exported,cf);
 
 		}
 
@@ -361,8 +365,12 @@ Vector<StringName> EditorExportPlatform::get_dependencies(bool p_bundles) const 
 				}
 			}
 		}
+		String cf = EditorImportExport::get_singleton()->get_export_custom_filter();
+		if (cf!="")
+			cf+=",";
+		cf+="*.flags";
+		_add_filter_to_list(exported,cf);
 
-		_add_filter_to_list(exported,EditorImportExport::get_singleton()->get_export_custom_filter());
 
 	}
 

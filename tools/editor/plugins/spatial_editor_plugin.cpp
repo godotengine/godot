@@ -535,6 +535,14 @@ SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_s
 	return NAVIGATION_GODOT;
 }
 
+SpatialEditorViewport::NavigationZoomStyle SpatialEditorViewport::_get_navigation_zoom_style(const String& p_property) {
+	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 0: return NAVIGATION_ZOOM_VERTICAL;
+		case 1: return NAVIGATION_ZOOM_HORIZONTAL;
+	}
+	return NAVIGATION_ZOOM_VERTICAL;
+}
+
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
 
 	if (!spatial_editor->is_gizmo_visible())
@@ -1429,10 +1437,19 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
 						zoom_speed *= zoom_speed_modifier;
 
-					if ( m.relative_y > 0)
-						cursor.distance*=1+m.relative_y*zoom_speed;
-					else if (m.relative_y < 0)
-						cursor.distance/=1-m.relative_y*zoom_speed;
+					NavigationZoomStyle zoom_style = _get_navigation_zoom_style("3d_editor/zoom_style");
+					if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
+						if ( m.relative_x > 0)
+							cursor.distance*=1-m.relative_x*zoom_speed;
+						else if (m.relative_x < 0)
+							cursor.distance/=1+m.relative_x*zoom_speed;
+					}
+					else {
+						if ( m.relative_y > 0)
+							cursor.distance*=1+m.relative_y*zoom_speed;
+						else if (m.relative_y < 0)
+							cursor.distance/=1-m.relative_y*zoom_speed;
+					}
 
 				} break;
 

@@ -602,6 +602,39 @@ void TabContainer::get_translatable_strings(List<String> *p_strings) const {
 }
 
 
+Size2 TabContainer::get_minimum_size() const {
+
+	Size2 ms;
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_set_as_toplevel())
+			continue;
+
+		if (!c->has_meta("_tab_name"))
+			continue;
+
+		if (!c->is_visible())
+			continue;
+
+		Size2 cms = c->get_minimum_size();
+		ms.x=MAX(ms.x,cms.x);
+		ms.y=MAX(ms.y,cms.y);
+	}
+
+	Ref<StyleBox> tab_bg = get_stylebox("tab_bg");
+	Ref<StyleBox> tab_fg = get_stylebox("tab_fg");
+	Ref<Font> font = get_font("font");
+
+	ms.y+=MAX(tab_bg->get_minimum_size().y,tab_fg->get_minimum_size().y);
+	ms.y+=font->get_height();
+
+	return ms;
+}
+
 void TabContainer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);

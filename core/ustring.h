@@ -142,7 +142,7 @@ public:
 	int64_t to_int64() const;
 	static int to_int(const char* p_str);
 	static double to_double(const char* p_str);
-	static double to_double(const CharType* p_str, int p_len=-1, const CharType **r_end=NULL);
+	static double to_double(const CharType* p_str, const CharType **r_end=NULL);
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
 	String capitalize() const;
 

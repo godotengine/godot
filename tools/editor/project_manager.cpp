@@ -39,7 +39,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 
-#include "scene/gui/empty_control.h"
+
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
@@ -580,8 +580,8 @@ void ProjectManager::_load_recent_projects() {
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		hb->add_child(vb);
-		EmptyControl *ec = memnew( EmptyControl );
-		ec->set_minsize(Size2(0,1));
+		Control *ec = memnew( Control );
+		ec->set_custom_minimum_size(Size2(0,1));
 		vb->add_child(ec);
 		Label *title = memnew( Label(project_name) );
 		title->add_font_override("font",get_font("large","Fonts"));

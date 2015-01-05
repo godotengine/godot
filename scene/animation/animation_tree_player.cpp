@@ -83,7 +83,8 @@ bool AnimationTreePlayer::_set(const StringName& p_name, const Variant& p_value)
 
 		ERR_FAIL_COND_V(nt==NODE_MAX,false);
 
-		add_node(nt,id);
+		if (nt!=NODE_OUTPUT)
+			add_node(nt,id);
 		node_set_pos(id,pos);
 
 

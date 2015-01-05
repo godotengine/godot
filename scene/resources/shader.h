@@ -50,6 +50,8 @@ class Shader : public Resource {
 	mutable Map<StringName,StringName> params_cache; //map a shader param to a material param..
 	Map<StringName,Ref<Texture> > default_textures;
 
+
+
 protected:
 
 
@@ -59,10 +61,11 @@ public:
 
 		MODE_MATERIAL,
 		MODE_CANVAS_ITEM,
-		MODE_POST_PROCESS
+		MODE_POST_PROCESS,
+		MODE_MAX
 	};
 
-	void set_mode(Mode p_mode);
+	//void set_mode(Mode p_mode);
 	Mode get_mode() const;
 
 	void set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs=0,int p_light_ofs=0);
@@ -79,12 +82,21 @@ public:
 
 	virtual RID get_rid() const;
 
-	Shader();
+	Shader(Mode p_mode);
 	~Shader();
 
 };
 
 VARIANT_ENUM_CAST( Shader::Mode );
+
+class MaterialShader : public Shader {
+
+	OBJ_TYPE(MaterialShader,Shader);
+
+public:
+
+	MaterialShader() : Shader(MODE_MATERIAL) {};
+};
 
 
 

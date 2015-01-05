@@ -135,6 +135,27 @@ def configure(env):
 		env.Append(LIBPATH=[DIRECTX_PATH+"/Lib/x86"])
 		env['ENV'] = os.environ;
 	else:
+
+		# Workaround for MinGW. See:
+		# http://www.scons.org/wiki/LongCmdLinesOnWin32
+		if (os.name=="nt"):
+			import subprocess
+			def mySpawn(sh, escape, cmd, args, env):
+				newargs = ' '.join(args[1:])
+				cmdline = cmd + " " + newargs
+				startupinfo = subprocess.STARTUPINFO()
+				startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+				proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+				    stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
+				data, err = proc.communicate()
+				rv = proc.wait()
+				if rv:
+					print "====="
+					print err
+					print "====="
+				return rv
+			env['SPAWN'] = mySpawn
+
 		#build using mingw
 		if (os.name=="nt"):
 			env['ENV']['TMP'] = os.environ['TMP'] #way to go scons, you can be so stupid sometimes

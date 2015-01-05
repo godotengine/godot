@@ -599,7 +599,19 @@ CodeTextEditor::CodeTextEditor() {
 	add_child(text_editor);
 	text_editor->set_area_as_parent_rect();
 	text_editor->set_margin(MARGIN_BOTTOM,20);
-	text_editor->add_font_override("font",get_font("source","Fonts"));
+
+	String editor_font = EDITOR_DEF("text_editor/font", "");
+	bool font_overrode = false;
+	if (editor_font!="") {
+		Ref<Font> fnt = ResourceLoader::load(editor_font);
+		if (fnt.is_valid()) {
+			text_editor->add_font_override("font",fnt);
+			font_overrode = true;
+		}
+	}
+
+	if (!font_overrode)
+		text_editor->add_font_override("font",get_font("source","Fonts"));
 	text_editor->set_show_line_numbers(true);
 	text_editor->set_brace_matching(true);
 

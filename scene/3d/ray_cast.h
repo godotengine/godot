@@ -45,8 +45,7 @@ class RayCast : public Spatial {
 
 	Vector3 cast_to;
 
-	RID exception;
-	Set<RID> exceptions;
+	Set<RID> exclude;
 
 protected:
 
@@ -65,6 +64,12 @@ public:
 	int get_collider_shape() const;
 	Vector3 get_collision_point() const;
 	Vector3 get_collision_normal() const;
+
+	void add_exception_rid(const RID& p_rid);
+	void add_exception(const Object* p_object);
+	void remove_exception_rid(const RID& p_rid);
+	void remove_exception(const Object* p_object);
+	void clear_exceptions();
 
 	RayCast();
 };

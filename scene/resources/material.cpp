@@ -501,7 +501,7 @@ bool ShaderMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 
 void ShaderMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"Shader" ) );
+	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"MaterialShader,MaterialShaderGraph" ) );
 
 	if (!shader.is_null()) {
 

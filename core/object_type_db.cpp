@@ -191,6 +191,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 HashMap<StringName,ObjectTypeDB::TypeInfo,StringNameHasher> ObjectTypeDB::types;
 HashMap<StringName,StringName,StringNameHasher> ObjectTypeDB::resource_base_extensions;
+HashMap<StringName,StringName,StringNameHasher> ObjectTypeDB::compat_types;
 
 ObjectTypeDB::TypeInfo::TypeInfo() {
 
@@ -263,12 +264,22 @@ bool ObjectTypeDB::type_exists(const String &p_type) {
 	return types.has(p_type);	
 }
 
+void ObjectTypeDB::add_compatibility_type(const StringName& p_type,const StringName& p_fallback) {
+
+	compat_types[p_type]=p_fallback;
+}
+
 Object *ObjectTypeDB::instance(const String &p_type) {
 	
 	TypeInfo *ti;
 	{
 		OBJTYPE_LOCK;
 		ti=types.getptr(p_type);
+		if (!ti || ti->disabled || !ti->creation_func) {
+			if (compat_types.has(p_type)) {
+				ti=types.getptr(compat_types[p_type]);
+			}
+		}
 		ERR_FAIL_COND_V(!ti,NULL);
 		ERR_FAIL_COND_V(ti->disabled,NULL);
 		ERR_FAIL_COND_V(!ti->creation_func,NULL);
@@ -914,6 +925,7 @@ void ObjectTypeDB::cleanup() {
 	}	
 	types.clear();
 	resource_base_extensions.clear();
+	compat_types.clear();
 }
 
 //

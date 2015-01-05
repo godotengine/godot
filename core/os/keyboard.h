@@ -328,5 +328,6 @@ enum KeyModifierMask {
 String keycode_get_string(uint32_t p_code);
 bool keycode_has_unicode(uint32_t p_unicode);
 int find_keycode(const String& p_code);
+int latin_keyboard_keycode_convert(int p_keycode);
 
 #endif

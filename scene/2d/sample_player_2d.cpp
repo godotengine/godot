@@ -102,6 +102,7 @@ void SamplePlayer2D::_notification(int p_what) {
 void SamplePlayer2D::set_sample_library(const Ref<SampleLibrary>& p_library) {
 
 	library=p_library;
+	_change_notify();
 }
 
 Ref<SampleLibrary> SamplePlayer2D::get_sample_library() const {

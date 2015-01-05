@@ -139,11 +139,13 @@ static _FORCE_INLINE_ uint16_t make_half_float(float f) {
     else if (exp <= 0x38000000)
     {
 
-	// store a denorm half-float value or zero
+	/*// store a denorm half-float value or zero
 	exp = (0x38000000 - exp) >> 23;
 	mantissa >>= (14 + exp);
 
 	hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
+	*/
+	hf=0; //denormals do not work for 3D, convert to zero
     }
     else
     {
@@ -969,7 +971,7 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 
 
-	if (img.detect_alpha()==Image::ALPHA_BLEND) {
+	if ((!texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) && img.detect_alpha()==Image::ALPHA_BLEND) {
 		texture->has_alpha=true;
 	}
 
@@ -4224,7 +4226,6 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 	}
 
 	w=DVector<uint8_t>::Write();
-
 	r_capture->create(viewport.width,viewport.height,0,Image::FORMAT_RGBA,pixels);
 	//r_capture->flip_y();
 
@@ -8188,8 +8189,18 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 	}
 
 	if (p_indices) {
-
+#ifdef GLEW_ENABLED
 		glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_INT, p_indices );
+#else
+		static const int _max_draw_poly_indices = 16*1024; // change this size if needed!!!
+		ERR_FAIL_COND(p_vertex_count > _max_draw_poly_indices);
+		static uint16_t _draw_poly_indices[_max_draw_poly_indices];
+		for (int i=0; i<p_vertex_count; i++) {
+			_draw_poly_indices[i] = p_indices[i];
+		};
+		glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_SHORT, _draw_poly_indices );
+#endif
+		//glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_INT, p_indices );
 	} else {
 		glDrawArrays(GL_TRIANGLES,0,p_vertex_count);
 	}
