@@ -770,7 +770,7 @@ void PhysicsServerSW::body_remove_collision_exception(RID p_body, RID p_body_b) 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->remove_exception(p_body);
+	body->remove_exception(p_body_b);
 
 };
 

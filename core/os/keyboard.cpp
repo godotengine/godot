@@ -353,3 +353,8 @@ int find_keycode(const String& p_code) {
 	return 0;
 
 }
+
+int latin_keyboard_keycode_convert(int p_keycode){
+
+	return p_keycode;
+}
