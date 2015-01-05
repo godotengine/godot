@@ -60,7 +60,13 @@ protected:
 	bool v_drag_enabled;
 	float h_ofs;
 	float v_ofs;
-
+	
+	float _shake_duration = 0;
+	Rect2 screen_rect = Rect2(0,0,OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height);
+	Color fade_color = Color(0, 0, 0, 1);
+	Color flash_color = Color(0, 0, 0, 0);
+	bool is_flashing = false;
+	bool is_fading = false;
 
 	Point2 camera_screen_center;
 	void _update_scroll();
@@ -73,7 +79,14 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 public:
+	
+	void flash(Color color, Vector2 postion, float intesity_speed, float max_intensity);
+	void fade(Color color,Vector2 postion,float intesity_speed);
+	void shake(float intensity_x, float intensity_y, float time);
 
+	bool fading();
+	bool flashing();
+	
 	void set_offset(const Vector2& p_offset);
 	Vector2 get_offset() const;
 
