@@ -1578,7 +1578,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	menu_hb->add_child(file_menu);
 	file_menu->set_text("File");
 	file_menu->get_popup()->add_item("Open",FILE_OPEN);
-	file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_ALT|KEY_S);
+	file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_ALT|KEY_MASK_CMD|KEY_S);
 	file_menu->get_popup()->add_item("Save As..",FILE_SAVE_AS);
 	file_menu->get_popup()->add_item("Save All",FILE_SAVE_ALL,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_S);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");

@@ -2888,7 +2888,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_separator();
 	p->add_item("Copy Pose",ANIM_COPY_POSE);
 	p->add_item("Paste Pose",ANIM_PASTE_POSE);
-	p->add_item("Clear Pose",ANIM_CLEAR_POSE,KEY_MASK_ALT|KEY_K);
+	p->add_item("Clear Pose",ANIM_CLEAR_POSE,KEY_MASK_SHIFT|KEY_K);
 
 	value_dialog = memnew( AcceptDialog );
 	value_dialog->set_title("Set a Value");
