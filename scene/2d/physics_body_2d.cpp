@@ -496,6 +496,42 @@ real_t RigidBody2D::get_bounce() const{
 	return bounce;
 }
 
+
+void RigidBody2D::set_gravity_scale(real_t p_gravity_scale){
+
+	gravity_scale=p_gravity_scale;
+	Physics2DServer::get_singleton()->body_set_param(get_rid(),Physics2DServer::BODY_PARAM_GRAVITY_SCALE,gravity_scale);
+
+}
+real_t RigidBody2D::get_gravity_scale() const{
+
+	return gravity_scale;
+}
+
+void RigidBody2D::set_linear_damp(real_t p_linear_damp){
+
+	ERR_FAIL_COND(p_linear_damp<-1);
+	linear_damp=p_linear_damp;
+	Physics2DServer::get_singleton()->body_set_param(get_rid(),Physics2DServer::BODY_PARAM_LINEAR_DAMP,linear_damp);
+
+}
+real_t RigidBody2D::get_linear_damp() const{
+
+	return linear_damp;
+}
+
+void RigidBody2D::set_angular_damp(real_t p_angular_damp){
+
+	ERR_FAIL_COND(p_angular_damp<-1);
+	angular_damp=p_angular_damp;
+	Physics2DServer::get_singleton()->body_set_param(get_rid(),Physics2DServer::BODY_PARAM_ANGULAR_DAMP,angular_damp);
+
+}
+real_t RigidBody2D::get_angular_damp() const{
+
+	return angular_damp;
+}
+
 void RigidBody2D::set_axis_velocity(const Vector2& p_axis) {
 
 	Vector2 v = state? state->get_linear_velocity() : linear_velocity;
@@ -683,6 +719,15 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_bounce","bounce"),&RigidBody2D::set_bounce);
 	ObjectTypeDB::bind_method(_MD("get_bounce"),&RigidBody2D::get_bounce);
 
+	ObjectTypeDB::bind_method(_MD("set_gravity_scale","gravity_scale"),&RigidBody2D::set_gravity_scale);
+	ObjectTypeDB::bind_method(_MD("get_gravity_scale"),&RigidBody2D::get_gravity_scale);
+
+	ObjectTypeDB::bind_method(_MD("set_linear_damp","linear_damp"),&RigidBody2D::set_linear_damp);
+	ObjectTypeDB::bind_method(_MD("get_linear_damp"),&RigidBody2D::get_linear_damp);
+
+	ObjectTypeDB::bind_method(_MD("set_angular_damp","angular_damp"),&RigidBody2D::set_angular_damp);
+	ObjectTypeDB::bind_method(_MD("get_angular_damp"),&RigidBody2D::get_angular_damp);
+
 	ObjectTypeDB::bind_method(_MD("set_linear_velocity","linear_velocity"),&RigidBody2D::set_linear_velocity);
 	ObjectTypeDB::bind_method(_MD("get_linear_velocity"),&RigidBody2D::get_linear_velocity);
 
@@ -726,6 +771,7 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"weight",PROPERTY_HINT_EXP_RANGE,"0.01,65535,0.01",PROPERTY_USAGE_EDITOR),_SCS("set_weight"),_SCS("get_weight"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_friction"),_SCS("get_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_bounce"),_SCS("get_bounce"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_scale",PROPERTY_HINT_RANGE,"-128,128,0.01"),_SCS("set_gravity_scale"),_SCS("get_gravity_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"custom_integrator"),_SCS("set_use_custom_integrator"),_SCS("is_using_custom_integrator"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"continuous_cd",PROPERTY_HINT_ENUM,"Disabled,Cast Ray,Cast Shape"),_SCS("set_continuous_collision_detection_mode"),_SCS("get_continuous_collision_detection_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"contacts_reported"),_SCS("set_max_contacts_reported"),_SCS("get_max_contacts_reported"));
@@ -734,6 +780,8 @@ void RigidBody2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"can_sleep"),_SCS("set_can_sleep"),_SCS("is_able_to_sleep"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"velocity/linear"),_SCS("set_linear_velocity"),_SCS("get_linear_velocity"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"velocity/angular"),_SCS("set_angular_velocity"),_SCS("get_angular_velocity"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"damp_override/linear",PROPERTY_HINT_RANGE,"-1,128,0.01"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"damp_override/angular",PROPERTY_HINT_RANGE,"-1,128,0.01"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 
 	ADD_SIGNAL( MethodInfo("body_enter_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
 	ADD_SIGNAL( MethodInfo("body_exit_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"local_shape")));
@@ -758,6 +806,11 @@ RigidBody2D::RigidBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_RIGID) {
 	bounce=0;
 	mass=1;
 	friction=1;
+
+	gravity_scale=1;
+	linear_damp=-1;
+	angular_damp=-1;
+
 	max_contacts_reported=0;
 	state=NULL;
 

@@ -738,6 +738,26 @@ static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>
 					incr=4+argc;
 
 				} break;
+				case GDFunction::OPCODE_YIELD: {
+
+					txt+=" yield ";
+					incr=1;
+
+				} break;
+				case GDFunction::OPCODE_YIELD_SIGNAL: {
+
+					txt+=" yield_signal ";
+					txt+=DADDR(1);
+					txt+=",";
+					txt+=DADDR(2);
+					incr=3;
+				} break;
+				case GDFunction::OPCODE_YIELD_RESUME: {
+
+					txt+=" yield resume: ";
+					txt+=DADDR(1);
+					incr=2;
+				} break;
 				case GDFunction::OPCODE_JUMP: {
 
 					txt+=" jump ";

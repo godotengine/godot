@@ -190,7 +190,7 @@ bool BodyPair2DSW::_test_ccd(float p_step,Body2DSW *p_A, int p_shape_A,const Mat
 	p_A->get_shape(p_shape_A)->project_rangev(mnormal,p_xform_A,min,max);
 	bool fast_object = mlen > (max-min)*0.3; //going too fast in that direction
 
-	if (fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
 		return false;
 	}
 

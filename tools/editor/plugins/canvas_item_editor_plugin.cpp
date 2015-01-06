@@ -2901,18 +2901,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item(_TR("Insert Key"),ANIM_INSERT_KEY,KEY_INSERT);
 	p->add_item(_TR("Insert Key (Existing Tracks)"),ANIM_INSERT_KEY_EXISTING,KEY_MASK_CMD+KEY_INSERT);
 	p->add_separator();
-	//p->add_check_item(_TR("Pos"),ANIM_INSERT_POS);
-	//p->add_check_item(_TR("Rot"),ANIM_INSERT_ROT);
-	//p->add_check_item(_TR("Scale"),ANIM_INSERT_SCALE);
-	//p->add_check_item(_TR("Pos+Rot"),ANIM_INSERT_POS_ROT);
-	//p->set_item_checked(p->get_item_index(ANIM_INSERT_POS_ROT),true);
-	//p->add_check_item(_TR("Pos+Scale"),ANIM_INSERT_POS_SCALE);
-	//p->add_check_item(_TR("Rot+Scale"),ANIM_INSERT_ROT_SCALE);
-	//p->add_check_item(_TR("Loc+Rot+Scale"),ANIM_INSERT_POS_ROT_SCALE);
-	//p->add_separator();
-	p->add_item(_TR("Copy Pose"),ANIM_COPY_POSE);
-	p->add_item(_TR("Paste Pose"),ANIM_PASTE_POSE);
-	p->add_item(_TR("Clear Pose"),ANIM_CLEAR_POSE,KEY_MASK_ALT|KEY_K);
+	p->add_item("Copy Pose",ANIM_COPY_POSE);
+	p->add_item("Paste Pose",ANIM_PASTE_POSE);
+	p->add_item("Clear Pose",ANIM_CLEAR_POSE,KEY_MASK_SHIFT|KEY_K);
 
 	value_dialog = memnew( AcceptDialog );
 	value_dialog->set_title(_TR("Set a Value"));

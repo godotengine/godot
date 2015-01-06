@@ -650,8 +650,8 @@ void SurfaceTool::mikktGetTexCoord(const SMikkTSpaceContext * pContext, float fv
 	Vector<List<Vertex>::Element*> &varr = *((Vector<List<Vertex>::Element*>*)pContext->m_pUserData);
 	Vector2 v = varr[iFace*3+iVert]->get().uv;
 	fvTexcOut[0]=v.x;
-	//fvTexcOut[1]=v.y;
-	fvTexcOut[1]=1.0-v.y;
+	fvTexcOut[1]=v.y;
+	//fvTexcOut[1]=1.0-v.y;
 
 }
 void SurfaceTool::mikktSetTSpaceBasic(const SMikkTSpaceContext * pContext, const float fvTangent[], const float fSign, const int iFace, const int iVert){
