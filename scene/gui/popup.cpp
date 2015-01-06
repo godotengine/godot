@@ -52,20 +52,19 @@ void Popup::_fix_size() {
 	Control *window = get_window();
 	ERR_FAIL_COND(!window);
 
+#if 0
+	Point2 pos = get_pos();
+	Size2 size = get_size();		
+	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
+#else
 
 	Point2 pos = get_global_pos();
 	Size2 size = get_size();
-	Point2 window_size = window==this ? get_parent_area_size()  :window->get_size();
-	Point2 window_pos = window==this ? Point2() : window->get_global_pos();
+	Point2 window_size = get_viewport_rect().size;
 
-	Size2 visible_size = get_viewport()->get_visible_rect().size;
-	if (window_pos.x+window_size.width<visible_size.width)
-		visible_size.width=window_pos.x+window_size.width;
-	if (window_pos.y+window_size.height<visible_size.height)
-		visible_size.height=window_pos.y+window_size.height;
-
-	if (pos.x+size.width > visible_size.width)
-		pos.x=visible_size.width-size.width;
+#endif
+	if (pos.x+size.width > window_size.width)
+		pos.x=window_size.width-size.width;
 	if (pos.x<0)
 		pos.x=0;
 	
@@ -73,8 +72,14 @@ void Popup::_fix_size() {
 		pos.y=visible_size.height-size.height;
 	if (pos.y<0)
 		pos.y=0;
-	if (pos!=get_global_pos())
+#if 0
+	if (pos!=get_pos())
+		set_pos(pos);
+#else
+	if (pos!=get_pos())
 		set_global_pos(pos);
+
+#endif
 
 }
 

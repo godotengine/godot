@@ -1580,11 +1580,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	file_menu = memnew( MenuButton );
 	menu_hb->add_child(file_menu);
-	file_menu->set_text(_TR("File"));
-	file_menu->get_popup()->add_item(_TR("Open"),FILE_OPEN);
-	file_menu->get_popup()->add_item(_TR("Save"),FILE_SAVE,KEY_MASK_ALT|KEY_S);
-	file_menu->get_popup()->add_item(_TR("Save As.."),FILE_SAVE_AS);
-	file_menu->get_popup()->add_item(_TR("Save All"),FILE_SAVE_ALL,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_S);
+	file_menu->set_text("File");
+	file_menu->get_popup()->add_item("Open",FILE_OPEN);
+	file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_ALT|KEY_MASK_CMD|KEY_S);
+	file_menu->get_popup()->add_item("Save As..",FILE_SAVE_AS);
+	file_menu->get_popup()->add_item("Save All",FILE_SAVE_ALL,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_S);
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	edit_menu = memnew( MenuButton );
@@ -1607,7 +1607,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item("Toggle Comment",EDIT_TOGGLE_COMMENT,KEY_MASK_CMD|KEY_K);
 	edit_menu->get_popup()->add_item("Clone Down",EDIT_CLONE_DOWN,KEY_MASK_CMD|KEY_B);
 	edit_menu->get_popup()->add_separator();
+#ifdef OSX_ENABLED
+	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_META|KEY_SPACE);
+#else
 	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
+#endif
 	edit_menu->get_popup()->add_item("Auto Indent",EDIT_AUTO_INDENT,KEY_MASK_CMD|KEY_I);
 	edit_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 

@@ -93,7 +93,6 @@ class Space2DSW {
 	float body_linear_velocity_sleep_treshold;
 	float body_angular_velocity_sleep_treshold;
 	float body_time_to_sleep;
-	float body_angular_velocity_damp_ratio;
 
 	bool locked;
 
@@ -142,7 +141,7 @@ public:
 	_FORCE_INLINE_ real_t get_body_linear_velocity_sleep_treshold() const { return body_linear_velocity_sleep_treshold; }
 	_FORCE_INLINE_ real_t get_body_angular_velocity_sleep_treshold() const { return body_angular_velocity_sleep_treshold; }
 	_FORCE_INLINE_ real_t get_body_time_to_sleep() const { return body_time_to_sleep; }
-	_FORCE_INLINE_ real_t get_body_angular_velocity_damp_ratio() const { return body_angular_velocity_damp_ratio; }
+
 
 
 	void update();

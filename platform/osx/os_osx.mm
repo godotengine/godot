@@ -724,7 +724,7 @@ static int translateKey(unsigned int key)
     ev.type=InputEvent::KEY;
     ev.key.pressed=true;
     ev.key.mod=translateFlags([event modifierFlags]);
-    ev.key.scancode = translateKey([event keyCode]);
+    ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
     ev.key.echo = [event isARepeat];
 
     NSString* characters = [event characters];
@@ -770,7 +770,7 @@ static int translateKey(unsigned int key)
 	ev.type=InputEvent::KEY;
 	ev.key.pressed=false;
 	ev.key.mod=translateFlags([event modifierFlags]);
-	ev.key.scancode = translateKey([event keyCode]);
+	ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
 	OS_OSX::singleton->push_input(ev);
 
 
