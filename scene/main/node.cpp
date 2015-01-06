@@ -71,7 +71,7 @@ void Node::_notification(int p_notification) {
 				if (data.parent)
 					data.pause_owner=data.parent->data.pause_owner;
 				else
-					data.pause_owner=NULL;
+					//data.pause_owner=NULL;
 					data.pause_owner=this;
 			} else {
 				data.pause_owner=this;
@@ -370,8 +370,6 @@ Node::PauseMode Node::get_pause_mode() const {
 
 void Node::_propagate_pause_owner(Node*p_owner) {
 
-	if (data.pause_mode!=PAUSE_MODE_INHERIT)
-		return;
 	//if (data.pause_mode!=PAUSE_MODE_INHERIT)
 	//	return;
 	data.pause_owner=p_owner;
@@ -385,17 +383,11 @@ bool Node::can_process() const {
 
 	ERR_FAIL_COND_V( !is_inside_tree(), false );
 
-	if (get_tree()->is_paused()) {
 	if (data.pause_mode==PAUSE_MODE_PROCESS)
 		return true;
 
-		if (data.pause_mode==PAUSE_MODE_PROCESS)
-			return true;
-
-
 	else if (data.pause_mode == PAUSE_MODE_STOP)
 		return false;
-
 	else if (get_tree()->is_paused()) {
 
 		if (data.pause_mode==PAUSE_MODE_INHERIT) {
@@ -403,7 +395,6 @@ bool Node::can_process() const {
 			if (!data.pause_owner)
 				return false; //clearly no pause owner by default
 
-			if (data.pause_owner->data.pause_mode==PAUSE_MODE_PROCESS)
 			if (data.pause_owner->data.pause_mode == PAUSE_MODE_PROCESS)
 				return true;
 		}

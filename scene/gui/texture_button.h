@@ -35,9 +35,6 @@ class TextureButton : public BaseButton {
 
 	OBJ_TYPE( TextureButton, BaseButton );
 
-	bool expand;
-	Color modulate;
-
 	Ref<Texture> normal;
 	Ref<Texture> pressed;
 	Ref<Texture> hover;

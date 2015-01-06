@@ -37,8 +37,6 @@
 #include <spine/spine.h>
 #include <spine/extension.h>
 
-typedef Ref<Texture> TextureRef;
-
 Spine::SpineResource::SpineResource() {
 
 	atlas = NULL;

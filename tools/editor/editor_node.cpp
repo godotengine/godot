@@ -3705,24 +3705,24 @@ EditorNode::EditorNode() {
 	resources_dock = memnew( ResourcesDock(this) );
 	resources_dock->set_name(_TR("Resources"));
 
-	Control *editor_spacer = memnew( Control );
-	editor_spacer->set_custom_minimum_size(Size2(260,200));
-	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor_vsplit->add_child( editor_spacer );
-	editor_spacer->add_child( top_pallete );
-	top_pallete->set_area_as_parent_rect();
+	//Control *editor_spacer = memnew( Control );
+	//editor_spacer->set_custom_minimum_size(Size2(260,200));
+	//editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	//editor_vsplit->add_child( editor_spacer );
+	//editor_spacer->add_child( top_pallete );
+	//top_pallete->set_area_as_parent_rect();
 
 
 	prop_pallete = memnew( TabContainer );
 
 	prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	editor_spacer = memnew( Control );
-	editor_spacer->set_custom_minimum_size(Size2(260,200));
-	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	editor_vsplit->add_child( editor_spacer );
-	editor_spacer->add_child( prop_pallete );
-	prop_pallete->set_area_as_parent_rect();
+	//editor_spacer = memnew( Control );
+	//editor_spacer->set_custom_minimum_size(Size2(260,200));
+	//editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	//editor_vsplit->add_child( editor_spacer );
+	//editor_spacer->add_child( prop_pallete );
+	//prop_pallete->set_area_as_parent_rect();
 
 	VBoxContainer *prop_editor_base = memnew( VBoxContainer );
 	prop_editor_base->set_name(_TR("Inspector")); // Properties?
@@ -3841,8 +3841,8 @@ EditorNode::EditorNode() {
 		resources_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		top_pallete->add_child(resources_dock);
 
-		EmptyControl *editor_spacer = memnew( EmptyControl );
-		editor_spacer->set_minsize(Size2(260,200));
+		Control *editor_spacer = memnew( Control );
+		editor_spacer->set_custom_minimum_size(Size2(260,200));
 		editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		editor_spacer->add_child( top_pallete );
 		editor_palletes_split->add_child( editor_spacer );
@@ -3862,8 +3862,8 @@ EditorNode::EditorNode() {
 		scenes_dock->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		prop_pallete->add_child(scenes_dock);
 
-		editor_spacer = memnew( EmptyControl );
-		editor_spacer->set_minsize(Size2(260,200));
+		editor_spacer = memnew( Control );
+		editor_spacer->set_custom_minimum_size(Size2(260,200));
 		editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		editor_spacer->add_child( prop_pallete );
 		editor_palletes_split->add_child( editor_spacer );
