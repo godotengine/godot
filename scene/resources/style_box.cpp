@@ -123,7 +123,7 @@ float StyleBoxTexture::get_style_margin(Margin p_margin) const {
 	return margin[p_margin];
 }
 
-void StyleBoxTexture::draw(RID p_canvas_item,const Rect2& p_rect) const {
+void StyleBoxTexture::draw(RID p_canvas_item,const Rect2& p_rect,const Color& p_modulate) const {
 	if (texture.is_null())
 		return;
 
@@ -132,7 +132,7 @@ void StyleBoxTexture::draw(RID p_canvas_item,const Rect2& p_rect) const {
 	r.pos.y-=expand_margin[MARGIN_TOP];
 	r.size.x+=expand_margin[MARGIN_LEFT]+expand_margin[MARGIN_RIGHT];
 	r.size.y+=expand_margin[MARGIN_TOP]+expand_margin[MARGIN_BOTTOM];
-	VisualServer::get_singleton()->canvas_item_add_style_box( p_canvas_item,r,texture->get_rid(),texture->get_region(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),draw_center);
+	VisualServer::get_singleton()->canvas_item_add_style_box( p_canvas_item,r,texture->get_rid(),texture->get_region(),Vector2(margin[MARGIN_LEFT],margin[MARGIN_TOP]),Vector2(margin[MARGIN_RIGHT],margin[MARGIN_BOTTOM]),draw_center,p_modulate);
 }
 
 void StyleBoxTexture::set_draw_center(bool p_draw) {
@@ -289,7 +289,7 @@ Size2 StyleBoxFlat::get_center_size() const {
 }
 
 
-void StyleBoxFlat::draw(RID p_canvas_item,const Rect2& p_rect) const {
+void StyleBoxFlat::draw(RID p_canvas_item,const Rect2& p_rect,const Color& p_modulate) const {
 
 	VisualServer *vs = VisualServer::get_singleton();
 	Rect2i r = p_rect;
@@ -298,8 +298,8 @@ void StyleBoxFlat::draw(RID p_canvas_item,const Rect2& p_rect) const {
 
 
 
-		Color color_upleft=light_color;
-		Color color_downright=dark_color;
+		Color color_upleft=light_color.blend(p_modulate);
+		Color color_downright=dark_color.blend(p_modulate);
 
 		if (blend) {
 
