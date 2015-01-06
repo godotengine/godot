@@ -65,7 +65,7 @@ class NewProjectDialog : public ConfirmationDialog {
 		error->set_text("");
 		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (d->change_dir(project_path->get_text())!=OK) {
+		if (project_path->get_text() != "" && d->change_dir(project_path->get_text())!=OK) {
 			error->set_text("Invalid Path for Project, Path Must Exist!");
 			memdelete(d);
 			return false;
@@ -82,7 +82,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 		} else {
 
-			if (!d->file_exists("engine.cfg")) {
+			if (project_path->get_text() != "" && !d->file_exists("engine.cfg")) {
 
 				error->set_text("Invalid Project Path (engine.cfg must exist).");
 				memdelete(d);
