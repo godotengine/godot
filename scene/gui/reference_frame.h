@@ -35,10 +35,21 @@ class ReferenceFrame : public Control {
 
 	OBJ_TYPE( ReferenceFrame, Control);
 
+	Color color;
+	bool always_show;
+
 protected:
 
+	static void _bind_methods();
 	void _notification(int p_what);
 public:
+
+	void set_color(const Color& p_color);
+	Color get_color() const;
+
+	void set_always_show(bool p_show);
+	bool is_always_show() const;
+
 	ReferenceFrame();
 };
 
