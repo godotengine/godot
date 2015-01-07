@@ -437,9 +437,9 @@ bool Tween::_apply_tween_value(InterpolateData& p_data, Variant& value) {
 				Variant::CallError error;
 				if (value.get_type() != Variant::NIL) {
 					Variant *arg[1] = { &value };
-					object->call(p_data.key, (const Variant **) arg, 1, error);
+					object->call_deferred(p_data.key, (const Variant **) arg, 1, error);
 				} else {
-					object->call(p_data.key, NULL, 0, error);
+					object->call_deferred(p_data.key, NULL, 0, error);
 				}
 
 				if(error.error == Variant::CallError::CALL_OK)
@@ -515,9 +515,9 @@ void Tween::_tween_process(float p_delta) {
 				Variant::CallError error;
 				if (data.arg.get_type() != Variant::NIL) {
 					Variant *arg[1] = { &data.arg };
-					object->call(data.key, (const Variant **) arg, 1, error);
+					object->call_deferred(data.key, (const Variant **) arg, 1, error);
 				} else {
-					object->call(data.key, NULL, 0, error);
+					object->call_deferred(data.key, NULL, 0, error);
 				}
 			}
 			continue;
