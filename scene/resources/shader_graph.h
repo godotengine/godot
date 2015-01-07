@@ -115,7 +115,7 @@ public:
 
 private:
 
-	String _find_unique_name(ShaderType p_which, const String& p_base);
+	String _find_unique_name(const String& p_base);
 
 	struct SourceSlot {
 
@@ -151,6 +151,7 @@ private:
 		ShaderType shader_type;
 		const char *name;
 		const char *variable;
+		const char *postfix;
 		SlotType slot_type;
 		SlotDir dir;
 	};
@@ -175,6 +176,9 @@ private:
 
 	Array _get_node_list(ShaderType p_type) const;
 	Array _get_connections(ShaderType p_type) const;
+
+	void _set_data(const Dictionary& p_data);
+	Dictionary _get_data() const;
 protected:
 
 	static void _bind_methods();

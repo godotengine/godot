@@ -265,6 +265,37 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 				Vector2 pos = gn->get_connection_input_pos(j)+gn->get_pos();
 
 				if (pos.distance_to(mpos)<grab_r) {
+
+					if (right_disconnects) {
+						//check disconnect
+						for (List<Connection>::Element*E=connections.front();E;E=E->next()) {
+
+							if (E->get().to==gn->get_name() && E->get().to_port==j) {
+
+								Node*fr = get_node(String(E->get().from));
+								if (fr && fr->cast_to<GraphNode>()) {
+
+									connecting_from=E->get().from;
+									connecting_index=E->get().from_port;
+									connecting_out=true;
+									connecting_type=fr->cast_to<GraphNode>()->get_connection_output_type(E->get().from_port);
+									connecting_color=fr->cast_to<GraphNode>()->get_connection_output_color(E->get().from_port);
+									connecting_target=false;
+									connecting_to=pos;
+
+									emit_signal("disconnection_request",E->get().from,E->get().from_port,E->get().to,E->get().to_port);
+									fr = get_node(String(connecting_from)); //maybe it was erased
+									if (fr && fr->cast_to<GraphNode>()) {
+										connecting=true;
+									}
+									return;
+								}
+
+							}
+						}
+					}
+
+
 					connecting=true;
 					connecting_from=gn->get_name();
 					connecting_index=j;
@@ -474,11 +505,26 @@ void GraphEdit::clear_connections() {
 }
 
 
+void GraphEdit::set_right_disconnects(bool p_enable) {
+
+	right_disconnects=p_enable;
+}
+
+bool GraphEdit::is_right_disconnects_enabled() const{
+
+	return right_disconnects;
+}
+
+
 void GraphEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("connect_node:Error","from","from_port","to","to_port"),&GraphEdit::connect_node);
 	ObjectTypeDB::bind_method(_MD("is_node_connected","from","from_port","to","to_port"),&GraphEdit::is_node_connected);
 	ObjectTypeDB::bind_method(_MD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
+
+	ObjectTypeDB::bind_method(_MD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
+	ObjectTypeDB::bind_method(_MD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
+
 	ObjectTypeDB::bind_method(_MD("_graph_node_moved"),&GraphEdit::_graph_node_moved);
 	ObjectTypeDB::bind_method(_MD("_graph_node_raised"),&GraphEdit::_graph_node_raised);
 
@@ -489,8 +535,11 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
 
 	ADD_SIGNAL(MethodInfo("connection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
+	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 
 }
+
+
 
 GraphEdit::GraphEdit() {
 	top_layer=NULL;
@@ -511,6 +560,7 @@ GraphEdit::GraphEdit() {
 	top_layer->add_child(v_scroll);
 	updating=false;
 	connecting=false;
+	right_disconnects=false;
 
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");
