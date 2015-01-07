@@ -28,7 +28,9 @@
 /*************************************************************************/
 #include "shader_graph.h"
 
-
+//todo
+//-RGB ops
+//-mostrar error de conexion
 
 Array ShaderGraph::_get_node_list(ShaderType p_type) const {
 
@@ -1418,6 +1420,7 @@ ShaderGraph::SlotType ShaderGraph::get_node_input_slot_type(Mode p_mode, ShaderT
 
 			if (nsi->type==p_type) {
 				for(int i=0;i<NodeSlotInfo::MAX_INS;i++) {
+
 					if (nsi->ins[i]==SLOT_MAX)
 						break;
 					if (i==p_idx)
