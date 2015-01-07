@@ -84,6 +84,7 @@ void MenuButton::pressed() {
 	popup->set_parent_rect( Rect2(Point2(gp-popup->get_global_pos()),get_size()));
 	popup->popup();
 	popup->call_deferred("grab_click_focus");
+	popup->set_invalidate_click_until_motion();
 	
 }
 

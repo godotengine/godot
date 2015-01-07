@@ -144,6 +144,12 @@ private:
 	};
 	NavigationScheme _get_navigation_schema(const String& p_property);
 
+	enum NavigationZoomStyle {
+		NAVIGATION_ZOOM_VERTICAL,
+		NAVIGATION_ZOOM_HORIZONTAL
+	};
+	NavigationZoomStyle _get_navigation_zoom_style(const String& p_property);
+
 	enum NavigationMode {
 		NAVIGATION_NONE,
 		NAVIGATION_PAN,

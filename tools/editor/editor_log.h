@@ -33,7 +33,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
-#include "scene/gui/empty_control.h"
+//#include "scene/gui/empty_control.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_frame.h"
@@ -50,7 +50,7 @@ class EditorLog : public PanelContainer {
 	TextureButton *tb;
 	HBoxContainer *title_hb;
 //	PaneDrag *pd;
-	EmptyControl *ec;
+	Control *ec;
 
 	static void _error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type);
 

@@ -105,9 +105,9 @@ typedef struct MD5state_st
 	unsigned int num;
 	} MD5_CTX;
 
-#ifdef OPENSSL_FIPS
+//#ifdef OPENSSL_FIPS
 int private_MD5_Init(MD5_CTX *c);
-#endif
+//#endif
 
 //#define MD5_Init _SSL_MD5_Init
 #define MD5_Final _SSL_MD5_Final

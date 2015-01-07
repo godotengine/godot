@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "keyboard.h"
-
+#include "os/os.h"
 
 struct _KeyCodeText {
 	int code;
@@ -352,4 +352,107 @@ int find_keycode(const String& p_code) {
 
 	return 0;
 
+}
+
+
+
+
+struct _KeyCodeReplace {
+	int from;
+	int to;
+};
+
+static const _KeyCodeReplace _keycode_replace_qwertz[]={
+{KEY_Y,KEY_Z},
+{KEY_Z,KEY_Y},
+{0,0}
+};
+
+static const _KeyCodeReplace _keycode_replace_azerty[]={
+{KEY_W,KEY_Z},
+{KEY_Z,KEY_W},
+{KEY_A,KEY_Q},
+{KEY_Q,KEY_A},
+{KEY_SEMICOLON,KEY_M},
+{KEY_M,KEY_SEMICOLON},
+{0,0}
+};
+
+static const _KeyCodeReplace _keycode_replace_qzerty[]={
+{KEY_W,KEY_Z},
+{KEY_Z,KEY_W},
+{KEY_SEMICOLON,KEY_M},
+{KEY_M,KEY_SEMICOLON},
+{0,0}
+};
+
+static const _KeyCodeReplace _keycode_replace_dvorak[]={
+{KEY_UNDERSCORE,KEY_BRACELEFT},
+{KEY_EQUAL,KEY_BRACERIGHT},
+{KEY_Q,KEY_APOSTROPHE},
+{KEY_W,KEY_COMMA},
+{KEY_E,KEY_PERIOD},
+{KEY_R,KEY_P},
+{KEY_T,KEY_Y},
+{KEY_Y,KEY_F},
+{KEY_U,KEY_G},
+{KEY_I,KEY_C},
+{KEY_O,KEY_R},
+{KEY_P,KEY_L},
+{KEY_BRACELEFT,KEY_SLASH},
+{KEY_BRACERIGHT,KEY_EQUAL},
+{KEY_A,KEY_A},
+{KEY_S,KEY_O},
+{KEY_D,KEY_E},
+{KEY_F,KEY_U},
+{KEY_G,KEY_I},
+{KEY_H,KEY_D},
+{KEY_J,KEY_H},
+{KEY_K,KEY_T},
+{KEY_L,KEY_N},
+{KEY_SEMICOLON,KEY_S},
+{KEY_APOSTROPHE,KEY_UNDERSCORE},
+{KEY_Z,KEY_SEMICOLON},
+{KEY_X,KEY_Q},
+{KEY_C,KEY_J},
+{KEY_V,KEY_K},
+{KEY_B,KEY_X},
+{KEY_N,KEY_B},
+{KEY_M,KEY_M},
+{KEY_COMMA,KEY_W},
+{KEY_PERIOD,KEY_V},
+{KEY_SLASH,KEY_Z},
+{0,0}
+};
+
+static const _KeyCodeReplace _keycode_replace_neo[]={
+{0,0}
+};
+
+
+int latin_keyboard_keycode_convert(int p_keycode) {
+
+	const _KeyCodeReplace *kcr=NULL;
+	switch(OS::get_singleton()->get_latin_keyboard_variant()) {
+
+		case OS::LATIN_KEYBOARD_QWERTY: return p_keycode; break;
+		case OS::LATIN_KEYBOARD_QWERTZ: kcr=_keycode_replace_qwertz; break;
+		case OS::LATIN_KEYBOARD_AZERTY: kcr=_keycode_replace_azerty; break;
+		case OS::LATIN_KEYBOARD_QZERTY: kcr=_keycode_replace_qzerty; break;
+		case OS::LATIN_KEYBOARD_DVORAK: kcr=_keycode_replace_dvorak; break;
+		case OS::LATIN_KEYBOARD_NEO: kcr=_keycode_replace_neo; break;
+		default: return p_keycode;
+	}
+
+	if (!kcr) {
+		return p_keycode;
+	}
+
+	while(kcr->from) {
+		if (kcr->from==p_keycode)
+			return kcr->to;
+		kcr++;
+	}
+
+	return p_keycode;
 }

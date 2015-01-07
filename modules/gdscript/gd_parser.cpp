@@ -2027,13 +2027,19 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				}
 
 
-				if (tokenizer->get_token(1)!=GDTokenizer::TK_IDENTIFIER) {
+				tokenizer->advance();
+				StringName name;
+
+				if (_get_completable_identifier(COMPLETION_VIRTUAL_FUNC,name)) {
+
+				}
+
+
+				if (name==StringName()) {
 
 					_set_error("Expected identifier after 'func' (syntax: 'func <identifier>([arguments]):' ).");
 					return;
 				}
-
-				StringName name = tokenizer->get_token_identifier(1);
 
 				for(int i=0;i<p_class->functions.size();i++) {
 					if (p_class->functions[i]->name==name) {
@@ -2045,7 +2051,7 @@ void GDParser::_parse_class(ClassNode *p_class) {
 						_set_error("Function '"+String(name)+"' already exists in this class (at line: "+itos(p_class->static_functions[i]->line)+").");
 					}
 				}
-				tokenizer->advance(2);
+
 
 				if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_OPEN) {
 

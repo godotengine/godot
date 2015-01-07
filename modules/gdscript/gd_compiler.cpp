@@ -45,8 +45,13 @@ void GDCompiler::_set_error(const String& p_error,const GDParser::Node *p_node) 
 		return;
 
 	error=p_error;
-	err_line=p_node->line;
-	err_column=p_node->column;
+	if (p_node) {
+		err_line=p_node->line;
+		err_column=p_node->column;
+	} else {
+		err_line=0;
+		err_column=0;
+	}
 }
 
 bool GDCompiler::_create_unary_operator(CodeGen& codegen,const GDParser::OperatorNode *on,Variant::Operator op, int p_stack_level) {
@@ -523,7 +528,7 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 						int ret = _parse_expression(codegen,on->arguments[i],slevel);
 						if (ret<0)
 							return ret;
-						if (ret&GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS) {
+						if (ret&(GDFunction::ADDR_TYPE_STACK<<GDFunction::ADDR_BITS)) {
 							slevel++;
 							codegen.alloc_stack(slevel);
 						}
@@ -1522,7 +1527,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		GDScript::MemberInfo minfo;
 		minfo.index = p_script->member_indices.size();
 		minfo.setter = p_class->variables[i].setter;
-		minfo.getter = p_class->variables[i].getter;
+		minfo.getter = p_class->variables[i].getter;		
 		p_script->member_indices[name]=minfo;
 		p_script->members.insert(name);
 
@@ -1586,6 +1591,48 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 			return err;
 	}
 
+#ifdef DEBUG_ENABLED
+	//validate setters/getters if debug is enabled
+	for(int i=0;i<p_class->variables.size();i++) {
+
+		if (p_class->variables[i].setter) {
+			const Map<StringName,GDFunction>::Element *E=p_script->get_member_functions().find(p_class->variables[i].setter);
+			if (!E) {
+				_set_error("Setter function '"+String(p_class->variables[i].setter)+"' not found in class.",NULL);
+				err_line=p_class->variables[i].line;
+				err_column=0;
+				return ERR_PARSE_ERROR;
+			}
+
+			if (E->get().is_static()) {
+
+				_set_error("Setter function '"+String(p_class->variables[i].setter)+"' is static.",NULL);
+				err_line=p_class->variables[i].line;
+				err_column=0;
+				return ERR_PARSE_ERROR;
+			}
+
+		}
+		if (p_class->variables[i].getter) {
+			const Map<StringName,GDFunction>::Element *E=p_script->get_member_functions().find(p_class->variables[i].getter);
+			if (!E) {
+				_set_error("Getter function '"+String(p_class->variables[i].getter)+"' not found in class.",NULL);
+				err_line=p_class->variables[i].line;
+				err_column=0;
+				return ERR_PARSE_ERROR;
+			}
+
+			if (E->get().is_static()) {
+
+				_set_error("Getter function '"+String(p_class->variables[i].getter)+"' is static.",NULL);
+				err_line=p_class->variables[i].line;
+				err_column=0;
+				return ERR_PARSE_ERROR;
+			}
+
+		}
+	}
+#endif
 	return OK;
 }
 

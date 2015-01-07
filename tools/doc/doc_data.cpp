@@ -186,8 +186,10 @@ void DocData::generate(bool p_basic_types) {
 					arginfo=E->get().return_val;
 					if (arginfo.type==Variant::NIL)
 						continue;
-
-					method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
+					if (m && m->get_return_type()!=StringName())
+						method.return_type=m->get_return_type();
+					else
+						method.return_type=(arginfo.hint==PROPERTY_HINT_RESOURCE_TYPE)?arginfo.hint_string:Variant::get_type_name(arginfo.type);
 
 				} else {
 

@@ -142,7 +142,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					String orig_type = res_orig->get_type();
-					print_line("orig type: "+orig_type);
+
 					Object *inst = ObjectTypeDB::instance( orig_type );
 
 					Ref<Resource> res = Ref<Resource>( inst->cast_to<Resource>() );
@@ -186,6 +186,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 
 
 					ERR_FAIL_COND( inheritors_array.empty() );
+
 
 					String intype=inheritors_array[p_which-TYPE_BASE_ID];
 
@@ -603,6 +604,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 
 			if (hint_text!="") {
+				int idx=0;
 
 				for(int i=0;i<hint_text.get_slice_count(",");i++) {
 
@@ -620,19 +622,19 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 						E=E->next();
 					}
 
-					int idx=0;
 					for(Set<String>::Element *E=valid_inheritors.front();E;E=E->next()) {
 						String t = E->get();
 						if (!ObjectTypeDB::can_instance(t))
 							continue;
 						inheritors_array.push_back(t);
 
+						int id = TYPE_BASE_ID+idx;
 						if (has_icon(t,"EditorIcons")) {
 
-							menu->add_icon_item(get_icon(t,"EditorIcons"),"New "+t,TYPE_BASE_ID+idx);
+							menu->add_icon_item(get_icon(t,"EditorIcons"),"New "+t,id);
 						} else {
 
-							menu->add_item("New "+t,TYPE_BASE_ID+idx);
+							menu->add_item("New "+t,id);
 						}
 
 						idx++;
@@ -970,9 +972,11 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 		
 			if (p_which==0) {
 			
+
 				ERR_FAIL_COND( inheritors_array.empty() );
 
 				String intype=inheritors_array[0];
+
 				
 				if (hint==PROPERTY_HINT_RESOURCE_TYPE) {
 				
@@ -1876,6 +1880,14 @@ void PropertyEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_FIXED_PROCESS) {
 		
 		
+		if (refresh_countdown>0) {
+			refresh_countdown-=get_fixed_process_delta_time();
+			if (refresh_countdown<=0) {
+				TreeItem *root = tree->get_root();
+				_refresh_item(root);
+			}
+		}
+
 		changing=true;
 		 
 		if (update_tree_pending) {
@@ -1982,7 +1994,71 @@ TreeItem *PropertyEditor::get_parent_node(String p_path,HashMap<String,TreeItem*
 }
 
 
+void PropertyEditor::_refresh_item(TreeItem *p_item) {
 
+	if (!p_item)
+		return;
+
+	String name = p_item->get_metadata(1);
+
+	if (name!=String()) {
+
+		if (get_instanced_node()) {
+
+			Dictionary d = get_instanced_node()->get_instance_state();
+			if (d.has(name)) {
+				Variant v = obj->get(name);
+				Variant vorig = d[name];
+
+				int found=-1;
+				for(int i=0;i<p_item->get_button_count(1);i++) {
+
+					if (p_item->get_button_id(1,i)==3) {
+						found=i;
+						break;
+					}
+				}
+
+				bool changed = ! (v==vorig);
+
+				if ((found!=-1)!=changed) {
+
+					if (changed) {
+
+						p_item->add_button(1,get_icon("Reload","EditorIcons"),3);
+					} else {
+
+						p_item->erase_button(1,found);
+					}
+
+				}
+
+			}
+
+		}
+
+		Dictionary d=p_item->get_metadata(0);
+		set_item_text(p_item,d["type"],d["name"],d["hint"],d["hint_text"]);
+	}
+
+	TreeItem *c=p_item->get_children();
+
+	while (c) {
+
+		_refresh_item(c);
+
+		c=c->get_next();
+	}
+
+}
+
+void PropertyEditor::refresh() {
+
+	if (refresh_countdown>0)
+		return;
+	refresh_countdown=EditorSettings::get_singleton()->get("property_editor/auto_refresh_interval");
+
+}
 
 void PropertyEditor::update_tree() {
 
@@ -3021,6 +3097,7 @@ PropertyEditor::PropertyEditor() {
 	keying=false;
 	read_only=false;
 	show_categories=false;
+	refresh_countdown=0;
 	
 }
 

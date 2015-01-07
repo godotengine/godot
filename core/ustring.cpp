@@ -626,7 +626,7 @@ Vector<float> String::split_floats(const String &p_splitter,bool p_allow_empty) 
 		if (end<0)
 			end=len;
 		if (p_allow_empty || (end>from))
-			ret.push_back(String::to_double(&c_str()[from],end-from));
+			ret.push_back(String::to_double(&c_str()[from]));
 
 		if (end==len)
 			break;
@@ -654,8 +654,9 @@ Vector<float> String::split_floats_mk(const Vector<String> &p_splitters,bool p_a
 			spl_len=p_splitters[idx].length();
 		}
 
-		if (p_allow_empty || (end>from))
-			ret.push_back(String::to_double(&c_str()[from],end-from));
+		if (p_allow_empty || (end>from)) {
+			ret.push_back(String::to_double(&c_str()[from]));
+		}
 
 		if (end==len)
 			break;
@@ -1959,8 +1960,10 @@ float String::to_float() const {
 	return to_double();
 }
 
-double String::to_double(const CharType* p_str, int p_len, const CharType **r_end)  {
+double String::to_double(const CharType* p_str, const CharType **r_end)  {
 
+	return built_in_strtod<CharType>(p_str,(CharType**)r_end);
+#if 0
 #if 0
 	//ndef NO_USE_STDLIB
 	return wcstod(p_str,p_len<0?NULL:p_str+p_len);
@@ -2052,6 +2055,7 @@ double String::to_double(const CharType* p_str, int p_len, const CharType **r_en
 		*r_end=str-1;
 
 	return sign*(integer+decimal)*Math::pow(10,exp_sign*exp);
+#endif
 #endif
 }
 
@@ -3437,7 +3441,7 @@ String String::percent_encode() const {
 		uint8_t c = cs[i];
 		if ( (c>='A' && c<='Z') || (c>='a' && c<='z') || (c>='0' && c<='9') || c=='-' || c=='_' || c=='~' || c=='.') {
 
-			char p[2]={c,0};
+			char p[2]={(char)c,0};
 			encoded+=p;
 		} else {
 			char p[4]={'%',0,0,0};

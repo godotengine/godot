@@ -151,6 +151,7 @@ class ObjectTypeDB {
 	static Mutex *lock;
 	static HashMap<StringName,TypeInfo,StringNameHasher> types;
 	static HashMap<StringName,StringName,StringNameHasher> resource_base_extensions;
+	static HashMap<StringName,StringName,StringNameHasher> compat_types;
 
 #ifdef DEBUG_METHODS_ENABLED
 	static MethodBind* bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
@@ -482,6 +483,7 @@ public:
 	static void get_resource_base_extensions(List<String> *p_extensions);
 	static void get_extensions_for_type(const StringName& p_type,List<String> *p_extensions);
 
+	static void add_compatibility_type(const StringName& p_type,const StringName& p_fallback);
 	static void init();
 	static void cleanup();
 };
