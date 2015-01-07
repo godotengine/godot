@@ -975,7 +975,6 @@ void EditorNode::_dialog_action(String p_file) {
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
 				_save_scene(p_file);
-				_run(false);
 			}
 
 		} break;
