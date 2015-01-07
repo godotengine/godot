@@ -3581,13 +3581,6 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "show_line" ), _SCS("set_show_line_numbers"),_SCS("is_show_line_numbers") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "drawing_tabs" ), _SCS("set_draw_tabs"),_SCS("is_drawing_tabs") );
 
-	ObjectTypeDB::bind_method(_MD("add_keyword_color","keyword","color"),&TextEdit::add_keyword_color);
-	ObjectTypeDB::bind_method(_MD("add_color_region","begin_key","end_key","color","line_only"),&TextEdit::add_color_region,DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("set_symbol_color","color"),&TextEdit::set_symbol_color);
-	ObjectTypeDB::bind_method(_MD("set_custom_bg_color","color"),&TextEdit::set_custom_bg_color);
-	ObjectTypeDB::bind_method(_MD("clear_colors"),&TextEdit::clear_colors);
-	
-
 	ADD_SIGNAL(MethodInfo("cursor_changed"));
 	ADD_SIGNAL(MethodInfo("text_changed"));
 	ADD_SIGNAL(MethodInfo("request_completion"));

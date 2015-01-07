@@ -68,8 +68,8 @@ void Popup::_fix_size() {
 	if (pos.x<0)
 		pos.x=0;
 	
-	if (pos.y+size.height > visible_size.height)
-		pos.y=visible_size.height-size.height;
+	if (pos.y+size.height > window_size.height)
+		pos.y=window_size.height-size.height;
 	if (pos.y<0)
 		pos.y=0;
 #if 0
