@@ -745,14 +745,9 @@ void ShaderGraphView::_create_node(int p_id) {
 
 
 		} break; // mat4 x mat4
-		case ShaderGraph::NODE_XFORM_VEC_MULT:
-		case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
+		case ShaderGraph::NODE_XFORM_VEC_MULT: {
 
-			if (graph->node_get_type(type,p_id)==ShaderGraph::NODE_XFORM_VEC_INV_MULT)
-				gn->set_title("XFVecMult");
-			else
-				gn->set_title("XFVecInvMult");
-
+			gn->set_title("XFVecMult");
 
 			Button *button = memnew( Button("RotOnly"));
 			button->set_toggle_mode(true);
@@ -773,6 +768,32 @@ void ShaderGraphView::_create_node(int p_id) {
 
 			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+
+		} break;
+		case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
+
+			gn->set_title("XFVecInvMult");
+
+
+			Button *button = memnew( Button("RotOnly"));
+			button->set_toggle_mode(true);
+			button->set_pressed(graph->xform_vec_mult_node_get_no_translation(type,p_id));
+			button->connect("toggled",this,"_xform_inv_rev_changed",varray(p_id));
+
+			gn->add_child(button);
+
+			gn->add_child( memnew(Label("vec")));
+			HBoxContainer *hbc = memnew( HBoxContainer );
+			hbc->add_constant_override("separation",0);
+			hbc->add_child( memnew(Label("xf")));
+			hbc->add_spacer();
+			Label *l = memnew(Label("out"));
+			l->set_align(Label::ALIGN_RIGHT);
+			hbc->add_child( l);
+			gn->add_child(hbc);
+
+			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 
 
 		} break; // mat4 x vec3 inverse mult (with no-translation option)

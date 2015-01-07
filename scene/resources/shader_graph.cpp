@@ -1289,7 +1289,7 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 		{NODE_RGB_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_TYPE_SCALAR},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_XFORM_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_XFORM,SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // mat4 x mat4
 		{NODE_XFORM_VEC_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 mult (with no-translation option)
-		{NODE_XFORM_VEC_INV_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 inverse mult (with no-translation option)
+		{NODE_XFORM_VEC_INV_MULT,{SLOT_TYPE_VEC,SLOT_TYPE_XFORM,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 inverse mult (with no-translation option)
 		{NODE_SCALAR_FUNC,{SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar function (sin,{SLOT_MAX},{SLOT_MAX}}, cos,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_FUNC,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vector function (normalize,{SLOT_MAX},{SLOT_MAX}}, negate,{SLOT_MAX},{SLOT_MAX}}, reciprocal,{SLOT_MAX},{SLOT_MAX}}, rgb2hsv,{SLOT_MAX},{SLOT_MAX}}, hsv2rgb,{SLOT_MAX},{SLOT_MAX}}, etc,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_LEN,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // vec3 length
@@ -1769,9 +1769,9 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			int op = p_node->param1;
 			String optxt;
 			switch(op) {
-				case VEC_OP_MUL: optxt = p_inputs[0]+"*"+p_inputs[1]+";"; break;
-				case VEC_OP_DIV: optxt = p_inputs[0]+"/"+p_inputs[1]+";"; break;
-				case VEC_OP_POW: optxt = "pow("+p_inputs[0]+","+p_inputs[1]+");"; break;
+				case VEC_SCALAR_OP_MUL: optxt = p_inputs[0]+"*"+p_inputs[1]+";"; break;
+				case VEC_SCALAR_OP_DIV: optxt = p_inputs[0]+"/"+p_inputs[1]+";"; break;
+				case VEC_SCALAR_OP_POW: optxt = "pow("+p_inputs[0]+","+p_inputs[1]+");"; break;
 			}
 			code+=OUTNAME(p_node->id,0)+"="+optxt+"\n";
 
@@ -1789,18 +1789,18 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 			bool no_translation = p_node->param1;
 			if (no_translation) {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+"*vec4("+p_inputs[1]+",0);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[0]+"*vec4("+p_inputs[1]+",0)).xyz;\n";
 			} else {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+"*vec4("+p_inputs[1]+",1);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[0]+"*vec4("+p_inputs[1]+",1)).xyz;\n";
 			}
 
 		}break;
 		case NODE_XFORM_VEC_INV_MULT: {
 			bool no_translation = p_node->param1;
 			if (no_translation) {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[1]+"*vec4("+p_inputs[0]+",0);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[1]+"*vec4("+p_inputs[0]+",0)).xyz;\n";
 			} else {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[1]+"*vec4("+p_inputs[0]+",1);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[1]+"*vec4("+p_inputs[0]+",1)).xyz;\n";
 			}
 		}break;
 		case NODE_SCALAR_FUNC: {
