@@ -134,7 +134,7 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -485,7 +485,7 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -956,7 +956,7 @@ Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
 Vector3 Curve3D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
