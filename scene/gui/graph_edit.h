@@ -51,6 +51,7 @@ private:
 
 
 
+	bool right_disconnects;
 	bool updating;
 	List<Connection> connections;
 
@@ -85,6 +86,9 @@ public:
 	void clear_connections();
 
 	void get_connection_list(List<Connection> *r_connections);
+
+	void set_right_disconnects(bool p_enable);
+	bool is_right_disconnects_enabled() const;
 
 
 	GraphEdit();

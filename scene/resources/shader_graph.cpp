@@ -57,6 +57,84 @@ Array ShaderGraph::_get_connections(ShaderType p_type) const {
 	return arr;
 }
 
+void ShaderGraph::_set_data(const Dictionary &p_data) {
+
+	Dictionary d=p_data;
+	ERR_FAIL_COND(!d.has("shaders"));
+	Array sh=d["shaders"];
+	ERR_FAIL_COND(sh.size()!=3);
+
+	for(int t=0;t<3;t++) {
+		Array data=sh[t];
+		ERR_FAIL_COND((data.size()%6)!=0);
+		shader[t].node_map.clear();
+		for(int i=0;i<data.size();i+=6) {
+
+			Node n;
+			n.id=data[i+0];
+			n.type=NodeType(int(data[i+1]));
+			n.pos=data[i+2];
+			n.param1=data[i+3];
+			n.param2=data[i+4];
+
+			Array conns=data[i+5];
+			ERR_FAIL_COND((conns.size()%3)!=0);
+
+			for(int j=0;j<conns.size();j+=3) {
+
+				SourceSlot ss;
+				int ls=conns[j+0];
+				ss.id=conns[j+1];
+				ss.slot=conns[j+2];
+				n.connections[ls]=ss;
+			}
+			shader[t].node_map[n.id]=n;
+
+		}
+	}
+
+	_update_shader();
+
+}
+
+Dictionary ShaderGraph::_get_data() const {
+
+	Array sh;
+	for(int i=0;i<3;i++) {
+		Array data;
+		int ec = shader[i].node_map.size();
+		data.resize(ec*6);
+		int idx=0;
+		for (Map<int,Node>::Element*E=shader[i].node_map.front();E;E=E->next()) {
+
+			data[idx+0]=E->key();
+			data[idx+1]=E->get().type;
+			data[idx+2]=E->get().pos;
+			data[idx+3]=E->get().param1;
+			data[idx+4]=E->get().param2;
+
+			Array conns;
+			conns.resize(E->get().connections.size()*3);
+			int idx2=0;
+			for(Map<int,SourceSlot>::Element*F=E->get().connections.front();F;F=F->next()) {
+
+				conns[idx2+0]=F->key();
+				conns[idx2+1]=F->get().id;
+				conns[idx2+2]=F->get().slot;
+				idx2+=3;
+			}
+			data[idx+5]=conns;
+			idx+=6;
+		}
+		sh.push_back(data);
+	}
+
+	Dictionary data;
+	data["shaders"]=sh;
+	return data;
+}
+
+
 void ShaderGraph::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_shader"),&ShaderGraph::_update_shader);
@@ -146,6 +224,11 @@ void ShaderGraph::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
 	ObjectTypeDB::bind_method(_MD("node_get_state:var","shader_type","id"),&ShaderGraph::node_get_state);
+
+	ObjectTypeDB::bind_method(_MD("_set_data"),&ShaderGraph::_set_data);
+	ObjectTypeDB::bind_method(_MD("_get_data"),&ShaderGraph::_get_data);
+
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data"));
 
 	//void get_connections(ShaderType p_which,List<Connection> *p_connections) const;
 
@@ -347,7 +430,7 @@ void ShaderGraph::_bind_methods() {
 }
 
 
-String ShaderGraph::_find_unique_name(ShaderType p_which, const String& p_base) {
+String ShaderGraph::_find_unique_name(const String& p_base) {
 
 
 
@@ -358,15 +441,19 @@ String ShaderGraph::_find_unique_name(ShaderType p_which, const String& p_base) 
 			tocmp+="_"+itos(idx);
 		}
 		bool valid=true;
-		for (Map<int,Node>::Element *E=shader[p_which].node_map.front();E;E=E->next()) {
-			if (E->get().type!=NODE_SCALAR_INPUT && E->get().type!=NODE_VEC_INPUT && E->get().type==NODE_RGB_INPUT && E->get().type==NODE_XFORM_INPUT && E->get().type==NODE_TEXTURE_INPUT && E->get().type==NODE_CUBEMAP_INPUT)
-				continue;
-			String name = E->get().param1;
-			if (name==tocmp) {
-				valid=false;
+		for(int i=0;i<3;i++) {
+			if (!valid)
 				break;
-			}
+			for (Map<int,Node>::Element *E=shader[i].node_map.front();E;E=E->next()) {
+				if (E->get().type!=NODE_SCALAR_INPUT && E->get().type!=NODE_VEC_INPUT && E->get().type==NODE_RGB_INPUT && E->get().type==NODE_XFORM_INPUT && E->get().type==NODE_TEXTURE_INPUT && E->get().type==NODE_CUBEMAP_INPUT)
+					continue;
+				String name = E->get().param1;
+				if (name==tocmp) {
+					valid=false;
+					break;
+				}
 
+			}
 		}
 
 		if (!valid) {
@@ -424,12 +511,12 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 		case NODE_XFORM_TO_VEC: {} break; // 3 scalar input: {} break; 1 vec3 output
 		case NODE_SCALAR_INTERP: {} break; // scalar interpolation (with optional curve)
 		case NODE_VEC_INTERP: {} break; // vec3 interpolation  (with optional curve)
-		case NODE_SCALAR_INPUT: {node.param1=_find_unique_name(p_type,"Scalar"); node.param2=0;} break; // scalar uniform (assignable in material)
-		case NODE_VEC_INPUT: {node.param1=_find_unique_name(p_type,"Vec3");node.param2=Vector3();} break; // vec3 uniform (assignable in material)
-		case NODE_RGB_INPUT: {node.param1=_find_unique_name(p_type,"Color");node.param2=Color();} break; // color uniform (assignable in material)
-		case NODE_XFORM_INPUT: {node.param1=_find_unique_name(p_type,"XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
-		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name(p_type,"Tex"); } break; // texture input (assignable in material)
-		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name(p_type,"Cube"); } break; // cubemap input (assignable in material)
+		case NODE_SCALAR_INPUT: {node.param1=_find_unique_name("Scalar"); node.param2=0;} break; // scalar uniform (assignable in material)
+		case NODE_VEC_INPUT: {node.param1=_find_unique_name("Vec3");node.param2=Vector3();} break; // vec3 uniform (assignable in material)
+		case NODE_RGB_INPUT: {node.param1=_find_unique_name("Color");node.param2=Color();} break; // color uniform (assignable in material)
+		case NODE_XFORM_INPUT: {node.param1=_find_unique_name("XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
+		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name("Tex"); } break; // texture input (assignable in material)
+		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)
 		case NODE_OUTPUT: {} break; // output (shader type dependent)
 		case NODE_COMMENT: {} break; // comment
 		case NODE_TYPE_MAX: {};
@@ -881,8 +968,9 @@ void ShaderGraph::input_node_set_name(ShaderType p_type,int p_id,const String& p
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_SCALAR_INPUT && n.type!=NODE_VEC_INPUT && n.type==NODE_RGB_INPUT && n.type==NODE_XFORM_INPUT && n.type==NODE_TEXTURE_INPUT && n.type==NODE_CUBEMAP_INPUT);
+
 	n.param1="";
-	n.param1=_find_unique_name(p_type,p_name);
+	n.param1=_find_unique_name(p_name);
 	_request_update();
 
 }
@@ -1097,59 +1185,74 @@ ShaderGraph::~ShaderGraph() {
 
 const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	//material vertex in
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","SRC_VERTEX",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","SRC_NORMAL",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","SRC_TANGENT",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"BinormalF","SRC_BINORMALF",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"WorldMatrix","WORLD_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InvCameraMatrix","INV_CAMERA_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ProjectionMatrix","PROJECTION_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ModelviewMatrix","MODELVIEW_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InstanceID","INSTANCE_ID",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Time","TIME",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","SRC_VERTEX","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","SRC_NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","SRC_TANGENT","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"BinormalF","SRC_BINORMALF","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Color","SRC_COLOR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Alpha","SRC_ALPHA","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV","SRC_UV","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV2","SRC_UV2","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"WorldMatrix","WORLD_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InvCameraMatrix","INV_CAMERA_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ProjectionMatrix","PROJECTION_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ModelviewMatrix","MODELVIEW_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InstanceID","INSTANCE_ID","",SLOT_TYPE_SCALAR,SLOT_IN},
+
 	//material vertex out
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","VERTEX",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","NORMAL",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","TANGENT",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Binormal","BINORMAL",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV","UV",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV2","UV2",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Color","COLOR.rgb",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Alpha","COLOR.a",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var1","VAR1.rgb",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var2","VAR2.rgb",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"SpecExp","SPEC_EXP",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"PointSize","POINT_SIZE",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","VERTEX","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","TANGENT","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Binormal","BINORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV","UV",".xy",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV2","UV2",".xy",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"SpecExp","SPEC_EXP","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"PointSize","POINT_SIZE","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	//pixel vertex in
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Vertex","VERTEX",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Position","POSITION",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","IN_NORMAL",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Tangent","TANGENT",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Binormal","BINORMAL",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV","UV",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV2","UV2",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UVScreen","SCREEN_UV",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"InvCameraMatrix","INV_CAMERA_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Time","TIME",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var1","VAR1.rgb",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var2","VAR2.rgb",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Vertex","VERTEX","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Position","POSITION","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","IN_NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Tangent","TANGENT","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Binormal","BINORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV","vec3(UV,0);","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV2","UV2","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UVScreen","SCREEN_UV","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"InvCameraMatrix","INV_CAMERA_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	//pixel vertex out
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Diffuse","DIFFUSE_OUT",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"DiffuseAlpha","ALPHA_OUT",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Specular","SPECULAR",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"SpecularExp","SPECULAR",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Emission","EMISSION",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Glow","GLOW",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"ShadeParam","SHADE_PARAM",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","NORMAL",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMap","NORMALMAP",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMapDepth","NORMALMAP_DEPTH",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Discard","DISCARD",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Diffuse","DIFFUSE_OUT","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"DiffuseAlpha","ALPHA_OUT","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Specular","SPECULAR","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"SpecularExp","SPECULAR","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Emission","EMISSION","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Glow","GLOW","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"ShadeParam","SHADE_PARAM","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMap","NORMALMAP","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMapDepth","NORMALMAP_DEPTH","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Discard","DISCARD",">0.5",SLOT_TYPE_SCALAR,SLOT_OUT},
+	//light in
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"LightDir","LIGHT_DIR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"LightDiffuse","LIGHT_DIFFUSE","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"LightSpecular","LIGHT_SPECULAR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"EyeVec","EYE_VEC","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Diffuse","DIFFUSE","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Specular","SPECULAR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"SpecExp","SPECULAR_EXP","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"ShadeParam","SHADE_PARAM","",SLOT_TYPE_SCALAR,SLOT_IN},
+	//light out
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Light","LIGHT","",SLOT_TYPE_VEC,SLOT_OUT},
 	//end
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
 
 };
 
@@ -1174,7 +1277,7 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 
 		{NODE_SCALAR_CONST,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, //scalar constant
 		{NODE_VEC_CONST,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, //vec3 constant
-		{NODE_RGB_CONST,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, //rgb constant (shows a color picker instead)
+		{NODE_RGB_CONST,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, //rgb constant (shows a color picker instead)
 		{NODE_XFORM_CONST,{SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // 4x4 matrix constant
 		{NODE_TIME,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // time in seconds
 		{NODE_SCREEN_TEX,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // screen texture sampler (takes UV) (only usable in fragment shader)
@@ -1381,6 +1484,14 @@ void ShaderGraph::_update_shader() {
 
 	String code[3];
 
+	List<StringName> names;
+	get_default_texture_param_list(&names);
+
+	for (List<StringName>::Element *E=names.front();E;E=E->next()) {
+		set_default_texture_param(E->get(),Ref<Texture>());
+	}
+
+
 	for(int i=0;i<3;i++) {
 
 		int idx=0;
@@ -1437,11 +1548,13 @@ void ShaderGraph::_update_shader() {
 		bool failed=false;
 
 		if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
-			code[i]+="vec3 DIFFUSE_OUT=vec3(0,0,0);";
-			code[i]+="float ALPHA_OUT=0;";
+			code[i]+="vec3 DIFFUSE_OUT=vec3(0,0,0);\n";
+			code[i]+="float ALPHA_OUT=0;\n";
 		}
 
+
 		Map<String,String> inputs_xlate;
+		Map<String,String> input_names_xlate;
 		Set<String> inputs_used;
 
 		for(int j=0;j<order.size();j++) {
@@ -1458,6 +1571,7 @@ void ShaderGraph::_update_shader() {
 
 						String vname=("nd"+itos(n->id)+"sl"+itos(idx));
 						inputs_xlate[vname]=String(typestr[iop->slot_type])+" "+vname+"="+iop->variable+";\n";
+						input_names_xlate[vname]=iop->variable;
 						idx++;
 					}
 					iop++;
@@ -1476,7 +1590,7 @@ void ShaderGraph::_update_shader() {
 							String iname=("nd"+itos(n->connections[idx].id)+"sl"+itos(n->connections[idx].slot));
 							if (node_get_type(ShaderType(i),n->connections[idx].id)==NODE_INPUT)
 								inputs_used.insert(iname);
-							code[i]+=String(iop->variable)+"="+iname+";\n";
+							code[i]+=String(iop->variable)+"="+iname+String(iop->postfix)+";\n";
 							if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL && String(iop->name)=="DiffuseAlpha")
 								use_alpha=true;
 						}
@@ -1488,8 +1602,7 @@ void ShaderGraph::_update_shader() {
 				if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
 
 					if (use_alpha) {
-						code[i]+="DIFFUSE_ALPHA.rgb=DIFFUSE_OUT;\n";
-						code[i]+="DIFFUSE_ALPHA.a=ALPHA_OUT;\n";
+						code[i]+="DIFFUSE_ALPHA=vec4(DIFFUSE_OUT,ALPHA_OUT);\n";
 					} else {
 						code[i]+="DIFFUSE=DIFFUSE_OUT;\n";
 					}
@@ -1506,13 +1619,19 @@ void ShaderGraph::_update_shader() {
 					}
 					String iname="nd"+itos(n->connections[k].id)+"sl"+itos(n->connections[k].slot);
 					inputs.push_back(iname);
-					if (node_get_type(ShaderType(i),n->connections[k].id)==NODE_INPUT)
+					if (node_get_type(ShaderType(i),n->connections[k].id)==NODE_INPUT) {
 						inputs_used.insert(iname);
+					}
 
 				}
 
 				if (failed)
 					break;
+
+				if (n->type==NODE_TEXTURE_INPUT || n->type==NODE_CUBEMAP_INPUT) {
+
+					set_default_texture_param(n->param1,n->param2);
+				}
 				_add_node_code(ShaderType(i),n,inputs,code[i]);
 			}
 
@@ -1521,11 +1640,31 @@ void ShaderGraph::_update_shader() {
 		if (failed)
 			continue;
 
+
 		for(Set<String>::Element *E=inputs_used.front();E;E=E->next()) {
 
 			ERR_CONTINUE( !inputs_xlate.has(E->get()));
 			code[i]=inputs_xlate[E->get()]+code[i];
+			String name=input_names_xlate[E->get()];
+
+			if (i==SHADER_TYPE_VERTEX && get_mode()==MODE_MATERIAL) {
+				if (name==("SRC_COLOR"))
+					code[i]="vec3 SRC_COLOR=COLOR.rgb;\n"+code[i];
+				if (name==("SRC_ALPHA"))
+					code[i]="float SRC_ALPHA=COLOR.a;\n"+code[i];
+				if (name==("SRC_UV"))
+					code[i]="vec3 SRC_UV=vec3(UV,0);\n"+code[i];
+				if (name==("SRC_UV2"))
+					code[i]="float SRC_UV2=vec3(UV2,0);\n"+code[i];
+			} else if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
+				if (name==("IN_NORMAL"))
+					code[i]="vec3 IN_NORMAL=NORMAL;\n"+code[i];
+			}
+
 		}
+
+
+
 		shader[i].error=GRAPH_OK;
 		print_line("ShADER: "+code[i]);
 	}
@@ -1568,6 +1707,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		case NODE_RGB_CONST: {
 			Color col = p_node->param1;
 			code+=OUTNAME(p_node->id,0)+"=vec3("+rtos(col.r)+","+rtos(col.g)+","+rtos(col.b)+");\n";
+			code+=OUTNAME(p_node->id,1)+"="+rtos(col.a)+";\n";
 		}break;
 		case NODE_XFORM_CONST: {
 
@@ -1744,7 +1884,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		}break;
 		case NODE_TEXTURE_INPUT: {
 			String name = p_node->param1;
-			String rname="_read_tex"+itos(p_node->id);
+			String rname="rt_read_tex"+itos(p_node->id);
 			code +="uniform texture "+name+";";
 			code +="vec4 "+rname+"=tex("+name+","+p_inputs[0]+".xy);\n";
 			code += OUTNAME(p_node->id,0)+"="+rname+".rgb;\n";
@@ -1755,7 +1895,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 			String name = p_node->param1;
 			code +="uniform cubemap "+name+";";
-			String rname="_read_tex"+itos(p_node->id);
+			String rname="rt_read_tex"+itos(p_node->id);
 			code +="vec4 "+rname+"=texcube("+name+","+p_inputs[0]+".xy);\n";
 			code += OUTNAME(p_node->id,0)+"="+rname+".rgb;\n";
 			code += OUTNAME(p_node->id,1)+"="+rname+".a;\n";

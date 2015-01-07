@@ -241,8 +241,9 @@ class RasterizerGLES2 : public Rasterizer {
 
 		struct UniformData {
 
+			bool inuse;
 			bool istexture;
-			Variant value;
+			Variant value;			
 			int index;
 		};
 

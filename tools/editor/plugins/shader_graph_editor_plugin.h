@@ -66,6 +66,8 @@ class ShaderGraphView : public Node {
 
 
 	void _connection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
+	void _disconnection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
+
 	void _node_removed(int p_id);
 	void _node_moved(const Vector2& p_from, const Vector2& p_to,int p_id);
 	void _move_node(int p_id,const Vector2& p_to);
