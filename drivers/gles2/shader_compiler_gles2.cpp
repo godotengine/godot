@@ -131,6 +131,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 			SL::BlockNode *bnode=(SL::BlockNode*)p_node;
 
 			//variables
+			code+="{"ENDL;
 			for(Map<StringName,SL::DataType>::Element *E=bnode->variables.front();E;E=E->next()) {
 
 				code+=_mktab(p_level)+_typestr(E->value())+" "+replace_string(E->key())+";"ENDL;
@@ -141,6 +142,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				code+=_mktab(p_level)+dump_node_code(bnode->statements[i],p_level)+";"ENDL;
 			}
 
+			code+="}"ENDL;
 
 		} break;
 		case SL::Node::TYPE_VARIABLE: {
@@ -676,6 +678,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	//mode_replace_table[1]["POSITION"]="IN_POSITION";
 	mode_replace_table[1]["NORMAL"]="normal";
 	mode_replace_table[1]["TANGENT"]="tangent";
+	mode_replace_table[1]["POSITION"]="gl_Position";
 	mode_replace_table[1]["BINORMAL"]="binormal";
 	mode_replace_table[1]["NORMALMAP"]="normalmap";
 	mode_replace_table[1]["NORMALMAP_DEPTH"]="normaldepth";

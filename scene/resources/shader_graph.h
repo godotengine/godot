@@ -267,9 +267,8 @@ public:
 		RGB_MAX_OP
 	};
 
-	void rgb_op_node_set_op(ShaderType p_which,float p_id,RGBOp p_op,float p_c);
+	void rgb_op_node_set_op(ShaderType p_which,float p_id,RGBOp p_op);
 	RGBOp rgb_op_node_get_op(ShaderType p_which,float p_id) const;
-	float rgb_op_node_get_c(ShaderType p_which,float p_id) const;
 
 	void xform_vec_mult_node_set_no_translation(ShaderType p_which,int p_id,bool p_no_translation);
 	bool xform_vec_mult_node_get_no_translation(ShaderType p_which,int p_id) const;
@@ -349,6 +348,8 @@ public:
 	Variant node_get_state(ShaderType p_type, int p_node) const;
 	void node_set_state(ShaderType p_type, int p_id, const Variant& p_state);
 
+	GraphError get_graph_error(ShaderType p_type) const;
+
 	static int get_type_input_count(NodeType p_type);
 	static int get_type_output_count(NodeType p_type);
 	static SlotType get_type_input_type(NodeType p_type,int p_idx);
@@ -388,6 +389,7 @@ VARIANT_ENUM_CAST( ShaderGraph::VecScalarOp );
 VARIANT_ENUM_CAST( ShaderGraph::RGBOp );
 VARIANT_ENUM_CAST( ShaderGraph::ScalarFunc );
 VARIANT_ENUM_CAST( ShaderGraph::VecFunc );
+VARIANT_ENUM_CAST( ShaderGraph::GraphError );
 
 
 class MaterialShaderGraph : public ShaderGraph {
