@@ -1297,9 +1297,7 @@ static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
 			return nil;
 		}
 
-		CFStringRef chararter = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
-		CFStringAppend(output, chararter);
-		CFRelease(chararter);
+		CFStringAppendCharacters(output, chars, 1);
 	}
 
 	//CFStringUppercase(output, NULL);
