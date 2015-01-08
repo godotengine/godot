@@ -200,7 +200,7 @@ void ShaderGraphView::_vec_input_changed(double p_value, int p_id,Array p_arr){
 }
 void ShaderGraphView::_xform_input_changed(int p_id, Node *p_button){
 
-	print_line("XFIC");
+
 	ToolButton *tb = p_button->cast_to<ToolButton>();
 	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
@@ -445,7 +445,7 @@ void ShaderGraphView::_node_removed(int p_id) {
 
 void ShaderGraphView::_node_moved(const Vector2& p_from, const Vector2& p_to,int p_id) {
 
-	print_line("moved from "+p_from+" to "+p_to);
+
 	ERR_FAIL_COND(!node_map.has(p_id));
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action("Move Shader Graph Node");
@@ -1213,7 +1213,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	graph_edit->add_child(gn);
 	node_map[p_id]=gn;
 	gn->set_offset(graph->node_get_pos(type,p_id));
-	print_line("NODE "+itos(p_id)+" OFS "+gn->get_offset());
+
 
 }
 
@@ -1236,7 +1236,7 @@ void ShaderGraphView::_update_graph() {
 
 	List<int> nl;
 	graph->get_node_list(type,&nl);
-	print_line("graph nodes: "+itos(nl.size()));
+
 	for(List<int>::Element *E=nl.front();E;E=E->next()) {
 
 		_create_node(E->get());
@@ -1255,11 +1255,29 @@ void ShaderGraphView::_update_graph() {
 
 }
 
+void ShaderGraphView::_sg_updated() {
+
+	if (!graph.is_valid())
+		return;
+	switch(graph->get_graph_error(type)) {
+		case ShaderGraph::GRAPH_OK: status->set_text(""); break;
+		case ShaderGraph::GRAPH_ERROR_CYCLIC: status->set_text("Error: Cyclic Connection Link"); break;
+		case ShaderGraph::GRAPH_ERROR_MISSING_CONNECTIONS: status->set_text("Error: Missing Input Connections"); break;
+	}
+}
+
 void ShaderGraphView::set_graph(Ref<ShaderGraph> p_graph){
 
-	print_line("GRAPH EDIT: "+itos(p_graph.is_valid()));
+
+	if (graph.is_valid()) {
+		graph->disconnect("updated",this,"_sg_updated");
+	}
 	graph=p_graph;
+	if (graph.is_valid()) {
+		graph->connect("updated",this,"_sg_updated");
+	}
 	_update_graph();
+	_sg_updated();
 
 }
 
@@ -1343,6 +1361,7 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
 	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
 
+	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
 
 ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
@@ -1352,8 +1371,15 @@ ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
 	block_update=false;
 	ped_popup = memnew( CustomPropertyEditor );
 	graph_edit->add_child(ped_popup);
-
-
+	status = memnew( Label );
+	graph_edit->get_top_layer()->add_child(status);
+	status->set_pos(Vector2(5,5));
+	status->add_color_override("font_color_shadow",Color(0,0,0));
+	status->add_color_override("font_color",Color(1,0.4,0.3));
+	status->add_constant_override("shadow_as_outline",1);
+	status->add_constant_override("shadow_offset_x",2);
+	status->add_constant_override("shadow_offset_y",2);
+	status->set_text("");
 }
 
 
@@ -1444,7 +1470,7 @@ ShaderGraphEditor::ShaderGraphEditor() {
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	menu = memnew( MenuButton );
-	menu->set_text("Add..");
+	menu->set_text("Add Node..");
 	hbc->add_child(menu);
 	add_child(hbc);
 
@@ -1466,6 +1492,7 @@ ShaderGraphEditor::ShaderGraphEditor() {
 		graph_edits[i]->get_graph_edit()->connect("connection_request",graph_edits[i],"_connection_request");
 		graph_edits[i]->get_graph_edit()->connect("disconnection_request",graph_edits[i],"_disconnection_request");
 		graph_edits[i]->get_graph_edit()->set_right_disconnects(true);
+
 	}
 
 	tabs->set_current_tab(1);

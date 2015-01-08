@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_graph.h"
-
+#include "scene/scene_string_names.h"
 //todo
 //-RGB ops
 //-mostrar error de conexion
@@ -137,6 +137,13 @@ Dictionary ShaderGraph::_get_data() const {
 }
 
 
+
+ShaderGraph::GraphError ShaderGraph::get_graph_error(ShaderType p_type) const {
+
+	ERR_FAIL_INDEX_V(p_type,3,GRAPH_OK);
+	return shader[p_type].error;
+}
+
 void ShaderGraph::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_shader"),&ShaderGraph::_update_shader);
@@ -180,9 +187,9 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("vec_scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::vec_scalar_op_node_set_op);
 	ObjectTypeDB::bind_method(_MD("vec_scalar_op_node_get_op","shader_type","id"),&ShaderGraph::vec_scalar_op_node_get_op);
 
-	ObjectTypeDB::bind_method(_MD("rgb_op_node_set_op","shader_type","id","op","c"),&ShaderGraph::rgb_op_node_set_op);
+	ObjectTypeDB::bind_method(_MD("rgb_op_node_set_op","shader_type","id","op"),&ShaderGraph::rgb_op_node_set_op);
 	ObjectTypeDB::bind_method(_MD("rgb_op_node_get_op","shader_type","id"),&ShaderGraph::rgb_op_node_get_op);
-	ObjectTypeDB::bind_method(_MD("rgb_op_node_get_c","shader_type","id"),&ShaderGraph::rgb_op_node_get_c);
+
 
 	ObjectTypeDB::bind_method(_MD("xform_vec_mult_node_set_no_translation","shader_type","id","disable"),&ShaderGraph::xform_vec_mult_node_set_no_translation);
 	ObjectTypeDB::bind_method(_MD("xform_vec_mult_node_get_no_translation","shader_type","id"),&ShaderGraph::xform_vec_mult_node_get_no_translation);
@@ -355,6 +362,8 @@ void ShaderGraph::_bind_methods() {
 	BIND_CONSTANT( VEC_FUNC_RGB2HSV );
 	BIND_CONSTANT( VEC_FUNC_HSV2RGB );
 	BIND_CONSTANT( VEC_MAX_FUNC );
+
+	ADD_SIGNAL(MethodInfo("updated"));
 
 
 #if 0
@@ -568,7 +577,7 @@ void ShaderGraph::node_remove(ShaderType p_type,int p_id) {
 	}
 
 	shader[p_type].node_map.erase(p_id);
-	print_line("erased node, amount left: "+itos(shader[p_type].node_map.size()));
+
 	_request_update();
 
 }
@@ -634,7 +643,6 @@ bool ShaderGraph::is_node_connected(ShaderType p_type,int p_src_id,int p_src_slo
 void ShaderGraph::disconnect_node(ShaderType p_type,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
 	ERR_FAIL_INDEX(p_type,3);
 
-	print_line("** dsisconnect");
 	SourceSlot ts;
 	ts.id=p_src_id;
 	ts.slot=p_src_slot;
@@ -871,14 +879,14 @@ ShaderGraph::VecScalarOp ShaderGraph::vec_scalar_op_node_get_op(ShaderType p_typ
 
 }
 
-void ShaderGraph::rgb_op_node_set_op(ShaderType p_type,float p_id,RGBOp p_op,float p_c){
+void ShaderGraph::rgb_op_node_set_op(ShaderType p_type,float p_id,RGBOp p_op){
 
 	ERR_FAIL_INDEX(p_type,3);
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_RGB_OP);
 	n.param1=p_op;
-	n.param2=p_c;
+
 	_request_update();
 
 }
@@ -892,15 +900,7 @@ ShaderGraph::RGBOp ShaderGraph::rgb_op_node_get_op(ShaderType p_type,float p_id)
 	return RGBOp(op);
 
 }
-float ShaderGraph::rgb_op_node_get_c(ShaderType p_type,float p_id) const{
 
-	ERR_FAIL_INDEX_V(p_type,3,0);
-	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),0);
-	const Node& n = shader[p_type].node_map[p_id];
-	ERR_FAIL_COND_V(n.type!=NODE_RGB_OP,0);
-	return n.param2;
-
-}
 
 void ShaderGraph::xform_vec_mult_node_set_no_translation(ShaderType p_type,int p_id,bool p_no_translation){
 
@@ -928,7 +928,9 @@ void ShaderGraph::scalar_func_node_set_function(ShaderType p_type,int p_id,Scala
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_SCALAR_FUNC);
-	n.param1=p_func;
+	int func = p_func;
+	ERR_FAIL_INDEX(func,SCALAR_MAX_FUNC);
+	n.param1=func;
 	_request_update();
 
 }
@@ -948,7 +950,9 @@ void ShaderGraph::vec_func_node_set_function(ShaderType p_type,int p_id,VecFunc 
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_VEC_FUNC);
-	n.param1=p_func;
+	int func = p_func;
+	ERR_FAIL_INDEX(func,VEC_MAX_FUNC);
+	n.param1=func;
 
 	_request_update();
 
@@ -1216,7 +1220,7 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"PointSize","POINT_SIZE","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	//pixel vertex in
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Vertex","VERTEX","",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Position","POSITION","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Position","POSITION.xyz","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","IN_NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Tangent","TANGENT","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Binormal","BINORMAL","",SLOT_TYPE_VEC,SLOT_IN},
@@ -1286,7 +1290,7 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 		{NODE_SCALAR_OP,{SLOT_TYPE_SCALAR,SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // scalar vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_SCALAR_OP,{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
-		{NODE_RGB_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_TYPE_SCALAR},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
+		{NODE_RGB_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_XFORM_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_XFORM,SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // mat4 x mat4
 		{NODE_XFORM_VEC_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 mult (with no-translation option)
 		{NODE_XFORM_VEC_INV_MULT,{SLOT_TYPE_VEC,SLOT_TYPE_XFORM,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 inverse mult (with no-translation option)
@@ -1669,7 +1673,7 @@ void ShaderGraph::_update_shader() {
 
 
 		shader[i].error=GRAPH_OK;
-		print_line("ShADER: "+code[i]);
+
 	}
 
 	bool all_ok=true;
@@ -1682,8 +1686,9 @@ void ShaderGraph::_update_shader() {
 		set_code(code[0],code[1],code[2]);
 	}
 	//do shader here
-	print_line("UPDATING SHADER");
+
 	_pending_update_shader=false;
+	emit_signal(SceneStringNames::get_singleton()->updated);
 }
 
 void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<String>& p_inputs,String& code) {
@@ -1691,6 +1696,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 	const char *typestr[4]={"float","vec3","mat4","texture"};
 #define OUTNAME(id,slot) (String(typestr[get_node_output_slot_type(get_mode(),p_type,p_node->type,slot)])+" "+("nd"+itos(id)+"sl"+itos(slot)))
+#define OUTVAR(id,slot) ("nd"+itos(id)+"sl"+itos(slot))
 
 	switch(p_node->type) {
 
@@ -1778,7 +1784,85 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		}break;
 		case NODE_RGB_OP: {
 
+			int op = p_node->param1;
+			static const char*axisn[3]={"x","y","z"};
+			switch(op) {
+				case RGB_OP_SCREEN: {
 
+					code += OUTNAME(p_node->id,0)+"=vec3(1.0)-(vec3(1.0)-"+p_inputs[0]+")*(vec3(1.0)-"+p_inputs[1]+");\n";
+				} break;
+				case RGB_OP_DIFFERENCE: {
+
+					code += OUTNAME(p_node->id,0)+"=abs("+p_inputs[0]+"-"+p_inputs[1]+");\n";
+
+				} break;
+				case RGB_OP_DARKEN: {
+
+					code += OUTNAME(p_node->id,0)+"=min("+p_inputs[0]+","+p_inputs[1]+");\n";
+				} break;
+				case RGB_OP_LIGHTEN: {
+
+					code += OUTNAME(p_node->id,0)+"=max("+p_inputs[0]+","+p_inputs[1]+");\n";
+
+				} break;
+				case RGB_OP_OVERLAY: {
+
+					code += OUTNAME(p_node->id,0)+";\n";
+					for(int i=0;i<3;i++) {
+						code += "{\n";
+						code += "\tfloat base="+p_inputs[0]+"."+axisn[i]+";\n";
+						code += "\tfloat blend="+p_inputs[1]+"."+axisn[i]+";\n";
+						code += "\tif (base < 0.5) {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = 2.0 * base * blend;\n";
+						code += "\t} else {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = 1.0 - 2.0 * (1.0 - blend) * (1.0 - base);\n";
+						code += "\t}\n";
+						code += "}\n";
+					}
+
+				} break;
+				case RGB_OP_DODGE: {
+
+					code += OUTNAME(p_node->id,0)+"=("+p_inputs[0]+")/(vec3(1.0)-"+p_inputs[1]+");\n";
+
+				} break;
+				case RGB_OP_BURN: {
+
+					code += OUTNAME(p_node->id,0)+"=vec3(1.0)-(vec3(1.0)-"+p_inputs[0]+")/("+p_inputs[1]+");\n";
+				} break;
+				case RGB_OP_SOFT_LIGHT: {
+
+					code += OUTNAME(p_node->id,0)+";\n";
+					for(int i=0;i<3;i++) {
+						code += "{\n";
+						code += "\tfloat base="+p_inputs[0]+"."+axisn[i]+";\n";
+						code += "\tfloat blend="+p_inputs[1]+"."+axisn[i]+";\n";
+						code += "\tif (base < 0.5) {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (base * (blend+0.5));\n";
+						code += "\t} else {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (1 - (1-base) * (1-(blend-0.5)));\n";
+						code += "\t}\n";
+						code += "}\n";
+					}
+
+				} break;
+				case RGB_OP_HARD_LIGHT: {
+
+					code += OUTNAME(p_node->id,0)+";\n";
+					for(int i=0;i<3;i++) {
+						code += "{\n";
+						code += "\tfloat base="+p_inputs[0]+"."+axisn[i]+";\n";
+						code += "\tfloat blend="+p_inputs[1]+"."+axisn[i]+";\n";
+						code += "\tif (base < 0.5) {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (base * (2*blend));\n";
+						code += "\t} else {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (1 - (1-base) * (1-2*(blend-0.5)));\n";
+						code += "\t}\n";
+						code += "}\n";
+					}
+
+				} break;
+			}
 		}break;
 		case NODE_XFORM_MULT: {
 
@@ -1804,11 +1888,70 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			}
 		}break;
 		case NODE_SCALAR_FUNC: {
+			static const char*scalar_func_id[SCALAR_MAX_FUNC]={
+				"sin($)",
+				"cos($)",
+				"tan($)",
+				"asin($)",
+				"acos($)",
+				"atan($)",
+				"sinh($)",
+				"cosh($)",
+				"tanh($)",
+				"log($)",
+				"exp($)",
+				"sqrt($)",
+				"abs($)",
+				"sign($)",
+				"floor($)",
+				"round($)",
+				"ceil($)",
+				"frac($)",
+				"min(max($,0),1)",
+				"-($)",
+			};
 
+			int func = p_node->param1;
+			ERR_FAIL_INDEX(func,SCALAR_MAX_FUNC);
+			code += OUTNAME(p_node->id,0)+"="+String(scalar_func_id[func]).replace("$",p_inputs[0])+";\n";
 
-		}break;
+		} break;
 		case NODE_VEC_FUNC: {
+			static const char*vec_func_id[VEC_MAX_FUNC]={
+				"normalize($)",
+				"max(min($,vec3(1,1,1)),vec3(0,0,0))",
+				"-($)",
+				"1.0/($)",
+				"",
+				"",
+			};
 
+
+			int func = p_node->param1;
+			ERR_FAIL_INDEX(func,VEC_MAX_FUNC);
+			if (func==VEC_FUNC_RGB2HSV) {
+				code += OUTNAME(p_node->id,0)+";\n";
+				code+="{\n";
+				code+="\tvec3 c = "+p_inputs[0]+";\n";
+				code+="\tvec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n";
+				code+="\tvec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));\n";
+				code+="\tvec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));\n";
+				code+="\tfloat d = q.x - min(q.w, q.y);\n";
+				code+="\tfloat e = 1.0e-10;\n";
+				code+="\t"+OUTVAR(p_node->id,0)+"=vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n";
+				code+="}\n";
+			} else if (func==VEC_FUNC_HSV2RGB) {
+				code += OUTNAME(p_node->id,0)+";\n";;
+				code+="{\n";
+				code+="\tvec3 c = "+p_inputs[0]+";\n";
+				code+="\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n";
+				code+="\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n";
+				code+="\t"+OUTVAR(p_node->id,0)+"=c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n";
+				code+="}\n";
+
+			} else {
+				code += OUTNAME(p_node->id,0)+"="+String(vec_func_id[func]).replace("$",p_inputs[0])+";\n";
+			}
 		}break;
 		case NODE_VEC_LEN: {
 
