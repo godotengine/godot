@@ -569,6 +569,7 @@ void OS_X11::set_fullscreen(bool p_fullscreen) {
 }
 
 bool OS_X11::is_fullscreen() const {
+	return current_videomode.fullscreen;
 }
 
 InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
