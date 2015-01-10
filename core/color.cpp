@@ -225,7 +225,7 @@ Color Color::inverted() const {
 Color Color::contrasted() const {
 
 	Color c=*this;
-	c.contrasted();
+	c.contrast();
 	return c;
 }
 
