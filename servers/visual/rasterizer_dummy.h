@@ -707,6 +707,7 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width);
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor);
 	virtual void canvas_set_transform(const Matrix32& p_transform);
+	virtual void canvas_render_items(CanvasItem *p_item_list);
 
 	/* ENVIRONMENT */
 

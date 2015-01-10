@@ -1617,6 +1617,11 @@ void RasterizerDummy::canvas_set_transform(const Matrix32& p_transform) {
 
 }
 
+void RasterizerDummy::canvas_render_items(CanvasItem *p_item_list) {
+
+
+}
+
 /* ENVIRONMENT */
 
 RID RasterizerDummy::environment_create() {

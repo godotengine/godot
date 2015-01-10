@@ -821,10 +821,7 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 	String vd = Globals::get_singleton()->get("display/driver");
 
 
-	if (vd.to_upper()=="GLES1")
-		env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)false);
-	else
-		env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)true);
+	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)true);
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**START");
 
