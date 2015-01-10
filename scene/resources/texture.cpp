@@ -935,21 +935,21 @@ float CubeMap::get_lossy_storage_quality() const {
 
 bool CubeMap::_set(const StringName& p_name, const Variant& p_value) {
 
-	if (p_name=="side/left")
+	if (p_name=="side/left") {
 		set_side(SIDE_LEFT,p_value);
-	if (p_name=="side/right")
+	} else if (p_name=="side/right") {
 		set_side(SIDE_RIGHT,p_value);
-	if (p_name=="side/bottom")
+	} else if (p_name=="side/bottom") {
 		set_side(SIDE_BOTTOM,p_value);
-	if (p_name=="side/top")
+	} else if (p_name=="side/top") {
 		set_side(SIDE_TOP,p_value);
-	if (p_name=="side/front")
+	} else if (p_name=="side/front") {
 		set_side(SIDE_FRONT,p_value);
-	if (p_name=="side/back")
+	} else if (p_name=="side/back") {
 		set_side(SIDE_BACK,p_value);
-	else if (p_name=="flags")
+	} else if (p_name=="flags") {
 		set_flags(p_value);
-	else if (p_name=="storage") {
+	} else if (p_name=="storage") {
 		storage=Storage(p_value.operator int());
 	} else if (p_name=="lossy_quality") {
 		lossy_storage_quality=p_value;
@@ -962,25 +962,25 @@ bool CubeMap::_set(const StringName& p_name, const Variant& p_value) {
 
 bool CubeMap::_get(const StringName& p_name,Variant &r_ret) const {
 
-	if (p_name=="side/left")
+	if (p_name=="side/left") {
 		r_ret=get_side(SIDE_LEFT);
-	if (p_name=="side/right")
+	} else if (p_name=="side/right") {
 		r_ret=get_side(SIDE_RIGHT);
-	if (p_name=="side/bottom")
+	} else if (p_name=="side/bottom") {
 		r_ret=get_side(SIDE_BOTTOM);
-	if (p_name=="side/top")
+	} else if (p_name=="side/top") {
 		r_ret=get_side(SIDE_TOP);
-	if (p_name=="side/front")
+	} else if (p_name=="side/front") {
 		r_ret=get_side(SIDE_FRONT);
-	if (p_name=="side/back")
+	} else if (p_name=="side/back") {
 		r_ret=get_side(SIDE_BACK);
-	else if (p_name=="flags")
+	} else if (p_name=="flags") {
 		r_ret= flags;
-	else if (p_name=="storage")
+	} else if (p_name=="storage") {
 		r_ret= storage;
-	else if (p_name=="lossy_quality")
+	} else if (p_name=="lossy_quality") {
 		r_ret= lossy_storage_quality;
-	else
+	} else
 		return false;
 
 	return true;
