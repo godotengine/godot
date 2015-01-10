@@ -521,6 +521,55 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 
 }
 
+void OS_X11::set_fullscreen(bool p_fullscreen) {
+	
+	long wm_action;
+
+	if(p_fullscreen) {
+		current_videomode.fullscreen = True;
+		wm_action = 1;
+	} else {
+		current_videomode.fullscreen = False;
+		wm_action = 0;
+	}
+	
+	/*
+	// MSC: Disabled until I can test it with lxde
+	//
+	// needed for lxde/openbox, possibly others
+	Hints hints;
+	Atom property;
+	hints.flags = 2;
+	hints.decorations = 0;
+	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
+	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
+	XMapRaised(x11_display, x11_window);
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+	XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
+	*/
+
+	// code for netwm-compliants
+	XEvent xev;
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_state;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = wm_action;
+	xev.xclient.data.l[1] = wm_fullscreen;
+	xev.xclient.data.l[2] = 0;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+
+	visual_server->init();
+}
+
+bool OS_X11::is_fullscreen() const {
+}
 
 InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
 	

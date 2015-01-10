@@ -108,6 +108,10 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
+	//MSC
+	void set_fullscreen(bool p_fullscreen);
+	bool is_fullscreen() const;
+
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();
 	void native_video_pause();

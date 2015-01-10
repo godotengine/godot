@@ -176,6 +176,14 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+void _OS::set_fullscreen(bool p_fullscreen) {
+	OS::get_singleton()->set_fullscreen(p_fullscreen);
+}
+
+bool _OS::is_fullscreen() const {
+	return OS::get_singleton()->is_fullscreen();
+}
+
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 	FileAccess::set_backup_save(p_enable);
@@ -631,6 +639,10 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+
+	//MSC
+	ObjectTypeDB::bind_method(_MD("set_fullscreen","fullscreen"),&_OS::set_fullscreen);
+	ObjectTypeDB::bind_method(_MD("is_fullscreen"),&_OS::is_fullscreen);
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
