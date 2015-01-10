@@ -151,7 +151,7 @@ public:
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
 
 	//MSC
-	virtual void set_fullscreen(bool fullscreen)=0;
+	virtual void set_fullscreen(bool p_enabled,int p_screen=0)=0;
 	virtual bool is_fullscreen() const=0;
 	
 	virtual void set_iterations_per_second(int p_ips);

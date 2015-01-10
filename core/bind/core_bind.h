@@ -109,7 +109,7 @@ public:
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
 	//MSC
-	void set_fullscreen(bool p_fullscreen);
+	void set_fullscreen(bool p_enabled, int p_screen=0);
 	bool is_fullscreen() const;
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

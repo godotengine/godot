@@ -521,11 +521,11 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 
 }
 
-void OS_X11::set_fullscreen(bool p_fullscreen) {
+void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
 	
 	long wm_action;
 
-	if(p_fullscreen) {
+	if(p_enabled) {
 		current_videomode.fullscreen = True;
 		wm_action = 1;
 	} else {

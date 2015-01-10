@@ -166,8 +166,8 @@ protected:
 	virtual const char * get_video_driver_name(int p_driver) const;	
 	virtual VideoMode get_default_video_mode() const;
 
-    virtual int get_audio_driver_count() const;
-    virtual const char * get_audio_driver_name(int p_driver) const;
+	virtual int get_audio_driver_count() const;
+	virtual const char * get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
 	virtual void finalize();
@@ -213,7 +213,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
-	virtual void set_fullscreen(bool p_fullscreen);
+	virtual void set_fullscreen(bool p_enabled,int p_screen=0);
 	virtual bool is_fullscreen() const;
 
 	virtual void move_window_to_foreground();
