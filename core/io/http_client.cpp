@@ -503,7 +503,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 
 	} else {
 		ByteArray ret;
-		ret.resize(MAX(body_left,tmp_read.size()));
+		ret.resize(body_left);
 		ByteArray::Write w = ret.write();
 		int _offset = 0;
 		while (body_left > 0) {
