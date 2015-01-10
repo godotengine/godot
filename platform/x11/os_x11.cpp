@@ -182,33 +182,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
-		// needed for lxde/openbox, possibly others
-		Hints hints;
-		Atom property;
-		hints.flags = 2;
-		hints.decorations = 0;
-		property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
-		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
-		XMapRaised(x11_display, x11_window);
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
-		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
-
-		// code for netwm-compliants
-		XEvent xev;
-		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
-		Atom fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
-
-		memset(&xev, 0, sizeof(xev));
-		xev.type = ClientMessage;
-		xev.xclient.window = x11_window;
-		xev.xclient.message_type = wm_state;
-		xev.xclient.format = 32;
-		xev.xclient.data.l[0] = 1;
-		xev.xclient.data.l[1] = fullscreen;
-		xev.xclient.data.l[2] = 0;
-
-		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+		set_wm_border(false);
+		set_wm_fullscreen(true);
 	}
 
 	// disable resizeable window
@@ -521,34 +496,19 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 
 }
 
-void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
-	
-	long wm_action;
-
-	if(p_enabled) {
-		current_videomode.fullscreen = True;
-		wm_action = 1;
-	} else {
-		current_videomode.fullscreen = False;
-		wm_action = 0;
-	}
-	
-	/*
-	// MSC: Disabled until I can test it with lxde
-	//
+void OS_X11::set_wm_border(bool p_enabled) {
 	// needed for lxde/openbox, possibly others
 	Hints hints;
 	Atom property;
 	hints.flags = 2;
-	hints.decorations = 0;
+	hints.decorations = p_enabled ? 1L : 0L;;
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	XMapRaised(x11_display, x11_window);
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
-	XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
-	*/
+	XMoveResizeWindow(x11_display, x11_window, 0, 0, current_videomode.width, current_videomode.height);
+}
 
+void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	// code for netwm-compliants
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
@@ -559,11 +519,45 @@ void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
 	xev.xclient.window = x11_window;
 	xev.xclient.message_type = wm_state;
 	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = wm_action;
+	xev.xclient.data.l[0] = p_enabled ? 1L : 0L;
 	xev.xclient.data.l[1] = wm_fullscreen;
 	xev.xclient.data.l[2] = 0;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+}
+
+void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
+
+	long wm_action;
+	long wm_decoration;
+
+	if(p_enabled) {
+		wm_action = 1L;
+		wm_decoration = 0L;	// Removes all decorations
+
+		pre_videomode = current_videomode;
+
+		// Get Desktop resolutuion
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+
+		current_videomode.fullscreen = True;
+		current_videomode.width = xwa.width;
+		current_videomode.height = xwa.height;
+
+		set_wm_border(false);
+		set_wm_fullscreen(true);
+	} else {
+		wm_action = 0L;
+		wm_decoration = 1L;	// MWM_DECORE_ALL (1L << 0)
+
+		current_videomode.fullscreen = False;
+		current_videomode.width = pre_videomode.width;
+		current_videomode.height = pre_videomode.height;
+
+		set_wm_fullscreen(false);
+		set_wm_border(true);
+	}
 
 	visual_server->init();
 }

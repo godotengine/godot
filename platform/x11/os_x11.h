@@ -73,6 +73,7 @@ class OS_X11 : public OS_Unix {
 	Rasterizer *rasterizer;
 	VisualServer *visual_server;
 	VideoMode current_videomode;
+	VideoMode pre_videomode;
 	List<String> args;
 	Window x11_window;
 	MainLoop *main_loop;	
@@ -159,6 +160,8 @@ class OS_X11 : public OS_Unix {
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
 
+	void set_wm_border(bool p_enabled);
+	void set_wm_fullscreen(bool p_enabled);
 
 protected:
 
@@ -177,6 +180,7 @@ protected:
 	void probe_joystick(int p_id = -1);
 	void process_joysticks();
 	void close_joystick(int p_id = -1);
+
 
 public:
 
