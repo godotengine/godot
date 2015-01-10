@@ -7993,7 +7993,7 @@ void RasterizerGLES2::_draw_gui_primitive2(int p_points, const Vector2 *p_vertic
 	_rinfo.ci_draw_commands++;
 }
 
-void RasterizerGLES2::_draw_textured_quad(const Rect2& p_rect, const Rect2& p_src_region, const Size2& p_tex_size,bool p_h_flip, bool p_v_flip ) {
+void RasterizerGLES2::_draw_textured_quad(const Rect2& p_rect, const Rect2& p_src_region, const Size2& p_tex_size,bool p_h_flip, bool p_v_flip, bool p_tile ) {
 
 	Vector2 texcoords[4]= {
 		Vector2( p_src_region.pos.x/p_tex_size.width,
@@ -8016,6 +8016,15 @@ void RasterizerGLES2::_draw_textured_quad(const Rect2& p_rect, const Rect2& p_sr
 	if (p_v_flip) {
 		SWAP( texcoords[1], texcoords[2] );
 		SWAP( texcoords[0], texcoords[3] );
+	}
+	if (p_tile) {
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+
+		for (int i=0; i<4; i++) {
+			texcoords[i].x *= p_rect.size.width / p_src_region.size.width;
+			texcoords[i].y *= p_rect.size.height / p_src_region.size.height;
+		}
 	}
 
 	Vector2 coords[4]= {
@@ -8056,11 +8065,11 @@ void RasterizerGLES2::canvas_draw_rect(const Rect2& p_rect, int p_flags, const R
 		if (!(p_flags&CANVAS_RECT_REGION)) {
 
 			Rect2 region = Rect2(0,0,texture->width,texture->height);
-			_draw_textured_quad(p_rect,region,region.size,p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V);
+			_draw_textured_quad(p_rect,region,region.size,p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V,p_flags&CANVAS_RECT_TILE);
 
 		} else {
 
-			_draw_textured_quad(p_rect, p_source, Size2(texture->width,texture->height),p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V );
+			_draw_textured_quad(p_rect, p_source, Size2(texture->width,texture->height),p_flags&CANVAS_RECT_FLIP_H,p_flags&CANVAS_RECT_FLIP_V,p_flags&CANVAS_RECT_TILE);
 
 		}
 	} else {
