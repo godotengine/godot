@@ -71,7 +71,7 @@ const char * OS_X11::get_video_driver_name(int p_driver) const {
 }
 OS::VideoMode OS_X11::get_default_video_mode() const {
 
-	return OS::VideoMode(800,600,false);
+	return OS::VideoMode(0,0,800,600,false);
 }
 
 int OS_X11::get_audio_driver_count() const {
@@ -163,6 +163,18 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	// maybe contextgl wants to be in charge of creating the window
 	//print_line("def videomode "+itos(current_videomode.width)+","+itos(current_videomode.height));
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+	if(	current_videomode.x > current_videomode.width ||
+		current_videomode.y > current_videomode.height ||
+		current_videomode.width==0 ||
+		current_videomode.height==0) {
+
+		current_videomode.x = 0;
+		current_videomode.y = 0;
+		current_videomode.width = 640;
+		current_videomode.height = 480;
+	}
+		
+
 	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
 	context_gl->initialize();
 
@@ -505,7 +517,7 @@ void OS_X11::set_wm_border(bool p_enabled) {
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	XMapRaised(x11_display, x11_window);
-	XMoveResizeWindow(x11_display, x11_window, 0, 0, current_videomode.width, current_videomode.height);
+	XMoveResizeWindow(x11_display, x11_window, current_videomode.x, current_videomode.y, current_videomode.width, current_videomode.height);
 }
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
@@ -528,17 +540,24 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 
 void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
 
-	long wm_action;
-	long wm_decoration;
-
 	if(p_enabled) {
-		wm_action = 1L;
-		wm_decoration = 0L;	// Removes all decorations
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, x11_window, &xwa);
+
+		print_line(itos(xwa.x));
+		print_line(itos(xwa.y));
+		print_line(itos(xwa.width));
+		print_line(itos(xwa.height));
+		
+		current_videomode.x = xwa.x;
+		current_videomode.y = xwa.y;
+		current_videomode.width = xwa.width;
+		current_videomode.height = xwa.height;
+		
 
 		pre_videomode = current_videomode;
 
 		// Get Desktop resolutuion
-		XWindowAttributes xwa;
 		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
 
 		current_videomode.fullscreen = True;
@@ -548,10 +567,9 @@ void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
 		set_wm_border(false);
 		set_wm_fullscreen(true);
 	} else {
-		wm_action = 0L;
-		wm_decoration = 1L;	// MWM_DECORE_ALL (1L << 0)
-
 		current_videomode.fullscreen = False;
+		current_videomode.x = pre_videomode.x;
+		current_videomode.y = pre_videomode.y;
 		current_videomode.width = pre_videomode.width;
 		current_videomode.height = pre_videomode.height;
 
