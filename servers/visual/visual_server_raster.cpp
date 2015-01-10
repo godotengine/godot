@@ -3650,7 +3650,7 @@ void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const R
 	canvas_item->commands.push_back(rect);	
 	
 }
-void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
+void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_region,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
 
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
@@ -3659,6 +3659,7 @@ void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_re
 	CanvasItem::CommandStyle * style = memnew( CanvasItem::CommandStyle );
 	ERR_FAIL_COND(!style);
 	style->texture=p_texture;
+	style->region=p_region;
 	style->rect=p_rect;
 	style->draw_center=p_draw_center;
 	style->color=p_modulate;
@@ -6318,7 +6319,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 					case CanvasItem::Command::TYPE_STYLE: {
 
 						CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
-						rasterizer->canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
+						rasterizer->canvas_draw_style_box(style->rect,style->texture,style->region,style->margin,style->draw_center,style->color);
 
 					} break;
 					case CanvasItem::Command::TYPE_PRIMITIVE: {
