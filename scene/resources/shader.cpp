@@ -144,10 +144,13 @@ void Shader::_set_code(const Dictionary& p_string) {
 
 void Shader::set_default_texture_param(const StringName& p_param,const Ref<Texture>& p_texture) {
 
-	if (p_texture.is_valid())
+	if (p_texture.is_valid()) {
 		default_textures[p_param]=p_texture;
-	else
+		VS::get_singleton()->shader_set_default_texture_param(shader,p_param,p_texture->get_rid());
+	} else {
 		default_textures.erase(p_param);
+		VS::get_singleton()->shader_set_default_texture_param(shader,p_param,RID());
+	}
 }
 
 Ref<Texture> Shader::get_default_texture_param(const StringName& p_param) const{

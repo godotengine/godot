@@ -478,8 +478,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (!connection->is_connected()) {
 				stop();
 				editor->notify_child_process_exited(); //somehow, exited
-				msgdialog->set_text("Process being debugged exited.");
-				msgdialog->popup_centered(Size2(250,100));
 				break;
 			};
 

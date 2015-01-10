@@ -119,6 +119,9 @@ private:
 	real_t bounce;
 	real_t mass;
 	real_t friction;
+	real_t gravity_scale;
+	real_t linear_damp;
+	real_t angular_damp;
 
 	Vector2 linear_velocity;
 	real_t angular_velocity;
@@ -197,6 +200,15 @@ public:
 
 	void set_bounce(real_t p_bounce);
 	real_t get_bounce() const;
+
+	void set_gravity_scale(real_t p_gravity_scale);
+	real_t get_gravity_scale() const;
+
+	void set_linear_damp(real_t p_linear_damp);
+	real_t get_linear_damp() const;
+
+	void set_angular_damp(real_t p_angular_damp);
+	real_t get_angular_damp() const;
 
 	void set_linear_velocity(const Vector2& p_velocity);
 	Vector2 get_linear_velocity() const;

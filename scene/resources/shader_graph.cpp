@@ -27,8 +27,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "shader_graph.h"
-
-
+#include "scene/scene_string_names.h"
+//todo
+//-RGB ops
+//-mostrar error de conexion
 
 Array ShaderGraph::_get_node_list(ShaderType p_type) const {
 
@@ -55,6 +57,91 @@ Array ShaderGraph::_get_connections(ShaderType p_type) const {
 
 	}
 	return arr;
+}
+
+void ShaderGraph::_set_data(const Dictionary &p_data) {
+
+	Dictionary d=p_data;
+	ERR_FAIL_COND(!d.has("shaders"));
+	Array sh=d["shaders"];
+	ERR_FAIL_COND(sh.size()!=3);
+
+	for(int t=0;t<3;t++) {
+		Array data=sh[t];
+		ERR_FAIL_COND((data.size()%6)!=0);
+		shader[t].node_map.clear();
+		for(int i=0;i<data.size();i+=6) {
+
+			Node n;
+			n.id=data[i+0];
+			n.type=NodeType(int(data[i+1]));
+			n.pos=data[i+2];
+			n.param1=data[i+3];
+			n.param2=data[i+4];
+
+			Array conns=data[i+5];
+			ERR_FAIL_COND((conns.size()%3)!=0);
+
+			for(int j=0;j<conns.size();j+=3) {
+
+				SourceSlot ss;
+				int ls=conns[j+0];
+				ss.id=conns[j+1];
+				ss.slot=conns[j+2];
+				n.connections[ls]=ss;
+			}
+			shader[t].node_map[n.id]=n;
+
+		}
+	}
+
+	_update_shader();
+
+}
+
+Dictionary ShaderGraph::_get_data() const {
+
+	Array sh;
+	for(int i=0;i<3;i++) {
+		Array data;
+		int ec = shader[i].node_map.size();
+		data.resize(ec*6);
+		int idx=0;
+		for (Map<int,Node>::Element*E=shader[i].node_map.front();E;E=E->next()) {
+
+			data[idx+0]=E->key();
+			data[idx+1]=E->get().type;
+			data[idx+2]=E->get().pos;
+			data[idx+3]=E->get().param1;
+			data[idx+4]=E->get().param2;
+
+			Array conns;
+			conns.resize(E->get().connections.size()*3);
+			int idx2=0;
+			for(Map<int,SourceSlot>::Element*F=E->get().connections.front();F;F=F->next()) {
+
+				conns[idx2+0]=F->key();
+				conns[idx2+1]=F->get().id;
+				conns[idx2+2]=F->get().slot;
+				idx2+=3;
+			}
+			data[idx+5]=conns;
+			idx+=6;
+		}
+		sh.push_back(data);
+	}
+
+	Dictionary data;
+	data["shaders"]=sh;
+	return data;
+}
+
+
+
+ShaderGraph::GraphError ShaderGraph::get_graph_error(ShaderType p_type) const {
+
+	ERR_FAIL_INDEX_V(p_type,3,GRAPH_OK);
+	return shader[p_type].error;
 }
 
 void ShaderGraph::_bind_methods() {
@@ -100,9 +187,9 @@ void ShaderGraph::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("vec_scalar_op_node_set_op","shader_type","id","op"),&ShaderGraph::vec_scalar_op_node_set_op);
 	ObjectTypeDB::bind_method(_MD("vec_scalar_op_node_get_op","shader_type","id"),&ShaderGraph::vec_scalar_op_node_get_op);
 
-	ObjectTypeDB::bind_method(_MD("rgb_op_node_set_op","shader_type","id","op","c"),&ShaderGraph::rgb_op_node_set_op);
+	ObjectTypeDB::bind_method(_MD("rgb_op_node_set_op","shader_type","id","op"),&ShaderGraph::rgb_op_node_set_op);
 	ObjectTypeDB::bind_method(_MD("rgb_op_node_get_op","shader_type","id"),&ShaderGraph::rgb_op_node_get_op);
-	ObjectTypeDB::bind_method(_MD("rgb_op_node_get_c","shader_type","id"),&ShaderGraph::rgb_op_node_get_c);
+
 
 	ObjectTypeDB::bind_method(_MD("xform_vec_mult_node_set_no_translation","shader_type","id","disable"),&ShaderGraph::xform_vec_mult_node_set_no_translation);
 	ObjectTypeDB::bind_method(_MD("xform_vec_mult_node_get_no_translation","shader_type","id"),&ShaderGraph::xform_vec_mult_node_get_no_translation);
@@ -146,6 +233,11 @@ void ShaderGraph::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("node_set_state","shader_type","id","state"),&ShaderGraph::node_set_state);
 	ObjectTypeDB::bind_method(_MD("node_get_state:var","shader_type","id"),&ShaderGraph::node_get_state);
+
+	ObjectTypeDB::bind_method(_MD("_set_data"),&ShaderGraph::_set_data);
+	ObjectTypeDB::bind_method(_MD("_get_data"),&ShaderGraph::_get_data);
+
+	ADD_PROPERTY( PropertyInfo(Variant::DICTIONARY,"_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR), _SCS("_set_data"),_SCS("_get_data"));
 
 	//void get_connections(ShaderType p_which,List<Connection> *p_connections) const;
 
@@ -271,6 +363,8 @@ void ShaderGraph::_bind_methods() {
 	BIND_CONSTANT( VEC_FUNC_HSV2RGB );
 	BIND_CONSTANT( VEC_MAX_FUNC );
 
+	ADD_SIGNAL(MethodInfo("updated"));
+
 
 #if 0
 	ObjectTypeDB::bind_method(_MD("node_add"),&ShaderGraph::node_add );
@@ -347,7 +441,7 @@ void ShaderGraph::_bind_methods() {
 }
 
 
-String ShaderGraph::_find_unique_name(ShaderType p_which, const String& p_base) {
+String ShaderGraph::_find_unique_name(const String& p_base) {
 
 
 
@@ -358,15 +452,19 @@ String ShaderGraph::_find_unique_name(ShaderType p_which, const String& p_base) 
 			tocmp+="_"+itos(idx);
 		}
 		bool valid=true;
-		for (Map<int,Node>::Element *E=shader[p_which].node_map.front();E;E=E->next()) {
-			if (E->get().type!=NODE_SCALAR_INPUT && E->get().type!=NODE_VEC_INPUT && E->get().type==NODE_RGB_INPUT && E->get().type==NODE_XFORM_INPUT && E->get().type==NODE_TEXTURE_INPUT && E->get().type==NODE_CUBEMAP_INPUT)
-				continue;
-			String name = E->get().param1;
-			if (name==tocmp) {
-				valid=false;
+		for(int i=0;i<3;i++) {
+			if (!valid)
 				break;
-			}
+			for (Map<int,Node>::Element *E=shader[i].node_map.front();E;E=E->next()) {
+				if (E->get().type!=NODE_SCALAR_INPUT && E->get().type!=NODE_VEC_INPUT && E->get().type==NODE_RGB_INPUT && E->get().type==NODE_XFORM_INPUT && E->get().type==NODE_TEXTURE_INPUT && E->get().type==NODE_CUBEMAP_INPUT)
+					continue;
+				String name = E->get().param1;
+				if (name==tocmp) {
+					valid=false;
+					break;
+				}
 
+			}
 		}
 
 		if (!valid) {
@@ -424,12 +522,12 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 		case NODE_XFORM_TO_VEC: {} break; // 3 scalar input: {} break; 1 vec3 output
 		case NODE_SCALAR_INTERP: {} break; // scalar interpolation (with optional curve)
 		case NODE_VEC_INTERP: {} break; // vec3 interpolation  (with optional curve)
-		case NODE_SCALAR_INPUT: {node.param1=_find_unique_name(p_type,"Scalar"); node.param2=0;} break; // scalar uniform (assignable in material)
-		case NODE_VEC_INPUT: {node.param1=_find_unique_name(p_type,"Vec3");node.param2=Vector3();} break; // vec3 uniform (assignable in material)
-		case NODE_RGB_INPUT: {node.param1=_find_unique_name(p_type,"Color");node.param2=Color();} break; // color uniform (assignable in material)
-		case NODE_XFORM_INPUT: {node.param1=_find_unique_name(p_type,"XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
-		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name(p_type,"Tex"); } break; // texture input (assignable in material)
-		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name(p_type,"Cube"); } break; // cubemap input (assignable in material)
+		case NODE_SCALAR_INPUT: {node.param1=_find_unique_name("Scalar"); node.param2=0;} break; // scalar uniform (assignable in material)
+		case NODE_VEC_INPUT: {node.param1=_find_unique_name("Vec3");node.param2=Vector3();} break; // vec3 uniform (assignable in material)
+		case NODE_RGB_INPUT: {node.param1=_find_unique_name("Color");node.param2=Color();} break; // color uniform (assignable in material)
+		case NODE_XFORM_INPUT: {node.param1=_find_unique_name("XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
+		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name("Tex"); } break; // texture input (assignable in material)
+		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)
 		case NODE_OUTPUT: {} break; // output (shader type dependent)
 		case NODE_COMMENT: {} break; // comment
 		case NODE_TYPE_MAX: {};
@@ -479,7 +577,7 @@ void ShaderGraph::node_remove(ShaderType p_type,int p_id) {
 	}
 
 	shader[p_type].node_map.erase(p_id);
-	print_line("erased node, amount left: "+itos(shader[p_type].node_map.size()));
+
 	_request_update();
 
 }
@@ -545,7 +643,6 @@ bool ShaderGraph::is_node_connected(ShaderType p_type,int p_src_id,int p_src_slo
 void ShaderGraph::disconnect_node(ShaderType p_type,int p_src_id,int p_src_slot, int p_dst_id,int p_dst_slot) {
 	ERR_FAIL_INDEX(p_type,3);
 
-	print_line("** dsisconnect");
 	SourceSlot ts;
 	ts.id=p_src_id;
 	ts.slot=p_src_slot;
@@ -782,14 +879,14 @@ ShaderGraph::VecScalarOp ShaderGraph::vec_scalar_op_node_get_op(ShaderType p_typ
 
 }
 
-void ShaderGraph::rgb_op_node_set_op(ShaderType p_type,float p_id,RGBOp p_op,float p_c){
+void ShaderGraph::rgb_op_node_set_op(ShaderType p_type,float p_id,RGBOp p_op){
 
 	ERR_FAIL_INDEX(p_type,3);
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_RGB_OP);
 	n.param1=p_op;
-	n.param2=p_c;
+
 	_request_update();
 
 }
@@ -803,15 +900,7 @@ ShaderGraph::RGBOp ShaderGraph::rgb_op_node_get_op(ShaderType p_type,float p_id)
 	return RGBOp(op);
 
 }
-float ShaderGraph::rgb_op_node_get_c(ShaderType p_type,float p_id) const{
 
-	ERR_FAIL_INDEX_V(p_type,3,0);
-	ERR_FAIL_COND_V(!shader[p_type].node_map.has(p_id),0);
-	const Node& n = shader[p_type].node_map[p_id];
-	ERR_FAIL_COND_V(n.type!=NODE_RGB_OP,0);
-	return n.param2;
-
-}
 
 void ShaderGraph::xform_vec_mult_node_set_no_translation(ShaderType p_type,int p_id,bool p_no_translation){
 
@@ -839,7 +928,9 @@ void ShaderGraph::scalar_func_node_set_function(ShaderType p_type,int p_id,Scala
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_SCALAR_FUNC);
-	n.param1=p_func;
+	int func = p_func;
+	ERR_FAIL_INDEX(func,SCALAR_MAX_FUNC);
+	n.param1=func;
 	_request_update();
 
 }
@@ -859,7 +950,9 @@ void ShaderGraph::vec_func_node_set_function(ShaderType p_type,int p_id,VecFunc 
 	ERR_FAIL_COND(!shader[p_type].node_map.has(p_id));
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_VEC_FUNC);
-	n.param1=p_func;
+	int func = p_func;
+	ERR_FAIL_INDEX(func,VEC_MAX_FUNC);
+	n.param1=func;
 
 	_request_update();
 
@@ -881,8 +974,9 @@ void ShaderGraph::input_node_set_name(ShaderType p_type,int p_id,const String& p
 	ERR_FAIL_COND(!p_name.is_valid_identifier());
 	Node& n = shader[p_type].node_map[p_id];
 	ERR_FAIL_COND(n.type!=NODE_SCALAR_INPUT && n.type!=NODE_VEC_INPUT && n.type==NODE_RGB_INPUT && n.type==NODE_XFORM_INPUT && n.type==NODE_TEXTURE_INPUT && n.type==NODE_CUBEMAP_INPUT);
+
 	n.param1="";
-	n.param1=_find_unique_name(p_type,p_name);
+	n.param1=_find_unique_name(p_name);
 	_request_update();
 
 }
@@ -1097,59 +1191,74 @@ ShaderGraph::~ShaderGraph() {
 
 const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	//material vertex in
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","SRC_VERTEX",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","SRC_NORMAL",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","SRC_TANGENT",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"BinormalF","SRC_BINORMALF",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"WorldMatrix","WORLD_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InvCameraMatrix","INV_CAMERA_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ProjectionMatrix","PROJECTION_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ModelviewMatrix","MODELVIEW_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InstanceID","INSTANCE_ID",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Time","TIME",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","SRC_VERTEX","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","SRC_NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","SRC_TANGENT","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"BinormalF","SRC_BINORMALF","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Color","SRC_COLOR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Alpha","SRC_ALPHA","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV","SRC_UV","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV2","SRC_UV2","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"WorldMatrix","WORLD_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InvCameraMatrix","INV_CAMERA_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ProjectionMatrix","PROJECTION_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"ModelviewMatrix","MODELVIEW_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"InstanceID","INSTANCE_ID","",SLOT_TYPE_SCALAR,SLOT_IN},
+
 	//material vertex out
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","VERTEX",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","NORMAL",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","TANGENT",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Binormal","BINORMAL",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV","UV",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV2","UV2",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Color","COLOR.rgb",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Alpha","COLOR.a",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var1","VAR1.rgb",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var2","VAR2.rgb",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"SpecExp","SPEC_EXP",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"PointSize","POINT_SIZE",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Vertex","VERTEX","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Tangent","TANGENT","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Binormal","BINORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV","UV",".xy",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"UV2","UV2",".xy",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"SpecExp","SPEC_EXP","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_VERTEX,"PointSize","POINT_SIZE","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	//pixel vertex in
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Vertex","VERTEX",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Position","POSITION",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","IN_NORMAL",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Tangent","TANGENT",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Binormal","BINORMAL",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV","UV",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV2","UV2",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UVScreen","SCREEN_UV",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"InvCameraMatrix","INV_CAMERA_MATRIX",SLOT_TYPE_XFORM,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Time","TIME",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var1","VAR1.rgb",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var2","VAR2.rgb",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Vertex","VERTEX","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Position","POSITION.xyz","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","IN_NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Tangent","TANGENT","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Binormal","BINORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV","vec3(UV,0);","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV2","UV2","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UVScreen","SCREEN_UV","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"InvCameraMatrix","INV_CAMERA_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	//pixel vertex out
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Diffuse","DIFFUSE_OUT",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"DiffuseAlpha","ALPHA_OUT",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Specular","SPECULAR",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"SpecularExp","SPECULAR",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Emission","EMISSION",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Glow","GLOW",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"ShadeParam","SHADE_PARAM",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","NORMAL",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMap","NORMALMAP",SLOT_TYPE_VEC,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMapDepth","NORMALMAP_DEPTH",SLOT_TYPE_SCALAR,SLOT_OUT},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Discard","DISCARD",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Diffuse","DIFFUSE_OUT","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"DiffuseAlpha","ALPHA_OUT","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Specular","SPECULAR","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"SpecularExp","SPECULAR","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Emission","EMISSION","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Glow","GLOW","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"ShadeParam","SHADE_PARAM","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMap","NORMALMAP","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"NormalMapDepth","NORMALMAP_DEPTH","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Discard","DISCARD",">0.5",SLOT_TYPE_SCALAR,SLOT_OUT},
+	//light in
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"LightDir","LIGHT_DIR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"LightDiffuse","LIGHT_DIFFUSE","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"LightSpecular","LIGHT_SPECULAR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"EyeVec","EYE_VEC","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Diffuse","DIFFUSE","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Specular","SPECULAR","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"SpecExp","SPECULAR_EXP","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"ShadeParam","SHADE_PARAM","",SLOT_TYPE_SCALAR,SLOT_IN},
+	//light out
+	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Light","LIGHT","",SLOT_TYPE_VEC,SLOT_OUT},
 	//end
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
 
 };
 
@@ -1174,17 +1283,17 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 
 		{NODE_SCALAR_CONST,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, //scalar constant
 		{NODE_VEC_CONST,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, //vec3 constant
-		{NODE_RGB_CONST,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, //rgb constant (shows a color picker instead)
+		{NODE_RGB_CONST,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, //rgb constant (shows a color picker instead)
 		{NODE_XFORM_CONST,{SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // 4x4 matrix constant
 		{NODE_TIME,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // time in seconds
 		{NODE_SCREEN_TEX,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // screen texture sampler (takes UV) (only usable in fragment shader)
 		{NODE_SCALAR_OP,{SLOT_TYPE_SCALAR,SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // scalar vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_SCALAR_OP,{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
-		{NODE_RGB_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_TYPE_SCALAR},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
+		{NODE_RGB_OP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 vs scalar op (mul,{SLOT_MAX},{SLOT_MAX}}, add,{SLOT_MAX},{SLOT_MAX}}, div,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_XFORM_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_XFORM,SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // mat4 x mat4
 		{NODE_XFORM_VEC_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 mult (with no-translation option)
-		{NODE_XFORM_VEC_INV_MULT,{SLOT_TYPE_XFORM,SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 inverse mult (with no-translation option)
+		{NODE_XFORM_VEC_INV_MULT,{SLOT_TYPE_VEC,SLOT_TYPE_XFORM,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // mat4 x vec3 inverse mult (with no-translation option)
 		{NODE_SCALAR_FUNC,{SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar function (sin,{SLOT_MAX},{SLOT_MAX}}, cos,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_FUNC,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vector function (normalize,{SLOT_MAX},{SLOT_MAX}}, negate,{SLOT_MAX},{SLOT_MAX}}, reciprocal,{SLOT_MAX},{SLOT_MAX}}, rgb2hsv,{SLOT_MAX},{SLOT_MAX}}, hsv2rgb,{SLOT_MAX},{SLOT_MAX}}, etc,{SLOT_MAX},{SLOT_MAX}}, etc)
 		{NODE_VEC_LEN,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // vec3 length
@@ -1315,6 +1424,7 @@ ShaderGraph::SlotType ShaderGraph::get_node_input_slot_type(Mode p_mode, ShaderT
 
 			if (nsi->type==p_type) {
 				for(int i=0;i<NodeSlotInfo::MAX_INS;i++) {
+
 					if (nsi->ins[i]==SLOT_MAX)
 						break;
 					if (i==p_idx)
@@ -1381,6 +1491,14 @@ void ShaderGraph::_update_shader() {
 
 	String code[3];
 
+	List<StringName> names;
+	get_default_texture_param_list(&names);
+
+	for (List<StringName>::Element *E=names.front();E;E=E->next()) {
+		set_default_texture_param(E->get(),Ref<Texture>());
+	}
+
+
 	for(int i=0;i<3;i++) {
 
 		int idx=0;
@@ -1437,11 +1555,13 @@ void ShaderGraph::_update_shader() {
 		bool failed=false;
 
 		if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
-			code[i]+="vec3 DIFFUSE_OUT=vec3(0,0,0);";
-			code[i]+="float ALPHA_OUT=0;";
+			code[i]+="vec3 DIFFUSE_OUT=vec3(0,0,0);\n";
+			code[i]+="float ALPHA_OUT=0;\n";
 		}
 
+
 		Map<String,String> inputs_xlate;
+		Map<String,String> input_names_xlate;
 		Set<String> inputs_used;
 
 		for(int j=0;j<order.size();j++) {
@@ -1458,6 +1578,7 @@ void ShaderGraph::_update_shader() {
 
 						String vname=("nd"+itos(n->id)+"sl"+itos(idx));
 						inputs_xlate[vname]=String(typestr[iop->slot_type])+" "+vname+"="+iop->variable+";\n";
+						input_names_xlate[vname]=iop->variable;
 						idx++;
 					}
 					iop++;
@@ -1476,7 +1597,7 @@ void ShaderGraph::_update_shader() {
 							String iname=("nd"+itos(n->connections[idx].id)+"sl"+itos(n->connections[idx].slot));
 							if (node_get_type(ShaderType(i),n->connections[idx].id)==NODE_INPUT)
 								inputs_used.insert(iname);
-							code[i]+=String(iop->variable)+"="+iname+";\n";
+							code[i]+=String(iop->variable)+"="+iname+String(iop->postfix)+";\n";
 							if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL && String(iop->name)=="DiffuseAlpha")
 								use_alpha=true;
 						}
@@ -1488,8 +1609,7 @@ void ShaderGraph::_update_shader() {
 				if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
 
 					if (use_alpha) {
-						code[i]+="DIFFUSE_ALPHA.rgb=DIFFUSE_OUT;\n";
-						code[i]+="DIFFUSE_ALPHA.a=ALPHA_OUT;\n";
+						code[i]+="DIFFUSE_ALPHA=vec4(DIFFUSE_OUT,ALPHA_OUT);\n";
 					} else {
 						code[i]+="DIFFUSE=DIFFUSE_OUT;\n";
 					}
@@ -1506,13 +1626,19 @@ void ShaderGraph::_update_shader() {
 					}
 					String iname="nd"+itos(n->connections[k].id)+"sl"+itos(n->connections[k].slot);
 					inputs.push_back(iname);
-					if (node_get_type(ShaderType(i),n->connections[k].id)==NODE_INPUT)
+					if (node_get_type(ShaderType(i),n->connections[k].id)==NODE_INPUT) {
 						inputs_used.insert(iname);
+					}
 
 				}
 
 				if (failed)
 					break;
+
+				if (n->type==NODE_TEXTURE_INPUT || n->type==NODE_CUBEMAP_INPUT) {
+
+					set_default_texture_param(n->param1,n->param2);
+				}
 				_add_node_code(ShaderType(i),n,inputs,code[i]);
 			}
 
@@ -1521,13 +1647,33 @@ void ShaderGraph::_update_shader() {
 		if (failed)
 			continue;
 
+
 		for(Set<String>::Element *E=inputs_used.front();E;E=E->next()) {
 
 			ERR_CONTINUE( !inputs_xlate.has(E->get()));
 			code[i]=inputs_xlate[E->get()]+code[i];
+			String name=input_names_xlate[E->get()];
+
+			if (i==SHADER_TYPE_VERTEX && get_mode()==MODE_MATERIAL) {
+				if (name==("SRC_COLOR"))
+					code[i]="vec3 SRC_COLOR=COLOR.rgb;\n"+code[i];
+				if (name==("SRC_ALPHA"))
+					code[i]="float SRC_ALPHA=COLOR.a;\n"+code[i];
+				if (name==("SRC_UV"))
+					code[i]="vec3 SRC_UV=vec3(UV,0);\n"+code[i];
+				if (name==("SRC_UV2"))
+					code[i]="float SRC_UV2=vec3(UV2,0);\n"+code[i];
+			} else if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
+				if (name==("IN_NORMAL"))
+					code[i]="vec3 IN_NORMAL=NORMAL;\n"+code[i];
+			}
+
 		}
+
+
+
 		shader[i].error=GRAPH_OK;
-		print_line("ShADER: "+code[i]);
+
 	}
 
 	bool all_ok=true;
@@ -1540,8 +1686,9 @@ void ShaderGraph::_update_shader() {
 		set_code(code[0],code[1],code[2]);
 	}
 	//do shader here
-	print_line("UPDATING SHADER");
+
 	_pending_update_shader=false;
+	emit_signal(SceneStringNames::get_singleton()->updated);
 }
 
 void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<String>& p_inputs,String& code) {
@@ -1549,6 +1696,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 	const char *typestr[4]={"float","vec3","mat4","texture"};
 #define OUTNAME(id,slot) (String(typestr[get_node_output_slot_type(get_mode(),p_type,p_node->type,slot)])+" "+("nd"+itos(id)+"sl"+itos(slot)))
+#define OUTVAR(id,slot) ("nd"+itos(id)+"sl"+itos(slot))
 
 	switch(p_node->type) {
 
@@ -1568,6 +1716,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		case NODE_RGB_CONST: {
 			Color col = p_node->param1;
 			code+=OUTNAME(p_node->id,0)+"=vec3("+rtos(col.r)+","+rtos(col.g)+","+rtos(col.b)+");\n";
+			code+=OUTNAME(p_node->id,1)+"="+rtos(col.a)+";\n";
 		}break;
 		case NODE_XFORM_CONST: {
 
@@ -1626,16 +1775,94 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			int op = p_node->param1;
 			String optxt;
 			switch(op) {
-				case VEC_OP_MUL: optxt = p_inputs[0]+"*"+p_inputs[1]+";"; break;
-				case VEC_OP_DIV: optxt = p_inputs[0]+"/"+p_inputs[1]+";"; break;
-				case VEC_OP_POW: optxt = "pow("+p_inputs[0]+","+p_inputs[1]+");"; break;
+				case VEC_SCALAR_OP_MUL: optxt = p_inputs[0]+"*"+p_inputs[1]+";"; break;
+				case VEC_SCALAR_OP_DIV: optxt = p_inputs[0]+"/"+p_inputs[1]+";"; break;
+				case VEC_SCALAR_OP_POW: optxt = "pow("+p_inputs[0]+","+p_inputs[1]+");"; break;
 			}
 			code+=OUTNAME(p_node->id,0)+"="+optxt+"\n";
 
 		}break;
 		case NODE_RGB_OP: {
 
+			int op = p_node->param1;
+			static const char*axisn[3]={"x","y","z"};
+			switch(op) {
+				case RGB_OP_SCREEN: {
 
+					code += OUTNAME(p_node->id,0)+"=vec3(1.0)-(vec3(1.0)-"+p_inputs[0]+")*(vec3(1.0)-"+p_inputs[1]+");\n";
+				} break;
+				case RGB_OP_DIFFERENCE: {
+
+					code += OUTNAME(p_node->id,0)+"=abs("+p_inputs[0]+"-"+p_inputs[1]+");\n";
+
+				} break;
+				case RGB_OP_DARKEN: {
+
+					code += OUTNAME(p_node->id,0)+"=min("+p_inputs[0]+","+p_inputs[1]+");\n";
+				} break;
+				case RGB_OP_LIGHTEN: {
+
+					code += OUTNAME(p_node->id,0)+"=max("+p_inputs[0]+","+p_inputs[1]+");\n";
+
+				} break;
+				case RGB_OP_OVERLAY: {
+
+					code += OUTNAME(p_node->id,0)+";\n";
+					for(int i=0;i<3;i++) {
+						code += "{\n";
+						code += "\tfloat base="+p_inputs[0]+"."+axisn[i]+";\n";
+						code += "\tfloat blend="+p_inputs[1]+"."+axisn[i]+";\n";
+						code += "\tif (base < 0.5) {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = 2.0 * base * blend;\n";
+						code += "\t} else {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = 1.0 - 2.0 * (1.0 - blend) * (1.0 - base);\n";
+						code += "\t}\n";
+						code += "}\n";
+					}
+
+				} break;
+				case RGB_OP_DODGE: {
+
+					code += OUTNAME(p_node->id,0)+"=("+p_inputs[0]+")/(vec3(1.0)-"+p_inputs[1]+");\n";
+
+				} break;
+				case RGB_OP_BURN: {
+
+					code += OUTNAME(p_node->id,0)+"=vec3(1.0)-(vec3(1.0)-"+p_inputs[0]+")/("+p_inputs[1]+");\n";
+				} break;
+				case RGB_OP_SOFT_LIGHT: {
+
+					code += OUTNAME(p_node->id,0)+";\n";
+					for(int i=0;i<3;i++) {
+						code += "{\n";
+						code += "\tfloat base="+p_inputs[0]+"."+axisn[i]+";\n";
+						code += "\tfloat blend="+p_inputs[1]+"."+axisn[i]+";\n";
+						code += "\tif (base < 0.5) {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (base * (blend+0.5));\n";
+						code += "\t} else {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (1 - (1-base) * (1-(blend-0.5)));\n";
+						code += "\t}\n";
+						code += "}\n";
+					}
+
+				} break;
+				case RGB_OP_HARD_LIGHT: {
+
+					code += OUTNAME(p_node->id,0)+";\n";
+					for(int i=0;i<3;i++) {
+						code += "{\n";
+						code += "\tfloat base="+p_inputs[0]+"."+axisn[i]+";\n";
+						code += "\tfloat blend="+p_inputs[1]+"."+axisn[i]+";\n";
+						code += "\tif (base < 0.5) {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (base * (2*blend));\n";
+						code += "\t} else {\n";
+						code += "\t\t"+OUTVAR(p_node->id,0)+"."+axisn[i]+" = (1 - (1-base) * (1-2*(blend-0.5)));\n";
+						code += "\t}\n";
+						code += "}\n";
+					}
+
+				} break;
+			}
 		}break;
 		case NODE_XFORM_MULT: {
 
@@ -1646,26 +1873,85 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 			bool no_translation = p_node->param1;
 			if (no_translation) {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+"*vec4("+p_inputs[1]+",0);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[0]+"*vec4("+p_inputs[1]+",0)).xyz;\n";
 			} else {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[0]+"*vec4("+p_inputs[1]+",1);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[0]+"*vec4("+p_inputs[1]+",1)).xyz;\n";
 			}
 
 		}break;
 		case NODE_XFORM_VEC_INV_MULT: {
 			bool no_translation = p_node->param1;
 			if (no_translation) {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[1]+"*vec4("+p_inputs[0]+",0);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[1]+"*vec4("+p_inputs[0]+",0)).xyz;\n";
 			} else {
-				code += OUTNAME(p_node->id,0)+"="+p_inputs[1]+"*vec4("+p_inputs[0]+",1);\n";
+				code += OUTNAME(p_node->id,0)+"=("+p_inputs[1]+"*vec4("+p_inputs[0]+",1)).xyz;\n";
 			}
 		}break;
 		case NODE_SCALAR_FUNC: {
+			static const char*scalar_func_id[SCALAR_MAX_FUNC]={
+				"sin($)",
+				"cos($)",
+				"tan($)",
+				"asin($)",
+				"acos($)",
+				"atan($)",
+				"sinh($)",
+				"cosh($)",
+				"tanh($)",
+				"log($)",
+				"exp($)",
+				"sqrt($)",
+				"abs($)",
+				"sign($)",
+				"floor($)",
+				"round($)",
+				"ceil($)",
+				"frac($)",
+				"min(max($,0),1)",
+				"-($)",
+			};
 
+			int func = p_node->param1;
+			ERR_FAIL_INDEX(func,SCALAR_MAX_FUNC);
+			code += OUTNAME(p_node->id,0)+"="+String(scalar_func_id[func]).replace("$",p_inputs[0])+";\n";
 
-		}break;
+		} break;
 		case NODE_VEC_FUNC: {
+			static const char*vec_func_id[VEC_MAX_FUNC]={
+				"normalize($)",
+				"max(min($,vec3(1,1,1)),vec3(0,0,0))",
+				"-($)",
+				"1.0/($)",
+				"",
+				"",
+			};
 
+
+			int func = p_node->param1;
+			ERR_FAIL_INDEX(func,VEC_MAX_FUNC);
+			if (func==VEC_FUNC_RGB2HSV) {
+				code += OUTNAME(p_node->id,0)+";\n";
+				code+="{\n";
+				code+="\tvec3 c = "+p_inputs[0]+";\n";
+				code+="\tvec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);\n";
+				code+="\tvec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));\n";
+				code+="\tvec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));\n";
+				code+="\tfloat d = q.x - min(q.w, q.y);\n";
+				code+="\tfloat e = 1.0e-10;\n";
+				code+="\t"+OUTVAR(p_node->id,0)+"=vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);\n";
+				code+="}\n";
+			} else if (func==VEC_FUNC_HSV2RGB) {
+				code += OUTNAME(p_node->id,0)+";\n";;
+				code+="{\n";
+				code+="\tvec3 c = "+p_inputs[0]+";\n";
+				code+="\tvec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n";
+				code+="\tvec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);\n";
+				code+="\t"+OUTVAR(p_node->id,0)+"=c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);\n";
+				code+="}\n";
+
+			} else {
+				code += OUTNAME(p_node->id,0)+"="+String(vec_func_id[func]).replace("$",p_inputs[0])+";\n";
+			}
 		}break;
 		case NODE_VEC_LEN: {
 
@@ -1744,7 +2030,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		}break;
 		case NODE_TEXTURE_INPUT: {
 			String name = p_node->param1;
-			String rname="_read_tex"+itos(p_node->id);
+			String rname="rt_read_tex"+itos(p_node->id);
 			code +="uniform texture "+name+";";
 			code +="vec4 "+rname+"=tex("+name+","+p_inputs[0]+".xy);\n";
 			code += OUTNAME(p_node->id,0)+"="+rname+".rgb;\n";
@@ -1755,7 +2041,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 			String name = p_node->param1;
 			code +="uniform cubemap "+name+";";
-			String rname="_read_tex"+itos(p_node->id);
+			String rname="rt_read_tex"+itos(p_node->id);
 			code +="vec4 "+rname+"=texcube("+name+","+p_inputs[0]+".xy);\n";
 			code += OUTNAME(p_node->id,0)+"="+rname+".rgb;\n";
 			code += OUTNAME(p_node->id,1)+"="+rname+".a;\n";

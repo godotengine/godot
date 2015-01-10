@@ -1,4 +1,5 @@
 #include "graph_node.h"
+#include "method_bind_ext.inc"
 
 
 bool GraphNode::_set(const StringName& p_name, const Variant& p_value) {
@@ -38,9 +39,8 @@ bool GraphNode::_set(const StringName& p_name, const Variant& p_value) {
 bool GraphNode::_get(const StringName& p_name,Variant &r_ret) const{
 
 
-	print_line("get "+p_name.operator String());
-	if (!p_name.operator String().begins_with("slot/")) {
-		print_line("no begins");
+
+	if (!p_name.operator String().begins_with("slot/")) {		
 		return false;
 	}
 
@@ -68,7 +68,6 @@ bool GraphNode::_get(const StringName& p_name,Variant &r_ret) const{
 	else
 		return false;
 
-	print_line("ask for: "+p_name.operator String()+" get: "+String(r_ret));
 	return true;
 }
 void GraphNode::_get_property_list( List<PropertyInfo> *p_list) const{
@@ -539,6 +538,30 @@ void GraphNode::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_title","title"),&GraphNode::set_title);
 	ObjectTypeDB::bind_method(_MD("get_title"),&GraphNode::get_title);
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphNode::_input_event);
+
+	ObjectTypeDB::bind_method(_MD("set_slot","idx","enable_left","type_left","color_left","enable_right","type_right","color_right"),&GraphNode::set_slot);
+	ObjectTypeDB::bind_method(_MD("clear_slot","idx"),&GraphNode::clear_slot);
+	ObjectTypeDB::bind_method(_MD("clear_all_slots","idx"),&GraphNode::clear_all_slots);
+	ObjectTypeDB::bind_method(_MD("is_slot_enabled_left","idx"),&GraphNode::is_slot_enabled_left);
+	ObjectTypeDB::bind_method(_MD("get_slot_type_left","idx"),&GraphNode::get_slot_type_left);
+	ObjectTypeDB::bind_method(_MD("get_slot_color_left","idx"),&GraphNode::get_slot_color_left);
+	ObjectTypeDB::bind_method(_MD("is_slot_enabled_right","idx"),&GraphNode::is_slot_enabled_right);
+	ObjectTypeDB::bind_method(_MD("get_slot_type_right","idx"),&GraphNode::get_slot_type_right);
+	ObjectTypeDB::bind_method(_MD("get_slot_color_right","idx"),&GraphNode::get_slot_color_right);
+
+	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&GraphNode::set_offset);
+	ObjectTypeDB::bind_method(_MD("get_offset"),&GraphNode::get_offset);
+
+	ObjectTypeDB::bind_method(_MD("get_connection_output_count"),&GraphNode::get_connection_output_count);
+	ObjectTypeDB::bind_method(_MD("get_connection_input_count"),&GraphNode::get_connection_input_count);
+
+	ObjectTypeDB::bind_method(_MD("get_connection_output_pos","idx"),&GraphNode::get_connection_output_pos);
+	ObjectTypeDB::bind_method(_MD("get_connection_output_type","idx"),&GraphNode::get_connection_output_type);
+	ObjectTypeDB::bind_method(_MD("get_connection_output_color","idx"),&GraphNode::get_connection_output_color);
+	ObjectTypeDB::bind_method(_MD("get_connection_input_pos","idx"),&GraphNode::get_connection_input_pos);
+	ObjectTypeDB::bind_method(_MD("get_connection_input_type","idx"),&GraphNode::get_connection_input_type);
+	ObjectTypeDB::bind_method(_MD("get_connection_input_color","idx"),&GraphNode::get_connection_input_color);
+
 
 	ObjectTypeDB::bind_method(_MD("set_show_close_button","show"),&GraphNode::set_show_close_button);
 	ObjectTypeDB::bind_method(_MD("is_close_button_visible"),&GraphNode::is_close_button_visible);

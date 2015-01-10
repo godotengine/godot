@@ -1545,12 +1545,14 @@ void RasterizerGLES2::shader_set_default_texture_param(RID p_shader, const Strin
 
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
-	ERR_FAIL_COND(!texture_owner.owns(p_texture));
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_owner.owns(p_texture));
 
 	if (p_texture.is_valid())
 		shader->default_textures[p_name]=p_texture;
 	else
 		shader->default_textures.erase(p_name);
+
+	_shader_make_dirty(shader);
 
 }
 
@@ -1606,6 +1608,7 @@ void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_par
 			material->shader_version=0; //get default!
 		} else {
 			E->get().value=p_value;
+			E->get().inuse=true;
 		}
 	} else {
 
@@ -1613,6 +1616,7 @@ void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_par
 		ud.index=-1;
 		ud.value=p_value;
 		ud.istexture=p_value.get_type()==Variant::_RID; /// cache it being texture
+		ud.inuse=true;
 		material->shader_params[p_param]=ud; //may be got at some point, or erased
 
 	}
@@ -1644,7 +1648,7 @@ Variant RasterizerGLES2::material_get_param(RID p_material, const StringName& p_
 	}
 
 
-	if (material->shader_params.has(p_param))
+	if (material->shader_params.has(p_param) && material->shader_params[p_param].inuse)
 		return material->shader_params[p_param].value;
 	else
 		return Variant();
@@ -4876,31 +4880,46 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 
 		Material::UniformData ud;
 
-		bool keep=true;
+		bool keep=true; //keep material value
+		bool has_old = old_mparams.has(E->key());
+		bool old_inuse=has_old && old_mparams[E->key()].inuse;
 
-		if (!old_mparams.has(E->key()))
+		if (!has_old || !old_inuse)
 			keep=false;
 		else if (old_mparams[E->key()].value.get_type()!=E->value().default_value.get_type()) {
-
-			if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
+			//type changed between old and new
+			/*if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
 				if (E->value().default_value.get_type()!=Variant::_RID) //hackfor textures
 					keep=false;
 			} else if (!old_mparams[E->key()].value.is_num() || !E->value().default_value.get_type())
+				keep=false;*/
+
+			//value is invalid because type differs and default is not null
+			if (E->value().default_value.get_type()!=Variant::NIL)
 				keep=false;
 		}
 
+		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+
 		if (keep) {
 			ud.value=old_mparams[E->key()].value;
+
 			//print_line("KEEP: "+String(E->key()));
 		} else {
-			ud.value=E->value().default_value;
+			if (ud.istexture && p_material->shader_cache->default_textures.has(E->key()))
+				ud.value=p_material->shader_cache->default_textures[E->key()];
+			else
+				ud.value=E->value().default_value;
+			old_inuse=false; //if reverted to default, obviously did not work
+
 			//print_line("NEW: "+String(E->key())+" because: hasold-"+itos(old_mparams.has(E->key())));
 			//if (old_mparams.has(E->key()))
 			//	print_line(" told "+Variant::get_type_name(old_mparams[E->key()].value.get_type())+" tnew "+Variant::get_type_name(E->value().default_value.get_type()));
 		}
 
-		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+
 		ud.index=idx++;
+		ud.inuse=old_inuse;
 		mparams[E->key()]=ud;
 	}
 
@@ -5021,22 +5040,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 						E->get().value=RID(); //nullify, invalid texture
 						rid=RID();
 					}
-				} else {
-
-
 				}
-
-				if (!rid.is_valid()) {
-					//use from default textures
-					Map<StringName,RID>::Element *F=p_material->shader_cache->default_textures.find(E->key());
-					if (F) {
-						t=texture_owner.get(F->get());
-						if (!t) {
-							p_material->shader_cache->default_textures.erase(E->key());
-						}
-					}
-				}
-
 
 				glActiveTexture(GL_TEXTURE0+texcoord);
 				glUniform1i(loc,texcoord); //TODO - this could happen automatically on compile...
@@ -5061,12 +5065,6 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 		}
 
-		for (Map<StringName,RID>::Element *E=p_material->shader_cache->default_textures.front();E;E=E->next()) {
-			if (p_material->shader_params.has(E->key()))
-				continue;
-
-
-		}
 
 		if (p_material->shader_cache->has_texscreen && framebuffer.active) {
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));

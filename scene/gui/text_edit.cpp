@@ -1293,106 +1293,108 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					break;
 
 				bool valid=true;
-				if (k.mod.command || k.mod.alt || k.mod.meta)
+				if (k.mod.command || k.mod.meta)
 					valid=false;
 				
 				if (valid) {
 					
-					if (k.scancode==KEY_UP) {
-						
-						if (completion_index>0) {
-							completion_index--;
+					if (!k.mod.alt) {
+						if (k.scancode==KEY_UP) {
+
+							if (completion_index>0) {
+								completion_index--;
+								completion_current=completion_options[completion_index];
+								update();
+							}
+							accept_event();
+							return;
+						}
+
+
+						if (k.scancode==KEY_DOWN) {
+
+							if (completion_index<completion_options.size()-1) {
+								completion_index++;
+								completion_current=completion_options[completion_index];
+								update();
+							}
+							accept_event();
+							return;
+						}
+
+						if (k.scancode==KEY_PAGEUP) {
+
+							completion_index-=get_constant("completion_lines");
+							if (completion_index<0)
+								completion_index=0;
 							completion_current=completion_options[completion_index];
 							update();
+							accept_event();
+							return;
 						}
-						accept_event();
-						return;
-					}
-					
-					
-					if (k.scancode==KEY_DOWN) {
-						
-						if (completion_index<completion_options.size()-1) {
-							completion_index++;
+
+
+						if (k.scancode==KEY_PAGEDOWN) {
+
+							completion_index+=get_constant("completion_lines");
+							if (completion_index>=completion_options.size())
+								completion_index=completion_options.size()-1;
 							completion_current=completion_options[completion_index];
 							update();
+							accept_event();
+							return;
 						}
-						accept_event();
-						return;
-					}
-					
-					if (k.scancode==KEY_PAGEUP) {
-						
-						completion_index-=get_constant("completion_lines");
-						if (completion_index<0)
+
+						if (k.scancode==KEY_HOME) {
+
 							completion_index=0;
-						completion_current=completion_options[completion_index];
-						update();
-						accept_event();
-						return;
-					}
-					
-					
-					if (k.scancode==KEY_PAGEDOWN) {
-						
-						completion_index+=get_constant("completion_lines");
-						if (completion_index>=completion_options.size())
-							completion_index=completion_options.size()-1;
-						completion_current=completion_options[completion_index];
-						update();
-						accept_event();
-						return;
-					}
-					
-					if (k.scancode==KEY_HOME) {
-						
-						completion_index=0;
-						completion_current=completion_options[completion_index];
-						update();
-						accept_event();
-						return;
-					}
-					
-					if (k.scancode==KEY_END) {
-						
-						completion_index=completion_options.size()-1;
-						completion_current=completion_options[completion_index];
-						update();
-						accept_event();
-						return;
-					}
-					
-					
-					if (k.scancode==KEY_DOWN) {
-						
-						if (completion_index<completion_options.size()-1) {
-							completion_index++;
 							completion_current=completion_options[completion_index];
 							update();
+							accept_event();
+							return;
 						}
-						accept_event();
-						return;
-					}
-					
-					if (k.scancode==KEY_RETURN || k.scancode==KEY_TAB) {
-						
-						_confirm_completion();
-						accept_event();
-						return;
-					}
-					
-					if (k.scancode==KEY_BACKSPACE) {
-						
-						backspace_at_cursor();
-						_update_completion_candidates();
-						accept_event();
-						return;
-					}
-					
-					
-					if (k.scancode==KEY_SHIFT) {
-						accept_event();
-						return;
+
+						if (k.scancode==KEY_END) {
+
+							completion_index=completion_options.size()-1;
+							completion_current=completion_options[completion_index];
+							update();
+							accept_event();
+							return;
+						}
+
+
+						if (k.scancode==KEY_DOWN) {
+
+							if (completion_index<completion_options.size()-1) {
+								completion_index++;
+								completion_current=completion_options[completion_index];
+								update();
+							}
+							accept_event();
+							return;
+						}
+
+						if (k.scancode==KEY_RETURN || k.scancode==KEY_TAB) {
+
+							_confirm_completion();
+							accept_event();
+							return;
+						}
+
+						if (k.scancode==KEY_BACKSPACE) {
+
+							backspace_at_cursor();
+							_update_completion_candidates();
+							accept_event();
+							return;
+						}
+
+
+						if (k.scancode==KEY_SHIFT) {
+							accept_event();
+							return;
+						}
 					}
 					
 					if (k.unicode>32) {
@@ -1972,7 +1974,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 				} break;
 					
 				case KEY_U:{
-					if (!k.mod.command || k.mod.shift || k.mod.alt) {
+					if (!k.mod.command || k.mod.shift) {
 						scancode_handled=false;
 						break;
 					}
@@ -2018,7 +2020,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 		}
 	    }
 */
-			if (!scancode_handled && !k.mod.command && !k.mod.alt) { //for german kbds
+			if (!scancode_handled && !k.mod.command) { //for german kbds
 				
 				if (k.unicode>=32) {
 					

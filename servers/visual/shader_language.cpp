@@ -768,16 +768,20 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	//constructors
 	{"bool",TYPE_BOOL,{TYPE_BOOL,TYPE_VOID}},
 	{"float",TYPE_FLOAT,{TYPE_FLOAT,TYPE_VOID}},
+	{"vec2",TYPE_VEC2,{TYPE_FLOAT,TYPE_VOID}},
 	{"vec2",TYPE_VEC2,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"vec3",TYPE_VEC3,{TYPE_FLOAT,TYPE_VOID}},
 	{"vec3",TYPE_VEC3,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"vec3",TYPE_VEC3,{TYPE_VEC2,TYPE_FLOAT,TYPE_VOID}},
 	{"vec3",TYPE_VEC3,{TYPE_FLOAT,TYPE_VEC2,TYPE_VOID}},
+	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC2,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_VEC2,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_FLOAT,TYPE_VEC2,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC3,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_VEC3,TYPE_FLOAT,TYPE_VOID}},
+	{"vec4",TYPE_VEC4,{TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
 	{"mat3",TYPE_MAT3,{TYPE_VEC3,TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
 	{"mat4",TYPE_MAT4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
 	//intrinsics - trigonometry
@@ -856,6 +860,9 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"clamp",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
 	{"clamp",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
 	{"clamp",TYPE_VEC4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
+	{"clamp",TYPE_VEC2,{TYPE_VEC2,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"clamp",TYPE_VEC3,{TYPE_VEC3,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
+	{"clamp",TYPE_VEC4,{TYPE_VEC4,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_FLOAT,TYPE_VOID}},
 	{"mix",TYPE_VEC2,{TYPE_VEC2,TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
@@ -1047,7 +1054,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::vertex_builtins_defs[]={
 const ShaderLanguage::BuiltinsDef ShaderLanguage::fragment_builtins_defs[]={
 
 	{ "VERTEX", TYPE_VEC3},
-	{ "POSITION", TYPE_VEC3},
+	{ "POSITION", TYPE_VEC4},
 	{ "NORMAL", TYPE_VEC3},
 	{ "TANGENT", TYPE_VEC3},
 	{ "BINORMAL", TYPE_VEC3},
@@ -1210,9 +1217,25 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 			Variant data;
 			switch(p_func->return_cache) {
 				case TYPE_FLOAT: data = cdata[0]; break;
-				case TYPE_VEC2: data = Vector2(cdata[0],cdata[1]); break;
-				case TYPE_VEC3: data = Vector3(cdata[0],cdata[1],cdata[2]); break;
-				case TYPE_VEC4: data = Plane(cdata[0],cdata[1],cdata[2],cdata[3]); break;
+				case TYPE_VEC2:
+					if (cdata.size()==1)
+						data = Vector2(cdata[0],cdata[0]);
+					else
+						data = Vector2(cdata[0],cdata[1]);
+
+					break;
+				case TYPE_VEC3:
+					if (cdata.size()==1)
+						data = Vector3(cdata[0],cdata[0],cdata[0]);
+					else
+						data = Vector3(cdata[0],cdata[1],cdata[2]);
+					break;
+				case TYPE_VEC4:
+					if (cdata.size()==1)
+						data = Plane(cdata[0],cdata[0],cdata[0],cdata[0]);
+					else
+						data = Plane(cdata[0],cdata[1],cdata[2],cdata[3]);
+					break;
 			}
 
 			cn->datatype=p_func->return_cache;
