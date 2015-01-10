@@ -487,7 +487,7 @@ struct test_27_data {
 
 bool test_27() {
 
-	OS::get_singleton()->print("\n\nTest 26: begins_with\n");
+	OS::get_singleton()->print("\n\nTest 27: begins_with\n");
 	test_27_data tc[] = {
 		{"res://foobar", "res://", true},
 		{"res", "res://", false},
@@ -504,10 +504,86 @@ bool test_27() {
 		}
 		if (!state) {
 			OS::get_singleton()->print("\n\t Failure on:\n\t\tstring: ", tc[i].data, "\n\t\tbegin: ", tc[i].begin, "\n\t\texpected: ", tc[i].expected ? "true" : "false", "\n");
+			break;
 		}
 	};
 	return state;
 };
+
+
+bool test_28() {
+
+	OS::get_singleton()->print("\n\nTest 28: sprintf\n");
+
+	bool success, state = true;
+	char output_format[] = "\tTest:\t%ls => %ls (%s)\n";
+	String format, output;
+	Array args;
+	
+	// %%
+	format = "fish %% frog";
+	args.clear();
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish % frog"));
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Int
+	format = "fish %d frog";
+	args.clear();
+	args.push_back(5);
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish 5 frog"));
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Hex (lower)
+	format = "fish %x frog";
+	args.clear();
+	args.push_back(45);
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish 2d frog"));
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Hex (upper)
+	format = "fish %X frog";
+	args.clear();
+	args.push_back(45);
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish 2D frog"));
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Octal
+	format = "fish %o frog";
+	args.clear();
+	args.push_back(99);
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish 143 frog"));
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// Real
+	format = "fish %f frog";
+	args.clear();
+	args.push_back(99.99);
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish 99.990000 frog"));
+	OS::get_singleton()->print(output_format, format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	// String
+	format = "fish %s frog";
+	args.clear();
+	args.push_back("cheese");
+	output = format.sprintf(args);
+	success = (format.sprintf(args) == String("fish cheese frog"));
+	OS::get_singleton()->print(output_format , format.c_str(), output.c_str(), success ? "OK" : "FAIL");
+	if (!success) state = false;
+
+	return state;
+}
 
 typedef bool (*TestFunc)(void);
 
@@ -540,6 +616,7 @@ TestFunc test_funcs[] = {
 	test_25,
 	test_26,
 	test_27,
+	test_28,
 	0
 	
 };

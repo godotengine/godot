@@ -31,6 +31,7 @@
 
 #include "typedefs.h"
 #include "vector.h"
+#include "array.h"
 
 /**
 	@author red <red@killy>
@@ -127,6 +128,7 @@ public:
 	String insert(int p_at_pos,String p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
+	String sprintf(const Array& values) const;
 	static String num(double p_num,int p_decimals=-1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num);
@@ -203,7 +205,7 @@ public:
 	String xml_unescape() const;
 	String c_escape() const;
 	String c_unescape() const;
-
+	
 	String percent_encode() const;
 	String percent_decode() const;
 

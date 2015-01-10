@@ -736,6 +736,20 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				}
 #endif
 				_RETURN( p_a._data._int % p_b._data._int );
+				
+			} else if (p_a.type==STRING) {
+				const String *str=reinterpret_cast<const String*>(p_a._data._mem);
+
+				if (p_b.type==ARRAY) {
+					// e.g. "frog %s %d" % ["fish", 12]
+					const Array *arr=reinterpret_cast<const Array*>(p_b._data._mem);
+					_RETURN(str->sprintf(*arr));
+				} else {
+					// e.g. "frog %d" % 12
+					Array arr;
+					arr.push_back(p_b);
+					_RETURN(str->sprintf(arr));
+				}
 			}
 
 			r_valid=false;

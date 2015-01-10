@@ -34,6 +34,8 @@
 #include "io/md5.h"
 #include "ucaps.h"
 #include "color.h"
+#include "variant.h"
+#include <stdio.h>
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
@@ -3518,4 +3520,100 @@ String rtoss(double p_val) {
 	return String::num_scientific(p_val);
 }
 
+// sprintf is implemented in GDScript via:
+//   "fish %s pie" % "frog"
+//   "fish %s %d pie" % ["frog", 12]
+const int FORMAT_BUFFER_SIZE = 1024;
+const int OUTPUT_BUFFER_SIZE = 1024 * 100;
+String String::sprintf(const Array& values) const {
 
+	String formatted;
+	CharType* self = (CharType*)c_str();
+	bool in_format = false;
+	int value_index = 0;
+	char format_format[FORMAT_BUFFER_SIZE] = "%d";
+
+	for (; *self; self++) {
+		const CharType c = *self;
+
+		if (in_format) { // We have % - lets see what else we get.
+			switch (c) {
+				case '%': // Manage %% as %
+					formatted += chr(c);
+					in_format = false;
+					break;
+
+				case 'd': // Integer (signed)
+				case 'o': // Octal
+				case 'x': // Hexadecimal (lowercase)
+				case 'X': // Hexadecimal (uppercase)
+					if (values[value_index].is_num()) {
+						char buffer[OUTPUT_BUFFER_SIZE];
+						int value = values[value_index]; 
+						format_format[1] = c;
+						format_format[2] = 0;
+						::sprintf(buffer, format_format, value);
+						
+						formatted += String(buffer);
+						++value_index;
+						in_format = false;
+					} else {
+						// TODO: Error?
+					}
+					
+					break;
+
+				case 'f': // Float
+					if (values[value_index].is_num()) {
+						char buffer[OUTPUT_BUFFER_SIZE];
+						double value = values[value_index];
+						::sprintf(buffer, "%f", value);
+
+						formatted += String(buffer);
+						++value_index;
+						in_format = false;
+					} else {
+						// TODO: Error?
+					}
+					
+					break;
+
+				case 's': // String
+					String value = values[value_index];
+					formatted += value;
+					++value_index;
+					in_format = false;
+					break;
+
+				// case '-': // Left justify
+				// 	break;
+
+				// case '+': // Show + if positive.
+				// 	break;
+
+				// case '0': case '1': case '2': case '3': case '4':
+				// case '5': case '6': case '7': case '8': case '9':
+				// 	break;
+
+				// case '.': // Float separtor.
+				// 	break;
+
+				// case '*': // Dyanmic width, based on value.
+				// 	break;
+
+				//default:
+					// TODO: error?
+			}
+		} else { // Not in format string.
+			switch (c) {
+				case '%':
+					in_format = true;
+					break;
+				default:
+					formatted += chr(c);
+			}
+		}
+	}
+
+	return formatted;
+}
