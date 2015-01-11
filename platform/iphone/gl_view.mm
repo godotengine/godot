@@ -307,11 +307,7 @@ static void clear_touches() {
 										nil];
 	
 	// Create our EAGLContext, and if successful make it current and create our framebuffer.
-#ifdef GLES1_OVERRIDE
-	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-#else
 	context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
-#endif
 
 	if(!context || ![EAGLContext setCurrentContext:context] || ![self createFramebuffer])
 	{

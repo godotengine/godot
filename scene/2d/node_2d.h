@@ -38,6 +38,7 @@ class Node2D : public CanvasItem {
 	Point2 pos;
 	float angle;
 	Size2 scale;
+	int z;
 
 	Matrix32 _mat;
 
@@ -84,6 +85,9 @@ public:
 	void set_transform(const Matrix32& p_transform);
 	void set_global_transform(const Matrix32& p_transform);
 	void set_global_pos(const Point2& p_pos);
+
+	void set_z(int p_z);
+	int get_z() const;
 
 
 	Matrix32 get_transform() const;

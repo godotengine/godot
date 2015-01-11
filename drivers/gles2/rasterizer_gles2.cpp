@@ -8215,6 +8215,217 @@ void RasterizerGLES2::canvas_set_transform(const Matrix32& p_transform) {
 	//canvas_transform = Variant(p_transform);
 }
 
+void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
+
+
+	CanvasItem *current_clip=NULL;
+
+
+	while(p_item_list) {
+
+		CanvasItem *ci=p_item_list;
+
+		if (ci->vp_render) {
+			if (draw_viewport_func) {
+				draw_viewport_func(ci->vp_render->owner,ci->vp_render->udata,ci->vp_render->rect);
+			}
+			memdelete(ci->vp_render);
+			ci->vp_render=NULL;
+		}
+
+		if (current_clip!=ci->final_clip_owner) {
+
+			current_clip=ci->final_clip_owner;
+
+			//setup clip
+			if (current_clip) {
+
+				glEnable(GL_SCISSOR_TEST);
+				glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+				current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+			} else {
+
+				glDisable(GL_SCISSOR_TEST);
+			}
+		}
+		//begin rect
+		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);
+		canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+
+		bool reclip=false;
+
+		if (ci==p_item_list || ci->blend_mode!=canvas_blend_mode) {
+
+			switch(ci->blend_mode) {
+
+				 case VS::MATERIAL_BLEND_MODE_MIX: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+				 } break;
+				 case VS::MATERIAL_BLEND_MODE_ADD: {
+
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+
+				 } break;
+				 case VS::MATERIAL_BLEND_MODE_SUB: {
+
+					glBlendEquation(GL_FUNC_SUBTRACT);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+				 } break;
+				case VS::MATERIAL_BLEND_MODE_MUL: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_DST_COLOR,GL_ZERO);
+				} break;
+				case VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+				} break;
+
+			}
+
+			canvas_blend_mode=ci->blend_mode;
+		}
+
+		int cc=ci->commands.size();
+		CanvasItem::Command **commands = ci->commands.ptr();
+
+		for(int i=0;i<cc;i++) {
+
+			CanvasItem::Command *c=commands[i];
+
+			switch(c->type) {
+				case CanvasItem::Command::TYPE_LINE: {
+
+					CanvasItem::CommandLine* line = static_cast<CanvasItem::CommandLine*>(c);
+					canvas_draw_line(line->from,line->to,line->color,line->width);
+				} break;
+				case CanvasItem::Command::TYPE_RECT: {
+
+					CanvasItem::CommandRect* rect = static_cast<CanvasItem::CommandRect*>(c);
+//						canvas_draw_rect(rect->rect,rect->region,rect->source,rect->flags&CanvasItem::CommandRect::FLAG_TILE,rect->flags&CanvasItem::CommandRect::FLAG_FLIP_H,rect->flags&CanvasItem::CommandRect::FLAG_FLIP_V,rect->texture,rect->modulate);
+#if 0
+					int flags=0;
+
+					if (rect->flags&CanvasItem::CommandRect::FLAG_REGION) {
+						flags|=Rasterizer::CANVAS_RECT_REGION;
+					}
+					if (rect->flags&CanvasItem::CommandRect::FLAG_TILE) {
+						flags|=Rasterizer::CANVAS_RECT_TILE;
+					}
+					if (rect->flags&CanvasItem::CommandRect::FLAG_FLIP_H) {
+
+						flags|=Rasterizer::CANVAS_RECT_FLIP_H;
+					}
+					if (rect->flags&CanvasItem::CommandRect::FLAG_FLIP_V) {
+
+						flags|=Rasterizer::CANVAS_RECT_FLIP_V;
+					}
+#else
+
+					int flags=rect->flags;
+#endif
+					canvas_draw_rect(rect->rect,flags,rect->source,rect->texture,rect->modulate);
+
+				} break;
+				case CanvasItem::Command::TYPE_STYLE: {
+
+					CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
+					canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
+
+				} break;
+				case CanvasItem::Command::TYPE_PRIMITIVE: {
+
+					CanvasItem::CommandPrimitive* primitive = static_cast<CanvasItem::CommandPrimitive*>(c);
+					canvas_draw_primitive(primitive->points,primitive->colors,primitive->uvs,primitive->texture,primitive->width);
+				} break;
+				case CanvasItem::Command::TYPE_POLYGON: {
+
+					CanvasItem::CommandPolygon* polygon = static_cast<CanvasItem::CommandPolygon*>(c);
+					canvas_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
+
+				} break;
+
+				case CanvasItem::Command::TYPE_POLYGON_PTR: {
+
+					CanvasItem::CommandPolygonPtr* polygon = static_cast<CanvasItem::CommandPolygonPtr*>(c);
+					canvas_draw_polygon(polygon->count,polygon->indices,polygon->points,polygon->uvs,polygon->colors,polygon->texture,false);
+				} break;
+				case CanvasItem::Command::TYPE_CIRCLE: {
+
+					CanvasItem::CommandCircle* circle = static_cast<CanvasItem::CommandCircle*>(c);
+					static const int numpoints=32;
+					Vector2 points[numpoints+1];
+					points[numpoints]=circle->pos;
+					int indices[numpoints*3];
+
+					for(int i=0;i<numpoints;i++) {
+
+						points[i]=circle->pos+Vector2( Math::sin(i*Math_PI*2.0/numpoints),Math::cos(i*Math_PI*2.0/numpoints) )*circle->radius;
+						indices[i*3+0]=i;
+						indices[i*3+1]=(i+1)%numpoints;
+						indices[i*3+2]=numpoints;
+					}
+					canvas_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
+					//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
+				} break;
+				case CanvasItem::Command::TYPE_TRANSFORM: {
+
+					CanvasItem::CommandTransform* transform = static_cast<CanvasItem::CommandTransform*>(c);
+					canvas_set_transform(transform->xform);
+				} break;
+				case CanvasItem::Command::TYPE_BLEND_MODE: {
+
+					CanvasItem::CommandBlendMode* bm = static_cast<CanvasItem::CommandBlendMode*>(c);
+					canvas_set_blend_mode(bm->blend_mode);
+
+				} break;
+				case CanvasItem::Command::TYPE_CLIP_IGNORE: {
+
+					CanvasItem::CommandClipIgnore* ci = static_cast<CanvasItem::CommandClipIgnore*>(c);
+					if (current_clip) {
+
+						if (ci->ignore!=reclip) {
+							if (ci->ignore) {
+
+								glDisable(GL_SCISSOR_TEST);
+								reclip=true;
+							} else  {
+
+								glEnable(GL_SCISSOR_TEST);
+								glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+								current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+								reclip=false;
+							}
+						}
+					}
+
+
+
+				} break;
+			}
+		}
+
+
+		if (reclip) {
+
+			glEnable(GL_SCISSOR_TEST);
+			glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+			current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+		}
+
+
+
+		p_item_list=p_item_list->next;
+	}
+
+	if (current_clip) {
+		glDisable(GL_SCISSOR_TEST);
+	}
+
+}
+
 /* ENVIRONMENT */
 
 RID RasterizerGLES2::environment_create() {

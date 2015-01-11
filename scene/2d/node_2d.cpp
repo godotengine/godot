@@ -289,6 +289,21 @@ void Node2D::set_global_transform(const Matrix32& p_transform) {
 
 }
 
+void Node2D::set_z(int p_z) {
+
+	ERR_FAIL_COND(p_z<-VS::CANVAS_ITEM_Z_DEFAULT);
+	ERR_FAIL_COND(p_z>=VS::CANVAS_ITEM_Z_DEFAULT);
+	z=p_z;
+	VS::get_singleton()->canvas_item_set_z(get_canvas_item(),z+VS::CANVAS_ITEM_Z_DEFAULT);
+
+}
+
+int Node2D::get_z() const{
+
+	return z;
+}
+
+
 void Node2D::_bind_methods() {
 
 
@@ -308,17 +323,21 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
 
+	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Node2D::set_global_pos);
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
-	ObjectTypeDB::bind_method(_MD("set_global_pos"),&Node2D::set_global_pos);
 
 	ObjectTypeDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);
+
+	ObjectTypeDB::bind_method(_MD("set_z","z"),&Node2D::set_z);
+	ObjectTypeDB::bind_method(_MD("get_z"),&Node2D::get_z);
 
 	ObjectTypeDB::bind_method(_MD("edit_set_pivot"),&Node2D::edit_set_pivot);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"visibility/z",PROPERTY_HINT_RANGE,"-512,511,1"),_SCS("set_z"),_SCS("get_z"));
 
 
 
@@ -331,6 +350,7 @@ Node2D::Node2D() {
 	angle=0;
 	scale=Vector2(1,1);
 	_xform_dirty=false;
+	z=0;
 
 }
 

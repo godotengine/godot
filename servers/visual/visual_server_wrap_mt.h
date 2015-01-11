@@ -1131,6 +1131,8 @@ public:
 	FUNC2(canvas_item_add_clip_ignore,RID, bool );
 
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
+	FUNC2(canvas_item_set_z,RID,int);
+
 
 	FUNC1(canvas_item_clear,RID);
 	FUNC1(canvas_item_raise,RID);

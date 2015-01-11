@@ -28,7 +28,6 @@
 /*************************************************************************/
 #include "servers/visual/visual_server_raster.h"
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
 #include "os_x11.h"
 #include "key_mapping_x11.h"
 #include <stdio.h>
@@ -63,11 +62,11 @@
 
 int OS_X11::get_video_driver_count() const {
 
-	return 2;
+	return 1;
 }
 const char * OS_X11::get_video_driver_name(int p_driver) const {
 
-	return p_driver==0?"GLES2":"GLES1";
+	return "GLES2";
 }
 OS::VideoMode OS_X11::get_default_video_mode() const {
 
@@ -178,10 +177,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
 	context_gl->initialize();
 
-	if (p_video_driver == 0) {
+	if (true) {
 		rasterizer = memnew( RasterizerGLES2 );
 	} else {
-		rasterizer = memnew( RasterizerGLES1 );
+		//rasterizer = memnew( RasterizerGLES1 );
 	};
 
 #endif
