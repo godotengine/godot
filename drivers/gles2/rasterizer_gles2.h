@@ -191,6 +191,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool writes_vertex;
 		bool uses_discard;
 		bool uses_time;
+		bool uses_normal;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
@@ -214,6 +215,7 @@ class RasterizerGLES2 : public Rasterizer {
 			writes_vertex=false;
 			uses_discard=false;
 			uses_time=false;
+			uses_normal=false;
 		}
 
 
@@ -1199,7 +1201,7 @@ class RasterizerGLES2 : public Rasterizer {
 	RID overdraw_material;
 
 	mutable MaterialShaderGLES2 material_shader;
-	CanvasShaderGLES2 canvas_shader;
+	mutable CanvasShaderGLES2 canvas_shader;
 	BlurShaderGLES2 blur_shader;
 	CopyShaderGLES2 copy_shader;
 

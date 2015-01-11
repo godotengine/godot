@@ -1411,6 +1411,9 @@ void RasterizerGLES2::shader_set_mode(RID p_shader,VS::ShaderMode p_mode) {
 			case VS::SHADER_MATERIAL: {
 				material_shader.free_custom_shader(shader->custom_code_id);
 			} break;
+			case VS::SHADER_CANVAS_ITEM: {
+				canvas_shader.free_custom_shader(shader->custom_code_id);
+			} break;
 		}
 
 		shader->custom_code_id=0;
@@ -1421,6 +1424,9 @@ void RasterizerGLES2::shader_set_mode(RID p_shader,VS::ShaderMode p_mode) {
 	switch(shader->mode) {
 		case VS::SHADER_MATERIAL: {
 			shader->custom_code_id=material_shader.create_custom_shader();
+		} break;
+		case VS::SHADER_CANVAS_ITEM: {
+			shader->custom_code_id=canvas_shader.create_custom_shader();
 		} break;
 	}
 	_shader_make_dirty(shader);
@@ -4518,7 +4524,33 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 
 		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
-	} else {
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+
+		Vector<const char*> enablers;
+
+		if (light_flags.uses_time || fragment_flags.uses_time || vertex_flags.uses_time) {
+			enablers.push_back("#define USE_TIME\n");
+			uses_time=true;
+		}
+		if (fragment_flags.uses_normal) {
+			enablers.push_back("#define NORMAL_USED\n");
+		}
+		if (light_flags.uses_light) {
+			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
+		}
+		if (fragment_flags.use_var1_interp || vertex_flags.use_var1_interp)
+			enablers.push_back("#define ENABLE_VAR1_INTERP\n");
+		if (fragment_flags.use_var2_interp || vertex_flags.use_var2_interp)
+			enablers.push_back("#define ENABLE_VAR2_INTERP\n");
+		if (fragment_flags.uses_texscreen) {
+			enablers.push_back("#define ENABLE_TEXSCREEN\n");
+		}
+		if (fragment_flags.uses_screen_uv) {
+			enablers.push_back("#define ENABLE_SCREEN_UV\n");
+		}
+
+		canvas_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
+
 		//postprocess_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, fragment_globals,uniform_names);
 	}
 
@@ -4529,6 +4561,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	p_shader->has_texscreen=fragment_flags.uses_texscreen;
 	p_shader->has_screen_uv=fragment_flags.uses_screen_uv;
 	p_shader->can_zpass=!fragment_flags.uses_discard && !vertex_flags.vertex_code_writes_vertex;
+	p_shader->uses_normal=fragment_flags.uses_normal || light_flags.uses_normal;
 	p_shader->uses_time=uses_time;
 	p_shader->version++;
 
@@ -7722,6 +7755,7 @@ void RasterizerGLES2::canvas_begin() {
 	canvas_tex=RID();
 	//material_shader.unbind();
 	canvas_shader.unbind();
+	canvas_shader.set_custom_shader(0);
 	canvas_shader.bind();
 	canvas_shader.set_uniform(CanvasShaderGLES2::TEXTURE, 0);
 	_set_color_attrib(Color(1,1,1));
@@ -8219,7 +8253,19 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 
 	CanvasItem *current_clip=NULL;
+	RID last_shader;
 
+	Transform canvas_transform;
+	canvas_transform.translate(-(viewport.width / 2.0f), -(viewport.height / 2.0f), 0.0f);
+	float csy = 1.0;
+	if (current_rt && current_rt_vflip)
+		csy = -1.0;
+
+	canvas_transform.scale( Vector3( 2.0f / viewport.width, csy * -2.0f / viewport.height, 1.0f ) );
+
+
+	canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
+	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
 
 	while(p_item_list) {
 
@@ -8231,6 +8277,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 			}
 			memdelete(ci->vp_render);
 			ci->vp_render=NULL;
+			last_shader=RID();
 		}
 
 		if (current_clip!=ci->final_clip_owner) {
@@ -8248,9 +8295,85 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				glDisable(GL_SCISSOR_TEST);
 			}
 		}
+
+
 		//begin rect
+
+		if (ci->shader!=last_shader) {
+
+			Shader *shader = NULL;
+			if (ci->shader.is_valid()) {
+				shader = shader_owner.get(ci->shader);
+				if (shader && !shader->valid) {
+					shader=NULL;
+				}
+			}
+
+			if (shader) {
+				canvas_shader.set_custom_shader(shader->custom_code_id);
+				canvas_shader.bind();
+
+				if (ci->shader_version!=shader->version) {
+					//todo optimize uniforms
+					ci->shader_version=shader->version;
+				}
+				//this can be optimized..
+				int tex_id=1;
+				int idx=0;
+				for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
+
+
+					Map<StringName,Variant>::Element *F=ci->shader_param.find(E->key());
+					Variant &v=F?F->get():E->get().default_value;
+					if (v.get_type()==Variant::_RID || v.get_type()==Variant::OBJECT) {
+						int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
+
+						glActiveTexture(GL_TEXTURE0+tex_id);
+						RID tex = v;
+						Texture *t=texture_owner.get(tex);
+						if (!t)
+							glBindTexture(GL_TEXTURE_2D,white_tex);
+						else
+							glBindTexture(t->target,t->tex_id);
+
+						glUniform1i(loc,tex_id);
+						tex_id++;
+
+					} else {
+						canvas_shader.set_custom_uniform(idx,v);
+					}
+
+					idx++;
+				}
+
+
+				if (shader->has_texscreen && framebuffer.active) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
+					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_TEX,tex_id);
+					glActiveTexture(GL_TEXTURE0+tex_id);
+					glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
+
+				}
+				if (shader->has_screen_uv) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
+				}
+
+				if (shader->uses_time) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::TIME,Math::fmod(last_time,300.0));
+					draw_next_frame=true;
+				}
+					//if uses TIME - draw_next_frame=true
+
+			} else {
+				canvas_shader.set_custom_shader(0);
+			}
+
+			canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
+		}
+
 		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);
 		canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+
 
 		bool reclip=false;
 
@@ -8290,6 +8413,8 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 		int cc=ci->commands.size();
 		CanvasItem::Command **commands = ci->commands.ptr();
+
+		canvas_opacity = ci->final_opacity;
 
 		for(int i=0;i<cc;i++) {
 

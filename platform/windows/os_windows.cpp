@@ -134,7 +134,7 @@ int OS_Windows::get_video_driver_count() const {
 }
 const char * OS_Windows::get_video_driver_name(int p_driver) const {
 
-	return p_driver=="GLES2";
+	return "GLES2";
 }
 
 OS::VideoMode OS_Windows::get_default_video_mode() const {

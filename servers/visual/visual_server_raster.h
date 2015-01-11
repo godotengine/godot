@@ -1110,6 +1110,11 @@ public:
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	virtual void canvas_item_set_z(RID p_item, int p_z);
 
+	virtual void canvas_item_set_shader(RID p_item, RID p_shader);
+	virtual RID canvas_item_get_shader(RID p_item) const;
+
+	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value);
+	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const;
 
 	virtual void canvas_item_clear(RID p_item);
 	virtual void canvas_item_raise(RID p_item);

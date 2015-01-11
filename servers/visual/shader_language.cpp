@@ -1105,6 +1105,60 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::light_builtins_defs[]={
 
 };
 
+
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
+
+	{ "SRC_VERTEX", TYPE_VEC2},
+	{ "VERTEX", TYPE_VEC2},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "POINT_SIZE", TYPE_FLOAT},
+
+	//builtins
+	{ "WORLD_MATRIX", TYPE_MAT4},
+	{ "PROJECTION_MATRIX", TYPE_MAT4},
+	{ "EXTRA_MATRIX", TYPE_MAT4},
+	{ "MODELVIEW_MATRIX", TYPE_MAT4},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID},
+};
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
+
+	{ "POSITION", TYPE_VEC4},
+	{ "NORMAL", TYPE_VEC3},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "TEXTURE", TYPE_TEXTURE},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "SCREEN_UV", TYPE_VEC2},
+	{ "POINT_COORD", TYPE_VEC2},
+
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_light_builtins_defs[]={
+
+	{ "COLOR", TYPE_VEC4},
+	{ "NORMAL", TYPE_VEC3},
+	{ "LIGHT_DIR", TYPE_VEC2},
+	{ "LIGHT_DISTANCE", TYPE_FLOAT},
+	{ "LIGHT", TYPE_VEC3},
+	{ "POINT_COORD", TYPE_VEC2},
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
 const ShaderLanguage::BuiltinsDef ShaderLanguage::postprocess_fragment_builtins_defs[]={
 
 	{ "IN_COLOR", TYPE_VEC3},
@@ -2468,6 +2522,27 @@ Error ShaderLanguage::parse(const Vector<Token>& p_tokens,ShaderType p_type,Comp
 			int idx=0;
 			while (light_builtins_defs[idx].name) {
 				parser.program->builtin_variables[light_builtins_defs[idx].name]=light_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_VERTEX: {
+			int idx=0;
+			while (ci_vertex_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_vertex_builtins_defs[idx].name]=ci_vertex_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_FRAGMENT: {
+			int idx=0;
+			while (ci_fragment_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_fragment_builtins_defs[idx].name]=ci_fragment_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_LIGHT: {
+			int idx=0;
+			while (ci_light_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_light_builtins_defs[idx].name]=ci_light_builtins_defs[idx].type;
 				idx++;
 			}
 		} break;

@@ -692,6 +692,9 @@ public:
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		CanvasItem*next;
+		RID shader;
+		Map<StringName,Variant> shader_param;
+		uint32_t shader_version;
 
 
 		float final_opacity;
@@ -824,8 +827,8 @@ public:
 			return rect;
 		}
 
-		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;}
-		CanvasItem() { vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; }
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  }
+		CanvasItem() { vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0;}
 		virtual ~CanvasItem() { clear(); }
 	};
 

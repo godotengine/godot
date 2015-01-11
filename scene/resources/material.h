@@ -253,68 +253,6 @@ public:
 
 
 
-class ParticleSystemMaterial : public Material {
-
-	OBJ_TYPE( ParticleSystemMaterial, Material );
-	REVERSE_GET_PROPERTY_LIST
-
-private:
-
-
-
-	Ref<Texture> texture;
-
-protected:
-
-
-	static void _bind_methods();
-
-public:
-
-	void set_texture(const Ref<Texture>& p_texture);
-	Ref<Texture> get_texture() const;
-
-
-	ParticleSystemMaterial();
-	~ParticleSystemMaterial();
-
-};
-
-///////////////////////////////////////////
-
-
-class UnshadedMaterial : public Material {
-
-	OBJ_TYPE( UnshadedMaterial, Material );
-	REVERSE_GET_PROPERTY_LIST
-
-private:
-
-
-	bool alpha;
-	bool color_array;
-	Ref<Texture> texture;
-
-protected:
-
-
-	static void _bind_methods();
-
-public:
-
-	void set_texture(const Ref<Texture>& p_texture);
-	Ref<Texture> get_texture() const;
-
-	void set_use_alpha(bool p_use_alpha);
-	bool is_using_alpha() const;
-
-	void set_use_color_array(bool p_use_color_array);
-	bool is_using_color_array() const;
-
-	UnshadedMaterial();
-	~UnshadedMaterial();
-
-};
 
 
 #endif
