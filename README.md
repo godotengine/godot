@@ -1,3 +1,21 @@
+### x11-window-management branch
+
+#### New GDScript Methods for the OS Class:
+* int OS.get_screen_count()
+* Vector2 OS.get_screen_size(int screen=0)
+* Vector2 OS.get_window_position()
+* void OS.set_window_position(Vector2 position)
+* Vector2 OS.get_window_size()
+* void OS.set_window_size(Vector2 size)
+* void OS.set_fullscreen(bool enabled, int screen=0)
+* bool OS.is_fullscreen()
+
+#### Demo
+A demo/test is available at "demos/misc/window-management"
+
+#### Warning
+Just only works for X11. It breaks other platforms at the moment.
+
 ![GODOT](/logo.png)
 
 ### The Engine
