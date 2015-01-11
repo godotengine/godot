@@ -195,7 +195,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Ref<Curve2D> curve = node->get_curve();
 
-				Vector2 new_pos = moving_from + xform.basis_xform( gpoint - moving_screen_from );
+				Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 				switch(action) {
 
 					case ACTION_MOVING_POINT: {
@@ -439,7 +439,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Ref<Curve2D> curve = node->get_curve();
 
-				Vector2 new_pos = moving_from + xform.basis_xform( gpoint - moving_screen_from );
+				Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 
 				switch(action) {
 
