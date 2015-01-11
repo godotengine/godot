@@ -108,6 +108,7 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
+	virtual int get_screen_count() const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;

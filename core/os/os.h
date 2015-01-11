@@ -150,6 +150,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
 
+	virtual int get_screen_count() const=0;
 	virtual Point2 get_window_position() const=0;
 	virtual void set_window_position(const Point2& p_position)=0;
 	virtual Size2 get_window_size() const=0;

@@ -526,6 +526,10 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
 }
 
+int OS_X11::get_screen_count() const {
+	return XScreenCount(x11_display);
+}
+
 Point2 OS_X11::get_window_position() const {
 	int x,y;
 	XWindowAttributes xwa;
@@ -596,6 +600,9 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
+
+	if(p_enabled && current_videomode.fullscreen)
+		return;
 
 	if(p_enabled) {
 		pre_videomode = current_videomode;
