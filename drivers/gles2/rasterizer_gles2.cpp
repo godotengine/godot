@@ -4440,6 +4440,13 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (err) {
 			return; //invalid
 		}
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+
+		Error err = shader_precompiler.compile(p_shader->vertex_code,ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX,vertex_code,vertex_globals,vertex_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+
 	}
 
 	//print_line("compiled vertex: "+vertex_code);
@@ -4449,9 +4456,16 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	String fragment_code;
 	String fragment_globals;
 
-	Error err = shader_precompiler.compile(p_shader->fragment_code,(p_shader->mode==VS::SHADER_MATERIAL?ShaderLanguage::SHADER_MATERIAL_FRAGMENT:ShaderLanguage::SHADER_POST_PROCESS),fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
-	if (err) {
-		return; //invalid
+	if (p_shader->mode==VS::SHADER_MATERIAL) {
+		Error err = shader_precompiler.compile(p_shader->fragment_code,ShaderLanguage::SHADER_MATERIAL_FRAGMENT,fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+		Error err = shader_precompiler.compile(p_shader->fragment_code,ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT,fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
 	}
 
 
@@ -4461,6 +4475,11 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	if (p_shader->mode==VS::SHADER_MATERIAL) {
 
 		Error err = shader_precompiler.compile(p_shader->light_code,(ShaderLanguage::SHADER_MATERIAL_LIGHT),light_code,light_globals,light_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+		Error err = shader_precompiler.compile(p_shader->light_code,(ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT),light_code,light_globals,light_flags,&p_shader->uniforms);
 		if (err) {
 			return; //invalid
 		}
@@ -8366,9 +8385,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 			} else {
 				canvas_shader.set_custom_shader(0);
+				canvas_shader.bind();
+
 			}
 
 			canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
+			last_shader=ci->shader;
 		}
 
 		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);

@@ -742,7 +742,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[4]["POSITION"]="gl_Position";
 	mode_replace_table[4]["NORMAL"]="normal";
 	mode_replace_table[4]["UV"]="uv_interp";
-	mode_replace_table[4]["COLOR"]="color_interp";
+	mode_replace_table[4]["COLOR"]="color";
 	mode_replace_table[4]["TEXTURE"]="texture";
 	mode_replace_table[4]["VAR1"]="var1_interp";
 	mode_replace_table[4]["VAR2"]="var2_interp";

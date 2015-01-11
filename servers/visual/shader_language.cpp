@@ -2643,6 +2643,28 @@ void ShaderLanguage::get_keyword_list(ShaderType p_type, List<String> *p_keyword
 				idx++;
 			}
 		} break;
+		case SHADER_CANVAS_ITEM_VERTEX: {
+			idx=0;
+			while (ci_vertex_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_vertex_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_FRAGMENT: {
+			idx=0;
+			while (ci_fragment_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_fragment_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_LIGHT: {
+			idx=0;
+			while (ci_light_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_light_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+
 		case SHADER_POST_PROCESS: {
 			idx=0;
 			while (postprocess_fragment_builtins_defs[idx].name) {
