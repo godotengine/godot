@@ -609,10 +609,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (video_driver=="") // specified in engine.cfg
 		video_driver=_GLOBAL_DEF("display/driver",Variant((const char*)OS::get_singleton()->get_video_driver_name(0)));
 
-	if (!force_res && use_custom_res && globals->has("display/x"))
-		video_mode.width=globals->get("display/y");
-	if (!force_res && use_custom_res && globals->has("display/width"))
-		video_mode.width=globals->get("display/width");
 	if (!force_res && use_custom_res && globals->has("display/width"))
 		video_mode.width=globals->get("display/width");
 	if (!force_res &&use_custom_res && globals->has("display/height"))
@@ -631,8 +627,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		}
 	}
 
-	GLOBAL_DEF("display/x",video_mode.x);
-	GLOBAL_DEF("display/y",video_mode.y);
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);

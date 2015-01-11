@@ -217,6 +217,8 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
 	virtual void set_fullscreen(bool p_enabled,int p_screen=0);
 	virtual bool is_fullscreen() const;
 

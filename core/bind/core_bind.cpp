@@ -176,6 +176,14 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+Point2 _OS::get_window_position() const {
+	return OS::get_singleton()->get_window_position();
+}
+
+void _OS::set_window_position(const Point2& p_position) {
+	OS::get_singleton()->set_window_position(p_position);
+}
+
 void _OS::set_fullscreen(bool p_enabled,int p_screen) {
 	OS::get_singleton()->set_fullscreen(p_enabled, p_screen);
 }
@@ -641,6 +649,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
 	//MSC
+	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
+	ObjectTypeDB::bind_method(_MD("set_window_position"),&_OS::set_window_position);
 	ObjectTypeDB::bind_method(_MD("set_fullscreen","enabled","screen"),&_OS::set_fullscreen,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("is_fullscreen"),&_OS::is_fullscreen);
 
