@@ -219,6 +219,8 @@ public:
 
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
 	virtual void set_fullscreen(bool p_enabled,int p_screen=0);
 	virtual bool is_fullscreen() const;
 

@@ -537,8 +537,11 @@ Point2 OS_X11::get_window_position() const {
 }
 
 void OS_X11::set_window_position(const Point2& p_position) {
-	// _NET_FRAME_EXTENTS
 
+	if( current_videomode.fullscreen )
+		return;
+
+	// _NET_FRAME_EXTENTS
 	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
 	Atom type;
 	int format;
@@ -577,6 +580,19 @@ void OS_X11::set_window_position(const Point2& p_position) {
 	}
 
 	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
+}
+
+Size2 OS_X11::get_window_size() const {
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
+	return Size2i(xwa.width, xwa.height);
+}
+
+void OS_X11::set_window_size(const Size2 p_size) {
+	if( current_videomode.fullscreen )
+		return;
+
+	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
 }
 
 void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
