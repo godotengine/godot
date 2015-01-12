@@ -3699,6 +3699,42 @@ void VisualServerRaster::canvas_item_set_z(RID p_item, int p_z) {
 
 }
 
+void VisualServerRaster::canvas_item_set_shader(RID p_item, RID p_shader) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->shader=p_shader;
+}
+
+RID VisualServerRaster::canvas_item_get_shader(RID p_item) const{
+
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND_V(!canvas_item,RID());
+	return canvas_item->shader;
+
+}
+
+void VisualServerRaster::canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value){
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
+	ERR_FAIL_COND(!canvas_item);
+	if (p_value.get_type()==Variant::NIL)
+		canvas_item->shader_param.erase(p_param);
+	else
+		canvas_item->shader_param[p_param]=p_value;
+
+}
+Variant VisualServerRaster::canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const{
+
+	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
+	ERR_FAIL_COND_V(!canvas_item,Variant());
+	ERR_FAIL_COND_V(!canvas_item->shader_param.has(p_param),Variant());
+
+	return canvas_item->shader_param[p_param];
+}
+
 
 void VisualServerRaster::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 

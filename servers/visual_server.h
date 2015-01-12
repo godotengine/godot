@@ -989,6 +989,12 @@ public:
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;
 
+	virtual void canvas_item_set_shader(RID p_item, RID p_shader)=0;
+	virtual RID canvas_item_get_shader(RID p_item) const=0;
+
+	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value)=0;
+	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const=0;
+
 	/* CURSOR */
 	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0)=0; // radians
 	virtual void cursor_set_texture(RID p_texture, const Point2 &p_center_offset = Point2(0, 0), int p_cursor=0)=0;

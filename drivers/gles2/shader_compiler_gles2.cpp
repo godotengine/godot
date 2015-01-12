@@ -181,6 +181,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_normalmap) {
 					uses_normalmap=true;
 				}
+				if (vnode->name==vname_normal) {
+					uses_normal=true;
+				}
 				if (vnode->name==vname_screen_uv) {
 					uses_screen_uv=true;
 				}
@@ -552,6 +555,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_light=false;
 	uses_time=false;
 	uses_normalmap=false;
+	uses_normal=false;
 	vertex_code_writes_vertex=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
@@ -562,6 +566,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.use_var1_interp=false;
 	r_flags.use_var2_interp=false;
 	r_flags.uses_normalmap=false;
+	r_flags.uses_normal=false;
 
 	String error;
 	int errline,errcol;
@@ -584,6 +589,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_light=uses_light;
 	r_flags.uses_time=uses_time;
 	r_flags.uses_normalmap=uses_normalmap;
+	r_flags.uses_normal=uses_normalmap;
 	r_code_line=code;
 	r_globals_line=global_code;
 
@@ -721,6 +727,39 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[2]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[2]["TIME"]="time";
 
+	mode_replace_table[3]["SRC_VERTEX"]="src_vtx";
+	mode_replace_table[3]["VERTEX"]="outvec.xy";
+	mode_replace_table[3]["UV"]="uv_interp";
+	mode_replace_table[3]["COLOR"]="color_interp";
+	mode_replace_table[3]["VAR1"]="var1_interp";
+	mode_replace_table[3]["VAR2"]="var2_interp";
+	mode_replace_table[3]["POINT_SIZE"]="gl_PointSize";
+	mode_replace_table[3]["WORLD_MATRIX"]="modelview_matrix";
+	mode_replace_table[3]["PROJECTION_MATRIX"]="projection_matrix";
+	mode_replace_table[3]["EXTRA_MATRIX"]="extra_matrix";
+	mode_replace_table[3]["TIME"]="time";
+
+	mode_replace_table[4]["POSITION"]="gl_Position";
+	mode_replace_table[4]["NORMAL"]="normal";
+	mode_replace_table[4]["UV"]="uv_interp";
+	mode_replace_table[4]["COLOR"]="color";
+	mode_replace_table[4]["TEXTURE"]="texture";
+	mode_replace_table[4]["VAR1"]="var1_interp";
+	mode_replace_table[4]["VAR2"]="var2_interp";
+	mode_replace_table[4]["SCREEN_UV"]="screen_uv";
+	mode_replace_table[4]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[4]["TIME"]="time";
+
+	mode_replace_table[5]["COLOR"]="color";
+	mode_replace_table[5]["NORMAL"]="normal";
+	mode_replace_table[5]["LIGHT_DIR"]="light_dir";
+	mode_replace_table[5]["LIGHT_DISTANCE"]="light_distance";
+	mode_replace_table[5]["LIGHT"]="light";
+	mode_replace_table[5]["POINT_COORD"]="gl_PointCoord";
+	mode_replace_table[5]["TIME"]="time";
+
+
+
 	//mode_replace_table[2]["SCREEN_POS"]="SCREEN_POS";
 	//mode_replace_table[2]["SCREEN_TEXEL_SIZE"]="SCREEN_TEXEL_SIZE";
 
@@ -741,5 +780,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_light="LIGHT";
 	vname_time="TIME";
 	vname_normalmap="NORMALMAP";
+	vname_normal="NORMAL";
 
 }

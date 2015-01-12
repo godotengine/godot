@@ -79,9 +79,6 @@ class ShaderEditor : public Control {
 		SEARCH_REPLACE,
 		//SEARCH_LOCATE_SYMBOL,
 		SEARCH_GOTO_LINE,
-		SHADER_MATERIAL_MODE,
-		SHADER_POST_PROCESS_MODE,
-		SHADER_SHADE_MODEL_MODE,
 
 	};
 
@@ -134,6 +131,7 @@ class ShaderEditorPlugin : public EditorPlugin {
 
 	OBJ_TYPE( ShaderEditorPlugin, EditorPlugin );
 
+	bool _2d;
 	ShaderEditor *shader_editor;
 	EditorNode *editor;
 public:
@@ -152,7 +150,7 @@ public:
 	virtual void save_external_data();
 	virtual void apply_changes();
 
-	ShaderEditorPlugin(EditorNode *p_node);
+	ShaderEditorPlugin(EditorNode *p_node,bool p_2d);
 	~ShaderEditorPlugin();
 
 };

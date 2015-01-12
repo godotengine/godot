@@ -1133,6 +1133,11 @@ public:
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
 	FUNC2(canvas_item_set_z,RID,int);
 
+	FUNC2(canvas_item_set_shader,RID, RID );
+	FUNC1RC(RID,canvas_item_get_shader,RID );
+
+	FUNC3(canvas_item_set_shader_param,RID,const StringName&,const Variant&);
+	FUNC2RC(Variant,canvas_item_get_shader_param,RID,const StringName&);
 
 	FUNC1(canvas_item_clear,RID);
 	FUNC1(canvas_item_raise,RID);
