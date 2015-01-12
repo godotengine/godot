@@ -100,6 +100,7 @@ public:
 		json->scale = 1;
 
 		res->data = spSkeletonJson_readSkeletonDataFile(json, p_path.utf8().get_data());
+		ERR_EXPLAIN(json->error ? json->error : "");
 		ERR_FAIL_COND_V(res->data == NULL, RES());
 		spSkeletonJson_dispose(json);
 

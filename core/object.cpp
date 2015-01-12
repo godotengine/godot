@@ -1865,9 +1865,9 @@ void ObjectDB::cleanup() {
 
 				ScriptInstance *instance = node->get_script_instance();
 				if(instance != NULL)
-					msg += " [" + node->get_path() + ":" + instance->get_script()->get_path() + "]";
+					msg += " [" + (node->is_inside_tree() ? node->get_path() : NodePath("")) + ":" + instance->get_script()->get_path() + "]";
 				else
-					msg += " [" + node->get_path() + "]";
+					msg += " [" + (node->is_inside_tree() ? node->get_path() : NodePath("")) + "]";
 
 				print_line(msg);
 			} else if(res != NULL) {

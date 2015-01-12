@@ -84,6 +84,11 @@ void Spine::_on_animation_state_event(int p_track, spEventType p_type, spEvent *
 
 void Spine::_spine_dispose() {
 
+	if (playing) {
+		// stop first
+		stop();
+	}
+
 	if (state) {
 
 		spAnimationStateData_dispose(state->data);
@@ -103,6 +108,8 @@ void Spine::_spine_dispose() {
 		memdelete(node.ref);
 	}
 	attachment_nodes.clear();
+
+	update();
 }
 
 static Ref<Texture> spine_get_texture(spRegionAttachment* attachment) {
@@ -396,21 +403,26 @@ bool Spine::_set(const StringName& p_name, const Variant& p_value) {
 	if (name == "playback/play") {
 
 		String which = p_value;
-		if (which == "[stop]")
-			stop();
-		else if (has(which))
-			play(which, 1, loop);
+		if (skeleton != NULL) {
+
+			if (which == "[stop]")
+				stop();
+			else if (has(which))
+				play(which, 1, loop);
+		} else
+			current_animation = which;
 	}
 	else if (name == "playback/loop") {
 
 		loop = p_value;
-		if (has(current_animation))
+		if (skeleton != NULL && has(current_animation))
 			play(current_animation, 1, loop);
 	}
 	else if (name == "playback/skin") {
 
 		skin = p_value;
-		set_skin(skin);
+		if (skeleton != NULL)
+			set_skin(skin);
 	}
 	else if (name == "debug/region")
 		set_debug_attachment(DEBUG_ATTACHMENT_REGION, p_value);
@@ -430,11 +442,7 @@ bool Spine::_get(const StringName& p_name, Variant &r_ret) const {
 
 	if (name == "playback/play") {
 
-		//if (is_active() && is_playing())
 		r_ret = current_animation;
-		//else
-		//	r_ret = "[stop]";
-
 	}
 	else if (name == "playback/loop")
 		r_ret = loop;
@@ -567,11 +575,13 @@ void Spine::set_resource(Ref<Spine::SpineResource> p_data) {
 	state->rendererObject = this;
 	state->listener = spine_animation_callback;
 
-	loop = false;
-	current_animation = "";
-	skin = "";
+	if (skin != "")
+		set_skin(skin);
+	if (current_animation != "[stop]")
+		play(current_animation, 1, loop);
+	else
+		reset();
 
-	reset();
 	_change_notify();
 }
 
@@ -1149,6 +1159,9 @@ Spine::Spine()
 	debug_attachment_mesh = false;
 	debug_attachment_skinned_mesh = false;
 	debug_attachment_bounding_box = false;
+
+	skin = "";
+	current_animation = "[stop]";
 	loop = true;
 
 	modulate = Color(1, 1, 1, 1);

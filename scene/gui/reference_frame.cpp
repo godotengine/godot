@@ -34,11 +34,58 @@ void ReferenceFrame::_notification(int p_what) {
 
 		if (!is_inside_tree())
 			return;
-		if (get_tree()->is_editor_hint())
-			draw_style_box(get_stylebox("border"),Rect2(Point2(),get_size())) ;
+		if (get_tree()->is_editor_hint() || always_show) {
+
+			//draw_style_box(get_stylebox("border"),Rect2(Point2(),get_size()),color);
+			Size2 size = get_size();
+			draw_line(Point2(0, 0), Point2(size.width, 0), color, 1);
+			draw_line(Point2(size.width, 0), Point2(size.width, size.height), color, 1);
+			draw_line(Point2(size.width, size.height), Point2(0, size.height), color, 1);
+			draw_line(Point2(0, size.height), Point2(0, 0), color, 1);
+		}
 	}
+}
+
+void ReferenceFrame::set_color(const Color& p_color) {
+	
+	if (color == p_color)
+		return;
+	color = p_color;
+	update();
+}
+
+Color ReferenceFrame::get_color() const {
+
+	return color;
+}
+
+void ReferenceFrame::set_always_show(bool p_show) {
+
+	if (always_show == p_show)
+		return;
+	always_show = p_show;
+	update();
+}
+
+bool ReferenceFrame::is_always_show() const {
+
+	return always_show;
+}
+
+
+void ReferenceFrame::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("set_color","color"), & ReferenceFrame::set_color );
+	ObjectTypeDB::bind_method(_MD("get_color"), & ReferenceFrame::get_color );
+	ObjectTypeDB::bind_method(_MD("set_always_show","show"), & ReferenceFrame::set_always_show );
+	ObjectTypeDB::bind_method(_MD("is_always_show"), & ReferenceFrame::is_always_show );
+
+	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "color"), _SCS("set_color"),_SCS("get_color") );
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "always_show" ), _SCS("set_always_show"),_SCS("is_always_show") );
 }
 
 ReferenceFrame::ReferenceFrame()
 {
+	always_show = false;
+	color = Color(1, 0, 0, 1);
 }

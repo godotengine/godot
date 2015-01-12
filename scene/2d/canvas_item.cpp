@@ -542,7 +542,7 @@ void CanvasItem::draw_texture_rect_region(const Ref<Texture>& p_texture,const Re
 	p_texture->draw_rect_region(canvas_item,p_rect,p_src_rect,p_modulate);
 }
 
-void CanvasItem::draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect) {
+void CanvasItem::draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect,const Color& p_modulate) {
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
@@ -550,7 +550,7 @@ void CanvasItem::draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_
 
 	ERR_FAIL_COND(p_style_box.is_null());
 
-	p_style_box->draw(canvas_item,p_rect);
+	p_style_box->draw(canvas_item,p_rect,p_modulate);
 
 }
 void CanvasItem::draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, Ref<Texture> p_texture,float p_width) {
@@ -861,7 +861,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("draw_texture","texture:Texture","pos"),&CanvasItem::draw_texture);
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect","texture:Texture","rect","tile","modulate"),&CanvasItem::draw_texture_rect,DEFVAL(false),DEFVAL(Color(1,1,1)));
 	ObjectTypeDB::bind_method(_MD("draw_texture_rect_region","texture:Texture","rect","src_rect","modulate"),&CanvasItem::draw_texture_rect_region,DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect"),&CanvasItem::draw_style_box);
+	ObjectTypeDB::bind_method(_MD("draw_style_box","style_box:StyleBox","rect","modulate"),&CanvasItem::draw_style_box);
 	ObjectTypeDB::bind_method(_MD("draw_primitive","points","colors","uvs","texture:Texture","width"),&CanvasItem::draw_primitive,DEFVAL(Array()),DEFVAL(Ref<Texture>()),DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("draw_polygon","points","colors","uvs","texture:Texture"),&CanvasItem::draw_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
 	ObjectTypeDB::bind_method(_MD("draw_colored_polygon","points","color","uvs","texture:Texture"),&CanvasItem::draw_colored_polygon,DEFVAL(Array()),DEFVAL(Ref<Texture>()));
