@@ -200,7 +200,7 @@ void ShaderGraphView::_vec_input_changed(double p_value, int p_id,Array p_arr){
 }
 void ShaderGraphView::_xform_input_changed(int p_id, Node *p_button){
 
-	print_line("XFIC");
+
 	ToolButton *tb = p_button->cast_to<ToolButton>();
 	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
@@ -385,6 +385,41 @@ void ShaderGraphView::_connection_request(const String& p_from, int p_from_slot,
 
 }
 
+void ShaderGraphView::_disconnection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot) {
+
+	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+
+	int from_idx=-1;
+	int to_idx=-1;
+	for (Map<int,GraphNode*>::Element *E=node_map.front();E;E=E->next()) {
+
+		if (p_from==E->get()->get_name())
+			from_idx=E->key();
+		if (p_to==E->get()->get_name())
+			to_idx=E->key();
+	}
+
+	ERR_FAIL_COND(from_idx==-1);
+	ERR_FAIL_COND(to_idx==-1);
+
+	if (!graph->is_node_connected(type,from_idx,p_from_slot,to_idx,p_to_slot))
+		return; //nothing to disconnect
+
+	ur->create_action("Disconnect Graph Nodes");
+
+	List<ShaderGraph::Connection> conns;
+
+	graph->get_node_connections(type,&conns);
+	//disconnect/reconnect dependencies
+	ur->add_do_method(graph.ptr(),"disconnect_node",type,from_idx,p_from_slot,to_idx,p_to_slot);
+	ur->add_undo_method(graph.ptr(),"connect_node",type,from_idx,p_from_slot,to_idx,p_to_slot);
+	ur->add_do_method(this,"_update_graph");
+	ur->add_undo_method(this,"_update_graph");
+	ur->commit_action();
+
+
+}
+
 void ShaderGraphView::_node_removed(int p_id) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
@@ -410,7 +445,7 @@ void ShaderGraphView::_node_removed(int p_id) {
 
 void ShaderGraphView::_node_moved(const Vector2& p_from, const Vector2& p_to,int p_id) {
 
-	print_line("moved from "+p_from+" to "+p_to);
+
 	ERR_FAIL_COND(!node_map.has(p_id));
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action("Move Shader Graph Node");
@@ -433,8 +468,8 @@ void ShaderGraphView::_create_node(int p_id) {
 	GraphNode *gn = memnew( GraphNode );
 	gn->set_show_close_button(true);
 	Color typecol[4]={
-		Color(0.2,1,0.2),
-		Color(0.7,0.1,1),
+		Color(0.9,0.4,1),
+		Color(0.8,1,0.2),
 		Color(1,0.2,0.2),
 		Color(0,1,1)
 	};
@@ -710,14 +745,9 @@ void ShaderGraphView::_create_node(int p_id) {
 
 
 		} break; // mat4 x mat4
-		case ShaderGraph::NODE_XFORM_VEC_MULT:
-		case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
+		case ShaderGraph::NODE_XFORM_VEC_MULT: {
 
-			if (graph->node_get_type(type,p_id)==ShaderGraph::NODE_XFORM_VEC_INV_MULT)
-				gn->set_title("XFVecMult");
-			else
-				gn->set_title("XFVecInvMult");
-
+			gn->set_title("XFVecMult");
 
 			Button *button = memnew( Button("RotOnly"));
 			button->set_toggle_mode(true);
@@ -738,6 +768,32 @@ void ShaderGraphView::_create_node(int p_id) {
 
 			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+
+		} break;
+		case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
+
+			gn->set_title("XFVecInvMult");
+
+
+			Button *button = memnew( Button("RotOnly"));
+			button->set_toggle_mode(true);
+			button->set_pressed(graph->xform_vec_mult_node_get_no_translation(type,p_id));
+			button->connect("toggled",this,"_xform_inv_rev_changed",varray(p_id));
+
+			gn->add_child(button);
+
+			gn->add_child( memnew(Label("vec")));
+			HBoxContainer *hbc = memnew( HBoxContainer );
+			hbc->add_constant_override("separation",0);
+			hbc->add_child( memnew(Label("xf")));
+			hbc->add_spacer();
+			Label *l = memnew(Label("out"));
+			l->set_align(Label::ALIGN_RIGHT);
+			hbc->add_child( l);
+			gn->add_child(hbc);
+
+			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 
 
 		} break; // mat4 x vec3 inverse mult (with no-translation option)
@@ -967,7 +1023,7 @@ void ShaderGraphView::_create_node(int p_id) {
 
 			gn->set_slot(0,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
-			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR],false,0,Color());
 
 		} break; // vec3 interpolation  (with optional curve)
 		case ShaderGraph::NODE_SCALAR_INPUT: {
@@ -1157,7 +1213,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	graph_edit->add_child(gn);
 	node_map[p_id]=gn;
 	gn->set_offset(graph->node_get_pos(type,p_id));
-	print_line("NODE "+itos(p_id)+" OFS "+gn->get_offset());
+
 
 }
 
@@ -1180,7 +1236,7 @@ void ShaderGraphView::_update_graph() {
 
 	List<int> nl;
 	graph->get_node_list(type,&nl);
-	print_line("graph nodes: "+itos(nl.size()));
+
 	for(List<int>::Element *E=nl.front();E;E=E->next()) {
 
 		_create_node(E->get());
@@ -1199,11 +1255,29 @@ void ShaderGraphView::_update_graph() {
 
 }
 
+void ShaderGraphView::_sg_updated() {
+
+	if (!graph.is_valid())
+		return;
+	switch(graph->get_graph_error(type)) {
+		case ShaderGraph::GRAPH_OK: status->set_text(""); break;
+		case ShaderGraph::GRAPH_ERROR_CYCLIC: status->set_text("Error: Cyclic Connection Link"); break;
+		case ShaderGraph::GRAPH_ERROR_MISSING_CONNECTIONS: status->set_text("Error: Missing Input Connections"); break;
+	}
+}
+
 void ShaderGraphView::set_graph(Ref<ShaderGraph> p_graph){
 
-	print_line("GRAPH EDIT: "+itos(p_graph.is_valid()));
+
+	if (graph.is_valid()) {
+		graph->disconnect("updated",this,"_sg_updated");
+	}
 	graph=p_graph;
+	if (graph.is_valid()) {
+		graph->connect("updated",this,"_sg_updated");
+	}
 	_update_graph();
+	_sg_updated();
 
 }
 
@@ -1262,6 +1336,7 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_move_node",&ShaderGraphView::_move_node);
 	ObjectTypeDB::bind_method("_node_removed",&ShaderGraphView::_node_removed);
 	ObjectTypeDB::bind_method("_connection_request",&ShaderGraphView::_connection_request);
+	ObjectTypeDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
 
 	ObjectTypeDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
 	ObjectTypeDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
@@ -1286,6 +1361,7 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
 	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
 
+	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
 
 ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
@@ -1295,8 +1371,15 @@ ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
 	block_update=false;
 	ped_popup = memnew( CustomPropertyEditor );
 	graph_edit->add_child(ped_popup);
-
-
+	status = memnew( Label );
+	graph_edit->get_top_layer()->add_child(status);
+	status->set_pos(Vector2(5,5));
+	status->add_color_override("font_color_shadow",Color(0,0,0));
+	status->add_color_override("font_color",Color(1,0.4,0.3));
+	status->add_constant_override("shadow_as_outline",1);
+	status->add_constant_override("shadow_offset_x",2);
+	status->add_constant_override("shadow_offset_y",2);
+	status->set_text("");
 }
 
 
@@ -1318,6 +1401,22 @@ void ShaderGraphEditor::_add_node(int p_type) {
 
 void ShaderGraphEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		for(int i=0;i<ShaderGraph::NODE_TYPE_MAX;i++) {
+
+			if (i==ShaderGraph::NODE_OUTPUT)
+				continue;
+			String nn = node_names[i];
+			String ic = nn.get_slice(":",0);
+			String v = nn.get_slice(":",1);
+			bool addsep=false;
+			if (nn.ends_with(":")) {
+				addsep=true;
+			}
+			menu->get_popup()->add_icon_item(get_icon(ic,"EditorIcons"),v,i);
+			if (addsep)
+				menu->get_popup()->add_separator();
+		}
 		menu->get_popup()->connect("item_pressed",this,"_add_node");
 
 
@@ -1332,38 +1431,38 @@ void ShaderGraphEditor::_bind_methods() {
 
 
 const char* ShaderGraphEditor::node_names[ShaderGraph::NODE_TYPE_MAX]={
-	"Input", // all inputs (shader type dependent)
-	"Scalar Constant", //scalar constant
-	"Vector Constant", //vec3 constant
-	"RGB Constant", //rgb constant (shows a color picker instead)
-	"XForm Constant", // 4x4 matrix constant
-	"Time:", // time in seconds
-	"Screen Sample", // screen texture sampler (takes uv) (only usable in fragment shader)
-	"Scalar Operator", // scalar vs scalar op (mul", add", div", etc)
-	"Vector Operator", // vec3 vs vec3 op (mul",ad",div",crossprod",etc)
-	"Scalar+Vector Operator", // vec3 vs scalar op (mul", add", div", etc)
-	"RGB Operator:", // vec3 vs vec3 rgb op (with scalar amount)", like brighten", darken", burn", dodge", multiply", etc.
-	"XForm Multiply", // mat4 x mat4
-	"XForm+Vector Multiply", // mat4 x vec3 mult (with no-translation option)
-	"XForm+Vector InvMultiply:", // mat4 x vec3 inverse mult (with no-translation option)
-	"Scalar Function", // scalar function (sin", cos", etc)
-	"Vector Function", // vector function (normalize", negate", reciprocal", rgb2hsv", hsv2rgb", etc", etc)
-	"Vector Length", // vec3 length
-	"Dot Product:", // vec3 . vec3 (dot product -> scalar output)
-	"Vector -> Scalars", // 1 vec3 input", 3 scalar outputs
-	"Scalars -> Vector", // 3 scalar input", 1 vec3 output
-	"XForm -> Vectors", // 3 vec input", 1 xform output
-	"Vectors -> XForm:", // 3 vec input", 1 xform output
-	"Scalar Interpolate", // scalar interpolation (with optional curve)
-	"Vector Interpolate:", // vec3 interpolation  (with optional curve)
-	"Scalar Uniform", // scalar uniform (assignable in material)
-	"Vector Uniform", // vec3 uniform (assignable in material)
-	"RGB Uniform", // color uniform (assignable in material)
-	"XForm Uniform", // mat4 uniform (assignable in material)
-	"Texture Uniform", // texture input (assignable in material)
-	"CubeMap Uniform:", // cubemap input (assignable in material)
+	"GraphInput:Input", // all inputs (shader type dependent)
+	"GraphScalar:Scalar Constant", //scalar constant
+	"GraphVector:Vector Constant", //vec3 constant
+	"GraphRgb:RGB Constant", //rgb constant (shows a color picker instead)
+	"GraphXform:XForm Constant", // 4x4 matrix constant
+	"GraphTime:Time:", // time in seconds
+	"GraphTexscreen:Screen Sample", // screen texture sampler (takes uv) (only usable in fragment shader)
+	"GraphScalarOp:Scalar Operator", // scalar vs scalar op (mul", add", div", etc)
+	"GraphVecOp:Vector Operator", // vec3 vs vec3 op (mul",ad",div",crossprod",etc)
+	"GraphVecScalarOp:Scalar+Vector Operator", // vec3 vs scalar op (mul", add", div", etc)
+	"GraphRgbOp:RGB Operator:", // vec3 vs vec3 rgb op (with scalar amount)", like brighten", darken", burn", dodge", multiply", etc.
+	"GraphXformMult:XForm Multiply", // mat4 x mat4
+	"GraphXformVecMult:XForm+Vector Multiply", // mat4 x vec3 mult (with no-translation option)
+	"GraphXformVecImult:Form+Vector InvMultiply:", // mat4 x vec3 inverse mult (with no-translation option)
+	"GraphXformScalarFunc:Scalar Function", // scalar function (sin", cos", etc)
+	"GraphXformVecFunc:Vector Function", // vector function (normalize", negate", reciprocal", rgb2hsv", hsv2rgb", etc", etc)
+	"GraphVecLength:Vector Length", // vec3 length
+	"GraphVecDp:Dot Product:", // vec3 . vec3 (dot product -> scalar output)
+	"GraphVecToScalars:Vector -> Scalars", // 1 vec3 input", 3 scalar outputs
+	"GraphScalarsToVec:Scalars -> Vector", // 3 scalar input", 1 vec3 output
+	"GraphXformToVecs:XForm -> Vectors", // 3 vec input", 1 xform output
+	"GraphVecsToXform:Vectors -> XForm:", // 3 vec input", 1 xform output
+	"GraphScalarInterp:Scalar Interpolate", // scalar interpolation (with optional curve)
+	"GraphVecInterp:Vector Interpolate:", // vec3 interpolation  (with optional curve)
+	"GraphScalarUniform:Scalar Uniform", // scalar uniform (assignable in material)
+	"GraphVectorUniform:Vector Uniform", // vec3 uniform (assignable in material)
+	"GraphRgbUniform:RGB Uniform", // color uniform (assignable in material)
+	"GraphXformUniform:XForm Uniform", // mat4 uniform (assignable in material)
+	"GraphTextureUniform:Texture Uniform", // texture input (assignable in material)
+	"GraphCubeUniform:CubeMap Uniform:", // cubemap input (assignable in material)
 	"Output", // output (shader type dependent)
-	"Comment", // comment
+	"GraphComment:Comment", // comment
 
 
 };
@@ -1371,23 +1470,10 @@ ShaderGraphEditor::ShaderGraphEditor() {
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	menu = memnew( MenuButton );
-	menu->set_text("Add..");
+	menu->set_text("Add Node..");
 	hbc->add_child(menu);
 	add_child(hbc);
-	for(int i=0;i<ShaderGraph::NODE_TYPE_MAX;i++) {
 
-		if (i==ShaderGraph::NODE_OUTPUT)
-			continue;
-		String v = node_names[i];
-		bool addsep=false;
-		if (v.ends_with(":")) {
-			addsep=true;
-			v=v.substr(0,v.length()-1);
-		}
-		menu->get_popup()->add_item(v,i);
-		if (addsep)
-			menu->get_popup()->add_separator();
-	}
 
 	tabs = memnew(TabContainer);
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1404,7 +1490,12 @@ ShaderGraphEditor::ShaderGraphEditor() {
 		graph_edits[i]->get_graph_edit()->set_name(sname[i]);
 		tabs->add_child(graph_edits[i]->get_graph_edit());
 		graph_edits[i]->get_graph_edit()->connect("connection_request",graph_edits[i],"_connection_request");
+		graph_edits[i]->get_graph_edit()->connect("disconnection_request",graph_edits[i],"_disconnection_request");
+		graph_edits[i]->get_graph_edit()->set_right_disconnects(true);
+
 	}
+
+	tabs->set_current_tab(1);
 
 	set_custom_minimum_size(Size2(100,300));
 }

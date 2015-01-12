@@ -191,6 +191,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool writes_vertex;
 		bool uses_discard;
 		bool uses_time;
+		bool uses_normal;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
@@ -214,6 +215,7 @@ class RasterizerGLES2 : public Rasterizer {
 			writes_vertex=false;
 			uses_discard=false;
 			uses_time=false;
+			uses_normal=false;
 		}
 
 
@@ -241,8 +243,9 @@ class RasterizerGLES2 : public Rasterizer {
 
 		struct UniformData {
 
+			bool inuse;
 			bool istexture;
-			Variant value;
+			Variant value;			
 			int index;
 		};
 
@@ -1198,7 +1201,7 @@ class RasterizerGLES2 : public Rasterizer {
 	RID overdraw_material;
 
 	mutable MaterialShaderGLES2 material_shader;
-	CanvasShaderGLES2 canvas_shader;
+	mutable CanvasShaderGLES2 canvas_shader;
 	BlurShaderGLES2 blur_shader;
 	CopyShaderGLES2 copy_shader;
 
@@ -1534,6 +1537,7 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width);
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor);
 	virtual void canvas_set_transform(const Matrix32& p_transform);
+	virtual void canvas_render_items(CanvasItem *p_item_list);
 
 	/* ENVIRONMENT */
 

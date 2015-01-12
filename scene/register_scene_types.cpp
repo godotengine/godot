@@ -504,14 +504,13 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Mesh>();
 	ObjectTypeDB::register_virtual_type<Material>();
 	ObjectTypeDB::register_type<FixedMaterial>();
-	//ObjectTypeDB::register_type<ParticleSystemMaterial>();
-	//ObjectTypeDB::register_type<UnshadedMaterial>();
 	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
 	ObjectTypeDB::register_virtual_type<Shader>();
 	ObjectTypeDB::register_virtual_type<ShaderGraph>();
 	ObjectTypeDB::register_type<MaterialShaderGraph>();
 	ObjectTypeDB::register_type<MaterialShader>();
+	ObjectTypeDB::register_type<CanvasItemShader>();
 	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");
 	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedMaterial");
 	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedMaterial");

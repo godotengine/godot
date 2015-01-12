@@ -27,7 +27,6 @@ def get_opts():
 		('game_center', 'Support for game center', 'yes'),
 		('store_kit', 'Support for in-app store', 'yes'),
 		('ios_gles22_override', 'Force GLES2.0 on iOS', 'yes'),
-		('ios_GLES1_override', 'Force legacy GLES (1.1) on iOS', 'no'),
 		('ios_appirater', 'Enable Appirater', 'no'),
 		('ios_exceptions', 'Use exceptions when compiling on playbook', 'yes'),
 	]
@@ -131,7 +130,7 @@ def configure(env):
 
 
 	env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
-	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES1_ENABLED', '-DMPC_FIXED_POINT'])
+	env.Append(CPPFLAGS=['-DIPHONE_ENABLED', '-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DMPC_FIXED_POINT'])
 	if env['ios_exceptions'] == 'yes':
 		env.Append(CPPFLAGS=['-fexceptions'])
 	else:

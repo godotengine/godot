@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "os_android.h"
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
+
 #include "core/io/file_access_buffered_fa.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -49,11 +49,11 @@
 
 int OS_Android::get_video_driver_count() const {
 
-	return 2;
+	return 1;
 }
 const char * OS_Android::get_video_driver_name(int p_driver) const {
 
-	return p_driver==0?"GLES2":"GLES1";
+	return "GLES2";
 }
 
 OS::VideoMode OS_Android::get_default_video_mode() const {
@@ -123,13 +123,13 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	AudioDriverManagerSW::add_driver(&audio_driver_android);
 
 
-	if (use_gl2) {
+	if (true) {
 		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,use_reload_hooks,false,use_reload_hooks ) );
 		if (gl_extensions)
 			rasterizer_gles22->set_extensions(gl_extensions);
 		rasterizer = rasterizer_gles22;
 	} else {
-		rasterizer = memnew( RasterizerGLES1(use_reload_hooks, use_reload_hooks) );
+		//rasterizer = memnew( RasterizerGLES1(use_reload_hooks, use_reload_hooks) );
 
 	}
 

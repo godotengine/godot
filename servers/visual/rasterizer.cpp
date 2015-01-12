@@ -568,8 +568,9 @@ void Rasterizer::_update_fixed_materials() {
 			}
 
 			material_set_param(fm.self,_fixed_material_uv_xform_name,fm.uv_xform);
-			if (fm.use_pointsize)
+			if (fm.use_pointsize) {
 				material_set_param(fm.self,_fixed_material_point_size_name,fm.point_size);
+			}
 		}
 
 		fixed_material_dirty_list.remove(fixed_material_dirty_list.first());
@@ -619,6 +620,8 @@ Rasterizer::Rasterizer() {
 
 	_fixed_material_uv_xform_name="fmp_uv_xform";
 	_fixed_material_point_size_name="fmp_point_size";
+
+	draw_viewport_func=NULL;
 
 	ERR_FAIL_COND( sizeof(FixedMaterialShaderKey)!=4);
 

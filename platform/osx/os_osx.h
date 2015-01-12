@@ -156,6 +156,8 @@ public:
 
 	virtual String get_executable_path() const;
 
+	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
+
 	virtual void move_window_to_foreground();
 
 	void run();

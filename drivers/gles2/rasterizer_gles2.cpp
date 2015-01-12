@@ -1441,6 +1441,9 @@ void RasterizerGLES2::shader_set_mode(RID p_shader,VS::ShaderMode p_mode) {
 			case VS::SHADER_MATERIAL: {
 				material_shader.free_custom_shader(shader->custom_code_id);
 			} break;
+			case VS::SHADER_CANVAS_ITEM: {
+				canvas_shader.free_custom_shader(shader->custom_code_id);
+			} break;
 		}
 
 		shader->custom_code_id=0;
@@ -1451,6 +1454,9 @@ void RasterizerGLES2::shader_set_mode(RID p_shader,VS::ShaderMode p_mode) {
 	switch(shader->mode) {
 		case VS::SHADER_MATERIAL: {
 			shader->custom_code_id=material_shader.create_custom_shader();
+		} break;
+		case VS::SHADER_CANVAS_ITEM: {
+			shader->custom_code_id=canvas_shader.create_custom_shader();
 		} break;
 	}
 	_shader_make_dirty(shader);
@@ -1575,12 +1581,14 @@ void RasterizerGLES2::shader_set_default_texture_param(RID p_shader, const Strin
 
 	Shader *shader=shader_owner.get(p_shader);
 	ERR_FAIL_COND(!shader);
-	ERR_FAIL_COND(!texture_owner.owns(p_texture));
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_owner.owns(p_texture));
 
 	if (p_texture.is_valid())
 		shader->default_textures[p_name]=p_texture;
 	else
 		shader->default_textures.erase(p_name);
+
+	_shader_make_dirty(shader);
 
 }
 
@@ -1636,6 +1644,7 @@ void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_par
 			material->shader_version=0; //get default!
 		} else {
 			E->get().value=p_value;
+			E->get().inuse=true;
 		}
 	} else {
 
@@ -1643,6 +1652,7 @@ void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_par
 		ud.index=-1;
 		ud.value=p_value;
 		ud.istexture=p_value.get_type()==Variant::_RID; /// cache it being texture
+		ud.inuse=true;
 		material->shader_params[p_param]=ud; //may be got at some point, or erased
 
 	}
@@ -1674,7 +1684,7 @@ Variant RasterizerGLES2::material_get_param(RID p_material, const StringName& p_
 	}
 
 
-	if (material->shader_params.has(p_param))
+	if (material->shader_params.has(p_param) && material->shader_params[p_param].inuse)
 		return material->shader_params[p_param].value;
 	else
 		return Variant();
@@ -4460,6 +4470,13 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (err) {
 			return; //invalid
 		}
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+
+		Error err = shader_precompiler.compile(p_shader->vertex_code,ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX,vertex_code,vertex_globals,vertex_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+
 	}
 
 	//print_line("compiled vertex: "+vertex_code);
@@ -4469,9 +4486,16 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	String fragment_code;
 	String fragment_globals;
 
-	Error err = shader_precompiler.compile(p_shader->fragment_code,(p_shader->mode==VS::SHADER_MATERIAL?ShaderLanguage::SHADER_MATERIAL_FRAGMENT:ShaderLanguage::SHADER_POST_PROCESS),fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
-	if (err) {
-		return; //invalid
+	if (p_shader->mode==VS::SHADER_MATERIAL) {
+		Error err = shader_precompiler.compile(p_shader->fragment_code,ShaderLanguage::SHADER_MATERIAL_FRAGMENT,fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+		Error err = shader_precompiler.compile(p_shader->fragment_code,ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT,fragment_code,fragment_globals,fragment_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
 	}
 
 
@@ -4481,6 +4505,11 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	if (p_shader->mode==VS::SHADER_MATERIAL) {
 
 		Error err = shader_precompiler.compile(p_shader->light_code,(ShaderLanguage::SHADER_MATERIAL_LIGHT),light_code,light_globals,light_flags,&p_shader->uniforms);
+		if (err) {
+			return; //invalid
+		}
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+		Error err = shader_precompiler.compile(p_shader->light_code,(ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT),light_code,light_globals,light_flags,&p_shader->uniforms);
 		if (err) {
 			return; //invalid
 		}
@@ -4544,7 +4573,33 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		}
 
 		material_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
-	} else {
+	} else if (p_shader->mode==VS::SHADER_CANVAS_ITEM) {
+
+		Vector<const char*> enablers;
+
+		if (light_flags.uses_time || fragment_flags.uses_time || vertex_flags.uses_time) {
+			enablers.push_back("#define USE_TIME\n");
+			uses_time=true;
+		}
+		if (fragment_flags.uses_normal) {
+			enablers.push_back("#define NORMAL_USED\n");
+		}
+		if (light_flags.uses_light) {
+			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
+		}
+		if (fragment_flags.use_var1_interp || vertex_flags.use_var1_interp)
+			enablers.push_back("#define ENABLE_VAR1_INTERP\n");
+		if (fragment_flags.use_var2_interp || vertex_flags.use_var2_interp)
+			enablers.push_back("#define ENABLE_VAR2_INTERP\n");
+		if (fragment_flags.uses_texscreen) {
+			enablers.push_back("#define ENABLE_TEXSCREEN\n");
+		}
+		if (fragment_flags.uses_screen_uv) {
+			enablers.push_back("#define ENABLE_SCREEN_UV\n");
+		}
+
+		canvas_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
+
 		//postprocess_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, fragment_globals,uniform_names);
 	}
 
@@ -4555,6 +4610,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	p_shader->has_texscreen=fragment_flags.uses_texscreen;
 	p_shader->has_screen_uv=fragment_flags.uses_screen_uv;
 	p_shader->can_zpass=!fragment_flags.uses_discard && !vertex_flags.vertex_code_writes_vertex;
+	p_shader->uses_normal=fragment_flags.uses_normal || light_flags.uses_normal;
 	p_shader->uses_time=uses_time;
 	p_shader->version++;
 
@@ -4906,31 +4962,46 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 
 		Material::UniformData ud;
 
-		bool keep=true;
+		bool keep=true; //keep material value
+		bool has_old = old_mparams.has(E->key());
+		bool old_inuse=has_old && old_mparams[E->key()].inuse;
 
-		if (!old_mparams.has(E->key()))
+		if (!has_old || !old_inuse)
 			keep=false;
 		else if (old_mparams[E->key()].value.get_type()!=E->value().default_value.get_type()) {
-
-			if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
+			//type changed between old and new
+			/*if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
 				if (E->value().default_value.get_type()!=Variant::_RID) //hackfor textures
 					keep=false;
 			} else if (!old_mparams[E->key()].value.is_num() || !E->value().default_value.get_type())
+				keep=false;*/
+
+			//value is invalid because type differs and default is not null
+			if (E->value().default_value.get_type()!=Variant::NIL)
 				keep=false;
 		}
 
+		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+
 		if (keep) {
 			ud.value=old_mparams[E->key()].value;
+
 			//print_line("KEEP: "+String(E->key()));
 		} else {
-			ud.value=E->value().default_value;
+			if (ud.istexture && p_material->shader_cache->default_textures.has(E->key()))
+				ud.value=p_material->shader_cache->default_textures[E->key()];
+			else
+				ud.value=E->value().default_value;
+			old_inuse=false; //if reverted to default, obviously did not work
+
 			//print_line("NEW: "+String(E->key())+" because: hasold-"+itos(old_mparams.has(E->key())));
 			//if (old_mparams.has(E->key()))
 			//	print_line(" told "+Variant::get_type_name(old_mparams[E->key()].value.get_type())+" tnew "+Variant::get_type_name(E->value().default_value.get_type()));
 		}
 
-		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+
 		ud.index=idx++;
+		ud.inuse=old_inuse;
 		mparams[E->key()]=ud;
 	}
 
@@ -5051,22 +5122,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 						E->get().value=RID(); //nullify, invalid texture
 						rid=RID();
 					}
-				} else {
-
-
 				}
-
-				if (!rid.is_valid()) {
-					//use from default textures
-					Map<StringName,RID>::Element *F=p_material->shader_cache->default_textures.find(E->key());
-					if (F) {
-						t=texture_owner.get(F->get());
-						if (!t) {
-							p_material->shader_cache->default_textures.erase(E->key());
-						}
-					}
-				}
-
 
 				glActiveTexture(GL_TEXTURE0+texcoord);
 				glUniform1i(loc,texcoord); //TODO - this could happen automatically on compile...
@@ -5091,12 +5147,6 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 		}
 
-		for (Map<StringName,RID>::Element *E=p_material->shader_cache->default_textures.front();E;E=E->next()) {
-			if (p_material->shader_params.has(E->key()))
-				continue;
-
-
-		}
 
 		if (p_material->shader_cache->has_texscreen && framebuffer.active) {
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
@@ -7763,6 +7813,7 @@ void RasterizerGLES2::canvas_begin() {
 	canvas_tex=RID();
 	//material_shader.unbind();
 	canvas_shader.unbind();
+	canvas_shader.set_custom_shader(0);
 	canvas_shader.bind();
 	canvas_shader.set_uniform(CanvasShaderGLES2::TEXTURE, 0);
 	_set_color_attrib(Color(1,1,1));
@@ -8262,6 +8313,311 @@ void RasterizerGLES2::canvas_set_transform(const Matrix32& p_transform) {
 	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,p_transform);
 
 	//canvas_transform = Variant(p_transform);
+}
+
+void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
+
+
+	CanvasItem *current_clip=NULL;
+	RID last_shader;
+
+	Transform canvas_transform;
+	canvas_transform.translate(-(viewport.width / 2.0f), -(viewport.height / 2.0f), 0.0f);
+	float csy = 1.0;
+	if (current_rt && current_rt_vflip)
+		csy = -1.0;
+
+	canvas_transform.scale( Vector3( 2.0f / viewport.width, csy * -2.0f / viewport.height, 1.0f ) );
+
+
+	canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
+	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+
+	while(p_item_list) {
+
+		CanvasItem *ci=p_item_list;
+
+		if (ci->vp_render) {
+			if (draw_viewport_func) {
+				draw_viewport_func(ci->vp_render->owner,ci->vp_render->udata,ci->vp_render->rect);
+			}
+			memdelete(ci->vp_render);
+			ci->vp_render=NULL;
+			last_shader=RID();
+		}
+
+		if (current_clip!=ci->final_clip_owner) {
+
+			current_clip=ci->final_clip_owner;
+
+			//setup clip
+			if (current_clip) {
+
+				glEnable(GL_SCISSOR_TEST);
+				glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+				current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+			} else {
+
+				glDisable(GL_SCISSOR_TEST);
+			}
+		}
+
+
+		//begin rect
+
+		if (ci->shader!=last_shader) {
+
+			Shader *shader = NULL;
+			if (ci->shader.is_valid()) {
+				shader = shader_owner.get(ci->shader);
+				if (shader && !shader->valid) {
+					shader=NULL;
+				}
+			}
+
+			if (shader) {
+				canvas_shader.set_custom_shader(shader->custom_code_id);
+				canvas_shader.bind();
+
+				if (ci->shader_version!=shader->version) {
+					//todo optimize uniforms
+					ci->shader_version=shader->version;
+				}
+				//this can be optimized..
+				int tex_id=1;
+				int idx=0;
+				for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
+
+
+					Map<StringName,Variant>::Element *F=ci->shader_param.find(E->key());
+					Variant &v=F?F->get():E->get().default_value;
+					if (v.get_type()==Variant::_RID || v.get_type()==Variant::OBJECT) {
+						int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
+
+						glActiveTexture(GL_TEXTURE0+tex_id);
+						RID tex = v;
+						Texture *t=texture_owner.get(tex);
+						if (!t)
+							glBindTexture(GL_TEXTURE_2D,white_tex);
+						else
+							glBindTexture(t->target,t->tex_id);
+
+						glUniform1i(loc,tex_id);
+						tex_id++;
+
+					} else {
+						canvas_shader.set_custom_uniform(idx,v);
+					}
+
+					idx++;
+				}
+
+
+				if (shader->has_texscreen && framebuffer.active) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
+					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_TEX,tex_id);
+					glActiveTexture(GL_TEXTURE0+tex_id);
+					glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
+
+				}
+				if (shader->has_screen_uv) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
+				}
+
+				if (shader->uses_time) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::TIME,Math::fmod(last_time,300.0));
+					draw_next_frame=true;
+				}
+					//if uses TIME - draw_next_frame=true
+
+			} else {
+				canvas_shader.set_custom_shader(0);
+				canvas_shader.bind();
+
+			}
+
+			canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
+			last_shader=ci->shader;
+		}
+
+		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);
+		canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
+
+
+		bool reclip=false;
+
+		if (ci==p_item_list || ci->blend_mode!=canvas_blend_mode) {
+
+			switch(ci->blend_mode) {
+
+				 case VS::MATERIAL_BLEND_MODE_MIX: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+
+				 } break;
+				 case VS::MATERIAL_BLEND_MODE_ADD: {
+
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+
+				 } break;
+				 case VS::MATERIAL_BLEND_MODE_SUB: {
+
+					glBlendEquation(GL_FUNC_SUBTRACT);
+					glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+				 } break;
+				case VS::MATERIAL_BLEND_MODE_MUL: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_DST_COLOR,GL_ZERO);
+				} break;
+				case VS::MATERIAL_BLEND_MODE_PREMULT_ALPHA: {
+					glBlendEquation(GL_FUNC_ADD);
+					glBlendFunc(GL_ONE,GL_ONE_MINUS_SRC_ALPHA);
+				} break;
+
+			}
+
+			canvas_blend_mode=ci->blend_mode;
+		}
+
+		int cc=ci->commands.size();
+		CanvasItem::Command **commands = ci->commands.ptr();
+
+		canvas_opacity = ci->final_opacity;
+
+		for(int i=0;i<cc;i++) {
+
+			CanvasItem::Command *c=commands[i];
+
+			switch(c->type) {
+				case CanvasItem::Command::TYPE_LINE: {
+
+					CanvasItem::CommandLine* line = static_cast<CanvasItem::CommandLine*>(c);
+					canvas_draw_line(line->from,line->to,line->color,line->width);
+				} break;
+				case CanvasItem::Command::TYPE_RECT: {
+
+					CanvasItem::CommandRect* rect = static_cast<CanvasItem::CommandRect*>(c);
+//						canvas_draw_rect(rect->rect,rect->region,rect->source,rect->flags&CanvasItem::CommandRect::FLAG_TILE,rect->flags&CanvasItem::CommandRect::FLAG_FLIP_H,rect->flags&CanvasItem::CommandRect::FLAG_FLIP_V,rect->texture,rect->modulate);
+#if 0
+					int flags=0;
+
+					if (rect->flags&CanvasItem::CommandRect::FLAG_REGION) {
+						flags|=Rasterizer::CANVAS_RECT_REGION;
+					}
+					if (rect->flags&CanvasItem::CommandRect::FLAG_TILE) {
+						flags|=Rasterizer::CANVAS_RECT_TILE;
+					}
+					if (rect->flags&CanvasItem::CommandRect::FLAG_FLIP_H) {
+
+						flags|=Rasterizer::CANVAS_RECT_FLIP_H;
+					}
+					if (rect->flags&CanvasItem::CommandRect::FLAG_FLIP_V) {
+
+						flags|=Rasterizer::CANVAS_RECT_FLIP_V;
+					}
+#else
+
+					int flags=rect->flags;
+#endif
+					canvas_draw_rect(rect->rect,flags,rect->source,rect->texture,rect->modulate);
+
+				} break;
+				case CanvasItem::Command::TYPE_STYLE: {
+
+					CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
+					canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
+
+				} break;
+				case CanvasItem::Command::TYPE_PRIMITIVE: {
+
+					CanvasItem::CommandPrimitive* primitive = static_cast<CanvasItem::CommandPrimitive*>(c);
+					canvas_draw_primitive(primitive->points,primitive->colors,primitive->uvs,primitive->texture,primitive->width);
+				} break;
+				case CanvasItem::Command::TYPE_POLYGON: {
+
+					CanvasItem::CommandPolygon* polygon = static_cast<CanvasItem::CommandPolygon*>(c);
+					canvas_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
+
+				} break;
+
+				case CanvasItem::Command::TYPE_POLYGON_PTR: {
+
+					CanvasItem::CommandPolygonPtr* polygon = static_cast<CanvasItem::CommandPolygonPtr*>(c);
+					canvas_draw_polygon(polygon->count,polygon->indices,polygon->points,polygon->uvs,polygon->colors,polygon->texture,false);
+				} break;
+				case CanvasItem::Command::TYPE_CIRCLE: {
+
+					CanvasItem::CommandCircle* circle = static_cast<CanvasItem::CommandCircle*>(c);
+					static const int numpoints=32;
+					Vector2 points[numpoints+1];
+					points[numpoints]=circle->pos;
+					int indices[numpoints*3];
+
+					for(int i=0;i<numpoints;i++) {
+
+						points[i]=circle->pos+Vector2( Math::sin(i*Math_PI*2.0/numpoints),Math::cos(i*Math_PI*2.0/numpoints) )*circle->radius;
+						indices[i*3+0]=i;
+						indices[i*3+1]=(i+1)%numpoints;
+						indices[i*3+2]=numpoints;
+					}
+					canvas_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
+					//canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
+				} break;
+				case CanvasItem::Command::TYPE_TRANSFORM: {
+
+					CanvasItem::CommandTransform* transform = static_cast<CanvasItem::CommandTransform*>(c);
+					canvas_set_transform(transform->xform);
+				} break;
+				case CanvasItem::Command::TYPE_BLEND_MODE: {
+
+					CanvasItem::CommandBlendMode* bm = static_cast<CanvasItem::CommandBlendMode*>(c);
+					canvas_set_blend_mode(bm->blend_mode);
+
+				} break;
+				case CanvasItem::Command::TYPE_CLIP_IGNORE: {
+
+					CanvasItem::CommandClipIgnore* ci = static_cast<CanvasItem::CommandClipIgnore*>(c);
+					if (current_clip) {
+
+						if (ci->ignore!=reclip) {
+							if (ci->ignore) {
+
+								glDisable(GL_SCISSOR_TEST);
+								reclip=true;
+							} else  {
+
+								glEnable(GL_SCISSOR_TEST);
+								glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+								current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+								reclip=false;
+							}
+						}
+					}
+
+
+
+				} break;
+			}
+		}
+
+
+		if (reclip) {
+
+			glEnable(GL_SCISSOR_TEST);
+			glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+			current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+		}
+
+
+
+		p_item_list=p_item_list->next;
+	}
+
+	if (current_clip) {
+		glDisable(GL_SCISSOR_TEST);
+	}
+
 }
 
 /* ENVIRONMENT */

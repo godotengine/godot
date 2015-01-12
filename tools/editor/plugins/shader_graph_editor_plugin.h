@@ -54,6 +54,7 @@ class ShaderGraphView : public Node {
 	CustomPropertyEditor *ped_popup;
 	bool block_update;
 
+	Label *status;
 	GraphEdit *graph_edit;
 	Ref<ShaderGraph> graph;
 	int edited_id;
@@ -66,6 +67,8 @@ class ShaderGraphView : public Node {
 
 
 	void _connection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
+	void _disconnection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot);
+
 	void _node_removed(int p_id);
 	void _node_moved(const Vector2& p_from, const Vector2& p_to,int p_id);
 	void _move_node(int p_id,const Vector2& p_to);
@@ -93,7 +96,7 @@ class ShaderGraphView : public Node {
 	void _variant_edited();
 	void _comment_edited(int p_id,Node* p_button);
 
-
+	void _sg_updated();
 	Map<int,GraphNode*> node_map;
 protected:
 	void _notification(int p_what);
