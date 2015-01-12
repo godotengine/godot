@@ -8526,7 +8526,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				case CanvasItem::Command::TYPE_STYLE: {
 
 					CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
-					canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
+					canvas_draw_style_box(style->rect,style->texture,style->region,style->margin,style->draw_center,style->color);
 
 				} break;
 				case CanvasItem::Command::TYPE_PRIMITIVE: {

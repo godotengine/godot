@@ -609,6 +609,7 @@ public:
 
 			Rect2 rect;
 			RID texture;
+			Rect2 region;
 			float margin[4];
 			float draw_center;
 			Color color;
