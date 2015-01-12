@@ -1174,6 +1174,11 @@ class RasterizerGLES2 : public Rasterizer {
 	float canvas_opacity;
 	bool uses_texpixel_size;
 	bool rebind_texpixel_size;
+	Transform canvas_transform;
+	RID canvas_last_shader;
+	bool canvas_texscreen_used;
+
+
 	_FORCE_INLINE_ Texture* _bind_canvas_texture(const RID& p_texture);
 	VS::MaterialBlendMode canvas_blend_mode;
 
@@ -1542,6 +1547,7 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width);
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor);
 	virtual void canvas_set_transform(const Matrix32& p_transform);
+
 	virtual void canvas_render_items(CanvasItem *p_item_list);
 
 	/* ENVIRONMENT */

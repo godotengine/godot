@@ -3699,6 +3699,15 @@ void VisualServerRaster::canvas_item_set_z(RID p_item, int p_z) {
 
 }
 
+void VisualServerRaster::canvas_item_set_use_parent_shader(RID p_item, bool p_enable) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->use_parent_shader=p_enable;
+
+}
+
 void VisualServerRaster::canvas_item_set_shader(RID p_item, RID p_shader) {
 
 	VS_CHANGED;
@@ -6139,7 +6148,7 @@ void VisualServerRaster::_render_canvas_item_tree(CanvasItem *p_canvas_item,cons
 	}
 
 
-	_render_canvas_item(p_canvas_item,p_transform,p_clip_rect,1.0,z_list,z_last_list,NULL);
+	_render_canvas_item(p_canvas_item,p_transform,p_clip_rect,1.0,z_list,z_last_list,NULL,NULL);
 
 	for(int i=0;i<CANVAS_ITEM_Z_MAX;i++) {
 		if (!z_list[i])
@@ -6156,9 +6165,10 @@ void VisualServerRaster::_render_canvas_item_viewport(VisualServer* p_self,void 
 	Viewport *vp=(Viewport*)p_vp;
 	self->_draw_viewport(vp,p_rect.pos.x,p_rect.pos.y,p_rect.size.x,p_rect.size.y);
 	self->rasterizer->canvas_begin();
+
 }
 
-void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip) {
+void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner) {
 
 	CanvasItem *ci = p_canvas_item;
 
@@ -6203,6 +6213,12 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		ci->vp_render=NULL;
 	}
 
+	if (ci->use_parent_shader && p_shader_owner)
+		ci->shader_owner=p_shader_owner;
+	else {
+		p_shader_owner=ci;
+		ci->shader_owner=NULL;
+	}
 
 
 	float opacity = ci->opacity * p_opacity;
@@ -6231,7 +6247,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 		if (child_items[i]->ontop)
 			continue;
-		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner);
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
 	}
 
 
@@ -6257,7 +6273,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 		if (!child_items[i]->ontop)
 			continue;
-		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner);
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
 	}
 
 }
@@ -6265,6 +6281,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_transform) {
 
 	rasterizer->canvas_begin();
+
 
 	int l = p_canvas->child_items.size();
 
@@ -6452,7 +6469,7 @@ void VisualServerRaster::_draw_viewports() {
 			rasterizer->set_viewport(viewport_rect);
 		}
 
-		rasterizer->canvas_begin();
+		rasterizer->canvas_begin();		
 		rasterizer->canvas_disable_blending();
 		rasterizer->canvas_begin_rect(Matrix32());
 		rasterizer->canvas_draw_rect(E->get()->rt_to_screen_rect,0,Rect2(Point2(),E->get()->rt_to_screen_rect.size),E->get()->render_target_texture,Color(1,1,1));

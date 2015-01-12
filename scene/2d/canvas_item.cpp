@@ -746,6 +746,17 @@ void CanvasItem::set_shader(const Ref<Shader>& p_shader) {
 	_change_notify(); //properties for shader exposed
 }
 
+void CanvasItem::set_use_parent_shader(bool p_use_parent_shader) {
+
+	use_parent_shader=p_use_parent_shader;
+	VS::get_singleton()->canvas_item_set_use_parent_shader(canvas_item,p_use_parent_shader);
+}
+
+bool CanvasItem::get_use_parent_shader() const{
+
+	return use_parent_shader;
+}
+
 Ref<Shader> CanvasItem::get_shader() const{
 
 	return shader;
@@ -868,17 +879,20 @@ void CanvasItem::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_shader","shader"),&CanvasItem::set_shader);
 	ObjectTypeDB::bind_method(_MD("get_shader"),&CanvasItem::get_shader);
+	ObjectTypeDB::bind_method(_MD("set_use_parent_shader","enable"),&CanvasItem::set_use_parent_shader);
+	ObjectTypeDB::bind_method(_MD("get_use_parent_shader"),&CanvasItem::get_use_parent_shader);
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"shader/shader",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemShader,CanvasItemShaderGraph"), _SCS("set_shader"),_SCS("get_shader") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"shader/use_parent"), _SCS("set_use_parent_shader"),_SCS("get_use_parent_shader") );
 	//exporting these two things doesn't really make much sense i think
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), _SCS("set_as_toplevel"),_SCS("is_set_as_toplevel") );
 	//ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),_SCS("set_transform_notify"),_SCS("is_transform_notify_enabled"));
@@ -955,6 +969,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	block_transform_notify=false;
 //	viewport=NULL;
 	canvas_layer=NULL;
+	use_parent_shader;
 	global_invalid=true;
 
 	C=NULL;

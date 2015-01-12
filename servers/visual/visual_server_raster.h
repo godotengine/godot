@@ -85,6 +85,7 @@ class VisualServerRaster : public VisualServer {
 		Vector<Point2> shape;
 		Rect2 bounds;
 
+
 		Portal() { enabled=true; disable_distance=50; disable_color=Color(); connect_range=0.8; }
 	};
 
@@ -382,6 +383,7 @@ class VisualServerRaster : public VisualServer {
 		bool sort_y;
 		float opacity;
 		float self_opacity;
+		bool use_parent_shader;
 
 
 		Vector<CanvasItem*> child_items;
@@ -393,6 +395,7 @@ class VisualServerRaster : public VisualServer {
 			opacity=1;
 			self_opacity=1;
 			sort_y=false;
+			use_parent_shader=false;
 		}
 	};
 
@@ -597,7 +600,7 @@ class VisualServerRaster : public VisualServer {
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	static void _render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect);
 	void _render_canvas_item_tree(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect);
-	void _render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect,float p_opacity,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip);
+	void _render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect,float p_opacity,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner);
 	void _render_canvas(Canvas *p_canvas,const Matrix32 &p_transform);
 	Vector<Vector3> _camera_generate_endpoints(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
 	Vector<Plane> _camera_generate_orthogonal_planes(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
@@ -1112,6 +1115,9 @@ public:
 
 	virtual void canvas_item_set_shader(RID p_item, RID p_shader);
 	virtual RID canvas_item_get_shader(RID p_item) const;
+
+	virtual void canvas_item_set_use_parent_shader(RID p_item, bool p_enable);
+
 
 	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value);
 	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const;

@@ -4961,7 +4961,7 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 			keep=false;
 		else if (old_mparams[E->key()].value.get_type()!=E->value().default_value.get_type()) {
 			//type changed between old and new
-			/*if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
+			/*	if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
 				if (E->value().default_value.get_type()!=Variant::_RID) //hackfor textures
 					keep=false;
 			} else if (!old_mparams[E->key()].value.is_num() || !E->value().default_value.get_type())
@@ -7799,7 +7799,7 @@ void RasterizerGLES2::canvas_begin() {
 	canvas_shader.bind();
 	canvas_shader.set_uniform(CanvasShaderGLES2::TEXTURE, 0);
 	_set_color_attrib(Color(1,1,1));
-	Transform canvas_transform;
+	canvas_transform=Transform();
 	canvas_transform.translate(-(viewport.width / 2.0f), -(viewport.height / 2.0f), 0.0f);
 	float csy = 1.0;
 	if (current_rt && current_rt_vflip)
@@ -7813,6 +7813,9 @@ void RasterizerGLES2::canvas_begin() {
 	canvas_opacity=1.0;
 	canvas_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 
+	canvas_texscreen_used=false;
+	uses_texpixel_size=false;
+	canvas_last_shader=RID();
 
 }
 
@@ -8294,26 +8297,13 @@ void RasterizerGLES2::canvas_set_transform(const Matrix32& p_transform) {
 	//canvas_transform = Variant(p_transform);
 }
 
+
 void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 
 	CanvasItem *current_clip=NULL;
-	RID last_shader;
 
-	Transform canvas_transform;
-	canvas_transform.translate(-(viewport.width / 2.0f), -(viewport.height / 2.0f), 0.0f);
-	float csy = 1.0;
-	if (current_rt && current_rt_vflip)
-		csy = -1.0;
-
-	canvas_transform.scale( Vector3( 2.0f / viewport.width, csy * -2.0f / viewport.height, 1.0f ) );
 	canvas_opacity=1.0;
-	uses_texpixel_size=false;
-
-
-	canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
-	canvas_shader.set_uniform(CanvasShaderGLES2::EXTRA_MATRIX,Matrix32());
-
 	while(p_item_list) {
 
 		CanvasItem *ci=p_item_list;
@@ -8324,7 +8314,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 			}
 			memdelete(ci->vp_render);
 			ci->vp_render=NULL;
-			last_shader=RID();
+			canvas_last_shader=RID();
 		}
 
 		if (current_clip!=ci->final_clip_owner) {
@@ -8345,12 +8335,13 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 
 		//begin rect
+		CanvasItem *shader_owner = ci->shader_owner?ci->shader_owner:ci;
 
-		if (ci->shader!=last_shader) {
+		if (shader_owner->shader!=canvas_last_shader) {
 
 			Shader *shader = NULL;
-			if (ci->shader.is_valid()) {
-				shader = shader_owner.get(ci->shader);
+			if (shader_owner->shader.is_valid()) {
+				shader = this->shader_owner.get(shader_owner->shader);
 				if (shader && !shader->valid) {
 					shader=NULL;
 				}
@@ -8361,9 +8352,9 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				if (canvas_shader.bind())
 					rebind_texpixel_size=true;
 
-				if (ci->shader_version!=shader->version) {
+				if (shader_owner->shader_version!=shader->version) {
 					//todo optimize uniforms
-					ci->shader_version=shader->version;
+					shader_owner->shader_version=shader->version;
 				}
 				//this can be optimized..
 				int tex_id=1;
@@ -8371,7 +8362,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
 
 
-					Map<StringName,Variant>::Element *F=ci->shader_param.find(E->key());
+					Map<StringName,Variant>::Element *F=shader_owner->shader_param.find(E->key());
 					Variant &v=F?F->get():E->get().default_value;
 					if (v.get_type()==Variant::_RID || v.get_type()==Variant::OBJECT) {
 						int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
@@ -8422,7 +8413,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 			}
 
 			canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
-			last_shader=ci->shader;
+			canvas_last_shader=shader_owner->shader;
 		}
 
 		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);

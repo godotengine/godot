@@ -1120,8 +1120,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
 	//builtins
 	{ "WORLD_MATRIX", TYPE_MAT4},
 	{ "PROJECTION_MATRIX", TYPE_MAT4},
-	{ "EXTRA_MATRIX", TYPE_MAT4},
-	{ "MODELVIEW_MATRIX", TYPE_MAT4},
+	{ "EXTRA_MATRIX", TYPE_MAT4},	
 	{ "TIME", TYPE_FLOAT},
 	{ NULL, TYPE_VOID},
 };
