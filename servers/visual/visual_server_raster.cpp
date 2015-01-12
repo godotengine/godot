@@ -3730,7 +3730,10 @@ Variant VisualServerRaster::canvas_item_get_shader_param(RID p_canvas_item, cons
 
 	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
 	ERR_FAIL_COND_V(!canvas_item,Variant());
-	ERR_FAIL_COND_V(!canvas_item->shader_param.has(p_param),Variant());
+	if (!canvas_item->shader_param.has(p_param)) {
+		ERR_FAIL_COND_V(!canvas_item->shader.is_valid(),Variant());
+		return rasterizer->shader_get_default_param(canvas_item->shader,p_param);
+	}
 
 	return canvas_item->shader_param[p_param];
 }

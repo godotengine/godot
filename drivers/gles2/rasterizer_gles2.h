@@ -192,6 +192,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool uses_discard;
 		bool uses_time;
 		bool uses_normal;
+		bool uses_texpixel_size;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
@@ -1171,6 +1172,8 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint white_tex;
 	RID canvas_tex;
 	float canvas_opacity;
+	bool uses_texpixel_size;
+	bool rebind_texpixel_size;
 	_FORCE_INLINE_ Texture* _bind_canvas_texture(const RID& p_texture);
 	VS::MaterialBlendMode canvas_blend_mode;
 
@@ -1261,6 +1264,8 @@ public:
 
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
+
+	virtual Variant shader_get_default_param(RID p_shader, const StringName& p_name);
 
 	/* COMMON MATERIAL API */
 

@@ -433,6 +433,8 @@ public:
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
 
+	virtual Variant shader_get_default_param(RID p_shader, const StringName& p_name);
+
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create();

@@ -1564,6 +1564,7 @@ void RasterizerGLES2::shader_set_default_texture_param(RID p_shader, const Strin
 
 RID RasterizerGLES2::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const{
 	const Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,RID());
 
 	const Map<StringName,RID>::Element *E=shader->default_textures.find(p_name);
 	if (!E)
@@ -1571,6 +1572,22 @@ RID RasterizerGLES2::shader_get_default_texture_param(RID p_shader, const String
 	return E->get();
 }
 
+Variant RasterizerGLES2::shader_get_default_param(RID p_shader, const StringName& p_name) {
+
+	Shader *shader=shader_owner.get(p_shader);
+	ERR_FAIL_COND_V(!shader,Variant());
+
+	//update shader params if necesary
+	//make sure the shader is compiled and everything
+	//so the actual parameters can be properly retrieved!
+	if (shader->dirty_list.in_list()) {
+		_update_shader(shader);
+	}
+	if (shader->valid && shader->uniforms.has(p_name))
+		return shader->uniforms[p_name].default_value;
+
+	return Variant();
+}
 
 
 /* COMMON MATERIAL API */
@@ -4567,6 +4584,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (fragment_flags.uses_screen_uv) {
 			enablers.push_back("#define ENABLE_SCREEN_UV\n");
 		}
+		if (fragment_flags.uses_texpixel_size) {
+			enablers.push_back("#define USE_TEXPIXEL_SIZE\n");
+		}
 
 		canvas_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 
@@ -4582,6 +4602,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 	p_shader->can_zpass=!fragment_flags.uses_discard && !vertex_flags.vertex_code_writes_vertex;
 	p_shader->uses_normal=fragment_flags.uses_normal || light_flags.uses_normal;
 	p_shader->uses_time=uses_time;
+	p_shader->uses_texpixel_size=fragment_flags.uses_texpixel_size;
 	p_shader->version++;
 
 }
@@ -7874,7 +7895,7 @@ void RasterizerGLES2::canvas_end_rect() {
 
 RasterizerGLES2::Texture* RasterizerGLES2::_bind_canvas_texture(const RID& p_texture) {
 
-	if (p_texture==canvas_tex) {
+	if (p_texture==canvas_tex && !rebind_texpixel_size) {
 		if (canvas_tex.is_valid()) {
 			Texture*texture=texture_owner.get(p_texture);
 			return texture;
@@ -7882,14 +7903,16 @@ RasterizerGLES2::Texture* RasterizerGLES2::_bind_canvas_texture(const RID& p_tex
 		return NULL;
 	}
 
-
+	rebind_texpixel_size=false;
 
 	if (p_texture.is_valid()) {
+
 
 		Texture*texture=texture_owner.get(p_texture);
 		if (!texture) {
 			canvas_tex=RID();
 			glBindTexture(GL_TEXTURE_2D,white_tex);
+
 			return NULL;
 		}
 
@@ -7898,6 +7921,9 @@ RasterizerGLES2::Texture* RasterizerGLES2::_bind_canvas_texture(const RID& p_tex
 
 		glBindTexture(GL_TEXTURE_2D,texture->tex_id);
 		canvas_tex=p_texture;
+		if (uses_texpixel_size) {
+			canvas_shader.set_uniform(CanvasShaderGLES2::TEXPIXEL_SIZE,Size2(1.0/texture->width,1.0/texture->height));
+		}
 		return texture;
 
 
@@ -8281,6 +8307,8 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 		csy = -1.0;
 
 	canvas_transform.scale( Vector3( 2.0f / viewport.width, csy * -2.0f / viewport.height, 1.0f ) );
+	canvas_opacity=1.0;
+	uses_texpixel_size=false;
 
 
 	canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
@@ -8330,7 +8358,8 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 			if (shader) {
 				canvas_shader.set_custom_shader(shader->custom_code_id);
-				canvas_shader.bind();
+				if (canvas_shader.bind())
+					rebind_texpixel_size=true;
 
 				if (ci->shader_version!=shader->version) {
 					//todo optimize uniforms
@@ -8383,9 +8412,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				}
 					//if uses TIME - draw_next_frame=true
 
+				uses_texpixel_size=shader->uses_texpixel_size;
+
 			} else {
 				canvas_shader.set_custom_shader(0);
 				canvas_shader.bind();
+				uses_texpixel_size=false;
 
 			}
 

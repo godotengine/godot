@@ -1127,11 +1127,13 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
 };
 const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
 
+	{ "SRC_COLOR", TYPE_VEC4},
 	{ "POSITION", TYPE_VEC4},
 	{ "NORMAL", TYPE_VEC3},
 	{ "UV", TYPE_VEC2},
 	{ "COLOR", TYPE_VEC4},
 	{ "TEXTURE", TYPE_TEXTURE},
+	{ "TEXTURE_PIXEL_SIZE", TYPE_VEC2},
 	{ "VAR1", TYPE_VEC4},
 	{ "VAR2", TYPE_VEC4},
 	{ "SCREEN_UV", TYPE_VEC2},
