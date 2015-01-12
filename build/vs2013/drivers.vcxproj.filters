@@ -82,9 +82,6 @@
     <Filter Include="drivers\gl_context">
       <UniqueIdentifier>{a2ae1a9a-eb28-41f7-8ae4-90c17c09a833}</UniqueIdentifier>
     </Filter>
-    <Filter Include="drivers\gles1">
-      <UniqueIdentifier>{bb139a01-b362-4ebb-92aa-1aed92e7f8f2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="drivers\gles2">
       <UniqueIdentifier>{cc586b2a-e2fc-453b-8abc-fbf3f670ae1a}</UniqueIdentifier>
     </Filter>
@@ -890,9 +887,6 @@
     </ClCompile>
     <ClCompile Include="..\..\drivers\gl_context\glew.c">
       <Filter>drivers\gl_context</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\drivers\gles1\rasterizer_gles1.cpp">
-      <Filter>drivers\gles1</Filter>
     </ClCompile>
     <ClCompile Include="..\..\drivers\gles2\rasterizer_gles2.cpp">
       <Filter>drivers\gles2</Filter>
@@ -3865,9 +3859,6 @@
     </ClInclude>
     <ClInclude Include="..\..\drivers\gl_context\wglew.h">
       <Filter>drivers\gl_context</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\drivers\gles1\rasterizer_gles1.h">
-      <Filter>drivers\gles1</Filter>
     </ClInclude>
     <ClInclude Include="..\..\drivers\gles2\rasterizer_gles2.h">
       <Filter>drivers\gles2</Filter>

@@ -821,7 +821,6 @@
     <ClCompile Include="..\..\drivers\dds\texture_loader_dds.cpp" />
     <ClCompile Include="..\..\drivers\etc1\image_etc.cpp" />
     <ClCompile Include="..\..\drivers\etc1\rg_etc1.cpp" />
-    <ClCompile Include="..\..\drivers\gles1\rasterizer_gles1.cpp" />
     <ClCompile Include="..\..\drivers\gles2\rasterizer_gles2.cpp" />
     <ClCompile Include="..\..\drivers\gles2\rasterizer_instance_gles2.cpp" />
     <ClCompile Include="..\..\drivers\gles2\shader_compiler_gles2.cpp" />
@@ -1473,7 +1472,6 @@
     <ClInclude Include="..\..\drivers\dds\texture_loader_dds.h" />
     <ClInclude Include="..\..\drivers\etc1\image_etc.h" />
     <ClInclude Include="..\..\drivers\etc1\rg_etc1.h" />
-    <ClInclude Include="..\..\drivers\gles1\rasterizer_gles1.h" />
     <ClInclude Include="..\..\drivers\gles2\rasterizer_gles2.h" />
     <ClInclude Include="..\..\drivers\gles2\rasterizer_instance_gles2.h" />
     <ClInclude Include="..\..\drivers\gles2\shaders\blur.glsl.h" />
