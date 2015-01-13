@@ -67,6 +67,8 @@ class Body2DSW : public CollisionObject2DSW {
 	Vector2 applied_force;
 	real_t applied_torque;
 
+	Vector2 one_way_collision_direction;
+
 
 	SelfList<Body2DSW> active_list;
 	SelfList<Body2DSW> inertia_update_list;
@@ -215,6 +217,9 @@ public:
 
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode=p_mode; }
 	_FORCE_INLINE_ Physics2DServer::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
+
+	void set_one_way_collision_direction(const Vector2& p_dir) { one_way_collision_direction=p_dir; }
+	Vector2 get_one_way_collision_direction() const { return one_way_collision_direction; }
 
 	void set_space(Space2DSW *p_space);
 

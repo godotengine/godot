@@ -80,6 +80,16 @@ public:
 	Ref<Texture> get_default_texture_param(const StringName& p_param) const;
 	void get_default_texture_param_list(List<StringName>* r_textures) const;
 
+	_FORCE_INLINE_ StringName remap_param(const StringName& p_param) const {
+		if (params_cache_dirty)
+			get_param_list(NULL);
+
+		const Map<StringName,StringName>::Element *E=params_cache.find(p_param);
+		if (E)
+			return E->get();
+		return StringName();
+	}
+
 	virtual RID get_rid() const;
 
 	Shader(Mode p_mode);
@@ -96,6 +106,15 @@ class MaterialShader : public Shader {
 public:
 
 	MaterialShader() : Shader(MODE_MATERIAL) {};
+};
+
+class CanvasItemShader : public Shader {
+
+	OBJ_TYPE(CanvasItemShader,Shader);
+
+public:
+
+	CanvasItemShader() : Shader(MODE_CANVAS_ITEM) {};
 };
 
 

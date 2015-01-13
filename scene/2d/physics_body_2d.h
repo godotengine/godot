@@ -39,6 +39,7 @@ class PhysicsBody2D : public CollisionObject2D {
 	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
 
 	uint32_t mask;
+	Vector2 one_way_collision_direction;
 protected:
 
 	void _notification(int p_what);
@@ -52,6 +53,9 @@ public:
 
 	void add_collision_exception_with(Node* p_node); //must be physicsbody
 	void remove_collision_exception_with(Node* p_node);
+
+	void set_one_way_collision_direction(const Vector2& p_dir);
+	Vector2 get_one_way_collision_direction() const;
 
 	PhysicsBody2D();
 

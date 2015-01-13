@@ -43,13 +43,28 @@ void PhysicsBody2D::_notification(int p_what) {
 	*/
 }
 
+void PhysicsBody2D::set_one_way_collision_direction(const Vector2& p_dir) {
+
+	one_way_collision_direction=p_dir;
+	Physics2DServer::get_singleton()->body_set_one_way_collision_direction(get_rid(),p_dir);
+}
+
+Vector2 PhysicsBody2D::get_one_way_collision_direction() const{
+
+	return one_way_collision_direction;
+}
+
+
 void PhysicsBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
+	ObjectTypeDB::bind_method(_MD("set_one_way_collision_direction","dir"),&PhysicsBody2D::set_one_way_collision_direction);
+	ObjectTypeDB::bind_method(_MD("get_one_way_collision_direction"),&PhysicsBody2D::get_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
 }
 
 void PhysicsBody2D::set_layer_mask(uint32_t p_mask) {

@@ -28,9 +28,6 @@
 /*************************************************************************/
 #include "shader_graph.h"
 #include "scene/scene_string_names.h"
-//todo
-//-RGB ops
-//-mostrar error de conexion
 
 Array ShaderGraph::_get_node_list(ShaderType p_type) const {
 

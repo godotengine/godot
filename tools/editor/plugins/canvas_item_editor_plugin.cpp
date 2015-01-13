@@ -2688,6 +2688,11 @@ HSplitContainer *CanvasItemEditor::get_palette_split() {
 	return palette_split;
 }
 
+VSplitContainer *CanvasItemEditor::get_bottom_split() {
+
+	return bottom_split;
+}
+
 CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 
 	tool = TOOL_SELECT;
@@ -2702,9 +2707,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	add_child( hb );
 	hb->set_area_as_parent_rect();
 
+	bottom_split = memnew( VSplitContainer );
+	bottom_split->set_v_size_flags(SIZE_EXPAND_FILL);
+	add_child(bottom_split);
+
 	palette_split = memnew( HSplitContainer);
 	palette_split->set_v_size_flags(SIZE_EXPAND_FILL);
-	add_child(palette_split);
+	bottom_split->add_child(palette_split);
 
 	Control *vp_base = memnew (Control);
 	vp_base->set_v_size_flags(SIZE_EXPAND_FILL);
