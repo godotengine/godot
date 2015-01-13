@@ -86,7 +86,7 @@ def configure(env):
 		env["LD"]="clang++"
 		if (env["colored"]=="yes"):
 			if sys.stdout.isatty():
-				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
+				env.Append(CPPFLAGS=["-fcolor-diagnostics"])
 
 	import methods
 
