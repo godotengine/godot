@@ -500,6 +500,10 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_max_contacts_reported","body","amount"),&Physics2DServer::body_set_max_contacts_reported);
 	ObjectTypeDB::bind_method(_MD("body_get_max_contacts_reported","body"),&Physics2DServer::body_get_max_contacts_reported);
 
+	ObjectTypeDB::bind_method(_MD("body_set_one_way_collision_direction","normal"),&Physics2DServer::body_set_one_way_collision_direction);
+	ObjectTypeDB::bind_method(_MD("body_get_one_way_collision_direction"),&Physics2DServer::body_get_one_way_collision_direction);
+
+
 	ObjectTypeDB::bind_method(_MD("body_set_omit_force_integration","body","enable"),&Physics2DServer::body_set_omit_force_integration);
 	ObjectTypeDB::bind_method(_MD("body_is_omitting_force_integration","body"),&Physics2DServer::body_is_omitting_force_integration);
 

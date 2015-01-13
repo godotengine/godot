@@ -86,8 +86,9 @@ public:
 		ARRAY_WEIGHTS_SIZE=4,
 		MAX_PARTICLE_COLOR_PHASES=4,
 		MAX_PARTICLE_ATTRACTORS=4,
-		CANVAS_ITEM_Z_MAX=1024,
-		CANVAS_ITEM_Z_DEFAULT=512,
+		CANVAS_ITEM_Z_MIN=-4096,
+		CANVAS_ITEM_Z_MAX=4096,
+
 
 
 		MAX_CURSORS = 8,
@@ -985,6 +986,7 @@ public:
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore)=0;
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
 	virtual void canvas_item_set_z(RID p_item, int p_z)=0;
+	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable)=0;
 
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;
