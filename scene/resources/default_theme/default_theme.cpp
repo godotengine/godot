@@ -168,15 +168,12 @@ void make_default_theme() {
 
 	tex_cache = memnew( TexCacheMap );
 
-//	uint32_t last=OS::get_singleton()->get_ticks_msec();
-
 	Ref<Theme> t( memnew( Theme ) );
 
 	//Ref<Font> default_font = make_font(_bi_font_normal_height,_bi_font_normal_ascent,_bi_font_normal_valign,_bi_font_normal_charcount,_bi_font_normal_characters,make_icon(font_normal_png));
 	Ref<Font> default_font=make_font2(_builtin_normal_font_height,_builtin_normal_font_ascent,_builtin_normal_font_charcount,&_builtin_normal_font_charrects[0][0],_builtin_normal_font_kerning_pair_count,&_builtin_normal_font_kerning_pairs[0][0],_builtin_normal_font_img_width,_builtin_normal_font_img_height,_builtin_normal_font_img_data);
 	Ref<Font> source_font=make_font2(_builtin_source_font_height,_builtin_source_font_ascent,_builtin_source_font_charcount,&_builtin_source_font_charrects[0][0],_builtin_source_font_kerning_pair_count,&_builtin_source_font_kerning_pairs[0][0],_builtin_source_font_img_width,_builtin_source_font_img_height,_builtin_source_font_img_data);
 	Ref<Font> large_font=make_font2(_builtin_large_font_height,_builtin_large_font_ascent,_builtin_large_font_charcount,&_builtin_large_font_charrects[0][0],_builtin_large_font_kerning_pair_count,&_builtin_large_font_kerning_pairs[0][0],_builtin_large_font_img_width,_builtin_large_font_img_height,_builtin_large_font_img_data);
-
 
 	// Font Colors
 
@@ -186,7 +183,6 @@ void make_default_theme() {
 	Color control_font_color_disabled = Color(0.9,0.9,0.9,0.2);
 	Color control_font_color_pressed = Color::html("ffffff");
 	Color font_color_selection = Color::html("7d7d7d");
-
 
 
 	// Panel
@@ -524,6 +520,9 @@ void make_default_theme() {
 	t->set_constant("hseparation","PopupMenu",4);
 	t->set_constant("vseparation","PopupMenu",4);
 
+
+	// GraphNode
+
 	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png,6,24,6,5,16,24,16,5);
 	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
 	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
@@ -539,7 +538,7 @@ void make_default_theme() {
 
 
 	// Tree
-		
+
 	Ref<StyleBoxTexture> tree_selected = make_stylebox( selection_png,4,4,4,4,8,0,8,0);
 	Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
 
@@ -739,7 +738,7 @@ void make_default_theme() {
 
 	t->set_constant("icon_separator","HButtonArray", 4 );
 	t->set_constant("button_separator","HButtonArray", 8 );
-	
+
 	t->set_stylebox("focus","HButtonArray", focus );
 
 
