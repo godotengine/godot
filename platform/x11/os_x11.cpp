@@ -36,6 +36,9 @@
 #include "servers/physics/physics_server_sw.h"
 
 #include "X11/Xutil.h"
+#ifdef EXPERIMENTAL_WM_API
+#include "X11/extensions/Xinerama.h"
+#endif
 #include "main/main.h"
 
 
@@ -558,26 +561,37 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 }
 
 int OS_X11::get_screen_count() const {
-	return XScreenCount(x11_display);
+	int event_base, error_base;
+	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
+	if( !ext_okay ) return 0;
+	int count;
+	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
+	XFree(xsi);
+	return count;
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
-	if( p_screen >= XScreenCount(x11_display) )
-		return Point2i(0,0);
-
-	Window root = XRootWindow(x11_display, p_screen);
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, root, &xwa);
-	return Point2i(xwa.x, xwa.y);
+	int event_base, error_base;
+	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
+	if( !ext_okay ) return Point2i(0,0);
+	int count;
+	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
+	if( p_screen >= count ) return Point2i(0,0);
+	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
+	XFree(xsi);
+	return position;
 }
 
 Size2 OS_X11::get_screen_size(int p_screen) const {
-	if( p_screen >= XScreenCount(x11_display) )
-		return Size2i(0,0);
-	Window root = XRootWindow(x11_display, p_screen);
-	XWindowAttributes xwa;
-	XGetWindowAttributes(x11_display, root, &xwa);
-	return Size2i(xwa.width, xwa.height);
+	int event_base, error_base;
+	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
+	if( !ext_okay ) return Size2i(0,0);
+	int count;
+	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
+	if( p_screen >= count ) return Size2i(0,0);
+	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
+	XFree(xsi);
+	return size;
 }
 	
 

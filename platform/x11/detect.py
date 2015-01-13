@@ -38,6 +38,11 @@ def can_build():
 	if (x11_error):
 		print("xcursor not found.. x11 disabled.")
 		return False
+	
+	x11_error=os.system("pkg-config xinerama --modversion > /dev/null ")
+	if (x11_error):
+		print("xinerama not found.. x11 disabled.")
+		return False
 
 	
 	return True # X11 enabled
@@ -151,4 +156,5 @@ def configure(env):
 
 	if(env["experimental_wm_api"]=="yes"):
 		env.Append(CPPFLAGS=['-DEXPERIMENTAL_WM_API'])
+		env.ParseConfig('pkg-config xinerama --cflags --libs')
 
