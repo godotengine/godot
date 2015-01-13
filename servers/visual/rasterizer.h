@@ -210,6 +210,8 @@ public:
 	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture)=0;
 	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const=0;
 
+	virtual Variant shader_get_default_param(RID p_shader, const StringName& p_name)=0;
+
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create()=0;
@@ -701,6 +703,7 @@ public:
 		Matrix32 final_transform;
 		Rect2 final_clip_rect;
 		CanvasItem* final_clip_owner;
+		CanvasItem* shader_owner;
 		ViewportRender *vp_render;
 
 		const Rect2& get_rect() const {
@@ -827,8 +830,8 @@ public:
 			return rect;
 		}
 
-		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  }
-		CanvasItem() { vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0;}
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  shader_owner=NULL;}
+		CanvasItem() { vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0; shader_owner=NULL;}
 		virtual ~CanvasItem() { clear(); }
 	};
 
@@ -849,6 +852,7 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width)=0;
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor)=0;
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;
+
 	virtual void canvas_render_items(CanvasItem *p_item_list)=0;
 
 

@@ -52,6 +52,7 @@ private:
 	bool uses_screen_uv;
 	bool uses_normalmap;
 	bool uses_normal;
+	bool uses_texpixel_size;
 	bool vertex_code_writes_vertex;
 	Flags *flags;
 
@@ -70,6 +71,7 @@ private:
 	StringName vname_time;
 	StringName vname_normalmap;
 	StringName vname_normal;
+	StringName vname_texpixel_size;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 
@@ -104,6 +106,7 @@ public:
 		bool uses_light;
 		bool uses_time;
 		bool uses_normal;
+		bool uses_texpixel_size;
 	};
 
 	Error compile(const String& p_code, ShaderLanguage::ShaderType p_type, String& r_code_line, String& r_globals_line, Flags& r_flags, Map<StringName,ShaderLanguage::Uniform> *r_uniforms=NULL);

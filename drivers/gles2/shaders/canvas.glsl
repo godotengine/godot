@@ -132,6 +132,11 @@ uniform float shadow_attenuation;
 
 #endif
 
+#if defined(USE_TEXPIXEL_SIZE)
+uniform vec2 texpixel_size;
+#endif
+
+
 FRAGMENT_SHADER_GLOBALS
 
 

@@ -81,6 +81,7 @@ private:
 	bool block_transform_notify;
 	bool behind;
 
+	bool use_parent_shader;
 	Ref<Shader> shader;
 
 	mutable Matrix32 global_transform;
@@ -213,6 +214,9 @@ public:
 
 	void set_shader(const Ref<Shader>& p_shader);
 	Ref<Shader> get_shader() const;
+
+	void set_use_parent_shader(bool p_use_parent_shader);
+	bool get_use_parent_shader() const;
 
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
