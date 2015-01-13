@@ -847,8 +847,15 @@ void ObjectTypeDB::set_type_enabled(StringName p_type,bool p_enable) {
 
 bool ObjectTypeDB::is_type_enabled(StringName p_type) {
 
-	ERR_FAIL_COND_V(!types.has(p_type),false);
-	return !types[p_type].disabled;
+	TypeInfo *ti=types.getptr(p_type);
+	if (!ti || !ti->creation_func) {
+		if (compat_types.has(p_type)) {
+			ti=types.getptr(compat_types[p_type]);
+		}
+	}
+
+	ERR_FAIL_COND_V(!ti,false);
+	return !ti->disabled;
 }
 
 StringName ObjectTypeDB::get_category(const StringName& p_node) {

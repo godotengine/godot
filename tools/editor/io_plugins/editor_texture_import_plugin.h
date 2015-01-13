@@ -98,6 +98,7 @@ public:
 		IMAGE_FLAG_USE_ANISOTROPY=1024, //convert image to linear
 	};
 
+	Mode get_mode() const { return mode; }
 	virtual String get_name() const;
 	virtual String get_visible_name() const;
 	virtual void import_dialog(const String& p_from="");

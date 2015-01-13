@@ -5171,6 +5171,7 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 
 		if (p_material->shader_cache->has_texscreen && framebuffer.active) {
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
+			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(0,0,float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
 			material_shader.set_uniform(MaterialShaderGLES2::TEXSCREEN_TEX,texcoord);
 			glActiveTexture(GL_TEXTURE0+texcoord);
 			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
@@ -8434,11 +8435,32 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 
 				if (shader->has_texscreen && framebuffer.active) {
+
+					int x = viewport.x;
+					int y = window_size.height-(viewport.height+viewport.y);
+
 					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
+					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(float(x)/framebuffer.width,float(y)/framebuffer.height,float(x+viewport.width)/framebuffer.width,float(y+viewport.height)/framebuffer.height));
 					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_TEX,tex_id);
 					glActiveTexture(GL_TEXTURE0+tex_id);
 					glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
+					if (framebuffer.scale==1 && !canvas_texscreen_used) {
+#ifdef GLEW_ENABLED
+						glReadBuffer(GL_COLOR_ATTACHMENT0);
+#endif
+						glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
+						if (current_clip) {
+							print_line(" a clip ");
+						}
 
+						canvas_texscreen_used=true;
+					}
+					tex_id++;
+
+				}
+
+				if (tex_id>1) {
+					glActiveTexture(GL_TEXTURE0);
 				}
 				if (shader->has_screen_uv) {
 					canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
@@ -8458,6 +8480,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				uses_texpixel_size=false;
 
 			}
+
 
 			canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
 			canvas_last_shader=shader_owner->shader;

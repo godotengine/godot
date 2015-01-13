@@ -3692,11 +3692,20 @@ void VisualServerRaster::canvas_item_add_set_blend_mode(RID p_item, MaterialBlen
 
 void VisualServerRaster::canvas_item_set_z(RID p_item, int p_z) {
 
-	ERR_FAIL_COND(p_z<0 || p_z>=CANVAS_ITEM_Z_MAX);
+	ERR_FAIL_COND(p_z<CANVAS_ITEM_Z_MIN || p_z>CANVAS_ITEM_Z_MAX);
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
 	canvas_item->z=p_z;
+
+}
+
+void VisualServerRaster::canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->z_relative=p_enable;
 
 }
 
@@ -6140,18 +6149,20 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 
 void VisualServerRaster::_render_canvas_item_tree(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect) {
 
-	Rasterizer::CanvasItem *z_list[CANVAS_ITEM_Z_MAX];
-	Rasterizer::CanvasItem *z_last_list[CANVAS_ITEM_Z_MAX];
 
-	for(int i=0;i<CANVAS_ITEM_Z_MAX;i++) {
+	static const int z_range = CANVAS_ITEM_Z_MAX-CANVAS_ITEM_Z_MIN+1;
+	Rasterizer::CanvasItem *z_list[z_range];
+	Rasterizer::CanvasItem *z_last_list[z_range];
+
+	for(int i=0;i<z_range;i++) {
 		z_list[i]=NULL;
 		z_last_list[i]=NULL;
 	}
 
 
-	_render_canvas_item(p_canvas_item,p_transform,p_clip_rect,1.0,z_list,z_last_list,NULL,NULL);
+	_render_canvas_item(p_canvas_item,p_transform,p_clip_rect,1.0,0,z_list,z_last_list,NULL,NULL);
 
-	for(int i=0;i<CANVAS_ITEM_Z_MAX;i++) {
+	for(int i=0;i<z_range;i++) {
 		if (!z_list[i])
 			continue;
 		rasterizer->canvas_render_items(z_list[i]);
@@ -6169,7 +6180,7 @@ void VisualServerRaster::_render_canvas_item_viewport(VisualServer* p_self,void 
 
 }
 
-void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner) {
+void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,int p_z,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner) {
 
 	CanvasItem *ci = p_canvas_item;
 
@@ -6248,7 +6259,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 		if (child_items[i]->ontop)
 			continue;
-		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,p_z,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
 	}
 
 
@@ -6257,13 +6268,20 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		ci->final_transform=xform;
 		ci->final_opacity=opacity * ci->self_opacity;
 
-		if (z_last_list[ci->z]) {
-			z_last_list[ci->z]->next=ci;
-			z_last_list[ci->z]=ci;
+		if (ci->z_relative)
+			p_z=CLAMP(p_z+ci->z,CANVAS_ITEM_Z_MIN,CANVAS_ITEM_Z_MAX);
+		else
+			p_z=ci->z;
+
+		int zidx = p_z-CANVAS_ITEM_Z_MIN;
+
+		if (z_last_list[zidx]) {
+			z_last_list[zidx]->next=ci;
+			z_last_list[zidx]=ci;
 
 		} else {
-			z_list[ci->z]=ci;
-			z_last_list[ci->z]=ci;
+			z_list[zidx]=ci;
+			z_last_list[zidx]=ci;
 		}
 
 		ci->next=NULL;
@@ -6274,7 +6292,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 		if (!child_items[i]->ontop)
 			continue;
-		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,p_z,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
 	}
 
 }
@@ -6283,31 +6301,62 @@ void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_trans
 
 	rasterizer->canvas_begin();
 
-
 	int l = p_canvas->child_items.size();
+	Canvas::ChildItem *ci=p_canvas->child_items.ptr();
 
+	bool has_mirror=false;
 	for(int i=0;i<l;i++) {
-
-		Canvas::ChildItem& ci=p_canvas->child_items[i];
-		_render_canvas_item_tree(ci.item,p_transform,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height));
-
-		//mirroring (useful for scrolling backgrounds)
-		if (ci.mirror.x!=0) {
-
-			Matrix32 xform2 = p_transform * Matrix32(0,Vector2(ci.mirror.x,0));
-			_render_canvas_item_tree(ci.item,xform2,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height));
+		if (ci[i].mirror.x || ci[i].mirror.y) {
+			has_mirror=true;
+			break;
 		}
-		if (ci.mirror.y!=0) {
+	}
 
-			Matrix32 xform2 = p_transform * Matrix32(0,Vector2(0,ci.mirror.y));
-			_render_canvas_item_tree(ci.item,xform2,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height));
+	Rect2 clip_rect(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height);
+	if (!has_mirror) {
+
+		static const int z_range = CANVAS_ITEM_Z_MAX-CANVAS_ITEM_Z_MIN+1;
+		Rasterizer::CanvasItem *z_list[z_range];
+		Rasterizer::CanvasItem *z_last_list[z_range];
+
+		for(int i=0;i<z_range;i++) {
+			z_list[i]=NULL;
+			z_last_list[i]=NULL;
 		}
-		if (ci.mirror.y!=0 && ci.mirror.x!=0) {
-
-			Matrix32 xform2 = p_transform * Matrix32(0,ci.mirror);
-			_render_canvas_item_tree(ci.item,xform2,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height));
+		for(int i=0;i<l;i++) {
+			_render_canvas_item(ci[i].item,p_transform,clip_rect,1.0,0,z_list,z_last_list,NULL,NULL);
 		}
 
+		for(int i=0;i<z_range;i++) {
+			if (!z_list[i])
+				continue;
+			rasterizer->canvas_render_items(z_list[i]);
+		}
+	} else {
+
+		for(int i=0;i<l;i++) {
+
+			Canvas::ChildItem& ci=p_canvas->child_items[i];
+			_render_canvas_item_tree(ci.item,p_transform,clip_rect);
+
+			//mirroring (useful for scrolling backgrounds)
+			if (ci.mirror.x!=0) {
+
+				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(ci.mirror.x,0));
+				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+			}
+			if (ci.mirror.y!=0) {
+
+				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(0,ci.mirror.y));
+				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+			}
+			if (ci.mirror.y!=0 && ci.mirror.x!=0) {
+
+				Matrix32 xform2 = p_transform * Matrix32(0,ci.mirror);
+				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+			}
+
+		}
 	}
 
 }

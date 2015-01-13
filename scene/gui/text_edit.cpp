@@ -298,7 +298,7 @@ void TextEdit::_update_scrollbars() {
 	
 	int hscroll_rows = ((hmin.height-1)/get_row_height())+1;
 	int visible_rows = get_visible_rows();
-	int total_rows = text.size() * cache.line_spacing;
+	int total_rows = text.size();
 	
 	int vscroll_pixels = v_scroll->get_combined_minimum_size().width;
 	int visible_width = size.width - cache.style_normal->get_minimum_size().width;

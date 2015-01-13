@@ -1142,6 +1142,7 @@ public:
 
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
 	FUNC2(canvas_item_set_z,RID,int);
+	FUNC2(canvas_item_set_z_as_relative_to_parent,RID,bool);
 
 	FUNC2(canvas_item_set_shader,RID, RID );
 	FUNC1RC(RID,canvas_item_get_shader,RID );

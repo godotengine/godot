@@ -860,6 +860,22 @@ int Physics2DServerSW::body_get_max_contacts_reported(RID p_body) const {
 	return body->get_max_contacts_reported();
 }
 
+void Physics2DServerSW::body_set_one_way_collision_direction(RID p_body,const Vector2& p_direction) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_one_way_collision_direction(p_direction);
+}
+
+Vector2 Physics2DServerSW::body_get_one_way_collision_direction(RID p_body) const{
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,Vector2());
+	return body->get_one_way_collision_direction();
+
+}
+
+
 void Physics2DServerSW::body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata) {
 
 
