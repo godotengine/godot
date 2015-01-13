@@ -15,11 +15,16 @@ func _fixed_process(delta):
 	
 	get_node("Label_Screen0_Resolution").set_text( str("Screen0 Resolution:\n", OS.get_screen_size() ) )
 	
+	get_node("Label_Screen0_Position").set_text(str("Screen0 Position:\n",OS.get_screen_position()))
+	
 	if(OS.get_screen_count() > 1):
 		get_node("Label_Screen1_Resolution").show()
-		get_node("Label_Screen1_Resolution").set_text( str("Screen0 Resolution:\n", OS.get_screen_size(1) ) )
-
-
+		get_node("Label_Screen1_Resolution").set_text( str("Screen1 Resolution:\n", OS.get_screen_size(1) ) )
+		get_node("Label_Screen1_Position").show()
+		get_node("Label_Screen1_Position").set_text( str("Screen1 Position:\n", OS.get_screen_size(1) ) )
+	else:
+		get_node("Label_Screen1_Resolution").hide()
+		get_node("Label_Screen1_Position").hide()
 func _ready():
 	set_fixed_process(true)
 

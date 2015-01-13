@@ -152,6 +152,7 @@ public:
 
 #ifdef EXPERIMENTAL_WM_API
 	virtual int get_screen_count() const=0;
+	virtual Point2 get_screen_position(int p_screen=0) const=0;
 	virtual Size2 get_screen_size(int p_screen=0) const=0;
 	virtual Point2 get_window_position() const=0;
 	virtual void set_window_position(const Point2& p_position)=0;

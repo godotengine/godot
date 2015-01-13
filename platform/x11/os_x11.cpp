@@ -561,7 +561,19 @@ int OS_X11::get_screen_count() const {
 	return XScreenCount(x11_display);
 }
 
+Point2 OS_X11::get_screen_position(int p_screen) const {
+	if( p_screen >= XScreenCount(x11_display) )
+		return Point2i(0,0);
+
+	Window root = XRootWindow(x11_display, p_screen);
+	XWindowAttributes xwa;
+	XGetWindowAttributes(x11_display, root, &xwa);
+	return Point2i(xwa.x, xwa.y);
+}
+
 Size2 OS_X11::get_screen_size(int p_screen) const {
+	if( p_screen >= XScreenCount(x11_display) )
+		return Size2i(0,0);
 	Window root = XRootWindow(x11_display, p_screen);
 	XWindowAttributes xwa;
 	XGetWindowAttributes(x11_display, root, &xwa);

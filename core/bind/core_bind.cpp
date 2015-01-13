@@ -181,6 +181,10 @@ int _OS::get_screen_count() const {
 	return OS::get_singleton()->get_screen_count();
 }
 
+Point2 _OS::get_screen_position(int p_screen) const {
+	return OS::get_singleton()->get_screen_position(p_screen);
+}
+
 Size2 _OS::get_screen_size(int p_screen) const {
 	return OS::get_singleton()->get_screen_size(p_screen);
 }
@@ -668,6 +672,7 @@ void _OS::_bind_methods() {
 
 #ifdef EXPERIMENTAL_WM_API
 	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
+	ObjectTypeDB::bind_method(_MD("get_screen_position"),&_OS::get_screen_position,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_screen_size"),&_OS::get_screen_size,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
 	ObjectTypeDB::bind_method(_MD("set_window_position"),&_OS::set_window_position);
