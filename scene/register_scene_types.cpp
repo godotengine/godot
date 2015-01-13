@@ -272,7 +272,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<Control>();
 //	ObjectTypeDB::register_type<EmptyControl>();
-	ObjectTypeDB::add_compatibility_type("EmptyControl","control");
+	ObjectTypeDB::add_compatibility_type("EmptyControl","Control");
 	ObjectTypeDB::register_type<Button>();
 	ObjectTypeDB::register_type<Label>();
 	ObjectTypeDB::register_type<HScrollBar>();

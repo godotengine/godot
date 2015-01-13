@@ -205,6 +205,7 @@ Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 	String name = _get_class_name(env, c, &array);
 	//print_line("name is " + name + ", array "+Variant(array));
 
+	print_line("ARGNAME: "+name);
 	if (name == "java.lang.String") {
 
 		return String::utf8(env->GetStringUTFChars( (jstring)obj, NULL ));
