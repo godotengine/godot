@@ -992,6 +992,8 @@ public:
 	virtual void canvas_item_set_shader(RID p_item, RID p_shader)=0;
 	virtual RID canvas_item_get_shader(RID p_item) const=0;
 
+	virtual void canvas_item_set_use_parent_shader(RID p_item, bool p_enable)=0;
+
 	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value)=0;
 	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const=0;
 

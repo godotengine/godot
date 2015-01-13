@@ -1146,6 +1146,9 @@ public:
 	FUNC2(canvas_item_set_shader,RID, RID );
 	FUNC1RC(RID,canvas_item_get_shader,RID );
 
+	FUNC2(canvas_item_set_use_parent_shader,RID, bool );
+
+
 	FUNC3(canvas_item_set_shader_param,RID,const StringName&,const Variant&);
 	FUNC2RC(Variant,canvas_item_get_shader_param,RID,const StringName&);
 

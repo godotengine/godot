@@ -231,6 +231,11 @@ RID RasterizerDummy::shader_get_default_texture_param(RID p_shader, const String
 	return RID();
 }
 
+Variant RasterizerDummy::shader_get_default_param(RID p_shader, const StringName& p_name) {
+
+	return Variant();
+}
+
 /* COMMON MATERIAL API */
 
 
