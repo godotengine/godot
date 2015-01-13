@@ -150,6 +150,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
 
+#ifdef EXPERIMENTAL_WM_API
 	virtual int get_screen_count() const=0;
 	virtual Size2 get_screen_size(int p_screen=0) const=0;
 	virtual Point2 get_window_position() const=0;
@@ -158,7 +159,8 @@ public:
 	virtual void set_window_size(const Size2 p_size)=0;
 	virtual void set_fullscreen(bool p_enabled,int p_screen=0)=0;
 	virtual bool is_fullscreen() const=0;
-	
+#endif	
+
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 

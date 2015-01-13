@@ -47,6 +47,7 @@ def get_opts():
 	return [
 	('use_llvm','Use llvm compiler','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
+	('experimental_wm_api', 'Use experimental window management API','no'),
 	]
   
 def get_flags():
@@ -147,4 +148,7 @@ def configure(env):
 	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	#env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
+
+	if(env["experimental_wm_api"]=="yes"):
+		env.Append(CPPFLAGS=['-DEXPERIMENTAL_WM_API'])
 
