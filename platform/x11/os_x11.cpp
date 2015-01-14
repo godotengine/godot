@@ -214,10 +214,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
 #else
-		old_window_position.x = 0;
-		old_window_position.y = 0;
-		old_window_size.width = 800;
-		old_window_size.height = 600;
+		window_data.position.x = 0;
+		window_data.position.y = 0;
+		window_data.size.width = 800;
+		window_data.size.height = 600;
 		set_wm_border(false);
 		set_wm_fullscreen(true);
 #endif
@@ -709,8 +709,8 @@ void OS_X11::set_fullscreen(bool p_enabled) {
 		return;
 
 	if(p_enabled) {
-		old_window_size = get_window_size();
-		old_window_position = get_window_position();
+		window_data.size = get_window_size();
+		window_data.position = get_window_position();
 
 		int screen = get_screen();
 		Size2i size = get_screen_size(screen);
@@ -724,7 +724,11 @@ void OS_X11::set_fullscreen(bool p_enabled) {
 	} else {
 		set_wm_fullscreen(false);
 		set_wm_border(true);
-		XMoveResizeWindow(x11_display, x11_window, old_window_position.x, old_window_position.y, old_window_size.width, old_window_size.height);
+		XMoveResizeWindow(x11_display, x11_window,
+					window_data.position.x,
+					window_data.position.y,
+					window_data.size.width,
+					window_data.size.height);
 
 		current_videomode.fullscreen = False;
 	}
@@ -1072,7 +1076,7 @@ void OS_X11::process_xevents() {
 
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 #if 1
-				Vector2 c = Point2i(current_videomode.width/2,current_videomode.height/2);
+				//Vector2 c = Point2i(current_videomode.width/2,current_videomode.height/2);
 				if (pos==Point2i(current_videomode.width/2,current_videomode.height/2)) {
 					//this sucks, it's a hack, etc and is a little inaccurate, etc.
 					//but nothing I can do, X11 sucks.
@@ -1081,9 +1085,9 @@ void OS_X11::process_xevents() {
 					break;
 				}
 
-				Point2i ncenter = pos;
+				Point2i new_center = pos;
 				pos = last_mouse_pos + ( pos-center );
-				center=ncenter;
+				center=new_center;
 				do_mouse_warp=true;
 #else
 				//Dear X11, thanks for making my life miserable

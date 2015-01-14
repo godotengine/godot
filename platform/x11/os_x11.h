@@ -160,8 +160,10 @@ class OS_X11 : public OS_Unix {
 	Joystick joysticks[JOYSTICKS_MAX];
 
 #ifdef EXPERIMENTAL_WM_API
-	Point2i old_window_position;
-	Size2i old_window_size;
+	struct {
+		Point2i position;
+		Size2i size;
+	} window_data;
 	void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 #endif
