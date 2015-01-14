@@ -1192,8 +1192,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	undo_redo=p_editor->get_undo_redo();
 
 	int mw = EDITOR_DEF("grid_map/palette_min_width",230);
-	EmptyControl *ec = memnew( EmptyControl);
-	ec->set_minsize(Size2(mw,0));
+	Control *ec = memnew( Control);
+	ec->set_custom_minimum_size(Size2(mw,0));
 	add_child(ec);
 
 
@@ -1222,9 +1222,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item("Cursor Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_A);
 	options->get_popup()->add_item("Cursor Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_S);
 	options->get_popup()->add_item("Cursor Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_D);
-	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_ALT+KEY_A);
-	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_ALT+KEY_S);
-	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_ALT+KEY_D);
+	options->get_popup()->add_item("Cursor Back Rotate X",MENU_OPTION_CURSOR_ROTATE_X,KEY_MASK_SHIFT+KEY_A);
+	options->get_popup()->add_item("Cursor Back Rotate Y",MENU_OPTION_CURSOR_ROTATE_Y,KEY_MASK_SHIFT+KEY_S);
+	options->get_popup()->add_item("Cursor Back Rotate Z",MENU_OPTION_CURSOR_ROTATE_Z,KEY_MASK_SHIFT+KEY_D);
 	options->get_popup()->add_item("Cursor Clear Rotation",MENU_OPTION_CURSOR_CLEAR_ROTATION,KEY_W);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item("Duplicate Selects",MENU_OPTION_DUPLICATE_SELECTS);

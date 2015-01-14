@@ -497,7 +497,7 @@ void Sprite3D::set_frame(int p_frame) {
 
 	frame=p_frame;
 	_queue_update();
-	ADD_SIGNAL(MethodInfo("frame_changed"));
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 
 }
 

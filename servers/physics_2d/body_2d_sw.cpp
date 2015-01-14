@@ -156,6 +156,17 @@ void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, float p_value) 
 			_update_inertia();
 
 		} break;
+		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
+			gravity_scale=p_value;
+		} break;
+		case Physics2DServer::BODY_PARAM_LINEAR_DAMP: {
+
+			linear_damp=p_value;
+		} break;
+		case Physics2DServer::BODY_PARAM_ANGULAR_DAMP: {
+
+			angular_damp=p_value;
+		} break;
 		default:{}
 	}
 }
@@ -173,6 +184,17 @@ float Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 		} break;
 		case Physics2DServer::BODY_PARAM_MASS: {
 			return mass;
+		} break;
+		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
+			return gravity_scale;
+		} break;
+		case Physics2DServer::BODY_PARAM_LINEAR_DAMP: {
+
+			return linear_damp;
+		} break;
+		case Physics2DServer::BODY_PARAM_ANGULAR_DAMP: {
+
+			return angular_damp;
 		} break;
 		default:{}
 	}
@@ -362,6 +384,8 @@ void Body2DSW::_compute_area_gravity(const Area2DSW *p_area) {
 	} else {
 		gravity = p_area->get_gravity_vector() * p_area->get_gravity();
 	}
+
+	gravity*=gravity_scale;
 }
 
 void Body2DSW::integrate_forces(real_t p_step) {
@@ -385,7 +409,16 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	}
 
 	_compute_area_gravity(current_area);
-	density=current_area->get_density();
+
+	if (angular_damp>=0)
+		area_angular_damp=angular_damp;
+	else
+		area_angular_damp=current_area->get_angular_damp();
+
+	if (linear_damp>=0)
+		area_linear_damp=linear_damp;
+	else
+		area_linear_damp=current_area->get_linear_damp();
 
 	Vector2 motion;
 	bool do_motion=false;
@@ -414,12 +447,12 @@ void Body2DSW::integrate_forces(real_t p_step) {
 			force+=applied_force;
 			real_t torque=applied_torque;
 
-			real_t damp = 1.0 - p_step * density;
+			real_t damp = 1.0 - p_step * area_linear_damp;
 
 			if (damp<0) // reached zero in the given time
 				damp=0;
 
-			real_t angular_damp = 1.0 - p_step * density * get_space()->get_body_angular_velocity_damp_ratio();
+			real_t angular_damp = 1.0 - p_step * area_angular_damp;
 
 			if (angular_damp<0) // reached zero in the given time
 				angular_damp=0;
@@ -608,8 +641,13 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	island_list_next=NULL;
 	_set_static(false);
 	first_time_kinematic=false;
-	density=0;
+	linear_damp=-1;
+	angular_damp=-1;
+	area_angular_damp=0;
+	area_linear_damp=0;
 	contact_count=0;
+	gravity_scale=1.0;
+	one_way_collision_max_depth=0.1;
 
 	still_time=0;
 	continuous_cd_mode=Physics2DServer::CCD_MODE_DISABLED;

@@ -27,15 +27,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "register_types.h"
+#ifndef _3D_DISABLED
 #include "object_type_db.h"
 #include "grid_map.h"
 #include "grid_map_editor_plugin.h"
+#endif
 
 void register_gridmap_types() {
 
+#ifndef _3D_DISABLED
 	ObjectTypeDB::register_type<GridMap>();
 #ifdef TOOLS_ENABLED
 	EditorPlugins::add_by_type<GridMapEditorPlugin>();
+#endif
 #endif
 }
 

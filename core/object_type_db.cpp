@@ -191,6 +191,7 @@ MethodDefinition _MD(const char* p_name,const char *p_arg1,const char *p_arg2,co
 
 HashMap<StringName,ObjectTypeDB::TypeInfo,StringNameHasher> ObjectTypeDB::types;
 HashMap<StringName,StringName,StringNameHasher> ObjectTypeDB::resource_base_extensions;
+HashMap<StringName,StringName,StringNameHasher> ObjectTypeDB::compat_types;
 
 ObjectTypeDB::TypeInfo::TypeInfo() {
 
@@ -263,12 +264,22 @@ bool ObjectTypeDB::type_exists(const String &p_type) {
 	return types.has(p_type);	
 }
 
+void ObjectTypeDB::add_compatibility_type(const StringName& p_type,const StringName& p_fallback) {
+
+	compat_types[p_type]=p_fallback;
+}
+
 Object *ObjectTypeDB::instance(const String &p_type) {
 	
 	TypeInfo *ti;
 	{
 		OBJTYPE_LOCK;
 		ti=types.getptr(p_type);
+		if (!ti || ti->disabled || !ti->creation_func) {
+			if (compat_types.has(p_type)) {
+				ti=types.getptr(compat_types[p_type]);
+			}
+		}
 		ERR_FAIL_COND_V(!ti,NULL);
 		ERR_FAIL_COND_V(ti->disabled,NULL);
 		ERR_FAIL_COND_V(!ti->creation_func,NULL);
@@ -805,12 +816,25 @@ void ObjectTypeDB::add_virtual_method(const StringName& p_type,const MethodInfo&
 
 }
 
-void ObjectTypeDB::get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods ) {
+void ObjectTypeDB::get_virtual_methods(const StringName& p_type, List<MethodInfo> * p_methods , bool p_no_inheritance) {
 
 	ERR_FAIL_COND(!types.has(p_type));
 
 #ifdef DEBUG_METHODS_ENABLED
-	*p_methods=types[p_type].virtual_methods;
+
+	TypeInfo *type=types.getptr(p_type);
+	TypeInfo *check=type;
+	while(check) {
+
+		for(List<MethodInfo>::Element *E=check->virtual_methods.front();E;E=E->next()) {
+			p_methods->push_back(E->get());
+		}
+
+		if (p_no_inheritance)
+			return;
+		check=check->inherits_ptr;
+	}
+
 #endif
 
 }
@@ -823,8 +847,15 @@ void ObjectTypeDB::set_type_enabled(StringName p_type,bool p_enable) {
 
 bool ObjectTypeDB::is_type_enabled(StringName p_type) {
 
-	ERR_FAIL_COND_V(!types.has(p_type),false);
-	return !types[p_type].disabled;
+	TypeInfo *ti=types.getptr(p_type);
+	if (!ti || !ti->creation_func) {
+		if (compat_types.has(p_type)) {
+			ti=types.getptr(compat_types[p_type]);
+		}
+	}
+
+	ERR_FAIL_COND_V(!ti,false);
+	return !ti->disabled;
 }
 
 StringName ObjectTypeDB::get_category(const StringName& p_node) {
@@ -901,6 +932,7 @@ void ObjectTypeDB::cleanup() {
 	}	
 	types.clear();
 	resource_base_extensions.clear();
+	compat_types.clear();
 }
 
 //

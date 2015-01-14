@@ -1126,6 +1126,7 @@ void Control::_window_input_event(InputEvent p_event) {
 				over = _find_control_at_pos(this,pos,parent_xform,window->focus_inv_xform);
 			}
 
+
 			if (window->drag_data.get_type()==Variant::NIL && over && !window->modal_stack.empty()) {
 
 				Control *top = window->modal_stack.back()->get();
@@ -1325,9 +1326,12 @@ Size2 Control::get_minimum_size() const {
 
 Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type) const {
 	
-	const Ref<Texture>* tex = data.icon_override.getptr(p_name);
-	if (tex)
-		return *tex;	
+	if (p_type==StringName()) {
+
+		const Ref<Texture>* tex = data.icon_override.getptr(p_name);
+		if (tex)
+			return *tex;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 
@@ -1353,12 +1357,11 @@ Ref<Texture> Control::get_icon(const StringName& p_name,const StringName& p_type
 
 Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p_type) const {
 		
-	
-	const Ref<StyleBox>* style = data.style_override.getptr(p_name);
-	
-	
-	if (style)
-		return *style;	
+	if (p_type==StringName()) {
+		const Ref<StyleBox>* style = data.style_override.getptr(p_name);
+		if (style)
+			return *style;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 
@@ -1381,10 +1384,12 @@ Ref<StyleBox> Control::get_stylebox(const StringName& p_name,const StringName& p
 
 }
 Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) const {
-	
-	const Ref<Font>* font = data.font_override.getptr(p_name);
-	if (font)
-		return *font;	
+
+	if (p_type==StringName()) {
+		const Ref<Font>* font = data.font_override.getptr(p_name);
+		if (font)
+			return *font;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 
@@ -1410,10 +1415,12 @@ Ref<Font> Control::get_font(const StringName& p_name,const StringName& p_type) c
 
 }
 Color Control::get_color(const StringName& p_name,const StringName& p_type) const {
-	
-	const Color* color = data.color_override.getptr(p_name);
-	if (color)
-		return *color;	
+
+	if (p_type==StringName()) {
+		const Color* color = data.color_override.getptr(p_name);
+		if (color)
+			return *color;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 	// try with custom themes
@@ -1437,10 +1444,12 @@ Color Control::get_color(const StringName& p_name,const StringName& p_type) cons
 }
 
 int Control::get_constant(const StringName& p_name,const StringName& p_type) const {
-	
-	const int* constant = data.constant_override.getptr(p_name);
-	if (constant)
-		return *constant;	
+
+	if (p_type==StringName()) {
+		const int* constant = data.constant_override.getptr(p_name);
+		if (constant)
+			return *constant;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 		// try with custom themes
@@ -1467,9 +1476,11 @@ int Control::get_constant(const StringName& p_name,const StringName& p_type) con
 
 bool Control::has_icon(const StringName& p_name,const StringName& p_type) const {
 	
-	const Ref<Texture>* tex = data.icon_override.getptr(p_name);
-	if (tex)
-		return true;	
+	if (p_type==StringName()) {
+		const Ref<Texture>* tex = data.icon_override.getptr(p_name);
+		if (tex)
+			return true;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 
@@ -1494,11 +1505,12 @@ bool Control::has_icon(const StringName& p_name,const StringName& p_type) const 
 }
 bool Control::has_stylebox(const StringName& p_name,const StringName& p_type) const {
 		
-	
-	const Ref<StyleBox>* style = data.style_override.getptr(p_name);
-		
-	if (style)
-		return true;	
+	if (p_type==StringName()) {
+		const Ref<StyleBox>* style = data.style_override.getptr(p_name);
+
+		if (style)
+			return true;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 
@@ -1523,9 +1535,11 @@ bool Control::has_stylebox(const StringName& p_name,const StringName& p_type) co
 }
 bool Control::has_font(const StringName& p_name,const StringName& p_type) const {
 	
-	const Ref<Font>* font = data.font_override.getptr(p_name);
-	if (font)
-		return true;	
+	if (p_type==StringName()) {
+		const Ref<Font>* font = data.font_override.getptr(p_name);
+		if (font)
+			return true;
+	}
 
 
 	StringName type = p_type?p_type:get_type_name();
@@ -1551,9 +1565,11 @@ bool Control::has_font(const StringName& p_name,const StringName& p_type) const 
 }
 bool Control::has_color(const StringName& p_name,const StringName& p_type) const {
 	
-	const Color* color = data.color_override.getptr(p_name);
-	if (color)
-		return true;	
+	if (p_type==StringName()) {
+		const Color* color = data.color_override.getptr(p_name);
+		if (color)
+			return true;
+	}
 
 	StringName type = p_type?p_type:get_type_name();
 
@@ -1578,10 +1594,13 @@ bool Control::has_color(const StringName& p_name,const StringName& p_type) const
 }
 
 bool Control::has_constant(const StringName& p_name,const StringName& p_type) const {
-	
-	const int* constant = data.constant_override.getptr(p_name);
-	if (constant)
-		return true;	
+
+	if (p_type==StringName()) {
+
+		const int* constant = data.constant_override.getptr(p_name);
+		if (constant)
+			return true;
+	}
 
 
 	StringName type = p_type?p_type:get_type_name();
@@ -2249,6 +2268,7 @@ void Control::_window_sort_subwindows() {
 		return;
 
 	window->modal_stack.sort_custom<CComparator>();
+	window->subwindows.sort_custom<CComparator>();
 	window->subwindow_order_dirty=false;
 
 }
@@ -2664,8 +2684,8 @@ bool Control::is_stopping_mouse() const {
 Control *Control::get_focus_owner() const {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),NULL);
-	ERR_FAIL_COND_V(!window,NULL);
-	return window->key_focus;
+	ERR_FAIL_COND_V(!data.window,NULL);
+	return data.window->window->key_focus;
 }
 
 void Control::_bind_methods() {

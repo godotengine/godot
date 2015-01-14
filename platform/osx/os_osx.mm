@@ -27,6 +27,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #import <Cocoa/Cocoa.h>
+
+#include <Carbon/Carbon.h>
 #include <IOKit/IOKitLib.h>
 #include <IOKit/IOCFPlugIn.h>
 #include <IOKit/hid/IOHIDLib.h>
@@ -694,7 +696,7 @@ static int translateKey(unsigned int key)
     ev.type=InputEvent::KEY;
     ev.key.pressed=true;
     ev.key.mod=translateFlags([event modifierFlags]);
-    ev.key.scancode = translateKey([event keyCode]);
+    ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
     ev.key.echo = [event isARepeat];
 
     NSString* characters = [event characters];
@@ -740,7 +742,7 @@ static int translateKey(unsigned int key)
 	ev.type=InputEvent::KEY;
 	ev.key.pressed=false;
 	ev.key.mod=translateFlags([event modifierFlags]);
-	ev.key.scancode = translateKey([event keyCode]);
+	ev.key.scancode = latin_keyboard_keycode_convert(translateKey([event keyCode]));
 	OS_OSX::singleton->push_input(ev);
 
 
@@ -835,11 +837,24 @@ void OS_OSX::initialize_core() {
 
 }
 
+static bool keyboard_layout_dirty = true;
+static void keyboardLayoutChanged(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+	keyboard_layout_dirty = true;
+}
+
 void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
 	/*** OSX INITIALIZATION ***/
+
+	keyboard_layout_dirty = true;
+
+	// Register to be notified on keyboard layout changes
+	CFNotificationCenterAddObserver(CFNotificationCenterGetDistributedCenter(),
+									NULL, keyboardLayoutChanged,
+									kTISNotifySelectedKeyboardInputSourceChanged, NULL,
+									CFNotificationSuspensionBehaviorDeliverImmediately);
     
 	window_delegate = [[GodotWindowDelegate alloc] init];
 
@@ -1006,6 +1021,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 }
 void OS_OSX::finalize() {
+
+	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 
 }
 
@@ -1241,6 +1258,83 @@ String OS_OSX::get_executable_path() const {
 
 }
 
+// Returns string representation of keys, if they are printable.
+//
+static NSString *createStringForKeys(const CGKeyCode *keyCode, int length) {
+
+	TISInputSourceRef currentKeyboard = TISCopyCurrentKeyboardInputSource();
+	if (!currentKeyboard)
+		return nil;
+
+	CFDataRef layoutData = (CFDataRef)TISGetInputSourceProperty(currentKeyboard, kTISPropertyUnicodeKeyLayoutData);
+	if (!layoutData)
+		return nil;
+
+	const UCKeyboardLayout *keyboardLayout = (const UCKeyboardLayout *)CFDataGetBytePtr(layoutData);
+
+	OSStatus err;
+	CFMutableStringRef output = CFStringCreateMutable(NULL, 0);
+
+	for (int i=0; i<length; ++i) {
+
+		UInt32 keysDown = 0;
+		UniChar chars[4];
+		UniCharCount realLength;
+
+		err = UCKeyTranslate(keyboardLayout,
+					   keyCode[i],
+					   kUCKeyActionDisplay,
+					   0,
+					   LMGetKbdType(),
+					   kUCKeyTranslateNoDeadKeysBit,
+					   &keysDown,
+					   sizeof(chars) / sizeof(chars[0]),
+					   &realLength,
+					   chars);
+
+		if (err != noErr) {
+			CFRelease(output);
+			return nil;
+		}
+
+		CFStringAppendCharacters(output, chars, 1);
+	}
+
+	//CFStringUppercase(output, NULL);
+
+	return (NSString *)output;
+}
+OS::LatinKeyboardVariant OS_OSX::get_latin_keyboard_variant() const {
+
+	static LatinKeyboardVariant layout = LATIN_KEYBOARD_QWERTY;
+
+	if (keyboard_layout_dirty) {
+
+		layout = LATIN_KEYBOARD_QWERTY;
+
+		CGKeyCode keys[] = {kVK_ANSI_Q, kVK_ANSI_W, kVK_ANSI_E, kVK_ANSI_R, kVK_ANSI_T, kVK_ANSI_Y};
+		NSString *test = createStringForKeys(keys, 6);
+
+		if ([test isEqualToString:@"qwertz"]) {
+			layout = LATIN_KEYBOARD_QWERTZ;
+		} else if ([test isEqualToString:@"azerty"]) {
+			layout = LATIN_KEYBOARD_AZERTY;
+		} else if ([test isEqualToString:@"qzerty"]) {
+			layout = LATIN_KEYBOARD_QZERTY;
+		} else if ([test isEqualToString:@"',.pyf"]) {
+			layout = LATIN_KEYBOARD_DVORAK;
+		} else if ([test isEqualToString:@"xvlcwk"]) {
+			layout = LATIN_KEYBOARD_NEO;
+		}
+
+		[test release];
+
+		keyboard_layout_dirty = false;
+		return layout;
+	}
+
+	return layout;
+}
 
 void OS_OSX::process_events() {
 

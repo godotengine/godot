@@ -398,11 +398,13 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	add_child(button_create);
 	button_create->connect("pressed",this,"_menu_option",varray(MODE_CREATE));
 	button_create->set_toggle_mode(true);
+	button_create->set_tooltip("Create a new polygon from scratch");
 
 	button_edit = memnew( ToolButton );
 	add_child(button_edit);
 	button_edit->connect("pressed",this,"_menu_option",varray(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
+	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
 
 	//add_constant_override("separation",0);
 

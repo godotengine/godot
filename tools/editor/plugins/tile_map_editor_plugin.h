@@ -34,15 +34,14 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/button_group.h"
-#include "tools/editor/pane_drag.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 class CanvasItemEditor;
 
-class TileMapEditor : public HBoxContainer {
+class TileMapEditor : public VBoxContainer {
 
-	OBJ_TYPE(TileMapEditor, BoxContainer );
+	OBJ_TYPE(TileMapEditor, VBoxContainer );
 
 	UndoRedo *undo_redo;
 
@@ -63,7 +62,6 @@ class TileMapEditor : public HBoxContainer {
 	Panel *panel;
 	TileMap *node;
 	MenuButton *options;
-	PaneDrag *pane_drag;
 
 	bool selection_active;
 	Point2i selection_begin;
@@ -74,6 +72,8 @@ class TileMapEditor : public HBoxContainer {
 	Label *mirror_label;
 	ToolButton *mirror_x;
 	ToolButton *mirror_y;
+
+	HBoxContainer *canvas_item_editor_hb;
 
 
 	struct CellOp {
@@ -88,7 +88,6 @@ class TileMapEditor : public HBoxContainer {
 	int get_selected_tile() const;
 
 	void _update_palette();
-	void _pane_drag(const Point2& p_to);
 	void _canvas_draw();
 	void _menu_option(int p_option);
 
@@ -99,14 +98,13 @@ class TileMapEditor : public HBoxContainer {
 	void _tileset_settings_changed();
 
 
-friend class TileMapEditorPlugin;
-	Panel *theme_panel;
 protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 public:
 
+	HBoxContainer *get_canvas_item_editor_hb() const { return canvas_item_editor_hb; }
 	Vector2 snap_point(const Vector2& p_point) const;
 	bool forward_input_event(const InputEvent& p_event);
 	void edit(Node *p_tile_map);
@@ -119,6 +117,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 	TileMapEditor *tile_map_editor;
 	EditorNode *editor;
+
 
 public:
 

@@ -98,7 +98,7 @@ bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vec
 		if (shape->intersect_segment(local_from,local_to,shape_point,shape_normal)) {
 
 
-			//print_line("inters sgment!");
+
 			Matrix32 xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 			shape_point=xform.xform(shape_point);
 
@@ -217,6 +217,16 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 		int shape_idx=space->intersection_query_subindex_results[i];
 
 
+		/*if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+
+			const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+			if (body->get_one_way_collision_direction()!=Vector2() && p_motion.dot(body->get_one_way_collision_direction())<=CMP_EPSILON) {
+				print_line("failed in motion dir");
+				continue;
+			}
+		}*/
+
+
 		Matrix32 col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 		//test initial overlap, does it collide if going all the way?
 		if (!CollisionSolver2DSW::solve(shape,p_xform,p_motion,col_obj->get_shape(shape_idx),col_obj_xform,Vector2() ,NULL,NULL,NULL,p_margin)) {
@@ -226,6 +236,14 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 
 		//test initial overlap
 		if (CollisionSolver2DSW::solve(shape,p_xform,Vector2(),col_obj->get_shape(shape_idx),col_obj_xform,Vector2() ,NULL,NULL,NULL,p_margin)) {
+
+			if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+				//if one way collision direction ignore initial overlap
+				const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+				if (body->get_one_way_collision_direction()!=Vector2()) {
+					continue;
+				}
+			}
 
 			return false;
 		}
@@ -252,6 +270,29 @@ bool Physics2DDirectSpaceStateSW::cast_motion(const RID& p_shape, const Matrix32
 				low=ofs;
 			}
 		}
+
+		if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+
+			const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+			if (body->get_one_way_collision_direction()!=Vector2()) {
+
+				Vector2 cd[2];
+				Physics2DServerSW::CollCbkData cbk;
+				cbk.max=1;
+				cbk.amount=0;
+				cbk.ptr=cd;
+				cbk.valid_dir=body->get_one_way_collision_direction();
+				cbk.valid_depth=body->get_one_way_collision_max_depth();
+
+				Vector2 sep=mnormal; //important optimization for this to work fast enough
+				bool collided = CollisionSolver2DSW::solve(shape,p_xform,p_motion*(hi+space->contact_max_allowed_penetration),col_obj->get_shape(shape_idx),col_obj_xform,Vector2(),Physics2DServerSW::_shape_col_cbk,&cbk,&sep,p_margin);
+				if (!collided || cbk.amount==0) {					
+					continue;
+				}
+
+			}
+		}
+
 
 		if (low<best_safe) {
 			best_safe=low;
@@ -311,13 +352,22 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Matrix32& p_s
 
 		if (p_exclude.has( col_obj->get_self() ))
 			continue;
+		if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
 
+			const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+			cbk.valid_dir=body->get_one_way_collision_direction();
+			cbk.valid_depth=body->get_one_way_collision_max_depth();
+		} else {
+			cbk.valid_dir=Vector2();
+			cbk.valid_depth=0;
+		}
 
 		if (CollisionSolver2DSW::solve(shape,p_shape_xform,p_motion,col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),Vector2(),cbkres,cbkptr,NULL,p_margin)) {
-			collided=true;
+			collided=p_result_max==0 || cbk.amount>0;
 		}
 
 	}
+
 
 	r_result_count=cbk.amount;
 
@@ -334,6 +384,8 @@ struct _RestCallbackData2D {
 	Vector2 best_contact;
 	Vector2 best_normal;
 	float best_len;
+	Vector2 valid_dir;
+	float valid_depth;
 };
 
 static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,void *p_userdata) {
@@ -341,10 +393,22 @@ static void _rest_cbk_result(const Vector2& p_point_A,const Vector2& p_point_B,v
 
 	_RestCallbackData2D *rd=(_RestCallbackData2D*)p_userdata;
 
+	if (rd->valid_dir!=Vector2()) {
+
+		if (rd->valid_dir!=Vector2()) {
+			if (p_point_A.distance_squared_to(p_point_B)>rd->valid_depth*rd->valid_depth)
+				return;
+			if (rd->valid_dir.dot((p_point_A-p_point_B).normalized())<Math_PI*0.25)
+				return;
+		}
+
+	}
+
 	Vector2 contact_rel = p_point_B - p_point_A;
 	float len = contact_rel.length();
 	if (len <= rd->best_len)
 		return;
+
 
 	rd->best_len=len;
 	rd->best_contact=p_point_B;
@@ -384,6 +448,17 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Matrix32& p_shape
 
 		if (p_exclude.has( col_obj->get_self() ))
 			continue;
+
+		if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+
+			const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+			rcd.valid_dir=body->get_one_way_collision_direction();
+			rcd.valid_depth=body->get_one_way_collision_max_depth();
+		} else {
+			rcd.valid_dir=Vector2();
+			rcd.valid_depth=0;
+		}
+
 
 		rcd.object=col_obj;
 		rcd.shape=shape_idx;
@@ -606,8 +681,7 @@ void Space2DSW::set_param(Physics2DServer::SpaceParameter p_param, real_t p_valu
 		case Physics2DServer::SPACE_PARAM_BODY_MAX_ALLOWED_PENETRATION: contact_max_allowed_penetration=p_value; break;
 		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: body_linear_velocity_sleep_treshold=p_value; break;
 		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: body_angular_velocity_sleep_treshold=p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep=p_value; break;
-		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: body_angular_velocity_damp_ratio=p_value; break;
+		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep=p_value; break;		
 		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias=p_value; break;
 	}
 }
@@ -622,7 +696,6 @@ real_t Space2DSW::get_param(Physics2DServer::SpaceParameter p_param) const {
 		case Physics2DServer::SPACE_PARAM_BODY_LINEAR_VELOCITY_SLEEP_TRESHOLD: return body_linear_velocity_sleep_treshold;
 		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_TRESHOLD: return body_angular_velocity_sleep_treshold;
 		case Physics2DServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: return body_time_to_sleep;
-		case Physics2DServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: return body_angular_velocity_damp_ratio;
 		case Physics2DServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: return constraint_bias;
 	}
 	return 0;
@@ -664,7 +737,6 @@ Space2DSW::Space2DSW() {
 	body_linear_velocity_sleep_treshold=0.01;
 	body_angular_velocity_sleep_treshold=(8.0 / 180.0 * Math_PI);
 	body_time_to_sleep=0.5;
-	body_angular_velocity_damp_ratio=15;
 
 
 	broadphase = BroadPhase2DSW::create_func();

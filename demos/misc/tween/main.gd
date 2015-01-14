@@ -112,8 +112,8 @@ func reset_tween():
 		tween.interpolate_property(sprite, "transform/rot", 360, 0, 2, state.trans, state.eases, 2)
 	
 	if get_node("modes/callback").is_pressed():
-		tween.interpolate_callback(self, "on_callback", 0.5, "0.5 second's after")
-		tween.interpolate_callback(self, "on_callback", 1.2, "1.2 second's after")
+		tween.interpolate_callback(self, 0.5, "on_callback", "0.5 second's after")
+		tween.interpolate_callback(self, 0.2, "on_callback", "1.2 second's after")
 	
 	if get_node("modes/follow").is_pressed():
 		follow.show()

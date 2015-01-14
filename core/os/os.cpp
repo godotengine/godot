@@ -485,6 +485,11 @@ void OS::set_time_scale(float p_scale) {
 	_time_scale=p_scale;
 }
 
+OS::LatinKeyboardVariant OS::get_latin_keyboard_variant() const {
+
+	return LATIN_KEYBOARD_QWERTY;
+}
+
 float OS::get_time_scale() const {
 
 	return _time_scale;

@@ -289,6 +289,10 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _viewport_input_event(const InputEvent& p_event);
 	void _viewport_draw();
+
+	HSplitContainer *palette_split;
+	VSplitContainer *bottom_split;
+
 friend class CanvasItemEditorPlugin;
 protected:
 
@@ -340,6 +344,9 @@ public:
 	void set_state(const Dictionary& p_state);
 
 	void add_control_to_menu_panel(Control *p_control);
+
+	HSplitContainer *get_palette_split();
+	VSplitContainer *get_bottom_split();
 
 	Control *get_viewport_control() { return viewport; }
 

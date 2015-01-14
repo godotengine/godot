@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  empty_control.cpp                                                    */
+/*  audio_driver_pulseaudio.h                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,34 +26,54 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#include "empty_control.h"
+#include "servers/audio/audio_server_sw.h"
 
-Size2 EmptyControl::get_minimum_size() const {
+#ifdef PULSEAUDIO_ENABLED
 
-	return minsize;
-}
+#include "core/os/thread.h"
+#include "core/os/mutex.h"
 
-void EmptyControl::set_minsize(const Size2& p_size) {
+#include <pulse/simple.h>
 
-	minsize=p_size;
-	minimum_size_changed();
-}
+class AudioDriverPulseAudio : public AudioDriverSW {
 
-Size2 EmptyControl::get_minsize() const {
+	Thread* thread;
+	Mutex* mutex;
 
-	return minsize;
-}
+    pa_simple* pulse;
 
+	int32_t* samples_in;
+	int16_t* samples_out;
 
-void EmptyControl::_bind_methods() {
+	static void thread_func(void* p_udata);
 
+	unsigned int mix_rate;
+	OutputFormat output_format;
 
-	ObjectTypeDB::bind_method(_MD("set_minsize","minsize"),&EmptyControl::set_minsize);
-	ObjectTypeDB::bind_method(_MD("get_minsize"),&EmptyControl::get_minsize);
+    unsigned int buffer_size;
+	int channels;
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"minsize"), _SCS("set_minsize"),_SCS("get_minsize") );
-}
+	bool active;
+	bool thread_exited;
+	mutable bool exit_thread;
+	bool pcm_open;
 
-EmptyControl::EmptyControl()
-{
-}
+public:
+
+	const char* get_name() const {
+        return "PulseAudio";
+	};
+
+	virtual Error init();
+	virtual void start();
+	virtual int get_mix_rate() const;
+	virtual OutputFormat get_output_format() const;
+	virtual void lock();
+	virtual void unlock();
+	virtual void finish();
+
+    AudioDriverPulseAudio();
+    ~AudioDriverPulseAudio();
+};
+
+#endif

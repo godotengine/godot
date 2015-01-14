@@ -382,6 +382,8 @@ bool Node::can_process() const {
 
 	if (get_tree()->is_paused()) {
 
+		if (data.pause_mode==PAUSE_MODE_STOP)
+			return false;
 		if (data.pause_mode==PAUSE_MODE_PROCESS)
 			return true;
 		if (data.pause_mode==PAUSE_MODE_INHERIT) {
@@ -391,6 +393,9 @@ bool Node::can_process() const {
 
 			if (data.pause_owner->data.pause_mode==PAUSE_MODE_PROCESS)
 				return true;
+
+			if (data.pause_owner->data.pause_mode==PAUSE_MODE_STOP)
+				return false;
 		}
 
 	}
@@ -1731,6 +1736,26 @@ NodePath Node::get_import_path() const {
 
 #endif
 
+static void _add_nodes_to_options(const Node *p_base,const Node *p_node,List<String>*r_options) {
+
+	if (p_node!=p_base && !p_node->get_owner())
+		return;
+	String n = p_base->get_path_to(p_node);
+	r_options->push_back("\""+n+"\"");
+	for(int i=0;i<p_node->get_child_count();i++) {
+		_add_nodes_to_options(p_base,p_node->get_child(i),r_options);
+	}
+}
+
+void Node::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+	String pf=p_function;
+	if ((pf=="has_node" || pf=="get_node") && p_idx==0) {
+
+		_add_nodes_to_options(this,this,r_options);
+	}
+	Object::get_argument_options(p_function,p_idx,r_options);
+}
 
 void Node::_bind_methods() {
 

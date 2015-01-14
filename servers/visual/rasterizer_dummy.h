@@ -429,6 +429,12 @@ public:
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
+
+	virtual Variant shader_get_default_param(RID p_shader, const StringName& p_name);
+
 	/* COMMON MATERIAL API */
 
 	virtual RID material_create();
@@ -703,6 +709,8 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width);
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor);
 	virtual void canvas_set_transform(const Matrix32& p_transform);
+
+	virtual void canvas_render_items(CanvasItem *p_item_list);
 
 	/* ENVIRONMENT */
 

@@ -39,7 +39,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/panel_container.h"
 
-#include "scene/gui/empty_control.h"
+
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/margin_container.h"
 #include "io/resource_saver.h"
@@ -65,7 +65,7 @@ class NewProjectDialog : public ConfirmationDialog {
 		error->set_text("");
 		get_ok()->set_disabled(true);
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (d->change_dir(project_path->get_text())!=OK) {
+		if (project_path->get_text() != "" && d->change_dir(project_path->get_text())!=OK) {
 			error->set_text("Invalid Path for Project, Path Must Exist!");
 			memdelete(d);
 			return false;
@@ -82,7 +82,7 @@ class NewProjectDialog : public ConfirmationDialog {
 
 		} else {
 
-			if (!d->file_exists("engine.cfg")) {
+			if (project_path->get_text() != "" && !d->file_exists("engine.cfg")) {
 
 				error->set_text("Invalid Project Path (engine.cfg must exist).");
 				memdelete(d);
@@ -580,8 +580,8 @@ void ProjectManager::_load_recent_projects() {
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		hb->add_child(vb);
-		EmptyControl *ec = memnew( EmptyControl );
-		ec->set_minsize(Size2(0,1));
+		Control *ec = memnew( Control );
+		ec->set_custom_minimum_size(Size2(0,1));
 		vb->add_child(ec);
 		Label *title = memnew( Label(project_name) );
 		title->add_font_override("font",get_font("large","Fonts"));

@@ -12,9 +12,9 @@ Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p
 	return ResourceLoader::load_interactive(p_path,p_type_hint);
 }
 
-RES _ResourceLoader::load(const String &p_path,const String& p_type_hint) {
+RES _ResourceLoader::load(const String &p_path,const String& p_type_hint, bool p_no_cache) {
 
-	RES ret =  ResourceLoader::load(p_path,p_type_hint);
+	RES ret =  ResourceLoader::load(p_path,p_type_hint, p_no_cache);
 	return ret;
 }
 
@@ -59,7 +59,7 @@ void _ResourceLoader::_bind_methods() {
 
 
 	ObjectTypeDB::bind_method(_MD("load_interactive:ResourceInteractiveLoader","path","type_hint"),&_ResourceLoader::load_interactive,DEFVAL(""));
-	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint"),&_ResourceLoader::load,DEFVAL(""));
+	ObjectTypeDB::bind_method(_MD("load:Resource","path","type_hint", "p_no_cache"),&_ResourceLoader::load,DEFVAL(""), DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_recognized_extensions_for_type","type"),&_ResourceLoader::get_recognized_extensions_for_type);
 	ObjectTypeDB::bind_method(_MD("set_abort_on_missing_resources","abort"),&_ResourceLoader::set_abort_on_missing_resources);
 	ObjectTypeDB::bind_method(_MD("get_dependencies"),&_ResourceLoader::get_dependencies);
@@ -642,7 +642,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("has_touchscreen_ui_hint"),&_OS::has_touchscreen_ui_hint);
 
-
+	ObjectTypeDB::bind_method(_MD("set_window_title","title"),&_OS::set_window_title);
 
 	ObjectTypeDB::bind_method(_MD("set_low_processor_usage_mode","enable"),&_OS::set_low_processor_usage_mode);
 	ObjectTypeDB::bind_method(_MD("is_in_low_processor_usage_mode"),&_OS::is_in_low_processor_usage_mode);
@@ -1121,6 +1121,7 @@ String _File::get_as_text() const {
 		text+=l+"\n";
 		l = get_line();
 	}
+	text+=l;
 
 	return text;
 

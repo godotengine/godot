@@ -32,6 +32,7 @@ public:
 	virtual void swap_buffers();
 
 	virtual Error initialize();
+	void reset();
 
 	void cleanup();
 

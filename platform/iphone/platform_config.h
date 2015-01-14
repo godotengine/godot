@@ -28,5 +28,6 @@
 /*************************************************************************/
 #include <alloca.h>
 #define GLES2_INCLUDE_H <ES2/gl.h>
-#define GLES1_INCLUDE_H <ES1/gl.h>
 
+
+#define PLATFORM_REFCOUNT

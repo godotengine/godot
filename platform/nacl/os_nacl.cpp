@@ -64,7 +64,7 @@ int OSNacl::get_video_driver_count() const {
 };
 const char * OSNacl::get_video_driver_name(int p_driver) const {
 
-	return "gles2";
+	return "GLES2";
 };
 
 OS::VideoMode OSNacl::get_default_video_mode() const {

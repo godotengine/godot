@@ -85,6 +85,7 @@ class VisualServerRaster : public VisualServer {
 		Vector<Point2> shape;
 		Rect2 bounds;
 
+
 		Portal() { enabled=true; disable_distance=50; disable_color=Color(); connect_range=0.8; }
 	};
 
@@ -372,139 +373,32 @@ class VisualServerRaster : public VisualServer {
 
 
 
-	struct CanvasItem {
-		
-		struct Command {
-			
-			enum Type {
-				
-				TYPE_LINE,
-				TYPE_RECT,
-				TYPE_STYLE,
-				TYPE_PRIMITIVE,
-				TYPE_POLYGON,
-				TYPE_POLYGON_PTR,
-				TYPE_CIRCLE,
-				TYPE_TRANSFORM,
-				TYPE_BLEND_MODE,
-				TYPE_CLIP_IGNORE,
-			};
-			
-			Type type;
-		};
-		
-		struct CommandLine : public Command {
-			
-			Point2 from,to;
-			Color color;		
-			float width;
-			CommandLine() { type = TYPE_LINE; }
-		};
-		
-		struct CommandRect : public Command {
-			
-			Rect2 rect;
-			RID texture;
-			Color modulate;
-			Rect2 source;
-			uint8_t flags;
-			
-			CommandRect() { flags=0; type = TYPE_RECT; }
-		};
-			
-		struct CommandStyle : public Command {
-			
-			Rect2 rect;
-			RID texture;
-			float margin[4];
-			float draw_center;
-			Color color;
-			CommandStyle() { draw_center=true; type = TYPE_STYLE; }
-		};
-			
-		struct CommandPrimitive : public Command {
-			
-			Vector<Point2> points;
-			Vector<Point2> uvs;
-			Vector<Color> colors;
-			RID texture;
-			float width;
-			
-			CommandPrimitive() { type = TYPE_PRIMITIVE; width=1;}
-		};
+	struct CanvasItem : public Rasterizer::CanvasItem {
 
-		struct CommandPolygon : public Command {
-
-			Vector<int> indices;
-			Vector<Point2> points;
-			Vector<Point2> uvs;
-			Vector<Color> colors;
-			RID texture;
-			int count;
-
-			CommandPolygon() { type = TYPE_POLYGON; count = 0; }
-		};
-
-		struct CommandPolygonPtr : public Command {
-
-			const int* indices;
-			const Point2* points;
-			const Point2* uvs;
-			const Color* colors;
-			RID texture;
-			int count;
-
-			CommandPolygonPtr() { type = TYPE_POLYGON_PTR; count = 0; }
-		};
-
-		struct CommandCircle : public Command {
-
-			Point2 pos;
-			float radius;
-			Color color;
-			CommandCircle() { type = TYPE_CIRCLE; }
-		};
-
-		struct CommandTransform : public Command {
-
-			Matrix32 xform;
-			CommandTransform() { type = TYPE_TRANSFORM; }
-		};
-
-		struct CommandBlendMode : public Command {
-
-			MaterialBlendMode blend_mode;
-			CommandBlendMode() { type = TYPE_BLEND_MODE; blend_mode = MATERIAL_BLEND_MODE_MIX; };
-		};
-		struct CommandClipIgnore : public Command {
-
-			bool ignore;
-			CommandClipIgnore() { type = TYPE_CLIP_IGNORE; ignore=false; };
-		};
 
 		RID parent; // canvas it belongs to
 		List<CanvasItem*>::Element *E;
-		Matrix32 xform;
-		bool clip;
-		bool visible;
-		bool ontop;
+		RID viewport;
+		int z;
+		bool z_relative;
 		bool sort_y;
 		float opacity;
 		float self_opacity;
-		MaterialBlendMode blend_mode;
-		RID viewport;
+		bool use_parent_shader;
 
-		mutable bool custom_rect;
-		mutable bool rect_dirty;		
-		mutable Rect2 rect;
-		
-		Vector<Command*> commands;
+
 		Vector<CanvasItem*> child_items;
 
-		const Rect2& get_rect() const;
-		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true;};
-		CanvasItem() { clip=false; E=NULL; opacity=1; self_opacity=1; blend_mode=MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; sort_y=false;}
-		~CanvasItem() { clear(); }
+
+		CanvasItem() {
+			E=NULL;
+			z=0;
+			opacity=1;
+			self_opacity=1;
+			sort_y=false;
+			use_parent_shader=false;
+			z_relative=true;
+		}
 	};
 
 
@@ -706,7 +600,9 @@ class VisualServerRaster : public VisualServer {
 	void _process_sampled_light(const Transform &p_camera, Instance *p_sampled_light, bool p_linear_colorspace);
 
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
-	void _render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect,float p_opacity);
+	static void _render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect);
+	void _render_canvas_item_tree(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect);
+	void _render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,int p_z,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner);
 	void _render_canvas(Canvas *p_canvas,const Matrix32 &p_transform);
 	Vector<Vector3> _camera_generate_endpoints(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
 	Vector<Plane> _camera_generate_orthogonal_planes(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
@@ -755,6 +651,10 @@ public:
 	virtual String shader_get_light_code(RID p_shader) const;
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
+
 
 	/* COMMON MATERIAL API */
 
@@ -1213,6 +1113,17 @@ public:
 	virtual void canvas_item_add_set_blend_mode(RID p_item, MaterialBlendMode p_blend);
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore);
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
+	virtual void canvas_item_set_z(RID p_item, int p_z);
+	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
+
+	virtual void canvas_item_set_shader(RID p_item, RID p_shader);
+	virtual RID canvas_item_get_shader(RID p_item) const;
+
+	virtual void canvas_item_set_use_parent_shader(RID p_item, bool p_enable);
+
+
+	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value);
+	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const;
 
 	virtual void canvas_item_clear(RID p_item);
 	virtual void canvas_item_raise(RID p_item);

@@ -2631,3 +2631,129 @@ Variant Variant::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 	return ret;
 }
 
+
+String Variant::get_construct_string() const {
+
+	switch( type ) {
+
+		case NIL: return "null";
+		case BOOL: return _data._bool ? "true" : "false";
+		case INT: return String::num(_data._int);
+		case REAL: return String::num(_data._real);
+		case STRING: return "\""+*reinterpret_cast<const String*>(_data._mem)+"\"";
+		case VECTOR2: return "Vector2("+operator Vector2()+")";
+		case RECT2: return "Rect2("+operator Rect2()+")";
+		case MATRIX32: return "Matrix32("+operator Matrix32()+")";
+		case VECTOR3: return "Vector3("+operator Vector3()+")";
+		case PLANE: return "Plane("+operator Plane()+")";
+		//case QUAT:
+		case _AABB: return "AABB("+operator AABB()+")";
+		case QUAT: return "Quat("+operator Quat()+")";
+		case MATRIX3: return "Matrix3("+operator Matrix3()+")";
+		case TRANSFORM: return "Transform("+operator Transform()+")";
+		case NODE_PATH: return "@\""+operator NodePath()+"\"";
+		case INPUT_EVENT: return "InputEvent()";
+		case COLOR: return "Color("+String::num( operator Color().r)+","+String::num( operator Color().g)+","+String::num( operator Color().b)+","+String::num( operator Color().a)+")" ;
+		case DICTIONARY: {
+
+			const Dictionary &d =*reinterpret_cast<const Dictionary*>(_data._mem);
+			//const String *K=NULL;
+			String str="{";
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			Vector<_VariantStrPair> pairs;
+
+			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+				_VariantStrPair sp;
+				sp.key=E->get().get_construct_string();
+				sp.value=d[E->get()].get_construct_string();
+				pairs.push_back(sp);
+			}
+
+			pairs.sort();
+
+			for(int i=0;i<pairs.size();i++) {
+				if (i>0)
+					str+=", ";
+				str+="("+pairs[i].key+":"+pairs[i].value+")";
+			}
+			str+="}";
+
+			return str;
+		} break;
+		case VECTOR3_ARRAY: {
+
+			DVector<Vector3> vec = operator DVector<Vector3>();
+			String str="[";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str+=Variant( vec[i] ).get_construct_string();
+			}
+			return str+"]";
+		} break;
+		case STRING_ARRAY: {
+
+			DVector<String> vec = operator DVector<String>();
+			String str="[";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+=Variant( vec[i] ).get_construct_string();
+			}
+			return str+"]";
+		} break;
+		case INT_ARRAY: {
+
+			DVector<int> vec = operator DVector<int>();
+			String str="[";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+itos(vec[i]);
+			}
+			return str+"]";
+		} break;
+		case REAL_ARRAY: {
+
+			DVector<real_t> vec = operator DVector<real_t>();
+			String str="[";
+			for(int i=0;i<vec.size();i++) {
+
+				if (i>0)
+					str+=", ";
+				str=str+rtos(vec[i]);
+			}
+			return str+"]";
+		} break;
+		case ARRAY: {
+
+			Array arr = operator Array();
+			String str="[";
+			for (int i=0; i<arr.size(); i++) {
+				if (i)
+					str+=", ";
+				str += arr[i].get_construct_string();
+			};
+			return str+"]";
+
+		} break;
+		case OBJECT: {
+
+			if (_get_obj().obj)
+				return _get_obj().obj->get_type()+".new()";
+			else
+				return "null";
+
+		} break;
+		default: {
+			return "["+get_type_name(type)+"]";
+		}
+	}
+
+}

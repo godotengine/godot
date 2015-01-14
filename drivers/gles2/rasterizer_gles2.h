@@ -191,10 +191,13 @@ class RasterizerGLES2 : public Rasterizer {
 		bool writes_vertex;
 		bool uses_discard;
 		bool uses_time;
+		bool uses_normal;
+		bool uses_texpixel_size;
 
 		Map<StringName,ShaderLanguage::Uniform> uniforms;
 		StringName first_texture;
 
+		Map<StringName,RID> default_textures;
 
 		SelfList<Shader> dirty_list;
 
@@ -213,6 +216,7 @@ class RasterizerGLES2 : public Rasterizer {
 			writes_vertex=false;
 			uses_discard=false;
 			uses_time=false;
+			uses_normal=false;
 		}
 
 
@@ -240,8 +244,9 @@ class RasterizerGLES2 : public Rasterizer {
 
 		struct UniformData {
 
+			bool inuse;
 			bool istexture;
-			Variant value;
+			Variant value;			
 			int index;
 		};
 
@@ -1167,6 +1172,13 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint white_tex;
 	RID canvas_tex;
 	float canvas_opacity;
+	bool uses_texpixel_size;
+	bool rebind_texpixel_size;
+	Transform canvas_transform;
+	RID canvas_last_shader;
+	bool canvas_texscreen_used;
+
+
 	_FORCE_INLINE_ Texture* _bind_canvas_texture(const RID& p_texture);
 	VS::MaterialBlendMode canvas_blend_mode;
 
@@ -1197,7 +1209,7 @@ class RasterizerGLES2 : public Rasterizer {
 	RID overdraw_material;
 
 	mutable MaterialShaderGLES2 material_shader;
-	CanvasShaderGLES2 canvas_shader;
+	mutable CanvasShaderGLES2 canvas_shader;
 	BlurShaderGLES2 blur_shader;
 	CopyShaderGLES2 copy_shader;
 
@@ -1255,6 +1267,10 @@ public:
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture);
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const;
+
+	virtual Variant shader_get_default_param(RID p_shader, const StringName& p_name);
 
 	/* COMMON MATERIAL API */
 
@@ -1531,6 +1547,8 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width);
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor);
 	virtual void canvas_set_transform(const Matrix32& p_transform);
+
+	virtual void canvas_render_items(CanvasItem *p_item_list);
 
 	/* ENVIRONMENT */
 

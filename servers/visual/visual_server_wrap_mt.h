@@ -653,6 +653,10 @@ public:
 	FUNC1RC(String,shader_get_light_code,RID);
 	FUNC2SC(shader_get_param_list,RID,List<PropertyInfo>*);
 
+	FUNC3(shader_set_default_texture_param,RID,const StringName&,RID);
+	FUNC2RC(RID,shader_get_default_texture_param,RID,const StringName&);
+
+
 	/*virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) {
 		if (Thread::get_caller_ID()!=server_thread) {
 			command_queue.push_and_sync( visual_server, &VisualServer::shader_get_param_list,p_shader,p_param_list);
@@ -1127,6 +1131,17 @@ public:
 	FUNC2(canvas_item_add_clip_ignore,RID, bool );
 
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
+	FUNC2(canvas_item_set_z,RID,int);
+	FUNC2(canvas_item_set_z_as_relative_to_parent,RID,bool);
+
+	FUNC2(canvas_item_set_shader,RID, RID );
+	FUNC1RC(RID,canvas_item_get_shader,RID );
+
+	FUNC2(canvas_item_set_use_parent_shader,RID, bool );
+
+
+	FUNC3(canvas_item_set_shader_param,RID,const StringName&,const Variant&);
+	FUNC2RC(Variant,canvas_item_get_shader_param,RID,const StringName&);
 
 	FUNC1(canvas_item_clear,RID);
 	FUNC1(canvas_item_raise,RID);

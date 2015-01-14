@@ -47,7 +47,8 @@ class Area2DSW : public CollisionObject2DSW{
 	Vector2 gravity_vector;
 	bool gravity_is_point;
 	float point_attenuation;
-	float density;
+	float linear_damp;
+	float angular_damp;
 	int priority;
 
 	ObjectID monitor_callback_id;
@@ -128,8 +129,11 @@ public:
 	_FORCE_INLINE_ void set_point_attenuation(float p_point_attenuation) { point_attenuation=p_point_attenuation; }
 	_FORCE_INLINE_ float get_point_attenuation() const { return point_attenuation; }
 
-	_FORCE_INLINE_ void set_density(float p_density) { density=p_density; }
-	_FORCE_INLINE_ float get_density() const { return density; }
+	_FORCE_INLINE_ void set_linear_damp(float p_linear_damp) { linear_damp=p_linear_damp; }
+	_FORCE_INLINE_ float get_linear_damp() const { return linear_damp; }
+
+	_FORCE_INLINE_ void set_angular_damp(float p_angular_damp) { angular_damp=p_angular_damp; }
+	_FORCE_INLINE_ float get_angular_damp() const { return angular_damp; }
 
 	_FORCE_INLINE_ void set_priority(int p_priority) { priority=p_priority; }
 	_FORCE_INLINE_ int get_priority() const { return priority; }

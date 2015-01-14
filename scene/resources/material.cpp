@@ -458,6 +458,8 @@ FixedMaterial::~FixedMaterial() {
 }
 
 
+
+
 bool ShaderMaterial::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (p_name==SceneStringNames::get_singleton()->shader_shader) {
@@ -465,10 +467,20 @@ bool ShaderMaterial::_set(const StringName& p_name, const Variant& p_value) {
 		return true;
 	} else {
 
-		String n = p_name;
-		if (n.begins_with("param/")) {
-			VisualServer::get_singleton()->material_set_param(material,String(n.ptr()+6),p_value);
-			return true;
+		if (shader.is_valid()) {
+
+
+			StringName pr = shader->remap_param(p_name);
+			if (!pr) {
+				String n = p_name;
+				if (n.find("param/")==0) { //backwards compatibility
+					pr = n.substr(6,n.length());
+				}
+			}
+			if (pr) {
+				VisualServer::get_singleton()->material_set_param(material,pr,p_value);
+				return true;
+			}
 		}
 	}
 
@@ -484,10 +496,13 @@ bool ShaderMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 		return true;
 	} else {
 
-		String n = p_name;
-		if (n.begins_with("param/")) {
-			r_ret=VisualServer::get_singleton()->material_get_param(material,String(n.ptr()+6));
-			return true;
+		if (shader.is_valid()) {
+
+			StringName pr = shader->remap_param(p_name);
+			if (pr) {
+				r_ret=VisualServer::get_singleton()->material_get_param(material,pr);
+				return true;
+			}
 		}
 
 	}
@@ -499,7 +514,7 @@ bool ShaderMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 
 void ShaderMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"Shader" ) );
+	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"MaterialShader,MaterialShaderGraph" ) );
 
 	if (!shader.is_null()) {
 
@@ -558,7 +573,21 @@ void ShaderMaterial::_bind_methods() {
 }
 
 
+void ShaderMaterial::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
 
+	String f = p_function.operator String();
+	if ((f=="get_shader_param" || f=="set_shader_param") && p_idx==0) {
+
+		if (shader.is_valid()) {
+			List<PropertyInfo> pl;
+			shader->get_param_list(&pl);
+			for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+				r_options->push_back("\""+E->get().name.replace("shader_param/","")+"\"");
+			}
+		}
+	}
+	Material::get_argument_options(p_function,p_idx,r_options);
+}
 
 ShaderMaterial::ShaderMaterial() :Material(VisualServer::get_singleton()->material_create()){
 
@@ -567,115 +596,3 @@ ShaderMaterial::ShaderMaterial() :Material(VisualServer::get_singleton()->materi
 
 
 /////////////////////////////////
-
-void ParticleSystemMaterial::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&ParticleSystemMaterial::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&ParticleSystemMaterial::get_texture);
-
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture" ), _SCS("set_texture"), _SCS("get_texture"));
-
-}
-
-void ParticleSystemMaterial::set_texture(const Ref<Texture>& p_texture) {
-	texture=p_texture;
-	RID rid;
-	if (texture.is_valid())
-		rid=texture->get_rid();
-
-	VS::get_singleton()->fixed_material_set_texture(material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,rid);
-}
-
-Ref<Texture> ParticleSystemMaterial::get_texture() const {
-
-	return texture;
-}
-
-
-ParticleSystemMaterial::ParticleSystemMaterial() :Material(VisualServer::get_singleton()->fixed_material_create()){
-
-	set_flag(FLAG_DOUBLE_SIDED,true);
-	set_flag(FLAG_UNSHADED,true);
-	set_depth_draw_mode(DEPTH_DRAW_NEVER);
-	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-	VisualServer::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
-	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
-
-}
-
-ParticleSystemMaterial::~ParticleSystemMaterial() {
-
-
-}
-
-//////////////////////////////
-
-
-
-void UnshadedMaterial::_bind_methods() {
-
-	ObjectTypeDB::bind_method(_MD("set_texture","texture"),&UnshadedMaterial::set_texture);
-	ObjectTypeDB::bind_method(_MD("get_texture:Texture"),&UnshadedMaterial::get_texture);
-
-	ObjectTypeDB::bind_method(_MD("set_use_alpha","enable"),&UnshadedMaterial::set_use_alpha);
-	ObjectTypeDB::bind_method(_MD("is_using_alpha"),&UnshadedMaterial::is_using_alpha);
-
-	ObjectTypeDB::bind_method(_MD("set_use_color_array","enable"),&UnshadedMaterial::set_use_color_array);
-	ObjectTypeDB::bind_method(_MD("is_using_color_array"),&UnshadedMaterial::is_using_color_array);
-
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture" ), _SCS("set_texture"), _SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "alpha" ), _SCS("set_use_alpha"), _SCS("is_using_alpha"));
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "color_array" ), _SCS("set_use_color_array"), _SCS("is_using_color_array"));
-
-}
-
-void UnshadedMaterial::set_texture(const Ref<Texture>& p_texture) {
-	RID rid;
-	if (texture.is_valid())
-		rid=texture->get_rid();
-
-	VS::get_singleton()->fixed_material_set_texture(material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,rid);
-}
-Ref<Texture> UnshadedMaterial::get_texture() const {
-
-	return texture;
-}
-
-void UnshadedMaterial::set_use_alpha(bool p_use_alpha) {
-
-	alpha=p_use_alpha;
-	VS::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_ALPHA,p_use_alpha);
-	//set_depth_draw_mode();
-	//set_hint(HINT,p_use_alpha);
-
-}
-
-bool UnshadedMaterial::is_using_alpha() const{
-
-	return alpha;
-}
-
-void UnshadedMaterial::set_use_color_array(bool p_use_color_array){
-
-	color_array=p_use_color_array;
-	VS::get_singleton()->fixed_material_set_flag(material,VS::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,p_use_color_array);
-
-}
-
-bool UnshadedMaterial::is_using_color_array() const{
-
-	return color_array;
-}
-
-UnshadedMaterial::UnshadedMaterial() :Material(VisualServer::get_singleton()->fixed_material_create()){
-
-	set_flag(FLAG_UNSHADED,true);
-	set_use_alpha(true);
-	set_flag(FLAG_COLOR_ARRAY_SRGB,true);
-
-}
-
-UnshadedMaterial::~UnshadedMaterial() {
-
-
-}

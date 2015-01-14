@@ -10,11 +10,6 @@ The editor, language and APIs are feature rich, yet simple to learn, allowing yo
 Godot has been developed by Juan Linietsky and Ariel Manzur for several years, and was born as an in-house engine, used to publish several work-for-hire titles.
 Development is sponsored by OKAM Studio (http://www.okamstudio.com).
 
-### Godot is BETA. Collaborate!!
-
-Having been developed as in-house means that the user experience may still not be ideal for everyone. The features needed to make a great game are there, but we really need your help to fix all the rough edges and improve usability (via feedback and/or code contributions).
-We know we are close to having an awesome, open source, game engine with nothing to envy from the best commercial offerings, but we can't do this alone. This is why Godot is now open source, so everyone can help us reach this goal.
-
 ### Documentation
 
 Documentation has been moved to the [GitHub Wiki](https://github.com/okamstudio/godot/wiki).

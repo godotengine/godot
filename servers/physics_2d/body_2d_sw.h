@@ -47,6 +47,10 @@ class Body2DSW : public CollisionObject2DSW {
 	Vector2 linear_velocity;
 	real_t angular_velocity;
 
+	real_t linear_damp;
+	real_t angular_damp;
+	real_t gravity_scale;
+
 	real_t mass;
 	real_t bounce;
 	real_t friction;
@@ -55,12 +59,16 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t _inv_inertia;
 
 	Vector2 gravity;
-	real_t density;
+	real_t area_linear_damp;
+	real_t area_angular_damp;
 
 	real_t still_time;
 
 	Vector2 applied_force;
 	real_t applied_torque;
+
+	Vector2 one_way_collision_direction;
+	float one_way_collision_max_depth;
 
 
 	SelfList<Body2DSW> active_list;
@@ -211,6 +219,12 @@ public:
 	_FORCE_INLINE_ void set_continuous_collision_detection_mode(Physics2DServer::CCDMode p_mode) { continuous_cd_mode=p_mode; }
 	_FORCE_INLINE_ Physics2DServer::CCDMode get_continuous_collision_detection_mode() const { return continuous_cd_mode; }
 
+	void set_one_way_collision_direction(const Vector2& p_dir) { one_way_collision_direction=p_dir; }
+	Vector2 get_one_way_collision_direction() const { return one_way_collision_direction; }
+
+	void set_one_way_collision_max_depth(float p_depth) { one_way_collision_max_depth=p_depth; }
+	float get_one_way_collision_max_depth() const { return one_way_collision_max_depth; }
+
 	void set_space(Space2DSW *p_space);
 
 	void update_inertias();
@@ -219,8 +233,10 @@ public:
 	_FORCE_INLINE_ real_t get_inv_inertia() const { return _inv_inertia; }
 	_FORCE_INLINE_ real_t get_friction() const { return friction; }
 	_FORCE_INLINE_ Vector2 get_gravity() const { return gravity; }
-	_FORCE_INLINE_ real_t get_density() const { return density; }
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
+	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
+	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
+
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);
@@ -306,7 +322,8 @@ public:
 	real_t step;
 
 	virtual Vector2 get_total_gravity() const {  return body->get_gravity();  } // get gravity vector working on this body space/area
-	virtual float get_total_density() const {  return body->get_density();  } // get density of this body space/area
+	virtual float get_total_angular_damp() const {  return body->get_angular_damp();  } // get density of this body space/area
+	virtual float get_total_linear_damp() const {  return body->get_linear_damp();  } // get density of this body space/area
 
 	virtual float get_inverse_mass() const {  return body->get_inv_mass();  } // get the mass
 	virtual real_t get_inverse_inertia() const { return body->get_inv_inertia();   } // get density of this body space

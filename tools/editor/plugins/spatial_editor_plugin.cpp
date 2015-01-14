@@ -535,6 +535,14 @@ SpatialEditorViewport::NavigationScheme SpatialEditorViewport::_get_navigation_s
 	return NAVIGATION_GODOT;
 }
 
+SpatialEditorViewport::NavigationZoomStyle SpatialEditorViewport::_get_navigation_zoom_style(const String& p_property) {
+	switch(EditorSettings::get_singleton()->get(p_property).operator int()) {
+		case 0: return NAVIGATION_ZOOM_VERTICAL;
+		case 1: return NAVIGATION_ZOOM_HORIZONTAL;
+	}
+	return NAVIGATION_ZOOM_VERTICAL;
+}
+
 bool SpatialEditorViewport::_gizmo_select(const Vector2& p_screenpos,bool p_hilite_only) {
 
 	if (!spatial_editor->is_gizmo_visible())
@@ -1429,10 +1437,19 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (nav_scheme==NAVIGATION_MAYA && m.mod.shift)
 						zoom_speed *= zoom_speed_modifier;
 
-					if ( m.relative_y > 0)
-						cursor.distance*=1+m.relative_y*zoom_speed;
-					else if (m.relative_y < 0)
-						cursor.distance/=1-m.relative_y*zoom_speed;
+					NavigationZoomStyle zoom_style = _get_navigation_zoom_style("3d_editor/zoom_style");
+					if (zoom_style == NAVIGATION_ZOOM_HORIZONTAL) {
+						if ( m.relative_x > 0)
+							cursor.distance*=1-m.relative_x*zoom_speed;
+						else if (m.relative_x < 0)
+							cursor.distance/=1+m.relative_x*zoom_speed;
+					}
+					else {
+						if ( m.relative_y > 0)
+							cursor.distance*=1+m.relative_y*zoom_speed;
+						else if (m.relative_y < 0)
+							cursor.distance/=1-m.relative_y*zoom_speed;
+					}
 
 				} break;
 
@@ -3633,12 +3650,12 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item("Use Default sRGB",MENU_VIEW_USE_DEFAULT_SRGB);
 	p->add_separator();
 
-	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT,KEY_MASK_ALT+KEY_1);
-	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS,KEY_MASK_ALT+KEY_2);
-	p->add_check_item("2 Viewports (Alt)",MENU_VIEW_USE_2_VIEWPORTS_ALT,KEY_MASK_SHIFT+KEY_MASK_ALT+KEY_2);
-	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS,KEY_MASK_ALT+KEY_3);
-	p->add_check_item("3 Viewports (Alt)",MENU_VIEW_USE_3_VIEWPORTS_ALT,KEY_MASK_SHIFT+KEY_MASK_ALT+KEY_3);
-	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS,KEY_MASK_ALT+KEY_4);
+	p->add_check_item("1 Viewport",MENU_VIEW_USE_1_VIEWPORT,KEY_MASK_CMD+KEY_1);
+	p->add_check_item("2 Viewports",MENU_VIEW_USE_2_VIEWPORTS,KEY_MASK_CMD+KEY_2);
+	p->add_check_item("2 Viewports (Alt)",MENU_VIEW_USE_2_VIEWPORTS_ALT,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_2);
+	p->add_check_item("3 Viewports",MENU_VIEW_USE_3_VIEWPORTS,KEY_MASK_CMD+KEY_3);
+	p->add_check_item("3 Viewports (Alt)",MENU_VIEW_USE_3_VIEWPORTS_ALT,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_3);
+	p->add_check_item("4 Viewports",MENU_VIEW_USE_4_VIEWPORTS,KEY_MASK_CMD+KEY_4);
 	p->add_separator();
 
 	p->add_check_item("Display Normal",MENU_VIEW_DISPLAY_NORMAL);

@@ -432,31 +432,38 @@ EGLAPI EGLBoolean EGLAPIENTRY eglQuerySurfacePointerANGLE (EGLDisplay dpy, EGLSu
 #define EGL_ANGLE_direct3d_display 1
 #define EGL_D3D11_ELSE_D3D9_DISPLAY_ANGLE ((EGLNativeDisplayType)-2)
 #define EGL_D3D11_ONLY_DISPLAY_ANGLE ((EGLNativeDisplayType)-3)
-#define EGL_D3D11_FL9_3_ONLY_DISPLAY_ANGLE ((EGLNativeDisplayType)-4)
 #endif /* EGL_ANGLE_direct3d_display */
 
 #ifndef EGL_ANGLE_surface_d3d_texture_2d_share_handle
 #define EGL_ANGLE_surface_d3d_texture_2d_share_handle 1
 #endif /* EGL_ANGLE_surface_d3d_texture_2d_share_handle */
 
+#ifndef EGL_ANGLE_surface_d3d_render_to_back_buffer
+#define EGL_ANGLE_surface_d3d_render_to_back_buffer 1
+#define EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER 0x320B
+#define EGL_ANGLE_SURFACE_RENDER_TO_BACK_BUFFER 0x320C
+#endif /* EGL_ANGLE_surface_d3d_render_to_back_buffer */
+
 #ifndef EGL_ANGLE_platform_angle
 #define EGL_ANGLE_platform_angle 1
 #define EGL_PLATFORM_ANGLE_ANGLE          0x3201
 #define EGL_PLATFORM_ANGLE_TYPE_ANGLE     0x3202
-#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE 0x3203
+#define EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE 0x3203
+#define EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE 0x3204
+#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE 0x3205
 #endif /* EGL_ANGLE_platform_angle */
 
 #ifndef EGL_ANGLE_platform_angle_d3d
 #define EGL_ANGLE_platform_angle_d3d 1
-#define EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE 0x3204
-#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE 0x3205
-#define EGL_PLATFORM_ANGLE_TYPE_D3D11_WARP_ANGLE 0x3206
+#define EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE 0x3206
+#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE 0x3207
+#define EGL_PLATFORM_ANGLE_USE_WARP_ANGLE 0x3208
 #endif /* EGL_ANGLE_platform_angle_d3d */
 
 #ifndef EGL_ANGLE_platform_angle_opengl
 #define EGL_ANGLE_platform_angle_opengl 1
-#define EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE 0x3207
-#define EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE 0x3208
+#define EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE 0x3209
+#define EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE 0x320A
 #endif /* EGL_ANGLE_platform_angle_opengl */
 
 #ifndef EGL_ARM_pixmap_multisample_discard

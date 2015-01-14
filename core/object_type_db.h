@@ -151,6 +151,7 @@ class ObjectTypeDB {
 	static Mutex *lock;
 	static HashMap<StringName,TypeInfo,StringNameHasher> types;
 	static HashMap<StringName,StringName,StringNameHasher> resource_base_extensions;
+	static HashMap<StringName,StringName,StringNameHasher> compat_types;
 
 #ifdef DEBUG_METHODS_ENABLED
 	static MethodBind* bind_methodfi(uint32_t p_flags, MethodBind *p_bind , const MethodDefinition &method_name, const Variant **p_defs, int p_defcount);
@@ -468,7 +469,7 @@ public:
 	static MethodBind *get_method(StringName p_type, StringName p_name);
 
 	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method );
-	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods );
+	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
 	
 	static void bind_integer_constant(const StringName& p_type, const StringName &p_name, int p_constant);
 	static void get_integer_constant_list(const StringName& p_type, List<String> *p_constants, bool p_no_inheritance=false);
@@ -482,6 +483,7 @@ public:
 	static void get_resource_base_extensions(List<String> *p_extensions);
 	static void get_extensions_for_type(const StringName& p_type,List<String> *p_extensions);
 
+	static void add_compatibility_type(const StringName& p_type,const StringName& p_fallback);
 	static void init();
 	static void cleanup();
 };

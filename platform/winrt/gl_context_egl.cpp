@@ -1,5 +1,7 @@
 #include "gl_context_egl.h"
 
+#include "EGL/eglext.h"
+
 using namespace Platform;
 
 void ContextEGL::release_current() {
@@ -20,6 +22,14 @@ int ContextEGL::get_window_width() {
 int ContextEGL::get_window_height() {
 
 	return height;
+};
+
+void ContextEGL::reset() {
+
+	cleanup();
+
+	window = CoreWindow::GetForCurrentThread();
+	initialize();
 };
 
 void ContextEGL::swap_buffers() {
@@ -63,7 +73,23 @@ Error ContextEGL::initialize() {
 
 	try {
 
-		display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+		const EGLint displayAttributes[] =
+		{
+			EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+			EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
+			EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
+			EGL_NONE,
+		};
+
+		PFNEGLGETPLATFORMDISPLAYEXTPROC eglGetPlatformDisplayEXT = reinterpret_cast<PFNEGLGETPLATFORMDISPLAYEXTPROC>(eglGetProcAddress("eglGetPlatformDisplayEXT"));
+
+		if (!eglGetPlatformDisplayEXT)
+		{
+			throw Exception::CreateException(E_FAIL, L"Failed to get function eglGetPlatformDisplayEXT");
+		}
+
+		display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
+
 		if (display == EGL_NO_DISPLAY)
 		{
 			throw Exception::CreateException(E_FAIL, L"Failed to get default EGL display");

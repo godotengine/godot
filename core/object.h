@@ -583,6 +583,7 @@ public:
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
+	virtual void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)

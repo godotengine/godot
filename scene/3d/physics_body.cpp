@@ -92,6 +92,7 @@ void PhysicsBody::remove_collision_exception_with(Node* p_node) {
 	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(),physics_body->get_rid());
 }
 
+
 void PhysicsBody::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody::get_layer_mask);
@@ -852,6 +853,8 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 		//motion recover
 		for(int i=0;i<get_shape_count();i++) {
 
+			if (is_shape_set_as_trigger(i))
+				continue;
 
 			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),m,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask)) {
 				collided=true;
@@ -930,6 +933,8 @@ Vector3 KinematicBody::move(const Vector3& p_motion) {
 	for(int i=0;i<get_shape_count();i++) {
 
 
+		if (is_shape_set_as_trigger(i))
+			continue;
 
 		float lsafe,lunsafe;
 		PhysicsDirectSpaceState::ShapeRestInfo lrest;
@@ -1041,6 +1046,8 @@ bool KinematicBody::can_move_to(const Vector3& p_position, bool p_discrete) {
 	//fill exclude list..
 	for(int i=0;i<get_shape_count();i++) {
 
+		if (is_shape_set_as_trigger(i))
+			continue;
 
 		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),0,NULL,0,exclude,get_layer_mask(),mask);
 		if (col)

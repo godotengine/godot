@@ -39,7 +39,6 @@
 #include "scene/main/viewport.h"
 #include "scene/gui/control.h"
 #include "scene/gui/texture_progress.h"
-#include "scene/gui/empty_control.h"
 #include "scene/gui/button.h"
 #include "scene/gui/button_array.h"
 #include "scene/gui/button_group.h"
@@ -75,6 +74,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/video_player.h"
 #include "scene/gui/reference_frame.h"
+#include "scene/gui/graph_node.h"
+#include "scene/gui/graph_edit.h"
 #include "scene/resources/video_stream.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
@@ -151,6 +152,8 @@
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/room.h"
+
+#include "scene/resources/shader_graph.h"
 
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
@@ -268,7 +271,8 @@ void register_scene_types() {
 	OS::get_singleton()->yield(); //may take time to init
 
 	ObjectTypeDB::register_type<Control>();
-	ObjectTypeDB::register_type<EmptyControl>();
+//	ObjectTypeDB::register_type<EmptyControl>();
+	ObjectTypeDB::add_compatibility_type("EmptyControl","Control");
 	ObjectTypeDB::register_type<Button>();
 	ObjectTypeDB::register_type<Label>();
 	ObjectTypeDB::register_type<HScrollBar>();
@@ -303,6 +307,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<SplitContainer>();
 	ObjectTypeDB::register_type<HSplitContainer>();
 	ObjectTypeDB::register_type<VSplitContainer>();
+	ObjectTypeDB::register_type<GraphNode>();
+	ObjectTypeDB::register_type<GraphEdit>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
@@ -494,11 +500,16 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Mesh>();
 	ObjectTypeDB::register_virtual_type<Material>();
 	ObjectTypeDB::register_type<FixedMaterial>();
-	ObjectTypeDB::register_type<ParticleSystemMaterial>();
-	ObjectTypeDB::register_type<UnshadedMaterial>();
 	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
-	ObjectTypeDB::register_type<Shader>();
+	ObjectTypeDB::register_virtual_type<Shader>();
+	ObjectTypeDB::register_virtual_type<ShaderGraph>();
+	ObjectTypeDB::register_type<MaterialShaderGraph>();
+	ObjectTypeDB::register_type<MaterialShader>();
+	ObjectTypeDB::register_type<CanvasItemShader>();
+	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");
+	ObjectTypeDB::add_compatibility_type("ParticleSystemMaterial","FixedMaterial");
+	ObjectTypeDB::add_compatibility_type("UnshadedMaterial","FixedMaterial");
 	ObjectTypeDB::register_type<MultiMesh>();
 	ObjectTypeDB::register_type<MeshLibrary>();
 

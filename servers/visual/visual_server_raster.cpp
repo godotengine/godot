@@ -157,6 +157,16 @@ void VisualServerRaster::shader_get_param_list(RID p_shader, List<PropertyInfo> 
 }
 
 
+void VisualServerRaster::shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture) {
+
+	rasterizer->shader_set_default_texture_param(p_shader,p_name,p_texture);
+}
+
+RID VisualServerRaster::shader_get_default_texture_param(RID p_shader, const StringName& p_name) const{
+
+	return rasterizer->shader_get_default_texture_param(p_shader,p_name);
+}
+
 
 /* Material */
 
@@ -3342,129 +3352,6 @@ void VisualServerRaster::canvas_item_set_clip(RID p_item, bool p_clip) {
 	canvas_item->clip=p_clip;
 }
 
-const Rect2& VisualServerRaster::CanvasItem::get_rect() const {
-
-	if (custom_rect || !rect_dirty)
-		return rect;
-
-	//must update rect
-	int s=commands.size();
-	if (s==0) {
-
-		rect=Rect2();
-		rect_dirty=false;
-		return rect;
-	}
-
-	Matrix32 xf;
-	bool found_xform=false;
-	bool first=true;
-
-	const CanvasItem::Command * const *cmd = &commands[0];
-
-
-	for (int i=0;i<s;i++) {
-
-		const  CanvasItem::Command *c=cmd[i];
-		Rect2 r;
-
-		switch(c->type) {
-			case CanvasItem::Command::TYPE_LINE: {
-
-				const CanvasItem::CommandLine* line = static_cast< const CanvasItem::CommandLine*>(c);
-				r.pos=line->from;
-				r.expand_to(line->to);
-			} break;
-			case CanvasItem::Command::TYPE_RECT: {
-
-				const CanvasItem::CommandRect* crect = static_cast< const CanvasItem::CommandRect*>(c);
-				r=crect->rect;
-
-			} break;
-			case CanvasItem::Command::TYPE_STYLE: {
-
-				const CanvasItem::CommandStyle* style = static_cast< const CanvasItem::CommandStyle*>(c);
-				r=style->rect;
-			} break;
-			case CanvasItem::Command::TYPE_PRIMITIVE: {
-
-				const CanvasItem::CommandPrimitive* primitive = static_cast< const CanvasItem::CommandPrimitive*>(c);
-				r.pos=primitive->points[0];
-				for(int i=1;i<primitive->points.size();i++) {
-
-					r.expand_to(primitive->points[i]);
-
-				}
-			} break;
-			case CanvasItem::Command::TYPE_POLYGON: {
-
-				const CanvasItem::CommandPolygon* polygon = static_cast< const CanvasItem::CommandPolygon*>(c);
-				int l = polygon->points.size();
-				const Point2*pp=&polygon->points[0];
-				r.pos=pp[0];
-				for(int i=1;i<l;i++) {
-
-					r.expand_to(pp[i]);
-
-				}
-			} break;
-
-			case CanvasItem::Command::TYPE_POLYGON_PTR: {
-
-				const CanvasItem::CommandPolygonPtr* polygon = static_cast< const CanvasItem::CommandPolygonPtr*>(c);
-				int l = polygon->count;
-				if (polygon->indices != NULL) {
-
-					r.pos=polygon->points[polygon->indices[0]];
-					for (int i=1; i<polygon->count; i++) {
-
-						r.expand_to(polygon->points[polygon->indices[i]]);
-					};
-				} else {
-					r.pos=polygon->points[0];
-					for (int i=1; i<polygon->count; i++) {
-
-						r.expand_to(polygon->points[i]);
-					};
-				};
-			} break;
-			case CanvasItem::Command::TYPE_CIRCLE: {
-
-				const CanvasItem::CommandCircle* circle = static_cast< const CanvasItem::CommandCircle*>(c);
-				r.pos=Point2(-circle->radius,-circle->radius)+circle->pos;
-				r.size=Point2(circle->radius*2.0,circle->radius*2.0);
-			} break;
-			case CanvasItem::Command::TYPE_TRANSFORM: {
-
-				const CanvasItem::CommandTransform* transform = static_cast<const CanvasItem::CommandTransform*>(c);
-				xf=transform->xform;
-				found_xform=true;
-				continue;
-			} break;
-			case CanvasItem::Command::TYPE_BLEND_MODE: {
-
-			} break;
-			case CanvasItem::Command::TYPE_CLIP_IGNORE: {
-
-			} break;
-		}
-
-		if (found_xform) {
-			r = xf.xform(r);
-			found_xform=false;
-		}
-
-
-		if (first) {
-			rect=r;
-			first=false;
-		} else
-			rect=rect.merge(r);
-	}
-
-	rect_dirty=false;
-	return rect;
-}
 
 void VisualServerRaster::canvas_item_set_transform(RID p_item, const Matrix32& p_transform) {
 
@@ -3801,6 +3688,74 @@ void VisualServerRaster::canvas_item_add_set_blend_mode(RID p_item, MaterialBlen
 
 	canvas_item->commands.push_back(bm);
 };
+
+void VisualServerRaster::canvas_item_set_z(RID p_item, int p_z) {
+
+	ERR_FAIL_COND(p_z<CANVAS_ITEM_Z_MIN || p_z>CANVAS_ITEM_Z_MAX);
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->z=p_z;
+
+}
+
+void VisualServerRaster::canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->z_relative=p_enable;
+
+}
+
+void VisualServerRaster::canvas_item_set_use_parent_shader(RID p_item, bool p_enable) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->use_parent_shader=p_enable;
+
+}
+
+void VisualServerRaster::canvas_item_set_shader(RID p_item, RID p_shader) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	canvas_item->shader=p_shader;
+}
+
+RID VisualServerRaster::canvas_item_get_shader(RID p_item) const{
+
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND_V(!canvas_item,RID());
+	return canvas_item->shader;
+
+}
+
+void VisualServerRaster::canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value){
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
+	ERR_FAIL_COND(!canvas_item);
+	if (p_value.get_type()==Variant::NIL)
+		canvas_item->shader_param.erase(p_param);
+	else
+		canvas_item->shader_param[p_param]=p_value;
+
+}
+Variant VisualServerRaster::canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const{
+
+	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
+	ERR_FAIL_COND_V(!canvas_item,Variant());
+	if (!canvas_item->shader_param.has(p_param)) {
+		ERR_FAIL_COND_V(!canvas_item->shader.is_valid(),Variant());
+		return rasterizer->shader_get_default_param(canvas_item->shader,p_param);
+	}
+
+	return canvas_item->shader_param[p_param];
+}
+
 
 void VisualServerRaster::canvas_item_set_sort_children_by_y(RID p_item, bool p_enable) {
 
@@ -6190,7 +6145,41 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 	rasterizer->end_scene();
 }
 
-void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity) {
+
+void VisualServerRaster::_render_canvas_item_tree(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect) {
+
+
+	static const int z_range = CANVAS_ITEM_Z_MAX-CANVAS_ITEM_Z_MIN+1;
+	Rasterizer::CanvasItem *z_list[z_range];
+	Rasterizer::CanvasItem *z_last_list[z_range];
+
+	for(int i=0;i<z_range;i++) {
+		z_list[i]=NULL;
+		z_last_list[i]=NULL;
+	}
+
+
+	_render_canvas_item(p_canvas_item,p_transform,p_clip_rect,1.0,0,z_list,z_last_list,NULL,NULL);
+
+	for(int i=0;i<z_range;i++) {
+		if (!z_list[i])
+			continue;
+		rasterizer->canvas_render_items(z_list[i]);
+	}
+
+}
+
+
+void VisualServerRaster::_render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect) {
+
+	VisualServerRaster *self=(VisualServerRaster*)(p_self);
+	Viewport *vp=(Viewport*)p_vp;
+	self->_draw_viewport(vp,p_rect.pos.x,p_rect.pos.y,p_rect.size.x,p_rect.size.y);
+	self->rasterizer->canvas_begin();
+
+}
+
+void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,int p_z,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner) {
 
 	CanvasItem *ci = p_canvas_item;
 
@@ -6209,24 +6198,39 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 	if (global_rect.intersects(p_clip_rect) && ci->viewport.is_valid() && viewport_owner.owns(ci->viewport)) {
 
-		Viewport *vp = viewport_owner.get(ci->viewport);
+		Viewport *vp = viewport_owner.get(ci->viewport);		
 
 		Point2i from = xform.get_origin() + Point2(viewport_rect.x,viewport_rect.y);
 		Point2i size = rect.size;
 		size.x *= xform[0].length();
 		size.y *= xform[1].length();
 
+		ci->vp_render = memnew( Rasterizer::CanvasItem::ViewportRender );
+		ci->vp_render->owner=this;
+		ci->vp_render->udata=vp;
+		ci->vp_render->rect=Rect2(from.x,
+					  from.y,
+					  size.x,
+					  size.y);
+/*
 		_draw_viewport(vp,
 				from.x,
 				from.y,
 				size.x,
 				size.y);
-
-		rasterizer->canvas_begin();
+*/
+		//rasterizer->canvas_begin();
+	} else {
+		ci->vp_render=NULL;
 	}
 
-	int s = ci->commands.size();
-	bool reclip=false;
+	if (ci->use_parent_shader && p_shader_owner)
+		ci->shader_owner=p_shader_owner;
+	else {
+		p_shader_owner=ci;
+		ci->shader_owner=NULL;
+	}
+
 
 	float opacity = ci->opacity * p_opacity;
 
@@ -6236,8 +6240,11 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 	copymem(child_items,ci->child_items.ptr(),child_item_count*sizeof(CanvasItem*));
 
 	if (ci->clip) {
-		rasterizer->canvas_set_clip(true,global_rect);
-		canvas_clip=global_rect;
+		ci->final_clip_rect=global_rect;
+		ci->final_clip_owner=ci;
+
+	} else {
+		ci->final_clip_owner=p_canvas_clip;
 	}
 
 	if (ci->sort_y) {
@@ -6246,160 +6253,45 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		sorter.sort(child_items,child_item_count);
 	}
 
+	if (ci->z_relative)
+		p_z=CLAMP(p_z+ci->z,CANVAS_ITEM_Z_MIN,CANVAS_ITEM_Z_MAX);
+	else
+		p_z=ci->z;
 
 	for(int i=0;i<child_item_count;i++) {
 
 		if (child_items[i]->ontop)
 			continue;
-		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,p_z,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
 	}
 
 
-	if (s!=0) {
-
-		//Rect2 rect( ci->rect.pos + p_ofs, ci->rect.size);
-
-		if (p_clip_rect.intersects(global_rect)) {
-
-			rasterizer->canvas_begin_rect(xform);
-			rasterizer->canvas_set_opacity( opacity * ci->self_opacity );
-			rasterizer->canvas_set_blend_mode( ci->blend_mode );
-
-			CanvasItem::Command **commands = &ci->commands[0];
-
-			for (int i=0;i<s;i++) {
-
-				CanvasItem::Command *c=commands[i];
-
-				switch(c->type) {
-					case CanvasItem::Command::TYPE_LINE: {
-
-						CanvasItem::CommandLine* line = static_cast<CanvasItem::CommandLine*>(c);
-						rasterizer->canvas_draw_line(line->from,line->to,line->color,line->width);
-					} break;
-					case CanvasItem::Command::TYPE_RECT: {
-
-						CanvasItem::CommandRect* rect = static_cast<CanvasItem::CommandRect*>(c);
-//						rasterizer->canvas_draw_rect(rect->rect,rect->region,rect->source,rect->flags&CanvasItem::CommandRect::FLAG_TILE,rect->flags&CanvasItem::CommandRect::FLAG_FLIP_H,rect->flags&CanvasItem::CommandRect::FLAG_FLIP_V,rect->texture,rect->modulate);
-#if 0
-						int flags=0;
-
-						if (rect->flags&CanvasItem::CommandRect::FLAG_REGION) {
-							flags|=Rasterizer::CANVAS_RECT_REGION;
-						}
-						if (rect->flags&CanvasItem::CommandRect::FLAG_TILE) {
-							flags|=Rasterizer::CANVAS_RECT_TILE;
-						}
-						if (rect->flags&CanvasItem::CommandRect::FLAG_FLIP_H) {
-
-							flags|=Rasterizer::CANVAS_RECT_FLIP_H;
-						}
-						if (rect->flags&CanvasItem::CommandRect::FLAG_FLIP_V) {
-
-							flags|=Rasterizer::CANVAS_RECT_FLIP_V;
-						}
-#else
-
-						int flags=rect->flags;
-#endif
-						rasterizer->canvas_draw_rect(rect->rect,flags,rect->source,rect->texture,rect->modulate);
-
-					} break;
-					case CanvasItem::Command::TYPE_STYLE: {
-
-						CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
-						rasterizer->canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
-
-					} break;
-					case CanvasItem::Command::TYPE_PRIMITIVE: {
-
-						CanvasItem::CommandPrimitive* primitive = static_cast<CanvasItem::CommandPrimitive*>(c);
-						rasterizer->canvas_draw_primitive(primitive->points,primitive->colors,primitive->uvs,primitive->texture,primitive->width);
-					} break;
-					case CanvasItem::Command::TYPE_POLYGON: {
-
-						CanvasItem::CommandPolygon* polygon = static_cast<CanvasItem::CommandPolygon*>(c);
-						rasterizer->canvas_draw_polygon(polygon->count,polygon->indices.ptr(),polygon->points.ptr(),polygon->uvs.ptr(),polygon->colors.ptr(),polygon->texture,polygon->colors.size()==1);
-
-					} break;
-
-					case CanvasItem::Command::TYPE_POLYGON_PTR: {
-
-						CanvasItem::CommandPolygonPtr* polygon = static_cast<CanvasItem::CommandPolygonPtr*>(c);
-						rasterizer->canvas_draw_polygon(polygon->count,polygon->indices,polygon->points,polygon->uvs,polygon->colors,polygon->texture,false);
-					} break;
-					case CanvasItem::Command::TYPE_CIRCLE: {
-
-						CanvasItem::CommandCircle* circle = static_cast<CanvasItem::CommandCircle*>(c);
-						static const int numpoints=32;
-						Vector2 points[numpoints+1];
-						points[numpoints]=circle->pos;
-						int indices[numpoints*3];
-
-						for(int i=0;i<numpoints;i++) {
-
-							points[i]=circle->pos+Vector2( Math::sin(i*Math_PI*2.0/numpoints),Math::cos(i*Math_PI*2.0/numpoints) )*circle->radius;
-							indices[i*3+0]=i;
-							indices[i*3+1]=(i+1)%numpoints;
-							indices[i*3+2]=numpoints;
-						}
-						rasterizer->canvas_draw_polygon(numpoints*3,indices,points,NULL,&circle->color,RID(),true);
-						//rasterizer->canvas_draw_circle(circle->indices.size(),circle->indices.ptr(),circle->points.ptr(),circle->uvs.ptr(),circle->colors.ptr(),circle->texture,circle->colors.size()==1);
-					} break;
-					case CanvasItem::Command::TYPE_TRANSFORM: {
-
-						CanvasItem::CommandTransform* transform = static_cast<CanvasItem::CommandTransform*>(c);
-						rasterizer->canvas_set_transform(transform->xform);
-					} break;
-					case CanvasItem::Command::TYPE_BLEND_MODE: {
-
-						CanvasItem::CommandBlendMode* bm = static_cast<CanvasItem::CommandBlendMode*>(c);
-						rasterizer->canvas_set_blend_mode(bm->blend_mode);
-
-					} break;
-					case CanvasItem::Command::TYPE_CLIP_IGNORE: {
-
-						CanvasItem::CommandClipIgnore* ci = static_cast<CanvasItem::CommandClipIgnore*>(c);
-						if (canvas_clip!=Rect2()) {
-
-							if (ci->ignore!=reclip) {
-								if (ci->ignore) {
-
-									rasterizer->canvas_set_clip(false,Rect2());
-									reclip=true;
-								} else  {
-									rasterizer->canvas_set_clip(true,canvas_clip);
-									reclip=false;
-								}
-							}
-						}
+	if ((!ci->commands.empty() && p_clip_rect.intersects(global_rect)) || ci->vp_render) {
+		//something to draw?
+		ci->final_transform=xform;
+		ci->final_opacity=opacity * ci->self_opacity;
 
 
+		int zidx = p_z-CANVAS_ITEM_Z_MIN;
 
-					} break;
-				}
-			}
-			rasterizer->canvas_end_rect();
+		if (z_last_list[zidx]) {
+			z_last_list[zidx]->next=ci;
+			z_last_list[zidx]=ci;
+
+		} else {
+			z_list[zidx]=ci;
+			z_last_list[zidx]=ci;
 		}
-	}
 
+		ci->next=NULL;
 
-	if (reclip) {
-
-		rasterizer->canvas_set_clip(true,canvas_clip);
 	}
 
 	for(int i=0;i<child_item_count;i++) {
 
 		if (!child_items[i]->ontop)
 			continue;
-		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity);
-	}
-
-
-	if (ci->clip) {
-		rasterizer->canvas_set_clip(false,Rect2());
-		canvas_clip=Rect2();
+		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,p_z,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_shader_owner);
 	}
 
 }
@@ -6409,29 +6301,61 @@ void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_trans
 	rasterizer->canvas_begin();
 
 	int l = p_canvas->child_items.size();
+	Canvas::ChildItem *ci=p_canvas->child_items.ptr();
 
+	bool has_mirror=false;
 	for(int i=0;i<l;i++) {
-
-		Canvas::ChildItem& ci=p_canvas->child_items[i];
-		_render_canvas_item(ci.item,p_transform,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height),1);
-
-		//mirroring (useful for scrolling backgrounds)
-		if (ci.mirror.x!=0) {
-
-			Matrix32 xform2 = p_transform * Matrix32(0,Vector2(ci.mirror.x,0));
-			_render_canvas_item(ci.item,xform2,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height),1);
+		if (ci[i].mirror.x || ci[i].mirror.y) {
+			has_mirror=true;
+			break;
 		}
-		if (ci.mirror.y!=0) {
+	}
 
-			Matrix32 xform2 = p_transform * Matrix32(0,Vector2(0,ci.mirror.y));
-			_render_canvas_item(ci.item,xform2,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height),1);
+	Rect2 clip_rect(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height);
+	if (!has_mirror) {
+
+		static const int z_range = CANVAS_ITEM_Z_MAX-CANVAS_ITEM_Z_MIN+1;
+		Rasterizer::CanvasItem *z_list[z_range];
+		Rasterizer::CanvasItem *z_last_list[z_range];
+
+		for(int i=0;i<z_range;i++) {
+			z_list[i]=NULL;
+			z_last_list[i]=NULL;
 		}
-		if (ci.mirror.y!=0 && ci.mirror.x!=0) {
-
-			Matrix32 xform2 = p_transform * Matrix32(0,ci.mirror);
-			_render_canvas_item(ci.item,xform2,Rect2(viewport_rect.x,viewport_rect.y,viewport_rect.width,viewport_rect.height),1);
+		for(int i=0;i<l;i++) {
+			_render_canvas_item(ci[i].item,p_transform,clip_rect,1.0,0,z_list,z_last_list,NULL,NULL);
 		}
 
+		for(int i=0;i<z_range;i++) {
+			if (!z_list[i])
+				continue;
+			rasterizer->canvas_render_items(z_list[i]);
+		}
+	} else {
+
+		for(int i=0;i<l;i++) {
+
+			Canvas::ChildItem& ci=p_canvas->child_items[i];
+			_render_canvas_item_tree(ci.item,p_transform,clip_rect);
+
+			//mirroring (useful for scrolling backgrounds)
+			if (ci.mirror.x!=0) {
+
+				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(ci.mirror.x,0));
+				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+			}
+			if (ci.mirror.y!=0) {
+
+				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(0,ci.mirror.y));
+				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+			}
+			if (ci.mirror.y!=0 && ci.mirror.x!=0) {
+
+				Matrix32 xform2 = p_transform * Matrix32(0,ci.mirror);
+				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+			}
+
+		}
 	}
 
 }
@@ -6594,7 +6518,7 @@ void VisualServerRaster::_draw_viewports() {
 			rasterizer->set_viewport(viewport_rect);
 		}
 
-		rasterizer->canvas_begin();
+		rasterizer->canvas_begin();		
 		rasterizer->canvas_disable_blending();
 		rasterizer->canvas_begin_rect(Matrix32());
 		rasterizer->canvas_draw_rect(E->get()->rt_to_screen_rect,0,Rect2(Point2(),E->get()->rt_to_screen_rect.size),E->get()->render_target_texture,Color(1,1,1));
@@ -6849,6 +6773,7 @@ RID VisualServerRaster::get_test_cube()  {
 VisualServerRaster::VisualServerRaster(Rasterizer *p_rasterizer) {
 
 	rasterizer=p_rasterizer;
+	rasterizer->draw_viewport_func=_render_canvas_item_viewport;
 	instance_update_list=NULL;
 	render_pass=0;
 	clear_color=Color(0.3,0.3,0.3,1.0);

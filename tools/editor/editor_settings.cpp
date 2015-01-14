@@ -403,6 +403,7 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/string_color",Color::html("ef6ebe"));
 	set("text_editor/symbol_color",Color::html("badfff"));
 	set("text_editor/selection_color",Color::html("7b5dbe"));
+	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
@@ -418,6 +419,8 @@ void EditorSettings::_load_defaults() {
 
 	set("3d_editor/navigation_scheme",0);
 	hints["3d_editor/navigation_scheme"]=PropertyInfo(Variant::INT,"3d_editor/navigation_scheme",PROPERTY_HINT_ENUM,"Godot,Maya,Modo");
+	set("3d_editor/zoom_style",0);
+	hints["3d_editor/zoom_style"]=PropertyInfo(Variant::INT,"3d_editor/zoom_style",PROPERTY_HINT_ENUM,"Vertical, Horizontal");
 	set("3d_editor/orbit_modifier",0);
 	hints["3d_editor/orbit_modifier"]=PropertyInfo(Variant::INT,"3d_editor/orbit_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 	set("3d_editor/pan_modifier",1);
@@ -443,6 +446,7 @@ void EditorSettings::_load_defaults() {
 	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
+	set("property_editor/auto_refresh_interval",0.3);
 	set("help/doc_path","");
 
 	set("import/ask_save_before_reimport",false);

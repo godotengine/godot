@@ -289,6 +289,9 @@ public:
 	NodePath get_root() const;
 
 	void clear_caches(); ///< must be called by hand if an animation was modified after added
+
+	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
+
 	
 	AnimationPlayer();	
 	~AnimationPlayer();

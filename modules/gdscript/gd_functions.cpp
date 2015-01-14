@@ -1166,6 +1166,8 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("weakref",PropertyInfo(Variant::OBJECT,"obj"));
 			mi.return_val.type=Variant::OBJECT;
+			mi.return_val.name="WeakRef";
+
 			return mi;
 
 		} break;
@@ -1173,6 +1175,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("funcref",PropertyInfo(Variant::OBJECT,"instance"),PropertyInfo(Variant::STRING,"funcname"));
 			mi.return_val.type=Variant::OBJECT;
+			mi.return_val.name="FuncRef";
 			return mi;
 
 		} break;
@@ -1231,6 +1234,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("load",PropertyInfo(Variant::STRING,"path"));
 			mi.return_val.type=Variant::OBJECT;
+			mi.return_val.name="Resource";
 			return mi;
 		} break;
 		case INST2DICT: {

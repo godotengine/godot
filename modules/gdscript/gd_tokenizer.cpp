@@ -110,7 +110,8 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "':'",
 "'\\n'",
 "Error",
-"EOF"};
+"EOF",
+"Cursor"};
 
 const char *GDTokenizer::get_token_name(Token p_token) {
 
@@ -647,6 +648,9 @@ void GDTokenizerText::_advance() {
 					_make_constant(str);
 				}
 
+			} break;
+			case 0xFFFF: {
+				_make_token(TK_CURSOR);
 			} break;
 			default: {
 

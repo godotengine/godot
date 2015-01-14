@@ -40,6 +40,9 @@
 class Rasterizer {
 protected:
 
+
+	typedef void (*CanvasItemDrawViewportFunc)(VisualServer*owner,void*ud,const Rect2& p_rect);
+
 	RID create_default_material();
 	RID create_overdraw_debug_material();
 
@@ -187,6 +190,7 @@ public:
 	virtual bool texture_has_alpha(RID p_texture) const=0;
 	virtual void texture_set_size_override(RID p_texture,int p_width, int p_height)=0;
 
+
 	virtual void texture_set_reload_hook(RID p_texture,ObjectID p_owner,const StringName& p_function) const=0;
 
 	/* SHADER API */
@@ -202,6 +206,11 @@ public:
 	virtual String shader_get_light_code(RID p_shader) const=0;
 
 	virtual void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const=0;
+
+	virtual void shader_set_default_texture_param(RID p_shader, const StringName& p_name, RID p_texture)=0;
+	virtual RID shader_get_default_texture_param(RID p_shader, const StringName& p_name) const=0;
+
+	virtual Variant shader_get_default_param(RID p_shader, const StringName& p_name)=0;
 
 	/* COMMON MATERIAL API */
 
@@ -557,7 +566,279 @@ public:
 		CANVAS_RECT_FLIP_H=4,
 		CANVAS_RECT_FLIP_V=8
 	};
-		
+
+	struct CanvasItem {
+
+		struct Command {
+
+			enum Type {
+
+				TYPE_LINE,
+				TYPE_RECT,
+				TYPE_STYLE,
+				TYPE_PRIMITIVE,
+				TYPE_POLYGON,
+				TYPE_POLYGON_PTR,
+				TYPE_CIRCLE,
+				TYPE_TRANSFORM,
+				TYPE_BLEND_MODE,
+				TYPE_CLIP_IGNORE,
+			};
+
+			Type type;
+		};
+
+		struct CommandLine : public Command {
+
+			Point2 from,to;
+			Color color;
+			float width;
+			CommandLine() { type = TYPE_LINE; }
+		};
+
+		struct CommandRect : public Command {
+
+			Rect2 rect;
+			RID texture;
+			Color modulate;
+			Rect2 source;
+			uint8_t flags;
+
+			CommandRect() { flags=0; type = TYPE_RECT; }
+		};
+
+		struct CommandStyle : public Command {
+
+			Rect2 rect;
+			RID texture;
+			float margin[4];
+			float draw_center;
+			Color color;
+			CommandStyle() { draw_center=true; type = TYPE_STYLE; }
+		};
+
+		struct CommandPrimitive : public Command {
+
+			Vector<Point2> points;
+			Vector<Point2> uvs;
+			Vector<Color> colors;
+			RID texture;
+			float width;
+
+			CommandPrimitive() { type = TYPE_PRIMITIVE; width=1;}
+		};
+
+		struct CommandPolygon : public Command {
+
+			Vector<int> indices;
+			Vector<Point2> points;
+			Vector<Point2> uvs;
+			Vector<Color> colors;
+			RID texture;
+			int count;
+
+			CommandPolygon() { type = TYPE_POLYGON; count = 0; }
+		};
+
+		struct CommandPolygonPtr : public Command {
+
+			const int* indices;
+			const Point2* points;
+			const Point2* uvs;
+			const Color* colors;
+			RID texture;
+			int count;
+
+			CommandPolygonPtr() { type = TYPE_POLYGON_PTR; count = 0; }
+		};
+
+		struct CommandCircle : public Command {
+
+			Point2 pos;
+			float radius;
+			Color color;
+			CommandCircle() { type = TYPE_CIRCLE; }
+		};
+
+		struct CommandTransform : public Command {
+
+			Matrix32 xform;
+			CommandTransform() { type = TYPE_TRANSFORM; }
+		};
+
+		struct CommandBlendMode : public Command {
+
+			VS::MaterialBlendMode blend_mode;
+			CommandBlendMode() { type = TYPE_BLEND_MODE; blend_mode = VS::MATERIAL_BLEND_MODE_MIX; }
+		};
+		struct CommandClipIgnore : public Command {
+
+			bool ignore;
+			CommandClipIgnore() { type = TYPE_CLIP_IGNORE; ignore=false; }
+		};
+
+
+		struct ViewportRender {
+			VisualServer*owner;
+			void* udata;
+			Rect2 rect;
+		};
+
+		Matrix32 xform;
+		bool clip;
+		bool visible;
+		bool ontop;
+		VS::MaterialBlendMode blend_mode;
+		Vector<Command*> commands;
+		mutable bool custom_rect;
+		mutable bool rect_dirty;
+		mutable Rect2 rect;
+		CanvasItem*next;
+		RID shader;
+		Map<StringName,Variant> shader_param;
+		uint32_t shader_version;
+
+
+		float final_opacity;
+		Matrix32 final_transform;
+		Rect2 final_clip_rect;
+		CanvasItem* final_clip_owner;
+		CanvasItem* shader_owner;
+		ViewportRender *vp_render;
+
+		const Rect2& get_rect() const {
+
+			if (custom_rect || !rect_dirty)
+				return rect;
+
+			//must update rect
+			int s=commands.size();
+			if (s==0) {
+
+				rect=Rect2();
+				rect_dirty=false;
+				return rect;
+			}
+
+			Matrix32 xf;
+			bool found_xform=false;
+			bool first=true;
+
+			const CanvasItem::Command * const *cmd = &commands[0];
+
+
+			for (int i=0;i<s;i++) {
+
+				const  CanvasItem::Command *c=cmd[i];
+				Rect2 r;
+
+				switch(c->type) {
+					case CanvasItem::Command::TYPE_LINE: {
+
+						const CanvasItem::CommandLine* line = static_cast< const CanvasItem::CommandLine*>(c);
+						r.pos=line->from;
+						r.expand_to(line->to);
+					} break;
+					case CanvasItem::Command::TYPE_RECT: {
+
+						const CanvasItem::CommandRect* crect = static_cast< const CanvasItem::CommandRect*>(c);
+						r=crect->rect;
+
+					} break;
+					case CanvasItem::Command::TYPE_STYLE: {
+
+						const CanvasItem::CommandStyle* style = static_cast< const CanvasItem::CommandStyle*>(c);
+						r=style->rect;
+					} break;
+					case CanvasItem::Command::TYPE_PRIMITIVE: {
+
+						const CanvasItem::CommandPrimitive* primitive = static_cast< const CanvasItem::CommandPrimitive*>(c);
+						r.pos=primitive->points[0];
+						for(int i=1;i<primitive->points.size();i++) {
+
+							r.expand_to(primitive->points[i]);
+
+						}
+					} break;
+					case CanvasItem::Command::TYPE_POLYGON: {
+
+						const CanvasItem::CommandPolygon* polygon = static_cast< const CanvasItem::CommandPolygon*>(c);
+						int l = polygon->points.size();
+						const Point2*pp=&polygon->points[0];
+						r.pos=pp[0];
+						for(int i=1;i<l;i++) {
+
+							r.expand_to(pp[i]);
+
+						}
+					} break;
+
+					case CanvasItem::Command::TYPE_POLYGON_PTR: {
+
+						const CanvasItem::CommandPolygonPtr* polygon = static_cast< const CanvasItem::CommandPolygonPtr*>(c);
+						int l = polygon->count;
+						if (polygon->indices != NULL) {
+
+							r.pos=polygon->points[polygon->indices[0]];
+							for (int i=1; i<polygon->count; i++) {
+
+								r.expand_to(polygon->points[polygon->indices[i]]);
+							};
+						} else {
+							r.pos=polygon->points[0];
+							for (int i=1; i<polygon->count; i++) {
+
+								r.expand_to(polygon->points[i]);
+							};
+						};
+					} break;
+					case CanvasItem::Command::TYPE_CIRCLE: {
+
+						const CanvasItem::CommandCircle* circle = static_cast< const CanvasItem::CommandCircle*>(c);
+						r.pos=Point2(-circle->radius,-circle->radius)+circle->pos;
+						r.size=Point2(circle->radius*2.0,circle->radius*2.0);
+					} break;
+					case CanvasItem::Command::TYPE_TRANSFORM: {
+
+						const CanvasItem::CommandTransform* transform = static_cast<const CanvasItem::CommandTransform*>(c);
+						xf=transform->xform;
+						found_xform=true;
+						continue;
+					} break;
+					case CanvasItem::Command::TYPE_BLEND_MODE: {
+
+					} break;
+					case CanvasItem::Command::TYPE_CLIP_IGNORE: {
+
+					} break;
+				}
+
+				if (found_xform) {
+					r = xf.xform(r);
+					found_xform=false;
+				}
+
+
+				if (first) {
+					rect=r;
+					first=false;
+				} else
+					rect=rect.merge(r);
+			}
+
+			rect_dirty=false;
+			return rect;
+		}
+
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  shader_owner=NULL;}
+		CanvasItem() { vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0; shader_owner=NULL;}
+		virtual ~CanvasItem() { clear(); }
+	};
+
+
+	CanvasItemDrawViewportFunc draw_viewport_func;
+
+
 	virtual void canvas_begin()=0;
 	virtual void canvas_disable_blending()=0;
 	virtual void canvas_set_opacity(float p_opacity)=0;
@@ -571,7 +852,10 @@ public:
 	virtual void canvas_draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width)=0;
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor)=0;
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;
-	
+
+	virtual void canvas_render_items(CanvasItem *p_item_list)=0;
+
+
 	/* ENVIRONMENT */
 	
 
