@@ -214,6 +214,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
 #else
+		old_window_position.x = 0;
+		old_window_position.y = 0;
+		old_window_size.width = 800;
+		old_window_size.height = 600;
 		set_wm_border(false);
 		set_wm_fullscreen(true);
 #endif
@@ -539,7 +543,7 @@ void OS_X11::set_wm_border(bool p_enabled) {
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	XMapRaised(x11_display, x11_window);
-	XMoveResizeWindow(x11_display, x11_window, 0, 0, current_videomode.width, current_videomode.height);
+	//XMoveResizeWindow(x11_display, x11_window, 0, 0, 800, 800);
 }
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
@@ -564,19 +568,55 @@ int OS_X11::get_screen_count() const {
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return 0;
+	
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
 	XFree(xsi);
 	return count;
 }
 
+int OS_X11::get_screen() const {
+        int x,y;
+        Window child;
+        XTranslateCoordinates( x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
+
+	int count = get_screen_count();
+	for(int i=0; i<count; i++) {
+		Point2i pos = get_screen_position(i);
+		Size2i size = get_screen_size(i);
+		if( (x >= pos.x && x <pos.x + size.width) && (y >= pos.y && y < pos.y + size.height) )
+			return i;	
+	}
+	return 0;
+}
+
+void OS_X11::set_screen(int p_screen) {
+	int count = get_screen_count();
+	if(p_screen >= count) return;
+		
+	if( current_videomode.fullscreen ) {
+		Point2i position = get_screen_position(p_screen);
+		Size2i size = get_screen_size(p_screen);
+
+	        XMoveResizeWindow(x11_display, x11_window, position.x, position.y, size.x, size.y);
+	}
+	else {
+		if( p_screen != get_screen() ) {
+			Point2i position = get_screen_position(p_screen);
+			XMoveWindow(x11_display, x11_window, position.x, position.y);
+		}
+	}
+}
+
 Point2 OS_X11::get_screen_position(int p_screen) const {
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return Point2i(0,0);
+	
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
 	if( p_screen >= count ) return Point2i(0,0);
+	
 	Point2i position = Point2i(xsi[p_screen].x_org, xsi[p_screen].y_org);
 	XFree(xsi);
 	return position;
@@ -586,9 +626,11 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return Size2i(0,0);
+	
 	int count;
 	XineramaScreenInfo* xsi = XineramaQueryScreens(x11_display, &count);
 	if( p_screen >= count ) return Size2i(0,0);
+	
 	Size2i size = Point2i(xsi[p_screen].width, xsi[p_screen].height);
 	XFree(xsi);
 	return size;
@@ -597,11 +639,8 @@ Size2 OS_X11::get_screen_size(int p_screen) const {
 
 Point2 OS_X11::get_window_position() const {
 	int x,y;
-	XWindowAttributes xwa;
 	Window child;
 	XTranslateCoordinates( x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
-	XGetWindowAttributes(x11_display, x11_window, &xwa);
-
 	return Point2i(x,y);		
 }
 
@@ -664,30 +703,30 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
 }
 
-void OS_X11::set_fullscreen(bool p_enabled,int p_screen) {
+void OS_X11::set_fullscreen(bool p_enabled) {
 
 	if(p_enabled && current_videomode.fullscreen)
 		return;
 
 	if(p_enabled) {
-		pre_videomode = current_videomode;
+		old_window_size = get_window_size();
+		old_window_position = get_window_position();
 
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
-
-		current_videomode.fullscreen = True;
-		current_videomode.width = xwa.width;
-		current_videomode.height = xwa.height;
+		int screen = get_screen();
+		Size2i size = get_screen_size(screen);
+		Point2i position = get_screen_position(screen);
 
 		set_wm_border(false);
 		set_wm_fullscreen(true);
-	} else {
-		current_videomode.fullscreen = False;
-		current_videomode.width = pre_videomode.width;
-		current_videomode.height = pre_videomode.height;
+	        XMoveResizeWindow(x11_display, x11_window, position.x, position.y, size.x, size.y);
 
+		current_videomode.fullscreen = True;
+	} else {
 		set_wm_fullscreen(false);
 		set_wm_border(true);
+		XMoveResizeWindow(x11_display, x11_window, old_window_position.x, old_window_position.y, old_window_size.width, old_window_size.height);
+
+		current_videomode.fullscreen = False;
 	}
 
 	visual_server->init();

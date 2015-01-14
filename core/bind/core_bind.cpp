@@ -181,6 +181,14 @@ int _OS::get_screen_count() const {
 	return OS::get_singleton()->get_screen_count();
 }
 
+int _OS::get_screen() const {
+	return OS::get_singleton()->get_screen();
+}
+
+void _OS::set_screen(int p_screen) {
+	OS::get_singleton()->set_screen(p_screen);
+}
+
 Point2 _OS::get_screen_position(int p_screen) const {
 	return OS::get_singleton()->get_screen_position(p_screen);
 }
@@ -205,8 +213,8 @@ void _OS::set_window_size(const Size2& p_size) {
 	OS::get_singleton()->set_window_size(p_size);
 }
 
-void _OS::set_fullscreen(bool p_enabled,int p_screen) {
-	OS::get_singleton()->set_fullscreen(p_enabled, p_screen);
+void _OS::set_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_fullscreen(p_enabled);
 }
 
 bool _OS::is_fullscreen() const {
@@ -672,13 +680,15 @@ void _OS::_bind_methods() {
 
 #ifdef EXPERIMENTAL_WM_API
 	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
+	ObjectTypeDB::bind_method(_MD("get_screen"),&_OS::get_screen);
+	ObjectTypeDB::bind_method(_MD("set_screen"),&_OS::set_screen);
 	ObjectTypeDB::bind_method(_MD("get_screen_position"),&_OS::get_screen_position,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_screen_size"),&_OS::get_screen_size,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
 	ObjectTypeDB::bind_method(_MD("set_window_position"),&_OS::set_window_position);
 	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
 	ObjectTypeDB::bind_method(_MD("set_window_size"),&_OS::set_window_size);
-	ObjectTypeDB::bind_method(_MD("set_fullscreen","enabled","screen"),&_OS::set_fullscreen,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("set_fullscreen","enabled"),&_OS::set_fullscreen);
 	ObjectTypeDB::bind_method(_MD("is_fullscreen"),&_OS::is_fullscreen);
 #endif
 

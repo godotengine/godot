@@ -152,13 +152,15 @@ public:
 
 #ifdef EXPERIMENTAL_WM_API
 	virtual int get_screen_count() const=0;
+	virtual int get_screen() const=0;
+	virtual void set_screen(int p_screen)=0;
 	virtual Point2 get_screen_position(int p_screen=0) const=0;
 	virtual Size2 get_screen_size(int p_screen=0) const=0;
 	virtual Point2 get_window_position() const=0;
 	virtual void set_window_position(const Point2& p_position)=0;
 	virtual Size2 get_window_size() const=0;
 	virtual void set_window_size(const Size2 p_size)=0;
-	virtual void set_fullscreen(bool p_enabled,int p_screen=0)=0;
+	virtual void set_fullscreen(bool p_enabled)=0;
 	virtual bool is_fullscreen() const=0;
 #endif	
 
