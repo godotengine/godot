@@ -39,6 +39,7 @@ class Node2D : public CanvasItem {
 	float angle;
 	Size2 scale;
 	int z;
+	bool z_relative;
 
 	Matrix32 _mat;
 
@@ -89,6 +90,8 @@ public:
 	void set_z(int p_z);
 	int get_z() const;
 
+	void set_z_as_relative(bool p_enabled);
+	bool is_z_relative() const;
 
 	Matrix32 get_transform() const;
 
