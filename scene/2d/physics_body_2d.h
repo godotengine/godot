@@ -40,6 +40,7 @@ class PhysicsBody2D : public CollisionObject2D {
 
 	uint32_t mask;
 	Vector2 one_way_collision_direction;
+	float one_way_collision_max_depth;
 protected:
 
 	void _notification(int p_what);
@@ -56,6 +57,9 @@ public:
 
 	void set_one_way_collision_direction(const Vector2& p_dir);
 	Vector2 get_one_way_collision_direction() const;
+
+	void set_one_way_collision_max_depth(float p_dir);
+	float get_one_way_collision_max_depth() const;
 
 	PhysicsBody2D();
 

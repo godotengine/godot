@@ -55,16 +55,32 @@ Vector2 PhysicsBody2D::get_one_way_collision_direction() const{
 }
 
 
+void PhysicsBody2D::set_one_way_collision_max_depth(float p_depth) {
+
+	one_way_collision_max_depth=p_depth;
+	Physics2DServer::get_singleton()->body_set_one_way_collision_max_depth(get_rid(),p_depth);
+
+}
+
+float PhysicsBody2D::get_one_way_collision_max_depth() const{
+
+	return one_way_collision_max_depth;
+}
+
+
 void PhysicsBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_direction","dir"),&PhysicsBody2D::set_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_direction"),&PhysicsBody2D::get_one_way_collision_direction);
+	ObjectTypeDB::bind_method(_MD("set_one_way_collision_max_depth","depth"),&PhysicsBody2D::set_one_way_collision_max_depth);
+	ObjectTypeDB::bind_method(_MD("get_one_way_collision_max_depth"),&PhysicsBody2D::get_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),_SCS("set_one_way_collision_max_depth"),_SCS("get_one_way_collision_max_depth"));
 }
 
 void PhysicsBody2D::set_layer_mask(uint32_t p_mask) {
@@ -81,6 +97,7 @@ uint32_t PhysicsBody2D::get_layer_mask() const {
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
 	mask=1;
+	set_one_way_collision_max_depth(0);
 
 }
 
@@ -947,7 +964,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
 			//if (d<margin)
 			///	continue;
-			recover_motion+=(b-a)*0.2;
+			recover_motion+=(b-a)*0.4;
 		}
 
 		if (recover_motion==Vector2()) {
@@ -978,6 +995,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,get_layer_mask(),mask);
 		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
 		if (!valid) {
+
 			safe=0;
 			unsafe=0;
 			best_shape=i; //sadly it's the best
@@ -1009,8 +1027,10 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 		bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), Vector2(), margin,&rest_info,exclude,get_layer_mask(),mask);
 		if (!c2) {
 			//should not happen, but floating point precision is so weird..
+
 			colliding=false;
 		} else {
+
 
 			//print_line("Travel: "+rtos(travel));
 			colliding=true;
