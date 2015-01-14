@@ -184,13 +184,20 @@ void FileDialog::_action_pressed() {
 			if (idx>=0 && idx<filters.size()) {
 
 				String flt=filters[idx].get_slice(";",0);
-				for (int j=0;j<flt.get_slice_count(",");j++) {
+				int filterSliceCount=flt.get_slice_count(",");
+				for (int j=0;j<filterSliceCount;j++) {
 
 					String str = (flt.get_slice(",",j).strip_edges());
 					if (f.match(str)) {
 						valid=true;
 						break;
 					}
+				}
+
+				if (!valid && filterSliceCount>0) {
+					String str = (flt.get_slice(",",0).strip_edges());
+					f+=str.substr(1, str.length()-1);
+					valid=true;
 				}
 			} else {
 				valid=true;
