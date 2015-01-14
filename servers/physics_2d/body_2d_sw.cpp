@@ -647,6 +647,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	area_linear_damp=0;
 	contact_count=0;
 	gravity_scale=1.0;
+	one_way_collision_max_depth=0.1;
 
 	still_time=0;
 	continuous_cd_mode=Physics2DServer::CCD_MODE_DISABLED;

@@ -4036,7 +4036,8 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this) ) );
-	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
+	add_editor_plugin( memnew( ShaderEditorPlugin(this,true) ) );
+	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );

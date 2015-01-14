@@ -231,6 +231,11 @@ RID RasterizerDummy::shader_get_default_texture_param(RID p_shader, const String
 	return RID();
 }
 
+Variant RasterizerDummy::shader_get_default_param(RID p_shader, const StringName& p_name) {
+
+	return Variant();
+}
+
 /* COMMON MATERIAL API */
 
 
@@ -1613,6 +1618,11 @@ void RasterizerDummy::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 }
 
 void RasterizerDummy::canvas_set_transform(const Matrix32& p_transform) {
+
+
+}
+
+void RasterizerDummy::canvas_render_items(CanvasItem *p_item_list) {
 
 
 }

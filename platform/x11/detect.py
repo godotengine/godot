@@ -48,6 +48,7 @@ def get_opts():
 	return [
 	('use_llvm','Use llvm compiler','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
+	('pulseaudio','Detect & Use pulseaudio','yes'),
 	]
   
 def get_flags():
@@ -113,23 +114,22 @@ def configure(env):
 	env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
 
 
-	if env['ao'] == 'yes':
-		env.ParseConfig('pkg-config ao --cflags --libs')
-		env.Append(CPPFLAGS=['-DAO_ENABLED'])
-
-	
 	env.Append(CPPFLAGS=['-DOPENGL_ENABLED','-DGLEW_ENABLED'])
 	if platform.platform() == 'Linux':
 		env.Append(CPPFLAGS=["-DALSA_ENABLED"])
 		env.Append(LIBS=['asound'])
-        if not os.system("pkg-config --exists libpulse-simple"):
-            print("Enabling PulseAudio")
-            env.Append(CPPFLAGS=["-DPULSEAUDIO_ENABLED"])
-            env.ParseConfig('pkg-config --cflags --libs libpulse-simple')
-        else:
-            print("PulseAudio development libraries not found, disabling driver")
+	if env['ao'] == 'yes':
+		env.ParseConfig('pkg-config ao --cflags --libs')
+		env.Append(CPPFLAGS=['-DAO_ENABLED'])
+	if (env["pulseaudio"]=="yes"):
+		if not os.system("pkg-config --exists libpulse-simple"):
+			print("Enabling PulseAudio")
+			env.Append(CPPFLAGS=["-DPULSEAUDIO_ENABLED"])
+			env.ParseConfig('pkg-config --cflags --libs libpulse-simple')
+		else:
+			print("PulseAudio development libraries not found, disabling driver")
 
-	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED','-DGLES1_ENABLED','-DGLES_OVER_GL'])
+	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED','-DGLES_OVER_GL'])
 	env.Append(LIBS=['GL', 'GLU', 'pthread', 'z'])
 	#env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
 

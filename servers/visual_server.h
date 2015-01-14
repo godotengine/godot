@@ -86,6 +86,9 @@ public:
 		ARRAY_WEIGHTS_SIZE=4,
 		MAX_PARTICLE_COLOR_PHASES=4,
 		MAX_PARTICLE_ATTRACTORS=4,
+		CANVAS_ITEM_Z_MIN=-4096,
+		CANVAS_ITEM_Z_MAX=4096,
+
 
 
 		MAX_CURSORS = 8,
@@ -982,9 +985,19 @@ public:
 	virtual void canvas_item_add_set_blend_mode(RID p_item, MaterialBlendMode p_blend)=0;
 	virtual void canvas_item_add_clip_ignore(RID p_item, bool p_ignore)=0;
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
+	virtual void canvas_item_set_z(RID p_item, int p_z)=0;
+	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable)=0;
 
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;
+
+	virtual void canvas_item_set_shader(RID p_item, RID p_shader)=0;
+	virtual RID canvas_item_get_shader(RID p_item) const=0;
+
+	virtual void canvas_item_set_use_parent_shader(RID p_item, bool p_enable)=0;
+
+	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value)=0;
+	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const=0;
 
 	/* CURSOR */
 	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0)=0; // radians

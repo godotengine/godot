@@ -84,7 +84,7 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 	for(List<PropertyInfo>::Element *E=local.front();E;E=E->next()) {
 
 		PropertyInfo pi=E->get();
-		pi.name="param/"+pi.name;
+		pi.name="shader_param/"+pi.name;
 		params_cache[pi.name]=E->get().name;
 		if (p_params) {
 

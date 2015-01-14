@@ -205,6 +205,7 @@ Variant _jobject_to_variant(JNIEnv * env, jobject obj) {
 	String name = _get_class_name(env, c, &array);
 	//print_line("name is " + name + ", array "+Variant(array));
 
+	print_line("ARGNAME: "+name);
 	if (name == "java.lang.String") {
 
 		return String::utf8(env->GetStringUTFChars( (jstring)obj, NULL ));
@@ -821,10 +822,7 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_initialize(JNIEnv * env, 
 	String vd = Globals::get_singleton()->get("display/driver");
 
 
-	if (vd.to_upper()=="GLES1")
-		env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)false);
-	else
-		env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)true);
+	env->CallVoidMethod(_godot_instance, _on_video_init, (jboolean)true);
 
 	__android_log_print(ANDROID_LOG_INFO,"godot","**START");
 

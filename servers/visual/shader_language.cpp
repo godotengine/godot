@@ -900,6 +900,7 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"normalize",TYPE_VEC3,{TYPE_VEC3,TYPE_VOID}},
 	{"normalize",TYPE_VEC4,{TYPE_VEC4,TYPE_VOID}},
 	{"reflect",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
+	{"refract",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_FLOAT,TYPE_VOID}},
 	//intrinsics - texture
 	{"tex",TYPE_VEC4,{TYPE_TEXTURE,TYPE_VEC2,TYPE_VOID}},
 	{"texcube",TYPE_VEC4,{TYPE_CUBEMAP,TYPE_VEC3,TYPE_VOID}},
@@ -1096,6 +1097,61 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::light_builtins_defs[]={
 	{ "SPECULAR", TYPE_VEC3},
 	{ "SPECULAR_EXP", TYPE_FLOAT},
 	{ "SHADE_PARAM", TYPE_FLOAT},
+	{ "LIGHT", TYPE_VEC3},
+	{ "POINT_COORD", TYPE_VEC2},
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
+
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
+
+	{ "SRC_VERTEX", TYPE_VEC2},
+	{ "VERTEX", TYPE_VEC2},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "POINT_SIZE", TYPE_FLOAT},
+
+	//builtins
+	{ "WORLD_MATRIX", TYPE_MAT4},
+	{ "PROJECTION_MATRIX", TYPE_MAT4},
+	{ "EXTRA_MATRIX", TYPE_MAT4},	
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID},
+};
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
+
+	{ "SRC_COLOR", TYPE_VEC4},
+	{ "POSITION", TYPE_VEC4},
+	{ "NORMAL", TYPE_VEC3},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "TEXTURE", TYPE_TEXTURE},
+	{ "TEXTURE_PIXEL_SIZE", TYPE_VEC2},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "SCREEN_UV", TYPE_VEC2},
+	{ "POINT_COORD", TYPE_VEC2},
+
+//	{ "SCREEN_POS", TYPE_VEC2},
+//	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
+	{ "TIME", TYPE_FLOAT},
+	{ NULL, TYPE_VOID}
+
+};
+
+const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_light_builtins_defs[]={
+
+	{ "COLOR", TYPE_VEC4},
+	{ "NORMAL", TYPE_VEC3},
+	{ "LIGHT_DIR", TYPE_VEC2},
+	{ "LIGHT_DISTANCE", TYPE_FLOAT},
 	{ "LIGHT", TYPE_VEC3},
 	{ "POINT_COORD", TYPE_VEC2},
 //	{ "SCREEN_POS", TYPE_VEC2},
@@ -2471,6 +2527,27 @@ Error ShaderLanguage::parse(const Vector<Token>& p_tokens,ShaderType p_type,Comp
 				idx++;
 			}
 		} break;
+		case SHADER_CANVAS_ITEM_VERTEX: {
+			int idx=0;
+			while (ci_vertex_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_vertex_builtins_defs[idx].name]=ci_vertex_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_FRAGMENT: {
+			int idx=0;
+			while (ci_fragment_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_fragment_builtins_defs[idx].name]=ci_fragment_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_LIGHT: {
+			int idx=0;
+			while (ci_light_builtins_defs[idx].name) {
+				parser.program->builtin_variables[ci_light_builtins_defs[idx].name]=ci_light_builtins_defs[idx].type;
+				idx++;
+			}
+		} break;
 		case SHADER_POST_PROCESS: {
 			int idx=0;
 			while (postprocess_fragment_builtins_defs[idx].name) {
@@ -2568,6 +2645,28 @@ void ShaderLanguage::get_keyword_list(ShaderType p_type, List<String> *p_keyword
 				idx++;
 			}
 		} break;
+		case SHADER_CANVAS_ITEM_VERTEX: {
+			idx=0;
+			while (ci_vertex_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_vertex_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_FRAGMENT: {
+			idx=0;
+			while (ci_fragment_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_fragment_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+		case SHADER_CANVAS_ITEM_LIGHT: {
+			idx=0;
+			while (ci_light_builtins_defs[idx].name) {
+				p_keywords->push_back(ci_light_builtins_defs[idx].name);
+				idx++;
+			}
+		} break;
+
 		case SHADER_POST_PROCESS: {
 			idx=0;
 			while (postprocess_fragment_builtins_defs[idx].name) {

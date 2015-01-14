@@ -15,6 +15,7 @@ const GRAVITY = 500.0
 #consider "floor".
 const FLOOR_ANGLE_TOLERANCE = 40
 const WALK_FORCE = 600
+const WALK_MIN_SPEED=10
 const WALK_MAX_SPEED = 200
 const STOP_FORCE = 1300
 const JUMP_SPEED = 200
@@ -40,12 +41,12 @@ func _fixed_process(delta):
 	var stop=true
 	
 	if (walk_left):
-		if (velocity.x<=0 and velocity.x > -WALK_MAX_SPEED):
+		if (velocity.x<=WALK_MIN_SPEED and velocity.x > -WALK_MAX_SPEED):
 			force.x-=WALK_FORCE			
 			stop=false
 		
 	elif (walk_right):
-		if (velocity.x>=0 and velocity.x < WALK_MAX_SPEED):
+		if (velocity.x>=-WALK_MIN_SPEED and velocity.x < WALK_MAX_SPEED):
 			force.x+=WALK_FORCE
 			stop=false
 	

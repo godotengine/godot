@@ -34,5 +34,5 @@
 #endif
 
 #define GLES2_INCLUDE_H "gl_context/glew.h"
-#define GLES1_INCLUDE_H "gl_context/glew.h"
+
 
