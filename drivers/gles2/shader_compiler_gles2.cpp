@@ -690,6 +690,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["cross" ]="cross";
 	replace_table["normalize"]= "normalize";
 	replace_table["reflect"]= "reflect";
+	replace_table["refract"]= "refract";
 	replace_table["tex"]= "tex";
 	replace_table["texa"]= "texa";
 	replace_table["tex2"]= "tex2";

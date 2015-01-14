@@ -900,6 +900,7 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"normalize",TYPE_VEC3,{TYPE_VEC3,TYPE_VOID}},
 	{"normalize",TYPE_VEC4,{TYPE_VEC4,TYPE_VOID}},
 	{"reflect",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
+	{"refract",TYPE_VEC3,{TYPE_VEC3,TYPE_VEC3,TYPE_FLOAT,TYPE_VOID}},
 	//intrinsics - texture
 	{"tex",TYPE_VEC4,{TYPE_TEXTURE,TYPE_VEC2,TYPE_VOID}},
 	{"texcube",TYPE_VEC4,{TYPE_CUBEMAP,TYPE_VEC3,TYPE_VOID}},

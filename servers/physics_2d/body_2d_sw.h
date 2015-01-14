@@ -68,6 +68,7 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t applied_torque;
 
 	Vector2 one_way_collision_direction;
+	float one_way_collision_max_depth;
 
 
 	SelfList<Body2DSW> active_list;
@@ -220,6 +221,9 @@ public:
 
 	void set_one_way_collision_direction(const Vector2& p_dir) { one_way_collision_direction=p_dir; }
 	Vector2 get_one_way_collision_direction() const { return one_way_collision_direction; }
+
+	void set_one_way_collision_max_depth(float p_depth) { one_way_collision_max_depth=p_depth; }
+	float get_one_way_collision_max_depth() const { return one_way_collision_max_depth; }
 
 	void set_space(Space2DSW *p_space);
 

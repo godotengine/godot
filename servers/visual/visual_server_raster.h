@@ -392,7 +392,7 @@ class VisualServerRaster : public VisualServer {
 
 		CanvasItem() {
 			E=NULL;
-			z=CANVAS_ITEM_Z_MAX/2;
+			z=0;
 			opacity=1;
 			self_opacity=1;
 			sort_y=false;
