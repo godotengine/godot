@@ -2,19 +2,22 @@
 
 #### New GDScript Methods for the OS Class:
 * int OS.get_screen_count()
+* int OS.get_screen()
+* void OS.set_screen(int screen)
+* Vector2 OS.get_screen_position(int screen=0)
 * Vector2 OS.get_screen_size(int screen=0)
 * Vector2 OS.get_window_position()
 * void OS.set_window_position(Vector2 position)
 * Vector2 OS.get_window_size()
 * void OS.set_window_size(Vector2 size)
-* void OS.set_fullscreen(bool enabled, int screen=0)
+* void OS.set_fullscreen(bool enabled)
 * bool OS.is_fullscreen()
 
 #### Demo
 A demo/test is available at "demos/misc/window-management"
 
-#### Warning
-Just only works for X11. It breaks other platforms at the moment.
+#### Scons Commandline
+'''scons p=x11 experimental_wm_api=yes'''
 
 ![GODOT](/logo.png)
 
