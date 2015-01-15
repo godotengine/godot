@@ -307,8 +307,8 @@ void make_default_theme() {
 	Ref<StyleBox> cb_empty = memnew( StyleBoxEmpty );
 	cb_empty->set_default_margin(MARGIN_LEFT,6);
 	cb_empty->set_default_margin(MARGIN_RIGHT,70);
-	cb_empty->set_default_margin(MARGIN_TOP,6);
-	cb_empty->set_default_margin(MARGIN_BOTTOM,6);
+	cb_empty->set_default_margin(MARGIN_TOP,4);
+	cb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
 	t->set_stylebox("normal","CheckButton", cb_empty );
 	t->set_stylebox("pressed","CheckButton", cb_empty );
