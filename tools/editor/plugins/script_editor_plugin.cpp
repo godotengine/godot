@@ -188,7 +188,7 @@ void ScriptTextEditor::apply_code() {
 
 	if (script.is_null())
 		return;
-	print_line("applying code");
+//	print_line("applying code");
 	script->set_source_code(get_text_edit()->get_text());
 	script->update_exports();
 }
@@ -1033,9 +1033,12 @@ void ScriptEditor::_menu_option(int p_option) {
 				editor->emit_signal("request_help", text);
 		} break;
 		case WINDOW_CLOSE: {
-
-			erase_tab_confirm->set_text("Close Tab?:\n\""+current->get_name()+"\"");
-			erase_tab_confirm->popup_centered(Point2(250,80));
+			if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
+				erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
+				erase_tab_confirm->popup_centered(Point2(250,80));
+			} else {
+				_close_current_tab();
+			}
 		} break;
 		case WINDOW_MOVE_LEFT: {
 
