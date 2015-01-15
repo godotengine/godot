@@ -120,6 +120,8 @@ public:
 	virtual void set_window_size(const Size2& p_size);
 	void set_fullscreen(bool p_enabled);
 	bool is_fullscreen() const;
+	void set_resizable(bool p_enabled);
+	bool is_resizable() const;
 #endif
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

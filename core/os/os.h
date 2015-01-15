@@ -162,6 +162,8 @@ public:
 	virtual void set_window_size(const Size2 p_size)=0;
 	virtual void set_fullscreen(bool p_enabled)=0;
 	virtual bool is_fullscreen() const=0;
+	virtual void set_resizable(bool p_enabled)=0;
+	virtual bool is_resizable() const=0;
 #endif	
 
 	virtual void set_iterations_per_second(int p_ips);

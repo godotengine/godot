@@ -223,7 +223,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 #endif
 	}
 
-	// disable resizeable window
+	// disable resizable window
 	if (!current_videomode.resizable) {
 		XSizeHints *xsh;
 		xsh = XAllocSizeHints();
@@ -239,7 +239,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		xsh->min_height = xwa.height;
 		xsh->max_height = xwa.height;
 		XSetWMNormalHints(x11_display, x11_window, xsh);
+		XFree(xsh);
 	}
+	current_videomode.resizable;
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -277,19 +279,19 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	XChangeWindowAttributes(x11_display, x11_window,CWEventMask,&new_attr);
 	
-    XClassHint* classHint;
+	XClassHint* classHint;
 
-    /* set the titlebar name */
-    XStoreName(x11_display, x11_window, "Godot");
+	/* set the titlebar name */
+	XStoreName(x11_display, x11_window, "Godot");
 
-    /* set the name and class hints for the window manager to use */
-    classHint = XAllocClassHint();
-    if (classHint) {
-        classHint->res_name = "Godot";
-        classHint->res_class = "Godot";
-    }
-    XSetClassHint(x11_display, x11_window, classHint);
-    XFree(classHint);
+	/* set the name and class hints for the window manager to use */
+	classHint = XAllocClassHint();
+	if (classHint) {
+		classHint->res_name = "Godot";
+		classHint->res_class = "Godot";
+	}
+	XSetClassHint(x11_display, x11_window, classHint);
+	XFree(classHint);
 
 	wm_delete = XInternAtom(x11_display, "WM_DELETE_WINDOW", true);	
 	XSetWMProtocols(x11_display, x11_window, &wm_delete, 1);
@@ -708,6 +710,9 @@ void OS_X11::set_fullscreen(bool p_enabled) {
 	if(p_enabled && current_videomode.fullscreen)
 		return;
 
+	if(!current_videomode.resizable)
+		set_resizable(true);
+
 	if(p_enabled) {
 		window_data.size = get_window_size();
 		window_data.position = get_window_position();
@@ -734,10 +739,36 @@ void OS_X11::set_fullscreen(bool p_enabled) {
 	}
 
 	visual_server->init();
+
 }
 
 bool OS_X11::is_fullscreen() const {
 	return current_videomode.fullscreen;
+}
+
+void OS_X11::set_resizable(bool p_enabled) {
+
+	if(!current_videomode.fullscreen) {
+		XSizeHints *xsh;
+		xsh = XAllocSizeHints();
+		xsh->flags = p_enabled ? 0L : PMinSize | PMaxSize;
+		if(!p_enabled) {
+			XWindowAttributes xwa;
+			XGetWindowAttributes(x11_display,x11_window,&xwa);
+			xsh->min_width = xwa.width; 
+			xsh->max_width = xwa.width;
+			xsh->min_height = xwa.height;
+			xsh->max_height = xwa.height;
+			printf("%d %d\n", xwa.width, xwa.height);
+		}
+		XSetWMNormalHints(x11_display, x11_window, xsh);
+		XFree(xsh);
+		current_videomode.resizable = p_enabled;
+	}
+}
+
+bool OS_X11::is_resizable() const {
+	return current_videomode.resizable;
 }
 #endif
 
@@ -1688,6 +1719,4 @@ OS_X11::OS_X11() {
 	minimized = false;
 	xim_style=NULL;
 	mouse_mode=MOUSE_MODE_VISIBLE;
-
-
 };

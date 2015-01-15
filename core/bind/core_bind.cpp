@@ -220,6 +220,14 @@ void _OS::set_fullscreen(bool p_enabled) {
 bool _OS::is_fullscreen() const {
 	return OS::get_singleton()->is_fullscreen();
 }
+
+void _OS::set_resizable(bool p_enabled) {
+	OS::get_singleton()->set_resizable(p_enabled);
+}
+
+bool _OS::is_resizable() const {
+	return OS::get_singleton()->is_resizable();
+}
 #endif
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
@@ -232,7 +240,6 @@ bool _OS::is_video_mode_resizable(int p_screen) const {
 	OS::VideoMode vm;
 	vm = OS::get_singleton()->get_video_mode(p_screen);
 	return vm.resizable;
-
 }
 
 Array _OS::get_fullscreen_mode_list(int p_screen) const {
@@ -690,6 +697,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_window_size"),&_OS::set_window_size);
 	ObjectTypeDB::bind_method(_MD("set_fullscreen","enabled"),&_OS::set_fullscreen);
 	ObjectTypeDB::bind_method(_MD("is_fullscreen"),&_OS::is_fullscreen);
+	ObjectTypeDB::bind_method(_MD("set_resizable","enabled"),&_OS::set_resizable);
+	ObjectTypeDB::bind_method(_MD("is_resizable"),&_OS::is_resizable);	
 #endif
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
