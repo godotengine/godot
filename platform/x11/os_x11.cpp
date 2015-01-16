@@ -552,7 +552,7 @@ void OS_X11::set_wm_border(bool p_enabled) {
 	Hints hints;
 	Atom property;
 	hints.flags = 2;
-	hints.decorations = p_enabled ? 1L : 0L;;
+	hints.decorations = p_enabled ? 1L : 0L;
 	property = XInternAtom(x11_display, "_MOTIF_WM_HINTS", True);
 	XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	XMapRaised(x11_display, x11_window);
@@ -700,7 +700,6 @@ void OS_X11::set_window_position(const Point2& p_position) {
 		top = extends[2];
 	
 		XFree(data);
-		data = NULL;
 	}
 
 	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
@@ -785,6 +784,10 @@ bool OS_X11::is_resizable() const {
 }
 
 void OS_X11::set_minimized(bool p_enabled) {
+
+	if( is_fullscreen() )
+		set_fullscreen(false);
+
         // Using ICCCM -- Inter-Client Communication Conventions Manual
         XEvent xev;
         Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
@@ -797,6 +800,20 @@ void OS_X11::set_minimized(bool p_enabled) {
         xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
 
         XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	
+        //XEvent xev;
+	Atom wm_state     =  XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_hidden    =  XInternAtom(x11_display, "_NET_WM_STATE_HIDDEN", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_state;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = _NET_WM_STATE_ADD;
+	xev.xclient.data.l[1] = wm_hidden;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);	
 }
 
 bool OS_X11::is_minimized() const {
@@ -825,7 +842,7 @@ bool OS_X11::is_minimized() const {
 
 	if( result == Success ) {
 		long *state = (long *) data;
-		if( state[0] == 3L ) 
+		if( state[0] == WM_IconicState ) 
 			return true;
 	}
 	return false;
@@ -847,7 +864,7 @@ void OS_X11::set_maximized(bool p_enabled) {
 	xev.xclient.data.l[1] = wm_max_horz;
 	xev.xclient.data.l[2] = wm_max_vert;
 
-	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
 	maximized = p_enabled;
 }
@@ -892,6 +909,7 @@ bool OS_X11::is_maximized() const {
 			if( found_wm_max_horz && found_wm_max_vert )
 				return true;
 		}
+		XFree(atoms);
 	}
 
 	return false;
