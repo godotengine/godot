@@ -156,7 +156,6 @@ void FileDialog::_action_pressed() {
 
 	if (mode==MODE_SAVE_FILE) {
 		
-		String ext = f.extension();
 		bool valid=false;
 
 		if (filter->get_selected()==filter->get_item_count()-1) {
@@ -197,6 +196,7 @@ void FileDialog::_action_pressed() {
 				if (!valid && filterSliceCount>0) {
 					String str = (flt.get_slice(",",0).strip_edges());
 					f+=str.substr(1, str.length()-1);
+					file->set_text(f.get_file());
 					valid=true;
 				}
 			} else {
