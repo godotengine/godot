@@ -19,9 +19,7 @@ func _fixed_process(delta):
 	
 	get_node("Label_Size").set_text(str("Size:\n", OS.get_window_size() ) )
 	
-	get_node("Label_Screen_Count").set_text( str("Screens:\n", OS.get_screen_count() ) )
-	
-	get_node("Label_Screen_Current").set_text( str("Current:\n", OS.get_screen() ) )
+	get_node("Label_Screen_Info").set_text( str("Screens:\n", OS.get_screen_count(),"\n\nCurrent:\n", OS.get_screen() ) )
 	
 	get_node("Label_Screen0_Resolution").set_text( str("Screen0 Resolution:\n", OS.get_screen_size() ) )
 	
