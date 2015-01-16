@@ -553,7 +553,7 @@ void Curve2D::_bake() const {
 		if (divs>1)
 			divs=1;
 
-		float step = divs*0.1; // 10 substeps ought to be enough?
+		float step = 0.1; // 10 substeps ought to be enough?
 		float p = 0;
 
 		while(p<1.0) {
@@ -1026,7 +1026,7 @@ void Curve3D::_bake() const {
 		if (divs>1)
 			divs=1;
 
-		float step = divs*0.1; // 10 substeps ought to be enough?
+		float step = 0.1; // 10 substeps ought to be enough?
 		float p = 0;
 
 		while(p<1.0) {
