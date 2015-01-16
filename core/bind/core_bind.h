@@ -118,10 +118,14 @@ public:
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;
 	virtual void set_window_size(const Size2& p_size);
-	void set_fullscreen(bool p_enabled);
-	bool is_fullscreen() const;
-	void set_resizable(bool p_enabled);
-	bool is_resizable() const;
+	virtual void set_fullscreen(bool p_enabled);
+	virtual bool is_fullscreen() const;
+	virtual void set_resizable(bool p_enabled);
+	virtual bool is_resizable() const;
+	virtual void set_minimized(bool p_enabled);
+	virtual bool is_minimized() const;
+	virtual void set_maximized(bool p_enabled);
+	virtual bool is_maximized() const;
 #endif
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);

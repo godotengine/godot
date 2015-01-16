@@ -228,6 +228,22 @@ void _OS::set_resizable(bool p_enabled) {
 bool _OS::is_resizable() const {
 	return OS::get_singleton()->is_resizable();
 }
+
+void _OS::set_minimized(bool p_enabled) {
+	OS::get_singleton()->set_minimized(p_enabled);
+}
+
+bool _OS::is_minimized() const {
+	return OS::get_singleton()->is_minimized();
+}
+
+void _OS::set_maximized(bool p_enabled) {
+	OS::get_singleton()->set_maximized(p_enabled);
+}
+
+bool _OS::is_maximized() const {
+	return OS::get_singleton()->is_maximized();
+}
 #endif
 
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
@@ -698,7 +714,11 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_fullscreen","enabled"),&_OS::set_fullscreen);
 	ObjectTypeDB::bind_method(_MD("is_fullscreen"),&_OS::is_fullscreen);
 	ObjectTypeDB::bind_method(_MD("set_resizable","enabled"),&_OS::set_resizable);
-	ObjectTypeDB::bind_method(_MD("is_resizable"),&_OS::is_resizable);	
+	ObjectTypeDB::bind_method(_MD("is_resizable"),&_OS::is_resizable);
+	ObjectTypeDB::bind_method(_MD("set_minimized", "enabled"),&_OS::set_minimized);
+	ObjectTypeDB::bind_method(_MD("is_minimized"),&_OS::is_minimized);
+	ObjectTypeDB::bind_method(_MD("set_maximized", "enabled"),&_OS::set_maximized);
+	ObjectTypeDB::bind_method(_MD("is_maximized"),&_OS::is_maximized);
 #endif
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);

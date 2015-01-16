@@ -37,7 +37,16 @@
 
 #include "X11/Xutil.h"
 #ifdef EXPERIMENTAL_WM_API
+#include "X11/Xatom.h"
 #include "X11/extensions/Xinerama.h"
+// ICCCM
+#define WM_NormalState		1L	// window normal state
+#define WM_IconicState		3L	// window minimized
+
+// EWMH
+#define _NET_WM_STATE_REMOVE	0L	// remove/unset property
+#define _NET_WM_STATE_ADD	1L	// add/set property
+#define _NET_WM_STATE_TOGGLE	2L	// toggle property
 #endif
 #include "main/main.h"
 
@@ -214,6 +223,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
 #else
+		minimized = false;
+		minimized = false;
 		window_data.position.x = 0;
 		window_data.position.y = 0;
 		window_data.size.width = 800;
@@ -549,7 +560,7 @@ void OS_X11::set_wm_border(bool p_enabled) {
 }
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
-	// code for netwm-compliants
+	// Using EWMH -- Extened Window Manager Hints
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_fullscreen = XInternAtom(x11_display, "_NET_WM_STATE_FULLSCREEN", False);
@@ -559,7 +570,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	xev.xclient.window = x11_window;
 	xev.xclient.message_type = wm_state;
 	xev.xclient.format = 32;
-	xev.xclient.data.l[0] = p_enabled ? 1L : 0L;
+	xev.xclient.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
 	xev.xclient.data.l[1] = wm_fullscreen;
 	xev.xclient.data.l[2] = 0;
 
@@ -567,6 +578,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 }
 
 int OS_X11::get_screen_count() const {
+	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return 0;
@@ -611,6 +623,7 @@ void OS_X11::set_screen(int p_screen) {
 }
 
 Point2 OS_X11::get_screen_position(int p_screen) const {
+	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return Point2i(0,0);
@@ -625,6 +638,7 @@ Point2 OS_X11::get_screen_position(int p_screen) const {
 }
 
 Size2 OS_X11::get_screen_size(int p_screen) const {
+	// Using Xinerama Extension
 	int event_base, error_base;
 	const Bool ext_okay = XineramaQueryExtension(x11_display, &event_base, &error_base);
 	if( !ext_okay ) return Size2i(0,0);
@@ -651,14 +665,14 @@ void OS_X11::set_window_position(const Point2& p_position) {
 	if( current_videomode.fullscreen )
 		return;
 
-	// _NET_FRAME_EXTENTS
+	// Using EWMH -- Extended Window Manager Hints
+	// to get the size of the decoration 
 	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
 	Atom type;
 	int format;
 	unsigned long len;
 	unsigned long remaining;
 	unsigned char *data = NULL;
-	//long *extends;
 	int result;
 
 	result = XGetWindowProperty(
@@ -759,7 +773,6 @@ void OS_X11::set_resizable(bool p_enabled) {
 			xsh->max_width = xwa.width;
 			xsh->min_height = xwa.height;
 			xsh->max_height = xwa.height;
-			printf("%d %d\n", xwa.width, xwa.height);
 		}
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
@@ -769,6 +782,119 @@ void OS_X11::set_resizable(bool p_enabled) {
 
 bool OS_X11::is_resizable() const {
 	return current_videomode.resizable;
+}
+
+void OS_X11::set_minimized(bool p_enabled) {
+        // Using ICCCM -- Inter-Client Communication Conventions Manual
+        XEvent xev;
+        Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
+
+        memset(&xev, 0, sizeof(xev));
+        xev.type = ClientMessage;
+        xev.xclient.window = x11_window;
+        xev.xclient.message_type = wm_change;
+        xev.xclient.format = 32;
+        xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
+
+        XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+}
+
+bool OS_X11::is_minimized() const {
+	// Using ICCCM -- Inter-Client Communication Conventions Manual
+        Atom property = XInternAtom(x11_display,"WM_STATE", True);
+        Atom type;
+        int format;
+        unsigned long len;
+        unsigned long remaining;
+        unsigned char *data = NULL;
+
+        int result = XGetWindowProperty(
+                x11_display,
+                x11_window,
+                property,
+                0,
+                32,
+                False,
+                AnyPropertyType,
+                &type,
+                &format,
+                &len,
+                &remaining,
+                &data
+        );
+
+	if( result == Success ) {
+		long *state = (long *) data;
+		if( state[0] == 3L ) 
+			return true;
+	}
+	return false;
+}
+
+void OS_X11::set_maximized(bool p_enabled) {
+	// Using EWMH -- Extended Window Manager Hints 
+	XEvent xev;
+	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+	Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+	Atom wm_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = wm_state;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = p_enabled ? _NET_WM_STATE_ADD : _NET_WM_STATE_REMOVE;
+	xev.xclient.data.l[1] = wm_max_horz;
+	xev.xclient.data.l[2] = wm_max_vert;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+
+	maximized = p_enabled;
+}
+
+bool OS_X11::is_maximized() const {
+	// Using EWMH -- Extended Window Manager Hints
+        Atom property = XInternAtom(x11_display,"_NET_WM_STATE",False );
+        Atom type;
+        int format;
+        unsigned long len;
+        unsigned long remaining;
+        unsigned char *data = NULL;
+
+        int result = XGetWindowProperty(
+                x11_display,
+                x11_window,
+                property,
+                0,
+                1024,
+                False,
+                XA_ATOM,
+                &type,
+                &format,
+                &len,
+                &remaining,
+                &data
+        );
+
+	if(result == Success) { 
+		Atom *atoms = (Atom*) data;
+		Atom wm_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
+		Atom wm_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
+		bool found_wm_max_horz = false;
+		bool found_wm_max_vert = false;
+
+		for( unsigned int i=0; i < len; i++ ) {
+			if( atoms[i] == wm_max_horz )
+				found_wm_max_horz = true;
+			if( atoms[i] == wm_max_vert )
+				found_wm_max_vert = true;
+
+			if( found_wm_max_horz && found_wm_max_vert )
+				return true;
+		}
+	}
+
+	return false;
 }
 #endif
 
@@ -1719,4 +1845,3 @@ OS_X11::OS_X11() {
 	xim_style=0L;
 	mouse_mode=MOUSE_MODE_VISIBLE;
 };
-

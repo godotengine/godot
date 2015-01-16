@@ -241,6 +241,10 @@ public:
 	virtual bool is_fullscreen() const;
 	virtual void set_resizable(bool p_enabled);
 	virtual bool is_resizable() const;
+	virtual void set_minimized(bool p_enabled);
+	virtual bool is_minimized() const;
+	virtual void set_maximized(bool p_enabled);
+	virtual bool is_maximized() const;
 #endif
 	virtual void move_window_to_foreground();
 

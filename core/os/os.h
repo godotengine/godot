@@ -164,6 +164,10 @@ public:
 	virtual bool is_fullscreen() const=0;
 	virtual void set_resizable(bool p_enabled)=0;
 	virtual bool is_resizable() const=0;
+	virtual void set_minimized(bool p_enabled)=0;
+	virtual bool is_minimized() const=0;
+	virtual void set_maximized(bool p_enabled)=0;
+	virtual bool is_maximized() const=0;
 #endif	
 
 	virtual void set_iterations_per_second(int p_ips);
