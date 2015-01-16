@@ -59,7 +59,7 @@
 
 
 #include <X11/Xatom.h>
-#include "os/pc_joystick_map.h"
+//#include "os/pc_joystick_map.h"
 
 #undef CursorShape
 
@@ -120,10 +120,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	if (xim == NULL) {
 		WARN_PRINT("XOpenIM failed");
-		xim_style=NULL;
+		xim_style=0L;
 	} else {
 		::XIMStyles *xim_styles=NULL;
-		xim_style=0;
+		xim_style=0L;
 		char *imvalret=NULL;
 		imvalret = XGetIMValues(xim, XNQueryInputStyle, &xim_styles, NULL);
 		if (imvalret != NULL || xim_styles == NULL) {
@@ -131,7 +131,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		}
 		
 		if (xim_styles) {
-			xim_style = 0;
+			xim_style = 0L;
 			for (int i=0;i<xim_styles->count_styles;i++) {
 				
 				if (xim_styles->supported_styles[i] ==
@@ -241,7 +241,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
 	}
-	current_videomode.resizable;
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -287,8 +286,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	/* set the name and class hints for the window manager to use */
 	classHint = XAllocClassHint();
 	if (classHint) {
-		classHint->res_name = "Godot";
-		classHint->res_class = "Godot";
+		char wmclass[] = "Godot";
+		classHint->res_name = wmclass;
+		classHint->res_class = wmclass;
 	}
 	XSetClassHint(x11_display, x11_window, classHint);
 	XFree(classHint);
@@ -845,11 +845,9 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 	KeySym keysym_keycode=0; // keysym used to find a keycode
 	KeySym keysym_unicode=0; // keysym used to find unicode
 					
-	int nbytes=0; // bytes the string takes
-						 
 	// XLookupString returns keysyms usable as nice scancodes/
 	char str[256+1];
-	nbytes=XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
+	XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
 						 
  	// Meanwhile, XLookupString returns keysyms useful for unicode.
 	
@@ -946,7 +944,7 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 			::Time tresh=ABS(peek_event.xkey.time-xkeyevent->time);
 			if (peek_event.type == KeyPress && tresh<5 ) {
 				KeySym rk;
-				nbytes=XLookupString((XKeyEvent*)&peek_event, str, 256, &rk, NULL);
+				XLookupString((XKeyEvent*)&peek_event, str, 256, &rk, NULL);
 				if (rk==keysym_keycode) {
 					XEvent event;
 					XNextEvent(x11_display, &event); //erase next event
@@ -1605,6 +1603,7 @@ void OS_X11::process_joysticks() {
 	#endif
 };
 
+
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape,CURSOR_MAX);
@@ -1717,6 +1716,7 @@ OS_X11::OS_X11() {
 #endif
 
 	minimized = false;
-	xim_style=NULL;
+	xim_style=0L;
 	mouse_mode=MOUSE_MODE_VISIBLE;
 };
+
