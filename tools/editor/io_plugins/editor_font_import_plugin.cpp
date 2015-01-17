@@ -499,7 +499,7 @@ class EditorFontImportDialog : public ConfirmationDialog {
 		Error err = plugin->import(dest->get_line_edit()->get_text(),rimd);
 
 		if (err!=OK) {
-			error_dialog->set_text("Could't save font.");
+			error_dialog->set_text("Couldn't save font.");
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
