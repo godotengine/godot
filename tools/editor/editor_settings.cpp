@@ -404,6 +404,7 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/symbol_color",Color::html("badfff"));
 	set("text_editor/selection_color",Color::html("7b5dbe"));
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
+	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
