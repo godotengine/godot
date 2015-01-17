@@ -51,7 +51,8 @@ class TileMapEditor : public VBoxContainer {
 		TOOL_PAINTING,
 		TOOL_SELECTING,
 		TOOL_ERASING,
-		TOOL_DUPLICATING
+		TOOL_DUPLICATING,
+		TOOL_PICKING
 	};
 
 	Tool tool;
@@ -81,11 +82,13 @@ class TileMapEditor : public VBoxContainer {
 		bool xf;
 		bool yf;
 		CellOp() { idx=-1; xf=false; yf=false; }
+		CellOp(const CellOp& p_other) : idx(p_other.idx), xf(p_other.xf), yf(p_other.yf) {}
 	};
 
 	Map<Point2i,CellOp> paint_undo;
 
 	int get_selected_tile() const;
+	void set_selected_tile(int p_tile);
 
 	void _update_palette();
 	void _canvas_draw();
@@ -102,6 +105,7 @@ protected:
 	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
+	CellOp _get_op_from_cell(const Point2i& p_pos);
 public:
 
 	HBoxContainer *get_canvas_item_editor_hb() const { return canvas_item_editor_hb; }

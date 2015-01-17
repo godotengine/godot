@@ -84,6 +84,9 @@ def configure(env):
 		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
 		env["CC"]="clang"
 		env["LD"]="clang++"
+		if (env["colored"]=="yes"):
+			if sys.stdout.isatty():
+				env.Append(CPPFLAGS=["-fcolor-diagnostics"])
 
 	import methods
 
