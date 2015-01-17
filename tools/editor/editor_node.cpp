@@ -1442,9 +1442,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			} else {
 
 				current_option=-1;
-				accept->get_ok()->set_text("I see..");
-				accept->set_text("Current scene was never saved, please save scene before running.");
-				accept->popup_centered(Size2(300,100));
+				_menu_option_confirm(FILE_SAVE_BEFORE_RUN, false);
 				return;
 			}
 		}
