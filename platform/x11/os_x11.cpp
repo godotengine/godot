@@ -42,7 +42,6 @@
 // ICCCM
 #define WM_NormalState		1L	// window normal state
 #define WM_IconicState		3L	// window minimized
-
 // EWMH
 #define _NET_WM_STATE_REMOVE	0L	// remove/unset property
 #define _NET_WM_STATE_ADD	1L	// add/set property
@@ -192,9 +191,9 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
+#ifndef EXPERIMENTAL_WM_API
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
-#ifndef EXPERIMENTAL_WM_API
 	// needed for lxde/openbox, possibly others
 		Hints hints;
 		Atom property;
@@ -222,16 +221,6 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		xev.xclient.data.l[2] = 0;
 
 		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
-#else
-		minimized = false;
-		minimized = false;
-		window_data.position.x = 0;
-		window_data.position.y = 0;
-		window_data.size.width = 800;
-		window_data.size.height = 600;
-		//set_wm_border(false);
-		set_wm_fullscreen(true);
-#endif
 	}
 
 	// disable resizable window
@@ -252,6 +241,21 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XSetWMNormalHints(x11_display, x11_window, xsh);
 		XFree(xsh);
 	}
+#else
+	if (current_videomode.fullscreen) {
+		minimized = false;
+		maximized = false;
+		//set_wm_border(false);
+		set_wm_fullscreen(true);
+	}
+	if (!current_videomode.resizable) {
+		int screen = get_screen();
+		Size2i screen_size = get_screen_size(screen);
+		set_window_size(screen_size);
+		set_resizable(false);
+	}
+#endif
+
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -519,7 +523,6 @@ OS::MouseMode OS_X11::get_mouse_mode() const {
 
 
 int OS_X11::get_mouse_button_state() const {
-
 	return last_button_state;
 }
 
@@ -547,6 +550,8 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 }
 
 #ifdef EXPERIMENTAL_WM_API
+#if 0
+// Just now not needed. Can be used for a possible OS.set_border(bool) method
 void OS_X11::set_wm_border(bool p_enabled) {
 	// needed for lxde/openbox, possibly others
 	Hints hints;
@@ -558,6 +563,7 @@ void OS_X11::set_wm_border(bool p_enabled) {
 	XMapRaised(x11_display, x11_window);
 	//XMoveResizeWindow(x11_display, x11_window, 0, 0, 800, 800);
 }
+#endif
 
 void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	// Using EWMH -- Extened Window Manager Hints
@@ -657,7 +663,11 @@ Point2 OS_X11::get_window_position() const {
 	int x,y;
 	Window child;
 	XTranslateCoordinates( x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
-	return Point2i(x,y);		
+
+	int screen = get_screen();
+	Point2i screen_position = get_screen_position(screen);
+
+	return Point2i(x-screen_position.x, y-screen_position.y);		
 }
 
 void OS_X11::set_window_position(const Point2& p_position) {
@@ -697,6 +707,12 @@ void OS_X11::set_window_position(const Point2& p_position) {
 	
 		XFree(data);
 	}
+
+	int screen = get_screen();
+	Point2i screen_position = get_screen_position(screen);
+
+	left -= screen_position.x;
+	top -= screen_position.y;
 
 	XMoveWindow(x11_display,x11_window,p_position.x - left,p_position.y - top);
 }
@@ -1146,9 +1162,9 @@ void OS_X11::process_xevents() {
 			minimized = (visibility->state == VisibilityFullyObscured);
 		} break;
 
-		case FocusIn:
+		case FocusIn: 
+			minimized = false;
 			if(current_videomode.fullscreen) {
-				set_minimized(false);
 				set_wm_fullscreen(true);
 				visual_server->init();
 			}

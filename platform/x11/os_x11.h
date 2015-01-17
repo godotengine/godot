@@ -160,16 +160,8 @@ class OS_X11 : public OS_Unix {
 	Joystick joysticks[JOYSTICKS_MAX];
 
 #ifdef EXPERIMENTAL_WM_API
-	// This struct saves the values of the window before going fullscreen
-	// to be able to restore the same state after leaving fullscreen
-	struct {
-		bool resizable;
-		Point2i position;
-		Size2i size;
-	} window_data;	
-
 	bool maximized;
-	void set_wm_border(bool p_enabled);
+	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
 #endif
 
