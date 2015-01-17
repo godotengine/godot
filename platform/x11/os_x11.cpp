@@ -229,7 +229,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		window_data.position.y = 0;
 		window_data.size.width = 800;
 		window_data.size.height = 600;
-		set_wm_border(false);
+		//set_wm_border(false);
 		set_wm_fullscreen(true);
 #endif
 	}
@@ -574,7 +574,7 @@ void OS_X11::set_wm_fullscreen(bool p_enabled) {
 	xev.xclient.data.l[1] = wm_fullscreen;
 	xev.xclient.data.l[2] = 0;
 
-	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 }
 
 int OS_X11::get_screen_count() const {
@@ -661,10 +661,6 @@ Point2 OS_X11::get_window_position() const {
 }
 
 void OS_X11::set_window_position(const Point2& p_position) {
-
-	if( current_videomode.fullscreen )
-		return;
-
 	// Using EWMH -- Extended Window Manager Hints
 	// to get the size of the decoration 
 	Atom property = XInternAtom(x11_display,"_NET_FRAME_EXTENTS", True);
@@ -712,14 +708,12 @@ Size2 OS_X11::get_window_size() const {
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
-	if( current_videomode.fullscreen )
-		return;
-
 	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
 }
 
 void OS_X11::set_fullscreen(bool p_enabled) {
 
+#if 0
 	if(p_enabled && current_videomode.fullscreen)
 		return;
 
@@ -750,6 +744,9 @@ void OS_X11::set_fullscreen(bool p_enabled) {
 
 		current_videomode.fullscreen = False;
 	}
+#endif
+	set_wm_fullscreen(p_enabled);
+	current_videomode.fullscreen = p_enabled;
 
 	visual_server->init();
 
@@ -760,23 +757,20 @@ bool OS_X11::is_fullscreen() const {
 }
 
 void OS_X11::set_resizable(bool p_enabled) {
-
-	if(!current_videomode.fullscreen) {
-		XSizeHints *xsh;
-		xsh = XAllocSizeHints();
-		xsh->flags = p_enabled ? 0L : PMinSize | PMaxSize;
-		if(!p_enabled) {
-			XWindowAttributes xwa;
-			XGetWindowAttributes(x11_display,x11_window,&xwa);
-			xsh->min_width = xwa.width; 
-			xsh->max_width = xwa.width;
-			xsh->min_height = xwa.height;
-			xsh->max_height = xwa.height;
-		}
-		XSetWMNormalHints(x11_display, x11_window, xsh);
-		XFree(xsh);
-		current_videomode.resizable = p_enabled;
+	XSizeHints *xsh;
+	xsh = XAllocSizeHints();
+	xsh->flags = p_enabled ? 0L : PMinSize | PMaxSize;
+	if(!p_enabled) {
+		XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display,x11_window,&xwa);
+		xsh->min_width = xwa.width; 
+		xsh->max_width = xwa.width;
+		xsh->min_height = xwa.height;
+		xsh->max_height = xwa.height;
 	}
+	XSetWMNormalHints(x11_display, x11_window, xsh);
+	XFree(xsh);
+	current_videomode.resizable = p_enabled;
 }
 
 bool OS_X11::is_resizable() const {
@@ -784,10 +778,6 @@ bool OS_X11::is_resizable() const {
 }
 
 void OS_X11::set_minimized(bool p_enabled) {
-
-	if( is_fullscreen() )
-		set_fullscreen(false);
-
         // Using ICCCM -- Inter-Client Communication Conventions Manual
         XEvent xev;
         Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
@@ -799,7 +789,7 @@ void OS_X11::set_minimized(bool p_enabled) {
         xev.xclient.format = 32;
         xev.xclient.data.l[0] = p_enabled ? WM_IconicState : WM_NormalState;
 
-        XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureNotifyMask, &xev);
+        XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 	
         //XEvent xev;
 	Atom wm_state     =  XInternAtom(x11_display, "_NET_WM_STATE", False);
@@ -1152,13 +1142,16 @@ void OS_X11::process_xevents() {
 			break;
 
 		case VisibilityNotify: {
-
 			XVisibilityEvent * visibility = (XVisibilityEvent *)&event;
 			minimized = (visibility->state == VisibilityFullyObscured);
-
 		} break;
 
 		case FocusIn:
+			if(current_videomode.fullscreen) {
+				set_minimized(false);
+				set_wm_fullscreen(true);
+				visual_server->init();
+			}
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				XGrabPointer(x11_display, x11_window, True,
@@ -1169,6 +1162,11 @@ void OS_X11::process_xevents() {
 			break;
 
 		case FocusOut:
+			if(current_videomode.fullscreen) {
+				set_wm_fullscreen(false);
+				set_minimized(true);
+				visual_server->init();
+			}
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				//dear X11, I try, I really try, but you never work, you do whathever you want.
