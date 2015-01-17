@@ -116,6 +116,7 @@ opts.Add("CFLAGS", "Custom flags for the C compiler");
 opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
+opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
 
 # add platform specific options
 
@@ -299,6 +300,9 @@ if selected_platform in platform_list:
 	if (env['xml']=='yes'):
 		env.Append(CPPFLAGS=['-DXML_ENABLED'])
 
+	if (env['colored']=='yes'):
+		methods.colored(sys,env)
+		
 
 	Export('env')
 

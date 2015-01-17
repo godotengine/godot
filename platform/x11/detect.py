@@ -82,6 +82,9 @@ def configure(env):
 			env.extra_suffix=".llvms"
 		else:
 			env.extra_suffix=".llvm"
+		if (env["colored"]=="yes"):
+			if sys.stdout.isatty():
+				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
 
 
 
