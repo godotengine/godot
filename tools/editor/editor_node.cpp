@@ -1434,12 +1434,19 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		run_filename=GLOBAL_DEF("application/main_scene","");
 		if (run_filename=="") {
 
-			current_option=-1;
-			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text("I see..");
-			accept->set_text("No main scene has ever been defined.\nSelect one from \"Project Settings\" under the 'application' category.");
-			accept->popup_centered(Size2(300,100));;
-			return;
+			if (edited_scene && edited_scene->get_filename()!="") {
+
+				run_filename=edited_scene->get_filename();
+				Globals::get_singleton()->set("application/main_scene", edited_scene->get_filename());
+				Globals::get_singleton()->save();
+			} else {
+
+				current_option=-1;
+				accept->get_ok()->set_text("I see..");
+				accept->set_text("Current scene was never saved, please save scene before running.");
+				accept->popup_centered(Size2(300,100));
+				return;
+			}
 		}
 
 	}
