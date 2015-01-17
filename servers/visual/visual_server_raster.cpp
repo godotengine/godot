@@ -6254,6 +6254,10 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		sorter.sort(child_items,child_item_count);
 	}
 
+	if (ci->z_relative)
+		p_z=CLAMP(p_z+ci->z,CANVAS_ITEM_Z_MIN,CANVAS_ITEM_Z_MAX);
+	else
+		p_z=ci->z;
 
 	for(int i=0;i<child_item_count;i++) {
 
@@ -6268,10 +6272,6 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		ci->final_transform=xform;
 		ci->final_opacity=opacity * ci->self_opacity;
 
-		if (ci->z_relative)
-			p_z=CLAMP(p_z+ci->z,CANVAS_ITEM_Z_MIN,CANVAS_ITEM_Z_MAX);
-		else
-			p_z=ci->z;
 
 		int zidx = p_z-CANVAS_ITEM_Z_MIN;
 

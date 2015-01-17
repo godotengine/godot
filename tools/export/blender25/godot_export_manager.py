@@ -101,6 +101,7 @@ class godot_export_manager(bpy.types.Panel):
             row = layout.row()
             col = row.column()
             
+            col.prop(group,"use_include_particle_duplicates")
             col.prop(group,"use_mesh_modifiers")
             col.prop(group,"use_tangent_arrays")
             col.prop(group,"use_triangles")
@@ -134,6 +135,8 @@ class add_objects_to_group(bpy.types.Operator):
     bl_label = "Add Objects to Group"
     bl_description = "Adds the selected Objects to the active group below."
     
+    undo = BoolProperty(default=True)
+    
     def execute(self,context):
         scene = context.scene
         
@@ -150,7 +153,8 @@ class add_objects_to_group(bpy.types.Operator):
         
         
             self.report({'INFO'}, objects_str + " added to group." )
-            bpy.ops.ed.undo_push(message="Objects added to group")
+            if self.undo:
+                bpy.ops.ed.undo_push(message="Objects added to group")
         else:
             self.report({'WARNING'}, "Create a group first." )   
         return{'FINISHED'}
@@ -228,11 +232,11 @@ class export_all_groups(bpy.types.Operator):
     
     def execute(self,context):
         scene = context.scene
-        for i in range(len(scene.godot_export_groups)):
-            if scene.godot_export_groups[i].active:
-                bpy.ops.scene.godot_export_group(idx=i)
+        
+        for i in range(0,len(scene.godot_export_groups)):
+            bpy.ops.scene.godot_export_group(idx=i,export_all=True)
+                    
         self.report({'INFO'}, "All Groups exported." )
-        bpy.ops.ed.undo_push(message="Export all Groups")   
         return{'FINISHED'}    
         
         
@@ -242,6 +246,8 @@ class export_group(bpy.types.Operator):
     bl_description = "Exports the active group to destination folder as Collada file."
     
     idx = IntProperty(default=0)
+    export_all = BoolProperty(default=False)
+
     
     def copy_object_recursive(self,ob,parent,single_user = True):
         new_ob = bpy.data.objects[ob.name].copy()
@@ -280,8 +286,19 @@ class export_group(bpy.types.Operator):
             self.delete_object(group)   
     
     def execute(self,context):
+        
         scene = context.scene
         group = context.scene.godot_export_groups
+        
+        if not group[self.idx].active and self.export_all:
+            return{'FINISHED'}
+        
+        for i,object in enumerate(group[self.idx].nodes):
+            if object.name in bpy.data.objects:
+                pass
+            else:
+                group[self.idx].nodes.remove(i)
+        bpy.ops.ed.undo_push(message="Clear not existent Group Nodes.")
         
         path = group[self.idx].export_path
         if (path.find("//")==0 or path.find("\\\\")==0):
@@ -307,25 +324,42 @@ class export_group(bpy.types.Operator):
                 object.select = False
             context.scene.objects.active = None
             
-            for i,object in enumerate(group[self.idx].nodes):
-                
-                if object.name in bpy.data.objects:
-                    if bpy.data.objects[object.name].type == "EMPTY":
-                        self.convert_group_to_node(bpy.data.objects[object.name])
-                    else:    
+            ### make particle duplicates, parent and select them
+            nodes_to_be_added = []
+            if group[self.idx].use_include_particle_duplicates:
+                for i,object in enumerate(group[self.idx].nodes):
+                    if bpy.data.objects[object.name].type != "EMPTY":
+                        context.scene.objects.active = bpy.data.objects[object.name]
                         bpy.data.objects[object.name].select = True
+                        bpy.ops.object.duplicates_make_real()
+                        for object in context.selected_objects:
+                            nodes_to_be_added.append(object)
+                        bpy.ops.object.parent_set(type="OBJECT", keep_transform=False)
 
-                else: # if object is not in the scene anymore it will be removed from the group
-                    group[self.idx].nodes.remove(i)        
+                        for object in context.selected_objects:
+                            object.select = False
+                        bpy.data.objects[object.name].select = False
+                        context.scene.objects.active = None
+            for object in nodes_to_be_added:
+                object.select = True
+            
+            ### select all other nodes from the group
+            for i,object in enumerate(group[self.idx].nodes):
+                if bpy.data.objects[object.name].type == "EMPTY":
+                    self.convert_group_to_node(bpy.data.objects[object.name])
+                else:    
+                    bpy.data.objects[object.name].select = True
+                    
             bpy.ops.object.transform_apply(location=group[self.idx].apply_loc, rotation=group[self.idx].apply_rot, scale=group[self.idx].apply_scale)
             bpy.ops.export_scene.dae(check_existing=True, filepath=path, filter_glob="*.dae", object_types=group[self.idx].object_types, use_export_selected=group[self.idx].use_export_selected, use_mesh_modifiers=group[self.idx].use_mesh_modifiers, use_tangent_arrays=group[self.idx].use_tangent_arrays, use_triangles=group[self.idx].use_triangles, use_copy_images=group[self.idx].use_copy_images, use_active_layers=group[self.idx].use_active_layers, use_exclude_ctrl_bones=group[self.idx].use_exclude_ctrl_bones, use_anim=group[self.idx].use_anim, use_anim_action_all=group[self.idx].use_anim_action_all, use_anim_skip_noexp=group[self.idx].use_anim_skip_noexp, use_anim_optimize=group[self.idx].use_anim_optimize, anim_optimize_precision=group[self.idx].anim_optimize_precision, use_metadata=group[self.idx].use_metadata)    
           
-                      
             self.report({'INFO'}, '"'+group[self.idx].name+'"' + " Group exported." )  
             msg = "Export Group "+group[self.idx].name
+            
             bpy.ops.ed.undo_push(message="")
             bpy.ops.ed.undo()
             bpy.ops.ed.undo_push(message=msg)
+                
         else:
             self.report({'INFO'}, "Define Export Name and Export Path." )  
         return{'FINISHED'}
@@ -397,6 +431,7 @@ class godot_export_groups(bpy.types.PropertyGroup):
     anim_optimize_precision = FloatProperty(name="Precision",description=("Tolerence for comparing double keyframes (higher for greater accuracy)"),min=1, max=16,soft_min=1, soft_max=16,default=6.0)
 
     use_metadata = BoolProperty(name="Use Metadata",default=True,options={'HIDDEN'})
+    use_include_particle_duplicates = BoolProperty(name="Include Particle Duplicates",default=True)
 
 def register():        
     bpy.utils.register_class(godot_export_manager)
@@ -426,7 +461,7 @@ def unregister():
     bpy.utils.unregister_class(export_group)
     bpy.utils.unregister_class(add_objects_to_group)
     bpy.utils.unregister_class(del_objects_from_group)
-    bpy.utils.unlregister_class(select_group_objects)
+    bpy.utils.unregister_class(select_group_objects)
     bpy.utils.unregister_class(UI_List_Godot)
 
 @persistent

@@ -1,4 +1,4 @@
-﻿EnsureSConsVersion(0,14);
+EnsureSConsVersion(0,14);
 
 import string
 import os
@@ -130,6 +130,7 @@ opts.Add('lua', 'Lua script support', "no")
 opts.Add('cjk', 'Add CJK language support', "no")
 opts.Add('rfs', 'Fixed rfs')
 opts.Add('sdk', "Third-Party SDK", "")
+opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
 
 # add platform specific options
 
@@ -317,6 +318,9 @@ if selected_platform in platform_list:
 	if (env['xml']=='yes'):
 		env.Append(CPPFLAGS=['-DXML_ENABLED'])
 
+	if (env['colored']=='yes'):
+		methods.colored(sys,env)
+		
 
 	rfs = env.get('rfs', 'no')
 	if (rfs=='no'):

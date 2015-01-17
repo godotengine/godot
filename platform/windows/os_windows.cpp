@@ -57,6 +57,9 @@
 #include "shlobj.h"
 static const WORD MAX_CONSOLE_LINES = 1500;
 
+extern "C" {
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+}
 
 //#define STDOUT_FILE
 
