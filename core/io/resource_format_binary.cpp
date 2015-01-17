@@ -31,6 +31,7 @@
 #include "globals.h"
 #include "io/file_access_compressed.h"
 #include "io/marshalls.h"
+#include "os/os.h"
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what)
 
@@ -770,7 +771,9 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	Object *obj = ObjectTypeDB::instance(t);
 	if (!obj) {
 		error=ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path+":Resource of unrecognized type in file: "+t);
+		String err = local_path+":Resource of unrecognized type in file: "+t;
+		OS::get_singleton()->print(err.utf8().get_data());
+		ERR_EXPLAIN(err);
 	}
 	ERR_FAIL_COND_V(!obj,ERR_FILE_CORRUPT);
 
