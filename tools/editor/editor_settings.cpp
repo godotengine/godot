@@ -414,6 +414,10 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/auto_brace_complete", false);
 
 
+	set("scenetree_editor/duplicate_node_name_num_separator",0);
+	hints["scenetree_editor/duplicate_node_name_num_separator"]=PropertyInfo(Variant::INT,"scenetree_editor/duplicate_node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash");
+
+
 	set("3d_editor/default_fov",45.0);
 	set("3d_editor/default_z_near",0.1);
 	set("3d_editor/default_z_far",500.0);
