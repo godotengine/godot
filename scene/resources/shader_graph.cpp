@@ -263,12 +263,15 @@ void ShaderGraph::_bind_methods() {
 	BIND_CONSTANT( NODE_XFORM_TO_VEC ); // 3 vec input ); 1 xform output
 	BIND_CONSTANT( NODE_SCALAR_INTERP ); // scalar interpolation (with optional curve)
 	BIND_CONSTANT( NODE_VEC_INTERP ); // vec3 interpolation  (with optional curve)
+	BIND_CONSTANT( NODE_COLOR_RAMP );
+	BIND_CONSTANT( NODE_CURVE_MAP );
 	BIND_CONSTANT( NODE_SCALAR_INPUT ); // scalar uniform (assignable in material)
 	BIND_CONSTANT( NODE_VEC_INPUT ); // vec3 uniform (assignable in material)
 	BIND_CONSTANT( NODE_RGB_INPUT ); // color uniform (assignable in material)
 	BIND_CONSTANT( NODE_XFORM_INPUT ); // mat4 uniform (assignable in material)
 	BIND_CONSTANT( NODE_TEXTURE_INPUT ); // texture input (assignable in material)
 	BIND_CONSTANT( NODE_CUBEMAP_INPUT ); // cubemap input (assignable in material)
+	BIND_CONSTANT( NODE_DEFAULT_TEXTURE );
 	BIND_CONSTANT( NODE_OUTPUT ); // output (shader type dependent)
 	BIND_CONSTANT( NODE_COMMENT ); // comment
 	BIND_CONSTANT( NODE_TYPE_MAX );
@@ -519,12 +522,15 @@ void ShaderGraph::node_add(ShaderType p_type, NodeType p_node_type,int p_id) {
 		case NODE_XFORM_TO_VEC: {} break; // 3 scalar input: {} break; 1 vec3 output
 		case NODE_SCALAR_INTERP: {} break; // scalar interpolation (with optional curve)
 		case NODE_VEC_INTERP: {} break; // vec3 interpolation  (with optional curve)
+		case NODE_COLOR_RAMP: { node.param1=Array();} break; // vec3 interpolation  (with optional curve)
+		case NODE_CURVE_MAP: { node.param1=Array();} break; // vec3 interpolation  (with optional curve)
 		case NODE_SCALAR_INPUT: {node.param1=_find_unique_name("Scalar"); node.param2=0;} break; // scalar uniform (assignable in material)
 		case NODE_VEC_INPUT: {node.param1=_find_unique_name("Vec3");node.param2=Vector3();} break; // vec3 uniform (assignable in material)
 		case NODE_RGB_INPUT: {node.param1=_find_unique_name("Color");node.param2=Color();} break; // color uniform (assignable in material)
 		case NODE_XFORM_INPUT: {node.param1=_find_unique_name("XForm"); node.param2=Transform();} break; // mat4 uniform (assignable in material)
 		case NODE_TEXTURE_INPUT: {node.param1=_find_unique_name("Tex"); } break; // texture input (assignable in material)
-		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)
+		case NODE_CUBEMAP_INPUT: {node.param1=_find_unique_name("Cube"); } break; // cubemap input (assignable in material)			
+		case NODE_DEFAULT_TEXTURE: {}; break;
 		case NODE_OUTPUT: {} break; // output (shader type dependent)
 		case NODE_COMMENT: {} break; // comment
 		case NODE_TYPE_MAX: {};
@@ -1299,6 +1305,8 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 		{NODE_SCALAR_TO_VEC,{SLOT_TYPE_SCALAR,SLOT_TYPE_SCALAR,SLOT_TYPE_SCALAR},{SLOT_TYPE_VEC,SLOT_MAX}}, // 3 scalar input,{SLOT_MAX},{SLOT_MAX}}, 1 vec3 output
 		{NODE_SCALAR_INTERP,{SLOT_TYPE_SCALAR,SLOT_TYPE_SCALAR,SLOT_TYPE_SCALAR},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar interpolation (with optional curve)
 		{NODE_VEC_INTERP,{SLOT_TYPE_VEC,SLOT_TYPE_VEC,SLOT_TYPE_SCALAR},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 interpolation  (with optional curve)
+		{NODE_COLOR_RAMP,{SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 interpolation  (with optional curve)
+		{NODE_CURVE_MAP,{SLOT_TYPE_SCALAR,SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // vec3 interpolation  (with optional curve)
 		{NODE_SCALAR_INPUT,{SLOT_MAX},{SLOT_TYPE_SCALAR,SLOT_MAX}}, // scalar uniform (assignable in material)
 		{NODE_VEC_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // vec3 uniform (assignable in material)
 		{NODE_RGB_INPUT,{SLOT_MAX},{SLOT_TYPE_VEC,SLOT_MAX}}, // color uniform (assignable in material)
@@ -1988,6 +1996,12 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			code += OUTNAME(p_node->id,0)+"=mix("+p_inputs[0]+","+p_inputs[1]+","+p_inputs[2]+");\n";
 
 		}break;
+		case NODE_COLOR_RAMP: {
+
+		}break;
+		case NODE_CURVE_MAP: {
+
+		}break;
 		case NODE_SCALAR_INPUT: {
 			String name = p_node->param1;
 			float dv=p_node->param2;
@@ -2043,6 +2057,10 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			code += OUTNAME(p_node->id,0)+"="+rname+".rgb;\n";
 			code += OUTNAME(p_node->id,1)+"="+rname+".a;\n";
 		}break;
+		case NODE_DEFAULT_TEXTURE: {
+
+
+		} break;
 		case NODE_OUTPUT: {
 
 
