@@ -73,6 +73,11 @@ class TileMapEditor : public VBoxContainer {
 	Label *mirror_label;
 	ToolButton *mirror_x;
 	ToolButton *mirror_y;
+	ToolButton *transpose;
+	ToolButton *rotate_0;
+	ToolButton *rotate_90;
+	ToolButton *rotate_180;
+	ToolButton *rotate_270;
 
 	HBoxContainer *canvas_item_editor_hb;
 
@@ -81,8 +86,8 @@ class TileMapEditor : public VBoxContainer {
 		int idx;
 		bool xf;
 		bool yf;
-		CellOp() { idx=-1; xf=false; yf=false; }
-		CellOp(const CellOp& p_other) : idx(p_other.idx), xf(p_other.xf), yf(p_other.yf) {}
+		bool tr;
+		CellOp() { idx=-1; xf=false; yf=false; tr=false; }
 	};
 
 	Map<Point2i,CellOp> paint_undo;
@@ -94,7 +99,7 @@ class TileMapEditor : public VBoxContainer {
 	void _canvas_draw();
 	void _menu_option(int p_option);
 
-	void _set_cell(const Point2i& p_pos, int p_value, bool p_flip_h=false, bool p_flip_v=false, bool p_with_undo=false);
+	void _set_cell(const Point2i& p_pos, int p_value, bool p_flip_h=false, bool p_flip_v=false, bool p_transpose=false, bool p_with_undo=false);
 
 	void _canvas_mouse_enter();
 	void _canvas_mouse_exit();

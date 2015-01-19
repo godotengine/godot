@@ -44,6 +44,11 @@ void TileMapEditor::_notification(int p_what) {
 
 			mirror_x->set_icon( get_icon("MirrorX","EditorIcons"));
 			mirror_y->set_icon( get_icon("MirrorY","EditorIcons"));
+			transpose->set_icon( get_icon("Transpose","EditorIcons"));
+			rotate_0->set_icon( get_icon("Rotate0","EditorIcons"));
+			rotate_90->set_icon( get_icon("Rotate90","EditorIcons"));
+			rotate_180->set_icon( get_icon("Rotate180","EditorIcons"));
+			rotate_270->set_icon( get_icon("Rotate270","EditorIcons"));
 
 		} break;
 	}
@@ -85,24 +90,25 @@ void TileMapEditor::set_selected_tile(int p_tile) {
 	}
 }
 
-void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bool p_flip_v,bool p_with_undo) {
+void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bool p_flip_v, bool p_transpose,bool p_with_undo) {
 
 	ERR_FAIL_COND(!node);
 
 	bool prev_flip_h=node->is_cell_x_flipped(p_pos.x,p_pos.y);
 	bool prev_flip_v=node->is_cell_y_flipped(p_pos.x,p_pos.y);
+	bool prev_transpose=node->is_cell_transposed(p_pos.x,p_pos.y);
 	int prev_val=node->get_cell(p_pos.x,p_pos.y);
 
-	if (p_value==prev_val && p_flip_h==prev_flip_h && p_flip_v==prev_flip_v)
+	if (p_value==prev_val && p_flip_h==prev_flip_h && p_flip_v==prev_transpose && p_flip_v==prev_transpose)
 		return; //check that it's actually different
 
 
 	if (p_with_undo) {
-		undo_redo->add_do_method(node,"set_cell",p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v);
-		undo_redo->add_undo_method(node,"set_cell",p_pos.x,p_pos.y,prev_val,prev_flip_h,prev_flip_v);
+		undo_redo->add_do_method(node,"set_cell",p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v,p_transpose);
+		undo_redo->add_undo_method(node,"set_cell",p_pos.x,p_pos.y,prev_val,prev_flip_h,prev_flip_v,prev_transpose);
 	} else {
 
-		node->set_cell(p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v);
+		node->set_cell(p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v,p_transpose);
 
 	}
 
@@ -168,6 +174,7 @@ struct _TileMapEditorCopyData {
 	int cell;
 	bool flip_h;
 	bool flip_v;
+	bool transpose;
 };
 
 bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
@@ -214,7 +221,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 					for (List<_TileMapEditorCopyData>::Element *E=dupdata.front();E;E=E->next()) {
 
 
-						_set_cell(E->get().pos+ofs,E->get().cell,E->get().flip_h,E->get().flip_v,true);
+						_set_cell(E->get().pos+ofs,E->get().cell,E->get().flip_h,E->get().flip_v,E->get().transpose,true);
 					}
 					undo_redo->commit_action();
 
@@ -239,6 +246,9 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 					} else if (mb.mod.control) {
 						tool=TOOL_PICKING;
 						set_selected_tile(node->get_cell(over_tile.x, over_tile.y));
+						mirror_x->set_pressed(node->is_cell_x_flipped(over_tile.x, over_tile.y));
+						mirror_y->set_pressed(node->is_cell_y_flipped(over_tile.x, over_tile.y));
+						transpose->set_pressed(node->is_cell_transposed(over_tile.x, over_tile.y));
 						canvas_item_editor->update();
 						return true;
 					} else {
@@ -248,7 +258,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 							Point2i local =node->world_to_map((xform_inv.xform(Point2(mb.x,mb.y))));
 							paint_undo.clear();
 							paint_undo[local]=_get_op_from_cell(local);
-							node->set_cell(local.x,local.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
+							node->set_cell(local.x,local.y,id,mirror_x->is_pressed(),mirror_y->is_pressed(),transpose->is_pressed());
 							return true;
 						}
 					}
@@ -263,8 +273,8 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 								for(Map<Point2i,CellOp>::Element *E=paint_undo.front();E;E=E->next()) {
 
 									Point2i p=E->key();
-									undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y));
-									undo_redo->add_undo_method(node,"set_cell",p.x,p.y,E->get().idx,E->get().xf,E->get().yf);
+									undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
+									undo_redo->add_undo_method(node,"set_cell",p.x,p.y,E->get().idx,E->get().xf,E->get().yf,E->get().tr);
 								}
 
 								undo_redo->commit_action();
@@ -289,7 +299,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 					Point2i local =node->world_to_map(xform_inv.xform(Point2(mb.x,mb.y)));
 					paint_undo.clear();
 					paint_undo[local]=_get_op_from_cell(local);
-					//node->set_cell(local.x,local.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
+					//node->set_cell(local.x,local.y,id,mirror_x->is_pressed(),mirror_y->is_pressed(),transpose->is_pressed());
 					//return true;
 					_set_cell(local,TileMap::INVALID_CELL);
 					return true;
@@ -302,9 +312,9 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 							for(Map<Point2i,CellOp>::Element *E=paint_undo.front();E;E=E->next()) {
 
 								Point2i p=E->key();
-								//undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y));
-								_set_cell(p,TileMap::INVALID_CELL,false,false,true);
-								undo_redo->add_undo_method(node,"set_cell",p.x,p.y,E->get().idx,E->get().xf,E->get().yf);
+								//undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
+								_set_cell(p,TileMap::INVALID_CELL,false,false,false,true);
+								undo_redo->add_undo_method(node,"set_cell",p.x,p.y,E->get().idx,E->get().xf,E->get().yf,E->get().tr);
 							}
 
 							undo_redo->commit_action();
@@ -340,7 +350,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 						paint_undo[over_tile]=_get_op_from_cell(over_tile);
 					}
-					node->set_cell(over_tile.x,over_tile.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
+					node->set_cell(over_tile.x,over_tile.y,id,mirror_x->is_pressed(),mirror_y->is_pressed(),transpose->is_pressed());
 
 					return true;
 				}
@@ -373,13 +383,16 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 				if (!paint_undo.has(over_tile)) {
 					paint_undo[over_tile]=_get_op_from_cell(over_tile);
 				}
-				//node->set_cell(over_tile.x,over_tile.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
+				//node->set_cell(over_tile.x,over_tile.y,id,mirror_x->is_pressed(),mirror_y->is_pressed(),transpose->is_pressed());
 				_set_cell(local,TileMap::INVALID_CELL);
 				return true;
 			}
 
 			if (tool==TOOL_PICKING) {
 				set_selected_tile(node->get_cell(over_tile.x, over_tile.y));
+				mirror_x->set_pressed(node->is_cell_x_flipped(over_tile.x, over_tile.y));
+				mirror_y->set_pressed(node->is_cell_y_flipped(over_tile.x, over_tile.y));
+				transpose->set_pressed(node->is_cell_transposed(over_tile.x, over_tile.y));
 				canvas_item_editor->update();
 				return true;
 			}
@@ -625,6 +638,9 @@ void TileMapEditor::_canvas_draw() {
 							sc.x*=-1.0;
 						if (mirror_y->is_pressed())
 							sc.y*=-1.0;
+						if (transpose->is_pressed()) {
+							//TODO
+						}
 						if (r==Rect2()) {
 
 							canvas_item_editor->draw_texture_rect(t,Rect2(from,t->get_size()*sc),false,Color(1,1,1,0.5));
@@ -744,6 +760,32 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	mirror_y->set_tooltip("Mirror Y (S)");
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	canvas_item_editor_hb->add_child(mirror_y);
+	transpose = memnew( ToolButton );
+	transpose->set_toggle_mode(true);
+	transpose->set_tooltip("Transpose");
+	transpose->set_focus_mode(FOCUS_NONE);
+	canvas_item_editor_hb->add_child(transpose);
+	canvas_item_editor_hb->add_child(memnew(VSeparator));
+	rotate_0 = memnew( ToolButton );
+	rotate_0->set_toggle_mode(true);
+	rotate_0->set_tooltip("Rotate 0 degrees");
+	rotate_0->set_focus_mode(FOCUS_NONE);
+	canvas_item_editor_hb->add_child(rotate_0);
+	rotate_90 = memnew( ToolButton );
+	rotate_90->set_toggle_mode(true);
+	rotate_90->set_tooltip("Rotate 90 degrees");
+	rotate_90->set_focus_mode(FOCUS_NONE);
+	canvas_item_editor_hb->add_child(rotate_90);
+	rotate_180 = memnew( ToolButton );
+	rotate_180->set_toggle_mode(true);
+	rotate_180->set_tooltip("Rotate 180 degrees");
+	rotate_180->set_focus_mode(FOCUS_NONE);
+	canvas_item_editor_hb->add_child(rotate_180);
+	rotate_270 = memnew( ToolButton );
+	rotate_270->set_toggle_mode(true);
+	rotate_270->set_tooltip("Rotate 270 degrees");
+	rotate_270->set_focus_mode(FOCUS_NONE);
+	canvas_item_editor_hb->add_child(rotate_270);
 	canvas_item_editor_hb->hide();
 
 	tool=TOOL_NONE;
