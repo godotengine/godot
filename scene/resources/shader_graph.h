@@ -175,6 +175,7 @@ private:
 	void _update_shader();
 	void _request_update();
 
+	void _plot_curve(const Vector2& p_a,const Vector2& p_b,const Vector2& p_c,const Vector2& p_d,uint8_t* p_heights,bool *p_useds);
 	void _add_node_code(ShaderType p_type,Node *p_node,const Vector<String>& p_inputs,String& code);
 
 	Array _get_node_list(ShaderType p_type) const;
@@ -315,6 +316,13 @@ public:
 
 	void vec_func_node_set_function(ShaderType p_which,int p_id,VecFunc p_func);
 	VecFunc vec_func_node_get_function(ShaderType p_which,int p_id) const;
+
+	void color_ramp_node_set_ramp(ShaderType p_which,int p_id,const DVector<Color>& p_colors, const DVector<real_t>& p_offsets);
+	DVector<Color> color_ramp_node_get_colors(ShaderType p_which,int p_id) const;
+	DVector<real_t> color_ramp_node_get_offsets(ShaderType p_which,int p_id) const;
+
+	void curve_map_node_set_points(ShaderType p_which, int p_id, const DVector<Vector2>& p_points);
+	DVector<Vector2> curve_map_node_get_points(ShaderType p_which,int p_id) const;
 
 	void input_node_set_name(ShaderType p_which,int p_id,const String& p_name);
 	String input_node_get_name(ShaderType p_which,int p_id);
