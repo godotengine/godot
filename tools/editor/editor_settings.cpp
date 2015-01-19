@@ -393,16 +393,16 @@ void EditorSettings::_load_defaults() {
 	set("global/default_project_export_path","");
 	hints["global/default_project_export_path"]=PropertyInfo(Variant::STRING,"global/default_project_export_path",PROPERTY_HINT_GLOBAL_DIR);
 
-	set("text_editor/background_color",Color::html("3b000000"));
-	set("text_editor/text_color",Color::html("aaaaaa"));
-	set("text_editor/text_selected_color",Color::html("000000"));
-	set("text_editor/keyword_color",Color::html("ffffb3"));
-	set("text_editor/base_type_color",Color::html("a4ffd4"));
-	set("text_editor/engine_type_color",Color::html("83d3ff"));
-	set("text_editor/comment_color",Color::html("983d1b"));
-	set("text_editor/string_color",Color::html("ef6ebe"));
-	set("text_editor/symbol_color",Color::html("badfff"));
-	set("text_editor/selection_color",Color::html("7b5dbe"));
+    set("text_editor/background_color",Color::html("212631"));
+    set("text_editor/text_color",Color::html("fbf9fd"));
+    set("text_editor/text_selected_color",Color::html("fdfdfd"));
+    set("text_editor/keyword_color",Color::html("bf3195"));
+    set("text_editor/base_type_color",Color::html("cc8c5b"));
+    set("text_editor/engine_type_color",Color::html("2883c6"));
+    set("text_editor/comment_color",Color::html("69838c"));
+    set("text_editor/string_color",Color::html("df444b"));
+    set("text_editor/symbol_color",Color::html("badfff"));
+    set("text_editor/selection_color",Color::html("384256"));
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
 	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
 
