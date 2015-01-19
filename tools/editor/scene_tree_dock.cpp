@@ -79,7 +79,15 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text(String("Error loading scene from ")+p_file);
-		accept->popup_centered(Size2(300,70));;
+		accept->popup_centered(Size2(300,70));
+		return NULL;
+	}
+
+	if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+
+		accept->get_ok()->set_text("Ok");
+		accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
+		accept->popup_centered(Size2(300,90));
 		return NULL;
 	}
 
@@ -99,6 +107,25 @@ Node* SceneTreeDock::instance(const String& p_file) {
 	return instanced_scene;
 
 }
+
+bool SceneTreeDock::_cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node) {
+	int childCount = p_desired_node->get_child_count();
+
+	if (p_desired_node->get_filename()==p_target_scene_path) {
+		return true;
+	}
+
+	for (int i=0;i<childCount;i++) {
+		Node* child=p_desired_node->get_child(i);
+
+		if(_cyclical_dependency_exists(p_target_scene_path,child)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 static String _get_name_num_separator() {
 	switch(EditorSettings::get_singleton()->get("scenetree_editor/duplicate_node_name_num_separator").operator int()) {
