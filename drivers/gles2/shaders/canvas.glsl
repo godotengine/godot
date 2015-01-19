@@ -46,14 +46,15 @@ void main() {
 
 	color_interp = color_attrib;
 	uv_interp = uv_attrib;		
-	highp vec4 outvec = vec4(vertex, 1.0);
+        highp vec4 outvec = vec4(vertex, 1.0);
 {
-	vec2 src_vtx=outvec.xy;
+        vec2 src_vtx=outvec.xy;
 VERTEX_SHADER_CODE
 
 }
-	outvec = extra_matrix * outvec;
-	outvec = modelview_matrix * outvec;
+        outvec = extra_matrix * outvec;
+        outvec = modelview_matrix * outvec;
+
 #ifdef USE_PIXEL_SNAP
 
 	outvec.xy=floor(outvec.xy+0.5);
