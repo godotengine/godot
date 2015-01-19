@@ -107,17 +107,18 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					if (res.is_null())
 						break;
 
+					/*
 					if (res->get_path() == "") {
 						error->set_text( "Resource should be saved first");
 						error->popup_centered(Size2(300,80));
 						break;
 					}
+					*/
 
 					List<String> extensions;
 					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
-
 					ResourceLoader::get_recognized_extensions_for_type(type,&extensions);
-					if (extensions.find(res->get_path().extension()) == NULL)
+					if (res->get_path() != "" && res->get_path().find("::")==-1 && extensions.find(res->get_path().extension()) == NULL)
 						break;
 
 					v=res.get_ref_ptr();
