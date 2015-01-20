@@ -45,6 +45,77 @@
 */
 
 
+class GraphColorRampEdit : public Control {
+
+	OBJ_TYPE(GraphColorRampEdit,Control);
+
+
+	struct Point {
+
+		float offset;
+		Color color;
+		bool operator<(const Point& p_ponit) const {
+			return offset<p_ponit.offset;
+		}
+	};
+
+	PopupPanel *popup;
+	ColorPicker *picker;
+
+
+	bool grabbing;
+	int grabbed;
+	float grabbed_at;
+	Vector<Point> points;
+
+	void _color_changed(const Color& p_color);
+
+protected:
+	void _input_event(const InputEvent& p_event);
+	void _notification(int p_what);
+	static void _bind_methods();
+public:
+
+	void set_ramp(const Vector<float>& p_offsets,const Vector<Color>& p_colors);
+	Vector<float> get_offsets() const;
+	Vector<Color> get_colors() const;
+	virtual Size2 get_minimum_size() const;
+	GraphColorRampEdit();
+};
+
+
+class GraphCurveMapEdit : public Control {
+
+	OBJ_TYPE(GraphCurveMapEdit,Control);
+
+
+	struct Point {
+
+		float offset;
+		float height;
+		bool operator<(const Point& p_ponit) const {
+			return offset<p_ponit.offset;
+		}
+	};
+
+
+	bool grabbing;
+	int grabbed;
+	Vector<Point> points;
+
+	void _plot_curve(const Vector2& p_a,const Vector2& p_b,const Vector2& p_c,const Vector2& p_d);
+protected:
+	void _input_event(const InputEvent& p_event);
+	void _notification(int p_what);
+	static void _bind_methods();
+public:
+
+	void set_points(const Vector<Vector2>& p_points);
+	Vector<Vector2> get_points() const;
+	virtual Size2 get_minimum_size() const;
+	GraphCurveMapEdit();
+};
+
 class ShaderGraphView : public Node {
 
 	OBJ_TYPE(ShaderGraphView,Node);
@@ -95,7 +166,8 @@ class ShaderGraphView : public Node {
 	void _cube_edited(int p_id,Node* p_button);
 	void _variant_edited();
 	void _comment_edited(int p_id,Node* p_button);
-
+	void _color_ramp_changed(int p_id,Node* p_ramp);
+	void _curve_changed(int p_id,Node* p_curve);
 	void _sg_updated();
 	Map<int,GraphNode*> node_map;
 protected:

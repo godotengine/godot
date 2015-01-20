@@ -268,3 +268,4 @@ logo.h
 *.d
 
 core/method_bind_ext.inc
+*.autosave

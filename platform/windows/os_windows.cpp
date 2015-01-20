@@ -58,7 +58,11 @@
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
+#ifdef _MSC_VER
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+#else
+	__attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
+#endif
 }
 
 //#define STDOUT_FILE
