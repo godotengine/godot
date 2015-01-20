@@ -117,8 +117,10 @@ void Font::_set_textures(const Vector<Variant> & p_textures) {
 Vector<Variant> Font::_get_textures() const {
 
 	Vector<Variant> rtextures;
-	for(int i=0;i<textures.size();i++)
-		rtextures.push_back(textures[i].get_ref_ptr());
+	if (!ttf_font.is_valid()) {
+		for(int i=0;i<textures.size();i++)
+			rtextures.push_back(textures[i].get_ref_ptr());
+	}
 	return rtextures;
 }
 
