@@ -239,6 +239,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_normal) {
 					uses_normal=true;
 				}
+				if (vnode->name==vname_world_vec) {
+					uses_worldvec=true;
+				}
 
 				if (vnode->name==vname_screen_uv) {
 					uses_screen_uv=true;
@@ -599,6 +602,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_normalmap=false;
 	uses_normal=false;
 	uses_texpixel_size=false;
+	uses_worldvec=false;
 	vertex_code_writes_vertex=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
@@ -634,6 +638,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_normalmap=uses_normalmap;
 	r_flags.uses_normal=uses_normalmap;
 	r_flags.uses_texpixel_size=uses_texpixel_size;
+	r_flags.uses_worldvec=uses_worldvec;
 	r_code_line=code;
 	r_globals_line=global_code;
 
@@ -774,6 +779,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	mode_replace_table[3]["SRC_VERTEX"]="src_vtx";
 	mode_replace_table[3]["VERTEX"]="outvec.xy";
+	mode_replace_table[3]["WORLD_VERTEX"]="outvec.xy";
 	mode_replace_table[3]["UV"]="uv_interp";
 	mode_replace_table[3]["COLOR"]="color_interp";
 	mode_replace_table[3]["VAR1"]="var1_interp";
@@ -830,5 +836,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_normalmap="NORMALMAP";
 	vname_normal="NORMAL";
 	vname_texpixel_size="TEXTURE_PIXEL_SIZE";
+	vname_world_vec="WORLD_VERTEX";
 
 }

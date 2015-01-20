@@ -969,7 +969,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	block_transform_notify=false;
 //	viewport=NULL;
 	canvas_layer=NULL;
-	use_parent_shader;
+	use_parent_shader=false;
 	global_invalid=true;
 
 	C=NULL;

@@ -4588,6 +4588,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_TEXPIXEL_SIZE\n");
 		}
 
+		if (fragment_flags.uses_worldvec) {
+			enablers.push_back("#define USE_WORLD_VEC\n");
+		}
 		canvas_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 
 		//postprocess_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, fragment_globals,uniform_names);
@@ -8362,24 +8365,39 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				int idx=0;
 				for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
 
-
 					Map<StringName,Variant>::Element *F=shader_owner->shader_param.find(E->key());
-					Variant &v=F?F->get():E->get().default_value;
-					if (v.get_type()==Variant::_RID || v.get_type()==Variant::OBJECT) {
-						int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
 
-						glActiveTexture(GL_TEXTURE0+tex_id);
-						RID tex = v;
-						Texture *t=texture_owner.get(tex);
-						if (!t)
-							glBindTexture(GL_TEXTURE_2D,white_tex);
-						else
-							glBindTexture(t->target,t->tex_id);
+					if ((E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP)) {
 
-						glUniform1i(loc,tex_id);
-						tex_id++;
+						RID rid;
+						if (F) {
+							rid=F->get();
+						}
 
+						if (!rid.is_valid()) {
+
+							Map<StringName,RID>::Element *DT=shader->default_textures.find(E->key());
+							if (DT) {
+								rid=DT->get();
+							}
+						}
+
+						if (rid.is_valid()) {
+
+							int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
+
+							glActiveTexture(GL_TEXTURE0+tex_id);
+							Texture *t=texture_owner.get(rid);
+							if (!t)
+								glBindTexture(GL_TEXTURE_2D,white_tex);
+							else
+								glBindTexture(t->target,t->tex_id);
+
+							glUniform1i(loc,tex_id);
+							tex_id++;
+						}
 					} else {
+						Variant &v=F?F->get():E->get().default_value;
 						canvas_shader.set_custom_uniform(idx,v);
 					}
 
@@ -8403,7 +8421,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 #endif
 						glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 						if (current_clip) {
-							print_line(" a clip ");
+						//	print_line(" a clip ");
 						}
 
 						canvas_texscreen_used=true;

@@ -191,6 +191,7 @@ class ShaderGraphEditor : public VBoxContainer {
 	ShaderGraphView *graph_edits[ShaderGraph::SHADER_TYPE_MAX];
 	static const char* node_names[ShaderGraph::NODE_TYPE_MAX];
 
+	bool _2d;
 	void _add_node(int p_type);
 protected:
 	void _notification(int p_what);
@@ -198,13 +199,14 @@ protected:
 public:
 
 	void edit(Ref<ShaderGraph> p_shader);
-	ShaderGraphEditor();
+	ShaderGraphEditor(bool p_2d);
 };
 
 class ShaderGraphEditorPlugin : public EditorPlugin {
 
 	OBJ_TYPE( ShaderGraphEditorPlugin, EditorPlugin );
 
+	bool _2d;
 	ShaderGraphEditor *shader_editor;
 	EditorNode *editor;
 
@@ -216,7 +218,7 @@ public:
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
 
-	ShaderGraphEditorPlugin(EditorNode *p_node);
+	ShaderGraphEditorPlugin(EditorNode *p_node,bool p_2d);
 	~ShaderGraphEditorPlugin();
 
 };
