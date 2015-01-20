@@ -90,6 +90,7 @@ private:
 	String skin;
 
 	Color modulate;
+	bool flip_x, flip_y;
 	SpineBatcher batcher;
 
 	typedef struct AttachmentNode {
@@ -148,6 +149,11 @@ public:
 
 	void set_modulate(const Color& p_color);
 	Color get_modulate() const;
+
+	void set_flip_x(bool p_flip);
+	void set_flip_y(bool p_flip);
+	bool is_flip_x() const;
+	bool is_flip_y() const;
 
 	void set_animation_process_mode(AnimationProcessMode p_mode);
 	AnimationProcessMode get_animation_process_mode() const;

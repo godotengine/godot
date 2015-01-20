@@ -234,7 +234,7 @@ void Spine::_animation_draw() {
 		color.g = skeleton->g * slot->g * g;
 		color.b = skeleton->b * slot->b * b;
 
-		batcher.add(texture, world_verts.ptr(), uvs, verties_count, triangles, triangles_count, &color);
+		batcher.add(texture, world_verts.ptr(), uvs, verties_count, triangles, triangles_count, &color, flip_x, flip_y);
 	}
 	batcher.flush();
 
@@ -305,7 +305,10 @@ void Spine::_animation_draw() {
 			for (int idx = 0; idx < points_size; idx++) {
 
 				Point2& pt = points[idx];
-				pt.y = -pt.y;
+				if (flip_x)
+					pt.x = -pt.x;
+				if (!flip_y)
+					pt.y = -pt.y;
 			}
 
 			if (triangles == NULL || triangles_count == 0) {
@@ -339,12 +342,22 @@ void Spine::_animation_draw() {
 			spBone *bone = skeleton->bones[i];
 			float x = bone->data->length * bone->m00 + bone->worldX;
 			float y = bone->data->length * bone->m10 + bone->worldY;
-			draw_line(Point2(bone->worldX, -bone->worldY), Point2(x, -y), Color(1, 0, 0, 1), 2);
+			draw_line(Point2(flip_x ? -bone->worldX : bone->worldX,
+				flip_y ? bone->worldY : -bone->worldY),
+				Point2(flip_x ? -x : x, flip_y ? y : -y),
+				Color(1, 0, 0, 1),
+				2
+			);
 		}
 		// Bone origins.
 		for (int i = 0, n = skeleton->bonesCount; i < n; i++) {
 			spBone *bone = skeleton->bones[i];
-			draw_rect(Rect2(bone->worldX - 1, -bone->worldY - 1, 3, 3), (i == 0) ? Color(0, 1, 0, 1) : Color(0, 0, 1, 1));
+			Rect2 rt = Rect2(flip_x ? -bone->worldX - 1 : bone->worldX - 1,
+				flip_y ? bone->worldY - 1 : -bone->worldY - 1,
+				3,
+				3
+			);
+			draw_rect(rt, (i == 0) ? Color(0, 1, 0, 1) : Color(0, 0, 1, 1));
 		}
 	}
 }
@@ -722,6 +735,28 @@ Color Spine::get_modulate() const{
 	return modulate;
 }
 
+void Spine::set_flip_x(bool p_flip) {
+
+	flip_x = p_flip;
+	update();
+}
+
+void Spine::set_flip_y(bool p_flip) {
+
+	flip_y = p_flip;
+	update();
+}
+
+bool Spine::is_flip_x() const {
+
+	return flip_x;
+}
+
+bool Spine::is_flip_y() const {
+
+	return flip_y;
+}
+
 bool Spine::set_skin(const String& p_name) {
 
 	ERR_FAIL_COND_V(skeleton == NULL, false);
@@ -1049,6 +1084,10 @@ void Spine::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_speed"), &Spine::get_speed);
 	ObjectTypeDB::bind_method(_MD("set_modulate", "modulate"), &Spine::set_modulate);
 	ObjectTypeDB::bind_method(_MD("get_modulate"), &Spine::get_modulate);
+	ObjectTypeDB::bind_method(_MD("set_flip_x", "modulate"), &Spine::set_flip_x);
+	ObjectTypeDB::bind_method(_MD("is_flip_x"), &Spine::is_flip_x);
+	ObjectTypeDB::bind_method(_MD("set_flip_y", "modulate"), &Spine::set_flip_y);
+	ObjectTypeDB::bind_method(_MD("is_flip_y"), &Spine::is_flip_y);
 	ObjectTypeDB::bind_method(_MD("set_skin", "skin"), &Spine::set_skin);
 	ObjectTypeDB::bind_method(_MD("set_animation_process_mode","mode"),&Spine::set_animation_process_mode);
 	ObjectTypeDB::bind_method(_MD("get_animation_process_mode"),&Spine::get_animation_process_mode);
@@ -1076,6 +1115,8 @@ void Spine::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug/bones"), _SCS("set_debug_bones"), _SCS("is_debug_bones"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_x"), _SCS("set_flip_x"), _SCS("is_flip_x"));
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_y"), _SCS("set_flip_y"), _SCS("is_flip_y"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "SpineResource"), _SCS("set_resource"), _SCS("get_resource")); //, PROPERTY_USAGE_NOEDITOR));
 
 	ADD_SIGNAL(MethodInfo("animation_start", PropertyInfo(Variant::INT, "track")));
@@ -1165,6 +1206,8 @@ Spine::Spine()
 	loop = true;
 
 	modulate = Color(1, 1, 1, 1);
+	flip_x = false;
+	flip_y = false;
 }
 
 Spine::~Spine() {

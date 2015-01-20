@@ -34,7 +34,7 @@
 void SpineBatcher::add(Ref<Texture> p_texture,
 	const float* p_vertices, const float* p_uvs, int p_vertices_count,
 	const int* p_indies, int p_indies_count,
-	Color *p_color) {
+	Color *p_color, bool flip_x, bool flip_y) {
 
 	if (p_texture != texture
 		|| vertices_count + (p_vertices_count >> 1) > BATCH_CAPACITY
@@ -49,8 +49,8 @@ void SpineBatcher::add(Ref<Texture> p_texture,
 
 	for (int i = 0; i < p_vertices_count; i += 2, ++vertices_count) {
 
-		elements.vertices[vertices_count].x = p_vertices[i];
-		elements.vertices[vertices_count].y = -p_vertices[i + 1];
+		elements.vertices[vertices_count].x = flip_x ? -p_vertices[i] : p_vertices[i];
+		elements.vertices[vertices_count].y = flip_y ? p_vertices[i + 1] : -p_vertices[i + 1];
 		elements.colors[vertices_count] = *p_color;
 		elements.uvs[vertices_count].x = p_uvs[i];
 		elements.uvs[vertices_count].y = p_uvs[i + 1];

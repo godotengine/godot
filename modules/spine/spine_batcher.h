@@ -60,7 +60,7 @@ public:
 	void add(Ref<Texture> p_texture,
 		const float* p_vertices, const float* p_uvs, int p_vertices_count,
 		const int* p_indies, int p_indies_count,
-		Color *p_color);
+		Color *p_color, bool flip_x, bool flip_y);
 
 	void flush();
 
