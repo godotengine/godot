@@ -83,12 +83,16 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		return NULL;
 	}
 
-	if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+	// If the scene hasn't been saved yet a cyclical dependency cannot exist.
+	if (edited_scene->get_filename()!="") {
 
-		accept->get_ok()->set_text("Ok");
-		accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
-		accept->popup_centered(Size2(300,90));
-		return NULL;
+		if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+
+			accept->get_ok()->set_text("Ok");
+			accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
+			accept->popup_centered(Size2(300,90));
+			return NULL;
+		}
 	}
 
 	instanced_scene->generate_instance_state();
