@@ -4588,6 +4588,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_TEXPIXEL_SIZE\n");
 		}
 
+		if (vertex_flags.uses_worldvec) {
+			enablers.push_back("#define USE_WORLD_VEC\n");
+		}
 		canvas_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
 
 		//postprocess_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, fragment_globals,uniform_names);
@@ -4954,12 +4957,26 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 		Material::UniformData ud;
 
 		bool keep=true; //keep material value
-		bool has_old = old_mparams.has(E->key());
+
+		Map<StringName,Material::UniformData>::Element *OLD=old_mparams.find(E->key());
+		bool has_old = OLD;
 		bool old_inuse=has_old && old_mparams[E->key()].inuse;
 
-		if (!has_old || !old_inuse)
+		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+
+		if (!has_old || !old_inuse) {
 			keep=false;
-		else if (old_mparams[E->key()].value.get_type()!=E->value().default_value.get_type()) {
+		}
+		else if (OLD->get().value.get_type()!=E->value().default_value.get_type()) {
+
+			if (OLD->get().value.get_type()==Variant::INT && E->get().type==ShaderLanguage::TYPE_FLOAT) {
+				//handle common mistake using shaders (feeding ints instead of float)
+				OLD->get().value=float(OLD->get().value);
+				keep=true;
+			} else if (!ud.istexture && E->value().default_value.get_type()!=Variant::NIL) {
+
+				keep=false;
+			}
 			//type changed between old and new
 			/*	if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
 				if (E->value().default_value.get_type()!=Variant::_RID) //hackfor textures
@@ -4968,11 +4985,9 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 				keep=false;*/
 
 			//value is invalid because type differs and default is not null
-			if (E->value().default_value.get_type()!=Variant::NIL)
-				keep=false;
+			;
 		}
 
-		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
 
 		if (keep) {
 			ud.value=old_mparams[E->key()].value;
@@ -5096,8 +5111,10 @@ bool RasterizerGLES2::_setup_material(const Geometry *p_geometry,const Material 
 		int texcoord=0;
 		for (Map<StringName,Material::UniformData>::Element *E=p_material->shader_params.front();E;E=E->next()) {
 
+
 			if (E->get().index<0)
 				continue;
+//			print_line(String(E->key())+": "+E->get().value);
 			if (E->get().istexture) {
 				//clearly a texture..
 				RID rid = E->get().value;
@@ -8362,24 +8379,39 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				int idx=0;
 				for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
 
-
 					Map<StringName,Variant>::Element *F=shader_owner->shader_param.find(E->key());
-					Variant &v=F?F->get():E->get().default_value;
-					if (v.get_type()==Variant::_RID || v.get_type()==Variant::OBJECT) {
-						int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
 
-						glActiveTexture(GL_TEXTURE0+tex_id);
-						RID tex = v;
-						Texture *t=texture_owner.get(tex);
-						if (!t)
-							glBindTexture(GL_TEXTURE_2D,white_tex);
-						else
-							glBindTexture(t->target,t->tex_id);
+					if ((E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP)) {
 
-						glUniform1i(loc,tex_id);
-						tex_id++;
+						RID rid;
+						if (F) {
+							rid=F->get();
+						}
 
+						if (!rid.is_valid()) {
+
+							Map<StringName,RID>::Element *DT=shader->default_textures.find(E->key());
+							if (DT) {
+								rid=DT->get();
+							}
+						}
+
+						if (rid.is_valid()) {
+
+							int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
+
+							glActiveTexture(GL_TEXTURE0+tex_id);
+							Texture *t=texture_owner.get(rid);
+							if (!t)
+								glBindTexture(GL_TEXTURE_2D,white_tex);
+							else
+								glBindTexture(t->target,t->tex_id);
+
+							glUniform1i(loc,tex_id);
+							tex_id++;
+						}
 					} else {
+						Variant &v=F?F->get():E->get().default_value;
 						canvas_shader.set_custom_uniform(idx,v);
 					}
 
@@ -8403,7 +8435,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 #endif
 						glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,viewport.width,viewport.height);
 						if (current_clip) {
-							print_line(" a clip ");
+						//	print_line(" a clip ");
 						}
 
 						canvas_texscreen_used=true;

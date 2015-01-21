@@ -46,29 +46,32 @@ void main() {
 
 	color_interp = color_attrib;
 	uv_interp = uv_attrib;		
-	highp vec4 outvec = vec4(vertex, 1.0);
+        highp vec4 outvec = vec4(vertex, 1.0);
 {
-	vec2 src_vtx=outvec.xy;
+        vec2 src_vtx=outvec.xy;
 VERTEX_SHADER_CODE
 
 }
-	outvec = extra_matrix * outvec;
-	outvec = modelview_matrix * outvec;
+#if !defined(USE_WORLD_VEC)
+        outvec = extra_matrix * outvec;
+        outvec = modelview_matrix * outvec;
+#endif
+
 #ifdef USE_PIXEL_SNAP
 
 	outvec.xy=floor(outvec.xy+0.5);
 #endif
 
 
+	gl_Position = projection_matrix * outvec;
+
 #ifdef USE_LIGHTING
 
-	light_tex_pos.xy = light_matrix * outvec;
+	light_tex_pos.xy = light_matrix * gl_Position;
 	light_tex_pos.zw=outvec.xy - light_matrix[4].xy; //likely wrong
 
 #endif
 
-
-	gl_Position = projection_matrix * outvec;
 }
 
 [fragment]

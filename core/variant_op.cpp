@@ -1687,6 +1687,19 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					return;
 				}
 			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					ie.action.action=p_value;
+					return;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed=p_value;
+					return;
+				}
+			}
 
 		} break;
 		case DICTIONARY: {
@@ -2363,6 +2376,17 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="speed") {
 					valid=true;
 					return Vector2(ie.screen_drag.speed_x,ie.screen_drag.speed_y);
+				}
+			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					return ie.action.action;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed;
 				}
 			}
 
