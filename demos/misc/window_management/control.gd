@@ -33,7 +33,6 @@ func _fixed_process(delta):
 	
 	get_node("Label_Screen0_Position").set_text(str("Screen0 Position:\n",OS.get_screen_position() ) )
 	
-	
 	if(OS.get_screen_count() > 1):
 		get_node("Button_Screen0").show()
 		get_node("Button_Screen1").show()
@@ -63,6 +62,7 @@ func _fixed_process(delta):
 	get_node("Button_FixedSize").set_pressed( !OS.is_resizable() )
 	get_node("Button_Minimized").set_pressed( OS.is_minimized() )
 	get_node("Button_Maximized").set_pressed( OS.is_maximized() )
+	get_node("Button_Mouse_Grab").set_pressed( Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED )
 
 
 func _ready():
@@ -113,4 +113,6 @@ func _on_Button_Maximized_pressed():
 		OS.set_maximized(true)
 
 
-
+func _on_Button_Mouse_Grab_pressed():
+	var observer = get_node("../Observer")
+	observer.state = observer.STATE_GRAB

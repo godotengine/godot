@@ -177,11 +177,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
 	context_gl->initialize();
 
-	if (true) {
-		rasterizer = memnew( RasterizerGLES2 );
-	} else {
-		//rasterizer = memnew( RasterizerGLES1 );
-	};
+	rasterizer = memnew( RasterizerGLES2 );
 
 #endif
 	visual_server = memnew( VisualServerRaster(rasterizer) );
@@ -1164,10 +1160,12 @@ void OS_X11::process_xevents() {
 
 		case FocusIn: 
 			minimized = false;
+#ifdef EXPERIMENTAL_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(true);
 				visual_server->init();
 			}
+#endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				XGrabPointer(x11_display, x11_window, True,
@@ -1178,11 +1176,13 @@ void OS_X11::process_xevents() {
 			break;
 
 		case FocusOut:
+#ifdef EXPERIMENTAL_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(false);
 				set_minimized(true);
 				visual_server->init();
 			}
+#endif
 			main_loop->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				//dear X11, I try, I really try, but you never work, you do whathever you want.
