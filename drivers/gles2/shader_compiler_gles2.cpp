@@ -226,6 +226,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_var2_interp) {
 					flags->use_var2_interp=true;
 				}
+				if (vnode->name==vname_world_vec) {
+					uses_worldvec=true;
+				}
 
 			}
 
@@ -238,9 +241,6 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				}
 				if (vnode->name==vname_normal) {
 					uses_normal=true;
-				}
-				if (vnode->name==vname_world_vec) {
-					uses_worldvec=true;
 				}
 
 				if (vnode->name==vname_screen_uv) {
@@ -310,13 +310,13 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 
 						String mul_l=dump_node_code(onode->arguments[0],p_level,true);
 						String mul_r=dump_node_code(onode->arguments[1],p_level);
-						code=mul_l+"=(vec4("+mul_l+",1.0,1.0)*("+mul_r+")).xy";
+						code=mul_l+"=(vec4("+mul_l+",0.0,1.0)*("+mul_r+")).xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_MAT4 && onode->arguments[1]->get_datatype()==SL::TYPE_VEC2) {
 
 						String mul_l=dump_node_code(onode->arguments[0],p_level,true);
 						String mul_r=dump_node_code(onode->arguments[1],p_level);
-						code=mul_l+"=(("+mul_l+")*vec4("+mul_r+",1.0,1.0)).xy";
+						code=mul_l+"=(("+mul_l+")*vec4("+mul_r+",0.0,1.0)).xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_VEC2 && onode->arguments[1]->get_datatype()==SL::TYPE_MAT3) {
 						String mul_l=dump_node_code(onode->arguments[0],p_level,true);
@@ -346,11 +346,11 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_MAT4 && onode->arguments[1]->get_datatype()==SL::TYPE_VEC2) {
 
-						code="("+dump_node_code(onode->arguments[0],p_level)+"*vec4("+dump_node_code(onode->arguments[1],p_level)+",1.0,1.0)).xyz";
+						code="("+dump_node_code(onode->arguments[0],p_level)+"*vec4("+dump_node_code(onode->arguments[1],p_level)+",0.0,1.0)).xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_VEC2 && onode->arguments[1]->get_datatype()==SL::TYPE_MAT4) {
 
-						code="(vec4("+dump_node_code(onode->arguments[0],p_level)+",1.0,1.0)*"+dump_node_code(onode->arguments[1],p_level)+").xyz";
+						code="(vec4("+dump_node_code(onode->arguments[0],p_level)+",0.0,1.0)*"+dump_node_code(onode->arguments[1],p_level)+").xy";
 						break;
 					} else if (onode->arguments[0]->get_datatype()==SL::TYPE_MAT3 && onode->arguments[1]->get_datatype()==SL::TYPE_VEC2) {
 

@@ -4588,7 +4588,7 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 			enablers.push_back("#define USE_TEXPIXEL_SIZE\n");
 		}
 
-		if (fragment_flags.uses_worldvec) {
+		if (vertex_flags.uses_worldvec) {
 			enablers.push_back("#define USE_WORLD_VEC\n");
 		}
 		canvas_shader.set_custom_shader_code(p_shader->custom_code_id,vertex_code, vertex_globals,fragment_code, light_code, fragment_globals,uniform_names,enablers);
