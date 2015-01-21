@@ -627,6 +627,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		}
 	}
 
+
 	GLOBAL_DEF("display/width",video_mode.width);
 	GLOBAL_DEF("display/height",video_mode.height);
 	GLOBAL_DEF("display/fullscreen",video_mode.fullscreen);

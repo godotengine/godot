@@ -19,6 +19,9 @@ func _fixed_process(delta):
 	if(OS.is_maximized()):
 		modetext += "Maximized\n"
 	
+	if(Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED):
+		modetext += "MouseGrab\n"
+	
 	get_node("Label_Mode").set_text(modetext)
 	
 	get_node("Label_Position").set_text( str("Position:\n", OS.get_window_position() ) )
@@ -65,8 +68,71 @@ func _fixed_process(delta):
 	get_node("Button_Mouse_Grab").set_pressed( Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED )
 
 
+func check_wm_api():
+	var s = ""
+	if( !OS.has_method("get_screen_count") ):
+		s += " - get_screen_count()\n"
+	
+	if( !OS.has_method("get_screen") ):
+		s += " - get_screen()\n"
+	
+	if( !OS.has_method("set_screen") ):
+		s += " - set_screen()\n"
+	
+	if( !OS.has_method("get_screen_position") ):
+		s += " - get_screen_position()\n"
+	
+	if( !OS.has_method("get_screen_size") ):
+		s += " - get_screen_size()\n"
+	
+	if( !OS.has_method("get_window_position") ):
+		s += " - get_window_position()\n"
+	
+	if( !OS.has_method("set_window_position") ):
+		s += " - set_window_position()\n"
+	
+	if( !OS.has_method("get_window_size") ):
+		s += " - get_window_size()\n"
+	
+	if( !OS.has_method("set_window_size") ):
+		s += " - set_window_size()\n"
+	
+	if( !OS.has_method("set_fullscreen") ):
+		s += " - set_fullscreen()\n"
+	
+	if( !OS.has_method("is_fullscreen") ):
+		s += " - is_fullscreen()\n"
+	
+	if( !OS.has_method("set_resizable") ):
+		s += " - set_resizable()\n"
+	
+	if( !OS.has_method("is_resizable") ):
+		s += " - is_resizable()\n"
+	
+	if( !OS.has_method("set_minimized") ):
+		s += " - set_minimized()\n"
+	
+	if( !OS.has_method("is_minimized") ):
+		s += " - is_minimized()\n"
+	
+	if( !OS.has_method("set_maximized") ):
+		s += " - set_maximized()\n"
+	
+	if( !OS.has_method("is_maximized") ):
+		s += " - is_maximized()\n"
+	
+	if( s.length() == 0 ):
+		return true
+	else:
+		var text = get_node("ImplementationDialog/Text").get_text()
+		get_node("ImplementationDialog/Text").set_text( text + s )
+		get_node("ImplementationDialog").show()
+		return false
+
+
 func _ready():
-	set_fixed_process(true)
+	if( check_wm_api() ):
+		set_fixed_process(true)
 
 
 func _on_Button_MoveTo_pressed():
