@@ -396,7 +396,7 @@ void ShaderEditor::edit(const Ref<Shader>& p_shader) {
 		light_editor->set_edited_shader(shader,ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT);
 	}
 
-	vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
+	//vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 	// see if already has it
 
 
