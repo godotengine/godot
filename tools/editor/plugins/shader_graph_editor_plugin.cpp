@@ -952,12 +952,12 @@ void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
 	Vector<float> offsets=cr->get_offsets();
 	Vector<Color> colors=cr->get_colors();
 
-	DVector<float> new_offsets;
+	DVector<real_t> new_offsets;
 	DVector<Color> new_colors;
 	{
 		new_offsets.resize(offsets.size());
 		new_colors.resize(colors.size());
-		DVector<float>::Write ow=new_offsets.write();
+		DVector<real_t>::Write ow=new_offsets.write();
 		DVector<Color>::Write cw=new_colors.write();
 		for(int i=0;i<new_offsets.size();i++) {
 			ow[i]=offsets[i];
@@ -967,7 +967,7 @@ void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
 	}
 
 
-	DVector<float> old_offsets=graph->color_ramp_node_get_offsets(type,p_id);
+	DVector<real_t> old_offsets=graph->color_ramp_node_get_offsets(type,p_id);
 	DVector<Color> old_colors=graph->color_ramp_node_get_colors(type,p_id);
 
 	if (old_offsets.size()!=new_offsets.size())
