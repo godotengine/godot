@@ -1790,7 +1790,7 @@ void ShaderGraph::_update_shader() {
 			all_ok=false;
 	}
 
-/*	print_line("VERTEX: \n"+code[0]);
+	/*print_line("VERTEX: \n"+code[0]);
 	print_line("FRAGMENT: \n"+code[1]);
 	print_line("LIGHT: \n"+code[2]);*/
 
@@ -1973,7 +1973,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			code+=OUTNAME(p_node->id,0)+"=TIME;\n";
 		}break;
 		case NODE_SCREEN_TEX: {
-			code+=OUTNAME(p_node->id,0)+"=texscreen("+p_inputs[0]+");\n";
+			code+=OUTNAME(p_node->id,0)+"=texscreen("+p_inputs[0]+".xy);\n";
 		}break;
 		case NODE_SCALAR_OP: {
 			int op = p_node->param1;
