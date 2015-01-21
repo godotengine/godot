@@ -1320,6 +1320,43 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"ShadeParam","SHADE_PARAM","",SLOT_TYPE_SCALAR,SLOT_IN},
 	//light out
 	{MODE_MATERIAL,SHADER_TYPE_LIGHT,"Light","LIGHT","",SLOT_TYPE_VEC,SLOT_OUT},
+	//canvas item vertex in
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Vertex","vec3(SRC_VERTEX,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"UV","SRC_UV","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Color","SRC_COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Alpha","SRC_COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"WorldMatrix","WORLD_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"ExtraMatrix","EXTRA_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"ProjectionMatrix","PROJECTION_MATRIX","",SLOT_TYPE_XFORM,SLOT_IN},
+	//canvas item vertex out
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Vertex","VERTEX",".xy",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"UV","UV",".xy",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_VERTEX,"PointSize","POINT_SIZE","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	//canvas item fragment in
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Color","SRC_COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Alpha","SRC_COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"UV","vec3(UV,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"UVScreen","vec3(SCREEN_UV,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"TexPixelSize","vec3(TEXTURE_PIXEL_SIZE,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
+	//canvas item fragment out
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	//canvas item light in
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightDist","LIGHT_DISTANCE","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightDir","vec3(LIGHT_DIR,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
+	//canvas item light out
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Light","LIGHT","",SLOT_TYPE_VEC,SLOT_OUT},
 	//end
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
 
@@ -1373,6 +1410,7 @@ const ShaderGraph::NodeSlotInfo ShaderGraph::node_slot_info[]= {
 		{NODE_XFORM_INPUT,{SLOT_MAX},{SLOT_TYPE_XFORM,SLOT_MAX}}, // mat4 uniform (assignable in material)
 		{NODE_TEXTURE_INPUT,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // texture input (assignable in material)
 		{NODE_CUBEMAP_INPUT,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // cubemap input (assignable in material)
+		{NODE_DEFAULT_TEXTURE,{SLOT_TYPE_VEC,SLOT_MAX},{SLOT_TYPE_VEC,SLOT_TYPE_SCALAR,SLOT_MAX}}, // cubemap input (assignable in material)
 		{NODE_COMMENT,{SLOT_MAX},{SLOT_MAX}}, // comment
 		{NODE_TYPE_MAX,{SLOT_MAX},{SLOT_MAX}}
 };
@@ -1731,6 +1769,11 @@ void ShaderGraph::_update_shader() {
 			} else if (i==SHADER_TYPE_FRAGMENT && get_mode()==MODE_MATERIAL) {
 				if (name==("IN_NORMAL"))
 					code[i]="vec3 IN_NORMAL=NORMAL;\n"+code[i];
+			} else if (i==SHADER_TYPE_VERTEX && get_mode()==MODE_CANVAS_ITEM) {
+				if (name==("SRC_COLOR"))
+					code[i]="vec3 SRC_COLOR=COLOR.rgb;\n"+code[i];
+				if (name==("SRC_UV"))
+					code[i]="vec3 SRC_UV=vec3(UV,0);\n"+code[i];
 			}
 
 		}
@@ -1746,6 +1789,10 @@ void ShaderGraph::_update_shader() {
 		if (shader[i].error!=GRAPH_OK)
 			all_ok=false;
 	}
+
+	/*print_line("VERTEX: \n"+code[0]);
+	print_line("FRAGMENT: \n"+code[1]);
+	print_line("LIGHT: \n"+code[2]);*/
 
 	if (all_ok) {
 		set_code(code[0],code[1],code[2]);
@@ -1926,7 +1973,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 			code+=OUTNAME(p_node->id,0)+"=TIME;\n";
 		}break;
 		case NODE_SCREEN_TEX: {
-			code+=OUTNAME(p_node->id,0)+"=texscreen("+p_inputs[0]+");\n";
+			code+=OUTNAME(p_node->id,0)+"=texscreen("+p_inputs[0]+".xy);\n";
 		}break;
 		case NODE_SCALAR_OP: {
 			int op = p_node->param1;
@@ -2372,7 +2419,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				code += OUTNAME(p_node->id,1)+"="+rname+".a;\n";
 
 			} else {
-
+				//not supported
 				code += OUTNAME(p_node->id,0)+"=vec3(0,0,0);\n";
 				code += OUTNAME(p_node->id,1)+"=1.0;\n";
 

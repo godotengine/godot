@@ -33,7 +33,7 @@
 #include "scene/gui/panel.h"
 #include "spatial_editor_plugin.h"
 #include "os/keyboard.h"
-
+#include "canvas_item_editor_plugin.h"
 
 void GraphColorRampEdit::_input_event(const InputEvent& p_event) {
 
@@ -2234,6 +2234,9 @@ void ShaderGraphEditor::_notification(int p_what) {
 
 			if (i==ShaderGraph::NODE_OUTPUT)
 				continue;
+			if (!_2d && i==ShaderGraph::NODE_DEFAULT_TEXTURE)
+				continue;
+
 			String nn = node_names[i];
 			String ic = nn.get_slice(":",0);
 			String v = nn.get_slice(":",1);
@@ -2297,7 +2300,8 @@ const char* ShaderGraphEditor::node_names[ShaderGraph::NODE_TYPE_MAX]={
 
 
 };
-ShaderGraphEditor::ShaderGraphEditor() {
+ShaderGraphEditor::ShaderGraphEditor(bool p_2d) {
+	_2d=p_2d;
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	menu = memnew( MenuButton );
@@ -2339,7 +2343,13 @@ void ShaderGraphEditorPlugin::edit(Object *p_object) {
 
 bool ShaderGraphEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ShaderGraph");
+	ShaderGraph *shader=p_object->cast_to<ShaderGraph>();
+	if (!shader)
+		return false;
+	if (_2d)
+		return shader->get_mode()==Shader::MODE_CANVAS_ITEM;
+	else
+		return shader->get_mode()==Shader::MODE_MATERIAL;
 }
 
 void ShaderGraphEditorPlugin::make_visible(bool p_visible) {
@@ -2353,12 +2363,16 @@ void ShaderGraphEditorPlugin::make_visible(bool p_visible) {
 
 }
 
-ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node) {
+ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) {
 
+	_2d=p_2d;
 	editor=p_node;
-	shader_editor = memnew( ShaderGraphEditor );
+	shader_editor = memnew( ShaderGraphEditor(p_2d) );
 	shader_editor->hide();
-	SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
+	if (p_2d)
+		CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(shader_editor);
+	else
+		SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
 
 
 //	editor->get_viewport()->add_child(shader_editor);
