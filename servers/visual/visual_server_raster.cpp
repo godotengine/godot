@@ -3819,6 +3819,91 @@ void VisualServerRaster::canvas_item_raise(RID p_item) {
 
 }
 
+/***** CANVAS LIGHT *******/
+
+RID VisualServerRaster::canvas_light_create() {
+
+	return RID();
+}
+
+void VisualServerRaster::canvas_light_attach_to_canvas(RID p_light,RID p_canvas){
+
+
+}
+void VisualServerRaster::canvas_light_set_enabled(RID p_light, bool p_enabled){
+
+
+}
+void VisualServerRaster::canvas_light_set_transform(RID p_light, const Matrix32& p_transform){
+
+
+}
+void VisualServerRaster::canvas_light_set_texture(RID p_light, RID p_texture){
+
+
+}
+void VisualServerRaster::canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset){
+
+
+}
+void VisualServerRaster::canvas_light_set_color(RID p_light, const Color& p_color){
+
+
+}
+void VisualServerRaster::canvas_light_set_height(RID p_light, float p_height){
+
+
+}
+void VisualServerRaster::canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z){
+
+
+}
+void VisualServerRaster::canvas_light_set_item_mask(RID p_light, int p_mask){
+
+
+}
+
+void VisualServerRaster::canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode){
+
+
+}
+void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled){
+
+
+}
+void VisualServerRaster::canvas_light_set_shadow_buffer_size(RID p_light, int p_size){
+
+
+}
+void VisualServerRaster::canvas_light_set_shadow_filter(RID p_light, int p_size){
+
+
+}
+
+/****** CANVAS LIGHT OCCLUDER ******/
+
+RID VisualServerRaster::canvas_light_occluder_create() {
+
+	return RID();
+}
+
+void VisualServerRaster::canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas) {
+
+
+}
+
+void VisualServerRaster::canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled){
+
+
+}
+
+void VisualServerRaster::canvas_light_occluder_set_shape(RID p_occluder,const DVector<Vector2>& p_shape){
+
+
+}
+
+
+
 /******** CANVAS *********/
 
 
