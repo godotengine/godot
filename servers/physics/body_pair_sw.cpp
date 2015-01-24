@@ -172,6 +172,53 @@ void BodyPairSW::validate_contacts() {
 	}
 }
 
+
+bool BodyPairSW::_test_ccd(float p_step,BodySW *p_A, int p_shape_A,const Transform& p_xform_A,BodySW *p_B, int p_shape_B,const Transform& p_xform_B) {
+
+
+
+	Vector3 motion = p_A->get_linear_velocity()*p_step;
+	real_t mlen = motion.length();
+	if (mlen<CMP_EPSILON)
+		return false;
+
+	Vector3 mnormal = motion / mlen;
+
+	real_t min,max;
+	p_A->get_shape(p_shape_A)->project_range(mnormal,p_xform_A,min,max);
+	bool fast_object = mlen > (max-min)*0.3; //going too fast in that direction
+
+	if (!fast_object) { //did it move enough in this direction to even attempt raycast? let's say it should move more than 1/3 the size of the object in that axis
+		return false;
+	}
+
+	//cast a segment from support in motion normal, in the same direction of motion by motion length
+	//support is the worst case collision point, so real collision happened before
+	int a;
+	Vector3 s=p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
+	Vector3 from = p_xform_A.xform(s);
+	Vector3 to = from + motion;
+
+	Transform from_inv = p_xform_B.affine_inverse();
+
+	Vector3 local_from = from_inv.xform(from-mnormal*mlen*0.1); //start from a little inside the bounding box
+	Vector3 local_to = from_inv.xform(to);
+
+	Vector3 rpos,rnorm;
+	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from,local_to,rpos,rnorm)) {
+		return false;
+	}
+
+	//shorten the linear velocity so it does not hit, but gets close enough, next frame will hit softly or soft enough
+	Vector3 hitpos = p_xform_B.xform(rpos);
+
+	float newlen = hitpos.distance_to(from)-(max-min)*0.01;
+	p_A->set_linear_velocity((mnormal*newlen)/p_step);
+
+	return true;
+}
+
+
 bool BodyPairSW::setup(float p_step) {
 
 	//cannot collide
@@ -198,8 +245,21 @@ bool BodyPairSW::setup(float p_step) {
 	bool collided = CollisionSolverSW::solve_static(shape_A_ptr,xform_A,shape_B_ptr,xform_B,_contact_added_callback,this,&sep_axis);
 	this->collided=collided;
 
-	if (!collided)
+
+	if (!collided) {
+
+		//test ccd (currently just a raycast)
+
+		if (A->is_continuous_collision_detection_enabled() && A->get_mode()>PhysicsServer::BODY_MODE_KINEMATIC && B->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC) {
+			_test_ccd(p_step,A,shape_A,xform_A,B,shape_B,xform_B);
+		}
+
+		if (B->is_continuous_collision_detection_enabled() && B->get_mode()>PhysicsServer::BODY_MODE_KINEMATIC && A->get_mode()<=PhysicsServer::BODY_MODE_KINEMATIC) {
+			_test_ccd(p_step,B,shape_B,xform_B,A,shape_A,xform_A);
+		}
+
 		return false;
+	}
 
 
 

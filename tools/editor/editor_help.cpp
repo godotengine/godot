@@ -1361,8 +1361,8 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 
 	Separator *hs = memnew( VSeparator );
 	panel_hb->add_child(hs);
-	EmptyControl *ec = memnew( EmptyControl );
-	ec->set_minsize(Size2(200,1));
+	Control *ec = memnew( Control );
+	ec->set_custom_minimum_size(Size2(200,1));
 	panel_hb->add_child(ec);
 	search = memnew( LineEdit );
 	ec->add_child(search);

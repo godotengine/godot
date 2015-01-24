@@ -250,7 +250,7 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 				if (p_str[idx]=='-' || (p_str[idx]>='0' && p_str[idx]<='9')) {
 					//a number
 					const CharType *rptr;
-					double number = String::to_double(&p_str[idx],-1,&rptr);
+					double number = String::to_double(&p_str[idx],&rptr);
 					idx+=(rptr - &p_str[idx]);
 					r_token.type=TK_NUMBER;
 					r_token.value=number;

@@ -85,6 +85,8 @@ public:
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 
+	virtual Size2 get_minimum_size() const;
+
 	virtual void get_translatable_strings(List<String> *p_strings) const;
 
 	TabContainer();

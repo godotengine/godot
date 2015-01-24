@@ -63,6 +63,7 @@ class TextEdit : public Control  {
 		int from_line,from_column;
 		int to_line,to_column;
 
+		bool shiftclick_left;
 
 	} selection;
 

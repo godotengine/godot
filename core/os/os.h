@@ -34,6 +34,7 @@
 #include "vector.h"
 #include "os/main_loop.h"
 #include <stdarg.h>
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -347,6 +348,18 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, Object* p_obj, String p_callback);
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, Object* p_obj, String p_callback);
 
+
+	enum LatinKeyboardVariant {
+		LATIN_KEYBOARD_QWERTY,
+		LATIN_KEYBOARD_QWERTZ,
+		LATIN_KEYBOARD_AZERTY,
+		LATIN_KEYBOARD_QZERTY,
+		LATIN_KEYBOARD_DVORAK,
+		LATIN_KEYBOARD_NEO,
+	};
+
+
+	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;

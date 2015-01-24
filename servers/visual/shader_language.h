@@ -105,6 +105,9 @@ public:
 		SHADER_MATERIAL_VERTEX,
 		SHADER_MATERIAL_FRAGMENT,
 		SHADER_MATERIAL_LIGHT,
+		SHADER_CANVAS_ITEM_VERTEX,
+		SHADER_CANVAS_ITEM_FRAGMENT,
+		SHADER_CANVAS_ITEM_LIGHT,
 		SHADER_POST_PROCESS,
 	};
 
@@ -376,6 +379,12 @@ private:
 	static const BuiltinsDef vertex_builtins_defs[];
 	static const BuiltinsDef fragment_builtins_defs[];
 	static const BuiltinsDef light_builtins_defs[];
+
+	static const BuiltinsDef ci_vertex_builtins_defs[];
+	static const BuiltinsDef ci_fragment_builtins_defs[];
+	static const BuiltinsDef ci_light_builtins_defs[];
+
+
 	static const BuiltinsDef postprocess_fragment_builtins_defs[];
 
 	static DataType get_token_datatype(TokenType p_type);

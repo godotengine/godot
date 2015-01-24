@@ -1240,8 +1240,8 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	group_options->add_child(atlas_preview);
 	atlas_preview->show();
 	atlas_preview->connect("pressed",this,"_group_atlas_preview");
-	EmptyControl *ec = memnew(EmptyControl );
-	ec->set_minsize(Size2(150,1));
+	Control *ec = memnew(Control );
+	ec->set_custom_minimum_size(Size2(150,1));
 	gvb->add_child(ec);
 
 	VBoxContainer *group_vb_right = memnew( VBoxContainer );

@@ -113,7 +113,7 @@ def configure(env):
 		env.Append(CCFLAGS=['/DTYPED_METHOD_BIND'])
 
 		env.Append(CCFLAGS=['/DGLES2_ENABLED'])
-		env.Append(CCFLAGS=['/DGLES1_ENABLED'])
+
 		env.Append(CCFLAGS=['/DGLEW_ENABLED'])
 		LIBS=['winmm','opengl32','dsound','kernel32','ole32','user32','gdi32', 'IPHLPAPI', 'wsock32', 'shell32','advapi32']
 		env.Append(LINKFLAGS=[p+env["LIBSUFFIX"] for p in LIBS])
@@ -135,6 +135,27 @@ def configure(env):
 		env.Append(LIBPATH=[DIRECTX_PATH+"/Lib/x86"])
 		env['ENV'] = os.environ;
 	else:
+
+		# Workaround for MinGW. See:
+		# http://www.scons.org/wiki/LongCmdLinesOnWin32
+		if (os.name=="nt"):
+			import subprocess
+			def mySpawn(sh, escape, cmd, args, env):
+				newargs = ' '.join(args[1:])
+				cmdline = cmd + " " + newargs
+				startupinfo = subprocess.STARTUPINFO()
+				startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+				proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+				    stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
+				data, err = proc.communicate()
+				rv = proc.wait()
+				if rv:
+					print "====="
+					print err
+					print "====="
+				return rv
+			env['SPAWN'] = mySpawn
+
 		#build using mingw
 		if (os.name=="nt"):
 			env['ENV']['TMP'] = os.environ['TMP'] #way to go scons, you can be so stupid sometimes
@@ -207,7 +228,7 @@ def configure(env):
 
 		env.Append(CCFLAGS=['-DWINDOWS_ENABLED','-mwindows'])
 		env.Append(CPPFLAGS=['-DRTAUDIO_ENABLED'])
-		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLES1_ENABLED','-DGLEW_ENABLED'])
+		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLEW_ENABLED'])
 		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','wsock32','kernel32'])
 
 		if (env["bits"]=="32" and env["mingw64_for_32"]!="yes"):

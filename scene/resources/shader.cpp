@@ -33,12 +33,6 @@
 #include "scene/scene_string_names.h"
 
 
-void Shader::set_mode(Mode p_mode) {
-
-	ERR_FAIL_INDEX(p_mode,2);
-	VisualServer::get_singleton()->shader_set_mode(shader,VisualServer::ShaderMode(p_mode));
-	emit_signal(SceneStringNames::get_singleton()->changed);
-}
 
 Shader::Mode Shader::get_mode() const {
 
@@ -90,7 +84,7 @@ void Shader::get_param_list(List<PropertyInfo> *p_params) const {
 	for(List<PropertyInfo>::Element *E=local.front();E;E=E->next()) {
 
 		PropertyInfo pi=E->get();
-		pi.name="param/"+pi.name;
+		pi.name="shader_param/"+pi.name;
 		params_cache[pi.name]=E->get().name;
 		if (p_params) {
 
@@ -150,10 +144,13 @@ void Shader::_set_code(const Dictionary& p_string) {
 
 void Shader::set_default_texture_param(const StringName& p_param,const Ref<Texture>& p_texture) {
 
-	if (p_texture.is_valid())
+	if (p_texture.is_valid()) {
 		default_textures[p_param]=p_texture;
-	else
+		VS::get_singleton()->shader_set_default_texture_param(shader,p_param,p_texture->get_rid());
+	} else {
 		default_textures.erase(p_param);
+		VS::get_singleton()->shader_set_default_texture_param(shader,p_param,RID());
+	}
 }
 
 Ref<Texture> Shader::get_default_texture_param(const StringName& p_param) const{
@@ -176,7 +173,6 @@ void Shader::get_default_texture_param_list(List<StringName>* r_textures) const{
 
 void Shader::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&Shader::set_mode);
 	ObjectTypeDB::bind_method(_MD("get_mode"),&Shader::get_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_code","vcode","fcode","lcode","fofs","lofs"),&Shader::set_code,DEFVAL(0),DEFVAL(0));
@@ -203,9 +199,9 @@ void Shader::_bind_methods() {
 
 }
 
-Shader::Shader() {
+Shader::Shader(Mode p_mode) {
 
-	shader = VisualServer::get_singleton()->shader_create();
+	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
 	params_cache_dirty=true;
 }
 
@@ -237,7 +233,7 @@ RES ResourceFormatLoaderShader::load(const String &p_path,const String& p_origin
 	String base_path = p_path.get_base_dir();
 
 
-	Ref<Shader> shader( memnew( Shader ) );
+	Ref<Shader> shader;//( memnew( Shader ) );
 
 	int line=0;
 

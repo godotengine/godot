@@ -215,7 +215,7 @@ public:
 		channels = p_channels;
 		freq = p_freq;
 		total_wrote = 0;
-		rb_power = 12;
+		rb_power = 22;
 		rb.resize(rb_power);
 	};
 
@@ -258,10 +258,12 @@ public:
 
 	void update(float time_increase)
 	{
+		float prev_time = mTime;
 		//mTime = (float)(stream->get_total_wrote()) / freq;
 		//mTime = MAX(0,mTime-AudioServer::get_singleton()->get_output_delay());
 		//mTime = (float)sample_count / channels / freq;
 		mTime += time_increase;
+		if (mTime - prev_time > .02) printf("time increase %f secs\n", mTime - prev_time);
 		//float duration=mClip->getDuration();
 		//if (mTime > duration) mTime=duration;
 		//printf("time at timer is %f, %f, samples %i\n", mTime, time_increase, sample_count);
@@ -386,7 +388,7 @@ void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 	{
 		DVector<uint8_t>::Write wr = data.write();
 		uint8_t* ptr = wr.ptr();
-		copymem(ptr, f->getBuffer(), imgsize);
+		memcpy(ptr, f->getBuffer(), imgsize);
 	}
     /*
     for (int i=0; i<h; i++) {

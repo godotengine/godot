@@ -922,20 +922,30 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 		case REAL: {  return;  } break;
 		case STRING: {
 
-			if (p_value.type!=Variant::STRING)
-				return;
-			if (p_index.get_type()==Variant::INT || p_index.get_type()==Variant::REAL) {
-				//string index
 
-				int idx=p_index;
-				String *str=reinterpret_cast<String*>(_data._mem);
-				if (idx >=0 && idx<str->length()) {
-					String chr = p_value;
-					*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
-					valid=true;
-					return;
-				}
+			if (p_index.type!=Variant::INT && p_index.type!=Variant::REAL)
+				return;
+
+			int idx=p_index;
+			String *str=reinterpret_cast<String*>(_data._mem);
+			if (idx <0 || idx>=str->length())
+				return;
+
+			String chr;
+			if (p_value.type==Variant::INT || p_value.type==Variant::REAL) {
+
+				chr = String::chr(p_value);
+			} else if (p_value.type==Variant::STRING) {
+
+				chr = p_value;
+			} else {
+				return;
 			}
+
+			*str = str->substr(0,idx-1)+chr+str->substr(idx+1,str->length());
+			valid=true;
+			return;
+
 
 		} break;
 		case VECTOR2: {
@@ -951,7 +961,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					Vector2 *v=reinterpret_cast<Vector2*>(_data._mem);
 					valid=true;
-					v[idx]=p_value;
+					(*v)[idx]=p_value;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::STRING) {
@@ -1045,7 +1055,7 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 
 					Vector3 *v=reinterpret_cast<Vector3*>(_data._mem);
 					valid=true;
-					v[idx]=p_value;
+					(*v)[idx]=p_value;
 					return;
 				}
 			} else if (p_index.get_type()==Variant::STRING) {
@@ -1674,6 +1684,19 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					Vector2 v=p_value;
 					ie.screen_drag.speed_x=v.x;
 					ie.screen_drag.speed_y=v.y;
+					return;
+				}
+			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					ie.action.action=p_value;
+					return;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed=p_value;
 					return;
 				}
 			}
@@ -2353,6 +2376,17 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="speed") {
 					valid=true;
 					return Vector2(ie.screen_drag.speed_x,ie.screen_drag.speed_y);
+				}
+			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					return ie.action.action;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed;
 				}
 			}
 

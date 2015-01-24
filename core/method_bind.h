@@ -178,6 +178,7 @@ public:
 #ifdef DEBUG_METHODS_ENABLED
 
 	_FORCE_INLINE_ void set_return_type(const StringName& p_type) { ret_type=p_type; }
+	_FORCE_INLINE_ StringName get_return_type() const { return ret_type; }
 
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
 

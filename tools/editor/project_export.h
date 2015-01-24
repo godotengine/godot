@@ -40,7 +40,7 @@
 #include "os/dir_access.h"
 #include "os/thread.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/empty_control.h"
+
 #include "scene/gui/slider.h"
 #include "tools/editor/editor_file_system.h"
 #include "property_editor.h"

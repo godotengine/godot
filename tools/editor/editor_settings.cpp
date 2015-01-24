@@ -404,6 +404,7 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/symbol_color",Color::html("badfff"));
 	set("text_editor/selection_color",Color::html("7b5dbe"));
 	set("text_editor/brace_mismatch_color",Color(1,0.2,0.2));
+	set("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15));
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
@@ -413,12 +414,18 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/auto_brace_complete", false);
 
 
+	set("scenetree_editor/duplicate_node_name_num_separator",0);
+	hints["scenetree_editor/duplicate_node_name_num_separator"]=PropertyInfo(Variant::INT,"scenetree_editor/duplicate_node_name_num_separator",PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash");
+
+
 	set("3d_editor/default_fov",45.0);
 	set("3d_editor/default_z_near",0.1);
 	set("3d_editor/default_z_far",500.0);
 
 	set("3d_editor/navigation_scheme",0);
 	hints["3d_editor/navigation_scheme"]=PropertyInfo(Variant::INT,"3d_editor/navigation_scheme",PROPERTY_HINT_ENUM,"Godot,Maya,Modo");
+	set("3d_editor/zoom_style",0);
+	hints["3d_editor/zoom_style"]=PropertyInfo(Variant::INT,"3d_editor/zoom_style",PROPERTY_HINT_ENUM,"Vertical, Horizontal");
 	set("3d_editor/orbit_modifier",0);
 	hints["3d_editor/orbit_modifier"]=PropertyInfo(Variant::INT,"3d_editor/orbit_modifier",PROPERTY_HINT_ENUM,"None,Shift,Alt,Meta,Ctrl");
 	set("3d_editor/pan_modifier",1);
@@ -444,6 +451,7 @@ void EditorSettings::_load_defaults() {
 	set("animation/confirm_insert_track",true);
 
 	set("property_editor/texture_preview_width",48);
+	set("property_editor/auto_refresh_interval",0.3);
 	set("help/doc_path","");
 
 	set("import/ask_save_before_reimport",false);

@@ -134,7 +134,7 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -485,7 +485,7 @@ Vector2 Curve2D::interpolate(int p_index, float p_offset) const {
 Vector2 Curve2D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -541,19 +541,12 @@ void Curve2D::_bake() const {
 
 
 	Vector2 pos=points[0].pos;
-	int point=0;
-	float ofs=0;
 	List<Vector2> pointlist;
 
 
 	for(int i=0;i<points.size()-1;i++) {
 
-		float slen=points[i].pos.distance_to(points[i+1].pos);
-		float divs = slen / bake_interval;
-		if (divs>1)
-			divs=1;
-
-		float step = divs*0.1; // 10 substeps ought to be enough?
+		float step = 0.1; // at least 10 substeps ought to be enough?
 		float p = 0;
 
 		while(p<1.0) {
@@ -956,7 +949,7 @@ Vector3 Curve3D::interpolate(int p_index, float p_offset) const {
 Vector3 Curve3D::interpolatef(real_t p_findex) const {
 
 
-	if (p_findex>0)
+	if (p_findex<0)
 		p_findex=0;
 	else if (p_findex>=points.size())
 		p_findex=points.size();
@@ -1014,19 +1007,12 @@ void Curve3D::_bake() const {
 
 
 	Vector3 pos=points[0].pos;
-	int point=0;
-	float ofs=0;
 	List<Plane> pointlist;
 	pointlist.push_back(Plane(pos,points[0].tilt));
 
 	for(int i=0;i<points.size()-1;i++) {
 
-		float slen=points[i].pos.distance_to(points[i+1].pos);
-		float divs = slen / bake_interval;
-		if (divs>1)
-			divs=1;
-
-		float step = divs*0.1; // 10 substeps ought to be enough?
+		float step = 0.1; // at least 10 substeps ought to be enough?
 		float p = 0;
 
 		while(p<1.0) {

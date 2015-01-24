@@ -31,7 +31,7 @@
 #include "os_iphone.h"
 
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
+
 
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
@@ -52,7 +52,7 @@ int OSIPhone::get_video_driver_count() const {
 
 const char * OSIPhone::get_video_driver_name(int p_driver) const {
 
-	return "openglES";
+	return "GLES2";
 };
 
 OSIPhone* OSIPhone::get_singleton() {
@@ -106,13 +106,9 @@ void OSIPhone::initialize(const VideoMode& p_desired,int p_video_driver,int p_au
 	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_vertical", false)?1:0) << PortraitDown);
 	supported_orientations |= ((GLOBAL_DEF("video_mode/allow_vertical_flipped", false)?1:0) << PortraitUp);
 
-#ifdef GLES1_OVERRIDE
-	rasterizer = memnew( RasterizerGLES1 );
-#else
 	rasterizer_gles22 = memnew( RasterizerGLES2(false, false, false) );
 	rasterizer = rasterizer_gles22;
 	rasterizer_gles22->set_base_framebuffer(gl_view_base_fb);
-#endif
 
 	visual_server = memnew( VisualServerRaster(rasterizer) );
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {

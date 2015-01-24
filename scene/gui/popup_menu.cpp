@@ -30,6 +30,7 @@
 #include "print_string.h"
 #include "os/keyboard.h"
 #include "translation.h"
+#include "os/input.h"
 
 String PopupMenu::_get_accel_text(uint32_t p_accel) const {
 
@@ -318,6 +319,10 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 
 					int over=_get_mouse_over(Point2(b.x,b.y));
 
+					if (invalidated_click) {
+						invalidated_click=false;
+						break;
+					}
 					if (over<0 || items[over].separator || items[over].disabled)
 						break; //non-activable
 
@@ -335,6 +340,13 @@ void PopupMenu::_input_event(const InputEvent &p_event) {
 		} break;
 		case InputEvent::MOUSE_MOTION: {
 	
+
+			if (invalidated_click) {
+				moved+=Vector2(p_event.mouse_motion.relative_x,p_event.mouse_motion.relative_y);
+				if (moved.length()>4)
+					invalidated_click=false;
+
+			}
 
 			const InputEventMouseMotion &m=p_event.mouse_motion;
 			for(List<Rect2>::Element *E=autohide_areas.front();E;E=E->next()) {
@@ -893,12 +905,17 @@ void PopupMenu::_bind_methods() {
 
 }
 	
+
+void PopupMenu::set_invalidate_click_until_motion() {
+	moved=Vector2();
+	invalidated_click=true;
+}
+
 PopupMenu::PopupMenu() {
 
 	idcount=0;
 	mouse_over=-1;
 	
-
 	set_focus_mode(FOCUS_ALL);
 	set_as_toplevel(true);
 

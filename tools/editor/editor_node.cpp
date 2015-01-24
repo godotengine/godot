@@ -75,6 +75,7 @@
 #include "plugins/tile_map_editor_plugin.h"
 #include "plugins/cube_grid_theme_editor_plugin.h"
 #include "plugins/shader_editor_plugin.h"
+#include "plugins/shader_graph_editor_plugin.h"
 #include "plugins/path_editor_plugin.h"
 #include "plugins/rich_text_editor_plugin.h"
 #include "plugins/collision_polygon_editor_plugin.h"
@@ -977,6 +978,15 @@ void EditorNode::_dialog_action(String p_file) {
 			}
 
 		} break;
+
+		case FILE_SAVE_AND_RUN: {
+			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
+
+				_save_scene(p_file);
+				_run(false);
+			}
+		} break;
+
 		case FILE_EXPORT_MESH_LIBRARY: {
 
 			Ref<MeshLibrary> ml;
@@ -1390,13 +1400,10 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		}
 
 		if (scene->get_filename()=="") {
-
-
 			current_option=-1;
 			//accept->get_cancel()->hide();
-			accept->get_ok()->set_text("I see..");
-			accept->set_text("Scene has never been saved. Save before running!");
-			accept->popup_centered(Size2(300,70));;
+			/**/
+			_menu_option_confirm(FILE_SAVE_BEFORE_RUN, false);
 			return;
 
 		}
@@ -1661,6 +1668,18 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			file->popup_centered_ratio();
 			file->set_title("Save Scene As..");
 			
+		} break;
+
+		case FILE_SAVE_BEFORE_RUN: {
+			if (!p_confirmed) {
+				accept->get_ok()->set_text("Yes");
+				accept->set_text("This scene has never been saved. Save before running?");
+				accept->popup_centered(Size2(300, 70));
+				break;
+			}
+
+			_menu_option(FILE_SAVE_AS_SCENE);
+			_menu_option_confirm(FILE_SAVE_AND_RUN, true);
 		} break;
 
 		case FILE_DUMP_STRINGS: {
@@ -3245,7 +3264,7 @@ EditorNode::EditorNode() {
 	gui_base->set_area_as_parent_rect();
 
 
-	Ref<Theme> theme( memnew( Theme ) );
+	theme = Ref<Theme>( memnew( Theme ) );
 	gui_base->set_theme( theme );
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
@@ -3308,13 +3327,13 @@ EditorNode::EditorNode() {
 	main_editor_tabs->connect("tab_changed",this,"_editor_select");
 	HBoxContainer *srth = memnew( HBoxContainer );
 	srt->add_child( srth );
-	EmptyControl *tec = memnew( EmptyControl );
-	tec->set_minsize(Size2(100,0));
+	Control *tec = memnew( Control );
+	tec->set_custom_minimum_size(Size2(100,0));
 	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	srth->add_child(tec);
 	srth->add_child(main_editor_tabs);
-	tec = memnew( EmptyControl );
-	tec->set_minsize(Size2(100,0));
+	tec = memnew( Control );
+	tec->set_custom_minimum_size(Size2(100,0));
 	srth->add_child(tec);
 	tec->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
@@ -3674,8 +3693,8 @@ EditorNode::EditorNode() {
 	top_pallete->add_child(resources_dock);
 	top_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	EmptyControl *editor_spacer = memnew( EmptyControl );
-	editor_spacer->set_minsize(Size2(260,200));
+	Control *editor_spacer = memnew( Control );
+	editor_spacer->set_custom_minimum_size(Size2(260,200));
 	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor_vsplit->add_child( editor_spacer );
 	editor_spacer->add_child( top_pallete );
@@ -3686,8 +3705,8 @@ EditorNode::EditorNode() {
 
 	prop_pallete->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 
-	editor_spacer = memnew( EmptyControl );
-	editor_spacer->set_minsize(Size2(260,200));
+	editor_spacer = memnew( Control );
+	editor_spacer->set_custom_minimum_size(Size2(260,200));
 	editor_spacer->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	editor_vsplit->add_child( editor_spacer );
 	editor_spacer->add_child( prop_pallete );
@@ -4016,7 +4035,10 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( ScriptEditorPlugin(this) ) );
 	add_editor_plugin( memnew( EditorHelpPlugin(this) ) );
 	add_editor_plugin( memnew( AnimationPlayerEditorPlugin(this) ) );
-	add_editor_plugin( memnew( ShaderEditorPlugin(this) ) );
+	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,true) ) );
+	add_editor_plugin( memnew( ShaderGraphEditorPlugin(this,false) ) );
+	add_editor_plugin( memnew( ShaderEditorPlugin(this,true) ) );
+	add_editor_plugin( memnew( ShaderEditorPlugin(this,false) ) );
 	add_editor_plugin( memnew( CameraEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleEditorPlugin(this) ) );
 	add_editor_plugin( memnew( SampleLibraryEditorPlugin(this) ) );
@@ -4067,9 +4089,9 @@ EditorNode::EditorNode() {
 
 	Globals::get_singleton()->set("debug/indicators_enabled",true);
 	Globals::get_singleton()->set("render/room_cull_enabled",false);
-	theme->set_color("prop_category","Editor",Color::hex(0x3f3945ff));
-	theme->set_color("prop_section","Editor",Color::hex(0x38323dff));
-	theme->set_color("prop_subsection","Editor",Color::hex(0x342e39ff));
+	theme->set_color("prop_category","Editor",Color::hex(0x403d41ff));
+	theme->set_color("prop_section","Editor",Color::hex(0x383539ff));
+	theme->set_color("prop_subsection","Editor",Color::hex(0x343135ff));
 	theme->set_color("fg_selected","Editor",Color::html("ffbd8e8e"));
 	theme->set_color("fg_error","Editor",Color::html("ffbd8e8e"));
 

@@ -61,13 +61,17 @@ src/YUV/C/yuv420_rgb_c.c
 src/TheoraVideoFrame.cpp
 """)
 
+env_theora = env.Clone()
+
 if env["platform"] == "iphone":
 	sources.append("src/AVFoundation/TheoraVideoClip_AVFoundation.mm")
 	env.Append(LINKFLAGS=['-framework', 'CoreVideo', '-framework', 'CoreMedia', '-framework', 'AVFoundation'])
+	if env["target"] == "release":
+		env_theora.Append(CPPFLAGS=["-D_IOS", "-D__ARM_NEON__", "-fstrict-aliasing", "-fmessage-length=210", "-fdiagnostics-show-note-include-stack", "-fmacro-backtrace-limit=0", "-fcolor-diagnostics", "-Wno-trigraphs", "-fpascal-strings", "-fvisibility=hidden", "-fvisibility-inlines-hidden"])
 
-env_theora = env.Clone()
-
-env_theora.Append(CPPFLAGS=["-D_YUV_C", "-D_LIB", "-D__THEORA"])
+env_theora.Append(CPPFLAGS=["-D_LIB", "-D__THEORA"]) # removed -D_YUV_C
+env_theora.Append(CPPFLAGS=["-D_YUV_LIBYUV"])
+#env_theora.Append(CPPFLAGS=["-D_YUV_C"])
 
 if env["platform"] == "iphone":
 	env_theora.Append(CPPFLAGS=["-D__AVFOUNDATION"])

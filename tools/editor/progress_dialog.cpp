@@ -29,7 +29,7 @@
 #include "progress_dialog.h"
 #include "main/main.h"
 #include "message_queue.h"
-#include "scene/gui/empty_control.h"
+
 
 void BackgroundProgress::_add_task(const String& p_task,const String& p_label, int p_steps) {
 
@@ -43,12 +43,12 @@ void BackgroundProgress::_add_task(const String& p_task,const String& p_label, i
 	t.progress = memnew( ProgressBar );
 	t.progress->set_max(p_steps);
 	t.progress->set_val(p_steps);
-	EmptyControl *ec = memnew( EmptyControl );
+	Control *ec = memnew( Control );
 	ec->set_h_size_flags(SIZE_EXPAND_FILL);
 	ec->set_v_size_flags(SIZE_EXPAND_FILL);
 	t.progress->set_area_as_parent_rect();
 	ec->add_child(t.progress);
-	ec->set_minsize(Size2(80,5));
+	ec->set_custom_minimum_size(Size2(80,5));
 	t.hb->add_child(ec);
 
 	add_child(t.hb);

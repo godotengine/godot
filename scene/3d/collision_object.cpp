@@ -47,6 +47,11 @@ void CollisionObject::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
+			if (area)
+				PhysicsServer::get_singleton()->area_set_transform(rid,get_global_transform());
+			else
+				PhysicsServer::get_singleton()->body_set_state(rid,PhysicsServer::BODY_STATE_TRANSFORM,get_global_transform());
+
 			RID space = get_world()->get_space();
 			if (area) {
 				PhysicsServer::get_singleton()->area_set_space(rid,space);

@@ -1131,10 +1131,44 @@ public:
 	FUNC2(canvas_item_add_clip_ignore,RID, bool );
 
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
+	FUNC2(canvas_item_set_z,RID,int);
+	FUNC2(canvas_item_set_z_as_relative_to_parent,RID,bool);
+
+	FUNC2(canvas_item_set_shader,RID, RID );
+	FUNC1RC(RID,canvas_item_get_shader,RID );
+
+	FUNC2(canvas_item_set_use_parent_shader,RID, bool );
+
+
+	FUNC3(canvas_item_set_shader_param,RID,const StringName&,const Variant&);
+	FUNC2RC(Variant,canvas_item_get_shader_param,RID,const StringName&);
 
 	FUNC1(canvas_item_clear,RID);
 	FUNC1(canvas_item_raise,RID);
 
+	/* CANVAS LIGHT */
+	FUNC0R(RID,canvas_light_create);
+	FUNC2(canvas_light_attach_to_canvas,RID,RID);
+	FUNC2(canvas_light_set_enabled,RID,bool);
+	FUNC2(canvas_light_set_transform,RID,const Matrix32&);
+	FUNC2(canvas_light_set_texture,RID,RID);
+	FUNC2(canvas_light_set_texture_offset,RID,const Vector2&);
+	FUNC2(canvas_light_set_color,RID,const Color&);
+	FUNC2(canvas_light_set_height,RID,float);
+	FUNC3(canvas_light_set_z_range,RID,int,int);
+	FUNC2(canvas_light_set_item_mask,RID,int);
+
+	FUNC2(canvas_light_set_blend_mode,RID,CanvasLightBlendMode);
+	FUNC2(canvas_light_set_shadow_enabled,RID,bool);
+	FUNC2(canvas_light_set_shadow_buffer_size,RID,int);
+	FUNC2(canvas_light_set_shadow_filter,RID,int);
+
+	/* CANVAS OCCLUDER */
+
+	FUNC0R(RID,canvas_light_occluder_create);
+	FUNC2(canvas_light_occluder_attach_to_canvas,RID,RID);
+	FUNC2(canvas_light_occluder_set_enabled,RID,bool);
+	FUNC2(canvas_light_occluder_set_shape,RID,const DVector<Vector2>&);
 
 	/* CURSOR */
 	FUNC2(cursor_set_rotation,float , int ); // radians
