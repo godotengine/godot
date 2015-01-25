@@ -129,8 +129,8 @@ def configure(env):
 		else:
 			print("PulseAudio development libraries not found, disabling driver")
 
-	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED','-DGLES_OVER_GL'])
-	env.Append(LIBS=['GL', 'GLU', 'pthread','asound','z']) #TODO detect linux/BSD!
+	env.Append(CPPFLAGS=['-DX11_ENABLED','-DUNIX_ENABLED','-DGLES2_ENABLED'])
+	env.Append(LIBS=['pthread','asound','z']) #TODO detect linux/BSD!
 	#env.Append(CPPFLAGS=['-DMPC_FIXED_POINT'])
 
 #host compiler is default..
