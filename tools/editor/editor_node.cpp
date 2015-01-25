@@ -1967,6 +1967,18 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				log->add_message("REDO: "+action);
 
 		} break;
+
+		case EDIT_REVERT: {
+
+			Node *scene = get_edited_scene();
+
+			if (!scene)
+				break;
+
+			open_request(scene->get_filename());
+
+		} break;
+
 #if 0
 		case NODE_EXTERNAL_INSTANCE: {
 
@@ -3464,6 +3476,8 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD+KEY_Z);
 	p->add_item("Redo",EDIT_REDO,KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_Z);
+	p->add_separator();
+	p->add_item("Revert Scene",EDIT_REVERT);
 	p->add_separator();
 	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_R);
 	p->add_separator();
