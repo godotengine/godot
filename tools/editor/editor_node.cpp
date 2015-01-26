@@ -3477,11 +3477,11 @@ EditorNode::EditorNode() {
 	p->add_item("Undo",EDIT_UNDO,KEY_MASK_CMD+KEY_Z);
 	p->add_item("Redo",EDIT_REDO,KEY_MASK_CMD+KEY_MASK_SHIFT+KEY_Z);
 	p->add_separator();
-	p->add_item("Revert Scene",EDIT_REVERT);
-	p->add_separator();
 	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_R);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
+	p->add_separator();
+	p->add_item("Revert Scene",EDIT_REVERT);
 	p->add_separator();
 	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_Q);
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
