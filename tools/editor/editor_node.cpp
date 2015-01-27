@@ -1974,8 +1974,15 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			if (!scene)
 				break;
+			
+			if (unsaved_cache && !p_confirmed) {
+				confirmation->get_ok()->set_text("Revert");
+				confirmation->set_text("This action cannot be undone. Revert anyway?");
+				confirmation->popup_centered(Size2(300,70));
+				break;
+			}
 
-			open_request(scene->get_filename());
+			Error err = load_scene(scene->get_filename());
 
 		} break;
 
