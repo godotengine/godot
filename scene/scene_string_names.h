@@ -63,6 +63,7 @@ public:
 	StringName idle;
 	StringName iteration;
 	StringName update;
+	StringName updated;
 
 	StringName line_separation;
 

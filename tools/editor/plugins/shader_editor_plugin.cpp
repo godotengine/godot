@@ -57,9 +57,9 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader>& p_shader,ShaderLangu
 
 	_load_theme_settings();
 
-	if (p_type==ShaderLanguage::SHADER_MATERIAL_LIGHT)
+	if (p_type==ShaderLanguage::SHADER_MATERIAL_LIGHT || p_type==ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT)
 		get_text_edit()->set_text(shader->get_light_code());
-	else if (p_type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
+	else if (p_type==ShaderLanguage::SHADER_MATERIAL_VERTEX || p_type==ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX)
 		get_text_edit()->set_text(shader->get_vertex_code());
 	else
 		get_text_edit()->set_text(shader->get_fragment_code());
@@ -81,6 +81,7 @@ void ShaderTextEditor::_load_theme_settings() {
 	get_text_edit()->add_color_override("font_selected_color",EDITOR_DEF("text_editor/text_selected_color",Color(1,1,1)));
 	get_text_edit()->add_color_override("selection_color",EDITOR_DEF("text_editor/selection_color",Color(0.2,0.2,1)));
 	get_text_edit()->add_color_override("brace_mismatch_color",EDITOR_DEF("text_editor/brace_mismatch_color",Color(1,0.2,0.2)));
+	get_text_edit()->add_color_override("current_line_color",EDITOR_DEF("text_editor/current_line_color",Color(0.3,0.5,0.8,0.15)));
 
 	Color keyword_color= EDITOR_DEF("text_editor/keyword_color",Color(0.5,0.0,0.2));
 
@@ -131,16 +132,11 @@ void ShaderTextEditor::_validate_script() {
 	String errortxt;
 	int line,col;
 
-	String code;
-	if (type==ShaderLanguage::SHADER_MATERIAL_LIGHT)
-		code=get_text_edit()->get_text();
-	else if (type==ShaderLanguage::SHADER_MATERIAL_VERTEX)
-		code=get_text_edit()->get_text();
-	else
-		code=get_text_edit()->get_text();
-
+	String code=get_text_edit()->get_text();
 	//List<StringName> params;
 	//shader->get_param_list(&params);
+
+	print_line("compile: type: "+itos(type)+" code:\n"+code);
 
 	Error err = ShaderLanguage::compile(code,type,NULL,NULL,&errortxt,&line,&col);
 
@@ -233,25 +229,7 @@ void ShaderEditor::_menu_option(int p_option) {
 
 			goto_line_dialog->popup_find_line(current->get_text_edit());
 		} break;
-		case SHADER_POST_PROCESS_MODE:{
 
-			fragment_editor->set_edited_shader(shader,ShaderLanguage::SHADER_POST_PROCESS);
-			fragment_editor->_validate_script();
-			apply_shaders();
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), false);
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), true);
-
-
-		} break;
-		case SHADER_MATERIAL_MODE: {
-
-			fragment_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_FRAGMENT);
-			fragment_editor->_validate_script();
-			apply_shaders();
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), true);
-			settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), false);
-
-		} break;
 	}
 }
 
@@ -408,18 +386,17 @@ void ShaderEditor::edit(const Ref<Shader>& p_shader) {
 	shader=p_shader;
 
 	if (shader->get_mode()==Shader::MODE_MATERIAL) {
+		vertex_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_MATERIAL_FRAGMENT);
 		light_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_LIGHT);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), true);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), false);
-	} else {
+	} else if (shader->get_mode()==Shader::MODE_CANVAS_ITEM) {
 
-		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_POST_PROCESS);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE), false);
-		settings_menu->get_popup()->set_item_checked( settings_menu->get_popup()->get_item_index(SHADER_POST_PROCESS_MODE), true);
+		vertex_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_CANVAS_ITEM_VERTEX);
+		fragment_editor->set_edited_shader(p_shader,ShaderLanguage::SHADER_CANVAS_ITEM_FRAGMENT);
+		light_editor->set_edited_shader(shader,ShaderLanguage::SHADER_CANVAS_ITEM_LIGHT);
 	}
 
-	vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
+	//vertex_editor->set_edited_shader(shader,ShaderLanguage::SHADER_MATERIAL_VERTEX);
 	// see if already has it
 
 
@@ -495,15 +472,6 @@ ShaderEditor::ShaderEditor() {
 	search_menu->get_popup()->add_item("Goto Line..",SEARCH_GOTO_LINE,KEY_MASK_CMD|KEY_G);
 	search_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
-	settings_menu = memnew( MenuButton );
-	add_child(settings_menu);
-	settings_menu->set_pos(Point2(90,-1));
-	settings_menu->set_text("Shader");
-	settings_menu->get_popup()->add_check_item("Material Mode",SHADER_MATERIAL_MODE);
-	settings_menu->get_popup()->set_item_checked(settings_menu->get_popup()->get_item_index(SHADER_MATERIAL_MODE),true);
-	settings_menu->get_popup()->add_check_item("Post Process Mode",SHADER_POST_PROCESS_MODE);
-
-	settings_menu->get_popup()->connect("item_pressed", this,"_menu_option");
 
 	tab_container->connect("tab_changed", this,"_tab_changed");
 
@@ -550,7 +518,13 @@ void ShaderEditorPlugin::edit(Object *p_object) {
 
 bool ShaderEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("Shader");
+	Shader *shader=p_object->cast_to<Shader>();
+	if (!shader)
+		return false;
+	if (_2d)
+		return shader->get_mode()==Shader::MODE_CANVAS_ITEM;
+	else
+		return shader->get_mode()==Shader::MODE_MATERIAL;
 }
 
 void ShaderEditorPlugin::make_visible(bool p_visible) {
@@ -596,12 +570,15 @@ void ShaderEditorPlugin::apply_changes() {
 	shader_editor->apply_shaders();
 }
 
-ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node) {
+ShaderEditorPlugin::ShaderEditorPlugin(EditorNode *p_node, bool p_2d) {
 
 	editor=p_node;
 	shader_editor = memnew( ShaderEditor );
-
-	SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
+	_2d=p_2d;
+	if (p_2d)
+		add_custom_control(CONTAINER_CANVAS_EDITOR_BOTTOM,shader_editor);
+	else
+		add_custom_control(CONTAINER_SPATIAL_EDITOR_BOTTOM,shader_editor);
 //	editor->get_viewport()->add_child(shader_editor);
 //	shader_editor->set_area_as_parent_rect();
 

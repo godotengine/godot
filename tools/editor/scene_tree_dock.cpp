@@ -100,6 +100,16 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 }
 
+static String _get_name_num_separator() {
+	switch(EditorSettings::get_singleton()->get("scenetree_editor/duplicate_node_name_num_separator").operator int()) {
+		case 0: return "";
+		case 1: return " ";
+		case 2: return "_";
+		case 3: return "-";
+	}
+	return " ";
+}
+
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 	current_option=p_tool;
@@ -318,17 +328,21 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				}
 
 				int num=nums.to_int();
-				if (num<2)
-					num=2;
+				if (num<1)
+					num=1;
 				else
 					num++;
 
-				name=name.substr(0,name.length()-nums.length()).strip_edges();
-				String attempt=name+" "+itos(num);
+				String nnsep = _get_name_num_separator();
+				name = name.substr(0,name.length()-nums.length()).strip_edges();
+				if ( name.substr(name.length()-nnsep.length(),nnsep.length()) == nnsep) {
+					name = name.substr(0,name.length()-nnsep.length());
+				}
+				String attempt = (name + nnsep + itos(num)).strip_edges();
 
 				while(parent->has_node(attempt)) {
 					num++;
-					attempt=name+" "+itos(num);
+					attempt = (name + nnsep + itos(num)).strip_edges();
 				}
 
 				dup->set_name(attempt);

@@ -40,6 +40,9 @@ def configure(env):
 		env["CC"]="clang"
 		env["CXX"]="clang++"
 		env["LD"]="clang++"
+		if (env["colored"]=="yes"):
+			if sys.stdout.isatty():
+				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
 
 	is64=sys.maxsize > 2**32
 

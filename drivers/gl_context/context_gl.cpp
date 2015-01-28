@@ -12,7 +12,7 @@
 #include "context_gl.h"
 
 
-#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED) || defined(GLES2_ENABLED) || defined(GLES1_ENABLED)
+#if defined(OPENGL_ENABLED)  || defined(GLES2_ENABLED)
 
 
 

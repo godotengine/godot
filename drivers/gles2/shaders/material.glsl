@@ -779,6 +779,7 @@ uniform highp mat4 camera_inverse_transform;
 #if defined(ENABLE_TEXSCREEN)
 
 uniform vec2 texscreen_screen_mult;
+uniform vec4 texscreen_screen_clamp;
 uniform sampler2D texscreen_tex;
 
 #endif

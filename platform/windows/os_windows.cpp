@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
+
 #include "os_windows.h"
 #include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
@@ -56,6 +56,13 @@
 #include "shlobj.h"
 static const WORD MAX_CONSOLE_LINES = 1500;
 
+extern "C" {
+#ifdef _MSC_VER
+	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+#else
+	__attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
+#endif
+}
 
 //#define STDOUT_FILE
 
@@ -130,11 +137,11 @@ void RedirectIOToConsole() {
 
 int OS_Windows::get_video_driver_count() const {
 
-	return 2;
+	return 1;
 }
 const char * OS_Windows::get_video_driver_name(int p_driver) const {
 
-	return p_driver==0?"GLES2":"GLES1";
+	return "GLES2";
 }
 
 OS::VideoMode OS_Windows::get_default_video_mode() const {

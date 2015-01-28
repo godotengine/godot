@@ -73,6 +73,18 @@ int TileMapEditor::get_selected_tile() const {
 	return item->get_metadata(0);
 }
 
+void TileMapEditor::set_selected_tile(int p_tile) {
+	TreeItem *item = palette->get_root()->get_children();
+	while (item) {
+		if ((int)item->get_metadata(0) == p_tile) {
+			item->select(0);
+			palette->ensure_cursor_is_visible();
+			break;
+		}
+		item = item->get_next();
+	}
+}
+
 void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bool p_flip_v,bool p_with_undo) {
 
 	ERR_FAIL_COND(!node);
@@ -224,28 +236,25 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 						canvas_item_editor->update();
 						return true;
 
+					} else if (mb.mod.control) {
+						tool=TOOL_PICKING;
+						set_selected_tile(node->get_cell(over_tile.x, over_tile.y));
+						canvas_item_editor->update();
+						return true;
 					} else {
 						int id = get_selected_tile();
 						if (id!=TileMap::INVALID_CELL) {
 							tool=TOOL_PAINTING;
 							Point2i local =node->world_to_map((xform_inv.xform(Point2(mb.x,mb.y))));
 							paint_undo.clear();
-							CellOp op;
-							op.idx = node->get_cell(local.x,local.y);
-							if (op.idx>=0) {
-								if (node->is_cell_x_flipped(local.x,local.y))
-									op.xf=true;
-								if (node->is_cell_y_flipped(local.x,local.y))
-									op.yf=true;
-							}
-							paint_undo[local]=op;
+							paint_undo[local]=_get_op_from_cell(local);
 							node->set_cell(local.x,local.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
 							return true;
 						}
 					}
 				} else {
 
-					if (tool==TOOL_PAINTING || tool == TOOL_SELECTING) {
+					if (tool==TOOL_PAINTING || tool == TOOL_SELECTING || tool == TOOL_PICKING) {
 
 						if (tool==TOOL_PAINTING) {
 
@@ -279,15 +288,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 					tool=TOOL_ERASING;
 					Point2i local =node->world_to_map(xform_inv.xform(Point2(mb.x,mb.y)));
 					paint_undo.clear();
-					CellOp op;
-					op.idx = node->get_cell(local.x,local.y);
-					if (op.idx>=0) {
-						if (node->is_cell_x_flipped(local.x,local.y))
-							op.xf=true;
-						if (node->is_cell_y_flipped(local.x,local.y))
-							op.yf=true;
-					}
-					paint_undo[local]=op;
+					paint_undo[local]=_get_op_from_cell(local);
 					//node->set_cell(local.x,local.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
 					//return true;
 					_set_cell(local,TileMap::INVALID_CELL);
@@ -337,15 +338,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 
 					if (!paint_undo.has(over_tile)) {
 
-						CellOp op;
-						op.idx = node->get_cell(over_tile.x,over_tile.y);
-						if (op.idx>=0) {
-							if (node->is_cell_x_flipped(over_tile.x,over_tile.y))
-								op.xf=true;
-							if (node->is_cell_y_flipped(over_tile.x,over_tile.y))
-								op.yf=true;
-						}
-						paint_undo[over_tile]=op;
+						paint_undo[over_tile]=_get_op_from_cell(over_tile);
 					}
 					node->set_cell(over_tile.x,over_tile.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
 
@@ -374,25 +367,22 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 				return true;
 
 			}
+
 			if (tool==TOOL_ERASING) {
 				Point2i local =over_tile;				
 				if (!paint_undo.has(over_tile)) {
-
-					CellOp op;
-					op.idx = node->get_cell(over_tile.x,over_tile.y);
-					if (op.idx>=0) {
-						if (node->is_cell_x_flipped(over_tile.x,over_tile.y))
-							op.xf=true;
-						if (node->is_cell_y_flipped(over_tile.x,over_tile.y))
-							op.yf=true;
-					}
-					paint_undo[over_tile]=op;
+					paint_undo[over_tile]=_get_op_from_cell(over_tile);
 				}
 				//node->set_cell(over_tile.x,over_tile.y,id,mirror_x->is_pressed(),mirror_y->is_pressed());
 				_set_cell(local,TileMap::INVALID_CELL);
 				return true;
 			}
 
+			if (tool==TOOL_PICKING) {
+				set_selected_tile(node->get_cell(over_tile.x, over_tile.y));
+				canvas_item_editor->update();
+				return true;
+			}
 
 		} break;
 		case InputEvent::KEY: {
@@ -708,6 +698,19 @@ void TileMapEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
 	ObjectTypeDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
 
+}
+
+TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)
+{
+	CellOp op;
+	op.idx = node->get_cell(p_pos.x,p_pos.y);
+	if (op.idx>=0) {
+		if (node->is_cell_x_flipped(p_pos.x,p_pos.y))
+			op.xf=true;
+		if (node->is_cell_y_flipped(p_pos.x,p_pos.y))
+			op.yf=true;
+	}
+	return op;
 }
 
 TileMapEditor::TileMapEditor(EditorNode *p_editor) {

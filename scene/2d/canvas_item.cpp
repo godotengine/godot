@@ -720,6 +720,95 @@ bool CanvasItem::is_draw_behind_parent_enabled() const{
 	return behind;
 }
 
+void CanvasItem::set_shader(const Ref<Shader>& p_shader) {
+
+	ERR_FAIL_COND(p_shader.is_valid() && p_shader->get_mode()!=Shader::MODE_CANVAS_ITEM);
+
+#ifdef TOOLS_ENABLED
+
+	if (shader.is_valid()) {
+		shader->disconnect("changed",this,"_shader_changed");
+	}
+#endif
+	shader=p_shader;
+
+#ifdef TOOLS_ENABLED
+
+	if (shader.is_valid()) {
+		shader->connect("changed",this,"_shader_changed");
+	}
+#endif
+
+	RID rid;
+	if (shader.is_valid())
+		rid=shader->get_rid();
+	VS::get_singleton()->canvas_item_set_shader(canvas_item,rid);
+	_change_notify(); //properties for shader exposed
+}
+
+void CanvasItem::set_use_parent_shader(bool p_use_parent_shader) {
+
+	use_parent_shader=p_use_parent_shader;
+	VS::get_singleton()->canvas_item_set_use_parent_shader(canvas_item,p_use_parent_shader);
+}
+
+bool CanvasItem::get_use_parent_shader() const{
+
+	return use_parent_shader;
+}
+
+Ref<Shader> CanvasItem::get_shader() const{
+
+	return shader;
+}
+
+void CanvasItem::set_shader_param(const StringName& p_param,const Variant& p_value) {
+
+	VS::get_singleton()->canvas_item_set_shader_param(canvas_item,p_param,p_value);
+}
+
+Variant CanvasItem::get_shader_param(const StringName& p_param) const {
+
+	return VS::get_singleton()->canvas_item_get_shader_param(canvas_item,p_param);
+}
+
+bool CanvasItem::_set(const StringName& p_name, const Variant& p_value) {
+
+	if (shader.is_valid()) {
+		StringName pr = shader->remap_param(p_name);
+		if (pr) {
+			set_shader_param(pr,p_value);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool CanvasItem::_get(const StringName& p_name,Variant &r_ret) const{
+
+	if (shader.is_valid()) {
+		StringName pr = shader->remap_param(p_name);
+		if (pr) {
+			r_ret=get_shader_param(pr);
+			return true;
+		}
+	}
+	return false;
+
+}
+void CanvasItem::_get_property_list( List<PropertyInfo> *p_list) const{
+
+	if (shader.is_valid()) {
+		shader->get_param_list(p_list);
+	}
+}
+
+#ifdef TOOLS_ENABLED
+void CanvasItem::_shader_changed() {
+
+	_change_notify();
+}
+#endif
 
 void CanvasItem::_bind_methods() {
 
@@ -761,7 +850,9 @@ void CanvasItem::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_on_top","on_top"),&CanvasItem::_set_on_top);
 	ObjectTypeDB::bind_method(_MD("_is_on_top"),&CanvasItem::_is_on_top);
-
+#ifdef TOOLS_ENABLED
+	ObjectTypeDB::bind_method(_MD("_shader_changed"),&CanvasItem::_shader_changed);
+#endif
 	//ObjectTypeDB::bind_method(_MD("get_transform"),&CanvasItem::get_transform);
 
 	ObjectTypeDB::bind_method(_MD("draw_line","from","to","color","width"),&CanvasItem::draw_line,DEFVAL(1.0));
@@ -786,15 +877,22 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_world_2d"),&CanvasItem::get_world_2d);
 	//ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasItem::get_viewport);
 
+	ObjectTypeDB::bind_method(_MD("set_shader","shader"),&CanvasItem::set_shader);
+	ObjectTypeDB::bind_method(_MD("get_shader"),&CanvasItem::get_shader);
+	ObjectTypeDB::bind_method(_MD("set_use_parent_shader","enable"),&CanvasItem::set_use_parent_shader);
+	ObjectTypeDB::bind_method(_MD("get_use_parent_shader"),&CanvasItem::get_use_parent_shader);
+
 	BIND_VMETHOD(MethodInfo("_draw"));
 
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"shader/shader",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemShader,CanvasItemShaderGraph"), _SCS("set_shader"),_SCS("get_shader") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"shader/use_parent"), _SCS("set_use_parent_shader"),_SCS("get_use_parent_shader") );
 	//exporting these two things doesn't really make much sense i think
 	//ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transform/toplevel"), _SCS("set_as_toplevel"),_SCS("is_set_as_toplevel") );
 	//ADD_PROPERTY(PropertyInfo(Variant::BOOL,"transform/notify"),_SCS("set_transform_notify"),_SCS("is_transform_notify_enabled"));
@@ -871,6 +969,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	block_transform_notify=false;
 //	viewport=NULL;
 	canvas_layer=NULL;
+	use_parent_shader=false;
 	global_invalid=true;
 
 	C=NULL;
