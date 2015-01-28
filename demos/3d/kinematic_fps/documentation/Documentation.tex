@@ -64,7 +64,8 @@
 {\Large Revisions}
 \begin{tabbing}
 \hspace{1cm} \= \kill
-1.0 \> Original draft
+1.0 \> Original draft\\
+1.1 \> Fixed elevator bug
 \end{tabbing}
 \end{center}
 
@@ -1222,6 +1223,9 @@ At the moment I'm writing this tutorial, I still didn't find a way to calculate 
 \\
 The problem is that makes more complicated to configure the elevator. You can with the \textit{AnimationPlayer} change the \textit{Linear Velocity} at any time with the desired velocity, but you have to calculated the correct velocity to make the platform arrive on time at destination, not too late nor too soon. And most of the time you'll have to find with lot of tries the right velocity. Probably someone will find a more convenient solution soon.
 
+\paragraph{Erratum}
+A solution has been found. You can animate an elevator with only the \textit{Translation}, as long as the \textit{Mode} is \textit{Kinematic}. But follow the tutorial for the moment.
+
 \subsection{Preparation of the elevator node}
 When the map was imported, the evelators, as well as all others meshes, were imported in 3 nodes like in figure \ref{fig:col_node_structure}.
 
@@ -1260,6 +1264,9 @@ We want to swap the mesh and \textit{col} nodes, because the \textit{Linear Velo
 \label{fig:corrected_col_node_structure}
 \end{figure}
 
+\paragraph{Erratum}
+Changing the order of the nodes isn't necessary anymore. You can skip the steps about reparenting if you want. 
+
 \step Open the map scene
 \step Search for one elevator's node and select its \textit{col} node. Rename it a unique name related to the elevator's name, for instance \textit{col-elevator2} (because my mesh was named elevator2).
 \step With the node still selected(1), reparent (2) it to the root node of the scene, usually name \textit{Spatial} by default.\\
@@ -1269,6 +1276,7 @@ We want to swap the mesh and \textit{col} nodes, because the \textit{Linear Velo
 \step Select now the \textit{col-elevator1} (1) and change its type(2) for a \textit{RigidBody} (3).\\
 \includegraphics[scale=0.45]{godot_step20.png} 
 \step Change the \textit{Mode} property to \textit{Character}.\\
+\textbf{Erratum} Set it to \textit{Kinematic} instead.\\
 \includegraphics[scale=0.45]{godot_step21.png}
 \step Check \textit{Custom Integration} and uncheck \textit{Can sleep}.\\
 \includegraphics[scale=0.45]{godot_step22.png}
@@ -1281,6 +1289,8 @@ I can't give much information about those options. In a nutshell, for what I've 
 Test the scene before you go further, just to be sure that the elevator is still at its original place and that you can still jump on it without falling through.\\
 
 \subsection{Animation of the elevator}
+\paragraph{Erratum} Before you do the next steps, if the rigid body is set to mode \textit{Kinematic}, you don't need to set a linear velocity. You can simply animate the \textit{Translation} instead.
+
 \step Select \textit{col-elevator1} node and add an \textit{AnimationPlayer} node.
 \step Select it and create a new animation, with the name for instance "default" (doesn't matter).\\
 \includegraphics[scale=0.45]{godot_step24.png}
@@ -1307,7 +1317,9 @@ Now, we must make the elevator go back to it's original point, after a little pa
 \includegraphics[scale=0.45]{godot_step30.png}
 \step then go at the time where the travel back animation should end, and create another key with value [0,0,0]. I choose time 20.5[s] because the starting time + travel time are 11 + 9.6 [s]
 \begin{warning}
-The timing must be perfectly calculated. If the time and velocity to travel back are not the same as the ones in the first travel, the elevator won't come back exactly to where it was originally. And since this animation will be played in a loop, any difference will grow bigger at each loop. Eventually the elevator completely stray from its original path.
+The timing must be perfectly calculated. If the time and velocity to travel back are not the same as the ones in the first travel, the elevator won't come back exactly to where it was originally. And since this animation will be played in a loop, any difference will grow bigger at each loop. Eventually the elevator completely stray from its original path.\\
+\\
+\textbf{Erratum} This is not needed anymore if you animate with \textit{Translation} instead of linear velocity.
 \end{warning}
 
 \step And to conclude, click on the loop button.\\
@@ -1375,7 +1387,9 @@ with:
     if Input.is_action_pressed("jump"):
 \end{pythoncode}
 
-Give it a try. Doesn't look bad, eh? Now the actor stays properly on the elevator and doesn't slip out of the elevator. And the actor doesn't interfere with the elevator course, except if you really try and jump on the elevator lot of times. And even so, it is hard to notice the difference (but yes, that's still a bug). That's one limitation of this way of doing. When another way to animate elevators with translation instead of linear velocity will be found, this problem will be solved. But in the meantime, that would do.\\
+Give it a try. Doesn't look bad, eh? Now the actor stays properly on the elevator and doesn't slip out of the elevator. And the actor doesn't interfere with the elevator course, except if you really try and jump on the elevator lot of times. And even so, it is hard to notice the difference (but yes, that's still a bug). That's one limitation of this way of doing. 
+\paragraph{Erratum}
+If you followed the previous erratums, you don't have this limitation. By setting the body to kinematic and by moving the node with translation, the linear velocity is automatically updated.\\
 \\
 You can now do the same for all others moving platforms.
 
@@ -1566,7 +1580,7 @@ You can find the complete script and scene for the actor and the button at this 
 \section{Conclusion}
 Congratulation! You finished this tutorial and you made a FPS game.\\
 \\
-It's not completely perfect, that's right. And there aren't even enemies nor weapons. But I let you have the joy to implement them. You have now the basics of a first person view controller, as well as the way to handle buttons, doors and interactive objects. You even have moving platforms and elevators, yet a bit buggy and bothersome to set up.\\
+It's not completely perfect, that's right. And there aren't even enemies nor weapons. But I let you have the joy to implement them. You have now the basics of a first person view controller, as well as the way to handle buttons, doors and interactive objects. You even have moving platforms and elevators.\\
 \\
 You can find the whole project with sources at github \cite{github_project}.\\
 
@@ -1577,7 +1591,6 @@ From now on, you can implement :
 \item Bullets. Otherwise it would hardly be called First Person \textbf{Shooter}.
 \item Items to interact with, or to take when you walk on them.
 \item Better door animation, with collision detection if an actor is in the way.
-\item Better floor velocity script to fix the bug.
 \item Crouch and sprint.
 \item Sound effects and music.
 \item And all the others stuff like an HUD, load levels, menu...
