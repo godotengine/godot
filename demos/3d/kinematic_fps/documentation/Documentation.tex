@@ -16,7 +16,7 @@
 \usepackage{minted}
 \author{Gokudomatic}
 \title{Tutorial for a kinematic FPS game}
-\date{\today\\v1.0}
+\date{\today\\v1.2}
 \renewcommand{\familydefault}{\sfdefault}
 
 \tikzstyle{node} = [draw, fill=blue!20, text centered, rounded corners]
@@ -65,7 +65,8 @@
 \begin{tabbing}
 \hspace{1cm} \= \kill
 1.0 \> Original draft\\
-1.1 \> Fixed elevator bug
+1.1 \> Fixed elevator bug\\
+1.2 \> Small grammar corrections
 \end{tabbing}
 \end{center}
 
@@ -79,10 +80,10 @@
 
 \subsection{Preface}
 Hi folks! 
-Today we're going to build a basic FPS (First Person Shooter) game with Godot. The highlights of this tutorial are setting up a 3d project, importing 3d models and implement a script to make the character move like in old FPS games like Doom\cite{doom}, Duke Nukem or Half Life.\\
+Today we're going to build a basic FPS (First Person Shooter) game with Godot. The highlights of this tutorial are to set up a 3d project, to import 3d models and to implement a script to make the character move like in old FPS games like Doom\cite{doom}, Duke Nukem or Half Life.\\
 \\
-I decided to write this tutorial when I was working on another Godot project which requires characters able to move in a 3d world. I noticed that Godot was not offering out of the box such features and the existing similar demos (3d platformer, kinematic char and FPS Test) do not provide exactly a ready to use solution that behaves like in the games mentioned above. I played then for a while, trying to understand little by little the code of the existing demos and figure out why they behave strangely in some situations, like slopes and stairs. Finally I got a satisfying implementation of a solution using kinematics and a couple of others concepts. And then I decided to share this work in the shape of a tutorial. I hope it will at the same time help beginners to understand how to build a 3d game with self made assets.\\
-It won't cover however the basic stuffs from Godot, like the concept of nodes, the scripting language GDScript or the user interface. If you are interested in those topics, I wrote a 2d demo\cite{fox2d} with a documentation that explain how nodes work in Godot and their capabilities.\\
+I decided to write this tutorial while I was working on another Godot project which requires characters able to move in a 3d world. I noticed that Godot was not offering out of the box such features and the existing similar demos (3d platformer, kinematic char and FPS Test) do not provide exactly a ready to use solution that behaves like in the games mentioned above. I played then for a while, trying to understand little by little the code of the existing demos and figure out why they behave strangely in some situations, like slopes and stairs. Finally I got a satisfying implementation of a solution using kinematics and a couple of others concepts. And then I decided to share this work as a tutorial. I hope it will at the same time help beginners to understand how to build a 3d game with self made assets.\\
+It won't cover however the basic stuffs from Godot, like the concept of nodes, the scripting language GDScript or the user interface. If you are interested in those topics, I wrote a 2d demo\cite{fox2d} with a documentation that explains how nodes work in Godot and their capabilities.\\
 \\
 I'm aware that as any tutorial, this one will eventually become outdated. However I'll try as much as possible to explain the maths behind, which is the most important part of this tutorial. I hope that even if Godot changes radically, you can still be able to rewrite easily the code. In fact, if you can even implement it in another game engine (Unity for instance), this document reached its objective.
 
@@ -110,13 +111,13 @@ This tutorial does not intend to explain every part of an FPS game, as it would 
 
 \subsection{Target audience}
 This document is destined to advanced beginners. A basic knowledge in Godot (IDE, nodes, script language) and in programming, including UML, is mandatory to properly understand this tutorial. \\
-Knowledge in Sketchup and Blender is also helpful, but you can download the 3d model from the project if you want to skip the modelling part.
+Knowledge in Sketchup and Blender is also helpful, but you can download the 3d model from the project\cite{github_project} if you want to skip the modelling part.
 \paragraph{About math} a good understanding of vectors is required. It is advised to get a grasp of the basics of quaternions too since we're going to use them a bit. You can find tutorials about those points in the wiki of Godot \cite{wiki_godot}.
 
 \subsection{Requirements}
 For this tutorial, you need to install:
 \begin{itemize}
-\item Godot v1.0 or later \cite{godot}
+\item Godot v1.1, build from github source or later version\cite{godot}
 \item Blender 2.7 or later \cite{blender}
 \item Better Collada exporter plugin for Blender provided with Godot. You'll have to install it in the Blender folder.
 \end{itemize}
@@ -164,7 +165,7 @@ I played with Godot almost since it was open-sourced, but because my knowledge i
 
 \section{Project folder structure}
 Let's start!
-\step Create a folder with 2 subfolders named "assets" and "source".
+\step Create a folder with 2 sub-folders named "assets" and "source".
 \begin{hint}
 The folder "assets" is for all your media files. In this case, it will be sketchup and blender files, as well as textures. But it would be for audio files too if your game uses some, which is most probably the case.\\
 The folder "source" the Godot project itself and all its source code.\\
@@ -173,7 +174,7 @@ By separating the assets and source, you won't distribute the original files of 
 \step Open Godot and create a new project in the folder "source".
 \step In the "source" folder, create a folder named "game\_assets".
 \begin{hint}
-This subfolder will containt all assets that need to be distributed with the game. 
+This sub-folder will contain all assets that need to be distributed with the game. 
 \end{hint}
 \step Copy all the textures you need in both "assets" and "game\_assets" folders.
 \begin{hint}
@@ -205,7 +206,7 @@ Elevators, buttons and others non-static objects can be drawn here. But for larg
 \step Extrude the rooms to make walls and ceilings.
 \step Create stairs (1), extrude from the wall a platform for the goal (2), and make a ladder (3).\\
  \includegraphics[scale=0.25]{map_step2.png} 
-\step The ladder can have any shape you whishes. It just need to be vertical.\\
+\step The ladder can have any shape you wish. It just needs to be vertical.\\
  \includegraphics[scale=0.75]{map_step3.png} 
 \step Create 2 blocs in the middle of the room (1) \& (2), and a bridge between them with a slope of 30°. And finally make a platform (4) that will be an elevator between the bloc (2) and the goal.\\
  \includegraphics[scale=0.3]{map_step4.png} 
@@ -280,13 +281,13 @@ The elevators made in Sketchup are actually part of the map. But in Godot they n
 \begin{hint}
 You can easily select all vertices by selecting one and select all linked vertices \textbf{[Ctrl-L]}.
 \end{hint}
-\step Repeat the previous action for for each elevator.
+\step Repeat the previous action for each elevator.
 \subsection{Textures \& UV mapping}
 \step Go back to object mode \textbf{[Tab]} and open the UV/image editor.
 \step Open each texture from the "assets" folder to load them in memory.
 \step Go back to the 3D View, select the map mesh and go in edit mode \textbf{[Tab]}.
 \begin{hint}
-For conveniency split the view in 2 and keep visible both 3D View and image editor.\\
+For convenience, split the view in 2 and keep visible both 3D View and image editor.\\
 \includegraphics[scale=0.4]{blender_hint_split_panels.png} 
 \end{hint}
 \step Select all faces that are the same kind, for instance the floor. They will have the same texture.
@@ -299,8 +300,8 @@ For conveniency split the view in 2 and keep visible both 3D View and image edit
 \begin{hint}
 The first material slot created is by default assigned to the whole mesh. That's why I selected the second material slot to assign the vertices.
 \end{hint}
-\step Create as many new material slot as there are textures, except for the two already created. And assign the vertices that should be linked with the texture. In my case, I have 1 wall texture, 1 ceiling texture and 2 floor textures. I had to create 2 others slots for the ceiling and the other floor textures. On top of that I created a special material slot for the ladder, without texture but with a gray color.
-\step Repeat the same actions for the elevators. You can however reuse existing materials. I had still to create a new material for the button, which I wanted red.
+\step Create as many new material slots as there are textures, except for the two already created. And assign the vertices that should be linked with the texture. In my case, I have 1 wall texture, 1 ceiling texture and 2 floor textures. I had to create 2 others slots for the ceiling and the other floor textures. On top of that I created a special material slot for the ladder, without texture but with a gray color.
+\step Repeat the same actions for the elevators. You can however reuse existing materials. I had still to create a new material for the button, which I wanted to be red.
 \step For the button material and the ladder material, set some colors.\\
 \includegraphics[scale=0.4]{blender_step6.png} 
 \step Now, we'll apply some texture. Select the material slot that will have a texture (1) and click "select" (2) to select all associates vertices.
@@ -315,7 +316,7 @@ The first material slot created is by default assigned to the whole mesh. That's
 \step The mesh is now UV-mapped. You can see the result by selecting Texture in the Viewport Shading menu (1). In the image editor (2) are showing up the UV mapping of the select faces.\\
 \includegraphics[scale=0.4]{blender_step11.png}
 \begin{hint}
-The Cube projection is especially useful here because it calculate an UV mapping appropriate for walls and makea proper synchronisation between walls so it looks continuous.
+The Cube projection is especially useful here because it calculates an UV mapping appropriate for walls and make a proper synchronisation between walls so it looks continuous.
 \end{hint}
 \step The UV map is too small. We want the texture to be smaller and to repeat itself. In the image editor, select all faces \textbf{[A]} and scale \textbf{[S]} until the texture is small enough. I scaled x5 for my elevator.\\
 \includegraphics[scale=0.4]{blender_step12.png}
@@ -331,7 +332,7 @@ The button and the tube are white even though they have a material. Don't panic,
 \includegraphics[scale=0.4]{blender_step14.png}
 Once all meshes are UV mapped and all materials have a texture, this section is done and only remains the lights and the door.
 \subsection{Lights}
-Adding light is very simple, but in the same it can be a whole profession on itself just to get the proper lighting. But here we'll only see the simple version. 
+Adding light is very simple, but at the same time it can be a whole profession on itself just to get the proper lighting. But here we'll only see the simple version. 
 \step Set the 3d cursor to where you want to add a light.
 \step Add a point light with \textbf{[Shift-A]} and select Lamp / Point.
 \step Change the Viewport Shading to Material so you can see the result.\\
@@ -394,7 +395,7 @@ You can find my .dae file and the texture in the "source/game\_assets" folder of
 \step Click on "Import \& Open"
 \step You should now see the map\\
 \includegraphics[scale=0.45]{godot_step1.png} 
-\step Disable the default light in menu View, and ajust the lightning.\\
+\step Disable the default light in menu View, and adjust the lightning.\\
 \\
 You have maybe noticed that the textures seem off. At best only a part of the texture shows up.\\
 \includegraphics[scale=0.45]{godot_step2.png} 
@@ -449,9 +450,9 @@ Before we start, a bit of explanation.
 \paragraph{Rigid body and kinematic body}
 In Godot, a rigid body is an object that is managed completely by the physics engine. We can only manipulate it by giving force impulses to move it or set its position. But eventually it's moved by the physics engine and the result is hard to predict. The kinematic body is like a rigid body except that we have to make it move ourselves with a script. We must take care of its velocity, collision detection, gravity and everything. However we can use functions from the physics engine. And the most important one is \textit{move(...)}, which makes the body move to a specific direction, but only if it doesn't collide with something else. With this, we are certain that our object would never intersect with another object. It requires more work to use a kinematic body rather than a rigid body because we must take care of everything, but we have a complete control of our object.
 
-\paragraph{Skeleton of a kinematic body} Technically a body can have any shape. In our tutorial, our character is a human. It doesn't need to be complex and a mere basic geometric shape is enough. In fact a mere box would be enough is most cases. If we take for instance a 2D platform game like Mario Bros (see fig. \ref{fig:mario_collision_shape}), the character collides with the ground and enemies as if it was just a rectangle (in yellow). You can also notice that in such game the rectangle never rotate or get transformed. Only its position change. In similar 3D games, it's the same concept, except that we use a box instead of a 2D rectangle. 
+\paragraph{Skeleton of a kinematic body} Technically a body can have any shape. In our tutorial, our character is a human. It doesn't need to be complex and a mere basic geometric shape is enough. In fact a mere box would be enough in most cases. If we take for instance a 2D platform game like Mario Bros (see fig. \ref{fig:mario_collision_shape}), the character collides with the ground and enemies as if it was just a rectangle (in yellow). You can also notice that in such game the rectangle never rotates or get transformed. Only its position changes. In similar 3D games, it's the same concept, except that we use a box instead of a 2D rectangle. 
 
-\paragraph{Collision and sliding} The physics engine calculates automatically the traject of the box by giving it a velocity. And if it encounters a wall, it will try to slide along the wall. At least, as much as possible. Because it the character tries to run directly against a wall, he won't slide at all. But if the velocity of the character goes a bit along the wall, the calculated velocity to slide  will be perpendicular to the wall. As shown in figure \ref{fig:collision_sliding}, the object at position $P$ moves with an initial velocity $V$ and collides at position $P_1$. A sliding velocity $S$ will be calculated and the object will move to its final position $P_2$.
+\paragraph{Collision and sliding} The physics engine calculates automatically the trajectory of the box by giving it a velocity. And if it encounters a wall, it will try to slide along the wall. At least, as much as possible. Because it the character tries to run directly against a wall, he won't slide at all. But if the velocity of the character goes a bit along the wall, the calculated velocity to slide  will be perpendicular to the wall. As shown in figure \ref{fig:collision_sliding}, the object at position $P$ moves with an initial velocity $V$ and collides at position $P_1$. A sliding velocity $S$ will be calculated and the object will move to its final position $P_2$.
 
 \begin{figure}[h]
 \includegraphics[scale=1]{NES_Super_Mario_Bros.png} 
@@ -478,7 +479,7 @@ In Godot, a rigid body is an object that is managed completely by the physics en
 \end{figure}
 
 \paragraph{Problematic of the staircase}
-With the sliding, a mere box is enough in most cases. Even with a slope, the box would be able to properly slide against it. However there is one case were the box doesn't suffice. Stairs. We humans can climb stairs thanks to our legs, but a box that slide against the floor would be stuck . The problem is that a stair is a wall but with a small height. However the physics engine do only detect there is a collision and it calculates the sliding velocity as if it was a wall. We must use another shape, which is the capsule. This shape has the particularity that its bottom is round (like an half sphere). When it collides against a stair, due to its round shape, the sliding velocity calculated will be different from sliding velocity of the rectangle shape, because the stair would be seen as a slope instead of a wall. As in figure \ref{fig:stair_problematic_1}, the sliding velocity of the box would be completely vertical. But because of the gravity, it would not move at all. However the sliding velocity of the capsule is like a slope, because it's the tangent of the half circle at the collision point. And as long as the slope is not too steep, the character would be able to climb it. No special scripting is needed. That's why the capsule shape is one popular way to solve this problem.
+With the sliding, a mere box is enough in most cases. Even with a slope, the box would be able to properly slide against it. However there is one case were the box doesn't suffice. Stairs. We humans can climb stairs thanks to our legs, but a box that slides against the floor would be stuck . The problem is that a stair is a wall but with a small height. However the physics engine does only detect there is a collision and it calculates the sliding velocity as if it was a wall. We must use another shape, which is the capsule. This shape has the particularity that its bottom is round (like an half sphere). When it collides against a stair, due to its round shape, the sliding velocity calculated will be different from sliding velocity of the rectangle shape, because the stair would be seen as a slope instead of a wall. As in figure \ref{fig:stair_problematic_1}, the sliding velocity of the box would be completely vertical. But because of the gravity, it would not move at all. However the sliding velocity of the capsule is like a slope, because it's the tangent of the half circle at the collision point. And as long as the slope is not too steep, the character would be able to climb it. No special scripting is needed. That's why the capsule shape is one popular way to solve this problem.
 
 \begin{figure}[h]
 \centering
@@ -515,7 +516,7 @@ With the sliding, a mere box is enough in most cases. Even with a slope, the box
 \subsection{Fly mode}
 \label{subsec:fly_mode}
 \paragraph{Skeleton}
-We will now implement a first version of this kinematic character. It is the most simplest one, the fly mode. This implementation, as its name say, doesn't have gravity. It can just move in space and collide with objects, like a ship in space. \\
+We will now implement a first version of this kinematic character. It is the simplest one, the fly mode. This implementation, as its name says, doesn't have gravity. It can just move in space and collide with objects, like a ship in space. \\
 \\
 Let's start with the skeleton:
 \step Create a new scene.
@@ -596,7 +597,7 @@ Now that we have the most basic structure of the code, we're going to implement 
     get_node("yaw/camera").set_rotation(Vector3(deg2rad(pitch), 0, 0))
 \end{pythoncode}
 \begin{hint}
-The variables \textit{yaw} and \textit{pitch} are the rotations of the camera. As explained before, we apply the \textit{yaw} rotation to the spatial parent of the camera instead of the camera, as we do for the pitch. Also, since we capture the delta of the mouse movements, we must check that the yaw angle doesn't go too high or negative. Therefore we apply a modulo to this value. For the pitch, we put a limit instead so the camera's orientation is always with the up on the top of the screen. Since the actor's body never rotate vertically, the camera must have the same up orientation as the body.
+The variables \textit{yaw} and \textit{pitch} are the rotations of the camera. As explained before, we apply the \textit{yaw} rotation to the spatial parent of the camera instead of the camera, as we do for the pitch. Also, since we capture the delta of the mouse movements, we must check that the yaw angle doesn't go too high or negative. Therefore we apply a modulo to this value. For the pitch, we put a limit instead so the camera's orientation is always with the up on the top of the screen. Since the actor's body never rotates vertically, the camera must have the same up orientation as the body.
 \end{hint}
 \step Append at the end of the script this code:
 \begin{pythoncode}
@@ -770,7 +771,7 @@ That's right. The changes we did just now added inertia to our velocity (you've 
 We added at the same time the variable \textit{is\_moving}. It will have multiple uses later, but now it helps to know if the actor must accelerate or decelerate. Because in video game physics, friction can be simplified by considering that there's friction only when something is not moving by itself. And when it wants to move, it accelerates before it reaches the maximum speed.
 \end{hint}
 \begin{hint}
-Did you also noticed that the speed changed? And on top of that it seems there is a maximum speed we can't go beyond. That's thanks to the \textit{linear\_interpolate} function. This function calculate a vector based on another vector and a length. If the length is bigger than the reference vector's length, it will be capped to the reference vector's length.
+Did you also noticed that the speed changed? And on top of that it seems there is a maximum speed we can't go beyond. That's thanks to the \textit{linear\_interpolate} function. This function calculates a vector based on another vector and a length. If the length is bigger than the reference vector's length, it will be capped to the reference vector's length.
 \end{hint}
 \subsubsection{Gravity}
 \step Add this code to the fields/variables section:
@@ -786,7 +787,7 @@ Gravity is multiplied 3 times because it gives a better feeling. I'm not sure wh
   velocity.y+=delta*GRAVITY
 \end{pythoncode}
 
-If you test it now, you'll see yourself falling to the ground. And if you go on a slope, you slide down to the bottom, no matter how steep the slope is. However you can see that depending on how steep the slope is, you have more or less difficulty to climb it. And check for the stairs. If you made a staircase that have low stairs, you'll be able to climb up the staircase, but not easily. That's thanks to ours capsule shape.
+If you test it now, you'll see yourself falling to the ground. And if you go on a slope, you slide down to the bottom, no matter how steep the slope is. However you can see that depending on how steep the slope is, you have more or less difficulty to climb it. And check for the stairs. If you made a staircase that have low stairs, you'll be able to climb up the staircase, but not easily. That's thanks to our capsule shape.
 \paragraph{Congratulation!} You made your very first FPS character. It's from far not perfect, but it walks on the ground and it falls. It can even climb slopes and stairs (somehow).\\
 \\
 Now we're going to fix all those problems.\\
@@ -866,7 +867,7 @@ But on the other side the ray must not be too long, because it would be like the
 
 \paragraph{Implementation}
 \step In the scene tree of the actor, select the \textit{actor} node.
-\step Add a \textit{RayCast} node (don't confuse with \textit{RayCast2D}) and name it \textit{ray}.
+\step Add a \textit{RayCast} node (don't confuse it with \textit{RayCast2D}) and name it \textit{ray}.
 \step Move it to \textit{Translation} [0,0.4,0], just at the intersection between \textit{body} and \textit{leg} nodes.
 \step Check property \textit{Enabled}
 \step Set the property \textit{Cast To} to [0,-0.8,0]\\
@@ -908,7 +909,7 @@ For convenience we nullify right here the Y of the direction. We are sure now th
     on_floor=false
 \end{pythoncode}		
 \begin{hint}
-Here we did 2 things. Not only we clamp to the ground the actor when he detected the collision, which we know it's the ground since it's right bellow, but we also configured a flag(field) \textit{on\_floor} to whether if the actor is on the floor or in air. You might have noticed that we teleport the actor only if there is a change between the collision state of the ray and the flag. By not constantly teleport the actor to the ground, not only we avoid useless code that would only slow down (a little) the game, but it avoids also possible bugs of the player moving vertically for no reason (for instance in an elevator).
+Here we did 2 things. Not only we clamp to the ground the actor when he detected the collision, which we know it's the ground since it's right below, but we also configured a flag(field) \textit{on\_floor} to whether if the actor is on the floor or in air. You might have noticed that we teleport the actor only if there is a change between the collision state of the ray and the flag. By not constantly teleport the actor to the ground, not only we avoid useless code that would only slow down (a little) the game, but it avoids also possible bugs of the player moving vertically for no reason (for instance in an elevator).
 \end{hint}
 \step Replace the code:
 \begin{pythoncode}
@@ -971,7 +972,7 @@ with:
 \end{pythoncode}
 
 Now give it a try. We can't fly with the jump key anymore. And we can stand on a slope, though it's not perfect and we still slide slowly.\\
-However new bugs appeared. When you climb a slope and stop, you're elevating in the air before you suddenly teleport to the ground. And when you going down the slope, you're first falling before you slide down. The reason it that the gravity is not applied all the time anymore and the vertical velocity .\\\\
+However new bugs appeared. When you climb a slope and stop, you're elevating in the air before you suddenly teleport to the ground. And when you going down the slope, you're first falling before you slide down. The reason it that the gravity is not applied all the time anymore and the vertical velocity is conserved because no friction is applied to it. So the actor goes up until the ray doesn't detect the ground anymore, then it falls and loses its vertical velocity.\\\\
 It's definitely not perfect. But we'll fix all this.
 
 \begin{hint}
@@ -982,7 +983,7 @@ You can find the complete script and scene for the actor at this point in the pr
 \label{subsec:slopes}
 In the previous section, what is missing is the part to manage the vertical velocity. When you move, the X and Z of the actor's velocity accelerate. And when you touch nothing, the X and Z of the actor's velocity decelerate. But in a slope, the Y changes too due to the \textit{slide} function. However, when you don't move anymore, the Y of the velocity doesn't decelerate and the actor starts to elevate until it reaches the point where the ray doesn't detect the ground anymore. And then the actor falls and the Y axis of its velocity is set to 0.\\
 In figure \ref{fig:problem_climb_slope}, step 1. shows the actor moving with a velocity. \\
-Step 2. show the actor when the player doesn't press a movement key; the X velocity is decelarated to 0 but the remaining Y velocity is still there. \\
+Step 2. show the actor when the player doesn't press a movement key; the X velocity is decelerated to 0 but the remaining Y velocity is still there. \\
 Step 3. shows the actor in the air and its ray that doesn't touch the ground anymore. Gravity applies again and the actor starts to fall.
 
 \begin{figure}[H]
@@ -1110,7 +1111,7 @@ You can find the complete script and scene for the actor at this point in the pr
 \end{hint}
 
 \subsubsection{Stairs}
-For the problem of the staircase we'll use another trick. We'll use another raycast to detect stairs. If a stair is detected and if it's at the direction the actor is trying to move, we'll make the actor automatically jump. The concept is as described in figure \ref{fig:step_raycast} by putting a raycast in front of the actor. This step raycast must not collide with the ground and thus must be placed hight than the \textit{leg}. This raycast will be only used when the player moves and it will be positioned always where the actor is going, meaning the velocity's direction.
+For the problem of the staircase we'll use another trick. We'll use another raycast to detect stairs. If a stair is detected and if it's at the direction the actor is trying to move, we'll make the actor automatically jump. The concept is as described in figure \ref{fig:step_raycast} by putting a raycast in front of the actor. This step raycast must not collide with the ground and thus must be placed higher than the \textit{leg}. This raycast will be only used when the player moves and it will be positioned always where the actor is going, meaning the velocity's direction.
 
 \begin{figure}[H]
 \centering
@@ -1330,6 +1331,8 @@ You can then close the animation editor and try it.\\
 Funny! If you leave it alone, it does travel forth and back properly. But if you try to step on it and stay on it, it moves differently. It has trouble to go up. Your actor interferes with the elevator path.\\
 But don't worry. This can be greatly minimized with scripting. 
 
+\paragraph{Erratum} With the transpose animation, the elevator sticks to its path. However the actor has trouble staying on the elevator. This will be fixed too in the next chapter.
+
 \subsection{Implementation of the floor velocity}
 Now we just have to add a little code in our actor to complete the implementation of elevators.
 
@@ -1394,12 +1397,6 @@ If you followed the previous erratums, you don't have this limitation. By settin
 You can now do the same for all others moving platforms.
 
 \begin{hint}
-Yet if you want to be absolutely sure that the elevator goes where you want and nowhere else, you can animate its \textit{Translation} property too. It will override the animation with linear velocity. However you must calculate properly all translations in your animation in order to do the same path as your linear velocity. If it's not the case, you'll get problems where your actor seems to move while standing on the elevator. \\
-\\
-Yet if the elevator need to go only vertically, you can set a larger velocity than the real one, because you won't notice a difference. But this trick works when the elevator travels vertically only.
-\end{hint}
-
-\begin{hint}
 You can find the complete script and scene for the actor at this point in the project's folder "tutorial/floor\_velocity". The scene of the map is in the "source/game\_assets" folder.
 \end{hint}
 
@@ -1460,7 +1457,7 @@ with
 Let's try it.\\
 \\
 When you enter the area, you just have to look up or down and move forward to climb up or down. And if you leave the ladders in the middle of the way, you fall. Simple but efficient. And if you made it high enough above the ladders, you can easily climb down the ladders from the top.\\
-If you have a hard time to climb up, that's probably because the area or the cube were misplaced and are too far in the wall. And if you were too generous with the area size, you climbs the ladder from too far. It only need proper adjustments of the size of the box.\\
+If you have a hard time to climb up, that's probably because the area or the cube were misplaced and are too far in the wall. And if you were too generous with the area size, you climbs the ladder from too far. It only needs proper adjustments of the size of the box.\\
 For every others ladders, you just have to connect them to the player with the existing functions (no need to create new ones).\\
 \\
 In my demo, there was some strange bug when climbing up the ladders, where we move not fluently. But that's because the collision shape of the ladder is a bit too complex. To avoid that, keep the collision shape of the ladder as simple as possible, like a box. You can just use a ladder texture on the wall if you want. As long as the area node is properly placed, it will work.
@@ -1475,7 +1472,7 @@ The last point we will cover are the interactive objects. They are objects that 
 \subsection{Prepare the actor}
 The actor, especially the one controlled by the player, will have a raycast that represents the focus of the actor. Everything in focus can be used. And by that, I mean to call a function from the object's script, which would do whatever this object is supposed to do when activated. For instance, if the object is a button, when the player focuses on this button and presses the \textit{action} key, the actor's script will call the \textit{on\_pressed} function of the button, which would for instance play an animation that makes the elevator move.
 \step Open the actor scene.
-\step Int the scene tree, select the \textit{camera} node and add a \textit{RayCast}. Rename it \textit{actionRay}.\\
+\step In the scene tree, select the \textit{camera} node and add a \textit{RayCast}. Rename it \textit{actionRay}.\\
 \includegraphics[scale=0.45]{godot_step35.png} 
 \step In its properties, mark \textit{Enabled} and set its \textit{Cast To} to [0,0,-2].
 \step Go in the script "actor.gd", and add in the \textit{\_ready} function:
@@ -1483,7 +1480,7 @@ The actor, especially the one controlled by the player, will have a raycast that
   get_node("yaw/camera/actionRay").add_exception(self)
 \end{pythoncode}
 \begin{hint}
-The raycast stops at the very first object it encounters. In our case, the \textit{actionRay} would always collide with the actor. So, we add an exception to not collide with the actor.
+The raycast stops at the very first object it encounters. In our case, the \textit{actionRay} would always collide with the actor. So, we add an exception to not collide with the actor. This function is available only in Godot v1.1 and later. If you really want to use godot v1.0, you have to move the raycast outside the body. 
 \end{hint}
 \step In the \textit{\_input} function, append:
 \begin{pythoncode}
@@ -1528,7 +1525,7 @@ The actor is now ready. If you try it, you should now see a small white rectangl
 \includegraphics[scale=0.45]{godot_step38.png} 
 
 \subsection{Prepare the button}
-We are here going to implement a button that makes an elevator move. I'll suppose that you have an elevator with an animation ready. Just make sur that the animation of this elevator is not in autoplay. We want the elevator to stand still by default.
+We are here going to implement a button that makes an elevator move. I'll suppose that you have an elevator with an animation ready. Just make sure that the animation of this elevator is not in autoplay mode. We want the elevator to stand still by default.
 \step Open the map scene.
 \step Select the mesh node with the button. Add a \textit{StaticBody} and rename it \textit{elevator1\_button}.\\
 \includegraphics[scale=0.45]{godot_step39.png} 
@@ -1555,7 +1552,7 @@ Try it and watch out the console. Now go to the button and press the "use" key w
 
 Great, it works! 
 ...Wait. What? But the "button.gd" script should print "action!". Instead it prints the text of the embedded script of the button node. That's simply because the embedded script overrides the button class it's extending. If you remove the \textit{on\_pressed} function in the embedded script, it would print the "action!" text. This mechanism is the class inheritance. More information in the wiki \cite{wiki_godot}.
-It allows you to write a custom behavior per node, and still be considered as a button.\\
+It allows you to write a custom behaviour per node, and the node will still be considered as a button.\\
 \\
 Now the last touch, make the elevator move.
 \step Replace the print call with:
@@ -1664,7 +1661,7 @@ It is important to notice that the other orthogonal side of the right rectangle 
 \label{fig:wanted_scalar_projection}
 \end{figure}
 
-To obtain vector $d$, we substract the vector $c$ to vector $a$, like in figure \ref{fig:scalar_substraction}
+To obtain vector $d$, we subtract the vector $c$ to vector $a$, like in figure \ref{fig:scalar_substraction}
 \begin{figure}[H]
 \centering
 \begin{tikzpicture}
@@ -1674,7 +1671,7 @@ To obtain vector $d$, we substract the vector $c$ to vector $a$, like in figure 
 	\draw [->,shift={(-0.82,1.52)},line width=1.2pt,color=blue] (1.86,1)-- node[above] {$c$} (0,0);
 	\draw [->,color=red,dash pattern=on 3pt off 3pt] (0,0)-- node[left] {$d$} (-0.82,1.52);
 \end{tikzpicture}
-\caption{Substraction of the scalar projection}
+\caption{Subtraction of the scalar projection}
 \label{fig:scalar_substraction}
 \end{figure}
 In GDScript, the code would be:
