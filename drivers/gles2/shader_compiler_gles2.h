@@ -51,6 +51,9 @@ private:
 	bool uses_time;
 	bool uses_screen_uv;
 	bool uses_normalmap;
+	bool uses_normal;
+	bool uses_texpixel_size;
+	bool uses_worldvec;
 	bool vertex_code_writes_vertex;
 	Flags *flags;
 
@@ -68,6 +71,9 @@ private:
 	StringName vname_light;
 	StringName vname_time;
 	StringName vname_normalmap;
+	StringName vname_normal;
+	StringName vname_texpixel_size;
+	StringName vname_world_vec;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 
@@ -79,7 +85,7 @@ private:
 
 	String replace_string(const StringName& p_string);
 
-	Map<StringName,StringName> mode_replace_table[3];
+	Map<StringName,StringName> mode_replace_table[9];
 	Map<StringName,StringName> replace_table;
 
 public:
@@ -101,6 +107,9 @@ public:
 		bool use_var2_interp;
 		bool uses_light;
 		bool uses_time;
+		bool uses_normal;
+		bool uses_texpixel_size;
+		bool uses_worldvec;
 	};
 
 	Error compile(const String& p_code, ShaderLanguage::ShaderType p_type, String& r_code_line, String& r_globals_line, Flags& r_flags, Map<StringName,ShaderLanguage::Uniform> *r_uniforms=NULL);

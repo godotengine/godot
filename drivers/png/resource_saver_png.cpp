@@ -64,10 +64,10 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"filter=true\n":"filter=false\n";
 		}
 		if (global_mipmaps!=bool(texture->get_flags()&Texture::FLAG_MIPMAPS)) {
-			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"gen_mipmaps=true\n":"gen_mipmaps=false\n";
+			text+=bool(texture->get_flags()&Texture::FLAG_MIPMAPS)?"gen_mipmaps=true\n":"gen_mipmaps=false\n";
 		}
 		if (global_repeat!=bool(texture->get_flags()&Texture::FLAG_REPEAT)) {
-			text+=bool(texture->get_flags()&Texture::FLAG_FILTER)?"repeat=true\n":"repeat=false\n";
+			text+=bool(texture->get_flags()&Texture::FLAG_REPEAT)?"repeat=true\n":"repeat=false\n";
 		}
 		if (bool(texture->get_flags()&Texture::FLAG_ANISOTROPIC_FILTER)) {
 			text+="anisotropic=true\n";

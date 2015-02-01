@@ -138,6 +138,21 @@ void Physics2DServerSW::_shape_col_cbk(const Vector2& p_point_A,const Vector2& p
 	if (cbk->max==0)
 		return;
 
+	if (cbk->valid_dir!=Vector2()) {
+		if (p_point_A.distance_squared_to(p_point_B)>cbk->valid_depth*cbk->valid_depth) {
+			return;
+		}
+		if (cbk->valid_dir.dot((p_point_A-p_point_B).normalized())<0.7071) {
+/*			print_line("A: "+p_point_A);
+			print_line("B: "+p_point_B);
+			print_line("discard too angled "+rtos(cbk->valid_dir.dot((p_point_A-p_point_B))));
+			print_line("resnorm: "+(p_point_A-p_point_B).normalized());
+			print_line("distance: "+rtos(p_point_A.distance_to(p_point_B)));
+*/
+			return;
+		}
+	}
+
 	if (cbk->amount == cbk->max) {
 		//find least deep
 		float min_depth=1e20;
@@ -858,6 +873,37 @@ int Physics2DServerSW::body_get_max_contacts_reported(RID p_body) const {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,-1);
 	return body->get_max_contacts_reported();
+}
+
+void Physics2DServerSW::body_set_one_way_collision_direction(RID p_body,const Vector2& p_direction) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_one_way_collision_direction(p_direction);
+}
+
+Vector2 Physics2DServerSW::body_get_one_way_collision_direction(RID p_body) const{
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,Vector2());
+	return body->get_one_way_collision_direction();
+
+}
+
+void Physics2DServerSW::body_set_one_way_collision_max_depth(RID p_body,float p_max_depth) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_one_way_collision_max_depth(p_max_depth);
+
+}
+
+float Physics2DServerSW::body_get_one_way_collision_max_depth(RID p_body) const {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,0);
+	return body->get_one_way_collision_max_depth();
+
 }
 
 void Physics2DServerSW::body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata) {

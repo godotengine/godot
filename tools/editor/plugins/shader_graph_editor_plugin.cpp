@@ -32,6 +32,642 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "spatial_editor_plugin.h"
+#include "os/keyboard.h"
+#include "canvas_item_editor_plugin.h"
+
+void GraphColorRampEdit::_input_event(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
+
+		points.remove(grabbed);
+		grabbed=-1;
+		update();
+		emit_signal("ramp_changed");
+		accept_event();
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && p_event.mouse_button.pressed) {
+
+		update();
+		int x = p_event.mouse_button.x;
+		int total_w = get_size().width-get_size().height-3;
+		if (x>total_w+3) {
+
+			if (grabbed==-1)
+				return;
+			Size2 ms = Size2(350, picker->get_combined_minimum_size().height+10);
+			picker->set_color(points[grabbed].color);
+			popup->set_pos(get_global_pos()-Size2(0,ms.height));
+			popup->set_size(ms);
+			popup->popup();
+			return;
+		}
+
+
+		float ofs = CLAMP(x/float(total_w),0,1);
+
+		grabbed=-1;
+		grabbing=true;
+		int pos=-1;
+		for(int i=0;i<points.size();i++) {
+
+			if (ABS(x-points[i].offset*total_w)<4) {
+				grabbed=i;
+			}
+			if (points[i].offset<ofs)
+				pos=i;
+		}
+
+		grabbed_at=ofs;
+		//grab or select
+		if (grabbed!=-1) {
+			return;
+		}
+		//insert
+
+
+		Point p;
+		p.offset=ofs;
+
+		Point prev;
+		Point next;
+
+		if (pos==-1) {
+
+			prev.color=Color(0,0,0);
+			prev.offset=0;
+			if (points.size()) {
+				next=points[0];
+			} else {
+				next.color=Color(1,1,1);
+				next.offset=1.0;
+			}
+		} else  {
+
+			if (pos==points.size()-1) {
+				next.color=Color(1,1,1);
+				next.offset=1.0;
+			} else {
+				next=points[pos+1];
+			}
+			prev=points[pos];
+
+		}
+
+		p.color=prev.color.linear_interpolate(next.color,(p.offset-prev.offset)/(next.offset-prev.offset));
+
+		points.push_back(p);
+		points.sort();
+		for(int i=0;i<points.size();i++) {
+			if (points[i].offset==ofs) {
+				grabbed=i;
+				break;
+			}
+		}
+
+		emit_signal("ramp_changed");
+
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && !p_event.mouse_button.pressed) {
+
+		if (grabbing) {
+			grabbing=false;
+			emit_signal("ramp_changed");
+		}
+		update();
+	}
+
+	if (p_event.type==InputEvent::MOUSE_MOTION && grabbing) {
+
+		int total_w = get_size().width-get_size().height-3;
+
+		int x = p_event.mouse_motion.x;
+		float newofs = CLAMP(x/float(total_w),0,1);
+
+		bool valid=true;
+		for(int i=0;i<points.size();i++) {
+
+			if (points[i].offset==newofs && i!=grabbed) {
+				valid=false;
+			}
+		}
+
+		if (!valid)
+			return;
+
+		points[grabbed].offset=newofs;
+
+		points.sort();
+		for(int i=0;i<points.size();i++) {
+			if (points[i].offset==newofs) {
+				grabbed=i;
+				break;
+			}
+		}
+
+		emit_signal("ramp_changed");
+
+		update();
+	}
+}
+
+void GraphColorRampEdit::_notification(int p_what){
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+		picker->connect("color_changed",this,"_color_changed");
+	}
+	if (p_what==NOTIFICATION_DRAW) {
+
+
+		Point prev;
+		prev.offset=0;
+		prev.color=Color(0,0,0);
+		int w = get_size().x;
+		int h = get_size().y;
+
+		int total_w = get_size().width-get_size().height-3;
+
+		for(int i=-1;i<points.size();i++) {
+
+			Point next;
+			if (i+1==points.size()) {
+				next.color=Color(1,1,1);
+				next.offset=1;
+			} else {
+				next=points[i+1];
+			}
+
+			if (prev.offset==next.offset) {
+				prev=next;
+				continue;
+			}
+
+			Vector<Vector2> points;
+			Vector<Color> colors;
+			points.push_back(Vector2(prev.offset*total_w,h));
+			points.push_back(Vector2(prev.offset*total_w,0));
+			points.push_back(Vector2(next.offset*total_w,0));
+			points.push_back(Vector2(next.offset*total_w,h));
+			colors.push_back(prev.color);
+			colors.push_back(prev.color);
+			colors.push_back(next.color);
+			colors.push_back(next.color);
+			draw_primitive(points,colors,Vector<Point2>());
+			prev=next;
+		}
+
+		for(int i=0;i<points.size();i++) {
+
+			Color col=i==grabbed?Color(1,0.0,0.0,0.9):Color(1,1,1,0.8);
+
+			draw_line(Vector2(points[i].offset*total_w,0),Vector2(points[i].offset*total_w,h-1),Color(0,0,0,0.7));
+			draw_line(Vector2(points[i].offset*total_w-1,h/2),Vector2(points[i].offset*total_w-1,h-1),col);
+			draw_line(Vector2(points[i].offset*total_w+1,h/2),Vector2(points[i].offset*total_w+1,h-1),col);
+			draw_line(Vector2(points[i].offset*total_w-1,h/2),Vector2(points[i].offset*total_w+1,h/2),col);
+			draw_line(Vector2(points[i].offset*total_w-1,h-1),Vector2(points[i].offset*total_w+1,h-1),col);
+
+		}
+
+		if (grabbed!=-1) {
+
+			draw_rect(Rect2(total_w+3,0,h,h),points[grabbed].color);
+		}
+
+		if (has_focus()) {
+
+			draw_line(Vector2(-1,-1),Vector2(total_w+1,-1),Color(1,1,1,0.6));
+			draw_line(Vector2(total_w+1,-1),Vector2(total_w+1,h+1),Color(1,1,1,0.6));
+			draw_line(Vector2(total_w+1,h+1),Vector2(-1,h+1),Color(1,1,1,0.6));
+			draw_line(Vector2(-1,-1),Vector2(-1,h+1),Color(1,1,1,0.6));
+		}
+
+	}
+}
+
+Size2 GraphColorRampEdit::get_minimum_size() const {
+
+	return Vector2(0,16);
+}
+
+
+void GraphColorRampEdit::_color_changed(const Color& p_color) {
+
+	if (grabbed==-1)
+		return;
+	points[grabbed].color=p_color;
+	update();
+	emit_signal("ramp_changed");
+
+}
+
+void GraphColorRampEdit::set_ramp(const Vector<float>& p_offsets,const Vector<Color>& p_colors) {
+
+	ERR_FAIL_COND(p_offsets.size()!=p_colors.size());
+	points.clear();
+	for(int i=0;i<p_offsets.size();i++) {
+		Point p;
+		p.offset=p_offsets[i];
+		p.color=p_colors[i];
+		points.push_back(p);
+	}
+
+	points.sort();
+	update();
+}
+
+Vector<float> GraphColorRampEdit::get_offsets() const{
+	Vector<float> ret;
+	for(int i=0;i<points.size();i++)
+		ret.push_back(points[i].offset);
+	return ret;
+}
+Vector<Color> GraphColorRampEdit::get_colors() const{
+
+	Vector<Color> ret;
+	for(int i=0;i<points.size();i++)
+		ret.push_back(points[i].color);
+	return ret;
+}
+
+
+void GraphColorRampEdit::_bind_methods(){
+
+	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphColorRampEdit::_input_event);
+	ObjectTypeDB::bind_method(_MD("_color_changed"),&GraphColorRampEdit::_color_changed);
+	ADD_SIGNAL(MethodInfo("ramp_changed"));
+}
+
+GraphColorRampEdit::GraphColorRampEdit(){
+
+	grabbed=-1;
+	grabbing=false;
+	set_focus_mode(FOCUS_ALL);
+
+	popup = memnew( PopupPanel );
+	picker = memnew( ColorPicker );
+	popup->add_child(picker);
+	popup->set_child_rect(picker);
+	add_child(popup);
+
+}
+////////////
+
+void GraphCurveMapEdit::_input_event(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::KEY && p_event.key.pressed && p_event.key.scancode==KEY_DELETE && grabbed!=-1) {
+
+		points.remove(grabbed);
+		grabbed=-1;
+		update();
+		emit_signal("curve_changed");
+		accept_event();
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && p_event.mouse_button.pressed) {
+
+		update();
+		Point2 p = Vector2(p_event.mouse_button.x,p_event.mouse_button.y)/get_size();
+		p.y=1.0-p.y;
+		grabbed=-1;
+		grabbing=true;
+
+		for(int i=0;i<points.size();i++) {
+
+			Vector2 ps = p*get_size();
+			Vector2 pt = Vector2(points[i].offset,points[i].height)*get_size();
+			if (ps.distance_to(pt)<4) {
+				grabbed=i;
+			}
+
+		}
+
+
+		//grab or select
+		if (grabbed!=-1) {
+			return;
+		}
+		//insert
+
+
+		Point np;
+		np.offset=p.x;
+		np.height=p.y;
+
+		points.push_back(np);
+		points.sort();
+		for(int i=0;i<points.size();i++) {
+			if (points[i].offset==p.x && points[i].height==p.y) {
+				grabbed=i;
+				break;
+			}
+		}
+
+		emit_signal("curve_changed");
+
+	}
+
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && !p_event.mouse_button.pressed) {
+
+		if (grabbing) {
+			grabbing=false;
+			emit_signal("curve_changed");
+		}
+		update();
+	}
+
+	if (p_event.type==InputEvent::MOUSE_MOTION && grabbing) {
+
+		Point2 p = Vector2(p_event.mouse_button.x,p_event.mouse_button.y)/get_size();
+		p.y=1.0-p.y;
+
+		p.x = CLAMP(p.x,0.0,1.0);
+		p.y = CLAMP(p.y,0.0,1.0);
+
+		bool valid=true;
+
+		for(int i=0;i<points.size();i++) {
+
+			if (points[i].offset==p.x && points[i].height==p.y && i!=grabbed) {
+				valid=false;
+			}
+		}
+
+		if (!valid)
+			return;
+
+		points[grabbed].offset=p.x;
+		points[grabbed].height=p.y;
+
+		points.sort();
+		for(int i=0;i<points.size();i++) {
+			if (points[i].offset==p.x && points[i].height==p.y) {
+				grabbed=i;
+				break;
+			}
+		}
+
+		emit_signal("curve_changed");
+
+		update();
+	}
+}
+
+void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const Vector2& p_c,const Vector2& p_d) {
+
+	float geometry[4][4];
+	float tmp1[4][4];
+	float tmp2[4][4];
+	float deltas[4][4];
+	double x, dx, dx2, dx3;
+	double y, dy, dy2, dy3;
+	double d, d2, d3;
+	int lastx, lasty;
+	int newx, newy;
+	int ntimes;
+	int i,j;
+
+	int xmax=get_size().x;
+	int ymax=get_size().y;
+
+	/* construct the geometry matrix from the segment */
+	for (i = 0; i < 4; i++)	{
+		geometry[i][2] = 0;
+		geometry[i][3] = 0;
+	}
+
+	geometry[0][0] = (p_a[0] * xmax);
+	geometry[1][0] = (p_b[0] * xmax);
+	geometry[2][0] = (p_c[0] * xmax);
+	geometry[3][0] = (p_d[0] * xmax);
+
+	geometry[0][1] = (p_a[1] * ymax);
+	geometry[1][1] = (p_b[1] * ymax);
+	geometry[2][1] = (p_c[1] * ymax);
+	geometry[3][1] = (p_d[1] * ymax);
+
+	/* subdivide the curve ntimes (1000) times */
+	ntimes = 4 * xmax;
+	/* ntimes can be adjusted to give a finer or coarser curve */
+	d = 1.0 / ntimes;
+	d2 = d * d;
+	d3 = d * d * d;
+
+	/* construct a temporary matrix for determining the forward differencing deltas */
+	tmp2[0][0] = 0;     tmp2[0][1] = 0;     tmp2[0][2] = 0;    tmp2[0][3] = 1;
+	tmp2[1][0] = d3;    tmp2[1][1] = d2;    tmp2[1][2] = d;    tmp2[1][3] = 0;
+	tmp2[2][0] = 6*d3;  tmp2[2][1] = 2*d2;  tmp2[2][2] = 0;    tmp2[2][3] = 0;
+	tmp2[3][0] = 6*d3;  tmp2[3][1] = 0;     tmp2[3][2] = 0;    tmp2[3][3] = 0;
+
+	/* compose the basis and geometry matrices */
+
+	static const float CR_basis[4][4] =
+	{
+	  { -0.5,  1.5, -1.5,  0.5 },
+	  {  1.0, -2.5,  2.0, -0.5 },
+	  { -0.5,  0.0,  0.5,  0.0 },
+	  {  0.0,  1.0,  0.0,  0.0 },
+	};
+
+	for (i = 0; i < 4; i++)
+	    {
+	      for (j = 0; j < 4; j++)
+		{
+		  tmp1[i][j] = (CR_basis[i][0] * geometry[0][j] +
+			      CR_basis[i][1] * geometry[1][j] +
+			      CR_basis[i][2] * geometry[2][j] +
+			      CR_basis[i][3] * geometry[3][j]);
+		}
+	    }
+	/* compose the above results to get the deltas matrix */
+
+	for (i = 0; i < 4; i++)
+	    {
+	      for (j = 0; j < 4; j++)
+		{
+		  deltas[i][j] = (tmp2[i][0] * tmp1[0][j] +
+			      tmp2[i][1] * tmp1[1][j] +
+			      tmp2[i][2] * tmp1[2][j] +
+			      tmp2[i][3] * tmp1[3][j]);
+		}
+	    }
+
+
+	/* extract the x deltas */
+	x = deltas[0][0];
+	dx = deltas[1][0];
+	dx2 = deltas[2][0];
+	dx3 = deltas[3][0];
+
+	/* extract the y deltas */
+	y = deltas[0][1];
+	dy = deltas[1][1];
+	dy2 = deltas[2][1];
+	dy3 = deltas[3][1];
+
+
+	lastx = CLAMP (x, 0, xmax);
+	lasty = CLAMP (y, 0, ymax);
+
+/*	if (fix255)
+	{
+		cd->curve[cd->outline][lastx] = lasty;
+	}
+	else
+	{
+		cd->curve_ptr[cd->outline][lastx] = lasty;
+		if(gb_debug) printf("bender_plot_curve xmax:%d ymax:%d\n", (int)xmax, (int)ymax);
+	}
+*/
+	/* loop over the curve */
+	for (i = 0; i < ntimes; i++)
+	{
+		/* increment the x values */
+		x += dx;
+		dx += dx2;
+		dx2 += dx3;
+
+		/* increment the y values */
+		y += dy;
+		dy += dy2;
+		dy2 += dy3;
+
+		newx = CLAMP ((Math::round (x)), 0, xmax);
+		newy = CLAMP ((Math::round (y)), 0, ymax);
+
+		/* if this point is different than the last one...then draw it */
+		if ((lastx != newx) || (lasty != newy))
+		{
+#if 0
+			/*
+			if(fix255)
+			{
+				/* use fixed array size (for the curve graph) */
+				cd->curve[cd->outline][newx] = newy;
+			}
+			else
+			{
+				/* use dynamic allocated curve_ptr (for the real curve) */
+				cd->curve_ptr[cd->outline][newx] = newy;
+
+				if(gb_debug) printf("outline: %d  cX: %d cY: %d\n", (int)cd->outline, (int)newx, (int)newy);
+			}
+#endif
+			draw_line(Vector2(lastx,ymax-lasty),Vector2(newx,ymax-newy),Color(0.8,0.8,0.8,0.8),2.0);
+		}
+
+		lastx = newx;
+		lasty = newy;
+	}
+}
+
+
+void GraphCurveMapEdit::_notification(int p_what){
+
+	if (p_what==NOTIFICATION_DRAW) {
+
+		draw_style_box(get_stylebox("bg","Tree"),Rect2(Point2(),get_size()));
+
+		int w = get_size().x;
+		int h = get_size().y;
+
+		Vector2 prev=Vector2(0,0);
+		Vector2 prev2=Vector2(0,0);
+
+		for(int i=-1;i<points.size();i++) {
+
+			Vector2 next;
+			Vector2 next2;
+			if (i+1>=points.size()) {
+				next=Vector2(1,1);
+			} else {
+				next=Vector2(points[i+1].offset,points[i+1].height);
+			}
+
+			if (i+2>=points.size()) {
+				next2=Vector2(1,1);
+			} else {
+				next2=Vector2(points[i+2].offset,points[i+2].height);
+			}
+
+			/*if (i==-1 && prev.offset==next.offset) {
+				prev=next;
+				continue;
+			}*/
+
+			_plot_curve(prev2,prev,next,next2);
+
+			prev2=prev;
+			prev=next;
+		}
+
+		for(int i=0;i<points.size();i++) {
+
+			Color col=i==grabbed?Color(1,0.0,0.0,0.9):Color(1,1,1,0.8);
+
+
+			draw_rect(Rect2( Vector2(points[i].offset,1.0-points[i].height)*get_size()-Vector2(2,2),Vector2(5,5)),col);
+		}
+
+/*		if (grabbed!=-1) {
+
+			draw_rect(Rect2(total_w+3,0,h,h),points[grabbed].color);
+		}
+*/
+		if (has_focus()) {
+
+			draw_line(Vector2(-1,-1),Vector2(w+1,-1),Color(1,1,1,0.6));
+			draw_line(Vector2(w+1,-1),Vector2(w+1,h+1),Color(1,1,1,0.6));
+			draw_line(Vector2(w+1,h+1),Vector2(-1,h+1),Color(1,1,1,0.6));
+			draw_line(Vector2(-1,-1),Vector2(-1,h+1),Color(1,1,1,0.6));
+		}
+
+	}
+}
+
+Size2 GraphCurveMapEdit::get_minimum_size() const {
+
+	return Vector2(64,64);
+}
+
+
+
+void GraphCurveMapEdit::set_points(const Vector<Vector2>& p_points) {
+
+
+	points.clear();
+	for(int i=0;i<p_points.size();i++) {
+		Point p;
+		p.offset=p_points[i].x;
+		p.height=p_points[i].y;
+		points.push_back(p);
+	}
+
+	points.sort();
+	update();
+}
+
+Vector<Vector2> GraphCurveMapEdit::get_points() const {
+	Vector<Vector2> ret;
+	for(int i=0;i<points.size();i++)
+		ret.push_back(Vector2(points[i].offset,points[i].height));
+	return ret;
+}
+
+void GraphCurveMapEdit::_bind_methods(){
+
+	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphCurveMapEdit::_input_event);
+	ADD_SIGNAL(MethodInfo("curve_changed"));
+}
+
+GraphCurveMapEdit::GraphCurveMapEdit(){
+
+	grabbed=-1;
+	grabbing=false;
+	set_focus_mode(FOCUS_ALL);
+
+}
+
 
 ////cbacks
 ///
@@ -200,7 +836,7 @@ void ShaderGraphView::_vec_input_changed(double p_value, int p_id,Array p_arr){
 }
 void ShaderGraphView::_xform_input_changed(int p_id, Node *p_button){
 
-	print_line("XFIC");
+
 	ToolButton *tb = p_button->cast_to<ToolButton>();
 	ped_popup->set_pos(tb->get_global_pos()+Vector2(0,tb->get_size().height));
 	ped_popup->set_size(tb->get_size());
@@ -306,6 +942,84 @@ void ShaderGraphView::_comment_edited(int p_id,Node* p_button) {
 
 }
 
+void ShaderGraphView::_color_ramp_changed(int p_id,Node* p_ramp) {
+
+	GraphColorRampEdit *cr=p_ramp->cast_to<GraphColorRampEdit>();
+
+	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+
+
+	Vector<float> offsets=cr->get_offsets();
+	Vector<Color> colors=cr->get_colors();
+
+	DVector<float> new_offsets;
+	DVector<Color> new_colors;
+	{
+		new_offsets.resize(offsets.size());
+		new_colors.resize(colors.size());
+		DVector<float>::Write ow=new_offsets.write();
+		DVector<Color>::Write cw=new_colors.write();
+		for(int i=0;i<new_offsets.size();i++) {
+			ow[i]=offsets[i];
+			cw[i]=colors[i];
+		}
+
+	}
+
+
+	DVector<float> old_offsets=graph->color_ramp_node_get_offsets(type,p_id);
+	DVector<Color> old_colors=graph->color_ramp_node_get_colors(type,p_id);
+
+	if (old_offsets.size()!=new_offsets.size())
+		ur->create_action("Add/Remove to Color Ramp");
+	else
+		ur->create_action("Modify Color Ramp",true);
+
+	ur->add_do_method(graph.ptr(),"color_ramp_node_set_ramp",type,p_id,new_colors,new_offsets);
+	ur->add_undo_method(graph.ptr(),"color_ramp_node_set_ramp",type,p_id,old_colors,old_offsets);
+	ur->add_do_method(this,"_update_graph");
+	ur->add_undo_method(this,"_update_graph");
+	block_update=true;
+	ur->commit_action();
+	block_update=false;
+}
+
+void ShaderGraphView::_curve_changed(int p_id,Node* p_curve) {
+
+	GraphCurveMapEdit *cr=p_curve->cast_to<GraphCurveMapEdit>();
+
+	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+
+
+	Vector<Point2> points=cr->get_points();
+
+	DVector<Vector2> new_points;
+	{
+		new_points.resize(points.size());
+		DVector<Vector2>::Write ow=new_points.write();
+		for(int i=0;i<new_points.size();i++) {
+			ow[i]=points[i];
+		}
+
+	}
+
+
+	DVector<Vector2> old_points=graph->curve_map_node_get_points(type,p_id);
+
+	if (old_points.size()!=new_points.size())
+		ur->create_action("Add/Remove to Curve Map");
+	else
+		ur->create_action("Modify Curve Map",true);
+
+	ur->add_do_method(graph.ptr(),"curve_map_node_set_points",type,p_id,new_points);
+	ur->add_undo_method(graph.ptr(),"curve_map_node_set_points",type,p_id,old_points);
+	ur->add_do_method(this,"_update_graph");
+	ur->add_undo_method(this,"_update_graph");
+	block_update=true;
+	ur->commit_action();
+	block_update=false;
+}
+
 
 void ShaderGraphView::_input_name_changed(const String& p_name, int p_id, Node *p_line_edit) {
 
@@ -385,6 +1099,41 @@ void ShaderGraphView::_connection_request(const String& p_from, int p_from_slot,
 
 }
 
+void ShaderGraphView::_disconnection_request(const String& p_from, int p_from_slot,const String& p_to,int p_to_slot) {
+
+	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+
+	int from_idx=-1;
+	int to_idx=-1;
+	for (Map<int,GraphNode*>::Element *E=node_map.front();E;E=E->next()) {
+
+		if (p_from==E->get()->get_name())
+			from_idx=E->key();
+		if (p_to==E->get()->get_name())
+			to_idx=E->key();
+	}
+
+	ERR_FAIL_COND(from_idx==-1);
+	ERR_FAIL_COND(to_idx==-1);
+
+	if (!graph->is_node_connected(type,from_idx,p_from_slot,to_idx,p_to_slot))
+		return; //nothing to disconnect
+
+	ur->create_action("Disconnect Graph Nodes");
+
+	List<ShaderGraph::Connection> conns;
+
+	graph->get_node_connections(type,&conns);
+	//disconnect/reconnect dependencies
+	ur->add_do_method(graph.ptr(),"disconnect_node",type,from_idx,p_from_slot,to_idx,p_to_slot);
+	ur->add_undo_method(graph.ptr(),"connect_node",type,from_idx,p_from_slot,to_idx,p_to_slot);
+	ur->add_do_method(this,"_update_graph");
+	ur->add_undo_method(this,"_update_graph");
+	ur->commit_action();
+
+
+}
+
 void ShaderGraphView::_node_removed(int p_id) {
 
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
@@ -410,7 +1159,7 @@ void ShaderGraphView::_node_removed(int p_id) {
 
 void ShaderGraphView::_node_moved(const Vector2& p_from, const Vector2& p_to,int p_id) {
 
-	print_line("moved from "+p_from+" to "+p_to);
+
 	ERR_FAIL_COND(!node_map.has(p_id));
 	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 	ur->create_action("Move Shader Graph Node");
@@ -433,8 +1182,8 @@ void ShaderGraphView::_create_node(int p_id) {
 	GraphNode *gn = memnew( GraphNode );
 	gn->set_show_close_button(true);
 	Color typecol[4]={
-		Color(0.2,1,0.2),
-		Color(0.7,0.1,1),
+		Color(0.9,0.4,1),
+		Color(0.8,1,0.2),
 		Color(1,0.2,0.2),
 		Color(0,1,1)
 	};
@@ -710,14 +1459,9 @@ void ShaderGraphView::_create_node(int p_id) {
 
 
 		} break; // mat4 x mat4
-		case ShaderGraph::NODE_XFORM_VEC_MULT:
-		case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
+		case ShaderGraph::NODE_XFORM_VEC_MULT: {
 
-			if (graph->node_get_type(type,p_id)==ShaderGraph::NODE_XFORM_VEC_INV_MULT)
-				gn->set_title("XFVecMult");
-			else
-				gn->set_title("XFVecInvMult");
-
+			gn->set_title("XFVecMult");
 
 			Button *button = memnew( Button("RotOnly"));
 			button->set_toggle_mode(true);
@@ -738,6 +1482,32 @@ void ShaderGraphView::_create_node(int p_id) {
 
 			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+
+		} break;
+		case ShaderGraph::NODE_XFORM_VEC_INV_MULT: {
+
+			gn->set_title("XFVecInvMult");
+
+
+			Button *button = memnew( Button("RotOnly"));
+			button->set_toggle_mode(true);
+			button->set_pressed(graph->xform_vec_mult_node_get_no_translation(type,p_id));
+			button->connect("toggled",this,"_xform_inv_rev_changed",varray(p_id));
+
+			gn->add_child(button);
+
+			gn->add_child( memnew(Label("vec")));
+			HBoxContainer *hbc = memnew( HBoxContainer );
+			hbc->add_constant_override("separation",0);
+			hbc->add_child( memnew(Label("xf")));
+			hbc->add_spacer();
+			Label *l = memnew(Label("out"));
+			l->set_align(Label::ALIGN_RIGHT);
+			hbc->add_child( l);
+			gn->add_child(hbc);
+
+			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_XFORM,typecol[ShaderGraph::SLOT_TYPE_XFORM],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 
 
 		} break; // mat4 x vec3 inverse mult (with no-translation option)
@@ -967,9 +1737,99 @@ void ShaderGraphView::_create_node(int p_id) {
 
 			gn->set_slot(0,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
 			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
-			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],false,0,Color());
+			gn->set_slot(2,true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR],false,0,Color());
 
 		} break; // vec3 interpolation  (with optional curve)
+		case ShaderGraph::NODE_COLOR_RAMP: {
+
+			gn->set_title("ColorRamp");
+			GraphColorRampEdit * ramp  = memnew( GraphColorRampEdit );
+
+			DVector<real_t> offsets = graph->color_ramp_node_get_offsets(type,p_id);
+			DVector<Color> colors = graph->color_ramp_node_get_colors(type,p_id);
+
+			int oc = offsets.size();
+
+			if (oc) {
+				DVector<real_t>::Read rofs = offsets.read();
+				DVector<Color>::Read rcol = colors.read();
+
+				Vector<float> ofsv;
+				Vector<Color> colorv;
+				for(int i=0;i<oc;i++) {
+					ofsv.push_back(rofs[i]);
+					colorv.push_back(rcol[i]);
+				}
+
+				ramp->set_ramp(ofsv,colorv);
+
+			}
+
+			ramp->connect("ramp_changed",this,"_color_ramp_changed",varray(p_id,ramp));
+			ramp->set_custom_minimum_size(Size2(128,1));
+			gn->add_child(ramp);
+
+
+			HBoxContainer *hbc = memnew( HBoxContainer );
+			hbc->add_constant_override("separation",0);
+			hbc->add_child( memnew(Label("c")));
+			hbc->add_spacer();
+			Label *l=memnew(Label("rgb"));
+			l->set_align(Label::ALIGN_RIGHT);
+			hbc->add_child( l);
+			gn->add_child(hbc);
+			l=memnew(Label("alpha"));
+			l->set_align(Label::ALIGN_RIGHT);
+			gn->add_child( l);
+
+
+			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
+			gn->set_slot(2,false,ShaderGraph::SLOT_MAX,Color(),true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR]);
+
+
+		} break; // scalar interpolation (with optional curve)
+		case ShaderGraph::NODE_CURVE_MAP: {
+
+			gn->set_title("CurveMap");
+			GraphCurveMapEdit * map  = memnew( GraphCurveMapEdit );
+
+			DVector<Vector2> points = graph->curve_map_node_get_points(type,p_id);
+
+			int oc = points.size();
+
+			if (oc) {
+				DVector<Vector2>::Read rofs = points.read();
+
+
+				Vector<Vector2> ofsv;
+				for(int i=0;i<oc;i++) {
+					ofsv.push_back(rofs[i]);
+				}
+
+				map->set_points(ofsv);
+
+			}
+			map->connect("curve_changed",this,"_curve_changed",varray(p_id,map));
+
+			//map->connect("map_changed",this,"_curve_map_changed",varray(p_id,map));
+			map->set_custom_minimum_size(Size2(128,64));
+			gn->add_child(map);
+
+			HBoxContainer *hbc = memnew( HBoxContainer );
+			hbc->add_constant_override("separation",0);
+			hbc->add_child( memnew(Label("c")));
+			hbc->add_spacer();
+			Label *l=memnew(Label("cmap"));
+			l->set_align(Label::ALIGN_RIGHT);
+			hbc->add_child( l);
+			gn->add_child(hbc);
+
+
+			gn->set_slot(1,true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR],true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR]);
+
+
+		} break; // scalar interpolation (with optional curve)
+
 		case ShaderGraph::NODE_SCALAR_INPUT: {
 
 			gn->set_title("ScalarUniform");
@@ -1117,6 +1977,28 @@ void ShaderGraphView::_create_node(int p_id) {
 			gn->set_slot(3,false,0,Color(),true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR]);
 
 		} break; // cubemap input (assignable in material)
+		case ShaderGraph::NODE_DEFAULT_TEXTURE: {
+
+			gn->set_title("CanvasItemTex");
+			HBoxContainer *hbc = memnew( HBoxContainer );
+			hbc->add_constant_override("separation",0);
+			hbc->add_child( memnew(Label("UV")));
+			hbc->add_spacer();
+			Label *l=memnew(Label("RGB"));
+			l->set_align(Label::ALIGN_RIGHT);
+			hbc->add_child(l);
+			gn->add_child(hbc);
+			l = memnew( Label );
+			l->set_text("Alpha");
+			l->set_align(Label::ALIGN_RIGHT);
+			gn->add_child(l);
+
+			gn->set_slot(0,true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC],true,ShaderGraph::SLOT_TYPE_VEC,typecol[ShaderGraph::SLOT_TYPE_VEC]);
+			gn->set_slot(1,false,0,Color(),true,ShaderGraph::SLOT_TYPE_SCALAR,typecol[ShaderGraph::SLOT_TYPE_SCALAR]);
+
+
+		} break; // screen texture sampler (takes UV) (only usable in fragment case Shader)
+
 		case ShaderGraph::NODE_OUTPUT: {
 			gn->set_title("Output");
 
@@ -1157,7 +2039,7 @@ void ShaderGraphView::_create_node(int p_id) {
 	graph_edit->add_child(gn);
 	node_map[p_id]=gn;
 	gn->set_offset(graph->node_get_pos(type,p_id));
-	print_line("NODE "+itos(p_id)+" OFS "+gn->get_offset());
+
 
 }
 
@@ -1180,7 +2062,7 @@ void ShaderGraphView::_update_graph() {
 
 	List<int> nl;
 	graph->get_node_list(type,&nl);
-	print_line("graph nodes: "+itos(nl.size()));
+
 	for(List<int>::Element *E=nl.front();E;E=E->next()) {
 
 		_create_node(E->get());
@@ -1199,11 +2081,29 @@ void ShaderGraphView::_update_graph() {
 
 }
 
+void ShaderGraphView::_sg_updated() {
+
+	if (!graph.is_valid())
+		return;
+	switch(graph->get_graph_error(type)) {
+		case ShaderGraph::GRAPH_OK: status->set_text(""); break;
+		case ShaderGraph::GRAPH_ERROR_CYCLIC: status->set_text("Error: Cyclic Connection Link"); break;
+		case ShaderGraph::GRAPH_ERROR_MISSING_CONNECTIONS: status->set_text("Error: Missing Input Connections"); break;
+	}
+}
+
 void ShaderGraphView::set_graph(Ref<ShaderGraph> p_graph){
 
-	print_line("GRAPH EDIT: "+itos(p_graph.is_valid()));
+
+	if (graph.is_valid()) {
+		graph->disconnect("updated",this,"_sg_updated");
+	}
 	graph=p_graph;
+	if (graph.is_valid()) {
+		graph->connect("updated",this,"_sg_updated");
+	}
 	_update_graph();
+	_sg_updated();
 
 }
 
@@ -1262,6 +2162,7 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_move_node",&ShaderGraphView::_move_node);
 	ObjectTypeDB::bind_method("_node_removed",&ShaderGraphView::_node_removed);
 	ObjectTypeDB::bind_method("_connection_request",&ShaderGraphView::_connection_request);
+	ObjectTypeDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
 
 	ObjectTypeDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
 	ObjectTypeDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
@@ -1285,7 +2186,10 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_variant_edited",&ShaderGraphView::_variant_edited);
 	ObjectTypeDB::bind_method("_cube_edited",&ShaderGraphView::_cube_edited);
 	ObjectTypeDB::bind_method("_comment_edited",&ShaderGraphView::_comment_edited);
+	ObjectTypeDB::bind_method("_color_ramp_changed",&ShaderGraphView::_color_ramp_changed);
+	ObjectTypeDB::bind_method("_curve_changed",&ShaderGraphView::_curve_changed);
 
+	ObjectTypeDB::bind_method("_sg_updated",&ShaderGraphView::_sg_updated);
 }
 
 ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
@@ -1295,8 +2199,15 @@ ShaderGraphView::ShaderGraphView(ShaderGraph::ShaderType p_type) {
 	block_update=false;
 	ped_popup = memnew( CustomPropertyEditor );
 	graph_edit->add_child(ped_popup);
-
-
+	status = memnew( Label );
+	graph_edit->get_top_layer()->add_child(status);
+	status->set_pos(Vector2(5,5));
+	status->add_color_override("font_color_shadow",Color(0,0,0));
+	status->add_color_override("font_color",Color(1,0.4,0.3));
+	status->add_constant_override("shadow_as_outline",1);
+	status->add_constant_override("shadow_offset_x",2);
+	status->add_constant_override("shadow_offset_y",2);
+	status->set_text("");
 }
 
 
@@ -1318,6 +2229,25 @@ void ShaderGraphEditor::_add_node(int p_type) {
 
 void ShaderGraphEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		for(int i=0;i<ShaderGraph::NODE_TYPE_MAX;i++) {
+
+			if (i==ShaderGraph::NODE_OUTPUT)
+				continue;
+			if (!_2d && i==ShaderGraph::NODE_DEFAULT_TEXTURE)
+				continue;
+
+			String nn = node_names[i];
+			String ic = nn.get_slice(":",0);
+			String v = nn.get_slice(":",1);
+			bool addsep=false;
+			if (nn.ends_with(":")) {
+				addsep=true;
+			}
+			menu->get_popup()->add_icon_item(get_icon(ic,"EditorIcons"),v,i);
+			if (addsep)
+				menu->get_popup()->add_separator();
+		}
 		menu->get_popup()->connect("item_pressed",this,"_add_node");
 
 
@@ -1332,62 +2262,53 @@ void ShaderGraphEditor::_bind_methods() {
 
 
 const char* ShaderGraphEditor::node_names[ShaderGraph::NODE_TYPE_MAX]={
-	"Input", // all inputs (shader type dependent)
-	"Scalar Constant", //scalar constant
-	"Vector Constant", //vec3 constant
-	"RGB Constant", //rgb constant (shows a color picker instead)
-	"XForm Constant", // 4x4 matrix constant
-	"Time:", // time in seconds
-	"Screen Sample", // screen texture sampler (takes uv) (only usable in fragment shader)
-	"Scalar Operator", // scalar vs scalar op (mul", add", div", etc)
-	"Vector Operator", // vec3 vs vec3 op (mul",ad",div",crossprod",etc)
-	"Scalar+Vector Operator", // vec3 vs scalar op (mul", add", div", etc)
-	"RGB Operator:", // vec3 vs vec3 rgb op (with scalar amount)", like brighten", darken", burn", dodge", multiply", etc.
-	"XForm Multiply", // mat4 x mat4
-	"XForm+Vector Multiply", // mat4 x vec3 mult (with no-translation option)
-	"XForm+Vector InvMultiply:", // mat4 x vec3 inverse mult (with no-translation option)
-	"Scalar Function", // scalar function (sin", cos", etc)
-	"Vector Function", // vector function (normalize", negate", reciprocal", rgb2hsv", hsv2rgb", etc", etc)
-	"Vector Length", // vec3 length
-	"Dot Product:", // vec3 . vec3 (dot product -> scalar output)
-	"Vector -> Scalars", // 1 vec3 input", 3 scalar outputs
-	"Scalars -> Vector", // 3 scalar input", 1 vec3 output
-	"XForm -> Vectors", // 3 vec input", 1 xform output
-	"Vectors -> XForm:", // 3 vec input", 1 xform output
-	"Scalar Interpolate", // scalar interpolation (with optional curve)
-	"Vector Interpolate:", // vec3 interpolation  (with optional curve)
-	"Scalar Uniform", // scalar uniform (assignable in material)
-	"Vector Uniform", // vec3 uniform (assignable in material)
-	"RGB Uniform", // color uniform (assignable in material)
-	"XForm Uniform", // mat4 uniform (assignable in material)
-	"Texture Uniform", // texture input (assignable in material)
-	"CubeMap Uniform:", // cubemap input (assignable in material)
-	"Output", // output (shader type dependent)
-	"Comment", // comment
+	"GraphInput:Input", // all inputs (shader type dependent)
+	"GraphScalar:Scalar Constant", //scalar constant
+	"GraphVector:Vector Constant", //vec3 constant
+	"GraphRgb:RGB Constant", //rgb constant (shows a color picker instead)
+	"GraphXform:XForm Constant", // 4x4 matrix constant
+	"GraphTime:Time:", // time in seconds
+	"GraphTexscreen:Screen Sample", // screen texture sampler (takes uv) (only usable in fragment shader)
+	"GraphScalarOp:Scalar Operator", // scalar vs scalar op (mul", add", div", etc)
+	"GraphVecOp:Vector Operator", // vec3 vs vec3 op (mul",ad",div",crossprod",etc)
+	"GraphVecScalarOp:Scalar+Vector Operator", // vec3 vs scalar op (mul", add", div", etc)
+	"GraphRgbOp:RGB Operator:", // vec3 vs vec3 rgb op (with scalar amount)", like brighten", darken", burn", dodge", multiply", etc.
+	"GraphXformMult:XForm Multiply", // mat4 x mat4
+	"GraphXformVecMult:XForm+Vector Multiply", // mat4 x vec3 mult (with no-translation option)
+	"GraphXformVecImult:Form+Vector InvMultiply:", // mat4 x vec3 inverse mult (with no-translation option)
+	"GraphXformScalarFunc:Scalar Function", // scalar function (sin", cos", etc)
+	"GraphXformVecFunc:Vector Function", // vector function (normalize", negate", reciprocal", rgb2hsv", hsv2rgb", etc", etc)
+	"GraphVecLength:Vector Length", // vec3 length
+	"GraphVecDp:Dot Product:", // vec3 . vec3 (dot product -> scalar output)
+	"GraphVecToScalars:Vector -> Scalars", // 1 vec3 input", 3 scalar outputs
+	"GraphScalarsToVec:Scalars -> Vector", // 3 scalar input", 1 vec3 output
+	"GraphXformToVecs:XForm -> Vectors", // 3 vec input", 1 xform output
+	"GraphVecsToXform:Vectors -> XForm:", // 3 vec input", 1 xform output
+	"GraphScalarInterp:Scalar Interpolate", // scalar interpolation (with optional curve)
+	"GraphVecInterp:Vector Interpolate:", // vec3 interpolation  (with optional curve)
+    "GraphColorRamp:Color Ramp", // vec3 interpolation  (with optional curve)
+    "GraphCurveMap:Curve Remap:", // vec3 interpolation  (with optional curve)
+    "GraphScalarUniform:Scalar Uniform", // scalar uniform (assignable in material)
+	"GraphVectorUniform:Vector Uniform", // vec3 uniform (assignable in material)
+	"GraphRgbUniform:RGB Uniform", // color uniform (assignable in material)
+	"GraphXformUniform:XForm Uniform", // mat4 uniform (assignable in material)
+	"GraphTextureUniform:Texture Uniform", // texture input (assignable in material)
+	"GraphCubeUniform:CubeMap Uniform:", // cubemap input (assignable in material)
+    "GraphDefaultTexture:CanvasItem Texture:", // cubemap input (assignable in material)
+    "Output", // output (shader type dependent)
+	"GraphComment:Comment", // comment
 
 
 };
-ShaderGraphEditor::ShaderGraphEditor() {
+ShaderGraphEditor::ShaderGraphEditor(bool p_2d) {
+	_2d=p_2d;
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 	menu = memnew( MenuButton );
-	menu->set_text("Add..");
+	menu->set_text("Add Node..");
 	hbc->add_child(menu);
 	add_child(hbc);
-	for(int i=0;i<ShaderGraph::NODE_TYPE_MAX;i++) {
 
-		if (i==ShaderGraph::NODE_OUTPUT)
-			continue;
-		String v = node_names[i];
-		bool addsep=false;
-		if (v.ends_with(":")) {
-			addsep=true;
-			v=v.substr(0,v.length()-1);
-		}
-		menu->get_popup()->add_item(v,i);
-		if (addsep)
-			menu->get_popup()->add_separator();
-	}
 
 	tabs = memnew(TabContainer);
 	tabs->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1404,7 +2325,12 @@ ShaderGraphEditor::ShaderGraphEditor() {
 		graph_edits[i]->get_graph_edit()->set_name(sname[i]);
 		tabs->add_child(graph_edits[i]->get_graph_edit());
 		graph_edits[i]->get_graph_edit()->connect("connection_request",graph_edits[i],"_connection_request");
+		graph_edits[i]->get_graph_edit()->connect("disconnection_request",graph_edits[i],"_disconnection_request");
+		graph_edits[i]->get_graph_edit()->set_right_disconnects(true);
+
 	}
+
+	tabs->set_current_tab(1);
 
 	set_custom_minimum_size(Size2(100,300));
 }
@@ -1417,7 +2343,13 @@ void ShaderGraphEditorPlugin::edit(Object *p_object) {
 
 bool ShaderGraphEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("ShaderGraph");
+	ShaderGraph *shader=p_object->cast_to<ShaderGraph>();
+	if (!shader)
+		return false;
+	if (_2d)
+		return shader->get_mode()==Shader::MODE_CANVAS_ITEM;
+	else
+		return shader->get_mode()==Shader::MODE_MATERIAL;
 }
 
 void ShaderGraphEditorPlugin::make_visible(bool p_visible) {
@@ -1431,12 +2363,16 @@ void ShaderGraphEditorPlugin::make_visible(bool p_visible) {
 
 }
 
-ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node) {
+ShaderGraphEditorPlugin::ShaderGraphEditorPlugin(EditorNode *p_node, bool p_2d) {
 
+	_2d=p_2d;
 	editor=p_node;
-	shader_editor = memnew( ShaderGraphEditor );
+	shader_editor = memnew( ShaderGraphEditor(p_2d) );
 	shader_editor->hide();
-	SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
+	if (p_2d)
+		CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(shader_editor);
+	else
+		SpatialEditor::get_singleton()->get_shader_split()->add_child(shader_editor);
 
 
 //	editor->get_viewport()->add_child(shader_editor);

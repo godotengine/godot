@@ -51,6 +51,7 @@ private:
 
 
 
+	bool right_disconnects;
 	bool updating;
 	List<Connection> connections;
 
@@ -68,6 +69,8 @@ private:
 	void _top_layer_draw();
 	void _update_scroll_offset();
 
+	Array _get_connection_list() const;
+
 friend class GraphEditFilter;
 	bool _filter_input(const Point2& p_point);
 protected:
@@ -84,7 +87,11 @@ public:
 	void disconnect_node(const StringName& p_from, int p_from_port,const StringName& p_to,int p_to_port);
 	void clear_connections();
 
-	void get_connection_list(List<Connection> *r_connections);
+	GraphEditFilter *get_top_layer() const { return top_layer; }
+	void get_connection_list(List<Connection> *r_connections) const;
+
+	void set_right_disconnects(bool p_enable);
+	bool is_right_disconnects_enabled() const;
 
 
 	GraphEdit();

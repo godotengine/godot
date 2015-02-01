@@ -111,7 +111,7 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"background/mode",PROPERTY_HINT_ENUM,"Keep,Default Color,Color,Texture,Cubemap,Texture RGBE,Cubemap RGBE"),_SCS("set_background"),_SCS("get_background"));
 	ADD_PROPERTYI( PropertyInfo(Variant::COLOR,"background/color"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_COLOR);
 	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_TEXTURE);
-	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/cubemap",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_CUBEMAP);
+	ADD_PROPERTYI( PropertyInfo(Variant::OBJECT,"background/cubemap",PROPERTY_HINT_RESOURCE_TYPE,"CubeMap"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_CUBEMAP);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/energy",PROPERTY_HINT_RANGE,"0,128,0.01"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_ENERGY);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/scale",PROPERTY_HINT_RANGE,"0.001,16,0.001"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_SCALE);
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"background/glow",PROPERTY_HINT_RANGE,"0.00,8,0.01"),_SCS("set_background_param"),_SCS("get_background_param"), BG_PARAM_GLOW);

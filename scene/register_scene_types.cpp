@@ -272,7 +272,7 @@ void register_scene_types() {
 
 	ObjectTypeDB::register_type<Control>();
 //	ObjectTypeDB::register_type<EmptyControl>();
-	ObjectTypeDB::add_compatibility_type("EmptyControl","control");
+	ObjectTypeDB::add_compatibility_type("EmptyControl","Control");
 	ObjectTypeDB::register_type<Button>();
 	ObjectTypeDB::register_type<Label>();
 	ObjectTypeDB::register_type<HScrollBar>();
@@ -496,16 +496,17 @@ void register_scene_types() {
 
 	/* REGISTER RESOURCES */
 
+	ObjectTypeDB::register_virtual_type<Shader>();
+	ObjectTypeDB::register_virtual_type<ShaderGraph>();
+	ObjectTypeDB::register_type<CanvasItemShader>();
+	ObjectTypeDB::register_type<CanvasItemShaderGraph>();
+
 #ifndef _3D_DISABLED
 	ObjectTypeDB::register_type<Mesh>();
 	ObjectTypeDB::register_virtual_type<Material>();
 	ObjectTypeDB::register_type<FixedMaterial>();
-	//ObjectTypeDB::register_type<ParticleSystemMaterial>();
-	//ObjectTypeDB::register_type<UnshadedMaterial>();
 	ObjectTypeDB::register_type<ShaderMaterial>();
 	ObjectTypeDB::register_type<RoomBounds>();
-	ObjectTypeDB::register_virtual_type<Shader>();
-	ObjectTypeDB::register_virtual_type<ShaderGraph>();
 	ObjectTypeDB::register_type<MaterialShaderGraph>();
 	ObjectTypeDB::register_type<MaterialShader>();
 	ObjectTypeDB::add_compatibility_type("Shader","MaterialShader");

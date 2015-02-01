@@ -62,6 +62,8 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);
 	ObjectTypeDB::bind_method(_MD("get_mouse_mode"),&Input::get_mouse_mode);
 	ObjectTypeDB::bind_method(_MD("warp_mouse_pos","to"),&Input::warp_mouse_pos);
+	ObjectTypeDB::bind_method(_MD("action_press"),&Input::action_press);
+	ObjectTypeDB::bind_method(_MD("action_release"),&Input::action_release);
 
 	BIND_CONSTANT( MOUSE_MODE_VISIBLE );
 	BIND_CONSTANT( MOUSE_MODE_HIDDEN );

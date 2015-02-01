@@ -138,7 +138,8 @@ void Tween::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("interpolate_property","object","property","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_property, DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("interpolate_method","object","method","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::interpolate_method, DEFVAL(0) );
-	ObjectTypeDB::bind_method(_MD("interpolate_callback","object","times_in_sec","callback","args"),&Tween::interpolate_callback, DEFVAL(Variant()) );
+	ObjectTypeDB::bind_method(_MD("interpolate_callback","object","times_in_sec","callback","arg1", "arg2","arg3","arg4","arg5"),&Tween::interpolate_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()) );
+	ObjectTypeDB::bind_method(_MD("interpolate_deferred_callback","object","times_in_sec","callback","arg1","arg2","arg3","arg4","arg5"),&Tween::interpolate_deferred_callback, DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(Variant()) );
 	ObjectTypeDB::bind_method(_MD("follow_property","object","property","initial_val","target","target_property","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_property, DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("follow_method","object","method","initial_val","target","target_method","times_in_sec","trans_type","ease_type","delay"),&Tween::follow_method, DEFVAL(0) );
 	ObjectTypeDB::bind_method(_MD("targeting_property","object","property","initial","initial_val","final_val","times_in_sec","trans_type","ease_type","delay"),&Tween::targeting_property, DEFVAL(0) );
@@ -513,11 +514,33 @@ void Tween::_tween_process(float p_delta) {
 			if(data.finish) {
 
 				Variant::CallError error;
-				if (data.arg.get_type() != Variant::NIL) {
-					Variant *arg[1] = { &data.arg };
-					object->call(data.key, (const Variant **) arg, 1, error);
-				} else {
-					object->call(data.key, NULL, 0, error);
+				if (data.call_deferred) {
+
+					switch (data.args) {
+					case 0:
+						object->call_deferred(data.key); break;
+					case 1:
+						object->call_deferred(data.key, data.arg[0]); break;
+					case 2:
+						object->call_deferred(data.key, data.arg[0], data.arg[1]); break;
+					case 3:
+						object->call_deferred(data.key, data.arg[0], data.arg[1], data.arg[2]); break;
+					case 4:
+						object->call_deferred(data.key, data.arg[0], data.arg[1], data.arg[2], data.arg[3]); break;
+					case 5:
+						object->call_deferred(data.key, data.arg[0], data.arg[1], data.arg[2], data.arg[3], data.arg[4]); break;
+					}
+
+				}
+				else {
+					Variant *arg[5] = {
+						&data.arg[0],
+						&data.arg[1],
+						&data.arg[2],
+						&data.arg[3],
+						&data.arg[4],
+					};
+					object->call(data.key, (const Variant **) arg, data.args, error);
 				}
 			}
 			continue;
@@ -1003,7 +1026,7 @@ bool Tween::interpolate_method(Object *p_object
 bool Tween::interpolate_callback(Object *p_object
 	, real_t p_times_in_sec
 	, String p_callback
-	, Variant p_arg
+	, VARIANT_ARG_DECLARE
 ) {
 
 	ERR_FAIL_COND_V(pending_update != 0, false);
@@ -1016,13 +1039,85 @@ bool Tween::interpolate_callback(Object *p_object
 	data.active = true;
 	data.type = INTER_CALLBACK;
 	data.finish = false;
+	data.call_deferred = false;
 	data.elapsed = 0;
 
 	data.id = p_object->get_instance_ID();
 	data.key = p_callback;
 	data.times_in_sec = p_times_in_sec;
 	data.delay = 0;
-	data.arg = p_arg;
+
+	int args=0;
+	if (p_arg5.get_type()!=Variant::NIL)
+		args=5;
+	else if (p_arg4.get_type()!=Variant::NIL)
+		args=4;
+	else if (p_arg3.get_type()!=Variant::NIL)
+		args=3;
+	else if (p_arg2.get_type()!=Variant::NIL)
+		args=2;
+	else if (p_arg1.get_type()!=Variant::NIL)
+		args=1;
+	else 
+		args=0;
+
+	data.args = args;
+	data.arg[0] = p_arg1;
+	data.arg[1] = p_arg2;
+	data.arg[2] = p_arg3;
+	data.arg[3] = p_arg4;
+	data.arg[4] = p_arg5;
+
+	pending_update ++;
+	interpolates.push_back(data);
+	pending_update --;
+	return true;
+}
+
+bool Tween::interpolate_deferred_callback(Object *p_object
+	, real_t p_times_in_sec
+	, String p_callback
+	, VARIANT_ARG_DECLARE
+) {
+
+	ERR_FAIL_COND_V(pending_update != 0, false);
+	ERR_FAIL_COND_V(p_object == NULL, false);
+	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
+
+	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
+
+	InterpolateData data;
+	data.active = true;
+	data.type = INTER_CALLBACK;
+	data.finish = false;
+	data.call_deferred = true;
+	data.elapsed = 0;
+
+	data.id = p_object->get_instance_ID();
+	data.key = p_callback;
+	data.times_in_sec = p_times_in_sec;
+	data.delay = 0;
+
+	int args=0;
+	if (p_arg5.get_type()!=Variant::NIL)
+		args=5;
+	else if (p_arg4.get_type()!=Variant::NIL)
+		args=4;
+	else if (p_arg3.get_type()!=Variant::NIL)
+		args=3;
+	else if (p_arg2.get_type()!=Variant::NIL)
+		args=2;
+	else if (p_arg1.get_type()!=Variant::NIL)
+		args=1;
+	else 
+		args=0;
+
+	data.args = args;
+	data.arg[0] = p_arg1;
+	data.arg[1] = p_arg2;
+	data.arg[2] = p_arg3;
+	data.arg[3] = p_arg4;
+	data.arg[4] = p_arg5;
 
 	pending_update ++;
 	interpolates.push_back(data);

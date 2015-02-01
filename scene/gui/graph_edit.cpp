@@ -1,5 +1,6 @@
 #include "graph_edit.h"
-
+#include "os/input.h"
+#include "os/keyboard.h"
 bool GraphEditFilter::has_point(const Point2& p_point) const {
 
 	return ge->_filter_input(p_point);
@@ -53,7 +54,7 @@ void GraphEdit::disconnect_node(const StringName& p_from, int p_from_port,const 
 	}
 }
 
-void GraphEdit::get_connection_list(List<Connection> *r_connections) {
+void GraphEdit::get_connection_list(List<Connection> *r_connections) const {
 
 	*r_connections=connections;
 }
@@ -88,7 +89,6 @@ void GraphEdit::_update_scroll() {
 
 	updating=true;
 	Rect2 screen;
-	screen.size=get_size();
 	for(int i=0;i<get_child_count();i++) {
 
 		GraphNode *gn=get_child(i)->cast_to<GraphNode>();
@@ -100,6 +100,10 @@ void GraphEdit::_update_scroll() {
 		r.size=gn->get_size();
 		screen = screen.merge(r);
 	}
+
+	screen.pos-=get_size();
+	screen.size+=get_size()*2.0;
+
 
 	h_scroll->set_min(screen.pos.x);
 	h_scroll->set_max(screen.pos.x+screen.size.x);
@@ -265,6 +269,37 @@ void GraphEdit::_top_layer_input(const InputEvent& p_ev) {
 				Vector2 pos = gn->get_connection_input_pos(j)+gn->get_pos();
 
 				if (pos.distance_to(mpos)<grab_r) {
+
+					if (right_disconnects) {
+						//check disconnect
+						for (List<Connection>::Element*E=connections.front();E;E=E->next()) {
+
+							if (E->get().to==gn->get_name() && E->get().to_port==j) {
+
+								Node*fr = get_node(String(E->get().from));
+								if (fr && fr->cast_to<GraphNode>()) {
+
+									connecting_from=E->get().from;
+									connecting_index=E->get().from_port;
+									connecting_out=true;
+									connecting_type=fr->cast_to<GraphNode>()->get_connection_output_type(E->get().from_port);
+									connecting_color=fr->cast_to<GraphNode>()->get_connection_output_color(E->get().from_port);
+									connecting_target=false;
+									connecting_to=pos;
+
+									emit_signal("disconnection_request",E->get().from,E->get().from_port,E->get().to,E->get().to_port);
+									fr = get_node(String(connecting_from)); //maybe it was erased
+									if (fr && fr->cast_to<GraphNode>()) {
+										connecting=true;
+									}
+									return;
+								}
+
+							}
+						}
+					}
+
+
 					connecting=true;
 					connecting_from=gn->get_name();
 					connecting_index=j;
@@ -461,7 +496,7 @@ void GraphEdit::_top_layer_draw() {
 
 void GraphEdit::_input_event(const InputEvent& p_ev) {
 
-	if (p_ev.type==InputEvent::MOUSE_MOTION && p_ev.mouse_motion.button_mask&BUTTON_MASK_MIDDLE) {
+	if (p_ev.type==InputEvent::MOUSE_MOTION && (p_ev.mouse_motion.button_mask&BUTTON_MASK_MIDDLE || (p_ev.mouse_motion.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 		h_scroll->set_val( h_scroll->get_val() - p_ev.mouse_motion.relative_x );
 		v_scroll->set_val( v_scroll->get_val() - p_ev.mouse_motion.relative_y );
 	}
@@ -474,11 +509,41 @@ void GraphEdit::clear_connections() {
 }
 
 
+void GraphEdit::set_right_disconnects(bool p_enable) {
+
+	right_disconnects=p_enable;
+}
+
+bool GraphEdit::is_right_disconnects_enabled() const{
+
+	return right_disconnects;
+}
+
+Array GraphEdit::_get_connection_list() const {
+
+	List<Connection> conns;
+	get_connection_list(&conns);
+	Array arr;
+	for(List<Connection>::Element *E=conns.front();E;E=E->next()) {
+		Dictionary d;
+		d["from"]=E->get().from;
+		d["from_port"]=E->get().from_port;
+		d["to"]=E->get().to;
+		d["to_port"]=E->get().to_port;
+		arr.push_back(d);
+	}
+	return arr;
+}
 void GraphEdit::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("connect_node:Error","from","from_port","to","to_port"),&GraphEdit::connect_node);
 	ObjectTypeDB::bind_method(_MD("is_node_connected","from","from_port","to","to_port"),&GraphEdit::is_node_connected);
 	ObjectTypeDB::bind_method(_MD("disconnect_node","from","from_port","to","to_port"),&GraphEdit::disconnect_node);
+	ObjectTypeDB::bind_method(_MD("get_connection_list"),&GraphEdit::_get_connection_list);
+
+	ObjectTypeDB::bind_method(_MD("set_right_disconnects","enable"),&GraphEdit::set_right_disconnects);
+	ObjectTypeDB::bind_method(_MD("is_right_disconnects_enabled"),&GraphEdit::is_right_disconnects_enabled);
+
 	ObjectTypeDB::bind_method(_MD("_graph_node_moved"),&GraphEdit::_graph_node_moved);
 	ObjectTypeDB::bind_method(_MD("_graph_node_raised"),&GraphEdit::_graph_node_raised);
 
@@ -489,8 +554,11 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
 
 	ADD_SIGNAL(MethodInfo("connection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
+	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 
 }
+
+
 
 GraphEdit::GraphEdit() {
 	top_layer=NULL;
@@ -511,6 +579,7 @@ GraphEdit::GraphEdit() {
 	top_layer->add_child(v_scroll);
 	updating=false;
 	connecting=false;
+	right_disconnects=false;
 
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");

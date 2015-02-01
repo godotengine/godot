@@ -83,6 +83,7 @@ private:
 		bool active;
 		InterpolateType type;
 		bool finish;
+		bool call_deferred;
 		real_t elapsed;
 		ObjectID id;
 		StringName key;
@@ -95,7 +96,8 @@ private:
 		TransitionType trans_type;
 		EaseType ease_type;
 		real_t delay;
-		Variant arg;
+		int args;
+		Variant arg[5];
 	};
 
 	String autoplay;
@@ -178,10 +180,16 @@ public:
 		, real_t p_delay = 0
 	);
 
-	bool interpolate_callback(Object *p_node
+	bool interpolate_callback(Object *p_object
 		, real_t p_times_in_sec
 		, String p_callback
-		, Variant p_arg = Variant()
+		, VARIANT_ARG_DECLARE
+	);
+	
+	bool interpolate_deferred_callback(Object *p_object
+		, real_t p_times_in_sec
+		, String p_callback
+		, VARIANT_ARG_DECLARE
 	);
 
 	bool follow_property(Object *p_node

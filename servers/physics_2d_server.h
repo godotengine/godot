@@ -442,6 +442,12 @@ public:
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts)=0;
 	virtual int body_get_max_contacts_reported(RID p_body) const=0;
 
+	virtual void body_set_one_way_collision_direction(RID p_body,const Vector2& p_direction)=0;
+	virtual Vector2 body_get_one_way_collision_direction(RID p_body) const=0;
+
+	virtual void body_set_one_way_collision_max_depth(RID p_body,float p_max_depth)=0;
+	virtual float body_get_one_way_collision_max_depth(RID p_body) const=0;
+
 	//missing remove
 	virtual void body_set_contacts_reported_depth_treshold(RID p_body, float p_treshold)=0;
 	virtual float body_get_contacts_reported_depth_treshold(RID p_body) const=0;

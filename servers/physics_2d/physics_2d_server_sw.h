@@ -71,6 +71,8 @@ public:
 
 	struct CollCbkData {
 
+		Vector2 valid_dir;
+		float valid_depth;
 		int max;
 		int amount;
 		Vector2 *ptr;
@@ -204,6 +206,13 @@ public:
 
 	virtual void body_set_max_contacts_reported(RID p_body, int p_contacts);
 	virtual int body_get_max_contacts_reported(RID p_body) const;
+
+	virtual void body_set_one_way_collision_direction(RID p_body,const Vector2& p_direction);
+	virtual Vector2 body_get_one_way_collision_direction(RID p_body) const;
+
+	virtual void body_set_one_way_collision_max_depth(RID p_body,float p_max_depth);
+	virtual float body_get_one_way_collision_max_depth(RID p_body) const;
+
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
 	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);

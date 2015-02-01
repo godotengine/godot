@@ -1661,7 +1661,7 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 	//print_line( p_code.replace(String::chr(0xFFFF),"<cursor>"));
 
 	GDParser p;
-	Error err = p.parse(p_code,p_base_path);
+	Error err = p.parse(p_code,p_base_path,true);
 	bool isfunction=false;
 	Set<String> options;
 
