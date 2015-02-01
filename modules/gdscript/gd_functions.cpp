@@ -89,6 +89,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"printt",
 		"printerr",
 		"printraw",
+		"format",
 		"range",
 		"load",
 		"inst2dict",
@@ -577,6 +578,32 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=Variant();
 
 		} break;
+
+		case TEXT_FORMAT: {
+
+			if (p_arg_count<1) {
+				r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+				r_error.argument=0;
+				return;
+			}
+			if (p_args[0]->get_type() != Variant::STRING)
+			{
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				return;
+			}
+
+			String str=p_args[0]->operator String();
+			for(int i=1;i<p_arg_count;i++) {
+
+				str=str.replace(String("{") + String::num(i-1) + String("}"),p_args[i]->operator String());
+			}
+
+			r_ret=str;
+
+		} break;
+
 		case GEN_RANGE: {
 
 
@@ -1224,6 +1251,15 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 
 		} break;
+
+		case TEXT_FORMAT: {
+
+			MethodInfo mi("format",PropertyInfo(Variant::STRING,"format"),PropertyInfo(Variant::NIL,"..."));
+			mi.return_val.type=Variant::STRING;
+			return mi;
+
+		} break;
+
 		case GEN_RANGE: {
 
 			MethodInfo mi("range",PropertyInfo(Variant::NIL,"..."));
