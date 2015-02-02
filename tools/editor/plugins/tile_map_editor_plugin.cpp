@@ -734,7 +734,48 @@ void TileMapEditor::_update_transform_buttons(Object *p_button) {
 	ERR_FAIL_NULL(p_button);
 	ToolButton *b=p_button->cast_to<ToolButton>();
 	ERR_FAIL_COND(!b);
+	
+	mirror_x->set_block_signals(true);
+	mirror_y->set_block_signals(true);
+	transpose->set_block_signals(true);
+	rotate_0->set_block_signals(true);
+	rotate_90->set_block_signals(true);
+	rotate_180->set_block_signals(true);
+	rotate_270->set_block_signals(true);
+	
+	if (b == rotate_0) {
+		mirror_x->set_pressed(false);
+		mirror_y->set_pressed(false);
+		transpose->set_pressed(false);
+	}
+	else if (b == rotate_90) {
+		mirror_x->set_pressed(false);
+		mirror_y->set_pressed(true);
+		transpose->set_pressed(true);
+	}
+	else if (b == rotate_180) {
+		mirror_x->set_pressed(true);
+		mirror_y->set_pressed(true);
+		transpose->set_pressed(false);
+	}
+	else if (b == rotate_270) {
+		mirror_x->set_pressed(true);
+		mirror_y->set_pressed(false);
+		transpose->set_pressed(true);
+	}
+	
+	rotate_0->set_pressed(!mirror_x->is_pressed() && !mirror_y->is_pressed() && !transpose->is_pressed());
+	rotate_90->set_pressed(!mirror_x->is_pressed() && mirror_y->is_pressed() && transpose->is_pressed());
+	rotate_180->set_pressed(mirror_x->is_pressed() && mirror_y->is_pressed() && !transpose->is_pressed());
+	rotate_270->set_pressed(mirror_x->is_pressed() && !mirror_y->is_pressed() && transpose->is_pressed());
 
+	mirror_x->set_block_signals(false);
+	mirror_y->set_block_signals(false);
+	transpose->set_block_signals(false);
+	rotate_0->set_block_signals(false);
+	rotate_90->set_block_signals(false);
+	rotate_180->set_block_signals(false);
+	rotate_270->set_block_signals(false);
 }
 
 TileMapEditor::TileMapEditor(EditorNode *p_editor) {
@@ -802,7 +843,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rotate_270->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_270));
 	canvas_item_editor_hb->add_child(rotate_270);
 	canvas_item_editor_hb->hide();
-
+	
+	rotate_0->set_pressed(true);
 	tool=TOOL_NONE;
 	selection_active=false;
 	mouse_over=false;
