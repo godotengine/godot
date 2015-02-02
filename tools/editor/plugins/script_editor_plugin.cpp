@@ -488,6 +488,11 @@ void ScriptEditor::_close_current_tab() {
 
 	apply_scripts();
 
+	// remove opened script resource
+	Ref<Script> script = current->get_edited_script();
+	ResourcesDock *resource_dock = EditorNode::get_singleton()->get_resources_dock();
+	resource_dock->call_deferred("remove_resource", script);
+
 	int idx = tab_container->get_current_tab();
 	memdelete(current);
 	if (idx>=tab_container->get_child_count())
@@ -497,7 +502,6 @@ void ScriptEditor::_close_current_tab() {
 
 	_update_window_menu();
 	_save_files_state();
-
 }
 
 
@@ -662,6 +666,46 @@ void ScriptEditor::_menu_option(int p_option) {
 	ScriptTextEditor *current = tab_container->get_child(selected)->cast_to<ScriptTextEditor>();
 	if (!current)
 		return;
+	if (!current->get_text_edit()->has_focus()) {
+
+		switch (p_option) {
+		//case FILE_OPEN:
+		//case FILE_SAVE:
+		//case FILE_SAVE_AS:
+		//case FILE_SAVE_ALL:
+		case EDIT_UNDO:
+		case EDIT_REDO:
+		case EDIT_CUT:
+		case EDIT_COPY:
+		case EDIT_PASTE:
+		case EDIT_SELECT_ALL:
+		case EDIT_COMPLETE:
+		case EDIT_AUTO_INDENT:
+        case EDIT_TOGGLE_COMMENT:
+        case EDIT_MOVE_LINE_UP:
+        case EDIT_MOVE_LINE_DOWN:
+        case EDIT_INDENT_RIGHT:
+        case EDIT_INDENT_LEFT:
+        case EDIT_CLONE_DOWN:
+		//case SEARCH_FIND:
+		//case SEARCH_FIND_NEXT:
+		//case SEARCH_REPLACE:
+		//case SEARCH_LOCATE_FUNCTION:
+		//case SEARCH_GOTO_LINE:
+		//case DEBUG_TOGGLE_BREAKPOINT:
+		//case DEBUG_NEXT:
+		//case DEBUG_STEP:
+		//case DEBUG_BREAK:
+		//case DEBUG_CONTINUE:
+		//case DEBUG_SHOW:
+		//case HELP_CONTEXTUAL:
+		//case WINDOW_CLOSE:
+		//case WINDOW_MOVE_LEFT:
+		//case WINDOW_MOVE_RIGHT:
+		//case WINDOW_SELECT_BASE:
+			return;
+		}
+	}
 
 	switch(p_option) {
 		case FILE_SAVE: {
@@ -1585,7 +1629,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu = memnew( MenuButton );
 	menu_hb->add_child(file_menu);
 	file_menu->set_text("File");
-	file_menu->get_popup()->add_item("Open",FILE_OPEN);
+	file_menu->get_popup()->add_item("Open",FILE_OPEN,KEY_MASK_ALT|KEY_O);
 	file_menu->get_popup()->add_item("Save",FILE_SAVE,KEY_MASK_ALT|KEY_MASK_CMD|KEY_S);
 	file_menu->get_popup()->add_item("Save As..",FILE_SAVE_AS);
 	file_menu->get_popup()->add_item("Save All",FILE_SAVE_ALL,KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_S);
