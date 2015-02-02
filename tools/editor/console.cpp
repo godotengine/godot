@@ -33,6 +33,7 @@
 #include "editor_icons.h"
 #include "scene/gui/label.h"
 #include "globals.h"
+#include "modules/register_module_types.h"
 #include "core/translation.h"
 
 
@@ -225,6 +226,7 @@ Console::Console() {
 	Ref<Theme> theme( memnew( Theme ) );
 	set_theme( theme );
 	editor_register_icons(theme);
+	register_module_icons(theme);
 
 	height=300;
 	tabs = memnew( TabContainer );

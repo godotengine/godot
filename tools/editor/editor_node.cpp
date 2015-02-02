@@ -98,6 +98,7 @@
 #include "tools/editor/io_plugins/editor_mesh_import_plugin.h"
 #include "tools/editor/io_plugins/editor_export_res.h"
 
+#include "modules/register_module_types.h"
 
 #include "core/translation.h"
 
@@ -3307,6 +3308,7 @@ EditorNode::EditorNode() {
 	gui_base->set_theme( theme );
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
+	register_module_icons(theme);
 
 	String global_font = EditorSettings::get_singleton()->get("global/font");
 	if (global_font!="") {

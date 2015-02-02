@@ -1176,7 +1176,8 @@ def detect_modules():
 	module_list=[]
 	includes_cpp=""
 	register_cpp=""
-	unregister_cpp=""
+	register_icons=""
+	unregister_cpp=""	
 
 	script_module_list=[]
 
@@ -1199,6 +1200,9 @@ def detect_modules():
 				register_cpp+='#ifdef MODULE_'+x.upper()+'_ENABLED\n'
 				register_cpp+='\tregister_'+x+'_types();\n'
 				register_cpp+='#endif\n'
+				register_icons+='#ifdef MODULE_'+x.upper()+'_ICONS_ENABLED\n'
+				register_icons+='\tregister_'+x+'_icons(theme);\n'
+				register_icons+='#endif\n'
 				unregister_cpp+='#ifdef MODULE_'+x.upper()+'_ENABLED\n'
 				unregister_cpp+='\tunregister_'+x+'_types();\n'
 				unregister_cpp+='#endif\n'
@@ -1215,6 +1219,12 @@ def detect_modules():
 void register_module_types() {
 
 """+register_cpp+"""
+
+}
+
+void register_module_icons(Ref<Theme> theme) {
+	
+"""+register_icons+"""
 
 }
 

@@ -45,6 +45,7 @@
 #include "io/resource_saver.h"
 
 #include "editor_icons.h"
+#include "modules/register_module_types.h"
 
 #include "core/translation.h"
 
@@ -977,6 +978,7 @@ ProjectManager::ProjectManager() {
 
 	Ref<Theme> theme = memnew( Theme );
 	editor_register_icons(theme);
+	register_module_icons(theme);
 	set_theme(theme);
 
 	npdialog->connect("project_created", this,"_load_recent_projects");
