@@ -173,6 +173,31 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 				editor_data->paste_object_params(instanced);
 			}
 		}
+		else
+		{
+			Ref<Script> script_res = ResourceLoader::load(p_file);
+			ERR_EXPLAIN("Can't load script: "+p_file);
+			ERR_FAIL_COND_V(script_res.is_null(),false);
+			if( script_res->can_instance()) {
+
+				StringName instance_type=script_res->get_instance_base_type();
+				Object *obj = ObjectTypeDB::instance(instance_type);
+				instanced = obj->cast_to<Node>();
+				if (!instanced) {
+					current_option=-1;
+					//accept->get_cancel()->hide();
+					accept->get_ok()->set_text("Ugh");
+					accept->set_text(String("Error loading scene from ")+p_file);
+					accept->popup_centered(Size2(300,70));;
+					return NULL;
+				}
+				obj->set_script(script_res.get_ref_ptr());
+				String path = script_res->get_path();
+				path = path.substr(path.find_last("/") + 1, path.length());
+				path = path.substr(0, path.find_last("."));
+				instanced->set_name(path);
+			}
+		}
 	}
 
 	// undo-redo
@@ -312,6 +337,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			file->set_mode(FileDialog::MODE_OPEN_FILE);
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
+			ResourceLoader::get_recognized_extensions_for_type("Script",&extensions);
 			file->clear_filters();
 			for(int i=0;i<extensions.size();i++) {
 
@@ -1308,6 +1334,16 @@ void SceneTreeDock::_create() {
 		editor_data->get_undo_redo().clear_history();
 		memdelete(n);
 		newnode->set_name(newname);
+		// cleanup subscene informations
+		newnode->set_filename("");
+		List<String> meta_list;
+		newnode->get_meta_list(&meta_list);
+		for (List<String>::Element *E = meta_list.front(); E; E = E->next()) {
+
+			String& key = E->get();
+			if (key.find("__editor_") != -1)
+				newnode->set_meta(key, Variant());
+		}
 		editor->push_item(newnode);
 		_update_tool_buttons();
 
