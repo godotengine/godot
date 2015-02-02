@@ -65,7 +65,7 @@ void sort(BTVector<T>& vector) { std::sort(vector.begin(), vector.end(), COMPARA
 
 #endif
 
-typedef BTVector<NodeData> BTStructure;
+typedef BTVector<NodeData> BtStructure;
 typedef BTVector<Node*> NodeList;
 
 

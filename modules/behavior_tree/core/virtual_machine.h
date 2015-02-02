@@ -8,61 +8,57 @@ namespace BehaviorTree
 
 struct VMRunningData
 {
-    struct RunningNode
-    {
-        Node* node;
-        NodeData data;
-    };
+	struct RunningNode
+	{
+		Node* node;
+		NodeData data;
+	};
 
-    BTVector<RunningNode> running_nodes;
-    BTVector<IndexType> this_tick_running;
-    BTVector<IndexType> last_tick_running;
-    IndexType index_marker;
+	BTVector<RunningNode> running_nodes;
+	BTVector<IndexType> this_tick_running;
+	BTVector<IndexType> last_tick_running;
+	IndexType index_marker;
 
-    void tick_begin();
-    void tick_end();
+	void tick_begin();
+	void tick_end();
 
-    void sort_last_running_nodes();
-    bool is_current_node_running_on_last_tick() const;
-    void pop_last_running_behavior();
-    void add_running_node(Node* node, NodeData node_data);
+	void sort_last_running_nodes();
+	bool is_current_node_running_on_last_tick() const;
+	void pop_last_running_behavior();
+	void add_running_node(Node* node, NodeData node_data);
 
+	IndexType move_index_to_running_child();
+
+	inline void increase_index() { ++index_marker; }
 };
 
 class VirtualMachine
 {
 private:
-    VMRunningData& running_data;
-    NodeList& node_list;
-    const BTStructure& structure_data;
+	NodeList& node_list;
+	const BtStructure& structure_data;
 
 public:
-    VirtualMachine(VMRunningData& running_data_, NodeList& node_list_, const BTStructure& structure_data_)
-        : running_data(running_data_), node_list(node_list_), structure_data(structure_data_)
-    {}
+	VirtualMachine(NodeList& node_list_, const BtStructure& structure_data_)
+		: node_list(node_list_), structure_data(structure_data_)
+	{}
 
-    // execute the whole behavior tree.
-    void tick(void* context);
-    // running behavior tree step by step.
-    void step(void* context);
+	// execute the whole behavior tree.
+	void tick(void* context, VMRunningData& running_data);
+	// running behavior tree step by step.
+	void step(void* context, VMRunningData& running_data);
 
-    inline void increase_index() { ++running_data.index_marker; }
-    void move_index_to_node_end(IndexType index);
-    IndexType move_index_to_running_child();
+	void move_index_to_node_end(IndexType index, VMRunningData& running_data);
 
-    inline NodeData get_node_data(IndexType index) const { return structure_data[index]; }
-    inline NodeData get_current_running_node() const {
-        BT_ASSERT(!running_data.running_nodes.empty());
-        return running_data.running_nodes.back().data;
-    }
+	inline NodeData get_node_data(IndexType index) const { return structure_data[index]; }
 
-    bool is_child(IndexType parent_index, IndexType child_index) const;
+	bool is_child(IndexType parent_index, IndexType child_index) const;
 
 private:
-    void cancel_skipped_behaviors(void* context);
-    void cancel_behavior(void* context);
-    void run_composites(E_State state, void* context);
-    E_State run_action(Node& node, void* context);
+	void cancel_skipped_behaviors(void* context, VMRunningData& running_data);
+	void cancel_behavior(void* context, VMRunningData& running_data);
+	void run_composites(E_State state, void* context, VMRunningData& running_data);
+	E_State run_action(Node& node, void* context, VMRunningData& running_data);
 };
 
 } /* BehaviorTree */ 

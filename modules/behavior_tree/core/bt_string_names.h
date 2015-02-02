@@ -3,20 +3,20 @@
 
 #include "string_db.h"
 
-class BTStringNames {
+class BtStringNames {
 
 friend void register_behavior_tree_types();
 friend void unregister_behavior_tree_types();
 
-	static BTStringNames* singleton;
+	static BtStringNames* singleton;
 
-	static void create() { singleton = memnew(BTStringNames); }
+	static void create() { singleton = memnew(BtStringNames); }
 	static void free() { memdelete( singleton); singleton=NULL; }
 
-	BTStringNames();
+	BtStringNames();
 
 public:
-	_FORCE_INLINE_ static BTStringNames* get_singleton() { return singleton; }
+	_FORCE_INLINE_ static BtStringNames* get_singleton() { return singleton; }
 
 	StringName _continue;
 	StringName _prepare;

@@ -1,8 +1,8 @@
 #include "bt_string_names.h"
 
-BTStringNames* BTStringNames::singleton=NULL;
+BtStringNames* BtStringNames::singleton=NULL;
 
-BTStringNames::BTStringNames() {
+BtStringNames::BtStringNames() {
 	_continue = StaticCString::create("_bt_continue");
 	_prepare = StaticCString::create("_bt_prepare");
 	_self_update = StaticCString::create("_bt_self_update");

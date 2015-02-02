@@ -5,6 +5,6 @@
 
 class BtNode;
 
-void create_bt_structure(BehaviorTree::BTStructure& structure, BehaviorTree::NodeList& node_list, BtNode& node, int begin);
+void create_bt_structure(BehaviorTree::BtStructure& structure, BehaviorTree::NodeList& node_list, BtNode& node, int begin);
 
 #endif
