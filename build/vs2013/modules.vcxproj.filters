@@ -28,6 +28,12 @@
     <Filter Include="modules\spine\spine-c">
       <UniqueIdentifier>{8acea1bf-4bd0-458b-a1a6-24601cf4fdd0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\behavior_tree">
+      <UniqueIdentifier>{043d9a86-3b7a-4bdf-b46d-9f4973d98a2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="modules\behavior_tree\core">
+      <UniqueIdentifier>{245e960d-28fc-4d3f-8e92-003e36523b1c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\modules\register_module_types.cpp">
@@ -183,6 +189,42 @@
     <ClCompile Include="..\..\modules\spine\spine_batcher.cpp">
       <Filter>modules\spine</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\editor_icons.cpp">
+      <Filter>modules\behavior_tree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\register_types.cpp">
+      <Filter>modules\behavior_tree</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_action_node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_composite_node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_decorator_node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_root_node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_string_names.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_utils.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\composite.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\virtual_machine.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\modules\register_module_types.h">
@@ -334,6 +376,48 @@
     </ClInclude>
     <ClInclude Include="..\..\modules\spine\spine_batcher.h">
       <Filter>modules\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\editor_icons.h">
+      <Filter>modules\behavior_tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\register_types.h">
+      <Filter>modules\behavior_tree</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_action_node.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_behavior_delegate.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_composite_node.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_decorator_node.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_node.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_root_node.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_string_names.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_utils.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\composite.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\node.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\typedef.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\virtual_machine.h">
+      <Filter>modules\behavior_tree\core</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
