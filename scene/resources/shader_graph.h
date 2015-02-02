@@ -406,7 +406,6 @@ VARIANT_ENUM_CAST( ShaderGraph::GraphError );
 class MaterialShaderGraph : public ShaderGraph {
 
 	OBJ_TYPE( MaterialShaderGraph, ShaderGraph );
-	RES_BASE_EXTENSION("sgp");
 
 public:
 
@@ -415,5 +414,18 @@ public:
 
 	}
 };
+
+class CanvasItemShaderGraph : public ShaderGraph {
+
+	OBJ_TYPE( CanvasItemShaderGraph, ShaderGraph );
+
+public:
+
+
+	CanvasItemShaderGraph() : ShaderGraph(MODE_CANVAS_ITEM) {
+
+	}
+};
+
 
 #endif // SHADER_GRAPH_H

@@ -52,8 +52,10 @@ void main() {
 VERTEX_SHADER_CODE
 
 }
+#if !defined(USE_WORLD_VEC)
         outvec = extra_matrix * outvec;
         outvec = modelview_matrix * outvec;
+#endif
 
 #ifdef USE_PIXEL_SNAP
 
@@ -61,15 +63,15 @@ VERTEX_SHADER_CODE
 #endif
 
 
+	gl_Position = projection_matrix * outvec;
+
 #ifdef USE_LIGHTING
 
-	light_tex_pos.xy = light_matrix * outvec;
+	light_tex_pos.xy = light_matrix * gl_Position;
 	light_tex_pos.zw=outvec.xy - light_matrix[4].xy; //likely wrong
 
 #endif
 
-
-	gl_Position = projection_matrix * outvec;
 }
 
 [fragment]

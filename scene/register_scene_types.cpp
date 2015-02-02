@@ -499,6 +499,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<Shader>();
 	ObjectTypeDB::register_virtual_type<ShaderGraph>();
 	ObjectTypeDB::register_type<CanvasItemShader>();
+	ObjectTypeDB::register_type<CanvasItemShaderGraph>();
 
 #ifndef _3D_DISABLED
 	ObjectTypeDB::register_type<Mesh>();
