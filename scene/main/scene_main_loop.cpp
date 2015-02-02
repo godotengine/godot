@@ -467,9 +467,6 @@ void SceneTree::init() {
 	input_handled=false;
 
 
-	editor_hint=false;
-	pause=false;
-
 	root->_set_tree(this);
 	MainLoop::init();
 
@@ -1056,6 +1053,8 @@ SceneTree::SceneTree() {
 	_quit=false;
 	accept_quit=true;
 	initialized=false;
+	editor_hint=false;
+	pause=false;
 	tree_version=1;
 	fixed_process_time=1;
 	idle_process_time=1;
