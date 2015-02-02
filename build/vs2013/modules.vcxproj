@@ -124,6 +124,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\modules\behavior_tree\core\bt_action_node.cpp" />
     <ClCompile Include="..\..\modules\behavior_tree\core\bt_composite_node.cpp" />
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_custom_parallel_node.cpp" />
     <ClCompile Include="..\..\modules\behavior_tree\core\bt_decorator_node.cpp" />
     <ClCompile Include="..\..\modules\behavior_tree\core\bt_node.cpp" />
     <ClCompile Include="..\..\modules\behavior_tree\core\bt_root_node.cpp" />
@@ -222,6 +223,7 @@
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_action_node.h" />
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_behavior_delegate.h" />
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_composite_node.h" />
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_custom_parallel_node.h" />
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_decorator_node.h" />
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_node.h" />
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_root_node.h" />

@@ -225,6 +225,9 @@
     <ClCompile Include="..\..\modules\behavior_tree\core\virtual_machine.cpp">
       <Filter>modules\behavior_tree\core</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\modules\behavior_tree\core\bt_custom_parallel_node.cpp">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\modules\register_module_types.h">
@@ -417,6 +420,9 @@
       <Filter>modules\behavior_tree\core</Filter>
     </ClInclude>
     <ClInclude Include="..\..\modules\behavior_tree\core\virtual_machine.h">
+      <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\behavior_tree\core\bt_custom_parallel_node.h">
       <Filter>modules\behavior_tree\core</Filter>
     </ClInclude>
   </ItemGroup>
