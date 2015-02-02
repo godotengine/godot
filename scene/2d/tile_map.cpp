@@ -222,19 +222,13 @@ void TileMap::_update_dirty_quadrants() {
 				rect.size.x=-rect.size.x;
 			if (c.flip_v)
 				rect.size.y=-rect.size.y;
-			if (c.transpose) {
-				//TODO
-			}
-				
 
 
 			rect.pos+=tile_ofs;
 			if (r==Rect2()) {
-
-				tex->draw_rect(q.canvas_item,rect);
+				tex->draw_rect(q.canvas_item,rect,false,Color(1,1,1),c.transpose);
 			} else {
-
-				tex->draw_rect_region(q.canvas_item,rect,r);
+				tex->draw_rect_region(q.canvas_item,rect,r,Color(1,1,1),c.transpose);
 			}
 
 			Vector< Ref<Shape2D> > shapes = tile_set->tile_get_shapes(c.id);
@@ -250,22 +244,19 @@ void TileMap::_update_dirty_quadrants() {
 					xform.set_origin(offset.floor());
 					if (c.flip_h) {
 						xform.elements[0]=-xform.elements[0];
-						xform.elements[2].x+=s.x-shape_ofs.x;
-					} else {
-
-						xform.elements[2].x+=shape_ofs.x;
+						shape_ofs.x=s.x-shape_ofs.x;
 					}
 					if (c.flip_v) {
 						xform.elements[1]=-xform.elements[1];
-						xform.elements[2].y+=s.y-shape_ofs.y;
-					} else {
-
-						xform.elements[2].y+=shape_ofs.y;
+						shape_ofs.y=s.y-shape_ofs.y;
 					}
 					if (c.transpose) {
-						//TODO
-					} else {
+						SWAP(xform.elements[0].x, xform.elements[0].y);
+						SWAP(xform.elements[1].x, xform.elements[1].y);
+						SWAP(shape_ofs.x, shape_ofs.y);
 					}
+					xform.elements[2].x+=shape_ofs.x;
+					xform.elements[2].y+=shape_ofs.y;
 
 
 

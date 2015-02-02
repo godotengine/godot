@@ -99,7 +99,7 @@ void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bo
 	bool prev_transpose=node->is_cell_transposed(p_pos.x,p_pos.y);
 	int prev_val=node->get_cell(p_pos.x,p_pos.y);
 
-	if (p_value==prev_val && p_flip_h==prev_flip_h && p_flip_v==prev_transpose && p_flip_v==prev_transpose)
+	if (p_value==prev_val && p_flip_h==prev_flip_h && p_flip_v==prev_flip_v && p_transpose==prev_transpose)
 		return; //check that it's actually different
 
 
@@ -127,7 +127,7 @@ void TileMapEditor::_update_palette() {
 
 
 	TreeItem *root = palette->create_item();
-	palette->set_hide_root(true);
+	//palette->set_hide_root(true);
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
 
@@ -211,6 +211,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 							tcd.cell=node->get_cell(j,i);
 							tcd.flip_h=node->is_cell_x_flipped(j,i);
 							tcd.flip_v=node->is_cell_y_flipped(j,i);
+							tcd.transpose=node->is_cell_transposed(j,i);
 							dupdata.push_back(tcd);
 
 
@@ -638,15 +639,12 @@ void TileMapEditor::_canvas_draw() {
 							sc.x*=-1.0;
 						if (mirror_y->is_pressed())
 							sc.y*=-1.0;
-						if (transpose->is_pressed()) {
-							//TODO
-						}
 						if (r==Rect2()) {
 
-							canvas_item_editor->draw_texture_rect(t,Rect2(from,t->get_size()*sc),false,Color(1,1,1,0.5));
+							canvas_item_editor->draw_texture_rect(t,Rect2(from,t->get_size()*sc),false,Color(1,1,1,0.5),transpose->is_pressed());
 						} else {
 
-							canvas_item_editor->draw_texture_rect_region(t,Rect2(from,r.get_size()*sc),r,Color(1,1,1,0.5));
+							canvas_item_editor->draw_texture_rect_region(t,Rect2(from,r.get_size()*sc),r,Color(1,1,1,0.5),transpose->is_pressed());
 						}
 					}
 				}
@@ -713,6 +711,7 @@ void TileMapEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_canvas_mouse_enter"),&TileMapEditor::_canvas_mouse_enter);
 	ObjectTypeDB::bind_method(_MD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
 	ObjectTypeDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
+	ObjectTypeDB::bind_method(_MD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
 
 }
 
@@ -725,8 +724,17 @@ TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)
 			op.xf=true;
 		if (node->is_cell_y_flipped(p_pos.x,p_pos.y))
 			op.yf=true;
+		if (node->is_cell_transposed(p_pos.x,p_pos.y))
+			op.tr=true;
 	}
 	return op;
+}
+
+void TileMapEditor::_update_transform_buttons(Object *p_button) {
+	ERR_FAIL_NULL(p_button);
+	ToolButton *b=p_button->cast_to<ToolButton>();
+	ERR_FAIL_COND(!b);
+
 }
 
 TileMapEditor::TileMapEditor(EditorNode *p_editor) {
@@ -754,37 +762,44 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	mirror_x->set_toggle_mode(true);
 	mirror_x->set_tooltip("Mirror X (A)");
 	mirror_x->set_focus_mode(FOCUS_NONE);
+	mirror_x->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_x));
 	canvas_item_editor_hb->add_child(mirror_x);
 	mirror_y = memnew( ToolButton );
 	mirror_y->set_toggle_mode(true);
 	mirror_y->set_tooltip("Mirror Y (S)");
 	mirror_y->set_focus_mode(FOCUS_NONE);
+	mirror_y->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_y));
 	canvas_item_editor_hb->add_child(mirror_y);
 	transpose = memnew( ToolButton );
 	transpose->set_toggle_mode(true);
 	transpose->set_tooltip("Transpose");
 	transpose->set_focus_mode(FOCUS_NONE);
+	transpose->connect("pressed", this, "_update_transform_buttons", make_binds(transpose));
 	canvas_item_editor_hb->add_child(transpose);
 	canvas_item_editor_hb->add_child(memnew(VSeparator));
 	rotate_0 = memnew( ToolButton );
 	rotate_0->set_toggle_mode(true);
 	rotate_0->set_tooltip("Rotate 0 degrees");
 	rotate_0->set_focus_mode(FOCUS_NONE);
+	rotate_0->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_0));
 	canvas_item_editor_hb->add_child(rotate_0);
 	rotate_90 = memnew( ToolButton );
 	rotate_90->set_toggle_mode(true);
 	rotate_90->set_tooltip("Rotate 90 degrees");
 	rotate_90->set_focus_mode(FOCUS_NONE);
+	rotate_90->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_90));
 	canvas_item_editor_hb->add_child(rotate_90);
 	rotate_180 = memnew( ToolButton );
 	rotate_180->set_toggle_mode(true);
 	rotate_180->set_tooltip("Rotate 180 degrees");
 	rotate_180->set_focus_mode(FOCUS_NONE);
+	rotate_180->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_180));
 	canvas_item_editor_hb->add_child(rotate_180);
 	rotate_270 = memnew( ToolButton );
 	rotate_270->set_toggle_mode(true);
 	rotate_270->set_tooltip("Rotate 270 degrees");
 	rotate_270->set_focus_mode(FOCUS_NONE);
+	rotate_270->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_270));
 	canvas_item_editor_hb->add_child(rotate_270);
 	canvas_item_editor_hb->hide();
 
