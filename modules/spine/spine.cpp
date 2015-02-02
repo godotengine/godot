@@ -616,11 +616,11 @@ void Spine::mix(const String& p_from, const String& p_to, real_t p_duration) {
 	spAnimationStateData_setMixByName(state->data, p_from.utf8().get_data(), p_to.utf8().get_data(), p_duration);
 }
 
-void Spine::play(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
+bool Spine::play(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
 
-	ERR_FAIL_COND(skeleton == NULL);
+	ERR_FAIL_COND_V(skeleton == NULL, false);
 	spAnimation* animation = spSkeletonData_findAnimation(skeleton->data, p_name.utf8().get_data());
-	ERR_FAIL_COND(animation == NULL);
+	ERR_FAIL_COND_V(animation == NULL, false);
 	spTrackEntry *entry = spAnimationState_setAnimation(state, p_track, animation, p_loop);
 	entry->delay = p_delay;
 	current_animation = p_name;
@@ -630,17 +630,21 @@ void Spine::play(const String& p_name, real_t p_cunstom_scale, bool p_loop, int 
 	// update frame
 	if (!is_active())
 		_animation_process(0);
+
+	return true;
 }
 
-void Spine::add(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
+bool Spine::add(const String& p_name, real_t p_cunstom_scale, bool p_loop, int p_track, int p_delay) {
 
-	ERR_FAIL_COND(skeleton == NULL);
+	ERR_FAIL_COND_V(skeleton == NULL, false);
 	spAnimation* animation = spSkeletonData_findAnimation(skeleton->data, p_name.utf8().get_data());
-	ERR_FAIL_COND(animation == NULL);
+	ERR_FAIL_COND_V(animation == NULL, false);
 	spTrackEntry *entry = spAnimationState_addAnimation(state, p_track, animation, p_loop, p_delay);
 
 	_set_process(true);
 	playing = true;
+
+	return true;
 }
 
 void Spine::clear(int p_track) {

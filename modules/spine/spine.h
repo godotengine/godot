@@ -129,8 +129,8 @@ public:
 	bool has(const String& p_name);
 	void mix(const String& p_from, const String& p_to, real_t p_duration);
 
-	void play(const String& p_name, real_t p_cunstom_scale = 1.0f, bool p_loop = false, int p_track = 0, int p_delay = 0);
-	void add(const String& p_name, real_t p_cunstom_scale = 1.0f, bool p_loop = false, int p_track = 0, int p_delay = 0);
+	bool play(const String& p_name, real_t p_cunstom_scale = 1.0f, bool p_loop = false, int p_track = 0, int p_delay = 0);
+	bool add(const String& p_name, real_t p_cunstom_scale = 1.0f, bool p_loop = false, int p_track = 0, int p_delay = 0);
 	void clear(int p_track = -1);
 	void stop();
 	bool is_playing() const;

@@ -551,8 +551,12 @@ void Tween::_tween_process(float p_delta) {
 
 		_apply_tween_value(data, result);
 
-		if(data.finish)
+		if (data.finish) {
 			emit_signal("tween_complete",object,data.key);
+			// not repeat mode, remove completed action
+			if (!repeat)
+				call_deferred("remove", object, data.key);
+		}
 	}
 	pending_update --;
 }
