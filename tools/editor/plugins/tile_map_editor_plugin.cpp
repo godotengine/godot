@@ -127,7 +127,7 @@ void TileMapEditor::_update_palette() {
 
 
 	TreeItem *root = palette->create_item();
-	//palette->set_hide_root(true);
+	palette->set_hide_root(true);
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
 
@@ -250,6 +250,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 						mirror_x->set_pressed(node->is_cell_x_flipped(over_tile.x, over_tile.y));
 						mirror_y->set_pressed(node->is_cell_y_flipped(over_tile.x, over_tile.y));
 						transpose->set_pressed(node->is_cell_transposed(over_tile.x, over_tile.y));
+						_update_transform_buttons();
 						canvas_item_editor->update();
 						return true;
 					} else {
@@ -394,6 +395,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 				mirror_x->set_pressed(node->is_cell_x_flipped(over_tile.x, over_tile.y));
 				mirror_y->set_pressed(node->is_cell_y_flipped(over_tile.x, over_tile.y));
 				transpose->set_pressed(node->is_cell_transposed(over_tile.x, over_tile.y));
+				_update_transform_buttons();
 				canvas_item_editor->update();
 				return true;
 			}
@@ -731,9 +733,9 @@ TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)
 }
 
 void TileMapEditor::_update_transform_buttons(Object *p_button) {
-	ERR_FAIL_NULL(p_button);
+	//ERR_FAIL_NULL(p_button);
 	ToolButton *b=p_button->cast_to<ToolButton>();
-	ERR_FAIL_COND(!b);
+	//ERR_FAIL_COND(!b);
 	
 	mirror_x->set_block_signals(true);
 	mirror_y->set_block_signals(true);

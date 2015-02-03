@@ -111,7 +111,7 @@ protected:
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 	CellOp _get_op_from_cell(const Point2i& p_pos);
-	void _update_transform_buttons(Object *p_button);
+	void _update_transform_buttons(Object *p_button=0);
 public:
 
 	HBoxContainer *get_canvas_item_editor_hb() const { return canvas_item_editor_hb; }
