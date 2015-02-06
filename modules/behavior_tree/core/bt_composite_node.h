@@ -28,6 +28,20 @@ class BtSelectorNode : public BtCompositeNode
 	virtual BehaviorTree::Node* get_behavior_node() override { return &behavior_node; }
 };
 
+class BtParallelSequenceNode : public BtCompositeNode
+{
+	OBJ_TYPE(BtParallelSequenceNode, BtCompositeNode);
+	BehaviorTree::ParallelSequence behavior_node;
+	virtual BehaviorTree::Node* get_behavior_node() override { return &behavior_node; }
+};
+
+class BtParallelSelectorNode : public BtCompositeNode
+{
+	OBJ_TYPE(BtParallelSelectorNode, BtCompositeNode);
+	BehaviorTree::ParallelSelector behavior_node;
+	virtual BehaviorTree::Node* get_behavior_node() override { return &behavior_node; }
+};
+
 class BtParallelNode : public BtCompositeNode
 {
 	OBJ_TYPE(BtParallelNode, BtCompositeNode);

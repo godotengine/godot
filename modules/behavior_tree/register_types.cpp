@@ -18,6 +18,8 @@ void register_behavior_tree_types() {
 	ObjectTypeDB::register_type<BtSequenceNode>();
 	ObjectTypeDB::register_type<BtSelectorNode>();
 	ObjectTypeDB::register_type<BtParallelNode>();
+	ObjectTypeDB::register_type<BtParallelSequenceNode>();
+	ObjectTypeDB::register_type<BtParallelSelectorNode>();
 	ObjectTypeDB::register_type<BtCustomParallelNode>();
 }
 

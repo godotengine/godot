@@ -25,6 +25,30 @@ protected:
 	virtual E_State child_update(VirtualMachine& vm, IndexType index, void*, E_State child_state, VMRunningData& ) override;
 };
 
+class ParallelSequence : public Composite
+{
+	uint32_t running_count;
+	uint32_t success_count;
+	uint32_t failure_count;
+	uint32_t error_count;
+protected:
+	virtual void restore_running(VirtualMachine& vm, IndexType index, void* context, VMRunningData& ) override;
+	virtual void prepare(VirtualMachine& , IndexType, void* , VMRunningData& ) override;
+	virtual E_State child_update(VirtualMachine& vm, IndexType index, void*, E_State child_state, VMRunningData& ) override;
+};
+
+class ParallelSelector : public Composite
+{
+	uint32_t running_count;
+	uint32_t success_count;
+	uint32_t failure_count;
+	uint32_t error_count;
+protected:
+	virtual void restore_running(VirtualMachine& vm, IndexType index, void* context, VMRunningData& ) override;
+	virtual void prepare(VirtualMachine& , IndexType, void* , VMRunningData& ) override;
+	virtual E_State child_update(VirtualMachine& vm, IndexType index, void*, E_State child_state, VMRunningData& ) override;
+};
+
 // instead of running children nodes in seperated thread,
 // we run chilren nodes step by step without interruption.
 template<E_State RESULT_STATE = BH_SUCCESS>

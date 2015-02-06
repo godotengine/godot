@@ -1222,11 +1222,13 @@ void register_module_types() {
 
 }
 
+#ifdef TOOLS_ENABLED
 void register_module_icons(Ref<Theme> theme) {
 	
 """+register_icons+"""
 
 }
+#endif
 
 void unregister_module_types() {
 
