@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "http_client.h"
 #include "io/stream_peer_ssl.h"
+#include "../print_string.h"
 
 VARIANT_ENUM_CAST(HTTPClient::Status);
 
@@ -242,6 +243,7 @@ Error HTTPClient::poll(){
 				case StreamPeerTCP::STATUS_CONNECTED: {
 					if (ssl) {
 						Ref<StreamPeerSSL> ssl = StreamPeerSSL::create();
+						ssl->set_verify_mode(verify_mode);
 						Error err = ssl->connect(tcp_connection,true,ssl_verify_host?conn_host:String());
 						if (err!=OK) {
 							close();
@@ -557,6 +559,14 @@ bool HTTPClient::is_blocking_mode_enabled() const{
 	return blocking;
 }
 
+void HTTPClient::set_verify_mode(int mode) {
+	verify_mode = mode;
+}
+
+int HTTPClient::get_verify_mode() const{
+	return verify_mode;
+}
+
 
 void HTTPClient::_bind_methods() {
 
@@ -581,6 +591,8 @@ void HTTPClient::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_status"),&HTTPClient::get_status);
 	ObjectTypeDB::bind_method(_MD("poll:Error"),&HTTPClient::poll);
 
+	ObjectTypeDB::bind_method(_MD("set_verify_mode","mode"),&HTTPClient::set_verify_mode);
+	ObjectTypeDB::bind_method(_MD("get_verify_mode"),&HTTPClient::get_verify_mode);
 
 	BIND_CONSTANT( METHOD_GET );
 	BIND_CONSTANT( METHOD_HEAD );
