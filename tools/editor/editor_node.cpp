@@ -1967,6 +1967,25 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				log->add_message("REDO: "+action);
 
 		} break;
+
+		case EDIT_REVERT: {
+
+			Node *scene = get_edited_scene();
+
+			if (!scene)
+				break;
+			
+			if (unsaved_cache && !p_confirmed) {
+				confirmation->get_ok()->set_text("Revert");
+				confirmation->set_text("This action cannot be undone. Revert anyway?");
+				confirmation->popup_centered(Size2(300,70));
+				break;
+			}
+
+			Error err = load_scene(scene->get_filename());
+
+		} break;
+
 #if 0
 		case NODE_EXTERNAL_INSTANCE: {
 
@@ -3468,6 +3487,8 @@ EditorNode::EditorNode() {
 	p->add_item("Run Script",FILE_RUN_SCRIPT,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_R);
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
+	p->add_separator();
+	p->add_item("Revert Scene",EDIT_REVERT);
 	p->add_separator();
 	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_Q);
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
