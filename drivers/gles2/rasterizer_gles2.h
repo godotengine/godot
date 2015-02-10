@@ -65,7 +65,7 @@ class RasterizerGLES2 : public Rasterizer {
 
 		MAX_SCENE_LIGHTS=2048,
 		LIGHT_SPOT_BIT=0x80,
-		DEFAULT_SKINNED_BUFFER_SIZE = 2048 * 1024, // 10k vertices
+		DEFAULT_SKINNED_BUFFER_SIZE = 2048, // 10k vertices
 		MAX_HW_LIGHTS = 1,
 	};
 
