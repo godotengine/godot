@@ -22,6 +22,8 @@ tools/editor/editor_icons.cpp
 scene/resources/default_theme/editor_fonts.inc
 scene/resources/default_theme/font_normal_cjk*.inc
 main/fixed_rfs.h
+.fscache
+log.txt
 
 # Android specific
 platform/android/java/local.properties

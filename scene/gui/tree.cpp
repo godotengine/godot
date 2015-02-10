@@ -2482,6 +2482,10 @@ void Tree::_notification(int p_what) {
 		}
 	}
 
+	if (p_what==NOTIFICATION_THEME_CHANGED) {
+		update_cache();
+	}
+
 }
 
 

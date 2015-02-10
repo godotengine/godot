@@ -204,6 +204,21 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 	if (!instanced)
 		return NULL;
 
+	// If the scene hasn't been saved yet a cyclical dependency cannot exist.
+	if (edited_scene->get_filename()!="") {
+
+		if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+
+			accept->get_ok()->set_text("Ok");
+			accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
+			accept->popup_centered(Size2(300,90));
+			return NULL;
+		}
+	}
+
+	instanced_scene->generate_instance_state();
+	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
+
 	if (p_replace_selected) {
 
 		//_replace_node(selected, instanced);
@@ -293,6 +308,25 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 	return instanced;
 
 }
+
+bool SceneTreeDock::_cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node) {
+	int childCount = p_desired_node->get_child_count();
+
+	if (p_desired_node->get_filename()==p_target_scene_path) {
+		return true;
+	}
+
+	for (int i=0;i<childCount;i++) {
+		Node* child=p_desired_node->get_child(i);
+
+		if(_cyclical_dependency_exists(p_target_scene_path,child)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 static String _get_name_num_separator() {
 	switch(EditorSettings::get_singleton()->get("scenetree_editor/duplicate_node_name_num_separator").operator int()) {
