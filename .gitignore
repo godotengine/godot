@@ -20,6 +20,7 @@ tools/editor/doc_data_compressed.h
 tools/editor/editor_icons.cpp
 -fpic
 .fscache
+log.txt
 
 # Android specific
 platform/android/java/local.properties
