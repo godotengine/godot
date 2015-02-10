@@ -102,6 +102,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _load_request(const String& p_path);
 	void _script_open_request(const Ref<Script>& p_script);
 
+	bool _cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node);
 
 	void _node_selected();
 	void _node_renamed();
