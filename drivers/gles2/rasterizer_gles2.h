@@ -827,14 +827,17 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint gui_quad_buffer;
 
 
+
 	struct RenderList {
 
 		enum {
-			MAX_ELEMENTS=4096,
+			DEFAULT_MAX_ELEMENTS=4096,
 			MAX_LIGHTS=4,
 			SORT_FLAG_SKELETON=1,
 			SORT_FLAG_INSTANCING=2,
 		};
+
+		static int max_elements;
 
 		struct Element {
 
@@ -868,8 +871,8 @@ class RasterizerGLES2 : public Rasterizer {
 		};
 
 
-		Element _elements[MAX_ELEMENTS];
-		Element *elements[MAX_ELEMENTS];
+		Element *_elements;
+		Element **elements;
 		int element_count;
 
 		void clear() {
@@ -1004,17 +1007,28 @@ class RasterizerGLES2 : public Rasterizer {
 		}
 		_FORCE_INLINE_ Element* add_element() {
 
-			if (element_count>MAX_ELEMENTS)
+			if (element_count>=max_elements)
 				return NULL;
 			elements[element_count]=&_elements[element_count];
 			return elements[element_count++];
 		}
 
-		RenderList() {
+		void init() {
 
 			element_count = 0;
-			for (int i=0;i<MAX_ELEMENTS;i++)
+			elements=memnew_arr(Element*,max_elements);
+			_elements=memnew_arr(Element,max_elements);
+			for (int i=0;i<max_elements;i++)
 				elements[i]=&_elements[i]; // assign elements
+
+		}
+
+		RenderList() {
+
+		}
+		~RenderList() {
+			memdelete_arr(elements);
+			memdelete_arr(_elements);
 		}
 	};
 
