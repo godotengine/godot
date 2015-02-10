@@ -32,6 +32,7 @@
 #include "variant.h"
 #include "object.h"
 #include "io/json.h"
+#include "ustring.h"
 
 struct ArrayPrivate {
 

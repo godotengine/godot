@@ -30,12 +30,12 @@
 #define ARRAY_H
 
 #include "typedefs.h"
-#include "ustring.h"
 
 class Variant;
 class ArrayPrivate;
 class Object;
 class StringName;
+class String;
 
 class Array {
 
