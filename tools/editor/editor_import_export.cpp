@@ -1141,8 +1141,34 @@ EditorImportExport* EditorImportExport::singleton=NULL;
 
 void EditorImportExport::add_import_plugin(const Ref<EditorImportPlugin>& p_plugin) {
 
+	// Need to make sure the name is unique if we are going to lookup by it
+	ERR_FAIL_COND(by_idx.has(p_plugin->get_name()));
+
 	by_idx[ p_plugin->get_name() ]=plugins.size();
 	plugins.push_back(p_plugin);
+}
+
+void EditorImportExport::remove_import_plugin(const Ref<EditorImportPlugin>& p_plugin) {
+
+	String plugin_name = p_plugin->get_name();
+
+	// Keep the indices the same
+	// Find the index of the target plugin
+	ERR_FAIL_COND(!by_idx.has(plugin_name));
+	int idx = by_idx[plugin_name];
+	int last_idx = plugins.size() - 1;
+
+	// Swap the last plugin and the target one
+	SWAP(plugins[idx], plugins[last_idx]);
+
+	// Update the index of the old last one
+	by_idx[plugins[idx]->get_name()] = idx;
+
+	// Remove the target plugin's by_idx entry
+	by_idx.erase(plugin_name);
+
+	// Erase the plugin
+	plugins.remove(last_idx);
 }
 
 int EditorImportExport::get_import_plugin_count() const{
