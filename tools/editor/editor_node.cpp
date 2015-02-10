@@ -3180,7 +3180,7 @@ void EditorNode::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
 	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
-
+	ObjectTypeDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
