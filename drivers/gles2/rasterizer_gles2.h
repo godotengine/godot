@@ -830,7 +830,7 @@ class RasterizerGLES2 : public Rasterizer {
 	struct RenderList {
 
 		enum {
-			MAX_ELEMENTS=4096,
+			INITIAL_ELEMENT_SLOTS=4096,
 			MAX_LIGHTS=4,
 			SORT_FLAG_SKELETON=1,
 			SORT_FLAG_INSTANCING=2,
@@ -868,9 +868,9 @@ class RasterizerGLES2 : public Rasterizer {
 		};
 
 
-		Element _elements[MAX_ELEMENTS];
-		Element *elements[MAX_ELEMENTS];
-		int element_count;
+		Element **elements;
+		int element_count,
+		    elements_slots;
 
 		void clear() {
 
@@ -1004,17 +1004,29 @@ class RasterizerGLES2 : public Rasterizer {
 		}
 		_FORCE_INLINE_ Element* add_element() {
 
-			if (element_count>MAX_ELEMENTS)
-				return NULL;
-			elements[element_count]=&_elements[element_count];
+			if (element_count >= elements_slots) {
+				int old_elements_slots = elements_slots;
+				elements_slots *= 2;
+				elements = (Element **)memrealloc(elements, sizeof(Element*) * elements_slots);
+				zeromem(&elements[old_elements_slots], sizeof(Element*) * old_elements_slots);
+			}
+			if (!elements[element_count])
+				elements[element_count] = (Element *)memalloc(sizeof(Element));
 			return elements[element_count++];
 		}
 
 		RenderList() {
 
 			element_count = 0;
-			for (int i=0;i<MAX_ELEMENTS;i++)
-				elements[i]=&_elements[i]; // assign elements
+			elements_slots=INITIAL_ELEMENT_SLOTS;
+			elements=(Element **)memalloc(sizeof(Element*) * elements_slots);
+			zeromem(elements, sizeof(Element*) * elements_slots);
+		}
+
+		~RenderList() {
+			for (int i = 0; i < elements_slots; ++i)
+				memfree(elements[i]);
+			memfree(elements);
 		}
 	};
 
