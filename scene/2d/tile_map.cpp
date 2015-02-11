@@ -439,10 +439,6 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bo
 
 }
 
-void TileMap::_set_cell(Point2 pos,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
-	set_cell(floor(pos.x), floor(pos.y), p_tile, p_flip_x, p_flip_y, p_transpose);
-}
-
 int TileMap::get_cell(int p_x,int p_y) const {
 
 	PosKey pk(p_x,p_y);
@@ -834,7 +830,6 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
 	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("_set_cell","pos","tile","flip_x","flip_y","transpose"),&TileMap::_set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);

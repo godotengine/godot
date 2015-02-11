@@ -90,6 +90,11 @@ void TileMapEditor::set_selected_tile(int p_tile) {
 	}
 }
 
+void TileMapEditor::_set_cell_shortened(const Point2& p_pos,int p_value,bool p_flip_h, bool p_flip_v, bool p_transpose) {
+	ERR_FAIL_COND(!node);
+	node->set_cell(floor(p_pos.x), floor(p_pos.y), p_value, p_flip_h, p_flip_v, p_transpose);
+}
+	
 void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bool p_flip_v, bool p_transpose,bool p_with_undo) {
 
 	ERR_FAIL_COND(!node);
@@ -104,8 +109,8 @@ void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bo
 
 
 	if (p_with_undo) {
-		undo_redo->add_do_method(node,"_set_cell",Point2(p_pos),p_value,p_flip_h,p_flip_v,p_transpose);
-		undo_redo->add_undo_method(node,"_set_cell",Point2(p_pos),prev_val,prev_flip_h,prev_flip_v,prev_transpose);
+		undo_redo->add_do_method(this,"_set_cell_shortened",Point2(p_pos),p_value,p_flip_h,p_flip_v,p_transpose);
+		undo_redo->add_undo_method(this,"_set_cell_shortened",Point2(p_pos),prev_val,prev_flip_h,prev_flip_v,prev_transpose);
 	} else {
 
 		node->set_cell(p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v,p_transpose);
@@ -275,8 +280,8 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 								for(Map<Point2i,CellOp>::Element *E=paint_undo.front();E;E=E->next()) {
 
 									Point2i p=E->key();
-									undo_redo->add_do_method(node,"_set_cell",Point2(p),node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
-									undo_redo->add_undo_method(node,"_set_cell",Point2(p),E->get().idx,E->get().xf,E->get().yf,E->get().tr);
+									undo_redo->add_do_method(this,"_set_cell_shortened",Point2(p),node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
+									undo_redo->add_undo_method(this,"_set_cell_shortened",Point2(p),E->get().idx,E->get().xf,E->get().yf,E->get().tr);
 								}
 
 								undo_redo->commit_action();
@@ -316,7 +321,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 								Point2i p=E->key();
 								//undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
 								_set_cell(p,TileMap::INVALID_CELL,false,false,false,true);
-								undo_redo->add_undo_method(node,"_set_cell",Point2(p),E->get().idx,E->get().xf,E->get().yf,E->get().tr);
+								undo_redo->add_undo_method(this,"_set_cell_shortened",Point2(p),E->get().idx,E->get().xf,E->get().yf,E->get().tr);
 							}
 
 							undo_redo->commit_action();
@@ -714,6 +719,7 @@ void TileMapEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_canvas_mouse_exit"),&TileMapEditor::_canvas_mouse_exit);
 	ObjectTypeDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
 	ObjectTypeDB::bind_method(_MD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
+	ObjectTypeDB::bind_method(_MD("_set_cell_shortened","pos","tile","flip_x","flip_y","transpose"),&TileMapEditor::_set_cell_shortened,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 
 }
 
