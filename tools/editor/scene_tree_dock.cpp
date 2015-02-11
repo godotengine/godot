@@ -150,6 +150,9 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 			print_line("Error instancing sprite from " + p_file);
 			return NULL;
 		}
+		instanced_scene->generate_instance_state();
+		instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
+
 	} else {
 
 		Ref<PackedScene> sdata = ResourceLoader::load(p_file);
@@ -196,6 +199,7 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 				path = path.substr(path.find_last("/") + 1, path.length());
 				path = path.substr(0, path.find_last("."));
 				instanced_scene->set_name(path);
+				instanced_scene->generate_instance_state();
 			}
 		}
 	}
@@ -215,9 +219,6 @@ Node* SceneTreeDock::_instance(const String& p_file, bool p_replace_selected) {
 			return NULL;
 		}
 	}
-
-	instanced_scene->generate_instance_state();
-	instanced_scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
 
 	if (p_replace_selected) {
 
