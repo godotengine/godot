@@ -34,6 +34,7 @@
 #include "editor_atlas.h"
 #include "io/image_loader.h"
 #include "io/resource_saver.h"
+#include "scene/2d/animated_sprite.h"
 #ifdef FREETYPE_ENABLED
 
 #include <ft2build.h>
@@ -70,11 +71,20 @@ public:
 		CHARSET_CUSTOM_LATIN
 	};
 
+	enum DynamicSource {
+
+		DYNAMIC_DISABLED,
+		DYNAMIC_TTF,
+		DYNAMIC_FRAMES,
+	};
+
 	CharacterSet character_set;
 	String custom_file;
 
-    bool dynamic_ttf;
+    DynamicSource dynamic_source;
     String dynamic_ttf_file;
+	String dynamic_sprite_frames;
+	String dynamic_sprite_pattern;
 
 	bool shadow;
     bool filter;
@@ -125,12 +135,18 @@ public:
         }else if (n=="filter/enabled") {
 			filter=p_value;
 			_change_notify();
-        }else if (n=="dynamic/enabled") {
-            dynamic_ttf=p_value;
+        }else if (n=="dynamic/source") {
+            dynamic_source=DynamicSource((int)p_value);
             _change_notify();
         }else if (n=="dynamic/ttf_file") {
             dynamic_ttf_file=p_value;
             _change_notify();
+		} else if (n == "dynamic/sprite_frames") {
+			dynamic_sprite_frames=p_value;
+			_change_notify();
+		} else if (n == "dynamic/sprite_pattern") {
+			dynamic_sprite_pattern=p_value;
+			_change_notify();
 		}else if (n=="shadow/radius")
 			shadow_radius=p_value;
 		else if (n=="shadow/offset")
@@ -198,10 +214,14 @@ public:
 			r_ret=shadow;
         else if (n=="filter/enabled")
             r_ret=filter;
-        else if (n=="dynamic/enabled")
-            r_ret=dynamic_ttf;
+        else if (n=="dynamic/source")
+            r_ret=dynamic_source;
         else if (n=="dynamic/ttf_file")
             r_ret=dynamic_ttf_file;
+        else if (n=="dynamic/sprite_frames")
+            r_ret=dynamic_sprite_frames;
+        else if (n=="dynamic/sprite_pattern")
+            r_ret=dynamic_sprite_pattern;
 		else if (n=="shadow/radius")
 			r_ret=shadow_radius;
 		else if (n=="shadow/offset")
@@ -246,16 +266,23 @@ public:
 
 	void _get_property_list( List<PropertyInfo> *p_list) const{
 
-		p_list->push_back(PropertyInfo(Variant::BOOL,"dynamic/enabled"));
-        if(dynamic_ttf)
+		p_list->push_back(PropertyInfo(Variant::INT,"dynamic/source",PROPERTY_HINT_ENUM,"Disabled,TtfFont,SpriteFrames"));
+		switch (dynamic_source) {
+		case DYNAMIC_TTF:
 			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/ttf_file",PROPERTY_HINT_FILE,"ttf,otf"));
+			break;
+		case DYNAMIC_FRAMES:
+			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/sprite_frames",PROPERTY_HINT_FILE,"res,xml"));
+			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/sprite_pattern"));
+			break;
+		}
 
         p_list->push_back(PropertyInfo(Variant::INT,"extra_space/char",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/top",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/bottom",PROPERTY_HINT_RANGE,"-64,64,1"));
 
-        if(!dynamic_ttf)
+        if(dynamic_source==DYNAMIC_DISABLED)
 		    p_list->push_back(PropertyInfo(Variant::INT,"character_set/mode",PROPERTY_HINT_ENUM,"Ascii,Latin,Unicode,Custom,Custom&Latin"));
 
 		if (character_set>=CHARSET_CUSTOM)
@@ -341,7 +368,8 @@ public:
 
 		character_set=CHARSET_LATIN;
 
-        dynamic_ttf=false;
+        dynamic_source=DYNAMIC_DISABLED;
+		dynamic_sprite_pattern = "0123456789";
 
 		shadow=false;
         filter=true;
@@ -499,9 +527,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 	void _import() {
 
 		Ref<ResourceImportMetadata> rimd = get_rimd();
-        bool dynamic_enabled=get_rimd()->get_option("dynamic/enabled");
+		int dynamic_source = (int)get_rimd()->get_option("dynamic/source");
+        bool dynamic_disabled= (int)get_rimd()->get_option("dynamic/source") == _EditorFontImportOptions::DYNAMIC_DISABLED;
 
-		if (!dynamic_enabled&&source->get_line_edit()->get_text()=="") {
+		if (dynamic_disabled&&source->get_line_edit()->get_text()=="") {
 			error_dialog->set_text(_TR("No source font file!"));
 			error_dialog->popup_centered(Size2(200,100));
 			return;
@@ -622,11 +651,11 @@ public:
 		//
 		List<String> fl;
 		Ref<Font> font= memnew(Font);
-		dest->get_file_dialog()->add_filter("*.fnt ; Font" );
-		//ResourceSaver::get_recognized_extensions(font,&fl);
-		//for(List<String>::Element *E=fl.front();E;E=E->next()) {
-		//	dest->get_file_dialog()->add_filter("*."+E->get());
-		//}
+		//dest->get_file_dialog()->add_filter("*.fnt ; Font" );
+		ResourceSaver::get_recognized_extensions(font,&fl);
+		for(List<String>::Element *E=fl.front();E;E=E->next()) {
+			dest->get_file_dialog()->add_filter("*."+E->get());
+		}
 
 		vbl->add_margin_child(_TR("Dest Resource:"),dest);
 		HBoxContainer *testhb = memnew( HBoxContainer );
@@ -762,43 +791,79 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	int bottom_space = from->get_option("extra_space/bottom");
 
 #ifdef FREETYPE_ENABLED
-	bool dynamic_ttf = from->get_option("dynamic/enabled");
-    if (dynamic_ttf)
-    {
-    	String dynamic_ttf_file = from->get_option("dynamic/ttf_file");
-        RES res=ResourceLoader::load(dynamic_ttf_file);
-        Ref<TtfFont> ttf_font=res;
-        if(ttf_font.is_valid())
-        {
-            int height=0;
-            int ascent=0;
-            int max_up,max_down;
-        	ERR_EXPLAIN("Error calc font height/ascent.");
-	        ERR_FAIL_COND_V( !ttf_font->calc_size(size, height, ascent, max_up, max_down), Ref<Font>() );
+	int dynamic_source = from->get_option("dynamic/source");
+	switch (dynamic_source) {
+		case _EditorFontImportOptions::DYNAMIC_TTF:	{
 
-            printf("Generate dynamic font\n");
+    		String dynamic_ttf_file = from->get_option("dynamic/ttf_file");
+			RES res=ResourceLoader::load(dynamic_ttf_file);
+			Ref<TtfFont> ttf_font=res;
+			ERR_EXPLAIN("Unabled to load ttf file:" + dynamic_ttf_file);
+			ERR_FAIL_COND_V(ttf_font.is_null(), RES());
+			int height=0;
+			int ascent=0;
+			int max_up,max_down;
+        	ERR_EXPLAIN("Error calc font height/ascent.");
+			ERR_FAIL_COND_V( !ttf_font->calc_size(size, height, ascent, max_up, max_down), Ref<Font>() );
+
+			printf("Generate dynamic font\n");
 			List<String> opts;
 			from->get_options(&opts);
 
-            Dictionary options;
+			Dictionary options;
 			for(List<String>::Element *E=opts.front();E;E=E->next()) {
 				options[E->get()]=from->get_option(E->get());
-            }
-            options["meta/height"]=height;
-            options["meta/ascent"]=ascent;
-            options["meta/max_up"]=max_up;
-            options["meta/max_down"]=max_down;
+			}
+			options["meta/height"]=height;
+			options["meta/ascent"]=ascent;
+			options["meta/max_up"]=max_up;
+			options["meta/max_down"]=max_down;
 
-	        font->clear();
-            font->set_ttf_font(ttf_font);
-            font->set_ttf_options(options);
-            font->set_height(height+bottom_space+top_space);
-            font->set_ascent(ascent+top_space);
+			font->clear();
+			font->set_ttf_font(ttf_font);
+			font->set_ttf_options(options);
+			font->set_height(height+bottom_space+top_space);
+			font->set_ascent(ascent+top_space);
 
-            return font;
-        }
-    }
+			return font;
+		}
+		break;
+		case _EditorFontImportOptions::DYNAMIC_FRAMES: {
 
+    		String sprite_frames = from->get_option("dynamic/sprite_frames");
+			RES res=ResourceLoader::load(sprite_frames);
+			Ref<SpriteFrames> frames=res;
+			ERR_EXPLAIN("Unabled to load sprite frame:" + sprite_frames);
+			ERR_FAIL_COND_V(frames.is_null(), RES());
+    		String sprite_pattern = from->get_option("dynamic/sprite_pattern");
+
+			font->clear();
+			int height = 0;
+			int width = 0;
+			for (int i = 0; i < sprite_pattern.size(); i++) {
+
+				if (i >= frames->get_frame_count())
+					break;
+
+				CharType ch = sprite_pattern[i];
+				Ref<Texture> tex = frames->get_frame(i);
+				font->add_texture(tex);
+				Size2 size = tex->get_size();
+				if (height < size.height)
+					height = size.height;
+				if (width < size.width)
+					width = size.width;
+				// add char, width = texture width * 0.9
+				font->add_char(ch, i, tex->get_region(), Size2(0, 0), width * 0.9);
+			}
+			// add space char (width = max_char_width / 2)
+			font->add_char(0x20, 0, Rect2(0, 0, 0, 0), Size2(0, 0), width / 2);
+			font->set_height(height);
+			return font;
+		}
+		break;
+	}
+	font->set_ttf_font(RES());
 
 	FT_Library   library;   /* handle to library     */
 	FT_Face      face;      /* handle to face object */
