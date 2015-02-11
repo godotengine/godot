@@ -221,6 +221,8 @@ public:
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
 
+	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
+
 	CanvasItem();
 	~CanvasItem();
 };
