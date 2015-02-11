@@ -23,6 +23,7 @@ scene/resources/default_theme/editor_fonts.inc
 scene/resources/default_theme/font_normal_cjk*.inc
 main/fixed_rfs.h
 .fscache
+make.bat
 log.txt
 
 # Android specific

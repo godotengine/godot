@@ -85,6 +85,12 @@ void StyleBox::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("draw"),&StyleBox::draw);
 
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/left", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_LEFT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/right", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_RIGHT );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/top", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_TOP);
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "content_margin/bottom", PROPERTY_HINT_RANGE,"-1,2048,1" ), _SCS("set_default_margin"),_SCS("get_default_margin"), MARGIN_BOTTOM );
+
+
 }
 
 StyleBox::StyleBox() {

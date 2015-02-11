@@ -5532,12 +5532,14 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 				base = surf->array_local;
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				bool can_copy_to_local=surf->local_stride * surf->array_len <= skinned_buffer_size;
+				if (p_morphs && surf->stride * surf->array_len > skinned_buffer_size)
+					can_copy_to_local=false;
+
+
 				if (!can_copy_to_local)
 					skeleton_valid=false;
 
-
 				/* compute morphs */
-
 
 				if (p_morphs && surf->morph_target_count && can_copy_to_local) {
 
@@ -9636,9 +9638,6 @@ void RasterizerGLES2::init() {
 	//glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	skinned_buffer_size = GLOBAL_DEF("rasterizer/skinned_buffer_size",DEFAULT_SKINNED_BUFFER_SIZE);
-	skinned_buffer = memnew_arr( uint8_t, skinned_buffer_size );
-
 	glGenTextures(1, &white_tex);
 	unsigned char whitetexdata[8*8*3];
 	for(int i=0;i<8*8*3;i++) {
@@ -9814,7 +9813,6 @@ void RasterizerGLES2::init() {
 void RasterizerGLES2::finish() {
 
 
-	memdelete_arr(skinned_buffer);
 }
 
 int RasterizerGLES2::get_render_info(VS::RenderInfo p_info) {
@@ -10109,8 +10107,18 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 		RenderList::max_elements=64000;
 	if (RenderList::max_elements<1024)
 		RenderList::max_elements=1024;
+
 	opaque_render_list.init();
 	alpha_render_list.init();
+
+	skinned_buffer_size = GLOBAL_DEF("rasterizer/skeleton_buffer_size_kb",DEFAULT_SKINNED_BUFFER_SIZE);
+	if (skinned_buffer_size<256)
+		skinned_buffer_size=256;
+	if (skinned_buffer_size>16384)
+		skinned_buffer_size=16384;
+	skinned_buffer_size*=1024;
+	skinned_buffer = memnew_arr( uint8_t, skinned_buffer_size );
+
 	keep_copies=p_keep_ram_copy;
 	use_reload_hooks=p_use_reload_hooks;
 	pack_arrays=p_compress_arrays;
@@ -10154,6 +10162,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 
 RasterizerGLES2::~RasterizerGLES2() {
 
+	memdelete_arr(skinned_buffer);
 };
 
 

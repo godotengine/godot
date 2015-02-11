@@ -582,7 +582,7 @@ void ShaderMaterial::get_argument_options(const StringName& p_function,int p_idx
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
 			for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
-				r_options->push_back("\""+E->get().name.replace("shader_param/","")+"\"");
+				r_options->push_back("\""+E->get().name.replace_first("shader_param/","")+"\"");
 			}
 		}
 	}
