@@ -212,8 +212,8 @@ class DaeExporter:
 		imgid = self.new_id("image")
 		
 		if (not os.path.isfile(imgpath)):
-			if img_tmp_path.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
-				imgpath="images/"+os.path.basename(img_tmp_path)
+			if imgpath.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
+				imgpath="images/"+os.path.basename(imgpath)
 			else:
 				imgpath="images/"+image.name+".png"
 		

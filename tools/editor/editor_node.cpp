@@ -336,6 +336,19 @@ void EditorNode::_vp_resized() {
 
 }
 
+void EditorNode::_rebuild_import_menu()
+{
+	PopupMenu* p = import_menu->get_popup();
+	p->clear();
+	p->add_item("Sub-Scene", FILE_IMPORT_SUBSCENE);
+	p->add_separator();
+	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
+		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
+	}
+	p->add_separator();
+	p->add_item("Re-Import..", SETTINGS_IMPORT);
+}
+
 void EditorNode::_node_renamed() {
 
 	if (property_editor)
@@ -1967,6 +1980,25 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				log->add_message("REDO: "+action);
 
 		} break;
+
+		case EDIT_REVERT: {
+
+			Node *scene = get_edited_scene();
+
+			if (!scene)
+				break;
+			
+			if (unsaved_cache && !p_confirmed) {
+				confirmation->get_ok()->set_text("Revert");
+				confirmation->set_text("This action cannot be undone. Revert anyway?");
+				confirmation->popup_centered(Size2(300,70));
+				break;
+			}
+
+			Error err = load_scene(scene->get_filename());
+
+		} break;
+
 #if 0
 		case NODE_EXTERNAL_INSTANCE: {
 
@@ -2385,6 +2417,19 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 	singleton->remove_child(p_editor);
 	singleton->editor_data.remove_editor_plugin( p_editor );
 
+}
+
+
+void EditorNode::add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
+
+	editor_import_export->add_import_plugin(p_editor_import);
+	_rebuild_import_menu();
+}
+
+void EditorNode::remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
+
+	editor_import_export->remove_import_plugin(p_editor_import);
+	_rebuild_import_menu();
 }
 
 
@@ -3152,6 +3197,9 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
 	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
 
+	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
+	ObjectTypeDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
@@ -3469,6 +3517,8 @@ EditorNode::EditorNode() {
 	p->add_separator();
 	p->add_item("Project Settings",RUN_SETTINGS);
 	p->add_separator();
+	p->add_item("Revert Scene",EDIT_REVERT);
+	p->add_separator();
 	p->add_item("Quit to Project List",RUN_PROJECT_MANAGER,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_Q);
 	p->add_item("Quit",FILE_QUIT,KEY_MASK_CMD+KEY_Q);
 
@@ -3513,8 +3563,6 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child( import_menu );
 
 	p=import_menu->get_popup();
-	p->add_item("Sub-Scene",FILE_IMPORT_SUBSCENE);
-	p->add_separator();
 	p->connect("item_pressed",this,"_menu_option");
 
 	export_button = memnew( ToolButton );
@@ -3552,7 +3600,7 @@ EditorNode::EditorNode() {
 	play_button->set_icon(gui_base->get_icon("MainPlay","EditorIcons"));
 	play_button->set_focus_mode(Control::FOCUS_NONE);
 	play_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY));
-	play_button->set_tooltip("Start the scene (F5).");
+	play_button->set_tooltip("Play the project (F5).");
 
 
 
@@ -4023,11 +4071,6 @@ EditorNode::EditorNode() {
 	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
 
-
-	for(int i=0;i<editor_import_export->get_import_plugin_count();i++) {
-		    import_menu->get_popup()->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(),IMPORT_PLUGIN_BASE+i);
-	}
-
 	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
 
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
@@ -4072,9 +4115,7 @@ EditorNode::EditorNode() {
 	circle_step_frame=OS::get_singleton()->get_frames_drawn();;
 	circle_step=0;
 
-
-	import_menu->get_popup()->add_separator();
-	import_menu->get_popup()->add_item("Re-Import..",SETTINGS_IMPORT);
+	_rebuild_import_menu();
 
 	editor_plugin_screen=NULL;
 	editor_plugin_over=NULL;

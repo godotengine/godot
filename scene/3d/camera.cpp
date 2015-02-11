@@ -604,7 +604,7 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 
 	Vector2 point;
 	point.x = (p_point.x/viewport_size.x) * 2.0 - 1.0;
-	point.y = (p_point.y/viewport_size.y) * 2.0 - 1.0;
+	point.y = (1.0-(p_point.y/viewport_size.y)) * 2.0 - 1.0;
 	point*=vp_size;
 
 	Vector3 p(point.x,point.y,-near);
