@@ -1003,6 +1003,7 @@ bool Tween::interpolate_method(Object *p_object
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
+	ERR_EXPLAIN("Object has no method named: %s" + p_method);
 	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
 
 	InterpolateData data;
@@ -1037,6 +1038,7 @@ bool Tween::interpolate_callback(Object *p_object
 	ERR_FAIL_COND_V(p_object == NULL, false);
 	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
 
+	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
 	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
 
 	InterpolateData data;
@@ -1088,6 +1090,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object
 	ERR_FAIL_COND_V(p_object == NULL, false);
 	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
 
+	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
 	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
 
 	InterpolateData data;
@@ -1203,7 +1206,9 @@ bool Tween::follow_method(Object *p_object
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
+	ERR_EXPLAIN("Object has no method named: %s" + p_method);
 	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
+	ERR_EXPLAIN("Target has no method named: %s" + p_target_method);
 	ERR_FAIL_COND_V(!p_target->has_method(p_target_method), false);
 
 	Variant::CallError error;
@@ -1313,7 +1318,9 @@ bool Tween::targeting_method(Object *p_object
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
+	ERR_EXPLAIN("Object has no method named: %s" + p_method);
 	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
+	ERR_EXPLAIN("Initial Object has no method named: %s" + p_initial_method);
 	ERR_FAIL_COND_V(!p_initial->has_method(p_initial_method), false);
 
 	Variant::CallError error;
