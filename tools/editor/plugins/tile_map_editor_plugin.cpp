@@ -34,7 +34,7 @@
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 #include "os/input.h"
-
+#include "method_bind_ext.inc"
 
 void TileMapEditor::_notification(int p_what) {
 
@@ -104,8 +104,8 @@ void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bo
 
 
 	if (p_with_undo) {
-		undo_redo->add_do_method(node,"set_cell",p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v,p_transpose);
-		undo_redo->add_undo_method(node,"set_cell",p_pos.x,p_pos.y,prev_val,prev_flip_h,prev_flip_v,prev_transpose);
+		undo_redo->add_do_method(node,"_set_cell",Point2(p_pos),p_value,p_flip_h,p_flip_v,p_transpose);
+		undo_redo->add_undo_method(node,"_set_cell",Point2(p_pos),prev_val,prev_flip_h,prev_flip_v,prev_transpose);
 	} else {
 
 		node->set_cell(p_pos.x,p_pos.y,p_value,p_flip_h,p_flip_v,p_transpose);
@@ -275,8 +275,8 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 								for(Map<Point2i,CellOp>::Element *E=paint_undo.front();E;E=E->next()) {
 
 									Point2i p=E->key();
-									undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
-									undo_redo->add_undo_method(node,"set_cell",p.x,p.y,E->get().idx,E->get().xf,E->get().yf,E->get().tr);
+									undo_redo->add_do_method(node,"_set_cell",Point2(p),node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
+									undo_redo->add_undo_method(node,"_set_cell",Point2(p),E->get().idx,E->get().xf,E->get().yf,E->get().tr);
 								}
 
 								undo_redo->commit_action();
@@ -316,7 +316,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 								Point2i p=E->key();
 								//undo_redo->add_do_method(node,"set_cell",p.x,p.y,node->get_cell(p.x,p.y),node->is_cell_x_flipped(p.x,p.y),node->is_cell_y_flipped(p.x,p.y),node->is_cell_transposed(p.x,p.y));
 								_set_cell(p,TileMap::INVALID_CELL,false,false,false,true);
-								undo_redo->add_undo_method(node,"set_cell",p.x,p.y,E->get().idx,E->get().xf,E->get().yf,E->get().tr);
+								undo_redo->add_undo_method(node,"_set_cell",Point2(p),E->get().idx,E->get().xf,E->get().yf,E->get().tr);
 							}
 
 							undo_redo->commit_action();

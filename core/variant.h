@@ -387,7 +387,7 @@ public:
 	};
 
 	Variant call(const StringName& p_method,const Variant** p_args,int p_argcount,CallError &r_error);
-	Variant call(const StringName& p_method,const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant(),const Variant& p_arg6=Variant());
+	Variant call(const StringName& p_method,const Variant& p_arg1=Variant(),const Variant& p_arg2=Variant(),const Variant& p_arg3=Variant(),const Variant& p_arg4=Variant(),const Variant& p_arg5=Variant());
 	static Variant construct(const Variant::Type,const Variant** p_args,int p_argcount,CallError &r_error);
 
 	void get_method_list(List<MethodInfo> *p_list) const;
