@@ -340,6 +340,8 @@ class EditorNode : public Node {
 	void _show_messages();
 	void _vp_resized();
 
+	void _rebuild_import_menu();
+
 	void _save_scene(String p_file);
 
 
@@ -420,6 +422,9 @@ public:
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
+
+	void add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
+	void remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
 
 
 	void edit_node(Node *p_node);

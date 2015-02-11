@@ -336,6 +336,19 @@ void EditorNode::_vp_resized() {
 
 }
 
+void EditorNode::_rebuild_import_menu()
+{
+	PopupMenu* p = import_menu->get_popup();
+	p->clear();
+	p->add_item("Sub-Scene", FILE_IMPORT_SUBSCENE);
+	p->add_separator();
+	for (int i = 0; i < editor_import_export->get_import_plugin_count(); i++) {
+		p->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(), IMPORT_PLUGIN_BASE + i);
+	}
+	p->add_separator();
+	p->add_item("Re-Import..", SETTINGS_IMPORT);
+}
+
 void EditorNode::_node_renamed() {
 
 	if (property_editor)
@@ -2407,6 +2420,19 @@ void EditorNode::remove_editor_plugin(EditorPlugin *p_editor) {
 }
 
 
+void EditorNode::add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
+
+	editor_import_export->add_import_plugin(p_editor_import);
+	_rebuild_import_menu();
+}
+
+void EditorNode::remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import) {
+
+	editor_import_export->remove_import_plugin(p_editor_import);
+	_rebuild_import_menu();
+}
+
+
 void EditorNode::set_edited_scene(Node *p_scene) {
 
 	if (edited_scene) {
@@ -3171,6 +3197,9 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_sources_changed",&EditorNode::_sources_changed);
 	ObjectTypeDB::bind_method("_fs_changed",&EditorNode::_fs_changed);
 
+	ObjectTypeDB::bind_method(_MD("add_editor_import_plugin", "plugin"), &EditorNode::add_editor_import_plugin);
+	ObjectTypeDB::bind_method(_MD("remove_editor_import_plugin", "plugin"), &EditorNode::remove_editor_import_plugin);
+	ObjectTypeDB::bind_method(_MD("get_gui_base"), &EditorNode::get_gui_base);
 
 	ADD_SIGNAL( MethodInfo("play_pressed") );
 	ADD_SIGNAL( MethodInfo("pause_pressed") );
@@ -3534,8 +3563,6 @@ EditorNode::EditorNode() {
 	left_menu_hb->add_child( import_menu );
 
 	p=import_menu->get_popup();
-	p->add_item("Sub-Scene",FILE_IMPORT_SUBSCENE);
-	p->add_separator();
 	p->connect("item_pressed",this,"_menu_option");
 
 	export_button = memnew( ToolButton );
@@ -4044,11 +4071,6 @@ EditorNode::EditorNode() {
 	editor_import_export->add_import_plugin( Ref<EditorSampleImportPlugin>( memnew(EditorSampleImportPlugin(this))));
 	editor_import_export->add_import_plugin( Ref<EditorTranslationImportPlugin>( memnew(EditorTranslationImportPlugin(this))));
 
-
-	for(int i=0;i<editor_import_export->get_import_plugin_count();i++) {
-		    import_menu->get_popup()->add_item(editor_import_export->get_import_plugin(i)->get_visible_name(),IMPORT_PLUGIN_BASE+i);
-	}
-
 	editor_import_export->add_export_plugin( Ref<EditorTextureExportPlugin>( memnew(EditorTextureExportPlugin)));
 
 	add_editor_plugin( memnew( CanvasItemEditorPlugin(this) ) );
@@ -4093,9 +4115,7 @@ EditorNode::EditorNode() {
 	circle_step_frame=OS::get_singleton()->get_frames_drawn();;
 	circle_step=0;
 
-
-	import_menu->get_popup()->add_separator();
-	import_menu->get_popup()->add_item("Re-Import..",SETTINGS_IMPORT);
+	_rebuild_import_menu();
 
 	editor_plugin_screen=NULL;
 	editor_plugin_over=NULL;

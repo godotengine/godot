@@ -270,6 +270,7 @@ public:
 	static EditorImportExport* get_singleton() { return singleton; }
 
 	void add_import_plugin(const Ref<EditorImportPlugin>& p_plugin);
+	void remove_import_plugin(const Ref<EditorImportPlugin>& p_plugin);
 	int get_import_plugin_count() const;
 	Ref<EditorImportPlugin> get_import_plugin(int p_idx) const;
 	Ref<EditorImportPlugin> get_import_plugin_by_name(const String& p_string) const;
