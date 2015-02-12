@@ -238,9 +238,11 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XFree(xsh);
 	}
 #else
+	capture_idle = 0;
+	minimized = false;
+	maximized = false;
+
 	if (current_videomode.fullscreen) {
-		minimized = false;
-		maximized = false;
 		//set_wm_border(false);
 		set_wm_fullscreen(true);
 	}
@@ -494,8 +496,9 @@ void OS_X11::set_mouse_mode(MouseMode p_mode) {
 		center.y = current_videomode.height/2;
 		XWarpPointer(x11_display, None, x11_window,
 			      0,0,0,0, (int)center.x, (int)center.y);
-	}
 
+		input->set_mouse_pos(center);
+	}
 }
 
 void OS_X11::warp_mouse_pos(const Point2& p_to) {
@@ -724,44 +727,10 @@ void OS_X11::set_window_size(const Size2 p_size) {
 }
 
 void OS_X11::set_fullscreen(bool p_enabled) {
-
-#if 0
-	if(p_enabled && current_videomode.fullscreen)
-		return;
-
-	if(!current_videomode.resizable)
-		set_resizable(true);
-
-	if(p_enabled) {
-		window_data.size = get_window_size();
-		window_data.position = get_window_position();
-
-		int screen = get_screen();
-		Size2i size = get_screen_size(screen);
-		Point2i position = get_screen_position(screen);
-
-		set_wm_border(false);
-		set_wm_fullscreen(true);
-	        XMoveResizeWindow(x11_display, x11_window, position.x, position.y, size.x, size.y);
-
-		current_videomode.fullscreen = True;
-	} else {
-		set_wm_fullscreen(false);
-		set_wm_border(true);
-		XMoveResizeWindow(x11_display, x11_window,
-					window_data.position.x,
-					window_data.position.y,
-					window_data.size.width,
-					window_data.size.height);
-
-		current_videomode.fullscreen = False;
-	}
-#endif
 	set_wm_fullscreen(p_enabled);
 	current_videomode.fullscreen = p_enabled;
 
 	visual_server->init();
-
 }
 
 bool OS_X11::is_fullscreen() const {
@@ -1209,7 +1178,7 @@ void OS_X11::process_xevents() {
 				event.xbutton.x=last_mouse_pos.x;
 				event.xbutton.y=last_mouse_pos.y;
 			}
-			
+		
 			InputEvent mouse_event;
 			mouse_event.ID=++event_id;
 			mouse_event.type = InputEvent::MOUSE_BUTTON;
@@ -1244,7 +1213,7 @@ void OS_X11::process_xevents() {
 					last_click_ms+=diff;	
 					last_click_pos = Point2(event.xbutton.x,event.xbutton.y);
 				}
-			}		
+			}	
 
 			input->parse_input_event( mouse_event);
 
@@ -1254,11 +1223,10 @@ void OS_X11::process_xevents() {
 						
 			
 			last_timestamp=event.xmotion.time;
-			
+		
 			// Motion is also simple.
 			// A little hack is in order
 			// to be able to send relative motion events.
-			
 			Point2i pos( event.xmotion.x, event.xmotion.y );
 
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
@@ -1273,7 +1241,7 @@ void OS_X11::process_xevents() {
 				}
 
 				Point2i new_center = pos;
-				pos = last_mouse_pos + ( pos-center );
+				pos = last_mouse_pos + ( pos - center );
 				center=new_center;
 				do_mouse_warp=true;
 #else
@@ -1287,9 +1255,7 @@ void OS_X11::process_xevents() {
 				XWarpPointer(x11_display, None, x11_window,
 					      0,0,0,0, (int)center.x, (int)center.y);
 #endif
-
 			}
-
 			
 			if (!last_mouse_pos_valid) {
 				
@@ -1298,7 +1264,14 @@ void OS_X11::process_xevents() {
 			}
 			
 			Point2i rel = pos - last_mouse_pos;
-			
+
+#ifdef EXPERIMENTAL_WM_API
+			if (mouse_mode==MOUSE_MODE_CAPTURED) {
+				pos.x = current_videomode.width / 2;
+				pos.y = current_videomode.height / 2;
+			}
+#endif
+
 			InputEvent motion_event;
 			motion_event.ID=++event_id;
 			motion_event.type=InputEvent::MOUSE_MOTION;
@@ -1309,7 +1282,7 @@ void OS_X11::process_xevents() {
 			motion_event.mouse_motion.x=pos.x;
 			motion_event.mouse_motion.y=pos.y;
 			input->set_mouse_pos(pos);
-			motion_event.mouse_motion.global_x=pos.x;
+			motion_event.mouse_motion.global_x=pos.y;
 			motion_event.mouse_motion.global_y=pos.y;
 			motion_event.mouse_motion.speed_x=input->get_mouse_speed().x;
 			motion_event.mouse_motion.speed_y=input->get_mouse_speed().y;
@@ -1318,6 +1291,8 @@ void OS_X11::process_xevents() {
 			motion_event.mouse_motion.relative_y=rel.y;
 						
 			last_mouse_pos=pos;
+
+			// printf("rel: %d,%d\n", rel.x, rel.y );
 			
 			input->parse_input_event( motion_event);
 			
@@ -1392,8 +1367,18 @@ void OS_X11::process_xevents() {
 	if (do_mouse_warp) {
 
 		XWarpPointer(x11_display, None, x11_window,
-			      0,0,0,0, (int)current_videomode.width/2, (int)current_videomode.height/2);
+		 	      0,0,0,0, (int)current_videomode.width/2, (int)current_videomode.height/2);
 
+		/*	
+		Window root, child;
+		int root_x, root_y;
+		int win_x, win_y;
+		unsigned int mask;
+		XQueryPointer( x11_display, x11_window, &root, &child, &root_x, &root_y, &win_x, &win_y, &mask );
+
+		printf("Root: %d,%d\n", root_x, root_y);
+		printf("Win: %d,%d\n", win_x, win_y);
+		*/
 	}
 }
 

@@ -28,6 +28,8 @@ func _fixed_process(delta):
 	
 	get_node("Label_Size").set_text(str("Size:\n", OS.get_window_size() ) )
 	
+	get_node("Label_MousePosition").set_text(str("Mouse Position:\n", Input.get_mouse_pos() ) )
+	
 	get_node("Label_Screen_Count").set_text( str("Screen_Count:\n", OS.get_screen_count() ) )
 	
 	get_node("Label_Screen_Current").set_text( str("Screen:\n", OS.get_screen() ) )

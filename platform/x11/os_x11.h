@@ -160,6 +160,7 @@ class OS_X11 : public OS_Unix {
 	Joystick joysticks[JOYSTICKS_MAX];
 
 #ifdef EXPERIMENTAL_WM_API
+	unsigned int capture_idle;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
