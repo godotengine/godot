@@ -810,6 +810,23 @@ void CanvasItem::_shader_changed() {
 }
 #endif
 
+void CanvasItem::get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const {
+
+	if (p_idx==0 && shader.is_valid() && (p_function.operator String()=="get_shader_param" || p_function.operator String()=="set_shader_param")) {
+
+		List<PropertyInfo> pl;
+		shader->get_param_list(&pl);
+		for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
+			r_options->push_back("\""+E->get().name.replace_first("shader_param/","")+"\"");
+		}
+
+		return;
+	}
+
+	Node::get_argument_options(p_function,p_idx,r_options);
+}
+
+
 void CanvasItem::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_sort_children"),&CanvasItem::_sort_children);
@@ -845,7 +862,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_self_opacity","self_opacity"),&CanvasItem::set_self_opacity);
 	ObjectTypeDB::bind_method(_MD("get_self_opacity"),&CanvasItem::get_self_opacity);
 
-	ObjectTypeDB::bind_method(_MD("set_draw_behind_parent","enabe"),&CanvasItem::set_draw_behind_parent);
+	ObjectTypeDB::bind_method(_MD("set_draw_behind_parent","enable"),&CanvasItem::set_draw_behind_parent);
 	ObjectTypeDB::bind_method(_MD("is_draw_behind_parent_enabled"),&CanvasItem::is_draw_behind_parent_enabled);
 
 	ObjectTypeDB::bind_method(_MD("_set_on_top","on_top"),&CanvasItem::_set_on_top);
@@ -881,6 +898,10 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shader"),&CanvasItem::get_shader);
 	ObjectTypeDB::bind_method(_MD("set_use_parent_shader","enable"),&CanvasItem::set_use_parent_shader);
 	ObjectTypeDB::bind_method(_MD("get_use_parent_shader"),&CanvasItem::get_use_parent_shader);
+
+	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value"),&CanvasItem::set_shader_param);
+	ObjectTypeDB::bind_method(_MD("get_shader_param","param"),&CanvasItem::get_shader_param);
+
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 

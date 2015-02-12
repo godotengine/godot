@@ -593,10 +593,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
+			// Make sure we don't include modifiers for the modifier key itself.
 			KeyEvent ke;
-			ke.mod_state.shift=shift_mem;
-			ke.mod_state.alt=alt_mem;
-			ke.mod_state.control=control_mem;
+			ke.mod_state.shift= (wParam != VK_SHIFT) ? shift_mem : false;
+			ke.mod_state.alt= (! (wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
+			ke.mod_state.control= (wParam != VK_CONTROL) ? control_mem : false;
 			ke.mod_state.meta=meta_mem;
 			ke.uMsg=uMsg;
 

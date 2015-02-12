@@ -4038,8 +4038,16 @@ void RasterizerGLES2::render_target_set_size(RID p_render_target,int p_width,int
 	glGenTextures(1, &rt->color);
 	glBindTexture(GL_TEXTURE_2D, rt->color);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,  rt->width, rt->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	if (rt->texture_ptr->flags&VS::TEXTURE_FLAG_FILTER) {
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	} else {
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	}
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, rt->color, 0);
@@ -5494,12 +5502,14 @@ Error RasterizerGLES2::_setup_geometry(const Geometry *p_geometry, const Materia
 				base = surf->array_local;
 				glBindBuffer(GL_ARRAY_BUFFER, 0);
 				bool can_copy_to_local=surf->local_stride * surf->array_len <= skinned_buffer_size;
+				if (p_morphs && surf->stride * surf->array_len > skinned_buffer_size)
+					can_copy_to_local=false;
+
+
 				if (!can_copy_to_local)
 					skeleton_valid=false;
 
-
 				/* compute morphs */
-
 
 				if (p_morphs && surf->morph_target_count && can_copy_to_local) {
 
@@ -9581,9 +9591,6 @@ void RasterizerGLES2::init() {
 	//glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	skinned_buffer_size = GLOBAL_DEF("rasterizer/skinned_buffer_size",DEFAULT_SKINNED_BUFFER_SIZE);
-	skinned_buffer = memnew_arr( uint8_t, skinned_buffer_size );
-
 	glGenTextures(1, &white_tex);
 	unsigned char whitetexdata[8*8*3];
 	for(int i=0;i<8*8*3;i++) {
@@ -9759,7 +9766,6 @@ void RasterizerGLES2::init() {
 void RasterizerGLES2::finish() {
 
 
-	memdelete_arr(skinned_buffer);
 }
 
 int RasterizerGLES2::get_render_info(VS::RenderInfo p_info) {
@@ -10039,9 +10045,28 @@ RasterizerGLES2* RasterizerGLES2::get_singleton() {
 	return _singleton;
 };
 
+int RasterizerGLES2::RenderList::max_elements=RenderList::DEFAULT_MAX_ELEMENTS;
+
 RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,bool p_default_fragment_lighting,bool p_use_reload_hooks) {
 
 	_singleton = this;
+
+	RenderList::max_elements=GLOBAL_DEF("rasterizer/max_render_elements",(int)RenderList::DEFAULT_MAX_ELEMENTS);
+	if (RenderList::max_elements>64000)
+		RenderList::max_elements=64000;
+	if (RenderList::max_elements<1024)
+		RenderList::max_elements=1024;
+
+	opaque_render_list.init();
+	alpha_render_list.init();
+
+	skinned_buffer_size = GLOBAL_DEF("rasterizer/skeleton_buffer_size_kb",DEFAULT_SKINNED_BUFFER_SIZE);
+	if (skinned_buffer_size<256)
+		skinned_buffer_size=256;
+	if (skinned_buffer_size>16384)
+		skinned_buffer_size=16384;
+	skinned_buffer_size*=1024;
+	skinned_buffer = memnew_arr( uint8_t, skinned_buffer_size );
 
 	keep_copies=p_keep_ram_copy;
 	use_reload_hooks=p_use_reload_hooks;
@@ -10086,6 +10111,7 @@ RasterizerGLES2::RasterizerGLES2(bool p_compress_arrays,bool p_keep_ram_copy,boo
 
 RasterizerGLES2::~RasterizerGLES2() {
 
+	memdelete_arr(skinned_buffer);
 };
 
 

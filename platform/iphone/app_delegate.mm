@@ -84,13 +84,11 @@ static int frame_count = 0;
 	switch (frame_count) {
 
 	case 0: {
-
-		int backingWidth;
-		int backingHeight;
-		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-		glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-
-		iphone_main(backingWidth, backingHeight, gargc, gargv);
+        int backingWidth;
+        int backingHeight;
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+		
 
 		OS::VideoMode vm;
 		vm.fullscreen = true;
@@ -198,6 +196,13 @@ static int frame_count = 0;
 	//glView.autoresizesSubviews = YES;
 	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleWidth];
 
+    int backingWidth;
+    int backingHeight;
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    
+    iphone_main(backingWidth, backingHeight, gargc, gargv);
+    
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;
 	window.rootViewController = view_controller;
