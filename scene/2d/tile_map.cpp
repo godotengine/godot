@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "tile_map.h"
 #include "io/marshalls.h"
+#include "servers/physics_2d_server.h"
 
 void TileMap::_notification(int p_what) {
 
@@ -339,7 +340,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	VisualServer::get_singleton()->canvas_item_set_parent( q.canvas_item, get_canvas_item() );
 	VisualServer::get_singleton()->canvas_item_set_transform( q.canvas_item, xform );
-	q.body=Physics2DServer::get_singleton()->body_create(body_mode);
+	q.body=Physics2DServer::get_singleton()->body_create(use_kinematic?Physics2DServer::BODY_MODE_KINEMATIC:Physics2DServer::BODY_MODE_STATIC);
 	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body,get_instance_ID());
 	Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
 	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_FRICTION,friction);
@@ -590,15 +591,15 @@ void TileMap::set_collision_layer_mask(uint32_t p_layer) {
 	}
 }
 
-Physics2DServer::BodyMode TileMap::get_collision_body_mode() const{
+bool TileMap::get_collision_use_kinematic() const{
 
-	return body_mode;
+	return use_kinematic;
 }
 
-void TileMap::set_collision_body_mode(Physics2DServer::BodyMode p_body_mode) {
+void TileMap::set_collision_use_kinematic(bool p_use_kinematic) {
 
 	_clear_quadrants();
-	body_mode=p_body_mode;
+	use_kinematic=p_use_kinematic;
 	_recreate_quadrants();
 }
 
@@ -816,11 +817,11 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_center_y","enable"),&TileMap::set_center_y);
 	ObjectTypeDB::bind_method(_MD("get_center_y"),&TileMap::get_center_y);
 
+	ObjectTypeDB::bind_method(_MD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
+	ObjectTypeDB::bind_method(_MD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
+
 	ObjectTypeDB::bind_method(_MD("set_collision_layer_mask","mask"),&TileMap::set_collision_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_collision_layer_mask"),&TileMap::get_collision_layer_mask);
-
-	ObjectTypeDB::bind_method(_MD("set_collision_body_mode","body_mode"),&TileMap::set_collision_body_mode);
-	ObjectTypeDB::bind_method(_MD("get_collision_body_mode"),&TileMap::get_collision_body_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_collision_friction","value"),&TileMap::set_collision_friction);
 	ObjectTypeDB::bind_method(_MD("get_collision_friction"),&TileMap::get_collision_friction);
@@ -852,7 +853,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell/custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/body_mode",PROPERTY_HINT_ENUM,"Static,Kinematic"),_SCS("set_collision_body_mode"),_SCS("get_collision_body_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision/use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer_mask"),_SCS("get_collision_layer_mask"));
@@ -886,7 +887,7 @@ TileMap::TileMap() {
 	bounce=0;
 	mode=MODE_SQUARE;
 	half_offset=HALF_OFFSET_DISABLED;
-	body_mode=Physics2DServer::BODY_MODE_STATIC;
+	use_kinematic=false;
 
 	fp_adjust=0.01;
 	fp_adjust=0.01;
