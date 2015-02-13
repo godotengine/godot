@@ -141,7 +141,7 @@ public:
 	bool add(const String& p_name, real_t p_cunstom_scale = 1.0f, bool p_loop = false, int p_track = 0, int p_delay = 0);
 	void clear(int p_track = -1);
 	void stop();
-	bool is_playing() const;
+	bool is_playing(int p_track = 0) const;
 	String get_current_animation(int p_track = 0) const;
 	void stop_all();
 	void reset();

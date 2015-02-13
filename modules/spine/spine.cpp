@@ -141,9 +141,8 @@ void Spine::_on_fx_draw() {
 	if (skeleton == NULL)
 		return;
 	fx_batcher.reset();
-
 	RID eci = fx_node->get_canvas_item();
-	VisualServer::get_singleton()->canvas_item_add_set_blend_mode(eci, VS::MaterialBlendMode(get_blend_mode()));
+	VisualServer::get_singleton()->canvas_item_add_set_blend_mode(eci, VS::MaterialBlendMode(fx_node->get_blend_mode()));
 	fx_batcher.flush();
 }
 
@@ -157,7 +156,8 @@ void Spine::_animation_draw() {
 	skeleton->b = modulate.b;
 	skeleton->a = modulate.a;
 
-	int additive = -1;
+	int additive = 0;
+	int fx_additive = 0;
 	Color color;
 	const float *uvs = NULL;
 	int verties_count = 0;
@@ -166,8 +166,8 @@ void Spine::_animation_draw() {
 	float r = 0, g = 0, b = 0, a = 0;
 
 	RID ci = this->get_canvas_item();
-	VisualServer::get_singleton()->canvas_item_add_set_blend_mode(ci, VS::MaterialBlendMode(get_blend_mode()));
 	batcher.reset();
+	VisualServer::get_singleton()->canvas_item_add_set_blend_mode(ci, VS::MaterialBlendMode(get_blend_mode()));
 
 	const char *fx_prefix = fx_slot_prefix.get_data();
 
@@ -237,18 +237,23 @@ void Spine::_animation_draw() {
 		if (texture.is_null())
 			continue;
 
-		if (slot->data->additiveBlending != additive) {
+		if (is_fx && slot->data->additiveBlending != fx_additive) {
 
-			batcher.flush();
-	
-			// TODO: additive blending for fx node
-			if (!is_fx) {
-				VisualServer::get_singleton()->canvas_item_add_set_blend_mode(ci,
-					slot->data->additiveBlending ? VisualServer::MATERIAL_BLEND_MODE_ADD : VS::MaterialBlendMode(get_blend_mode())
-				);
-				additive = slot->data->additiveBlending;
-			}
+			fx_batcher.add_set_blender_mode(slot->data->additiveBlending
+				? VisualServer::MATERIAL_BLEND_MODE_ADD
+				: get_blend_mode()
+			);
+			fx_additive = slot->data->additiveBlending;
 		}
+		else if (slot->data->additiveBlending != additive) {
+
+			batcher.add_set_blender_mode(slot->data->additiveBlending
+				? VisualServer::MATERIAL_BLEND_MODE_ADD
+				: fx_node->get_blend_mode()
+			);
+			additive = slot->data->additiveBlending;
+		}
+
 		color.a = skeleton->a * slot->a * a * get_opacity();
 		color.r = skeleton->r * slot->r * r;
 		color.g = skeleton->g * slot->g * g;
@@ -696,9 +701,9 @@ void Spine::stop() {
 	reset();
 }
 
-bool Spine::is_playing() const {
+bool Spine::is_playing(int p_track) const {
 
-	return playing;
+	return playing && spAnimationState_getCurrent(state, p_track) != NULL;
 }
 
 String Spine::get_current_animation(int p_track) const {
@@ -1132,7 +1137,7 @@ void Spine::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add", "name", "cunstom_scale", "loop", "track", "delay"), &Spine::add, 1.0f, false, 0, 0);
 	ObjectTypeDB::bind_method(_MD("clear", "track"), &Spine::clear);
 	ObjectTypeDB::bind_method(_MD("stop"), &Spine::stop);
-	ObjectTypeDB::bind_method(_MD("is_playing"), &Spine::is_playing);
+	ObjectTypeDB::bind_method(_MD("is_playing", "track"), &Spine::is_playing);
 	ObjectTypeDB::bind_method(_MD("get_current_animation"), &Spine::get_current_animation);
 	ObjectTypeDB::bind_method(_MD("stop_all"), &Spine::stop_all);
 	ObjectTypeDB::bind_method(_MD("reset"), &Spine::reset);
