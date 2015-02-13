@@ -33,6 +33,7 @@
 #include "scene/resources/tile_set.h"
 #include "self_list.h"
 #include "vset.h"
+#include "servers/physics_2d_server.h"
 
 class TileMap : public Node2D {
 
@@ -60,6 +61,7 @@ private:
 	Mode mode;
 	Matrix32 custom_transform;
 	HalfOffset half_offset;
+	Physics2DServer::BodyMode body_mode;
 
 
 	union PosKey {
@@ -97,14 +99,14 @@ private:
 
 		Vector2 pos;
 		RID canvas_item;
-		RID static_body;
+		RID body;
 
 		SelfList<Quadrant> dirty_list;
 
 		VSet<PosKey> cells;
 
-		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; static_body=q.static_body; cells=q.cells; }
-		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; static_body=q.static_body; cells=q.cells;}
+		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells; }
+		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells;}
 		Quadrant() : dirty_list(this) {}
 	};
 
@@ -176,6 +178,9 @@ public:
 
 	void set_collision_layer_mask(uint32_t p_layer);
 	uint32_t get_collision_layer_mask() const;
+
+	void set_collision_body_mode(Physics2DServer::BodyMode p_body_mode);
+	Physics2DServer::BodyMode get_collision_body_mode() const;
 
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;
