@@ -542,8 +542,12 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
         else
     	    ERR_FAIL_COND_V( c->texture_idx<-1 || c->texture_idx>=textures.size(),0)
     }
-	if (c->texture_idx!=-1)
-		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), textures[c->texture_idx]->get_rid(),c->rect, p_modulate );
+	if (c->texture_idx != -1) {
+
+		Ref<Texture> tex = textures[c->texture_idx];
+		Rect2 src_rect = Rect2(c->rect.pos + tex->get_region().pos, c->rect.size);
+		VisualServer::get_singleton()->canvas_item_add_texture_rect_region( p_canvas_item, Rect2( cpos, c->rect.size ), tex->get_rid(),src_rect, p_modulate );
+	}
 	
 	return get_char_size(p_char,p_next).width;
 }

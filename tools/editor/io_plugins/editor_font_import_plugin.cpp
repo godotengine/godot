@@ -85,6 +85,9 @@ public:
     String dynamic_ttf_file;
 	String dynamic_sprite_frames;
 	String dynamic_sprite_pattern;
+	int dynamic_sprite_width;
+	int dynamic_sprite_height;
+	int dynamic_sprite_space;
 
 	bool shadow;
     bool filter;
@@ -146,6 +149,15 @@ public:
 			_change_notify();
 		} else if (n == "dynamic/sprite_pattern") {
 			dynamic_sprite_pattern=p_value;
+			_change_notify();
+		} else if (n == "dynamic/sprite_width") {
+			dynamic_sprite_width=p_value;
+			_change_notify();
+		} else if (n == "dynamic/sprite_height") {
+			dynamic_sprite_height=p_value;
+			_change_notify();
+		} else if (n == "dynamic/sprite_space") {
+			dynamic_sprite_space=p_value;
 			_change_notify();
 		}else if (n=="shadow/radius")
 			shadow_radius=p_value;
@@ -222,6 +234,12 @@ public:
             r_ret=dynamic_sprite_frames;
         else if (n=="dynamic/sprite_pattern")
             r_ret=dynamic_sprite_pattern;
+        else if (n=="dynamic/sprite_width")
+            r_ret=dynamic_sprite_width;
+        else if (n=="dynamic/sprite_height")
+            r_ret=dynamic_sprite_height;
+        else if (n=="dynamic/sprite_space")
+            r_ret=dynamic_sprite_space;
 		else if (n=="shadow/radius")
 			r_ret=shadow_radius;
 		else if (n=="shadow/offset")
@@ -274,6 +292,9 @@ public:
 		case DYNAMIC_FRAMES:
 			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/sprite_frames",PROPERTY_HINT_FILE,"res,xml"));
 			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/sprite_pattern"));
+			p_list->push_back(PropertyInfo(Variant::INT,"dynamic/sprite_width"));
+			p_list->push_back(PropertyInfo(Variant::INT,"dynamic/sprite_height"));
+			p_list->push_back(PropertyInfo(Variant::INT,"dynamic/sprite_space"));
 			break;
 		}
 
@@ -370,6 +391,9 @@ public:
 
         dynamic_source=DYNAMIC_DISABLED;
 		dynamic_sprite_pattern = "0123456789";
+		dynamic_sprite_width = 0;
+		dynamic_sprite_height = 0;
+		dynamic_sprite_space = 0;
 
 		shadow=false;
         filter=true;
@@ -837,9 +861,13 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 			ERR_FAIL_COND_V(frames.is_null(), RES());
     		String sprite_pattern = from->get_option("dynamic/sprite_pattern");
 
+			int dynamic_sprite_width = from->get_option("dynamic/sprite_width");
+    		int dynamic_sprite_height = from->get_option("dynamic/sprite_height");
+    		int dynamic_sprite_space = from->get_option("dynamic/sprite_space");
+
 			font->clear();
-			int height = 0;
-			int width = 0;
+			int height = dynamic_sprite_height;
+			int width = dynamic_sprite_width;
 			for (int i = 0; i < sprite_pattern.size(); i++) {
 
 				if (i >= frames->get_frame_count())
@@ -849,12 +877,13 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 				Ref<Texture> tex = frames->get_frame(i);
 				font->add_texture(tex);
 				Size2 size = tex->get_size();
-				if (height < size.height)
+				if (dynamic_sprite_height == 0 && height < size.height)
 					height = size.height;
-				if (width < size.width)
+				if (dynamic_sprite_width == 0 && width < size.width)
 					width = size.width;
-				// add char, width = texture width * 0.9
-				font->add_char(ch, i, tex->get_region(), Size2(0, 0), width * 0.9);
+				// add char
+				Size2 align = (Size2(width, height) - tex->get_size()) / 2;
+				font->add_char(ch, i, tex->get_region(), align, dynamic_sprite_space > 0 ? dynamic_sprite_space : width);
 			}
 			// add space char (width = max_char_width / 2)
 			font->add_char(0x20, 0, Rect2(0, 0, 0, 0), Size2(0, 0), width / 2);
