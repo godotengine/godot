@@ -242,18 +242,21 @@ void TileMap::_update_dirty_quadrants() {
 					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
 					Matrix32 xform;
 					xform.set_origin(offset.floor());
-					if (c.flip_h) {
-						xform.elements[0]=-xform.elements[0];
-						shape_ofs.x=s.x-shape_ofs.x;
-					}
-					if (c.flip_v) {
-						xform.elements[1]=-xform.elements[1];
-						shape_ofs.y=s.y-shape_ofs.y;
-					}
 					if (c.transpose) {
 						SWAP(xform.elements[0].x, xform.elements[0].y);
 						SWAP(xform.elements[1].x, xform.elements[1].y);
 						SWAP(shape_ofs.x, shape_ofs.y);
+						SWAP(s.x, s.y);
+					}
+					if (c.flip_h) {
+						xform.elements[0].x=-xform.elements[0].x;
+						xform.elements[1].x=-xform.elements[1].x;
+						shape_ofs.x=s.x-shape_ofs.x;
+					}
+					if (c.flip_v) {
+						xform.elements[0].y=-xform.elements[0].y;
+						xform.elements[1].y=-xform.elements[1].y;
+						shape_ofs.y=s.y-shape_ofs.y;
 					}
 					xform.elements[2].x+=shape_ofs.x;
 					xform.elements[2].y+=shape_ofs.y;

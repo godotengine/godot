@@ -8119,6 +8119,9 @@ void RasterizerGLES2::_draw_textured_quad(const Rect2& p_rect, const Rect2& p_sr
 		(p_src_region.pos.y+p_src_region.size.height)/p_tex_size.height)
 	};
 
+	if (p_transpose) {
+		SWAP( texcoords[1], texcoords[3] );
+	}
 	if (p_h_flip) {
 		SWAP( texcoords[0], texcoords[1] );
 		SWAP( texcoords[2], texcoords[3] );
@@ -8126,9 +8129,6 @@ void RasterizerGLES2::_draw_textured_quad(const Rect2& p_rect, const Rect2& p_sr
 	if (p_v_flip) {
 		SWAP( texcoords[1], texcoords[2] );
 		SWAP( texcoords[0], texcoords[3] );
-	}
-	if (p_transpose) {
-		SWAP( texcoords[1], texcoords[3] );
 	}
 
 	Vector2 coords[4]= {

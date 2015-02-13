@@ -42,9 +42,9 @@ void TileMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 
+			transpose->set_icon( get_icon("Transpose","EditorIcons"));
 			mirror_x->set_icon( get_icon("MirrorX","EditorIcons"));
 			mirror_y->set_icon( get_icon("MirrorY","EditorIcons"));
-			transpose->set_icon( get_icon("Transpose","EditorIcons"));
 			rotate_0->set_icon( get_icon("Rotate0","EditorIcons"));
 			rotate_90->set_icon( get_icon("Rotate90","EditorIcons"));
 			rotate_180->set_icon( get_icon("Rotate180","EditorIcons"));
@@ -90,6 +90,7 @@ void TileMapEditor::set_selected_tile(int p_tile) {
 	}
 }
 
+// Wrapper to workaround five arg limit of undo/redo methods
 void TileMapEditor::_set_cell_shortened(const Point2& p_pos,int p_value,bool p_flip_h, bool p_flip_v, bool p_transpose) {
 	ERR_FAIL_COND(!node);
 	node->set_cell(floor(p_pos.x), floor(p_pos.y), p_value, p_flip_h, p_flip_v, p_transpose);
@@ -757,8 +758,8 @@ void TileMapEditor::_update_transform_buttons(Object *p_button) {
 		transpose->set_pressed(false);
 	}
 	else if (b == rotate_90) {
-		mirror_x->set_pressed(false);
-		mirror_y->set_pressed(true);
+		mirror_x->set_pressed(true);
+		mirror_y->set_pressed(false);
 		transpose->set_pressed(true);
 	}
 	else if (b == rotate_180) {
@@ -767,15 +768,15 @@ void TileMapEditor::_update_transform_buttons(Object *p_button) {
 		transpose->set_pressed(false);
 	}
 	else if (b == rotate_270) {
-		mirror_x->set_pressed(true);
-		mirror_y->set_pressed(false);
+		mirror_x->set_pressed(false);
+		mirror_y->set_pressed(true);
 		transpose->set_pressed(true);
 	}
 	
 	rotate_0->set_pressed(!mirror_x->is_pressed() && !mirror_y->is_pressed() && !transpose->is_pressed());
-	rotate_90->set_pressed(!mirror_x->is_pressed() && mirror_y->is_pressed() && transpose->is_pressed());
+	rotate_90->set_pressed(mirror_x->is_pressed() && !mirror_y->is_pressed() && transpose->is_pressed());
 	rotate_180->set_pressed(mirror_x->is_pressed() && mirror_y->is_pressed() && !transpose->is_pressed());
-	rotate_270->set_pressed(mirror_x->is_pressed() && !mirror_y->is_pressed() && transpose->is_pressed());
+	rotate_270->set_pressed(!mirror_x->is_pressed() && mirror_y->is_pressed() && transpose->is_pressed());
 
 	mirror_x->set_block_signals(false);
 	mirror_y->set_block_signals(false);
@@ -807,6 +808,12 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	canvas_item_editor_hb = memnew( HBoxContainer );
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(canvas_item_editor_hb);
 	canvas_item_editor_hb->add_child( memnew( VSeparator ));
+	transpose = memnew( ToolButton );
+	transpose->set_toggle_mode(true);
+	transpose->set_tooltip("Transpose");
+	transpose->set_focus_mode(FOCUS_NONE);
+	transpose->connect("pressed", this, "_update_transform_buttons", make_binds(transpose));
+	canvas_item_editor_hb->add_child(transpose);
 	mirror_x = memnew( ToolButton );
 	mirror_x->set_toggle_mode(true);
 	mirror_x->set_tooltip("Mirror X (A)");
@@ -819,12 +826,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	mirror_y->set_focus_mode(FOCUS_NONE);
 	mirror_y->connect("pressed", this, "_update_transform_buttons", make_binds(mirror_y));
 	canvas_item_editor_hb->add_child(mirror_y);
-	transpose = memnew( ToolButton );
-	transpose->set_toggle_mode(true);
-	transpose->set_tooltip("Transpose");
-	transpose->set_focus_mode(FOCUS_NONE);
-	transpose->connect("pressed", this, "_update_transform_buttons", make_binds(transpose));
-	canvas_item_editor_hb->add_child(transpose);
 	canvas_item_editor_hb->add_child(memnew(VSeparator));
 	rotate_0 = memnew( ToolButton );
 	rotate_0->set_toggle_mode(true);
