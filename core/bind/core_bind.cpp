@@ -838,6 +838,12 @@ Variant _Geometry::segment_intersects_triangle( const Vector3& p_from, const Vec
 		return Variant();
 
 }
+
+bool _Geometry::point_is_inside_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c) const {
+
+	return Geometry::is_point_in_triangle(s,a,b,c);
+}
+
 DVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius) {
 
 	DVector<Vector3> r;
@@ -938,6 +944,7 @@ void _Geometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
+	ObjectTypeDB::bind_method(_MD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 

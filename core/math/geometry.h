@@ -511,6 +511,20 @@ public:
 		else
 			return p_segment[0]+n*d; // inside
 	}
+
+	static bool is_point_in_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c)
+	{
+	    int as_x = s.x-a.x;
+	    int as_y = s.y-a.y;
+
+	    bool s_ab = (b.x-a.x)*as_y-(b.y-a.y)*as_x > 0;
+
+	    if((c.x-a.x)*as_y-(c.y-a.y)*as_x > 0 == s_ab) return false;
+
+	    if((c.x-b.x)*(s.y-b.y)-(c.y-b.y)*(s.x-b.x) > 0 != s_ab) return false;
+
+	    return true;
+	}
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2& p_point, const Vector2 *p_segment) {
 
 		Vector2 p=p_point-p_segment[0];

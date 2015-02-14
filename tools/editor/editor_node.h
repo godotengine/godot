@@ -232,6 +232,7 @@ class EditorNode : public Node {
 	ConfirmationDialog *open_recent_confirmation;
 	AcceptDialog *accept;
 	AcceptDialog *about;
+	AcceptDialog *warning;
 
 	//OptimizedPresetsDialog *optimized_presets;
 	EditorSettingsDialog *settings_config_dialog;
@@ -482,6 +483,9 @@ public:
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+
+
+	void show_warning(const String& p_text);
 
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);
