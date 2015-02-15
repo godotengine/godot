@@ -75,6 +75,9 @@ class CanvasItemEditor : public VBoxContainer {
 
 	enum MenuOption {
 		SNAP_USE,
+		SNAP_SHOW_GRID,
+		SNAP_USE_ROTATION,
+		SNAP_TO_OFFSET,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
 		ZOOM_IN,
@@ -143,8 +146,15 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Matrix32 transform;
 	float zoom;
-	int snap;
-	bool pixel_snap;
+	Vector2 snap_offset;
+	Vector2 snap_step;
+	float snap_rotation_step;
+	float snap_rotation_offset;
+	bool snap_grid;
+	bool snap_show_grid;
+	bool snap_rotation;
+	bool snap_to_offset;
+	bool snap_pixel;
 	bool box_selecting;
 	Point2 box_selecting_to;
 	bool key_pos;
@@ -247,6 +257,8 @@ class CanvasItemEditor : public VBoxContainer {
 	CanvasItem* _select_canvas_item_at_pos(const Point2 &p_pos,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform);
 	void _find_canvas_items_at_rect(const Rect2& p_rect,Node* p_node,const Matrix32& p_parent_xform,const Matrix32& p_canvas_xform,List<CanvasItem*> *r_items);
 
+	ConfirmationDialog *snap_dialog;
+	
 	AcceptDialog *value_dialog;
 	Label *dialog_label;
 	SpinBox *dialog_val;
@@ -261,7 +273,6 @@ class CanvasItemEditor : public VBoxContainer {
 
 	DragType _find_drag_type(const Matrix32& p_xform, const Rect2& p_local_rect, const Point2& p_click, Vector2& r_point);
 
-	Point2 snapify(const Point2& p_pos) const;
 	void _popup_callback(int p_op);
 	bool updating_scroll;
 	void _update_scroll(float);
@@ -271,6 +282,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _append_canvas_item(CanvasItem *p_item);
 	void _dialog_value_changed(double);
+	void _snap_changed();
 	UndoRedo *undo_redo;
 
 	Point2 _find_topleftmost_point();
@@ -334,8 +346,8 @@ protected:
 	static CanvasItemEditor *singleton;
 public:
 
-	bool is_snap_active() const;
-	int get_snap() const { return snap; }
+	Vector2 snap_point(Vector2 p_target, Vector2 p_start = Vector2(0, 0)) const;
+	float snap_angle(float p_target, float p_start = 0) const;
 
 	Matrix32 get_canvas_transform() const { return transform; }
 

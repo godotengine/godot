@@ -34,17 +34,6 @@ void CollisionPolygon2DEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 CollisionPolygon2DEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
-
 void CollisionPolygon2DEditor::_menu_option(int p_option) {
 
 	switch(p_option) {
@@ -98,7 +87,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint=snap_point(cpoint);
+			cpoint=canvas_item_editor->snap_point(cpoint);
 			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
 			Vector<Vector2> poly = node->get_polygon();
@@ -301,7 +290,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-				cpoint=snap_point(cpoint);
+				cpoint=canvas_item_editor->snap_point(cpoint);
 				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
 				canvas_item_editor->get_viewport_control()->update();
