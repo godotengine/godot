@@ -2267,8 +2267,10 @@ void Control::_window_sort_subwindows() {
 	if (!window->subwindow_order_dirty)
 		return;
 
+
 	window->modal_stack.sort_custom<CComparator>();
 	window->subwindows.sort_custom<CComparator>();
+
 	window->subwindow_order_dirty=false;
 
 }
