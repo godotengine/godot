@@ -30,7 +30,7 @@
 #define GLOBALS_LIST_H
 
 #include "os/memory.h"
-
+#include "sort.h"
 
 /**
  * Generic Templatized Linked List Implementation.
@@ -551,7 +551,7 @@ public:
 	}
 			
 	template<class C>
-	void sort_custom() {
+	void sort_custom_inplace() {
 
 		if(size()<2)
 			return;
@@ -602,6 +602,58 @@ public:
 		_data->first=from;
 		_data->last=to;
 	}
+
+	template<class C>
+	struct AuxiliaryComparator {
+
+		C compare;
+		_FORCE_INLINE_ bool operator()(const Element *a,const Element* b) const {
+
+			return compare(a->value,b->value);
+		}
+	};
+
+	template<class C>
+	void sort_custom() {
+
+		//this version uses auxiliary memory for speed.
+		//if you don't want to use auxiliary memory, use the in_place version
+
+		int s = size();
+		if(s<2)
+			return;
+
+
+		Element **aux_buffer = memnew_arr(Element*,s);
+
+		int idx=0;
+		for(Element *E=front();E;E=E->next_ptr) {
+
+			aux_buffer[idx]=E;
+			idx++;
+		}
+
+		SortArray<Element*,AuxiliaryComparator<C> > sort;
+		sort.sort(aux_buffer,s);
+
+		_data->first=aux_buffer[0];
+		aux_buffer[0]->prev_ptr=NULL;
+		aux_buffer[0]->next_ptr=aux_buffer[1];
+
+		_data->last=aux_buffer[s-1];
+		aux_buffer[s-1]->prev_ptr=aux_buffer[s-2];
+		aux_buffer[s-1]->next_ptr=NULL;
+
+		for(int i=1;i<s-1;i++) {
+
+			aux_buffer[i]->prev_ptr=aux_buffer[i-1];
+			aux_buffer[i]->next_ptr=aux_buffer[i+1];
+
+		}
+
+		memdelete_arr(aux_buffer);
+	}
+
 
 	/**
 	 * copy constructor for the list
