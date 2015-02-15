@@ -1100,7 +1100,7 @@ void OS_OSX::warp_mouse_pos(const Point2& p_to) {
 	NSPoint localPoint = { p_to.x, p_to.y };
 
 	NSPoint pointInWindow = [window_view convertPoint:localPoint toView:nil];
-	NSPoint pointOnScreen = [[window_view window] convertRectToScreen:(CGRect){.origin=pointInWindow}];
+	NSPoint pointOnScreen = [[window_view window] convertRectToScreen:(NSRect){.origin=pointInWindow}].origin;
 
 	//point in scren coords
 	CGPoint lMouseWarpPos = { pointOnScreen.x, pointOnScreen.y};
