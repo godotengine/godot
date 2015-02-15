@@ -2631,8 +2631,13 @@ Variant Variant::call(const StringName& p_method,VARIANT_ARG_DECLARE) {
 	return ret;
 }
 
+void Variant::construct_from_string(const String& p_string,Variant& r_value,ObjectConstruct p_obj_construct,void *p_construct_ud) {
 
-String Variant::get_construct_string() const {
+	r_value=Variant();
+}
+
+
+String Variant::get_construct_string(ObjectDeConstruct p_obj_deconstruct,void *p_deconstruct_ud) const {
 
 	switch( type ) {
 
@@ -2640,7 +2645,7 @@ String Variant::get_construct_string() const {
 		case BOOL: return _data._bool ? "true" : "false";
 		case INT: return String::num(_data._int);
 		case REAL: return String::num(_data._real);
-		case STRING: return "\""+*reinterpret_cast<const String*>(_data._mem)+"\"";
+		case STRING: return "\""+reinterpret_cast<const String*>(_data._mem)->c_escape()+"\"";
 		case VECTOR2: return "Vector2("+operator Vector2()+")";
 		case RECT2: return "Rect2("+operator Rect2()+")";
 		case MATRIX32: return "Matrix32("+operator Matrix32()+")";
@@ -2651,7 +2656,7 @@ String Variant::get_construct_string() const {
 		case QUAT: return "Quat("+operator Quat()+")";
 		case MATRIX3: return "Matrix3("+operator Matrix3()+")";
 		case TRANSFORM: return "Transform("+operator Transform()+")";
-		case NODE_PATH: return "@\""+operator NodePath()+"\"";
+		case NODE_PATH: return "@\""+String(operator NodePath()).c_escape()+"\"";
 		case INPUT_EVENT: return "InputEvent()";
 		case COLOR: return "Color("+String::num( operator Color().r)+","+String::num( operator Color().g)+","+String::num( operator Color().b)+","+String::num( operator Color().a)+")" ;
 		case DICTIONARY: {
@@ -2667,8 +2672,8 @@ String Variant::get_construct_string() const {
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 				_VariantStrPair sp;
-				sp.key=E->get().get_construct_string();
-				sp.value=d[E->get()].get_construct_string();
+				sp.key=E->get().get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
+				sp.value=d[E->get()].get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
 				pairs.push_back(sp);
 			}
 
@@ -2686,50 +2691,50 @@ String Variant::get_construct_string() const {
 		case VECTOR3_ARRAY: {
 
 			DVector<Vector3> vec = operator DVector<Vector3>();
-			String str="[";
+			String str="Vector3Array([";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str+=Variant( vec[i] ).get_construct_string();
 			}
-			return str+"]";
+			return str+"])";
 		} break;
 		case STRING_ARRAY: {
 
 			DVector<String> vec = operator DVector<String>();
-			String str="[";
+			String str="StringArray([";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+=Variant( vec[i] ).get_construct_string();
 			}
-			return str+"]";
+			return str+"])";
 		} break;
 		case INT_ARRAY: {
 
 			DVector<int> vec = operator DVector<int>();
-			String str="[";
+			String str="IntArray([";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+itos(vec[i]);
 			}
-			return str+"]";
+			return str+"])";
 		} break;
 		case REAL_ARRAY: {
 
 			DVector<real_t> vec = operator DVector<real_t>();
-			String str="[";
+			String str="FloatArray([";
 			for(int i=0;i<vec.size();i++) {
 
 				if (i>0)
 					str+=", ";
 				str=str+rtos(vec[i]);
 			}
-			return str+"]";
+			return str+"])";
 		} break;
 		case ARRAY: {
 
@@ -2738,16 +2743,20 @@ String Variant::get_construct_string() const {
 			for (int i=0; i<arr.size(); i++) {
 				if (i)
 					str+=", ";
-				str += arr[i].get_construct_string();
+				str += arr[i].get_construct_string(p_obj_deconstruct,p_deconstruct_ud);
 			};
 			return str+"]";
 
 		} break;
 		case OBJECT: {
 
-			if (_get_obj().obj)
-				return _get_obj().obj->get_type()+".new()";
-			else
+			if (_get_obj().obj) {
+				if (p_obj_deconstruct) {
+					return "Object(\""+p_obj_deconstruct(Variant(*this),p_deconstruct_ud).c_escape()+")";
+				} else {
+					return _get_obj().obj->get_type()+".new()";
+				}
+			} else
 				return "null";
 
 		} break;

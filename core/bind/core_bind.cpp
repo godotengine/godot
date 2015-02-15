@@ -385,6 +385,11 @@ float _OS::get_time_scale() {
 	return OS::get_singleton()->get_time_scale();
 }
 
+bool _OS::is_ok_left_and_cancel_right() const {
+
+	return OS::get_singleton()->get_swap_ok_cancel();
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -788,6 +793,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
 
+	ObjectTypeDB::bind_method(_MD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
+
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 
 	ObjectTypeDB::bind_method(_MD("print_all_textures_by_size"),&_OS::print_all_textures_by_size);
@@ -927,6 +934,12 @@ Variant _Geometry::segment_intersects_triangle( const Vector3& p_from, const Vec
 		return Variant();
 
 }
+
+bool _Geometry::point_is_inside_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c) const {
+
+	return Geometry::is_point_in_triangle(s,a,b,c);
+}
+
 DVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius) {
 
 	DVector<Vector3> r;
@@ -1027,6 +1040,7 @@ void _Geometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
+	ObjectTypeDB::bind_method(_MD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 
