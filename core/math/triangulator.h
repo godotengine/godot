@@ -22,9 +22,8 @@
 #define TRIANGULATOR_H
 
 #include "math_2d.h"
-#include <list>
-#include <set>
-
+#include "list.h"
+#include "set.h"
 //2D point structure
 
 
@@ -119,11 +118,9 @@ protected:
 		long next;
 	};
 
-	class VertexSorter{
-		MonotoneVertex *vertices;
-	public:
-		VertexSorter(MonotoneVertex *v) : vertices(v) {}
-		bool operator() (long index1, long index2);
+	struct VertexSorter{
+		mutable MonotoneVertex *vertices;
+		bool operator() (long index1, long index2) const;
 	};
 
 	struct Diagonal {
@@ -142,7 +139,7 @@ protected:
 	struct DPState2 {
 		bool visible;
 		long weight;
-		std::list<Diagonal> pairs;
+		List<Diagonal> pairs;
 	};
 
 	//edge that intersects the scanline
@@ -182,11 +179,11 @@ protected:
 	//helper functions for MonotonePartition
 	bool Below(Vector2 &p1, Vector2 &p2);
 	void AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
-			 char *vertextypes, std::set<ScanLineEdge>::iterator *edgeTreeIterators,
-			 std::set<ScanLineEdge> *edgeTree, long *helpers);
+			 char *vertextypes, Set<ScanLineEdge>::Element **edgeTreeIterators,
+			 Set<ScanLineEdge> *edgeTree, long *helpers);
 
 	//triangulates a monotone polygon, used in Triangulate_MONO
-	int TriangulateMonotone(TriangulatorPoly *inPoly, std::list<TriangulatorPoly> *triangles);
+	int TriangulateMonotone(TriangulatorPoly *inPoly, List<TriangulatorPoly> *triangles);
 
 public:
 
@@ -200,7 +197,7 @@ public:
 	//             vertices of all hole polys have to be in clockwise order
 	//   outpolys : a list of polygons without holes
 	//returns 1 on success, 0 on failure
-	int RemoveHoles(std::list<TriangulatorPoly> *inpolys, std::list<TriangulatorPoly> *outpolys);
+	int RemoveHoles(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *outpolys);
 
 	//triangulates a polygon by ear clipping
 	//time complexity O(n^2), n is the number of vertices
@@ -210,7 +207,7 @@ public:
 	//          vertices have to be in counter-clockwise order
 	//   triangles : a list of triangles (result)
 	//returns 1 on success, 0 on failure
-	int Triangulate_EC(TriangulatorPoly *poly, std::list<TriangulatorPoly> *triangles);
+	int Triangulate_EC(TriangulatorPoly *poly, List<TriangulatorPoly> *triangles);
 
 	//triangulates a list of polygons that may contain holes by ear clipping algorithm
 	//first calls RemoveHoles to get rid of the holes, and then Triangulate_EC for each resulting polygon
@@ -222,7 +219,7 @@ public:
 	//             vertices of all hole polys have to be in clockwise order
 	//   triangles : a list of triangles (result)
 	//returns 1 on success, 0 on failure
-	int Triangulate_EC(std::list<TriangulatorPoly> *inpolys, std::list<TriangulatorPoly> *triangles);
+	int Triangulate_EC(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *triangles);
 
 	//creates an optimal polygon triangulation in terms of minimal edge length
 	//time complexity: O(n^3), n is the number of vertices
@@ -232,7 +229,7 @@ public:
 	//          vertices have to be in counter-clockwise order
 	//   triangles : a list of triangles (result)
 	//returns 1 on success, 0 on failure
-	int Triangulate_OPT(TriangulatorPoly *poly, std::list<TriangulatorPoly> *triangles);
+	int Triangulate_OPT(TriangulatorPoly *poly, List<TriangulatorPoly> *triangles);
 
 	//triangulates a polygons by firstly partitioning it into monotone polygons
 	//time complexity: O(n*log(n)), n is the number of vertices
@@ -242,7 +239,7 @@ public:
 	//          vertices have to be in counter-clockwise order
 	//   triangles : a list of triangles (result)
 	//returns 1 on success, 0 on failure
-	int Triangulate_MONO(TriangulatorPoly *poly, std::list<TriangulatorPoly> *triangles);
+	int Triangulate_MONO(TriangulatorPoly *poly, List<TriangulatorPoly> *triangles);
 
 	//triangulates a list of polygons by firstly partitioning them into monotone polygons
 	//time complexity: O(n*log(n)), n is the number of vertices
@@ -253,7 +250,7 @@ public:
 	//             vertices of all hole polys have to be in clockwise order
 	//   triangles : a list of triangles (result)
 	//returns 1 on success, 0 on failure
-	int Triangulate_MONO(std::list<TriangulatorPoly> *inpolys, std::list<TriangulatorPoly> *triangles);
+	int Triangulate_MONO(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *triangles);
 
 	//creates a monotone partition of a list of polygons that can contain holes
 	//time complexity: O(n*log(n)), n is the number of vertices
@@ -264,7 +261,7 @@ public:
 	//             vertices of all hole polys have to be in clockwise order
 	//   monotonePolys : a list of monotone polygons (result)
 	//returns 1 on success, 0 on failure
-	int MonotonePartition(std::list<TriangulatorPoly> *inpolys, std::list<TriangulatorPoly> *monotonePolys);
+	int MonotonePartition(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *monotonePolys);
 
 	//partitions a polygon into convex polygons by using Hertel-Mehlhorn algorithm
 	//the algorithm gives at most four times the number of parts as the optimal algorithm
@@ -277,7 +274,7 @@ public:
 	//          vertices have to be in counter-clockwise order
 	//   parts : resulting list of convex polygons
 	//returns 1 on success, 0 on failure
-	int ConvexPartition_HM(TriangulatorPoly *poly, std::list<TriangulatorPoly> *parts);
+	int ConvexPartition_HM(TriangulatorPoly *poly, List<TriangulatorPoly> *parts);
 
 	//partitions a list of polygons into convex parts by using Hertel-Mehlhorn algorithm
 	//the algorithm gives at most four times the number of parts as the optimal algorithm
@@ -291,7 +288,7 @@ public:
 	//             vertices of all hole polys have to be in clockwise order
 	//   parts : resulting list of convex polygons
 	//returns 1 on success, 0 on failure
-	int ConvexPartition_HM(std::list<TriangulatorPoly> *inpolys, std::list<TriangulatorPoly> *parts);
+	int ConvexPartition_HM(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *parts);
 
 	//optimal convex partitioning (in terms of number of resulting convex polygons)
 	//using the Keil-Snoeyink algorithm
@@ -302,7 +299,7 @@ public:
 	//          vertices have to be in counter-clockwise order
 	//   parts : resulting list of convex polygons
 	//returns 1 on success, 0 on failure
-	int ConvexPartition_OPT(TriangulatorPoly *poly, std::list<TriangulatorPoly> *parts);
+	int ConvexPartition_OPT(TriangulatorPoly *poly, List<TriangulatorPoly> *parts);
 };
 
 

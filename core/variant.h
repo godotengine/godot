@@ -419,7 +419,11 @@ public:
 	static bool has_numeric_constant(Variant::Type p_type, const StringName& p_value);
 	static int get_numeric_constant_value(Variant::Type p_type, const StringName& p_value);
 
-	String get_construct_string() const;
+	typedef String (*ObjectDeConstruct)(const Variant& p_object,void *ud);
+	typedef void (*ObjectConstruct)(const String& p_text,void *ud,Variant& r_value);
+
+	String get_construct_string(ObjectDeConstruct p_obj_deconstruct=NULL,void *p_deconstruct_ud=NULL) const;
+	static void construct_from_string(const String& p_string,Variant& r_value,ObjectConstruct p_obj_construct=NULL,void *p_construct_ud=NULL);
 
 	void operator=(const Variant& p_variant); // only this is enough for all the other types
 	Variant(const Variant& p_variant);

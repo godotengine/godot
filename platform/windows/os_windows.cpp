@@ -1439,7 +1439,6 @@ void OS_Windows::warp_mouse_pos(const Point2& p_to) {
 
 		SetCursorPos(p.x,p.y);
 	}
-
 }
 
 Point2 OS_Windows::get_mouse_pos() const {

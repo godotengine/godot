@@ -113,7 +113,7 @@ void NavigationPolygon::clear_outlines(){
 }
 void NavigationPolygon::make_polygons_from_outlines(){
 
-	std::list<TriangulatorPoly> in_poly,out_poly;
+	List<TriangulatorPoly> in_poly,out_poly;
 
 	Vector2 outside_point(-1e10,-1e10);
 
@@ -194,9 +194,9 @@ void NavigationPolygon::make_polygons_from_outlines(){
 	vertices.resize(0);
 
 	Map<Vector2,int> points;
-	for(std::list<TriangulatorPoly>::iterator I = out_poly.begin();I!=out_poly.end();I++) {
+	for(List<TriangulatorPoly>::Element*I = out_poly.front();I;I=I->next()) {
 
-		TriangulatorPoly& tp = *I;
+		TriangulatorPoly& tp = I->get();
 
 		struct Polygon p;
 

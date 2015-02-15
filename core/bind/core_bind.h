@@ -220,6 +220,8 @@ public:
 	void set_time_scale(float p_scale);
 	float get_time_scale();
 
+	bool is_ok_left_and_cancel_right() const;
+
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();

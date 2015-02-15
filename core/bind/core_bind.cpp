@@ -316,6 +316,11 @@ float _OS::get_time_scale() {
 	return OS::get_singleton()->get_time_scale();
 }
 
+bool _OS::is_ok_left_and_cancel_right() const {
+
+	return OS::get_singleton()->get_swap_ok_cancel();
+}
+
 /*
 enum Weekday {
 	DAY_SUNDAY,
@@ -698,6 +703,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
 	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
+
+	ObjectTypeDB::bind_method(_MD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
 
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 

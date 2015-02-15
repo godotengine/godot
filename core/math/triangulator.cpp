@@ -22,9 +22,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <algorithm>
+
 #include "triangulator.h"
-using namespace std;
+
 
 #define TRIANGULATOR_VERTEXTYPE_REGULAR 0
 #define TRIANGULATOR_VERTEXTYPE_START 1
@@ -163,9 +163,9 @@ int TriangulatorPartition::Intersects(Vector2 &p11, Vector2 &p12, Vector2 &p21, 
 }
 
 //removes holes from inpolys by merging them with non-holes
-int TriangulatorPartition::RemoveHoles(list<TriangulatorPoly> *inpolys, list<TriangulatorPoly> *outpolys) {
-	list<TriangulatorPoly> polys;
-	list<TriangulatorPoly>::iterator holeiter,polyiter,iter,iter2;
+int TriangulatorPartition::RemoveHoles(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *outpolys) {
+	List<TriangulatorPoly> polys;
+	List<TriangulatorPoly>::Element *holeiter,*polyiter,*iter,*iter2;
 	long i,i2,holepointindex,polypointindex;
 	Vector2 holepoint,polypoint,bestpolypoint;
 	Vector2 linep1,linep2;
@@ -177,15 +177,15 @@ int TriangulatorPartition::RemoveHoles(list<TriangulatorPoly> *inpolys, list<Tri
 
 	//check for trivial case (no holes)
 	hasholes = false;
-	for(iter = inpolys->begin(); iter!=inpolys->end(); iter++) {
-		if(iter->IsHole()) {
+	for(iter = inpolys->front(); iter; iter=iter->next()) {
+		if(iter->get().IsHole()) {
 			hasholes = true;
 			break;
 		}
 	}
 	if(!hasholes) {
-		for(iter = inpolys->begin(); iter!=inpolys->end(); iter++) {
-			outpolys->push_back(*iter);
+		for(iter = inpolys->front(); iter; iter=iter->next()) {
+			outpolys->push_back(iter->get());
 		}
 		return 1;
 	}
@@ -195,8 +195,8 @@ int TriangulatorPartition::RemoveHoles(list<TriangulatorPoly> *inpolys, list<Tri
 	while(1) {
 		//find the hole point with the largest x
 		hasholes = false;
-		for(iter = polys.begin(); iter!=polys.end(); iter++) {
-			if(!iter->IsHole()) continue;
+		for(iter = polys.front(); iter; iter=iter->next()) {
+			if(!iter->get().IsHole()) continue;
 
 			if(!hasholes) {
 				hasholes = true;
@@ -204,38 +204,38 @@ int TriangulatorPartition::RemoveHoles(list<TriangulatorPoly> *inpolys, list<Tri
 				holepointindex = 0;
 			}
 
-			for(i=0; i < iter->GetNumPoints(); i++) {
-				if(iter->GetPoint(i).x > holeiter->GetPoint(holepointindex).x) {
+			for(i=0; i < iter->get().GetNumPoints(); i++) {
+				if(iter->get().GetPoint(i).x > holeiter->get().GetPoint(holepointindex).x) {
 					holeiter = iter;
 					holepointindex = i;
 				}
 			}
 		}
 		if(!hasholes) break;
-		holepoint = holeiter->GetPoint(holepointindex);
+		holepoint = holeiter->get().GetPoint(holepointindex);
 
 		pointfound = false;
-		for(iter = polys.begin(); iter!=polys.end(); iter++) {
-			if(iter->IsHole()) continue;
-			for(i=0; i < iter->GetNumPoints(); i++) {
-				if(iter->GetPoint(i).x <= holepoint.x) continue;
-				if(!InCone(iter->GetPoint((i+iter->GetNumPoints()-1)%(iter->GetNumPoints())),
-					   iter->GetPoint(i),
-					   iter->GetPoint((i+1)%(iter->GetNumPoints())),
+		for(iter = polys.front(); iter; iter=iter->next()) {
+			if(iter->get().IsHole()) continue;
+			for(i=0; i < iter->get().GetNumPoints(); i++) {
+				if(iter->get().GetPoint(i).x <= holepoint.x) continue;
+				if(!InCone(iter->get().GetPoint((i+iter->get().GetNumPoints()-1)%(iter->get().GetNumPoints())),
+					   iter->get().GetPoint(i),
+					   iter->get().GetPoint((i+1)%(iter->get().GetNumPoints())),
 					   holepoint))
 					continue;
-				polypoint = iter->GetPoint(i);
+				polypoint = iter->get().GetPoint(i);
 				if(pointfound) {
 					v1 = Normalize(polypoint-holepoint);
 					v2 = Normalize(bestpolypoint-holepoint);
 					if(v2.x > v1.x) continue;
 				}
 				pointvisible = true;
-				for(iter2 = polys.begin(); iter2!=polys.end(); iter2++) {
-					if(iter2->IsHole()) continue;
-					for(i2=0; i2 < iter2->GetNumPoints(); i2++) {
-						linep1 = iter2->GetPoint(i2);
-						linep2 = iter2->GetPoint((i2+1)%(iter2->GetNumPoints()));
+				for(iter2 = polys.front(); iter2; iter2=iter2->next()) {
+					if(iter2->get().IsHole()) continue;
+					for(i2=0; i2 < iter2->get().GetNumPoints(); i2++) {
+						linep1 = iter2->get().GetPoint(i2);
+						linep2 = iter2->get().GetPoint((i2+1)%(iter2->get().GetNumPoints()));
 						if(Intersects(holepoint,polypoint,linep1,linep2)) {
 							pointvisible = false;
 							break;
@@ -254,18 +254,18 @@ int TriangulatorPartition::RemoveHoles(list<TriangulatorPoly> *inpolys, list<Tri
 
 		if(!pointfound) return 0;
 
-		newpoly.Init(holeiter->GetNumPoints() + polyiter->GetNumPoints() + 2);
+		newpoly.Init(holeiter->get().GetNumPoints() + polyiter->get().GetNumPoints() + 2);
 		i2 = 0;
 		for(i=0;i<=polypointindex;i++) {
-			newpoly[i2] = polyiter->GetPoint(i);
+			newpoly[i2] = polyiter->get().GetPoint(i);
 			i2++;
 		}
-		for(i=0;i<=holeiter->GetNumPoints();i++) {
-			newpoly[i2] = holeiter->GetPoint((i+holepointindex)%holeiter->GetNumPoints());
+		for(i=0;i<=holeiter->get().GetNumPoints();i++) {
+			newpoly[i2] = holeiter->get().GetPoint((i+holepointindex)%holeiter->get().GetNumPoints());
 			i2++;
 		}
-		for(i=polypointindex;i<polyiter->GetNumPoints();i++) {
-			newpoly[i2] = polyiter->GetPoint(i);
+		for(i=polypointindex;i<polyiter->get().GetNumPoints();i++) {
+			newpoly[i2] = polyiter->get().GetPoint(i);
 			i2++;
 		}
 
@@ -274,8 +274,8 @@ int TriangulatorPartition::RemoveHoles(list<TriangulatorPoly> *inpolys, list<Tri
 		polys.push_back(newpoly);
 	}
 
-	for(iter = polys.begin(); iter!=polys.end(); iter++) {
-		outpolys->push_back(*iter);
+	for(iter = polys.front(); iter; iter=iter->next()) {
+		outpolys->push_back(iter->get());
 	}
 
 	return 1;
@@ -366,7 +366,7 @@ void TriangulatorPartition::UpdateVertex(PartitionVertex *v, PartitionVertex *ve
 }
 
 //triangulation by ear removal
-int TriangulatorPartition::Triangulate_EC(TriangulatorPoly *poly, list<TriangulatorPoly> *triangles) {
+int TriangulatorPartition::Triangulate_EC(TriangulatorPoly *poly, List<TriangulatorPoly> *triangles) {
 	long numvertices;
 	PartitionVertex *vertices;
 	PartitionVertex *ear;
@@ -440,20 +440,20 @@ int TriangulatorPartition::Triangulate_EC(TriangulatorPoly *poly, list<Triangula
 	return 1;
 }
 
-int TriangulatorPartition::Triangulate_EC(list<TriangulatorPoly> *inpolys, list<TriangulatorPoly> *triangles) {
-	list<TriangulatorPoly> outpolys;
-	list<TriangulatorPoly>::iterator iter;
+int TriangulatorPartition::Triangulate_EC(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *triangles) {
+	List<TriangulatorPoly> outpolys;
+	List<TriangulatorPoly>::Element*iter;
 
 	if(!RemoveHoles(inpolys,&outpolys)) return 0;
-	for(iter=outpolys.begin();iter!=outpolys.end();iter++) {
-		if(!Triangulate_EC(&(*iter),triangles)) return 0;
+	for(iter=outpolys.front();iter;iter=iter->next()) {
+		if(!Triangulate_EC(&(iter->get()),triangles)) return 0;
 	}
 	return 1;
 }
 
-int TriangulatorPartition::ConvexPartition_HM(TriangulatorPoly *poly, list<TriangulatorPoly> *parts) {
-	list<TriangulatorPoly> triangles;
-	list<TriangulatorPoly>::iterator iter1,iter2;
+int TriangulatorPartition::ConvexPartition_HM(TriangulatorPoly *poly, List<TriangulatorPoly> *parts) {
+	List<TriangulatorPoly> triangles;
+	List<TriangulatorPoly>::Element *iter1,*iter2;
 	TriangulatorPoly *poly1,*poly2;
 	TriangulatorPoly newpoly;
 	Vector2 d1,d2,p1,p2,p3;
@@ -480,17 +480,17 @@ int TriangulatorPartition::ConvexPartition_HM(TriangulatorPoly *poly, list<Trian
 
 	if(!Triangulate_EC(poly,&triangles)) return 0;
 
-	for(iter1 = triangles.begin(); iter1 != triangles.end(); iter1++) {
-		poly1 = &(*iter1);
+	for(iter1 = triangles.front(); iter1 ; iter1=iter1->next()) {
+		poly1 = &(iter1->get());
 		for(i11=0;i11<poly1->GetNumPoints();i11++) {
 			d1 = poly1->GetPoint(i11);
 			i12 = (i11+1)%(poly1->GetNumPoints());
 			d2 = poly1->GetPoint(i12);
 
 			isdiagonal = false;
-			for(iter2 = iter1; iter2 != triangles.end(); iter2++) {
+			for(iter2 = iter1; iter2 ; iter2=iter2->next()) {
 				if(iter1 == iter2) continue;
-				poly2 = &(*iter2);
+				poly2 = &(iter2->get());
 
 				for(i21=0;i21<poly2->GetNumPoints();i21++) {
 					if((d2.x != poly2->GetPoint(i21).x)||(d2.y != poly2->GetPoint(i21).y)) continue;
@@ -536,28 +536,28 @@ int TriangulatorPartition::ConvexPartition_HM(TriangulatorPoly *poly, list<Trian
 			}
 
 			triangles.erase(iter2);
-			*iter1 = newpoly;
-			poly1 = &(*iter1);
+			iter1->get() = newpoly;
+			poly1 = &(iter1->get());
 			i11 = -1;
 
 			continue;
 		}
 	}
 
-	for(iter1 = triangles.begin(); iter1 != triangles.end(); iter1++) {
-		parts->push_back(*iter1);
+	for(iter1 = triangles.front(); iter1 ; iter1=iter1->next()) {
+		parts->push_back(iter1->get());
 	}
 
 	return 1;
 }
 
-int TriangulatorPartition::ConvexPartition_HM(list<TriangulatorPoly> *inpolys, list<TriangulatorPoly> *parts) {
-	list<TriangulatorPoly> outpolys;
-	list<TriangulatorPoly>::iterator iter;
+int TriangulatorPartition::ConvexPartition_HM(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *parts) {
+	List<TriangulatorPoly> outpolys;
+	List<TriangulatorPoly>::Element* iter;
 
 	if(!RemoveHoles(inpolys,&outpolys)) return 0;
-	for(iter=outpolys.begin();iter!=outpolys.end();iter++) {
-		if(!ConvexPartition_HM(&(*iter),parts)) return 0;
+	for(iter=outpolys.front();iter;iter=iter->next()) {
+		if(!ConvexPartition_HM(&(iter->get()),parts)) return 0;
 	}
 	return 1;
 }
@@ -565,14 +565,14 @@ int TriangulatorPartition::ConvexPartition_HM(list<TriangulatorPoly> *inpolys, l
 //minimum-weight polygon triangulation by dynamic programming
 //O(n^3) time complexity
 //O(n^2) space complexity
-int TriangulatorPartition::Triangulate_OPT(TriangulatorPoly *poly, list<TriangulatorPoly> *triangles) {
+int TriangulatorPartition::Triangulate_OPT(TriangulatorPoly *poly, List<TriangulatorPoly> *triangles) {
 	long i,j,k,gap,n;
 	DPState **dpstates;
 	Vector2 p1,p2,p3,p4;
 	long bestvertex;
 	real_t weight,minweight,d1,d2;
 	Diagonal diagonal,newdiagonal;
-	list<Diagonal> diagonals;
+	List<Diagonal> diagonals;
 	TriangulatorPoly triangle;
 	int ret = 1;
 
@@ -666,7 +666,7 @@ int TriangulatorPartition::Triangulate_OPT(TriangulatorPoly *poly, list<Triangul
 	newdiagonal.index2 = n-1;
 	diagonals.push_back(newdiagonal);
 	while(!diagonals.empty()) {
-		diagonal = *(diagonals.begin());
+		diagonal = (diagonals.front()->get());
 		diagonals.pop_front();
 		bestvertex = dpstates[diagonal.index2][diagonal.index1].bestvertex;
 		if(bestvertex == -1) {
@@ -697,7 +697,7 @@ int TriangulatorPartition::Triangulate_OPT(TriangulatorPoly *poly, list<Triangul
 
 void TriangulatorPartition::UpdateState(long a, long b, long w, long i, long j, DPState2 **dpstates) {
 	Diagonal newdiagonal;
-	list<Diagonal> *pairs;
+	List<Diagonal> *pairs;
 	long w2;
 
 	w2 = dpstates[a][b].weight;
@@ -712,15 +712,15 @@ void TriangulatorPartition::UpdateState(long a, long b, long w, long i, long j, 
 		pairs->push_front(newdiagonal);
 		dpstates[a][b].weight = w;
 	} else {
-		if((!pairs->empty())&&(i <= pairs->begin()->index1)) return;
-		while((!pairs->empty())&&(pairs->begin()->index2 >= j)) pairs->pop_front();
+		if((!pairs->empty())&&(i <= pairs->front()->get().index1)) return;
+		while((!pairs->empty())&&(pairs->front()->get().index2 >= j)) pairs->pop_front();
 		pairs->push_front(newdiagonal);
 	}
 }
 
 void TriangulatorPartition::TypeA(long i, long j, long k, PartitionVertex *vertices, DPState2 **dpstates) {
-	list<Diagonal> *pairs;
-	list<Diagonal>::iterator iter,lastiter;
+	List<Diagonal> *pairs;
+	List<Diagonal>::Element *iter,*lastiter;
 	long top;
 	long w;
 
@@ -733,25 +733,29 @@ void TriangulatorPartition::TypeA(long i, long j, long k, PartitionVertex *verti
 	}
 	if(j-i > 1) {
 		pairs = &(dpstates[i][j].pairs);
-		iter = pairs->end();
-		lastiter = pairs->end();
-		while(iter!=pairs->begin()) {
-			iter--;
-			if(!IsReflex(vertices[iter->index2].p,vertices[j].p,vertices[k].p)) lastiter = iter;
+		iter = NULL;
+		lastiter = NULL;
+		while(iter!=pairs->front()) {
+			if (!iter)
+				iter=pairs->back();
+			else
+				iter=iter->prev();
+
+			if(!IsReflex(vertices[iter->get().index2].p,vertices[j].p,vertices[k].p)) lastiter = iter;
 			else break;
 		}
-		if(lastiter == pairs->end()) w++;
+		if(lastiter == NULL) w++;
 		else {
-			if(IsReflex(vertices[k].p,vertices[i].p,vertices[lastiter->index1].p)) w++;
-			else top = lastiter->index1;
+			if(IsReflex(vertices[k].p,vertices[i].p,vertices[lastiter->get().index1].p)) w++;
+			else top = lastiter->get().index1;
 		}
 	}
 	UpdateState(i,k,w,top,j,dpstates);
 }
 
 void TriangulatorPartition::TypeB(long i, long j, long k, PartitionVertex *vertices, DPState2 **dpstates) {
-	list<Diagonal> *pairs;
-	list<Diagonal>::iterator iter,lastiter;
+	List<Diagonal> *pairs;
+	List<Diagonal>::Element* iter,*lastiter;
 	long top;
 	long w;
 
@@ -766,36 +770,36 @@ void TriangulatorPartition::TypeB(long i, long j, long k, PartitionVertex *verti
 	if (k-j > 1) {
 		pairs = &(dpstates[j][k].pairs);
 
-		iter = pairs->begin();
-		if((!pairs->empty())&&(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->index1].p))) {
+		iter = pairs->front();
+		if((!pairs->empty())&&(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->get().index1].p))) {
 			lastiter = iter;
-			while(iter!=pairs->end()) {
-				if(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->index1].p)) {
+			while(iter!=NULL) {
+				if(!IsReflex(vertices[i].p,vertices[j].p,vertices[iter->get().index1].p)) {
 					lastiter = iter;
-					iter++;
+					iter=iter->next();
 				}
 				else break;
 			}
-			if(IsReflex(vertices[lastiter->index2].p,vertices[k].p,vertices[i].p)) w++;
-			else top = lastiter->index2;
+			if(IsReflex(vertices[lastiter->get().index2].p,vertices[k].p,vertices[i].p)) w++;
+			else top = lastiter->get().index2;
 		} else w++;
 	}
 	UpdateState(i,k,w,j,top,dpstates);
 }
 
-int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<TriangulatorPoly> *parts) {
+int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, List<TriangulatorPoly> *parts) {
 	Vector2 p1,p2,p3,p4;
 	PartitionVertex *vertices;
 	DPState2 **dpstates;
 	long i,j,k,n,gap;
-	list<Diagonal> diagonals,diagonals2;
+	List<Diagonal> diagonals,diagonals2;
 	Diagonal diagonal,newdiagonal;
-	list<Diagonal> *pairs,*pairs2;
-	list<Diagonal>::iterator iter,iter2;
+	List<Diagonal> *pairs,*pairs2;
+	List<Diagonal>::Element* iter,*iter2;
 	int ret;
 	TriangulatorPoly newpoly;
-	list<long> indices;
-	list<long>::iterator iiter;
+	List<long> indices;
+	List<long>::Element* iiter;
 	bool ijreal,jkreal;
 
 	n = poly->GetNumPoints();
@@ -903,7 +907,7 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 	newdiagonal.index2 = n-1;
 	diagonals.push_front(newdiagonal);
 	while(!diagonals.empty()) {
-		diagonal = *(diagonals.begin());
+		diagonal = (diagonals.front()->get());
 		diagonals.pop_front();
 		if((diagonal.index2 - diagonal.index1) <=1) continue;
 		pairs = &(dpstates[diagonal.index1][diagonal.index2].pairs);
@@ -912,23 +916,23 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 			break;
 		}
 		if(!vertices[diagonal.index1].isConvex) {
-			iter = pairs->end();
-			iter--;
-			j = iter->index2;
+			iter = pairs->back();
+
+			j = iter->get().index2;
 			newdiagonal.index1 = j;
 			newdiagonal.index2 = diagonal.index2;
 			diagonals.push_front(newdiagonal);
 			if((j - diagonal.index1)>1) {
-				if(iter->index1 != iter->index2) {
+				if(iter->get().index1 != iter->get().index2) {
 					pairs2 = &(dpstates[diagonal.index1][j].pairs);
 					while(1) {
 						if(pairs2->empty()) {
 							ret = 0;
 							break;
 						}
-						iter2 = pairs2->end();
-						iter2--;
-						if(iter->index1 != iter2->index1) pairs2->pop_back();
+						iter2 = pairs2->back();
+
+						if(iter->get().index1 != iter2->get().index1) pairs2->pop_back();
 						else break;
 					}
 					if(ret == 0) break;
@@ -938,21 +942,21 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 				diagonals.push_front(newdiagonal);
 			}
 		} else {
-			iter = pairs->begin();
-			j = iter->index1;
+			iter = pairs->front();
+			j = iter->get().index1;
 			newdiagonal.index1 = diagonal.index1;
 			newdiagonal.index2 = j;
 			diagonals.push_front(newdiagonal);
 			if((diagonal.index2 - j) > 1) {
-				if(iter->index1 != iter->index2) {
+				if(iter->get().index1 != iter->get().index2) {
 					pairs2 = &(dpstates[j][diagonal.index2].pairs);
 					while(1) {
 						if(pairs2->empty()) {
 							ret = 0;
 							break;
 						}
-						iter2 = pairs2->begin();
-						if(iter->index2 != iter2->index2) pairs2->pop_front();
+						iter2 = pairs2->front();
+						if(iter->get().index2 != iter2->get().index2) pairs2->pop_front();
 						else break;
 					}
 					if(ret == 0) break;
@@ -978,7 +982,7 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 	newdiagonal.index2 = n-1;
 	diagonals.push_front(newdiagonal);
 	while(!diagonals.empty()) {
-		diagonal = *(diagonals.begin());
+		diagonal = (diagonals.front())->get();
 		diagonals.pop_front();
 		if((diagonal.index2 - diagonal.index1) <= 1) continue;
 
@@ -989,21 +993,20 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 		diagonals2.push_front(diagonal);
 
 		while(!diagonals2.empty()) {
-			diagonal = *(diagonals2.begin());
+			diagonal = (diagonals2.front()->get());
 			diagonals2.pop_front();
 			if((diagonal.index2 - diagonal.index1) <= 1) continue;
 			ijreal = true;
 			jkreal = true;
 			pairs = &(dpstates[diagonal.index1][diagonal.index2].pairs);
 			if(!vertices[diagonal.index1].isConvex) {
-				iter = pairs->end();
-				iter--;
-				j = iter->index2;
-				if(iter->index1 != iter->index2) ijreal = false;
+				iter = pairs->back();
+				j = iter->get().index2;
+				if(iter->get().index1 != iter->get().index2) ijreal = false;
 			} else {
-				iter = pairs->begin();
-				j = iter->index1;
-				if(iter->index1 != iter->index2) jkreal = false;
+				iter = pairs->front();
+				j = iter->get().index1;
+				if(iter->get().index1 != iter->get().index2) jkreal = false;
 			}
 
 			newdiagonal.index1 = diagonal.index1;
@@ -1028,8 +1031,8 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 		indices.sort();
 		newpoly.Init((long)indices.size());
 		k=0;
-		for(iiter = indices.begin();iiter!=indices.end();iiter++) {
-			newpoly[k] = vertices[*iiter].p;
+		for(iiter = indices.front();iiter;iiter=iiter->next()) {
+			newpoly[k] = vertices[iiter->get()].p;
 			k++;
 		}
 		parts->push_back(newpoly);
@@ -1049,8 +1052,8 @@ int TriangulatorPartition::ConvexPartition_OPT(TriangulatorPoly *poly, list<Tria
 //the algorithm used here is outlined in the book
 //"Computational Geometry: Algorithms and Applications"
 //by Mark de Berg, Otfried Cheong, Marc van Kreveld and Mark Overmars
-int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, list<TriangulatorPoly> *monotonePolys) {
-	list<TriangulatorPoly>::iterator iter;
+int TriangulatorPartition::MonotonePartition(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *monotonePolys) {
+	List<TriangulatorPoly>::Element *iter;
 	MonotoneVertex *vertices;
 	long i,numvertices,vindex,vindex2,newnumvertices,maxnumvertices;
 	long polystartindex, polyendindex;
@@ -1060,8 +1063,8 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 	bool error = false;
 
 	numvertices = 0;
-	for(iter = inpolys->begin(); iter != inpolys->end(); iter++) {
-		numvertices += iter->GetNumPoints();
+	for(iter = inpolys->front(); iter ; iter=iter->next()) {
+		numvertices += iter->get().GetNumPoints();
 	}
 
 	maxnumvertices = numvertices*3;
@@ -1069,8 +1072,8 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 	newnumvertices = numvertices;
 
 	polystartindex = 0;
-	for(iter = inpolys->begin(); iter != inpolys->end(); iter++) {
-		poly = &(*iter);
+	for(iter = inpolys->front(); iter ; iter=iter->next()) {
+		poly = &(iter->get());
 		polyendindex = polystartindex + poly->GetNumPoints()-1;
 		for(i=0;i<poly->GetNumPoints();i++) {
 			vertices[i+polystartindex].p = poly->GetPoint(i);
@@ -1085,7 +1088,9 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 	//construct the priority queue
 	long *priority = new long [numvertices];
 	for(i=0;i<numvertices;i++) priority[i] = i;
-	std::sort(priority,&(priority[numvertices]),VertexSorter(vertices));
+	SortArray<long,VertexSorter> sorter;
+	sorter.compare.vertices=vertices;
+	sorter.sort(priority,numvertices);
 
 	//determine vertex types
 	char *vertextypes = new char[maxnumvertices];
@@ -1118,13 +1123,13 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 	//binary search tree that holds edges intersecting the scanline
 	//note that while set doesn't actually have to be implemented as a tree
 	//complexity requirements for operations are the same as for the balanced binary search tree
-	set<ScanLineEdge> edgeTree;
+	Set<ScanLineEdge> edgeTree;
 	//store iterators to the edge tree elements
 	//this makes deleting existing edges much faster
-	set<ScanLineEdge>::iterator *edgeTreeIterators,edgeIter;
-	edgeTreeIterators = new set<ScanLineEdge>::iterator[maxnumvertices];
-	pair<set<ScanLineEdge>::iterator,bool> edgeTreeRet;
-	for(i = 0; i<numvertices; i++) edgeTreeIterators[i] = edgeTree.end();
+	Set<ScanLineEdge>::Element **edgeTreeIterators,*edgeIter;
+	edgeTreeIterators = new Set<ScanLineEdge>::Element*[maxnumvertices];
+//	Pair<Set<ScanLineEdge>::Element*,bool> edgeTreeRet;
+	for(i = 0; i<numvertices; i++) edgeTreeIterators[i] = NULL;
 
 	//for each vertex
 	for(i=0;i<numvertices;i++) {
@@ -1141,8 +1146,7 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 				newedge.p1 = v->p;
 				newedge.p2 = vertices[v->next].p;
 				newedge.index = vindex;
-				edgeTreeRet = edgeTree.insert(newedge);
-				edgeTreeIterators[vindex] = edgeTreeRet.first;
+				edgeTreeIterators[vindex] = edgeTree.insert(newedge);
 				helpers[vindex] = vindex;
 				break;
 
@@ -1162,24 +1166,24 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 				newedge.p1 = v->p;
 				newedge.p2 = v->p;
 				edgeIter = edgeTree.lower_bound(newedge);
-				if(edgeIter == edgeTree.begin()) {
+				if(edgeIter == edgeTree.front()) {
 					error = true;
 					break;
 				}
-				edgeIter--;
+				edgeIter=edgeIter->prev();
 				//Insert the diagonal connecting vi to helper(ej) in D.
-				AddDiagonal(vertices,&newnumvertices,vindex,helpers[edgeIter->index],
+				AddDiagonal(vertices,&newnumvertices,vindex,helpers[edgeIter->get().index],
 						vertextypes, edgeTreeIterators, &edgeTree, helpers);
 				vindex2 = newnumvertices-2;
 				v2 = &(vertices[vindex2]);
 				//helper(e j)�vi
-				helpers[edgeIter->index] = vindex;
+				helpers[edgeIter->get().index] = vindex;
 				//Insert ei in T and set helper(ei) to vi.
 				newedge.p1 = v2->p;
 				newedge.p2 = vertices[v2->next].p;
 				newedge.index = vindex2;
-				edgeTreeRet = edgeTree.insert(newedge);
-				edgeTreeIterators[vindex2] = edgeTreeRet.first;
+
+				edgeTreeIterators[vindex2] = edgeTree.insert(newedge);
 				helpers[vindex2] = vindex2;
 				break;
 
@@ -1198,19 +1202,19 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 				newedge.p1 = v->p;
 				newedge.p2 = v->p;
 				edgeIter = edgeTree.lower_bound(newedge);
-				if(edgeIter == edgeTree.begin()) {
+				if(edgeIter == edgeTree.front()) {
 					error = true;
 					break;
 				}
-				edgeIter--;
+				edgeIter=edgeIter->prev();
 				//if helper(ej) is a merge vertex
-				if(vertextypes[helpers[edgeIter->index]]==TRIANGULATOR_VERTEXTYPE_MERGE) {
+				if(vertextypes[helpers[edgeIter->get().index]]==TRIANGULATOR_VERTEXTYPE_MERGE) {
 					//Insert the diagonal connecting vi to helper(e j) in D.
-					AddDiagonal(vertices,&newnumvertices,vindex2,helpers[edgeIter->index],
+					AddDiagonal(vertices,&newnumvertices,vindex2,helpers[edgeIter->get().index],
 							vertextypes, edgeTreeIterators, &edgeTree, helpers);
 				}
 				//helper(e j)�vi
-				helpers[edgeIter->index] = vindex2;
+				helpers[edgeIter->get().index] = vindex2;
 				break;
 
 			case TRIANGULATOR_VERTEXTYPE_REGULAR:
@@ -1230,27 +1234,26 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 					newedge.p1 = v2->p;
 					newedge.p2 = vertices[v2->next].p;
 					newedge.index = vindex2;
-					edgeTreeRet = edgeTree.insert(newedge);
-					edgeTreeIterators[vindex2] = edgeTreeRet.first;
+					edgeTreeIterators[vindex2] = edgeTree.insert(newedge);
 					helpers[vindex2] = vindex;
 				} else {
 					//Search in T to find the edge ej directly left of vi.
 					newedge.p1 = v->p;
 					newedge.p2 = v->p;
 					edgeIter = edgeTree.lower_bound(newedge);
-					if(edgeIter == edgeTree.begin()) {
+					if(edgeIter == edgeTree.front()) {
 						error = true;
 						break;
 					}
-					edgeIter--;
+					edgeIter=edgeIter->prev();
 					//if helper(ej) is a merge vertex
-					if(vertextypes[helpers[edgeIter->index]]==TRIANGULATOR_VERTEXTYPE_MERGE) {
+					if(vertextypes[helpers[edgeIter->get().index]]==TRIANGULATOR_VERTEXTYPE_MERGE) {
 						//Insert the diagonal connecting vi to helper(e j) in D.
-						AddDiagonal(vertices,&newnumvertices,vindex,helpers[edgeIter->index],
+						AddDiagonal(vertices,&newnumvertices,vindex,helpers[edgeIter->get().index],
 								vertextypes, edgeTreeIterators, &edgeTree, helpers);
 					}
 					//helper(e j)�vi
-					helpers[edgeIter->index] = vindex;
+					helpers[edgeIter->get().index] = vindex;
 				}
 				break;
 		}
@@ -1308,8 +1311,8 @@ int TriangulatorPartition::MonotonePartition(list<TriangulatorPoly> *inpolys, li
 
 //adds a diagonal to the doubly-connected list of vertices
 void TriangulatorPartition::AddDiagonal(MonotoneVertex *vertices, long *numvertices, long index1, long index2,
-					char *vertextypes, set<ScanLineEdge>::iterator *edgeTreeIterators,
-					set<ScanLineEdge> *edgeTree, long *helpers)
+					char *vertextypes, Set<ScanLineEdge>::Element **edgeTreeIterators,
+					Set<ScanLineEdge> *edgeTree, long *helpers)
 {
 	long newindex1,newindex2;
 
@@ -1337,13 +1340,13 @@ void TriangulatorPartition::AddDiagonal(MonotoneVertex *vertices, long *numverti
 	vertextypes[newindex1] = vertextypes[index1];
 	edgeTreeIterators[newindex1] = edgeTreeIterators[index1];
 	helpers[newindex1] = helpers[index1];
-	if(edgeTreeIterators[newindex1] != edgeTree->end())
-		edgeTreeIterators[newindex1]->index = newindex1;
+	if(edgeTreeIterators[newindex1] != NULL)
+		edgeTreeIterators[newindex1]->get().index = newindex1;
 	vertextypes[newindex2] = vertextypes[index2];
 	edgeTreeIterators[newindex2] = edgeTreeIterators[index2];
 	helpers[newindex2] = helpers[index2];
-	if(edgeTreeIterators[newindex2] != edgeTree->end())
-		edgeTreeIterators[newindex2]->index = newindex2;
+	if(edgeTreeIterators[newindex2] != NULL)
+		edgeTreeIterators[newindex2]->get().index = newindex2;
 }
 
 bool TriangulatorPartition::Below(Vector2 &p1, Vector2 &p2) {
@@ -1354,8 +1357,12 @@ bool TriangulatorPartition::Below(Vector2 &p1, Vector2 &p2) {
 	return false;
 }
 
+
+
+
+
 //sorts in the falling order of y values, if y is equal, x is used instead
-bool TriangulatorPartition::VertexSorter::operator() (long index1, long index2) {
+bool TriangulatorPartition::VertexSorter::operator() (long index1, long index2) const {
 	if(vertices[index1].p.y > vertices[index2].p.y) return true;
 	else if(vertices[index1].p.y == vertices[index2].p.y) {
 		if(vertices[index1].p.x > vertices[index2].p.x) return true;
@@ -1392,7 +1399,7 @@ bool TriangulatorPartition::ScanLineEdge::operator < (const ScanLineEdge & other
 
 //triangulates monotone polygon
 //O(n) time, O(n) space complexity
-int TriangulatorPartition::TriangulateMonotone(TriangulatorPoly *inPoly, list<TriangulatorPoly> *triangles) {
+int TriangulatorPartition::TriangulateMonotone(TriangulatorPoly *inPoly, List<TriangulatorPoly> *triangles) {
 	long i,i2,j,topindex,bottomindex,leftindex,rightindex,vindex;
 	Vector2 *points;
 	long numpoints;
@@ -1524,19 +1531,19 @@ int TriangulatorPartition::TriangulateMonotone(TriangulatorPoly *inPoly, list<Tr
 	return 1;
 }
 
-int TriangulatorPartition::Triangulate_MONO(list<TriangulatorPoly> *inpolys, list<TriangulatorPoly> *triangles) {
-	list<TriangulatorPoly> monotone;
-	list<TriangulatorPoly>::iterator iter;
+int TriangulatorPartition::Triangulate_MONO(List<TriangulatorPoly> *inpolys, List<TriangulatorPoly> *triangles) {
+	List<TriangulatorPoly> monotone;
+	List<TriangulatorPoly>::Element* iter;
 
 	if(!MonotonePartition(inpolys,&monotone)) return 0;
-	for(iter = monotone.begin(); iter!=monotone.end();iter++) {
-		if(!TriangulateMonotone(&(*iter),triangles)) return 0;
+	for(iter = monotone.front(); iter;iter=iter->next()) {
+		if(!TriangulateMonotone(&(iter->get()),triangles)) return 0;
 	}
 	return 1;
 }
 
-int TriangulatorPartition::Triangulate_MONO(TriangulatorPoly *poly, list<TriangulatorPoly> *triangles) {
-	list<TriangulatorPoly> polys;
+int TriangulatorPartition::Triangulate_MONO(TriangulatorPoly *poly, List<TriangulatorPoly> *triangles) {
+	List<TriangulatorPoly> polys;
 	polys.push_back(*poly);
 
 	return Triangulate_MONO(&polys, triangles);
