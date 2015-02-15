@@ -607,9 +607,9 @@ public:
 	struct AuxiliaryComparator {
 
 		C compare;
-		_FORCE_INLINE_ bool operator()(const Element *A,const Element* B) const {
+		_FORCE_INLINE_ bool operator()(const Element *a,const Element* b) const {
 
-			return compare(A->value,B->value);
+			return compare(a->value,b->value);
 		}
 	};
 
