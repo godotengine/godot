@@ -36,7 +36,7 @@
 #include "servers/physics/physics_server_sw.h"
 
 #include "X11/Xutil.h"
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 #include "X11/Xatom.h"
 #include "X11/extensions/Xinerama.h"
 // ICCCM
@@ -187,7 +187,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
-#ifndef EXPERIMENTAL_WM_API
+#ifndef NEW_WM_API
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 	// needed for lxde/openbox, possibly others
@@ -552,7 +552,7 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 
 }
 
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 #if 0
 // Just now not needed. Can be used for a possible OS.set_border(bool) method
 void OS_X11::set_wm_border(bool p_enabled) {
@@ -1133,7 +1133,7 @@ void OS_X11::process_xevents() {
 
 		case FocusIn: 
 			minimized = false;
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(true);
 				visual_server->init();
@@ -1149,7 +1149,7 @@ void OS_X11::process_xevents() {
 			break;
 
 		case FocusOut:
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(false);
 				set_minimized(true);
@@ -1269,7 +1269,7 @@ void OS_X11::process_xevents() {
 			
 			Point2i rel = pos - last_mouse_pos;
 
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 			if (mouse_mode==MOUSE_MODE_CAPTURED) {
 				pos.x = current_videomode.width / 2;
 				pos.y = current_videomode.height / 2;

@@ -108,7 +108,7 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 	virtual int get_screen_count() const;
 	virtual int get_screen() const;
 	virtual void set_screen(int p_screen);

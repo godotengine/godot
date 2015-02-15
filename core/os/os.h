@@ -150,7 +150,7 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
 
-#ifdef EXPERIMENTAL_WM_API
+#ifdef NEW_WM_API
 	virtual int get_screen_count() const=0;
 	virtual int get_screen() const=0;
 	virtual void set_screen(int p_screen)=0;
