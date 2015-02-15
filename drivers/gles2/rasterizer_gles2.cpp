@@ -8333,7 +8333,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 
 	CanvasItem *current_clip=NULL;
-
+	Shader *shader_cache=NULL;
 	canvas_opacity=1.0;
 	while(p_item_list) {
 
@@ -8378,6 +8378,8 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				}
 			}
 
+			shader_cache=shader;
+
 			if (shader) {
 				canvas_shader.set_custom_shader(shader->custom_code_id);
 				if (canvas_shader.bind())
@@ -8387,50 +8389,6 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 					//todo optimize uniforms
 					shader_owner->shader_version=shader->version;
 				}
-				//this can be optimized..
-				int tex_id=1;
-				int idx=0;
-				for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
-
-					Map<StringName,Variant>::Element *F=shader_owner->shader_param.find(E->key());
-
-					if ((E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP)) {
-
-						RID rid;
-						if (F) {
-							rid=F->get();
-						}
-
-						if (!rid.is_valid()) {
-
-							Map<StringName,RID>::Element *DT=shader->default_textures.find(E->key());
-							if (DT) {
-								rid=DT->get();
-							}
-						}
-
-						if (rid.is_valid()) {
-
-							int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
-
-							glActiveTexture(GL_TEXTURE0+tex_id);
-							Texture *t=texture_owner.get(rid);
-							if (!t)
-								glBindTexture(GL_TEXTURE_2D,white_tex);
-							else
-								glBindTexture(t->target,t->tex_id);
-
-							glUniform1i(loc,tex_id);
-							tex_id++;
-						}
-					} else {
-						Variant &v=F?F->get():E->get().default_value;
-						canvas_shader.set_custom_uniform(idx,v);
-					}
-
-					idx++;
-				}
-
 
 				if (shader->has_texscreen && framebuffer.active) {
 
@@ -8439,8 +8397,8 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_MULT,Vector2(float(viewport.width)/framebuffer.width,float(viewport.height)/framebuffer.height));
 					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_SCREEN_CLAMP,Color(float(x)/framebuffer.width,float(y)/framebuffer.height,float(x+viewport.width)/framebuffer.width,float(y+viewport.height)/framebuffer.height));
-					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_TEX,tex_id);
-					glActiveTexture(GL_TEXTURE0+tex_id);
+					canvas_shader.set_uniform(CanvasShaderGLES2::TEXSCREEN_TEX,max_texture_units-1);
+					glActiveTexture(GL_TEXTURE0+max_texture_units-1);
 					glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
 					if (framebuffer.scale==1 && !canvas_texscreen_used) {
 #ifdef GLEW_ENABLED
@@ -8452,14 +8410,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 						}
 
 						canvas_texscreen_used=true;
-					}
-					tex_id++;
+					}	
 
-				}
-
-				if (tex_id>1) {
 					glActiveTexture(GL_TEXTURE0);
+
 				}
+
 				if (shader->has_screen_uv) {
 					canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
 				}
@@ -8473,6 +8429,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 				uses_texpixel_size=shader->uses_texpixel_size;
 
 			} else {
+				shader_cache=NULL;
 				canvas_shader.set_custom_shader(0);
 				canvas_shader.bind();
 				uses_texpixel_size=false;
@@ -8482,6 +8439,59 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list) {
 
 			canvas_shader.set_uniform(CanvasShaderGLES2::PROJECTION_MATRIX,canvas_transform);
 			canvas_last_shader=shader_owner->shader;
+		}
+
+		if (shader_cache) {
+
+			Shader *shader = shader_cache;
+			//this can be optimized..
+			int tex_id=1;
+			int idx=0;
+			for(Map<StringName,ShaderLanguage::Uniform>::Element *E=shader->uniforms.front();E;E=E->next()) {
+
+				Map<StringName,Variant>::Element *F=shader_owner->shader_param.find(E->key());
+
+				if ((E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP)) {
+
+					RID rid;
+					if (F) {
+						rid=F->get();
+					}
+
+					if (!rid.is_valid()) {
+
+						Map<StringName,RID>::Element *DT=shader->default_textures.find(E->key());
+						if (DT) {
+							rid=DT->get();
+						}
+					}
+
+					if (rid.is_valid()) {
+
+						int loc = canvas_shader.get_custom_uniform_location(idx); //should be automatic..
+
+						glActiveTexture(GL_TEXTURE0+tex_id);
+						Texture *t=texture_owner.get(rid);
+						if (!t)
+							glBindTexture(GL_TEXTURE_2D,white_tex);
+						else
+							glBindTexture(t->target,t->tex_id);
+
+						glUniform1i(loc,tex_id);
+						tex_id++;
+					}
+				} else {
+					Variant &v=F?F->get():E->get().default_value;
+					canvas_shader.set_custom_uniform(idx,v);
+				}
+
+				idx++;
+			}
+
+			if (tex_id>1) {
+				glActiveTexture(GL_TEXTURE0);
+			}
+
 		}
 
 		canvas_shader.set_uniform(CanvasShaderGLES2::MODELVIEW_MATRIX,ci->final_transform);

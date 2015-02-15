@@ -1432,9 +1432,13 @@ void OS_Windows::warp_mouse_pos(const Point2& p_to) {
 		old_y=p_to.y;
 	} else {
 
-		SetCursorPos(p_to.x, p_to.y);
-	}
+		POINT p;
+		p.x=p_to.x;
+		p.y=p_to.y;
+		ClientToScreen(hWnd,&p);
 
+		SetCursorPos(p.x,p.y);
+	}
 }
 
 Point2 OS_Windows::get_mouse_pos() const {

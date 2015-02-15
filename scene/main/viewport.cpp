@@ -29,6 +29,8 @@
 #include "viewport.h"
 #include "os/os.h"
 #include "scene/3d/spatial.h"
+#include "os/input.h"
+
 //#include "scene/3d/camera.h"
 
 #include "servers/spatial_sound_server.h"
@@ -1100,6 +1102,12 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
 }
 
+void Viewport::warp_mouse(const Vector2& p_pos) {
+
+	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
+	Input::get_singleton()->warp_mouse_pos(gpos);
+}
+
 void Viewport::input(const InputEvent& p_event) {
 
 	ERR_FAIL_COND(!is_inside_tree());
@@ -1289,6 +1297,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
 	ObjectTypeDB::bind_method(_MD("set_render_target_to_screen_rect"), &Viewport::set_render_target_to_screen_rect);
 
+	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"), _SCS("set_rect"), _SCS("get_rect") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );

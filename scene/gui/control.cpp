@@ -2688,6 +2688,12 @@ Control *Control::get_focus_owner() const {
 	return data.window->window->key_focus;
 }
 
+
+void Control::warp_mouse(const Point2& p_to_pos) {
+	ERR_FAIL_COND(!is_inside_tree());
+	get_viewport()->warp_mouse(get_global_transform().xform(p_to_pos));
+}
+
 void Control::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_window_input_event"),&Control::_window_input_event);
@@ -2783,6 +2789,9 @@ void Control::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("grab_click_focus"),&Control::grab_click_focus);
 
 	ObjectTypeDB::bind_method(_MD("set_drag_preview","control:Control"),&Control::set_drag_preview);
+
+	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"),&Control::warp_mouse);
+
 
 	BIND_VMETHOD(MethodInfo("_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	BIND_VMETHOD(MethodInfo(Variant::VECTOR2,"get_minimum_size"));

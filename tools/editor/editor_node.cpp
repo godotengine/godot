@@ -89,6 +89,7 @@
 #include "plugins/animation_player_editor_plugin.h"
 #include "plugins/baked_light_editor_plugin.h"
 #include "plugins/polygon_2d_editor_plugin.h"
+#include "plugins/navigation_polygon_editor_plugin.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -3260,6 +3261,11 @@ Error EditorNode::export_platform(const String& p_platform, const String& p_path
 	return OK;
 }
 
+void EditorNode::show_warning(const String& p_text) {
+
+	warning->set_text(p_text);
+	warning->popup_centered_minsize();
+}
 
 
 EditorNode::EditorNode() {
@@ -3970,6 +3976,8 @@ EditorNode::EditorNode() {
 	logo->set_pos(Point2(20,20));
 	logo->set_texture(gui_base->get_icon("Logo","EditorIcons") );
 
+	warning = memnew( AcceptDialog );
+	add_child(warning);
 
 
 
@@ -4107,6 +4115,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( PathEditorPlugin(this) ) );
 	add_editor_plugin( memnew( BakedLightEditorPlugin(this) ) );
 	add_editor_plugin( memnew( Polygon2DEditorPlugin(this) ) );
+	add_editor_plugin( memnew( NavigationPolygonEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );

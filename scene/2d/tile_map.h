@@ -60,6 +60,7 @@ private:
 	Mode mode;
 	Matrix32 custom_transform;
 	HalfOffset half_offset;
+	bool use_kinematic;
 
 
 	union PosKey {
@@ -98,14 +99,14 @@ private:
 
 		Vector2 pos;
 		RID canvas_item;
-		RID static_body;
+		RID body;
 
 		SelfList<Quadrant> dirty_list;
 
 		VSet<PosKey> cells;
 
-		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; static_body=q.static_body; cells=q.cells; }
-		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; static_body=q.static_body; cells=q.cells;}
+		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells; }
+		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells;}
 		Quadrant() : dirty_list(this) {}
 	};
 
@@ -178,6 +179,9 @@ public:
 
 	void set_collision_layer_mask(uint32_t p_layer);
 	uint32_t get_collision_layer_mask() const;
+
+	void set_collision_use_kinematic(bool p_use_kinematic);
+	bool get_collision_use_kinematic() const;
 
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;

@@ -246,6 +246,8 @@ public:
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
 
+	void warp_mouse(const Vector2& p_pos);
+
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
 
