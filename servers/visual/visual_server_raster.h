@@ -440,6 +440,8 @@ class VisualServerRaster : public VisualServer {
 	};
 
 
+	RID_Owner<Rasterizer::CanvasLight> canvas_light_owner;
+
 
 	struct Viewport {
 
