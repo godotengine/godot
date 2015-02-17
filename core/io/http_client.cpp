@@ -273,7 +273,7 @@ Error HTTPClient::poll(){
 			while(true) {
 				uint8_t byte;
 				int rec=0;
-				Error err = connection->get_partial_data(&byte,1,rec);
+				Error err = _get_http_data(&byte,1,rec);
 				if (err!=OK) {
 					close();
 					status=STATUS_CONNECTION_ERROR;
@@ -417,7 +417,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 				//reading len
 				uint8_t b;
 				int rec=0;
-				err = connection->get_partial_data(&b,1,rec);
+				err = _get_http_data(&b,1,rec);
 
 				if (rec==0)
 					break;
@@ -471,7 +471,7 @@ ByteArray HTTPClient::read_response_body_chunk() {
 			} else {
 
 				int rec=0;
-				err = connection->get_partial_data(&chunk[chunk.size()-chunk_left],chunk_left,rec);
+				err = _get_http_data(&chunk[chunk.size()-chunk_left],chunk_left,rec);
 				if (rec==0) {
 					break;
 				}
@@ -502,18 +502,23 @@ ByteArray HTTPClient::read_response_body_chunk() {
 		}
 
 	} else {
+
+		int to_read = MIN(body_left,read_chunk_size);
 		ByteArray ret;
-		ret.resize(MAX(body_left,tmp_read.size()));
+		ret.resize(to_read);
 		ByteArray::Write w = ret.write();
 		int _offset = 0;
-		while (body_left > 0) {
-			ByteArray::Write r = tmp_read.write();
+		while (to_read > 0) {
 			int rec=0;
-			err = connection->get_partial_data(r.ptr(),MIN(body_left,tmp_read.size()),rec);
+			err = _get_http_data(w.ptr()+_offset,to_read,rec);
 			if (rec>0) {
-				copymem(w.ptr()+_offset,r.ptr(),rec);
 				body_left-=rec;
+				to_read-=rec;
 				_offset += rec;
+			} else {
+				if (to_read>0) //ended up reading less
+					ret.resize(_offset);
+				break;
 			}
 		}
 		if (body_left==0) {
@@ -557,6 +562,20 @@ bool HTTPClient::is_blocking_mode_enabled() const{
 	return blocking;
 }
 
+Error HTTPClient::_get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received) {
+
+	if (blocking) {
+
+		Error err = connection->get_data(p_buffer,p_bytes);
+		if (err==OK)
+			r_received=p_bytes;
+		else
+			r_received=0;
+		return err;
+	} else {
+		return connection->get_partial_data(p_buffer,p_bytes,r_received);
+	}
+}
 
 void HTTPClient::_bind_methods() {
 
@@ -574,6 +593,7 @@ void HTTPClient::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_response_headers_as_dictionary"),&HTTPClient::_get_response_headers_as_dictionary);
 	ObjectTypeDB::bind_method(_MD("get_response_body_length"),&HTTPClient::get_response_body_length);
 	ObjectTypeDB::bind_method(_MD("read_response_body_chunk"),&HTTPClient::read_response_body_chunk);
+	ObjectTypeDB::bind_method(_MD("set_read_chunk_size","bytes"),&HTTPClient::set_read_chunk_size);
 
 	ObjectTypeDB::bind_method(_MD("set_blocking_mode","enabled"),&HTTPClient::set_blocking_mode);
 	ObjectTypeDB::bind_method(_MD("is_blocking_mode_enabled"),&HTTPClient::is_blocking_mode_enabled);
@@ -664,6 +684,11 @@ void HTTPClient::_bind_methods() {
 
 }
 
+void HTTPClient::set_read_chunk_size(int p_size) {
+	ERR_FAIL_COND(p_size<256 || p_size>(1<<24));
+	read_chunk_size=p_size;
+}
+
 HTTPClient::HTTPClient(){
 
 	tcp_connection = StreamPeerTCP::create_ref();
@@ -677,7 +702,7 @@ HTTPClient::HTTPClient(){
 	response_num=0;
 	ssl=false;
 	blocking=false;
-	tmp_read.resize(4096);
+	read_chunk_size=4096;
 }
 
 HTTPClient::~HTTPClient(){

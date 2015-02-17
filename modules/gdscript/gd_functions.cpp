@@ -89,6 +89,8 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"printt",
 		"printerr",
 		"printraw",
+		"var2str",
+		"str2var",
 		"range",
 		"load",
 		"inst2dict",
@@ -577,9 +579,22 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			r_ret=Variant();
 
 		} break;
+		case VAR_TO_STR: {
+			VALIDATE_ARG_COUNT(1);
+			r_ret=p_args[0]->get_construct_string();
+		} break;
+		case STR_TO_VAR: {
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::STRING) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_error.expected=Variant::STRING;
+				r_ret=Variant();
+				return;
+			}
+			Variant::construct_from_string(*p_args[0],r_ret);
+		} break;
 		case GEN_RANGE: {
-
-
 
 			switch(p_arg_count) {
 
@@ -860,7 +875,6 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 					return;
 				}
 			}
-
 
 			r_ret = gdscr->_new(NULL,0,r_error);
 
@@ -1223,6 +1237,18 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			mi.return_val.type=Variant::NIL;
 			return mi;
 
+		} break;
+		case VAR_TO_STR: {
+			MethodInfo mi("var2str",PropertyInfo(Variant::NIL,"var"));
+			mi.return_val.type=Variant::STRING;
+			return mi;
+
+		} break;
+		case STR_TO_VAR: {
+
+			MethodInfo mi("str2var:var",PropertyInfo(Variant::STRING,"string"));
+			mi.return_val.type=Variant::NIL;
+			return mi;
 		} break;
 		case GEN_RANGE: {
 

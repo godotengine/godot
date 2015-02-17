@@ -480,8 +480,12 @@ void OS_X11::warp_mouse_pos(const Point2& p_to) {
 		last_mouse_pos=p_to;
 	} else {
 
+		/*XWindowAttributes xwa;
+		XGetWindowAttributes(x11_display, x11_window, &xwa);
+		printf("%d %d\n", xwa.x, xwa.y); needed? */
+
 		XWarpPointer(x11_display, None, x11_window,
-			      0,0,0,0, (int)p_to.x, (int)p_to.y);
+			      0,0,0,0, (int)p_to.x , (int)p_to.y);
 	}
 
 }

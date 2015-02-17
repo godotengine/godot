@@ -440,6 +440,8 @@ class VisualServerRaster : public VisualServer {
 	};
 
 
+	RID_Owner<Rasterizer::CanvasLight> canvas_light_owner;
+
 
 	struct Viewport {
 
@@ -1122,8 +1124,42 @@ public:
 	virtual void canvas_item_set_use_parent_shader(RID p_item, bool p_enable);
 
 
+
 	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value);
 	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const;
+
+	virtual RID canvas_light_create();
+	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas);
+	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled);
+	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform);
+	virtual void canvas_light_set_texture(RID p_light, RID p_texture);
+	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset);
+	virtual void canvas_light_set_color(RID p_light, const Color& p_color);
+	virtual void canvas_light_set_height(RID p_light, float p_height);
+	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z);
+	virtual void canvas_light_set_item_mask(RID p_light, int p_mask);
+
+	enum CanvasightBlendMode {
+		CANVAS_LIGHT_BLEND_ADD,
+		CANVAS_LIGHT_BLEND_SUB,
+		CANVAS_LIGHT_BLEND_MULTIPLY,
+		CANVAS_LIGHT_BLEND_DODGE,
+		CANVAS_LIGHT_BLEND_BURN,
+		CANVAS_LIGHT_BLEND_LIGHTEN,
+		CANVAS_LIGHT_BLEND_DARKEN,
+		CANVAS_LIGHT_BLEND_OVERLAY,
+		CANVAS_LIGHT_BLEND_SCREEN,
+	};
+	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode);
+	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
+	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
+	virtual void canvas_light_set_shadow_filter(RID p_light, int p_size);
+
+
+	virtual RID canvas_light_occluder_create();
+	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas);
+	virtual void canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled);
+	virtual void canvas_light_occluder_set_shape(RID p_occluder,const DVector<Vector2>& p_shape);
 
 	virtual void canvas_item_clear(RID p_item);
 	virtual void canvas_item_raise(RID p_item);

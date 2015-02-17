@@ -127,6 +127,7 @@ class EditorNode : public Node {
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
 		EDIT_REDO,
+		EDIT_REVERT,
 		RESOURCE_NEW,
 		RESOURCE_LOAD,
 		RESOURCE_SAVE,
@@ -231,6 +232,7 @@ class EditorNode : public Node {
 	ConfirmationDialog *open_recent_confirmation;
 	AcceptDialog *accept;
 	AcceptDialog *about;
+	AcceptDialog *warning;
 
 	//OptimizedPresetsDialog *optimized_presets;
 	EditorSettingsDialog *settings_config_dialog;
@@ -339,6 +341,8 @@ class EditorNode : public Node {
 	void _show_messages();
 	void _vp_resized();
 
+	void _rebuild_import_menu();
+
 	void _save_scene(String p_file);
 
 
@@ -420,6 +424,9 @@ public:
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
 
+	void add_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
+	void remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_editor_import);
+
 
 	void edit_node(Node *p_node);
 	void edit_resource(const Ref<Resource>& p_resource);
@@ -476,6 +483,9 @@ public:
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+
+
+	void show_warning(const String& p_text);
 
 
 	Error export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after=false);

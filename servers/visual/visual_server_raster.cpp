@@ -3819,6 +3819,131 @@ void VisualServerRaster::canvas_item_raise(RID p_item) {
 
 }
 
+/***** CANVAS LIGHT *******/
+
+RID VisualServerRaster::canvas_light_create() {
+
+	Rasterizer::CanvasLight *clight = memnew( Rasterizer::CanvasLight );
+	return canvas_light_owner.make_rid(clight);
+}
+
+void VisualServerRaster::canvas_light_attach_to_canvas(RID p_light,RID p_canvas){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+
+
+}
+void VisualServerRaster::canvas_light_set_enabled(RID p_light, bool p_enabled){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->enabled=p_enabled;
+
+}
+void VisualServerRaster::canvas_light_set_transform(RID p_light, const Matrix32& p_transform){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->xform=p_transform;
+
+}
+void VisualServerRaster::canvas_light_set_texture(RID p_light, RID p_texture){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->texture=p_texture;
+
+}
+void VisualServerRaster::canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->texture_offset=p_offset;
+
+}
+void VisualServerRaster::canvas_light_set_color(RID p_light, const Color& p_color){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->color=p_color;
+
+
+}
+void VisualServerRaster::canvas_light_set_height(RID p_light, float p_height){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->height=p_height;
+
+}
+void VisualServerRaster::canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->z_min=p_min_z;
+	clight->z_max=p_max_z;
+
+}
+void VisualServerRaster::canvas_light_set_item_mask(RID p_light, int p_mask){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->item_mask=p_mask;
+
+}
+
+void VisualServerRaster::canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->blend_mode=p_blend_mode;
+
+}
+void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->shadow=p_enabled;
+
+}
+void VisualServerRaster::canvas_light_set_shadow_buffer_size(RID p_light, int p_size){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+
+}
+void VisualServerRaster::canvas_light_set_shadow_filter(RID p_light, int p_size){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+
+}
+
+/****** CANVAS LIGHT OCCLUDER ******/
+
+RID VisualServerRaster::canvas_light_occluder_create() {
+
+	return RID();
+}
+
+void VisualServerRaster::canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas) {
+
+
+}
+
+void VisualServerRaster::canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled){
+
+
+}
+
+void VisualServerRaster::canvas_light_occluder_set_shape(RID p_occluder,const DVector<Vector2>& p_shape){
+
+
+}
+
+
+
 /******** CANVAS *********/
 
 
@@ -4101,6 +4226,15 @@ void VisualServerRaster::free( RID p_rid ) {
 		canvas_item_owner.free( p_rid );
 		
 		memdelete( canvas_item );
+
+	} else if (canvas_light_owner.owns(p_rid)) {
+
+		Rasterizer::CanvasLight *canvas_light = canvas_light_owner.get(p_rid);
+		ERR_FAIL_COND(!canvas_light);
+
+		canvas_light_owner.free( p_rid );
+		memdelete( canvas_light );
+
 	} else if (scenario_owner.owns(p_rid)) {
 		
 		Scenario *scenario=scenario_owner.get(p_rid);
