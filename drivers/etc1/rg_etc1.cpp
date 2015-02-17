@@ -2367,7 +2367,7 @@ found_perfect_match:
       int dr = best_results[1].m_block_color_unscaled.r - best_results[0].m_block_color_unscaled.r;
       int dg = best_results[1].m_block_color_unscaled.g - best_results[0].m_block_color_unscaled.g;
       int db = best_results[1].m_block_color_unscaled.b - best_results[0].m_block_color_unscaled.b;
-      RG_ETC1_ASSERT(best_use_color4 || (rg_etc1::minimum(dr, dg, db) >= cETC1ColorDeltaMin) && (rg_etc1::maximum(dr, dg, db) <= cETC1ColorDeltaMax));
+      RG_ETC1_ASSERT(best_use_color4 || ((rg_etc1::minimum(dr, dg, db) >= cETC1ColorDeltaMin) && (rg_etc1::maximum(dr, dg, db) <= cETC1ColorDeltaMax)));
            
       if (best_use_color4)
       {

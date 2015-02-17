@@ -630,11 +630,13 @@ bool ScriptEditor::_test_script_times_on_disk() {
 
 
 
-	if (!all_ok)
-		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false)))
+	if (!all_ok) {
+		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false))) {
 			script_editor->_reload_scripts();
-		else
+		} else {
 			disk_changed->call_deferred("popup_centered_ratio",0.5);
+		}
+	}
 
 	return all_ok;
 }
