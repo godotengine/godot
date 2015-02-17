@@ -1089,6 +1089,7 @@ class RasterizerGLES2 : public Rasterizer {
 		LightInstance *owner;
 		bool init(int p_size,bool p_use_depth);
 		ShadowBuffer() { size=0; depth=0; owner=NULL; }
+		~ShadowBuffer();
 	};
 
 	Vector<ShadowBuffer> near_shadow_buffers;
@@ -1132,7 +1133,7 @@ class RasterizerGLES2 : public Rasterizer {
 			GLuint fbo;
 			GLuint color;
 
-			Blur() { fbo=0; color=0; }
+			Blur() : fbo(0), color(0) {}
 		} blur[3];
 
 		struct Luminance {
@@ -1141,7 +1142,8 @@ class RasterizerGLES2 : public Rasterizer {
 			GLuint fbo;
 			GLuint color;
 
-			Luminance() { fbo=0; color=0; size=0;}
+			Luminance() : size(0), fbo(0), color(0) {}
+			void free();
 		};
 
 		Vector<Luminance> luminance;
@@ -1149,9 +1151,9 @@ class RasterizerGLES2 : public Rasterizer {
 		GLuint sample_fbo;
 		GLuint sample_color;
 
-		FrameBuffer() {
-			blur_size=0;
-		}
+		FrameBuffer() : fbo(0), color(0), depth(0), width(0), height(0),
+			scale(1), active(false), blur_size(0), sample_fbo(0), sample_color(0)
+		{}
 
 	} framebuffer;
 

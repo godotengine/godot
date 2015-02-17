@@ -111,6 +111,7 @@ public:
 	_FORCE_INLINE_ bool has_path(const String& p_path);
 
 	PackedData();
+	virtual ~PackedData();
 };
 
 class PackSource {

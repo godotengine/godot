@@ -9212,7 +9212,24 @@ bool RasterizerGLES2::ShadowBuffer::init(int p_size,bool p_use_depth) {
 
 }
 
+RasterizerGLES2::ShadowBuffer::~ShadowBuffer() {
+	if (fbo != 0)
+		glDeleteFramebuffers(1, &fbo);
+}
 
+void RasterizerGLES2::FrameBuffer::Luminance::free() {
+	if (color != 0)
+	{
+		glDeleteTextures(1, &color);
+		color = 0;
+	}
+	if (fbo != 0)
+	{
+		glDeleteFramebuffers(1, &fbo);
+		fbo = 0;
+	}
+	size = 0;
+}
 
 void RasterizerGLES2::_update_framebuffer() {
 
@@ -9243,11 +9260,9 @@ void RasterizerGLES2::_update_framebuffer() {
 		glDeleteTextures(1,&framebuffer.color);
 
 		for(int i=0;i<framebuffer.luminance.size();i++) {
-
-			glDeleteTextures(1,&framebuffer.luminance[i].color);
-			glDeleteFramebuffers(1,&framebuffer.luminance[i].fbo);
-
+			framebuffer.luminance[i].free();
 		}
+		framebuffer.luminance.clear();
 
 		for(int i=0;i<3;i++) {
 
@@ -9257,7 +9272,6 @@ void RasterizerGLES2::_update_framebuffer() {
 
 		glDeleteTextures(1,&framebuffer.sample_color);
 		glDeleteFramebuffers(1,&framebuffer.sample_fbo);
-		framebuffer.luminance.clear();
 		framebuffer.blur_size=0;
 		framebuffer.fbo=0;
 	}
@@ -9435,11 +9449,8 @@ void RasterizerGLES2::_update_framebuffer() {
 
 
 		for(int i=0;i<framebuffer.luminance.size();i++) {
-
-			glDeleteFramebuffers(1,&framebuffer.luminance[i].fbo);
-			glDeleteTextures(1,&framebuffer.luminance[i].color);
+			framebuffer.luminance[i].free();
 		}
-
 		framebuffer.luminance.clear();
 
 
@@ -9590,9 +9601,6 @@ void RasterizerGLES2::init() {
 	framebuffer.fbo=0;
 	framebuffer.width=0;
 	framebuffer.height=0;
-//	framebuffer.buff16=false;
-//	framebuffer.blur[0].fbo=false;
-//	framebuffer.blur[1].fbo=false;
 	framebuffer.active=false;
 
 
@@ -9774,8 +9782,12 @@ void RasterizerGLES2::init() {
 }
 
 void RasterizerGLES2::finish() {
-
-
+	free(default_material);
+	free(shadow_material);
+	free(overdraw_material);
+	for(int i=0;i<framebuffer.luminance.size();i++) {
+		framebuffer.luminance[i].free();
+	}
 }
 
 int RasterizerGLES2::get_render_info(VS::RenderInfo p_info) {
@@ -9999,6 +10011,9 @@ void RasterizerGLES2::reload_vram() {
 			framebuffer.blur[i].color=0;
 		}
 
+		for(int i=0;i<framebuffer.luminance.size();i++) {
+			framebuffer.luminance[i].free();
+		}
 		framebuffer.luminance.clear();
 
 	}
