@@ -567,6 +567,39 @@ public:
 		CANVAS_RECT_FLIP_V=8
 	};
 
+
+	struct CanvasLight {
+
+		bool enabled;
+		bool shadow;
+		Color color;
+		Matrix32 xform;
+		float height;
+		int z_min;
+		int z_max;
+		int item_mask;
+		VS::CanvasLightBlendMode blend_mode;
+		RID texture;
+		void *texture_cache; // implementation dependent
+		Vector2 texture_offset;
+
+		CanvasLight *next_ptr;
+
+		CanvasLight() {
+			enabled=true;
+			shadow=false;
+			color=Color(1,1,1);
+			height=0;
+			z_min=-1024;
+			z_max=1024;
+			item_mask=1;
+			blend_mode=VS::CANVAS_LIGHT_BLEND_ADD;
+			texture_cache=NULL;
+			next_ptr=NULL;
+		}
+	};
+
+
 	struct CanvasItem {
 
 		struct Command {
