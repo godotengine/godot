@@ -104,6 +104,7 @@
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/y_sort.h"
 #include "scene/2d/navigation2d.h"
+#include "scene/2d/canvas_modulate.h"
 
 #include "scene/2d/position_2d.h"
 #include "scene/2d/tile_map.h"
@@ -264,6 +265,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
 	ObjectTypeDB::register_type<Timer>();
 	ObjectTypeDB::register_type<CanvasLayer>();
+	ObjectTypeDB::register_type<CanvasModulate>();
 	ObjectTypeDB::register_type<ResourcePreloader>();
 
 	/* REGISTER GUI */

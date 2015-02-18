@@ -71,6 +71,7 @@ private:
 	List<CanvasItem*>::Element *C;
 
 	BlendMode blend_mode;
+	int light_mask;
 
 	bool first_draw;
 	bool hidden;
@@ -80,8 +81,8 @@ private:
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
-
 	bool use_parent_shader;
+
 	Ref<Shader> shader;
 
 	mutable Matrix32 global_transform;
@@ -157,6 +158,9 @@ public:
 
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
+
+	void set_light_mask(int p_light_mask);
+	int get_light_mask() const;
 
 	void set_opacity(float p_opacity);
 	float get_opacity() const;
