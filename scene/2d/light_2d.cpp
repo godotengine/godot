@@ -1,6 +1,39 @@
 #include "light_2d.h"
 #include "servers/visual_server.h"
 
+void Light2D::edit_set_pivot(const Point2& p_pivot) {
+
+	set_texture_offset(p_pivot);
+
+}
+
+Point2 Light2D::edit_get_pivot() const {
+
+	return get_texture_offset();
+}
+bool Light2D::edit_has_pivot() const {
+
+	return true;
+}
+
+Rect2 Light2D::get_item_rect() const {
+
+	if (texture.is_null())
+		return Rect2(0,0,1,1);
+
+	Size2i s;
+
+	s = texture->get_size();
+	Point2i ofs=texture_offset;
+	ofs-=s/2;
+
+	if (s==Size2(0,0))
+		s=Size2(1,1);
+
+	return Rect2(ofs,s);
+}
+
+
 void Light2D::set_enabled( bool p_enabled) {
 
 	VS::get_singleton()->canvas_light_set_enabled(canvas_light,p_enabled);
@@ -81,6 +114,28 @@ int Light2D::get_z_range_max() const {
 	return z_max;
 }
 
+void Light2D::set_layer_range_min( int p_min_layer) {
+
+	layer_min=p_min_layer;
+	VS::get_singleton()->canvas_light_set_layer_range(canvas_light,layer_min,layer_max);
+
+}
+int Light2D::get_layer_range_min() const {
+
+	return layer_min;
+}
+
+void Light2D::set_layer_range_max( int p_max_layer) {
+
+	layer_max=p_max_layer;
+	VS::get_singleton()->canvas_light_set_layer_range(canvas_light,layer_min,layer_max);
+
+}
+int Light2D::get_layer_range_max() const {
+
+	return layer_max;
+}
+
 void Light2D::set_item_mask( int p_mask) {
 
 	item_mask=p_mask;
@@ -93,15 +148,15 @@ int Light2D::get_item_mask() const {
 	return item_mask;
 }
 
-void Light2D::set_blend_mode( LightBlendMode p_blend_mode ) {
+void Light2D::set_subtract_mode( bool p_enable ) {
 
-	blend_mode=p_blend_mode;
-	VS::get_singleton()->canvas_light_set_blend_mode(canvas_light,VS::CanvasLightBlendMode(blend_mode));
+	subtract_mode=p_enable;
+	VS::get_singleton()->canvas_light_set_subtract_mode(canvas_light,p_enable);
 }
 
-Light2D::LightBlendMode Light2D::get_blend_mode() const {
+bool Light2D::get_subtract_mode() const {
 
-	return blend_mode;
+	return subtract_mode;
 }
 
 void Light2D::set_shadow_enabled( bool p_enabled) {
@@ -113,6 +168,25 @@ void Light2D::set_shadow_enabled( bool p_enabled) {
 bool Light2D::is_shadow_enabled() const {
 
 	return shadow;
+}
+
+void Light2D::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		VS::get_singleton()->canvas_light_attach_to_canvas( canvas_light, get_canvas() );
+	}
+
+	if (p_what==NOTIFICATION_TRANSFORM_CHANGED) {
+
+		VS::get_singleton()->canvas_light_set_transform( canvas_light, get_global_transform());
+	}
+
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+
+		VS::get_singleton()->canvas_light_attach_to_canvas( canvas_light, RID() );
+	}
+
 }
 
 void Light2D::_bind_methods() {
@@ -139,11 +213,18 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_z_range_max","z"),&Light2D::set_z_range_max);
 	ObjectTypeDB::bind_method(_MD("get_z_range_max"),&Light2D::get_z_range_max);
 
+	ObjectTypeDB::bind_method(_MD("set_layer_range_min","layer"),&Light2D::set_layer_range_min);
+	ObjectTypeDB::bind_method(_MD("get_layer_range_min"),&Light2D::get_layer_range_min);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_range_max","layer"),&Light2D::set_layer_range_max);
+	ObjectTypeDB::bind_method(_MD("get_layer_range_max"),&Light2D::get_layer_range_max);
+
+
 	ObjectTypeDB::bind_method(_MD("set_item_mask","item_mask"),&Light2D::set_item_mask);
 	ObjectTypeDB::bind_method(_MD("get_item_mask"),&Light2D::get_item_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_blend_mode","blend_mode"),&Light2D::set_blend_mode);
-	ObjectTypeDB::bind_method(_MD("get_blend_mode"),&Light2D::get_blend_mode);
+	ObjectTypeDB::bind_method(_MD("set_subtract_mode","enable"),&Light2D::set_subtract_mode);
+	ObjectTypeDB::bind_method(_MD("get_subtract_mode"),&Light2D::get_subtract_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_shadow_enabled","enabled"),&Light2D::set_shadow_enabled);
 	ObjectTypeDB::bind_method(_MD("is_shadow_enabled"),&Light2D::is_shadow_enabled);
@@ -155,8 +236,10 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height"),_SCS("set_height"),_SCS("get_height"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"z_range_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"z_range_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer_range_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer_range_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_mask"),_SCS("get_item_mask"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"blend_mode",PROPERTY_HINT_ENUM,"Add,Sub,Mul,Dodge,Burn,Lighten,Darken,Overlay,Screen"),_SCS("set_blend_mode"),_SCS("get_blend_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"subtract"),_SCS("set_subtract_mode"),_SCS("get_subtract_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow_enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
 
 
@@ -171,8 +254,10 @@ Light2D::Light2D() {
 	height=0;
 	z_min=-1024;
 	z_max=1024;
+	layer_min=0;
+	layer_max=0;
 	item_mask=1;
-	blend_mode=LIGHT_BLEND_ADD;
+	subtract_mode=false;
 
 }
 

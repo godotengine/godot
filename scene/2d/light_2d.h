@@ -6,20 +6,6 @@
 class Light2D : public Node2D {
 
 	OBJ_TYPE(Light2D,Node2D);
-public:
-
-	enum LightBlendMode {
-		LIGHT_BLEND_ADD,
-		LIGHT_BLEND_SUB,
-		LIGHT_BLEND_MULTIPLY,
-		LIGHT_BLEND_DODGE,
-		LIGHT_BLEND_BURN,
-		LIGHT_BLEND_LIGHTEN,
-		LIGHT_BLEND_DARKEN,
-		LIGHT_BLEND_OVERLAY,
-		LIGHT_BLEND_SCREEN,
-	};
-
 private:
 	RID canvas_light;
 	bool enabled;
@@ -28,16 +14,23 @@ private:
 	float height;
 	int z_min;
 	int z_max;
+	int layer_min;
+	int layer_max;
 	int item_mask;
-	LightBlendMode blend_mode;
+	bool subtract_mode;
 	Ref<Texture> texture;
 	Vector2 texture_offset;
 
 protected:
 
+	void _notification(int p_what);
 	static void _bind_methods();
 public:
 
+
+	virtual void edit_set_pivot(const Point2& p_pivot);
+	virtual Point2 edit_get_pivot() const;
+	virtual bool edit_has_pivot() const;
 
 	void set_enabled( bool p_enabled);
 	bool is_enabled() const;
@@ -60,21 +53,26 @@ public:
 	void set_z_range_max( int p_max_z);
 	int get_z_range_max() const;
 
+	void set_layer_range_min( int p_min_layer);
+	int get_layer_range_min() const;
+
+	void set_layer_range_max( int p_max_layer);
+	int get_layer_range_max() const;
+
 	void set_item_mask( int p_mask);
 	int get_item_mask() const;
 
-	void set_blend_mode( LightBlendMode p_blend_mode );
-	LightBlendMode get_blend_mode() const;
+	void set_subtract_mode( bool p_enable );
+	bool get_subtract_mode() const;
 
 	void set_shadow_enabled( bool p_enabled);
 	bool is_shadow_enabled() const;
 
+	virtual Rect2 get_item_rect() const;
 
 	Light2D();
 	~Light2D();
 };
 
-
-VARIANT_ENUM_CAST(Light2D::LightBlendMode);
 
 #endif // LIGHT_2D_H

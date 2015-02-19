@@ -1087,6 +1087,8 @@ public:
 	FUNC0R(RID,canvas_create);
 	FUNC3(canvas_set_item_mirroring,RID,RID,const Point2&);
 	FUNC2RC(Point2,canvas_get_item_mirroring,RID,RID);
+	FUNC2(canvas_set_modulate,RID,const Color&);
+
 
 	FUNC0R(RID,canvas_item_create);
 
@@ -1097,7 +1099,7 @@ public:
 	FUNC1RC(bool,canvas_item_is_visible,RID);
 
 	FUNC2(canvas_item_set_blend_mode,RID,MaterialBlendMode );
-
+	FUNC2(canvas_item_set_light_mask,RID,int );
 
 	//FUNC(canvas_item_set_rect,RID, const Rect2& p_rect);
 	FUNC2(canvas_item_set_transform,RID, const Matrix32& );
@@ -1155,10 +1157,11 @@ public:
 	FUNC2(canvas_light_set_texture_offset,RID,const Vector2&);
 	FUNC2(canvas_light_set_color,RID,const Color&);
 	FUNC2(canvas_light_set_height,RID,float);
+	FUNC3(canvas_light_set_layer_range,RID,int,int);
 	FUNC3(canvas_light_set_z_range,RID,int,int);
 	FUNC2(canvas_light_set_item_mask,RID,int);
 
-	FUNC2(canvas_light_set_blend_mode,RID,CanvasLightBlendMode);
+	FUNC2(canvas_light_set_subtract_mode,RID,bool);
 	FUNC2(canvas_light_set_shadow_enabled,RID,bool);
 	FUNC2(canvas_light_set_shadow_buffer_size,RID,int);
 	FUNC2(canvas_light_set_shadow_filter,RID,int);

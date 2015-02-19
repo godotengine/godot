@@ -261,6 +261,11 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					uses_light=true;
 				}
 
+				if (vnode->name==vname_normal) {
+					uses_normal=true;
+				}
+
+
 			}
 
 			if (vnode->name==vname_time) {
@@ -636,7 +641,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_light=uses_light;
 	r_flags.uses_time=uses_time;
 	r_flags.uses_normalmap=uses_normalmap;
-	r_flags.uses_normal=uses_normalmap;
+	r_flags.uses_normal=uses_normal;
 	r_flags.uses_texpixel_size=uses_texpixel_size;
 	r_flags.uses_worldvec=uses_worldvec;
 	r_code_line=code;

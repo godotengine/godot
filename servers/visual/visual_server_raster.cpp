@@ -3195,6 +3195,7 @@ RID VisualServerRaster::canvas_create() {
 	return rid;
 }
 
+
 void VisualServerRaster::canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring) {
 
 	Canvas * canvas = canvas_owner.get(p_canvas);
@@ -3219,6 +3220,14 @@ Point2 VisualServerRaster::canvas_get_item_mirroring(RID p_canvas,RID p_item) co
 	ERR_FAIL_COND_V(idx==-1,Point2());
 	return canvas->child_items[idx].mirror;
 }
+
+void VisualServerRaster::canvas_set_modulate(RID p_canvas,const Color& p_color) {
+
+	Canvas * canvas = canvas_owner.get(p_canvas);
+	ERR_FAIL_COND(!canvas);
+	canvas->modulate=p_color;
+}
+
 
 
 RID VisualServerRaster::canvas_item_create() {
@@ -3305,14 +3314,27 @@ bool VisualServerRaster::canvas_item_is_visible(RID p_item) const {
 
 }
 
+void VisualServerRaster::canvas_item_set_light_mask(RID p_canvas_item,int p_mask) {
+
+	VS_CHANGED;
+
+	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
+	ERR_FAIL_COND(!canvas_item);
+
+	if (canvas_item->light_mask==p_mask)
+		return;
+	VS_CHANGED;
+
+	canvas_item->light_mask=p_mask;
+
+}
+
+
 void VisualServerRaster::canvas_item_set_blend_mode(RID p_canvas_item,MaterialBlendMode p_blend) {
 
 	VS_CHANGED;
 
 	CanvasItem *canvas_item = canvas_item_owner.get( p_canvas_item );
-	if (!canvas_item) {
-		printf("!canvas_item\n");
-	};
 	ERR_FAIL_COND(!canvas_item);
 
 	if (canvas_item->blend_mode==p_blend)
@@ -3832,6 +3854,23 @@ void VisualServerRaster::canvas_light_attach_to_canvas(RID p_light,RID p_canvas)
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
 	ERR_FAIL_COND(!clight);
 
+	if (clight->canvas.is_valid()) {
+
+		Canvas *canvas = canvas_owner.get(clight->canvas);
+		canvas->lights.erase(clight);
+	}
+
+	if (!canvas_owner.owns(p_canvas))
+		p_canvas=RID();
+	clight->canvas=p_canvas;
+
+	if (clight->canvas.is_valid()) {
+
+		Canvas *canvas = canvas_owner.get(clight->canvas);
+		canvas->lights.insert(clight);
+	}
+
+
 
 }
 void VisualServerRaster::canvas_light_set_enabled(RID p_light, bool p_enabled){
@@ -3885,6 +3924,16 @@ void VisualServerRaster::canvas_light_set_z_range(RID p_light, int p_min_z,int p
 	clight->z_max=p_max_z;
 
 }
+
+void VisualServerRaster::canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->layer_min=p_min_layer;
+	clight->layer_max=p_max_layer;
+
+}
+
 void VisualServerRaster::canvas_light_set_item_mask(RID p_light, int p_mask){
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
@@ -3893,11 +3942,12 @@ void VisualServerRaster::canvas_light_set_item_mask(RID p_light, int p_mask){
 
 }
 
-void VisualServerRaster::canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode){
+void VisualServerRaster::canvas_light_set_subtract_mode(RID p_light, bool p_enable) {
+
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
 	ERR_FAIL_COND(!clight);
-	clight->blend_mode=p_blend_mode;
+	clight->subtract=p_enable;
 
 }
 void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled){
@@ -4194,7 +4244,13 @@ void VisualServerRaster::free( RID p_rid ) {
 
 			canvas->child_items[i].item->parent=RID();
 		}
-		
+
+		for (Set<Rasterizer::CanvasLight*>::Element *E=canvas->lights.front();E;E=E->next()) {
+
+			E->get()->canvas=RID();
+		}
+
+
 		canvas_owner.free( p_rid );
 		
 		memdelete( canvas );
@@ -4231,6 +4287,12 @@ void VisualServerRaster::free( RID p_rid ) {
 
 		Rasterizer::CanvasLight *canvas_light = canvas_light_owner.get(p_rid);
 		ERR_FAIL_COND(!canvas_light);
+
+		if (canvas_light->canvas.is_valid()) {
+			Canvas* canvas = canvas_owner.get(canvas_light->canvas);
+			if (canvas)
+				canvas->lights.erase(canvas_light);
+		}
 
 		canvas_light_owner.free( p_rid );
 		memdelete( canvas_light );
@@ -6280,7 +6342,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 }
 
 
-void VisualServerRaster::_render_canvas_item_tree(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect) {
+void VisualServerRaster::_render_canvas_item_tree(CanvasItem *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color& p_modulate, Rasterizer::CanvasLight *p_lights) {
 
 
 	static const int z_range = CANVAS_ITEM_Z_MAX-CANVAS_ITEM_Z_MIN+1;
@@ -6298,7 +6360,7 @@ void VisualServerRaster::_render_canvas_item_tree(CanvasItem *p_canvas_item,cons
 	for(int i=0;i<z_range;i++) {
 		if (!z_list[i])
 			continue;
-		rasterizer->canvas_render_items(z_list[i]);
+		rasterizer->canvas_render_items(z_list[i],CANVAS_ITEM_Z_MIN+i,p_modulate,p_lights);
 	}
 
 }
@@ -6404,7 +6466,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		//something to draw?
 		ci->final_transform=xform;
 		ci->final_opacity=opacity * ci->self_opacity;
-
+		ci->global_rect_cache=global_rect;
 
 		int zidx = p_z-CANVAS_ITEM_Z_MIN;
 
@@ -6416,6 +6478,8 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 			z_list[zidx]=ci;
 			z_last_list[zidx]=ci;
 		}
+
+
 
 		ci->next=NULL;
 
@@ -6430,7 +6494,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 
 }
 
-void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_transform) {
+void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_transform,Rasterizer::CanvasLight *p_lights) {
 
 	rasterizer->canvas_begin();
 
@@ -6463,30 +6527,30 @@ void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_trans
 		for(int i=0;i<z_range;i++) {
 			if (!z_list[i])
 				continue;
-			rasterizer->canvas_render_items(z_list[i]);
+			rasterizer->canvas_render_items(z_list[i],CANVAS_ITEM_Z_MIN+i,p_canvas->modulate,p_lights);
 		}
 	} else {
 
 		for(int i=0;i<l;i++) {
 
 			Canvas::ChildItem& ci=p_canvas->child_items[i];
-			_render_canvas_item_tree(ci.item,p_transform,clip_rect);
+			_render_canvas_item_tree(ci.item,p_transform,clip_rect,p_canvas->modulate,p_lights);
 
 			//mirroring (useful for scrolling backgrounds)
 			if (ci.mirror.x!=0) {
 
 				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(ci.mirror.x,0));
-				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+				_render_canvas_item_tree(ci.item,xform2,clip_rect,p_canvas->modulate,p_lights);
 			}
 			if (ci.mirror.y!=0) {
 
 				Matrix32 xform2 = p_transform * Matrix32(0,Vector2(0,ci.mirror.y));
-				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+				_render_canvas_item_tree(ci.item,xform2,clip_rect,p_canvas->modulate,p_lights);
 			}
 			if (ci.mirror.y!=0 && ci.mirror.x!=0) {
 
 				Matrix32 xform2 = p_transform * Matrix32(0,ci.mirror);
-				_render_canvas_item_tree(ci.item,xform2,clip_rect);
+				_render_canvas_item_tree(ci.item,xform2,clip_rect,p_canvas->modulate,p_lights);
 			}
 
 		}
@@ -6549,7 +6613,43 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 		Map<Viewport::CanvasKey,Viewport::CanvasData*> canvas_map;
 
+		Rect2 clip_rect(0,0,viewport_rect.width,viewport_rect.height);
+		Rasterizer::CanvasLight *lights=NULL;
+
 		for (Map<RID,Viewport::CanvasData>::Element *E=p_viewport->canvas_map.front();E;E=E->next()) {
+
+			Matrix32 xf = p_viewport->global_transform * E->get().transform;
+
+			//find lights in canvas
+
+
+			for(Set<Rasterizer::CanvasLight*>::Element *F=E->get().canvas->lights.front();F;F=F->next()) {
+
+				Rasterizer::CanvasLight* cl=F->get();
+				if (cl->enabled && cl->texture.is_valid()) {
+					//not super efficient..
+					Size2 tsize(rasterizer->texture_get_width(cl->texture),rasterizer->texture_get_height(cl->texture));
+					Vector2 offset=tsize/2.0;
+					cl->rect_cache=Rect2(-offset+cl->texture_offset,tsize);
+					cl->xform_cache=xf * cl->xform;
+
+					if (clip_rect.intersects_transformed(cl->xform_cache,cl->rect_cache)) {
+						cl->filter_next_ptr=lights;
+						lights=cl;
+						cl->texture_cache=NULL;
+						Matrix32 scale;
+						scale.scale(cl->rect_cache.size);
+						scale.elements[2]=cl->rect_cache.pos;
+						cl->light_shader_xform = (cl->xform_cache * scale).affine_inverse();
+						cl->light_shader_pos=cl->xform_cache[2];
+					}
+
+
+
+
+				}
+			}
+
 			canvas_map[ Viewport::CanvasKey( E->key(), E->get().layer) ]=&E->get();
 
 		}
@@ -6560,7 +6660,19 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 	//		print_line("canvas "+itos(i)+" size: "+itos(I->get()->canvas->child_items.size()));
 			//print_line("GT "+p_viewport->global_transform+". CT: "+E->get()->transform);
 			Matrix32 xform = p_viewport->global_transform * E->get()->transform;
-			_render_canvas( E->get()->canvas,xform );
+
+			Rasterizer::CanvasLight *canvas_lights=NULL;
+
+			Rasterizer::CanvasLight *ptr=lights;
+			while(ptr) {
+				if (E->get()->layer>=ptr->layer_min && E->get()->layer<=ptr->layer_max) {
+					ptr->next_ptr=canvas_lights;
+					canvas_lights=ptr;
+				}
+				ptr=ptr->filter_next_ptr;
+			}
+
+			_render_canvas( E->get()->canvas,xform,canvas_lights );
 			i++;
 
 		}
