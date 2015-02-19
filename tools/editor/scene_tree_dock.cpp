@@ -1254,7 +1254,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
-	tb->set_tooltip("Instance a Node from scene file.");
+	tb->set_tooltip("Instance a scene file as a Node.");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_INSTANCE]=tb;
 
