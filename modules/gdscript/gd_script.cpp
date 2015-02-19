@@ -340,6 +340,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					if (dst->get_type()==Variant::STRING) {
 						//return a string when invalid with the error
 						err_text=*dst;
+						err_text += " in operator '"+Variant::get_operator_name(op)+"'.";
 					} else {
 						err_text="Invalid operands '"+Variant::get_type_name(a->get_type())+"' and '"+Variant::get_type_name(b->get_type())+"' in operator '"+Variant::get_operator_name(op)+"'.";
 					}
