@@ -337,7 +337,7 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				Variant::evaluate(op,*a,*b,*dst,valid);
 				if (!valid) {
-					if (false && dst->get_type()==Variant::STRING) {
+					if (dst->get_type()==Variant::STRING) {
 						//return a string when invalid with the error
 						err_text=*dst;
 					} else {
