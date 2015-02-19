@@ -1,5 +1,7 @@
 #include "navigation2d.h"
 
+#define USE_ENTRY_POINT
+
 void Navigation2D::_navpoly_link(int p_id) {
 
 	ERR_FAIL_COND(!navpoly_map.has(p_id));
@@ -336,12 +338,25 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 	List<Polygon*> open_list;
 
+	begin_poly->entry=p_start;
+
 	for(int i=0;i<begin_poly->edges.size();i++) {
 
 		if (begin_poly->edges[i].C) {
 
 			begin_poly->edges[i].C->prev_edge=begin_poly->edges[i].C_edge;
+#ifdef USE_ENTRY_POINT
+			Vector2 edge[2]={
+				_get_vertex(begin_poly->edges[i].point),
+				_get_vertex(begin_poly->edges[(i+1)%begin_poly->edges.size()].point)
+			};
+
+			Vector2 entry = Geometry::get_closest_point_to_segment_2d(begin_poly->entry,edge);
+			begin_poly->edges[i].C->distance = begin_poly->entry.distance_to(entry);
+			begin_poly->edges[i].C->entry=entry;
+#else
 			begin_poly->edges[i].C->distance=begin_poly->center.distance_to(begin_poly->edges[i].C->center);
+#endif
 			open_list.push_back(begin_poly->edges[i].C);
 
 			if (begin_poly->edges[i].C==end_poly) {
@@ -381,8 +396,9 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 		Polygon *p=least_cost_poly->get();
 		//open the neighbours for search
+		int es = p->edges.size();
 
-		for(int i=0;i<p->edges.size();i++) {
+		for(int i=0;i<es;i++) {
 
 
 			Polygon::Edge &e=p->edges[i];
@@ -390,7 +406,21 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 			if (!e.C)
 				continue;
 
+#ifdef USE_ENTRY_POINT
+			Vector2 edge[2]={
+				_get_vertex(p->edges[i].point),
+				_get_vertex(p->edges[(i+1)%es].point)
+			};
+
+			Vector2 edge_entry = Geometry::get_closest_point_to_segment_2d(p->entry,edge);
+			float distance = p->entry.distance_to(edge_entry) + p->distance;
+
+#else
+
 			float distance = p->center.distance_to(e.C->center) + p->distance;
+
+#endif
+
 
 			if (e.C->prev_edge!=-1) {
 				//oh this was visited already, can we win the cost?
@@ -399,12 +429,19 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 					e.C->prev_edge=e.C_edge;
 					e.C->distance=distance;
+#ifdef USE_ENTRY_POINT
+					e.C->entry=edge_entry;
+#endif
 				}
 			} else {
 				//add to open neighbours
 
 				e.C->prev_edge=e.C_edge;
 				e.C->distance=distance;
+#ifdef USE_ENTRY_POINT
+				e.C->entry=edge_entry;
+#endif
+
 				open_list.push_back(e.C);
 
 				if (e.C==end_poly) {
