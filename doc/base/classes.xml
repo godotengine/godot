@@ -257,13 +257,14 @@
 		<method name="lerp"  >
 			<return type="float">
 			</return>
-			<argument index="0" name="a" type="float">
+			<argument index="0" name="from" type="float">
 			</argument>
-			<argument index="1" name="b" type="float">
+			<argument index="1" name="to" type="float">
 			</argument>
-			<argument index="2" name="c" type="float">
+			<argument index="2" name="percent" type="float">
 			</argument>
 			<description>
+			Linear interpolates between two values by a normalized value.
 			</description>
 		</method>
 		<method name="dectime"  >
@@ -276,6 +277,7 @@
 			<argument index="2" name="step" type="float">
 			</argument>
 			<description>
+			Decreases time by a specified amount.
 			</description>
 		</method>
 		<method name="randomize"  >
@@ -421,6 +423,7 @@
 			<argument index="1" name="funcname" type="String">
 			</argument>
 			<description>
+			Returns a reference to the specified function
 			</description>
 		</method>
 		<method name="convert"  >
@@ -475,6 +478,7 @@
 			<argument index="1" name="..." type="var">
 			</argument>
 			<description>
+			Print one or more arguments to the console with a tab between each argument.
 			</description>
 		</method>
 		<method name="printerr"  >
@@ -497,6 +501,24 @@
 			</argument>
 			<description>
 			Print one or more arguments to strings in the best way possible to console. No newline is added at the end.
+			</description>
+		</method>
+		<method name="var2str"  >
+			<return type="String">
+			</return>
+			<argument index="0" name="var" type="var">
+			</argument>
+			<description>
+			Converts the value of a variable to a String.
+			</description>
+		</method>
+		<method name="str2var:var"  >
+			<return type="String">
+			</return>
+			<argument index="0" name="str" type="String">
+			</argument>
+			<description>
+			Converts the value of a String to a variable.
 			</description>
 		</method>
 		<method name="range"  >
@@ -544,6 +566,7 @@
 			<argument index="0" name="var:var" type="var">
 			</argument>
 			<description>
+			Hashes the variable passed and returns an integer.
 			</description>
 		</method>
 		<method name="print_stack"  >
