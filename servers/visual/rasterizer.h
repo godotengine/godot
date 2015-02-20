@@ -570,6 +570,7 @@ public:
 
 	struct CanvasLight {
 
+
 		bool enabled;
 		bool shadow;
 		Color color;
@@ -577,12 +578,23 @@ public:
 		float height;
 		int z_min;
 		int z_max;
+		int layer_min;
+		int layer_max;
 		int item_mask;
-		VS::CanvasLightBlendMode blend_mode;
+		bool subtract;
 		RID texture;
-		void *texture_cache; // implementation dependent
 		Vector2 texture_offset;
+		RID canvas;
 
+
+		void *texture_cache; // implementation dependent
+		Rect2 rect_cache;
+		Matrix32 xform_cache;
+
+		Matrix32 light_shader_xform;
+		Vector2 light_shader_pos;
+
+		CanvasLight *filter_next_ptr;
 		CanvasLight *next_ptr;
 
 		CanvasLight() {
@@ -592,10 +604,13 @@ public:
 			height=0;
 			z_min=-1024;
 			z_max=1024;
+			layer_min=0;
+			layer_max=0;
 			item_mask=1;
-			blend_mode=VS::CANVAS_LIGHT_BLEND_ADD;
+			subtract=false;
 			texture_cache=NULL;
 			next_ptr=NULL;
+			filter_next_ptr=NULL;
 		}
 	};
 
@@ -722,6 +737,7 @@ public:
 		bool visible;
 		bool ontop;
 		VS::MaterialBlendMode blend_mode;
+		int light_mask;
 		Vector<Command*> commands;
 		mutable bool custom_rect;
 		mutable bool rect_dirty;
@@ -739,8 +755,9 @@ public:
 		CanvasItem* shader_owner;
 		ViewportRender *vp_render;
 
-		const Rect2& get_rect() const {
+		Rect2 global_rect_cache;
 
+		const Rect2& get_rect() const {
 			if (custom_rect || !rect_dirty)
 				return rect;
 
@@ -864,7 +881,7 @@ public:
 		}
 
 		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  shader_owner=NULL;}
-		CanvasItem() { vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0; shader_owner=NULL;}
+		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0; shader_owner=NULL;}
 		virtual ~CanvasItem() { clear(); }
 	};
 
@@ -886,7 +903,7 @@ public:
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor)=0;
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;
 
-	virtual void canvas_render_items(CanvasItem *p_item_list)=0;
+	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light)=0;
 
 
 	/* ENVIRONMENT */

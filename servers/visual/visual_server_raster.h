@@ -410,6 +410,8 @@ class VisualServerRaster : public VisualServer {
 		}
 	};
 
+	struct CanvasLight;
+
 	struct Canvas {
 
 		Set<RID> viewports;
@@ -419,8 +421,10 @@ class VisualServerRaster : public VisualServer {
 			CanvasItem *item;
 		};
 
+		Set<Rasterizer::CanvasLight*> lights;
 
 		Vector<ChildItem> child_items;
+		Color modulate;
 
 		int find_item(CanvasItem *p_item) {
 			for(int i=0;i<child_items.size();i++) {
@@ -435,7 +439,7 @@ class VisualServerRaster : public VisualServer {
 				child_items.remove(idx);
 		}
 
-		Canvas() {  }
+		Canvas() { modulate=Color(1,1,1,1); }
 		
 	};
 
@@ -603,9 +607,9 @@ class VisualServerRaster : public VisualServer {
 
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	static void _render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect);
-	void _render_canvas_item_tree(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect);
+	void _render_canvas_item_tree(CanvasItem *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, Rasterizer::CanvasLight *p_lights);
 	void _render_canvas_item(CanvasItem *p_canvas_item,const Matrix32& p_transform,const Rect2& p_clip_rect, float p_opacity,int p_z,Rasterizer::CanvasItem **z_list,Rasterizer::CanvasItem **z_last_list,CanvasItem *p_canvas_clip,CanvasItem *p_shader_owner);
-	void _render_canvas(Canvas *p_canvas,const Matrix32 &p_transform);
+	void _render_canvas(Canvas *p_canvas, const Matrix32 &p_transform, Rasterizer::CanvasLight *p_lights);
 	Vector<Vector3> _camera_generate_endpoints(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
 	Vector<Plane> _camera_generate_orthogonal_planes(Instance *p_light,Camera *p_camera,float p_range_min, float p_range_max);
 
@@ -1075,6 +1079,8 @@ public:
 	virtual RID canvas_create();
 	virtual void canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring);
 	virtual Point2 canvas_get_item_mirroring(RID p_canvas,RID p_item) const;
+	virtual void canvas_set_modulate(RID p_canvas,const Color& p_color);
+
 
 	virtual RID canvas_item_create();
 
@@ -1085,6 +1091,8 @@ public:
 	virtual bool canvas_item_is_visible(RID p_item) const;
 
 	virtual void canvas_item_set_blend_mode(RID p_canvas_item,MaterialBlendMode p_blend);
+	virtual void canvas_item_set_light_mask(RID p_canvas_item,int p_mask);
+
 
 
 	//virtual void canvas_item_set_rect(RID p_item, const Rect2& p_rect);
@@ -1137,20 +1145,10 @@ public:
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color);
 	virtual void canvas_light_set_height(RID p_light, float p_height);
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z);
+	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer);
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask);
 
-	enum CanvasightBlendMode {
-		CANVAS_LIGHT_BLEND_ADD,
-		CANVAS_LIGHT_BLEND_SUB,
-		CANVAS_LIGHT_BLEND_MULTIPLY,
-		CANVAS_LIGHT_BLEND_DODGE,
-		CANVAS_LIGHT_BLEND_BURN,
-		CANVAS_LIGHT_BLEND_LIGHTEN,
-		CANVAS_LIGHT_BLEND_DARKEN,
-		CANVAS_LIGHT_BLEND_OVERLAY,
-		CANVAS_LIGHT_BLEND_SCREEN,
-	};
-	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode);
+	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable);
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
 	virtual void canvas_light_set_shadow_filter(RID p_light, int p_size);

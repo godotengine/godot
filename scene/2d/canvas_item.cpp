@@ -458,6 +458,16 @@ CanvasItem::BlendMode CanvasItem::get_blend_mode() const {
 	return blend_mode;
 }
 
+void CanvasItem::set_light_mask(int p_light_mask) {
+
+	light_mask=p_light_mask;
+	VS::get_singleton()->canvas_item_set_light_mask(canvas_item,p_light_mask);
+}
+
+int CanvasItem::get_light_mask() const{
+
+	return light_mask;
+}
 
 
 void CanvasItem::item_rect_changed() {
@@ -857,6 +867,9 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_blend_mode","blend_mode"),&CanvasItem::set_blend_mode);
 	ObjectTypeDB::bind_method(_MD("get_blend_mode"),&CanvasItem::get_blend_mode);
 
+	ObjectTypeDB::bind_method(_MD("set_light_mask","light_mask"),&CanvasItem::set_light_mask);
+	ObjectTypeDB::bind_method(_MD("get_light_mask"),&CanvasItem::get_light_mask);
+
 	ObjectTypeDB::bind_method(_MD("set_opacity","opacity"),&CanvasItem::set_opacity);
 	ObjectTypeDB::bind_method(_MD("get_opacity"),&CanvasItem::get_opacity);
 	ObjectTypeDB::bind_method(_MD("set_self_opacity","self_opacity"),&CanvasItem::set_self_opacity);
@@ -912,6 +925,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"shader/shader",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemShader,CanvasItemShaderGraph"), _SCS("set_shader"),_SCS("get_shader") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"shader/use_parent"), _SCS("set_use_parent_shader"),_SCS("get_use_parent_shader") );
 	//exporting these two things doesn't really make much sense i think
@@ -992,6 +1006,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	canvas_layer=NULL;
 	use_parent_shader=false;
 	global_invalid=true;
+	light_mask=1;
 
 	C=NULL;
 
