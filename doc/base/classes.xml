@@ -261,7 +261,7 @@
 			</argument>
 			<argument index="1" name="to" type="float">
 			</argument>
-			<argument index="2" name="percent" type="float">
+			<argument index="2" name="weight" type="float">
 			</argument>
 			<description>
 			Linear interpolates between two values by a normalized value.
