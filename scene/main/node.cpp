@@ -306,6 +306,32 @@ void Node::remove_and_delete_child(Node *p_child) {
 
 }
 
+void Node::remove_and_delete_children(){
+
+	for (int i=0;i<data.children.size();i++){
+		
+		Node *child = data.children[i];
+		remove_child(child);
+		memdelete(child);
+	}
+}
+
+void Node::remove_and_delete_children_except(Node *p_child) {
+	
+	ERR_FAIL_NULL( p_child );
+	ERR_FAIL_COND( p_child->get_parent()!=this );
+	
+	for (int i=0;i<data.children.size();i++){
+		
+		Node *child = data.children[i];
+		
+		if ( child->get_name() != p_child->get_name() ) {
+			remove_child(child);
+			memdelete(child);
+		}
+	}
+}
+
 void Node::remove_child_notify(Node *p_child) {
 
 	// to be used when not wanted	
@@ -1764,6 +1790,8 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
 	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
 	ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
+	ObjectTypeDB::bind_method(_MD("remove_and_delete_children"),&Node::remove_and_delete_children);
+	ObjectTypeDB::bind_method(_MD("remove_and_delete_children_except","node:Node"),&Node::remove_and_delete_children_except);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
