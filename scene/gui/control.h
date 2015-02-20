@@ -392,7 +392,7 @@ public:
 
 	void grab_click_focus();
 
-
+	void warp_mouse(const Point2& p_to_pos);
 
 	Control();	
 	~Control();

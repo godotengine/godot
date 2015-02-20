@@ -1622,7 +1622,7 @@ void RasterizerDummy::canvas_set_transform(const Matrix32& p_transform) {
 
 }
 
-void RasterizerDummy::canvas_render_items(CanvasItem *p_item_list) {
+void RasterizerDummy::canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light) {
 
 
 }

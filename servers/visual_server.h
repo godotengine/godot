@@ -944,6 +944,8 @@ public:
 	virtual RID canvas_create()=0;
 	virtual void canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring)=0;
 	virtual Point2 canvas_get_item_mirroring(RID p_canvas,RID p_item) const=0;
+	virtual void canvas_set_modulate(RID p_canvas,const Color& p_color)=0;
+
 
 
 	virtual RID canvas_item_create()=0;
@@ -952,6 +954,8 @@ public:
 
 	virtual void canvas_item_set_visible(RID p_item,bool p_visible)=0;
 	virtual bool canvas_item_is_visible(RID p_item) const=0;
+
+	virtual void canvas_item_set_light_mask(RID p_item,int p_mask)=0;
 
 	virtual void canvas_item_set_blend_mode(RID p_canvas_item,MaterialBlendMode p_blend)=0;
 
@@ -1008,20 +1012,10 @@ public:
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color)=0;
 	virtual void canvas_light_set_height(RID p_light, float p_height)=0;
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z)=0;
+	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer)=0;
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask)=0;
 
-	enum CanvasLightBlendMode {
-		CANVAS_LIGHT_BLEND_ADD,
-		CANVAS_LIGHT_BLEND_SUB,
-		CANVAS_LIGHT_BLEND_MULTIPLY,
-		CANVAS_LIGHT_BLEND_DODGE,
-		CANVAS_LIGHT_BLEND_BURN,
-		CANVAS_LIGHT_BLEND_LIGHTEN,
-		CANVAS_LIGHT_BLEND_DARKEN,
-		CANVAS_LIGHT_BLEND_OVERLAY,
-		CANVAS_LIGHT_BLEND_SCREEN,
-	};
-	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode)=0;
+	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable)=0;
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
 	virtual void canvas_light_set_shadow_filter(RID p_light, int p_size)=0;

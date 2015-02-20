@@ -94,6 +94,8 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 		Control *c=get_child(i)->cast_to<Control>();
 		if (!c)
 			continue;
+		if (c->is_hidden())
+			continue;
 
 		Size2 minsize = c->get_combined_minimum_size();
 
@@ -113,6 +115,8 @@ void Popup::popup_centered_minsize(const Size2& p_minsize) {
 				minsize[j]+=margin_end;
 
 		}
+
+		print_line(String(c->get_type())+": "+minsize);
 
 		total_minsize.width = MAX( total_minsize.width, minsize.width );
 		total_minsize.height = MAX( total_minsize.height, minsize.height );

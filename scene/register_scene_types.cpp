@@ -79,6 +79,7 @@
 #include "scene/resources/video_stream.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
+#include "scene/2d/light_2d.h"
 
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/sprite.h"
@@ -102,6 +103,8 @@
 #include "scene/2d/screen_button.h"
 #include "scene/2d/remote_transform_2d.h"
 #include "scene/2d/y_sort.h"
+#include "scene/2d/navigation2d.h"
+#include "scene/2d/canvas_modulate.h"
 
 #include "scene/2d/position_2d.h"
 #include "scene/2d/tile_map.h"
@@ -265,6 +268,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_virtual_type<RenderTargetTexture>();
 	ObjectTypeDB::register_type<Timer>();
 	ObjectTypeDB::register_type<CanvasLayer>();
+	ObjectTypeDB::register_type<CanvasModulate>();
 	ObjectTypeDB::register_type<ResourcePreloader>();
 
 	/* REGISTER GUI */
@@ -475,6 +479,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<VisibilityNotifier2D>();
 	ObjectTypeDB::register_type<VisibilityEnabler2D>();
 	ObjectTypeDB::register_type<Polygon2D>();
+	ObjectTypeDB::register_type<Light2D>();
 	ObjectTypeDB::register_type<YSort>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
@@ -578,6 +583,10 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Curve2D>();
 	ObjectTypeDB::register_type<Path2D>();
 	ObjectTypeDB::register_type<PathFollow2D>();
+
+	ObjectTypeDB::register_type<Navigation2D>();
+	ObjectTypeDB::register_type<NavigationPolygon>();
+	ObjectTypeDB::register_type<NavigationPolygonInstance>();
 
 	OS::get_singleton()->yield(); //may take time to init
 
