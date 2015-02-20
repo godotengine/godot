@@ -603,6 +603,9 @@
     <ClCompile Include="..\..\platform\x11\export\export.cpp">
       <Filter>platform\x11\export</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\navigation_polygon_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\tools\collada\collada.h">
@@ -1219,6 +1222,9 @@
     </ClInclude>
     <ClInclude Include="..\..\platform\x11\export\export.h">
       <Filter>platform\x11\export</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\navigation_polygon_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

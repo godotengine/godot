@@ -459,6 +459,9 @@
     <ClInclude Include="..\..\core\io\packet_peer_udp.h">
       <Filter>core\io</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\core\math\triangulator.h">
+      <Filter>core\math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\core\array.cpp">
@@ -826,6 +829,12 @@
     </ClCompile>
     <ClCompile Include="..\..\core\io\packet_peer_udp.cpp">
       <Filter>core\io</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\math\triangulator.cpp">
+      <Filter>core\math</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\core\variant_construct_string.cpp">
+      <Filter>core</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

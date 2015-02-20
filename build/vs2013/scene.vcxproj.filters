@@ -597,6 +597,18 @@
     <ClCompile Include="..\..\scene\gui\graph_edit.cpp">
       <Filter>scene\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\scene\2d\canvas_modulate.cpp">
+      <Filter>scene\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\scene\2d\light_2d.cpp">
+      <Filter>scene\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\scene\2d\navigation2d.cpp">
+      <Filter>scene\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\scene\2d\navigation_polygon.cpp">
+      <Filter>scene\2d</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\scene\register_scene_types.h">
@@ -1162,6 +1174,18 @@
     </ClInclude>
     <ClInclude Include="..\..\scene\gui\graph_edit.h">
       <Filter>scene\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\2d\canvas_modulate.h">
+      <Filter>scene\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\2d\light_2d.h">
+      <Filter>scene\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\2d\navigation2d.h">
+      <Filter>scene\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\2d\navigation_polygon.h">
+      <Filter>scene\2d</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

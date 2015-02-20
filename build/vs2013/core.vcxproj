@@ -201,6 +201,7 @@
     <ClInclude Include="..\..\core\math\transform.h" />
     <ClInclude Include="..\..\core\math\triangle_mesh.h" />
     <ClInclude Include="..\..\core\math\triangulate.h" />
+    <ClInclude Include="..\..\core\math\triangulator.h" />
     <ClInclude Include="..\..\core\math\vector3.h" />
     <ClInclude Include="..\..\core\message_queue.h" />
     <ClInclude Include="..\..\core\method_bind.h" />
@@ -333,6 +334,7 @@
     <ClCompile Include="..\..\core\math\transform.cpp" />
     <ClCompile Include="..\..\core\math\triangle_mesh.cpp" />
     <ClCompile Include="..\..\core\math\triangulate.cpp" />
+    <ClCompile Include="..\..\core\math\triangulator.cpp" />
     <ClCompile Include="..\..\core\math\vector3.cpp" />
     <ClCompile Include="..\..\core\message_queue.cpp" />
     <ClCompile Include="..\..\core\method_bind.cpp" />
@@ -382,6 +384,7 @@
     <ClCompile Include="..\..\core\ustring.cpp" />
     <ClCompile Include="..\..\core\variant.cpp" />
     <ClCompile Include="..\..\core\variant_call.cpp" />
+    <ClCompile Include="..\..\core\variant_construct_string.cpp" />
     <ClCompile Include="..\..\core\variant_op.cpp" />
     <ClCompile Include="..\..\core\vmap.cpp" />
     <ClCompile Include="..\..\core\vset.cpp" />
