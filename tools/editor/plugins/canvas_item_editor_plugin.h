@@ -77,7 +77,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SNAP_USE,
 		SNAP_SHOW_GRID,
 		SNAP_USE_ROTATION,
-		SNAP_TO_OFFSET,
+		SNAP_RELATIVE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
 		ZOOM_IN,
@@ -153,7 +153,7 @@ class CanvasItemEditor : public VBoxContainer {
 	bool snap_grid;
 	bool snap_show_grid;
 	bool snap_rotation;
-	bool snap_to_offset;
+	bool snap_relative;
 	bool snap_pixel;
 	bool box_selecting;
 	Point2 box_selecting_to;

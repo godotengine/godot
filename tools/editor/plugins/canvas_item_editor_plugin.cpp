@@ -179,15 +179,15 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 	return memnew( CanvasItemEditorSelectedItem );
 }
 
-inline float _snap_scalar(float p_offset, float p_step, bool p_snap_to_offset, float p_target, float p_start) {
-	float offset = p_snap_to_offset ? p_start : p_offset;
+inline float _snap_scalar(float p_offset, float p_step, bool p_snap_relative, float p_target, float p_start) {
+	float offset = p_snap_relative ? p_start : p_offset;
 	return p_step != 0 ? Math::stepify(p_target - offset, p_step) + offset : p_target;
 }
 
 Vector2 CanvasItemEditor::snap_point(Vector2 p_target, Vector2 p_start) const {
 	if (snap_grid) {
-		p_target.x = _snap_scalar(snap_offset.x, snap_step.x, snap_to_offset, p_target.x, p_start.x);
-		p_target.y = _snap_scalar(snap_offset.y, snap_step.y, snap_to_offset, p_target.y, p_start.y);
+		p_target.x = _snap_scalar(snap_offset.x, snap_step.x, snap_relative, p_target.x, p_start.x);
+		p_target.y = _snap_scalar(snap_offset.y, snap_step.y, snap_relative, p_target.y, p_start.y);
 	}
 	if (snap_pixel)
 		p_target = p_target.snapped(Size2(1, 1));
@@ -196,7 +196,7 @@ Vector2 CanvasItemEditor::snap_point(Vector2 p_target, Vector2 p_start) const {
 }
 
 float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
-	return snap_rotation ? _snap_scalar(snap_rotation_offset, snap_rotation_step, snap_to_offset, p_target, p_start) : p_target;
+	return snap_rotation ? _snap_scalar(snap_rotation_offset, snap_rotation_step, snap_relative, p_target, p_start) : p_target;
 }
 
 Dictionary CanvasItemEditor::get_state() const {
@@ -212,7 +212,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["snap_grid"]=snap_grid;
 	state["snap_show_grid"]=snap_show_grid;
 	state["snap_rotation"]=snap_rotation;
-	state["snap_to_offset"]=snap_to_offset;
+	state["snap_relative"]=snap_relative;
 	state["snap_pixel"]=snap_pixel;
 	return state;
 }
@@ -264,10 +264,10 @@ void CanvasItemEditor::set_state(const Dictionary& p_state){
 		edit_menu->get_popup()->set_item_checked(idx,snap_rotation);
 	}
 
-	if (state.has("snap_to_offset")) {
-		snap_to_offset=state["snap_to_offset"];
-		int idx = edit_menu->get_popup()->get_item_index(SNAP_TO_OFFSET);
-		edit_menu->get_popup()->set_item_checked(idx,snap_to_offset);
+	if (state.has("snap_relative")) {
+		snap_relative=state["snap_relative"];
+		int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+		edit_menu->get_popup()->set_item_checked(idx,snap_relative);
 	}
 
 	if (state.has("snap_pixel")) {
@@ -2131,10 +2131,10 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
 			edit_menu->get_popup()->set_item_checked(idx,snap_rotation);
 		} break;
-		case SNAP_TO_OFFSET: {
-			snap_to_offset = !snap_to_offset;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_TO_OFFSET);
-			edit_menu->get_popup()->set_item_checked(idx,snap_to_offset);
+		case SNAP_RELATIVE: {
+			snap_relative = !snap_relative;
+			int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+			edit_menu->get_popup()->set_item_checked(idx,snap_relative);
 		} break;
 		case SNAP_USE_PIXEL: {
 			snap_pixel = !snap_pixel;
@@ -2889,7 +2889,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_check_item("Use Snap",SNAP_USE);
 	p->add_check_item("Show Grid",SNAP_SHOW_GRID);
 	p->add_check_item("Use Rotation Snap",SNAP_USE_ROTATION);
-	p->add_check_item("Offset Snap",SNAP_TO_OFFSET);
+	p->add_check_item("Snap Relative",SNAP_RELATIVE);
 	p->add_item("Configure Snap..",SNAP_CONFIGURE);
 	p->add_separator();
 	p->add_check_item("Use Pixel Snap",SNAP_USE_PIXEL);
