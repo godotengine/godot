@@ -190,7 +190,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 		XMapRaised(x11_display, x11_window);
 		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+		XGetWindowAttributes(x11_display, x11_window, &xwa);
 		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
 
 		// code for netwm-compliants
