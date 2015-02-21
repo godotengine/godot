@@ -71,6 +71,7 @@ private:
 	List<CanvasItem*>::Element *C;
 
 	BlendMode blend_mode;
+	int light_mask;
 
 	bool first_draw;
 	bool hidden;
@@ -80,8 +81,8 @@ private:
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
-
 	bool use_parent_shader;
+
 	Ref<Shader> shader;
 
 	mutable Matrix32 global_transform;
@@ -158,6 +159,9 @@ public:
 	void set_blend_mode(BlendMode p_blend_mode);
 	BlendMode get_blend_mode() const;
 
+	void set_light_mask(int p_light_mask);
+	int get_light_mask() const;
+
 	void set_opacity(float p_opacity);
 	float get_opacity() const;
 
@@ -170,8 +174,8 @@ public:
 	void draw_rect(const Rect2& p_rect, const Color& p_color);
 	void draw_circle(const Point2& p_pos, float p_radius, const Color& p_color);
 	void draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos);
-	void draw_texture_rect(const Ref<Texture>& p_texture, const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1));
-	void draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1));
+	void draw_texture_rect(const Ref<Texture>& p_texture, const Rect2& p_rect, bool p_tile=false,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
+	void draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1), bool p_transpose=false);
 	void draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect);
 	void draw_primitive(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, Ref<Texture> p_texture=Ref<Texture>(),float p_width=1);
 	void draw_polygon(const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), Ref<Texture> p_texture=Ref<Texture>());

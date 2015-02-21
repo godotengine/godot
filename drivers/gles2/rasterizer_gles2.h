@@ -1127,6 +1127,7 @@ class RasterizerGLES2 : public Rasterizer {
 		bool active;
 
 		int blur_size;
+
 		struct Blur {
 
 			GLuint fbo;
@@ -1186,11 +1187,15 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint white_tex;
 	RID canvas_tex;
 	float canvas_opacity;
+	Color canvas_modulate;
+	bool canvas_use_modulate;
 	bool uses_texpixel_size;
 	bool rebind_texpixel_size;
 	Transform canvas_transform;
 	RID canvas_last_shader;
 	bool canvas_texscreen_used;
+	Vector2 normal_flip;
+	_FORCE_INLINE_ void _canvas_normal_set_flip(const Vector2& p_flip);
 
 
 	_FORCE_INLINE_ Texture* _bind_canvas_texture(const RID& p_texture);
@@ -1232,7 +1237,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _draw_primitive(int p_points, const Vector3 *p_vertices, const Vector3 *p_normals, const Color* p_colors, const Vector3 *p_uvs,const Plane *p_tangents=NULL,int p_instanced=1);
 	_FORCE_INLINE_ void _draw_gui_primitive(int p_points, const Vector2 *p_vertices, const Color* p_colors, const Vector2 *p_uvs);
 	_FORCE_INLINE_ void _draw_gui_primitive2(int p_points, const Vector2 *p_vertices, const Color* p_colors, const Vector2 *p_uvs, const Vector2 *p_uvs2);
-	void _draw_textured_quad(const Rect2& p_rect, const Rect2& p_src_region, const Size2& p_tex_size,bool p_h_flip=false, bool p_v_flip=false );
+	void _draw_textured_quad(const Rect2& p_rect, const Rect2& p_src_region, const Size2& p_tex_size,bool p_h_flip=false, bool p_v_flip=false, bool p_transpose=false );
 	void _draw_quad(const Rect2& p_rect);
 	void _copy_screen_quad();
 	void _copy_to_texscreen();
@@ -1247,6 +1252,10 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint tc0_id_cache;
 	GLuint tc0_idx;
 
+	template<bool use_normalmap>
+	_FORCE_INLINE_ void _canvas_item_render_commands(CanvasItem *p_item,CanvasItem *current_clip,bool &reclip);
+	_FORCE_INLINE_ void _canvas_item_setup_shader_params(CanvasItem *shader_owner,Shader* p_shader);
+	_FORCE_INLINE_ void _canvas_item_setup_shader_uniforms(CanvasItem *shader_owner,Shader* p_shader);
 public:
 
 	/* TEXTURE API */
@@ -1562,7 +1571,8 @@ public:
 	virtual void canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor);
 	virtual void canvas_set_transform(const Matrix32& p_transform);
 
-	virtual void canvas_render_items(CanvasItem *p_item_list);
+	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light);
+
 
 	/* ENVIRONMENT */
 
