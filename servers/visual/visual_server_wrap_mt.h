@@ -967,6 +967,10 @@ public:
 	FUNC2(viewport_set_render_target_vflip,RID,bool);
 	FUNC1RC(bool,viewport_get_render_target_vflip,RID);
 	FUNC2(viewport_set_render_target_to_screen_rect,RID,const Rect2&);
+	
+	FUNC2(viewport_set_render_target_clear_on_new_frame,RID,bool);
+	FUNC1RC(bool,viewport_get_render_target_clear_on_new_frame,RID);
+	FUNC1(viewport_render_target_clear,RID);
 
 	FUNC1(viewport_queue_screen_capture,RID);
 	FUNC1RC(Image,viewport_get_screen_capture,RID);
@@ -1087,6 +1091,8 @@ public:
 	FUNC0R(RID,canvas_create);
 	FUNC3(canvas_set_item_mirroring,RID,RID,const Point2&);
 	FUNC2RC(Point2,canvas_get_item_mirroring,RID,RID);
+	FUNC2(canvas_set_modulate,RID,const Color&);
+
 
 	FUNC0R(RID,canvas_item_create);
 
@@ -1097,7 +1103,7 @@ public:
 	FUNC1RC(bool,canvas_item_is_visible,RID);
 
 	FUNC2(canvas_item_set_blend_mode,RID,MaterialBlendMode );
-
+	FUNC2(canvas_item_set_light_mask,RID,int );
 
 	//FUNC(canvas_item_set_rect,RID, const Rect2& p_rect);
 	FUNC2(canvas_item_set_transform,RID, const Matrix32& );
@@ -1116,9 +1122,8 @@ public:
 	FUNC5(canvas_item_add_line,RID, const Point2& , const Point2& ,const Color& ,float );
 	FUNC3(canvas_item_add_rect,RID, const Rect2& , const Color& );
 	FUNC4(canvas_item_add_circle,RID, const Point2& , float ,const Color& );
-	FUNC5(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color& );
-	FUNC5(canvas_item_add_texture_rect_region,RID, const Rect2& , RID ,const Rect2& ,const Color& );
-
+	FUNC6(canvas_item_add_texture_rect,RID, const Rect2& , RID ,bool ,const Color&,bool );
+	FUNC6(canvas_item_add_texture_rect_region,RID, const Rect2& , RID ,const Rect2& ,const Color&,bool );
 	FUNC7(canvas_item_add_style_box,RID, const Rect2& , RID ,const Vector2& ,const Vector2&, bool ,const Color& );
 	FUNC6(canvas_item_add_primitive,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID ,float );
 	FUNC5(canvas_item_add_polygon,RID, const Vector<Point2>& , const Vector<Color>& ,const Vector<Point2>& , RID );
@@ -1155,10 +1160,11 @@ public:
 	FUNC2(canvas_light_set_texture_offset,RID,const Vector2&);
 	FUNC2(canvas_light_set_color,RID,const Color&);
 	FUNC2(canvas_light_set_height,RID,float);
+	FUNC3(canvas_light_set_layer_range,RID,int,int);
 	FUNC3(canvas_light_set_z_range,RID,int,int);
 	FUNC2(canvas_light_set_item_mask,RID,int);
 
-	FUNC2(canvas_light_set_blend_mode,RID,CanvasLightBlendMode);
+	FUNC2(canvas_light_set_subtract_mode,RID,bool);
 	FUNC2(canvas_light_set_shadow_enabled,RID,bool);
 	FUNC2(canvas_light_set_shadow_buffer_size,RID,int);
 	FUNC2(canvas_light_set_shadow_filter,RID,int);

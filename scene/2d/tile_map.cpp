@@ -29,7 +29,7 @@
 #include "tile_map.h"
 #include "io/marshalls.h"
 #include "servers/physics_2d_server.h"
-
+#include "method_bind_ext.inc"
 void TileMap::_notification(int p_what) {
 
 	switch(p_what) {
@@ -226,11 +226,9 @@ void TileMap::_update_dirty_quadrants() {
 
 			rect.pos+=tile_ofs;
 			if (r==Rect2()) {
-
-				tex->draw_rect(q.canvas_item,rect);
+				tex->draw_rect(q.canvas_item,rect,false,Color(1,1,1),c.transpose);
 			} else {
-
-				tex->draw_rect_region(q.canvas_item,rect,r);
+				tex->draw_rect_region(q.canvas_item,rect,r,Color(1,1,1),c.transpose);
 			}
 
 			Vector< Ref<Shape2D> > shapes = tile_set->tile_get_shapes(c.id);
@@ -244,20 +242,25 @@ void TileMap::_update_dirty_quadrants() {
 					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
 					Matrix32 xform;
 					xform.set_origin(offset.floor());
+					if (c.transpose) {
+						SWAP(xform.elements[0].x, xform.elements[0].y);
+						SWAP(xform.elements[1].x, xform.elements[1].y);
+						SWAP(shape_ofs.x, shape_ofs.y);
+						SWAP(s.x, s.y);
+					}
 					if (c.flip_h) {
-						xform.elements[0]=-xform.elements[0];
-						xform.elements[2].x+=s.x-shape_ofs.x;
-					} else {
-
-						xform.elements[2].x+=shape_ofs.x;
+						xform.elements[0].x=-xform.elements[0].x;
+						xform.elements[1].x=-xform.elements[1].x;
+						shape_ofs.x=s.x-shape_ofs.x;
 					}
 					if (c.flip_v) {
-						xform.elements[1]=-xform.elements[1];
-						xform.elements[2].y+=s.y-shape_ofs.y;
-					} else {
-
-						xform.elements[2].y+=shape_ofs.y;
+						xform.elements[0].y=-xform.elements[0].y;
+						xform.elements[1].y=-xform.elements[1].y;
+						shape_ofs.y=s.y-shape_ofs.y;
 					}
+					xform.elements[2].x+=shape_ofs.x;
+					xform.elements[2].y+=shape_ofs.y;
+
 
 
 					ps->body_add_shape(q.body,shape->get_rid(),xform);
@@ -386,7 +389,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey,Quadrant>::Element *Q) {
 }
 
 
-void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
+void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
 
 	PosKey pk(p_x,p_y);
 
@@ -422,7 +425,7 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
 	} else {
 		ERR_FAIL_COND(!Q); // quadrant should exist...
 
-		if (E->get().id==p_tile && E->get().flip_h==p_flip_x && E->get().flip_v==p_flip_y)
+		if (E->get().id==p_tile && E->get().flip_h==p_flip_x && E->get().flip_v==p_flip_y && E->get().transpose==p_transpose)
 			return; //nothing changed
 
 	}
@@ -433,6 +436,7 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
 	c.id=p_tile;
 	c.flip_h=p_flip_x;
 	c.flip_v=p_flip_y;
+	c.transpose=p_transpose;
 
 	_make_quadrant_dirty(Q);
 
@@ -471,6 +475,17 @@ bool TileMap::is_cell_y_flipped(int p_x,int p_y) const {
 		return false;
 
 	return E->get().flip_v;
+}
+bool TileMap::is_cell_transposed(int p_x,int p_y) const {
+
+	PosKey pk(p_x,p_y);
+
+	const Map<PosKey,Cell>::Element *E=tile_map.find(pk);
+
+	if (!E)
+		return false;
+
+	return E->get().transpose;
 }
 
 
@@ -536,11 +551,12 @@ void TileMap::_set_tile_data(const DVector<int>& p_data) {
 		uint32_t v = decode_uint32(&local[4]);
 		bool flip_h = v&(1<<29);
 		bool flip_v = v&(1<<30);
+		bool transpose = v&(1<<31);
 		v&=(1<<29)-1;
 
 //		if (x<-20 || y <-20 || x>4000 || y>4000)
 //			continue;
-		set_cell(x,y,v,flip_h,flip_v);
+		set_cell(x,y,v,flip_h,flip_v,transpose);
 
 	}
 
@@ -563,6 +579,8 @@ DVector<int> TileMap::_get_tile_data() const {
 			val|=(1<<29);
 		if (E->get().flip_v)
 			val|=(1<<30);
+		if (E->get().transpose)
+			val|=(1<<31);
 
 		encode_uint32(val,&ptr[4]);
 		idx+=2;
@@ -829,7 +847,7 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_collision_bounce","value"),&TileMap::set_collision_bounce);
 	ObjectTypeDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
-	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);

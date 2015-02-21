@@ -26,7 +26,13 @@ uniform float time;
 #ifdef USE_LIGHTING
 
 uniform highp mat4 light_matrix;
-varying vec4 light_tex_pos;
+uniform vec2 light_pos;
+varying vec4 light_uv_interp;
+
+#if defined(NORMAL_USED)
+varying vec4 local_rot;
+uniform vec2 normal_flip;
+#endif
 
 #endif
 
@@ -67,8 +73,13 @@ VERTEX_SHADER_CODE
 
 #ifdef USE_LIGHTING
 
-	light_tex_pos.xy = light_matrix * gl_Position;
-	light_tex_pos.zw=outvec.xy - light_matrix[4].xy; //likely wrong
+	light_uv_interp.xy = (light_matrix * outvec).xy;
+	light_uv_interp.zw = outvec.xy-light_pos;
+
+#if defined(NORMAL_USED)
+	local_rot.xy=normalize( (modelview_matrix * ( extra_matrix * vec4(1.0,0.0,0.0,0.0) )).xy  )*normal_flip.x;
+	local_rot.zw=normalize( (modelview_matrix * ( extra_matrix * vec4(0.0,1.0,0.0,0.0) )).xy  )*normal_flip.y;
+#endif
 
 #endif
 
@@ -121,11 +132,22 @@ varying vec4 var2_interp;
 uniform float time;
 #endif
 
+#ifdef USE_MODULATE
+
+uniform vec4 modulate;
+
+#endif
 
 #ifdef USE_LIGHTING
 
 uniform sampler2D light_texture;
-varying vec4 light_tex_pos;
+uniform vec4 light_color;
+uniform float light_height;
+varying vec4 light_uv_interp;
+
+#if defined(NORMAL_USED)
+varying vec4 local_rot;
+#endif
 
 #ifdef USE_SHADOWS
 
@@ -151,6 +173,11 @@ void main() {
 	vec3 normal = vec3(0,0,1);
 #endif
 
+#ifdef USE_MODULATE
+
+	color*=modulate;
+#endif
+
 	color *= texture2D( texture,  uv_interp );
 #if defined(ENABLE_SCREEN_UV)
 	vec2 screen_uv = gl_FragCoord.xy*screen_uv_mult;
@@ -166,9 +193,13 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_LIGHTING
 
+#if defined(NORMAL_USED)
+	normal.xy =  mat2(local_rot.xy,local_rot.zw) * normal.xy;
+#endif
+
 	float att=1.0;
 
-	vec3 light = texture2D(light_texture,light_tex_pos).rgb;
+	vec4 light = texture2D(light_texture,light_uv_interp.xy) * light_color;
 #ifdef USE_SHADOWS
 	//this might not be that great on mobile?
 	float light_dist = length(light_texture.zw);
@@ -183,18 +214,29 @@ FRAGMENT_SHADER_CODE
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
 {
-	vec2 light_dir = normalize(light_tex_pos.zw);
-	float light_distance = length(light_tex_pos.zw);
+	vec2 light_dir = normalize(light_uv_interp.zw);
+	float light_distance = length(light_uv_interp.zw);
 LIGHT_SHADER_CODE
 }
+
 #else
 
 #if defined(NORMAL_USED)
-	vec2 light_normal = normalize(light_tex_pos.zw);
-	light = color.rgb * light * max(dot(light_normal,normal),0);
+	vec3 light_normal = normalize(vec3(light_uv_interp.zw,-light_height));
+	light*=max(dot(-light_normal,normal),0);
 #endif
 
-	color.rgb=light;
+	color*=light;
+/*
+#ifdef USE_NORMAL
+	color.xy=local_rot.xy;//normal.xy;
+	color.zw=vec2(0.0,1.0);
+#endif
+*/
+	if (any(lessThan(light_uv_interp.xy,vec2(0.0,0.0))) || any(greaterThanEqual(light_uv_interp.xy,vec2(1.0,1.0)))) {
+		color.a=0.0; //invisible
+	}
+
 //light shader code
 #endif
 

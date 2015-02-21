@@ -27,7 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles1/rasterizer_gles1.h"
 #include "os_winrt.h"
 #include "drivers/nedmalloc/memory_pool_static_nedmalloc.h"
 #include "drivers/unix/memory_pool_static_malloc.h"
@@ -62,11 +61,11 @@ using namespace Microsoft::WRL;
 
 int OSWinrt::get_video_driver_count() const {
 
-	return 2;
+	return 1;
 }
 const char * OSWinrt::get_video_driver_name(int p_driver) const {
 
-	return p_driver==0?"GLES2":"GLES1";
+	return "GLES2";
 }
 
 OS::VideoMode OSWinrt::get_default_video_mode() const {

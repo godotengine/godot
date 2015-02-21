@@ -458,6 +458,16 @@ CanvasItem::BlendMode CanvasItem::get_blend_mode() const {
 	return blend_mode;
 }
 
+void CanvasItem::set_light_mask(int p_light_mask) {
+
+	light_mask=p_light_mask;
+	VS::get_singleton()->canvas_item_set_light_mask(canvas_item,p_light_mask);
+}
+
+int CanvasItem::get_light_mask() const{
+
+	return light_mask;
+}
 
 
 void CanvasItem::item_rect_changed() {
@@ -511,7 +521,7 @@ void CanvasItem::draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos)
 	p_texture->draw(canvas_item,p_pos);
 }
 
-void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_rect, bool p_tile,const Color& p_modulate) {
+void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -519,17 +529,17 @@ void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_
 	}
 
 	ERR_FAIL_COND(p_texture.is_null());
-	p_texture->draw_rect(canvas_item,p_rect,p_tile,p_modulate);
+	p_texture->draw_rect(canvas_item,p_rect,p_tile,p_modulate,p_transpose);
 
 }
-void CanvasItem::draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate) {
+void CanvasItem::draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
 	}
 	ERR_FAIL_COND(p_texture.is_null());
-	p_texture->draw_rect_region(canvas_item,p_rect,p_src_rect,p_modulate);
+	p_texture->draw_rect_region(canvas_item,p_rect,p_src_rect,p_modulate,p_transpose);
 }
 
 void CanvasItem::draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect) {
@@ -857,6 +867,9 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_blend_mode","blend_mode"),&CanvasItem::set_blend_mode);
 	ObjectTypeDB::bind_method(_MD("get_blend_mode"),&CanvasItem::get_blend_mode);
 
+	ObjectTypeDB::bind_method(_MD("set_light_mask","light_mask"),&CanvasItem::set_light_mask);
+	ObjectTypeDB::bind_method(_MD("get_light_mask"),&CanvasItem::get_light_mask);
+
 	ObjectTypeDB::bind_method(_MD("set_opacity","opacity"),&CanvasItem::set_opacity);
 	ObjectTypeDB::bind_method(_MD("get_opacity"),&CanvasItem::get_opacity);
 	ObjectTypeDB::bind_method(_MD("set_self_opacity","self_opacity"),&CanvasItem::set_self_opacity);
@@ -912,6 +925,7 @@ void CanvasItem::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
+	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"shader/shader",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemShader,CanvasItemShaderGraph"), _SCS("set_shader"),_SCS("get_shader") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"shader/use_parent"), _SCS("set_use_parent_shader"),_SCS("get_use_parent_shader") );
 	//exporting these two things doesn't really make much sense i think
@@ -992,6 +1006,7 @@ CanvasItem::CanvasItem() : xform_change(this) {
 	canvas_layer=NULL;
 	use_parent_shader=false;
 	global_invalid=true;
+	light_mask=1;
 
 	C=NULL;
 
