@@ -3518,7 +3518,7 @@ void VisualServerRaster::canvas_item_add_circle(RID p_item, const Point2& p_pos,
 
 }
 
-void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile,const Color& p_modulate) {
+void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile,const Color& p_modulate,bool p_transpose) {
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -3541,12 +3541,16 @@ void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p
 		rect->flags|=Rasterizer::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_transpose) {
+		rect->flags|=Rasterizer::CANVAS_RECT_TRANSPOSE;
+		SWAP(rect->rect.size.x, rect->rect.size.y);
+	}
 	rect->texture=p_texture;
 	canvas_item->rect_dirty=true;
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate)  {
+void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate,bool p_transpose)  {
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -3569,12 +3573,17 @@ void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const R
 		rect->flags|=Rasterizer::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_transpose) {
+		rect->flags|=Rasterizer::CANVAS_RECT_TRANSPOSE;
+		SWAP(rect->rect.size.x, rect->rect.size.y);
+	}
 
 	canvas_item->rect_dirty=true;
 
 	canvas_item->commands.push_back(rect);	
 	
 }
+
 void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
 
 	VS_CHANGED;
