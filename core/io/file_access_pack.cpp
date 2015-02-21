@@ -107,6 +107,14 @@ PackedData::PackedData() {
 	add_pack_source(memnew(PackedSourcePCK));
 }
 
+PackedData::~PackedData() {
+	for (int i=0; i<sources.size(); i++) {
+		memdelete(sources[i]);
+	}
+	sources.clear();
+	memdelete(root);
+	root = 0;
+}
 
 //////////////////////////////////////////////////////////////////
 
