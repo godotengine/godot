@@ -684,6 +684,9 @@ public:
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const=0;
 	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable)=0;
 	virtual bool viewport_get_render_target_vflip(RID p_viewport) const=0;
+	virtual void viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable)=0;
+	virtual bool viewport_get_render_target_clear_on_new_frame(RID p_viewport) const=0;
+	virtual void viewport_render_target_clear(RID p_viewport)=0;
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;

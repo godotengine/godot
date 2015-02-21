@@ -1576,6 +1576,15 @@ void VisualServerRaster::viewport_set_render_target_vflip(RID p_viewport,bool p_
 
 }
 
+void VisualServerRaster::viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable) {
+
+	Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+
+	viewport->render_target_clear_on_new_frame=p_enable;
+
+}
+
 void VisualServerRaster::viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect) {
 
 	Viewport *viewport = viewport_owner.get( p_viewport );
@@ -1594,6 +1603,23 @@ bool VisualServerRaster::viewport_get_render_target_vflip(RID p_viewport) const{
 
 }
 
+bool VisualServerRaster::viewport_get_render_target_clear_on_new_frame(RID p_viewport) const{
+
+	const Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND_V(!viewport,false);
+
+	return viewport->render_target_clear_on_new_frame;
+
+}
+
+void VisualServerRaster::viewport_render_target_clear(RID p_viewport) {
+
+	Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+
+	viewport->render_target_clear=true;
+
+}
 
 void VisualServerRaster::viewport_queue_screen_capture(RID p_viewport) {
 
@@ -6605,7 +6631,10 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 	} else if (true /*|| !p_viewport->canvas_list.empty()*/){
 
 		//clear the viewport black because of no camera? i seriously should..
-		rasterizer->clear_viewport(clear_color);
+		if (p_viewport->render_target_clear_on_new_frame || p_viewport->render_target_clear) {
+			rasterizer->clear_viewport(clear_color);
+			p_viewport->render_target_clear=false;
+		}
 	}
 
 	if (!p_viewport->hide_canvas) {

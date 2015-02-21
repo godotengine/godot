@@ -468,6 +468,8 @@ class VisualServerRaster : public VisualServer {
 		bool transparent_bg;
 		bool queue_capture;
 		bool render_target_vflip;
+		bool render_target_clear_on_new_frame;
+		bool render_target_clear;
 		Image capture;
 
 		bool rendered_in_prev_frame;
@@ -494,7 +496,7 @@ class VisualServerRaster : public VisualServer {
 
 		SelfList<Viewport> update_list;
 
-		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false;}
+		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false; render_target_clear_on_new_frame=true; render_target_clear=true;}
 	};
 
 	SelfList<Viewport>::List viewport_update_list;
@@ -957,6 +959,9 @@ public:
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const;
 	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable);
 	virtual bool viewport_get_render_target_vflip(RID p_viewport) const;
+	virtual void viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable);
+	virtual bool viewport_get_render_target_clear_on_new_frame(RID p_viewport) const;
+	virtual void viewport_render_target_clear(RID p_viewport);
 	virtual void viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect);
 
 	virtual void viewport_queue_screen_capture(RID p_viewport);
