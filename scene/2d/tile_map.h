@@ -86,6 +86,7 @@ private:
 			int32_t id:24;
 			bool flip_h:1;
 			bool flip_v:1;
+			bool transpose:1;
 		};
 
 		uint32_t _u32t;
@@ -168,10 +169,11 @@ public:
 	void set_center_y(bool p_enable);
 	bool get_center_y() const;
 
-	void set_cell(int p_x,int p_y,int p_tile,bool p_flip_x=false,bool p_flip_y=false);
+	void set_cell(int p_x,int p_y,int p_tile,bool p_flip_x=false,bool p_flip_y=false,bool p_transpose=false);
 	int get_cell(int p_x,int p_y) const;
 	bool is_cell_x_flipped(int p_x,int p_y) const;
 	bool is_cell_y_flipped(int p_x,int p_y) const;
+	bool is_cell_transposed(int p_x,int p_y) const;
 
 	Rect2 get_item_rect() const;
 

@@ -114,6 +114,7 @@ friend class RenderTargetTexture;
 
 	bool transparent_bg;
 	bool render_target_vflip;
+	bool render_target_clear_on_new_frame;
 	bool render_target_filter;
 	bool render_target_gen_mipmaps;
 
@@ -219,6 +220,10 @@ public:
 
 	void set_render_target_vflip(bool p_enable);
 	bool get_render_target_vflip() const;
+
+	void set_render_target_clear_on_new_frame(bool p_enable);
+	bool get_render_target_clear_on_new_frame() const;
+	void render_target_clear();
 
 	void set_render_target_filter(bool p_enable);
 	bool get_render_target_filter() const;

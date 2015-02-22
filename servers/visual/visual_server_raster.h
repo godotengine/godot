@@ -468,6 +468,8 @@ class VisualServerRaster : public VisualServer {
 		bool transparent_bg;
 		bool queue_capture;
 		bool render_target_vflip;
+		bool render_target_clear_on_new_frame;
+		bool render_target_clear;
 		Image capture;
 
 		bool rendered_in_prev_frame;
@@ -494,7 +496,7 @@ class VisualServerRaster : public VisualServer {
 
 		SelfList<Viewport> update_list;
 
-		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false;}
+		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false; render_target_clear_on_new_frame=true; render_target_clear=true;}
 	};
 
 	SelfList<Viewport>::List viewport_update_list;
@@ -957,6 +959,9 @@ public:
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const;
 	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable);
 	virtual bool viewport_get_render_target_vflip(RID p_viewport) const;
+	virtual void viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable);
+	virtual bool viewport_get_render_target_clear_on_new_frame(RID p_viewport) const;
+	virtual void viewport_render_target_clear(RID p_viewport);
 	virtual void viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect);
 
 	virtual void viewport_queue_screen_capture(RID p_viewport);
@@ -1112,8 +1117,8 @@ public:
 	virtual void canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0);
 	virtual void canvas_item_add_rect(RID p_item, const Rect2& p_rect, const Color& p_color);
 	virtual void canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color);
-	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1));
-	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1));
+	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1),bool p_transpose=false);
+	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1),bool p_transpose=false);
 	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1));
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width=1.0);
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID());

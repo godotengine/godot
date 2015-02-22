@@ -1576,6 +1576,15 @@ void VisualServerRaster::viewport_set_render_target_vflip(RID p_viewport,bool p_
 
 }
 
+void VisualServerRaster::viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable) {
+
+	Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+
+	viewport->render_target_clear_on_new_frame=p_enable;
+
+}
+
 void VisualServerRaster::viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect) {
 
 	Viewport *viewport = viewport_owner.get( p_viewport );
@@ -1594,6 +1603,23 @@ bool VisualServerRaster::viewport_get_render_target_vflip(RID p_viewport) const{
 
 }
 
+bool VisualServerRaster::viewport_get_render_target_clear_on_new_frame(RID p_viewport) const{
+
+	const Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND_V(!viewport,false);
+
+	return viewport->render_target_clear_on_new_frame;
+
+}
+
+void VisualServerRaster::viewport_render_target_clear(RID p_viewport) {
+
+	Viewport *viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+
+	viewport->render_target_clear=true;
+
+}
 
 void VisualServerRaster::viewport_queue_screen_capture(RID p_viewport) {
 
@@ -3492,7 +3518,7 @@ void VisualServerRaster::canvas_item_add_circle(RID p_item, const Point2& p_pos,
 
 }
 
-void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile,const Color& p_modulate) {
+void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile,const Color& p_modulate,bool p_transpose) {
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -3515,12 +3541,16 @@ void VisualServerRaster::canvas_item_add_texture_rect(RID p_item, const Rect2& p
 		rect->flags|=Rasterizer::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_transpose) {
+		rect->flags|=Rasterizer::CANVAS_RECT_TRANSPOSE;
+		SWAP(rect->rect.size.x, rect->rect.size.y);
+	}
 	rect->texture=p_texture;
 	canvas_item->rect_dirty=true;
 	canvas_item->commands.push_back(rect);
 }
 
-void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate)  {
+void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate,bool p_transpose)  {
 	VS_CHANGED;
 	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
 	ERR_FAIL_COND(!canvas_item);
@@ -3543,12 +3573,17 @@ void VisualServerRaster::canvas_item_add_texture_rect_region(RID p_item, const R
 		rect->flags|=Rasterizer::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_transpose) {
+		rect->flags|=Rasterizer::CANVAS_RECT_TRANSPOSE;
+		SWAP(rect->rect.size.x, rect->rect.size.y);
+	}
 
 	canvas_item->rect_dirty=true;
 
 	canvas_item->commands.push_back(rect);	
 	
 }
+
 void VisualServerRaster::canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center,const Color& p_modulate) {
 
 	VS_CHANGED;
@@ -6605,7 +6640,10 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 	} else if (true /*|| !p_viewport->canvas_list.empty()*/){
 
 		//clear the viewport black because of no camera? i seriously should..
-		rasterizer->clear_viewport(clear_color);
+		if (p_viewport->render_target_clear_on_new_frame || p_viewport->render_target_clear) {
+			rasterizer->clear_viewport(clear_color);
+			p_viewport->render_target_clear=false;
+		}
 	}
 
 	if (!p_viewport->hide_canvas) {

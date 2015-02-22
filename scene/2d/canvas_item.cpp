@@ -521,7 +521,7 @@ void CanvasItem::draw_texture(const Ref<Texture>& p_texture,const Point2& p_pos)
 	p_texture->draw(canvas_item,p_pos);
 }
 
-void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_rect, bool p_tile,const Color& p_modulate) {
+void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -529,17 +529,17 @@ void CanvasItem::draw_texture_rect(const Ref<Texture>& p_texture,const Rect2& p_
 	}
 
 	ERR_FAIL_COND(p_texture.is_null());
-	p_texture->draw_rect(canvas_item,p_rect,p_tile,p_modulate);
+	p_texture->draw_rect(canvas_item,p_rect,p_tile,p_modulate,p_transpose);
 
 }
-void CanvasItem::draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate) {
+void CanvasItem::draw_texture_rect_region(const Ref<Texture>& p_texture,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 		ERR_FAIL();
 	}
 	ERR_FAIL_COND(p_texture.is_null());
-	p_texture->draw_rect_region(canvas_item,p_rect,p_src_rect,p_modulate);
+	p_texture->draw_rect_region(canvas_item,p_rect,p_src_rect,p_modulate,p_transpose);
 }
 
 void CanvasItem::draw_style_box(const Ref<StyleBox>& p_style_box,const Rect2& p_rect) {

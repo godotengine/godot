@@ -684,6 +684,9 @@ public:
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const=0;
 	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable)=0;
 	virtual bool viewport_get_render_target_vflip(RID p_viewport) const=0;
+	virtual void viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable)=0;
+	virtual bool viewport_get_render_target_clear_on_new_frame(RID p_viewport) const=0;
+	virtual void viewport_render_target_clear(RID p_viewport)=0;
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;
@@ -978,8 +981,8 @@ public:
 	virtual void canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0)=0;
 	virtual void canvas_item_add_rect(RID p_item, const Rect2& p_rect, const Color& p_color)=0;
 	virtual void canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color)=0;
-	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1))=0;
-	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1))=0;
+	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1),bool p_transpose=false)=0;
+	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1),bool p_transpose=false)=0;
 	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1))=0;
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width=1.0)=0;
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID())=0;
