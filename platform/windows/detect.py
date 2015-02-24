@@ -1,4 +1,90 @@
+# 
+# 	tested on               | Windows native    | Linux cross-compilation
+#	------------------------+-------------------+---------------------------
+#	MSVS C++ 2010 Express   | WORKS             | n/a
+#	Mingw-w64               | WORKS             | WORKS
+#	Mingw-w32               | WORKS             | WORKS
+#	MinGW                   | WORKS             | untested
+#
+#####
+# Notes about MSVS C++ :
+#
+# 	- MSVC2010-Express compiles to 32bits only.
+#
+#####
+# Notes about Mingw-w64 and Mingw-w32 under Windows :
+#
+#	- both can be installed using the official installer :
+#		http://mingw-w64.sourceforge.net/download.php#mingw-builds
+#
+#	- if you want to compile both 32bits and 64bits, don't forget to
+#	run the installer twice to install them both.
+#
+#	- install them into a path that does not contain spaces
+#		( example : "C:/Mingw-w32", "C:/Mingw-w64" )
+#
+#	- if you want to compile faster using the "-j" option, don't forget
+#	to install the appropriate version of the Pywin32 python extension 
+#	available from : http://sourceforge.net/projects/pywin32/files/
+#
+#	- before running scons, you must add into the environment path 
+#	the path to the "/bin" directory of the Mingw version you want 
+#	to use :
+#
+#		set PATH=C:/Mingw-w32/bin;%PATH%
+#
+#	- then, scons should be able to detect gcc.
+#	- Mingw-w32 only compiles 32bits.
+#	- Mingw-w64 only compiles 64bits.
+#
+#	- it is possible to add them both at the same time into the PATH env, 
+#	if you also define the MINGW32_PREFIX and MINGW64_PREFIX environment 
+#	variables. 
+#	For instance, you could store that set of commands into a .bat script
+#	that you would run just before scons :
+#
+#			set PATH=C:\mingw-w64\bin;%PATH%
+#			set PATH=C:\mingw-w64\bin;%PATH%
+#			set MINGW32_PREFIX=C:\mingw-w64\bin\
+#			set MINGW64_PREFIX=C:\mingw-w64\bin\
+#
+#####
+# Notes about Mingw, Mingw-w64 and Mingw-w32 under Linux :
+#
+#	- default toolchain prefixes are :
+#		"i586-mingw32msvc-" for MinGW
+#		"i686-w64-mingw32-"	for Mingw-w32
+#		"x86_64-w64-mingw32-" for Mingw-w64
+#
+#	- if both MinGW and Mingw-w32 are installed on your system
+#	Mingw-w32 should take the priority over MinGW.
+#
+#	- it is possible to manually override prefixes by defining
+#	the MINGW32_PREFIX and MINGW64_PREFIX environment variables.
+#	
+#####
+# Notes about Mingw under Windows :
+#
+#	- this is the MinGW version from http://mingw.org/ 
+#	- install it into a path that does not contain spaces
+#		( example : "C:/MinGW" )
+#	- several DirectX headers might be missing. You can copy them into 
+#	the C:/MinGW/include" directory from this page :
+#	 https://code.google.com/p/mingw-lib/source/browse/trunk/working/avcodec_to_widget_5/directx_include/
+#	- before running scons, add the path to the "/bin" directory :
+#		set PATH=C:/MinGW/bin;%PATH%
+#	- scons should be able to detect gcc.
+#
 
+#####
+# TODO :
+#
+#	- finish to cleanup this script to remove all the remains of previous hacks and workarounds
+#	- make it work with the Windows7 SDK that is supposed to enable 64bits compilation for MSVC2010-Express
+#	- confirm it works well with other Visual Studio versions.
+#	- update the wiki about the pywin32 extension required for the "-j" option under Windows.
+#	- update the wiki to document MINGW32_PREFIX and MINGW64_PREFIX
+# 	
 
 import os
 
@@ -13,50 +99,70 @@ def get_name():
 
 def can_build():
 	
-	
 	if (os.name=="nt"):
 		#building natively on windows!
 		if (os.getenv("VSINSTALLDIR")):
 			return True 
 		else:
-			print("MSVC Not detected, attempting mingw.")
+			print("\nMSVC not detected, attempting Mingw.")
+			mingw32 = ""
+			mingw64 = ""
+			if ( os.getenv("MINGW32_PREFIX") ) :
+				mingw32 = os.getenv("MINGW32_PREFIX")
+			if ( os.getenv("MINGW64_PREFIX") ) :
+				mingw64 = os.getenv("MINGW64_PREFIX")
+				
+			test = "gcc --version > NUL 2>&1"
+			if os.system(test)!= 0 and os.system(mingw32+test)!=0 and os.system(mingw64+test)!=0 :
+				print("- could not detect gcc.")
+				print("Please, make sure a path to a Mingw /bin directory is accessible into the environment PATH.\n")
+				return False
+			else:
+				print("- gcc detected.")
+				
 			return True
-			
-			
 			
 	if (os.name=="posix"):
 
 		mingw = "i586-mingw32msvc-"
-		mingw64 = "i686-w64-mingw32-"
+		mingw64 = "x86_64-w64-mingw32-"
+		mingw32 = "i686-w64-mingw32-"
+		
 		if (os.getenv("MINGW32_PREFIX")):
-			mingw=os.getenv("MINGW32_PREFIX")
+			mingw32=os.getenv("MINGW32_PREFIX")
+			mingw = mingw32
 		if (os.getenv("MINGW64_PREFIX")):
 			mingw64=os.getenv("MINGW64_PREFIX")
-
-		if os.system(mingw+"gcc --version >/dev/null") == 0 or os.system(mingw64+"gcc --version >/dev/null") ==0:
+			
+		test = "gcc --version >/dev/null"
+		if os.system(mingw+test) == 0 or os.system(mingw64+test) ==0 or os.system(mingw32+test) ==0 :
 			return True
-
-
 			
 	return False
 		
 def get_opts():
 
 	mingw=""
+	mingw32=""
 	mingw64=""
-	if (os.name!="nt"):
+	if ( os.name == "posix" ):
 		mingw = "i586-mingw32msvc-"
-		mingw64 = "i686-w64-mingw32-"
-		if (os.getenv("MINGW32_PREFIX")):
-			mingw=os.getenv("MINGW32_PREFIX")
-		if (os.getenv("MINGW64_PREFIX")):
-			mingw64=os.getenv("MINGW64_PREFIX")
+		mingw32 = "i686-w64-mingw32-"
+		mingw64 = "x86_64-w64-mingw32-"
+		
+		if os.system(mingw32+"gcc --version >/dev/null") != 0 :
+			mingw32 = mingw
+	
+	if (os.getenv("MINGW32_PREFIX")):
+		mingw32=os.getenv("MINGW32_PREFIX")
+		mingw = mingw32
+	if (os.getenv("MINGW64_PREFIX")):
+		mingw64=os.getenv("MINGW64_PREFIX")
 
 
 	return [
-		('mingw_prefix','Mingw Prefix',mingw),
+		('mingw_prefix','Mingw Prefix',mingw32),
 		('mingw_prefix_64','Mingw Prefix 64 bits',mingw64),
-		('mingw64_for_32','Use Mingw 64 for 32 Bits Build',"no"),
 	]
   
 def get_flags():
@@ -140,13 +246,13 @@ def configure(env):
 		# http://www.scons.org/wiki/LongCmdLinesOnWin32
 		if (os.name=="nt"):
 			import subprocess
-			def mySpawn(sh, escape, cmd, args, env):
-				newargs = ' '.join(args[1:])
-				cmdline = cmd + " " + newargs
+			
+			def mySubProcess(cmdline,env):
+				#print "SPAWNED : " + cmdline
 				startupinfo = subprocess.STARTUPINFO()
 				startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 				proc = subprocess.Popen(cmdline, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-				    stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
+					stderr=subprocess.PIPE, startupinfo=startupinfo, shell = False, env = env)
 				data, err = proc.communicate()
 				rv = proc.wait()
 				if rv:
@@ -154,35 +260,45 @@ def configure(env):
 					print err
 					print "====="
 				return rv
+				
+			def mySpawn(sh, escape, cmd, args, env):
+								
+				newargs = ' '.join(args[1:])
+				cmdline = cmd + " " + newargs
+				
+				rv=0
+				if len(cmdline) > 32000 and cmd.endswith("ar") :
+					cmdline = cmd + " " + args[1] + " " + args[2] + " "
+					for i in range(3,len(args)) :
+						rv = mySubProcess( cmdline + args[i], env )
+						if rv :
+							break	
+				else:				
+					rv = mySubProcess( cmdline, env )
+					
+				return rv
+				
 			env['SPAWN'] = mySpawn
 
 		#build using mingw
 		if (os.name=="nt"):
 			env['ENV']['TMP'] = os.environ['TMP'] #way to go scons, you can be so stupid sometimes
 		else:
-			env["PROGSUFFIX"]=env["PROGSUFFIX"]+".exe"
+			env["PROGSUFFIX"]=env["PROGSUFFIX"]+".exe" # for linux cross-compilation
 
 		mingw_prefix=""
 
 		if (env["bits"]=="default"):
 			env["bits"]="32"
 
-		use64=False
 		if (env["bits"]=="32"):
-
-			if (env["mingw64_for_32"]=="yes"):
-				env.Append(CCFLAGS=['-m32'])
-				env.Append(LINKFLAGS=['-m32'])
-				env.Append(LINKFLAGS=['-static-libgcc'])
-				env.Append(LINKFLAGS=['-static-libstdc++'])
-				mingw_prefix=env["mingw_prefix_64"];
-			else:
-				mingw_prefix=env["mingw_prefix"];
-
-
-		else:
-			mingw_prefix=env["mingw_prefix_64"];
 			env.Append(LINKFLAGS=['-static'])
+			env.Append(LINKFLAGS=['-static-libgcc'])
+			env.Append(LINKFLAGS=['-static-libstdc++'])
+			mingw_prefix=env["mingw_prefix"];
+		else:
+			env.Append(LINKFLAGS=['-static'])
+			mingw_prefix=env["mingw_prefix_64"];
 
 		nulstr=""
 
@@ -193,10 +309,10 @@ def configure(env):
 
 
 
-		if os.system(mingw_prefix+"gcc --version"+nulstr)!=0:
-			#not really super consistent but..
-			print("Can't find Windows compiler: "+mingw_prefix)
-			sys.exit(255)
+		# if os.system(mingw_prefix+"gcc --version"+nulstr)!=0:
+			# #not really super consistent but..
+			# print("Can't find Windows compiler: "+mingw_prefix)
+			# sys.exit(255)
 
 		if (env["target"]=="release"):
 			
@@ -231,11 +347,11 @@ def configure(env):
 		env.Append(CCFLAGS=['-DGLES2_ENABLED','-DGLEW_ENABLED'])
 		env.Append(LIBS=['mingw32','opengl32', 'dsound', 'ole32', 'd3d9','winmm','gdi32','iphlpapi','wsock32','kernel32'])
 
-		if (env["bits"]=="32" and env["mingw64_for_32"]!="yes"):
-#			env.Append(LIBS=['gcc_s'])
-			#--with-arch=i686
-			env.Append(CPPFLAGS=['-march=i686'])
-			env.Append(LINKFLAGS=['-march=i686'])
+		# if (env["bits"]=="32"):
+# #			env.Append(LIBS=['gcc_s'])
+			# #--with-arch=i686
+			# env.Append(CPPFLAGS=['-march=i686'])
+			# env.Append(LINKFLAGS=['-march=i686'])
 
 
 
