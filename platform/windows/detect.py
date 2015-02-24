@@ -45,7 +45,7 @@
 #
 #			set PATH=C:\mingw-w64\bin;%PATH%
 #			set PATH=C:\mingw-w64\bin;%PATH%
-#			set MINGW32_PREFIX=C:\mingw-w64\bin\
+#			set MINGW32_PREFIX=C:\mingw-w32\bin\
 #			set MINGW64_PREFIX=C:\mingw-w64\bin\
 #
 #####
