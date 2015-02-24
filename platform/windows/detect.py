@@ -43,7 +43,7 @@
 #	For instance, you could store that set of commands into a .bat script
 #	that you would run just before scons :
 #
-#			set PATH=C:\mingw-w64\bin;%PATH%
+#			set PATH=C:\mingw-w32\bin;%PATH%
 #			set PATH=C:\mingw-w64\bin;%PATH%
 #			set MINGW32_PREFIX=C:\mingw-w32\bin\
 #			set MINGW64_PREFIX=C:\mingw-w64\bin\
