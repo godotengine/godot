@@ -715,9 +715,14 @@ String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps)
 		return "";
 
 	_snprintf( buffer, sizeof(buffer), "%s\\%s", REGSTR_PATH_JOYOEM, OEM);
-	res = RegOpenKeyEx ( HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS) 
-		return "";
+	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
+	if (res != ERROR_SUCCESS)
+	{
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
+		if (res != ERROR_SUCCESS)
+			return "";
+	}
+		
 
 	sz = sizeof(buffer);
 	res = RegQueryValueEx(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, (LPBYTE) buffer,
