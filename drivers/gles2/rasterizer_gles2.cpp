@@ -8437,7 +8437,7 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item,CanvasItem
 				CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
 				if (use_normalmap)
 					_canvas_normal_set_flip(Vector2(1,1));
-				canvas_draw_style_box(style->rect,style->texture,style->margin,style->draw_center,style->color);
+				canvas_draw_style_box(style->rect,style->texture,style->region,style->margin,style->draw_center,style->color);
 
 			} break;
 			case CanvasItem::Command::TYPE_PRIMITIVE: {
@@ -8773,8 +8773,6 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 						if (subtract) {
 
-					CanvasItem::CommandStyle* style = static_cast<CanvasItem::CommandStyle*>(c);
-					canvas_draw_style_box(style->rect,style->texture,style->region,style->margin,style->draw_center,style->color);
 							glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
 							glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
