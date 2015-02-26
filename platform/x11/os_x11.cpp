@@ -36,6 +36,8 @@
 #include "servers/physics/physics_server_sw.h"
 
 #include "X11/Xutil.h"
+#include "X11/extensions/Xinerama.h"
+
 #include "main/main.h"
 
 
@@ -191,6 +193,25 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		XMapRaised(x11_display, x11_window);
 		XWindowAttributes xwa;
 		XGetWindowAttributes(x11_display, DefaultRootWindow(x11_display), &xwa);
+
+		// Check for multiple monitors and go full screen on screen 0
+		int event_base;
+		int error_base;
+		bool xineramaActive = XineramaQueryExtension(x11_display, &event_base, &error_base);
+		if (xineramaActive) {
+			int screen_count;
+			XineramaScreenInfo* screen = XineramaQueryScreens(x11_display, &screen_count);
+			if (screen_count > 0) {
+				// for(int i = 0; i < screen_count; i++) {
+				// 	printf("Screen %d: %d,%d %dx%d\n", i, screen[i].x_org, screen[i].y_org, screen[i].width, screen[i].height);
+				// }
+				xwa.width = screen[0].width;
+				xwa.height = screen[0].height;
+				
+				XFree(screen);			
+			}
+		}
+
 		XMoveResizeWindow(x11_display, x11_window, 0, 0, xwa.width, xwa.height);
 
 		// code for netwm-compliants
