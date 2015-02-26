@@ -39,6 +39,10 @@ def can_build():
 		print("xcursor not found.. x11 disabled.")
 		return False
 
+	x11_error=os.system("pkg-config xinerama --modversion > /dev/null")
+	if (x11_error):
+		print("xinerama not found.. x11 disabled.")
+		return False
 	
 	return True # X11 enabled
   
@@ -108,6 +112,7 @@ def configure(env):
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
+	env.ParseConfig('pkg-config xinerama --cflags --libs')
 	env.ParseConfig('pkg-config openssl --cflags --libs')
 
 
