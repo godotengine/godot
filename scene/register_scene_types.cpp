@@ -76,6 +76,7 @@
 #include "scene/gui/reference_frame.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/tool_button.h"
 #include "scene/resources/video_stream.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
@@ -288,6 +289,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<PopupPanel>();
 	ObjectTypeDB::register_type<MenuButton>();
 	ObjectTypeDB::register_type<CheckButton>();
+	ObjectTypeDB::register_type<ToolButton>();
 	ObjectTypeDB::register_type<Panel>();
 	ObjectTypeDB::register_type<Range>();
 
