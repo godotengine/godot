@@ -6398,7 +6398,12 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 
 					 case VS::MATERIAL_BLEND_MODE_MIX: {
 						glBlendEquation(GL_FUNC_ADD);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+						if (current_rt && current_rt_transparent) {
+							glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+						}
+						else {
+							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+						}
 
 					 } break;
 					 case VS::MATERIAL_BLEND_MODE_ADD: {
@@ -6414,7 +6419,12 @@ void RasterizerGLES2::_render_list_forward(RenderList *p_render_list,const Trans
 					 } break;
 					case VS::MATERIAL_BLEND_MODE_MUL: {
 						glBlendEquation(GL_FUNC_ADD);
-						glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+						if (current_rt && current_rt_transparent) {
+							glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+						}
+						else {
+							glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+						}
 
 					} break;
 
@@ -6681,7 +6691,12 @@ void RasterizerGLES2::_copy_to_texscreen() {
 #endif
 	glDisable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (current_rt && current_rt_transparent) {
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	//glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glBindBuffer(GL_ARRAY_BUFFER,0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
@@ -7155,7 +7170,12 @@ void RasterizerGLES2::end_scene() {
 	current_depth_mask=true;
 	texscreen_copied=false;
 	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (current_rt && current_rt_transparent) {
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	glDisable(GL_BLEND);
 	current_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 
@@ -7172,7 +7192,12 @@ void RasterizerGLES2::end_scene() {
 	}
 
 	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (current_rt && current_rt_transparent) {
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	glDisable(GL_BLEND);
 	current_blend_mode=VS::MATERIAL_BLEND_MODE_MIX;
 	material_shader.set_conditional(MaterialShaderGLES2::USE_GLOW,false);
@@ -7809,7 +7834,12 @@ void RasterizerGLES2::canvas_begin() {
 #endif
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	if (current_rt && current_rt_transparent) {
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
+	else {
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	//glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glLineWidth(1.0);
 	glBindBuffer(GL_ARRAY_BUFFER,0);
@@ -7866,7 +7896,12 @@ void RasterizerGLES2::canvas_set_blend_mode(VS::MaterialBlendMode p_mode) {
 
 		 case VS::MATERIAL_BLEND_MODE_MIX: {
 			glBlendEquation(GL_FUNC_ADD);
-			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			if (current_rt && current_rt_transparent) {
+				glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+			}
+			else {
+				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			}
 
 		 } break;
 		 case VS::MATERIAL_BLEND_MODE_ADD: {
@@ -8675,7 +8710,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 				 case VS::MATERIAL_BLEND_MODE_MIX: {
 					glBlendEquation(GL_FUNC_ADD);
-					glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+					if (current_rt && current_rt_transparent) {
+						glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+					}
+					else {
+						glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+					}
 
 				 } break;
 				 case VS::MATERIAL_BLEND_MODE_ADD: {
@@ -8805,7 +8845,12 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 					canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,canvas_modulate);
 
 				glBlendEquation(GL_FUNC_ADD);
-				glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+				if (current_rt && current_rt_transparent) {
+					glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+				}
+				else {
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+				}
 			}
 
 
