@@ -303,9 +303,13 @@ void make_default_theme() {
     // CheckBox
 
     Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
+    cbx_empty->set_default_margin(MARGIN_LEFT,22);
+    cbx_empty->set_default_margin(MARGIN_RIGHT,4);
+    cbx_empty->set_default_margin(MARGIN_TOP,4);
+    cbx_empty->set_default_margin(MARGIN_BOTTOM,5);
     Ref<StyleBox> cbx_focus = focus;
     cbx_focus->set_default_margin(MARGIN_LEFT,4);
-    cbx_focus->set_default_margin(MARGIN_RIGHT,4);
+    cbx_focus->set_default_margin(MARGIN_RIGHT,22);
     cbx_focus->set_default_margin(MARGIN_TOP,4);
     cbx_focus->set_default_margin(MARGIN_BOTTOM,5);
 
@@ -570,7 +574,7 @@ void make_default_theme() {
 	// Tree
 
 	Ref<StyleBoxTexture> tree_selected = make_stylebox( selection_png,4,4,4,4,8,0,8,0);
-	Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
+    Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
 
 	t->set_stylebox("bg","Tree", make_stylebox( tree_bg_png,4,4,4,5) );
 	t->set_stylebox("bg_focus","Tree", focus );

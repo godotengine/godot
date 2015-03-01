@@ -40,17 +40,14 @@ class CheckBox : public Button {
 
 
 protected:
-    static void _bind_methods();
+    void _notification(int p_what);
 
     bool is_radio();
 
-    void update_icon(bool p_pressed);
-
 
 public:
-    void toggled(bool p_pressed);
 
-    CheckBox();
+    CheckBox(const String& p_text=String());
     ~CheckBox();
 
 };

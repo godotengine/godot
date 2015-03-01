@@ -31,9 +31,27 @@
 #include "servers/visual_server.h"
 #include "button_group.h"
 
-void CheckBox::_bind_methods()
-{
-    ObjectTypeDB::bind_method(_MD("set_pressed","pressed"),&CheckBox::toggled);
+
+void CheckBox::_notification(int p_what) {
+
+    if (p_what==NOTIFICATION_DRAW) {
+
+        RID ci = get_canvas_item();
+
+        Ref<Texture> on=Control::get_icon(is_radio() ? "radio_checked" : "checked");
+        Ref<Texture> off=Control::get_icon(is_radio() ? "radio_unchecked" : "unchecked");
+
+        Vector2 ofs;
+        ofs.x = 0;
+        ofs.y = int((get_size().height - on->get_height())/2);
+
+        if (is_pressed())
+            on->draw(ci,ofs);
+        else
+            off->draw(ci,ofs);
+
+
+    }
 }
 
 bool CheckBox::is_radio()
@@ -41,33 +59,18 @@ bool CheckBox::is_radio()
     Node* parent = this;
     do {
         parent = parent->get_parent();
-        if (dynamic_cast< ButtonGroup* >( parent))
+        if (dynamic_cast< ButtonGroup* >(parent))
             break;
     } while (parent != nullptr);
 
     return (parent != nullptr);
 }
 
-void CheckBox::update_icon(bool p_pressed)
-{
-    if (is_radio())
-        set_icon(Control::get_icon(p_pressed ? "radio_checked" : "radio_unchecked"));
-    else
-        set_icon(Control::get_icon(p_pressed ? "checked" : "unchecked"));
-}
-
-void CheckBox::toggled(bool p_pressed)
-{
-    update_icon();
-    BaseButton::toggled(p_pressed);
-}
-
-CheckBox::CheckBox()
+CheckBox::CheckBox(const String &p_text):
+    Button(p_text)
 {
     set_toggle_mode(true);
     set_text_align(ALIGN_LEFT);
-
-    update_icon(is_pressed());
 
 }
 
