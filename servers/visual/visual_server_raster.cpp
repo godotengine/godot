@@ -6641,7 +6641,12 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 		//clear the viewport black because of no camera? i seriously should..
 		if (p_viewport->render_target_clear_on_new_frame || p_viewport->render_target_clear) {
-			rasterizer->clear_viewport(clear_color);
+			if (p_viewport->transparent_bg) {
+				rasterizer->clear_viewport(Color(0,0,0,0));
+			}
+			else {
+				rasterizer->clear_viewport(clear_color);
+			}
 			p_viewport->render_target_clear=false;
 		}
 	}
