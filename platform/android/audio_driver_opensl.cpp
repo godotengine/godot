@@ -396,6 +396,14 @@ void AudioDriverOpenSL::finish(){
 void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 	pause=p_pause;
+
+	if (active) {
+		if (pause) {
+			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PAUSED);
+		} else {
+			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
+		}
+	}
 }
 
 

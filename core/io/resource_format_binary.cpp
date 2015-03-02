@@ -1778,6 +1778,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	f->store_32(VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
 
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
+
 	//f->store_32(saved_resources.size()+external_resources.size()); // load steps -not needed
 	save_unicode_string(p_resource->get_type());
 	uint64_t md_at = f->get_pos();
@@ -1909,6 +1914,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 
 	f->store_buffer((const uint8_t*)"RSRC",4); //magic at end
+
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
 
 	f->close();
 

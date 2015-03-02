@@ -572,8 +572,8 @@ public:
 	struct CanvasLight {
 
 
+
 		bool enabled;
-		bool shadow;
 		Color color;
 		Matrix32 xform;
 		float height;
@@ -586,21 +586,26 @@ public:
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
+		RID shadow_buffer;
+		int shadow_buffer_size;
+		float shadow_esm_mult;
 
 
 		void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
 		Matrix32 xform_cache;
+		float radius_cache; //used for shadow far plane
+		CameraMatrix shadow_matrix_cache;
 
 		Matrix32 light_shader_xform;
 		Vector2 light_shader_pos;
 
+		CanvasLight *shadows_next_ptr;
 		CanvasLight *filter_next_ptr;
 		CanvasLight *next_ptr;
 
 		CanvasLight() {
-			enabled=true;
-			shadow=false;
+			enabled=true;			
 			color=Color(1,1,1);
 			height=0;
 			z_min=-1024;
@@ -612,9 +617,24 @@ public:
 			texture_cache=NULL;
 			next_ptr=NULL;
 			filter_next_ptr=NULL;
+			shadow_buffer_size=2048;
+			shadow_esm_mult=80;
+
 		}
 	};
 
+	struct CanvasItem;
+
+	struct CanvasItemMaterial  {
+
+		RID shader;
+		Map<StringName,Variant> shader_param;
+		uint32_t shader_version;
+		Set<CanvasItem*> owners;
+		bool unshaded;
+
+		CanvasItemMaterial() {unshaded=false; shader_version=0; }
+	};
 
 	struct CanvasItem {
 
@@ -744,16 +764,14 @@ public:
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		CanvasItem*next;
-		RID shader;
-		Map<StringName,Variant> shader_param;
-		uint32_t shader_version;
+		CanvasItemMaterial* material;
 
 
 		float final_opacity;
 		Matrix32 final_transform;
 		Rect2 final_clip_rect;
 		CanvasItem* final_clip_owner;
-		CanvasItem* shader_owner;
+		CanvasItem* material_owner;
 		ViewportRender *vp_render;
 
 		Rect2 global_rect_cache;
@@ -881,8 +899,8 @@ public:
 			return rect;
 		}
 
-		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  shader_owner=NULL;}
-		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0; shader_owner=NULL;}
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL;}
+		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; }
 		virtual ~CanvasItem() { clear(); }
 	};
 
@@ -905,7 +923,36 @@ public:
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;
 
 	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light)=0;
+	virtual void canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow)=0;
+	/* LIGHT SHADOW MAPPING */
 
+	virtual RID canvas_light_occluder_create()=0;
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines)=0;
+
+
+	virtual RID canvas_light_shadow_buffer_create(int p_width)=0;
+
+	struct CanvasLightOccluderInstance {
+
+
+		bool enabled;
+		RID canvas;
+		RID polygon;
+		RID polygon_buffer;
+		Rect2 aabb_cache;
+		Matrix32 xform;
+		Matrix32 xform_cache;
+		int light_mask;
+		VS::CanvasOccluderPolygonCullMode cull_cache;
+
+		CanvasLightOccluderInstance *next;
+
+		CanvasLightOccluderInstance() { enabled=true; next=NULL; light_mask=1; cull_cache=VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED; }
+	};
+
+
+
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
 
 	/* ENVIRONMENT */
 	
@@ -944,6 +991,8 @@ public:
 	virtual bool is_skeleton(const RID& p_rid) const=0;
 	virtual bool is_environment(const RID& p_rid) const=0;
 	virtual bool is_shader(const RID& p_rid) const=0;
+
+	virtual bool is_canvas_light_occluder(const RID& p_rid) const=0;
 
 	virtual void free(const RID& p_rid)=0;
 

@@ -1,11 +1,10 @@
-#include "collision_polygon_2d_editor_plugin.h"
+#include "light_occluder_2d_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 
-
-void CollisionPolygon2DEditor::_notification(int p_what) {
+void LightOccluder2DEditor::_notification(int p_what) {
 
 	switch(p_what) {
 
@@ -15,6 +14,7 @@ void CollisionPolygon2DEditor::_notification(int p_what) {
 			button_edit->set_icon( get_icon("MovePoint","EditorIcons"));
 			button_edit->set_pressed(true);
 			get_tree()->connect("node_removed",this,"_node_removed");
+			create_poly->connect("confirmed",this,"_create_poly");
 
 		} break;
 		case NOTIFICATION_FIXED_PROCESS: {
@@ -24,7 +24,7 @@ void CollisionPolygon2DEditor::_notification(int p_what) {
 	}
 
 }
-void CollisionPolygon2DEditor::_node_removed(Node *p_node) {
+void LightOccluder2DEditor::_node_removed(Node *p_node) {
 
 	if(p_node==node) {
 		node=NULL;
@@ -35,7 +35,7 @@ void CollisionPolygon2DEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 CollisionPolygon2DEditor::snap_point(const Vector2& p_point) const {
+Vector2 LightOccluder2DEditor::snap_point(const Vector2& p_point) const {
 
 	if (canvas_item_editor->is_snap_active()) {
 
@@ -46,7 +46,7 @@ Vector2 CollisionPolygon2DEditor::snap_point(const Vector2& p_point) const {
 	}
 }
 
-void CollisionPolygon2DEditor::_menu_option(int p_option) {
+void LightOccluder2DEditor::_menu_option(int p_option) {
 
 	switch(p_option) {
 
@@ -66,11 +66,14 @@ void CollisionPolygon2DEditor::_menu_option(int p_option) {
 	}
 }
 
-void CollisionPolygon2DEditor::_wip_close() {
+void LightOccluder2DEditor::_wip_close(bool p_closed) {
 
 	undo_redo->create_action("Create Poly");
-	undo_redo->add_undo_method(node,"set_polygon",node->get_polygon());
-	undo_redo->add_do_method(node,"set_polygon",wip);
+	undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",node->get_occluder_polygon()->get_polygon());
+	undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",wip);
+	undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_closed",node->get_occluder_polygon()->is_closed());
+	undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_closed",p_closed);
+
 	undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
 	undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 	undo_redo->commit_action();
@@ -82,12 +85,19 @@ void CollisionPolygon2DEditor::_wip_close() {
 	edited_point=-1;
 }
 
-bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
+bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 
 
 	if (!node)
 		return false;
 
+	if (node->get_occluder_polygon().is_null()) {
+		if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && p_event.mouse_button.pressed) {
+			create_poly->set_text("No OccluderPolygon2D resource on this node.\nCreate and assign one?");
+			create_poly->popup_centered_minsize();
+		}
+		return false;
+	}
 	switch(p_event.type) {
 
 		case InputEvent::MOUSE_BUTTON: {
@@ -102,7 +112,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 			cpoint=snap_point(cpoint);
 			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
-			Vector<Vector2> poly = node->get_polygon();
+			Vector<Vector2> poly = Variant(node->get_occluder_polygon()->get_polygon());
 
 			//first check if a point is to be added (segment split)
 			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
@@ -129,9 +139,14 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 							if (wip.size()>1 && xform.xform(wip[0]).distance_to(gpoint)<grab_treshold) {
 								//wip closed
-								_wip_close();
+								_wip_close(true);
 
 								return true;
+							} else if (wip.size()>1 && xform.xform(wip[wip.size()-1]).distance_to(gpoint)<grab_treshold) {
+									//wip closed
+									_wip_close(false);
+									return true;
+
 							} else {
 
 								wip.push_back( cpoint );
@@ -143,7 +158,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 							}
 						}
 					} else if (mb.button_index==BUTTON_RIGHT && mb.pressed && wip_active) {
-						_wip_close();
+						_wip_close(true);
 					}
 
 
@@ -161,9 +176,9 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 								if (poly.size() < 3) {
 
 									undo_redo->create_action("Edit Poly");
-									undo_redo->add_undo_method(node,"set_polygon",poly);
+									undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 									poly.push_back(cpoint);
-									undo_redo->add_do_method(node,"set_polygon",poly);
+									undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 									undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
 									undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 									undo_redo->commit_action();
@@ -199,7 +214,7 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 									poly.insert(closest_idx+1,xform.affine_inverse().xform(closest_pos));
 									edited_point=closest_idx+1;
 									edited_point_pos=xform.affine_inverse().xform(closest_pos);
-									node->set_polygon(poly);
+									node->get_occluder_polygon()->set_polygon(Variant(poly));
 									canvas_item_editor->get_viewport_control()->update();
 									return true;
 								}
@@ -241,8 +256,8 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 								ERR_FAIL_INDEX_V(edited_point,poly.size(),false);
 								poly[edited_point]=edited_point_pos;
 								undo_redo->create_action("Edit Poly");
-								undo_redo->add_do_method(node,"set_polygon",poly);
-								undo_redo->add_undo_method(node,"set_polygon",pre_move_edit);
+								undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
+								undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",pre_move_edit);
 								undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
 								undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 								undo_redo->commit_action();
@@ -275,9 +290,9 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 
 							undo_redo->create_action("Edit Poly (Remove Point)");
-							undo_redo->add_undo_method(node,"set_polygon",poly);
+							undo_redo->add_undo_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 							poly.remove(closest_idx);
-							undo_redo->add_do_method(node,"set_polygon",poly);
+							undo_redo->add_do_method(node->get_occluder_polygon().ptr(),"set_polygon",poly);
 							undo_redo->add_do_method(canvas_item_editor->get_viewport_control(),"update");
 							undo_redo->add_undo_method(canvas_item_editor->get_viewport_control(),"update");
 							undo_redo->commit_action();
@@ -314,9 +329,9 @@ bool CollisionPolygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 	return false;
 }
-void CollisionPolygon2DEditor::_canvas_draw() {
+void LightOccluder2DEditor::_canvas_draw() {
 
-	if (!node)
+	if (!node || !node->get_occluder_polygon().is_valid())
 		return;
 
 	Control *vpc = canvas_item_editor->get_viewport_control();
@@ -326,7 +341,7 @@ void CollisionPolygon2DEditor::_canvas_draw() {
 	if (wip_active)
 		poly=wip;
 	else
-		poly=node->get_polygon();
+		poly=Variant(node->get_occluder_polygon()->get_polygon());
 
 
 	Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
@@ -348,14 +363,19 @@ void CollisionPolygon2DEditor::_canvas_draw() {
 		Vector2 next_point = xform.xform(p2);
 
 		Color col=Color(1,0.3,0.1,0.8);
-		vpc->draw_line(point,next_point,col,2);
+
+		if (i==poly.size()-1 && (!node->get_occluder_polygon()->is_closed() || wip_active)) {
+
+		} else {
+			vpc->draw_line(point,next_point,col,2);
+		}
 		vpc->draw_texture(handle,point-handle->get_size()*0.5);
 	}
 }
 
 
 
-void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
+void LightOccluder2DEditor::edit(Node *p_collision_polygon) {
 
 	if (!canvas_item_editor) {
 		canvas_item_editor=CanvasItemEditor::get_singleton();
@@ -363,7 +383,7 @@ void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
 
 	if (p_collision_polygon) {
 
-		node=p_collision_polygon->cast_to<CollisionPolygon2D>();
+		node=p_collision_polygon->cast_to<LightOccluder2D>();
 		if (!canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
 			canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
 		wip.clear();
@@ -380,15 +400,25 @@ void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
 
 }
 
-void CollisionPolygon2DEditor::_bind_methods() {
+void LightOccluder2DEditor::_create_poly()  {
 
-	ObjectTypeDB::bind_method(_MD("_menu_option"),&CollisionPolygon2DEditor::_menu_option);
-	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&CollisionPolygon2DEditor::_canvas_draw);
-	ObjectTypeDB::bind_method(_MD("_node_removed"),&CollisionPolygon2DEditor::_node_removed);
+	undo_redo->create_action("Create Occluder Polygon");
+	undo_redo->add_do_method(node,"set_occluder_polygon",Ref<OccluderPolygon2D>(memnew( OccluderPolygon2D)));
+	undo_redo->add_undo_method(node,"set_occluder_polygon",Variant(REF()));
+	undo_redo->commit_action();
+}
+
+void LightOccluder2DEditor::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("_menu_option"),&LightOccluder2DEditor::_menu_option);
+	ObjectTypeDB::bind_method(_MD("_canvas_draw"),&LightOccluder2DEditor::_canvas_draw);
+	ObjectTypeDB::bind_method(_MD("_node_removed"),&LightOccluder2DEditor::_node_removed);
+	ObjectTypeDB::bind_method(_MD("_create_poly"),&LightOccluder2DEditor::_create_poly);
 
 }
 
-CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
+
+LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 
 	canvas_item_editor=NULL;
 	editor=p_editor;
@@ -407,6 +437,11 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 	button_edit->set_toggle_mode(true);
 	button_edit->set_tooltip("Edit existing polygon:\nLMB: Move Point.\nCtrl+LMB: Split Segment.\nRMB: Erase Point.");
 
+	create_poly = memnew( ConfirmationDialog );
+	add_child(create_poly);
+	create_poly->get_ok()->set_text("Create");
+
+
 	//add_constant_override("separation",0);
 
 #if 0
@@ -424,17 +459,17 @@ CollisionPolygon2DEditor::CollisionPolygon2DEditor(EditorNode *p_editor) {
 }
 
 
-void CollisionPolygon2DEditorPlugin::edit(Object *p_object) {
+void LightOccluder2DEditorPlugin::edit(Object *p_object) {
 
 	collision_polygon_editor->edit(p_object->cast_to<Node>());
 }
 
-bool CollisionPolygon2DEditorPlugin::handles(Object *p_object) const {
+bool LightOccluder2DEditorPlugin::handles(Object *p_object) const {
 
-	return p_object->is_type("CollisionPolygon2D");
+	return p_object->is_type("LightOccluder2D");
 }
 
-void CollisionPolygon2DEditorPlugin::make_visible(bool p_visible) {
+void LightOccluder2DEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
 		collision_polygon_editor->show();
@@ -446,10 +481,10 @@ void CollisionPolygon2DEditorPlugin::make_visible(bool p_visible) {
 
 }
 
-CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_node) {
+LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin(EditorNode *p_node) {
 
 	editor=p_node;
-	collision_polygon_editor = memnew( CollisionPolygon2DEditor(p_node) );
+	collision_polygon_editor = memnew( LightOccluder2DEditor(p_node) );
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(collision_polygon_editor);
 
 	collision_polygon_editor->hide();
@@ -459,7 +494,7 @@ CollisionPolygon2DEditorPlugin::CollisionPolygon2DEditorPlugin(EditorNode *p_nod
 }
 
 
-CollisionPolygon2DEditorPlugin::~CollisionPolygon2DEditorPlugin()
+LightOccluder2DEditorPlugin::~LightOccluder2DEditorPlugin()
 {
 }
 

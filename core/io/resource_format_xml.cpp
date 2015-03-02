@@ -2592,6 +2592,11 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	}
 
 	exit_tag("resource_file");
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
+
 	f->close();
 	//memdelete(f);
 

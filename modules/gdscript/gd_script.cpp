@@ -2696,7 +2696,10 @@ Error ResourceFormatSaverGDScript::save(const String &p_path,const RES& p_resour
 	}
 
 	file->store_string(source);
-
+	if (file->get_error()!=OK && file->get_error()!=ERR_FILE_EOF) {
+		memdelete(file);
+		return ERR_CANT_CREATE;
+	}
 	file->close();
 	memdelete(file);
 	return OK;
