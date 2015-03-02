@@ -33,6 +33,8 @@
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/button_group.h"
 
 #include "tools/editor/editor_node.h"
 

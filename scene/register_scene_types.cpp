@@ -53,6 +53,7 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/panel_container.h"
@@ -287,6 +288,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Popup>();
 	ObjectTypeDB::register_type<PopupPanel>();
 	ObjectTypeDB::register_type<MenuButton>();
+    ObjectTypeDB::register_type<CheckBox>();
 	ObjectTypeDB::register_type<CheckButton>();
 	ObjectTypeDB::register_type<Panel>();
 	ObjectTypeDB::register_type<Range>();
