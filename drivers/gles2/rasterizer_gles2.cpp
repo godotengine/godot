@@ -9023,11 +9023,6 @@ void RasterizerGLES2::_canvas_item_setup_shader_params(CanvasItemMaterial *mater
 		canvas_shader.set_uniform(CanvasShaderGLES2::SCREEN_UV_MULT,Vector2(1.0/viewport.width,1.0/viewport.height));
 	}
 
-	if (shader->uses_time) {
-		canvas_shader.set_uniform(CanvasShaderGLES2::TIME,Math::fmod(last_time,300.0));
-		draw_next_frame=true;
-	}
-		//if uses TIME - draw_next_frame=true
 
 	uses_texpixel_size=shader->uses_texpixel_size;
 
@@ -9082,6 +9077,13 @@ void RasterizerGLES2::_canvas_item_setup_shader_uniforms(CanvasItemMaterial *mat
 	if (tex_id>1) {
 		glActiveTexture(GL_TEXTURE0);
 	}
+
+	if (shader->uses_time) {
+		canvas_shader.set_uniform(CanvasShaderGLES2::TIME,Math::fmod(last_time,300.0));
+		draw_next_frame=true;
+	}
+		//if uses TIME - draw_next_frame=true
+
 
 }
 
