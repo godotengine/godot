@@ -152,13 +152,13 @@ class OS_Windows : public OS {
 
 	CursorShape cursor_shape;
 
-	InputDefault *input;
+	InputPC *input;
 
 #ifdef RTAUDIO_ENABLED
 	AudioDriverRtAudio driver_rtaudio;
 #endif
 
-	void _post_dpad(DWORD p_dpad, int p_device, bool p_pressed);
+	void _post_hat(int p_device, DWORD p_dpad);
 
 	void _drag_event(int p_x, int p_y, int idx);
 	void _touch_event(bool p_pressed, int p_x, int p_y, int idx);
@@ -187,7 +187,7 @@ protected:
 	void probe_joysticks();
 	void process_joysticks();
 	void process_key_events();
-	String get_joystick_name( int id, JOYCAPS jcaps);
+	String get_joystick_name( int id, JOYCAPS jcaps, HKEY p_hkey);
 	
 	struct ProcessInfo {
 
