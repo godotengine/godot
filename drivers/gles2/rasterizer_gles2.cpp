@@ -4954,12 +4954,26 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 		Material::UniformData ud;
 
 		bool keep=true; //keep material value
-		bool has_old = old_mparams.has(E->key());
+
+		Map<StringName,Material::UniformData>::Element *OLD=old_mparams.find(E->key());
+		bool has_old = OLD;
 		bool old_inuse=has_old && old_mparams[E->key()].inuse;
 
-		if (!has_old || !old_inuse)
+		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
+
+		if (!has_old || !old_inuse) {
 			keep=false;
-		else if (old_mparams[E->key()].value.get_type()!=E->value().default_value.get_type()) {
+		}
+		else if (OLD->get().value.get_type()!=E->value().default_value.get_type()) {
+
+			if (OLD->get().value.get_type()==Variant::INT && E->get().type==ShaderLanguage::TYPE_FLOAT) {
+				//handle common mistake using shaders (feeding ints instead of float)
+				OLD->get().value=float(OLD->get().value);
+				keep=true;
+			} else if (!ud.istexture && E->value().default_value.get_type()!=Variant::NIL) {
+
+				keep=false;
+			}
 			//type changed between old and new
 			/*	if (old_mparams[E->key()].value.get_type()==Variant::OBJECT) {
 				if (E->value().default_value.get_type()!=Variant::_RID) //hackfor textures
@@ -4968,11 +4982,9 @@ _FORCE_INLINE_ void RasterizerGLES2::_update_material_shader_params(Material *p_
 				keep=false;*/
 
 			//value is invalid because type differs and default is not null
-			if (E->value().default_value.get_type()!=Variant::NIL)
-				keep=false;
+			;
 		}
 
-		ud.istexture=(E->get().type==ShaderLanguage::TYPE_TEXTURE || E->get().type==ShaderLanguage::TYPE_CUBEMAP);
 
 		if (keep) {
 			ud.value=old_mparams[E->key()].value;

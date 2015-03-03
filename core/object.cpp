@@ -1033,6 +1033,13 @@ void Object::add_user_signal(const MethodInfo& p_signal) {
 	signal_map[p_signal.name]=s;
 }
 
+bool Object::_has_user_signal(const StringName& p_name) const {
+
+	if (!signal_map.has(p_name))
+		return false;
+	return signal_map[p_name].user.name.length()>0;
+}
+
 struct _ObjectSignalDisconnectData {
 
 	StringName signal;
@@ -1431,6 +1438,7 @@ void Object::_bind_methods() {
 //	ObjectTypeDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("has_user_signal","signal"),&Object::_has_user_signal);
 //	ObjectTypeDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
 
 

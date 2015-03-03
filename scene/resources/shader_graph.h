@@ -66,6 +66,8 @@ public:
 		NODE_VEC_TO_XFORM, // 3 vec input, 1 xform output
 		NODE_SCALAR_INTERP, // scalar interpolation (with optional curve)
 		NODE_VEC_INTERP, // vec3 interpolation  (with optional curve)
+		/*NODE_SCALAR_CURVE_REMAP,
+		NODE_VEC_CURVE_REMAP,*/
 		NODE_SCALAR_INPUT, // scalar uniform (assignable in material)
 		NODE_VEC_INPUT, // vec3 uniform (assignable in material)
 		NODE_RGB_INPUT, // color uniform (assignable in material)

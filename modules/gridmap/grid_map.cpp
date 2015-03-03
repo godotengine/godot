@@ -122,7 +122,7 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 				Octant &g = *octant_map[ok];
 
 				g.baked=b;
-				g.bake_instance=VS::get_singleton()->instance_create();;
+				g.bake_instance=VS::get_singleton()->instance_create();;				
 				VS::get_singleton()->instance_set_base(g.bake_instance,g.baked->get_rid());
 				VS::get_singleton()->instance_geometry_set_baked_light(g.bake_instance,baked_light_instance?baked_light_instance->get_baked_light_instance():RID());
 			}
@@ -418,6 +418,7 @@ void GridMap::set_cell_item(int p_x,int p_y,int p_z, int p_item,int p_rot){
 		Octant *g = memnew( Octant );
 		g->dirty=true;
 		g->static_body = PhysicsServer::get_singleton()->body_create(PhysicsServer::BODY_MODE_STATIC);
+		PhysicsServer::get_singleton()->body_attach_object_instance_ID(g->static_body,get_instance_ID());
 		if (is_inside_world())
 			PhysicsServer::get_singleton()->body_set_space(g->static_body,get_world()->get_space());
 
