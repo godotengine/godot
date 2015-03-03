@@ -4,6 +4,7 @@
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 
+
 void CollisionPolygon2DEditor::_notification(int p_what) {
 
 	switch(p_what) {

@@ -29,6 +29,8 @@
 #include "viewport.h"
 #include "os/os.h"
 #include "scene/3d/spatial.h"
+#include "os/input.h"
+
 //#include "scene/3d/camera.h"
 
 #include "servers/spatial_sound_server.h"
@@ -970,6 +972,22 @@ bool Viewport::get_render_target_vflip() const{
 	return render_target_vflip;
 }
 
+void Viewport::set_render_target_clear_on_new_frame(bool p_enable) {
+
+	render_target_clear_on_new_frame=p_enable;
+	VisualServer::get_singleton()->viewport_set_render_target_clear_on_new_frame(viewport,p_enable);
+}
+
+bool Viewport::get_render_target_clear_on_new_frame() const{
+
+	return render_target_clear_on_new_frame;
+}
+
+void Viewport::render_target_clear() {
+
+	//render_target_clear=true;
+	VisualServer::get_singleton()->viewport_render_target_clear(viewport);
+}
 
 void Viewport::set_render_target_filter(bool p_enable) {
 
@@ -1098,6 +1116,12 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 	_make_input_local(ev);
 	unhandled_input(ev);
 
+}
+
+void Viewport::warp_mouse(const Vector2& p_pos) {
+
+	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
+	Input::get_singleton()->warp_mouse_pos(gpos);
 }
 
 void Viewport::input(const InputEvent& p_event) {
@@ -1256,6 +1280,11 @@ void Viewport::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_render_target_vflip","enable"), &Viewport::set_render_target_vflip);
 	ObjectTypeDB::bind_method(_MD("get_render_target_vflip"), &Viewport::get_render_target_vflip);
+	
+	ObjectTypeDB::bind_method(_MD("set_render_target_clear_on_new_frame","enable"), &Viewport::set_render_target_clear_on_new_frame);
+	ObjectTypeDB::bind_method(_MD("get_render_target_clear_on_new_frame"), &Viewport::get_render_target_clear_on_new_frame);
+	
+	ObjectTypeDB::bind_method(_MD("render_target_clear"), &Viewport::render_target_clear);
 
 	ObjectTypeDB::bind_method(_MD("set_render_target_filter","enable"), &Viewport::set_render_target_filter);
 	ObjectTypeDB::bind_method(_MD("get_render_target_filter"), &Viewport::get_render_target_filter);
@@ -1289,6 +1318,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
 	ObjectTypeDB::bind_method(_MD("set_render_target_to_screen_rect"), &Viewport::set_render_target_to_screen_rect);
 
+	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"), _SCS("set_rect"), _SCS("get_rect") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"own_world"), _SCS("set_use_own_world"), _SCS("is_using_own_world") );
@@ -1297,6 +1327,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"transparent_bg"), _SCS("set_transparent_background"), _SCS("has_transparent_background") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/enabled"), _SCS("set_as_render_target"), _SCS("is_set_as_render_target") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/v_flip"), _SCS("set_render_target_vflip"), _SCS("get_render_target_vflip") );
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/clear_on_new_frame"), _SCS("set_render_target_clear_on_new_frame"), _SCS("get_render_target_clear_on_new_frame") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/filter"), _SCS("set_render_target_filter"), _SCS("get_render_target_filter") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"render_target/gen_mipmaps"), _SCS("set_render_target_gen_mipmaps"), _SCS("get_render_target_gen_mipmaps") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"render_target/update_mode",PROPERTY_HINT_ENUM,"Disabled,Once,When Visible,Always"), _SCS("set_render_target_update_mode"), _SCS("get_render_target_update_mode") );
@@ -1335,6 +1366,8 @@ Viewport::Viewport() {
 	render_target_gen_mipmaps=false;
 	render_target=false;
 	render_target_vflip=false;
+	render_target_clear_on_new_frame=true;
+	//render_target_clear=true;
 	render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE;
 	render_target_texture = Ref<RenderTargetTexture>( memnew( RenderTargetTexture(this) ) );
 

@@ -54,10 +54,16 @@
 #include "io/marshalls.h"
 
 #include "shlobj.h"
+#include <regstr.h>
+
 static const WORD MAX_CONSOLE_LINES = 1500;
 
 extern "C" {
+#ifdef _MSC_VER
 	_declspec(dllexport) DWORD NvOptimusEnablement = 0x00000001;
+#else
+	__attribute__((visibility("default"))) DWORD NvOptimusEnablement = 0x00000001;
+#endif
 }
 
 //#define STDOUT_FILE
@@ -589,10 +595,11 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
+			// Make sure we don't include modifiers for the modifier key itself.
 			KeyEvent ke;
-			ke.mod_state.shift=shift_mem;
-			ke.mod_state.alt=alt_mem;
-			ke.mod_state.control=control_mem;
+			ke.mod_state.shift= (wParam != VK_SHIFT) ? shift_mem : false;
+			ke.mod_state.alt= (! (wParam == VK_MENU && (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN))) ? alt_mem : false;
+			ke.mod_state.control= (wParam != VK_CONTROL) ? control_mem : false;
 			ke.mod_state.meta=meta_mem;
 			ke.uMsg=uMsg;
 
@@ -680,6 +687,53 @@ LRESULT CALLBACK WndProc(HWND	hWnd,UINT uMsg,	WPARAM	wParam,	LPARAM	lParam)	{
 
 }
 
+
+String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps)
+{
+	char buffer [256];
+	char OEM [256];
+	HKEY hKey;
+	DWORD sz;
+	int res;
+
+	_snprintf(buffer, sizeof(buffer), "%s\\%s\\%s",
+				REGSTR_PATH_JOYCONFIG, jcaps.szRegKey,
+				REGSTR_KEY_JOYCURR );
+	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
+	if (res != ERROR_SUCCESS)
+	{
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
+		if (res != ERROR_SUCCESS) 
+			return "";
+	}
+
+	sz = sizeof(OEM);
+	_snprintf( buffer, sizeof(buffer), "Joystick%d%s", id + 1, REGSTR_VAL_JOYOEMNAME);
+	res = RegQueryValueEx ( hKey, buffer, 0, 0, (LPBYTE) OEM, &sz);
+	RegCloseKey ( hKey );
+	if (res != ERROR_SUCCESS) 
+		return "";
+
+	_snprintf( buffer, sizeof(buffer), "%s\\%s", REGSTR_PATH_JOYOEM, OEM);
+	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
+	if (res != ERROR_SUCCESS)
+	{
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
+		if (res != ERROR_SUCCESS)
+			return "";
+	}
+		
+
+	sz = sizeof(buffer);
+	res = RegQueryValueEx(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, (LPBYTE) buffer,
+						  &sz);
+	RegCloseKey(hKey);
+	if (res != ERROR_SUCCESS) 
+		return "";
+
+	return String(buffer);
+}
+
 void OS_Windows::probe_joysticks() {
 
 	static uint32_t last_attached = 0;
@@ -721,7 +775,13 @@ void OS_Windows::probe_joysticks() {
 			JOYCAPS jcaps;
 			MMRESULT res = joyGetDevCaps(JOYSTICKID1 + i, &jcaps, sizeof(jcaps));
 			if (res == JOYERR_NOERROR) {
-				joy.name = jcaps.szPname;
+				String name = get_joystick_name(JOYSTICKID1 + i, jcaps);
+				if ( name == "")
+					joy.name = jcaps.szPname;
+				else
+					joy.name = name;
+				
+					
 			};
 		};
 
@@ -1377,9 +1437,13 @@ void OS_Windows::warp_mouse_pos(const Point2& p_to) {
 		old_y=p_to.y;
 	} else {
 
-		SetCursorPos(p_to.x, p_to.y);
-	}
+		POINT p;
+		p.x=p_to.x;
+		p.y=p_to.y;
+		ClientToScreen(hWnd,&p);
 
+		SetCursorPos(p.x,p.y);
+	}
 }
 
 Point2 OS_Windows::get_mouse_pos() const {

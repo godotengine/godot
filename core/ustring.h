@@ -31,6 +31,7 @@
 
 #include "typedefs.h"
 #include "vector.h"
+#include "array.h"
 
 /**
 	@author red <red@killy>
@@ -127,10 +128,13 @@ public:
 	String insert(int p_at_pos,String p_string) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
+	String lpad(int min_length,const String& character=" ") const;
+	String rpad(int min_length,const String& character=" ") const;
+	String sprintf(const Array& values) const;
 	static String num(double p_num,int p_decimals=-1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num);
-	static String num_int64(int64_t p_num);
+	static String num_int64(int64_t p_num,int base=10,bool capitalize_hex=false);
 	static String chr(CharType p_char);
 	static String md5(const uint8_t *p_md5);
 	bool is_numeric() const;
@@ -203,7 +207,7 @@ public:
 	String xml_unescape() const;
 	String c_escape() const;
 	String c_unescape() const;
-
+	
 	String percent_encode() const;
 	String percent_decode() const;
 

@@ -29,6 +29,7 @@
 #include "tile_map.h"
 #include "io/marshalls.h"
 #include "servers/physics_2d_server.h"
+#include "method_bind_ext.inc"
 void TileMap::_notification(int p_what) {
 
 	switch(p_what) {
@@ -62,7 +63,7 @@ void TileMap::_update_quadrant_space(const RID& p_space) {
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
-		Physics2DServer::get_singleton()->body_set_space(q.static_body,p_space);
+		Physics2DServer::get_singleton()->body_set_space(q.body,p_space);
 	}
 }
 
@@ -79,7 +80,7 @@ void TileMap::_update_quadrant_transform() {
 		Matrix32 xform;
 		xform.set_origin( q.pos );
 		xform = global_transform * xform;
-		Physics2DServer::get_singleton()->body_set_state(q.static_body,Physics2DServer::BODY_STATE_TRANSFORM,xform);
+		Physics2DServer::get_singleton()->body_set_state(q.body,Physics2DServer::BODY_STATE_TRANSFORM,xform);
 	}
 }
 
@@ -178,7 +179,7 @@ void TileMap::_update_dirty_quadrants() {
 		Quadrant &q = *dirty_quadrant_list.first()->self();
 
 		vs->canvas_item_clear(q.canvas_item);
-		ps->body_clear_shapes(q.static_body);
+		ps->body_clear_shapes(q.body);
 		int shape_idx=0;
 
 		for(int i=0;i<q.cells.size();i++) {
@@ -225,11 +226,9 @@ void TileMap::_update_dirty_quadrants() {
 
 			rect.pos+=tile_ofs;
 			if (r==Rect2()) {
-
-				tex->draw_rect(q.canvas_item,rect);
+				tex->draw_rect(q.canvas_item,rect,false,Color(1,1,1),c.transpose);
 			} else {
-
-				tex->draw_rect_region(q.canvas_item,rect,r);
+				tex->draw_rect_region(q.canvas_item,rect,r,Color(1,1,1),c.transpose);
 			}
 
 			Vector< Ref<Shape2D> > shapes = tile_set->tile_get_shapes(c.id);
@@ -243,24 +242,29 @@ void TileMap::_update_dirty_quadrants() {
 					Vector2 shape_ofs = tile_set->tile_get_shape_offset(c.id);
 					Matrix32 xform;
 					xform.set_origin(offset.floor());
+					if (c.transpose) {
+						SWAP(xform.elements[0].x, xform.elements[0].y);
+						SWAP(xform.elements[1].x, xform.elements[1].y);
+						SWAP(shape_ofs.x, shape_ofs.y);
+						SWAP(s.x, s.y);
+					}
 					if (c.flip_h) {
-						xform.elements[0]=-xform.elements[0];
-						xform.elements[2].x+=s.x-shape_ofs.x;
-					} else {
-
-						xform.elements[2].x+=shape_ofs.x;
+						xform.elements[0].x=-xform.elements[0].x;
+						xform.elements[1].x=-xform.elements[1].x;
+						shape_ofs.x=s.x-shape_ofs.x;
 					}
 					if (c.flip_v) {
-						xform.elements[1]=-xform.elements[1];
-						xform.elements[2].y+=s.y-shape_ofs.y;
-					} else {
-
-						xform.elements[2].y+=shape_ofs.y;
+						xform.elements[0].y=-xform.elements[0].y;
+						xform.elements[1].y=-xform.elements[1].y;
+						shape_ofs.y=s.y-shape_ofs.y;
 					}
+					xform.elements[2].x+=shape_ofs.x;
+					xform.elements[2].y+=shape_ofs.y;
 
 
-					ps->body_add_shape(q.static_body,shape->get_rid(),xform);
-					ps->body_set_shape_metadata(q.static_body,shape_idx++,Vector2(E->key().x,E->key().y));
+
+					ps->body_add_shape(q.body,shape->get_rid(),xform);
+					ps->body_set_shape_metadata(q.body,shape_idx++,Vector2(E->key().x,E->key().y));
 
 				}
 			}
@@ -339,19 +343,19 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.canvas_item = VisualServer::get_singleton()->canvas_item_create();
 	VisualServer::get_singleton()->canvas_item_set_parent( q.canvas_item, get_canvas_item() );
 	VisualServer::get_singleton()->canvas_item_set_transform( q.canvas_item, xform );
-	q.static_body=Physics2DServer::get_singleton()->body_create(Physics2DServer::BODY_MODE_STATIC);
-	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.static_body,get_instance_ID());
-	Physics2DServer::get_singleton()->body_set_layer_mask(q.static_body,collision_layer);
-	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_FRICTION,friction);
-	Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);
+	q.body=Physics2DServer::get_singleton()->body_create(use_kinematic?Physics2DServer::BODY_MODE_KINEMATIC:Physics2DServer::BODY_MODE_STATIC);
+	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body,get_instance_ID());
+	Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
+	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_FRICTION,friction);
+	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);
 
 	if (is_inside_tree()) {
 		xform = get_global_transform() * xform;
 		RID space = get_world_2d()->get_space();
-		Physics2DServer::get_singleton()->body_set_space(q.static_body,space);
+		Physics2DServer::get_singleton()->body_set_space(q.body,space);
 	}
 
-	Physics2DServer::get_singleton()->body_set_state(q.static_body,Physics2DServer::BODY_STATE_TRANSFORM,xform);
+	Physics2DServer::get_singleton()->body_set_state(q.body,Physics2DServer::BODY_STATE_TRANSFORM,xform);
 
 	rect_cache_dirty=true;
 	quadrant_order_dirty=true;
@@ -361,7 +365,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 void TileMap::_erase_quadrant(Map<PosKey,Quadrant>::Element *Q) {
 
 	Quadrant &q=Q->get();
-	Physics2DServer::get_singleton()->free(q.static_body);
+	Physics2DServer::get_singleton()->free(q.body);
 	VisualServer::get_singleton()->free(q.canvas_item);
 	if (q.dirty_list.in_list())
 		dirty_quadrant_list.remove(&q.dirty_list);
@@ -385,7 +389,7 @@ void TileMap::_make_quadrant_dirty(Map<PosKey,Quadrant>::Element *Q) {
 }
 
 
-void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
+void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
 
 	PosKey pk(p_x,p_y);
 
@@ -421,7 +425,7 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
 	} else {
 		ERR_FAIL_COND(!Q); // quadrant should exist...
 
-		if (E->get().id==p_tile && E->get().flip_h==p_flip_x && E->get().flip_v==p_flip_y)
+		if (E->get().id==p_tile && E->get().flip_h==p_flip_x && E->get().flip_v==p_flip_y && E->get().transpose==p_transpose)
 			return; //nothing changed
 
 	}
@@ -432,6 +436,7 @@ void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y) {
 	c.id=p_tile;
 	c.flip_h=p_flip_x;
 	c.flip_v=p_flip_y;
+	c.transpose=p_transpose;
 
 	_make_quadrant_dirty(Q);
 
@@ -470,6 +475,17 @@ bool TileMap::is_cell_y_flipped(int p_x,int p_y) const {
 		return false;
 
 	return E->get().flip_v;
+}
+bool TileMap::is_cell_transposed(int p_x,int p_y) const {
+
+	PosKey pk(p_x,p_y);
+
+	const Map<PosKey,Cell>::Element *E=tile_map.find(pk);
+
+	if (!E)
+		return false;
+
+	return E->get().transpose;
 }
 
 
@@ -535,11 +551,12 @@ void TileMap::_set_tile_data(const DVector<int>& p_data) {
 		uint32_t v = decode_uint32(&local[4]);
 		bool flip_h = v&(1<<29);
 		bool flip_v = v&(1<<30);
+		bool transpose = v&(1<<31);
 		v&=(1<<29)-1;
 
 //		if (x<-20 || y <-20 || x>4000 || y>4000)
 //			continue;
-		set_cell(x,y,v,flip_h,flip_v);
+		set_cell(x,y,v,flip_h,flip_v,transpose);
 
 	}
 
@@ -562,6 +579,8 @@ DVector<int> TileMap::_get_tile_data() const {
 			val|=(1<<29);
 		if (E->get().flip_v)
 			val|=(1<<30);
+		if (E->get().transpose)
+			val|=(1<<31);
 
 		encode_uint32(val,&ptr[4]);
 		idx+=2;
@@ -586,8 +605,20 @@ void TileMap::set_collision_layer_mask(uint32_t p_layer) {
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
-		Physics2DServer::get_singleton()->body_set_layer_mask(q.static_body,collision_layer);
+		Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
 	}
+}
+
+bool TileMap::get_collision_use_kinematic() const{
+
+	return use_kinematic;
+}
+
+void TileMap::set_collision_use_kinematic(bool p_use_kinematic) {
+
+	_clear_quadrants();
+	use_kinematic=p_use_kinematic;
+	_recreate_quadrants();
 }
 
 void TileMap::set_collision_friction(float p_friction) {
@@ -596,7 +627,7 @@ void TileMap::set_collision_friction(float p_friction) {
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
-		Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_FRICTION,p_friction);
+		Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_FRICTION,p_friction);
 	}
 
 }
@@ -612,7 +643,7 @@ void TileMap::set_collision_bounce(float p_bounce){
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
-		Physics2DServer::get_singleton()->body_set_param(q.static_body,Physics2DServer::BODY_PARAM_BOUNCE,p_bounce);
+		Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_BOUNCE,p_bounce);
 	}
 
 }
@@ -804,6 +835,9 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_center_y","enable"),&TileMap::set_center_y);
 	ObjectTypeDB::bind_method(_MD("get_center_y"),&TileMap::get_center_y);
 
+	ObjectTypeDB::bind_method(_MD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
+	ObjectTypeDB::bind_method(_MD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
+
 	ObjectTypeDB::bind_method(_MD("set_collision_layer_mask","mask"),&TileMap::set_collision_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_collision_layer_mask"),&TileMap::get_collision_layer_mask);
 
@@ -813,7 +847,7 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_collision_bounce","value"),&TileMap::set_collision_bounce);
 	ObjectTypeDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
-	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
@@ -837,6 +871,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/quadrant_size",PROPERTY_HINT_RANGE,"1,128,1"),_SCS("set_quadrant_size"),_SCS("get_quadrant_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::MATRIX32,"cell/custom_transform"),_SCS("set_custom_transform"),_SCS("get_custom_transform"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cell/half_offset",PROPERTY_HINT_ENUM,"Offset X,Offset Y,Disabled"),_SCS("set_half_offset"),_SCS("get_half_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision/use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer_mask"),_SCS("get_collision_layer_mask"));
@@ -870,6 +905,7 @@ TileMap::TileMap() {
 	bounce=0;
 	mode=MODE_SQUARE;
 	half_offset=HALF_OFFSET_DISABLED;
+	use_kinematic=false;
 
 	fp_adjust=0.01;
 	fp_adjust=0.01;

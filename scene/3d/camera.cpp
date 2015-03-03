@@ -152,11 +152,11 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		case PROJECTION_PERSPECTIVE: {
 		
-			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_NOEDITOR) );
+			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_NOEDITOR) );
 			if (keep_aspect==KEEP_WIDTH)
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 			else
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 
 			
 		} break;
@@ -604,7 +604,7 @@ Vector3 Camera::project_position(const Point2& p_point) const {
 
 	Vector2 point;
 	point.x = (p_point.x/viewport_size.x) * 2.0 - 1.0;
-	point.y = (p_point.y/viewport_size.y) * 2.0 - 1.0;
+	point.y = (1.0-(p_point.y/viewport_size.y)) * 2.0 - 1.0;
 	point*=vp_size;
 
 	Vector3 p(point.x,point.y,-near);

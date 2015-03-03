@@ -415,7 +415,19 @@ static void clear_touches() {
 		return;
 	active = TRUE;
 	printf("start animation!\n");
+#if USE_CADISPLAYLINK
+	// Approximate frame rate
+	// assumes device refreshes at 60 fps
+	int frameInterval = (int) floor(animationInterval * 60.0f);
+
+	displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(drawView)];
+	[displayLink setFrameInterval:frameInterval];
+
+	// Setup DisplayLink in main thread
+	[displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+#else
 	animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];
+#endif
 
 	if (video_playing)
 	{
@@ -429,8 +441,13 @@ static void clear_touches() {
 		return;
 	active = FALSE;
 	printf("******** stop animation!\n");
+#if USE_CADISPLAYLINK
+	[displayLink invalidate];
+	displayLink = nil;
+#else
 	[animationTimer invalidate];
 	animationTimer = nil;
+#endif
 	clear_touches();
 
 	if (video_playing)
@@ -443,7 +460,11 @@ static void clear_touches() {
 {
 	animationInterval = interval;
 	
+#if USE_CADISPLAYLINK
+	if(displayLink)
+#else
 	if(animationTimer)
+#endif
 	{
 		[self stopAnimation];
 		[self startAnimation];
@@ -453,6 +474,17 @@ static void clear_touches() {
 // Updates the OpenGL view when the timer fires
 - (void)drawView
 {
+#if USE_CADISPLAYLINK
+	// Pause the CADisplayLink to avoid recursion
+	[displayLink setPaused: YES];
+
+	// Process all input events
+	while(CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0, TRUE) == kCFRunLoopRunHandledSource);
+
+	// We are good to go, resume the CADisplayLink
+	[displayLink setPaused: NO];
+#endif
+
 	if (!active) {
 		printf("draw view not active!\n");
 		return;

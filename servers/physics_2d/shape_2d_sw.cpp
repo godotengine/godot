@@ -136,6 +136,7 @@ real_t LineShape2DSW::get_moment_of_inertia(float p_mass, const Vector2 &p_scale
 	return 0;
 }
 
+
 void LineShape2DSW::set_data(const Variant& p_data) {
 
 	ERR_FAIL_COND(p_data.get_type()!=Variant::ARRAY);

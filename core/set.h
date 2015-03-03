@@ -249,6 +249,37 @@ private:
 		return (node!=_data._nil)?node:NULL;
 	}
 
+	Element *_lower_bound(const T& p_value) const {
+
+		Element *node = _data._root->left;
+		Element *prev = NULL;
+		C less;
+
+		while(node!=_data._nil) {
+			prev=node;
+
+			if (less(p_value,node->value))
+				node=node->left;
+			else if (less(node->value,p_value))
+				node=node->right;
+			else
+				break; // found
+		}
+
+		if (node==_data._nil) {
+			if (prev==NULL)
+				return NULL;
+			if (less(prev->value,p_value)) {
+
+				prev=prev->_next;
+			}
+
+			return prev;
+
+		} else
+			return node;
+	}
+
 
 	Element *_insert(const T& p_value, bool& r_exists) {
 		
@@ -582,6 +613,12 @@ public:
 		
 		return e;
 	}
+
+	Element *lower_bound(const T& p_value) const {
+
+		return _lower_bound(p_value);
+	}
+
 	
 	inline int size() const { return _data.size_cache; }
 	int calculate_depth() const {

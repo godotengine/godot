@@ -60,6 +60,7 @@ private:
 	Mode mode;
 	Matrix32 custom_transform;
 	HalfOffset half_offset;
+	bool use_kinematic;
 
 
 	union PosKey {
@@ -85,6 +86,7 @@ private:
 			int32_t id:24;
 			bool flip_h:1;
 			bool flip_v:1;
+			bool transpose:1;
 		};
 
 		uint32_t _u32t;
@@ -97,14 +99,14 @@ private:
 
 		Vector2 pos;
 		RID canvas_item;
-		RID static_body;
+		RID body;
 
 		SelfList<Quadrant> dirty_list;
 
 		VSet<PosKey> cells;
 
-		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; static_body=q.static_body; cells=q.cells; }
-		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; static_body=q.static_body; cells=q.cells;}
+		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells; }
+		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells;}
 		Quadrant() : dirty_list(this) {}
 	};
 
@@ -167,15 +169,19 @@ public:
 	void set_center_y(bool p_enable);
 	bool get_center_y() const;
 
-	void set_cell(int p_x,int p_y,int p_tile,bool p_flip_x=false,bool p_flip_y=false);
+	void set_cell(int p_x,int p_y,int p_tile,bool p_flip_x=false,bool p_flip_y=false,bool p_transpose=false);
 	int get_cell(int p_x,int p_y) const;
 	bool is_cell_x_flipped(int p_x,int p_y) const;
 	bool is_cell_y_flipped(int p_x,int p_y) const;
+	bool is_cell_transposed(int p_x,int p_y) const;
 
 	Rect2 get_item_rect() const;
 
 	void set_collision_layer_mask(uint32_t p_layer);
 	uint32_t get_collision_layer_mask() const;
+
+	void set_collision_use_kinematic(bool p_use_kinematic);
+	bool get_collision_use_kinematic() const;
 
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;

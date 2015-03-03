@@ -187,6 +187,7 @@ protected:
 	void probe_joysticks();
 	void process_joysticks();
 	void process_key_events();
+	String get_joystick_name( int id, JOYCAPS jcaps);
 	
 	struct ProcessInfo {
 

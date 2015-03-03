@@ -1112,6 +1112,7 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_vertex_builtins_defs[]={
 
 	{ "SRC_VERTEX", TYPE_VEC2},
 	{ "VERTEX", TYPE_VEC2},
+	{ "WORLD_VERTEX", TYPE_VEC2},
 	{ "UV", TYPE_VEC2},
 	{ "COLOR", TYPE_VEC4},
 	{ "VAR1", TYPE_VEC4},

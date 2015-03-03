@@ -121,7 +121,7 @@ void CameraMatrix::set_orthogonal(float p_size, float p_aspect, float p_znear, f
 
 
 void CameraMatrix::set_frustum(float p_left, float p_right, float p_bottom, float p_top, float p_near, float p_far) {
-
+#if 0
 	///@TODO, give a check to this. I'm not sure if it's working.
 	set_identity();
 
@@ -133,8 +133,25 @@ void CameraMatrix::set_frustum(float p_left, float p_right, float p_bottom, floa
 	matrix[2][3]=-(2*p_far*p_near) / (p_far-p_near);
 	matrix[3][2]=-1;
 	matrix[3][3]=0;
+#else
+	float *te = &matrix[0][0];
+	float x = 2 * p_near / ( p_right - p_left );
+	float y = 2 * p_near / ( p_top - p_bottom );
+
+	float a = ( p_right + p_left ) / ( p_right - p_left );
+	float b = ( p_top + p_bottom ) / ( p_top - p_bottom );
+	float c = - ( p_far + p_near ) / ( p_far - p_near );
+	float d = - 2 * p_far * p_near / ( p_far - p_near );
+
+	te[0] = x;	te[4] = 0;	te[8] = a;	te[12] = 0;
+	te[1] = 0;	te[5] = y;	te[9] = b;	te[13] = 0;
+	te[2] = 0;	te[6] = 0;	te[10] = c;	te[14] = d;
+	te[3] = 0;	te[7] = 0;	te[11] = - 1;	te[15] = 0;
+
+#endif
 
 }
+
 
 
 float CameraMatrix::get_z_far() const {

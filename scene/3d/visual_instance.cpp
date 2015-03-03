@@ -310,6 +310,17 @@ int GeometryInstance::get_baked_light_texture_id() const{
 	return baked_light_texture_id;
 }
 
+void GeometryInstance::set_extra_cull_margin(float p_margin) {
+
+	ERR_FAIL_COND(p_margin<0);
+	extra_cull_margin=p_margin;
+	VS::get_singleton()->instance_set_extra_visibility_margin(get_instance(),extra_cull_margin);
+}
+
+float GeometryInstance::get_extra_cull_margin() const{
+
+	return extra_cull_margin;
+}
 
 void GeometryInstance::_bind_methods() {
 
@@ -328,6 +339,9 @@ void GeometryInstance::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_baked_light_texture_id","id"), &GeometryInstance::set_baked_light_texture_id);
 	ObjectTypeDB::bind_method(_MD("get_baked_light_texture_id"), &GeometryInstance::get_baked_light_texture_id);
 
+	ObjectTypeDB::bind_method(_MD("set_extra_cull_margin","margin"), &GeometryInstance::set_extra_cull_margin);
+	ObjectTypeDB::bind_method(_MD("get_extra_cull_margin"), &GeometryInstance::get_extra_cull_margin);
+
 	ObjectTypeDB::bind_method(_MD("_baked_light_changed"), &GeometryInstance::_baked_light_changed);
 
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/visible"), _SCS("set_flag"), _SCS("get_flag"),FLAG_VISIBLE);
@@ -336,6 +350,7 @@ void GeometryInstance::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/receive_shadows"), _SCS("set_flag"), _SCS("get_flag"),FLAG_RECEIVE_SHADOWS);
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/range_begin",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_draw_range_begin"), _SCS("get_draw_range_begin"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "geometry/range_end",PROPERTY_HINT_RANGE,"0,32768,0.01"), _SCS("set_draw_range_end"), _SCS("get_draw_range_end"));
+	ADD_PROPERTY( PropertyInfo( Variant::REAL, "geometry/extra_cull_margin",PROPERTY_HINT_RANGE,"0,16384,0"), _SCS("set_extra_cull_margin"), _SCS("get_extra_cull_margin"));
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/billboard"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/billboard_y"), _SCS("set_flag"), _SCS("get_flag"),FLAG_BILLBOARD_FIX_Y);
 	ADD_PROPERTYI( PropertyInfo( Variant::BOOL, "geometry/depth_scale"), _SCS("set_flag"), _SCS("get_flag"),FLAG_DEPH_SCALE);

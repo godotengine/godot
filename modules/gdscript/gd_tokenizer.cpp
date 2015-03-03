@@ -539,10 +539,11 @@ void GDTokenizerText::_advance() {
 				
 			case '\'':
 			case '"': {
-
+	
 				if (GETCHAR(0)=='\'')
 					string_mode=STRING_SINGLE_QUOTE;
-
+																	
+																	
 				int i=1;
 				if (string_mode==STRING_DOUBLE_QUOTE && GETCHAR(i)=='"' && GETCHAR(i+1)=='"') {
 					i+=2;

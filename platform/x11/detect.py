@@ -70,24 +70,23 @@ def configure(env):
 		else:
 			env["bits"]="32"
 
-
 	env.Append(CPPPATH=['#platform/x11'])
 	if (env["use_llvm"]=="yes"):
-		env["CC"]="clang"
-		env["CXX"]="clang++"
-		env["LD"]="clang++"
-		if (env["use_sanitizer"]=="yes"):
-			env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
-			env.Append(LINKFLAGS=['-fsanitize=address'])
-			env.extra_suffix=".llvms"
-		else:
-			env.extra_suffix=".llvm"
+		if 'clang++' not in env['CXX']:
+			env["CC"]="clang"
+			env["CXX"]="clang++"
+			env["LD"]="clang++"
+		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
+		env.extra_suffix=".llvm"
+
 		if (env["colored"]=="yes"):
 			if sys.stdout.isatty():
 				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
 
-
-
+	if (env["use_sanitizer"]=="yes"):
+		env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
+		env.Append(LINKFLAGS=['-fsanitize=address'])
+		env.extra_suffix+="s"
 
 	#if (env["tools"]=="no"):
 	#	#no tools suffix
@@ -140,11 +139,6 @@ def configure(env):
 		env.Append(CPPFLAGS=['-m64'])
 		env.Append(LINKFLAGS=['-m64','-L/usr/lib/i686-linux-gnu'])
 
-
-	if (env["CXX"]=="clang++"):
-		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
-		env["CC"]="clang"
-		env["LD"]="clang++"
 
 	import methods
 

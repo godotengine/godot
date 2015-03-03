@@ -38,19 +38,19 @@ Size2 Texture::get_size() const {
 }
 
 
-void Texture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate) const {
+void Texture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate, bool p_transpose) const {
 
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,Rect2( p_pos, get_size()),get_rid(),false,p_modulate);
-
-}
-void Texture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate) const {
-
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,p_rect,get_rid(),p_tile,p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,Rect2( p_pos, get_size()),get_rid(),false,p_modulate,p_transpose);
 
 }
-void Texture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate) const{
+void Texture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) const {
 
-	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,get_rid(),p_src_rect,p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,p_rect,get_rid(),p_tile,p_modulate,p_transpose);
+
+}
+void Texture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) const{
+
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,get_rid(),p_src_rect,p_modulate,p_transpose);
 }
 
 bool Texture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const {
@@ -70,9 +70,9 @@ void Texture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_alpha"),&Texture::has_alpha);
 	ObjectTypeDB::bind_method(_MD("set_flags","flags"),&Texture::set_flags);
 	ObjectTypeDB::bind_method(_MD("get_flags"),&Texture::get_flags);
-	ObjectTypeDB::bind_method(_MD("draw","canvas_item","pos","modulate"),&Texture::draw,DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate"),&Texture::draw_rect,DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)));
+	ObjectTypeDB::bind_method(_MD("draw","canvas_item","pos","modulate"),&Texture::draw,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_rect","canvas_item","rect","tile","modulate"),&Texture::draw_rect,DEFVAL(Color(1,1,1)),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("draw_rect_region","canvas_item","rect","src_rect","modulate"),&Texture::draw_rect_region,DEFVAL(Color(1,1,1)),DEFVAL(false));
 
 	BIND_CONSTANT( FLAG_MIPMAPS );
 	BIND_CONSTANT( FLAG_REPEAT );
@@ -327,27 +327,26 @@ bool ImageTexture::has_alpha() const {
 }
 
 
-void ImageTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate) const {
+void ImageTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate, bool p_transpose) const {
 
 	if ((w|h)==0)
 		return;
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,Rect2( p_pos, Size2(w,h)),texture,false,p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,Rect2( p_pos, Size2(w,h)),texture,false,p_modulate,p_transpose);
 
 }
-void ImageTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate) const {
+void ImageTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) const {
 
 	if ((w|h)==0)
 		return;
-	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,p_rect,texture,p_tile,p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_canvas_item,p_rect,texture,p_tile,p_modulate,p_transpose);
 
 }
-void ImageTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate) const{
+void ImageTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) const{
 
 	if ((w|h)==0)
 		return;
-	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,texture,p_src_rect,p_modulate);
+	VisualServer::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,p_rect,texture,p_src_rect,p_modulate,p_transpose);
 }
-
 
 void ImageTexture::set_size_override(const Size2& p_size) {
 
@@ -546,7 +545,7 @@ void AtlasTexture::_bind_methods() {
 
 
 
-void AtlasTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate) const {
+void AtlasTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate, bool p_transpose) const {
 
 	Rect2 rc=region;
 
@@ -561,10 +560,10 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_m
 		rc.size.height=atlas->get_height();
 	}
 
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,Rect2(p_pos+margin.pos,rc.size),atlas->get_rid(),rc,p_modulate);
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,Rect2(p_pos+margin.pos,rc.size),atlas->get_rid(),rc,p_modulate,p_transpose);
 }
 
-void AtlasTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate) const {
+void AtlasTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) const {
 
 	Rect2 rc=region;
 
@@ -582,10 +581,10 @@ void AtlasTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,
 	Vector2 scale = p_rect.size / (region.size+margin.size);
 	Rect2 dr( p_rect.pos+margin.pos*scale,rc.size*scale  );
 
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),rc,p_modulate);
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),rc,p_modulate,p_transpose);
 
 }
-void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate) const {
+void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) const {
 
 	//this might not necesarily work well if using a rect, needs to be fixed properly
 	Rect2 rc=region;
@@ -615,7 +614,7 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
     }
 	Rect2 dr( p_rect.pos+ofs*scale,src_c.size*scale );
 
-	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate);
+	VS::get_singleton()->canvas_item_add_texture_rect_region(p_canvas_item,dr,atlas->get_rid(),src_c,p_modulate,p_transpose);
 }
 
 bool AtlasTexture::get_rect_region(const Rect2& p_rect, const Rect2& p_src_rect,Rect2& r_rect,Rect2& r_src_rect) const {
@@ -801,15 +800,16 @@ void LargeTexture::_bind_methods() {
 
 
 
-void LargeTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate) const {
+void LargeTexture::draw(RID p_canvas_item, const Point2& p_pos, const Color& p_modulate, bool p_transpose) const {
 
 	for(int i=0;i<pieces.size();i++) {
 
-		pieces[i].texture->draw(p_canvas_item,pieces[i].offset+p_pos,p_modulate);
+		// TODO
+		pieces[i].texture->draw(p_canvas_item,pieces[i].offset+p_pos,p_modulate,p_transpose);
 	}
 }
 
-void LargeTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate) const {
+void LargeTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,const Color& p_modulate, bool p_transpose) const {
 
 	//tiling not supported for this
 	if (size.x==0 || size.y==0)
@@ -819,11 +819,11 @@ void LargeTexture::draw_rect(RID p_canvas_item,const Rect2& p_rect, bool p_tile,
 
 	for(int i=0;i<pieces.size();i++) {
 
-		pieces[i].texture->draw_rect(p_canvas_item,Rect2(pieces[i].offset*scale+p_rect.pos,pieces[i].texture->get_size()*scale),false,p_modulate);
+		// TODO
+		pieces[i].texture->draw_rect(p_canvas_item,Rect2(pieces[i].offset*scale+p_rect.pos,pieces[i].texture->get_size()*scale),false,p_modulate,p_transpose);
 	}
-
 }
-void LargeTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate) const {
+void LargeTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const Rect2& p_src_rect,const Color& p_modulate, bool p_transpose) const {
 
 
 	//tiling not supported for this
@@ -834,6 +834,7 @@ void LargeTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
 
 	for(int i=0;i<pieces.size();i++) {
 
+		// TODO
 		Rect2 rect( pieces[i].offset, pieces[i].texture->get_size());
 		if (!p_src_rect.intersects(rect))
 			continue;
@@ -842,7 +843,7 @@ void LargeTexture::draw_rect_region(RID p_canvas_item,const Rect2& p_rect, const
 		target.size*=scale;
 		target.pos=p_rect.pos+(p_src_rect.pos+rect.pos)*scale;
 		local.pos-=rect.pos;
-		pieces[i].texture->draw_rect_region(p_canvas_item,target,local,p_modulate);
+		pieces[i].texture->draw_rect_region(p_canvas_item,target,local,p_modulate,p_transpose);
 	}
 
 }
@@ -935,21 +936,21 @@ float CubeMap::get_lossy_storage_quality() const {
 
 bool CubeMap::_set(const StringName& p_name, const Variant& p_value) {
 
-	if (p_name=="side/left")
+	if (p_name=="side/left") {
 		set_side(SIDE_LEFT,p_value);
-	if (p_name=="side/right")
+	} else if (p_name=="side/right") {
 		set_side(SIDE_RIGHT,p_value);
-	if (p_name=="side/bottom")
+	} else if (p_name=="side/bottom") {
 		set_side(SIDE_BOTTOM,p_value);
-	if (p_name=="side/top")
+	} else if (p_name=="side/top") {
 		set_side(SIDE_TOP,p_value);
-	if (p_name=="side/front")
+	} else if (p_name=="side/front") {
 		set_side(SIDE_FRONT,p_value);
-	if (p_name=="side/back")
+	} else if (p_name=="side/back") {
 		set_side(SIDE_BACK,p_value);
-	else if (p_name=="flags")
+	} else if (p_name=="flags") {
 		set_flags(p_value);
-	else if (p_name=="storage") {
+	} else if (p_name=="storage") {
 		storage=Storage(p_value.operator int());
 	} else if (p_name=="lossy_quality") {
 		lossy_storage_quality=p_value;
@@ -962,25 +963,25 @@ bool CubeMap::_set(const StringName& p_name, const Variant& p_value) {
 
 bool CubeMap::_get(const StringName& p_name,Variant &r_ret) const {
 
-	if (p_name=="side/left")
+	if (p_name=="side/left") {
 		r_ret=get_side(SIDE_LEFT);
-	if (p_name=="side/right")
+	} else if (p_name=="side/right") {
 		r_ret=get_side(SIDE_RIGHT);
-	if (p_name=="side/bottom")
+	} else if (p_name=="side/bottom") {
 		r_ret=get_side(SIDE_BOTTOM);
-	if (p_name=="side/top")
+	} else if (p_name=="side/top") {
 		r_ret=get_side(SIDE_TOP);
-	if (p_name=="side/front")
+	} else if (p_name=="side/front") {
 		r_ret=get_side(SIDE_FRONT);
-	if (p_name=="side/back")
+	} else if (p_name=="side/back") {
 		r_ret=get_side(SIDE_BACK);
-	else if (p_name=="flags")
+	} else if (p_name=="flags") {
 		r_ret= flags;
-	else if (p_name=="storage")
+	} else if (p_name=="storage") {
 		r_ret= storage;
-	else if (p_name=="lossy_quality")
+	} else if (p_name=="lossy_quality") {
 		r_ret= lossy_storage_quality;
-	else
+	} else
 		return false;
 
 	return true;

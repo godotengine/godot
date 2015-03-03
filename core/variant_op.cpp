@@ -552,6 +552,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					if (p_b.type==MATRIX32) {
 						_RETURN( *p_a._data._matrix32 * *p_b._data._matrix32 );
 					};
+					if (p_b.type==VECTOR2) {
+						_RETURN( p_a._data._matrix32->xform( *(const Vector2*)p_b._data._mem) );
+					};
 					r_valid=false;
 					return;
 				} break;
@@ -736,6 +739,20 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				}
 #endif
 				_RETURN( p_a._data._int % p_b._data._int );
+				
+			} else if (p_a.type==STRING) {
+				const String *str=reinterpret_cast<const String*>(p_a._data._mem);
+
+				if (p_b.type==ARRAY) {
+					// e.g. "frog %s %d" % ["fish", 12]
+					const Array *arr=reinterpret_cast<const Array*>(p_b._data._mem);
+					_RETURN(str->sprintf(*arr));
+				} else {
+					// e.g. "frog %d" % 12
+					Array arr;
+					arr.push_back(p_b);
+					_RETURN(str->sprintf(arr));
+				}
 			}
 
 			r_valid=false;
@@ -1687,6 +1704,19 @@ void Variant::set(const Variant& p_index, const Variant& p_value, bool *r_valid)
 					return;
 				}
 			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					ie.action.action=p_value;
+					return;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed=p_value;
+					return;
+				}
+			}
 
 		} break;
 		case DICTIONARY: {
@@ -2363,6 +2393,17 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				} if (str=="speed") {
 					valid=true;
 					return Vector2(ie.screen_drag.speed_x,ie.screen_drag.speed_y);
+				}
+			}
+			if (ie.type == InputEvent::ACTION) {
+
+				if (str =="action") {
+					valid=true;
+					return ie.action.action;
+				}
+				else if (str == "pressed") {
+					valid=true;
+					ie.action.pressed;
 				}
 			}
 

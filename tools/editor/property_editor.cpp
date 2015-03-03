@@ -1857,7 +1857,32 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 				} else {
 					p_item->set_text(1,"<"+res->get_type()+">");
 				};
+
+				if (has_icon(res->get_type(),"EditorIcons")) {
+
+					p_item->set_icon(1,get_icon(res->get_type(),"EditorIcons"));
+				} else {
+
+					Dictionary d = p_item->get_metadata(0);
+					int hint=d.has("hint")?d["hint"].operator int():-1;
+					String hint_text=d.has("hint_text")?d["hint_text"]:"";
+					if (hint==PROPERTY_HINT_RESOURCE_TYPE) {
+
+						if (has_icon(hint_text,"EditorIcons")) {
+
+							p_item->set_icon(1,get_icon(hint_text,"EditorIcons"));
+
+						} else {
+							p_item->set_icon(1,get_icon("Object","EditorIcons"));
+
+						}
+					}
+				}
+
+
+
 			}
+
 
 		} break;
 		default: {};
@@ -2529,7 +2554,10 @@ void PropertyEditor::update_tree() {
 				item->set_editable( 1, !read_only );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
 				String type;
+				if (p.hint==PROPERTY_HINT_RESOURCE_TYPE)
+					type=p.hint_string;
 				bool notnil=false;
+
 				if (obj->get( p.name ).get_type() == Variant::NIL || obj->get( p.name ).operator RefPtr().is_null()) {
 					item->set_text(1,"<null>");
 
@@ -2553,12 +2581,18 @@ void PropertyEditor::update_tree() {
 					};
 					notnil=true;
 
+					if (has_icon(res->get_type(),"EditorIcons")) {
+						type=res->get_type();
+					}
 				}
 
-				if (p.hint==PROPERTY_HINT_RESOURCE_TYPE) {
+
+				if (type!=String()) {
+					if (type.find(",")!=-1)
+						type=type.get_slice(",",0);
 					//printf("prop %s , type %s\n",p.name.ascii().get_data(),p.hint_string.ascii().get_data());
-					if (has_icon(p.hint_string,"EditorIcons"))
-						item->set_icon( 0, get_icon(p.hint_string,"EditorIcons") );
+					if (has_icon(type,"EditorIcons"))
+						item->set_icon( 0, get_icon(type,"EditorIcons") );
 					else
 						item->set_icon( 0, get_icon("Object","EditorIcons") );
 				}

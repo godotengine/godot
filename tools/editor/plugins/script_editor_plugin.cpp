@@ -631,7 +631,10 @@ bool ScriptEditor::_test_script_times_on_disk() {
 
 
 	if (!all_ok)
-		disk_changed->call_deferred("popup_centered_ratio",0.5);
+		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false)))
+			script_editor->_reload_scripts();
+		else
+			disk_changed->call_deferred("popup_centered_ratio",0.5);
 
 	return all_ok;
 }
@@ -1607,7 +1610,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_menu->get_popup()->add_item("Clone Down",EDIT_CLONE_DOWN,KEY_MASK_CMD|KEY_B);
 	edit_menu->get_popup()->add_separator();
 #ifdef OSX_ENABLED
-	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_META|KEY_SPACE);
+	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CTRL|KEY_SPACE);
 #else
 	edit_menu->get_popup()->add_item("Complete Symbol",EDIT_COMPLETE,KEY_MASK_CMD|KEY_SPACE);
 #endif
@@ -1806,6 +1809,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	script_editor->hide();
 
+	EDITOR_DEF("text_editor/auto_reload_changed_scripts",false);
 	EDITOR_DEF("external_editor/use_external_editor",false);
 	EDITOR_DEF("external_editor/exec_path","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));
