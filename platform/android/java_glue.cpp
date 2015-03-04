@@ -210,7 +210,6 @@ jvalret _variant_to_jvalue(JNIEnv *env, Variant::Type p_type, const Variant* p_a
 #else
 			env->SetFloatArrayRegion(arr,0,array.size(),r.ptr());
 #endif
-			v.l=arr;
 			v.val.l=arr;
 			v.obj=arr;
 
