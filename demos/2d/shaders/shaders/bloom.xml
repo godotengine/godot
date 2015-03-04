@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform float blurSize = 1.0 / 512.0;&#000a;uniform float intensity = 0.35;&#000a;&#000a;vec4 sum = vec4(0);&#000a;vec2 texcoord = UV.xy;&#000a;float j;&#000a;float i;&#000a;&#000a;//thank you! http://www.gamerendering.com/2008/10/11/gaussian-blur-filter-shader/ for the&#000a;//blur tutorial&#000a;// blur in y (vertical)&#000a;// take nine samples, with the distance blurSize between them&#000a;sum += tex(TEXTURE, vec2(texcoord.x - 4.0*blurSize, texcoord.y)) * 0.05;&#000a;sum += tex(TEXTURE, vec2(texcoord.x - 3.0*blurSize, texcoord.y)) * 0.09;&#000a;sum += tex(TEXTURE, vec2(texcoord.x - 2.0*blurSize, texcoord.y)) * 0.12;&#000a;sum += tex(TEXTURE, vec2(texcoord.x - blurSize, texcoord.y)) * 0.15;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y)) * 0.16;&#000a;sum += tex(TEXTURE, vec2(texcoord.x + blurSize, texcoord.y)) * 0.15;&#000a;sum += tex(TEXTURE, vec2(texcoord.x + 2.0*blurSize, texcoord.y)) * 0.12;&#000a;sum += tex(TEXTURE, vec2(texcoord.x + 3.0*blurSize, texcoord.y)) * 0.09;&#000a;sum += tex(TEXTURE, vec2(texcoord.x + 4.0*blurSize, texcoord.y)) * 0.05;&#000a;&#000a;// blur in y (vertical)&#000a;// take nine samples, with the distance blurSize between them&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y - 4.0*blurSize)) * 0.05;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y - 3.0*blurSize)) * 0.09;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y - 2.0*blurSize)) * 0.12;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y - blurSize)) * 0.15;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y)) * 0.16;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y + blurSize)) * 0.15;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y + 2.0*blurSize)) * 0.12;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y + 3.0*blurSize)) * 0.09;&#000a;sum += tex(TEXTURE, vec2(texcoord.x, texcoord.y + 4.0*blurSize)) * 0.05;&#000a;&#000a;//increase blur with intensity!&#000a;COLOR = sum*intensity + SRC_COLOR * tex(TEXTURE, texcoord); &#000a;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

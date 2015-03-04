@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform float resolution = 1;&#000a;uniform float radius = 0.01;&#000a;uniform vec2 direction = 0.1;&#000a;&#000a;//this will be our RGBA sum&#000a;vec4 sum = vec4(0.0);&#000a;&#000a;//our original texcoord for this fragment&#000a;vec2 tc = UV;&#000a;&#000a;//the amount to blur, i.e. how far off center to sample from &#000a;//1.0 -&lt; blur by one pixel&#000a;//2.0 -&lt; blur by two pixels, etc.&#000a;float blur = radius / resolution; &#000a;&#000a;//the u_direction of our blur&#000a;//(1.0, 0.0) -&lt; x-axis blur&#000a;//(0.0, 1.0) -&lt; y-axis blur&#000a;float hstep = direction.x;&#000a;float vstep = direction.y;&#000a;&#000a;//apply blurring, using a 9-tap filter with predefined gaussian weights&#000a;&#000a;sum += tex(TEXTURE, vec2(tc.x - 4.0*blur*hstep, tc.y - 4.0*blur*vstep)) * 0.0162162162;&#000a;sum += tex(TEXTURE, vec2(tc.x - 3.0*blur*hstep, tc.y - 3.0*blur*vstep)) * 0.0540540541;&#000a;sum += tex(TEXTURE, vec2(tc.x - 2.0*blur*hstep, tc.y - 2.0*blur*vstep)) * 0.1216216216;&#000a;sum += tex(TEXTURE, vec2(tc.x - 1.0*blur*hstep, tc.y - 1.0*blur*vstep)) * 0.1945945946;&#000a;&#000a;sum += tex(TEXTURE, vec2(tc.x, tc.y)) * 0.2270270270;&#000a;&#000a;sum += tex(TEXTURE, vec2(tc.x + 1.0*blur*hstep, tc.y + 1.0*blur*vstep)) * 0.1945945946;&#000a;sum += tex(TEXTURE, vec2(tc.x + 2.0*blur*hstep, tc.y + 2.0*blur*vstep)) * 0.1216216216;&#000a;sum += tex(TEXTURE, vec2(tc.x + 3.0*blur*hstep, tc.y + 3.0*blur*vstep)) * 0.0540540541;&#000a;sum += tex(TEXTURE, vec2(tc.x + 4.0*blur*hstep, tc.y + 4.0*blur*vstep)) * 0.0162162162;&#000a;&#000a;//discard alpha for our simple demo, multiply by vertex color and return&#000a;COLOR = SRC_COLOR * sum; //vec4(sum.rgb, 1.0);&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

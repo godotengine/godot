@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "vec4 c = tex(TEXTURE, UV);&#000a;vec4 final = c;&#000a;final.r = (c.r * 0.393) + (c.g * 0.769) + (c.b * 0.189);&#000a;final.g = (c.r * 0.349) + (c.g * 0.686) + (c.b * 0.168);&#000a;final.b = (c.r * 0.272) + (c.g * 0.534) + (c.b * 0.131);&#000a;&#000a;COLOR = SRC_COLOR *  final;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>hexpixellatemask</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Hexagonal pixellate mask</name>
+	<category>Color</category>
+	<description>Hexagonal pixellate the background.</description>
+	<author>Evan Wallace</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>0</extend-box-horizontal>
+	<extend-box-vertical>0</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>true</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>true</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>false</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>Scale</name>
+			<description>Size of the hexagons.</description>
+			<type>float</type>
+			<initial>16</initial>
+			<uniform>scale</uniform>
+		</param>
+	</parameters>
+	
+</c2effect>

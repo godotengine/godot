@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>swirl</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Swirl</name>
+	<category>Distortion</category>
+	<description>Twist an image in a spiral pattern.</description>
+	<author>Brad Larson</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>0</extend-box-horizontal>
+	<extend-box-vertical>0</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>false</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>false</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>false</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>Radius</name>
+			<description>Radius of the effect, from 0 to 100.</description>
+			<type>percent</type>
+			<initial>0.5</initial>
+			<uniform>radius</uniform>
+		</param>
+		<param>
+			<name>Angle</name>
+			<description>Amount of rotation to apply.</description>
+			<type>percent</type>
+			<initial>1</initial>
+			<uniform>angle</uniform>
+		</param>
+	</parameters>
+</c2effect>

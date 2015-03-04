@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "vec4 fragmentColor = tex(TEXTURE, UV) * 0.18;&#000a;uniform vec2 directionalTexelStep = vec2(1, 1);&#000a;&#000a;fragmentColor += tex(TEXTURE, UV - directionalTexelStep) * 0.15;&#000a;fragmentColor += tex(TEXTURE, UV - 2 * directionalTexelStep) *  0.12;&#000a;fragmentColor += tex(TEXTURE, UV - 3 * directionalTexelStep) * 0.09;&#000a;fragmentColor += tex(TEXTURE, UV - 4 * directionalTexelStep) * 0.05;&#000a;fragmentColor += tex(TEXTURE, UV + directionalTexelStep) * 0.15;&#000a;fragmentColor += tex(TEXTURE, UV + 2 * directionalTexelStep) *  0.12;&#000a;fragmentColor += tex(TEXTURE, UV + 3 * directionalTexelStep) * 0.09;&#000a;fragmentColor += tex(TEXTURE, UV + 4 * directionalTexelStep) * 0.05;&#000a;&#000a;&#000a;COLOR = SRC_COLOR * fragmentColor;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

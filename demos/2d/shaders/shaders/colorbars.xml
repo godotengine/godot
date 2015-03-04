@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "vec4 getColorByCoord(float y){&#000a;    if(y &gt; 5.0){&#000a;         if(y &gt;= 0.1){&#000a;            return vec4(1,0,0,1);&#000a;         } else if(y &gt;= 1.1){&#000a;            return vec4(0,1,0,1);&#000a;         } else if(y &gt;= 2.1){&#000a;            return vec4(0,0,1,1);&#000a;         } else if(y &gt;= 3.1){&#000a;            return vec4(0,1,1,1);&#000a;         } else{&#000a;            return vec4(1,0,1,1);&#000a;         }&#000a;     } else {&#000a;         if(y &gt;= 5.1){&#000a;            return vec4(1,1,0,1);&#000a;         } else if(y &gt;= 6.1){&#000a;            return vec4(1,1,1,1);&#000a;         } else if(y &gt;= 7.1){&#000a;            return vec4(1,0.5,0,1);&#000a;         } else if(y &gt;= 8.1){&#000a;            return vec4(1,0.5,0.5,1);&#000a;         }else {&#000a;            return vec4(0.5,0.5,1,1);&#000a;         }&#000a;     }&#000a;&#0009;return vec4(0, 0, 0, 0);&#000a;}&#000a;&#000a;float y = mod(UV.y * 200 / 10.0, 10.0  );&#000a;COLOR = getColorByCoord(y) * SRC_COLOR * tex(TEXTURE, UV);&#000a;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

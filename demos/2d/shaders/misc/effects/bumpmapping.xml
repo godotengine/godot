@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>bumpmapping</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Bumpmapping</name>
+	<category>Normal mapping</category>
+	<description>Use the foreground as a normal map to apply bumpmapping to the background.</description>
+	<author>Scirra</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>0</extend-box-horizontal>
+	<extend-box-vertical>0</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>true</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>false</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>false</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>Light X</name>
+			<description>X position of the light, from 0 to 100.</description>
+			<type>percent</type>
+			<initial>0.5</initial>
+			<uniform>lightx</uniform>
+		</param>
+		<param>
+			<name>Light Y</name>
+			<description>Y position of the light, from 0 to 100.</description>
+			<type>percent</type>
+			<initial>0.5</initial>
+			<uniform>lighty</uniform>
+		</param>
+		<param>
+			<name>Light Z</name>
+			<description>Z position of the light.</description>
+			<type>percent</type>
+			<initial>0.1</initial>
+			<uniform>lightz</uniform>
+		</param>
+		<param>
+			<name>Intensity</name>
+			<description>Intensity of the light.</description>
+			<type>percent</type>
+			<initial>2.5</initial>
+			<uniform>intensity</uniform>
+		</param>
+	</parameters>
+</c2effect>

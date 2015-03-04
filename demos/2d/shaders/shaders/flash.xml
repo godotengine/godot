@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform vec3 flashColor = vec3(1, 0, 0); &#000a;uniform float flashTime = 8;&#000a;&#000a;vec4 col = tex(TEXTURE, UV);&#000a;if(col.a &lt; 0.0) {&#000a;&#0009;vec3 deltaColor = (flashColor - col.xyz) * sin(TIME * flashTime) * col.a;&#000a;&#0009;col.xyz += deltaColor;&#000a;}&#000a;COLOR = SRC_COLOR * col;&#000a;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

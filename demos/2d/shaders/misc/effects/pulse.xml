@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>pulse</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Pulse</name>
+	<category>Distortion</category>
+	<description>An animated warping pulse effect.</description>
+	<author>Danguafer/Silexars</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>50</extend-box-horizontal>
+	<extend-box-vertical>50</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>false</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>false</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>true</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>Intensity</name>
+			<description>How much of the effect to apply, from 0 to 100.</description>
+			<type>percent</type>
+			<initial>1</initial>
+			<uniform>intensity</uniform>
+		</param>
+		<param>
+			<name>Lighting</name>
+			<description>How much lighting to apply, from 0 to 100.</description>
+			<type>percent</type>
+			<initial>0.5</initial>
+			<uniform>lighting</uniform>
+		</param>
+		<param>
+			<name>Speed</name>
+			<description>Speed of the pulse waves.</description>
+			<type>float</type>
+			<initial>10</initial>
+			<uniform>speed</uniform>
+		</param>
+		<param>
+			<name>Frequency</name>
+			<description>Frequency of the pulse waves.</description>
+			<type>float</type>
+			<initial>30</initial>
+			<uniform>frequency</uniform>
+		</param>
+		<param>
+			<name>Center X</name>
+			<description>X position of the effect center, from 0 (left edge) to 100 (right edge).</description>
+			<type>percent</type>
+			<initial>0.5</initial>
+			<uniform>centerX</uniform>
+		</param>
+		<param>
+			<name>Center Y</name>
+			<description>Y position of the effect center, from 0 (left edge) to 100 (right edge).</description>
+			<type>percent</type>
+			<initial>0.5</initial>
+			<uniform>centerY</uniform>
+		</param>
+	</parameters>
+	
+</c2effect>

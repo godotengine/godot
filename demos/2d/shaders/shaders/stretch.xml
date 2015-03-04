@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "// An unusual linear stretching effect.&#000a;uniform vec2 center = vec2(0.5, 0.5);&#000a;&#000a;vec2 normCoord = 2.0 * UV - vec2(1.0);&#000a;vec2 normCenter = 2.0 * center - vec2(1.0);&#000a;&#000a;normCoord -= normCenter;&#000a;vec2 s = sign(normCoord);&#000a;normCoord = abs(normCoord);&#000a;normCoord = 0.5 * normCoord + 0.5 * smoothstep(0.25, 0.5, normCoord) * normCoord;&#000a;normCoord = s * normCoord;&#000a;&#000a;normCoord += normCenter;&#000a;&#000a;COLOR = tex(TEXTURE, normCoord / 2.0 + vec2(0.5));" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

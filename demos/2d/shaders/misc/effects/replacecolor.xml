@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>replacecolor</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Replace color</name>
+	<category>Color</category>
+	<description>Replace a color in the image.</description>
+	<author>Scirra</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>0</extend-box-horizontal>
+	<extend-box-vertical>0</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>false</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>false</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>false</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>R Source</name>
+			<description>Red color to replace, from 0 to 255.</description>
+			<type>float</type>
+			<initial>255</initial>
+			<uniform>rsource</uniform>
+		</param>
+		<param>
+			<name>G Source</name>
+			<description>Green color to replace, from 0 to 255.</description>
+			<type>float</type>
+			<initial>255</initial>
+			<uniform>gsource</uniform>
+		</param>
+		<param>
+			<name>B Source</name>
+			<description>Blue color to replace, from 0 to 255.</description>
+			<type>float</type>
+			<initial>255</initial>
+			<uniform>bsource</uniform>
+		</param>
+		<param>
+			<name>R Replace</name>
+			<description>Red color to replace with, from 0 to 255.</description>
+			<type>float</type>
+			<initial>0</initial>
+			<uniform>rdest</uniform>
+		</param>
+		<param>
+			<name>G Replace</name>
+			<description>Green color to replace with, from 0 to 255.</description>
+			<type>float</type>
+			<initial>0</initial>
+			<uniform>gdest</uniform>
+		</param>
+		<param>
+			<name>B Replace</name>
+			<description>Blue color to replace with, from 0 to 255.</description>
+			<type>float</type>
+			<initial>0</initial>
+			<uniform>bdest</uniform>
+		</param>
+		<param>
+			<name>Tolerance</name>
+			<description>From 0 to 100. Increase to also replace colors close to the source color.</description>
+			<type>percent</type>
+			<initial>0.01</initial>
+			<uniform>tolerance</uniform>
+		</param>
+	</parameters>
+	
+</c2effect>

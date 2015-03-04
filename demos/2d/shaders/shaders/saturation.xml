@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform float saturation = 0.5;&#000a;vec3 luminanceWeighting = vec3(0.2125, 0.7154, 0.0721);&#000a;vec4 textureColor = tex(TEXTURE, UV);&#000a;float luminance = dot(textureColor.rgb, luminanceWeighting);&#000a;vec3 greyScaleColor = vec3(luminance);&#000a;COLOR = SRC_COLOR * vec4(mix(greyScaleColor, textureColor.rgb, saturation), textureColor.w);" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

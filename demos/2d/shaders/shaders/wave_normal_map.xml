@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform texture normalMap;&#000a;uniform float timeFactor = 0.2;&#000a;uniform float offsetFactor = 0.5;&#000a;uniform float refractionFactor = 0.7;&#000a;uniform float texFactor = 10;&#000a;uniform float ampFactor = 0.05;&#000a;&#000a;vec3 waveNormal(vec2 p) {&#000a;    vec3 normal = tex(normalMap, p).xyz;&#000a;    normal = vec3(-1.0) + normal * 2.0;&#000a;    return normalize(normal);&#000a;}&#000a;&#000a;// simple UV animation&#000a;vec3 normal = waveNormal(UV);&#000a;// simple calculate refraction UV offset&#000a;vec2 p = vec2(-1) + 2 * UV;&#000a;vec3 eyePos = vec3(0, 0, 100);&#000a;vec3 inVec = normalize(vec3(p, 0) - eyePos);&#000a;vec3 refractVec = refract(inVec, normal, refractionFactor);&#000a;vec2 uv = UV + refractVec.xy * offsetFactor;&#000a;&#000a;uv.x+=sin(TIME * timeFactor+UV.x*texFactor)*ampFactor;&#000a;uv.y+=cos(TIME * timeFactor+UV.y*texFactor)*ampFactor;&#000a;&#000a;COLOR = tex(TEXTURE, uv) * SRC_COLOR;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

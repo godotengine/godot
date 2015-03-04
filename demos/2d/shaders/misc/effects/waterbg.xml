@@ -1,0 +1,94 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>waterbg</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Water background</name>
+	<category>Distortion</category>
+	<description>An animated water-surface like distortion that also distorts the background.</description>
+	<author>Viktor Korsun</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>25</extend-box-horizontal>
+	<extend-box-vertical>25</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>true</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>true</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>true</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>Speed</name>
+			<description>Overall speed of the effect.</description>
+			<type>percent</type>
+			<initial>0.1</initial>
+			<uniform>speed</uniform>
+		</param>
+		<param>
+			<name>X speed</name>
+			<description>Horizontal speed of the waves.</description>
+			<type>percent</type>
+			<initial>0.3</initial>
+			<uniform>speed_x</uniform>
+		</param>
+		<param>
+			<name>Y speed</name>
+			<description>Vertical speed of the waves.</description>
+			<type>percent</type>
+			<initial>0.3</initial>
+			<uniform>speed_y</uniform>
+		</param>
+		<param>
+			<name>Intensity</name>
+			<description>Intensity of the waves.</description>
+			<type>float</type>
+			<initial>3</initial>
+			<uniform>intensity</uniform>
+		</param>
+		<param>
+			<name>Frequency</name>
+			<description>Frequency of the waves.</description>
+			<type>float</type>
+			<initial>4</initial>
+			<uniform>frequency</uniform>
+		</param>
+		<param>
+			<name>Angle</name>
+			<description>Angle of the waves (prime numbers work best).</description>
+			<type>float</type>
+			<initial>7</initial>
+			<uniform>angle</uniform>
+		</param>
+		<param>
+			<name>Delta</name>
+			<description>Amount of distortion caused by waves.  Lower values cause more distortion.</description>
+			<type>float</type>
+			<initial>20</initial>
+			<uniform>delta</uniform>
+		</param>
+		<param>
+			<name>Reflectivity</name>
+			<description>Intensity of the wave highlights.</description>
+			<type>float</type>
+			<initial>400</initial>
+			<uniform>intence</uniform>
+		</param>
+		<param>
+			<name>Emboss</name>
+			<description>Depth of the waves.</description>
+			<type>percent</type>
+			<initial>0.3</initial>
+			<uniform>emboss</uniform>
+		</param>
+	</parameters>
+</c2effect>

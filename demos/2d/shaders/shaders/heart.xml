@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform vec2 center = vec2(0.5, 0.35);&#000a;uniform vec2 resolution = vec2(1, -1);&#000a;&#000a;float time = TIME;&#000a;vec2 p = 2.0 * (UV.xy - center.xy) / resolution.xy;&#000a;&#000a;// animate&#000a;float tt = mod(time,2.0)/2.0;&#000a;float ss = pow(tt,.2)*0.5 + 0.5;&#000a;ss -= ss*0.2*sin(tt*6.2831*5.0)*exp(-tt*6.0);&#000a;p *= vec2(0.5,1.5) + ss*vec2(0.5,-0.5);&#000a;&#000a;&#000a;float a = atan2(p.x,p.y)/3.141593;&#000a;float r = length(p);&#000a;&#000a;// shape&#000a;float h = abs(a);&#000a;float d = (13.0*h - 22.0*h*h + 10.0*h*h*h)/(6.0-5.0*h);&#000a;&#000a;// color&#000a;float f = step(r,d) * pow(1.0-r/d,0.25);&#000a;&#000a;if (f != 0) {&#000a;&#0009;COLOR = SRC_COLOR * vec4(f,f,f,1.0);&#000a;} else {&#000a;&#0009;COLOR = vec4(0);&#000a;}" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

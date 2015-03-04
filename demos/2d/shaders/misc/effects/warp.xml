@@ -1,0 +1,73 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>warp</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Warp</name>
+	<category>Distortion</category>
+	<description>An animated wave distortion.</description>
+	<author>Scirra</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>25</extend-box-horizontal>
+	<extend-box-vertical>25</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>false</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>false</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>true</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>X frequency</name>
+			<description>Frequency of waves on the X axis.</description>
+			<type>float</type>
+			<initial>25</initial>
+			<uniform>freqX</uniform>
+		</param>
+		<param>
+			<name>Y frequency</name>
+			<description>Frequency of waves on the Y axis.</description>
+			<type>float</type>
+			<initial>25</initial>
+			<uniform>freqY</uniform>
+		</param>
+		<param>
+			<name>X amplitude</name>
+			<description>Amplitude of waves on the X axis in pixels, from 0 to 25.</description>
+			<type>float</type>
+			<initial>5</initial>
+			<uniform>ampX</uniform>
+		</param>
+		<param>
+			<name>Y amplitude</name>
+			<description>Amplitude of waves on the Y axis in pixels, from 0 to 25.</description>
+			<type>float</type>
+			<initial>5</initial>
+			<uniform>ampY</uniform>
+		</param>
+		<param>
+			<name>X speed</name>
+			<description>Speed of the wave animation on the X axis.</description>
+			<type>float</type>
+			<initial>1</initial>
+			<uniform>speedX</uniform>
+		</param>
+		<param>
+			<name>Y speed</name>
+			<description>Speed of the wave animation on the Y axis.</description>
+			<type>float</type>
+			<initial>1</initial>
+			<uniform>speedY</uniform>
+		</param>
+	</parameters>
+</c2effect>

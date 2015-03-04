@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "COLOR = tex(TEXTURE, vec2(UV.x + VAR1.x, UV.y + VAR1.y));&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "uniform float period = 5;&#000a;uniform float shakeAmount = 10;&#000a;&#000a;float tm = period / 100;&#000a;VAR1.x = cos( ( mod(TIME, tm) / (period / 100)) * 2 * 3.14159 ) * shakeAmount / 1000;&#000a;VAR1.y = sin( ( mod(TIME, tm) / (period / 100)) * 2 * 3.14159 ) * shakeAmount / 1000;&#000a;" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

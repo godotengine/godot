@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform float timeFactor=1;&#000a;uniform float texFactor=10;&#000a;uniform float ampFactor=0.01;&#000a;//just like rotate pixel according to texture coordinate&#000a;vec2 uv = UV;&#000a;uv.x+=sin(TIME*timeFactor+UV.x*texFactor)*ampFactor;&#000a;uv.y+=cos(TIME*timeFactor+UV.y*texFactor)*ampFactor;&#000a;COLOR=tex(TEXTURE,uv) * SRC_COLOR;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

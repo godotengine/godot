@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<c2effect>
+	<!-- About -->
+	<id>toon</id>			<!-- Never change the ID.  Change the name instead -->
+	<name>Toon</name>
+	<category>Color</category>
+	<description>Posterizes colors and adds black outlines.</description>
+	<author>Brad Larson</author>
+	
+	<!-- Settings -->
+	
+	<!-- Extend the bounding box for effect processing by a number of pixels to show the edges
+		 of effects which go beyond the object edges, e.g. blur and warp. -->
+	<extend-box-horizontal>0</extend-box-horizontal>
+	<extend-box-vertical>0</extend-box-vertical>
+	
+	<!-- Set to true if the background is sampled (samplerBack is referenced at all in the shader) -->
+	<blends-background>false</blends-background>
+	
+	<!-- Set to true if the background is not sampled at 1:1 with the foreground (e.g. the
+		 background texture co-ordinates are modified in some way by the shader, as done
+		 by Glass and Lens) -->
+	<cross-sampling>false</cross-sampling>
+	
+	<!-- Set to true if the effect changes over time, e.g. Noise or Warp effects. -->
+	<animated>false</animated>
+	
+	<!-- Parameters -->
+	<parameters>
+		<param>
+			<name>Threshold</name>
+			<description>Outlining threshold, from 0 to 100.</description>
+			<type>percent</type>
+			<initial>0.2</initial>
+			<uniform>threshold</uniform>
+		</param>
+		<param>
+			<name>Levels</name>
+			<description>Number of color levels to use.</description>
+			<type>float</type>
+			<initial>10</initial>
+			<uniform>quantizationLevels</uniform>
+		</param>
+	</parameters>
+</c2effect>

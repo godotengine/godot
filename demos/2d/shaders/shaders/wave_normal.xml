@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform vec2 resolution = vec2(480, 320);&#000a;uniform float scale = 240;&#000a;uniform float timeFactor = 4.0;&#000a;uniform float texFactor = 12.0;&#000a;uniform float ampFactor = 0.01;&#000a;uniform vec2 center = vec2(0.5, 0.5);&#000a;&#000a;// get wave height based on distance-to-center&#000a;float waveHeight(vec2 p) {&#000a;    float dist = length(p);&#000a;    return cos(TIME * timeFactor + dist * texFactor) * ampFactor;&#000a;}&#000a;&#000a;vec2 p = vec2(-1.0) + 2.0 * (UV - center + vec2(0.5, 0.5));&#000a;vec2 normal = normalize(p);&#000a; &#000a;vec2 uv = UV + normal * waveHeight(p);&#000a; &#000a;vec4 lightColor = vec4(1, 1, 1, 1);&#000a;vec3 lightDir = vec3(1, 1, 1);&#000a;&#000a;float waveHeightRight = waveHeight(p + vec2(2.0 / resolution.x, 0)) * scale;&#000a;float waveHeightLeft = waveHeight(p - vec2(2.0 / resolution.x, 0)) * scale;&#000a;float waveHeightTop = waveHeight(p + vec2(0, 2.0 / resolution.y)) * scale;&#000a;float waveHeightBottom = waveHeight(p - vec2(0, 2.0 / resolution.y)) * scale;&#000a; &#000a;vec3 t = vec3(1, 0, waveHeightRight - waveHeightLeft);&#000a;vec3 b = vec3(0, 1, waveHeightTop - waveHeightBottom);&#000a;vec3 n = cross(t, b);&#000a; &#000a;vec3 normalp = normalize(n);&#000a;&#000a;COLOR = tex(TEXTURE, uv) * SRC_COLOR * lightColor * max(0, dot(lightDir, normalp));&#000a;//COLOR.a = 1;&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>

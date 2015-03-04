@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource_file type="CanvasItemShader" subresource_count="1" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+	<main_resource>
+		<dictionary name="_code" shared="false">
+			<string> "fragment_ofs" </string>
+			<int> 0 </int>
+			<string> "fragment" </string>
+			<string> "uniform vec2 resolution = vec2(480, 320);&#000a;&#000a;float lookup(vec2 p, float dx, float dy)&#000a;{&#000a;    vec2 uv = p.xy + vec2(dx , dy ) / resolution.xy;&#000a;    vec4 c = tex(TEXTURE, uv.xy);&#000a;    return 0.2126*c.r + 0.7152*c.g + 0.0722*c.b;&#000a;}&#000a;&#000a;vec2 p = UV.xy;&#000a;// simple sobel edge detection&#000a;float gx = 0.0;&#000a;gx += -1.0 * lookup(p, -1.0, -1.0);&#000a;gx += -2.0 * lookup(p, -1.0,  0.0);&#000a;gx += -1.0 * lookup(p, -1.0,  1.0);&#000a;gx +=  1.0 * lookup(p,  1.0, -1.0);&#000a;gx +=  2.0 * lookup(p,  1.0,  0.0);&#000a;gx +=  1.0 * lookup(p,  1.0,  1.0);&#000a;&#000a;float gy = 0.0;&#000a;gy += -1.0 * lookup(p, -1.0, -1.0);&#000a;gy += -2.0 * lookup(p,  0.0, -1.0);&#000a;gy += -1.0 * lookup(p,  1.0, -1.0);&#000a;gy +=  1.0 * lookup(p, -1.0,  1.0);&#000a;gy +=  2.0 * lookup(p,  0.0,  1.0);&#000a;gy +=  1.0 * lookup(p,  1.0,  1.0);&#000a;&#000a;float g = gx*gx + gy*gy;&#000a;&#000a;COLOR = SRC_COLOR * vec4(vec3(1.0-g), 1); // * tex(TEXTURE, UV);&#000a;" </string>
+			<string> "vertex_ofs" </string>
+			<int> 0 </int>
+			<string> "vertex" </string>
+			<string> "" </string>
+			<string> "light_ofs" </string>
+			<int> 0 </int>
+			<string> "light" </string>
+			<string> "" </string>
+		</dictionary>
+
+	</main_resource>
+</resource_file>
