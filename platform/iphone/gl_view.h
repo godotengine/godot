@@ -119,6 +119,8 @@
 - (BOOL)createFramebuffer;
 - (void)destroyFramebuffer;
 
+- (void)audioRouteChangeListenerCallback:(NSNotification*)notification;
+
 @property NSTimeInterval animationInterval;
 
 @end

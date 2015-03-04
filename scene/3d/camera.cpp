@@ -152,11 +152,11 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		case PROJECTION_PERSPECTIVE: {
 		
-			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_NOEDITOR) );
+			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_NOEDITOR) );
 			if (keep_aspect==KEEP_WIDTH)
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 			else
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 
 			
 		} break;

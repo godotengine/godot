@@ -170,6 +170,29 @@ bool Light2D::is_shadow_enabled() const {
 	return shadow;
 }
 
+void Light2D::set_shadow_buffer_size( int p_size ) {
+
+	shadow_buffer_size=p_size;
+	VS::get_singleton()->canvas_light_set_shadow_buffer_size(canvas_light,shadow_buffer_size);
+}
+
+int Light2D::get_shadow_buffer_size() const {
+
+	return shadow_buffer_size;
+}
+
+void Light2D::set_shadow_esm_multiplier( float p_multiplier) {
+
+	shadow_esm_multiplier=p_multiplier;
+	VS::get_singleton()->canvas_light_set_shadow_esm_multiplier(canvas_light,p_multiplier);
+}
+
+float Light2D::get_shadow_esm_multiplier() const{
+
+	return shadow_esm_multiplier;
+}
+
+
 void Light2D::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -229,18 +252,26 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shadow_enabled","enabled"),&Light2D::set_shadow_enabled);
 	ObjectTypeDB::bind_method(_MD("is_shadow_enabled"),&Light2D::is_shadow_enabled);
 
+	ObjectTypeDB::bind_method(_MD("set_shadow_buffer_size","size"),&Light2D::set_shadow_buffer_size);
+	ObjectTypeDB::bind_method(_MD("get_shadow_buffer_size"),&Light2D::get_shadow_buffer_size);
+
+	ObjectTypeDB::bind_method(_MD("set_shadow_esm_multiplier","multiplier"),&Light2D::set_shadow_esm_multiplier);
+	ObjectTypeDB::bind_method(_MD("get_shadow_esm_multiplier"),&Light2D::get_shadow_esm_multiplier);
+
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"texture_offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"height"),_SCS("set_height"),_SCS("get_height"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"z_range_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"z_range_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer_range_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"layer_range_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_mask"),_SCS("get_item_mask"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"subtract"),_SCS("set_subtract_mode"),_SCS("get_subtract_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow_enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height"),_SCS("set_height"),_SCS("get_height"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_min",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_min"),_SCS("get_layer_range_min"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_mask"),_SCS("get_item_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow/enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/esm_multiplier",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_esm_multiplier"),_SCS("get_shadow_esm_multiplier"));
 
 
 }
@@ -258,6 +289,8 @@ Light2D::Light2D() {
 	layer_max=0;
 	item_mask=1;
 	subtract_mode=false;
+	shadow_buffer_size=2048;
+	shadow_esm_multiplier=80;
 
 }
 

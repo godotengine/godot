@@ -81,8 +81,6 @@ def configure(env):
 	if (env["target"]=="release"):
 
 		env.Append(CCFLAGS=['-O3','-DRELEASE_BUILD'])
-		env['OBJSUFFIX'] = "_opt"+env['OBJSUFFIX']
-		env['LIBSUFFIX'] = "_opt"+env['LIBSUFFIX']
 
 	elif (env["target"]=="debug"):
 

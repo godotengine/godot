@@ -337,6 +337,24 @@ public:
 					if(normal==p_vert.normal) {
 						if(uv==p_vert.uv) {
 							if(uv2==p_vert.uv2) {
+
+								if (!weights.empty() || !p_vert.weights.empty()) {
+
+									if (weights.size()==p_vert.weights.size()) {
+
+										for(int i=0;i<weights.size();i++) {
+											if (weights[i].bone_idx!=p_vert.weights[i].bone_idx)
+												return weights[i].bone_idx<p_vert.weights[i].bone_idx;
+
+											if (weights[i].weight!=p_vert.weights[i].weight)
+												return weights[i].weight<p_vert.weights[i].weight;
+										}
+									}  else {
+										return weights.size() < p_vert.weights.size();
+									}
+
+								}
+
 								return (color<p_vert.color);
 							} else
 								return (uv2<p_vert.uv2);

@@ -817,7 +817,7 @@ void Collada::_parse_camera(XMLParser& parser) {
 			if (name=="perspective") {
 
 				camera.mode=CameraData::MODE_PERSPECTIVE;
-			} else if (name=="orthogonal") {
+			} else if (name=="orthographic") {
 
 				camera.mode=CameraData::MODE_ORTHOGONAL;
 			} else if (name=="xfov") {
