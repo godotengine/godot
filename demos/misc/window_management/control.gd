@@ -54,18 +54,6 @@ func _fixed_process(delta):
 		get_node("Label_Screen1_Resolution").hide()
 		get_node("Label_Screen1_Position").hide()
 		
-	if( Input.is_action_pressed("ui_right")):
-		OS.set_screen(1)
-		
-	if( Input.is_action_pressed("ui_left")):
-		OS.set_screen(0)
-		
-	if( Input.is_action_pressed("ui_up")):
-		OS.set_fullscreen(true)
-		
-	if( Input.is_action_pressed("ui_down")):
-		OS.set_fullscreen(false)
-		
 	get_node("Button_Fullscreen").set_pressed( OS.is_fullscreen() )
 	get_node("Button_FixedSize").set_pressed( !OS.is_resizable() )
 	get_node("Button_Minimized").set_pressed( OS.is_minimized() )
