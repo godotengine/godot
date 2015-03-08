@@ -21,6 +21,9 @@ func _fixed_process(delta):
 	
 	if(Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED):
 		modetext += "MouseGrab\n"
+		get_node("Label_MouseGrab_KeyInfo").show()
+	else:
+		get_node("Label_MouseGrab_KeyInfo").hide()
 	
 	get_node("Label_Mode").set_text(modetext)
 	
