@@ -1286,7 +1286,7 @@ void OS_X11::process_xevents() {
 			motion_event.mouse_motion.x=pos.x;
 			motion_event.mouse_motion.y=pos.y;
 			input->set_mouse_pos(pos);
-			motion_event.mouse_motion.global_x=pos.y;
+			motion_event.mouse_motion.global_x=pos.x;
 			motion_event.mouse_motion.global_y=pos.y;
 			motion_event.mouse_motion.speed_x=input->get_mouse_speed().x;
 			motion_event.mouse_motion.speed_y=input->get_mouse_speed().y;
