@@ -56,6 +56,7 @@ public:
 	StringName _input_event;
 	StringName item_rect_changed;
 	StringName shader_shader;
+	StringName shader_unshaded;
 	StringName enter_tree;
 	StringName exit_tree;
 	StringName size_flags_changed;

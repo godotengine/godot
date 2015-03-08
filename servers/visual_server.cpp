@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "visual_server.h"
 #include "globals.h"
+#include "method_bind_ext.inc"
 
 VisualServer *VisualServer::singleton=NULL;
 VisualServer* (*VisualServer::create_func)()=NULL;
@@ -510,8 +511,9 @@ void VisualServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_line"),&VisualServer::canvas_item_add_line, DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_rect"),&VisualServer::canvas_item_add_rect);
-	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect"),&VisualServer::canvas_item_add_texture_rect, DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect_region"),&VisualServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1,1,1)));
+	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect"),&VisualServer::canvas_item_add_texture_rect, DEFVAL(Color(1,1,1)), DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect_region"),&VisualServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1,1,1)), DEFVAL(false));
+
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_style_box"),&VisualServer::_canvas_item_add_style_box, DEFVAL(Color(1,1,1)));
 //	ObjectTypeDB::bind_method(_MD("canvas_item_add_primitive"),&VisualServer::canvas_item_add_primitive,DEFVAL(Vector<Vector2>()),DEFVAL(RID()));
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_circle"),&VisualServer::canvas_item_add_circle);

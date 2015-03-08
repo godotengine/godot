@@ -119,6 +119,8 @@ bool _play_video(String p_path, float p_volume, String p_audio_track, String p_s
                                                name:AVPlayerItemDidPlayToEndTimeNotification
                                              object:[_instance.avPlayer currentItem]];
 
+	[_instance.avPlayer addObserver:_instance forKeyPath:@"rate" options:NSKeyValueObservingOptionNew context:0];
+
     [_instance.avPlayerLayer setFrame:_instance.bounds];
     [_instance.layer addSublayer:_instance.avPlayerLayer];
     [_instance.avPlayer play];
@@ -610,6 +612,39 @@ static void clear_touches() {
 	printf("inserting text with character %i\n", character[0]);
 };
 
+- (void)audioRouteChangeListenerCallback:(NSNotification*)notification
+{
+	printf("*********** route changed!%i\n");
+	NSDictionary *interuptionDict = notification.userInfo;
+
+	NSInteger routeChangeReason = [[interuptionDict valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
+
+	switch (routeChangeReason) {
+
+		case AVAudioSessionRouteChangeReasonNewDeviceAvailable:
+			NSLog(@"AVAudioSessionRouteChangeReasonNewDeviceAvailable");
+			NSLog(@"Headphone/Line plugged in");
+			break;
+
+		case AVAudioSessionRouteChangeReasonOldDeviceUnavailable:
+			NSLog(@"AVAudioSessionRouteChangeReasonOldDeviceUnavailable");
+			NSLog(@"Headphone/Line was pulled. Resuming video play....");
+			if (_is_video_playing) {
+
+				dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5f * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+							[_instance.avPlayer play]; // NOTE: change this line according your current player implementation
+							NSLog(@"resumed play");
+				});
+			};
+			break;
+
+		case AVAudioSessionRouteChangeReasonCategoryChange:
+			// called at start - also when other audio wants to play
+			NSLog(@"AVAudioSessionRouteChangeReasonCategoryChange");
+			break;
+	}
+}
+
 
 // When created via code however, we get initWithFrame
 -(id)initWithFrame:(CGRect)frame
@@ -624,6 +659,11 @@ static void clear_touches() {
 	}
 	init_touches();
 	self. multipleTouchEnabled = YES;
+
+	printf("******** adding observer for sound routing changes\n");
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(audioRouteChangeListenerCallback:)
+												 name:AVAudioSessionRouteChangeNotification
+											   object:nil];
 
 	//self.autoresizesSubviews = YES;
 	//[self setAutoresizingMask:UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleWidth];
@@ -674,6 +714,18 @@ static void clear_touches() {
     		video_current_time = kCMTimeZero;
 		}
     }
+
+	if (object == _instance.avPlayer && [keyPath isEqualToString:@"rate"]) {
+		NSLog(@"Player playback rate changed: %.5f", _instance.avPlayer.rate);
+		if (_is_video_playing() && _instance.avPlayer.rate == 0.0 && !_instance.avPlayer.error) {
+			dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.5f * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
+						[_instance.avPlayer play]; // NOTE: change this line according your current player implementation
+						NSLog(@"resumed play");
+			});
+
+			NSLog(@" . . . PAUSED (or just started)");
+		}
+	}
 }
 
 - (void)playerItemDidReachEnd:(NSNotification *)notification {

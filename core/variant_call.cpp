@@ -1263,8 +1263,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC1(VECTOR2,VECTOR2,Vector2,snapped,VECTOR2,"by",varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,get_aspect,varray());
 	ADDFUNC1(VECTOR2,REAL,Vector2,dot,VECTOR2,"with",varray());
-	ADDFUNC1(VECTOR2,REAL,Vector2,slide,VECTOR2,"vec",varray());
-	ADDFUNC1(VECTOR2,REAL,Vector2,reflect,VECTOR2,"vec",varray());
+	ADDFUNC1(VECTOR2,VECTOR2,Vector2,slide,VECTOR2,"vec",varray());
+	ADDFUNC1(VECTOR2,VECTOR2,Vector2,reflect,VECTOR2,"vec",varray());
 	//ADDFUNC1(VECTOR2,REAL,Vector2,cross,VECTOR2,"with",varray());
 
 	ADDFUNC0(RECT2,REAL,Rect2,get_area,varray());

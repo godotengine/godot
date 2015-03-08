@@ -100,6 +100,7 @@ protected:
 		Vector<TempData> file_ofs;
 		EditorProgress *ep;
 		int count;
+		int alignment;
 
 	};
 
@@ -121,7 +122,7 @@ public:
 
 	Error export_project_files(EditorExportSaveFunction p_func, void* p_udata,bool p_make_bundles);
 
-	Error save_pack(FileAccess *p_where, bool p_make_bundles=false);
+	Error save_pack(FileAccess *p_where, bool p_make_bundles=false, int p_alignment = 1);
 	virtual String get_name() const =0;
 	virtual ImageCompression get_image_compression() const=0;
 	virtual Ref<Texture> get_logo() const =0;

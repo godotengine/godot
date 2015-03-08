@@ -55,6 +55,7 @@ class Navigation2D : public Node2D {
 		Vector<Edge> edges;
 
 		Vector2 center;
+		Vector2 entry;
 
 		float distance;
 		int prev_edge;

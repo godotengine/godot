@@ -2059,7 +2059,9 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 					at+=get_datatype_name(compute_node_type(op->arguments[i]));
 
 				}
-				parser.set_error("Invalid arguments to operator "+String(token_names[op->op])+": "+at);
+				static const char *op_names[OP_MAX]={"=","+","-","*","/","+=","-=","*=","/=","-","!","==","!=","<=",">=","<",">","||","&&","call","()"};
+
+				parser.set_error("Invalid arguments to operator "+String(op_names[op->op])+": "+at);
 				return ERR_PARSE_ERROR;
 			}
 			expression.remove(next_op);

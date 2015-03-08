@@ -684,6 +684,9 @@ public:
 	virtual RID viewport_get_render_target_texture(RID p_viewport) const=0;
 	virtual void viewport_set_render_target_vflip(RID p_viewport,bool p_enable)=0;
 	virtual bool viewport_get_render_target_vflip(RID p_viewport) const=0;
+	virtual void viewport_set_render_target_clear_on_new_frame(RID p_viewport,bool p_enable)=0;
+	virtual bool viewport_get_render_target_clear_on_new_frame(RID p_viewport) const=0;
+	virtual void viewport_render_target_clear(RID p_viewport)=0;
 
 	virtual void viewport_queue_screen_capture(RID p_viewport)=0;
 	virtual Image viewport_get_screen_capture(RID p_viewport) const=0;
@@ -944,6 +947,8 @@ public:
 	virtual RID canvas_create()=0;
 	virtual void canvas_set_item_mirroring(RID p_canvas,RID p_item,const Point2& p_mirroring)=0;
 	virtual Point2 canvas_get_item_mirroring(RID p_canvas,RID p_item) const=0;
+	virtual void canvas_set_modulate(RID p_canvas,const Color& p_color)=0;
+
 
 
 	virtual RID canvas_item_create()=0;
@@ -952,6 +957,8 @@ public:
 
 	virtual void canvas_item_set_visible(RID p_item,bool p_visible)=0;
 	virtual bool canvas_item_is_visible(RID p_item) const=0;
+
+	virtual void canvas_item_set_light_mask(RID p_item,int p_mask)=0;
 
 	virtual void canvas_item_set_blend_mode(RID p_canvas_item,MaterialBlendMode p_blend)=0;
 
@@ -974,8 +981,8 @@ public:
 	virtual void canvas_item_add_line(RID p_item, const Point2& p_from, const Point2& p_to,const Color& p_color,float p_width=1.0)=0;
 	virtual void canvas_item_add_rect(RID p_item, const Rect2& p_rect, const Color& p_color)=0;
 	virtual void canvas_item_add_circle(RID p_item, const Point2& p_pos, float p_radius,const Color& p_color)=0;
-	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1))=0;
-	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1))=0;
+	virtual void canvas_item_add_texture_rect(RID p_item, const Rect2& p_rect, RID p_texture,bool p_tile=false,const Color& p_modulate=Color(1,1,1),bool p_transpose=false)=0;
+	virtual void canvas_item_add_texture_rect_region(RID p_item, const Rect2& p_rect, RID p_texture,const Rect2& p_src_rect,const Color& p_modulate=Color(1,1,1),bool p_transpose=false)=0;
 	virtual void canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector2& p_topleft, const Vector2& p_bottomright, bool p_draw_center=true,const Color& p_modulate=Color(1,1,1))=0;
 	virtual void canvas_item_add_primitive(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs, RID p_texture,float p_width=1.0)=0;
 	virtual void canvas_item_add_polygon(RID p_item, const Vector<Point2>& p_points, const Vector<Color>& p_colors,const Vector<Point2>& p_uvs=Vector<Point2>(), RID p_texture=RID())=0;
@@ -991,13 +998,9 @@ public:
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;
 
-	virtual void canvas_item_set_shader(RID p_item, RID p_shader)=0;
-	virtual RID canvas_item_get_shader(RID p_item) const=0;
+	virtual void canvas_item_set_material(RID p_item, RID p_material)=0;
 
-	virtual void canvas_item_set_use_parent_shader(RID p_item, bool p_enable)=0;
-
-	virtual void canvas_item_set_shader_param(RID p_canvas_item, const StringName& p_param, const Variant& p_value)=0;
-	virtual Variant canvas_item_get_shader_param(RID p_canvas_item, const StringName& p_param) const=0;
+	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable)=0;
 
 	virtual RID canvas_light_create()=0;
 	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas)=0;
@@ -1008,29 +1011,40 @@ public:
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color)=0;
 	virtual void canvas_light_set_height(RID p_light, float p_height)=0;
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z)=0;
+	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer)=0;
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask)=0;
 
-	enum CanvasLightBlendMode {
-		CANVAS_LIGHT_BLEND_ADD,
-		CANVAS_LIGHT_BLEND_SUB,
-		CANVAS_LIGHT_BLEND_MULTIPLY,
-		CANVAS_LIGHT_BLEND_DODGE,
-		CANVAS_LIGHT_BLEND_BURN,
-		CANVAS_LIGHT_BLEND_LIGHTEN,
-		CANVAS_LIGHT_BLEND_DARKEN,
-		CANVAS_LIGHT_BLEND_OVERLAY,
-		CANVAS_LIGHT_BLEND_SCREEN,
-	};
-	virtual void canvas_light_set_blend_mode(RID p_light, CanvasLightBlendMode p_blend_mode)=0;
+	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable)=0;
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
-	virtual void canvas_light_set_shadow_filter(RID p_light, int p_size)=0;
+	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier)=0;
+
 
 
 	virtual RID canvas_light_occluder_create()=0;
 	virtual void canvas_light_occluder_attach_to_canvas(RID p_occluder,RID p_canvas)=0;
 	virtual void canvas_light_occluder_set_enabled(RID p_occluder,bool p_enabled)=0;
-	virtual void canvas_light_occluder_set_shape(RID p_occluder,const DVector<Vector2>& p_shape)=0;
+	virtual void canvas_light_occluder_set_polygon(RID p_occluder,RID p_polygon)=0;
+	virtual void canvas_light_occluder_set_transform(RID p_occluder,const Matrix32& p_xform)=0;
+	virtual void canvas_light_occluder_set_light_mask(RID p_occluder,int p_mask)=0;
+
+	virtual RID canvas_occluder_polygon_create()=0;
+	virtual void canvas_occluder_polygon_set_shape(RID p_occluder_polygon,const DVector<Vector2>& p_shape,bool p_closed)=0;
+	virtual void canvas_occluder_polygon_set_shape_as_lines(RID p_occluder_polygon,const DVector<Vector2>& p_shape)=0;
+	enum CanvasOccluderPolygonCullMode {
+		CANVAS_OCCLUDER_POLYGON_CULL_DISABLED,
+		CANVAS_OCCLUDER_POLYGON_CULL_CLOCKWISE,
+		CANVAS_OCCLUDER_POLYGON_CULL_COUNTER_CLOCKWISE,
+	};
+	virtual void canvas_occluder_polygon_set_cull_mode(RID p_occluder_polygon,CanvasOccluderPolygonCullMode p_mode)=0;
+
+	/* CANVAS ITEM MATERIAL */
+
+	virtual RID canvas_item_material_create()=0;
+	virtual void canvas_item_material_set_shader(RID p_material, RID p_shader)=0;
+	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value)=0;
+	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const=0;
+	virtual void canvas_item_material_set_unshaded(RID p_material, bool p_unshaded)=0;
 
 	/* CURSOR */
 	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0)=0; // radians

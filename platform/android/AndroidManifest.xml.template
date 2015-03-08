@@ -10,7 +10,7 @@
                       android:largeScreens="true"
                       android:xlargeScreens="true"/>
 
-    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false">
+    <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
         <activity android:name="com.android.godot.Godot"
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
@@ -33,6 +33,7 @@ $$ADD_APPLICATION_CHUNKS$$
     </application>
     <uses-feature android:glEsVersion="0x00020000"/>
 
+$$ADD_PERMISSION_CHUNKS$$
 <uses-permission android:name="godot.ACCESS_CHECKIN_PROPERTIES"/>
 <uses-permission android:name="godot.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="godot.ACCESS_FINE_LOCATION"/>

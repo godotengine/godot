@@ -10,7 +10,6 @@ SConscript('alsa/SCsub');
 SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
-SConscript('gles1/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('openssl/SCsub');
 

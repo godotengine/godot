@@ -552,6 +552,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					if (p_b.type==MATRIX32) {
 						_RETURN( *p_a._data._matrix32 * *p_b._data._matrix32 );
 					};
+					if (p_b.type==VECTOR2) {
+						_RETURN( p_a._data._matrix32->xform( *(const Vector2*)p_b._data._mem) );
+					};
 					r_valid=false;
 					return;
 				} break;
