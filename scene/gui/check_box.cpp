@@ -61,9 +61,9 @@ bool CheckBox::is_radio()
         parent = parent->get_parent();
         if (dynamic_cast< ButtonGroup* >(parent))
             break;
-    } while (parent != nullptr);
+    } while (parent);
 
-    return (parent != nullptr);
+    return (parent != 0);
 }
 
 CheckBox::CheckBox(const String &p_text):
