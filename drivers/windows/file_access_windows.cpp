@@ -28,7 +28,7 @@
 /*************************************************************************/
 #ifdef WINDOWS_ENABLED
 
-#include <Windows.h>
+#include <windows.h>
 #include "Shlwapi.h"
 #include "file_access_windows.h"
 
