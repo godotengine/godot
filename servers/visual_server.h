@@ -1013,6 +1013,7 @@ public:
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z)=0;
 	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer)=0;
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask)=0;
+	virtual void canvas_light_set_item_shadow_mask(RID p_light, int p_mask)=0;
 
 	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable)=0;
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;

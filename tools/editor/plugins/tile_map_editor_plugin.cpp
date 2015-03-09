@@ -640,19 +640,53 @@ void TileMapEditor::_canvas_draw() {
 
 					Ref<Texture> t = ts->tile_get_texture(st);
 					if (t.is_valid()) {
-						Vector2 from = xform.xform(ts->tile_get_texture_offset(st)+node->map_to_world(over_tile)+node->get_cell_draw_offset());
+						Vector2 from = node->map_to_world(over_tile)+node->get_cell_draw_offset();
 						Rect2 r = ts->tile_get_region(st);												
 						Size2 sc = xform.get_scale();
 						if (mirror_x->is_pressed())
 							sc.x*=-1.0;
 						if (mirror_y->is_pressed())
 							sc.y*=-1.0;
-						if (r==Rect2()) {
 
-							canvas_item_editor->draw_texture_rect(t,Rect2(from,t->get_size()*sc),false,Color(1,1,1,0.5),transpose->is_pressed());
+						Rect2 rect;
+						if (r==Rect2()) {
+							rect=Rect2(from,t->get_size());
 						} else {
 
-							canvas_item_editor->draw_texture_rect_region(t,Rect2(from,r.get_size()*sc),r,Color(1,1,1,0.5),transpose->is_pressed());
+							rect=Rect2(from,r.get_size());
+						}
+
+
+						if (node->get_tile_origin()==TileMap::TILE_ORIGIN_TOP_LEFT) {
+							rect.pos+=ts->tile_get_texture_offset(st);
+
+						} else if (node->get_tile_origin()==TileMap::TILE_ORIGIN_CENTER) {
+							rect.pos+=node->get_cell_size()/2;
+							Vector2 s = r.size;
+
+							Vector2 center = (s/2) - ts->tile_get_texture_offset(st);
+
+
+							if (mirror_x->is_pressed())
+								rect.pos.x-=s.x-center.x;
+							else
+								rect.pos.x-=center.x;
+
+							if (mirror_y->is_pressed())
+								rect.pos.y-=s.y-center.y;
+							else
+								rect.pos.y-=center.y;
+						}
+
+						rect.pos=xform.xform(rect.pos);
+						rect.size*=sc;
+
+						if (r==Rect2()) {
+
+							canvas_item_editor->draw_texture_rect(t,rect,false,Color(1,1,1,0.5),transpose->is_pressed());
+						} else {
+
+							canvas_item_editor->draw_texture_rect_region(t,rect,r,Color(1,1,1,0.5),transpose->is_pressed());
 						}
 					}
 				}

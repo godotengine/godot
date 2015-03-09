@@ -18,7 +18,8 @@ void OccluderPolygon2D::set_closed(bool p_closed) {
 	if (closed==p_closed)
 		return;
 	closed=p_closed;
-	VS::get_singleton()->canvas_occluder_polygon_set_shape(occ_polygon,polygon,closed);
+	if (polygon.size())
+		VS::get_singleton()->canvas_occluder_polygon_set_shape(occ_polygon,polygon,closed);
 	emit_changed();
 }
 
@@ -56,9 +57,9 @@ void OccluderPolygon2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_polygon","polygon"),&OccluderPolygon2D::set_polygon);
 	ObjectTypeDB::bind_method(_MD("get_polygon"),&OccluderPolygon2D::get_polygon);
 
-	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"closed"),_SCS("set_closed"),_SCS("is_closed"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"cull_mode",PROPERTY_HINT_ENUM,"Disabled,ClockWise,CounterClockWise"),_SCS("set_cull_mode"),_SCS("get_cull_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2_ARRAY,"polygon"),_SCS("set_polygon"),_SCS("get_polygon"));
 
 	BIND_CONSTANT(CULL_DISABLED);
 	BIND_CONSTANT(CULL_CLOCKWISE);

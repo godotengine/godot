@@ -3954,6 +3954,15 @@ void VisualServerRaster::canvas_light_set_item_mask(RID p_light, int p_mask){
 
 }
 
+void VisualServerRaster::canvas_light_set_item_shadow_mask(RID p_light, int p_mask){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->item_shadow_mask=p_mask;
+
+}
+
+
 void VisualServerRaster::canvas_light_set_subtract_mode(RID p_light, bool p_enable) {
 
 
@@ -4556,6 +4565,13 @@ void VisualServerRaster::free( RID p_rid ) {
 			if (occluder_poly) {
 				occluder_poly->owners.erase(occluder);
 			}
+
+		}
+
+		if (occluder->canvas.is_valid() && canvas_owner.owns(occluder->canvas)) {
+
+			Canvas *canvas = canvas_owner.get(occluder->canvas);
+			canvas->occluders.erase(occluder);
 
 		}
 
@@ -6906,6 +6922,8 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 		Rasterizer::CanvasLight *lights_with_shadow=NULL;
 		Rect2 shadow_rect;
 
+		int light_count=0;
+
 		for (Map<RID,Viewport::CanvasData>::Element *E=p_viewport->canvas_map.front();E;E=E->next()) {
 
 			Matrix32 xf = p_viewport->global_transform * E->get().transform;
@@ -6944,10 +6962,13 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 							cl->radius_cache=cl->rect_cache.size.length();
 
 						}
+
+						light_count++;
 					}
 				}
 			}
 
+			//print_line("lights: "+itos(light_count));
 			canvas_map[ Viewport::CanvasKey( E->key(), E->get().layer) ]=&E->get();
 
 		}
@@ -7007,7 +7028,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 		}
 
-		rasterizer->canvas_debug_viewport_shadows(lights_with_shadow);
+		//rasterizer->canvas_debug_viewport_shadows(lights_with_shadow);
 	}
 
 	//capture

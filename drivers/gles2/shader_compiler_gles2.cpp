@@ -808,12 +808,19 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[4]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[4]["TIME"]="time";
 
-	mode_replace_table[5]["SRC_COLOR"]="color";
-	mode_replace_table[5]["COLOR"]="color";
+	mode_replace_table[5]["POSITION"]="gl_Position";
 	mode_replace_table[5]["NORMAL"]="normal";
-	mode_replace_table[5]["LIGHT_DIR"]="light_dir";
-	mode_replace_table[5]["LIGHT_DISTANCE"]="light_distance";
-	mode_replace_table[5]["LIGHT"]="light";
+	mode_replace_table[5]["UV"]="uv_interp";
+	mode_replace_table[5]["COLOR"]="color";
+	mode_replace_table[5]["TEXTURE"]="texture";
+	mode_replace_table[5]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
+	mode_replace_table[5]["VAR1"]="var1_interp";
+	mode_replace_table[5]["VAR2"]="var2_interp";
+	mode_replace_table[5]["LIGHT_VEC"]="light_vec";
+	mode_replace_table[5]["LIGHT_HEIGHT"]="light_height";
+	mode_replace_table[5]["LIGHT_COLOR"]="light";
+	mode_replace_table[5]["LIGHT"]="light_out";
+	mode_replace_table[5]["SCREEN_UV"]="screen_uv";
 	mode_replace_table[5]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[5]["TIME"]="time";
 

@@ -32,6 +32,7 @@
 #include "scene/2d/physics_body_2d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/scene_string_names.h"
+#include "particles_2d.h"
 
 void VisibilityNotifier2D::_enter_viewport(Viewport* p_viewport) {
 
@@ -188,6 +189,15 @@ void VisibilityEnabler2D::_find_nodes(Node* p_node) {
 
 	}
 
+	if (enabler[ENABLER_PAUSE_PARTICLES]) {
+
+		Particles2D *ps = p_node->cast_to<Particles2D>();
+		if (ps) {
+			add=true;
+		}
+
+	}
+
 	if (add) {
 
 		p_node->connect(SceneStringNames::get_singleton()->exit_tree,this,"_node_removed",varray(p_node),CONNECT_ONESHOT);
@@ -271,6 +281,15 @@ void VisibilityEnabler2D::_change_node_state(Node* p_node,bool p_enabled) {
 		}
 	}
 
+	{
+		Particles2D *ps=p_node->cast_to<Particles2D>();
+
+		if (ps) {
+
+			ps->set_emitting(p_enabled);
+		}
+	}
+
 }
 
 
@@ -292,9 +311,11 @@ void VisibilityEnabler2D::_bind_methods(){
 
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_particles"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_PARTICLES);
 
 	BIND_CONSTANT( ENABLER_FREEZE_BODIES );
 	BIND_CONSTANT( ENABLER_PAUSE_ANIMATIONS );
+	BIND_CONSTANT( ENABLER_PAUSE_PARTICLES );
 	BIND_CONSTANT( ENABLER_MAX);
 }
 
@@ -319,4 +340,5 @@ VisibilityEnabler2D::VisibilityEnabler2D() {
 	visible=false;
 
 }
+
 
