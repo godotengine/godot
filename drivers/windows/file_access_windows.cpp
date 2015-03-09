@@ -29,7 +29,7 @@
 #ifdef WINDOWS_ENABLED
 
 #include <windows.h>
-#include "Shlwapi.h"
+#include "shlwapi.h"
 #include "file_access_windows.h"
 
 
