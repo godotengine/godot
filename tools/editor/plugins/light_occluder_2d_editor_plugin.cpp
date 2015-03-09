@@ -96,7 +96,7 @@ bool LightOccluder2DEditor::forward_input_event(const InputEvent& p_event) {
 			create_poly->set_text("No OccluderPolygon2D resource on this node.\nCreate and assign one?");
 			create_poly->popup_centered_minsize();
 		}
-		return false;
+		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);
 	}
 	switch(p_event.type) {
 
@@ -389,7 +389,7 @@ void LightOccluder2DEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
-
+		canvas_item_editor->get_viewport_control()->update();
 	} else {
 		node=NULL;
 
@@ -402,6 +402,8 @@ void LightOccluder2DEditor::edit(Node *p_collision_polygon) {
 
 void LightOccluder2DEditor::_create_poly()  {
 
+	if (!node)
+		return;
 	undo_redo->create_action("Create Occluder Polygon");
 	undo_redo->add_do_method(node,"set_occluder_polygon",Ref<OccluderPolygon2D>(memnew( OccluderPolygon2D)));
 	undo_redo->add_undo_method(node,"set_occluder_polygon",Variant(REF()));

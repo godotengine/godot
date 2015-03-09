@@ -582,6 +582,7 @@ public:
 		int layer_min;
 		int layer_max;
 		int item_mask;
+		int item_shadow_mask;
 		bool subtract;
 		RID texture;
 		Vector2 texture_offset;
@@ -613,6 +614,7 @@ public:
 			layer_min=0;
 			layer_max=0;
 			item_mask=1;
+			item_shadow_mask=-1;
 			subtract=false;
 			texture_cache=NULL;
 			next_ptr=NULL;

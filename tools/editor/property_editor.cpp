@@ -1860,7 +1860,7 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 				if (has_icon(res->get_type(),"EditorIcons")) {
 
-					p_item->set_icon(1,get_icon(res->get_type(),"EditorIcons"));
+					p_item->set_icon(0,get_icon(res->get_type(),"EditorIcons"));
 				} else {
 
 					Dictionary d = p_item->get_metadata(0);
@@ -1870,10 +1870,10 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 						if (has_icon(hint_text,"EditorIcons")) {
 
-							p_item->set_icon(1,get_icon(hint_text,"EditorIcons"));
+							p_item->set_icon(0,get_icon(hint_text,"EditorIcons"));
 
 						} else {
-							p_item->set_icon(1,get_icon("Object","EditorIcons"));
+							p_item->set_icon(0,get_icon("Object","EditorIcons"));
 
 						}
 					}

@@ -148,6 +148,18 @@ int Light2D::get_item_mask() const {
 	return item_mask;
 }
 
+void Light2D::set_item_shadow_mask( int p_mask) {
+
+	item_shadow_mask=p_mask;
+	VS::get_singleton()->canvas_light_set_item_shadow_mask(canvas_light,item_shadow_mask);
+
+}
+
+int Light2D::get_item_shadow_mask() const {
+
+	return item_shadow_mask;
+}
+
 void Light2D::set_subtract_mode( bool p_enable ) {
 
 	subtract_mode=p_enable;
@@ -246,6 +258,9 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_item_mask","item_mask"),&Light2D::set_item_mask);
 	ObjectTypeDB::bind_method(_MD("get_item_mask"),&Light2D::get_item_mask);
 
+	ObjectTypeDB::bind_method(_MD("set_item_shadow_mask","item_shadow_mask"),&Light2D::set_item_shadow_mask);
+	ObjectTypeDB::bind_method(_MD("get_item_shadow_mask"),&Light2D::get_item_shadow_mask);
+
 	ObjectTypeDB::bind_method(_MD("set_subtract_mode","enable"),&Light2D::set_subtract_mode);
 	ObjectTypeDB::bind_method(_MD("get_subtract_mode"),&Light2D::get_subtract_mode);
 
@@ -272,6 +287,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow/enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/esm_multiplier",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_esm_multiplier"),_SCS("get_shadow_esm_multiplier"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_mask"),_SCS("get_item_shadow_mask"));
 
 
 }
@@ -288,6 +304,7 @@ Light2D::Light2D() {
 	layer_min=0;
 	layer_max=0;
 	item_mask=1;
+	item_shadow_mask=1;
 	subtract_mode=false;
 	shadow_buffer_size=2048;
 	shadow_esm_multiplier=80;

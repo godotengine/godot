@@ -9276,7 +9276,10 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 						normal_flip=Vector2(1,1);
 
 					}
-					canvas_shader.set_conditional(CanvasShaderGLES2::USE_SHADOWS,light->shadow_buffer.is_valid());
+
+					bool has_shadow = light->shadow_buffer.is_valid() && ci->light_mask&light->item_shadow_mask;
+
+					canvas_shader.set_conditional(CanvasShaderGLES2::USE_SHADOWS,has_shadow);
 
 					bool light_rebind = canvas_shader.bind();
 
@@ -9302,7 +9305,9 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_POS,light->light_shader_pos);
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_COLOR,light->color);
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_HEIGHT,light->height);
-					if (light->shadow_buffer.is_valid()) {
+					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_LOCAL_MATRIX,light->xform_cache.affine_inverse());
+
+					if (has_shadow) {
 
 						CanvasLightShadow *cls = canvas_light_shadow_owner.get(light->shadow_buffer);
 						glActiveTexture(GL_TEXTURE0+max_texture_units-3);
@@ -9313,7 +9318,6 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 						canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_TEXTURE,max_texture_units-3);
 						canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_MATRIX,light->shadow_matrix_cache);
-						canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_LOCAL_MATRIX,light->xform_cache.affine_inverse());
 						canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_ESM_MULTIPLIER,light->shadow_esm_mult);
 
 					}

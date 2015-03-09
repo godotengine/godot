@@ -30,6 +30,7 @@
 #define TILE_MAP_H
 
 #include "scene/2d/node_2d.h"
+#include "scene/2d/navigation2d.h"
 #include "scene/resources/tile_set.h"
 #include "self_list.h"
 #include "vset.h"
@@ -51,6 +52,12 @@ public:
 		HALF_OFFSET_DISABLED,
 	};
 
+	enum TileOrigin {
+		TILE_ORIGIN_TOP_LEFT,
+		TILE_ORIGIN_CENTER
+	};
+
+
 private:
 
 	Ref<TileSet> tile_set;
@@ -61,6 +68,7 @@ private:
 	Matrix32 custom_transform;
 	HalfOffset half_offset;
 	bool use_kinematic;
+	Navigation2D *navigation;
 
 
 	union PosKey {
@@ -98,15 +106,29 @@ private:
 	struct Quadrant {
 
 		Vector2 pos;
-		RID canvas_item;
+		List<RID> canvas_items;
 		RID body;
 
 		SelfList<Quadrant> dirty_list;
 
+		struct NavPoly {
+			int id;
+			Matrix32 xform;
+		};
+
+		struct Occluder {
+			RID id;
+			Matrix32 xform;
+		};
+
+
+		Map<PosKey,NavPoly> navpoly_ids;
+		Map<PosKey,Occluder> occluder_instances;
+
 		VSet<PosKey> cells;
 
-		void operator=(const Quadrant& q) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells; }
-		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_item=q.canvas_item; body=q.body; cells=q.cells;}
+		void operator=(const Quadrant& q) { pos=q.pos; canvas_items=q.canvas_items; body=q.body; cells=q.cells; navpoly_ids=q.navpoly_ids; occluder_instances=q.occluder_instances; }
+		Quadrant(const Quadrant& q) : dirty_list(this) { pos=q.pos; canvas_items=q.canvas_items; body=q.body; cells=q.cells; occluder_instances=q.occluder_instances; navpoly_ids=q.navpoly_ids;}
 		Quadrant() : dirty_list(this) {}
 	};
 
@@ -119,11 +141,14 @@ private:
 	Rect2 rect_cache;
 	bool rect_cache_dirty;
 	bool quadrant_order_dirty;
+	bool y_sort_mode;
 	float fp_adjust;
 	float friction;
 	float bounce;
 	uint32_t collision_layer;
+	TileOrigin tile_origin;
 
+	void _fix_cell_transform(Matrix32& xform, const Cell& c, Vector2 &offset, const Size2 &s);
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
 	void _erase_quadrant(Map<PosKey,Quadrant>::Element *Q);
@@ -134,6 +159,9 @@ private:
 	void _update_quadrant_space(const RID& p_space);
 	void _update_quadrant_transform();
 	void _recompute_rect_cache();
+
+	_FORCE_INLINE_ int _get_quadrant_size() const;
+
 
 	void _set_tile_data(const DVector<int>& p_data);
 	DVector<int> _get_tile_data() const;
@@ -195,6 +223,9 @@ public:
 	void set_half_offset(HalfOffset p_half_offset);
 	HalfOffset get_half_offset() const;
 
+	void set_tile_origin(TileOrigin p_tile_origin);
+	TileOrigin get_tile_origin() const;
+
 	void set_custom_transform(const Matrix32& p_xform);
 	Matrix32 get_custom_transform() const;
 
@@ -204,6 +235,9 @@ public:
 	Vector2 map_to_world(const Vector2& p_pos, bool p_ignore_ofs=false) const;
 	Vector2 world_to_map(const Vector2& p_pos) const;
 
+	void set_y_sort_mode(bool p_enable);
+	bool is_y_sort_mode_enabled() const;
+
 	void clear();
 
 	TileMap();
@@ -212,5 +246,6 @@ public:
 
 VARIANT_ENUM_CAST(TileMap::Mode);
 VARIANT_ENUM_CAST(TileMap::HalfOffset);
+VARIANT_ENUM_CAST(TileMap::TileOrigin);
 
 #endif // TILE_MAP_H

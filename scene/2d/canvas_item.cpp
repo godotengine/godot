@@ -1011,6 +1011,7 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_global_transform_with_canvas"),&CanvasItem::get_global_transform_with_canvas);
 	ObjectTypeDB::bind_method(_MD("get_viewport_transform"),&CanvasItem::get_viewport_transform);
 	ObjectTypeDB::bind_method(_MD("get_viewport_rect"),&CanvasItem::get_viewport_rect);
+	ObjectTypeDB::bind_method(_MD("get_canvas_transform"),&CanvasItem::get_canvas_transform);
 	ObjectTypeDB::bind_method(_MD("get_canvas"),&CanvasItem::get_canvas);
 	ObjectTypeDB::bind_method(_MD("get_world_2d"),&CanvasItem::get_world_2d);
 	//ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasItem::get_viewport);

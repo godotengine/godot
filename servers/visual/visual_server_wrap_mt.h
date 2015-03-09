@@ -1158,6 +1158,7 @@ public:
 	FUNC3(canvas_light_set_layer_range,RID,int,int);
 	FUNC3(canvas_light_set_z_range,RID,int,int);
 	FUNC2(canvas_light_set_item_mask,RID,int);
+	FUNC2(canvas_light_set_item_shadow_mask,RID,int);
 
 	FUNC2(canvas_light_set_subtract_mode,RID,bool);
 	FUNC2(canvas_light_set_shadow_enabled,RID,bool);

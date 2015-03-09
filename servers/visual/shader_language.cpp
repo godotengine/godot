@@ -1149,11 +1149,19 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
 
 const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_light_builtins_defs[]={
 
-	{ "COLOR", TYPE_VEC4},
+	{ "POSITION", TYPE_VEC4},
 	{ "NORMAL", TYPE_VEC3},
-	{ "LIGHT_DIR", TYPE_VEC2},
-	{ "LIGHT_DISTANCE", TYPE_FLOAT},
-	{ "LIGHT", TYPE_VEC3},
+	{ "UV", TYPE_VEC2},
+	{ "COLOR", TYPE_VEC4},
+	{ "TEXTURE", TYPE_TEXTURE},
+	{ "TEXTURE_PIXEL_SIZE", TYPE_VEC2},
+	{ "VAR1", TYPE_VEC4},
+	{ "VAR2", TYPE_VEC4},
+	{ "SCREEN_UV", TYPE_VEC2},
+	{ "LIGHT_VEC", TYPE_VEC2},
+	{ "LIGHT_HEIGHT", TYPE_FLOAT},
+	{ "LIGHT_COLOR", TYPE_VEC4},
+	{ "LIGHT", TYPE_VEC4},
 	{ "POINT_COORD", TYPE_VEC2},
 //	{ "SCREEN_POS", TYPE_VEC2},
 //	{ "SCREEN_TEXEL_SIZE", TYPE_VEC2},
