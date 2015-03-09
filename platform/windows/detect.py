@@ -170,11 +170,12 @@ def configure(env):
 		use64=False
 		if (env["bits"]=="32"):
 
+			env.Append(LINKFLAGS=['-static-libgcc'])
+			env.Append(LINKFLAGS=['-static-libstdc++'])
+
 			if (env["mingw64_for_32"]=="yes"):
 				env.Append(CCFLAGS=['-m32'])
 				env.Append(LINKFLAGS=['-m32'])
-				env.Append(LINKFLAGS=['-static-libgcc'])
-				env.Append(LINKFLAGS=['-static-libstdc++'])
 				mingw_prefix=env["mingw_prefix_64"];
 			else:
 				mingw_prefix=env["mingw_prefix"];
