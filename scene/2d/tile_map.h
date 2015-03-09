@@ -148,7 +148,7 @@ private:
 	uint32_t collision_layer;
 	TileOrigin tile_origin;
 
-	void _fix_cell_transform(Matrix32& xform, const Cell& c, Vector2 &offset, const Size2 &s);
+	void _fix_cell_transform(Matrix32& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
 
 	Map<PosKey,Quadrant>::Element *_create_quadrant(const PosKey& p_qk);
 	void _erase_quadrant(Map<PosKey,Quadrant>::Element *Q);

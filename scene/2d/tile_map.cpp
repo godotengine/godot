@@ -215,23 +215,24 @@ bool TileMap::get_center_y() const {
 	return center_y;
 }
 
-void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& c,Vector2& offset,const Size2 &sc) {
+void TileMap::_fix_cell_transform(Matrix32& xform,const Cell& p_cell, const Vector2& p_offset, const Size2 &p_sc) {
 
-	Size2 s=sc;
+	Size2 s=p_sc;
+	Vector2 offset = p_offset;
 
-	if (c.transpose) {
+	if (p_cell.transpose) {
 		SWAP(xform.elements[0].x, xform.elements[0].y);
 		SWAP(xform.elements[1].x, xform.elements[1].y);
 		SWAP(offset.x, offset.y);
 		SWAP(s.x, s.y);
 	}
-	if (c.flip_h) {
+	if (p_cell.flip_h) {
 		xform.elements[0].x=-xform.elements[0].x;
 		xform.elements[1].x=-xform.elements[1].x;
 		if (tile_origin==TILE_ORIGIN_TOP_LEFT)
 			offset.x=s.x-offset.x;
 	}
-	if (c.flip_v) {
+	if (p_cell.flip_v) {
 		xform.elements[0].y=-xform.elements[0].y;
 		xform.elements[1].y=-xform.elements[1].y;
 		if (tile_origin==TILE_ORIGIN_TOP_LEFT)
