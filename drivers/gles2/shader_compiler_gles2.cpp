@@ -61,6 +61,7 @@ static String _typestr(SL::DataType p_type) {
 		case SL::TYPE_VEC2: return "vec2";
 		case SL::TYPE_VEC3: return "vec3";
 		case SL::TYPE_VEC4: return "vec4";
+		case SL::TYPE_MAT2: return "mat2";
 		case SL::TYPE_MAT3: return "mat3";
 		case SL::TYPE_MAT4: return "mat4";
 		case SL::TYPE_TEXTURE: return "sampler2D";
@@ -284,6 +285,7 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				case SL::TYPE_VEC2: { Vector2 v = cnode->value; code="vec2("+_mknum(v.x)+", "+_mknum(v.y)+")"; } break;
 				case SL::TYPE_VEC3: { Vector3 v = cnode->value; code="vec3("+_mknum(v.x)+", "+_mknum(v.y)+", "+_mknum(v.z)+")"; } break;
 				case SL::TYPE_VEC4: { Plane v = cnode->value; code="vec4("+_mknum(v.normal.x)+", "+_mknum(v.normal.y)+", "+_mknum(v.normal.z)+", "+_mknum(v.d)+")"; } break;
+				case SL::TYPE_MAT2: { Matrix32 x = cnode->value; code="mat2( vec2("+_mknum(x[0][0])+", "+_mknum(x[0][1])+"), vec2("+_mknum(x[1][0])+", "+_mknum(x[1][1])+"))"; } break;
 				case SL::TYPE_MAT3: { Matrix3 x = cnode->value; code="mat3( vec3("+_mknum(x.get_axis(0).x)+", "+_mknum(x.get_axis(0).y)+", "+_mknum(x.get_axis(0).z)+"), vec3("+_mknum(x.get_axis(1).x)+", "+_mknum(x.get_axis(1).y)+", "+_mknum(x.get_axis(1).z)+"), vec3("+_mknum(x.get_axis(2).x)+", "+_mknum(x.get_axis(2).y)+", "+_mknum(x.get_axis(2).z)+"))"; } break;
 				case SL::TYPE_MAT4: { Transform x = cnode->value; code="mat4( vec4("+_mknum(x.basis.get_axis(0).x)+", "+_mknum(x.basis.get_axis(0).y)+", "+_mknum(x.basis.get_axis(0).z)+",0.0), vec4("+_mknum(x.basis.get_axis(1).x)+", "+_mknum(x.basis.get_axis(1).y)+", "+_mknum(x.basis.get_axis(1).z)+",0.0), vec4("+_mknum(x.basis.get_axis(2).x)+", "+_mknum(x.basis.get_axis(2).y)+", "+_mknum(x.basis.get_axis(2).z)+",0.0), vec4("+_mknum(x.origin.x)+", "+_mknum(x.origin.y)+", "+_mknum(x.origin.z)+",1.0))"; } break;
 				default: code="<error: "+Variant::get_type_name(cnode->value.get_type())+" ("+itos(cnode->datatype)+">";
@@ -476,6 +478,11 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					m="[2]";
 				else if (mnode->name=="w")
 					m="[3]";
+			} else if (mnode->basetype==SL::TYPE_MAT2) {
+				if (mnode->name=="x")
+					m="[0]";
+				else if (mnode->name=="y")
+					m="[1]";
 
 			} else if (mnode->basetype==SL::TYPE_MAT3) {
 				if (mnode->name=="x")
@@ -657,6 +664,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["vec2"  ]= "vec2";
 	replace_table["vec3"  ]= "vec3";
 	replace_table["vec4"  ]= "vec4";
+	replace_table["mat2" ]= "mat2";
 	replace_table["mat3" ]= "mat3";
 	replace_table["mat4" ]= "mat4";
 	replace_table["texture" ]= "sampler2D";
@@ -808,12 +816,19 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[4]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[4]["TIME"]="time";
 
-	mode_replace_table[5]["SRC_COLOR"]="color";
-	mode_replace_table[5]["COLOR"]="color";
+	mode_replace_table[5]["POSITION"]="gl_Position";
 	mode_replace_table[5]["NORMAL"]="normal";
-	mode_replace_table[5]["LIGHT_DIR"]="light_dir";
-	mode_replace_table[5]["LIGHT_DISTANCE"]="light_distance";
-	mode_replace_table[5]["LIGHT"]="light";
+	mode_replace_table[5]["UV"]="uv_interp";
+	mode_replace_table[5]["COLOR"]="color";
+	mode_replace_table[5]["TEXTURE"]="texture";
+	mode_replace_table[5]["TEXTURE_PIXEL_SIZE"]="texpixel_size";
+	mode_replace_table[5]["VAR1"]="var1_interp";
+	mode_replace_table[5]["VAR2"]="var2_interp";
+	mode_replace_table[5]["LIGHT_VEC"]="light_vec";
+	mode_replace_table[5]["LIGHT_HEIGHT"]="light_height";
+	mode_replace_table[5]["LIGHT_COLOR"]="light";
+	mode_replace_table[5]["LIGHT"]="light_out";
+	mode_replace_table[5]["SCREEN_UV"]="screen_uv";
 	mode_replace_table[5]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[5]["TIME"]="time";
 

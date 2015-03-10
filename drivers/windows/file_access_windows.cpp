@@ -28,13 +28,17 @@
 /*************************************************************************/
 #ifdef WINDOWS_ENABLED
 
+#include <Windows.h>
+#include "Shlwapi.h"
 #include "file_access_windows.h"
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <wchar.h>
 #include <tchar.h>
 #include "print_string.h"
+
 
 #ifdef _MSC_VER
  #define S_ISREG(m) ((m)&_S_IFREG)
@@ -111,10 +115,20 @@ void FileAccessWindows::close() {
 
 		//unlink(save_path.utf8().get_data());
 		//print_line("renaming..");
-		_wunlink(save_path.c_str()); //unlink if exists
-		int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
+		//_wunlink(save_path.c_str()); //unlink if exists
+		//int rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str());
+
+
+		bool rename_error;
+		if (!PathFileExistsW(save_path.c_str())) {
+			//creating new file
+			rename_error = _wrename((save_path+".tmp").c_str(),save_path.c_str())!=0;
+		} else {
+			//atomic replace for existing file
+			rename_error = !ReplaceFileW(save_path.c_str(), (save_path+".tmp").c_str(), NULL, 2|4, NULL, NULL);
+		}
 		save_path="";
-		ERR_FAIL_COND( rename_error != 0);
+		ERR_FAIL_COND( rename_error );
 	}
 
 

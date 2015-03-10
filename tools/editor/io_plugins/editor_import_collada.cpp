@@ -285,13 +285,16 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 					case Collada::CameraData::MODE_ORTHOGONAL: {
 
-						if (cd.orthogonal.x_mag) {
+						if (cd.orthogonal.y_mag) {
 
-							camera->set_orthogonal(cd.orthogonal.x_mag,cd.z_near,cd.z_far);
+							camera->set_keep_aspect_mode(Camera::KEEP_HEIGHT);
+							camera->set_orthogonal(cd.orthogonal.y_mag*2.0 ,cd.z_near,cd.z_far);
 
-						} else if (!cd.orthogonal.x_mag && cd.orthogonal.y_mag) {
+						} else if (!cd.orthogonal.y_mag && cd.orthogonal.x_mag) {
 
-							camera->set_orthogonal(cd.orthogonal.y_mag * cd.aspect,cd.z_near,cd.z_far);
+
+							camera->set_keep_aspect_mode(Camera::KEEP_WIDTH);
+							camera->set_orthogonal(cd.orthogonal.x_mag*2.0,cd.z_near,cd.z_far);
 						}
 
 					} break;

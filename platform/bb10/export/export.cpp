@@ -321,12 +321,29 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 	//BE SUPER CAREFUL WITH THIS PLEASE!!!
 	//BLACKBERRY THIS IS YOUR FAULT FOR NOT MAKING A BETTER WAY!!
 
-	if (bar_dir.ends_with("bb10_export")) {
-		Error err = da->erase_contents_recursive();
-		if (err!=OK) {
+	bool berr = bar_dir.ends_with("bb10_export");
+	if (berr) {
+		if (da->list_dir_begin()) {
 			EditorNode::add_io_error("Can't ensure that dir is empty:\n"+bar_dir);
-			ERR_FAIL_COND_V(err!=OK,err);
-		}
+			ERR_FAIL_COND_V(berr,FAILED);
+		};
+
+		String f = da->get_next();
+		while (f != "") {
+
+			if (f == "." || f == "..") {
+				f = da->get_next();
+				continue;
+			};
+			Error err = da->remove(bar_dir + "/" + f);
+			if (err != OK) {
+				EditorNode::add_io_error("Can't ensure that dir is empty:\n"+bar_dir);
+				ERR_FAIL_COND_V(err!=OK,err);
+			};
+			f = da->get_next();
+		};
+
+		da->list_dir_end();
 
 	} else {
 		print_line("ARE YOU CRAZY??? THIS IS A SERIOUS BUG HERE!!!");
@@ -405,52 +422,23 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 		ret = unzGoToNextFile(pkg);
 	}
 
-	ep.step("Finding Files..",1);
-
-	Vector<StringName> files=get_dependencies(false);
-
 	ep.step("Adding Files..",2);
 
-	da->change_dir(bar_dir);
-	da->make_dir("assets");
-	Error err = da->change_dir("assets");
-	ERR_FAIL_COND_V(err,err);
-
-	String asset_dir=da->get_current_dir();
-	if (!asset_dir.ends_with("/"))
-		asset_dir+="/";
-
-	for(int i=0;i<files.size();i++) {
-
-		String fname=files[i];
-		Vector<uint8_t> data = get_exported_file(fname);
-		/*
-		FileAccess *f=FileAccess::open(files[i],FileAccess::READ);
-		if (!f) {
-			EditorNode::add_io_error("Couldn't read: "+String(files[i]));
-		}
-		ERR_CONTINUE(!f);
-		data.resize(f->get_len());
-		f->get_buffer(data.ptr(),data.size());
-*/
-		String dst_path=fname;
-		dst_path=dst_path.replace_first("res://",asset_dir);
-
-		da->make_dir_recursive(dst_path.get_base_dir());
-
-		ep.step("Adding File: "+String(files[i]).get_file(),3+i*100/files.size());
-
-		FileAccessRef fr = FileAccess::open(dst_path,FileAccess::WRITE);
-		fr->store_buffer(data.ptr(),data.size());
+	FileAccess* dst = FileAccess::open(bar_dir+"/data.pck", FileAccess::WRITE);
+	if (!dst) {
+		EditorNode::add_io_error("Can't copy executable file to:\n "+p_path);
+		return ERR_FILE_CANT_WRITE;
 	}
-
+	save_pack(dst, false, 1024);
+	dst->close();
+	memdelete(dst);
 
 	ep.step("Creating BAR Package..",104);
 
 	String bb_packager=EditorSettings::get_singleton()->get("blackberry/host_tools");
 	bb_packager=bb_packager.plus_file("blackberry-nativepackager");
 	if (OS::get_singleton()->get_name()=="Windows")
-		bb_packager+=".exe";
+		bb_packager+=".bat";
 
 
 	if (!FileAccess::exists(bb_packager)) {
@@ -482,7 +470,7 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 
 	int ec;
 
-	err = OS::get_singleton()->execute(bb_packager,args,true,NULL,NULL,&ec);
+	Error err = OS::get_singleton()->execute(bb_packager,args,true,NULL,NULL,&ec);
 
 	if (err!=OK)
 		return err;
@@ -492,7 +480,6 @@ Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debu
 	return OK;
 
 }
-
 
 bool EditorExportPlatformBB10::poll_devices() {
 
@@ -537,7 +524,7 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 		bb_deploy=bb_deploy.plus_file("blackberry-deploy");
 		bool windows = OS::get_singleton()->get_name()=="Windows";
 		if (windows)
-			bb_deploy+=".exe";
+			bb_deploy+=".bat";
 
 		if (!FileAccess::exists(bb_deploy)) {
 			OS::get_singleton()->delay_usec(3000000);
@@ -639,7 +626,7 @@ Error EditorExportPlatformBB10::run(int p_device, bool p_dumb) {
 	String bb_deploy=EditorSettings::get_singleton()->get("blackberry/host_tools");
 	bb_deploy=bb_deploy.plus_file("blackberry-deploy");
 	if (OS::get_singleton()->get_name()=="Windows")
-		bb_deploy+=".exe";
+		bb_deploy+=".bat";
 
 	if (!FileAccess::exists(bb_deploy)) {
 		EditorNode::add_io_error("Blackberry Deploy not found:\n"+bb_deploy);

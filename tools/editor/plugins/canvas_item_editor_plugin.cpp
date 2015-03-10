@@ -87,7 +87,7 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["ofs"]=Point2(h_scroll->get_val(),v_scroll->get_val());
 //	state["ofs"]=-transform.get_origin();
 	state["use_snap"]=is_snap_active();
-	state["snap"]=snap;
+	state["snap_vec"]=Vector2(get_snap());
 	state["pixel_snap"]=pixel_snap;
 	return state;
 }
@@ -111,7 +111,15 @@ void CanvasItemEditor::set_state(const Dictionary& p_state){
 	}
 
 	if (state.has("snap")) {
-		snap=state["snap"];
+		snap_x->set_val(state["snap"]);
+		snap_y->set_val(state["snap"]);
+	}
+
+	if (state.has("snap_vec")) {
+		Vector2 sv = state["snap_vec"];
+		snap_x->set_val(sv.x);
+		snap_y->set_val(sv.y);
+		viewport->update();
 	}
 
 	if (state.has("pixel_snap")) {
@@ -300,7 +308,7 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 
 		Vector2 drag = p_dir;
 		if (p_snap)
-			drag*=snap;
+			drag*=get_snap();
 
 		undo_redo->add_undo_method(canvas_item,"edit_set_state",canvas_item->edit_get_state());
 
@@ -554,6 +562,13 @@ void CanvasItemEditor::_append_canvas_item(CanvasItem *c) {
 }
 
 
+void CanvasItemEditor::_snap_changed(double) {
+
+	viewport->update();
+}
+
+
+
 void CanvasItemEditor::_dialog_value_changed(double) {
 
 	if (updating_value_dialog)
@@ -563,7 +578,7 @@ void CanvasItemEditor::_dialog_value_changed(double) {
 
 		case SNAP_CONFIGURE: {
 
-			snap=dialog_val->get_val();
+		//	snap=dialog_val->get_val();
 			viewport->update();
 		} break;
 		case ZOOM_SET: {
@@ -1165,7 +1180,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 				continue;
 			}
 
-			if (pixel_snap || (is_snap_active() && snap>0)) {
+			if (pixel_snap || (is_snap_active() && get_snap().x>0 && get_snap().y>0)) {
 
 				if (drag!=DRAG_ALL) {
 					dfrom=drag_point_from;
@@ -1174,14 +1189,14 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 					Vector2 newpos = drag_point_from + (dto-dfrom);
 					Vector2 disp;
-					if (!is_snap_active() || snap<1) {
+					if (!is_snap_active() || get_snap().x<1 || get_snap().y<1) {
 
 						disp.x = Math::fposmod(newpos.x,1);
 						disp.y = Math::fposmod(newpos.y,1);
 
 					} else {
-						disp.x = Math::fposmod(newpos.x,snap);
-						disp.y = Math::fposmod(newpos.y,snap);
+						disp.x = Math::fposmod(newpos.x,get_snap().x);
+						disp.y = Math::fposmod(newpos.y,get_snap().y);
 					}
 					dto-=disp;
 				}
@@ -1477,7 +1492,7 @@ void CanvasItemEditor::_viewport_draw() {
 	_update_scrollbars();
 	RID ci=viewport->get_canvas_item();
 
-	if (snap>0 && is_snap_active() && true ) {
+	if (get_snap().x>0 && get_snap().y>0 && is_snap_active() && true ) {
 
 		Size2 s = viewport->get_size();
 
@@ -1485,7 +1500,7 @@ void CanvasItemEditor::_viewport_draw() {
 		Matrix32 xform = transform.affine_inverse();
 		for(int i=0;i<s.width;i++) {
 
-			int cell = Math::fast_ftoi(Math::floor(xform.xform(Vector2(i,0)).x/snap));
+			int cell = Math::fast_ftoi(Math::floor(xform.xform(Vector2(i,0)).x/get_snap().x));
 			if (i==0)
 				last_cell=cell;
 			if (last_cell!=cell)
@@ -1495,7 +1510,7 @@ void CanvasItemEditor::_viewport_draw() {
 
 		for(int i=0;i<s.height;i++) {
 
-			int cell = Math::fast_ftoi(Math::floor(xform.xform(Vector2(0,i)).y/snap));
+			int cell = Math::fast_ftoi(Math::floor(xform.xform(Vector2(0,i)).y/get_snap().y));
 			if (i==0)
 				last_cell=cell;
 			if (last_cell!=cell)
@@ -1809,6 +1824,8 @@ void CanvasItemEditor::_notification(int p_what) {
 		group_button->set_icon(get_icon("Group","EditorIcons"));
 		ungroup_button->set_icon(get_icon("Ungroup","EditorIcons"));
 		key_insert_button->set_icon(get_icon("Key","EditorIcons"));
+		snap_x->connect("value_changed",this,"_snap_changed");
+		snap_y->connect("value_changed",this,"_snap_changed");
 
 	}
 
@@ -2002,7 +2019,7 @@ Point2 CanvasItemEditor::snapify(const Point2& p_pos) const {
 
 	Vector2 pos = p_pos;
 
-	if (!active || snap<1) {
+	if (!active || get_snap().x<1 || get_snap().y<1) {
 
 		if (pixel_snap) {
 
@@ -2014,8 +2031,8 @@ Point2 CanvasItemEditor::snapify(const Point2& p_pos) const {
 	}
 
 	
-	pos.x=Math::stepify(pos.x,snap);
-	pos.y=Math::stepify(pos.y,snap);
+	pos.x=Math::stepify(pos.x,get_snap().x);
+	pos.y=Math::stepify(pos.y,get_snap().y);
 	return pos;
 
 
@@ -2038,15 +2055,46 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
 			edit_menu->get_popup()->set_item_checked(idx,pixel_snap);
 		} break;
+		case SNAP_OBJECT_CENTERS: {
+
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+
+			undo_redo->create_action("Snap Object Centers");
+			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
+				if (!canvas_item)
+					continue;
+				if (!canvas_item->is_visible())
+					continue;
+				Node2D* node = canvas_item->cast_to<Node2D>();
+				if (!node)
+					continue;
+
+				Matrix32 gtrans = node->get_global_transform();
+				gtrans.elements[2]=snapify(gtrans.elements[2]);
+
+				undo_redo->add_do_method(node,"set_global_transform",gtrans);
+				undo_redo->add_undo_method(node,"set_global_transform",node->get_global_transform());
+			}
+
+			undo_redo->add_do_method(viewport,"update");
+			undo_redo->add_undo_method(viewport,"update");
+			undo_redo->commit_action();
+
+		} break;
 		case SNAP_CONFIGURE: {
 				updating_value_dialog=true;
 
+				snap_dialog->popup_centered_minsize();
+/*
 				dialog_label->set_text("Snap (Pixels):");
 				dialog_val->set_min(1);
 				dialog_val->set_step(1);
 				dialog_val->set_max(4096);
 				dialog_val->set_val(snap);
 				value_dialog->popup_centered(Size2(200,85));
+				*/
 				updating_value_dialog=false;
 
 		} break;
@@ -2604,6 +2652,7 @@ void CanvasItemEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_unhandled_key_input",&CanvasItemEditor::_unhandled_key_input);
 	ObjectTypeDB::bind_method("_viewport_draw",&CanvasItemEditor::_viewport_draw);
 	ObjectTypeDB::bind_method("_viewport_input_event",&CanvasItemEditor::_viewport_input_event);
+	ObjectTypeDB::bind_method("_snap_changed",&CanvasItemEditor::_snap_changed);
 
 	ADD_SIGNAL( MethodInfo("item_lock_status_changed") );
 	ADD_SIGNAL( MethodInfo("item_group_status_changed") );
@@ -2812,6 +2861,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Configure Snap..",SNAP_CONFIGURE);
 	p->add_separator();
 	p->add_check_item("Use Pixel Snap",SNAP_USE_PIXEL);
+	p->add_item("Snap Selected Object Centers",SNAP_OBJECT_CENTERS);
 	p->add_separator();
 	p->add_item("Expand to Parent",EXPAND_TO_PARENT,KEY_MASK_CMD|KEY_P);
 	p->add_separator();
@@ -2918,12 +2968,33 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	dialog_val->connect("value_changed",this,"_dialog_value_changed");
 	select_sb = Ref<StyleBoxTexture>( memnew( StyleBoxTexture) );
 
+	snap_dialog = memnew( AcceptDialog );
+	VBoxContainer *snap_vb = memnew( VBoxContainer );
+	snap_dialog->add_child(snap_vb);
+	snap_dialog->set_child_rect(snap_vb);
+	snap_dialog->set_title("Snap Configuration");
+	snap_x = memnew( SpinBox );
+	snap_x->set_custom_minimum_size(Size2(250,0));
+	snap_y = memnew( SpinBox );
+	snap_x->set_min(1);
+	snap_x->set_max(4096);
+	snap_x->set_step(1);
+	snap_x->set_val(10);
+	snap_y->set_min(1);
+	snap_y->set_max(4096);
+	snap_y->set_step(1);
+	snap_y->set_val(10);
+	snap_vb->add_margin_child("Snap X",snap_x);
+	snap_vb->add_margin_child("Snap Y",snap_y);
+	add_child(snap_dialog);
+
+
 	key_pos=true;
 	key_rot=true;
 	key_scale=false;
 
 	zoom=1;
-	snap=10;
+	//snap=10;
 	updating_value_dialog=false;
 	box_selecting=false;
 	//zoom=0.5;

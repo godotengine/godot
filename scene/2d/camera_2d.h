@@ -106,6 +106,7 @@ public:
 	float get_follow_smoothing() const;
 
 	void make_current();
+	void clear_current();
 	bool is_current() const;
 
 	void set_zoom(const Vector2& p_zoom);

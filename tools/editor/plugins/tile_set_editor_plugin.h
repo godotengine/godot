@@ -56,7 +56,7 @@ class TileSetEditor : public Control {
 
 	int option;
 	void _menu_cbk(int p_option);
-	void _menu_confirm();
+	void _menu_confirm();	
 
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
 

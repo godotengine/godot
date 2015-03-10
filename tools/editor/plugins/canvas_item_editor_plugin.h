@@ -77,6 +77,7 @@ class CanvasItemEditor : public VBoxContainer {
 		SNAP_USE,
 		SNAP_CONFIGURE,
 		SNAP_USE_PIXEL,
+		SNAP_OBJECT_CENTERS,
 		ZOOM_IN,
 		ZOOM_OUT,
 		ZOOM_RESET,
@@ -143,7 +144,6 @@ class CanvasItemEditor : public VBoxContainer {
 
 	Matrix32 transform;
 	float zoom;
-	int snap;
 	bool pixel_snap;
 	bool box_selecting;
 	Point2 box_selecting_to;
@@ -250,7 +250,11 @@ class CanvasItemEditor : public VBoxContainer {
 	AcceptDialog *value_dialog;
 	Label *dialog_label;
 	SpinBox *dialog_val;
-	
+
+	AcceptDialog *snap_dialog;
+	SpinBox *snap_x;
+	SpinBox *snap_y;
+
 	CanvasItem *ref_item;
 
 	void _add_canvas_item(CanvasItem *p_canvas_item);
@@ -289,6 +293,7 @@ class CanvasItemEditor : public VBoxContainer {
 
 	void _viewport_input_event(const InputEvent& p_event);
 	void _viewport_draw();
+	void _snap_changed(double);
 
 	HSplitContainer *palette_split;
 	VSplitContainer *bottom_split;
@@ -335,7 +340,7 @@ protected:
 public:
 
 	bool is_snap_active() const;
-	int get_snap() const { return snap; }
+	Size2i get_snap() const { return Size2i(snap_x->get_val(),snap_y->get_val()); }
 
 	Matrix32 get_canvas_transform() const { return transform; }
 

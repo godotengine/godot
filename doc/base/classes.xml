@@ -18902,7 +18902,8 @@
 			collider_id: collider id of the object agaisnt which the ray was stopped[br]
 			collider: collider object agaisnt which the ray was stopped[br]
 			rid:  [RID] of the object agaisnt which the ray was stopped[br]
-			If the ray did not intersect anything, then null is returned instead of a [Dictionary].
+			If the ray did not intersect anything, then an empty
+			dictionary (dir.empty()==true) is returned instead.
 			</description>
 		</method>
 		<method name="intersect_shape"  >
