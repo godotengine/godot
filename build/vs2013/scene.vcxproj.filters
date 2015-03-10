@@ -609,6 +609,9 @@
     <ClCompile Include="..\..\scene\2d\navigation_polygon.cpp">
       <Filter>scene\2d</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\scene\2d\light_occluder_2d.cpp">
+      <Filter>scene\2d</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\scene\register_scene_types.h">
@@ -1185,6 +1188,9 @@
       <Filter>scene\2d</Filter>
     </ClInclude>
     <ClInclude Include="..\..\scene\2d\navigation_polygon.h">
+      <Filter>scene\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\2d\light_occluder_2d.h">
       <Filter>scene\2d</Filter>
     </ClInclude>
   </ItemGroup>

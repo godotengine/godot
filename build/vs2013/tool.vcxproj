@@ -211,6 +211,7 @@
     <ClCompile Include="..\..\tools\editor\plugins\control_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\item_list_editor_plugin.cpp" />
+    <ClCompile Include="..\..\tools\editor\plugins\light_occluder_2d_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\mesh_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\multimesh_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\navigation_polygon_editor_plugin.cpp" />
@@ -367,6 +368,7 @@
     <ClInclude Include="..\..\tools\editor\plugins\control_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\item_list_editor_plugin.h" />
+    <ClInclude Include="..\..\tools\editor\plugins\light_occluder_2d_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\mesh_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\multimesh_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\navigation_polygon_editor_plugin.h" />

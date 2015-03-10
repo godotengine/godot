@@ -132,6 +132,7 @@
     <ClCompile Include="..\..\scene\2d\collision_shape_2d.cpp" />
     <ClCompile Include="..\..\scene\2d\joints_2d.cpp" />
     <ClCompile Include="..\..\scene\2d\light_2d.cpp" />
+    <ClCompile Include="..\..\scene\2d\light_occluder_2d.cpp" />
     <ClCompile Include="..\..\scene\2d\navigation2d.cpp" />
     <ClCompile Include="..\..\scene\2d\navigation_polygon.cpp" />
     <ClCompile Include="..\..\scene\2d\node_2d.cpp" />
@@ -332,6 +333,7 @@
     <ClInclude Include="..\..\scene\2d\collision_shape_2d.h" />
     <ClInclude Include="..\..\scene\2d\joints_2d.h" />
     <ClInclude Include="..\..\scene\2d\light_2d.h" />
+    <ClInclude Include="..\..\scene\2d\light_occluder_2d.h" />
     <ClInclude Include="..\..\scene\2d\navigation2d.h" />
     <ClInclude Include="..\..\scene\2d\navigation_polygon.h" />
     <ClInclude Include="..\..\scene\2d\node_2d.h" />
