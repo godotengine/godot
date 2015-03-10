@@ -56,6 +56,7 @@ const char * ShaderLanguage::token_names[TK_MAX]={
 	"TYPE_VEC2",
 	"TYPE_VEC3",
 	"TYPE_VEC4",
+	"TYPE_MAT2",
 	"TYPE_MAT3",
 	"TYPE_MAT4",
 	"TYPE_TEXTURE",
@@ -403,9 +404,9 @@ ShaderLanguage::Token ShaderLanguage::read_token(const CharType* p_text,int p_le
 					{TK_TYPE_TEXTURE,"texture"},
 					{TK_TYPE_CUBEMAP,"cubemap"},
 					{TK_TYPE_COLOR,"color"},
-					/*
+
 					{TK_TYPE_MAT2,"mat2"},
-					{TK_TYPE_MAT3,"mat3"},
+					/*{TK_TYPE_MAT3,"mat3"},
 					{TK_TYPE_MAT4,"mat3"},*/
 					{TK_TYPE_MAT3,"mat3"},
 					{TK_TYPE_MAT4,"mat4"},
@@ -511,6 +512,7 @@ bool ShaderLanguage::is_token_datatype(TokenType p_type) {
 	(p_type==TK_TYPE_VEC3) ||
 	(p_type==TK_TYPE_VEC4) ||
 	(p_type==TK_TYPE_COLOR) ||
+	(p_type==TK_TYPE_MAT2) ||
 	(p_type==TK_TYPE_MAT3) ||
 	(p_type==TK_TYPE_MAT4) ||
 	(p_type==TK_TYPE_CUBEMAP) ||
@@ -529,6 +531,7 @@ ShaderLanguage::DataType ShaderLanguage::get_token_datatype(TokenType p_type) {
 		case TK_TYPE_VEC3: return TYPE_VEC3;
 		case TK_TYPE_VEC4: return TYPE_VEC4;
 		case TK_TYPE_COLOR: return TYPE_VEC4;
+		case TK_TYPE_MAT2: return TYPE_MAT2;
 		case TK_TYPE_MAT3: return TYPE_MAT3;
 		case TK_TYPE_MAT4: return TYPE_MAT4;
 		case TK_TYPE_TEXTURE: return TYPE_TEXTURE;
@@ -550,6 +553,7 @@ String ShaderLanguage::get_datatype_name(DataType p_type) {
 		case TYPE_VEC2: return "vec2";
 		case TYPE_VEC3: return "vec3";
 		case TYPE_VEC4: return "vec4";
+		case TYPE_MAT2: return "mat2";
 		case TYPE_MAT3: return "mat3";
 		case TYPE_MAT4: return "mat4";
 		case TYPE_TEXTURE: return "texture";
@@ -570,6 +574,7 @@ bool ShaderLanguage::is_token_nonvoid_datatype(TokenType p_type) {
 		(p_type==TK_TYPE_VEC3) ||
 		(p_type==TK_TYPE_VEC4) ||
 		(p_type==TK_TYPE_COLOR) ||
+		(p_type==TK_TYPE_MAT2) ||
 		(p_type==TK_TYPE_MAT3) ||
 		(p_type==TK_TYPE_MAT4) ||
 		(p_type==TK_TYPE_TEXTURE) ||
@@ -782,6 +787,7 @@ const ShaderLanguage::IntrinsicFuncDef ShaderLanguage::intrinsic_func_defs[]={
 	{"vec4",TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC3,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_VEC3,TYPE_FLOAT,TYPE_VOID}},
 	{"vec4",TYPE_VEC4,{TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
+	{"mat2",TYPE_MAT2,{TYPE_VEC2,TYPE_VEC2,TYPE_VOID}},
 	{"mat3",TYPE_MAT3,{TYPE_VEC3,TYPE_VEC3,TYPE_VEC3,TYPE_VOID}},
 	{"mat4",TYPE_MAT4,{TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VEC4,TYPE_VOID}},
 	//intrinsics - trigonometry
@@ -918,6 +924,7 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_ASSIGN,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_VEC3,TYPE_VEC3}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_VEC4,TYPE_VEC4}},
+	{OP_ASSIGN,TYPE_VOID,{TYPE_MAT2,TYPE_MAT2}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_MAT3,TYPE_MAT3}},
 	{OP_ASSIGN,TYPE_VOID,{TYPE_MAT4,TYPE_MAT4}},
 	{OP_ADD,TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT}},
@@ -933,6 +940,8 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_FLOAT}},
 	{OP_MUL,TYPE_VEC2,{TYPE_FLOAT,TYPE_VEC2}},
 	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_MAT3}},
+	{OP_MUL,TYPE_VEC2,{TYPE_MAT2,TYPE_VEC2}},
+	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_MAT2}},
 	{OP_MUL,TYPE_VEC2,{TYPE_MAT3,TYPE_VEC2}},
 	{OP_MUL,TYPE_VEC2,{TYPE_VEC2,TYPE_MAT4}},
 	{OP_MUL,TYPE_VEC2,{TYPE_MAT4,TYPE_VEC2}},
@@ -947,6 +956,7 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_MUL,TYPE_VEC4,{TYPE_FLOAT,TYPE_VEC4}},
 	{OP_MUL,TYPE_VEC4,{TYPE_MAT4,TYPE_VEC4}},
 	{OP_MUL,TYPE_VEC4,{TYPE_VEC4,TYPE_MAT4}},
+	{OP_MUL,TYPE_MAT2,{TYPE_MAT2,TYPE_MAT2}},
 	{OP_MUL,TYPE_MAT3,{TYPE_MAT3,TYPE_MAT3}},
 	{OP_MUL,TYPE_MAT4,{TYPE_MAT4,TYPE_MAT4}},
 	{OP_DIV,TYPE_FLOAT,{TYPE_FLOAT,TYPE_FLOAT}},
@@ -976,15 +986,15 @@ const ShaderLanguage::OperatorDef ShaderLanguage::operator_defs[]={
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_FLOAT,TYPE_FLOAT}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_VEC2}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_FLOAT}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT3,TYPE_VEC2}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_VEC2}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC2,TYPE_MAT2}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT2,TYPE_MAT2}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_MAT3}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_VEC3}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_FLOAT}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT3,TYPE_VEC3}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_VEC3}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC3,TYPE_MAT4}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC4,TYPE_VEC4}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC4,TYPE_FLOAT}},
-	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_VEC4}},
+	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_VEC4,TYPE_MAT4}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT3,TYPE_MAT3}},
 	{OP_ASSIGN_MUL,TYPE_VOID,{TYPE_MAT4,TYPE_MAT4}},
 	{OP_ASSIGN_DIV,TYPE_VOID,{TYPE_FLOAT,TYPE_FLOAT}},
@@ -1566,6 +1576,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 				   case TYPE_VEC2: name="vec2"; break;
 				   case TYPE_VEC3: name="vec3"; break;
 				   case TYPE_VEC4: name="vec4"; break;
+				   case TYPE_MAT2: name="mat2"; break;
 				   case TYPE_MAT3: name="mat3"; break;
 				   case TYPE_MAT4: name="mat4"; break;
 				   default: ERR_FAIL_V(ERR_BUG);
@@ -1860,6 +1871,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 					}
 
 				} break;
+				case TYPE_MAT2: ok=(ident=="x" || ident=="y"); member_type=TYPE_VEC2; break;
 				case TYPE_MAT3: ok=(ident=="x" || ident=="y" || ident=="z" ); member_type=TYPE_VEC3; break;
 				case TYPE_MAT4: ok=(ident=="x" || ident=="y" || ident=="z" || ident=="w"); member_type=TYPE_VEC4; break;
 				default: {}
@@ -2246,6 +2258,7 @@ Error ShaderLanguage::parse_variable_declaration(Parser& parser,BlockNode *p_blo
 				case TYPE_VEC2: con->value=Vector2(); break;
 				case TYPE_VEC3: con->value=Vector3(); break;
 				case TYPE_VEC4: con->value=iscolor?Variant(Color()):Variant(Plane()); break;
+				case TYPE_MAT2: con->value=Matrix32(); break;
 				case TYPE_MAT3: con->value=Matrix3(); break;
 				case TYPE_MAT4: con->value=Transform(); break;
 				case TYPE_TEXTURE:
@@ -2628,11 +2641,19 @@ void ShaderLanguage::get_keyword_list(ShaderType p_type, List<String> *p_keyword
 
 	int idx=0;
 
+	p_keywords->push_back("uniform");
+	p_keywords->push_back("texture");
+	p_keywords->push_back("cubemap");
+	p_keywords->push_back("color");
+	p_keywords->push_back("if");
+	p_keywords->push_back("else");
+
 	while(intrinsic_func_defs[idx].name) {
 
 		p_keywords->push_back(intrinsic_func_defs[idx].name);
 		idx++;
 	}
+
 
 	switch(p_type)	{
 		case SHADER_MATERIAL_VERTEX: {
