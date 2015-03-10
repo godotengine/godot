@@ -4,6 +4,7 @@
 #include "os/file_access.h"
 #include "tools/editor/editor_settings.h"
 
+
 void CollisionPolygon2DEditor::_notification(int p_what) {
 
 	switch(p_what) {
@@ -368,6 +369,7 @@ void CollisionPolygon2DEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
+		canvas_item_editor->get_viewport_control()->update();
 
 	} else {
 		node=NULL;

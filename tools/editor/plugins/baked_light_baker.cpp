@@ -1233,7 +1233,7 @@ float BakedLightBaker::_throw_ray(ThreadStack& thread_stack,bool p_bake_direct,c
 			if (dist<r) {
 				//avoid accumulaiton of light on corners
 				//plot_light=plot_light.linear_interpolate(Color(0,0,0,0),1.0-sd/plot_size*plot_size);
-				skip-true;
+				skip=true;
 
 			} else {
 

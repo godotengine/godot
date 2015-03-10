@@ -94,8 +94,6 @@ def strarr(arr):
 	s+=" "
 	return s
 
-
-
 class DaeExporter:
 
 	def validate_id(self,d):
@@ -132,10 +130,10 @@ class DaeExporter:
 				tup = tup + (self.tangent.x,self.tangent.y,self.tangent.z)
 			if (self.bitangent!=None):
 				tup = tup + (self.bitangent.x,self.bitangent.y,self.bitangent.z)
-			#for t in self.bones:
-			#	tup = tup + (t)
-			#for t in self.weights:
-			#	tup = tup + (t)
+			for t in self.bones:
+				tup = tup + (float(t),)
+			for t in self.weights:
+				tup = tup + (float(t),)
 
 			return tup
 
@@ -512,12 +510,12 @@ class DaeExporter:
 		mat_assign=[]
 
 		uv_layer_count=len(mesh.uv_textures)
-		if (len(mesh.uv_textures)):
+		if (has_tangents and len(mesh.uv_textures)):
 			try:
 				mesh.calc_tangents()
 			except:
-				print("Warning, blender API is fucked up, not exporting UVs for this object.")
-				uv_layer_count=0
+				self.operator.report({'WARNING'},'CalcTangets failed for mesh "'+mesh.name+'", no tangets will be exported.')
+				#uv_layer_count=0
 				mesh.calc_normals_split()
 				has_tangents=False
 
@@ -591,16 +589,30 @@ class DaeExporter:
 
 				if (armature!=None):
 					wsum=0.0
+					zero_bones=[]
+
 					for vg in mv.groups:
 						if vg.group >= len(node.vertex_groups):
 							continue;
 						name = node.vertex_groups[vg.group].name
+
 						if (name in si["bone_index"]):
 							#could still put the weight as 0.0001 maybe
 							if (vg.weight>0.001): #blender has a lot of zero weight stuff
 								v.bones.append(si["bone_index"][name])
 								v.weights.append(vg.weight)
 								wsum+=vg.weight
+					if (wsum==0.0):
+						if not self.wrongvtx_report:
+							self.operator.report({'WARNING'},'Mesh for object "'+node.name+'" has unassigned weights. This may look wrong in exported model.')
+							self.wrongvtx_report=True
+
+						#blender can have bones assigned that weight zero so they remain local
+						#this is the best it can be done?
+						v.bones.append(0)
+						v.weights.append(1)
+
+
 
 
 				tup = v.get_tup()
@@ -889,6 +901,15 @@ class DaeExporter:
 		if (node.parent!=None):
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
+			armcount=0
+			for n in node.modifiers:
+				if (n.type=="ARMATURE"):
+					armcount+=1
+			if (armcount>1):
+				self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsopported.')
+
+
+
 
 		if (node.data.shape_keys!=None):
 				sk = node.data.shape_keys
@@ -940,6 +961,12 @@ class DaeExporter:
 		boneidx = si["bone_count"]
 		si["bone_count"]+=1
 		bonesid = si["id"]+"-"+str(boneidx)
+		if (bone.name in self.used_bones):
+			if (self.config["use_anim_action_all"]):
+				self.operator.report({'WARNING'},'Bone name "'+bone.name+'" used in more than one skeleton. Actions might export wrong.')
+		else:
+			self.used_bones.append(bone.name)
+
 		si["bone_index"][bone.name]=boneidx
 		si["bone_ids"][bone]=boneid
 		si["bone_names"].append(bonesid)
@@ -1002,12 +1029,12 @@ class DaeExporter:
 			self.writel(S_CAMS,5,'<zfar> '+str(camera.clip_end)+' </zfar>')
 			self.writel(S_CAMS,4,'</perspective>')
 		else:
-			self.writel(S_CAMS,4,'<orthografic>')
-			self.writel(S_CAMS,5,'<xmag> '+str(camera.ortho_scale)+' </xmag>') # I think?
+			self.writel(S_CAMS,4,'<orthographic>')
+			self.writel(S_CAMS,5,'<xmag> '+str(camera.ortho_scale*0.5)+' </xmag>') # I think?
 			self.writel(S_CAMS,5,'<aspect_ratio> '+str(self.scene.render.resolution_x / self.scene.render.resolution_y)+' </aspect_ratio>')
 			self.writel(S_CAMS,5,'<znear> '+str(camera.clip_start)+' </znear>')
 			self.writel(S_CAMS,5,'<zfar> '+str(camera.clip_end)+' </zfar>')
-			self.writel(S_CAMS,4,'</orthografic>')
+			self.writel(S_CAMS,4,'</orthographic>')
 
 		self.writel(S_CAMS,3,'</technique_common>')
 		self.writel(S_CAMS,2,'</optics>')
@@ -1534,9 +1561,13 @@ class DaeExporter:
 				for z in tcn:
 					self.writel(S_ANIM_CLIPS,2,'<instance_animation url="#'+z+'"/>')
 				self.writel(S_ANIM_CLIPS,1,'</animation_clip>')
+				if (len(tcn)==0):
+					self.operator.report({'WARNING'},'Animation clip "'+x.name+'" contains no tracks.')
+
 
 
 			self.writel(S_ANIM_CLIPS,0,'</library_animation_clips>')
+
 
 			for i,s in enumerate(self.skeletons):
 				if (s.animation_data==None):
@@ -1547,6 +1578,7 @@ class DaeExporter:
 					s.animation_data.action = None
 					for j,bone in enumerate(s.pose.bones):
 						bone.matrix_basis = tmp_mat[i][1][j]
+
 		else:
 			self.export_animation(self.scene.frame_start,self.scene.frame_end)
 		
@@ -1617,7 +1649,8 @@ class DaeExporter:
 		f.write(bytes('</COLLADA>\n',"UTF-8"))
 		return True
 
-	def __init__(self,path,kwargs):
+	def __init__(self,path,kwargs,operator):
+		self.operator=operator
 		self.scene=bpy.context.scene
 		self.last_id=0
 		self.scene_name=self.new_id("scene")
@@ -1631,6 +1664,10 @@ class DaeExporter:
 		self.config=kwargs
 		self.valid_nodes=[]
 		self.armature_for_morph={}
+		self.used_bones=[]
+		self.wrongvtx_report=False		
+
+
 
 
 
@@ -1642,8 +1679,10 @@ def save(operator, context,
 	**kwargs
 	):
 
-	exp = DaeExporter(filepath,kwargs)
+	exp = DaeExporter(filepath,kwargs,operator)
 	exp.export()
+
+
 
 	return {'FINISHED'}  # so the script wont run after we have batch exported.
 

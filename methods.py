@@ -1291,6 +1291,14 @@ def android_module_manifest(self,file):
 	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
 	f = open(base_path,"rb")
 	self.android_manifest_chunk+=f.read()
+def android_module_permission(self,file):
+	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
+	f = open(base_path,"rb")
+	self.android_permission_chunk+=f.read()
+def android_module_attribute(self,file):
+	base_path = self.Dir(".").abspath+"/modules/"+self.current_module+"/"+file
+	f = open(base_path,"rb")
+	self.android_appattributes_chunk+=f.read()
 
 def disable_module(self):
 	self.disabled_modules.append(self.current_module)

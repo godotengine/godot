@@ -151,7 +151,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	sample_manager = memnew( SampleManagerMallocSW );
 	audio_server = memnew( AudioServerSW(sample_manager) );
 
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
+	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,true);
 	audio_server->init();
 
 	spatial_sound_server = memnew( SpatialSoundServerSW );

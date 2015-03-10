@@ -80,6 +80,7 @@
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
 #include "scene/2d/light_2d.h"
+#include "scene/2d/light_occluder_2d.h"
 
 #include "scene/2d/canvas_item.h"
 #include "scene/2d/sprite.h"
@@ -454,6 +455,7 @@ void register_scene_types() {
 	//ObjectTypeDB::set_type_enabled("BodyVolumeCylinder",false);
 	//ObjectTypeDB::set_type_enabled("BodyVolumeConvexPolygon",false);
 
+	ObjectTypeDB::register_type<CanvasItemMaterial>();
 	ObjectTypeDB::register_virtual_type<CanvasItem>();
 	ObjectTypeDB::register_type<Node2D>();
 	ObjectTypeDB::register_type<Particles2D>();
@@ -476,6 +478,8 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<VisibilityEnabler2D>();
 	ObjectTypeDB::register_type<Polygon2D>();
 	ObjectTypeDB::register_type<Light2D>();
+	ObjectTypeDB::register_type<LightOccluder2D>();
+	ObjectTypeDB::register_type<OccluderPolygon2D>();
 	ObjectTypeDB::register_type<YSort>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);

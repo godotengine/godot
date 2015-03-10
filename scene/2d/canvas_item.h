@@ -40,6 +40,41 @@ class Font;
 
 class StyleBox;
 
+class CanvasItemMaterial : public Resource{
+
+	OBJ_TYPE(CanvasItemMaterial,Resource);
+	RID material;
+	Ref<Shader> shader;
+	bool unshaded;
+
+protected:
+
+	bool _set(const StringName& p_name, const Variant& p_value);
+	bool _get(const StringName& p_name,Variant &r_ret) const;
+	void _get_property_list( List<PropertyInfo> *p_list) const;
+
+	void _shader_changed();
+	static void _bind_methods();
+
+	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
+
+public:
+
+	void set_shader(const Ref<Shader>& p_shader);
+	Ref<Shader> get_shader() const;
+
+	void set_shader_param(const StringName& p_param,const Variant& p_value);
+	Variant get_shader_param(const StringName& p_param) const;
+
+	void set_unshaded(bool p_unshaded);
+	bool is_unshaded() const;
+
+	virtual RID get_rid() const;
+	CanvasItemMaterial();
+	~CanvasItemMaterial();
+};
+
+
 class CanvasItem : public Node {
 
 	OBJ_TYPE( CanvasItem, Node );
@@ -81,9 +116,9 @@ private:
 	bool drawing;
 	bool block_transform_notify;
 	bool behind;
-	bool use_parent_shader;
+	bool use_parent_material;
 
-	Ref<Shader> shader;
+	Ref<CanvasItemMaterial> material;
 
 	mutable Matrix32 global_transform;
 	mutable bool global_invalid;
@@ -104,20 +139,12 @@ private:
 	void _queue_sort_children();
 	void _sort_children();
 
-#ifdef TOOLS_ENABLED
-	void _shader_changed();
-#endif
 	void _notify_transform(CanvasItem *p_node);
 
 	void _set_on_top(bool p_on_top) { set_draw_behind_parent(!p_on_top); }
 	bool _is_on_top() const { return !is_draw_behind_parent_enabled(); }
 
 protected:
-
-	bool _set(const StringName& p_name, const Variant& p_value);
-	bool _get(const StringName& p_name,Variant &r_ret) const;
-	void _get_property_list( List<PropertyInfo> *p_list) const;
-
 
 	_FORCE_INLINE_ void _notify_transform() { if (!is_inside_tree()) return; _notify_transform(this); if (!block_transform_notify) notification(NOTIFICATION_LOCAL_TRANSFORM_CHANGED); }
 
@@ -216,16 +243,12 @@ public:
 	RID get_canvas() const;
 	Ref<World2D> get_world_2d() const;
 
-	void set_shader(const Ref<Shader>& p_shader);
-	Ref<Shader> get_shader() const;
+	void set_material(const Ref<CanvasItemMaterial>& p_material);
+	Ref<CanvasItemMaterial> get_material() const;
 
-	void set_use_parent_shader(bool p_use_parent_shader);
-	bool get_use_parent_shader() const;
+	void set_use_parent_material(bool p_use_parent_material);
+	bool get_use_parent_material() const;
 
-	void set_shader_param(const StringName& p_param,const Variant& p_value);
-	Variant get_shader_param(const StringName& p_param) const;
-
-	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
 	CanvasItem();
 	~CanvasItem();
