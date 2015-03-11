@@ -3899,6 +3899,15 @@ void VisualServerRaster::canvas_light_set_transform(RID p_light, const Matrix32&
 	clight->xform=p_transform;
 
 }
+void VisualServerRaster::canvas_light_set_scale(RID p_light, float p_scale) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->scale=p_scale;
+
+}
+
+
 void VisualServerRaster::canvas_light_set_texture(RID p_light, RID p_texture){
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
@@ -6937,6 +6946,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize(rasterizer->texture_get_width(cl->texture),rasterizer->texture_get_height(cl->texture));
+					tsize*=cl->scale;
 					Vector2 offset=tsize/2.0;
 					cl->rect_cache=Rect2(-offset+cl->texture_offset,tsize);
 					cl->xform_cache=xf * cl->xform;

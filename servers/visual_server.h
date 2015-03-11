@@ -1005,6 +1005,7 @@ public:
 	virtual RID canvas_light_create()=0;
 	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas)=0;
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled)=0;
+	virtual void canvas_light_set_scale(RID p_light, float p_scale)=0;
 	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform)=0;
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture)=0;
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset)=0;

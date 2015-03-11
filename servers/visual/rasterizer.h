@@ -577,6 +577,7 @@ public:
 		Color color;
 		Matrix32 xform;
 		float height;
+		float scale;
 		int z_min;
 		int z_max;
 		int layer_min;
@@ -614,6 +615,7 @@ public:
 			layer_min=0;
 			layer_max=0;
 			item_mask=1;
+			scale=1.0;
 			item_shadow_mask=-1;
 			subtract=false;
 			texture_cache=NULL;
