@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<resource_file type="PackedScene" subresource_count="3" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
+<resource_file type="PackedScene" subresource_count="2" version="1.0" version_name="Godot Engine v1.0.stable.custom_build">
 	<ext_resource path="res://logo.png" type="Texture"></ext_resource>
-	<ext_resource path="res://slot.gd" type="Script"></ext_resource>
 	<main_resource>
 		<dictionary name="_bundled" shared="false">
 			<string> "names" </string>
@@ -12,6 +11,7 @@
 				<string> "visibility/visible" </string>
 				<string> "visibility/opacity" </string>
 				<string> "visibility/self_opacity" </string>
+				<string> "visibility/light_mask" </string>
 				<string> "margin/right" </string>
 				<string> "margin/bottom" </string>
 				<string> "transform/rot" </string>
@@ -28,7 +28,6 @@
 				<string> "texture" </string>
 				<string> "modulate" </string>
 				<string> "expand" </string>
-				<string> "script/script" </string>
 				<string> "__meta__" </string>
 				<string> "label" </string>
 				<string> "Label" </string>
@@ -57,10 +56,11 @@
 			<string> "node_count" </string>
 			<int> 2 </int>
 			<string> "variants" </string>
-			<array  len="17" shared="false">
+			<array  len="16" shared="false">
 				<node_path> "" </node_path>
 				<bool> True </bool>
 				<real> 1 </real>
+				<int> 1 </int>
 				<real> 189 </real>
 				<real> 68 </real>
 				<real> 0 </real>
@@ -69,7 +69,6 @@
 				<resource  resource_type="Texture" path="res://logo.png">  </resource>
 				<color> 1, 1, 1, 1 </color>
 				<bool> False </bool>
-				<resource  resource_type="Script" path="res://slot.gd">  </resource>
 				<dictionary  shared="false">
 					<string> "__editor_plugin_states__" </string>
 					<dictionary  shared="false">
@@ -81,10 +80,10 @@
 							<real> 3.794776 </real>
 							<string> "use_snap" </string>
 							<bool> False </bool>
+							<string> "snap_vec" </string>
+							<vector2> 10, 10 </vector2>
 							<string> "ofs" </string>
 							<vector2> -26.0841, -26.0527 </vector2>
-							<string> "snap" </string>
-							<int> 10 </int>
 						</dictionary>
 						<string> "3D" </string>
 						<dictionary  shared="false">
@@ -190,12 +189,11 @@
 					<string> "2D" </string>
 				</dictionary>
 				<color> 0, 0.127907, 0.137931, 1 </color>
-				<int> 1 </int>
 				<string> "shaders" </string>
 				<real> -1 </real>
 			</array>
 			<string> "nodes" </string>
-			<int_array  len="126"> 				-1, -1, 1, 0, -1, 22, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 0, 11, 0, 12, 0, 13, 0, 14, 1, 15, 1, 16, 7, 17, 7, 18, 2, 19, 8, 20, 9, 21, 10, 22, 11, 23, 12, 0, 0, 0, 25, 24, -1, 34, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 0, 11, 0, 12, 0, 13, 0, 14, 1, 15, 1, 16, 7, 17, 7, 18, 2, 26, 13, 27, 14, 28, 14, 29, 14, 30, 5, 31, 2, 32, 2, 33, 2, 34, 5, 35, 10, 36, 10, 37, 15, 38, 14, 39, 14, 40, 10, 41, 1, 42, 16, 0 </int_array>
+			<int_array  len="128"> 				-1, -1, 1, 0, -1, 22, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 0, 12, 0, 13, 0, 14, 0, 15, 1, 16, 1, 17, 8, 18, 8, 19, 2, 20, 9, 21, 10, 22, 11, 23, 12, 0, 0, 0, 25, 24, -1, 35, 2, 0, 3, 1, 4, 2, 5, 2, 6, 3, 7, 4, 8, 5, 9, 6, 10, 7, 11, 0, 12, 0, 13, 0, 14, 0, 15, 1, 16, 1, 17, 8, 18, 8, 19, 2, 26, 13, 27, 3, 28, 3, 29, 3, 30, 6, 31, 2, 32, 2, 33, 2, 34, 6, 35, 11, 36, 11, 37, 14, 38, 3, 39, 3, 40, 11, 41, 1, 42, 15, 0 </int_array>
 			<string> "conns" </string>
 			<int_array  len="0"> 				 </int_array>
 		</dictionary>
