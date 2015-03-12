@@ -1149,6 +1149,7 @@ public:
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	virtual void canvas_item_set_z(RID p_item, int p_z);
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
+	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect);
 
 	virtual void canvas_item_set_material(RID p_item, RID p_material);
 	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable);

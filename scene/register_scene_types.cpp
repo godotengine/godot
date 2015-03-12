@@ -86,6 +86,7 @@
 #include "scene/2d/sprite.h"
 #include "scene/2d/animated_sprite.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/2d/back_buffer_copy.h"
 
 
 #include "scene/2d/visibility_notifier_2d.h"
@@ -481,6 +482,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<LightOccluder2D>();
 	ObjectTypeDB::register_type<OccluderPolygon2D>();
 	ObjectTypeDB::register_type<YSort>();
+	ObjectTypeDB::register_type<BackBufferCopy>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);

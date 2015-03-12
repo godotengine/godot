@@ -989,8 +989,14 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 
 	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps)
 		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
-	else
-		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	else {
+		if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		} else {
+			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+
+		}
+	}
 
 	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
 
@@ -1283,8 +1289,14 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 
 	if (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && !texture->ignore_mipmaps)
 		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,use_fast_texture_filter?GL_LINEAR_MIPMAP_NEAREST:GL_LINEAR_MIPMAP_LINEAR);
-	else
-		glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+	else{
+		if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
+			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+		} else {
+			glTexParameteri(texture->target,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+
+		}
+	}
 
 	if (texture->flags&VS::TEXTURE_FLAG_FILTER) {
 
@@ -8554,7 +8566,7 @@ RID RasterizerGLES2::canvas_light_shadow_buffer_create(int p_width) {
 	//printf("errnum: %x\n",status);
 #ifdef GLEW_ENABLED
 	if (read_depth_supported) {
-		glDrawBuffer(GL_BACK);
+		//glDrawBuffer(GL_BACK);
 	}
 #endif
 	glBindFramebuffer(GL_FRAMEBUFFER, base_framebuffer);
@@ -8563,7 +8575,7 @@ RID RasterizerGLES2::canvas_light_shadow_buffer_create(int p_width) {
 
 #ifdef GLEW_ENABLED
 	if (read_depth_supported) {
-		glDrawBuffer(GL_BACK);
+		//glDrawBuffer(GL_BACK);
 	}
 #endif
 
@@ -9137,6 +9149,40 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 				glDisable(GL_SCISSOR_TEST);
 			}
 		}
+
+		if (ci->copy_back_buffer && framebuffer.active && framebuffer.scale==1) {
+
+			Rect2 rect;
+			int x,y,w,h;
+
+			if (ci->copy_back_buffer->full) {
+
+				x = viewport.x;
+				y = window_size.height-(viewport.height+viewport.y);
+				w = viewport.width;
+				h = viewport.height;
+			} else {
+				x = viewport.x+ci->copy_back_buffer->screen_rect.pos.x;
+				y = window_size.height-(viewport.y+ci->copy_back_buffer->screen_rect.pos.y+ci->copy_back_buffer->screen_rect.size.y);
+				w = ci->copy_back_buffer->screen_rect.size.x;
+				h = ci->copy_back_buffer->screen_rect.size.y;
+			}
+			glActiveTexture(GL_TEXTURE0+max_texture_units-1);
+			glBindTexture(GL_TEXTURE_2D,framebuffer.sample_color);
+
+#ifdef GLEW_ENABLED
+			glReadBuffer(GL_COLOR_ATTACHMENT0);
+#endif
+			glCopyTexSubImage2D(GL_TEXTURE_2D,0,x,y,x,y,w,h);
+//			if (current_clip) {
+//			//	print_line(" a clip ");
+//			}
+
+			canvas_texscreen_used=true;
+			glActiveTexture(GL_TEXTURE0);
+		}
+
+
 
 
 		//begin rect
@@ -9904,7 +9950,7 @@ bool RasterizerGLES2::ShadowBuffer::init(int p_size,bool p_use_depth) {
 	//printf("errnum: %x\n",status);
 #ifdef GLEW_ENABLED
 	if (p_use_depth) {
-		glDrawBuffer(GL_BACK);
+		//glDrawBuffer(GL_BACK);
 	}
 #endif
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -9913,7 +9959,7 @@ bool RasterizerGLES2::ShadowBuffer::init(int p_size,bool p_use_depth) {
 
 #ifdef GLEW_ENABLED
 	if (p_use_depth) {
-		glDrawBuffer(GL_BACK);
+		//glDrawBuffer(GL_BACK);
 	}
 #endif
 
