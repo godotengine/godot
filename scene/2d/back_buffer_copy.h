@@ -30,7 +30,7 @@ public:
 	void set_copy_mode(CopyMode p_mode);
 	CopyMode get_copy_mode() const;
 
-	Rect2 BackBufferCopy::get_item_rect() const;
+	Rect2 get_item_rect() const;
 
 	BackBufferCopy();
 	~BackBufferCopy();
