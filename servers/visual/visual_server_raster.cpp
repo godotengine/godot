@@ -3765,6 +3765,27 @@ void VisualServerRaster::canvas_item_set_z_as_relative_to_parent(RID p_item, boo
 
 }
 
+void VisualServerRaster::canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable, const Rect2& p_rect) {
+
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+	if (bool(canvas_item->copy_back_buffer!=NULL) !=p_enable) {
+		if (p_enable) {
+			canvas_item->copy_back_buffer = memnew( Rasterizer::CanvasItem::CopyBackBuffer );
+		} else {
+			memdelete(canvas_item->copy_back_buffer);
+			canvas_item->copy_back_buffer=NULL;
+		}
+	}
+
+	if (p_enable) {
+		canvas_item->copy_back_buffer->rect=p_rect;
+		canvas_item->copy_back_buffer->full=p_rect==Rect2();
+	}
+
+}
+
 void VisualServerRaster::canvas_item_set_use_parent_material(RID p_item, bool p_enable) {
 
 	VS_CHANGED;
@@ -3899,6 +3920,15 @@ void VisualServerRaster::canvas_light_set_transform(RID p_light, const Matrix32&
 	clight->xform=p_transform;
 
 }
+void VisualServerRaster::canvas_light_set_scale(RID p_light, float p_scale) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->scale=p_scale;
+
+}
+
+
 void VisualServerRaster::canvas_light_set_texture(RID p_light, RID p_texture){
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
@@ -6757,8 +6787,12 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		_render_canvas_item(child_items[i],xform,p_clip_rect,opacity,p_z,z_list,z_last_list,(CanvasItem*)ci->final_clip_owner,p_material_owner);
 	}
 
+	if (ci->copy_back_buffer) {
 
-	if ((!ci->commands.empty() && p_clip_rect.intersects(global_rect)) || ci->vp_render) {
+		ci->copy_back_buffer->screen_rect = xform.xform(ci->copy_back_buffer->rect).clip(p_clip_rect);
+	}
+
+	if ((!ci->commands.empty() && p_clip_rect.intersects(global_rect)) || ci->vp_render || ci->copy_back_buffer) {
 		//something to draw?
 		ci->final_transform=xform;
 		ci->final_opacity=opacity * ci->self_opacity;
@@ -6937,6 +6971,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize(rasterizer->texture_get_width(cl->texture),rasterizer->texture_get_height(cl->texture));
+					tsize*=cl->scale;
 					Vector2 offset=tsize/2.0;
 					cl->rect_cache=Rect2(-offset+cl->texture_offset,tsize);
 					cl->xform_cache=xf * cl->xform;

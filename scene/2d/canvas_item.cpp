@@ -44,7 +44,6 @@ bool CanvasItemMaterial::_set(const StringName& p_name, const Variant& p_value) 
 		return true;
 	} else if (p_name==SceneStringNames::get_singleton()->shader_unshaded) {
 		set_unshaded(p_value);
-		print_line("set unshaded");
 		return true;
 	} else {
 

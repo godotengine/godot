@@ -577,6 +577,7 @@ public:
 		Color color;
 		Matrix32 xform;
 		float height;
+		float scale;
 		int z_min;
 		int z_max;
 		int layer_min;
@@ -614,6 +615,7 @@ public:
 			layer_min=0;
 			layer_max=0;
 			item_mask=1;
+			scale=1.0;
 			item_shadow_mask=-1;
 			subtract=false;
 			texture_cache=NULL;
@@ -768,6 +770,12 @@ public:
 		mutable Rect2 rect;
 		CanvasItem*next;
 		CanvasItemMaterial* material;
+		struct CopyBackBuffer {
+			Rect2 rect;
+			Rect2 screen_rect;
+			bool full;
+		};
+		CopyBackBuffer *copy_back_buffer;
 
 
 		float final_opacity;
@@ -903,8 +911,8 @@ public:
 		}
 
 		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL;}
-		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; }
-		virtual ~CanvasItem() { clear(); }
+		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; copy_back_buffer=NULL; }
+		virtual ~CanvasItem() { clear(); if (copy_back_buffer) memdelete(copy_back_buffer); }
 	};
 
 

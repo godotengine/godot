@@ -1149,6 +1149,7 @@ public:
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	virtual void canvas_item_set_z(RID p_item, int p_z);
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
+	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect);
 
 	virtual void canvas_item_set_material(RID p_item, RID p_material);
 	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
@@ -1157,6 +1158,7 @@ public:
 	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas);
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled);
 	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform);
+	virtual void canvas_light_set_scale(RID p_light, float p_scale);
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture);
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset);
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color);

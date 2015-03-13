@@ -1148,6 +1148,8 @@ public:
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
 	FUNC2(canvas_item_set_z,RID,int);
 	FUNC2(canvas_item_set_z_as_relative_to_parent,RID,bool);
+	FUNC3(canvas_item_set_copy_to_backbuffer,RID,bool,const Rect2&);
+
 
 	FUNC2(canvas_item_set_material,RID, RID );
 
@@ -1161,6 +1163,7 @@ public:
 	FUNC2(canvas_light_attach_to_canvas,RID,RID);
 	FUNC2(canvas_light_set_enabled,RID,bool);
 	FUNC2(canvas_light_set_transform,RID,const Matrix32&);
+	FUNC2(canvas_light_set_scale,RID,float);
 	FUNC2(canvas_light_set_texture,RID,RID);
 	FUNC2(canvas_light_set_texture_offset,RID,const Vector2&);
 	FUNC2(canvas_light_set_color,RID,const Color&);
