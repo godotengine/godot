@@ -28,8 +28,10 @@
 /*************************************************************************/
 #ifdef WINDOWS_ENABLED
 
-#include <Windows.h>
-#include "Shlwapi.h"
+#define WINVER 0x0500
+
+#include <windows.h>
+#include "shlwapi.h"
 #include "file_access_windows.h"
 
 
