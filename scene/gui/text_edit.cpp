@@ -1345,7 +1345,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							return;
 						}
 
-						if (k.scancode==KEY_HOME) {
+						if (k.scancode==KEY_HOME && completion_index>0) {
 
 							completion_index=0;
 							completion_current=completion_options[completion_index];
@@ -1354,7 +1354,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							return;
 						}
 
-						if (k.scancode==KEY_END) {
+						if (k.scancode==KEY_END && completion_index<completion_options.size()-1) {
 
 							completion_index=completion_options.size()-1;
 							completion_current=completion_options[completion_index];

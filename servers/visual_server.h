@@ -704,6 +704,7 @@ public:
 	
 	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide)=0;
 	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide)=0;
+	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable)=0;
 
 	virtual void viewport_attach_camera(RID p_viewport,RID p_camera)=0;
 	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario)=0;
@@ -734,8 +735,7 @@ public:
 		ENV_BG_COLOR,
 		ENV_BG_TEXTURE,
 		ENV_BG_CUBEMAP,
-		ENV_BG_TEXTURE_RGBE,
-		ENV_BG_CUBEMAP_RGBE,
+		ENV_BG_CANVAS,
 		ENV_BG_MAX
 	};
 
@@ -744,6 +744,7 @@ public:
 
 	enum EnvironmentBGParam {
 
+		ENV_BG_PARAM_CANVAS_MAX_LAYER,
 		ENV_BG_PARAM_COLOR,
 		ENV_BG_PARAM_TEXTURE,
 		ENV_BG_PARAM_CUBEMAP,
