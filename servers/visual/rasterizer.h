@@ -918,6 +918,7 @@ public:
 	CanvasItemDrawViewportFunc draw_viewport_func;
 
 
+	virtual void begin_canvas_bg()=0;
 	virtual void canvas_begin()=0;
 	virtual void canvas_disable_blending()=0;
 	virtual void canvas_set_opacity(float p_opacity)=0;

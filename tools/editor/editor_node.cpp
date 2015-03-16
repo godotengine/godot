@@ -218,6 +218,7 @@ void EditorNode::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
+
 		//MessageQueue::get_singleton()->push_call(this,"_get_scene_metadata");
 		get_tree()->set_editor_hint(true);				
 		get_tree()->get_root()->set_as_audio_listener(false);
@@ -231,6 +232,8 @@ void EditorNode::_notification(int p_what) {
 
 		VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport(),true);
 		VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport(),true);
+		VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(),true);
+
 		_editor_select(1);
 
 		if (defer_load_scene!="") {
@@ -3412,6 +3415,8 @@ EditorNode::EditorNode() {
 
 
 	scene_root = memnew( Viewport );
+
+
 	//scene_root_base->add_child(scene_root);
 	scene_root->set_meta("_editor_disable_input",true);
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport(),true);

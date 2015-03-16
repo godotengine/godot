@@ -489,6 +489,8 @@ class VisualServerRaster : public VisualServer {
 		bool render_target_vflip;
 		bool render_target_clear_on_new_frame;
 		bool render_target_clear;
+		bool disable_environment;
+
 		Image capture;
 
 		bool rendered_in_prev_frame;
@@ -515,7 +517,7 @@ class VisualServerRaster : public VisualServer {
 
 		SelfList<Viewport> update_list;
 
-		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false; render_target_clear_on_new_frame=true; render_target_clear=true;}
+		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false; render_target_clear_on_new_frame=true; render_target_clear=true; disable_environment=false; }
 	};
 
 	SelfList<Viewport>::List viewport_update_list;
@@ -626,6 +628,7 @@ class VisualServerRaster : public VisualServer {
 	void _cull_room(Camera *p_camera, Instance *p_room,Instance *p_from_portal=NULL);
 	void _process_sampled_light(const Transform &p_camera, Instance *p_sampled_light, bool p_linear_colorspace);
 
+	void _render_no_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	static void _render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect);
 	void _render_canvas_item_tree(CanvasItem *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, Rasterizer::CanvasLight *p_lights);
@@ -643,6 +646,7 @@ class VisualServerRaster : public VisualServer {
 	int changes;
 	bool draw_extra_frame;
 
+	void _draw_viewport_camera(Viewport *p_viewport, bool p_ignore_camera);
 	void _draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_ofs_y,int p_parent_w,int p_parent_h);
 	void _draw_viewports();
 	void _draw_cursors_and_margins();
@@ -983,6 +987,7 @@ public:
 	virtual void viewport_render_target_clear(RID p_viewport);
 	virtual void viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect);
 
+
 	virtual void viewport_queue_screen_capture(RID p_viewport);
 	virtual Image viewport_get_screen_capture(RID p_viewport) const;
 
@@ -991,6 +996,7 @@ public:
 	
 	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide);
 	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide);
+	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable);
 	virtual void viewport_attach_camera(RID p_viewport,RID p_camera);
 	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario);
 

@@ -4288,7 +4288,7 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 
 void RasterizerGLES2::clear_viewport(const Color& p_color) {
 
-	if (current_rt) {
+	if (current_rt || using_canvas_bg) {
 
 		glScissor( 0, 0, viewport.width, viewport.height );
 	} else {
@@ -6944,7 +6944,7 @@ void RasterizerGLES2::_draw_tex_bg() {
 
 	RID texture;
 
-	if (current_env->bg_mode==VS::ENV_BG_TEXTURE || current_env->bg_mode==VS::ENV_BG_TEXTURE_RGBE) {
+	if (current_env->bg_mode==VS::ENV_BG_TEXTURE) {
 		texture=current_env->bg_param[VS::ENV_BG_PARAM_TEXTURE];
 	} else {
 		texture=current_env->bg_param[VS::ENV_BG_PARAM_CUBEMAP];
@@ -6961,25 +6961,20 @@ void RasterizerGLES2::_draw_tex_bg() {
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_ENERGY,true);
 
-	if (current_env->bg_mode==VS::ENV_BG_TEXTURE || current_env->bg_mode==VS::ENV_BG_TEXTURE_RGBE) {
+	if (current_env->bg_mode==VS::ENV_BG_TEXTURE) {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_CUBEMAP,false);
 
 	} else {
 		copy_shader.set_conditional(CopyShaderGLES2::USE_CUBEMAP,true);
 	}
 
-	if (current_env->bg_mode==VS::ENV_BG_CUBEMAP_RGBE || current_env->bg_mode==VS::ENV_BG_TEXTURE_RGBE) {
-		copy_shader.set_conditional(CopyShaderGLES2::USE_RGBE,true);
-	} else {
-		copy_shader.set_conditional(CopyShaderGLES2::USE_RGBE,false);
-	}
 
 	copy_shader.set_conditional(CopyShaderGLES2::USE_CUSTOM_ALPHA,true);
 
 
 	copy_shader.bind();
 
-	if (current_env->bg_mode==VS::ENV_BG_TEXTURE || current_env->bg_mode==VS::ENV_BG_TEXTURE_RGBE) {
+	if (current_env->bg_mode==VS::ENV_BG_TEXTURE) {
 		glUniform1i( copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE),0);
 	} else {
 		glUniform1i( copy_shader.get_uniform_location(CopyShaderGLES2::SOURCE_CUBE),0);
@@ -7006,7 +7001,7 @@ void RasterizerGLES2::_draw_tex_bg() {
 		Vector3( 0, 0, 0)
 	};
 
-	if (current_env->bg_mode==VS::ENV_BG_TEXTURE || current_env->bg_mode==VS::ENV_BG_TEXTURE_RGBE) {
+	if (current_env->bg_mode==VS::ENV_BG_TEXTURE) {
 
 		//regular texture
 		//adjust aspect
@@ -7076,7 +7071,7 @@ void RasterizerGLES2::end_scene() {
 	if (framebuffer.active) {
 
 		//detect when to use the framebuffer object
-		if (texscreen_used || framebuffer.scale!=1) {
+		if (using_canvas_bg || texscreen_used || framebuffer.scale!=1) {
 			use_fb=true;
 		} else if (current_env) {
 			use_fb=false;
@@ -7128,6 +7123,7 @@ void RasterizerGLES2::end_scene() {
 
 		switch(current_env->bg_mode) {
 
+			case VS::ENV_BG_CANVAS:
 			case VS::ENV_BG_KEEP: {
 				//copy from framebuffer if framebuffer
 				glClear(GL_DEPTH_BUFFER_BIT);
@@ -7140,7 +7136,7 @@ void RasterizerGLES2::end_scene() {
 					bgcolor = current_env->bg_param[VS::ENV_BG_PARAM_COLOR];
 				else
 					bgcolor = Globals::get_singleton()->get("render/default_clear_color");
-				bgcolor = _convert_color(bgcolor);
+			bgcolor = _convert_color(bgcolor);
 				float a = use_fb ? float(current_env->bg_param[VS::ENV_BG_PARAM_GLOW]) : 1.0;
 				glClearColor(bgcolor.r,bgcolor.g,bgcolor.b,a);
 				_glClearDepth(1.0);
@@ -7148,9 +7144,7 @@ void RasterizerGLES2::end_scene() {
 
 			} break;
 			case VS::ENV_BG_TEXTURE:
-			case VS::ENV_BG_CUBEMAP:
-			case VS::ENV_BG_TEXTURE_RGBE:
-			case VS::ENV_BG_CUBEMAP_RGBE: {
+			case VS::ENV_BG_CUBEMAP: {
 
 
 				glClear(GL_DEPTH_BUFFER_BIT);
@@ -7369,8 +7363,12 @@ void RasterizerGLES2::end_scene() {
 		_debug_shadows();
 	}
 //	_debug_luminances();
-	_debug_samplers();
+//	_debug_samplers();
 
+	if (using_canvas_bg) {
+		using_canvas_bg=false;
+		glColorMask(1,1,1,1); //don't touch alpha
+	}
 
 }
 void RasterizerGLES2::end_shadow_map() {
@@ -7839,7 +7837,25 @@ void RasterizerGLES2::flush_frame() {
 
 /* CANVAS API */
 
+void RasterizerGLES2::begin_canvas_bg() {
+
+	if (framebuffer.active) {
+		using_canvas_bg=true;
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
+		glViewport( 0,0,viewport.width , viewport.height );
+	} else {
+		using_canvas_bg=false;
+	}
+
+}
+
 void RasterizerGLES2::canvas_begin() {
+
+
+	if (using_canvas_bg) {
+		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
+		glColorMask(1,1,1,0); //don't touch alpha
+	}
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
@@ -10567,7 +10583,7 @@ void RasterizerGLES2::init() {
 	glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
 
 
-
+	using_canvas_bg=false;
 	_update_framebuffer();
 	DEBUG_TEST_ERROR("Initializing");
 }

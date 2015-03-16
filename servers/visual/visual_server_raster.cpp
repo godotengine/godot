@@ -1693,6 +1693,17 @@ void VisualServerRaster::viewport_set_hide_canvas(RID p_viewport,bool p_hide) {
 
 }
 
+void VisualServerRaster::viewport_set_disable_environment(RID p_viewport,bool p_disable) {
+
+	VS_CHANGED;
+
+	Viewport *viewport=NULL;
+	viewport = viewport_owner.get( p_viewport );
+	ERR_FAIL_COND(!viewport);
+	viewport->disable_environment=p_disable;
+
+}
+
 void VisualServerRaster::viewport_attach_camera(RID p_viewport,RID p_camera) {
 	VS_CHANGED;
 
@@ -6267,6 +6278,20 @@ void VisualServerRaster::_process_sampled_light(const Transform& p_camera,Instan
 }
 
 
+void VisualServerRaster::_render_no_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario) {
+	RID environment;
+	if (p_scenario->environment.is_valid())
+		environment=p_scenario->environment;
+	else
+		environment=p_scenario->fallback_environment;
+
+	rasterizer->set_camera(Transform(),CameraMatrix());
+	rasterizer->begin_scene(p_viewport->viewport_data,environment,p_scenario->debug);
+	rasterizer->set_viewport(viewport_rect);
+	rasterizer->end_scene();
+}
+
+
 void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario) {
 
 
@@ -6889,6 +6914,23 @@ void VisualServerRaster::_render_canvas(Canvas *p_canvas,const Matrix32 &p_trans
 }
 
 
+void VisualServerRaster::_draw_viewport_camera(Viewport *p_viewport,bool p_ignore_camera) {
+
+
+	Camera *camera=NULL;
+	if (camera_owner.owns( p_viewport->camera ))
+		camera=camera_owner.get( p_viewport->camera );
+	Scenario *scenario = scenario_owner.get( p_viewport->scenario );
+
+	_update_instances(); // check dirty instances before rendering
+
+	if (p_ignore_camera)
+		_render_no_camera(p_viewport, camera,scenario );
+	else
+		_render_camera(p_viewport, camera,scenario );
+
+}
+
 void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_ofs_y,int p_parent_w,int p_parent_h) {
 
 	ViewportRect desired_rect=p_viewport->rect;
@@ -6923,14 +6965,31 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 	/* Camera should always be BEFORE any other 3D */
 
-	if (!p_viewport->hide_scenario && camera_owner.owns(p_viewport->camera) && scenario_owner.owns(p_viewport->scenario)) {
+	bool scenario_draw_canvas_bg=false;
+	int scenario_canvas_max_layer=0;
 
-		Camera *camera = camera_owner.get( p_viewport->camera );
-		Scenario *scenario = scenario_owner.get( p_viewport->scenario );
+	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && scenario_owner.owns(p_viewport->scenario)) {
 
-		_update_instances(); // check dirty instances before rendering
+		Scenario *scenario=scenario_owner.get(p_viewport->scenario);
+		if (scenario->environment.is_valid()) {
+			if (rasterizer->is_environment(scenario->environment)) {
+				scenario_draw_canvas_bg=rasterizer->environment_get_background(scenario->environment)==VS::ENV_BG_CANVAS;
+				scenario_canvas_max_layer=rasterizer->environment_get_background_param(scenario->environment,VS::ENV_BG_PARAM_CANVAS_MAX_LAYER);
+			}
+		}
+	}
 
-		_render_camera(p_viewport, camera,scenario );
+	bool can_draw_3d=!p_viewport->hide_scenario && camera_owner.owns(p_viewport->camera) && scenario_owner.owns(p_viewport->scenario);
+
+
+	if (scenario_draw_canvas_bg) {
+
+		rasterizer->begin_canvas_bg();
+	}
+
+	if (!scenario_draw_canvas_bg && can_draw_3d) {
+
+		_draw_viewport_camera(p_viewport,false);
 
 	} else if (true /*|| !p_viewport->canvas_list.empty()*/){
 
@@ -6940,7 +6999,10 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 				rasterizer->clear_viewport(Color(0,0,0,0));
 			}
 			else {
-				rasterizer->clear_viewport(clear_color);
+				Color cc=clear_color;
+				if (scenario_draw_canvas_bg)
+					cc.a=0;
+				rasterizer->clear_viewport(cc);
 			}
 			p_viewport->render_target_clear=false;
 		}
@@ -7040,6 +7102,16 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 			rasterizer->set_viewport(viewport_rect); //must reset viewport afterwards
 		}
 
+
+
+
+		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().layer>scenario_canvas_max_layer) {
+
+			_draw_viewport_camera(p_viewport,!can_draw_3d);
+			scenario_draw_canvas_bg=false;
+
+		}
+
 		for (Map<Viewport::CanvasKey,Viewport::CanvasData*>::Element *E=canvas_map.front();E;E=E->next()) {
 
 
@@ -7061,7 +7133,19 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 			_render_canvas( E->get()->canvas,xform,canvas_lights );
 			i++;
 
+			if (scenario_draw_canvas_bg && E->key().layer>=scenario_canvas_max_layer) {
+				_draw_viewport_camera(p_viewport,!can_draw_3d);
+				scenario_draw_canvas_bg=false;
+			}
+
+
 		}
+
+		if (scenario_draw_canvas_bg) {
+			_draw_viewport_camera(p_viewport,!can_draw_3d);
+			scenario_draw_canvas_bg=false;
+		}
+
 
 		//rasterizer->canvas_debug_viewport_shadows(lights_with_shadow);
 	}
