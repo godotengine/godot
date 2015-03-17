@@ -490,6 +490,29 @@ Array Area2D::get_overlapping_areas() const {
 	return ret;
 }
 
+bool Area2D::overlaps_area(Node* p_area) const {
+
+	ERR_FAIL_NULL_V(p_area,false);
+	const Map<ObjectID,AreaState>::Element *E=area_map.find(p_area->get_instance_ID());
+	if (!E)
+		return false;
+	return E->get().in_tree;
+
+
+
+}
+
+bool Area2D::overlaps_body(Node* p_body) const{
+
+	ERR_FAIL_NULL_V(p_body,false);
+	const Map<ObjectID,BodyState>::Element *E=body_map.find(p_body->get_instance_ID());
+	if (!E)
+		return false;
+	return E->get().in_tree;
+
+}
+
+
 void Area2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_body_enter_tree","id"),&Area2D::_body_enter_tree);
@@ -527,6 +550,9 @@ void Area2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area2D::get_overlapping_bodies);
 	ObjectTypeDB::bind_method(_MD("get_overlapping_areas"),&Area2D::get_overlapping_areas);
+
+	ObjectTypeDB::bind_method(_MD("overlaps_body:PhysicsBody2D","body"),&Area2D::overlaps_body);
+	ObjectTypeDB::bind_method(_MD("overlaps_area:Area2D","area"),&Area2D::overlaps_area);
 
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area2D::_body_inout);
 	ObjectTypeDB::bind_method(_MD("_area_inout"),&Area2D::_area_inout);
