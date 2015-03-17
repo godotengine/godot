@@ -341,7 +341,10 @@ public:
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const=0;
 	virtual Matrix32 area_get_transform(RID p_area) const=0;
 
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable)=0;
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method)=0;
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method)=0;
 
 	/* BODY API */
 

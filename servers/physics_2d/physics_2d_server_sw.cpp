@@ -463,6 +463,16 @@ Matrix32 Physics2DServerSW::area_get_transform(RID p_area) const {
 	return area->get_transform();
 };
 
+void Physics2DServerSW::area_set_monitorable(RID p_area,bool p_monitorable) {
+
+	Area2DSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_monitorable(p_monitorable);
+
+}
+
+
 void Physics2DServerSW::area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method) {
 
 	Area2DSW *area = area_owner.get(p_area);
@@ -473,6 +483,14 @@ void Physics2DServerSW::area_set_monitor_callback(RID p_area,Object *p_receiver,
 
 }
 
+void Physics2DServerSW::area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method) {
+
+
+	Area2DSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_area_monitor_callback(p_receiver?p_receiver->get_instance_ID():0,p_method);
+}
 
 /* BODY API */
 

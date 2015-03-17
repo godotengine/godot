@@ -527,13 +527,20 @@ void* Space2DSW::_broadphase_pair(CollisionObject2DSW *A,int p_subindex_A,Collis
 
 	if (type_A==CollisionObject2DSW::TYPE_AREA) {
 
-		ERR_FAIL_COND_V(type_B!=CollisionObject2DSW::TYPE_BODY,NULL);
 		Area2DSW *area=static_cast<Area2DSW*>(A);
-		Body2DSW *body=static_cast<Body2DSW*>(B);
+		if (type_B==CollisionObject2DSW::TYPE_AREA) {
 
-		AreaPair2DSW *area_pair = memnew(AreaPair2DSW(body,p_subindex_B,area,p_subindex_A) );
+			Area2DSW *area_b=static_cast<Area2DSW*>(B);
+			Area2Pair2DSW *area2_pair = memnew(Area2Pair2DSW(area_b,p_subindex_B,area,p_subindex_A) );
+			return area2_pair;
+		} else {
 
-		return area_pair;
+			Body2DSW *body=static_cast<Body2DSW*>(B);
+			AreaPair2DSW *area_pair = memnew(AreaPair2DSW(body,p_subindex_B,area,p_subindex_A) );
+			return area_pair;
+		}
+
+
 	} else {
 
 
