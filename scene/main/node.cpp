@@ -306,6 +306,40 @@ void Node::remove_and_delete_child(Node *p_child) {
 
 }
 
+void Node::remove_and_delete_children(){ 
+
+	for (int i=0;i<data.children.size();i++){ 
+		 
+		Node *child = data.children[i]; 
+		remove_child(child); 
+		memdelete(child); 
+	} 
+}
+
+void Node::remove_and_delete_children_except(const StringName& p_name) { 
+	 
+	for (int i=0;i<data.children.size();i++) { 
+		 
+		Node *child = data.children[i]; 
+		 
+		if ( child->get_name() != p_name ) { 
+			remove_child(child); 
+			memdelete(child); 
+		} 
+	} 
+} 
+
+bool Node::does_child_exist(const StringName& p_name) {
+	
+	for (int i=0;i<data.children.size();i++) {
+		if (data.children[i]->get_name() == p_name)	{
+			return true;
+		}
+	}
+	return false;
+}
+
+
 void Node::remove_child_notify(Node *p_child) {
 
 	// to be used when not wanted	
@@ -1350,6 +1384,54 @@ Node *Node::duplicate() const {
 	return node;
 }
 
+void Node::duplicate_with_name_and_reown(const StringName& p_name) const {
+
+	Node *node=NULL;
+
+	Object *obj = ObjectTypeDB::instance(get_type());
+	ERR_FAIL_COND(!obj);
+	node = obj->cast_to<Node>();
+	if (!node)
+		memdelete(obj);
+	ERR_FAIL_COND(!node);
+
+
+
+	if (get_filename()!="") { //an instance
+		node->set_filename(get_filename());
+	}
+
+	List<PropertyInfo> plist;
+
+	get_property_list(&plist);
+
+	for(List<PropertyInfo>::Element *E=plist.front();E;E=E->next()) {
+
+		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
+			continue;
+		String name = E->get().name;
+		node->set( name, get(name) );
+
+	}
+
+	node->set_name(p_name);
+
+	for(int i=0;i<get_child_count();i++) {
+
+		if (get_child(i)->data.parent_owned)
+			continue;
+		Node *dup = get_child(i)->duplicate();
+		if (!dup) {
+
+			memdelete(node);
+		}
+
+		node->add_child(dup);
+	}
+
+	data.parent->add_child(node);
+}
+
 
 void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const {
 
@@ -1764,6 +1846,9 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
 	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
 	ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
+	ObjectTypeDB::bind_method(_MD("remove_and_delete_children"),&Node::remove_and_delete_children);
+	ObjectTypeDB::bind_method(_MD("remove_and_delete_children_except","name"),&Node::remove_and_delete_children_except);
+	ObjectTypeDB::bind_method(_MD("does_child_exist","name"),&Node::does_child_exist);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
@@ -1813,6 +1898,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tree:SceneTree"),&Node::get_tree);
 
 	ObjectTypeDB::bind_method(_MD("duplicate:Node"),&Node::duplicate);
+	ObjectTypeDB::bind_method(_MD("duplicate_with_name_and_reown","name"),&Node::duplicate_with_name_and_reown);
 	ObjectTypeDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);

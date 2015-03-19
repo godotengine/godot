@@ -285,6 +285,7 @@ void OptionButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_selected"),&OptionButton::_selected);
 	
 	ObjectTypeDB::bind_method(_MD("add_item","label","id"),&OptionButton::add_item,DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("set_item","idx","emit_signal"),&OptionButton::_select);
 	ObjectTypeDB::bind_method(_MD("add_icon_item","texture:Texture","label","id"),&OptionButton::add_icon_item);
 	ObjectTypeDB::bind_method(_MD("set_item_text","idx","text"),&OptionButton::set_item_text);
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","texture:Texture"),&OptionButton::set_item_icon);

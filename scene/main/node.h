@@ -144,7 +144,9 @@ protected:
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
 	void remove_and_delete_child(Node *p_child);
-	
+	void remove_and_delete_children(); 
+	void remove_and_delete_children_except(const StringName& p_name); 
+	bool does_child_exist(const StringName& p_name);
 	void _propagate_replace_owner(Node *p_owner,Node* p_by_owner); 
 	
 	static void _bind_methods();
@@ -252,6 +254,7 @@ public:
 	int get_position_in_parent() const;
 
 	Node *duplicate() const;
+	void duplicate_with_name_and_reown(const StringName& p_name) const;
 	Node *duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const;
 	//Node *clone_tree() const;
 
