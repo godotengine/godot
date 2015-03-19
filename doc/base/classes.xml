@@ -17025,6 +17025,15 @@
 			Add an item, with text "label" and (optionally) id. If no "id" is passed, "id" becomes the item index. New items are appended at the end.
 			</description>
 		</method>
+		<method name="set_item"  >
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="emit_signal" type="bool">
+			</argument>
+			<description>
+			Set an item by index number. Passing false on emit signal is useful for setting a default item without triggering the signal call back
+			</description>
+		</method>
 		<method name="add_icon_item"  >
 			<argument index="0" name="texture" type="Texture">
 			</argument>
