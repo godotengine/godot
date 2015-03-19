@@ -1916,7 +1916,7 @@ done:
                   for (uint packed_c = 0; packed_c < limit; packed_c++)
                   {
                      int v = etc1_decode_value(diff, inten, selector, packed_c);
-             uint err = intabs(v - color);
+                     uint err = labs(v - static_cast<int>(color));
 		     //printf("err: %d - %u = %u\n",v,color,err);
                     #ifdef JAVASCRIPT_ENABLED
                      if (err < best_error || best_error == cUINT32_MAX)
