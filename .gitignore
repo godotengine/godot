@@ -23,6 +23,9 @@ tools/editor/editor_icons.cpp
 make.bat
 log.txt
 
+# Javascript specific
+*.bc
+
 # Android specific
 platform/android/java/local.properties
 platform/android/java/project.properties
