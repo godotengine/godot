@@ -42,7 +42,6 @@ Area::SpaceOverride Area::get_space_override_mode() const{
 }
 
 void Area::set_gravity_is_point(bool p_enabled){
-
 	gravity_is_point=p_enabled;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT,p_enabled);
 
@@ -50,6 +49,17 @@ void Area::set_gravity_is_point(bool p_enabled){
 bool Area::is_gravity_a_point() const{
 
 	return gravity_is_point;
+}
+
+void Area::set_gravity_distance_scale(real_t p_scale){
+
+	gravity_distance_scale=p_scale;
+	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE,p_scale);
+
+}
+
+real_t Area::get_gravity_distance_scale() const{
+	return gravity_distance_scale;
 }
 
 void Area::set_gravity_vector(const Vector3& p_vec){
@@ -302,6 +312,9 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_gravity_is_point","enable"),&Area::set_gravity_is_point);
 	ObjectTypeDB::bind_method(_MD("is_gravity_a_point"),&Area::is_gravity_a_point);
 
+	ObjectTypeDB::bind_method(_MD("set_gravity_distance_scale","distance_scale"),&Area::set_gravity_distance_scale);
+	ObjectTypeDB::bind_method(_MD("get_gravity_distance_scale"),&Area::get_gravity_distance_scale);
+
 	ObjectTypeDB::bind_method(_MD("set_gravity_vector","vector"),&Area::set_gravity_vector);
 	ObjectTypeDB::bind_method(_MD("get_gravity_vector"),&Area::get_gravity_vector);
 
@@ -330,6 +343,7 @@ void Area::_bind_methods() {
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"density",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_density"),_SCS("get_density"));
@@ -345,6 +359,7 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	locked=false;
 	set_gravity_vector(Vector3(0,-1,0));
 	gravity_is_point=false;
+	gravity_distance_scale=0;
 	density=0.1;
 	priority=0;
 	monitoring=false;

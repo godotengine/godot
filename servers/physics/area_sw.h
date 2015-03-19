@@ -45,6 +45,7 @@ class AreaSW : public CollisionObjectSW{
 	float gravity;
 	Vector3 gravity_vector;
 	bool gravity_is_point;
+	float gravity_distance_scale;
 	float point_attenuation;
 	float density;
 	int priority;
@@ -124,6 +125,9 @@ public:
 
 	_FORCE_INLINE_ void set_gravity_as_point(bool p_enable) { gravity_is_point=p_enable; }
 	_FORCE_INLINE_ bool is_gravity_point() const { return gravity_is_point; }
+
+	_FORCE_INLINE_ void set_gravity_distance_scale(float scale) { gravity_distance_scale=scale; }
+	_FORCE_INLINE_ float get_gravity_distance_scale() const { return gravity_distance_scale; }
 
 	_FORCE_INLINE_ void set_point_attenuation(float p_point_attenuation) { point_attenuation=p_point_attenuation; }
 	_FORCE_INLINE_ float get_point_attenuation() const { return point_attenuation; }

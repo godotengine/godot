@@ -49,6 +49,7 @@ private:
 	Vector3 gravity_vec;
 	real_t gravity;
 	bool gravity_is_point;
+	real_t gravity_distance_scale;
 	real_t density;
 	int priority;
 	bool monitoring;
@@ -97,6 +98,9 @@ public:
 
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
+
+	void set_gravity_distance_scale(real_t p_scale);
+	real_t get_gravity_distance_scale() const;
 
 	void set_gravity_vector(const Vector3& p_vec);
 	Vector3 get_gravity_vector() const;
