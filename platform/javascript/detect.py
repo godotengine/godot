@@ -36,6 +36,7 @@ def get_flags():
 		('squish', 'no'),
 		('speex', 'no'),
 		('old_scenes', 'no'),
+		('etc1', 'no'),
 #		('default_gui_theme', 'no'),
 
 		#('builtin_zlib', 'no'),
