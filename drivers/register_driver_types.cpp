@@ -222,10 +222,7 @@ void register_driver_types() {
 #endif
 #endif
 
-#ifdef ETC1_ENABLED
 	_register_etc1_compress_func();
-#endif
-
 	initialize_chibi();
 }
 

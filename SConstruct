@@ -307,8 +307,6 @@ if selected_platform in platform_list:
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
 		
-	if (env['etc1']=='yes'):
-		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
 	Export('env')
 
