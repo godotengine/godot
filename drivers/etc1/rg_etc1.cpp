@@ -1918,11 +1918,7 @@ done:
                      int v = etc1_decode_value(diff, inten, selector, packed_c);
                      uint err = labs(v - static_cast<int>(color));
 		     //printf("err: %d - %u = %u\n",v,color,err);
-                    #ifdef JAVASCRIPT_ENABLED
-                     if (err < best_error || best_error == cUINT32_MAX)
-                    #else
                      if (err < best_error)
-                    #endif 
                      {
                         best_error = err;
                         best_packed_c = packed_c;
