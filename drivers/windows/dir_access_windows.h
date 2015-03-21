@@ -58,6 +58,7 @@ class DirAccessWindows : public DirAccess {
 
 	bool unicode;
 	bool _cisdir;
+	bool _cishidden;
 
 public:
 
