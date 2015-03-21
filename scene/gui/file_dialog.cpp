@@ -29,6 +29,8 @@
 #include "file_dialog.h"
 #include "scene/gui/label.h"
 #include "print_string.h"
+#include "os/keyboard.h"
+#include "tools/editor/editor_settings.h"
 
 
 FileDialog::GetIconFunc FileDialog::get_icon_func=NULL;
@@ -278,13 +280,20 @@ void FileDialog::update_file_list() {
 	List<String> dirs;
 	
 	bool isdir;
+	bool ishidden;
+	bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
 	String item;
+
 	while ((item=dir_access->get_next(&isdir))!="") {
-		
-		if (!isdir)
-			files.push_back(item);
-		else
-			dirs.push_back(item);		
+
+		ishidden = dir_access->current_is_hidden();
+
+		if (show_hidden || !ishidden) {
+			if (!isdir)
+				files.push_back(item);
+			else
+				dirs.push_back(item);
+		}
 	}
 	
 	dirs.sort_custom<NoCaseComparator>();
