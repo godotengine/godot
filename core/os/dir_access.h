@@ -78,6 +78,7 @@ public:
 	virtual String get_next(bool* p_is_dir); // compatibility
 	virtual String get_next()=0;
 	virtual bool current_is_dir() const=0;
+	virtual bool current_is_hidden() const=0;
 	
 	virtual void list_dir_end()=0; ///< 
 	
