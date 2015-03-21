@@ -984,7 +984,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	{
 
 		bool skip=false;
-		error = FT_Load_Char( face, charcode, FT_LOAD_RENDER );
+		error = FT_Load_Char( face, charcode, font_mode==_EditorFontImportOptions::FONT_BITMAP?FT_LOAD_RENDER:FT_LOAD_MONOCHROME );
 		if (error) skip=true;
 		else error = FT_Render_Glyph( face->glyph, font_mode==_EditorFontImportOptions::FONT_BITMAP?ft_render_mode_normal:ft_render_mode_mono );
 		if (error) {
@@ -1016,7 +1016,8 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		int w = slot->bitmap.width;
 		int h = slot->bitmap.rows;
 		int p = slot->bitmap.pitch;
-		print_line("pitch "+itos(slot->bitmap.pitch));
+
+		print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
 
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 
@@ -1048,8 +1049,6 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 			fdata->advance=(slot->advance.x+(1<<5))>>6;
 		else
 			fdata->advance=slot->advance.x/float(1<<6);
-
-		fdata->advance/=scaler;
 
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 
@@ -1150,7 +1149,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	spd->ofs_x=0;
 	spd->ofs_y=0;
 
-	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, ft_render_mode_normal )) {
+	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, font_mode==_EditorFontImportOptions::FONT_BITMAP?ft_render_mode_normal:ft_render_mode_mono )) {
 
 		spd->advance = slot->advance.x>>6; //round to nearest or store as float
 		spd->advance/=scaler;
@@ -1498,7 +1497,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		atlas.convert(Image::FORMAT_GRAYSCALE_ALPHA);
 	}
 
-	if (1) {
+	if (0) {
 		//debug the texture
 		Ref<ImageTexture> atlast = memnew( ImageTexture );
 		atlast->create_from_image(atlas);
@@ -1531,6 +1530,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	font->clear();
 	font->set_height(height+bottom_space+top_space);
 	font->set_ascent(ascent+top_space);
+	font->set_distance_field_hint(font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD);
 
 	//register texures
 	{

@@ -969,6 +969,7 @@ public:
 
 	virtual void canvas_item_set_transform(RID p_item, const Matrix32& p_transform)=0;
 	virtual void canvas_item_set_clip(RID p_item, bool p_clip)=0;
+	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable)=0;
 	virtual void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect=Rect2())=0;
 	virtual void canvas_item_set_opacity(RID p_item, float p_opacity)=0;
 	virtual float canvas_item_get_opacity(RID p_item, float p_opacity) const=0;

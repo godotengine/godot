@@ -3411,6 +3411,14 @@ void VisualServerRaster::canvas_item_set_clip(RID p_item, bool p_clip) {
 	canvas_item->clip=p_clip;
 }
 
+void VisualServerRaster::canvas_item_set_distance_field_mode(RID p_item, bool p_distance_field) {
+	VS_CHANGED;
+	CanvasItem *canvas_item = canvas_item_owner.get( p_item );
+	ERR_FAIL_COND(!canvas_item);
+
+	canvas_item->distance_field=p_distance_field;
+}
+
 
 void VisualServerRaster::canvas_item_set_transform(RID p_item, const Matrix32& p_transform) {
 

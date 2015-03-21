@@ -9127,8 +9127,10 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 	canvas_use_modulate=p_modulate!=Color(1,1,1,1);
 	canvas_modulate=p_modulate;
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_MODULATE,canvas_use_modulate);
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD,false);
 
 	bool reset_modulate=false;
+	bool prev_distance_field=false;
 
 	while(p_item_list) {
 
@@ -9144,11 +9146,21 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			canvas_use_modulate=p_modulate!=Color(1,1,1,1);
 			canvas_modulate=p_modulate;
 			canvas_shader.set_conditional(CanvasShaderGLES2::USE_MODULATE,canvas_use_modulate);
+			canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD,false);
+			prev_distance_field=false;
 			rebind_shader=true;
 			reset_modulate=true;
 
 
 		}
+
+		if (prev_distance_field!=ci->distance_field) {
+
+			canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD,ci->distance_field);
+			prev_distance_field=ci->distance_field;
+			rebind_shader=true;
+		}
+
 
 		if (current_clip!=ci->final_clip_owner) {
 
