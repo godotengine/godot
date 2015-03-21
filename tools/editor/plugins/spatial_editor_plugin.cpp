@@ -477,6 +477,16 @@ void SpatialEditorViewport::_select_region() {
 
 }
 
+void SpatialEditorViewport::_update_name() {
+
+	String ortho = orthogonal?"Orthogonal":"Perspective";
+
+	if (name!="")
+		view_menu->set_text("[ "+name+" "+ortho+" ]");
+	else
+		view_menu->set_text("[ "+ortho+" ]");
+}
+
 
 void SpatialEditorViewport::_compute_edit(const Point2& p_point) {
 
@@ -832,6 +842,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 								_edit.plane=TRANSFORM_X_AXIS;
 								set_message("View Plane Transform.",2);
+								name="";
+								_update_name();
 							} break;
 							case TRANSFORM_X_AXIS: {
 
@@ -1460,6 +1472,8 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 						cursor.x_rot=Math_PI/2.0;
 					if (cursor.x_rot<-Math_PI/2.0)
 						cursor.x_rot=-Math_PI/2.0;
+					name="";
+					_update_name();
 				} break;
 
 				default: {}
@@ -1484,9 +1498,14 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (k.mod.shift) {
 						cursor.x_rot=-Math_PI/2.0;
 						set_message("Bottom View.",2);
+						name="Bottom";
+						_update_name();
+
 					} else {
 						cursor.x_rot=Math_PI/2.0;
 						set_message("Top View.",2);
+						name="Top";
+						_update_name();
 					}
 				} break;
 				case KEY_KP_1: {
@@ -1495,10 +1514,14 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (k.mod.shift) {
 						cursor.y_rot=Math_PI;
 						set_message("Rear View.",2);
+						name="Rear";
+						_update_name();
 
 					} else {
 						cursor.y_rot=0;
 						set_message("Front View.",2);
+						name="Front";
+						_update_name();
 					}
 
 				} break;
@@ -1508,9 +1531,13 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 					if (k.mod.shift) {
 						cursor.y_rot=Math_PI/2.0;
 						set_message("Left View.",2);
+						name="Left";
+						_update_name();
 					} else {
 						cursor.y_rot=-Math_PI/2.0;
 						set_message("Right View.",2);
+						name="Right";
+						_update_name();
 					}
 
 				} break;
@@ -1518,6 +1545,7 @@ void SpatialEditorViewport::_sinput(const InputEvent &p_event) {
 
 					orthogonal = !orthogonal;
 					_menu_option(orthogonal?VIEW_PERSPECTIVE:VIEW_ORTHOGONAL);
+					_update_name();
 
 
 				} break;
@@ -1831,35 +1859,47 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 
 			cursor.x_rot=Math_PI/2.0;
 			cursor.y_rot=0;
+			name="Top";
+			_update_name();
 		} break;
 		case VIEW_BOTTOM: {
 
 			cursor.x_rot=-Math_PI/2.0;
 			cursor.y_rot=0;
+			name="Bottom";
+			_update_name();
 
 		} break;
 		case VIEW_LEFT: {
 
 			cursor.y_rot=Math_PI/2.0;
 			cursor.x_rot=0;
+			name="Left";
+			_update_name();
 
 		} break;
 		case VIEW_RIGHT: {
 
 			cursor.y_rot=-Math_PI/2.0;
 			cursor.x_rot=0;
+			name="Right";
+			_update_name();
 
 		} break;
 		case VIEW_FRONT: {
 
 			cursor.y_rot=0;
 			cursor.x_rot=0;
+			name="Front";
+			_update_name();
 
 		} break;
 		case VIEW_REAR: {
 
 			cursor.y_rot=Math_PI;
 			cursor.x_rot=0;
+			name="Rear";
+			_update_name();
 
 		} break;
 		case VIEW_CENTER_TO_SELECTION: {
@@ -1941,6 +1981,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL), false );
 			orthogonal=false;
 			call_deferred("update_transform_gizmo_view");
+			_update_name();
 
 		} break;
 		case VIEW_ORTHOGONAL: {
@@ -1949,6 +1990,7 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked( view_menu->get_popup()->get_item_index(VIEW_ORTHOGONAL), true );
 			orthogonal=true;
 			call_deferred("update_transform_gizmo_view");
+			_update_name();
 
 		} break;
 		case VIEW_AUDIO_LISTENER: {
@@ -2147,15 +2189,13 @@ void SpatialEditorViewport::reset() {
 	message_time=0;
 	message="";
 	last_message="";
+	name="Top";
 
 	cursor.x_rot=0;
 	cursor.y_rot=0;
 	cursor.distance=4;
 	cursor.region_select=false;
-
-
-
-
+	_update_name();
 }
 
 SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
@@ -2189,18 +2229,17 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu = memnew( MenuButton );
 	surface->add_child(view_menu);
 	view_menu->set_pos( Point2(4,4));
-	view_menu->set_text("[view]");
 	view_menu->set_self_opacity(0.5);
 
-	view_menu->get_popup()->add_item("Top",VIEW_TOP);
-	view_menu->get_popup()->add_item("Bottom",VIEW_BOTTOM);
-	view_menu->get_popup()->add_item("Left",VIEW_LEFT);
-	view_menu->get_popup()->add_item("Right",VIEW_RIGHT);
-	view_menu->get_popup()->add_item("Front",VIEW_FRONT);
-	view_menu->get_popup()->add_item("Rear",VIEW_REAR);
+	view_menu->get_popup()->add_item("Top (Num7)",VIEW_TOP);
+	view_menu->get_popup()->add_item("Bottom (Shift+Num7)",VIEW_BOTTOM);
+	view_menu->get_popup()->add_item("Left (Num3)",VIEW_LEFT);
+	view_menu->get_popup()->add_item("Right (Shift+Num3)",VIEW_RIGHT);
+	view_menu->get_popup()->add_item("Front (Num1)",VIEW_FRONT);
+	view_menu->get_popup()->add_item("Rear (Shift+Num1)",VIEW_REAR);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_check_item("Perspective",VIEW_PERSPECTIVE);
-	view_menu->get_popup()->add_check_item("Orthogonal",VIEW_ORTHOGONAL);
+	view_menu->get_popup()->add_check_item("Perspective (Num5)",VIEW_PERSPECTIVE);
+	view_menu->get_popup()->add_check_item("Orthogonal (Num5)",VIEW_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE),true);
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_item("Environment",VIEW_ENVIRONMENT);
@@ -2232,6 +2271,10 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 		view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUDIO_LISTENER),true);
 		viewport->set_as_audio_listener(true);
 	}
+
+
+	name="Top";
+	_update_name();
 
 	EditorSettings::get_singleton()->connect("settings_changed",this,"update_transform_gizmo_view");
 
