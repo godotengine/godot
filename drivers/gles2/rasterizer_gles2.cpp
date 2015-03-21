@@ -8445,7 +8445,7 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 		static uint16_t _draw_poly_indices[_max_draw_poly_indices];
 		for (int i=0; i<p_vertex_count; i++) {
 			_draw_poly_indices[i] = p_indices[i];
-             OS::get_singleton()->print("ind: %d ", p_indices[i]);
+             //OS::get_singleton()->print("ind: %d ", p_indices[i]);
 		};
 
         //copy the data to GPU.
