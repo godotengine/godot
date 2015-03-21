@@ -31,6 +31,7 @@
 #include "os/os.h"
 #include "print_string.h"
 #include "label.h"
+#include "fribidi/rtlfixer.h"
 
 void LineEdit::_input_event(InputEvent p_event) {
 
@@ -325,7 +326,8 @@ void LineEdit::drop_data(const Point2& p_point,const Variant& p_data){
 	if (p_data.get_type()==Variant::STRING) {
 		set_cursor_at_pixel_pos(p_point.x);
 		int selected = selection.end - selection.begin;
-		text.erase(selection.begin, selected);
+        text.erase(selection.begin, selected);
+        visualText = RTLFixer::getFixedText(text);
 		append_at_cursor(p_data);
 		selection.begin = cursor_pos-selected;
 		selection.end = cursor_pos;
@@ -383,11 +385,11 @@ void LineEdit::_notification(int p_what) {
 			while(true) {
 				
 		//end of string, break!
-				if (char_ofs>=text.length())
+                if (char_ofs>=visualText.length())
 					break;
 
-				CharType cchar=pass?'*':text[char_ofs];
-				CharType next=pass?'*':text[char_ofs+1];
+                CharType cchar=pass?'*':visualText[char_ofs];
+                CharType next=pass?'*':visualText[char_ofs+1];
 				int char_width=font->get_char_size( cchar,next ).width;
 								
 		// end of widget, break!
@@ -525,9 +527,9 @@ void LineEdit::delete_char() {
 	
 	
 	text.erase( cursor_pos-1, 1 );
-	
+    visualText = RTLFixer::getFixedText(text);
 	set_cursor_pos(get_cursor_pos()-1);
-	
+
 	if (cursor_pos==window_pos) {
 		
 	//	set_window_pos(cursor_pos-get_window_length());
@@ -558,8 +560,8 @@ String LineEdit::get_text() const {
 
 void LineEdit::set_cursor_pos(int p_pos) {
 	
-	if (p_pos>(int)text.length())
-		p_pos=text.length();
+    if (p_pos>(int)visualText.length())
+        p_pos=visualText.length();
 	
 	if(p_pos<0)
 		p_pos=0;
@@ -629,6 +631,7 @@ void LineEdit::append_at_cursor(String p_text) {
 		String pre = text.substr( 0, cursor_pos );
 		String post = text.substr( cursor_pos, text.length()-cursor_pos );
 		text=pre+p_text+post;
+        visualText = RTLFixer::getFixedText(text);
 		set_cursor_pos(cursor_pos+p_text.length());
 		
 	}
@@ -677,6 +680,7 @@ void LineEdit::selection_delete() {
 		
 		undo_text = text;
 		text.erase(selection.begin,selection.end-selection.begin);
+        visualText = RTLFixer::getFixedText(text);
 		cursor_pos-=CLAMP( cursor_pos-selection.begin, 0, selection.end-selection.begin);
 		
 		if (cursor_pos>=text.length()) {

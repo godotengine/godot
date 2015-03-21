@@ -48,7 +48,10 @@ public:
 private:
 
 	bool flat;
+    //Original Text
 	String text;
+    //Text that will show up (For RTL langauge)
+    String visualText;
 	Ref<Texture> icon;	
 	bool clip_text;
 	TextAlign align;

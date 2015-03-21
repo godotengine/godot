@@ -1,0 +1,26 @@
+Import('env')
+fribidi_sources= [
+"fribidi-char-sets.c",
+"fribidi-char-sets-cap-rtl.c",
+"fribidi-char-sets-cp1255.c",
+"fribidi-char-sets-cp1256.c",
+"fribidi-char-sets-iso8859-6.c",
+"fribidi-char-sets-iso8859-8.c",
+"fribidi-char-sets-utf8.c",
+"fribidi.c",
+"fribidi-arabic.c",
+"fribidi-bidi.c",
+"fribidi-bidi-types.c",
+"fribidi-deprecated.c",
+"fribidi-joining.c",
+"fribidi-joining-types.c",
+"fribidi-mem.c",
+"fribidi-mirroring.c",
+"fribidi-run.c",
+"fribidi-shape.c",
+"rtlfixer.cpp",
+];
+env.add_source_files(env.core_sources, fribidi_sources)
+
+
+Export('env')

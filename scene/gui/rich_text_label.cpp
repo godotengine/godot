@@ -30,6 +30,7 @@
 #include "scene/scene_string_names.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "fribidi/rtlfixer.h"
 RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item) {
 
 	if (p_item->subitems.size()) {
@@ -900,25 +901,28 @@ void RichTextLabel::_invalidate_current_line() {
 
 void RichTextLabel::add_text(const String& p_text) {
 
-	int pos=0;
+    int pos=0;
+    String str =p_text;
 
-	while (pos<p_text.length()) {
+    str = RTLFixer::getFixedText(p_text);
 
-		int end=p_text.find("\n",pos);
+    while (pos<str.length()) {
+
+        int end=str.find("\n",pos);
 		String line;
 		bool eol=false;
 		if (end==-1) {
 
-			end=p_text.length();
+            end=str.length();
 		} else {
 
 			eol=true;
-		}
+        }
 
-		if (pos==0 && end==p_text.length())
-			line=p_text;
+        if (pos==0 && end==str.length())
+            line=str;
 		else
-			line=p_text.substr(pos,end-pos);
+            line=str.substr(pos,end-pos);
 
 		if (line.length()>0) {
 

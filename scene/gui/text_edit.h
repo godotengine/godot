@@ -112,10 +112,12 @@ class TextEdit : public Control  {
 		       bool breakpoint : 1;
 		       Map<int,ColorRegionInfo> region_info;
 		       String data;
+               String vdata;
 	       };
+           mutable Vector<Line> text;
 	private:
 	       const Vector<ColorRegion> *color_regions;
-	       mutable Vector<Line> text;
+
 	       Ref<Font> font;
 	       int tab_size;
 
@@ -140,6 +142,7 @@ class TextEdit : public Control  {
 		int size() const { return text.size(); }
 		void clear();
 		void clear_caches();
+
         _FORCE_INLINE_ const String& operator[](int p_line) const { return text[p_line].data; }
 		Text() { tab_size=4; }
        };
@@ -313,6 +316,7 @@ public:
 	void get_breakpoints(List<int> *p_breakpoints) const;
 	String get_text();
 	String get_line(int line) const;
+    String get_line_visualText(int line) const;
     void set_line(int line, String new_text);
 	void backspace_at_cursor();
 	

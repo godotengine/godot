@@ -30,6 +30,7 @@
 #define LABEL_H
 
 #include "scene/gui/range.h"
+#include "fribidi/fribidi.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -57,7 +58,10 @@ public:
 private:
 	Align align;
 	VAlign valign;
+    //Originial Text
 	String text;
+    //Visual Text Text that will show up(Used For RTL Languages)
+    String visualText;
 	bool autowrap;
 	bool clip;
 	Size2 minsize;

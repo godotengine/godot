@@ -40,6 +40,7 @@
 #include "text_edit.h"
 #include "os/keyboard.h"
 #include "os/os.h"
+#include "fribidi/rtlfixer.h"
 
 #include "globals.h"
 #include "message_queue.h"
@@ -107,8 +108,8 @@ void TextEdit::Text::_update_line_cache(int p_line) const {
 	int w =0;
 	int tab_w=font->get_char_size(' ').width;
 	
-	int len = text[p_line].data.length();
-	const CharType *str = text[p_line].data.c_str();
+    int len = text[p_line].vdata.length();
+    const CharType *str = text[p_line].vdata.c_str();
 	
 	//update width
 	
@@ -263,6 +264,7 @@ void TextEdit::Text::set(int p_line,const String& p_text) {
 	
 	text[p_line].width_cache=-1;
 	text[p_line].data=p_text;
+    text[p_line].vdata=RTLFixer::getFixedText(p_text);
 }
 
 
@@ -273,6 +275,7 @@ void TextEdit::Text::insert(int p_at,const String& p_text) {
 	line.breakpoint=false;
 	line.width_cache=-1;
 	line.data=p_text;
+    line.vdata = RTLFixer::getFixedText(p_text);
 	text.insert(p_at,line);
 }
 void TextEdit::Text::remove(int p_at) {
@@ -385,7 +388,7 @@ void TextEdit::_notification(int p_what) {
 			int line_number_char_count=0;
 			
 			{
-				int lc=text.size()+1;
+                int lc=text.size()+1;
 				cache.line_number_w=0;
 				while(lc) {
 					cache.line_number_w+=1;
@@ -435,7 +438,7 @@ void TextEdit::_notification(int p_what) {
 				
 				for(int i=0;i<cursor.line_ofs;i++) {
 					
-					const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(i);
+                    const Map<int,Text::ColorRegionInfo>& cri_map=text.get_color_region_info(i);
 					
 					if (in_region>=0 && color_regions[in_region].line_only) {
 						in_region=-1; //reset regions that end at end of line
@@ -473,10 +476,10 @@ void TextEdit::_notification(int p_what) {
 			
 			
 			if (brace_matching_enabled) {
-				
-				if (cursor.column<text[cursor.line].length()) {
+
+                if (cursor.column<text[cursor.line].length()) {
 					//check for open
-					CharType c = text[cursor.line][cursor.column];
+                    CharType c = text[cursor.line][cursor.column];
 					CharType closec=0;
 					
 					if (c=='[') {
@@ -495,9 +498,9 @@ void TextEdit::_notification(int p_what) {
 						for(int i=cursor.line;i<text.size();i++) {
 							
 							int from = i==cursor.line?cursor.column+1:0;
-							for(int j=from;j<text[i].length();j++) {
+                            for(int j=from;j<text[i].length();j++) {
 								
-								CharType cc = text[i][j];
+                                CharType cc = text[i][j];
 								if (cc==c)
 									stack++;
 								else if (cc==closec)
@@ -523,7 +526,7 @@ void TextEdit::_notification(int p_what) {
 				}
 				
 				if (cursor.column>0) {
-					CharType c = text[cursor.line][cursor.column-1];
+                    CharType c = text[cursor.line][cursor.column-1];
 					CharType closec=0;
 					
 					
@@ -543,10 +546,10 @@ void TextEdit::_notification(int p_what) {
 						
 						for(int i=cursor.line;i>=0;i--) {
 							
-							int from = i==cursor.line?cursor.column-2:text[i].length()-1;
+                            int from = i==cursor.line?cursor.column-2:text[i].length()-1;
 							for(int j=from;j>=0;j--) {
 								
-								CharType cc = text[i][j];
+                                CharType cc = text[i][j];
 								if (cc==c)
 									stack++;
 								else if (cc==closec)
@@ -585,7 +588,7 @@ void TextEdit::_notification(int p_what) {
 				if (line<0 || line>=(int)text.size())
 					continue;
 				
-				const String &str=text[line];
+                const String &str=get_line_visualText(line);
 				
 				int char_margin=xmargin_beg-cursor.x_ofs;
 				int char_ofs=0;
@@ -655,7 +658,7 @@ void TextEdit::_notification(int p_what) {
 								if (!cri.end) {
 									
 									in_region=cri.region;
-								}
+                                }
 							} else if (in_region==cri.region && !color_regions[cri.region].line_only) { //ignore otherwise
 								
 								if (cri.end || color_regions[cri.region].eq) {
@@ -2296,7 +2299,7 @@ void TextEdit::_remove_text(int p_from_line, int p_from_column,int p_to_line,int
 
 void TextEdit::_insert_text_at_cursor(const String& p_text) {
 	
-	int new_column,new_line;
+    int new_column,new_line;
 	_insert_text(cursor.line,cursor.column,p_text,&new_line,&new_column);
 	cursor_set_line(new_line);
 	cursor_set_column(new_column);
@@ -2615,6 +2618,13 @@ String TextEdit::get_line(int line) const {
 	return 	text[line];
 	
 };
+
+String TextEdit::get_line_visualText(int line) const
+{
+    if (line<0 || line>=text.size())
+        return "";
+    return text.text[line].vdata;
+}
 
 void TextEdit::_clear() {
 	

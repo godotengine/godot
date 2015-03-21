@@ -41,8 +41,10 @@ class LineEdit : public Control {
 	bool pass;
 	
 	String undo_text;
-	String text;
-	
+    //Orignial Text this text will be edited
+    String text;
+    //This Text will be shown( RTL FIX)
+    String visualText;
 	int cursor_pos;
 	int window_pos;
 	int max_length; // 0 for no maximum
