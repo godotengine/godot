@@ -30,6 +30,7 @@
 #include "print_string.h"
 #include "globals.h"
 #include "translation.h"
+#include "fribidi/rtlfixer.h"
 
 
 void Label::set_autowrap(bool p_autowrap) {
@@ -231,9 +232,9 @@ void Label::_notification(int p_what) {
 					float x_ofs_shadow=x_ofs;
 					for (int i=0;i<from->word_len;i++) {
 						
-						if (visible_chars < 0 || chars_total_shadow<visible_chars) {
-							CharType c = text[i+pos];
-							CharType n = text[i+pos+1];
+                        if (visible_chars < 0 || chars_total_shadow<visible_chars) {
+                            CharType c = visualText[i+pos];
+                            CharType n = visualText[i+pos+1];
 							if (uppercase) {
 								c=String::char_uppercase(c);
 								n=String::char_uppercase(c);
@@ -254,9 +255,9 @@ void Label::_notification(int p_what) {
 				}
 				for (int i=0;i<from->word_len;i++) {
 					
-					if (visible_chars < 0 || chars_total<visible_chars) {
-						CharType c = text[i+pos];
-						CharType n = text[i+pos+1];
+                    if (visible_chars < 0 || chars_total<visible_chars) {
+                        CharType c = visualText[i+pos];
+                        CharType n = visualText[i+pos+1];
 						if (uppercase) {
 							c=String::char_uppercase(c);
 							n=String::char_uppercase(c);
@@ -311,9 +312,9 @@ int Label::get_longest_line_width() const {
 	int max_line_width=0;
 	int line_width=0;
 	
-	for (int i=0;i<text.size()+1;i++) {
+    for (int i=0;i<visualText.size()+1;i++) {
 		
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+        CharType current=i<visualText.length()?visualText[i]:' '; //always a space at the end, so the algo works
 		if (uppercase)
 			current=String::char_uppercase(current);
 
@@ -369,11 +370,14 @@ void Label::regenerate_word_cache() {
 	line_count=1;
 	total_char_cache=0;
 	
-	WordCache *last=NULL;
-	
-	for (int i=0;i<text.size()+1;i++) {
+    WordCache *last=NULL;
+
+
+
+
+    for (int i=0;i<visualText.size()+1;i++) {
 		
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+        CharType current=i<visualText.length()?visualText[i]:' '; //always a space at the end, so the algo works
 		
 		if (uppercase)
 			current=String::char_uppercase(current);
@@ -406,7 +410,7 @@ void Label::regenerate_word_cache() {
 				total_char_cache++;
 			}
 
-			if (i<text.length() && text[i] == ' ') {
+            if (i<visualText.length() && visualText[i] == ' ') {
 				total_char_cache--;  // do not count spaces
 			}
 
@@ -494,13 +498,17 @@ Label::VAlign Label::get_valign() const{
 }
 
 void Label::set_text(const String& p_string) {
-	
+
 	String str = XL_MESSAGE(p_string);
 
 	if (text==str)
-		return;
-	
-	text=str;
+        return;
+
+    text=str;
+
+    //RTL FIXED
+    visualText = RTLFixer::getFixedText(text);
+
 	word_cache_dirty=true;
 	update();
 	if (!autowrap)
@@ -514,7 +522,7 @@ void Label::set_clip_text(bool p_clip) {
 		return;
 	clip=p_clip;
 	update();
-	minimum_size_changed();
+    minimum_size_changed();
 }
 
 bool Label::is_clipping_text() const {
@@ -598,7 +606,8 @@ Label::Label(const String &p_text) {
 	
 	align=ALIGN_LEFT;
 	valign=VALIGN_TOP;
-	text="";
+    text="";
+    visualText="";
 	word_cache=NULL;
 	word_cache_dirty=true;	
 	autowrap=false;

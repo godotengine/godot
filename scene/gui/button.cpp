@@ -28,13 +28,14 @@
 /*************************************************************************/
 #include "button.h"
 #include "servers/visual_server.h"
+#include "fribidi/rtlfixer.h"
 #include "print_string.h"
 #include "translation.h"
 
 
 Size2 Button::get_minimum_size() const {
 
-	Size2 minsize=get_font("font")->get_string_size( text );
+    Size2 minsize=get_font("font")->get_string_size( visualText);
 	if (clip_text)
 		minsize.width=0;
 
@@ -48,7 +49,7 @@ Size2 Button::get_minimum_size() const {
 	
 		minsize.height=MAX( minsize.height, _icon->get_height() );
 		minsize.width+=_icon->get_width();
-		if (text!="")
+        if (visualText!="")
 			minsize.width+=get_constant("hseparation");
 	}
 
@@ -107,7 +108,7 @@ void Button::_notification(int p_what) {
 
 		Point2 icon_ofs = (!_icon.is_null())?Point2( _icon->get_width() + get_constant("hseparation"), 0):Point2();
 		int text_clip=size.width - style->get_minimum_size().width - icon_ofs.width;
-		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( text ) )/2.0;
+        Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( visualText ) )/2.0;
 
 		switch(align) {
 			case ALIGN_LEFT: {
@@ -126,7 +127,7 @@ void Button::_notification(int p_what) {
 
 
 		text_ofs.y+=font->get_ascent();
-		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
+        font->draw( ci, text_ofs.floor(), visualText, color,clip_text?text_clip:-1);
 		if (!_icon.is_null()) {
 		
 			_icon->draw(ci,Point2(style->get_offset().x, Math::floor( (size.height-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
@@ -146,6 +147,8 @@ void Button::set_text(const String& p_text) {
 	if (text==p_text)
 		return;
 	text=XL_MESSAGE(p_text);
+     visualText = RTLFixer::getFixedText(text);
+
 	update();
 	_change_notify("text");
 	minimum_size_changed();
