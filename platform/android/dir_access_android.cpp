@@ -79,6 +79,9 @@ bool DirAccessAndroid::current_is_dir() const{
 	return false;
 
 }
+bool DirAccessAndroid::current_is_hidden() const{
+	return current!="." && current!=".." && current.begins_with(".");
+}
 void DirAccessAndroid::list_dir_end(){
 
 	if (aad==NULL)

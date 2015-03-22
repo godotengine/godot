@@ -56,6 +56,8 @@ pp_basein = open(abspath+"/AndroidManifest.xml.template","rb")
 pp_baseout = open(abspath+"/java/AndroidManifest.xml","wb")
 manifest = pp_basein.read()
 manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$",env.android_manifest_chunk)
+manifest = manifest.replace("$$ADD_PERMISSION_CHUNKS$$",env.android_permission_chunk)
+manifest = manifest.replace("$$ADD_APPATTRIBUTE_CHUNKS$$",env.android_appattributes_chunk)
 pp_baseout.write( manifest )
 
 

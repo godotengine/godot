@@ -904,6 +904,16 @@ Error EditorExportPlatform::export_project_files(EditorExportSaveFunction p_func
 	return OK;
 }
 
+static int _get_pad(int p_alignment, int p_n) {
+
+	int rest = p_n % p_alignment;
+	int pad = 0;
+	if (rest > 0) {
+		pad = p_alignment - rest;
+	};
+
+	return pad;
+};
 
 Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
@@ -930,11 +940,19 @@ Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path
 	pd->ep->step("Storing File: "+p_path,2+p_file*100/p_total);
 	pd->count++;
 	pd->ftmp->store_buffer(p_data.ptr(),p_data.size());
+	if (pd->alignment > 1) {
+
+		int pad = _get_pad(pd->alignment, pd->ftmp->get_pos());
+		for (int i=0; i<pad; i++) {
+
+			pd->ftmp->store_8(0);
+		};
+	};
 	return OK;
 
 }
 
-Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
+Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p_alignment) {
 
 	EditorProgress ep("savepack","Packing",102);
 
@@ -952,7 +970,6 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 		dst->store_32(0);
 	}
 
-
 	size_t fcountpos = dst->get_pos();
 	dst->store_32(0);
 
@@ -961,10 +978,19 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles) {
 	pd.f=dst;
 	pd.ftmp=tmp;
 	pd.count=0;
+	pd.alignment = p_alignment;
 	Error err = export_project_files(save_pack_file,&pd,p_make_bundles);
 	memdelete(tmp);
 	if (err)
 		return err;
+
+	if (p_alignment > 1) {
+		int pad = _get_pad(p_alignment, dst->get_pos());
+		for (int i=0; i<pad; i++) {
+
+			dst->store_8(0);
+		};
+	};
 
 	size_t ofsplus = dst->get_pos();
 	//append file

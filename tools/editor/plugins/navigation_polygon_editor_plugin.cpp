@@ -36,6 +36,9 @@ void NavigationPolygonEditor::_node_removed(Node *p_node) {
 
 void NavigationPolygonEditor::_create_nav()  {
 
+	if (!node)
+		return;
+
 	undo_redo->create_action("Create Navigation Polygon");
 	undo_redo->add_do_method(node,"set_navigation_polygon",Ref<NavigationPolygon>(memnew( NavigationPolygon)));
 	undo_redo->add_undo_method(node,"set_navigation_polygon",Variant(REF()));
@@ -96,7 +99,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 			create_nav->set_text("No NavigationPolygon resource on this node.\nCreate and assign one?");
 			create_nav->popup_centered_minsize();
 		}
-		return false;
+		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);;
 	}
 
 
@@ -434,6 +437,7 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
+		canvas_item_editor->get_viewport_control()->update();
 
 	} else {
 		node=NULL;

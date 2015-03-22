@@ -92,6 +92,7 @@ public:
 	};
 private:
 	int index;
+	String name;
 	void _menu_option(int p_option);
 	Size2 prev_size;
 
@@ -110,6 +111,7 @@ private:
 	bool orthogonal;
 	float gizmo_scale;
 
+	void _update_name();
 	void _compute_edit(const Point2& p_point);
 	void _clear_selected();
 	void _select_clicked(bool p_append,bool p_single);

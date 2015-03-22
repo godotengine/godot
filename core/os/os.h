@@ -73,7 +73,7 @@ public:
 		bool fullscreen;
 		bool resizable;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) { width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
 	};
 protected:
 friend class Main;
@@ -149,7 +149,27 @@ public:
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0)=0;
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
-	
+
+#ifdef NEW_WM_API
+	virtual int get_screen_count() const=0;
+	virtual int get_screen() const=0;
+	virtual void set_screen(int p_screen)=0;
+	virtual Point2 get_screen_position(int p_screen=0) const=0;
+	virtual Size2 get_screen_size(int p_screen=0) const=0;
+	virtual Point2 get_window_position() const=0;
+	virtual void set_window_position(const Point2& p_position)=0;
+	virtual Size2 get_window_size() const=0;
+	virtual void set_window_size(const Size2 p_size)=0;
+	virtual void set_fullscreen(bool p_enabled)=0;
+	virtual bool is_fullscreen() const=0;
+	virtual void set_resizable(bool p_enabled)=0;
+	virtual bool is_resizable() const=0;
+	virtual void set_minimized(bool p_enabled)=0;
+	virtual bool is_minimized() const=0;
+	virtual void set_maximized(bool p_enabled)=0;
+	virtual bool is_maximized() const=0;
+#endif	
+
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 

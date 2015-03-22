@@ -56,6 +56,7 @@ public:
 	StringName _input_event;
 	StringName item_rect_changed;
 	StringName shader_shader;
+	StringName shader_unshaded;
 	StringName enter_tree;
 	StringName exit_tree;
 	StringName size_flags_changed;
@@ -81,6 +82,10 @@ public:
 	StringName body_enter;
 	StringName body_exit_shape;
 	StringName body_exit;
+
+	StringName area_enter_shape;
+	StringName area_exit_shape;
+
 
 
 	StringName _get_gizmo_geometry;
@@ -122,6 +127,9 @@ public:
 
 	StringName _body_enter_tree;
 	StringName _body_exit_tree;
+
+	StringName _area_enter_tree;
+	StringName _area_exit_tree;
 
 	StringName changed;
 	StringName _shader_changed;

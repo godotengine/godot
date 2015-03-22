@@ -337,9 +337,10 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 
 				Variant::evaluate(op,*a,*b,*dst,valid);
 				if (!valid) {
-					if (false && dst->get_type()==Variant::STRING) {
+					if (dst->get_type()==Variant::STRING) {
 						//return a string when invalid with the error
 						err_text=*dst;
+						err_text += " in operator '"+Variant::get_operator_name(op)+"'.";
 					} else {
 						err_text="Invalid operands '"+Variant::get_type_name(a->get_type())+"' and '"+Variant::get_type_name(b->get_type())+"' in operator '"+Variant::get_operator_name(op)+"'.";
 					}
@@ -2696,7 +2697,10 @@ Error ResourceFormatSaverGDScript::save(const String &p_path,const RES& p_resour
 	}
 
 	file->store_string(source);
-
+	if (file->get_error()!=OK && file->get_error()!=ERR_FILE_EOF) {
+		memdelete(file);
+		return ERR_CANT_CREATE;
+	}
 	file->close();
 	memdelete(file);
 	return OK;

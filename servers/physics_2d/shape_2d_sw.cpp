@@ -106,6 +106,11 @@ void LineShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,int
 	r_amount=0;
 }
 
+bool LineShape2DSW::contains_point(const Vector2& p_point) const {
+
+	return normal.dot(p_point) < d;
+}
+
 bool LineShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
 
 	Vector2 segment= p_begin - p_end;
@@ -175,6 +180,11 @@ void RayShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,int 
 
 }
 
+bool RayShape2DSW::contains_point(const Vector2& p_point) const {
+
+	return false;
+}
+
 bool RayShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
 
 	return false; //rays can't be intersected
@@ -221,6 +231,11 @@ void SegmentShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,
 		*r_supports=a;
 	r_amount=1;
 
+}
+
+bool SegmentShape2DSW::contains_point(const Vector2& p_point) const {
+
+	return false;
 }
 
 bool SegmentShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
@@ -287,6 +302,13 @@ void CircleShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,i
 	*r_supports=p_normal*radius;
 
 }
+
+
+bool CircleShape2DSW::contains_point(const Vector2& p_point) const {
+
+	return p_point.length_squared() < radius*radius;
+}
+
 
 bool CircleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
 
@@ -375,6 +397,11 @@ void RectangleShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_support
 
 }
 
+bool RectangleShape2DSW::contains_point(const Vector2& p_point) const {
+
+	return Math::abs(p_point.x)<half_extents.x && Math::abs(p_point.y)<half_extents.y;
+}
+
 bool RectangleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
 
 
@@ -437,6 +464,17 @@ void CapsuleShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_supports,
 		*r_supports=n;
 
 	}
+}
+
+bool CapsuleShape2DSW::contains_point(const Vector2& p_point) const {
+
+	Vector2 p = p_point;
+	p.y=Math::abs(p.y);
+	p.y-=height*0.5;
+	if (p.y<0)
+		p.y=0;
+
+	return p.length_squared() < radius*radius;
 }
 
 bool CapsuleShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
@@ -573,6 +611,25 @@ void ConvexPolygonShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_sup
 	r_supports[0]=points[support_idx].pos;
 
 }
+
+
+bool ConvexPolygonShape2DSW::contains_point(const Vector2& p_point) const {
+
+	bool out=false;
+	bool in=false;
+
+	for(int i=0;i<point_count;i++) {
+
+		float d = points[i].normal.dot(p_point) - points[i].normal.dot(points[i].pos);
+		if (d>0)
+			out=true;
+		else
+			in=true;
+	}
+
+	return (in && !out) || (!in && out);
+}
+
 
 bool ConvexPolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const {
 
@@ -733,6 +790,12 @@ void ConcavePolygonShape2DSW::get_supports(const Vector2& p_normal,Vector2 *r_su
 	*r_supports=points[idx];
 
 }
+
+bool ConcavePolygonShape2DSW::contains_point(const Vector2& p_point) const {
+
+	return false; //sorry
+}
+
 
 bool ConcavePolygonShape2DSW::intersect_segment(const Vector2& p_begin,const Vector2& p_end,Vector2 &r_point, Vector2 &r_normal) const{
 

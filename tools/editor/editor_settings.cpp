@@ -446,6 +446,7 @@ void EditorSettings::_load_defaults() {
 
 	set("text_editor/create_signal_callbacks",true);
 
+	set("file_dialog/show_hidden_files", false);
 
 	set("animation/autorename_animation_tracks",true);
 	set("animation/confirm_insert_track",true);

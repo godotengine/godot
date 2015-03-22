@@ -607,6 +607,14 @@ void ConnectionsDialog::_remove_confirm() {
 
 }
 */
+
+struct _ConnectionsDialogMethodInfoSort {
+
+	_FORCE_INLINE_ bool operator()(const MethodInfo& a, const MethodInfo& b) const {
+		return a.name < b.name;
+	}
+};
+
 void ConnectionsDialog::update_tree() {
 	
 	if (!is_visible())
@@ -623,7 +631,8 @@ void ConnectionsDialog::update_tree() {
 
 	node->get_signal_list(&node_signals);
 
-	
+	//node_signals.sort_custom<_ConnectionsDialogMethodInfoSort>();
+
 	for(List<MethodInfo>::Element *E=node_signals.front();E;E=E->next()) {
 		
 

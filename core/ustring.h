@@ -130,7 +130,7 @@ public:
 	String pad_zeros(int p_digits) const;
 	String lpad(int min_length,const String& character=" ") const;
 	String rpad(int min_length,const String& character=" ") const;
-	String sprintf(const Array& values) const;
+	String sprintf(const Array& values, bool* error) const;
 	static String num(double p_num,int p_decimals=-1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num);
@@ -149,6 +149,7 @@ public:
 	static double to_double(const CharType* p_str, const CharType **r_end=NULL);
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
 	String capitalize() const;
+	String camelcase_to_underscore() const;
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter,int p_slice) const;
@@ -225,8 +226,6 @@ public:
 	String(const char *p_str);
 	String(const CharType *p_str,int p_clip_to_len=-1);
 	String(const StrRange& p_range);
-
-
 };
 
 

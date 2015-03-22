@@ -159,6 +159,12 @@ class OS_X11 : public OS_Unix {
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
 
+#ifdef NEW_WM_API
+	unsigned int capture_idle;
+	bool maximized;
+	//void set_wm_border(bool p_enabled);
+	void set_wm_fullscreen(bool p_enabled);
+#endif
 
 protected:
 
@@ -166,8 +172,8 @@ protected:
 	virtual const char * get_video_driver_name(int p_driver) const;	
 	virtual VideoMode get_default_video_mode() const;
 
-    virtual int get_audio_driver_count() const;
-    virtual const char * get_audio_driver_name(int p_driver) const;
+	virtual int get_audio_driver_count() const;
+	virtual const char * get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
 	virtual void finalize();
@@ -177,6 +183,7 @@ protected:
 	void probe_joystick(int p_id = -1);
 	void process_joysticks();
 	void close_joystick(int p_id = -1);
+
 
 public:
 
@@ -213,6 +220,25 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
 
+#ifdef NEW_WM_API
+	virtual int get_screen_count() const;
+	virtual int get_screen() const;
+	virtual void set_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
+	virtual void set_fullscreen(bool p_enabled);
+	virtual bool is_fullscreen() const;
+	virtual void set_resizable(bool p_enabled);
+	virtual bool is_resizable() const;
+	virtual void set_minimized(bool p_enabled);
+	virtual bool is_minimized() const;
+	virtual void set_maximized(bool p_enabled);
+	virtual bool is_maximized() const;
+#endif
 	virtual void move_window_to_foreground();
 
 	void run();

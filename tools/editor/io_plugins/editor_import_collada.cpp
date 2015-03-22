@@ -285,13 +285,16 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 					case Collada::CameraData::MODE_ORTHOGONAL: {
 
-						if (cd.orthogonal.x_mag) {
+						if (cd.orthogonal.y_mag) {
 
-							camera->set_orthogonal(cd.orthogonal.x_mag,cd.z_near,cd.z_far);
+							camera->set_keep_aspect_mode(Camera::KEEP_HEIGHT);
+							camera->set_orthogonal(cd.orthogonal.y_mag*2.0 ,cd.z_near,cd.z_far);
 
-						} else if (!cd.orthogonal.x_mag && cd.orthogonal.y_mag) {
+						} else if (!cd.orthogonal.y_mag && cd.orthogonal.x_mag) {
 
-							camera->set_orthogonal(cd.orthogonal.y_mag * cd.aspect,cd.z_near,cd.z_far);
+
+							camera->set_keep_aspect_mode(Camera::KEEP_WIDTH);
+							camera->set_orthogonal(cd.orthogonal.x_mag*2.0,cd.z_near,cd.z_far);
 						}
 
 					} break;
@@ -1354,8 +1357,60 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 					vertw = DVector<Vector3>::Write();
 					DVector<Vector3> normals;
 					DVector<float> tangents;
+					if(md.vertices[vertex_src_id].sources.has("NORMAL")){
+						//has normals 
+						normals.resize(vlen);
+						std::cout << "has normals" << std::endl;
+						String normal_src_id = md.vertices[vertex_src_id].sources["NORMAL"];
+						std::cout << "normals source: "<< normal_src_id.utf8().get_data() <<std::endl;
+						ERR_FAIL_COND_V(!md.sources.has(normal_src_id),ERR_INVALID_DATA);
 
-					_generate_normals(index_array,vertices,normals);
+						const Collada::MeshData::Source *m=&md.sources[normal_src_id];
+
+						ERR_FAIL_COND_V( m->array.size() != vertex_src->array.size(), ERR_INVALID_DATA);
+						int stride=m->stride;
+						if (stride==0)
+							stride=3;
+
+					
+						//read normals from morph target
+						DVector<Vector3>::Write vertw = normals.write();
+
+						for(int m_i=0;m_i<m->array.size()/stride;m_i++) {
+
+							int pos = m_i*stride;
+							Vector3 vtx( m->array[pos+0], m->array[pos+1], m->array[pos+2] );
+
+	#ifndef NO_UP_AXIS_SWAP
+							if (collada.state.up_axis==Vector3::AXIS_Z) {
+
+								SWAP( vtx.z, vtx.y );
+								vtx.z = -vtx.z;
+
+							}
+	#endif
+
+							Collada::Vertex vertex;
+							vertex.vertex=vtx;
+							vertex.fix_unit_scale(collada);
+							vtx=vertex.vertex;
+
+							vtx = p_local_xform.xform(vtx);
+
+
+							if (vertex_map.has(m_i)) { //vertex may no longer be here, don't bother converting
+
+
+								for (Set<int> ::Element *E=vertex_map[m_i].front() ; E; E=E->next() ) {
+
+									vertw[E->get()]=vtx;
+								}
+							}
+						}
+					
+					}else{
+						_generate_normals(index_array,vertices,normals);//no normals
+					}
 					if (final_tangent_array.size() && final_uv_array.size()) {
 
 						_generate_tangents_and_binormals(index_array,vertices,final_uv_array,normals,tangents);

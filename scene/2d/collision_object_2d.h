@@ -38,6 +38,7 @@ class CollisionObject2D : public Node2D {
 
 	bool area;
 	RID rid;
+	bool pickable;
 
 	struct ShapeData {
 		Matrix32 xform;
@@ -66,7 +67,15 @@ protected:
 	bool _get(const StringName& p_name,Variant &r_ret) const;
 	void _get_property_list( List<PropertyInfo> *p_list) const;
 	static void _bind_methods();
+
+	void _update_pickable();
+friend class Viewport;
+	void _input_event(Node *p_viewport, const InputEvent& p_input_event, int p_shape);
+	void _mouse_enter();
+	void _mouse_exit();
+
 public:
+
 
 
 	void add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p_transform=Matrix32());
@@ -79,6 +88,9 @@ public:
 	bool is_shape_set_as_trigger(int p_shape_idx) const;
 	void remove_shape(int p_shape_idx);
 	void clear_shapes();
+
+	void set_pickable(bool p_enabled);
+	bool is_pickable() const;
 
 	_FORCE_INLINE_ RID get_rid() const { return rid; }
 

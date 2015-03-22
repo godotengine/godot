@@ -482,7 +482,7 @@ void String::erase(int p_pos, int p_chars) {
 
 String String::capitalize() const {
 
-	String aux=this->replace("_"," ").to_lower();
+	String aux=this->camelcase_to_underscore().replace("_"," ").to_lower();
 	String cap;
 	for (int i=0;i<aux.get_slice_count(" ");i++) {
 		
@@ -498,6 +498,29 @@ String String::capitalize() const {
 	
 	return cap;
 }
+
+
+String String::camelcase_to_underscore() const {
+	const CharType * cstr = c_str();
+	String newString;
+	const char A = 'A', Z = 'Z';
+	int startIndex = 0;
+
+	for ( int i = 1; i < this->size()-1; i++ ) {
+		bool isCapital = cstr[i] >= A && cstr[i] <= Z;
+
+		if ( isCapital ) {
+			newString += "_" + this->substr(startIndex, i-startIndex);
+			startIndex = i;
+		}
+	}
+
+	newString += "_" + this->substr(startIndex, this->size()-startIndex);
+
+	return newString;
+}
+
+
 int String::get_slice_count(String p_splitter) const{
 
 	if (empty())
@@ -3550,8 +3573,8 @@ String String::lpad(int min_length, const String& character) const {
 // sprintf is implemented in GDScript via:
 //   "fish %s pie" % "frog"
 //   "fish %s %d pie" % ["frog", 12]
-String String::sprintf(const Array& values) const {
-
+// In case of an error, the string returned is the error description and "error" is true.
+String String::sprintf(const Array& values, bool* error) const {
 	String formatted;
 	CharType* self = (CharType*)c_str();
 	int num_items = values.size();
@@ -3564,6 +3587,7 @@ String String::sprintf(const Array& values) const {
 	bool left_justified;
 	bool show_sign;
 
+	*error = true;
 
 	for (; *self; self++) {
 		const CharType c = *self;
@@ -3580,13 +3604,11 @@ String String::sprintf(const Array& values) const {
 				case 'x': // Hexadecimal (lowercase)
 				case 'X': { // Hexadecimal (uppercase)
 					if (value_index >= values.size()) {
-						ERR_EXPLAIN("not enough arguments for format string");
-						ERR_FAIL_V("");
+						return "not enough arguments for format string";
 					}
 
 					if (!values[value_index].is_num()) {
-						ERR_EXPLAIN("a number is required");
-						ERR_FAIL_V("");
+						return "a number is required";
 					}
 					
 					int64_t value = values[value_index];
@@ -3622,13 +3644,11 @@ String String::sprintf(const Array& values) const {
 				}
 				case 'f': { // Float
 					if (value_index >= values.size()) {
-						ERR_EXPLAIN("not enough arguments for format string");
-						ERR_FAIL_V("");
+						return "not enough arguments for format string";
 					}
 
 					if (!values[value_index].is_num()) {
-						ERR_EXPLAIN("a number is required");
-						ERR_FAIL_V("");
+						return "a number is required";
 					}
 
 					double value = values[value_index];
@@ -3657,8 +3677,7 @@ String String::sprintf(const Array& values) const {
 				}
 				case 's': { // String
 					if (value_index >= values.size()) {
-						ERR_EXPLAIN("not enough arguments for format string");
-						ERR_FAIL_V("");
+						return "not enough arguments for format string";
 					}
 
 					String str = values[value_index];
@@ -3676,8 +3695,7 @@ String String::sprintf(const Array& values) const {
 				}
 				case 'c': {
 					if (value_index >= values.size()) {
-						ERR_EXPLAIN("not enough arguments for format string");
-						ERR_FAIL_V("");
+						return "not enough arguments for format string";
 					}
 
 					// Convert to character.
@@ -3685,22 +3703,18 @@ String String::sprintf(const Array& values) const {
 					if (values[value_index].is_num()) {
 						int value = values[value_index];
 						if (value < 0) {
-							ERR_EXPLAIN("unsigned byte integer is lower than maximum")
-							ERR_FAIL_V("");
+							return "unsigned byte integer is lower than maximum";
 						} else if (value > 255) {
-							ERR_EXPLAIN("unsigned byte integer is greater than maximum")
-							ERR_FAIL_V("");
+							return "unsigned byte integer is greater than maximum";
 						}
 						str = chr(values[value_index]);
 					} else if (values[value_index].get_type() == Variant::STRING) {
 						str = values[value_index];
 						if (str.length() != 1) {
-							ERR_EXPLAIN("%c requires number or single-character string");
-							ERR_FAIL_V("");
+							return "%c requires number or single-character string";
 						}
 					} else {
-						ERR_EXPLAIN("%c requires number or single-character string");
-						ERR_FAIL_V("");
+						return "%c requires number or single-character string";
 					}
 
 					// Padding.
@@ -3741,8 +3755,7 @@ String String::sprintf(const Array& values) const {
 				}
 				case '.': { // Float separtor.
 					if (in_decimals) {
-						ERR_EXPLAIN("too many decimal points in format");
-						ERR_FAIL_V("");
+						return "too many decimal points in format";
 					}
 					in_decimals = true;
 					min_decimals = 0; // We want to add the value manually.
@@ -3751,13 +3764,11 @@ String String::sprintf(const Array& values) const {
 
 				case '*': { // Dyanmic width, based on value.
 					if (value_index >= values.size()) {
-						ERR_EXPLAIN("not enough arguments for format string");
-						ERR_FAIL_V("");
+						return "not enough arguments for format string";
 					}
 
 					if (!values[value_index].is_num()) {
-						ERR_EXPLAIN("* wants number");
-						ERR_FAIL_V("");
+						return "* wants number";
 					}
 
 					int size = values[value_index];
@@ -3773,8 +3784,7 @@ String String::sprintf(const Array& values) const {
 				}
 
 				default: {
-					ERR_EXPLAIN("unsupported format character");
-  					ERR_FAIL_V("");
+					return "unsupported format character";
   				}
 			}
 		} else { // Not in format string.
@@ -3796,14 +3806,13 @@ String String::sprintf(const Array& values) const {
 	}
 
 	if (in_format) {
-		ERR_EXPLAIN("incomplete format");
-  		ERR_FAIL_V("");
+		return "incomplete format";
 	}
 
 	if (value_index != values.size()) {
-		ERR_EXPLAIN("not all arguments converted during string formatting");
-  		ERR_FAIL_V("");
+		return "not all arguments converted during string formatting";
 	}
 
+	*error = false;
 	return formatted;
 }

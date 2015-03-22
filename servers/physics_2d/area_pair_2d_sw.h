@@ -49,5 +49,23 @@ public:
 	~AreaPair2DSW();
 };
 
+
+class Area2Pair2DSW : public Constraint2DSW {
+
+	Area2DSW *area_a;
+	Area2DSW *area_b;
+	int shape_a;
+	int shape_b;
+	bool colliding;
+public:
+
+	bool setup(float p_step);
+	void solve(float p_step);
+
+	Area2Pair2DSW(Area2DSW *p_area_a,int p_shape_a, Area2DSW *p_area_b,int p_shape_b);
+	~Area2Pair2DSW();
+};
+
+
 #endif // AREA_PAIR_2D_SW_H
 

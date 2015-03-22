@@ -321,6 +321,13 @@ void ImageTexture::premultiply_alpha() {
 	}
 }
 
+void ImageTexture::normal_to_xy() {
+
+	Image img = get_data();
+	img.normalmap_to_xy();
+	create_from_image(img,flags);
+}
+
 bool ImageTexture::has_alpha() const {
 
 	return ( format==Image::FORMAT_GRAYSCALE_ALPHA || format==Image::FORMAT_INDEXED_ALPHA || format==Image::FORMAT_RGBA );
@@ -405,9 +412,11 @@ void ImageTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
 	ObjectTypeDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
 	ObjectTypeDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
+	ObjectTypeDB::bind_method(_MD("normal_to_xy"),&ImageTexture::normal_to_xy);
 	ObjectTypeDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 

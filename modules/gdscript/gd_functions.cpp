@@ -1101,7 +1101,7 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_LERP: {
-			MethodInfo mi("lerp",PropertyInfo(Variant::REAL,"a"),PropertyInfo(Variant::REAL,"b"), PropertyInfo(Variant::REAL,"c"));
+			MethodInfo mi("lerp",PropertyInfo(Variant::REAL,"from"),PropertyInfo(Variant::REAL,"to"), PropertyInfo(Variant::REAL,"weight"));
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;

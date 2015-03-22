@@ -940,67 +940,67 @@ void Control::_window_input_event(InputEvent p_event) {
 		case InputEvent::MOUSE_BUTTON: {
 
 
-		window->key_event_accepted=false;
+			window->key_event_accepted=false;
 
-		Point2 mpos =(get_canvas_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
-		if (p_event.mouse_button.pressed) {
-
-
-
-			Size2 pos = mpos;
-			if (window->mouse_focus && p_event.mouse_button.button_index!=window->mouse_focus_button) {
-
-				//do not steal mouse focus and stuff
-
-			} else {
+			Point2 mpos =(get_canvas_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
+			if (p_event.mouse_button.pressed) {
 
 
-				_window_sort_modal_stack();
-				while (!window->modal_stack.empty()) {
 
-					Control *top = window->modal_stack.back()->get();
-					if (!top->has_point(top->get_global_transform().affine_inverse().xform(pos))) {
+				Size2 pos = mpos;
+				if (window->mouse_focus && p_event.mouse_button.button_index!=window->mouse_focus_button) {
 
-						if (top->data.modal_exclusive) {
-							//cancel event, sorry, modal exclusive EATS UP ALL
-							get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
-							get_tree()->set_input_as_handled();
-							return; // no one gets the event if exclusive NO ONE
+					//do not steal mouse focus and stuff
+
+				} else {
+
+
+					_window_sort_modal_stack();
+					while (!window->modal_stack.empty()) {
+
+						Control *top = window->modal_stack.back()->get();
+						if (!top->has_point(top->get_global_transform().affine_inverse().xform(pos))) {
+
+							if (top->data.modal_exclusive) {
+								//cancel event, sorry, modal exclusive EATS UP ALL
+								get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+								get_tree()->set_input_as_handled();
+								return; // no one gets the event if exclusive NO ONE
+							}
+
+							top->notification(NOTIFICATION_MODAL_CLOSE);
+							top->_modal_stack_remove();
+							top->hide();
+						} else {
+							break;
 						}
+					}
 
-						top->notification(NOTIFICATION_MODAL_CLOSE);
-						top->_modal_stack_remove();
-						top->hide();
-					} else {
+
+
+					Matrix32 parent_xform;
+
+					if (data.parent_canvas_item)
+						parent_xform=data.parent_canvas_item->get_global_transform();
+
+
+
+					window->mouse_focus = _find_control_at_pos(this,pos,parent_xform,window->focus_inv_xform);
+					//print_line("has mf "+itos(window->mouse_focus!=NULL));
+					window->mouse_focus_button=p_event.mouse_button.button_index;
+
+					if (!window->mouse_focus) {
 						break;
 					}
+
+					if (p_event.mouse_button.button_index==BUTTON_LEFT) {
+						window->drag_accum=Vector2();
+						window->drag_attempted=false;
+						window->drag_data=Variant();
+					}
+
+
 				}
-
-
-
-				Matrix32 parent_xform;
-
-				if (data.parent_canvas_item)
-					parent_xform=data.parent_canvas_item->get_global_transform();
-
-
-
-				window->mouse_focus = _find_control_at_pos(this,pos,parent_xform,window->focus_inv_xform);
-				//print_line("has mf "+itos(window->mouse_focus!=NULL));
-				window->mouse_focus_button=p_event.mouse_button.button_index;
-
-				if (!window->mouse_focus) {
-					break;
-				}
-
-				if (p_event.mouse_button.button_index==BUTTON_LEFT) {
-					window->drag_accum=Vector2();
-					window->drag_attempted=false;
-					window->drag_data=Variant();
-				}
-
-
-			}
 
 				p_event.mouse_button.global_x = pos.x;
 				p_event.mouse_button.global_y = pos.y;
@@ -1020,8 +1020,8 @@ void Control::_window_input_event(InputEvent p_event) {
 
 				/*if (bool(GLOBAL_DEF("debug/print_clicked_control",false))) {
 
-					print_line(String(window->mouse_focus->get_path())+" - "+pos);
-				}*/
+						print_line(String(window->mouse_focus->get_path())+" - "+pos);
+					}*/
 #endif
 
 				if (window->mouse_focus->get_focus_mode()!=FOCUS_NONE && window->mouse_focus!=window->key_focus && p_event.mouse_button.button_index==BUTTON_LEFT) {
@@ -1033,9 +1033,11 @@ void Control::_window_input_event(InputEvent p_event) {
 				if (window->mouse_focus->can_process()) {
 					_window_call_input(window->mouse_focus,p_event);
 				}
-				
+
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
+
+				window->tooltip_popup->hide();
 
 			} else {
 

@@ -68,6 +68,7 @@ struct DirAccessWindowsPrivate {
 bool DirAccessWindows::list_dir_begin() {
 
 	_cisdir=false;
+	_cishidden=false;
 	
 	if (unicode) {
 		list_dir_end();
@@ -95,6 +96,8 @@ String DirAccessWindows::get_next() {
 	if (unicode) {
 	
 		_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+		_cishidden=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN);
+
 		String name=p->fu.cFileName;
 
 		if (FindNextFileW(p->h, &p->fu) == 0) {
@@ -108,6 +111,7 @@ String DirAccessWindows::get_next() {
 
 #ifndef WINRT_ENABLED
 		_cisdir=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY);
+		_cishidden=(p->fu.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN);
 
 		String name=p->f.cFileName;
 
@@ -126,6 +130,11 @@ String DirAccessWindows::get_next() {
 bool DirAccessWindows::current_is_dir() const {
 
 	return _cisdir;
+}
+
+bool DirAccessWindows::current_is_hidden() const {
+
+	return _cishidden;
 }
 
 void DirAccessWindows::list_dir_end() {
@@ -270,7 +279,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 		return OK;
 	};
 
-	if (err == ERROR_ALREADY_EXISTS) {
+	if (err == ERROR_ALREADY_EXISTS || err == ERROR_ACCESS_DENIED) {
 		return ERR_ALREADY_EXISTS;
 	};
 

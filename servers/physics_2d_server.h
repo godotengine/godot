@@ -137,6 +137,7 @@ class Physics2DDirectSpaceState : public Object {
 
 	Dictionary _intersect_ray(const Vector2& p_from, const Vector2& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_layers=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 
+	Array _intersect_point(const Vector2& p_point,int p_max_results=32,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_layers=0,uint32_t p_object_type_mask=TYPE_MASK_COLLISION);
 	Array _intersect_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query,int p_max_results=32);
 	Array _cast_motion(const Ref<Physics2DShapeQueryParameters> &p_shape_query);
 	Array _collide_shape(const Ref<Physics2DShapeQueryParameters> &p_shape_query,int p_max_results=32);
@@ -180,6 +181,8 @@ public:
 
 
 	};
+
+	virtual int intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
 	virtual int intersect_shape(const RID& p_shape, const Matrix32& p_xform,const Vector2& p_motion,float p_margin,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude=Set<RID>(),uint32_t p_layer_mask=0xFFFFFFFF,uint32_t p_object_type_mask=TYPE_MASK_COLLISION)=0;
 
@@ -341,7 +344,11 @@ public:
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const=0;
 	virtual Matrix32 area_get_transform(RID p_area) const=0;
 
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable)=0;
+	virtual void area_set_pickable(RID p_area,bool p_pickable)=0;
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method)=0;
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method)=0;
 
 	/* BODY API */
 
@@ -458,6 +465,8 @@ public:
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant())=0;
 
 	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count)=0;
+
+	virtual void body_set_pickable(RID p_body,bool p_pickable)=0;
 
 	/* JOINT API */
 

@@ -12,11 +12,15 @@ private:
 	bool shadow;
 	Color color;
 	float height;
+	float _scale;
 	int z_min;
 	int z_max;
 	int layer_min;
 	int layer_max;
 	int item_mask;
+	int item_shadow_mask;
+	int shadow_buffer_size;
+	float shadow_esm_multiplier;
 	bool subtract_mode;
 	Ref<Texture> texture;
 	Vector2 texture_offset;
@@ -47,6 +51,9 @@ public:
 	void set_height( float p_height);
 	float get_height() const;
 
+	void set_texture_scale( float p_scale);
+	float get_texture_scale() const;
+
 	void set_z_range_min( int p_min_z);
 	int get_z_range_min() const;
 
@@ -62,11 +69,20 @@ public:
 	void set_item_mask( int p_mask);
 	int get_item_mask() const;
 
+	void set_item_shadow_mask( int p_mask);
+	int get_item_shadow_mask() const;
+
 	void set_subtract_mode( bool p_enable );
 	bool get_subtract_mode() const;
 
 	void set_shadow_enabled( bool p_enabled);
 	bool is_shadow_enabled() const;
+
+	void set_shadow_buffer_size( int p_size );
+	int get_shadow_buffer_size() const;
+
+	void set_shadow_esm_multiplier( float p_multiplier);
+	float get_shadow_esm_multiplier() const;
 
 	virtual Rect2 get_item_rect() const;
 

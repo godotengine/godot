@@ -47,6 +47,7 @@ private:
 	Type type;
 	RID self;
 	ObjectID instance_id;
+	bool pickable;
 
 	struct Shape {
 
@@ -128,6 +129,9 @@ public:
 	virtual void set_space(Space2DSW *p_space)=0;
 
 	_FORCE_INLINE_ bool is_static() const { return _static;  }
+
+	void set_pickable(bool p_pickable) { pickable=p_pickable; }
+	_FORCE_INLINE_ bool is_pickable() const { return pickable; }
 
 	virtual ~CollisionObject2DSW() {}
 

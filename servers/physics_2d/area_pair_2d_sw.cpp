@@ -94,3 +94,72 @@ AreaPair2DSW::~AreaPair2DSW() {
 	body->remove_constraint(this);
 	area->remove_constraint(this);
 }
+
+
+//////////////////////////////////
+
+
+
+bool Area2Pair2DSW::setup(float p_step) {
+
+	bool result = CollisionSolver2DSW::solve(area_a->get_shape(shape_a),area_a->get_transform() * area_a->get_shape_transform(shape_a),Vector2(),area_b->get_shape(shape_b),area_b->get_transform() * area_b->get_shape_transform(shape_b),Vector2(),NULL,this);
+
+	if (result!=colliding) {
+
+		if (result) {
+
+			if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
+				area_b->add_area_to_query(area_a,shape_a,shape_b);
+
+			if (area_a->has_area_monitor_callback() && area_b->is_monitorable())
+				area_a->add_area_to_query(area_b,shape_b,shape_a);
+
+		} else {
+
+			if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
+				area_b->remove_area_from_query(area_a,shape_a,shape_b);
+
+			if (area_a->has_area_monitor_callback() && area_b->is_monitorable())
+				area_a->remove_area_from_query(area_b,shape_b,shape_a);
+		}
+
+		colliding=result;
+
+	}
+
+	return false; //never do any post solving
+}
+
+void Area2Pair2DSW::solve(float p_step) {
+
+
+}
+
+
+Area2Pair2DSW::Area2Pair2DSW(Area2DSW *p_area_a,int p_shape_a, Area2DSW *p_area_b,int p_shape_b) {
+
+
+	area_a=p_area_a;
+	area_b=p_area_b;
+	shape_a=p_shape_a;
+	shape_b=p_shape_b;
+	colliding=false;
+	area_a->add_constraint(this);
+	area_b->add_constraint(this);
+
+}
+
+Area2Pair2DSW::~Area2Pair2DSW() {
+
+	if (colliding) {
+
+		if (area_b->has_area_monitor_callback() && area_a->is_monitorable())
+			area_b->remove_area_from_query(area_a,shape_a,shape_b);
+
+		if (area_a->has_area_monitor_callback() && area_b->is_monitorable())
+			area_a->remove_area_from_query(area_b,shape_b,shape_a);
+	}
+
+	area_a->remove_constraint(this);
+	area_b->remove_constraint(this);
+}

@@ -323,6 +323,16 @@ void Camera2D::make_current() {
 	}
 }
 
+void Camera2D::clear_current() {
+
+	current=false;
+	if (is_inside_tree()) {
+		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",(Object*)(NULL));
+	}
+
+}
+
+
 void Camera2D::set_limit(Margin p_margin,int p_limit) {
 
 	ERR_FAIL_INDEX(p_margin,4);
@@ -435,6 +445,7 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_rotating"),&Camera2D::is_rotating);
 
 	ObjectTypeDB::bind_method(_MD("make_current"),&Camera2D::make_current);
+	ObjectTypeDB::bind_method(_MD("clear_current"),&Camera2D::clear_current);
 	ObjectTypeDB::bind_method(_MD("_make_current"),&Camera2D::_make_current);
 
 	ObjectTypeDB::bind_method(_MD("_update_scroll"),&Camera2D::_update_scroll);

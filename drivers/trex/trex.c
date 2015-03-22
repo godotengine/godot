@@ -489,7 +489,7 @@ static const TRexChar *trex_matchnode(TRex* exp,TRexNode *node,const TRexChar *s
 			return cur;
 	}				 
 	case OP_WB:
-		if(str == exp->_bol && !isspace(*str)
+		if((str == exp->_bol && !isspace(*str))
 		 || (str == exp->_eol && !isspace(*(str-1)))
 		 || (!isspace(*str) && isspace(*(str+1)))
 		 || (isspace(*str) && !isspace(*(str+1))) ) {
