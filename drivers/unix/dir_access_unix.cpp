@@ -161,6 +161,7 @@ String DirAccessUnix::get_next() {
 
 	}
 
+	_cishidden=(fname!="." && fname!=".." && fname.begins_with("."));
 
 
 
@@ -171,6 +172,11 @@ String DirAccessUnix::get_next() {
 bool DirAccessUnix::current_is_dir() const {
 
 	return _cisdir;
+}
+
+bool DirAccessUnix::current_is_hidden() const {
+
+	return _cishidden;
 }
 
 
