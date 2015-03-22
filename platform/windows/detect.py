@@ -11,6 +11,15 @@ def is_active():
 def get_name():
         return "Windows"
 
+def get_mingw_prefix():
+	mingw = "i586-mingw32msvc-"
+	mingw64 = "i686-w64-mingw32-"
+	if (os.getenv("MINGW32_PREFIX")):
+		mingw=os.getenv("MINGW32_PREFIX")
+	if (os.getenv("MINGW64_PREFIX")):
+		mingw64=os.getenv("MINGW64_PREFIX")
+	return mingw, mingw64
+
 def can_build():
 	
 	
@@ -26,14 +35,9 @@ def can_build():
 			
 	if (os.name=="posix"):
 
-		mingw = "i586-mingw32msvc-"
-		mingw64 = "i686-w64-mingw32-"
-		if (os.getenv("MINGW32_PREFIX")):
-			mingw=os.getenv("MINGW32_PREFIX")
-		if (os.getenv("MINGW64_PREFIX")):
-			mingw64=os.getenv("MINGW64_PREFIX")
+		mingw, mingw64 = get_mingw_prefix()
 
-		if os.system(mingw+"gcc --version >/dev/null") == 0 or os.system(mingw64+"gcc --version >/dev/null") ==0:
+		if os.system(mingw+"gcc --version >/dev/null 2>&1") == 0 or os.system(mingw64+"gcc --version >/dev/null 2>&1") ==0:
 			return True
 
 
@@ -45,12 +49,7 @@ def get_opts():
 	mingw=""
 	mingw64=""
 	if (os.name!="nt"):
-		mingw = "i586-mingw32msvc-"
-		mingw64 = "i686-w64-mingw32-"
-		if (os.getenv("MINGW32_PREFIX")):
-			mingw=os.getenv("MINGW32_PREFIX")
-		if (os.getenv("MINGW64_PREFIX")):
-			mingw64=os.getenv("MINGW64_PREFIX")
+		mingw, mingw64 = get_mingw_prefix()
 
 
 	return [
