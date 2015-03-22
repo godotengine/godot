@@ -279,7 +279,7 @@ Error DirAccessWindows::make_dir(String p_dir) {
 		return OK;
 	};
 
-	if (err == ERROR_ALREADY_EXISTS) {
+	if (err == ERROR_ALREADY_EXISTS || err == ERROR_ACCESS_DENIED) {
 		return ERR_ALREADY_EXISTS;
 	};
 
