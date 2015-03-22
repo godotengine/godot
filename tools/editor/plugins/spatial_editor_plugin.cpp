@@ -3709,7 +3709,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	p->add_check_item("View Origin",MENU_VIEW_ORIGIN);
 	p->add_check_item("View Grid",MENU_VIEW_GRID);
 	p->add_separator();
-	p->add_check_item("Settings",MENU_VIEW_CAMERA_SETTINGS );
+	p->add_item("Settings",MENU_VIEW_CAMERA_SETTINGS);
 
 
 	p->set_item_checked( p->get_item_index(MENU_VIEW_USE_DEFAULT_LIGHT), true );
