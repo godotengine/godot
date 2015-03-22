@@ -482,7 +482,7 @@ void String::erase(int p_pos, int p_chars) {
 
 String String::capitalize() const {
 
-	String aux=this->camelcase_to_underscore().replace("_"," ").to_lower();
+	String aux=this->replace("_"," ").to_lower();
 	String cap;
 	for (int i=0;i<aux.get_slice_count(" ");i++) {
 		
@@ -498,29 +498,6 @@ String String::capitalize() const {
 	
 	return cap;
 }
-
-
-String String::camelcase_to_underscore() const {
-	const CharType * cstr = c_str();
-	String newString;
-	const char A = 'A', Z = 'Z';
-	int startIndex = 0;
-
-	for ( int i = 1; i < this->size()-1; i++ ) {
-		bool isCapital = cstr[i] >= A && cstr[i] <= Z;
-
-		if ( isCapital ) {
-			newString += "_" + this->substr(startIndex, i-startIndex);
-			startIndex = i;
-		}
-	}
-
-	newString += "_" + this->substr(startIndex, this->size()-startIndex);
-
-	return newString;
-}
-
-
 int String::get_slice_count(String p_splitter) const{
 
 	if (empty())
