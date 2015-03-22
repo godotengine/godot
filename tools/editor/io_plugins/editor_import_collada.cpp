@@ -1361,9 +1361,9 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 					if(md.vertices[vertex_src_id].sources.has("NORMAL")){
 						//has normals 
 						normals.resize(vlen);
-						std::cout << "has normals" << std::endl;
+						//std::cout << "has normals" << std::endl;
 						String normal_src_id = md.vertices[vertex_src_id].sources["NORMAL"];
-						std::cout << "normals source: "<< normal_src_id.utf8().get_data() <<std::endl;
+						//std::cout << "normals source: "<< normal_src_id.utf8().get_data() <<std::endl;
 						ERR_FAIL_COND_V(!md.sources.has(normal_src_id),ERR_INVALID_DATA);
 
 						const Collada::MeshData::Source *m=&md.sources[normal_src_id];
