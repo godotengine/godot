@@ -35,7 +35,7 @@ func _fixed_process(delta):
 	
 	get_node("Label_Screen_Count").set_text( str("Screen_Count:\n", OS.get_screen_count() ) )
 	
-	get_node("Label_Screen_Current").set_text( str("Screen:\n", OS.get_screen() ) )
+	get_node("Label_Screen_Current").set_text( str("Screen:\n", OS.get_current_screen() ) )
 	
 	get_node("Label_Screen0_Resolution").set_text( str("Screen0 Resolution:\n", OS.get_screen_size() ) )
 	
@@ -54,10 +54,10 @@ func _fixed_process(delta):
 		get_node("Label_Screen1_Resolution").hide()
 		get_node("Label_Screen1_Position").hide()
 		
-	get_node("Button_Fullscreen").set_pressed( OS.is_fullscreen() )
-	get_node("Button_FixedSize").set_pressed( !OS.is_resizable() )
-	get_node("Button_Minimized").set_pressed( OS.is_minimized() )
-	get_node("Button_Maximized").set_pressed( OS.is_maximized() )
+	get_node("Button_Fullscreen").set_pressed( OS.is_window_fullscreen() )
+	get_node("Button_FixedSize").set_pressed( !OS.is_is_window_resizable() )
+	get_node("Button_Minimized").set_pressed( OS.is_is_window_minimized() )
+	get_node("Button_Maximized").set_pressed( OS.is_is_window_maximized() )
 	get_node("Button_Mouse_Grab").set_pressed( Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED )
 
 
@@ -137,39 +137,39 @@ func _on_Button_Resize_pressed():
 
 
 func _on_Button_Screen0_pressed():
-	OS.set_screen(0)
+	OS.set_current_screen(0)
 
 
 func _on_Button_Screen1_pressed():
-	OS.set_screen(1)
+	OS.set_current_screen(1)
 
 
 func _on_Button_Fullscreen_pressed():
-	if(OS.is_fullscreen()):
-		OS.set_fullscreen(false)
+	if(OS.is_window_fullscreen()):
+		OS.set_window_fullscreen(false)
 	else:
-		OS.set_fullscreen(true)
+		OS.set_window_fullscreen(true)
 
 
 func _on_Button_FixedSize_pressed():
-	if(OS.is_resizable()):
-		OS.set_resizable(false)
+	if(OS.is_window_resizable()):
+		OS.set_window_resizable(false)
 	else:
-		OS.set_resizable(true)
+		OS.set_window_resizable(true)
 
 
 func _on_Button_Minimized_pressed():
-	if(OS.is_minimized()):
-		OS.set_minimized(false)
+	if(OS.is_window_minimized()):
+		OS.set_window_minimized(false)
 	else:
-		OS.set_minimized(true)
+		OS.set_window_minimized(true)
 
 
 func _on_Button_Maximized_pressed():
-	if(OS.is_maximized()):
-		OS.set_maximized(false)
+	if(OS.is_window_maximized()):
+		OS.set_window_maximized(false)
 	else:
-		OS.set_maximized(true)
+		OS.set_window_maximized(true)
 
 
 func _on_Button_Mouse_Grab_pressed():

@@ -108,25 +108,25 @@ public:
 	bool is_video_mode_resizable(int p_screen=0) const;
 	Array get_fullscreen_mode_list(int p_screen=0) const;
 
-#ifdef NEW_WM_API
+
 	virtual int get_screen_count() const;
-	virtual int get_screen() const;
-	virtual void set_screen(int p_screen);
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
 	virtual Point2 get_screen_position(int p_screen=0) const;
 	virtual Size2 get_screen_size(int p_screen=0) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
 	virtual Size2 get_window_size() const;
 	virtual void set_window_size(const Size2& p_size);
-	virtual void set_fullscreen(bool p_enabled);
-	virtual bool is_fullscreen() const;
-	virtual void set_resizable(bool p_enabled);
-	virtual bool is_resizable() const;
-	virtual void set_minimized(bool p_enabled);
-	virtual bool is_minimized() const;
-	virtual void set_maximized(bool p_enabled);
-	virtual bool is_maximized() const;
-#endif
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
+
 
 	Error native_video_play(String p_path, float p_volume, String p_audio_track, String p_subtitle_track);
 	bool native_video_is_playing();

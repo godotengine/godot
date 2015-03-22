@@ -150,25 +150,25 @@ public:
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
 
-#ifdef NEW_WM_API
-	virtual int get_screen_count() const=0;
-	virtual int get_screen() const=0;
-	virtual void set_screen(int p_screen)=0;
-	virtual Point2 get_screen_position(int p_screen=0) const=0;
-	virtual Size2 get_screen_size(int p_screen=0) const=0;
-	virtual Point2 get_window_position() const=0;
-	virtual void set_window_position(const Point2& p_position)=0;
+
+	virtual int get_screen_count() const{ return 1; }
+	virtual int get_current_screen() const { return 0; }
+	virtual void set_current_screen(int p_screen) { }
+	virtual Point2 get_screen_position(int p_screen=0)  { return Point2(); }
+	virtual Size2 get_screen_size(int p_screen=0) const { return get_window_size(); }
+	virtual Point2 get_window_position() const { return Vector2(); }
+	virtual void set_window_position(const Point2& p_position) {}
 	virtual Size2 get_window_size() const=0;
-	virtual void set_window_size(const Size2 p_size)=0;
-	virtual void set_fullscreen(bool p_enabled)=0;
-	virtual bool is_fullscreen() const=0;
-	virtual void set_resizable(bool p_enabled)=0;
-	virtual bool is_resizable() const=0;
-	virtual void set_minimized(bool p_enabled)=0;
-	virtual bool is_minimized() const=0;
-	virtual void set_maximized(bool p_enabled)=0;
-	virtual bool is_maximized() const=0;
-#endif	
+	virtual void set_window_size(const Size2 p_size){}
+	virtual void set_window_fullscreen(bool p_enabled) {}
+	virtual bool is_window_fullscreen() const { return true; }
+	virtual void set_window_resizable(bool p_enabled) {}
+	virtual bool is_window_resizable() const { return false; }
+	virtual void set_window_minimized(bool p_enabled) {}
+	virtual bool is_window_minimized() const { return false; }
+	virtual void set_window_maximized(bool p_enabled) {}
+	virtual bool is_window_maximized() const { return true; }
+
 
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;

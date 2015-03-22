@@ -171,6 +171,8 @@ void OS_Windows::initialize_core() {
 	last_button_state=0;
 
 	//RedirectIOToConsole();
+	maximized=false;
+	minimized=false;
 
 	ThreadWindows::make_default();	
 	SemaphoreWindows::make_default();	
@@ -1007,6 +1009,23 @@ void OS_Windows::process_joysticks() {
 	};
 };
 
+
+BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData) {
+	OS_Windows *self=(OS_Windows*)OS::get_singleton();
+	MonitorInfo minfo;
+	minfo.hMonitor=hMonitor;
+	minfo.hdcMonitor=hdcMonitor;
+	minfo.rect.pos.x=lprcMonitor->left;
+	minfo.rect.pos.y=lprcMonitor->top;
+	minfo.rect.size.x=lprcMonitor->right - lprcMonitor->left;
+	minfo.rect.size.y=lprcMonitor->bottom - lprcMonitor->top;
+
+	self->monitor_info.push_back(minfo);
+
+	return TRUE;
+}
+
+
 void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 
@@ -1045,6 +1064,9 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	}
 	
 	
+	EnumDisplayMonitors(NULL,NULL,MonitorEnumProc,0);
+
+	print_line("DETECTED MONITORS: "+itos(monitor_info.size()));
 	if (video_mode.fullscreen) {
 
 		DEVMODE current;
@@ -1474,6 +1496,172 @@ void OS_Windows::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) 
 
 	
 }
+
+int OS_Windows::get_screen_count() const {
+
+	return monitor_info.size();
+}
+int OS_Windows::get_current_screen() const{
+
+	HMONITOR monitor = MonitorFromWindow(hWnd,MONITOR_DEFAULTTONEAREST);
+	for(int i=0;i<monitor_info.size();i++) {
+		if (monitor_info[i].hMonitor==monitor)
+			return i;
+	}
+
+	return 0;
+}
+void OS_Windows::set_current_screen(int p_screen){
+
+	ERR_FAIL_INDEX(p_screen,monitor_info.size());
+
+	Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
+	set_window_position(ofs+get_screen_position(p_screen));
+
+}
+
+Point2 OS_Windows::get_screen_position(int p_screen) const{
+
+	ERR_FAIL_INDEX_V(p_screen,monitor_info.size(),Point2());
+	return Vector2( monitor_info[p_screen].rect.pos );
+
+}
+Size2 OS_Windows::get_screen_size(int p_screen) const{
+
+	ERR_FAIL_INDEX_V(p_screen,monitor_info.size(),Point2());
+	return Vector2( monitor_info[p_screen].rect.size );
+
+}
+Point2 OS_Windows::get_window_position() const{
+
+	RECT r;
+	GetWindowRect(hWnd,&r);
+	return Point2(r.left,r.top);
+}
+void OS_Windows::set_window_position(const Point2& p_position){
+
+	RECT r;
+	GetWindowRect(hWnd,&r);
+	MoveWindow(hWnd,p_position.x,p_position.y,r.right-r.left,r.bottom-r.top,TRUE);
+
+}
+Size2 OS_Windows::get_window_size() const{
+
+	RECT r;
+	GetWindowRect(hWnd,&r);
+	return Vector2(r.right-r.left,r.bottom-r.top);
+
+}
+void OS_Windows::set_window_size(const Size2 p_size){
+
+	RECT r;
+	GetWindowRect(hWnd,&r);
+	MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
+
+}
+void OS_Windows::set_window_fullscreen(bool p_enabled){
+
+	if (video_mode.fullscreen==p_enabled)
+		return;
+
+	if (p_enabled) {
+
+		GetWindowRect(hWnd,&pre_fs_rect);
+
+		int cs = get_current_screen();
+		Point2 pos = get_screen_position(cs);
+		Size2 size = get_screen_size(cs);
+		RECT WindowRect;
+		WindowRect.left = pos.x;
+		WindowRect.top = pos.y;
+		WindowRect.bottom = pos.y+size.y;
+		WindowRect.right = pos.x+size.x;
+
+		DWORD dwExStyle=WS_EX_APPWINDOW;
+		DWORD dwStyle=WS_POPUP;
+
+		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
+
+		video_mode.fullscreen=true;
+		video_mode.width=size.x;
+		video_mode.height=size.y;
+
+
+	} else {
+
+		DWORD dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		DWORD dwStyle=WS_OVERLAPPEDWINDOW;
+		if (!video_mode.resizable) {
+			dwStyle &= ~WS_THICKFRAME;
+			dwStyle &= ~WS_MAXIMIZEBOX;
+		}
+		AdjustWindowRectEx(&pre_fs_rect, dwStyle, FALSE, dwExStyle);
+		video_mode.fullscreen=false;
+		video_mode.width=pre_fs_rect.right-pre_fs_rect.left;
+		video_mode.height=pre_fs_rect.bottom-pre_fs_rect.top;
+
+	}
+
+
+}
+bool OS_Windows::is_window_fullscreen() const{
+
+	return video_mode.fullscreen;
+}
+void OS_Windows::set_window_resizable(bool p_enabled){
+
+	if (video_mode.fullscreen || video_mode.resizable==p_enabled)
+		return;
+
+	GetWindowRect(hWnd,&pre_fs_rect);
+	DWORD dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+	DWORD dwStyle=WS_OVERLAPPEDWINDOW;
+	if (!p_enabled) {
+		dwStyle &= ~WS_THICKFRAME;
+		dwStyle &= ~WS_MAXIMIZEBOX;
+	}
+	AdjustWindowRectEx(&pre_fs_rect, dwStyle, FALSE, dwExStyle);
+	video_mode.resizable=p_enabled;
+
+}
+bool OS_Windows::is_window_resizable() const{
+
+	return video_mode.resizable;
+}
+void OS_Windows::set_window_minimized(bool p_enabled){
+
+	if (p_enabled) {
+		maximized=false;
+		minimized=true;
+		ShowWindow(hWnd,SW_MINIMIZE);
+	} else {
+		ShowWindow(hWnd,SW_RESTORE);
+		maximized=false;
+		minimized=false;
+	}
+}
+bool OS_Windows::is_window_minimized() const{
+
+	return minimized;
+
+}
+void OS_Windows::set_window_maximized(bool p_enabled){
+
+	if (p_enabled) {
+		maximized=true;
+		minimized=false;
+		ShowWindow(hWnd,SW_MAXIMIZE);
+	} else {
+		ShowWindow(hWnd,SW_RESTORE);
+		maximized=false;
+		minimized=false;
+	}
+}
+bool OS_Windows::is_window_maximized() const{
+
+	return maximized;
+}
+
 
 void OS_Windows::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 

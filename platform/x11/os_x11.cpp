@@ -36,7 +36,7 @@
 #include "servers/physics/physics_server_sw.h"
 
 #include "X11/Xutil.h"
-#ifdef NEW_WM_API
+
 #include "X11/Xatom.h"
 #include "X11/extensions/Xinerama.h"
 // ICCCM
@@ -46,7 +46,7 @@
 #define _NET_WM_STATE_REMOVE	0L	// remove/unset property
 #define _NET_WM_STATE_ADD	1L	// add/set property
 #define _NET_WM_STATE_TOGGLE	2L	// toggle property
-#endif
+
 #include "main/main.h"
 
 
@@ -187,7 +187,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		visual_server =memnew(VisualServerWrapMT(visual_server,get_render_thread_mode()==RENDER_SEPARATE_THREAD));
 	}
 
-#ifndef NEW_WM_API
+#if 1
+	// NEW_WM_API
 	// borderless fullscreen window mode
 	if (current_videomode.fullscreen) {
 	// needed for lxde/openbox, possibly others
@@ -552,7 +553,7 @@ void OS_X11::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 
 }
 
-#ifdef NEW_WM_API
+//#ifdef NEW_WM_API
 #if 0
 // Just now not needed. Can be used for a possible OS.set_border(bool) method
 void OS_X11::set_wm_border(bool p_enabled) {
@@ -598,7 +599,7 @@ int OS_X11::get_screen_count() const {
 	return count;
 }
 
-int OS_X11::get_screen() const {
+int OS_X11::get_current_screen() const {
         int x,y;
         Window child;
         XTranslateCoordinates( x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
@@ -613,7 +614,7 @@ int OS_X11::get_screen() const {
 	return 0;
 }
 
-void OS_X11::set_screen(int p_screen) {
+void OS_X11::set_current_screen(int p_screen) {
 	int count = get_screen_count();
 	if(p_screen >= count) return;
 		
@@ -730,18 +731,18 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	XResizeWindow(x11_display, x11_window, p_size.x, p_size.y);
 }
 
-void OS_X11::set_fullscreen(bool p_enabled) {
+void OS_X11::set_window_fullscreen(bool p_enabled) {
 	set_wm_fullscreen(p_enabled);
 	current_videomode.fullscreen = p_enabled;
 
 	visual_server->init();
 }
 
-bool OS_X11::is_fullscreen() const {
+bool OS_X11::is_window_fullscreen() const {
 	return current_videomode.fullscreen;
 }
 
-void OS_X11::set_resizable(bool p_enabled) {
+void OS_X11::set_window_resizable(bool p_enabled) {
 	XSizeHints *xsh;
 	xsh = XAllocSizeHints();
 	xsh->flags = p_enabled ? 0L : PMinSize | PMaxSize;
@@ -758,11 +759,11 @@ void OS_X11::set_resizable(bool p_enabled) {
 	current_videomode.resizable = p_enabled;
 }
 
-bool OS_X11::is_resizable() const {
+bool OS_X11::is_window_resizable() const {
 	return current_videomode.resizable;
 }
 
-void OS_X11::set_minimized(bool p_enabled) {
+void OS_X11::set_window_minimized(bool p_enabled) {
         // Using ICCCM -- Inter-Client Communication Conventions Manual
         XEvent xev;
         Atom wm_change = XInternAtom(x11_display, "WM_CHANGE_STATE", False);
@@ -791,7 +792,7 @@ void OS_X11::set_minimized(bool p_enabled) {
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);	
 }
 
-bool OS_X11::is_minimized() const {
+bool OS_X11::is_window_minimized() const {
 	// Using ICCCM -- Inter-Client Communication Conventions Manual
         Atom property = XInternAtom(x11_display,"WM_STATE", True);
         Atom type;
@@ -823,7 +824,7 @@ bool OS_X11::is_minimized() const {
 	return false;
 }
 
-void OS_X11::set_maximized(bool p_enabled) {
+void OS_X11::set_window_maximized(bool p_enabled) {
 	// Using EWMH -- Extended Window Manager Hints 
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
@@ -844,7 +845,7 @@ void OS_X11::set_maximized(bool p_enabled) {
 	maximized = p_enabled;
 }
 
-bool OS_X11::is_maximized() const {
+bool OS_X11::is_window_maximized() const {
 	// Using EWMH -- Extended Window Manager Hints
         Atom property = XInternAtom(x11_display,"_NET_WM_STATE",False );
         Atom type;
@@ -889,7 +890,7 @@ bool OS_X11::is_maximized() const {
 
 	return false;
 }
-#endif
+
 
 InputModifierState OS_X11::get_key_modifier_state(unsigned int p_x11_state) {
 	
