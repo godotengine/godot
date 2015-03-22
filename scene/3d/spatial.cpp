@@ -660,6 +660,12 @@ void Spatial::orthonormalize() {
 
 }
 
+void Spatial::set_identity() {
+
+	set_transform(Transform());
+
+}
+
 
 void Spatial::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
 
@@ -735,6 +741,7 @@ void Spatial::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("translate","offset"),&Spatial::translate );
 	ObjectTypeDB::bind_method( _MD("global_translate","offset"),&Spatial::global_translate );
 	ObjectTypeDB::bind_method( _MD("orthonormalize"),&Spatial::orthonormalize );
+	ObjectTypeDB::bind_method( _MD("set_identity"),&Spatial::set_identity );
 
 	ObjectTypeDB::bind_method( _MD("look_at","target","up"),&Spatial::look_at );
 	ObjectTypeDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );

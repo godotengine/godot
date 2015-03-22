@@ -180,6 +180,7 @@ public:
 	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
 
 	void orthonormalize();
+	void set_identity();
 
 	void show();
 	void hide();
