@@ -39,6 +39,7 @@
 #include "scene/resources/packed_scene.h"
 #include "os/os.h"
 #include "tools/editor/editor_node.h"
+#include <iostream>
 
 
 struct ColladaImport {
