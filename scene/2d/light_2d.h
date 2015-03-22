@@ -12,7 +12,7 @@ private:
 	bool shadow;
 	Color color;
 	float height;
-	float scale;
+	float _scale;
 	int z_min;
 	int z_max;
 	int layer_min;

@@ -37,7 +37,7 @@ class Node2D : public CanvasItem {
 
 	Point2 pos;
 	float angle;
-	Size2 scale;
+	Size2 _scale;
 	int z;
 	bool z_relative;
 
@@ -72,9 +72,12 @@ public:
 	void set_rot(float p_angle);
 	void set_scale(const Size2& p_scale);
 
-	void rotate(float p_degrees);
+	void rotate(float p_radians);
 	void move_x(float p_delta,bool p_scaled=false);
 	void move_y(float p_delta,bool p_scaled=false);
+	void translate(const Vector2& p_amount);
+	void global_translate(const Vector2& p_amount);
+	void scale(const Vector2& p_amount);
 
 	Point2 get_pos() const;
 	float get_rot() const;
@@ -94,6 +97,7 @@ public:
 	bool is_z_relative() const;
 
 	Matrix32 get_relative_transform(const Node *p_parent) const;
+
 
 
 	Matrix32 get_transform() const;

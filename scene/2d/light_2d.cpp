@@ -23,7 +23,7 @@ Rect2 Light2D::get_item_rect() const {
 
 	Size2i s;
 
-	s = texture->get_size()*scale;
+	s = texture->get_size()*_scale;
 	Point2i ofs=texture_offset;
 	ofs-=s/2;
 
@@ -98,8 +98,8 @@ float Light2D::get_height() const {
 
 void Light2D::set_scale( float p_scale) {
 
-	scale=p_scale;
-	VS::get_singleton()->canvas_light_set_scale(canvas_light,scale);
+	_scale=p_scale;
+	VS::get_singleton()->canvas_light_set_scale(canvas_light,_scale);
 	item_rect_changed();
 
 }
@@ -107,7 +107,7 @@ void Light2D::set_scale( float p_scale) {
 
 float Light2D::get_scale() const {
 
-	return scale;
+	return _scale;
 }
 
 void Light2D::set_z_range_min( int p_min_z) {
@@ -322,7 +322,7 @@ Light2D::Light2D() {
 	shadow=false;
 	color=Color(1,1,1);
 	height=0;
-	scale=1.0;
+	_scale=1.0;
 	z_min=-1024;
 	z_max=1024;
 	layer_min=0;
