@@ -920,7 +920,7 @@ void ScriptEditor::_menu_option(int p_option) {
                     String line_text = tx->get_line(i);
 
                     if (line_text.begins_with("#"))
-                        line_text = line_text.strip_edges().substr(1, line_text.length());
+                        line_text = line_text.substr(1, line_text.length());
                     else
                         line_text = "#" + line_text;
                     tx->set_line(i, line_text);
@@ -932,7 +932,7 @@ void ScriptEditor::_menu_option(int p_option) {
                 String line_text = tx->get_line(begin);
 
                 if (line_text.begins_with("#"))
-                    line_text = line_text.strip_edges().substr(1, line_text.length());
+                    line_text = line_text.substr(1, line_text.length());
                 else
                     line_text = "#" + line_text;
                 tx->set_line(begin, line_text);
