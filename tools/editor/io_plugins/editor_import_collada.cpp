@@ -26,6 +26,8 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+#include <iostream>
+
 #include "editor_import_collada.h"
 #include "collada/collada.h"
 #include "scene/3d/spatial.h"
