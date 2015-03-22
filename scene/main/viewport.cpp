@@ -104,7 +104,9 @@ void Viewport::_update_stretch_transform() {
 		stretch_transform.scale(scale);
 		stretch_transform.elements[2]=size_override_margin*scale;
 
+
 	} else {
+
 
 		stretch_transform=Matrix32();
 	}
@@ -1076,8 +1078,9 @@ Matrix32 Viewport::_get_input_pre_xform() const {
 
 		ERR_FAIL_COND_V(to_screen_rect.size.x==0,pre_xf);
 		ERR_FAIL_COND_V(to_screen_rect.size.y==0,pre_xf);
-		pre_xf.scale(rect.size/to_screen_rect.size);
+
 		pre_xf.elements[2]=-to_screen_rect.pos;
+		pre_xf.scale(rect.size/to_screen_rect.size);
 	} else {
 
 		pre_xf.elements[2]=-rect.pos;
@@ -1140,6 +1143,7 @@ void Viewport::_make_input_local(InputEvent& ev) {
 			ev.screen_drag.speed_y=s.y;
 		} break;
 	}
+
 
 }
 

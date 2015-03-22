@@ -1,10 +1,6 @@
 
 extends Area2D
 
-# member variables here, example:
-# var a=2
-# var b="textvar"
-
 #virtual from CollisionObject2D (also available as signal)
 func _input_event(viewport, event, shape_idx):
 	#convert event to local coordinates
