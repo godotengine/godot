@@ -523,6 +523,10 @@ void Font::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_texture","texture:Texture"),&Font::add_texture);
 	ObjectTypeDB::bind_method(_MD("add_char","character","texture","rect","align","advance"),&Font::add_char,DEFVAL(Point2()),DEFVAL(-1));
 
+
+	ObjectTypeDB::bind_method(_MD("get_texture_count"),&Font::get_texture_count);
+	ObjectTypeDB::bind_method(_MD("get_texture:Texture","idx"),&Font::get_texture);
+
 	ObjectTypeDB::bind_method(_MD("get_char_size","char","next"),&Font::get_char_size,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_string_size","string"),&Font::get_string_size);
 

@@ -45,6 +45,57 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 
 }
 
+
+int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+
+	if (p_result_max<=0)
+		return 0;
+
+	Rect2 aabb;
+	aabb.pos=p_point-Vector2(0.00001,0.00001);
+	aabb.size=Vector2(0.00002,0.00002);
+
+	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
+
+	int cc=0;
+
+	for(int i=0;i<amount;i++) {
+
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
+			continue;
+
+		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
+			continue;
+
+		const CollisionObject2DSW *col_obj=space->intersection_query_results[i];
+
+		if (!col_obj->is_pickable())
+			continue;
+
+		int shape_idx=space->intersection_query_subindex_results[i];
+
+		Shape2DSW * shape = col_obj->get_shape(shape_idx);
+
+		Vector2 local_point = (col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).affine_inverse().xform(p_point);
+
+		if (!shape->contains_point(local_point))
+			continue;
+
+		r_results[cc].collider_id=col_obj->get_instance_id();
+		if (r_results[cc].collider_id!=0)
+			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
+		r_results[cc].rid=col_obj->get_self();
+		r_results[cc].shape=shape_idx;
+		r_results[cc].metadata=col_obj->get_shape_metadata(shape_idx);
+
+		cc++;
+	}
+
+	return cc;
+
+
+}
+
 bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 

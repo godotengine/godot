@@ -249,6 +249,7 @@ public:
 	void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
 
+	InputEvent make_input_local(const InputEvent& pevent) const;
 
 	CanvasItem();
 	~CanvasItem();

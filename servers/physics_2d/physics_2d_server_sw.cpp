@@ -463,6 +463,14 @@ Matrix32 Physics2DServerSW::area_get_transform(RID p_area) const {
 	return area->get_transform();
 };
 
+void Physics2DServerSW::area_set_pickable(RID p_area,bool p_pickable) {
+
+	Area2DSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+	area->set_pickable(p_pickable);
+
+}
+
 void Physics2DServerSW::area_set_monitorable(RID p_area,bool p_monitorable) {
 
 	Area2DSW *area = area_owner.get(p_area);
@@ -943,6 +951,13 @@ bool Physics2DServerSW::body_collide_shape(RID p_body, int p_body_shape, RID p_s
 
 }
 
+void Physics2DServerSW::body_set_pickable(RID p_body,bool p_pickable) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND(!body);
+	body->set_pickable(p_pickable);
+
+}
 
 /* JOINT API */
 

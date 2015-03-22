@@ -138,6 +138,9 @@ public:
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 
+	virtual void area_set_pickable(RID p_area,bool p_pickable);
+
+
 	/* BODY API */
 
 	// create a body of a given type
@@ -217,6 +220,8 @@ public:
 
 	virtual void body_set_force_integration_callback(RID p_body,Object *p_receiver,const StringName& p_method,const Variant& p_udata=Variant());
 	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);
+
+	virtual void body_set_pickable(RID p_body,bool p_pickable);
 
 	/* JOINT API */
 

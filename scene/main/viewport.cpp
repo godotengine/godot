@@ -30,7 +30,7 @@
 #include "os/os.h"
 #include "scene/3d/spatial.h"
 #include "os/input.h"
-
+#include "servers/physics_2d_server.h"
 //#include "scene/3d/camera.h"
 
 #include "servers/spatial_sound_server.h"
@@ -40,7 +40,7 @@
 #include "scene/3d/spatial_indexer.h"
 #include "scene/3d/collision_object.h"
 
-
+#include "scene/2d/collision_object_2d.h"
 
 int RenderTargetTexture::get_width() const {
 
@@ -355,11 +355,12 @@ void Viewport::_notification(int p_what) {
 		case NOTIFICATION_FIXED_PROCESS: {
 
 			if (physics_object_picking) {
-#ifndef _3D_DISABLED
+
 				Vector2 last_pos(1e20,1e20);
 				CollisionObject *last_object;
 				ObjectID last_id=0;
 				PhysicsDirectSpaceState::RayResult result;
+				Physics2DDirectSpaceState *ss2d=Physics2DServer::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 				bool motion_tested=false;
 
@@ -392,6 +393,60 @@ void Viewport::_notification(int p_what) {
 
 					}
 
+					if (ss2d) {
+						//send to 2D
+
+
+						uint64_t frame = get_tree()->get_frame();
+
+						Vector2 point = get_canvas_transform().affine_inverse().xform(pos);
+						Physics2DDirectSpaceState::ShapeResult res[64];
+						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
+						for(int i=0;i<rc;i++) {
+
+							if (res[i].collider) {
+								CollisionObject2D *co=res[i].collider->cast_to<CollisionObject2D>();
+								if (co) {
+
+									Map<ObjectID,uint64_t>::Element *E=physics_2d_mouseover.find(res[i].collider_id);
+									if (!E) {
+										E=physics_2d_mouseover.insert(res[i].collider_id,frame);
+										co->_mouse_enter();
+									} else {
+										E->get()=frame;
+									}
+
+									co->_input_event(this,ev,res[i].shape);
+								}
+							}
+						}
+
+						List<Map<ObjectID,uint64_t>::Element*> to_erase;
+
+						for (Map<ObjectID,uint64_t>::Element*E=physics_2d_mouseover.front();E;E=E->next()) {
+							if (E->get()!=frame) {
+								Object *o=ObjectDB::get_instance(E->key());
+								if (o) {
+
+									CollisionObject2D *co=o->cast_to<CollisionObject2D>();
+									if (co) {
+										co->_mouse_exit();
+									}
+								}
+								to_erase.push_back(E);
+							}
+						}
+
+						while(to_erase.size()) {
+							physics_2d_mouseover.erase(to_erase.front()->get());
+							to_erase.pop_front();
+						}
+
+					}
+
+
+
+#ifndef _3D_DISABLED
 					bool captured=false;
 
 					if (physics_object_capture!=0) {
@@ -499,9 +554,9 @@ void Viewport::_notification(int p_what) {
 						_test_new_mouseover(new_collider);
 
 					}
-
-				}
 #endif
+				}
+
 			}
 
 		} break;
