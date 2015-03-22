@@ -51,8 +51,8 @@ public:
 	void set_height( float p_height);
 	float get_height() const;
 
-	void set_scale( float p_scale);
-	float get_scale() const;
+	void set_texture_scale( float p_scale);
+	float get_texture_scale() const;
 
 	void set_z_range_min( int p_min_z);
 	int get_z_range_min() const;
