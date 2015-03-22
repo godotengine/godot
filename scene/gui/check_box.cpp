@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  theme_editor_plugin.h                                                */
+/*  check_button.cpp                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,94 +26,54 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef THEME_EDITOR_PLUGIN_H
-#define THEME_EDITOR_PLUGIN_H
+#include "check_box.h"
 
-#include "scene/resources/theme.h"
-#include "scene/gui/texture_frame.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/button_group.h"
-
-#include "tools/editor/editor_node.h"
+#include "servers/visual_server.h"
+#include "button_group.h"
 
 
+void CheckBox::_notification(int p_what) {
 
-class ThemeEditor : public Control {
+    if (p_what==NOTIFICATION_DRAW) {
 
-	OBJ_TYPE( ThemeEditor, Control );
+        RID ci = get_canvas_item();
 
+        Ref<Texture> on=Control::get_icon(is_radio() ? "radio_checked" : "checked");
+        Ref<Texture> off=Control::get_icon(is_radio() ? "radio_unchecked" : "unchecked");
 
-	VBoxContainer *main_vb;
-	Ref<Theme> theme;
+        Vector2 ofs;
+        ofs.x = 0;
+        ofs.y = int((get_size().height - on->get_height())/2);
 
-	FileDialog *file_dialog;
-
-	double time_left;
-
-	MenuButton *theme_menu;
-	ConfirmationDialog *add_del_dialog;
-	MenuButton *type_menu;
-	LineEdit *type_edit;
-	MenuButton *name_menu;
-	LineEdit *name_edit;
-	OptionButton *type_select;
-	Label * type_select_label;
-	Label * name_select_label;
-	Label * dtype_select_label;
-
-	enum PopupMode {
-		POPUP_ADD,
-		POPUP_CLASS_ADD,
-		POPUP_REMOVE,
-		POPUP_CREATE_TEMPLATE
-	};
-
-	int popup_mode;
-
-	Tree *test_tree;
-
-	void _save_template_cbk(String fname);
-	void _dialog_cbk();
-	void _type_menu_cbk(int p_option);
-	void _name_menu_about_to_show();
-	void _name_menu_cbk(int p_option);
-	void _theme_menu_cbk(int p_option);
-	void _propagate_redraw(Control *p_at);
-	void _refresh_interval();
+        if (is_pressed())
+            on->draw(ci,ofs);
+        else
+            off->draw(ci,ofs);
 
 
-protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-public:
+    }
+}
 
-	void edit(const Ref<Theme>& p_theme);
+bool CheckBox::is_radio()
+{
+    Node* parent = this;
+    do {
+        parent = parent->get_parent();
+        if (dynamic_cast< ButtonGroup* >(parent))
+            break;
+    } while (parent);
 
-	ThemeEditor();
-};
+    return (parent != 0);
+}
 
+CheckBox::CheckBox(const String &p_text):
+    Button(p_text)
+{
+    set_toggle_mode(true);
+    set_text_align(ALIGN_LEFT);
 
+}
 
-class ThemeEditorPlugin : public EditorPlugin {
-
-	OBJ_TYPE( ThemeEditorPlugin, EditorPlugin );
-
-	ThemeEditor *theme_editor;
-	EditorNode *editor;
-
-public:
-
-	virtual String get_name() const { return "Theme"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
-
-	ThemeEditorPlugin(EditorNode *p_node);
-
-};
-
-
-#endif // THEME_EDITOR_PLUGIN_H
+CheckBox::~CheckBox()
+{
+}

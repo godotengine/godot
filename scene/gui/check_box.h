@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  theme_editor_plugin.h                                                */
+/*  check_box.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,94 +26,30 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef THEME_EDITOR_PLUGIN_H
-#define THEME_EDITOR_PLUGIN_H
-
-#include "scene/resources/theme.h"
-#include "scene/gui/texture_frame.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/file_dialog.h"
-#include "scene/gui/check_box.h"
-#include "scene/gui/button_group.h"
-
-#include "tools/editor/editor_node.h"
+#ifndef CHECK_BOX_H
+#define CHECK_BOX_H
 
 
+#include "scene/gui/button.h"
+/**
+@author Mariano Suligoy <marianognu.esyrpg@gmail.com>
+*/
+class CheckBox : public Button {
 
-class ThemeEditor : public Control {
-
-	OBJ_TYPE( ThemeEditor, Control );
-
-
-	VBoxContainer *main_vb;
-	Ref<Theme> theme;
-
-	FileDialog *file_dialog;
-
-	double time_left;
-
-	MenuButton *theme_menu;
-	ConfirmationDialog *add_del_dialog;
-	MenuButton *type_menu;
-	LineEdit *type_edit;
-	MenuButton *name_menu;
-	LineEdit *name_edit;
-	OptionButton *type_select;
-	Label * type_select_label;
-	Label * name_select_label;
-	Label * dtype_select_label;
-
-	enum PopupMode {
-		POPUP_ADD,
-		POPUP_CLASS_ADD,
-		POPUP_REMOVE,
-		POPUP_CREATE_TEMPLATE
-	};
-
-	int popup_mode;
-
-	Tree *test_tree;
-
-	void _save_template_cbk(String fname);
-	void _dialog_cbk();
-	void _type_menu_cbk(int p_option);
-	void _name_menu_about_to_show();
-	void _name_menu_cbk(int p_option);
-	void _theme_menu_cbk(int p_option);
-	void _propagate_redraw(Control *p_at);
-	void _refresh_interval();
+    OBJ_TYPE( CheckBox, Button );
 
 
 protected:
-	void _notification(int p_what);
-	static void _bind_methods();
-public:
+    void _notification(int p_what);
 
-	void edit(const Ref<Theme>& p_theme);
+    bool is_radio();
 
-	ThemeEditor();
-};
-
-
-
-class ThemeEditorPlugin : public EditorPlugin {
-
-	OBJ_TYPE( ThemeEditorPlugin, EditorPlugin );
-
-	ThemeEditor *theme_editor;
-	EditorNode *editor;
 
 public:
 
-	virtual String get_name() const { return "Theme"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_node);
-	virtual bool handles(Object *p_node) const;
-	virtual void make_visible(bool p_visible);
-
-	ThemeEditorPlugin(EditorNode *p_node);
+    CheckBox(const String& p_text=String());
+    ~CheckBox();
 
 };
 
-
-#endif // THEME_EDITOR_PLUGIN_H
+#endif
