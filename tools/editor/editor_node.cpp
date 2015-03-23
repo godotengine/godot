@@ -3279,7 +3279,6 @@ EditorNode::EditorNode() {
 	singleton=this;
 
 	FileAccess::set_backup_save(true);
-	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	PathRemap::get_singleton()->clear_remaps();; //editor uses no remaps
 	TranslationServer::get_singleton()->set_enabled(false);
@@ -3288,6 +3287,7 @@ EditorNode::EditorNode() {
 		EditorSettings::create();
 
 	ResourceLoader::set_abort_on_missing_resources(false);
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 	ResourceLoader::set_error_notify_func(this,_load_error_notify);
 
 	ResourceLoader::set_timestamp_on_load(true);
