@@ -1067,6 +1067,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	EnumDisplayMonitors(NULL,NULL,MonitorEnumProc,0);
 
 	print_line("DETECTED MONITORS: "+itos(monitor_info.size()));
+	pre_fs_valid=true;
 	if (video_mode.fullscreen) {
 
 		DEVMODE current;
@@ -1089,6 +1090,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 			video_mode.fullscreen=false;
 		}*/
+		pre_fs_valid=false;
 	}
 
 	DWORD		dwExStyle;
@@ -1548,15 +1550,43 @@ void OS_Windows::set_window_position(const Point2& p_position){
 Size2 OS_Windows::get_window_size() const{
 
 	RECT r;
-	GetWindowRect(hWnd,&r);
+	GetClientRect(hWnd,&r);
 	return Vector2(r.right-r.left,r.bottom-r.top);
 
 }
 void OS_Windows::set_window_size(const Size2 p_size){
 
-	RECT r;
-	GetWindowRect(hWnd,&r);
-	MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
+	video_mode.width=p_size.width;
+	video_mode.height=p_size.height;
+
+	if (video_mode.fullscreen) {
+		return;
+	}
+
+
+	RECT crect;
+	GetClientRect(hWnd,&crect);
+
+	RECT rect;
+	GetWindowRect(hWnd,&rect);
+	int dx = (rect.right-rect.left)-(crect.right-crect.left);
+	int dy = (rect.bottom-rect.top)-(crect.bottom-crect.top);
+
+	rect.right=rect.left+p_size.width+dx;
+	rect.bottom=rect.top+p_size.height+dy;
+
+
+	//print_line("PRE: "+itos(rect.left)+","+itos(rect.top)+","+itos(rect.right-rect.left)+","+itos(rect.bottom-rect.top));
+
+	/*if (video_mode.resizable) {
+		AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+	} else {
+		AdjustWindowRect(&rect, WS_CAPTION | WS_POPUPWINDOW, FALSE);
+	}*/
+
+	//print_line("POST: "+itos(rect.left)+","+itos(rect.top)+","+itos(rect.right-rect.left)+","+itos(rect.bottom-rect.top));
+
+	MoveWindow(hWnd,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,TRUE);
 
 }
 void OS_Windows::set_window_fullscreen(bool p_enabled){
@@ -1564,31 +1594,65 @@ void OS_Windows::set_window_fullscreen(bool p_enabled){
 	if (video_mode.fullscreen==p_enabled)
 		return;
 
+
+
 	if (p_enabled) {
 
-		GetWindowRect(hWnd,&pre_fs_rect);
+
+		if (pre_fs_valid) {
+			GetWindowRect(hWnd,&pre_fs_rect);
+			//print_line("A: "+itos(pre_fs_rect.left)+","+itos(pre_fs_rect.top)+","+itos(pre_fs_rect.right-pre_fs_rect.left)+","+itos(pre_fs_rect.bottom-pre_fs_rect.top));
+			//MapWindowPoints(hWnd, GetParent(hWnd), (LPPOINT) &pre_fs_rect, 2);
+			//print_line("B: "+itos(pre_fs_rect.left)+","+itos(pre_fs_rect.top)+","+itos(pre_fs_rect.right-pre_fs_rect.left)+","+itos(pre_fs_rect.bottom-pre_fs_rect.top));
+		}
+
 
 		int cs = get_current_screen();
 		Point2 pos = get_screen_position(cs);
 		Size2 size = get_screen_size(cs);
-		RECT WindowRect;
-		WindowRect.left = pos.x;
-		WindowRect.top = pos.y;
-		WindowRect.bottom = pos.y+size.y;
-		WindowRect.right = pos.x+size.x;
 
-		DWORD dwExStyle=WS_EX_APPWINDOW;
-		DWORD dwStyle=WS_POPUP;
-
-		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
+	/*	r.left = pos.x;
+		r.top = pos.y;
+		r.bottom = pos.y+size.y;
+		r.right = pos.x+size.x;
+*/
+		SetWindowLongPtr(hWnd, GWL_STYLE,
+		    WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE);
+		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 
 		video_mode.fullscreen=true;
-		video_mode.width=size.x;
-		video_mode.height=size.y;
 
 
 	} else {
 
+		RECT rect;
+
+		if (pre_fs_valid) {
+			rect=pre_fs_rect;
+		} else {
+			rect.left=0;
+			rect.right=video_mode.width;
+			rect.top=0;
+			rect.bottom=video_mode.height;
+		}
+
+
+
+		if (video_mode.resizable) {
+
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+			//AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+			MoveWindow(hWnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+		} else {
+
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE);
+			//AdjustWindowRect(&rect, WS_CAPTION | WS_POPUPWINDOW, FALSE);
+			MoveWindow(hWnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+		}
+
+		video_mode.fullscreen=false;
+		pre_fs_valid=true;
+/*
 		DWORD dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 		DWORD dwStyle=WS_OVERLAPPEDWINDOW;
 		if (!video_mode.resizable) {
@@ -1599,8 +1663,10 @@ void OS_Windows::set_window_fullscreen(bool p_enabled){
 		video_mode.fullscreen=false;
 		video_mode.width=pre_fs_rect.right-pre_fs_rect.left;
 		video_mode.height=pre_fs_rect.bottom-pre_fs_rect.top;
-
+*/
 	}
+
+//	MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
 
 
 }
@@ -1610,9 +1676,9 @@ bool OS_Windows::is_window_fullscreen() const{
 }
 void OS_Windows::set_window_resizable(bool p_enabled){
 
-	if (video_mode.fullscreen || video_mode.resizable==p_enabled)
+	if (video_mode.resizable==p_enabled)
 		return;
-
+/*
 	GetWindowRect(hWnd,&pre_fs_rect);
 	DWORD dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
 	DWORD dwStyle=WS_OVERLAPPEDWINDOW;
@@ -1621,6 +1687,21 @@ void OS_Windows::set_window_resizable(bool p_enabled){
 		dwStyle &= ~WS_MAXIMIZEBOX;
 	}
 	AdjustWindowRectEx(&pre_fs_rect, dwStyle, FALSE, dwExStyle);
+	*/
+
+	if (!video_mode.fullscreen) {
+		if (p_enabled) {
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+		} else {
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE);
+
+		}
+
+		RECT rect;
+		GetWindowRect(hWnd,&rect);
+		MoveWindow(hWnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+	}
+
 	video_mode.resizable=p_enabled;
 
 }
