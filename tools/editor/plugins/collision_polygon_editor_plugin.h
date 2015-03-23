@@ -90,7 +90,6 @@ protected:
 	static void _bind_methods();
 public:
 
-	Vector2 snap_point(const Vector2& p_point) const;
 	virtual bool forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygonEditor(EditorNode *p_editor);

@@ -36,6 +36,110 @@
 #include "globals.h"
 #include "os/input.h"
 #include "tools/editor/editor_settings.h"
+#include "scene/gui/grid_container.h"
+
+class SnapDialog : public ConfirmationDialog {
+
+	OBJ_TYPE(SnapDialog,ConfirmationDialog);
+	
+protected:
+	friend class CanvasItemEditor;
+	SpinBox *grid_offset_x;
+	SpinBox *grid_offset_y;
+	SpinBox *grid_step_x;
+	SpinBox *grid_step_y;	
+	SpinBox *rotation_offset;	
+	SpinBox *rotation_step;
+	
+public:
+	SnapDialog() : ConfirmationDialog() {
+		const int SPIN_BOX_GRID_RANGE = 256;
+		const int SPIN_BOX_ROTATION_RANGE = 360;
+		Label *label;
+		VBoxContainer *container;
+		GridContainer *child_container;
+		
+		set_title("Configure Snap");
+		get_ok()->set_text("Close");
+		container = memnew(VBoxContainer);
+		add_child(container);
+		
+		child_container = memnew(GridContainer);
+		child_container->set_columns(3);
+		container->add_child(child_container);
+		
+		label = memnew(Label);
+		label->set_text("Grid Offset:");
+		child_container->add_child(label);
+		grid_offset_x=memnew(SpinBox);
+		grid_offset_x->set_min(-SPIN_BOX_GRID_RANGE);
+		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
+		grid_offset_x->set_suffix("px");
+		child_container->add_child(grid_offset_x);
+		grid_offset_y=memnew(SpinBox);
+		grid_offset_y->set_min(-SPIN_BOX_GRID_RANGE);
+		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
+		grid_offset_y->set_suffix("px");
+		child_container->add_child(grid_offset_y);
+
+		label = memnew(Label);
+		label->set_text("Grid Step:");
+		child_container->add_child(label);
+		grid_step_x=memnew(SpinBox);
+		grid_step_x->set_min(-SPIN_BOX_GRID_RANGE);
+		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
+		grid_step_x->set_suffix("px");
+		child_container->add_child(grid_step_x);
+		grid_step_y=memnew(SpinBox);
+		grid_step_y->set_min(-SPIN_BOX_GRID_RANGE);
+		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
+		grid_step_y->set_suffix("px");
+		child_container->add_child(grid_step_y);
+		
+		container->add_child(memnew(HSeparator));
+
+		child_container = memnew(GridContainer);
+		child_container->set_columns(2);
+		container->add_child(child_container);
+
+		label = memnew(Label);
+		label->set_text("Rotation Offset:");
+		child_container->add_child(label);
+		rotation_offset=memnew(SpinBox);
+		rotation_offset->set_min(-SPIN_BOX_ROTATION_RANGE);
+		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
+		rotation_offset->set_suffix("deg");
+		child_container->add_child(rotation_offset);
+		
+		label = memnew(Label);
+		label->set_text("Rotation Step:");
+		child_container->add_child(label);
+		rotation_step=memnew(SpinBox);
+		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
+		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
+		rotation_step->set_suffix("deg");
+		child_container->add_child(rotation_step);
+	}
+	
+	void set_fields(const Point2 p_grid_offset, const Size2 p_grid_step, const float p_rotation_offset, const float p_rotation_step) {
+		grid_offset_x->set_val(p_grid_offset.x);
+		grid_offset_y->set_val(p_grid_offset.y);
+		grid_step_x->set_val(p_grid_step.x);
+		grid_step_y->set_val(p_grid_step.y);
+		rotation_offset->set_val(p_rotation_offset * (180 / Math_PI));
+		rotation_step->set_val(p_rotation_step * (180 / Math_PI));
+	}
+	
+	void get_fields(Point2 &p_grid_offset, Size2 &p_grid_step, float &p_rotation_offset, float &p_rotation_step) {
+		p_grid_offset.x = grid_offset_x->get_val();
+		p_grid_offset.y = grid_offset_y->get_val();
+		p_grid_step.x = grid_step_x->get_val();
+		p_grid_step.y = grid_step_y->get_val();
+		p_rotation_offset = rotation_offset->get_val() / (180 / Math_PI);
+		p_rotation_step = rotation_step->get_val() / (180 / Math_PI);
+	}
+};
+
 void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 
 	if (!is_visible())
@@ -75,9 +179,24 @@ Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
 	return memnew( CanvasItemEditorSelectedItem );
 }
 
-bool CanvasItemEditor::is_snap_active() const {
+inline float _snap_scalar(float p_offset, float p_step, bool p_snap_relative, float p_target, float p_start) {
+	float offset = p_snap_relative ? p_start : p_offset;
+	return p_step != 0 ? Math::stepify(p_target - offset, p_step) + offset : p_target;
+}
 
-	return edit_menu->get_popup()->is_item_checked(edit_menu->get_popup()->get_item_index(SNAP_USE));
+Vector2 CanvasItemEditor::snap_point(Vector2 p_target, Vector2 p_start) const {
+	if (snap_grid) {
+		p_target.x = _snap_scalar(snap_offset.x, snap_step.x, snap_relative, p_target.x, p_start.x);
+		p_target.y = _snap_scalar(snap_offset.y, snap_step.y, snap_relative, p_target.y, p_start.y);
+	}
+	if (snap_pixel)
+		p_target = p_target.snapped(Size2(1, 1));
+
+	return p_target;
+}
+
+float CanvasItemEditor::snap_angle(float p_target, float p_start) const {
+	return snap_rotation ? _snap_scalar(snap_rotation_offset, snap_rotation_step, snap_relative, p_target, p_start) : p_target;
 }
 
 Dictionary CanvasItemEditor::get_state() const {
@@ -86,9 +205,15 @@ Dictionary CanvasItemEditor::get_state() const {
 	state["zoom"]=zoom;
 	state["ofs"]=Point2(h_scroll->get_val(),v_scroll->get_val());
 //	state["ofs"]=-transform.get_origin();
-	state["use_snap"]=is_snap_active();
-	state["snap_vec"]=Vector2(get_snap());
-	state["pixel_snap"]=pixel_snap;
+	state["snap_offset"]=snap_offset;
+	state["snap_step"]=snap_step;
+	state["snap_rotation_offset"]=snap_rotation_offset;
+	state["snap_rotation_step"]=snap_rotation_step;
+	state["snap_grid"]=snap_grid;
+	state["snap_show_grid"]=snap_show_grid;
+	state["snap_rotation"]=snap_rotation;
+	state["snap_relative"]=snap_relative;
+	state["snap_pixel"]=snap_pixel;
 	return state;
 }
 void CanvasItemEditor::set_state(const Dictionary& p_state){
@@ -105,27 +230,50 @@ void CanvasItemEditor::set_state(const Dictionary& p_state){
 		v_scroll->set_val(ofs.y);
 	}
 
-	if (state.has("use_snap")) {
+	if (state.has("snap_step")) {
+		snap_step=state["snap_step"];
+	}
+
+	if (state.has("snap_offset")) {
+		snap_offset=state["snap_offset"];
+	}
+
+	if (state.has("snap_rotation_step")) {
+		snap_rotation_step=state["snap_rotation_step"];
+	}
+
+	if (state.has("snap_rotation_offset")) {
+		snap_rotation_offset=state["snap_rotation_offset"];
+	}
+
+	if (state.has("snap_grid")) {
+		snap_grid=state["snap_grid"];
 		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE);
-		edit_menu->get_popup()->set_item_checked(idx,state["use_snap"]);
+		edit_menu->get_popup()->set_item_checked(idx,snap_grid);
 	}
 
-	if (state.has("snap")) {
-		snap_x->set_val(state["snap"]);
-		snap_y->set_val(state["snap"]);
+	if (state.has("snap_show_grid")) {
+		snap_show_grid=state["snap_show_grid"];
+		int idx = edit_menu->get_popup()->get_item_index(SNAP_SHOW_GRID);
+		edit_menu->get_popup()->set_item_checked(idx,snap_show_grid);
 	}
 
-	if (state.has("snap_vec")) {
-		Vector2 sv = state["snap_vec"];
-		snap_x->set_val(sv.x);
-		snap_y->set_val(sv.y);
-		viewport->update();
+	if (state.has("snap_rotation")) {
+		snap_rotation=state["snap_rotation"];
+		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
+		edit_menu->get_popup()->set_item_checked(idx,snap_rotation);
 	}
 
-	if (state.has("pixel_snap")) {
-		pixel_snap=state["pixel_snap"];
+	if (state.has("snap_relative")) {
+		snap_relative=state["snap_relative"];
+		int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+		edit_menu->get_popup()->set_item_checked(idx,snap_relative);
+	}
+
+	if (state.has("snap_pixel")) {
+		snap_pixel=state["snap_pixel"];
 		int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
-		edit_menu->get_popup()->set_item_checked(idx,pixel_snap);
+		edit_menu->get_popup()->set_item_checked(idx,snap_pixel);
 	}
 }
 
@@ -294,9 +442,7 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 		CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-		if (!canvas_item)
-			continue;
-		if (!canvas_item->is_visible())
+		if (!canvas_item || !canvas_item->is_visible())
 			continue;
 		CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		if (!se)
@@ -308,7 +454,7 @@ void CanvasItemEditor::_key_move(const Vector2& p_dir, bool p_snap, KeyMoveMODE 
 
 		Vector2 drag = p_dir;
 		if (p_snap)
-			drag*=get_snap();
+			drag*=snap_step;
 
 		undo_redo->add_undo_method(canvas_item,"edit_set_state",canvas_item->edit_get_state());
 
@@ -355,9 +501,7 @@ Point2 CanvasItemEditor::_find_topleftmost_point() {
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 		CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-		if (!canvas_item)
-			continue;
-		if (!canvas_item->is_visible())
+		if (!canvas_item || !canvas_item->is_visible())
 			continue;
 
 
@@ -385,9 +529,7 @@ int CanvasItemEditor::get_item_count() {
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 		CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-		if (!canvas_item)
-			continue;
-		if (!canvas_item->is_visible())
+		if (!canvas_item || !canvas_item->is_visible())
 			continue;
 
 		ic++;
@@ -406,9 +548,7 @@ CanvasItem *CanvasItemEditor::get_single_item() {
 	for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
 		CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
-		if (!canvas_item)
-			continue;
-		if (!canvas_item->is_visible())
+		if (!canvas_item || !canvas_item->is_visible())
 			continue;
 
 		if (single_item)
@@ -562,12 +702,10 @@ void CanvasItemEditor::_append_canvas_item(CanvasItem *c) {
 }
 
 
-void CanvasItemEditor::_snap_changed(double) {
-
+void CanvasItemEditor::_snap_changed() {
+	((SnapDialog *)snap_dialog)->get_fields(snap_offset, snap_step, snap_rotation_offset, snap_rotation_step);
 	viewport->update();
 }
-
-
 
 void CanvasItemEditor::_dialog_value_changed(double) {
 
@@ -576,11 +714,6 @@ void CanvasItemEditor::_dialog_value_changed(double) {
 
 	switch(last_option) {
 
-		case SNAP_CONFIGURE: {
-
-		//	snap=dialog_val->get_val();
-			viewport->update();
-		} break;
 		case ZOOM_SET: {
 
 			zoom=dialog_val->get_val()/100.0;
@@ -676,9 +809,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 					for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 						CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-						if (!canvas_item)
-							continue;
-						if (!canvas_item->is_visible())
+						if (!canvas_item || !canvas_item->is_visible())
 							continue;
 
 						CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -750,9 +881,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 						for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 							CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-							if (!canvas_item)
-								continue;
-							if (!canvas_item->is_visible())
+							if (!canvas_item || !canvas_item->is_visible())
 								continue;
 							CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 							if (!se)
@@ -958,9 +1087,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 				CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 				if (!se)
@@ -1083,9 +1210,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 				CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 				if (!se)
@@ -1141,9 +1266,7 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 			CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-			if (!canvas_item)
-				continue;
-			if (!canvas_item->is_visible())
+			if (!canvas_item || !canvas_item->is_visible())
 				continue;
 			CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 			if (!se)
@@ -1168,39 +1291,21 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 			if (drag==DRAG_ROTATE) {
 
 				Vector2 center = canvas_item->get_global_transform_with_canvas().get_origin();
-
-				Matrix32 rot;
-				rot.elements[1] = (dfrom - center).normalized();
-				rot.elements[0] = rot.elements[1].tangent();
-				float ang = rot.xform_inv(dto-center).atan2();
-				canvas_item->edit_rotate(ang);
-				display_rotate_to = dto;
-				display_rotate_from = center;
+				if (Node2D *node = canvas_item->cast_to<Node2D>()) {
+					Matrix32 rot;
+					rot.elements[1] = (dfrom - center).normalized();
+					rot.elements[0] = rot.elements[1].tangent();
+					node->set_rot(snap_angle(rot.xform_inv(dto-center).atan2(), node->get_rot()));
+					display_rotate_to = dto;
+					display_rotate_from = center;
+					viewport->update();
+				}
 
 				continue;
 			}
 
-			if (pixel_snap || (is_snap_active() && get_snap().x>0 && get_snap().y>0)) {
-
-				if (drag!=DRAG_ALL) {
-					dfrom=drag_point_from;
-					dto=snapify(dto);
-				} else {
-
-					Vector2 newpos = drag_point_from + (dto-dfrom);
-					Vector2 disp;
-					if (!is_snap_active() || get_snap().x<1 || get_snap().y<1) {
-
-						disp.x = Math::fposmod(newpos.x,1);
-						disp.y = Math::fposmod(newpos.y,1);
-
-					} else {
-						disp.x = Math::fposmod(newpos.x,get_snap().x);
-						disp.y = Math::fposmod(newpos.y,get_snap().y);
-					}
-					dto-=disp;
-				}
-			}
+			dfrom = drag_point_from;
+			dto = snap_point(dto - (drag == DRAG_ALL ? drag_from - drag_point_from : Vector2(0, 0)), drag_point_from);
 
 			Vector2 drag_vector =
 					canvas_item->get_global_transform_with_canvas().affine_inverse().xform(dto) -
@@ -1305,8 +1410,6 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 
 				default:{}
 			}
-
-
 
 
 
@@ -1492,32 +1595,32 @@ void CanvasItemEditor::_viewport_draw() {
 	_update_scrollbars();
 	RID ci=viewport->get_canvas_item();
 
-	if (get_snap().x>0 && get_snap().y>0 && is_snap_active() && true ) {
-
+	if (snap_show_grid) {
 		Size2 s = viewport->get_size();
-
 		int last_cell;
 		Matrix32 xform = transform.affine_inverse();
-		for(int i=0;i<s.width;i++) {
 
-			int cell = Math::fast_ftoi(Math::floor(xform.xform(Vector2(i,0)).x/get_snap().x));
-			if (i==0)
+		if (snap_step.x!=0) {
+			for(int i=0;i<s.width;i++) {
+				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(i,0)).x-snap_offset.x)/snap_step.x));
+				if (i==0)
+					last_cell=cell;
+				if (last_cell!=cell)
+					viewport->draw_line(Point2(i,0),Point2(i,s.height),Color(0.3,0.7,1,0.3));
 				last_cell=cell;
-			if (last_cell!=cell)
-				viewport->draw_line(Point2(i,0),Point2(i,s.height),Color(0.3,0.7,1,0.3));
-			last_cell=cell;
+			}
 		}
 
-		for(int i=0;i<s.height;i++) {
-
-			int cell = Math::fast_ftoi(Math::floor(xform.xform(Vector2(0,i)).y/get_snap().y));
-			if (i==0)
+		if (snap_step.y!=0) {
+			for(int i=0;i<s.height;i++) {
+				int cell = Math::fast_ftoi(Math::floor((xform.xform(Vector2(0,i)).y-snap_offset.y)/snap_step.y));
+				if (i==0)
+					last_cell=cell;
+				if (last_cell!=cell)
+					viewport->draw_line(Point2(0,i),Point2(s.width,i),Color(0.3,0.7,1,0.3));
 				last_cell=cell;
-			if (last_cell!=cell)
-				viewport->draw_line(Point2(0,i),Point2(s.width,i),Color(0.3,0.7,1,0.3));
-			last_cell=cell;
+			}
 		}
-
 	}
 
 	if (viewport->has_focus()) {
@@ -1545,9 +1648,7 @@ void CanvasItemEditor::_viewport_draw() {
 
 
 		CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
-		if (!canvas_item)
-			continue;
-		if (!canvas_item->is_visible())
+		if (!canvas_item || !canvas_item->is_visible())
 			continue;
 		CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
 		if (!se)
@@ -1764,9 +1865,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 			CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-			if (!canvas_item)
-				continue;
-			if (!canvas_item->is_visible())
+			if (!canvas_item || !canvas_item->is_visible())
 				continue;
 
 			CanvasItemEditorSelectedItem *se=editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(canvas_item);
@@ -1824,8 +1923,6 @@ void CanvasItemEditor::_notification(int p_what) {
 		group_button->set_icon(get_icon("Group","EditorIcons"));
 		ungroup_button->set_icon(get_icon("Ungroup","EditorIcons"));
 		key_insert_button->set_icon(get_icon("Key","EditorIcons"));
-		snap_x->connect("value_changed",this,"_snap_changed");
-		snap_y->connect("value_changed",this,"_snap_changed");
 
 	}
 
@@ -2013,90 +2110,40 @@ void CanvasItemEditor::_update_scroll(float) {
 }
 
 
-Point2 CanvasItemEditor::snapify(const Point2& p_pos) const {
-
-	bool active=is_snap_active();
-
-	Vector2 pos = p_pos;
-
-	if (!active || get_snap().x<1 || get_snap().y<1) {
-
-		if (pixel_snap) {
-
-			pos.x=Math::stepify(pos.x,1);
-			pos.y=Math::stepify(pos.y,1);
-		}
-
-		return pos;
-	}
-
-	
-	pos.x=Math::stepify(pos.x,get_snap().x);
-	pos.y=Math::stepify(pos.y,get_snap().y);
-	return pos;
-
-
-}
-
-
 void CanvasItemEditor::_popup_callback(int p_op) {
 
 	last_option=MenuOption(p_op);
 	switch(p_op) {
 
 		case SNAP_USE: {
-
+			snap_grid = !snap_grid;
 			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE);
-			edit_menu->get_popup()->set_item_checked( idx,!edit_menu->get_popup()->is_item_checked(0));
+			edit_menu->get_popup()->set_item_checked(idx,snap_grid);
+		} break;
+		case SNAP_SHOW_GRID: {
+			snap_show_grid = !snap_show_grid;
+			int idx = edit_menu->get_popup()->get_item_index(SNAP_SHOW_GRID);
+			edit_menu->get_popup()->set_item_checked(idx,snap_show_grid);
 			viewport->update();
 		} break;
-		case SNAP_USE_PIXEL: {
-			pixel_snap = ! pixel_snap;
-			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
-			edit_menu->get_popup()->set_item_checked(idx,pixel_snap);
+		case SNAP_USE_ROTATION: {
+			snap_rotation = !snap_rotation;
+			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_ROTATION);
+			edit_menu->get_popup()->set_item_checked(idx,snap_rotation);
 		} break;
-		case SNAP_OBJECT_CENTERS: {
-
-			List<Node*> &selection = editor_selection->get_selected_node_list();
-
-			undo_redo->create_action("Snap Object Centers");
-			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
-
-				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
-					continue;
-				Node2D* node = canvas_item->cast_to<Node2D>();
-				if (!node)
-					continue;
-
-				Matrix32 gtrans = node->get_global_transform();
-				gtrans.elements[2]=snapify(gtrans.elements[2]);
-
-				undo_redo->add_do_method(node,"set_global_transform",gtrans);
-				undo_redo->add_undo_method(node,"set_global_transform",node->get_global_transform());
-			}
-
-			undo_redo->add_do_method(viewport,"update");
-			undo_redo->add_undo_method(viewport,"update");
-			undo_redo->commit_action();
-
+		case SNAP_RELATIVE: {
+			snap_relative = !snap_relative;
+			int idx = edit_menu->get_popup()->get_item_index(SNAP_RELATIVE);
+			edit_menu->get_popup()->set_item_checked(idx,snap_relative);
+		} break;
+		case SNAP_USE_PIXEL: {
+			snap_pixel = !snap_pixel;
+			int idx = edit_menu->get_popup()->get_item_index(SNAP_USE_PIXEL);
+			edit_menu->get_popup()->set_item_checked(idx,snap_pixel);
 		} break;
 		case SNAP_CONFIGURE: {
-				updating_value_dialog=true;
-
-				snap_dialog->popup_centered_minsize();
-/*
-				dialog_label->set_text("Snap (Pixels):");
-				dialog_val->set_min(1);
-				dialog_val->set_step(1);
-				dialog_val->set_max(4096);
-				dialog_val->set_val(snap);
-				value_dialog->popup_centered(Size2(200,85));
-				*/
-				updating_value_dialog=false;
-
+			((SnapDialog *)snap_dialog)->set_fields(snap_offset, snap_step, snap_rotation_offset, snap_rotation_step);
+			snap_dialog->popup_centered(Size2(200,160));
 		} break;
 		case ZOOM_IN: {
 			zoom=zoom*(1.0/0.5);
@@ -2140,9 +2187,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 				canvas_item->set_meta("_edit_lock_",true);
@@ -2157,9 +2202,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 
@@ -2177,9 +2220,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 				canvas_item->set_meta("_edit_group_",true);
@@ -2194,9 +2235,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 				canvas_item->set_meta("_edit_group_",Variant());
@@ -2214,9 +2253,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 
@@ -2284,9 +2321,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 				if (canvas_item->cast_to<Node2D>()) {
@@ -2396,9 +2431,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 
@@ -2448,9 +2481,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(Map<Node*,Object*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->key()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 				if (canvas_item->cast_to<Node2D>()) {
@@ -2576,9 +2607,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 				CanvasItem *canvas_item = E->get()->cast_to<CanvasItem>();
-				if (!canvas_item)
-					continue;
-				if (!canvas_item->is_visible())
+				if (!canvas_item || !canvas_item->is_visible())
 					continue;
 
 
@@ -2858,10 +2887,12 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	PopupMenu *p;
 	p = edit_menu->get_popup();
 	p->add_check_item("Use Snap",SNAP_USE);
+	p->add_check_item("Show Grid",SNAP_SHOW_GRID);
+	p->add_check_item("Use Rotation Snap",SNAP_USE_ROTATION);
+	p->add_check_item("Snap Relative",SNAP_RELATIVE);
 	p->add_item("Configure Snap..",SNAP_CONFIGURE);
 	p->add_separator();
 	p->add_check_item("Use Pixel Snap",SNAP_USE_PIXEL);
-	p->add_item("Snap Selected Object Centers",SNAP_OBJECT_CENTERS);
 	p->add_separator();
 	p->add_item("Expand to Parent",EXPAND_TO_PARENT,KEY_MASK_CMD|KEY_P);
 	p->add_separator();
@@ -2949,6 +2980,10 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_item("Paste Pose",ANIM_PASTE_POSE);
 	p->add_item("Clear Pose",ANIM_CLEAR_POSE,KEY_MASK_SHIFT|KEY_K);
 
+	snap_dialog = memnew(SnapDialog);
+	snap_dialog->connect("confirmed",this,"_snap_changed");
+	add_child(snap_dialog);
+
 	value_dialog = memnew( AcceptDialog );
 	value_dialog->set_title("Set a Value");
 	value_dialog->get_ok()->set_text("Close");
@@ -2968,33 +3003,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	dialog_val->connect("value_changed",this,"_dialog_value_changed");
 	select_sb = Ref<StyleBoxTexture>( memnew( StyleBoxTexture) );
 
-	snap_dialog = memnew( AcceptDialog );
-	VBoxContainer *snap_vb = memnew( VBoxContainer );
-	snap_dialog->add_child(snap_vb);
-	snap_dialog->set_child_rect(snap_vb);
-	snap_dialog->set_title("Snap Configuration");
-	snap_x = memnew( SpinBox );
-	snap_x->set_custom_minimum_size(Size2(250,0));
-	snap_y = memnew( SpinBox );
-	snap_x->set_min(1);
-	snap_x->set_max(4096);
-	snap_x->set_step(1);
-	snap_x->set_val(10);
-	snap_y->set_min(1);
-	snap_y->set_max(4096);
-	snap_y->set_step(1);
-	snap_y->set_val(10);
-	snap_vb->add_margin_child("Snap X",snap_x);
-	snap_vb->add_margin_child("Snap Y",snap_y);
-	add_child(snap_dialog);
-
-
 	key_pos=true;
 	key_rot=true;
 	key_scale=false;
 
 	zoom=1;
-	//snap=10;
+	snap_offset=Vector2(0, 0);
+	snap_step=Vector2(10, 10);
+	snap_rotation_offset=0;
+	snap_rotation_step=15 / (180 / Math_PI);
+	snap_grid=false;
+	snap_show_grid=false;
+	snap_rotation=false;
+	snap_pixel=false;
 	updating_value_dialog=false;
 	box_selecting=false;
 	//zoom=0.5;
@@ -3002,7 +3023,6 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor->get_animation_editor()->connect("keying_changed",this,"_keying_changed");
 	set_process_unhandled_key_input(true);
 	can_move_pivot=false;
-	pixel_snap=false;
 	drag=DRAG_NONE;
 }
 
