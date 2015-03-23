@@ -352,7 +352,16 @@ void World2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_canvas"),&World2D::get_canvas);
 	ObjectTypeDB::bind_method(_MD("get_space"),&World2D::get_space);
 	ObjectTypeDB::bind_method(_MD("get_sound_space"),&World2D::get_sound_space);
+
+	ObjectTypeDB::bind_method(_MD("get_direct_space_state:Physics2DDirectSpaceState"),&World2D::get_direct_space_state);
+
 }
+
+Physics2DDirectSpaceState *World2D::get_direct_space_state() {
+
+	return Physics2DServer::get_singleton()->space_get_direct_state(space);
+}
+
 
 World2D::World2D() {
 

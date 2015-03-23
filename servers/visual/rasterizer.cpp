@@ -91,7 +91,7 @@ RID Rasterizer::_create_shader(const FixedMaterialShaderKey& p_key) {
 		scode+="uniform float fmp_normal;\n";
 		scode+="uniform texture fmp_normal_tex;\n";
 		String uv_str;
-		if ((p_key.texcoord_mask>>(VS::FIXED_MATERIAL_PARAM_NORMAL*2))&0x3==VS::FIXED_MATERIAL_TEXCOORD_SPHERE) {
+		if (((p_key.texcoord_mask>>(VS::FIXED_MATERIAL_PARAM_NORMAL*2))&0x3)==VS::FIXED_MATERIAL_TEXCOORD_SPHERE) {
 			uv_str="uv"; //sorry not supported
 		} else {
 			uv_str=_TEXUVSTR(VS::FIXED_MATERIAL_PARAM_NORMAL);

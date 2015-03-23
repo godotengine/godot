@@ -635,11 +635,13 @@ bool ScriptEditor::_test_script_times_on_disk() {
 
 
 
-	if (!all_ok)
-		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false)))
+	if (!all_ok) {
+		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false))) {
 			script_editor->_reload_scripts();
-		else
+		} else {
 			disk_changed->call_deferred("popup_centered_ratio",0.5);
+		}
+	}
 
 	return all_ok;
 }
@@ -965,7 +967,7 @@ void ScriptEditor::_menu_option(int p_option) {
                     String line_text = tx->get_line(i);
 
                     if (line_text.begins_with("#"))
-                        line_text = line_text.strip_edges().substr(1, line_text.length());
+                        line_text = line_text.substr(1, line_text.length());
                     else
                         line_text = "#" + line_text;
                     tx->set_line(i, line_text);
@@ -977,7 +979,7 @@ void ScriptEditor::_menu_option(int p_option) {
                 String line_text = tx->get_line(begin);
 
                 if (line_text.begins_with("#"))
-                    line_text = line_text.strip_edges().substr(1, line_text.length());
+                    line_text = line_text.substr(1, line_text.length());
                 else
                     line_text = "#" + line_text;
                 tx->set_line(begin, line_text);

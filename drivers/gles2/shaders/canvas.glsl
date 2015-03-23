@@ -191,8 +191,16 @@ void main() {
 	vec3 normal = vec3(0.0,0.0,1.0);
 #endif
 
-
+#ifdef USE_DISTANCE_FIELD
+	const float smoothing = 1.0/32.0;
+	float distance = texture2D(texture, uv_interp).a;
+	color.a = smoothstep(0.5 - smoothing, 0.5 + smoothing, distance);
+#else
 	color *= texture2D( texture,  uv_interp );
+
+#endif
+
+
 #if defined(ENABLE_SCREEN_UV)
 	vec2 screen_uv = gl_FragCoord.xy*screen_uv_mult;
 #endif

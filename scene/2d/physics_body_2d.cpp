@@ -98,6 +98,7 @@ PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject
 
 	mask=1;
 	set_one_way_collision_max_depth(0);
+	set_pickable(false);
 
 }
 

@@ -31,6 +31,7 @@
 #include "body_2d_sw.h"
 
 Area2DSW::BodyKey::BodyKey(Body2DSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape) { rid=p_body->get_self(); instance_id=p_body->get_instance_id(); body_shape=p_body_shape; area_shape=p_area_shape; }
+Area2DSW::BodyKey::BodyKey(Area2DSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape) { rid=p_body->get_self(); instance_id=p_body->get_instance_id(); body_shape=p_body_shape; area_shape=p_area_shape; }
 
 void Area2DSW::_shapes_changed() {
 
@@ -57,6 +58,7 @@ void Area2DSW::set_space(Space2DSW *p_space) {
 	}
 
 	monitored_bodies.clear();
+	monitored_areas.clear();
 
 	_set_space(p_space);
 }
@@ -76,11 +78,31 @@ void Area2DSW::set_monitor_callback(ObjectID p_id, const StringName& p_method) {
 	monitor_callback_method=p_method;
 
 	monitored_bodies.clear();
+	monitored_areas.clear();
 
 	_shape_changed();
 
 }
 
+void Area2DSW::set_area_monitor_callback(ObjectID p_id, const StringName& p_method) {
+
+
+	if (p_id==area_monitor_callback_id) {
+		area_monitor_callback_method=p_method;
+		return;
+	}
+
+	_unregister_shapes();
+
+	area_monitor_callback_id=p_id;
+	area_monitor_callback_method=p_method;
+
+	monitored_bodies.clear();
+	monitored_areas.clear();
+
+	_shape_changed();
+
+}
 
 
 void Area2DSW::set_space_override_mode(Physics2DServer::AreaSpaceOverrideMode p_mode) {
@@ -134,6 +156,15 @@ void Area2DSW::_queue_monitor_update() {
 
 }
 
+void Area2DSW::set_monitorable(bool p_monitorable) {
+
+	if (monitorable==p_monitorable)
+		return;
+
+	monitorable=p_monitorable;
+	_set_static(!monitorable);
+}
+
 void Area2DSW::call_queries() {
 
 	if (monitor_callback_id && !monitored_bodies.empty()) {
@@ -170,13 +201,49 @@ void Area2DSW::call_queries() {
 
 	monitored_bodies.clear();
 
+	if (area_monitor_callback_id && !monitored_areas.empty()) {
+
+
+		Variant res[5];
+		Variant *resptr[5];
+		for(int i=0;i<5;i++)
+			resptr[i]=&res[i];
+
+		Object *obj = ObjectDB::get_instance(area_monitor_callback_id);
+		if (!obj) {
+			monitored_areas.clear();
+			area_monitor_callback_id=0;
+			return;
+		}
+
+
+
+		for (Map<BodyKey,BodyState>::Element *E=monitored_areas.front();E;E=E->next()) {
+
+			if (E->get().state==0)
+				continue; //nothing happened
+
+			res[0]=E->get().state>0 ? Physics2DServer::AREA_BODY_ADDED : Physics2DServer::AREA_BODY_REMOVED;
+			res[1]=E->key().rid;
+			res[2]=E->key().instance_id;
+			res[3]=E->key().body_shape;
+			res[4]=E->key().area_shape;
+
+
+			Variant::CallError ce;
+			obj->call(area_monitor_callback_method,(const Variant**)resptr,5,ce);
+		}
+	}
+
+	monitored_areas.clear();
+
 	//get_space()->area_remove_from_monitor_query_list(&monitor_query_list);
 
 }
 
 Area2DSW::Area2DSW() : CollisionObject2DSW(TYPE_AREA), monitor_query_list(this), moved_list(this)  {
 
-	_set_static(true); //areas are never active
+	_set_static(true); //areas are not active by default
 	space_override_mode=Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED;
 	gravity=9.80665;
 	gravity_vector=Vector2(0,-1);
@@ -187,6 +254,8 @@ Area2DSW::Area2DSW() : CollisionObject2DSW(TYPE_AREA), monitor_query_list(this),
 	linear_damp=0.1;
 	priority=0;
 	monitor_callback_id=0;
+	area_monitor_callback_id=0;
+	monitorable=false;
 
 
 }

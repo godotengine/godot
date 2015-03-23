@@ -72,6 +72,7 @@ void Label::_notification(int p_what) {
 		if (clip && !autowrap)
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
+
 		if (word_cache_dirty)
 			regenerate_word_cache();
 
@@ -87,7 +88,8 @@ void Label::_notification(int p_what) {
 		bool use_outlinde = get_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_constant("shadow_offset_x"),get_constant("shadow_offset_y"));
 
-		
+		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(),font.is_valid() && font->is_distance_field_hint());
+
 		int font_h = font->get_height();
 		int line_from=(int)get_val(); // + p_exposed.pos.y / font_h;
 		int lines_visible = size.y/font_h;

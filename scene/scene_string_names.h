@@ -83,6 +83,10 @@ public:
 	StringName body_exit_shape;
 	StringName body_exit;
 
+	StringName area_enter_shape;
+	StringName area_exit_shape;
+
+
 
 	StringName _get_gizmo_geometry;
 	StringName _can_gizmo_scale;
@@ -123,6 +127,9 @@ public:
 
 	StringName _body_enter_tree;
 	StringName _body_exit_tree;
+
+	StringName _area_enter_tree;
+	StringName _area_exit_tree;
 
 	StringName changed;
 	StringName _shader_changed;

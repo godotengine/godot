@@ -139,8 +139,6 @@ public:
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;
 
-	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
-	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
 
 	void set_v_offset(float p_offset);
 	float get_v_offset() const;

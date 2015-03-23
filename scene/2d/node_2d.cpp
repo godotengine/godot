@@ -65,7 +65,7 @@ void Node2D::edit_set_state(const Variant& p_state) {
 
 	pos = state[0];
 	angle = state[1];
-	scale = state[2];
+	_scale = state[2];
 	_update_transform();
 	_change_notify("transform/rot");
 	_change_notify("transform/scale");
@@ -93,11 +93,11 @@ void Node2D::edit_set_rect(const Rect2& p_edit_rect) {
 	Point2 new_pos = p_edit_rect.pos + p_edit_rect.size*zero_offset;//p_edit_rect.pos - r.pos;
 
 	Matrix32 postxf;
-	postxf.set_rotation_and_scale(angle,scale);
+	postxf.set_rotation_and_scale(angle,_scale);
 	new_pos = postxf.xform(new_pos);
 
 	pos+=new_pos;
-	scale*=new_scale;
+	_scale*=new_scale;
 
 	_update_transform();
 	_change_notify("transform/scale");
@@ -118,14 +118,14 @@ void Node2D::_update_xform_values() {
 
 	pos=_mat.elements[2];
 	angle=_mat.get_rotation();
-	scale=_mat.get_scale();
+	_scale=_mat.get_scale();
 	_xform_dirty=false;
 }
 
 void Node2D::_update_transform() {
 
 	Matrix32 mat(angle,pos);
-	_mat.set_rotation_and_scale(angle,scale);
+	_mat.set_rotation_and_scale(angle,_scale);
 	_mat.elements[2]=pos;
 
 	VisualServer::get_singleton()->canvas_item_set_transform(get_canvas_item(),_mat);
@@ -161,11 +161,11 @@ void Node2D::set_scale(const Size2& p_scale) {
 
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
-	scale=p_scale;
-	if (scale.x==0)
-		scale.x=CMP_EPSILON;
-	if (scale.y==0)
-		scale.y=CMP_EPSILON;
+	_scale=p_scale;
+	if (_scale.x==0)
+		_scale.x=CMP_EPSILON;
+	if (_scale.y==0)
+		_scale.y=CMP_EPSILON;
 	_update_transform();
 	_change_notify("transform/scale");
 
@@ -187,7 +187,7 @@ Size2 Node2D::get_scale() const {
 	if (_xform_dirty)
 		((Node2D*)this)->_update_xform_values();
 
-	return scale;
+	return _scale;
 }
 
 void Node2D::_set_rotd(float p_angle) {
@@ -224,10 +224,26 @@ Rect2 Node2D::get_item_rect() const {
 	return Rect2(Point2(-32,-32),Size2(64,64));
 }
 
-void Node2D::rotate(float p_degrees) {
+void Node2D::rotate(float p_radians) {
 
-	set_rot( get_rot() + p_degrees);
+	set_rot( get_rot() + p_radians);
 }
+
+void Node2D::translate(const Vector2& p_amount) {
+
+	set_pos( get_pos() + p_amount );
+}
+
+void Node2D::global_translate(const Vector2& p_amount) {
+
+	set_global_pos( get_global_pos() + p_amount );
+}
+
+void Node2D::scale(const Vector2& p_amount) {
+
+	set_scale( get_scale() * p_amount );
+}
+
 
 void Node2D::move_x(float p_delta,bool p_scaled){
 
@@ -345,9 +361,12 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_rot"),&Node2D::get_rot);
 	ObjectTypeDB::bind_method(_MD("get_scale"),&Node2D::get_scale);
 
-	ObjectTypeDB::bind_method(_MD("rotate","degrees"),&Node2D::rotate);
+	ObjectTypeDB::bind_method(_MD("rotate","radians"),&Node2D::rotate);
 	ObjectTypeDB::bind_method(_MD("move_local_x","delta","scaled"),&Node2D::move_x,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("move_local_y","delta","scaled"),&Node2D::move_y,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("translate","offset"),&Node2D::translate);
+	ObjectTypeDB::bind_method(_MD("global_translate","offset"),&Node2D::global_translate);
+	ObjectTypeDB::bind_method(_MD("scale","ratio"),&Node2D::scale);
 
 	ObjectTypeDB::bind_method(_MD("set_global_pos","pos"),&Node2D::set_global_pos);
 	ObjectTypeDB::bind_method(_MD("get_global_pos"),&Node2D::get_global_pos);
@@ -379,7 +398,7 @@ Node2D::Node2D() {
 
 
 	angle=0;
-	scale=Vector2(1,1);
+	_scale=Vector2(1,1);
 	_xform_dirty=false;
 	z=0;
 	z_relative=true;

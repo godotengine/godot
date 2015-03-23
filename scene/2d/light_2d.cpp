@@ -23,7 +23,7 @@ Rect2 Light2D::get_item_rect() const {
 
 	Size2i s;
 
-	s = texture->get_size()*scale;
+	s = texture->get_size()*_scale;
 	Point2i ofs=texture_offset;
 	ofs-=s/2;
 
@@ -96,18 +96,18 @@ float Light2D::get_height() const {
 	return height;
 }
 
-void Light2D::set_scale( float p_scale) {
+void Light2D::set_texture_scale( float p_scale) {
 
-	scale=p_scale;
-	VS::get_singleton()->canvas_light_set_scale(canvas_light,scale);
+	_scale=p_scale;
+	VS::get_singleton()->canvas_light_set_scale(canvas_light,_scale);
 	item_rect_changed();
 
 }
 
 
-float Light2D::get_scale() const {
+float Light2D::get_texture_scale() const {
 
-	return scale;
+	return _scale;
 }
 
 void Light2D::set_z_range_min( int p_min_z) {
@@ -260,8 +260,8 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_height","height"),&Light2D::set_height);
 	ObjectTypeDB::bind_method(_MD("get_height"),&Light2D::get_height);
 
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&Light2D::set_scale);
-	ObjectTypeDB::bind_method(_MD("get_scale"),&Light2D::get_scale);
+	ObjectTypeDB::bind_method(_MD("set_texture_scale","texture_scale"),&Light2D::set_texture_scale);
+	ObjectTypeDB::bind_method(_MD("get_texture_scale"),&Light2D::get_texture_scale);
 
 
 	ObjectTypeDB::bind_method(_MD("set_z_range_min","z"),&Light2D::set_z_range_min);
@@ -298,7 +298,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,4096,0.01"),_SCS("set_scale"),_SCS("get_scale"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,4096,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"subtract"),_SCS("set_subtract_mode"),_SCS("get_subtract_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height"),_SCS("set_height"),_SCS("get_height"));
@@ -322,7 +322,7 @@ Light2D::Light2D() {
 	shadow=false;
 	color=Color(1,1,1);
 	height=0;
-	scale=1.0;
+	_scale=1.0;
 	z_min=-1024;
 	z_max=1024;
 	layer_min=0;

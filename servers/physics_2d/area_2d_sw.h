@@ -50,9 +50,13 @@ class Area2DSW : public CollisionObject2DSW{
 	float linear_damp;
 	float angular_damp;
 	int priority;
+	bool monitorable;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
+
+	ObjectID area_monitor_callback_id;
+	StringName area_monitor_callback_method;
 
 	SelfList<Area2DSW> monitor_query_list;
 	SelfList<Area2DSW> moved_list;
@@ -80,6 +84,7 @@ class Area2DSW : public CollisionObject2DSW{
 
 		_FORCE_INLINE_ BodyKey() {}
 		BodyKey(Body2DSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+		BodyKey(Area2DSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
 	};
 
 	struct BodyState {
@@ -91,6 +96,7 @@ class Area2DSW : public CollisionObject2DSW{
 	};
 
 	Map<BodyKey,BodyState> monitored_bodies;
+	Map<BodyKey,BodyState> monitored_areas;
 
 	//virtual void shape_changed_notify(Shape2DSW *p_shape);
 	//virtual void shape_deleted_notify(Shape2DSW *p_shape);
@@ -108,8 +114,15 @@ public:
 	void set_monitor_callback(ObjectID p_id, const StringName& p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id; }
 
+	void set_area_monitor_callback(ObjectID p_id, const StringName& p_method);
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback_id; }
+
+
 	_FORCE_INLINE_ void add_body_to_query(Body2DSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(Body2DSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+
+	_FORCE_INLINE_ void add_area_to_query(Area2DSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape);
+	_FORCE_INLINE_ void remove_area_from_query(Area2DSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape);
 
 	void set_param(Physics2DServer::AreaParameter p_param, const Variant& p_value);
 	Variant get_param(Physics2DServer::AreaParameter p_param) const;
@@ -142,6 +155,9 @@ public:
 	_FORCE_INLINE_ void remove_constraint( Constraint2DSW* p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<Constraint2DSW*>& get_constraints() const { return constraints; }
 
+	void set_monitorable(bool p_monitorable);
+	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
+
 	void set_transform(const Matrix32& p_transform);
 
 	void set_space(Space2DSW *p_space);
@@ -168,6 +184,24 @@ void Area2DSW::remove_body_from_query(Body2DSW *p_body, uint32_t p_body_shape,ui
 		_queue_monitor_update();
 }
 
+void Area2DSW::add_area_to_query(Area2DSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape) {
+
+
+	BodyKey bk(p_area,p_area_shape,p_self_shape);
+	monitored_areas[bk].inc();
+	if (!monitor_query_list.in_list())
+		_queue_monitor_update();
+
+
+}
+void Area2DSW::remove_area_from_query(Area2DSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape) {
+
+
+	BodyKey bk(p_area,p_area_shape,p_self_shape);
+	monitored_areas[bk].dec();
+	if (!monitor_query_list.in_list())
+		_queue_monitor_update();
+}
 
 
 

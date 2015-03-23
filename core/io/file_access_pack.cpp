@@ -370,6 +370,10 @@ bool DirAccessPack::current_is_dir() const{
 
 	return cdir;
 }
+bool DirAccessPack::current_is_hidden() const{
+
+	return false;
+}
 void DirAccessPack::list_dir_end() {
 
 	list_dirs.clear();

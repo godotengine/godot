@@ -498,7 +498,29 @@ void TextEdit::_notification(int p_what) {
 							for(int j=from;j<text[i].length();j++) {
 								
 								CharType cc = text[i][j];
-								if (cc==c)
+								//ignore any brackets inside a string
+								if (cc== '"' | cc == '\'') {
+									CharType quotation = cc;
+									do {
+										j++;
+										if (!(j<text[i].length())) {
+											break;
+										}
+										cc=text[i][j];
+										//skip over escaped quotation marks inside strings
+										if (cc=='\\') {
+											bool escaped = true;
+											while (j+1<text[i].length() && text[i][j+1]=='\\') {
+												escaped=!escaped;
+												j++;
+											}
+											if (escaped) {
+												j++;
+												continue;
+											}
+										}
+									} while (cc!= quotation);
+								} else if (cc==c)
 									stack++;
 								else if (cc==closec)
 									stack--;
@@ -547,7 +569,30 @@ void TextEdit::_notification(int p_what) {
 							for(int j=from;j>=0;j--) {
 								
 								CharType cc = text[i][j];
-								if (cc==c)
+								//ignore any brackets inside a string
+								if (cc== '"' | cc == '\'') {
+									CharType quotation = cc;
+									do {
+										j--;
+										if (!(j>=0)) {
+											break;
+										}
+										cc=text[i][j];
+										//skip over escaped quotation marks inside strings
+										if (cc==quotation) {
+											bool escaped = false;
+											while (j-1>=0 && text[i][j-1]=='\\') {
+												escaped=!escaped;
+												j--;
+											}
+											if (escaped) {
+												j--;
+												cc='\\';
+												continue;
+											}
+										}
+									} while (cc!= quotation);
+								} else if (cc==c)
 									stack++;
 								else if (cc==closec)
 									stack--;
