@@ -3279,6 +3279,7 @@ EditorNode::EditorNode() {
 	singleton=this;
 
 	FileAccess::set_backup_save(true);
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	PathRemap::get_singleton()->clear_remaps();; //editor uses no remaps
 	TranslationServer::get_singleton()->set_enabled(false);

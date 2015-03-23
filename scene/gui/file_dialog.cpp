@@ -30,7 +30,7 @@
 #include "scene/gui/label.h"
 #include "print_string.h"
 #include "os/keyboard.h"
-#include "tools/editor/editor_settings.h"
+
 
 
 FileDialog::GetIconFunc FileDialog::get_icon_func=NULL;
@@ -281,7 +281,7 @@ void FileDialog::update_file_list() {
 	
 	bool isdir;
 	bool ishidden;
-	bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+	bool show_hidden = show_hidden_files;
 	String item;
 
 	while ((item=dir_access->get_next(&isdir))!="") {
@@ -625,6 +625,9 @@ void FileDialog::_update_drives() {
 	}
 }
 
+bool FileDialog::default_show_hidden_files=true;
+
+
 void FileDialog::_bind_methods() {
 	
 	ObjectTypeDB::bind_method(_MD("_tree_selected"),&FileDialog::_tree_selected);
@@ -649,6 +652,8 @@ void FileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_vbox:VBoxContainer"),&FileDialog::get_vbox);
 	ObjectTypeDB::bind_method(_MD("set_access","access"),&FileDialog::set_access);
 	ObjectTypeDB::bind_method(_MD("get_access"),&FileDialog::get_access);
+	ObjectTypeDB::bind_method(_MD("set_show_hidden_files"),&FileDialog::set_show_hidden_files);
+	ObjectTypeDB::bind_method(_MD("is_showing_hidden_files"),&FileDialog::is_showing_hidden_files);
 	ObjectTypeDB::bind_method(_MD("_select_drive"),&FileDialog::_select_drive);
 	ObjectTypeDB::bind_method(_MD("_make_dir"),&FileDialog::_make_dir);
 	ObjectTypeDB::bind_method(_MD("_make_dir_confirm"),&FileDialog::_make_dir_confirm);
@@ -673,9 +678,23 @@ void FileDialog::_bind_methods() {
 }
 
 
+void FileDialog::set_show_hidden_files(bool p_show) {
+	show_hidden_files=p_show;
+	invalidate();
+}
+
+bool FileDialog::is_showing_hidden_files() const {
+	return show_hidden_files;
+}
+
+void FileDialog::set_default_show_hidden_files(bool p_show) {
+	default_show_hidden_files=p_show;
+}
 
 FileDialog::FileDialog() {
-	
+
+	show_hidden_files=true;
+
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
 	set_child_rect(vbc);

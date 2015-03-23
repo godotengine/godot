@@ -51,6 +51,7 @@ protected:
 	BuildMode build_mode;
 	Vector<Point2> polygon;
 	bool trigger;
+	bool unparenting;
 
 	void _add_to_collision_object(Object *p_obj);
 	void _update_parent();

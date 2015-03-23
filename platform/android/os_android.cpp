@@ -291,6 +291,11 @@ void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) 
 	p_list->push_back(default_videomode);
 }
 
+Size2 OS_Android::get_window_size() const {
+
+	return Vector2(default_videomode.width,default_videomode.height);
+}
+
 String OS_Android::get_name() {
 
 	return "Android";
