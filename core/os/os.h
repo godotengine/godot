@@ -158,7 +158,7 @@ public:
 	virtual Size2 get_screen_size(int p_screen=0) const { return get_window_size(); }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2& p_position) {}
-	virtual Size2 get_window_size() const=0;
+	virtual Size2 get_window_size() const { return Size2(); };
 	virtual void set_window_size(const Size2 p_size){}
 	virtual void set_window_fullscreen(bool p_enabled) {}
 	virtual bool is_window_fullscreen() const { return true; }
