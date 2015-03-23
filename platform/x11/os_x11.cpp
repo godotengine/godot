@@ -248,10 +248,10 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 		set_wm_fullscreen(true);
 	}
 	if (!current_videomode.resizable) {
-		int screen = get_screen();
+		int screen = get_current_screen();
 		Size2i screen_size = get_screen_size(screen);
 		set_window_size(screen_size);
-		set_resizable(false);
+		set_window_resizable(false);
 	}
 #endif
 
@@ -624,7 +624,7 @@ void OS_X11::set_current_screen(int p_screen) {
 	        XMoveResizeWindow(x11_display, x11_window, position.x, position.y, size.x, size.y);
 	}
 	else {
-		if( p_screen != get_screen() ) {
+		if( p_screen != get_current_screen() ) {
 			Point2i position = get_screen_position(p_screen);
 			XMoveWindow(x11_display, x11_window, position.x, position.y);
 		}
@@ -667,7 +667,7 @@ Point2 OS_X11::get_window_position() const {
 	Window child;
 	XTranslateCoordinates( x11_display, x11_window, DefaultRootWindow(x11_display), 0, 0, &x, &y, &child);
 
-	int screen = get_screen();
+	int screen = get_current_screen();
 	Point2i screen_position = get_screen_position(screen);
 
 	return Point2i(x-screen_position.x, y-screen_position.y);		
@@ -711,7 +711,7 @@ void OS_X11::set_window_position(const Point2& p_position) {
 		XFree(data);
 	}
 
-	int screen = get_screen();
+	int screen = get_current_screen();
 	Point2i screen_position = get_screen_position(screen);
 
 	left -= screen_position.x;
@@ -1152,7 +1152,7 @@ void OS_X11::process_xevents() {
 #ifdef NEW_WM_API
 			if(current_videomode.fullscreen) {
 				set_wm_fullscreen(false);
-				set_minimized(true);
+				set_window_minimized(true);
 				visual_server->init();
 			}
 #endif
