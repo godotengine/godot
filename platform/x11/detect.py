@@ -113,6 +113,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
+	env.ParseConfig('pkg-config xinerama --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
 	env.ParseConfig('pkg-config openssl --cflags --libs')
 

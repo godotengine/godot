@@ -5,18 +5,18 @@ func _fixed_process(delta):
 
 	var modetext = "Mode:\n"
 	
-	if(OS.is_fullscreen()):
+	if(OS.is_window_fullscreen()):
 		modetext += "Fullscreen\n"
 	else:
 		modetext += "Windowed\n"
 		
-	if(!OS.is_resizable()):
+	if(!OS.is_window_resizable()):
 		modetext += "FixedSize\n"
 	
-	if(OS.is_minimized()):
+	if(OS.is_window_minimized()):
 		modetext += "Minimized\n"
 	
-	if(OS.is_maximized()):
+	if(OS.is_window_maximized()):
 		modetext += "Maximized\n"
 	
 	if(Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED):
@@ -55,9 +55,9 @@ func _fixed_process(delta):
 		get_node("Label_Screen1_Position").hide()
 		
 	get_node("Button_Fullscreen").set_pressed( OS.is_window_fullscreen() )
-	get_node("Button_FixedSize").set_pressed( !OS.is_is_window_resizable() )
-	get_node("Button_Minimized").set_pressed( OS.is_is_window_minimized() )
-	get_node("Button_Maximized").set_pressed( OS.is_is_window_maximized() )
+	get_node("Button_FixedSize").set_pressed( !OS.is_window_resizable() )
+	get_node("Button_Minimized").set_pressed( OS.is_window_minimized() )
+	get_node("Button_Maximized").set_pressed( OS.is_window_maximized() )
 	get_node("Button_Mouse_Grab").set_pressed( Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED )
 
 
@@ -66,11 +66,11 @@ func check_wm_api():
 	if( !OS.has_method("get_screen_count") ):
 		s += " - get_screen_count()\n"
 	
-	if( !OS.has_method("get_screen") ):
-		s += " - get_screen()\n"
+	if( !OS.has_method("get_current_screen") ):
+		s += " - get_current_screen()\n"
 	
-	if( !OS.has_method("set_screen") ):
-		s += " - set_screen()\n"
+	if( !OS.has_method("set_current_screen") ):
+		s += " - set_current_screen()\n"
 	
 	if( !OS.has_method("get_screen_position") ):
 		s += " - get_screen_position()\n"
@@ -90,29 +90,29 @@ func check_wm_api():
 	if( !OS.has_method("set_window_size") ):
 		s += " - set_window_size()\n"
 	
-	if( !OS.has_method("set_fullscreen") ):
-		s += " - set_fullscreen()\n"
+	if( !OS.has_method("set_window_fullscreen") ):
+		s += " - set_window_fullscreen()\n"
 	
-	if( !OS.has_method("is_fullscreen") ):
-		s += " - is_fullscreen()\n"
+	if( !OS.has_method("is_window_fullscreen") ):
+		s += " - is_window_fullscreen()\n"
 	
-	if( !OS.has_method("set_resizable") ):
-		s += " - set_resizable()\n"
+	if( !OS.has_method("set_window_resizable") ):
+		s += " - set_window_resizable()\n"
 	
-	if( !OS.has_method("is_resizable") ):
-		s += " - is_resizable()\n"
+	if( !OS.has_method("is_window_resizable") ):
+		s += " - is_window_resizable()\n"
 	
-	if( !OS.has_method("set_minimized") ):
-		s += " - set_minimized()\n"
+	if( !OS.has_method("set_window_minimized") ):
+		s += " - set_window_minimized()\n"
 	
-	if( !OS.has_method("is_minimized") ):
-		s += " - is_minimized()\n"
+	if( !OS.has_method("is_window_minimized") ):
+		s += " - is_window_minimized()\n"
 	
-	if( !OS.has_method("set_maximized") ):
-		s += " - set_maximized()\n"
+	if( !OS.has_method("set_window_maximized") ):
+		s += " - set_window_maximized()\n"
 	
-	if( !OS.has_method("is_maximized") ):
-		s += " - is_maximized()\n"
+	if( !OS.has_method("is_window_maximized") ):
+		s += " - is_window_maximized()\n"
 	
 	if( s.length() == 0 ):
 		return true
