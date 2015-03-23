@@ -105,7 +105,7 @@ bool DirAccessJAndroid::current_is_dir() const{
 
 	return true;
 }
-bool DirAccessAndroid::current_is_hidden() const{
+bool DirAccessJAndroid::current_is_hidden() const{
 	return current!="." && current!=".." && current.begins_with(".");
 }
 void DirAccessJAndroid::list_dir_end(){

@@ -281,7 +281,11 @@ void FileDialog::update_file_list() {
 	
 	bool isdir;
 	bool ishidden;
+#ifdef TOOLS_ENABLED
 	bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+#else
+	bool show_hidden = true;
+#endif
 	String item;
 
 	while ((item=dir_access->get_next(&isdir))!="") {
