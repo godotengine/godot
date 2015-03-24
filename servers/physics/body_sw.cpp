@@ -378,6 +378,7 @@ void BodySW::integrate_forces(real_t p_step) {
 	bool replace = false;
 	gravity=Vector3(0,0,0);
 	if (ac) {
+		areas.sort();
 		const AreaCMP *aa = &areas[0];
 		density = aa[ac-1].area->get_density();
 		for(int i=ac-1;i>=0;i--) {
