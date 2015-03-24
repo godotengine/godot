@@ -1245,6 +1245,10 @@ void OS_OSX::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) cons
 
 }
 
+Size2 OS_OSX::get_window_size() const {
+	return Vector2(current_videomode.width, current_videomode.height);
+}
+
 void OS_OSX::move_window_to_foreground() {
 
 	[window_object orderFrontRegardless];
