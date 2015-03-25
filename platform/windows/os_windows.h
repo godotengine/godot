@@ -130,6 +130,7 @@ class OS_Windows : public OS {
 	int joystick_count;
 	Joystick joysticks[JOYSTICKS_MAX];
 	
+	Size2 window_rect;
 	VideoMode video_mode;
 
 	MainLoop *main_loop;
@@ -204,6 +205,7 @@ protected:
 
 	};
 
+	bool pre_fs_valid;
 	RECT pre_fs_rect;
 	Vector<MonitorInfo> monitor_info;
 	bool maximized;

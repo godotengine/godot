@@ -70,19 +70,6 @@ void CollisionPolygonEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 CollisionPolygonEditor::snap_point(const Vector2& p_point) const {
-
-	return p_point;
-	
-	if (CanvasItemEditor::get_singleton()->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*CanvasItemEditor::get_singleton()->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
-
 void CollisionPolygonEditor::_menu_option(int p_option) {
 
 	switch(p_option) {
@@ -150,7 +137,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 			Vector2 cpoint(spoint.x,spoint.y);
 
-			cpoint=snap_point(cpoint);
+			cpoint=CanvasItemEditor::get_singleton()->snap_point(cpoint);
 
 			Vector<Vector2> poly = node->get_polygon();
 
@@ -364,7 +351,7 @@ bool CollisionPolygonEditor::forward_spatial_input_event(Camera* p_camera,const 
 
 				Vector2 cpoint(spoint.x,spoint.y);
 
-				cpoint=snap_point(cpoint);
+				cpoint=CanvasItemEditor::get_singleton()->snap_point(cpoint);
 				edited_point_pos = cpoint;
 
 				_polygon_draw();

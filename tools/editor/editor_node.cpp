@@ -3324,6 +3324,7 @@ EditorNode::EditorNode() {
 	EditorTranslationServer::get_singleton()->load();
 
 	ResourceLoader::set_abort_on_missing_resources(false);
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 	ResourceLoader::set_error_notify_func(this,_load_error_notify);
 
 	ResourceLoader::set_timestamp_on_load(true);

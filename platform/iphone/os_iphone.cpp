@@ -474,6 +474,11 @@ String OSIPhone::get_name() {
 	return "iOS";
 };
 
+Size2 OSIPhone::get_window_size() const {
+	
+	return Vector2(video_mode.width, video_mode.height);
+}
+
 bool OSIPhone::has_touchscreen_ui_hint() const {
 
 	return true;
