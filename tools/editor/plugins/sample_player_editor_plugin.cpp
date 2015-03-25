@@ -94,6 +94,7 @@ void SamplePlayerEditor::_update_sample_library() {
 
 	List<StringName> samplenames;
 	sl->get_sample_list(&samplenames);
+	samplenames.sort_custom<StringName::AlphCompare>();
 	for(List<StringName>::Element *E=samplenames.front();E;E=E->next()) {
 		samples->add_item(E->get());
 	}
