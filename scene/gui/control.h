@@ -130,7 +130,7 @@ private:
 		bool modal;
 		bool modal_exclusive;
 		Ref<Theme> theme;
-		Control *theme_owner;		
+		Control *theme_owner;
 		String tooltip;
 		CursorShape default_cursor;
 
@@ -160,16 +160,20 @@ private:
 		int mouse_focus_button;
 		Control *key_focus;
 		Control *mouse_over;
+#ifndef TOOLTIP_DISABLED
 		Control *tooltip;
 		Panel *tooltip_popup;
 		Label *tooltip_label;
 		Point2 tooltip_pos;
+#endif
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
 		bool drag_attempted;
 		Variant drag_data;
 		Control *drag_preview;
+#ifndef TOOLTIP_DISABLED
 		Timer *tooltip_timer;
+#endif
 		List<Control*> modal_stack;
 		unsigned int cancelled_input_ID;
 		Matrix32 focus_inv_xform;

@@ -135,6 +135,7 @@ opts.Add('cjk', 'Add CJK language support', "no")
 opts.Add('rfs', 'Fixed rfs')
 opts.Add('sdk', "Third-Party SDK", "")
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
+opts.Add('disable_tooltip', "Disable control default tooltip behavior (yes/no)", 'no')
 
 # add platform specific options
 
@@ -324,7 +325,9 @@ if selected_platform in platform_list:
 
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
-		
+
+	if (env['disable_tooltip']=='yes'):
+		env.Append(CPPFLAGS=['-DTOOLTIP_DISABLED'])
 
 	rfs = env.get('rfs', 'no')
 	if (rfs=='no'):
