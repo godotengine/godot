@@ -81,6 +81,7 @@ public:
 
 		DYNAMIC_DISABLED,
 		DYNAMIC_TTF,
+		DYNAMIC_GLOBAL_TTF,
 		DYNAMIC_FRAMES,
 	};
 
@@ -297,10 +298,13 @@ public:
 
 	void _get_property_list( List<PropertyInfo> *p_list) const{
 
-		p_list->push_back(PropertyInfo(Variant::INT,"dynamic/source",PROPERTY_HINT_ENUM,"Disabled,TtfFont,SpriteFrames"));
+		p_list->push_back(PropertyInfo(Variant::INT,"dynamic/source",PROPERTY_HINT_ENUM,"Disabled,TtfFont,TtfFont(global),SpriteFrames"));
 		switch (dynamic_source) {
 		case DYNAMIC_TTF:
 			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/ttf_file",PROPERTY_HINT_FILE,"ttf,otf"));
+			break;
+		case DYNAMIC_GLOBAL_TTF:
+			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/ttf_file",PROPERTY_HINT_GLOBAL_FILE,"ttf,otf"));
 			break;
 		case DYNAMIC_FRAMES:
 			p_list->push_back(PropertyInfo(Variant::STRING,"dynamic/sprite_frames",PROPERTY_HINT_FILE,"res,xml"));
@@ -978,7 +982,8 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 #ifdef FREETYPE_ENABLED
 	int dynamic_source = from->get_option("dynamic/source");
 	switch (dynamic_source) {
-		case _EditorFontImportOptions::DYNAMIC_TTF:	{
+		case _EditorFontImportOptions::DYNAMIC_TTF:
+		case _EditorFontImportOptions::DYNAMIC_GLOBAL_TTF: {
 
     		String dynamic_ttf_file = from->get_option("dynamic/ttf_file");
 			RES res=ResourceLoader::load(dynamic_ttf_file);
