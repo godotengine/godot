@@ -121,6 +121,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
+opts.Add('disable_tooltip', "Disable control default tooltip behavior (yes/no)", 'no')
 
 # add platform specific options
 
@@ -306,7 +307,10 @@ if selected_platform in platform_list:
 
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
-		
+
+	if (env['disable_tooltip']=='yes'):
+		env.Append(CPPFLAGS=['-DTOOLTIP_DISABLED'])
+
 
 	Export('env')
 

@@ -41,7 +41,7 @@
 #include "scene/gui/label.h"
 #include <stdio.h>
 
-
+#ifndef TOOLTIP_DISABLED
 class TooltipPanel : public Panel {
 
 	OBJ_TYPE(TooltipPanel,Panel)
@@ -57,6 +57,7 @@ public:
 	TooltipLabel() {};
 
 };
+#endif
 
 Control::Window::Window() {
 
@@ -68,9 +69,11 @@ Control::Window::Window() {
 	disable_input=false;
 
 	cancelled_input_ID=0;
+#ifndef TOOLTIP_DISABLED
 	tooltip=NULL;
 	tooltip_popup=NULL;
 	tooltip_label=NULL;
+#endif
 	subwindow_order_dirty=false;
 }
 
@@ -349,6 +352,7 @@ void Control::_notification(int p_notification) {
 				add_to_group("_vp_gui_input"+itos(get_viewport()->get_instance_ID()));
 				add_to_group("windows");
 
+#ifndef TOOLTIP_DISABLED
 				window->tooltip_timer = memnew( Timer );
 				add_child(window->tooltip_timer);
 				window->tooltip_timer->force_parent_owned();
@@ -362,6 +366,7 @@ void Control::_notification(int p_notification) {
 				window->tooltip_popup->add_child(window->tooltip_label);
 				window->tooltip_popup->set_as_toplevel(true);
 				window->tooltip_popup->hide();
+#endif
 				window->drag_attempted=false;
 				window->drag_preview=NULL;
 
@@ -395,14 +400,17 @@ void Control::_notification(int p_notification) {
 					data.window->window->key_focus=NULL;
 				if (data.window->window->mouse_over == this)
 					data.window->window->mouse_over=NULL;
+#ifndef TOOLTIP_DISABLED
 				if (data.window->window->tooltip == this)
 					data.window->window->tooltip=NULL;
+#endif
 			}
 
 			if (window) {
 
 				remove_from_group("_vp_gui_input"+itos(get_viewport()->get_instance_ID()));
 				remove_from_group("windows");
+#ifndef TOOLTIP_DISABLED
 				if (window->tooltip_timer)
 					memdelete(window->tooltip_timer);
 				window->tooltip_timer=NULL;
@@ -410,7 +418,7 @@ void Control::_notification(int p_notification) {
 				if (window->tooltip_popup)
 					memdelete(window->tooltip_popup);
 				window->tooltip_popup=NULL;
-
+#endif
 				memdelete(window);
 				window=NULL;
 
@@ -614,11 +622,12 @@ void Control::_notification(int p_notification) {
 					data.window->window->key_focus=NULL;
 				if (data.window->window->mouse_over == this)
 					data.window->window->mouse_over=NULL;
+#ifndef TOOLTIP_DISABLED
 				if (data.window->window->tooltip == this)
 					data.window->window->tooltip=NULL;
 				if (data.window->window->tooltip == this)
 					data.window->window->tooltip=NULL;
-
+#endif
 				_modal_stack_remove();
 				minimum_size_changed();
 
@@ -797,8 +806,10 @@ Control* Control::_find_control_at_pos(CanvasItem* p_node,const Point2& p_global
 
 		for(int i=p_node->get_child_count()-1;i>=0;i--) {
 
+#ifndef TOOLTIP_DISABLED
 			if (p_node==data.window->window->tooltip_popup)
 				continue;
+#endif
 
 			CanvasItem *ci = p_node->get_child(i)->cast_to<CanvasItem>();
 			if (!ci || ci->is_set_as_toplevel())
@@ -849,16 +860,18 @@ bool Control::window_has_modal_stack() const {
 
 void Control::_window_cancel_tooltip() {
 
+#ifndef TOOLTIP_DISABLED
 	window->tooltip=NULL;
 	if (window->tooltip_timer)
 		window->tooltip_timer->stop();
 	if (window->tooltip_popup)
 		window->tooltip_popup->hide();
-
+#endif
 }
 
 void Control::_window_show_tooltip() {
 
+#ifndef TOOLTIP_DISABLED
 	if (!window->tooltip) {
 		return;
 	}
@@ -896,6 +909,7 @@ void Control::_window_show_tooltip() {
 	window->tooltip_popup->raise();
 
 	window->tooltip_popup->show();
+#endif
 }
 
 
@@ -1037,7 +1051,9 @@ void Control::_window_input_event(InputEvent p_event) {
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
 
+#ifndef TOOLTIP_DISABLED
 				window->tooltip_popup->hide();
+#endif
 
 			} else {
 
@@ -1168,6 +1184,7 @@ void Control::_window_input_event(InputEvent p_event) {
 			p_event.mouse_motion.relative_x=rel.x;
 			p_event.mouse_motion.relative_y=rel.y;
 
+#ifndef TOOLTIP_DISABLED
 			if (p_event.mouse_motion.button_mask==0 && window->tooltip_timer) {
 				//nothing pressed
 
@@ -1187,7 +1204,7 @@ void Control::_window_input_event(InputEvent p_event) {
 					window->tooltip_timer->start();
 				}
 			}
-
+#endif
 
 			pos = window->focus_inv_xform.xform(pos);
 
