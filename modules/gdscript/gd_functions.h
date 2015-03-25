@@ -67,6 +67,7 @@ public:
 		MATH_RAND,
 		MATH_RANDF,
 		MATH_RANDOM,
+		MATH_SEED,
 		MATH_RANDSEED,
 		MATH_DEG2RAD,
 		MATH_RAD2DEG,
@@ -95,6 +96,7 @@ public:
 		PRINT_STACK,
 		AUTOLOAD,
 		DEB,
+		GET_INST,
 		FUNC_MAX
 
 	};
