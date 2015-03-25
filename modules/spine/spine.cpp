@@ -397,7 +397,7 @@ void Spine::_animation_process(float p_delta) {
 		return;
 	p_delta *= speed_scale;
 
-	spAnimationState_update(state, p_delta);
+	spAnimationState_update(state, forward ? p_delta : -p_delta);
 	spAnimationState_apply(state, skeleton);
 	spSkeleton_updateWorldTransform(skeleton);
 
@@ -417,9 +417,9 @@ void Spine::_animation_process(float p_delta) {
 			continue;
 		}
 		const spBone *bone = info.bone;
-		node->set_pos(Vector2(bone->worldX + bone->skeleton->x, -bone->worldY + bone->skeleton->y) + info.ofs);
-		node->set_scale(Vector2(bone->worldScaleX, bone->worldScaleY) * info.scale);
-		node->set_rot(Math::atan2(bone->m10, bone->m11) + Math::deg2rad(info.rot));
+		node->call("set_pos", Vector2(bone->worldX + bone->skeleton->x, -bone->worldY + bone->skeleton->y) + info.ofs);
+		node->call("set_scale", Vector2(bone->worldScaleX, bone->worldScaleY) * info.scale);
+		node->call("set_rot", Math::atan2(bone->m10, bone->m11) + Math::deg2rad(info.rot));
 	}
 	update();
 }
@@ -462,6 +462,10 @@ bool Spine::_set(const StringName& p_name, const Variant& p_value) {
 		if (skeleton != NULL && has(current_animation))
 			play(current_animation, 1, loop);
 	}
+	else if (name == "playback/forward") {
+
+		forward = p_value;
+	}
 	else if (name == "playback/skin") {
 
 		skin = p_value;
@@ -490,6 +494,8 @@ bool Spine::_get(const StringName& p_name, Variant &r_ret) const {
 	}
 	else if (name == "playback/loop")
 		r_ret = loop;
+	else if (name == "playback/forward")
+		r_ret = forward;
 	else if (name == "playback/skin")
 		r_ret = skin;
 	else if (name == "debug/region")
@@ -528,6 +534,7 @@ void Spine::_get_property_list(List<PropertyInfo> *p_list) const {
 
 		p_list->push_back(PropertyInfo(Variant::STRING, "playback/play", PROPERTY_HINT_ENUM, hint));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "playback/loop", PROPERTY_HINT_NONE));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "playback/forward", PROPERTY_HINT_NONE));
 	}
 
 	names.clear();
@@ -704,6 +711,16 @@ void Spine::stop() {
 bool Spine::is_playing(int p_track) const {
 
 	return playing && spAnimationState_getCurrent(state, p_track) != NULL;
+}
+
+void Spine::set_forward(bool p_forward) {
+
+	forward = p_forward;
+}
+
+bool Spine::is_forward() const {
+
+	return forward;
 }
 
 String Spine::get_current_animation(int p_track) const {
@@ -1268,6 +1285,7 @@ Spine::Spine()
 	processing = false;
 	active = false;
 	playing = false;
+	forward = true;
 
 	debug_bones = false;
 	debug_attachment_region = false;

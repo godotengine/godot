@@ -80,6 +80,7 @@ private:
 	bool processing;
 	bool active;
 	bool playing;
+	bool forward;
 	bool debug_bones;
 	bool debug_attachment_region;
 	bool debug_attachment_mesh;
@@ -142,6 +143,8 @@ public:
 	void clear(int p_track = -1);
 	void stop();
 	bool is_playing(int p_track = 0) const;
+	void set_forward(bool p_forward = true);
+	bool is_forward() const;
 	String get_current_animation(int p_track = 0) const;
 	void stop_all();
 	void reset();
