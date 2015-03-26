@@ -40,8 +40,6 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
-
-
 void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
@@ -83,6 +81,14 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 		} break;
 
 	}
+}
+
+Node *EditorPlugin::get_selected_node() {
+    return EditorNode::get_singleton()->get_scene_tree_dock()->get_selected();
+}
+
+Ref<Texture> EditorPlugin::get_editor_icon(const StringName& p_name) {
+    return EditorNode::get_singleton()->get_gui_base()->get_icon(p_name, "EditorIcons");
 }
 
 bool EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
@@ -204,6 +210,8 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_custom_control","container","control"),&EditorPlugin::add_custom_control);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
+	ObjectTypeDB::bind_method(_MD("get_selected_node"), &EditorPlugin::get_selected_node);
+	ObjectTypeDB::bind_method(_MD("get_editor_icon:Texture", "name"), &EditorPlugin::get_editor_icon);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));

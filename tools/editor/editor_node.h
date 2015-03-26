@@ -97,13 +97,13 @@ typedef void (*EditorNodeInitCallback)();
 class EditorNode : public Node {
 
 	OBJ_TYPE( EditorNode, Node );
-	
+
 	enum {
-		
-		HISTORY_SIZE=64	
+
+		HISTORY_SIZE=64
 	};
 	enum MenuOptions {
-	
+
 		FILE_NEW_SCENE,
 		FILE_OPEN_SCENE,
 		FILE_SAVE_SCENE,
@@ -310,13 +310,13 @@ class EditorNode : public Node {
 	String external_file;
 	List<String> previous_scenes;
 	bool opening_prev;
-	
+
 	void _dialog_action(String p_file);
 
 
 	void _edit_current();
 	void _dialog_display_file_error(String p_file,Error p_error);
-	
+
 	int current_option;
 	//void _animation_visibility_toggle();
 	void _resource_selected(const RES& p_res,const String& p_property="");
@@ -327,7 +327,7 @@ class EditorNode : public Node {
 	void _property_editor_forward();
 	void _property_editor_back();
 
-	
+
 	void _fs_changed();
 	void _sources_changed(bool p_exist);
 	void _imported(Node *p_node);
@@ -411,7 +411,7 @@ class EditorNode : public Node {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods();		
+	static void _bind_methods();
 public:
 
 	static EditorNode* get_singleton() { return singleton; }
@@ -444,6 +444,7 @@ public:
 
 	void set_edited_scene(Node *p_scene);
 
+	SceneTreeDock *get_scene_tree_dock() { return singleton->scene_tree_dock; }
 
 	static EditorLog *get_log() { return singleton->log; }
 	Control* get_viewport();
@@ -510,7 +511,7 @@ public:
 	bool is_scene_in_use(const String& p_path);
 
 	void scan_import_changes();
-	EditorNode();	
+	EditorNode();
 	~EditorNode();
 	void get_singleton(const char* arg1, bool arg2);
 

@@ -283,7 +283,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			for (int i = 0; i < selection.size(); i++) {
 				Node *top_node = selection[i];
 				Node *bottom_node = selection[selection.size() - 1 - i];
-				 
+
 				ERR_FAIL_COND(!top_node->get_parent());
 				ERR_FAIL_COND(!bottom_node->get_parent());
 
@@ -1176,6 +1176,13 @@ void SceneTreeDock::_create() {
 void SceneTreeDock::set_edited_scene(Node* p_scene) {
 
 	edited_scene=p_scene;
+}
+
+Node *SceneTreeDock::get_selected() {
+    if (scene_tree->get_selected()) {
+        return scene_tree->get_selected();
+    }
+    return NULL;
 }
 
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected ) {

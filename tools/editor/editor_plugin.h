@@ -42,7 +42,7 @@ class Spatial;
 class Camera;
 
 class EditorPlugin : public Node {
-	
+
 	OBJ_TYPE( EditorPlugin, Node );
 friend class EditorData;
 	UndoRedo *undo_redo;
@@ -73,6 +73,10 @@ public:
 	//TODO: send a resoucre for editing to the editor node?
 
 	void add_custom_control(CustomControlContainer p_location,Control *p_control);
+
+	Node *get_selected_node();
+
+	Ref<Texture> get_editor_icon(const StringName& p_name);
 
 	virtual bool create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_input_event(const InputEvent& p_event);
