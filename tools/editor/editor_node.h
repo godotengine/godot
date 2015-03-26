@@ -192,7 +192,8 @@ class EditorNode : public Node {
 
 	HSplitContainer *editor_hsplit;
 	VSplitContainer *editor_vsplit;
-	HBoxContainer *menu_hb;
+	HBoxContainer *left_menu_hb;
+	HBoxContainer *right_menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
 	MenuButton *import_menu;
@@ -436,7 +437,8 @@ public:
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
-	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
+    static HBoxContainer *get_left_menu_hb() { return singleton->left_menu_hb; }
+    static HBoxContainer *get_right_menu_hb() { return singleton->right_menu_hb; }
 
 	void push_item(Object *p_object,const String& p_property="");
 

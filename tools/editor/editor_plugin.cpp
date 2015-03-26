@@ -43,11 +43,19 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
+        case CONTAINER_LEFT_TOOLBAR: {
 
-		case CONTAINER_TOOLBAR: {
+            EditorNode::get_left_menu_hb()->add_child(p_control);
 
-			EditorNode::get_menu_hb()->add_child(p_control);
+        } break;
+
+		case CONTAINER_RIGHT_TOOLBAR: {
+
+			EditorNode::get_right_menu_hb()->add_child(p_control);
+			EditorNode::get_right_menu_hb()->move_child(p_control, 0);
+
 		} break;
+
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
 			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
@@ -226,7 +234,8 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("apply_changes"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING_ARRAY,"get_breakpoints"));
 
-	BIND_CONSTANT( CONTAINER_TOOLBAR );
+    BIND_CONSTANT( CONTAINER_LEFT_TOOLBAR );
+	BIND_CONSTANT( CONTAINER_RIGHT_TOOLBAR );
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_MENU );
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_SIDE );
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_BOTTOM );
