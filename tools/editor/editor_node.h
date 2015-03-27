@@ -421,6 +421,7 @@ public:
 	EditorPlugin *get_editor_plugin_screen() { return editor_plugin_screen; }
 	EditorPlugin *get_editor_plugin_over() { return editor_plugin_over; }
 	PropertyEditor *get_property_editor() { return property_editor; }
+	SceneTreeDock *get_scene_tree_dock() { return singleton->scene_tree_dock; }
 
 	static void add_editor_plugin(EditorPlugin *p_editor);
 	static void remove_editor_plugin(EditorPlugin *p_editor);
@@ -437,16 +438,14 @@ public:
 
 	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 
-    static HBoxContainer *get_left_menu_hb() { return singleton->left_menu_hb; }
-    static HBoxContainer *get_right_menu_hb() { return singleton->right_menu_hb; }
+    	static HBoxContainer *get_left_menu_hb() { return singleton->left_menu_hb; }
+    	static HBoxContainer *get_right_menu_hb() { return singleton->right_menu_hb; }
 
 	void push_item(Object *p_object,const String& p_property="");
 
 	void open_request(const String& p_path);
 
 	void set_edited_scene(Node *p_scene);
-
-	SceneTreeDock *get_scene_tree_dock() { return singleton->scene_tree_dock; }
 
 	static EditorLog *get_log() { return singleton->log; }
 	Control* get_viewport();

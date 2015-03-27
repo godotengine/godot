@@ -49,10 +49,12 @@ friend class EditorData;
 
 	UndoRedo* _get_undo_redo() { return undo_redo; }
 
+	Node *edited_scene;
+
 protected:
 
 	static void _bind_methods();
-	UndoRedo& get_undo_redo() { return *undo_redo; }
+	UndoRedo& get_undo_redo();
 
 	void add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon);
 	void remove_custom_type(const String& p_type);
@@ -73,9 +75,10 @@ public:
 
 	//TODO: send a resoucre for editing to the editor node?
 
-	void add_custom_control(CustomControlContainer p_location,Control *p_control);
-
+    void create_node(Node* p_scene);
 	Node *get_selected_node();
+
+	void add_custom_control(CustomControlContainer p_location,Control *p_control);
 
 	Ref<Texture> get_editor_icon(const StringName& p_name);
 

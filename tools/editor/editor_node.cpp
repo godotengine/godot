@@ -3472,7 +3472,7 @@ EditorNode::EditorNode() {
 
 	PanelContainer *top_region = memnew( PanelContainer );
 	top_region->add_style_override("panel",gui_base->get_stylebox("hover","Button"));
-    left_menu_hb = memnew( HBoxContainer );
+   	left_menu_hb = memnew( HBoxContainer );
 	top_region->add_child(left_menu_hb);
 	menu_hb->add_child(top_region);
 
