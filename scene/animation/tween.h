@@ -110,6 +110,27 @@ private:
 
 	List<InterpolateData> interpolates;
 
+	struct PendingCommand {
+		StringName key;
+		int args;
+		Variant arg[10];
+	};
+	List<PendingCommand> pending_commands;
+
+	void _add_pending_command(StringName p_key
+		,const Variant& p_arg1=Variant()
+		,const Variant& p_arg2=Variant()
+		,const Variant& p_arg3=Variant()
+		,const Variant& p_arg4=Variant()
+		,const Variant& p_arg5=Variant()
+		,const Variant& p_arg6=Variant()
+		,const Variant& p_arg7=Variant()
+		,const Variant& p_arg8=Variant()
+		,const Variant& p_arg9=Variant()
+		,const Variant& p_arg10=Variant()
+	);
+	void _process_pending_commands();
+
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];
 
