@@ -36,7 +36,7 @@ uniform vec2 normal_flip;
 #endif
 
 #ifdef USE_SHADOWS
-highp varying vec2 pos;
+varying highp vec2 pos;
 #endif
 
 #endif
@@ -161,11 +161,11 @@ varying vec4 local_rot;
 
 #ifdef USE_SHADOWS
 
-uniform sampler2D shadow_texture;
+uniform highp sampler2D shadow_texture;
 uniform float shadow_attenuation;
 
 uniform highp mat4 shadow_matrix;
-highp varying vec2 pos;
+varying highp vec2 pos;
 uniform float shadowpixel_size;
 
 #ifdef SHADOW_ESM
@@ -292,12 +292,12 @@ LIGHT_SHADER_CODE
 		}
 
 
-		vec4 s = shadow_matrix * vec4(point,0.0,1.0);
+		highp vec4 s = shadow_matrix * highp vec4(point,0.0,1.0);
 		s.xyz/=s.w;
 		su=s.x*0.5+0.5;
 		sz=s.z*0.5+0.5;
 
-		float shadow_attenuation;
+		highp float shadow_attenuation;
 
 #ifdef SHADOW_PCF5
 
