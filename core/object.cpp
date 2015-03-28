@@ -1503,6 +1503,8 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
 	ObjectTypeDB::bind_method(_MD("tr","message"),&Object::tr);
 
+	ObjectTypeDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
+
 	ADD_SIGNAL( MethodInfo("script_changed"));
 
 	BIND_VMETHOD( MethodInfo("_notification",PropertyInfo(Variant::INT,"what")) );
@@ -1566,6 +1568,10 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 
 }
 
+bool Object::is_queued_for_deletion() const {
+	return _is_queued_for_deletion;
+}
+
 #ifdef TOOLS_ENABLED
 void Object::set_edited(bool p_edited) {
 
@@ -1587,6 +1593,7 @@ Object::Object() {
 	_instance_ID=0;
 	_instance_ID = ObjectDB::add_instance(this);
 	_can_translate=true;
+	_is_queued_for_deletion=false;
 	script_instance=NULL;
 #ifdef TOOLS_ENABLED
 
