@@ -588,7 +588,7 @@ public:
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)
 
-	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete(), and returned by 
+	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
 	bool is_queued_for_deletion() const; 
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate=p_enable; }
