@@ -34,6 +34,7 @@
 #include "core_string_names.h"
 #include "translation.h"
 #include "scene/main/node.h"
+#include "os/os.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -1026,9 +1027,9 @@ void Object::set_meta(const String& p_name, const Variant& p_value ) {
 
 Variant Object::get_meta(const String& p_name) const {
 
-	Variant key=p_name;
-	ERR_EXPLAIN("Object::get_mtae, object has no meta: '" + p_name + "'");
-	ERR_FAIL_COND_V(!metadata.has(key),Variant());
+	if(!metadata.has(p_name))
+		OS::get_singleton()->print("Object has no meta named '%s'\n", p_name.utf8().get_data());
+	ERR_FAIL_COND_V(!metadata.has(p_name),Variant());
 	return metadata[p_name];
 }
 

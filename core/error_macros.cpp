@@ -31,15 +31,17 @@
 
 
 bool _err_error_exists=false;
-static Tls tls_err_error_exists;
+//static Tls tls_err_error_exists;
 bool _is_err_error_exists() {
 
-	return tls_err_error_exists.get() != NULL;
+	return _err_error_exists;
+	//return tls_err_error_exists.get() != NULL;
 }
 
 void _set_err_error_exists(bool p_exists) {
 
-	tls_err_error_exists.set(p_exists? (void *)1 : 0);
+	_err_error_exists=p_exists;
+	//tls_err_error_exists.set(p_exists? (void *)1 : 0);
 }
 
 static ErrorHandlerList *error_handler_list=NULL;

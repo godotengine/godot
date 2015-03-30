@@ -139,19 +139,22 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+static char *s_last_error=NULL;
 char * OS::_get_last_error() const {
 
-	return (char *) tls_last_errors.get();
+	return s_last_error;
+	//return (char *) tls_last_errors.get();
 }
 
 void OS::_set_last_error(char *p_error) {
 
-	tls_last_errors.set(p_error);
+	s_last_error=p_error;
+	//tls_last_errors.set(p_error);
 }
 
 void OS::set_last_error(const char* p_error) {
 
-	//GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION
 	if (p_error==NULL)
 		p_error="Unknown Error";
 
@@ -170,7 +173,7 @@ void OS::set_last_error(const char* p_error) {
 }
 
 const char *OS::get_last_error() const {
-	//GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION
 	char *last_error = _get_last_error();
 	return last_error?last_error:"";
 }
@@ -249,7 +252,7 @@ void OS::dump_resources_to_file(const char* p_file) {
 
 void OS::clear_last_error() {
 
-	//GLOBAL_LOCK_FUNCTION
+	GLOBAL_LOCK_FUNCTION
 	char * last_error = _get_last_error();
 	if (last_error)
 		memfree(last_error);
