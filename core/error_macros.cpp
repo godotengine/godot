@@ -30,7 +30,7 @@
 #include "os/os.h"
 
 
-//bool _err_error_exists=false;
+bool _err_error_exists=false;
 static Tls tls_err_error_exists;
 bool _is_err_error_exists() {
 
@@ -40,8 +40,6 @@ bool _is_err_error_exists() {
 void _set_err_error_exists(bool p_exists) {
 
 	tls_err_error_exists.set(p_exists? (void *)1 : 0);
-	if(tls_err_error_exists.get() != (p_exists? (void *)1 : 0))
-		__asm int 3;
 }
 
 static ErrorHandlerList *error_handler_list=NULL;
