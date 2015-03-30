@@ -98,5 +98,38 @@ ThreadWindows::~ThreadWindows() {
 
 }
 
+void TlsWindows::create_func_windows(ID& p_tls_key) {
+
+	p_tls_key = TlsAlloc();
+}
+
+void TlsWindows::delete_func_windows(ID& p_tls_key) {
+
+	TlsFree(p_tls_key);
+}
+
+void *TlsWindows::get_func_windows(ID& p_tls_key) {
+
+	return TlsGetValue(p_tls_key);
+}
+
+void TlsWindows::set_func_windows(ID& p_tls_key, void *p_ptr) {
+
+	TlsSetValue(p_tls_key, p_ptr);
+}
+
+void TlsWindows::make_default() {
+
+	create_func=create_func_windows;
+	delete_func=delete_func_windows;
+	get_func=get_func_windows;
+	set_func=set_func_windows;
+}
+
+TlsWindows::TlsWindows() {
+}
+
+TlsWindows::~TlsWindows() {
+}
 
 #endif

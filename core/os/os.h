@@ -34,6 +34,7 @@
 #include "vector.h"
 #include "os/main_loop.h"
 #include <stdarg.h>
+#include "thread.h"
 
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
@@ -58,7 +59,7 @@ class OS {
 	int _target_fps;
 	float _time_scale;
 
-	char *last_error;
+	Tls tls_last_errors;
 
 public:
 	enum RenderThreadMode {
@@ -101,6 +102,9 @@ friend class Main;
 	virtual void set_cmdline(const char* p_execpath, const List<String>& p_args);
 
 	void _ensure_data_dir();
+
+	char * _get_last_error() const;
+	void _set_last_error(char *p_error);
 	
 public:
 	

@@ -80,13 +80,14 @@ void _err_print_error(const char* p_function,const char* p_file,int p_line,const
 
 /** An index has failed if m_index<0 or m_index >=m_size, the function exists */
 
-extern bool _err_error_exists;
+bool _is_err_error_exists();
+void _set_err_error_exists(bool p_exists);
 
 #ifdef DEBUG_ENABLED
 /** Print a warning string.
  */
-#define ERR_EXPLAINC(m_reason) {_err_set_last_error(m_reason); _err_error_exists=true;}
-#define ERR_EXPLAIN(m_string) {_err_set_last_error(String(m_string).utf8().get_data()); _err_error_exists=true;}
+#define ERR_EXPLAINC(m_reason) {_err_set_last_error(m_reason); _set_err_error_exists(true);}
+#define ERR_EXPLAIN(m_string) {_err_set_last_error(String(m_string).utf8().get_data()); _set_err_error_exists(true);}
 
 #else
 
@@ -106,7 +107,7 @@ extern bool _err_error_exists;
 	 do {if ((m_index)<0 || (m_index)>=(m_size)) { \
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index "_STR(m_index)" out of size ("_STR(m_size)").");	\
 		return;	\
-	} else _err_error_exists=false; } while(0);	\
+	} else _set_err_error_exists(false); } while(0);	\
 
 /** An index has failed if m_index<0 or m_index >=m_size, the function exists.
   * This function returns an error value, if returning Error, please select the most
@@ -117,7 +118,7 @@ extern bool _err_error_exists;
 	 do {if ((m_index)<0 || (m_index)>=(m_size)) { \
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Index "_STR(m_index)" out of size ("_STR(m_size)").");	\
 		return m_retval;	 \
-	} else _err_error_exists=false;} while (0);
+	} else _set_err_error_exists(false);} while (0);
 
  /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert().
   * the function will exit.
@@ -127,14 +128,14 @@ extern bool _err_error_exists;
 	 { if ( !m_param ) {	\
 		 _err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' "_STR(m_param)" ' is null.");	\
 		 return;	 \
-	 }else _err_error_exists=false; }	\
+	 }else _set_err_error_exists(false); }	\
 
 
 #define ERR_FAIL_NULL_V(m_param,m_retval) \
 	{ if ( !m_param ) {	\
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Parameter ' "_STR(m_param)" ' is null.");	\
 		return m_retval;	 \
-	}else _err_error_exists=false; }	\
+	}else _set_err_error_exists(false); }	\
 
 /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
  * the function will exit.
@@ -144,7 +145,7 @@ extern bool _err_error_exists;
 	{ if ( m_cond ) {	\
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true.");	\
 		return;	 \
-	}else _err_error_exists=false; }	\
+	}else _set_err_error_exists(false); }	\
 
 /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
  * the function will exit.
@@ -156,7 +157,7 @@ extern bool _err_error_exists;
 	{ if ( m_cond ) {	\
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. returned: "_STR(m_retval));	\
 		return m_retval;	 \
-	}else _err_error_exists=false; }	\
+	}else _set_err_error_exists(false); }	\
 
 /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
  * the loop will skip to the next iteration.
@@ -166,7 +167,7 @@ extern bool _err_error_exists;
 	{ if ( m_cond ) {	\
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. Continuing..:");	\
 		continue;\
-	} else _err_error_exists=false;}	\
+	} else _set_err_error_exists(false);}	\
 
 /** An error condition happened (m_cond tested true) (WARNING this is the opposite as assert(). 
  * the loop will break
@@ -176,7 +177,7 @@ extern bool _err_error_exists;
 	{ if ( m_cond ) {	\
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Condition ' "_STR(m_cond)" ' is true. Breaking..:");	\
 		break;\
-	} else _err_error_exists=false;}	\
+	} else _set_err_error_exists(false);}	\
 
 /** Print an error string and return
  */
@@ -184,7 +185,7 @@ extern bool _err_error_exists;
 #define ERR_FAIL() \
 { \
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Method/Function Failed.");	\
-		_err_error_exists=false;\
+		_set_err_error_exists(false);\
 		return;\
 } \
 
@@ -194,7 +195,7 @@ extern bool _err_error_exists;
 #define ERR_FAIL_V(m_value) \
 { \
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,"Method/Function Failed, returning: "__STR(m_value));	\
-		_err_error_exists=false;	\
+		_set_err_error_exists(false);	\
 		return m_value;\
 } \
 
@@ -204,7 +205,7 @@ extern bool _err_error_exists;
 #define ERR_PRINT(m_string) \
 	{ \
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,m_string);	\
-		_err_error_exists=false;\
+		_set_err_error_exists(false);\
 	} \
 
 
@@ -214,7 +215,7 @@ extern bool _err_error_exists;
 #define WARN_PRINT(m_string) \
 	{ \
 		_err_print_error(FUNCTION_STR,__FILE__,__LINE__,m_string,ERR_HANDLER_WARNING);	\
-		_err_error_exists=false;\
+		_set_err_error_exists(false);\
 	} \
 
 

@@ -85,5 +85,25 @@ public:
 
 };
 
+class Tls {
+public:
+	Tls();
+	virtual ~Tls();
+
+	void *get() const;
+	void set(void *p_ptr);
+
+protected:
+	typedef uint64_t ID;
+	static void (*create_func)(ID&);
+	static void (*delete_func)(ID&);
+	static void * (*get_func)(ID&);
+	static void (*set_func)(ID&, void *);
+
+	mutable ID tls_key;
+
+private:
+};
+
 #endif
 

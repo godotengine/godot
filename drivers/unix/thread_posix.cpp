@@ -96,5 +96,42 @@ ThreadPosix::~ThreadPosix() {
 
 }
 
+void TlsPosix::create_func_posix(ID& p_tls_key) {
+
+	pthread_key_t key;
+	ERR_FAIL_COND(pthread_key_create(&key, NULL) != 0);
+	p_tls_key = key;
+}
+
+void TlsPosix::delete_func_posix(ID& p_tls_key) {
+
+	ERR_FAIL_COND(pthread_key_delete(p_tls_key) != 0);
+}
+
+void *TlsPosix::get_func_posix(ID& p_tls_key) {
+
+	return pthread_getspecific(p_tls_key);
+}
+
+void TlsPosix::set_func_posix(ID& p_tls_key, void *p_ptr) {
+
+	ERR_FAIL_COND(pthread_setspecific(p_tls_key, p_ptr) != 0);
+}
+
+void TlsPosix::make_default() {
+
+	create_func=create_func_posix;
+	delete_func=delete_func_posix;
+	get_func=get_func_posix;
+	set_func=set_func_posix;
+}
+
+TlsPosix::TlsPosix() {
+}
+
+TlsPosix::~TlsPosix() {
+}
+
+
 
 #endif

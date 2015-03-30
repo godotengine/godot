@@ -69,6 +69,19 @@ public:
 
 };
 
+class TlsPosix: public Tls {
+
+	static void create_func_posix(ID& p_tls_key);
+	static void delete_func_posix(ID& p_tls_key);
+	static void *get_func_posix(ID& p_tls_key);
+	static void set_func_posix(ID& p_tls_key, void *p_ptr);
+
+public:
+	static void make_default();
+
+	TlsPosix();
+	~TlsPosix();
+};
 
 #endif
 

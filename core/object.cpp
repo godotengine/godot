@@ -1026,7 +1026,9 @@ void Object::set_meta(const String& p_name, const Variant& p_value ) {
 
 Variant Object::get_meta(const String& p_name) const {
 
-	ERR_FAIL_COND_V(!metadata.has(p_name),Variant());
+	Variant key=p_name;
+	ERR_EXPLAIN("Object::get_mtae, object has no meta: '" + p_name + "'");
+	ERR_FAIL_COND_V(!metadata.has(key),Variant());
 	return metadata[p_name];
 }
 
