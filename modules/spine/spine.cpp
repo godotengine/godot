@@ -743,8 +743,9 @@ void Spine::reset() {
 
 	ERR_FAIL_COND(skeleton == NULL);
 	spSkeleton_setToSetupPose(skeleton);
-	// reset frame
-	_animation_process(0);
+	spAnimationState_update(state, 0);
+	spAnimationState_apply(state, skeleton);
+	spSkeleton_updateWorldTransform(skeleton);
 }
 
 void Spine::seek(float p_pos) {
