@@ -9129,6 +9129,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_MODULATE,canvas_use_modulate);
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_DISTANCE_FIELD,false);
 
+
 	bool reset_modulate=false;
 	bool prev_distance_field=false;
 
@@ -10578,6 +10579,7 @@ void RasterizerGLES2::init() {
 	shadow_mat_ptr = material_owner.get(shadow_material);
 	overdraw_material = create_overdraw_debug_material();
 	copy_shader.set_conditional(CopyShaderGLES2::USE_8BIT_HDR,!use_fp16_fb);
+	canvas_shader.set_conditional(CanvasShaderGLES2::USE_DEPTH_SHADOWS,read_depth_supported);
 
 	canvas_shader.set_conditional(CanvasShaderGLES2::USE_PIXEL_SNAP,GLOBAL_DEF("rasterizer/use_pixel_snap",false));
 

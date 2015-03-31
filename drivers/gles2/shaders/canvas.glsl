@@ -299,32 +299,45 @@ LIGHT_SHADER_CODE
 
 		highp float shadow_attenuation;
 
+#ifdef USE_DEPTH_SHADOWS
+
+#define SHADOW_DEPTH(m_tex,m_uv) (texture2D((m_tex),(m_uv)).z)
+
+#else
+
+//#define SHADOW_DEPTH(m_tex,m_uv) dot(texture2D((m_tex),(m_uv)),highp vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1)  )
+#define SHADOW_DEPTH(m_tex,m_uv) dot(texture2D((m_tex),(m_uv)),vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1)  )
+
+#endif
+
+
+
 #ifdef SHADOW_PCF5
 
 		shadow_attenuation=0.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size*2.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size*2.0,sh)).z<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*2.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*2.0,sh))<sz?0.0:1.0;
 		shadow_attenuation/=5.0;
 
 #endif
 
 #ifdef SHADOW_PCF13
 
-		shadow_attenuation += texture2D(shadow_texture,vec2(su,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size*2.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size*3.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size*4.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size*5.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su+shadowpixel_size*6.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size*2.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size*3.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size*4.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size*5.0,sh)).z<sz?0.0:1.0;
-		shadow_attenuation += texture2D(shadow_texture,vec2(su-shadowpixel_size*6.0,sh)).z<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*2.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*3.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*4.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*5.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*6.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*2.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*3.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*4.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*5.0,sh))<sz?0.0:1.0;
+		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su-shadowpixel_size*6.0,sh))<sz?0.0:1.0;
 		shadow_attenuation/=13.0;
 
 #endif
@@ -336,8 +349,8 @@ LIGHT_SHADER_CODE
 			float unnormalized = su/shadowpixel_size;
 			float fractional = fract(unnormalized);
 			unnormalized = floor(unnormalized);
-			float zc = texture2D(shadow_texture,vec2((unnormalized-0.5)*shadowpixel_size,sh)).z;
-			float zn = texture2D(shadow_texture,vec2((unnormalized+0.5)*shadowpixel_size,sh)).z;
+			float zc = SHADOW_DEPTH(shadow_texture,vec2((unnormalized-0.5)*shadowpixel_size,sh));
+			float zn = SHADOW_DEPTH(shadow_texture,vec2((unnormalized+0.5)*shadowpixel_size,sh));
 			float z = mix(zc,zn,fractional);
 			shadow_attenuation=clamp(exp(shadow_esm_multiplier* ( z - sz )),0.0,1.0);
 	}
@@ -346,7 +359,7 @@ LIGHT_SHADER_CODE
 
 #if !defined(SHADOW_PCF5) && !defined(SHADOW_PCF13) && !defined(SHADOW_ESM)
 
-		shadow_attenuation = texture2D(shadow_texture,vec2(su+shadowpixel_size,sh)).z<sz?0.0:1.0;
+		shadow_attenuation = SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
 
 #endif
 
