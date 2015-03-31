@@ -7155,7 +7155,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 		}
 
 
-		//rasterizer->canvas_debug_viewport_shadows(lights_with_shadow);
+//		rasterizer->canvas_debug_viewport_shadows(lights_with_shadow);
 	}
 
 	//capture

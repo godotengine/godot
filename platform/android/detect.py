@@ -24,7 +24,7 @@ def get_opts():
              ('NDK_TOOLCHAIN', 'toolchain to use for the NDK',"arm-eabi-4.4.0"), 	                      
              #android 2.3       
 		 ('ndk_platform', 'compile for platform: (2.2,2.3)',"2.2"),
-		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.9"),
+		 ('NDK_TARGET', 'toolchain to use for the NDK',"arm-linux-androideabi-4.8"),
 		('android_stl','enable STL support in android port (for modules)','no'),
 		('armv6','compile for older phones running arm v6 (instead of v7+neon+smp)','no'),
 		 ('x86','Xompile for Android-x86','no')
