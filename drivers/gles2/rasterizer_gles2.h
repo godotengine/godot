@@ -1288,6 +1288,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _copy_screen_quad();
 	void _copy_to_texscreen();
 
+	bool _test_depth_shadow_buffer();
 
 	Vector3 chunk_vertex;
 	Vector3 chunk_normal;
