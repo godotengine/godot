@@ -175,7 +175,7 @@ if selected_platform in platform_list:
 	else:
 		env = env_base.Clone()
 
-	env.extra_suffix=""
+	env.extra_suffix=env["extra_suffix"]
 
 	CCFLAGS = env.get('CCFLAGS', '')
 	env['CCFLAGS'] = ''
@@ -226,7 +226,7 @@ if selected_platform in platform_list:
 	elif (env["bits"]=="64"):
 		suffix+=".64"
 
-	suffix+=env.extra_suffix
+	suffix+="."+env.extra_suffix
 
 	env["PROGSUFFIX"]=suffix+env["PROGSUFFIX"]
 	env["OBJSUFFIX"]=suffix+env["OBJSUFFIX"]
