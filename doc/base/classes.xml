@@ -5669,7 +5669,7 @@
 	<description>
 	Base class of anything 2D. Canvas items are laid out in a tree and children inherit and extend the transform of their parent. CanvasItem is extended by [Control], for anything GUI related, and by [Node2D] for anything 2D engine related.
 	Any CanvasItem can draw. For this, the "update" function must be called, then NOTIFICATION_DRAW will be received on idle time to request redraw. Because of this, canvas items don't need to be redraw on every frame, improving the performance significantly. Several functions for drawing on the CanvasItem are provided (see draw_* functions). They can only be used inside the notification, signal or _draw() overrided function, though.
-	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though). 
+	Canvas items are draw in tree order. By default, children are on top of their parents so a root CanvasItem will be drawn behind everything (this can be changed per item though).
 	Canvas items can also be hidden (hiding also their subtree). They provide many means for changing standard parameters such as opacity (for it and the subtree) and self opacity, blend mode.
 	Ultimately, a transform notification can be requested, which will notify the node that its global position changed in case the parent tree changed.
 	</description>
@@ -15511,7 +15511,7 @@
 	</brief_description>
 	<description>
 	Nodes can be set as children of other nodes, resulting in a tree arrangement. Any tree of nodes is called a "Scene".
-        Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects. 
+        Scenes can be saved to disk, and then instanced into other scenes. This allows for very high flexibility in the architecture and data model of the projects.
         [SceneMainLoop] contains the "active" tree of nodes, and a node becomes active (receinving NOTIFICATION_ENTER_SCENE) when added to that tree.
         A node can contain any number of nodes as a children (but there is only one tree root) with the requirement that no two childrens with the same name can exist.
         Nodes can, optionally, be added to groups. This makes it easy to reach a number of nodes from the code (for example an "enemies" group).
@@ -15588,6 +15588,15 @@
 			</argument>
 			<description>
 			Add a child [Node]. Nodes can have as many children as they want, but every child must have a unique name. Children nodes are automatically deleted when the parent node is deleted, so deleting a whole scene is performed by deleting its topmost node.
+			</description>
+		</method>
+		<method name="set_child"  >
+			<argument index="0" name="name" type="String">
+			</argument>
+			<argument index="0" name="node" type="Node">
+			</argument>
+			<description>
+			Add a child [Node] with the given name. If there is already a child with that name, it will be replaced.
 			</description>
 		</method>
 		<method name="remove_child"  >
@@ -16120,7 +16129,7 @@
 	Built-in type optimized for path traversing.
 	</brief_description>
 	<description>
-	Built-in type optimized for path traversing. A Node path is an optimized compiled path used for traversing the scene tree. 
+	Built-in type optimized for path traversing. A Node path is an optimized compiled path used for traversing the scene tree.
         It references nodes and can reference properties in that node, or even reference properties inside the resources of the node.
 	</description>
 	<methods>
@@ -16194,11 +16203,11 @@
 	<description>
 	Operating System functions. OS Wraps the most common functionality to communicate with the host Operating System, such as:
         -Mouse Grabbing
-        -Mouse Cursors        
+        -Mouse Cursors
         -Clipboard
         -Video Mode
         -Date " Time
-        -Timers        
+        -Timers
         -Environment Variables
         -Execution of Binaries
         -Command Line
@@ -24284,7 +24293,7 @@
 	Rigid body 2D node.
 	</brief_description>
 	<description>
-	Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid Body to Character or even Static. 
+	Rigid body 2D node. This node is used for placing rigid bodies in the scene. It can contain a number of shapes, and also shift state between regular Rigid Body to Character or even Static.
 	Character mode forbids the node from being rotated. This node can have a custom force integrator function, for writing complex physics motion behavior per node.[br]
 	As a warning, don't change this node position every frame or very often. Sporadic changes work fine, but physics runs at a different granularity (fixed hz) than usual rendering (process callback) and maybe even in a separate thread, so changing this from a process loop will yield strange behavior.
 	</description>
