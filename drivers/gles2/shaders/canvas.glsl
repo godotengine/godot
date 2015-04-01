@@ -297,7 +297,7 @@ LIGHT_SHADER_CODE
 		su=s.x*0.5+0.5;
 		sz=s.z*0.5+0.5;
 
-		highp float shadow_attenuation;
+		highp float shadow_attenuation=0.0;
 
 #ifdef USE_DEPTH_SHADOWS
 
@@ -314,7 +314,6 @@ LIGHT_SHADER_CODE
 
 #ifdef SHADOW_PCF5
 
-		shadow_attenuation=0.0;
 		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su,sh))<sz?0.0:1.0;
 		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
 		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*2.0,sh))<sz?0.0:1.0;
