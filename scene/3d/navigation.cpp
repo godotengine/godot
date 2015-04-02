@@ -490,10 +490,10 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 
 }
 
-Vector3 Navigation::get_closest_point_to_segment(const Vector3& p_from,const Vector3& p_to) {
+Vector3 Navigation::get_closest_point_to_segment(const Vector3& p_from,const Vector3& p_to,const bool& p_use_collision) {
 
 
-	bool use_collision=false;
+    bool use_collision=p_use_collision;
 	Vector3 closest_point;
 	float closest_point_d=1e20;
 	NavMesh *closest_navmesh=NULL;
@@ -633,7 +633,7 @@ void Navigation::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
 
 	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
-	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","start","end"),&Navigation::get_closest_point_to_segment);
+    ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation::get_closest_point);
 	ObjectTypeDB::bind_method(_MD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
 

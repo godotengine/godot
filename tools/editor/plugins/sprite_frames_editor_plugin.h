@@ -46,6 +46,7 @@ class SpriteFramesEditor : public PanelContainer {
 	Button *_delete;
 	Button *paste;
 	Button *empty;
+	Button *empty2;
 	Button *move_up;
 	Button *move_down;
 	Tree *tree;
@@ -65,6 +66,7 @@ class SpriteFramesEditor : public PanelContainer {
 	void _file_load_request(const DVector<String>& p_path);
 	void _paste_pressed();
 	void _empty_pressed();
+	void _empty2_pressed();
 	void _delete_pressed();
 	void _delete_confirm_pressed();
 	void _up_pressed();

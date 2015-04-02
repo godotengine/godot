@@ -65,8 +65,13 @@ void VisibilityNotifier2D::_exit_viewport(Viewport* p_viewport){
 void VisibilityNotifier2D::set_rect(const Rect2& p_rect){
 
 	rect=p_rect;
-	if (is_inside_tree())
+	if (is_inside_tree()) {
 		get_world_2d()->_update_notifier(this,get_global_transform().xform(rect));
+		if (get_tree()->is_editor_hint()) {
+			update();
+			item_rect_changed();
+		}
+	}
 
 	_change_notify("rect");
 }
