@@ -56,31 +56,18 @@ Error EventQueue::push_call(uint32_t p_instance_ID, const StringName& p_method, 
 	
 	buffer_end+=sizeof(Event);
 	
+	Variant * v = memnew_placement( &event_buffer[ buffer_end ], Variant );
+	buffer_end+=sizeof(Variant);
+    
 	if (args==1) {
-	
-		Variant * v = memnew_placement( &event_buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
 		*v=p_arg1;
 	} else if (args==2) {
-	
-		Variant * v = memnew_placement( &event_buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
 		*v=p_arg2;
 	} else if (args==3) {
-	
-		Variant * v = memnew_placement( &event_buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
-		*v=p_arg3;
-		
+		*v=p_arg3;	
 	} else if (args==4) {
-	
-		Variant * v = memnew_placement( &event_buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
 		*v=p_arg4;
 	} else if (args==5) {
-	
-		Variant * v = memnew_placement( &event_buffer[ buffer_end ], Variant );
-		buffer_end+=sizeof(Variant);
 		*v=p_arg5;
 	}
 	
