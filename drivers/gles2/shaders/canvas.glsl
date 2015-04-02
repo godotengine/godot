@@ -235,7 +235,7 @@ FRAGMENT_SHADER_CODE
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
 {
-	vec4 light_out=vec4(0.0,0.0,0.0,0.0);
+	vec4 light_out=light*color;
 LIGHT_SHADER_CODE
 	color=light_out;
 }

@@ -1546,7 +1546,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	quit_request=false;
 	orientation=0;
 	remove_prev=true;
-	use_32_fb=false;
+	use_32_fb=true;
 
 	device_thread=Thread::create(_device_poll_thread,this);
 	devices_changed=true;
