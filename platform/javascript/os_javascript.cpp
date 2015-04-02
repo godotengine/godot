@@ -231,7 +231,7 @@ OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 	return default_videomode;
 }
 
-Size2 OS_JavaScript::get_screen_size(int p_screen) const {
+Size2 OS_JavaScript::get_window_size() const {
 
 	return Vector2(default_videomode.width,default_videomode.height);
 }
