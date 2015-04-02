@@ -32,8 +32,6 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
-		err_dialog->set_text("Mesh is empty!");
-		err_dialog->popup_centered(Size2(100,50));
 		return;
 	}
 
