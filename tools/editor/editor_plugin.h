@@ -42,17 +42,19 @@ class Spatial;
 class Camera;
 
 class EditorPlugin : public Node {
-	
+
 	OBJ_TYPE( EditorPlugin, Node );
 friend class EditorData;
 	UndoRedo *undo_redo;
 
 	UndoRedo* _get_undo_redo() { return undo_redo; }
 
+	Node *edited_scene;
+
 protected:
 
 	static void _bind_methods();
-	UndoRedo& get_undo_redo() { return *undo_redo; }
+	UndoRedo& get_undo_redo();
 
 	void add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon);
 	void remove_custom_type(const String& p_type);
@@ -61,7 +63,8 @@ protected:
 public:
 
 	enum CustomControlContainer {
-		CONTAINER_TOOLBAR,
+        CONTAINER_LEFT_TOOLBAR,
+		CONTAINER_RIGHT_TOOLBAR,
 		CONTAINER_SPATIAL_EDITOR_MENU,
 		CONTAINER_SPATIAL_EDITOR_SIDE,
 		CONTAINER_SPATIAL_EDITOR_BOTTOM,
@@ -72,7 +75,12 @@ public:
 
 	//TODO: send a resoucre for editing to the editor node?
 
+    void create_node(Node* p_scene);
+	Node *get_selected_node();
+
 	void add_custom_control(CustomControlContainer p_location,Control *p_control);
+
+	Ref<Texture> get_editor_icon(const StringName& p_name);
 
 	virtual bool create_spatial_gizmo(Spatial* p_spatial);
 	virtual bool forward_input_event(const InputEvent& p_event);

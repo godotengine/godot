@@ -30,6 +30,10 @@
 #include "plugins/canvas_item_editor_plugin.h"
 #include "plugins/spatial_editor_plugin.h"
 
+UndoRedo& EditorPlugin::get_undo_redo() {
+    return *undo_redo;
+}
+
 void EditorPlugin::add_custom_type(const String& p_type, const String& p_base,const Ref<Script>& p_script, const Ref<Texture>& p_icon) {
 
 	EditorNode::get_editor_data().add_custom_type(p_type,p_base,p_script,p_icon);
@@ -40,16 +44,22 @@ void EditorPlugin::remove_custom_type(const String& p_type){
 	EditorNode::get_editor_data().remove_custom_type(p_type);
 }
 
-
-
 void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control *p_control) {
 
 	switch(p_location) {
+        case CONTAINER_LEFT_TOOLBAR: {
 
-		case CONTAINER_TOOLBAR: {
+            EditorNode::get_left_menu_hb()->add_child(p_control);
 
-			EditorNode::get_menu_hb()->add_child(p_control);
+        } break;
+
+		case CONTAINER_RIGHT_TOOLBAR: {
+
+			EditorNode::get_right_menu_hb()->add_child(p_control);
+			EditorNode::get_right_menu_hb()->move_child(p_control, 0);
+
 		} break;
+
 		case CONTAINER_SPATIAL_EDITOR_MENU: {
 
 			SpatialEditor::get_singleton()->add_control_to_menu_panel(p_control);
@@ -81,8 +91,45 @@ void EditorPlugin::add_custom_control(CustomControlContainer p_location,Control 
 			CanvasItemEditor::get_singleton()->get_bottom_split()->add_child(p_control);
 
 		} break;
-
 	}
+}
+
+void EditorPlugin::create_node(Node* node) {
+    EditorNode *editor = EditorNode::get_singleton();
+    edited_scene = editor->get_edited_scene();
+
+    if (edited_scene && !get_selected_node()) {
+        ERR_FAIL_COND(!get_selected_node())
+    }
+
+    get_undo_redo().create_action("Create Node");
+
+    if (edited_scene) {
+
+        get_undo_redo().add_do_method(get_selected_node(), "add_child", node);
+        get_undo_redo().add_do_method(node, "set_owner", edited_scene);
+        get_undo_redo().add_do_method(editor->get_editor_selection(),"clear");
+        get_undo_redo().add_do_method(editor->get_editor_selection(),"add_node",node);
+		get_undo_redo().add_do_reference(node);
+		get_undo_redo().add_undo_method(get_selected_node(),"remove_child",node);
+
+    } else {
+
+        get_undo_redo().add_do_method(editor, "set_edited_scene", node);
+        get_undo_redo().add_do_reference(node);
+
+        get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object*) NULL);
+    }
+
+    get_undo_redo().commit_action();
+}
+
+Node *EditorPlugin::get_selected_node() {
+    return EditorNode::get_singleton()->get_scene_tree_dock()->get_selected();
+}
+
+Ref<Texture> EditorPlugin::get_editor_icon(const StringName& p_name) {
+    return EditorNode::get_singleton()->get_gui_base()->get_icon(p_name, "EditorIcons");
 }
 
 bool EditorPlugin::create_spatial_gizmo(Spatial* p_spatial) {
@@ -200,10 +247,13 @@ void EditorPlugin::save_global_state() {}
 
 void EditorPlugin::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("get_undo_redo"),&EditorPlugin::_get_undo_redo);
+	ObjectTypeDB::bind_method(_MD("get_undo_redo:UndoRedo"),&EditorPlugin::_get_undo_redo);
+	ObjectTypeDB::bind_method(_MD("create_node", "node:Node"), &EditorPlugin::create_node);
+	ObjectTypeDB::bind_method(_MD("get_selected_node:Node"), &EditorPlugin::get_selected_node);
 	ObjectTypeDB::bind_method(_MD("add_custom_control","container","control"),&EditorPlugin::add_custom_control);
 	ObjectTypeDB::bind_method(_MD("add_custom_type","type","base","script:Script","icon:Texture"),&EditorPlugin::add_custom_type);
 	ObjectTypeDB::bind_method(_MD("remove_custom_type","type"),&EditorPlugin::remove_custom_type);
+	ObjectTypeDB::bind_method(_MD("get_editor_icon:Texture", "name"), &EditorPlugin::get_editor_icon);
 
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_input_event",PropertyInfo(Variant::INPUT_EVENT,"event")));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::BOOL,"forward_spatial_input_event",PropertyInfo(Variant::OBJECT,"camera",PROPERTY_HINT_RESOURCE_TYPE,"Camera"),PropertyInfo(Variant::INPUT_EVENT,"event")));
@@ -218,18 +268,21 @@ void EditorPlugin::_bind_methods() {
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo("apply_changes"));
 	ObjectTypeDB::add_virtual_method(get_type_static(),MethodInfo(Variant::STRING_ARRAY,"get_breakpoints"));
 
-	BIND_CONSTANT( CONTAINER_TOOLBAR );
+    BIND_CONSTANT( CONTAINER_LEFT_TOOLBAR );
+	BIND_CONSTANT( CONTAINER_RIGHT_TOOLBAR );
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_MENU );
 	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_SIDE );
-	BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_BOTTOM );
-	BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_MENU );
-	BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_SIDE );
+    BIND_CONSTANT( CONTAINER_SPATIAL_EDITOR_BOTTOM );
+    BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_MENU );
+    BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_SIDE );
+    BIND_CONSTANT( CONTAINER_CANVAS_EDITOR_BOTTOM );
 
 }
 
 EditorPlugin::EditorPlugin()
 {
-	undo_redo=NULL;
+    edited_scene = NULL;
+	undo_redo=&EditorNode::get_editor_data().get_undo_redo();
 }
 
 
