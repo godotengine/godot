@@ -91,7 +91,7 @@ def configure(env):
 		gcc_path=gcc_path+"/darwin-x86_64/bin" #this may be wrong
 		env['SHLINKFLAGS'][1] = '-shared'
 	elif (os.name=="nt"):
-		gcc_path=gcc_path+"/windows/bin" #this may be wrong
+		gcc_path=gcc_path+"/windows-x86_64/bin" #this may be wrong
 	
 	
 
