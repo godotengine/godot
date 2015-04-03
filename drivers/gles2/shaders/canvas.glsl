@@ -369,7 +369,7 @@ LIGHT_SHADER_CODE
 #if defined(USE_LIGHT_SHADOW_COLOR)
 	color=mix(shadow_color,color,shadow_attenuation);
 #else
-	color.rgb*=shadow_attenuation;
+	color*=shadow_attenuation;
 #endif
 //use shadows
 #endif
