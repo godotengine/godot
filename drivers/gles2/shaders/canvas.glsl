@@ -230,7 +230,11 @@ FRAGMENT_SHADER_CODE
 
 	float att=1.0;
 
-	vec4 light = texture2D(light_texture,light_uv_interp.xy) * light_color;	
+	vec2 light_uv = light_uv_interp.xy;
+	vec4 light = texture2D(light_texture,light_uv) * light_color;
+#if defined(USE_LIGHT_SHADOW_COLOR)
+	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
+#endif
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
@@ -362,7 +366,11 @@ LIGHT_SHADER_CODE
 
 #endif
 
-		color.rgb*=shadow_attenuation;
+#if defined(USE_LIGHT_SHADOW_COLOR)
+	color=mix(shadow_color,color,shadow_attenuation);
+#else
+	color.rgb*=shadow_attenuation;
+#endif
 //use shadows
 #endif
 	}

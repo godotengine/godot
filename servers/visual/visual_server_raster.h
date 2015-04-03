@@ -1170,12 +1170,13 @@ public:
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset);
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color);
 	virtual void canvas_light_set_height(RID p_light, float p_height);
+	virtual void canvas_light_set_energy(RID p_light, float p_energy);
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z);
 	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer);
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask);
 	virtual void canvas_light_set_item_shadow_mask(RID p_light, int p_mask);
 
-	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable);
+	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode);
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier);
@@ -1204,8 +1205,9 @@ public:
 	virtual RID canvas_item_material_create();
 	virtual void canvas_item_material_set_shader(RID p_material, RID p_shader);
 	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value);
-	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const;
-	virtual void canvas_item_material_set_unshaded(RID p_material, bool p_unshaded);
+	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const;	
+	virtual void canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode);
+
 
 
 	/* CURSOR */

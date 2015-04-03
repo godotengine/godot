@@ -3977,6 +3977,15 @@ void VisualServerRaster::canvas_light_set_height(RID p_light, float p_height){
 	clight->height=p_height;
 
 }
+
+void VisualServerRaster::canvas_light_set_energy(RID p_light, float p_energy){
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->energy=p_energy;
+
+}
+
 void VisualServerRaster::canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z){
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
@@ -4012,12 +4021,12 @@ void VisualServerRaster::canvas_light_set_item_shadow_mask(RID p_light, int p_ma
 }
 
 
-void VisualServerRaster::canvas_light_set_subtract_mode(RID p_light, bool p_enable) {
+void VisualServerRaster::canvas_light_set_mode(RID p_light, CanvasLightMode p_mode) {
 
 
 	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
 	ERR_FAIL_COND(!clight);
-	clight->subtract=p_enable;
+	clight->mode=p_mode;
 
 }
 void VisualServerRaster::canvas_light_set_shadow_enabled(RID p_light, bool p_enabled){
@@ -4267,12 +4276,12 @@ Variant VisualServerRaster::canvas_item_material_get_shader_param(RID p_material
 	return material->shader_param[p_param];
 }
 
-void VisualServerRaster::canvas_item_material_set_unshaded(RID p_material, bool p_unshaded){
+void VisualServerRaster::canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode) {
 
 	VS_CHANGED;
 	Rasterizer::CanvasItemMaterial *material = canvas_item_material_owner.get( p_material );
 	ERR_FAIL_COND(!material);
-	material->unshaded=p_unshaded;
+	material->shading_mode=p_mode;
 
 }
 

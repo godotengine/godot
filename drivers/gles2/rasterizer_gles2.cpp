@@ -4611,6 +4611,9 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (fragment_flags.uses_texpixel_size) {
 			enablers.push_back("#define USE_TEXPIXEL_SIZE\n");
 		}
+		if (light_flags.uses_shadow_color) {
+			enablers.push_back("#define USE_LIGHT_SHADOW_COLOR\n");
+		}
 
 		if (vertex_flags.uses_worldvec) {
 			enablers.push_back("#define USE_WORLD_VEC\n");
@@ -9260,7 +9263,9 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			_canvas_item_setup_shader_uniforms(material,shader_cache);
 		}
 
-		if (material && material->unshaded) {
+		bool unshaded = material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED;
+
+		if (unshaded) {
 			canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,Color(1,1,1,1));
 			reset_modulate=true;
 		} else if (reset_modulate) {
@@ -9317,13 +9322,15 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 		canvas_opacity = ci->final_opacity;
 
-		_canvas_item_render_commands<false>(ci,current_clip,reclip);
 
-		if (canvas_blend_mode==VS::MATERIAL_BLEND_MODE_MIX && p_light && (!material || !material->unshaded)) {
+		if (unshaded || (p_modulate.a>0.001 && (!material || material->shading_mode!=VS::CANVAS_ITEM_SHADING_ONLY_LIGHT)))
+			_canvas_item_render_commands<false>(ci,current_clip,reclip);
+
+		if (canvas_blend_mode==VS::MATERIAL_BLEND_MODE_MIX && p_light && !unshaded) {
 
 			CanvasLight *light = p_light;
 			bool light_used=false;
-			bool subtract=false;
+			VS::CanvasLightMode mode=VS::CANVAS_LIGHT_MODE_ADD;
 
 
 			while(light) {
@@ -9332,21 +9339,28 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 					//intersects this light
 
-					if (!light_used || subtract!=light->subtract) {
+					if (!light_used || mode!=light->mode) {
 
-						subtract=light->subtract;
+						mode=light->mode;
 
-						if (subtract) {
+						switch(mode) {
 
-							glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
-							glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+							case VS::CANVAS_LIGHT_MODE_ADD: {
+								glBlendEquation(GL_FUNC_ADD);
+								glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 
-						} else {
+							} break;
+							case VS::CANVAS_LIGHT_MODE_SUB: {
+								glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+								glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+							} break;
+							case VS::CANVAS_LIGHT_MODE_MIX: {
+								glBlendEquation(GL_FUNC_ADD);
+								glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-							glBlendEquation(GL_FUNC_ADD);
-							glBlendFunc(GL_SRC_ALPHA,GL_ONE);
-
+							} break;
 						}
+
 					}
 
 					if (!light_used) {
@@ -9384,7 +9398,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_MATRIX,light->light_shader_xform);
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_POS,light->light_shader_pos);
-					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_COLOR,light->color);
+					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_COLOR,Color(light->color.r*light->energy,light->color.g*light->energy,light->color.b*light->energy,light->color.a));
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_HEIGHT,light->height);
 					canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_LOCAL_MATRIX,light->xform_cache.affine_inverse());
 
