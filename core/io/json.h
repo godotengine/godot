@@ -69,13 +69,15 @@ class JSON {
 	static String _print_var(const Variant& p_var);
 
 	static Error _get_token(const CharType *p_str,int &index, int p_len,Token& r_token,int &line,String &r_err_str);
-	static Error _parse_value(Variant &value,Token& token,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str);
+	static Error _parse_value(Variant &value,Token& token,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str,bool p_shared);
 	static Error _parse_array(Array &array,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str);
 	static Error _parse_object(Dictionary &object,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str);
 
 public:
 	static String print(const Dictionary& p_dict);
+	static String print(const Array& p_array);
 	static Error parse(const String& p_json,Dictionary& r_ret,String &r_err_str,int &r_err_line);
+	static Error parse(const String& p_json,Array& r_ret,String &r_err_str,int &r_err_line);
 };
 
 #endif // JSON_H

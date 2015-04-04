@@ -30,6 +30,8 @@
 #define ARRAY_H
 
 #include "typedefs.h"
+#include "ustring.h"
+
 class Variant;
 class ArrayPrivate;
 class Object;
@@ -74,6 +76,9 @@ public:
 	int find(const Variant& p_value) const;
 
 	void erase(const Variant& p_value);
+
+	Error parse_json(const String& p_json);
+	String to_json() const;
 
 	Array(const Array& p_from);
 	Array(bool p_shared=false);

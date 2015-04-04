@@ -92,6 +92,11 @@ String JSON::_print_var(const Variant& p_var) {
 
 }
 
+String JSON::print(const Array& p_array) {
+
+	return _print_var(p_array);
+}
+
 String JSON::print(const Dictionary& p_dict) {
 
 	return _print_var(p_dict);
@@ -283,12 +288,12 @@ Error JSON::_get_token(const CharType *p_str, int &idx, int p_len, Token& r_toke
 
 
 
-Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str) {
+Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &index, int p_len,int &line,String &r_err_str,bool p_shared) {
 
 
 	if (token.type==TK_CURLY_BRACKET_OPEN) {
 
-		Dictionary d;
+		Dictionary d(p_shared);
 		Error err = _parse_object(d,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -296,7 +301,7 @@ Error JSON::_parse_value(Variant &value,Token& token,const CharType *p_str,int &
 		return OK;
 	} else if (token.type==TK_BRACKET_OPEN) {
 
-		Array a;
+		Array a(p_shared);
 		Error err = _parse_array(a,p_str,index,p_len,line,r_err_str);
 		if (err)
 			return err;
@@ -365,7 +370,7 @@ Error JSON::_parse_array(Array &array,const CharType *p_str,int &index, int p_le
 		}
 
 		Variant v;
-		err = _parse_value(v,token,p_str,index,p_len,line,r_err_str);
+		err = _parse_value(v,token,p_str,index,p_len,line,r_err_str,array.is_shared());
 		if (err)
 			return err;
 
@@ -437,7 +442,7 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 				return err;
 
 			Variant v;
-			err = _parse_value(v,token,p_str,index,p_len,line,r_err_str);
+			err = _parse_value(v,token,p_str,index,p_len,line,r_err_str,object.is_shared());
 			if (err)
 				return err;
 			object[key]=v;
@@ -449,6 +454,28 @@ Error JSON::_parse_object(Dictionary &object,const CharType *p_str,int &index, i
 	return OK;
 }
 
+
+Error JSON::parse(const String& p_json,Array& r_ret,String &r_err_str,int &r_err_line) {
+
+	const CharType *str = p_json.ptr();
+	int idx = 0;
+	int len = p_json.length();
+	Token token;
+	int line=0;
+	String aux_key;
+
+	Error err = _get_token(str,idx,len,token,line,r_err_str);
+	if (err)
+		return err;
+
+	if (token.type!=TK_BRACKET_OPEN) {
+
+		r_err_str="Expected '['";
+		return ERR_PARSE_ERROR;
+	}
+
+	return _parse_array(r_ret,str,idx,len,r_err_line,r_err_str);
+}
 
 Error JSON::parse(const String& p_json,Dictionary& r_ret,String &r_err_str,int &r_err_line) {
 
