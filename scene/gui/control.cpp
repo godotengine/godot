@@ -2869,7 +2869,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT( SIZE_EXPAND_FILL );
 
 	ADD_SIGNAL( MethodInfo("resized") );
-	ADD_SIGNAL( MethodInfo("input_event") );
+	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	ADD_SIGNAL( MethodInfo("mouse_enter") );
 	ADD_SIGNAL( MethodInfo("mouse_exit") );
 	ADD_SIGNAL( MethodInfo("focus_enter") );

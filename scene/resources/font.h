@@ -75,6 +75,7 @@ private:
 	
 	float height;
 	float ascent;
+	bool distance_field_hint;
 
 	void _set_chars(const DVector<int>& p_chars);
 	DVector<int> _get_chars() const;
@@ -116,6 +117,9 @@ public:
 	Size2 get_string_size(const String& p_string) const;
 	
 	void clear();
+
+	void set_distance_field_hint(bool p_distance_field);
+	bool is_distance_field_hint() const;
 	
 	void draw(RID p_canvas_item, const Point2& p_pos, const String& p_text,const Color& p_modulate=Color(1,1,1),int p_clip_w=-1) const;
 	void draw_halign(RID p_canvas_item, const Point2& p_pos, HAlign p_align,float p_width,const String& p_text,const Color& p_modulate=Color(1,1,1)) const;

@@ -651,6 +651,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			if (!RES(v).is_null()) {
 
+
+
 				menu->add_icon_item(get_icon("EditResource","EditorIcons"),"Edit",OBJ_MENU_EDIT);
 				menu->add_icon_item(get_icon("Del","EditorIcons"),"Clear",OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate","EditorIcons"),"Make Unique",OBJ_MENU_MAKE_UNIQUE);
@@ -659,6 +661,13 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					menu->add_separator();
 					menu->add_icon_item(get_icon("Reload","EditorIcons"),"Re-Import",OBJ_MENU_REIMPORT);
 				}
+				/*if (r.is_valid() && r->get_path().is_resource_file()) {
+					menu->set_item_tooltip(1,r->get_path());
+				} else if (r.is_valid()) {
+					menu->set_item_tooltip(1,r->get_name()+" ("+r->get_type()+")");
+				}*/
+			} else {
+
 			}
 
 
@@ -1858,6 +1867,14 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 					p_item->set_text(1,"<"+res->get_type()+">");
 				};
 
+
+				if (res.is_valid() && res->get_path().is_resource_file()) {
+					p_item->set_tooltip(1,res->get_path());
+				} else if (res.is_valid()) {
+					p_item->set_tooltip(1,res->get_name()+" ("+res->get_type()+")");
+				}
+
+
 				if (has_icon(res->get_type(),"EditorIcons")) {
 
 					p_item->set_icon(0,get_icon(res->get_type(),"EditorIcons"));
@@ -2362,7 +2379,7 @@ void PropertyEditor::update_tree() {
 				} else {
 					if (p.type == Variant::REAL) {
 
-						item->set_range_config(1, -65536, 65535, 0.01);
+						item->set_range_config(1, -65536, 65535, 0.001);
 					} else {
 
 						item->set_range_config(1, -65536, 65535, 1);
@@ -2584,6 +2601,13 @@ void PropertyEditor::update_tree() {
 					if (has_icon(res->get_type(),"EditorIcons")) {
 						type=res->get_type();
 					}
+
+					if (res.is_valid() && res->get_path().is_resource_file()) {
+						item->set_tooltip(1,res->get_path());
+					} else if (res.is_valid()) {
+						item->set_tooltip(1,res->get_name()+" ("+res->get_type()+")");
+					}
+
 				}
 
 

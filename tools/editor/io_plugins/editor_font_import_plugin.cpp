@@ -47,6 +47,12 @@ class _EditorFontImportOptions : public Object {
 	OBJ_TYPE(_EditorFontImportOptions,Object);
 public:
 
+	enum FontMode {
+
+		FONT_BITMAP,
+		FONT_DISTANCE_FIELD
+	};
+
 	enum ColorType {
 		COLOR_WHITE,
 		COLOR_CUSTOM,
@@ -68,6 +74,9 @@ public:
 		CHARSET_CUSTOM,
 		CHARSET_CUSTOM_LATIN
 	};
+
+
+	FontMode font_mode;
 
 	CharacterSet character_set;
 	String custom_file;
@@ -91,7 +100,6 @@ public:
 	bool color_use_monochrome;
 	String gradient_image;
 
-
 	bool disable_filter;
 	bool round_advance;
 
@@ -100,7 +108,10 @@ public:
 	bool _set(const StringName& p_name, const Variant& p_value) {
 
 		String n = p_name;
-		if (n=="extra_space/char")
+		if (n=="mode/mode") {
+			font_mode=FontMode(int(p_value));
+			_change_notify();
+		} else if (n=="extra_space/char")
 			char_extra_spacing=p_value;
 		else if (n=="extra_space/space")
 			space_extra_spacing=p_value;
@@ -169,7 +180,9 @@ public:
 	bool _get(const StringName& p_name,Variant &r_ret) const{
 
 		String n = p_name;
-		if (n=="extra_space/char")
+		if (n=="mode/mode")
+			r_ret=font_mode;
+		else if (n=="extra_space/char")
 			r_ret=char_extra_spacing;
 		else if (n=="extra_space/space")
 			r_ret=space_extra_spacing;
@@ -231,6 +244,9 @@ public:
 
 	void _get_property_list( List<PropertyInfo> *p_list) const{
 
+
+		p_list->push_back(PropertyInfo(Variant::INT,"mode/mode",PROPERTY_HINT_ENUM,"Bitmap,Distance Field"));
+
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/char",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/space",PROPERTY_HINT_RANGE,"-64,64,1"));
 		p_list->push_back(PropertyInfo(Variant::INT,"extra_space/top",PROPERTY_HINT_RANGE,"-64,64,1"));
@@ -240,35 +256,45 @@ public:
 		if (character_set>=CHARSET_CUSTOM)
 			p_list->push_back(PropertyInfo(Variant::STRING,"character_set/custom",PROPERTY_HINT_FILE));
 
-		p_list->push_back(PropertyInfo(Variant::BOOL,"shadow/enabled"));
-		if (shadow) {
-			p_list->push_back(PropertyInfo(Variant::INT,"shadow/radius",PROPERTY_HINT_RANGE,"-64,64,1"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow/offset"));
-			p_list->push_back(PropertyInfo(Variant::COLOR,"shadow/color"));
-			p_list->push_back(PropertyInfo(Variant::REAL,"shadow/transition",PROPERTY_HINT_EXP_EASING));
+		int usage = PROPERTY_USAGE_DEFAULT;
+
+		if (font_mode==FONT_DISTANCE_FIELD) {
+			usage = PROPERTY_USAGE_NOEDITOR;
 		}
 
-		p_list->push_back(PropertyInfo(Variant::BOOL,"shadow2/enabled"));
-		if (shadow2) {
-			p_list->push_back(PropertyInfo(Variant::INT,"shadow2/radius",PROPERTY_HINT_RANGE,"-64,64,1"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow2/offset"));
-			p_list->push_back(PropertyInfo(Variant::COLOR,"shadow2/color"));
-			p_list->push_back(PropertyInfo(Variant::REAL,"shadow2/transition",PROPERTY_HINT_EXP_EASING));
+		{
+
+			p_list->push_back(PropertyInfo(Variant::BOOL,"shadow/enabled",PROPERTY_HINT_NONE,"",usage));
+			if (shadow) {
+				p_list->push_back(PropertyInfo(Variant::INT,"shadow/radius",PROPERTY_HINT_RANGE,"-64,64,1",usage));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow/offset",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::COLOR,"shadow/color",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::REAL,"shadow/transition",PROPERTY_HINT_EXP_EASING,"",usage));
+			}
+
+			p_list->push_back(PropertyInfo(Variant::BOOL,"shadow2/enabled",PROPERTY_HINT_NONE,"",usage));
+			if (shadow2) {
+				p_list->push_back(PropertyInfo(Variant::INT,"shadow2/radius",PROPERTY_HINT_RANGE,"-64,64,1",usage));
+				p_list->push_back(PropertyInfo(Variant::VECTOR2,"shadow2/offset",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::COLOR,"shadow2/color",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::REAL,"shadow2/transition",PROPERTY_HINT_EXP_EASING,"",usage));
+			}
+
+			p_list->push_back(PropertyInfo(Variant::INT,"color/mode",PROPERTY_HINT_ENUM,"White,Color,Gradient,Gradient Image",usage));
+			if (color_type==COLOR_CUSTOM) {
+				p_list->push_back(PropertyInfo(Variant::COLOR,"color/color",PROPERTY_HINT_NONE,"",usage));
+
+			}
+			if (color_type==COLOR_GRADIENT_RANGE) {
+				p_list->push_back(PropertyInfo(Variant::COLOR,"color/begin",PROPERTY_HINT_NONE,"",usage));
+				p_list->push_back(PropertyInfo(Variant::COLOR,"color/end",PROPERTY_HINT_NONE,"",usage));
+			}
+			if (color_type==COLOR_GRADIENT_IMAGE) {
+				p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_FILE,"",usage));
+			}
+			p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome",PROPERTY_HINT_NONE,"",usage));
 		}
 
-		p_list->push_back(PropertyInfo(Variant::INT,"color/mode",PROPERTY_HINT_ENUM,"White,Color,Gradient,Gradient Image"));
-		if (color_type==COLOR_CUSTOM) {
-			p_list->push_back(PropertyInfo(Variant::COLOR,"color/color"));
-
-		}
-		if (color_type==COLOR_GRADIENT_RANGE) {
-			p_list->push_back(PropertyInfo(Variant::COLOR,"color/begin"));
-			p_list->push_back(PropertyInfo(Variant::COLOR,"color/end"));
-		}
-		if (color_type==COLOR_GRADIENT_IMAGE) {
-			p_list->push_back(PropertyInfo(Variant::STRING,"color/image",PROPERTY_HINT_FILE));
-		}
-		p_list->push_back(PropertyInfo(Variant::BOOL,"color/monochrome"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/round_advance"));
 		p_list->push_back(PropertyInfo(Variant::BOOL,"advanced/disable_filter"));
 
@@ -307,12 +333,15 @@ public:
 		gradient_end=Color(0.5,0.5,0.5,1);
 		color_use_monochrome=false;
 
+		font_mode=FONT_BITMAP;
 		round_advance=true;
 		disable_filter=false;
 
 	}
 
 	_EditorFontImportOptions() {
+
+		font_mode=FONT_BITMAP;
 
 		char_extra_spacing=0;
 		top_extra_spacing=0;
@@ -706,6 +735,137 @@ struct _EditorKerningKey {
 
 };
 
+
+static unsigned char get_SDF_radial(
+		unsigned char *fontmap,
+		int w, int h,
+		int x, int y,
+		int max_radius )
+{
+	//	hideous brute force method
+	float d2 = max_radius*max_radius+1.0;
+	unsigned char v = fontmap[x+y*w];
+	for( int radius = 1; (radius <= max_radius) && (radius*radius < d2); ++radius )
+	{
+		int line, lo, hi;
+		//	north
+		line = y - radius;
+		if( (line >= 0) && (line < h) )
+		{
+			lo = x - radius;
+			hi = x + radius;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= w ) { hi = w-1; }
+			int idx = line * w + lo;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = i - x;
+					float ny = line - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				++idx;
+			}
+		}
+		//	south
+		line = y + radius;
+		if( (line >= 0) && (line < h) )
+		{
+			lo = x - radius;
+			hi = x + radius;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= w ) { hi = w-1; }
+			int idx = line * w + lo;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = i - x;
+					float ny = line - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				++idx;
+			}
+		}
+		//	west
+		line = x - radius;
+		if( (line >= 0) && (line < w) )
+		{
+			lo = y - radius + 1;
+			hi = y + radius - 1;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= h ) { hi = h-1; }
+			int idx = lo * w + line;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = line - x;
+					float ny = i - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				idx += w;
+			}
+		}
+		//	east
+		line = x + radius;
+		if( (line >= 0) && (line < w) )
+		{
+			lo = y - radius + 1;
+			hi = y + radius - 1;
+			if( lo < 0 ) { lo = 0; }
+			if( hi >= h ) { hi = h-1; }
+			int idx = lo * w + line;
+			for( int i = lo; i <= hi; ++i )
+			{
+				//	check this pixel
+				if( fontmap[idx] != v )
+				{
+					float nx = line - x;
+					float ny = i - y;
+					float nd2 = nx*nx+ny*ny;
+					if( nd2 < d2 )
+					{
+						d2 = nd2;
+					}
+				}
+				//	move on
+				idx += w;
+			}
+		}
+	}
+	d2 = sqrtf( d2 );
+	if( v==0 )
+	{
+		d2 = -d2;
+	}
+	d2 *= 127.5 / max_radius;
+	d2 += 127.5;
+	if( d2 < 0.0 ) d2 = 0.0;
+	if( d2 > 255.0 ) d2 = 255.0;
+	return (unsigned char)(d2 + 0.5);
+}
+
+
 Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata>& p_from, const String &p_existing) {
 
 	Ref<ResourceImportMetadata> from = p_from;
@@ -754,7 +914,11 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 	}
 
-	error = FT_Set_Pixel_Sizes(face,0,size);
+	int font_mode = from->get_option("mode/mode");
+
+	int scaler=(font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD)?16:1;
+
+	error = FT_Set_Pixel_Sizes(face,0,size*scaler);
 
 	FT_GlyphSlot slot = face->glyph;
 
@@ -820,9 +984,9 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	{
 
 		bool skip=false;
-		error = FT_Load_Char( face, charcode, FT_LOAD_RENDER );
+		error = FT_Load_Char( face, charcode, font_mode==_EditorFontImportOptions::FONT_BITMAP?FT_LOAD_RENDER:FT_LOAD_MONOCHROME );
 		if (error) skip=true;
-		else error = FT_Render_Glyph( face->glyph, ft_render_mode_normal );
+		else error = FT_Render_Glyph( face->glyph, font_mode==_EditorFontImportOptions::FONT_BITMAP?ft_render_mode_normal:ft_render_mode_mono );
 		if (error) {
 			skip=true;
 		} else if (!skip) {
@@ -847,27 +1011,35 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		}
 
 		_EditorFontData * fdata = memnew( _EditorFontData );
-		fdata->bitmap.resize( slot->bitmap.width*slot->bitmap.rows );
-		fdata->width=slot->bitmap.width;
-		fdata->height=slot->bitmap.rows;
+
+
+		int w = slot->bitmap.width;
+		int h = slot->bitmap.rows;
+		int p = slot->bitmap.pitch;
+
+		print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
+
+		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
+
+			//	oversize the holding buffer so I can smooth it!
+			int sw = w + scaler * 4;
+			int sh = h + scaler * 4;
+			//	do the SDF
+			int sdfw = sw / scaler;
+			int sdfh = sh / scaler;
+
+			fdata->width=sdfw;
+			fdata->height=sdfh;
+		} else {
+			fdata->width=w;
+			fdata->height=h;
+		}
+
 		fdata->character=charcode;
 		fdata->glyph=FT_Get_Char_Index(face,charcode);
 		if  (charcode=='x')
-			xsize=slot->bitmap.width;
+			xsize=w/scaler;
 
-
-		if (charcode<127) {
-			if (slot->bitmap_top>max_up) {
-
-				max_up=slot->bitmap_top;
-			}
-
-
-			if ( (slot->bitmap_top - fdata->height)<max_down ) {
-
-				max_down=slot->bitmap_top - fdata->height;
-			}
-		}
 
 
 		fdata->valign=slot->bitmap_top;
@@ -878,12 +1050,85 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		else
 			fdata->advance=slot->advance.x/float(1<<6);
 
+		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
+
+			fdata->halign = fdata->halign / scaler - 1.5;
+			fdata->valign = fdata->valign / scaler + 1.5;
+			fdata->advance/=scaler;
+
+		}
+
 		fdata->advance+=font_spacing;
 
-		for (int i=0;i<slot->bitmap.width;i++) {
-			for (int j=0;j<slot->bitmap.rows;j++) {
 
-				fdata->bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
+		if (charcode<127) {
+			int top = fdata->valign;
+			int hmax = h/scaler;
+
+			if (top>max_up) {
+
+				max_up=top;
+			}
+
+
+			if ( (top - hmax)<max_down ) {
+
+				max_down=top - hmax;
+			}
+		}
+
+		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
+
+
+			//	oversize the holding buffer so I can smooth it!
+			int sw = w + scaler * 4;
+			int sh = h + scaler * 4;
+
+			unsigned char *smooth_buf = new unsigned char[sw*sh];
+
+			for( int i = 0; i < sw*sh; ++i ) {
+				smooth_buf[i] = 0;
+			}
+
+			// copy the glyph into the buffer to be smoothed
+			unsigned char *buf = slot->bitmap.buffer;
+			for( int j = 0; j < h; ++j ) {
+				for( int i = 0; i < w; ++i ) {
+					smooth_buf[scaler*2+i+(j+scaler*2)*sw] = 255 * ((buf[j*p+(i>>3)] >> (7 - (i & 7))) & 1);
+				}
+			}
+
+			// do the SDF
+			int sdfw = fdata->width;
+			int sdfh = fdata->height;
+
+			fdata->bitmap.resize( sdfw*sdfh );
+
+			for( int j = 0; j < sdfh; ++j )	{
+				for( int i = 0; i < sdfw; ++i )	{
+					int pd_idx = j*sdfw+i;
+
+					//fdata->bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
+
+					fdata->bitmap[pd_idx] =
+							//get_SDF
+							get_SDF_radial
+							( smooth_buf, sw, sh,
+							  i*scaler + (scaler >>1), j*scaler + (scaler >>1),
+							  2*scaler );
+
+				}
+			}
+
+			delete [] smooth_buf;
+
+		} else {
+			fdata->bitmap.resize( slot->bitmap.width*slot->bitmap.rows );
+			for (int i=0;i<slot->bitmap.width;i++) {
+				for (int j=0;j<slot->bitmap.rows;j++) {
+
+					fdata->bitmap[j*slot->bitmap.width+i]=slot->bitmap.buffer[j*slot->bitmap.width+i];
+				}
 			}
 		}
 
@@ -904,9 +1149,10 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	spd->ofs_x=0;
 	spd->ofs_y=0;
 
-	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, ft_render_mode_normal )) {
+	if (!FT_Load_Char( face, ' ', FT_LOAD_RENDER ) && !FT_Render_Glyph( face->glyph, font_mode==_EditorFontImportOptions::FONT_BITMAP?ft_render_mode_normal:ft_render_mode_mono )) {
 
 		spd->advance = slot->advance.x>>6; //round to nearest or store as float
+		spd->advance/=scaler;
 		spd->advance+=font_spacing;
 	} else {
 
@@ -955,7 +1201,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 
 				if (kern==0)
 					continue;
-				kerning_map[kpk]=kern;
+				kerning_map[kpk]=kern/scaler;
 			}
 		}
 	}
@@ -1079,7 +1325,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		pixels.resize(s.x*s.y*4);
 
 		DVector<uint8_t>::Write w = pixels.write();
-		print_line("val: "+itos(font_data_list[i]->valign));
+		//print_line("val: "+itos(font_data_list[i]->valign));
 		for(int y=0;y<s.height;y++) {
 
 			int yc=CLAMP(y-o.y+font_data_list[i]->valign,0,height-1);
@@ -1284,6 +1530,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 	font->clear();
 	font->set_height(height+bottom_space+top_space);
 	font->set_ascent(ascent+top_space);
+	font->set_distance_field_hint(font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD);
 
 	//register texures
 	{

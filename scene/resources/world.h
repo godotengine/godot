@@ -75,6 +75,8 @@ public:
 	void set_environment(const Ref<Environment>& p_environment);
 	Ref<Environment> get_environment() const;
 
+	PhysicsDirectSpaceState *get_direct_space_state();
+
 	World();
 	~World();
 

@@ -28,6 +28,9 @@
 /*************************************************************************/
 #include "editor_dir_dialog.h"
 #include "os/os.h"
+#include "os/keyboard.h"
+#include "tools/editor/editor_settings.h"
+
 
 void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
@@ -39,12 +42,21 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 	da->change_dir(cdir);
 	da->list_dir_begin();
 	String p=da->get_next();
+
+	bool ishidden;
+	bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
+
 	while(p!="") {
-		if (da->current_is_dir() && !p.begins_with(".")) {
-			TreeItem *ti = tree->create_item(p_item);
-			ti->set_text(0,p);
-			ti->set_icon(0,get_icon("Folder","EditorIcons"));
-			ti->set_collapsed(true);
+
+		ishidden = da->current_is_hidden();
+
+		if (show_hidden || !ishidden) {
+			if (da->current_is_dir() && !p.begins_with(".")) {
+				TreeItem *ti = tree->create_item(p_item);
+				ti->set_text(0,p);
+				ti->set_icon(0,get_icon("Folder","EditorIcons"));
+				ti->set_collapsed(true);
+			}
 		}
 
 		p=da->get_next();

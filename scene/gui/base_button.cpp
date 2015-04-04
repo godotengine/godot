@@ -279,12 +279,12 @@ void BaseButton::set_disabled(bool p_disabled) {
 		set_focus_mode(FOCUS_NONE);
 	else
 		set_focus_mode(FOCUS_ALL);
-};
+}
 
 bool BaseButton::is_disabled() const {
 
 	return status.disabled;
-};
+}
 
 void BaseButton::set_pressed(bool p_pressed) {
 	
@@ -391,6 +391,7 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
+    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
 
 

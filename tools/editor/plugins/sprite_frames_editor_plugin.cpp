@@ -229,6 +229,33 @@ void SpriteFramesEditor::_empty_pressed() {
 
 }
 
+void SpriteFramesEditor::_empty2_pressed() {
+
+
+	int from=-1;
+
+	if (tree->get_selected()) {
+
+		from = tree->get_selected()->get_metadata(0);
+		sel=from;
+
+	} else {
+		from=frames->get_frame_count();
+	}
+
+
+
+	Ref<Texture> r;
+
+	undo_redo->create_action("Add Empty");
+	undo_redo->add_do_method(frames,"add_frame",r,from+1);
+	undo_redo->add_undo_method(frames,"remove_frame",from+1);
+	undo_redo->add_do_method(this,"_update_library");
+	undo_redo->add_undo_method(this,"_update_library");
+	undo_redo->commit_action();
+
+}
+
 void SpriteFramesEditor::_up_pressed() {
 
 	if (!tree->get_selected())
@@ -322,6 +349,8 @@ void SpriteFramesEditor::_update_library() {
 			ti->set_text(0,"Frame "+itos(i));
 			ti->set_icon(0,frames->get_frame(i));
 		}
+		if (frames->get_frame(i).is_valid())
+			ti->set_tooltip(0,frames->get_frame(i)->get_path());
 		ti->set_metadata(0,i);
 		ti->set_icon_max_width(0,96);
 		if (sel==i)
@@ -355,6 +384,7 @@ void SpriteFramesEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&SpriteFramesEditor::_input_event);
 	ObjectTypeDB::bind_method(_MD("_load_pressed"),&SpriteFramesEditor::_load_pressed);
 	ObjectTypeDB::bind_method(_MD("_empty_pressed"),&SpriteFramesEditor::_empty_pressed);
+	ObjectTypeDB::bind_method(_MD("_empty2_pressed"),&SpriteFramesEditor::_empty2_pressed);
 	ObjectTypeDB::bind_method(_MD("_item_edited"),&SpriteFramesEditor::_item_edited);
 	ObjectTypeDB::bind_method(_MD("_delete_pressed"),&SpriteFramesEditor::_delete_pressed);
 	ObjectTypeDB::bind_method(_MD("_paste_pressed"),&SpriteFramesEditor::_paste_pressed);
@@ -387,8 +417,12 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	hbc->add_child(paste);
 
 	empty = memnew( Button );
-	empty->set_text("Insert Empty");
+	empty->set_text("Insert Empty (Before)");
 	hbc->add_child(empty);
+
+	empty2 = memnew( Button );
+	empty2->set_text("Insert Empty (After)");
+	hbc->add_child(empty2);
 
 	move_up = memnew( Button );
 	move_up->set_text("Up");
@@ -422,6 +456,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	_delete->connect("pressed", this,"_delete_pressed");
 	paste->connect("pressed", this,"_paste_pressed");
 	empty->connect("pressed", this,"_empty_pressed");
+	empty2->connect("pressed", this,"_empty2_pressed");
 	move_up->connect("pressed", this,"_up_pressed");
 	move_down->connect("pressed", this,"_down_pressed");
 	file->connect("files_selected", this,"_file_load_request");

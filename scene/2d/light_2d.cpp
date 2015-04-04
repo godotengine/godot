@@ -23,7 +23,7 @@ Rect2 Light2D::get_item_rect() const {
 
 	Size2i s;
 
-	s = texture->get_size();
+	s = texture->get_size()*_scale;
 	Point2i ofs=texture_offset;
 	ofs-=s/2;
 
@@ -63,6 +63,8 @@ void Light2D::set_texture_offset( const Vector2& p_offset) {
 
 	texture_offset=p_offset;
 	VS::get_singleton()->canvas_light_set_texture_offset(canvas_light,texture_offset);
+	item_rect_changed();
+
 }
 
 Vector2 Light2D::get_texture_offset() const {
@@ -87,9 +89,40 @@ void Light2D::set_height( float p_height) {
 	VS::get_singleton()->canvas_light_set_height(canvas_light,height);
 
 }
+
+
 float Light2D::get_height() const {
 
 	return height;
+}
+
+void Light2D::set_energy( float p_energy) {
+
+	energy=p_energy;
+	VS::get_singleton()->canvas_light_set_energy(canvas_light,energy);
+
+}
+
+
+float Light2D::get_energy() const {
+
+	return energy;
+}
+
+
+
+void Light2D::set_texture_scale( float p_scale) {
+
+	_scale=p_scale;
+	VS::get_singleton()->canvas_light_set_scale(canvas_light,_scale);
+	item_rect_changed();
+
+}
+
+
+float Light2D::get_texture_scale() const {
+
+	return _scale;
 }
 
 void Light2D::set_z_range_min( int p_min_z) {
@@ -160,15 +193,15 @@ int Light2D::get_item_shadow_mask() const {
 	return item_shadow_mask;
 }
 
-void Light2D::set_subtract_mode( bool p_enable ) {
+void Light2D::set_mode( Mode p_mode ) {
 
-	subtract_mode=p_enable;
-	VS::get_singleton()->canvas_light_set_subtract_mode(canvas_light,p_enable);
+	mode=p_mode;
+	VS::get_singleton()->canvas_light_set_mode(canvas_light,VS::CanvasLightMode(p_mode));
 }
 
-bool Light2D::get_subtract_mode() const {
+Light2D::Mode Light2D::get_mode() const {
 
-	return subtract_mode;
+	return mode;
 }
 
 void Light2D::set_shadow_enabled( bool p_enabled) {
@@ -242,6 +275,13 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_height","height"),&Light2D::set_height);
 	ObjectTypeDB::bind_method(_MD("get_height"),&Light2D::get_height);
 
+	ObjectTypeDB::bind_method(_MD("set_energy","energy"),&Light2D::set_energy);
+	ObjectTypeDB::bind_method(_MD("get_energy"),&Light2D::get_energy);
+
+	ObjectTypeDB::bind_method(_MD("set_texture_scale","texture_scale"),&Light2D::set_texture_scale);
+	ObjectTypeDB::bind_method(_MD("get_texture_scale"),&Light2D::get_texture_scale);
+
+
 	ObjectTypeDB::bind_method(_MD("set_z_range_min","z"),&Light2D::set_z_range_min);
 	ObjectTypeDB::bind_method(_MD("get_z_range_min"),&Light2D::get_z_range_min);
 
@@ -261,8 +301,8 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_item_shadow_mask","item_shadow_mask"),&Light2D::set_item_shadow_mask);
 	ObjectTypeDB::bind_method(_MD("get_item_shadow_mask"),&Light2D::get_item_shadow_mask);
 
-	ObjectTypeDB::bind_method(_MD("set_subtract_mode","enable"),&Light2D::set_subtract_mode);
-	ObjectTypeDB::bind_method(_MD("get_subtract_mode"),&Light2D::get_subtract_mode);
+	ObjectTypeDB::bind_method(_MD("set_mode","mode"),&Light2D::set_mode);
+	ObjectTypeDB::bind_method(_MD("get_mode"),&Light2D::get_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_shadow_enabled","enabled"),&Light2D::set_shadow_enabled);
 	ObjectTypeDB::bind_method(_MD("is_shadow_enabled"),&Light2D::is_shadow_enabled);
@@ -276,8 +316,10 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"scale",PROPERTY_HINT_RANGE,"0.01,4096,0.01"),_SCS("set_texture_scale"),_SCS("get_texture_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"subtract"),_SCS("set_subtract_mode"),_SCS("get_subtract_mode"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"energy"),_SCS("set_energy"),_SCS("get_energy"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"mode",PROPERTY_HINT_ENUM,"Add,Sub,Mix"),_SCS("set_mode"),_SCS("get_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"range/height"),_SCS("set_height"),_SCS("get_height"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_min",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_min"),_SCS("get_z_range_min"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/z_max",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z_range_max"),_SCS("get_z_range_max"));
@@ -289,6 +331,10 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/esm_multiplier",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_esm_multiplier"),_SCS("get_shadow_esm_multiplier"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_mask"),_SCS("get_item_shadow_mask"));
 
+	BIND_CONSTANT( MODE_ADD );
+	BIND_CONSTANT( MODE_SUB );
+	BIND_CONSTANT( MODE_MIX );
+
 
 }
 
@@ -299,15 +345,17 @@ Light2D::Light2D() {
 	shadow=false;
 	color=Color(1,1,1);
 	height=0;
+	_scale=1.0;
 	z_min=-1024;
 	z_max=1024;
 	layer_min=0;
 	layer_max=0;
 	item_mask=1;
 	item_shadow_mask=1;
-	subtract_mode=false;
+	mode=MODE_ADD;
 	shadow_buffer_size=2048;
 	shadow_esm_multiplier=80;
+	energy=1.0;
 
 }
 

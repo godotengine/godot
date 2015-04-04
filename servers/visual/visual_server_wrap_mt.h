@@ -982,6 +982,7 @@ public:
 	FUNC2(viewport_set_hide_canvas,RID,bool );
 	FUNC2(viewport_attach_camera,RID,RID );
 	FUNC2(viewport_set_scenario,RID,RID );
+	FUNC2(viewport_set_disable_environment,RID,bool );
 
 	FUNC1RC(RID,viewport_get_attached_camera,RID);
 	FUNC1RC(RID,viewport_get_scenario,RID );
@@ -1108,6 +1109,7 @@ public:
 	//FUNC(canvas_item_set_rect,RID, const Rect2& p_rect);
 	FUNC2(canvas_item_set_transform,RID, const Matrix32& );
 	FUNC2(canvas_item_set_clip,RID, bool );
+	FUNC2(canvas_item_set_distance_field_mode,RID, bool );
 	FUNC3(canvas_item_set_custom_rect,RID, bool ,const Rect2&);
 	FUNC2(canvas_item_set_opacity,RID, float );
 	FUNC2RC(float,canvas_item_get_opacity,RID, float );
@@ -1138,6 +1140,8 @@ public:
 	FUNC2(canvas_item_set_sort_children_by_y,RID,bool);
 	FUNC2(canvas_item_set_z,RID,int);
 	FUNC2(canvas_item_set_z_as_relative_to_parent,RID,bool);
+	FUNC3(canvas_item_set_copy_to_backbuffer,RID,bool,const Rect2&);
+
 
 	FUNC2(canvas_item_set_material,RID, RID );
 
@@ -1151,16 +1155,18 @@ public:
 	FUNC2(canvas_light_attach_to_canvas,RID,RID);
 	FUNC2(canvas_light_set_enabled,RID,bool);
 	FUNC2(canvas_light_set_transform,RID,const Matrix32&);
+	FUNC2(canvas_light_set_scale,RID,float);
 	FUNC2(canvas_light_set_texture,RID,RID);
 	FUNC2(canvas_light_set_texture_offset,RID,const Vector2&);
 	FUNC2(canvas_light_set_color,RID,const Color&);
 	FUNC2(canvas_light_set_height,RID,float);
+	FUNC2(canvas_light_set_energy,RID,float);
 	FUNC3(canvas_light_set_layer_range,RID,int,int);
 	FUNC3(canvas_light_set_z_range,RID,int,int);
 	FUNC2(canvas_light_set_item_mask,RID,int);
 	FUNC2(canvas_light_set_item_shadow_mask,RID,int);
 
-	FUNC2(canvas_light_set_subtract_mode,RID,bool);
+	FUNC2(canvas_light_set_mode,RID,CanvasLightMode);
 	FUNC2(canvas_light_set_shadow_enabled,RID,bool);
 	FUNC2(canvas_light_set_shadow_buffer_size,RID,int);
 	FUNC2(canvas_light_set_shadow_esm_multiplier,RID,float);
@@ -1186,8 +1192,8 @@ public:
 	FUNC0R(RID,canvas_item_material_create);
 	FUNC2(canvas_item_material_set_shader,RID,RID);
 	FUNC3(canvas_item_material_set_shader_param,RID,const StringName&,const Variant&);
-	FUNC2RC(Variant,canvas_item_material_get_shader_param,RID,const StringName&);
-	FUNC2(canvas_item_material_set_unshaded,RID,bool);
+	FUNC2RC(Variant,canvas_item_material_get_shader_param,RID,const StringName&);	
+	FUNC2(canvas_item_material_set_shading_mode,RID,CanvasItemShadingMode);
 
 	/* CURSOR */
 	FUNC2(cursor_set_rotation,float , int ); // radians

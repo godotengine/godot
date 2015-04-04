@@ -704,6 +704,7 @@ public:
 	
 	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide)=0;
 	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide)=0;
+	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable)=0;
 
 	virtual void viewport_attach_camera(RID p_viewport,RID p_camera)=0;
 	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario)=0;
@@ -734,8 +735,7 @@ public:
 		ENV_BG_COLOR,
 		ENV_BG_TEXTURE,
 		ENV_BG_CUBEMAP,
-		ENV_BG_TEXTURE_RGBE,
-		ENV_BG_CUBEMAP_RGBE,
+		ENV_BG_CANVAS,
 		ENV_BG_MAX
 	};
 
@@ -744,6 +744,7 @@ public:
 
 	enum EnvironmentBGParam {
 
+		ENV_BG_PARAM_CANVAS_MAX_LAYER,
 		ENV_BG_PARAM_COLOR,
 		ENV_BG_PARAM_TEXTURE,
 		ENV_BG_PARAM_CUBEMAP,
@@ -968,6 +969,7 @@ public:
 
 	virtual void canvas_item_set_transform(RID p_item, const Matrix32& p_transform)=0;
 	virtual void canvas_item_set_clip(RID p_item, bool p_clip)=0;
+	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable)=0;
 	virtual void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect=Rect2())=0;
 	virtual void canvas_item_set_opacity(RID p_item, float p_opacity)=0;
 	virtual float canvas_item_get_opacity(RID p_item, float p_opacity) const=0;
@@ -994,6 +996,7 @@ public:
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable)=0;
 	virtual void canvas_item_set_z(RID p_item, int p_z)=0;
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable)=0;
+	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect)=0;
 
 	virtual void canvas_item_clear(RID p_item)=0;
 	virtual void canvas_item_raise(RID p_item)=0;
@@ -1005,17 +1008,25 @@ public:
 	virtual RID canvas_light_create()=0;
 	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas)=0;
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled)=0;
+	virtual void canvas_light_set_scale(RID p_light, float p_scale)=0;
 	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform)=0;
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture)=0;
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset)=0;
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color)=0;
 	virtual void canvas_light_set_height(RID p_light, float p_height)=0;
+	virtual void canvas_light_set_energy(RID p_light, float p_energy)=0;
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z)=0;
 	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer)=0;
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask)=0;
 	virtual void canvas_light_set_item_shadow_mask(RID p_light, int p_mask)=0;
 
-	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable)=0;
+	enum CanvasLightMode {
+		CANVAS_LIGHT_MODE_ADD,
+		CANVAS_LIGHT_MODE_SUB,
+		CANVAS_LIGHT_MODE_MIX,
+	};
+
+	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode)=0;
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier)=0;
@@ -1045,7 +1056,15 @@ public:
 	virtual void canvas_item_material_set_shader(RID p_material, RID p_shader)=0;
 	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value)=0;
 	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const=0;
-	virtual void canvas_item_material_set_unshaded(RID p_material, bool p_unshaded)=0;
+
+
+	enum CanvasItemShadingMode {
+		CANVAS_ITEM_SHADING_NORMAL,
+		CANVAS_ITEM_SHADING_UNSHADED,
+		CANVAS_ITEM_SHADING_ONLY_LIGHT,
+	};
+
+	virtual void canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode)=0;
 
 	/* CURSOR */
 	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0)=0; // radians

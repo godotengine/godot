@@ -593,6 +593,97 @@ bool Spatial::_is_visible_() const {
 	return !is_hidden();
 }
 
+void Spatial::rotate(const Vector3& p_normal,float p_radians) {
+
+	Transform t =get_transform();
+	t.basis.rotate(p_normal,p_radians);
+	set_transform(t);
+}
+
+void Spatial::rotate_x(float p_radians) {
+
+	Transform t =get_transform();
+	t.basis.rotate(Vector3(1,0,0),p_radians);
+	set_transform(t);
+
+}
+
+void Spatial::rotate_y(float p_radians){
+
+	Transform t =get_transform();
+	t.basis.rotate(Vector3(0,1,0),p_radians);
+	set_transform(t);
+
+}
+void Spatial::rotate_z(float p_radians){
+
+	Transform t =get_transform();
+	t.basis.rotate(Vector3(0,0,1),p_radians);
+	set_transform(t);
+
+}
+
+void Spatial::translate(const Vector3& p_offset){
+
+	Transform t =get_transform();
+	t.origin+=p_offset;
+	set_transform(t);
+
+}
+void Spatial::scale(const Vector3& p_ratio){
+
+	Transform t =get_transform();
+	t.basis.scale(p_ratio);
+	set_transform(t);
+
+}
+void Spatial::global_rotate(const Vector3& p_normal,float p_radians){
+
+	Matrix3 rotation(p_normal,p_radians);
+	Transform t = get_global_transform();
+	t.basis= rotation * t.basis;
+	set_global_transform(t);
+
+}
+void Spatial::global_translate(const Vector3& p_offset){
+	Transform t = get_global_transform();
+	t.origin+=p_offset;
+	set_global_transform(t);
+
+}
+
+void Spatial::orthonormalize() {
+
+	Transform t = get_transform();
+	t.orthonormalize();
+	set_transform(t);
+
+}
+
+void Spatial::set_identity() {
+
+	set_transform(Transform());
+
+}
+
+
+void Spatial::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
+
+	Transform lookat;
+	lookat.origin=get_global_transform().origin;
+	lookat=lookat.looking_at(p_target,p_up_normal);
+	set_global_transform(lookat);
+}
+
+void Spatial::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal) {
+
+	Transform lookat;
+	lookat.origin=p_pos;
+	lookat=lookat.looking_at(p_target,p_up_normal);
+	set_global_transform(lookat);
+
+}
+
 
 void Spatial::_bind_methods() {
 
@@ -632,6 +723,28 @@ void Spatial::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_set_visible_"), &Spatial::_set_visible_);
 	ObjectTypeDB::bind_method(_MD("_is_visible_"), &Spatial::_is_visible_);
+
+	void rotate(const Vector3& p_normal,float p_radians);
+	void rotate_x(float p_radians);
+	void rotate_y(float p_radians);
+	void rotate_z(float p_radians);
+	void translate(const Vector3& p_offset);
+	void scale(const Vector3& p_ratio);
+	void global_rotate(const Vector3& p_normal,float p_radians);
+	void global_translate(const Vector3& p_offset);
+
+	ObjectTypeDB::bind_method( _MD("rotate","normal","radians"),&Spatial::rotate );
+	ObjectTypeDB::bind_method( _MD("global_rotate","normal","radians"),&Spatial::global_rotate );
+	ObjectTypeDB::bind_method( _MD("rotate_x","radians"),&Spatial::rotate_x );
+	ObjectTypeDB::bind_method( _MD("rotate_y","radians"),&Spatial::rotate_y );
+	ObjectTypeDB::bind_method( _MD("rotate_z","radians"),&Spatial::rotate_z );
+	ObjectTypeDB::bind_method( _MD("translate","offset"),&Spatial::translate );
+	ObjectTypeDB::bind_method( _MD("global_translate","offset"),&Spatial::global_translate );
+	ObjectTypeDB::bind_method( _MD("orthonormalize"),&Spatial::orthonormalize );
+	ObjectTypeDB::bind_method( _MD("set_identity"),&Spatial::set_identity );
+
+	ObjectTypeDB::bind_method( _MD("look_at","target","up"),&Spatial::look_at );
+	ObjectTypeDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Spatial::look_at_from_pos );
 
 	BIND_CONSTANT( NOTIFICATION_TRANSFORM_CHANGED );
 	BIND_CONSTANT( NOTIFICATION_ENTER_WORLD );

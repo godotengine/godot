@@ -124,6 +124,7 @@ friend class RenderTargetTexture;
 	ObjectID physics_object_over;
 	Vector2 physics_last_mousepos;
 	void _test_new_mouseover(ObjectID new_collider);
+	Map<ObjectID,uint64_t> physics_2d_mouseover;
 
 	void _update_rect();
 

@@ -62,17 +62,6 @@ void Path2DEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 Path2DEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
-
 bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 	if (!node)
@@ -93,8 +82,8 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 			Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
-			Vector2 cpoint = !mb.mod.alt? snap_point(xform.affine_inverse().xform(gpoint))
-										: node->get_global_transform().affine_inverse().xform( snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
+			Vector2 cpoint = !mb.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
+										: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 			//first check if a point is to be added (segment split)
 			real_t grab_treshold=EDITOR_DEF("poly_editor/point_grab_radius",8);
@@ -250,9 +239,9 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 						if (!wip_active) {
 
 							wip.clear();
-							wip.push_back( snap_point(cpoint) );
+							wip.push_back( canvas_item_editor->snap_point(cpoint) );
 							wip_active=true;
-							edited_point_pos=snap_point(cpoint);
+							edited_point_pos=canvas_item_editor->snap_point(cpoint);
 							canvas_item_editor->update();
 							edited_point=1;
 							return true;
@@ -265,7 +254,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 								return true;
 							} else {
 
-								wip.push_back( snap_point(cpoint) );
+								wip.push_back( canvas_item_editor->snap_point(cpoint) );
 								edited_point=wip.size();
 								canvas_item_editor->update();
 								return true;
@@ -327,9 +316,9 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 								if (closest_idx>=0) {
 
 									pre_move_edit=poly;
-									poly.insert(closest_idx+1,snap_point(xform.affine_inverse().xform(closest_pos)));
+									poly.insert(closest_idx+1,canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos)));
 									edited_point=closest_idx+1;
-									edited_point_pos=snap_point(xform.affine_inverse().xform(closest_pos));
+									edited_point_pos=canvas_item_editor->snap_point(xform.affine_inverse().xform(closest_pos));
 									node->set_polygon(poly);
 									canvas_item_editor->update();
 									return true;
@@ -434,8 +423,8 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 				Vector2 gpoint = Point2(mm.x,mm.y);
-				Vector2 cpoint = !mm.mod.alt? snap_point(xform.affine_inverse().xform(gpoint))
-											: node->get_global_transform().affine_inverse().xform( snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
+				Vector2 cpoint = !mm.mod.alt? canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint))
+											: node->get_global_transform().affine_inverse().xform( canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint)) );
 
 				Ref<Curve2D> curve = node->get_curve();
 
@@ -471,7 +460,7 @@ bool Path2DEditor::forward_input_event(const InputEvent& p_event) {
 				Matrix32 xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
-				edited_point_pos = snap_point(xform.affine_inverse().xform(gpoint));
+				edited_point_pos = canvas_item_editor->snap_point(xform.affine_inverse().xform(gpoint));
 				canvas_item_editor->update();
 
 			}

@@ -230,6 +230,12 @@ OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }
+
+Size2 OS_JavaScript::get_window_size() const {
+
+	return Vector2(default_videomode.width,default_videomode.height);
+}
+
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 	p_list->push_back(default_videomode);

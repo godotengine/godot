@@ -227,19 +227,6 @@ static int button_mask=0;
       //  centerCursor(window);
 }
 
-- (void)windowDidMiniaturize:(NSNotification *)notification
-{
-   // _GodotInputWindowIconify(window, GL_TRUE);
-}
-
-- (void)windowDidDeminiaturize:(NSNotification *)notification
-{
-    //if (window->monitor)
-//        enterFullscreenMode(window);
-
-  //  _GodotInputWindowIconify(window, GL_FALSE);
-}
-
 - (void)windowDidBecomeKey:(NSNotification *)notification
 {
    // _GodotInputWindowFocus(window, GL_TRUE);
@@ -255,6 +242,21 @@ static int button_mask=0;
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 }
+
+- (void)windowDidMiniaturize:(NSNotification*)notification
+{
+	OS_OSX::singleton->wm_minimized(true);
+	if (OS_OSX::singleton->get_main_loop())
+		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
+};
+
+- (void)windowDidDeminiaturize:(NSNotification*)notification
+{
+
+	OS_OSX::singleton->wm_minimized(false);
+	if (OS_OSX::singleton->get_main_loop())
+		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+};
 
 @end
 
@@ -903,7 +905,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	unsigned int attributeCount = 0;
 
 	// OS X needs non-zero color size, so set resonable values
-	int colorBits = 24;
+	int colorBits = 32;
 
 	// Fail if a robustness strategy was requested
 
@@ -1018,7 +1020,15 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	_ensure_data_dir();
 
+	NSArray *screenArray = [NSScreen screens];
+	printf("nscreen count %i\n", (int)[screenArray count]);
+	for (int i=0; i<[screenArray count]; i++) {
 
+		NSRect nsrect = [[screenArray objectAtIndex: i] visibleFrame];
+		screens.push_back(Rect2(nsrect.origin.x, nsrect.origin.y, nsrect.size.width, nsrect.size.height));
+		printf("added screen %i\n", screens.size());
+	};
+	restore_rect = Rect2(get_window_position(), get_window_size());
 }
 void OS_OSX::finalize() {
 
@@ -1231,7 +1241,10 @@ void OS_OSX::swap_buffers() {
 
 }
 
+void OS_OSX::wm_minimized(bool p_minimized) {
 
+	minimized = p_minimized;
+};
 
 void OS_OSX::set_video_mode(const VideoMode& p_video_mode,int p_screen) {
 
@@ -1244,6 +1257,119 @@ OS::VideoMode OS_OSX::get_video_mode(int p_screen) const {
 void OS_OSX::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 }
+
+
+int OS_OSX::get_screen_count() const {
+
+	return screens.size();
+};
+
+int OS_OSX::get_current_screen() const {
+
+	return current_screen;
+};
+
+void OS_OSX::set_current_screen(int p_screen) {
+
+	current_screen = p_screen;
+};
+
+Point2 OS_OSX::get_screen_position(int p_screen) {
+
+	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
+	return screens[p_screen].pos;
+};
+
+Size2 OS_OSX::get_screen_size(int p_screen) {
+
+	ERR_FAIL_INDEX_V(p_screen, screens.size(), Point2());
+	return screens[p_screen].size;
+};
+
+Point2 OS_OSX::get_window_position() const {
+
+	return Size2([window_object frame].origin.x, [window_object frame].origin.y);
+};
+
+
+void OS_OSX::set_window_position(const Point2& p_position) {
+
+	[window_object setFrame:NSMakeRect(p_position.x, p_position.y, [window_object frame].size.width, [window_object frame].size.height) display:YES];
+};
+
+Size2 OS_OSX::get_window_size() const {
+
+	return Size2([window_object frame].size.width, [window_object frame].size.height);
+};
+
+void OS_OSX::set_window_size(const Size2 p_size) {
+
+	NSRect frame = [window_object frame];
+	[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, p_size.x, p_size.y) display:YES];
+};
+
+void OS_OSX::set_window_fullscreen(bool p_enabled) {
+
+	[window_object performZoom:nil];
+	zoomed = p_enabled;
+};
+
+bool OS_OSX::is_window_fullscreen() const {
+
+	if ( [window_object respondsToSelector:@selector(isZoomed)] )
+		return [window_object isZoomed];
+
+	return zoomed;
+};
+
+void OS_OSX::set_window_resizable(bool p_enabled) {
+
+	if (p_enabled)
+		[window_object setStyleMask:[window_object styleMask] | NSResizableWindowMask ];
+	else
+		[window_object setStyleMask:[window_object styleMask] &  ~NSResizableWindowMask ];
+};
+
+bool OS_OSX::is_window_resizable() const {
+
+	return [window_object styleMask] & NSResizableWindowMask;
+};
+
+void OS_OSX::set_window_minimized(bool p_enabled) {
+
+	if (p_enabled)
+		[window_object performMiniaturize:nil];
+	else
+		[window_object deminiaturize:nil];
+};
+
+bool OS_OSX::is_window_minimized() const {
+
+	if ( [window_object respondsToSelector:@selector(isMiniaturized)])
+		return [window_object isMiniaturized];
+
+	return minimized;
+};
+
+
+void OS_OSX::set_window_maximized(bool p_enabled) {
+
+	if (p_enabled) {
+		restore_rect = Rect2(get_window_position(), get_window_size());
+		[window_object setFrame:[[[NSScreen screens] objectAtIndex:current_screen] visibleFrame] display:YES];
+	} else {
+		set_window_size(restore_rect.size);
+		set_window_position(restore_rect.pos);
+	};
+	maximized = p_enabled;
+};
+
+bool OS_OSX::is_window_maximized() const {
+
+	// don't know
+	return maximized;
+};
+
 
 void OS_OSX::move_window_to_foreground() {
 
@@ -1473,5 +1599,9 @@ OS_OSX::OS_OSX() {
 	last_id=1;
 	cursor_shape=CURSOR_ARROW;
 
+	current_screen = 0;
 
+	maximized = false;
+	minimized = false;
+	zoomed = false;
 }

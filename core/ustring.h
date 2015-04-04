@@ -130,7 +130,7 @@ public:
 	String pad_zeros(int p_digits) const;
 	String lpad(int min_length,const String& character=" ") const;
 	String rpad(int min_length,const String& character=" ") const;
-	String sprintf(const Array& values) const;
+	String sprintf(const Array& values, bool* error) const;
 	static String num(double p_num,int p_decimals=-1);
 	static String num_scientific(double p_num);
 	static String num_real(double p_num);

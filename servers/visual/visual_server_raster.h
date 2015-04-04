@@ -489,6 +489,8 @@ class VisualServerRaster : public VisualServer {
 		bool render_target_vflip;
 		bool render_target_clear_on_new_frame;
 		bool render_target_clear;
+		bool disable_environment;
+
 		Image capture;
 
 		bool rendered_in_prev_frame;
@@ -515,7 +517,7 @@ class VisualServerRaster : public VisualServer {
 
 		SelfList<Viewport> update_list;
 
-		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false; render_target_clear_on_new_frame=true; render_target_clear=true;}
+		Viewport() : update_list(this) { transparent_bg=false; render_target_update_mode=RENDER_TARGET_UPDATE_WHEN_VISIBLE; queue_capture=false; rendered_in_prev_frame=false; render_target_vflip=false; render_target_clear_on_new_frame=true; render_target_clear=true; disable_environment=false; }
 	};
 
 	SelfList<Viewport>::List viewport_update_list;
@@ -626,6 +628,7 @@ class VisualServerRaster : public VisualServer {
 	void _cull_room(Camera *p_camera, Instance *p_room,Instance *p_from_portal=NULL);
 	void _process_sampled_light(const Transform &p_camera, Instance *p_sampled_light, bool p_linear_colorspace);
 
+	void _render_no_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	void _render_camera(Viewport *p_viewport,Camera *p_camera, Scenario *p_scenario);
 	static void _render_canvas_item_viewport(VisualServer* p_self,void *p_vp,const Rect2& p_rect);
 	void _render_canvas_item_tree(CanvasItem *p_canvas_item, const Matrix32& p_transform, const Rect2& p_clip_rect, const Color &p_modulate, Rasterizer::CanvasLight *p_lights);
@@ -643,6 +646,7 @@ class VisualServerRaster : public VisualServer {
 	int changes;
 	bool draw_extra_frame;
 
+	void _draw_viewport_camera(Viewport *p_viewport, bool p_ignore_camera);
 	void _draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_ofs_y,int p_parent_w,int p_parent_h);
 	void _draw_viewports();
 	void _draw_cursors_and_margins();
@@ -983,6 +987,7 @@ public:
 	virtual void viewport_render_target_clear(RID p_viewport);
 	virtual void viewport_set_render_target_to_screen_rect(RID p_viewport,const Rect2& p_rect);
 
+
 	virtual void viewport_queue_screen_capture(RID p_viewport);
 	virtual Image viewport_get_screen_capture(RID p_viewport) const;
 
@@ -991,6 +996,7 @@ public:
 	
 	virtual void viewport_set_hide_scenario(RID p_viewport,bool p_hide);
 	virtual void viewport_set_hide_canvas(RID p_viewport,bool p_hide);
+	virtual void viewport_set_disable_environment(RID p_viewport,bool p_disable);
 	virtual void viewport_attach_camera(RID p_viewport,RID p_camera);
 	virtual void viewport_set_scenario(RID p_viewport,RID p_scenario);
 
@@ -1122,6 +1128,7 @@ public:
 	//virtual void canvas_item_set_rect(RID p_item, const Rect2& p_rect);
 	virtual void canvas_item_set_transform(RID p_item, const Matrix32& p_transform);
 	virtual void canvas_item_set_clip(RID p_item, bool p_clip);
+	virtual void canvas_item_set_distance_field_mode(RID p_item, bool p_enable);
 	virtual void canvas_item_set_custom_rect(RID p_item, bool p_custom_rect,const Rect2& p_rect=Rect2());
 	virtual void canvas_item_set_opacity(RID p_item, float p_opacity);
 	virtual float canvas_item_get_opacity(RID p_item, float p_opacity) const;
@@ -1149,6 +1156,7 @@ public:
 	virtual void canvas_item_set_sort_children_by_y(RID p_item, bool p_enable);
 	virtual void canvas_item_set_z(RID p_item, int p_z);
 	virtual void canvas_item_set_z_as_relative_to_parent(RID p_item, bool p_enable);
+	virtual void canvas_item_set_copy_to_backbuffer(RID p_item, bool p_enable,const Rect2& p_rect);
 
 	virtual void canvas_item_set_material(RID p_item, RID p_material);
 	virtual void canvas_item_set_use_parent_material(RID p_item, bool p_enable);
@@ -1157,16 +1165,18 @@ public:
 	virtual void canvas_light_attach_to_canvas(RID p_light,RID p_canvas);
 	virtual void canvas_light_set_enabled(RID p_light, bool p_enabled);
 	virtual void canvas_light_set_transform(RID p_light, const Matrix32& p_transform);
+	virtual void canvas_light_set_scale(RID p_light, float p_scale);
 	virtual void canvas_light_set_texture(RID p_light, RID p_texture);
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset);
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color);
 	virtual void canvas_light_set_height(RID p_light, float p_height);
+	virtual void canvas_light_set_energy(RID p_light, float p_energy);
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z);
 	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer);
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask);
 	virtual void canvas_light_set_item_shadow_mask(RID p_light, int p_mask);
 
-	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable);
+	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode);
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier);
@@ -1195,8 +1205,9 @@ public:
 	virtual RID canvas_item_material_create();
 	virtual void canvas_item_material_set_shader(RID p_material, RID p_shader);
 	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value);
-	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const;
-	virtual void canvas_item_material_set_unshaded(RID p_material, bool p_unshaded);
+	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const;	
+	virtual void canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode);
+
 
 
 	/* CURSOR */

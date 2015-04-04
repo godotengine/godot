@@ -53,6 +53,7 @@
 #include "scene/gui/color_picker.h"
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/panel_container.h"
@@ -76,6 +77,7 @@
 #include "scene/gui/reference_frame.h"
 #include "scene/gui/graph_node.h"
 #include "scene/gui/graph_edit.h"
+#include "scene/gui/tool_button.h"
 #include "scene/resources/video_stream.h"
 #include "scene/2d/particles_2d.h"
 #include "scene/2d/path_2d.h"
@@ -86,6 +88,7 @@
 #include "scene/2d/sprite.h"
 #include "scene/2d/animated_sprite.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/2d/back_buffer_copy.h"
 
 
 #include "scene/2d/visibility_notifier_2d.h"
@@ -288,7 +291,9 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<Popup>();
 	ObjectTypeDB::register_type<PopupPanel>();
 	ObjectTypeDB::register_type<MenuButton>();
+    ObjectTypeDB::register_type<CheckBox>();
 	ObjectTypeDB::register_type<CheckButton>();
+	ObjectTypeDB::register_type<ToolButton>();
 	ObjectTypeDB::register_type<Panel>();
 	ObjectTypeDB::register_type<Range>();
 
@@ -481,6 +486,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<LightOccluder2D>();
 	ObjectTypeDB::register_type<OccluderPolygon2D>();
 	ObjectTypeDB::register_type<YSort>();
+	ObjectTypeDB::register_type<BackBufferCopy>();
 
 	ObjectTypeDB::set_type_enabled("CollisionShape2D",false);
 	ObjectTypeDB::set_type_enabled("CollisionPolygon2D",false);

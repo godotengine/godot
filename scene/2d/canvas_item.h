@@ -45,9 +45,16 @@ class CanvasItemMaterial : public Resource{
 	OBJ_TYPE(CanvasItemMaterial,Resource);
 	RID material;
 	Ref<Shader> shader;
-	bool unshaded;
+public:
+	enum ShadingMode {
+		SHADING_NORMAL,
+		SHADING_UNSHADED,
+		SHADING_ONLY_LIGHT,
+	};
 
 protected:
+
+	ShadingMode shading_mode;
 
 	bool _set(const StringName& p_name, const Variant& p_value);
 	bool _get(const StringName& p_name,Variant &r_ret) const;
@@ -66,13 +73,15 @@ public:
 	void set_shader_param(const StringName& p_param,const Variant& p_value);
 	Variant get_shader_param(const StringName& p_param) const;
 
-	void set_unshaded(bool p_unshaded);
-	bool is_unshaded() const;
+	void set_shading_mode(ShadingMode p_mode);
+	ShadingMode get_shading_mode() const;
 
 	virtual RID get_rid() const;
 	CanvasItemMaterial();
 	~CanvasItemMaterial();
 };
+
+VARIANT_ENUM_CAST( CanvasItemMaterial::ShadingMode );
 
 
 class CanvasItem : public Node {
@@ -249,6 +258,7 @@ public:
 	void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
 
+	InputEvent make_input_local(const InputEvent& pevent) const;
 
 	CanvasItem();
 	~CanvasItem();

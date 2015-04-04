@@ -677,6 +677,7 @@ class RasterizerGLES2 : public Rasterizer {
 			bg_param[VS::ENV_BG_PARAM_ENERGY]=1.0;
 			bg_param[VS::ENV_BG_PARAM_SCALE]=1.0;
 			bg_param[VS::ENV_BG_PARAM_GLOW]=0.0;
+			bg_param[VS::ENV_BG_PARAM_CANVAS_MAX_LAYER]=0;
 
 			for(int i=0;i<VS::ENV_FX_MAX;i++)
 				fx_enabled[i]=false;
@@ -1258,6 +1259,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _process_hdr();
 	void _draw_tex_bg();
 
+	bool using_canvas_bg;
 	Size2 window_size;
 	VS::ViewportRect viewport;
 	double last_time;
@@ -1286,6 +1288,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _copy_screen_quad();
 	void _copy_to_texscreen();
 
+	bool _test_depth_shadow_buffer();
 
 	Vector3 chunk_vertex;
 	Vector3 chunk_normal;
@@ -1599,6 +1602,8 @@ public:
 	virtual void end_frame();
 
 	/* CANVAS API */
+
+	virtual void begin_canvas_bg();
 
 	virtual void canvas_begin();
 	virtual void canvas_disable_blending();
