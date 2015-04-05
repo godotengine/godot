@@ -1,4 +1,5 @@
 import shutil
+import os
 
 Import('env')
 
@@ -25,6 +26,7 @@ android_files = [
 #obj = env.SharedObject('godot_android.cpp')
 
 env_android = env.Clone()
+
 if env['target'] == "profile":
 	env_android.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
 
@@ -34,7 +36,7 @@ for x in android_files:
 
 prog = None
 
-abspath=env.Dir(".").abspath
+abspath=env.Dir(".").abspath + "/"
 
 
 pp_basein = open(abspath+"/project.properties.template","rb")
@@ -43,11 +45,26 @@ pp_baseout.write( pp_basein.read() )
 
 refcount=1
 
+print("\t- Android profile : "+ env['target'])
+print("\t- platform : "+ env['PLATFORM'])
+print("\t- HOME : "+  os.environ.get('HOME'))
+
+LIB_NAME = "libgodot"+env["SHLIBSUFFIX"]
+LIB_PATH = "bin/"+LIB_NAME
+print("\t- Android LIB_NAME: "+ LIB_NAME)
+
+LIB_INSTALL_PATH = "platform/android/java/libs/armeabi/"
+print("\t- LIB_INSTALL_PATH: "+ LIB_INSTALL_PATH)
+ANDROID_HOME = os.environ.get('ANDROID_HOME')
+ant_build = Dir('.').abspath+"/java/"
+ANT_TARGET = ant_build+'local.properties'
+ANT_SOURCES = ant_build+'build.xml'
+ANDROID_HOME = os.environ.get('ANDROID_HOME')
+ANT_COMMAND = 'ant release -Dsdk.dir='+ANDROID_HOME+' -f $SOURCE'
+
 for x in env.android_source_modules:
 	pp_baseout.write("android.library.reference."+str(refcount)+"="+x+"\n")
 	refcount+=1
-
-
 
 pp_baseout.close()
 
@@ -68,6 +85,55 @@ for x in env.android_module_libraries:
 	shutil.copy(x,abspath+"/java/libs")	
 
 
-env_android.SharedLibrary("#bin/libgodot",[android_objects],SHLIBSUFFIX=env["SHLIBSUFFIX"])
+env_android.SharedLibrary("#bin/libgodot",[android_objects],\
+	SHLIBSUFFIX=env["SHLIBSUFFIX"])
 
-#env.Command('#bin/libgodot_android.so', '#platform/android/libgodot_android.so', Copy('bin/libgodot_android.so', 'platform/android/libgodot_android.so'))
+#---------------------------------------------------------
+#  Create the Android export template
+#---------------------------------------------------------
+
+#  Copy android library created to LIB_INSTALL_PATH
+#---------------------------------------------------------
+lib_install = env_android.Command("lib_install", [], 
+        "cp -fv "+ LIB_PATH +"  " + LIB_INSTALL_PATH + "/libgodot_android.so")
+env_android.AlwaysBuild(lib_install)
+
+# Build the Android APK
+#---------------------------------------------------------
+APK_PATH = abspath+ '/java/bin/Godot-release-unsigned.apk'
+apk_build = env_android.Command(APK_PATH, source=ANT_SOURCES, action=ANT_COMMAND)
+env_android.AlwaysBuild(apk_build)
+env_android.Depends(apk_build, lib_install)
+
+# Link apk to platform templates
+#---------------------------------------------------------
+TEMPLATE_INSTALL_DIR_LINUX = os.environ.get('HOME')+ '/.godot/templates/'
+TEMPLATE_INSTALL_PATH_LINUX_RELEASE = \
+        TEMPLATE_INSTALL_DIR_LINUX + "/android_release.apk"
+TEMPLATE_INSTALL_PATH_LINUX_DEBUG = \
+    TEMPLATE_INSTALL_DIR_LINUX + "/android_debug.apk"
+
+TEMPLATE_INSTALL_PATH = "NOT_SET"
+
+# Set the correct LINUX install path for APK Template
+if env['target'] == 'release_debug':
+    TEMPLATE_INSTALL_PATH_LINUX = TEMPLATE_INSTALL_PATH_LINUX_DEBUG
+elif env['target'] == 'release':
+    TEMPLATE_INSTALL_PATH_LINUX = TEMPLATE_INSTALL_PATH_LINUX_RELEASE
+else:
+    print( "A valid build target wasn't specified! platorm was: " +
+        env['target'])
+    Exit(2)
+
+if env['PLATFORM'] == 'posix':
+    TEMPLATE_INSTALL_PATH = TEMPLATE_INSTALL_PATH_LINUX
+    TEMPLATE_INSTALL_DIR = TEMPLATE_INSTALL_DIR_LINUX
+    inst = env_android.Command("install", [], 
+            "ln -fs "+ APK_PATH +"  " + TEMPLATE_INSTALL_PATH)
+    print("\t*** Going to link created apk: "+ APK_PATH + 
+            " to templates dir: " + TEMPLATE_INSTALL_PATH)
+
+    env_android.Depends(inst, lib_install)
+    env_android.Depends(inst, apk_build)
+    env_android.AlwaysBuild(inst)
+
