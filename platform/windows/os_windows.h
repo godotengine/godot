@@ -55,6 +55,11 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+
+#define WM_USER_FAKE_MOUSEWHEEL_UP_RELEASE WM_USER+123
+#define WM_USER_FAKE_MOUSEWHEEL_DOWN_RELEASE WM_USER+124
+#define FAKE_MOUSEWHEEL_RELEASE_DELAY_IN_TICKS 100000
+
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -151,6 +156,15 @@ class OS_Windows : public OS {
 	bool force_quit;
 	uint32_t last_button_state;
 
+	// --- Simulate MouseWheel button release events :
+	int last_mouse_wheel_up_ticks; // date-time in ticks when the event occured
+	int fake_mouse_wheel_up_release_after; // tristate : -1 = early release, 0 = disabled, >0 = date-time in ticks after which the release should occur
+	int last_mouse_wheel_down_ticks;
+	int fake_mouse_wheel_down_release_after;
+	WPARAM last_mouse_wparam;
+	LPARAM last_mouse_lparam;
+	// ---
+	
 	CursorShape cursor_shape;
 
 	InputDefault *input;
