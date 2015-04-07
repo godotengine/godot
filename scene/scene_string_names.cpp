@@ -42,6 +42,7 @@ SceneStringNames::SceneStringNames() {
 	input_event=StaticCString::create("input_event");
 	shader_shader=StaticCString::create("shader/shader");
 	shader_unshaded=StaticCString::create("shader/unshaded");
+	shading_mode=StaticCString::create("shader/shading_mode");
 	enter_tree=StaticCString::create("enter_tree");
 	exit_tree=StaticCString::create("exit_tree");
 	item_rect_changed=StaticCString::create("item_rect_changed");

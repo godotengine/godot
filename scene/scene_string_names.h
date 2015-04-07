@@ -57,6 +57,7 @@ public:
 	StringName item_rect_changed;
 	StringName shader_shader;
 	StringName shader_unshaded;
+	StringName shading_mode;
 	StringName enter_tree;
 	StringName exit_tree;
 	StringName size_flags_changed;

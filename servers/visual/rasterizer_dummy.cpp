@@ -1545,9 +1545,36 @@ void RasterizerDummy::end_frame() {
 
 }
 
+RID RasterizerDummy::canvas_light_occluder_create() {
+	return RID();
+}
+
+void RasterizerDummy::canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines) {
+
+
+}
+
+RID RasterizerDummy::canvas_light_shadow_buffer_create(int p_width) {
+
+	return RID();
+}
+
+void RasterizerDummy::canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache) {
+
+
+}
+
+void RasterizerDummy::canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow) {
+
+
+}
+
 /* CANVAS API */
 
 
+void RasterizerDummy::begin_canvas_bg() {
+
+}
 void RasterizerDummy::canvas_begin() {
 
 
@@ -1759,6 +1786,11 @@ bool RasterizerDummy::is_skeleton(const RID& p_rid) const {
 bool RasterizerDummy::is_environment(const RID& p_rid) const {
 
 	return environment_owner.owns(p_rid);
+}
+
+bool RasterizerDummy::is_canvas_light_occluder(const RID& p_rid) const {
+
+	return false;
 }
 
 bool RasterizerDummy::is_shader(const RID& p_rid) const {

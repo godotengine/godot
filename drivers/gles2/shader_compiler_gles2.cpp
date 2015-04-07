@@ -266,6 +266,9 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 					uses_normal=true;
 				}
 
+				if (vnode->name==vname_shadow) {
+					uses_shadow_color=true;
+				}
 
 			}
 
@@ -616,6 +619,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	uses_texpixel_size=false;
 	uses_worldvec=false;
 	vertex_code_writes_vertex=false;
+	uses_shadow_color=false;
 	uniforms=r_uniforms;
 	flags=&r_flags;
 	r_flags.use_color_interp=false;
@@ -651,6 +655,7 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_normal=uses_normal;
 	r_flags.uses_texpixel_size=uses_texpixel_size;
 	r_flags.uses_worldvec=uses_worldvec;
+	r_flags.uses_shadow_color=uses_shadow_color;
 	r_code_line=code;
 	r_globals_line=global_code;
 
@@ -827,7 +832,9 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	mode_replace_table[5]["LIGHT_VEC"]="light_vec";
 	mode_replace_table[5]["LIGHT_HEIGHT"]="light_height";
 	mode_replace_table[5]["LIGHT_COLOR"]="light";
+	mode_replace_table[5]["LIGHT_UV"]="light_uv";
 	mode_replace_table[5]["LIGHT"]="light_out";
+	mode_replace_table[5]["SHADOW"]="shadow_color";
 	mode_replace_table[5]["SCREEN_UV"]="screen_uv";
 	mode_replace_table[5]["POINT_COORD"]="gl_PointCoord";
 	mode_replace_table[5]["TIME"]="time";
@@ -857,5 +864,6 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_normal="NORMAL";
 	vname_texpixel_size="TEXTURE_PIXEL_SIZE";
 	vname_world_vec="WORLD_VERTEX";
+	vname_shadow="SHADOW";
 
 }

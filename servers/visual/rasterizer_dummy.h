@@ -696,6 +696,7 @@ public:
 
 	/* CANVAS API */
 
+	virtual void begin_canvas_bg();
 	virtual void canvas_begin();
 	virtual void canvas_disable_blending();
 	virtual void canvas_set_opacity(float p_opacity);
@@ -711,6 +712,14 @@ public:
 	virtual void canvas_set_transform(const Matrix32& p_transform);
 
 	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light);
+
+	virtual RID canvas_light_occluder_create();
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines);
+
+	virtual RID canvas_light_shadow_buffer_create(int p_width);
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache);
+
+	virtual void canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow);
 
 	/* ENVIRONMENT */
 
@@ -747,6 +756,7 @@ public:
 	virtual bool is_particles_instance(const RID& p_rid) const;
 	virtual bool is_skeleton(const RID& p_rid) const;
 	virtual bool is_environment(const RID& p_rid) const;
+	virtual bool is_canvas_light_occluder(const RID& p_rid) const;
 
 	virtual bool is_shader(const RID& p_rid) const;
 

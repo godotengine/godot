@@ -42,8 +42,8 @@ bool CanvasItemMaterial::_set(const StringName& p_name, const Variant& p_value) 
 	if (p_name==SceneStringNames::get_singleton()->shader_shader) {
 		set_shader(p_value);
 		return true;
-	} else if (p_name==SceneStringNames::get_singleton()->shader_unshaded) {
-		set_unshaded(p_value);
+	} else if (p_name==SceneStringNames::get_singleton()->shading_mode) {
+		set_shading_mode(ShadingMode(p_value.operator int()));
 		return true;
 	} else {
 
@@ -74,10 +74,10 @@ bool CanvasItemMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 
 		r_ret=get_shader();
 		return true;
-	} else if (p_name==SceneStringNames::get_singleton()->shader_unshaded) {
+	} else if (p_name==SceneStringNames::get_singleton()->shading_mode) {
 
 
-		r_ret=unshaded;
+		r_ret=shading_mode;
 		return true;
 	} else {
 
@@ -100,7 +100,7 @@ bool CanvasItemMaterial::_get(const StringName& p_name,Variant &r_ret) const {
 void CanvasItemMaterial::_get_property_list( List<PropertyInfo> *p_list) const {
 
 	p_list->push_back( PropertyInfo( Variant::OBJECT, "shader/shader", PROPERTY_HINT_RESOURCE_TYPE,"CanvasItemShader,CanvasItemShaderGraph" ) );
-	p_list->push_back( PropertyInfo( Variant::BOOL, "shader/unshaded") );
+	p_list->push_back( PropertyInfo( Variant::INT, "shader/shading_mode",PROPERTY_HINT_ENUM,"Normal,Unshaded,Light Only") );
 
 	if (!shader.is_null()) {
 
@@ -161,16 +161,16 @@ RID CanvasItemMaterial::get_rid() const {
 	return material;
 }
 
-void CanvasItemMaterial::set_unshaded(bool p_unshaded) {
+void CanvasItemMaterial::set_shading_mode(ShadingMode p_mode) {
 
-	unshaded=p_unshaded;
-	VS::get_singleton()->canvas_item_material_set_unshaded(material,p_unshaded);
+	shading_mode=p_mode;
+	VS::get_singleton()->canvas_item_material_set_shading_mode(material,VS::CanvasItemShadingMode(p_mode));
 }
 
-bool CanvasItemMaterial::is_unshaded() const{
-
-	return unshaded;
+CanvasItemMaterial::ShadingMode CanvasItemMaterial::get_shading_mode() const {
+	return shading_mode;
 }
+
 
 void CanvasItemMaterial::_bind_methods() {
 
@@ -178,8 +178,13 @@ void CanvasItemMaterial::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_shader:Shader"),&CanvasItemMaterial::get_shader);
 	ObjectTypeDB::bind_method(_MD("set_shader_param","param","value"),&CanvasItemMaterial::set_shader_param);
 	ObjectTypeDB::bind_method(_MD("get_shader_param","param"),&CanvasItemMaterial::get_shader_param);
-	ObjectTypeDB::bind_method(_MD("set_unshaded","unshaded"),&CanvasItemMaterial::set_unshaded);
-	ObjectTypeDB::bind_method(_MD("is_unshaded"),&CanvasItemMaterial::is_unshaded);
+	ObjectTypeDB::bind_method(_MD("set_shading_mode","mode"),&CanvasItemMaterial::set_shading_mode);
+	ObjectTypeDB::bind_method(_MD("get_shading_mode"),&CanvasItemMaterial::get_shading_mode);
+
+	BIND_CONSTANT( SHADING_NORMAL );
+	BIND_CONSTANT( SHADING_UNSHADED );
+	BIND_CONSTANT( SHADING_ONLY_LIGHT );
+
 
 }
 
@@ -202,7 +207,7 @@ void CanvasItemMaterial::get_argument_options(const StringName& p_function,int p
 CanvasItemMaterial::CanvasItemMaterial() {
 
 	material=VS::get_singleton()->canvas_item_material_create();
-	unshaded=false;
+	shading_mode=SHADING_NORMAL;
 }
 
 CanvasItemMaterial::~CanvasItemMaterial(){
