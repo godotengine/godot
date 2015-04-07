@@ -149,6 +149,7 @@ public:
 	static double to_double(const CharType* p_str, const CharType **r_end=NULL);
 	static int64_t to_int(const CharType* p_str,int p_len=-1);
 	String capitalize() const;
+	String camelcase_to_underscore() const;
 
 	int get_slice_count(String p_splitter) const;
 	String get_slice(String p_splitter,int p_slice) const;
