@@ -108,6 +108,7 @@ void OS_Unix::initialize_core() {
 	ThreadDummy::make_default();
 	SemaphoreDummy::make_default();
 	MutexDummy::make_default();
+	TlsDummy::make_default();
 #else
 	ThreadPosix::make_default();	
 	SemaphorePosix::make_default();

@@ -139,12 +139,26 @@ bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
 
+static char *s_last_error=NULL;
+char * OS::_get_last_error() const {
+
+	return s_last_error;
+	//return (char *) tls_last_errors.get();
+}
+
+void OS::_set_last_error(char *p_error) {
+
+	s_last_error=p_error;
+	//tls_last_errors.set(p_error);
+}
+
 void OS::set_last_error(const char* p_error) {
 
 	GLOBAL_LOCK_FUNCTION
 	if (p_error==NULL)
 		p_error="Unknown Error";
 
+	char * last_error = _get_last_error();
 	if (last_error)
 		memfree(last_error);
 	last_error=NULL;
@@ -155,10 +169,12 @@ void OS::set_last_error(const char* p_error) {
 	for(int i=0;i<len;i++)
 		last_error[i]=p_error[i];
 
+	_set_last_error(last_error);
 }
 
 const char *OS::get_last_error() const {
 	GLOBAL_LOCK_FUNCTION
+	char *last_error = _get_last_error();
 	return last_error?last_error:"";
 }
 
@@ -237,9 +253,11 @@ void OS::dump_resources_to_file(const char* p_file) {
 void OS::clear_last_error() {
 
 	GLOBAL_LOCK_FUNCTION
+	char * last_error = _get_last_error();
 	if (last_error)
 		memfree(last_error);
 	last_error=NULL;
+	_set_last_error(last_error);
 }
 void OS::set_frame_delay(uint32_t p_msec) {
 
@@ -503,7 +521,6 @@ float OS::get_time_scale() const {
 
 
 OS::OS() {
-	last_error=NULL;
 	frames_drawn=0;
 	singleton=this;
 	ips=60;
@@ -520,10 +537,6 @@ OS::OS() {
 	Math::seed(1234567);
 }
 
-
 OS::~OS() {
 
-	singleton=NULL;
 }
-
-

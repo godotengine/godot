@@ -31,6 +31,18 @@
 
 
 bool _err_error_exists=false;
+//static Tls tls_err_error_exists;
+bool _is_err_error_exists() {
+
+	return _err_error_exists;
+	//return tls_err_error_exists.get() != NULL;
+}
+
+void _set_err_error_exists(bool p_exists) {
+
+	_err_error_exists=p_exists;
+	//tls_err_error_exists.set(p_exists? (void *)1 : 0);
+}
 
 static ErrorHandlerList *error_handler_list=NULL;
 
@@ -82,21 +94,21 @@ void _err_print_error(const char* p_function, const char* p_file,int p_line,cons
 
 
 
-	OS::get_singleton()->print_error(p_function,p_file,p_line,p_error,_err_error_exists?OS::get_singleton()->get_last_error():"",(OS::ErrorType)p_type);
+	OS::get_singleton()->print_error(p_function,p_file,p_line,p_error,_is_err_error_exists()?OS::get_singleton()->get_last_error():"",(OS::ErrorType)p_type);
 
 	_global_lock();
 	ErrorHandlerList *l = error_handler_list;
 	while(l) {
 
-		l->errfunc(l->userdata,p_function,p_file,p_line,p_error,_err_error_exists?OS::get_singleton()->get_last_error():"",p_type);
+		l->errfunc(l->userdata,p_function,p_file,p_line,p_error,_is_err_error_exists()?OS::get_singleton()->get_last_error():"",p_type);
 		l=l->next;
 	}
 
 	_global_unlock();
 
-	if (_err_error_exists) {
+	if (_is_err_error_exists()) {
 		OS::get_singleton()->clear_last_error();
-		_err_error_exists=false;
+		_set_err_error_exists(false);
 	}
 
 }

@@ -615,6 +615,9 @@
     <ClCompile Include="..\..\scene\2d\back_buffer_copy.cpp">
       <Filter>scene\2d</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\scene\gui\check_box.cpp">
+      <Filter>scene\gui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\scene\register_scene_types.h">
@@ -1198,6 +1201,9 @@
     </ClInclude>
     <ClInclude Include="..\..\scene\2d\back_buffer_copy.h">
       <Filter>scene\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\gui\check_box.h">
+      <Filter>scene\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

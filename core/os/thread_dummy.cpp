@@ -55,5 +55,26 @@ void SemaphoreDummy::make_default() {
 	Semaphore::create_func = &SemaphoreDummy::create;
 };
 
+void TlsDummy::create_func_dummy(ID& p_tls_key) {
+}
+
+void TlsDummy::delete_func_dummy(ID& p_tls_key) {
+}
+
+void *TlsDummy::get_func_dummy(ID& p_tls_key) {
+
+	return NULL;
+}
+
+void TlsDummy::set_func_dummy(ID& p_tls_key, void *p_ptr) {
+}
+
+void TlsDummy::make_default() {
+
+	create_func=create_func_dummy;
+	delete_func=delete_func_dummy;
+	get_func=get_func_dummy;
+	set_func=set_func_dummy;
+}
 
 

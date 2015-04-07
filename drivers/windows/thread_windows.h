@@ -69,6 +69,19 @@ public:
 
 };
 
+class TlsWindows : public Tls {
+
+	static void create_func_windows(ID& p_tls_key);
+	static void delete_func_windows(ID& p_tls_key);
+	static void *get_func_windows(ID& p_tls_key);
+	static void set_func_windows(ID& p_tls_key, void *p_ptr);
+
+public:
+	static void make_default();
+
+	TlsWindows();
+	~TlsWindows();
+};
 
 #endif
 

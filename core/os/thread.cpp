@@ -27,11 +27,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "thread.h"
-
+#if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
+#include "drivers/unix/thread_posix.h"
+#else
+#include "drivers/windows/thread_windows.h"
+#endif
 
 Thread* (*Thread::create_func)(ThreadCreateCallback,void *,const Settings&)=NULL;
 Thread::ID (*Thread::get_thread_ID_func)()=NULL;
 void (*Thread::wait_to_finish_func)(Thread*)=NULL;
+
+void (*Tls::create_func)(ID&)=NULL;
+void (*Tls::delete_func)(ID&)=NULL;
+void* (*Tls::get_func)(ID&)=NULL;
+void (*Tls::set_func)(ID&,void*)=NULL;
 
 Thread::ID Thread::_main_thread_id=0;
 
@@ -67,4 +76,34 @@ Thread::~Thread()
 {
 }
 
+void *Tls::get() const {
 
+	if(get_func)
+		return get_func(tls_key);
+	return NULL;
+}
+
+void Tls::set(void *p_ptr) {
+
+	if(set_func)
+		set_func(tls_key, p_ptr);
+}
+
+Tls::Tls() {
+
+	if(create_func==NULL)
+#if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
+	TlsPosix::make_default();
+#else
+	TlsWindows::make_default();
+#endif
+
+	if(create_func)
+		create_func(tls_key);
+}
+
+Tls::~Tls() {
+
+	if(delete_func)
+		delete_func(tls_key);
+}

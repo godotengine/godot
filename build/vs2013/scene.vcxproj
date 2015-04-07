@@ -212,6 +212,7 @@
     <ClCompile Include="..\..\scene\gui\button_array.cpp" />
     <ClCompile Include="..\..\scene\gui\button_group.cpp" />
     <ClCompile Include="..\..\scene\gui\center_container.cpp" />
+    <ClCompile Include="..\..\scene\gui\check_box.cpp" />
     <ClCompile Include="..\..\scene\gui\check_button.cpp" />
     <ClCompile Include="..\..\scene\gui\color_picker.cpp" />
     <ClCompile Include="..\..\scene\gui\container.cpp" />
@@ -411,6 +412,7 @@
     <ClInclude Include="..\..\scene\gui\button_array.h" />
     <ClInclude Include="..\..\scene\gui\button_group.h" />
     <ClInclude Include="..\..\scene\gui\center_container.h" />
+    <ClInclude Include="..\..\scene\gui\check_box.h" />
     <ClInclude Include="..\..\scene\gui\check_button.h" />
     <ClInclude Include="..\..\scene\gui\color_picker.h" />
     <ClInclude Include="..\..\scene\gui\container.h" />

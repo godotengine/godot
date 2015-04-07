@@ -78,7 +78,7 @@ env_base.android_module_libraries=[]
 env_base.android_manifest_chunk=""
 env_base.android_permission_chunk=""
 env_base.android_appattributes_chunk=""
-env_base.disabled_modules=[]
+env_base.disabled_modules=["behavior_tree"]
 
 env_base.__class__.android_module_source = methods.android_module_source
 env_base.__class__.android_module_library = methods.android_module_library

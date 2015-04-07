@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "object_type_db.h"
 #include "os/mutex.h"
+#include "os/os.h"
 
 #ifdef NO_THREADS
 
@@ -303,6 +304,8 @@ void ObjectTypeDB::_add_type2(const StringName& p_type, const StringName& p_inhe
 
 	StringName name = p_type;
 
+	if(types.has(name))
+		OS::get_singleton()->print("Type %s already registered\n", name.operator String().utf8().get_data());
 	ERR_FAIL_COND(types.has(name));
 
 	types[name]=TypeInfo();
@@ -312,6 +315,8 @@ void ObjectTypeDB::_add_type2(const StringName& p_type, const StringName& p_inhe
 
 	if (ti.inherits) {
 
+		if(!types.has(ti.inherits))
+			OS::get_singleton()->print("Type %s was not registered\n", ti.inherits.operator String().utf8().get_data());
 		ERR_FAIL_COND( !types.has(ti.inherits) ); //it MUST be registered.
 		ti.inherits_ptr = &types[ti.inherits];
 
@@ -805,6 +810,8 @@ else goto set_defvals;
 }
 
 void ObjectTypeDB::add_virtual_method(const StringName& p_type,const MethodInfo& p_method ) {
+	if(!types.has(p_type))
+		OS::get_singleton()->print("Type %s was not registered\n", p_type.operator String().utf8().get_data());
 	ERR_FAIL_COND(!types.has(p_type));
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -818,6 +825,8 @@ void ObjectTypeDB::add_virtual_method(const StringName& p_type,const MethodInfo&
 
 void ObjectTypeDB::get_virtual_methods(const StringName& p_type, List<MethodInfo> * p_methods , bool p_no_inheritance) {
 
+	if(!types.has(p_type))
+		OS::get_singleton()->print("Type %s was not registered\n", p_type.operator String().utf8().get_data());
 	ERR_FAIL_COND(!types.has(p_type));
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -841,6 +850,8 @@ void ObjectTypeDB::get_virtual_methods(const StringName& p_type, List<MethodInfo
 
 void ObjectTypeDB::set_type_enabled(StringName p_type,bool p_enable) {
 
+	if(!types.has(p_type))
+		OS::get_singleton()->print("Type %s not registered\n", p_type.operator String().utf8().get_data());
 	ERR_FAIL_COND(!types.has(p_type));
 	types[p_type].disabled=!p_enable;
 }
@@ -860,6 +871,8 @@ bool ObjectTypeDB::is_type_enabled(StringName p_type) {
 
 StringName ObjectTypeDB::get_category(const StringName& p_node) {
 
+	if(!types.has(p_node))
+		OS::get_singleton()->print("Type %s was not registered\n", p_node.operator String().utf8().get_data());
 	ERR_FAIL_COND_V(!types.has(p_node),StringName());
 #ifdef DEBUG_ENABLED
 	return types[p_node].category;
