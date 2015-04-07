@@ -170,6 +170,11 @@ void OS_Windows::initialize_core() {
 
 	last_button_state=0;
 
+	last_mouse_wheel_up_ticks=0;
+	fake_mouse_wheel_up_release_after=0;
+	last_mouse_wheel_down_ticks=0;
+	fake_mouse_wheel_down_release_after=0;
+
 	//RedirectIOToConsole();
 	maximized=false;
 	minimized=false;
@@ -370,6 +375,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mm.button_mask|=(wParam&MK_LBUTTON)?(1<<0):0;
 			mm.button_mask|=(wParam&MK_RBUTTON)?(1<<1):0;
 			mm.button_mask|=(wParam&MK_MBUTTON)?(1<<2):0;
+			mm.button_mask|=(fake_mouse_wheel_up_release_after>0)?(1<<3):0;
+			mm.button_mask|=(fake_mouse_wheel_down_release_after>0)?(1<<4):0;
 			last_button_state=mm.button_mask;
 			/*mm.button_mask|=(wParam&MK_XBUTTON1)?(1<<5):0;
 			mm.button_mask|=(wParam&MK_XBUTTON2)?(1<<6):0;*/
@@ -422,6 +429,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_RBUTTONDOWN:
 		case WM_RBUTTONUP:
 		case WM_MOUSEWHEEL:
+		case WM_USER_FAKE_MOUSEWHEEL_UP_RELEASE:
+		case WM_USER_FAKE_MOUSEWHEEL_DOWN_RELEASE:
 		case WM_LBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
@@ -483,13 +492,29 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 					if (!motion)
 						return 0;
 
-
-					if (motion>0)
+					if (motion>0) {
 						mb.button_index=4;
-					else
+						last_mouse_wheel_up_ticks = get_ticks_usec();
+						fake_mouse_wheel_up_release_after = last_mouse_wheel_up_ticks + FAKE_MOUSEWHEEL_RELEASE_DELAY_IN_TICKS;
+						if ( fake_mouse_wheel_down_release_after > 0 )
+							fake_mouse_wheel_down_release_after = -1; // this will trigger an early release of wheel down
+					}
+					else {
 						mb.button_index=5;
+						last_mouse_wheel_down_ticks = get_ticks_usec();
+						fake_mouse_wheel_down_release_after = last_mouse_wheel_down_ticks + FAKE_MOUSEWHEEL_RELEASE_DELAY_IN_TICKS;
+						if ( fake_mouse_wheel_up_release_after > 0 )
+							fake_mouse_wheel_up_release_after = -1; // this will trigger an early release of wheel up
+					}					
 
-
+				} break;
+				case WM_USER_FAKE_MOUSEWHEEL_UP_RELEASE: {
+					mb.pressed=false;
+					mb.button_index=4;
+				} break;
+				case WM_USER_FAKE_MOUSEWHEEL_DOWN_RELEASE: {
+					mb.pressed=false;
+					mb.button_index=5;
 				} break;
 					/*
 				case WM_XBUTTONDOWN: {
@@ -503,6 +528,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 				default: { return 0; }
 			}
 
+			last_mouse_lparam = lParam; // we will need the most recents for the fake MouseWheel release
+			last_mouse_wparam = wParam;
 
 			mb.mod.control=(wParam&MK_CONTROL)!=0;
 			mb.mod.shift=(wParam&MK_SHIFT)!=0;
@@ -511,7 +538,8 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mb.button_mask|=(wParam&MK_LBUTTON)?(1<<0):0;
 			mb.button_mask|=(wParam&MK_RBUTTON)?(1<<1):0;
 			mb.button_mask|=(wParam&MK_MBUTTON)?(1<<2):0;
-
+			mb.button_mask|=(fake_mouse_wheel_up_release_after>0)?(1<<3):0;
+			mb.button_mask|=(fake_mouse_wheel_down_release_after>0)?(1<<4):0;
 			last_button_state=mb.button_mask;
 			/*
 			mb.button_mask|=(wParam&MK_XBUTTON1)?(1<<5):0;
@@ -529,7 +557,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 			mb.global_y=mb.y;
 
 
-			if (uMsg != WM_MOUSEWHEEL) {
+			if (uMsg != WM_MOUSEWHEEL && uMsg != WM_USER_FAKE_MOUSEWHEEL_UP_RELEASE && uMsg != WM_USER_FAKE_MOUSEWHEEL_DOWN_RELEASE ) {
 				if (mb.pressed) {
 
 					if (++pressrc>0)
@@ -554,12 +582,19 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 			if (main_loop) {
 				input->parse_input_event(event);
-				if (mb.pressed && mb.button_index>3) {
-					//send release for mouse wheel
+				if (fake_mouse_wheel_up_release_after < 0 ) { //send an early release for mouse wheel up
+					fake_mouse_wheel_up_release_after = 0;
+					mb.button_index=4;
 					mb.pressed=false;
 					event.ID=++last_id;
 					input->parse_input_event(event);
-
+				}
+				if ( fake_mouse_wheel_down_release_after < 0 ) { //send an early release for mouse wheel down
+					fake_mouse_wheel_down_release_after = 0;
+					mb.button_index=5;
+					mb.pressed=false;
+					event.ID=++last_id;
+					input->parse_input_event(event);
 				}
 			}
 
@@ -1905,6 +1940,15 @@ void OS_Windows::process_events() {
 
 	process_key_events();
 
+	// post programmed mouse wheel releases
+	if ( fake_mouse_wheel_up_release_after > 0 && get_ticks_usec() > fake_mouse_wheel_up_release_after ) {
+		PostMessage(hWnd, WM_USER_FAKE_MOUSEWHEEL_UP_RELEASE, last_mouse_wparam, last_mouse_lparam);
+		fake_mouse_wheel_up_release_after = 0;
+	}
+	if ( fake_mouse_wheel_down_release_after > 0 && get_ticks_usec() > fake_mouse_wheel_down_release_after ) {
+		PostMessage(hWnd, WM_USER_FAKE_MOUSEWHEEL_DOWN_RELEASE, last_mouse_wparam, last_mouse_lparam);
+		fake_mouse_wheel_down_release_after = 0;
+	}
 }
 
 void OS_Windows::set_cursor_shape(CursorShape p_shape) {
@@ -2206,7 +2250,6 @@ void OS_Windows::run() {
 	};
 	
 	main_loop->finish();
-
 }
 
 
