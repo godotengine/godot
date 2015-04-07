@@ -1033,32 +1033,33 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	int mipmaps= (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && img.get_mipmaps()>0) ? img.get_mipmaps() +1 : 1;
 
 
-	int w=img.get_width();
-	int h=img.get_height();
+	//int w=img.get_width();
+	//int h=img.get_height();
 
 	int tsize=0;
 	for(int i=0;i<mipmaps;i++) {
 
 		int size,ofs;
-		img.get_mipmap_offset_and_size(i,ofs,size);
+		int mm_w,mm_h;
+		img.get_mipmap_offset_size_and_dimensions(i,ofs,size,mm_w,mm_h);
 
 		if (texture->compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-			glCompressedTexImage2D( blit_target, i, format,w,h,0,size,&read[ofs] );
+			glCompressedTexImage2D( blit_target, i, format,mm_w,mm_h,0,size,&read[ofs] );
 
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
-				glTexSubImage2D( blit_target, i, 0,0,w,h,format,GL_UNSIGNED_BYTE,&read[ofs] );
+				glTexSubImage2D( blit_target, i, 0,0,mm_w, mm_h,format,GL_UNSIGNED_BYTE,&read[ofs] );
 			} else {
-				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
+				glTexImage2D(blit_target, i, internal_format, mm_w, mm_h, 0, format, GL_UNSIGNED_BYTE,&read[ofs]);
 			}
 
 		}
 		tsize+=size;
 
-		w = MAX(1,w>>1);
-		h = MAX(1,h>>1);
+		//w = MAX(Image::,w>>1);
+		//h = MAX(1,h>>1);
 
 	}
 

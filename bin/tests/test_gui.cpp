@@ -132,7 +132,7 @@ public:
 		frame->add_child( button );
 
 
-#if 0
+
 		Sprite *tf = memnew( Sprite );
 		frame->add_child(tf);
 		Image img;
@@ -140,14 +140,14 @@ public:
 
 		img.resize(512,512);
 		img.generate_mipmaps();
-		img.compress();
-		Ref<Texture> text = memnew( Texture );
-		text->create_from_image(img);
-		tf->set_texture(text);
+		img.compress(Image::COMPRESS_PVRTC4);
+		Ref<ImageTexture> tt = memnew( ImageTexture );
+		tt->create_from_image(img);
+		tf->set_texture(tt);
 		tf->set_pos(Point2(50,50));
 		//tf->set_scale(Point2(0.3,0.3));
 
-
+#if 0
 		return;
 #endif
 

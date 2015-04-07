@@ -236,6 +236,7 @@ public:
 
 	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
 	void get_mipmap_offset_and_size(int p_mipmap,int &r_ofs, int &r_size) const; //get where the mipmap begins in data
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap,int &r_ofs, int &r_size,int &w, int& h) const; //get where the mipmap begins in data
 
 	/**
 	 * Resize the image, using the prefered interpolation method.
