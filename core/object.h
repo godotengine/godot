@@ -397,7 +397,6 @@ friend void postinitialize_handler(Object*);
 
 protected:	
 
-
 	virtual bool _use_builtin_script() const { return false; }
 	virtual void _initialize_typev() { initialize_type(); }
 	virtual bool _setv(const StringName& p_name,const Variant &p_property) { return false; };
@@ -588,6 +587,9 @@ public:
 
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)
+
+	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
+	bool is_queued_for_deletion() const; 
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate=p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }
