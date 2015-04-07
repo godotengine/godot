@@ -111,6 +111,7 @@ opts.Add('jpg','JPG Image loader support (yes/no)','yes')
 opts.Add('webp','WEBP Image loader support (yes/no)','yes')
 opts.Add('dds','DDS Texture loader support (yes/no)','yes')
 opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
+opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
@@ -311,6 +312,8 @@ if selected_platform in platform_list:
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
 		
+	if (env['etc1']=='yes'):
+		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
 	Export('env')
 

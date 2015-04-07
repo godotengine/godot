@@ -91,6 +91,10 @@
 
 static RasterizerGLES2* _singleton = NULL;
 
+#ifdef GLES_NO_CLIENT_ARRAYS
+static float GlobalVertexBuffer[MAX_POLYGON_VERTICES * 8] = {0};
+#endif
+
 static const GLenum prim_type[]={GL_POINTS,GL_LINES,GL_TRIANGLES,GL_TRIANGLE_FAN};
 
 _FORCE_INLINE_ static void _set_color_attrib(const Color& p_color) {
@@ -8341,20 +8345,22 @@ void RasterizerGLES2::canvas_draw_primitive(const Vector<Point2>& p_points, cons
 
 void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indices, const Vector2* p_vertices, const Vector2* p_uvs, const Color* p_colors,const RID& p_texture,bool p_singlecolor) {
 
-	bool do_colors=false;
+    bool do_colors=false;
+    Color m;
+    if (p_singlecolor) {
+        m = *p_colors;
+        m.a*=canvas_opacity;
+        _set_color_attrib(m);
+    } else if (!p_colors) {
+        m = Color(1, 1, 1, canvas_opacity);
+        _set_color_attrib(m);
+    } else
+        do_colors=true;
 
-	if (p_singlecolor) {
-		Color m = *p_colors;
-		m.a*=canvas_opacity;
-		_set_color_attrib(m);
-	} else if (!p_colors) {
-		_set_color_attrib( Color(1,1,1,canvas_opacity));
-	} else
-		do_colors=true;
+    Texture *texture = _bind_canvas_texture(p_texture);
 
-	Texture *texture = _bind_canvas_texture(p_texture);
-
-	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+#ifndef GLES_NO_CLIENT_ARRAYS
+    glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, sizeof(Vector2), p_vertices );
 	if (do_colors) {
 
@@ -8384,10 +8390,77 @@ void RasterizerGLES2::canvas_draw_polygon(int p_vertex_count, const int* p_indic
 		};
 		glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_SHORT, _draw_poly_indices );
 #endif
-		//glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_INT, p_indices );
 	} else {
 		glDrawArrays(GL_TRIANGLES,0,p_vertex_count);
 	}
+
+
+#else //WebGL specific impl.
+	glBindBuffer(GL_ARRAY_BUFFER, gui_quad_buffer);    
+    float *b = GlobalVertexBuffer;
+    int ofs = 0;
+    if(p_vertex_count > MAX_POLYGON_VERTICES){
+        print_line("Too many vertices to render");
+        return;
+    }
+    glEnableVertexAttribArray(VS::ARRAY_VERTEX);
+    glVertexAttribPointer( VS::ARRAY_VERTEX, 2 ,GL_FLOAT, false, sizeof(float)*2, ((float*)0)+ofs );
+    for(int i=0;i<p_vertex_count;i++) {
+        b[ofs++]=p_vertices[i].x;
+        b[ofs++]=p_vertices[i].y;
+    }
+
+    if (p_colors && do_colors) {
+
+        glEnableVertexAttribArray(VS::ARRAY_COLOR);
+        glVertexAttribPointer( VS::ARRAY_COLOR, 4 ,GL_FLOAT, false, sizeof(float)*4, ((float*)0)+ofs );
+        for(int i=0;i<p_vertex_count;i++) {
+            b[ofs++]=p_colors[i].r;
+            b[ofs++]=p_colors[i].g;
+            b[ofs++]=p_colors[i].b;
+            b[ofs++]=p_colors[i].a;
+        }
+
+    } else {
+        glDisableVertexAttribArray(VS::ARRAY_COLOR);
+    }
+
+
+    if (p_uvs) {
+
+        glEnableVertexAttribArray(VS::ARRAY_TEX_UV);
+        glVertexAttribPointer( VS::ARRAY_TEX_UV, 2 ,GL_FLOAT, false, sizeof(float)*2, ((float*)0)+ofs );
+        for(int i=0;i<p_vertex_count;i++) {
+            b[ofs++]=p_uvs[i].x;
+            b[ofs++]=p_uvs[i].y;
+        }
+
+    } else {
+        glDisableVertexAttribArray(VS::ARRAY_TEX_UV);
+    }
+
+    glBufferSubData(GL_ARRAY_BUFFER,0,ofs*4,&b[0]);
+
+    //bind the indices buffer.
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+
+		static const int _max_draw_poly_indices = 16*1024; // change this size if needed!!!
+		ERR_FAIL_COND(p_vertex_count > _max_draw_poly_indices);
+		static uint16_t _draw_poly_indices[_max_draw_poly_indices];
+		for (int i=0; i<p_vertex_count; i++) {
+			_draw_poly_indices[i] = p_indices[i];
+             //OS::get_singleton()->print("ind: %d ", p_indices[i]);
+		};
+
+        //copy the data to GPU.
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, p_vertex_count * sizeof(uint16_t), &_draw_poly_indices[0]);
+
+        //draw the triangles.
+        glDrawElements(GL_TRIANGLES, p_vertex_count, GL_UNSIGNED_SHORT, 0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+#endif
 
 	_rinfo.ci_draw_commands++;
 
@@ -10673,9 +10746,20 @@ void RasterizerGLES2::init() {
 
 	glGenBuffers(1,&gui_quad_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER,gui_quad_buffer);
-	glBufferData(GL_ARRAY_BUFFER,128,NULL,GL_DYNAMIC_DRAW);
+#ifdef GLES_NO_CLIENT_ARRAYS //WebGL specific implementation.
+    glBufferData(GL_ARRAY_BUFFER, 8 * MAX_POLYGON_VERTICES,NULL,GL_DYNAMIC_DRAW);
+#else
+    glBufferData(GL_ARRAY_BUFFER,128,NULL,GL_DYNAMIC_DRAW);
+#endif
 	glBindBuffer(GL_ARRAY_BUFFER,0); //unbind
 
+
+#ifdef GLES_NO_CLIENT_ARRAYS    //webgl indices buffer
+    glGenBuffers(1, &indices_buffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 16*1024, NULL, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);// unbind
+#endif
 
 	using_canvas_bg=false;
 	_update_framebuffer();
