@@ -575,7 +575,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			}
 
 			//str+="\n";
-			OS::get_singleton()->print("%s\n",str.utf8().get_data());
+			OS::get_singleton()->print("%s",str.utf8().get_data());
 			r_ret=Variant();
 
 		} break;
