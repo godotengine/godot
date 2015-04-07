@@ -235,6 +235,7 @@ void SampleLibraryEditor::_update_library() {
 
 	List<StringName> names;
 	sample_library->get_sample_list(&names);
+	names.sort_custom<StringName::AlphCompare>();
 
 	for(List<StringName>::Element *E=names.front();E;E=E->next()) {
 
