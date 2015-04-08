@@ -188,7 +188,7 @@ void AcceptDialog::_post_popup() {
 }
 
 void AcceptDialog::_notification(int p_what) {
-	
+
 	if (p_what==NOTIFICATION_MODAL_CLOSE) {
 
 		cancel_pressed();
@@ -197,7 +197,7 @@ void AcceptDialog::_notification(int p_what) {
 
 
 
-	}	
+	}
 }
 
 void AcceptDialog::_builtin_text_entered(const String& p_text) {
@@ -206,7 +206,7 @@ void AcceptDialog::_builtin_text_entered(const String& p_text) {
 }
 
 void AcceptDialog::_ok_pressed() {
-	
+
 	if (hide_on_ok)
 		hide();
 	ok_pressed();
@@ -214,7 +214,7 @@ void AcceptDialog::_ok_pressed() {
 
 }
 void AcceptDialog::_close_pressed() {
-	
+
 	cancel_pressed();
 }
 
@@ -223,7 +223,7 @@ String AcceptDialog::get_text() const {
 	return label->get_text();
 }
 void AcceptDialog::set_text(String p_text) {
-	
+
 	label->set_text(p_text);
 }
 
@@ -250,6 +250,14 @@ void AcceptDialog::set_child_rect(Control *p_child) {
 
 	p_child->set_area_as_parent_rect(get_constant("margin","Dialogs"));
 	p_child->set_margin(MARGIN_BOTTOM, get_constant("button_margin","Dialogs")+10);
+}
+
+void AcceptDialog::fit_to_label() {
+        Size2 size_label;
+        size_label.x = label->get_longest_line_width() + get_constant("margin","Dialogs");
+        size_label.y = label->get_line_height() * label->get_line_count() + get_constant("button_margin","Dialogs")+10;
+
+        set_size(size_label);
 }
 
 void AcceptDialog::_custom_action(const String& p_action) {
@@ -291,7 +299,7 @@ Button* AcceptDialog::add_cancel(const String &p_cancel) {
 }
 
 void AcceptDialog::_bind_methods() {
-	
+
 	ObjectTypeDB::bind_method(_MD("_ok"),&AcceptDialog::_ok_pressed);
 	ObjectTypeDB::bind_method(_MD("get_ok"),&AcceptDialog::get_ok);
 	ObjectTypeDB::bind_method(_MD("get_label"),&AcceptDialog::get_label);
@@ -308,7 +316,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
 
-	
+
 }
 
 
@@ -319,11 +327,11 @@ void AcceptDialog::set_swap_ok_cancel(bool p_swap) {
 }
 
 AcceptDialog::AcceptDialog() {
-	
+
 	int margin = get_constant("margin","Dialogs");
 	int button_margin = get_constant("button_margin","Dialogs");
-	
-	
+
+
 	label = memnew( Label );
 	label->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	label->set_anchor(MARGIN_BOTTOM,ANCHOR_END);
@@ -343,8 +351,8 @@ AcceptDialog::AcceptDialog() {
 	hbc->add_child(ok);
 	hbc->add_spacer();
 	//add_child(ok);
-	
-	
+
+
 	ok->connect("pressed", this,"_ok");
 	set_as_toplevel(true);
 
