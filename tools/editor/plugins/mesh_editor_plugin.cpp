@@ -33,7 +33,8 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text("Mesh is empty!");
-		err_dialog->popup_centered(Size2(100,80));
+		err_dialog->fit_to_label();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -85,7 +86,8 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
-				err_dialog->popup_centered(Size2(100,50));
+				err_dialog->fit_to_label();
+				err_dialog->popup_centered();
 				return;
 			}
 			Ref<Shape> shape = mesh->create_trimesh_shape();
@@ -111,6 +113,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
+				err_dialog->fit_to_label();
 				err_dialog->popup_centered(Size2(100,50));
 				return;
 			}
@@ -171,7 +174,8 @@ void MeshInstanceEditor::_create_outline_mesh() {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text("MeshInstance lacks a Mesh!");
-		err_dialog->popup_centered(Size2(100,50));
+		err_dialog->fit_to_label();
+		err_dialog->popup_centered();
 		return;
 	}
 
@@ -179,7 +183,8 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 	if (mesho.is_null()) {
 		err_dialog->set_text("Could not create outline!");
-		err_dialog->popup_centered(Size2(100,50));
+		err_dialog->fit_to_label();
+		err_dialog->popup_centered();
 		return;
 	}
 

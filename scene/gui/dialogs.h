@@ -134,6 +134,7 @@ public:
 	String get_text() const;
 
 	void set_child_rect(Control *p_child);
+	void fit_to_label();
 
 	AcceptDialog();
 	~AcceptDialog();
@@ -142,7 +143,7 @@ public:
 
 
 class ConfirmationDialog : public AcceptDialog {
-	
+
 	OBJ_TYPE(ConfirmationDialog,AcceptDialog);
 	Button *cancel;
 protected:

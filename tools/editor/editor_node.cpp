@@ -452,8 +452,9 @@ void EditorNode::_dialog_display_file_error(String p_file,Error p_error) {
 				accept->set_text("Error Saving.");
 			}break;
 		}
-					
-		accept->popup_centered(Size2(300,70));;
+		
+		accept->fit_to_label();	
+		accept->popup_centered();
 	}
 
 }
@@ -704,7 +705,8 @@ void EditorNode::_save_scene(String p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("I see..");
 		accept->set_text("This operation can't be done without a tree root.");
-		accept->popup_centered(Size2(300,70));;
+		accept->fit_to_label();
+		accept->popup_centered();
 		return;
 	}
 
@@ -726,7 +728,8 @@ void EditorNode::_save_scene(String p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("I see..");
 		accept->set_text("Couldn't save scene. Likely dependencies (instances) couldn't be satisfied.");
-		accept->popup_centered(Size2(300,70));;
+		accept->fit_to_label();
+		accept->popup_centered();
 		return;
 	}
 
@@ -927,7 +930,8 @@ void EditorNode::_dialog_action(String p_file) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation requieres a single selected node.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -949,7 +953,8 @@ void EditorNode::_dialog_action(String p_file) {
 					//accept->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
 					accept->set_text("Couldn't save subscene. Likely dependencies (instances) couldn't be satisfied.");
-					accept->popup_centered(Size2(300,70));;
+					accept->fit_to_label();
+					accept->popup_centered();
 					return;
 				}
 
@@ -967,7 +972,8 @@ void EditorNode::_dialog_action(String p_file) {
 					//confirmation->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
 					accept->set_text("Error saving scene.");
-					accept->popup_centered(Size2(300,70));;
+					accept->fit_to_label();
+					accept->popup_centered();
 					break;
 				}
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
@@ -978,7 +984,8 @@ void EditorNode::_dialog_action(String p_file) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("Error duplicating scene to save it.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 
 			}
@@ -1016,7 +1023,8 @@ void EditorNode::_dialog_action(String p_file) {
 					//accept->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
 					accept->set_text("Can't load MeshLibrary for merging!.");
-					accept->popup_centered(Size2(300,70));;
+					accept->fit_to_label();
+					accept->popup_centered();
 					return;
 				}
 
@@ -1033,7 +1041,8 @@ void EditorNode::_dialog_action(String p_file) {
 
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("Error saving MeshLibrary!.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				return;
 			}
 
@@ -1050,7 +1059,8 @@ void EditorNode::_dialog_action(String p_file) {
 					//accept->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
 					accept->set_text("Can't load TileSet for merging!.");
-					accept->popup_centered(Size2(300,70));;
+					accept->fit_to_label();
+					accept->popup_centered();
 					return;
 				}
 
@@ -1067,7 +1077,8 @@ void EditorNode::_dialog_action(String p_file) {
 
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("Error saving TileSet!.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				return;
 			}
 		} break;
@@ -1084,7 +1095,8 @@ void EditorNode::_dialog_action(String p_file) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("Can't open export templates zip.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				return;
 
 			}
@@ -1413,7 +1425,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text("I see..");
 			accept->set_text("No scene to run exists.");
-			accept->popup_centered(Size2(300,70));;
+			accept->fit_to_label();
+			accept->popup_centered();
 			return;
 		}
 
@@ -1456,7 +1469,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text("I see..");
 			accept->set_text("No main scene has ever been defined.\nSelect one from \"Project Settings\" under the 'application' category.");
-			accept->popup_centered(Size2(300,100));;
+			accept->fit_to_label();
+			accept->popup_centered();
 			return;
 		}
 
@@ -1477,7 +1491,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 					//accept->get_cancel()->hide();
 					accept->get_ok()->set_text("I see..");
 					accept->set_text("Current scene was never saved, please save scene before running.");
-					accept->popup_centered(Size2(300,70));;
+					accept->fit_to_label();
+					accept->popup_centered();
 					return;
 				}
 
@@ -1500,7 +1515,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		//confirmation->get_cancel()->hide();
 		accept->get_ok()->set_text("I see..");
 		accept->set_text("Could not start subprocess!");
-		accept->popup_centered(Size2(300,70));;
+		accept->fit_to_label();
+		accept->popup_centered();
 		return;
 
 	}
@@ -1648,7 +1664,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;				
 			}
 			
@@ -1692,7 +1709,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			if (!p_confirmed) {
 				accept->get_ok()->set_text("Yes");
 				accept->set_text("This scene has never been saved. Save before running?");
-				accept->popup_centered(Size2(300, 70));
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -1710,7 +1728,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -1728,7 +1747,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("Please save the scene first.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 
 			}
@@ -1754,7 +1774,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a scene.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -1767,7 +1788,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation requieres a single selected node.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -1780,7 +1802,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on instanced scenes.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -1875,7 +1898,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a scene.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -1920,7 +1944,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a selected node.");
-				accept->popup_centered(Size2(300,70));;
+				accept->fit_to_label();
+				accept->popup_centered();
 				break;
 			}
 
@@ -2704,7 +2729,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text("Error loading scene, it must be inside the project path. Use 'Import' to open the scene, then save it inside the project path.");
-		accept->popup_centered(Size2(300,120));
+		accept->fit_to_label();
+		accept->popup_centered();
 		opening_prev=false;
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -2718,7 +2744,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text("Error loading scene.");
-		accept->popup_centered(Size2(300,70));;
+		accept->fit_to_label();
+		accept->popup_centered();
 		opening_prev=false;
 		return ERR_FILE_NOT_FOUND;
 	}
@@ -2731,7 +2758,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text("Error loading scene.");
-		accept->popup_centered(Size2(300,70));;
+		accept->fit_to_label();
+		accept->popup_centered();
 		opening_prev=false;
 		return ERR_FILE_NOT_FOUND;
 	}
