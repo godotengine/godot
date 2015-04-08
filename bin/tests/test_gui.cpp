@@ -132,7 +132,7 @@ public:
 		frame->add_child( button );
 
 
-
+#if 0
 		Sprite *tf = memnew( Sprite );
 		frame->add_child(tf);
 		Image img;
@@ -147,7 +147,7 @@ public:
 		tf->set_pos(Point2(50,50));
 		//tf->set_scale(Point2(0.3,0.3));
 
-#if 0
+
 		return;
 #endif
 

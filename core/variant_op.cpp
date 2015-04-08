@@ -471,7 +471,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						}
 						const Array &array_a=*reinterpret_cast<const Array *>(p_a._data._mem);
 						const Array &array_b=*reinterpret_cast<const Array *>(p_b._data._mem);
-						Array sum;
+						Array sum(array_a.is_shared() || array_b.is_shared());
 						int asize=array_a.size();
 						int bsize=array_b.size();
 						sum.resize(asize+bsize);
