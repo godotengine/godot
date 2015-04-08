@@ -90,7 +90,8 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			if (node->get_texture().is_null()) {
 
 				error->set_text("No texture in this polygon.\nSet a texture to be able to edit UV.");
-				error->popup_centered_minsize(Size2(300,70));
+				errot->fit_to_label()
+				error->popup_centered();
 				return;
 			}
 
