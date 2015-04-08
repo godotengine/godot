@@ -2204,7 +2204,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		}break;
 		case NODE_VEC_LEN: {
 
-			code += OUTNAME(p_node->id,0)+"=length("+p_inputs[1]+");\n";
+			code += OUTNAME(p_node->id,0)+"=length("+p_inputs[0]+");\n";
 
 		}break;
 		case NODE_DOT_PROD: {
