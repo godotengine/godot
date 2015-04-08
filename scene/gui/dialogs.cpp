@@ -312,6 +312,7 @@ void AcceptDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_custom_action"),&AcceptDialog::_custom_action);
 	ObjectTypeDB::bind_method(_MD("set_text","text"),&AcceptDialog::set_text);
 	ObjectTypeDB::bind_method(_MD("get_text"),&AcceptDialog::get_text);
+	ObjectTypeDB::bind_method(_MD("fit_to_label"),&AcceptDialog::fit_to_label);
 
 	ADD_SIGNAL( MethodInfo("confirmed") );
 	ADD_SIGNAL( MethodInfo("custom_action",PropertyInfo(Variant::STRING,"action")) );
