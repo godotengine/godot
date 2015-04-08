@@ -93,7 +93,7 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 			dialog->set_title("Error!");
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text("Close");
-			dialog->popup_centered(Size2(300,60));
+			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
 		String basename = path.get_file().basename();
