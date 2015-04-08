@@ -406,7 +406,7 @@ void Viewport::_notification(int p_what) {
 						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
 						for(int i=0;i<rc;i++) {
 
-							if (res[i].collider) {
+							if (res[i].collider_id && res[i].collider) {
 								CollisionObject2D *co=res[i].collider->cast_to<CollisionObject2D>();
 								if (co) {
 

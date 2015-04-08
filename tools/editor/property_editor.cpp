@@ -2258,7 +2258,7 @@ void PropertyEditor::update_tree() {
 		}
 
 		if (capitalize_paths)
-			item->set_text( 0, name.capitalize() );
+			item->set_text( 0, name.camelcase_to_underscore().capitalize() );
 		else
 			item->set_text( 0, name );
 

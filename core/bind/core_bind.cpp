@@ -709,13 +709,13 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
 	ObjectTypeDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
-	ObjectTypeDB::bind_method(_MD("set_current_screen"),&_OS::set_current_screen);
-	ObjectTypeDB::bind_method(_MD("get_screen_position"),&_OS::get_screen_position,DEFVAL(0));
-	ObjectTypeDB::bind_method(_MD("get_screen_size"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
+	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
-	ObjectTypeDB::bind_method(_MD("set_window_position"),&_OS::set_window_position);
+	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
 	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
-	ObjectTypeDB::bind_method(_MD("set_window_size"),&_OS::set_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
 	ObjectTypeDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
 	ObjectTypeDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
 	ObjectTypeDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);

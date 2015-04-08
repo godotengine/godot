@@ -1689,7 +1689,7 @@ bool GDScript::_update_exports() {
 			}
 
 
-			if (c->extends_used && String(c->extends_file)!="") {
+			if (c->extends_used && String(c->extends_file)!="" && String(c->extends_file) != get_path()) {
 
 				String path = c->extends_file;
 				if (path.is_rel_path()) {

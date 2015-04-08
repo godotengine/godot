@@ -31,6 +31,8 @@
 
 #include "servers/visual/rasterizer.h"
 
+#define MAX_POLYGON_VERTICES 4096 //used for WebGL canvas_draw_polygon call.
+
 #ifdef GLES2_ENABLED
 
 #include "image.h"
@@ -828,6 +830,7 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint base_framebuffer;
 
 	GLuint gui_quad_buffer;
+	GLuint indices_buffer;
 
 
 

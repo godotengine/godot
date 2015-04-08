@@ -33,7 +33,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text("Mesh is empty!");
-		err_dialog->popup_centered(Size2(100,50));
+		err_dialog->popup_centered(Size2(100,80));
 		return;
 	}
 
@@ -239,6 +239,9 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	outline_dialog->set_child_rect(outline_size);
 	add_child(outline_dialog);
 	outline_dialog->connect("confirmed",this,"_create_outline_mesh");
+
+	err_dialog = memnew( AcceptDialog );
+	add_child(err_dialog);
 
 }
 
