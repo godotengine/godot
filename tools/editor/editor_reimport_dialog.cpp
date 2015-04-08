@@ -33,7 +33,7 @@ void EditorReImportDialog::popup_reimport() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
 		error->set_text("Please wait for scan to complete");
-		error->popup_centered(Size2(250,100));
+		error->popup_centered_minsize();
 		return;
 	}
 
@@ -70,7 +70,7 @@ void EditorReImportDialog::popup_reimport() {
 		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->get_filename()=="") {
 
 			error->set_text("Current scene must be saved to re-import.");
-			error->popup_centered(Size2(250,100));
+			error->popup_centered_minsize();
 			get_ok()->set_text("Re-Import");
 			get_ok()->set_disabled(true);
 			return;
@@ -93,7 +93,7 @@ void EditorReImportDialog::ok_pressed() {
 
 	if (EditorFileSystem::get_singleton()->is_scanning()) {
 		error->set_text("Please wait for scan to complete");
-		error->popup_centered(Size2(250,100));
+		error->popup_centered_minsize();
 		return;
 	}
 

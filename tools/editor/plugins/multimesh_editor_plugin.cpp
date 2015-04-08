@@ -57,13 +57,13 @@ void MultiMeshEditor::_populate() {
 		if (multimesh.is_null()) {
 
 			err_dialog->set_text("No mesh source specified (and no MultiMesh set in node).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 		if (multimesh->get_mesh().is_null()) {
 
 			err_dialog->set_text("No mesh source specified (and MultiMesh contains no Mesh).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -75,7 +75,7 @@ void MultiMeshEditor::_populate() {
 		if (!ms_node) {
 
 			err_dialog->set_text("Mesh source is invalid (Invalid Path).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -84,7 +84,7 @@ void MultiMeshEditor::_populate() {
 		if (!ms_instance) {
 
 			err_dialog->set_text("Mesh source is invalid (Not a MeshInstance).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -93,7 +93,7 @@ void MultiMeshEditor::_populate() {
 		if (mesh.is_null()) {
 
 			err_dialog->set_text("Mesh source is invalid (Contains no Mesh resource).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -102,7 +102,7 @@ void MultiMeshEditor::_populate() {
 	if (surface_source->get_text()=="") {
 
 		err_dialog->set_text("No surface source specified.");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -111,7 +111,7 @@ void MultiMeshEditor::_populate() {
 	if (!ss_node) {
 
 		err_dialog->set_text("Surface source is invalid (Invalid Path).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -120,7 +120,7 @@ void MultiMeshEditor::_populate() {
 	if (!ss_instance) {
 
 		err_dialog->set_text("Surface source is invalid (Not Geometry).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -131,7 +131,7 @@ void MultiMeshEditor::_populate() {
 	if (geometry.size()==0) {
 
 		err_dialog->set_text("Surface source is invalid (No Faces).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
