@@ -183,7 +183,7 @@ void IP::erase_resolve_item(ResolverID p_id) {
 
 	GLOBAL_LOCK_FUNCTION;
 
-	resolver->queue[p_id].status=IP::RESOLVER_STATUS_DONE;
+	resolver->queue[p_id].status=IP::RESOLVER_STATUS_NONE;
 
 }
 
