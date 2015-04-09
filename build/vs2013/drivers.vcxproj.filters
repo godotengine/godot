@@ -3324,6 +3324,21 @@
     <ClCompile Include="..\..\drivers\theoraplayer\src\YUV\libyuv\src\video_common.cc">
       <Filter>drivers\theoraplayer\src\YUV\libyuv\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\drivers\pvr\BitScale.cpp">
+      <Filter>drivers\pvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\pvr\MortonTable.cpp">
+      <Filter>drivers\pvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\pvr\PvrTcDecoder.cpp">
+      <Filter>drivers\pvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\pvr\PvrTcEncoder.cpp">
+      <Filter>drivers\pvr</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\drivers\pvr\PvrTcPacket.cpp">
+      <Filter>drivers\pvr</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\drivers\register_driver_types.h">
@@ -4981,6 +4996,45 @@
     </ClInclude>
     <ClInclude Include="..\..\drivers\theoraplayer\src\YUV\libyuv\include\libyuv\video_common.h">
       <Filter>drivers\theoraplayer\src\YUV\libyuv\include\libyuv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\RgbBitmap.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\AlphaBitmap.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\Bitmap.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\BitScale.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\BitUtility.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\ColorRgba.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\Interval.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\MortonTable.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\Point2.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\PvrTcDecoder.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\PvrTcEncoder.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\PvrTcPacket.h">
+      <Filter>drivers\pvr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\drivers\pvr\RgbaBitmap.h">
+      <Filter>drivers\pvr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
