@@ -571,9 +571,24 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	}
 
 	@Override public void onSensorChanged(SensorEvent event) {
-		float x = event.values[0];
-		float y = event.values[1];
-		float z = event.values[2];
+		Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		int displayRotation = display.getRotation();
+		
+		float[] adjustedValues = new float[3];
+		final int axisSwap[][] = {
+		{  1,  -1,  0,  1  },     // ROTATION_0 
+		{-1,  -1,  1,  0  },     // ROTATION_90 
+		{-1,    1,  0,  1  },     // ROTATION_180 
+		{  1,    1,  1,  0  }  }; // ROTATION_270 
+
+		final int[] as = axisSwap[displayRotation]; 
+		adjustedValues[0]  =  (float)as[0] * event.values[ as[2] ]; 
+		adjustedValues[1]  =  (float)as[1] * event.values[ as[3] ]; 
+		adjustedValues[2]  =  event.values[2];
+		
+		float x = adjustedValues[0];
+		float y = adjustedValues[1];
+		float z = adjustedValues[2];
 		GodotLib.accelerometer(x,y,z);
 	}
 

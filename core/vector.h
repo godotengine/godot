@@ -149,7 +149,16 @@ public:
 		sort_custom<_DefaultComparator<T> >();
 	}
 
+	void ordered_insert(const T& p_val) {
+			int i;
+			for (i=0; i<size(); i++) {
 
+				if (p_val < operator[](i)) {
+					break;
+				};
+			};
+			insert(i, p_val);
+	}
 
 	void operator=(const Vector& p_from);
 	Vector(const Vector& p_from);

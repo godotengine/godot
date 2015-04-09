@@ -428,6 +428,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0(Array,invert);
 	VCALL_LOCALMEM1R(Array,parse_json);
 	VCALL_LOCALMEM0R(Array,to_json);
+	VCALL_LOCALMEM0R(Array,is_shared);
 
 	static void _call_ByteArray_get_string_from_ascii(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
@@ -1380,6 +1381,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(ARRAY,NIL,Array,sort,varray());
 	ADDFUNC2(ARRAY,NIL,Array,sort_custom,OBJECT,"obj",STRING,"func",varray());
 	ADDFUNC0(ARRAY,NIL,Array,invert,varray());
+	ADDFUNC0(ARRAY,BOOL,Array,is_shared,varray());
 
 	ADDFUNC1(ARRAY,INT,Array,parse_json,STRING,"json",varray());
 	ADDFUNC0(ARRAY,STRING,Array,to_json,varray());

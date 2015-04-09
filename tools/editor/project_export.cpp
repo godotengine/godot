@@ -417,7 +417,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
 
 			error->set_text(_TR("Please export outside the project folder!"));
-			error->popup_centered(Size2(300,70));;
+			error->popup_centered_minsize();
 			return;
 		}
 		String nl = (location+"/..").simplify_path();
@@ -435,7 +435,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 	Error err = export_platform(platform,p_file,file_export_check->is_pressed(),file_export_password->get_text(),false);
 	if (err!=OK) {
 		error->set_text(_TR("Error exporting project!"));
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 	}
 
 }
@@ -454,7 +454,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
 	if (!f) {
 		error->set_text(_TR("Error exporting project PCK! Can't write"));
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 	}
 	ERR_FAIL_COND(!f);
 
@@ -463,7 +463,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 
 	if (err!=OK) {
 		error->set_text(_TR("Error exporting project!"));
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return;
 	}
 }
@@ -479,7 +479,7 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 	Error err = exporter->export_project(p_path,p_debug);
 	if (err!=OK) {
 		error->set_text(_TR("Error exporting project!"));
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return ERR_CANT_CREATE;
 	} else {
 		if (p_quit_after) {
@@ -508,7 +508,7 @@ void ProjectExportDialog::custom_action(const String&) {
 
 	if (exporter.is_null()) {
 		error->set_text(_TR("No exporter for platform '")+platform+_TR("' yet."));
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return;
 	}
 

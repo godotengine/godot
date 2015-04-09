@@ -2121,7 +2121,7 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 }
 
 
-void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Set<Node*> &checked_nodes) {
+void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Node *p_existing_scene,Set<Node*> &checked_nodes) {
 
 
 	for(int i=0;i<p_imported->get_child_count();i++) {
@@ -2129,12 +2129,15 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 
 		Node *imported_node = p_imported->get_child(i);
 
-		if (imported_node->get_owner()!=p_imported_scene)
+		if (imported_node->get_owner()!=p_imported_scene) {
+		//	print_line("skipping because not imported at "+String(imported_node->get_name()));
 			continue; //end of the road
+		}
 
 		Vector<StringName> nn;
 		nn.push_back(imported_node->get_name());
 		NodePath imported_path(nn,false);
+		//print_line("check for: "+String(imported_path));
 
 		if (!p_node->has_node(imported_path) && !checked_nodes.has(imported_node)) {
 			//not there, re-add it
@@ -2144,8 +2147,11 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 			if (o)
 				n=o->cast_to<Node>();
 
+			//print_line("creating node of same type..");
+
 			if (n) {
 
+				//print_line("copy props and add");
 				List<PropertyInfo> pl;
 				imported_node->get_property_list(&pl);
 				for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
@@ -2155,8 +2161,11 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 				}
 
 				p_node->add_child(n);
+				n->set_owner(p_existing_scene);
 			}
 
+		} else {
+			//print_line("already exists");
 		}
 
 
@@ -2164,7 +2173,7 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 
 			Node *other_node = p_node->get_node(imported_path);
 
-			_add_new_nodes(other_node,imported_node,p_imported_scene,checked_nodes);
+			_add_new_nodes(other_node,imported_node,p_imported_scene,p_existing_scene,checked_nodes);
 
 		}
 
@@ -2177,7 +2186,7 @@ void EditorSceneImportPlugin::_merge_scenes(Node *p_node,Node *p_imported) {
 	Set<Ref<Resource> > checked_resources;
 	Set<Node*> checked_nodes;
 	_merge_existing_node(p_node,p_imported,checked_resources,checked_nodes);
-	_add_new_nodes(p_node,p_imported,p_imported,checked_nodes);
+	_add_new_nodes(p_node,p_imported,p_imported,p_node,checked_nodes);
 	//add existing.. ?
 }
 
@@ -2214,27 +2223,33 @@ void EditorSceneImportPlugin::_scan_materials(Node*p_base,Node *p_node,Map<Strin
 
 void EditorSceneImportPlugin::_apply_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials,Set<Ref<Mesh> >& meshes_processed) {
 
-	if (!p_base && p_node->get_owner()!=p_base)
+	if (p_node!=p_base && p_node->get_owner()!=p_base)
 		return;
 
 	MeshInstance *mi=p_node->cast_to<MeshInstance>();
 
 	if (mi) {
 
+		print_line("is mesh "+String(p_node->get_name()));
 		String path = p_base->get_path_to(p_node);
-		if (override_materials.has(path))
+		if (override_materials.has(path)) {
+			print_line("is in material overrides");
 			mi->set_material_override(override_materials[path]);
+		}
 
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid() && !meshes_processed.has(mesh)) {
+			print_line("mesh was not processed");
 			meshes_processed.insert(mesh);
 			for(int i=0;i<mesh->get_surface_count();i++) {
 
 				String name = mesh->get_name()+":"+mesh->surface_get_name(i);
+				print_line("name for surface "+itos(i)+": "+name);
 				if (mesh_materials.has(name)) {
 
 					Ref<Material> mat = mesh_materials[name];
 					mesh->surface_set_material(i,mat);
+					print_line("overriding!");
 				}
 			}
 		}
@@ -2251,8 +2266,18 @@ void EditorSceneImportPlugin::_merge_materials(Node *p_node,Node *p_imported) {
 	Map<String,Ref<Material> > override_materials;
 
 	_scan_materials(p_node,p_node,mesh_materials,override_materials);
+
+	for (Map<String,Ref<Material> >::Element *E=mesh_materials.front();E;E=E->next()) {
+		print_line("Mats: "+String(E->key()));
+	}
+
+	for (Map<String,Ref<Material> >::Element *E=override_materials.front();E;E=E->next()) {
+		print_line("Overrides: "+String(E->key()));
+	}
+
 	Set<Ref<Mesh> > mp;
 	_apply_materials(p_imported,p_imported,mesh_materials,override_materials,mp);
+
 
 }
 

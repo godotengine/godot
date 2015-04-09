@@ -827,7 +827,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			RES res = ResourceLoader::load(p_file,type);
 			if (res.is_null()) {
 				error->set_text(_TR("Error loading file: Not a resource!"));
-				error->popup_centered(Size2(300,80));
+				error->popup_centered_minsize();
 				break;
 			}
 			v=res.get_ref_ptr();
@@ -2395,7 +2395,7 @@ void PropertyEditor::update_tree() {
 		}
 
 		if (capitalize_paths)
-			item->set_text( 0, name.capitalize() );
+			item->set_text( 0, name.camelcase_to_underscore().capitalize() );
 		else
 			item->set_text( 0, name );
 

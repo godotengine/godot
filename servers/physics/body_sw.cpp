@@ -358,10 +358,10 @@ void BodySW::_compute_area_gravity(const AreaSW *p_area) {
 
 	if (p_area->is_gravity_point()) {
 
-		gravity = (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
+		gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
 
 	} else {
-		gravity = p_area->get_gravity_vector() * p_area->get_gravity();
+		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}
 }
 
@@ -371,23 +371,29 @@ void BodySW::integrate_forces(real_t p_step) {
 	if (mode==PhysicsServer::BODY_MODE_STATIC)
 		return;
 
-	AreaSW *current_area = get_space()->get_default_area();
-	ERR_FAIL_COND(!current_area);
+	AreaSW *def_area = get_space()->get_default_area();
+	ERR_FAIL_COND(!def_area);
 
-	int prio = current_area->get_priority();
 	int ac = areas.size();
+	bool replace = false;
+	gravity=Vector3(0,0,0);
 	if (ac) {
+		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		for(int i=0;i<ac;i++) {
-			if (aa[i].area->get_priority() > prio) {
-				current_area=aa[i].area;
-				prio=current_area->get_priority();
+		density = aa[ac-1].area->get_density();
+		for(int i=ac-1;i>=0;i--) {
+			_compute_area_gravity(aa[i].area);
+			if (aa[i].area->get_space_override_mode() == PhysicsServer::AREA_SPACE_OVERRIDE_REPLACE) {
+				replace = true;
+				break;
 			}
 		}
+	} else {
+		density=def_area->get_density();
 	}
-
-	_compute_area_gravity(current_area);
-	density=current_area->get_density();
+	if( !replace ) {
+		_compute_area_gravity(def_area);
+	}
 
 	Vector3 motion;
 	bool do_motion=false;
@@ -455,7 +461,7 @@ void BodySW::integrate_forces(real_t p_step) {
 	}
 
 
-	current_area=NULL; // clear the area, so it is set in the next frame
+	def_area=NULL; // clear the area, so it is set in the next frame
 	contact_count=0;
 
 }

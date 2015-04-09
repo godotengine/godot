@@ -482,6 +482,11 @@ class DaeExporter:
 
 		apply_modifiers = len(node.modifiers) and self.config["use_mesh_modifiers"]
 
+		name_to_use = mesh.name
+		#print("name to use: "+mesh.name)
+		if (custom_name!=None and custom_name!=""):
+			name_to_use=custom_name
+
 		mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
 
 		triangulate=self.config["use_triangles"]
@@ -635,10 +640,7 @@ class DaeExporter:
 
 
 		meshid = self.new_id("mesh")
-		if (custom_name!=None):
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
-		else:
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+name_to_use+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 

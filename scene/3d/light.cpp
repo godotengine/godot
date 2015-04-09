@@ -669,7 +669,7 @@ void SpotLight::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_ATTENUATION );
 
 	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/spot_angle", PROPERTY_HINT_RANGE, "0.01,89.9,0.01"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPOT_ANGLE );
-	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/spot_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPOT_ATTENUATION );
+	ADD_PROPERTYI( PropertyInfo( Variant::REAL, "params/spot_attenuation", PROPERTY_HINT_EXP_EASING, "spot_attenuation"), _SCS("set_parameter"), _SCS("get_parameter"), PARAM_SPOT_ATTENUATION );
 
 }
 

@@ -101,12 +101,12 @@ void ScriptCreateDialog::ok_pressed() {
 	if (class_name->is_editable() && !_validate(class_name->get_text())) {
 
 		alert->set_text(_TR("Class Name is Invalid!"));
-		alert->popup_centered(Size2(200,60));
+		alert->popup_centered_minsize();
 		return;
 	}
 	if (!_validate(parent_name->get_text())) {
 		alert->set_text(_TR("Parent Class Name is Invalid!"));
-		alert->popup_centered(Size2(200,60));
+		alert->popup_centered_minsize();
 
 		return;
 
@@ -136,7 +136,7 @@ void ScriptCreateDialog::ok_pressed() {
 		if (!path_valid) {
 
 			alert->set_text(_TR("Path is Invalid!"));
-			alert->popup_centered(Size2(200,60));
+			alert->popup_centered_minsize();
 			return;
 
 		}
@@ -144,7 +144,7 @@ void ScriptCreateDialog::ok_pressed() {
 		if (err!=OK) {
 
 			alert->set_text(_TR("Could not create script in filesystem: ")+String(""));
-			alert->popup_centered(Size2(200,60));
+			alert->popup_centered_minsize();
 			return;
 		}
 		scr->set_path(lpath);
