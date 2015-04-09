@@ -1652,6 +1652,9 @@ void RasterizerGLES2::material_set_param(RID p_material, const StringName& p_par
 		}
 	} else {
 
+		if (p_value.get_type()==Variant::NIL)
+			return;
+
 		Material::UniformData ud;
 		ud.index=-1;
 		ud.value=p_value;

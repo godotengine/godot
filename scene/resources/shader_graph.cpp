@@ -92,6 +92,7 @@ void ShaderGraph::_set_data(const Dictionary &p_data) {
 		}
 	}
 
+	_pending_update_shader=true;
 	_update_shader();
 
 }
@@ -1607,6 +1608,7 @@ void ShaderGraph::_update_shader() {
 	get_default_texture_param_list(&names);
 
 	for (List<StringName>::Element *E=names.front();E;E=E->next()) {
+
 		set_default_texture_param(E->get(),Ref<Texture>());
 	}
 
@@ -1750,6 +1752,7 @@ void ShaderGraph::_update_shader() {
 				if (n->type==NODE_TEXTURE_INPUT || n->type==NODE_CUBEMAP_INPUT) {
 
 					set_default_texture_param(n->param1,n->param2);
+
 				}
 				_add_node_code(ShaderType(i),n,inputs,code[i]);
 			}
