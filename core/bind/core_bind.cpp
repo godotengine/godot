@@ -702,6 +702,33 @@ void _OS::print_line(String p_string, bool new_line) {
 	return ::print_line(p_string, new_line);
 }
 
+void _OS::_error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type ) {
+
+	_OS *self = (_OS *) p_self;
+	if (self->current!=Thread::get_caller_ID())
+		return;
+
+	char source[256];
+#if defined(_MSC_VER) || defined(MINGW_ENABLED)
+	_snprintf(source,sizeof(source),"%s %s:%d",p_file,p_func,p_line);
+#else
+	snprintf(source,sizeof(source),"%s %s:%d",p_file,p_func,p_line);
+#endif
+
+	const char *type = "";
+	switch(p_type) {
+	case ERR_HANDLER_ERROR:
+		type = "error"; break;
+	case ERR_HANDLER_WARNING:
+		type = "warn"; break;
+	case ERR_HANDLER_SCRIPT:
+		type = "script"; break;
+	default:
+		type = "unknown"; break;
+	}
+	self->emit_signal("error_invoke", source, p_error, p_errorexp, type);
+}
+
 void _OS::_bind_methods() {
 
 	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&_OS::get_mouse_pos);
@@ -821,7 +848,12 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
-
+	ADD_SIGNAL( MethodInfo("error_invoke"
+		, PropertyInfo(Variant::STRING,"source")
+		, PropertyInfo(Variant::STRING,"error")
+		, PropertyInfo(Variant::STRING,"errorexp")
+		, PropertyInfo(Variant::STRING,"type")
+	));
 
 	BIND_CONSTANT( DAY_SUNDAY );
 	BIND_CONSTANT( DAY_MONDAY );
@@ -858,7 +890,19 @@ void _OS::_bind_methods() {
 _OS::_OS() {
 
 	singleton=this;
+
+	current=Thread::get_caller_ID();
+
+	eh.errfunc=_error_handler;
+	eh.userdata=this;
+	add_error_handler(&eh);
 }
+
+_OS::~_OS() {
+
+	remove_error_handler(&eh);
+}
+
 
 
 ///////////////////// GEOMETRY

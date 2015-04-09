@@ -63,8 +63,12 @@ class MainLoop;
 class _OS : public Object  {
 	OBJ_TYPE(_OS,Object);
 
+	Thread::ID current;
+	ErrorHandlerList eh;
+
 protected:
 
+	static void _error_handler(void *p_self, const char*p_func, const char*p_file,int p_line, const char*p_error,const char*p_errorexp,ErrorHandlerType p_type );
 	static void _bind_methods();
 	static _OS *singleton;
 public:
@@ -248,6 +252,7 @@ public:
 	static _OS *get_singleton() { return singleton; }
 
 	_OS();
+	~_OS();
 };
 
 VARIANT_ENUM_CAST(_OS::SystemDir);
