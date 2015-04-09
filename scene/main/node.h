@@ -143,7 +143,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
-	void remove_and_delete_child(Node *p_child);
+	//void remove_and_delete_child(Node *p_child);
 	
 	void _propagate_replace_owner(Node *p_owner,Node* p_by_owner); 
 	
