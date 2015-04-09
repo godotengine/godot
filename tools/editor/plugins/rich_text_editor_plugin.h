@@ -42,6 +42,8 @@ class RichTextEditor : public Control {
 
 	OBJ_TYPE(RichTextEditor, Control );
 
+        friend class RichTextEditorPlugin;
+
 	enum {
 
 		PARSE_BBCODE,
@@ -49,8 +51,8 @@ class RichTextEditor : public Control {
 	};
 
 	Panel *panel;
+        MenuButton *options;
 	RichTextLabel *node;
-	MenuButton *options;
 	FileDialog *file_dialog;
 
 	void _file_selected(const String& p_path);
