@@ -172,7 +172,7 @@ void ConnectDialog::ok_pressed() {
 	if (dst_method->get_text()=="") {
 
 		error->set_text("Method in target Node must be specified!");
-		error->popup_centered(Size2(300,80));
+		error->popup_centered_minsize();
 		return;
 	}
 	emit_signal("connected");
