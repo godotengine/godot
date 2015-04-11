@@ -38,6 +38,11 @@ def can_build():
 	if (x11_error):
 		print("xcursor not found.. x11 disabled.")
 		return False
+	
+	x11_error=os.system("pkg-config xinerama --modversion > /dev/null ")
+	if (x11_error):
+		print("xinerama not found.. x11 disabled.")
+		return False
 
 	
 	return True # X11 enabled
@@ -48,6 +53,7 @@ def get_opts():
 	('use_llvm','Use llvm compiler','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
 	('pulseaudio','Detect & Use pulseaudio','yes'),
+	('new_wm_api', 'Use experimental window management API','no'),
 	]
   
 def get_flags():
@@ -70,24 +76,23 @@ def configure(env):
 		else:
 			env["bits"]="32"
 
-
 	env.Append(CPPPATH=['#platform/x11'])
 	if (env["use_llvm"]=="yes"):
-		env["CC"]="clang"
-		env["CXX"]="clang++"
-		env["LD"]="clang++"
-		if (env["use_sanitizer"]=="yes"):
-			env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
-			env.Append(LINKFLAGS=['-fsanitize=address'])
-			env.extra_suffix=".llvms"
-		else:
-			env.extra_suffix=".llvm"
+		if 'clang++' not in env['CXX']:
+			env["CC"]="clang"
+			env["CXX"]="clang++"
+			env["LD"]="clang++"
+		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
+		env.extra_suffix=".llvm"
+
 		if (env["colored"]=="yes"):
 			if sys.stdout.isatty():
 				env.Append(CXXFLAGS=["-fcolor-diagnostics"])
 
-
-
+	if (env["use_sanitizer"]=="yes"):
+		env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
+		env.Append(LINKFLAGS=['-fsanitize=address'])
+		env.extra_suffix+="s"
 
 	#if (env["tools"]=="no"):
 	#	#no tools suffix
@@ -108,6 +113,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
+	env.ParseConfig('pkg-config xinerama --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
 	env.ParseConfig('pkg-config openssl --cflags --libs')
 
@@ -143,15 +149,14 @@ def configure(env):
 		env.Append(LINKFLAGS=['-m64','-L/usr/lib/i686-linux-gnu'])
 
 
-	if (env["CXX"]=="clang++"):
-		env.Append(CPPFLAGS=['-DTYPED_METHOD_BIND'])
-		env["CC"]="clang"
-		env["LD"]="clang++"
-
 	import methods
 
 	env.Append( BUILDERS = { 'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	#env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
+
+	if(env["new_wm_api"]=="yes"):
+		env.Append(CPPFLAGS=['-DNEW_WM_API'])
+		env.ParseConfig('pkg-config xinerama --cflags --libs')
 

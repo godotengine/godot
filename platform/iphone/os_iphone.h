@@ -167,6 +167,8 @@ public:
 	virtual void hide_virtual_keyboard();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	
+	virtual Size2 get_window_size() const;
 
 	virtual bool has_touchscreen_ui_hint() const;
 

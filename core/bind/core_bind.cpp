@@ -176,6 +176,76 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+
+int _OS::get_screen_count() const {
+	return OS::get_singleton()->get_screen_count();
+}
+
+int _OS::get_current_screen() const {
+	return OS::get_singleton()->get_current_screen();
+}
+
+void _OS::set_current_screen(int p_screen) {
+	OS::get_singleton()->set_current_screen(p_screen);
+}
+
+Point2 _OS::get_screen_position(int p_screen) const {
+	return OS::get_singleton()->get_screen_position(p_screen);
+}
+
+Size2 _OS::get_screen_size(int p_screen) const {
+	return OS::get_singleton()->get_screen_size(p_screen);
+}
+
+Point2 _OS::get_window_position() const {
+	return OS::get_singleton()->get_window_position();
+}
+
+void _OS::set_window_position(const Point2& p_position) {
+	OS::get_singleton()->set_window_position(p_position);
+}
+
+Size2 _OS::get_window_size() const {
+	return OS::get_singleton()->get_window_size();
+}
+
+void _OS::set_window_size(const Size2& p_size) {
+	OS::get_singleton()->set_window_size(p_size);
+}
+
+void _OS::set_window_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_window_fullscreen(p_enabled);
+}
+
+bool _OS::is_window_fullscreen() const {
+	return OS::get_singleton()->is_window_fullscreen();
+}
+
+void _OS::set_window_resizable(bool p_enabled) {
+	OS::get_singleton()->set_window_resizable(p_enabled);
+}
+
+bool _OS::is_window_resizable() const {
+	return OS::get_singleton()->is_window_resizable();
+}
+
+void _OS::set_window_minimized(bool p_enabled) {
+	OS::get_singleton()->set_window_minimized(p_enabled);
+}
+
+bool _OS::is_window_minimized() const {
+	return OS::get_singleton()->is_window_minimized();
+}
+
+void _OS::set_window_maximized(bool p_enabled) {
+	OS::get_singleton()->set_window_maximized(p_enabled);
+}
+
+bool _OS::is_window_maximized() const {
+	return OS::get_singleton()->is_window_maximized();
+}
+
+
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 	FileAccess::set_backup_save(p_enable);
@@ -186,7 +256,6 @@ bool _OS::is_video_mode_resizable(int p_screen) const {
 	OS::VideoMode vm;
 	vm = OS::get_singleton()->get_video_mode(p_screen);
 	return vm.resizable;
-
 }
 
 Array _OS::get_fullscreen_mode_list(int p_screen) const {
@@ -314,6 +383,11 @@ void _OS::set_time_scale(float p_scale) {
 float _OS::get_time_scale() {
 
 	return OS::get_singleton()->get_time_scale();
+}
+
+bool _OS::is_ok_left_and_cancel_right() const {
+
+	return OS::get_singleton()->get_swap_ok_cancel();
 }
 
 /*
@@ -632,6 +706,26 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
 
+
+	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
+	ObjectTypeDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
+	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
+	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
+	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
+	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);
+	ObjectTypeDB::bind_method(_MD("is_window_resizable"),&_OS::is_window_resizable);
+	ObjectTypeDB::bind_method(_MD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
+	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
+	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
+	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+
+
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("set_target_fps","target_fps"),&_OS::set_target_fps);
@@ -698,6 +792,8 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_data_dir"),&_OS::get_data_dir);
 	ObjectTypeDB::bind_method(_MD("get_system_dir","dir"),&_OS::get_system_dir);
 	ObjectTypeDB::bind_method(_MD("get_unique_ID"),&_OS::get_unique_ID);
+
+	ObjectTypeDB::bind_method(_MD("is_ok_left_and_cancel_right"),&_OS::is_ok_left_and_cancel_right);
 
 	ObjectTypeDB::bind_method(_MD("get_frames_per_second"),&_OS::get_frames_per_second);
 
@@ -838,6 +934,12 @@ Variant _Geometry::segment_intersects_triangle( const Vector3& p_from, const Vec
 		return Variant();
 
 }
+
+bool _Geometry::point_is_inside_triangle(const Vector2& s, const Vector2& a, const Vector2& b, const Vector2& c) const {
+
+	return Geometry::is_point_in_triangle(s,a,b,c);
+}
+
 DVector<Vector3> _Geometry::segment_intersects_sphere( const Vector3& p_from, const Vector3& p_to, const Vector3& p_sphere_pos,real_t p_sphere_radius) {
 
 	DVector<Vector3> r;
@@ -938,6 +1040,7 @@ void _Geometry::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("segment_intersects_sphere","from","to","spos","sradius"),&_Geometry::segment_intersects_sphere);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_cylinder","from","to","height","radius"),&_Geometry::segment_intersects_cylinder);
 	ObjectTypeDB::bind_method(_MD("segment_intersects_convex","from","to","planes"),&_Geometry::segment_intersects_convex);
+	ObjectTypeDB::bind_method(_MD("point_is_inside_triangle","point","a","b","c"),&_Geometry::point_is_inside_triangle);
 
 	ObjectTypeDB::bind_method(_MD("triangulate_polygon","polygon"),&_Geometry::triangulate_polygon);
 

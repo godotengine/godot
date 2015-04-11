@@ -151,7 +151,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	sample_manager = memnew( SampleManagerMallocSW );
 	audio_server = memnew( AudioServerSW(sample_manager) );
 
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
+	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,true);
 	audio_server->init();
 
 	spatial_sound_server = memnew( SpatialSoundServerSW );
@@ -289,6 +289,11 @@ OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
 void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 	p_list->push_back(default_videomode);
+}
+
+Size2 OS_Android::get_window_size() const {
+
+	return Vector2(default_videomode.width,default_videomode.height);
 }
 
 String OS_Android::get_name() {

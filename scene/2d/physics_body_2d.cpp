@@ -98,6 +98,7 @@ PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject
 
 	mask=1;
 	set_one_way_collision_max_depth(0);
+	set_pickable(false);
 
 }
 
@@ -1197,7 +1198,7 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody2D::move);
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
 
-	ObjectTypeDB::bind_method(_MD("can_move_to","position"),&KinematicBody2D::can_move_to);
+	ObjectTypeDB::bind_method(_MD("can_move_to","position","discrete"),&KinematicBody2D::can_move_to,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody2D::is_colliding);
 

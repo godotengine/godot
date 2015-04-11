@@ -30,7 +30,7 @@
 #define WORLD_2D_H
 
 #include "resource.h"
-
+#include "servers/physics_2d_server.h"
 
 class SpatialIndexer2D;
 class VisibilityNotifier2D;
@@ -67,6 +67,8 @@ public:
 	RID get_canvas();
 	RID get_space();
 	RID get_sound_space();
+
+	Physics2DDirectSpaceState *get_direct_space_state();
 
 	World2D();
 	~World2D();

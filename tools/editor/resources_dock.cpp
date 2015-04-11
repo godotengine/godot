@@ -134,7 +134,7 @@ void ResourcesDock::save_resource(const String& p_path,const Ref<Resource>& p_re
 
 	if (err!=OK) {
 		accept->set_text("Error saving resource!");
-		accept->popup_centered(Size2(300,100));
+		accept->popup_centered_minsize();
         return;
 	}
 //	EditorFileSystem::get_singleton()->update_file(path,p_resource->get_type());

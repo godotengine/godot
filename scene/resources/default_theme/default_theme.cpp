@@ -300,6 +300,40 @@ void make_default_theme() {
 
 	t->set_constant("hseparation","MenuButton", 0 );
 
+    // CheckBox
+
+    Ref<StyleBox> cbx_empty = memnew( StyleBoxEmpty );
+    cbx_empty->set_default_margin(MARGIN_LEFT,22);
+    cbx_empty->set_default_margin(MARGIN_RIGHT,4);
+    cbx_empty->set_default_margin(MARGIN_TOP,4);
+    cbx_empty->set_default_margin(MARGIN_BOTTOM,5);
+    Ref<StyleBox> cbx_focus = focus;
+    cbx_focus->set_default_margin(MARGIN_LEFT,4);
+    cbx_focus->set_default_margin(MARGIN_RIGHT,22);
+    cbx_focus->set_default_margin(MARGIN_TOP,4);
+    cbx_focus->set_default_margin(MARGIN_BOTTOM,5);
+
+    t->set_stylebox("normal","CheckBox", cbx_empty );
+    t->set_stylebox("pressed","CheckBox", cbx_empty );
+    t->set_stylebox("disabled","CheckBox", cbx_empty );
+    t->set_stylebox("hover","CheckBox", cbx_empty );
+    t->set_stylebox("focus","CheckBox", cbx_focus );
+
+    t->set_icon("checked", "CheckBox", make_icon(checked_png));
+    t->set_icon("unchecked", "CheckBox", make_icon(unchecked_png));
+    t->set_icon("radio_checked", "CheckBox", make_icon(radio_checked_png));
+    t->set_icon("radio_unchecked", "CheckBox", make_icon(radio_unchecked_png));
+
+    t->set_font("font","CheckBox", default_font );
+
+    t->set_color("font_color","CheckBox", control_font_color );
+    t->set_color("font_color_pressed","CheckBox", control_font_color_pressed );
+    t->set_color("font_color_hover","CheckBox", control_font_color_hover );
+    t->set_color("font_color_disabled","CheckBox", control_font_color_disabled );
+
+    t->set_constant("hseparation","CheckBox",4);
+    t->set_constant("check_vadjust","CheckBox",0);
+
 
 
 	// CheckButton
@@ -308,7 +342,7 @@ void make_default_theme() {
 	cb_empty->set_default_margin(MARGIN_LEFT,6);
 	cb_empty->set_default_margin(MARGIN_RIGHT,70);
 	cb_empty->set_default_margin(MARGIN_TOP,4);
-	cb_empty->set_default_margin(MARGIN_BOTTOM,4);
+    cb_empty->set_default_margin(MARGIN_BOTTOM,4);
 
 	t->set_stylebox("normal","CheckButton", cb_empty );
 	t->set_stylebox("pressed","CheckButton", cb_empty );
@@ -540,7 +574,7 @@ void make_default_theme() {
 	// Tree
 
 	Ref<StyleBoxTexture> tree_selected = make_stylebox( selection_png,4,4,4,4,8,0,8,0);
-	Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
+    Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
 
 	t->set_stylebox("bg","Tree", make_stylebox( tree_bg_png,4,4,4,5) );
 	t->set_stylebox("bg_focus","Tree", focus );

@@ -289,6 +289,36 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 	return ret;
 
 }
+
+Array Physics2DDirectSpaceState::_intersect_point(const Vector2& p_point,int p_max_results,const Vector<RID>& p_exclude,uint32_t p_layers,uint32_t p_object_type_mask) {
+
+	Set<RID> exclude;
+	for(int i=0;i<p_exclude.size();i++)
+		exclude.insert(p_exclude[i]);
+
+	Vector<ShapeResult> ret;
+	ret.resize(p_max_results);
+
+	int rc = intersect_point(p_point,ret.ptr(),ret.size(),exclude,p_layers,p_object_type_mask);
+	if (rc==0)
+		return Array();
+
+	Array r;
+	r.resize(rc);
+	for(int i=0;i<rc;i++) {
+
+		Dictionary d;
+		d["rid"]=ret[i].rid;
+		d["collider_id"]=ret[i].collider_id;
+		d["collider"]=ret[i].collider;
+		d["shape"]=ret[i].shape;
+		d["metadata"]=ret[i].metadata;
+		r[i]=d;
+	}
+	return r;
+
+}
+
 Array Physics2DDirectSpaceState::_collide_shape(const Ref<Physics2DShapeQueryParameters> &psq, int p_max_results){
 
 	Vector<Vector2> ret;
@@ -336,6 +366,7 @@ Physics2DDirectSpaceState::Physics2DDirectSpaceState() {
 void Physics2DDirectSpaceState::_bind_methods() {
 
 
+	ObjectTypeDB::bind_method(_MD("intersect_point","point","max_results","exclude","layer_mask","type_mask"),&Physics2DDirectSpaceState::_intersect_point,DEFVAL(32),DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
 	ObjectTypeDB::bind_method(_MD("intersect_ray:Dictionary","from","to","exclude","layer_mask","type_mask"),&Physics2DDirectSpaceState::_intersect_ray,DEFVAL(Array()),DEFVAL(0x7FFFFFFF),DEFVAL(TYPE_MASK_COLLISION));
 	ObjectTypeDB::bind_method(_MD("intersect_shape","shape:Physics2DShapeQueryParameters","max_results"),&Physics2DDirectSpaceState::_intersect_shape,DEFVAL(32));
 	ObjectTypeDB::bind_method(_MD("cast_motion","shape:Physics2DShapeQueryParameters"),&Physics2DDirectSpaceState::_cast_motion);

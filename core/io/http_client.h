@@ -157,7 +157,10 @@ private:
 	static void _bind_methods();
 	StringArray _get_response_headers();
 	Dictionary _get_response_headers_as_dictionary();
-	ByteArray tmp_read;
+	int read_chunk_size;
+
+	Error _get_http_data(uint8_t* p_buffer, int p_bytes,int &r_received);
+
 public:
 
 
@@ -185,6 +188,7 @@ public:
 	void set_blocking_mode(bool p_enable); //useful mostly if running in a thread
 	bool is_blocking_mode_enabled() const;
 
+	void set_read_chunk_size(int p_size);
 
 	Error poll();
 

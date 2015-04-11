@@ -471,7 +471,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						}
 						const Array &array_a=*reinterpret_cast<const Array *>(p_a._data._mem);
 						const Array &array_b=*reinterpret_cast<const Array *>(p_b._data._mem);
-						Array sum;
+						Array sum(array_a.is_shared() || array_b.is_shared());
 						int asize=array_a.size();
 						int bsize=array_b.size();
 						sum.resize(asize+bsize);
@@ -551,6 +551,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 
 					if (p_b.type==MATRIX32) {
 						_RETURN( *p_a._data._matrix32 * *p_b._data._matrix32 );
+					};
+					if (p_b.type==VECTOR2) {
+						_RETURN( p_a._data._matrix32->xform( *(const Vector2*)p_b._data._mem) );
 					};
 					r_valid=false;
 					return;
@@ -736,6 +739,24 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				}
 #endif
 				_RETURN( p_a._data._int % p_b._data._int );
+				
+			} else if (p_a.type==STRING) {
+				const String* format=reinterpret_cast<const String*>(p_a._data._mem);
+
+				String result;
+				bool error;
+				if (p_b.type==ARRAY) {
+					// e.g. "frog %s %d" % ["fish", 12]
+					const Array* args=reinterpret_cast<const Array*>(p_b._data._mem);
+					result=format->sprintf(*args, &error);
+				} else {
+					// e.g. "frog %d" % 12
+					Array args;
+					args.push_back(p_b);
+					result=format->sprintf(args, &error);
+				}
+				r_valid = !error;
+				_RETURN(result);
 			}
 
 			r_valid=false;

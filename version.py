@@ -1,7 +1,7 @@
 short_name="godot"
 name="Godot Engine"
 major=1
-minor=0
-status="stable"
+minor=1
+status="beta1"
 
 

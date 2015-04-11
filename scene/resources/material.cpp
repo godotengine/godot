@@ -534,7 +534,7 @@ void ShaderMaterial::set_shader(const Ref<Shader>& p_shader) {
 	if (shader.is_valid())
 		shader->disconnect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
 	shader=p_shader;
-	VS::get_singleton()->material_set_shader(material,shader->get_rid());
+	VS::get_singleton()->material_set_shader(material,shader.is_valid()?shader->get_rid():RID());
 	if (shader.is_valid()) {
 		shader->connect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
 	}
@@ -582,7 +582,7 @@ void ShaderMaterial::get_argument_options(const StringName& p_function,int p_idx
 			List<PropertyInfo> pl;
 			shader->get_param_list(&pl);
 			for (List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
-				r_options->push_back("\""+E->get().name.replace("shader_param/","")+"\"");
+				r_options->push_back("\""+E->get().name.replace_first("shader_param/","")+"\"");
 			}
 		}
 	}

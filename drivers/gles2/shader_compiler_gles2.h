@@ -55,6 +55,7 @@ private:
 	bool uses_texpixel_size;
 	bool uses_worldvec;
 	bool vertex_code_writes_vertex;
+	bool uses_shadow_color;
 	Flags *flags;
 
 	StringName vname_discard;
@@ -74,6 +75,7 @@ private:
 	StringName vname_normal;
 	StringName vname_texpixel_size;
 	StringName vname_world_vec;
+	StringName vname_shadow;
 
 	Map<StringName,ShaderLanguage::Uniform> *uniforms;
 
@@ -110,6 +112,7 @@ public:
 		bool uses_normal;
 		bool uses_texpixel_size;
 		bool uses_worldvec;
+		bool uses_shadow_color;
 	};
 
 	Error compile(const String& p_code, ShaderLanguage::ShaderType p_type, String& r_code_line, String& r_globals_line, Flags& r_flags, Map<StringName,ShaderLanguage::Uniform> *r_uniforms=NULL);

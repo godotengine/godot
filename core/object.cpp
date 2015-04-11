@@ -1033,6 +1033,13 @@ void Object::add_user_signal(const MethodInfo& p_signal) {
 	signal_map[p_signal.name]=s;
 }
 
+bool Object::_has_user_signal(const StringName& p_name) const {
+
+	if (!signal_map.has(p_name))
+		return false;
+	return signal_map[p_name].user.name.length()>0;
+}
+
 struct _ObjectSignalDisconnectData {
 
 	StringName signal;
@@ -1431,6 +1438,7 @@ void Object::_bind_methods() {
 //	ObjectTypeDB::bind_method(_MD("call_deferred","method","arg1","arg2","arg3","arg4"),&Object::_call_deferred_bind,DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()),DEFVAL(Variant()));
 
 	ObjectTypeDB::bind_method(_MD("add_user_signal","signal","arguments"),&Object::_add_user_signal,DEFVAL(Array()));
+	ObjectTypeDB::bind_method(_MD("has_user_signal","signal"),&Object::_has_user_signal);
 //	ObjectTypeDB::bind_method(_MD("emit_signal","signal","arguments"),&Object::_emit_signal,DEFVAL(Array()));
 
 
@@ -1495,6 +1503,8 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
 	ObjectTypeDB::bind_method(_MD("tr","message"),&Object::tr);
 
+	ObjectTypeDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
+
 	ADD_SIGNAL( MethodInfo("script_changed"));
 
 	BIND_VMETHOD( MethodInfo("_notification",PropertyInfo(Variant::INT,"what")) );
@@ -1558,6 +1568,10 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 
 }
 
+bool Object::is_queued_for_deletion() const {
+	return _is_queued_for_deletion;
+}
+
 #ifdef TOOLS_ENABLED
 void Object::set_edited(bool p_edited) {
 
@@ -1579,6 +1593,7 @@ Object::Object() {
 	_instance_ID=0;
 	_instance_ID = ObjectDB::add_instance(this);
 	_can_translate=true;
+	_is_queued_for_deletion=false;
 	script_instance=NULL;
 #ifdef TOOLS_ENABLED
 

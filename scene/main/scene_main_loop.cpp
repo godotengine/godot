@@ -850,6 +850,7 @@ void SceneTree::queue_delete(Object *p_object) {
 
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_NULL(p_object);
+	p_object->_is_queued_for_deletion = true;
 	delete_queue.push_back(p_object->get_instance_ID());
 }
 

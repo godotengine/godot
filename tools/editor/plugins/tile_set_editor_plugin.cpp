@@ -37,83 +37,103 @@ void TileSetEditor::edit(const Ref<TileSet>& p_tileset) {
 void TileSetEditor::_import_scene(Node *scene, Ref<TileSet> p_library, bool p_merge) {
 
 	if (!p_merge)
-	       p_library->clear();
+		p_library->clear();
 
 	for(int i=0;i<scene->get_child_count();i++) {
 
 
-	       Node *child = scene->get_child(i);
+		Node *child = scene->get_child(i);
 
 
-	       if (!child->cast_to<Sprite>()) {
-		       if (child->get_child_count()>0) {
-			       child=child->get_child(0);
-			       if (!child->cast_to<Sprite>()) {
-				       continue;
-			       }
+		if (!child->cast_to<Sprite>()) {
+			if (child->get_child_count()>0) {
+				child=child->get_child(0);
+				if (!child->cast_to<Sprite>()) {
+					continue;
+				}
 
-		       } else
-			       continue;
+			} else
+				continue;
 
 
-	       }
+		}
 
-	       Sprite *mi = child->cast_to<Sprite>();
-	       Ref<Texture> texture=mi->get_texture();
-	       if (texture.is_null())
+		Sprite *mi = child->cast_to<Sprite>();
+		Ref<Texture> texture=mi->get_texture();
+		Ref<CanvasItemMaterial> material=mi->get_material();
+
+		if (texture.is_null())
 			continue;
 
-	       int id = p_library->find_tile_by_name(mi->get_name());
-	       if (id<0) {
+		int id = p_library->find_tile_by_name(mi->get_name());
+		if (id<0) {
 
-		       id=p_library->get_last_unused_tile_id();
-		       p_library->create_tile(id);
-		       p_library->tile_set_name(id,mi->get_name());
-	       }
+			id=p_library->get_last_unused_tile_id();
+			p_library->create_tile(id);
+			p_library->tile_set_name(id,mi->get_name());
+		}
 
 
-	       p_library->tile_set_texture(id,texture);
-	       Vector2 phys_offset;
 
-	       if (mi->is_centered()) {
-		       Size2 s;
-		       if (mi->is_region()) {
-			       s=mi->get_region_rect().size;
-		       } else {
-			       s=texture->get_size();
-		       }
-		       phys_offset+=-s/2;
-	       }
-	       if (mi->is_region()) {
-		       p_library->tile_set_region(id,mi->get_region_rect());
-	       }
+		p_library->tile_set_texture(id,texture);
+		p_library->tile_set_material(id,material);
 
-	       Vector<Ref<Shape2D> >collisions;
+		Vector2 phys_offset;
 
-	       for(int j=0;j<mi->get_child_count();j++) {
-
-		       Node *child2 = mi->get_child(j);
-		       if (!child2->cast_to<StaticBody2D>())
-			       continue;
-		       StaticBody2D *sb = child2->cast_to<StaticBody2D>();
-		       if (sb->get_shape_count()==0)
-			       continue;
-		       Ref<Shape2D> collision=sb->get_shape(0);
-		       if (collision.is_valid()) {
-			       collisions.push_back(collision);
+		if (mi->is_centered()) {
+			Size2 s;
+			if (mi->is_region()) {
+				s=mi->get_region_rect().size;
+			} else {
+				s=texture->get_size();
 			}
-	       }
+			phys_offset+=-s/2;
+		}
+		if (mi->is_region()) {
+			p_library->tile_set_region(id,mi->get_region_rect());
+		}
 
-	       if (collisions.size()) {
+		Vector<Ref<Shape2D> >collisions;
+		Ref<NavigationPolygon> nav_poly;
+		Ref<OccluderPolygon2D> occluder;
 
-		       p_library->tile_set_shapes(id,collisions);
-		       p_library->tile_set_shape_offset(id,-phys_offset);
-	       } else {
-		       p_library->tile_set_shape_offset(id,Vector2());
+		for(int j=0;j<mi->get_child_count();j++) {
 
-	       }
+			Node *child2 = mi->get_child(j);
 
-	       p_library->tile_set_texture_offset(id,mi->get_offset());
+			if (child2->cast_to<NavigationPolygonInstance>())
+				nav_poly=child2->cast_to<NavigationPolygonInstance>()->get_navigation_polygon();
+
+			if (child2->cast_to<LightOccluder2D>())
+				occluder=child2->cast_to<LightOccluder2D>()->get_occluder_polygon();
+
+			if (!child2->cast_to<StaticBody2D>())
+				continue;
+			StaticBody2D *sb = child2->cast_to<StaticBody2D>();
+			if (sb->get_shape_count()==0)
+				continue;
+			Ref<Shape2D> collision=sb->get_shape(0);
+			if (collision.is_valid()) {
+				collisions.push_back(collision);
+			}
+		}
+
+		if (collisions.size()) {
+
+			p_library->tile_set_shapes(id,collisions);
+			p_library->tile_set_shape_offset(id,-phys_offset);
+		} else {
+			p_library->tile_set_shape_offset(id,Vector2());
+
+		}
+
+		p_library->tile_set_texture_offset(id,mi->get_offset());
+		p_library->tile_set_navigation_polygon(id,nav_poly);
+		p_library->tile_set_light_occluder(id,occluder);
+		p_library->tile_set_occluder_offset(id,-phys_offset);
+		p_library->tile_set_navigation_polygon_offset(id,-phys_offset);
+
+
 	}
 }
 
@@ -121,23 +141,23 @@ void TileSetEditor::_menu_confirm() {
 
 	switch(option) {
 
-		 case MENU_OPTION_REMOVE_ITEM: {
+		case MENU_OPTION_REMOVE_ITEM: {
 
-			 tileset->remove_tile(to_erase);
-		 } break;
-		 case MENU_OPTION_MERGE_FROM_SCENE:
-		 case MENU_OPTION_CREATE_FROM_SCENE: {
-
-
-			 EditorNode *en = editor;
-			 Node * scene = en->get_edited_scene();
-			 if (!scene)
-				 break;
-
-			 _import_scene(scene,tileset,option==MENU_OPTION_MERGE_FROM_SCENE);
+			tileset->remove_tile(to_erase);
+		} break;
+		case MENU_OPTION_MERGE_FROM_SCENE:
+		case MENU_OPTION_CREATE_FROM_SCENE: {
 
 
-		 } break;
+			EditorNode *en = editor;
+			Node * scene = en->get_edited_scene();
+			if (!scene)
+				break;
+
+			_import_scene(scene,tileset,option==MENU_OPTION_MERGE_FROM_SCENE);
+
+
+		} break;
 	}
 }
 
@@ -165,11 +185,11 @@ void TileSetEditor::_menu_cbk(int p_option) {
 			cd->set_text("Create from scene?");
 			cd->popup_centered(Size2(300,60));
 		} break;
-		 case MENU_OPTION_MERGE_FROM_SCENE: {
+		case MENU_OPTION_MERGE_FROM_SCENE: {
 
-			 cd->set_text("Merge from scene?");
-			 cd->popup_centered(Size2(300,60));
-		 } break;
+			cd->set_text("Merge from scene?");
+			cd->popup_centered(Size2(300,60));
+		} break;
 	}
 }
 

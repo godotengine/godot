@@ -34,6 +34,8 @@
 #import <MediaPlayer/MediaPlayer.h>
 #import <AVFoundation/AVFoundation.h>
 
+#define USE_CADISPLAYLINK      1   //iOS version 3.1+ is required
+
 @protocol GLViewDelegate;
 
 @interface GLView : UIView<UIKeyInput>
@@ -51,8 +53,14 @@
 	// OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist)
 	GLuint depthRenderbuffer;
 	
+#if USE_CADISPLAYLINK
+	// CADisplayLink available on 3.1+ synchronizes the animation timer & drawing with the refresh rate of the display, only supports animation intervals of 1/60 1/30 & 1/15
+	CADisplayLink *displayLink;
+#else
 	// An animation timer that, when animation is started, will periodically call -drawView at the given rate.
 	NSTimer *animationTimer;
+#endif
+	
 	NSTimeInterval animationInterval;
 	
 	// Delegate to do our drawing, called by -drawView, which can be called manually or via the animation timer.
@@ -92,6 +100,8 @@
 - (id)initGLES;
 - (BOOL)createFramebuffer;
 - (void)destroyFramebuffer;
+
+- (void)audioRouteChangeListenerCallback:(NSNotification*)notification;
 
 @property NSTimeInterval animationInterval;
 

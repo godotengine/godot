@@ -114,6 +114,7 @@ friend class RenderTargetTexture;
 
 	bool transparent_bg;
 	bool render_target_vflip;
+	bool render_target_clear_on_new_frame;
 	bool render_target_filter;
 	bool render_target_gen_mipmaps;
 
@@ -123,6 +124,7 @@ friend class RenderTargetTexture;
 	ObjectID physics_object_over;
 	Vector2 physics_last_mousepos;
 	void _test_new_mouseover(ObjectID new_collider);
+	Map<ObjectID,uint64_t> physics_2d_mouseover;
 
 	void _update_rect();
 
@@ -220,6 +222,10 @@ public:
 	void set_render_target_vflip(bool p_enable);
 	bool get_render_target_vflip() const;
 
+	void set_render_target_clear_on_new_frame(bool p_enable);
+	bool get_render_target_clear_on_new_frame() const;
+	void render_target_clear();
+
 	void set_render_target_filter(bool p_enable);
 	bool get_render_target_filter() const;
 
@@ -245,6 +251,8 @@ public:
 
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
+
+	void warp_mouse(const Vector2& p_pos);
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();

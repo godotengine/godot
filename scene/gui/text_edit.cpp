@@ -498,7 +498,29 @@ void TextEdit::_notification(int p_what) {
 							for(int j=from;j<text[i].length();j++) {
 								
 								CharType cc = text[i][j];
-								if (cc==c)
+								//ignore any brackets inside a string
+								if (cc== '"' | cc == '\'') {
+									CharType quotation = cc;
+									do {
+										j++;
+										if (!(j<text[i].length())) {
+											break;
+										}
+										cc=text[i][j];
+										//skip over escaped quotation marks inside strings
+										if (cc=='\\') {
+											bool escaped = true;
+											while (j+1<text[i].length() && text[i][j+1]=='\\') {
+												escaped=!escaped;
+												j++;
+											}
+											if (escaped) {
+												j++;
+												continue;
+											}
+										}
+									} while (cc!= quotation);
+								} else if (cc==c)
 									stack++;
 								else if (cc==closec)
 									stack--;
@@ -547,7 +569,30 @@ void TextEdit::_notification(int p_what) {
 							for(int j=from;j>=0;j--) {
 								
 								CharType cc = text[i][j];
-								if (cc==c)
+								//ignore any brackets inside a string
+								if (cc== '"' | cc == '\'') {
+									CharType quotation = cc;
+									do {
+										j--;
+										if (!(j>=0)) {
+											break;
+										}
+										cc=text[i][j];
+										//skip over escaped quotation marks inside strings
+										if (cc==quotation) {
+											bool escaped = false;
+											while (j-1>=0 && text[i][j-1]=='\\') {
+												escaped=!escaped;
+												j--;
+											}
+											if (escaped) {
+												j--;
+												cc='\\';
+												continue;
+											}
+										}
+									} while (cc!= quotation);
+								} else if (cc==c)
 									stack++;
 								else if (cc==closec)
 									stack--;
@@ -1345,7 +1390,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							return;
 						}
 
-						if (k.scancode==KEY_HOME) {
+						if (k.scancode==KEY_HOME && completion_index>0) {
 
 							completion_index=0;
 							completion_current=completion_options[completion_index];
@@ -1354,7 +1399,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							return;
 						}
 
-						if (k.scancode==KEY_END) {
+						if (k.scancode==KEY_END && completion_index<completion_options.size()-1) {
 
 							completion_index=completion_options.size()-1;
 							completion_current=completion_options[completion_index];

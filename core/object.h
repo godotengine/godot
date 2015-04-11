@@ -386,6 +386,7 @@ friend void postinitialize_handler(Object*);
 	Dictionary metadata;
 
 	void _add_user_signal(const String& p_name, const Array& p_pargs=Array());
+	bool _has_user_signal(const StringName& p_name) const;
 	Variant _emit_signal(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 	Array _get_signal_list() const;
 	Array _get_signal_connection_list(const String& p_signal) const;
@@ -395,7 +396,6 @@ friend void postinitialize_handler(Object*);
 	void property_list_changed_notify();
 
 protected:	
-
 
 	virtual bool _use_builtin_script() const { return false; }
 	virtual void _initialize_typev() { initialize_type(); }
@@ -587,6 +587,9 @@ public:
 
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)
+
+	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
+	bool is_queued_for_deletion() const; 
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate=p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }

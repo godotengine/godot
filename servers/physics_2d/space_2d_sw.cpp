@@ -45,6 +45,57 @@ _FORCE_INLINE_ static bool _match_object_type_query(CollisionObject2DSW *p_objec
 
 }
 
+
+int Physics2DDirectSpaceStateSW::intersect_point(const Vector2& p_point,ShapeResult *r_results,int p_result_max,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
+
+	if (p_result_max<=0)
+		return 0;
+
+	Rect2 aabb;
+	aabb.pos=p_point-Vector2(0.00001,0.00001);
+	aabb.size=Vector2(0.00002,0.00002);
+
+	int amount = space->broadphase->cull_aabb(aabb,space->intersection_query_results,Space2DSW::INTERSECTION_QUERY_MAX,space->intersection_query_subindex_results);
+
+	int cc=0;
+
+	for(int i=0;i<amount;i++) {
+
+		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
+			continue;
+
+		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
+			continue;
+
+		const CollisionObject2DSW *col_obj=space->intersection_query_results[i];
+
+		if (!col_obj->is_pickable())
+			continue;
+
+		int shape_idx=space->intersection_query_subindex_results[i];
+
+		Shape2DSW * shape = col_obj->get_shape(shape_idx);
+
+		Vector2 local_point = (col_obj->get_transform() * col_obj->get_shape_transform(shape_idx)).affine_inverse().xform(p_point);
+
+		if (!shape->contains_point(local_point))
+			continue;
+
+		r_results[cc].collider_id=col_obj->get_instance_id();
+		if (r_results[cc].collider_id!=0)
+			r_results[cc].collider=ObjectDB::get_instance(r_results[cc].collider_id);
+		r_results[cc].rid=col_obj->get_self();
+		r_results[cc].shape=shape_idx;
+		r_results[cc].metadata=col_obj->get_shape_metadata(shape_idx);
+
+		cc++;
+	}
+
+	return cc;
+
+
+}
+
 bool Physics2DDirectSpaceStateSW::intersect_ray(const Vector2& p_from, const Vector2& p_to,RayResult &r_result,const Set<RID>& p_exclude,uint32_t p_layer_mask,uint32_t p_object_type_mask) {
 
 
@@ -527,13 +578,20 @@ void* Space2DSW::_broadphase_pair(CollisionObject2DSW *A,int p_subindex_A,Collis
 
 	if (type_A==CollisionObject2DSW::TYPE_AREA) {
 
-		ERR_FAIL_COND_V(type_B!=CollisionObject2DSW::TYPE_BODY,NULL);
 		Area2DSW *area=static_cast<Area2DSW*>(A);
-		Body2DSW *body=static_cast<Body2DSW*>(B);
+		if (type_B==CollisionObject2DSW::TYPE_AREA) {
 
-		AreaPair2DSW *area_pair = memnew(AreaPair2DSW(body,p_subindex_B,area,p_subindex_A) );
+			Area2DSW *area_b=static_cast<Area2DSW*>(B);
+			Area2Pair2DSW *area2_pair = memnew(Area2Pair2DSW(area_b,p_subindex_B,area,p_subindex_A) );
+			return area2_pair;
+		} else {
 
-		return area_pair;
+			Body2DSW *body=static_cast<Body2DSW*>(B);
+			AreaPair2DSW *area_pair = memnew(AreaPair2DSW(body,p_subindex_B,area,p_subindex_A) );
+			return area_pair;
+		}
+
+
 	} else {
 
 

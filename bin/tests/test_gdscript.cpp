@@ -478,6 +478,7 @@ static String _disassemble_addr(const Ref<GDScript>& p_script,const GDFunction& 
 		case GDFunction::ADDR_TYPE_NIL: {
 			return "nil";
 		} break;
+
 	}
 
 	return "<err>";
@@ -827,6 +828,13 @@ static void _disassemble_class(const Ref<GDScript>& p_class,const Vector<String>
 
 					txt+=" end";
 					incr+=1;
+				} break;
+				case GDFunction::OPCODE_ASSERT: {
+
+					   txt+=" assert ";
+					   txt+=DADDR(1);
+					   incr+=2;
+
 				} break;
 
 			}

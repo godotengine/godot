@@ -33,7 +33,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text("Mesh is empty!");
-		err_dialog->popup_centered(Size2(100,50));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -85,7 +85,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
-				err_dialog->popup_centered(Size2(100,50));
+				err_dialog->popup_centered_minsize();
 				return;
 			}
 			Ref<Shape> shape = mesh->create_trimesh_shape();
@@ -111,7 +111,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 
 			if (node==get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text("This doesn't work on scene root!");
-				err_dialog->popup_centered(Size2(100,50));
+				err_dialog->popup_centered_minsize();
 				return;
 			}
 			Ref<Shape> shape = mesh->create_convex_shape();
@@ -160,7 +160,7 @@ void MeshInstanceEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CREATE_OUTLINE_MESH: {
 
-			outline_dialog->popup_centered(Size2(200,80));
+			outline_dialog->popup_centered_minsize();
 		} break;
 	}
 
@@ -171,7 +171,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 	Ref<Mesh> mesh = node->get_mesh();
 	if (mesh.is_null()) {
 		err_dialog->set_text("MeshInstance lacks a Mesh!");
-		err_dialog->popup_centered(Size2(100,50));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -179,7 +179,7 @@ void MeshInstanceEditor::_create_outline_mesh() {
 
 	if (mesho.is_null()) {
 		err_dialog->set_text("Could not create outline!");
-		err_dialog->popup_centered(Size2(100,50));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -239,6 +239,9 @@ MeshInstanceEditor::MeshInstanceEditor() {
 	outline_dialog->set_child_rect(outline_size);
 	add_child(outline_dialog);
 	outline_dialog->connect("confirmed",this,"_create_outline_mesh");
+
+	err_dialog = memnew( AcceptDialog );
+	add_child(err_dialog);
 
 }
 

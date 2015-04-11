@@ -109,6 +109,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
     private Button mPauseButton;
     private Button mWiFiSettingsButton;
 
+    private boolean use_32_bits=false;
     private boolean mStatePaused;
     private int mState;
 
@@ -255,7 +256,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
         // ...add to FrameLayout
 		   layout.addView(edittext);
 		
-		mView = new GodotView(getApplication(),io,use_gl2, this);
+		mView = new GodotView(getApplication(),io,use_gl2,use_32_bits, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		mView.setKeepScreenOn(true);
 		
@@ -399,7 +400,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			for(int i=0;i<command_line.length;i++) {
 
 				boolean has_extra = i< command_line.length -1;
-				if (command_line[i].equals("-use_apk_expansion")) {
+				if (command_line[i].equals("-use_depth_32")) {
+					use_32_bits=true;
+				} else if (command_line[i].equals("-use_apk_expansion")) {
 					use_apk_expansion=true;
 				} else if (has_extra && command_line[i].equals("-apk_expansion_md5")) {
 					main_pack_md5=command_line[i+1];
@@ -568,9 +571,24 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	}
 
 	@Override public void onSensorChanged(SensorEvent event) {
-		float x = event.values[0];
-		float y = event.values[1];
-		float z = event.values[2];
+		Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		int displayRotation = display.getRotation();
+		
+		float[] adjustedValues = new float[3];
+		final int axisSwap[][] = {
+		{  1,  -1,  0,  1  },     // ROTATION_0 
+		{-1,  -1,  1,  0  },     // ROTATION_90 
+		{-1,    1,  0,  1  },     // ROTATION_180 
+		{  1,    1,  1,  0  }  }; // ROTATION_270 
+
+		final int[] as = axisSwap[displayRotation]; 
+		adjustedValues[0]  =  (float)as[0] * event.values[ as[2] ]; 
+		adjustedValues[1]  =  (float)as[1] * event.values[ as[3] ]; 
+		adjustedValues[2]  =  event.values[2];
+		
+		float x = adjustedValues[0];
+		float y = adjustedValues[1];
+		float z = adjustedValues[2];
 		GodotLib.accelerometer(x,y,z);
 	}
 

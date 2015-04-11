@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "visual_server.h"
 #include "globals.h"
+#include "method_bind_ext.inc"
 
 VisualServer *VisualServer::singleton=NULL;
 VisualServer* (*VisualServer::create_func)()=NULL;
@@ -145,7 +146,6 @@ RID VisualServer::_make_test_cube() {
 	tangents.push_back( normal_points[m_idx][0] );\
 	tangents.push_back( 1.0 );\
 	uvs.push_back( Vector3(uv_points[m_idx*2+0],uv_points[m_idx*2+1],0) );\
-	print_line(itos( (face_points[m_idx][0]>0?1:0)|(face_points[m_idx][1]>0?2:0)|(face_points[m_idx][2]>0?4:0)));\
 	vtx_idx++;\
 
 	for (int i=0;i<6;i++) {
@@ -206,7 +206,7 @@ RID VisualServer::_make_test_cube() {
 	//material_set_flag(material, MATERIAL_FLAG_BILLBOARD_TOGGLE,true);
 	fixed_material_set_texture( material, FIXED_MATERIAL_PARAM_DIFFUSE, get_test_texture() );
 	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_SPECULAR_EXP, 70 );
-	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_EMISSION, Vector3(0.2,0.2,0.2) );
+	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_EMISSION, Color(0.2,0.2,0.2) );
 
 	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_DIFFUSE, Color(1, 1, 1) );
 	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_SPECULAR, Color(1,1,1) );
@@ -510,8 +510,9 @@ void VisualServer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_line"),&VisualServer::canvas_item_add_line, DEFVAL(1.0));
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_rect"),&VisualServer::canvas_item_add_rect);
-	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect"),&VisualServer::canvas_item_add_texture_rect, DEFVAL(Color(1,1,1)));
-	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect_region"),&VisualServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1,1,1)));
+	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect"),&VisualServer::canvas_item_add_texture_rect, DEFVAL(Color(1,1,1)), DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("canvas_item_add_texture_rect_region"),&VisualServer::canvas_item_add_texture_rect_region, DEFVAL(Color(1,1,1)), DEFVAL(false));
+
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_style_box"),&VisualServer::_canvas_item_add_style_box, DEFVAL(Color(1,1,1)));
 //	ObjectTypeDB::bind_method(_MD("canvas_item_add_primitive"),&VisualServer::canvas_item_add_primitive,DEFVAL(Vector<Vector2>()),DEFVAL(RID()));
 	ObjectTypeDB::bind_method(_MD("canvas_item_add_circle"),&VisualServer::canvas_item_add_circle);

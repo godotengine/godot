@@ -61,7 +61,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ok :( ");
 		accept->set_text("No parent to instance a child at.");
-		accept->popup_centered(Size2(300,70));
+		accept->popup_centered_minsize();
 		return NULL;
 	};
 
@@ -79,8 +79,20 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text(String("Error loading scene from ")+p_file);
-		accept->popup_centered(Size2(300,70));;
+		accept->popup_centered_minsize();
 		return NULL;
+	}
+
+	// If the scene hasn't been saved yet a cyclical dependency cannot exist.
+	if (edited_scene->get_filename()!="") {
+
+		if (_cyclical_dependency_exists(edited_scene->get_filename(), instanced_scene)) {
+
+			accept->get_ok()->set_text("Ok");
+			accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
+			accept->popup_centered_minsize();
+			return NULL;
+		}
 	}
 
 	instanced_scene->generate_instance_state();
@@ -99,6 +111,25 @@ Node* SceneTreeDock::instance(const String& p_file) {
 	return instanced_scene;
 
 }
+
+bool SceneTreeDock::_cyclical_dependency_exists(const String& p_target_scene_path, Node* p_desired_node) {
+	int childCount = p_desired_node->get_child_count();
+
+	if (p_desired_node->get_filename()==p_target_scene_path) {
+		return true;
+	}
+
+	for (int i=0;i<childCount;i++) {
+		Node* child=p_desired_node->get_child(i);
+
+		if(_cyclical_dependency_exists(p_target_scene_path,child)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 static String _get_name_num_separator() {
 	switch(EditorSettings::get_singleton()->get("scenetree_editor/duplicate_node_name_num_separator").operator int()) {
@@ -133,7 +164,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -214,7 +245,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -282,7 +313,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -389,7 +420,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -425,7 +456,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			} else {
 				delete_dialog->set_text("Delete Node(s)?");
-				delete_dialog->popup_centered(Size2(200,80));
+				delete_dialog->popup_centered_minsize();
 			}
 
 
@@ -807,7 +838,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 			accept->get_ok()->set_text("Makes Sense!");
 			accept->set_text("Can't operate on nodes from a foreign scene!");
-			accept->popup_centered(Size2(300,70));;
+			accept->popup_centered_minsize();
 			return false;
 
 		}
@@ -1028,14 +1059,15 @@ void SceneTreeDock::_create() {
 
 
 		if (edited_scene) {
-
+			// If root exists in edited scene
 			parent = scene_tree->get_selected();
-			ERR_FAIL_COND(!parent);
-		} else {
+			if( !parent )
+				parent = edited_scene;
 
+		} else {
+			// If no root exist in edited scene
 			parent = scene_root;
 			ERR_FAIL_COND(!parent);
-
 		}
 
 		Object *c = create_dialog->instance_selected();
@@ -1223,7 +1255,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 
 	tb = memnew( ToolButton );
 	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_INSTANCE, false));
-	tb->set_tooltip("Instance a Node from scene file.");
+	tb->set_tooltip("Instance a scene file as a Node.");
 	hbc_top->add_child(tb);
 	tool_buttons[TOOL_INSTANCE]=tb;
 

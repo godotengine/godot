@@ -630,8 +630,13 @@ bool ScriptEditor::_test_script_times_on_disk() {
 
 
 
-	if (!all_ok)
-		disk_changed->call_deferred("popup_centered_ratio",0.5);
+	if (!all_ok) {
+		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false))) {
+			script_editor->_reload_scripts();
+		} else {
+			disk_changed->call_deferred("popup_centered_ratio",0.5);
+		}
+	}
 
 	return all_ok;
 }
@@ -917,7 +922,7 @@ void ScriptEditor::_menu_option(int p_option) {
                     String line_text = tx->get_line(i);
 
                     if (line_text.begins_with("#"))
-                        line_text = line_text.strip_edges().substr(1, line_text.length());
+                        line_text = line_text.substr(1, line_text.length());
                     else
                         line_text = "#" + line_text;
                     tx->set_line(i, line_text);
@@ -929,7 +934,7 @@ void ScriptEditor::_menu_option(int p_option) {
                 String line_text = tx->get_line(begin);
 
                 if (line_text.begins_with("#"))
-                    line_text = line_text.strip_edges().substr(1, line_text.length());
+                    line_text = line_text.substr(1, line_text.length());
                 else
                     line_text = "#" + line_text;
                 tx->set_line(begin, line_text);
@@ -1036,7 +1041,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		case WINDOW_CLOSE: {
 			if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
 				erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
-				erase_tab_confirm->popup_centered(Point2(250,80));
+				erase_tab_confirm->popup_centered_minsize();
 			} else {
 				_close_current_tab();
 			}
@@ -1806,6 +1811,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	script_editor->hide();
 
+	EDITOR_DEF("text_editor/auto_reload_changed_scripts",false);
 	EDITOR_DEF("external_editor/use_external_editor",false);
 	EDITOR_DEF("external_editor/exec_path","");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING,"external_editor/exec_path",PROPERTY_HINT_GLOBAL_FILE));

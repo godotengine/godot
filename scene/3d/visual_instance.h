@@ -108,6 +108,7 @@ private:
 	void _find_baked_light();
 	BakedLightInstance *baked_light_instance;
 	int baked_light_texture_id;
+	float extra_cull_margin;
 
 	void _baked_light_changed();
 	void _update_visibility();
@@ -131,6 +132,9 @@ public:
 
 	void set_baked_light_texture_id(int p_id);
 	int get_baked_light_texture_id() const;
+
+	void set_extra_cull_margin(float p_margin);
+	float get_extra_cull_margin() const;
 
 	GeometryInstance();
 };

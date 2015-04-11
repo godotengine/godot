@@ -228,4 +228,5 @@ CollisionObject2DSW::CollisionObject2DSW(Type p_type) {
 	instance_id=0;
 	user_mask=0;
 	layer_mask=1;
+	pickable=true;
 }

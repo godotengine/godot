@@ -67,12 +67,16 @@ env_base.android_source_modules=[]
 env_base.android_source_files=[]
 env_base.android_module_libraries=[]
 env_base.android_manifest_chunk=""
+env_base.android_permission_chunk=""
+env_base.android_appattributes_chunk=""
 env_base.disabled_modules=[]
 
 env_base.__class__.android_module_source = methods.android_module_source
 env_base.__class__.android_module_library = methods.android_module_library
 env_base.__class__.android_module_file = methods.android_module_file
 env_base.__class__.android_module_manifest = methods.android_module_manifest
+env_base.__class__.android_module_permission = methods.android_module_permission
+env_base.__class__.android_module_attribute = methods.android_module_attribute
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_source_files = methods.add_source_files
@@ -107,6 +111,7 @@ opts.Add('jpg','JPG Image loader support (yes/no)','yes')
 opts.Add('webp','WEBP Image loader support (yes/no)','yes')
 opts.Add('dds','DDS Texture loader support (yes/no)','yes')
 opts.Add('pvr','PVR (PowerVR) Texture loader support (yes/no)','yes')
+opts.Add('etc1','etc1 Texture compression support (yes/no)','yes')
 opts.Add('builtin_zlib','Use built-in zlib (yes/no)','yes')
 opts.Add('openssl','Use OpenSSL (yes/no/builtin)','no')
 opts.Add('musepack','Musepack Audio (yes/no)','yes')
@@ -117,6 +122,7 @@ opts.Add("LINKFLAGS", "Custom flags for the linker");
 opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
+opts.Add('extra_suffix', 'Custom extra suffix added to the base filename of all generated binary files.', '')
 
 # add platform specific options
 
@@ -172,6 +178,9 @@ if selected_platform in platform_list:
 		env = env_base.Clone()
 
 	env.extra_suffix=""
+	
+	if env["extra_suffix"] != '' :
+		env.extra_suffix += '.'+env["extra_suffix"]
 
 	CCFLAGS = env.get('CCFLAGS', '')
 	env['CCFLAGS'] = ''
@@ -303,6 +312,8 @@ if selected_platform in platform_list:
 	if (env['colored']=='yes'):
 		methods.colored(sys,env)
 		
+	if (env['etc1']=='yes'):
+		env.Append(CPPFLAGS=['-DETC1_ENABLED'])
 
 	Export('env')
 
