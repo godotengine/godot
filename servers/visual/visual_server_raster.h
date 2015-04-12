@@ -1251,7 +1251,7 @@ public:
 
 	RID get_test_cube();
 
-	virtual void set_boot_image(const Image& p_image, const Color& p_color);
+	virtual void set_boot_image(const Image& p_image, const Color& p_color, bool p_scale);
 	virtual void set_default_clear_color(const Color& p_color);
 
 	VisualServerRaster(Rasterizer *p_rasterizer);	

@@ -500,6 +500,10 @@ uint32_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 
+uint32_t _OS::get_splash_tick_msec() const {
+
+	return OS::get_singleton()->get_splash_tick_msec();
+}
 
 bool _OS::can_use_threads() const {
 
@@ -765,6 +769,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
+	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
 

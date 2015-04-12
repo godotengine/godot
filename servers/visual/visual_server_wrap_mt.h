@@ -1233,7 +1233,7 @@ public:
 	FUNC1R(int,get_render_info,RenderInfo );
 	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
 
-	FUNC2(set_boot_image,const Image& , const Color& );
+	FUNC3(set_boot_image,const Image& , const Color&,bool );
 	FUNC1(set_default_clear_color,const Color& );
 
 	FUNC0R(RID,get_test_cube );
