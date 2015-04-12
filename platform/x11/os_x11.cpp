@@ -260,7 +260,20 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
 
-		ERR_PRINT("Initializing audio failed.");
+		bool success=false;
+		for(int i=0;i<AudioDriverManagerSW::get_driver_count();i++) {
+			if (i==p_audio_driver)
+				continue;
+			if (AudioDriverManagerSW::get_driver(i)->init()==OK) {
+				success=true;
+				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
+				break;
+			}
+		}
+		if (!success) {
+			ERR_PRINT("Initializing audio failed.");
+		}
+
 	}
 
 	sample_manager = memnew( SampleManagerMallocSW );
