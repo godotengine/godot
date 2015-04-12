@@ -321,12 +321,23 @@ void EditorTextureImportDialog::_import() {
 
 	String dst_path=save_path->get_text();
 
-	if (dst_path.empty()) {
-
-		error_dialog->set_text("Please specify a valid target import path!");
-		error_dialog->popup_centered(Size2(200,100));
+	if (save_path->get_text().strip_edges()=="") {
+		error_dialog->set_text("Target path is empty.");
+		error_dialog->popup_centered_minsize();
 		return;
+	}
 
+	if (!save_path->get_text().begins_with("res://")) {
+		error_dialog->set_text("Target path must be full resource path.");
+		error_dialog->popup_centered_minsize();
+		return;
+	}
+
+
+	if (!atlas && !DirAccess::exists(save_path->get_text())) {
+		error_dialog->set_text("Target path must exist.");
+		error_dialog->popup_centered_minsize();
+		return;
 	}
 
 	if (atlas) { //atlas

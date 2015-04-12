@@ -266,6 +266,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 				continue;
 			if (AudioDriverManagerSW::get_driver(i)->init()==OK) {
 				success=true;
+				print_line("Audio Driver Failed: "+String(AudioDriverManagerSW::get_driver(p_audio_driver)->get_name()));
 				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
 				break;
 			}
