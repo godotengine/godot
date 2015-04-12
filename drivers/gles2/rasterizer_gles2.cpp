@@ -4270,17 +4270,21 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 		glReadPixels( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height,GL_RGBA,GL_UNSIGNED_BYTE,w.ptr());
 	}
 
-	uint32_t *imgptr = (uint32_t*)w.ptr();
-	for(int y=0;y<(viewport.height/2);y++) {
+	bool flip = current_rt==NULL;
 
-		uint32_t *ptr1 = &imgptr[y*viewport.width];
-		uint32_t *ptr2 = &imgptr[(viewport.height-y-1)*viewport.width];
+	if (flip) {
+		uint32_t *imgptr = (uint32_t*)w.ptr();
+		for(int y=0;y<(viewport.height/2);y++) {
 
-		for(int x=0;x<viewport.width;x++) {
+			uint32_t *ptr1 = &imgptr[y*viewport.width];
+			uint32_t *ptr2 = &imgptr[(viewport.height-y-1)*viewport.width];
 
-			uint32_t tmp = ptr1[x];
-			ptr1[x]=ptr2[x];
-			ptr2[x]=tmp;
+			for(int x=0;x<viewport.width;x++) {
+
+				uint32_t tmp = ptr1[x];
+				ptr1[x]=ptr2[x];
+				ptr2[x]=tmp;
+			}
 		}
 	}
 
