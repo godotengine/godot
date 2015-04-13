@@ -760,7 +760,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("animation_optimizer_max_angle",animation_options->get_optimize_max_angle());
 	rim->set_option("animation_filters",animation_options->get_filter());
 	rim->set_option("animation_clips",animation_options->get_clips());
-	rim->set_option("post_import_script",script_path->get_text()!=String()?EditorImportPlugin::validate_source_path(script_path->get_text()):String());
+	rim->set_option("post_import_script",script_path->get_text());
 	rim->set_option("import_this_time",this_import->get_selected());
 	rim->set_option("import_next_time",next_import->get_selected());
 	rim->set_option("reimport",true);
@@ -905,6 +905,7 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 			animation_options->set_optimize_angular_error(rimd->get_option("animation_optimizer_angular_error"));
 		if (rimd->has_option("animation_optimizer_max_angle"))
 			animation_options->set_optimize_max_angle(rimd->get_option("animation_optimizer_max_angle"));
+
 
 		script_path->set_text(rimd->get_option("post_import_script"));
 		if (rimd->has_option("import_this_time"))
