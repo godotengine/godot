@@ -468,7 +468,7 @@ public:
 	static void get_method_list(StringName p_type,List<MethodInfo> *p_methods,bool p_no_inheritance=false);
 	static MethodBind *get_method(StringName p_type, StringName p_name);
 
-	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method );
+	static void add_virtual_method(const StringName& p_type,const MethodInfo& p_method,bool p_virtual=true );
 	static void get_virtual_methods(const StringName& p_type,List<MethodInfo> * p_methods,bool p_no_inheritance=false );
 	
 	static void bind_integer_constant(const StringName& p_type, const StringName &p_name, int p_constant);

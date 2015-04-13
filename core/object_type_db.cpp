@@ -804,12 +804,13 @@ else goto set_defvals;
 
 }
 
-void ObjectTypeDB::add_virtual_method(const StringName& p_type,const MethodInfo& p_method ) {
+void ObjectTypeDB::add_virtual_method(const StringName& p_type, const MethodInfo& p_method , bool p_virtual) {
 	ERR_FAIL_COND(!types.has(p_type));
 
 #ifdef DEBUG_METHODS_ENABLED
 	MethodInfo mi=p_method;
-	mi.flags|=METHOD_FLAG_VIRTUAL;
+	if (p_virtual)
+		mi.flags|=METHOD_FLAG_VIRTUAL;
 	types[p_type].virtual_methods.push_back(mi);
 
 #endif

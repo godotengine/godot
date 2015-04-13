@@ -1505,6 +1505,8 @@ void Object::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
 
+	ObjectTypeDB::add_virtual_method("Object",MethodInfo("free"),false);
+
 	ADD_SIGNAL( MethodInfo("script_changed"));
 
 	BIND_VMETHOD( MethodInfo("_notification",PropertyInfo(Variant::INT,"what")) );
