@@ -1293,12 +1293,15 @@ bool Main::iteration() {
 	uint64_t ticks=OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed=ticks-last_ticks;
 
+	double step=(double)ticks_elapsed / 1000000.0;
+	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
+
+	//if (time_accum+step < frame_slice)
+	//	return false;
+
 	frame+=ticks_elapsed;
 
 	last_ticks=ticks;
-	double step=(double)ticks_elapsed / 1000000.0;
-
-	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
 
 	if (step>frame_slice*8)
 		step=frame_slice*8;
@@ -1308,7 +1311,6 @@ bool Main::iteration() {
 	float time_scale = OS::get_singleton()->get_time_scale();
 
 	bool exit=false;
-
 
 	int iters = 0;
 
