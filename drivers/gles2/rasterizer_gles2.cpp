@@ -1067,33 +1067,34 @@ void RasterizerGLES2::texture_set_data(RID p_texture,const Image& p_image,VS::Cu
 	int mipmaps= (texture->flags&VS::TEXTURE_FLAG_MIPMAPS && img.get_mipmaps()>0) ? img.get_mipmaps() +1 : 1;
 
 
-	//int w=img.get_width();
-	//int h=img.get_height();
+	int w=img.get_width();
+	int h=img.get_height();
 
 	int tsize=0;
 	for(int i=0;i<mipmaps;i++) {
 
 		int size,ofs;
-		int mm_w,mm_h;
-		img.get_mipmap_offset_size_and_dimensions(i,ofs,size,mm_w,mm_h);
+		img.get_mipmap_offset_and_size(i,ofs,size);
+
+		//print_line("mipmap: "+itos(i)+" size: "+itos(size)+" w: "+itos(mm_w)+", h: "+itos(mm_h));
 
 		if (texture->compressed) {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
-			glCompressedTexImage2D( blit_target, i, format,mm_w,mm_h,0,size,&read[ofs] );
+			glCompressedTexImage2D( blit_target, i, format,w,h,0,size,&read[ofs] );
 
 		} else {
 			glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 			if (texture->flags&VS::TEXTURE_FLAG_VIDEO_SURFACE) {
-				glTexSubImage2D( blit_target, i, 0,0,mm_w, mm_h,format,type,&read[ofs] );
+				glTexSubImage2D( blit_target, i, 0,0,w, h,format,type,&read[ofs] );
 			} else {
-				glTexImage2D(blit_target, i, internal_format, mm_w, mm_h, 0, format, type,&read[ofs]);
+				glTexImage2D(blit_target, i, internal_format, w, h, 0, format, type,&read[ofs]);
 			}
 
 		}
 		tsize+=size;
 
-		//w = MAX(Image::,w>>1);
-		//h = MAX(1,h>>1);
+		w = MAX(1,w>>1);
+		h = MAX(1,h>>1);
 
 	}
 
@@ -4300,17 +4301,21 @@ void RasterizerGLES2::capture_viewport(Image* r_capture) {
 		glReadPixels( viewport.x, window_size.height-(viewport.height+viewport.y), viewport.width,viewport.height,GL_RGBA,GL_UNSIGNED_BYTE,w.ptr());
 	}
 
-	uint32_t *imgptr = (uint32_t*)w.ptr();
-	for(int y=0;y<(viewport.height/2);y++) {
+	bool flip = current_rt==NULL;
 
-		uint32_t *ptr1 = &imgptr[y*viewport.width];
-		uint32_t *ptr2 = &imgptr[(viewport.height-y-1)*viewport.width];
+	if (flip) {
+		uint32_t *imgptr = (uint32_t*)w.ptr();
+		for(int y=0;y<(viewport.height/2);y++) {
 
-		for(int x=0;x<viewport.width;x++) {
+			uint32_t *ptr1 = &imgptr[y*viewport.width];
+			uint32_t *ptr2 = &imgptr[(viewport.height-y-1)*viewport.width];
 
-			uint32_t tmp = ptr1[x];
-			ptr1[x]=ptr2[x];
-			ptr2[x]=tmp;
+			for(int x=0;x<viewport.width;x++) {
+
+				uint32_t tmp = ptr1[x];
+				ptr1[x]=ptr2[x];
+				ptr2[x]=tmp;
+			}
 		}
 	}
 
@@ -8027,8 +8032,16 @@ void RasterizerGLES2::canvas_set_clip(bool p_clip, const Rect2& p_rect) {
 	if (p_clip) {
 
 		glEnable(GL_SCISSOR_TEST);
-		glScissor(viewport.x+p_rect.pos.x,viewport.y+ (viewport.height-(p_rect.pos.y+p_rect.size.height)),
-		p_rect.size.width,p_rect.size.height);
+		//glScissor(viewport.x+p_rect.pos.x,viewport.y+ (viewport.height-(p_rect.pos.y+p_rect.size.height)),
+
+		int x = p_rect.pos.x;
+		int y = window_size.height-(p_rect.pos.y+p_rect.size.y);
+		int w = p_rect.size.x;
+		int h = p_rect.size.y;
+
+		glScissor(x,y,w,h);
+
+
 	} else {
 
 		glDisable(GL_SCISSOR_TEST);
@@ -9129,8 +9142,17 @@ void RasterizerGLES2::_canvas_item_render_commands(CanvasItem *p_item,CanvasItem
 						} else  {
 
 							glEnable(GL_SCISSOR_TEST);
-							glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
-							current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+							//glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+							//current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+
+							int x = current_clip->final_clip_rect.pos.x;
+							int y = window_size.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.y);
+							int w = current_clip->final_clip_rect.size.x;
+							int h = current_clip->final_clip_rect.size.y;
+
+							glScissor(x,y,w,h);
+
+
 							reclip=false;
 						}
 					}
@@ -9304,8 +9326,21 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			if (current_clip) {
 
 				glEnable(GL_SCISSOR_TEST);
-				glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
-				current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+				//glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+				//current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+
+/*				int x = viewport.x+current_clip->final_clip_rect.pos.x;
+				int y = window_size.height-(viewport.y+current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.y);
+				int w = current_clip->final_clip_rect.size.x;
+				int h = current_clip->final_clip_rect.size.y;
+*/
+				int x = current_clip->final_clip_rect.pos.x;
+				int y = window_size.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.y);
+				int w = current_clip->final_clip_rect.size.x;
+				int h = current_clip->final_clip_rect.size.y;
+
+				glScissor(x,y,w,h);
+
 			} else {
 
 				glDisable(GL_SCISSOR_TEST);
@@ -9594,8 +9629,17 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 		if (reclip) {
 
 			glEnable(GL_SCISSOR_TEST);
-			glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
-			current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+			//glScissor(viewport.x+current_clip->final_clip_rect.pos.x,viewport.y+ (viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.height)),
+			//current_clip->final_clip_rect.size.width,current_clip->final_clip_rect.size.height);
+
+			int x = current_clip->final_clip_rect.pos.x;
+			int y = window_size.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.y);
+			int w = current_clip->final_clip_rect.size.x;
+			int h = current_clip->final_clip_rect.size.y;
+
+			glScissor(x,y,w,h);
+
+
 		}
 
 

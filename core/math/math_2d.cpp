@@ -230,6 +230,23 @@ Vector2 Vector2::cubic_interpolate(const Vector2& p_b,const Vector2& p_pre_a, co
 
 
 
+	Vector2 p0=p_pre_a;
+	Vector2 p1=*this;
+	Vector2 p2=p_b;
+	Vector2 p3=p_post_b;
+
+	float t = p_t;
+	float t2 = t * t;
+	float t3 = t2 * t;
+
+	Vector2 out;
+	out = 0.5f * ( ( p1 * 2.0f) +
+	( -p0 + p2 ) * t +
+	( 2.0f * p0 - 5.0f * p1 + 4 * p2 - p3 ) * t2 +
+	( -p0 + 3.0f * p1 - 3.0f * p2 + p3 ) * t3 );
+	return out;
+
+/*
 	float mu = p_t;
 	float mu2 = mu*mu;
 
@@ -239,7 +256,7 @@ Vector2 Vector2::cubic_interpolate(const Vector2& p_b,const Vector2& p_pre_a, co
 	Vector2 a3 = *this;
 
 	return ( a0*mu*mu2 + a1*mu2 + a2*mu + a3 );
-
+*/
 	/*
 	float t = p_t;
 	real_t t2 = t*t;

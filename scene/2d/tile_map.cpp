@@ -406,17 +406,19 @@ void TileMap::_update_dirty_quadrants() {
 
 			if (navigation) {
 				Ref<NavigationPolygon> navpoly = tile_set->tile_get_navigation_polygon(c.id);
-				Vector2 npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.id);
-				Matrix32 xform;
-				xform.set_origin(offset.floor()+q.pos);
-				_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
+				if (navpoly.is_valid()) {
+					Vector2 npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.id);
+					Matrix32 xform;
+					xform.set_origin(offset.floor()+q.pos);
+					_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
 
-				int pid = navigation->navpoly_create(navpoly,nav_rel * xform);
+					int pid = navigation->navpoly_create(navpoly,nav_rel * xform);
 
-				Quadrant::NavPoly np;
-				np.id=pid;
-				np.xform=xform;
-				q.navpoly_ids[E->key()]=np;
+					Quadrant::NavPoly np;
+					np.id=pid;
+					np.xform=xform;
+					q.navpoly_ids[E->key()]=np;
+				}
 			}
 
 

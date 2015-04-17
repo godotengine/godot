@@ -43,6 +43,9 @@ OS* OS::get_singleton() {
 uint32_t OS::get_ticks_msec() const
 { return get_ticks_usec()/1000; }
 
+uint64_t OS::get_splash_tick_msec() const {
+	return _msec_splash;
+}
 uint64_t OS::get_unix_time() const {
 
 	return 0;

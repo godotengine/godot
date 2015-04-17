@@ -296,7 +296,7 @@ void Node::add_child_notify(Node *p_child) {
 	// to be used when not wanted	
 }
 
-
+/*
 void Node::remove_and_delete_child(Node *p_child) {
 
 	ERR_FAIL_NULL( p_child );
@@ -306,6 +306,7 @@ void Node::remove_and_delete_child(Node *p_child) {
 	memdelete(p_child);
 
 }
+*/
 
 void Node::remove_child_notify(Node *p_child) {
 
@@ -1773,7 +1774,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
 	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
 	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
-	ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
+	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);

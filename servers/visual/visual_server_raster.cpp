@@ -7391,7 +7391,7 @@ void VisualServerRaster::set_default_clear_color(const Color& p_color) {
 	clear_color=p_color;
 }
 
-void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color) {
+void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale) {
 
 	if (p_image.empty())
 		return;
@@ -7413,9 +7413,27 @@ void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_col
 	texture_set_data(texture,p_image);
 	rasterizer->canvas_begin_rect(Matrix32());
 	Rect2 imgrect(0,0,p_image.get_width(),p_image.get_height());
-	Rect2 screenrect=imgrect;
-	screenrect.pos+=((Size2(vr.width,vr.height)-screenrect.size)/2.0).floor();
-	rasterizer->canvas_draw_rect(screenrect,0,imgrect,texture,Color(1,1,1,0));
+	Rect2 screenrect;
+	if (p_scale) {
+
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.pos.x = (window_w - screenrect.size.x)/2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.pos.y = (window_h - screenrect.size.y)/2;
+		}
+	} else {
+
+		screenrect=imgrect;
+		screenrect.pos+=((Size2(vr.width,vr.height)-screenrect.size)/2.0).floor();
+
+	}
 	rasterizer->canvas_draw_rect(screenrect,0,imgrect,texture,Color(1,1,1,1));
 	rasterizer->canvas_end_rect();
 

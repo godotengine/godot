@@ -399,6 +399,15 @@ Error DirAccess::copy(String p_from,String p_to) {
 	return err;
 }
 
+bool DirAccess::exists(String p_dir) {
+
+	DirAccess* da = DirAccess::create_for_path(p_dir);
+	bool valid = da->change_dir(p_dir)==OK;
+	memdelete(da);
+	return valid;
+
+}
+
 DirAccess::DirAccess(){
 
 	_access_type=ACCESS_FILESYSTEM;
