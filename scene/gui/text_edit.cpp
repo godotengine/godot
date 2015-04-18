@@ -26,16 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-/*****f********************************************/
-/*  text_edit.cpp                                */
-/*************************************************/
-/*            This file is part of:              */
-/*                GODOT ENGINE                   */
-/*************************************************/
-/*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
-/*             All Rights Reserved.              */
-/*************************************************/
 
 #include "text_edit.h"
 #include "os/keyboard.h"

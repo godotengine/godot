@@ -1386,7 +1386,7 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 					_set_error("Could not resolve relative path for parent class: "+path,p_class);
 					return ERR_FILE_NOT_FOUND;
 				}
-				path=base.get_base_dir().plus_file(path);
+				path=base.get_base_dir().plus_file(path).simplify_path();
 			}
 			script = ResourceLoader::load(path);
 			if (script.is_null()) {

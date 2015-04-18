@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -348,8 +348,8 @@ void TileMap::_update_dirty_quadrants() {
 			rect.pos=offset.floor();
 			rect.size=s;
 
-			rect.size.x+=fp_adjust;
-			rect.size.y+=fp_adjust;
+		/*	rect.size.x+=fp_adjust;
+			rect.size.y+=fp_adjust;*/
 
 			if (c.flip_h)
 				rect.size.x=-rect.size.x;
@@ -1154,8 +1154,7 @@ TileMap::TileMap() {
 	navigation=NULL;
 	y_sort_mode=false;
 
-	fp_adjust=0.01;
-	fp_adjust=0.01;
+	fp_adjust=0.00001;
 	tile_origin=TILE_ORIGIN_TOP_LEFT;
 }
 
