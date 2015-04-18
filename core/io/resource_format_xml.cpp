@@ -458,7 +458,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				path=path.replace("local://",local_path+"::");
 			else if (path.find("://")==-1 && path.is_rel_path()) {
 				// path is relative to file being loaded, so convert to a resource path
-				path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+				path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 
 			}
 
@@ -1423,7 +1423,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 
@@ -1601,7 +1601,7 @@ void ResourceInteractiveLoaderXML::get_dependencies(FileAccess *f,List<String> *
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (path.ends_with("*")) {

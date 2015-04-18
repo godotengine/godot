@@ -390,7 +390,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path=Globals::get_singleton()->localize_path(res_path.get_base_dir()+"/"+path);
+						path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
 					}
 
