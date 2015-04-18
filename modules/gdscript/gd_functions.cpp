@@ -98,7 +98,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"dict2inst",
 		"hash",
 		"print_stack",
-		"get_inst",
+		"instance_from_id",
 	};
 
 	return _names[p_func];
@@ -904,7 +904,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			};
 		} break;
 
-		case GET_INST: {
+		case INSTANCE_FROM_ID: {
 
 			VALIDATE_ARG_COUNT(1);
 			if (p_args[0]->get_type()!=Variant::INT && p_args[0]->get_type()!=Variant::REAL) {
@@ -1316,8 +1316,8 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 
-		case GET_INST: {
-			MethodInfo mi("get_info",PropertyInfo(Variant::INT,"instance_id"));
+		case INSTANCE_FROM_ID: {
+			MethodInfo mi("instance_from_id",PropertyInfo(Variant::INT,"instance_id"));
 			mi.return_val.type=Variant::OBJECT;
 			return mi;
 		} break;

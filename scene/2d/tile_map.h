@@ -171,6 +171,8 @@ private:
 
 	_FORCE_INLINE_ Vector2 _map_to_world(int p_x,int p_y,bool p_ignore_ofs=false) const;
 
+	Array get_used_cells() const;
+
 protected:
 
 

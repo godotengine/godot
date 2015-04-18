@@ -1024,6 +1024,19 @@ bool TileMap::is_y_sort_mode_enabled() const {
 	return y_sort_mode;
 }
 
+Array TileMap::get_used_cells() const {
+
+	Array a;
+	a.resize(tile_map.size());
+	int i=0;
+	for (Map<PosKey,Cell>::Element *E=tile_map.front();E;E=E->next()) {
+
+		Vector2 p (E->key().x,E->key().y);
+		a[i++]=p;
+	}
+
+	return a;
+}
 
 void TileMap::_bind_methods() {
 
@@ -1079,6 +1092,8 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
+
+	ObjectTypeDB::bind_method(_MD("get_used_cells"),&TileMap::get_used_cells);
 
 	ObjectTypeDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);

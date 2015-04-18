@@ -94,7 +94,7 @@ public:
 		DICT2INST,
 		HASH,
 		PRINT_STACK,
-		GET_INST,
+		INSTANCE_FROM_ID,
 		FUNC_MAX
 
 	};
