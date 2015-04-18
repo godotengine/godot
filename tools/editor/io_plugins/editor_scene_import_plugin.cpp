@@ -714,7 +714,8 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 
-	Ref<EditorScenePostImport> pi;
+
+
 
 	if (script_path->get_text()!="") {
 		Ref<Script> scr = ResourceLoader::load(script_path->get_text());
@@ -724,7 +725,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			return;
 		}
 
-		pi = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
+		Ref<EditorScenePostImport> pi = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
 		pi->set_script(scr.get_ref_ptr());
 		if (!pi->get_script_instance()) {
 
@@ -732,6 +733,8 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
+
+		print_line("PI REFERENCES "+itos(scr->reference_get_count()));
 	}
 
 
@@ -2726,7 +2729,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Ref<EditorScenePostImport>  post_import_script;
 
 	if (post_import_script_path!="") {
-		post_import_script_path = EditorImportPlugin::expand_source_path(post_import_script_path);
+		post_import_script_path = post_import_script_path;
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error("Couldn't load post-import script: '"+post_import_script_path);
@@ -2748,7 +2751,10 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			EditorNode::add_io_error("Error running Post-Import script: '"+post_import_script_path);
 			return err;
 		}
+
+
 	}
+
 
 	/// IMPORT IMAGES
 

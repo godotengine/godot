@@ -59,6 +59,10 @@ void Reference::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("unreference"),&Reference::unreference);
 }
 
+int Reference::reference_get_count() const {
+	return refcount.get();
+}
+
 void Reference::reference(){
 
 	refcount.ref();

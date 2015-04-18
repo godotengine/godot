@@ -53,6 +53,7 @@ public:
 	bool init_ref();
 	void reference();
 	bool unreference();
+	int reference_get_count() const;
 
 	Reference();
 	~Reference();
