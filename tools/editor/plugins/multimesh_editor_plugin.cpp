@@ -29,8 +29,7 @@
 #include "multimesh_editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
-
-
+#include "spatial_editor_plugin.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
 
@@ -299,7 +298,7 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 void MultiMeshEditor::edit(MultiMeshInstance *p_multimesh) {
 
-	node=p_multimesh;	
+	node=p_multimesh;
 
 }
 
@@ -326,7 +325,8 @@ MultiMeshEditor::MultiMeshEditor() {
 
 
 	options = memnew( MenuButton );
-	add_child(options);
+	//add_child(options);
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 	options->set_area_as_parent_rect();
 
 	options->set_text("MultiMesh");
@@ -340,7 +340,6 @@ MultiMeshEditor::MultiMeshEditor() {
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	populate_dialog->add_child(vbc);
 	populate_dialog->set_child_rect(vbc);
-
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 
@@ -435,10 +434,10 @@ bool MultiMeshEditorPlugin::handles(Object *p_object) const {
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		multimesh_editor->show();
+		multimesh_editor->options->show();
 	} else {
 
-		multimesh_editor->hide();
+		multimesh_editor->options->hide();
 		multimesh_editor->edit(NULL);
 	}
 
@@ -457,9 +456,7 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
 	multimesh_editor->set_margin(MARGIN_TOP,0);
 	multimesh_editor->set_margin(MARGIN_BOTTOM,10);
 
-
-
-	multimesh_editor->hide();
+	multimesh_editor->options->hide();
 }
 
 
