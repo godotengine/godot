@@ -559,7 +559,17 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 					int index;
 					if (named) {
+#ifdef DEBUG_ENABLED
+						if (on->arguments[0]->type==GDParser::Node::TYPE_SELF && codegen.script && codegen.function_node && !codegen.function_node->_static) {
 
+							const Map<StringName,GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(static_cast<GDParser::IdentifierNode*>(on->arguments[1])->name);
+							if (MI && MI->get().getter==codegen.function_node->name) {
+								String n = static_cast<GDParser::IdentifierNode*>(on->arguments[1])->name;
+								_set_error("Must use '"+n+"' instead of 'self."+n+"' in getter.",on);
+								return -1;
+							}
+						}
+#endif
 						index=codegen.get_name_map_pos(static_cast<GDParser::IdentifierNode*>(on->arguments[1])->name);
 
 					} else {
@@ -702,6 +712,25 @@ int GDCompiler::_parse_expression(CodeGen& codegen,const GDParser::Node *p_expre
 
 					if (on->arguments[0]->type==GDParser::Node::TYPE_OPERATOR && (static_cast<GDParser::OperatorNode*>(on->arguments[0])->op==GDParser::OperatorNode::OP_INDEX || static_cast<GDParser::OperatorNode*>(on->arguments[0])->op==GDParser::OperatorNode::OP_INDEX_NAMED)) {
 						//SET (chained) MODE!!
+
+
+#ifdef DEBUG_ENABLED
+						if (static_cast<GDParser::OperatorNode*>(on->arguments[0])->op==GDParser::OperatorNode::OP_INDEX_NAMED) {
+							const GDParser::OperatorNode* inon = static_cast<GDParser::OperatorNode*>(on->arguments[0]);
+
+
+							if (inon->arguments[0]->type==GDParser::Node::TYPE_SELF && codegen.script && codegen.function_node && !codegen.function_node->_static) {
+
+								const Map<StringName,GDScript::MemberInfo>::Element *MI = codegen.script->member_indices.find(static_cast<GDParser::IdentifierNode*>(inon->arguments[1])->name);
+								if (MI && MI->get().setter==codegen.function_node->name) {
+									String n = static_cast<GDParser::IdentifierNode*>(inon->arguments[1])->name;
+									_set_error("Must use '"+n+"' instead of 'self."+n+"' in setter.",inon);
+									return -1;
+								}
+							}
+						}
+#endif
+
 
 						int slevel=p_stack_level;
 
