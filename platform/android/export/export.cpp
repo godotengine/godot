@@ -186,6 +186,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool apk_expansion;
 	bool remove_prev;
 	bool use_32_fb;
+	bool immersive;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
 	int orientation;
@@ -282,6 +283,8 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		_signed=p_value;
 	else if (n=="screen/use_32_bits_view")
 		use_32_fb=p_value;
+	else if (n=="screen/immersive_mode")
+		immersive=p_value;
 	else if (n=="screen/orientation")
 		orientation=p_value;
 	else if (n=="screen/support_small")
@@ -349,6 +352,8 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=_signed;
 	else if (n=="screen/use_32_bits_view")
 		r_ret=use_32_fb;
+	else if (n=="screen/immersive_mode")
+		r_ret=immersive;
 	else if (n=="screen/orientation")
 		r_ret=orientation;
 	else if (n=="screen/support_small")
@@ -399,6 +404,7 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/icon",PROPERTY_HINT_FILE,"png") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "package/signed") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/use_32_bits_view") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/immersive_mode") );
 	p_list->push_back( PropertyInfo( Variant::INT, "screen/orientation",PROPERTY_HINT_ENUM,"Landscape,Portrait") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_small") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/support_normal") );
@@ -1171,6 +1177,8 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 	if (use_32_fb)
 		cl.push_back("-use_depth_32");
 
+	if (immersive)
+		cl.push_back("-use_immersive");
 
 	if (cl.size()) {
 		//add comandline
@@ -1547,6 +1555,7 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	orientation=0;
 	remove_prev=true;
 	use_32_fb=true;
+	immersive=true;
 
 	device_thread=Thread::create(_device_poll_thread,this);
 	devices_changed=true;
