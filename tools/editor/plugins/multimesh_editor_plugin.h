@@ -42,14 +42,14 @@ class MultiMeshEditor : public Control {
 
 	OBJ_TYPE(MultiMeshEditor, Control );
 
+        friend class MultiMeshEditorPlugin;
 
 	AcceptDialog *err_dialog;
-
+        MenuButton * options;
 	MultiMeshInstance *_last_pp_node;
 	bool browsing_source;
 
 	Panel *panel;
-	MenuButton * options;
 	MultiMeshInstance *node;
 
 	LineEdit *surface_source;
