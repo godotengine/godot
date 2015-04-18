@@ -2586,9 +2586,8 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
 void TextEdit::set_text(String p_text){
 	
 	setting_text=true;
-	_clear();
 	_insert_text_at_cursor(p_text);
-	
+	clear_undo_history();
 	cursor.column=0;
 	cursor.line=0;
 	cursor.x_ofs=0;
