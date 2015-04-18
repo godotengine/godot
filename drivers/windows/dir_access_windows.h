@@ -56,7 +56,7 @@ class DirAccessWindows : public DirAccess {
 
 	String current_dir;
 
-	bool unicode;
+
 	bool _cisdir;
 	bool _cishidden;
 

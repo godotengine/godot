@@ -176,7 +176,7 @@ bool DirAccessJAndroid::file_exists(String p_file){
 	if (current_dir=="")
 		sd=p_file;
 	else
-		sd=current_dir+"/"+p_file;
+		sd=current_dir.plus_file(p_file);
 
 	FileAccessJAndroid *f = memnew(FileAccessJAndroid);
 	bool exists = f->file_exists(sd);
@@ -190,12 +190,19 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	String sd;
+
+
 	if (current_dir=="")
 		sd=p_dir;
-	else
-		sd=current_dir+"/"+p_dir;
+	else {
+		if (p_dir.is_rel_path())
+			sd=current_dir.plus_file(p_dir);
+		else
+			sd=fix_path(p_dir);
+	}
 
-	String path=fix_path(sd).simplify_path();
+	String path=sd.simplify_path();
+
 	if (path.begins_with("/"))
 		path=path.substr(1,path.length());
 	else if (path.begins_with("res://"))

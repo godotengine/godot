@@ -734,7 +734,6 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			return;
 		}
 
-		print_line("PI REFERENCES "+itos(scr->reference_get_count()));
 	}
 
 
