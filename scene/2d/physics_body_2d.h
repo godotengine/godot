@@ -188,6 +188,7 @@ private:
 	void _body_inout(int p_status, ObjectID p_instance, int p_body_shape,int p_local_shape);
 	void _direct_state_changed(Object *p_state);
 
+	bool _test_motion(const Vector2& p_motion,float p_margin=0.08,const Ref<Physics2DTestMotionResult>& p_result=Ref<Physics2DTestMotionResult>());
 
 protected:
 
@@ -249,6 +250,8 @@ public:
 	void set_applied_force(const Vector2& p_force);
 	Vector2 get_applied_force() const;
 
+
+
 	Array get_colliding_bodies() const; //function for script
 
 	RigidBody2D();
@@ -266,11 +269,6 @@ class KinematicBody2D : public PhysicsBody2D {
 	OBJ_TYPE(KinematicBody2D,PhysicsBody2D);
 
 	float margin;
-	bool collide_static;
-	bool collide_rigid;
-	bool collide_kinematic;
-	bool collide_character;
-
 	bool colliding;
 	Vector2 collision;
 	Vector2 normal;
@@ -290,7 +288,7 @@ public:
 	Vector2 move(const Vector2& p_motion);
 	Vector2 move_to(const Vector2& p_position);
 
-	bool can_move_to(const Vector2& p_position,bool p_discrete=false);
+	bool test_move(const Vector2& p_motion);
 	bool is_colliding() const;
 	Vector2 get_collision_pos() const;
 	Vector2 get_collision_normal() const;
@@ -298,18 +296,6 @@ public:
 	ObjectID get_collider() const;
 	int get_collider_shape() const;
 	Variant get_collider_metadata() const;
-
-	void set_collide_with_static_bodies(bool p_enable);
-	bool can_collide_with_static_bodies() const;
-
-	void set_collide_with_rigid_bodies(bool p_enable);
-	bool can_collide_with_rigid_bodies() const;
-
-	void set_collide_with_kinematic_bodies(bool p_enable);
-	bool can_collide_with_kinematic_bodies() const;
-
-	void set_collide_with_character_bodies(bool p_enable);
-	bool can_collide_with_character_bodies() const;
 
 	void set_collision_margin(float p_margin);
 	float get_collision_margin() const;

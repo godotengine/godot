@@ -165,6 +165,8 @@ public:
 
 	int get_collision_pairs() const { return collision_pairs; }
 
+	bool test_body_motion(Body2DSW *p_body, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
+
 	Physics2DDirectSpaceStateSW *get_direct_state();
 
 	Space2DSW();

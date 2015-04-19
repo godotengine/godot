@@ -556,7 +556,511 @@ Physics2DDirectSpaceStateSW::Physics2DDirectSpaceStateSW() {
 
 
 
+bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p_margin,Physics2DServer::MotionResult *r_result) {
 
+	//give me back regular physics engine logic
+	//this is madness
+	//and most people using this function will think
+	//what it does is simpler than using physics
+	//this took about a week to get right..
+	//but is it right? who knows at this point..
+
+	Rect2 body_aabb;
+
+	for(int i=0;i<p_body->get_shape_count();i++) {
+
+		if (i==0)
+			body_aabb=p_body->get_shape_aabb(i);
+		else
+			body_aabb=body_aabb.merge(p_body->get_shape_aabb(i));
+	}
+
+	body_aabb=body_aabb.grow(p_margin);
+
+	{
+		//add motion
+
+		Rect2 motion_aabb=body_aabb;
+		motion_aabb.pos+=p_motion;
+		body_aabb=body_aabb.merge(motion_aabb);
+	}
+
+
+	int amount = broadphase->cull_aabb(body_aabb,intersection_query_results,INTERSECTION_QUERY_MAX,intersection_query_subindex_results);
+
+	for(int i=0;i<amount;i++) {
+
+		bool keep=true;
+
+		if (intersection_query_results[i]==p_body)
+			keep=false;
+		else if (intersection_query_results[i]->get_type()==CollisionObject2DSW::TYPE_AREA)
+			keep=false;
+		else if ((static_cast<Body2DSW*>(intersection_query_results[i])->get_layer_mask()&p_body->get_layer_mask())==0)
+			keep=false;
+		else if (static_cast<Body2DSW*>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self()))
+			keep=false;
+		else if (static_cast<Body2DSW*>(intersection_query_results[i])->is_shape_set_as_trigger(intersection_query_subindex_results[i]))
+			keep=false;
+
+		if (!keep) {
+
+			if (i<amount-1) {
+				SWAP(intersection_query_results[i],intersection_query_results[amount-1]);
+				SWAP(intersection_query_subindex_results[i],intersection_query_subindex_results[amount-1]);
+
+			}
+
+			amount--;
+			i--;
+
+		}
+	}
+
+	Matrix32 body_transform = p_body->get_transform();
+
+	{
+		//STEP 1, FREE BODY IF STUCK
+
+		const int max_results = 32;
+		int recover_attempts=4;
+		Vector2 sr[max_results*2];
+
+		do {
+
+			Physics2DServerSW::CollCbkData cbk;
+			cbk.max=max_results;
+			cbk.amount=0;
+			cbk.ptr=sr;
+
+
+			CollisionSolver2DSW::CallbackResult cbkres=NULL;
+
+			Physics2DServerSW::CollCbkData *cbkptr=NULL;
+			cbkptr=&cbk;
+			cbkres=Physics2DServerSW::_shape_col_cbk;
+
+			bool collided=false;
+
+
+			for(int j=0;j<p_body->get_shape_count();j++) {
+				if (p_body->is_shape_set_as_trigger(j))
+					continue;
+
+				Matrix32 body_shape_xform = body_transform * p_body->get_shape_transform(j);
+				Shape2DSW *body_shape = p_body->get_shape(j);
+				for(int i=0;i<amount;i++) {
+
+					const CollisionObject2DSW *col_obj=intersection_query_results[i];
+					int shape_idx=intersection_query_subindex_results[i];
+
+					if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+
+						const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+						cbk.valid_dir=body->get_one_way_collision_direction();
+						cbk.valid_depth=body->get_one_way_collision_max_depth();
+					} else {
+						cbk.valid_dir=Vector2();
+						cbk.valid_depth=0;
+					}
+
+					if (CollisionSolver2DSW::solve(body_shape,body_shape_xform,Vector2(),col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),Vector2(),cbkres,cbkptr,NULL,p_margin)) {
+						collided=cbk.amount>0;
+					}
+				}
+			}
+
+
+			if (!collided)
+				break;
+
+			Vector2 recover_motion;
+
+			for(int i=0;i<cbk.amount;i++) {
+
+				Vector2 a = sr[i*2+0];
+				Vector2 b = sr[i*2+1];
+
+			//	float d = a.distance_to(b);
+
+				//if (d<margin)
+				///	continue;
+				recover_motion+=(b-a)*0.4;
+			}
+
+			if (recover_motion==Vector2()) {
+				collided=false;
+				break;
+			}
+
+			body_transform.elements[2]+=recover_motion;
+
+			recover_attempts--;
+
+		} while (recover_attempts);
+	}
+
+
+
+	float safe = 1.0;
+	float unsafe = 1.0;
+	int best_shape=-1;
+
+	{
+		// STEP 2 ATTEMPT MOTION
+
+
+
+		for(int j=0;j<p_body->get_shape_count();j++) {
+
+			if (p_body->is_shape_set_as_trigger(j))
+				continue;
+
+			Matrix32 body_shape_xform = body_transform * p_body->get_shape_transform(j);
+			Shape2DSW *body_shape = p_body->get_shape(j);
+
+			bool stuck=false;
+
+			float best_safe=1;
+			float best_unsafe=1;
+
+			for(int i=0;i<amount;i++) {
+
+				const CollisionObject2DSW *col_obj=intersection_query_results[i];
+				int shape_idx=intersection_query_subindex_results[i];
+
+
+				Matrix32 col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
+				//test initial overlap, does it collide if going all the way?
+				if (!CollisionSolver2DSW::solve(body_shape,body_shape_xform,p_motion,col_obj->get_shape(shape_idx),col_obj_xform,Vector2() ,NULL,NULL,NULL,0)) {
+					continue;
+				}
+
+
+				//test initial overlap
+				if (CollisionSolver2DSW::solve(body_shape,body_shape_xform,Vector2(),col_obj->get_shape(shape_idx),col_obj_xform,Vector2() ,NULL,NULL,NULL,0)) {
+
+					if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+						//if one way collision direction ignore initial overlap
+						const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+						if (body->get_one_way_collision_direction()!=Vector2()) {
+							continue;
+						}
+					}
+
+					stuck=true;
+					break;
+				}
+
+
+				//just do kinematic solving
+				float low=0;
+				float hi=1;
+				Vector2 mnormal=p_motion.normalized();
+
+				for(int i=0;i<8;i++) { //steps should be customizable..
+
+					//Matrix32 xfa = p_xform;
+					float ofs = (low+hi)*0.5;
+
+					Vector2 sep=mnormal; //important optimization for this to work fast enough
+					bool collided = CollisionSolver2DSW::solve(body_shape,body_shape_xform,p_motion*ofs,col_obj->get_shape(shape_idx),col_obj_xform,Vector2(),NULL,NULL,&sep,0);
+
+					if (collided) {
+
+						hi=ofs;
+					} else {
+
+						low=ofs;
+					}
+				}
+
+				if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+
+					const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+					if (body->get_one_way_collision_direction()!=Vector2()) {
+
+						Vector2 cd[2];
+						Physics2DServerSW::CollCbkData cbk;
+						cbk.max=1;
+						cbk.amount=0;
+						cbk.ptr=cd;
+						cbk.valid_dir=body->get_one_way_collision_direction();
+						cbk.valid_depth=body->get_one_way_collision_max_depth();
+
+						Vector2 sep=mnormal; //important optimization for this to work fast enough
+						bool collided = CollisionSolver2DSW::solve(body_shape,body_shape_xform,p_motion*(hi+contact_max_allowed_penetration),col_obj->get_shape(shape_idx),col_obj_xform,Vector2(),Physics2DServerSW::_shape_col_cbk,&cbk,&sep,0);
+						if (!collided || cbk.amount==0) {
+							continue;
+						}
+
+					}
+				}
+
+
+				if (low<best_safe) {
+					best_safe=low;
+					best_unsafe=hi;
+				}
+			}
+
+			if (stuck) {
+
+				safe=0;
+				unsafe=0;
+				best_shape=j; //sadly it's the best
+				break;
+			}
+			if (best_safe==1.0) {
+				continue;
+			}
+			if (best_safe < safe) {
+
+				safe=best_safe;
+				unsafe=best_unsafe;
+				best_shape=j;
+			}
+		}
+	}
+
+	bool collided=false;
+	if (safe>=1) {
+		//not collided
+		collided=false;
+		if (r_result) {
+
+			r_result->motion=p_motion+(body_transform.elements[2]-p_body->get_transform().elements[2]);
+			r_result->remainder=Vector2();
+		}
+
+	} else {
+
+		//it collided, let's get the rest info in unsafe advance
+		Matrix32 ugt = body_transform;
+		ugt.elements[2]+=p_motion*unsafe;
+
+		_RestCallbackData2D rcd;
+		rcd.best_len=0;
+		rcd.best_object=NULL;
+		rcd.best_shape=0;
+
+		Matrix32 body_shape_xform = ugt * p_body->get_shape_transform(best_shape);
+		Shape2DSW *body_shape = p_body->get_shape(best_shape);
+
+
+		for(int i=0;i<amount;i++) {
+
+
+			const CollisionObject2DSW *col_obj=intersection_query_results[i];
+			int shape_idx=intersection_query_subindex_results[i];
+
+			if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
+
+				const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
+				rcd.valid_dir=body->get_one_way_collision_direction();
+				rcd.valid_depth=body->get_one_way_collision_max_depth();
+			} else {
+				rcd.valid_dir=Vector2();
+				rcd.valid_depth=0;
+			}
+
+
+			rcd.object=col_obj;
+			rcd.shape=shape_idx;
+			bool sc = CollisionSolver2DSW::solve(body_shape,body_shape_xform,Vector2(),col_obj->get_shape(shape_idx),col_obj->get_transform() * col_obj->get_shape_transform(shape_idx),Vector2() ,_rest_cbk_result,&rcd,NULL,p_margin);
+			if (!sc)
+				continue;
+
+		}
+
+		if (rcd.best_len!=0) {
+
+			if (r_result) {
+				r_result->collider=rcd.best_object->get_self();
+				r_result->collider_id=rcd.best_object->get_instance_id();
+				r_result->collider_shape=rcd.best_shape;
+				r_result->collision_normal=rcd.best_normal;
+				r_result->collision_point=rcd.best_contact;
+				r_result->collider_metadata=rcd.best_object->get_shape_metadata(rcd.best_shape);
+
+				const Body2DSW *body = static_cast<const Body2DSW*>(rcd.best_object);
+				Vector2 rel_vec = r_result->collision_point-body->get_transform().get_origin();
+				r_result->collider_velocity = Vector2(-body->get_angular_velocity() * rel_vec.y, body->get_angular_velocity() * rel_vec.x) + body->get_linear_velocity();
+
+				r_result->motion=safe*p_motion+(body_transform.elements[2]-p_body->get_transform().elements[2]);
+				r_result->remainder=p_motion - safe * p_motion;
+			}
+
+			collided=true;
+		} else {
+			if (r_result) {
+
+				r_result->motion=p_motion+(body_transform.elements[2]-p_body->get_transform().elements[2]);
+				r_result->remainder=Vector2();
+			}
+
+			collided=false;
+
+		}
+	}
+
+	return collided;
+
+
+#if 0
+	//give me back regular physics engine logic
+	//this is madness
+	//and most people using this function will think
+	//what it does is simpler than using physics
+	//this took about a week to get right..
+	//but is it right? who knows at this point..
+
+
+	colliding=false;
+	ERR_FAIL_COND_V(!is_inside_tree(),Vector2());
+	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
+	ERR_FAIL_COND_V(!dss,Vector2());
+	const int max_shapes=32;
+	Vector2 sr[max_shapes*2];
+	int res_shapes;
+
+	Set<RID> exclude;
+	exclude.insert(get_rid());
+
+
+	//recover first
+	int recover_attempts=4;
+
+	bool collided=false;
+	uint32_t mask=0;
+	if (collide_static)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_STATIC_BODY;
+	if (collide_kinematic)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
+	if (collide_rigid)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_RIGID_BODY;
+	if (collide_character)
+		mask|=Physics2DDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
+
+//	print_line("motion: "+p_motion+" margin: "+rtos(margin));
+
+	//print_line("margin: "+rtos(margin));
+	do {
+
+		//motion recover
+		for(int i=0;i<get_shape_count();i++) {
+
+			if (is_shape_set_as_trigger(i))
+				continue;
+			if (dss->collide_shape(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i),Vector2(),margin,sr,max_shapes,res_shapes,exclude,get_layer_mask(),mask))
+				collided=true;
+
+		}
+
+		if (!collided)
+			break;
+
+		Vector2 recover_motion;
+
+		for(int i=0;i<res_shapes;i++) {
+
+			Vector2 a = sr[i*2+0];
+			Vector2 b = sr[i*2+1];
+
+			float d = a.distance_to(b);
+
+			//if (d<margin)
+			///	continue;
+			recover_motion+=(b-a)*0.4;
+		}
+
+		if (recover_motion==Vector2()) {
+			collided=false;
+			break;
+		}
+
+		Matrix32 gt = get_global_transform();
+		gt.elements[2]+=recover_motion;
+		set_global_transform(gt);
+
+		recover_attempts--;
+
+	} while (recover_attempts);
+
+
+	//move second
+	float safe = 1.0;
+	float unsafe = 1.0;
+	int best_shape=-1;
+
+	for(int i=0;i<get_shape_count();i++) {
+
+		if (is_shape_set_as_trigger(i))
+			continue;
+
+		float lsafe,lunsafe;
+		bool valid = dss->cast_motion(get_shape(i)->get_rid(), get_global_transform() * get_shape_transform(i), p_motion, 0,lsafe,lunsafe,exclude,get_layer_mask(),mask);
+		//print_line("shape: "+itos(i)+" travel:"+rtos(ltravel));
+		if (!valid) {
+
+			safe=0;
+			unsafe=0;
+			best_shape=i; //sadly it's the best
+			break;
+		}
+		if (lsafe==1.0) {
+			continue;
+		}
+		if (lsafe < safe) {
+
+			safe=lsafe;
+			unsafe=lunsafe;
+			best_shape=i;
+		}
+	}
+
+
+	//print_line("best shape: "+itos(best_shape)+" motion "+p_motion);
+
+	if (safe>=1) {
+		//not collided
+		colliding=false;
+	} else {
+
+		//it collided, let's get the rest info in unsafe advance
+		Matrix32 ugt = get_global_transform();
+		ugt.elements[2]+=p_motion*unsafe;
+		Physics2DDirectSpaceState::ShapeRestInfo rest_info;
+		bool c2 = dss->rest_info(get_shape(best_shape)->get_rid(), ugt*get_shape_transform(best_shape), Vector2(), margin,&rest_info,exclude,get_layer_mask(),mask);
+		if (!c2) {
+			//should not happen, but floating point precision is so weird..
+
+			colliding=false;
+		} else {
+
+
+			//print_line("Travel: "+rtos(travel));
+			colliding=true;
+			collision=rest_info.point;
+			normal=rest_info.normal;
+			collider=rest_info.collider_id;
+			collider_vel=rest_info.linear_velocity;
+			collider_shape=rest_info.shape;
+			collider_metadata=rest_info.metadata;
+		}
+
+	}
+
+	Vector2 motion=p_motion*safe;
+	Matrix32 gt = get_global_transform();
+	gt.elements[2]+=motion;
+	set_global_transform(gt);
+
+	return p_motion-motion;
+
+#endif
+	return false;
+}
 
 
 

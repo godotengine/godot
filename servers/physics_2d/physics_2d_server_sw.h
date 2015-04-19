@@ -223,6 +223,9 @@ public:
 
 	virtual void body_set_pickable(RID p_body,bool p_pickable);
 
+	virtual bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL);
+
+
 	/* JOINT API */
 
 	virtual void joint_set_param(RID p_joint, JointParam p_param, real_t p_value);

@@ -959,6 +959,18 @@ void Physics2DServerSW::body_set_pickable(RID p_body,bool p_pickable) {
 
 }
 
+bool Physics2DServerSW::body_test_motion(RID p_body,const Vector2& p_motion,float p_margin,MotionResult *r_result) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,false);
+	ERR_FAIL_COND_V(!body->get_space(),false);
+	ERR_FAIL_COND_V(body->get_space()->is_locked(),false);
+
+	return body->get_space()->test_body_motion(body,p_motion,p_margin,r_result);
+
+}
+
+
 /* JOINT API */
 
 void Physics2DServerSW::joint_set_param(RID p_joint, JointParam p_param, real_t p_value) {
