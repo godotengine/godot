@@ -14120,14 +14120,14 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-			Create a matrix from 3 axis vectors.
+			Create a matrix from an axis vector and an angle.
 			</description>
 		</method>
 		<method name="Matrix3"  >
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-			Create a matrix from 3 axis vectors.
+			Create a matrix from a quaternion.
 			</description>
 		</method>
 	</methods>
