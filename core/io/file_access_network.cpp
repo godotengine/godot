@@ -254,6 +254,7 @@ FileAccessNetworkClient::~FileAccessNetworkClient() {
 		quit=true;
 		sem->post();
 		Thread::wait_to_finish(thread);
+		memdelete(thread);
 	}
 
 	memdelete(blockrequest_mutex);

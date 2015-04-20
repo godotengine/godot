@@ -105,6 +105,13 @@ class GridMapEditor : public VBoxContainer {
 	RID duplicate_mesh;
 	RID duplicate_instance;
 
+	RID indicator_mat;
+
+	RID inner_mat;
+	RID outer_mat;
+	RID inner_mat_dup;
+	RID outer_mat_dup;
+
 	bool updating;
 
 

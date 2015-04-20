@@ -3289,10 +3289,10 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	keying->connect("pressed",this,"_keying_toggled");
 	*/
 
-	l = memnew( Label );
+/*	l = memnew( Label );
 	l->set_text("Base: ");
 	l->set_pos(Point2(0,3));
-//	dr_panel->add_child(l);
+//	dr_panel->add_child(l);*/
 
 //	menu->get_popup()->connect("item_pressed",this,"_menu_callback");
 

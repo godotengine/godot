@@ -144,6 +144,7 @@ void EditorNode::_unhandled_input(const InputEvent& p_event) {
 void EditorNode::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_EXIT_TREE) {
+
 		editor_data.save_editor_external_data();
 
 		log->deinit(); // do not get messages anymore
@@ -1393,7 +1394,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	}
 
 	play_button->set_pressed(false);
-	pause_button->set_pressed(false);
+	//pause_button->set_pressed(false);
 	play_scene_button->set_pressed(false);
 
 	String current_filename;
@@ -2152,7 +2153,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			editor_run.stop();
 			play_button->set_pressed(false);
 			play_scene_button->set_pressed(false);
-			pause_button->set_pressed(false);
+			//pause_button->set_pressed(false);
 			emit_signal("stop_pressed");
 
 		} break;
@@ -3023,7 +3024,7 @@ void EditorNode::notify_child_process_exited() {
 
 	play_button->set_pressed(false);
 	play_scene_button->set_pressed(false);
-	pause_button->set_pressed(false);
+	//pause_button->set_pressed(false);
 	stop_button->set_pressed(false);
 	editor_run.stop();
 
@@ -3306,6 +3307,7 @@ EditorNode::EditorNode() {
 	FileDialog::unregister_func=_file_dialog_unregister;
 
 	editor_import_export = memnew( EditorImportExport );
+	add_child(editor_import_export);
 
 	register_exporters();
 
@@ -3491,8 +3493,9 @@ EditorNode::EditorNode() {
 	prev_scene->set_disabled(true);
 	//left_menu_hb->add_child( prev_scene );
 	prev_scene->connect("pressed",this,"_menu_option",make_binds(FILE_OPEN_PREV));
-	//gui_base->add_child(prev_scene);
+	gui_base->add_child(prev_scene);
 	prev_scene->set_pos(Point2(3,24));
+	prev_scene->hide();
 
 
 	Separator *vs=NULL;
@@ -3617,14 +3620,14 @@ EditorNode::EditorNode() {
 
 
 
-	pause_button = memnew( ToolButton );
+	/*pause_button = memnew( ToolButton );
 	//menu_panel->add_child(pause_button); - not needed for now?
 	pause_button->set_toggle_mode(true);
 	pause_button->set_icon(gui_base->get_icon("Pause","EditorIcons"));
 	pause_button->set_focus_mode(Control::FOCUS_NONE);
 	pause_button->connect("pressed", this,"_menu_option",make_binds(RUN_PAUSE));
 	pause_button->set_tooltip("Pause the scene (F7).");
-
+*/
 	stop_button = memnew( ToolButton );
 	play_hb->add_child(stop_button);
 	//stop_button->set_toggle_mode(true);
@@ -3641,7 +3644,7 @@ EditorNode::EditorNode() {
 	native_play_button->hide();
 	native_play_button->get_popup()->connect("item_pressed",this,"_run_in_device");
 
-	VSeparator *s1 = memnew( VSeparator );
+//	VSeparator *s1 = memnew( VSeparator );
 //	play_hb->add_child(s1);
 
 	play_scene_button = memnew( ToolButton );
@@ -3677,13 +3680,14 @@ EditorNode::EditorNode() {
 	p->set_item_tooltip(p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),"Deploy dumb clients when the File Server is active.");
 	p->connect("item_pressed",this,"_menu_option");
 
+	/*
 	run_settings_button = memnew( ToolButton );
 	//menu_hb->add_child(run_settings_button);
 	//run_settings_button->set_toggle_mode(true);
 	run_settings_button->set_focus_mode(Control::FOCUS_NONE);
 	run_settings_button->set_icon(gui_base->get_icon("Run","EditorIcons"));
 	run_settings_button->connect("pressed", this,"_menu_option",make_binds(RUN_SCENE_SETTINGS));
-
+*/
 
 	/*
 	run_settings_button = memnew( ToolButton );
@@ -4245,6 +4249,7 @@ EditorNode::EditorNode() {
 
 
 EditorNode::~EditorNode() {	
+
 
 	memdelete(editor_selection);
 	memdelete(file_server);

@@ -2127,6 +2127,7 @@ void BakedLightBaker::_stop_thread() {
 	bake_thread_exit=true;
 	for(int i=0;i<threads.size();i++) {
 		Thread::wait_to_finish(threads[i]);
+		memdelete(threads[i]);
 	}
 	threads.clear();
 }

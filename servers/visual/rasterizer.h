@@ -661,6 +661,7 @@ public:
 			};
 
 			Type type;
+			virtual ~Command(){}
 		};
 
 		struct CommandLine : public Command {

@@ -650,6 +650,7 @@ public:
 
 		vbl->add_spacer();
 		vbl->add_margin_child("Test: ",testhb);
+		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
 		upd_hb->add_spacer();
@@ -657,7 +658,7 @@ public:
 		upd_hb->add_child(update);
 		update->set_text("Update");
 		update->connect("pressed",this,"_update");
-
+*/
 		options = memnew( _EditorFontImportOptions );
 		prop_edit = memnew( PropertyEditor() );
 		vbr->add_margin_child("Options:",prop_edit,true);

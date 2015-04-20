@@ -37,7 +37,8 @@ void Camera2D::_update_scroll() {
 		return;
 
 	if (get_tree()->is_editor_hint()) {
-		update(); //will just be drawn
+	//	update(); //will just be drawn
+		//??
 		return;
 	}
 

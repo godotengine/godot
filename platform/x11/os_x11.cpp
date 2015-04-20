@@ -258,9 +258,11 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
+	audio_driver_index=p_audio_driver;
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
 
 		bool success=false;
+		audio_driver_index=-1;
 		for(int i=0;i<AudioDriverManagerSW::get_driver_count();i++) {
 			if (i==p_audio_driver)
 				continue;
@@ -268,6 +270,7 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 				success=true;
 				print_line("Audio Driver Failed: "+String(AudioDriverManagerSW::get_driver(p_audio_driver)->get_name()));
 				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
+				audio_driver_index=i;
 				break;
 			}
 		}

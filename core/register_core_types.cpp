@@ -205,12 +205,14 @@ void unregister_core_types() {
 	if (ip)
 		memdelete(ip);
 
+
+	ObjectDB::cleanup();
+
 	unregister_variant_methods();
 
-	CoreStringNames::free();
 	ObjectTypeDB::cleanup();
 	ResourceCache::clear();
-	ObjectDB::cleanup();
+	CoreStringNames::free();
 	StringName::cleanup();
 
 	if (_global_mutex) {

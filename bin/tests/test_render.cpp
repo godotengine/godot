@@ -33,6 +33,8 @@
 #include "print_string.h"
 #include "os/os.h"
 #include "quick_hull.h"
+#include "os/keyboard.h"
+
 #define OBJECT_COUNT 50
 
 namespace TestRender {
@@ -59,10 +61,14 @@ class TestMainLoop : public MainLoop {
 	
 	float ofs;
 	bool quit;
+protected:
+
+
 public:
 	virtual void input_event(const InputEvent& p_event) {
 	
-		
+		if (p_event.type==InputEvent::KEY && p_event.key.pressed)
+			quit=true;
 	}
 
 	virtual void init() {

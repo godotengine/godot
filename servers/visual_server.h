@@ -55,8 +55,10 @@ class VisualServer : public Object {
 	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
 protected:	
 	RID _make_test_cube();
+	void _free_internal_rids();
 	RID test_texture;
 	RID white_texture;
+	RID test_material;
 	RID material_2d[16];
 	
 	static VisualServer* (*create_func)();

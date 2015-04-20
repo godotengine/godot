@@ -1635,8 +1635,11 @@ bool EditorExportPlatformAndroid::can_export(String *r_error) const {
 
 EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 
+
 	quit_request=true;
 	Thread::wait_to_finish(device_thread);
+	memdelete(device_lock);
+	memdelete(device_thread);
 }
 
 

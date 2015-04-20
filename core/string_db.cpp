@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "string_db.h"
 #include "print_string.h"
-
+#include "os/os.h"
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs; scs.ptr=p_ptr; return scs;
 }
@@ -55,14 +55,28 @@ void StringName::setup() {
 void StringName::cleanup() {
 	
 	_global_lock();	
+	int lost_strings=0;
 	for(int i=0;i<STRING_TABLE_LEN;i++) {
 		
 		while(_table[i]) {
 			
 			_Data*d=_table[i];
-			_table[i]=_table[i]->next;
+			lost_strings++;
+			if (OS::get_singleton()->is_stdout_verbose()) {
+
+				if (d->cname) {
+					print_line("Orphan StringName: "+String(d->cname));
+				} else {
+					print_line("Orphan StringName: "+String(d->name));
+				}
+			}
+
+			_table[i]=_table[i]->next;			
 			memdelete(d);
 		}
+	}
+	if (OS::get_singleton()->is_stdout_verbose() && lost_strings) {
+		print_line("StringName: "+itos(lost_strings)+" unclaimed string names at exit.");
 	}
 	_global_unlock();	
 }

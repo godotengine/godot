@@ -1450,6 +1450,7 @@ Viewport::~Viewport() {
 
 	VisualServer::get_singleton()->free( viewport );
 	SpatialSoundServer::get_singleton()->free(listener);
+	SpatialSound2DServer::get_singleton()->free(listener_2d);
 	if (render_target_texture.is_valid())
 		render_target_texture->vp=NULL; //so if used, will crash
 }

@@ -96,6 +96,8 @@ private:
 	static PackedData *singleton;
 	bool disabled;
 
+	void _free_packed_dirs(PackedDir *p_dir);
+
 public:
 
 	void add_pack_source(PackSource* p_source);
@@ -111,6 +113,7 @@ public:
 	_FORCE_INLINE_ bool has_path(const String& p_path);
 
 	PackedData();
+	~PackedData();
 };
 
 class PackSource {
@@ -119,6 +122,7 @@ public:
 
 	virtual bool try_open_pack(const String& p_path)=0;
 	virtual FileAccess* get_file(const String& p_path, PackedData::PackedFile* p_file)=0;
+	virtual ~PackSource() {}
 };
 
 class PackedSourcePCK : public PackSource {

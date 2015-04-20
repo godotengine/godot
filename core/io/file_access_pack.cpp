@@ -107,6 +107,21 @@ PackedData::PackedData() {
 	add_pack_source(memnew(PackedSourcePCK));
 }
 
+void PackedData::_free_packed_dirs(PackedDir *p_dir) {
+
+	for (Map<String,PackedDir*>::Element *E=p_dir->subdirs.front();E;E=E->next())
+		_free_packed_dirs(E->get());
+	memdelete(p_dir);
+}
+
+PackedData::~PackedData() {
+
+	for(int i=0;i<sources.size();i++) {
+		memdelete(sources[i]);
+	}
+	_free_packed_dirs(root);
+}
+
 
 //////////////////////////////////////////////////////////////////
 

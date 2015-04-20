@@ -1613,7 +1613,8 @@ Variant RasterizerGLES2::shader_get_default_param(RID p_shader, const StringName
 
 RID RasterizerGLES2::material_create() {
 
-	return material_owner.make_rid( memnew( Material ) );
+	RID material = material_owner.make_rid( memnew( Material ) );
+	return material;
 }
 
 void RasterizerGLES2::material_set_shader(RID p_material, RID p_shader) {
@@ -10815,7 +10816,10 @@ void RasterizerGLES2::init() {
 
 void RasterizerGLES2::finish() {
 
+	free(default_material);
+	free(shadow_material);
 	free(canvas_shadow_blur);
+	free( overdraw_material );
 }
 
 int RasterizerGLES2::get_render_info(VS::RenderInfo p_info) {

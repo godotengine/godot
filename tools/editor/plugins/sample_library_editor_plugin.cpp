@@ -332,7 +332,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	play->set_pos(Point2( 5, 5 ));
 	play->set_size( Size2(1,1 ) );
 	play->set_toggle_mode(true);
-	//add_child(play);
+	add_child(play);
+	play->hide();
 
 	stop = memnew( Button );
 

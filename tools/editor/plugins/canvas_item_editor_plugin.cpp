@@ -943,13 +943,13 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		}
 
 
-		List<BoneList>::Element *Cbone=NULL; //closest
+		Map<ObjectID,BoneList>::Element *Cbone=NULL; //closest
 
 		{
 			bone_ik_list.clear();
 			float closest_dist=1e20;
 			int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");
-			for(List<BoneList>::Element *E=bone_list.front();E;E=E->next()) {
+			for(Map<ObjectID,BoneList>::Element *E=bone_list.front();E;E=E->next()) {
 
 				if (E->get().from == E->get().to)
 					continue;
@@ -1789,7 +1789,7 @@ void CanvasItemEditor::_viewport_draw() {
 	Color bone_ik_color = EditorSettings::get_singleton()->get("2d_editor/bone_ik_color");
 	Color bone_selected_color = EditorSettings::get_singleton()->get("2d_editor/bone_selected_color");
 
-	for(List<BoneList>::Element*E=bone_list.front();E;E=E->next()) {
+	for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
 
 		E->get().from=Vector2();
 		E->get().to=Vector2();
@@ -1884,10 +1884,12 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		}
 
-		for(List<BoneList>::Element *E=bone_list.front();E;E=E->next()) {
+
+		for(Map<ObjectID,BoneList>::Element *E=bone_list.front();E;E=E->next()) {
 
 			Object *b = ObjectDB::get_instance(E->get().bone);
 			if (!b) {
+
 				viewport->update();
 				break;
 			}
@@ -1989,9 +1991,14 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 
 		if (c->has_meta("_edit_bone_")) {
 
-			BoneList bone;
-			bone.bone=c->get_instance_ID();
-			bone_list.push_back(bone);
+			ObjectID id = c->get_instance_ID();
+			if (!bone_list.has(id)) {
+				BoneList bone;
+				bone.bone=id;
+				bone_list[id]=bone;
+			}
+
+			bone_list[id].last_pass=bone_last_frame;
 		}
 
 		r_rect.expand_to( xform.xform(rect.pos) );
@@ -2026,11 +2033,26 @@ void CanvasItemEditor::_update_scrollbars() {
 	Rect2 canvas_item_rect=Rect2(Point2(),screen_rect);
 
 	lock_list.clear();;
-	bone_list.clear();;
+	bone_last_frame++;
+
+
 
 	if (editor->get_edited_scene())
 		_find_canvas_items_span(editor->get_edited_scene(),canvas_item_rect,Matrix32());
 
+	List<Map<ObjectID,BoneList>::Element*> bone_to_erase;
+
+	for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
+
+		if (E->get().last_pass!=bone_last_frame) {
+			bone_to_erase.push_back(E);
+		}
+	}
+
+	while(bone_to_erase.size()) {
+		bone_list.erase(bone_to_erase.front()->get());
+		bone_to_erase.pop_front();
+	}
 
 	//expand area so it's easier to do animations and stuff at 0,0
 	canvas_item_rect.size+=screen_rect*2;
@@ -3024,6 +3046,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	set_process_unhandled_key_input(true);
 	can_move_pivot=false;
 	drag=DRAG_NONE;
+	bone_last_frame=0;
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton=NULL;

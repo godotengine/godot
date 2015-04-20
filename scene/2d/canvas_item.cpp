@@ -342,7 +342,6 @@ void CanvasItem::_update_callback() {
 		return;
 	}
 
-
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
 	if (is_visible()) { //todo optimize this!!

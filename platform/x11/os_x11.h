@@ -157,9 +157,10 @@ class OS_X11 : public OS_Unix {
 
 
 	int joystick_count;
+
 	Joystick joysticks[JOYSTICKS_MAX];
 
-
+	int audio_driver_index;
 	unsigned int capture_idle;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);

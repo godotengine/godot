@@ -336,6 +336,7 @@ public:
 	void save_config();
 
 	EditorImportExport();
+	~EditorImportExport();
 };
 
 VARIANT_ENUM_CAST(EditorImportExport::ImageAction);

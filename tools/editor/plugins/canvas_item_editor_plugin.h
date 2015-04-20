@@ -181,9 +181,12 @@ class CanvasItemEditor : public VBoxContainer {
 		Vector2 from;
 		Vector2 to;
 		ObjectID bone;
+		uint64_t last_pass;
 	};
 
-	List<BoneList> bone_list;
+	uint64_t bone_last_frame;
+	Map<ObjectID,BoneList> bone_list;
+
 	Matrix32 bone_orig_xform;
 
 	struct BoneIK {
