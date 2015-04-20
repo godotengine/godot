@@ -5286,7 +5286,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
-			Return a normal vector in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera proyection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
+			Return a normal vector in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="project_local_ray_normal" qualifiers="const" >
@@ -5303,7 +5303,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
-			Return a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera proyection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
+			Return a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="unproject_position" qualifiers="const" >
