@@ -168,6 +168,7 @@ private:
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
+		Vector<int> space_caches;
 		int height_cache;
 		int height_accum_cache;
 
@@ -242,6 +243,8 @@ private:
 	void _input_event(InputEvent p_event);
 	Item *_get_next_item(Item* p_item);
 
+	bool use_bbcode;
+	String bbcode;
 
 protected:
 	void _notification(int p_what);
@@ -291,8 +294,15 @@ public:
 	bool is_selection_enabled() const;
 	void selection_copy();
 
+
 	Error parse_bbcode(const String& p_bbcode);
 	Error append_bbcode(const String& p_bbcode);
+
+	void set_use_bbcode(bool p_enable);
+	bool is_using_bbcode() const;
+
+	void set_bbcode(const String& p_bbcode);
+	String get_bbcode() const;
 
 	RichTextLabel();
 	~RichTextLabel();
