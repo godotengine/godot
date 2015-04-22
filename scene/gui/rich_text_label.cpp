@@ -114,7 +114,7 @@ void RichTextLabel::_process_line(int &y, int p_width, int p_line, ProcessMode p
 		line++;\
 		if (line < l.offset_caches.size())\
 			line_ofs=l.offset_caches[line];\
-		wofs=margin;\		
+		wofs=margin;\
 		if (align!=ALIGN_FILL)\
 			wofs+=line_ofs;\
 	} else {\
