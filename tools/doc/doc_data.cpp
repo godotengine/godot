@@ -59,6 +59,9 @@ void DocData::merge_from(const DocData& p_data) {
 
 				if (cf.methods[j].name!=m.name)
 					continue;
+				if (cf.methods[j].arguments.size()!=m.arguments.size())
+					continue;
+
 				const MethodDoc &mf = cf.methods[j];
 
 				m.description=mf.description;
