@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,8 +55,10 @@ class VisualServer : public Object {
 	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
 protected:	
 	RID _make_test_cube();
+	void _free_internal_rids();
 	RID test_texture;
 	RID white_texture;
+	RID test_material;
 	RID material_2d[16];
 	
 	static VisualServer* (*create_func)();
@@ -1014,12 +1016,19 @@ public:
 	virtual void canvas_light_set_texture_offset(RID p_light, const Vector2& p_offset)=0;
 	virtual void canvas_light_set_color(RID p_light, const Color& p_color)=0;
 	virtual void canvas_light_set_height(RID p_light, float p_height)=0;
+	virtual void canvas_light_set_energy(RID p_light, float p_energy)=0;
 	virtual void canvas_light_set_z_range(RID p_light, int p_min_z,int p_max_z)=0;
 	virtual void canvas_light_set_layer_range(RID p_light, int p_min_layer,int p_max_layer)=0;
 	virtual void canvas_light_set_item_mask(RID p_light, int p_mask)=0;
 	virtual void canvas_light_set_item_shadow_mask(RID p_light, int p_mask)=0;
 
-	virtual void canvas_light_set_subtract_mode(RID p_light, bool p_enable)=0;
+	enum CanvasLightMode {
+		CANVAS_LIGHT_MODE_ADD,
+		CANVAS_LIGHT_MODE_SUB,
+		CANVAS_LIGHT_MODE_MIX,
+	};
+
+	virtual void canvas_light_set_mode(RID p_light, CanvasLightMode p_mode)=0;
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier)=0;
@@ -1049,7 +1058,15 @@ public:
 	virtual void canvas_item_material_set_shader(RID p_material, RID p_shader)=0;
 	virtual void canvas_item_material_set_shader_param(RID p_material, const StringName& p_param, const Variant& p_value)=0;
 	virtual Variant canvas_item_material_get_shader_param(RID p_material, const StringName& p_param) const=0;
-	virtual void canvas_item_material_set_unshaded(RID p_material, bool p_unshaded)=0;
+
+
+	enum CanvasItemShadingMode {
+		CANVAS_ITEM_SHADING_NORMAL,
+		CANVAS_ITEM_SHADING_UNSHADED,
+		CANVAS_ITEM_SHADING_ONLY_LIGHT,
+	};
+
+	virtual void canvas_item_material_set_shading_mode(RID p_material, CanvasItemShadingMode p_mode)=0;
 
 	/* CURSOR */
 	virtual void cursor_set_rotation(float p_rotation, int p_cursor = 0)=0; // radians
@@ -1122,7 +1139,7 @@ public:
 	virtual void mesh_add_surface_from_mesh_data( RID p_mesh, const Geometry::MeshData& p_mesh_data);
 	virtual void mesh_add_surface_from_planes( RID p_mesh, const DVector<Plane>& p_planes);
 
-	virtual void set_boot_image(const Image& p_image, const Color& p_color)=0;
+	virtual void set_boot_image(const Image& p_image, const Color& p_color,bool p_scale)=0;
 	virtual void set_default_clear_color(const Color& p_color)=0;
 
 	enum Features {

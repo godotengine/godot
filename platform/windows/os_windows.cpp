@@ -423,6 +423,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_RBUTTONUP:
 		case WM_MOUSEWHEEL:
 		case WM_LBUTTONDBLCLK:
+		case WM_RBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
 
@@ -474,6 +475,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 					mb.pressed=true;
 					mb.button_index=1;
+					mb.doubleclick = true;
+				} break;
+				case WM_RBUTTONDBLCLK: {
+
+					mb.pressed=true;
+					mb.button_index=2;
 					mb.doubleclick = true;
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -2045,7 +2052,7 @@ String OS_Windows::get_executable_path() const {
 	wchar_t bufname[4096];
 	GetModuleFileNameW(NULL,bufname,4096);
 	String s= bufname;
-	print_line("EXEC PATHPÃ³: "+s);
+	print_line("EXEC PATHP¨®: "+s);
 	return s;
 }
 

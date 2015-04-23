@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -105,6 +105,21 @@ PackedData::PackedData() {
 	disabled=false;
 
 	add_pack_source(memnew(PackedSourcePCK));
+}
+
+void PackedData::_free_packed_dirs(PackedDir *p_dir) {
+
+	for (Map<String,PackedDir*>::Element *E=p_dir->subdirs.front();E;E=E->next())
+		_free_packed_dirs(E->get());
+	memdelete(p_dir);
+}
+
+PackedData::~PackedData() {
+
+	for(int i=0;i<sources.size();i++) {
+		memdelete(sources[i]);
+	}
+	_free_packed_dirs(root);
 }
 
 

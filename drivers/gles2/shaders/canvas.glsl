@@ -230,12 +230,16 @@ FRAGMENT_SHADER_CODE
 
 	float att=1.0;
 
-	vec4 light = texture2D(light_texture,light_uv_interp.xy) * light_color;	
+	vec2 light_uv = light_uv_interp.xy;
+	vec4 light = texture2D(light_texture,light_uv) * light_color;
+#if defined(USE_LIGHT_SHADOW_COLOR)
+	vec4 shadow_color=vec4(0.0,0.0,0.0,0.0);
+#endif
 
 #if defined(USE_LIGHT_SHADER_CODE)
 //light is written by the light shader
 {
-	vec4 light_out=vec4(0.0,0.0,0.0,0.0);
+	vec4 light_out=light*color;
 LIGHT_SHADER_CODE
 	color=light_out;
 }
@@ -292,12 +296,12 @@ LIGHT_SHADER_CODE
 		}
 
 
-		highp vec4 s = shadow_matrix * highp vec4(point,0.0,1.0);
+		highp vec4 s = shadow_matrix * vec4(point,0.0,1.0);
 		s.xyz/=s.w;
 		su=s.x*0.5+0.5;
 		sz=s.z*0.5+0.5;
 
-		highp float shadow_attenuation;
+		highp float shadow_attenuation=0.0;
 
 #ifdef USE_DEPTH_SHADOWS
 
@@ -314,7 +318,6 @@ LIGHT_SHADER_CODE
 
 #ifdef SHADOW_PCF5
 
-		shadow_attenuation=0.0;
 		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su,sh))<sz?0.0:1.0;
 		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size,sh))<sz?0.0:1.0;
 		shadow_attenuation += SHADOW_DEPTH(shadow_texture,vec2(su+shadowpixel_size*2.0,sh))<sz?0.0:1.0;
@@ -363,7 +366,11 @@ LIGHT_SHADER_CODE
 
 #endif
 
-		color.rgb*=shadow_attenuation;
+#if defined(USE_LIGHT_SHADOW_COLOR)
+	color=mix(shadow_color,color,shadow_attenuation);
+#else
+	color*=shadow_attenuation;
+#endif
 //use shadows
 #endif
 	}

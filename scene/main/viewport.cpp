@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -406,7 +406,7 @@ void Viewport::_notification(int p_what) {
 						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
 						for(int i=0;i<rc;i++) {
 
-							if (res[i].collider) {
+							if (res[i].collider_id && res[i].collider) {
 								CollisionObject2D *co=res[i].collider->cast_to<CollisionObject2D>();
 								if (co) {
 
@@ -1450,6 +1450,7 @@ Viewport::~Viewport() {
 
 	VisualServer::get_singleton()->free( viewport );
 	SpatialSoundServer::get_singleton()->free(listener);
+	SpatialSound2DServer::get_singleton()->free(listener_2d);
 	if (render_target_texture.is_valid())
 		render_target_texture->vp=NULL; //so if used, will crash
 }

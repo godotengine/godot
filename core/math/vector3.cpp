@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,27 +27,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "vector3.h"
-
+#include "matrix3.h"
 
 
 void Vector3::rotate(const Vector3& p_axis,float p_phi) {
 
-	Vector3 axis1 = cross(p_axis);
-	float l = axis1.length();
-	if (l==0)
-		return;
-	axis1/=l;
-	Vector3 axis2 = axis1.cross(p_axis).normalized();
-
-	float _x = axis1.dot(*this);
-	float _y = axis2.dot(*this);
-
-	float ang = Math::atan2(_x,_y);
-
-	ang+=p_phi;
-
-	*this=((axis1 * Math::cos(ang)) + (axis2 * Math::sin(ang))) * length();
-
+	*this=Matrix3(p_axis,p_phi).xform(*this);
 }
 
 Vector3 Vector3::rotated(const Vector3& p_axis,float p_phi) const {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -104,6 +104,13 @@ class GridMapEditor : public VBoxContainer {
 	RID selection_instance;
 	RID duplicate_mesh;
 	RID duplicate_instance;
+
+	RID indicator_mat;
+
+	RID inner_mat;
+	RID outer_mat;
+	RID inner_mat_dup;
+	RID outer_mat_dup;
 
 	bool updating;
 

@@ -639,6 +639,62 @@ Vector2 Navigation2D::get_closest_point(const Vector2& p_point) {
 
 }
 
+Object* Navigation2D::get_closest_point_owner(const Vector2& p_point) {
+
+	Object *owner=NULL;
+	Vector2 closest_point=Vector2();
+	float closest_point_d=1e20;
+
+	for (Map<int,NavMesh>::Element*E=navpoly_map.front();E;E=E->next()) {
+
+		if (!E->get().linked)
+			continue;
+		for(List<Polygon>::Element *F=E->get().polygons.front();F;F=F->next()) {
+
+			Polygon &p=F->get();
+			for(int i=2;i<p.edges.size();i++) {
+
+				if (Geometry::is_point_in_triangle(p_point,_get_vertex(p.edges[0].point),_get_vertex(p.edges[i-1].point),_get_vertex(p.edges[i].point))) {
+
+					E->get().owner;
+				}
+
+			}
+		}
+	}
+
+	for (Map<int,NavMesh>::Element*E=navpoly_map.front();E;E=E->next()) {
+
+		if (!E->get().linked)
+			continue;
+		for(List<Polygon>::Element *F=E->get().polygons.front();F;F=F->next()) {
+
+			Polygon &p=F->get();
+			int es = p.edges.size();
+			for(int i=0;i<es;i++) {
+
+				Vector2 edge[2]={
+					_get_vertex(p.edges[i].point),
+					_get_vertex(p.edges[(i+1)%es].point)
+				};
+
+
+				Vector2 spoint=Geometry::get_closest_point_to_segment_2d(p_point,edge);
+				float d = spoint.distance_squared_to(p_point);
+				if (d<closest_point_d) {
+
+					closest_point=spoint;
+					closest_point_d=d;
+					owner=E->get().owner;
+				}
+			}
+		}
+	}
+
+	return owner;
+
+}
+
 
 void Navigation2D::_bind_methods() {
 
@@ -648,6 +704,7 @@ void Navigation2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation2D::get_simple_path,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation2D::get_closest_point);
+	ObjectTypeDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation2D::get_closest_point_owner);
 
 }
 

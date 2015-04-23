@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,6 +129,18 @@ void Image::get_mipmap_offset_and_size(int p_mipmap,int &r_ofs, int &r_size) con
 	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
 	int ofs2;
 	_get_mipmap_offset_and_size(p_mipmap+1,ofs2,w,h);
+	r_ofs=ofs;
+	r_size=ofs2-ofs;
+
+}
+
+void Image::get_mipmap_offset_size_and_dimensions(int p_mipmap,int &r_ofs, int &r_size,int &w, int& h) const {
+
+
+	int ofs;
+	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
+	int ofs2,w2,h2;
+	_get_mipmap_offset_and_size(p_mipmap+1,ofs2,w2,h2);
 	r_ofs=ofs;
 	r_size=ofs2-ofs;
 

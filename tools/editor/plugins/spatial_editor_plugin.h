@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -224,6 +224,7 @@ private:
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _init_gizmo_instance(int p_idx);
+	void _finish_gizmo_instances();
 
 
 protected:
@@ -324,6 +325,8 @@ private:
 	RID indicators_instance;	
 	RID cursor_mesh;
 	RID cursor_instance;
+	RID indicator_mat;
+	RID cursor_material;
 
 /*
 	struct Selected {

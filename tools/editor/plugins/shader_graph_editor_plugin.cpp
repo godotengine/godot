@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -376,7 +376,7 @@ void GraphCurveMapEdit::_input_event(const InputEvent& p_event) {
 		update();
 	}
 
-	if (p_event.type==InputEvent::MOUSE_MOTION && grabbing) {
+	if (p_event.type==InputEvent::MOUSE_MOTION && grabbing  && grabbed != -1) {
 
 		Point2 p = Vector2(p_event.mouse_button.x,p_event.mouse_button.y)/get_size();
 		p.y=1.0-p.y;

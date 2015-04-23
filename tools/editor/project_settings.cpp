@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1280,8 +1280,10 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	del->set_text("Del");
 	del->connect("pressed",this,"_item_del");
 
+	/*
 	Button *save = memnew( Button );
-	//props_base->add_child(save);
+	props_base->add_child(save);
+
 	save->set_anchor(MARGIN_LEFT,ANCHOR_END);
 	save->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	save->set_anchor(MARGIN_TOP,ANCHOR_END);
@@ -1290,7 +1292,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_end( Point2(10,20) );
 	save->set_text("Save");
 	save->connect("pressed",this,"_save");
-
+*/
 	popup_platform = memnew( MenuButton );
 	popup_platform->set_text("Copy To Platform..");
 	popup_platform->set_disabled(true);
@@ -1409,6 +1411,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	device_input->add_child(device_index);
 
+	/*
 	save = memnew( Button );
 	input_base->add_child(save);
 	save->set_anchor(MARGIN_LEFT,ANCHOR_END);
@@ -1419,7 +1422,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_end( Point2(10,20) );
 	save->set_text("Save");
 	save->connect("pressed",this,"_save");
-
+*/
 	setting=false;
 
 	//translations

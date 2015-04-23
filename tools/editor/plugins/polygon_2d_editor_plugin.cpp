@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -90,7 +90,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			if (node->get_texture().is_null()) {
 
 				error->set_text("No texture in this polygon.\nSet a texture to be able to edit UV.");
-				error->popup_centered_minsize(Size2(300,70));
+				error->popup_centered_minsize();
 				return;
 			}
 

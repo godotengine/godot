@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1041,7 +1041,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		case WINDOW_CLOSE: {
 			if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
 				erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
-				erase_tab_confirm->popup_centered(Point2(250,80));
+				erase_tab_confirm->popup_centered_minsize();
 			} else {
 				_close_current_tab();
 			}

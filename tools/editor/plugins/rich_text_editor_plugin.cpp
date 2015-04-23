@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,8 @@
 /*************************************************************************/
 #include "rich_text_editor_plugin.h"
 #include "os/file_access.h"
+#include "canvas_item_editor_plugin.h"
+
 void RichTextEditor::_notification(int p_what) {
 
 	switch(p_what) {
@@ -100,7 +102,8 @@ void RichTextEditor::edit(Node *p_rich_text) {
 RichTextEditor::RichTextEditor() {
 
 	options = memnew( MenuButton );
-	add_child(options);
+	//add_child(options);
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 	options->set_area_as_parent_rect();
 
 	options->set_text("RichText");
@@ -129,10 +132,10 @@ bool RichTextEditorPlugin::handles(Object *p_object) const {
 void RichTextEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		rich_text_editor->show();
+		rich_text_editor->options->show();
 	} else {
 
-		rich_text_editor->hide();
+		rich_text_editor->options->hide();
 		rich_text_editor->edit(NULL);
 	}
 
@@ -149,10 +152,7 @@ RichTextEditorPlugin::RichTextEditorPlugin(EditorNode *p_node) {
 	rich_text_editor->set_margin(MARGIN_TOP,0);
 	rich_text_editor->set_margin(MARGIN_BOTTOM,10);
 
-
-	rich_text_editor->hide();
-
-
+	rich_text_editor->options->hide();
 
 }
 

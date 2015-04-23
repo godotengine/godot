@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -577,6 +577,7 @@ public:
 		Color color;
 		Matrix32 xform;
 		float height;
+		float energy;
 		float scale;
 		int z_min;
 		int z_max;
@@ -584,7 +585,7 @@ public:
 		int layer_max;
 		int item_mask;
 		int item_shadow_mask;
-		bool subtract;
+		VS::CanvasLightMode mode;
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
@@ -616,8 +617,9 @@ public:
 			layer_max=0;
 			item_mask=1;
 			scale=1.0;
+			energy=1.0;
 			item_shadow_mask=-1;
-			subtract=false;
+			mode=VS::CANVAS_LIGHT_MODE_ADD;
 			texture_cache=NULL;
 			next_ptr=NULL;
 			filter_next_ptr=NULL;
@@ -635,9 +637,9 @@ public:
 		Map<StringName,Variant> shader_param;
 		uint32_t shader_version;
 		Set<CanvasItem*> owners;
-		bool unshaded;
+		VS::CanvasItemShadingMode shading_mode;
 
-		CanvasItemMaterial() {unshaded=false; shader_version=0; }
+		CanvasItemMaterial() {shading_mode=VS::CANVAS_ITEM_SHADING_NORMAL; shader_version=0; }
 	};
 
 	struct CanvasItem {
@@ -659,6 +661,7 @@ public:
 			};
 
 			Type type;
+			virtual ~Command(){}
 		};
 
 		struct CommandLine : public Command {

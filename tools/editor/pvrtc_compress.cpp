@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,11 +32,34 @@
 #include "io/resource_saver.h"
 #include "io/resource_loader.h"
 #include "os/os.h"
-
+#include "os/file_access.h"
+static void (*_base_image_compress_pvrtc2_func)(Image *)=NULL;
+static void (*_base_image_compress_pvrtc4_func)(Image *)=NULL;
 
 static void _compress_image(Image::CompressMode p_mode,Image *p_image) {
 
 	String ttpath = EditorSettings::get_singleton()->get("PVRTC/texture_tool");
+
+	if (ttpath.strip_edges()=="" || !FileAccess::exists(ttpath)) {
+		switch(p_mode) {
+
+			case Image::COMPRESS_PVRTC2:
+				if (_base_image_compress_pvrtc2_func)
+					_base_image_compress_pvrtc2_func(p_image);
+				else if (_base_image_compress_pvrtc4_func)
+					_base_image_compress_pvrtc4_func(p_image);
+
+			break;
+			case Image::COMPRESS_PVRTC4:
+				if (_base_image_compress_pvrtc4_func)
+					_base_image_compress_pvrtc4_func(p_image);
+
+			break;
+			default: ERR_FAIL();
+
+		}
+		return;
+	}
 	String spath = EditorSettings::get_singleton()->get_settings_path();
 
 
@@ -99,6 +122,9 @@ static void _compress_etc(Image *p_image) {
 }
 
 void _pvrtc_register_compressors() {
+
+	_base_image_compress_pvrtc2_func=Image::_image_compress_pvrtc2_func;
+	_base_image_compress_pvrtc4_func=Image::_image_compress_pvrtc4_func;
 
 	Image::_image_compress_pvrtc2_func=_compress_pvrtc2;
 	Image::_image_compress_pvrtc4_func=_compress_pvrtc4;
