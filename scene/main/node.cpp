@@ -676,7 +676,9 @@ void Node::add_child(Node *p_child) {
 void Node::set_child(String name, Node *p_child) {
 
 	if ( this->has_node(name) ) {
-		this->remove_and_delete_child( this->get_node(name) );
+		Node *old = this->get_node(name);
+		this->remove_child( old );
+		old->queue_delete();
 	}
 
 	p_child->set_name(name);
