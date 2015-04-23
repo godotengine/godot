@@ -15596,7 +15596,7 @@
 			<argument index="0" name="node" type="Node">
 			</argument>
 			<description>
-			Add a child [Node] with the given name. If there is already a child with that name, it will be replaced.
+			Add a child [Node] with the given name, replacing any node that already has that name.
 			</description>
 		</method>
 		<method name="remove_child"  >
