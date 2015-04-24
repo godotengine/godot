@@ -42,6 +42,7 @@ CoreStringNames::CoreStringNames() {
 	_iter_init=StaticCString::create("_iter_init");
 	_iter_next=StaticCString::create("_iter_next");
 	_iter_get=StaticCString::create("_iter_get");
+	get_rid=StaticCString::create("get_rid");
 
 
 }
