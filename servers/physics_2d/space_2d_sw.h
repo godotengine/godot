@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -164,6 +164,8 @@ public:
 	int get_active_objects() const { return active_objects; }
 
 	int get_collision_pairs() const { return collision_pairs; }
+
+	bool test_body_motion(Body2DSW *p_body, const Vector2&p_motion, float p_margin, Physics2DServer::MotionResult *r_result);
 
 	Physics2DDirectSpaceStateSW *get_direct_state();
 

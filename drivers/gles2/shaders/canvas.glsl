@@ -296,7 +296,7 @@ LIGHT_SHADER_CODE
 		}
 
 
-		highp vec4 s = shadow_matrix * highp vec4(point,0.0,1.0);
+		highp vec4 s = shadow_matrix * vec4(point,0.0,1.0);
 		s.xyz/=s.w;
 		su=s.x*0.5+0.5;
 		sz=s.z*0.5+0.5;

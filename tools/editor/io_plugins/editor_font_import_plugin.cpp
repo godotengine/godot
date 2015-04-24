@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -732,6 +732,7 @@ public:
 
 		vbl->add_spacer();
 		vbl->add_margin_child(_TR("Test: "),testhb);
+		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
 		upd_hb->add_spacer();
@@ -739,7 +740,7 @@ public:
 		upd_hb->add_child(update);
 		update->set_text(_TR("Update"));
 		update->connect("pressed",this,"_update");
-
+*/
 		options = memnew( _EditorFontImportOptions );
 		prop_edit = memnew( PropertyEditor() );
 		vbr->add_margin_child(_TR("Options:"),prop_edit,true);

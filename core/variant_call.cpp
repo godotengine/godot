@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1114,6 +1114,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		const _VariantCall::ConstructData &cd = E->get();
 		MethodInfo mi;
 		mi.name=Variant::get_type_name(p_type);
+		mi.return_val.type=p_type;
 		for(int i=0;i<cd.arg_count;i++) {
 
 			PropertyInfo pi;
@@ -1136,6 +1137,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		pi.name="from";
 		pi.type=Variant::Type(i);
 		mi.arguments.push_back(pi);
+		mi.return_val.type=p_type;
 		p_list->push_back(mi);
 	}
 }

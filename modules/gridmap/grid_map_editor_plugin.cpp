@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -868,7 +868,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	{
 
 		//update grids
-		RID indicator_mat = VisualServer::get_singleton()->fixed_material_create();
+		indicator_mat = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
 		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
 
@@ -922,7 +922,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 			d[VS::ARRAY_VERTEX]=grid_points[i];
 			d[VS::ARRAY_COLOR]=grid_colors[i];
 			VisualServer::get_singleton()->mesh_add_surface(grid[i],VisualServer::PRIMITIVE_LINES,d);
-			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat,true);
+			VisualServer::get_singleton()->mesh_surface_set_material(grid[i],0,indicator_mat);
 
 
 		}
@@ -1340,7 +1340,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 
-		RID inner_mat = VisualServer::get_singleton()->fixed_material_create();
+		inner_mat = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(inner_mat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.7,0.7,1.0,0.3));
 		VisualServer::get_singleton()->material_set_flag(inner_mat,VS::MATERIAL_FLAG_ONTOP,true);
 		VisualServer::get_singleton()->material_set_flag(inner_mat,VS::MATERIAL_FLAG_UNSHADED,true);
@@ -1349,9 +1349,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		d[VS::ARRAY_VERTEX]=triangles;
 		VisualServer::get_singleton()->mesh_add_surface(selection_mesh,VS::PRIMITIVE_TRIANGLES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh,0,inner_mat,true);
+		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh,0,inner_mat);
 
-		RID outer_mat = VisualServer::get_singleton()->fixed_material_create();
+		outer_mat = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(outer_mat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0.7,0.7,1.0,0.8));
 		VisualServer::get_singleton()->material_set_line_width(outer_mat,3.0);
 		VisualServer::get_singleton()->material_set_flag(outer_mat,VS::MATERIAL_FLAG_ONTOP,true);
@@ -1361,10 +1361,10 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		d[VS::ARRAY_VERTEX]=lines;
 		VisualServer::get_singleton()->mesh_add_surface(selection_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh,1,outer_mat,true);
+		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh,1,outer_mat);
 
 
-		RID inner_mat_dup = VisualServer::get_singleton()->fixed_material_create();
+		inner_mat_dup = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(inner_mat_dup,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(1.0,0.7,0.7,0.3));
 		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,VS::MATERIAL_FLAG_ONTOP,true);
 		VisualServer::get_singleton()->material_set_flag(inner_mat_dup,VS::MATERIAL_FLAG_UNSHADED,true);
@@ -1373,9 +1373,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		d[VS::ARRAY_VERTEX]=triangles;
 		VisualServer::get_singleton()->mesh_add_surface(duplicate_mesh,VS::PRIMITIVE_TRIANGLES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh,0,inner_mat_dup,true);
+		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh,0,inner_mat_dup);
 
-		RID outer_mat_dup = VisualServer::get_singleton()->fixed_material_create();
+		outer_mat_dup = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->fixed_material_set_param(outer_mat_dup,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(1.0,0.7,0.7,0.8));
 		VisualServer::get_singleton()->material_set_line_width(outer_mat_dup,3.0);
 		VisualServer::get_singleton()->material_set_flag(outer_mat_dup,VS::MATERIAL_FLAG_ONTOP,true);
@@ -1385,7 +1385,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		d[VS::ARRAY_VERTEX]=lines;
 		VisualServer::get_singleton()->mesh_add_surface(duplicate_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh,1,outer_mat_dup,true);
+		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh,1,outer_mat_dup);
 
 	}
 
@@ -1408,6 +1408,11 @@ GridMapEditor::~GridMapEditor() {
 		if (cursor_instance)
 			VisualServer::get_singleton()->free(cursor_instance);
 	}
+
+	VisualServer::get_singleton()->free(inner_mat);
+	VisualServer::get_singleton()->free(outer_mat);
+	VisualServer::get_singleton()->free(inner_mat_dup);
+	VisualServer::get_singleton()->free(outer_mat_dup);
 
 	VisualServer::get_singleton()->free(selection_mesh);
 	if (selection_instance.is_valid())

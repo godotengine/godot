@@ -12,4 +12,4 @@
 
 # Project target.
 #android.library=true
-target=android-15
+target=android-19

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -348,8 +348,8 @@ void TileMap::_update_dirty_quadrants() {
 			rect.pos=offset.floor();
 			rect.size=s;
 
-			rect.size.x+=fp_adjust;
-			rect.size.y+=fp_adjust;
+		/*	rect.size.x+=fp_adjust;
+			rect.size.y+=fp_adjust;*/
 
 			if (c.flip_h)
 				rect.size.x=-rect.size.x;
@@ -1024,6 +1024,19 @@ bool TileMap::is_y_sort_mode_enabled() const {
 	return y_sort_mode;
 }
 
+Array TileMap::get_used_cells() const {
+
+	Array a;
+	a.resize(tile_map.size());
+	int i=0;
+	for (Map<PosKey,Cell>::Element *E=tile_map.front();E;E=E->next()) {
+
+		Vector2 p (E->key().x,E->key().y);
+		a[i++]=p;
+	}
+
+	return a;
+}
 
 void TileMap::_bind_methods() {
 
@@ -1079,6 +1092,8 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
+
+	ObjectTypeDB::bind_method(_MD("get_used_cells"),&TileMap::get_used_cells);
 
 	ObjectTypeDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);
@@ -1139,8 +1154,7 @@ TileMap::TileMap() {
 	navigation=NULL;
 	y_sort_mode=false;
 
-	fp_adjust=0.01;
-	fp_adjust=0.01;
+	fp_adjust=0.00001;
 	tile_origin=TILE_ORIGIN_TOP_LEFT;
 }
 

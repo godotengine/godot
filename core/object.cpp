@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1871,35 +1871,20 @@ void ObjectDB::cleanup() {
 
 	GLOBAL_LOCK_FUNCTION;
 	if (instances.size()) {
+			
 		WARN_PRINT("ObjectDB Instances still exist!");		
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			const uint32_t *K=NULL;
+			while((K=instances.next(K))) {
 
-	    const uint32_t *K=NULL;
-    	while((K=instances.next(K))) {
-            Object *o = instances[*K];
-			Node *node = dynamic_cast<Node *>(o);
-			Resource *res = dynamic_cast<Resource *>(o);
-			if(node != NULL) {
-
-				String msg = " >> " + node->get_type();
-				msg += " \"" + node->get_name().operator String() + "\"";
-
-				ScriptInstance *instance = node->get_script_instance();
-				if(instance != NULL)
-					msg += " [" + (node->is_inside_tree() ? node->get_path() : NodePath("")) + ":" + instance->get_script()->get_path() + "]";
-				else
-					msg += " [" + (node->is_inside_tree() ? node->get_path() : NodePath("")) + "]";
-
-				print_line(msg);
-			} else if(res != NULL) {
-
-				String msg = " >> " + res->get_type();
-				msg += " [" + res->get_path() + "]";
-
-				print_line(msg);
-
-			} else
-				print_line(" >> " + o->get_type());
-	    }
+				String node_name;
+				if (instances[*K]->is_type("Node"))
+					node_name=" - Node Name: "+String(instances[*K]->call("get_name"));
+				if (instances[*K]->is_type("Resoucre"))
+					node_name=" - Resource Name: "+String(instances[*K]->call("get_name"))+" Path: "+String(instances[*K]->call("get_path"));
+				print_line("Leaked Instance: "+String(instances[*K]->get_type())+":"+itos(*K)+node_name);
+			}
+		}
 	}
 	instances.clear();
 	instance_checks.clear();
