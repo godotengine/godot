@@ -1616,6 +1616,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 
 					if (collada.state.morph_controller_data_map.has(meshid)) {
 						//it's a morph!!
+						morph = &collada.state.morph_controller_data_map[meshid];
 						ngsource=meshid;
 						meshid=morph->mesh;
 					} else {
