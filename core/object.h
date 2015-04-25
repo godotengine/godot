@@ -550,6 +550,7 @@ public:
 	
 	void set_script(const RefPtr& p_script);
 	RefPtr get_script() const;
+	virtual String get_default_gdscript_code() const { return ""; }
 
 	/* SCRIPT */
 

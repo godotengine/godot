@@ -1234,7 +1234,18 @@ String Node::get_filename() const {
 	return data.filename;
 }
 
+String Node::get_default_gdscript_code() const {
+	String code;
 
+	code += "\n\n# Initialization code here...";
+	code += "\nfunc _ready():";
+	code += "\n\tset_process(true)";
+	code += "\n\n# _process() executes each frame";
+	code += "\nfunc _process(delta):";
+	code += "\n\t# Code here...";
+
+	return code;
+}
 
 void Node::generate_instance_state() {
 
