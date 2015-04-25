@@ -9376,7 +9376,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			_canvas_item_setup_shader_uniforms(material,shader_cache);
 		}
 
-		bool unshaded = material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED;
+		bool unshaded = (material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED) || ci->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX;
 
 		if (unshaded) {
 			canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,Color(1,1,1,1));
