@@ -1462,7 +1462,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 			} break;
 			case GDTokenizer::TK_CF_PASS: {
-				if (tokenizer->get_token(1)!=GDTokenizer::TK_SEMICOLON && tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE ) {
+				if (tokenizer->get_token(1)!=GDTokenizer::TK_SEMICOLON && tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE && tokenizer->get_token(1)!=GDTokenizer::TK_EOF) {
 
 					_set_error("Expected ';' or <NewLine>.");
 					return;
