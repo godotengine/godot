@@ -338,14 +338,14 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 			ObjectID obj = state->get_contact_collider_id(i);
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
-			toadd[i].local_shape=local_shape;
-			toadd[i].id=obj;
-			toadd[i].shape=shape;
 
-			bool found=false;
+//			bool found=false;
 
 			Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(obj);
 			if (!E) {
+				toadd[toadd_count].local_shape=local_shape;
+				toadd[toadd_count].id=obj;
+				toadd[toadd_count].shape=shape;
 				toadd_count++;
 				continue;
 			}
@@ -354,6 +354,9 @@ void RigidBody::_direct_state_changed(Object *p_state) {
 			int idx = E->get().shapes.find(sp);
 			if (idx==-1) {
 
+				toadd[toadd_count].local_shape=local_shape;
+				toadd[toadd_count].id=obj;
+				toadd[toadd_count].shape=shape;
 				toadd_count++;
 				continue;
 			}

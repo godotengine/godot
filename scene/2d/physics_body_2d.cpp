@@ -277,6 +277,13 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(objid);
 
+	/*if (obj) {
+		if (body_in)
+			print_line("in: "+String(obj->call("get_name")));
+		else
+			print_line("out: "+String(obj->call("get_name")));
+	}*/
+
 	ERR_FAIL_COND(!body_in && !E);
 
 	if (body_in) {
@@ -386,14 +393,14 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			ObjectID obj = state->get_contact_collider_id(i);
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
-			toadd[i].local_shape=local_shape;
-			toadd[i].id=obj;
-			toadd[i].shape=shape;
 
 //			bool found=false;
 
 			Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(obj);
 			if (!E) {
+				toadd[toadd_count].local_shape=local_shape;
+				toadd[toadd_count].id=obj;
+				toadd[toadd_count].shape=shape;
 				toadd_count++;
 				continue;
 			}
@@ -402,6 +409,9 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			int idx = E->get().shapes.find(sp);
 			if (idx==-1) {
 
+				toadd[toadd_count].local_shape=local_shape;
+				toadd[toadd_count].id=obj;
+				toadd[toadd_count].shape=shape;
 				toadd_count++;
 				continue;
 			}
