@@ -1560,7 +1560,9 @@ void EditorNode::_cleanup_scene() {
 
 void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 	
-	current_option=(MenuOptions)p_option;
+	//print_line("option "+itos(p_option)+" confirm "+itos(p_confirmed));
+	if (!p_confirmed) //this may be a hack..
+		current_option=(MenuOptions)p_option;
 
 
 	switch( p_option ) {
@@ -1931,13 +1933,16 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_QUIT: {
 			
+
 			if (!p_confirmed) {
+
 				confirmation->get_ok()->set_text("Quit");
 				//confirmation->get_cancel()->show();
 				confirmation->set_text("Exit the Editor?");
 				confirmation->popup_centered(Size2(180,70));
 				break;
 			}
+
 
 			_menu_option_confirm(RUN_STOP,true);
 			get_tree()->quit();
