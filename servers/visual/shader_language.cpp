@@ -1145,6 +1145,8 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
 	{ "SRC_COLOR", TYPE_VEC4},
 	{ "POSITION", TYPE_VEC4},
 	{ "NORMAL", TYPE_VEC3},
+	{ "NORMALMAP", TYPE_VEC3},
+	{ "NORMALMAP_DEPTH", TYPE_FLOAT},
 	{ "UV", TYPE_VEC2},
 	{ "COLOR", TYPE_VEC4},
 	{ "TEXTURE", TYPE_TEXTURE},

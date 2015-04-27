@@ -4609,6 +4609,10 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (fragment_flags.uses_normal) {
 			enablers.push_back("#define NORMAL_USED\n");
 		}
+		if (fragment_flags.uses_normalmap) {
+			enablers.push_back("#define USE_NORMALMAP\n");
+		}
+
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
 		}

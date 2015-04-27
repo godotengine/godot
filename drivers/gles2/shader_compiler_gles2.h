@@ -72,6 +72,7 @@ private:
 	StringName vname_light;
 	StringName vname_time;
 	StringName vname_normalmap;
+	StringName vname_normalmap_depth;
 	StringName vname_normal;
 	StringName vname_texpixel_size;
 	StringName vname_world_vec;
