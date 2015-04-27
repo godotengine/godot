@@ -200,6 +200,12 @@ public:
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
+	_FORCE_INLINE_ void wakeup() {
+		if ((get_space() && active) || mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
+			return;
+		set_active(true);
+	}
+
 	void set_param(PhysicsServer::BodyParameter p_param, float);
 	float get_param(PhysicsServer::BodyParameter p_param) const;
 

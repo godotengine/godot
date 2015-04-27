@@ -1508,8 +1508,8 @@ void ScriptEditor::_update_window_menu() {
 	window_menu->get_popup()->clear();
 	window_menu->get_popup()->add_item("Close",WINDOW_CLOSE,KEY_MASK_CMD|KEY_W);
 	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
-	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
+	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_MASK_ALT|KEY_LEFT);
+	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_MASK_ALT|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
 
 	idx=0;
@@ -1521,7 +1521,7 @@ void ScriptEditor::_update_window_menu() {
 		String n = ste->get_name();
 		uint32_t accel=0;
 		if (idx<9) {
-			accel=KEY_MASK_ALT|(KEY_1+idx);
+			accel=KEY_MASK_ALT|KEY_MASK_CMD|(KEY_1+idx);
 		}
 		window_menu->get_popup()->add_item(n,WINDOW_SELECT_BASE+idx,accel);
 		idx++;

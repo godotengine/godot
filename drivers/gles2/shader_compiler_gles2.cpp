@@ -243,6 +243,10 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 				if (vnode->name==vname_normal) {
 					uses_normal=true;
 				}
+				if (vnode->name==vname_normalmap || vnode->name==vname_normalmap_depth) {
+					uses_normalmap=true;
+					uses_normal=true;
+				}
 
 				if (vnode->name==vname_screen_uv) {
 					uses_screen_uv=true;
@@ -810,6 +814,8 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	mode_replace_table[4]["POSITION"]="gl_Position";
 	mode_replace_table[4]["NORMAL"]="normal";
+	mode_replace_table[4]["NORMALMAP"]="normal_map";
+	mode_replace_table[4]["NORMALMAP_DEPTH"]="normal_depth";
 	mode_replace_table[4]["UV"]="uv_interp";
 	mode_replace_table[4]["SRC_COLOR"]="color_interp";
 	mode_replace_table[4]["COLOR"]="color";
@@ -861,6 +867,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	vname_light="LIGHT";
 	vname_time="TIME";
 	vname_normalmap="NORMALMAP";
+	vname_normalmap_depth="NORMALMAP_DEPTH";
 	vname_normal="NORMAL";
 	vname_texpixel_size="TEXTURE_PIXEL_SIZE";
 	vname_world_vec="WORLD_VERTEX";

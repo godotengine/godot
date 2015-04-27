@@ -524,13 +524,15 @@ void Control::_notification(int p_notification) {
 
 			if (data.MI) {
 
-				data.window->window->modal_stack.erase(data.MI);
+				if (data.window && data.window->window)
+					data.window->window->modal_stack.erase(data.MI);
 				data.MI=NULL;
 			}
 
 			if (data.SI) {
 				//erase from subwindows
-				data.window->window->subwindows.erase(data.SI);
+				if (data.window && data.window->window)
+					data.window->window->subwindows.erase(data.SI);
 				data.SI=NULL;
 			}
 

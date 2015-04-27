@@ -783,6 +783,8 @@ void Physics2DServerSW::body_set_applied_force(RID p_body, const Vector2& p_forc
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_force(p_force);
+	body->wakeup();
+
 };
 
 Vector2 Physics2DServerSW::body_get_applied_force(RID p_body) const {
@@ -798,6 +800,7 @@ void Physics2DServerSW::body_set_applied_torque(RID p_body, float p_torque) {
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_torque(p_torque);
+	body->wakeup();
 };
 
 float Physics2DServerSW::body_get_applied_torque(RID p_body) const {
@@ -814,6 +817,7 @@ void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2& p_pos, con
 	ERR_FAIL_COND(!body);
 
 	body->apply_impulse(p_pos,p_impulse);
+	body->wakeup();
 };
 
 void Physics2DServerSW::body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity) {
@@ -826,7 +830,7 @@ void Physics2DServerSW::body_set_axis_velocity(RID p_body, const Vector2& p_axis
 	v-=axis*axis.dot(v);
 	v+=p_axis_velocity;
 	body->set_linear_velocity(v);
-
+	body->wakeup();
 };
 
 void Physics2DServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
@@ -835,7 +839,7 @@ void Physics2DServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
 	ERR_FAIL_COND(!body);
 
 	body->add_exception(p_body_b);
-
+	body->wakeup();
 };
 
 void Physics2DServerSW::body_remove_collision_exception(RID p_body, RID p_body_b) {
@@ -844,6 +848,7 @@ void Physics2DServerSW::body_remove_collision_exception(RID p_body, RID p_body_b
 	ERR_FAIL_COND(!body);
 
 	body->remove_exception(p_body_b);
+	body->wakeup();
 
 };
 
