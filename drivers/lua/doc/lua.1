@@ -1,0 +1,163 @@
+.\" $Id: lua.man,v 1.11 2006/01/06 16:03:34 lhf Exp $
+.TH LUA 1 "$Date: 2006/01/06 16:03:34 $"
+.SH NAME
+lua \- Lua interpreter
+.SH SYNOPSIS
+.B lua
+[
+.I options
+]
+[
+.I script
+[
+.I args
+]
+]
+.SH DESCRIPTION
+.B lua
+is the stand-alone Lua interpreter.
+It loads and executes Lua programs,
+either in textual source form or
+in precompiled binary form.
+(Precompiled binaries are output by
+.BR luac ,
+the Lua compiler.)
+.B lua
+can be used as a batch interpreter and also interactively.
+.LP
+The given
+.I options
+(see below)
+are executed and then
+the Lua program in file
+.I script
+is loaded and executed.
+The given
+.I args
+are available to
+.I script
+as strings in a global table named
+.BR arg .
+If these arguments contain spaces or other characters special to the shell,
+then they should be quoted
+(but note that the quotes will be removed by the shell).
+The arguments in
+.B arg
+start at 0,
+which contains the string
+.RI ' script '.
+The index of the last argument is stored in
+.BR arg.n .
+The arguments given in the command line before
+.IR script ,
+including the name of the interpreter,
+are available in negative indices in
+.BR arg .
+.LP
+At the very start,
+before even handling the command line,
+.B lua
+executes the contents of the environment variable
+.BR LUA_INIT ,
+if it is defined.
+If the value of
+.B LUA_INIT
+is of the form
+.RI '@ filename ',
+then
+.I filename
+is executed.
+Otherwise, the string is assumed to be a Lua statement and is executed.
+.LP
+Options start with
+.B '\-'
+and are described below.
+You can use
+.B "'\--'"
+to signal the end of options.
+.LP
+If no arguments are given,
+then
+.B "\-v \-i"
+is assumed when the standard input is a terminal;
+otherwise,
+.B "\-"
+is assumed.
+.LP
+In interactive mode,
+.B lua
+prompts the user,
+reads lines from the standard input,
+and executes them as they are read.
+If a line does not contain a complete statement,
+then a secondary prompt is displayed and
+lines are read until a complete statement is formed or
+a syntax error is found.
+So, one way to interrupt the reading of an incomplete statement is
+to force a syntax error:
+adding a
+.B ';' 
+in the middle of a statement is a sure way of forcing a syntax error
+(except inside multiline strings and comments; these must be closed explicitly).
+If a line starts with
+.BR '=' ,
+then
+.B lua
+displays the values of all the expressions in the remainder of the
+line. The expressions must be separated by commas.
+The primary prompt is the value of the global variable
+.BR _PROMPT ,
+if this value is a string;
+otherwise, the default prompt is used.
+Similarly, the secondary prompt is the value of the global variable
+.BR _PROMPT2 .
+So,
+to change the prompts,
+set the corresponding variable to a string of your choice.
+You can do that after calling the interpreter
+or on the command line
+(but in this case you have to be careful with quotes
+if the prompt string contains a space; otherwise you may confuse the shell.)
+The default prompts are "> " and ">> ".
+.SH OPTIONS
+.TP
+.B \-
+load and execute the standard input as a file,
+that is,
+not interactively,
+even when the standard input is a terminal.
+.TP
+.BI \-e " stat"
+execute statement
+.IR stat .
+You need to quote
+.I stat 
+if it contains spaces, quotes,
+or other characters special to the shell.
+.TP
+.B \-i
+enter interactive mode after
+.I script
+is executed.
+.TP
+.BI \-l " name"
+call
+.BI require(' name ')
+before executing
+.IR script .
+Typically used to load libraries.
+.TP
+.B \-v
+show version information.
+.SH "SEE ALSO"
+.BR luac (1)
+.br
+http://www.lua.org/
+.SH DIAGNOSTICS
+Error messages should be self explanatory.
+.SH AUTHORS
+R. Ierusalimschy,
+L. H. de Figueiredo,
+and
+W. Celes
+.\" EOF
