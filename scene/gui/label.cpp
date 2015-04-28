@@ -170,7 +170,7 @@ void Label::_notification(int p_what) {
 			while(to && to->char_pos>=0) {
 				
 				taken+=to->pixel_width;
-				if (to!=from) {
+				if (to!=from && to->space_insert) {
 					spaces++;
 				}
 				to=to->next;
@@ -212,15 +212,15 @@ void Label::_notification(int p_what) {
 					ERR_PRINT("BUG");
 					return;
 				}
-				if (from!=wc) {
+				if (from!=wc && from->space_insert) {
 				/* spacing */
 					x_ofs+=space_w;
 					if (can_fill && align==ALIGN_FILL && spaces) {
-						
+
 						x_ofs+=int((size.width-(taken+space_w*spaces))/spaces);
 					}
-					
-					
+
+
 				}
 				
 				
@@ -411,6 +411,38 @@ void Label::regenerate_word_cache() {
 			}
 
 
+		}else if ((current < 65||current >90) && (current<97||current>122)) {
+			if (current_word_size>0) {
+
+				WordCache *wc = memnew( WordCache );
+				if (word_cache) {
+					last->next=wc;
+				} else {
+					word_cache=wc;
+				}
+				last=wc;
+
+				wc->pixel_width=current_word_size;
+				wc->char_pos=word_pos;
+				wc->word_len=i-word_pos;
+				current_word_size=0;
+			}
+			WordCache *wc = memnew( WordCache );
+			if (word_cache) {
+				last->next=wc;
+			} else {
+				word_cache=wc;
+			}
+			last=wc;
+
+			wc->pixel_width=font->get_char_size(current).width;
+			wc->char_pos=i;
+			wc->word_len=1;
+			wc->space_insert = false;
+			current_word_size=0;
+			word_pos = i+1;
+			line_width+=wc->pixel_width;
+			total_char_cache++;
 		} else {
 			
 			if (current_word_size==0) {
