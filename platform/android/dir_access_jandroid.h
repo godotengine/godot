@@ -47,6 +47,7 @@ class DirAccessJAndroid  : public DirAccess {
 	static jmethodID _dir_open;
 	static jmethodID _dir_next;
 	static jmethodID _dir_close;
+	static jmethodID _dir_is_dir;
 
 	int id;
 

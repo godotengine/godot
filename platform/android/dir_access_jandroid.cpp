@@ -31,11 +31,15 @@
 #include "dir_access_jandroid.h"
 #include "file_access_jandroid.h"
 #include "thread_jandroid.h"
+#include "print_string.h"
+
+
 jobject DirAccessJAndroid::io=NULL;
 jclass DirAccessJAndroid::cls=NULL;
 jmethodID DirAccessJAndroid::_dir_open=NULL;
 jmethodID DirAccessJAndroid::_dir_next=NULL;
 jmethodID DirAccessJAndroid::_dir_close=NULL;
+jmethodID DirAccessJAndroid::_dir_is_dir=NULL;
 
 
 DirAccess *DirAccessJAndroid::create_fs() {
@@ -67,43 +71,18 @@ String DirAccessJAndroid::get_next(){
 	if (!str)
 		return "";
 
-	int sl = env->GetStringLength(str);
-	if (sl==0) {
-		env->DeleteLocalRef((jobject)str);
-		return "";
-	}
-
-	CharString cs;
-	cs.resize(sl+1);
-	env->GetStringRegion(str,0,sl,(jchar*)&cs[0]);
-	cs[sl]=0;
-
-	String ret;
-	ret.parse_utf8(&cs[0]);
+	String ret = String::utf8(env->GetStringUTFChars( (jstring)str, NULL ));
 	env->DeleteLocalRef((jobject)str);
-
 	return ret;
 
 }
 bool DirAccessJAndroid::current_is_dir() const{
 
+
 	JNIEnv *env = ThreadAndroid::get_env();
-	String sd;
-	if (current_dir=="")
-		sd=current;
-	else
-		sd=current_dir+"/"+current;
 
-	jstring js = env->NewStringUTF(sd.utf8().get_data());
+	return env->CallBooleanMethod(io,_dir_is_dir,id);
 
-	int res = env->CallIntMethod(io,_dir_open,js);
-	if (res<=0)
-		return false;
-
-	env->CallObjectMethod(io,_dir_close,res);
-
-
-	return true;
 }
 
 bool DirAccessJAndroid::current_is_hidden() const {
@@ -142,24 +121,31 @@ Error DirAccessJAndroid::change_dir(String p_dir){
 
 	String new_dir;
 
+	if (p_dir!="res://" && p_dir.length()>1 && p_dir.ends_with("/"))
+		p_dir=p_dir.substr(0,p_dir.length()-1);
+
 	if (p_dir.begins_with("/"))
 		new_dir=p_dir.substr(1,p_dir.length());
 	else if (p_dir.begins_with("res://"))
 		new_dir=p_dir.substr(6,p_dir.length());
-	else  //relative
-		new_dir=new_dir+"/"+p_dir;
+	else if (current_dir=="")
+		new_dir=p_dir;
+	else
+		new_dir=current_dir.plus_file(p_dir);
 
+	//print_line("new dir is: "+new_dir);
 //test if newdir exists
 	new_dir=new_dir.simplify_path();
 
 	jstring js = env->NewStringUTF(new_dir.utf8().get_data());
 	int res = env->CallIntMethod(io,_dir_open,js);
+	env->DeleteLocalRef(js);
 	if (res<=0)
 		return ERR_INVALID_PARAMETER;
 
 	env->CallObjectMethod(io,_dir_close,res);
 
-
+	current_dir=new_dir;
 
 	return OK;
 }
@@ -210,6 +196,7 @@ bool DirAccessJAndroid::dir_exists(String p_dir) {
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io,_dir_open,js);
+	env->DeleteLocalRef(js);
 	if (res<=0)
 		return false;
 
@@ -262,6 +249,10 @@ void DirAccessJAndroid::setup( jobject p_io) {
 	_dir_close = env->GetMethodID(cls, "dir_close", "(I)V");
 	if(_dir_close != 0) {
 		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_close ok!!");
+	}
+	_dir_is_dir = env->GetMethodID(cls, "dir_is_dir", "(I)Z");
+	if(_dir_is_dir != 0) {
+		__android_log_print(ANDROID_LOG_INFO,"godot","*******GOT METHOD _dir_is_dir ok!!");
 	}
 
 //	(*env)->CallVoidMethod(env,obj,aMethodID, myvar);
