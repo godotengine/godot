@@ -1032,7 +1032,7 @@ Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int
 			case STRING_ARRAY: return (StringArray(*p_args[0]));
 			case VECTOR2_ARRAY: return (Vector2Array(*p_args[0])); 	// 25
 			case VECTOR3_ARRAY: return (Vector3Array(*p_args[0])); 	// 25
-			case COLOR_ARRAY: return (Color(*p_args[0]));
+			case COLOR_ARRAY: return (ColorArray(*p_args[0]));
 			default: return Variant();
 		}
 	}
