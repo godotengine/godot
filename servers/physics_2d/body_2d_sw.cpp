@@ -279,6 +279,7 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 				_set_inv_transform(get_transform().inverse());
 
 			}
+			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_LINEAR_VELOCITY: {
@@ -286,12 +287,14 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 			//if (mode==Physics2DServer::BODY_MODE_STATIC)
 			//	break;
 			linear_velocity=p_variant;
+			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_ANGULAR_VELOCITY: {
 			//if (mode!=Physics2DServer::BODY_MODE_RIGID)
 			//	break;
 			angular_velocity=p_variant;
+			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_SLEEPING: {

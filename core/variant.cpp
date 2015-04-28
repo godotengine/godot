@@ -32,7 +32,7 @@
 #include "scene/main/node.h"
 #include "scene/gui/control.h"
 #include "io/marshalls.h"
-
+#include "core_string_names.h"
 
 
 
@@ -1430,8 +1430,16 @@ Variant::operator RID() const {
 		return *reinterpret_cast<const RID*>(_data._mem);
 	else if (type==OBJECT && !_get_obj().ref.is_null()) {
 		return _get_obj().ref.get_rid();
-	} else
+	} else if (type==OBJECT && _get_obj().obj) {
+		Variant::CallError ce;
+		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid,NULL,0,ce);
+		if (ce.error==Variant::CallError::CALL_OK && ret.get_type()==Variant::_RID) {
+			return ret;
+		}
 		return RID();
+	} else {
+		return RID();
+	}
 }
 
 Variant::operator Object*() const {

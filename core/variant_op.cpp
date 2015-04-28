@@ -290,8 +290,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					if (arr_b->size()!=l)
 						_RETURN( false );
 					for(int i=0;i<l;i++) {
-						if (!(arr_a[i]==arr_b[i]))
+						if (!((*arr_a)[i]==(*arr_b)[i])) {
 							_RETURN( false );
+						}
 					}
 
 					_RETURN( true );

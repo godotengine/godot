@@ -1442,7 +1442,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,con
 #endif
 			for(int mi=0;mi<p_morph_meshes.size();mi++) {
 
-				print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
+			//	print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
 				Array a = p_morph_meshes[mi]->surface_get_arrays(surface);
 				a[Mesh::ARRAY_BONES]=Variant();
 				a[Mesh::ARRAY_WEIGHTS]=Variant();
@@ -1616,6 +1616,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 
 					if (collada.state.morph_controller_data_map.has(meshid)) {
 						//it's a morph!!
+						morph = &collada.state.morph_controller_data_map[meshid];
 						ngsource=meshid;
 						meshid=morph->mesh;
 					} else {

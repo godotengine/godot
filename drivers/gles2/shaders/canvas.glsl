@@ -207,7 +207,17 @@ void main() {
 
 
 {
+#if defined(USE_NORMALMAP)
+	vec3 normal_map=vec3(0.0,0.0,1.0);
+	float normal_depth=1.0;
+#endif
+
 FRAGMENT_SHADER_CODE
+
+#if defined(USE_NORMALMAP)
+	normal = mix(vec3(0.0,0.0,1.0), normal_map * vec3(2.0,-2.0,1.0) - vec3( 1.0, -1.0, 0.0 ), normal_depth );
+#endif
+
 }
 #ifdef DEBUG_ENCODED_32
 	highp float enc32 = dot( color,highp vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1)  );

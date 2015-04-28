@@ -4609,6 +4609,10 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (fragment_flags.uses_normal) {
 			enablers.push_back("#define NORMAL_USED\n");
 		}
+		if (fragment_flags.uses_normalmap) {
+			enablers.push_back("#define USE_NORMALMAP\n");
+		}
+
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
 		}
@@ -9376,7 +9380,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			_canvas_item_setup_shader_uniforms(material,shader_cache);
 		}
 
-		bool unshaded = material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED;
+		bool unshaded = (material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED) || ci->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX;
 
 		if (unshaded) {
 			canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,Color(1,1,1,1));

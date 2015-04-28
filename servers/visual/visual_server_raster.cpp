@@ -6839,6 +6839,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		ci->final_transform=xform;
 		ci->final_opacity=opacity * ci->self_opacity;
 		ci->global_rect_cache=global_rect;
+		ci->global_rect_cache.pos-=p_clip_rect.pos;
 
 		int zidx = p_z-CANVAS_ITEM_Z_MIN;
 

@@ -640,6 +640,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/test_height",0);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
+		if (rtm>=1) //hack for now
+			rtm=1;
+
 	}
 
 	if (rtm>=0 && rtm<3)

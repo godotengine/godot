@@ -118,13 +118,17 @@ ShaderLanguage::Token ShaderLanguage::read_token(const CharType* p_text,int p_le
 
 
 					while(true) {
-						if (GETCHAR(r_chars+1)=='0')
+						if (GETCHAR(r_chars+1)==0) {
+							r_chars+=1;
 							break;
-						if (GETCHAR(r_chars+1)=='*' && GETCHAR(r_chars+2)=='/')
+						} if (GETCHAR(r_chars+1)=='*' && GETCHAR(r_chars+2)=='/') {
+							r_chars+=3;
 							break;
-						if (GETCHAR(r_chars+1)=='\n')
+						} if (GETCHAR(r_chars+1)=='\n') {
 							r_line++;
-							r_chars++;
+						}
+
+						r_chars++;
 					}
 
 					return Token();
@@ -1141,6 +1145,8 @@ const ShaderLanguage::BuiltinsDef ShaderLanguage::ci_fragment_builtins_defs[]={
 	{ "SRC_COLOR", TYPE_VEC4},
 	{ "POSITION", TYPE_VEC4},
 	{ "NORMAL", TYPE_VEC3},
+	{ "NORMALMAP", TYPE_VEC3},
+	{ "NORMALMAP_DEPTH", TYPE_FLOAT},
 	{ "UV", TYPE_VEC2},
 	{ "COLOR", TYPE_VEC4},
 	{ "TEXTURE", TYPE_TEXTURE},
