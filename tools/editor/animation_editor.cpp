@@ -2538,7 +2538,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 				insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
 
 			insert_confirm->get_ok()->set_text("Create");
-			insert_confirm->popup_centered(Size2(300,100));
+			insert_confirm->popup_centered_minsize();
 			insert_query=true;
 		} else {
 			call_deferred("_insert_delay");
