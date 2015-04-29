@@ -212,7 +212,7 @@ void Label::_notification(int p_what) {
 					ERR_PRINT("BUG");
 					return;
 				}
-				if (from!=wc && from->space_count) {
+				if (from->space_count) {
 				/* spacing */
 					x_ofs+=space_w*from->space_count;
 					if (can_fill && align==ALIGN_FILL && spaces) {
@@ -411,7 +411,7 @@ void Label::regenerate_word_cache() {
 
 			if (i<text.length() && text[i] == ' ') {
 				total_char_cache--;  // do not count spaces
-				if (line_width > 0) {
+				if (line_width > 0 || last==NULL || last->char_pos!=WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width+=space_width;
 				}else {
@@ -467,7 +467,6 @@ void Label::regenerate_word_cache() {
 			
 		}
 
-		print_line(itos(line_width));
 		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
 
 			WordCache *wc = memnew( WordCache );
