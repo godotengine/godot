@@ -170,8 +170,8 @@ void Label::_notification(int p_what) {
 			while(to && to->char_pos>=0) {
 				
 				taken+=to->pixel_width;
-				if (to!=from && to->space_insert) {
-					spaces++;
+				if (to!=from && to->space_count) {
+					spaces+=to->space_count;
 				}
 				to=to->next;
 			}
@@ -212,9 +212,9 @@ void Label::_notification(int p_what) {
 					ERR_PRINT("BUG");
 					return;
 				}
-				if (from!=wc && from->space_insert) {
+				if (from!=wc && from->space_count) {
 				/* spacing */
-					x_ofs+=space_w;
+					x_ofs+=space_w*from->space_count;
 					if (can_fill && align==ALIGN_FILL && spaces) {
 
 						x_ofs+=int((size.width-(taken+space_w*spaces))/spaces);
@@ -366,6 +366,8 @@ void Label::regenerate_word_cache() {
 	int word_pos=0;
 	int line_width=0;
 	int last_width=0;
+	int space_count=0;
+	int space_width=font->get_char_size(' ').width;
 	line_count=1;
 	total_char_cache=0;
 	
@@ -383,7 +385,6 @@ void Label::regenerate_word_cache() {
 		if (current<33) {
 			
 			if (current_word_size>0) {
-				
 				WordCache *wc = memnew( WordCache );
 				if (word_cache) {
 					last->next=wc;
@@ -395,7 +396,9 @@ void Label::regenerate_word_cache() {
 				wc->pixel_width=current_word_size;
 				wc->char_pos=word_pos;
 				wc->word_len=i-word_pos;
+				wc->space_count = space_count;
 				current_word_size=0;
+				space_count=0;
 				
 			}
 			
@@ -408,10 +411,16 @@ void Label::regenerate_word_cache() {
 
 			if (i<text.length() && text[i] == ' ') {
 				total_char_cache--;  // do not count spaces
+				if (line_width > 0) {
+					space_count++;
+					line_width+=space_width;
+				}else {
+					space_count=0;
+				}
 			}
 
 
-		}else if ((current < 65||current >90) && (current<97||current>122)) {
+		}else if ((current < 65||current >90) && (current<97||current>122) && (current<48||current>57)) {
 			if (current_word_size>0) {
 
 				WordCache *wc = memnew( WordCache );
@@ -425,7 +434,9 @@ void Label::regenerate_word_cache() {
 				wc->pixel_width=current_word_size;
 				wc->char_pos=word_pos;
 				wc->word_len=i-word_pos;
+				wc->space_count = space_count;
 				current_word_size=0;
+				space_count=0;
 			}
 			WordCache *wc = memnew( WordCache );
 			if (word_cache) {
@@ -438,16 +449,14 @@ void Label::regenerate_word_cache() {
 			wc->pixel_width=font->get_char_size(current).width;
 			wc->char_pos=i;
 			wc->word_len=1;
-			wc->space_insert = false;
+			wc->space_count=space_count;
 			current_word_size=0;
-			word_pos = i+1;
-			line_width+=wc->pixel_width;
+			space_count=0;
 			total_char_cache++;
+			line_width+=wc->pixel_width;
 		} else {
-			
+			// latin characters
 			if (current_word_size==0) {
-				if (line_width>0) // add a space before the new word if a word existed before
-					line_width+=font->get_char_size(' ').width;
 				word_pos=i;
 			}
 			
@@ -457,9 +466,10 @@ void Label::regenerate_word_cache() {
 			total_char_cache++;
 			
 		}
-		
+
+		print_line(itos(line_width));
 		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
-			
+
 			WordCache *wc = memnew( WordCache );
 			if (word_cache) {
 				last->next=wc;
@@ -467,14 +477,14 @@ void Label::regenerate_word_cache() {
 				word_cache=wc;
 			}
 			last=wc;
-			
+
 			wc->pixel_width=0;
 			wc->char_pos=insert_newline?WordCache::CHAR_NEWLINE:WordCache::CHAR_WRAPLINE;
 
 			line_width=current_word_size;
 			line_count++;
 
-			
+
 		}
 		
 		last_width=line_width;
