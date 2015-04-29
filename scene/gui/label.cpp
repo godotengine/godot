@@ -438,6 +438,25 @@ void Label::regenerate_word_cache() {
 				current_word_size=0;
 				space_count=0;
 			}
+			float current_width = font->get_char_size(current).width;
+			if ((autowrap && line_width+current_width>=width && last_width<width)) {
+
+				WordCache *wc = memnew( WordCache );
+				if (word_cache) {
+					last->next=wc;
+				} else {
+					word_cache=wc;
+				}
+				last=wc;
+
+				wc->pixel_width=0;
+				wc->char_pos=WordCache::CHAR_WRAPLINE;
+
+				line_width=0;
+				line_count++;
+
+
+			}
 			WordCache *wc = memnew( WordCache );
 			if (word_cache) {
 				last->next=wc;
@@ -446,7 +465,7 @@ void Label::regenerate_word_cache() {
 			}
 			last=wc;
 
-			wc->pixel_width=font->get_char_size(current).width;
+			wc->pixel_width=current_width;
 			wc->char_pos=i;
 			wc->word_len=1;
 			wc->space_count=space_count;
