@@ -552,6 +552,13 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 	};
 };
 
+bool Camera::is_position_behind(const Vector3& p_pos) const {
+
+	Transform t = get_global_transform();
+	Vector3 eyedir = -get_global_transform().basis.get_axis(2).normalized();
+	return eyedir.dot(p_pos) < (eyedir.dot(t.origin)+near);
+}
+
 Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 	if (!is_inside_tree()) {
@@ -666,6 +673,7 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("project_local_ray_normal","screen_point"), &Camera::project_local_ray_normal);
 	ObjectTypeDB::bind_method( _MD("project_ray_origin","screen_point"), &Camera::project_ray_origin);
 	ObjectTypeDB::bind_method( _MD("unproject_position","world_point"), &Camera::unproject_position);
+	ObjectTypeDB::bind_method( _MD("is_position_behind","world_point"), &Camera::is_position_behind);
 	ObjectTypeDB::bind_method( _MD("project_position","screen_point"), &Camera::project_position);
 	ObjectTypeDB::bind_method( _MD("set_perspective","fov","z_near","z_far"),&Camera::set_perspective );
 	ObjectTypeDB::bind_method( _MD("set_orthogonal","size","z_near","z_far"),&Camera::set_orthogonal );
