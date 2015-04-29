@@ -42,6 +42,7 @@ Area::SpaceOverride Area::get_space_override_mode() const{
 }
 
 void Area::set_gravity_is_point(bool p_enabled){
+
 	gravity_is_point=p_enabled;
 	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_GRAVITY_IS_POINT,p_enabled);
 
