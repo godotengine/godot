@@ -99,7 +99,7 @@ void Label::_notification(int p_what) {
 		int chars_total=0;
 
 		int vbegin=0,vsep=0;
-
+		
 		if (lines_total && lines_total < lines_visible) {
 
 
@@ -136,10 +136,9 @@ void Label::_notification(int p_what) {
 		if (!wc)
 			return;
 		
-
+		int c = 0;
 		int line=0;
 		while(wc) {
-			
 		/* handle lines not meant to be drawn quickly */
 			if  (line>line_to)
 				break;
@@ -253,7 +252,7 @@ void Label::_notification(int p_what) {
 					
 				}
 				for (int i=0;i<from->word_len;i++) {
-					
+
 					if (visible_chars < 0 || chars_total<visible_chars) {
 						CharType c = text[i+pos];
 						CharType n = text[i+pos+1];
@@ -486,7 +485,7 @@ void Label::regenerate_word_cache() {
 			
 		}
 
-		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
+		if ((autowrap && line_width>=width && last &&  last->char_pos >= 0) || insert_newline) {
 
 			WordCache *wc = memnew( WordCache );
 			if (word_cache) {
@@ -525,7 +524,7 @@ void Label::regenerate_word_cache() {
 	set_max(line_count);
 	
 	word_cache_dirty=false;
-		
+
 }
 
 
