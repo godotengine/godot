@@ -516,7 +516,8 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 						apex_poly=p;
 						portal_left=apex_point;
 						portal_right=apex_point;
-						path.push_back(apex_point);
+						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
+							path.push_back(apex_point);
 						skip=true;
 					}
 				}
@@ -536,7 +537,8 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 						apex_poly=p;
 						portal_right=apex_point;
 						portal_left=apex_point;
-						path.push_back(apex_point);
+						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
+							path.push_back(apex_point);
 					}
 				}
 
@@ -547,7 +549,7 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 
 			}
 
-			if (path[path.size()-1]!=begin_point)
+			if (path[path.size()-1].distance_to(begin_point)>CMP_EPSILON)
 				path.push_back(begin_point);
 
 			path.invert();
