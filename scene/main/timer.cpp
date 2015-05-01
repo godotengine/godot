@@ -46,6 +46,8 @@ void Timer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_PROCESS: {
 
+			if (!is_processing())
+				return;
 			time_left -= get_process_delta_time();
 
 			if (time_left<0) {
