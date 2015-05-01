@@ -1263,7 +1263,6 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 		p_flags&=VS::TEXTURE_FLAG_FILTER;//can change only filter
 	}
 
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
