@@ -1552,7 +1552,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					case KEY_HOME:
 					case KEY_END:
 						// ignore arrows if any modifiers are held (shift = selecting, others may be used for editor hotkeys)
-						if (k.mod.command || k.mod.shift || k.mod.alt || k.mod.command)
+						if (k.mod.command || k.mod.shift || k.mod.alt)
 							break;
 						unselect=true;
 						break;

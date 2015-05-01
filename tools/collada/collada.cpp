@@ -979,7 +979,7 @@ void Collada::_parse_curve_geometry(XMLParser& parser,String p_id,String p_name)
 				current_source=id;
 				COLLADA_PRINT("source data: "+id);
 
-			} else if (section=="float_array" || section=="array" || section=="float_array") {
+			} else if (section=="float_array" || section=="array") {
 				// create a new array and read it.
 				if (curvedata.sources.has(current_source)) {
 

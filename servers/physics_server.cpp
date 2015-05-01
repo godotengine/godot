@@ -303,7 +303,7 @@ Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameter
 	Array ret(true);
 	ret.resize(2);
 	ret[0]=closest_safe;
-	ret[0]=closest_unsafe;
+	ret[1]=closest_unsafe;
 	return ret;
 
 }

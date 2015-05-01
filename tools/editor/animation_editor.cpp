@@ -1375,7 +1375,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					if (p_input.is_action("ui_up"))
 						selected_track--;
 					if (v_scroll->is_visible() && p_input.is_action("ui_page_up"))
-						selected_track=selected_track--;;
+						selected_track--;;
 
 					if (selected_track<0)
 						selected_track=0;

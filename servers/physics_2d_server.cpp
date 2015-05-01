@@ -285,7 +285,7 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 	Array ret(true);
 	ret.resize(2);
 	ret[0]=closest_safe;
-	ret[0]=closest_unsafe;
+	ret[1]=closest_unsafe;
 	return ret;
 
 }

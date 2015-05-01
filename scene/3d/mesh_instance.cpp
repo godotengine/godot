@@ -168,7 +168,7 @@ Node* MeshInstance::create_trimesh_collision_node() {
 	static_body->add_shape( shape );
 	return static_body;
 
-	return NULL;
+
 }
 
 void MeshInstance::create_trimesh_collision() {
@@ -202,7 +202,7 @@ Node* MeshInstance::create_convex_collision_node() {
 	static_body->add_shape( shape );
 	return static_body;
 
-	return NULL;
+
 }
 
 void MeshInstance::create_convex_collision() {

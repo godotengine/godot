@@ -2433,7 +2433,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				}
 				else if (str == "pressed") {
 					valid=true;
-					ie.action.pressed;
+					return ie.action.pressed;
 				}
 			}
 

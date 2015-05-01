@@ -641,11 +641,11 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 				int iofs=ofs+8;
 
-				uint32_t string_count=decode_uint32(&p_manifest[iofs]);
-				uint32_t styles_count=decode_uint32(&p_manifest[iofs+4]);
+				string_count=decode_uint32(&p_manifest[iofs]);
+				styles_count=decode_uint32(&p_manifest[iofs+4]);
 				uint32_t string_flags=decode_uint32(&p_manifest[iofs+8]);
-				uint32_t string_data_offset=decode_uint32(&p_manifest[iofs+12]);
-				uint32_t styles_offset=decode_uint32(&p_manifest[iofs+16]);
+				string_data_offset=decode_uint32(&p_manifest[iofs+12]);
+				styles_offset=decode_uint32(&p_manifest[iofs+16]);
 /*
 				printf("string count: %i\n",string_count);
 				printf("flags: %i\n",string_flags);

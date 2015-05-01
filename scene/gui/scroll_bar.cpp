@@ -51,20 +51,20 @@ void ScrollBar::_input_event(InputEvent p_event) {
 
 			if (b.button_index==5 && b.pressed) {
 		
-				if (orientation==VERTICAL)
-					set_val( get_val() + get_page() / 4.0 );
-				else
-					set_val( get_val() + get_page() / 4.0 );
+				//if (orientation==VERTICAL)
+				//	set_val( get_val() + get_page() / 4.0 );
+				//else
+				set_val( get_val() + get_page() / 4.0 );
 				accept_event();
 
 			}
 			
 			if (b.button_index==4 && b.pressed) {
 		
-				if (orientation==HORIZONTAL)
-					set_val( get_val() - get_page() / 4.0 );
-				else
-					set_val( get_val() - get_page() / 4.0  );
+				//if (orientation==HORIZONTAL)
+				//	set_val( get_val() - get_page() / 4.0 );
+				//else
+				set_val( get_val() - get_page() / 4.0  );
 				accept_event();
 			}
 		
