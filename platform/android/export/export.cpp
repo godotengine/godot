@@ -225,6 +225,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static void _device_poll_thread(void *ud);
 
+	String get_package_name();
+
 	String get_project_name() const;
 	void _fix_manifest(Vector<uint8_t>& p_manifest);
 	void _fix_resources(Vector<uint8_t>& p_manifest);
@@ -756,7 +758,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 					if (tname=="manifest" && attrname=="package") {
 
 						print_line("FOUND PACKAGE");
-						string_table[attr_value]=package;
+						string_table[attr_value]=get_package_name();
 					}
 
 					//print_line("tname: "+tname);
@@ -1169,7 +1171,7 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 
 		if (apk_expansion) {
 
-			String apkfname="main."+itos(version_code)+"."+package+".obb";
+			String apkfname="main."+itos(version_code)+"."+get_package_name()+".obb";
 			String fullpath=p_path.get_base_dir().plus_file(apkfname);
 			FileAccess *pf = FileAccess::open(fullpath,FileAccess::WRITE);
 			if (!pf) {
@@ -1514,7 +1516,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 		args.push_back("-s");
 		args.push_back(devices[p_device].id);
 		args.push_back("uninstall");
-		args.push_back(package);
+		args.push_back(get_package_name());
 
 		err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 #if 0
@@ -1552,7 +1554,7 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
 	args.push_back("-n");
-	args.push_back(package+"/com.android.godot.Godot");
+	args.push_back(get_package_name()+"/com.android.godot.Godot");
 
 	err = OS::get_singleton()->execute(adb,args,true,NULL,NULL,&rv);
 	if (err || rv!=0) {
@@ -1564,12 +1566,37 @@ Error EditorExportPlatformAndroid::run(int p_device, bool p_dumb) {
 	return OK;
 }
 
+String EditorExportPlatformAndroid::get_package_name() {
+
+	String pname = package;
+	String basename = Globals::get_singleton()->get("application/name");
+	basename=basename.to_lower();
+
+	String name;
+	bool first=true;
+	for(int i=0;i<basename.length();i++) {
+		CharType c = basename[i];
+		if (c>='0' && c<='9' && first) {
+			continue;
+		}
+		if ((c>='a' && c<='z') || (c>='A' && c<='Z') || (c>='0' && c<='9')) {
+			name+=String::chr(c);
+			first=false;
+		}
+	}
+	if (name=="")
+		name="noname";
+
+	pname=pname.replace("$genname",name);
+	return pname;
+
+}
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 
 	version_code=1;
 	version_name="1.0";
-	package="com.android.noname";
+	package="org.godotengine.$genname";
 	name="";
 	_signed=true;
 	apk_expansion=false;
