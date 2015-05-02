@@ -56,7 +56,7 @@ void Input::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_joy_axis","device","axis"),&Input::get_joy_axis);
 	ObjectTypeDB::bind_method(_MD("get_joy_name","device"),&Input::get_joy_name);
 	ObjectTypeDB::bind_method(_MD("get_accelerometer"),&Input::get_accelerometer);
-	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos);
+	//ObjectTypeDB::bind_method(_MD("get_mouse_pos"),&Input::get_mouse_pos); - this is not the function you want
 	ObjectTypeDB::bind_method(_MD("get_mouse_speed"),&Input::get_mouse_speed);
 	ObjectTypeDB::bind_method(_MD("get_mouse_button_mask"),&Input::get_mouse_button_mask);
 	ObjectTypeDB::bind_method(_MD("set_mouse_mode","mode"),&Input::set_mouse_mode);

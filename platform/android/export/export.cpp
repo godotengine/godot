@@ -768,19 +768,21 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 					if (tname=="activity" && /*nspace=="android" &&*/ attrname=="screenOrientation") {
 
+						encode_uint32(orientation==0?0:1,&p_manifest[iofs+16]);
+						/*
 						print_line("FOUND screen orientation");
 						if (attr_value==0xFFFFFFFF) {
 							WARN_PRINT("Version name in a resource, should be plaintext")
 						} else {
 							string_table[attr_value]=(orientation==0?"landscape":"portrait");
-						}
+						}*/
 					}
 
 					if (tname=="application" && /*nspace=="android" &&*/ attrname=="label") {
 
 						print_line("FOUND application");
 						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Application name in a resource, should be plaintext.")
+							WARN_PRINT("Application name in a resource, should be plaintext (but you can ignore this).")
 						} else {
 
 							String aname = get_project_name();
@@ -791,7 +793,7 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 
 						print_line("FOUND activity name");
 						if (attr_value==0xFFFFFFFF) {
-							WARN_PRINT("Activity name in a resource, should be plaintext")
+							WARN_PRINT("Activity name in a resource, should be plaintext (but you can ignore this)")
 						} else {
 							String aname;
 							if (this->name!="") {
@@ -835,23 +837,19 @@ void EditorExportPlatformAndroid::_fix_manifest(Vector<uint8_t>& p_manifest) {
 							WARN_PRINT("Screen res name in a resource, should be plaintext")
 						} else if (attrname=="smallScreens") {
 
-							print_line("SMALLSCREEN");
-							string_table[attr_value]=screen_support[SCREEN_SMALL]?"true":"false";
+							encode_uint32(screen_support[SCREEN_SMALL]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						} else if (attrname=="mediumScreens") {
 
-							print_line("MEDSCREEN");
-							string_table[attr_value]=screen_support[SCREEN_NORMAL]?"true":"false";
+							encode_uint32(screen_support[SCREEN_NORMAL]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						} else if (attrname=="largeScreens") {
 
-							print_line("LARGECREEN");
-							string_table[attr_value]=screen_support[SCREEN_LARGE]?"true":"false";
+							encode_uint32(screen_support[SCREEN_LARGE]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						} else if (attrname=="xlargeScreens") {
 
-							print_line("XLARGECREEN");
-							string_table[attr_value]=screen_support[SCREEN_XLARGE]?"true":"false";
+							encode_uint32(screen_support[SCREEN_XLARGE]?0xFFFFFFFF:0,&p_manifest[iofs+16]);
 
 						}
 					}
