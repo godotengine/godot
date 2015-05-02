@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -458,7 +458,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				path=path.replace("local://",local_path+"::");
 			else if (path.find("://")==-1 && path.is_rel_path()) {
 				// path is relative to file being loaded, so convert to a resource path
-				path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+				path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 
 			}
 
@@ -1423,7 +1423,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 
@@ -1601,7 +1601,7 @@ void ResourceInteractiveLoaderXML::get_dependencies(FileAccess *f,List<String> *
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (path.ends_with("*")) {
@@ -2243,12 +2243,12 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 			List<Variant> keys;
 			dict.get_key_list(&keys);
+			keys.sort();
 
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 				//if (!_check_type(dict[E->get()]))
 				//	continue;
-
 				bool ok;
 				write_property("",E->get(),&ok);
 				ERR_CONTINUE(!ok);
@@ -2438,7 +2438,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 				return;
 
 			if (!p_main && (!bundle_resources ) && res->get_path().length() && res->get_path().find("::") == -1 ) {
-				external_resources.insert(res);
+				external_resources.push_back(res);
 				return;
 			}
 
@@ -2448,6 +2448,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 			List<PropertyInfo> property_list;
 
 			res->get_property_list( &property_list );
+			property_list.sort();
 
 			List<PropertyInfo>::Element *I=property_list.front();
 
@@ -2525,7 +2526,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	enter_tag("resource_file","type=\""+p_resource->get_type()+"\" subresource_count=\""+itos(saved_resources.size()+external_resources.size())+"\" version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\" version_name=\""+VERSION_FULL_NAME+"\"");
 	write_string("\n",false);
 
-	for(Set<RES>::Element *E=external_resources.front();E;E=E->next()) {
+	for(List<RES>::Element *E=external_resources.front();E;E=E->next()) {
 
 		write_tabs();
 		String p = E->get()->get_path();
@@ -2562,6 +2563,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
+		property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 

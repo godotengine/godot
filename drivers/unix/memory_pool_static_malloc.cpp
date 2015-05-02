@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -153,7 +153,7 @@ void* MemoryPoolStaticMalloc::_realloc(void *p_memory,size_t p_bytes) {
 		return alloc( p_bytes );
 	}
 		
-	if (p_bytes<=0) {
+	if (p_bytes==0) {
 		
 		this->free(p_memory);
 		ERR_FAIL_COND_V( p_bytes < 0 , NULL );

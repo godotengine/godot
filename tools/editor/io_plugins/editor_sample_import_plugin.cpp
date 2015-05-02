@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -719,8 +719,8 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 
 
 			xm_sample=CLAMP(in[i]*32767.0,-32768,32767);
-			if (xm_sample==32767 || xm_sample==-32768)
-				printf("clippy!\n",xm_sample);
+			//if (xm_sample==32767 || xm_sample==-32768)
+			//	printf("clippy!\n",xm_sample);
 		}
 
 	//	xm_sample=xm_sample+xm_prev;

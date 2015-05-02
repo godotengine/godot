@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,13 +91,14 @@ class Body2DSW : public CollisionObject2DSW {
 	struct AreaCMP {
 
 		Area2DSW *area;
-		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_self() < p_cmp.area->get_self() ; }
+		_FORCE_INLINE_ bool operator==(const AreaCMP& p_cmp) const { return area->get_self() == p_cmp.area->get_self();}
+		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_priority() < p_cmp.area->get_priority();}
 		_FORCE_INLINE_ AreaCMP() {}
 		_FORCE_INLINE_ AreaCMP(Area2DSW *p_area) { area=p_area;}
 	};
 
 
-	VSet<AreaCMP> areas;
+	Vector<AreaCMP> areas;
 
 	struct Contact {
 
@@ -140,7 +141,7 @@ public:
 	void set_force_integration_callback(ObjectID p_id, const StringName& p_method, const Variant &p_udata=Variant());
 
 
-	_FORCE_INLINE_ void add_area(Area2DSW *p_area) { areas.insert(AreaCMP(p_area)); }
+	_FORCE_INLINE_ void add_area(Area2DSW *p_area) { areas.ordered_insert(AreaCMP(p_area)); }
 	_FORCE_INLINE_ void remove_area(Area2DSW *p_area) { areas.erase(AreaCMP(p_area)); }
 
 	_FORCE_INLINE_ void set_max_contacts_reported(int p_size) { contacts.resize(p_size); contact_count=0; if (mode==Physics2DServer::BODY_MODE_KINEMATIC && p_size) set_active(true);}
@@ -199,6 +200,15 @@ public:
 
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
+
+	_FORCE_INLINE_ void wakeup() {
+		if ((get_space() && active) || mode==Physics2DServer::BODY_MODE_STATIC || mode==Physics2DServer::BODY_MODE_KINEMATIC)
+			return;
+		set_active(true);
+	}
+
+
+
 
 	void set_param(Physics2DServer::BodyParameter p_param, float);
 	float get_param(Physics2DServer::BodyParameter p_param) const;

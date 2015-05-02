@@ -130,6 +130,7 @@ public:
 
 	Vector<Vector2> get_simple_path(const Vector2& p_start, const Vector2& p_end,bool p_optimize=true);
 	Vector2 get_closest_point(const Vector2& p_point);
+	Object* get_closest_point_owner(const Vector2& p_point);
 
 	Navigation2D();
 };

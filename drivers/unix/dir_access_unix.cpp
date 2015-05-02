@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,7 +87,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 
 
 	if (p_dir.is_rel_path())
-		p_dir=current_dir+"/"+p_dir;
+		p_dir=get_current_dir().plus_file(p_dir);
 	else
 		p_dir=fix_path(p_dir);
 
@@ -278,9 +278,16 @@ String DirAccessUnix::get_current_dir() {
 
 Error DirAccessUnix::rename(String p_path,String p_new_path) {
 
-	p_path=fix_path(p_path);
-	p_new_path=fix_path(p_new_path);
-	
+	if (p_path.is_rel_path())
+		p_path=get_current_dir().plus_file(p_path);
+	else
+		p_path=fix_path(p_path);
+
+	if (p_new_path.is_rel_path())
+		p_new_path=get_current_dir().plus_file(p_new_path);
+	else
+		p_new_path=fix_path(p_new_path);
+
 	return ::rename(p_path.utf8().get_data(),p_new_path.utf8().get_data())==0?OK:FAILED;
 }
 Error DirAccessUnix::remove(String p_path)  {

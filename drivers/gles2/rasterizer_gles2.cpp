@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1263,7 +1263,6 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 		p_flags&=VS::TEXTURE_FLAG_FILTER;//can change only filter
 	}
 
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
@@ -1613,7 +1612,8 @@ Variant RasterizerGLES2::shader_get_default_param(RID p_shader, const StringName
 
 RID RasterizerGLES2::material_create() {
 
-	return material_owner.make_rid( memnew( Material ) );
+	RID material = material_owner.make_rid( memnew( Material ) );
+	return material;
 }
 
 void RasterizerGLES2::material_set_shader(RID p_material, RID p_shader) {
@@ -4608,6 +4608,10 @@ void RasterizerGLES2::_update_shader( Shader* p_shader) const {
 		if (fragment_flags.uses_normal) {
 			enablers.push_back("#define NORMAL_USED\n");
 		}
+		if (fragment_flags.uses_normalmap) {
+			enablers.push_back("#define USE_NORMALMAP\n");
+		}
+
 		if (light_flags.uses_light) {
 			enablers.push_back("#define USE_LIGHT_SHADER_CODE\n");
 		}
@@ -9375,7 +9379,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 			_canvas_item_setup_shader_uniforms(material,shader_cache);
 		}
 
-		bool unshaded = material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED;
+		bool unshaded = (material && material->shading_mode==VS::CANVAS_ITEM_SHADING_UNSHADED) || ci->blend_mode!=VS::MATERIAL_BLEND_MODE_MIX;
 
 		if (unshaded) {
 			canvas_shader.set_uniform(CanvasShaderGLES2::MODULATE,Color(1,1,1,1));
@@ -9447,6 +9451,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 			while(light) {
 
+
 				if (ci->light_mask&light->item_mask && p_z>=light->z_min && p_z<=light->z_max && ci->global_rect_cache.intersects_transformed(light->xform_cache,light->rect_cache)) {
 
 					//intersects this light
@@ -9483,6 +9488,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 						normal_flip=Vector2(1,1);
 
 					}
+
 
 					bool has_shadow = light->shadow_buffer.is_valid() && ci->light_mask&light->item_shadow_mask;
 
@@ -10815,7 +10821,10 @@ void RasterizerGLES2::init() {
 
 void RasterizerGLES2::finish() {
 
+	free(default_material);
+	free(shadow_material);
 	free(canvas_shadow_blur);
+	free( overdraw_material );
 }
 
 int RasterizerGLES2::get_render_info(VS::RenderInfo p_info) {

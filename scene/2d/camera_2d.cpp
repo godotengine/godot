@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,8 @@ void Camera2D::_update_scroll() {
 		return;
 
 	if (get_tree()->is_editor_hint()) {
-		update(); //will just be drawn
+	//	update(); //will just be drawn
+		//??
 		return;
 	}
 
@@ -214,6 +215,7 @@ void Camera2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+
 
 			viewport = NULL;
 			Node *n=this;
@@ -525,6 +527,7 @@ Camera2D::Camera2D() {
 	drag_margin[MARGIN_RIGHT]=0.2;
 	drag_margin[MARGIN_BOTTOM]=0.2;
 	camera_pos=Vector2();
+	first=true;
 
 	smoothing=0.0;
 	zoom = Vector2(1, 1);

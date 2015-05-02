@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,16 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-/*****f********************************************/
-/*  text_edit.cpp                                */
-/*************************************************/
-/*            This file is part of:              */
-/*                GODOT ENGINE                   */
-/*************************************************/
-/*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
-/*             All Rights Reserved.              */
-/*************************************************/
 
 #include "text_edit.h"
 #include "os/keyboard.h"
@@ -1562,7 +1552,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					case KEY_HOME:
 					case KEY_END:
 						// ignore arrows if any modifiers are held (shift = selecting, others may be used for editor hotkeys)
-						if (k.mod.command || k.mod.shift || k.mod.alt || k.mod.command)
+						if (k.mod.command || k.mod.shift || k.mod.alt)
 							break;
 						unselect=true;
 						break;
@@ -2596,9 +2586,9 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
 void TextEdit::set_text(String p_text){
 	
 	setting_text=true;
-	_clear();
+	clear();
 	_insert_text_at_cursor(p_text);
-	
+	clear_undo_history();
 	cursor.column=0;
 	cursor.line=0;
 	cursor.x_ofs=0;

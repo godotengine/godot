@@ -729,7 +729,11 @@ void make_default_theme() {
 
 	t->set_stylebox("focus","RichTextLabel", focus );
 
-	t->set_font("default_font","RichTextLabel", default_font );
+	t->set_font("normal_font","RichTextLabel", default_font );
+	t->set_font("bold_font","RichTextLabel", default_font );
+	t->set_font("italics_font","RichTextLabel", default_font );
+	t->set_font("bold_italics_font","RichTextLabel", default_font );
+	t->set_font("mono_font","RichTextLabel", default_font );
 
 	t->set_color("default_color","RichTextLabel", control_font_color );
 	t->set_color("font_color_selected","RichTextLabel", font_color_selection );

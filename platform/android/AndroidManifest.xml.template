@@ -7,7 +7,7 @@
       >
 <supports-screens android:smallScreens="true"
                       android:normalScreens="true"
-                      android:largeScreens="true"
+                      android:largeScreens="false"
                       android:xlargeScreens="true"/>
 
     <application android:label="@string/godot_project_name_string" android:icon="@drawable/icon" android:allowBackup="false" $$ADD_APPATTRIBUTE_CHUNKS$$ >
@@ -15,7 +15,7 @@
                   android:label="@string/godot_project_name_string"
                   android:theme="@android:style/Theme.NoTitleBar.Fullscreen"
                   android:launchMode="singleTask"
-                  android:screenOrientation="portrait"
+                  android:screenOrientation="landscape"
                   android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize">
                                                                                                   
             <intent-filter>

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,14 +42,14 @@ class MultiMeshEditor : public Control {
 
 	OBJ_TYPE(MultiMeshEditor, Control );
 
+        friend class MultiMeshEditorPlugin;
 
 	AcceptDialog *err_dialog;
-
+        MenuButton * options;
 	MultiMeshInstance *_last_pp_node;
 	bool browsing_source;
 
 	Panel *panel;
-	MenuButton * options;
 	MultiMeshInstance *node;
 
 	LineEdit *surface_source;

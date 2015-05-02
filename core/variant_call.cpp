@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1032,7 +1032,7 @@ Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int
 			case STRING_ARRAY: return (StringArray(*p_args[0]));
 			case VECTOR2_ARRAY: return (Vector2Array(*p_args[0])); 	// 25
 			case VECTOR3_ARRAY: return (Vector3Array(*p_args[0])); 	// 25
-			case COLOR_ARRAY: return (Color(*p_args[0]));
+			case COLOR_ARRAY: return (ColorArray(*p_args[0]));
 			default: return Variant();
 		}
 	}
@@ -1112,6 +1112,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		const _VariantCall::ConstructData &cd = E->get();
 		MethodInfo mi;
 		mi.name=Variant::get_type_name(p_type);
+		mi.return_val.type=p_type;
 		for(int i=0;i<cd.arg_count;i++) {
 
 			PropertyInfo pi;
@@ -1134,6 +1135,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		pi.name="from";
 		pi.type=Variant::Type(i);
 		mi.arguments.push_back(pi);
+		mi.return_val.type=p_type;
 		p_list->push_back(mi);
 	}
 }

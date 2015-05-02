@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -261,6 +261,7 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 				_set_inv_transform(get_transform().inverse());
 
 			}
+			wakeup();
 
 		} break;
 		case PhysicsServer::BODY_STATE_LINEAR_VELOCITY: {
@@ -268,11 +269,13 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 			//if (mode==PhysicsServer::BODY_MODE_STATIC)
 			//	break;
 			linear_velocity=p_variant;
+			wakeup();
 		} break;
 		case PhysicsServer::BODY_STATE_ANGULAR_VELOCITY: {
 			//if (mode!=PhysicsServer::BODY_MODE_RIGID)
 			//	break;
 			angular_velocity=p_variant;
+			wakeup();
 
 		} break;
 		case PhysicsServer::BODY_STATE_SLEEPING: {

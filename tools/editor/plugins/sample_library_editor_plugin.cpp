@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -332,7 +332,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	play->set_pos(Point2( 5, 5 ));
 	play->set_size( Size2(1,1 ) );
 	play->set_toggle_mode(true);
-	//add_child(play);
+	add_child(play);
+	play->hide();
 
 	stop = memnew( Button );
 

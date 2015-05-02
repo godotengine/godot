@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -269,7 +269,7 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 	{
 
 	case Variant::BOOL:
-		result = ((int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec)) >= 0.5;
+		result = ( _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay,  initial_val,  delta_val, p_data.times_in_sec)) >= 0.5;
 		break;
 
 	case Variant::INT:

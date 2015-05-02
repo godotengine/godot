@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -783,6 +783,8 @@ void Physics2DServerSW::body_set_applied_force(RID p_body, const Vector2& p_forc
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_force(p_force);
+	body->wakeup();
+
 };
 
 Vector2 Physics2DServerSW::body_get_applied_force(RID p_body) const {
@@ -798,6 +800,7 @@ void Physics2DServerSW::body_set_applied_torque(RID p_body, float p_torque) {
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_torque(p_torque);
+	body->wakeup();
 };
 
 float Physics2DServerSW::body_get_applied_torque(RID p_body) const {
@@ -814,6 +817,7 @@ void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2& p_pos, con
 	ERR_FAIL_COND(!body);
 
 	body->apply_impulse(p_pos,p_impulse);
+	body->wakeup();
 };
 
 void Physics2DServerSW::body_set_axis_velocity(RID p_body, const Vector2& p_axis_velocity) {
@@ -826,7 +830,7 @@ void Physics2DServerSW::body_set_axis_velocity(RID p_body, const Vector2& p_axis
 	v-=axis*axis.dot(v);
 	v+=p_axis_velocity;
 	body->set_linear_velocity(v);
-
+	body->wakeup();
 };
 
 void Physics2DServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
@@ -835,7 +839,7 @@ void Physics2DServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
 	ERR_FAIL_COND(!body);
 
 	body->add_exception(p_body_b);
-
+	body->wakeup();
 };
 
 void Physics2DServerSW::body_remove_collision_exception(RID p_body, RID p_body_b) {
@@ -844,6 +848,7 @@ void Physics2DServerSW::body_remove_collision_exception(RID p_body, RID p_body_b
 	ERR_FAIL_COND(!body);
 
 	body->remove_exception(p_body_b);
+	body->wakeup();
 
 };
 
@@ -958,6 +963,18 @@ void Physics2DServerSW::body_set_pickable(RID p_body,bool p_pickable) {
 	body->set_pickable(p_pickable);
 
 }
+
+bool Physics2DServerSW::body_test_motion(RID p_body,const Vector2& p_motion,float p_margin,MotionResult *r_result) {
+
+	Body2DSW *body = body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body,false);
+	ERR_FAIL_COND_V(!body->get_space(),false);
+	ERR_FAIL_COND_V(body->get_space()->is_locked(),false);
+
+	return body->get_space()->test_body_motion(body,p_motion,p_margin,r_result);
+
+}
+
 
 /* JOINT API */
 

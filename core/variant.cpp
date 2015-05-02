@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "scene/main/node.h"
 #include "scene/gui/control.h"
 #include "io/marshalls.h"
-
+#include "core_string_names.h"
 
 
 
@@ -454,6 +454,15 @@ bool Variant::operator==(const Variant& p_variant) const {
 	evaluate(OP_EQUAL,*this,p_variant,r,v);
 	return r;
 
+}
+
+bool Variant::operator<(const Variant& p_variant) const {
+	if (type!=p_variant.type) //if types differ, then order by type first
+		return type<p_variant.type;
+	bool v;
+	Variant r;
+	evaluate(OP_LESS,*this,p_variant,r,v);
+	return r;
 }
 
 bool Variant::is_zero() const {
@@ -1430,8 +1439,16 @@ Variant::operator RID() const {
 		return *reinterpret_cast<const RID*>(_data._mem);
 	else if (type==OBJECT && !_get_obj().ref.is_null()) {
 		return _get_obj().ref.get_rid();
-	} else
+	} else if (type==OBJECT && _get_obj().obj) {
+		Variant::CallError ce;
+		Variant ret = _get_obj().obj->call(CoreStringNames::get_singleton()->get_rid,NULL,0,ce);
+		if (ce.error==Variant::CallError::CALL_OK && ret.get_type()==Variant::_RID) {
+			return ret;
+		}
 		return RID();
+	} else {
+		return RID();
+	}
 }
 
 Variant::operator Object*() const {

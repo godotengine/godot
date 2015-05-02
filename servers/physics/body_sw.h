@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ class BodySW : public CollisionObjectSW {
 
 		AreaSW *area;
 		_FORCE_INLINE_ bool operator==(const AreaCMP& p_cmp) const { return area->get_self() == p_cmp.area->get_self();}
-		_FORCE_INLINE_ bool operator<(const AreaCMP a) const { return area->get_priority() < a.area->get_priority();}
+		_FORCE_INLINE_ bool operator<(const AreaCMP& p_cmp) const { return area->get_priority() < p_cmp.area->get_priority();}
 		_FORCE_INLINE_ AreaCMP() {}
 		_FORCE_INLINE_ AreaCMP(AreaSW *p_area) { area=p_area;}
 	};
@@ -199,6 +199,12 @@ public:
 
 	void set_active(bool p_active);
 	_FORCE_INLINE_ bool is_active() const { return active; }
+
+	_FORCE_INLINE_ void wakeup() {
+		if ((get_space() && active) || mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
+			return;
+		set_active(true);
+	}
 
 	void set_param(PhysicsServer::BodyParameter p_param, float);
 	float get_param(PhysicsServer::BodyParameter p_param) const;

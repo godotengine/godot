@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,6 +87,9 @@ static MessageQueue *message_queue=NULL;
 static Performance *performance = NULL;
 static PathRemap *path_remap;
 static PackedData *packed_data=NULL;
+#ifdef MINIZIP_ENABLED
+static ZipArchive *zip_packed_data=NULL;
+#endif
 static FileAccessNetworkClient *file_access_network_client=NULL;
 static TranslationServer *translation_server = NULL;
 
@@ -248,7 +251,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		packed_data = memnew(PackedData);
 
 #ifdef MINIZIP_ENABLED
-	packed_data->add_pack_source(ZipArchive::get_singleton());
+	zip_packed_data = ZipArchive::get_singleton();
+	packed_data->add_pack_source(zip_packed_data);
 #endif
 
 	bool editor=false;
@@ -636,6 +640,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/test_height",0);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
+		if (rtm>=1) //hack for now
+			rtm=1;
+
 	}
 
 	if (rtm>=0 && rtm<3)
@@ -740,6 +747,15 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
+
+	if (packed_data)
+		memdelete( packed_data );
+#ifdef MINIZIP_ENABLED
+	if (zip_packed_data)
+		memdelete( zip_packed_data );
+#endif
+
+
 	unregister_core_types();
 	
 	OS::get_singleton()->_cmdline.clear();
