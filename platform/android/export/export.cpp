@@ -187,6 +187,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	bool remove_prev;
 	bool use_32_fb;
 	bool immersive;
+	bool export_arm;
+	bool export_x86;
 	String apk_expansion_salt;
 	String apk_expansion_pkey;
 	int orientation;
@@ -281,6 +283,10 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		icon=p_value;
 	else if (n=="package/signed")
 		_signed=p_value;
+	else if (n=="architecture/arm")
+		export_arm=p_value;
+	else if (n=="architecture/x86")
+		export_x86=p_value;
 	else if (n=="screen/use_32_bits_view")
 		use_32_fb=p_value;
 	else if (n=="screen/immersive_mode")
@@ -350,6 +356,10 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=icon;
 	else if (n=="package/signed")
 		r_ret=_signed;
+	else if (n=="architecture/arm")
+		r_ret=export_arm;
+	else if (n=="architecture/x86")
+		r_ret=export_x86;
 	else if (n=="screen/use_32_bits_view")
 		r_ret=use_32_fb;
 	else if (n=="screen/immersive_mode")
@@ -403,6 +413,8 @@ void EditorExportPlatformAndroid::_get_property_list( List<PropertyInfo> *p_list
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/name") );
 	p_list->push_back( PropertyInfo( Variant::STRING, "package/icon",PROPERTY_HINT_FILE,"png") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "package/signed") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "architecture/arm") );
+	p_list->push_back( PropertyInfo( Variant::BOOL, "architecture/x86") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/use_32_bits_view") );
 	p_list->push_back( PropertyInfo( Variant::BOOL, "screen/immersive_mode") );
 	p_list->push_back( PropertyInfo( Variant::INT, "screen/orientation",PROPERTY_HINT_ENUM,"Landscape,Portrait") );
@@ -1045,6 +1057,8 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 		char fname[16384];
 		ret = unzGetCurrentFileInfo(pkg,&info,fname,16384,NULL,0,NULL,0);
 
+		bool skip=false;
+
 		String file=fname;
 
 		Vector<uint8_t> data;
@@ -1097,20 +1111,31 @@ Error EditorExportPlatformAndroid::export_project(const String& p_path, bool p_d
 			}
 		}
 
-		print_line("ADDING: "+file);
-		zipOpenNewFileInZip(apk,
-			file.utf8().get_data(),
-			NULL,
-			NULL,
-			0,
-			NULL,
-			0,
-			NULL,
-			Z_DEFLATED,
-			Z_DEFAULT_COMPRESSION);
+		if (file=="lib/x86/libgodot_android.so" && !export_x86) {
+			skip=true;
+		}
 
-		zipWriteInFileInZip(apk,data.ptr(),data.size());
-		zipCloseFileInZip(apk);
+		if (file=="lib/armeabi/libgodot_android.so" && !export_arm) {
+			skip=true;
+		}
+
+		print_line("ADDING: "+file);
+
+		if (!skip) {
+			zipOpenNewFileInZip(apk,
+				file.utf8().get_data(),
+				NULL,
+				NULL,
+				0,
+				NULL,
+				0,
+				NULL,
+				Z_DEFLATED,
+				Z_DEFAULT_COMPRESSION);
+
+			zipWriteInFileInZip(apk,data.ptr(),data.size());
+			zipCloseFileInZip(apk);
+		}
 
 		ret = unzGoToNextFile(pkg);
 	}
@@ -1554,6 +1579,10 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	remove_prev=true;
 	use_32_fb=true;
 	immersive=true;
+
+	export_arm=true;
+	export_x86=false;
+
 
 	device_thread=Thread::create(_device_poll_thread,this);
 	devices_changed=true;
