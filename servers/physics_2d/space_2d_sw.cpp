@@ -596,7 +596,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 			keep=false;
 		else if (intersection_query_results[i]->get_type()==CollisionObject2DSW::TYPE_AREA)
 			keep=false;
-		else if ((static_cast<Body2DSW*>(intersection_query_results[i])->get_layer_mask()&p_body->get_layer_mask())==0)
+		else if ((static_cast<Body2DSW*>(intersection_query_results[i])->test_collision_mask(p_body))==0)
 			keep=false;
 		else if (static_cast<Body2DSW*>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self()))
 			keep=false;

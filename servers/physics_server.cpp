@@ -221,7 +221,7 @@ PhysicsShapeQueryParameters::PhysicsShapeQueryParameters() {
 /////////////////////////////////////
 
 /*
-Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
+Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max,const Vector<RID>& p_exclude,uint32_t p_collision_mask) {
 
 
 

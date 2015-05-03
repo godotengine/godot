@@ -39,6 +39,7 @@ class PhysicsBody2D : public CollisionObject2D {
 	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
 
 	uint32_t mask;
+	uint32_t collision_mask;
 	Vector2 one_way_collision_direction;
 	float one_way_collision_max_depth;
 protected:
@@ -51,6 +52,9 @@ public:
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
 
 	void add_collision_exception_with(Node* p_node); //must be physicsbody
 	void remove_collision_exception_with(Node* p_node);

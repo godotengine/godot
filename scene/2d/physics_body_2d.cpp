@@ -72,13 +72,16 @@ void PhysicsBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody2D::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody2D::get_collision_mask);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_direction","dir"),&PhysicsBody2D::set_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_direction"),&PhysicsBody2D::get_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_max_depth","depth"),&PhysicsBody2D::set_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_max_depth"),&PhysicsBody2D::get_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),_SCS("set_one_way_collision_max_depth"),_SCS("get_one_way_collision_max_depth"));
 }
@@ -94,9 +97,22 @@ uint32_t PhysicsBody2D::get_layer_mask() const {
 	return mask;
 }
 
+void PhysicsBody2D::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	Physics2DServer::get_singleton()->body_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t PhysicsBody2D::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
 	mask=1;
+	collision_mask=1;
 	set_one_way_collision_max_depth(0);
 	set_pickable(false);
 

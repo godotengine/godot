@@ -512,6 +512,29 @@ bool Area2D::overlaps_body(Node* p_body) const{
 
 }
 
+void Area2D::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	Physics2DServer::get_singleton()->area_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t Area2D::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+
+void Area2D::set_layer_mask(uint32_t p_mask) {
+
+	layer_mask=p_mask;
+	Physics2DServer::get_singleton()->area_set_layer_mask(get_rid(),p_mask);
+}
+
+uint32_t Area2D::get_layer_mask() const {
+
+	return layer_mask;
+}
+
 
 void Area2D::_bind_methods() {
 
@@ -541,6 +564,12 @@ void Area2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area2D::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area2D::get_priority);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","collision_mask"),&Area2D::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&Area2D::get_collision_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask","layer_mask"),&Area2D::set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&Area2D::get_layer_mask);
 
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area2D::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area2D::is_monitoring_enabled);
@@ -578,6 +607,8 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 
 }
 
@@ -593,9 +624,10 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	priority=0;
 	monitoring=false;
 	monitorable=false;
+	collision_mask=1;
+	layer_mask=1;
 	set_enable_monitoring(true);
 	set_monitorable(true);
-
 }
 
 Area2D::~Area2D() {
