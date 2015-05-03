@@ -265,6 +265,8 @@ bool BodyPair2DSW::setup(float p_step) {
 	} 
 	//faster to set than to check..
 
+	bool prev_collided=collided;
+
 	collided = CollisionSolver2DSW::solve(shape_A_ptr,xform_A,motion_A,shape_B_ptr,xform_B,motion_B,_add_contact,this,&sep_axis);
 	if (!collided) {
 
@@ -283,6 +285,57 @@ bool BodyPair2DSW::setup(float p_step) {
 		if (!collided)
 			return false;
 
+	}
+
+	if (!prev_collided) {
+
+		if (A->is_using_one_way_collision()) {
+			Vector2 direction = A->get_one_way_collision_direction();
+			bool valid=false;
+			for(int i=0;i<contact_count;i++) {
+				Contact& c = contacts[i];
+
+				if (c.normal.dot(direction)<0)
+					continue;
+				if (B->get_linear_velocity().dot(direction)<0)
+					continue;
+
+				if (!c.reused) {
+					continue;
+				}
+
+				valid=true;
+			}
+
+			if (!valid) {
+				collided=false;
+				return false;
+			}
+		}
+
+		if (B->is_using_one_way_collision()) {
+			Vector2 direction = B->get_one_way_collision_direction();
+			bool valid=false;
+			for(int i=0;i<contact_count;i++) {
+
+				Contact& c = contacts[i];
+
+				if (c.normal.dot(direction)<0)
+					continue;
+				if (A->get_linear_velocity().dot(direction)<0)
+					continue;
+
+				if (!c.reused) {
+					continue;
+				}
+
+				valid=true;
+			}
+			if (!valid) {
+				collided=false;
+				return false;
+			}
+		}
 	}
 
 	real_t max_penetration = space->get_contact_max_allowed_penetration();
