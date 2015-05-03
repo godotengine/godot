@@ -123,6 +123,7 @@ opts.Add('disable_3d', 'Disable 3D nodes for smaller executable (yes/no)', "no")
 opts.Add('disable_advanced_gui', 'Disable advance 3D gui nodes and behaviors (yes/no)', "no")
 opts.Add('colored', 'Enable colored output for the compilation (yes/no)', 'no')
 opts.Add('extra_suffix', 'Custom extra suffix added to the base filename of all generated binary files.', '')
+opts.Add('vsproj', 'Generate Visual Studio Project. (yes/no)', 'no')
 
 # add platform specific options
 
@@ -177,6 +178,25 @@ if selected_platform in platform_list:
 	else:
 		env = env_base.Clone()
 
+	if env['vsproj']=="yes":
+		env.vs_incs = []
+		env.vs_srcs = []
+		
+		def AddToVSProject( sources ):
+			for x in sources:
+				if type(x) == type(""):
+					fname = env.File(x).path
+				else:
+					fname = env.File(x)[0].path
+				pieces =  fname.split(".")
+				if len(pieces)>0:
+					basename = pieces[0]
+					basename = basename.replace('\\\\','/')
+					env.vs_srcs = env.vs_srcs + [basename + ".cpp"]
+					env.vs_incs = env.vs_incs + [basename + ".h"]					
+					#print basename	
+		env.AddToVSProject = AddToVSProject				
+		
 	env.extra_suffix=""
 	
 	if env["extra_suffix"] != '' :
@@ -330,6 +350,32 @@ if selected_platform in platform_list:
 	SConscript("main/SCsub")
 
 	SConscript("platform/"+selected_platform+"/SCsub"); # build selected platform
+	
+	# Microsoft Visual Studio Project Generation			
+	if (env['vsproj'])=="yes":		
+	
+		AddToVSProject(env.core_sources)
+		AddToVSProject(env.main_sources)
+		AddToVSProject(env.modules_sources)	
+		AddToVSProject(env.scene_sources)
+		AddToVSProject(env.servers_sources)
+		AddToVSProject(env.tool_sources)
+			
+		debug_variants = ['Debug|Win32']+['Debug|x64']
+		release_variants = ['Release|Win32']+['Release|x64']
+		release_debug_variants = ['Release_Debug|Win32']+['Release_Debug|x64']
+		variants = debug_variants + release_variants + release_debug_variants
+		debug_targets = ['Debug']+['Debug']
+		release_targets = ['Release']+['Release']
+		release_debug_targets = ['ReleaseDebug']+['ReleaseDebug']
+		targets = debug_targets + release_targets + release_debug_targets
+		msvproj = env.MSVSProject(target = ['#godot' + env['MSVSPROJECTSUFFIX'] ],
+								incs = env.vs_incs,
+								srcs = env.vs_srcs, 
+								runfile = targets, 
+								buildtarget = targets, 
+								auto_build_solution=1, 
+								variant = variants) 		
 
 else:
 
