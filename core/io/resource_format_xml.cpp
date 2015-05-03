@@ -2563,7 +2563,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
-		property_list.sort();
+//		property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 
