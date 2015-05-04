@@ -31,6 +31,7 @@
 #include "message_queue.h"
 #include "scene/scene_string_names.h"
 #include "scene/resources/packed_scene.h"
+#include "modules/gdscript/gd_script.h"
 #include "io/resource_loader.h"
 #include "viewport.h"
 
@@ -1235,14 +1236,9 @@ String Node::get_filename() const {
 }
 
 String Node::get_default_gdscript_code() const {
-	String code;
+	String code = String() + "\n\n";
 
-	code += "\n\n# Initialization code here...";
-	code += "\nfunc _ready():";
-	code += "\n\tset_process(true)";
-	code += "\n\n# _process() executes each frame";
-	code += "\nfunc _process(delta):";
-	code += "\n\t# Code here...";
+	code += GDScriptLanguage::get_singleton()->get_template_body();
 
 	return code;
 }
