@@ -2378,7 +2378,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 			String name = p_node->param1;
 			Vector3 dv=p_node->param2;
-			code +="uniform float "+name+"=vec3("+rtos(dv.x)+","+rtos(dv.y)+","+rtos(dv.z)+");\n";
+			code +="uniform vec3 "+name+"=vec3("+rtos(dv.x)+","+rtos(dv.y)+","+rtos(dv.z)+");\n";
 			code += OUTNAME(p_node->id,0)+"="+name+";\n";
 		}break;
 		case NODE_RGB_INPUT: {

@@ -23,6 +23,7 @@ const JUMP_MAX_AIRBORNE_TIME=0.2
 
 const SLIDE_STOP_VELOCITY=1.0 #one pixel per second
 const SLIDE_STOP_MIN_TRAVEL=1.0 #one pixel
+
 var velocity = Vector2()
 var on_air_time=100
 var jumping=false
@@ -94,7 +95,7 @@ func _fixed_process(delta):
 			#Since this formula will always slide the character around, 
 			#a special case must be considered to to stop it from moving 
 			#if standing on an inclined floor. Conditions are:
-			# 1) Standin on floor (on_air_time==0)
+			# 1) Standing on floor (on_air_time==0)
 			# 2) Did not move more than one pixel (get_travel().length() < SLIDE_STOP_MIN_TRAVEL)
 			# 3) Not moving horizontally (abs(velocity.x) < SLIDE_STOP_VELOCITY)
 			# 4) Collider is not moving
@@ -117,9 +118,13 @@ func _fixed_process(delta):
 		move(floor_velocity*delta)
 
 	if (jumping and velocity.y>0):
+		#if falling, no longer jumping
 		jumping=false
 		
 	if (on_air_time<JUMP_MAX_AIRBORNE_TIME and jump and not prev_jump_pressed and not jumping):	
+		# Jump must also be allowed to happen if the
+		# character left the floor a little bit ago.
+		# Makes controls more snappy.
 		velocity.y=-JUMP_SPEED	
 		jumping=true
 		
