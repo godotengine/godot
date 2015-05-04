@@ -1249,7 +1249,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 					
 					
-					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {
+					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600 && cursor.line==prev_line) {
 						//tripleclick select line
 						select(cursor.line,0,cursor.line,text[cursor.line].length());
 						last_dblclk=0;
