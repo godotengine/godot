@@ -214,7 +214,7 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 			static const Type valid[]={
 				INT,
 				REAL,
-				STRING,
+				//STRING,
 				NIL,
 			};
 
@@ -225,7 +225,7 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 			static const Type valid[]={
 				BOOL,
 				REAL,
-				STRING,
+				//STRING,
 				NIL,
 			};
 
@@ -237,7 +237,7 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 			static const Type valid[]={
 				BOOL,
 				INT,
-				STRING,
+				//STRING,
 				NIL,
 			};
 
