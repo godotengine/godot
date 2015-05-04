@@ -406,7 +406,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			imd->set_option(opt,v);
 		}
 
-		imd->add_source(EditorImportPlugin::validate_source_path(source->get_line_edit()->get_text()));
+		String src_path = EditorImportPlugin::validate_source_path(source->get_line_edit()->get_text());
+		//print_line("pre src path "+source->get_line_edit()->get_text());
+		//print_line("src path "+src_path);
+		imd->add_source(src_path);
 		imd->set_option("font/size",font_size->get_val());
 
 		return imd;
@@ -1018,7 +1021,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		int h = slot->bitmap.rows;
 		int p = slot->bitmap.pitch;
 
-		print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
+		//print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
 
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 

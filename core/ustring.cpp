@@ -3297,8 +3297,11 @@ String String::path_to_file(const String& p_path) const {
 
 	String src=this->replace("\\","/").get_base_dir();
 	String dst=p_path.replace("\\","/").get_base_dir();
-
-	return src.path_to(dst)+p_path.get_file();
+	String rel = src.path_to(dst);
+	if (rel==dst) // failed
+		return p_path;
+	else
+		return rel+p_path.get_file();
 }
 
 String String::path_to(const String& p_path) const {
@@ -3333,7 +3336,9 @@ String String::path_to(const String& p_path) const {
 		String src_begin=src.get_slice("/",0);
 		String dst_begin=dst.get_slice("/",0);
 
-		ERR_FAIL_COND_V(src_begin!=dst_begin,p_path); //return dst absolute path
+		if (src_begin!=dst_begin)
+			return p_path; //impossible to do this
+
 		base=src_begin;
 		src=src.substr(src_begin.length(),src.length());
 		dst=dst.substr(dst_begin.length(),dst.length());

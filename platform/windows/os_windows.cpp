@@ -2117,12 +2117,13 @@ bool OS_Windows::has_environment(const String& p_var) const {
 
 String OS_Windows::get_environment(const String& p_var) const {
 
-	char* val = getenv(p_var.utf8().get_data());
-	if (val)
-		return val;
-
+	wchar_t wval[0x7Fff]; // MSDN says 32767 char is the maximum
+	int wlen = GetEnvironmentVariableW(p_var.c_str(),wval,0x7Fff);
+	if ( wlen > 0 ) {
+		return wval;
+	}
 	return "";
-};
+}
 
 String OS_Windows::get_stdin_string(bool p_block) {
 
