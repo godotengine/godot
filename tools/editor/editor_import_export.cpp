@@ -47,6 +47,7 @@ String EditorImportPlugin::validate_source_path(const String& p_path) {
 	String rp = Globals::get_singleton()->get_resource_path();
 	if (!rp.ends_with("/"))
 		rp+="/";
+
 	return rp.path_to_file(gp);
 }
 

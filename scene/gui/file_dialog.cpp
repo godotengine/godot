@@ -92,7 +92,6 @@ void FileDialog::_file_entered(const String& p_file) {
 }
 
 void FileDialog::_save_confirm_pressed() {
-	
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 	emit_signal("file_selected",f);
 	hide();		
