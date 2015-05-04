@@ -489,7 +489,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j++;
@@ -560,7 +560,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j--;
