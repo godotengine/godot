@@ -431,6 +431,42 @@ String ShaderCompilerGLES2::dump_node_code(SL::Node *p_node,int p_level,bool p_a
 //						code="get_texpos(gl_ProjectionMatrixInverse * texture2D( depth_texture, clamp(("+dump_node_code(onode->arguments[1],p_level)+").xy,vec2(0.0),vec2(1.0))*gl_LightSource[5].specular.zw+gl_LightSource[5].specular.xy)";
 						//code="(texture2D( screen_texture, ("+dump_node_code(onode->arguments[1],p_level)+").xy).rgb";
 						break;
+					} else if (custom_h && callfunc=="cosh_custom") {
+
+						if (!cosh_used) {
+							global_code=	"float cosh_custom(float val)\n"\
+									"{\n"\
+									"    float tmp = exp(val);\n"\
+									"    float cosH = (tmp + 1.0 / tmp) / 2.0;\n"\
+									"    return cosH;\n"\
+									"}\n"+global_code;
+							cosh_used=true;
+						}
+						code="cosh_custom("+dump_node_code(onode->arguments[1],p_level)+"";
+					} else if (custom_h && callfunc=="sinh_custom") {
+
+						if (!sinh_used) {
+							global_code=	"float sinh_custom(float val)\n"\
+									"{\n"\
+									"    float tmp = exp(val);\n"\
+									"    float sinH = (tmp - 1.0 / tmp) / 2.0;\n"\
+									"    return sinH;\n"\
+									"}\n"+global_code;
+							sinh_used=true;
+						}
+						code="sinh_custom("+dump_node_code(onode->arguments[1],p_level)+"";
+					} else if (custom_h && callfunc=="tanh_custom") {
+
+						if (!tanh_used) {
+							global_code=	"float tanh_custom(float val)\n"\
+									"{\n"\
+									"    float tmp = exp(val);\n"\
+									"    float tanH = (tmp - 1.0 / tmp) / (tmp + 1.0 / tmp);\n"\
+									"    return tanH;\n"\
+									"}\n"+global_code;
+							tanh_used=true;
+						}
+						code="tanh_custom("+dump_node_code(onode->arguments[1],p_level)+"";
 
 					} else {
 
@@ -634,6 +670,9 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.use_var2_interp=false;
 	r_flags.uses_normalmap=false;
 	r_flags.uses_normal=false;
+	sinh_used=false;
+	tanh_used=false;
+	cosh_used=false;
 
 	String error;
 	int errline,errcol;
@@ -662,11 +701,17 @@ Error ShaderCompilerGLES2::compile(const String& p_code, ShaderLanguage::ShaderT
 	r_flags.uses_shadow_color=uses_shadow_color;
 	r_code_line=code;
 	r_globals_line=global_code;
-
 	return OK;
 }
 
 ShaderCompilerGLES2::ShaderCompilerGLES2() {
+
+#ifdef GLEW_ENABLED
+	//use custom functions because they are not supported in GLSL120
+	custom_h=true;
+#else
+	custom_h=false;
+#endif
 
 	replace_table["bool"]= "bool";
 	replace_table["float" ]=  "float";
@@ -686,9 +731,17 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	replace_table["acos" ]= "acos";
 	replace_table["atan" ]= "atan";
 	replace_table["atan2"]= "atan";
-	replace_table["sinh" ]= "sinh";
-	replace_table["cosh" ]= "cosh";
-	replace_table["tanh" ]= "tanh";
+
+	if (custom_h) {
+		replace_table["sinh" ]= "sinh_custom";
+		replace_table["cosh" ]= "cosh_custom";
+		replace_table["tanh" ]= "tanh_custom";
+	} else {
+		replace_table["sinh" ]= "sinh";
+		replace_table["cosh" ]= "cosh";
+		replace_table["tanh" ]= "tanh";
+	}
+
 	replace_table["pow"  ]= "pow";
 	replace_table["exp" ]=  "exp";
 	replace_table["log" ]=  "log";

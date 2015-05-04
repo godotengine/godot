@@ -2160,7 +2160,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				"floor($)",
 				"round($)",
 				"ceil($)",
-				"frac($)",
+				"fract($)",
 				"min(max($,0),1)",
 				"-($)",
 			};
