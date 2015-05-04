@@ -532,7 +532,7 @@ bool Variant::is_zero() const {
 		} break;
 		case QUAT: {
 
-			*reinterpret_cast<const Quat*>(_data._mem)==Quat();
+			return *reinterpret_cast<const Quat*>(_data._mem)==Quat();
 
 		} break;
 		case MATRIX3: {
