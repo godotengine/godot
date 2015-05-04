@@ -58,6 +58,9 @@ lib_list = []
 
 import string
 
+if env['vsproj']=="yes":
+	env.AddToVSProject(env.drivers_sources)
+
 for f in env.drivers_sources:
 	fname = ""
 	if type(f) == type(""):
