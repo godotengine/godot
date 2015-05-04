@@ -197,7 +197,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 		if (worked) {
 
 			GetCurrentDirectoryW(2048,real_current_dir_name);
-			current_dir=real_current_dir_name; // TODO, utf8 parser
+			current_dir=real_current_dir_name;
 			current_dir=current_dir.replace("\\","/");
 
 		} //else {
@@ -218,7 +218,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 		if (worked) {
 
 			GetCurrentDirectoryA(2048,real_current_dir_name);
-			current_dir=real_current_dir_name; // TODO, utf8 parser
+			current_dir=real_current_dir_name;
 			current_dir=current_dir.replace("\\","/");
 
 		}// else {
