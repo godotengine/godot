@@ -309,6 +309,7 @@ Error ResourceInteractiveLoaderXML::_parse_array_element(Vector<char> &buff,bool
 
 				buff_max++;
 				buff.resize(buff_max);
+				buffptr=buff.ptr();
 
 			}
 
