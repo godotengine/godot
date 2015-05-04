@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1041,7 +1041,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		case WINDOW_CLOSE: {
 			if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
 				erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
-				erase_tab_confirm->popup_centered(Point2(250,80));
+				erase_tab_confirm->popup_centered_minsize();
 			} else {
 				_close_current_tab();
 			}
@@ -1508,8 +1508,8 @@ void ScriptEditor::_update_window_menu() {
 	window_menu->get_popup()->clear();
 	window_menu->get_popup()->add_item("Close",WINDOW_CLOSE,KEY_MASK_CMD|KEY_W);
 	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
-	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
+	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_MASK_ALT|KEY_LEFT);
+	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_MASK_ALT|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
 
 	idx=0;
@@ -1521,7 +1521,7 @@ void ScriptEditor::_update_window_menu() {
 		String n = ste->get_name();
 		uint32_t accel=0;
 		if (idx<9) {
-			accel=KEY_MASK_ALT|(KEY_1+idx);
+			accel=KEY_MASK_ALT|KEY_MASK_CMD|(KEY_1+idx);
 		}
 		window_menu->get_popup()->add_item(n,WINDOW_SELECT_BASE+idx,accel);
 		idx++;

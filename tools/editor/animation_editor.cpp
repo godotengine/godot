@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1375,7 +1375,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					if (p_input.is_action("ui_up"))
 						selected_track--;
 					if (v_scroll->is_visible() && p_input.is_action("ui_page_up"))
-						selected_track=selected_track--;;
+						selected_track--;;
 
 					if (selected_track<0)
 						selected_track=0;
@@ -2538,7 +2538,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 				insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
 
 			insert_confirm->get_ok()->set_text("Create");
-			insert_confirm->popup_centered(Size2(300,100));
+			insert_confirm->popup_centered_minsize();
 			insert_query=true;
 		} else {
 			call_deferred("_insert_delay");
@@ -3289,10 +3289,10 @@ AnimationKeyEditor::AnimationKeyEditor(UndoRedo *p_undo_redo, EditorHistory *p_h
 	keying->connect("pressed",this,"_keying_toggled");
 	*/
 
-	l = memnew( Label );
+/*	l = memnew( Label );
 	l->set_text("Base: ");
 	l->set_pos(Point2(0,3));
-//	dr_panel->add_child(l);
+//	dr_panel->add_child(l);*/
 
 //	menu->get_popup()->connect("item_pressed",this,"_menu_callback");
 

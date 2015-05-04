@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1689,7 +1689,7 @@ bool GDScript::_update_exports() {
 			}
 
 
-			if (c->extends_used && String(c->extends_file)!="") {
+			if (c->extends_used && String(c->extends_file)!="" && String(c->extends_file) != get_path()) {
 
 				String path = c->extends_file;
 				if (path.is_rel_path()) {

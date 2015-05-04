@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,6 +109,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
     private Button mPauseButton;
     private Button mWiFiSettingsButton;
 
+    private boolean use_32_bits=false;
+    private boolean use_immersive=false;
     private boolean mStatePaused;
     private int mState;
 
@@ -255,7 +257,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
         // ...add to FrameLayout
 		   layout.addView(edittext);
 		
-		mView = new GodotView(getApplication(),io,use_gl2, this);
+		mView = new GodotView(getApplication(),io,use_gl2,use_32_bits, this);
 		layout.addView(mView,new LayoutParams(LayoutParams.FILL_PARENT,LayoutParams.FILL_PARENT));
 		mView.setKeepScreenOn(true);
 		
@@ -373,6 +375,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	    mRemoteService.onClientUpdated(mDownloaderClientStub.getMessenger());
 	}
 
+
+
 	@Override 
 	protected void onCreate(Bundle icicle) {
 
@@ -399,7 +403,22 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			for(int i=0;i<command_line.length;i++) {
 
 				boolean has_extra = i< command_line.length -1;
-				if (command_line[i].equals("-use_apk_expansion")) {
+				if (command_line[i].equals("-use_depth_32")) {
+					use_32_bits=true;
+				} else if (command_line[i].equals("-use_immersive")) {
+					use_immersive=true;
+					if(Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
+						window.getDecorView().setSystemUiVisibility(
+								    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+									    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+									    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+									    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+									    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+									    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+						UiChangeListener();
+					}
+				} else if (command_line[i].equals("-use_apk_expansion")) {
 					use_apk_expansion=true;
 				} else if (has_extra && command_line[i].equals("-apk_expansion_md5")) {
 					main_pack_md5=command_line[i+1];
@@ -557,6 +576,16 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		GodotLib.focusin();
+		if(use_immersive && Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
+			Window window = getWindow();
+			window.getDecorView().setSystemUiVisibility(
+					    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+						    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+						    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+						    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+						    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+						    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+		}
 
 		for(int i=0;i<singleton_count;i++) {
 
@@ -567,10 +596,43 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	}
 
+	public void UiChangeListener() {
+		final View decorView = getWindow().getDecorView();
+		decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+			@Override
+			public void onSystemUiVisibilityChange(int visibility) {
+				if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+					decorView.setSystemUiVisibility(
+					View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+				}
+			}
+		});
+	}
+
 	@Override public void onSensorChanged(SensorEvent event) {
-		float x = event.values[0];
-		float y = event.values[1];
-		float z = event.values[2];
+		Display display = ((WindowManager) getSystemService(WINDOW_SERVICE)).getDefaultDisplay();
+		int displayRotation = display.getRotation();
+		
+		float[] adjustedValues = new float[3];
+		final int axisSwap[][] = {
+		{  1,  -1,  0,  1  },     // ROTATION_0 
+		{-1,  -1,  1,  0  },     // ROTATION_90 
+		{-1,    1,  0,  1  },     // ROTATION_180 
+		{  1,    1,  1,  0  }  }; // ROTATION_270 
+
+		final int[] as = axisSwap[displayRotation]; 
+		adjustedValues[0]  =  (float)as[0] * event.values[ as[2] ]; 
+		adjustedValues[1]  =  (float)as[1] * event.values[ as[3] ]; 
+		adjustedValues[2]  =  event.values[2];
+		
+		float x = adjustedValues[0];
+		float y = adjustedValues[1];
+		float z = adjustedValues[2];
 		GodotLib.accelerometer(x,y,z);
 	}
 

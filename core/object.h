@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,6 +110,9 @@ struct PropertyInfo {
 	PropertyInfo() { type=Variant::NIL; hint=PROPERTY_HINT_NONE; usage = PROPERTY_USAGE_DEFAULT; }
 	PropertyInfo( Variant::Type p_type, const String p_name, PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_string="",uint32_t p_usage=PROPERTY_USAGE_DEFAULT) {
 		type=p_type; name=p_name; hint=p_hint; hint_string=p_hint_string; usage=p_usage;
+	}
+	bool operator<(const PropertyInfo& p_info) const {
+		return name<p_info.name;
 	}
 };
 
@@ -397,7 +400,6 @@ friend void postinitialize_handler(Object*);
 
 protected:	
 
-
 	virtual bool _use_builtin_script() const { return false; }
 	virtual void _initialize_typev() { initialize_type(); }
 	virtual bool _setv(const StringName& p_name,const Variant &p_property) { return false; };
@@ -588,6 +590,9 @@ public:
 
 	StringName XL_MESSAGE(const StringName& p_message) const; //translate message (internationalization)
 	StringName tr(const StringName& p_message) const; //translate message (alternative)
+
+	bool _is_queued_for_deletion; // set to true by SceneTree::queue_delete()
+	bool is_queued_for_deletion() const; 
 
 	_FORCE_INLINE_ void set_message_translation(bool p_enable) { _can_translate=p_enable; }
 	_FORCE_INLINE_ bool can_translate_messages() const { return _can_translate; }

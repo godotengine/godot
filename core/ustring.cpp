@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -498,6 +498,27 @@ String String::capitalize() const {
 	
 	return cap;
 }
+
+String String::camelcase_to_underscore() const {
+	const CharType * cstr = c_str();
+	String newString;
+	const char A = 'A', Z = 'Z';
+	int startIndex = 0;
+
+	for ( int i = 1; i < this->size()-1; i++ ) {
+		bool isCapital = cstr[i] >= A && cstr[i] <= Z;
+
+		if ( isCapital ) {
+			newString += "_" + this->substr(startIndex, i-startIndex);
+			startIndex = i;
+		}
+	}
+
+	newString += "_" + this->substr(startIndex, this->size()-startIndex);
+
+	return newString;
+}
+
 int String::get_slice_count(String p_splitter) const{
 
 	if (empty())

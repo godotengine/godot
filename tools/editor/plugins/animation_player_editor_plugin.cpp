@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -336,7 +336,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	String new_name = name->get_text();
 	if (new_name=="" || new_name.find(":")!=-1 || new_name.find("/")!=-1) {
 		error_dialog->set_text("ERROR: Invalid animation name!");
-		error_dialog->popup_centered(Size2(300,70));
+		error_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -347,7 +347,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 
 	if (player->has_animation(new_name)) {
 		error_dialog->set_text("ERROR: Animation Name Already Exists!");
-		error_dialog->popup_centered(Size2(300,70));
+		error_dialog->popup_centered_minsize();
 		return;
 	}
 

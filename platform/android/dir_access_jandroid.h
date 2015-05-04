@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@ class DirAccessJAndroid  : public DirAccess {
 	static jmethodID _dir_open;
 	static jmethodID _dir_next;
 	static jmethodID _dir_close;
+	static jmethodID _dir_is_dir;
 
 	int id;
 

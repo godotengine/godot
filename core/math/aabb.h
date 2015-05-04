@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,17 +110,17 @@ public:
 
 inline bool AABB::intersects(const AABB& p_aabb) const {
 
-        if ( pos.x > (p_aabb.pos.x + p_aabb.size.x) )
+	if ( pos.x >= (p_aabb.pos.x + p_aabb.size.x) )
                 return false;
-        if ( (pos.x+size.x) < p_aabb.pos.x  )
+	if ( (pos.x+size.x) <= p_aabb.pos.x  )
                 return false;
-        if ( pos.y > (p_aabb.pos.y + p_aabb.size.y) )
+	if ( pos.y >= (p_aabb.pos.y + p_aabb.size.y) )
                 return false;
-        if ( (pos.y+size.y) < p_aabb.pos.y  )
+	if ( (pos.y+size.y) <= p_aabb.pos.y  )
                 return false;
-        if ( pos.z > (p_aabb.pos.z + p_aabb.size.z) )
+	if ( pos.z >= (p_aabb.pos.z + p_aabb.size.z) )
                 return false;
-        if ( (pos.z+size.z) < p_aabb.pos.z  )
+	if ( (pos.z+size.z) <= p_aabb.pos.z  )
                 return false;
 
         return true;

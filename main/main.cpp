@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,6 +87,9 @@ static MessageQueue *message_queue=NULL;
 static Performance *performance = NULL;
 static PathRemap *path_remap;
 static PackedData *packed_data=NULL;
+#ifdef MINIZIP_ENABLED
+static ZipArchive *zip_packed_data=NULL;
+#endif
 static FileAccessNetworkClient *file_access_network_client=NULL;
 static TranslationServer *translation_server = NULL;
 
@@ -248,7 +251,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		packed_data = memnew(PackedData);
 
 #ifdef MINIZIP_ENABLED
-	packed_data->add_pack_source(ZipArchive::get_singleton());
+	zip_packed_data = ZipArchive::get_singleton();
+	packed_data->add_pack_source(zip_packed_data);
 #endif
 
 	bool editor=false;
@@ -636,6 +640,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/test_height",0);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
+		if (rtm>=1) //hack for now
+			rtm=1;
+
 	}
 
 	if (rtm>=0 && rtm<3)
@@ -740,6 +747,15 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
+
+	if (packed_data)
+		memdelete( packed_data );
+#ifdef MINIZIP_ENABLED
+	if (zip_packed_data)
+		memdelete( zip_packed_data );
+#endif
+
+
 	unregister_core_types();
 	
 	OS::get_singleton()->_cmdline.clear();
@@ -767,13 +783,23 @@ Error Main::setup2() {
 #endif
 
 	if (show_logo) { //boot logo!
-		Image boot_logo=GLOBAL_DEF("application/boot_logo",Image());
+		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
+		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
+		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
+
+
+		Image boot_logo;
+
+		if (boot_logo_path.strip_edges()!="" && FileAccess::exists(boot_logo_path)) {
+			boot_logo.load(boot_logo_path);
+		}
 
 		if (!boot_logo.empty()) {
+			OS::get_singleton()->_msec_splash=OS::get_singleton()->get_ticks_msec();
 			Color clear = GLOBAL_DEF("render/default_clear_color",Color(0.3,0.3,0.3));
 			VisualServer::get_singleton()->set_default_clear_color(clear);
 			Color boot_bg = GLOBAL_DEF("application/boot_bg_color", clear);
-			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg);
+			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg,boot_logo_scale);
 #ifndef TOOLS_ENABLED
 			//no tools, so free the boot logo (no longer needed)
 			Globals::get_singleton()->set("application/boot_logo",Image());
@@ -788,7 +814,7 @@ Error Main::setup2() {
 			MAIN_PRINT("Main: ClearColor");
 			VisualServer::get_singleton()->set_default_clear_color(boot_splash_bg_color);
 			MAIN_PRINT("Main: Image");
-			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color);
+			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color,false);
 #endif
 			MAIN_PRINT("Main: DCC");
 			VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("render/default_clear_color",Color(0.3,0.3,0.3)));
@@ -1283,12 +1309,15 @@ bool Main::iteration() {
 	uint64_t ticks=OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed=ticks-last_ticks;
 
+	double step=(double)ticks_elapsed / 1000000.0;
+	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
+
+	//if (time_accum+step < frame_slice)
+	//	return false;
+
 	frame+=ticks_elapsed;
 
 	last_ticks=ticks;
-	double step=(double)ticks_elapsed / 1000000.0;
-
-	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
 
 	if (step>frame_slice*8)
 		step=frame_slice*8;
@@ -1298,7 +1327,6 @@ bool Main::iteration() {
 	float time_scale = OS::get_singleton()->get_time_scale();
 
 	bool exit=false;
-
 
 	int iters = 0;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1075,6 +1075,7 @@ GDParser::Node* GDParser::_reduce_expression(Node *p_node,bool p_to_const) {
 
 				ConstantNode *cn = alloc_node<ConstantNode>();
 				Array arr(!p_to_const);
+				//print_line("mk array "+itos(!p_to_const));
 				arr.resize(an->elements.size());
 				for(int i=0;i<an->elements.size();i++) {
 					ConstantNode *acn = static_cast<ConstantNode*>(an->elements[i]);
@@ -1461,7 +1462,7 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 
 			} break;
 			case GDTokenizer::TK_CF_PASS: {
-				if (tokenizer->get_token(1)!=GDTokenizer::TK_SEMICOLON && tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE ) {
+				if (tokenizer->get_token(1)!=GDTokenizer::TK_SEMICOLON && tokenizer->get_token(1)!=GDTokenizer::TK_NEWLINE && tokenizer->get_token(1)!=GDTokenizer::TK_EOF) {
 
 					_set_error("Expected ';' or <NewLine>.");
 					return;

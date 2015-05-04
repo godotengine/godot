@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -604,6 +604,7 @@ void PhysicsServerSW::body_set_layer_mask(RID p_body, uint32_t p_mask) {
 	ERR_FAIL_COND(!body);
 
 	body->set_layer_mask(p_mask);
+	body->wakeup();
 
 }
 
@@ -674,6 +675,7 @@ void PhysicsServerSW::body_set_state(RID p_body, BodyState p_state, const Varian
 	ERR_FAIL_COND(!body);
 
 	body->set_state(p_state,p_variant);
+
 };
 
 Variant PhysicsServerSW::body_get_state(RID p_body, BodyState p_state) const {
@@ -691,6 +693,7 @@ void PhysicsServerSW::body_set_applied_force(RID p_body, const Vector3& p_force)
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_force(p_force);
+	body->wakeup();
 };
 
 Vector3 PhysicsServerSW::body_get_applied_force(RID p_body) const {
@@ -706,6 +709,7 @@ void PhysicsServerSW::body_set_applied_torque(RID p_body, const Vector3& p_torqu
 	ERR_FAIL_COND(!body);
 
 	body->set_applied_torque(p_torque);
+	body->wakeup();
 };
 
 Vector3 PhysicsServerSW::body_get_applied_torque(RID p_body) const {
@@ -722,6 +726,7 @@ void PhysicsServerSW::body_apply_impulse(RID p_body, const Vector3& p_pos, const
 	ERR_FAIL_COND(!body);
 
 	body->apply_impulse(p_pos,p_impulse);
+	body->wakeup();
 };
 
 void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_velocity) {
@@ -734,6 +739,7 @@ void PhysicsServerSW::body_set_axis_velocity(RID p_body, const Vector3& p_axis_v
 	v-=axis*axis.dot(v);
 	v+=p_axis_velocity;
 	body->set_linear_velocity(v);
+	body->wakeup();
 
 };
 
@@ -743,6 +749,7 @@ void PhysicsServerSW::body_set_axis_lock(RID p_body,BodyAxisLock p_lock) {
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 	body->set_axis_lock(p_lock);
+	body->wakeup();
 
 }
 
@@ -762,6 +769,7 @@ void PhysicsServerSW::body_add_collision_exception(RID p_body, RID p_body_b) {
 	ERR_FAIL_COND(!body);
 
 	body->add_exception(p_body_b);
+	body->wakeup();
 
 };
 
@@ -771,6 +779,7 @@ void PhysicsServerSW::body_remove_collision_exception(RID p_body, RID p_body_b) 
 	ERR_FAIL_COND(!body);
 
 	body->remove_exception(p_body_b);
+	body->wakeup();
 
 };
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,6 @@ Error FileAccessJAndroid::_open(const String& p_path, int p_mode_flags) {
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
 	int res = env->CallIntMethod(io,_file_open,js,p_mode_flags&WRITE?true:false);
-
 	env->DeleteLocalRef(js);
 
 	if (res<=0)

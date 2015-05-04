@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -146,6 +146,8 @@ private:
 	float friction;
 	float bounce;
 	uint32_t collision_layer;
+	uint32_t collision_mask;
+
 	TileOrigin tile_origin;
 
 	void _fix_cell_transform(Matrix32& xform, const Cell& p_cell, const Vector2 &p_offset, const Size2 &p_sc);
@@ -170,6 +172,8 @@ private:
 	int _get_old_cell_size() const { return cell_size.x; }
 
 	_FORCE_INLINE_ Vector2 _map_to_world(int p_x,int p_y,bool p_ignore_ofs=false) const;
+
+	Array get_used_cells() const;
 
 protected:
 
@@ -205,8 +209,11 @@ public:
 
 	Rect2 get_item_rect() const;
 
-	void set_collision_layer_mask(uint32_t p_layer);
-	uint32_t get_collision_layer_mask() const;
+	void set_collision_layer(uint32_t p_layer);
+	uint32_t get_collision_layer() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
 
 	void set_collision_use_kinematic(bool p_use_kinematic);
 	bool get_collision_use_kinematic() const;

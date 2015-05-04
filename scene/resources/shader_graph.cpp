@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,6 +92,7 @@ void ShaderGraph::_set_data(const Dictionary &p_data) {
 		}
 	}
 
+	_pending_update_shader=true;
 	_update_shader();
 
 }
@@ -1287,8 +1288,8 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Normal","IN_NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Tangent","TANGENT","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Binormal","BINORMAL","",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV","vec3(UV,0);","",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV2","UV2","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV","vec3(UV,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UV2","vec3(UV2,0)","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"UVScreen","vec3(SCREEN_UV,0)","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
@@ -1349,16 +1350,27 @@ const ShaderGraph::InOutParamInfo ShaderGraph::inout_param_info[]={
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"NormalMap","NORMALMAP","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_FRAGMENT,"NormalMapDepth","NORMALMAP_DEPTH","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	//canvas item light in
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Color","COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Alpha","COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Normal","NORMAL","",SLOT_TYPE_VEC,SLOT_IN},
-	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightDist","LIGHT_DISTANCE","",SLOT_TYPE_SCALAR,SLOT_IN},
-	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightDir","vec3(LIGHT_DIR,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"UV","vec3(UV,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightColor","LIGHT_COLOR.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightAlpha","LIGHT_COLOR.a","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightHeight","LIGHT_HEIGHT","",SLOT_TYPE_SCALAR,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"TexPixelSize","vec3(TEXTURE_PIXEL_SIZE,0)","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Var1","VAR1.rgb","",SLOT_TYPE_VEC,SLOT_IN},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Var2","VAR2.rgb","",SLOT_TYPE_VEC,SLOT_IN},
 	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"PointCoord","POINT_COORD","",SLOT_TYPE_VEC,SLOT_IN},
 	//canvas item light out
-	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"Light","LIGHT","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightColor","LIGHT.rgb","",SLOT_TYPE_VEC,SLOT_OUT},
+	{MODE_CANVAS_ITEM,SHADER_TYPE_LIGHT,"LightAlpha","LIGHT.a","",SLOT_TYPE_SCALAR,SLOT_OUT},
 	//end
 	{MODE_MATERIAL,SHADER_TYPE_FRAGMENT,NULL,NULL,NULL,SLOT_TYPE_SCALAR,SLOT_OUT},
+
+
 
 };
 
@@ -1598,6 +1610,7 @@ void ShaderGraph::_update_shader() {
 	get_default_texture_param_list(&names);
 
 	for (List<StringName>::Element *E=names.front();E;E=E->next()) {
+
 		set_default_texture_param(E->get(),Ref<Texture>());
 	}
 
@@ -1741,6 +1754,7 @@ void ShaderGraph::_update_shader() {
 				if (n->type==NODE_TEXTURE_INPUT || n->type==NODE_CUBEMAP_INPUT) {
 
 					set_default_texture_param(n->param1,n->param2);
+
 				}
 				_add_node_code(ShaderType(i),n,inputs,code[i]);
 			}
@@ -2146,7 +2160,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 				"floor($)",
 				"round($)",
 				"ceil($)",
-				"frac($)",
+				"fract($)",
 				"min(max($,0),1)",
 				"-($)",
 			};
@@ -2195,7 +2209,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 		}break;
 		case NODE_VEC_LEN: {
 
-			code += OUTNAME(p_node->id,0)+"=length("+p_inputs[1]+");\n";
+			code += OUTNAME(p_node->id,0)+"=length("+p_inputs[0]+");\n";
 
 		}break;
 		case NODE_DOT_PROD: {
@@ -2364,7 +2378,7 @@ void ShaderGraph::_add_node_code(ShaderType p_type,Node *p_node,const Vector<Str
 
 			String name = p_node->param1;
 			Vector3 dv=p_node->param2;
-			code +="uniform float "+name+"=vec3("+rtos(dv.x)+","+rtos(dv.y)+","+rtos(dv.z)+");\n";
+			code +="uniform vec3 "+name+"=vec3("+rtos(dv.x)+","+rtos(dv.y)+","+rtos(dv.z)+");\n";
 			code += OUTNAME(p_node->id,0)+"="+name+";\n";
 		}break;
 		case NODE_RGB_INPUT: {

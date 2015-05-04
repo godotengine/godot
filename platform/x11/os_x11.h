@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -157,9 +157,10 @@ class OS_X11 : public OS_Unix {
 
 
 	int joystick_count;
+
 	Joystick joysticks[JOYSTICKS_MAX];
 
-
+	int audio_driver_index;
 	unsigned int capture_idle;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);

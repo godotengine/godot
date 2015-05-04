@@ -6,6 +6,13 @@
 class Light2D : public Node2D {
 
 	OBJ_TYPE(Light2D,Node2D);
+public:
+	enum Mode {
+		MODE_ADD,
+		MODE_SUB,
+		MODE_MIX,
+	};
+
 private:
 	RID canvas_light;
 	bool enabled;
@@ -13,6 +20,7 @@ private:
 	Color color;
 	float height;
 	float _scale;
+	float energy;
 	int z_min;
 	int z_max;
 	int layer_min;
@@ -21,7 +29,7 @@ private:
 	int item_shadow_mask;
 	int shadow_buffer_size;
 	float shadow_esm_multiplier;
-	bool subtract_mode;
+	Mode mode;
 	Ref<Texture> texture;
 	Vector2 texture_offset;
 
@@ -51,6 +59,9 @@ public:
 	void set_height( float p_height);
 	float get_height() const;
 
+	void set_energy( float p_energy);
+	float get_energy() const;
+
 	void set_texture_scale( float p_scale);
 	float get_texture_scale() const;
 
@@ -72,8 +83,8 @@ public:
 	void set_item_shadow_mask( int p_mask);
 	int get_item_shadow_mask() const;
 
-	void set_subtract_mode( bool p_enable );
-	bool get_subtract_mode() const;
+	void set_mode( Mode p_mode );
+	Mode get_mode() const;
 
 	void set_shadow_enabled( bool p_enabled);
 	bool is_shadow_enabled() const;
@@ -90,5 +101,6 @@ public:
 	~Light2D();
 };
 
+VARIANT_ENUM_CAST(Light2D::Mode);
 
 #endif // LIGHT_2D_H

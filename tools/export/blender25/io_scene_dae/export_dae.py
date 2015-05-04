@@ -208,13 +208,16 @@ class DaeExporter:
 		
 
 		imgid = self.new_id("image")
+
+		print("FOR: "+imgpath)
 		
-		if (not os.path.isfile(imgpath)):
-			if imgpath.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
-				imgpath="images/"+os.path.basename(imgpath)
-			else:
-				imgpath="images/"+image.name+".png"
-		
+#		if (not os.path.isfile(imgpath)):
+#			print("NOT FILE?")
+#			if imgpath.endswith((".bmp",".rgb",".png",".jpeg",".jpg",".jp2",".tga",".cin",".dpx",".exr",".hdr",".tif")):
+#				imgpath="images/"+os.path.basename(imgpath)
+#			else:
+#				imgpath="images/"+image.name+".png"
+
 		self.writel(S_IMGS,1,'<image id="'+imgid+'" name="'+image.name+'">')
 		self.writel(S_IMGS,2,'<init_from>'+imgpath+'</init_from>"/>')
 		self.writel(S_IMGS,1,'</image>')
@@ -479,6 +482,11 @@ class DaeExporter:
 
 		apply_modifiers = len(node.modifiers) and self.config["use_mesh_modifiers"]
 
+		name_to_use = mesh.name
+		#print("name to use: "+mesh.name)
+		if (custom_name!=None and custom_name!=""):
+			name_to_use=custom_name
+
 		mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
 
 		triangulate=self.config["use_triangles"]
@@ -529,8 +537,8 @@ class DaeExporter:
 
 			if (not (f.material_index in surface_indices)):
 				surface_indices[f.material_index]=[]
-				print("Type: "+str(type(f.material_index)))
-				print("IDX: "+str(f.material_index)+"/"+str(len(mesh.materials)))
+				#print("Type: "+str(type(f.material_index)))
+				#print("IDX: "+str(f.material_index)+"/"+str(len(mesh.materials)))
 
 				try:
 					#Bizarre blender behavior i don't understand, so catching exception
@@ -632,10 +640,7 @@ class DaeExporter:
 
 
 		meshid = self.new_id("mesh")
-		if (custom_name!=None):
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
-		else:
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+name_to_use+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 
@@ -914,14 +919,14 @@ class DaeExporter:
 		if (node.data.shape_keys!=None):
 				sk = node.data.shape_keys
 				if (sk.animation_data):
-					print("HAS ANIM")
-					print("DRIVERS: "+str(len(sk.animation_data.drivers)))
+					#print("HAS ANIM")
+					#print("DRIVERS: "+str(len(sk.animation_data.drivers)))
 					for d in sk.animation_data.drivers:
 						if (d.driver):
 							for v in d.driver.variables:
 								for t in v.targets:
 									if (t.id!=None and t.id.name in self.scene.objects):
-										print("LINKING "+str(node)+" WITH "+str(t.id.name))
+										#print("LINKING "+str(node)+" WITH "+str(t.id.name))
 										self.armature_for_morph[node]=self.scene.objects[t.id.name]
 
 
@@ -1234,7 +1239,7 @@ class DaeExporter:
 		il+=1
 
 		self.writel(S_NODES,il,'<matrix sid="transform">'+strmtx(node.matrix_local)+'</matrix>')
-		print("NODE TYPE: "+node.type+" NAME: "+node.name)
+		#print("NODE TYPE: "+node.type+" NAME: "+node.name)
 		if (node.type=="MESH"):
 			self.export_mesh_node(node,il)
 		elif (node.type=="CURVE"):
@@ -1258,7 +1263,7 @@ class DaeExporter:
 			return False
 		if (self.config["use_active_layers"]):
 			valid=False
-			print("NAME: "+node.name)
+			#print("NAME: "+node.name)
 			for i in range(20):
 				if (node.layers[i] and  self.scene.layers[i]):
 					valid=True
@@ -1408,7 +1413,7 @@ class DaeExporter:
 		# Change frames first, export objects last
 		# This improves performance enormously
 
-		print("anim from: "+str(start)+" to "+str(end)+" allowed: "+str(allowed))
+		#print("anim from: "+str(start)+" to "+str(end)+" allowed: "+str(allowed))
 		for t in range(start,end+1):
 			self.scene.frame_set(t)
 			key = t * frame_len - frame_sub
@@ -1462,7 +1467,7 @@ class DaeExporter:
 						bone_name=self.skeleton_info[node]["bone_ids"][bone]
 
 						if (not (bone_name in xform_cache)):
-							print("has bone: "+bone_name)
+							#print("has bone: "+bone_name)
 							xform_cache[bone_name]=[]
 
 						posebone = node.pose.bones[bone.name]
@@ -1548,15 +1553,15 @@ class DaeExporter:
 							bone.matrix_basis = Matrix()
 							
 
-				print("allowed skeletons "+str(allowed_skeletons))
+				#print("allowed skeletons "+str(allowed_skeletons))
 
-				print(str(x))
+				#print(str(x))
 
 				tcn = self.export_animation(int(x.frame_range[0]),int(x.frame_range[1]+0.5),allowed_skeletons)
 				framelen=(1.0/self.scene.render.fps)
 				start = x.frame_range[0]*framelen
 				end = x.frame_range[1]*framelen
-				print("Export anim: "+x.name)
+				#print("Export anim: "+x.name)
 				self.writel(S_ANIM_CLIPS,1,'<animation_clip name="'+x.name+'" start="'+str(start)+'" end="'+str(end)+'">')
 				for z in tcn:
 					self.writel(S_ANIM_CLIPS,2,'<instance_animation url="#'+z+'"/>')

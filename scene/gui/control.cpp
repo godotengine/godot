@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -138,22 +138,27 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slice("/",1);
 			data.icon_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slice("/",1);
 			data.style_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slice("/",1);
 			data.font_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slice("/",1);
 			data.color_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slice("/",1);
 			data.constant_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else
 			return false;
@@ -161,19 +166,24 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 	} else {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slice("/",1);
+			notification(NOTIFICATION_THEME_CHANGED);
 			add_icon_override(dname,p_value);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slice("/",1);
 			add_style_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slice("/",1);
 			add_font_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slice("/",1);
 			add_color_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slice("/",1);
 			add_constant_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else
 			return false;
 	}
@@ -514,13 +524,15 @@ void Control::_notification(int p_notification) {
 
 			if (data.MI) {
 
-				data.window->window->modal_stack.erase(data.MI);
+				if (data.window && data.window->window)
+					data.window->window->modal_stack.erase(data.MI);
 				data.MI=NULL;
 			}
 
 			if (data.SI) {
 				//erase from subwindows
-				data.window->window->subwindows.erase(data.SI);
+				if (data.window && data.window->window)
+					data.window->window->subwindows.erase(data.SI);
 				data.SI=NULL;
 			}
 
@@ -2869,7 +2881,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT( SIZE_EXPAND_FILL );
 
 	ADD_SIGNAL( MethodInfo("resized") );
-	ADD_SIGNAL( MethodInfo("input_event") );
+	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	ADD_SIGNAL( MethodInfo("mouse_enter") );
 	ADD_SIGNAL( MethodInfo("mouse_exit") );
 	ADD_SIGNAL( MethodInfo("focus_enter") );

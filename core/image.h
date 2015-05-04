@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -236,6 +236,7 @@ public:
 
 	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
 	void get_mipmap_offset_and_size(int p_mipmap,int &r_ofs, int &r_size) const; //get where the mipmap begins in data
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap,int &r_ofs, int &r_size,int &w, int& h) const; //get where the mipmap begins in data
 
 	/**
 	 * Resize the image, using the prefered interpolation method.

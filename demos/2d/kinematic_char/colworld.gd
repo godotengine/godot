@@ -14,4 +14,5 @@ func _ready():
 
 func _on_princess_body_enter( body ):
 	#the name of this editor-generated callback is unfortunate
-	get_node("youwin").show()
+	if (body.get_name()=="player"):
+		get_node("youwin").show()

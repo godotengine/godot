@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -140,10 +140,10 @@ public:
 
 		img.resize(512,512);
 		img.generate_mipmaps();
-		img.compress();
-		Ref<Texture> text = memnew( Texture );
-		text->create_from_image(img);
-		tf->set_texture(text);
+		img.compress(Image::COMPRESS_PVRTC4);
+		Ref<ImageTexture> tt = memnew( ImageTexture );
+		tt->create_from_image(img);
+		tf->set_texture(tt);
 		tf->set_pos(Point2(50,50));
 		//tf->set_scale(Point2(0.3,0.3));
 

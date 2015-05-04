@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,13 +72,16 @@ void PhysicsBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody2D::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody2D::get_collision_mask);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_direction","dir"),&PhysicsBody2D::set_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_direction"),&PhysicsBody2D::get_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_max_depth","depth"),&PhysicsBody2D::set_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_max_depth"),&PhysicsBody2D::get_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),_SCS("set_one_way_collision_max_depth"),_SCS("get_one_way_collision_max_depth"));
 }
@@ -94,9 +97,22 @@ uint32_t PhysicsBody2D::get_layer_mask() const {
 	return mask;
 }
 
+void PhysicsBody2D::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	Physics2DServer::get_singleton()->body_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t PhysicsBody2D::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
 	mask=1;
+	collision_mask=1;
 	set_one_way_collision_max_depth(0);
 	set_pickable(false);
 
@@ -277,6 +293,13 @@ void RigidBody2D::_body_inout(int p_status, ObjectID p_instance, int p_body_shap
 
 	Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(objid);
 
+	/*if (obj) {
+		if (body_in)
+			print_line("in: "+String(obj->call("get_name")));
+		else
+			print_line("out: "+String(obj->call("get_name")));
+	}*/
+
 	ERR_FAIL_COND(!body_in && !E);
 
 	if (body_in) {
@@ -341,6 +364,16 @@ struct _RigidBody2DInOut {
 	int local_shape;
 };
 
+
+bool RigidBody2D::_test_motion(const Vector2& p_motion,float p_margin,const Ref<Physics2DTestMotionResult>& p_result) {
+
+	Physics2DServer::MotionResult *r=NULL;
+	if (p_result.is_valid())
+		r=p_result->get_result_ptr();
+	return Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,p_margin,r);
+
+}
+
 void RigidBody2D::_direct_state_changed(Object *p_state) {
 
 	//eh.. fuck
@@ -376,14 +409,14 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			ObjectID obj = state->get_contact_collider_id(i);
 			int local_shape = state->get_contact_local_shape(i);
 			int shape = state->get_contact_collider_shape(i);
-			toadd[i].local_shape=local_shape;
-			toadd[i].id=obj;
-			toadd[i].shape=shape;
 
 //			bool found=false;
 
 			Map<ObjectID,BodyState>::Element *E=contact_monitor->body_map.find(obj);
 			if (!E) {
+				toadd[toadd_count].local_shape=local_shape;
+				toadd[toadd_count].id=obj;
+				toadd[toadd_count].shape=shape;
 				toadd_count++;
 				continue;
 			}
@@ -392,6 +425,9 @@ void RigidBody2D::_direct_state_changed(Object *p_state) {
 			int idx = E->get().shapes.find(sp);
 			if (idx==-1) {
 
+				toadd[toadd_count].local_shape=local_shape;
+				toadd[toadd_count].id=obj;
+				toadd[toadd_count].shape=shape;
 				toadd_count++;
 				continue;
 			}
@@ -791,6 +827,8 @@ void RigidBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_can_sleep","able_to_sleep"),&RigidBody2D::set_can_sleep);
 	ObjectTypeDB::bind_method(_MD("is_able_to_sleep"),&RigidBody2D::is_able_to_sleep);
 
+	ObjectTypeDB::bind_method(_MD("test_motion","motion","margin","result:Physics2DTestMotionResult"),&RigidBody2D::_test_motion,DEFVAL(0.08),DEFVAL(Variant()));
+
 	ObjectTypeDB::bind_method(_MD("_direct_state_changed"),&RigidBody2D::_direct_state_changed);
 	ObjectTypeDB::bind_method(_MD("_body_enter_tree"),&RigidBody2D::_body_enter_tree);
 	ObjectTypeDB::bind_method(_MD("_body_exit_tree"),&RigidBody2D::_body_exit_tree);
@@ -887,21 +925,40 @@ Variant KinematicBody2D::_get_collider() const {
 	return obj;
 }
 
+void KinematicBody2D::revert_motion() {
 
-bool KinematicBody2D::_ignores_mode(Physics2DServer::BodyMode p_mode) const {
+	Matrix32 gt = get_global_transform();
+	gt.elements[2]-=travel;
+	travel=Vector2();
+	set_global_transform(gt);
 
-	switch(p_mode) {
-		case Physics2DServer::BODY_MODE_STATIC: return !collide_static;
-		case Physics2DServer::BODY_MODE_KINEMATIC: return !collide_kinematic;
-		case Physics2DServer::BODY_MODE_RIGID: return !collide_rigid;
-		case Physics2DServer::BODY_MODE_CHARACTER: return !collide_character;
-	}
+}
 
-	return true;
+Vector2 KinematicBody2D::get_travel() const {
+
+	return travel;
 }
 
 Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
+#if 1
+	Physics2DServer::MotionResult result;
+	colliding = Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,margin,&result);
+
+	collider_metadata=result.collider_metadata;
+	collider_shape=result.collider_shape;
+	collider_vel=result.collider_velocity;
+	collision=result.collision_point;
+	normal=result.collision_normal;
+	collider=result.collider_id;
+
+	Matrix32 gt = get_global_transform();
+	gt.elements[2]+=result.motion;
+	set_global_transform(gt);
+	travel=result.motion;
+	return result.remainder;
+
+#else
 	//give me back regular physics engine logic
 	//this is madness
 	//and most people using this function will think
@@ -1051,7 +1108,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	set_global_transform(gt);
 
 	return p_motion-motion;
-
+#endif
 }
 
 Vector2 KinematicBody2D::move_to(const Vector2& p_position) {
@@ -1059,58 +1116,22 @@ Vector2 KinematicBody2D::move_to(const Vector2& p_position) {
 	return move(p_position-get_global_pos());
 }
 
-bool KinematicBody2D::can_move_to(const Vector2& p_position, bool p_discrete) {
-
-	ERR_FAIL_COND_V(!is_inside_tree(),false);
-	Physics2DDirectSpaceState *dss = Physics2DServer::get_singleton()->space_get_direct_state(get_world_2d()->get_space());
-	ERR_FAIL_COND_V(!dss,false);
-
-	uint32_t mask=0;
-	if (collide_static)
-		mask|=Physics2DDirectSpaceState::TYPE_MASK_STATIC_BODY;
-	if (collide_kinematic)
-		mask|=Physics2DDirectSpaceState::TYPE_MASK_KINEMATIC_BODY;
-	if (collide_rigid)
-		mask|=Physics2DDirectSpaceState::TYPE_MASK_RIGID_BODY;
-	if (collide_character)
-		mask|=Physics2DDirectSpaceState::TYPE_MASK_CHARACTER_BODY;
-
-	Vector2 motion = p_position-get_global_pos();
-	Matrix32 xform=get_global_transform();
-
-	if (p_discrete) {
-
-		xform.elements[2]+=motion;
-		motion=Vector2();
-	}
-
-	Set<RID> exclude;
-	exclude.insert(get_rid());
-
-	//fill exclude list..
-	for(int i=0;i<get_shape_count();i++) {
-
-
-		bool col = dss->intersect_shape(get_shape(i)->get_rid(), xform * get_shape_transform(i),motion,0,NULL,0,exclude,get_layer_mask(),mask);
-		if (col)
-			return false;
-	}
-
-	return true;
-}
-
-bool KinematicBody2D::is_colliding() const {
+bool KinematicBody2D::test_move(const Vector2& p_motion) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(),false);
 
-	return colliding;
+	return Physics2DServer::get_singleton()->body_test_motion(get_rid(),p_motion,margin);
+
+
 }
+
 Vector2 KinematicBody2D::get_collision_pos() const {
 
 	ERR_FAIL_COND_V(!colliding,Vector2());
 	return collision;
 
 }
+
 Vector2 KinematicBody2D::get_collision_normal() const {
 
 	ERR_FAIL_COND_V(!colliding,Vector2());
@@ -1143,43 +1164,10 @@ Variant KinematicBody2D::get_collider_metadata() const {
 
 }
 
-void KinematicBody2D::set_collide_with_static_bodies(bool p_enable) {
 
-	collide_static=p_enable;
-}
-bool KinematicBody2D::can_collide_with_static_bodies() const {
+bool KinematicBody2D::is_colliding() const{
 
-	return collide_static;
-}
-
-void KinematicBody2D::set_collide_with_rigid_bodies(bool p_enable) {
-
-	collide_rigid=p_enable;
-
-}
-bool KinematicBody2D::can_collide_with_rigid_bodies() const {
-
-
-	return collide_rigid;
-}
-
-void KinematicBody2D::set_collide_with_kinematic_bodies(bool p_enable) {
-
-	collide_kinematic=p_enable;
-
-}
-bool KinematicBody2D::can_collide_with_kinematic_bodies() const {
-
-	return collide_kinematic;
-}
-
-void KinematicBody2D::set_collide_with_character_bodies(bool p_enable) {
-
-	collide_character=p_enable;
-}
-bool KinematicBody2D::can_collide_with_character_bodies() const {
-
-	return collide_character;
+	return colliding;
 }
 
 void KinematicBody2D::set_collision_margin(float p_margin) {
@@ -1198,7 +1186,9 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move","rel_vec"),&KinematicBody2D::move);
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
 
-	ObjectTypeDB::bind_method(_MD("can_move_to","position"),&KinematicBody2D::can_move_to);
+	ObjectTypeDB::bind_method(_MD("test_move","rel_vec"),&KinematicBody2D::test_move);
+	ObjectTypeDB::bind_method(_MD("get_travel"),&KinematicBody2D::get_travel);
+	ObjectTypeDB::bind_method(_MD("revert_motion"),&KinematicBody2D::revert_motion);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody2D::is_colliding);
 
@@ -1209,37 +1199,15 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collider_shape"),&KinematicBody2D::get_collider_shape);
 	ObjectTypeDB::bind_method(_MD("get_collider_metadata"),&KinematicBody2D::get_collider_metadata);
 
-
-	ObjectTypeDB::bind_method(_MD("set_collide_with_static_bodies","enable"),&KinematicBody2D::set_collide_with_static_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_static_bodies"),&KinematicBody2D::can_collide_with_static_bodies);
-
-	ObjectTypeDB::bind_method(_MD("set_collide_with_kinematic_bodies","enable"),&KinematicBody2D::set_collide_with_kinematic_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_kinematic_bodies"),&KinematicBody2D::can_collide_with_kinematic_bodies);
-
-	ObjectTypeDB::bind_method(_MD("set_collide_with_rigid_bodies","enable"),&KinematicBody2D::set_collide_with_rigid_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_rigid_bodies"),&KinematicBody2D::can_collide_with_rigid_bodies);
-
-	ObjectTypeDB::bind_method(_MD("set_collide_with_character_bodies","enable"),&KinematicBody2D::set_collide_with_character_bodies);
-	ObjectTypeDB::bind_method(_MD("can_collide_with_character_bodies"),&KinematicBody2D::can_collide_with_character_bodies);
-
 	ObjectTypeDB::bind_method(_MD("set_collision_margin","pixels"),&KinematicBody2D::set_collision_margin);
 	ObjectTypeDB::bind_method(_MD("get_collision_margin","pixels"),&KinematicBody2D::get_collision_margin);
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/static"),_SCS("set_collide_with_static_bodies"),_SCS("can_collide_with_static_bodies"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/kinematic"),_SCS("set_collide_with_kinematic_bodies"),_SCS("can_collide_with_kinematic_bodies"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/rigid"),_SCS("set_collide_with_rigid_bodies"),_SCS("can_collide_with_rigid_bodies"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collide_with/character"),_SCS("set_collide_with_character_bodies"),_SCS("can_collide_with_character_bodies"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/margin",PROPERTY_HINT_RANGE,"0.001,256,0.001"),_SCS("set_collision_margin"),_SCS("get_collision_margin"));
 
 
 }
 
 KinematicBody2D::KinematicBody2D() : PhysicsBody2D(Physics2DServer::BODY_MODE_KINEMATIC){
-
-	collide_static=true;
-	collide_rigid=true;
-	collide_kinematic=true;
-	collide_character=true;
 
 	colliding=false;
 	collider=0;

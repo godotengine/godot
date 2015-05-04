@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,8 +48,8 @@ uint32_t Math::rand_from_seed(uint32_t *seed) {
 		s = 0x12345987;
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
-		s += 2147483647;
+//	if (s < 0)
+//		s += 2147483647;
 	(*seed) = s;
 	return (s & Math::RANDOM_MAX);
 #else

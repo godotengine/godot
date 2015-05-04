@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,6 +42,7 @@ SceneStringNames::SceneStringNames() {
 	input_event=StaticCString::create("input_event");
 	shader_shader=StaticCString::create("shader/shader");
 	shader_unshaded=StaticCString::create("shader/unshaded");
+	shading_mode=StaticCString::create("shader/shading_mode");
 	enter_tree=StaticCString::create("enter_tree");
 	exit_tree=StaticCString::create("exit_tree");
 	item_rect_changed=StaticCString::create("item_rect_changed");

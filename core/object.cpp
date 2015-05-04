@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "message_queue.h"
 #include "core_string_names.h"
 #include "translation.h"
+#include "os/os.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -1503,6 +1504,10 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("XL_MESSAGE","message"),&Object::XL_MESSAGE);
 	ObjectTypeDB::bind_method(_MD("tr","message"),&Object::tr);
 
+	ObjectTypeDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
+
+	ObjectTypeDB::add_virtual_method("Object",MethodInfo("free"),false);
+
 	ADD_SIGNAL( MethodInfo("script_changed"));
 
 	BIND_VMETHOD( MethodInfo("_notification",PropertyInfo(Variant::INT,"what")) );
@@ -1566,6 +1571,10 @@ void Object::get_translatable_strings(List<String> *p_strings) const {
 
 }
 
+bool Object::is_queued_for_deletion() const {
+	return _is_queued_for_deletion;
+}
+
 #ifdef TOOLS_ENABLED
 void Object::set_edited(bool p_edited) {
 
@@ -1587,6 +1596,7 @@ Object::Object() {
 	_instance_ID=0;
 	_instance_ID = ObjectDB::add_instance(this);
 	_can_translate=true;
+	_is_queued_for_deletion=false;
 	script_instance=NULL;
 #ifdef TOOLS_ENABLED
 
@@ -1719,8 +1729,20 @@ void ObjectDB::cleanup() {
 
 	GLOBAL_LOCK_FUNCTION;
 	if (instances.size()) {
-	
+			
 		WARN_PRINT("ObjectDB Instances still exist!");		
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			const uint32_t *K=NULL;
+			while((K=instances.next(K))) {
+
+				String node_name;
+				if (instances[*K]->is_type("Node"))
+					node_name=" - Node Name: "+String(instances[*K]->call("get_name"));
+				if (instances[*K]->is_type("Resoucre"))
+					node_name=" - Resource Name: "+String(instances[*K]->call("get_name"))+" Path: "+String(instances[*K]->call("get_path"));
+				print_line("Leaked Instance: "+String(instances[*K]->get_type())+":"+itos(*K)+node_name);
+			}
+		}
 	}
 	instances.clear();
 	instance_checks.clear();

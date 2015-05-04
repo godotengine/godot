@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -252,6 +252,24 @@ public:
 		if (samples.size()==0) {
 			error_dialog->set_text("No samples to import!");
 			error_dialog->popup_centered(Size2(200,100));
+		}
+
+		if (save_path->get_text().strip_edges()=="") {
+			error_dialog->set_text("Target path is empty.");
+			error_dialog->popup_centered_minsize();
+			return;
+		}
+
+		if (!save_path->get_text().begins_with("res://")) {
+			error_dialog->set_text("Target path must be full resource path.");
+			error_dialog->popup_centered_minsize();
+			return;
+		}
+
+		if (!DirAccess::exists(save_path->get_text())) {
+			error_dialog->set_text("Target path must exist.");
+			error_dialog->popup_centered_minsize();
+			return;
 		}
 
 		for(int i=0;i<samples.size();i++) {
@@ -701,8 +719,8 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 
 
 			xm_sample=CLAMP(in[i]*32767.0,-32768,32767);
-			if (xm_sample==32767 || xm_sample==-32768)
-				printf("clippy!\n",xm_sample);
+			//if (xm_sample==32767 || xm_sample==-32768)
+			//	printf("clippy!\n",xm_sample);
 		}
 
 	//	xm_sample=xm_sample+xm_prev;

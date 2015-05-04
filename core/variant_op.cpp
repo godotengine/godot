@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,6 +165,12 @@ r_valid=false;\
 return;}
 
 #define DEFAULT_OP_ARRAY_EQ(m_name,m_type)\
+DEFAULT_OP_ARRAY_OP(m_name,m_type,!=,!=,true,false,false)
+
+#define DEFAULT_OP_ARRAY_LT(m_name,m_type)\
+DEFAULT_OP_ARRAY_OP(m_name,m_type,<,!=,false,a_len<array_b.size(),true)
+
+#define DEFAULT_OP_ARRAY_OP(m_name,m_type,m_opa,m_opb,m_ret_def,m_ret_s,m_ret_f)\
 case m_name: {	\
 	if (p_a.type!=p_b.type) {\
 		r_valid=false;\
@@ -174,19 +180,19 @@ case m_name: {	\
 	const DVector<m_type> &array_b=*reinterpret_cast<const DVector<m_type> *>(p_b._data._mem);\
 \
 	int a_len = array_a.size();\
-	if (a_len!=array_b.size()){\
-		_RETURN( false);\
+	if (a_len m_opa array_b.size()){\
+		_RETURN( m_ret_s);\
 	}else {\
 \
 		DVector<m_type>::Read ra = array_a.read();\
 		DVector<m_type>::Read rb = array_b.read();\
 \
 		for(int i=0;i<a_len;i++) {\
-			if (ra[i]!=rb[i])\
-				_RETURN( false);\
+			if (ra[i] m_opb rb[i])\
+				_RETURN( m_ret_f);\
 		}\
 \
-		_RETURN( true);\
+		_RETURN( m_ret_def);\
 	}\
 }
 
@@ -290,8 +296,9 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 					if (arr_b->size()!=l)
 						_RETURN( false );
 					for(int i=0;i<l;i++) {
-						if (!(arr_a[i]==arr_b[i]))
+						if (!((*arr_a)[i]==(*arr_b)[i])) {
 							_RETURN( false );
+						}
 					}
 
 					_RETURN( true );
@@ -356,14 +363,33 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 				} break;
 				DEFAULT_OP_FAIL(INPUT_EVENT);
 				DEFAULT_OP_FAIL(DICTIONARY);
-				DEFAULT_OP_FAIL(ARRAY);
-				DEFAULT_OP_FAIL(RAW_ARRAY);
-				DEFAULT_OP_FAIL(INT_ARRAY);
-				DEFAULT_OP_FAIL(REAL_ARRAY);
-				DEFAULT_OP_FAIL(STRING_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR2_ARRAY);
-				DEFAULT_OP_FAIL(VECTOR3_ARRAY);
-				DEFAULT_OP_FAIL(COLOR_ARRAY);
+				case ARRAY: {
+
+					if (p_b.type!=ARRAY)
+						_RETURN( false );
+
+					const Array *arr_a=reinterpret_cast<const Array*>(p_a._data._mem);
+					const Array *arr_b=reinterpret_cast<const Array*>(p_b._data._mem);
+
+					int l = arr_a->size();
+					if (arr_b->size()<l)
+						_RETURN( false );
+					for(int i=0;i<l;i++) {
+						if (!((*arr_a)[i]<(*arr_b)[i])) {
+							_RETURN( true );
+						}
+					}
+
+					_RETURN( false );
+
+				} break;
+				DEFAULT_OP_ARRAY_LT(RAW_ARRAY,uint8_t);
+				DEFAULT_OP_ARRAY_LT(INT_ARRAY,int);
+				DEFAULT_OP_ARRAY_LT(REAL_ARRAY,real_t);
+				DEFAULT_OP_ARRAY_LT(STRING_ARRAY,String);
+				DEFAULT_OP_ARRAY_LT(VECTOR2_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_LT(VECTOR3_ARRAY,Vector3);
+				DEFAULT_OP_ARRAY_LT(COLOR_ARRAY,Color);
 				case VARIANT_MAX: {
 					r_valid=false;
 					return;
@@ -471,7 +497,7 @@ void Variant::evaluate(const Operator& p_op, const Variant& p_a, const Variant& 
 						}
 						const Array &array_a=*reinterpret_cast<const Array *>(p_a._data._mem);
 						const Array &array_b=*reinterpret_cast<const Array *>(p_b._data._mem);
-						Array sum;
+						Array sum(array_a.is_shared() || array_b.is_shared());
 						int asize=array_a.size();
 						int bsize=array_b.size();
 						sum.resize(asize+bsize);
@@ -2407,7 +2433,7 @@ Variant Variant::get(const Variant& p_index, bool *r_valid) const {
 				}
 				else if (str == "pressed") {
 					valid=true;
-					ie.action.pressed;
+					return ie.action.pressed;
 				}
 			}
 

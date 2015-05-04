@@ -764,6 +764,8 @@ EditorExportPlatformBB10::~EditorExportPlatformBB10() {
 
 	quit_request=true;
 	Thread::wait_to_finish(device_thread);
+	memdelete(device_lock);
+	memdelete(device_thread);
 }
 
 

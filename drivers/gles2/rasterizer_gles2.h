@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 #define RASTERIZER_GLES2_H
 
 #include "servers/visual/rasterizer.h"
+
+#define MAX_POLYGON_VERTICES 4096 //used for WebGL canvas_draw_polygon call.
 
 #ifdef GLES2_ENABLED
 
@@ -828,6 +830,7 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint base_framebuffer;
 
 	GLuint gui_quad_buffer;
+	GLuint indices_buffer;
 
 
 
@@ -1288,6 +1291,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _copy_screen_quad();
 	void _copy_to_texscreen();
 
+	bool _test_depth_shadow_buffer();
 
 	Vector3 chunk_vertex;
 	Vector3 chunk_normal;
