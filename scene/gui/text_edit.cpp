@@ -1440,7 +1440,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							
 						} else {
 							//different char, go back
-							const CharType chr[2] = {k.unicode, 0};
+							const CharType chr[2] = {(CharType)k.unicode, 0};
 							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 								_consume_pair_symbol(chr[0]);
 							} else {
@@ -2062,7 +2062,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (readonly)
 						break;
 					
-					const CharType chr[2] = {k.unicode, 0};
+					const CharType chr[2] = {(CharType)k.unicode, 0};
 					
 					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);

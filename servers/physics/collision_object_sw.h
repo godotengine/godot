@@ -34,8 +34,10 @@
 #include "self_list.h"
 #include "broad_phase_sw.h"
 
-#define MAX_OBJECT_DISTANCE 10000000
+#ifdef DEBUG_ENABLED
+#define MAX_OBJECT_DISTANCE 10000000.0
 #define MAX_OBJECT_DISTANCE_X2 (MAX_OBJECT_DISTANCE*MAX_OBJECT_DISTANCE)
+#endif
 
 class SpaceSW;
 
