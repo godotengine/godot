@@ -432,30 +432,28 @@ void Label::regenerate_word_cache() {
 			total_char_cache++;
 			
 		}
-		
-        bool unicode_wrap=false;
-        if (/*(current>255)&&*/(autowrap && line_width>=width))
-        {
-		    if (current_word_size>0) {
-				
-			    WordCache *wc = memnew( WordCache );
-			    if (word_cache) {
-				    last->next=wc;
-			    } else {
-				    word_cache=wc;
-			    }
-			    last=wc;
-				
-			    wc->pixel_width=current_word_size;
-			    wc->char_pos=word_pos;
-			    wc->word_len=i-word_pos;
-			    current_word_size=0;
-		    }
-            unicode_wrap=true;
-        }
 
-		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
-			
+		if ((autowrap && line_width>=width && (last &&  last->char_pos >= 0 || not_latin)) || insert_newline) {
+			if (not_latin) {
+				if (current_word_size>0) {
+					WordCache *wc = memnew( WordCache );
+					if (word_cache) {
+						last->next=wc;
+					} else {
+						word_cache=wc;
+					}
+					last=wc;
+
+					wc->pixel_width=current_word_size-char_width;
+					wc->char_pos=word_pos;
+					wc->word_len=i-word_pos;
+					wc->space_count = space_count;
+					current_word_size=char_width;
+					space_count=0;
+					word_pos=i;
+				}
+			}
+
 			WordCache *wc = memnew( WordCache );
 			if (word_cache) {
 				last->next=wc;
@@ -471,15 +469,6 @@ void Label::regenerate_word_cache() {
 			line_count++;
 			space_count=0;
 
-            if (unicode_wrap) {
-			    if (current_word_size==0) {
-				    word_pos=i;
-			    }
-    			
-			    int char_width=font->get_char_size(current).width;
-			    current_word_size+=char_width;
-			    line_width+=char_width;
-            }			
 		}
 		
 	}
