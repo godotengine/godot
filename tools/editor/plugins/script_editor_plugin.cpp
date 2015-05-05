@@ -130,6 +130,7 @@ void ScriptEditorQuickOpen::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
 
+
 	ADD_SIGNAL(MethodInfo("goto_line",PropertyInfo(Variant::INT,"line")));
 
 }
@@ -1089,6 +1090,18 @@ void ScriptEditor::_notification(int p_what) {
 		editor->connect("stop_pressed",this,"_editor_stop");
 		editor->connect("script_add_function_request",this,"_add_callback");
 		editor->connect("resource_saved",this,"_res_saved_callback");
+		autosave_timer->connect("timeout",this,"_autosave_scripts");
+		{
+			float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
+			if (autosave_time>0) {
+				autosave_timer->set_wait_time(autosave_time);
+				autosave_timer->start();
+			} else {
+				autosave_timer->stop();
+			}
+		}
+
+		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
 
 
 	}
@@ -1339,7 +1352,8 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
 	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
 	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
-
+	ObjectTypeDB::bind_method("_autosave_scripts",&ScriptEditor::_autosave_scripts);
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ScriptEditor::_editor_settings_changed);
 }
 
 
@@ -1568,6 +1582,25 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 
 }
 
+void ScriptEditor::_editor_settings_changed() {
+
+	print_line("settings changed");
+	float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
+	if (autosave_time>0) {
+		autosave_timer->set_wait_time(autosave_time);
+		autosave_timer->start();
+	} else {
+		autosave_timer->stop();
+	}
+
+}
+
+void ScriptEditor::_autosave_scripts() {
+
+	print_line("autosaving");
+	save_external_data();
+}
+
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	editor=p_editor;
@@ -1718,6 +1751,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	v_split->add_child(debugger);
 	debugger->connect("breaked",this,"_breaked");
+
+	autosave_timer = memnew( Timer );
+	autosave_timer->set_one_shot(false);
+	add_child(autosave_timer);
+
 //	debugger_gui->hide();
 
 }
