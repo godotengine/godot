@@ -433,7 +433,7 @@ void Label::regenerate_word_cache() {
 			
 		}
 
-		if ((autowrap && line_width>=width && (last &&  last->char_pos >= 0 || not_latin)) || insert_newline) {
+		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || not_latin)) || insert_newline) {
 			if (not_latin) {
 				if (current_word_size>0) {
 					WordCache *wc = memnew( WordCache );
