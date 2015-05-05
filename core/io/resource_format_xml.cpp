@@ -309,6 +309,7 @@ Error ResourceInteractiveLoaderXML::_parse_array_element(Vector<char> &buff,bool
 
 				buff_max++;
 				buff.resize(buff_max);
+				buffptr=buff.ptr();
 
 			}
 
@@ -2563,7 +2564,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
-		property_list.sort();
+//		property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 

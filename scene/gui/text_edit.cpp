@@ -489,7 +489,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j++;
@@ -560,7 +560,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j--;
@@ -1249,7 +1249,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 					
 					
-					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {
+					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600 && cursor.line==prev_line) {
 						//tripleclick select line
 						select(cursor.line,0,cursor.line,text[cursor.line].length());
 						last_dblclk=0;
@@ -3494,6 +3494,9 @@ void TextEdit::set_line(int line, String new_text)
 		return;
 	_remove_text(line, 0, line, text[line].length());
 	_insert_text(line, 0, new_text);
+	if (cursor.line==line) {
+		cursor.column=MIN(cursor.column,new_text.length());
+	}
 }
 
 void TextEdit::insert_at(const String &p_text, int at)

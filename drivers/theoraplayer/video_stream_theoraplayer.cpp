@@ -388,7 +388,7 @@ void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 	{
 		DVector<uint8_t>::Write wr = data.write();
 		uint8_t* ptr = wr.ptr();
-		memcpy(ptr, f->getBuffer(), imgsize);
+		copymem(ptr, f->getBuffer(), imgsize);
 	}
     /*
     for (int i=0; i<h; i++) {

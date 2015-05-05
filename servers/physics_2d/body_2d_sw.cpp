@@ -657,6 +657,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	area_linear_damp=0;
 	contact_count=0;
 	gravity_scale=1.0;
+	using_one_way_cache=false;
 	one_way_collision_max_depth=0.1;
 
 	still_time=0;

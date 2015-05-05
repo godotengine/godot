@@ -925,6 +925,19 @@ Variant KinematicBody2D::_get_collider() const {
 	return obj;
 }
 
+void KinematicBody2D::revert_motion() {
+
+	Matrix32 gt = get_global_transform();
+	gt.elements[2]-=travel;
+	travel=Vector2();
+	set_global_transform(gt);
+
+}
+
+Vector2 KinematicBody2D::get_travel() const {
+
+	return travel;
+}
 
 Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
@@ -942,6 +955,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	Matrix32 gt = get_global_transform();
 	gt.elements[2]+=result.motion;
 	set_global_transform(gt);
+	travel=result.motion;
 	return result.remainder;
 
 #else
@@ -1173,6 +1187,8 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
 
 	ObjectTypeDB::bind_method(_MD("test_move","rel_vec"),&KinematicBody2D::test_move);
+	ObjectTypeDB::bind_method(_MD("get_travel"),&KinematicBody2D::get_travel);
+	ObjectTypeDB::bind_method(_MD("revert_motion"),&KinematicBody2D::revert_motion);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody2D::is_colliding);
 

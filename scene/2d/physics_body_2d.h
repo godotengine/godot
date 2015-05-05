@@ -280,6 +280,7 @@ class KinematicBody2D : public PhysicsBody2D {
 	ObjectID collider;
 	int collider_shape;
 	Variant collider_metadata;
+	Vector2 travel;
 
 	Variant _get_collider() const;
 
@@ -294,6 +295,10 @@ public:
 
 	bool test_move(const Vector2& p_motion);
 	bool is_colliding() const;
+
+	Vector2 get_travel() const;
+	void revert_motion();
+
 	Vector2 get_collision_pos() const;
 	Vector2 get_collision_normal() const;
 	Vector2 get_collider_velocity() const;
