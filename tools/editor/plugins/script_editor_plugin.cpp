@@ -816,11 +816,11 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int begin, end;
-            begin = tx->get_selection_from_line();
+
             if (tx->is_selection_active())
             {
-                end = tx->get_selection_to_line();
+		int begin = tx->get_selection_from_line();
+		int end = tx->get_selection_to_line();
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
@@ -840,7 +840,7 @@ void ScriptEditor::_menu_option(int p_option) {
             }
             else
             {
-                begin = tx->cursor_get_line();
+		int begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
                 // begins with tab
                 if (line_text.begins_with("\t"))
@@ -866,11 +866,10 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int begin, end;
-            begin = tx->get_selection_from_line();
             if (tx->is_selection_active())
             {
-                end = tx->get_selection_to_line();
+		int begin = tx->get_selection_from_line();
+		int end = tx->get_selection_to_line();
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
@@ -880,7 +879,7 @@ void ScriptEditor::_menu_option(int p_option) {
             }
             else
             {
-                begin = tx->cursor_get_line();
+		int begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
                 line_text = '\t' + line_text;
                 tx->set_line(begin, line_text);
@@ -913,11 +912,12 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int begin, end;
-            begin = tx->get_selection_from_line();
+
+
             if (tx->is_selection_active())
             {
-                end = tx->get_selection_to_line();
+		int begin = tx->get_selection_from_line();
+		int end = tx->get_selection_to_line();
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
@@ -931,7 +931,7 @@ void ScriptEditor::_menu_option(int p_option) {
             }
             else
             {
-                begin = tx->cursor_get_line();
+		int begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
 
                 if (line_text.begins_with("#"))

@@ -3494,6 +3494,9 @@ void TextEdit::set_line(int line, String new_text)
 		return;
 	_remove_text(line, 0, line, text[line].length());
 	_insert_text(line, 0, new_text);
+	if (cursor.line==line) {
+		cursor.column=MIN(cursor.column,new_text.length());
+	}
 }
 
 void TextEdit::insert_at(const String &p_text, int at)
