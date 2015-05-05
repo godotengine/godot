@@ -407,7 +407,7 @@ Dictionary ScenePreloader::_get_bundled_scene() const {
 		rconns.push_back(cd.signal);
 		rconns.push_back(cd.method);
 		rconns.push_back(cd.binds.size());
-		for(int j=0;j<cd.binds.size();i++)
+		for(int j=0;j<cd.binds.size();j++)
 			rconns.push_back(cd.binds[j]);
 
 	}

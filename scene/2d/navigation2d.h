@@ -60,6 +60,8 @@ class Navigation2D : public Node2D {
 		float distance;
 		int prev_edge;
 
+		bool clockwise;
+
 		NavMesh *owner;
 	};
 

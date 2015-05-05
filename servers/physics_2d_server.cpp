@@ -285,7 +285,7 @@ Array Physics2DDirectSpaceState::_cast_motion(const Ref<Physics2DShapeQueryParam
 	Array ret(true);
 	ret.resize(2);
 	ret[0]=closest_safe;
-	ret[0]=closest_unsafe;
+	ret[1]=closest_unsafe;
 	return ret;
 
 }
@@ -536,6 +536,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("area_remove_shape","area","shape_idx"),&Physics2DServer::area_remove_shape);
 	ObjectTypeDB::bind_method(_MD("area_clear_shapes","area"),&Physics2DServer::area_clear_shapes);
 
+	ObjectTypeDB::bind_method(_MD("area_set_layer_mask","area","mask"),&Physics2DServer::area_set_layer_mask);
+	ObjectTypeDB::bind_method(_MD("area_set_collision_mask","area","mask"),&Physics2DServer::area_set_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("area_set_param","area","param","value"),&Physics2DServer::area_set_param);
 	ObjectTypeDB::bind_method(_MD("area_set_transform","area","transform"),&Physics2DServer::area_set_transform);
@@ -584,8 +586,8 @@ void Physics2DServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("body_set_layer_mask","body","mask"),&Physics2DServer::body_set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("body_get_layer_mask","body"),&Physics2DServer::body_get_layer_mask);
 
-	ObjectTypeDB::bind_method(_MD("body_set_user_mask","body","mask"),&Physics2DServer::body_set_user_mask);
-	ObjectTypeDB::bind_method(_MD("body_get_user_mask","body"),&Physics2DServer::body_get_user_mask);
+	ObjectTypeDB::bind_method(_MD("body_set_collision_mask","body","mask"),&Physics2DServer::body_set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("body_get_collision_mask","body"),&Physics2DServer::body_get_collision_mask);
 
 
 	ObjectTypeDB::bind_method(_MD("body_set_param","body","param","value"),&Physics2DServer::body_set_param);

@@ -111,6 +111,9 @@ struct PropertyInfo {
 	PropertyInfo( Variant::Type p_type, const String p_name, PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_string="",uint32_t p_usage=PROPERTY_USAGE_DEFAULT) {
 		type=p_type; name=p_name; hint=p_hint; hint_string=p_hint_string; usage=p_usage;
 	}
+	bool operator<(const PropertyInfo& p_info) const {
+		return name<p_info.name;
+	}
 };
 
 

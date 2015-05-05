@@ -101,6 +101,8 @@ class Space2DSW {
 	int active_objects;
 	int collision_pairs;
 
+	int _cull_aabb_for_body(Body2DSW *p_body,const Rect2& p_aabb);
+
 friend class Physics2DDirectSpaceStateSW;
 
 public:

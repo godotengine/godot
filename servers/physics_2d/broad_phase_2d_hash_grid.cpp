@@ -467,9 +467,10 @@ int BroadPhase2DHashGrid::cull_segment(const Vector2& p_from, const Vector2& p_t
 	delta.x=cell_size/delta.x;
 	delta.y=cell_size/delta.y;
 
-	Point2i pos = p_from.floor() / cell_size;
-	Point2i end = p_to.floor() / cell_size;
-	Point2i step = Vector2( SGN(dir.x), SGN(dir.y));
+	Point2i pos = (p_from/cell_size).floor();
+	Point2i end = (p_to/cell_size).floor();
+
+	Point2i step = Vector2( SGN(dir.x), SGN(dir.y) );
 
 	Vector2 max;
 

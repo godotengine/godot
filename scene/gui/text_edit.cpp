@@ -489,7 +489,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j++;
@@ -560,7 +560,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j--;
@@ -1249,7 +1249,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 					
 					
-					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {
+					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600 && cursor.line==prev_line) {
 						//tripleclick select line
 						select(cursor.line,0,cursor.line,text[cursor.line].length());
 						last_dblclk=0;
@@ -1552,7 +1552,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					case KEY_HOME:
 					case KEY_END:
 						// ignore arrows if any modifiers are held (shift = selecting, others may be used for editor hotkeys)
-						if (k.mod.command || k.mod.shift || k.mod.alt || k.mod.command)
+						if (k.mod.command || k.mod.shift || k.mod.alt)
 							break;
 						unselect=true;
 						break;

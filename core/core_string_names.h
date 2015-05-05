@@ -56,6 +56,7 @@ public:
 	StringName _iter_init;
 	StringName _iter_next;
 	StringName _iter_get;
+	StringName get_rid;
 
 };
 

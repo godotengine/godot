@@ -125,7 +125,7 @@ class ResourceFormatSaverXMLInstance  {
 	int depth;
 	Map<RES,int> resource_map;
 	List<RES> saved_resources;
-	Set<RES> external_resources;
+	List<RES> external_resources;
 
 	void enter_tag(const char* p_tag,const String& p_args=String());
 	void exit_tag(const char* p_tag);

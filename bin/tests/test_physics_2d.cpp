@@ -191,7 +191,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 
 			Image image(convex_png);
 
-			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].image=vs->texture_create_from_image(image);
+			body_shape_data[Physics2DServer::SHAPE_CUSTOM+1].image=vs->texture_create_from_image(image);
 
 			RID convex_polygon_shape = ps->shape_create(Physics2DServer::SHAPE_CONVEX_POLYGON);
 
@@ -206,7 +206,7 @@ class TestPhysics2DMainLoop : public MainLoop {
 			arr.push_back(Point2(11,7)-sb);
 			ps->shape_set_data(convex_polygon_shape,arr);
 
-			body_shape_data[Physics2DServer::SHAPE_CONVEX_POLYGON].shape = convex_polygon_shape;
+			body_shape_data[Physics2DServer::SHAPE_CUSTOM+1].shape = convex_polygon_shape;
 
 		}
 

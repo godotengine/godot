@@ -216,6 +216,7 @@ void Camera2D::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
 
+
 			viewport = NULL;
 			Node *n=this;
 			while(n){
@@ -526,6 +527,7 @@ Camera2D::Camera2D() {
 	drag_margin[MARGIN_RIGHT]=0.2;
 	drag_margin[MARGIN_BOTTOM]=0.2;
 	camera_pos=Vector2();
+	first=true;
 
 	smoothing=0.0;
 	zoom = Vector2(1, 1);

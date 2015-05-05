@@ -19442,7 +19442,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="body_set_user_mask"  >
+		<method name="body_set_collision_mask"  >
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="mask" type="int">
@@ -19450,7 +19450,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="body_get_user_mask" qualifiers="const" >
+		<method name="body_get_collision_mask" qualifiers="const" >
 			<return type="int">
 			</return>
 			<argument index="0" name="body" type="RID">

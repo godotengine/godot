@@ -536,7 +536,7 @@ void Generic6DOFJointSW::set_param(Vector3::Axis p_axis,PhysicsServer::G6DOFJoin
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS: {
 
-			m_angularLimits[p_axis].m_limitSoftness;
+			m_angularLimits[p_axis].m_limitSoftness=p_value;
 
 		} break;
 		case PhysicsServer::G6DOF_JOINT_ANGULAR_DAMPING: {

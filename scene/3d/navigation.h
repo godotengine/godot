@@ -59,6 +59,8 @@ class Navigation : public Spatial {
 
 		float distance;
 		int prev_edge;
+		bool clockwise;
+
 
 		NavMesh *owner;
 	};

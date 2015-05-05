@@ -1573,7 +1573,9 @@ void EditorNode::_cleanup_scene() {
 
 void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 	
-	current_option=(MenuOptions)p_option;
+	//print_line("option "+itos(p_option)+" confirm "+itos(p_confirmed));
+	if (!p_confirmed) //this may be a hack..
+		current_option=(MenuOptions)p_option;
 
 
 	switch( p_option ) {
@@ -1944,13 +1946,16 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_QUIT: {
 			
+
 			if (!p_confirmed) {
-				confirmation->get_ok()->set_text(_TR("Quit"));
+
+				confirmation->get_ok()->set_text("Quit");
 				//confirmation->get_cancel()->show();
 				confirmation->set_text(_TR("Exit the Editor?"));
 				confirmation->popup_centered(Size2(180,70));
 				break;
 			}
+
 
 			_menu_option_confirm(RUN_STOP,true);
 			get_tree()->quit();
@@ -3544,6 +3549,7 @@ EditorNode::EditorNode() {
 	p=file_menu->get_popup();
 	p->add_item("New Scene",FILE_NEW_SCENE);
 	p->add_item("Open Scene..",FILE_OPEN_SCENE,KEY_MASK_CMD+KEY_O);
+	p->add_separator();
 	p->add_item("Save Scene",FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);
 	p->add_item("Save Scene As..",FILE_SAVE_AS_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S);
 	p->add_separator();

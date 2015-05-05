@@ -309,6 +309,7 @@ Error ResourceInteractiveLoaderXML::_parse_array_element(Vector<char> &buff,bool
 
 				buff_max++;
 				buff.resize(buff_max);
+				buffptr=buff.ptr();
 
 			}
 
@@ -2243,12 +2244,12 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 			List<Variant> keys;
 			dict.get_key_list(&keys);
+			keys.sort();
 
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 				//if (!_check_type(dict[E->get()]))
 				//	continue;
-
 				bool ok;
 				write_property("",E->get(),&ok);
 				ERR_CONTINUE(!ok);
@@ -2438,7 +2439,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 				return;
 
 			if (!p_main && (!bundle_resources ) && res->get_path().length() && res->get_path().find("::") == -1 ) {
-				external_resources.insert(res);
+				external_resources.push_back(res);
 				return;
 			}
 
@@ -2448,6 +2449,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 			List<PropertyInfo> property_list;
 
 			res->get_property_list( &property_list );
+			property_list.sort();
 
 			List<PropertyInfo>::Element *I=property_list.front();
 
@@ -2585,6 +2587,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
+//		property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 

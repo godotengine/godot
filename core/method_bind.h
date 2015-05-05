@@ -98,7 +98,7 @@ struct VariantCaster<m_enum> {\
 #define CHECK_ARG(m_arg)\
 	if ((m_arg-1)<p_arg_count) {\
 		Variant::Type argtype=get_argument_type(m_arg-1);\
-		if (!Variant::can_convert(p_args[m_arg-1]->get_type(),argtype)) {\
+		if (!Variant::can_convert_strict(p_args[m_arg-1]->get_type(),argtype)) {\
 			r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;\
 			r_error.argument=m_arg-1;\
 			r_error.expected=argtype;\

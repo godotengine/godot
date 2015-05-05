@@ -250,6 +250,7 @@ void Particles2D::_process_particles(float p_delta) {
 		if (time_to_live < 0) {
 
 			emitting = false;
+			_change_notify("config/emitting");
 		};
 	};
 
@@ -717,6 +718,7 @@ void Particles2D::set_emitting(bool p_emitting) {
 		time_to_live = emit_timeout;
 	};
 	emitting=p_emitting;
+	_change_notify("config/emitting");
 }
 
 bool Particles2D::is_emitting() const {

@@ -1376,7 +1376,7 @@ void AnimationKeyEditor::_track_editor_input_event(const InputEvent& p_input) {
 					if (p_input.is_action("ui_up"))
 						selected_track--;
 					if (v_scroll->is_visible() && p_input.is_action("ui_page_up"))
-						selected_track=selected_track--;;
+						selected_track--;;
 
 					if (selected_track<0)
 						selected_track=0;
@@ -2539,7 +2539,7 @@ void AnimationKeyEditor::_query_insert(const InsertData& p_id) {
 				insert_confirm->set_text("Create "+itos(insert_data.size())+" NEW tracks and insert keys?");
 
 			insert_confirm->get_ok()->set_text("Create");
-			insert_confirm->popup_centered(Size2(300,100));
+			insert_confirm->popup_centered_minsize();
 			insert_query=true;
 		} else {
 			call_deferred("_insert_delay");

@@ -1738,7 +1738,13 @@ void AnimationTreePlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_base_path","path"),&AnimationTreePlayer::set_base_path);
 	ObjectTypeDB::bind_method(_MD("get_base_path"),&AnimationTreePlayer::get_base_path);
 
+	ObjectTypeDB::bind_method(_MD("set_master_player","nodepath"),&AnimationTreePlayer::set_master_player);
+	ObjectTypeDB::bind_method(_MD("get_master_player"),&AnimationTreePlayer::get_master_player);
+
 	ObjectTypeDB::bind_method(_MD("get_node_list"),&AnimationTreePlayer::_get_node_list);
+
+
+
 
 	ObjectTypeDB::bind_method(_MD("reset"),&AnimationTreePlayer::reset);
 

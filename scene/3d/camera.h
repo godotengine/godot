@@ -126,6 +126,7 @@ public:
 	Vector3 project_ray_origin(const Point2& p_point) const;
 	Vector3 project_local_ray_normal(const Point2& p_point) const;
 	Point2 unproject_position(const Vector3& p_pos) const;
+	bool is_position_behind(const Vector3& p_pos) const;
 	Vector3 project_position(const Point2& p_point) const;
 
 	void set_visible_layers(uint32_t p_layers);
