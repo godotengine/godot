@@ -969,7 +969,7 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	[window_object makeKeyAndOrderFront:nil];
 
 	if (p_desired.fullscreen)
-		set_window_fullscreen(true);
+		zoomed = true;
 
 	/*** END OSX INITIALIZATION ***/
 	/*** END OSX INITIALIZATION ***/
@@ -1312,11 +1312,13 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 
 void OS_OSX::set_window_fullscreen(bool p_enabled) {
 
+	if (zoomed != p_enabled) {
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
-	[window_object toggleFullScreen:nil];
+		[window_object toggleFullScreen:nil];
 #else
-	[window_object performZoom:nil];
+		[window_object performZoom:nil];
 #endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
+	}
 	zoomed = p_enabled;
 };
 
@@ -1516,6 +1518,11 @@ void OS_OSX::run() {
 		return;
 
 	main_loop->init();
+
+	if (zoomed) {
+		zoomed = false;
+		set_window_fullscreen(true);
+	}
 
 //	uint64_t last_ticks=get_ticks_usec();
 
