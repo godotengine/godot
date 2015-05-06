@@ -92,7 +92,9 @@ void PackedData::add_path(const String& pkg_path, const String& path, uint64_t o
 
 void PackedData::add_pack_source(PackSource *p_source) {
 
-	sources.push_back(p_source);
+	if (p_source != NULL) {
+		sources.push_back(p_source);
+	}
 };
 
 PackedData *PackedData::singleton=NULL;
