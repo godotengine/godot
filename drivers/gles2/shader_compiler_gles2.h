@@ -56,6 +56,13 @@ private:
 	bool uses_worldvec;
 	bool vertex_code_writes_vertex;
 	bool uses_shadow_color;
+
+	bool sinh_used;
+	bool tanh_used;
+	bool cosh_used;
+
+	bool custom_h;
+
 	Flags *flags;
 
 	StringName vname_discard;

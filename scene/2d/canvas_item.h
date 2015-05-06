@@ -260,6 +260,9 @@ public:
 
 	InputEvent make_input_local(const InputEvent& pevent) const;
 
+	Vector2 get_global_mouse_pos() const;
+	Vector2 get_local_mouse_pos() const;
+
 	CanvasItem();
 	~CanvasItem();
 };

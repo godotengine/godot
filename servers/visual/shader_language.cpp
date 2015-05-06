@@ -1279,7 +1279,7 @@ ShaderLanguage::Node* ShaderLanguage::validate_function_call(Parser&parser, Oper
 
 		if (p_func->op==OP_CONSTRUCT && all_const) {
 
-			bool all_const=false;
+
 			Vector<float> cdata;
 			for(int i=0;i<argcount;i++) {
 

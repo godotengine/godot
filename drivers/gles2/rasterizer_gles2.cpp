@@ -1263,7 +1263,6 @@ void RasterizerGLES2::texture_set_flags(RID p_texture,uint32_t p_flags) {
 		p_flags&=VS::TEXTURE_FLAG_FILTER;//can change only filter
 	}
 
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(texture->target, texture->tex_id);
 	uint32_t cube = texture->flags & VS::TEXTURE_FLAG_CUBEMAP;
@@ -9452,6 +9451,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 
 			while(light) {
 
+
 				if (ci->light_mask&light->item_mask && p_z>=light->z_min && p_z<=light->z_max && ci->global_rect_cache.intersects_transformed(light->xform_cache,light->rect_cache)) {
 
 					//intersects this light
@@ -9488,6 +9488,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 						normal_flip=Vector2(1,1);
 
 					}
+
 
 					bool has_shadow = light->shadow_buffer.is_valid() && ci->light_mask&light->item_shadow_mask;
 

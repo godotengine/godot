@@ -383,6 +383,7 @@ GeometryInstance::GeometryInstance() {
 	flags[FLAG_RECEIVE_SHADOWS]=true;
 	baked_light_instance=NULL;
 	baked_light_texture_id=0;
+	extra_cull_margin=0;
 	VS::get_singleton()->instance_geometry_set_baked_light_texture_index(get_instance(),0);
 
 

@@ -48,8 +48,8 @@ uint32_t Math::rand_from_seed(uint32_t *seed) {
 		s = 0x12345987;
 	k = s / 127773;
 	s = 16807 * (s - k * 127773) - 2836 * k;
-	if (s < 0)
-		s += 2147483647;
+//	if (s < 0)
+//		s += 2147483647;
 	(*seed) = s;
 	return (s & Math::RANDOM_MAX);
 #else

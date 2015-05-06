@@ -233,7 +233,7 @@ int CPPlayer::get_channel_voice(int p_channel) {
 
 const char* CPPlayer::get_voice_sample_name(int p_voice) {
 
-	const char *name;
+	const char *name = NULL;
 
 
 
@@ -302,7 +302,7 @@ const char * CPPlayer::get_voice_instrument_name(int p_voice) {
 
 
 
-	const char *name;
+	const char *name = NULL;
 
 
 

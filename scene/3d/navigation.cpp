@@ -30,6 +30,7 @@ void Navigation::_navmesh_link(int p_id) {
 		p.edges.resize(plen);
 
 		Vector3 center;
+		float sum=0;
 
 		for(int j=0;j<plen;j++) {
 
@@ -44,7 +45,18 @@ void Navigation::_navmesh_link(int p_id) {
 			center+=ep;
 			e.point=_get_point(ep);
 			p.edges[j]=e;
+
+			if (j>=2) {
+				Vector3 epa = nm.xform.xform(r[indices[j-2]]);
+				Vector3 epb = nm.xform.xform(r[indices[j-1]]);
+
+				sum+=up.dot((epb-epa).cross(ep-epa));
+
+			}
+
 		}
+
+		p.clockwise=sum>0;
 
 		if (!valid) {
 			nm.polygons.pop_back();
@@ -399,7 +411,8 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 					left = _get_vertex(p->edges[prev].point);
 					right = _get_vertex(p->edges[prev_n].point);
 
-					if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5).dot(up) < 0){
+					//if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5).dot(up) < 0){
+					if (p->clockwise) {
 						SWAP(left,right);
 					}
 				}

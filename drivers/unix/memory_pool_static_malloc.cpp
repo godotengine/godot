@@ -153,7 +153,7 @@ void* MemoryPoolStaticMalloc::_realloc(void *p_memory,size_t p_bytes) {
 		return alloc( p_bytes );
 	}
 		
-	if (p_bytes<=0) {
+	if (p_bytes==0) {
 		
 		this->free(p_memory);
 		ERR_FAIL_COND_V( p_bytes < 0 , NULL );

@@ -719,8 +719,8 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 
 
 			xm_sample=CLAMP(in[i]*32767.0,-32768,32767);
-			if (xm_sample==32767 || xm_sample==-32768)
-				printf("clippy!\n",xm_sample);
+			//if (xm_sample==32767 || xm_sample==-32768)
+			//	printf("clippy!\n",xm_sample);
 		}
 
 	//	xm_sample=xm_sample+xm_prev;

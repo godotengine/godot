@@ -555,6 +555,42 @@ Physics2DDirectSpaceStateSW::Physics2DDirectSpaceStateSW() {
 
 
 
+int Space2DSW::_cull_aabb_for_body(Body2DSW *p_body,const Rect2& p_aabb) {
+
+
+	int amount = broadphase->cull_aabb(p_aabb,intersection_query_results,INTERSECTION_QUERY_MAX,intersection_query_subindex_results);
+
+	for(int i=0;i<amount;i++) {
+
+		bool keep=true;
+
+		if (intersection_query_results[i]==p_body)
+			keep=false;
+		else if (intersection_query_results[i]->get_type()==CollisionObject2DSW::TYPE_AREA)
+			keep=false;
+		else if ((static_cast<Body2DSW*>(intersection_query_results[i])->test_collision_mask(p_body))==0)
+			keep=false;
+		else if (static_cast<Body2DSW*>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self()))
+			keep=false;
+		else if (static_cast<Body2DSW*>(intersection_query_results[i])->is_shape_set_as_trigger(intersection_query_subindex_results[i]))
+			keep=false;
+
+		if (!keep) {
+
+			if (i<amount-1) {
+				SWAP(intersection_query_results[i],intersection_query_results[amount-1]);
+				SWAP(intersection_query_subindex_results[i],intersection_query_subindex_results[amount-1]);
+
+			}
+
+			amount--;
+			i--;
+
+		}
+	}
+
+	return amount;
+}
 
 bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p_margin,Physics2DServer::MotionResult *r_result) {
 
@@ -577,45 +613,6 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 
 	body_aabb=body_aabb.grow(p_margin);
 
-	{
-		//add motion
-
-		Rect2 motion_aabb=body_aabb;
-		motion_aabb.pos+=p_motion;
-		body_aabb=body_aabb.merge(motion_aabb);
-	}
-
-
-	int amount = broadphase->cull_aabb(body_aabb,intersection_query_results,INTERSECTION_QUERY_MAX,intersection_query_subindex_results);
-
-	for(int i=0;i<amount;i++) {
-
-		bool keep=true;
-
-		if (intersection_query_results[i]==p_body)
-			keep=false;
-		else if (intersection_query_results[i]->get_type()==CollisionObject2DSW::TYPE_AREA)
-			keep=false;
-		else if ((static_cast<Body2DSW*>(intersection_query_results[i])->get_layer_mask()&p_body->get_layer_mask())==0)
-			keep=false;
-		else if (static_cast<Body2DSW*>(intersection_query_results[i])->has_exception(p_body->get_self()) || p_body->has_exception(intersection_query_results[i]->get_self()))
-			keep=false;
-		else if (static_cast<Body2DSW*>(intersection_query_results[i])->is_shape_set_as_trigger(intersection_query_subindex_results[i]))
-			keep=false;
-
-		if (!keep) {
-
-			if (i<amount-1) {
-				SWAP(intersection_query_results[i],intersection_query_results[amount-1]);
-				SWAP(intersection_query_subindex_results[i],intersection_query_subindex_results[amount-1]);
-
-			}
-
-			amount--;
-			i--;
-
-		}
-	}
 
 	Matrix32 body_transform = p_body->get_transform();
 
@@ -642,6 +639,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 
 			bool collided=false;
 
+			int amount = _cull_aabb_for_body(p_body,body_aabb);
 
 			for(int j=0;j<p_body->get_shape_count();j++) {
 				if (p_body->is_shape_set_as_trigger(j))
@@ -694,6 +692,7 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 			}
 
 			body_transform.elements[2]+=recover_motion;
+			body_aabb.pos+=recover_motion;
 
 			recover_attempts--;
 
@@ -709,7 +708,11 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 	{
 		// STEP 2 ATTEMPT MOTION
 
+		Rect2 motion_aabb=body_aabb;
+		motion_aabb.pos+=p_motion;
+		motion_aabb=motion_aabb.merge(body_aabb);
 
+		int amount = _cull_aabb_for_body(p_body,motion_aabb);
 
 		for(int j=0;j<p_body->get_shape_count();j++) {
 
@@ -846,6 +849,10 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 
 		Matrix32 body_shape_xform = ugt * p_body->get_shape_transform(best_shape);
 		Shape2DSW *body_shape = p_body->get_shape(best_shape);
+
+		body_aabb.pos+=p_motion*unsafe;
+
+		int amount = _cull_aabb_for_body(p_body,body_aabb);
 
 
 		for(int i=0;i<amount;i++) {

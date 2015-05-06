@@ -268,7 +268,9 @@ if (m_height > line_height) {\
 						}
 
 						if (found_space) {
-							fw+=l.offset_caches[line]/l.space_caches[line];
+							int ln = MIN(l.offset_caches.size()-1,line);
+
+							fw+=l.offset_caches[ln]/l.space_caches[ln];
 						}
 
 					}

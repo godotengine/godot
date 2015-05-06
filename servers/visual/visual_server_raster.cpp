@@ -7047,17 +7047,20 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 			for(Set<Rasterizer::CanvasLight*>::Element *F=E->get().canvas->lights.front();F;F=F->next()) {
 
+
 				Rasterizer::CanvasLight* cl=F->get();
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize(rasterizer->texture_get_width(cl->texture),rasterizer->texture_get_height(cl->texture));
 					tsize*=cl->scale;
+
 					Vector2 offset=tsize/2.0;
 					cl->rect_cache=Rect2(-offset+cl->texture_offset,tsize);
 					cl->xform_cache=xf * cl->xform;
 
 
 					if (clip_rect.intersects_transformed(cl->xform_cache,cl->rect_cache)) {
+
 						cl->filter_next_ptr=lights;
 						lights=cl;
 						cl->texture_cache=NULL;
@@ -7067,6 +7070,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 						cl->light_shader_xform = (cl->xform_cache * scale).affine_inverse();
 						cl->light_shader_pos=cl->xform_cache[2];
 						if (cl->shadow_buffer.is_valid()) {
+
 							cl->shadows_next_ptr=lights_with_shadow;
 							if (lights_with_shadow==NULL) {
 								shadow_rect = cl->xform_cache.xform(cl->rect_cache);

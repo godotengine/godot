@@ -165,7 +165,8 @@ public:
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
-	static bool can_convert(Type p_type_from,Type p_type_to);
+	static bool can_convert(Type p_type_from, Type p_type_to);
+	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
 
 
@@ -408,7 +409,8 @@ public:
 
 	//argsVariant call()
 
-	bool operator==(const Variant& p_variant) const;	
+	bool operator==(const Variant& p_variant) const;
+	bool operator<(const Variant& p_variant) const;
 	uint32_t hash() const;
 
 	bool booleanize(bool &valid) const;
