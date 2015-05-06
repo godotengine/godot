@@ -748,8 +748,6 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
 
-	if (packed_data)
-		memdelete( packed_data );
 #ifdef MINIZIP_ENABLED
 	if (zip_packed_data)
 		memdelete( zip_packed_data );
