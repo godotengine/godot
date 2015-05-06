@@ -1,0 +1,13 @@
+Import('env')
+
+
+jpg_sources = [
+	"jpg/tinyjpeg.c",
+	"jpg/jidctflt.c",
+	"jpg/image_loader_jpg.cpp"
+	]
+
+env.drivers_sources+=jpg_sources
+
+#env.add_source_files(env.drivers_sources, jpg_sources)
+

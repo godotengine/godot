@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Google Play სერვისების მიღება"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"ეს აპი ვერ გაეშვება Google Play სერვისების გარეშე, რაც თქვენს ტელეფონზე ვერ იძებნება."</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"ეს აპი ვერ გაეშვება Google Play სერვისების გარეშე, რაც თქვენს ტელეფონზე ვერ იძებნება."</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Google Play სერვისების მიღება"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Google Play სერვისების გააქტიურება"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"ეს აპი არ იმუშავებს, თუ არ გაააქტიურებთ Google Play სერვისებს."</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Google Play სერვისების გააქტიურება"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Google Play სერვისების განახლება"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"ეს აპი ვერ გაეშვება, თუ Google Play სერვისებს არ განაახლებთ."</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"ქსელის შეცდომა"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Google Play Services-თან დასაკავშირებლად მონაცემთა გადაცემა აუცილებელია."</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"ანგარიში არასწორია"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"მითითებული ანგარიში ამ მოწყობილობაზე არ არსებობს. გთხოვთ, აირჩიოთ სხვა ანგარიში."</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Google Play სერვისებთან დაკავშირებით უცნობი შეფერხება წარმოიშვა."</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Google Play სერვისები"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Google Play სერვისები, რაც თქვენს ზოგიერთ აპს ჭირდება, თქვენს მოწყობილობაზე მხარდაჭერილი არ არის. გთხოვთ, დაუკავშირდეთ მწარმოებელს დახმარებისათვის."</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"როგორც ჩანს, მოწყობილობის თარიღი არასწორია. გთხოვთ, შეამოწმოთ მოწყობილობის თარიღი."</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"განახლება"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"შესვლა"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Google-ით შესვლა"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"აპლიკაცია შეეცადა გამოეყენებინა Google Play სერვისების არასწორი ვერსია."</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"აპლიკაცია საჭიროებს გააქტიურებულ Google Play Services."</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"აპლიკაცია საჭიროებს Google Play Services-ის ინსტალაციას."</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"აპლიკაცია საჭიროებს Google Play Services-ის განახლებას."</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Google Play სერვისების შეცდომა"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"მომთხოვნი: <xliff:g id="APP_NAME">%1$s</xliff:g>"</string>
+</resources>

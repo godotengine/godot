@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"Տեղադրեք Google Play ծառայությունները"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"Այս հավելվածը չի գործարկվի առանց Google Play ծառայությունների, որոնք բացակայում են ձեր հեռախոսում:"</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"Այս հավելվածը չի գործարկվի առանց Google Play ծառայությունների, որոնք բացակայում են ձեր գրասալիկում:"</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"Տեղադրել Google Play ծառայությունները"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"Միացնել Google Play ծառայությունները"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"Այս ծրագիրը չի աշխատի, եթե դուք չմիացնեք Google Play ծառայությունները:"</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"Միացնել Google Play ծառայությունները"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"Նորացրեք Google Play ծառայությունները"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"Այս ծրագիրը չի գործարկվի, եթե դուք չնորացնեք Google Play ծառայությունները:"</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"Ցանցի սխալ կա"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"Պահանջվում է տվյալների կապ` Google Play ծառայություններին միանալու համար:"</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"Հաշիվն անվավեր է"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"Նշված հաշիվը գոյություն չունի այս սարքում: Ընտրեք այլ հաշիվ:"</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Անհայտ խնդիր՝ Google Play ծառայություններում:"</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Google Play ծառայություններ"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"Google Play ծառայությունները, որոնց ապավինում են ձեր ծրագրերից որոշները, չեն աջակցվում ձեր սարքի կողմից: Խնդրում ենք կապվել արտադրողի հետ օգնության համար:"</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"Սարքի ամսաթիվը կարծես սխալ է: Ստուգեք սարքի ամսաթիվը:"</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"Նորացնել"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"Մուտք գործել"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"Մուտք գործեք Google-ով"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"Հավելվածը փորձել է կիրառել Google Play ծառայությունների վատ տարբերակը:"</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"Հավելվածը պահանջում է միացնել Google Play ծառայությունները:"</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"Հավելվածը պահանջում է տեղադրել Google Play ծառայությունները:"</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"Հավելվածը պահանջում է թարմացնել Google Play ծառայությունները:"</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Google Play ծառայությունների սխալ"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"<xliff:g id="APP_NAME">%1$s</xliff:g>-ի հարցմամբ"</string>
+</resources>

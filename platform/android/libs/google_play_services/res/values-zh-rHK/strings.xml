@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <string name="common_google_play_services_install_title" msgid="26645092511305524">"取得 Google Play 服務"</string>
+    <string name="common_google_play_services_install_text_phone" msgid="8685301130651051380">"您的手機未安裝 Google Play 服務，安裝後才能執行這個應用程式。"</string>
+    <string name="common_google_play_services_install_text_tablet" msgid="1589957570365247855">"您的平板電腦未安裝 Google Play 服務，安裝後才能執行這個應用程式。"</string>
+    <string name="common_google_play_services_install_button" msgid="8515591849428043265">"取得 Google Play 服務"</string>
+    <string name="common_google_play_services_enable_title" msgid="529078775174559253">"啟用 Google Play 服務"</string>
+    <string name="common_google_play_services_enable_text" msgid="7627896071867667758">"您必須啟用 Google Play 服務，才能執行這個應用程式。"</string>
+    <string name="common_google_play_services_enable_button" msgid="4181637455539816337">"啟用 Google Play 服務"</string>
+    <string name="common_google_play_services_update_title" msgid="6006316683626838685">"更新 Google Play 服務"</string>
+    <string name="common_google_play_services_update_text" msgid="448354684997260580">"您必須更新 Google Play 服務，才能執行這個應用程式。"</string>
+    <string name="common_google_play_services_network_error_title" msgid="3827284619958211114">"網絡錯誤"</string>
+    <string name="common_google_play_services_network_error_text" msgid="9038847255613537209">"要連接 Google Play 服務，必需數據連線。"</string>
+    <string name="common_google_play_services_invalid_account_title" msgid="1066672360770936753">"無效的帳戶"</string>
+    <string name="common_google_play_services_invalid_account_text" msgid="4983316348021735578">"這個裝置上沒有您指定的帳戶，請選擇其他帳戶。"</string>
+    <string name="common_google_play_services_unknown_issue" msgid="4762332809710093730">"Google Play 服務出現不明問題。"</string>
+    <string name="common_google_play_services_unsupported_title" msgid="6334768798839376943">"Google Play 服務"</string>
+    <string name="common_google_play_services_unsupported_text" msgid="3542578567569488671">"您的裝置不支援部分應用程式所需的 Google Play 服務。如需協助，請與您的裝置製造商聯絡。"</string>
+    <string name="common_google_play_services_unsupported_date_text" msgid="4725396522367789365">"裝置上的日期看來不正確，請檢查裝置上的日期。"</string>
+    <string name="common_google_play_services_update_button" msgid="8932944190611227642">"更新"</string>
+    <string name="common_signin_button_text" msgid="9071884888741449141">"登入"</string>
+    <string name="common_signin_button_text_long" msgid="2429381841831957106">"登入 Google"</string>
+
+    <string name="auth_client_using_bad_version_title" msgid="2534454398764507874">"應用程式嘗試使用錯誤版本的「Google Play 服務」。"</string>
+    <string name="auth_client_needs_enabling_title" msgid="3983201110833868073">"必須啟用「Google Play 服務」，才能使用應用程式。"</string>
+    <string name="auth_client_needs_installation_title" msgid="7999585836145154206">"必須安裝「Google Play 服務」，才能使用應用程式。"</string>
+    <string name="auth_client_needs_update_title" msgid="6488605506794595966">"必須更新「Google Play 服務」，才能使用應用程式。"</string>
+    <string name="auth_client_play_services_err_notification_msg" msgid="3635065018897986478">"Google Play 服務錯誤"</string>
+    <string name="auth_client_requested_by_msg" msgid="6304135633531965756">"「<xliff:g id="APP_NAME">%1$s</xliff:g>」提出要求"</string>
+</resources>

@@ -1,0 +1,69 @@
+import shutil
+
+Import('env')
+
+android_files = [
+
+	'os_android.cpp',
+	'godot_android.cpp',
+	'file_access_android.cpp',
+	'dir_access_android.cpp',
+	'audio_driver_opensl.cpp',
+	'file_access_jandroid.cpp',
+	'dir_access_jandroid.cpp',
+	'thread_jandroid.cpp',
+	'audio_driver_jandroid.cpp',
+	'ifaddrs_android.cpp',
+	'android_native_app_glue.c',
+	'java_glue.cpp'
+]
+
+#env.Depends('#core/math/vector3.h', 'vector3_psp.h')
+
+#obj = env.SharedObject('godot_android.cpp')
+
+env_android = env.Clone()
+if env['target'] == "profile":
+	env_android.Append(CPPFLAGS=['-DPROFILER_ENABLED'])
+
+android_objects=[]
+for x in android_files:
+	android_objects.append( env_android.SharedObject( x ) )
+
+prog = None
+
+abspath=env.Dir(".").abspath
+
+
+pp_basein = open(abspath+"/project.properties.template","rb")
+pp_baseout = open(abspath+"/java/project.properties","wb")
+pp_baseout.write( pp_basein.read() )
+
+refcount=1
+
+for x in env.android_source_modules:
+	pp_baseout.write("android.library.reference."+str(refcount)+"="+x+"\n")
+	refcount+=1
+
+
+
+pp_baseout.close()
+
+
+pp_basein = open(abspath+"/AndroidManifest.xml.template","rb")
+pp_baseout = open(abspath+"/java/AndroidManifest.xml","wb")
+manifest = pp_basein.read()
+manifest = manifest.replace("$$ADD_APPLICATION_CHUNKS$$",env.android_manifest_chunk)
+pp_baseout.write( manifest )
+
+
+for x in env.android_source_files:
+	shutil.copy(x,abspath+"/java/src/com/android/godot")	
+
+for x in env.android_module_libraries:
+	shutil.copy(x,abspath+"/java/libs")	
+
+
+env_android.SharedLibrary("#platform/android/libgodot_android.so",[android_objects])
+
+env.Command('#bin/libgodot_android.so', '#platform/android/libgodot_android.so', Copy('bin/libgodot_android.so', 'platform/android/libgodot_android.so'))

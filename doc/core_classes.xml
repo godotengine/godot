@@ -1,0 +1,2654 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<doc version="1.0" name="Core Types">
+<class category="Core" name="Vector3">
+	<brief_description>
+	Vector class, which performs basic 3D vector math operations.
+	</brief_description>
+	<description>
+	Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vecor math operations. 
+	</description>
+	<methods>
+	<method name="operator+">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		Sum.
+		</return>
+		<description>
+		Add two vectors.
+		</description>
+	</method>
+	<method name="operator-">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		Difference.
+		</return>
+		<description>
+		Substract two vectors.
+		</description>
+	</method>
+	<method name="operator/">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		Quotient.
+		</return>
+		<description>
+		Divide two vectors (component wise).		
+		</description>
+	</method>
+	<method name="operator*">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		Product.
+		</return>
+		<description>
+		Multiply two vectors (components wise).		
+		</description>
+	</method>
+	<method name="set_axis">
+		<argument index="0" name="axis" type="int">
+		Axis Index.
+		</argument>
+		<argument index="1" name="value" type="real">
+		Value.
+		</argument>
+		<description>
+		Set an individual axis (0 is X, 1 is Y and 2 is Z). the enum constants Vector.AXIS_X, Vector.AXIS_Y, and Vector.AXIS_Z, are also valid. This is specially useful for for-loops.
+		</description>
+	</method>
+	<method name="get_axis">
+		<argument index="0" name="axis" type="int">
+		Axis Index.
+		</argument>
+		<return type="real">
+		Value.
+		</return>
+		<description>
+		Set an individual axis (0 is X, 1 is Y and 2 is Z). the enum constants Vector.AXIS_X, Vector.AXIS_Y, and Vector.AXIS_Z, are also valid. This is specially useful for for-loops.
+		</description>
+	</method>
+	<method name="length">
+		<return type="real">
+		Length: sqrt(x^2+y^2+z^2)
+		</return>
+		<description>
+		Return the length of the vector.
+		</description>
+	</method>
+	<method name="length_squared">
+		<return type="real">
+		Squared Length: x^2+y^2+z^2.
+		</return>
+		<description>
+		Return the length of the vector, without the square root step.
+		</description>
+	</method>
+	<method name="normalize">
+		<description>
+		Normalize the vector to unit length. This is the same as v = v / v.length()
+		</description>
+	</method>
+	<method name="normalized">
+		<return type="Vector3">
+		</return>
+		<description>
+		Return a copy of the normalized vector to unit length. This is the same as v / v.length()		
+		</description>
+	</method>
+	<method name="inverse">
+		<return type="Vector3">
+		Inverse: 1/v
+		</return>
+		<description>
+		Returns the inverse of the vector. this is the same as Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )
+		</description>
+	</method>
+	<method name="zero">
+		<description>
+		Set x,y and z to 0.
+		</description>
+	</method>
+	<method name="snap">
+		<argument index="0" name="snap" type="real">		
+		</argument>
+		<description>
+		Snap the vector in each axis the the lowest nearest multiple. ie: 4,5,7 snapped to 2 equals 4,4,6.
+		</description>
+	</method>
+	<method name="snapped">
+		<argument index="0" name="snap" type="real">
+		</argument>
+		<return type="Vector3">
+		Snapped copy.
+		</return>
+		<description>
+		Return a copy of the vector, snapped to the lowest neared multiple.
+		</description>
+	</method>
+	<method name="linear_interpolate">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<argument index="1" name="i" type="real">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Linearly interpolates the vector to a given one (b), by the given amount (i)
+		</description>
+	</method>
+	<method name="cubic_interpolate">
+		<argument index="0" name="a" type="Vector3">
+		</argument>
+		<argument index="1" name="c" type="Vector3">
+		</argument>
+		<argument index="2" name="d" type="Vector3">
+		</argument>
+		<argument index="3" name="i" type="real">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Perform a cubic interpolation between vectors a,b,c,d (b is current), by the given amount (i).
+		</description>
+	</method>
+	<method name="cross">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		Cross product.
+		</return>
+		<description>
+		Return the cross product with b.
+		</description>
+	</method>
+	<method name="dot">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Return the dot product with b.
+		</description>
+	</method>
+	<method name="distance_to">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Return the distance to b.
+		</description>
+	</method>
+	<method name="distance_squared_to">
+		<argument index="0" name="b" type="Vector3">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Return the squared distance (distance minus the last square root) to b.
+		</description>
+	</method>
+	</methods>
+	<constants>
+		<constant name="AXIS_X" value="0">
+		</constant>
+		<constant name="AXIS_Y" value="1">
+		</constant>
+		<constant name="AXIS_Z" value="2">
+		</constant>	
+	</constants>
+	<members>
+		<member name="x" type="real">
+		</member>
+		<member name="y" type="real">
+		</member>
+		<member name="z" type="real">
+		</member>
+	</members>
+</class>
+<class category="Core" name="AABB">
+	<brief_description>
+	Axis-Aligned-Bounding-Box.
+	</brief_description>
+	<description>
+	AABB stands for "Axis Aligned Bounding Box". It consits of a position and a size, which for an box that is always aligned to the x, y and z axis, which goes from "pos" to "pos+size".
+	</description>
+	<methods>
+	<method name="has_no_area">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if the AABB volume is empty (even if it has a surface). Holds true if size.x,y or z is 0.
+		</description>
+	</method>
+	<method name="has_no_surface">
+		<return type="bool">
+		</return>
+		<description>
+		Return true if size is 0,0,0.
+		</description>
+	</method>
+	<method name="area">
+		<return type="real">
+		</return>
+		<description>
+		Compute the volume of the AABB.
+		</description>
+	</method>
+	<method name="intersects">
+		<argument index="0" name="b" type="AABB">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if this AABB shares a portion of space with b.
+		</description>
+	</method>
+	<method name="encloses">
+		<argument index="0" name="b" type="AABB">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if this AABB completely encloses b.
+		</description>
+	</method>
+	<method name="merge_with">
+		<argument index="0" name="b" type="AABB">
+		</argument>
+		<description>
+		Expand this AABB to also enclose the area of b.
+		</description>
+	</method>
+	<method name="intersection_with">
+		<argument index="0" name="b" type="AABB">
+		</argument>
+		<return type="AABB">
+		</return>
+		<description>
+		Return the shared portion of space with b (empty if  they don't intersect).
+		</description>
+	</method>
+	<method name="intersects_segment">
+		<argument index="0" name="a" type="Vector3">
+		</argument>
+		<argument index="1" name="b" type="Vector3">
+		</argument>
+		<argument index="2" name="@r" type="Vector3">
+		result (if they intersect)
+		</argument>
+		<argument index="3" name="@n" type="Vector3">
+		normal (if they intersect)
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if this AABB intersects segment "a" towards "b". Also, return the point and normal of intersection.
+		</description>
+	</method>
+	<method name="intersects_plane">
+		<argument index="0" name="p" type="Plane">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if this AABB intersects the plane b.
+		</description>
+	</method>
+	<method name="has_point">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Return true if this AABB contains point "p".
+		</description>
+	</method>
+	<method name="get_longest_axis">
+		<return type="Vector3">
+		Axis direction
+		</return>
+		<description>
+		Get the normal of the longest axis in this AABB.
+		</description>
+	</method>
+	<method name="get_longest_axis_index">
+		<return type="int">
+		</return>
+		<description>
+		Get the index of the longest axis in this AABB.
+		</description>
+	</method>
+	<method name="get_longest_axis_size">
+		<return type="real">
+		Get the length of the longest axis in this AABB.
+		</return>
+		<description>
+		</description>
+	</method>
+	<method name="get_edge">
+		<argument index="0" name="@ra" type="Vector3">
+		</argument>
+		<argument index="1" name="@rb" type="Vector3">
+		</argument>
+		<description>
+		Get one of the edges (0 to 11) of this AABB in "ra" and "rb". 
+		</description>
+	</method>
+	<method name="grow_by">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<description>
+		Grow this AABB, by expanding its margin, by "s".
+		</description>
+	</method>
+	<method name="expand_to">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<description>
+		Expand this AABB to contain point "p".
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="pos" type="Vector3">
+		Position of the AABB.
+		</member>
+		<member name="size" type="Vector3">
+		Suze of the AABB (should always be positive).
+		</member>
+	</members>
+</class>
+<class category="Core" name="Plane">
+	<brief_description>
+	Plane in hessian form.
+	</brief_description>
+	<description>
+	Plane represents a normalized plane equation. Basically, "normal" is the normal of the plane (a,b,c normalized), and "d" is the distance from the origin to the plane (in the direction of "normal"). "Over" or "Above" the plane is considered the side of the plane towards where the normal is pointing.
+	</description>
+	<methods>
+	<method name="normalize">
+		<description>
+		Normalize the plane (although it will be often normalized already).
+		</description>
+	</method>
+	<method name="normalized">
+		<return type="Plane">
+		</return>
+		<description>
+		Returns a copy of the plane, normalized.
+		</description>
+	</method>
+	<method name="is_point_over">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if "p" is located above the plane.
+		</description>
+	</method>
+	<method name="distance">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Returns the orthogonal distance from "p" to the plane. If positive, "p" is above, if negative, "p" is below.
+		</description>
+	</method>
+	<method name="has_point">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if "p" is inside the plane (by a very minimum treshold).
+		</description>
+	</method>
+	<method name="intersect_3">
+		<argument index="0" name="a" type="Plane">
+		</argument>
+		<argument index="1" name="b" type="Plane">
+		</argument>
+		<argument index="2" name="@r" type="Vector3">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if this plane intersects with planes "a" and "b". The resulting intersectin is placed in "r".
+		</description>
+	</method>
+	<method name="intersects_ray">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<argument index="1" name="d" type="Vector3">
+		</argument>
+		<argument index="2" name="@r" type="Vector3">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if ray consiting of position "p" and direction normal "d" intersects this plane. If true, the result is placed in "r".
+		</description>
+	</method>
+	<method name="intersects_segment">
+		<argument index="0" name="sa" type="Vector3">
+		</argument>
+		<argument index="1" name="sb" type="Vector3">
+		</argument>
+		<argument index="2" name="@r" type="Vector3">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if segment from position "sa" to position "sb" intersects this plane. If true, the result is placed in "r".
+				
+		</description>
+	</method>
+	<method name="project">
+		<argument index="0" name="p" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Returns the orthogonal projection of point "p" into a point in the plane.
+		</description>
+	</method>
+	<method name="is_almost_like">
+		<argument index="0" name="b" type="plane">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if plane "b" is very similar to this one. 
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="normal" type="Vector3">
+		Plane normal vector (a,c and d in the plane equation normalized).
+		</member>
+		<member name="d" type="real">
+		Plane distance (d in the plane equation).
+		</member>
+	</members>
+</class>
+<class category="Core" name="Quat">
+	<brief_description>
+	Quaternion.
+	</brief_description>
+	<description>
+	Quaternion is a 4 dimensional vector that is used to represet a rotation. It mainly exists to perform SLERP (spherical-linear interpolation) between to rotations obtained by a Matrix3 cheaply. Adding quaternions also cheaply adds the rotations, however quaternions need to be often normalized, or else they suffer from precision issues.
+	</description>
+	<methods>
+	<method name="length">
+		<return type="real">
+		</return>
+		<description>
+		Returns the length of the quaternion.
+		</description>
+	</method>
+	<method name="length_squared">
+		<return type="real">
+		</return>
+		<description>
+		Returns the length of the quaternion, minus the square root.
+		</description>
+	</method>
+	<method name="normalize">
+		<description>
+		Normalize the quaternion to unit length.
+		</description>
+	</method>
+	<method name="normalized">
+		<return type="Quat">
+		</return>
+		<description>
+		Returns a copy of the quaternion, normalized to unit length.
+		</description>
+	</method>
+	<method name="inverse">
+		<return type="Quat">
+		</return>
+		<description>
+		Returns the inverse of the quaternion (applies to the inverse rotatio too).
+		</description>
+	</method>
+	<method name="dot">
+		<argument index="0" name="b" type="Quat">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Returns the dot product between two quaternions.
+		</description>
+	</method>
+	<method name="set_euler">
+		<argument index="0" name="e" type="Vector3">
+		</argument>
+		<description>
+		Create a quaternion from euler rotation "e", as yaw, pitch, roll.
+		</description>
+	</method>
+	<method name="slerp">
+		<argument index="0" name="b" type="Quat">
+		</argument>
+		<argument index="1" name="i" type="real">
+		</argument>
+		<return type="Quat">
+		</return>
+		<description>
+		Perform a spherical-linear interpolation with another quaternion.
+		</description>
+	</method>
+	<method name="operator*">
+		<argument index="0" name="arg1" type="Quat">
+		</argument>
+		<return type="Quat">
+		</return>
+		<description>
+		Peform multiplication between two quaternions.
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="x" type="real">
+		x-axis
+		</member>
+		<member name="y" type="real">
+		y-axis
+		</member>
+		<member name="z" type="real">
+		z-axis
+		</member>
+		<member name="w" type="real">
+		w-axis
+		</member>
+	</members>
+</class>
+<class category="Core" name="Matrix3">
+	<brief_description>
+	3x3 Matrix.
+	</brief_description>
+	<description>
+	</description>
+	Matrix represent a 3x3 (3 rows by 3 columns) transformation matrix. it is used mainly to represent and accumulate transformations such as rotation or scale when used as an OCS (oriented coordinate system).
+	<methods>
+	<method name="invert">
+		<description>
+		Invert the matrix (transformations are reversed).
+		</description>
+	</method>
+	<method name="transpose">
+		<description>
+		Transpose the matrix (transformations are reversed only for orthogonal matrices).
+		</description>
+	</method>
+	<method name="inverse">
+		<return type="Matrix3">
+		</return>
+		<description>
+		Returns the inverse of the matrix.
+		</description>
+	</method>
+	<method name="transposed">
+		<return type="Matrix3">
+		</return>
+		<description>
+		Returns the transposition of the matrix.
+		</description>
+	</method>
+	<method name="rotate">
+		<argument index="0" name="axis" type="Vector3">
+		</argument>
+		<argument index="1" name="phi" type="real">
+		</argument>
+		<description>
+		Rotates the matrix in normalized "axis" by amount "phi" in radians. (This is equivalent to glRotate from OpenGL).
+		</description>
+	</method>
+	<method name="scale">
+		<argument index="0" name="s" type="Vector3">
+		</argument>
+		<description>
+		Scale each axis of the rotated matrix by 's".
+		</description>
+	</method>
+	<method name="get_scale">
+		<return type="Vector3">
+		</return>
+		<description>
+		Get the scale of the matrix.
+		</description>
+	</method>
+	<method name="set_euler">
+		<argument index="0" name="e" type="Vector3">
+		</argument>
+		<description>
+		Create an orthogonal matrix from euler angles "e", as yaw, pitch, roll.
+		</description>
+	</method>
+	<method name="get_euler">
+		<return type="Vector3">
+		</return>
+		<description>
+		Computes and returns the euler engles for an orthogonal matrix, as yaw, pitch, roll.
+		</description>
+	</method>
+	<method name="tdotx">
+		<argument index="0" name="v" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Computes and returns a dot product with transposed axis x.
+		</description>
+	</method>
+	<method name="tdoty">
+		<argument index="0" name="v" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Computes and returns a dot product with transposed axis y.
+		</description>
+	</method>
+	<method name="tdotz">
+		<argument index="0" name="arg1" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Computes and returns a dot product with transposed axis z.
+		</description>
+	</method>
+	<method name="xform">
+		<argument index="0" name="v" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Transforms vector "v" by this matrix (as M x V) and returns the result.
+		</description>
+	</method>
+	<method name="xform_inv">
+		<argument index="0" name="v" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Inverse-transforms vector "v" by this matrix (as V x M) and returns the result.
+		</description>
+	</method>
+	<method name="get_axis">
+		<argument index="0" name="axis" type="int">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Get an axis of the OCS. (0 is X, 1 is Y and 2 is Z). The enum constants Vector.AXIS_X, Vector.AXIS_Y, and Vector.AXIS_Z, are also valid. This is equivalent to get_column().
+		</description>
+	</method>
+	<method name="set_axis">
+		<argument index="0" name="axis" type="int">
+		</argument>
+		<argument index="1" name="v" type="Vector3">
+		</argument>
+		<description>
+		Set an axis of the OCS. (0 is X, 1 is Y and 2 is Z). The enum constants Vector.AXIS_X, Vector.AXIS_Y, and Vector.AXIS_Z, are also valid. This is equivalent to set_column()			
+		</description>
+	</method>
+	<method name="get_row">
+		<argument index="0" name="i" type="int">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Get a matrix row.
+		</description>
+	</method>
+	<method name="set_row">
+		<argument index="0" name="i" type="int">
+		</argument>
+		<argument index="1" name="v" type="Vector3">
+		</argument>
+		<description>
+		Set a matrix row.
+		</description>
+	</method>
+	<method name="get_column">
+		<argument index="0" name="axis" type="int">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Get a matrix column. This is equivalent to get_axis()
+		</description>
+	</method>
+	<method name="set_column">
+		<argument index="0" name="axis" type="int">
+		</argument>
+		<argument index="1" name="av" type="Vector3">
+		</argument>
+		Set a matrix column. This is equivalent to set_axis
+		<description>
+		</description>
+	</method>
+	<method name="operator*">
+		<argument index="0" name="N" type="Matrix3">
+		</argument>
+		<return type="Matrix3">
+		</return>
+		<description>
+		Perform a matrix multiplication (M x N) and return the result.
+		</description>
+	</method>
+	<method name="transpose_xform">
+		<argument index="0" name="arg1" type="Matrix3">
+		</argument>
+		<return type="Matrix3">
+		</return>
+		<description>
+		Perform a transposed-matrix multiplication (Mt x N) and return the result.
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="xx" type="real">		
+		</member>
+		<member name="xy" type="real">
+		</member>
+		<member name="xz" type="real">
+		</member>
+		<member name="yx" type="real">
+		</member>
+		<member name="yy" type="real">
+		</member>
+		<member name="yz" type="real">
+		</member>
+		<member name="zx" type="real">
+		</member>
+		<member name="zy" type="real">
+		</member>
+		<member name="zz" type="real">
+		</member>
+	</members>
+</class>
+<class category="Core" name="Transform">
+	<brief_description>
+	Transformation. 
+	</brief_description>
+	<description>
+	Transform is used to store transformations, including translations. It consists of a Matrix3 "basis" and Vector3 "origin". Transform is used to represent transformations of any object in space. It is similar to a 4x3 matrix.
+	</description>
+	<methods>
+	<method name="invert">
+		<description>
+		Invert the transform.
+		</description>
+	</method>
+
+	<method name="inverse">
+		<return type="Transform">
+		</return>
+		<description>
+		Returns the inverse of the transform.
+		</description>
+	</method>
+	<method name="rotate">
+		<argument index="0" name="axis" type="Vector3">
+		</argument>
+		<argument index="1" name="phi" type="real">
+		</argument>
+		<description>
+		Rotates the transform in normalized "axis" by amount "phi" in radians. (This is equivalent to glRotate from OpenGL).
+		</description>
+	</method>
+	<method name="scale">
+		<argument index="0" name="s" type="Vector3">
+		</argument>
+		<description>
+		Scales the whole transform by "s" (including the origin)
+		</description>
+	</method>
+	<method name="get_basis">
+		<return type="Matrix3">
+		</return>
+		<description>
+		Get the basis.
+		</description>
+	</method>
+	<method name="translate">
+		<argument index="0" name="v" type="Vector3">
+		</argument>
+		<description>
+		Translate the transform by "v".
+		</description>
+	</method>
+	<method name="set_look_at">
+		<argument index="0" name="eye" type="Vector3">
+		"Eye" Position.
+		</argument>
+		<argument index="1" name="target" type="Vector3">
+		"Target" Position.
+		</argument>
+		<argument index="2" name="up" type="Vector3">
+		"Up" Normal Vector.
+		</argument>
+		<description>
+		Creates a transform positioned at "eye", looking towards "target". "up" represents the direction where "up" is. This function is useful for setting up cameras.
+		</description>
+	</method>
+	<method name="xform">
+		<argument index="0" name="v" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Transforms vector "v" by this transform.
+		</description>
+	</method>
+	<method name="xform_inv">
+		<argument index="0" name="arg1" type="Vector3">
+		</argument>
+		<return type="Vector3">
+		</return>
+		<description>
+		Inverse-transforms vector "v" by this transform.
+		</description>
+	</method>
+	<method name="xform_aabb">
+		<argument index="0" name="a" type="AABB">
+		</argument>
+		<return type="AABB">
+		</return>
+		<description>
+		Transforms AABB "a" by this transform. The resulting aabb will often be larger, so succesive transforms are not recommended.
+		</description>
+	</method>
+	<method name="xform_aabb_inv">
+		<argument index="0" name="a" type="AABB">
+		</argument>
+		<return type="AABB">
+		</return>
+		<description>
+		Inverse-transforms AABB "a" by this transform. The resulting aabb will often be larger, so succesive transforms are not recommended.
+		</description>
+	</method>
+	<method name="xform_plane">
+		<argument index="0" name="p" type="Plane">
+		</argument>
+		<return type="Plane">
+		</return>
+		<description>
+		Transform plane "p" by this transform. 
+		</description>
+	</method>
+	<method name="xform_plane_inv">
+		<argument index="0" name="p" type="Plane">
+		</argument>
+		<return type="Plane">
+		</return>
+		<description>
+		Inverse-transforms plane "p" by this transform. 
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="basis" type="Matrix3">
+			Transform "basis" or OCS.
+		</member>
+		<member name="origin" type="Vector3">
+			Transform origin.
+		</member>
+		<member name="xx" type="real">
+		</member>
+		<member name="xy" type="real">
+		</member>
+		<member name="xz" type="real">
+		</member>
+		<member name="yx" type="real">
+		</member>
+		<member name="yy" type="real">
+		</member>
+		<member name="yz" type="real">
+		</member>
+		<member name="zx" type="real">
+		</member>
+		<member name="zy" type="real">
+		</member>
+		<member name="zz" type="real">
+		</member>
+		<member name="tx" type="real">
+		</member>
+		<member name="ty" type="real">
+		</member>
+		<member name="tz" type="real">
+		</member>
+
+	</members>
+</class>
+<class category="Core" name="Vector2">
+	<brief_description>
+	Vector used for 2D Math.
+	</brief_description>
+	<description>
+	</description>
+	Vector class, which performs basic 2D vector math operations.
+	<methods>
+	<method name="operator+">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<return type="Vector2">
+		</return>
+		<description>
+		Add two vectors.
+		</description>
+	</method>
+	<method name="operator-">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<return type="Vector2">
+		</return>
+		<description>
+		Substract two vectors.
+		</description>
+	</method>
+	<method name="operator/">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<return type="Vector2">
+		</return>
+		<description>
+		Divide two vectors.
+		</description>
+	</method>
+	<method name="operator*">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<return type="Vector2">
+		</return>
+		<description>
+		Multiply two vectors.
+		</description>
+	</method>
+	<method name="length">
+		<return type="real">
+		</return>
+		<description>
+		Returns the length of the vector.
+		</description>
+	</method>
+	<method name="length_squared">
+		<return type="real">
+		</return>
+		<description>
+		Returns the squared length of the vector.
+		</description>
+	</method>
+	<method name="normalize">
+		<description>
+		Normalizes the vector to unit length.
+		</description>
+	</method>
+	<method name="normalized">
+		<return type="Vector2">
+		</return>
+		<description>
+		Returns a normalized vector to unit length.
+		</description>
+	</method>
+	<method name="zero">
+		<description>
+		Sets x and y to 0.
+		</description>
+	</method>
+	<method name="linear_interpolate">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<argument index="1" name="i" type="real">
+		</argument>
+		<return type="Vector2">
+		</return>
+		<description>
+		Returns the result of the linear interpolation between this vector and "b", by amount "i".
+		</description>
+	</method>
+	<method name="dot">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Returns the dot product with vector "b".
+		</description>
+	</method>
+	<method name="distance_to">
+		<argument index="0" name="b" type="Vector2">
+		</argument>
+		<return type="real">
+		</return>
+		<description>
+		Returns the distance to vector "b".
+		</description>
+	</method>
+	<method name="floor">
+		<return type="Vector2">
+		</return>
+		<description>
+		Remove the fractional part of x and y.
+		</description>
+	</method>
+	</methods>
+
+	<members>
+		<member name="x" type="real">
+		</member>
+		<member name="y" type="real">
+		</member>
+
+	</members>
+</class>
+<class category="Core" name="Rect2">
+	<brief_description>
+	Positioned rectangle in 2D.
+	</brief_description>
+	<description>
+	Rect2 represets a positioned rectangle of position "pos" and "size".
+	</description>
+	<methods>
+	<method name="has_no_area">
+		<return type="bool">
+		</return>
+		<description>
+		Returns "true" if the rectangle has no area.
+		</description>
+	</method>
+	<method name="has_point">
+		<argument index="0" name="v" type="Vector2">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if v is contained within the rectangle.
+		</description>
+	</method>
+	<method name="merge">
+		<argument index="0" name="b" type="Rect2">
+		</argument>
+		<description>
+		Extend the rectangle to enclose "b".
+		</description>
+	</method>
+	<method name="clip">
+		<argument index="0" name="b" type="Rect2">
+		</argument>
+		<return type="Rect2">
+		</return>
+		<description>
+		Return the interection with rectangle "b"
+		</description>
+	</method>
+	<method name="grow">
+		<argument index="0" name="m" type="Vector2">
+		</argument>
+		<description>
+		Extend the rectangle margin by "m".
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="pos" type="Vector2">
+		Position of the rectangle.
+		</member>
+		<member name="size" type="Vector2">
+		Size of the rectangle.
+		</member>
+		<member name="x" type="real">
+		</member>
+		<member name="y" type="real">
+		</member>
+		<member name="size_x" type="real">
+		</member>
+		<member name="size_y" type="real">
+		</member>
+	</members>
+</class>
+
+<class category="Core" name="Color">
+	<brief_description>
+	Color in RGBA format.
+	</brief_description>
+	<description>
+	A color is represented as red, green and blue (r,g,b) components. Additionally, "a" represents the alpha component, often used for transparency.
+	</description>
+	<methods>
+	<method name="to_32">
+		<return type="real">
+		</return>
+		<description>
+		Convert the color to a 32 its integer (each byte represets a RGBA).		
+		</description>
+	</method>
+	<method name="gray">
+		<return type="real">
+		</return>
+		<description>
+		Convert the color to gray.
+		</description>
+	</method>
+	<method name="get_h">
+		<return type="real">
+		</return>
+		<description>
+		Compute the "hue" of the color.
+		</description>
+	</method>
+	<method name="get_s">
+		<return type="real">
+		</return>
+		<description>
+		Compute the "saturation" of the color.
+		</description>
+	</method>
+	<method name="get_v">
+		<return type="real">
+		</return>
+		<description>
+		Compute the "value" of the color.
+		</description>
+	</method>
+	<method name="set_hsv">
+		<argument index="0" name="h" type="real">
+		</argument>
+		<argument index="1" name="s" type="real">
+		</argument>
+		<argument index="2" name="v" type="real">
+		</argument>
+		<description>
+		Set the color from the HSV format.
+		</description>
+	</method>
+	<method name="invert">
+		<description>
+		Invert the color.
+		</description>
+	</method>
+	<method name="contrast">
+		<description>
+		Contrast the color.
+		</description>
+	</method>
+	<method name="interpolate">
+		<argument index="0" name="c" type="Vector3">
+		</argument>
+		<argument index="1" name="i" type="real">
+		(0 to 1)
+		</argument>
+		<description>
+		Linearly blend with color "c", by amount "i".
+		</description>
+	</method>
+	</methods>
+	<members>
+		<member name="r" type="real">
+		Red.
+		</member>
+		<member name="g" type="real">
+		Green.
+		</member>
+		<member name="b" type="real">
+		Blue.
+		</member>
+		<member name="a" type="real">
+		Alpha.
+		</member>
+	</members>
+</class>
+<class category="Core" name="Image">
+	<brief_description>
+	Two Dimensional Image.
+	</brief_description>
+	<description>
+	Image represents a two-dimensional representation of an image, composed by a color per pixel.
+	</description>
+	<methods>
+	<method name="get_width">
+		<return type="real">
+		</return>
+		<description>
+		Returns the width of the image (in pixels).
+		</description>
+	</method>
+	<method name="get_height">
+		<return type="real">
+		</return>
+		<description>
+		Returns the height of the image (in pixels).
+		</description>
+	</method>
+	<method name="get_pixel">
+		<argument index="0" name="x" type="int">
+		</argument>
+		<argument index="1" name="y" type="int">
+		</argument>
+		<return type="Color">
+		</return>
+		<description>
+		Get the color of the pixel at position (x,y).
+		</description>
+	</method>
+	<method name="put_pixel">
+		<argument index="0" name="x" type="int">
+		</argument>
+		<argument index="1" name="y" type="int">
+		</argument>
+		<argument index="2" name="color" type="Color">
+		</argument>
+		<description>
+		Sets the color of the pixel at position (x,y).
+		</description>
+	</method>
+	<method name="convert">
+		<argument index="0" name="format" type="int">
+		</argument>
+		<description>
+		Convert the image to a new format (valid values in the FORMAT_* enumeration).
+		</description>
+	</method>
+	<method name="get_format">
+		<return type="int">
+		</return>
+		<description>
+		Get the image format (valid values in the FORMAT_* enumeration).
+		</description>
+	</method>
+	<method name="resize">
+		<argument index="0" name="width" type="int">
+		</argument>
+		<argument index="1" name="height" type="int">
+		</argument>
+		<description>
+		Resize the image to a new pixel resolution given by width,height.
+		</description>
+	</method>
+	<method name="crop">
+		<argument index="0" name="width" type="int">
+		</argument>
+		<argument index="1" name="height" type="int">
+		</argument>
+		<description>
+		Crop the image to a new pixel resolution given by width,height.
+		</description>
+	</method>
+	<method name="flip_x">
+		<description>
+		Flip the X axis of the image.
+		</description>
+	</method>
+	<method name="flip_y">
+		<description>
+		Flip the Y axis of the image.
+		</description>
+	</method>
+	<method name="make_mipmap">
+		<argument index="0" name="source" type="Image">
+		</argument>
+		<description>
+		Create a mipmap from "source" image.
+		</description>
+	</method>
+	<method name="make_normalmap">
+		<argument index="0" name="height_scale" type="real">
+		</argument>
+		<description>
+		Create a normalmap from "height_scale" image.
+		</description>
+	</method>
+	<method name="create">
+		<argument index="0" name="width" type="int">
+		</argument>
+		<argument index="1" name="height" type="int">
+		</argument>
+		<argument index="2" name="format" type="int">
+		</argument>
+		<description>
+		Create a new image of size width, height and format.
+		</description>
+	</method>
+	<method name="import">
+		<argument index="0" name="width" type="int">
+		</argument>
+		<argument index="1" name="height" type="int">
+		</argument>
+		<argument index="2" name="format" type="int">
+		</argument>
+		<argument index="3" name="data" type="RawArray">
+		</argument>
+		<description>
+		Import an image from raw data, given a specific format.
+		</description>
+	</method>
+	<method name="empty">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if the image is empty.
+		</description>
+	</method>
+	<method name="load">
+		<argument index="0" name="path" type="String">
+		</argument>	
+		<return type="Error">
+		</return>
+		<description>
+		Load an image from a file in "path".
+		</description>
+	</method>
+	</methods>
+	<constants>
+		<constant name="FORMAT_GRAYSCALE" value="0">
+		</constant>
+		<constant name="FORMAT_INTENSITY" value="1">
+		</constant>
+		<constant name="FORMAT_GRAYSCALE_ALPHA" value="2">
+		</constant>
+		<constant name="FORMAT_RGB" value="3">
+		</constant>
+		<constant name="FORMAT_RGBA" value="4">
+		</constant>
+		<constant name="FORMAT_INDEXED" value="5">
+		</constant>
+		<constant name="FORMAT_INDEXED_ALPHA" value="6">
+		</constant>
+	</constants>
+</class>
+<class category="Core" name="RID">
+	<brief_description>
+	Resource ID.
+	</brief_description>
+	<description>
+	RID references a resource, typically created in a server.
+	</description>
+	<methods>
+	<method name="is_valid">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if the resource is valid.
+		</description>
+	</method>
+	</methods>
+</class>
+<class category="Core" name="InputEvent">
+	<brief_description>
+	A struct containing information fron an input device.
+	</brief_description>
+	<description>
+	A struct containing information fron an input event, such as mouse, keyboard, joystick, etc. Valid event types are:<br></br>
+		<list>
+		<li> InputEvent.NONE </li>
+		<li> InputEvent.KEY </li>
+		<li> InputEvent.MOUSE_BUTTON </li>
+		<li> InputEvent.MOUSE_MOTION </li>
+		<li> InputEvent.JOYSTICK_MOTION </li>
+		<li> InputEvent.JOYSTICK_BUTTON </li>
+		</list>
+	
+	</description>
+	<members>
+		<member name="ID" type="int">
+		Event ID. Every event as a unique ID.
+		</member>
+		<member name="type" type="int">
+		Event type (check description).
+		</member>
+		<member name="device" type="int">
+		Device that originated the event.
+		</member>
+		<member name="mouse_x" type="int">
+		Mouse x position (for mouse events).
+		</member>
+		<member name="mouse_y" type="int">
+		Mouse y position (for mouse events).
+		</member>
+		<member name="mouse_button_mask" type="int">
+		State of the mouse buttons as a bitmask (for key and mouse events)
+		</member>
+		<member name="mouse_global_x" type="int">
+		Global mouse x position (used in GUI Controls).
+		</member>
+		<member name="mouse_global_y" type="int">
+		Global mouse y position (used in GUI Controls).
+		</member>
+		<member name="mouse_pressed" type="bool">
+		if MOUSE_BUTTON was a press, this value is true.
+		</member>
+		<member name="mouse_doubleclick" type="bool">
+		if MOUSE_BUTTON was a doubleclick, this value is true.
+		</member>
+		<member name="mouse_button_index" type="int">
+		Index of the clicked button (mouse button event).
+		</member>
+		<member name="mouse_motion_x" type="int">
+		Relative x motion of the mouse (mouse motion event).
+		</member>
+		<member name="mouse_motion_y" type="int">
+		Relative y motion of the mouse (mouse motion event).
+		</member>
+		<member name="mod_alt" type="bool">
+		If ALT modifier is pressed, this is true (mouse and key events).
+		</member>
+		<member name="mod_shift" type="bool">
+		If SHIFT modifier is pressed, this is true (mouse and key events).
+		</member>
+		<member name="mod_control" type="bool">
+		If CONTROL modifier is pressed, this is true (mouse and key events).
+		</member>
+		<member name="mod_meta" type="bool">
+		If META modifier (win/apple/etc keys) is pressed, this is true (mouse and key events).
+		</member>
+		<member name="key_pressed" type="bool">
+		if a KEY event originated from a keypress, this is true.
+		</member>
+		<member name="key_echo" type="bool">
+		if a KEY event originated from an echo key, this is true.
+		</member>
+		<member name="key_unicode" type="int">
+		Unicode value of a key pressed (key event).
+		</member>
+		<member name="key_scancode" type="Key">
+		Scancode of a key pressed (check the KEY_* enumeration) (key event).
+		</member>
+		<member name="joy_button_index" type="int">
+		Joystick button index (joy button event).
+		</member>
+		<member name="joy_button_pressed" type="bool">
+		If joystick button was pressed, this is true (joy button event).
+		</member>
+		<member name="joy_button_index" type="int">
+		Index of the pressed/released joystick button.
+		</member>
+		<member name="joy_axis" type="int">
+		Axis of a joystick (joy axis event).
+		</member>
+		<member name="joy_axis_value" type="real">
+		Axis value a joystick, from -1 to 1 (joy axis event).
+		</member>
+	</members>
+	<constants>
+		<constant name="NONE" value="0">
+		Empty input event.
+		</constant>
+		<constant name="KEY" value="1">
+		Key pressed/released event.
+		</constant>
+		<constant name="MOUSE_BUTTON" value="2">
+		Mouse button pressed/released event.
+		</constant>
+		<constant name="JOYSTICK_MOTION" value="3">
+		Joystick axis motion event.
+		</constant>
+		<constant name="JOYSTICK_BUTTON" value="4">
+		Joystick button press/release event.
+		</constant>
+	</constants>
+	
+</class>
+<class category="Core" name="FileAccess">
+	<brief_description>
+	File Access Interface.
+	</brief_description>
+	<description>
+	FileAccess provides access to files in the host platform (remote access to files in webserver in the web plugin, as web plugin does not access the local filesystem).
+	</description>
+	<methods>
+	<method name="open">
+		<argument index="0" name="path" type="String">
+		Path to a file
+		</argument>
+		<argument index="1" name="mode" type="int">
+		Open mode: FileAccess.READ, FileAccess.WRITE or FileAccess.READ_WRITE
+		</argument>
+		<return type="Error">
+		Error value (check the ERR_ macro for the meaning of the values)
+		</return>
+		<description>
+		Open a file in a given path. Error is returned if the file can't be opened, is nt found, etc.
+		</description>
+	</method>	
+	<method name="close">
+		<description>
+		Closes a currently open file.
+		</description>
+	</method>
+	<method name="is_open">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if a file is currently open.
+		</description>
+	</method>
+	<method name="seek">
+		<argument index="0" name="pos" type="int">
+		</argument>
+		<description>
+		Seek to a given position (in bytes) in the file.
+		</description>
+	</method>
+	<method name="seek_end">
+		<argument index="0" name="pos" type="int">
+		</argument>
+		<description>
+		Seek to a given position (in bytes) in the file, from the end of the file.
+		</description>
+	</method>
+	<method name="get_pos">
+		<return type="int">
+		</return>
+		<description>
+		Get the current position in the file.
+		</description>
+	</method>
+	<method name="get_len">
+		<return type="int">
+		</return>
+		<description>
+		Get the open file size (in bytes).
+		</description>
+	</method>
+	<method name="eof_reached">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if EOF was reached (read past end of file).
+		</description>
+	</method>
+	<method name="get_8">
+		<return type="int">
+		</return>
+		<description>
+		Read a byte from the file.
+		</description>
+	</method>
+	<method name="get_16">
+		<return type="int">
+		</return>
+		<description>
+		Read a 16-bits unsigned integer from the file, in little/big endian format.
+		</description>
+	</method>
+	<method name="get_32">
+		<return type="int">
+		</return>
+		<description>
+		Read a 32-bits unsigned integer from the file, in little/big endian format.
+		</description>
+	</method>
+	<method name="set_endian_swap">
+		<argument index="0" name="swap" type="bool">
+		</argument>
+		<description>
+		Change the endian mode for reading sizes larger than a byte (read big endian files).
+		</description>
+	</method>
+	<method name="get_endian_swap">
+		<return type="bool">
+		</return>
+		<description>
+		Return the status of the endian swap.
+		</description>
+	</method>
+	<method name="store_8">
+		<argument index="0" name="byte" type="int">
+		</argument>
+		<description>
+		Store a byte in the file.
+		</description>
+	</method>
+	<method name="store_16">
+		<argument index="0" name="word" type="int">
+		</argument>
+		<description>
+		Store a 16-bits integer in the file.
+		</description>
+	</method>
+	<method name="store_32">
+		<argument index="0" name="dword" type="int">
+		</argument>
+		<description>
+		Store a 32 bits integer in the file.
+		</description>
+	</method>
+	<method name="file_exists">
+		<argument index="0" name="path" type="String">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if a given file (in path) exist.
+		</description>
+	</method>
+	</methods>
+	<constants>
+		<constant name="READ" value="1">
+		</constant>
+		<constant name="WRITE" value="2">
+		</constant>
+		<constant name="READ_WRITE" value="4">
+		</constant>
+
+	</constants>
+</class>
+<class category="Core" name="Dir">
+	<brief_description>
+	Directory Tree Access Interface.
+	</brief_description>
+	<description>
+	Dir provides access to directories in the host platform (remote access to files in webserver in the web plugin, as web plugin does not access the local filesystem).
+	</description>
+	<methods>
+	<method name="list_dir_begin">
+		<return type="bool">
+		true if an error ocurred.
+		</return>
+		<description>
+		 Begin a directory listing. This is done iteratively due to the positility of directories with a large amount of entries.
+		</description>
+	</method>	
+	<method name="get_next">
+		<return type="String">
+		</return>
+		<description>
+		Get the next item. If the return value is empty (""), then the end of the directory has been reached.
+		</description>
+	</method>	
+	<method name="current_is_dir">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if the current item is a directory (not a file).
+		</description>
+	</method>	
+	<method name="list_dir_end">
+		<description>
+		End the directory listing.
+		</description>
+	</method>	
+	<method name="get_drive_count">
+		<return type="int">
+		</return>
+		<description>
+		 Get the amount of drives (windows only, returns 0 on other platforms).
+		</description>
+	</method>	
+	<method name="get_drive">
+		<argument index="0" name="di" type="int">
+		</argument>
+		<return type="String">
+		</return>
+		<description>
+		Get the string (or character) representing the drive (such as "C","D",etc).
+		</description>
+	</method>	
+	<method name="change_dir">
+		<argument index="0" name="dir" type="String">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Change the current directory of the dir access. "dir" can be either absolute or relative.
+		</description>
+	</method>	
+	<method name="get_current_dir">
+		<return type="String">
+		</return>
+		<description>
+		Get the full path of the current dir.
+		</description>
+	</method>	
+	<method name="get_dir_separator">
+		<return type="String">
+		</return>
+		<description>
+		Get the string or character most commonly used as drive separator in the host OS.
+		</description>
+	</method>	
+	<method name="make_dir">
+		<argument index="0" name="name" type="String">
+		</argument>
+		<return type="bool">
+		true on error.
+		</return>
+		<description>
+		Create a new directory. "name" can be either absolute or relative.
+		</description>
+	</method>	
+	<method name="file_exists">
+		<argument index="0" name="path" type="String">
+		</argument>
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if a file exist. "path" can be either absolute or relative.
+		</description>
+	</method>	
+	<method name="get_space_left">
+		<return type="int">
+		</return>
+		<description>
+		Return the space left on the device, in kilobytes.
+		</description>
+	</method>	
+	</methods>
+</class>
+<class category="Core" name="VideoMode">
+	<brief_description>
+	Video Mode structure.
+	</brief_description>
+	<description>
+	Describes a video mode.
+	</description>
+	<members>
+		<member name="width" type="int">
+		</member>
+		<member name="height" type="int">
+		</member>
+		<member name="fullscreen" type="bool">
+		"true" if the video mode is full scren.
+		</member>
+		<member name="resizable" type="bool">
+		"true" if the video mode can be resized to another video mode.
+		</member>
+	</members>
+</class>
+<class category="Core" name="Date">
+	<brief_description>
+	Date structure.
+	</brief_description>
+	<description>
+	Describes a date.
+	</description>
+	<members>
+		<member name="year" type="int">
+		year (integer)
+		</member>
+		<member name="day" type="int">
+		day of the year
+		</member>
+		<member name="weekday" type="int">
+		day of the week (0 to 6)
+		</member>
+		<member name="month" type="int">
+		month of the year (0 to 11)
+		</member>
+		<member name="dst" type="bool">
+		"true" if daylight savings is enabled.
+		</member>
+	</members>
+</class>
+<class category="Core" name="Time">
+	<brief_description>
+	Current Time.
+	</brief_description>
+	<description>
+	Describes the current time.
+	</description>
+	<members>
+		<member name="hour" type="int">
+		(0 to 11)
+		</member>
+		<member name="min" type="int">
+		(0 to 59)
+		</member>
+		<member name="sec" type="int">
+		(0 to 59)
+		</member>
+	</members>
+</class>
+<class category="Core" name="OS">
+	<brief_description>
+	Operating System common functions.
+	</brief_description>
+	<description>
+	OS provides access to common host OS functions. "OS" Must not be instanced. All members are static (called like OS.get_name() ).
+	</description>
+	<methods>
+	<method name="alert">
+		<argument index="0" name="text" type="String">
+		</argument>
+		<description>
+		Produce an alert. On OSs such as windows or mac, this may result in a popup dialog.
+		</description>
+	</method>	
+	<method name="set_mouse_show">
+		<argument index="0" name="show" type="bool">
+		</argument>
+		<description>
+		Determine the hardware cursor visibility (if available).
+		</description>
+	</method>	
+	<method name="set_mouse_grab">
+		<argument index="0" name="grab" type="bool">
+		</argument>
+		<description>
+		Capture the hardware cursor (if available).
+		</description>
+	</method>	
+	<method name="is_mouse_grab_enabled">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if the application is capturing the hardware cursor.
+		</description>
+	</method>	
+	<method name="get_name">
+		<return type="String">
+		</return>
+		<description>
+		Get the name of the host OS or Platform.
+		</description>
+	</method>	
+	<method name="set_video_mode">
+		<argument index="0" name="mode" type="VideoMode">
+		</argument>
+		<description>
+		Change the current videomode (if available).
+		</description>
+	</method>	
+	<method name="get_video_mode">
+		<return type="VideoMode">
+		</return>
+		<description>
+		Get the current videomode.
+		</description>
+	</method>	
+	<method name="get_date">
+		<return type="Date">
+		</return>
+		<description>
+		Get the current date.
+		</description>
+	</method>	
+	<method name="get_time">
+		<return type="Time">
+		</return>
+		<description>
+		 Get the current time.
+		</description>
+	</method>	
+	<method name="get_ticks_msec">
+		<return type="int">
+		</return>
+		<description>
+		Get the amount of milliseconds since the app started.
+		</description>
+	</method>	
+	<method name="delay_usec">
+		<argument index="0" name="usec" type="int">
+		</argument>
+		<description>
+		Suspend the calling thread for "usec" milliseconds
+		</description>
+	</method>	
+	</methods>
+</class>
+<class category="Core" name="Math">
+	<brief_description>
+	Common math functions.
+	</brief_description>
+	<description>
+	Math provides implementations of commonly used math functions."Math" shouldt not be instanced since all members are static (called like Math.cos() ).
+	</description>
+	<methods>
+	<method name="sin">
+		<argument index="0" name="rad" type="real">
+		</argument>
+		<return type="real">
+		</return>		
+		<description>		
+		</description>
+	</method>	
+	<method name="cos">
+		<argument index="0" name="rad" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="tan">
+		<argument index="0" name="rad" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="asin">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="acos">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="atan2">
+		<argument index="0" name="x" type="real">
+		</argument>
+		<argument index="1" name="y" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="deg2rad">
+		<argument index="0" name="deg" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		Degrees to Radians conversion.
+		</description>
+	</method>	
+	<method name="sqrt">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="pow">
+		<argument index="0" name="base" type="real">
+		</argument>
+		<argument index="1" name="power" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="exp">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="log">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="fmod">
+		<argument index="0" name="x" type="real">
+		</argument>
+		<argument index="1" name="y" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="stepify">
+		<argument index="0" name="x" type="real">
+		</argument>
+		<argument index="1" name="step" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>	
+		Round to nearest (lowest) value in given step.
+		</description>
+	</method>	
+	<method name="floor">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="round">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		</description>
+	</method>	
+	<method name="decimals">
+		<argument index="0" name="s" type="real">
+		</argument>
+		<return type="int">
+		</return>				
+		<description>		
+		Returns the amount of decimals used by "s".
+		</description>
+	</method>	
+	<method name="randf">
+		<return type="real">
+		</return>				
+		<description>		
+		Returns a random number fro 0 to 1
+		</description>
+	</method>	
+	<method name="random">
+		<argument index="0" name="min" type="real">
+		</argument>
+		<argument index="1" name="max" type="real">
+		</argument>
+		<return type="real">
+		</return>				
+		<description>		
+		Returns a random number between "min" and "max"
+		</description>
+	</method>		
+	</methods>
+	<constants>
+		<constant name="PI" value="3.14159265358979323846">
+		</constant>
+	</constants>
+	
+</class>
+<class category="Core" name="Shell">
+	<brief_description>
+	Shell Execution interface.
+	</brief_description>
+	<description>
+	Shell allows the application to open a given URL in the host OS. It can be anything the host OS understands, from a web page to a media file.
+	</description>
+	<methods>
+	<method name="exec">
+		<argument index="0" name="url" type="String">
+		</argument>
+		<description>
+		Open any URL the host OS understands.
+		</description>
+	</method>	
+	</methods>
+</class>
+<class category="Core" name="ResourceLoader">
+	<brief_description>
+	Resource Loader.
+	</brief_description>
+	<description>
+	ResourceLoader loads resources from disk and returns a resource object.
+	</description>
+	<methods>
+	<method name="load">
+		<argument index="0" name="path" type="String">
+		</argument>
+		<return type="Resource">
+		null on failure.
+		</return>
+		<description>
+		Open a resource in the given path.
+		</description>
+	</method>	
+	</methods>
+</class>
+<class category="Core" name="SceneLoader">
+	<brief_description>
+	Scene Loader
+	</brief_description>
+	<description>
+	SceneLoader loads scenes from disk and returns a scene node.
+	</description>
+	<methods>
+	<method name="load">
+		<argument index="0" name="path" type="String">
+		</argument>
+		<return type="Node">
+		A scene node, null on error.
+		</return>
+		<description>
+		Load a scene from disk at given "path" and return a node object.
+		</description>
+	</method>	
+	</methods>
+</class>
+<class category="Core" name="Object">
+	<brief_description>
+	Base class for the Object Model.
+	</brief_description>
+	<description>
+	Object is the building block of most of the high level engine interfaces. The "Object" interface contains a reference to an actual internal Object.
+	Usually, Object memory should not be managed by the API, as resources will be fred automatically when not in use and nodes are deleted by their parent nodes.
+	</description>
+	<methods>
+	<method name="free">
+		<description>
+		Free the Object reference. This should not be used with nodes inside a scene tree, as they are removed by their parent node. This function can also be used to unreference resources.
+		</description>
+	</method>	
+	<method name="get_type">
+		<return type="String">
+		</return>
+		<description>
+		Get a string with the type name of the object.
+		</description>
+	</method>	
+	<method name="has_instance">
+		<return type="bool">
+		</return>
+		<description>
+		Returns true if the Object datatype contains a reference to an actual object instance.
+		</description>
+	</method>	
+	<method name="get_instance_ID">
+		<return type="bool">
+		</return>
+		<description>
+		Return the instance ID of the object. Every Object has a unique instance ID.
+		</description>
+	</method>	
+	<method name="is_type"  qualifiers="const" >
+		<return type="bool" >
+		</return>
+		<argument index="0" name="type" type="String" >
+		</argument>
+		<description>
+		Return true if the type of the object class (or any base clases) match "type.
+		</description>
+	</method>
+	<method name="set" >
+		<argument index="0" name="property" type="String" >
+		</argument>
+		<argument index="1" name="value" type="var" >
+		</argument>
+		<description>
+		Set a property "property", with any value "value. This function can be inherited with "_set" (but base class "_set" will still be called).
+		</description>
+	</method>
+	<method name="get"  qualifiers="const" >
+		<return type="var" >
+		</return>
+		<argument index="0" name="property" type="String" >
+		</argument>
+		<description>
+		Return a property "property". This function can be inherited with "_get" (but base class "_get" will still be called).
+		</description>
+	</method>
+	<method name="notification" >
+		<argument index="0" name="what" type="int" >
+		</argument>
+		<argument index="1" name="reverse" type="bool"  default="false" >
+		</argument>
+		<description>
+		Perform a notification. Notifications are quick ways to tell an Object that something happened or changed regarding it's state and surroundings. This function can be inherited with "_notification" (but base class "_notification" will still be called).
+		</description>
+	</method>
+	<method name="set_script" >
+		<argument index="0" name="script" type="RefPtr" >
+		</argument>
+		<description>
+		Set the script of the object. Any object can contain a script. Scripts behave as if they inherited the object they are set to
+		</description>
+	</method>
+	<method name="get_script"  qualifiers="const" >
+		<return type="RefPtr" >
+		</return>
+		<description>
+		Return the script of the object. Any object can contain a script. Scripts behave as if they inherited the object they are set to
+		</description>
+	</method>
+	<method name="set_meta" >
+		<argument index="0" name="name" type="String" >
+		</argument>
+		<description>
+		Set a meta property. Meta properties are just containers for setting and retrieving any custom data to an object. Metaproperties are also saved with the object.
+		</description>
+	</method>
+	<method name="get_meta"  qualifiers="const" >
+		<argument index="0" name="name" type="String" >
+		</argument>
+		<description>
+		Return a meta property. Meta properties are just containers for setting and retrieving any custom data to an object. Metaproperties are also saved with the object.
+		</description>
+	</method>
+	<method name="has_meta"  qualifiers="const" >
+		<return type="bool" >
+		</return>
+		<argument index="0" name="name" type="String" >
+		</argument>
+		<description>
+		Return wether an object has a meta property. Meta properties are just containers for setting and retrieving any custom data to an object. Metaproperties are also saved with the object.
+		</description>
+	</method>
+	<method name="get_meta_list"  qualifiers="const" >
+		<return type="StringArray" >
+		</return>
+		<description>
+		Return the list of meta properties in the object. Meta properties are just containers for setting and retrieving any custom data to an object. Metaproperties are also saved with the object.
+		</description>
+	</method>
+	<method name="call" >
+		<argument index="0" name="method" type="String" >
+		</argument>
+		<description>
+		Call any method in the object (syntax: call("method", .. arguments..). 
+		</description>
+	</method>
+	</methods>
+	<constants>
+		<constant name="NOTIFICATION_POSTINITIALIZE" value="0">
+		This notification is called right after the object is done initializing
+		</constant>
+		<constant name="NOTIFICATION_PREDELETE" value="1">
+		This notification is called right before the object will e deleted.
+		</constant>
+	</constants>
+</class>
+<class category="Core" name="Key">
+	<brief_description>
+		All Symbolic Key Names
+	</brief_description>
+	<description>
+		Key is an enumaration containing the constants for all the symbolic key names. They are used directly (not with Key. prefix). This value is used in the "scancode" field of the "KEY" InputEvent.
+	</description>
+	<constants>
+	<constant name="SPKEY">Special Key Mask</constant>
+	<constant name="KEY_ESCAPE"></constant>
+	<constant name="KEY_TAB"></constant>
+	<constant name="KEY_BACKTAB"></constant>
+	<constant name="KEY_BACKSPACE"></constant>
+	<constant name="KEY_RETURN"></constant>
+	<constant name="KEY_ENTER"></constant>
+	<constant name="KEY_INSERT"></constant>
+	<constant name="KEY_DELETE"></constant>
+	<constant name="KEY_PAUSE"></constant>
+	<constant name="KEY_PRINT"></constant>
+	<constant name="KEY_SYSREQ"></constant>
+	<constant name="KEY_CLEAR"></constant>
+	<constant name="KEY_HOME"></constant>
+	<constant name="KEY_END"></constant>
+	<constant name="KEY_LEFT"></constant>
+	<constant name="KEY_UP"></constant>
+	<constant name="KEY_RIGHT"></constant>
+	<constant name="KEY_DOWN"></constant>
+	<constant name="KEY_PAGEUP"></constant>
+	<constant name="KEY_PAGEDOWN"></constant>
+	<constant name="KEY_SHIFT"></constant>
+	<constant name="KEY_CONTROL"></constant>
+	<constant name="KEY_META"></constant>
+	<constant name="KEY_ALT"></constant>
+	<constant name="KEY_CAPSLOCK"></constant>
+	<constant name="KEY_NUMLOCK"></constant>
+	<constant name="KEY_SCROLLLOCK"></constant>
+	<constant name="KEY_F1"></constant>
+	<constant name="KEY_F2"></constant>
+	<constant name="KEY_F3"></constant>
+	<constant name="KEY_F4"></constant>
+	<constant name="KEY_F5"></constant>
+	<constant name="KEY_F6"></constant>
+	<constant name="KEY_F7"></constant>
+	<constant name="KEY_F8"></constant>
+	<constant name="KEY_F9"></constant>
+	<constant name="KEY_F10"></constant>
+	<constant name="KEY_F11"></constant>
+	<constant name="KEY_F12"></constant>
+	<constant name="KEY_F13"></constant>
+	<constant name="KEY_F14"></constant>
+	<constant name="KEY_F15"></constant>
+	<constant name="KEY_F16"></constant>
+	<constant name="KEY_KP_ENTER"></constant>
+	<constant name="KEY_KP_MULTIPLY"></constant>
+	<constant name="KEY_KP_DIVIDE"></constant>
+	<constant name="KEY_KP_SUBSTRACT"></constant>
+	<constant name="KEY_KP_PERIOD"></constant>
+	<constant name="KEY_KP_ADD"></constant>
+	<constant name="KEY_KP_0"></constant>
+	<constant name="KEY_KP_1"></constant>
+	<constant name="KEY_KP_2"></constant>
+	<constant name="KEY_KP_3"></constant>
+	<constant name="KEY_KP_4"></constant>
+	<constant name="KEY_KP_5"></constant>
+	<constant name="KEY_KP_6"></constant>
+	<constant name="KEY_KP_7"></constant>
+	<constant name="KEY_KP_8"></constant>
+	<constant name="KEY_KP_9"></constant>
+	<constant name="KEY_SUPER_L"></constant>
+	<constant name="KEY_SUPER_R"></constant>
+	<constant name="KEY_MENU"></constant>
+	<constant name="KEY_HYPER_L"></constant>
+	<constant name="KEY_HYPER_R"></constant>
+	<constant name="KEY_HELP"></constant>
+	<constant name="KEY_DIRECTION_L"></constant>
+	<constant name="KEY_DIRECTION_R"></constant>
+	<constant name="KEY_BACK"></constant>
+	<constant name="KEY_FORWARD"></constant>
+	<constant name="KEY_STOP"></constant>
+	<constant name="KEY_REFRESH"></constant>
+	<constant name="KEY_VOLUMEDOWN"></constant>
+	<constant name="KEY_VOLUMEMUTE"></constant>
+	<constant name="KEY_VOLUMEUP"></constant>
+	<constant name="KEY_BASSBOOST"></constant>
+	<constant name="KEY_BASSUP"></constant>
+	<constant name="KEY_BASSDOWN"></constant>
+	<constant name="KEY_TREBLEUP"></constant>
+	<constant name="KEY_TREBLEDOWN"></constant>
+	<constant name="KEY_MEDIAPLAY"></constant>
+	<constant name="KEY_MEDIASTOP"></constant>
+	<constant name="KEY_MEDIAPREVIOUS"></constant>
+	<constant name="KEY_MEDIANEXT"></constant>
+	<constant name="KEY_MEDIARECORD"></constant>
+	<constant name="KEY_HOMEPAGE"></constant>
+	<constant name="KEY_FAVORITES"></constant>
+	<constant name="KEY_SEARCH"></constant>
+	<constant name="KEY_STANDBY"></constant>
+	<constant name="KEY_OPENURL"></constant>
+	<constant name="KEY_LAUNCHMAIL"></constant>
+	<constant name="KEY_LAUNCHMEDIA"></constant>
+	<constant name="KEY_LAUNCH0"></constant>
+	<constant name="KEY_LAUNCH1"></constant>
+	<constant name="KEY_LAUNCH2"></constant>
+	<constant name="KEY_LAUNCH3"></constant>
+	<constant name="KEY_LAUNCH4"></constant>
+	<constant name="KEY_LAUNCH5"></constant>
+	<constant name="KEY_LAUNCH6"></constant>
+	<constant name="KEY_LAUNCH7"></constant>
+	<constant name="KEY_LAUNCH8"></constant>
+	<constant name="KEY_LAUNCH9"></constant>
+	<constant name="KEY_LAUNCHA"></constant>
+	<constant name="KEY_LAUNCHB"></constant>
+	<constant name="KEY_LAUNCHC"></constant>
+	<constant name="KEY_LAUNCHD"></constant>
+	<constant name="KEY_LAUNCHE"></constant>
+	<constant name="KEY_LAUNCHF"></constant>
+	
+	<constant name="KEY_UNKNOWN"></constant>
+	<constant name="KEY_SPACE"></constant>
+	<constant name="KEY_EXCLAM"></constant>
+	<constant name="KEY_QUOTEDBL"></constant>
+	<constant name="KEY_NUMBERSIGN"></constant>
+	<constant name="KEY_DOLLAR"></constant>
+	<constant name="KEY_PERCENT"></constant>
+	<constant name="KEY_AMPERSAND"></constant>
+	<constant name="KEY_APOSTROPHE"></constant>
+	<constant name="KEY_PARENLEFT"></constant>
+	<constant name="KEY_PARENRIGHT"></constant>
+	<constant name="KEY_ASTERISK"></constant>
+	<constant name="KEY_PLUS"></constant>
+	<constant name="KEY_COMMA"></constant>
+	<constant name="KEY_MINUS"></constant>
+	<constant name="KEY_PERIOD"></constant>
+	<constant name="KEY_SLASH"></constant>
+	<constant name="KEY_0"></constant>
+	<constant name="KEY_1"></constant>
+	<constant name="KEY_2"></constant>
+	<constant name="KEY_3"></constant>
+	<constant name="KEY_4"></constant>
+	<constant name="KEY_5"></constant>
+	<constant name="KEY_6"></constant>
+	<constant name="KEY_7"></constant>
+	<constant name="KEY_8"></constant>
+	<constant name="KEY_9"></constant>
+	<constant name="KEY_COLON"></constant>
+	<constant name="KEY_SEMICOLON"></constant>
+	<constant name="KEY_LESS"></constant>
+	<constant name="KEY_EQUAL"></constant>
+	<constant name="KEY_GREATER"></constant>
+	<constant name="KEY_QUESTION"></constant>
+	<constant name="KEY_AT"></constant>
+	<constant name="KEY_A"></constant>
+	<constant name="KEY_B"></constant>
+	<constant name="KEY_C"></constant>
+	<constant name="KEY_D"></constant>
+	<constant name="KEY_E"></constant>
+	<constant name="KEY_F"></constant>
+	<constant name="KEY_G"></constant>
+	<constant name="KEY_H"></constant>
+	<constant name="KEY_I"></constant>
+	<constant name="KEY_J"></constant>
+	<constant name="KEY_K"></constant>
+	<constant name="KEY_L"></constant>
+	<constant name="KEY_M"></constant>
+	<constant name="KEY_N"></constant>
+	<constant name="KEY_O"></constant>
+	<constant name="KEY_P"></constant>
+	<constant name="KEY_Q"></constant>
+	<constant name="KEY_R"></constant>
+	<constant name="KEY_S"></constant>
+	<constant name="KEY_T"></constant>
+	<constant name="KEY_U"></constant>
+	<constant name="KEY_V"></constant>
+	<constant name="KEY_W"></constant>
+	<constant name="KEY_X"></constant>
+	<constant name="KEY_Y"></constant>
+	<constant name="KEY_Z"></constant>
+	<constant name="KEY_BRACKETLEFT"></constant>
+	<constant name="KEY_BACKSLASH"></constant>
+	<constant name="KEY_BRACKETRIGHT"></constant>
+	<constant name="KEY_ASCIICIRCUM"></constant>
+	<constant name="KEY_UNDERSCORE"></constant>
+	<constant name="KEY_QUOTELEFT"></constant>
+	<constant name="KEY_BRACELEFT"></constant>
+	<constant name="KEY_BAR"></constant>
+	<constant name="KEY_BRACERIGHT"></constant>
+	<constant name="KEY_ASCIITILDE"></constant>
+	<constant name="KEY_NOBREAKSPACE"></constant>
+	<constant name="KEY_EXCLAMDOWN"></constant>
+	<constant name="KEY_CENT"></constant>
+	<constant name="KEY_STERLING"></constant>
+	<constant name="KEY_CURRENCY"></constant>
+	<constant name="KEY_YEN"></constant>
+	<constant name="KEY_BROKENBAR"></constant>
+	<constant name="KEY_SECTION"></constant>
+	<constant name="KEY_DIAERESIS"></constant>
+	<constant name="KEY_COPYRIGHT"></constant>
+	<constant name="KEY_ORDFEMININE"></constant>
+	<constant name="KEY_GUILLEMOTLEFT"></constant>
+	<constant name="KEY_NOTSIGN"></constant>
+	<constant name="KEY_HYPHEN"></constant>
+	<constant name="KEY_REGISTERED"></constant>
+	<constant name="KEY_MACRON"></constant>
+	<constant name="KEY_DEGREE"></constant>
+	<constant name="KEY_PLUSMINUS"></constant>
+	<constant name="KEY_TWOSUPERIOR"></constant>
+	<constant name="KEY_THREESUPERIOR"></constant>
+	<constant name="KEY_ACUTE"></constant>
+	<constant name="KEY_MU"></constant>
+	<constant name="KEY_PARAGRAPH"></constant>
+	<constant name="KEY_PERIODCENTERED"></constant>
+	<constant name="KEY_CEDILLA"></constant>
+	<constant name="KEY_ONESUPERIOR"></constant>
+	<constant name="KEY_MASCULINE"></constant>
+	<constant name="KEY_GUILLEMOTRIGHT"></constant>
+	<constant name="KEY_ONEQUARTER"></constant>
+	<constant name="KEY_ONEHALF"></constant>
+	<constant name="KEY_THREEQUARTERS"></constant>
+	<constant name="KEY_QUESTIONDOWN"></constant>
+	<constant name="KEY_AGRAVE"></constant>
+	<constant name="KEY_AACUTE"></constant>
+	<constant name="KEY_ACIRCUMFLEX"></constant>
+	<constant name="KEY_ATILDE"></constant>
+	<constant name="KEY_ADIAERESIS"></constant>
+	<constant name="KEY_ARING"></constant>
+	<constant name="KEY_AE"></constant>
+	<constant name="KEY_CCEDILLA"></constant>
+	<constant name="KEY_EGRAVE"></constant>
+	<constant name="KEY_EACUTE"></constant>
+	<constant name="KEY_ECIRCUMFLEX"></constant>
+	<constant name="KEY_EDIAERESIS"></constant>
+	<constant name="KEY_IGRAVE"></constant>
+	<constant name="KEY_IACUTE"></constant>
+	<constant name="KEY_ICIRCUMFLEX"></constant>
+	<constant name="KEY_IDIAERESIS"></constant>
+	<constant name="KEY_ETH"></constant>
+	<constant name="KEY_NTILDE"></constant>
+	<constant name="KEY_OGRAVE"></constant>
+	<constant name="KEY_OACUTE"></constant>
+	<constant name="KEY_OCIRCUMFLEX"></constant>
+	<constant name="KEY_OTILDE"></constant>
+	<constant name="KEY_ODIAERESIS"></constant>
+	<constant name="KEY_MULTIPLY"></constant>
+	<constant name="KEY_OOBLIQUE"></constant>
+	<constant name="KEY_UGRAVE"></constant>
+	<constant name="KEY_UACUTE"></constant>
+	<constant name="KEY_UCIRCUMFLEX"></constant>
+	<constant name="KEY_UDIAERESIS"></constant>
+	<constant name="KEY_YACUTE"></constant>
+	<constant name="KEY_THORN"></constant>
+	<constant name="KEY_SSHARP"></constant>
+	
+	<constant name="KEY_DIVISION"></constant>
+	<constant name="KEY_YDIAERESIS"></constant>
+		
+	<constant name="KEY_CODE_MASK"></constant>
+	<constant name="KEY_MODIFIER_MASK"></constant>
+	
+	<constant name="KEY_MASK_SHIFT"></constant>
+	<constant name="KEY_MASK_ALT"></constant>
+	<constant name="KEY_MASK_META"></constant>
+	<constant name="KEY_MASK_CTRL"></constant>
+	<constant name="KEY_MASK_KPAD"></constant>
+	<constant name="KEY_MASK_GROUP_SWITCH"></constant>
+	
+	</constants>
+</class>
+<class category="Core" name="PropertyHint">
+	<brief_description>
+		Property Hints.
+	</brief_description>
+	<description>
+		PropertyHint hints editors on how to edit a property. In many cases, hint_string (in the PropertyInfo) will contain extra data. These constants are used globally ("PropertyHint" class doesn't exist").
+	</description>
+	<constants>
+	<constant name="PROPERTY_HINT_NONE"></constant>
+	<constant name="PROPERTY_HINT_RANGE">Hint_string defined as "min,max,step
+	"</constant>
+	<constant name="PROPERTY_HINT_ENUM">Values such as 0,1,2 are represented in hint_string as "A,B,C"</constant>
+	<constant name="PROPERTY_HINT_LENGTH">hint_string is the length of an array type.</constant>
+	<constant name="PROPERTY_HINT_FLAGS">Flags names are in hint_string from MSB to LSB as "flag8,fla7,flag6,,,,flag1"</constant>
+	<constant name="PROPERTY_HINT_PATH">Property is a path.</constant>
+	<constant name="PROPERTY_HINT_FILE">Property is a path to a file.</constant>
+	<constant name="PROPERTY_HINT_DIR">Property is a path to a dir.</constant>
+	<constant name="PROPERTY_HINT_RESOURCE_TYPE">hint_string contains the valid resource types the property accept (separated by ",").</constant>
+	</constants>
+</class>
+<class category="Core" name="PropertyUsage">
+	<brief_description>
+		Usage for an object property.
+	</brief_description>
+	<description>
+		PropertyUsage defines a list of (inclusive) usages that can be ORed together to specify how the property will be treated in different scenarios. These constants are used globally ("PropertyUsage" class doesn't exist").
+	</description>
+	<constants>
+	<constant name="PROPERTY_USAGE_STORAGE"> Property is Saved/Loaded from disk.</constant>
+	<constant name="PROPERTY_USAGE_EDITOR">Property is visible in editor (for editing).</constant>
+	<constant name="PROPERTY_USAGE_NETWORK">Property can be syncronized on network.</constant>
+	<constant name="PROPERTY_USAGE_DEFAULT">Default usage.</constant>
+	</constants>
+</class>
+<class category="Core" name="Type">
+	<brief_description>
+		Valid Data Types.
+	</brief_description>
+	<description>
+		Type consists of a list of valid types. It is usually used for property type hinting. These constants are used globally ("Type" class doesn't exist").
+	</description>
+	<constants>
+		<constant name="TYPE_NIL"></constant>
+		<constant name="TYPE_BOOL"></constant>
+		<constant name="TYPE_INT"></constant>
+		<constant name="TYPE_REAL"></constant>
+		<constant name="TYPE_STRING"></constant>
+		<constant name="TYPE_VECTOR2"></constant>
+		<constant name="TYPE_RECT2"></constant>
+		<constant name="TYPE_VECTOR3"></constant>
+		<constant name="TYPE_PLANE"></constant>
+		<constant name="TYPE_QUAT"></constant>
+		<constant name="TYPE_AABB"></constant>
+		<constant name="TYPE_MATRIX3"></constant>
+		<constant name="TYPE_TRANSFORM"></constant>
+		<constant name="TYPE_COLOR"></constant>
+		<constant name="TYPE_IMAGE"></constant>
+		<constant name="TYPE_NODE_PATH"></constant>
+		<constant name="TYPE_RESOURCE"></constant>
+		<constant name="TYPE_RID"></constant>
+		<constant name="TYPE_OBJECT"></constant>
+		<constant name="TYPE_INPUT_EVENT"></constant>
+		<constant name="TYPE_DICTIONARY"></constant>
+		<constant name="TYPE_ARRAY"></constant>
+		<constant name="TYPE_RAW_ARRAY"></constant>
+		<constant name="TYPE_INT_ARRAY"></constant>
+		<constant name="TYPE_REAL_ARRAY"></constant>
+		<constant name="TYPE_STRING_ARRAY"></constant>
+		<constant name="TYPE_VECTOR3_ARRAY"></constant>
+		<constant name="TYPE_COLOR_ARRAY"></constant>
+	</constants>		
+</class>
+	
+
+<class category="Core" name="Error">
+	<brief_description>
+		List of generic errors.
+	</brief_description>
+	<description>
+		Error is a list of generic errors
+	</description>
+	<constants>
+	<constant name="OK"></constant>
+	<constant name="FAILED">  Generic fail error</constant>
+	<constant name="ERR_UNAVAILABLE">  What is requested is unsupported/unavailable</constant>
+	<constant name="ERR_UNCONFIGURED">  The object being used hasnt been properly set up yet</constant>
+	<constant name="ERR_UNAUTHORIZED">  Missing credentials for requested resource</constant>
+	<constant name="ERR_PARAMETER_RANGE_ERROR">  Parameter given out of range</constant>
+	<constant name="ERR_OUT_OF_MEMORY">  Out of memory</constant>
+	<constant name="ERR_FILE_NOT_FOUND"></constant>
+	<constant name="ERR_FILE_BAD_DRIVE"></constant>
+	<constant name="ERR_FILE_BAD_PATH"></constant>
+	<constant name="ERR_FILE_NO_PERMISSION"></constant>
+	<constant name="ERR_FILE_ALREADY_IN_USE"></constant>
+	<constant name="ERR_FILE_CANT_OPEN"></constant>
+	<constant name="ERR_FILE_CANT_WRITE"></constant>
+	<constant name="ERR_FILE_CANT_READ"></constant>
+	<constant name="ERR_FILE_UNRECOGNIZED"></constant>
+	<constant name="ERR_FILE_CORRUPT"></constant>
+	<constant name="ERR_FILE_EOF"></constant>
+	<constant name="ERR_CANT_OPEN">  Can't open a resource/socket/file</constant>
+	<constant name="ERR_CANT_CREATE"></constant>
+	<constant name="ERROR_QUERY_FAILED"></constant>
+	<constant name="ERR_ALREADY_IN_USE"></constant>
+	<constant name="ERR_LOCKED">  resource is locked</constant>
+	<constant name="ERR_TIMEOUT"></constant>
+	<constant name="ERR_CANT_AQUIRE_RESOURCE"></constant>
+	<constant name="ERR_INVALID_DATA">  Data passed is invalid</constant>
+	<constant name="ERR_INVALID_PARAMETER">  Parameter passed is invalid</constant>
+	<constant name="ERR_ALREADY_EXISTS">  When adding"> item already exists</constant>
+	<constant name="ERR_DOES_NOT_EXIST">  When retrieving/erasing"> it item does not exist</constant>
+	<constant name="ERR_DATABASE_CANT_READ">  database is full</constant>
+	<constant name="ERR_DATABASE_CANT_WRITE">  database is full</constant>
+	<constant name="ERR_COMPILATION_FAILED"></constant>
+	<constant name="ERR_METHOD_NOT_FOUND"></constant>
+	<constant name="ERR_LINK_FAILED"></constant>
+	<constant name="ERR_SCRIPT_FAILED"></constant>
+	<constant name="ERR_CYCLIC_LINK"></constant>
+	<constant name="ERR_BUSY"></constant>
+	<constant name="ERR_HELP">  user requested help!!</constant>
+	<constant name="ERR_BUG">  a bug in the software certainly happeneddue to a double check failing or unexpected behavior.</constant>
+	<constant name="ERR_WTF "> an impossible to trigger check due to paranoid programmer was triggered</constant>
+	</constants>
+</class>
+</doc>
+
+

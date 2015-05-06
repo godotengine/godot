@@ -1,0 +1,13 @@
+Import('env')
+
+
+common_win=[
+	"context_gl_win.cpp",
+	"os_windows.cpp",
+	"ctxgl_procaddr.cpp",
+	"key_mapping_win.cpp",
+	"tcp_server_winsock.cpp",
+	"stream_peer_winsock.cpp",
+]
+
+env.Program('#bin/godot.exe',['godot_win.cpp']+common_win)
