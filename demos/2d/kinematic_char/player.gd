@@ -34,8 +34,6 @@ func _fixed_process(delta):
 
 	#create forces
 	var force = Vector2(0,GRAVITY)
-
-	var stop = velocity.x!=0.0
 	
 	var walk_left = Input.is_action_pressed("move_left")
 	var walk_right = Input.is_action_pressed("move_right")
