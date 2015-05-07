@@ -11,21 +11,21 @@ public:
     
 
     ColorRgb()
-        : r(0)
+        : b(0)
         , g(0)
-        , b(0) {
+        , r(0) {
     }
 
     ColorRgb(T red, T green, T blue)
-        : r(red)
+        : b(blue)
         , g(green)
-        , b(blue) {
+        , r(red) {
     }
 
     ColorRgb(const ColorRgb<T> &x)
-        : r(x.r)
+        : b(x.b)
         , g(x.g)
-        , b(x.b) {
+        , r(x.r) {
     }
 
     ColorRgb<int> operator *(int x) {

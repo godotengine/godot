@@ -863,17 +863,17 @@ public:
 						if (polygon->indices != NULL) {
 
 							r.pos=polygon->points[polygon->indices[0]];
-							for (int i=1; i<polygon->count; i++) {
+							for (int i=1; i<l; i++) {
 
 								r.expand_to(polygon->points[polygon->indices[i]]);
-							};
+							}
 						} else {
 							r.pos=polygon->points[0];
-							for (int i=1; i<polygon->count; i++) {
+							for (int i=1; i<l; i++) {
 
 								r.expand_to(polygon->points[i]);
-							};
-						};
+							}
+						}
 					} break;
 					case CanvasItem::Command::TYPE_CIRCLE: {
 

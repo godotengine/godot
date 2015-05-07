@@ -551,7 +551,7 @@ bool PhysicsServerSW::body_is_shape_set_as_trigger(RID p_body, int p_shape_idx) 
 	ERR_FAIL_COND_V(!body,false);
 	ERR_FAIL_INDEX_V(p_shape_idx,body->get_shape_count(),false);
 
-	body->is_shape_set_as_trigger(p_shape_idx);
+	return body->is_shape_set_as_trigger(p_shape_idx);
 }
 
 

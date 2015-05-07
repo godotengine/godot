@@ -940,19 +940,19 @@ String EditorFileSystem::get_file_type(const String& p_file) const {
 EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
     if (!filesystem || scanning)
-	return false;
+    	return NULL;
 
 
     String f = Globals::get_singleton()->localize_path(p_path);
 
     if (!f.begins_with("res://"))
-	return false;
+    	return NULL;
 
 
     f=f.substr(6,f.length());
     f=f.replace("\\","/");
     if (f==String())
-	return filesystem;
+    	return filesystem;
 
     if (f.ends_with("/"))
 	f=f.substr(0,f.length()-1);
@@ -960,7 +960,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
     Vector<String> path = f.split("/");
 
     if (path.size()==0)
-	return false;
+    	return NULL;
 
     EditorFileSystemDirectory *fs=filesystem;
 
