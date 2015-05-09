@@ -1,6 +1,8 @@
 
 extends Control
 
+var mousepos
+
 func _fixed_process(delta):
 
 	var modetext = "Mode:\n"
@@ -31,7 +33,7 @@ func _fixed_process(delta):
 	
 	get_node("Label_Size").set_text(str("Size:\n", OS.get_window_size() ) )
 	
-	get_node("Label_MousePosition").set_text(str("Mouse Position:\n", Input.get_mouse_pos() ) )
+	get_node("Label_MousePosition").set_text(str("Mouse Position:\n", mousepos ) )
 	
 	get_node("Label_Screen_Count").set_text( str("Screen_Count:\n", OS.get_screen_count() ) )
 	
@@ -126,6 +128,12 @@ func check_wm_api():
 func _ready():
 	if( check_wm_api() ):
 		set_fixed_process(true)
+		set_process_input(true)
+
+
+func _input(ev):
+	if (ev.type==InputEvent.MOUSE_MOTION):
+		mousepos = ev.pos
 
 
 func _on_Button_MoveTo_pressed():
