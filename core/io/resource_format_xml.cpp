@@ -1850,7 +1850,7 @@ void ResourceFormatSaverXMLInstance::escape(String& p_str) {
 	p_str=p_str.replace(">","&lt;");
 	p_str=p_str.replace("'","&apos;");
 	p_str=p_str.replace("\"","&quot;");
-	for (int i=1;i<32;i++) {
+	for (char i=1;i<32;i++) {
 
 		char chr[2]={i,0};
 		const char hexn[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};

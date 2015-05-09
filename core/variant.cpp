@@ -463,8 +463,8 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 		case BOOL: {
 
 			static const Type valid[]={
-				//INT,
-				//REAL,
+				INT,
+				REAL,
 				//STRING,
 				NIL,
 			};
@@ -474,7 +474,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 		case INT: {
 
 			static const Type valid[]={
-				//BOOL,
+				BOOL,
 				REAL,
 				//STRING,
 				NIL,
@@ -486,7 +486,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_
 		case REAL: {
 
 			static const Type valid[]={
-				//BOOL,
+				BOOL,
 				INT,
 				//STRING,
 				NIL,

@@ -1257,7 +1257,8 @@ void SkeletonSpatialGizmo::redraw() {
 
 			//find closest axis
 			int closest=-1;
-			float closest_d;
+			float closest_d = 0.0;
+
 			for(int j=0;j<3;j++) {
 				float dp = Math::abs(grests[parent].basis[j].normalized().dot(d));
 				if (j==0 || dp>closest_d)

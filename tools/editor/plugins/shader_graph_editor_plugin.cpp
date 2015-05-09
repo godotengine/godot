@@ -539,7 +539,6 @@ void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const 
 		if ((lastx != newx) || (lasty != newy))
 		{
 #if 0
-			/*
 			if(fix255)
 			{
 				/* use fixed array size (for the curve graph) */

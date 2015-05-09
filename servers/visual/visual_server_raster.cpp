@@ -7281,7 +7281,7 @@ void VisualServerRaster::_draw_viewports() {
 		if (r.size.width==0)
 			r.size.width=window_w;
 		if (r.size.height==0)
-			r.size.height=window_w;
+			r.size.height=window_h;
 
 
 		_draw_viewport(vp,r.pos.x,r.pos.y,r.size.width,r.size.height);
