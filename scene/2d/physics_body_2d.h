@@ -42,6 +42,11 @@ class PhysicsBody2D : public CollisionObject2D {
 	uint32_t collision_mask;
 	Vector2 one_way_collision_direction;
 	float one_way_collision_max_depth;
+
+
+	void _set_layers(uint32_t p_mask);
+	uint32_t _get_layers() const;
+
 protected:
 
 	void _notification(int p_what);

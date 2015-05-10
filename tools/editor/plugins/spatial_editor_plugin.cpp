@@ -3372,6 +3372,7 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon( get_icon("ToolRotate","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_SCALE]->set_icon( get_icon("ToolScale","EditorIcons") );
 		instance_button->set_icon( get_icon("SpatialAdd","EditorIcons") );
+		instance_button->hide();
 
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT),get_icon("Panels1","EditorIcons"));
