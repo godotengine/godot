@@ -1282,6 +1282,23 @@ void Object::get_signal_list(List<MethodInfo> *p_signals ) const {
 	}
 }
 
+
+void Object::get_all_signal_connections(List<Connection> *p_connections) const {
+
+	const StringName *S=NULL;
+
+	while((S=signal_map.next(S))) {
+
+		const Signal *s=&signal_map[*S];
+
+		for(int i=0;i<s->slot_map.size();i++) {
+
+			p_connections->push_back(s->slot_map.getv(i).conn);
+		}
+	}
+
+}
+
 void Object::get_signal_connection_list(const StringName& p_signal,List<Connection> *p_connections) const {
 
 	const Signal *s=signal_map.getptr(p_signal);
