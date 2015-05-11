@@ -68,17 +68,34 @@ float PhysicsBody2D::get_one_way_collision_max_depth() const{
 }
 
 
+void PhysicsBody2D::_set_layers(uint32_t p_mask) {
+
+	set_layer_mask(p_mask);
+	set_collision_mask(p_mask);
+}
+
+uint32_t PhysicsBody2D::_get_layers() const{
+
+	return get_layer_mask();
+}
+
 void PhysicsBody2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","mask"),&PhysicsBody2D::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody2D::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody2D::get_collision_mask);
+	ObjectTypeDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody2D::_set_layers);
+	ObjectTypeDB::bind_method(_MD("_get_layers"),&PhysicsBody2D::_get_layers);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_direction","dir"),&PhysicsBody2D::set_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_direction"),&PhysicsBody2D::get_one_way_collision_direction);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_max_depth","depth"),&PhysicsBody2D::set_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("get_one_way_collision_max_depth"),&PhysicsBody2D::get_one_way_collision_max_depth);
 	ObjectTypeDB::bind_method(_MD("add_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::add_collision_exception_with);
 	ObjectTypeDB::bind_method(_MD("remove_collision_exception_with","body:PhysicsBody2D"),&PhysicsBody2D::remove_collision_exception_with);
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"layers",PROPERTY_HINT_ALL_FLAGS,"",0),_SCS("_set_layers"),_SCS("_get_layers")); //for backwards compat
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"one_way_collision/direction"),_SCS("set_one_way_collision_direction"),_SCS("get_one_way_collision_direction"));
 	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"one_way_collision/max_depth"),_SCS("set_one_way_collision_max_depth"),_SCS("get_one_way_collision_max_depth"));
 }
@@ -94,9 +111,22 @@ uint32_t PhysicsBody2D::get_layer_mask() const {
 	return mask;
 }
 
+void PhysicsBody2D::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	Physics2DServer::get_singleton()->body_set_collision_mask(get_rid(),p_mask);
+}
+
+uint32_t PhysicsBody2D::get_collision_mask() const {
+
+	return collision_mask;
+}
+
+
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
 
 	mask=1;
+	collision_mask=1;
 	set_one_way_collision_max_depth(0);
 	set_pickable(false);
 
@@ -909,6 +939,19 @@ Variant KinematicBody2D::_get_collider() const {
 	return obj;
 }
 
+void KinematicBody2D::revert_motion() {
+
+	Matrix32 gt = get_global_transform();
+	gt.elements[2]-=travel;
+	travel=Vector2();
+	set_global_transform(gt);
+
+}
+
+Vector2 KinematicBody2D::get_travel() const {
+
+	return travel;
+}
 
 Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 
@@ -926,6 +969,7 @@ Vector2 KinematicBody2D::move(const Vector2& p_motion) {
 	Matrix32 gt = get_global_transform();
 	gt.elements[2]+=result.motion;
 	set_global_transform(gt);
+	travel=result.motion;
 	return result.remainder;
 
 #else
@@ -1157,6 +1201,8 @@ void KinematicBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("move_to","position"),&KinematicBody2D::move_to);
 
 	ObjectTypeDB::bind_method(_MD("test_move","rel_vec"),&KinematicBody2D::test_move);
+	ObjectTypeDB::bind_method(_MD("get_travel"),&KinematicBody2D::get_travel);
+	ObjectTypeDB::bind_method(_MD("revert_motion"),&KinematicBody2D::revert_motion);
 
 	ObjectTypeDB::bind_method(_MD("is_colliding"),&KinematicBody2D::is_colliding);
 

@@ -519,6 +519,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.body=Physics2DServer::get_singleton()->body_create(use_kinematic?Physics2DServer::BODY_MODE_KINEMATIC:Physics2DServer::BODY_MODE_STATIC);
 	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body,get_instance_ID());
 	Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
+	Physics2DServer::get_singleton()->body_set_collision_mask(q.body,collision_mask);
 	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_FRICTION,friction);
 	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);
 
@@ -790,13 +791,23 @@ Rect2 TileMap::get_item_rect() const {
 	return rect_cache;
 }
 
-void TileMap::set_collision_layer_mask(uint32_t p_layer) {
+void TileMap::set_collision_layer(uint32_t p_layer) {
 
 	collision_layer=p_layer;
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
 		Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
+	}
+}
+
+void TileMap::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+		Quadrant &q=E->get();
+		Physics2DServer::get_singleton()->body_set_collision_mask(q.body,collision_mask);
 	}
 }
 
@@ -844,9 +855,14 @@ float TileMap::get_collision_bounce() const{
 }
 
 
-uint32_t TileMap::get_collision_layer_mask() const {
+uint32_t TileMap::get_collision_layer() const {
 
 	return collision_layer;
+}
+
+uint32_t TileMap::get_collision_mask() const {
+
+	return collision_mask;
 }
 
 void TileMap::set_mode(Mode p_mode) {
@@ -1077,8 +1093,11 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
 	ObjectTypeDB::bind_method(_MD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
 
-	ObjectTypeDB::bind_method(_MD("set_collision_layer_mask","mask"),&TileMap::set_collision_layer_mask);
-	ObjectTypeDB::bind_method(_MD("get_collision_layer_mask"),&TileMap::get_collision_layer_mask);
+	ObjectTypeDB::bind_method(_MD("set_collision_layer","mask"),&TileMap::set_collision_layer);
+	ObjectTypeDB::bind_method(_MD("get_collision_layer"),&TileMap::get_collision_layer);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&TileMap::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&TileMap::get_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("set_collision_friction","value"),&TileMap::set_collision_friction);
 	ObjectTypeDB::bind_method(_MD("get_collision_friction"),&TileMap::get_collision_friction);
@@ -1117,7 +1136,9 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision/use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer_mask"),_SCS("get_collision_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
@@ -1146,6 +1167,7 @@ TileMap::TileMap() {
 	center_x=false;
 	center_y=false;
 	collision_layer=1;
+	collision_mask=1;
 	friction=1;
 	bounce=0;
 	mode=MODE_SQUARE;

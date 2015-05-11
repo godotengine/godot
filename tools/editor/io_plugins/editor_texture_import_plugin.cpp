@@ -51,6 +51,7 @@ static const char *flag_names[]={
 	NULL
 };
 
+#if 0 // not used
 static const char *flag_short_names[]={
 	"Stream",
 	"FixBorder",
@@ -65,6 +66,7 @@ static const char *flag_short_names[]={
 	"Anisoropic",
 	NULL
 };
+#endif
 
 
 void EditorImportTextureOptions::set_format(EditorTextureImportPlugin::ImageFormat p_format) {

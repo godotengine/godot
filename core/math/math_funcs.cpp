@@ -36,8 +36,9 @@ uint32_t Math::default_seed=1;
 
 #define PHI 0x9e3779b9
 
-static uint32_t Q[4096], c = 362436;
-
+#if 0
+static uint32_t Q[4096];
+#endif
 
 uint32_t Math::rand_from_seed(uint32_t *seed) {
 
@@ -269,7 +270,7 @@ bool Math::is_inf(double p_val) {
 
 uint32_t Math::larger_prime(uint32_t p_val) {
 
-	static const int primes[] = {
+	static const uint32_t primes[] = {
 		5,
 		13,
 		23,

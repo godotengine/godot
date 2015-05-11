@@ -258,12 +258,12 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 		case MATRIX32: {
 
 
-			static const Type invalid[]={
+			static const Type valid[]={
 				TRANSFORM,
 				NIL
 			};
 
-			invalid_types=invalid;
+			valid_types=valid;
 		} break;
 		case QUAT: {
 
@@ -298,6 +298,256 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 			valid_types=valid;
 
 		} break;		
+
+		case COLOR: {
+
+			static const Type valid[] = {
+				//STRING,
+				//INT,
+				NIL,
+			};
+
+			valid_types = valid;
+
+		} break;
+
+		case _RID: {
+
+			static const Type valid[]={
+				OBJECT,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case OBJECT: {
+
+			static const Type valid[]={
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case NODE_PATH: {
+
+			static const Type valid[]={
+				STRING,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case ARRAY: {
+
+
+			static const Type valid[]={
+				RAW_ARRAY,
+				INT_ARRAY,
+				STRING_ARRAY,
+				REAL_ARRAY,
+				COLOR_ARRAY,
+				VECTOR2_ARRAY,
+				VECTOR3_ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+			// arrays
+		case RAW_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case INT_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+		} break;
+		case REAL_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case STRING_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+		} break;
+		case VECTOR2_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+
+		} break;
+		case VECTOR3_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+			valid_types=valid;
+
+		} break;
+		case COLOR_ARRAY: {
+
+			static const Type valid[]={
+				ARRAY,
+				NIL
+			};
+
+			valid_types=valid;
+
+		} break;
+		default: {}
+	}
+
+
+	if (valid_types) {
+
+		int i=0;
+		while(valid_types[i]!=NIL) {
+
+			if (p_type_from==valid_types[i])
+				return true;
+			i++;
+		}
+	} else if (invalid_types) {
+
+
+		int i=0;
+		while(invalid_types[i]!=NIL) {
+
+			if (p_type_from==invalid_types[i])
+				return false;
+			i++;
+		}
+	}
+
+	return false;
+
+}
+
+bool Variant::can_convert_strict(Variant::Type p_type_from,Variant::Type p_type_to) {
+
+	if (p_type_from==p_type_to)
+		return true;
+	if (p_type_to==NIL && p_type_from!=NIL) //nil can convert to anything
+		return true;
+
+	if (p_type_from == NIL) {
+		return (p_type_to == OBJECT);
+	};
+
+	const Type *valid_types=NULL;
+	const Type *invalid_types=NULL;
+
+	switch(p_type_to) {
+		case BOOL: {
+
+			static const Type valid[]={
+				INT,
+				REAL,
+				//STRING,
+				NIL,
+			};
+
+			valid_types=valid;
+		} break;
+		case INT: {
+
+			static const Type valid[]={
+				BOOL,
+				REAL,
+				//STRING,
+				NIL,
+			};
+
+			valid_types=valid;
+
+		} break;
+		case REAL: {
+
+			static const Type valid[]={
+				BOOL,
+				INT,
+				//STRING,
+				NIL,
+			};
+
+			valid_types=valid;
+
+		} break;
+		case STRING: {
+
+
+			static const Type valid[]={
+				NODE_PATH,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case MATRIX32: {
+
+
+			static const Type valid[]={
+				TRANSFORM,
+				NIL
+			};
+
+			valid_types=valid;
+		} break;
+		case QUAT: {
+
+			static const Type valid[]={
+				MATRIX3,
+				NIL
+			};
+
+			valid_types=valid;
+
+		} break;
+		case MATRIX3: {
+
+			static const Type valid[]={
+				QUAT,
+				NIL
+			};
+
+			valid_types=valid;
+
+
+		} break;
+		case TRANSFORM: {
+
+			static const Type valid[]={
+				MATRIX32,
+				QUAT,
+				MATRIX3,
+				NIL
+			};
+
+			valid_types=valid;
+
+		} break;
 
 		case COLOR: {
 
@@ -532,7 +782,7 @@ bool Variant::is_zero() const {
 		} break;
 		case QUAT: {
 
-			*reinterpret_cast<const Quat*>(_data._mem)==Quat();
+			return *reinterpret_cast<const Quat*>(_data._mem)==Quat();
 
 		} break;
 		case MATRIX3: {

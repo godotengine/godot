@@ -309,6 +309,7 @@ Error ResourceInteractiveLoaderXML::_parse_array_element(Vector<char> &buff,bool
 
 				buff_max++;
 				buff.resize(buff_max);
+				buffptr=buff.ptr();
 
 			}
 
@@ -1849,7 +1850,7 @@ void ResourceFormatSaverXMLInstance::escape(String& p_str) {
 	p_str=p_str.replace(">","&lt;");
 	p_str=p_str.replace("'","&apos;");
 	p_str=p_str.replace("\"","&quot;");
-	for (int i=1;i<32;i++) {
+	for (char i=1;i<32;i++) {
 
 		char chr[2]={i,0};
 		const char hexn[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
@@ -2563,7 +2564,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
-		property_list.sort();
+//		property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 

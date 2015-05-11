@@ -32,6 +32,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 		p.edges.resize(plen);
 
 		Vector2 center;
+		float sum=0;
 
 		for(int j=0;j<plen;j++) {
 
@@ -46,7 +47,22 @@ void Navigation2D::_navpoly_link(int p_id) {
 			center+=ep;
 			e.point=_get_point(ep);
 			p.edges[j]=e;
+
+
+			int idxn = indices[(j+1)%plen];
+			if (idxn<0 || idxn>=len) {
+				valid=false;
+				break;
+			}
+
+			Vector2 epn = nm.xform.xform(r[idxn]);
+
+			sum+=(epn.x-ep.x)*(epn.y+ep.y);
+
+
 		}
+
+		p.clockwise=sum>0;
 
 		if (!valid) {
 			nm.polygons.pop_back();
@@ -493,17 +509,30 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 					left = _get_vertex(p->edges[prev].point);
 					right = _get_vertex(p->edges[prev_n].point);
 
-					if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5) < 0){
+					if (p->clockwise) {
 						SWAP(left,right);
 					}
+					/*if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5) < 0){
+						SWAP(left,right);
+					}*/
 				}
 
 				bool skip=false;
 
+			/*	print_line("-----\nAPEX: "+(apex_point-end_point));
+				print_line("LEFT:");
+				print_line("\tPortal: "+(portal_left-end_point));
+				print_line("\tPoint: "+(left-end_point));
+				print_line("\tFree: "+itos(CLOCK_TANGENT(apex_point,portal_left,left) >= 0));
+				print_line("RIGHT:");
+				print_line("\tPortal: "+(portal_right-end_point));
+				print_line("\tPoint: "+(right-end_point));
+				print_line("\tFree: "+itos(CLOCK_TANGENT(apex_point,portal_right,right) <= 0));
+*/
 
 				if (CLOCK_TANGENT(apex_point,portal_left,left) >= 0){
 					//process
-					if (portal_left==apex_point || CLOCK_TANGENT(apex_point,left,portal_right) > 0) {
+					if (portal_left.distance_squared_to(apex_point)<CMP_EPSILON || CLOCK_TANGENT(apex_point,left,portal_right) > 0) {
 						left_poly=p;
 						portal_left=left;
 					} else {
@@ -519,12 +548,13 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
 							path.push_back(apex_point);
 						skip=true;
+						//print_line("addpoint left");
 					}
 				}
 
 				if (!skip && CLOCK_TANGENT(apex_point,portal_right,right) <= 0){
 					//process
-					if (portal_right==apex_point || CLOCK_TANGENT(apex_point,right,portal_left) < 0) {
+					if (portal_right.distance_squared_to(apex_point)<CMP_EPSILON || CLOCK_TANGENT(apex_point,right,portal_left) < 0) {
 						right_poly=p;
 						portal_right=right;
 					} else {
@@ -539,6 +569,8 @@ Vector<Vector2> Navigation2D::get_simple_path(const Vector2& p_start, const Vect
 						portal_left=apex_point;
 						if (path[path.size()-1].distance_to(apex_point)>CMP_EPSILON)
 							path.push_back(apex_point);
+						//print_line("addpoint right");
+
 					}
 				}
 

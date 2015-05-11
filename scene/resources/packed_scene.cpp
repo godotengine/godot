@@ -182,6 +182,8 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 
 	if (get_path()!="" && get_path().find("::")==-1)
 		s->set_filename(get_path());
+
+	s->notification(Node::NOTIFICATION_INSTANCED);
 	return ret_nodes[0];
 
 }

@@ -39,8 +39,14 @@ class PhysicsBody2D : public CollisionObject2D {
 	OBJ_TYPE(PhysicsBody2D,CollisionObject2D);
 
 	uint32_t mask;
+	uint32_t collision_mask;
 	Vector2 one_way_collision_direction;
 	float one_way_collision_max_depth;
+
+
+	void _set_layers(uint32_t p_mask);
+	uint32_t _get_layers() const;
+
 protected:
 
 	void _notification(int p_what);
@@ -51,6 +57,9 @@ public:
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
 
 	void add_collision_exception_with(Node* p_node); //must be physicsbody
 	void remove_collision_exception_with(Node* p_node);
@@ -276,6 +285,7 @@ class KinematicBody2D : public PhysicsBody2D {
 	ObjectID collider;
 	int collider_shape;
 	Variant collider_metadata;
+	Vector2 travel;
 
 	Variant _get_collider() const;
 
@@ -290,6 +300,10 @@ public:
 
 	bool test_move(const Vector2& p_motion);
 	bool is_colliding() const;
+
+	Vector2 get_travel() const;
+	void revert_motion();
+
 	Vector2 get_collision_pos() const;
 	Vector2 get_collision_normal() const;
 	Vector2 get_collider_velocity() const;

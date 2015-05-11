@@ -167,6 +167,7 @@ Error DirAccessWindows::change_dir(String p_dir) {
 
 	if (worked) {
 
+
 		GetCurrentDirectoryW(2048,real_current_dir_name);
 		current_dir=real_current_dir_name; // TODO, utf8 parser
 		current_dir=current_dir.replace("\\","/");
@@ -190,9 +191,9 @@ Error DirAccessWindows::make_dir(String p_dir) {
 
 #else
 
-	//p_dir=fix_path(p_dir);
+	p_dir=fix_path(p_dir);
 	
-	p_dir.replace("/","\\");
+	//p_dir.replace("/","\\");
 
 	bool success;
 	int err;
@@ -249,14 +250,14 @@ bool DirAccessWindows::file_exists(String p_file) {
 
 	p_file=fix_path(p_file);
 	
-	p_file.replace("/","\\");
+	//p_file.replace("/","\\");
 
-	WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
+	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 
 	DWORD fileAttr;
 
-	fileAttr = GetFileAttributesExW(p_file.c_str(), GetFileExInfoStandard, &fileInfo);
-	if (0 == fileAttr)
+	fileAttr = GetFileAttributesW(p_file.c_str());
+	if (INVALID_FILE_ATTRIBUTES == fileAttr)
 		return false;
 
 	return !(fileAttr&FILE_ATTRIBUTE_DIRECTORY);
@@ -272,17 +273,16 @@ bool DirAccessWindows::dir_exists(String p_dir) {
 	else
 		p_dir=fix_path(p_dir);
 
-	p_dir.replace("/","\\");
+	//p_dir.replace("/","\\");
 
-	WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
+	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
 
 
 	DWORD fileAttr;
 
-	fileAttr = GetFileAttributesExW(p_dir.c_str(), GetFileExInfoStandard, &fileInfo);
-	if (0 == fileAttr)
-		return false;
-
+	fileAttr = GetFileAttributesW(p_dir.c_str());
+	if (INVALID_FILE_ATTRIBUTES == fileAttr)
+		    return false;
 	return (fileAttr&FILE_ATTRIBUTE_DIRECTORY);
 
 }
@@ -313,12 +313,15 @@ Error DirAccessWindows::remove(String p_path)  {
 	p_path=fix_path(p_path);
 	
 	printf("erasing %s\n",p_path.utf8().get_data());
-	WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
-	DWORD fileAttr = GetFileAttributesExW(p_path.c_str(), GetFileExInfoStandard, &fileInfo);
-	if (fileAttr == INVALID_FILE_ATTRIBUTES)
-		return FAILED;
+	//WIN32_FILE_ATTRIBUTE_DATA    fileInfo;
+	//DWORD fileAttr = GetFileAttributesExW(p_path.c_str(), GetFileExInfoStandard, &fileInfo);
 
-	if (fileAttr & FILE_ATTRIBUTE_DIRECTORY)
+	DWORD fileAttr;
+
+	fileAttr = GetFileAttributesW(p_path.c_str());
+	if (INVALID_FILE_ATTRIBUTES == fileAttr)
+		    return FAILED;
+	if ((fileAttr&FILE_ATTRIBUTE_DIRECTORY))
 		return ::_wrmdir(p_path.c_str())==0?OK:FAILED;
 	else
 		return ::_wunlink(p_path.c_str())==0?OK:FAILED;

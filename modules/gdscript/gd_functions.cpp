@@ -88,6 +88,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"str",
 		"print",
 		"printt",
+		"prints",
 		"printerr",
 		"printraw",
 		"var2str",
@@ -553,6 +554,22 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 				if (i)
 					str+="\t";
+				str+=p_args[i]->operator String();
+			}
+
+			//str+="\n";
+			print_line(str);
+			r_ret=Variant();
+
+
+		} break;
+		case TEXT_PRINT_SPACED: {
+
+			String str;
+			for(int i=0;i<p_arg_count;i++) {
+
+				if (i)
+					str+=" ";
 				str+=p_args[i]->operator String();
 			}
 
@@ -1248,6 +1265,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case TEXT_PRINT_TABBED: {
 
 			MethodInfo mi("printt",PropertyInfo(Variant::NIL,"what"),PropertyInfo(Variant::NIL,"..."));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+
+		} break;
+		case TEXT_PRINT_SPACED: {
+
+			MethodInfo mi("prints",PropertyInfo(Variant::NIL,"what"),PropertyInfo(Variant::NIL,"..."));
 			mi.return_val.type=Variant::NIL;
 			return mi;
 

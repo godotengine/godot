@@ -115,6 +115,8 @@ void Button::_notification(int p_what) {
 				text_ofs.y+=style->get_offset().y;
 			} break;
 			case ALIGN_CENTER: {
+				if (text_ofs.x<0)
+					text_ofs.x=0;
 				text_ofs+=icon_ofs;
 				text_ofs+=style->get_offset();
 			} break;

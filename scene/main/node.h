@@ -126,6 +126,7 @@ private:
 	void _propagate_pause_owner(Node*p_owner);
 	Array _get_node_and_resource(const NodePath& p_path);
 
+	void _duplicate_signals(const Node* p_original,Node* p_copy) const;
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -170,6 +171,7 @@ public:
 		NOTIFICATION_PROCESS = 17,
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED=19,
+		NOTIFICATION_INSTANCED=20,
 	};
 			
 	/* NODE/TREE */			

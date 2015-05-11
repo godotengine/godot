@@ -3172,11 +3172,11 @@ void SpatialEditor::_init_indicators() {
 				int arrow_sides=6;
 
 
-				for(int i = 0; i < 7 ; i++) {
+				for(int k = 0; k < 7 ; k++) {
 
 
-					Matrix3 ma(ivec,Math_PI*2*float(i)/arrow_sides);
-					Matrix3 mb(ivec,Math_PI*2*float(i+1)/arrow_sides);
+					Matrix3 ma(ivec,Math_PI*2*float(k)/arrow_sides);
+					Matrix3 mb(ivec,Math_PI*2*float(k+1)/arrow_sides);
 
 
 					for(int j=0;j<arrow_points-1;j++) {
@@ -3372,6 +3372,7 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon( get_icon("ToolRotate","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_SCALE]->set_icon( get_icon("ToolScale","EditorIcons") );
 		instance_button->set_icon( get_icon("SpatialAdd","EditorIcons") );
+		instance_button->hide();
 
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT),get_icon("Panels1","EditorIcons"));
