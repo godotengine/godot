@@ -170,7 +170,7 @@ void EditorSettings::create() {
 
 	String config_path;
 	String config_dir;
-	String config_file="editor_settings.xml";
+	String config_file="editor_settings."VERSION_MKSTRING".xml";
 
 	if (OS::get_singleton()->has_environment("APPDATA")) {
 		// Most likely under windows, save here
