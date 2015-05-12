@@ -2122,7 +2122,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			editor_data.get_undo_redo().clear_history();
-			if (editor_plugin_screen) { //reload editor plugin
+			if (editor_plugin_over) { //reload editor plugin
 				editor_plugin_over->edit(NULL);
 				editor_plugin_over->edit(current);
 			}
