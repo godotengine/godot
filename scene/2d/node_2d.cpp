@@ -346,6 +346,17 @@ Matrix32 Node2D::get_relative_transform(const Node *p_parent) const {
 		return parent_2d->get_relative_transform(p_parent) * get_transform();
 }
 
+
+void Node2D::look_at(const Vector2& p_pos) {
+
+	rotate(get_angle_to(p_pos));
+}
+
+float Node2D::get_angle_to(const Vector2& p_pos) const {
+
+	return (get_global_transform().affine_inverse().xform(p_pos)).atan2();
+}
+
 void Node2D::_bind_methods() {
 
 
@@ -373,6 +384,9 @@ void Node2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);
+
+	ObjectTypeDB::bind_method(_MD("look_at","point"),&Node2D::look_at);
+	ObjectTypeDB::bind_method(_MD("get_angle_to","point"),&Node2D::get_angle_to);
 
 	ObjectTypeDB::bind_method(_MD("set_z","z"),&Node2D::set_z);
 	ObjectTypeDB::bind_method(_MD("get_z"),&Node2D::get_z);
