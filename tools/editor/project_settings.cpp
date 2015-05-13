@@ -916,8 +916,8 @@ void ProjectSettings::_translation_res_option_changed() {
 
 
 	ERR_FAIL_COND(!remaps.has(key));
-	StringArray r = remaps[key];
-	ERR_FAIL_INDEX(idx,remaps.size());
+	StringArray r = remaps[key];	
+	ERR_FAIL_INDEX(idx,r.size());
 	r.set(idx,path+":"+langs[which]);
 	remaps[key]=r;
 
@@ -1095,6 +1095,7 @@ void ProjectSettings::_update_translations() {
 					t2->set_editable(1,true);
 					t2->set_metadata(1,path);
 					int idx = langs.find(locale);
+					print_line("find "+locale+" at "+itos(idx));
 					if (idx<0)
 						idx=0;
 

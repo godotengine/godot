@@ -655,7 +655,12 @@ bool Space2DSW::test_body_motion(Body2DSW *p_body,const Vector2&p_motion,float p
 					if (col_obj->get_type()==CollisionObject2DSW::TYPE_BODY) {
 
 						const Body2DSW *body=static_cast<const Body2DSW*>(col_obj);
-						cbk.valid_dir=body->get_one_way_collision_direction();
+
+						Vector2 cdir = body->get_one_way_collision_direction();
+						if (cdir!=Vector2() && p_motion.dot(cdir)<0)
+							continue;
+
+						cbk.valid_dir=cdir;
 						cbk.valid_depth=body->get_one_way_collision_max_depth();
 					} else {
 						cbk.valid_dir=Vector2();

@@ -242,6 +242,9 @@ if (m_height > line_height) {\
 							break;
 						}
 
+						if (c[end]=='\t') {
+							cw=tab_size*font->get_char_size(' ').width;
+						}
 						w+=cw;
 
 						if (c[end]==' ') {
@@ -299,6 +302,9 @@ if (m_height > line_height) {\
 
 
 								int cw=font->get_char_size(c[i],c[i+1]).x;
+								if (c[i]=='\t') {
+									cw=tab_size*font->get_char_size(' ').width;
+								}
 
 								if (p_click_pos.x-cw/2>pofs) {
 
@@ -337,6 +343,10 @@ if (m_height > line_height) {\
 
 								} else {
 									cw=font->draw_char(ci,Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
+								}
+
+								if (c[i]=='\t') {
+									cw=tab_size*font->get_char_size(' ').width;
 								}
 
 
