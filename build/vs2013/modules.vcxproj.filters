@@ -34,6 +34,9 @@
     <Filter Include="modules\behavior_tree\core">
       <UniqueIdentifier>{245e960d-28fc-4d3f-8e92-003e36523b1c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\digest\sproto">
+      <UniqueIdentifier>{fe8050e5-48ff-40c0-ba5b-29d90d41d7e0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\modules\register_module_types.cpp">
@@ -227,6 +230,24 @@
     </ClCompile>
     <ClCompile Include="..\..\modules\behavior_tree\core\bt_custom_parallel_node.cpp">
       <Filter>modules\behavior_tree\core</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\sproto\sproto.c">
+      <Filter>modules\digest\sproto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\snappy.cpp">
+      <Filter>modules\digest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\sproto.cpp">
+      <Filter>modules\digest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\sproto_enc.cpp">
+      <Filter>modules\digest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\sproto_dec.cpp">
+      <Filter>modules\digest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\modules\digest\sproto_def.cpp">
+      <Filter>modules\digest</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -424,6 +445,18 @@
     </ClInclude>
     <ClInclude Include="..\..\modules\behavior_tree\core\bt_custom_parallel_node.h">
       <Filter>modules\behavior_tree\core</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\sproto\sproto.h">
+      <Filter>modules\digest\sproto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\sproto\msvcint.h">
+      <Filter>modules\digest\sproto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\snappy.h">
+      <Filter>modules\digest</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\modules\digest\sproto.h">
+      <Filter>modules\digest</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
