@@ -53,7 +53,7 @@ public:
 	void dump();
 	Variant get_default(const String& p_type);
 	ByteArray encode(const String& p_type, const Variant& p_variant);
-	Variant decode(const String& p_type, const ByteArray& p_stream);
+	Variant decode(const String& p_type, const ByteArray& p_stream, bool p_use_default = false);
 	Dictionary protocol();
 };
 

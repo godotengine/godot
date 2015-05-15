@@ -39,6 +39,8 @@ struct decode_ud {
 	Variant key;
 	int deep;
 	int mainindex_tag;
+	bool use_default;
+	Sproto* sproto;
 };
 
 static int decode_callback(const struct sproto_arg *args) {
@@ -53,11 +55,15 @@ static int decode_callback(const struct sproto_arg *args) {
 		if (args->tagname != self->array_tag) {
 			self->array_tag = args->tagname;
 			Dictionary& object = result.operator Dictionary();
-			if(args->mainindex > 0)
-				array = Dictionary(true);
-			else
-				array = Array(true);
-			object[args->tagname] = array;
+			if(!object.has(args->tagname)) {
+				if(args->mainindex > 0)
+					array = Dictionary(true);
+				else
+					array = Array(true);
+				object[args->tagname] = array;
+			} else {
+				array = object[args->tagname];
+			}
 		}
 	}
 	switch (args->type) {
@@ -82,8 +88,25 @@ static int decode_callback(const struct sproto_arg *args) {
 	}
 	case SPROTO_TSTRUCT: {
 		struct decode_ud sub;
+		sub.use_default = self->use_default;
+		sub.sproto = self->sproto;
 		int r;
-		value = Dictionary(true);
+
+		if(args->index > 0) {
+			if(self->use_default)
+				value = self->sproto->get_default(sproto_name(args->subtype));
+			else
+				value = Dictionary(true);
+		} else {
+			Dictionary& object = self->result.operator Dictionary();
+			if(object.has(args->tagname))
+				value = object[args->tagname];
+			else if(self->use_default)
+				value = self->sproto->get_default(sproto_name(args->subtype));
+			else
+				value = Dictionary(true);
+		}
+
 		sub.result = value;
 		sub.deep = self->deep + 1;
 		if (args->mainindex >= 0) {
@@ -125,13 +148,15 @@ static int decode_callback(const struct sproto_arg *args) {
 	return 0;
 }
 
-Variant Sproto::decode(const String& p_type, const ByteArray& p_stream) {
+Variant Sproto::decode(const String& p_type, const ByteArray& p_stream, bool p_use_default) {
 
 	struct sproto_type *st = sproto_type(proto, p_type.utf8().get_data());
 	ERR_FAIL_COND_V(st == NULL, ByteArray());
 
-	Dictionary o(true);
+	Dictionary o = p_use_default ? get_default(p_type) : Dictionary(true);
 	struct decode_ud self;
+	self.use_default = p_use_default;
+	self.sproto = this;
 	self.result = o;
 	self.deep = 0;
 	self.mainindex_tag = -1;

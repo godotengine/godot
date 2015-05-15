@@ -31,10 +31,52 @@ extern "C" {
 #include "sproto/sproto.h"
 };
 
+static int encode_default(const struct sproto_arg *args) {
+
+	Dictionary& dict = *(Dictionary *) args->ud;
+	Variant value;
+	if(args->index > 0) {
+		if(args->mainindex > 0)
+			value = Dictionary(true);
+		else
+			value = Array(true);
+	} else {
+		switch(args->type) {
+		case SPROTO_TINTEGER:
+			value = 0;
+			break;
+		case SPROTO_TREAL:
+			value = 0.0f;
+			break;
+		case SPROTO_TBOOLEAN:
+			value = false;
+			break;
+		case SPROTO_TSTRING:
+			value = "";
+			break;
+		case SPROTO_TSTRUCT:
+			Dictionary sub(true);
+			sub["__type"] = sproto_name(args->subtype);
+			value = sub;
+			char dummy[32];
+			sproto_encode(args->subtype, dummy, sizeof(dummy), encode_default, &sub);
+			break;
+		}
+	}
+	dict[args->tagname] = value;
+	return 0;
+}
+
 Variant Sproto::get_default(const String& p_type) {
 
 	struct sproto_type *st = sproto_type(proto, p_type.utf8().get_data());
 	ERR_FAIL_COND_V(st == NULL, Variant());
+	// 32 is enough for dummy buffer, because ldefault encode nothing but the header.
+	char dummy[32];
+	Dictionary dict(true);
+	dict["__type"] = p_type;
+	int ret = sproto_encode(st, dummy, sizeof(dummy), encode_default, &dict);
+	ERR_FAIL_COND_V(ret < 0, Variant());
 
-	return Variant();
+	return dict;
 }

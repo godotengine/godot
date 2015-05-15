@@ -45,8 +45,9 @@ Dictionary Sproto::protocol() {
 void Sproto::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("dump"),&Sproto::dump);
+	ObjectTypeDB::bind_method(_MD("get_default",""),&Sproto::get_default);
 	ObjectTypeDB::bind_method(_MD("encode","type","variant"),&Sproto::encode);
-	ObjectTypeDB::bind_method(_MD("decode","stream"),&Sproto::decode);
+	ObjectTypeDB::bind_method(_MD("decode","type","stream","use_default"),&Sproto::decode,false);
 	ObjectTypeDB::bind_method(_MD("protocol",""),&Sproto::protocol);
 }
 
