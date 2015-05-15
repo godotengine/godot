@@ -54,7 +54,7 @@ static int decode_callback(const struct sproto_arg *args) {
 		// It's array
 		if (args->tagname != self->array_tag) {
 			self->array_tag = args->tagname;
-			Dictionary& object = result.operator Dictionary();
+			Dictionary object = result.operator Dictionary();
 			if(!object.has(args->tagname)) {
 				if(args->mainindex > 0)
 					array = Dictionary(true);
@@ -69,7 +69,7 @@ static int decode_callback(const struct sproto_arg *args) {
 	switch (args->type) {
 	case SPROTO_TINTEGER: {
 		// notice: in lua 5.2, 52bit integer support (not 64)
-		value = *(long *)args->value;
+		value = (*(int *)args->value);
 		break;
 	}
 	case SPROTO_TREAL: {
@@ -98,7 +98,7 @@ static int decode_callback(const struct sproto_arg *args) {
 			else
 				value = Dictionary(true);
 		} else {
-			Dictionary& object = self->result.operator Dictionary();
+			Dictionary object = self->result.operator Dictionary();
 			if(object.has(args->tagname))
 				value = object[args->tagname];
 			else if(self->use_default)
@@ -121,7 +121,6 @@ static int decode_callback(const struct sproto_arg *args) {
 			return 0;
 		} else {
 			sub.mainindex_tag = -1;
-			sub.key = NULL;
 			r = sproto_decode(args->subtype, args->value, args->length, decode_callback, &sub);
 			if (r < 0 || r != args->length)
 				return r;
@@ -134,7 +133,7 @@ static int decode_callback(const struct sproto_arg *args) {
 		break;
 	}
 	if (args->index > 0) {
-		Array& object = self->array.operator Array();
+		Array object = self->array.operator Array();
 		object.append(value);
 	} else {
 		if (self->mainindex_tag == args->tagid) {
@@ -142,7 +141,7 @@ static int decode_callback(const struct sproto_arg *args) {
 			// assert(self->key_index > 0);
 			self->key = value;
 		}
-		Dictionary& object = self->result.operator Dictionary();
+		Dictionary object = self->result.operator Dictionary();
 		object[args->tagname] = value;
 	}
 	return 0;
@@ -153,14 +152,15 @@ Variant Sproto::decode(const String& p_type, const ByteArray& p_stream, bool p_u
 	struct sproto_type *st = sproto_type(proto, p_type.utf8().get_data());
 	ERR_FAIL_COND_V(st == NULL, ByteArray());
 
-	Dictionary o = p_use_default ? get_default(p_type) : Dictionary(true);
+	Dictionary o(true);
+	if(p_use_default)
+		o = get_default(p_type);
 	struct decode_ud self;
 	self.use_default = p_use_default;
 	self.sproto = this;
 	self.result = o;
 	self.deep = 0;
 	self.mainindex_tag = -1;
-	self.key = NULL;
 
 	ByteArray::Read r = p_stream.read();
 
