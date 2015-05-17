@@ -1094,11 +1094,11 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi,defargs);
 
-	ObjectTypeDB::bind_method(_MD("set_current_scene","child_node"),&SceneTree::set_current_scene);
-	ObjectTypeDB::bind_method(_MD("get_current_scene"),&SceneTree::get_current_scene);
+	ObjectTypeDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
+	ObjectTypeDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);
 
 	ObjectTypeDB::bind_method(_MD("change_scene","path"),&SceneTree::change_scene);
-	ObjectTypeDB::bind_method(_MD("change_scene_to","packed_scene"),&SceneTree::change_scene_to);
+	ObjectTypeDB::bind_method(_MD("change_scene_to","packed_scene:PackedScene"),&SceneTree::change_scene_to);
 
 	ObjectTypeDB::bind_method(_MD("reload_current_scene"),&SceneTree::reload_current_scene);
 
