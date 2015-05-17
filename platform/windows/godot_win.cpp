@@ -135,7 +135,12 @@ int widechar_main(int argc, wchar_t** argv) {
 		argv_utf8[i] = wc_to_utf8(argv[i]);
 	}
 
-	Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
+	Error err = Main::setup(argv_utf8[0], argc - 1, &argv_utf8[1]);
+
+	if (err!=OK)
+		return 255;
+
+
 	if (Main::start())
 		os.run();
 	Main::cleanup();
