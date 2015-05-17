@@ -343,6 +343,8 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 #endif
 
 				if (!valid) {
+#ifdef DEBUG_ENABLED
+
 					if (ret.get_type()==Variant::STRING) {
 						//return a string when invalid with the error
 						err_text=ret;
@@ -350,7 +352,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					} else {
 						err_text="Invalid operands '"+Variant::get_type_name(a->get_type())+"' and '"+Variant::get_type_name(b->get_type())+"' in operator '"+Variant::get_operator_name(op)+"'.";
 					}
+#endif
 					break;
+
 				}
 #ifdef DEBUG_ENABLED
 				*dst=ret;

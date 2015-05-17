@@ -5,7 +5,7 @@
 #include "io/base64.h"
 #include "core/globals.h"
 #include "io/file_access_encrypted.h"
-
+#include "os/keyboard.h"
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
 Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p_path,const String& p_type_hint) {
@@ -694,6 +694,20 @@ String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
 }
+
+String _OS::get_scancode_string(uint32_t p_code) const {
+
+	return keycode_get_string(p_code);
+}
+bool _OS::is_scancode_unicode(uint32_t p_unicode) const {
+
+	return keycode_has_unicode(p_unicode);
+}
+int _OS::find_scancode_from_string(const String& p_code) const {
+
+	return find_keycode(p_code);
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -810,6 +824,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
 
+	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
+	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
+	ObjectTypeDB::bind_method(_MD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
