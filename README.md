@@ -1,4 +1,4 @@
-![GODOT](../../logo.png)
+![GODOT](/logo.png)
 
 ### The Engine
 
