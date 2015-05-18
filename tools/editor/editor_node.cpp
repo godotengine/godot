@@ -2656,7 +2656,7 @@ Error EditorNode::save_optimized_copy(const String& p_scene,const String& p_pres
 		}
 	}
 
-	ERR_EXPLAIN("Preset '"+p_preset+"' references unexisting saver: "+type);
+	ERR_EXPLAIN("Preset '"+p_preset+"' references nonexistent saver: "+type);
 	ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 
 	List<Variant> keys;

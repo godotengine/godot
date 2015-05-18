@@ -168,7 +168,7 @@ Array InputMap::_get_action_list(const StringName& p_action) {
 	Array ret;
 	const List<InputEvent> *al = get_action_list(p_action);
 	if (al) {
-		for(List<InputEvent>::Element *E=al->front();E;E=E->next()) {
+		for(const List<InputEvent>::Element *E=al->front();E;E=E->next()) {
 
 			ret.push_back(E->get());;
 		}
@@ -192,7 +192,7 @@ bool InputMap::event_is_action(const InputEvent& p_event, const StringName& p_ac
 
 	Map<StringName,Action >::Element *E=input_map.find(p_action);
 	if(!E) {
-		ERR_EXPLAIN("Request for unexisting InputMap action: "+String(p_action));
+		ERR_EXPLAIN("Request for nonexistent InputMap action: "+String(p_action));
 		ERR_FAIL_COND_V(!E,false);
 	}
 
