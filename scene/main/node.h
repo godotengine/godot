@@ -172,6 +172,7 @@ public:
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED=19,
 		NOTIFICATION_INSTANCED=20,
+		NOTIFICATION_REPARENTED=21,
 	};
 			
 	/* NODE/TREE */			
@@ -212,6 +213,7 @@ public:
 	
 	void get_groups(List<GroupInfo> *p_groups) const;
 	
+	void reparent(Node *p_parent,int p_pos);
 	void move_child(Node *p_child,int p_pos);
 	void raise();
 	
