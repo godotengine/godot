@@ -295,7 +295,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 					
 						p_anim->node_cache[i]->bone_idx=p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 						if (p_anim->node_cache[i]->bone_idx<0) {
-							// broken track (unexisting bone)
+							// broken track (nonexistent bone)
 							p_anim->node_cache[i]->skeleton=NULL;
 							p_anim->node_cache[i]->spatial=NULL;
 							printf("bone is %ls\n", String(bone_name).c_str());

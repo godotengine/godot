@@ -1653,7 +1653,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (saver.is_null()) {
 				memdelete(d);
-				ERR_EXPLAIN("Preset '"+preset+"' references unexisting saver: "+type);
+				ERR_EXPLAIN("Preset '"+preset+"' references nonexistent saver: "+type);
 				ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 			}
 

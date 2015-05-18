@@ -42,7 +42,7 @@ void InputMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("action_add_event","action","event"),&InputMap::action_add_event);
 	ObjectTypeDB::bind_method(_MD("action_has_event","action","event"),&InputMap::action_has_event);
 	ObjectTypeDB::bind_method(_MD("action_erase_event","action","event"),&InputMap::action_erase_event);
-	ObjectTypeDB::bind_method(_MD("get_action_list","action"),&InputMap::get_action_list);
+	ObjectTypeDB::bind_method(_MD("get_action_list","action"),&InputMap::_get_action_list);
 	ObjectTypeDB::bind_method(_MD("event_is_action","event","action"),&InputMap::event_is_action);
 	ObjectTypeDB::bind_method(_MD("load_from_globals"),&InputMap::load_from_globals);
 
@@ -159,6 +159,22 @@ void InputMap::action_erase_event(const StringName& p_action,const InputEvent& p
 		return; //already gots
 
 	input_map[p_action].inputs.erase(E);
+
+}
+
+
+Array InputMap::_get_action_list(const StringName& p_action) {
+
+	Array ret;
+	const List<InputEvent> *al = get_action_list(p_action);
+	if (al) {
+		for(List<InputEvent>::Element *E=al->front();E;E=E->next()) {
+
+			ret.push_back(E->get());;
+		}
+	}
+
+	return ret;
 
 }
 

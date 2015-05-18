@@ -140,7 +140,7 @@ String GDFunction::_get_call_error(const Variant::CallError& p_err, const String
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
 		err_text="Invalid call to "+p_where+". Expected "+itos(p_err.argument)+" arguments.";
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text="Invalid call. Unexisting "+p_where+".";
+		err_text="Invalid call. Nonexistent "+p_where+".";
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text="Attempt to call "+p_where+" on a null instance.";
 	} else {
