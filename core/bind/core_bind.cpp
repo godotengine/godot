@@ -1757,7 +1757,9 @@ _Mutex::~_Mutex(){
 
 void _Thread::_start_func(void *ud) {
 
-	_Thread *t=(_Thread*)ud;
+	Ref<_Thread>* tud=(Ref<_Thread>*)ud;
+	Ref<_Thread> t=*tud;
+	memdelete(tud);
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
@@ -1804,9 +1806,11 @@ Error _Thread::start(Object *p_instance,const StringName& p_method,const Variant
 	userdata=p_userdata;
 	active=true;
 
+	Ref<_Thread> *ud = memnew( Ref<_Thread>(this) );
+
 	Thread::Settings s;
 	s.priority=(Thread::Priority)p_priority;
-	thread = Thread::create(_start_func,this,s);
+	thread = Thread::create(_start_func,ud,s);
 	if (!thread) {
 		active=false;
 		target_method=StringName();
@@ -1867,5 +1871,8 @@ _Thread::_Thread() {
 
 _Thread::~_Thread() {
 
+	if (active) {
+		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running..")
+	}
 	ERR_FAIL_COND(active==true);
 }
