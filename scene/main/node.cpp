@@ -251,7 +251,9 @@ void Node::reparent(Node *p_parent, int p_pos) {
 	ERR_FAIL_INDEX( p_pos, p_parent->data.children.size()+1 );
 	ERR_FAIL_COND(data.blocked>0);
 
-	data.parent->data.children.remove( data.pos );
+	if (data.parent)
+		data.parent->data.children.remove( data.pos );
+
 	p_parent->data.children.insert( p_parent->data.children.size(), this );
 	data.parent=p_parent;
 
