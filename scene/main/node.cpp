@@ -244,11 +244,18 @@ void Node::_propagate_exit_tree() {
 
 }
 
-void Node::reparent(Node *p_parent, int p_pos) {
+void Node::reparent(Node *p_parent, int p_pos=-1) {
 
 	ERR_FAIL_NULL(p_parent);
-	ERR_EXPLAIN("Invalid new child position: "+itos(p_pos));
-	ERR_FAIL_INDEX( p_pos, p_parent->data.children.size()+1 );
+
+	int pos=0;
+	if (p_pos>=0)
+		pos=p_pos;
+	else if (p_parent->data.children.size()>0)
+		pos=p_parent->data.children.size()-1;
+
+	ERR_EXPLAIN("Invalid new child position: "+itos(pos));
+	ERR_FAIL_INDEX( pos, p_parent->data.children.size()+1 );
 	ERR_FAIL_COND(data.blocked>0);
 
 	Node* old_parent = data.parent;
@@ -273,8 +280,8 @@ void Node::reparent(Node *p_parent, int p_pos) {
 
 	notification(NOTIFICATION_REPARENTED);
 
-	p_parent->move_child(this, p_pos);
-
+	if (p_pos>=0)
+		p_parent->move_child(this, p_pos);
 }
 
 void Node::move_child(Node *p_child,int p_pos) {	
@@ -1847,7 +1854,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_to_group","group"),&Node::add_to_group,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("remove_from_group","group"),&Node::remove_from_group);
 	ObjectTypeDB::bind_method(_MD("is_in_group","group"),&Node::is_in_group);
-	ObjectTypeDB::bind_method(_MD("reparent","parent_node:Node","to_pos"),&Node::reparent);
+	ObjectTypeDB::bind_method(_MD("reparent","parent_node:Node","to_pos"),&Node::reparent, DEFVAL(-1));
 	ObjectTypeDB::bind_method(_MD("move_child","child_node:Node","to_pos"),&Node::move_child);
 	ObjectTypeDB::bind_method(_MD("get_groups"),&Node::_get_groups);
 	ObjectTypeDB::bind_method(_MD("raise"),&Node::raise);
