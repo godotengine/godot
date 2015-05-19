@@ -317,6 +317,12 @@ void Node::move_child_notify(Node *p_child) {
 	// to be used when not wanted	
 }
 
+
+void Node::reparent_notify(Node *p_destination_parent) {
+
+	// to be used when not wanted	
+}
+
 void Node::set_fixed_process(bool p_process) {
 	
 	if (data.fixed_process==p_process)
@@ -752,6 +758,45 @@ void Node::remove_child(Node *p_child) {
 	// validate owner
 	p_child->_propagate_validate_owner();
 		
+}
+//Change parent from the node with reparent notification only
+void Node::reparent(Node *p_destination_parent) {
+	ERR_FAIL_NULL(p_destination_parent);
+	ERR_EXPLAIN("Destination parent is NULL.")
+	ERR_FAIL_NULL(data.parent);
+	ERR_EXPLAIN("Node doesn't belong to a parent, add the node to a parent first.")
+	ERR_FAIL_COND(p_destination_parent == data.parent);
+	ERR_EXPLAIN("Parent from node is the same as destination parent.")
+	ERR_FAIL_COND(data.blocked>0);
+
+	int idx = -1;
+	for (int i = 0; i<data.parent->data.children.size(); i++) {
+
+		if (data.parent->data.children[i] == this) {
+			idx = i;
+			break;
+		}
+	}
+	ERR_FAIL_COND(idx == -1);
+
+	//remove from old parent
+	data.parent->data.children.remove(idx);
+	for (int i = idx; i<data.parent->data.children.size(); i++) {
+
+		data.parent->data.children[i]->data.pos = i;
+	}
+	_propagate_validate_owner();
+
+	//add to new parent
+	p_destination_parent->_validate_child_name(this);
+	data.pos = p_destination_parent->data.children.size();
+	p_destination_parent->data.children.push_back(this);
+	data.parent = p_destination_parent;
+	//p_child->data.parent_owned = p_destination_parent->data.in_constructor; //I don't know if this is necessary for reparent
+
+	//notifications of reparent
+	notification(NOTIFICATION_REPARENTED);
+	reparent_notify(p_destination_parent);
 }
 
 int Node::get_child_count() const {
@@ -1798,8 +1843,9 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
-	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
-	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
+	ObjectTypeDB::bind_method(_MD("add_child", "node:Node"), &Node::add_child);
+	ObjectTypeDB::bind_method(_MD("remove_child", "node:Node"), &Node::remove_child);
+	ObjectTypeDB::bind_method(_MD("reparent", "destination_parent:Node"), &Node::reparent);
 	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
@@ -1871,9 +1917,9 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_PROCESS );
 	BIND_CONSTANT( NOTIFICATION_PARENTED );
 	BIND_CONSTANT( NOTIFICATION_UNPARENTED );
+	BIND_CONSTANT(NOTIFICATION_REPARENTED);
 	BIND_CONSTANT( NOTIFICATION_PAUSED );
 	BIND_CONSTANT( NOTIFICATION_UNPAUSED );
-
 
 	BIND_CONSTANT( PAUSE_MODE_INHERIT );
 	BIND_CONSTANT( PAUSE_MODE_STOP );

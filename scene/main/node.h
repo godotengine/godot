@@ -144,6 +144,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
+	virtual void reparent_notify(Node *p_destination_parent);
 	//void remove_and_delete_child(Node *p_child);
 	
 	void _propagate_replace_owner(Node *p_owner,Node* p_by_owner); 
@@ -170,8 +171,9 @@ public:
 		NOTIFICATION_FIXED_PROCESS = 16,
 		NOTIFICATION_PROCESS = 17,
 		NOTIFICATION_PARENTED=18,
-		NOTIFICATION_UNPARENTED=19,
-		NOTIFICATION_INSTANCED=20,
+		NOTIFICATION_UNPARENTED = 19,
+		NOTIFICATION_INSTANCED = 20,
+		NOTIFICATION_REPARENTED = 21,
 	};
 			
 	/* NODE/TREE */			
@@ -181,6 +183,7 @@ public:
 	
 	void add_child(Node *p_child);
 	void remove_child(Node *p_child);
+	void reparent(Node *p_destination_parent);
 	
 	int get_child_count() const;
 	Node *get_child(int p_index) const;
