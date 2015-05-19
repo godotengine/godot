@@ -255,6 +255,12 @@ void Node::reparent(Node *p_parent, int p_pos) {
 	p_parent->data.children.insert( p_parent->data.children.size(), this );
 	data.parent=p_parent;
 
+	p_parent->data.blocked++;
+	for (int i=0;i<p_parent->data.children.size();i++) {
+		p_parent->data.children[i]->data.pos=i;
+	}
+	p_parent->data.blocked--;
+
 	notification(NOTIFICATION_REPARENTED);
 
 	p_parent->move_child(this, p_pos);
