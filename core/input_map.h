@@ -46,6 +46,8 @@ class InputMap : public Object {
 
 	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
 
+	Array _get_action_list(const StringName& p_action);
+
 protected:
 
 	static void _bind_methods();

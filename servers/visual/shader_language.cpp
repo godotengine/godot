@@ -1714,7 +1714,7 @@ Error ShaderLanguage::parse_expression(Parser& parser,Node *p_parent,Node **r_ex
 
 			if (!existing) {
 
-				parser.set_error("Unexisting identifier in expression: "+identifier);
+				parser.set_error("Nonexistent identifier in expression: "+identifier);
 				return ERR_PARSE_ERROR;
 
 			}

@@ -1248,7 +1248,8 @@ bool Main::start() {
 
 				ERR_EXPLAIN("Failed loading scene: "+local_game_path);
 				ERR_FAIL_COND_V(!scene,false)
-				sml->get_root()->add_child(scene);
+				//sml->get_root()->add_child(scene);
+				sml->add_current_scene(scene);
 
 				String iconpath = GLOBAL_DEF("application/icon","Variant()""");
 				if (iconpath!="") {

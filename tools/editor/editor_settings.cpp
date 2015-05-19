@@ -264,6 +264,7 @@ void EditorSettings::create() {
 
 	singleton = Ref<EditorSettings>( memnew( EditorSettings ) );
 	singleton->config_file_path=config_file_path;
+	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults();
 	singleton->scan_plugins();
 

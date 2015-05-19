@@ -610,7 +610,42 @@ static Error _fix_imported_scene_paths(Node* node, Node* root, String save_path)
 };
 
 
-bool EditorNode::_find_and_save_edited_subresources(Object *obj,Set<RES>& processed,int32_t flags) {
+bool EditorNode::_find_and_save_resource(RES res,Map<RES,bool>& processed,int32_t flags) {
+
+	if (res.is_null())
+		return false;
+
+	 if (processed.has(res)) {
+
+		 return processed[res];
+	 }
+
+
+	bool changed = res->is_edited();
+	res->set_edited(false);
+
+	bool subchanged = _find_and_save_edited_subresources(res.ptr(),processed,flags);
+
+//	print_line("checking if edited: "+res->get_type()+" :: "+res->get_name()+" :: "+res->get_path()+" :: "+itos(changed)+" :: SR "+itos(subchanged));
+
+	if (res->get_path().is_resource_file()) {
+		if (changed || subchanged) {
+			//save
+			print_line("Also saving modified external resource: "+res->get_path());
+			Error err = ResourceSaver::save(res->get_path(),res,flags);
+
+		}
+		processed[res]=false; //because it's a file
+		return false;
+	} else {
+
+
+		processed[res]=changed;
+		return changed;
+	}
+}
+
+bool EditorNode::_find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags) {
 
 	bool ret_changed=false;
 	List<PropertyInfo> pi;
@@ -620,57 +655,45 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj,Set<RES>& proces
 		if (!(E->get().usage&PROPERTY_USAGE_STORAGE))
 			continue;
 
+
+
 		switch(E->get().type) {
 			case Variant::OBJECT: {
 
 				RES res = obj->get(E->get().name);
 
-				if (res.is_null() || processed.has(res))
-					break;
-
-				processed.insert(res);
-
-				bool changed = res->is_edited();
-				res->set_edited(false);
-
-				bool subchanged = _find_and_save_edited_subresources(res.ptr(),processed,flags);
-
-				if (res->get_path().is_resource_file()) {
-					if (changed || subchanged) {
-						//save
-						print_line("Also saving modified external resource: "+res->get_path());
-						Error err = ResourceSaver::save(res->get_path(),res,flags);
-
-					}
-				} else {
-
+				if (_find_and_save_resource(res,processed,flags))
 					ret_changed=true;
-				}
-
 
 			} break;
 			case Variant::ARRAY: {
 
-				/*Array varray=p_variant;
+				Array varray= obj->get(E->get().name);
 				int len=varray.size();
 				for(int i=0;i<len;i++) {
 
 					Variant v=varray.get(i);
-					_find_resources(v);
-				}*/
+					RES res=v;
+					if (_find_and_save_resource(res,processed,flags))
+						ret_changed=true;
+
+					//_find_resources(v);
+				}
 
 			} break;
 			case Variant::DICTIONARY: {
 
-				/*
-				Dictionary d=p_variant;
+
+				Dictionary d=obj->get(E->get().name);;
 				List<Variant> keys;
 				d.get_key_list(&keys);
 				for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 					Variant v = d[E->get()];
-					_find_resources(v);
-				} */
+					RES res=v;
+					if (_find_and_save_resource(res,processed,flags))
+						ret_changed=true;
+				}
 			} break;
 			default: {}
 		}
@@ -681,7 +704,7 @@ bool EditorNode::_find_and_save_edited_subresources(Object *obj,Set<RES>& proces
 
 }
 
-void EditorNode::_save_edited_subresources(Node* scene,Set<RES>& processed,int32_t flags) {
+void EditorNode::_save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags) {
 
 	_find_and_save_edited_subresources(scene,processed,flags);
 
@@ -741,7 +764,7 @@ void EditorNode::_save_scene(String p_file) {
 
 
 	err = ResourceSaver::save(p_file,sdata,flg);
-	Set<RES> processed;
+	Map<RES,bool> processed;
 	_save_edited_subresources(scene,processed,flg);
 	editor_data.save_editor_external_data();
 	if (err==OK) {
@@ -2122,7 +2145,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 
 			editor_data.get_undo_redo().clear_history();
-			if (editor_plugin_screen) { //reload editor plugin
+			if (editor_plugin_over) { //reload editor plugin
 				editor_plugin_over->edit(NULL);
 				editor_plugin_over->edit(current);
 			}
@@ -2518,7 +2541,7 @@ Error EditorNode::save_translatable_strings(const String& p_to_file) {
 	OS::Time time = OS::get_singleton()->get_time();
 	f->store_line("# Translation Strings Dump.");
 	f->store_line("# Created By.");
-	f->store_line("# \t"VERSION_FULL_NAME" (c) 2008-2014 Juan Linietsky, Ariel Manzur.");
+	f->store_line("# \t"VERSION_FULL_NAME" (c) 2008-2015 Juan Linietsky, Ariel Manzur.");
 	f->store_line("# From Scene: ");
 	f->store_line("# \t"+get_edited_scene()->get_filename());
 	f->store_line("");
@@ -2633,7 +2656,7 @@ Error EditorNode::save_optimized_copy(const String& p_scene,const String& p_pres
 		}
 	}
 
-	ERR_EXPLAIN("Preset '"+p_preset+"' references unexisting saver: "+type);
+	ERR_EXPLAIN("Preset '"+p_preset+"' references nonexistent saver: "+type);
 	ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 
 	List<Variant> keys;
@@ -3984,7 +4007,7 @@ EditorNode::EditorNode() {
 	about->get_ok()->set_text("Thanks!");
 	about->set_hide_on_ok(true);
 	Label *about_text = memnew( Label );
-	about_text->set_text(VERSION_FULL_NAME"\n(c) 2008-2014 Juan Linietsky, Ariel Manzur.\n");
+	about_text->set_text(VERSION_FULL_NAME"\n(c) 2008-2015 Juan Linietsky, Ariel Manzur.\n");
 	about_text->set_pos(Point2(gui_base->get_icon("Logo","EditorIcons")->get_size().width+30,20));
 	gui_base->add_child(about);
 	about->add_child(about_text);

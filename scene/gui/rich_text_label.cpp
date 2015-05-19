@@ -1673,6 +1673,8 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
 	ObjectTypeDB::bind_method(_MD("is_scroll_following"),&RichTextLabel::is_scroll_following);
 
+	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
+
 	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
 	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
 

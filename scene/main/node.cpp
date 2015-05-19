@@ -1417,6 +1417,41 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 
 }
 
+
+void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
+
+	if (this!=p_original && get_owner()!=p_original)
+		return;
+
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+
+	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
+
+		if (E->get().flags&CONNECT_PERSIST) {
+			//user connected
+			NodePath p = p_original->get_path_to(this);
+			Node *copy = p_copy->get_node(p);
+
+			Node *target = E->get().target->cast_to<Node>();
+			if (!target)
+				continue;
+			NodePath ptarget = p_original->get_path_to(target);
+			Node *copytarget = p_copy->get_node(ptarget);
+
+			if (copy && copytarget) {
+				copy->connect(E->get().signal,copytarget,E->get().method,E->get().binds,CONNECT_PERSIST);
+			}
+		}
+	}
+
+	for(int i=0;i<get_child_count();i++) {
+		get_child(i)->_duplicate_signals(p_original,p_copy);
+	}
+
+}
+
+
 Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 
 
@@ -1455,6 +1490,7 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 		get_child(i)->_duplicate_and_reown(node,p_reown_map);
 	}
 
+	_duplicate_signals(this,node);
 	return node;
 
 }
