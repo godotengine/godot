@@ -149,8 +149,18 @@ void Node::_propagate_ready() {
 
 }
 
+void Node::_propagate_reparent()
+{
+	data.blocked++;
+	for (int i = 0; i<data.children.size(); i++) {
 
-void Node::_propagate_enter_tree() {
+		data.children[i]->_propagate_reparent();
+	}
+	data.blocked--;
+	notification(NOTIFICATION_REPARENTED);
+}
+
+void Node::_propagate_enter_tree(bool skip_notify) {
 	// this needs to happen to all childs before any enter_tree
 
 	if (data.parent) {
@@ -174,17 +184,17 @@ void Node::_propagate_enter_tree() {
 		data.tree->add_to_group(*K,this);
 	}
 
+	if (!skip_notify)
+	{
+		notification(NOTIFICATION_ENTER_TREE);
+		if (get_script_instance()) {
 
-	notification(NOTIFICATION_ENTER_TREE);
+			Variant::CallError err;
+			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree, NULL, 0);
+		}
 
-	if (get_script_instance()) {
-
-		Variant::CallError err;
-		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree,NULL,0);
+		emit_signal(SceneStringNames::get_singleton()->enter_tree);
 	}
-
-	emit_signal(SceneStringNames::get_singleton()->enter_tree);
-
 
 	data.blocked++;
 	//block while adding children
@@ -192,7 +202,7 @@ void Node::_propagate_enter_tree() {
 	for (int i=0;i<data.children.size();i++) {
 		
 		if (!data.children[i]->is_inside_tree()) // could have been added in enter_tree
-			data.children[i]->_propagate_enter_tree();
+			data.children[i]->_propagate_enter_tree(skip_notify);
 	}	
 
 	data.blocked--;
@@ -201,7 +211,7 @@ void Node::_propagate_enter_tree() {
 
 
 
-void Node::_propagate_exit_tree() {
+void Node::_propagate_exit_tree(bool skip_notify) {
 
 	//block while removing children
 
@@ -209,19 +219,19 @@ void Node::_propagate_exit_tree() {
 
 	for (int i=data.children.size()-1;i>=0;i--) {
 
-		data.children[i]->_propagate_exit_tree();
+		data.children[i]->_propagate_exit_tree(skip_notify);
 	}
 
 	data.blocked--;
-
-	if (get_script_instance()) {
-
-		Variant::CallError err;
-		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree,NULL,0);
+	if (!skip_notify)
+	{
+		if (get_script_instance()) {
+			Variant::CallError err;
+			get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, NULL, 0);
+		}
+		emit_signal(SceneStringNames::get_singleton()->exit_tree);
+		notification(NOTIFICATION_EXIT_TREE, true);
 	}
-	emit_signal(SceneStringNames::get_singleton()->exit_tree);
-
-	notification(NOTIFICATION_EXIT_TREE,true);
 	if (data.tree)
 		data.tree->node_removed(this);
 
@@ -780,23 +790,55 @@ void Node::reparent(Node *p_destination_parent) {
 	ERR_FAIL_COND(idx == -1);
 
 	//remove from old parent
+	//_set_tree(NULL);
+
+	SceneTree *tree_changed_a = NULL;
+	SceneTree *tree_changed_b = NULL;
+	if (data.tree) {
+		_propagate_exit_tree(true);
+		tree_changed_a = data.tree;
+	}
+	data.tree = NULL;
+	if (tree_changed_a)
+		tree_changed_a->tree_changed();
+
 	data.parent->data.children.remove(idx);
 	for (int i = idx; i<data.parent->data.children.size(); i++) {
-
 		data.parent->data.children[i]->data.pos = i;
 	}
+	data.parent = NULL;
+	data.pos = -1;
 	_propagate_validate_owner();
+
 
 	//add to new parent
 	p_destination_parent->_validate_child_name(this);
 	data.pos = p_destination_parent->data.children.size();
 	p_destination_parent->data.children.push_back(this);
 	data.parent = p_destination_parent;
-	//p_child->data.parent_owned = p_destination_parent->data.in_constructor; //I don't know if this is necessary for reparent
+	data.parent_owned = p_destination_parent->data.in_constructor; //I don't know if this is necessary for reparent
+	//if (p_destination_parent->data.tree) {
+	//	_set_tree(p_destination_parent->data.tree);
+	//}
+
+	tree_changed_a = NULL;
+	tree_changed_b = NULL;
+	data.tree = p_destination_parent->data.tree;
+	if (data.tree) {
+		_propagate_enter_tree(true);
+		//_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
+
+		tree_changed_b = data.tree;
+
+	}
+	if (tree_changed_b)
+		tree_changed_b->tree_changed();
+
 
 	//notifications of reparent
 	notification(NOTIFICATION_REPARENTED);
 	reparent_notify(p_destination_parent);
+	//_propagate_reparent(); //the propagate crash with the event NOTIFICATION_REPARENTED and call VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item()); on canvas_item.cpp so i hope we don't need the event on the subchilds
 }
 
 int Node::get_child_count() const {
