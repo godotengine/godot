@@ -201,7 +201,7 @@ public:
 	_FORCE_INLINE_ bool is_active() const { return active; }
 
 	_FORCE_INLINE_ void wakeup() {
-		if ((get_space() && active) || mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
+		if ((!get_space()) || mode==PhysicsServer::BODY_MODE_STATIC || mode==PhysicsServer::BODY_MODE_KINEMATIC)
 			return;
 		set_active(true);
 	}

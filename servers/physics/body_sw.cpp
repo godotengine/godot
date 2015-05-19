@@ -257,6 +257,8 @@ void BodySW::set_state(PhysicsServer::BodyState p_state, const Variant& p_varian
 				Transform t = p_variant;
 				t.orthonormalize();
 				new_transform=get_transform(); //used as old to compute motion
+				if (new_transform==t)
+					break;
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
 

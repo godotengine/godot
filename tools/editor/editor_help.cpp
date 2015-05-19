@@ -353,7 +353,7 @@ void EditorHelp::_search(const String&) {
 	String stext=search->get_text();
 	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
 
-	class_desc->search(stext);
+	class_desc->search(stext, keep);
 
 	prev_search=stext;
 	if (class_list->get_selected())

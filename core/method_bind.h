@@ -298,7 +298,7 @@ MethodBind* create_native_method_bind( Variant (T::*p_method)(const Variant**,in
 
 // tale of an amazing hack.. //
 
-// if you declare an unexisting class..
+// if you declare an nonexistent class..
 class __UnexistingClass;
 
 
