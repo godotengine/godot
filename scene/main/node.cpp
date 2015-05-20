@@ -797,12 +797,12 @@ void Node::remove_child(Node *p_child) {
 }
 //Change parent from the node with reparent notification only
 void Node::reparent(Node *p_destination_parent) {
-	ERR_FAIL_NULL(p_destination_parent);
 	ERR_EXPLAIN("Destination parent is NULL.")
-	ERR_FAIL_NULL(data.parent);
+	ERR_FAIL_NULL(p_destination_parent);
 	ERR_EXPLAIN("Node doesn't belong to a parent, add the node to a parent first.")
-	ERR_FAIL_COND(p_destination_parent == data.parent);
+	ERR_FAIL_NULL(data.parent);
 	ERR_EXPLAIN("Parent from node is the same as destination parent.")
+	ERR_FAIL_COND(p_destination_parent == data.parent);
 	ERR_FAIL_COND(data.blocked>0);
 
 	int idx = -1;
