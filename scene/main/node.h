@@ -82,6 +82,7 @@ private:
 		StringName name;
 		SceneTree *tree;
 		bool inside_tree;
+		bool reparenting;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
@@ -197,7 +198,9 @@ public:
 	_FORCE_INLINE_ SceneTree *get_tree() const { ERR_FAIL_COND_V( !data.tree, NULL ); return data.tree; }
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
-	
+
+	_FORCE_INLINE_ bool is_reparenting() const { return data.reparenting; }
+
 	bool is_a_parent_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
 	

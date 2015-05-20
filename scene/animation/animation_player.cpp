@@ -191,14 +191,16 @@ void AnimationPlayer::_notification(int p_what) {
 	
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!processing) {
-				//make sure that a previous process state was not saved
-				//only process if "processing" is set
-				set_fixed_process(false);
-				set_process(false);
+			if (!is_reparenting()) {
+				if (!processing) {
+					//make sure that a previous process state was not saved
+					//only process if "processing" is set
+					set_fixed_process(false);
+					set_process(false);
+				}
+				//_set_process(false);
+				clear_caches();
 			}
-			//_set_process(false);
-			clear_caches();
 		} break;
 		case NOTIFICATION_READY: {
 
@@ -222,9 +224,10 @@ void AnimationPlayer::_notification(int p_what) {
 				_animation_process( get_fixed_process_delta_time() );
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-		
-			stop_all();
-			clear_caches();
+			if (!is_reparenting()) {
+				stop_all();
+				clear_caches();
+			}
 		} break;
 	}
 }

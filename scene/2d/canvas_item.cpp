@@ -550,8 +550,7 @@ void CanvasItem::_notification(int p_what) {
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
 		case NOTIFICATION_REPARENTED: {
-			CanvasItem *parent = get_parent_item();
-			VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
+
 		} break;
 
 	}
