@@ -133,6 +133,9 @@ void Node::_notification(int p_notification) {
 			}
 
 		} break;
+		case NOTIFICATION_REPARENTING: {
+			data.reparenting = true;
+		} break;
 		case NOTIFICATION_REPARENTED: {
 			data.reparenting = false;
 		} break;
@@ -152,12 +155,23 @@ void Node::_propagate_ready() {
 
 }
 
-void Node::_propagate_reparent()
+void Node::_propagate_reparenting()
 {
 	data.blocked++;
 	for (int i = 0; i<data.children.size(); i++) {
 
-		data.children[i]->_propagate_reparent();
+		data.children[i]->_propagate_reparenting();
+	}
+	data.blocked--;
+	notification(NOTIFICATION_REPARENTING);
+}
+
+void Node::_propagate_reparented()
+{
+	data.blocked++;
+	for (int i = 0; i<data.children.size(); i++) {
+
+		data.children[i]->_propagate_reparented();
 	}
 	data.blocked--;
 	notification(NOTIFICATION_REPARENTED);
@@ -335,7 +349,12 @@ void Node::move_child_notify(Node *p_child) {
 }
 
 
-void Node::reparent_notify(Node *p_destination_parent) {
+void Node::reparenting_notify(Node *p_destination_parent) {
+
+	// to be used when not wanted	
+}
+
+void Node::reparented_notify(Node *p_destination_parent) {
 
 	// to be used when not wanted	
 }
@@ -797,12 +816,8 @@ void Node::reparent(Node *p_destination_parent) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	data.reparenting = true;
-
-	//set initial reparenting state on children
-	for (int i=0;i<data.children.size();i++) {
-		data.children[i]->data.reparenting=true;
-	}
+	reparenting_notify(p_destination_parent);
+	_propagate_reparenting();
 
 	SceneTree *tree_changed_a=NULL;
 	SceneTree *tree_changed_b=NULL;
@@ -842,9 +857,8 @@ void Node::reparent(Node *p_destination_parent) {
 		tree_changed_b->tree_changed();
 
 	//notifications of reparent
-	reparent_notify(p_destination_parent);
-
-	_propagate_reparent(); //the propagate crash with the event NOTIFICATION_REPARENTED and call VisualServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item()); on canvas_item.cpp so i hope we don't need the event on the subchilds
+	reparented_notify(p_destination_parent);
+	_propagate_reparented();
 }
 
 int Node::get_child_count() const {
@@ -1964,7 +1978,8 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_FIXED_PROCESS );
 	BIND_CONSTANT( NOTIFICATION_PROCESS );
 	BIND_CONSTANT( NOTIFICATION_PARENTED );
-	BIND_CONSTANT( NOTIFICATION_UNPARENTED );
+	BIND_CONSTANT(NOTIFICATION_UNPARENTED);
+	BIND_CONSTANT(NOTIFICATION_REPARENTING);
 	BIND_CONSTANT(NOTIFICATION_REPARENTED);
 	BIND_CONSTANT( NOTIFICATION_PAUSED );
 	BIND_CONSTANT( NOTIFICATION_UNPAUSED );

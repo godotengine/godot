@@ -121,7 +121,8 @@ private:
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
 	void _propagate_enter_tree(bool skip_notify = false);
 	void _propagate_ready();
-	void _propagate_reparent();
+	void _propagate_reparenting();
+	void _propagate_reparented();
 	void _propagate_exit_tree(bool skip_notify = false);
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
@@ -146,7 +147,8 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
-	virtual void reparent_notify(Node *p_destination_parent);
+	virtual void reparented_notify(Node *p_destination_parent);
+	virtual void reparenting_notify(Node *p_destination_parent);
 	//void remove_and_delete_child(Node *p_child);
 	
 	void _propagate_replace_owner(Node *p_owner,Node* p_by_owner); 
@@ -175,7 +177,8 @@ public:
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED = 19,
 		NOTIFICATION_INSTANCED = 20,
-		NOTIFICATION_REPARENTED = 21,
+		NOTIFICATION_REPARENTING = 21,
+		NOTIFICATION_REPARENTED = 22,
 	};
 			
 	/* NODE/TREE */			
