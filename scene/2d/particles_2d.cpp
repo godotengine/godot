@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -250,6 +250,7 @@ void Particles2D::_process_particles(float p_delta) {
 		if (time_to_live < 0) {
 
 			emitting = false;
+			_change_notify("config/emitting");
 		};
 	};
 
@@ -717,6 +718,7 @@ void Particles2D::set_emitting(bool p_emitting) {
 		time_to_live = emit_timeout;
 	};
 	emitting=p_emitting;
+	_change_notify("config/emitting");
 }
 
 bool Particles2D::is_emitting() const {
@@ -1077,13 +1079,18 @@ void Particles2D::_bind_methods() {
 	BIND_CONSTANT( PARAM_SPREAD );
 	BIND_CONSTANT( PARAM_LINEAR_VELOCITY );
 	BIND_CONSTANT( PARAM_SPIN_VELOCITY );
+	BIND_CONSTANT( PARAM_ORBIT_VELOCITY );
 	BIND_CONSTANT( PARAM_GRAVITY_DIRECTION );
 	BIND_CONSTANT( PARAM_GRAVITY_STRENGTH );
 	BIND_CONSTANT( PARAM_RADIAL_ACCEL );
 	BIND_CONSTANT( PARAM_TANGENTIAL_ACCEL );
+	BIND_CONSTANT( PARAM_DAMPING );
+	BIND_CONSTANT( PARAM_INITIAL_ANGLE );
 	BIND_CONSTANT( PARAM_INITIAL_SIZE );
 	BIND_CONSTANT( PARAM_FINAL_SIZE );
 	BIND_CONSTANT( PARAM_HUE_VARIATION );
+	BIND_CONSTANT( PARAM_ANIM_SPEED_SCALE );
+	BIND_CONSTANT( PARAM_ANIM_INITIAL_POS );
 	BIND_CONSTANT( PARAM_MAX );
 
 	BIND_CONSTANT( MAX_COLOR_PHASES );

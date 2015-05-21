@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,8 +131,8 @@ class PhysicsDirectSpaceState : public Object {
 
 	OBJ_TYPE( PhysicsDirectSpaceState, Object );
 
-//	Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
-//	Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
+//	Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
+//	Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
 public:
 
 	enum ObjectTypeMask {

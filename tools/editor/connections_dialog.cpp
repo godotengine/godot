@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -172,7 +172,7 @@ void ConnectDialog::ok_pressed() {
 	if (dst_method->get_text()=="") {
 
 		error->set_text("Method in target Node must be specified!");
-		error->popup_centered(Size2(300,80));
+		error->popup_centered_minsize();
 		return;
 	}
 	emit_signal("connected");
@@ -607,6 +607,14 @@ void ConnectionsDialog::_remove_confirm() {
 
 }
 */
+
+struct _ConnectionsDialogMethodInfoSort {
+
+	_FORCE_INLINE_ bool operator()(const MethodInfo& a, const MethodInfo& b) const {
+		return a.name < b.name;
+	}
+};
+
 void ConnectionsDialog::update_tree() {
 	
 	if (!is_visible())
@@ -623,7 +631,8 @@ void ConnectionsDialog::update_tree() {
 
 	node->get_signal_list(&node_signals);
 
-	
+	//node_signals.sort_custom<_ConnectionsDialogMethodInfoSort>();
+
 	for(List<MethodInfo>::Element *E=node_signals.front();E;E=E->next()) {
 		
 

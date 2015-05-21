@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ public:
 		PARAM_ENERGY=VisualServer::LIGHT_PARAM_ENERGY,
 		PARAM_ATTENUATION=VisualServer::LIGHT_PARAM_ATTENUATION,
 		PARAM_SPOT_ANGLE=VisualServer::LIGHT_PARAM_SPOT_ANGLE,
-		PARAM_SPOT_ATTENUATION=VisualServer::LIGHT_PARAM_ATTENUATION,
+		PARAM_SPOT_ATTENUATION=VisualServer::LIGHT_PARAM_SPOT_ATTENUATION,
 		PARAM_SHADOW_DARKENING=VisualServer::LIGHT_PARAM_SHADOW_DARKENING,
 		PARAM_SHADOW_Z_OFFSET=VisualServer::LIGHT_PARAM_SHADOW_Z_OFFSET,
 		PARAM_SHADOW_Z_SLOPE_SCALE=VisualServer::LIGHT_PARAM_SHADOW_Z_SLOPE_SCALE,

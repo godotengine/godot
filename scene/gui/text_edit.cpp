@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,16 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-/*****f********************************************/
-/*  text_edit.cpp                                */
-/*************************************************/
-/*            This file is part of:              */
-/*                GODOT ENGINE                   */
-/*************************************************/
-/*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
-/*             All Rights Reserved.              */
-/*************************************************/
 
 #include "text_edit.h"
 #include "os/keyboard.h"
@@ -498,7 +488,29 @@ void TextEdit::_notification(int p_what) {
 							for(int j=from;j<text[i].length();j++) {
 								
 								CharType cc = text[i][j];
-								if (cc==c)
+								//ignore any brackets inside a string
+								if (cc== '"' || cc == '\'') {
+									CharType quotation = cc;
+									do {
+										j++;
+										if (!(j<text[i].length())) {
+											break;
+										}
+										cc=text[i][j];
+										//skip over escaped quotation marks inside strings
+										if (cc=='\\') {
+											bool escaped = true;
+											while (j+1<text[i].length() && text[i][j+1]=='\\') {
+												escaped=!escaped;
+												j++;
+											}
+											if (escaped) {
+												j++;
+												continue;
+											}
+										}
+									} while (cc!= quotation);
+								} else if (cc==c)
 									stack++;
 								else if (cc==closec)
 									stack--;
@@ -547,7 +559,30 @@ void TextEdit::_notification(int p_what) {
 							for(int j=from;j>=0;j--) {
 								
 								CharType cc = text[i][j];
-								if (cc==c)
+								//ignore any brackets inside a string
+								if (cc== '"' || cc == '\'') {
+									CharType quotation = cc;
+									do {
+										j--;
+										if (!(j>=0)) {
+											break;
+										}
+										cc=text[i][j];
+										//skip over escaped quotation marks inside strings
+										if (cc==quotation) {
+											bool escaped = false;
+											while (j-1>=0 && text[i][j-1]=='\\') {
+												escaped=!escaped;
+												j--;
+											}
+											if (escaped) {
+												j--;
+												cc='\\';
+												continue;
+											}
+										}
+									} while (cc!= quotation);
+								} else if (cc==c)
 									stack++;
 								else if (cc==closec)
 									stack--;
@@ -1214,7 +1249,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 					
 					
-					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {
+					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600 && cursor.line==prev_line) {
 						//tripleclick select line
 						select(cursor.line,0,cursor.line,text[cursor.line].length());
 						last_dblclk=0;
@@ -1345,7 +1380,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							return;
 						}
 
-						if (k.scancode==KEY_HOME) {
+						if (k.scancode==KEY_HOME && completion_index>0) {
 
 							completion_index=0;
 							completion_current=completion_options[completion_index];
@@ -1354,7 +1389,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							return;
 						}
 
-						if (k.scancode==KEY_END) {
+						if (k.scancode==KEY_END && completion_index<completion_options.size()-1) {
 
 							completion_index=completion_options.size()-1;
 							completion_current=completion_options[completion_index];
@@ -1405,7 +1440,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							
 						} else {
 							//different char, go back
-							const CharType chr[2] = {k.unicode, 0};
+							const CharType chr[2] = {(CharType)k.unicode, 0};
 							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 								_consume_pair_symbol(chr[0]);
 							} else {
@@ -1517,7 +1552,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					case KEY_HOME:
 					case KEY_END:
 						// ignore arrows if any modifiers are held (shift = selecting, others may be used for editor hotkeys)
-						if (k.mod.command || k.mod.shift || k.mod.alt || k.mod.command)
+						if (k.mod.command || k.mod.shift || k.mod.alt)
 							break;
 						unselect=true;
 						break;
@@ -1858,7 +1893,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					selection.from_line=0;
 					selection.from_column=0;
 					selection.to_line=text.size()-1;
-					selection.to_column=text[selection.to_line].size();
+					selection.to_column=text[selection.to_line].length();
 					selection.selecting_mode=Selection::MODE_NONE;
 					update();
 					
@@ -2027,7 +2062,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (readonly)
 						break;
 					
-					const CharType chr[2] = {k.unicode, 0};
+					const CharType chr[2] = {(CharType)k.unicode, 0};
 					
 					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);
@@ -2551,9 +2586,9 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
 void TextEdit::set_text(String p_text){
 	
 	setting_text=true;
-	_clear();
+	clear();
 	_insert_text_at_cursor(p_text);
-	
+	clear_undo_history();
 	cursor.column=0;
 	cursor.line=0;
 	cursor.x_ofs=0;
@@ -2743,6 +2778,11 @@ void TextEdit::copy() {
 	if (!selection.active)
 		return;
 	
+	print_line("from line: "+itos(selection.from_line));
+	print_line("from column: "+itos(selection.from_column));
+	print_line("to line: "+itos(selection.to_line));
+	print_line("to column: "+itos(selection.to_column));
+
 	String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 	OS::get_singleton()->set_clipboard(clipboard);
 	
@@ -2774,7 +2814,7 @@ void TextEdit::select_all() {
 	selection.from_line=0;
 	selection.from_column=0;
 	selection.to_line=text.size()-1;
-	selection.to_column=text[selection.to_line].size();
+	selection.to_column=text[selection.to_line].length();
 	selection.selecting_mode=Selection::MODE_NONE;
 	update();
 	
@@ -3459,6 +3499,9 @@ void TextEdit::set_line(int line, String new_text)
 		return;
 	_remove_text(line, 0, line, text[line].length());
 	_insert_text(line, 0, new_text);
+	if (cursor.line==line) {
+		cursor.column=MIN(cursor.column,new_text.length());
+	}
 }
 
 void TextEdit::insert_at(const String &p_text, int at)

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,8 @@ void Camera2D::_update_scroll() {
 		return;
 
 	if (get_tree()->is_editor_hint()) {
-		update(); //will just be drawn
+	//	update(); //will just be drawn
+		//??
 		return;
 	}
 
@@ -131,8 +132,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 	}
 
 
-	Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());;
-	screen_offset;
+	Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());
 
 	float angle = get_global_transform().get_rotation();
 	if(rotating){
@@ -214,6 +214,7 @@ void Camera2D::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+
 
 			viewport = NULL;
 			Node *n=this;
@@ -322,6 +323,16 @@ void Camera2D::make_current() {
 		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",this);
 	}
 }
+
+void Camera2D::clear_current() {
+
+	current=false;
+	if (is_inside_tree()) {
+		get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,group_name,"_make_current",(Object*)(NULL));
+	}
+
+}
+
 
 void Camera2D::set_limit(Margin p_margin,int p_limit) {
 
@@ -435,6 +446,7 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_rotating"),&Camera2D::is_rotating);
 
 	ObjectTypeDB::bind_method(_MD("make_current"),&Camera2D::make_current);
+	ObjectTypeDB::bind_method(_MD("clear_current"),&Camera2D::clear_current);
 	ObjectTypeDB::bind_method(_MD("_make_current"),&Camera2D::_make_current);
 
 	ObjectTypeDB::bind_method(_MD("_update_scroll"),&Camera2D::_update_scroll);
@@ -514,6 +526,7 @@ Camera2D::Camera2D() {
 	drag_margin[MARGIN_RIGHT]=0.2;
 	drag_margin[MARGIN_BOTTOM]=0.2;
 	camera_pos=Vector2();
+	first=true;
 
 	smoothing=0.0;
 	zoom = Vector2(1, 1);

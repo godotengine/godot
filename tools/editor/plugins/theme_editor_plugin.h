@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,8 @@
 #include "scene/gui/texture_frame.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/file_dialog.h"
+#include "scene/gui/check_box.h"
+#include "scene/gui/button_group.h"
 
 #include "tools/editor/editor_node.h"
 

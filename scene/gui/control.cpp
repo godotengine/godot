@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -138,22 +138,27 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slice("/",1);
 			data.icon_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slice("/",1);
 			data.style_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slice("/",1);
 			data.font_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slice("/",1);
 			data.color_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slice("/",1);
 			data.constant_override.erase(dname);
+			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else
 			return false;
@@ -161,19 +166,24 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 	} else {
 		if (name.begins_with("custom_icons/")) {
 			String dname = name.get_slice("/",1);
+			notification(NOTIFICATION_THEME_CHANGED);
 			add_icon_override(dname,p_value);
 		} else if (name.begins_with("custom_styles/")) {
 			String dname = name.get_slice("/",1);
 			add_style_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
 			String dname = name.get_slice("/",1);
 			add_font_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_colors/")) {
 			String dname = name.get_slice("/",1);
 			add_color_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_constants/")) {
 			String dname = name.get_slice("/",1);
 			add_constant_override(dname,p_value);
+			notification(NOTIFICATION_THEME_CHANGED);
 		} else
 			return false;
 	}
@@ -514,13 +524,15 @@ void Control::_notification(int p_notification) {
 
 			if (data.MI) {
 
-				data.window->window->modal_stack.erase(data.MI);
+				if (data.window && data.window->window)
+					data.window->window->modal_stack.erase(data.MI);
 				data.MI=NULL;
 			}
 
 			if (data.SI) {
 				//erase from subwindows
-				data.window->window->subwindows.erase(data.SI);
+				if (data.window && data.window->window)
+					data.window->window->subwindows.erase(data.SI);
 				data.SI=NULL;
 			}
 
@@ -940,67 +952,67 @@ void Control::_window_input_event(InputEvent p_event) {
 		case InputEvent::MOUSE_BUTTON: {
 
 
-		window->key_event_accepted=false;
+			window->key_event_accepted=false;
 
-		Point2 mpos =(get_canvas_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
-		if (p_event.mouse_button.pressed) {
-
-
-
-			Size2 pos = mpos;
-			if (window->mouse_focus && p_event.mouse_button.button_index!=window->mouse_focus_button) {
-
-				//do not steal mouse focus and stuff
-
-			} else {
+			Point2 mpos =(get_canvas_transform()).affine_inverse().xform(Point2(p_event.mouse_button.x,p_event.mouse_button.y));
+			if (p_event.mouse_button.pressed) {
 
 
-				_window_sort_modal_stack();
-				while (!window->modal_stack.empty()) {
 
-					Control *top = window->modal_stack.back()->get();
-					if (!top->has_point(top->get_global_transform().affine_inverse().xform(pos))) {
+				Size2 pos = mpos;
+				if (window->mouse_focus && p_event.mouse_button.button_index!=window->mouse_focus_button) {
 
-						if (top->data.modal_exclusive) {
-							//cancel event, sorry, modal exclusive EATS UP ALL
-							get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
-							get_tree()->set_input_as_handled();
-							return; // no one gets the event if exclusive NO ONE
+					//do not steal mouse focus and stuff
+
+				} else {
+
+
+					_window_sort_modal_stack();
+					while (!window->modal_stack.empty()) {
+
+						Control *top = window->modal_stack.back()->get();
+						if (!top->has_point(top->get_global_transform().affine_inverse().xform(pos))) {
+
+							if (top->data.modal_exclusive) {
+								//cancel event, sorry, modal exclusive EATS UP ALL
+								get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
+								get_tree()->set_input_as_handled();
+								return; // no one gets the event if exclusive NO ONE
+							}
+
+							top->notification(NOTIFICATION_MODAL_CLOSE);
+							top->_modal_stack_remove();
+							top->hide();
+						} else {
+							break;
 						}
+					}
 
-						top->notification(NOTIFICATION_MODAL_CLOSE);
-						top->_modal_stack_remove();
-						top->hide();
-					} else {
+
+
+					Matrix32 parent_xform;
+
+					if (data.parent_canvas_item)
+						parent_xform=data.parent_canvas_item->get_global_transform();
+
+
+
+					window->mouse_focus = _find_control_at_pos(this,pos,parent_xform,window->focus_inv_xform);
+					//print_line("has mf "+itos(window->mouse_focus!=NULL));
+					window->mouse_focus_button=p_event.mouse_button.button_index;
+
+					if (!window->mouse_focus) {
 						break;
 					}
+
+					if (p_event.mouse_button.button_index==BUTTON_LEFT) {
+						window->drag_accum=Vector2();
+						window->drag_attempted=false;
+						window->drag_data=Variant();
+					}
+
+
 				}
-
-
-
-				Matrix32 parent_xform;
-
-				if (data.parent_canvas_item)
-					parent_xform=data.parent_canvas_item->get_global_transform();
-
-
-
-				window->mouse_focus = _find_control_at_pos(this,pos,parent_xform,window->focus_inv_xform);
-				//print_line("has mf "+itos(window->mouse_focus!=NULL));
-				window->mouse_focus_button=p_event.mouse_button.button_index;
-
-				if (!window->mouse_focus) {
-					break;
-				}
-
-				if (p_event.mouse_button.button_index==BUTTON_LEFT) {
-					window->drag_accum=Vector2();
-					window->drag_attempted=false;
-					window->drag_data=Variant();
-				}
-
-
-			}
 
 				p_event.mouse_button.global_x = pos.x;
 				p_event.mouse_button.global_y = pos.y;
@@ -1020,8 +1032,8 @@ void Control::_window_input_event(InputEvent p_event) {
 
 				/*if (bool(GLOBAL_DEF("debug/print_clicked_control",false))) {
 
-					print_line(String(window->mouse_focus->get_path())+" - "+pos);
-				}*/
+						print_line(String(window->mouse_focus->get_path())+" - "+pos);
+					}*/
 #endif
 
 				if (window->mouse_focus->get_focus_mode()!=FOCUS_NONE && window->mouse_focus!=window->key_focus && p_event.mouse_button.button_index==BUTTON_LEFT) {
@@ -1033,9 +1045,11 @@ void Control::_window_input_event(InputEvent p_event) {
 				if (window->mouse_focus->can_process()) {
 					_window_call_input(window->mouse_focus,p_event);
 				}
-				
+
 				get_tree()->call_group(SceneTree::GROUP_CALL_REALTIME,"windows","_cancel_input_ID",p_event.ID);
 				get_tree()->set_input_as_handled();
+
+				window->tooltip_popup->hide();
 
 			} else {
 
@@ -2867,7 +2881,7 @@ void Control::_bind_methods() {
 	BIND_CONSTANT( SIZE_EXPAND_FILL );
 
 	ADD_SIGNAL( MethodInfo("resized") );
-	ADD_SIGNAL( MethodInfo("input_event") );
+	ADD_SIGNAL( MethodInfo("input_event",PropertyInfo(Variant::INPUT_EVENT,"ev")) );
 	ADD_SIGNAL( MethodInfo("mouse_enter") );
 	ADD_SIGNAL( MethodInfo("mouse_exit") );
 	ADD_SIGNAL( MethodInfo("focus_enter") );

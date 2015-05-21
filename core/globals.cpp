@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1381,7 +1381,7 @@ Globals::Globals() {
 
 	set("application/name","" );
 	set("application/main_scene","");
-	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"xml,res,scn,xscn");
+	custom_prop_info["application/main_scene"]=PropertyInfo(Variant::STRING,"application/main_scene",PROPERTY_HINT_FILE,"scn,res,xscn,xml");
 	set("application/disable_stdout",false);
 	set("application/use_shared_user_dir",true);
 

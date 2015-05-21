@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ class Node2D : public CanvasItem {
 
 	Point2 pos;
 	float angle;
-	Size2 scale;
+	Size2 _scale;
 	int z;
 	bool z_relative;
 
@@ -72,9 +72,12 @@ public:
 	void set_rot(float p_angle);
 	void set_scale(const Size2& p_scale);
 
-	void rotate(float p_degrees);
+	void rotate(float p_radians);
 	void move_x(float p_delta,bool p_scaled=false);
 	void move_y(float p_delta,bool p_scaled=false);
+	void translate(const Vector2& p_amount);
+	void global_translate(const Vector2& p_amount);
+	void scale(const Vector2& p_amount);
 
 	Point2 get_pos() const;
 	float get_rot() const;
@@ -90,10 +93,14 @@ public:
 	void set_z(int p_z);
 	int get_z() const;
 
+	void look_at(const Vector2& p_pos);
+	float get_angle_to(const Vector2& p_pos) const;
+
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 
 	Matrix32 get_relative_transform(const Node *p_parent) const;
+
 
 
 	Matrix32 get_transform() const;

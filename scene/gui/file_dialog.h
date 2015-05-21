@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -89,6 +89,10 @@ private:
 	
 	Vector<String> filters;
 
+
+	static bool default_show_hidden_files;
+	bool show_hidden_files;
+
 	bool invalidated;
 	
 	void update_dir();
@@ -140,6 +144,11 @@ public:
 
 	void set_access(Access p_access);
 	Access get_access() const;
+
+	void set_show_hidden_files(bool p_show);
+	bool is_showing_hidden_files() const;
+
+	static void set_default_show_hidden_files(bool p_show);
 
 	void invalidate();
 	

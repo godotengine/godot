@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -916,8 +916,8 @@ void ProjectSettings::_translation_res_option_changed() {
 
 
 	ERR_FAIL_COND(!remaps.has(key));
-	StringArray r = remaps[key];
-	ERR_FAIL_INDEX(idx,remaps.size());
+	StringArray r = remaps[key];	
+	ERR_FAIL_INDEX(idx,r.size());
 	r.set(idx,path+":"+langs[which]);
 	remaps[key]=r;
 
@@ -1095,6 +1095,7 @@ void ProjectSettings::_update_translations() {
 					t2->set_editable(1,true);
 					t2->set_metadata(1,path);
 					int idx = langs.find(locale);
+					print_line("find "+locale+" at "+itos(idx));
 					if (idx<0)
 						idx=0;
 
@@ -1280,8 +1281,10 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	del->set_text("Del");
 	del->connect("pressed",this,"_item_del");
 
+	/*
 	Button *save = memnew( Button );
-	//props_base->add_child(save);
+	props_base->add_child(save);
+
 	save->set_anchor(MARGIN_LEFT,ANCHOR_END);
 	save->set_anchor(MARGIN_RIGHT,ANCHOR_END);
 	save->set_anchor(MARGIN_TOP,ANCHOR_END);
@@ -1290,7 +1293,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_end( Point2(10,20) );
 	save->set_text("Save");
 	save->connect("pressed",this,"_save");
-
+*/
 	popup_platform = memnew( MenuButton );
 	popup_platform->set_text("Copy To Platform..");
 	popup_platform->set_disabled(true);
@@ -1409,6 +1412,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 
 	device_input->add_child(device_index);
 
+	/*
 	save = memnew( Button );
 	input_base->add_child(save);
 	save->set_anchor(MARGIN_LEFT,ANCHOR_END);
@@ -1419,7 +1423,7 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 	save->set_end( Point2(10,20) );
 	save->set_text("Save");
 	save->connect("pressed",this,"_save");
-
+*/
 	setting=false;
 
 	//translations

@@ -171,6 +171,8 @@ void OS_Windows::initialize_core() {
 	last_button_state=0;
 
 	//RedirectIOToConsole();
+	maximized=false;
+	minimized=false;
 
 	ThreadWindows::make_default();	
 	SemaphoreWindows::make_default();	
@@ -421,6 +423,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_RBUTTONUP:
 		case WM_MOUSEWHEEL:
 		case WM_LBUTTONDBLCLK:
+		case WM_RBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
 
@@ -472,6 +475,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 					mb.pressed=true;
 					mb.button_index=1;
+					mb.doubleclick = true;
+				} break;
+				case WM_RBUTTONDBLCLK: {
+
+					mb.pressed=true;
+					mb.button_index=2;
 					mb.doubleclick = true;
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -715,9 +724,14 @@ String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps)
 		return "";
 
 	_snprintf( buffer, sizeof(buffer), "%s\\%s", REGSTR_PATH_JOYOEM, OEM);
-	res = RegOpenKeyEx ( HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS) 
-		return "";
+	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
+	if (res != ERROR_SUCCESS)
+	{
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
+		if (res != ERROR_SUCCESS)
+			return "";
+	}
+		
 
 	sz = sizeof(buffer);
 	res = RegQueryValueEx(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, (LPBYTE) buffer,
@@ -1002,6 +1016,23 @@ void OS_Windows::process_joysticks() {
 	};
 };
 
+
+BOOL CALLBACK OS_Windows::MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor,  LPARAM dwData) {
+	OS_Windows *self=(OS_Windows*)OS::get_singleton();
+	MonitorInfo minfo;
+	minfo.hMonitor=hMonitor;
+	minfo.hdcMonitor=hdcMonitor;
+	minfo.rect.pos.x=lprcMonitor->left;
+	minfo.rect.pos.y=lprcMonitor->top;
+	minfo.rect.size.x=lprcMonitor->right - lprcMonitor->left;
+	minfo.rect.size.y=lprcMonitor->bottom - lprcMonitor->top;
+
+	self->monitor_info.push_back(minfo);
+
+	return TRUE;
+}
+
+
 void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver) {
 
 
@@ -1040,6 +1071,10 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	}
 	
 	
+	EnumDisplayMonitors(NULL,NULL,MonitorEnumProc,0);
+
+	print_line("DETECTED MONITORS: "+itos(monitor_info.size()));
+	pre_fs_valid=true;
 	if (video_mode.fullscreen) {
 
 		DEVMODE current;
@@ -1062,6 +1097,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 
 			video_mode.fullscreen=false;
 		}*/
+		pre_fs_valid=false;
 	}
 
 	DWORD		dwExStyle;
@@ -1470,6 +1506,251 @@ void OS_Windows::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) 
 	
 }
 
+int OS_Windows::get_screen_count() const {
+
+	return monitor_info.size();
+}
+int OS_Windows::get_current_screen() const{
+
+	HMONITOR monitor = MonitorFromWindow(hWnd,MONITOR_DEFAULTTONEAREST);
+	for(int i=0;i<monitor_info.size();i++) {
+		if (monitor_info[i].hMonitor==monitor)
+			return i;
+	}
+
+	return 0;
+}
+void OS_Windows::set_current_screen(int p_screen){
+
+	ERR_FAIL_INDEX(p_screen,monitor_info.size());
+
+	Vector2 ofs = get_window_position() - get_screen_position(get_current_screen());
+	set_window_position(ofs+get_screen_position(p_screen));
+
+}
+
+Point2 OS_Windows::get_screen_position(int p_screen) const{
+
+	ERR_FAIL_INDEX_V(p_screen,monitor_info.size(),Point2());
+	return Vector2( monitor_info[p_screen].rect.pos );
+
+}
+Size2 OS_Windows::get_screen_size(int p_screen) const{
+
+	ERR_FAIL_INDEX_V(p_screen,monitor_info.size(),Point2());
+	return Vector2( monitor_info[p_screen].rect.size );
+
+}
+Point2 OS_Windows::get_window_position() const{
+
+	RECT r;
+	GetWindowRect(hWnd,&r);
+	return Point2(r.left,r.top);
+}
+void OS_Windows::set_window_position(const Point2& p_position){
+
+	RECT r;
+	GetWindowRect(hWnd,&r);
+	MoveWindow(hWnd,p_position.x,p_position.y,r.right-r.left,r.bottom-r.top,TRUE);
+
+}
+Size2 OS_Windows::get_window_size() const{
+
+	RECT r;
+	GetClientRect(hWnd,&r);
+	return Vector2(r.right-r.left,r.bottom-r.top);
+
+}
+void OS_Windows::set_window_size(const Size2 p_size){
+
+	video_mode.width=p_size.width;
+	video_mode.height=p_size.height;
+
+	if (video_mode.fullscreen) {
+		return;
+	}
+
+
+	RECT crect;
+	GetClientRect(hWnd,&crect);
+
+	RECT rect;
+	GetWindowRect(hWnd,&rect);
+	int dx = (rect.right-rect.left)-(crect.right-crect.left);
+	int dy = (rect.bottom-rect.top)-(crect.bottom-crect.top);
+
+	rect.right=rect.left+p_size.width+dx;
+	rect.bottom=rect.top+p_size.height+dy;
+
+
+	//print_line("PRE: "+itos(rect.left)+","+itos(rect.top)+","+itos(rect.right-rect.left)+","+itos(rect.bottom-rect.top));
+
+	/*if (video_mode.resizable) {
+		AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+	} else {
+		AdjustWindowRect(&rect, WS_CAPTION | WS_POPUPWINDOW, FALSE);
+	}*/
+
+	//print_line("POST: "+itos(rect.left)+","+itos(rect.top)+","+itos(rect.right-rect.left)+","+itos(rect.bottom-rect.top));
+
+	MoveWindow(hWnd,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top,TRUE);
+
+}
+void OS_Windows::set_window_fullscreen(bool p_enabled){
+
+	if (video_mode.fullscreen==p_enabled)
+		return;
+
+
+
+	if (p_enabled) {
+
+
+		if (pre_fs_valid) {
+			GetWindowRect(hWnd,&pre_fs_rect);
+			//print_line("A: "+itos(pre_fs_rect.left)+","+itos(pre_fs_rect.top)+","+itos(pre_fs_rect.right-pre_fs_rect.left)+","+itos(pre_fs_rect.bottom-pre_fs_rect.top));
+			//MapWindowPoints(hWnd, GetParent(hWnd), (LPPOINT) &pre_fs_rect, 2);
+			//print_line("B: "+itos(pre_fs_rect.left)+","+itos(pre_fs_rect.top)+","+itos(pre_fs_rect.right-pre_fs_rect.left)+","+itos(pre_fs_rect.bottom-pre_fs_rect.top));
+		}
+
+
+		int cs = get_current_screen();
+		Point2 pos = get_screen_position(cs);
+		Size2 size = get_screen_size(cs);
+
+	/*	r.left = pos.x;
+		r.top = pos.y;
+		r.bottom = pos.y+size.y;
+		r.right = pos.x+size.x;
+*/
+		SetWindowLongPtr(hWnd, GWL_STYLE,
+		    WS_SYSMENU | WS_POPUP | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_VISIBLE);
+		MoveWindow(hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+
+		video_mode.fullscreen=true;
+
+
+	} else {
+
+		RECT rect;
+
+		if (pre_fs_valid) {
+			rect=pre_fs_rect;
+		} else {
+			rect.left=0;
+			rect.right=video_mode.width;
+			rect.top=0;
+			rect.bottom=video_mode.height;
+		}
+
+
+
+		if (video_mode.resizable) {
+
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+			//AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
+			MoveWindow(hWnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+		} else {
+
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE);
+			//AdjustWindowRect(&rect, WS_CAPTION | WS_POPUPWINDOW, FALSE);
+			MoveWindow(hWnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+		}
+
+		video_mode.fullscreen=false;
+		pre_fs_valid=true;
+/*
+		DWORD dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+		DWORD dwStyle=WS_OVERLAPPEDWINDOW;
+		if (!video_mode.resizable) {
+			dwStyle &= ~WS_THICKFRAME;
+			dwStyle &= ~WS_MAXIMIZEBOX;
+		}
+		AdjustWindowRectEx(&pre_fs_rect, dwStyle, FALSE, dwExStyle);
+		video_mode.fullscreen=false;
+		video_mode.width=pre_fs_rect.right-pre_fs_rect.left;
+		video_mode.height=pre_fs_rect.bottom-pre_fs_rect.top;
+*/
+	}
+
+//	MoveWindow(hWnd,r.left,r.top,p_size.x,p_size.y,TRUE);
+
+
+}
+bool OS_Windows::is_window_fullscreen() const{
+
+	return video_mode.fullscreen;
+}
+void OS_Windows::set_window_resizable(bool p_enabled){
+
+	if (video_mode.resizable==p_enabled)
+		return;
+/*
+	GetWindowRect(hWnd,&pre_fs_rect);
+	DWORD dwExStyle=WS_EX_APPWINDOW | WS_EX_WINDOWEDGE;
+	DWORD dwStyle=WS_OVERLAPPEDWINDOW;
+	if (!p_enabled) {
+		dwStyle &= ~WS_THICKFRAME;
+		dwStyle &= ~WS_MAXIMIZEBOX;
+	}
+	AdjustWindowRectEx(&pre_fs_rect, dwStyle, FALSE, dwExStyle);
+	*/
+
+	if (!video_mode.fullscreen) {
+		if (p_enabled) {
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW | WS_VISIBLE);
+		} else {
+			SetWindowLongPtr(hWnd, GWL_STYLE, WS_CAPTION | WS_POPUPWINDOW | WS_VISIBLE);
+
+		}
+
+		RECT rect;
+		GetWindowRect(hWnd,&rect);
+		MoveWindow(hWnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+	}
+
+	video_mode.resizable=p_enabled;
+
+}
+bool OS_Windows::is_window_resizable() const{
+
+	return video_mode.resizable;
+}
+void OS_Windows::set_window_minimized(bool p_enabled){
+
+	if (p_enabled) {
+		maximized=false;
+		minimized=true;
+		ShowWindow(hWnd,SW_MINIMIZE);
+	} else {
+		ShowWindow(hWnd,SW_RESTORE);
+		maximized=false;
+		minimized=false;
+	}
+}
+bool OS_Windows::is_window_minimized() const{
+
+	return minimized;
+
+}
+void OS_Windows::set_window_maximized(bool p_enabled){
+
+	if (p_enabled) {
+		maximized=true;
+		minimized=false;
+		ShowWindow(hWnd,SW_MAXIMIZE);
+	} else {
+		ShowWindow(hWnd,SW_RESTORE);
+		maximized=false;
+		minimized=false;
+	}
+}
+bool OS_Windows::is_window_maximized() const{
+
+	return maximized;
+}
+
+
 void OS_Windows::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
 
 	HANDLE hCon=GetStdHandle(STD_OUTPUT_HANDLE);
@@ -1771,7 +2052,7 @@ String OS_Windows::get_executable_path() const {
 	wchar_t bufname[4096];
 	GetModuleFileNameW(NULL,bufname,4096);
 	String s= bufname;
-	print_line("EXEC PATHPÃ³: "+s);
+	print_line("EXEC PATHP¨®: "+s);
 	return s;
 }
 
@@ -1836,12 +2117,13 @@ bool OS_Windows::has_environment(const String& p_var) const {
 
 String OS_Windows::get_environment(const String& p_var) const {
 
-	char* val = getenv(p_var.utf8().get_data());
-	if (val)
-		return val;
-
+	wchar_t wval[0x7Fff]; // MSDN says 32767 char is the maximum
+	int wlen = GetEnvironmentVariableW(p_var.c_str(),wval,0x7Fff);
+	if ( wlen > 0 ) {
+		return wval;
+	}
 	return "";
-};
+}
 
 String OS_Windows::get_stdin_string(bool p_block) {
 
@@ -1857,6 +2139,7 @@ String OS_Windows::get_stdin_string(bool p_block) {
 void OS_Windows::move_window_to_foreground() {
 
 	SetForegroundWindow(hWnd);
+	BringWindowToTop(hWnd);
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -167,6 +167,8 @@ public:
 	virtual void hide_virtual_keyboard();
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	
+	virtual Size2 get_window_size() const;
 
 	virtual bool has_touchscreen_ui_hint() const;
 

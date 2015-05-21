@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,11 @@ protected:
 	static void _bind_methods();
 public:
 
+	enum TimerProcessMode {
+		TIMER_PROCESS_FIXED,
+		TIMER_PROCESS_IDLE,
+	};
+
 	void set_wait_time(float p_time);
 	float get_wait_time() const;
 
@@ -60,7 +65,16 @@ public:
 
 	float get_time_left() const;
 
+	void set_timer_process_mode(TimerProcessMode p_mode);
+	TimerProcessMode get_timer_process_mode() const;
 	Timer();
+
+private:
+	TimerProcessMode timer_process_mode;
+	void _set_process(bool p_process, bool p_force = false);
+
 };
+
+VARIANT_ENUM_CAST(Timer::TimerProcessMode);
 
 #endif // TIMER_H

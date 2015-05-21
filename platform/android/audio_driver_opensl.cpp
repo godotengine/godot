@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -396,6 +396,14 @@ void AudioDriverOpenSL::finish(){
 void AudioDriverOpenSL::set_pause(bool p_pause) {
 
 	pause=p_pause;
+
+	if (active) {
+		if (pause) {
+			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PAUSED);
+		} else {
+			(*playItf)->SetPlayState(playItf, SL_PLAYSTATE_PLAYING);
+		}
+	}
 }
 
 

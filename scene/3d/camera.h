@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -126,6 +126,7 @@ public:
 	Vector3 project_ray_origin(const Point2& p_point) const;
 	Vector3 project_local_ray_normal(const Point2& p_point) const;
 	Point2 unproject_position(const Vector3& p_pos) const;
+	bool is_position_behind(const Vector3& p_pos) const;
 	Vector3 project_position(const Point2& p_point) const;
 
 	void set_visible_layers(uint32_t p_layers);
@@ -139,8 +140,6 @@ public:
 	void set_keep_aspect_mode(KeepAspect p_aspect);
 	KeepAspect get_keep_aspect_mode() const;
 
-	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
-	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
 
 	void set_v_offset(float p_offset);
 	float get_v_offset() const;

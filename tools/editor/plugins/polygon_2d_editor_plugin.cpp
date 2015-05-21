@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,17 +69,6 @@ void Polygon2DEditor::_node_removed(Node *p_node) {
 }
 
 
-Vector2 Polygon2DEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
-}
-
 void Polygon2DEditor::_menu_option(int p_option) {
 
 	switch(p_option) {
@@ -101,7 +90,7 @@ void Polygon2DEditor::_menu_option(int p_option) {
 			if (node->get_texture().is_null()) {
 
 				error->set_text("No texture in this polygon.\nSet a texture to be able to edit UV.");
-				error->popup_centered_minsize(Size2(300,70));
+				error->popup_centered_minsize();
 				return;
 			}
 
@@ -201,7 +190,7 @@ bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint=snap_point(cpoint);
+			cpoint=canvas_item_editor->snap_point(cpoint);
 			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
 
@@ -405,7 +394,7 @@ bool Polygon2DEditor::forward_input_event(const InputEvent& p_event) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-				cpoint=snap_point(cpoint);
+				cpoint=canvas_item_editor->snap_point(cpoint);
 				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
 				canvas_item_editor->get_viewport_control()->update();

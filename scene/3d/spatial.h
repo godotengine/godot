@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -166,6 +166,21 @@ public:
 	_FORCE_INLINE_ bool is_inside_world() const { return data.inside_world; }
 
 	Transform get_relative_transform(const Node *p_parent) const;
+
+	void rotate(const Vector3& p_normal,float p_radians);
+	void rotate_x(float p_radians);
+	void rotate_y(float p_radians);
+	void rotate_z(float p_radians);
+	void translate(const Vector3& p_offset);
+	void scale(const Vector3& p_ratio);
+	void global_rotate(const Vector3& p_normal,float p_radians);
+	void global_translate(const Vector3& p_offset);
+
+	void look_at(const Vector3& p_target, const Vector3& p_up_normal);
+	void look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal);
+
+	void orthonormalize();
+	void set_identity();
 
 	void show();
 	void hide();

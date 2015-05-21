@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -390,8 +390,9 @@ class EditorNode : public Node {
 
 	void _cleanup_scene();
 
-	bool _find_and_save_edited_subresources(Object *obj,Set<RES>& processed,int32_t flags);
-	void _save_edited_subresources(Node* scene,Set<RES>& processed,int32_t flags);
+	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
+	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
+	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
 
 
 	struct ExportDefer {

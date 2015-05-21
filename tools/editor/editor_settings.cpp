@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -264,6 +264,7 @@ void EditorSettings::create() {
 
 	singleton = Ref<EditorSettings>( memnew( EditorSettings ) );
 	singleton->config_file_path=config_file_path;
+	singleton->settings_path=config_path+"/"+config_dir;
 	singleton->_load_defaults();
 	singleton->scan_plugins();
 
@@ -408,7 +409,7 @@ void EditorSettings::_load_defaults() {
 
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
-	set("text_editor/autosave_interval_seconds",60);
+	set("text_editor/autosave_interval_secs",0);
 	set("text_editor/font","");
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
 	set("text_editor/auto_brace_complete", false);
@@ -446,6 +447,7 @@ void EditorSettings::_load_defaults() {
 
 	set("text_editor/create_signal_callbacks",true);
 
+	set("file_dialog/show_hidden_files", false);
 
 	set("animation/autorename_animation_tracks",true);
 	set("animation/confirm_insert_track",true);

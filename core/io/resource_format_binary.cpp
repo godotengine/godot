@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -390,7 +390,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path=Globals::get_singleton()->localize_path(res_path.get_base_dir()+"/"+path);
+						path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
 					}
 
@@ -861,7 +861,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	print_bl("minor: "+itos(ver_minor));
 	print_bl("format: "+itos(ver_format));
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		ERR_EXPLAIN("File Format '"+itos(FORMAT_VERSION)+"."+itos(ver_major)+"."+itos(ver_minor)+"' is too new! Please upgrade to a a new engine version: "+local_path);
@@ -968,7 +968,7 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	uint32_t ver_minor=f->get_32();
 	uint32_t ver_format=f->get_32();
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		return "";
@@ -1778,6 +1778,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	f->store_32(VERSION_MINOR);
 	f->store_32(FORMAT_VERSION);
 
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
+
 	//f->store_32(saved_resources.size()+external_resources.size()); // load steps -not needed
 	save_unicode_string(p_resource->get_type());
 	uint64_t md_at = f->get_pos();
@@ -1909,6 +1914,11 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 
 
 	f->store_buffer((const uint8_t*)"RSRC",4); //magic at end
+
+	if (f->get_error()!=OK && f->get_error()!=ERR_FILE_EOF) {
+		f->close();
+		return ERR_CANT_CREATE;
+	}
 
 	f->close();
 

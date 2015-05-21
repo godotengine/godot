@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ok :( ");
 		accept->set_text("No parent to instance a child at.");
-		accept->popup_centered(Size2(300,70));
+		accept->popup_centered_minsize();
 		return NULL;
 	};
 
@@ -79,7 +79,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text(String("Error loading scene from ")+p_file);
-		accept->popup_centered(Size2(300,70));
+		accept->popup_centered_minsize();
 		return NULL;
 	}
 
@@ -90,7 +90,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 			accept->get_ok()->set_text("Ok");
 			accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
-			accept->popup_centered(Size2(300,90));
+			accept->popup_centered_minsize();
 			return NULL;
 		}
 	}
@@ -164,7 +164,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -245,7 +245,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -313,7 +313,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -420,7 +420,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -456,7 +456,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			} else {
 				delete_dialog->set_text("Delete Node(s)?");
-				delete_dialog->popup_centered(Size2(200,80));
+				delete_dialog->popup_centered_minsize();
 			}
 
 
@@ -838,7 +838,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 			accept->get_ok()->set_text("Makes Sense!");
 			accept->set_text("Can't operate on nodes from a foreign scene!");
-			accept->popup_centered(Size2(300,70));;
+			accept->popup_centered_minsize();
 			return false;
 
 		}
@@ -1059,14 +1059,15 @@ void SceneTreeDock::_create() {
 
 
 		if (edited_scene) {
-
+			// If root exists in edited scene
 			parent = scene_tree->get_selected();
-			ERR_FAIL_COND(!parent);
-		} else {
+			if( !parent )
+				parent = edited_scene;
 
+		} else {
+			// If no root exist in edited scene
 			parent = scene_root;
 			ERR_FAIL_COND(!parent);
-
 		}
 
 		Object *c = create_dialog->instance_selected();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,6 +72,7 @@ void Label::_notification(int p_what) {
 		if (clip && !autowrap)
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(),true);
 
+
 		if (word_cache_dirty)
 			regenerate_word_cache();
 
@@ -87,7 +88,8 @@ void Label::_notification(int p_what) {
 		bool use_outlinde = get_constant("shadow_as_outline");
 		Point2 shadow_ofs(get_constant("shadow_offset_x"),get_constant("shadow_offset_y"));
 
-		
+		VisualServer::get_singleton()->canvas_item_set_distance_field_mode(get_canvas_item(),font.is_valid() && font->is_distance_field_hint());
+
 		int font_h = font->get_height();
 		int line_from=(int)get_val(); // + p_exposed.pos.y / font_h;
 		int lines_visible = size.y/font_h;
@@ -97,7 +99,7 @@ void Label::_notification(int p_what) {
 		int chars_total=0;
 
 		int vbegin=0,vsep=0;
-
+		
 		if (lines_total && lines_total < lines_visible) {
 
 
@@ -134,10 +136,9 @@ void Label::_notification(int p_what) {
 		if (!wc)
 			return;
 		
-
+		int c = 0;
 		int line=0;
 		while(wc) {
-			
 		/* handle lines not meant to be drawn quickly */
 			if  (line>line_to)
 				break;
@@ -168,8 +169,8 @@ void Label::_notification(int p_what) {
 			while(to && to->char_pos>=0) {
 				
 				taken+=to->pixel_width;
-				if (to!=from) {
-					spaces++;
+				if (to!=from && to->space_count) {
+					spaces+=to->space_count;
 				}
 				to=to->next;
 			}
@@ -210,15 +211,15 @@ void Label::_notification(int p_what) {
 					ERR_PRINT("BUG");
 					return;
 				}
-				if (from!=wc) {
+				if (from->space_count) {
 				/* spacing */
-					x_ofs+=space_w;
+					x_ofs+=space_w*from->space_count;
 					if (can_fill && align==ALIGN_FILL && spaces) {
-						
+
 						x_ofs+=int((size.width-(taken+space_w*spaces))/spaces);
 					}
-					
-					
+
+
 				}
 				
 				
@@ -251,7 +252,7 @@ void Label::_notification(int p_what) {
 					
 				}
 				for (int i=0;i<from->word_len;i++) {
-					
+
 					if (visible_chars < 0 || chars_total<visible_chars) {
 						CharType c = text[i+pos];
 						CharType n = text[i+pos+1];
@@ -359,11 +360,12 @@ void Label::regenerate_word_cache() {
 	
 	int width=autowrap?get_size().width:get_longest_line_width();
 	Ref<Font> font = get_font("font");
-	
+
 	int current_word_size=0;
 	int word_pos=0;
 	int line_width=0;
-	int last_width=0;
+	int space_count=0;
+	int space_width=font->get_char_size(' ').width;
 	line_count=1;
 	total_char_cache=0;
 	
@@ -372,16 +374,21 @@ void Label::regenerate_word_cache() {
 	for (int i=0;i<text.size()+1;i++) {
 		
 		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
-		
+
 		if (uppercase)
 			current=String::char_uppercase(current);
 
+		// ranges taken from http://www.unicodemap.org/
+		// if your language is not well supported, consider helping improve
+		// the unicode support in Godot.
+		bool separatable = (current>=0x2E08 && current<=0xFAFF) || (current>=0xFE30 && current<=0xFE4F);
+				//current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
 		bool insert_newline=false;
-		
+		int char_width;
+
 		if (current<33) {
-			
+
 			if (current_word_size>0) {
-				
 				WordCache *wc = memnew( WordCache );
 				if (word_cache) {
 					last->next=wc;
@@ -389,14 +396,16 @@ void Label::regenerate_word_cache() {
 					word_cache=wc;
 				}
 				last=wc;
-				
+
 				wc->pixel_width=current_word_size;
 				wc->char_pos=word_pos;
 				wc->word_len=i-word_pos;
+				wc->space_count = space_count;
 				current_word_size=0;
-				
+				space_count=0;
+
 			}
-			
+
 
 			if (current=='\n') {
 				insert_newline=true;
@@ -406,26 +415,49 @@ void Label::regenerate_word_cache() {
 
 			if (i<text.length() && text[i] == ' ') {
 				total_char_cache--;  // do not count spaces
+				if (line_width > 0 || last==NULL || last->char_pos!=WordCache::CHAR_WRAPLINE) {
+					space_count++;
+					line_width+=space_width;
+				}else {
+					space_count=0;
+				}
 			}
 
 
 		} else {
-			
+			// latin characters
 			if (current_word_size==0) {
-				if (line_width>0) // add a space before the new word if a word existed before
-					line_width+=font->get_char_size(' ').width;
 				word_pos=i;
 			}
 			
-			int char_width=font->get_char_size(current).width;
+			char_width=font->get_char_size(current).width;
 			current_word_size+=char_width;
 			line_width+=char_width;
 			total_char_cache++;
 			
 		}
-		
-		if ((autowrap && line_width>=width && last_width<width) || insert_newline) {
-			
+
+		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || separatable)) || insert_newline) {
+			if (separatable) {
+				if (current_word_size>0) {
+					WordCache *wc = memnew( WordCache );
+					if (word_cache) {
+						last->next=wc;
+					} else {
+						word_cache=wc;
+					}
+					last=wc;
+
+					wc->pixel_width=current_word_size-char_width;
+					wc->char_pos=word_pos;
+					wc->word_len=i-word_pos;
+					wc->space_count = space_count;
+					current_word_size=char_width;
+					space_count=0;
+					word_pos=i;
+				}
+			}
+
 			WordCache *wc = memnew( WordCache );
 			if (word_cache) {
 				last->next=wc;
@@ -433,17 +465,15 @@ void Label::regenerate_word_cache() {
 				word_cache=wc;
 			}
 			last=wc;
-			
+
 			wc->pixel_width=0;
 			wc->char_pos=insert_newline?WordCache::CHAR_NEWLINE:WordCache::CHAR_WRAPLINE;
 
 			line_width=current_word_size;
 			line_count++;
+			space_count=0;
 
-			
 		}
-		
-		last_width=line_width;
 		
 	}
 	
@@ -463,7 +493,7 @@ void Label::regenerate_word_cache() {
 	set_max(line_count);
 	
 	word_cache_dirty=false;
-		
+
 }
 
 

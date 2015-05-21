@@ -53,7 +53,6 @@ protected:
 	static void _bind_methods();
 public:
 
-	Vector2 snap_point(const Vector2& p_point) const;
 	bool forward_input_event(const InputEvent& p_event);
 	void edit(Node *p_collision_polygon);
 	CollisionPolygon2DEditor(EditorNode *p_editor);

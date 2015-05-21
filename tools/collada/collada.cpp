@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -817,7 +817,7 @@ void Collada::_parse_camera(XMLParser& parser) {
 			if (name=="perspective") {
 
 				camera.mode=CameraData::MODE_PERSPECTIVE;
-			} else if (name=="orthogonal") {
+			} else if (name=="orthographic") {
 
 				camera.mode=CameraData::MODE_ORTHOGONAL;
 			} else if (name=="xfov") {
@@ -979,7 +979,7 @@ void Collada::_parse_curve_geometry(XMLParser& parser,String p_id,String p_name)
 				current_source=id;
 				COLLADA_PRINT("source data: "+id);
 
-			} else if (section=="float_array" || section=="array" || section=="float_array") {
+			} else if (section=="float_array" || section=="array") {
 				// create a new array and read it.
 				if (curvedata.sources.has(current_source)) {
 

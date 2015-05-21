@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -353,7 +353,7 @@ void EditorHelp::_search(const String&) {
 	String stext=search->get_text();
 	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
 
-	class_desc->search(stext);
+	class_desc->search(stext, keep);
 
 	prev_search=stext;
 	if (class_list->get_selected())
@@ -1390,7 +1390,9 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 
 	{
 		PanelContainer *pc = memnew( PanelContainer );
-		pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
+		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
+		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		h_split->add_child(pc);
 		class_desc = memnew( RichTextLabel );
 		pc->add_child(class_desc);

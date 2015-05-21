@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,6 +39,7 @@
 #include "scene/resources/packed_scene.h"
 #include "os/os.h"
 #include "tools/editor/editor_node.h"
+#include <iostream>
 
 
 struct ColladaImport {
@@ -83,7 +84,7 @@ struct ColladaImport {
 	Error _create_scene(Collada::Node *p_node, Spatial *p_parent);
 	Error _create_resources(Collada::Node *p_node);
 	Error _create_material(const String& p_material);
-	Error _create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data);
+	Error _create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *p_skin_data, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes=Vector<Ref<Mesh> >());
 	Error load(const String& p_path, int p_flags, bool p_force_make_tangents=false);
 	void _fix_param_animation_tracks();
 	void create_animation(int p_clip,bool p_make_tracks_in_all_bones);
@@ -285,13 +286,16 @@ Error ColladaImport::_create_scene(Collada::Node *p_node, Spatial *p_parent) {
 
 					case Collada::CameraData::MODE_ORTHOGONAL: {
 
-						if (cd.orthogonal.x_mag) {
+						if (cd.orthogonal.y_mag) {
 
-							camera->set_orthogonal(cd.orthogonal.x_mag,cd.z_near,cd.z_far);
+							camera->set_keep_aspect_mode(Camera::KEEP_HEIGHT);
+							camera->set_orthogonal(cd.orthogonal.y_mag*2.0 ,cd.z_near,cd.z_far);
 
-						} else if (!cd.orthogonal.x_mag && cd.orthogonal.y_mag) {
+						} else if (!cd.orthogonal.y_mag && cd.orthogonal.x_mag) {
 
-							camera->set_orthogonal(cd.orthogonal.y_mag * cd.aspect,cd.z_near,cd.z_far);
+
+							camera->set_keep_aspect_mode(Camera::KEEP_WIDTH);
+							camera->set_orthogonal(cd.orthogonal.x_mag*2.0,cd.z_near,cd.z_far);
 						}
 
 					} break;
@@ -585,7 +589,7 @@ static void _generate_tangents_and_binormals(const DVector<int>& p_indices,const
 	}
 }
 
-Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data) {
+Error ColladaImport::_create_mesh_surfaces(bool p_optimize,Ref<Mesh>& p_mesh,const Map<String,Collada::NodeGeometry::Material>& p_material_map,const Collada::MeshData &meshdata,const Transform& p_local_xform,const Vector<int> &bone_remap, const Collada::SkinControllerData *skin_controller, const Collada::MorphControllerData *p_morph_data,Vector<Ref<Mesh> > p_morph_meshes) {
 
 
 	bool local_xform_mirror=p_local_xform.basis.determinant() < 0;
@@ -746,7 +750,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 				ERR_FAIL_INDEX_V(src,p.indices.size(),ERR_INVALID_DATA);
 
 				Collada::Vertex vertex;
-				if (p_morph_data)
+				if (!p_optimize)
 					vertex.uid=vertidx++;
 
 				int vertex_index=p.indices[src+vertex_ofs]; //used for index field (later used by controllers)
@@ -1272,7 +1276,7 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 			////////////////////////////
 			// THEN THE MORPH TARGETS //
 			////////////////////////////
-
+#if 0
 			if (p_morph_data) {
 
 				//add morphie target
@@ -1354,8 +1358,63 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 					vertw = DVector<Vector3>::Write();
 					DVector<Vector3> normals;
 					DVector<float> tangents;
+					print_line("vertex source id: "+vertex_src_id);
+					if(md.vertices[vertex_src_id].sources.has("NORMAL")){
+						//has normals 
+						normals.resize(vlen);
+						//std::cout << "has normals" << std::endl;
+						String normal_src_id = md.vertices[vertex_src_id].sources["NORMAL"];
+						//std::cout << "normals source: "<< normal_src_id.utf8().get_data() <<std::endl;
+						ERR_FAIL_COND_V(!md.sources.has(normal_src_id),ERR_INVALID_DATA);
 
-					_generate_normals(index_array,vertices,normals);
+						const Collada::MeshData::Source *m=&md.sources[normal_src_id];
+
+						ERR_FAIL_COND_V( m->array.size() != vertex_src->array.size(), ERR_INVALID_DATA);
+						int stride=m->stride;
+						if (stride==0)
+							stride=3;
+
+					
+						//read normals from morph target
+						DVector<Vector3>::Write vertw = normals.write();
+
+						for(int m_i=0;m_i<m->array.size()/stride;m_i++) {
+
+							int pos = m_i*stride;
+							Vector3 vtx( m->array[pos+0], m->array[pos+1], m->array[pos+2] );
+
+	#ifndef NO_UP_AXIS_SWAP
+							if (collada.state.up_axis==Vector3::AXIS_Z) {
+
+								SWAP( vtx.z, vtx.y );
+								vtx.z = -vtx.z;
+
+							}
+	#endif
+
+							Collada::Vertex vertex;
+							vertex.vertex=vtx;
+							vertex.fix_unit_scale(collada);
+							vtx=vertex.vertex;
+
+							vtx = p_local_xform.xform(vtx);
+
+
+							if (vertex_map.has(m_i)) { //vertex may no longer be here, don't bother converting
+
+
+								for (Set<int> ::Element *E=vertex_map[m_i].front() ; E; E=E->next() ) {
+
+									vertw[E->get()]=vtx;
+								}
+							}
+						}
+					
+						print_line("using built-in normals");
+					}else{
+						print_line("generating normals");
+						_generate_normals(index_array,vertices,normals);//no normals
+					}
 					if (final_tangent_array.size() && final_uv_array.size()) {
 
 						_generate_tangents_and_binormals(index_array,vertices,final_uv_array,normals,tangents);
@@ -1380,6 +1439,17 @@ Error ColladaImport::_create_mesh_surfaces(Ref<Mesh>& p_mesh,const Map<String,Co
 
 			}
 
+#endif
+			for(int mi=0;mi<p_morph_meshes.size();mi++) {
+
+			//	print_line("want surface "+itos(mi)+" has "+itos(p_morph_meshes[mi]->get_surface_count()));
+				Array a = p_morph_meshes[mi]->surface_get_arrays(surface);
+				a[Mesh::ARRAY_BONES]=Variant();
+				a[Mesh::ARRAY_WEIGHTS]=Variant();
+				a[Mesh::ARRAY_INDEX]=Variant();
+				//a.resize(Mesh::ARRAY_MAX); //no need for index
+				mr.push_back(a);
+			}
 
 			p_mesh->add_surface(Mesh::PRIMITIVE_TRIANGLES,d,mr);
 
@@ -1510,17 +1580,21 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 			String meshid;
 			Transform apply_xform;
 			Vector<int> bone_remap;
+			Vector<Ref<Mesh> > morphs;
 
 			print_line("mesh: "+String(mi->get_name()));
 
 			if (ng->controller) {
 
 				print_line("has controller");
-				if (collada.state.skin_controller_data_map.has(ng->source)) {
+
+				String ngsource = ng->source;
+
+				if (collada.state.skin_controller_data_map.has(ngsource)) {
 
 
-					ERR_FAIL_COND_V(!collada.state.skin_controller_data_map.has(ng->source),ERR_INVALID_DATA);
-					skin=&collada.state.skin_controller_data_map[ng->source];
+					ERR_FAIL_COND_V(!collada.state.skin_controller_data_map.has(ngsource),ERR_INVALID_DATA);
+					skin=&collada.state.skin_controller_data_map[ngsource];
 
 					Vector<String> skeletons = ng->skeletons;
 
@@ -1543,7 +1617,10 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					if (collada.state.morph_controller_data_map.has(meshid)) {
 						//it's a morph!!
 						morph = &collada.state.morph_controller_data_map[meshid];
+						ngsource=meshid;
 						meshid=morph->mesh;
+					} else {
+						ngsource="";
 					}
 
 					if (apply_mesh_xform_to_vertices) {
@@ -1574,15 +1651,48 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 						ERR_FAIL_COND_V( !bone_remap_map.has(str), ERR_INVALID_DATA );
 						bone_remap[i]=bone_remap_map[str];
 					}
-				} else if (collada.state.morph_controller_data_map.has(ng->source)) {
-					print_line("is morph "+ng->source);
+				}
+
+				if (collada.state.morph_controller_data_map.has(ngsource)) {
+					print_line("is morph "+ngsource);
 					//it's a morph!!
-					morph = &collada.state.morph_controller_data_map[ng->source];
+					morph = &collada.state.morph_controller_data_map[ngsource];
 					meshid=morph->mesh;
 					printf("KKmorph: %p\n",morph);
 					print_line("morph mshid: "+meshid);
-				} else {
-					ERR_EXPLAIN("Controller Instance Source '"+ng->source+"' is neither skin or morph!");
+
+					Vector<String> targets;
+
+					morph->targets.has("MORPH_TARGET");
+					String target = morph->targets["MORPH_TARGET"];
+					bool valid=false;
+					if (morph->sources.has(target)) {
+						valid=true;
+						Vector<String> names = morph->sources[target].sarray;
+						for(int i=0;i<names.size();i++) {
+
+							String meshid=names[i];
+							if (collada.state.mesh_data_map.has(meshid)) {
+								Ref<Mesh> mesh=Ref<Mesh>(memnew( Mesh ));
+								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
+								Error err = _create_mesh_surfaces(false,mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,NULL);
+								ERR_FAIL_COND_V(err,err);
+
+								morphs.push_back(mesh);
+							} else {
+								valid=false;
+							}
+						}
+					}
+
+					if (!valid)
+						morphs.clear();
+
+					ngsource="";
+				}
+
+				if (ngsource!=""){
+					ERR_EXPLAIN("Controller Instance Source '"+ngsource+"' is neither skin or morph!");
 					ERR_FAIL_V( ERR_INVALID_DATA );
 				}
 
@@ -1603,7 +1713,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node) {
 					mesh=Ref<Mesh>(memnew( Mesh ));
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					mesh->set_name( meshdata.name );
-					Error err = _create_mesh_surfaces(mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,morph);
+					Error err = _create_mesh_surfaces(morphs.size()==0,mesh,ng->material_map,meshdata,apply_xform,bone_remap,skin,morph,morphs);
 					ERR_FAIL_COND_V(err,err);
 
 					mesh_cache[meshid]=mesh;

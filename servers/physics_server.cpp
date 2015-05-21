@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -221,7 +221,7 @@ PhysicsShapeQueryParameters::PhysicsShapeQueryParameters() {
 /////////////////////////////////////
 
 /*
-Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max,const Vector<RID>& p_exclude,uint32_t p_user_mask) {
+Variant PhysicsDirectSpaceState::_intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max,const Vector<RID>& p_exclude,uint32_t p_collision_mask) {
 
 
 
@@ -303,7 +303,7 @@ Array PhysicsDirectSpaceState::_cast_motion(const Ref<PhysicsShapeQueryParameter
 	Array ret(true);
 	ret.resize(2);
 	ret[0]=closest_safe;
-	ret[0]=closest_unsafe;
+	ret[1]=closest_unsafe;
 	return ret;
 
 }

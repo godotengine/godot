@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -295,7 +295,7 @@ void Node::add_child_notify(Node *p_child) {
 	// to be used when not wanted	
 }
 
-
+/*
 void Node::remove_and_delete_child(Node *p_child) {
 
 	ERR_FAIL_NULL( p_child );
@@ -305,6 +305,7 @@ void Node::remove_and_delete_child(Node *p_child) {
 	memdelete(p_child);
 
 }
+*/
 
 void Node::remove_child_notify(Node *p_child) {
 
@@ -1416,6 +1417,41 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 
 }
 
+
+void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
+
+	if (this!=p_original && get_owner()!=p_original)
+		return;
+
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+
+	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
+
+		if (E->get().flags&CONNECT_PERSIST) {
+			//user connected
+			NodePath p = p_original->get_path_to(this);
+			Node *copy = p_copy->get_node(p);
+
+			Node *target = E->get().target->cast_to<Node>();
+			if (!target)
+				continue;
+			NodePath ptarget = p_original->get_path_to(target);
+			Node *copytarget = p_copy->get_node(ptarget);
+
+			if (copy && copytarget) {
+				copy->connect(E->get().signal,copytarget,E->get().method,E->get().binds,CONNECT_PERSIST);
+			}
+		}
+	}
+
+	for(int i=0;i<get_child_count();i++) {
+		get_child(i)->_duplicate_signals(p_original,p_copy);
+	}
+
+}
+
+
 Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 
 
@@ -1454,6 +1490,7 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 		get_child(i)->_duplicate_and_reown(node,p_reown_map);
 	}
 
+	_duplicate_signals(this,node);
 	return node;
 
 }
@@ -1763,7 +1800,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
 	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
 	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
-	ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
+	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);

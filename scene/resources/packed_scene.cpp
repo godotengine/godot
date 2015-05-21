@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -182,6 +182,8 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 
 	if (get_path()!="" && get_path().find("::")==-1)
 		s->set_filename(get_path());
+
+	s->notification(Node::NOTIFICATION_INSTANCED);
 	return ret_nodes[0];
 
 }

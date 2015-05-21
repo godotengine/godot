@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
-		if (!(static_cast<AreaSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (!(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))

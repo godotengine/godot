@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -295,7 +295,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 					
 						p_anim->node_cache[i]->bone_idx=p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 						if (p_anim->node_cache[i]->bone_idx<0) {
-							// broken track (unexisting bone)
+							// broken track (nonexistent bone)
 							p_anim->node_cache[i]->skeleton=NULL;
 							p_anim->node_cache[i]->spatial=NULL;
 							printf("bone is %ls\n", String(bone_name).c_str());

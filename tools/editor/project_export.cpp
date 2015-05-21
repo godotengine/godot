@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -416,7 +416,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 		if (FileAccess::exists(location.plus_file("engine.cfg"))) {
 
 			error->set_text("Please export outside the project folder!");
-			error->popup_centered(Size2(300,70));;
+			error->popup_centered_minsize();
 			return;
 		}
 		String nl = (location+"/..").simplify_path();
@@ -434,7 +434,7 @@ void ProjectExportDialog::_export_action(const String& p_file) {
 	Error err = export_platform(platform,p_file,file_export_check->is_pressed(),file_export_password->get_text(),false);
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 	}
 
 }
@@ -453,7 +453,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);
 	if (!f) {
 		error->set_text("Error exporting project PCK! Can't write");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 	}
 	ERR_FAIL_COND(!f);
 
@@ -462,7 +462,7 @@ void ProjectExportDialog::_export_action_pck(const String& p_file) {
 
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return;
 	}
 }
@@ -478,7 +478,12 @@ Error ProjectExportDialog::export_platform(const String& p_platform, const Strin
 	Error err = exporter->export_project(p_path,p_debug);
 	if (err!=OK) {
 		error->set_text("Error exporting project!");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
+		ERR_PRINT("Exporting failed!");
+		if (p_quit_after) {
+			OS::get_singleton()->set_exit_code(255);
+			get_tree()->quit();
+		}
 		return ERR_CANT_CREATE;
 	} else {
 		if (p_quit_after) {
@@ -507,7 +512,7 @@ void ProjectExportDialog::custom_action(const String&) {
 
 	if (exporter.is_null()) {
 		error->set_text("No exporter for platform '"+platform+"' yet.");
-		error->popup_centered(Size2(300,70));;
+		error->popup_centered_minsize();
 		return;
 	}
 
@@ -1648,7 +1653,7 @@ Error ProjectExport::export_project(const String& p_preset) {
 
 			if (saver.is_null()) {
 				memdelete(d);
-				ERR_EXPLAIN("Preset '"+preset+"' references unexisting saver: "+type);
+				ERR_EXPLAIN("Preset '"+preset+"' references nonexistent saver: "+type);
 				ERR_FAIL_COND_V(saver.is_null(),ERR_INVALID_DATA);
 			}
 

@@ -36,21 +36,13 @@ void NavigationPolygonEditor::_node_removed(Node *p_node) {
 
 void NavigationPolygonEditor::_create_nav()  {
 
+	if (!node)
+		return;
+
 	undo_redo->create_action("Create Navigation Polygon");
 	undo_redo->add_do_method(node,"set_navigation_polygon",Ref<NavigationPolygon>(memnew( NavigationPolygon)));
 	undo_redo->add_undo_method(node,"set_navigation_polygon",Variant(REF()));
 	undo_redo->commit_action();
-}
-
-Vector2 NavigationPolygonEditor::snap_point(const Vector2& p_point) const {
-
-	if (canvas_item_editor->is_snap_active()) {
-
-		return p_point.snapped(Vector2(1,1)*canvas_item_editor->get_snap());
-
-	} else {
-		return p_point;
-	}
 }
 
 void NavigationPolygonEditor::_menu_option(int p_option) {
@@ -107,7 +99,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 			create_nav->set_text("No NavigationPolygon resource on this node.\nCreate and assign one?");
 			create_nav->popup_centered_minsize();
 		}
-		return false;
+		return (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1);;
 	}
 
 
@@ -122,7 +114,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 			Vector2 gpoint = Point2(mb.x,mb.y);
 			Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-			cpoint=snap_point(cpoint);
+			cpoint=canvas_item_editor->snap_point(cpoint);
 			cpoint = node->get_global_transform().affine_inverse().xform(cpoint);
 
 
@@ -370,7 +362,7 @@ bool NavigationPolygonEditor::forward_input_event(const InputEvent& p_event) {
 
 				Vector2 gpoint = Point2(mm.x,mm.y);
 				Vector2 cpoint = canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint);
-				cpoint=snap_point(cpoint);
+				cpoint=canvas_item_editor->snap_point(cpoint);
 				edited_point_pos = node->get_global_transform().affine_inverse().xform(cpoint);
 
 				canvas_item_editor->get_viewport_control()->update();
@@ -445,6 +437,7 @@ void NavigationPolygonEditor::edit(Node *p_collision_polygon) {
 		wip.clear();
 		wip_active=false;
 		edited_point=-1;
+		canvas_item_editor->get_viewport_control()->update();
 
 	} else {
 		node=NULL;

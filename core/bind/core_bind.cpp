@@ -5,7 +5,7 @@
 #include "io/base64.h"
 #include "core/globals.h"
 #include "io/file_access_encrypted.h"
-
+#include "os/keyboard.h"
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
 Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p_path,const String& p_type_hint) {
@@ -176,6 +176,76 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+
+int _OS::get_screen_count() const {
+	return OS::get_singleton()->get_screen_count();
+}
+
+int _OS::get_current_screen() const {
+	return OS::get_singleton()->get_current_screen();
+}
+
+void _OS::set_current_screen(int p_screen) {
+	OS::get_singleton()->set_current_screen(p_screen);
+}
+
+Point2 _OS::get_screen_position(int p_screen) const {
+	return OS::get_singleton()->get_screen_position(p_screen);
+}
+
+Size2 _OS::get_screen_size(int p_screen) const {
+	return OS::get_singleton()->get_screen_size(p_screen);
+}
+
+Point2 _OS::get_window_position() const {
+	return OS::get_singleton()->get_window_position();
+}
+
+void _OS::set_window_position(const Point2& p_position) {
+	OS::get_singleton()->set_window_position(p_position);
+}
+
+Size2 _OS::get_window_size() const {
+	return OS::get_singleton()->get_window_size();
+}
+
+void _OS::set_window_size(const Size2& p_size) {
+	OS::get_singleton()->set_window_size(p_size);
+}
+
+void _OS::set_window_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_window_fullscreen(p_enabled);
+}
+
+bool _OS::is_window_fullscreen() const {
+	return OS::get_singleton()->is_window_fullscreen();
+}
+
+void _OS::set_window_resizable(bool p_enabled) {
+	OS::get_singleton()->set_window_resizable(p_enabled);
+}
+
+bool _OS::is_window_resizable() const {
+	return OS::get_singleton()->is_window_resizable();
+}
+
+void _OS::set_window_minimized(bool p_enabled) {
+	OS::get_singleton()->set_window_minimized(p_enabled);
+}
+
+bool _OS::is_window_minimized() const {
+	return OS::get_singleton()->is_window_minimized();
+}
+
+void _OS::set_window_maximized(bool p_enabled) {
+	OS::get_singleton()->set_window_maximized(p_enabled);
+}
+
+bool _OS::is_window_maximized() const {
+	return OS::get_singleton()->is_window_maximized();
+}
+
+
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 	FileAccess::set_backup_save(p_enable);
@@ -186,7 +256,6 @@ bool _OS::is_video_mode_resizable(int p_screen) const {
 	OS::VideoMode vm;
 	vm = OS::get_singleton()->get_video_mode(p_screen);
 	return vm.resizable;
-
 }
 
 Array _OS::get_fullscreen_mode_list(int p_screen) const {
@@ -431,6 +500,10 @@ uint32_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 
+uint32_t _OS::get_splash_tick_msec() const {
+
+	return OS::get_singleton()->get_splash_tick_msec();
+}
 
 bool _OS::can_use_threads() const {
 
@@ -621,6 +694,20 @@ String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
 }
+
+String _OS::get_scancode_string(uint32_t p_code) const {
+
+	return keycode_get_string(p_code);
+}
+bool _OS::is_scancode_unicode(uint32_t p_unicode) const {
+
+	return keycode_has_unicode(p_unicode);
+}
+int _OS::find_scancode_from_string(const String& p_code) const {
+
+	return find_keycode(p_code);
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -636,6 +723,26 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+
+
+	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
+	ObjectTypeDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
+	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
+	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
+	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
+	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);
+	ObjectTypeDB::bind_method(_MD("is_window_resizable"),&_OS::is_window_resizable);
+	ObjectTypeDB::bind_method(_MD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
+	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
+	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
+	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
@@ -676,6 +783,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
+	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
 
@@ -716,6 +824,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
 
+	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
+	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
+	ObjectTypeDB::bind_method(_MD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
@@ -1646,7 +1757,9 @@ _Mutex::~_Mutex(){
 
 void _Thread::_start_func(void *ud) {
 
-	_Thread *t=(_Thread*)ud;
+	Ref<_Thread>* tud=(Ref<_Thread>*)ud;
+	Ref<_Thread> t=*tud;
+	memdelete(tud);
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
@@ -1693,9 +1806,11 @@ Error _Thread::start(Object *p_instance,const StringName& p_method,const Variant
 	userdata=p_userdata;
 	active=true;
 
+	Ref<_Thread> *ud = memnew( Ref<_Thread>(this) );
+
 	Thread::Settings s;
 	s.priority=(Thread::Priority)p_priority;
-	thread = Thread::create(_start_func,this,s);
+	thread = Thread::create(_start_func,ud,s);
 	if (!thread) {
 		active=false;
 		target_method=StringName();
@@ -1756,5 +1871,8 @@ _Thread::_Thread() {
 
 _Thread::~_Thread() {
 
+	if (active) {
+		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running..");
+	}
 	ERR_FAIL_COND(active==true);
 }

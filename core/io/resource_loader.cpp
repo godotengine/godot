@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,6 +117,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const Stri
 
 RES ResourceFormatLoader::load(const String &p_path,const String& p_original_path) {
 
+	String path=p_path;
 
 	//or this must be implemented
 	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path);
@@ -150,9 +151,13 @@ void ResourceFormatLoader::get_dependencies(const String& p_path,List<String> *p
 
 RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_no_cache) {
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
 
-	local_path=find_complete_path(p_path,p_type_hint);
+	local_path=find_complete_path(local_path,p_type_hint);
 	ERR_FAIL_COND_V(local_path=="",RES());
 
 	if (!p_no_cache && ResourceCache::has(local_path)) {
@@ -209,7 +214,11 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p_path) {
 
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
 
 	String extension=p_path.extension();
 	bool found=false;
@@ -283,9 +292,13 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 
 
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
 
-	local_path=find_complete_path(p_path,p_type_hint);
+	local_path=find_complete_path(local_path,p_type_hint);
 	ERR_FAIL_COND_V(local_path=="",Ref<ResourceInteractiveLoader>());
 
 
@@ -340,7 +353,13 @@ void ResourceLoader::add_resource_format_loader(ResourceFormatLoader *p_format_l
 
 void ResourceLoader::get_dependencies(const String& p_path,List<String> *p_dependencies) {
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
+
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 
 	String extension=remapped_path.extension();
@@ -359,7 +378,11 @@ void ResourceLoader::get_dependencies(const String& p_path,List<String> *p_depen
 
 String ResourceLoader::guess_full_filename(const String &p_path,const String& p_type) {
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
 
 	return find_complete_path(local_path,p_type);
 
@@ -367,7 +390,12 @@ String ResourceLoader::guess_full_filename(const String &p_path,const String& p_
 
 String ResourceLoader::get_resource_type(const String &p_path) {
 
-	String local_path = Globals::get_singleton()->localize_path(p_path);
+	String local_path;
+	if (p_path.is_rel_path())
+		local_path="res://"+p_path;
+	else
+		local_path = Globals::get_singleton()->localize_path(p_path);
+
 	String remapped_path = PathRemap::get_singleton()->get_remap(local_path);
 	String extension=remapped_path.extension();
 

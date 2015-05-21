@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,6 +129,7 @@ void ScriptEditorQuickOpen::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_text_changed"),&ScriptEditorQuickOpen::_text_changed);
 	ObjectTypeDB::bind_method(_MD("_confirmed"),&ScriptEditorQuickOpen::_confirmed);
 	ObjectTypeDB::bind_method(_MD("_sbox_input"),&ScriptEditorQuickOpen::_sbox_input);
+
 
 	ADD_SIGNAL(MethodInfo("goto_line",PropertyInfo(Variant::INT,"line")));
 
@@ -630,11 +631,13 @@ bool ScriptEditor::_test_script_times_on_disk() {
 
 
 
-	if (!all_ok)
-		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false)))
+	if (!all_ok) {
+		if (bool(EDITOR_DEF("text_editor/auto_reload_changed_scripts",false))) {
 			script_editor->_reload_scripts();
-		else
+		} else {
 			disk_changed->call_deferred("popup_centered_ratio",0.5);
+		}
+	}
 
 	return all_ok;
 }
@@ -703,25 +706,31 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case EDIT_UNDO: {
 			current->get_text_edit()->undo();
+			current->get_text_edit()->call_deferred("grab_focus");
 		} break;
 		case EDIT_REDO: {
 			current->get_text_edit()->redo();
+			current->get_text_edit()->call_deferred("grab_focus");
 		} break;
 		case EDIT_CUT: {
 
 			current->get_text_edit()->cut();
+			current->get_text_edit()->call_deferred("grab_focus");
 		} break;
 		case EDIT_COPY: {
 			current->get_text_edit()->copy();
+			current->get_text_edit()->call_deferred("grab_focus");
 
 		} break;
 		case EDIT_PASTE: {
 			current->get_text_edit()->paste();
+			current->get_text_edit()->call_deferred("grab_focus");
 
 		} break;
 		case EDIT_SELECT_ALL: {
 
 			current->get_text_edit()->select_all();
+			current->get_text_edit()->call_deferred("grab_focus");
 
 		} break;
         case EDIT_MOVE_LINE_UP: {
@@ -813,11 +822,11 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int begin, end;
-            begin = tx->get_selection_from_line();
+
             if (tx->is_selection_active())
             {
-                end = tx->get_selection_to_line();
+		int begin = tx->get_selection_from_line();
+		int end = tx->get_selection_to_line();
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
@@ -837,7 +846,7 @@ void ScriptEditor::_menu_option(int p_option) {
             }
             else
             {
-                begin = tx->cursor_get_line();
+		int begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
                 // begins with tab
                 if (line_text.begins_with("\t"))
@@ -863,11 +872,10 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int begin, end;
-            begin = tx->get_selection_from_line();
             if (tx->is_selection_active())
             {
-                end = tx->get_selection_to_line();
+		int begin = tx->get_selection_from_line();
+		int end = tx->get_selection_to_line();
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
@@ -877,7 +885,7 @@ void ScriptEditor::_menu_option(int p_option) {
             }
             else
             {
-                begin = tx->cursor_get_line();
+		int begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
                 line_text = '\t' + line_text;
                 tx->set_line(begin, line_text);
@@ -910,17 +918,18 @@ void ScriptEditor::_menu_option(int p_option) {
             if (scr.is_null())
                 return;
 
-            int begin, end;
-            begin = tx->get_selection_from_line();
+
+
             if (tx->is_selection_active())
             {
-                end = tx->get_selection_to_line();
+		int begin = tx->get_selection_from_line();
+		int end = tx->get_selection_to_line();
                 for (int i = begin; i <= end; i++)
                 {
                     String line_text = tx->get_line(i);
 
                     if (line_text.begins_with("#"))
-                        line_text = line_text.strip_edges().substr(1, line_text.length());
+                        line_text = line_text.substr(1, line_text.length());
                     else
                         line_text = "#" + line_text;
                     tx->set_line(i, line_text);
@@ -928,11 +937,11 @@ void ScriptEditor::_menu_option(int p_option) {
             }
             else
             {
-                begin = tx->cursor_get_line();
+		int begin = tx->cursor_get_line();
                 String line_text = tx->get_line(begin);
 
                 if (line_text.begins_with("#"))
-                    line_text = line_text.strip_edges().substr(1, line_text.length());
+                    line_text = line_text.substr(1, line_text.length());
                 else
                     line_text = "#" + line_text;
                 tx->set_line(begin, line_text);
@@ -1039,7 +1048,7 @@ void ScriptEditor::_menu_option(int p_option) {
 		case WINDOW_CLOSE: {
 			if (current->get_text_edit()->get_version()!=current->get_text_edit()->get_saved_version()) {
 				erase_tab_confirm->set_text("Close and save changes?\n\""+current->get_name()+"\"");
-				erase_tab_confirm->popup_centered(Point2(250,80));
+				erase_tab_confirm->popup_centered_minsize();
 			} else {
 				_close_current_tab();
 			}
@@ -1087,6 +1096,18 @@ void ScriptEditor::_notification(int p_what) {
 		editor->connect("stop_pressed",this,"_editor_stop");
 		editor->connect("script_add_function_request",this,"_add_callback");
 		editor->connect("resource_saved",this,"_res_saved_callback");
+		autosave_timer->connect("timeout",this,"_autosave_scripts");
+		{
+			float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
+			if (autosave_time>0) {
+				autosave_timer->set_wait_time(autosave_time);
+				autosave_timer->start();
+			} else {
+				autosave_timer->stop();
+			}
+		}
+
+		EditorSettings::get_singleton()->connect("settings_changed",this,"_editor_settings_changed");
 
 
 	}
@@ -1337,7 +1358,8 @@ void ScriptEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_breaked",&ScriptEditor::_breaked);
 	ObjectTypeDB::bind_method("_show_debugger",&ScriptEditor::_show_debugger);
 	ObjectTypeDB::bind_method("_get_debug_tooltip",&ScriptEditor::_get_debug_tooltip);
-
+	ObjectTypeDB::bind_method("_autosave_scripts",&ScriptEditor::_autosave_scripts);
+	ObjectTypeDB::bind_method("_editor_settings_changed",&ScriptEditor::_editor_settings_changed);
 }
 
 
@@ -1506,8 +1528,8 @@ void ScriptEditor::_update_window_menu() {
 	window_menu->get_popup()->clear();
 	window_menu->get_popup()->add_item("Close",WINDOW_CLOSE,KEY_MASK_CMD|KEY_W);
 	window_menu->get_popup()->add_separator();
-	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_LEFT);
-	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_RIGHT);
+	window_menu->get_popup()->add_item("Move Left",WINDOW_MOVE_LEFT,KEY_MASK_CMD|KEY_MASK_ALT|KEY_LEFT);
+	window_menu->get_popup()->add_item("Move Right",WINDOW_MOVE_RIGHT,KEY_MASK_CMD|KEY_MASK_ALT|KEY_RIGHT);
 	window_menu->get_popup()->add_separator();
 
 	idx=0;
@@ -1519,7 +1541,7 @@ void ScriptEditor::_update_window_menu() {
 		String n = ste->get_name();
 		uint32_t accel=0;
 		if (idx<9) {
-			accel=KEY_MASK_ALT|(KEY_1+idx);
+			accel=KEY_MASK_ALT|KEY_MASK_CMD|(KEY_1+idx);
 		}
 		window_menu->get_popup()->add_item(n,WINDOW_SELECT_BASE+idx,accel);
 		idx++;
@@ -1564,6 +1586,25 @@ void ScriptEditor::_add_callback(Object *p_obj, const String& p_function, const 
 
 	}
 
+}
+
+void ScriptEditor::_editor_settings_changed() {
+
+	print_line("settings changed");
+	float autosave_time = EditorSettings::get_singleton()->get("text_editor/autosave_interval_secs");
+	if (autosave_time>0) {
+		autosave_timer->set_wait_time(autosave_time);
+		autosave_timer->start();
+	} else {
+		autosave_timer->stop();
+	}
+
+}
+
+void ScriptEditor::_autosave_scripts() {
+
+	print_line("autosaving");
+	save_external_data();
 }
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
@@ -1716,6 +1757,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	v_split->add_child(debugger);
 	debugger->connect("breaked",this,"_breaked");
+
+	autosave_timer = memnew( Timer );
+	autosave_timer->set_one_shot(false);
+	add_child(autosave_timer);
+
 //	debugger_gui->hide();
 
 }

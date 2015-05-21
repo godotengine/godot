@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -534,7 +534,7 @@ void ShaderMaterial::set_shader(const Ref<Shader>& p_shader) {
 	if (shader.is_valid())
 		shader->disconnect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
 	shader=p_shader;
-	VS::get_singleton()->material_set_shader(material,shader->get_rid());
+	VS::get_singleton()->material_set_shader(material,shader.is_valid()?shader->get_rid():RID());
 	if (shader.is_valid()) {
 		shader->connect(SceneStringNames::get_singleton()->changed,this,SceneStringNames::get_singleton()->_shader_changed);
 	}

@@ -10,7 +10,6 @@ SConscript('alsa/SCsub');
 SConscript('pulseaudio/SCsub');
 SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
-SConscript('gles1/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('openssl/SCsub');
 
@@ -58,6 +57,9 @@ list = []
 lib_list = []
 
 import string
+
+if env['vsproj']=="yes":
+	env.AddToVSProject(env.drivers_sources)
 
 for f in env.drivers_sources:
 	fname = ""
