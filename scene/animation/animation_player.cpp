@@ -226,8 +226,8 @@ void AnimationPlayer::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			if (!is_reparenting()) {
 				stop_all();
-				clear_caches();
 			}
+			clear_caches();
 		} break;
 	}
 }
