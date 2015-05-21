@@ -275,6 +275,8 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 				Matrix32 t = p_variant;
 				t.orthonormalize();
 				new_transform=get_transform(); //used as old to compute motion
+				if (t==new_transform)
+					break;
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
 

@@ -93,6 +93,9 @@ public:
 	void set_z(int p_z);
 	int get_z() const;
 
+	void look_at(const Vector2& p_pos);
+	float get_angle_to(const Vector2& p_pos) const;
+
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;
 

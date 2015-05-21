@@ -357,6 +357,7 @@ if (res!=-1 && res < min_pos) {\
 		} break;
 		case MIN_OPEN: {
 			int level=1;
+			end++;
 			while(end<close_pos) {
 
 				if (str[end]=='[')
@@ -373,6 +374,7 @@ if (res!=-1 && res < min_pos) {\
 		} break;
 		case MIN_CURLY_OPEN: {
 			int level=1;
+			end++;
 			while(end<close_pos) {
 
 				if (str[end]=='{')
