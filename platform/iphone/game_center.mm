@@ -32,6 +32,7 @@
 
 extern "C" {
 #import <GameKit/GameKit.h>
+#import "app_delegate.h"
 };
 
 GameCenter* GameCenter::instance = NULL;
@@ -42,6 +43,10 @@ void GameCenter::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("post_score"),&GameCenter::post_score);
 	ObjectTypeDB::bind_method(_MD("award_achievement"),&GameCenter::award_achievement);
+	ObjectTypeDB::bind_method(_MD("reset_achievements"),&GameCenter::reset_achievements);
+	ObjectTypeDB::bind_method(_MD("request_achievements"),&GameCenter::request_achievements);
+	ObjectTypeDB::bind_method(_MD("request_achievement_descriptions"),&GameCenter::request_achievement_descriptions);
+	ObjectTypeDB::bind_method(_MD("show_game_center"),&GameCenter::show_game_center);
 
 	ObjectTypeDB::bind_method(_MD("get_pending_event_count"),&GameCenter::get_pending_event_count);
 	ObjectTypeDB::bind_method(_MD("pop_pending_event"),&GameCenter::pop_pending_event);
@@ -50,23 +55,41 @@ void GameCenter::_bind_methods() {
 
 Error GameCenter::connect() {
 
+	//if this class isn't available, game center isn't implemented
+	if ((NSClassFromString(@"GKLocalPlayer")) == nil) {
+		GameCenter::get_singleton()->connected = false;
+		return ERR_UNAVAILABLE;
+	}
+
 	GKLocalPlayer* player = [GKLocalPlayer localPlayer];
-	[player authenticateWithCompletionHandler:^(NSError* error) {
+	ERR_FAIL_COND_V(![player respondsToSelector:@selector(authenticateHandler)], ERR_UNAVAILABLE);
 
-		Dictionary ret;
-		ret["type"] = "authentication";
-		if (player.isAuthenticated) {
-			ret["result"] = "ok";
-			GameCenter::get_singleton()->connected = true;
-		} else {
-			ret["result"] = "error";
-			ret["error_code"] = error.code;
-			ret["error_description"] = [error.localizedDescription UTF8String];
-			GameCenter::get_singleton()->connected = false;
-		};
+	ViewController *root_controller=(ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
+	ERR_FAIL_COND_V(!root_controller, FAILED);
 
-		pending_events.push_back(ret);
-	}];
+    //this handler is called serveral times.  first when the view needs to be shown, then again after the view is cancelled or the user logs in.  or if the user's already logged in, it's called just once to confirm they're authenticated.  This is why no result needs to be specified in the presentViewController phase. in this case, more calls to this function will follow.
+	player.authenticateHandler = (^(UIViewController *controller, NSError *error) {
+        if (controller) {
+            [root_controller presentViewController:controller animated:YES completion:nil];
+        }
+        else {
+            Dictionary ret;
+            ret["type"] = "authentication";
+            if (player.isAuthenticated) {
+                ret["result"] = "ok";
+                GameCenter::get_singleton()->connected = true;
+            } else {
+                ret["result"] = "error";
+                ret["error_code"] = error.code;
+                ret["error_description"] = [error.localizedDescription UTF8String];
+                GameCenter::get_singleton()->connected = false;
+            };
+            
+            pending_events.push_back(ret);
+        };
+	
+	});
+
 	return OK;
 };
 
@@ -85,7 +108,9 @@ Error GameCenter::post_score(Variant p_score) {
 	GKScore* reporter = [[[GKScore alloc] initWithCategory:cat_str] autorelease];
 	reporter.value = score;
 
-	[reporter reportScoreWithCompletionHandler:^(NSError* error) {
+	ERR_FAIL_COND_V([GKScore respondsToSelector:@selector(reportScores)], ERR_UNAVAILABLE);
+
+	[GKScore reportScores:@[reporter] withCompletionHandler:^(NSError* error) {
 
 		Dictionary ret;
 		ret["type"] = "post_score";
@@ -114,8 +139,15 @@ Error GameCenter::award_achievement(Variant p_params) {
 	GKAchievement* achievement = [[[GKAchievement alloc] initWithIdentifier: name_str] autorelease];
 	ERR_FAIL_COND_V(!achievement, FAILED);
 
+	ERR_FAIL_COND_V([GKAchievement respondsToSelector:@selector(reportAchievements)], ERR_UNAVAILABLE);
+
 	achievement.percentComplete = progress;
-	[achievement reportAchievementWithCompletionHandler:^(NSError* error) {
+	achievement.showsCompletionBanner = NO;
+	if (params.has("show_completion_banner")) {
+		achievement.showsCompletionBanner = params["show_completion_banner"] ? YES : NO;
+	}
+	
+	[GKAchievement reportAchievements:@[achievement] withCompletionHandler:^(NSError *error) {
 
 		Dictionary ret;
 		ret["type"] = "award_achievement";
@@ -130,6 +162,154 @@ Error GameCenter::award_achievement(Variant p_params) {
 	}];
 
 	return OK;
+};
+
+void GameCenter::request_achievement_descriptions() {
+
+	[GKAchievementDescription loadAchievementDescriptionsWithCompletionHandler:^(NSArray *descriptions, NSError *error) {
+
+		Dictionary ret;
+		ret["type"] = "achievement_descriptions";
+		if (error == nil) {
+			ret["result"] = "ok";
+			StringArray names;
+			StringArray titles;
+			StringArray unachieved_descriptions;
+			StringArray achieved_descriptions;
+			IntArray maximum_points;
+			IntArray hidden;
+			IntArray replayable;
+			
+			for (int i=0; i<[descriptions count]; i++) {
+
+				GKAchievementDescription* description = [descriptions objectAtIndex:i];
+				
+				const char* str = [description.identifier UTF8String];
+				names.push_back(String::utf8(str != NULL ? str : ""));
+				
+				str = [description.title UTF8String];
+				titles.push_back(String::utf8(str != NULL ? str : ""));
+				  
+				str = [description.unachievedDescription UTF8String];
+				unachieved_descriptions.push_back(String::utf8(str != NULL ? str : ""));
+				
+				str = [description.achievedDescription UTF8String];
+				achieved_descriptions.push_back(String::utf8(str != NULL ? str : ""));
+				
+				maximum_points.push_back(description.maximumPoints);
+				
+				hidden.push_back(description.hidden == YES ? 1 : 0);
+				
+				replayable.push_back(description.replayable == YES ? 1 : 0);
+			}
+			
+			ret["names"] = names;
+			
+		} else {
+			ret["result"] = "error";
+			ret["error_code"] = error.code;
+		};
+
+		pending_events.push_back(ret);
+	}];
+};
+
+
+void GameCenter::request_achievements() {
+
+	[GKAchievement loadAchievementsWithCompletionHandler:^(NSArray *achievements, NSError *error) {
+
+		Dictionary ret;
+		ret["type"] = "achievements";
+		if (error == nil) {
+			ret["result"] = "ok";
+			StringArray names;
+			RealArray percentages;
+					
+			for (int i=0; i<[achievements count]; i++) {
+
+				GKAchievement* achievement = [achievements objectAtIndex:i];
+				const char* str = [achievement.identifier UTF8String];
+				names.push_back(String::utf8(str != NULL ? str : ""));
+				
+				percentages.push_back(achievement.percentComplete);
+			}
+			
+			ret["names"] = names;
+			ret["progresses"] = percentages;
+			
+		} else {
+			ret["result"] = "error";
+			ret["error_code"] = error.code;
+		};
+
+		pending_events.push_back(ret);
+	}];
+};
+
+void GameCenter::reset_achievements() {
+
+	[GKAchievement resetAchievementsWithCompletionHandler:^(NSError *error)
+	{
+		Dictionary ret;
+		ret["type"] = "reset_achievements";
+		if (error == nil) {
+			ret["result"] = "ok";
+		} else {
+			ret["result"] = "error";
+			ret["error_code"] = error.code;
+		};
+		
+		pending_events.push_back(ret);
+	}];
+};
+
+Error GameCenter::show_game_center(Variant p_params) {
+
+	ERR_FAIL_COND_V(!NSProtocolFromString(@"GKGameCenterControllerDelegate"), FAILED);
+
+	Dictionary params = p_params;
+
+	GKGameCenterViewControllerState view_state = GKGameCenterViewControllerStateDefault;
+	if (params.has("view")) {
+		String view_name = params["view"];
+		if (view_name == "default") {
+			view_state = GKGameCenterViewControllerStateDefault;
+		}
+		else if (view_name == "leaderboards") {
+			view_state = GKGameCenterViewControllerStateLeaderboards;
+		}
+		else if (view_name == "achievements") {
+			view_state = GKGameCenterViewControllerStateAchievements;
+		}
+		else if (view_name == "challenges") {
+			view_state = GKGameCenterViewControllerStateChallenges;
+		}
+		else {
+			return ERR_INVALID_PARAMETER;
+		}
+	}
+
+	GKGameCenterViewController *controller = [[GKGameCenterViewController alloc] init];
+	ERR_FAIL_COND_V(!controller, FAILED);
+
+	ViewController *root_controller=(ViewController *)((AppDelegate *)[[UIApplication sharedApplication] delegate]).window.rootViewController;
+	ERR_FAIL_COND_V(!root_controller, FAILED);
+	
+	controller.gameCenterDelegate = root_controller;
+	controller.viewState = view_state;
+	if (view_state == GKGameCenterViewControllerStateLeaderboards) {
+		controller.leaderboardIdentifier = nil;
+		if (params.has("leaderboard_name")) {
+			String name = params["leaderboard_name"];
+			NSString* name_str = [[[NSString alloc] initWithUTF8String:name.utf8().get_data()] autorelease];
+			controller.leaderboardIdentifier = name_str;
+		}
+	}
+ 
+	[root_controller presentViewController: controller animated: YES completion:nil];
+
+	return OK;	
 };
 
 int GameCenter::get_pending_event_count() {

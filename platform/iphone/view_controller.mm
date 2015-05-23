@@ -124,10 +124,14 @@ int add_cmdline(int p_argc, char** p_args) {
 	}
 };
 
-
 - (BOOL)prefersStatusBarHidden
 {
 	return YES;
+}
+
+- (void) gameCenterViewControllerDidFinish:(GKGameCenterViewController*) gameCenterViewController {
+	printf("in finish");
+    [gameCenterViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

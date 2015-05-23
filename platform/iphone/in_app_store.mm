@@ -210,7 +210,7 @@ Error InAppStore::request_product_info(Variant p_params) {
                 receipt_to_send = [receipt description];
             }
             Dictionary receipt_ret;
-            receipt_ret["receipt"] = String::utf8([receipt_to_send UTF8String]);
+            receipt_ret["receipt"] = String::utf8(receipt_to_send != nil ? [receipt_to_send UTF8String] : "");
             receipt_ret["sdk"] = sdk_version;
             ret["receipt"] = receipt_ret;
             
