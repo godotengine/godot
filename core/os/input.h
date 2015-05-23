@@ -62,7 +62,7 @@ public:
 
 	virtual float get_joy_axis(int p_device,int p_axis)=0;
 	virtual String get_joy_name(int p_idx)=0;
-	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name)=0;
+	virtual void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid = "")=0;
 
 
 	virtual Point2 get_mouse_pos() const=0;
@@ -87,6 +87,8 @@ VARIANT_ENUM_CAST(Input::MouseMode);
 class InputDefault : public Input {
 
 	OBJ_TYPE( InputDefault, Input );
+
+protected:
 	_THREAD_SAFE_CLASS_
 
 	int mouse_button_mask;
@@ -94,7 +96,6 @@ class InputDefault : public Input {
 	Set<int> joy_buttons_pressed;
 	Map<int,float> joy_axis;
 	Map<StringName,int> custom_action_press;
-	Map<int, String> joy_names;
 	Vector3 accelerometer;
 	Vector2 mouse_pos;
 	MainLoop *main_loop;
@@ -115,6 +116,15 @@ class InputDefault : public Input {
 
 	SpeedTrack mouse_speed_track;
 
+	struct Joystick {
+		StringName name;
+		StringName uid;
+		int mapping;
+		int hat_current;
+	};
+
+	Map<int, Joystick> joy_names;
+
 public:
 
 	virtual bool is_key_pressed(int p_scancode);
@@ -123,8 +133,9 @@ public:
 	virtual bool is_action_pressed(const StringName& p_action);
 
 	virtual float get_joy_axis(int p_device,int p_axis);
+
 	String get_joy_name(int p_idx);
-	void joy_connection_changed(int p_idx, bool p_connected, String p_name);
+	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid="");
 
 	virtual Vector3 get_accelerometer();
 
@@ -133,7 +144,6 @@ public:
 	virtual int get_mouse_button_mask() const;
 
 	virtual void warp_mouse_pos(const Vector2& p_to);
-
 
 	void parse_input_event(const InputEvent& p_event);
 	void set_accelerometer(const Vector3& p_accel);
@@ -150,5 +160,75 @@ public:
 	InputDefault();
 
 };
+
+class InputPC : public InputDefault {
+
+	OBJ_TYPE( InputPC, InputDefault );
+
+public:
+	enum HatMask {
+		HAT_MASK_CENTER = 0,
+		HAT_MASK_UP = 1,
+		HAT_MASK_RIGHT = 2,
+		HAT_MASK_DOWN = 4,
+		HAT_MASK_LEFT = 8,
+	};
+
+	enum HatDir {
+		HAT_UP,
+		HAT_RIGHT,
+		HAT_DOWN,
+		HAT_LEFT,
+		HAT_MAX,
+	};
+
+private:
+
+	enum JoyType {
+		TYPE_BUTTON,
+		TYPE_AXIS,
+		TYPE_HAT,
+		TYPE_MAX,
+	};
+
+	struct JoyEvent {
+		int type;
+		int index;
+		int value;
+	};
+
+	struct JoyDeviceMapping {
+
+		String uid;
+		Map<int,JoyEvent> buttons;
+		Map<int,JoyEvent> axis;
+		JoyEvent hat[HAT_MAX];
+	};
+
+	JoyEvent hat_map_default[HAT_MAX];
+
+	Vector<JoyDeviceMapping> map_db;
+
+	JoyEvent _find_to_event(String p_to);
+	uint32_t _button_event(uint32_t p_last_id, int p_device, int p_index, bool p_pressed);
+	uint32_t _axis_event(uint32_t p_last_id, int p_device, int p_axis, float p_value);
+
+protected:
+
+
+public:
+
+	void joy_connection_changed(int p_idx, bool p_connected, String p_name, String p_guid="");
+
+	void parse_mapping(String p_mapping);
+
+	uint32_t joy_button(uint32_t p_last_id, int p_device, int p_button, bool p_pressed);
+	uint32_t joy_axis(uint32_t p_last_id, int p_device, int p_axis, float p_value);
+	uint32_t joy_hat(uint32_t p_last_id, int p_device, int p_val);
+
+	InputPC();
+	~InputPC();
+};
+
 
 #endif // INPUT_H
