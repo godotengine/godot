@@ -177,8 +177,8 @@ void GameCenter::request_achievement_descriptions() {
 			StringArray unachieved_descriptions;
 			StringArray achieved_descriptions;
 			IntArray maximum_points;
-			IntArray hidden;
-			IntArray replayable;
+			Array hidden;
+			Array replayable;
 			
 			for (int i=0; i<[descriptions count]; i++) {
 
@@ -198,12 +198,18 @@ void GameCenter::request_achievement_descriptions() {
 				
 				maximum_points.push_back(description.maximumPoints);
 				
-				hidden.push_back(description.hidden == YES ? 1 : 0);
+				hidden.push_back(description.hidden == YES);
 				
-				replayable.push_back(description.replayable == YES ? 1 : 0);
+				replayable.push_back(description.replayable == YES);
 			}
 			
 			ret["names"] = names;
+			ret["titles"] = titles;
+			ret["unachieved_descriptions"] = unachieved_descriptions;
+			ret["achieved_descriptions"] = achieved_descriptions;
+			ret["maximum_points"] = maximum_points;
+			ret["hidden"] = hidden;
+			ret["replayable"] = replayable;
 			
 		} else {
 			ret["result"] = "error";
@@ -236,7 +242,7 @@ void GameCenter::request_achievements() {
 			}
 			
 			ret["names"] = names;
-			ret["progresses"] = percentages;
+			ret["progress"] = percentages;
 			
 		} else {
 			ret["result"] = "error";
