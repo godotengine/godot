@@ -91,6 +91,7 @@
 #include "plugins/polygon_2d_editor_plugin.h"
 #include "plugins/navigation_polygon_editor_plugin.h"
 #include "plugins/light_occluder_2d_editor_plugin.h"
+#include "plugins/color_ramp_editor_plugin.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -4157,6 +4158,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( Polygon2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( LightOccluder2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( NavigationPolygonEditorPlugin(this) ) );
+	add_editor_plugin( memnew( ColorRampEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );
