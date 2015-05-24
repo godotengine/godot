@@ -360,6 +360,11 @@ if selected_platform in platform_list:
 		AddToVSProject(env.scene_sources)
 		AddToVSProject(env.servers_sources)
 		AddToVSProject(env.tool_sources)
+		
+		#env['MSVS_VERSION']='9.0'
+		env['MSVSBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
+		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
+		env['MSVSCLEANCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
 			
 		debug_variants = ['Debug|Win32']+['Debug|x64']
 		release_variants = ['Release|Win32']+['Release|x64']
