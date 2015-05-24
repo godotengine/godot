@@ -314,9 +314,17 @@ Error GameCenter::show_game_center(Variant p_params) {
 	}
  
 	[root_controller presentViewController: controller animated: YES completion:nil];
-
+	
 	return OK;	
 };
+
+void GameCenter::game_center_closed() {
+	
+	Dictionary ret;
+        ret["type"] = "show_game_center";
+	ret["result"] = "ok";
+	pending_events.push_back(ret);
+}
 
 int GameCenter::get_pending_event_count() {
 
