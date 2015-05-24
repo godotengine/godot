@@ -1,0 +1,10 @@
+Import('env')
+
+common_haiku = [
+	'os_haiku.cpp'
+]
+
+env.Program(
+	'#bin/godot',
+	['godot_haiku.cpp'] + common_haiku
+)
