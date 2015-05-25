@@ -6,6 +6,8 @@
 #else
 precision mediump float;
 precision mediump int;
+#define mediump
+#define highp
 #endif
 
 uniform highp mat4 projection_matrix;
@@ -103,6 +105,8 @@ VERTEX_SHADER_CODE
 #else
 precision mediump float;
 precision mediump int;
+#define mediump
+#define highp
 #endif
 
  // texunit:0
