@@ -79,3 +79,7 @@ OS::VideoMode OS_Haiku::get_video_mode(int p_screen) const {
 void OS_Haiku::get_fullscreen_mode_list(List<VideoMode> *p_list, int p_screen) const {
 	
 }
+
+String OS_Haiku::get_executable_path() const {
+	return OS::get_executable_path();
+}
