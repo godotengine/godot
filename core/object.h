@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@ enum PropertyHint {
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing funciton (Math::ease)
 	PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
+	PROPERTY_HINT_SPRITE_FRAME,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_ALL_FLAGS,
@@ -110,6 +111,9 @@ struct PropertyInfo {
 	PropertyInfo() { type=Variant::NIL; hint=PROPERTY_HINT_NONE; usage = PROPERTY_USAGE_DEFAULT; }
 	PropertyInfo( Variant::Type p_type, const String p_name, PropertyHint p_hint=PROPERTY_HINT_NONE, const String& p_hint_string="",uint32_t p_usage=PROPERTY_USAGE_DEFAULT) {
 		type=p_type; name=p_name; hint=p_hint; hint_string=p_hint_string; usage=p_usage;
+	}
+	bool operator<(const PropertyInfo& p_info) const {
+		return name<p_info.name;
 	}
 };
 
@@ -445,6 +449,7 @@ protected:
 
 	DVector<String> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
+	Array _get_method_list_bind() const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();
@@ -571,6 +576,7 @@ public:
 	void emit_signal(const StringName& p_name,VARIANT_ARG_LIST);
 	void get_signal_list(List<MethodInfo> *p_signals ) const;
 	void get_signal_connection_list(const StringName& p_signal,List<Connection> *p_connections) const;
+	void get_all_signal_connections(List<Connection> *p_connections) const;
 
 	Error connect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method,const Vector<Variant>& p_binds=Vector<Variant>(),uint32_t p_flags=0);
 	void disconnect(const StringName& p_signal, Object *p_to_object, const StringName& p_to_method);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -259,6 +259,9 @@ public:
 	bool get_use_parent_material() const;
 
 	InputEvent make_input_local(const InputEvent& pevent) const;
+
+	Vector2 get_global_mouse_pos() const;
+	Vector2 get_local_mouse_pos() const;
 
 	CanvasItem();
 	~CanvasItem();

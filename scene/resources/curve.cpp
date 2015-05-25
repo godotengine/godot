@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -798,6 +798,7 @@ void Curve2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_baked_length"),&Curve2D::get_baked_length);
 	ObjectTypeDB::bind_method(_MD("interpolate_baked","offset","cubic"),&Curve2D::interpolate_baked,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_baked_points"),&Curve2D::get_baked_points);
+	ObjectTypeDB::bind_method(_MD("tesselate","max_stages","tolerance_degrees"),&Curve2D::tesselate,DEFVAL(5),DEFVAL(4));
 
 	ObjectTypeDB::bind_method(_MD("_get_data"),&Curve2D::_get_data);
 	ObjectTypeDB::bind_method(_MD("_set_data"),&Curve2D::_set_data);
@@ -1330,6 +1331,7 @@ void Curve3D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("interpolate_baked","offset","cubic"),&Curve3D::interpolate_baked,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_baked_points"),&Curve3D::get_baked_points);
 	ObjectTypeDB::bind_method(_MD("get_baked_tilts"),&Curve3D::get_baked_tilts);
+	ObjectTypeDB::bind_method(_MD("tesselate","max_stages","tolerance_degrees"),&Curve3D::tesselate,DEFVAL(5),DEFVAL(4));
 
 	ObjectTypeDB::bind_method(_MD("_get_data"),&Curve3D::_get_data);
 	ObjectTypeDB::bind_method(_MD("_set_data"),&Curve3D::_set_data);

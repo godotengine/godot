@@ -178,6 +178,11 @@ public:
 
 	String get_unique_ID() const;
 
+	String get_scancode_string(uint32_t p_code) const;
+	bool is_scancode_unicode(uint32_t p_unicode) const;
+	int find_scancode_from_string(const String& p_code) const;
+
+
 	/*
 	struct Date {
 
@@ -210,6 +215,7 @@ public:
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
+	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 #include "message_queue.h"
 #include "core_string_names.h"
 #include "translation.h"
+#include "os/os.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -994,12 +995,44 @@ Variant Object::get_meta(const String& p_name) const {
 	return metadata[p_name];
 }
 
+
 Array Object::_get_property_list_bind() const {
 
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
 	return convert_property_list(&lpi);
 }
+
+Array Object::_get_method_list_bind() const {
+
+	List<MethodInfo> ml;
+	get_method_list(&ml);
+	Array ret;
+
+	for(List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
+
+		Dictionary d;
+		d["name"]=E->get().name;
+		d["args"]=convert_property_list(&E->get().arguments);
+		Array da;
+		for(int i=0;i<E->get().default_arguments.size();i++)
+			da.push_back(E->get().default_arguments[i]);
+		d["default_args"]=da;
+		d["flags"]=E->get().flags;
+		d["id"]=E->get().id;
+		Dictionary r;
+		r["type"]=E->get().return_val.type;
+		r["hint"]=E->get().return_val.hint;
+		r["hint_string"]=E->get().return_val.hint_string;
+		d["return_type"]=r;
+		//va.push_back(d);
+		ret.push_back(d);
+	}
+
+	return ret;
+
+}
+
 DVector<String> Object::_get_meta_list_bind() const {
 
 	DVector<String> _metaret;
@@ -1281,6 +1314,23 @@ void Object::get_signal_list(List<MethodInfo> *p_signals ) const {
 	}
 }
 
+
+void Object::get_all_signal_connections(List<Connection> *p_connections) const {
+
+	const StringName *S=NULL;
+
+	while((S=signal_map.next(S))) {
+
+		const Signal *s=&signal_map[*S];
+
+		for(int i=0;i<s->slot_map.size();i++) {
+
+			p_connections->push_back(s->slot_map.getv(i).conn);
+		}
+	}
+
+}
+
 void Object::get_signal_connection_list(const StringName& p_signal,List<Connection> *p_connections) const {
 
 	const Signal *s=signal_map.getptr(p_signal);
@@ -1301,7 +1351,7 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 	if (!s) {
 		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
 		if (!signal_is_valid) {
-			ERR_EXPLAIN("Attempt to connect to unexisting signal: "+p_signal);
+			ERR_EXPLAIN("Attempt to connect to nonexistent signal: "+p_signal);
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();
@@ -1338,7 +1388,7 @@ bool Object::is_connected(const StringName& p_signal, Object *p_to_object, const
 		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
 		if (signal_is_valid)
 			return false;
-		ERR_EXPLAIN("Unexisting signal: "+p_signal);
+		ERR_EXPLAIN("Nonexistent signal: "+p_signal);
 		ERR_FAIL_COND_V(!s,false);
 	}
 
@@ -1355,7 +1405,7 @@ void Object::disconnect(const StringName& p_signal, Object *p_to_object, const S
 	ERR_FAIL_NULL(p_to_object);
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
-		ERR_EXPLAIN("Unexisting signal: "+p_signal);
+		ERR_EXPLAIN("Nonexistent signal: "+p_signal);
 		ERR_FAIL_COND(!s);
 	}
 	if (s->lock>0) {
@@ -1366,7 +1416,7 @@ void Object::disconnect(const StringName& p_signal, Object *p_to_object, const S
 	Signal::Target target(p_to_object->get_instance_ID(),p_to_method);
 
 	if (!s->slot_map.has(target)) {
-		ERR_EXPLAIN("Disconnecting unexisting signal '"+p_signal+"', slot: "+itos(target._id)+":"+target.method);
+		ERR_EXPLAIN("Disconnecting nonexistent signal '"+p_signal+"', slot: "+itos(target._id)+":"+target.method);
 		ERR_FAIL();
 	}
 	int prev = p_to_object->connections.size();
@@ -1421,6 +1471,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set","property","value"),&Object::_set_bind);
 	ObjectTypeDB::bind_method(_MD("get","property"),&Object::_get_bind);
 	ObjectTypeDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
+	ObjectTypeDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
 	ObjectTypeDB::bind_method(_MD("notification","what"),&Object::notification,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
 
@@ -1504,6 +1555,8 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("tr","message"),&Object::tr);
 
 	ObjectTypeDB::bind_method(_MD("is_queued_for_deletion"),&Object::is_queued_for_deletion);
+
+	ObjectTypeDB::add_virtual_method("Object",MethodInfo("free"),false);
 
 	ADD_SIGNAL( MethodInfo("script_changed"));
 
@@ -1726,8 +1779,20 @@ void ObjectDB::cleanup() {
 
 	GLOBAL_LOCK_FUNCTION;
 	if (instances.size()) {
-	
+			
 		WARN_PRINT("ObjectDB Instances still exist!");		
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			const uint32_t *K=NULL;
+			while((K=instances.next(K))) {
+
+				String node_name;
+				if (instances[*K]->is_type("Node"))
+					node_name=" - Node Name: "+String(instances[*K]->call("get_name"));
+				if (instances[*K]->is_type("Resoucre"))
+					node_name=" - Resource Name: "+String(instances[*K]->call("get_name"))+" Path: "+String(instances[*K]->call("get_path"));
+				print_line("Leaked Instance: "+String(instances[*K]->get_type())+":"+itos(*K)+node_name);
+			}
+		}
 	}
 	instances.clear();
 	instance_checks.clear();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,6 +92,9 @@ public:
 
 	void set_z(int p_z);
 	int get_z() const;
+
+	void look_at(const Vector2& p_pos);
+	float get_angle_to(const Vector2& p_pos) const;
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;

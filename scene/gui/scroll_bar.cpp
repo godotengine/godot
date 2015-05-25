@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,20 +51,20 @@ void ScrollBar::_input_event(InputEvent p_event) {
 
 			if (b.button_index==5 && b.pressed) {
 		
-				if (orientation==VERTICAL)
-					set_val( get_val() + get_page() / 4.0 );
-				else
-					set_val( get_val() + get_page() / 4.0 );
+				//if (orientation==VERTICAL)
+				//	set_val( get_val() + get_page() / 4.0 );
+				//else
+				set_val( get_val() + get_page() / 4.0 );
 				accept_event();
 
 			}
 			
 			if (b.button_index==4 && b.pressed) {
 		
-				if (orientation==HORIZONTAL)
-					set_val( get_val() - get_page() / 4.0 );
-				else
-					set_val( get_val() - get_page() / 4.0  );
+				//if (orientation==HORIZONTAL)
+				//	set_val( get_val() - get_page() / 4.0 );
+				//else
+				set_val( get_val() - get_page() / 4.0  );
 				accept_event();
 			}
 		

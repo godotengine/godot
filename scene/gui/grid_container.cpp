@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,6 +69,7 @@ void GridContainer::_notification(int p_what) {
 				else
 					row_minh[row]=ms.height;
 
+			//	print_line("store row "+itos(row)+" mw "+itos(ms.height));
 
 				if (c->get_h_size_flags()&SIZE_EXPAND)
 					col_expanded.insert(col);
@@ -121,23 +122,22 @@ void GridContainer::_notification(int p_what) {
 						row_ofs+=row_minh[row-1]+sep+(row_expanded.has(row-1)?row_expand:0);
 				}
 
-				if (c->is_visible()) {
-					Size2 s;
-					if (col_minw.has(col))
-						s.width=col_minw[col];
-					if (row_minh.has(row))
-						s.height=row_minh[col];
+				Size2 s;
+				if (col_minw.has(col))
+					s.width=col_minw[col];
+				if (row_minh.has(row))
+					s.height=row_minh[row];
 
-					if (row_expanded.has(row))
-						s.height+=row_expand;
-					if (col_expanded.has(col))
-						s.width+=col_expand;
+				if (row_expanded.has(row))
+					s.height+=row_expand;
+				if (col_expanded.has(col))
+					s.width+=col_expand;
 
-					Point2 p(col_ofs,row_ofs);
+				Point2 p(col_ofs,row_ofs);
 
-					fit_child_in_rect(c,Rect2(p,s));
-
-				}
+//				print_line("col: "+itos(col)+" row: "+itos(row)+" col_ofs: "+itos(col_ofs)+" row_ofs: "+itos(row_ofs));
+				fit_child_in_rect(c,Rect2(p,s));
+				//print_line("col: "+itos(col)+" row: "+itos(row)+" rect: "+Rect2(p,s));
 
 				if (col_minw.has(col)) {
 					col_ofs+=col_minw[col]+sep+(col_expanded.has(col)?col_expand:0);

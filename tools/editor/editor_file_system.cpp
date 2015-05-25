@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -940,19 +940,19 @@ String EditorFileSystem::get_file_type(const String& p_file) const {
 EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
     if (!filesystem || scanning)
-	return false;
+    	return NULL;
 
 
     String f = Globals::get_singleton()->localize_path(p_path);
 
     if (!f.begins_with("res://"))
-	return false;
+    	return NULL;
 
 
     f=f.substr(6,f.length());
     f=f.replace("\\","/");
     if (f==String())
-	return filesystem;
+    	return filesystem;
 
     if (f.ends_with("/"))
 	f=f.substr(0,f.length()-1);
@@ -960,7 +960,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
     Vector<String> path = f.split("/");
 
     if (path.size()==0)
-	return false;
+    	return NULL;
 
     EditorFileSystemDirectory *fs=filesystem;
 
@@ -989,6 +989,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
 void EditorFileSystem::_resource_saved(const String& p_path){
 
+	print_line("resource saved: "+p_path);
 	EditorFileSystem::get_singleton()->update_file(p_path);
 }
 

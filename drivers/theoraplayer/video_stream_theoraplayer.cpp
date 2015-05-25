@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -388,7 +388,7 @@ void VideoStreamTheoraplayer::pop_frame(Ref<ImageTexture> p_tex) {
 	{
 		DVector<uint8_t>::Write wr = data.write();
 		uint8_t* ptr = wr.ptr();
-		memcpy(ptr, f->getBuffer(), imgsize);
+		copymem(ptr, f->getBuffer(), imgsize);
 	}
     /*
     for (int i=0; i<h; i++) {

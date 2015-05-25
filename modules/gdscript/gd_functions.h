@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -84,6 +84,7 @@ public:
 		TEXT_STR,
 		TEXT_PRINT,
 		TEXT_PRINT_TABBED,
+		TEXT_PRINT_SPACED,
 		TEXT_PRINTERR,
 		TEXT_PRINTRAW,
 		VAR_TO_STR,
@@ -94,7 +95,7 @@ public:
 		DICT2INST,
 		HASH,
 		PRINT_STACK,
-		GET_INST,
+		INSTANCE_FROM_ID,
 		FUNC_MAX
 
 	};

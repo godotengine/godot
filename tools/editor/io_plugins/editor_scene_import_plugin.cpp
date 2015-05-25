@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -671,15 +671,28 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	wip_open=p_and_open;
 //'	ImportMonitorBlock imb;
 
-	if (import_path->get_text()=="") {
+
+	if (import_path->get_text().strip_edges()=="") {
 		error_dialog->set_text("Source path is empty.");
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered_minsize();
 		return;
 	}
 
-	if (save_path->get_text()=="") {
+	if (save_path->get_text().strip_edges()=="") {
 		error_dialog->set_text("Target path is empty.");
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered_minsize();
+		return;
+	}
+
+	if (!save_path->get_text().begins_with("res://")) {
+		error_dialog->set_text("Target path must be full resource path.");
+		error_dialog->popup_centered_minsize();
+		return;
+	}
+
+	if (!DirAccess::exists(save_path->get_text())) {
+		error_dialog->set_text("Target path must exist.");
+		error_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -701,7 +714,8 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 
-	Ref<EditorScenePostImport> pi;
+
+
 
 	if (script_path->get_text()!="") {
 		Ref<Script> scr = ResourceLoader::load(script_path->get_text());
@@ -711,7 +725,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			return;
 		}
 
-		pi = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
+		Ref<EditorScenePostImport> pi = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
 		pi->set_script(scr.get_ref_ptr());
 		if (!pi->get_script_instance()) {
 
@@ -719,6 +733,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
+
 	}
 
 
@@ -747,7 +762,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("animation_optimizer_max_angle",animation_options->get_optimize_max_angle());
 	rim->set_option("animation_filters",animation_options->get_filter());
 	rim->set_option("animation_clips",animation_options->get_clips());
-	rim->set_option("post_import_script",script_path->get_text()!=String()?EditorImportPlugin::validate_source_path(script_path->get_text()):String());
+	rim->set_option("post_import_script",script_path->get_text());
 	rim->set_option("import_this_time",this_import->get_selected());
 	rim->set_option("import_next_time",next_import->get_selected());
 	rim->set_option("reimport",true);
@@ -892,6 +907,7 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 			animation_options->set_optimize_angular_error(rimd->get_option("animation_optimizer_angular_error"));
 		if (rimd->has_option("animation_optimizer_max_angle"))
 			animation_options->set_optimize_max_angle(rimd->get_option("animation_optimizer_max_angle"));
+
 
 		script_path->set_text(rimd->get_option("post_import_script"));
 		if (rimd->has_option("import_this_time"))
@@ -2622,8 +2638,11 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 			for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
 				keep.insert(F->get());
 			}
-
+			print_line("FILTERING ANIM: "+String(E->get()));
 			_filter_anim_tracks(anim->get_animation(name),keep);
+		} else {
+			print_line("NOT FILTERING ANIM: "+String(E->get()));
+
 		}
 
 	}
@@ -2712,7 +2731,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Ref<EditorScenePostImport>  post_import_script;
 
 	if (post_import_script_path!="") {
-		post_import_script_path = EditorImportPlugin::expand_source_path(post_import_script_path);
+		post_import_script_path = post_import_script_path;
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error("Couldn't load post-import script: '"+post_import_script_path);
@@ -2734,7 +2753,10 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			EditorNode::add_io_error("Error running Post-Import script: '"+post_import_script_path);
 			return err;
 		}
+
+
 	}
+
 
 	/// IMPORT IMAGES
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -260,7 +260,7 @@ public:
 	void play(const StringName& p_name=StringName(),float p_custom_blend=-1,float p_custom_scale=1.0,bool p_from_end=false);
 	void queue(const StringName& p_name);
 	void clear_queue();
-	void stop();
+	void stop(bool p_reset=true);
 	bool is_playing() const;
 	String get_current_animation() const;
 	void set_current_animation(const String& p_anim);

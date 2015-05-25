@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1765,6 +1765,12 @@ void SpatialEditorViewport::_notification(int p_what) {
 		_init_gizmo_instance(index);
 
 	}
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+
+
+		_finish_gizmo_instances();
+
+	}
 
 	if (p_what==NOTIFICATION_MOUSE_ENTER) {
 
@@ -2052,6 +2058,16 @@ void SpatialEditorViewport::_init_gizmo_instance(int p_idx) {
 
 }
 
+
+void SpatialEditorViewport::_finish_gizmo_instances() {
+
+
+	for(int i=0;i<3;i++) {
+		VS::get_singleton()->free(move_gizmo_instance[i]);
+		VS::get_singleton()->free(rotate_gizmo_instance[i]);
+	}
+
+}
 void SpatialEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 
@@ -2971,14 +2987,14 @@ void SpatialEditor::_init_indicators() {
 	VisualServer::get_singleton()->instance_set_transform(light_instance,light_transform);
 
 
-	RID mat = VisualServer::get_singleton()->fixed_material_create();
-	VisualServer::get_singleton()->fixed_material_set_flag(mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-	VisualServer::get_singleton()->fixed_material_set_flag(mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+	//RID mat = VisualServer::get_singleton()->fixed_material_create();
+	///VisualServer::get_singleton()->fixed_material_set_flag(mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
+	//VisualServer::get_singleton()->fixed_material_set_flag(mat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
 
 
 	{
 
-		RID indicator_mat = VisualServer::get_singleton()->fixed_material_create();
+		indicator_mat = VisualServer::get_singleton()->fixed_material_create();
 		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
 		VisualServer::get_singleton()->material_set_flag( indicator_mat, VisualServer::MATERIAL_FLAG_ONTOP, false );
 		VisualServer::get_singleton()->fixed_material_set_flag(indicator_mat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
@@ -3042,7 +3058,7 @@ void SpatialEditor::_init_indicators() {
 		d[VisualServer::ARRAY_COLOR]=origin_colors;
 
 		VisualServer::get_singleton()->mesh_add_surface(origin,VisualServer::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat,true);
+		VisualServer::get_singleton()->mesh_surface_set_material(origin,0,indicator_mat);
 
 
 //		origin = VisualServer::get_singleton()->poly_create();
@@ -3073,17 +3089,17 @@ void SpatialEditor::_init_indicators() {
 		cursor_points.push_back(Vector3(0,-cs,0));
 		cursor_points.push_back(Vector3(0,0,+cs));
 		cursor_points.push_back(Vector3(0,0,-cs));
-		RID cmat=VisualServer::get_singleton()->fixed_material_create();
-		VisualServer::get_singleton()->fixed_material_set_param(cmat,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0,1,1));
-		VisualServer::get_singleton()->material_set_flag( cmat, VisualServer::MATERIAL_FLAG_UNSHADED, true );
-		VisualServer::get_singleton()->fixed_material_set_flag(cmat, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
-		VisualServer::get_singleton()->fixed_material_set_flag(cmat, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
+		cursor_material=VisualServer::get_singleton()->fixed_material_create();
+		VisualServer::get_singleton()->fixed_material_set_param(cursor_material,VS::FIXED_MATERIAL_PARAM_DIFFUSE,Color(0,1,1));
+		VisualServer::get_singleton()->material_set_flag( cursor_material, VisualServer::MATERIAL_FLAG_UNSHADED, true );
+		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_ALPHA,true);
+		VisualServer::get_singleton()->fixed_material_set_flag(cursor_material, VisualServer::FIXED_MATERIAL_FLAG_USE_COLOR_ARRAY,true);
 
 		Array d;
 		d.resize(VS::ARRAY_MAX);
 		d[VS::ARRAY_VERTEX]=cursor_points;
 		VisualServer::get_singleton()->mesh_add_surface(cursor_mesh,VS::PRIMITIVE_LINES,d);
-		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cmat,true);
+		VisualServer::get_singleton()->mesh_surface_set_material(cursor_mesh,0,cursor_material);
 
 		cursor_instance = VisualServer::get_singleton()->instance_create2(cursor_mesh,get_tree()->get_root()->get_world()->get_scenario());
 		VS::get_singleton()->instance_set_layer_mask(cursor_instance,1<<SpatialEditorViewport::GIZMO_GRID_LAYER);
@@ -3156,11 +3172,11 @@ void SpatialEditor::_init_indicators() {
 				int arrow_sides=6;
 
 
-				for(int i = 0; i < 7 ; i++) {
+				for(int k = 0; k < 7 ; k++) {
 
 
-					Matrix3 ma(ivec,Math_PI*2*float(i)/arrow_sides);
-					Matrix3 mb(ivec,Math_PI*2*float(i+1)/arrow_sides);
+					Matrix3 ma(ivec,Math_PI*2*float(k)/arrow_sides);
+					Matrix3 mb(ivec,Math_PI*2*float(k+1)/arrow_sides);
 
 
 					for(int j=0;j<arrow_points-1;j++) {
@@ -3252,7 +3268,6 @@ void SpatialEditor::_init_indicators() {
 
 void SpatialEditor::_finish_indicators() {
 
-
 	VisualServer::get_singleton()->free(origin_instance);
 	VisualServer::get_singleton()->free(origin);
 	for(int i=0;i<3;i++) {
@@ -3267,6 +3282,8 @@ void SpatialEditor::_finish_indicators() {
 
 	VisualServer::get_singleton()->free(cursor_instance);
 	VisualServer::get_singleton()->free(cursor_mesh);
+	VisualServer::get_singleton()->free(indicator_mat);
+	VisualServer::get_singleton()->free(cursor_material);
 }
 
 void SpatialEditor::_instance_scene() {
@@ -3355,6 +3372,7 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon( get_icon("ToolRotate","EditorIcons") );
 		tool_button[SpatialEditor::TOOL_MODE_SCALE]->set_icon( get_icon("ToolScale","EditorIcons") );
 		instance_button->set_icon( get_icon("SpatialAdd","EditorIcons") );
+		instance_button->hide();
 
 
 		view_menu->get_popup()->set_item_icon(view_menu->get_popup()->get_item_index(MENU_VIEW_USE_1_VIEWPORT),get_icon("Panels1","EditorIcons"));

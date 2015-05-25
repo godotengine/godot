@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -539,7 +539,6 @@ void GraphCurveMapEdit::_plot_curve(const Vector2& p_a,const Vector2& p_b,const 
 		if ((lastx != newx) || (lasty != newy))
 		{
 #if 0
-			/*
 			if(fix255)
 			{
 				/* use fixed array size (for the curve graph) */

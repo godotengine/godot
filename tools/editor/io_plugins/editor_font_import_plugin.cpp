@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -406,7 +406,10 @@ class EditorFontImportDialog : public ConfirmationDialog {
 			imd->set_option(opt,v);
 		}
 
-		imd->add_source(EditorImportPlugin::validate_source_path(source->get_line_edit()->get_text()));
+		String src_path = EditorImportPlugin::validate_source_path(source->get_line_edit()->get_text());
+		//print_line("pre src path "+source->get_line_edit()->get_text());
+		//print_line("src path "+src_path);
+		imd->add_source(src_path);
 		imd->set_option("font/size",font_size->get_val());
 
 		return imd;
@@ -650,6 +653,7 @@ public:
 
 		vbl->add_spacer();
 		vbl->add_margin_child("Test: ",testhb);
+		/*
 		HBoxContainer *upd_hb = memnew( HBoxContainer );
 //		vbl->add_child(upd_hb);
 		upd_hb->add_spacer();
@@ -657,7 +661,7 @@ public:
 		upd_hb->add_child(update);
 		update->set_text("Update");
 		update->connect("pressed",this,"_update");
-
+*/
 		options = memnew( _EditorFontImportOptions );
 		prop_edit = memnew( PropertyEditor() );
 		vbr->add_margin_child("Options:",prop_edit,true);
@@ -1017,7 +1021,7 @@ Ref<Font> EditorFontImportPlugin::generate_font(const Ref<ResourceImportMetadata
 		int h = slot->bitmap.rows;
 		int p = slot->bitmap.pitch;
 
-		print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
+		//print_line("W: "+itos(w)+" P: "+itos(slot->bitmap.pitch));
 
 		if (font_mode==_EditorFontImportOptions::FONT_DISTANCE_FIELD) {
 

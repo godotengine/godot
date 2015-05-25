@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -661,6 +661,7 @@ public:
 			};
 
 			Type type;
+			virtual ~Command(){}
 		};
 
 		struct CommandLine : public Command {
@@ -862,17 +863,17 @@ public:
 						if (polygon->indices != NULL) {
 
 							r.pos=polygon->points[polygon->indices[0]];
-							for (int i=1; i<polygon->count; i++) {
+							for (int i=1; i<l; i++) {
 
 								r.expand_to(polygon->points[polygon->indices[i]]);
-							};
+							}
 						} else {
 							r.pos=polygon->points[0];
-							for (int i=1; i<polygon->count; i++) {
+							for (int i=1; i<l; i++) {
 
 								r.expand_to(polygon->points[i]);
-							};
-						};
+							}
+						}
 					} break;
 					case CanvasItem::Command::TYPE_CIRCLE: {
 

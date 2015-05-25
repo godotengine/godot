@@ -143,6 +143,7 @@ func restart_pressed():
 		cells.clear()
 		get_node("gameover").set_text("")		
 		piece_active=true
+		get_node("../restart").release_focus()
 		update()
 		
 		

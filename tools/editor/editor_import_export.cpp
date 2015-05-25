@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,6 +47,7 @@ String EditorImportPlugin::validate_source_path(const String& p_path) {
 	String rp = Globals::get_singleton()->get_resource_path();
 	if (!rp.ends_with("/"))
 		rp+="/";
+
 	return rp.path_to_file(gp);
 }
 
@@ -1775,6 +1776,14 @@ EditorImportExport::EditorImportExport() {
 	image_shrink=1;
 
 	script_action=SCRIPT_ACTION_COMPILE;
+
+}
+
+
+
+EditorImportExport::~EditorImportExport() {
+
+
 
 }
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,13 @@ private:
 	bool uses_worldvec;
 	bool vertex_code_writes_vertex;
 	bool uses_shadow_color;
+
+	bool sinh_used;
+	bool tanh_used;
+	bool cosh_used;
+
+	bool custom_h;
+
 	Flags *flags;
 
 	StringName vname_discard;
@@ -72,6 +79,7 @@ private:
 	StringName vname_light;
 	StringName vname_time;
 	StringName vname_normalmap;
+	StringName vname_normalmap_depth;
 	StringName vname_normal;
 	StringName vname_texpixel_size;
 	StringName vname_world_vec;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,8 @@ private:
 	bool gravity_is_point;
 	real_t linear_damp;
 	real_t angular_damp;
+	uint32_t collision_mask;
+	uint32_t layer_mask;
 	int priority;
 	bool monitoring;
 	bool monitorable;
@@ -150,6 +152,12 @@ public:
 
 	void set_monitorable(bool p_enable);
 	bool is_monitorable() const;
+
+	void set_collision_mask(uint32_t p_mask);
+	uint32_t get_collision_mask() const;
+
+	void set_layer_mask(uint32_t p_mask);
+	uint32_t get_layer_mask() const;
 
 	Array get_overlapping_bodies() const; //function for script
 	Array get_overlapping_areas() const; //function for script

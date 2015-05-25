@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -134,6 +134,8 @@ public:
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const;
 	virtual Matrix32 area_get_transform(RID p_area) const;
 	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
+	virtual void area_set_collision_mask(RID p_area,uint32_t p_mask);
+	virtual void area_set_layer_mask(RID p_area,uint32_t p_mask);
 
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
@@ -179,8 +181,8 @@ public:
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
 	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
 
-	virtual void body_set_user_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_user_mask(RID p_body, uint32_t p_mask) const;
+	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
+	virtual uint32_t body_get_collision_mask(RID p_body, uint32_t p_mask) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
@@ -222,6 +224,9 @@ public:
 	virtual bool body_collide_shape(RID p_body, int p_body_shape,RID p_shape, const Matrix32& p_shape_xform,const Vector2& p_motion,Vector2 *r_results,int p_result_max,int &r_result_count);
 
 	virtual void body_set_pickable(RID p_body,bool p_pickable);
+
+	virtual bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL);
+
 
 	/* JOINT API */
 

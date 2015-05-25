@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,6 +110,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
     private Button mWiFiSettingsButton;
 
     private boolean use_32_bits=false;
+    private boolean use_immersive=false;
     private boolean mStatePaused;
     private int mState;
 
@@ -374,6 +375,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	    mRemoteService.onClientUpdated(mDownloaderClientStub.getMessenger());
 	}
 
+
+
 	@Override 
 	protected void onCreate(Bundle icicle) {
 
@@ -402,6 +405,19 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				boolean has_extra = i< command_line.length -1;
 				if (command_line[i].equals("-use_depth_32")) {
 					use_32_bits=true;
+				} else if (command_line[i].equals("-use_immersive")) {
+					use_immersive=true;
+					if(Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
+						window.getDecorView().setSystemUiVisibility(
+								    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+									    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+									    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+									    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+									    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+									    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+
+						UiChangeListener();
+					}
 				} else if (command_line[i].equals("-use_apk_expansion")) {
 					use_apk_expansion=true;
 				} else if (has_extra && command_line[i].equals("-apk_expansion_md5")) {
@@ -560,6 +576,16 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mView.onResume();
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		GodotLib.focusin();
+		if(use_immersive && Build.VERSION.SDK_INT >= 19.0){ // check if the application runs on an android 4.4+
+			Window window = getWindow();
+			window.getDecorView().setSystemUiVisibility(
+					    View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+						    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+						    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+						    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION // hide nav bar
+						    | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
+						    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+		}
 
 		for(int i=0;i<singleton_count;i++) {
 
@@ -568,6 +594,24 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		
 		
 
+	}
+
+	public void UiChangeListener() {
+		final View decorView = getWindow().getDecorView();
+		decorView.setOnSystemUiVisibilityChangeListener (new View.OnSystemUiVisibilityChangeListener() {
+			@Override
+			public void onSystemUiVisibilityChange(int visibility) {
+				if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
+					decorView.setSystemUiVisibility(
+					View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+					| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+					| View.SYSTEM_UI_FLAG_FULLSCREEN
+					| View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+				}
+			}
+		});
 	}
 
 	@Override public void onSensorChanged(SensorEvent event) {
@@ -703,7 +747,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				//}
 			} break;
 			case MotionEvent.ACTION_POINTER_UP: {
-				int pointer_idx = event.getActionIndex();
+				final int indexPointUp = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+				final int pointer_idx = event.getPointerId(indexPointUp); 
 				GodotLib.touch(4,pointer_idx,evcount,arr);
 				//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 			} break;

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -250,6 +250,7 @@ void Particles2D::_process_particles(float p_delta) {
 		if (time_to_live < 0) {
 
 			emitting = false;
+			_change_notify("config/emitting");
 		};
 	};
 
@@ -717,6 +718,7 @@ void Particles2D::set_emitting(bool p_emitting) {
 		time_to_live = emit_timeout;
 	};
 	emitting=p_emitting;
+	_change_notify("config/emitting");
 }
 
 bool Particles2D::is_emitting() const {

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -214,13 +214,13 @@ struct Rect2 {
 	float get_area() const { return size.width*size.height; }
 
 	inline bool intersects(const Rect2& p_rect) const { 
-		if ( pos.x > (p_rect.pos.x + p_rect.size.width) ) 
+		if ( pos.x >= (p_rect.pos.x + p_rect.size.width) )
 			return false;
-		if ( (pos.x+size.width) < p_rect.pos.x  ) 
+		if ( (pos.x+size.width) <= p_rect.pos.x  )
 			return false;
-		if ( pos.y > (p_rect.pos.y + p_rect.size.height) ) 
+		if ( pos.y >= (p_rect.pos.y + p_rect.size.height) )
 			return false;
-		if ( (pos.y+size.height) < p_rect.pos.y  ) 
+		if ( (pos.y+size.height) <= p_rect.pos.y  )
 			return false;
 		
 		return true;

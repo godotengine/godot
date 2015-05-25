@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1216,8 +1216,8 @@ T Animation::_interpolate( const Vector< TKey<T> >& p_keys, float p_time,  Inter
 	
 	if (p_ok)
 		*p_ok=true;
-	
-	int next;
+
+	int next=0;
 	float c=0;	
 	// prepare for all cases of interpolation
 	

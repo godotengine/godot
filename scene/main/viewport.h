@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -252,6 +252,7 @@ public:
 	void set_render_target_to_screen_rect(const Rect2& p_rect);
 	Rect2 get_render_target_to_screen_rect() const;
 
+	Vector2 get_mouse_pos() const;
 	void warp_mouse(const Vector2& p_pos);
 
 	void set_physics_object_picking(bool p_enable);

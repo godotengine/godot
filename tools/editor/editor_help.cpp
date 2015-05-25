@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -353,7 +353,7 @@ void EditorHelp::_search(const String&) {
 	String stext=search->get_text();
 	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
 
-	class_desc->search(stext);
+	class_desc->search(stext, keep);
 
 	prev_search=stext;
 	if (class_list->get_selected())

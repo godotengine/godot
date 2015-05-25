@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -154,6 +154,7 @@ class ScriptEditor : public VBoxContainer {
 	MenuButton *window_menu;
 	MenuButton *debug_menu;
 	MenuButton *help_menu;
+	Timer *autosave_timer;
 	uint64_t idle;
 
 	TabContainer *tab_container;
@@ -194,6 +195,9 @@ class ScriptEditor : public VBoxContainer {
 	void _breaked(bool p_breaked,bool p_can_debug);
 	void _show_debugger(bool p_show);
 	void _update_window_menu();
+
+	void _editor_settings_changed();
+	void _autosave_scripts();
 
 	static ScriptEditor *script_editor;
 protected:

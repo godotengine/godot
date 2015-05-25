@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -59,6 +59,9 @@ void DocData::merge_from(const DocData& p_data) {
 
 				if (cf.methods[j].name!=m.name)
 					continue;
+				if (cf.methods[j].arguments.size()!=m.arguments.size())
+					continue;
+
 				const MethodDoc &mf = cf.methods[j];
 
 				m.description=mf.description;
