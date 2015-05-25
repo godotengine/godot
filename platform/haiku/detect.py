@@ -34,9 +34,11 @@ def configure(env):
 			env["bits"]="32"
 	
 	env.Append(CPPPATH = ['#platform/haiku'])
+	
+	# TODO: add clang and try gcc2 too
 	env["CC"] = "gcc-x86"
 	env["CXX"] = "g++-x86"
-	env.Append(CPPFLAGS = ['-DDEBUG_METHODS_ENABLED'])
 	
+	env.Append(CPPFLAGS = ['-DDEBUG_METHODS_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED'])
-	#env.Append(LIBS = ['be'])
+	env.Append(LIBS = ['be'])

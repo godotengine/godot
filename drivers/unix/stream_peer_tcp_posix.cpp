@@ -39,7 +39,11 @@
 #include <netdb.h>
 #include <sys/types.h>
 #ifndef NO_FCNTL
-#include <sys/fcntl.h>
+	#ifdef __HAIKU__
+		#include <fcntl.h>
+	#else
+		#include <sys/fcntl.h>
+	#endif
 #else
 #include <sys/ioctl.h>
 #endif
@@ -202,7 +206,8 @@ Error StreamPeerTCPPosix::write(const uint8_t* p_data,int p_bytes, int &r_sent, 
 
 	while (data_to_send) {
 
-		int sent_amount = send(sockfd, offset, data_to_send, MSG_NOSIGNAL);
+		// TODO: handle MSG_NOSIGNAL on __HAIKU__
+		int sent_amount = send(sockfd, offset, data_to_send, 0);
 		//printf("Sent TCP data of %d bytes, errno %d\n", sent_amount, errno);
 
 		if (sent_amount == -1) {
