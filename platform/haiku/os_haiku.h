@@ -1,6 +1,7 @@
 #ifndef OS_HAIKU_H
 #define OS_HAIKU_H
 
+#include "os/os.h"
 #include "drivers/unix/os_unix.h"
 
 
@@ -24,7 +25,7 @@ public:
 
 	virtual String get_name();
 
-	virtual MainLoop *get_main_loop() const;
+	virtual MainLoop* get_main_loop() const;
 	virtual bool can_draw() const;
 
 	virtual Point2 get_mouse_pos() const;

@@ -41,4 +41,4 @@ def configure(env):
 	
 	env.Append(CPPFLAGS = ['-DDEBUG_METHODS_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED'])
-	env.Append(LIBS = ['be'])
+	env.Append(LIBS = ['be', 'z', 'network', 'bnetapi'])

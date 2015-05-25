@@ -206,8 +206,12 @@ Error StreamPeerTCPPosix::write(const uint8_t* p_data,int p_bytes, int &r_sent, 
 
 	while (data_to_send) {
 
-		// TODO: handle MSG_NOSIGNAL on __HAIKU__
-		int sent_amount = send(sockfd, offset, data_to_send, 0);
+		// TODO: haiku does not have MSG_NOSIGNAL
+#ifdef __HAIKU__
+	int sent_amount = send(sockfd, offset, data_to_send, 0);
+#else
+	int sent_amount = send(sockfd, offset, data_to_send, MSG_NOSIGNAL);
+#endif
 		//printf("Sent TCP data of %d bytes, errno %d\n", sent_amount, errno);
 
 		if (sent_amount == -1) {
