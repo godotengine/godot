@@ -320,7 +320,7 @@ void Sprite::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes"), _SCS("set_vframes"),_SCS("get_vframes"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes"), _SCS("set_hframes"),_SCS("get_hframes"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));

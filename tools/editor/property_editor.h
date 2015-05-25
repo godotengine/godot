@@ -187,6 +187,7 @@ class PropertyEditor : public Control {
 
 	Node *get_instanced_node();
 	void _refresh_item(TreeItem *p_item);
+	void _set_range_def(Object *p_item, String prop, float p_frame);
 
 	UndoRedo *undo_redo;
 protected:

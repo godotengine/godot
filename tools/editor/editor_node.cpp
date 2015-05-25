@@ -2838,9 +2838,9 @@ void EditorNode::_instance_request(const String& p_path){
 	request_instance_scene(p_path);
 }
 
-void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value) {
+void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value,bool p_advance) {
 
-	animation_editor->insert_value_key(p_keyed,p_value);
+	animation_editor->insert_value_key(p_keyed,p_value,p_advance);
 }
 
 void EditorNode::_transform_keyed(Object *sp,const String& p_sub,const Transform& p_key) {
