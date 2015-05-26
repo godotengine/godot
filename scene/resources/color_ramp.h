@@ -23,6 +23,7 @@ public:
 
 private:
 	Vector<Point> points;
+	bool is_sorted;
 
 protected:
 	static void _bind_methods();
@@ -45,6 +46,8 @@ public:
 
 	void set_colors(const Vector<Color>& colors);
 	Vector<Color> get_colors() const;
+
+	Color get_color_at_offset(float offset);
 
 	int get_points_count() const;
 };

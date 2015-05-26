@@ -17,6 +17,7 @@ ColorRamp::ColorRamp() {
 	points[0].offset = 0;
 	points[1].color = Color(1,1,1,1);
 	points[1].offset = 1;
+	is_sorted = true;
 }
 
 ColorRamp::~ColorRamp() {
@@ -24,9 +25,6 @@ ColorRamp::~ColorRamp() {
 }
 
 void ColorRamp::_bind_methods() {
-
-	//ObjectTypeDB::bind_method(_MD("set_offset", "pos", "offset"),&ColorRamp::set_offset);
-	//ObjectTypeDB::bind_method(_MD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offset);
 
 	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_SET_OFFSETS,"offsets"),&ColorRamp::set_offsets);
 	ObjectTypeDB::bind_method(_MD(COLOR_RAMP_GET_OFFSETS),&ColorRamp::get_offsets);
@@ -58,19 +56,22 @@ Vector<Color> ColorRamp::get_colors() const {
 	return colors;
 }
 
-void ColorRamp::set_offsets(const Vector<float>& offsets) {
-	points.resize(offsets.size());
+void ColorRamp::set_offsets(const Vector<float>& p_offsets) {
+	points.resize(p_offsets.size());
 	for(int i = 0; i < points.size(); i++)
 	{
-		points[i].offset = offsets[i];
+		points[i].offset = p_offsets[i];
 	}
+	is_sorted = false;
 }
 
-void ColorRamp::set_colors(const Vector<Color>& colors) {
-	points.resize(colors.size());
+void ColorRamp::set_colors(const Vector<Color>& p_colors) {
+	if(points.size()<p_colors.size())
+		is_sorted = false;
+	points.resize(p_colors.size());
 	for(int i = 0; i < points.size(); i++)
 	{
-		points[i].color = colors[i];
+		points[i].color = p_colors[i];
 	}
 }
 
@@ -80,12 +81,14 @@ Vector<ColorRamp::Point>& ColorRamp::get_points() {
 
 void ColorRamp::set_points(Vector<ColorRamp::Point>& p_points) {
 	points = p_points;
+	is_sorted = false;
 }
 
 void ColorRamp::set_offset(int pos, const float offset) {
 	if(points.size() <= pos)
 		points.resize(pos + 1);
 	points[pos].offset = offset;
+	is_sorted = false;
 }
 
 float ColorRamp::get_offset(int pos) const {
@@ -96,7 +99,10 @@ float ColorRamp::get_offset(int pos) const {
 
 void ColorRamp::set_color(int pos, const Color& color) {
 	if(points.size() <= pos)
+	{
 		points.resize(pos + 1);
+		is_sorted = false;
+	}
 	points[pos].color = color;
 }
 
@@ -104,6 +110,54 @@ Color ColorRamp::get_color(int pos) const {
 	if(points.size() > pos)
 		return points[pos].color;
 	return Color(0,0,0,1); //TODO: Maybe throw some error instead?
+}
+
+Color ColorRamp::get_color_at_offset(float p_offset) {
+
+	if (points.empty())
+		return Color(0,0,0,1);
+
+	if (points.size() == 1)
+		return points[0].color;
+
+	if(!is_sorted)
+	{
+		points.sort();
+		is_sorted = true;
+	}
+
+	//binary search
+	int low = 0;
+	int high = points.size() -1;
+	int middle;
+
+	while( low <= high )
+	{
+		middle = ( low  + high ) / 2;
+		Point& point = points[middle];
+		if( point.offset > p_offset ) {
+			high = middle - 1; //search low end of array
+		} else if ( point.offset < p_offset) {
+			low = middle + 1; //search high end of array
+		} else {
+			return point.color;
+		}
+	}
+
+	//return interpolated value
+	if (points[middle].offset>p_offset)
+	{
+		middle--;
+	}
+	int first=middle;
+	int second=middle+1;
+	if(second>=points.size())
+		return points[points.size()-1].color;
+	if(first<0)
+		return points[0].color;
+	Point& pointFirst = points[first];
+	Point& pointSecond = points[second];
+	return pointFirst.color.linear_interpolate(pointSecond.color, (p_offset-pointFirst.offset)/(pointSecond.offset - pointFirst.offset));
 }
 
 int ColorRamp::get_points_count() const {

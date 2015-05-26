@@ -528,35 +528,7 @@ void Particles2D::_notification(int p_what) {
 
 				if(color_ramp.is_valid())
 				{
-					Vector<ColorRamp::Point>& color_points = color_ramp->get_points();
-
-					int cpos=0;
-
-					while(cpos<color_points.size()) {
-
-						if (color_points[cpos].offset > ptime)
-							break;
-						cpos++;
-					}
-
-					cpos--;
-					//could be faster..
-					if (cpos==-1)
-						if(color_points.size())
-							color=color_points[0].color;//Extend color to the beginning
-						else
-							color=Color(1,1,1,1);//If no points just use white.
-					else {
-						if (cpos==color_points.size()-1)
-							color=color_points[cpos].color;
-						else {
-							float diff = (color_points[cpos+1].offset-color_points[cpos].offset);
-							if (diff>0)
-								color=color_points[cpos].color.linear_interpolate(color_points[cpos+1].color, (ptime - color_points[cpos].offset) / diff );
-							else
-								color=color_points[cpos+1].color;
-						}
-					}
+					color = color_ramp->get_color_at_offset(ptime);
 				} else
 				{
 					color = default_color;
