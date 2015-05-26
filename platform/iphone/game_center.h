@@ -51,6 +51,12 @@ public:
 
 	Error post_score(Variant p_score);
 	Error award_achievement(Variant p_params);
+	void reset_achievements();
+	void request_achievements();
+	void request_achievement_descriptions();
+	Error show_game_center(Variant p_params);
+
+	void game_center_closed();
 
 	int get_pending_event_count();
 	Variant pop_pending_event();
