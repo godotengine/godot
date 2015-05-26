@@ -167,6 +167,7 @@
     <ClCompile Include="..\..\servers\physics_2d\constraint_2d_sw.cpp" />
     <ClCompile Include="..\..\servers\physics_2d\joints_2d_sw.cpp" />
     <ClCompile Include="..\..\servers\physics_2d\physics_2d_server_sw.cpp" />
+    <ClCompile Include="..\..\servers\physics_2d\physics_2d_server_wrap_mt.cpp" />
     <ClCompile Include="..\..\servers\physics_2d\shape_2d_sw.cpp" />
     <ClCompile Include="..\..\servers\physics_2d\space_2d_sw.cpp" />
     <ClCompile Include="..\..\servers\physics_2d\step_2d_sw.cpp" />
@@ -233,12 +234,14 @@
     <ClInclude Include="..\..\servers\physics_2d\constraint_2d_sw.h" />
     <ClInclude Include="..\..\servers\physics_2d\joints_2d_sw.h" />
     <ClInclude Include="..\..\servers\physics_2d\physics_2d_server_sw.h" />
+    <ClInclude Include="..\..\servers\physics_2d\physics_2d_server_wrap_mt.h" />
     <ClInclude Include="..\..\servers\physics_2d\shape_2d_sw.h" />
     <ClInclude Include="..\..\servers\physics_2d\space_2d_sw.h" />
     <ClInclude Include="..\..\servers\physics_2d\step_2d_sw.h" />
     <ClInclude Include="..\..\servers\physics_2d_server.h" />
     <ClInclude Include="..\..\servers\physics_server.h" />
     <ClInclude Include="..\..\servers\register_server_types.h" />
+    <ClInclude Include="..\..\servers\server_wrap_mt_common.h" />
     <ClInclude Include="..\..\servers\spatial_sound\spatial_sound_server_sw.h" />
     <ClInclude Include="..\..\servers\spatial_sound_2d\spatial_sound_2d_server_sw.h" />
     <ClInclude Include="..\..\servers\spatial_sound_2d_server.h" />
