@@ -26,8 +26,8 @@ if ("neon_enabled" in env and env["neon_enabled"]):
 	env_neon = env.Clone();
 	if "S_compiler" in env:
 		env_neon['CC'] = env['S_compiler']
-	#env_neon.Append(CPPFLAGS=["-DPNG_ARM_NEON"])
-	#png_sources.append(env_neon.Object("#drivers/png/filter_neon.S"))
+	env_neon.Append(CPPFLAGS=["-DPNG_ARM_NEON"])
+	png_sources.append(env_neon.Object("#drivers/png/filter_neon.S"))
 
 
 env.drivers_sources+=png_sources
