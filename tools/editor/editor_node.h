@@ -351,7 +351,7 @@ class EditorNode : public Node {
 
 	void _select_node_request(Node *p_node);
 
-	void _property_keyed(const String& p_keyed,const Variant& p_value);
+	void _property_keyed(const String& p_keyed, const Variant& p_value, bool p_advance);
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
 
 	void _update_keying();

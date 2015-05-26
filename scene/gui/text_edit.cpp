@@ -1893,7 +1893,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					selection.from_line=0;
 					selection.from_column=0;
 					selection.to_line=text.size()-1;
-					selection.to_column=text[selection.to_line].size();
+					selection.to_column=text[selection.to_line].length();
 					selection.selecting_mode=Selection::MODE_NONE;
 					update();
 					
@@ -2796,6 +2796,11 @@ void TextEdit::copy() {
 	if (!selection.active)
 		return;
 	
+	print_line("from line: "+itos(selection.from_line));
+	print_line("from column: "+itos(selection.from_column));
+	print_line("to line: "+itos(selection.to_line));
+	print_line("to column: "+itos(selection.to_column));
+
 	String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 	OS::get_singleton()->set_clipboard(clipboard);
 	
@@ -2827,7 +2832,7 @@ void TextEdit::select_all() {
 	selection.from_line=0;
 	selection.from_column=0;
 	selection.to_line=text.size()-1;
-	selection.to_column=text[selection.to_line].size();
+	selection.to_column=text[selection.to_line].length();
 	selection.selecting_mode=Selection::MODE_NONE;
 	update();
 	

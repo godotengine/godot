@@ -608,18 +608,12 @@ void FileDialog::_update_drives() {
 		drives->clear();
 		drives->show();
 
-		int current=-1;
-		String abspath = dir_access->get_current_dir();
-
 		for(int i=0;i<dir_access->get_drive_count();i++) {
-			String d = dir_access->get_drive(i);
-			if (abspath.begins_with(d))
-				current=i;
+			String d = dir_access->get_drive(i);			
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		if (current!=-1)
-			drives->select(current);
+		drives->select(dir_access->get_current_drive());
 
 	}
 }

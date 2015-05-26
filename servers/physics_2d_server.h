@@ -405,10 +405,10 @@ public:
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const=0;
 
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask)=0;
-	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const=0;
+	virtual uint32_t body_get_layer_mask(RID p_body) const=0;
 
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask)=0;
-	virtual uint32_t body_get_collision_mask(RID p_body, uint32_t p_mask) const=0;
+	virtual uint32_t body_get_collision_mask(RID p_body) const=0;
 
 	// common body variables
 	enum BodyParameter {
@@ -539,6 +539,7 @@ public:
 	virtual void step(float p_step)=0;
 	virtual void sync()=0;
 	virtual void flush_queries()=0;
+	virtual void end_sync()=0;
 	virtual void finish()=0;
 
 	enum ProcessInfo {

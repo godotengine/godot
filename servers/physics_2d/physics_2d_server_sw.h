@@ -51,6 +51,8 @@ friend class Physics2DDirectSpaceStateSW;
 	int active_objects;
 	int collision_pairs;
 
+	bool using_threads;
+
 
 	Step2DSW *stepper;
 	Set<const Space2DSW*> active_spaces;
@@ -179,10 +181,10 @@ public:
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const;
 
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const;
+	virtual uint32_t body_get_layer_mask(RID p_body) const;
 
 	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask);
-	virtual uint32_t body_get_collision_mask(RID p_body, uint32_t p_mask) const;
+	virtual uint32_t body_get_collision_mask(RID p_) const;
 
 	virtual void body_set_param(RID p_body, BodyParameter p_param, float p_value);
 	virtual float body_get_param(RID p_body, BodyParameter p_param) const;
@@ -248,8 +250,9 @@ public:
 	virtual void set_active(bool p_active);
 	virtual void init();
 	virtual void step(float p_step);
-	virtual void sync();
+	virtual void sync();	
 	virtual void flush_queries();
+	virtual void end_sync();
 	virtual void finish();
 
 	int get_process_info(ProcessInfo p_info);

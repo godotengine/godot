@@ -298,6 +298,7 @@ void CanvasItem::show() {
 	if (is_visible()) {
 		_propagate_visibility_changed(true);
 	}
+	_change_notify("visibility/visible");
 }
 
 
@@ -315,6 +316,7 @@ void CanvasItem::hide() {
 	if (propagate)
 		_propagate_visibility_changed(false);
 
+	_change_notify("visibility/visible");
 }
 
 

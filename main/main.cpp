@@ -1362,6 +1362,8 @@ bool Main::iteration() {
 		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice*time_scale);
+
+		Physics2DServer::get_singleton()->end_sync();
 		Physics2DServer::get_singleton()->step(frame_slice*time_scale);
 
 		time_accum-=frame_slice;

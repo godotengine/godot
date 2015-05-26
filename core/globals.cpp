@@ -339,7 +339,7 @@ Error Globals::setup(const String& p_path,const String & p_main_pack) {
 			//try to load settings in ascending through dirs shape!
 
 			//tries to open pack, but only first time
-			if (first_time && _load_resource_pack(current_dir+"/data.pck")) {
+			if (first_time && (_load_resource_pack(current_dir+"/data.pck") || _load_resource_pack(current_dir+"/data.pcz") )) {
 				if (_load_settings("res://engine.cfg")==OK || _load_settings_binary("res://engine.cfb")==OK) {
 
 					_load_settings("res://override.cfg");
@@ -1460,6 +1460,7 @@ Globals::Globals() {
 	custom_prop_info["display/orientation"]=PropertyInfo(Variant::STRING,"display/orientation",PROPERTY_HINT_ENUM,"landscape,portrait,reverse_landscape,reverse_portrait,sensor_landscape,sensor_portrait,sensor");
 	custom_prop_info["render/mipmap_policy"]=PropertyInfo(Variant::INT,"render/mipmap_policy",PROPERTY_HINT_ENUM,"Allow,Allow For Po2,Disallow");
 	custom_prop_info["render/thread_model"]=PropertyInfo(Variant::INT,"render/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
+	custom_prop_info["physics_2d/thread_model"]=PropertyInfo(Variant::INT,"physics_2d/thread_model",PROPERTY_HINT_ENUM,"Single-Unsafe,Single-Safe,Multi-Threaded");
 	set("display/emulate_touchscreen",false);
 
 	using_datapack=false;

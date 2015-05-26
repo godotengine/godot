@@ -146,18 +146,28 @@ RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_
 			}
 
 			int frames=chunksize;
+
 			frames/=format_channels;
 			frames/=(format_bits>>3);
 
-
+			/*print_line("chunksize: "+itos(chunksize));
+			print_line("channels: "+itos(format_channels));
+			print_line("bits: "+itos(format_bits));
+*/
 			sample->create(
 					(format_bits==8) ? Sample::FORMAT_PCM8 : Sample::FORMAT_PCM16,
 					(format_channels==2)?true:false,
 					frames );
 			sample->set_mix_rate( format_freq );
 
+			int len=frames;
+			if (format_channels==2)
+				len*=2;
+			if (format_bits>8)
+				len*=2;
+
 			DVector<uint8_t> data;
-			data.resize(chunksize);
+			data.resize(len);
 			DVector<uint8_t>::Write dataw = data.write();
 			void * data_ptr = dataw.ptr();
 
