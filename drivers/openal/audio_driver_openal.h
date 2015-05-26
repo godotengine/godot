@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  audio_driver_javascript.h                                            */
+/*  audio_driver_openal.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -26,31 +26,61 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-#ifndef AUDIO_DRIVER_JAVASCRIPT_H
-#define AUDIO_DRIVER_JAVASCRIPT_H
-
-
 #include "servers/audio/audio_server_sw.h"
-#include "os/mutex.h"
 
-class AudioDriverJavaScript : public AudioDriverSW {
+#ifdef OPENAL_ENABLED
+
+#include "core/os/thread.h"
+#include "core/os/mutex.h"
+
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <emscripten.h>
+
+class AudioDriverOPENAL : public AudioDriverSW {
+
+	Thread* thread;
+	Mutex* mutex;
+
+	//snd_pcm_t* pcm_handle;
+
+	int32_t* samples_in;
+	int16_t* samples_out;
+
+	//void thread_func(void* p_udata);
+	static void thread_func(void* p_udata);
+
+	unsigned int mix_rate;
+	OutputFormat output_format;
+
+	//snd_pcm_uframes_t buffer_size;
+	int buffer_size;
+	int channels;
+
+	bool active;
+	bool thread_exited;
+	mutable bool exit_thread;
+	bool pcm_open;
+
+	ALuint sources[1];
+	ALuint buffers[1];
+
 public:
 
-	void set_singleton();
-
-	virtual const char* get_name() const;
+	const char* get_name() const {
+		return "OPENAL";
+	};
 
 	virtual Error init();
 	virtual void start();
-	virtual int get_mix_rate() const ;
+	virtual int get_mix_rate() const;
 	virtual OutputFormat get_output_format() const;
 	virtual void lock();
 	virtual void unlock();
 	virtual void finish();
 
-
-	AudioDriverJavaScript();
+	AudioDriverOPENAL();
+	~AudioDriverOPENAL();
 };
-
 
 #endif

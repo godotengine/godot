@@ -2,7 +2,7 @@ Import('env')
 
 javascript_files = [
 	"os_javascript.cpp",
-	"audio_driver_javascript.cpp",
+	#"audio_driver_javascript.cpp",
 	"javascript_main.cpp"
 ]
 

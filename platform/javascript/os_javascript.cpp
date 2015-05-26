@@ -59,7 +59,7 @@ int OS_JavaScript::get_audio_driver_count() const {
 
 const char * OS_JavaScript::get_audio_driver_name(int p_driver) const {
 
-	return "JavaScript";
+	return "OPENAL";
 }
 
 void OS_JavaScript::initialize_core() {
@@ -87,6 +87,7 @@ void OS_JavaScript::initialize(const VideoMode& p_desired,int p_video_driver,int
 	print_line("Init Audio");
 
 	AudioDriverManagerSW::add_driver(&audio_driver_javascript);
+
 
 	if (true) {
 		RasterizerGLES2 *rasterizer_gles22=memnew( RasterizerGLES2(false,false,false,false) );;
@@ -278,6 +279,7 @@ void OS_JavaScript::main_loop_end() {
 	if (main_loop)
 		main_loop->finish();
 
+	emscripten_cancel_main_loop();
 }
 
 void OS_JavaScript::main_loop_focusout() {

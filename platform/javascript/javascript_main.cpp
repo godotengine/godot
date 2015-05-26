@@ -31,6 +31,8 @@
 #include "main/main.h"
 #include "io/resource_loader.h"
 #include "os/keyboard.h"
+#include <emscripten.h>
+
 OS_JavaScript *os=NULL;
 
 static void _gfx_init(void *ud,bool gl2,int w, int h,bool fs) {
@@ -234,11 +236,12 @@ int main(int argc, char *argv[]) {
    /* Set up glut callback functions */
 	glutIdleFunc (_gfx_idle);
 //   glutReshapeFunc(gears_reshape);
-	glutDisplayFunc(_godot_draw);
+	//glutDisplayFunc(_godot_draw);
    //glutSpecialFunc(gears_special);
 	 os->main_loop_begin();
 
-	glutMainLoop();
+	//glutMainLoop();
+	emscripten_set_main_loop(_godot_draw, 0, 1);
 
 	return 0;
 }

@@ -39,7 +39,8 @@
 #include "servers/physics_2d/physics_2d_server_sw.h"
 #include "servers/visual/rasterizer.h"
 
-#include "audio_driver_javascript.h"
+//#include "audio_driver_javascript.h"
+#include "drivers/openal/audio_driver_openal.h"
 
 typedef void (*GFXInitFunc)(void *ud,bool gl2,int w, int h, bool fs);
 typedef int (*OpenURIFunc)(const String&);
@@ -73,7 +74,8 @@ private:
 	SpatialSound2DServerSW *spatial_sound_2d_server;
 	PhysicsServer *physics_server;
 	Physics2DServer *physics_2d_server;
-	AudioDriverJavaScript audio_driver_javascript;
+	//AudioDriverJavaScript audio_driver_javascript;
+
 	const char* gl_extensions;
 
 	InputDefault *input;
@@ -85,7 +87,7 @@ private:
 	GetLocaleFunc get_locale_func;
 
 public:
-
+	AudioDriverOPENAL audio_driver_javascript;
 	// functions used by main to initialize/deintialize the OS
 	virtual int get_video_driver_count() const;
 	virtual const char * get_video_driver_name(int p_driver) const;
