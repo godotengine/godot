@@ -1095,6 +1095,11 @@ FRAGMENT_SHADER_CODE
 
 	shadow_attenuation=SAMPLE_SHADOW_TEX(shadow_coord.xy,shadow_coord.z);
 #endif
+
+	float shadow_fade_exponent=5.0;  //hardcoded for now
+	float shadow_fade=pow(min(length(vertex_interp)/light_attenuation.g,1.0),shadow_fade_exponent);
+	shadow_attenuation=mix(shadow_attenuation,1.0,shadow_fade);
+
 #endif
 
 #ifdef LIGHT_TYPE_OMNI
