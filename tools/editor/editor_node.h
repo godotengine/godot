@@ -348,7 +348,7 @@ class EditorNode : public Node {
 
 	void _instance_request(const String& p_path);
 
-	void _property_keyed(const String& p_keyed,const Variant& p_value);
+	void _property_keyed(const String& p_keyed, const Variant& p_value, bool p_advance);
 	void _transform_keyed(Object *sp,const String& p_sub,const Transform& p_key);
 
 	void _update_keying();

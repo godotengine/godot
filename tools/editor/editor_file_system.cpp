@@ -989,6 +989,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
 void EditorFileSystem::_resource_saved(const String& p_path){
 
+	print_line("resource saved: "+p_path);
 	EditorFileSystem::get_singleton()->update_file(p_path);
 }
 

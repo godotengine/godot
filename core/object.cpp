@@ -995,12 +995,44 @@ Variant Object::get_meta(const String& p_name) const {
 	return metadata[p_name];
 }
 
+
 Array Object::_get_property_list_bind() const {
 
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
 	return convert_property_list(&lpi);
 }
+
+Array Object::_get_method_list_bind() const {
+
+	List<MethodInfo> ml;
+	get_method_list(&ml);
+	Array ret;
+
+	for(List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
+
+		Dictionary d;
+		d["name"]=E->get().name;
+		d["args"]=convert_property_list(&E->get().arguments);
+		Array da;
+		for(int i=0;i<E->get().default_arguments.size();i++)
+			da.push_back(E->get().default_arguments[i]);
+		d["default_args"]=da;
+		d["flags"]=E->get().flags;
+		d["id"]=E->get().id;
+		Dictionary r;
+		r["type"]=E->get().return_val.type;
+		r["hint"]=E->get().return_val.hint;
+		r["hint_string"]=E->get().return_val.hint_string;
+		d["return_type"]=r;
+		//va.push_back(d);
+		ret.push_back(d);
+	}
+
+	return ret;
+
+}
+
 DVector<String> Object::_get_meta_list_bind() const {
 
 	DVector<String> _metaret;
@@ -1439,6 +1471,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set","property","value"),&Object::_set_bind);
 	ObjectTypeDB::bind_method(_MD("get","property"),&Object::_get_bind);
 	ObjectTypeDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
+	ObjectTypeDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
 	ObjectTypeDB::bind_method(_MD("notification","what"),&Object::notification,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
 

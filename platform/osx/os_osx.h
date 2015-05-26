@@ -44,6 +44,7 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "platform/osx/audio_driver_osx.h"
 #include <ApplicationServices/ApplicationServices.h>
 

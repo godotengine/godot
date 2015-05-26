@@ -378,7 +378,11 @@ void Label::regenerate_word_cache() {
 		if (uppercase)
 			current=String::char_uppercase(current);
 
-		bool not_latin = current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
+		// ranges taken from http://www.unicodemap.org/
+		// if your language is not well supported, consider helping improve
+		// the unicode support in Godot.
+		bool separatable = (current>=0x2E08 && current<=0xFAFF) || (current>=0xFE30 && current<=0xFE4F);
+				//current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
 		bool insert_newline=false;
 		int char_width;
 
@@ -433,8 +437,8 @@ void Label::regenerate_word_cache() {
 			
 		}
 
-		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || not_latin)) || insert_newline) {
-			if (not_latin) {
+		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || separatable)) || insert_newline) {
+			if (separatable) {
 				if (current_word_size>0) {
 					WordCache *wc = memnew( WordCache );
 					if (word_cache) {

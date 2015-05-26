@@ -187,8 +187,8 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer* p_contained,bool p_create_t
 	draw_pending=0;
 	draw_thread_up=false;
 	alloc_mutex=Mutex::create();
-	texture_pool_max_size=GLOBAL_DEF("render/thread_textures_prealloc",20);
-	mesh_pool_max_size=GLOBAL_DEF("render/thread_meshes_prealloc",20);
+	texture_pool_max_size=GLOBAL_DEF("render/thread_textures_prealloc",5);
+	mesh_pool_max_size=GLOBAL_DEF("core/rid_pool_prealloc",20);
 	if (!p_create_thread) {
 		server_thread=Thread::get_caller_ID();
 	} else {

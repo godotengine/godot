@@ -84,6 +84,7 @@ public:
 	
 	virtual int get_drive_count()=0;
 	virtual String get_drive(int p_drive)=0;
+	virtual int get_current_drive();
 	
 	virtual Error change_dir(String p_dir)=0; ///< can be relative or absolute, return false on success
 	virtual String get_current_dir()=0; ///< return current dir location
