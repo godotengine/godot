@@ -24,6 +24,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	void thread_loop();
 
 	Thread::ID server_thread;
+	Thread::ID main_thread;
 	volatile bool exit;
 	Thread *thread;
 	volatile bool step_thread_up;
@@ -37,6 +38,7 @@ class Physics2DServerWrapMT : public Physics2DServer {
 	void thread_exit();
 
 	Mutex*alloc_mutex;
+	bool first_frame;
 
 	int shape_pool_max_size;
 	List<RID> shape_id_pool;
@@ -72,7 +74,7 @@ public:
 	//these work well, but should be used from the main thread only
 	bool shape_collide(RID p_shape_A, const Matrix32& p_xform_A,const Vector2& p_motion_A,RID p_shape_B, const Matrix32& p_xform_B, const Vector2& p_motion_B,Vector2 *r_results,int p_result_max,int &r_result_count) {
 
-		ERR_FAIL_COND_V(server_thread!=Thread::get_caller_ID(),false);
+		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
 		return physics_2d_server->shape_collide(p_shape_A,p_xform_A,p_motion_A,p_shape_B,p_xform_B,p_motion_B,r_results,p_result_max,r_result_count);
 	}
 
@@ -88,7 +90,7 @@ public:
 	// this function only works on fixed process, errors and returns null otherwise
 	Physics2DDirectSpaceState* space_get_direct_state(RID p_space) {
 
-		ERR_FAIL_COND_V(server_thread!=Thread::get_caller_ID(),NULL);
+		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),NULL);
 		return physics_2d_server->space_get_direct_state(p_space);
 	}
 
@@ -221,7 +223,7 @@ public:
 
 	bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL) {
 
-		ERR_FAIL_COND_V(server_thread!=Thread::get_caller_ID(),false);
+		ERR_FAIL_COND_V(main_thread!=Thread::get_caller_ID(),false);
 		return body_test_motion(p_body,p_motion,p_margin,r_result);
 	}
 

@@ -61,7 +61,12 @@ void Physics2DServerWrapMT::step(float p_step) {
 
 void Physics2DServerWrapMT::sync() {
 
-	step_sem->wait();
+	if (step_sem) {
+		if (first_frame)
+			first_frame=false;
+		else
+			step_sem->wait(); //must not wait if a step was not issued
+	}
 	physics_2d_server->sync();;
 }
 
@@ -147,6 +152,9 @@ Physics2DServerWrapMT::Physics2DServerWrapMT(Physics2DServer* p_contained,bool p
 	} else {
 		server_thread=0;
 	}
+
+	main_thread = Thread::get_caller_ID();
+	first_frame=true;
 }
 
 
