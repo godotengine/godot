@@ -39,6 +39,16 @@ def configure(env):
 	env["CC"] = "gcc-x86"
 	env["CXX"] = "g++-x86"
 	
-	env.Append(CPPFLAGS = ['-DDEBUG_METHODS_ENABLED'])
+	if (env["target"]=="release"):
+		if (env["debug_release"]=="yes"):
+			env.Append(CCFLAGS=['-g2','-fomit-frame-pointer'])
+		else:
+			env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer'])
+	elif (env["target"]=="release_debug"):
+		env.Append(CCFLAGS=['-O2','-ffast-math','-DDEBUG_ENABLED'])
+	elif (env["target"]=="debug"):
+		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
+	
+	#env.Append(CPPFLAGS = ['-DDEBUG_METHODS_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED'])
 	env.Append(LIBS = ['be', 'z', 'network', 'bnetapi'])
