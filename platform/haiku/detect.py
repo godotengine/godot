@@ -49,6 +49,7 @@ def configure(env):
 	elif (env["target"]=="debug"):
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 	
-	#env.Append(CPPFLAGS = ['-DDEBUG_METHODS_ENABLED'])
-	env.Append(CPPFLAGS = ['-DUNIX_ENABLED'])
+	#env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
+	env.Append(CPPFLAGS = ['-DOPENGL_ENABLED', '-DGLEW_ENABLED'])
+	env.Append(CPPFLAGS = ['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
 	env.Append(LIBS = ['be', 'z', 'network', 'bnetapi'])

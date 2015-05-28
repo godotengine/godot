@@ -2,10 +2,15 @@
 #define OS_HAIKU_H
 
 #include "drivers/unix/os_unix.h"
-
+#include "servers/visual_server.h"
+#include "servers/visual/rasterizer.h"
 
 class OS_Haiku : public OS_Unix {
 private:
+	MainLoop* main_loop;
+	Rasterizer* rasterizer;
+	VisualServer* visual_server;
+
 	virtual void delete_main_loop();
 
 protected:
