@@ -50,6 +50,11 @@ def configure(env):
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 	
 	#env.Append(CCFLAGS=['-DFREETYPE_ENABLED'])
-	env.Append(CPPFLAGS = ['-DOPENGL_ENABLED', '-DGLEW_ENABLED'])
+	env.Append(CPPFLAGS = ['-DOPENGL_ENABLED'])
 	env.Append(CPPFLAGS = ['-DUNIX_ENABLED', '-DGLES2_ENABLED', '-DGLES_OVER_GL'])
-	env.Append(LIBS = ['be', 'z', 'network', 'bnetapi'])
+	env.Append(LIBS = ['be', 'GL', 'GLEW', 'z', 'network', 'bnetapi'])
+	
+	import methods
+	env.Append(BUILDERS = {'GLSL120' : env.Builder(action = methods.build_legacygl_headers, suffix = 'glsl.h',src_suffix = '.glsl')})
+	env.Append(BUILDERS = {'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl')})
+	env.Append(BUILDERS = {'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl')})
