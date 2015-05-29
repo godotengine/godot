@@ -10,6 +10,7 @@ private:
 	MainLoop* main_loop;
 	Rasterizer* rasterizer;
 	VisualServer* visual_server;
+	VideoMode current_video_mode;
 
 	virtual void delete_main_loop();
 
