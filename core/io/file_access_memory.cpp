@@ -74,6 +74,14 @@ bool FileAccessMemory::file_exists(const String& p_name) {
 }
 
 
+Error FileAccessMemory::open_custom(const uint8_t* p_data, int p_len) {
+
+	data=(uint8_t*)p_data;
+	length=p_len;
+	pos=0;
+	return OK;
+}
+
 Error FileAccessMemory::_open(const String& p_path, int p_mode_flags) {
 
 	ERR_FAIL_COND_V(!files, ERR_FILE_NOT_FOUND);

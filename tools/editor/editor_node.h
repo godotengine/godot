@@ -78,7 +78,7 @@
 #include "tools/editor/editor_plugin.h"
 
 #include "fileserver/editor_file_server.h"
-
+#include "editor_resource_preview.h"
 
 
 
@@ -238,7 +238,7 @@ class EditorNode : public Node {
 	EditorSettingsDialog *settings_config_dialog;
 	RunSettingsDialog *run_settings_dialog;
 	ProjectSettings *project_settings;
-	FileDialog *file;
+	EditorFileDialog *file;
 	FileDialog *file_templates;
 	FileDialog *file_export;
 	FileDialog *file_export_lib;
@@ -304,6 +304,7 @@ class EditorNode : public Node {
 	EditorSelection *editor_selection;
 	ProjectExport *project_export;
 	ProjectExportDialog *project_export_settings;
+	EditorResourcePreview *resource_preview;
 
 	EditorFileServer *file_server;
 
@@ -381,11 +382,15 @@ class EditorNode : public Node {
 	String import_reload_fn;
 
 	Set<FileDialog*> file_dialogs;
+	Set<EditorFileDialog*> editor_file_dialogs;
+
 	Map<String,Ref<Texture> > icon_type_cache;
 
 	static Ref<Texture> _file_dialog_get_icon(const String& p_path);
 	static void _file_dialog_register(FileDialog *p_dialog);
 	static void _file_dialog_unregister(FileDialog *p_dialog);
+	static void _editor_file_dialog_register(EditorFileDialog *p_dialog);
+	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
 
 	void _cleanup_scene();
@@ -393,6 +398,9 @@ class EditorNode : public Node {
 	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
 	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
+
+	void _find_node_types(Node* p_node, int&count_2d, int&count_3d);
+	void _save_scene_with_preview(String p_file);
 
 
 	struct ExportDefer {

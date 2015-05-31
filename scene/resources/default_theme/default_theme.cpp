@@ -692,7 +692,6 @@ void make_default_theme() {
 	// FileDialog
 	
 	t->set_icon("folder","FileDialog",make_icon(icon_folder_png));
-
 	t->set_color("files_disabled","FileDialog",Color(0,0,0,0.7));
 
 

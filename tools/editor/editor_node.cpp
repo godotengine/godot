@@ -99,6 +99,7 @@
 #include "tools/editor/io_plugins/editor_translation_import_plugin.h"
 #include "tools/editor/io_plugins/editor_mesh_import_plugin.h"
 
+#include "plugins/editor_preview_plugins.h"
 
 
 EditorNode *EditorNode::singleton=NULL;
@@ -320,6 +321,11 @@ void EditorNode::_fs_changed() {
 
 		E->get()->invalidate();
 	}
+
+	for(Set<EditorFileDialog*>::Element *E=editor_file_dialogs.front();E;E=E->next()) {
+
+		E->get()->invalidate();
+	}
 }
 
 void EditorNode::_sources_changed(bool p_exist) {
@@ -386,7 +392,7 @@ void EditorNode::edit_node(Node *p_node) {
 void EditorNode::open_resource(const String& p_type) {
 
 
-	file->set_mode(FileDialog::MODE_OPEN_FILE);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type(p_type,&extensions);
@@ -718,6 +724,96 @@ void EditorNode::_save_edited_subresources(Node* scene,Map<RES,bool>& processed,
 
 }
 
+void EditorNode::_find_node_types(Node* p_node, int&count_2d, int&count_3d) {
+
+	if (p_node->is_type("Viewport") || (p_node!=get_edited_scene() && p_node->get_owner()!=get_edited_scene()))
+		return;
+
+	if (p_node->is_type("CanvasItem"))
+		count_2d++;
+	else if (p_node->is_type("Spatial"))
+		count_3d++;
+
+	for(int i=0;i<p_node->get_child_count();i++)
+		_find_node_types(p_node->get_child(i),count_2d,count_3d);
+
+}
+
+
+void EditorNode::_save_scene_with_preview(String p_file) {
+
+	int c2d=0;
+	int c3d=0;
+
+	EditorProgress save("save","Saving Scene",4);
+	save.step("Analyzing",0);
+	_find_node_types(get_edited_scene(),c2d,c3d);
+
+	RID viewport;
+	bool is2d;
+	if (c3d<c2d) {
+		viewport=scene_root->get_viewport();
+		is2d=true;
+	} else {
+		viewport=SpatialEditor::get_singleton()->get_editor_viewport(0)->get_viewport_node()->get_viewport();
+		is2d=false;
+
+	}
+	save.step("Creating Thumbnail",1);
+	//current view?
+	int screen =-1;
+	for(int i=0;i<editor_table.size();i++) {
+		if (editor_plugin_screen==editor_table[i]) {
+			screen=i;
+			break;
+		}
+	}
+
+	_editor_select(is2d?0:1);
+
+	VS::get_singleton()->viewport_queue_screen_capture(viewport);
+	save.step("Creating Thumbnail",2);
+	save.step("Creating Thumbnail",3);
+	Image img = VS::get_singleton()->viewport_get_screen_capture(viewport);
+	int preview_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");;
+	int width,height;
+	if (img.get_width() > preview_size && img.get_width() >= img.get_height()) {
+
+		width=preview_size;
+		height = img.get_height() * preview_size / img.get_width();
+	} else if (img.get_height() > preview_size &&  img.get_height() >= img.get_width()) {
+
+		height=preview_size;
+		width = img.get_width() * preview_size / img.get_height();
+	}  else {
+
+		width=img.get_width();
+		height=img.get_height();
+	}
+
+	img.convert(Image::FORMAT_RGB);
+	img.resize(width,height);
+
+	String pfile = EditorSettings::get_singleton()->get_settings_path().plus_file("tmp/last_scene_preview.png");
+	img.save_png(pfile);
+	Vector<uint8_t> imgdata = FileAccess::get_file_as_array(pfile);
+
+	print_line("img data is "+itos(imgdata.size()));
+
+	if (scene_import_metadata.is_null())
+		scene_import_metadata = Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) );
+	scene_import_metadata->set_option("thumbnail",imgdata);
+
+	//tamanio tel thumbnail
+	if (screen!=-1) {
+		_editor_select(screen);
+	}
+	save.step("Saving Scene",4);
+	_save_scene(p_file);
+
+}
+
+
 void EditorNode::_save_scene(String p_file) {
 
 	Node *scene = edited_scene;
@@ -1016,7 +1112,9 @@ void EditorNode::_dialog_action(String p_file) {
 
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
-				_save_scene(p_file);
+				//_save_scene(p_file);
+				_save_scene_with_preview(p_file);
+
 			}
 
 		} break;
@@ -1024,7 +1122,8 @@ void EditorNode::_dialog_action(String p_file) {
 		case FILE_SAVE_AND_RUN: {
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
-				_save_scene(p_file);
+				//_save_scene(p_file);
+				_save_scene_with_preview(p_file);
 				_run(false);
 			}
 		} break;
@@ -1177,7 +1276,8 @@ void EditorNode::_dialog_action(String p_file) {
 			
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
-				_save_scene(p_file);
+				//_save_scene(p_file);
+				_save_scene_with_preview(p_file);
 			}
 			
 		} break;
@@ -1505,7 +1605,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 					return;
 				}
 
-				_save_scene(scene->get_filename());
+				//_save_scene(scene->get_filename());
+				_save_scene_with_preview(scene->get_filename());
 			}
 		}
 
@@ -1608,7 +1709,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			
 			
 			//print_tree();
-			file->set_mode(FileDialog::MODE_OPEN_FILE);
+			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 			//not for now?
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
@@ -1659,7 +1760,8 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			Node *scene = edited_scene;
 			if (scene && scene->get_filename()!="") {
 
-				_save_scene(scene->get_filename());
+				//_save_scene(scene->get_filename());
+				_save_scene_with_preview(scene->get_filename());
 				return;
 			};
 			// fallthrough to save_as
@@ -1678,7 +1780,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				break;				
 			}
 			
-			file->set_mode(FileDialog::MODE_SAVE_FILE);
+			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 			bool relpaths = (scene->has_meta("__editor_relpaths__") && scene->get_meta("__editor_relpaths__").operator bool());
 
 
@@ -1761,7 +1863,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			bool relpaths = (scene->has_meta("__editor_relpaths__") && scene->get_meta("__editor_relpaths__").operator bool());
 
-			file->set_mode(FileDialog::MODE_SAVE_FILE);
+			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 
 			file->set_current_path(cpath);
 			file->set_title("Save Translatable Strings");
@@ -1810,7 +1912,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 				break;
 			}
 
-			file->set_mode(FileDialog::MODE_SAVE_FILE);
+			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 
 			List<String> extensions;
 			Ref<PackedScene> sd = memnew( PackedScene );
@@ -3132,6 +3234,7 @@ void EditorNode::register_editor_types() {
 	ObjectTypeDB::register_type<EditorImportPlugin>();
 	ObjectTypeDB::register_type<EditorScenePostImport>();
 	ObjectTypeDB::register_type<EditorScript>();
+	ObjectTypeDB::register_type<EditorFileDialog>();
 
 
 	//ObjectTypeDB::register_type<EditorImporter>();
@@ -3282,6 +3385,16 @@ void EditorNode::_file_dialog_unregister(FileDialog *p_dialog){
 	singleton->file_dialogs.erase(p_dialog);
 }
 
+void EditorNode::_editor_file_dialog_register(EditorFileDialog *p_dialog) {
+
+	singleton->editor_file_dialogs.insert(p_dialog);
+}
+
+void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog){
+
+	singleton->editor_file_dialogs.erase(p_dialog);
+}
+
 Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
 
 Error EditorNode::export_platform(const String& p_platform, const String& p_path, bool p_debug,const String& p_password,bool p_quit_after) {
@@ -3334,6 +3447,11 @@ EditorNode::EditorNode() {
 	FileDialog::register_func=_file_dialog_register;
 	FileDialog::unregister_func=_file_dialog_unregister;
 
+	EditorFileDialog::get_icon_func=_file_dialog_get_icon;
+	EditorFileDialog::register_func=_editor_file_dialog_register;
+	EditorFileDialog::unregister_func=_editor_file_dialog_unregister;
+
+
 	editor_import_export = memnew( EditorImportExport );
 	add_child(editor_import_export);
 
@@ -3358,6 +3476,9 @@ EditorNode::EditorNode() {
 	editor_register_icons(theme);
 	editor_register_fonts(theme);
 
+	//theme->set_icon("folder","EditorFileDialog",Theme::get_default()->get_icon("folder","EditorFileDialog"));
+	//theme->set_color("files_disabled","EditorFileDialog",Color(0,0,0,0.7));
+
 	String global_font = EditorSettings::get_singleton()->get("global/font");
 	if (global_font!="") {
 		Ref<Font> fnt = ResourceLoader::load(global_font);
@@ -3376,6 +3497,8 @@ EditorNode::EditorNode() {
 	theme->set_stylebox("EditorFocus","EditorStyles",focus_sbt);
 
 
+	resource_preview = memnew( EditorResourcePreview );
+	add_child(resource_preview);
 	progress_dialog = memnew( ProgressDialog );
 	gui_base->add_child(progress_dialog);
 
@@ -3472,6 +3595,7 @@ EditorNode::EditorNode() {
 	pc->add_child(animation_vb);
 	animation_panel=pc;
 	animation_panel->hide();
+
 
 	HBoxContainer *animation_hb = memnew( HBoxContainer);
 	animation_vb->add_child(animation_hb);
@@ -4031,7 +4155,7 @@ EditorNode::EditorNode() {
 	file_templates->add_filter("*.tpz ; Template Package");
 
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	gui_base->add_child(file);
 	file->set_current_dir("res://");
 
@@ -4160,6 +4284,13 @@ EditorNode::EditorNode() {
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );
+
+
+	resource_preview->add_preview_generator( Ref<EditorTexturePreviewPlugin>( memnew(EditorTexturePreviewPlugin )));
+	resource_preview->add_preview_generator( Ref<EditorPackedScenePreviewPlugin>( memnew(EditorPackedScenePreviewPlugin )));
+	resource_preview->add_preview_generator( Ref<EditorMaterialPreviewPlugin>( memnew(EditorMaterialPreviewPlugin )));
+	resource_preview->add_preview_generator( Ref<EditorScriptPreviewPlugin>( memnew(EditorScriptPreviewPlugin )));
+	resource_preview->add_preview_generator( Ref<EditorSamplePreviewPlugin>( memnew(EditorSamplePreviewPlugin )));
 
 	circle_step_msec=OS::get_singleton()->get_ticks_msec();
 	circle_step_frame=OS::get_singleton()->get_frames_drawn();;
