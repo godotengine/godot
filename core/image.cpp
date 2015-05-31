@@ -1746,6 +1746,10 @@ Error Image::_decompress_bc() {
 	return OK;
 }
 
+bool Image::is_compressed() const {
+	return format>=FORMAT_BC1;
+}
+
 
 Image Image::decompressed() const {
 
@@ -1998,7 +2002,7 @@ void Image::blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& 
 }
 
 
-Image (*Image::_png_mem_loader_func)(const uint8_t*)=NULL;
+Image (*Image::_png_mem_loader_func)(const uint8_t*,int)=NULL;
 void (*Image::_image_compress_bc_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *)=NULL;
@@ -2167,7 +2171,7 @@ void Image::fix_alpha_edges() {
 
 }
 
-Image::Image(const uint8_t* p_png) {
+Image::Image(const uint8_t* p_png,int p_len) {
 
 	width=0;
 	height=0;
@@ -2175,7 +2179,7 @@ Image::Image(const uint8_t* p_png) {
 	format=FORMAT_GRAYSCALE;
 
 	if (_png_mem_loader_func) {
-		*this = _png_mem_loader_func(p_png);
+		*this = _png_mem_loader_func(p_png,p_len);
 	}
 }
 

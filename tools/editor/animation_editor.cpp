@@ -1327,8 +1327,16 @@ void AnimationKeyEditor::_track_editor_draw() {
 			float time = animation->track_get_key_time(idx,i);
 			if (time<keys_from)
 				continue;
-			if (time>keys_to)
+			if (time>keys_to) {
+
+				if (first && i>0 && animation->track_get_key_value(idx,i)==animation->track_get_key_value(idx,i-1)) {
+					//draw whole line
+					te->draw_line(ofs+Vector2(name_limit,y+h/2),ofs+Point2(settings_limit,y+h/2),color);
+				}
+
 				break;
+			}
+
 			float x =  key_hofs + name_limit + (time-keys_from)*zoom_scale;
 
 			Ref<Texture> tex = type_icon[tt];

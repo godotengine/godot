@@ -38,6 +38,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/file_dialog.h"
 #include "create_dialog.h"
+#include "editor_file_dialog.h"
 
 
 class EditorNode;
@@ -68,7 +69,7 @@ class ResourcesDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 
 	AcceptDialog *accept;
-	FileDialog *file;
+	EditorFileDialog *file;
 	Tree *resources;
 	bool block_add;
 	int current_action;
