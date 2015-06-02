@@ -1320,8 +1320,8 @@ bool Main::iteration() {
 	double step=(double)ticks_elapsed / 1000000.0;
 	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
 
-	//if (time_accum+step < frame_slice)
-	//	return false;
+//	if (time_accum+step < frame_slice)
+//		return false;
 
 	frame+=ticks_elapsed;
 
