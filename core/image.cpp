@@ -252,30 +252,28 @@ Image::BColor Image::_get_pixelw(int p_x,int p_y,int p_width,const unsigned char
                 uint8_t a:4;
             } pixel;
 
-            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            pixel *p = (pixel *) (p_data + ofs * sizeof(pixel));
             result=BColor(p->r, p->g, p->b, p->a);
         } break;
         case FORMAT_RGBA_5551: {
-
             typedef struct {
-                uint8_t r:5;
-                uint8_t g:5;
-                uint8_t b:5;
-                uint8_t a:1;
+                uint16_t r:5;
+                uint16_t g:5;
+                uint16_t b:5;
+                uint16_t a:1;
             } pixel;
-
-            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            pixel *p = (pixel *) (p_data + ofs * sizeof(pixel));
             result=BColor(p->r, p->g, p->b, p->a);
         } break;
         case FORMAT_RGB_565: {
 
             typedef struct {
-                uint8_t r:5;
-                uint8_t g:6;
-                uint8_t b:5;
+                uint16_t r:5;
+                uint16_t g:6;
+                uint16_t b:5;
             } pixel;
 
-            pixel *p = (pixel *) p_data[ofs * sizeof(pixel)];
+            pixel *p = (pixel *) (p_data + ofs * sizeof(pixel));
             result=BColor(p->r, p->g, p->b, 255);
         } break;
         case FORMAT_BGRA_8888: {

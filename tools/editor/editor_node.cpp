@@ -2970,7 +2970,6 @@ void EditorNode::_select_node_request(Node *p_node) {
 	object_menu->get_popup()->clear();
 }
 
-void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value) {
 void EditorNode::_property_keyed(const String& p_keyed,const Variant& p_value,bool p_advance) {
 
 	animation_editor->insert_value_key(p_keyed,p_value,p_advance);

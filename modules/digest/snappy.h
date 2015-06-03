@@ -31,9 +31,9 @@
 
 #include "core/reference.h"
 
-class Snappy : public Reference {
+class Snappy : public Object {
 
-	OBJ_TYPE(Snappy,Reference);
+	OBJ_TYPE(Snappy,Object);
 
 protected:
 

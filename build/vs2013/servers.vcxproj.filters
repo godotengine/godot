@@ -219,6 +219,9 @@
     <ClCompile Include="..\..\servers\visual\visual_server_wrap_mt.cpp">
       <Filter>server\visual</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\servers\physics_2d\physics_2d_server_wrap_mt.cpp">
+      <Filter>server\physics_2d</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\servers\audio_server.h">
@@ -412,6 +415,12 @@
     </ClInclude>
     <ClInclude Include="..\..\servers\visual\visual_server_wrap_mt.h">
       <Filter>server\visual</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\servers\server_wrap_mt_common.h">
+      <Filter>server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\servers\physics_2d\physics_2d_server_wrap_mt.h">
+      <Filter>server\physics_2d</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
