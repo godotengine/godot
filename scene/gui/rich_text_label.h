@@ -171,8 +171,9 @@ private:
 		Vector<int> space_caches;
 		int height_cache;
 		int height_accum_cache;
+		int char_count;
 
-		Line() { from=NULL; }
+		Line() { from=NULL; char_count=0; }
 	};
 
 
@@ -238,10 +239,10 @@ private:
     bool drag_touching_deaccel;
     bool click_handled;
 
+	int visible_characters;
 
 
-
-	void _process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos=Point2i(),Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL);
+	void _process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos=Point2i(),Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL,int p_char_count=0);
 	void _find_click(const Point2i& p_click,Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL);
 
 
@@ -261,6 +262,8 @@ private:
 
 	bool use_bbcode;
 	String bbcode;
+
+
 
 protected:
 	void _notification(int p_what);
@@ -321,6 +324,10 @@ public:
 
 	void set_bbcode(const String& p_bbcode);
 	String get_bbcode() const;
+
+	void set_visible_characters(int p_visible);
+	int get_visible_characters() const;
+	int get_total_character_count() const;
 
 	RichTextLabel();
 	~RichTextLabel();
