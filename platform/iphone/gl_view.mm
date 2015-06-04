@@ -352,8 +352,9 @@ static void clear_touches() {
 	// Generate IDs for a framebuffer object and a color renderbuffer
 	UIScreen* mainscr = [UIScreen mainScreen];
 	printf("******** screen size %i, %i\n", (int)mainscr.currentMode.size.width, (int)mainscr.currentMode.size.height);
-	if (mainscr.currentMode.size.width == 640 || mainscr.currentMode.size.width == 960) // modern iphone, can go to 640x960
-		self.contentScaleFactor = 2.0;
+	float minPointSize = MIN(mainscr.bounds.size.width, mainscr.bounds.size.height);
+	float minScreenSize = MIN(mainscr.currentMode.size.width, mainscr.currentMode.size.height);
+	self.contentScaleFactor = minScreenSize / minPointSize;
 
 	glGenFramebuffersOES(1, &viewFramebuffer);
 	glGenRenderbuffersOES(1, &viewRenderbuffer);
