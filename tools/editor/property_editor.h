@@ -32,7 +32,7 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/file_dialog.h"
+#include "tools/editor/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/menu_button.h"
@@ -75,7 +75,7 @@ class CustomPropertyEditor : public Popup {
 
 	PopupMenu *menu;
 	SceneTreeDialog *scene_tree;
-	FileDialog *file;
+	EditorFileDialog *file;
 	ConfirmationDialog *error;
 	String name;
 	Variant::Type type;

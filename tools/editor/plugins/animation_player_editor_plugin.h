@@ -84,7 +84,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Texture> autoplay_icon;
 	bool last_active;
 
-	FileDialog *file;
+	EditorFileDialog *file;
 
 	struct BlendEditor {
 

@@ -66,6 +66,7 @@
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/separator.h"
@@ -327,7 +328,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<HButtonArray>();
 	ObjectTypeDB::register_type<VButtonArray>();
 	ObjectTypeDB::register_type<TextureProgress>();
-
+	ObjectTypeDB::register_type<ItemList>();
 
 #ifndef	ADVANCED_GUI_DISABLED
 
@@ -335,6 +336,7 @@ void register_scene_types() {
 	ObjectTypeDB::register_type<LineEdit>();
 	ObjectTypeDB::register_type<PopupMenu>();
 	ObjectTypeDB::register_type<Tree>();
+
 	ObjectTypeDB::register_type<TextEdit>();
 
 	ObjectTypeDB::register_virtual_type<TreeItem>();

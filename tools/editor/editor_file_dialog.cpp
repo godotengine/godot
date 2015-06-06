@@ -4,8 +4,8 @@
 #include "print_string.h"
 #include "os/keyboard.h"
 #include "editor_resource_preview.h"
-
-
+#include "editor_settings.h"
+#include "scene/gui/margin_container.h"
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func=NULL;
 EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func=NULL;
 
@@ -19,6 +19,21 @@ VBoxContainer *EditorFileDialog::get_vbox() {
 }
 
 void EditorFileDialog::_notification(int p_what) {
+
+	if (p_what==NOTIFICATION_ENTER_TREE) {
+
+		mode_thumbnails->set_icon(get_icon("FileThumbnail","EditorIcons"));
+		mode_list->set_icon(get_icon("FileList","EditorIcons"));
+		dir_prev->set_icon(get_icon("ArrowLeft","EditorIcons"));
+		dir_next->set_icon(get_icon("ArrowRight","EditorIcons"));
+		dir_up->set_icon(get_icon("ArrowUp","EditorIcons"));
+		favorite->set_icon(get_icon("Favorites","EditorIcons"));
+
+		fav_up->set_icon(get_icon("MoveUp","EditorIcons"));
+		fav_down->set_icon(get_icon("MoveDown","EditorIcons"));
+		fav_rm->set_icon(get_icon("RemoveSmall","EditorIcons"));
+
+	}
 	if (p_what==NOTIFICATION_PROCESS) {
 
 		if (preview_waiting) {
@@ -43,20 +58,19 @@ void EditorFileDialog::_notification(int p_what) {
 
 void EditorFileDialog::set_enable_multiple_selection(bool p_enable) {
 
-	tree->set_select_mode(p_enable?Tree::SELECT_MULTI : Tree::SELECT_SINGLE);
+	item_list->set_select_mode(p_enable?ItemList::SELECT_MULTI:ItemList::SELECT_SINGLE);
+
 };
 
 Vector<String> EditorFileDialog::get_selected_files() const {
 
 	Vector<String> list;
-
-	TreeItem* item = tree->get_root();
-	while ( (item = tree->get_next_selected(item)) ) {
-
-		list.push_back(dir_access->get_current_dir().plus_file(item->get_text(0)));
-	};
-
+	for(int i=0;i<item_list->get_item_count();i++) {
+		if (item_list->is_selected(i))
+			list.push_back(item_list->get_item_text(i));
+	}
 	return list;
+
 };
 
 void EditorFileDialog::update_dir() {
@@ -71,6 +85,9 @@ void EditorFileDialog::_dir_entered(String p_dir) {
 	file->set_text("");
 	invalidate();
 	update_dir();
+	_push_history();
+
+
 }
 
 void EditorFileDialog::_file_entered(const String& p_file) {
@@ -80,6 +97,7 @@ void EditorFileDialog::_file_entered(const String& p_file) {
 
 void EditorFileDialog::_save_confirm_pressed() {
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
+	_save_to_recent();
 	emit_signal("file_selected",f);
 	hide();
 }
@@ -94,11 +112,56 @@ void EditorFileDialog::_post_popup() {
 	if (mode==MODE_SAVE_FILE)
 		file->grab_focus();
 	else
-		tree->grab_focus();
+		item_list->grab_focus();
 
 	if (is_visible() && get_current_file()!="")
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
 
+	if (is_visible()) {
+		Ref<Texture> folder = get_icon("folder","FileDialog");
+		recent->clear();
+
+
+		bool res = access==ACCESS_RESOURCES;
+		Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
+		for(int i=0;i<recentd.size();i++) {
+			bool cres = recentd[i].begins_with("res://");
+			if (cres!=res)
+				continue;
+			String name = recentd[i];
+			if (res && name=="res://") {
+				name="/";
+			} else {
+				name=name.get_file()+"/";
+			}
+
+			//print_line("file: "+name);
+			recent->add_item(name,folder);
+			recent->set_item_metadata( recent->get_item_count()-1,recentd[i]);
+		}
+
+		local_history.clear();
+		local_history_pos=-1;
+		_push_history();
+
+		_update_favorites();
+	}
+
+}
+
+void EditorFileDialog::_thumbnail_result(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
+
+	if (display_mode==DISPLAY_LIST || p_preview.is_null())
+		return;
+
+	for(int i=0;i<item_list->get_item_count();i++) {
+		Dictionary d = item_list->get_item_metadata(i);
+		String pname = d["path"];
+		if (pname==p_path) {
+			item_list->set_item_icon(i,p_preview);
+			item_list->set_item_tag_icon(i,Ref<Texture>());
+		}
+	}
 }
 
 void EditorFileDialog::_thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata) {
@@ -108,8 +171,13 @@ void EditorFileDialog::_thumbnail_done(const String& p_path,const Ref<Texture>& 
 
 	if (p_preview.is_valid() && get_current_path()==p_path) {
 
+
 		preview->set_texture(p_preview);
-		preview_vb->show();
+		if (display_mode==DISPLAY_THUMBNAILS) {
+			preview_vb->hide();
+		} else {
+			preview_vb->show();
+		}
 
 	} else {
 		preview_vb->hide();
@@ -133,17 +201,17 @@ void EditorFileDialog::_action_pressed() {
 
 	if (mode==MODE_OPEN_FILES) {
 
-		TreeItem *ti=tree->get_next_selected(NULL);
+
 		String fbase=dir_access->get_current_dir();
 
 		DVector<String> files;
-		while(ti) {
-
-			files.push_back( fbase.plus_file(ti->get_text(0)) );
-			ti=tree->get_next_selected(ti);
+		for(int i=0;i<item_list->get_item_count();i++) {
+			if (item_list->is_selected(i))
+				files.push_back( fbase.plus_file(item_list->get_item_text(i) ));
 		}
 
 		if (files.size()) {
+			_save_to_recent();
 			emit_signal("files_selected",files);
 			hide();
 		}
@@ -154,6 +222,7 @@ void EditorFileDialog::_action_pressed() {
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 
 	if (mode==MODE_OPEN_FILE && dir_access->file_exists(f)) {
+		_save_to_recent();
 		emit_signal("file_selected",f);
 		hide();
 	}
@@ -169,6 +238,7 @@ void EditorFileDialog::_action_pressed() {
 			}
 		}*/
 		path=path.replace("\\","/");
+		_save_to_recent();
 		emit_signal("dir_selected",path);
 		hide();
 	}
@@ -237,7 +307,7 @@ void EditorFileDialog::_action_pressed() {
 			confirm_save->popup_centered(Size2(200,80));
 		} else {
 
-
+			_save_to_recent();
 			emit_signal("file_selected",f);
 			hide();
 		}
@@ -251,12 +321,13 @@ void EditorFileDialog::_cancel_pressed() {
 	hide();
 }
 
-void EditorFileDialog::_tree_selected() {
+void EditorFileDialog::_item_selected(int p_item) {
 
-	TreeItem *ti=tree->get_selected();
-	if (!ti)
+	int current = p_item;
+	if (current<0 || current>=item_list->get_item_count())
 		return;
-	Dictionary d=ti->get_metadata(0);
+
+	Dictionary d=item_list->get_item_metadata(current);
 
 	if (!d["dir"]) {
 
@@ -265,34 +336,105 @@ void EditorFileDialog::_tree_selected() {
 	}
 }
 
-void EditorFileDialog::_tree_dc_selected() {
+void EditorFileDialog::_push_history() {
+
+	local_history.resize(local_history_pos+1);
+	String new_path = dir_access->get_current_dir();
+	if (local_history.size()==0 || new_path!=local_history[local_history_pos]) {
+		local_history.push_back(new_path);
+		local_history_pos++;
+		dir_prev->set_disabled(local_history_pos==0);
+		dir_next->set_disabled(true);
+	}
+
+}
+
+void EditorFileDialog::_item_dc_selected(int p_item) {
 
 
-	TreeItem *ti=tree->get_selected();
-	if (!ti)
+	int current = p_item;
+	if (current<0 || current>=item_list->get_item_count())
 		return;
 
-	Dictionary d=ti->get_metadata(0);
+	Dictionary d=item_list->get_item_metadata(current);
 
 	if (d["dir"]) {
 
+		print_line("change dir: "+String(d["name"]));
 		dir_access->change_dir(d["name"]);
 		if (mode==MODE_OPEN_FILE || mode==MODE_OPEN_FILES || mode==MODE_OPEN_DIR)
 			file->set_text("");
 		call_deferred("_update_file_list");
 		call_deferred("_update_dir");
+
+		_push_history();
+
+
 	} else {
 
 		_action_pressed();
 	}
 }
 
+
+
 void EditorFileDialog::update_file_list() {
 
-	tree->clear();
+
+	int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
+	Ref<Texture> folder_thumbnail;
+	Ref<Texture> file_thumbnail;
+
+	item_list->clear();
+
+	if (display_mode==DISPLAY_THUMBNAILS) {
+
+		item_list->set_max_columns(0);
+		item_list->set_icon_mode(ItemList::ICON_MODE_TOP);
+		item_list->set_fixed_column_width(thumbnail_size*3/2);
+		item_list->set_max_text_lines(2);
+		item_list->set_min_icon_size(Size2(thumbnail_size,thumbnail_size));
+
+		if (!has_icon("ResizedFolder","EditorIcons")) {
+			Ref<ImageTexture> folder = get_icon("FolderBig","EditorIcons");
+			Image img = folder->get_data();
+			img.resize(thumbnail_size,thumbnail_size);
+			Ref<ImageTexture> resized_folder = Ref<ImageTexture>( memnew( ImageTexture));
+			resized_folder->create_from_image(img,0);
+			Theme::get_default()->set_icon("ResizedFolder","EditorIcons",resized_folder);
+		}
+
+		folder_thumbnail = get_icon("ResizedFolder","EditorIcons");
+
+		if (!has_icon("ResizedFile","EditorIcons")) {
+			Ref<ImageTexture> file = get_icon("FileBig","EditorIcons");
+			Image img = file->get_data();
+			img.resize(thumbnail_size,thumbnail_size);
+			Ref<ImageTexture> resized_file = Ref<ImageTexture>( memnew( ImageTexture));
+			resized_file->create_from_image(img,0);
+			Theme::get_default()->set_icon("ResizedFile","EditorIcons",resized_file);
+		}
+
+		file_thumbnail = get_icon("ResizedFile","EditorIcons");
+
+		preview_vb->hide();
+
+	} else {
+
+		item_list->set_icon_mode(ItemList::ICON_MODE_LEFT);
+		item_list->set_max_columns(1);
+		item_list->set_max_text_lines(1);
+		item_list->set_fixed_column_width(0);
+		item_list->set_min_icon_size(Size2());
+		if (preview->get_texture().is_valid())
+			preview_vb->show();
+
+	}
+
+
 	dir_access->list_dir_begin();
 
-	TreeItem *root = tree->create_item();
+
 	Ref<Texture> folder = get_icon("folder","FileDialog");
 	List<String> files;
 	List<String> dirs;
@@ -320,13 +462,20 @@ void EditorFileDialog::update_file_list() {
 	while(!dirs.empty()) {
 
 		if (dirs.front()->get()!=".") {
-			TreeItem *ti=tree->create_item(root);
-			ti->set_text(0,dirs.front()->get()+"/");
-			ti->set_icon(0,folder);
+			item_list->add_item(dirs.front()->get()+"/");
+			if (display_mode==DISPLAY_THUMBNAILS) {
+
+				item_list->set_item_icon(item_list->get_item_count()-1,folder_thumbnail);
+			} else {
+
+				item_list->set_item_icon(item_list->get_item_count()-1,folder);
+			}
+
 			Dictionary d;
 			d["name"]=dirs.front()->get();
+			d["path"]=String();
 			d["dir"]=true;
-			ti->set_metadata(0,d);
+			item_list->set_item_metadata( item_list->get_item_count() -1, d);
 		}
 		dirs.pop_front();
 
@@ -382,33 +531,71 @@ void EditorFileDialog::update_file_list() {
 		}
 
 		if (match) {
-			TreeItem *ti=tree->create_item(root);
-			ti->set_text(0,files.front()->get());
+			//TreeItem *ti=tree->create_item(root);
+			//ti->set_text(0,files.front()->get());
+			item_list->add_item(files.front()->get());
 
 			if (get_icon_func) {
 
 				Ref<Texture> icon = get_icon_func(base_dir.plus_file(files.front()->get()));
-				ti->set_icon(0,icon);
+				//ti->set_icon(0,icon);
+				if (display_mode==DISPLAY_THUMBNAILS) {
+
+					item_list->set_item_icon(item_list->get_item_count()-1,file_thumbnail);
+					item_list->set_item_tag_icon(item_list->get_item_count()-1,icon);
+				} else {
+					item_list->set_item_icon(item_list->get_item_count()-1,icon);
+				}
 			}
 
 			if (mode==MODE_OPEN_DIR) {
-				ti->set_custom_color(0,get_color("files_disabled"));
-				ti->set_selectable(0,false);
+				//disabled mode?
+				//ti->set_custom_color(0,get_color("files_disabled"));
+				//ti->set_selectable(0,false);
 			}
 			Dictionary d;
 			d["name"]=files.front()->get();
 			d["dir"]=false;
-			ti->set_metadata(0,d);
+			String fullpath = base_dir.plus_file(files.front()->get());
+
+			if (display_mode==DISPLAY_THUMBNAILS) {
+				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath,this,"_thumbnail_result",fullpath);
+			}
+			d["path"]=base_dir.plus_file(files.front()->get());
+			//ti->set_metadata(0,d);
+			item_list->set_item_metadata(item_list->get_item_count()-1,d);
 
 			if (file->get_text()==files.front()->get())
-				ti->select(0);
+				item_list->set_current(item_list->get_item_count()-1);
 		}
 
 		files.pop_front();
 	}
 
-	if (tree->get_root() && tree->get_root()->get_children())
-		tree->get_root()->get_children()->select(0);
+	if (favorites->get_current()>=0) {
+		favorites->unselect(favorites->get_current());
+	}
+
+	favorite->set_pressed(false);
+	fav_up->set_disabled(true);
+	fav_down->set_disabled(true);
+	for(int i=0;i<favorites->get_item_count();i++) {
+		if (favorites->get_item_metadata(i)==base_dir) {
+			favorites->select(i);
+			favorite->set_pressed(true);
+			if (i>0) {
+				fav_up->set_disabled(false);
+			}
+			if (i<favorites->get_item_count()-1) {
+				fav_down->set_disabled(false);
+			}
+			break;
+		}
+
+	}
+	// ??
+	//if (tree->get_root() && tree->get_root()->get_children())
+	//	tree->get_root()->get_children()->select(0);
 
 	files.clear();
 
@@ -485,6 +672,8 @@ void EditorFileDialog::set_current_dir(const String& p_dir) {
 	dir_access->change_dir(p_dir);
 	update_dir();
 	invalidate();
+	_push_history();
+
 
 }
 void EditorFileDialog::set_current_file(const String& p_file) {
@@ -533,10 +722,9 @@ void EditorFileDialog::set_mode(Mode p_mode) {
 	}
 
 	if (mode==MODE_OPEN_FILES) {
-		tree->set_select_mode(Tree::SELECT_MULTI);
+		item_list->set_select_mode(ItemList::SELECT_MULTI);
 	} else {
-		tree->set_select_mode(Tree::SELECT_SINGLE);
-
+		item_list->set_select_mode(ItemList::SELECT_SINGLE);
 	}
 }
 
@@ -597,6 +785,8 @@ void EditorFileDialog::_make_dir_confirm() {
 		invalidate();
 		update_filters();
 		update_dir();
+		_push_history();
+
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250,50));
 	}
@@ -617,6 +807,8 @@ void EditorFileDialog::_select_drive(int p_idx) {
 	file->set_text("");
 	invalidate();
 	update_dir();
+	_push_history();
+
 
 }
 
@@ -640,13 +832,214 @@ void EditorFileDialog::_update_drives() {
 	}
 }
 
+
+void EditorFileDialog::_favorite_selected(int p_idx) {
+
+	Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+	ERR_FAIL_INDEX(p_idx,favorited.size());
+
+	dir_access->change_dir(favorited[p_idx]);
+	file->set_text("");
+	invalidate();
+	update_dir();
+	_push_history();
+}
+
+void EditorFileDialog::_favorite_move_up(){
+
+	int current = favorites->get_current();
+
+	if (current>0 && current<favorites->get_item_count()) {
+		Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+
+		int a_idx=favorited.find(favorites->get_item_metadata(current-1));
+		int b_idx=favorited.find(favorites->get_item_metadata(current));
+
+		if (a_idx==-1 || b_idx==-1)
+			return;
+		SWAP(favorited[a_idx],favorited[b_idx]);
+
+		EditorSettings::get_singleton()->set_favorite_dirs(favorited);
+
+		_update_favorites();
+		update_file_list();
+
+	}
+}
+void EditorFileDialog::_favorite_move_down(){
+
+	int current = favorites->get_current();
+
+	if (current>=0 && current<favorites->get_item_count()-1) {
+		Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+
+		int a_idx=favorited.find(favorites->get_item_metadata(current+1));
+		int b_idx=favorited.find(favorites->get_item_metadata(current));
+
+		if (a_idx==-1 || b_idx==-1)
+			return;
+		SWAP(favorited[a_idx],favorited[b_idx]);
+
+		EditorSettings::get_singleton()->set_favorite_dirs(favorited);
+
+		_update_favorites();
+		update_file_list();
+
+	}
+}
+
+
+void EditorFileDialog::_update_favorites() {
+
+	bool res = access==ACCESS_RESOURCES;
+
+	String current = get_current_dir();
+	Ref<Texture> star = get_icon("Favorites","EditorIcons");
+	favorites->clear();
+
+	favorite->set_pressed(false);
+
+
+	Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+	for(int i=0;i<favorited.size();i++) {
+		bool cres = favorited[i].begins_with("res://");
+		if (cres!=res)
+			continue;
+		String name = favorited[i];
+
+		bool setthis = name==current;
+
+		if (res && name=="res://") {
+			name="/";
+		} else {
+			name=name.get_file()+"/";
+		}
+
+
+		//print_line("file: "+name);
+		favorites->add_item(name,star);
+		favorites->set_item_metadata( favorites->get_item_count()-1,favorited[i]);
+
+		if (setthis) {
+			favorite->set_pressed(true);
+			favorites->set_current(favorites->get_item_count()-1);
+		}
+	}
+
+
+}
+
+void EditorFileDialog::_favorite_toggled(bool p_toggle) {
+	bool res = access==ACCESS_RESOURCES;
+
+	String cd = get_current_dir();
+
+	Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+
+	bool found = false;
+	for(int i=0;i<favorited.size();i++) {
+		bool cres = favorited[i].begins_with("res://");
+		if (cres!=res)
+			continue;
+
+		if (favorited[i]==cd) {
+			found=true;
+			break;
+		}
+	}
+
+	if (found) {
+		favorited.erase(cd);
+		favorite->set_pressed(false);
+	} else {
+		favorited.push_back(cd);
+		favorite->set_pressed(true);
+	}
+
+	EditorSettings::get_singleton()->set_favorite_dirs(favorited);
+
+	_update_favorites();
+
+}
+
+void EditorFileDialog::_recent_selected(int p_idx) {
+
+	Vector<String> recentd = EditorSettings::get_singleton()->get_recent_dirs();
+	ERR_FAIL_INDEX(p_idx,recentd.size());
+
+	dir_access->change_dir(recent->get_item_metadata(p_idx));
+	update_file_list();
+	update_dir();
+	_push_history();
+}
+
+void EditorFileDialog::_go_up() {
+
+	dir_access->change_dir("..");
+	update_file_list();
+	update_dir();
+	_push_history();
+
+}
+
+void EditorFileDialog::_go_back(){
+
+	if (local_history_pos<=0) {
+		return;
+	}
+
+	local_history_pos--;
+	dir_access->change_dir(local_history[local_history_pos]);
+	update_file_list();
+	update_dir();
+
+	dir_prev->set_disabled(local_history_pos==0);
+	dir_next->set_disabled(local_history_pos==local_history.size()-1);
+}
+void EditorFileDialog::_go_forward(){
+
+	if (local_history_pos==local_history.size()-1) {
+		return;
+	}
+
+	local_history_pos++;
+	dir_access->change_dir(local_history[local_history_pos]);
+	update_file_list();
+	update_dir();
+
+	dir_prev->set_disabled(local_history_pos==0);
+	dir_next->set_disabled(local_history_pos==local_history.size()-1);
+
+}
+
 bool EditorFileDialog::default_show_hidden_files=true;
+
+void EditorFileDialog::set_display_mode(DisplayMode p_mode) {
+
+	if (display_mode==p_mode)
+		return;
+	if (p_mode==DISPLAY_THUMBNAILS) {
+		mode_list->set_pressed(false);
+		mode_thumbnails->set_pressed(true);
+	} else {
+		mode_thumbnails->set_pressed(false);
+		mode_list->set_pressed(true);
+	}
+	display_mode=p_mode;
+	invalidate();;
+}
+
+EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const{
+
+	return display_mode;
+}
+
 
 
 void EditorFileDialog::_bind_methods() {
 
-	ObjectTypeDB::bind_method(_MD("_tree_selected"),&EditorFileDialog::_tree_selected);
-	ObjectTypeDB::bind_method(_MD("_tree_db_selected"),&EditorFileDialog::_tree_dc_selected);
+	ObjectTypeDB::bind_method(_MD("_item_selected"),&EditorFileDialog::_item_selected);
+	ObjectTypeDB::bind_method(_MD("_item_db_selected"),&EditorFileDialog::_item_dc_selected);
 	ObjectTypeDB::bind_method(_MD("_dir_entered"),&EditorFileDialog::_dir_entered);
 	ObjectTypeDB::bind_method(_MD("_file_entered"),&EditorFileDialog::_file_entered);
 	ObjectTypeDB::bind_method(_MD("_action_pressed"),&EditorFileDialog::_action_pressed);
@@ -675,6 +1068,19 @@ void EditorFileDialog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_update_file_list"),&EditorFileDialog::update_file_list);
 	ObjectTypeDB::bind_method(_MD("_update_dir"),&EditorFileDialog::update_dir);
 	ObjectTypeDB::bind_method(_MD("_thumbnail_done"),&EditorFileDialog::_thumbnail_done);
+	ObjectTypeDB::bind_method(_MD("set_display_mode","mode"),&EditorFileDialog::set_display_mode);
+	ObjectTypeDB::bind_method(_MD("get_display_mode"),&EditorFileDialog::get_display_mode);
+	ObjectTypeDB::bind_method(_MD("_thumbnail_result"),&EditorFileDialog::_thumbnail_result);
+
+	ObjectTypeDB::bind_method(_MD("_recent_selected"),&EditorFileDialog::_recent_selected);
+	ObjectTypeDB::bind_method(_MD("_go_back"),&EditorFileDialog::_go_back);
+	ObjectTypeDB::bind_method(_MD("_go_forward"),&EditorFileDialog::_go_forward);
+	ObjectTypeDB::bind_method(_MD("_go_up"),&EditorFileDialog::_go_up);
+
+	ObjectTypeDB::bind_method(_MD("_favorite_toggled"),&EditorFileDialog::_favorite_toggled);
+	ObjectTypeDB::bind_method(_MD("_favorite_selected"),&EditorFileDialog::_favorite_selected);
+	ObjectTypeDB::bind_method(_MD("_favorite_move_up"),&EditorFileDialog::_favorite_move_up);
+	ObjectTypeDB::bind_method(_MD("_favorite_move_down"),&EditorFileDialog::_favorite_move_down);
 
 	ObjectTypeDB::bind_method(_MD("invalidate"),&EditorFileDialog::invalidate);
 
@@ -707,9 +1113,36 @@ void EditorFileDialog::set_default_show_hidden_files(bool p_show) {
 	default_show_hidden_files=p_show;
 }
 
+void EditorFileDialog::_save_to_recent() {
+
+	String dir = get_current_dir();
+	Vector<String> recent = EditorSettings::get_singleton()->get_recent_dirs();
+
+	const int max=20;
+	int count=0;
+	bool res=dir.begins_with("res://");
+
+	for(int i=0;i<recent.size();i++) {
+		bool cres=recent[i].begins_with("res://");
+		if (recent[i]==dir || (res==cres && count>max)) {
+			recent.remove(i);
+			i--;
+		} else {
+			count++;
+		}
+	}
+
+	recent.insert(0,dir);
+
+	EditorSettings::get_singleton()->set_recent_dirs(recent);
+
+
+}
+
 EditorFileDialog::EditorFileDialog() {
 
 	show_hidden_files=true;
+	display_mode=DISPLAY_THUMBNAILS;
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);
@@ -718,10 +1151,38 @@ EditorFileDialog::EditorFileDialog() {
 	mode=MODE_SAVE_FILE;
 	set_title("Save a File");
 
-	dir = memnew(LineEdit);
 	HBoxContainer *pathhb = memnew( HBoxContainer );
+
+	dir_prev = memnew( ToolButton );
+	dir_next = memnew( ToolButton );
+	dir_up = memnew( ToolButton );
+
+	pathhb->add_child(dir_prev);
+	pathhb->add_child(dir_next);
+	pathhb->add_child(dir_up);
+
+	dir_prev->connect("pressed",this,"_go_back");
+	dir_next->connect("pressed",this,"_go_forward");
+	dir_up->connect("pressed",this,"_go_up");
+
+	dir = memnew(LineEdit);
 	pathhb->add_child(dir);
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	favorite = memnew( ToolButton );
+	favorite->set_toggle_mode(true);
+	favorite->connect("toggled",this,"_favorite_toggled");
+	pathhb->add_child(favorite);
+
+	mode_thumbnails = memnew( ToolButton );
+	mode_thumbnails->connect("pressed",this,"set_display_mode",varray(DISPLAY_THUMBNAILS));
+	mode_thumbnails->set_toggle_mode(true);
+	mode_thumbnails->set_pressed(true);
+	pathhb->add_child(mode_thumbnails);
+	mode_list = memnew( ToolButton );
+	mode_list->connect("pressed",this,"set_display_mode",varray(DISPLAY_LIST));
+	mode_list->set_toggle_mode(true);
+	pathhb->add_child(mode_list);
 
 	drives = memnew( OptionButton );
 	pathhb->add_child(drives);
@@ -732,18 +1193,49 @@ EditorFileDialog::EditorFileDialog() {
 	makedir->connect("pressed",this,"_make_dir");
 	pathhb->add_child(makedir);
 
-	vbc->add_margin_child("Path:",pathhb);
-
 	list_hb = memnew( HBoxContainer );
-	vbc->add_margin_child("Directories & Files:",list_hb,true);
 
-	tree = memnew(Tree);
-	tree->set_hide_root(true);
-	tree->set_h_size_flags(SIZE_EXPAND_FILL);
-	list_hb->add_child(tree);
+	vbc->add_margin_child("Path:",pathhb);
+	vbc->add_child(list_hb);
+	list_hb->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	VBoxContainer *fav_vb = memnew( VBoxContainer );
+	list_hb->add_child(fav_vb);
+	HBoxContainer *fav_hb = memnew( HBoxContainer );
+	fav_vb->add_child(fav_hb);
+	fav_hb->add_child(memnew(Label("Favorites:")));
+	fav_hb->add_spacer();
+	fav_up = memnew( ToolButton );
+	fav_hb->add_child(fav_up);
+	fav_up->connect("pressed",this,"_favorite_move_up");
+	fav_down = memnew( ToolButton );
+	fav_hb->add_child(fav_down);
+	fav_down->connect("pressed",this,"_favorite_move_down");
+	fav_rm = memnew( ToolButton );
+	fav_hb->add_child(fav_rm);
+	fav_rm->hide(); // redundant
+
+	MarginContainer *fav_mv = memnew( MarginContainer );
+	fav_vb->add_child(fav_mv);
+	fav_mv->set_v_size_flags(SIZE_EXPAND_FILL);
+	favorites = memnew( ItemList );
+	fav_mv->add_child(favorites);
+	favorites->connect("item_selected",this,"_favorite_selected");
+
+	recent = memnew( ItemList );
+	fav_vb->add_margin_child("Recent:",recent,true);
+	recent->connect("item_selected",this,"_recent_selected");
+
+	VBoxContainer *item_vb = memnew( VBoxContainer );
+	list_hb->add_child(item_vb);
+	item_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	item_list = memnew( ItemList );
+	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	item_vb->add_margin_child("Directories & Files:",item_list,true);
 
 	HBoxContainer* filter_hb = memnew( HBoxContainer );
-	vbc->add_child(filter_hb);
+	item_vb->add_child(filter_hb);
 
 	VBoxContainer *filter_vb = memnew( VBoxContainer );
 	filter_hb->add_child(filter_vb);
@@ -775,8 +1267,8 @@ EditorFileDialog::EditorFileDialog() {
 
 	connect("confirmed", this,"_action_pressed");
 	//cancel->connect("pressed", this,"_cancel_pressed");
-	tree->connect("cell_selected", this,"_tree_selected",varray(),CONNECT_DEFERRED);
-	tree->connect("item_activated", this,"_tree_db_selected",varray());
+	item_list->connect("item_selected", this,"_item_selected",varray(),CONNECT_DEFERRED);
+	item_list->connect("item_activated", this,"_item_db_selected",varray());
 	dir->connect("text_entered", this,"_dir_entered");
 	file->connect("text_entered", this,"_file_entered");
 	filter->connect("item_selected", this,"_filter_selected");

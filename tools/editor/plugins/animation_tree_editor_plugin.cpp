@@ -1193,7 +1193,7 @@ void AnimationTreeEditor::_add_menu_item(int p_item) {
 	} else if (p_item == MENU_IMPORT_ANIMATIONS) {
 
 		file_op = MENU_IMPORT_ANIMATIONS;
-		file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+		file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		file_dialog->popup_centered_ratio();
 
 	} else {
@@ -1458,7 +1458,7 @@ AnimationTreeEditor::AnimationTreeEditor() {
 	edit_check->hide();;
 	edit_check->connect("pressed", this,"_edit_dialog_changed");
 
-	file_dialog = memnew( FileDialog );
+	file_dialog = memnew( EditorFileDialog );
 	file_dialog->set_enable_multiple_selection(true);
 	file_dialog->set_current_dir(Globals::get_singleton()->get_resource_path());
 	add_child(file_dialog);

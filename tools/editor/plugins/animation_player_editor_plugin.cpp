@@ -98,7 +98,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		duplicate_anim->set_icon( get_icon("Duplicate","EditorIcons") );
 		autoplay->set_icon( get_icon("AutoPlay","EditorIcons") );
 		load_anim->set_icon( get_icon("Folder","EditorIcons") );
-		remove_anim->set_icon( get_icon("Del","EditorIcons") );
+		remove_anim->set_icon( get_icon("Remove","EditorIcons") );
 		edit_anim->set_icon( get_icon("Edit","EditorIcons") );
 		blend_anim->set_icon( get_icon("Blend","EditorIcons") );
 		play->set_icon( get_icon("PlayStart","EditorIcons") );
@@ -355,7 +355,7 @@ void AnimationPlayerEditor::_animation_rename() {
 }
 void AnimationPlayerEditor::_animation_load() {
 	ERR_FAIL_COND(!player);
-	file->set_mode( FileDialog::MODE_OPEN_FILE );
+	file->set_mode( EditorFileDialog::MODE_OPEN_FILE );
 	file->clear_filters();
 	List<String> extensions;
 
@@ -1232,7 +1232,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor) {
 	resource_edit_anim->hide();
 
 
-	file = memnew(FileDialog);
+	file = memnew(EditorFileDialog);
 	add_child(file);
 
 	name_dialog = memnew( ConfirmationDialog );
