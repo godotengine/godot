@@ -273,6 +273,32 @@ OS::Time OSNacl::get_time(bool utc) const {
 	return ret;
 };
 
+OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
+	time_t t = time(NULL);
+	struct tm *lt = localtime(&t);
+	char name[16];
+	strftime(name, 16, "%Z", lt);
+	name[15] = 0;
+	TimeZoneInfo ret;
+	ret.name = name;
+
+	char bias_buf[16];
+	strftime(bias_buf, 16, "%z", lt);
+	int bias;
+	bias_buf[15] = 0;
+	sscanf(bias_buf, "%d", &bias);
+
+	// convert from ISO 8601 (1 minute=1, 1 hour=100) to minutes
+	int hour = (int)bias / 100;
+	int minutes = bias % 100;
+	if (bias < 0)
+		ret.bias = hour * 60 - minutes;
+	else
+		ret.bias = hour * 60 + minutes;
+
+	return ret;
+};
+
 void OSNacl::delay_usec(uint32_t p_usec) const {
 
 	//usleep(p_usec);

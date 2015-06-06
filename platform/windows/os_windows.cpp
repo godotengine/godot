@@ -1858,6 +1858,36 @@ OS::Time OS_Windows::get_time(bool utc) const {
 	time.sec=systemtime.wSecond;
 	return time;
 }
+OS::Time OS_Windows::get_time(bool utc) const {
+
+	SYSTEMTIME systemtime;
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
+
+	Time time;
+	time.hour=systemtime.wHour;
+	time.min=systemtime.wMinute;
+	time.sec=systemtime.wSecond;
+	return time;
+}
+
+OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (GetTimeZoneInformation(info) == TIME_ZONE_ID_DAYLIGHT)
+		daylight = true;
+
+	if (daylight) {
+		ret.name = info.DaylightName;
+	} else {
+		ret.name = info.StandardName;
+	}
+
+	ret.bias = info.Bias;
+	return ret;
+}
 
 uint64_t OS_Windows::get_unix_time(bool local) const {
 

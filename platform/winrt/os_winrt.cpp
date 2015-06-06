@@ -469,6 +469,22 @@ OS::Time OSWinrt::get_time(bool utc) const {
 	return time;
 }
 
+OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (GetTimeZoneInformation(info) == TIME_ZONE_ID_DAYLIGHT)
+		daylight = true;
+
+	if (daylight) {
+		ret.name = info.DaylightName;
+	} else {
+		ret.name = info.StandardName;
+	}
+
+	ret.bias = info.Bias;
+	return ret;
+}
+
 uint64_t OSWinrt::get_unix_time(bool utc) const {
 
 	FILETIME ft;

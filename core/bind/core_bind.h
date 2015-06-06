@@ -206,6 +206,7 @@ public:
 	void set_icon(const Image& p_icon);
 	Dictionary get_date(bool utc) const;
 	Dictionary get_time(bool utc) const;
+	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 
 	int get_static_memory_usage() const;

@@ -480,6 +480,15 @@ Dictionary _OS::get_time(bool utc) const {
 	return timed;
 
 }
+
+Dictionary _OS::get_time_zone_info() const {
+	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
+	Dictionary infod;
+	infod["bias"] = info.bias;
+	infod["name"] = info.name;
+	return infod;
+}
+
 uint64_t _OS::get_unix_time() const {
 
 	return OS::get_singleton()->get_unix_time();
@@ -776,6 +785,7 @@ void _OS::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
 
 	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
