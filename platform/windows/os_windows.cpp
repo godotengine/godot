@@ -1832,7 +1832,7 @@ String OS_Windows::get_name() {
 OS::Date OS_Windows::get_date() const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	GetLocalTime(&systemtime);
 	Date date;
 	date.day=systemtime.wDay;
 	date.month=Month(systemtime.wMonth);

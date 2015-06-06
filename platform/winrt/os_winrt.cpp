@@ -445,7 +445,7 @@ String OSWinrt::get_name() {
 OS::Date OSWinrt::get_date() const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	GetLocalTime(&systemtime);
 	Date date;
 	date.day=systemtime.wDay;
 	date.month=Month(systemtime.wMonth);
@@ -457,7 +457,7 @@ OS::Date OSWinrt::get_date() const {
 OS::Time OSWinrt::get_time() const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
