@@ -48,7 +48,7 @@ class ThemeEditor : public Control {
 	VBoxContainer *main_vb;
 	Ref<Theme> theme;
 
-	FileDialog *file_dialog;
+	EditorFileDialog *file_dialog;
 
 	double time_left;
 

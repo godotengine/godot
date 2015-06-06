@@ -224,6 +224,28 @@ void EditorSettings::create() {
 			dir->change_dir("..");
 		}
 
+		if (dir->change_dir("config")!=OK) {
+			dir->make_dir("config");
+		} else {
+
+			dir->change_dir("..");
+		}
+
+		dir->change_dir("config");
+
+		String pcp=Globals::get_singleton()->get_resource_path();
+		if (pcp.ends_with("/"))
+			pcp=config_path.substr(0,pcp.size()-1);
+		pcp=pcp.get_file()+"-"+pcp.md5_text();
+
+		if (dir->change_dir(pcp)) {
+			dir->make_dir(pcp);
+		} else {
+			dir->change_dir("..");
+		}
+
+		dir->change_dir("..");
+
 		// path at least is validated, so validate config file
 
 
@@ -244,6 +266,7 @@ void EditorSettings::create() {
 		}
 
 		singleton->config_file_path=config_file_path;
+		singleton->project_config_path=pcp;
 		singleton->settings_path=config_path+"/"+config_dir;
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
@@ -251,7 +274,7 @@ void EditorSettings::create() {
 			print_line("EditorSettings: Load OK!");
 		}
 
-
+		singleton->load_favorites();
 		singleton->scan_plugins();
 
 		return;
@@ -645,6 +668,71 @@ void EditorSettings::set_plugin_enabled(const String& p_plugin, bool p_enabled) 
 		set("_plugins/enabled",Variant());
 	else
 		set("_plugins/enabled",sa);
+
+}
+
+void EditorSettings::set_favorite_dirs(const Vector<String>& p_favorites) {
+
+	favorite_dirs=p_favorites;
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"),FileAccess::WRITE);
+	if (f) {
+		for(int i=0;i<favorite_dirs.size();i++)
+			f->store_line(favorite_dirs[i]);
+		memdelete(f);
+	}
+
+}
+
+Vector<String> EditorSettings::get_favorite_dirs() const {
+
+	return favorite_dirs;
+}
+
+
+void EditorSettings::set_recent_dirs(const Vector<String>& p_recent) {
+
+	recent_dirs=p_recent;
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"),FileAccess::WRITE);
+	if (f) {
+		for(int i=0;i<recent_dirs.size();i++)
+			f->store_line(recent_dirs[i]);
+		memdelete(f);
+	}
+}
+
+Vector<String> EditorSettings::get_recent_dirs() const {
+
+	return recent_dirs;
+}
+
+String EditorSettings::get_project_settings_path() const {
+
+
+	return get_settings_path().plus_file("config").plus_file(project_config_path);
+}
+
+
+void EditorSettings::load_favorites() {
+
+	FileAccess *f = FileAccess::open(get_project_settings_path().plus_file("favorite_dirs"),FileAccess::READ);
+	if (f) {
+		String line = f->get_line().strip_edges();
+		while(line!="") {
+			favorite_dirs.push_back(line);
+			line = f->get_line().strip_edges();
+		}
+		memdelete(f);
+	}
+
+	f = FileAccess::open(get_project_settings_path().plus_file("recent_dirs"),FileAccess::READ);
+	if (f) {
+		String line = f->get_line().strip_edges();
+		while(line!="") {
+			recent_dirs.push_back(line);
+			line = f->get_line().strip_edges();
+		}
+		memdelete(f);
+	}
 
 }
 

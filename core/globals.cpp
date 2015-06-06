@@ -1397,6 +1397,13 @@ Globals::Globals() {
 	set("input/ui_accept",va);
 
 	va=Array();
+	key.key.scancode=KEY_SPACE;
+	va.push_back(key);
+	joyb.joy_button.button_index=JOY_BUTTON_3;
+	va.push_back(joyb);
+	set("input/ui_select",va);
+
+	va=Array();
 	key.key.scancode=KEY_ESCAPE;
 	va.push_back(key);
 	joyb.joy_button.button_index=JOY_BUTTON_1;

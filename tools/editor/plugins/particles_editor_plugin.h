@@ -48,7 +48,7 @@ class ParticlesEditor : public Control {
 	Particles *node;
 
 
-	FileDialog *emission_file_dialog;
+	EditorFileDialog *emission_file_dialog;
 	SceneTreeDialog *emission_tree_dialog;
 
 	ConfirmationDialog *err_dialog;

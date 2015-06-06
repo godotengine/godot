@@ -79,7 +79,7 @@ class AnimationTreeEditor : public Control {
 	Button *edit_button;
 	Button *filter_button;
 	CheckButton *edit_check;
-	FileDialog* file_dialog;
+	EditorFileDialog* file_dialog;
 	int file_op;
 
 	void _popup_edit_dialog();

@@ -48,7 +48,7 @@ class Particles2DEditorPlugin : public EditorPlugin {
 	};
 
 
-	FileDialog *file;
+	EditorFileDialog *file;
 	EditorNode *editor;
 
 	MenuButton *menu;

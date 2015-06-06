@@ -248,8 +248,8 @@ class EditorTextureImportDialog : public ConfirmationDialog  {
 
 	LineEdit *import_path;
 	LineEdit *save_path;
-	FileDialog *file_select;
-	FileDialog *save_file_select;
+	EditorFileDialog *file_select;
+	EditorFileDialog *save_file_select;
 	EditorDirDialog *save_select;
 	OptionButton *texture_action;
 	ConfirmationDialog *error_dialog;
@@ -596,8 +596,8 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 
 	save_choose->connect("pressed", this,"_browse_target");
 
-	file_select = memnew(FileDialog);
-	file_select->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_select = memnew(EditorFileDialog);
+	file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(file_select);
 	if (!large)
 		file_select->set_mode(FileDialog::MODE_OPEN_FILES);
@@ -606,10 +606,10 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	file_select->connect("files_selected", this,"_choose_files");
 	file_select->connect("file_selected", this,"_choose_file");
 
-	save_file_select = memnew(FileDialog);
-	save_file_select->set_access(FileDialog::ACCESS_RESOURCES);
+	save_file_select = memnew(EditorFileDialog);
+	save_file_select->set_access(EditorFileDialog::ACCESS_RESOURCES);
 	add_child(save_file_select);
-	save_file_select->set_mode(FileDialog::MODE_SAVE_FILE);
+	save_file_select->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	save_file_select->clear_filters();
 	if (large)
 		save_file_select->add_filter("*.ltex;Large Texture");
@@ -620,7 +620,7 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	save_select = memnew(	EditorDirDialog );
 	add_child(save_select);
 
-//	save_select->set_mode(FileDialog::MODE_OPEN_DIR);
+//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 	save_select->connect("dir_selected", this,"_choose_save_dir");
 
 	get_ok()->connect("pressed", this,"_import");
