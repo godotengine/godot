@@ -967,14 +967,16 @@ String AnimationPlayer::get_current_animation() const {
 
 }
 
-void AnimationPlayer::stop() {
+void AnimationPlayer::stop(bool p_reset) {
 	
 	Playback &c=playback;
 	c.blend.clear();
-	c.current.from=NULL;
+	if (p_reset) {
+		c.current.from=NULL;
+	}
 	_set_process(false);
 	queued.clear();
-    playing = false;
+	playing = false;
 }
 
 void AnimationPlayer::stop_all() {
@@ -1211,7 +1213,7 @@ void AnimationPlayer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_default_blend_time"),&AnimationPlayer::get_default_blend_time);
 
 	ObjectTypeDB::bind_method(_MD("play","name","custom_blend","custom_speed","from_end"),&AnimationPlayer::play,DEFVAL(""),DEFVAL(-1),DEFVAL(1.0),DEFVAL(false));
-	ObjectTypeDB::bind_method(_MD("stop"),&AnimationPlayer::stop);
+	ObjectTypeDB::bind_method(_MD("stop","reset"),&AnimationPlayer::stop,DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("stop_all"),&AnimationPlayer::stop_all);
 	ObjectTypeDB::bind_method(_MD("is_playing"),&AnimationPlayer::is_playing);
 	ObjectTypeDB::bind_method(_MD("set_current_animation","anim"),&AnimationPlayer::set_current_animation);

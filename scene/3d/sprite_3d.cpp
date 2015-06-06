@@ -580,7 +580,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes"), _SCS("set_vframes"),_SCS("get_vframes"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes"), _SCS("set_hframes"),_SCS("get_hframes"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
 
@@ -727,7 +727,7 @@ void AnimatedSprite3D::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("get_frame"),&AnimatedSprite3D::get_frame);
 
 	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 

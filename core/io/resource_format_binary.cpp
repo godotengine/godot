@@ -861,7 +861,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	print_bl("minor: "+itos(ver_minor));
 	print_bl("format: "+itos(ver_format));
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		ERR_EXPLAIN("File Format '"+itos(FORMAT_VERSION)+"."+itos(ver_major)+"."+itos(ver_minor)+"' is too new! Please upgrade to a a new engine version: "+local_path);
@@ -968,7 +968,7 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	uint32_t ver_minor=f->get_32();
 	uint32_t ver_format=f->get_32();
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		return "";

@@ -58,7 +58,7 @@ RichTextLabel::Item *RichTextLabel::_get_next_item(Item* p_item) {
 
 }
 
-void RichTextLabel::_process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos,Item **r_click_item,int *r_click_char,bool *r_outside) {
+void RichTextLabel::_process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos,Item **r_click_item,int *r_click_char,bool *r_outside,int p_char_count) {
 
 	RID ci;
 	if (r_outside)
@@ -80,6 +80,7 @@ void RichTextLabel::_process_line(int &y, int p_width, int p_line, ProcessMode p
 	int line=0;
 	int spaces=0;
 
+
 	if (p_mode!=PROCESS_CACHE) {
 
 		ERR_FAIL_INDEX(line,l.offset_caches.size());
@@ -89,6 +90,7 @@ void RichTextLabel::_process_line(int &y, int p_width, int p_line, ProcessMode p
 	if (p_mode==PROCESS_CACHE) {
 		l.offset_caches.clear();
 		l.height_caches.clear();
+		l.char_count=0;
 	}
 
 	int wofs=margin;
@@ -216,6 +218,8 @@ if (m_height > line_height) {\
 						underline=true;
 					}
 
+				} else if (p_mode==PROCESS_CACHE) {
+					l.char_count+=text->text.length();
 				}
 
 				rchar=0;
@@ -326,18 +330,23 @@ if (m_height > line_height) {\
 									}
 								}
 
-								int cw;
+								int cw=0;
+
+								bool visible = visible_characters<0 || p_char_count<visible_characters;
 
 								if (selected) {
 
 									cw = font->get_char_size(c[i],c[i+1]).x;
 									draw_rect(Rect2(pofs,y,cw,lh),selection_bg);
-									font->draw_char(ci,Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],selection_fg);
+									if (visible)
+										font->draw_char(ci,Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],selection_fg);
 
 								} else {
-									cw=font->draw_char(ci,Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
+									if (visible)
+										cw=font->draw_char(ci,Point2(pofs,y+lh-(fh-ascent)),c[i],c[i+1],color);
 								}
 
+								p_char_count++;
 								if (c[i]=='\t') {
 									cw=tab_size*font->get_char_size(' ').width;
 								}
@@ -371,6 +380,8 @@ if (m_height > line_height) {\
 				lh=0;
 				if (p_mode!=PROCESS_CACHE)
 					lh = line<l.height_caches.size()?l.height_caches[line]:1;
+				else
+					l.char_count+=1; //images count as chars too
 
 				ItemImage *img = static_cast<ItemImage*>(it);
 
@@ -383,9 +394,12 @@ if (m_height > line_height) {\
 
 				ENSURE_WIDTH( img->image->get_width() );
 
-				if (p_mode==PROCESS_DRAW) {
+				bool visible = visible_characters<0 || p_char_count<visible_characters;
+
+				if (p_mode==PROCESS_DRAW && visible) {
 					img->image->draw(ci,Point2(wofs,y+lh-font->get_descent()-img->image->get_height()));
 				}
+				p_char_count++;
 
 				ADVANCE( img->image->get_width() );
 				CHECK_HEIGHT( (img->image->get_height()+font->get_descent()) );
@@ -556,11 +570,13 @@ void RichTextLabel::_notification(int p_what) {
 			//todo, change to binary search
 
 			int from_line = 0;
+			int total_chars = 0;
 			while (from_line<lines.size()) {
 
 				if (lines[from_line].height_accum_cache>=ofs)
 					break;
 				from_line++;
+				total_chars+=lines[from_line].char_count;
 			}
 
 			if (from_line>=lines.size())
@@ -572,7 +588,8 @@ void RichTextLabel::_notification(int p_what) {
 
 			while (y<size.height && from_line<lines.size()) {
 
-				_process_line(y,size.width-scroll_w,from_line,PROCESS_DRAW,base_font,base_color);
+				_process_line(y,size.width-scroll_w,from_line,PROCESS_DRAW,base_font,base_color,Point2i(),NULL,NULL,NULL,total_chars);
+				total_chars+=lines[from_line].char_count;
 				from_line++;
 			}
 		}
@@ -1673,6 +1690,8 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_scroll_follow","follow"),&RichTextLabel::set_scroll_follow);
 	ObjectTypeDB::bind_method(_MD("is_scroll_following"),&RichTextLabel::is_scroll_following);
 
+	ObjectTypeDB::bind_method(_MD("get_v_scroll"),&RichTextLabel::get_v_scroll);
+
 	ObjectTypeDB::bind_method(_MD("set_tab_size","spaces"),&RichTextLabel::set_tab_size);
 	ObjectTypeDB::bind_method(_MD("get_tab_size"),&RichTextLabel::get_tab_size);
 
@@ -1686,11 +1705,17 @@ void RichTextLabel::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_bbcode","text"),&RichTextLabel::set_bbcode);
 	ObjectTypeDB::bind_method(_MD("get_bbcode"),&RichTextLabel::get_bbcode);
 
+	ObjectTypeDB::bind_method(_MD("set_visible_characters","amount"),&RichTextLabel::set_visible_characters);
+	ObjectTypeDB::bind_method(_MD("get_visible_characters"),&RichTextLabel::get_visible_characters);
+
+	ObjectTypeDB::bind_method(_MD("get_total_character_count"),&RichTextLabel::get_total_character_count);
+
 	ObjectTypeDB::bind_method(_MD("set_use_bbcode","enable"),&RichTextLabel::set_use_bbcode);
 	ObjectTypeDB::bind_method(_MD("is_using_bbcode"),&RichTextLabel::is_using_bbcode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"bbcode/enabled"),_SCS("set_use_bbcode"),_SCS("is_using_bbcode"));
 	ADD_PROPERTY(PropertyInfo(Variant::STRING,"bbcode/bbcode",PROPERTY_HINT_MULTILINE_TEXT),_SCS("set_bbcode"),_SCS("get_bbcode"));
+	ADD_PROPERTY(PropertyInfo(Variant::INT,"visible_characters",PROPERTY_HINT_RANGE,"-1,128000,1"),_SCS("set_visible_characters"),_SCS("get_visible_characters"));
 
 	ADD_SIGNAL( MethodInfo("meta_clicked",PropertyInfo(Variant::NIL,"meta")));
 
@@ -1716,6 +1741,27 @@ void RichTextLabel::_bind_methods() {
 	BIND_CONSTANT( ITEM_META );
 
 }
+
+
+void RichTextLabel::set_visible_characters(int p_visible) {
+
+	visible_characters=p_visible;
+	update();
+}
+
+int RichTextLabel::get_visible_characters() const {
+
+	return visible_characters;
+}
+int RichTextLabel::get_total_character_count() const {
+
+	int tc=0;
+	for(int i=0;i<lines.size();i++)
+		tc+=lines[i].char_count;
+
+	return tc;
+}
+
 
 RichTextLabel::RichTextLabel() {
 
@@ -1753,6 +1799,8 @@ RichTextLabel::RichTextLabel() {
 	selection.click=NULL;
 	selection.active=false;
 	selection.enabled=false;
+
+	visible_characters=-1;
 
 }
 

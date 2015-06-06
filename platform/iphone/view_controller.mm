@@ -124,10 +124,15 @@ int add_cmdline(int p_argc, char** p_args) {
 	}
 };
 
-
 - (BOOL)prefersStatusBarHidden
 {
 	return YES;
+}
+
+- (void) gameCenterViewControllerDidFinish:(GKGameCenterViewController*) gameCenterViewController {
+    //[gameCenterViewController dismissViewControllerAnimated:YES completion:^{GameCenter::get_singleton()->game_center_closed();}];//version for signaling when overlay is completely gone
+    GameCenter::get_singleton()->game_center_closed();
+    [gameCenterViewController dismissViewControllerAnimated:YES completion:nil];
 }
 
 @end

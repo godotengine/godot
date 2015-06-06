@@ -902,18 +902,22 @@ class DaeExporter:
 		if (node.data==None):
 			return
 		armature=None
+		armcount=0
+		for n in node.modifiers:
+			if (n.type=="ARMATURE"):
+				armcount+=1
 
 		if (node.parent!=None):
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
-			armcount=0
-			for n in node.modifiers:
-				if (n.type=="ARMATURE"):
-					armcount+=1
-			if (armcount>1):
-				self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsopported.')
+				if (armcount>1):
+					self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsopported.')
+				if (armcount==0):
+					self.operator.report({'WARNING'},'Object "'+node.name+'" is child of an armature, but has no armature modifier.')
 
 
+		if (armcount>0 and not armature):
+			self.operator.report({'WARNING'},'Object "'+node.name+'" has armature modifier, but is not a child of an armature. This is unsupported.')
 
 
 		if (node.data.shape_keys!=None):

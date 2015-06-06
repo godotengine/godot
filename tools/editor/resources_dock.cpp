@@ -152,7 +152,7 @@ void ResourcesDock::save_resource_as(const Ref<Resource>& p_resource) {
 
 	List<String> extensions;
 	ResourceSaver::get_recognized_extensions(res,&extensions);
-	file->set_mode(FileDialog::MODE_SAVE_FILE);
+	file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 
 	if (p_resource->get_path()!="" && p_resource->get_path().find("::")==-1) {
 
@@ -396,7 +396,7 @@ ResourcesDock::ResourcesDock(EditorNode *p_editor) {
 	accept = memnew (AcceptDialog);
 	add_child(accept);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 	file->connect("file_selected",this,"_file_action");
 

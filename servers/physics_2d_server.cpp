@@ -713,7 +713,7 @@ void Physics2DServer::_bind_methods() {
 
 Physics2DServer::Physics2DServer() {
 
-	ERR_FAIL_COND( singleton!=NULL );
+	//ERR_FAIL_COND( singleton!=NULL );
 	singleton=this;
 }
 

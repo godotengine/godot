@@ -610,6 +610,7 @@ Error EditorSampleImportPlugin::import(const String& p_path, const Ref<ResourceI
 		dst_format=Sample::FORMAT_IMA_ADPCM;
 
 		_compress_ima_adpcm(data,dst_data);
+		print_line("compressing ima-adpcm, resulting buffersize is "+itos(dst_data.size())+" from "+itos(data.size()));
 
 	} else {
 
@@ -755,10 +756,10 @@ void EditorSampleImportPlugin::_compress_ima_adpcm(const Vector<float>& p_data,D
 			prev+=vpdiff ;
 
 		if (prev > 32767) {
-			printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip up %i\n",i,xm_sample,prev,diff,vpdiff,prev);
+			//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip up %i\n",i,xm_sample,prev,diff,vpdiff,prev);
 			prev=32767;
 		} else if (prev < -32768) {
-			printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip down %i\n",i,xm_sample,prev,diff,vpdiff,prev);
+			//printf("%i,xms %i, prev %i,diff %i, vpdiff %i, clip down %i\n",i,xm_sample,prev,diff,vpdiff,prev);
 			prev = -32768 ;
 		}
 

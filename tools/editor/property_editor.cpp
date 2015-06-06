@@ -2629,7 +2629,12 @@ void PropertyEditor::update_tree() {
 
 		if (keying) {
 
-			item->add_button(1,get_icon("Key","EditorIcons"),2);
+			if (p.hint==PROPERTY_HINT_SPRITE_FRAME) {
+
+				item->add_button(1,get_icon("KeyNext","EditorIcons"),5);
+			} else {
+				item->add_button(1,get_icon("Key","EditorIcons"),2);
+			}
 		}
 
 		if (get_instanced_node()) {
@@ -2904,6 +2909,16 @@ void PropertyEditor::edit(Object* p_object) {
 	
 }
 
+void PropertyEditor::_set_range_def(Object *p_item, String prop,float p_frame) {
+
+	TreeItem *ti = p_item->cast_to<TreeItem>();
+	ERR_FAIL_COND(!ti);
+
+	ti->call_deferred("set_range",1, p_frame);
+	obj->call_deferred("set",prop,p_frame);
+
+}
+
 void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 	TreeItem *ti = p_item->cast_to<TreeItem>();
 	ERR_FAIL_COND(!ti);
@@ -2915,7 +2930,15 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		if (!d.has("name"))
 			return;
 		String prop=d["name"];
-		emit_signal("property_keyed",prop,obj->get(prop));
+		emit_signal("property_keyed",prop,obj->get(prop),false);
+	} else if (p_button==5) {
+		print_line("PB5");
+		if (!d.has("name"))
+			return;
+		String prop=d["name"];
+		emit_signal("property_keyed",prop,obj->get(prop),true);
+		//set_range(p_column, ti->get_range(p_column)+1.0 );
+		call_deferred("_set_range_def",ti,prop,ti->get_range(p_column)+1.0);
 	} else if (p_button==3) {
 
 		if (!get_instanced_node())
@@ -3046,6 +3069,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_edit_button",&PropertyEditor::_edit_button);
 	ObjectTypeDB::bind_method( "_changed_callback",&PropertyEditor::_changed_callbacks);
 	ObjectTypeDB::bind_method( "_draw_flags",&PropertyEditor::_draw_flags);
+	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );

@@ -1671,7 +1671,7 @@ void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 	int major = version.get_slice(".",0).to_int();
 	int minor = version.get_slice(".",1).to_int();
 
-	if (major>VERSION_MAJOR || (major==VERSION_MAJOR && minor>VERSION_MINOR)) {
+	if (major>VERSION_MAJOR) {
 
 		error=ERR_FILE_UNRECOGNIZED;
 		ResourceLoader::notify_load_error(local_path+": File Format '"+version+"' is too new. Please upgrade to a newer engine version.");
