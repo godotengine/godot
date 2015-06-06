@@ -240,10 +240,14 @@ MainLoop *OSNacl::get_main_loop() const {
 	return main_loop;
 };
 
-OS::Date OSNacl::get_date() const {
+OS::Date OSNacl::get_date(bool utc) const {
 
 	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	struct tm *lt;
+	if (utc)
+		lt=gmtime(&t);
+	else
+		lt=localtime(&t);
 	Date ret;
 	ret.year=lt->tm_year;
 	ret.month=(Month)lt->tm_mon;
@@ -254,10 +258,14 @@ OS::Date OSNacl::get_date() const {
 	return ret;
 };
 
-OS::Time OSNacl::get_time() const {
+OS::Time OSNacl::get_time(bool utc) const {
 
 	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	struct tm *lt;
+	if (utc)
+		lt=gmtime(&t);
+	else
+		lt=localtime(&t);
 	Time ret;
 	ret.hour=lt->tm_hour;
 	ret.min=lt->tm_min;

@@ -454,10 +454,13 @@ OS::Date OSWinrt::get_date() const {
 	date.dst=false;
 	return date;
 }
-OS::Time OSWinrt::get_time() const {
+OS::Time OSWinrt::get_time(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetLocalTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
@@ -466,11 +469,14 @@ OS::Time OSWinrt::get_time() const {
 	return time;
 }
 
-uint64_t OSWinrt::get_unix_time() const {
+uint64_t OSWinrt::get_unix_time(bool utc) const {
 
 	FILETIME ft;
 	SYSTEMTIME st;
-	GetSystemTime(&st);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 	SystemTimeToFileTime(&st, &ft);
 
 	SYSTEMTIME ep;

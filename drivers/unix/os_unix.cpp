@@ -218,10 +218,14 @@ uint64_t OS_Unix::get_unix_time() const {
 };
 
 
-OS::Date OS_Unix::get_date() const {
+OS::Date OS_Unix::get_date(bool utc) const {
 
 	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	struct tm *lt;
+	if (utc)
+		lt=gmtime(&t);
+	else
+		lt=localtime(&t);
 	Date ret;
 	ret.year=1900+lt->tm_year;
 	ret.month=(Month)lt->tm_mon;
@@ -231,10 +235,13 @@ OS::Date OS_Unix::get_date() const {
 	
 	return ret;
 }
-OS::Time OS_Unix::get_time() const {
-
+OS::Time OS_Unix::get_time(bool utc) const {
 	time_t t=time(NULL);
-	struct tm *lt=localtime(&t);
+	struct tm *lt;
+	if (utc)
+		lt=gmtime(&t);
+	else
+		lt=localtime(&t);
 	Time ret;
 	ret.hour=lt->tm_hour;
 	ret.min=lt->tm_min;

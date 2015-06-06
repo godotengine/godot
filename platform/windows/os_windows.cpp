@@ -1832,7 +1832,10 @@ String OS_Windows::get_name() {
 OS::Date OS_Windows::get_date() const {
 
 	SYSTEMTIME systemtime;
-	GetLocalTime(&systemtime);
+	if (local)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 	Date date;
 	date.day=systemtime.wDay;
 	date.month=Month(systemtime.wMonth);
@@ -1841,10 +1844,13 @@ OS::Date OS_Windows::get_date() const {
 	date.dst=false;
 	return date;
 }
-OS::Time OS_Windows::get_time() const {
+OS::Time OS_Windows::get_time(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetLocalTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
@@ -1853,7 +1859,7 @@ OS::Time OS_Windows::get_time() const {
 	return time;
 }
 
-uint64_t OS_Windows::get_unix_time() const {
+uint64_t OS_Windows::get_unix_time(bool local) const {
 
 	FILETIME ft;
 	SYSTEMTIME st;
