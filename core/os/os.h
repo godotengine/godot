@@ -244,9 +244,15 @@ public:
 		int min;
 		int sec;
 	};
-	
-	virtual Date get_date() const=0;
-	virtual Time get_time() const=0;
+
+	struct TimeZoneInfo {
+		int bias;
+		String name;
+	};
+
+	virtual Date get_date(bool local=false) const=0;
+	virtual Time get_time(bool local=false) const=0;
+	virtual TimeZoneInfo get_time_zone_info() const=0;
 	virtual uint64_t get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const=0; 

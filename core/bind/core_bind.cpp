@@ -457,9 +457,9 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
-Dictionary _OS::get_date() const {
+Dictionary _OS::get_date(bool utc) const {
 
-	OS::Date date = OS::get_singleton()->get_date();
+	OS::Date date = OS::get_singleton()->get_date(utc);
 	Dictionary dated;
 	dated["year"]=date.year;
 	dated["month"]=date.month;
@@ -470,9 +470,9 @@ Dictionary _OS::get_date() const {
 
 
 }
-Dictionary _OS::get_time() const {
+Dictionary _OS::get_time(bool utc) const {
 
-	OS::Time time = OS::get_singleton()->get_time();
+	OS::Time time = OS::get_singleton()->get_time(utc);
 	Dictionary timed;
 	timed["hour"]=time.hour;
 	timed["minute"]=time.min;
@@ -480,6 +480,15 @@ Dictionary _OS::get_time() const {
 	return timed;
 
 }
+
+Dictionary _OS::get_time_zone_info() const {
+	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
+	Dictionary infod;
+	infod["bias"] = info.bias;
+	infod["name"] = info.name;
+	return infod;
+}
+
 uint64_t _OS::get_unix_time() const {
 
 	return OS::get_singleton()->get_unix_time();
@@ -774,8 +783,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
 	ObjectTypeDB::bind_method(_MD("get_main_loop"),&_OS::get_main_loop);
 
-	ObjectTypeDB::bind_method(_MD("get_date"),&_OS::get_date);
-	ObjectTypeDB::bind_method(_MD("get_time"),&_OS::get_time);
+	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
 
 	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
