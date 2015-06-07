@@ -98,7 +98,7 @@ void EditorResourcePreview::_thread() {
 
 		if (queue.size()) {
 
-			//print_line("pop from queue");
+
 
 			QueueItem item = queue.front()->get();
 			queue.pop_front();
@@ -106,6 +106,7 @@ void EditorResourcePreview::_thread() {
 
 			Ref<Texture> texture;
 
+			//print_line("pop from queue "+item.path);
 
 			uint64_t modtime = FileAccess::get_modified_time(item.path);
 			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
@@ -206,7 +207,7 @@ void EditorResourcePreview::queue_resource_preview(const String& p_path, Object*
 
 	}
 
-	//print_line("send to thread");
+	//print_line("send to thread "+p_path);
 	QueueItem item;
 	item.function=p_receiver_func;
 	item.id=p_receiver->get_instance_ID();

@@ -63,14 +63,15 @@ EditorTexturePreviewPlugin::EditorTexturePreviewPlugin() {
 
 Ref<Texture> EditorPackedScenePreviewPlugin::_gen_from_imd(Ref<ResourceImportMetadata> p_imd) {
 
-	if (p_imd.is_null())
+	if (p_imd.is_null()) {
 		return Ref<Texture>();
+	}
 
 	if (!p_imd->has_option("thumbnail"))
 		return Ref<Texture>();
 
 	Variant tn = p_imd->get_option("thumbnail");
-	print_line(Variant::get_type_name(tn.get_type()));
+	//print_line(Variant::get_type_name(tn.get_type()));
 	DVector<uint8_t> thumbnail = tn;
 
 	int len = thumbnail.size();

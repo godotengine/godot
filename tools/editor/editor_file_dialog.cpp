@@ -348,7 +348,6 @@ void EditorFileDialog::_push_history() {
 	}
 
 }
-
 void EditorFileDialog::_item_dc_selected(int p_item) {
 
 
@@ -672,7 +671,7 @@ void EditorFileDialog::set_current_dir(const String& p_dir) {
 	dir_access->change_dir(p_dir);
 	update_dir();
 	invalidate();
-	_push_history();
+	//_push_history();
 
 
 }
@@ -852,8 +851,8 @@ void EditorFileDialog::_favorite_move_up(){
 	if (current>0 && current<favorites->get_item_count()) {
 		Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
 
-		int a_idx=favorited.find(favorites->get_item_metadata(current-1));
-		int b_idx=favorited.find(favorites->get_item_metadata(current));
+		int a_idx=favorited.find(String(favorites->get_item_metadata(current-1)));
+		int b_idx=favorited.find(String(favorites->get_item_metadata(current)));
 
 		if (a_idx==-1 || b_idx==-1)
 			return;
@@ -873,8 +872,8 @@ void EditorFileDialog::_favorite_move_down(){
 	if (current>=0 && current<favorites->get_item_count()-1) {
 		Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
 
-		int a_idx=favorited.find(favorites->get_item_metadata(current+1));
-		int b_idx=favorited.find(favorites->get_item_metadata(current));
+		int a_idx=favorited.find(String(favorites->get_item_metadata(current+1)));
+		int b_idx=favorited.find(String(favorites->get_item_metadata(current)));
 
 		if (a_idx==-1 || b_idx==-1)
 			return;
@@ -1143,6 +1142,7 @@ EditorFileDialog::EditorFileDialog() {
 
 	show_hidden_files=true;
 	display_mode=DISPLAY_THUMBNAILS;
+	local_history_pos=0;
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);

@@ -7358,7 +7358,7 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 	rasterizer->canvas_end_rect();
 };
 
-void VisualServerRaster::flush() {
+void VisualServerRaster::sync() {
 	//do none
 }
 

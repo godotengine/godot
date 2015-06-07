@@ -3601,6 +3601,10 @@ TextEdit::TextEdit()  {
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
 	cache.size=Size2(1,1);
+	cache.row_height=1;
+	cache.line_spacing=1;
+	cache.line_number_w=1;
+
 	tab_size=4;
 	text.set_tab_size(tab_size);
 	text.clear();

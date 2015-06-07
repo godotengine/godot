@@ -600,9 +600,9 @@ EditorTextureImportDialog::EditorTextureImportDialog(EditorTextureImportPlugin* 
 	file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(file_select);
 	if (!large)
-		file_select->set_mode(FileDialog::MODE_OPEN_FILES);
+		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 	else
-		file_select->set_mode(FileDialog::MODE_OPEN_FILE);
+		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	file_select->connect("files_selected", this,"_choose_files");
 	file_select->connect("file_selected", this,"_choose_file");
 

@@ -681,7 +681,7 @@ public:
 	virtual void init();
 	virtual void finish();
 	virtual void draw();
-	virtual void flush();
+	virtual void sync();
 	FUNC0RC(bool,has_changed);
 
 	/* RENDER INFO */

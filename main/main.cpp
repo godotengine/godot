@@ -1380,6 +1380,8 @@ bool Main::iteration() {
 		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
+	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+
 	if (OS::get_singleton()->can_draw()) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
@@ -1392,8 +1394,6 @@ bool Main::iteration() {
 			OS::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
-	} else {
-		VisualServer::get_singleton()->flush(); // flush visual commands
 	}
 
 	if (AudioServer::get_singleton())
