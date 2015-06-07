@@ -1863,9 +1863,10 @@ OS::Time OS_Windows::get_time(bool utc) const {
 OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
 	TIME_ZONE_INFORMATION info;
 	bool daylight = false;
-	if (GetTimeZoneInformation(info) == TIME_ZONE_ID_DAYLIGHT)
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
 		daylight = true;
 
+	TimeZoneInfo ret;
 	if (daylight) {
 		ret.name = info.DaylightName;
 	} else {
