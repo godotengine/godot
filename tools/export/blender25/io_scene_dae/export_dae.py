@@ -87,6 +87,15 @@ def numarr(a,mult=1.0):
 	s+=" "
 	return s
 
+def numarr_alpha(a,mult=1.0):
+	s=" "
+	for x in a:
+		s+=" "+str(x*mult)
+	if len(a) == 3:
+		s+=" 1.0"
+	s+=" "
+	return s
+
 def strarr(arr):
 	s=" "
 	for x in arr:
@@ -291,25 +300,25 @@ class DaeExporter:
 		if (emission_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+emission_tex+'" texcoord="CHANNEL1"/>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
+			self.writel(S_FX,6,'<color>'+numarr_alpha(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
 		self.writel(S_FX,5,'</emission>')
 
 		self.writel(S_FX,5,'<ambient>')
-		self.writel(S_FX,6,'<color>'+numarr(self.scene.world.ambient_color,material.ambient)+' </color>')
+		self.writel(S_FX,6,'<color>'+numarr_alpha(self.scene.world.ambient_color,material.ambient)+' </color>')
 		self.writel(S_FX,5,'</ambient>')
 
 		self.writel(S_FX,5,'<diffuse>')
 		if (diffuse_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'" texcoord="CHANNEL1"/>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.diffuse_intensity)+'</color>')
+			self.writel(S_FX,6,'<color>'+numarr_alpha(material.diffuse_color,material.diffuse_intensity)+'</color>')
 		self.writel(S_FX,5,'</diffuse>')
 
 		self.writel(S_FX,5,'<specular>')
 		if (specular_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+specular_tex+'" texcoord="CHANNEL1"/>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.specular_color,material.specular_intensity)+'</color>')
+			self.writel(S_FX,6,'<color>'+numarr_alpha(material.specular_color,material.specular_intensity)+'</color>')
 		self.writel(S_FX,5,'</specular>')
 
 		self.writel(S_FX,5,'<shininess>')
@@ -317,7 +326,7 @@ class DaeExporter:
 		self.writel(S_FX,5,'</shininess>')
 
 		self.writel(S_FX,5,'<reflective>')
-		self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
+		self.writel(S_FX,6,'<color>'+numarr_alpha(material.mirror_color)+'</color>')
 		self.writel(S_FX,5,'</reflective>')
 
 		if (material.use_transparency):
@@ -325,10 +334,11 @@ class DaeExporter:
 			self.writel(S_FX,6,'<float>'+str(material.alpha)+'</float>')
 			self.writel(S_FX,5,'</transparency>')
 
-
+		self.writel(S_FX,5,'<index_of_refraction>')
+		self.writel(S_FX,6,'<float>'+str(material.specular_ior)+'</float>')
+		self.writel(S_FX,5,'</index_of_refraction>')
 
 		self.writel(S_FX,4,'</'+shtype+'>')
-		self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
 		self.writel(S_FX,4,'<extra>')
 		self.writel(S_FX,5,'<technique profile="FCOLLADA">')
