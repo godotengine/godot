@@ -48,9 +48,9 @@ void ColorRampEditorPlugin::_ramp_changed() {
 		UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
 
 		//Not sure if I should convert this data to DVector
-		Vector<float> new_offsets=ramp_editor->get_offsets();
+		Vector<real_t> new_offsets=ramp_editor->get_offsets();
 		Vector<Color> new_colors=ramp_editor->get_colors();
-		Vector<float> old_offsets=color_ramp_ref->get_offsets();
+		Vector<real_t> old_offsets=color_ramp_ref->get_offsets();
 		Vector<Color> old_colors=color_ramp_ref->get_colors();
 
 		if (old_offsets.size()!=new_offsets.size())
@@ -65,7 +65,7 @@ void ColorRampEditorPlugin::_ramp_changed() {
 	}
 }
 
-void ColorRampEditorPlugin::_undo_redo_color_ramp(const Vector<float>& offsets,
+void ColorRampEditorPlugin::_undo_redo_color_ramp(const Vector<real_t>& offsets,
 		const Vector<Color>& colors) {
 
 	color_ramp_ref->set_offsets(offsets);

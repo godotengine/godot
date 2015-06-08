@@ -41,8 +41,8 @@ public:
 	void set_color(int pos, const Color& color);
 	Color get_color(int pos) const;
 
-	void set_offsets(const Vector<float>& offsets);
-	Vector<float> get_offsets() const;
+	void set_offsets(const Vector<real_t>& offsets);
+	Vector<real_t> get_offsets() const;
 
 	void set_colors(const Vector<Color>& colors);
 	Vector<Color> get_colors() const;

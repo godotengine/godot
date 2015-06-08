@@ -36,8 +36,8 @@ void ColorRamp::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"colors"),_SCS(COLOR_RAMP_SET_COLORS),_SCS(COLOR_RAMP_GET_COLORS) );
 }
 
-Vector<float> ColorRamp::get_offsets() const {
-	Vector<float> offsets;
+Vector<real_t> ColorRamp::get_offsets() const {
+	Vector<real_t> offsets;
 	offsets.resize(points.size());
 	for(int i = 0; i < points.size(); i++)
 	{
@@ -56,7 +56,7 @@ Vector<Color> ColorRamp::get_colors() const {
 	return colors;
 }
 
-void ColorRamp::set_offsets(const Vector<float>& p_offsets) {
+void ColorRamp::set_offsets(const Vector<real_t>& p_offsets) {
 	points.resize(p_offsets.size());
 	for(int i = 0; i < points.size(); i++)
 	{
