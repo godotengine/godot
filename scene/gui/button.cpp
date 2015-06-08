@@ -89,8 +89,11 @@ void Button::_notification(int p_what) {
 				color = get_color("font_color");
 				break;
 		}
+
+		// Flat button means don't draw style (decorations) if normal or focused.
 		if(!(is_flat() && (draw_mode == DRAW_NORMAL || draw_mode == DRAW_FOCUSED)))
 			style->draw(ci, Rect2(Point2(0,0), size));
+
 		Ref<Font> font = get_font("font");
 		Ref<Texture> _icon;
 		if (icon.is_null() && has_icon("icon"))

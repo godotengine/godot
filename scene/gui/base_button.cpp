@@ -319,15 +319,12 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		return DRAW_DISABLED;
 	
 	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
-
 	// Hover action
-	if (!status.press_attempt && status.hovering && !status.pressed) {
+	if (!status.press_attempt && status.hovering && !status.pressed)
 		return DRAW_HOVER;
-	}
 
 	// Pressed action
-	if (status.pressed ||
-			(status.press_attempt && status.pressing_inside && !status.pressed))
+	if (status.pressed || (status.press_attempt && status.pressing_inside && !status.pressed))
 		return DRAW_PRESSED;
 
 	// Focused
@@ -379,7 +376,7 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
-  ADD_PROPERTY( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
+	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
 
 	BIND_CONSTANT( DRAW_NORMAL );
