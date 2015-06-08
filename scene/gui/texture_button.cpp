@@ -84,6 +84,7 @@ void TextureButton::_notification(int p_what) {
 			Ref<Texture> texdraw;
 
 			switch (draw_mode) {
+			  case DRAW_FOCUSED:
 				case DRAW_NORMAL: {
 
 					if (normal.is_valid())

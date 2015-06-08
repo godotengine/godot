@@ -4889,6 +4889,8 @@
 		</constant>
 		<constant name="DRAW_DISABLED" value="3">
 		</constant>
+		<constant name="DRAW_FOCUSED" value="4">
+		</constant>
 	</constants>
 </class>
 <class name="BitMap" inherits="Resource" category="Core">

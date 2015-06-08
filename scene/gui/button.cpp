@@ -58,88 +58,75 @@ Size2 Button::get_minimum_size() const {
 
 
 void Button::_notification(int p_what) {
-	
 	if (p_what==NOTIFICATION_DRAW) {
-		
 		RID ci = get_canvas_item();
 		Size2 size=get_size();
 		Color color;
+		Ref<StyleBox> style;
 
-		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(get_draw_mode()));
-		
-		switch( get_draw_mode() ) {
-		
-			case DRAW_NORMAL: {
-			
-				if (!flat)
-					get_stylebox("normal" )->draw(  ci, Rect2(Point2(0,0), size) );
-				color=get_color("font_color");			
-			} break;
-			case DRAW_PRESSED: {
-			
-				get_stylebox("pressed" )->draw(  ci, Rect2(Point2(0,0), size) );
-				if (has_color("font_color_pressed"))
-					color=get_color("font_color_pressed");
-				else
-					color=get_color("font_color");
-			
-			} break;
-			case DRAW_HOVER: {
-			
-				get_stylebox("hover" )->draw(  ci, Rect2(Point2(0,0), size) );
-				color=get_color("font_color_hover");
-				
-			} break;
-			case DRAW_DISABLED: {
-
-				get_stylebox("disabled" )->draw(  ci, Rect2(Point2(0,0), size) );
-				color=get_color("font_color_disabled");
-			
-			} break;
+		DrawMode draw_mode = get_draw_mode();
+		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(draw_mode));
+		switch (draw_mode) {
+			case DRAW_FOCUSED:
+				style = get_stylebox("focus");
+				color = get_color("font_color");
+				break;
+			case DRAW_PRESSED:
+				style = get_stylebox("pressed" );
+				color = has_color("font_color_pressed") ? get_color("font_color_pressed") : get_color("font_color");
+			  break;
+			case DRAW_HOVER:
+				style = get_stylebox("hover");
+				color = get_color("font_color_hover");
+			  break;
+			case DRAW_DISABLED:
+				style = get_stylebox("disabled");
+				color = get_color("font_color_disabled");
+			  break;
+			case DRAW_NORMAL:
+			default:
+				style = get_stylebox("normal");
+				color = get_color("font_color");
+				break;
 		}
-		Ref<StyleBox> style = get_stylebox("normal" );
-		Ref<Font> font=get_font("font");
+		if(!(is_flat() && (draw_mode == DRAW_NORMAL || draw_mode == DRAW_FOCUSED)))
+			style->draw(ci, Rect2(Point2(0,0), size));
+		Ref<Font> font = get_font("font");
 		Ref<Texture> _icon;
 		if (icon.is_null() && has_icon("icon"))
 			_icon=Control::get_icon("icon");
 		else
 			_icon=icon;
 
-		Point2 icon_ofs = (!_icon.is_null())?Point2( _icon->get_width() + get_constant("hseparation"), 0):Point2();
-		int text_clip=size.width - style->get_minimum_size().width - icon_ofs.width;
-		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( text ) )/2.0;
+		Point2 icon_ofs = (!_icon.is_null()) ? Point2( _icon->get_width() + get_constant("hseparation"), 0) : Point2();
+		int text_clip = size.width - style->get_minimum_size().width - icon_ofs.width;
+		Point2 text_ofs = (size - style->get_minimum_size() - icon_ofs - font->get_string_size( text )) / 2.0;
 
 		switch(align) {
 			case ALIGN_LEFT: {
 				text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
-				text_ofs.y+=style->get_offset().y;
+				text_ofs.y += style->get_offset().y;
 			} break;
 			case ALIGN_CENTER: {
-				if (text_ofs.x<0)
-					text_ofs.x=0;
-				text_ofs+=icon_ofs;
-				text_ofs+=style->get_offset();
+				if (text_ofs.x < 0)
+					text_ofs.x = 0;
+				text_ofs += icon_ofs;
+				text_ofs += style->get_offset();
 			} break;
 			case ALIGN_RIGHT: {
-				text_ofs.x=size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size( text ).x;
-				text_ofs.y+=style->get_offset().y;
+				text_ofs.x = size.x - style->get_margin(MARGIN_RIGHT) - font->get_string_size( text ).x;
+				text_ofs.y += style->get_offset().y;
 			} break;
 		}
 
+		text_ofs.y += font->get_ascent();
+		font->draw(ci, text_ofs.floor(), text, color, clip_text ? text_clip : -1);
 
-		text_ofs.y+=font->get_ascent();
-		font->draw( ci, text_ofs.floor(), text, color,clip_text?text_clip:-1);
 		if (!_icon.is_null()) {
-		
-			_icon->draw(ci,Point2(style->get_offset().x, Math::floor( (size.height-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
+			_icon->draw(ci, Point2(style->get_offset().x,
+					Math::floor( (size.height - _icon->get_height()) / 2.0 ) ),
+					is_disabled() ? Color(1,1,1,0.4) : Color(1,1,1) );
 		}
-
-		if (has_focus()) {
-
-			Ref<StyleBox> style = get_stylebox("focus");
-			style->draw(ci,Rect2(Point2(),size));
-		}
-				
 	}
 }
 

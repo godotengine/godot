@@ -314,35 +314,25 @@ bool BaseButton::is_hovered() const {
 }
 
 BaseButton::DrawMode BaseButton::get_draw_mode() const {
-	
-	if (status.disabled) {
+	// Disabled
+	if (status.disabled)
 		return DRAW_DISABLED;
-	};
 	
 	//print_line("press attempt: "+itos(status.press_attempt)+" hover: "+itos(status.hovering)+" pressed: "+itos(status.pressed));
-	if (status.press_attempt==false && status.hovering && !status.pressed) {
 
-
+	// Hover action
+	if (!status.press_attempt && status.hovering && !status.pressed) {
 		return DRAW_HOVER;
-	} else {
-		/* determine if pressed or not */
-				
-		bool pressing;
-		if (status.press_attempt) {
-			
-			pressing=status.pressing_inside;
-			if (status.pressed)
-				pressing=!pressing;
-		} else {
-			
-			pressing=status.pressed;
-		}
-		
-		if (pressing) 
-			return DRAW_PRESSED;
-		else			
-			return DRAW_NORMAL;
-	}	
+	}
+
+	// Pressed action
+	if (status.pressed ||
+			(status.press_attempt && status.pressing_inside && !status.pressed))
+		return DRAW_PRESSED;
+
+	// Focused
+	if (has_focus())
+		return DRAW_FOCUSED;
 
 	return DRAW_NORMAL;
 }
@@ -367,9 +357,6 @@ bool BaseButton::get_click_on_press() const {
 	return status.click_on_press;
 }
 
-
-
-
 void BaseButton::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&BaseButton::_input_event);
@@ -392,19 +379,17 @@ void BaseButton::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("toggled", PropertyInfo( Variant::BOOL,"pressed") ) );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "disabled"), _SCS("set_disabled"), _SCS("is_disabled"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "toggle_mode"), _SCS("set_toggle_mode"), _SCS("is_toggle_mode"));
-    ADD_PROPERTY( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
+  ADD_PROPERTY( PropertyInfo( Variant::BOOL, "is_pressed"), _SCS("set_pressed"), _SCS("is_pressed"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "click_on_press"), _SCS("set_click_on_press"), _SCS("get_click_on_press"));
-
 
 	BIND_CONSTANT( DRAW_NORMAL );
 	BIND_CONSTANT( DRAW_PRESSED );
 	BIND_CONSTANT( DRAW_HOVER );
 	BIND_CONSTANT( DRAW_DISABLED );
-
+	BIND_CONSTANT( DRAW_FOCUSED );
 }
 
 BaseButton::BaseButton() {
-	
 	toggle_mode=false;
 	status.pressed=false;
 	status.press_attempt=false;
@@ -415,8 +400,6 @@ BaseButton::BaseButton() {
 	status.pressing_button=0;
 	set_focus_mode( FOCUS_ALL );
 	group=NULL;
-
-		
 }
 
 BaseButton::~BaseButton()
