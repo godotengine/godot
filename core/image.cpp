@@ -1124,6 +1124,7 @@ void Image::create( const char ** p_xpm ) {
 }
 #define DETECT_ALPHA_MAX_TRESHOLD 254
 #define DETECT_ALPHA_MIN_TRESHOLD 2
+
 #define DETECT_ALPHA( m_value )\
 { \
 	uint8_t value=m_value;\
@@ -1134,6 +1135,82 @@ void Image::create( const char ** p_xpm ) {
 		detected=true;\
 		break;\
 	}\
+}
+
+#define DETECT_NON_ALPHA( m_value )\
+{ \
+	uint8_t value=m_value;\
+	if (value>0) {\
+		\
+		detected=true;\
+		break;\
+	}\
+}
+
+
+bool Image::is_invisible() const {
+
+	if (format==FORMAT_GRAYSCALE ||
+	    format==FORMAT_RGB ||
+	    format==FORMAT_INDEXED)
+		return false;
+
+	int len = data.size();
+
+	if (len==0)
+		return true;
+
+	if (format >= FORMAT_YUV_422 && format <= FORMAT_YUV_444)
+		return false;
+
+	int w,h;
+	_get_mipmap_offset_and_size(1,len,w,h);
+
+	DVector<uint8_t>::Read r = data.read();
+	const unsigned char *data_ptr=r.ptr();
+
+	bool detected=false;
+
+	switch(format) {
+		case FORMAT_INTENSITY: {
+
+			for(int i=0;i<len;i++) {
+				DETECT_NON_ALPHA(data_ptr[i]);
+			}
+		} break;
+		case FORMAT_GRAYSCALE_ALPHA: {
+
+
+			for(int i=0;i<(len>>1);i++) {
+				DETECT_NON_ALPHA(data_ptr[(i<<1)+1]);
+			}
+
+		} break;
+		case FORMAT_RGBA: {
+
+			for(int i=0;i<(len>>2);i++) {
+				DETECT_NON_ALPHA(data_ptr[(i<<2)+3])
+			}
+
+		} break;
+		case FORMAT_INDEXED: {
+
+			return false;
+		} break;
+		case FORMAT_INDEXED_ALPHA: {
+
+			return false;
+		} break;
+		case FORMAT_PVRTC2_ALPHA:
+		case FORMAT_PVRTC4_ALPHA:
+		case FORMAT_BC2:
+		case FORMAT_BC3: {
+			detected=true;
+		} break;
+		default: {}
+	}
+
+	return !detected;
 }
 
 Image::AlphaMode Image::detect_alpha() const {

@@ -111,10 +111,10 @@ RichTextEditor::RichTextEditor() {
 	options->get_popup()->add_item("Clear",CLEAR);
 
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
-	file_dialog = memnew( FileDialog );
+	file_dialog = memnew( EditorFileDialog );
 	add_child(file_dialog);
 	file_dialog->add_filter("*.txt");
-	file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	file_dialog->connect("file_selected",this,"_file_selected");
 }
 

@@ -223,7 +223,7 @@ void AnimationPlayer::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 		
-			stop_all();
+			//stop_all();
 			clear_caches();
 		} break;
 	}

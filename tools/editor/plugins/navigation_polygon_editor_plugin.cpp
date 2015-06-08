@@ -459,7 +459,7 @@ void NavigationPolygonEditor::_bind_methods() {
 }
 
 NavigationPolygonEditor::NavigationPolygonEditor(EditorNode *p_editor) {
-
+	node=NULL;
 	canvas_item_editor=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();

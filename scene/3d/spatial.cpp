@@ -626,10 +626,11 @@ void Spatial::rotate_z(float p_radians){
 void Spatial::translate(const Vector3& p_offset){
 
 	Transform t =get_transform();
-	t.origin+=p_offset;
+	t.translate(p_offset);
 	set_transform(t);
 
 }
+
 void Spatial::scale(const Vector3& p_ratio){
 
 	Transform t =get_transform();

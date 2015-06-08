@@ -65,5 +65,24 @@ public:
 };
 
 
+class EditorMeshPreviewPlugin : public EditorResourcePreviewGenerator {
+
+	RID scenario;
+	RID mesh_instance;
+	RID viewport;
+	RID light;
+	RID light_instance;
+	RID light2;
+	RID light_instance2;
+	RID camera;
+public:
+
+	virtual bool handles(const String& p_type) const;
+	virtual Ref<Texture> generate(const RES& p_from);
+
+	EditorMeshPreviewPlugin();
+	~EditorMeshPreviewPlugin();
+};
+
 
 #endif // EDITORPREVIEWPLUGINS_H

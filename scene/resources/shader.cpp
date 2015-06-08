@@ -36,7 +36,7 @@
 
 Shader::Mode Shader::get_mode() const {
 
-	return (Mode)VisualServer::get_singleton()->shader_get_mode(shader);
+	return mode;
 }
 
 void Shader::set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs,int p_light_ofs) {
@@ -203,6 +203,7 @@ void Shader::_bind_methods() {
 
 Shader::Shader(Mode p_mode) {
 
+	mode=p_mode;
 	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
 	params_cache_dirty=true;
 }

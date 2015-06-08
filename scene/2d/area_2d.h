@@ -49,6 +49,7 @@ private:
 	Vector2 gravity_vec;
 	real_t gravity;
 	bool gravity_is_point;
+	real_t gravity_distance_scale;
 	real_t linear_damp;
 	real_t angular_damp;
 	uint32_t collision_mask;
@@ -132,6 +133,9 @@ public:
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
 
+	void set_gravity_distance_scale(real_t p_scale);
+	real_t get_gravity_distance_scale() const;
+
 	void set_gravity_vector(const Vector2& p_vec);
 	Vector2 get_gravity_vector() const;
 
@@ -158,6 +162,12 @@ public:
 
 	void set_layer_mask(uint32_t p_mask);
 	uint32_t get_layer_mask() const;
+
+	void set_collision_mask_bit(int p_bit, bool p_value);
+	bool get_collision_mask_bit(int p_bit) const;
+
+	void set_layer_mask_bit(int p_bit, bool p_value);
+	bool get_layer_mask_bit(int p_bit) const;
 
 	Array get_overlapping_bodies() const; //function for script
 	Array get_overlapping_areas() const; //function for script

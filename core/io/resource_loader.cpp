@@ -214,6 +214,7 @@ RES ResourceLoader::load(const String &p_path,const String& p_type_hint,bool p_n
 Ref<ResourceImportMetadata> ResourceLoader::load_import_metadata(const String &p_path) {
 
 
+
 	String local_path;
 	if (p_path.is_rel_path())
 		local_path="res://"+p_path;

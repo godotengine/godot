@@ -305,6 +305,7 @@ public:
 	};
 
 	AlphaMode detect_alpha() const;
+	bool is_invisible() const;
 
 	void put_indexed_pixel(int p_x, int p_y, uint8_t p_idx,int p_mipmap=0);
 	uint8_t get_indexed_pixel(int p_x, int p_y,int p_mipmap=0) const;
