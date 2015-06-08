@@ -164,6 +164,7 @@
     <ClCompile Include="..\..\tools\editor\default_saver.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_data.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_dir_dialog.cpp" />
+    <ClCompile Include="..\..\tools\editor\editor_file_dialog.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_file_system.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_fonts.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_help.cpp" />
@@ -174,6 +175,7 @@
     <ClCompile Include="..\..\tools\editor\editor_path.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_reimport_dialog.cpp" />
+    <ClCompile Include="..\..\tools\editor\editor_resource_preview.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_run.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_run_native.cpp" />
     <ClCompile Include="..\..\tools\editor\editor_run_script.cpp" />
@@ -210,6 +212,7 @@
     <ClCompile Include="..\..\tools\editor\plugins\collision_polygon_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\control_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.cpp" />
+    <ClCompile Include="..\..\tools\editor\plugins\editor_preview_plugins.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\item_list_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\light_occluder_2d_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\mesh_editor_plugin.cpp" />
@@ -322,6 +325,7 @@
     <ClInclude Include="..\..\tools\editor\doc_title_font.h" />
     <ClInclude Include="..\..\tools\editor\editor_data.h" />
     <ClInclude Include="..\..\tools\editor\editor_dir_dialog.h" />
+    <ClInclude Include="..\..\tools\editor\editor_file_dialog.h" />
     <ClInclude Include="..\..\tools\editor\editor_file_system.h" />
     <ClInclude Include="..\..\tools\editor\editor_fonts.h" />
     <ClInclude Include="..\..\tools\editor\editor_help.h" />
@@ -332,6 +336,7 @@
     <ClInclude Include="..\..\tools\editor\editor_path.h" />
     <ClInclude Include="..\..\tools\editor\editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\editor_reimport_dialog.h" />
+    <ClInclude Include="..\..\tools\editor\editor_resource_preview.h" />
     <ClInclude Include="..\..\tools\editor\editor_run.h" />
     <ClInclude Include="..\..\tools\editor\editor_run_native.h" />
     <ClInclude Include="..\..\tools\editor\editor_run_script.h" />
@@ -367,6 +372,7 @@
     <ClInclude Include="..\..\tools\editor\plugins\collision_polygon_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\control_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.h" />
+    <ClInclude Include="..\..\tools\editor\plugins\editor_preview_plugins.h" />
     <ClInclude Include="..\..\tools\editor\plugins\item_list_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\light_occluder_2d_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\mesh_editor_plugin.h" />

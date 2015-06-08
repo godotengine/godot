@@ -609,6 +609,15 @@
     <ClCompile Include="..\..\tools\editor\plugins\light_occluder_2d_editor_plugin.cpp">
       <Filter>tools\editor\plugins</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_file_dialog.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\editor_resource_preview.cpp">
+      <Filter>tools\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\editor_preview_plugins.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\tools\collada\collada.h">
@@ -1230,6 +1239,15 @@
       <Filter>tools\editor\plugins</Filter>
     </ClInclude>
     <ClInclude Include="..\..\tools\editor\plugins\light_occluder_2d_editor_plugin.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_file_dialog.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\editor_resource_preview.h">
+      <Filter>tools\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\editor_preview_plugins.h">
       <Filter>tools\editor\plugins</Filter>
     </ClInclude>
   </ItemGroup>

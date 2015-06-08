@@ -957,7 +957,7 @@ Error EditorTextureImportPlugin::_process_texture_data(Ref<ImageTexture> &textur
 }
 
 
-Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external){
+Error EditorTextureImportPlugin::import2(const String& p_path, const Ref<ResourceImportMetadata>& p_from,EditorExportPlatform::ImageCompression p_compr, bool p_external, bool p_preview){
 
 
 
