@@ -1097,7 +1097,7 @@ public:
 	/* EVENT QUEUING */
 
 	virtual void draw()=0;
-	virtual void flush()=0;
+	virtual void sync()=0;
 	virtual bool has_changed() const=0;
 	virtual void init()=0;
 	virtual void finish()=0;

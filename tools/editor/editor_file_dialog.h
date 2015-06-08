@@ -32,14 +32,14 @@
 #define EDITORFILEDIALOG_H
 
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/dialogs.h"
 #include "os/dir_access.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/texture_frame.h"
-
+#include "scene/gui/tool_button.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -48,6 +48,12 @@ class EditorFileDialog : public ConfirmationDialog {
 	OBJ_TYPE( EditorFileDialog, ConfirmationDialog );
 
 public:
+
+	enum DisplayMode {
+		DISPLAY_THUMBNAILS,
+		DISPLAY_LIST
+	};
+
 
 	enum Access {
 		ACCESS_RESOURCES,
@@ -82,8 +88,13 @@ private:
 	VBoxContainer *vbox;
 	Mode mode;
 	LineEdit *dir;
+
+	ToolButton *dir_prev;
+	ToolButton *dir_next;
+	ToolButton *dir_up;
+
 	OptionButton *drives;
-	Tree *tree;
+	ItemList *item_list;
 	TextureFrame *preview;
 	VBoxContainer *preview_vb;
 	HBoxContainer *list_hb;
@@ -93,6 +104,22 @@ private:
 	OptionButton *filter;
 	DirAccess *dir_access;
 	ConfirmationDialog *confirm_save;
+	ToolButton *mode_thumbnails;
+	ToolButton *mode_list;
+
+
+	ToolButton *favorite;
+
+	ToolButton *fav_up;
+	ToolButton *fav_down;
+	ToolButton *fav_rm;
+
+	ItemList *favorites;
+	ItemList *recent;
+
+	Vector<String> local_history;
+	int local_history_pos;
+	void _push_history();
 
 	Vector<String> filters;
 
@@ -101,6 +128,7 @@ private:
 	float preview_wheel_timeout;
 	static bool default_show_hidden_files;
 	bool show_hidden_files;
+	DisplayMode display_mode;
 
 	bool invalidated;
 
@@ -108,10 +136,20 @@ private:
 	void update_file_list();
 	void update_filters();
 
-	void _tree_selected();
+	void _update_favorites();
+	void _favorite_toggled(bool p_toggle);
+	void _favorite_selected(int p_idx);
+	void _favorite_move_up();
+	void _favorite_move_down();
+
+
+
+	void _recent_selected(int p_idx);
+
+	void _item_selected(int p_item);
+	void _item_dc_selected(int p_item);
 
 	void _select_drive(int p_idx);
-	void _tree_dc_selected();
 	void _dir_entered(String p_dir);
 	void _file_entered(const String& p_file);
 	void _action_pressed();
@@ -123,11 +161,16 @@ private:
 
 	void _update_drives();
 
+	void _go_up();
+	void _go_back();
+	void _go_forward();
+
 	virtual void _post_popup();
 
-
+	void _save_to_recent();
 	//callback funtion is callback(String p_path,Ref<Texture> preview,Variant udata) preview null if could not load
 
+	void _thumbnail_result(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
 	void _thumbnail_done(const String& p_path,const Ref<Texture>& p_preview, const Variant& p_udata);
 	void _request_single_thumbnail(const String& p_path);
 
@@ -150,6 +193,9 @@ public:
 	void set_current_dir(const String& p_dir);
 	void set_current_file(const String& p_file);
 	void set_current_path(const String& p_path);
+
+	void set_display_mode(DisplayMode p_mode);
+	DisplayMode get_display_mode() const;
 
 	void set_mode(Mode p_mode);
 	Mode get_mode() const;
@@ -194,5 +240,6 @@ public:
 
 VARIANT_ENUM_CAST( EditorFileDialog::Mode );
 VARIANT_ENUM_CAST( EditorFileDialog::Access );
+VARIANT_ENUM_CAST( EditorFileDialog::DisplayMode );
 
 #endif // EDITORFILEDIALOG_H

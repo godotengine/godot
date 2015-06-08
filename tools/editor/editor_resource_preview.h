@@ -8,9 +8,9 @@
 
 /* make previews for:
 *packdscene
--wav
+*wav
 *image
--mesh
+*mesh
 -font
 *script
 *material

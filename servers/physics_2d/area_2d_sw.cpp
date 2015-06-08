@@ -120,6 +120,7 @@ void Area2DSW::set_param(Physics2DServer::AreaParameter p_param, const Variant& 
 		case Physics2DServer::AREA_PARAM_GRAVITY: gravity=p_value; ; break;
 		case Physics2DServer::AREA_PARAM_GRAVITY_VECTOR: gravity_vector=p_value; ; break;
 		case Physics2DServer::AREA_PARAM_GRAVITY_IS_POINT: gravity_is_point=p_value; ; break;
+		case Physics2DServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE: gravity_distance_scale=p_value; ; break;
 		case Physics2DServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION:  point_attenuation=p_value; ; break;
 		case Physics2DServer::AREA_PARAM_LINEAR_DAMP: linear_damp=p_value; ; break;
 		case Physics2DServer::AREA_PARAM_ANGULAR_DAMP: angular_damp=p_value; ; break;
@@ -136,6 +137,7 @@ Variant Area2DSW::get_param(Physics2DServer::AreaParameter p_param) const {
 		case Physics2DServer::AREA_PARAM_GRAVITY: return gravity;
 		case Physics2DServer::AREA_PARAM_GRAVITY_VECTOR: return gravity_vector;
 		case Physics2DServer::AREA_PARAM_GRAVITY_IS_POINT: return gravity_is_point;
+		case Physics2DServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE: return gravity_distance_scale;
 		case Physics2DServer::AREA_PARAM_GRAVITY_POINT_ATTENUATION: return  point_attenuation;
 		case Physics2DServer::AREA_PARAM_LINEAR_DAMP: return linear_damp;
 		case Physics2DServer::AREA_PARAM_ANGULAR_DAMP: return angular_damp;
@@ -248,6 +250,7 @@ Area2DSW::Area2DSW() : CollisionObject2DSW(TYPE_AREA), monitor_query_list(this),
 	gravity=9.80665;
 	gravity_vector=Vector2(0,-1);
 	gravity_is_point=false;
+	gravity_distance_scale=0;
 	point_attenuation=1;
 
 	angular_damp=1.0;

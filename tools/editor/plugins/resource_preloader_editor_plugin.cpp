@@ -103,7 +103,7 @@ void ResourcePreloaderEditor::_load_pressed() {
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
 
-	file->set_mode(FileDialog::MODE_OPEN_FILE);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	file->popup_centered_ratio();
 
@@ -311,7 +311,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	paste->set_text(_TR("Paste"));
 	hbc->add_child(paste);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 
 

@@ -54,7 +54,7 @@ class SampleLibraryEditor : public Panel {
 	Button *_delete;
 	Tree *tree;
 
-	FileDialog *file;
+	EditorFileDialog *file;
 
 	ConfirmationDialog *dialog;
 

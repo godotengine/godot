@@ -226,6 +226,29 @@ struct Rect2 {
 		return true;
 	}
 
+	inline float distance_to(const Vector2& p_point) const {
+
+		float dist = 1e20;
+
+		if (p_point.x < pos.x) {
+			dist=MIN(dist,pos.x-p_point.x);
+		}
+		if (p_point.y < pos.y) {
+			dist=MIN(dist,pos.y-p_point.y);
+		}
+		if (p_point.x >= (pos.x+size.x) ) {
+			dist=MIN(p_point.x-(pos.x+size.x),dist);
+		}
+		if (p_point.y >= (pos.y+size.y) ) {
+			dist=MIN(p_point.y-(pos.y+size.y),dist);
+		}
+
+		if (dist==1e20)
+			return 0;
+		else
+			return dist;
+	}
+
 	_FORCE_INLINE_ bool intersects_transformed(const Matrix32& p_xform, const Rect2& p_rect) const;
 
 	bool intersects_segment(const Point2& p_from, const Point2& p_to, Point2* r_pos=NULL, Point2* r_normal=NULL) const;

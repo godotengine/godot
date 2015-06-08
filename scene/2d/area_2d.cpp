@@ -52,6 +52,17 @@ bool Area2D::is_gravity_a_point() const{
 	return gravity_is_point;
 }
 
+void Area2D::set_gravity_distance_scale(real_t p_scale){
+
+	gravity_distance_scale=p_scale;
+	Physics2DServer::get_singleton()->area_set_param(get_rid(),Physics2DServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE,p_scale);
+
+}
+
+real_t Area2D::get_gravity_distance_scale() const{
+	return gravity_distance_scale;
+}
+
 void Area2D::set_gravity_vector(const Vector2& p_vec){
 
 	gravity_vec=p_vec;
@@ -535,6 +546,39 @@ uint32_t Area2D::get_layer_mask() const {
 	return layer_mask;
 }
 
+void Area2D::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_collision_mask(mask);
+
+}
+
+bool Area2D::get_collision_mask_bit(int p_bit) const{
+
+	return get_collision_mask()&(1<<p_bit);
+}
+
+
+void Area2D::set_layer_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_layer_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_layer_mask(mask);
+
+}
+
+bool Area2D::get_layer_mask_bit(int p_bit) const{
+
+	return get_layer_mask()&(1<<p_bit);
+}
+
 
 void Area2D::_bind_methods() {
 
@@ -549,6 +593,9 @@ void Area2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_gravity_is_point","enable"),&Area2D::set_gravity_is_point);
 	ObjectTypeDB::bind_method(_MD("is_gravity_a_point"),&Area2D::is_gravity_a_point);
+
+	ObjectTypeDB::bind_method(_MD("set_gravity_distance_scale","distance_scale"),&Area2D::set_gravity_distance_scale);
+	ObjectTypeDB::bind_method(_MD("get_gravity_distance_scale"),&Area2D::get_gravity_distance_scale);
 
 	ObjectTypeDB::bind_method(_MD("set_gravity_vector","vector"),&Area2D::set_gravity_vector);
 	ObjectTypeDB::bind_method(_MD("get_gravity_vector"),&Area2D::get_gravity_vector);
@@ -570,6 +617,12 @@ void Area2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_layer_mask","layer_mask"),&Area2D::set_layer_mask);
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&Area2D::get_layer_mask);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&Area2D::set_collision_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&Area2D::get_collision_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&Area2D::set_layer_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&Area2D::get_layer_mask_bit);
 
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area2D::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area2D::is_monitoring_enabled);
@@ -600,6 +653,7 @@ void Area2D::_bind_methods() {
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
@@ -618,6 +672,7 @@ Area2D::Area2D() : CollisionObject2D(Physics2DServer::get_singleton()->area_crea
 	set_gravity(98);;
 	set_gravity_vector(Vector2(0,1));
 	gravity_is_point=false;
+	gravity_distance_scale=0;
 	linear_damp=0.1;
 	angular_damp=1;
 	locked=false;

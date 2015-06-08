@@ -41,6 +41,14 @@ class PacketPeer : public Reference {
 
 	static void _bind_methods();
 
+
+	Error _put_packet(const DVector<uint8_t> &p_buffer);
+	DVector<uint8_t> _get_packet() const;
+	Error _get_packet_error() const;
+
+
+	mutable Error last_get_error;
+
 public:
 
 	virtual int get_available_packet_count() const=0;

@@ -2253,6 +2253,14 @@ void SpatialEditorViewport::reset() {
 
 SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, EditorNode *p_editor, int p_index) {
 
+	_edit.mode=TRANSFORM_NONE;
+	_edit.plane=TRANSFORM_VIEW;
+	_edit.edited_gizmo=0;
+	_edit.snap=1;
+	_edit.gizmo_handle=0;
+
+
+
 	index=p_index;
 	editor=p_editor;
 	editor_selection=editor->get_editor_selection();;
@@ -3652,6 +3660,8 @@ void SpatialEditor::_default_light_angle_input(const InputEvent& p_event) {
 
 SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
+	gizmo.visible=true;
+	gizmo.scale=1.0;
 
 	viewport_environment = Ref<Environment>( memnew( Environment ) );
 	undo_redo=p_editor->get_undo_redo();

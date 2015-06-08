@@ -85,6 +85,14 @@ void PhysicsBody2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_layer_mask"),&PhysicsBody2D::get_layer_mask);
 	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&PhysicsBody2D::set_collision_mask);
 	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&PhysicsBody2D::get_collision_mask);
+
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask_bit","bit","value"),&PhysicsBody2D::set_collision_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask_bit","bit"),&PhysicsBody2D::get_collision_mask_bit);
+
+	ObjectTypeDB::bind_method(_MD("set_layer_mask_bit","bit","value"),&PhysicsBody2D::set_layer_mask_bit);
+	ObjectTypeDB::bind_method(_MD("get_layer_mask_bit","bit"),&PhysicsBody2D::get_layer_mask_bit);
+
 	ObjectTypeDB::bind_method(_MD("_set_layers","mask"),&PhysicsBody2D::_set_layers);
 	ObjectTypeDB::bind_method(_MD("_get_layers"),&PhysicsBody2D::_get_layers);
 	ObjectTypeDB::bind_method(_MD("set_one_way_collision_direction","dir"),&PhysicsBody2D::set_one_way_collision_direction);
@@ -122,6 +130,37 @@ uint32_t PhysicsBody2D::get_collision_mask() const {
 	return collision_mask;
 }
 
+void PhysicsBody2D::set_collision_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_collision_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_collision_mask(mask);
+
+}
+bool PhysicsBody2D::get_collision_mask_bit(int p_bit) const{
+
+	return get_collision_mask()&(1<<p_bit);
+}
+
+
+void PhysicsBody2D::set_layer_mask_bit(int p_bit, bool p_value) {
+
+	uint32_t mask = get_layer_mask();
+	if (p_value)
+		mask|=1<<p_bit;
+	else
+		mask&=~(1<<p_bit);
+	set_layer_mask(mask);
+
+}
+
+bool PhysicsBody2D::get_layer_mask_bit(int p_bit) const{
+
+	return get_layer_mask()&(1<<p_bit);
+}
 
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) : CollisionObject2D( Physics2DServer::get_singleton()->body_create(p_mode), false) {
 

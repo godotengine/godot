@@ -33,7 +33,7 @@ void EditorResourcePreview::_thread_func(void *ud) {
 
 void EditorResourcePreview::_preview_ready(const String& p_str,const Ref<Texture>& p_texture,ObjectID id,const StringName& p_func,const Variant& p_ud) {
 
-	print_line("preview is ready");
+	//print_line("preview is ready");
 	preview_mutex->lock();
 
 	Item item;
@@ -52,7 +52,7 @@ void EditorResourcePreview::_preview_ready(const String& p_str,const Ref<Texture
 Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,const String& cache_base) {
 
 	String type = ResourceLoader::get_resource_type(p_item.path);
-	print_line("resource type is: "+type);
+	//print_line("resource type is: "+type);
 
 	if (type=="")
 		return Ref<Texture>(); //could not guess type
@@ -68,7 +68,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 	}
 
 	if (generated.is_valid()) {
-		print_line("was generated");
+		//print_line("was generated");
 		int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
 		//wow it generated a preview... save cache
 		ResourceSaver::save(cache_base+".png",generated);
@@ -78,7 +78,7 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 		f->store_line(FileAccess::get_md5(p_item.path));
 		memdelete(f);
 	} else {
-		print_line("was not generated");
+		//print_line("was not generated");
 
 	}
 
@@ -87,18 +87,18 @@ Ref<Texture> EditorResourcePreview::_generate_preview(const QueueItem& p_item,co
 
 void EditorResourcePreview::_thread() {
 
-	print_line("begin thread");
+	//print_line("begin thread");
 	while(!exit) {
 
-		print_line("wait for semaphore");
+		//print_line("wait for semaphore");
 		preview_sem->wait();
 		preview_mutex->lock();
 
-		print_line("blue team go");
+		//print_line("blue team go");
 
 		if (queue.size()) {
 
-			print_line("pop from queue");
+
 
 			QueueItem item = queue.front()->get();
 			queue.pop_front();
@@ -106,6 +106,7 @@ void EditorResourcePreview::_thread() {
 
 			Ref<Texture> texture;
 
+			//print_line("pop from queue "+item.path);
 
 			uint64_t modtime = FileAccess::get_modified_time(item.path);
 			int thumbnail_size = EditorSettings::get_singleton()->get("file_dialog/thumbnail_size");
@@ -124,11 +125,11 @@ void EditorResourcePreview::_thread() {
 				//does not have it, try to load a cached thumbnail
 
 				String file = cache_base+".txt";
-				print_line("cachetxt at "+file);
+				//print_line("cachetxt at "+file);
 				FileAccess *f=FileAccess::open(file,FileAccess::READ);
 				if (!f) {
 
-					print_line("generate because not cached");
+					//print_line("generate because not cached");
 
 					//generate
 					texture=_generate_preview(item,cache_base);
@@ -179,7 +180,7 @@ void EditorResourcePreview::_thread() {
 
 				}
 
-				print_line("notify of preview ready");
+				//print_line("notify of preview ready");
 				call_deferred("_preview_ready",item.path,texture,item.id,item.function,item.userdata);
 
 			}
@@ -206,7 +207,7 @@ void EditorResourcePreview::queue_resource_preview(const String& p_path, Object*
 
 	}
 
-	print_line("send to thread");
+	//print_line("send to thread "+p_path);
 	QueueItem item;
 	item.function=p_receiver_func;
 	item.id=p_receiver->get_instance_ID();

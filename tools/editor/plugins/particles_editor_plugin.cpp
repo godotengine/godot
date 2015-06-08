@@ -394,7 +394,7 @@ ParticlesEditor::ParticlesEditor() {
 	add_child(err_dialog);
 
 
-	emission_file_dialog = memnew( FileDialog );
+	emission_file_dialog = memnew( EditorFileDialog );
 	add_child(emission_file_dialog);
 	emission_file_dialog->connect("file_selected",this,"_resource_seleted");
 	emission_tree_dialog = memnew( SceneTreeDialog );
@@ -410,7 +410,7 @@ ParticlesEditor::ParticlesEditor() {
 		emission_file_dialog->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
 	}
 
-	emission_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);

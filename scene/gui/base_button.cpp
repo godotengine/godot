@@ -148,6 +148,7 @@ void BaseButton::_input_event(InputEvent p_event) {
 					update();
 			}
 		} break;
+		case InputEvent::ACTION:
 		case InputEvent::JOYSTICK_BUTTON:
 		case InputEvent::KEY: {
 		
