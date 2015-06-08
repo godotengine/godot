@@ -85,7 +85,6 @@ void TextureButton::_notification(int p_what) {
 
 			switch (draw_mode) {
 				case DRAW_NORMAL: {
-
 					if (normal.is_valid())
 						texdraw=normal;
 				} break;
