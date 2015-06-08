@@ -215,6 +215,7 @@
     <ClCompile Include="..\..\scene\gui\check_box.cpp" />
     <ClCompile Include="..\..\scene\gui\check_button.cpp" />
     <ClCompile Include="..\..\scene\gui\color_picker.cpp" />
+    <ClCompile Include="..\..\scene\gui\color_ramp_edit.cpp" />
     <ClCompile Include="..\..\scene\gui\container.cpp" />
     <ClCompile Include="..\..\scene\gui\control.cpp" />
     <ClCompile Include="..\..\scene\gui\custom_button.cpp" />
@@ -223,6 +224,7 @@
     <ClCompile Include="..\..\scene\gui\graph_edit.cpp" />
     <ClCompile Include="..\..\scene\gui\graph_node.cpp" />
     <ClCompile Include="..\..\scene\gui\grid_container.cpp" />
+    <ClCompile Include="..\..\scene\gui\item_list.cpp" />
     <ClCompile Include="..\..\scene\gui\label.cpp" />
     <ClCompile Include="..\..\scene\gui\line_edit.cpp" />
     <ClCompile Include="..\..\scene\gui\margin_container.cpp" />
@@ -275,6 +277,7 @@
     <ClCompile Include="..\..\scene\resources\capsule_shape.cpp" />
     <ClCompile Include="..\..\scene\resources\capsule_shape_2d.cpp" />
     <ClCompile Include="..\..\scene\resources\circle_shape_2d.cpp" />
+    <ClCompile Include="..\..\scene\resources\color_ramp.cpp" />
     <ClCompile Include="..\..\scene\resources\concave_polygon_shape.cpp" />
     <ClCompile Include="..\..\scene\resources\concave_polygon_shape_2d.cpp" />
     <ClCompile Include="..\..\scene\resources\convex_polygon_shape.cpp" />
@@ -415,6 +418,7 @@
     <ClInclude Include="..\..\scene\gui\check_box.h" />
     <ClInclude Include="..\..\scene\gui\check_button.h" />
     <ClInclude Include="..\..\scene\gui\color_picker.h" />
+    <ClInclude Include="..\..\scene\gui\color_ramp_edit.h" />
     <ClInclude Include="..\..\scene\gui\container.h" />
     <ClInclude Include="..\..\scene\gui\control.h" />
     <ClInclude Include="..\..\scene\gui\custom_button.h" />
@@ -423,6 +427,7 @@
     <ClInclude Include="..\..\scene\gui\graph_edit.h" />
     <ClInclude Include="..\..\scene\gui\graph_node.h" />
     <ClInclude Include="..\..\scene\gui\grid_container.h" />
+    <ClInclude Include="..\..\scene\gui\item_list.h" />
     <ClInclude Include="..\..\scene\gui\label.h" />
     <ClInclude Include="..\..\scene\gui\line_edit.h" />
     <ClInclude Include="..\..\scene\gui\margin_container.h" />
@@ -473,6 +478,7 @@
     <ClInclude Include="..\..\scene\resources\capsule_shape.h" />
     <ClInclude Include="..\..\scene\resources\capsule_shape_2d.h" />
     <ClInclude Include="..\..\scene\resources\circle_shape_2d.h" />
+    <ClInclude Include="..\..\scene\resources\color_ramp.h" />
     <ClInclude Include="..\..\scene\resources\concave_polygon_shape.h" />
     <ClInclude Include="..\..\scene\resources\concave_polygon_shape_2d.h" />
     <ClInclude Include="..\..\scene\resources\convex_polygon_shape.h" />

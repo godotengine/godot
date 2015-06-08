@@ -618,6 +618,15 @@
     <ClCompile Include="..\..\scene\gui\check_box.cpp">
       <Filter>scene\gui</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\scene\gui\color_ramp_edit.cpp">
+      <Filter>scene\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\scene\gui\item_list.cpp">
+      <Filter>scene\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\scene\resources\color_ramp.cpp">
+      <Filter>scene\resources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\scene\register_scene_types.h">
@@ -1204,6 +1213,15 @@
     </ClInclude>
     <ClInclude Include="..\..\scene\gui\check_box.h">
       <Filter>scene\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\gui\color_ramp_edit.h">
+      <Filter>scene\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\gui\item_list.h">
+      <Filter>scene\gui</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\scene\resources\color_ramp.h">
+      <Filter>scene\resources</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

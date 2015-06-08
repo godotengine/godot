@@ -210,6 +210,7 @@
     <ClCompile Include="..\..\tools\editor\plugins\canvas_item_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\collision_polygon_2d_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\collision_polygon_editor_plugin.cpp" />
+    <ClCompile Include="..\..\tools\editor\plugins\color_ramp_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\control_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.cpp" />
     <ClCompile Include="..\..\tools\editor\plugins\editor_preview_plugins.cpp" />
@@ -370,6 +371,7 @@
     <ClInclude Include="..\..\tools\editor\plugins\canvas_item_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\collision_polygon_2d_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\collision_polygon_editor_plugin.h" />
+    <ClInclude Include="..\..\tools\editor\plugins\color_ramp_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\control_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\cube_grid_theme_editor_plugin.h" />
     <ClInclude Include="..\..\tools\editor\plugins\editor_preview_plugins.h" />

@@ -618,6 +618,9 @@
     <ClCompile Include="..\..\tools\editor\plugins\editor_preview_plugins.cpp">
       <Filter>tools\editor\plugins</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\tools\editor\plugins\color_ramp_editor_plugin.cpp">
+      <Filter>tools\editor\plugins</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\tools\collada\collada.h">
@@ -1248,6 +1251,9 @@
       <Filter>tools\editor</Filter>
     </ClInclude>
     <ClInclude Include="..\..\tools\editor\plugins\editor_preview_plugins.h">
+      <Filter>tools\editor\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tools\editor\plugins\color_ramp_editor_plugin.h">
       <Filter>tools\editor\plugins</Filter>
     </ClInclude>
   </ItemGroup>
