@@ -77,7 +77,6 @@ public:
 		DRAW_PRESSED,
 		DRAW_HOVER,
 		DRAW_DISABLED,
-		DRAW_FOCUSED,
 	};
 
 	DrawMode get_draw_mode() const;

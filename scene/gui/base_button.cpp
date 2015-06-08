@@ -327,10 +327,6 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 	if (status.pressed || (status.press_attempt && status.pressing_inside && !status.pressed))
 		return DRAW_PRESSED;
 
-	// Focused
-	if (has_focus())
-		return DRAW_FOCUSED;
-
 	return DRAW_NORMAL;
 }
 
@@ -383,7 +379,6 @@ void BaseButton::_bind_methods() {
 	BIND_CONSTANT( DRAW_PRESSED );
 	BIND_CONSTANT( DRAW_HOVER );
 	BIND_CONSTANT( DRAW_DISABLED );
-	BIND_CONSTANT( DRAW_FOCUSED );
 }
 
 BaseButton::BaseButton() {

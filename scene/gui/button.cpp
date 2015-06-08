@@ -67,10 +67,6 @@ void Button::_notification(int p_what) {
 		DrawMode draw_mode = get_draw_mode();
 		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(draw_mode));
 		switch (draw_mode) {
-			case DRAW_FOCUSED:
-				style = get_stylebox("focus");
-				color = get_color("font_color");
-				break;
 			case DRAW_PRESSED:
 				style = get_stylebox("pressed" );
 				color = has_color("font_color_pressed") ? get_color("font_color_pressed") : get_color("font_color");
@@ -91,8 +87,12 @@ void Button::_notification(int p_what) {
 		}
 
 		// Flat button means don't draw style (decorations) if normal or focused.
-		if(!(is_flat() && (draw_mode == DRAW_NORMAL || draw_mode == DRAW_FOCUSED)))
+		if (!(is_flat() && draw_mode == DRAW_NORMAL))
 			style->draw(ci, Rect2(Point2(0,0), size));
+
+		// Draw Focused as overlay if button is in focus
+		if (has_focus() && !get_stylebox("focus").is_null())
+			get_stylebox("focus")->draw(ci, Rect2(Point2(0,0), size));
 
 		Ref<Font> font = get_font("font");
 		Ref<Texture> _icon;
