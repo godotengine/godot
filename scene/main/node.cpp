@@ -840,6 +840,28 @@ bool Node::has_node(const NodePath& p_path) const {
 	return _get_node(p_path)!=NULL;
 }
 
+
+Node* Node::find_node(const String& p_mask,bool p_recursive,bool p_owned) const {
+
+	Node * const*cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for(int i=0;i<ccount;i++) {
+		if (p_owned && !cptr[i]->data.owner)
+			continue;
+		if (cptr[i]->data.name.operator String().match(p_mask))
+			return cptr[i];
+
+		if (!p_recursive)
+			continue;
+
+		Node* ret = cptr[i]->find_node(p_mask,true,p_owned);
+		if (ret)
+			return ret;
+	}
+	return NULL;
+
+}
+
 Node *Node::get_parent() const {
 
 	return data.parent;
@@ -1807,6 +1829,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
 	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
+	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::get_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
 
