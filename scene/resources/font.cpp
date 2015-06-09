@@ -510,6 +510,7 @@ float Font::draw_char(RID p_canvas_item, const Point2& p_pos, const CharType& p_
 
 void Font::_bind_methods() {
 
+    ObjectTypeDB::bind_method(_MD("create_from_fnt","path"),&Font::create_from_fnt);
 	ObjectTypeDB::bind_method(_MD("set_height","px"),&Font::set_height);
 	ObjectTypeDB::bind_method(_MD("get_height"),&Font::get_height);
 
