@@ -196,11 +196,80 @@ Matrix32 Camera2D::get_camera_transform()  {
 }
 
 
+void Camera2D::shake(float intensity_x, float intensity_y,float time){
+	_shake_duration += 1 * get_fixed_process_delta_time();
+	if (_shake_duration <= time){
+	Vector2 *instance = memnew(Vector2(Math::random(-intensity_x, intensity_x), Math::random(-intensity_y, intensity_y)));
+	Vector2& intensity = *instance;
+	offset = intensity;
+	}
+	_update_scroll();
+}
+
+void Camera2D::flash(Color color,Vector2 position,float intesity_speed,float max_intensity){
+	is_flashing = true;
+
+	flash_color.r = color.r;
+	flash_color.g = color.g;
+	flash_color.b = color.b;
+
+	screen_rect.pos.x = position.x;
+	screen_rect.pos.y = position.y;
+
+	if (is_flashing)
+		flash_color.a += intesity_speed * get_fixed_process_delta_time();
+
+	if (flash_color.a < max_intensity){
+		is_flashing = true;
+		update();
+	}
+	if (flash_color.a >= max_intensity){
+		flash_color.a = 0;
+		is_flashing = false;
+	}
+}
+
+void Camera2D::fade(Color color, Vector2 position, float intesity_speed){
+	is_fading = true;
+
+	fade_color.r = color.r;
+	fade_color.g = color.g;
+	fade_color.b = color.b;
+
+	screen_rect.pos.x = position.x;
+	screen_rect.pos.y = position.y;
+
+	if (is_fading)
+		fade_color.a -= intesity_speed * get_fixed_process_delta_time();
+
+	if (fade_color.a > 0){
+		is_fading = true;
+		update();
+	}
+	if (fade_color.a <= 0){
+		fade_color.a = 0;
+		is_fading = false;
+	}
+}
+
+bool Camera2D::fading(){
+	return is_fading;
+}
+
+bool Camera2D::flashing(){
+	return is_flashing;
+}
 
 void Camera2D::_notification(int p_what) {
 
 	switch(p_what) {
-
+		case NOTIFICATION_DRAW: {
+			//effects 
+			if (is_flashing)
+				draw_rect(screen_rect, flash_color);
+			if (is_fading)
+				draw_rect(screen_rect, fade_color);
+		}break;
 		case NOTIFICATION_FIXED_PROCESS: {
 
 			_update_scroll();
@@ -438,7 +507,14 @@ void Camera2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Camera2D::set_offset);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&Camera2D::get_offset);
+	
+	ObjectTypeDB::bind_method(_MD("shake", "intensitX,intensityY"), &Camera2D::shake);
+	ObjectTypeDB::bind_method(_MD("flash", "color", "position", "force","stop_at"), &Camera2D::flash);
+	ObjectTypeDB::bind_method(_MD("fade", "color", "position", "force"), &Camera2D::fade);
+	ObjectTypeDB::bind_method(_MD("fading"), &Camera2D::flashing);
+	ObjectTypeDB::bind_method(_MD("flashing"), &Camera2D::fading);
 
+	
 	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&Camera2D::set_centered);
 	ObjectTypeDB::bind_method(_MD("is_centered"),&Camera2D::is_centered);
 
