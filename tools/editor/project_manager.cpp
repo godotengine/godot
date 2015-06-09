@@ -245,7 +245,8 @@ public:
 		project_name->clear();
 
 		if (import_mode) {
-			set_title("Import Existing Project:");
+			set_title("Import Existing Project");
+			get_ok()->set_text("Import");
 			pp->set_text("Project Path: (Must exist)");
 			pn->set_text("Project Name:");
 			pn->hide();
@@ -254,7 +255,8 @@ public:
 			popup_centered(Size2(500,125));
 
 		} else {
-			set_title("Create New Project:");
+			set_title("Create New Project");
+			get_ok()->set_text("Create");
 			pp->set_text("Project Path:");
 			pn->set_text("Project Name:");
 			pn->show();
@@ -313,7 +315,6 @@ public:
 		l->add_color_override("font_color",Color(1,0.4,0.3,0.8));
 		l->set_align(Label::ALIGN_CENTER);
 
-		get_ok()->set_text("Create");
 		DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		project_path->set_text(d->get_current_dir());
 		memdelete(d);
