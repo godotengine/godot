@@ -42,22 +42,18 @@ Size2 TextureButton::get_minimum_size() const {
 			else
 				rscale= hover->get_size();
 		} else
-			rscale= pressed->get_size()*scale;
+			rscale= pressed->get_size();//*get_scale();
 
 	} else
 		rscale= normal->get_size();
 
-	return rscale*scale;
+	return rscale;
 }
 
 
 bool TextureButton::has_point(const Point2& p_point) const {
 
-	if (scale[0] <= 0 || scale[1] <= 0) {
-		return false;
-	}
-
-	Point2 ppos = p_point/scale;
+	Point2 ppos = p_point;
 
 	if (click_mask.is_valid()) {
 
@@ -122,15 +118,24 @@ void TextureButton::_notification(int p_what) {
 			}
 
 			if (texdraw.is_valid()) {
-				Rect2 drect(Point2(),texdraw->get_size()*scale);
+				Rect2 drect(Point2(),texdraw->get_size());
+				if(draw_mode == DRAW_PRESSED) {
+					Size2 delta = ((pressed_scale - Size2(1, 1)) / 2) * drect.size;
+					drect.pos -= delta;
+					drect.size += (delta * 2);
+				}
 				draw_texture_rect(texdraw,drect,false,modulate);
 
 			}
 			if (has_focus() && focused.is_valid()) {
 
-				Rect2 drect(Point2(),focused->get_size()*scale);
+				Rect2 drect(Point2(),focused->get_size());
+				if(draw_mode == DRAW_PRESSED) {
+					Size2 delta = ((pressed_scale - Size2(1, 1)) / 2) * drect.size;
+					drect.pos -= delta;
+					drect.size += (delta * 2);
+				}
 				draw_texture_rect(focused,drect,false,modulate);
-
 			};
 
 		} break;
@@ -145,7 +150,7 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_disabled_texture","texture:Texture"),&TextureButton::set_disabled_texture);
 	ObjectTypeDB::bind_method(_MD("set_focused_texture","texture:Texture"),&TextureButton::set_focused_texture);
 	ObjectTypeDB::bind_method(_MD("set_click_mask","mask:BitMap"),&TextureButton::set_click_mask);
-	ObjectTypeDB::bind_method(_MD("set_scale","scale"),&TextureButton::set_scale);
+	ObjectTypeDB::bind_method(_MD("set_pressed_scale","scale"),&TextureButton::set_pressed_scale);
 	ObjectTypeDB::bind_method(_MD("set_modulate","color"),&TextureButton::set_modulate);
 
 	ObjectTypeDB::bind_method(_MD("get_normal_texture:Texture"),&TextureButton::get_normal_texture);
@@ -154,7 +159,7 @@ void TextureButton::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_disabled_texture:Texture"),&TextureButton::get_disabled_texture);
 	ObjectTypeDB::bind_method(_MD("get_focused_texture:Texture"),&TextureButton::get_focused_texture);
 	ObjectTypeDB::bind_method(_MD("get_click_mask:BitMap"),&TextureButton::get_click_mask);
-	ObjectTypeDB::bind_method(_MD("get_scale"),&TextureButton::get_scale);
+	ObjectTypeDB::bind_method(_MD("get_pressed_scale"),&TextureButton::get_pressed_scale);
 	ObjectTypeDB::bind_method(_MD("get_modulate"),&TextureButton::get_modulate);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/normal",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_normal_texture"), _SCS("get_normal_texture"));
@@ -163,7 +168,7 @@ void TextureButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/disabled",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_disabled_texture"), _SCS("get_disabled_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/focused",PROPERTY_HINT_RESOURCE_TYPE,"Texture"), _SCS("set_focused_texture"), _SCS("get_focused_texture"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"textures/click_mask",PROPERTY_HINT_RESOURCE_TYPE,"BitMap"), _SCS("set_click_mask"), _SCS("get_click_mask")) ;
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"params/scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_scale"), _SCS("get_scale"));
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"params/pressed_scale",PROPERTY_HINT_RANGE,"0.01,1024,0.01"), _SCS("set_pressed_scale"), _SCS("get_pressed_scale"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR,"params/modulate"), _SCS("set_modulate"), _SCS("get_modulate"));
 
 }
@@ -232,16 +237,15 @@ void TextureButton::set_focused_texture(const Ref<Texture>& p_focused) {
 	focused = p_focused;
 };
 
-void TextureButton::set_scale(Size2 p_scale) {
+void TextureButton::set_pressed_scale(Size2 p_scale) {
 
-	scale=p_scale;
-	minimum_size_changed();
+	pressed_scale=p_scale;
 	update();
 }
 
-Size2 TextureButton::get_scale() const{
+Size2 TextureButton::get_pressed_scale() const{
 
-	return scale;
+	return pressed_scale;
 }
 
 void TextureButton::set_modulate(const Color& p_modulate) {
@@ -255,6 +259,6 @@ Color TextureButton::get_modulate() const {
 
 
 TextureButton::TextureButton() {
-	scale=Size2(1.0, 1.0);
+	pressed_scale=Size2(1.0, 1.0);
 	modulate=Color(1,1,1);
 }
