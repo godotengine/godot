@@ -622,9 +622,41 @@ float Matrix32::basis_determinant() const {
 }
 
 Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) const {
+	
+	//extract parameters
+	Vector2 p1 = get_origin();
+	Vector2 p2 = p_transform.get_origin();
+	
+	float r1 = get_rotation();
+	float r2 = p_transform.get_rotation();
+	
+	Vector2 s1 = get_scale();
+	Vector2 s2 = p_transform.get_scale();
+	
+	//slerp rotation
+	Vector2 v1(Math::cos(r1), Math::sin(r1));
+	Vector2 v2(Math::cos(r2), Math::sin(r2));
+	
+	float dot = v1.dot(v2);
+	
+	dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot); //clamp dot to [-1,1]
+	
+	Vector2 v;
 
-
-	return Matrix32();
+	if (dot > 0.9995f) {
+		v = Vector2::linear_interpolate(v1, v2, p_c); //linearly interpolate to avoid numerical precision issues
+		v.normalize();
+	} else {
+		float angle = Math::acos(dot) * p_c;
+		Vector2 v3(v2 - v1 * dot);
+		v3.normalize();
+		v = v1 * Math::cos(angle) + v3 * Math::sin(angle);
+	}
+	
+	//construct matrix
+	Matrix32 res(Math::atan2(v.y, v.x), Vector2::linear_interpolate(p1, p2, p_c));
+	res.scale(Vector2::linear_interpolate(s1, s2, p_c));
+	return res;
 }
 
 Matrix32::operator String() const {
