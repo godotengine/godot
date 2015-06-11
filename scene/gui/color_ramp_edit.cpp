@@ -48,6 +48,7 @@ void ColorRampEdit::_input_event(const InputEvent& p_event) {
 
 		points.remove(grabbed);
 		grabbed=-1;
+		grabbing=false;
 		update();
 		emit_signal("ramp_changed");
 		accept_event();
@@ -67,6 +68,7 @@ void ColorRampEdit::_input_event(const InputEvent& p_event) {
 		{
 			points.remove(grabbed);
 			grabbed=-1;
+			grabbing=false;
 			update();
 			emit_signal("ramp_changed");
 			accept_event();
