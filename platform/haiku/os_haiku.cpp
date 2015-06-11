@@ -1,14 +1,37 @@
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/gles2/rasterizer_gles2.h"
+#include "servers/physics/physics_server_sw.h"
+#include "main/main.h"
+
 #include "os_haiku.h"
 
+
 OS_Haiku::OS_Haiku() {
-	
+	AudioDriverManagerSW::add_driver(&driver_dummy);
 };
 
 void OS_Haiku::run() {
-	ERR_PRINT("run() NOT IMPLEMENTED");
+	if (!main_loop) {
+		return;
+	}
+
+	main_loop->init();
+
+	/*
+	while (true) {
+		// TODO: process events
+
+		if (Main::iteration() == true) {
+			break;
+		}
+	}
+	*/
+
+	app->Run();
+	delete app;
+
+	main_loop->finish();
 }
 
 String OS_Haiku::get_name() {
@@ -31,20 +54,44 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	main_loop = NULL;
 	current_video_mode = p_desired;
 
+	app = new HaikuApplication();
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
-	//context_gl = memnew( ContextGL_X11( x11_display, x11_window,current_videomode, false ) );
-	//context_gl->initialize();
+	context_gl = memnew(ContextGL_Haiku(&window, current_video_mode));
+	context_gl->initialize();
 
 	rasterizer = memnew(RasterizerGLES2);
 #endif
 
 	visual_server = memnew(VisualServerRaster(rasterizer));
 
+	ERR_FAIL_COND(!visual_server);
+
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	}
 
 	visual_server->init();
+
+	physics_server = memnew(PhysicsServerSW);
+	physics_server->init();
+	physics_2d_server = memnew(Physics2DServerSW);
+	physics_2d_server->init();
+
+	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
+
+	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init() != OK) {
+		ERR_PRINT("Initializing audio failed.");
+	}
+
+	sample_manager = memnew(SampleManagerMallocSW);
+	audio_server = memnew(AudioServerSW(sample_manager));
+	audio_server->init();
+
+	spatial_sound_server = memnew(SpatialSoundServerSW);
+	spatial_sound_server->init();
+	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
+	spatial_sound_2d_server->init();
 }
 
 void OS_Haiku::finalize() {
@@ -54,9 +101,29 @@ void OS_Haiku::finalize() {
 
 	main_loop = NULL;
 
+	spatial_sound_server->finish();
+	memdelete(spatial_sound_server);
+
+	spatial_sound_2d_server->finish();
+	memdelete(spatial_sound_2d_server);
+
+	audio_server->finish();
+	memdelete(audio_server);
+	memdelete(sample_manager);
+
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(rasterizer);
+
+	physics_server->finish();
+	memdelete(physics_server);
+
+	physics_2d_server->finish();
+	memdelete(physics_2d_server);
+
+#if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
+	memdelete(context_gl);
+#endif
 }
 
 void OS_Haiku::set_main_loop(MainLoop* p_main_loop) {
@@ -78,8 +145,21 @@ void OS_Haiku::delete_main_loop() {
 	main_loop = NULL;
 }
 
+void OS_Haiku::release_rendering_thread() {
+	ERR_PRINT("release_rendering_thread() NOT IMPLEMENTED");
+}
+
+void OS_Haiku::make_rendering_thread() {
+	ERR_PRINT("make_rendering_thread() NOT IMPLEMENTED");
+}
+
 bool OS_Haiku::can_draw() const {
-	ERR_PRINT("can_draw() NOT IMPLEMENTED");
+	// TODO: implement
+	return true;
+}
+
+void OS_Haiku::swap_buffers() {
+	context_gl->swap_buffers();
 }
 
 Point2 OS_Haiku::get_mouse_pos() const {
@@ -95,7 +175,8 @@ void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
 }
 
 void OS_Haiku::set_window_title(const String& p_title) {
-	ERR_PRINT("set_window_title() NOT IMPLEMENTED");
+	//ERR_PRINT("set_window_title() NOT IMPLEMENTED");
+	window->SetTitle(p_title.utf8().get_data());
 }
 
 Size2 OS_Haiku::get_window_size() const {
