@@ -655,7 +655,7 @@ Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) cons
 	
 	//construct matrix
 	Matrix32 res(Math::atan2(v.y, v.x), Vector2::linear_interpolate(p1, p2, p_c));
-	res.scale(Vector2::linear_interpolate(s1, s2, p_c));
+	res.scale_basis(Vector2::linear_interpolate(s1, s2, p_c));
 	return res;
 }
 
