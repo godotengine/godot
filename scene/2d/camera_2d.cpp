@@ -81,35 +81,39 @@ Matrix32 Camera2D::get_camera_transform()  {
 	if (!first) {
 
 
-		if (centered) {
+		if (anchor_mode==ANCHOR_MODE_DRAG_CENTER) {
 
-            if (h_drag_enabled) {
-                camera_pos.x = MIN( camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT]));
-                camera_pos.x = MAX( camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * drag_margin[MARGIN_LEFT]));
-            } else {
+			if (h_drag_enabled) {
+				camera_pos.x = MIN( camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT]));
+				camera_pos.x = MAX( camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * drag_margin[MARGIN_LEFT]));
+			} else {
 
-		if (h_ofs<0) {
-                    camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT] * h_ofs;
-                } else {
-                    camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_LEFT] * h_ofs;
-                }
-            }
+				if (h_ofs<0) {
+					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_RIGHT] * h_ofs;
+				} else {
+					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_LEFT] * h_ofs;
+				}
+			}
 
-            if (v_drag_enabled) {
+			if (v_drag_enabled) {
 
-                camera_pos.y = MIN( camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM]));
-                camera_pos.y = MAX( camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * drag_margin[MARGIN_TOP]));
+				camera_pos.y = MIN( camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM]));
+				camera_pos.y = MAX( camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * drag_margin[MARGIN_TOP]));
 
-            } else {
+			} else {
 
-                if (v_ofs<0) {
-                    camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_TOP] * v_ofs;
-                } else {
-                    camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM] * v_ofs;
-                }
-            }
+				if (v_ofs<0) {
+					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_TOP] * v_ofs;
+				} else {
+					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM] * v_ofs;
+				}
+			}
 
+		} else if (anchor_mode==ANCHOR_MODE_FIXED_TOP_LEFT){
+
+			camera_pos=new_camera_pos;
 		}
+
 
 
 		if (smoothing>0.0) {
@@ -117,7 +121,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 			float c = smoothing*get_fixed_process_delta_time();
 			smoothed_camera_pos = ((new_camera_pos-smoothed_camera_pos)*c)+smoothed_camera_pos;
 			ret_camera_pos=smoothed_camera_pos;
-//			camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
+			//			camera_pos=camera_pos*(1.0-smoothing)+new_camera_pos*smoothing;
 		} else {
 
 			ret_camera_pos=smoothed_camera_pos=camera_pos;
@@ -132,7 +136,7 @@ Matrix32 Camera2D::get_camera_transform()  {
 	}
 
 
-	Point2 screen_offset = (centered ? (screen_size * 0.5 * zoom) : Point2());
+	Point2 screen_offset = (anchor_mode==ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
 
 	float angle = get_global_transform().get_rotation();
 	if(rotating){
@@ -267,15 +271,15 @@ Vector2 Camera2D::get_offset() const{
 	return offset;
 }
 
-void Camera2D::set_centered(bool p_centered){
+void Camera2D::set_anchor_mode(AnchorMode p_anchor_mode){
 
-	centered=p_centered;
+	anchor_mode=p_anchor_mode;
 	_update_scroll();
 }
 
-bool Camera2D::is_centered() const {
+Camera2D::AnchorMode Camera2D::get_anchor_mode() const {
 
-	return centered;
+	return anchor_mode;
 }
 
 void Camera2D::set_rotating(bool p_rotating){
@@ -439,8 +443,8 @@ void Camera2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_offset","offset"),&Camera2D::set_offset);
 	ObjectTypeDB::bind_method(_MD("get_offset"),&Camera2D::get_offset);
 
-	ObjectTypeDB::bind_method(_MD("set_centered","centered"),&Camera2D::set_centered);
-	ObjectTypeDB::bind_method(_MD("is_centered"),&Camera2D::is_centered);
+	ObjectTypeDB::bind_method(_MD("set_anchor_mode","anchor_mode"),&Camera2D::set_anchor_mode);
+	ObjectTypeDB::bind_method(_MD("get_anchor_mode"),&Camera2D::get_anchor_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_rotating","rotating"),&Camera2D::set_rotating);
 	ObjectTypeDB::bind_method(_MD("is_rotating"),&Camera2D::is_rotating);
@@ -487,7 +491,7 @@ void Camera2D::_bind_methods() {
 
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_offset"),_SCS("get_offset"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"centered"),_SCS("set_centered"),_SCS("is_centered"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"anchor_mode",PROPERTY_HINT_ENUM,"Fixed TopLeft,Drag Center"),_SCS("set_anchor_mode"),_SCS("get_anchor_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"rotating"),_SCS("set_rotating"),_SCS("is_rotating"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"current"),_SCS("_set_current"),_SCS("is_current"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"smoothing"),_SCS("set_follow_smoothing"),_SCS("get_follow_smoothing") );
@@ -507,6 +511,8 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTYI( PropertyInfo(Variant::REAL,"drag_margin/bottom",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_drag_margin"),_SCS("get_drag_margin"),MARGIN_BOTTOM);
 
 
+	BIND_CONSTANT( ANCHOR_MODE_DRAG_CENTER );
+	BIND_CONSTANT( ANCHOR_MODE_FIXED_TOP_LEFT );
 
 }
 
@@ -514,7 +520,7 @@ Camera2D::Camera2D() {
 
 
 
-	centered=true;
+	anchor_mode=ANCHOR_MODE_DRAG_CENTER;
 	rotating=false;
 	current=false;
 	limit[MARGIN_LEFT]=-10000000;
