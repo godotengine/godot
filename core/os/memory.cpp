@@ -112,13 +112,6 @@ size_t Memory::get_dynamic_mem_usage() {
 	return MemoryPoolDynamic::get_singleton()->get_total_usage();
 }
 
-void * operator new(size_t p_size,void *p_pointer,size_t check, const char *p_description) {
-
-	void *failptr=0;
-	ERR_FAIL_COND_V( check < p_size , failptr); /** bug, or strange compiler, most likely */
-
-	return p_pointer;
-}
 
 
 

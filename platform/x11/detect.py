@@ -111,9 +111,9 @@ def configure(env):
 	if (env["target"]=="release"):
 
 		if (env["debug_release"]=="yes"):
-			env.Append(CCFLAGS=['-g2','-fomit-frame-pointer'])
+			env.Append(CCFLAGS=['-g2'])
 		else:
-			env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer'])
+			env.Append(CCFLAGS=['-O3','-ffast-math'])
 
 	elif (env["target"]=="release_debug"):
 
