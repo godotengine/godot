@@ -149,11 +149,11 @@ void AnimatedSprite::_notification(int p_what) {
 
 			Size2i s;
 			s = texture->get_size();
-			Point2i ofs=offset;
+			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
 
-			Rect2i dst_rect(ofs,s);
+			Rect2 dst_rect(ofs,s);
 
 			if (hflip)
 				dst_rect.size.x=-dst_rect.size.x;
@@ -284,7 +284,7 @@ Rect2 AnimatedSprite::get_item_rect() const {
 		return Node2D::get_item_rect();
 	Size2i s = t->get_size();
 
-	Point2i ofs=offset;
+	Point2 ofs=offset;
 	if (centered)
 		ofs-=s/2;
 
