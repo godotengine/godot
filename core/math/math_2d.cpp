@@ -627,8 +627,8 @@ Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) cons
 	Vector2 p1 = get_origin();
 	Vector2 p2 = p_transform.get_origin();
 	
-	float r1 = get_rotation();
-	float r2 = p_transform.get_rotation();
+	real_t r1 = get_rotation();
+	real_t r2 = p_transform.get_rotation();
 	
 	Vector2 s1 = get_scale();
 	Vector2 s2 = p_transform.get_scale();
@@ -637,20 +637,18 @@ Matrix32 Matrix32::interpolate_with(const Matrix32& p_transform, float p_c) cons
 	Vector2 v1(Math::cos(r1), Math::sin(r1));
 	Vector2 v2(Math::cos(r2), Math::sin(r2));
 	
-	float dot = v1.dot(v2);
+	real_t dot = v1.dot(v2);
 	
-	dot = (dot < -1.0f) ? -1.0f : ((dot > 1.0f) ? 1.0f : dot); //clamp dot to [-1,1]
+	dot = (dot < -1.0) ? -1.0 : ((dot > 1.0) ? 1.0 : dot); //clamp dot to [-1,1]
 	
 	Vector2 v;
 
-	if (dot > 0.9995f) {
-		v = Vector2::linear_interpolate(v1, v2, p_c); //linearly interpolate to avoid numerical precision issues
-		v.normalize();
+	if (dot > 0.9995) {
+		v = Vector2::linear_interpolate(v1, v2, p_c).normalized(); //linearly interpolate to avoid numerical precision issues
 	} else {
-		float angle = Math::acos(dot) * p_c;
-		Vector2 v3(v2 - v1 * dot);
-		v3.normalize();
-		v = v1 * Math::cos(angle) + v3 * Math::sin(angle);
+		real_t angle = p_c*Math::acos(dot);
+		Vector2 v3 = (v2 - v1*dot).normalized();
+		v = v1*Math::cos(angle) + v3*Math::sin(angle);
 	}
 	
 	//construct matrix
