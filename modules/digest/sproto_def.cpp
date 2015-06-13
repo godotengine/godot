@@ -67,10 +67,29 @@ static int encode_default(const struct sproto_arg *args) {
 	return 0;
 }
 
-Variant Sproto::get_default(const String& p_type) {
+Dictionary Sproto::get_default(const String& p_type) {
 
+	ERR_FAIL_COND_V(proto == NULL, Variant());
 	struct sproto_type *st = sproto_type(proto, p_type.utf8().get_data());
 	ERR_FAIL_COND_V(st == NULL, Variant());
+	// 32 is enough for dummy buffer, because ldefault encode nothing but the header.
+	char dummy[32];
+	Dictionary dict(true);
+	dict["__type"] = p_type;
+	int ret = sproto_encode(st, dummy, sizeof(dummy), encode_default, &dict);
+	ERR_FAIL_COND_V(ret < 0, Variant());
+
+	return dict;
+}
+
+Dictionary Sproto::proto_get_default(const String& p_type, Proto p_what) {
+
+	ERR_FAIL_COND_V(proto == NULL, Variant());
+	int tag = sproto_prototag(proto, p_type.utf8().get_data());
+	ERR_FAIL_COND_V(tag == -1, Variant());
+	struct sproto_type *st = sproto_protoquery(proto, tag, p_what);
+	ERR_FAIL_COND_V(st == NULL, Variant());
+
 	// 32 is enough for dummy buffer, because ldefault encode nothing but the header.
 	char dummy[32];
 	Dictionary dict(true);

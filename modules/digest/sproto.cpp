@@ -37,18 +37,33 @@ void Sproto::dump() {
 	sproto_dump(proto);
 }
 
-Dictionary Sproto::protocol() {
+int Sproto::proto_tag(const String& p_type) {
 
-	return Dictionary();
+	ERR_FAIL_COND_V(proto == NULL, -1);
+	return sproto_prototag(proto, p_type.utf8().get_data());
+}
+
+String Sproto::proto_name(int p_tag) {
+
+	ERR_FAIL_COND_V(proto == NULL, "");
+	return sproto_protoname(proto, p_tag);
 }
 
 void Sproto::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("dump"),&Sproto::dump);
 	ObjectTypeDB::bind_method(_MD("get_default","type"),&Sproto::get_default);
-	ObjectTypeDB::bind_method(_MD("encode","type","variant"),&Sproto::encode);
+	ObjectTypeDB::bind_method(_MD("encode","type","dict"),&Sproto::encode);
 	ObjectTypeDB::bind_method(_MD("decode","type","stream","use_default"),&Sproto::decode,false);
-	ObjectTypeDB::bind_method(_MD("protocol",""),&Sproto::protocol);
+
+	ObjectTypeDB::bind_method(_MD("proto_tag","type"),&Sproto::proto_tag);
+	ObjectTypeDB::bind_method(_MD("proto_name","tag"),&Sproto::proto_name);
+	ObjectTypeDB::bind_method(_MD("proto_get_default","type","what"),&Sproto::proto_get_default);
+	ObjectTypeDB::bind_method(_MD("proto_encode","type","what","dict"),&Sproto::proto_encode);
+	ObjectTypeDB::bind_method(_MD("proto_decode","type","what","stream","use_default"),&Sproto::proto_decode,false);
+
+	BIND_CONSTANT(REQUEST);
+	BIND_CONSTANT(RESPONSE);
 }
 
 Sproto::Sproto()
@@ -61,49 +76,3 @@ Sproto::~Sproto() {
 	if(proto != NULL)
 		sproto_release(proto);
 }
-
-//ByteArray Snappy::compress(const ByteArray& p_input) {
-//
-//	ByteArray::Read r = p_input.read();
-//	uint32_t max_compressed_length = csnappy_max_compressed_length(p_input.size());
-//
-//	ByteArray output;
-//	output.resize(max_compressed_length);
-//	ByteArray::Write w = output.write();
-//
-//	static char working_memory[CSNAPPY_WORKMEM_BYTES];
-//
-//	uint32_t compressed_length;
-//	csnappy_compress((const char *) r.ptr(), p_input.size(), (char *) w.ptr(), &compressed_length, working_memory, CSNAPPY_WORKMEM_BYTES_POWER_OF_TWO);
-//	if(compressed_length > 0) {
-//
-//		w = ByteArray::Write();
-//		output.resize(compressed_length);
-//		return output;
-//	}
-//
-//	return ByteArray();
-//}
-//
-//ByteArray Snappy::uncompress(const ByteArray& p_input) {
-//
-//	ByteArray::Read r = p_input.read();
-//	uint32_t uncompressed_length;
-//	if(csnappy_get_uncompressed_length((const char *) r.ptr(), p_input.size(), &uncompressed_length) != CSNAPPY_E_HEADER_BAD) {
-//		
-//		ByteArray output;
-//		output.resize(uncompressed_length);
-//		ByteArray::Write w = output.write();
-//
-//		if(csnappy_decompress((const char *) r.ptr(), p_input.size(), (char *) w.ptr(), uncompressed_length) == CSNAPPY_E_OK)
-//			return output;
-//	}
-//
-//	return ByteArray();
-//}
-//
-//void Snappy::_bind_methods() {
-//
-//	ObjectTypeDB::bind_method(_MD("compress"),&Snappy::compress);
-//	ObjectTypeDB::bind_method(_MD("uncompress"),&Snappy::uncompress);
-//}

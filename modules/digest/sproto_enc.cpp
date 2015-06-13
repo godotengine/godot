@@ -240,25 +240,18 @@ static int encode_callback(const struct sproto_arg *args) {
 	return 0;
 }
 
-ByteArray Sproto::encode(const String& p_type, const Variant& p_variant) {
-
-	ERR_FAIL_COND_V(p_variant.get_type() != Variant::DICTIONARY
-		&& p_variant.get_type() != Variant::ARRAY,
-		ByteArray()
-	);
-	struct sproto_type *st = sproto_type(proto, p_type.utf8().get_data());
-	ERR_FAIL_COND_V(st == NULL, ByteArray());
+static ByteArray _encode(struct sproto_type *p_st, const Dictionary& p_dict) {
 
 	ByteArray output;
 	output.resize(1024);
 	ByteArray::Write w = output.write();
 
 	encode_ud self;
-	self.value = p_variant;
-	self.st = st;
+	self.value = p_dict;
+	self.st = p_st;
 	for (;;) {
 		self.deep = 0;
-		int r = sproto_encode(st, w.ptr(), output.size(), encode_callback, &self);
+		int r = sproto_encode(self.st, w.ptr(), output.size(), encode_callback, &self);
 		w = ByteArray::Write();
 		if (r<0) {
 			output.resize(output.size() * 2);
@@ -269,4 +262,24 @@ ByteArray Sproto::encode(const String& p_type, const Variant& p_variant) {
 		}
 	}
 	return output;
+}
+
+ByteArray Sproto::encode(const String& p_type, const Dictionary& p_dict) {
+
+	ERR_FAIL_COND_V(proto == NULL, ByteArray());
+	struct sproto_type *st = sproto_type(proto, p_type.utf8().get_data());
+	ERR_FAIL_COND_V(st == NULL, ByteArray());
+
+	return _encode(st, p_dict);
+}
+
+ByteArray Sproto::proto_encode(const String& p_type, Proto p_what, const Dictionary& p_dict) {
+
+	ERR_FAIL_COND_V(proto == NULL, ByteArray());
+	int tag = sproto_prototag(proto, p_type.utf8().get_data());
+	ERR_FAIL_COND_V(tag == -1, ByteArray());
+	struct sproto_type *st = sproto_protoquery(proto, tag, p_what);
+	ERR_FAIL_COND_V(st == NULL, ByteArray());
+
+	return _encode(st, p_dict);
 }

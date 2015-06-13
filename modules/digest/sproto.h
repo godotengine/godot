@@ -41,6 +41,8 @@ class Sproto : public Resource {
 
 	sproto* proto;
 
+	Dictionary _decode(struct sproto_type *p_st, const String& p_type, const ByteArray& p_stream, bool p_use_default);
+
 protected:
 	static void _bind_methods();
 
@@ -51,10 +53,22 @@ public:
 	void set_proto(sproto* p_proto) { proto = p_proto; }
 
 	void dump();
-	Variant get_default(const String& p_type);
-	ByteArray encode(const String& p_type, const Variant& p_variant);
-	Variant decode(const String& p_type, const ByteArray& p_stream, bool p_use_default = false);
-	Dictionary protocol();
+	Dictionary get_default(const String& p_type);
+	ByteArray encode(const String& p_type, const Dictionary& p_dict);
+	Dictionary decode(const String& p_type, const ByteArray& p_stream, bool p_use_default = false);
+
+	enum Proto {
+		REQUEST,
+		RESPONSE,
+	};
+
+	int proto_tag(const String& p_type);
+	String proto_name(int p_tag);
+	Dictionary proto_get_default(const String& p_type, Proto p_what);
+	ByteArray proto_encode(const String& p_type, Proto p_what, const Dictionary& p_dict);
+	Dictionary proto_decode(const String& p_type, Proto p_what, const ByteArray& p_stream, bool p_use_default = false);
 };
+
+VARIANT_ENUM_CAST(Sproto::Proto);
 
 #endif // SPROTO_H
