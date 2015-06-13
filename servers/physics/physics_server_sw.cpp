@@ -394,6 +394,14 @@ Transform PhysicsServerSW::area_get_transform(RID p_area) const {
 	return area->get_transform();
 };
 
+void PhysicsServerSW::area_set_monitorable(RID p_area,bool p_monitorable) {
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_monitorable(p_monitorable);
+}
+
 void PhysicsServerSW::area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method) {
 
 	AreaSW *area = area_owner.get(p_area);
@@ -423,6 +431,14 @@ bool PhysicsServerSW::area_is_ray_pickable(RID p_area) const{
 }
 
 
+void PhysicsServerSW::area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method) {
+
+
+	AreaSW *area = area_owner.get(p_area);
+	ERR_FAIL_COND(!area);
+
+	area->set_area_monitor_callback(p_receiver?p_receiver->get_instance_ID():0,p_method);
+}
 
 /* BODY API */
 

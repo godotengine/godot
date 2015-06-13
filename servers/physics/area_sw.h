@@ -49,9 +49,13 @@ class AreaSW : public CollisionObjectSW{
 	float point_attenuation;
 	float density;
 	int priority;
+	bool monitorable;
 
 	ObjectID monitor_callback_id;
 	StringName monitor_callback_method;
+
+	ObjectID area_monitor_callback_id;
+	StringName area_monitor_callback_method;
 
 	SelfList<AreaSW> monitor_query_list;
 	SelfList<AreaSW> moved_list;
@@ -79,6 +83,8 @@ class AreaSW : public CollisionObjectSW{
 
 		_FORCE_INLINE_ BodyKey() {}
 		BodyKey(BodySW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+		BodyKey(AreaSW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+
 	};
 
 	struct BodyState {
@@ -90,6 +96,7 @@ class AreaSW : public CollisionObjectSW{
 	};
 
 	Map<BodyKey,BodyState> monitored_bodies;
+	Map<BodyKey,BodyState> monitored_areas;
 
 	//virtual void shape_changed_notify(ShapeSW *p_shape);
 	//virtual void shape_deleted_notify(ShapeSW *p_shape);
@@ -108,8 +115,14 @@ public:
 	void set_monitor_callback(ObjectID p_id, const StringName& p_method);
 	_FORCE_INLINE_ bool has_monitor_callback() const { return monitor_callback_id; }
 
+	void set_area_monitor_callback(ObjectID p_id, const StringName& p_method);
+	_FORCE_INLINE_ bool has_area_monitor_callback() const { return area_monitor_callback_id; }
+
 	_FORCE_INLINE_ void add_body_to_query(BodySW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
 	_FORCE_INLINE_ void remove_body_from_query(BodySW *p_body, uint32_t p_body_shape,uint32_t p_area_shape);
+
+	_FORCE_INLINE_ void add_area_to_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape);
+	_FORCE_INLINE_ void remove_area_from_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape);
 
 	void set_param(PhysicsServer::AreaParameter p_param, const Variant& p_value);
 	Variant get_param(PhysicsServer::AreaParameter p_param) const;
@@ -142,8 +155,8 @@ public:
 	_FORCE_INLINE_ void remove_constraint( ConstraintSW* p_constraint) { constraints.erase(p_constraint); }
 	_FORCE_INLINE_ const Set<ConstraintSW*>& get_constraints() const { return constraints; }
 
-
-
+	void set_monitorable(bool p_monitorable);
+	_FORCE_INLINE_ bool is_monitorable() const { return monitorable; }
 
 	void set_transform(const Transform& p_transform);
 
@@ -167,6 +180,26 @@ void AreaSW::remove_body_from_query(BodySW *p_body, uint32_t p_body_shape,uint32
 
 	BodyKey bk(p_body,p_body_shape,p_area_shape);
 	monitored_bodies[bk].dec();
+	if (!monitor_query_list.in_list())
+		_queue_monitor_update();
+}
+
+
+void AreaSW::add_area_to_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape) {
+
+
+	BodyKey bk(p_area,p_area_shape,p_self_shape);
+	monitored_areas[bk].inc();
+	if (!monitor_query_list.in_list())
+		_queue_monitor_update();
+
+
+}
+void AreaSW::remove_area_from_query(AreaSW *p_area, uint32_t p_area_shape,uint32_t p_self_shape) {
+
+
+	BodyKey bk(p_area,p_area_shape,p_self_shape);
+	monitored_areas[bk].dec();
 	if (!monitor_query_list.in_list())
 		_queue_monitor_update();
 }
