@@ -920,7 +920,8 @@ void make_default_theme() {
 	t->set_constant("margin","MarginContainer",15);
 
 	t->set_constant("margin","MarginContainer",8);
-	t->set_constant("separation","GridContainer",4);
+	t->set_constant("hseparation","GridContainer",4);
+	t->set_constant("vseparation","GridContainer",4);
 	t->set_constant("center_separation","GridContainer", false);
 
 	t->set_constant("separation","HSplitContainer",8);

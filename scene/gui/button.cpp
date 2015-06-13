@@ -102,6 +102,13 @@ void Button::_notification(int p_what) {
 			
 			} break;
 		}
+
+		if (has_focus()) {
+
+			Ref<StyleBox> style = get_stylebox("focus");
+			style->draw(ci,Rect2(Point2(),size));
+		}
+
 		Ref<StyleBox> style = get_stylebox("normal" );
 		Ref<Font> font=get_font("font");
 		Ref<Texture> _icon;
@@ -153,11 +160,7 @@ void Button::_notification(int p_what) {
 			_icon->draw(ci,Point2(style->get_offset().x, Math::floor( (size.height-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
 		}
 #ifdef WIN32
-		if (has_focus()) {
 
-			Ref<StyleBox> style = get_stylebox("focus");
-			style->draw(ci,Rect2(Point2(),size));
-		}
 #endif				
 	}
 }

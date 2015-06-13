@@ -82,7 +82,7 @@ void Sprite::_notification(int p_what) {
 
 			}
 
-			Point2i ofs=offset;
+			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
 
@@ -265,7 +265,7 @@ Rect2 Sprite::get_item_rect() const {
 		s=s/Point2(hframes,vframes);
 	}
 
-	Point2i ofs=offset;
+	Point2 ofs=offset;
 	if (centered)
 		ofs-=s/2;
 
@@ -413,11 +413,11 @@ void ViewportSprite::_notification(int p_what) {
 
 			src_rect.size=s;
 
-			Point2i ofs=offset;
+			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
 
-			Rect2i dst_rect(ofs,s);
+			Rect2 dst_rect(ofs,s);
 			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 
 		} break;
@@ -505,7 +505,7 @@ Rect2 ViewportSprite::get_item_rect() const {
 	Size2i s;
 
 	s = texture->get_size();
-	Point2i ofs=offset;
+	Point2 ofs=offset;
 	if (centered)
 		ofs-=s/2;
 
