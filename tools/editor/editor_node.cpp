@@ -3339,6 +3339,10 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_dock_pre_popup",&EditorNode::_dock_pre_popup);
 	ObjectTypeDB::bind_method("_dock_split_dragged",&EditorNode::_dock_split_dragged);
 	ObjectTypeDB::bind_method("_save_docks",&EditorNode::_save_docks);
+	ObjectTypeDB::bind_method("_dock_popup_exit",&EditorNode::_dock_popup_exit);
+	ObjectTypeDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
+	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
+
 
 
 
@@ -3427,7 +3431,6 @@ void EditorNode::_dock_select_input(const InputEvent& p_input) {
 
 		Vector2 point(p_input.mouse_motion.x,p_input.mouse_motion.y);
 
-		dock_select_rect_over=-1;
 		int nrect = -1;
 		for(int i=0;i<DOCK_SLOT_MAX;i++) {
 			if (dock_select_rect[i].has_point(point)) {
@@ -3435,10 +3438,17 @@ void EditorNode::_dock_select_input(const InputEvent& p_input) {
 				break;
 			}
 		}
+
+
 		if (nrect!=dock_select_rect_over) {
 			dock_select->update();
 			dock_select_rect_over=nrect;
+
 		}
+
+
+		if (nrect==-1)
+			return;
 
 		if (p_input.type==InputEvent::MOUSE_BUTTON && p_input.mouse_button.button_index==1 && p_input.mouse_button.pressed && dock_popup_selected!=nrect) {
 			Control *dock = dock_slot[dock_popup_selected]->get_current_tab_control();
@@ -3476,10 +3486,44 @@ void EditorNode::_dock_select_input(const InputEvent& p_input) {
 	}
 }
 
+void EditorNode::_dock_popup_exit() {
+
+	dock_select_rect_over=-1;
+	dock_select->update();
+}
+
 void EditorNode::_dock_pre_popup(int p_which) {
 	
-	print_line("pre popup? "+itos(p_which));
+
 	dock_popup_selected=p_which;
+}
+
+void EditorNode::_dock_move_left() {
+
+	if (dock_popup_selected<0 || dock_popup_selected>=DOCK_SLOT_MAX)
+		return;
+	Control *current = dock_slot[dock_popup_selected]->get_tab_control( dock_slot[dock_popup_selected]->get_current_tab() );
+	Control *prev = dock_slot[dock_popup_selected]->get_tab_control( dock_slot[dock_popup_selected]->get_current_tab()-1 );
+	if (!current || !prev)
+		return;
+	dock_slot[dock_popup_selected]->move_child(current,prev->get_index());
+	dock_slot[dock_popup_selected]->set_current_tab( dock_slot[dock_popup_selected]->get_current_tab()-1 );
+	dock_select->update();
+	_save_docks();
+
+
+}
+
+void EditorNode::_dock_move_right() {
+
+	Control *current = dock_slot[dock_popup_selected]->get_tab_control( dock_slot[dock_popup_selected]->get_current_tab() );
+	Control *next = dock_slot[dock_popup_selected]->get_tab_control( dock_slot[dock_popup_selected]->get_current_tab()+1 );
+	if (!current || !next)
+		return;
+	dock_slot[dock_popup_selected]->move_child(next,current->get_index());
+	dock_slot[dock_popup_selected]->set_current_tab( dock_slot[dock_popup_selected]->get_current_tab()+1 );
+	dock_select->update();
+	_save_docks();
 }
 
 void EditorNode::_dock_select_draw(){
@@ -3551,6 +3595,7 @@ void EditorNode::_dock_select_draw(){
 		dock_select_rect[i]=r;
 		r.pos+=Vector2(2,5);
 		r.size-=Vector2(4,7);
+
 
 		if (i==dock_select_rect_over) {
 			dock_select->draw_rect(r,used_selected);
@@ -3690,6 +3735,14 @@ void EditorNode::_load_docks() {
 		else
 			splits[i]->hide();
 	}
+
+	for(int i=0;i<DOCK_SLOT_MAX;i++) {
+
+		if (!dock_slot[i]->is_hidden() && dock_slot[i]->get_tab_count()) {
+			dock_slot[i]->set_current_tab(0);
+		}
+	}
+
 }
 
 EditorNode::EditorNode() {
@@ -3865,12 +3918,15 @@ EditorNode::EditorNode() {
 	dock_tab_move_left = memnew( ToolButton );
 	dock_tab_move_left->set_icon(theme->get_icon("Back","EditorIcons"));
 	dock_tab_move_left->set_focus_mode(Control::FOCUS_NONE);
+	dock_tab_move_left->connect("pressed",this,"_dock_move_left");
 	//dock_tab_move_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_hb->add_child(dock_tab_move_left);
 	dock_hb->add_spacer();
 	dock_tab_move_right = memnew( ToolButton );
 	dock_tab_move_right->set_icon(theme->get_icon("Forward","EditorIcons"));
 	dock_tab_move_right->set_focus_mode(Control::FOCUS_NONE);
+	dock_tab_move_right->connect("pressed",this,"_dock_move_right");
+
 	//dock_tab_move_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_hb->add_child(dock_tab_move_right);
 	dock_vb->add_child(dock_hb);
@@ -3879,6 +3935,7 @@ EditorNode::EditorNode() {
 	dock_select->set_custom_minimum_size(Size2(128,64));
 	dock_select->connect("input_event",this,"_dock_select_input");
 	dock_select->connect("draw",this,"_dock_select_draw");
+	dock_select->connect("mouse_exit",this,"_dock_popup_exit");
 	dock_select->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	dock_vb->add_child(dock_select);
 

@@ -455,9 +455,12 @@ class EditorNode : public Node {
 	bool _find_scene_in_use(Node* p_node,const String& p_path) const;
 
 	void _dock_select_input(const InputEvent& p_input);
+	void _dock_move_left();
+	void _dock_move_right();
 	void _dock_select_draw();
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
+	void _dock_popup_exit();
 
 	void _save_docks();
 	void _load_docks();
