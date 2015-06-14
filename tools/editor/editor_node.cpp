@@ -3458,7 +3458,11 @@ void EditorNode::_dock_select_input(const InputEvent& p_input) {
 			if (dock_slot[dock_popup_selected]->get_tab_count()==0) {
 				dock_slot[dock_popup_selected]->hide();
 
+			} else  {
+
+				dock_slot[dock_popup_selected]->set_current_tab(0);
 			}
+
 			print_line("performing reparent");
 			dock_slot[nrect]->add_child(dock);
 			dock_popup_selected=nrect;
