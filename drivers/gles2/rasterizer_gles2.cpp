@@ -4402,7 +4402,7 @@ void RasterizerGLES2::set_camera(const Transform& p_world,const CameraMatrix& p_
 	}
 	camera_transform_inverse=camera_transform.inverse();
 	camera_projection=p_projection;
-	camera_plane = Plane( camera_transform.origin, camera_transform.basis.get_axis(2) );
+	camera_plane = Plane( camera_transform.origin, -camera_transform.basis.get_axis(2) );
 	camera_z_near=camera_projection.get_z_near();
 	camera_z_far=camera_projection.get_z_far();
 	camera_projection.get_viewport_size(camera_vp_size.x,camera_vp_size.y);
