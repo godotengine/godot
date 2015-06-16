@@ -1,6 +1,7 @@
 #ifndef OS_HAIKU_H
 #define OS_HAIKU_H
 
+#include "os/input.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/visual_server.h"
 #include "servers/visual/rasterizer.h"
@@ -22,6 +23,7 @@ private:
 	HaikuApplication* app;
 	HaikuDirectWindow* window;
 	MainLoop* main_loop;
+	InputDefault* input;
 	Rasterizer* rasterizer;
 	VisualServer* visual_server;
 	VideoMode current_video_mode;

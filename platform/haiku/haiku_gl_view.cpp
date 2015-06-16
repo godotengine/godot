@@ -1,54 +1,31 @@
+#include "main/main.h"
 #include "haiku_gl_view.h"
 
 HaikuGLView::HaikuGLView(BRect frame, uint32 type)
-   : BGLView(frame, "SampleGLView", B_FOLLOW_ALL_SIDES, 0, type), rotate(0)
+   : BGLView(frame, "SampleGLView", B_FOLLOW_ALL_SIDES, 0, type)
 {
-	width = frame.right-frame.left;
-	height = frame.bottom-frame.top;
 }
 
-void HaikuGLView::AttachedToWindow(void)
-{
+void HaikuGLView::AttachedToWindow(void) {
 	LockGL();
 	BGLView::AttachedToWindow();
 	UnlockGL();
 	MakeFocus();
 }
 
-void HaikuGLView::FrameResized(float newWidth, float newHeight) 
-{
+void HaikuGLView::Draw(BRect updateRect) {
+	Main::force_redraw();
 }
 
-void HaikuGLView::gDraw(float rotation)
+void HaikuGLView::MessageReceived(BMessage* msg)
 {
-}
-
-void HaikuGLView::gReshape(int width, int height)
-{
-}
-
-void HaikuGLView::Render(void)
-{
-	LockGL();
-	SwapBuffers();
-	UnlockGL();
-}
-
-void HaikuGLView::MessageReceived(BMessage * msg)
-{
+	// TODO: remove if not needed
 	switch (msg->what) {
-	case 'rdrw':
-		Render();
-		/* Rotate a bit more */
-		rotate++;
-		break;
-
-	default:	
-		BGLView::MessageReceived(msg);
+		default:	
+			BGLView::MessageReceived(msg);
 	}
 }
 
-void HaikuGLView::KeyDown(const char *bytes, int32 numBytes)
-{
-
+void HaikuGLView::MouseMoved (BPoint where, uint32 code, const BMessage *dragMessage) {
+	ERR_PRINT("MouseMoved()");
 }

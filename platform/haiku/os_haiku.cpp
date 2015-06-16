@@ -17,6 +17,8 @@ void OS_Haiku::run() {
 	}
 
 	main_loop->init();
+	window->Show();
+	window->StartMessageRunner();
 
 	/*
 	while (true) {
@@ -29,6 +31,7 @@ void OS_Haiku::run() {
 	*/
 
 	app->Run();
+	window->StopMessageRunner();
 	delete app;
 
 	main_loop->finish();
@@ -56,8 +59,13 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 
 	app = new HaikuApplication();
 
+	BRect frame;
+	frame.Set(50, 50, 50 + current_video_mode.width - 1, 50 + current_video_mode.height - 1);
+
+	window = new HaikuDirectWindow(frame);
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
-	context_gl = memnew(ContextGL_Haiku(&window, current_video_mode));
+	context_gl = memnew(ContextGL_Haiku(window));
 	context_gl->initialize();
 
 	rasterizer = memnew(RasterizerGLES2);
@@ -67,9 +75,9 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 
 	ERR_FAIL_COND(!visual_server);
 
-	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
-	}
+	//if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
+	//	visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
+	//}
 
 	visual_server->init();
 
@@ -92,6 +100,9 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	spatial_sound_server->init();
 	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
 	spatial_sound_2d_server->init();
+
+	input = memnew(InputDefault);
+	window->SetInput(input);
 }
 
 void OS_Haiku::finalize() {
@@ -121,6 +132,8 @@ void OS_Haiku::finalize() {
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
 
+	memdelete(input);
+
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	memdelete(context_gl);
 #endif
@@ -128,9 +141,7 @@ void OS_Haiku::finalize() {
 
 void OS_Haiku::set_main_loop(MainLoop* p_main_loop) {
 	main_loop = p_main_loop;
-	
-	// TODO: enable
-	//input->set_main_loop(p_main_loop);
+	input->set_main_loop(p_main_loop);
 }
 
 MainLoop* OS_Haiku::get_main_loop() const {
@@ -146,11 +157,11 @@ void OS_Haiku::delete_main_loop() {
 }
 
 void OS_Haiku::release_rendering_thread() {
-	ERR_PRINT("release_rendering_thread() NOT IMPLEMENTED");
+	context_gl->release_current();
 }
 
 void OS_Haiku::make_rendering_thread() {
-	ERR_PRINT("make_rendering_thread() NOT IMPLEMENTED");
+	context_gl->make_current();
 }
 
 bool OS_Haiku::can_draw() const {

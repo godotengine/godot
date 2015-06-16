@@ -3,7 +3,6 @@
 
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 
-#include "os/os.h"
 #include "drivers/gl_context/context_gl.h"
 
 #include "haiku_direct_window.h"
@@ -13,10 +12,9 @@ class ContextGL_Haiku : public ContextGL {
 private:
 	HaikuGLView* view;
 	HaikuDirectWindow* window;
-	OS::VideoMode video_mode;
 
 public:
-	ContextGL_Haiku(HaikuDirectWindow** p_window, OS::VideoMode& default_video_mode);
+	ContextGL_Haiku(HaikuDirectWindow* p_window);
 	~ContextGL_Haiku();
 
 	virtual Error initialize();
