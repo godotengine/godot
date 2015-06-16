@@ -153,6 +153,7 @@ Variant ItemList::get_item_metadata(int p_idx) const{
 	return items[p_idx].metadata;
 
 }
+
 void ItemList::select(int p_idx,bool p_single){
 
 	ERR_FAIL_INDEX(p_idx,items.size());
@@ -964,13 +965,16 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("get_item_text","idx"),&ItemList::get_item_text);
 
 	ObjectTypeDB::bind_method(_MD("set_item_icon","idx","icon:Texture"),&ItemList::set_item_icon);
-	ObjectTypeDB::bind_method(_MD("get_item_icon:Tedture","idx"),&ItemList::get_item_icon);
+	ObjectTypeDB::bind_method(_MD("get_item_icon:Texture","idx"),&ItemList::get_item_icon);
 
 	ObjectTypeDB::bind_method(_MD("set_item_selectable","idx","selectable"),&ItemList::set_item_selectable);
 	ObjectTypeDB::bind_method(_MD("is_item_selectable","idx"),&ItemList::is_item_selectable);
 
 	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&ItemList::set_item_disabled);
 	ObjectTypeDB::bind_method(_MD("is_item_disabled","idx"),&ItemList::is_item_disabled);
+
+	ObjectTypeDB::bind_method(_MD("set_item_metadata", "idx", "meta"),&ItemList::set_item_metadata);
+	ObjectTypeDB::bind_method(_MD("get_item_metadata", "idx"),&ItemList::get_item_metadata);
 
 	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
