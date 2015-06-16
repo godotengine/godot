@@ -286,8 +286,19 @@ void ScriptTextEditor::reload_text() {
 
 	ERR_FAIL_COND(script.is_null())	;
 
-	get_text_edit()->set_text(script->get_source_code());
-	get_text_edit()->clear_undo_history();
+	TextEdit *te = get_text_edit();
+	int column = te->cursor_get_column();
+	int row = te->cursor_get_line();
+	int h = te->get_h_scroll();
+	int v = te->get_v_scroll();
+
+	te->set_text(script->get_source_code());
+	te->clear_undo_history();
+	te->cursor_set_line(row);
+	te->cursor_set_column(column);
+	te->set_h_scroll(h);
+	te->set_v_scroll(v);
+
 	_line_col_changed();
 
 }
