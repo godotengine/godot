@@ -78,8 +78,6 @@ int TileMapEditor::get_selected_tile() const {
 }
 
 void TileMapEditor::set_selected_tile(int p_tile) {
-	//TreeItem *item = palette->get_root()->get_children();
-
 	for (int i = 0; i < palette->get_item_count(); i++) {
 	    if (palette->get_item_metadata(i).operator int() == p_tile) {
 	        palette->select(i,true);
@@ -87,16 +85,6 @@ void TileMapEditor::set_selected_tile(int p_tile) {
 	        break;
 	    }
 	}
-/*
-	while (item) {
-		if ((int)item->get_metadata(0) == p_tile) {
-			item->select(0);
-			palette->ensure_cursor_is_visible();
-			break;
-		}
-		item = item->get_next();
-	}
-*/
 }
 
 // Wrapper to workaround five arg limit of undo/redo methods
@@ -163,37 +151,25 @@ void TileMapEditor::_update_palette() {
 	if (!tileset.is_valid())
 		return;
 
-
-	//TreeItem *root = palette->create_item();
-	//palette->set_hide_root(true);
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
 
-    //Size2 min_size = Size2(72,64);
-
     if (display_mode == DISPLAY_THUMBNAIL) {
-	    palette->set_max_columns(16);
+	    palette->set_max_columns(0);
 	    palette->set_icon_mode(ItemList::ICON_MODE_TOP);
     } else if (display_mode == DISPLAY_LIST) {
         palette->set_max_columns(1);
         palette->set_icon_mode(ItemList::ICON_MODE_LEFT);
     }
+
 	palette->set_max_text_lines(2);
 
 	for(List<int>::Element *E=tiles.front();E;E=E->next()) {
-
-		//TreeItem *tile = palette->create_item(root);
-
         palette->add_item("");
 
-		//tile->set_icon_max_width(0,64);
-
         Ref<Texture> tex = tileset->tile_get_texture(E->get());
-		//Ref<Texture> tex = get_icon("DefaultProjectIcon", "EditorIcons");
 
 		if (tex.is_valid()) {
-			//tile->set_icon(0,tex);
-
 			Rect2 region = tileset->tile_get_region(E->get());
 
 			if (region==Rect2()) {
@@ -209,14 +185,11 @@ void TileMapEditor::_update_palette() {
 		}
 
 		if (tileset->tile_get_name(E->get())!="") {
-			//tile->set_text(0,tileset->tile_get_name(E->get()));
 			palette->set_item_text(palette->get_item_count()-1, tileset->tile_get_name(E->get()));
 
         } else {
-			//tile->set_text(0,"#"+itos(E->get()));
 			palette->set_item_text(palette->get_item_count()-1, "#"+itos(E->get()));
         }
-		//tile->set_metadata(0,E->get());
         palette->set_item_metadata(palette->get_item_count()-1, E->get());
 	}
 }
