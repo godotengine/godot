@@ -729,7 +729,7 @@ void GridMapEditor::update_pallete()  {
 
 	theme_pallete->clear();
     if (display_mode == DISPLAY_THUMBNAIL) {
-	    theme_pallete->set_max_columns(10);
+	    theme_pallete->set_max_columns(16);
 	    theme_pallete->set_icon_mode(ItemList::ICON_MODE_TOP);
 	} else if (display_mode == DISPLAY_LIST){
         theme_pallete->set_max_columns(1);
