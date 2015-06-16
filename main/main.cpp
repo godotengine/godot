@@ -98,6 +98,9 @@ static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
 
+static bool init_maximized=false;
+static int init_screen=-1;
+
 static String unescape_cmdline(const String& p_str) {
 
 	return p_str.replace("%20"," ");
@@ -384,7 +387,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
-
+			init_maximized=true;
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -788,6 +791,13 @@ Error Main::setup2() {
 #ifdef JAVASCRIPT_ENABLED
 	show_logo=false;
 #endif
+
+	if (init_screen!=-1) {
+		OS::get_singleton()->set_current_screen(init_screen);
+	}
+	if (init_maximized) {
+		OS::get_singleton()->set_window_maximized(true);
+	}
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());

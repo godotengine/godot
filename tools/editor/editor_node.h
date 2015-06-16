@@ -94,6 +94,8 @@
 
 typedef void (*EditorNodeInitCallback)();
 
+
+
 class EditorNode : public Node {
 
 	OBJ_TYPE( EditorNode, Node );
@@ -168,7 +170,17 @@ class EditorNode : public Node {
 		OBJECT_METHOD_BASE=500
 	};
 
-
+	enum DockSlot {
+		DOCK_SLOT_LEFT_UL,
+		DOCK_SLOT_LEFT_BL,
+		DOCK_SLOT_LEFT_UR,
+		DOCK_SLOT_LEFT_BR,
+		DOCK_SLOT_RIGHT_UL,
+		DOCK_SLOT_RIGHT_BL,
+		DOCK_SLOT_RIGHT_UR,
+		DOCK_SLOT_RIGHT_BR,
+		DOCK_SLOT_MAX
+	};
 
 
 	Node *edited_scene; //scene being edited
@@ -179,8 +191,22 @@ class EditorNode : public Node {
 	Control* scene_root_parent;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	HSplitContainer *main_split;
-	VSplitContainer *left_split;
+
+
+
+	HSplitContainer *left_l_hsplit;
+	VSplitContainer *left_l_vsplit;
+	HSplitContainer *left_r_hsplit;
+	VSplitContainer *left_r_vsplit;
+	HSplitContainer *main_hsplit;
+	HSplitContainer *right_hsplit;
+	VSplitContainer *right_l_vsplit;
+	VSplitContainer *right_r_vsplit;
+
+	VSplitContainer *center_split;
+
+
+
 	int old_split_ofs;
 	VSplitContainer *top_split;
 	HBoxContainer *bottom_hb;
@@ -190,8 +216,9 @@ class EditorNode : public Node {
 	TextureButton *anim_close;
 	Panel *menu_panel;
 
-	HSplitContainer *editor_hsplit;
-	VSplitContainer *editor_vsplit;
+
+	//HSplitContainer *editor_hsplit;
+	//VSplitContainer *editor_vsplit;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -249,8 +276,8 @@ class EditorNode : public Node {
 	String current_path;
 	MenuButton *update_menu;
 	ToolButton *sources_button;
-	TabContainer *prop_pallete;
-	TabContainer *top_pallete;
+	//TabContainer *prop_pallete;
+	//TabContainer *top_pallete;
 	String defer_load_scene;
 	String defer_translatable;
 	String defer_optimize;
@@ -276,6 +303,16 @@ class EditorNode : public Node {
 
 	ProgressDialog *progress_dialog;
 	BackgroundProgress *progress_hb;
+
+	TabContainer *dock_slot[DOCK_SLOT_MAX];
+	Rect2 dock_select_rect[DOCK_SLOT_MAX];
+	int dock_select_rect_over;
+	PopupPanel *dock_select_popoup;
+	Control *dock_select;
+	ToolButton *dock_tab_move_left;
+	ToolButton *dock_tab_move_right;
+	int dock_popup_selected;
+	Timer *dock_drag_timer;
 
 	String _tmp_import_path;
 
@@ -417,6 +454,16 @@ class EditorNode : public Node {
 
 	bool _find_scene_in_use(Node* p_node,const String& p_path) const;
 
+	void _dock_select_input(const InputEvent& p_input);
+	void _dock_move_left();
+	void _dock_move_right();
+	void _dock_select_draw();
+	void _dock_pre_popup(int p_which);
+	void _dock_split_dragged(int ofs);
+	void _dock_popup_exit();
+
+	void _save_docks();
+	void _load_docks();
 
 protected:
 	void _notification(int p_what);

@@ -498,6 +498,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		get_tree()->disconnect("tree_changed",this,"_tree_changed");
 		get_tree()->disconnect("node_removed",this,"_node_removed");
+		tree->disconnect("item_collapsed",this,"_cell_collapsed");
 		_update_tree();
 	}
 
@@ -808,6 +809,11 @@ void SceneTreeDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		connect("confirmed", this,"_select");
+
+	}
+
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this,"_select");
 
 	}
 	if (p_what==NOTIFICATION_DRAW) {

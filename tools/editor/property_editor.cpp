@@ -1915,6 +1915,7 @@ void PropertyEditor::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
+		get_tree()->disconnect("node_removed",this,"_node_removed");
 		edit(NULL);
 	}
 

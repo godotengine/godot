@@ -88,7 +88,22 @@ void TabContainer::_input_event(const InputEvent& p_event) {
 		Ref<Font> font = get_font("font");
 		Ref<Texture> incr = get_icon("increment");
 		Ref<Texture> decr = get_icon("decrement");
+		Ref<Texture> menu = get_icon("menu");
+		Ref<Texture> menu_hl = get_icon("menu_hl");
 
+		if (popup && pos.x>get_size().width-menu->get_width()) {
+
+
+			emit_signal("pre_popup_pressed");
+			Vector2 pp_pos = get_global_pos();
+			pp_pos.x+=get_size().width;
+			pp_pos.x-=popup->get_size().width;
+			pp_pos.y+=menu->get_height();
+
+			popup->set_global_pos( pp_pos );
+			popup->popup();;
+			return;
+		}
 		pos.x-=tabs_ofs_cache;
 
 		int idx=0;
@@ -116,17 +131,17 @@ void TabContainer::_input_event(const InputEvent& p_event) {
 			String s = c->has_meta("_tab_name")?String(XL_MESSAGE(String(c->get_meta("_tab_name")))):String(c->get_name());
 			int tab_width=font->get_string_size(s).width;
 
-            if (c->has_meta("_tab_icon")) {
-                Ref<Texture> icon = c->get_meta("_tab_icon");
-                if (icon.is_valid()) {
-                    tab_width+=icon->get_width();
-                    if (s!="")
-                        tab_width+=get_constant("hseparation");
+			if (c->has_meta("_tab_icon")) {
+				Ref<Texture> icon = c->get_meta("_tab_icon");
+				if (icon.is_valid()) {
+					tab_width+=icon->get_width();
+					if (s!="")
+						tab_width+=get_constant("hseparation");
 
-                }
-            }
+				}
+			}
 
-            if (idx==current) {
+			if (idx==current) {
 
 				tab_width+=tab_fg->get_minimum_size().width;
 			} else {
@@ -163,7 +178,7 @@ void TabContainer::_input_event(const InputEvent& p_event) {
 
 		if (found!=-1) {
 
-			set_current_tab(found);			
+			set_current_tab(found);
 		}
 	}
 
@@ -194,7 +209,9 @@ void TabContainer::_notification(int p_what) {
 			Ref<Texture> incr = get_icon("increment");
 			Ref<Texture> incr_hl = get_icon("increment_hilite");
 			Ref<Texture> decr = get_icon("decrement");
-			Ref<Texture> decr_hl = get_icon("decrement_hilite");
+			Ref<Texture> decr_hl = get_icon("decrement_hilite");			
+			Ref<Texture> menu = get_icon("menu");
+			Ref<Texture> menu_hl = get_icon("menu_hl");
 			Ref<Font> font = get_font("font");
 			Color color_fg = get_color("font_color_fg");
 			Color color_bg = get_color("font_color_bg");
@@ -207,6 +224,7 @@ void TabContainer::_notification(int p_what) {
 
 
 			Size2 top_size = Size2( size.width, top_margin );
+
 
 
 			int w=0;
@@ -227,7 +245,7 @@ void TabContainer::_notification(int p_what) {
 					if (icon.is_valid()) {
 						w+=icon->get_width();
 						if (s!="")
-                            w+=get_constant("hseparation");
+						     w+=get_constant("hseparation");
 
 					}
 				}
@@ -245,14 +263,18 @@ void TabContainer::_notification(int p_what) {
 
 			int ofs;
 			int limit=get_size().width;
+			if (popup) {
+				top_size.width-=menu->get_width();
+				limit-=menu->get_width();
+			}
 
 
-			if (w<=get_size().width) {
+			if (w<=limit) {
 				switch(align) {
 
 					case ALIGN_LEFT: ofs = side_margin; break;
-					case ALIGN_CENTER: ofs = (int(top_size.width) - w)/2; break;
-					case ALIGN_RIGHT: ofs = int(top_size.width) - w - side_margin; break;
+					case ALIGN_CENTER: ofs = (int(limit) - w)/2; break;
+					case ALIGN_RIGHT: ofs = int(limit) - w - side_margin; break;
 				};
 
 				tab_display_ofs=0;
@@ -364,6 +386,15 @@ void TabContainer::_notification(int p_what) {
 				incr->draw(ci,Point2(limit+incr->get_width(),vofs),Color(1,1,1,notdone?1.0:0.5));
 			}
 
+			if (popup) {
+				int from = get_size().width-menu->get_width();
+
+				if (mouse_x_cache > from)
+					menu_hl->draw(get_canvas_item(),Size2(from,0));
+				else
+					menu->draw(get_canvas_item(),Size2(from,0));
+			}
+
 			panel->draw(ci, Rect2( 0, top_size.height, size.width, size.height-top_size.height));
 
 		} break;
@@ -465,6 +496,48 @@ int TabContainer::get_current_tab() const {
 	return current;
 }
 
+Control* TabContainer::get_tab_control(int p_idx) const {
+
+	int idx=0;
+
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_set_as_toplevel())
+			continue;
+		if (idx==p_idx) {
+			return c;
+
+		}
+		idx++;
+	}
+
+	return NULL;
+}
+Control* TabContainer::get_current_tab_control() const {
+
+	int idx=0;
+
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c = get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_set_as_toplevel())
+			continue;
+		if (idx==current) {
+			return c;
+
+		}
+		idx++;
+	}
+
+	return NULL;
+}
 
 void TabContainer::remove_child_notify(Node *p_child) {
 
@@ -635,12 +708,25 @@ Size2 TabContainer::get_minimum_size() const {
 	return ms;
 }
 
+void TabContainer::set_popup(Node *p_popup) {
+	ERR_FAIL_NULL(p_popup);
+	popup=p_popup->cast_to<Popup>();
+	update();
+}
+
+Popup* TabContainer::get_popup() const {
+	return popup;
+}
+
+
 void TabContainer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_input_event"),&TabContainer::_input_event);
 	ObjectTypeDB::bind_method(_MD("get_tab_count"),&TabContainer::get_tab_count);
 	ObjectTypeDB::bind_method(_MD("set_current_tab","tab_idx"),&TabContainer::set_current_tab);
 	ObjectTypeDB::bind_method(_MD("get_current_tab"),&TabContainer::get_current_tab);
+	ObjectTypeDB::bind_method(_MD("get_current_tab_control:Control"),&TabContainer::get_current_tab_control);
+	ObjectTypeDB::bind_method(_MD("get_tab_control:Control","idx"),&TabContainer::get_tab_control);
 	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&TabContainer::set_tab_align);
 	ObjectTypeDB::bind_method(_MD("get_tab_align"),&TabContainer::get_tab_align);
 	ObjectTypeDB::bind_method(_MD("set_tabs_visible","visible"),&TabContainer::set_tabs_visible);
@@ -649,10 +735,13 @@ void TabContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tab_title","tab_idx"),&TabContainer::get_tab_title);
 	ObjectTypeDB::bind_method(_MD("set_tab_icon","tab_idx","icon:Texture"),&TabContainer::set_tab_icon);
 	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&TabContainer::get_tab_icon);
+	ObjectTypeDB::bind_method(_MD("set_popup","popup:Popup"),&TabContainer::set_popup);
+	ObjectTypeDB::bind_method(_MD("get_popup:Popup"),&TabContainer::get_popup);
 
 	ObjectTypeDB::bind_method(_MD("_child_renamed_callback"),&TabContainer::_child_renamed_callback);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
+	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM,"Left,Center,Right"), _SCS("set_tab_align"), _SCS("get_tab_align") );
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
@@ -669,5 +758,6 @@ TabContainer::TabContainer() {
 	mouse_x_cache=0;
 	align=ALIGN_CENTER;
 	tabs_visible=true;
+	popup=NULL;
 
 }
