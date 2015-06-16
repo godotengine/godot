@@ -61,7 +61,7 @@ void  GridMapEditor::_menu_option(int p_option) {
 
 		case MENU_OPTION_CONFIGURE: {
 
-			
+
 		} break;
 		case MENU_OPTION_LOCK_VIEW: {
 
@@ -523,6 +523,9 @@ void GridMapEditor::_duplicate_paste() {
 
 bool GridMapEditor::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
 
+    if (!node) {
+        return false;
+    }
 
 	if (edit_mode->get_selected()==0) { // regular click
 		switch (p_event.type) {
@@ -840,8 +843,10 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 		set_process(false);
 		for(int i=0;i<3;i++) {
 			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
-
 		}
+
+		VisualServer::get_singleton()->instance_geometry_set_flag(cursor_instance, VS::INSTANCE_FLAG_VISIBLE, false);
+
 		_clear_areas();
 
 		return;
@@ -1014,7 +1019,7 @@ void GridMapEditor::_notification(int p_what) {
 		if (xf!=grid_xform) {
 			for(int i=0;i<3;i++) {
 
-				
+
 				VS::get_singleton()->instance_set_transform(grid_instance[i],xf * edit_grid_xform);
 			}
 			grid_xform=xf;
@@ -1044,6 +1049,9 @@ void GridMapEditor::_notification(int p_what) {
 
 void GridMapEditor::_update_cursor_instance() {
 
+    if (!node) {
+        return;
+    }
 
 	if (cursor_instance.is_valid())
 		VisualServer::get_singleton()->free(cursor_instance);
@@ -1093,6 +1101,9 @@ void GridMapEditor::_clear_areas() {
 
 void GridMapEditor::_update_areas_display() {
 
+    if (!node) {
+        return;
+    }
 
 	_clear_areas();
 	List<int> areas;
