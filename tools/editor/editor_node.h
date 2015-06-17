@@ -506,6 +506,7 @@ public:
 	AnimationKeyEditor *get_animation_editor() const { return animation_editor; }
 	Control *get_animation_panel() { return animation_vb; }
 	HBoxContainer *get_animation_panel_hb() { return animation_panel_hb; }
+	ResourcesDock *get_resources_dock() { return resources_dock; }
 
 	void animation_editor_make_visible(bool p_visible);
 	void hide_animation_player_editors();

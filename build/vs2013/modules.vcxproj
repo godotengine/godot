@@ -143,6 +143,7 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Shipping|Win32'">$(IntDir)register_types_btree.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_btree.obj</ObjectFileName>
     </ClCompile>
+    <ClCompile Include="..\..\modules\digest\crypt\crypt.cpp" />
     <ClCompile Include="..\..\modules\digest\register_types.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)register_types_digest.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)register_types_digest.obj</ObjectFileName>
@@ -245,6 +246,7 @@
     <ClInclude Include="..\..\modules\behavior_tree\core\virtual_machine.h" />
     <ClInclude Include="..\..\modules\behavior_tree\editor_icons.h" />
     <ClInclude Include="..\..\modules\behavior_tree\register_types.h" />
+    <ClInclude Include="..\..\modules\digest\crypt\crypt.h" />
     <ClInclude Include="..\..\modules\digest\register_types.h" />
     <ClInclude Include="..\..\modules\digest\snappy.h" />
     <ClInclude Include="..\..\modules\digest\snappy\csnappy.h" />
@@ -299,6 +301,11 @@
     <ClInclude Include="..\..\modules\spine\spine.h" />
     <ClInclude Include="..\..\modules\spine\spine_batcher.h" />
     <ClInclude Include="..\..\modules\spine\src\spine\Json.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\modules\digest\crypt\des.inl" />
+    <None Include="..\..\modules\digest\crypt\hmac.inl" />
+    <None Include="..\..\modules\digest\crypt\sha1.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

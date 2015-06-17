@@ -83,49 +83,6 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 		case Variant::OBJECT: {
 
 			switch(p_which) {
-				case OBJ_MENU_FROM_FILESYSTEM: {
-
-					String selected = EditorNode::get_singleton()->get_scenes_dock()->get_selected_path();
-					if (selected == "") return;
-
-					List<String> extensions;
-					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
-					ResourceLoader::get_recognized_extensions_for_type(type,&extensions);
-					if (extensions.find(selected.extension()) == NULL) return;
-
-					RES res = ResourceLoader::load(selected,type);
-					if (res.is_null()) {
-						error->set_text("Error loading file: Not a resource!");
-						error->popup_centered(Size2(300,80));
-						break;
-					}
-					v=res.get_ref_ptr();
-					emit_signal("variant_changed");
-
-				} break;
-				case OBJ_MENU_FROM_RESOURCE: {
-
-					RES res = EditorNode::get_singleton()->get_resources_dock()->get_selected_resource();
-					if (res.is_null())
-						break;
-
-					if (res->get_path() == "") {
-						error->set_text( "Resource should be saved first");
-						error->popup_centered(Size2(300,80));
-						break;
-					}
-
-					List<String> extensions;
-					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
-
-					ResourceLoader::get_recognized_extensions_for_type(type,&extensions);
-					if (extensions.find(res->get_path().extension()) == NULL)
-						break;
-
-					v=res.get_ref_ptr();
-					emit_signal("variant_changed");
-
-				} break;
 				case OBJ_MENU_LOAD: {
 
 					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
@@ -141,19 +98,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 					}
 
 					file->popup_centered_ratio();
-
 				} break;
-				case OBJ_MENU_SELECT_IN_FILESYSTEM: {
 
-					RefPtr ref_ptr=v;
-					Ref<Resource> res = ref_ptr;
-					if (res.is_null())
-						return;
-
-					// todo: avoid communicate with scenes dock directly by emiting singal
-					EditorNode::get_singleton()->get_scenes_dock()->set_selected(res->get_path());
-
-				} break;
 				case OBJ_MENU_EDIT: {
 
 					RefPtr RefPtr=v;
@@ -348,15 +294,15 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				type_button->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,3);
 				type_button->set_anchor_and_margin(MARGIN_TOP,ANCHOR_END,25);
 				type_button->set_anchor_and_margin(MARGIN_BOTTOM,ANCHOR_END,7);
-				type_button->set_text(_TR("Preset.."));
+				type_button->set_text("Preset..");
 				type_button->get_popup()->clear();
-				type_button->get_popup()->add_item(_TR("Linear"),EASING_LINEAR);
-				type_button->get_popup()->add_item(_TR("Ease In"),EASING_EASE_IN);
-				type_button->get_popup()->add_item(_TR("Ease Out"),EASING_EASE_OUT);
+				type_button->get_popup()->add_item("Linear",EASING_LINEAR);
+				type_button->get_popup()->add_item("Ease In",EASING_EASE_IN);
+				type_button->get_popup()->add_item("Ease Out",EASING_EASE_OUT);
 				if (hint_text!="attenuation") {
-					type_button->get_popup()->add_item(_TR("Zero"),EASING_ZERO);
-					type_button->get_popup()->add_item(_TR("Easing In-Out"),EASING_IN_OUT);
-					type_button->get_popup()->add_item(_TR("Easing Out-In"),EASING_OUT_IN);
+					type_button->get_popup()->add_item("Zero",EASING_ZERO);
+					type_button->get_popup()->add_item("Easing In-Out",EASING_IN_OUT);
+					type_button->get_popup()->add_item("Easing Out-In",EASING_OUT_IN);
 				}
 
 				type_button->show();
@@ -382,7 +328,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			} else {
 				List<String> names;
-				names.push_back(_TR("value:"));
+				names.push_back("value:");
 				config_value_editors(1,1,50,names);
 				Vector3 vec=v;
 				value_editor[0]->set_text( String::num(v) );
@@ -395,15 +341,14 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				List<String> names;
 				names.push_back("File..");
-				names.push_back("Select");
 				names.push_back("Clear");
 				config_action_buttons(names);
 
 			} else if (hint==PROPERTY_HINT_DIR || hint==PROPERTY_HINT_GLOBAL_DIR) {
 
 				List<String> names;
-				names.push_back(_TR("Dir.."));
-				names.push_back(_TR("Clear"));
+				names.push_back("Dir..");
+				names.push_back("Clear");
 				config_action_buttons(names);
 			} else if (hint==PROPERTY_HINT_ENUM) {
 
@@ -425,12 +370,12 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 				action_buttons[0]->set_anchor( MARGIN_BOTTOM, ANCHOR_END );
 				action_buttons[0]->set_begin( Point2( 70, button_margin-5 ) );
 				action_buttons[0]->set_end( Point2( margin, margin ) );
-				action_buttons[0]->set_text(_TR("Close"));
+				action_buttons[0]->set_text("Close");
 				action_buttons[0]->show();
 
 			} else {
 				List<String> names;
-				names.push_back(_TR("string:"));
+				names.push_back("string:");
 				config_value_editors(1,1,50,names);
 				Vector3 vec=v;
 				value_editor[0]->set_text( v );
@@ -636,9 +581,9 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 		case Variant::IMAGE: {
 			
 			List<String> names;
-			names.push_back(_TR("New"));
-			names.push_back(_TR("Load"));
-			names.push_back(_TR("Clear"));
+			names.push_back("New");
+			names.push_back("Load");
+			names.push_back("Clear");
 			config_action_buttons(names);
 			
 		} break;
@@ -646,7 +591,6 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 			
 			List<String> names;
 			names.push_back("Assign");
-			names.push_back("Select");
 			names.push_back("Clear");
 			config_action_buttons(names);
 
@@ -705,10 +649,7 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					menu->add_separator();
 			}
 
-			menu->add_icon_item(get_icon("Back","EditorIcons"),"From FileSystem",OBJ_MENU_FROM_FILESYSTEM);
-			menu->add_icon_item(get_icon("Back","EditorIcons"),"From Resource",OBJ_MENU_FROM_RESOURCE);
 			menu->add_icon_item(get_icon("Load","EditorIcons"),"Load",OBJ_MENU_LOAD);
-			menu->add_icon_item(get_icon("Forward","EditorIcons"),"Select",OBJ_MENU_SELECT_IN_FILESYSTEM);
 
 			if (!RES(v).is_null()) {
 
@@ -741,12 +682,12 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 				if (!RES(v).is_null()) {
 
-					menu->add_item(_TR("Copy"),OBJ_MENU_COPY);
+					menu->add_item("Copy",OBJ_MENU_COPY);
 				}
 
 				if (paste_valid) {
 
-					menu->add_item(_TR("Paste"),OBJ_MENU_PASTE);
+					menu->add_item("Paste",OBJ_MENU_PASTE);
 				}
 			}
 
@@ -826,7 +767,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			RES res = ResourceLoader::load(p_file,type);
 			if (res.is_null()) {
-				error->set_text(_TR("Error loading file: Not a resource!"));
+				error->set_text("Error loading file: Not a resource!");
 				error->popup_centered_minsize();
 				break;
 			}
@@ -838,7 +779,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 
 			Image image;
 			Error err = ImageLoader::load_image(p_file,&image);
-			ERR_EXPLAIN(_TR("Couldn't load image"));
+			ERR_EXPLAIN("Couldn't load image");
 			ERR_FAIL_COND(err);
 			v=image;
 			emit_signal("variant_changed");
@@ -934,7 +875,7 @@ void CustomPropertyEditor::_node_path_selected(NodePath p_path) {
 
 	v=p_path;
 	emit_signal("variant_changed");
-	hide();
+
 }
 
 void CustomPropertyEditor::_action_pressed(int p_which) {
@@ -994,14 +935,7 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 						}
 					}
 					file->popup_centered_ratio();
-
-				}else if (p_which==1) { // Select
-
-					// todo: avoid communicate with scene dock directly by emiting signal
-					EditorNode::get_singleton()->get_scenes_dock()->set_selected(v);
-					hide();
-
-				} else { // Clear
+				} else {
 
 					v="";
 					emit_signal("variant_changed");
@@ -1037,18 +971,12 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 				scene_tree->popup_centered_ratio();
 
-			} else if (p_which==1) { // select
+			} else if (p_which==1) {
 
-				if (!v.is_zero())
-					emit_signal("select_node_request");
-				hide();
-
-			} else { // clear
 
 				v=NodePath();
 				emit_signal("variant_changed");
-				hide();
-			}
+			}				
 		} break;
 		case Variant::OBJECT: {
 		
@@ -1672,7 +1600,6 @@ void CustomPropertyEditor::_bind_methods() {
 
 	ADD_SIGNAL( MethodInfo("variant_changed") );
 	ADD_SIGNAL( MethodInfo("resource_edit_request") );
-	ADD_SIGNAL( MethodInfo("select_node_request") );
 }
 CustomPropertyEditor::CustomPropertyEditor() {
 	
@@ -1962,9 +1889,9 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 		
 			Image img = obj->get( p_name );
 			if (img.empty())
-				p_item->set_text(1,_TR("[Image (empty)]"));
+				p_item->set_text(1,"[Image (empty)]");
 			else
-				p_item->set_text(1,_TR("[Image ")+itos(img.get_width())+"x"+itos(img.get_height())+"]");
+				p_item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"]");
 
 		} break;
 		case Variant::NODE_PATH: {
@@ -1975,7 +1902,6 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 
 			if (obj->get( p_name ).get_type() == Variant::NIL || obj->get( p_name ).operator RefPtr().is_null()) {
-
 				p_item->set_text(1,"<null>");
 
 				Dictionary d = p_item->get_metadata(0);
@@ -1988,7 +1914,6 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 			} else {
 				RES res = obj->get( p_name ).operator RefPtr();
 				if (res->is_type("Texture")) {
-
 					int tw = EditorSettings::get_singleton()->get("property_editor/texture_preview_width");
 					p_item->set_icon_max_width(1,tw);
 					p_item->set_icon(1,res);
@@ -1998,10 +1923,8 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 
 					p_item->set_text(1, res->get_name());
 				} else if (res->get_path()!="" && !res->get_path().begins_with("local://")) {
-
 					p_item->set_text(1, res->get_path().get_file());
 				} else {
-
 					p_item->set_text(1,"<"+res->get_type()+">");
 				};
 
@@ -2243,6 +2166,7 @@ void PropertyEditor::refresh() {
 
 void PropertyEditor::update_tree() {
 
+
 	tree->clear();
 
 	if (!obj)
@@ -2344,7 +2268,7 @@ void PropertyEditor::update_tree() {
 				sep->set_icon(0,get_icon("Object","EditorIcons") );
 			print_line("CATEGORY: "+type);
 			*/
-			sep->set_text(0,_TR(type));
+			sep->set_text(0,type);
 			sep->set_selectable(0,false);
 			sep->set_selectable(1,false);
 			sep->set_custom_bg_color(0,get_color("prop_category","Editor"));
@@ -2692,9 +2616,9 @@ void PropertyEditor::update_tree() {
 				item->set_editable( 1, !read_only );
 				Image img = obj->get( p.name );
 				if (img.empty())
-					item->set_text(1,_TR("[Image (empty)]"));
+					item->set_text(1,"[Image (empty)]");
 				else
-					item->set_text(1,_TR("[Image ")+itos(img.get_width())+"x"+itos(img.get_height())+"]");
+					item->set_text(1,"[Image "+itos(img.get_width())+"x"+itos(img.get_height())+"]");
 				item->set_icon( 0,get_icon("Image","EditorIcons") );
 			
 			} break;
@@ -2821,7 +2745,9 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		_changed_callbacks(obj,p_name);
 		emit_signal(_prop_edited,p_name);
 
+
 	} else {
+
 
 		undo_redo->create_action("Set "+p_name,true);
 		undo_redo->add_do_property(obj,p_name,p_value);
@@ -2840,7 +2766,6 @@ void PropertyEditor::_edit_set(const String& p_name, const Variant& p_value) {
 		undo_redo->add_do_method(this,"emit_signal",_prop_edited,_prop_edited_name);
 		undo_redo->commit_action();
 	}
-
 }
 
 
@@ -2994,25 +2919,8 @@ void PropertyEditor::_resource_edit_request() {
 	emit_signal("resource_selected",res.get_ref_ptr(),name);
 }
 
-void PropertyEditor::_select_node_request() {
-	if (!obj)
-		return;
-
-	Node *editing = obj->cast_to<Node>();
-	if (!editing)
-		return;
-
-	NodePath node_path=custom_editor->get_variant();
-	if (node_path.is_empty())
-		return;
-	Node *node = editing->get_node(node_path);
-	if (!node)
-		return;
-
-	emit_signal("select_node_request",node);
-}
-
 void PropertyEditor::_custom_editor_edited() {
+
 
 	if (!obj)
 		return;
@@ -3045,6 +2953,7 @@ void PropertyEditor::_custom_editor_request(bool p_arrow) {
 }
 
 void PropertyEditor::edit(Object* p_object) {
+	
 
 	if (obj==p_object)
 		return;
@@ -3222,7 +3131,6 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_custom_editor_request",&PropertyEditor::_custom_editor_request);
 	ObjectTypeDB::bind_method( "_custom_editor_edited",&PropertyEditor::_custom_editor_edited);	
 	ObjectTypeDB::bind_method( "_resource_edit_request",&PropertyEditor::_resource_edit_request);	
-	ObjectTypeDB::bind_method( "_select_node_request",&PropertyEditor::_select_node_request);
 	ObjectTypeDB::bind_method( "_node_removed",&PropertyEditor::_node_removed);		
 	ObjectTypeDB::bind_method( "_edit_button",&PropertyEditor::_edit_button);
 	ObjectTypeDB::bind_method( "_changed_callback",&PropertyEditor::_changed_callbacks);
@@ -3230,8 +3138,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
-	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );	
-	ADD_SIGNAL( MethodInfo("select_node_request", PropertyInfo(Variant::OBJECT, "node")));
+	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );
 	ADD_SIGNAL( MethodInfo("property_keyed",PropertyInfo( Variant::STRING, "property")));
 	ADD_SIGNAL( MethodInfo("property_edited",PropertyInfo( Variant::STRING, "property")));
 }
@@ -3293,7 +3200,7 @@ PropertyEditor::PropertyEditor() {
 	update_tree_pending=false;
 	
 	top_label = memnew( Label );
-	top_label->set_text(_TR("Properties:"));
+	top_label->set_text("Properties:");
 	top_label->set_anchor( MARGIN_RIGHT, ANCHOR_END );
 	top_label->set_begin( Point2( 10,0) );
 	top_label->set_end( Point2( 0,12) );		
@@ -3336,8 +3243,8 @@ PropertyEditor::PropertyEditor() {
 	
 	capitalize_paths=true;
 	autoclear=false;
-	tree->set_column_title(0,_TR("Property"));
-	tree->set_column_title(1,_TR("Value"));
+	tree->set_column_title(0,"Property");
+	tree->set_column_title(1,"Value");
 	tree->set_column_titles_visible(true);
 
 	keying=false;

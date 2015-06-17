@@ -37,6 +37,9 @@
     <Filter Include="modules\digest\sproto">
       <UniqueIdentifier>{fe8050e5-48ff-40c0-ba5b-29d90d41d7e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="modules\digest\crypt">
+      <UniqueIdentifier>{22698689-d4e6-4217-89c1-9a30da428772}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\modules\register_module_types.cpp">
@@ -249,6 +252,9 @@
     <ClCompile Include="..\..\modules\digest\sproto_def.cpp">
       <Filter>modules\digest</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\modules\digest\crypt\crypt.cpp">
+      <Filter>modules\digest\crypt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\modules\register_module_types.h">
@@ -458,5 +464,19 @@
     <ClInclude Include="..\..\modules\digest\sproto.h">
       <Filter>modules\digest</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\modules\digest\crypt\crypt.h">
+      <Filter>modules\digest\crypt</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\modules\digest\crypt\sha1.inl">
+      <Filter>modules\digest\crypt</Filter>
+    </None>
+    <None Include="..\..\modules\digest\crypt\des.inl">
+      <Filter>modules\digest\crypt</Filter>
+    </None>
+    <None Include="..\..\modules\digest\crypt\hmac.inl">
+      <Filter>modules\digest\crypt</Filter>
+    </None>
   </ItemGroup>
 </Project>

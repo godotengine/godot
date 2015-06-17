@@ -2926,7 +2926,8 @@ void EditorNode::open_request(const String& p_path) {
 
 Node* EditorNode::request_instance_scene(const String &p_path) {
 
-	return scene_tree_dock->instance(p_path);
+	//return scene_tree_dock->instance(p_path);
+	return NULL;
 
 }
 
