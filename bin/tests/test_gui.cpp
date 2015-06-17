@@ -109,6 +109,9 @@ public:
 		frame->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 		frame->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
 		frame->set_end( Point2(0,0) );
+
+		Ref<Theme> t = memnew( Theme );
+		frame->set_theme(t);
 		
 		get_root()->add_child( frame );
 
