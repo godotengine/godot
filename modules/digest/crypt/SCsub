@@ -1,8 +1,5 @@
 ﻿Import('env')
 
-SConscript("snappy/SCsub")
-SConscript("sproto/SCsub")
-SConscript("crypt/SCsub")
 env.add_source_files(env.modules_sources,"*.cpp")
 
 Export('env')
