@@ -42,7 +42,8 @@ void BoxContainer::_resort() {
 	/** First pass, determine minimum size AND amount of stretchable elements */
 
 
-	Size2i new_size=get_size();;
+	Ref<StyleBox> sb=get_stylebox("frame");
+	Size2i new_size=get_size() - sb->get_minimum_size();
 
 	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
 
@@ -181,10 +182,10 @@ void BoxContainer::_resort() {
 
 		if (vertical) {
 
-			rect=Rect2(0,from,new_size.width,size);
+			rect=Rect2(sb->get_margin(MARGIN_LEFT),sb->get_margin(MARGIN_TOP)+from,new_size.width,size);
 		} else {
 
-			rect=Rect2(from,0,size,new_size.height);
+			rect=Rect2(sb->get_margin(MARGIN_LEFT)+from,sb->get_margin(MARGIN_TOP),size,new_size.height);
 
 		}
 
@@ -203,6 +204,7 @@ Size2 BoxContainer::get_minimum_size() const {
 
 	Size2i minimum;
 	int sep=get_constant("separation");//,vertical?"VBoxContainer":"HBoxContainer");
+	Ref<StyleBox> sb=get_stylebox("frame");
 
 	bool first=true;
 
@@ -240,7 +242,7 @@ Size2 BoxContainer::get_minimum_size() const {
 		first=false;
 	}
 
-	return minimum;
+	return minimum + sb->get_minimum_size();
 }
 
 void BoxContainer::_notification(int p_what) {

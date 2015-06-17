@@ -1,11 +1,11 @@
 #ifndef GRAPH_NODE_H
 #define GRAPH_NODE_H
 
-#include "scene/gui/container.h"
+#include "scene/gui/box_container.h"
 
-class GraphNode : public Container {
+class GraphNode : public VBoxContainer {
 
-	OBJ_TYPE(GraphNode,Container);
+	OBJ_TYPE(GraphNode,VBoxContainer);
 
 
 
@@ -90,9 +90,6 @@ public:
 	Vector2 get_connection_output_pos(int p_idx);
 	int get_connection_output_type(int p_idx);
 	Color get_connection_output_color(int p_idx);
-
-
-	virtual Size2 get_minimum_size() const;
 
 	GraphNode();
 };

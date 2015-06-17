@@ -36,9 +36,9 @@ class BoxContainer : public Container {
 	OBJ_TYPE(BoxContainer,Container);
 
 	bool vertical;
+protected:
 
 	void _resort();
-protected:
 
 	void _notification(int p_what);
 public:

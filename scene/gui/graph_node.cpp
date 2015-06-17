@@ -91,40 +91,9 @@ void GraphNode::_get_property_list( List<PropertyInfo> *p_list) const{
 	}
 }
 
-
 void GraphNode::_resort() {
 
-
-
-	int sep=get_constant("separation");
-	Ref<StyleBox> sb=get_stylebox("frame");
-	bool first=true;
-
-	Size2 minsize;
-
-	for(int i=0;i<get_child_count();i++) {
-		Control *c=get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-
-		Size2i size=c->get_combined_minimum_size();
-
-		minsize.y+=size.y;
-		minsize.x=MAX(minsize.x,size.x);
-
-		if (first)
-			first=false;
-		else
-			minsize.y+=sep;
-
-	}
-
-
-	int vofs=0;
-	int w = get_size().x - sb->get_minimum_size().x;
-
+	VBoxContainer::_resort();
 
 	cache_y.clear();
 	for(int i=0;i<get_child_count();i++) {
@@ -133,25 +102,11 @@ void GraphNode::_resort() {
 			continue;
 		if (c->is_set_as_toplevel())
 			continue;
-
-		Size2i size=c->get_combined_minimum_size();
-
-		Rect2 r(sb->get_margin(MARGIN_LEFT),sb->get_margin(MARGIN_TOP)+vofs,w,size.y);
-
-		fit_child_in_rect(c,r);
-		cache_y.push_back(vofs+size.y*0.5);
-
-		if (vofs>0)
-			vofs+=sep;
-		vofs+=size.y;
-
-
+		cache_y.push_back(c->get_pos().y + c->get_size().height / 2);
 	}
-
 	_change_notify();
 	update();
 	connpos_dirty=true;
-
 
 }
 
@@ -169,7 +124,6 @@ void GraphNode::_notification(int p_what) {
 		Color title_color = get_color("title_color");
 		Point2i icofs = -port->get_size()*0.5;
 		int edgeofs=get_constant("port_offset");
-		icofs.y+=sb->get_margin(MARGIN_TOP);
 		draw_style_box(sb,Rect2(Point2(),get_size()));
 
 		int w = get_size().width-sb->get_minimum_size().x;
@@ -297,44 +251,6 @@ Color GraphNode::get_slot_color_right(int p_idx) const{
 
 }
 
-Size2 GraphNode::get_minimum_size() const {
-
-	Ref<Font> title_font = get_font("title_font");
-
-	int sep=get_constant("separation");
-	Ref<StyleBox> sb=get_stylebox("frame");
-	bool first=true;
-
-	Size2 minsize;
-	minsize.x=title_font->get_string_size(title).x;
-	if (show_close) {
-		Ref<Texture> close =get_icon("close");
-		minsize.x+=sep+close->get_width();
-	}
-
-
-	for(int i=0;i<get_child_count();i++) {
-
-		Control *c=get_child(i)->cast_to<Control>();
-		if (!c)
-			continue;
-		if (c->is_set_as_toplevel())
-			continue;
-
-		Size2i size=c->get_combined_minimum_size();
-
-		minsize.y+=size.y;
-		minsize.x=MAX(minsize.x,size.x);
-
-		if (first)
-			first=false;
-		else
-			minsize.y+=sep;
-	}
-
-	return minsize+sb->get_minimum_size();
-}
-
 void GraphNode::set_title(const String& p_title) {
 
 	title=p_title;
@@ -382,9 +298,13 @@ void GraphNode::_connpos_update() {
 	Ref<Texture> port =get_icon("port");
 	conn_input_cache.clear();
 	conn_output_cache.clear();
-	int vofs=0;
 
 	int idx=0;
+
+	if (cache_y.size() == 0)
+	{
+		_resort();
+	}
 
 	for(int i=0;i<get_child_count();i++) {
 		Control *c=get_child(i)->cast_to<Control>();
@@ -395,31 +315,23 @@ void GraphNode::_connpos_update() {
 
 		Size2i size=c->get_combined_minimum_size();
 
-		int y = sb->get_margin(MARGIN_TOP)+vofs;
-		int h = size.y;
-
-
 		if (slot_info.has(idx)) {
 
 			if (slot_info[idx].enable_left) {
 				ConnCache cc;
-				cc.pos=Point2i(edgeofs,y+h/2);
+				cc.pos=Point2i(edgeofs,cache_y[idx]);
 				cc.type=slot_info[idx].type_left;
 				cc.color=slot_info[idx].color_left;
 				conn_input_cache.push_back(cc);
 			}
 			if (slot_info[idx].enable_right) {
 				ConnCache cc;
-				cc.pos=Point2i(get_size().width-edgeofs,y+h/2);
+				cc.pos=Point2i(get_size().width-edgeofs,cache_y[idx]);
 				cc.type=slot_info[idx].type_right;
 				cc.color=slot_info[idx].color_right;
 				conn_output_cache.push_back(cc);
 			}
 		}
-
-		if (vofs>0)
-			vofs+=sep;
-		vofs+=size.y;
 		idx++;
 
 	}
@@ -575,7 +487,7 @@ void GraphNode::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("close_request"));
 }
 
-GraphNode::GraphNode() {
+GraphNode::GraphNode() : VBoxContainer() {
 
 	dragging=false;
 	show_close=false;
