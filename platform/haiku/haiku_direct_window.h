@@ -23,6 +23,8 @@ private:
 
 	void DispatchMouseButton(BMessage* message);
 	void DispatchMouseMoved(BMessage* message);
+	inline InputModifierState GetKeyModifierState(uint32 p_state);
+	inline unsigned int GetMouseButtonState(uint32 p_state);
 
 public:
 	HaikuDirectWindow(BRect p_frame);

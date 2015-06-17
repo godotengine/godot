@@ -39,7 +39,7 @@ bool HaikuDirectWindow::QuitRequested() {
 }
 
 void HaikuDirectWindow::DirectConnected(direct_buffer_info* info) {
-	view->DirectConnected(info);	
+	view->DirectConnected(info);
 	view->EnableDirectMode(true);
 }
 
@@ -49,21 +49,21 @@ void HaikuDirectWindow::MessageReceived(BMessage* message)
 		case REDRAW_MSG:
 			//ERR_PRINT("iteration 1");
 			Main::iteration();
-			
+
 			//if (NeedsUpdate()) {
 			//	ERR_PRINT("NEEDS UPDATE");
 			//	Main::force_redraw();
 			//}
-			
+
 			//ERR_PRINT("iteration 2");
 			break;
-		
+
 		case B_INVALIDATE:
 			ERR_PRINT("WINDOW B_INVALIDATE");
 			//Main::force_redraw();
 			break;
 
-		default:	
+		default:
 			BDirectWindow::MessageReceived(message);
 	}
 }
@@ -92,6 +92,7 @@ void HaikuDirectWindow::DispatchMouseButton(BMessage* message) {
 		return;
 	}
 
+	uint32 modifiers = message->FindInt32("modifiers");
 	uint32 buttons = message->FindInt32("buttons");
 	uint32 button = buttons ^ last_buttons_state;
 	last_buttons_state = buttons;
@@ -101,15 +102,14 @@ void HaikuDirectWindow::DispatchMouseButton(BMessage* message) {
 	//	event.xbutton.x=last_mouse_pos.x;
 	//	event.xbutton.y=last_mouse_pos.y;
 	//}
-	
+
 	InputEvent mouse_event;
 	mouse_event.ID = ++event_id;
 	mouse_event.type = InputEvent::MOUSE_BUTTON;
 	mouse_event.device = 0;
 
-	// TODO: implement the modifier state getters
-	//mouse_event.mouse_button.mod = get_key_modifier_state(event.xbutton.state);
-	//mouse_event.mouse_button.button_mask = get_mouse_button_state(event.xbutton.state);
+	mouse_event.mouse_button.mod = GetKeyModifierState(modifiers);
+	mouse_event.mouse_button.button_mask = GetMouseButtonState(buttons);
 	mouse_event.mouse_button.x = where.x;
 	mouse_event.mouse_button.y = where.y;
 	mouse_event.mouse_button.global_x = where.x;
@@ -118,30 +118,27 @@ void HaikuDirectWindow::DispatchMouseButton(BMessage* message) {
 	switch (button) {
 		default:
 		case B_PRIMARY_MOUSE_BUTTON:
-			ERR_PRINT("PRIMARY");
 			mouse_event.mouse_button.button_index = 1;
 			break;
 
 		case B_SECONDARY_MOUSE_BUTTON:
-			ERR_PRINT("SECONDARY");
 			mouse_event.mouse_button.button_index = 2;
 			break;
 
 		case B_TERTIARY_MOUSE_BUTTON:
-			ERR_PRINT("MIDDLE");
 			mouse_event.mouse_button.button_index = 3;
 			break;
 	}
-		
+
 	mouse_event.mouse_button.pressed = (message->what == B_MOUSE_DOWN);
 
 	if (message->what == B_MOUSE_DOWN && mouse_event.mouse_button.button_index == 1) {
 		int32 clicks = message->FindInt32("clicks");
-		
+
 		if (clicks > 1) {
 			mouse_event.mouse_button.doubleclick=true;
 		}
-	}	
+	}
 
 	input->parse_input_event(mouse_event);
 }
@@ -151,12 +148,14 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	if (message->FindPoint("where", &where) != B_OK) {
 		return;
 	}
-			
+
 	Point2i pos(where.x, where.y);
-	
+	uint32 modifiers = message->FindInt32("modifiers");
+	uint32 buttons = message->FindInt32("buttons");
+
 	if (!last_mouse_pos_valid) {
-		last_mouse_pos=pos;
-		last_mouse_pos_valid=true;
+		last_mouse_pos = pos;
+		last_mouse_pos_valid = true;
 	}
 
 	Point2i rel = pos - last_mouse_pos;
@@ -166,9 +165,8 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	motion_event.type = InputEvent::MOUSE_MOTION;
 	motion_event.device = 0;
 
-	// TODO: implement the modifier state getters
-	//motion_event.mouse_motion.mod = get_key_modifier_state(event.xmotion.state);
-	//motion_event.mouse_motion.button_mask = get_mouse_button_state(event.xmotion.state);
+	motion_event.mouse_motion.mod = GetKeyModifierState(modifiers);
+	motion_event.mouse_motion.button_mask = GetMouseButtonState(buttons);
 	motion_event.mouse_motion.x = pos.x;
 	motion_event.mouse_motion.y = pos.y;
 	input->set_mouse_pos(pos);
@@ -183,4 +181,33 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	last_mouse_pos=pos;
 
 	input->parse_input_event(motion_event);
+}
+
+inline InputModifierState HaikuDirectWindow::GetKeyModifierState(uint32 p_state) {
+	InputModifierState state;
+
+	state.shift = (p_state & B_SHIFT_KEY) != 0;
+	state.control = (p_state & B_CONTROL_KEY) != 0;
+	state.alt = (p_state & B_OPTION_KEY) != 0;
+	state.meta = (p_state & B_COMMAND_KEY) != 0;
+
+	return state;
+}
+
+inline unsigned int HaikuDirectWindow::GetMouseButtonState(uint32 p_state) {
+	unsigned int state = 0;
+
+	if (p_state & B_PRIMARY_MOUSE_BUTTON) {
+		state |= 1 << 0;
+	}
+
+	if (p_state & B_SECONDARY_MOUSE_BUTTON) {
+		state |= 1 << 1;
+	}
+
+	if (p_state & B_TERTIARY_MOUSE_BUTTON) {
+		state |= 1 << 2;
+	}
+
+	return state;
 }
