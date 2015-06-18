@@ -1237,7 +1237,7 @@ public:
 	/* EVENT QUEUING */
 
 	virtual void draw();
-	virtual void flush();
+	virtual void sync();
 
 	virtual void init();	
 	virtual void finish();

@@ -52,6 +52,17 @@ bool Area::is_gravity_a_point() const{
 	return gravity_is_point;
 }
 
+void Area::set_gravity_distance_scale(real_t p_scale){
+
+	gravity_distance_scale=p_scale;
+	PhysicsServer::get_singleton()->area_set_param(get_rid(),PhysicsServer::AREA_PARAM_GRAVITY_DISTANCE_SCALE,p_scale);
+
+}
+
+real_t Area::get_gravity_distance_scale() const{
+	return gravity_distance_scale;
+}
+
 void Area::set_gravity_vector(const Vector3& p_vec){
 
 	gravity_vec=p_vec;
@@ -214,27 +225,56 @@ void Area::_clear_monitoring() {
 	}
 	ERR_FAIL_COND(locked);
 
-	Map<ObjectID,BodyState> bmcopy = body_map;
-	body_map.clear();
-	//disconnect all monitored stuff
+	{
+		Map<ObjectID,BodyState> bmcopy = body_map;
+		body_map.clear();
+		//disconnect all monitored stuff
 
-	for (Map<ObjectID,BodyState>::Element *E=bmcopy.front();E;E=E->next()) {
+		for (Map<ObjectID,BodyState>::Element *E=bmcopy.front();E;E=E->next()) {
 
-		Object *obj = ObjectDB::get_instance(E->key());
-		Node *node = obj ? obj->cast_to<Node>() : NULL;
-		ERR_CONTINUE(!node);
-		if (!E->get().in_tree)
-			continue;
+			Object *obj = ObjectDB::get_instance(E->key());
+			Node *node = obj ? obj->cast_to<Node>() : NULL;
+			ERR_CONTINUE(!node);
+			if (!E->get().in_tree)
+				continue;
 
-		for(int i=0;i<E->get().shapes.size();i++) {
+			for(int i=0;i<E->get().shapes.size();i++) {
 
-			emit_signal(SceneStringNames::get_singleton()->body_exit_shape,E->key(),node,E->get().shapes[i].body_shape,E->get().shapes[i].area_shape);
+				emit_signal(SceneStringNames::get_singleton()->body_exit_shape,E->key(),node,E->get().shapes[i].body_shape,E->get().shapes[i].area_shape);
+			}
+
+			emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
+
+			node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
 		}
 
-		emit_signal(SceneStringNames::get_singleton()->body_exit,obj);
+	}
 
-		node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_body_enter_tree);
-		node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_body_exit_tree);
+	{
+
+		Map<ObjectID,AreaState> bmcopy = area_map;
+		area_map.clear();
+		//disconnect all monitored stuff
+
+		for (Map<ObjectID,AreaState>::Element *E=bmcopy.front();E;E=E->next()) {
+
+			Object *obj = ObjectDB::get_instance(E->key());
+			Node *node = obj ? obj->cast_to<Node>() : NULL;
+			ERR_CONTINUE(!node);
+			if (!E->get().in_tree)
+				continue;
+
+			for(int i=0;i<E->get().shapes.size();i++) {
+
+				emit_signal(SceneStringNames::get_singleton()->area_exit_shape,E->key(),node,E->get().shapes[i].area_shape,E->get().shapes[i].self_shape);
+			}
+
+			emit_signal(SceneStringNames::get_singleton()->area_exit,obj);
+
+			node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_area_enter_tree);
+			node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_area_exit_tree);
+		}
 	}
 
 }
@@ -260,10 +300,127 @@ void Area::set_enable_monitoring(bool p_enable) {
 	if (monitoring) {
 
 		PhysicsServer::get_singleton()->area_set_monitor_callback(get_rid(),this,"_body_inout");
+		PhysicsServer::get_singleton()->area_set_area_monitor_callback(get_rid(),this,"_area_inout");
 	} else {
 		PhysicsServer::get_singleton()->area_set_monitor_callback(get_rid(),NULL,StringName());
+		PhysicsServer::get_singleton()->area_set_area_monitor_callback(get_rid(),NULL,StringName());
 		_clear_monitoring();
+
 	}
+}
+
+
+void Area::_area_enter_tree(ObjectID p_id) {
+
+	Object *obj = ObjectDB::get_instance(p_id);
+	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	ERR_FAIL_COND(!node);
+
+	Map<ObjectID,AreaState>::Element *E=area_map.find(p_id);
+	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND(E->get().in_tree);
+
+	E->get().in_tree=true;
+	emit_signal(SceneStringNames::get_singleton()->area_enter,node);
+	for(int i=0;i<E->get().shapes.size();i++) {
+
+		emit_signal(SceneStringNames::get_singleton()->area_enter_shape,p_id,node,E->get().shapes[i].area_shape,E->get().shapes[i].self_shape);
+	}
+
+}
+
+void Area::_area_exit_tree(ObjectID p_id) {
+
+	Object *obj = ObjectDB::get_instance(p_id);
+	Node *node = obj ? obj->cast_to<Node>() : NULL;
+	ERR_FAIL_COND(!node);
+	Map<ObjectID,AreaState>::Element *E=area_map.find(p_id);
+	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND(!E->get().in_tree);
+	E->get().in_tree=false;
+	emit_signal(SceneStringNames::get_singleton()->area_exit,node);
+	for(int i=0;i<E->get().shapes.size();i++) {
+
+		emit_signal(SceneStringNames::get_singleton()->area_exit_shape,p_id,node,E->get().shapes[i].area_shape,E->get().shapes[i].self_shape);
+	}
+
+}
+
+void Area::_area_inout(int p_status,const RID& p_area, int p_instance, int p_area_shape,int p_self_shape) {
+
+
+	bool area_in = p_status==PhysicsServer::AREA_BODY_ADDED;
+	ObjectID objid=p_instance;
+
+	Object *obj = ObjectDB::get_instance(objid);
+	Node *node = obj ? obj->cast_to<Node>() : NULL;
+
+	Map<ObjectID,AreaState>::Element *E=area_map.find(objid);
+
+	ERR_FAIL_COND(!area_in && !E);
+
+	locked=true;
+
+	if (area_in) {
+		if (!E) {
+
+			E = area_map.insert(objid,AreaState());
+			E->get().rc=0;
+			E->get().in_tree=node && node->is_inside_tree();
+			if (node) {
+				node->connect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_area_enter_tree,make_binds(objid));
+				node->connect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_area_exit_tree,make_binds(objid));
+				if (E->get().in_tree) {
+					emit_signal(SceneStringNames::get_singleton()->area_enter,node);
+
+				}
+			}
+
+		}
+		E->get().rc++;
+		if (node)
+			E->get().shapes.insert(AreaShapePair(p_area_shape,p_self_shape));
+
+
+		if (!node || E->get().in_tree) {
+			emit_signal(SceneStringNames::get_singleton()->area_enter_shape,objid,node,p_area_shape,p_self_shape);
+		}
+
+	} else {
+
+		E->get().rc--;
+
+		if (node)
+			E->get().shapes.erase(AreaShapePair(p_area_shape,p_self_shape));
+
+		bool eraseit=false;
+
+		if (E->get().rc==0) {
+
+			if (node) {
+				node->disconnect(SceneStringNames::get_singleton()->enter_tree,this,SceneStringNames::get_singleton()->_area_enter_tree);
+				node->disconnect(SceneStringNames::get_singleton()->exit_tree,this,SceneStringNames::get_singleton()->_area_exit_tree);
+				if (E->get().in_tree) {
+					emit_signal(SceneStringNames::get_singleton()->area_exit,obj);
+				}
+
+			}
+
+			eraseit=true;
+
+		}
+		if (!node || E->get().in_tree) {
+			emit_signal(SceneStringNames::get_singleton()->area_exit_shape,objid,obj,p_area_shape,p_self_shape);
+		}
+
+		if (eraseit)
+			area_map.erase(E);
+
+	}
+
+	locked=false;
+
+
 }
 
 bool Area::is_monitoring_enabled() const {
@@ -291,16 +448,84 @@ Array Area::get_overlapping_bodies() const {
 	return ret;
 }
 
+void Area::set_monitorable(bool p_enable) {
+
+	if (locked) {
+		ERR_EXPLAIN("This function can't be used during the in/out signal.");
+	}
+	ERR_FAIL_COND(locked);
+
+	if (p_enable==monitorable)
+		return;
+
+	monitorable=p_enable;
+
+	PhysicsServer::get_singleton()->area_set_monitorable(get_rid(),monitorable);
+}
+
+bool Area::is_monitorable() const {
+
+	return monitorable;
+}
+
+
+Array Area::get_overlapping_areas() const {
+
+	ERR_FAIL_COND_V(!monitoring,Array());
+	Array ret;
+	ret.resize(area_map.size());
+	int idx=0;
+	for (const Map<ObjectID,AreaState>::Element *E=area_map.front();E;E=E->next()) {
+		Object *obj = ObjectDB::get_instance(E->key());
+		if (!obj) {
+			ret.resize( ret.size() -1 ); //ops
+		} else {
+			ret[idx++]=obj;
+		}
+
+	}
+
+	return ret;
+}
+
+bool Area::overlaps_area(Node* p_area) const {
+
+	ERR_FAIL_NULL_V(p_area,false);
+	const Map<ObjectID,AreaState>::Element *E=area_map.find(p_area->get_instance_ID());
+	if (!E)
+		return false;
+	return E->get().in_tree;
+
+
+
+}
+
+bool Area::overlaps_body(Node* p_body) const{
+
+	ERR_FAIL_NULL_V(p_body,false);
+	const Map<ObjectID,BodyState>::Element *E=body_map.find(p_body->get_instance_ID());
+	if (!E)
+		return false;
+	return E->get().in_tree;
+
+}
+
 void Area::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_body_enter_tree","id"),&Area::_body_enter_tree);
 	ObjectTypeDB::bind_method(_MD("_body_exit_tree","id"),&Area::_body_exit_tree);
+
+	ObjectTypeDB::bind_method(_MD("_area_enter_tree","id"),&Area::_area_enter_tree);
+	ObjectTypeDB::bind_method(_MD("_area_exit_tree","id"),&Area::_area_exit_tree);
 
 	ObjectTypeDB::bind_method(_MD("set_space_override_mode","enable"),&Area::set_space_override_mode);
 	ObjectTypeDB::bind_method(_MD("get_space_override_mode"),&Area::get_space_override_mode);
 
 	ObjectTypeDB::bind_method(_MD("set_gravity_is_point","enable"),&Area::set_gravity_is_point);
 	ObjectTypeDB::bind_method(_MD("is_gravity_a_point"),&Area::is_gravity_a_point);
+
+	ObjectTypeDB::bind_method(_MD("set_gravity_distance_scale","distance_scale"),&Area::set_gravity_distance_scale);
+	ObjectTypeDB::bind_method(_MD("get_gravity_distance_scale"),&Area::get_gravity_distance_scale);
 
 	ObjectTypeDB::bind_method(_MD("set_gravity_vector","vector"),&Area::set_gravity_vector);
 	ObjectTypeDB::bind_method(_MD("get_gravity_vector"),&Area::get_gravity_vector);
@@ -314,13 +539,21 @@ void Area::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_priority","priority"),&Area::set_priority);
 	ObjectTypeDB::bind_method(_MD("get_priority"),&Area::get_priority);
 
+	ObjectTypeDB::bind_method(_MD("set_monitorable","enable"),&Area::set_monitorable);
+	ObjectTypeDB::bind_method(_MD("is_monitorable"),&Area::is_monitorable);
+
 
 	ObjectTypeDB::bind_method(_MD("set_enable_monitoring","enable"),&Area::set_enable_monitoring);
 	ObjectTypeDB::bind_method(_MD("is_monitoring_enabled"),&Area::is_monitoring_enabled);
 
 	ObjectTypeDB::bind_method(_MD("get_overlapping_bodies"),&Area::get_overlapping_bodies);
+	ObjectTypeDB::bind_method(_MD("get_overlapping_areas"),&Area::get_overlapping_areas);
+
+	ObjectTypeDB::bind_method(_MD("overlaps_body:PhysicsBody","body"),&Area::overlaps_body);
+	ObjectTypeDB::bind_method(_MD("overlaps_area:Area","area"),&Area::overlaps_area);
 
 	ObjectTypeDB::bind_method(_MD("_body_inout"),&Area::_body_inout);
+	ObjectTypeDB::bind_method(_MD("_area_inout"),&Area::_area_inout);
 
 
 	ADD_SIGNAL( MethodInfo("body_enter_shape",PropertyInfo(Variant::INT,"body_id"),PropertyInfo(Variant::OBJECT,"body"),PropertyInfo(Variant::INT,"body_shape"),PropertyInfo(Variant::INT,"area_shape")));
@@ -328,13 +561,20 @@ void Area::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("body_enter",PropertyInfo(Variant::OBJECT,"body")));
 	ADD_SIGNAL( MethodInfo("body_exit",PropertyInfo(Variant::OBJECT,"body")));
 
+	ADD_SIGNAL( MethodInfo("area_enter_shape",PropertyInfo(Variant::INT,"area_id"),PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area"),PropertyInfo(Variant::INT,"area_shape"),PropertyInfo(Variant::INT,"area_shape")));
+	ADD_SIGNAL( MethodInfo("area_exit_shape",PropertyInfo(Variant::INT,"area_id"),PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area"),PropertyInfo(Variant::INT,"area_shape"),PropertyInfo(Variant::INT,"area_shape")));
+	ADD_SIGNAL( MethodInfo("area_enter",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
+	ADD_SIGNAL( MethodInfo("area_exit",PropertyInfo(Variant::OBJECT,"area",PROPERTY_HINT_RESOURCE_TYPE,"Area")));
+
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
+	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"density",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_density"),_SCS("get_density"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
 
 }
 
@@ -345,11 +585,13 @@ Area::Area() : CollisionObject(PhysicsServer::get_singleton()->area_create(),tru
 	locked=false;
 	set_gravity_vector(Vector3(0,-1,0));
 	gravity_is_point=false;
+	gravity_distance_scale=0;
 	density=0.1;
 	priority=0;
 	monitoring=false;
 	set_ray_pickable(false);
 	set_enable_monitoring(true);
+	set_monitorable(true);
 
 }
 

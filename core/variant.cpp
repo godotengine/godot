@@ -302,8 +302,8 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 		case COLOR: {
 
 			static const Type valid[] = {
-				//STRING,
-				//INT,
+				STRING,
+				INT,
 				NIL,
 			};
 
@@ -1653,6 +1653,10 @@ Variant::operator Color() const {
 
 	if (type==COLOR)
 		return *reinterpret_cast<const Color*>(_data._mem);
+	else if (type==STRING)
+		return Color::html( operator String() );
+	else if (type==INT)
+		return Color::hex( operator int() );
 	else
 		return Color();
 }

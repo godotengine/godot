@@ -137,8 +137,8 @@ public:
 
 	virtual MainLoop *get_main_loop() const;
 
-	virtual Date get_date() const;
-	virtual Time get_time() const;
+	virtual Date get_date(bool utc) const;
+	virtual Time get_time(bool utc) const;
 
 	virtual void delay_usec(uint32_t p_usec) const;
 	virtual uint64_t get_ticks_usec() const;

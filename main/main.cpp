@@ -98,6 +98,9 @@ static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
 
+static bool init_maximized=false;
+static int init_screen=-1;
+
 static String unescape_cmdline(const String& p_str) {
 
 	return p_str.replace("%20"," ");
@@ -384,7 +387,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
-
+			init_maximized=true;
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -788,6 +791,13 @@ Error Main::setup2() {
 #ifdef JAVASCRIPT_ENABLED
 	show_logo=false;
 #endif
+
+	if (init_screen!=-1) {
+		OS::get_singleton()->set_current_screen(init_screen);
+	}
+	if (init_maximized) {
+		OS::get_singleton()->set_window_maximized(true);
+	}
 
 	if (show_logo) { //boot logo!
 		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
@@ -1320,8 +1330,8 @@ bool Main::iteration() {
 	double step=(double)ticks_elapsed / 1000000.0;
 	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
 
-	//if (time_accum+step < frame_slice)
-	//	return false;
+//	if (time_accum+step < frame_slice)
+//		return false;
 
 	frame+=ticks_elapsed;
 
@@ -1356,6 +1366,8 @@ bool Main::iteration() {
 		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice*time_scale);
+
+		Physics2DServer::get_singleton()->end_sync();
 		Physics2DServer::get_singleton()->step(frame_slice*time_scale);
 
 		time_accum-=frame_slice;
@@ -1378,6 +1390,8 @@ bool Main::iteration() {
 		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
+	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+
 	if (OS::get_singleton()->can_draw()) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
@@ -1390,8 +1404,6 @@ bool Main::iteration() {
 			OS::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
-	} else {
-		VisualServer::get_singleton()->flush(); // flush visual commands
 	}
 
 	if (AudioServer::get_singleton())

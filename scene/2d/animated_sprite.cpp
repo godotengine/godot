@@ -149,11 +149,11 @@ void AnimatedSprite::_notification(int p_what) {
 
 			Size2i s;
 			s = texture->get_size();
-			Point2i ofs=offset;
+			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
 
-			Rect2i dst_rect(ofs,s);
+			Rect2 dst_rect(ofs,s);
 
 			if (hflip)
 				dst_rect.size.x=-dst_rect.size.x;
@@ -284,7 +284,7 @@ Rect2 AnimatedSprite::get_item_rect() const {
 		return Node2D::get_item_rect();
 	Size2i s = t->get_size();
 
-	Point2i ofs=offset;
+	Point2 ofs=offset;
 	if (centered)
 		ofs-=s/2;
 
@@ -329,7 +329,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 
 	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "frames",PROPERTY_HINT_RESOURCE_TYPE,"SpriteFrames"), _SCS("set_sprite_frames"),_SCS("get_sprite_frames"));
-	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "centered"), _SCS("set_centered"),_SCS("is_centered"));
 	ADD_PROPERTYNZ( PropertyInfo( Variant::VECTOR2, "offset"), _SCS("set_offset"),_SCS("get_offset"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_h"), _SCS("set_flip_h"),_SCS("is_flipped_h"));

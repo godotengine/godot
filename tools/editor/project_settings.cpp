@@ -415,7 +415,7 @@ void ProjectSettings::_update_actions() {
 		item->set_cell_mode(0,TreeItem::CELL_MODE_CHECK);
 		item->set_text(0,name);
 		item->add_button(0,get_icon("Add","EditorIcons"),1);
-		item->add_button(0,get_icon("Del","EditorIcons"),2);
+		item->add_button(0,get_icon("Remove","EditorIcons"),2);
 		item->set_custom_bg_color(0,get_color("prop_subsection","Editor"));
 		item->set_editable(0,true);
 		item->set_checked(0,pi.usage&PROPERTY_USAGE_CHECKED);
@@ -483,7 +483,7 @@ void ProjectSettings::_update_actions() {
 					action->set_icon(0,get_icon("JoyAxis","EditorIcons"));
 				} break;
 			}
-			action->add_button(0,get_icon("Del","EditorIcons"),2);
+			action->add_button(0,get_icon("Remove","EditorIcons"),2);
 			action->set_metadata(0,i);
 		}
 	}
@@ -1450,9 +1450,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		translation_list->set_v_size_flags(SIZE_EXPAND_FILL);
 		tmc->add_child(translation_list);
 
-		translation_file_open=memnew( FileDialog );
+		translation_file_open=memnew( EditorFileDialog );
 		add_child(translation_file_open);
-		translation_file_open->set_mode(FileDialog::MODE_OPEN_FILE);
+		translation_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		translation_file_open->connect("file_selected",this,"_translation_add");
 
 	}
@@ -1477,9 +1477,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		tmc->add_child(translation_remap);
 		translation_remap->connect("button_pressed",this,"_translation_res_delete");
 
-		translation_res_file_open=memnew( FileDialog );
+		translation_res_file_open=memnew( EditorFileDialog );
 		add_child(translation_res_file_open);
-		translation_res_file_open->set_mode(FileDialog::MODE_OPEN_FILE);
+		translation_res_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		translation_res_file_open->connect("file_selected",this,"_translation_res_add");
 
 		thb = memnew( HBoxContainer);
@@ -1507,9 +1507,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		translation_remap_options->connect("item_edited",this,"_translation_res_option_changed");
 		translation_remap_options->connect("button_pressed",this,"_translation_res_option_delete");
 
-		translation_res_option_file_open=memnew( FileDialog );
+		translation_res_option_file_open=memnew( EditorFileDialog );
 		add_child(translation_res_option_file_open);
-		translation_res_option_file_open->set_mode(FileDialog::MODE_OPEN_FILE);
+		translation_res_option_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		translation_res_option_file_open->connect("file_selected",this,"_translation_res_option_add");
 
 	}
@@ -1548,9 +1548,9 @@ ProjectSettings::ProjectSettings(EditorData *p_data) {
 		autoload_list->set_v_size_flags(SIZE_EXPAND_FILL);
 		avb->add_margin_child("List:",autoload_list,true);
 
-		autoload_file_open=memnew( FileDialog );
+		autoload_file_open=memnew( EditorFileDialog );
 		add_child(autoload_file_open);
-		autoload_file_open->set_mode(FileDialog::MODE_OPEN_FILE);
+		autoload_file_open->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		autoload_file_open->connect("file_selected",this,"_autoload_file_callback");
 
 		autoload_list->set_columns(2);

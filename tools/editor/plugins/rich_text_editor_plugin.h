@@ -53,7 +53,7 @@ class RichTextEditor : public Control {
 	Panel *panel;
         MenuButton *options;
 	RichTextLabel *node;
-	FileDialog *file_dialog;
+	EditorFileDialog *file_dialog;
 
 	void _file_selected(const String& p_path);
 	void _menu_option(int p_option);

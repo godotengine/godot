@@ -82,7 +82,7 @@ void Sprite::_notification(int p_what) {
 
 			}
 
-			Point2i ofs=offset;
+			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
 
@@ -265,7 +265,7 @@ Rect2 Sprite::get_item_rect() const {
 		s=s/Point2(hframes,vframes);
 	}
 
-	Point2i ofs=offset;
+	Point2 ofs=offset;
 	if (centered)
 		ofs-=s/2;
 
@@ -320,7 +320,7 @@ void Sprite::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flip_v"), _SCS("set_flip_v"),_SCS("is_flipped_v"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "vframes"), _SCS("set_vframes"),_SCS("get_vframes"));
 	ADD_PROPERTY( PropertyInfo( Variant::INT, "hframes"), _SCS("set_hframes"),_SCS("get_hframes"));
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame"), _SCS("set_frame"),_SCS("get_frame"));
+	ADD_PROPERTY( PropertyInfo( Variant::INT, "frame",PROPERTY_HINT_SPRITE_FRAME), _SCS("set_frame"),_SCS("get_frame"));
 	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate"));
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "region"), _SCS("set_region"),_SCS("is_region"));
 	ADD_PROPERTY( PropertyInfo( Variant::RECT2, "region_rect"), _SCS("set_region_rect"),_SCS("get_region_rect"));
@@ -413,11 +413,11 @@ void ViewportSprite::_notification(int p_what) {
 
 			src_rect.size=s;
 
-			Point2i ofs=offset;
+			Point2 ofs=offset;
 			if (centered)
 				ofs-=s/2;
 
-			Rect2i dst_rect(ofs,s);
+			Rect2 dst_rect(ofs,s);
 			texture->draw_rect_region(ci,dst_rect,src_rect,modulate);
 
 		} break;
@@ -505,7 +505,7 @@ Rect2 ViewportSprite::get_item_rect() const {
 	Size2i s;
 
 	s = texture->get_size();
-	Point2i ofs=offset;
+	Point2 ofs=offset;
 	if (centered)
 		ofs-=s/2;
 

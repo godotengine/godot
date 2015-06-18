@@ -294,6 +294,9 @@ public:
 		reference=NULL;
 	}
 
+	void instance() {
+		ref( memnew( T ));
+	}
 
 	Ref() {
 

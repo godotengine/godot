@@ -411,6 +411,7 @@ void LightOccluder2DEditor::_bind_methods() {
 
 LightOccluder2DEditor::LightOccluder2DEditor(EditorNode *p_editor) {
 
+	node=NULL;
 	canvas_item_editor=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();

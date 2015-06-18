@@ -54,6 +54,7 @@ enum PropertyHint {
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing funciton (Math::ease)
 	PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
+	PROPERTY_HINT_SPRITE_FRAME,
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_ALL_FLAGS,
@@ -448,6 +449,7 @@ protected:
 
 	DVector<String> _get_meta_list_bind() const;
 	Array _get_property_list_bind() const;
+	Array _get_method_list_bind() const;
 
 public: //should be protected, but bug in clang++
 	static void initialize_type();

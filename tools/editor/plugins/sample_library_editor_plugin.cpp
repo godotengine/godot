@@ -350,13 +350,13 @@ SampleLibraryEditor::SampleLibraryEditor() {
 
 	_delete = memnew( Button );
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Sample",&extensions);
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
-	file->set_mode(FileDialog::MODE_OPEN_FILES);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
 	_delete->set_pos(Point2( 65, 5 ));
 	_delete->set_size( Size2(1,1 ) );

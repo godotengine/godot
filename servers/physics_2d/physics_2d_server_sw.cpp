@@ -30,7 +30,7 @@
 #include "broad_phase_2d_basic.h"
 #include "broad_phase_2d_hash_grid.h"
 #include "collision_solver_2d_sw.h"
-
+#include "globals.h"
 RID Physics2DServerSW::shape_create(ShapeType p_shape) {
 
 	Shape2DSW *shape=NULL;
@@ -261,7 +261,7 @@ Physics2DDirectSpaceState* Physics2DServerSW::space_get_direct_state(RID p_space
 
 	Space2DSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space,NULL);
-	if (/*doing_sync ||*/ space->is_locked()) {
+	if ((using_threads && !doing_sync) || space->is_locked()) {
 
 		ERR_EXPLAIN("Space state is inaccesible right now, wait for iteration or fixed process notification.");
 		ERR_FAIL_V(NULL);
@@ -733,7 +733,7 @@ void Physics2DServerSW::body_set_layer_mask(RID p_body, uint32_t p_flags) {
 
 };
 
-uint32_t Physics2DServerSW::body_get_layer_mask(RID p_body, uint32_t p_flags) const {
+uint32_t Physics2DServerSW::body_get_layer_mask(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -750,7 +750,7 @@ void Physics2DServerSW::body_set_collision_mask(RID p_body, uint32_t p_flags) {
 
 };
 
-uint32_t Physics2DServerSW::body_get_collision_mask(RID p_body, uint32_t p_flags) const {
+uint32_t Physics2DServerSW::body_get_collision_mask(RID p_body) const {
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body,0);
@@ -1196,7 +1196,7 @@ void Physics2DServerSW::set_active(bool p_active) {
 
 void Physics2DServerSW::init() {
 
-	doing_sync=true;
+	doing_sync=false;
 	last_step=0.001;
 	iterations=8;// 8?
 	stepper = memnew( Step2DSW );
@@ -1228,6 +1228,7 @@ void Physics2DServerSW::step(float p_step) {
 
 void Physics2DServerSW::sync() {
 
+	doing_sync=true;
 };
 
 void Physics2DServerSW::flush_queries() {
@@ -1235,7 +1236,7 @@ void Physics2DServerSW::flush_queries() {
 	if (!active)
 		return;
 
-	doing_sync=true;
+
 	for( Set<const Space2DSW*>::Element *E=active_spaces.front();E;E=E->next()) {
 
 		Space2DSW *space=(Space2DSW *)E->get();
@@ -1243,6 +1244,10 @@ void Physics2DServerSW::flush_queries() {
 	}
 
 };
+
+void Physics2DServerSW::end_sync() {
+	doing_sync=false;
+}
 
 
 
@@ -1283,6 +1288,7 @@ Physics2DServerSW::Physics2DServerSW() {
 	island_count=0;
 	active_objects=0;
 	collision_pairs=0;
+	using_threads=int(Globals::get_singleton()->get("physics_2d/thread_model"))==2;
 
 };
 

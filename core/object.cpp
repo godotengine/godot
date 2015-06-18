@@ -995,12 +995,44 @@ Variant Object::get_meta(const String& p_name) const {
 	return metadata[p_name];
 }
 
+
 Array Object::_get_property_list_bind() const {
 
 	List<PropertyInfo> lpi;
 	get_property_list(&lpi);
 	return convert_property_list(&lpi);
 }
+
+Array Object::_get_method_list_bind() const {
+
+	List<MethodInfo> ml;
+	get_method_list(&ml);
+	Array ret;
+
+	for(List<MethodInfo>::Element *E=ml.front();E;E=E->next()) {
+
+		Dictionary d;
+		d["name"]=E->get().name;
+		d["args"]=convert_property_list(&E->get().arguments);
+		Array da;
+		for(int i=0;i<E->get().default_arguments.size();i++)
+			da.push_back(E->get().default_arguments[i]);
+		d["default_args"]=da;
+		d["flags"]=E->get().flags;
+		d["id"]=E->get().id;
+		Dictionary r;
+		r["type"]=E->get().return_val.type;
+		r["hint"]=E->get().return_val.hint;
+		r["hint_string"]=E->get().return_val.hint_string;
+		d["return_type"]=r;
+		//va.push_back(d);
+		ret.push_back(d);
+	}
+
+	return ret;
+
+}
+
 DVector<String> Object::_get_meta_list_bind() const {
 
 	DVector<String> _metaret;
@@ -1319,7 +1351,7 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 	if (!s) {
 		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
 		if (!signal_is_valid) {
-			ERR_EXPLAIN("Attempt to connect to nonexistent signal: "+p_signal);
+			ERR_EXPLAIN("Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_method+"'");
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
 		}
 		signal_map[p_signal]=Signal();
@@ -1439,6 +1471,7 @@ void Object::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set","property","value"),&Object::_set_bind);
 	ObjectTypeDB::bind_method(_MD("get","property"),&Object::_get_bind);
 	ObjectTypeDB::bind_method(_MD("get_property_list"),&Object::_get_property_list_bind);
+	ObjectTypeDB::bind_method(_MD("get_method_list"),&Object::_get_method_list_bind);
 	ObjectTypeDB::bind_method(_MD("notification","what"),&Object::notification,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_instance_ID"),&Object::get_instance_ID);
 

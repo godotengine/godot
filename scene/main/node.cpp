@@ -641,6 +641,7 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 	p_child->data.pos=data.children.size();
 	data.children.push_back( p_child );
 	p_child->data.parent=this;
+	p_child->notification(NOTIFICATION_PARENTED);
 
 	if (data.tree) {
 		p_child->_set_tree(data.tree);
@@ -649,7 +650,6 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 	/* Notify */
 	//recognize childs created in this node constructor
 	p_child->data.parent_owned=data.in_constructor;
-	p_child->notification(NOTIFICATION_PARENTED);
 	add_child_notify(p_child);
 
 
@@ -838,6 +838,28 @@ Node *Node::get_node(const NodePath& p_path) const {
 bool Node::has_node(const NodePath& p_path) const {
 
 	return _get_node(p_path)!=NULL;
+}
+
+
+Node* Node::find_node(const String& p_mask,bool p_recursive,bool p_owned) const {
+
+	Node * const*cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for(int i=0;i<ccount;i++) {
+		if (p_owned && !cptr[i]->data.owner)
+			continue;
+		if (cptr[i]->data.name.operator String().match(p_mask))
+			return cptr[i];
+
+		if (!p_recursive)
+			continue;
+
+		Node* ret = cptr[i]->find_node(p_mask,true,p_owned);
+		if (ret)
+			return ret;
+	}
+	return NULL;
+
 }
 
 Node *Node::get_parent() const {
@@ -1807,6 +1829,7 @@ void Node::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
 	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
+	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::get_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
 

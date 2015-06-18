@@ -230,6 +230,11 @@ void CreateDialog::_notification(int p_what) {
 		connect("confirmed",this,"_confirmed");
 		_update_search();
 	}
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+
+		disconnect("confirmed",this,"_confirmed");
+
+	}
 
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 

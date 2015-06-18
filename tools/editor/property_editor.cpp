@@ -83,7 +83,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			switch(p_which) {
 				case OBJ_MENU_LOAD: {
 
-					file->set_mode(FileDialog::MODE_OPEN_FILE);
+					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 					List<String> extensions;
 					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
 
@@ -908,11 +908,11 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (p_which==0) {
 
 					if (hint==PROPERTY_HINT_FILE)
-						file->set_access(FileDialog::ACCESS_RESOURCES);
+						file->set_access(EditorFileDialog::ACCESS_RESOURCES);
 					else
-						file->set_access(FileDialog::ACCESS_FILESYSTEM);
+						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
-					file->set_mode(FileDialog::MODE_OPEN_FILE);
+					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 					file->clear_filters();
 
 					file->clear_filters();
@@ -946,10 +946,10 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (p_which==0) {
 
 					if (hint==PROPERTY_HINT_DIR)
-						file->set_access(FileDialog::ACCESS_RESOURCES);
+						file->set_access(EditorFileDialog::ACCESS_RESOURCES);
 					else
-						file->set_access(FileDialog::ACCESS_FILESYSTEM);
-					file->set_mode(FileDialog::MODE_OPEN_DIR);
+						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+					file->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 					file->clear_filters();
 					file->popup_centered_ratio();
 				} else {
@@ -1001,8 +1001,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				}
 			} else if (p_which==1) {
 			
-				file->set_access(FileDialog::ACCESS_RESOURCES);
-				file->set_mode(FileDialog::MODE_OPEN_FILE);
+				file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+				file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 				List<String> extensions;
 				String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
 				
@@ -1081,8 +1081,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 			} else if (p_which==1) {
 
-				file->set_access(FileDialog::ACCESS_RESOURCES);
-				file->set_mode(FileDialog::MODE_OPEN_FILE);
+				file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+				file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 				List<String> extensions;
 				ImageLoader::get_recognized_extensions(&extensions);
 
@@ -1612,7 +1612,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	color_picker->connect("color_changed",this,"_color_changed");
 
 	set_as_toplevel(true);
-	file = memnew ( FileDialog );
+	file = memnew ( EditorFileDialog );
 	add_child(file);
 	file->hide();
 	
@@ -1915,6 +1915,7 @@ void PropertyEditor::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
+		get_tree()->disconnect("node_removed",this,"_node_removed");
 		edit(NULL);
 	}
 
@@ -2629,7 +2630,12 @@ void PropertyEditor::update_tree() {
 
 		if (keying) {
 
-			item->add_button(1,get_icon("Key","EditorIcons"),2);
+			if (p.hint==PROPERTY_HINT_SPRITE_FRAME) {
+
+				item->add_button(1,get_icon("KeyNext","EditorIcons"),5);
+			} else {
+				item->add_button(1,get_icon("Key","EditorIcons"),2);
+			}
 		}
 
 		if (get_instanced_node()) {
@@ -2904,6 +2910,16 @@ void PropertyEditor::edit(Object* p_object) {
 	
 }
 
+void PropertyEditor::_set_range_def(Object *p_item, String prop,float p_frame) {
+
+	TreeItem *ti = p_item->cast_to<TreeItem>();
+	ERR_FAIL_COND(!ti);
+
+	ti->call_deferred("set_range",1, p_frame);
+	obj->call_deferred("set",prop,p_frame);
+
+}
+
 void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 	TreeItem *ti = p_item->cast_to<TreeItem>();
 	ERR_FAIL_COND(!ti);
@@ -2915,7 +2931,15 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		if (!d.has("name"))
 			return;
 		String prop=d["name"];
-		emit_signal("property_keyed",prop,obj->get(prop));
+		emit_signal("property_keyed",prop,obj->get(prop),false);
+	} else if (p_button==5) {
+		print_line("PB5");
+		if (!d.has("name"))
+			return;
+		String prop=d["name"];
+		emit_signal("property_keyed",prop,obj->get(prop),true);
+		//set_range(p_column, ti->get_range(p_column)+1.0 );
+		call_deferred("_set_range_def",ti,prop,ti->get_range(p_column)+1.0);
 	} else if (p_button==3) {
 
 		if (!get_instanced_node())
@@ -3046,6 +3070,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_edit_button",&PropertyEditor::_edit_button);
 	ObjectTypeDB::bind_method( "_changed_callback",&PropertyEditor::_changed_callbacks);
 	ObjectTypeDB::bind_method( "_draw_flags",&PropertyEditor::_draw_flags);
+	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );

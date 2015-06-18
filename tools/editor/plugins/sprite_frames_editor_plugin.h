@@ -54,7 +54,7 @@ class SpriteFramesEditor : public PanelContainer {
 	int sel;
 
 
-	FileDialog *file;
+	EditorFileDialog *file;
 
 	AcceptDialog *dialog;
 
