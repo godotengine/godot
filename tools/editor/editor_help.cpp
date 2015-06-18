@@ -339,7 +339,7 @@ void EditorHelp::_unhandled_key_input(const InputEvent& p_ev) {
 
 		search->grab_focus();
 		search->select_all();
-	} else if (p_ev.key.mod.shift && p_ev.key.scancode==KEY_F1) {
+	} else if (p_ev.key.mod.shift && p_ev.key.scancode==KEY_F1 && p_ev.is_pressed() && !p_ev.is_echo()) {
 		class_search->popup();
 	}
 }
