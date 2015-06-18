@@ -1148,8 +1148,13 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 		video_mode.height = rect.bottom;
 		video_mode.fullscreen = false;
 	} else {
+		DWORD screen_width = GetSystemMetrics(SM_CXSCREEN);
+		DWORD screen_height = GetSystemMetrics(SM_CYSCREEN);
 
-		if (!(hWnd=CreateWindowExW(dwExStyle,L"Engine",L"", dwStyle|WS_CLIPSIBLINGS|WS_CLIPCHILDREN, 0, 0,WindowRect.right-WindowRect.left,WindowRect.bottom-WindowRect.top, NULL,NULL,	hInstance,NULL))) {
+		LONG window_width = WindowRect.right - WindowRect.left;
+		LONG window_height = WindowRect.bottom - WindowRect.top;
+
+		if (!(hWnd=CreateWindowExW(dwExStyle,L"Engine",L"", dwStyle|WS_CLIPSIBLINGS|WS_CLIPCHILDREN, screen_width/2-window_width/2, screen_height/2-window_height/2,window_width,window_height, NULL,NULL,	hInstance,NULL))) {
 			MessageBoxW(NULL,L"Window Creation Error.",L"ERROR",MB_OK|MB_ICONEXCLAMATION);
 			return;								// Return FALSE
 		}
