@@ -3238,7 +3238,7 @@ PropertyEditor::PropertyEditor() {
 
 	custom_editor->connect("variant_changed", this,"_custom_editor_edited");
 	custom_editor->connect("resource_edit_request", this,"_resource_edit_request",make_binds(),CONNECT_DEFERRED);
-	custom_editor->connect("select_node_request", this, "_select_node_request");
+	//custom_editor->connect("select_node_request", this, "_select_node_request");
 	custom_editor->set_value_evaluator(evaluator);
 	
 	capitalize_paths=true;
