@@ -453,18 +453,23 @@ void CollisionShape2DEditor::_canvas_draw() {
 void CollisionShape2DEditor::edit(Node* p_node) {
     if (!canvas_item_editor) {
         canvas_item_editor=CanvasItemEditor::get_singleton();
-
-        canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
     }
 
     if (p_node) {
         node=p_node->cast_to<CollisionShape2D>();
+
+        if (!canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
+			canvas_item_editor->get_viewport_control()->connect("draw",this,"_canvas_draw");
 
         _get_current_shape_type();
 
     } else {
         edit_handle = -1;
         shape_type = -1;
+
+        if (canvas_item_editor->get_viewport_control()->is_connected("draw",this,"_canvas_draw"))
+			canvas_item_editor->get_viewport_control()->disconnect("draw",this,"_canvas_draw");
+
         node=NULL;
     }
 
