@@ -6,6 +6,7 @@ HaikuDirectWindow::HaikuDirectWindow(BRect p_frame)
 {
 	last_mouse_pos_valid = false;
 	last_buttons_state = 0;
+	last_button_mask = 0;
 }
 
 
@@ -154,11 +155,11 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	uint32 buttons = message->FindInt32("buttons");
 
 	if (!last_mouse_pos_valid) {
-		last_mouse_pos = pos;
+		last_mouse_position = pos;
 		last_mouse_pos_valid = true;
 	}
 
-	Point2i rel = pos - last_mouse_pos;
+	Point2i rel = pos - last_mouse_position;
 
 	InputEvent motion_event;
 	motion_event.ID = ++event_id;
@@ -178,7 +179,7 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	motion_event.mouse_motion.relative_x = rel.x;
 	motion_event.mouse_motion.relative_y = rel.y;
 
-	last_mouse_pos=pos;
+	last_mouse_position = pos;
 
 	input->parse_input_event(motion_event);
 }
@@ -194,8 +195,8 @@ inline InputModifierState HaikuDirectWindow::GetKeyModifierState(uint32 p_state)
 	return state;
 }
 
-inline unsigned int HaikuDirectWindow::GetMouseButtonState(uint32 p_state) {
-	unsigned int state = 0;
+inline int HaikuDirectWindow::GetMouseButtonState(uint32 p_state) {
+	int state = 0;
 
 	if (p_state & B_PRIMARY_MOUSE_BUTTON) {
 		state |= 1 << 0;
@@ -208,6 +209,8 @@ inline unsigned int HaikuDirectWindow::GetMouseButtonState(uint32 p_state) {
 	if (p_state & B_TERTIARY_MOUSE_BUTTON) {
 		state |= 1 << 2;
 	}
+
+	last_button_mask = state;
 
 	return state;
 }

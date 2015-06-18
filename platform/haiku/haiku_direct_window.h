@@ -13,9 +13,10 @@ class HaikuDirectWindow : public BDirectWindow
 {
 private:
 	unsigned int event_id;
-	Point2i last_mouse_pos;
+	Point2i last_mouse_position;
 	bool last_mouse_pos_valid;
 	uint32 last_buttons_state;
+	int last_button_mask;
 
 	InputDefault* input;
 	HaikuGLView* view;
@@ -24,7 +25,7 @@ private:
 	void DispatchMouseButton(BMessage* message);
 	void DispatchMouseMoved(BMessage* message);
 	inline InputModifierState GetKeyModifierState(uint32 p_state);
-	inline unsigned int GetMouseButtonState(uint32 p_state);
+	inline int GetMouseButtonState(uint32 p_state);
 
 public:
 	HaikuDirectWindow(BRect p_frame);
@@ -38,6 +39,9 @@ public:
 	virtual void DirectConnected(direct_buffer_info* info);
 	virtual void MessageReceived(BMessage* message);
 	virtual void DispatchMessage(BMessage* message, BHandler* handler);
+
+	inline Point2i GetLastMousePosition() { return last_mouse_position; };
+	inline int GetLastButtonMask() { return last_button_mask; };
 };
 
 #endif

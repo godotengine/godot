@@ -174,19 +174,18 @@ void OS_Haiku::swap_buffers() {
 }
 
 Point2 OS_Haiku::get_mouse_pos() const {
-	ERR_PRINT("get_mouse_pos() NOT IMPLEMENTED");
+	return window->GetLastMousePosition();
 }
 
 int OS_Haiku::get_mouse_button_state() const {
-	ERR_PRINT("get_mouse_button_state() NOT IMPLEMENTED");
+	return window->GetLastButtonMask();
 }
 
 void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
-	ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
+	//ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
 }
 
 void OS_Haiku::set_window_title(const String& p_title) {
-	//ERR_PRINT("set_window_title() NOT IMPLEMENTED");
 	window->SetTitle(p_title.utf8().get_data());
 }
 
