@@ -164,6 +164,8 @@ ByteArray Crypt::desdecode(const ByteArray& p_key, const ByteArray& p_text) {
 	}
 	ERR_EXPLAIN("Invalid des crypt text");
 	ERR_FAIL_COND_V(padding > 8, ByteArray());
+	w = ByteArray::Write();
+	buffer.resize(textsz - padding);
 	return buffer;
 }
 
@@ -468,6 +470,8 @@ ByteArray Crypt::base64decode(const ByteArray& p_base64) {
 		}
 		}
 	}
+	buffer = ByteArray::Write();
+	tmp.resize(output);
 	return tmp;
 }
 
