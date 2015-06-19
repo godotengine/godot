@@ -78,22 +78,17 @@ Variant CollisionShape2DEditor::get_handle_value(int idx) const {
 }
 
 void CollisionShape2DEditor::set_handle(int idx, Point2& p_point) {
-    Point2 org = Point2();
-
     switch ( shape_type ) {
         case CAPSULE_SHAPE: {
             if (idx < 2) {
                 Ref<CapsuleShape2D> capsule = node->get_shape();
 
-                Vector2 rel = Point2();
-                rel[idx] = p_point[idx];
-
-                real_t parameter = rel.length();
+                real_t parameter = Math::abs(p_point[idx]);
 
                 if (idx==0) {
                     capsule->set_radius(parameter);
                 } else if (idx==1){
-                    capsule->set_height(parameter);
+                    capsule->set_height(parameter*2 - capsule->get_radius()*2);
                 }
 
                 canvas_item_editor->get_viewport_control()->update();
@@ -112,8 +107,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2& p_point) {
         case RAY_SHAPE: {
             Ref<RayShape2D> ray = node->get_shape();
 
-            Vector2 rel = Vector2(0, p_point.y);
-            ray->set_length(org.distance_to(rel));
+            ray->set_length(Math::abs(p_point.y));
 
             canvas_item_editor->get_viewport_control()->update();
 
@@ -390,7 +384,7 @@ void CollisionShape2DEditor::_canvas_draw() {
             float height = shape->get_height()/2;
 
             handles[0] = Point2(radius, -height);
-            handles[1] = Point2(0,-height-radius);
+            handles[1] = Point2(0,-(height + radius));
 
             c->draw_texture(h, gt.xform(handles[0])-size);
             c->draw_texture(h, gt.xform(handles[1])-size);
