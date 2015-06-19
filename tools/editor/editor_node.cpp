@@ -92,6 +92,7 @@
 #include "plugins/navigation_polygon_editor_plugin.h"
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
+#include "plugins/collision_shape_2d_editor_plugin.h"
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -152,8 +153,8 @@ void EditorNode::_notification(int p_what) {
 		log->deinit(); // do not get messages anymore
 	}
 	if (p_what==NOTIFICATION_PROCESS) {
-	
-		//force the whole tree viewport		
+
+		//force the whole tree viewport
 #if 0
 		{
 			Rect2 grect = scene_root_base->get_global_rect();
@@ -217,13 +218,13 @@ void EditorNode::_notification(int p_what) {
 			}
 
 		}
-	
+
 	}
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
 
 		//MessageQueue::get_singleton()->push_call(this,"_get_scene_metadata");
-		get_tree()->set_editor_hint(true);				
+		get_tree()->set_editor_hint(true);
 		get_tree()->get_root()->set_as_audio_listener(false);
 		get_tree()->get_root()->set_as_audio_listener_2d(false);
 		get_tree()->set_auto_accept_quit(false);
@@ -426,12 +427,12 @@ void EditorNode::save_resource_as(const Ref<Resource>& p_resource) {
 
 
 void EditorNode::_menu_option(int p_option) {
-	
+
 	_menu_option_confirm(p_option,false);
 }
 
 void EditorNode::_menu_confirm_current() {
-	
+
 	_menu_option_confirm(current_option,true);
 }
 
@@ -440,27 +441,27 @@ void EditorNode::_dialog_display_file_error(String p_file,Error p_error) {
 
 
 	if (p_error) {
-		
+
 		current_option=-1;
 		//accept->"()->hide();
 		accept->get_ok()->set_text("I see..");
-		
+
 		switch(p_error) {
-		
+
 			case ERR_FILE_CANT_WRITE: {
 
 				accept->set_text("Can't open file for writing: "+p_file.extension());
 			} break;
 			case ERR_FILE_UNRECOGNIZED: {
-			
+
 				accept->set_text("File format requested unknown: "+p_file.extension());
 			} break;
 			default: {
-			
+
 				accept->set_text("Error Saving.");
 			}break;
 		}
-					
+
 		accept->popup_centered_minsize();
 	}
 
@@ -982,10 +983,10 @@ void EditorNode::_import(const String &p_file) {
 }
 
 void EditorNode::_dialog_action(String p_file) {
-	
+
 
 	switch(current_option) {
-	
+
 		case RESOURCE_LOAD: {
 
 			RES res = ResourceLoader::load(p_file);
@@ -1273,14 +1274,14 @@ void EditorNode::_dialog_action(String p_file) {
 		} break;
 
 		default: { //save scene?
-		
-			
+
+
 			if (file->get_mode()==FileDialog::MODE_SAVE_FILE) {
 
 				//_save_scene(p_file);
 				_save_scene_with_preview(p_file);
 			}
-			
+
 		} break;
 	}
 }
@@ -1313,13 +1314,13 @@ void EditorNode::_property_editor_forward() {
 
 	if (editor_history.next())
 		_edit_current();
-		
+
 }
 void EditorNode::_property_editor_back() {
-	
+
 	if (editor_history.previous())
 		_edit_current();
-	
+
 }
 
 
@@ -1349,7 +1350,7 @@ void EditorNode::_hide_top_editors() {
 }
 
 void EditorNode::_edit_current() {
-	
+
 	uint32_t current = editor_history.get_current();
 	Object *current_obj = current>0 ? ObjectDB::get_instance(current) : NULL;
 
@@ -1358,7 +1359,7 @@ void EditorNode::_edit_current() {
 
 
 	if (!current_obj) {
-		
+
 		scene_tree_dock->set_selected(NULL);
 		property_editor->edit( NULL );
 		object_menu->set_disabled(true);
@@ -1497,7 +1498,7 @@ void EditorNode::_edit_current() {
 }
 
 void EditorNode::_resource_selected(const RES& p_res,const String& p_property) {
-	
+
 
 	if (p_res.is_null())
 		return;
@@ -1678,13 +1679,13 @@ void EditorNode::_cleanup_scene() {
 		}
 
 	}
-	
+
 	_update_title();
 
 }
 
 void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
-	
+
 	//print_line("option "+itos(p_option)+" confirm "+itos(p_confirmed));
 	if (!p_confirmed) //this may be a hack..
 		current_option=(MenuOptions)p_option;
@@ -1704,11 +1705,11 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			_cleanup_scene();
 
-			
+
 		} break;
 		case FILE_OPEN_SCENE: {
-			
-			
+
+
 			//print_tree();
 			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 			//not for now?
@@ -1716,10 +1717,10 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
 			file->clear_filters();
 			for(int i=0;i<extensions.size();i++) {
-				
+
 				file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
 			}
-			
+
 
 			//file->set_current_path(current_path);
 			Node *scene = edited_scene;
@@ -1728,7 +1729,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			};
 			file->set_title("Open Scene");
 			file->popup_centered_ratio();
-			
+
 		} break;
 		case FILE_QUICK_OPEN_SCENE: {
 
@@ -1768,19 +1769,19 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			// fallthrough to save_as
 		};
 		case FILE_SAVE_AS_SCENE: {
-			
+
 			Node *scene = edited_scene;
-			
+
 			if (!scene) {
-				
+
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
 				accept->popup_centered_minsize();
-				break;				
+				break;
 			}
-			
+
 			file->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 			bool relpaths = (scene->has_meta("__editor_relpaths__") && scene->get_meta("__editor_relpaths__").operator bool());
 
@@ -1793,7 +1794,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 				file->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
 			}
-			
+
 			//file->set_current_path(current_path);
 			if (scene->get_filename()!="") {
 				file->set_current_path(scene->get_filename());
@@ -1814,7 +1815,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			}
 			file->popup_centered_ratio();
 			file->set_title("Save Scene As..");
-			
+
 		} break;
 
 		case FILE_SAVE_BEFORE_RUN: {
@@ -2058,7 +2059,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		} break;
 
 		case FILE_QUIT: {
-			
+
 
 			if (!p_confirmed) {
 
@@ -2072,7 +2073,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			_menu_option_confirm(RUN_STOP,true);
 			get_tree()->quit();
-				
+
 		} break;
 		case FILE_EXTERNAL_OPEN_SCENE: {
 
@@ -2124,7 +2125,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			if (!scene)
 				break;
-			
+
 			if (unsaved_cache && !p_confirmed) {
 				confirmation->get_ok()->set_text("Revert");
 				confirmation->set_text("This action cannot be undone. Revert anyway?");
@@ -2190,7 +2191,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 #endif
-		
+
 		case OBJECT_REQUEST_HELP: {
 
 			if (current) {
@@ -2201,13 +2202,13 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		case OBJECT_COPY_PARAMS: {
-			
+
 			editor_data.apply_changes_in_editors();;
 			if (current)
 				editor_data.copy_object_params(current);
 		} break;
 		case OBJECT_PASTE_PARAMS: {
-			
+
 			editor_data.apply_changes_in_editors();;
 			if (current)
 				editor_data.paste_object_params(current);
@@ -2255,7 +2256,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		case OBJECT_CALL_METHOD: {
-		
+
 			editor_data.apply_changes_in_editors();;
 			call_dialog->set_object(current);
 			call_dialog->popup_centered_ratio();
@@ -2456,7 +2457,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		} break;
 		default: {
-		
+
 			if (p_option>=OBJECT_METHOD_BASE) {
 
 				ERR_FAIL_COND(!current);
@@ -2480,12 +2481,12 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			}
 		}
-	}		
+	}
 }
 
 
 Control* EditorNode::get_viewport() {
-	
+
 	return viewport;
 }
 
@@ -2526,7 +2527,7 @@ void EditorNode::add_editor_plugin(EditorPlugin *p_editor) {
 
 
 	if (p_editor->has_main_screen()) {
-	
+
 		singleton->main_editor_tabs->add_tab(p_editor->get_name());
 		singleton->editor_table.push_back(p_editor);
 	}
@@ -2576,7 +2577,7 @@ void EditorNode::set_edited_scene(Node *p_scene) {
 		if (edited_scene->get_parent()==scene_root)
 			scene_root->remove_child(edited_scene);
 		animation_editor->set_root(NULL);
-	}	
+	}
 	edited_scene=p_scene;
 	if (edited_scene && edited_scene->cast_to<Popup>())
 		edited_scene->cast_to<Popup>()->show(); //show popups
@@ -3010,7 +3011,7 @@ void EditorNode::animation_editor_make_visible(bool p_visible) {
 
 	if (p_visible) {
 
-		animation_editor->show();		
+		animation_editor->show();
 		animation_vb->get_parent_control()->minimum_size_changed();
 		//pd_anim->show();
 		top_split->set_collapsed(false);
@@ -3294,7 +3295,7 @@ void EditorNode::progress_end_task_bg(const String& p_task) {
 
 
 void EditorNode::_bind_methods() {
-	
+
 
 	ObjectTypeDB::bind_method("_menu_option",&EditorNode::_menu_option);
 	ObjectTypeDB::bind_method("_menu_confirm_current",&EditorNode::_menu_confirm_current);
@@ -3359,7 +3360,7 @@ void EditorNode::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("resource_saved",PropertyInfo(Variant::OBJECT,"obj")) );
 
 
-	
+
 }
 
 Ref<Texture> EditorNode::_file_dialog_get_icon(const String& p_path) {
@@ -3497,7 +3498,7 @@ void EditorNode::_dock_popup_exit() {
 }
 
 void EditorNode::_dock_pre_popup(int p_which) {
-	
+
 
 	dock_popup_selected=p_which;
 }
@@ -3841,7 +3842,7 @@ EditorNode::EditorNode() {
 	gui_base->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	gui_base->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
 	gui_base->set_end( Point2(0,0) );
-	
+
 	main_vbox = memnew( VBoxContainer );
 	gui_base->add_child(main_vbox);
 	main_vbox->set_area_as_parent_rect(8);
@@ -4387,14 +4388,14 @@ EditorNode::EditorNode() {
 	property_editor->set_autoclear(true);
 	property_editor->set_show_categories(true);
 	property_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	
+
 	property_editor->hide_top_label();
 
 	prop_editor_base->add_child( property_editor );
 	property_editor->set_undo_redo(&editor_data.get_undo_redo());
 
 
-	
+
 	property_back = memnew( ToolButton );
 	property_back->set_icon( gui_base->get_icon("Back","EditorIcons") );
 	property_back->set_flat(true);
@@ -4494,7 +4495,7 @@ EditorNode::EditorNode() {
 
 
 
-	
+
 	call_dialog = memnew( CallDialog );
 	call_dialog->hide();
 	gui_base->add_child( call_dialog );
@@ -4542,7 +4543,7 @@ EditorNode::EditorNode() {
 
 
 
-	
+
 	settings_config_dialog = memnew( EditorSettingsDialog );
 	gui_base->add_child(settings_config_dialog);
 
@@ -4652,7 +4653,7 @@ EditorNode::EditorNode() {
 
 	property_forward->connect("pressed", this,"_property_editor_forward");
 	property_back->connect("pressed", this,"_property_editor_back");
-		
+
 
 
 	file_menu->get_popup()->connect("item_pressed", this,"_menu_option");
@@ -4727,6 +4728,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin( memnew( LightOccluder2DEditorPlugin(this) ) );
 	add_editor_plugin( memnew( NavigationPolygonEditorPlugin(this) ) );
 	add_editor_plugin( memnew( ColorRampEditorPlugin(this) ) );
+	add_editor_plugin( memnew( CollisionShape2DEditorPlugin(this) ) );
 
 	for(int i=0;i<EditorPlugins::get_plugin_count();i++)
 		add_editor_plugin( EditorPlugins::create(i,this) );
@@ -4858,7 +4860,7 @@ EditorNode::EditorNode() {
 }
 
 
-EditorNode::~EditorNode() {	
+EditorNode::~EditorNode() {
 
 
 	memdelete(editor_selection);
