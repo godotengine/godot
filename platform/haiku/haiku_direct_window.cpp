@@ -2,7 +2,7 @@
 #include "haiku_direct_window.h"
 
 HaikuDirectWindow::HaikuDirectWindow(BRect p_frame)
-   : BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, 0)
+   : BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE)
 {
 	last_mouse_pos_valid = false;
 	last_buttons_state = 0;
@@ -33,10 +33,13 @@ void HaikuDirectWindow::SetInput(InputDefault* p_input) {
 	input = p_input;
 }
 
+void HaikuDirectWindow::SetMainLoop(MainLoop* p_main_loop) {
+	main_loop = p_main_loop;
+}
+
 bool HaikuDirectWindow::QuitRequested() {
-	view->EnableDirectMode(false);
-	be_app->PostMessage(B_QUIT_REQUESTED);
-	return true;
+	main_loop->notification(MainLoop::NOTIFICATION_WM_QUIT_REQUEST);
+	return false;
 }
 
 void HaikuDirectWindow::DirectConnected(direct_buffer_info* info) {
@@ -44,24 +47,15 @@ void HaikuDirectWindow::DirectConnected(direct_buffer_info* info) {
 	view->EnableDirectMode(true);
 }
 
-void HaikuDirectWindow::MessageReceived(BMessage* message)
-{
+void HaikuDirectWindow::MessageReceived(BMessage* message) {
 	switch (message->what) {
 		case REDRAW_MSG:
-			//ERR_PRINT("iteration 1");
-			Main::iteration();
+			Sync();
 
-			//if (NeedsUpdate()) {
-			//	ERR_PRINT("NEEDS UPDATE");
-			//	Main::force_redraw();
-			//}
-
-			//ERR_PRINT("iteration 2");
-			break;
-
-		case B_INVALIDATE:
-			ERR_PRINT("WINDOW B_INVALIDATE");
-			//Main::force_redraw();
+			if (Main::iteration() == true) {
+				view->EnableDirectMode(false);
+				Quit();
+			}
 			break;
 
 		default:

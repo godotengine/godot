@@ -29,6 +29,7 @@ void OS_Haiku::run() {
 		}
 	}
 	*/
+	
 
 	app->Run();
 	window->StopMessageRunner();
@@ -142,6 +143,7 @@ void OS_Haiku::finalize() {
 void OS_Haiku::set_main_loop(MainLoop* p_main_loop) {
 	main_loop = p_main_loop;
 	input->set_main_loop(p_main_loop);
+	window->SetMainLoop(p_main_loop);
 }
 
 MainLoop* OS_Haiku::get_main_loop() const {
@@ -154,6 +156,7 @@ void OS_Haiku::delete_main_loop() {
 	}
 
 	main_loop = NULL;
+	window->SetMainLoop(NULL);
 }
 
 void OS_Haiku::release_rendering_thread() {

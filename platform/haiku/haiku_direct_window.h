@@ -18,6 +18,7 @@ private:
 	uint32 last_buttons_state;
 	int last_button_mask;
 
+	MainLoop* main_loop;
 	InputDefault* input;
 	HaikuGLView* view;
 	BMessageRunner* update_runner;
@@ -35,6 +36,7 @@ public:
 	void StartMessageRunner();
 	void StopMessageRunner();
 	void SetInput(InputDefault* p_input);
+	void SetMainLoop(MainLoop* p_main_loop);
 	virtual bool QuitRequested();
 	virtual void DirectConnected(direct_buffer_info* info);
 	virtual void MessageReceived(BMessage* message);
