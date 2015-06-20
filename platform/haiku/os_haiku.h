@@ -69,10 +69,18 @@ public:
 	virtual int get_mouse_button_state() const;
 	virtual void set_cursor_shape(CursorShape p_shape);
 
+	virtual int get_screen_count() const;
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
 	virtual void set_window_title(const String& p_title);
 	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2& p_position);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
 
 	virtual void set_video_mode(const VideoMode& p_video_mode, int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;

@@ -1,3 +1,5 @@
+#include <Screen.h>
+
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/gles2/rasterizer_gles2.h"
@@ -180,13 +182,48 @@ void OS_Haiku::set_cursor_shape(CursorShape p_shape) {
 	//ERR_PRINT("set_cursor_shape() NOT IMPLEMENTED");
 }
 
+int OS_Haiku::get_screen_count() const {
+	// TODO: implement get_screen_count()
+	return 1;
+}
+
+int OS_Haiku::get_current_screen() const {
+	// TODO: implement get_current_screen()
+	return 0;
+}
+
+void OS_Haiku::set_current_screen(int p_screen) {
+	// TODO: implement set_current_screen()
+}
+
+Point2 OS_Haiku::get_screen_position(int p_screen) const {
+	// TODO: make this work with the p_screen parameter
+	BScreen* screen = new BScreen(window);
+	BRect frame = screen->Frame();
+	delete screen;
+	return Point2i(frame.left, frame.top);
+}
+
+Size2 OS_Haiku::get_screen_size(int p_screen) const {
+	// TODO: make this work with the p_screen parameter
+	BScreen* screen = new BScreen(window);
+	BRect frame = screen->Frame();
+	delete screen;
+	return Size2i(frame.IntegerWidth() + 1, frame.IntegerHeight() + 1);
+}
+
 void OS_Haiku::set_window_title(const String& p_title) {
 	window->SetTitle(p_title.utf8().get_data());
 }
 
 Size2 OS_Haiku::get_window_size() const {
 	BSize size = window->Size();
-	return Size2i(size.IntegerWidth(), size.IntegerHeight());
+	return Size2i(size.IntegerWidth() + 1, size.IntegerHeight() + 1);
+}
+
+void OS_Haiku::set_window_size(const Size2 p_size) {
+	// TODO: why does it stop redrawing after this is called?
+	window->ResizeTo(p_size.x, p_size.y);
 }
 
 Point2 OS_Haiku::get_window_position() const {
@@ -197,6 +234,16 @@ Point2 OS_Haiku::get_window_position() const {
 
 void OS_Haiku::set_window_position(const Point2& p_position) {
 	window->MoveTo(p_position.x, p_position.y);
+}
+
+void OS_Haiku::set_window_fullscreen(bool p_enabled) {
+	window->SetFullScreen(p_enabled);
+	current_video_mode.fullscreen = p_enabled;
+	visual_server->init();
+}
+
+bool OS_Haiku::is_window_fullscreen() const {
+	return current_video_mode.fullscreen;
 }
 
 void OS_Haiku::set_video_mode(const VideoMode& p_video_mode, int p_screen) {
