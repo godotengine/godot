@@ -2,6 +2,7 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "servers/physics/physics_server_sw.h"
+//#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "main/main.h"
 
 #include "os_haiku.h"
@@ -19,22 +20,10 @@ void OS_Haiku::run() {
 	main_loop->init();
 	window->Show();
 	window->StartMessageRunner();
-
-	/*
-	while (true) {
-		// TODO: process events
-
-		if (Main::iteration() == true) {
-			break;
-		}
-	}
-	*/
-	
-
 	app->Run();
 	window->StopMessageRunner();
-	delete app;
 
+	delete app;
 	main_loop->finish();
 }
 
@@ -76,6 +65,7 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 
 	ERR_FAIL_COND(!visual_server);
 
+	// TODO: enable multithreaded VS
 	//if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 	//	visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	//}
@@ -85,6 +75,8 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	physics_server = memnew(PhysicsServerSW);
 	physics_server->init();
 	physics_2d_server = memnew(Physics2DServerSW);
+	// TODO: enable multithreaded PS
+	//physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
