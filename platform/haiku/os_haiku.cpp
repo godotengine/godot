@@ -185,7 +185,18 @@ void OS_Haiku::set_window_title(const String& p_title) {
 }
 
 Size2 OS_Haiku::get_window_size() const {
-	ERR_PRINT("get_window_size() NOT IMPLEMENTED");
+	BSize size = window->Size();
+	return Size2i(size.IntegerWidth(), size.IntegerHeight());
+}
+
+Point2 OS_Haiku::get_window_position() const {
+	BPoint point(0, 0);
+	window->ConvertToScreen(&point);
+	return Point2i(point.x, point.y);
+}
+
+void OS_Haiku::set_window_position(const Point2& p_position) {
+	window->MoveTo(p_position.x, p_position.y);
 }
 
 void OS_Haiku::set_video_mode(const VideoMode& p_video_mode, int p_screen) {
