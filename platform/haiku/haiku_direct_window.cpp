@@ -7,6 +7,7 @@ HaikuDirectWindow::HaikuDirectWindow(BRect p_frame)
 	last_mouse_pos_valid = false;
 	last_buttons_state = 0;
 	last_button_mask = 0;
+	last_key_modifier_state = 0;
 }
 
 
@@ -72,6 +73,10 @@ void HaikuDirectWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 
 		case B_MOUSE_MOVED:
 			DispatchMouseMoved(message);
+			break;
+
+		case B_MOUSE_WHEEL_CHANGED:
+			DispatchMouseWheelChanged(message);
 			break;
 
 		default:
@@ -178,7 +183,35 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	input->parse_input_event(motion_event);
 }
 
+void HaikuDirectWindow::DispatchMouseWheelChanged(BMessage* message) {
+	float wheel_delta_y = 0;
+	if (message->FindFloat("be:wheel_delta_y", &wheel_delta_y) != B_OK) {
+		return;
+	}
+
+	InputEvent mouse_event;
+	mouse_event.ID = ++event_id;
+	mouse_event.type = InputEvent::MOUSE_BUTTON;
+	mouse_event.device = 0;
+
+	mouse_event.mouse_button.button_index = wheel_delta_y < 0 ? 4 : 5;
+	mouse_event.mouse_button.mod = GetKeyModifierState(last_key_modifier_state);
+	mouse_event.mouse_button.button_mask = last_button_mask;
+	mouse_event.mouse_button.x = last_mouse_position.x;
+	mouse_event.mouse_button.y = last_mouse_position.y;
+	mouse_event.mouse_button.global_x = last_mouse_position.x;
+	mouse_event.mouse_button.global_y = last_mouse_position.y;
+
+	mouse_event.mouse_button.pressed = true;
+	input->parse_input_event(mouse_event);
+
+	mouse_event.ID = ++event_id;
+	mouse_event.mouse_button.pressed = false;
+	input->parse_input_event(mouse_event);
+}
+
 inline InputModifierState HaikuDirectWindow::GetKeyModifierState(uint32 p_state) {
+	last_key_modifier_state = p_state;
 	InputModifierState state;
 
 	state.shift = (p_state & B_SHIFT_KEY) != 0;

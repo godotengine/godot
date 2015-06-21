@@ -16,6 +16,7 @@ private:
 	Point2i last_mouse_position;
 	bool last_mouse_pos_valid;
 	uint32 last_buttons_state;
+	uint32 last_key_modifier_state;
 	int last_button_mask;
 
 	MainLoop* main_loop;
@@ -25,6 +26,7 @@ private:
 
 	void DispatchMouseButton(BMessage* message);
 	void DispatchMouseMoved(BMessage* message);
+	void DispatchMouseWheelChanged(BMessage* message);
 	inline InputModifierState GetKeyModifierState(uint32 p_state);
 	inline int GetMouseButtonState(uint32 p_state);
 
