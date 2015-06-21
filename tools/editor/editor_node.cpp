@@ -3236,6 +3236,7 @@ void EditorNode::register_editor_types() {
 	ObjectTypeDB::register_type<EditorScenePostImport>();
 	ObjectTypeDB::register_type<EditorScript>();
 	ObjectTypeDB::register_type<EditorFileDialog>();
+	ObjectTypeDB::register_type<UndoRedo>();
 
 
 	//ObjectTypeDB::register_type<EditorImporter>();
