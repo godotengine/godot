@@ -1,0 +1,19 @@
+var searchData=
+[
+  ['d',['d',['../union_marshall_double.html#a51e4ccdc66863a1a8ffbb36256ee0887',1,'MarshallDouble']]],
+  ['data',['data',['../structmpc__reader__t.html#a84db8289c71d41bfb5a3db3aa3219d77',1,'mpc_reader_t::data()'],['../struct_speex_callback.html#aef5bf2e1c64de776bed916d752e545eb',1,'SpeexCallback::data()'],['../struct___jitter_buffer_packet.html#a4da65c37d1fd9de11aa54cfa4e020544',1,'_JitterBufferPacket::data()'],['../structth__img__plane.html#af8133681516ce88b5a201c1b4b7e6ba2',1,'th_img_plane::data()']]],
+  ['dc_5fscale',['dc_scale',['../structth__quant__info.html#ad5c1c0d1aa4127fcf864ae747d732ed9',1,'th_quant_info']]],
+  ['dec',['dec',['../struct_speex_mode.html#af33161f02e0cf45e273428089666853f',1,'SpeexMode']]],
+  ['dec_5fctl',['dec_ctl',['../struct_speex_mode.html#ac0e9dfc3a8c13106e7fd2a26a6d6346c',1,'SpeexMode']]],
+  ['dec_5fdestroy',['dec_destroy',['../struct_speex_mode.html#a7903560d60758ed5a7257ce9015493e6',1,'SpeexMode']]],
+  ['dec_5finit',['dec_init',['../struct_speex_mode.html#aa8b014ef5e102d6c6745c5ff253ea6da',1,'SpeexMode']]],
+  ['decode',['DECODE',['../classcom_1_1google_1_1android_1_1vending_1_1licensing_1_1util_1_1_base64.html#a6c1206b8a1efeaaab7c3a10c9df9cc44',1,'com::google::android::vending::licensing::util::Base64']]],
+  ['decoded_5fsamples',['decoded_samples',['../structmpc__decoder__t.html#aaecd30e5081ad834618d5ce6879edf28',1,'mpc_decoder_t']]],
+  ['default_5fuser_5fagent',['DEFAULT_USER_AGENT',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1_constants.html#a22b8685967e9f362647554b4b3b9f753',1,'com::google::android::vending::expansion::downloader::Constants']]],
+  ['defaultsubmode',['defaultSubmode',['../struct_speex_n_b_mode.html#a99422f32eccba8697663cde44360f625',1,'SpeexNBMode::defaultSubmode()'],['../struct_speex_s_b_mode.html#ac81bc90d9d6a9e0144ec76ea491b9d92',1,'SpeexSBMode::defaultSubmode()']]],
+  ['delay_5fstep',['delay_step',['../struct_jitter_buffer__.html#aad7a72c9df66d24c492656a7385a6ae1',1,'JitterBuffer_']]],
+  ['destroy',['destroy',['../struct_jitter_buffer__.html#abc81c24eabe1ccea9ed31b92e49fd45c',1,'JitterBuffer_']]],
+  ['double_5fcodebook',['double_codebook',['../struct_speex_submode.html#a8f0e8522e599a2ca396f41d03d7235c8',1,'SpeexSubmode']]],
+  ['dtx_5fcount',['dtx_count',['../struct_enc_state.html#a16e7bd1ef6d7f38d7c43e183e5826a15',1,'EncState']]],
+  ['dtx_5fenabled',['dtx_enabled',['../struct_enc_state.html#a0dbeaa686e75dbcdee1ee2d47c8ac1c6',1,'EncState']]]
+];

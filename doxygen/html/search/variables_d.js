@@ -1,0 +1,22 @@
+var searchData=
+[
+  ['nb_5fadapt',['nb_adapt',['../struct_speex_preprocess_state__.html#a2cc93cbd991355bc8cda105e534655b0',1,'SpeexPreprocessState_']]],
+  ['nb_5fchannels',['nb_channels',['../struct_speex_header.html#ad1dae4c23ac3d70e6f1100fb1e3e6f4f',1,'SpeexHeader']]],
+  ['nb_5fmode',['nb_mode',['../struct_speex_s_b_mode.html#a2ed398a07cb044d7366269d5b57965ac',1,'SpeexSBMode']]],
+  ['nbbits',['nbBits',['../struct_speex_bits.html#a05dbc189891a4392c7173d0736c108e5',1,'SpeexBits']]],
+  ['nbits',['nbits',['../structth__huff__code.html#aaf97b8f2f90042f7bc136a7b2bc35e35',1,'th_huff_code']]],
+  ['nbsubframes',['nbSubframes',['../struct_enc_state.html#a4e0c28e8139ae337115258544c0ad69a',1,'EncState::nbSubframes()'],['../struct_dec_state.html#a985eb3904e69ff55dcdd6c5be514855e',1,'DecState::nbSubframes()'],['../struct_s_b_enc_state.html#a4098ea1a612d15967414479cb2a966e4',1,'SBEncState::nbSubframes()']]],
+  ['network_5fcannot_5fuse_5froaming',['NETWORK_CANNOT_USE_ROAMING',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#a150005e2b0da555652cf30e11d941612',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5fmobile',['NETWORK_MOBILE',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#ad8d36116f0fe67742f09d73607a67640',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5fno_5fconnection',['NETWORK_NO_CONNECTION',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#a324a4e7615d370148cf9af0b554fccf3',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5fok',['NETWORK_OK',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#aa77b582f7addfbda831d6a0ea16d6061',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5frecommended_5funusable_5fdue_5fto_5fsize',['NETWORK_RECOMMENDED_UNUSABLE_DUE_TO_SIZE',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#a645148faaf855dc4b161549aed5a5867',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5ftype_5fdisallowed_5fby_5frequestor',['NETWORK_TYPE_DISALLOWED_BY_REQUESTOR',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#a10122347d330c87df23a3dcfff82bcc2',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5funusable_5fdue_5fto_5fsize',['NETWORK_UNUSABLE_DUE_TO_SIZE',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#a06c92ef900863ba1566c2a53ec46acc5',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['network_5fwifi',['NETWORK_WIFI',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#a69361f8dc569bc355a5c1dcc7a97aa62',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['next',['next',['../struct_theora_audio_packet.html#ad7ef9560af58b03b031e1a9e6f007ea7',1,'TheoraAudioPacket']]],
+  ['next_5fstop',['next_stop',['../struct_jitter_buffer__.html#aaabaf13d6894e7def7ec857c57cc7d90',1,'JitterBuffer_']]],
+  ['noise',['noise',['../struct_speex_preprocess_state__.html#a4e401887868a91b0f904a01a6ad20ea9',1,'SpeexPreprocessState_']]],
+  ['not_5flicensed',['NOT_LICENSED',['../interfacecom_1_1google_1_1android_1_1vending_1_1licensing_1_1_policy.html#a4f006a8dc8045205a6c4e859bdcfaffd',1,'com::google::android::vending::licensing::Policy']]],
+  ['nranges',['nranges',['../structth__quant__ranges.html#a53e5a3d7f7a112100b4b670929b3ebab',1,'th_quant_ranges']]]
+];

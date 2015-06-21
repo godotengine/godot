@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['callback_5fid',['callback_id',['../struct_speex_callback.html#a27587cfea58a4f14d8ee89194b61b487',1,'SpeexCallback']]],
+  ['canseek',['canseek',['../structmpc__reader__t.html#a71c0073bf678bbb9d5e7ba0e5e04105d',1,'mpc_reader_t']]],
+  ['channels',['channels',['../structmpc__decoder__t.html#a39cf9623d7e887152eeff705a8aa6d0e',1,'mpc_decoder_t::channels()'],['../structmpc__streaminfo.html#a146b5391a0b1311eba6c9132ecefd764',1,'mpc_streaminfo::channels()']]],
+  ['chap',['chap',['../structmpc__demux__t.html#a260adc65cebd142c2a3bb51b7bf54cfa',1,'mpc_demux_t']]],
+  ['chap_5fnb',['chap_nb',['../structmpc__demux__t.html#a7500c8afa111f310cb81dd6438b995b5',1,'mpc_demux_t']]],
+  ['chap_5fpos',['chap_pos',['../structmpc__demux__t.html#a09e88ac63f92f5ed662bd30bb869d20e',1,'mpc_demux_t']]],
+  ['charptr',['charPtr',['../struct_speex_bits.html#a08fdeb2749523716cf5c2d8a68567ec2',1,'SpeexBits']]],
+  ['chars',['chars',['../struct_speex_bits.html#a5f314934ef0817f9f5eb3f9b28014bc4',1,'SpeexBits']]],
+  ['colorspace',['colorspace',['../structth__info.html#a8c7828cd0e023e9d21108160d53659a6',1,'th_info::colorspace()'],['../structtheora__info.html#a5eaba99c96706d47b426ab7b7602dc5d',1,'theora_info::colorspace()']]],
+  ['comb_5fgain',['comb_gain',['../struct_speex_submode.html#a21ac98cea7bcd6b1b67cdf69b1bf4df1',1,'SpeexSubmode']]],
+  ['comment_5flengths',['comment_lengths',['../structth__comment.html#a723dc6fdf75757e70e28eea864b10898',1,'th_comment::comment_lengths()'],['../structtheora__comment.html#a5ab4a376d3c217282a684577c9c9f49a',1,'theora_comment::comment_lengths()']]],
+  ['comments',['comments',['../structth__comment.html#a5990c34932376f070ad0fc314daaeb78',1,'th_comment::comments()'],['../structtheora__comment.html#a122393035c8352ff9be42d69e73aee00',1,'theora_comment::comments()']]],
+  ['complexity',['complexity',['../struct_enc_state.html#a61c1ca98897ebf9a3472f44938d00c09',1,'EncState']]],
+  ['concealment_5fsize',['concealment_size',['../struct_jitter_buffer__.html#ab2e50381daacd2cc6e101d33b1f58ec4',1,'JitterBuffer_']]],
+  ['control_5fpaused',['CONTROL_PAUSED',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#aacd0cec73a62553d0e7a9c522014272b',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['control_5frun',['CONTROL_RUN',['../classcom_1_1google_1_1android_1_1vending_1_1expansion_1_1downloader_1_1impl_1_1_downloader_service.html#aeb084b2546a5db6e1331383345f04d8c',1,'com::google::android::vending::expansion::downloader::impl::DownloaderService']]],
+  ['count',['count',['../structmpc__bits__reader__t.html#ad117b1d9513475c3c0d16e3d9e89d78f',1,'mpc_bits_reader_t']]],
+  ['count_5flost',['count_lost',['../struct_dec_state.html#a0cd1905b21ad7e191bf25d95f4c500b1',1,'DecState']]],
+  ['counts',['counts',['../struct_timing_buffer.html#a63c38af46c7a6cc567b01f169b9bc90a',1,'TimingBuffer']]],
+  ['ctx',['ctx',['../structth__stripe__callback.html#ab895162ce29a411fa98e0ba9661f47d4',1,'th_stripe_callback']]],
+  ['cumul_5fgain',['cumul_gain',['../struct_enc_state.html#af9f10e6d795cca10fa8fca5b2e984e53',1,'EncState']]],
+  ['curr_5fcount',['curr_count',['../struct_timing_buffer.html#aaa1bb281dfda4cf3003849a2d6e63929',1,'TimingBuffer']]]
+];
