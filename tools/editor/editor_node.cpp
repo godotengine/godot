@@ -105,11 +105,24 @@
 
 EditorNode *EditorNode::singleton=NULL;
 
+void EditorNode::_update_scene_tabs() {
+
+	scene_tabs->clear_tabs();
+	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+		int current = editor_data.get_edited_scene();
+		bool unsaved = (i==current)?saved_version!=editor_data.get_undo_redo().get_version():editor_data.get_scene_version(i)!=0;
+		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""));
+	}
+
+	scene_tabs->set_current_tab(editor_data.get_edited_scene());
+
+}
+
 void EditorNode::_update_title() {
 
 	String appname = Globals::get_singleton()->get("application/name");
 	String title = appname.empty()?String(VERSION_FULL_NAME):String(_MKSTR(VERSION_NAME) + String(" - ") + appname);
-	String edited = edited_scene?edited_scene->get_filename():String();
+	String edited = editor_data.get_edited_scene_root()?editor_data.get_edited_scene_root()->get_filename():String();
 	if (!edited.empty())
 		title+=" - " + String(edited.get_file());
 	if (unsaved_cache)
@@ -174,6 +187,11 @@ void EditorNode::_notification(int p_what) {
 			_update_title();
 		}
 
+		if (last_checked_version!=editor_data.get_undo_redo().get_version()) {
+			_update_scene_tabs();
+			last_checked_version=editor_data.get_undo_redo().get_version();
+		}
+
 		//get_root_node()->set_rect(viewport->get_global_rect());
 
 		//update the circle
@@ -230,6 +248,13 @@ void EditorNode::_notification(int p_what) {
 				//VisualServer::get_singleton()->viewport_set_hide_canvas(editor->get_scene_root()->get_viewport(),false);
 
 		//import_monitor->scan_changes();
+	}
+
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+
+
+		editor_data.clear_edited_scenes();
+
 	}
 	if (p_what==NOTIFICATION_READY) {
 
@@ -468,7 +493,7 @@ void EditorNode::_dialog_display_file_error(String p_file,Error p_error) {
 
 void EditorNode::_get_scene_metadata() {
 
-	Node *scene = edited_scene;
+	Node *scene = editor_data.get_edited_scene_root();
 
 	if (!scene)
 		return;
@@ -495,7 +520,7 @@ void EditorNode::_get_scene_metadata() {
 
 void EditorNode::_set_scene_metadata() {
 
-	Node *scene = edited_scene;
+	Node *scene = editor_data.get_edited_scene_root();
 
 	if (!scene)
 		return;
@@ -718,7 +743,7 @@ void EditorNode::_save_edited_subresources(Node* scene,Map<RES,bool>& processed,
 	for(int i=0;i<scene->get_child_count();i++) {
 
 		Node *n = scene->get_child(i);
-		if (n->get_owner()!=edited_scene)
+		if (n->get_owner()!=editor_data.get_edited_scene_root())
 			continue;
 		_save_edited_subresources(n,processed,flags);
 	}
@@ -727,7 +752,7 @@ void EditorNode::_save_edited_subresources(Node* scene,Map<RES,bool>& processed,
 
 void EditorNode::_find_node_types(Node* p_node, int&count_2d, int&count_3d) {
 
-	if (p_node->is_type("Viewport") || (p_node!=get_edited_scene() && p_node->get_owner()!=get_edited_scene()))
+	if (p_node->is_type("Viewport") || (p_node!=editor_data.get_edited_scene_root() && p_node->get_owner()!=editor_data.get_edited_scene_root()))
 		return;
 
 	if (p_node->is_type("CanvasItem"))
@@ -748,7 +773,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 
 	EditorProgress save("save","Saving Scene",4);
 	save.step("Analyzing",0);
-	_find_node_types(get_edited_scene(),c2d,c3d);
+	_find_node_types(editor_data.get_edited_scene_root(),c2d,c3d);
 
 	RID viewport;
 	bool is2d;
@@ -799,11 +824,11 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 	img.save_png(pfile);
 	Vector<uint8_t> imgdata = FileAccess::get_file_as_array(pfile);
 
-	print_line("img data is "+itos(imgdata.size()));
+	//print_line("img data is "+itos(imgdata.size()));
 
-	if (scene_import_metadata.is_null())
-		scene_import_metadata = Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) );
-	scene_import_metadata->set_option("thumbnail",imgdata);
+	if (editor_data.get_edited_scene_import_metadata().is_null())
+		editor_data.set_edited_scene_import_metadata(Ref<ResourceImportMetadata>( memnew( ResourceImportMetadata ) ) );
+	editor_data.get_edited_scene_import_metadata()->set_option("thumbnail",imgdata);
 
 	//tamanio tel thumbnail
 	if (screen!=-1) {
@@ -817,7 +842,7 @@ void EditorNode::_save_scene_with_preview(String p_file) {
 
 void EditorNode::_save_scene(String p_file) {
 
-	Node *scene = edited_scene;
+	Node *scene = editor_data.get_edited_scene_root();
 
 	if (!scene) {
 
@@ -851,7 +876,7 @@ void EditorNode::_save_scene(String p_file) {
 		return;
 	}
 
-	sdata->set_import_metadata(scene_import_metadata);
+	sdata->set_import_metadata(editor_data.get_edited_scene_import_metadata());
 	int flg=0;
 	if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
 		flg|=ResourceSaver::FLAG_COMPRESS;
@@ -867,7 +892,7 @@ void EditorNode::_save_scene(String p_file) {
 	if (err==OK) {
 		scene->set_filename( Globals::get_singleton()->localize_path(p_file) );
 		//EditorFileSystem::get_singleton()->update_file(p_file,sdata->get_type());
-		saved_version=editor_data.get_undo_redo().get_version();
+		set_current_version(editor_data.get_undo_redo().get_version());
 		_update_title();
 	} else {
 
@@ -1055,7 +1080,7 @@ void EditorNode::_dialog_action(String p_file) {
 			Node *base = selection.front()->get();
 
 			Map<Node*,Node*> reown;
-			reown[get_edited_scene()]=base;
+			reown[editor_data.get_edited_scene_root()]=base;
 			Node *copy = base->duplicate_and_reown(reown);
 			if (copy) {
 
@@ -1150,7 +1175,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<MeshLibrary>( memnew( MeshLibrary ));
 			}
 
-			MeshLibraryEditor::update_library_file(edited_scene,ml,true);
+			MeshLibraryEditor::update_library_file(editor_data.get_edited_scene_root(),ml,true);
 
 			Error err = ResourceSaver::save(p_file,ml);
 			if (err) {
@@ -1184,7 +1209,7 @@ void EditorNode::_dialog_action(String p_file) {
 				ml = Ref<TileSet>( memnew( TileSet ));
 			}
 
-			TileSetEditor::update_library_file(edited_scene,ml,true);
+			TileSetEditor::update_library_file(editor_data.get_edited_scene_root(),ml,true);
 
 			Error err = ResourceSaver::save(p_file,ml);
 			if (err) {
@@ -1325,15 +1350,15 @@ void EditorNode::_property_editor_back() {
 
 void EditorNode::_imported(Node *p_node) {
 
-	Node *scene = edited_scene;
-	set_edited_scene(p_node);
-
+	Node *scene = editor_data.get_edited_scene_root();
+//	add_edited_scene(p_node);
+/*
 	if (scene) {
 		String path = scene->get_filename();
 		p_node->set_filename(path);
 		memdelete(scene);
 	}
-
+*/
 
 
 }
@@ -1408,17 +1433,22 @@ void EditorNode::_edit_current() {
 		if (main_plugin!=editor_plugin_screen) {
 
 			// update screen main_plugin
-			if (editor_plugin_screen)
-				editor_plugin_screen->make_visible(false);
-			editor_plugin_screen=main_plugin;
-			editor_plugin_screen->edit(current_obj);
-			editor_plugin_screen->make_visible(true);
+
+			if (!changing_scene) {
+
+				if (editor_plugin_screen)
+					editor_plugin_screen->make_visible(false);
+				editor_plugin_screen=main_plugin;
+				editor_plugin_screen->edit(current_obj);
+
+				editor_plugin_screen->make_visible(true);
 
 
-			for(int i=0;i<editor_table.size();i++) {
-				if (editor_table[i]==main_plugin) {
-					main_editor_tabs->set_current_tab(i);
-					break;
+				for(int i=0;i<editor_table.size();i++) {
+					if (editor_table[i]==main_plugin) {
+						main_editor_tabs->set_current_tab(i);
+						break;
+					}
 				}
 			}
 
@@ -1527,10 +1557,10 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 
 
-	if (p_current || (edited_scene && p_custom==edited_scene->get_filename())) {
+	if (p_current || (editor_data.get_edited_scene_root() && p_custom==editor_data.get_edited_scene_root()->get_filename())) {
 
 
-		Node *scene = edited_scene;
+		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
 
@@ -1592,7 +1622,7 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 		if (unsaved_cache) {
 
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 
 			if (scene) { //only autosave if there is a scene obviously
 
@@ -1644,8 +1674,8 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 
 void EditorNode::_cleanup_scene() {
 
-
-	Node *scene = edited_scene;
+#if 0
+	Node *scene = editor_data.get_edited_scene_root();
 	editor_selection->clear();
 	editor_data.clear_editor_states();
 	editor_history.clear();
@@ -1654,7 +1684,7 @@ void EditorNode::_cleanup_scene() {
 	property_editor->edit(NULL);
 	resources_dock->cleanup();
 	scene_import_metadata.unref();
-	set_edited_scene(NULL);
+	//set_edited_scene(NULL);
 	if (scene) {
 		if (scene->get_filename()!="") {
 			previous_scenes.push_back(scene->get_filename());
@@ -1680,7 +1710,7 @@ void EditorNode::_cleanup_scene() {
 	}
 	
 	_update_title();
-
+#endif
 }
 
 void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
@@ -1693,16 +1723,20 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 	switch( p_option ) {
 		case FILE_NEW_SCENE: {
 
+			/*
 			if (!p_confirmed) {
 				confirmation->get_ok()->set_text("Yes");
 				//confirmation->get_cancel()->show();
 				confirmation->set_text("Start a New Scene? (Current will be lost)");
 				confirmation->popup_centered_minsize();
 				break;
-			}
+			}*/
 
 
-			_cleanup_scene();
+			int idx = editor_data.add_edited_scene(-1);
+			_scene_tab_changed(idx);
+
+			//_cleanup_scene();
 
 			
 		} break;
@@ -1722,7 +1756,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			
 
 			//file->set_current_path(current_path);
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 			if (scene) {
 				file->set_current_path(scene->get_filename());
 			};
@@ -1755,10 +1789,25 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			open_request(previous_scenes.back()->get());
 
 		} break;
+		case FILE_CLOSE: {
+
+			if (!p_confirmed) {
+				confirmation->get_ok()->set_text("Yes");
+				//confirmation->get_cancel()->show();
+				confirmation->set_text("Close scene? (Unsaved changes will be lost)");
+				confirmation->popup_centered_minsize();
+				break;
+			}
+
+			_remove_edited_scene();
+
+
+
+		} break;
 		case FILE_SAVE_SCENE: {
 
 
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 			if (scene && scene->get_filename()!="") {
 
 				//_save_scene(scene->get_filename());
@@ -1769,7 +1818,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		};
 		case FILE_SAVE_AS_SCENE: {
 			
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 			
 			if (!scene) {
 				
@@ -1831,7 +1880,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_DUMP_STRINGS: {
 
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 
 			if (!scene) {
 
@@ -1875,7 +1924,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_SAVE_SUBSCENE: {
 
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 
 			if (!scene) {
 
@@ -1902,7 +1951,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			Node *tocopy = selection.front()->get();
 
-			if (tocopy!=edited_scene && tocopy->get_filename()!="") {
+			if (tocopy!=editor_data.get_edited_scene_root() && tocopy->get_filename()!="") {
 
 
 				current_option=-1;
@@ -1936,7 +1985,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			file->set_title("Save Sub-Scene As..");
 		} break;
 		case FILE_SAVE_OPTIMIZED: {
-			Node *scene = edited_scene;
+			Node *scene = editor_data.get_edited_scene_root();
 #if 0
 			if (!scene) {
 
@@ -1998,7 +2047,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 		case FILE_EXPORT_MESH_LIBRARY: {
 
-			if (!edited_scene) {
+			if (!editor_data.get_edited_scene_root()) {
 
 				current_option=-1;
 				//confirmation->get_cancel()->hide();
@@ -2043,7 +2092,7 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 
 			//import_subscene->popup_centered_ratio();
 
-			if (!edited_scene) {
+			if (!editor_data.get_edited_scene_root()) {
 
 				current_option=-1;
 				//accept->get_cancel()->hide();
@@ -2569,29 +2618,53 @@ void EditorNode::remove_editor_import_plugin(const Ref<EditorImportPlugin>& p_ed
 	_rebuild_import_menu();
 }
 
+void EditorNode::_remove_edited_scene() {
+	int new_index = editor_data.get_edited_scene();
+	int old_index=new_index;
 
+	if (new_index>0) {
+		new_index=new_index-1;
+	} else if (editor_data.get_edited_scene_count()>1) {
+		new_index=1;
+	} else {
+		editor_data.add_edited_scene(-1);
+		new_index=1;
+	}
+
+	_scene_tab_changed(new_index);
+	editor_data.remove_scene(old_index);
+	editor_data.get_undo_redo().clear_history();
+	_update_title();
+	_update_scene_tabs();
+
+	if (editor_data.get_edited_scene_count()==1) {
+		//make new scene appear saved
+		set_current_version(editor_data.get_undo_redo().get_version());
+		unsaved_cache=false;
+	}
+}
 void EditorNode::set_edited_scene(Node *p_scene) {
 
-	if (edited_scene) {
-		if (edited_scene->get_parent()==scene_root)
-			scene_root->remove_child(edited_scene);
+	if (get_editor_data().get_edited_scene_root()) {
+		if (get_editor_data().get_edited_scene_root()->get_parent()==scene_root)
+			scene_root->remove_child(get_editor_data().get_edited_scene_root());
 		animation_editor->set_root(NULL);
 	}	
-	edited_scene=p_scene;
-	if (edited_scene && edited_scene->cast_to<Popup>())
-		edited_scene->cast_to<Popup>()->show(); //show popups
-	scene_tree_dock->set_edited_scene(edited_scene);
+	get_editor_data().set_edited_scene_root(p_scene);
+	
+	if (p_scene && p_scene->cast_to<Popup>())
+		p_scene->cast_to<Popup>()->show(); //show popups
+	scene_tree_dock->set_edited_scene(p_scene);
 	if (get_tree())
-		get_tree()->set_edited_scene_root(edited_scene);
+		get_tree()->set_edited_scene_root(p_scene);
 
-	if (edited_scene) {
+	if (p_scene) {
 		if (p_scene->get_parent()!=scene_root)
 			scene_root->add_child(p_scene);
 		animation_editor->set_root(p_scene);
 	}
-
-
 }
+
 
 void EditorNode::_fetch_translatable_strings(const Object *p_object,Set<StringName>& strings) {
 
@@ -2818,6 +2891,115 @@ Error EditorNode::save_optimized_copy(const String& p_scene,const String& p_pres
 	return OK;
 }
 
+
+Dictionary EditorNode::_get_main_scene_state() {
+
+	Dictionary state;
+	state["main_tab"]=main_editor_tabs->get_current_tab();
+	state["scene_tree_offset"]=scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
+	state["property_edit_offset"]=get_property_editor()->get_scene_tree()->get_vscroll_bar()->get_val();
+	state["saved_version"]=saved_version;
+	//print_line(" getting main tab: "+itos(state["main_tab"]));
+	return state;
+}
+
+void EditorNode::_set_main_scene_state(Dictionary p_state) {
+
+	//print_line("set current 7 ");
+
+	if (p_state.has("main_tab")) {
+		int idx = p_state["main_tab"];
+		int current=-1;
+		for(int i=0;i<editor_table.size();i++) {
+			if (editor_plugin_screen==editor_table[i]) {
+				current=i;
+				break;
+			}
+		}
+
+		if (idx<2 && current<2) {
+			//only set tab for 2D and 3D
+			_editor_select(p_state["main_tab"]);
+			//print_line(" setting main tab: "+itos(p_state["main_tab"]));
+		}
+	}
+
+	if (p_state.has("scene_tree_offset"))
+		scene_tree_dock->get_tree_editor()->get_scene_tree()->get_vscroll_bar()->set_val(p_state["scene_tree_offset"]);
+	if (p_state.has("property_edit_offset"))
+		get_property_editor()->get_scene_tree()->get_vscroll_bar()->set_val(p_state["property_edit_offset"]);
+
+	//print_line("set current 8 ");
+
+
+}
+
+void EditorNode::set_current_version(uint64_t p_version) {
+
+	saved_version=p_version;
+	editor_data.set_edited_scene_version(p_version);
+}
+
+bool EditorNode::is_changing_scene() const {
+	return changing_scene;
+}
+void EditorNode::set_current_scene(int p_idx) {
+
+	changing_scene=true;
+	editor_data.save_edited_scene_state(editor_selection,&editor_history,_get_main_scene_state());
+
+	if (get_editor_data().get_edited_scene_root()) {
+		if (get_editor_data().get_edited_scene_root()->get_parent()==scene_root)
+			scene_root->remove_child(get_editor_data().get_edited_scene_root());
+		animation_editor->set_root(NULL);
+	}
+
+	//print_line("set current 2 ");
+
+	editor_selection->clear();
+	editor_data.set_edited_scene(p_idx);
+
+	Node* new_scene = editor_data.get_edited_scene_root();
+
+	if (new_scene && new_scene->cast_to<Popup>())
+		new_scene->cast_to<Popup>()->show(); //show popups
+
+	//print_line("set current 3 ");
+
+	scene_tree_dock->set_edited_scene(new_scene);
+	if (get_tree())
+		get_tree()->set_edited_scene_root(new_scene);
+
+	if (new_scene) {
+		if (new_scene->get_parent()!=scene_root)
+			scene_root->add_child(new_scene);
+		animation_editor->set_root(new_scene);
+	}
+	//print_line("set current 4 ");
+
+
+	Dictionary state = editor_data.restore_edited_scene_state(editor_selection,&editor_history);
+	_edit_current();
+
+	/*if (!unsaved) {
+		saved_version=editor_data.get_undo_redo().get_version();
+		if (p_backwards)
+			saved_version--;
+		else
+			saved_version++;
+		print_line("was saved, updating version");
+	} else {
+		saved_version=state["saved_version"];
+	}*/
+	//_set_main_scene_state(state);
+
+	call_deferred("_set_main_scene_state",state); //do after everything else is done setting up
+	//print_line("set current 6 ");
+	changing_scene=false;
+
+
+}
+
 Error EditorNode::load_scene(const String& p_scene) {
 
 	if (!is_inside_tree()) {
@@ -2825,6 +3007,14 @@ Error EditorNode::load_scene(const String& p_scene) {
 		return OK;
 	}
 
+
+	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+
+		if (editor_data.get_scene_path(i)==p_scene) {
+			_scene_tab_changed(i);
+			return OK;
+		}
+	}
 
 
 	load_errors->clear();
@@ -2841,7 +3031,20 @@ Error EditorNode::load_scene(const String& p_scene) {
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	_cleanup_scene(); // i'm sorry but this MUST happen to avoid modified resources to not be reloaded.
+	int prev = editor_data.get_edited_scene();
+	int idx = editor_data.add_edited_scene(-1);
+	//print_line("load scene callback");
+	//set_current_scene(idx);
+
+	if (!editor_data.get_edited_scene_root() && editor_data.get_edited_scene_count()==2) {
+		_remove_edited_scene();
+	} else {
+		_scene_tab_changed(idx);
+	}
+
+
+
+	//_cleanup_scene(); // i'm sorry but this MUST happen to avoid modified resources to not be reloaded.
 
 	Ref<PackedScene> sdata = ResourceLoader::load(lpath);
 	if (!sdata.is_valid()) {
@@ -2852,6 +3055,11 @@ Error EditorNode::load_scene(const String& p_scene) {
 		accept->set_text("Error loading scene.");
 		accept->popup_centered_minsize();
 		opening_prev=false;
+
+		if (prev!=-1) {
+			set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
 		return ERR_FILE_NOT_FOUND;
 	}
 
@@ -2859,14 +3067,22 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	if (!new_scene) {
 
+		sdata.unref();
 		current_option=-1;
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text("Error loading scene.");
 		accept->popup_centered_minsize();
 		opening_prev=false;
+		if (prev!=-1) {
+			set_current_scene(prev);
+			editor_data.remove_scene(idx);
+		}
 		return ERR_FILE_NOT_FOUND;
 	}
+
+	//guess not needed in the end?
+	//new_scene->clear_internal_tree_resource_paths(); //make sure no internal tree paths to internal resources exist
 
 	/*
 	Node *old_scene = edited_scene;
@@ -2880,16 +3096,23 @@ Error EditorNode::load_scene(const String& p_scene) {
 		memdelete(old_scene);
 	}
 */
+
 	set_edited_scene(new_scene);
 	_get_scene_metadata();
+	/*
+	editor_data.set_edited_scene_root(new_scene);
+
 	scene_tree_dock->set_selected(new_scene, true);
 	property_editor->edit(new_scene);
-	scene_import_metadata = sdata->get_import_metadata();
+	editor_data.set_edited_scene_root(new_scene);
+*/
+	editor_data.set_edited_scene_import_metadata( sdata->get_import_metadata() );
 
-	editor_data.get_undo_redo().clear_history();
+
+//	editor_data.get_undo_redo().clear_history();
 	saved_version=editor_data.get_undo_redo().get_version();
 	_update_title();
-
+	_update_scene_tabs();
 	_add_to_recent_scenes(lpath);
 
 	if (new_scene->has_meta("__editor_plugin_screen__")) {
@@ -2919,8 +3142,9 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 void EditorNode::open_request(const String& p_path) {
 
-	external_file=p_path;
-	_menu_option_confirm(FILE_EXTERNAL_OPEN_SCENE,false);
+	load_scene(p_path); // as it will be opened in separate tab
+	//external_file=p_path;
+	//_menu_option_confirm(FILE_EXTERNAL_OPEN_SCENE,false);
 }
 
 
@@ -3058,15 +3282,16 @@ void EditorNode::_open_recent_scene(int p_idx) {
 
 	String path = "res://"+rc[p_idx];
 
-	if (unsaved_cache) {
+
+	/*if (unsaved_cache) {
 		_recent_scene=rc[p_idx];
 		open_recent_confirmation->set_text("Discard current scene and open:\n'"+rc[p_idx]+"'");
 		open_recent_confirmation->get_label()->set_align(Label::ALIGN_CENTER);
 		open_recent_confirmation->popup_centered(Size2(400,100));
 		return;
-	}
+	}*/
 
-	load_scene(rc[p_idx]);
+	load_scene(path);
 
 
 }
@@ -3108,12 +3333,6 @@ void EditorNode::_save_optimized() {
 
 	project_settings->add_remapped_path(Globals::get_singleton()->localize_path(get_edited_scene()->get_filename()),Globals::get_singleton()->localize_path(path),platform);
 #endif
-}
-
-void EditorNode::_open_recent_scene_confirm() {
-
-	load_scene(_recent_scene);
-
 }
 
 void EditorNode::_update_recent_scenes() {
@@ -3325,7 +3544,7 @@ void EditorNode::_bind_methods() {
 	//ObjectTypeDB::bind_method("_import",&EditorNode::_import);
 //	ObjectTypeDB::bind_method("_import_conflicts_solved",&EditorNode::_import_conflicts_solved);
 	ObjectTypeDB::bind_method("_open_recent_scene",&EditorNode::_open_recent_scene);
-	ObjectTypeDB::bind_method("_open_recent_scene_confirm",&EditorNode::_open_recent_scene_confirm);
+//	ObjectTypeDB::bind_method("_open_recent_scene_confirm",&EditorNode::_open_recent_scene_confirm);
 
 	ObjectTypeDB::bind_method("_save_optimized",&EditorNode::_save_optimized);
 	ObjectTypeDB::bind_method(_MD("animation_panel_make_visible","enable"),&EditorNode::animation_panel_make_visible);
@@ -3343,6 +3562,11 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("_dock_move_left",&EditorNode::_dock_move_left);
 	ObjectTypeDB::bind_method("_dock_move_right",&EditorNode::_dock_move_right);
 
+	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
+	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
+	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
+	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
 
 
 
@@ -3655,8 +3879,27 @@ void EditorNode::_save_docks() {
 	}
 
 
+	HSplitContainer *h_splits[4]={
+		left_l_hsplit,
+		left_r_hsplit,
+		main_hsplit,
+		right_hsplit,
+	};
+
+	for(int i=0;i<4;i++) {
+
+		config->set_value("docks","dock_hsplit_"+itos(i+1),h_splits[i]->get_split_offset());
+	}
+
+	editor_data.get_plugin_window_layout(config);
+
 	config->save(EditorSettings::get_singleton()->get_project_settings_path().plus_file("editor_layout.cfg"));
 
+}
+
+void EditorNode::save_layout() {
+
+	dock_drag_timer->start();
 }
 
 void EditorNode::_dock_split_dragged(int ofs) {
@@ -3732,6 +3975,20 @@ void EditorNode::_load_docks() {
 		splits[i]->set_split_offset(ofs);
 	}
 
+	HSplitContainer *h_splits[4]={
+		left_l_hsplit,
+		left_r_hsplit,
+		main_hsplit,
+		right_hsplit,
+	};
+
+	for(int i=0;i<4;i++) {
+		if (!config->has_section_key("docks","dock_hsplit_"+itos(i+1)))
+			continue;
+		int ofs = config->get_value("docks","dock_hsplit_"+itos(i+1));
+		h_splits[i]->set_split_offset(ofs);
+	}
+
 	for(int i=0;i<DOCK_SLOT_MAX/2;i++) {
 		bool in_use = dock_slot[i*2+0]->get_tab_count() || dock_slot[i*2+1]->get_tab_count();
 		if (in_use)
@@ -3747,6 +4004,38 @@ void EditorNode::_load_docks() {
 		}
 	}
 
+	editor_data.set_plugin_window_layout(config);
+
+}
+
+
+void EditorNode::_scene_tab_changed(int p_tab) {
+
+
+	//print_line("set current 1 ");
+	bool unsaved = (saved_version!=editor_data.get_undo_redo().get_version());
+	//print_line("version: "+itos(editor_data.get_undo_redo().get_version())+", saved "+itos(saved_version));
+
+	if (p_tab==editor_data.get_edited_scene())
+		return; //pointless
+
+	uint64_t next_scene_version = editor_data.get_scene_version(p_tab);
+
+
+
+	//print_line("scene tab changed???");
+	editor_data.get_undo_redo().create_action("Switch Scene Tab");
+	editor_data.get_undo_redo().add_do_method(this,"set_current_version",unsaved?saved_version:0);
+	editor_data.get_undo_redo().add_do_method(this,"set_current_scene",p_tab);
+	editor_data.get_undo_redo().add_do_method(scene_tabs,"set_current_tab",p_tab);
+	editor_data.get_undo_redo().add_do_method(this,"set_current_version",next_scene_version==0?editor_data.get_undo_redo().get_version()+1:next_scene_version);
+
+	editor_data.get_undo_redo().add_undo_method(this,"set_current_version",next_scene_version);
+	editor_data.get_undo_redo().add_undo_method(this,"set_current_scene",editor_data.get_edited_scene());
+	editor_data.get_undo_redo().add_undo_method(scene_tabs,"set_current_tab",editor_data.get_edited_scene());
+	editor_data.get_undo_redo().add_undo_method(this,"set_current_version",saved_version);
+	editor_data.get_undo_redo().commit_action();
+
 }
 
 EditorNode::EditorNode() {
@@ -3754,6 +4043,8 @@ EditorNode::EditorNode() {
 	EditorHelp::generate_doc(); //before any editor classes are crated
 
 	singleton=this;
+	last_checked_version=0;
+	changing_scene=false;
 
 	FileAccess::set_backup_save(true);
 
@@ -3841,14 +4132,38 @@ EditorNode::EditorNode() {
 	gui_base->set_anchor( MARGIN_RIGHT, Control::ANCHOR_END );
 	gui_base->set_anchor( MARGIN_BOTTOM, Control::ANCHOR_END );
 	gui_base->set_end( Point2(0,0) );
-	
+
 	main_vbox = memnew( VBoxContainer );
 	gui_base->add_child(main_vbox);
 	main_vbox->set_area_as_parent_rect(8);
 
-	menu_hb = memnew( HBoxContainer );
-	main_vbox->add_child(menu_hb);
+	PanelContainer *top_dark_panel = memnew( PanelContainer );
+	Ref<StyleBoxTexture> top_dark_sb;
+	top_dark_sb.instance();;
+	top_dark_sb->set_texture(theme->get_icon("PanelTop","EditorIcons"));
+	for(int i=0;i<4;i++) {
+		top_dark_sb->set_margin_size(Margin(i),3);
+		top_dark_sb->set_default_margin(Margin(i),0);
+	}
+	top_dark_sb->set_expand_margin_size(MARGIN_LEFT,20);
+	top_dark_sb->set_expand_margin_size(MARGIN_RIGHT,20);
 
+	top_dark_panel->add_style_override("panel",top_dark_sb);
+	VBoxContainer *top_dark_vb = memnew( VBoxContainer );
+	main_vbox->add_child(top_dark_panel);
+	top_dark_panel->add_child(top_dark_vb);
+
+
+
+
+	menu_hb = memnew( HBoxContainer );
+	top_dark_vb->add_child(menu_hb);
+
+	scene_tabs=memnew( Tabs );
+	scene_tabs->add_tab("unsaved");
+	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
+	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
+	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );
 	main_vbox->add_child(left_l_hsplit);
@@ -3911,6 +4226,12 @@ EditorNode::EditorNode() {
 	left_r_vsplit->connect("dragged",this,"_dock_split_dragged");
 	right_l_vsplit->connect("dragged",this,"_dock_split_dragged");
 	right_r_vsplit->connect("dragged",this,"_dock_split_dragged");
+
+	left_l_hsplit->connect("dragged",this,"_dock_split_dragged");
+	left_r_hsplit->connect("dragged",this,"_dock_split_dragged");
+	main_hsplit->connect("dragged",this,"_dock_split_dragged");
+	right_hsplit->connect("dragged",this,"_dock_split_dragged");
+
 
 
 	dock_select_popoup = memnew( PopupPanel );
@@ -4101,7 +4422,9 @@ EditorNode::EditorNode() {
 	p->add_item("Save Scene",FILE_SAVE_SCENE,KEY_MASK_CMD+KEY_S);
 	p->add_item("Save Scene As..",FILE_SAVE_AS_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_S);
 	p->add_separator();
-	p->add_item("Goto Prev. Scene",FILE_OPEN_PREV,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_P);
+	p->add_item("Close Scene",FILE_CLOSE,KEY_MASK_SHIFT+KEY_MASK_CTRL+KEY_W);
+	p->add_separator();
+	p->add_item("Close Goto Prev. Scene",FILE_OPEN_PREV,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_P);
 	p->add_submenu_item("Open Recent","RecentScenes",FILE_OPEN_RECENT);
 	p->add_separator();
 	p->add_item("Quick Open Scene..",FILE_QUICK_OPEN_SCENE,KEY_MASK_SHIFT+KEY_MASK_CMD+KEY_O);
@@ -4791,8 +5114,8 @@ EditorNode::EditorNode() {
 	}
 
 
-	edited_scene=NULL;
-	saved_version=0;
+	//edited_scene=NULL;
+	saved_version=1;
 	unsaved_cache=true;
 	_last_instanced_scene=NULL;
 
@@ -4854,7 +5177,13 @@ EditorNode::EditorNode() {
 	for(int i=0;i<_init_callbacks.size();i++)
 		_init_callbacks[i]();
 
+	editor_data.add_edited_scene(-1);
+	editor_data.set_edited_scene(0);
+	_update_scene_tabs();
+
 	_load_docks();
+
+
 }
 
 

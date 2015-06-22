@@ -34,6 +34,7 @@
 #include "core_string_names.h"
 #include "translation.h"
 #include "os/os.h"
+#include "resource.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -1462,6 +1463,63 @@ StringName Object::tr(const StringName& p_message) const {
 
 	return XL_MESSAGE(p_message);
 
+}
+
+
+void Object::_clear_internal_resource_paths(const Variant &p_var) {
+
+	switch(p_var.get_type()) {
+
+		case Variant::OBJECT: {
+
+			RES r = p_var;
+			if (!r.is_valid())
+				return;
+
+			if (!r->get_path().begins_with("res://") || r->get_path().find("::")==-1)
+				return; //not an internal resource
+
+			Object *object=p_var;
+			if (!object)
+				return;
+
+			r->set_path("");
+			r->clear_internal_resource_paths();
+		} break;
+		case Variant::ARRAY: {
+
+			Array a=p_var;
+			for(int i=0;i<a.size();i++) {
+				_clear_internal_resource_paths(a[i]);
+			}
+
+		} break;
+		case Variant::DICTIONARY: {
+
+			Dictionary d=p_var;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			for (List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+				_clear_internal_resource_paths(E->get());
+				_clear_internal_resource_paths(d[E->get()]);
+			}
+		} break;
+	}
+
+}
+
+void Object::clear_internal_resource_paths() {
+
+	List<PropertyInfo> pinfo;
+
+	get_property_list(&pinfo);
+
+	for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		_clear_internal_resource_paths(get(E->get().name));
+	}
 }
 
 void Object::_bind_methods() {

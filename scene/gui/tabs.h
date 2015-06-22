@@ -34,6 +34,14 @@
 class Tabs : public Control {
 
 	OBJ_TYPE( Tabs, Control );
+public:
+
+	enum TabAlign {
+
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT
+	};
 private:
 
 
@@ -42,12 +50,14 @@ private:
 		String text;
 		Ref<Texture> icon;
 		int ofs_cache;
+		int size_cache;
 	};
 
 	Vector<Tab> tabs;
 	int current;
 	Control *_get_tab(int idx) const;
 	int _get_top_margin() const;
+	TabAlign tab_align;
 
 protected:
 
@@ -65,16 +75,22 @@ public:
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
 
+	void set_tab_align(TabAlign p_align);
+	TabAlign get_tab_align() const;
+
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 
 	void remove_tab(int p_idx);
 
+	void clear_tabs();
+
 	Size2 get_minimum_size() const;
 
 	Tabs();
 };
 
+VARIANT_ENUM_CAST(Tabs::TabAlign);
 
 #endif // TABS_H

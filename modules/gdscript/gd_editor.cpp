@@ -1195,7 +1195,7 @@ static void _find_identifiers(GDCompletionContext& context,int p_line,bool p_onl
 	}
 
 	static const char*_type_names[Variant::VARIANT_MAX]={
-		"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Trasnform",
+		"null","bool","int","float","String","Vector2","Rect2","Vector3","Matrix32","Plane","Quat","AABB","Matrix3","Transform",
 		"Color","Image","NodePath","RID","Object","InputEvent","Dictionary","Array","RawArray","IntArray","FloatArray","StringArray",
 		"Vector2Array","Vector3Array","ColorArray"};
 

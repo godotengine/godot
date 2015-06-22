@@ -11,6 +11,7 @@ void ItemList::add_item(const String& p_item,const Ref<Texture>& p_texture,bool 
 	item.selectable=p_selectable;
 	item.selected=false;
 	item.disabled=false;
+	item.custom_bg=Color(0,0,0,0);
 	items.push_back(item);
 
 	update();
@@ -26,6 +27,7 @@ void ItemList::add_icon_item(const Ref<Texture>& p_item,bool p_selectable){
 	item.selectable=p_selectable;
 	item.selected=false;
 	item.disabled=false;
+	item.custom_bg=Color(0,0,0,0);
 	items.push_back(item);
 
 	update();
@@ -84,6 +86,23 @@ Ref<Texture> ItemList::get_item_icon(int p_idx) const{
 	return items[p_idx].icon;
 
 }
+
+void ItemList::set_item_custom_bg_color(int p_idx,const Color& p_custom_bg_color) {
+
+	ERR_FAIL_INDEX(p_idx,items.size());
+
+	items[p_idx].custom_bg=p_custom_bg_color;
+
+}
+
+Color ItemList::get_item_custom_bg_color(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,items.size(),Color());
+
+	return items[p_idx].custom_bg;
+
+}
+
 
 
 void ItemList::set_item_tag_icon(int p_idx,const Ref<Texture>& p_tag_icon){
@@ -635,6 +654,7 @@ void ItemList::_notification(int p_what) {
 		Ref<Font> font = get_font("font");
 		Color guide_color = get_color("guide_color");
 		Color font_color = get_color("font_color");
+		Color font_color_selected = get_color("font_color_selected");
 		int font_height = font->get_height();
 		Vector<int> line_size_cache;
 		Vector<int> line_limit_cache;
@@ -781,6 +801,11 @@ void ItemList::_notification(int p_what) {
 			if (current_columns==1) {
 				rcache.size.width = width-rcache.pos.x;
 			}
+			if (items[i].custom_bg.a>0.001) {
+				Rect2 r=rcache;
+				r.pos+=base_ofs;
+				draw_rect(r,items[i].custom_bg);
+			}
 			if (items[i].selected) {
 				Rect2 r=rcache;
 				r.pos+=base_ofs;
@@ -864,7 +889,7 @@ void ItemList::_notification(int p_what) {
 							if (line>=max_text_lines)
 								break;
 						}
-						ofs+=font->draw_char(get_canvas_item(),text_ofs+Vector2(ofs+(max_len-line_size_cache[line])/2,line*(font_height+line_separation)).floor(),items[i].text[j],items[i].text[j+1],font_color);
+						ofs+=font->draw_char(get_canvas_item(),text_ofs+Vector2(ofs+(max_len-line_size_cache[line])/2,line*(font_height+line_separation)).floor(),items[i].text[j],items[i].text[j+1],items[i].selected?font_color_selected:font_color);
 					}
 
 					//special multiline mode
@@ -884,7 +909,7 @@ void ItemList::_notification(int p_what) {
 					text_ofs+=base_ofs;
 					text_ofs+=items[i].rect_cache.pos;
 
-					draw_string(font,text_ofs,items[i].text,font_color,max_len+1);
+					draw_string(font,text_ofs,items[i].text,items[i].selected?font_color_selected:font_color,max_len+1);
 				}
 
 
@@ -954,6 +979,30 @@ String ItemList::get_tooltip(const Point2& p_pos) const {
 
 }
 
+void ItemList::sort_items_by_text() {
+	items.sort();
+	update();
+	if (select_mode==SELECT_SINGLE) {
+		for(int i=0;i<items.size();i++) {
+			if (items[i].selected) {
+				select(i);
+				return;
+			}
+		}
+	}
+}
+
+int ItemList::find_metadata(const Variant& p_metadata) const {
+
+	for(int i=0;i<items.size();i++) {
+		if (items[i].metadata==p_metadata) {
+			return i;
+		}
+	}
+
+	return -1;
+
+}
 
 void ItemList::_bind_methods(){
 
@@ -972,6 +1021,12 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("set_item_disabled","idx","disabled"),&ItemList::set_item_disabled);
 	ObjectTypeDB::bind_method(_MD("is_item_disabled","idx"),&ItemList::is_item_disabled);
 
+	ObjectTypeDB::bind_method(_MD("set_item_metadata","idx","metadata"),&ItemList::set_item_metadata);
+	ObjectTypeDB::bind_method(_MD("get_item_metadata","idx"),&ItemList::get_item_metadata);
+
+	ObjectTypeDB::bind_method(_MD("set_item_custom_bg_color","idx","custom_bg_color"),&ItemList::set_item_custom_bg_color);
+	ObjectTypeDB::bind_method(_MD("get_item_custom_bg_color","idx"),&ItemList::get_item_custom_bg_color);
+
 	ObjectTypeDB::bind_method(_MD("set_item_tooltip","idx","tooltip"),&ItemList::set_item_tooltip);
 	ObjectTypeDB::bind_method(_MD("get_item_tooltip","idx"),&ItemList::get_item_tooltip);
 
@@ -983,6 +1038,7 @@ void ItemList::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("remove_item","idx"),&ItemList::remove_item);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&ItemList::clear);
+	ObjectTypeDB::bind_method(_MD("sort_items_by_text"),&ItemList::clear);
 
 	ObjectTypeDB::bind_method(_MD("set_fixed_column_width","width"),&ItemList::set_fixed_column_width);
 	ObjectTypeDB::bind_method(_MD("get_fixed_column_width"),&ItemList::get_fixed_column_width);
