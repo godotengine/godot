@@ -458,4 +458,7 @@ void UndoRedo::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value"),&UndoRedo::add_undo_property);
 	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
 	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
+	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
+	ObjectTypeDB::bind_method(_MD("get_current_action_name"),&UndoRedo::get_current_action_name);
+	ObjectTypeDB::bind_method(_MD("get_version"),&UndoRedo::get_version);
 }
