@@ -90,6 +90,7 @@ class SceneTreeDock : public VBoxContainer {
 	EditorFileDialog *file;
 	EditorSubScene *import_subscene_dialog;
 
+	bool first_enter;
 
 	void _create();
 	Node *scene_root;

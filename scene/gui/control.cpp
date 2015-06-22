@@ -548,15 +548,18 @@ void Control::_notification(int p_notification) {
 			Control * parent = get_parent()->cast_to<Control>();
 
 			//make children reference them theme
-			if (parent && data.theme.is_null() && parent->data.theme_owner)
+
+			if (parent && data.theme.is_null() && parent->data.theme_owner) {
 				_propagate_theme_changed(parent->data.theme_owner);
+			}
 
 		} break;
 		case NOTIFICATION_UNPARENTED: {
 
 			//make children unreference the theme
-			if (data.theme.is_null() && data.theme_owner)
+			if (data.theme.is_null() && data.theme_owner) {
 				_propagate_theme_changed(NULL);
+			}
 
 		} break;
 		 case NOTIFICATION_MOVED_IN_PARENT: {

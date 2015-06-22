@@ -39,6 +39,9 @@ void GroupsEditor::_notification(int p_what) {
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		connect("confirmed", this,"_close");
 	}	
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this,"_close");
+	}
 }
 
 void GroupsEditor::_close() {

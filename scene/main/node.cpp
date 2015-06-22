@@ -641,6 +641,7 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 	p_child->data.pos=data.children.size();
 	data.children.push_back( p_child );
 	p_child->data.parent=this;
+	p_child->notification(NOTIFICATION_PARENTED);
 
 	if (data.tree) {
 		p_child->_set_tree(data.tree);
@@ -649,7 +650,6 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 	/* Notify */
 	//recognize childs created in this node constructor
 	p_child->data.parent_owned=data.in_constructor;
-	p_child->notification(NOTIFICATION_PARENTED);
 	add_child_notify(p_child);
 
 

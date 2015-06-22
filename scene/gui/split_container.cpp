@@ -345,6 +345,7 @@ void SplitContainer::_input_event(const InputEvent& p_event) {
 
 			expand_ofs=drag_ofs+((vertical?mm.y:mm.x)-drag_from);
 			queue_sort();
+			emit_signal("dragged",get_split_offset());
 		}
 	}
 
@@ -431,10 +432,12 @@ void SplitContainer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_dragger_visible","visible"),&SplitContainer::set_dragger_visible);
 	ObjectTypeDB::bind_method(_MD("is_dragger_visible"),&SplitContainer::is_dragger_visible);
 
+	ADD_SIGNAL( MethodInfo("dragged",PropertyInfo(Variant::INT,"offset")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/offset"),_SCS("set_split_offset"),_SCS("get_split_offset"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/collapsed"),_SCS("set_collapsed"),_SCS("is_collapsed"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"split/dragger_visible"),_SCS("set_dragger_visible"),_SCS("is_dragger_visible"));
+
 
 }
 
