@@ -79,11 +79,11 @@ int TileMapEditor::get_selected_tile() const {
 
 void TileMapEditor::set_selected_tile(int p_tile) {
 	for (int i = 0; i < palette->get_item_count(); i++) {
-	    if (palette->get_item_metadata(i).operator int() == p_tile) {
-	        palette->select(i,true);
-	        palette->ensure_current_is_visible();
-	        break;
-	    }
+		if (palette->get_item_metadata(i).operator int() == p_tile) {
+			palette->select(i,true);
+			palette->ensure_current_is_visible();
+			break;
+		}
 	}
 }
 
@@ -170,16 +170,16 @@ void TileMapEditor::_update_palette() {
 		if (tex.is_valid()) {
 			Rect2 region = tileset->tile_get_region(E->get());
 
-			if (region==Rect2()) {
-			    continue;
+			if (!region.has_no_area()) {
+				Image data = VS::get_singleton()->texture_get_data(tex->get_rid());
+
+				Ref<ImageTexture> img = memnew( ImageTexture );
+				img->create_from_image(data.get_rect(region));
+
+				palette->set_item_icon(palette->get_item_count()-1, img);
+			} else {
+				palette->set_item_icon(palette->get_item_count()-1,tex);
 			}
-
-			Image data = VS::get_singleton()->texture_get_data(tex->get_rid());
-
-			Ref<ImageTexture> img = memnew( ImageTexture );
-			img->create_from_image(data.get_rect(region));
-
-			palette->set_item_icon(palette->get_item_count()-1, img);
 		}
 
 		if (tileset->tile_get_name(E->get())!="") {
@@ -187,6 +187,7 @@ void TileMapEditor::_update_palette() {
 		} else {
 			palette->set_item_text(palette->get_item_count()-1, "#"+itos(E->get()));
 		}
+
 		palette->set_item_metadata(palette->get_item_count()-1, E->get());
 	}
 }
