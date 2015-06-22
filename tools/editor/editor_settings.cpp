@@ -433,9 +433,11 @@ void EditorSettings::_load_defaults() {
 	set("text_editor/idle_parse_delay",2);
 	set("text_editor/create_signal_callbacks",true);
 	set("text_editor/autosave_interval_secs",0);
+
 	set("text_editor/font","");
 	hints["text_editor/font"]=PropertyInfo(Variant::STRING,"text_editor/font",PROPERTY_HINT_GLOBAL_FILE,"*.fnt");
 	set("text_editor/auto_brace_complete", false);
+	set("text_editor/restore_scripts_on_load",true);
 
 
 	set("scenetree_editor/duplicate_node_name_num_separator",0);

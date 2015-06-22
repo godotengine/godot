@@ -1633,7 +1633,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	scene_tree = memnew( SceneTreeDialog );
 	add_child(scene_tree);
 	scene_tree->connect("selected", this,"_node_path_selected");
-	scene_tree->get_tree()->set_show_enabled_subscene(true);
+	scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
 	texture_preview = memnew( TextureFrame );
 	add_child( texture_preview);

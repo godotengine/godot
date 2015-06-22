@@ -1466,6 +1466,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 
 	String type;
 	String path;
+	int subres=0;
 
 	if (!main) {
 		//loading resource
@@ -1476,11 +1477,15 @@ Error ResourceInteractiveLoaderXML::poll() {
 		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <resource> missing 'type' field.");
 		ERR_FAIL_COND_V(!tag->args.has("type"),ERR_FILE_CORRUPT);
 		path=tag->args["path"];
+
 		error=OK;
 
 		if (path.begins_with("local://")) {
 			//built-in resource (but really external)
-			path=path.replace("local://",local_path+"::");
+
+			path=path.replace("local://","");
+			subres=path.to_int();
+			path=local_path+"::"+path;
 		}
 
 
@@ -1519,6 +1524,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 	res = RES( r );
 	if (path!="")
 		r->set_path(path);
+	r->set_subindex(subres);
 
 	//load properties
 
@@ -2029,9 +2035,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 				//internal resource
 				ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
-				ERR_FAIL_COND(!resource_map.has(res));
+				ERR_FAIL_COND(!resource_set.has(res));
 
-				params+=" path=\"local://"+itos(resource_map[res])+"\"";
+				params+=" path=\"local://"+itos(res->get_subindex())+"\"";
 			}
 
 		} break;
@@ -2443,7 +2449,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 				return;
 			}
 
-			if (resource_map.has(res))
+			if (resource_set.has(res))
 				return;
 
 			List<PropertyInfo> property_list;
@@ -2466,7 +2472,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 				I=I->next();
 			}
 
-			resource_map[ res ] = resource_map.size(); //saved after, so the childs it needs are available when loaded
+			resource_set.insert( res ); //saved after, so the childs it needs are available when loaded
 			saved_resources.push_back(res);
 
 		} break;
@@ -2537,12 +2543,27 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 		write_string("\n",false);
 	}
 
-
+	Set<int> used_indices;
 
 	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
 
 		RES res = E->get();
-		ERR_CONTINUE(!resource_map.has(res));
+		if (E->next() && (res->get_path()=="" || res->get_path().find("::") != -1 )) {
+
+			if (res->get_subindex()!=0) {
+				if (used_indices.has(res->get_subindex())) {
+					res->set_subindex(0); //repeated
+				} else {
+					used_indices.insert(res->get_subindex());
+				}
+			}
+		}
+	}
+
+	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
+
+		RES res = E->get();
+		ERR_CONTINUE(!resource_set.has(res));
 		bool main = (E->next()==NULL);
 
 		write_tabs();
@@ -2552,7 +2573,18 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 		else if (res->get_path().length() && res->get_path().find("::") == -1 )
 			enter_tag("resource","type=\""+res->get_type()+"\" path=\""+res->get_path()+"\""); //bundled
 		else {
-			int idx = resource_map[res];
+
+			if (res->get_subindex()==0) {
+				int new_subindex=1;
+				if (used_indices.size()) {
+					new_subindex=used_indices.back()->get()+1;
+				}
+
+				res->set_subindex(new_subindex);
+				used_indices.insert(new_subindex);
+			}
+
+			int idx = res->get_subindex();
 			enter_tag("resource","type=\""+res->get_type()+"\" path=\"local://"+itos(idx)+"\"");
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);

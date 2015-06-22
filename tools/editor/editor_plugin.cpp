@@ -197,6 +197,13 @@ bool EditorPlugin::get_remove_list(List<Node*> *p_list) {
 void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
+void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+
+}
+
+void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout){
+
+}
 
 void EditorPlugin::_bind_methods() {
 

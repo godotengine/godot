@@ -282,6 +282,7 @@ void UndoRedo::undo() {
 		return; //nothing to redo
 	_process_operation_list(actions[current_action].undo_ops.front());
 	current_action--;
+	version--;
 }
 
 void UndoRedo::clear_history() {
@@ -292,7 +293,7 @@ void UndoRedo::clear_history() {
 	while(actions.size())
 		_pop_history_tail();
 
-	version++;
+	//version++;
 }
 
 String UndoRedo::get_current_action_name() const {
@@ -326,7 +327,7 @@ void UndoRedo::set_commit_notify_callback(CommitNotifyCallback p_callback,void* 
 
 UndoRedo::UndoRedo() {
 
-	version=0;
+	version=1;
 	action_level=0;
 	current_action=-1;
 	max_steps=-1;

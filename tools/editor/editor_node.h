@@ -125,6 +125,7 @@ class EditorNode : public Node {
 		FILE_QUICK_OPEN_SCRIPT,
 		FILE_RUN_SCRIPT,
 		FILE_OPEN_PREV,
+		FILE_CLOSE,
 		FILE_QUIT,
 		FILE_EXTERNAL_OPEN_SCENE,
 		EDIT_UNDO,
@@ -183,16 +184,16 @@ class EditorNode : public Node {
 	};
 
 
-	Node *edited_scene; //scene being edited
+	//Node *edited_scene; //scene being edited
 	Viewport *scene_root; //root of the scene being edited
 
-	Ref<ResourceImportMetadata> scene_import_metadata;
+	//Ref<ResourceImportMetadata> scene_import_metadata;
 
 	Control* scene_root_parent;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
 
-
+	//split
 
 	HSplitContainer *left_l_hsplit;
 	VSplitContainer *left_l_vsplit;
@@ -205,6 +206,9 @@ class EditorNode : public Node {
 
 	VSplitContainer *center_split;
 
+	//main tabs
+
+	Tabs *scene_tabs;
 
 
 	int old_split_ofs;
@@ -324,8 +328,10 @@ class EditorNode : public Node {
 	bool reference_resource_mem;
 	bool save_external_resources_mem;
 	uint64_t saved_version;
+	uint64_t last_checked_version;
 	bool unsaved_cache;
 	String open_navigate;
+	bool changing_scene;
 
 	uint32_t circle_step_msec;
 	uint64_t circle_step_frame;
@@ -375,6 +381,7 @@ class EditorNode : public Node {
 	void _set_scene_metadata();
 	void _get_scene_metadata();
 	void _update_title();
+	void _update_scene_tabs();
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();
@@ -402,7 +409,7 @@ class EditorNode : public Node {
 	void _add_to_recent_scenes(const String& p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
-	void _open_recent_scene_confirm();
+	//void _open_recent_scene_confirm();
 	String _recent_scene;
 
 	bool convert_old;
@@ -431,7 +438,7 @@ class EditorNode : public Node {
 
 
 	void _cleanup_scene();
-
+	void _remove_edited_scene();
 	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
 	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
@@ -461,6 +468,10 @@ class EditorNode : public Node {
 	void _dock_pre_popup(int p_which);
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
+	void _scene_tab_changed(int p_tab);
+
+	Dictionary _get_main_scene_state();
+	void _set_main_scene_state(Dictionary p_state);
 
 	void _save_docks();
 	void _load_docks();
@@ -498,7 +509,7 @@ public:
 
 	void open_request(const String& p_path);
 
-	void set_edited_scene(Node *p_scene);
+	bool is_changing_scene() const;
 
 
 	static EditorLog *get_log() { return singleton->log; }
@@ -511,7 +522,9 @@ public:
 	void hide_animation_player_editors();
 	void animation_panel_make_visible(bool p_visible);
 
-	Node *get_edited_scene() { return edited_scene; }
+	void set_edited_scene(Node *p_scene);
+
+	Node *get_edited_scene() { return editor_data.get_edited_scene_root(); }
 
 	Viewport *get_scene_root() { return scene_root; } //root of the scene being edited
 	Error save_optimized_copy(const String& p_scene,const String& p_preset);
@@ -519,6 +532,9 @@ public:
 	void clear_scene() { _cleanup_scene(); }
 	Error load_scene(const String& p_scene);
 	Error load_resource(const String& p_scene);
+
+	void set_current_version(uint64_t p_version);
+	void set_current_scene(int p_idx);
 
 	static EditorData& get_editor_data() { return singleton->editor_data; }
 
@@ -566,6 +582,9 @@ public:
 	bool is_scene_in_use(const String& p_path);
 
 	void scan_import_changes();
+
+	void save_layout();
+
 	EditorNode();	
 	~EditorNode();
 	void get_singleton(const char* arg1, bool arg2);
