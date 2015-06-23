@@ -2131,7 +2131,6 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 	{
 		const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			members[E->get().index]=p_value;
 			if (E->get().setter) {
 				const Variant *val=&p_value;
 				Variant::CallError err;
@@ -2140,6 +2139,8 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 					return true; //function exists, call was successful
 				}
 			}
+			else
+				members[E->get().index] = p_value;
 			return true;
 		}
 	}

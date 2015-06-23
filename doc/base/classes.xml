@@ -8783,7 +8783,7 @@
 			</description>
 		</method>
 		<method name="get_undo_redo"  >
-			<return type="Object">
+			<return type="UndoRedo">
 			</return>
 			<description>
 			</description>

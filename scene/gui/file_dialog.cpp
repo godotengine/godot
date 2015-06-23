@@ -686,7 +686,7 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 
 FileDialog::FileDialog() {
 
-	show_hidden_files=true;
+	show_hidden_files=default_show_hidden_files;
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);

@@ -340,3 +340,126 @@ UndoRedo::~UndoRedo() {
 
 	clear_history();
 }
+
+Variant UndoRedo::_add_do_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<2) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=0;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::OBJECT) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::OBJECT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=1;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Object* object = *p_args[0];
+	String method = *p_args[1];
+
+	Variant v[VARIANT_ARG_MAX];
+
+
+	for(int i=0;i<MIN(VARIANT_ARG_MAX,p_argcount-2);++i) {
+
+		v[i]=*p_args[i+2];
+	}
+
+	add_do_method(object,method,v[0],v[1],v[2],v[3],v[4]);
+	return Variant();
+}
+
+Variant UndoRedo::_add_undo_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
+
+	if (p_argcount<2) {
+		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+		r_error.argument=0;
+		return Variant();
+	}
+
+	if (p_args[0]->get_type()!=Variant::OBJECT) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=0;
+		r_error.expected=Variant::OBJECT;
+		return Variant();
+	}
+
+	if (p_args[1]->get_type()!=Variant::STRING) {
+		r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument=1;
+		r_error.expected=Variant::STRING;
+		return Variant();
+	}
+
+	r_error.error=Variant::CallError::CALL_OK;
+
+	Object* object = *p_args[0];
+	String method = *p_args[1];
+
+	Variant v[VARIANT_ARG_MAX];
+
+
+	for(int i=0;i<MIN(VARIANT_ARG_MAX,p_argcount-2);++i) {
+
+		v[i]=*p_args[i+2];
+	}
+
+	add_undo_method(object,method,v[0],v[1],v[2],v[3],v[4]);
+	return Variant();
+}
+
+void UndoRedo::_bind_methods() {
+
+	ObjectTypeDB::bind_method(_MD("create_action","name","mergeable"),&UndoRedo::create_action, DEFVAL(false) );
+	ObjectTypeDB::bind_method(_MD("commit_action"),&UndoRedo::commit_action);
+	
+	//ObjectTypeDB::bind_method(_MD("add_do_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_do_method);
+	//ObjectTypeDB::bind_method(_MD("add_undo_method","p_object", "p_method", "VARIANT_ARG_LIST"),&UndoRedo::add_undo_method);
+	
+	{
+		MethodInfo mi;
+		mi.name="add_do_method";
+		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
+		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
+		Vector<Variant> defargs;
+		for(int i=0;i<VARIANT_ARG_MAX;++i) {
+			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
+			defargs.push_back(Variant());
+		}
+
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_do_method",&UndoRedo::_add_do_method,mi,defargs);
+	}
+
+	{
+		MethodInfo mi;
+		mi.name="add_undo_method";
+		mi.arguments.push_back( PropertyInfo( Variant::OBJECT, "object"));
+		mi.arguments.push_back( PropertyInfo( Variant::STRING, "method"));
+		Vector<Variant> defargs;
+		for(int i=0;i<VARIANT_ARG_MAX;++i) {
+			mi.arguments.push_back( PropertyInfo( Variant::NIL, "arg"+itos(i)));
+			defargs.push_back(Variant());
+		}
+
+		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
+	}
+
+	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:var"),&UndoRedo::add_do_property);
+	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:var"),&UndoRedo::add_undo_property);
+	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
+	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
+	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
+	ObjectTypeDB::bind_method(_MD("get_current_action_name"),&UndoRedo::get_current_action_name);
+	ObjectTypeDB::bind_method(_MD("get_version"),&UndoRedo::get_version);
+}
