@@ -40,9 +40,7 @@
 class SpatialEditorPlugin;
 
 class GridMapEditor : public VBoxContainer {
-
 	OBJ_TYPE(GridMapEditor, VBoxContainer );
-
 
 	enum {
 
@@ -66,6 +64,10 @@ class GridMapEditor : public VBoxContainer {
 		CLIP_BELOW
 	};
 
+	enum DisplayMode {
+	    DISPLAY_THUMBNAIL,
+	    DISPLAY_LIST
+	};
 
 	UndoRedo *undo_redo;
 	InputAction input_action;
@@ -73,6 +75,8 @@ class GridMapEditor : public VBoxContainer {
 	MenuButton * options;
 	SpinBox *floor;
 	OptionButton *edit_mode;
+	ToolButton *mode_thumbnail;
+	ToolButton *mode_list;
 	HBoxContainer *spatial_editor_hb;
 
 	struct SetItem {
@@ -132,6 +136,7 @@ class GridMapEditor : public VBoxContainer {
 	Vector3 cursor_origin;
 	Vector3 last_mouseover;
 
+	int display_mode;
 	int selected_pallete;
 	int selected_area;
 	int cursor_rot;
@@ -183,9 +188,10 @@ class GridMapEditor : public VBoxContainer {
 	void _configure();
 	void _menu_option(int);
 	void update_pallete();
-	Tree *theme_pallete;
+	void _set_display_mode(int p_mode);
+	ItemList *theme_pallete;
 	Tree *area_list;
-	void _item_selected_cbk();
+	void _item_selected_cbk(int idx);
 	void _update_cursor_transform();
 	void _update_cursor_instance();
 	void _update_clip();
