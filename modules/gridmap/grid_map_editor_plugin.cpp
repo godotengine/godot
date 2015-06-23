@@ -522,7 +522,9 @@ void GridMapEditor::_duplicate_paste() {
 }
 
 bool GridMapEditor::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
-
+	if (!node) {
+		return false;
+	}
 
 	if (edit_mode->get_selected()==0) { // regular click
 		switch (p_event.type) {
@@ -1059,7 +1061,9 @@ void GridMapEditor::_notification(int p_what) {
 }
 
 void GridMapEditor::_update_cursor_instance() {
-
+	if (!node) {
+		return;
+	}
 
 	if (cursor_instance.is_valid())
 		VisualServer::get_singleton()->free(cursor_instance);
@@ -1098,7 +1102,9 @@ void GridMapEditor::_clear_areas() {
 }
 
 void GridMapEditor::_update_areas_display() {
-
+	if (!node) {
+		return;
+	}
 
 	_clear_areas();
 	List<int> areas;
