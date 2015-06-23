@@ -20,7 +20,6 @@ void OS_Haiku::run() {
 	}
 
 	main_loop->init();
-	window->Show();
 	window->StartMessageRunner();
 	app->Run();
 	window->StopMessageRunner();
@@ -55,6 +54,16 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	frame.Set(50, 50, 50 + current_video_mode.width - 1, 50 + current_video_mode.height - 1);
 
 	window = new HaikuDirectWindow(frame);
+
+	if (current_video_mode.fullscreen) {
+		window->SetFullScreen(true);
+	}
+
+	if (!current_video_mode.resizable) {
+		uint32 flags = window->Flags();
+		flags |= B_NOT_RESIZABLE;
+		window->SetFlags(flags);
+	}
 
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	context_gl = memnew(ContextGL_Haiku(window));
@@ -98,6 +107,7 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 
 	input = memnew(InputDefault);
 	window->SetInput(input);
+	window->Show();
 }
 
 void OS_Haiku::finalize() {
@@ -244,6 +254,38 @@ void OS_Haiku::set_window_fullscreen(bool p_enabled) {
 
 bool OS_Haiku::is_window_fullscreen() const {
 	return current_video_mode.fullscreen;
+}
+
+void OS_Haiku::set_window_resizable(bool p_enabled) {
+	uint32 flags = window->Flags();
+
+	if (p_enabled) {
+		flags &= ~(B_NOT_RESIZABLE);
+	} else {
+		flags |= B_NOT_RESIZABLE;
+	}
+
+	window->SetFlags(flags);
+}
+
+bool OS_Haiku::is_window_resizable() const {
+	return !(window->Flags() & B_NOT_RESIZABLE);
+}
+
+void OS_Haiku::set_window_minimized(bool p_enabled) {
+	window->Minimize(p_enabled);
+}
+
+bool OS_Haiku::is_window_minimized() const {
+	return window->IsMinimized();
+}
+
+void OS_Haiku::set_window_maximized(bool p_enabled) {
+	window->Minimize(!p_enabled);
+}
+
+bool OS_Haiku::is_window_maximized() const {
+	return !window->IsMinimized();
 }
 
 void OS_Haiku::set_video_mode(const VideoMode& p_video_mode, int p_screen) {

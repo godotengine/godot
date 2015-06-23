@@ -81,6 +81,12 @@ public:
 	virtual void set_window_position(const Point2& p_position);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
 
 	virtual void set_video_mode(const VideoMode& p_video_mode, int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
