@@ -343,7 +343,7 @@ UndoRedo::~UndoRedo() {
 
 Variant UndoRedo::_add_do_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
-	if (p_argcount<1) {
+	if (p_argcount<2) {
 		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument=0;
 		return Variant();
@@ -382,7 +382,7 @@ Variant UndoRedo::_add_do_method(const Variant** p_args, int p_argcount, Variant
 
 Variant UndoRedo::_add_undo_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error) {
 
-	if (p_argcount<1) {
+	if (p_argcount<2) {
 		r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 		r_error.argument=0;
 		return Variant();
@@ -455,8 +455,8 @@ void UndoRedo::_bind_methods() {
 		ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"add_undo_method",&UndoRedo::_add_undo_method,mi,defargs);
 	}
 
-	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value"),&UndoRedo::add_do_property);
-	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value"),&UndoRedo::add_undo_property);
+	ObjectTypeDB::bind_method(_MD("add_do_property","object", "property", "value:var"),&UndoRedo::add_do_property);
+	ObjectTypeDB::bind_method(_MD("add_undo_property","object", "property", "value:var"),&UndoRedo::add_undo_property);
 	ObjectTypeDB::bind_method(_MD("add_do_reference","object"),&UndoRedo::add_do_reference);
 	ObjectTypeDB::bind_method(_MD("add_undo_reference","object"),&UndoRedo::add_undo_reference);
 	ObjectTypeDB::bind_method(_MD("clear_history"),&UndoRedo::clear_history);
