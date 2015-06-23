@@ -48,6 +48,7 @@ void ColorRampEdit::_input_event(const InputEvent& p_event) {
 
 		points.remove(grabbed);
 		grabbed=-1;
+		grabbing=false;
 		update();
 		emit_signal("ramp_changed");
 		accept_event();
@@ -67,9 +68,35 @@ void ColorRampEdit::_input_event(const InputEvent& p_event) {
 		{
 			points.remove(grabbed);
 			grabbed=-1;
+			grabbing=false;
 			update();
 			emit_signal("ramp_changed");
 			accept_event();
+		}
+	}
+
+	//Hold alt key to duplicate selected color
+	if (p_event.type==InputEvent::MOUSE_BUTTON && p_event.mouse_button.button_index==1 && p_event.mouse_button.pressed && p_event.key.mod.alt ) {
+
+		int x = p_event.mouse_button.x;
+		grabbed=_get_point_from_pos(x);
+
+		if( grabbed != -1 ) {
+			int total_w = get_size().width-get_size().height-3;
+			ColorRamp::Point newPoint = points[grabbed];
+			newPoint.offset=CLAMP(x/float(total_w),0,1);
+
+			points.push_back(newPoint);
+			points.sort();
+			for(int i=0;i<points.size();++i) {
+				if (points[i].offset==newPoint.offset) {
+					grabbed=i;
+					break;
+				}
+			}
+
+			emit_signal("ramp_changed");
+			update();
 		}
 	}
 
@@ -158,6 +185,33 @@ void ColorRampEdit::_input_event(const InputEvent& p_event) {
 
 		int x = p_event.mouse_motion.x;
 		float newofs = CLAMP(x/float(total_w),0,1);
+		
+		//Snap to nearest point if holding shift
+		if (p_event.key.mod.shift) {
+			float snap_treshhold = 0.03;
+			float smallest_ofs = snap_treshhold;
+			bool founded = false;
+			int nearest_point;
+			for(int i=0;i<points.size();++i) {
+				if (i != grabbed) {
+					float temp_ofs = ABS(points[i].offset - newofs);
+					if (temp_ofs < smallest_ofs) {
+						smallest_ofs = temp_ofs;
+						nearest_point = i;
+						if (founded)
+							break;
+						founded = true;
+					}
+				}
+			}
+			if (founded) {
+				if (points[nearest_point].offset < newofs)
+					newofs = points[nearest_point].offset+0.00001;
+				else
+					newofs = points[nearest_point].offset-0.00001;
+				newofs = CLAMP(newofs,0,1);
+			}
+		}
 
 		bool valid=true;
 		for(int i=0;i<points.size();i++) {
