@@ -530,7 +530,7 @@ void ConnectionsDialog::ok_pressed() {
 		get_ok()->set_disabled(true);
 		return;
 	}
-	if (item->get_parent()==tree->get_root()) {
+	if (item->get_parent()==tree->get_root() || item->get_parent()->get_parent()==tree->get_root()) {
 		//a signal - connect
 		String signal=item->get_metadata(0).operator Dictionary()["name"];
 		String signalname=signal;
@@ -778,7 +778,7 @@ void ConnectionsDialog::_something_selected() {
 		get_ok()->set_text("Connect..");
 		get_ok()->set_disabled(true);
 
-	} else if (item->get_parent()==tree->get_root()) {
+	} else if (item->get_parent()==tree->get_root() || item->get_parent()->get_parent()==tree->get_root()) {
 		//a signal - connect
 		get_ok()->set_text("Connect..");
 		get_ok()->set_disabled(false);
