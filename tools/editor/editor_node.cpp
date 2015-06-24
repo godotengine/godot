@@ -4274,7 +4274,7 @@ EditorNode::EditorNode() {
 	//dock_select_popoup->set_(Size2(20,20));
 
 	for(int i=0;i<DOCK_SLOT_MAX;i++) {
-		dock_slot[i]->set_custom_minimum_size(Size2(250,250));
+		dock_slot[i]->set_custom_minimum_size(Size2(230,220));
 		dock_slot[i]->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		dock_slot[i]->set_popup(dock_select_popoup);
 		dock_slot[i]->connect("pre_popup_pressed",this,"_dock_pre_popup",varray(i));

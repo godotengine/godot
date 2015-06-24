@@ -1711,7 +1711,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	script_list = memnew( ItemList );
 	script_split->add_child(script_list);
-	script_list->set_custom_minimum_size(Size2(140,0));
+	script_list->set_custom_minimum_size(Size2(70,0));
+	script_split->set_split_offset(70);
 
 	tab_container = memnew( TabContainer );
 	tab_container->set_tabs_visible(false);
