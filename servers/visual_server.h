@@ -1032,6 +1032,7 @@ public:
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier)=0;
+	virtual void canvas_light_set_shadow_color(RID p_light, const Color& p_color)=0;
 
 
 

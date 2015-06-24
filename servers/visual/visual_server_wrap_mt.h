@@ -626,6 +626,8 @@ public:
 	FUNC2(canvas_light_set_shadow_enabled,RID,bool);
 	FUNC2(canvas_light_set_shadow_buffer_size,RID,int);
 	FUNC2(canvas_light_set_shadow_esm_multiplier,RID,float);
+	FUNC2(canvas_light_set_shadow_color,RID,const Color&);
+
 
 
 	/* CANVAS OCCLUDER */

@@ -9536,6 +9536,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 						canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_TEXTURE,max_texture_units-3);
 						canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_MATRIX,light->shadow_matrix_cache);
 						canvas_shader.set_uniform(CanvasShaderGLES2::SHADOW_ESM_MULTIPLIER,light->shadow_esm_mult);
+						canvas_shader.set_uniform(CanvasShaderGLES2::LIGHT_SHADOW_COLOR,light->shadow_color);
 
 					}
 
