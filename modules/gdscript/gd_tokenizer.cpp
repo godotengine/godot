@@ -856,6 +856,7 @@ void GDTokenizerText::_advance() {
 								{TK_PR_PRELOAD,"preload"},
 								{TK_PR_ASSERT,"assert"},
 								{TK_PR_YIELD,"yield"},
+								{TK_PR_SIGNAL,"signal"},
 								{TK_PR_CONST,"const"},
 								//controlflow
 								{TK_CF_IF,"if"},

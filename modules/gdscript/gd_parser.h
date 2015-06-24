@@ -76,6 +76,7 @@ public:
 		StringName extends_file;
 		Vector<StringName> extends_class;
 
+
 		struct Member {
 			PropertyInfo _export;
 #ifdef TOOLS_ENABLED
@@ -92,11 +93,17 @@ public:
 			Node *expression;
 		};
 
+		struct Signal {
+			StringName name;
+			Vector<StringName> arguments;
+		};
+
 		Vector<ClassNode*> subclasses;
 		Vector<Member> variables;
 		Vector<Constant> constant_expressions;
 		Vector<FunctionNode*> functions;
 		Vector<FunctionNode*> static_functions;
+		Vector<Signal> _signals;
 		BlockNode *initializer;
 		ClassNode *owner;
 		//Vector<Node*> initializers;

@@ -1520,8 +1520,10 @@ void GDParser::_parse_block(BlockNode *p_block,bool p_static) {
 				op->arguments.push_back(assigned);
 				p_block->statements.push_back(op);
 
-				_end_statement();
-
+				if (!_end_statement()) {
+					_set_error("Expected end of statement (var)");
+					return;
+				}
 
 			} break;
 			case GDTokenizer::TK_CF_IF: {
@@ -1946,8 +1948,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				_parse_extends(p_class);
 				if (error_set)
 					return;
-				_end_statement();
-
+				if (!_end_statement()) {
+					_set_error("Expected end of statement after extends");
+					return;
+				}
 
 			} break;
 			case GDTokenizer::TK_PR_TOOL: {
@@ -2226,6 +2230,53 @@ void GDParser::_parse_class(ClassNode *p_class) {
 				current_block=NULL;
 
 				//arguments
+			} break;
+			case GDTokenizer::TK_PR_SIGNAL: {
+				tokenizer->advance();
+
+				if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+					_set_error("Expected identifier after 'signal'.");
+					return;
+				}
+
+				ClassNode::Signal sig;
+				sig.name = tokenizer->get_token_identifier();
+				tokenizer->advance();
+
+
+				if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_OPEN) {
+					tokenizer->advance();
+					while(true) {
+
+
+						if (tokenizer->get_token()==GDTokenizer::TK_PARENTHESIS_CLOSE) {
+							tokenizer->advance();
+							break;
+						}
+
+						if (tokenizer->get_token()!=GDTokenizer::TK_IDENTIFIER) {
+							_set_error("Expected identifier in signal argument.");
+							return;
+						}
+
+						sig.arguments.push_back(tokenizer->get_token_identifier());
+						tokenizer->advance();
+
+						if (tokenizer->get_token()==GDTokenizer::TK_COMMA) {
+							tokenizer->advance();
+						} else if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+							_set_error("Expected ',' or ')' after signal parameter identifier.");
+							return;
+						}
+					}
+				}
+
+				p_class->_signals.push_back(sig);
+
+				if (!_end_statement()) {
+					_set_error("Expected end of statement (signal)");
+					return;
+				}
 			} break;
 			case GDTokenizer::TK_PR_EXPORT: {
 
@@ -2644,8 +2695,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 				p_class->variables.push_back(member);
 
-				_end_statement();
-
+				if (!_end_statement()) {
+					_set_error("Expected end of statement (continue)");
+					return;
+				}
 			} break;
 			case GDTokenizer::TK_PR_CONST: {
 				//variale declaration and (eventual) initialization
@@ -2682,8 +2735,10 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 				p_class->constant_expressions.push_back(constant);
 
-				_end_statement();
-
+				if (!_end_statement()) {
+					_set_error("Expected end of statement (constant)");
+					return;
+				}
 
 			} break;
 
