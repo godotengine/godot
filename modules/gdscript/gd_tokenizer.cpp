@@ -568,7 +568,10 @@ void GDTokenizerText::_advance() {
 					} else if( string_mode!=STRING_MULTILINE && CharType(GETCHAR(i))=='\n') {
 						_make_error("Unexpected EOL at String.");
 						return;
-
+					} else if( CharType(GETCHAR(i))==0xFFFF) {
+						//string ends here, next will be TK
+						i--;
+						break;
 					} else if (CharType(GETCHAR(i))=='\\') {
 						//escaped characters...
 						i++;
@@ -670,19 +673,19 @@ void GDTokenizerText::_advance() {
 					while(true) {
 						if (GETCHAR(i)=='.') {
 							if (period_found || exponent_found) {
-                                _make_error("Invalid numeric constant at '.'");
+								_make_error("Invalid numeric constant at '.'");
 								return;
 							}
 							period_found=true;
 						} else if (GETCHAR(i)=='x') {
-                            if (hexa_found || str.length()!=1 || !( (i==1 && str[0]=='0') || (i==2 && str[1]=='0' && str[0]=='-') ) ) {
-                                _make_error("Invalid numeric constant at 'x'");
+							if (hexa_found || str.length()!=1 || !( (i==1 && str[0]=='0') || (i==2 && str[1]=='0' && str[0]=='-') ) ) {
+								_make_error("Invalid numeric constant at 'x'");
 								return;
 							}
 							hexa_found=true;
-                        } else if (!hexa_found && GETCHAR(i)=='e') {
+						} else if (!hexa_found && GETCHAR(i)=='e') {
 							if (hexa_found || exponent_found) {
-                                _make_error("Invalid numeric constant at 'e'");
+								_make_error("Invalid numeric constant at 'e'");
 								return;
 							}
 							exponent_found=true;
@@ -692,7 +695,7 @@ void GDTokenizerText::_advance() {
 
 						} else if ((GETCHAR(i)=='-' || GETCHAR(i)=='+') && exponent_found) {
 							if (sign_found) {
-                                _make_error("Invalid numeric constant at '-'");
+								_make_error("Invalid numeric constant at '-'");
 								return;
 							}
 							sign_found=true;
@@ -703,20 +706,20 @@ void GDTokenizerText::_advance() {
 						i++;
 					}
 
-                    if (!( _is_number(str[str.length()-1]) || (hexa_found && _is_hex(str[str.length()-1])))) {
-                        _make_error("Invalid numeric constant: "+str);
+					if (!( _is_number(str[str.length()-1]) || (hexa_found && _is_hex(str[str.length()-1])))) {
+						_make_error("Invalid numeric constant: "+str);
 						return;
 					}
 
 					INCPOS(str.length());
-                    if (hexa_found) {
-                        int val = str.hex_to_int();
-                        _make_constant(val);
-                    } else if (period_found) {
+					if (hexa_found) {
+						int val = str.hex_to_int();
+						_make_constant(val);
+					} else if (period_found) {
 						real_t val = str.to_double();
 						//print_line("*%*%*%*% to convert: "+str+" result: "+rtos(val));
 						_make_constant(val);
-                    } else {
+					} else {
 						int val = str.to_int();
 						_make_constant(val);
 
@@ -825,7 +828,7 @@ void GDTokenizerText::_advance() {
 
 									_make_built_in_func(GDFunctions::Function(i));
 									found=true;
-									 break;
+									break;
 								}
 							}
 

@@ -381,7 +381,12 @@ static Ref<Reference> _get_parent_class(GDCompletionContext& context) {
 
 				path=context.base_path.plus_file(path);
 			}
-			script = ResourceLoader::load(path);
+
+			if (ScriptCodeCompletionCache::get_sigleton())
+				script = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(path);
+			else
+				script = ResourceLoader::load(path);
+
 			if (script.is_null()) {
 				return REF();
 			}
@@ -1322,6 +1327,21 @@ static void _find_type_arguments(const GDParser::Node*p_node,int p_line,const St
 			if (obj) {
 				List<String> options;
 				obj->get_argument_options(p_method,p_argidx,&options);
+				if (obj->is_type("Node") && p_argidx==0 && (String(p_method)=="get_node" || String(p_method)=="has_node")) {
+
+					List<PropertyInfo> props;
+					Globals::get_singleton()->get_property_list(&props);
+
+					for(List<PropertyInfo>::Element *E=props.front();E;E=E->next()) {
+
+						String s = E->get().name;
+						if (!s.begins_with("autoload/"))
+							continue;
+					//	print_line("found "+s);
+						String name = s.get_slice("/",1);
+						options.push_back("\"/root/"+name+"\"");
+					}
+				}
 				for(List<String>::Element *E=options.front();E;E=E->next()) {
 
 					result.insert(E->get());
@@ -1661,7 +1681,9 @@ Error GDScriptLanguage::complete_code(const String& p_code, const String& p_base
 	//print_line( p_code.replace(String::chr(0xFFFF),"<cursor>"));
 
 	GDParser p;
-	Error err = p.parse(p_code,p_base_path,true);
+	//Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
+
+	Error err = p.parse(p_code,p_base_path,false,"",true);
 	bool isfunction=false;
 	Set<String> options;
 

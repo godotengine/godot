@@ -30,6 +30,7 @@
 #include "print_string.h"
 #include "io/resource_loader.h"
 #include "os/file_access.h"
+#include "script_language.h"
 
 template<class T>
 T* GDParser::alloc_node() {
@@ -116,6 +117,14 @@ bool GDParser::_parse_arguments(Node* p_parent,Vector<Node*>& p_args,bool p_stat
 			if (tokenizer->get_token()==GDTokenizer::TK_CURSOR) {
 				_make_completable_call(argidx);
 				completion_node=p_parent;
+			} else if (tokenizer->get_token()==GDTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type()==Variant::STRING && tokenizer->get_token(1)==GDTokenizer::TK_CURSOR) {
+				//completing a string argument..
+				completion_cursor=tokenizer->get_token_constant();
+
+				_make_completable_call(argidx);
+				completion_node=p_parent;
+				tokenizer->advance(1);
+				return false;
 			}
 
 			Node*arg  = _parse_expression(p_parent,p_static);
@@ -277,7 +286,11 @@ GDParser::Node* GDParser::_parse_expression(Node *p_parent,bool p_static,bool p_
 			if (!validating) {
 
 				//this can be too slow for just validating code
-				res = ResourceLoader::load(path);
+				if (for_completion && ScriptCodeCompletionCache::get_sigleton()) {
+					res = ScriptCodeCompletionCache::get_sigleton()->get_cached_resource(path);
+				} else {
+					res = ResourceLoader::load(path);
+				}
 				if (!res.is_valid()) {
 					_set_error("Can't preload resource at path: "+path);
 					return NULL;
@@ -2814,6 +2827,8 @@ Error GDParser::_parse(const String& p_base_path) {
 
 Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path, const String &p_self_path) {
 
+	for_completion=false;
+	validating=false;
 	completion_type=COMPLETION_NONE;
 	completion_node=NULL;
 	completion_class=NULL;
@@ -2834,7 +2849,7 @@ Error GDParser::parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p
 }
 
 
-Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_just_validate, const String &p_self_path) {
+Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_just_validate, const String &p_self_path,bool p_for_completion) {
 
 	completion_type=COMPLETION_NONE;
 	completion_node=NULL;
@@ -2851,6 +2866,7 @@ Error GDParser::parse(const String& p_code, const String& p_base_path, bool p_ju
 	tt->set_code(p_code);
 
 	validating=p_just_validate;
+	for_completion=p_for_completion;
 	tokenizer=tt;
 	Error ret = _parse(p_base_path);
 	memdelete(tt);
@@ -2886,6 +2902,7 @@ void GDParser::clear() {
 	current_function=NULL;
 
 	validating=false;
+	for_completion=false;
 	error_set=false;
 	tab_level.clear();
 	tab_level.push_back(0);

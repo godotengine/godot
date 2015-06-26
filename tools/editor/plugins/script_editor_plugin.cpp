@@ -43,6 +43,83 @@
 /*** SCRIPT EDITOR ****/
 
 
+class EditorScriptCodeCompletionCache : public ScriptCodeCompletionCache {
+
+
+	struct Cache {
+		uint64_t time_loaded;
+		RES cache;
+	};
+
+	Map<String,Cache> cached;
+
+
+public:
+
+	uint64_t max_time_cache;
+	int max_cache_size;
+
+	void cleanup() {
+
+		List< Map<String,Cache>::Element * > to_clean;
+
+
+		Map<String,Cache>::Element *I=cached.front();
+		while(I) {
+			if ((OS::get_singleton()->get_ticks_msec()-I->get().time_loaded)>max_time_cache) {
+				to_clean.push_back(I);
+			}
+			I=I->next();
+		}
+
+		while(to_clean.front()) {
+			cached.erase(to_clean.front()->get());
+			to_clean.pop_front();
+		}
+	}
+
+	RES get_cached_resource(const String& p_path) {
+
+		Map<String,Cache>::Element *E=cached.find(p_path);
+		if (!E) {
+
+			Cache c;
+			c.cache=ResourceLoader::load(p_path);
+			E=cached.insert(p_path,c);
+		}
+
+		E->get().time_loaded=OS::get_singleton()->get_ticks_msec();
+
+		if (cached.size()>max_cache_size) {
+			uint64_t older;
+			Map<String,Cache>::Element *O=cached.front();
+			older=O->get().time_loaded;
+			Map<String,Cache>::Element *I=O;
+			while(I) {
+				if (I->get().time_loaded<older) {
+					older = I->get().time_loaded;
+					O=I;
+				}
+				I=I->next();
+			}
+
+			if (O!=E) {//should never heppane..
+				cached.erase(O);
+			}
+		}
+
+		return E->get().cache;
+	}
+
+
+	EditorScriptCodeCompletionCache() {
+
+		max_cache_size=128;
+		max_time_cache=5*60*1000; //minutes, five
+	}
+
+};
+
 #define SORT_SCRIPT_LIST
 
 void ScriptEditorQuickOpen::popup(const Vector<String>& p_functions, bool p_dontclear) {
@@ -1694,6 +1771,7 @@ void ScriptEditor::get_window_layout(Ref<ConfigFile> p_layout) {
 
 ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
+	completion_cache = memnew( EditorScriptCodeCompletionCache );
 	restoring_layout=false;
 	waiting_update_names=false;
 	editor=p_editor;
@@ -1873,6 +1951,11 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 }
 
+
+ScriptEditor::~ScriptEditor() {
+
+	memdelete(completion_cache);
+}
 
 void ScriptEditorPlugin::edit(Object *p_object) {
 

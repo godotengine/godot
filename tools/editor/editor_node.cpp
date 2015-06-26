@@ -3047,7 +3047,7 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	//_cleanup_scene(); // i'm sorry but this MUST happen to avoid modified resources to not be reloaded.
 
-	Ref<PackedScene> sdata = ResourceLoader::load(lpath);
+	Ref<PackedScene> sdata = ResourceLoader::load(lpath,"",true);
 	if (!sdata.is_valid()) {
 
 		current_option=-1;
@@ -3063,6 +3063,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 		}
 		return ERR_FILE_NOT_FOUND;
 	}
+
+	sdata->set_path(lpath,true); //take over path
 
 	Node*new_scene=sdata->instance(true);
 

@@ -106,6 +106,8 @@ public:
 
 };
 
+class EditorScriptCodeCompletionCache;
+
 class ScriptEditor : public VBoxContainer {
 
 	OBJ_TYPE(ScriptEditor, VBoxContainer );
@@ -191,6 +193,7 @@ class ScriptEditor : public VBoxContainer {
 
 	ScriptEditorQuickOpen *quick_open;
 
+	EditorScriptCodeCompletionCache *completion_cache;
 
 	void _editor_play();
 	void _editor_pause();
@@ -248,6 +251,7 @@ public:
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
 	ScriptEditor(EditorNode *p_editor);
+	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
