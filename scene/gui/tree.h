@@ -454,6 +454,8 @@ public:
 	void set_cursor_can_exit_tree(bool p_enable);
 	bool can_cursor_exit_tree() const;
 
+	VScrollBar *get_vscroll_bar() { return v_scroll; }
+
 	Tree();
 	~Tree();	
 

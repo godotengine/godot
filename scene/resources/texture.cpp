@@ -81,6 +81,7 @@ void Texture::_bind_methods() {
 	BIND_CONSTANT( FLAGS_DEFAULT );
 	BIND_CONSTANT( FLAG_ANISOTROPIC_FILTER );
 	BIND_CONSTANT( FLAG_CONVERT_TO_LINEAR );
+	BIND_CONSTANT( FLAG_MIRRORED_REPEAT );
 
 }
 
@@ -181,7 +182,7 @@ void ImageTexture::_get_property_list( List<PropertyInfo> *p_list) const {
 
 
 
-	p_list->push_back( PropertyInfo( Variant::INT, "flags", PROPERTY_HINT_FLAGS,"Mipmaps,Repeat,Filter,Anisotropic,sRGB") );
+	p_list->push_back( PropertyInfo( Variant::INT, "flags", PROPERTY_HINT_FLAGS,"Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat") );
 	p_list->push_back( PropertyInfo( Variant::IMAGE, "image", img_hint,String::num(lossy_storage_quality)) );
 	p_list->push_back( PropertyInfo( Variant::VECTOR2, "size",PROPERTY_HINT_NONE, ""));
 	p_list->push_back( PropertyInfo( Variant::INT, "storage", PROPERTY_HINT_ENUM,"Uncompressed,Compress Lossy,Compress Lossless"));

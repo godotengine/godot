@@ -1816,6 +1816,16 @@ void Node::get_argument_options(const StringName& p_function,int p_idx,List<Stri
 	Object::get_argument_options(p_function,p_idx,r_options);
 }
 
+
+void Node::clear_internal_tree_resource_paths() {
+
+	clear_internal_resource_paths();
+	for(int i=0;i<data.children.size();i++) {
+		data.children[i]->clear_internal_tree_resource_paths();
+	}
+
+}
+
 void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);

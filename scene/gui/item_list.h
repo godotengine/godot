@@ -29,8 +29,12 @@ private:
 		bool disabled;
 		Variant metadata;
 		String tooltip;
+		Color custom_bg;
+
 
 		Rect2 rect_cache;
+
+		bool operator<(const Item& p_another) const { return text<p_another.text; }
 	};
 
 	int current;
@@ -85,6 +89,9 @@ public:
 	void set_item_tooltip(int p_idx,const String& p_tooltip);
 	String get_item_tooltip(int p_idx) const;
 
+	void set_item_custom_bg_color(int p_idx,const Color& p_custom_bg_color);
+	Color get_item_custom_bg_color(int p_idx) const;
+
 	void select(int p_idx,bool p_single=true);
 	void unselect(int p_idx);
 	bool is_selected(int p_idx) const;
@@ -118,6 +125,8 @@ public:
 
 	void ensure_current_is_visible();
 
+	void sort_items_by_text();
+	int find_metadata(const Variant& p_metadata) const;
 
 	virtual String get_tooltip(const Point2& p_pos) const;
 

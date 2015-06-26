@@ -155,6 +155,11 @@ void VisibilityEnabler2D::_screen_enter() {
 		_change_node_state(E->key(),true);
 	}
 
+	if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
+		get_parent()->set_fixed_process(true);
+	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
+		get_parent()->set_process(true);
+
 	visible=true;
 }
 
@@ -164,6 +169,11 @@ void VisibilityEnabler2D::_screen_exit(){
 
 		_change_node_state(E->key(),false);
 	}
+
+	if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
+		get_parent()->set_fixed_process(false);
+	if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
+		get_parent()->set_process(false);
 
 	visible=false;
 }
@@ -234,6 +244,12 @@ void VisibilityEnabler2D::_notification(int p_what){
 			from=from->get_parent();
 
 		_find_nodes(from);
+
+		if (enabler[ENABLER_PARENT_FIXED_PROCESS] && get_parent())
+			get_parent()->set_fixed_process(false);
+		if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
+			get_parent()->set_process(false);
+
 
 	}
 
@@ -317,10 +333,14 @@ void VisibilityEnabler2D::_bind_methods(){
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_animations"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_ANIMATIONS );
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/freeze_bodies"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_FREEZE_BODIES);
 	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/pause_particles"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PAUSE_PARTICLES);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_PROCESS);
+	ADD_PROPERTYI( PropertyInfo(Variant::BOOL,"enabler/fixed_process_parent"),_SCS("set_enabler"),_SCS("is_enabler_enabled"), ENABLER_PARENT_FIXED_PROCESS);
 
 	BIND_CONSTANT( ENABLER_FREEZE_BODIES );
 	BIND_CONSTANT( ENABLER_PAUSE_ANIMATIONS );
 	BIND_CONSTANT( ENABLER_PAUSE_PARTICLES );
+	BIND_CONSTANT( ENABLER_PARENT_PROCESS );
+	BIND_CONSTANT( ENABLER_PARENT_FIXED_PROCESS );
 	BIND_CONSTANT( ENABLER_MAX);
 }
 
@@ -341,6 +361,8 @@ VisibilityEnabler2D::VisibilityEnabler2D() {
 
 	for(int i=0;i<ENABLER_MAX;i++)
 		enabler[i]=true;
+	enabler[ENABLER_PARENT_PROCESS]=false;
+	enabler[ENABLER_PARENT_FIXED_PROCESS]=false;
 
 	visible=false;
 

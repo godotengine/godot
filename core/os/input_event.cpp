@@ -173,6 +173,16 @@ bool InputEvent::is_action(const String& p_action) const {
 	return InputMap::get_singleton()->event_is_action(*this,p_action);
 }
 
+bool InputEvent::is_action_pressed(const String& p_action) const {
+
+	return is_action(p_action) && is_pressed() && !is_echo();
+}
+
+bool InputEvent::is_action_released(const String& p_action) const {
+
+	return is_action(p_action) && !is_pressed();
+}
+
 uint32_t InputEventKey::get_scancode_with_modifiers() const {
 
 	uint32_t sc=scancode;

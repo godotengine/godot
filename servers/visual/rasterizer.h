@@ -592,6 +592,7 @@ public:
 		RID shadow_buffer;
 		int shadow_buffer_size;
 		float shadow_esm_mult;
+		Color shadow_color;
 
 
 		void *texture_cache; // implementation dependent
@@ -610,6 +611,7 @@ public:
 		CanvasLight() {
 			enabled=true;			
 			color=Color(1,1,1);
+			shadow_color=Color(0,0,0,0);
 			height=0;
 			z_min=-1024;
 			z_max=1024;

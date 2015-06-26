@@ -61,7 +61,7 @@ void  GridMapEditor::_menu_option(int p_option) {
 
 		case MENU_OPTION_CONFIGURE: {
 
-			
+
 		} break;
 		case MENU_OPTION_LOCK_VIEW: {
 
@@ -522,7 +522,9 @@ void GridMapEditor::_duplicate_paste() {
 }
 
 bool GridMapEditor::forward_spatial_input_event(Camera* p_camera,const InputEvent& p_event) {
-
+	if (!node) {
+		return false;
+	}
 
 	if (edit_mode->get_selected()==0) { // regular click
 		switch (p_event.type) {
@@ -706,9 +708,40 @@ struct _CGMEItemSort {
 
 };
 
+void GridMapEditor::_set_display_mode(int p_mode) {
+	if (display_mode==p_mode) {
+		return;
+	}
+
+	if (p_mode == DISPLAY_LIST) {
+		mode_list->set_pressed(true);
+		mode_thumbnail->set_pressed(false);
+	} else if (p_mode == DISPLAY_THUMBNAIL) {
+		mode_list->set_pressed(false);
+		mode_thumbnail->set_pressed(true);
+	}
+
+	display_mode=p_mode;
+
+	update_pallete();
+}
+
 void GridMapEditor::update_pallete()  {
+	int selected = theme_pallete->get_current();
 
 	theme_pallete->clear();
+	if (display_mode == DISPLAY_THUMBNAIL) {
+		theme_pallete->set_max_columns(0);
+		theme_pallete->set_icon_mode(ItemList::ICON_MODE_TOP);
+	} else if (display_mode == DISPLAY_LIST){
+		theme_pallete->set_max_columns(1);
+		theme_pallete->set_icon_mode(ItemList::ICON_MODE_LEFT);
+	}
+
+	float min_size = EDITOR_DEF("grid_map/preview_size",64);
+	theme_pallete->set_min_icon_size(Size2(min_size, min_size));
+	theme_pallete->set_fixed_column_width(min_size*3/2);
+	theme_pallete->set_max_text_lines(2);
 
 	Ref<MeshLibrary> theme = node->get_theme();
 
@@ -720,10 +753,6 @@ void GridMapEditor::update_pallete()  {
 	Vector<int> ids;
 	ids = theme->get_item_list();
 
-	TreeItem *root = theme_pallete->create_item(NULL);
-	theme_pallete->set_hide_root(true);
-	TreeItem *selected=NULL;
-
 	List<_CGMEItemSort> il;
 	for(int i=0;i<ids.size();i++) {
 
@@ -734,45 +763,31 @@ void GridMapEditor::update_pallete()  {
 	}
 	il.sort();
 
-	int col=0;
-	TreeItem *ti=NULL;
-	int selected_col=0;
+	int item = 0;
 
 	for(List<_CGMEItemSort>::Element *E=il.front();E;E=E->next()) {
-
 		int id = E->get().id;
 
-		if (col==0) {
-			ti = theme_pallete->create_item(root);
-		}
+		theme_pallete->add_item("");
 
 		String name=theme->get_item_name(id);
 		Ref<Texture> preview = theme->get_item_preview(id);
 
 		if (!preview.is_null()) {
-
-			ti->set_cell_mode(col,TreeItem::CELL_MODE_ICON);
-			ti->set_icon(col,preview);
-			ti->set_tooltip(col,name);
-		} else {
-
-			ti->set_text(col,name);
+			theme_pallete->set_item_icon(item, preview);
+			theme_pallete->set_item_tooltip(item, name);
 		}
-		ti->set_metadata(col,id);
-
-		if (selected_pallete==id) {
-			selected=ti;
-			selected_col=col;
+		if (name!="") {
+			theme_pallete->set_item_text(item,name);
 		}
+		theme_pallete->set_item_metadata(item, id);
 
-		col++;
-		if (col==theme_pallete->get_columns())
-			col=0;
-
+		item++;
 	}
 
-	if (selected)
-		selected->select(selected_col);
+	if (selected!=-1) {
+		theme_pallete->select(selected);
+	}
 
 	last_theme=theme.operator->();
 }
@@ -842,6 +857,9 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 			VisualServer::get_singleton()->instance_geometry_set_flag(grid_instance[i],VS::INSTANCE_FLAG_VISIBLE,false);
 
 		}
+
+		VisualServer::get_singleton()->instance_geometry_set_flag(cursor_instance, VS::INSTANCE_FLAG_VISIBLE,false);
+
 		_clear_areas();
 
 		return;
@@ -951,7 +969,7 @@ void GridMapEditor::update_grid() {
 
 	grid_xform.origin.x-=1; //force update in hackish way.. what do i care
 
-	VS *vs = VS::get_singleton();
+	//VS *vs = VS::get_singleton();
 
 	grid_ofs[edit_axis]=edit_floor[edit_axis]*node->get_cell_size();
 
@@ -976,7 +994,7 @@ void GridMapEditor::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 
-		theme_pallete->connect("cell_selected", this,"_item_selected_cbk");
+		theme_pallete->connect("item_selected", this,"_item_selected_cbk");
 		edit_mode->connect("item_selected", this,"_edit_mode_changed");
 		area_list->connect("item_edited", this,"_area_renamed");
 		area_list->connect("item_selected", this,"_area_selected");
@@ -1014,7 +1032,7 @@ void GridMapEditor::_notification(int p_what) {
 		if (xf!=grid_xform) {
 			for(int i=0;i<3;i++) {
 
-				
+
 				VS::get_singleton()->instance_set_transform(grid_instance[i],xf * edit_grid_xform);
 			}
 			grid_xform=xf;
@@ -1043,7 +1061,9 @@ void GridMapEditor::_notification(int p_what) {
 }
 
 void GridMapEditor::_update_cursor_instance() {
-
+	if (!node) {
+		return;
+	}
 
 	if (cursor_instance.is_valid())
 		VisualServer::get_singleton()->free(cursor_instance);
@@ -1063,18 +1083,8 @@ void GridMapEditor::_update_cursor_instance() {
 
 }
 
-void GridMapEditor::_item_selected_cbk() {
-
-	TreeItem *it = theme_pallete->get_selected();
-	if (it) {
-
-		selected_pallete=it->get_metadata(theme_pallete->get_selected_column());
-
-	} else {
-
-		selected_pallete=-1;
-
-	}
+void GridMapEditor::_item_selected_cbk(int idx) {
+	selected_pallete=theme_pallete->get_item_metadata(idx);
 
 	_update_cursor_instance();
 
@@ -1092,7 +1102,9 @@ void GridMapEditor::_clear_areas() {
 }
 
 void GridMapEditor::_update_areas_display() {
-
+	if (!node) {
+		return;
+	}
 
 	_clear_areas();
 	List<int> areas;
@@ -1179,7 +1191,7 @@ void GridMapEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_area_selected",&GridMapEditor::_area_selected);
 	ObjectTypeDB::bind_method("_floor_changed",&GridMapEditor::_floor_changed);
 
-
+	ObjectTypeDB::bind_method(_MD("_set_display_mode","mode"), &GridMapEditor::_set_display_mode);
 }
 
 
@@ -1240,6 +1252,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	clip_mode=CLIP_DISABLED;
 	options->get_popup()->connect("item_pressed", this,"_menu_option");
 
+	HBoxContainer *hb = memnew( HBoxContainer );
+	add_child(hb);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	edit_mode = memnew(OptionButton);
 	edit_mode->set_area_as_parent_rect();
@@ -1247,13 +1262,27 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	edit_mode->set_anchor_and_margin(MARGIN_RIGHT,ANCHOR_END,14);;
 	edit_mode->add_item("Tiles");
 	edit_mode->add_item("Areas");
-	add_child(edit_mode);
+	hb->add_child(edit_mode);
+	edit_mode->set_h_size_flags(SIZE_EXPAND_FILL);
 
+	mode_thumbnail = memnew( ToolButton );
+	mode_thumbnail->set_toggle_mode(true);
+	mode_thumbnail->set_pressed(true);
+	mode_thumbnail->set_icon(p_editor->get_gui_base()->get_icon("FileThumbnail","EditorIcons"));
+	hb->add_child(mode_thumbnail);
+	mode_thumbnail->connect("pressed", this, "_set_display_mode", varray(DISPLAY_THUMBNAIL));
+
+	mode_list = memnew( ToolButton );
+	mode_list->set_toggle_mode(true);
+	mode_list->set_pressed(false);
+	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
+	hb->add_child(mode_list);
+	mode_list->connect("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
+
+	display_mode = DISPLAY_THUMBNAIL;
 	selected_area=-1;
 
-
-	theme_pallete = memnew( Tree );
-	theme_pallete->set_columns(3);
+	theme_pallete = memnew( ItemList );
 	add_child(theme_pallete);
 	theme_pallete->set_v_size_flags(SIZE_EXPAND_FILL);
 

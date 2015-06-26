@@ -105,7 +105,7 @@ public:
 	_EditorMeshImportOptions() {
 
 		generate_tangents=true;
-		generate_normals=true;
+		generate_normals=false;
 		flip_faces=false;
 		smooth_shading=false;
 		weld_vertices=true;

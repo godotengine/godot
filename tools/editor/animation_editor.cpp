@@ -3319,7 +3319,8 @@ void AnimationKeyEditor::_insert_delay() {
 void AnimationKeyEditor::_step_changed(float p_len) {
 
 	updating=true;
-	animation->set_step(p_len);
+	if (!animation.is_null())
+		animation->set_step(p_len);
 	updating=false;
 }
 
