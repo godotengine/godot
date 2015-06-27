@@ -187,6 +187,7 @@ public:
 
 	bool is_visible() const;
 	bool is_hidden() const;
+	void set_visible(bool p_visible);
 	void show();
 	void hide();
 
