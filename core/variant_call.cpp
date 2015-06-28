@@ -715,6 +715,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 	VCALL_PTR0R( InputEvent, is_pressed );
 	VCALL_PTR1R( InputEvent, is_action );
+	VCALL_PTR1R( InputEvent, is_action_pressed );
+	VCALL_PTR1R( InputEvent, is_action_released );
 	VCALL_PTR0R( InputEvent, is_echo );
     VCALL_PTR2( InputEvent, set_as_action );
 
@@ -748,6 +750,12 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	static void Rect2_init2(Variant& r_ret,const Variant** p_args) {
 
 		r_ret=Rect2(*p_args[0],*p_args[1],*p_args[2],*p_args[3]);
+	}
+
+	static void Matrix32_init2(Variant& r_ret,const Variant** p_args) {
+		
+		Matrix32 m(*p_args[0], *p_args[1]);
+		r_ret=m;
 	}
 
 	static void Matrix32_init3(Variant& r_ret,const Variant** p_args) {
@@ -1534,6 +1542,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_pressed,varray());
 	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action,STRING,"action",varray());
+	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_pressed,STRING,"is_action_pressed",varray());
+	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_released,STRING,"is_action_released",varray());
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_echo,varray());
     ADDFUNC2(INPUT_EVENT,NIL,InputEvent,set_as_action,STRING,"action",BOOL,"pressed",varray());
 
@@ -1544,6 +1554,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constructor(_VariantCall::Rect2_init1,Variant::RECT2,"pos",Variant::VECTOR2,"size",Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Rect2_init2,Variant::RECT2,"x",Variant::REAL,"y",Variant::REAL,"width",Variant::REAL,"height",Variant::REAL);
 
+	_VariantCall::add_constructor(_VariantCall::Matrix32_init2,Variant::MATRIX32,"rot",Variant::REAL,"pos",Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Matrix32_init3,Variant::MATRIX32,"x_axis",Variant::VECTOR2,"y_axis",Variant::VECTOR2,"origin",Variant::VECTOR2);
 
 	_VariantCall::add_constructor(_VariantCall::Vector3_init1,Variant::VECTOR3,"x",Variant::REAL,"y",Variant::REAL,"z",Variant::REAL);

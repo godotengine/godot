@@ -14,7 +14,6 @@ var offset=0
 
 
 func _process(delta):
-	
 	offset+=delta*SPEED
 	set_pos(Vector2(offset,0))
 

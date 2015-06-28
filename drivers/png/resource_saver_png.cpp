@@ -75,6 +75,9 @@ Error ResourceSaverPNG::save(const String &p_path,const RES& p_resource,uint32_t
 		if (bool(texture->get_flags()&Texture::FLAG_CONVERT_TO_LINEAR)) {
 			text+="tolinear=true\n";
 		}
+		if (bool(texture->get_flags()&Texture::FLAG_MIRRORED_REPEAT)) {
+			text+="mirroredrepeat=true\n";
+		}
 
 		if (text!="" || FileAccess::exists(p_path+".flags")) {
 

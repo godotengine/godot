@@ -4071,6 +4071,15 @@ void VisualServerRaster::canvas_light_set_shadow_esm_multiplier(RID p_light, flo
 
 }
 
+void VisualServerRaster::canvas_light_set_shadow_color(RID p_light, const Color& p_color) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->shadow_color=p_color;
+
+}
+
+
 /****** CANVAS LIGHT OCCLUDER ******/
 
 RID VisualServerRaster::canvas_light_occluder_create() {

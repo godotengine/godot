@@ -4,7 +4,7 @@ void BackBufferCopy::_update_copy_mode() {
 
 	switch(copy_mode) {
 
-		case COPY_MODE_DISALED: {
+		case COPY_MODE_DISABLED: {
 
 			VS::get_singleton()->canvas_item_set_copy_to_backbuffer(get_canvas_item(),false,Rect2());
 		} break;
@@ -58,7 +58,7 @@ void BackBufferCopy::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"copy_mode",PROPERTY_HINT_ENUM,"Disabled,Rect,Viewport"),_SCS("set_copy_mode"),_SCS("get_copy_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"),_SCS("set_rect"),_SCS("get_rect"));
 
-	BIND_CONSTANT( COPY_MODE_DISALED );
+	BIND_CONSTANT( COPY_MODE_DISABLED );
 	BIND_CONSTANT( COPY_MODE_RECT );
 	BIND_CONSTANT( COPY_MODE_VIEWPORT );
 

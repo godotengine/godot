@@ -34,6 +34,7 @@
 #include "core_string_names.h"
 #include "translation.h"
 #include "os/os.h"
+#include "resource.h"
 
 #ifdef DEBUG_ENABLED
 
@@ -1301,6 +1302,10 @@ Array Object::_get_signal_connection_list(const String& p_signal) const{
 
 void Object::get_signal_list(List<MethodInfo> *p_signals ) const {
 
+	if (!script.is_null()) {
+		Ref<Script>(script)->get_script_signal_list(p_signals);
+	}
+
 	ObjectTypeDB::get_signal_list(get_type_name(),p_signals);
 	//find maybe usersignals?
 	const StringName *S=NULL;
@@ -1312,6 +1317,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals ) const {
 			p_signals->push_back(signal_map[*S].user);
 		}
 	}
+
 }
 
 
@@ -1350,6 +1356,10 @@ Error Object::connect(const StringName& p_signal, Object *p_to_object, const Str
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ObjectTypeDB::has_signal(get_type_name(),p_signal);
+		//check in script
+		if (!signal_is_valid && !script.is_null() && Ref<Script>(script)->has_script_signal(p_signal))
+			signal_is_valid=true;
+
 		if (!signal_is_valid) {
 			ERR_EXPLAIN("Attempt to connect nonexistent signal '"+p_signal+"' to method '"+p_to_method+"'");
 			ERR_FAIL_COND_V(!signal_is_valid,ERR_INVALID_PARAMETER);
@@ -1462,6 +1472,63 @@ StringName Object::tr(const StringName& p_message) const {
 
 	return XL_MESSAGE(p_message);
 
+}
+
+
+void Object::_clear_internal_resource_paths(const Variant &p_var) {
+
+	switch(p_var.get_type()) {
+
+		case Variant::OBJECT: {
+
+			RES r = p_var;
+			if (!r.is_valid())
+				return;
+
+			if (!r->get_path().begins_with("res://") || r->get_path().find("::")==-1)
+				return; //not an internal resource
+
+			Object *object=p_var;
+			if (!object)
+				return;
+
+			r->set_path("");
+			r->clear_internal_resource_paths();
+		} break;
+		case Variant::ARRAY: {
+
+			Array a=p_var;
+			for(int i=0;i<a.size();i++) {
+				_clear_internal_resource_paths(a[i]);
+			}
+
+		} break;
+		case Variant::DICTIONARY: {
+
+			Dictionary d=p_var;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+
+			for (List<Variant>::Element *E=keys.front();E;E=E->next()) {
+
+				_clear_internal_resource_paths(E->get());
+				_clear_internal_resource_paths(d[E->get()]);
+			}
+		} break;
+	}
+
+}
+
+void Object::clear_internal_resource_paths() {
+
+	List<PropertyInfo> pinfo;
+
+	get_property_list(&pinfo);
+
+	for(List<PropertyInfo>::Element *E=pinfo.front();E;E=E->next()) {
+
+		_clear_internal_resource_paths(get(E->get().name));
+	}
 }
 
 void Object::_bind_methods() {

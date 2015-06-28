@@ -71,22 +71,19 @@ void TileMapEditor::_canvas_mouse_exit()  {
 }
 
 int TileMapEditor::get_selected_tile() const {
-
-	TreeItem *item = palette->get_selected();
-	if (!item)
+	int item = palette->get_current();
+	if (item==-1)
 		return TileMap::INVALID_CELL;
-	return item->get_metadata(0);
+	return palette->get_item_metadata(item);
 }
 
 void TileMapEditor::set_selected_tile(int p_tile) {
-	TreeItem *item = palette->get_root()->get_children();
-	while (item) {
-		if ((int)item->get_metadata(0) == p_tile) {
-			item->select(0);
-			palette->ensure_cursor_is_visible();
+	for (int i = 0; i < palette->get_item_count(); i++) {
+		if (palette->get_item_metadata(i).operator int() == p_tile) {
+			palette->select(i,true);
+			palette->ensure_current_is_visible();
 			break;
 		}
-		item = item->get_next();
 	}
 }
 
@@ -95,7 +92,7 @@ void TileMapEditor::_set_cell_shortened(const Point2& p_pos,int p_value,bool p_f
 	ERR_FAIL_COND(!node);
 	node->set_cell(floor(p_pos.x), floor(p_pos.y), p_value, p_flip_h, p_flip_v, p_transpose);
 }
-	
+
 void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bool p_flip_v, bool p_transpose,bool p_with_undo) {
 
 	ERR_FAIL_COND(!node);
@@ -120,42 +117,78 @@ void TileMapEditor::_set_cell(const Point2i& p_pos,int p_value,bool p_flip_h, bo
 
 }
 
+void TileMapEditor::_set_display_mode(int p_mode) {
+	if (display_mode == p_mode) {
+		return;
+	}
+
+	switch (p_mode) {
+		case DISPLAY_THUMBNAIL: {
+			button_thumbnail->set_pressed(true);
+			button_list->set_pressed(false);
+		} break;
+		case DISPLAY_LIST: {
+			button_thumbnail->set_pressed(false);
+			button_list->set_pressed(true);
+		} break;
+	}
+
+	display_mode = p_mode;
+
+	_update_palette();
+}
+
 void TileMapEditor::_update_palette() {
 
 	if (!node)
 		return;
 
-	palette->clear();;
+	palette->clear();
 
 	Ref<TileSet> tileset=node->get_tileset();
 	if (!tileset.is_valid())
 		return;
 
-
-	TreeItem *root = palette->create_item();
-	palette->set_hide_root(true);
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
 
+	if (display_mode == DISPLAY_THUMBNAIL) {
+		palette->set_max_columns(0);
+		palette->set_icon_mode(ItemList::ICON_MODE_TOP);
+	} else if (display_mode == DISPLAY_LIST) {
+		palette->set_max_columns(1);
+		palette->set_icon_mode(ItemList::ICON_MODE_LEFT);
+	}
+
+	palette->set_max_text_lines(2);
+
 	for(List<int>::Element *E=tiles.front();E;E=E->next()) {
+		palette->add_item("");
 
-		TreeItem *tile = palette->create_item(root);
-
-		tile->set_icon_max_width(0,64);
 		Ref<Texture> tex = tileset->tile_get_texture(E->get());
+
 		if (tex.is_valid()) {
-			tile->set_icon(0,tex);
 			Rect2 region = tileset->tile_get_region(E->get());
-			if (region!=Rect2())
-				tile->set_icon_region(0,region);
 
-		} else if (tileset->tile_get_name(E->get())!="")
-			tile->set_text(0,tileset->tile_get_name(E->get()));
-		else
-			tile->set_text(0,"#"+itos(E->get()));
+			if (!region.has_no_area()) {
+				Image data = VS::get_singleton()->texture_get_data(tex->get_rid());
 
-		tile->set_metadata(0,E->get());
+				Ref<ImageTexture> img = memnew( ImageTexture );
+				img->create_from_image(data.get_rect(region));
 
+				palette->set_item_icon(palette->get_item_count()-1, img);
+			} else {
+				palette->set_item_icon(palette->get_item_count()-1,tex);
+			}
+		}
+
+		if (tileset->tile_get_name(E->get())!="") {
+			palette->set_item_text(palette->get_item_count()-1, tileset->tile_get_name(E->get()));
+		} else {
+			palette->set_item_text(palette->get_item_count()-1, "#"+itos(E->get()));
+		}
+
+		palette->set_item_metadata(palette->get_item_count()-1, E->get());
 	}
 }
 
@@ -387,7 +420,7 @@ bool TileMapEditor::forward_input_event(const InputEvent& p_event) {
 			}
 
 			if (tool==TOOL_ERASING) {
-				Point2i local =over_tile;				
+				Point2i local =over_tile;
 				if (!paint_undo.has(over_tile)) {
 					paint_undo[over_tile]=_get_op_from_cell(over_tile);
 				}
@@ -641,7 +674,7 @@ void TileMapEditor::_canvas_draw() {
 					Ref<Texture> t = ts->tile_get_texture(st);
 					if (t.is_valid()) {
 						Vector2 from = node->map_to_world(over_tile)+node->get_cell_draw_offset();
-						Rect2 r = ts->tile_get_region(st);												
+						Rect2 r = ts->tile_get_region(st);
 						Size2 sc = xform.get_scale();
 						if (mirror_x->is_pressed())
 							sc.x*=-1.0;
@@ -755,7 +788,7 @@ void TileMapEditor::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_tileset_settings_changed"),&TileMapEditor::_tileset_settings_changed);
 	ObjectTypeDB::bind_method(_MD("_update_transform_buttons"),&TileMapEditor::_update_transform_buttons);
 	ObjectTypeDB::bind_method(_MD("_set_cell_shortened","pos","tile","flip_x","flip_y","transpose"),&TileMapEditor::_set_cell_shortened,DEFVAL(false),DEFVAL(false),DEFVAL(false));
-
+	ObjectTypeDB::bind_method(_MD("_set_display_mode","mode"),&TileMapEditor::_set_display_mode);
 }
 
 TileMapEditor::CellOp TileMapEditor::_get_op_from_cell(const Point2i& p_pos)
@@ -777,7 +810,7 @@ void TileMapEditor::_update_transform_buttons(Object *p_button) {
 	//ERR_FAIL_NULL(p_button);
 	ToolButton *b=p_button->cast_to<ToolButton>();
 	//ERR_FAIL_COND(!b);
-	
+
 	mirror_x->set_block_signals(true);
 	mirror_y->set_block_signals(true);
 	transpose->set_block_signals(true);
@@ -785,7 +818,7 @@ void TileMapEditor::_update_transform_buttons(Object *p_button) {
 	rotate_90->set_block_signals(true);
 	rotate_180->set_block_signals(true);
 	rotate_270->set_block_signals(true);
-	
+
 	if (b == rotate_0) {
 		mirror_x->set_pressed(false);
 		mirror_y->set_pressed(false);
@@ -806,7 +839,7 @@ void TileMapEditor::_update_transform_buttons(Object *p_button) {
 		mirror_y->set_pressed(true);
 		transpose->set_pressed(true);
 	}
-	
+
 	rotate_0->set_pressed(!mirror_x->is_pressed() && !mirror_y->is_pressed() && !transpose->is_pressed());
 	rotate_90->set_pressed(mirror_x->is_pressed() && !mirror_y->is_pressed() && transpose->is_pressed());
 	rotate_180->set_pressed(mirror_x->is_pressed() && mirror_y->is_pressed() && !transpose->is_pressed());
@@ -833,8 +866,27 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	ec->set_custom_minimum_size(Size2(mw,0));
 	add_child(ec);
 
+	HBoxContainer *hb = memnew( HBoxContainer );
+	add_child(hb);
+	hb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_spacer(true);
+
+	button_thumbnail = memnew( ToolButton );
+	button_thumbnail->set_toggle_mode(true);
+	button_thumbnail->set_pressed(true);
+	button_thumbnail->set_icon(p_editor->get_gui_base()->get_icon("FileThumbnail","EditorIcons"));
+	hb->add_child(button_thumbnail);
+	button_thumbnail->connect("pressed", this, "_set_display_mode", varray(DISPLAY_THUMBNAIL));
+
+	button_list = memnew( ToolButton );
+	button_list->set_toggle_mode(true);
+	button_list->set_pressed(false);
+	button_list->set_icon(p_editor->get_gui_base()->get_icon("FileList","EditorIcons"));
+	hb->add_child(button_list);
+	button_list->connect("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
+
 	// Add tile palette
-	palette = memnew( Tree );
+	palette = memnew( ItemList );
 	palette->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(palette);
 
@@ -886,7 +938,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rotate_270->connect("pressed", this, "_update_transform_buttons", make_binds(rotate_270));
 	canvas_item_editor_hb->add_child(rotate_270);
 	canvas_item_editor_hb->hide();
-	
+
 	rotate_0->set_pressed(true);
 	tool=TOOL_NONE;
 	selection_active=false;

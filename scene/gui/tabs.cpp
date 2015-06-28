@@ -77,8 +77,8 @@ void Tabs::_input_event(const InputEvent& p_event) {
 		for(int i=0;i<tabs.size();i++) {
 
 			int ofs=tabs[i].ofs_cache;
-
-			if (pos.x < ofs) {
+			int size = tabs[i].ofs_cache;
+			if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
 
 				found=i;
 				break;
@@ -89,6 +89,7 @@ void Tabs::_input_event(const InputEvent& p_event) {
 		if (found!=-1) {
 
 			set_current_tab(found);
+			emit_signal("tab_changed",found);
 		}
 	}
 
@@ -117,8 +118,22 @@ void Tabs::_notification(int p_what) {
 
 			int w=0;
 
+			int mw = get_minimum_size().width;
+
+			if (tab_align==ALIGN_CENTER) {
+				w=(get_size().width-mw)/2;
+			} else if (tab_align==ALIGN_RIGHT) {
+				w=get_size().width-mw;
+
+			}
+
+			if (w<0) {
+				w=0;
+			}
+
 			for(int i=0;i<tabs.size();i++) {
 
+				tabs[i].ofs_cache=w;
 
 				String s = tabs[i].text;
 				int lsize=0;
@@ -171,7 +186,7 @@ void Tabs::_notification(int p_what) {
 
 				w+=slen+sb->get_margin(MARGIN_RIGHT);
 
-				tabs[i].ofs_cache=w;
+				tabs[i].size_cache=w-tabs[i].ofs_cache;
 
 			}
 
@@ -195,7 +210,7 @@ void Tabs::set_current_tab(int p_current) {
 	current=p_current;	
 
 	_change_notify("current_tab");
-	emit_signal("tab_changed",current);
+	//emit_signal("tab_changed",current);
 	update();
 }
 
@@ -249,6 +264,12 @@ void Tabs::add_tab(const String& p_str,const Ref<Texture>& p_icon) {
 
 }
 
+void Tabs::clear_tabs() {
+	tabs.clear();
+	current=0;
+	update();
+}
+
 void Tabs::remove_tab(int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx,tabs.size());
@@ -263,8 +284,19 @@ void Tabs::remove_tab(int p_idx) {
 	if (current>=tabs.size())
 		current=tabs.size()-1;
 
-	emit_signal("tab_changed",current);
+	//emit_signal("tab_changed",current);
 
+}
+
+void Tabs::set_tab_align(TabAlign p_align) {
+
+	tab_align=p_align;
+	update();
+}
+
+Tabs::TabAlign Tabs::get_tab_align() const {
+
+	return tab_align;
 }
 
 
@@ -280,15 +312,21 @@ void Tabs::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&Tabs::get_tab_icon);
 	ObjectTypeDB::bind_method(_MD("remove_tab","tab_idx"),&Tabs::remove_tab);
 	ObjectTypeDB::bind_method(_MD("add_tab","title","icon:Texture"),&Tabs::add_tab);
+	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&Tabs::set_tab_align);
+	ObjectTypeDB::bind_method(_MD("get_tab_align"),&Tabs::get_tab_align);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
 
+	BIND_CONSTANT( ALIGN_LEFT );
+	BIND_CONSTANT( ALIGN_CENTER );
+	BIND_CONSTANT( ALIGN_RIGHT );
 }
 
 Tabs::Tabs() {
 
 	current=0;
+	tab_align=ALIGN_CENTER;
 
 }

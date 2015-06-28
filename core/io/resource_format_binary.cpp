@@ -663,14 +663,18 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	//maybe it is loaded already
 	String path;
+	int subindex=0;
 
 
 
 	if (!main) {
 
 		path=internal_resources[s].path;
-		if (path.begins_with("local://"))
-			path=path.replace("local://",res_path+"::");
+		if (path.begins_with("local://")) {
+			path=path.replace_first("local://","");
+			subindex = path.to_int();
+			path=res_path+"::"+path;
+		}
 
 
 
@@ -709,6 +713,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	RES res = RES( r );
 
 	r->set_path(path);
+	r->set_subindex(subindex);
 
 	int pc = f->get_32();
 
@@ -1434,14 +1439,14 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 				save_unicode_string(path);
 			} else {
 
-				if (!resource_map.has(res)) {
+				if (!resource_set.has(res)) {
 					f->store_32(OBJECT_EMPTY);
 					ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
 					ERR_FAIL();
 				}
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(resource_map[res]);
+				f->store_32(res->get_subindex());
 				//internal resource
 			}
 
@@ -1598,7 +1603,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 			}
 
 
-			if (resource_map.has(res))
+			if (resource_set.has(res))
 				return;
 
 			List<PropertyInfo> property_list;
@@ -1613,7 +1618,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 				}
 			}
 
-			resource_map[ res ] = saved_resources.size();
+			resource_set.insert(res);
 			saved_resources.push_back(res);
 
 		} break;
@@ -1846,11 +1851,42 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
+	Set<int> used_indices;
+
 	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
 
 		RES r = E->get();
 		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
-			save_unicode_string("local://"+itos(ofs_pos.size()));
+
+			if (r->get_subindex()!=0) {
+				if (used_indices.has(r->get_subindex())) {
+					r->set_subindex(0); //repeated
+				} else {
+					used_indices.insert(r->get_subindex());
+				}
+			}
+		}
+
+	}
+
+
+	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
+
+
+		RES r = E->get();
+		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
+			if (r->get_subindex()==0) {
+				int new_subindex=1;
+				if (used_indices.size()) {
+					new_subindex=used_indices.back()->get()+1;
+				}
+
+				r->set_subindex(new_subindex);
+				used_indices.insert(new_subindex);
+
+			}
+
+			save_unicode_string("local://"+itos(r->get_subindex()));
 			if (takeover_paths) {
 				r->set_path(p_path+"::"+itos(ofs_pos.size()),true);
 			}

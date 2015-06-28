@@ -1756,6 +1756,12 @@ bool GDScript::_update_exports() {
 				//print_line("found "+c->variables[i]._export.name);
 				member_default_values_cache[c->variables[i].identifier]=c->variables[i].default_value;
 			}
+
+			_signals.clear();
+
+			for(int i=0;i<c->_signals.size();i++) {
+				_signals[c->_signals[i].name]=c->_signals[i].arguments;
+			}
 		}
 	} else {
 		//print_line("unchaged is "+get_path());
@@ -2100,6 +2106,47 @@ Ref<GDScript> GDScript::get_base() const {
 	return base;
 }
 
+bool GDScript::has_script_signal(const StringName& p_signal) const {
+	if (_signals.has(p_signal))
+		return true;
+	if (base.is_valid()) {
+		return base->has_script_signal(p_signal);
+	}
+#ifdef TOOLS_ENABLED
+	else if (base_cache.is_valid()){
+		return base_cache->has_script_signal(p_signal);
+	}
+
+#endif
+	return false;
+}
+void GDScript::get_script_signal_list(List<MethodInfo> *r_signals) const {
+
+	for(const Map<StringName,Vector<StringName> >::Element *E=_signals.front();E;E=E->next()) {
+
+		MethodInfo mi;
+		mi.name=E->key();
+		for(int i=0;i<E->get().size();i++) {
+			PropertyInfo arg;
+			arg.name=E->get()[i];
+			mi.arguments.push_back(arg);
+		}
+		r_signals->push_back(mi);
+	}
+
+	if (base.is_valid()) {
+		base->get_script_signal_list(r_signals);
+	}
+#ifdef TOOLS_ENABLED
+	else if (base_cache.is_valid()){
+		base_cache->get_script_signal_list(r_signals);
+	}
+
+#endif
+
+}
+
+
 GDScript::GDScript() {
 
 
@@ -2131,7 +2178,6 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 	{
 		const Map<StringName,GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
 		if (E) {
-			members[E->get().index]=p_value;
 			if (E->get().setter) {
 				const Variant *val=&p_value;
 				Variant::CallError err;
@@ -2140,6 +2186,8 @@ bool GDInstance::set(const StringName& p_name, const Variant& p_value) {
 					return true; //function exists, call was successful
 				}
 			}
+			else
+				members[E->get().index] = p_value;
 			return true;
 		}
 	}
@@ -2593,6 +2641,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const  {
 		"static",
 		"float",
 		"int",
+		"signal",
 	0};
 
 

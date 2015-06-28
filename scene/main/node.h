@@ -290,6 +290,8 @@ public:
 
 	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
 
+	void clear_internal_tree_resource_paths();
+
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 
 	/* CANVAS */

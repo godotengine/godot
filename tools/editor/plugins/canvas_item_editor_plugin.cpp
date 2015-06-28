@@ -175,11 +175,21 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 						Vector2 offset = n2d->edit_get_pivot();
 						Vector2 gpos = n2d->get_global_pos();
 
+						Vector2 motion_ofs = gpos-mouse_pos;
 
 						undo_redo->add_do_method(n2d,"set_global_pos",mouse_pos);
-						undo_redo->add_do_method(n2d,"edit_set_pivot",offset+(gpos-mouse_pos));
+						undo_redo->add_do_method(n2d,"edit_set_pivot",offset+n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
 						undo_redo->add_undo_method(n2d,"set_global_pos",gpos);
 						undo_redo->add_undo_method(n2d,"edit_set_pivot",offset);
+						for(int i=0;i<n2d->get_child_count();i++) {
+							Node2D *n2dc = n2d->get_child(i)->cast_to<Node2D>();
+							if (!n2dc)
+								continue;
+
+							undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+							undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+
+						}
 
 					}
 
