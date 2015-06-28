@@ -7607,6 +7607,11 @@ bool VisualServerRaster::has_feature(Features p_feature) const {
 	return rasterizer->has_feature(p_feature); // lies for now
 }
 
+void VisualServerRaster::set_swap_buffers_active(const bool p_active) {
+
+	rasterizer->set_swap_buffers_active(p_active);
+}
+
 void VisualServerRaster::set_default_clear_color(const Color& p_color) {
 
 	clear_color=p_color;

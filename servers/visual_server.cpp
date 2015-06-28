@@ -562,6 +562,8 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("sync"),&VisualServer::sync);
 	ObjectTypeDB::bind_method(_MD("free"),&VisualServer::free);
 
+	ObjectTypeDB::bind_method(_MD("set_swap_buffers_active"),&VisualServer::set_swap_buffers_active);
+
 	ObjectTypeDB::bind_method(_MD("set_default_clear_color"),&VisualServer::set_default_clear_color);
 
 	ObjectTypeDB::bind_method(_MD("get_render_info"),&VisualServer::get_render_info);

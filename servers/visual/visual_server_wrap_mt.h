@@ -715,6 +715,7 @@ public:
 
 	FUNC1R(int,get_render_info,RenderInfo );
 	virtual bool has_feature(Features p_feature) const { return visual_server->has_feature(p_feature); }
+	FUNC1(set_swap_buffers_active, bool);
 
 	FUNC3(set_boot_image,const Image& , const Color&,bool );
 	FUNC1(set_default_clear_color,const Color& );

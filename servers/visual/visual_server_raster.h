@@ -1277,6 +1277,8 @@ public:
 	virtual int get_render_info(RenderInfo p_info);
 	virtual bool has_feature(Features p_feature) const;
 
+	virtual void set_swap_buffers_active(const bool p_active);
+
 	RID get_test_cube();
 
 	virtual void set_boot_image(const Image& p_image, const Color& p_color, bool p_scale);
