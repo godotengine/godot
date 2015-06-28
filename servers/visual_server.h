@@ -1165,6 +1165,7 @@ public:
 	};
 
 	virtual bool has_feature(Features p_feature) const=0;
+	virtual void set_swap_buffers_active(const bool p_active)=0;
 
 	VisualServer();	
 	virtual ~VisualServer();

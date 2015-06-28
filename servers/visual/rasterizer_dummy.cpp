@@ -1952,6 +1952,10 @@ void RasterizerDummy::restore_framebuffer() {
 
 }
 
+void RasterizerDummy::set_swap_buffers_active(const bool p_active) {
+
+}
+
 RasterizerDummy::RasterizerDummy() {
 
 };
