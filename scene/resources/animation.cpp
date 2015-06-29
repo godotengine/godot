@@ -42,8 +42,8 @@ bool Animation::_set(const StringName& p_name, const Variant& p_value) {
 		set_step(p_value);
 	else if (name.begins_with("tracks/")) {
 	
-		int track=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int track=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 
 		if (tracks.size()==track && what=="type") {
 		
@@ -257,8 +257,8 @@ bool Animation::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= step;
 	else if (name.begins_with("tracks/")) {
 
-		int track=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int track=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		ERR_FAIL_INDEX_V( track, tracks.size(), false );
 		if (what=="type") {
 		

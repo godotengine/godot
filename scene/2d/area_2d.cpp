@@ -428,8 +428,9 @@ void Area2D::set_enable_monitoring(bool p_enable) {
 
 	if (monitoring) {
 
-		Physics2DServer::get_singleton()->area_set_monitor_callback(get_rid(),this,"_body_inout");
-		Physics2DServer::get_singleton()->area_set_area_monitor_callback(get_rid(),this,"_area_inout");
+		Physics2DServer::get_singleton()->area_set_monitor_callback(get_rid(),this,SceneStringNames::get_singleton()->_body_inout);
+		Physics2DServer::get_singleton()->area_set_area_monitor_callback(get_rid(),this,SceneStringNames::get_singleton()->_area_inout);
+
 	} else {
 		Physics2DServer::get_singleton()->area_set_monitor_callback(get_rid(),NULL,StringName());
 		Physics2DServer::get_singleton()->area_set_area_monitor_callback(get_rid(),NULL,StringName());
@@ -652,17 +653,17 @@ void Area2D::_bind_methods() {
 
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"space_override",PROPERTY_HINT_ENUM,"Disabled,Combine,Replace"),_SCS("set_space_override_mode"),_SCS("get_space_override_mode"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"gravity_point"),_SCS("set_gravity_is_point"),_SCS("is_gravity_a_point"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::REAL,"gravity_distance_scale", PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_gravity_distance_scale"),_SCS("get_gravity_distance_scale"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"gravity_vec"),_SCS("set_gravity_vector"),_SCS("get_gravity_vector"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"gravity",PROPERTY_HINT_RANGE,"-1024,1024,0.01"),_SCS("set_gravity"),_SCS("get_gravity"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"linear_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_linear_damp"),_SCS("get_linear_damp"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"angular_damp",PROPERTY_HINT_RANGE,"0,1024,0.001"),_SCS("set_angular_damp"),_SCS("get_angular_damp"));
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"priority",PROPERTY_HINT_RANGE,"0,128,1"),_SCS("set_priority"),_SCS("get_priority"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitoring"),_SCS("set_enable_monitoring"),_SCS("is_monitoring_enabled"));
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"monitorable"),_SCS("set_monitorable"),_SCS("is_monitorable"));
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_layer_mask"),_SCS("get_layer_mask"));
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
 
 }
 

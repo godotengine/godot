@@ -2556,9 +2556,9 @@ void GDScriptLanguage::init() {
 
 	//populate native classes
 
-	List<String> class_list;
+	List<StringName> class_list;
 	ObjectTypeDB::get_type_list(&class_list);
-	for(List<String>::Element *E=class_list.front();E;E=E->next()) {
+	for(List<StringName>::Element *E=class_list.front();E;E=E->next()) {
 
 		StringName n = E->get();
 		String s = String(n);

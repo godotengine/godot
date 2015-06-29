@@ -340,12 +340,14 @@ template<class T>
 void Vector<T>::remove(int p_index) {
 
 	ERR_FAIL_INDEX(p_index, size());
-	for (int i=p_index; i<size()-1; i++) {
+	T*p=ptr();
+	int len=size();
+	for (int i=p_index; i<len-1; i++) {
 
-		set(i, get(i+1));
+		p[i]=p[i+1];
 	};
 
-	resize(size()-1);
+	resize(len-1);
 };
 
 template<class T>

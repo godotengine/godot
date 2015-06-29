@@ -1016,10 +1016,10 @@ void Image::create( const char ** p_xpm ) {
 			String line_str=line_ptr;
 			line_str.replace("\t"," ");
 			
-			size_width=line_str.get_slice(" ",0).to_int();
-			size_height=line_str.get_slice(" ",1).to_int();
-			colormap_size=line_str.get_slice(" ",2).to_int();
-			pixelchars=line_str.get_slice(" ",3).to_int();
+			size_width=line_str.get_slicec(' ',0).to_int();
+			size_height=line_str.get_slicec(' ',1).to_int();
+			colormap_size=line_str.get_slicec(' ',2).to_int();
+			pixelchars=line_str.get_slicec(' ',3).to_int();
 			ERR_FAIL_COND(colormap_size > 32766);
 			ERR_FAIL_COND(pixelchars > 5);
 			ERR_FAIL_COND(size_width > 32767);

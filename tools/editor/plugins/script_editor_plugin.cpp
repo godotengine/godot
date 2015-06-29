@@ -321,10 +321,10 @@ void ScriptTextEditor::_load_theme_settings() {
 	//colorize engine types
 	Color type_color= EDITOR_DEF("text_editor/engine_type_color",Color(0.0,0.2,0.4));
 
-    List<String> types;
+	List<StringName> types;
 	ObjectTypeDB::get_type_list(&types);
 
-	for(List<String>::Element *E=types.front();E;E=E->next()) {
+	for(List<StringName>::Element *E=types.front();E;E=E->next()) {
 
 		get_text_edit()->add_keyword_color(E->get(),type_color);
 	}

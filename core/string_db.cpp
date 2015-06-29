@@ -158,7 +158,7 @@ void StringName::operator=(const StringName& p_name) {
 		_data = p_name._data;		
 	}
 }
-
+/* was inlined
 StringName::operator String() const {
 	
 	if (_data)
@@ -166,7 +166,7 @@ StringName::operator String() const {
 	
 	return "";
 }
-
+*/
 StringName::StringName(const StringName& p_name) {
 	
 	ERR_FAIL_COND(!configured);

@@ -1321,7 +1321,7 @@ Vector<String> Globals::get_optimizer_presets() const {
 
 		if (!E->get().name.begins_with("optimizer_presets/"))
 			continue;
-		names.push_back(E->get().name.get_slice("/",1));
+		names.push_back(E->get().name.get_slicec('/',1));
 	}
 
 	names.sort();

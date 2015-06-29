@@ -1106,7 +1106,7 @@ int Tree::draw_item(const Point2i& p_pos,const Point2& p_draw_ofs, const Size2& 
 						int option = (int)p_item->cells[i].val;
 
 						String s = p_item->cells[i].text;
-						s=s.get_slice(",",option);
+						s=s.get_slicec(',',option);
 
 						Ref<Texture> downarrow = cache.select_arrow;
 
@@ -1527,7 +1527,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos,int x_ofs,int y_ofs,bool p_
 					popup_menu->clear();
 					for (int i=0;i<c.text.get_slice_count(",");i++) {
 
-						String s = c.text.get_slice(",",i);
+						String s = c.text.get_slicec(',',i);
 						popup_menu->add_item(s,i);
 
 					}
@@ -2234,7 +2234,7 @@ bool Tree::edit_selected() {
 		popup_menu->clear();
 		for (int i=0;i<c.text.get_slice_count(",");i++) {
 
-			String s = c.text.get_slice(",",i);
+			String s = c.text.get_slicec(',',i);
 			popup_menu->add_item(s,i);
 
 		}

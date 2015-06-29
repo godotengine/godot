@@ -258,12 +258,15 @@ bool Object::_predelete() {
 	
 	_predelete_ok=1;
 	notification(NOTIFICATION_PREDELETE,true);
+	if (_predelete_ok) {
+		_type_ptr=NULL; //must restore so destructors can access type ptr correctly
+	}
 	return _predelete_ok;
 
 }
 
 void Object::_postinitialize() {
-	
+	_type_ptr=_get_type_namev();
 	_initialize_typev();
 	notification(NOTIFICATION_POSTINITIALIZE);
 	
@@ -1707,7 +1710,7 @@ bool Object::is_edited() const {
 
 Object::Object() {
 	
-
+	_type_ptr=NULL;
 	_block_signals=false;
 	_predelete_ok=0;
 	_instance_ID=0;

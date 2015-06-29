@@ -486,7 +486,7 @@ String String::capitalize() const {
 	String cap;
 	for (int i=0;i<aux.get_slice_count(" ");i++) {
 		
-		String slice=aux.get_slice(" ",i);
+		String slice=aux.get_slicec(' ',i);
 		if (slice.length()>0) {
 		
 			slice[0]=_find_upper(slice[0]);
@@ -574,6 +574,41 @@ String String::get_slice(String p_splitter, int p_slice) const {
 	}
 
 	return ""; //no find!
+
+}
+
+String String::get_slicec(CharType p_splitter, int p_slice) const {
+
+	if (empty())
+		return String();
+
+	if (p_slice<0)
+		return String();
+
+	const CharType *c=this->ptr();
+	int i=0;
+	int prev=0;
+	int count=0;
+	while(true) {
+
+
+		if (c[i]==0 || c[i]==p_splitter) {
+
+			if (p_slice==count) {
+
+				return substr(prev,i-prev);
+			} else {
+				count++;
+				prev=i+1;
+			}
+
+		}
+
+		i++;
+
+	}
+
+	return String(); //no find!
 
 }
 
@@ -3333,8 +3368,8 @@ String String::path_to(const String& p_path) const {
 		//nothing
 	} else {
 		//dos style
-		String src_begin=src.get_slice("/",0);
-		String dst_begin=dst.get_slice("/",0);
+		String src_begin=src.get_slicec('/',0);
+		String dst_begin=dst.get_slicec('/',0);
 
 		if (src_begin!=dst_begin)
 			return p_path; //impossible to do this
