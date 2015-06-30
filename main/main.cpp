@@ -605,6 +605,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (bool(Globals::get_singleton()->get("application/disable_stdout"))) {
 		quiet_stdout=true;
 	}
+	if (bool(Globals::get_singleton()->get("application/disable_stderr"))) {
+		_print_error_enabled = false;
+	};
 
 	if (quiet_stdout)
 		_print_line_enabled=false;
