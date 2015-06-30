@@ -33,6 +33,7 @@
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
 #include "tools/editor/plugins/canvas_item_editor_plugin.h"
+#include "core/io/resource_saver.h"
 
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
@@ -460,7 +461,55 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 
+		} break;
+		case TOOL_NEW_SCENE_FROM: {
 
+			Node *scene = editor_data->get_edited_scene_root();
+
+			if (!scene) {
+				accept->get_ok()->set_text("I see..");
+				accept->set_text("This operation can't be done without a scene.");
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			List<Node*> selection = editor_selection->get_selected_node_list();
+
+			if (selection.size()!=1) {
+				accept->get_ok()->set_text("I see..");
+				accept->set_text("This operation requieres a single selected node.");
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			Node *tocopy = selection.front()->get();
+
+			if (tocopy!=editor_data->get_edited_scene_root() && tocopy->get_filename()!="") {
+				accept->get_ok()->set_text("I see..");
+				accept->set_text("This operation can't be done on instanced scenes.");
+				accept->popup_centered_minsize();
+				break;
+			}
+
+			new_scene_from_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
+
+			List<String> extensions;
+			Ref<PackedScene> sd = memnew(PackedScene);
+			ResourceSaver::get_recognized_extensions(sd,&extensions);
+            new_scene_from_dialog->clear_filters();
+			for(int i=0;i<extensions.size();i++) {
+				new_scene_from_dialog->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
+			}
+
+			String existing;
+			if (extensions.size()) {
+				existing="new_scene."+extensions.front()->get().to_lower();
+			}
+			new_scene_from_dialog->set_current_path(existing);
+
+			new_scene_from_dialog->popup_centered_ratio();
+			new_scene_from_dialog->set_title("Save New Scene As..");
+                        
 		} break;
 
 	}
@@ -495,6 +544,7 @@ void SceneTreeDock::_notification(int p_what) {
 				"Duplicate",
 				"Reparent",
 				"Remove",
+                "CreateNewSceneFrom"
 			};
 
 
@@ -1050,6 +1100,7 @@ void SceneTreeDock::_update_tool_buttons() {
 	tool_buttons[TOOL_DUPLICATE]->set_disabled(disable_root);
 	tool_buttons[TOOL_REPARENT]->set_disabled(disable_root);
 	tool_buttons[TOOL_ERASE]->set_disabled(disable);
+	tool_buttons[TOOL_NEW_SCENE_FROM]->set_disabled(disable_root);
 
 }
 
@@ -1213,6 +1264,58 @@ void SceneTreeDock::_import_subscene() {
 */
 }
 
+void SceneTreeDock::_new_scene_from(String p_file) {
+    
+    List<Node*> selection = editor_selection->get_selected_node_list();
+
+    if (selection.size()!=1) {
+        accept->get_ok()->set_text("I see..");
+        accept->set_text("This operation requieres a single selected node.");
+        accept->popup_centered_minsize();
+        return;
+    }
+
+    Node *base = selection.front()->get();
+
+    Map<Node*,Node*> reown;
+    reown[editor_data->get_edited_scene_root()]=base;
+    Node *copy = base->duplicate_and_reown(reown);
+    if (copy) {
+
+        Ref<PackedScene> sdata = memnew( PackedScene );
+        Error err = sdata->pack(copy);
+        memdelete(copy);
+
+        if (err!=OK) {
+            accept->get_ok()->set_text("I see..");
+            accept->set_text("Couldn't save new scene. Likely dependencies (instances) couldn't be satisfied.");
+            accept->popup_centered_minsize();
+            return;
+        }
+
+        int flg=0;
+        if (EditorSettings::get_singleton()->get("on_save/compress_binary_resources"))
+            flg|=ResourceSaver::FLAG_COMPRESS;
+        if (EditorSettings::get_singleton()->get("on_save/save_paths_as_relative"))
+            flg|=ResourceSaver::FLAG_RELATIVE_PATHS;
+
+        err = ResourceSaver::save(p_file,sdata,flg);
+        if (err!=OK) {
+            accept->get_ok()->set_text("I see..");
+            accept->set_text("Error saving scene.");
+            accept->popup_centered_minsize();
+            return;
+        }
+
+    } else {
+        accept->get_ok()->set_text("I see..");
+        accept->set_text("Error duplicating scene to save it.");
+        accept->popup_centered_minsize();
+        return;
+    }
+
+}
+
 void SceneTreeDock::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_tool_selected"),&SceneTreeDock::_tool_selected);
@@ -1229,6 +1332,7 @@ void SceneTreeDock::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_delete_confirm"),&SceneTreeDock::_delete_confirm);
 	ObjectTypeDB::bind_method(_MD("_node_prerenamed"),&SceneTreeDock::_node_prerenamed);
 	ObjectTypeDB::bind_method(_MD("_import_subscene"),&SceneTreeDock::_import_subscene);
+	ObjectTypeDB::bind_method(_MD("_new_scene_from"),&SceneTreeDock::_new_scene_from);
 
 	ObjectTypeDB::bind_method(_MD("instance"),&SceneTreeDock::instance);
 }
@@ -1329,6 +1433,12 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	hbc_bottom->add_child(tb);
 	tool_buttons[TOOL_REPARENT]=tb;
 
+    tb = memnew( ToolButton );
+	tb->connect("pressed",this,"_tool_selected",make_binds(TOOL_NEW_SCENE_FROM, false));
+	tb->set_tooltip("Create New Scene From Node(s)");
+	hbc_bottom->add_child(tb);
+	tool_buttons[TOOL_NEW_SCENE_FROM]=tb;
+
 	hbc_bottom->add_spacer();
 
 	tb = memnew( ToolButton );
@@ -1366,10 +1476,16 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	delete_dialog = memnew( ConfirmationDialog );
 	add_child(delete_dialog);
 	delete_dialog->connect("confirmed",this,"_delete_confirm");
+    
 	import_subscene_dialog = memnew( EditorSubScene );
 	add_child(import_subscene_dialog);
 	import_subscene_dialog->connect("subscene_selected",this,"_import_subscene");
 
+	new_scene_from_dialog = memnew( EditorFileDialog );
+	new_scene_from_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);    
+	add_child(new_scene_from_dialog);
+	new_scene_from_dialog->connect("file_selected",this,"_new_scene_from");
+    
 	first_enter=true;
 
 
