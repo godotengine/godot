@@ -137,9 +137,9 @@ void DocData::merge_from(const DocData& p_data) {
 void DocData::generate(bool p_basic_types) {
 
 
-	List<String> classes;
+	List<StringName> classes;
 	ObjectTypeDB::get_type_list(&classes);
-	classes.sort();
+	classes.sort_custom<StringName::AlphCompare>();
 
 	while(classes.size()) {
 
@@ -547,7 +547,7 @@ void DocData::generate(bool p_basic_types) {
 			Globals::Singleton &s=E->get();
 			pd.name=s.name;
 			pd.type=s.ptr->get_type();
-			while (ObjectTypeDB::type_inherits_from(pd.type)!="Object")
+			while (String(ObjectTypeDB::type_inherits_from(pd.type))!="Object")
 				pd.type=ObjectTypeDB::type_inherits_from(pd.type);
 			if (pd.type.begins_with("_"))
 				pd.type=pd.type.substr(1,pd.type.length());

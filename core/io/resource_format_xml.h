@@ -123,7 +123,7 @@ class ResourceFormatSaverXMLInstance  {
 	bool skip_editor;
 	FileAccess *f;
 	int depth;
-	Map<RES,int> resource_map;
+	Set<RES> resource_set;
 	List<RES> saved_resources;
 	List<RES> external_resources;
 

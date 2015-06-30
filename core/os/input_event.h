@@ -287,6 +287,8 @@ struct InputEvent {
 
 	bool is_pressed() const;
 	bool is_action(const String& p_action) const;
+	bool is_action_pressed(const String& p_action) const;
+	bool is_action_released(const String& p_action) const;
 	bool is_echo() const;
 	void set_as_action(const String& p_action, bool p_pressed);
 

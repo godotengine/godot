@@ -76,10 +76,10 @@ static String _escape_string(const String& p_str) {
 void DocDump::dump(const String& p_file) {
 
 
-	List<String> class_list;
+	List<StringName> class_list;
 	ObjectTypeDB::get_type_list(&class_list);
 
-	class_list.sort();
+	class_list.sort_custom<StringName::AlphCompare>();
 
 
 	FileAccess *f = FileAccess::open(p_file,FileAccess::WRITE);

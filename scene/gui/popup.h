@@ -62,6 +62,7 @@ public:
 	void popup_centered_ratio(float p_screen_ratio=0.75);
 	void popup_centered(const Size2& p_size=Size2());
 	void popup_centered_minsize(const Size2& p_minsize=Size2());
+	void set_as_minsize();
 	virtual void popup();
 
 	

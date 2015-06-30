@@ -40,7 +40,8 @@ void GridContainer::_notification(int p_what) {
 			Set<int> col_expanded;
 			Set<int> row_expanded;
 
-			int sep=get_constant("separation");
+			int hsep=get_constant("hseparation");
+			int vsep=get_constant("vseparation");
 
 			int idx=0;
 			int max_row=0;
@@ -97,8 +98,8 @@ void GridContainer::_notification(int p_what) {
 					expand_rows++;
 			}
 
-			ms.height+=sep*max_row;
-			ms.width+=sep*max_col;
+			ms.height+=vsep*max_row;
+			ms.width+=hsep*max_col;
 
 			int row_expand = expand_rows?(size.y-ms.y)/expand_rows:0;
 			int col_expand = expand_cols?(size.x-ms.x)/expand_cols:0;
@@ -119,7 +120,7 @@ void GridContainer::_notification(int p_what) {
 				if (col==0) {
 					col_ofs=0;
 					if (row>0 && row_minh.has(row-1))
-						row_ofs+=row_minh[row-1]+sep+(row_expanded.has(row-1)?row_expand:0);
+						row_ofs+=row_minh[row-1]+vsep+(row_expanded.has(row-1)?row_expand:0);
 				}
 
 				Size2 s;
@@ -140,7 +141,7 @@ void GridContainer::_notification(int p_what) {
 				//print_line("col: "+itos(col)+" row: "+itos(row)+" rect: "+Rect2(p,s));
 
 				if (col_minw.has(col)) {
-					col_ofs+=col_minw[col]+sep+(col_expanded.has(col)?col_expand:0);
+					col_ofs+=col_minw[col]+hsep+(col_expanded.has(col)?col_expand:0);
 				}
 
 				idx++;
@@ -178,7 +179,8 @@ Size2 GridContainer::get_minimum_size() const {
 	Map<int,int> col_minw;
 	Map<int,int> row_minh;
 
-	int sep=get_constant("separation");
+	int hsep=get_constant("hseparation");
+	int vsep=get_constant("vseparation");
 
 	int idx=0;
 	int max_row=0;
@@ -216,8 +218,8 @@ Size2 GridContainer::get_minimum_size() const {
 		ms.height+=E->get();
 	}
 
-	ms.height+=sep*max_row;
-	ms.width+=sep*max_col;
+	ms.height+=vsep*max_row;
+	ms.width+=hsep*max_col;
 
 	return ms;
 

@@ -152,6 +152,7 @@ uniform vec4 modulate;
 
 uniform sampler2D light_texture;
 uniform vec4 light_color;
+uniform vec4 light_shadow_color;
 uniform float light_height;
 varying vec4 light_uv_interp;
 
@@ -379,7 +380,8 @@ LIGHT_SHADER_CODE
 #if defined(USE_LIGHT_SHADOW_COLOR)
 	color=mix(shadow_color,color,shadow_attenuation);
 #else
-	color*=shadow_attenuation;
+	//color*=shadow_attenuation;
+	color=mix(light_shadow_color,color,shadow_attenuation);
 #endif
 //use shadows
 #endif

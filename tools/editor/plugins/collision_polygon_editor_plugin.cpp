@@ -533,6 +533,7 @@ void CollisionPolygonEditor::_bind_methods() {
 CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 
 
+	node=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
 

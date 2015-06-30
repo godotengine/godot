@@ -1015,7 +1015,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	//physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
@@ -1112,7 +1113,9 @@ void OS_OSX::warp_mouse_pos(const Point2& p_to) {
 	NSPoint localPoint = { p_to.x, p_to.y };
 
 	NSPoint pointInWindow = [window_view convertPoint:localPoint toView:nil];
-	NSPoint pointOnScreen = [[window_view window] convertRectToScreen:(NSRect){.origin=pointInWindow}].origin;
+	NSRect pointInWindowRect;
+	pointInWindowRect.origin = pointInWindow;
+	NSPoint pointOnScreen = [[window_view window] convertRectToScreen:pointInWindowRect].origin;
 
 	//point in scren coords
 	CGPoint lMouseWarpPos = { pointOnScreen.x, pointOnScreen.y};

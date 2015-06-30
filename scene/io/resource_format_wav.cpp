@@ -150,10 +150,10 @@ RES ResourceFormatLoaderWAV::load(const String &p_path,const String& p_original_
 			frames/=format_channels;
 			frames/=(format_bits>>3);
 
-			print_line("chunksize: "+itos(chunksize));
+			/*print_line("chunksize: "+itos(chunksize));
 			print_line("channels: "+itos(format_channels));
 			print_line("bits: "+itos(format_bits));
-
+*/
 			sample->create(
 					(format_bits==8) ? Sample::FORMAT_PCM8 : Sample::FORMAT_PCM16,
 					(format_channels==2)?true:false,

@@ -41,6 +41,11 @@ void ReparentDialog::_notification(int p_what) {
 		connect("confirmed", this,"_reparent");
 	}
 
+	if (p_what==NOTIFICATION_EXIT_TREE)	{
+
+		disconnect("confirmed", this,"_reparent");
+	}
+
 	if (p_what==NOTIFICATION_DRAW) {
 		
 		//RID ci = get_canvas_item();

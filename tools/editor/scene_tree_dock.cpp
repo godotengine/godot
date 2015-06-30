@@ -171,7 +171,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign())
 				break;
 
-			file->set_mode(FileDialog::MODE_OPEN_FILE);
+			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
 			file->clear_filters();
@@ -471,8 +471,18 @@ void SceneTreeDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 
+			if (!first_enter)
+				break;
+			first_enter=false;
+
+			CanvasItemEditorPlugin *canvas_item_plugin =  editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
+			if (canvas_item_plugin) {
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
+				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
+			}
 			static const char* button_names[TOOL_BUTTON_MAX]={
 				"New",
 				"Add",
@@ -484,21 +494,14 @@ void SceneTreeDock::_notification(int p_what) {
 				"MoveDown",
 				"Duplicate",
 				"Reparent",
-				"Del",
+				"Remove",
 			};
+
+
 
 			for(int i=0;i<TOOL_BUTTON_MAX;i++)
 				tool_buttons[i]->set_icon(get_icon(button_names[i],"EditorIcons"));
 
-		} break;
-		case NOTIFICATION_READY: {
-
-			CanvasItemEditorPlugin *canvas_item_plugin =  editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
-			if (canvas_item_plugin) {
-				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
-				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
-				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
-			}
 		} break;
 	}
 }
@@ -1355,7 +1358,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	accept = memnew( AcceptDialog );
 	add_child(accept);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 	file->connect("file_selected",this,"instance");
 	set_process_unhandled_key_input(true);
@@ -1367,7 +1370,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	add_child(import_subscene_dialog);
 	import_subscene_dialog->connect("subscene_selected",this,"_import_subscene");
 
-
+	first_enter=true;
 
 
 }

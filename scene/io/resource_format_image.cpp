@@ -180,6 +180,11 @@ RES ResourceFormatLoaderImage::load(const String &p_path,const String& p_origina
 			if (flags_found["tolinear"])
 				flags|=Texture::FLAG_CONVERT_TO_LINEAR;
 		}
+		
+		if (flags_found.has("mirroredrepeat")) {
+			if (flags_found["mirroredrepeat"])
+				flags|=Texture::FLAG_MIRRORED_REPEAT;
+		}
 
 		if (debug_load_times)
 			begtime=OS::get_singleton()->get_ticks_usec();

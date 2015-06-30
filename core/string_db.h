@@ -114,7 +114,17 @@ public:
 	}
 	bool operator!=(const StringName& p_name) const;
 	
-	operator String() const;
+	_FORCE_INLINE_ operator String() const {
+
+		if (_data) {
+			if (_data->cname )
+				return String(_data->cname);
+			else
+				return _data->name;
+		}
+
+		return String();
+	}
 
 	static StringName search(const char *p_name);
 	static StringName search(const CharType *p_name);

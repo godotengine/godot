@@ -613,11 +613,11 @@ void Label::_bind_methods() {
 	BIND_CONSTANT( VALIGN_BOTTOM );
 	BIND_CONSTANT( VALIGN_FILL );
 
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
 
 }

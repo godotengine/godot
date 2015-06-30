@@ -34,6 +34,7 @@
 #include "os/mutex.h"
 #include "os/memory.h"
 #include "simple_type.h"
+#include "print_string.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -174,7 +175,7 @@ class CommandQueueMT {
 		R* ret;
 		SyncSemaphore *sync;
 	
-		virtual void call() { *ret = (instance->*method)(p1); sync->sem->post(); sync->in_use=false; ; }
+		virtual void call() { *ret = (instance->*method)(p1); sync->sem->post(); print_line("post"); sync->in_use=false; ; }
 	};
 	
 	template<class T,class M,class P1,class P2,class R>
@@ -675,6 +676,7 @@ public:
 		
 		if (sync) sync->post();
 		ss->sem->wait();
+		print_line("wait");
 	}
 
 	template<class T, class M, class P1, class P2,class R>

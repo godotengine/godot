@@ -239,7 +239,7 @@ public:
 	void set_state(const Dictionary& p_state);
 	Dictionary get_state() const;
 	void reset();
-
+	Viewport *get_viewport_node() { return viewport; }
 
 
 	SpatialEditorViewport(SpatialEditor *p_spatial_editor,EditorNode *p_editor,int p_index);
@@ -422,6 +422,7 @@ private:
 	HBoxContainer *hbc_menu;
 
 
+
 //
 //
 	void _generate_selection_box();
@@ -513,6 +514,11 @@ public:
 	void set_over_gizmo_handle(int idx) { over_gizmo_handle=idx; }
 
 	void set_can_preview(Camera* p_preview);
+
+	SpatialEditorViewport *get_editor_viewport(int p_idx) {
+		ERR_FAIL_INDEX_V(p_idx,4,NULL);
+		return viewports[p_idx];
+	}
 
 	Camera *get_camera() { return NULL; }
 	void edit(Spatial *p_spatial);

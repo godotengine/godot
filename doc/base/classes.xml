@@ -8783,7 +8783,7 @@
 			</description>
 		</method>
 		<method name="get_undo_redo"  >
-			<return type="Object">
+			<return type="UndoRedo">
 			</return>
 			<description>
 			</description>
@@ -23032,12 +23032,14 @@
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the closest object the ray is pointing to is colliding with the vector, with the vector length considered.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const" >
 			<return type="Object">
 			</return>
 			<description>
+			Return the closest object the ray is pointing to. Note that this does not consider the length of the vector, so you must also use [is_colliding] to check if the object returned is actually colliding with the ray.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const" >

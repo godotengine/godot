@@ -5,10 +5,12 @@
 #include "print_string.h"
 #define COMP_MAGIC 0x43454447
 
+#include "core/variant.h"
+#include <stdio.h>
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base,const Vector<uint8_t>& p_key,Mode p_mode) {
 
-	print_line("open and parse!");
+	//print_line("open and parse!");
 	ERR_FAIL_COND_V(file!=NULL,ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_key.size()!=32,ERR_INVALID_PARAMETER);
 

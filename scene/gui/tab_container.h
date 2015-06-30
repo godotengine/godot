@@ -31,7 +31,7 @@
 
 
 #include "scene/gui/control.h"
-
+#include "scene/gui/popup.h"
 class TabContainer : public Control {
 
 	OBJ_TYPE( TabContainer, Control );
@@ -55,6 +55,8 @@ private:
 	TabAlign align;
 	Control *_get_tab(int idx) const;
 	int _get_top_margin() const;
+	Popup *popup;
+
 
 protected:
 
@@ -85,9 +87,16 @@ public:
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 
+	Control* get_tab_control(int p_idx) const;
+	Control* get_current_tab_control() const;
+
 	virtual Size2 get_minimum_size() const;
 
 	virtual void get_translatable_strings(List<String> *p_strings) const;
+
+	void set_popup(Node *p_popup);
+	Popup* get_popup() const;
+
 
 	TabContainer();
 };

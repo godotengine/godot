@@ -205,7 +205,7 @@ ObjectTypeDB::TypeInfo::~TypeInfo() {
 }
 
 
-bool ObjectTypeDB::is_type(const String &p_type,const String& p_inherits) {
+bool ObjectTypeDB::is_type(const StringName &p_type,const StringName& p_inherits) {
 	
 	OBJTYPE_LOCK;
 	
@@ -220,7 +220,7 @@ bool ObjectTypeDB::is_type(const String &p_type,const String& p_inherits) {
 	
 	return false;
 }
-void ObjectTypeDB::get_type_list( List<String> *p_types) {
+void ObjectTypeDB::get_type_list( List<StringName> *p_types) {
 	
 	OBJTYPE_LOCK;
 	
@@ -235,7 +235,7 @@ void ObjectTypeDB::get_type_list( List<String> *p_types) {
 }
 
 
-void ObjectTypeDB::get_inheriters_from( const String& p_type,List<String> *p_types) {
+void ObjectTypeDB::get_inheriters_from( const StringName& p_type,List<StringName> *p_types) {
 
 	OBJTYPE_LOCK;
 	
@@ -249,7 +249,7 @@ void ObjectTypeDB::get_inheriters_from( const String& p_type,List<String> *p_typ
 
 }
 
-String ObjectTypeDB::type_inherits_from(const String& p_type) {
+StringName ObjectTypeDB::type_inherits_from(const StringName& p_type) {
 	
 	OBJTYPE_LOCK;
 	
@@ -258,7 +258,7 @@ String ObjectTypeDB::type_inherits_from(const String& p_type) {
 	return ti->inherits;
 }
 
-bool ObjectTypeDB::type_exists(const String &p_type) {
+bool ObjectTypeDB::type_exists(const StringName &p_type) {
 	
 	OBJTYPE_LOCK;
 	return types.has(p_type);	
@@ -269,7 +269,7 @@ void ObjectTypeDB::add_compatibility_type(const StringName& p_type,const StringN
 	compat_types[p_type]=p_fallback;
 }
 
-Object *ObjectTypeDB::instance(const String &p_type) {
+Object *ObjectTypeDB::instance(const StringName &p_type) {
 	
 	TypeInfo *ti;
 	{
@@ -287,7 +287,7 @@ Object *ObjectTypeDB::instance(const String &p_type) {
 
 	return ti->creation_func();
 }
-bool ObjectTypeDB::can_instance(const String &p_type) {
+bool ObjectTypeDB::can_instance(const StringName &p_type) {
 	
 	OBJTYPE_LOCK;
 	
@@ -650,7 +650,13 @@ bool ObjectTypeDB::set_property(Object* p_object,const StringName& p_property, c
 				Variant index=psg->index;
 				const Variant* arg[2]={&index,&p_value};
 				Variant::CallError ce;
-				p_object->call(psg->setter,arg,2,ce);
+//				p_object->call(psg->setter,arg,2,ce);
+				if (psg->_setptr) {
+					psg->_setptr->call(p_object,arg,2,ce);
+				} else {
+					p_object->call(psg->setter,arg,2,ce);
+				}
+
 
 			} else {
 				const Variant* arg[1]={&p_value};

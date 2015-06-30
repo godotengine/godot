@@ -97,6 +97,13 @@ void Button::_notification(int p_what) {
 			
 			} break;
 		}
+
+		if (has_focus()) {
+
+			Ref<StyleBox> style = get_stylebox("focus");
+			style->draw(ci,Rect2(Point2(),size));
+		}
+
 		Ref<StyleBox> style = get_stylebox("normal" );
 		Ref<Font> font=get_font("font");
 		Ref<Texture> _icon;
@@ -134,11 +141,7 @@ void Button::_notification(int p_what) {
 			_icon->draw(ci,Point2(style->get_offset().x, Math::floor( (size.height-_icon->get_height())/2.0 ) ),is_disabled()?Color(1,1,1,0.4):Color(1,1,1) );
 		}
 
-		if (has_focus()) {
 
-			Ref<StyleBox> style = get_stylebox("focus");
-			style->draw(ci,Rect2(Point2(),size));
-		}
 				
 	}
 }
@@ -222,11 +225,11 @@ void Button::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_text_align"),&Button::get_text_align);
 	ObjectTypeDB::bind_method(_MD("is_flat"),&Button::is_flat);
 
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL ), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), _SCS("set_button_icon"),_SCS("get_button_icon") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text", PROPERTY_HINT_NONE,"",PROPERTY_USAGE_DEFAULT_INTL ), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture" ), _SCS("set_button_icon"),_SCS("get_button_icon") );
 	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "flat" ), _SCS("set_flat"),_SCS("is_flat") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "clip_text" ), _SCS("set_clip_text"),_SCS("get_clip_text") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "align",PROPERTY_HINT_ENUM,"Left,Center,Right" ), _SCS("set_text_align"),_SCS("get_text_align") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "clip_text" ), _SCS("set_clip_text"),_SCS("get_clip_text") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::INT, "align",PROPERTY_HINT_ENUM,"Left,Center,Right" ), _SCS("set_text_align"),_SCS("get_text_align") );
 
 }
 

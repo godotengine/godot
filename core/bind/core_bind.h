@@ -204,8 +204,9 @@ public:
 	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
-	Dictionary get_date() const;
-	Dictionary get_time() const;
+	Dictionary get_date(bool utc) const;
+	Dictionary get_time(bool utc) const;
+	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 
 	int get_static_memory_usage() const;

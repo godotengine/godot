@@ -302,8 +302,8 @@ bool Variant::can_convert(Variant::Type p_type_from,Variant::Type p_type_to) {
 		case COLOR: {
 
 			static const Type valid[] = {
-				//STRING,
-				//INT,
+				STRING,
+				INT,
 				NIL,
 			};
 
@@ -877,6 +877,63 @@ bool Variant::is_zero() const {
 
 	return false;
 }
+
+
+bool Variant::is_one() const {
+
+	switch( type ) {
+		case NIL: {
+
+			return true;
+		} break;
+
+		// atomic types
+		case BOOL: {
+
+			return _data._bool==true;
+		} break;
+		case INT: {
+
+			return _data._int==1;
+
+		} break;
+		case REAL: {
+
+			return _data._real==1;
+
+		} break;
+		case VECTOR2: {
+
+			return *reinterpret_cast<const Vector2*>(_data._mem)==Vector2(1,1);
+
+		} break;
+		case RECT2: {
+
+			return *reinterpret_cast<const Rect2*>(_data._mem)==Rect2(1,1,1,1);
+
+		} break;
+		case VECTOR3: {
+
+			return *reinterpret_cast<const Vector3*>(_data._mem)==Vector3(1,1,1);
+
+		} break;
+		case PLANE: {
+
+			return *reinterpret_cast<const Plane*>(_data._mem)==Plane(1,1,1,1);
+
+		} break;
+		case COLOR: {
+
+			return *reinterpret_cast<const Color*>(_data._mem)==Color(1,1,1,1);
+
+		} break;
+
+		default: { return !is_zero(); }
+	}
+
+	return false;
+}
+
 
 void Variant::reference(const Variant& p_variant) {
 
@@ -1653,6 +1710,10 @@ Variant::operator Color() const {
 
 	if (type==COLOR)
 		return *reinterpret_cast<const Color*>(_data._mem);
+	else if (type==STRING)
+		return Color::html( operator String() );
+	else if (type==INT)
+		return Color::hex( operator int() );
 	else
 		return Color();
 }

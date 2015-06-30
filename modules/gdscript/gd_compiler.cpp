@@ -28,15 +28,6 @@
 /*************************************************************************/
 #include "gd_compiler.h"
 #include "gd_script.h"
-/* TODO:
-
-   *AND and OR need early abort
-   -Inheritance properly process (done?)
-   *create built in initializer and constructor
-   *assign operators
-   *build arrays and dictionaries
-   *call parent constructor
- */
 
 
 void GDCompiler::_set_error(const String& p_error,const GDParser::Node *p_node) {
@@ -1397,13 +1388,14 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 
 
 	int index_from=0;
+	Ref<GDNativeClass> native;
 
 	if (p_class->extends_used) {
 		//do inheritance
 		String path = p_class->extends_file;
 
 		Ref<GDScript> script;
-		Ref<GDNativeClass> native;
+
 
 		if (path!="") {
 			//path (and optionally subclasses)
@@ -1573,7 +1565,35 @@ Error GDCompiler::_parse_class(GDScript *p_script,GDScript *p_owner,const GDPars
 		//p_script->constants[constant->value].make_const();
 	}
 
+	for(int i=0;i<p_class->_signals.size();i++) {
 
+		StringName name = p_class->_signals[i].name;
+
+		GDScript *c = p_script;
+
+		while(c) {
+
+			if (c->_signals.has(name)) {
+				_set_error("Signal '"+name+"' redefined (in current or parent class)",p_class);
+				return ERR_ALREADY_EXISTS;
+			}
+
+			if (c->base.is_valid()) {
+				c=c->base.ptr();
+			} else {
+				c=NULL;
+			}
+		}
+
+		if (native.is_valid()) {
+			if (ObjectTypeDB::has_signal(native->get_name(),name)) {
+				_set_error("Signal '"+name+"' redefined (original in native class '"+String(native->get_name())+"')",p_class);
+				return ERR_ALREADY_EXISTS;
+			}
+		}
+
+		p_script->_signals[name]=p_class->_signals[i].arguments;
+	}
 	//parse sub-classes
 
 	for(int i=0;i<p_class->subclasses.size();i++) {

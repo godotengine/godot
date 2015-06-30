@@ -129,7 +129,7 @@ class ResourceFormatSaverBinaryInstance  {
 	int bin_meta_idx;
 	FileAccess *f;
 	String magic;
-	Map<RES,int> resource_map;
+	Set<RES> resource_set;
 	Map<StringName,int> string_map;
 	Vector<StringName> strings;
 

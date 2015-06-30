@@ -237,6 +237,16 @@ float Light2D::get_shadow_esm_multiplier() const{
 	return shadow_esm_multiplier;
 }
 
+void Light2D::set_shadow_color( const Color& p_shadow_color) {
+	shadow_color=p_shadow_color;
+	VS::get_singleton()->canvas_light_set_shadow_color(canvas_light,shadow_color);
+}
+
+Color Light2D::get_shadow_color() const {
+	return shadow_color;
+}
+
+
 
 void Light2D::_notification(int p_what) {
 
@@ -313,6 +323,10 @@ void Light2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_shadow_esm_multiplier","multiplier"),&Light2D::set_shadow_esm_multiplier);
 	ObjectTypeDB::bind_method(_MD("get_shadow_esm_multiplier"),&Light2D::get_shadow_esm_multiplier);
 
+	ObjectTypeDB::bind_method(_MD("set_shadow_color","shadow_color"),&Light2D::set_shadow_color);
+	ObjectTypeDB::bind_method(_MD("get_shadow_color"),&Light2D::get_shadow_color);
+
+
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"enabled"),_SCS("set_enabled"),_SCS("is_enabled"));
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR2,"offset"),_SCS("set_texture_offset"),_SCS("get_texture_offset"));
@@ -327,6 +341,7 @@ void Light2D::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/layer_max",PROPERTY_HINT_RANGE,"-512,512,1"),_SCS("set_layer_range_max"),_SCS("get_layer_range_max"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"range/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_mask"),_SCS("get_item_mask"));
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"shadow/enabled"),_SCS("set_shadow_enabled"),_SCS("is_shadow_enabled"));
+	ADD_PROPERTY( PropertyInfo(Variant::COLOR,"shadow/color"),_SCS("set_shadow_color"),_SCS("get_shadow_color"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/buffer_size",PROPERTY_HINT_RANGE,"32,16384,1"),_SCS("set_shadow_buffer_size"),_SCS("get_shadow_buffer_size"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"shadow/esm_multiplier",PROPERTY_HINT_RANGE,"1,4096,0.1"),_SCS("set_shadow_esm_multiplier"),_SCS("get_shadow_esm_multiplier"));
 	ADD_PROPERTY( PropertyInfo(Variant::INT,"shadow/item_mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_item_shadow_mask"),_SCS("get_item_shadow_mask"));
@@ -356,6 +371,7 @@ Light2D::Light2D() {
 	shadow_buffer_size=2048;
 	shadow_esm_multiplier=80;
 	energy=1.0;
+	shadow_color=Color(0,0,0,0);
 
 }
 
