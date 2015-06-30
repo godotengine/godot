@@ -1977,8 +1977,16 @@ void GDScript::_bind_methods() {
 
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"new",&GDScript::_new,MethodInfo("new"));	
 
+	ObjectTypeDB::bind_method(_MD("get_as_byte_code"),&GDScript::get_as_byte_code);
+
 }
 
+
+Vector<uint8_t> GDScript::get_as_byte_code() const {
+
+	GDTokenizerBuffer tokenizer;
+	return tokenizer.parse_code_string(source);
+};
 
 
 Error GDScript::load_byte_code(const String& p_path) {

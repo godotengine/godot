@@ -57,7 +57,13 @@
 #include <errno.h>
 #include <assert.h>
 #include "globals.h"
+
+extern bool _print_error_enabled;
+
 void OS_Unix::print_error(const char* p_function,const char* p_file,int p_line,const char *p_code,const char*p_rationale,ErrorType p_type) {
+
+	if (!_print_error_enabled)
+		return;
 
 	if (p_rationale && p_rationale[0]) {
 

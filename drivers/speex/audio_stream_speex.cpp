@@ -21,7 +21,7 @@ void AudioStreamSpeex::update() {
 	//printf("update, loops %i, read ofs %i\n", (int)loops, read_ofs);
 	//printf("playing %i, paused %i\n", (int)playing, (int)paused);
 
-	if (!playing || paused || !data.size())
+	if (!active || !playing || paused || !data.size())
 		return;
 
 	/*
