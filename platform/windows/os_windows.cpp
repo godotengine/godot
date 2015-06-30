@@ -697,7 +697,7 @@ LRESULT CALLBACK WndProc(HWND	hWnd,UINT uMsg,	WPARAM	wParam,	LPARAM	lParam)	{
 }
 
 
-String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps, HKEY p_hkey)
+String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps)
 {
 	char buffer [256];
 	char OEM [256];
@@ -708,7 +708,7 @@ String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps, HKEY p_hkey)
 	_snprintf(buffer, sizeof(buffer), "%s\\%s\\%s",
 				REGSTR_PATH_JOYCONFIG, jcaps.szRegKey,
 				REGSTR_KEY_JOYCURR );
-	res = RegOpenKeyEx(p_hkey, buffer, 0, KEY_QUERY_VALUE, &hKey);
+	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
 	if (res != ERROR_SUCCESS)
 	{
 		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
@@ -724,9 +724,14 @@ String OS_Windows::get_joystick_name(int id, JOYCAPS jcaps, HKEY p_hkey)
 		return "";
 
 	_snprintf( buffer, sizeof(buffer), "%s\\%s", REGSTR_PATH_JOYOEM, OEM);
-	res = RegOpenKeyEx ( p_hkey, buffer, 0, KEY_QUERY_VALUE, &hKey);
-	if (res != ERROR_SUCCESS) 
-		return "";
+	res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hKey);
+	if (res != ERROR_SUCCESS)
+	{
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, buffer, 0, KEY_QUERY_VALUE, &hKey);
+		if (res != ERROR_SUCCESS)
+			return "";
+	}
+		
 
 	sz = sizeof(buffer);
 	res = RegQueryValueEx(hKey, REGSTR_VAL_JOYOEMNAME, 0, 0, (LPBYTE) buffer,
@@ -779,9 +784,7 @@ void OS_Windows::probe_joysticks() {
 			JOYCAPS jcaps;
 			MMRESULT res = joyGetDevCaps(JOYSTICKID1 + i, &jcaps, sizeof(jcaps));
 			if (res == JOYERR_NOERROR) {
-				String name = get_joystick_name(JOYSTICKID1 + i, jcaps, HKEY_LOCAL_MACHINE);
-				if (name == "")
-					name = get_joystick_name(JOYSTICKID1 + i, jcaps, HKEY_CURRENT_USER);
+				String name = get_joystick_name(JOYSTICKID1 + i, jcaps);
 				if ( name == "")
 					joy.name = jcaps.szPname;
 				else
@@ -866,44 +869,78 @@ void OS_Windows::process_key_events() {
 	key_event_pos=0;
 }
 
-void OS_Windows::_post_hat(int p_device, DWORD p_dpad) {
+void OS_Windows::_post_dpad(DWORD p_dpad, int p_device, bool p_pressed) {
 
-	int dpad_val = 0;
+	InputEvent ievent;
+	ievent.device = p_device;
+	ievent.type = InputEvent::JOYSTICK_BUTTON;
+	ievent.joy_button.pressed = p_pressed;
+	ievent.joy_button.pressure = p_pressed ? 1.0 : 0.0;
 
 	if (p_dpad == 0) {
 
-		dpad_val = 0;
+		ievent.joy_button.button_index = JOY_DPAD_UP;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 4500) {
 
-		dpad_val = ( InputPC::HAT_MASK_UP | InputPC::HAT_MASK_RIGHT );
+		ievent.joy_button.button_index = JOY_DPAD_UP;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
+
+		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 9000) {
 
-		dpad_val = InputPC::HAT_MASK_RIGHT;
+		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 13500) {
 
-		dpad_val = ( InputPC::HAT_MASK_RIGHT | InputPC::HAT_MASK_DOWN );
+		ievent.joy_button.button_index = JOY_DPAD_RIGHT;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
+
+		ievent.joy_button.button_index = JOY_DPAD_DOWN;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 18000) {
 
-		dpad_val = InputPC::HAT_MASK_DOWN;
+		ievent.joy_button.button_index = JOY_DPAD_DOWN;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 22500) {
 
-		dpad_val = ( InputPC::HAT_MASK_DOWN | InputPC::HAT_MASK_LEFT );
+		ievent.joy_button.button_index = JOY_DPAD_DOWN;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
+
+		ievent.joy_button.button_index = JOY_DPAD_LEFT;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 27000) {
 
-		dpad_val = InputPC::HAT_MASK_LEFT;
+		ievent.joy_button.button_index = JOY_DPAD_LEFT;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
 	} else if (p_dpad == 31500) {
 
-		dpad_val = ( InputPC::HAT_MASK_LEFT | InputPC::HAT_MASK_UP );
-	};
+		ievent.joy_button.button_index = JOY_DPAD_LEFT;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
 
-	last_id = input->joy_hat(last_id, p_device, dpad_val);
+		ievent.joy_button.button_index = JOY_DPAD_UP;
+		ievent.ID = ++last_id;
+		input->parse_input_event(ievent);
+	};
 };
 
 void OS_Windows::process_joysticks() {
@@ -911,6 +948,8 @@ void OS_Windows::process_joysticks() {
 	if (!main_loop) {
 		return;
 	};
+
+	InputEvent ievent;
 
 	JOYINFOEX jinfo;
 	jinfo.dwSize = sizeof(JOYINFOEX);
@@ -927,10 +966,16 @@ void OS_Windows::process_joysticks() {
 			continue;
 		};
 
+		ievent.device = i;
+
 		#define CHECK_AXIS(n, var) \
 			if (joysticks[i].last_axis[n] != var) {\
-				last_id = input->joy_axis(last_id, i, n, (float)((int)var - MAX_JOY_AXIS) / (float)MAX_JOY_AXIS);\
+				ievent.type = InputEvent::JOYSTICK_MOTION;\
+				ievent.ID = ++last_id;\
+				ievent.joy_motion.axis = n;\
+				ievent.joy_motion.axis_value = (float)((int)var - MAX_JOY_AXIS) / (float)MAX_JOY_AXIS;\
 				joysticks[i].last_axis[n] = var;\
+				input->parse_input_event(ievent);\
 			};
 
 		CHECK_AXIS(0, jinfo.dwXpos);
@@ -940,17 +985,30 @@ void OS_Windows::process_joysticks() {
 		CHECK_AXIS(4, jinfo.dwUpos);
 		CHECK_AXIS(5, jinfo.dwVpos);
 
-		_post_hat(i, jinfo.dwPOV);
+		if (joysticks[i].last_pov != jinfo.dwPOV) {
+
+			if (joysticks[i].last_pov != JOY_POVCENTERED)
+				_post_dpad(joysticks[i].last_pov, i, false);
+
+			if (jinfo.dwPOV != JOY_POVCENTERED)
+				_post_dpad(jinfo.dwPOV, i, true);
+
+			joysticks[i].last_pov = jinfo.dwPOV;
+		};
 
 		if (joysticks[i].last_buttons == jinfo.dwButtons) {
 			continue;
 		};
 
+		ievent.type = InputEvent::JOYSTICK_BUTTON;
 		for (int j=0; j<32; j++) {
 
 			if ( (joysticks[i].last_buttons & (1<<j)) != (jinfo.dwButtons & (1<<j)) ) {
 
-				last_id = input->joy_button(last_id, i, j, jinfo.dwButtons & 1<<j);
+				ievent.joy_button.button_index = j; //_pc_joystick_get_native_button(j);
+				ievent.joy_button.pressed = jinfo.dwButtons & 1<<j;
+				ievent.ID = ++last_id;
+				input->parse_input_event(ievent);
 			};
 		};
 
@@ -1144,7 +1202,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
   */
 	visual_server->init();	
 
-	input = memnew( InputPC );
+	input = memnew( InputDefault );
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
@@ -2222,6 +2280,8 @@ String OS_Windows::get_data_dir() const {
 	}
 
 	return Globals::get_singleton()->get_resource_path();
+
+
 }
 
 
