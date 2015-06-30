@@ -67,11 +67,14 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 	
+
 	resize(len+1); // include 0
 	
-	for(int i=0;i<len+1;i++) {
-	
-		set(i,p_cstr[i]);
+	CharType *dst = this->ptr();
+
+	for (int i=0;i<len+1;i++) {
+
+		dst[i]=p_cstr[i];
 	}
 
 }
