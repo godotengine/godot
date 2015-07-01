@@ -122,8 +122,8 @@ bool CollisionObject::_set(const StringName& p_name, const Variant& p_value) {
 
 	} else if (name.begins_with("shapes/")) {
 
-		int idx=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int idx=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="shape")
 			set_shape(idx,RefPtr(p_value));
 		else if (what=="transform")
@@ -148,8 +148,8 @@ bool CollisionObject::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= shapes.size();
 	} else if (name.begins_with("shapes/")) {
 
-		int idx=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int idx=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="shape")
 			r_ret= get_shape(idx);
 		else if (what=="transform")

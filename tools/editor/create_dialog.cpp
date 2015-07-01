@@ -128,7 +128,7 @@ void CreateDialog::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	List<String> type_list;
+	List<StringName> type_list;
 	ObjectTypeDB::get_type_list(&type_list);
 
 	HashMap<String,TreeItem*> types;
@@ -137,7 +137,7 @@ void CreateDialog::_update_search() {
 
 	root->set_text(0,base_type);
 
-	List<String>::Element *I=type_list.front();
+	List<StringName>::Element *I=type_list.front();
 	TreeItem *to_select=NULL;
 
 	for(;I;I=I->next()) {

@@ -398,11 +398,11 @@ void Node2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_relative_transform"),&Node2D::get_relative_transform);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"z/z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"z/relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z/z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z/relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
 
 
 }

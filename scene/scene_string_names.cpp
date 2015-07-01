@@ -68,6 +68,8 @@ SceneStringNames::SceneStringNames() {
 	area_enter_shape = StaticCString::create("area_enter_shape");
 	area_exit_shape = StaticCString::create("area_exit_shape");
 
+	_body_inout = StaticCString::create("_body_inout");
+	_area_inout = StaticCString::create("_area_inout");
 
 	idle=StaticCString::create("idle");
 	iteration=StaticCString::create("iteration");
@@ -161,4 +163,11 @@ SceneStringNames::SceneStringNames() {
 
 	frame_changed=StaticCString::create("frame_changed");
 
+	playback_speed=StaticCString::create("playback/speed");
+	playback_active=StaticCString::create("playback/active");
+	autoplay=StaticCString::create("autoplay");
+	blend_times=StaticCString::create("blend_times");
+	speed=StaticCString::create("speed");
+
+	path_pp=NodePath("..");
 }

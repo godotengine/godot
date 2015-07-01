@@ -2054,8 +2054,8 @@ void Collada::_parse_animation(XMLParser& parser) {
 			}
 
 			if (target.find("/")!=-1) { //transform component
-				track.target=target.get_slice("/",0);
-				track.param=target.get_slice("/",1);
+				track.target=target.get_slicec('/',0);
+				track.param=target.get_slicec('/',1);
 				if (track.param.find(".")!=-1)
 					track.component=track.param.get_slice(".",1).to_upper();
 				track.param=track.param.get_slice(".",0);

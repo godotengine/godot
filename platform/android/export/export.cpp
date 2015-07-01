@@ -317,7 +317,7 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 		apk_expansion_pkey=p_value;
 	else if (n.begins_with("permissions/")) {
 
-		String what = n.get_slice("/",1).to_upper();
+		String what = n.get_slicec('/',1).to_upper();
 		bool state = p_value;
 		if (state)
 			perms.insert(what);
@@ -325,7 +325,7 @@ bool EditorExportPlatformAndroid::_set(const StringName& p_name, const Variant& 
 			perms.erase(what);
 	} else if (n.begins_with("user_permissions/")) {
 
-		int which = n.get_slice("/",1).to_int();
+		int which = n.get_slicec('/',1).to_int();
 		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
 		user_perms[which]=p_value;
 
@@ -390,11 +390,11 @@ bool EditorExportPlatformAndroid::_get(const StringName& p_name,Variant &r_ret) 
 		r_ret=apk_expansion_pkey;
 	else if (n.begins_with("permissions/")) {
 
-		String what = n.get_slice("/",1).to_upper();
+		String what = n.get_slicec('/',1).to_upper();
 		r_ret = perms.has(what);
 	} else if (n.begins_with("user_permissions/")) {
 
-		int which = n.get_slice("/",1).to_int();
+		int which = n.get_slicec('/',1).to_int();
 		ERR_FAIL_INDEX_V(which,MAX_USER_PERMISSIONS,false);
 		r_ret=user_perms[which];
 	} else

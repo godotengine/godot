@@ -40,8 +40,8 @@ PropertyInfo MethodBind::get_argument_info(int p_argument) const {
 		PropertyInfo pi( get_argument_type(p_argument), name );
 		if ((pi.type==Variant::OBJECT) && name.find(":")!=-1) {
 			pi.hint=PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string=name.get_slice(":",1);
-			pi.name=name.get_slice(":",0);
+			pi.hint_string=name.get_slicec(':',1);
+			pi.name=name.get_slicec(':',0);
 		}
 		return pi;
 

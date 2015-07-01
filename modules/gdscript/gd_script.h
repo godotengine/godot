@@ -349,6 +349,8 @@ public:
 	Error load_source_code(const String& p_path);
 	Error load_byte_code(const String& p_path);
 
+	Vector<uint8_t> get_as_byte_code() const;
+
 	virtual ScriptLanguage *get_language() const;
 
 	GDScript();

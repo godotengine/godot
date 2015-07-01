@@ -325,7 +325,7 @@ Error HTTPClient::poll(){
 
 						if (i==0 && responses[i].begins_with("HTTP")) {
 
-							String num = responses[i].get_slice(" ",1);
+							String num = responses[i].get_slicec(' ',1);
 							response_num=num.to_int();
 						} else {
 

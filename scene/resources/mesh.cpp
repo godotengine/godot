@@ -99,7 +99,7 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 		if (sl==-1)
 			return false;
 		int idx=sname.substr(8,sl-8).to_int()-1;
-		String what = sname.get_slice("/",1);
+		String what = sname.get_slicec('/',1);
 		if (what=="material")
 			surface_set_material(idx,p_value);
 		else if (what=="name")
@@ -117,8 +117,8 @@ bool Mesh::_set(const StringName& p_name, const Variant& p_value) {
 		return false;
 
 
-	int idx=sname.get_slice("/",1).to_int();
-	String what=sname.get_slice("/",2);
+	int idx=sname.get_slicec('/',1).to_int();
+	String what=sname.get_slicec('/',2);
 
 	if (idx==surfaces.size()) {
 
@@ -180,7 +180,7 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 		if (sl==-1)
 			return false;
 		int idx=sname.substr(8,sl-8).to_int()-1;
-		String what = sname.get_slice("/",1);
+		String what = sname.get_slicec('/',1);
 		if (what=="material")
 			r_ret=surface_get_material(idx);
 		else if (what=="name")
@@ -195,7 +195,7 @@ bool Mesh::_get(const StringName& p_name,Variant &r_ret) const {
 		return false;
 
 
-	int idx=sname.get_slice("/",1).to_int();
+	int idx=sname.get_slicec('/',1).to_int();
 	ERR_FAIL_INDEX_V(idx,surfaces.size(),false);
 
 	Dictionary d;

@@ -1072,19 +1072,19 @@ void Particles2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/amount",PROPERTY_HINT_EXP_RANGE,"1,1024"),_SCS("set_amount"),_SCS("get_amount") );
 	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/lifetime",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_lifetime"),_SCS("get_lifetime") );
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/time_scale",PROPERTY_HINT_EXP_RANGE,"0.01,128,0.01"),_SCS("set_time_scale"),_SCS("get_time_scale") );
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/preprocess",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_pre_process_time"),_SCS("get_pre_process_time") );
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/emit_timeout",PROPERTY_HINT_RANGE,"0,3600,0.1"),_SCS("set_emit_timeout"),_SCS("get_emit_timeout") );
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/emitting"),_SCS("set_emitting"),_SCS("is_emitting") );
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"config/offset"),_SCS("set_emissor_offset"),_SCS("get_emissor_offset"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"config/half_extents"),_SCS("set_emission_half_extents"),_SCS("get_emission_half_extents"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/local_space"),_SCS("set_use_local_space"),_SCS("is_using_local_space"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"config/explosiveness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_explosiveness"),_SCS("get_explosiveness"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/flip_h"),_SCS("set_flip_h"),_SCS("is_flipped_h"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"config/flip_v"),_SCS("set_flip_v"),_SCS("is_flipped_v"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"config/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/h_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_h_frames"),_SCS("get_h_frames"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"config/v_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_v_frames"),_SCS("get_v_frames"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::REAL,"config/time_scale",PROPERTY_HINT_EXP_RANGE,"0.01,128,0.01"),_SCS("set_time_scale"),_SCS("get_time_scale") );
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/preprocess",PROPERTY_HINT_EXP_RANGE,"0.1,3600,0.1"),_SCS("set_pre_process_time"),_SCS("get_pre_process_time") );
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"config/emit_timeout",PROPERTY_HINT_RANGE,"0,3600,0.1"),_SCS("set_emit_timeout"),_SCS("get_emit_timeout") );
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/emitting"),_SCS("set_emitting"),_SCS("is_emitting") );
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/offset"),_SCS("set_emissor_offset"),_SCS("get_emissor_offset"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"config/half_extents"),_SCS("set_emission_half_extents"),_SCS("get_emission_half_extents"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"config/local_space"),_SCS("set_use_local_space"),_SCS("is_using_local_space"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::REAL,"config/explosiveness",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_explosiveness"),_SCS("get_explosiveness"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"config/flip_h"),_SCS("set_flip_h"),_SCS("is_flipped_h"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL,"config/flip_v"),_SCS("set_flip_v"),_SCS("is_flipped_v"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"config/texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"),_SCS("set_texture"),_SCS("get_texture"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"config/h_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_h_frames"),_SCS("get_h_frames"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::INT,"config/v_frames",PROPERTY_HINT_RANGE,"1,512,1"),_SCS("set_v_frames"),_SCS("get_v_frames"));
 
 
 	for(int i=0;i<PARAM_MAX;i++) {
@@ -1092,10 +1092,10 @@ void Particles2D::_bind_methods() {
 	}
 
 	for(int i=0;i<PARAM_MAX;i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::REAL,_particlesframe_property_rnames[i],PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_randomness"),_SCS("get_randomness"),i);
+		ADD_PROPERTYINZ(PropertyInfo(Variant::REAL,_particlesframe_property_rnames[i],PROPERTY_HINT_RANGE,"-1,1,0.01"),_SCS("set_randomness"),_SCS("get_randomness"),i);
 	}
 
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1", 0), _SCS("set_color_phases"), _SCS("get_color_phases"));
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "color_phases/count",PROPERTY_HINT_RANGE,"0,4,1", 0), _SCS("set_color_phases"), _SCS("get_color_phases"));
 
 	//Backward compatibility. They will be converted to color ramp
 	for(int i=0;i<MAX_COLOR_PHASES;i++) {
@@ -1104,10 +1104,10 @@ void Particles2D::_bind_methods() {
 		ADD_PROPERTYI( PropertyInfo( Variant::COLOR, phase+"color", PROPERTY_HINT_NONE, "", 0),_SCS("set_color_phase_color"),_SCS("get_color_phase_color"),i );
 	}
 
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color/color"),_SCS("set_color"),_SCS("get_color"));
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT,"color/color_ramp",PROPERTY_HINT_RESOURCE_TYPE,"ColorRamp"),_SCS("set_color_ramp"),_SCS("get_color_ramp"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::COLOR, "color/color"),_SCS("set_color"),_SCS("get_color"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT,"color/color_ramp",PROPERTY_HINT_RESOURCE_TYPE,"ColorRamp"),_SCS("set_color_ramp"),_SCS("get_color_ramp"));
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2_ARRAY,"emission_points",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_emission_points"),_SCS("get_emission_points"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2_ARRAY,"emission_points",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("set_emission_points"),_SCS("get_emission_points"));
 
 	BIND_CONSTANT( PARAM_DIRECTION );
 	BIND_CONSTANT( PARAM_SPREAD );

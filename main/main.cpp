@@ -524,8 +524,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		ScriptDebuggerRemote *sdr = memnew( ScriptDebuggerRemote );
 		uint16_t debug_port = GLOBAL_DEF("debug/remote_port",6007);
 		if (debug_host.find(":")!=-1) {
-		    debug_port=debug_host.get_slice(":",1).to_int();
-		    debug_host=debug_host.get_slice(":",0);
+		    debug_port=debug_host.get_slicec(':',1).to_int();
+		    debug_host=debug_host.get_slicec(':',0);
 		}
 		Error derr = sdr->connect_to_host(debug_host,debug_port);
 
@@ -546,8 +546,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		file_access_network_client=memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.find(":")!=-1) {
-			port=remotefs.get_slice(":",1).to_int();
-			remotefs=remotefs.get_slice(":",0);
+			port=remotefs.get_slicec(':',1).to_int();
+			remotefs=remotefs.get_slicec(':',0);
 		} else {
 			port=6010;
 		}
@@ -605,6 +605,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (bool(Globals::get_singleton()->get("application/disable_stdout"))) {
 		quiet_stdout=true;
 	}
+	if (bool(Globals::get_singleton()->get("application/disable_stderr"))) {
+		_print_error_enabled = false;
+	};
 
 	if (quiet_stdout)
 		_print_line_enabled=false;
@@ -1219,7 +1222,7 @@ bool Main::start() {
 						String s = E->get().name;
 						if (!s.begins_with("autoload/"))
 							continue;
-						String name = s.get_slice("/",1);
+						String name = s.get_slicec('/',1);
 						String path = Globals::get_singleton()->get(s);
 						RES res = ResourceLoader::load(path);
 						ERR_EXPLAIN("Can't autoload: "+path);

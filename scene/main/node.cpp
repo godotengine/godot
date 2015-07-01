@@ -1891,7 +1891,7 @@ void Node::_bind_methods() {
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
 	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
-	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
 
 #endif
 

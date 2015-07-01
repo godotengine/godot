@@ -136,27 +136,27 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 	if (p_value.get_type()==Variant::NIL) {
 
 		if (name.begins_with("custom_icons/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			data.icon_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_styles/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			data.style_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_fonts/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			data.font_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_colors/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			data.color_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
 		} else if (name.begins_with("custom_constants/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			data.constant_override.erase(dname);
 			notification(NOTIFICATION_THEME_CHANGED);
 			update();
@@ -165,23 +165,23 @@ bool Control::_set(const StringName& p_name, const Variant& p_value) {
 
 	} else {
 		if (name.begins_with("custom_icons/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			notification(NOTIFICATION_THEME_CHANGED);
 			add_icon_override(dname,p_value);
 		} else if (name.begins_with("custom_styles/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			add_style_override(dname,p_value);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_fonts/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			add_font_override(dname,p_value);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_colors/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			add_color_override(dname,p_value);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else if (name.begins_with("custom_constants/")) {
-			String dname = name.get_slice("/",1);
+			String dname = name.get_slicec('/',1);
 			add_constant_override(dname,p_value);
 			notification(NOTIFICATION_THEME_CHANGED);
 		} else
@@ -217,22 +217,22 @@ bool Control::_get(const StringName& p_name,Variant &r_ret) const {
 		return false;
 
 	if (sname.begins_with("custom_icons/")) {
-		String name = sname.get_slice("/",1);
+		String name = sname.get_slicec('/',1);
 
 		r_ret= data.icon_override.has(name)?Variant(data.icon_override[name]):Variant();
 	} else if (sname.begins_with("custom_styles/")) {
-		String name = sname.get_slice("/",1);
+		String name = sname.get_slicec('/',1);
 
 		r_ret= data.style_override.has(name)?Variant(data.style_override[name]):Variant();
 	} else if (sname.begins_with("custom_fonts/")) {
-		String name = sname.get_slice("/",1);
+		String name = sname.get_slicec('/',1);
 
 		r_ret= data.font_override.has(name)?Variant(data.font_override[name]):Variant();
 	} else if (sname.begins_with("custom_colors/")) {
-		String name = sname.get_slice("/",1);
+		String name = sname.get_slicec('/',1);
 		r_ret= data.color_override.has(name)?Variant(data.color_override[name]):Variant();
 	} else if (sname.begins_with("custom_constants/")) {
-		String name = sname.get_slice("/",1);
+		String name = sname.get_slicec('/',1);
 
 		r_ret= data.constant_override.has(name)?Variant(data.constant_override[name]):Variant();
 	} else
@@ -2832,16 +2832,16 @@ void Control::_bind_methods() {
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/size", PROPERTY_HINT_NONE, "",PROPERTY_USAGE_EDITOR), _SCS("set_size"),_SCS("get_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::VECTOR2,"rect/min_size"), _SCS("set_custom_minimum_size"),_SCS("get_custom_minimum_size") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::STRING,"hint/tooltip", PROPERTY_HINT_MULTILINE_TEXT), _SCS("set_tooltip"),_SCS("_get_tooltip") );
-	ADD_PROPERTYI( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
-	ADD_PROPERTYI( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
-	ADD_PROPERTYI( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/right" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_RIGHT );
-	ADD_PROPERTYI( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/left" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_LEFT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/top" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_TOP );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/right" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_RIGHT );
+	ADD_PROPERTYINZ( PropertyInfo(Variant::NODE_PATH,"focus_neighbour/bottom" ), _SCS("set_focus_neighbour"),_SCS("get_focus_neighbour"),MARGIN_BOTTOM );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus/ignore_mouse"), _SCS("set_ignore_mouse"),_SCS("is_ignoring_mouse") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"focus/stop_mouse"), _SCS("set_stop_mouse"),_SCS("is_stopping_mouse") );
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"size_flags/horizontal", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_h_size_flags"),_SCS("get_h_size_flags") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"size_flags/vertical", PROPERTY_HINT_FLAGS, "Expand,Fill"), _SCS("set_v_size_flags"),_SCS("get_v_size_flags") );
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"size_flags/stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"size_flags/stretch_ratio", PROPERTY_HINT_RANGE, "1,128,0.01"), _SCS("set_stretch_ratio"),_SCS("get_stretch_ratio") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"theme/theme", PROPERTY_HINT_RESOURCE_TYPE, "Theme"), _SCS("set_theme"),_SCS("get_theme") );
 
 	BIND_CONSTANT( ANCHOR_BEGIN );

@@ -228,13 +228,13 @@ public:
 		T::register_custom_data_to_otdb();
 	}
 
-	static void get_type_list( List<String> *p_types);
-	static void get_inheriters_from( const String& p_type,List<String> *p_types);
-	static String type_inherits_from(const String& p_type);
-	static bool type_exists(const String &p_type);
-	static bool is_type(const String &p_type,const String& p_inherits);
-	static bool can_instance(const String &p_type);	
-	static Object *instance(const String &p_type);
+	static void get_type_list( List<StringName> *p_types);
+	static void get_inheriters_from( const StringName& p_type,List<StringName> *p_types);
+	static StringName type_inherits_from(const StringName& p_type);
+	static bool type_exists(const StringName &p_type);
+	static bool is_type(const StringName &p_type,const StringName& p_inherits);
+	static bool can_instance(const StringName &p_type);
+	static Object *instance(const StringName &p_type);
 
 #if 0
 	template<class N, class M>
