@@ -20,11 +20,21 @@ void OS_Haiku::run() {
 	}
 
 	main_loop->init();
+	context_gl->release_current();
+
+	// TODO: clean up
+	BMessenger* bms = new BMessenger(window);
+	BMessage* msg = new BMessage();
+	bms->SendMessage(LOCKGL_MSG, msg);
+
 	window->StartMessageRunner();
 	app->Run();
 	window->StopMessageRunner();
 
 	delete app;
+
+	delete bms;
+	delete msg;
 	main_loop->finish();
 }
 
@@ -54,6 +64,7 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	frame.Set(50, 50, 50 + current_video_mode.width - 1, 50 + current_video_mode.height - 1);
 
 	window = new HaikuDirectWindow(frame);
+	window->SetVideoMode(&current_video_mode);
 
 	if (current_video_mode.fullscreen) {
 		window->SetFullScreen(true);
@@ -68,6 +79,7 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 #if defined(OPENGL_ENABLED) || defined(LEGACYGL_ENABLED)
 	context_gl = memnew(ContextGL_Haiku(window));
 	context_gl->initialize();
+	context_gl->make_current();
 
 	rasterizer = memnew(RasterizerGLES2);
 #endif
@@ -81,6 +93,10 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	//	visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
 	//}
 
+	input = memnew(InputDefault);
+	window->SetInput(input);
+
+	window->Show();
 	visual_server->init();
 
 	physics_server = memnew(PhysicsServerSW);
@@ -104,10 +120,6 @@ void OS_Haiku::initialize(const VideoMode& p_desired, int p_video_driver, int p_
 	spatial_sound_server->init();
 	spatial_sound_2d_server = memnew(SpatialSound2DServerSW);
 	spatial_sound_2d_server->init();
-
-	input = memnew(InputDefault);
-	window->SetInput(input);
-	window->Show();
 }
 
 void OS_Haiku::finalize() {
@@ -266,10 +278,11 @@ void OS_Haiku::set_window_resizable(bool p_enabled) {
 	}
 
 	window->SetFlags(flags);
+	current_video_mode.resizable = p_enabled;
 }
 
 bool OS_Haiku::is_window_resizable() const {
-	return !(window->Flags() & B_NOT_RESIZABLE);
+	return current_video_mode.resizable;
 }
 
 void OS_Haiku::set_window_minimized(bool p_enabled) {

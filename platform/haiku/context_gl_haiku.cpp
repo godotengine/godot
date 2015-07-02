@@ -15,20 +15,17 @@ ContextGL_Haiku::~ContextGL_Haiku() {
 
 Error ContextGL_Haiku::initialize() {
 	window->AddChild(view);
-	view->LockGL();
 	window->SetHaikuGLView(view);
 
 	return OK;
 }
 
 void ContextGL_Haiku::release_current() {
-	//ERR_PRINT("release_current() NOT IMPLEMENTED");
 	view->UnlockGL();
 }
 
 void ContextGL_Haiku::make_current() {
 	view->LockGL();
-	//ERR_PRINT("make_current() NOT IMPLEMENTED");
 }
 
 void ContextGL_Haiku::swap_buffers() {

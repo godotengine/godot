@@ -23,7 +23,7 @@ void HaikuDirectWindow::SetHaikuGLView(HaikuGLView* p_view) {
 
 void HaikuDirectWindow::StartMessageRunner() {
 	update_runner = new BMessageRunner(BMessenger(this),
-		new BMessage(REDRAW_MSG), 1000000/60 /* 60 fps */);
+		new BMessage(REDRAW_MSG), 1000000/30 /* 30 fps */);
 }
 
 void HaikuDirectWindow::StopMessageRunner() {
@@ -68,15 +68,31 @@ void HaikuDirectWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 	switch (message->what) {
 		case B_MOUSE_DOWN:
 		case B_MOUSE_UP:
-			DispatchMouseButton(message);
+			HandleMouseButton(message);
 			break;
 
 		case B_MOUSE_MOVED:
-			DispatchMouseMoved(message);
+			HandleMouseMoved(message);
 			break;
 
 		case B_MOUSE_WHEEL_CHANGED:
-			DispatchMouseWheelChanged(message);
+			HandleMouseWheelChanged(message);
+			break;
+
+		case B_WINDOW_RESIZED:
+			HandleWindowResized(message);
+			//view->UnlockGL();
+			//BDirectWindow::DispatchMessage(message, handler);
+			//view->LockGL();
+			break;
+
+		case LOCKGL_MSG:
+			ERR_PRINT("LOCKGL");
+			view->LockGL();
+			break;
+
+		case UNLOCKGL_MSG:
+			view->UnlockGL();
 			break;
 
 		default:
@@ -84,7 +100,7 @@ void HaikuDirectWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 	}
 }
 
-void HaikuDirectWindow::DispatchMouseButton(BMessage* message) {
+void HaikuDirectWindow::HandleMouseButton(BMessage* message) {
 	message->PrintToStream();
 
 	BPoint where;
@@ -143,7 +159,7 @@ void HaikuDirectWindow::DispatchMouseButton(BMessage* message) {
 	input->parse_input_event(mouse_event);
 }
 
-void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
+void HaikuDirectWindow::HandleMouseMoved(BMessage* message) {
 	BPoint where;
 	if (message->FindPoint("where", &where) != B_OK) {
 		return;
@@ -183,7 +199,7 @@ void HaikuDirectWindow::DispatchMouseMoved(BMessage* message) {
 	input->parse_input_event(motion_event);
 }
 
-void HaikuDirectWindow::DispatchMouseWheelChanged(BMessage* message) {
+void HaikuDirectWindow::HandleMouseWheelChanged(BMessage* message) {
 	float wheel_delta_y = 0;
 	if (message->FindFloat("be:wheel_delta_y", &wheel_delta_y) != B_OK) {
 		return;
@@ -208,6 +224,18 @@ void HaikuDirectWindow::DispatchMouseWheelChanged(BMessage* message) {
 	mouse_event.ID = ++event_id;
 	mouse_event.mouse_button.pressed = false;
 	input->parse_input_event(mouse_event);
+}
+
+void HaikuDirectWindow::HandleWindowResized(BMessage* message) {
+	int32 width = 0;
+	int32 height = 0;
+
+	if ((message->FindInt32("width", &width) != B_OK) || (message->FindInt32("height", &height) != B_OK)) {
+		return;
+	}
+
+	current_video_mode->width = width;
+	current_video_mode->height = height;
 }
 
 inline InputModifierState HaikuDirectWindow::GetKeyModifierState(uint32 p_state) {

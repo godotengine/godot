@@ -5,9 +5,12 @@
 #include <DirectWindow.h>
 
 #include "os/input.h"
+#include "core/os/os.h"
 #include "haiku_gl_view.h"
 
 #define REDRAW_MSG 'rdrw'
+#define LOCKGL_MSG 'glck'
+#define UNLOCKGL_MSG 'ulck'
 
 class HaikuDirectWindow : public BDirectWindow 
 {
@@ -18,15 +21,17 @@ private:
 	uint32 last_buttons_state;
 	uint32 last_key_modifier_state;
 	int last_button_mask;
+	OS::VideoMode* current_video_mode;
 
 	MainLoop* main_loop;
 	InputDefault* input;
 	HaikuGLView* view;
 	BMessageRunner* update_runner;
 
-	void DispatchMouseButton(BMessage* message);
-	void DispatchMouseMoved(BMessage* message);
-	void DispatchMouseWheelChanged(BMessage* message);
+	void HandleMouseButton(BMessage* message);
+	void HandleMouseMoved(BMessage* message);
+	void HandleMouseWheelChanged(BMessage* message);
+	void HandleWindowResized(BMessage* message);
 	inline InputModifierState GetKeyModifierState(uint32 p_state);
 	inline int GetMouseButtonState(uint32 p_state);
 
@@ -39,6 +44,7 @@ public:
 	void StopMessageRunner();
 	void SetInput(InputDefault* p_input);
 	void SetMainLoop(MainLoop* p_main_loop);
+	inline void SetVideoMode(OS::VideoMode* video_mode) { current_video_mode = video_mode; };
 	virtual bool QuitRequested();
 	virtual void DirectConnected(direct_buffer_info* info);
 	virtual void MessageReceived(BMessage* message);
