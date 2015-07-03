@@ -9349,7 +9349,7 @@ void RasterizerGLES2::canvas_render_items(CanvasItem *p_item_list,int p_z,const 
 				int h = current_clip->final_clip_rect.size.y;
 */
 				int x = current_clip->final_clip_rect.pos.x;
-				int y = window_size.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.y);
+				int y = viewport.height-(current_clip->final_clip_rect.pos.y+current_clip->final_clip_rect.size.y);
 				int w = current_clip->final_clip_rect.size.x;
 				int h = current_clip->final_clip_rect.size.y;
 
