@@ -6,7 +6,7 @@ void Navigation::_navmesh_link(int p_id) {
 	NavMesh &nm=navmesh_map[p_id];
 	ERR_FAIL_COND(nm.linked);
 
-	print_line("LINK");
+	//print_line("LINK");
 
 	DVector<Vector3> vertices=nm.navmesh->get_vertices();
 	int len = vertices.size();

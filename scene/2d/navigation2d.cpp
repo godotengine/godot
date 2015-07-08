@@ -8,7 +8,7 @@ void Navigation2D::_navpoly_link(int p_id) {
 	NavMesh &nm=navpoly_map[p_id];
 	ERR_FAIL_COND(nm.linked);
 
-	print_line("LINK");
+	//print_line("LINK");
 
 	DVector<Vector2> vertices=nm.navpoly->get_vertices();
 	int len = vertices.size();
