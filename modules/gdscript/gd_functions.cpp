@@ -190,7 +190,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_COUNT(2);
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
-			r_ret=Math::atan2(*p_args[0],*p_args[1]);
+			r_ret=Math::atan2(*p_args[1], *p_args[0]);
 		} break;
 		case MATH_SQRT: {
 			VALIDATE_ARG_COUNT(1);

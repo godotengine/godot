@@ -31,7 +31,7 @@
 
 real_t Vector2::atan2() const {
 
-	return Math::atan2(x,y);
+	return Math::atan2(y,x);
 }
 
 float Vector2::length() const {
