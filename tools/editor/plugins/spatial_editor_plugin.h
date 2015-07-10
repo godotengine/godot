@@ -374,13 +374,16 @@ private:
 		MENU_VIEW_ORIGIN,
 		MENU_VIEW_GRID,
 		MENU_VIEW_CAMERA_SETTINGS,
+		MENU_VIEW_LOCK_SELECTED,
+		MENU_VIEW_UNLOCK_SELECTED,
 
 	};
 
 
 	Button *tool_button[4];
 	Button *instance_button;
-
+	ToolButton *lock_button;
+	ToolButton *unlock_button;
 
 	MenuButton* transform_menu;
 	MenuButton* view_menu;
