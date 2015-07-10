@@ -48,6 +48,8 @@ if (env['musepack']=='yes'):
 	SConscript("mpc/SCsub");
 if (env["squish"]=="yes" and env["tools"]=="yes"):
 	SConscript("squish/SCsub");
+if (env["lua"]=='yes'):
+	SConscript("lua/SCsub");
 
 num = 0
 cur_base = ""

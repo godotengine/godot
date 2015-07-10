@@ -97,6 +97,7 @@ opts.Add('bits', 'Compile Target Bits (default/32/64).', "default")
 opts.Add('platform','Platform: '+str(platform_list)+'.',"")
 opts.Add('p','Platform (same as platform=).',"")
 opts.Add('tools','Build Tools (Including Editor): (yes/no)','yes')
+opts.Add('lua','Build Lua Support: (yes/no)','yes')
 opts.Add('gdscript','Build GDSCript support: (yes/no)','yes')
 opts.Add('vorbis','Build Ogg Vorbis Support: (yes/no)','yes')
 opts.Add('minizip','Build Minizip Archive Support: (yes/no)','yes')
@@ -277,7 +278,9 @@ if selected_platform in platform_list:
 		sys.path.remove(tmppath)
 		sys.modules.pop('config')
 
-
+	if (env['lua']=='yes'):
+		env.Append(CPPFLAGS=['-DLUASCRIPT_ENABLED']);
+		
 	if (env['musepack']=='yes'):
 		env.Append(CPPFLAGS=['-DMUSEPACK_ENABLED']);
         if (env['openssl']!='no'):
