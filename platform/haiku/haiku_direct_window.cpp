@@ -1,5 +1,9 @@
+#include <UnicodeChar.h>
+
 #include "main/main.h"
+#include "os/keyboard.h"
 #include "haiku_direct_window.h"
+#include "key_mapping_haiku.h"
 
 HaikuDirectWindow::HaikuDirectWindow(BRect p_frame)
    : BDirectWindow(p_frame, "Godot", B_TITLED_WINDOW, B_QUIT_ON_WINDOW_CLOSE)
@@ -77,6 +81,15 @@ void HaikuDirectWindow::DispatchMessage(BMessage* message, BHandler* handler) {
 
 		case B_MOUSE_WHEEL_CHANGED:
 			HandleMouseWheelChanged(message);
+			break;
+
+		case B_KEY_DOWN:
+		case B_KEY_UP:
+			HandleKeyboardEvent(message);
+			break;
+
+		case B_MODIFIERS_CHANGED:
+			HandleKeyboardModifierEvent(message);
 			break;
 
 		case B_WINDOW_RESIZED:
@@ -224,6 +237,77 @@ void HaikuDirectWindow::HandleMouseWheelChanged(BMessage* message) {
 	mouse_event.ID = ++event_id;
 	mouse_event.mouse_button.pressed = false;
 	input->parse_input_event(mouse_event);
+}
+
+void HaikuDirectWindow::HandleKeyboardEvent(BMessage* message) {
+	message->PrintToStream();
+	int32 raw_char = 0;
+	int32 key = 0;
+	int32 modifiers = 0;
+
+	if (message->FindInt32("raw_char", &raw_char) != B_OK) {
+		return;
+	}
+
+	if (message->FindInt32("key", &key) != B_OK) {
+		return;
+	}
+
+	if (message->FindInt32("modifiers", &modifiers) != B_OK) {
+		return;
+	}
+
+	InputEvent event;
+	event.ID = ++event_id;
+	event.type = InputEvent::KEY;
+	event.device = 0;
+	event.key.mod = GetKeyModifierState(modifiers);
+	event.key.pressed = (message->what == B_KEY_DOWN);
+	event.key.scancode = KeyMappingHaiku::get_keysym(raw_char, key);
+	event.key.echo = message->HasInt32("be:key_repeat");
+	event.key.unicode = 0;
+
+	const char* bytes = NULL;
+	if (message->FindString("bytes", &bytes) == B_OK) {
+		event.key.unicode = BUnicodeChar::FromUTF8(&bytes);
+	}
+
+	//make it consistent accross platforms.
+	if (event.key.scancode==KEY_BACKTAB) {
+		event.key.scancode=KEY_TAB;
+		event.key.mod.shift=true;
+	}
+
+	input->parse_input_event(event);
+}
+
+void HaikuDirectWindow::HandleKeyboardModifierEvent(BMessage* message) {
+	message->PrintToStream();
+
+	int32 old_modifiers = 0;
+	int32 modifiers = 0;
+
+	if (message->FindInt32("be:old_modifiers", &old_modifiers) != B_OK) {
+		return;
+	}
+
+	if (message->FindInt32("modifiers", &modifiers) != B_OK) {
+		return;
+	}
+
+	int32 key = old_modifiers ^ modifiers;
+
+	InputEvent event;
+	event.ID = ++event_id;
+	event.type = InputEvent::KEY;
+	event.device = 0;
+	event.key.mod = GetKeyModifierState(modifiers);
+	event.key.pressed = ((modifiers & key) != 0);
+	event.key.scancode = KeyMappingHaiku::get_modifier_keysym(key);
+	event.key.echo = false;
+	event.key.unicode = 0;
+
+	input->parse_input_event(event);
 }
 
 void HaikuDirectWindow::HandleWindowResized(BMessage* message) {

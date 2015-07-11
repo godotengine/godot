@@ -5,7 +5,8 @@ common_haiku = [
 	'context_gl_haiku.cpp',
 	'haiku_application.cpp',
 	'haiku_direct_window.cpp',
-	'haiku_gl_view.cpp'
+	'haiku_gl_view.cpp',
+	'key_mapping_haiku.cpp'
 ]
 
 env.Program(

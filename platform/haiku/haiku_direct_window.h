@@ -32,6 +32,8 @@ private:
 	void HandleMouseMoved(BMessage* message);
 	void HandleMouseWheelChanged(BMessage* message);
 	void HandleWindowResized(BMessage* message);
+	void HandleKeyboardEvent(BMessage* message);
+	void HandleKeyboardModifierEvent(BMessage* message);
 	inline InputModifierState GetKeyModifierState(uint32 p_state);
 	inline int GetMouseButtonState(uint32 p_state);
 
