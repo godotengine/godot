@@ -32,6 +32,7 @@
 
 static PrintHandlerList *print_handler_list=NULL;
 bool _print_line_enabled=true;
+bool _print_error_enabled = true;
 
 void add_print_handler(PrintHandlerList *p_handler) {
 
