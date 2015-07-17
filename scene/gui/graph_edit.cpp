@@ -499,7 +499,15 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 	if (p_ev.type==InputEvent::MOUSE_MOTION && (p_ev.mouse_motion.button_mask&BUTTON_MASK_MIDDLE || (p_ev.mouse_motion.button_mask&BUTTON_MASK_LEFT && Input::get_singleton()->is_key_pressed(KEY_SPACE)))) {
 		h_scroll->set_val( h_scroll->get_val() - p_ev.mouse_motion.relative_x );
 		v_scroll->set_val( v_scroll->get_val() - p_ev.mouse_motion.relative_y );
-	}
+    } else if (p_ev.type== InputEvent::MOUSE_BUTTON) {
+
+        const InputEventMouseButton &b=p_ev.mouse_button;
+
+        if (b.button_index==2 && b.pressed)
+        {
+            emit_signal("popup_request", Vector2(b.global_x, b.global_y));
+        }
+    }
 }
 
 void GraphEdit::clear_connections() {
@@ -554,8 +562,8 @@ void GraphEdit::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_input_event"),&GraphEdit::_input_event);
 
 	ADD_SIGNAL(MethodInfo("connection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
-	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
-
+    ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
+    ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2,"p_position")));
 }
 
 

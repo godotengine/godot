@@ -175,7 +175,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	void add_node(int p_type);
+    void add_node(int p_type, const Vector2 &location);
 	GraphEdit *get_graph_edit() { return graph_edit; }
 	void set_graph(Ref<ShaderGraph> p_graph);
 
@@ -186,13 +186,15 @@ class ShaderGraphEditor : public VBoxContainer {
 
 	OBJ_TYPE(ShaderGraphEditor,VBoxContainer);
 
-	MenuButton *menu;
+    PopupMenu *popup;
 	TabContainer *tabs;
 	ShaderGraphView *graph_edits[ShaderGraph::SHADER_TYPE_MAX];
 	static const char* node_names[ShaderGraph::NODE_TYPE_MAX];
+    Vector2 next_location;
 
 	bool _2d;
 	void _add_node(int p_type);
+    void _popup_requested(const Vector2 &p_position);
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

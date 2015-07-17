@@ -2114,7 +2114,7 @@ void ShaderGraphView::_notification(int p_what) {
 	}
  }
 
-void ShaderGraphView::add_node(int p_type) {
+void ShaderGraphView::add_node(int p_type, const Vector2 &location) {
 
 	List<int> existing;
 	graph->get_node_list(type,&existing);
@@ -2127,7 +2127,7 @@ void ShaderGraphView::add_node(int p_type) {
 		}
 	}
 
-	Vector2 init_ofs(20,20);
+    Vector2 init_ofs = location;
 	while(true) {
 		bool valid=true;
 		for(List<int>::Element *E=existing.front();E;E=E->next()) {
@@ -2222,7 +2222,17 @@ void ShaderGraphEditor::_add_node(int p_type) {
 
 	ShaderGraph::ShaderType shader_type=ShaderGraph::ShaderType(tabs->get_current_tab());
 
-	graph_edits[shader_type]->add_node(p_type);
+    graph_edits[shader_type]->add_node(p_type, next_location);
+}
+
+void ShaderGraphEditor::_popup_requested(const Vector2 &p_position)
+{
+    next_location = get_local_mouse_pos();
+    popup->set_global_pos(p_position);
+    popup->set_size( Size2( 200, 0) );
+    popup->popup();
+    popup->call_deferred("grab_click_focus");
+    popup->set_invalidate_click_until_motion();
 }
 
 
@@ -2243,11 +2253,11 @@ void ShaderGraphEditor::_notification(int p_what) {
 			if (nn.ends_with(":")) {
 				addsep=true;
 			}
-			menu->get_popup()->add_icon_item(get_icon(ic,"EditorIcons"),v,i);
+            popup->add_icon_item(get_icon(ic,"EditorIcons"),v,i);
 			if (addsep)
-				menu->get_popup()->add_separator();
+                popup->add_separator();
 		}
-		menu->get_popup()->connect("item_pressed",this,"_add_node");
+        popup->connect("item_pressed",this,"_add_node");
 
 
 	}
@@ -2256,7 +2266,7 @@ void ShaderGraphEditor::_notification(int p_what) {
 void ShaderGraphEditor::_bind_methods() {
 
 	ObjectTypeDB::bind_method("_add_node",&ShaderGraphEditor::_add_node);
-
+    ObjectTypeDB::bind_method("_popup_requested",&ShaderGraphEditor::_popup_requested);
 }
 
 
@@ -2302,11 +2312,10 @@ const char* ShaderGraphEditor::node_names[ShaderGraph::NODE_TYPE_MAX]={
 ShaderGraphEditor::ShaderGraphEditor(bool p_2d) {
 	_2d=p_2d;
 
-	HBoxContainer *hbc = memnew( HBoxContainer );
-	menu = memnew( MenuButton );
-	menu->set_text("Add Node..");
-	hbc->add_child(menu);
-	add_child(hbc);
+    HBoxContainer *hbc = memnew( HBoxContainer );
+    popup = memnew( PopupMenu );
+    hbc->add_child(popup);
+    add_child(hbc);
 
 
 	tabs = memnew(TabContainer);
@@ -2325,8 +2334,8 @@ ShaderGraphEditor::ShaderGraphEditor(bool p_2d) {
 		tabs->add_child(graph_edits[i]->get_graph_edit());
 		graph_edits[i]->get_graph_edit()->connect("connection_request",graph_edits[i],"_connection_request");
 		graph_edits[i]->get_graph_edit()->connect("disconnection_request",graph_edits[i],"_disconnection_request");
-		graph_edits[i]->get_graph_edit()->set_right_disconnects(true);
-
+        graph_edits[i]->get_graph_edit()->connect("popup_request",this,"_popup_requested");
+        graph_edits[i]->get_graph_edit()->set_right_disconnects(true);
 	}
 
 	tabs->set_current_tab(1);
