@@ -82,7 +82,6 @@ private:
 		StringName name;
 		SceneTree *tree;
 		bool inside_tree;
-		bool reparenting;
 #ifdef TOOLS_ENABLED
 		NodePath import_path; //path used when imported, used by scene editors to keep tracking
 #endif
@@ -119,16 +118,15 @@ private:
 
 	void _propagate_reverse_notification(int p_notification);	
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
-	void _propagate_enter_tree(bool skip_notify = false);
+	void _propagate_enter_tree();
 	void _propagate_ready();
-	void _propagate_reparenting();
-	void _propagate_reparented();
-	void _propagate_exit_tree(bool skip_notify = false);
+	void _propagate_exit_tree();
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node*p_owner);
 	Array _get_node_and_resource(const NodePath& p_path);
 
+	void _duplicate_signals(const Node* p_original,Node* p_copy) const;
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -146,8 +144,6 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
-	virtual void reparented_notify(Node *p_destination_parent);
-	virtual void reparenting_notify(Node *p_destination_parent);
 	//void remove_and_delete_child(Node *p_child);
 	
 	void _propagate_replace_owner(Node *p_owner,Node* p_by_owner); 
@@ -174,10 +170,8 @@ public:
 		NOTIFICATION_FIXED_PROCESS = 16,
 		NOTIFICATION_PROCESS = 17,
 		NOTIFICATION_PARENTED=18,
-		NOTIFICATION_UNPARENTED = 19,
-		NOTIFICATION_INSTANCED = 20,
-		NOTIFICATION_REPARENTING = 21,
-		NOTIFICATION_REPARENTED = 22,
+		NOTIFICATION_UNPARENTED=19,
+		NOTIFICATION_INSTANCED=20,
 	};
 			
 	/* NODE/TREE */			
@@ -187,7 +181,6 @@ public:
 	
 	void add_child(Node *p_child);
 	void remove_child(Node *p_child);
-	void reparent(Node *p_destination_parent);
 	
 	int get_child_count() const;
 	Node *get_child(int p_index) const;
@@ -200,9 +193,7 @@ public:
 	_FORCE_INLINE_ SceneTree *get_tree() const { ERR_FAIL_COND_V( !data.tree, NULL ); return data.tree; }
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
-
-	_FORCE_INLINE_ bool is_reparenting() const { return data.reparenting; }
-
+	
 	bool is_a_parent_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
 	

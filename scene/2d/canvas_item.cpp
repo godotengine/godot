@@ -549,9 +549,6 @@ void CanvasItem::_notification(int p_what) {
 
 			emit_signal(SceneStringNames::get_singleton()->visibility_changed);
 		} break;
-		case NOTIFICATION_REPARENTED: {
-
-		} break;
 
 	}
 }

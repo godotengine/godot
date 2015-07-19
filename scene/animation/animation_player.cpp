@@ -191,16 +191,14 @@ void AnimationPlayer::_notification(int p_what) {
 	
 		case NOTIFICATION_ENTER_TREE: {
 
-			if (!is_reparenting()) {
-				if (!processing) {
-					//make sure that a previous process state was not saved
-					//only process if "processing" is set
-					set_fixed_process(false);
-					set_process(false);
-				}
-				//_set_process(false);
-				clear_caches();
+			if (!processing) {
+				//make sure that a previous process state was not saved
+				//only process if "processing" is set
+				set_fixed_process(false);
+				set_process(false);
 			}
+			//_set_process(false);
+			clear_caches();
 		} break;
 		case NOTIFICATION_READY: {
 
@@ -224,10 +222,9 @@ void AnimationPlayer::_notification(int p_what) {
 				_animation_process( get_fixed_process_delta_time() );
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (!is_reparenting()) {
-				stop_all();
-				clear_caches();
-			}
+		
+			stop_all();
+			clear_caches();
 		} break;
 	}
 }
@@ -298,7 +295,7 @@ void AnimationPlayer::_generate_node_caches(AnimationData* p_anim) {
 					
 						p_anim->node_cache[i]->bone_idx=p_anim->node_cache[i]->skeleton->find_bone(bone_name);
 						if (p_anim->node_cache[i]->bone_idx<0) {
-							// broken track (unexisting bone)
+							// broken track (nonexistent bone)
 							p_anim->node_cache[i]->skeleton=NULL;
 							p_anim->node_cache[i]->spatial=NULL;
 							printf("bone is %ls\n", String(bone_name).c_str());

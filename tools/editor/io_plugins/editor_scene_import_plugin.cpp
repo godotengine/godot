@@ -2638,8 +2638,11 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 			for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
 				keep.insert(F->get());
 			}
-
+			print_line("FILTERING ANIM: "+String(E->get()));
 			_filter_anim_tracks(anim->get_animation(name),keep);
+		} else {
+			print_line("NOT FILTERING ANIM: "+String(E->get()));
+
 		}
 
 	}

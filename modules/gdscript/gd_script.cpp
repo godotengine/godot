@@ -140,7 +140,7 @@ String GDFunction::_get_call_error(const Variant::CallError& p_err, const String
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS) {
 		err_text="Invalid call to "+p_where+". Expected "+itos(p_err.argument)+" arguments.";
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_INVALID_METHOD) {
-		err_text="Invalid call. Unexisting "+p_where+".";
+		err_text="Invalid call. Nonexistent "+p_where+".";
 	} else if (p_err.error==Variant::CallError::CALL_ERROR_INSTANCE_IS_NULL) {
 		err_text="Attempt to call "+p_where+" on a null instance.";
 	} else {
@@ -335,17 +335,30 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(b,3);
 				GET_VARIANT_PTR(dst,4);
 
+#ifdef DEBUG_ENABLED
+				Variant ret;
+				Variant::evaluate(op,*a,*b,ret,valid);
+#else
 				Variant::evaluate(op,*a,*b,*dst,valid);
+#endif
+
 				if (!valid) {
-					if (dst->get_type()==Variant::STRING) {
+#ifdef DEBUG_ENABLED
+
+					if (ret.get_type()==Variant::STRING) {
 						//return a string when invalid with the error
-						err_text=*dst;
+						err_text=ret;
 						err_text += " in operator '"+Variant::get_operator_name(op)+"'.";
 					} else {
 						err_text="Invalid operands '"+Variant::get_type_name(a->get_type())+"' and '"+Variant::get_type_name(b->get_type())+"' in operator '"+Variant::get_operator_name(op)+"'.";
 					}
+#endif
 					break;
+
 				}
+#ifdef DEBUG_ENABLED
+				*dst=ret;
+#endif
 
 				ip+=5;
 
@@ -457,8 +470,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				GET_VARIANT_PTR(dst,3);
 
 				bool valid;
+#ifdef DEBUG_ENABLED
+//allow better error message in cases where src and dst are the same stack position
+				Variant ret = src->get(*index,&valid);
+#else
 				*dst = src->get(*index,&valid);
 
+#endif
 				if (!valid) {
 					String v = index->operator String();
 					if (v!="") {
@@ -469,6 +487,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					err_text="Invalid get index "+v+" (on base: '"+_get_var_type(src)+"').";
 					break;
 				}
+#ifdef DEBUG_ENABLED
+				*dst=ret;
+#endif
 				ip+=4;
 			} continue;
 			case OPCODE_SET_NAMED: {
@@ -508,7 +529,13 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 				const StringName *index = &_global_names_ptr[indexname];
 
 				bool valid;
+#ifdef DEBUG_ENABLED
+//allow better error message in cases where src and dst are the same stack position
+				Variant ret = src->get_named(*index,&valid);
+
+#else
 				*dst = src->get_named(*index,&valid);
+#endif
 
 				if (!valid) {
 					if (src->has_method(*index)) {
@@ -518,7 +545,9 @@ Variant GDFunction::call(GDInstance *p_instance, const Variant **p_args, int p_a
 					}
 					break;
 				}
-
+#ifdef DEBUG_ENABLED
+				*dst=ret;
+#endif
 				ip+=4;
 			} continue;
 			case OPCODE_ASSIGN: {

@@ -133,14 +133,8 @@ void Node::_notification(int p_notification) {
 			}
 
 		} break;
-		case NOTIFICATION_REPARENTING: {
-			data.reparenting = true;
-		} break;
-		case NOTIFICATION_REPARENTED: {
-			data.reparenting = false;
-		} break;
 	}
-}	
+}
 
 
 void Node::_propagate_ready() {
@@ -155,29 +149,8 @@ void Node::_propagate_ready() {
 
 }
 
-void Node::_propagate_reparenting()
-{
-	data.blocked++;
-	for (int i = 0; i<data.children.size(); i++) {
 
-		data.children[i]->_propagate_reparenting();
-	}
-	data.blocked--;
-	notification(NOTIFICATION_REPARENTING);
-}
-
-void Node::_propagate_reparented()
-{
-	data.blocked++;
-	for (int i = 0; i<data.children.size(); i++) {
-
-		data.children[i]->_propagate_reparented();
-	}
-	data.blocked--;
-	notification(NOTIFICATION_REPARENTED);
-}
-
-void Node::_propagate_enter_tree(bool skip_notify) {
+void Node::_propagate_enter_tree() {
 	// this needs to happen to all childs before any enter_tree
 
 	if (data.parent) {
@@ -201,19 +174,17 @@ void Node::_propagate_enter_tree(bool skip_notify) {
 		data.tree->add_to_group(*K,this);
 	}
 
+
 	notification(NOTIFICATION_ENTER_TREE);
 
-	if (!skip_notify)
-	{
-		if (get_script_instance()) {
+	if (get_script_instance()) {
 
-			Variant::CallError err;
-			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree, NULL, 0);
-		}
-
+		Variant::CallError err;
+		get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_enter_tree,NULL,0);
 	}
 
 	emit_signal(SceneStringNames::get_singleton()->enter_tree);
+
 
 	data.blocked++;
 	//block while adding children
@@ -221,7 +192,7 @@ void Node::_propagate_enter_tree(bool skip_notify) {
 	for (int i=0;i<data.children.size();i++) {
 		
 		if (!data.children[i]->is_inside_tree()) // could have been added in enter_tree
-			data.children[i]->_propagate_enter_tree(skip_notify);
+			data.children[i]->_propagate_enter_tree();
 	}	
 
 	data.blocked--;
@@ -230,7 +201,7 @@ void Node::_propagate_enter_tree(bool skip_notify) {
 
 
 
-void Node::_propagate_exit_tree(bool skip_notify) {
+void Node::_propagate_exit_tree() {
 
 	//block while removing children
 
@@ -238,21 +209,19 @@ void Node::_propagate_exit_tree(bool skip_notify) {
 
 	for (int i=data.children.size()-1;i>=0;i--) {
 
-		data.children[i]->_propagate_exit_tree(skip_notify);
+		data.children[i]->_propagate_exit_tree();
 	}
 
 	data.blocked--;
-	if (!skip_notify)
-	{
-		if (get_script_instance()) {
-			Variant::CallError err;
-			get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree, NULL, 0);
-		}
-	}
 
-	notification(NOTIFICATION_EXIT_TREE, true);
+	if (get_script_instance()) {
+
+		Variant::CallError err;
+		get_script_instance()->call_multilevel(SceneStringNames::get_singleton()->_exit_tree,NULL,0);
+	}
 	emit_signal(SceneStringNames::get_singleton()->exit_tree);
 
+	notification(NOTIFICATION_EXIT_TREE,true);
 	if (data.tree)
 		data.tree->node_removed(this);
 
@@ -344,17 +313,6 @@ void Node::remove_child_notify(Node *p_child) {
 }
 
 void Node::move_child_notify(Node *p_child) {
-
-	// to be used when not wanted	
-}
-
-
-void Node::reparenting_notify(Node *p_destination_parent) {
-
-	// to be used when not wanted	
-}
-
-void Node::reparented_notify(Node *p_destination_parent) {
 
 	// to be used when not wanted	
 }
@@ -794,71 +752,6 @@ void Node::remove_child(Node *p_child) {
 	// validate owner
 	p_child->_propagate_validate_owner();
 		
-}
-//Change parent from the node with reparent notification only
-void Node::reparent(Node *p_destination_parent) {
-	ERR_EXPLAIN("Destination parent is NULL.")
-	ERR_FAIL_NULL(p_destination_parent);
-	ERR_EXPLAIN("Node doesn't belong to a parent, add the node to a parent first.")
-	ERR_FAIL_NULL(data.parent);
-	ERR_EXPLAIN("Parent from node is the same as destination parent.")
-	ERR_FAIL_COND(p_destination_parent == data.parent);
-	ERR_FAIL_COND(data.blocked>0);
-
-	int idx = -1;
-	for (int i = 0; i<data.parent->data.children.size(); i++) {
-
-		if (data.parent->data.children[i] == this) {
-			idx = i;
-			break;
-		}
-	}
-
-	ERR_FAIL_COND(idx == -1);
-
-	reparenting_notify(p_destination_parent);
-	_propagate_reparenting();
-
-	SceneTree *tree_changed_a=NULL;
-	SceneTree *tree_changed_b=NULL;
-
-	if (data.tree) {
-		_propagate_exit_tree(true);
-
-		tree_changed_a=data.tree;
-	}
-
-	data.parent->data.children.remove(idx);
-	for (int i = idx; i<data.parent->data.children.size(); i++) {
-		data.parent->data.children[i]->data.pos = i;
-	}
-	data.parent = NULL;
-	data.pos = -1;
-	_propagate_validate_owner();
-
-	//add to new parent
-	p_destination_parent->_validate_child_name(this);
-	data.pos = p_destination_parent->data.children.size();
-	p_destination_parent->data.children.push_back(this);
-	data.parent = p_destination_parent;
-	data.parent_owned = p_destination_parent->data.in_constructor; //I don't know if this is necessary for reparent
-
-	data.tree=p_destination_parent->data.tree;
-
-	if (data.tree) {
-		_propagate_enter_tree(true);
-
-		tree_changed_b=data.tree;
-	}
-
-	if (tree_changed_a)
-		tree_changed_a->tree_changed();
-	if (tree_changed_b)
-		tree_changed_b->tree_changed();
-
-	//notifications of reparent
-	reparented_notify(p_destination_parent);
-	_propagate_reparented();
 }
 
 int Node::get_child_count() const {
@@ -1524,6 +1417,41 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 
 }
 
+
+void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
+
+	if (this!=p_original && get_owner()!=p_original)
+		return;
+
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+
+	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
+
+		if (E->get().flags&CONNECT_PERSIST) {
+			//user connected
+			NodePath p = p_original->get_path_to(this);
+			Node *copy = p_copy->get_node(p);
+
+			Node *target = E->get().target->cast_to<Node>();
+			if (!target)
+				continue;
+			NodePath ptarget = p_original->get_path_to(target);
+			Node *copytarget = p_copy->get_node(ptarget);
+
+			if (copy && copytarget) {
+				copy->connect(E->get().signal,copytarget,E->get().method,E->get().binds,CONNECT_PERSIST);
+			}
+		}
+	}
+
+	for(int i=0;i<get_child_count();i++) {
+		get_child(i)->_duplicate_signals(p_original,p_copy);
+	}
+
+}
+
+
 Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 
 
@@ -1562,6 +1490,7 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 		get_child(i)->_duplicate_and_reown(node,p_reown_map);
 	}
 
+	_duplicate_signals(this,node);
 	return node;
 
 }
@@ -1869,9 +1798,8 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
-	ObjectTypeDB::bind_method(_MD("add_child", "node:Node"), &Node::add_child);
-	ObjectTypeDB::bind_method(_MD("remove_child", "node:Node"), &Node::remove_child);
-	ObjectTypeDB::bind_method(_MD("reparent", "destination_parent:Node"), &Node::reparent);
+	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
+	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
 	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
@@ -1942,11 +1870,10 @@ void Node::_bind_methods() {
 	BIND_CONSTANT( NOTIFICATION_FIXED_PROCESS );
 	BIND_CONSTANT( NOTIFICATION_PROCESS );
 	BIND_CONSTANT( NOTIFICATION_PARENTED );
-	BIND_CONSTANT(NOTIFICATION_UNPARENTED);
-	BIND_CONSTANT(NOTIFICATION_REPARENTING);
-	BIND_CONSTANT(NOTIFICATION_REPARENTED);
+	BIND_CONSTANT( NOTIFICATION_UNPARENTED );
 	BIND_CONSTANT( NOTIFICATION_PAUSED );
 	BIND_CONSTANT( NOTIFICATION_UNPAUSED );
+
 
 	BIND_CONSTANT( PAUSE_MODE_INHERIT );
 	BIND_CONSTANT( PAUSE_MODE_STOP );

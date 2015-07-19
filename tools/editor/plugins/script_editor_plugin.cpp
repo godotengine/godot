@@ -706,25 +706,31 @@ void ScriptEditor::_menu_option(int p_option) {
 		} break;
 		case EDIT_UNDO: {
 			current->get_text_edit()->undo();
+			current->get_text_edit()->call_deferred("grab_focus");
 		} break;
 		case EDIT_REDO: {
 			current->get_text_edit()->redo();
+			current->get_text_edit()->call_deferred("grab_focus");
 		} break;
 		case EDIT_CUT: {
 
 			current->get_text_edit()->cut();
+			current->get_text_edit()->call_deferred("grab_focus");
 		} break;
 		case EDIT_COPY: {
 			current->get_text_edit()->copy();
+			current->get_text_edit()->call_deferred("grab_focus");
 
 		} break;
 		case EDIT_PASTE: {
 			current->get_text_edit()->paste();
+			current->get_text_edit()->call_deferred("grab_focus");
 
 		} break;
 		case EDIT_SELECT_ALL: {
 
 			current->get_text_edit()->select_all();
+			current->get_text_edit()->call_deferred("grab_focus");
 
 		} break;
         case EDIT_MOVE_LINE_UP: {
