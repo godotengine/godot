@@ -819,6 +819,7 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
 	Panel *panel = memnew( Panel );

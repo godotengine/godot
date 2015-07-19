@@ -128,7 +128,10 @@ public:
 	virtual void area_set_ray_pickable(RID p_area,bool p_enable);
 	virtual bool area_is_ray_pickable(RID p_area) const;
 
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable);
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method);
 
 
 	/* BODY API */

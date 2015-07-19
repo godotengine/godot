@@ -138,6 +138,29 @@ static int frame_count = 0;
 		Main::setup2();
 		++frame_count;
 
+		// this might be necessary before here
+		for (NSString* key in [[NSBundle mainBundle] infoDictionary]) {
+			NSObject* value = [[[NSBundle mainBundle] infoDictionary] objectForKey:key];
+			String ukey = String::utf8([key UTF8String]);
+
+			// we need a NSObject to Variant conversor
+
+			if ([value isKindOfClass:[NSString class]]) {
+				NSString* str = (NSString*)value;
+				String uval = String::utf8([str UTF8String]);
+
+				Globals::get_singleton()->set("Info.plist/"+ukey, uval);
+
+			} else if ([value isKindOfClass:[NSNumber class]]) {
+
+				NSNumber* n = (NSNumber*)value;
+				double dval = [n doubleValue];
+
+				Globals::get_singleton()->set("Info.plist/"+ukey, dval);
+			};
+			// do stuff
+		}
+
 	} break;
 /*
 	case 3: {

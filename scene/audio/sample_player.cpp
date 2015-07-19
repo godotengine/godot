@@ -102,7 +102,7 @@ bool SamplePlayer::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= get_sample_library();
 	} else if (name.begins_with("default/")) {
 
-			String what=name.get_slice("/",1);
+			String what=name.get_slicec('/',1);
 
 			if (what=="volume_db")
 				r_ret= get_default_volume_db();

@@ -94,7 +94,7 @@ public:
 		/* INTERPOLATE GAUSS */
 	};
 
-	static Image (*_png_mem_loader_func)(const uint8_t* p_png);
+	static Image (*_png_mem_loader_func)(const uint8_t* p_png,int p_size);
 	static void (*_image_compress_bc_func)(Image *);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
@@ -305,6 +305,7 @@ public:
 	};
 
 	AlphaMode detect_alpha() const;
+	bool is_invisible() const;
 
 	void put_indexed_pixel(int p_x, int p_y, uint8_t p_idx,int p_mipmap=0);
 	uint8_t get_indexed_pixel(int p_x, int p_y,int p_mipmap=0) const;
@@ -335,6 +336,7 @@ public:
 	Image compressed(int p_mode); /* from the Image::CompressMode enum */
 	Error decompress();
 	Image decompressed() const;
+	bool is_compressed() const;
 
 	void fix_alpha_edges();
 	void premultiply_alpha();
@@ -349,7 +351,7 @@ public:
 	Image get_rect(const Rect2& p_area) const;
 
 	static void set_compress_bc_func(void (*p_compress_func)(Image *));
-	Image(const uint8_t* p_mem_png);
+	Image(const uint8_t* p_mem_png, int p_len=-1);
 	Image(const char **p_xpm);
 	~Image();
 

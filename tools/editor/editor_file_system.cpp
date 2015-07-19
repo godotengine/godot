@@ -33,7 +33,7 @@
 #include "os/file_access.h"
 #include "editor_node.h"
 #include "io/resource_saver.h"
-
+#include "editor_settings.h"
 
 EditorFileSystem *EditorFileSystem::singleton=NULL;
 
@@ -357,7 +357,9 @@ void EditorFileSystem::_scan_scenes() {
 
 
 	String project=Globals::get_singleton()->get_resource_path();
-	FileAccess *f =FileAccess::open(project+"/.fscache",FileAccess::READ);
+
+	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
+	FileAccess *f =FileAccess::open(fscache,FileAccess::READ);
 
 	if (f) {
 		//read the disk cache
@@ -470,7 +472,9 @@ void EditorFileSystem::_scan_scenes() {
 
 
 	//save back the findings
-	f=FileAccess::open(project+"/.fscache",FileAccess::WRITE);
+//	String fscache = EditorSettings::get_singleton()->get_project_settings_path().plus_file("file_cache");
+
+	f=FileAccess::open(fscache,FileAccess::WRITE);
 	_save_type_cache_fs(scandir,f);
 	f->close();
 	memdelete(f);
@@ -989,6 +993,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_path(const String& p_path) {
 
 void EditorFileSystem::_resource_saved(const String& p_path){
 
+	print_line("resource saved: "+p_path);
 	EditorFileSystem::get_singleton()->update_file(p_path);
 }
 

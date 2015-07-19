@@ -33,12 +33,13 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/menu_button.h"
+#include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 #include "script_language.h"
 #include "tools/editor/code_editor.h"
 #include "scene/gui/split_container.h"
-
+#include "scene/gui/item_list.h"
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
@@ -88,6 +89,7 @@ protected:
 	virtual void _code_complete_script(const String& p_code, List<String>* r_options);
 	virtual void _load_theme_settings();
 	void _notification(int p_what);
+	static void _bind_methods();
 
 
 public:
@@ -97,11 +99,14 @@ public:
 	Vector<String> get_functions() ;
 	void set_edited_script(const Ref<Script>& p_script);
 	void reload_text();
-	void _update_name();
+	String get_name() ;
+	Ref<Texture> get_icon() ;
 
 	ScriptTextEditor();
 
 };
+
+class EditorScriptCodeCompletionCache;
 
 class ScriptEditor : public VBoxContainer {
 
@@ -115,6 +120,7 @@ class ScriptEditor : public VBoxContainer {
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
+		FILE_CLOSE,
 		EDIT_UNDO,
 		EDIT_REDO,
 		EDIT_CUT,
@@ -123,12 +129,12 @@ class ScriptEditor : public VBoxContainer {
 		EDIT_SELECT_ALL,
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
-        EDIT_TOGGLE_COMMENT,
-        EDIT_MOVE_LINE_UP,
-        EDIT_MOVE_LINE_DOWN,
-        EDIT_INDENT_RIGHT,
-        EDIT_INDENT_LEFT,
-        EDIT_CLONE_DOWN,
+		EDIT_TOGGLE_COMMENT,
+		EDIT_MOVE_LINE_UP,
+		EDIT_MOVE_LINE_DOWN,
+		EDIT_INDENT_RIGHT,
+		EDIT_INDENT_LEFT,
+		EDIT_CLONE_DOWN,
 		SEARCH_FIND,
 		SEARCH_FIND_NEXT,
 		SEARCH_REPLACE,
@@ -140,8 +146,7 @@ class ScriptEditor : public VBoxContainer {
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
 		DEBUG_SHOW,
-		HELP_CONTEXTUAL,
-		WINDOW_CLOSE,
+		HELP_CONTEXTUAL,		
 		WINDOW_MOVE_LEFT,
 		WINDOW_MOVE_RIGHT,
 		WINDOW_SELECT_BASE=100
@@ -151,17 +156,19 @@ class ScriptEditor : public VBoxContainer {
 	MenuButton *file_menu;
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
-	MenuButton *window_menu;
 	MenuButton *debug_menu;
 	MenuButton *help_menu;
 	Timer *autosave_timer;
 	uint64_t idle;
 
+	ItemList *script_list;
+	HSplitContainer *script_split;
 	TabContainer *tab_container;
 	FindReplaceDialog *find_replace_dialog;
 	GotoLineDialog *goto_line_dialog;
 	ConfirmationDialog *erase_tab_confirm;
 	ScriptEditorDebugger* debugger;
+	ToolButton *scripts_visible;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_optin);
@@ -170,6 +177,8 @@ class ScriptEditor : public VBoxContainer {
 	ConfirmationDialog *disk_changed;
 
 	VSplitContainer *v_split;
+
+	bool restoring_layout;
 
 	String _get_debug_tooltip(const String&p_text,Node *_ste);
 
@@ -180,8 +189,11 @@ class ScriptEditor : public VBoxContainer {
 
 	void _close_current_tab();
 
+	bool grab_focus_block;
+
 	ScriptEditorQuickOpen *quick_open;
 
+	EditorScriptCodeCompletionCache *completion_cache;
 
 	void _editor_play();
 	void _editor_pause();
@@ -199,6 +211,18 @@ class ScriptEditor : public VBoxContainer {
 	void _editor_settings_changed();
 	void _autosave_scripts();
 
+	void _update_script_names();
+
+	void _script_selected(int p_idx);
+
+	void _find_scripts(Node* p_base, Node* p_current,Set<Ref<Script> >& used);
+
+	void _tree_changed();
+
+	void _script_split_dragged(float);
+
+	bool waiting_update_names;
+
 	static ScriptEditor *script_editor;
 protected:
 	void _notification(int p_what);
@@ -206,9 +230,6 @@ protected:
 public:
 
 	static ScriptEditor *get_singleton() { return script_editor; }
-	void _save_files_state();
-	void _load_files_state();
-
 
 	void ensure_focus_current();
 	void apply_scripts() const;
@@ -222,11 +243,15 @@ public:
 
 	void get_breakpoints(List<String> *p_breakpoints);
 
-    void swap_lines(TextEdit *tx, int line1, int line2);
+	void swap_lines(TextEdit *tx, int line1, int line2);
 
 	void save_external_data();
 
+	void set_window_layout(Ref<ConfigFile> p_layout);
+	void get_window_layout(Ref<ConfigFile> p_layout);
+
 	ScriptEditor(EditorNode *p_editor);
+	~ScriptEditor();
 };
 
 class ScriptEditorPlugin : public EditorPlugin {
@@ -253,6 +278,9 @@ public:
 
 	virtual void restore_global_state();
 	virtual void save_global_state();
+
+	virtual void set_window_layout(Ref<ConfigFile> p_layout);
+	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 
 	virtual void get_breakpoints(List<String> *p_breakpoints);
 

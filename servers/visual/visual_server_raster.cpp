@@ -4071,6 +4071,15 @@ void VisualServerRaster::canvas_light_set_shadow_esm_multiplier(RID p_light, flo
 
 }
 
+void VisualServerRaster::canvas_light_set_shadow_color(RID p_light, const Color& p_color) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->shadow_color=p_color;
+
+}
+
+
 /****** CANVAS LIGHT OCCLUDER ******/
 
 RID VisualServerRaster::canvas_light_occluder_create() {
@@ -6302,7 +6311,7 @@ void VisualServerRaster::_render_no_camera(Viewport *p_viewport,Camera *p_camera
 	else
 		environment=p_scenario->fallback_environment;
 
-	rasterizer->set_camera(Transform(),CameraMatrix());
+	rasterizer->set_camera(Transform(),CameraMatrix(),false);
 	rasterizer->begin_scene(p_viewport->viewport_data,environment,p_scenario->debug);
 	rasterizer->set_viewport(viewport_rect);
 	rasterizer->end_scene();
@@ -6318,7 +6327,8 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 
 	/* STEP 1 - SETUP CAMERA */
 	CameraMatrix camera_matrix;
-	
+	bool ortho=false;
+
 	switch(p_camera->type) {
 		case Camera::ORTHOGONAL: {
 		
@@ -6330,6 +6340,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 				p_camera->vaspect
 
 			);
+			ortho=true;
 		} break;
 		case Camera::PERSPECTIVE: {
 
@@ -6341,12 +6352,13 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 				p_camera->vaspect
 
 			);
+			ortho=false;
 				
 		} break;		
 	}
 
 
-	rasterizer->set_camera(p_camera->transform, camera_matrix);
+	rasterizer->set_camera(p_camera->transform, camera_matrix,ortho);
 	
 	Vector<Plane> planes = camera_matrix.get_projection_planes(p_camera->transform);
 
@@ -7358,7 +7370,7 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 	rasterizer->canvas_end_rect();
 };
 
-void VisualServerRaster::flush() {
+void VisualServerRaster::sync() {
 	//do none
 }
 

@@ -383,9 +383,12 @@ void Body2DSW::set_space(Space2DSW *p_space){
 void Body2DSW::_compute_area_gravity(const Area2DSW *p_area) {
 
 	if (p_area->is_gravity_point()) {
-
-		gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
-
+		if(p_area->get_gravity_distance_scale() > 0) {
+			Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
+			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale()+1, 2) );
+		} else {
+			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
+		}
 	} else {
 		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}

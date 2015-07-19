@@ -136,6 +136,14 @@ ScriptInstance::~ScriptInstance() {
 
 }
 
+
+ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton=NULL;
+ScriptCodeCompletionCache::ScriptCodeCompletionCache() {
+	singleton=this;
+}
+
+
+
 void ScriptLanguage::frame() {
 
 

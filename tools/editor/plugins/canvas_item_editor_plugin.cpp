@@ -150,8 +150,56 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 		_tool_select(TOOL_MOVE);
 	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_E)
 		_tool_select(TOOL_ROTATE);
-	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_V && drag==DRAG_ALL && can_move_pivot)
-		drag=DRAG_PIVOT;
+	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_V && drag==DRAG_NONE && can_move_pivot) {
+		if (p_ev.key.mod.shift) {
+			//move drag pivot
+			drag=DRAG_PIVOT;
+		} else if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
+
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+
+			Vector2 mouse_pos = viewport->get_local_mouse_pos();
+			if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
+				//just in case, make it work if over viewport
+				mouse_pos=transform.affine_inverse().xform(mouse_pos);
+				mouse_pos=snap_point(mouse_pos);
+
+				undo_redo->create_action("Move Pivot");
+
+				for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+					Node2D *n2d = E->get()->cast_to<Node2D>();
+
+					if (n2d && n2d->edit_has_pivot()) {
+
+						Vector2 offset = n2d->edit_get_pivot();
+						Vector2 gpos = n2d->get_global_pos();
+
+						Vector2 motion_ofs = gpos-mouse_pos;
+
+						undo_redo->add_do_method(n2d,"set_global_pos",mouse_pos);
+						undo_redo->add_do_method(n2d,"edit_set_pivot",offset+n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
+						undo_redo->add_undo_method(n2d,"set_global_pos",gpos);
+						undo_redo->add_undo_method(n2d,"edit_set_pivot",offset);
+						for(int i=0;i<n2d->get_child_count();i++) {
+							Node2D *n2dc = n2d->get_child(i)->cast_to<Node2D>();
+							if (!n2dc)
+								continue;
+
+							undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+							undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+
+						}
+
+					}
+
+				}
+
+				undo_redo->commit_action();
+			}
+
+		}
+	}
 
 }
 
@@ -1685,7 +1733,7 @@ void CanvasItemEditor::_viewport_draw() {
 			viewport->draw_line(endpoints[i],endpoints[(i+1)%4],c,2);
 		}
 
-		if (single && (tool==TOOL_SELECT || tool == TOOL_MOVE)) { //kind of sucks
+		if (single && (tool==TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_ROTATE)) { //kind of sucks
 
 			if (canvas_item->cast_to<Node2D>()) {
 
@@ -2854,7 +2902,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(select_button);
 	select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Move Pivot (while moving)");
+	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).");
 
 	move_button = memnew( ToolButton );
 	move_button->set_toggle_mode(true);

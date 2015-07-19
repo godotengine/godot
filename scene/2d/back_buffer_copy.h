@@ -7,7 +7,7 @@ class BackBufferCopy : public Node2D {
 	OBJ_TYPE( BackBufferCopy,Node2D);
 public:
 	enum CopyMode {
-		COPY_MODE_DISALED,
+		COPY_MODE_DISABLED,
 		COPY_MODE_RECT,
 		COPY_MODE_VIEWPORT
 	};

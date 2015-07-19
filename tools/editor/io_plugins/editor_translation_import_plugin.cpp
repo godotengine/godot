@@ -47,7 +47,7 @@ class EditorTranslationImportDialog : public ConfirmationDialog {
 
 	LineEdit *import_path;
 	LineEdit *save_path;
-	FileDialog *file_select;
+	EditorFileDialog *file_select;
 	CheckButton *ignore_first;
 	CheckButton *compress;
 	CheckButton *add_to_project;
@@ -347,16 +347,16 @@ public:
 		add_to_project->set_text("Add to Project (engine.cfg)");
 		tcomp->add_child(add_to_project);
 
-		file_select = memnew(FileDialog);
-		file_select->set_access(FileDialog::ACCESS_FILESYSTEM);
+		file_select = memnew(EditorFileDialog);
+		file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		add_child(file_select);
-		file_select->set_mode(FileDialog::MODE_OPEN_FILE);
+		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 		file_select->connect("file_selected", this,"_choose_file");
 		file_select->add_filter("*.csv ; Translation CSV");
 		save_select = memnew(	EditorDirDialog );
 		add_child(save_select);
 
-	//	save_select->set_mode(FileDialog::MODE_OPEN_DIR);
+	//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");

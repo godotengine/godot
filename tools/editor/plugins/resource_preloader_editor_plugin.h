@@ -49,7 +49,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 	bool loading_scene;
 
 
-	FileDialog *file;
+	EditorFileDialog *file;
 
 	AcceptDialog *dialog;
 

@@ -201,6 +201,12 @@ def configure(env):
 
 			env.Append(CCFLAGS=['/O2','/DDEBUG_ENABLED'])
 			env.Append(LINKFLAGS=['/SUBSYSTEM:CONSOLE'])
+		elif (env["target"]=="debug_release"):
+
+			env.Append(CCFLAGS=['/Zi','/Od'])
+			env.Append(LINKFLAGS=['/DEBUG'])
+			env.Append(LINKFLAGS=['/SUBSYSTEM:WINDOWS'])
+			env.Append(LINKFLAGS=['/ENTRY:mainCRTStartup'])
 
 		elif (env["target"]=="debug"):
 

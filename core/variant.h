@@ -185,6 +185,7 @@ public:
 	_FORCE_INLINE_ bool is_array() const { return type>=ARRAY; };
 	bool is_shared() const;
 	bool is_zero() const;
+	bool is_one() const;
 
 	operator bool() const;
 	operator signed int() const;

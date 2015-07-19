@@ -135,6 +135,7 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 
 
 	ERR_EXPLAIN("Sample buffer size does not match sample size.");
+	//print_line("len bytes: "+itos(s->length_bytes)+" bufsize: "+itos(buff_size));
 	ERR_FAIL_COND(s->length_bytes!=buff_size);
 	DVector<uint8_t>::Read buffer_r=p_buffer.read();
 	const uint8_t *src = buffer_r.ptr();

@@ -18,6 +18,7 @@ private:
 	bool enabled;
 	bool shadow;
 	Color color;
+	Color shadow_color;
 	float height;
 	float _scale;
 	float energy;
@@ -94,6 +95,10 @@ public:
 
 	void set_shadow_esm_multiplier( float p_multiplier);
 	float get_shadow_esm_multiplier() const;
+
+	void set_shadow_color( const Color& p_shadow_color);
+	Color get_shadow_color() const;
+
 
 	virtual Rect2 get_item_rect() const;
 

@@ -56,6 +56,17 @@ String DirAccess::_get_root_string() const {
 	return "";
 }
 
+int DirAccess::get_current_drive() {
+
+	String path = get_current_dir().to_lower();
+	for(int i=0;i<get_drive_count();i++) {
+		String d = get_drive(i).to_lower();
+		if (path.begins_with(d))
+			return i;
+	}
+
+	return 0;
+}
 
 static Error _erase_recursive(DirAccess *da) {
 

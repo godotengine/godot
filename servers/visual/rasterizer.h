@@ -502,7 +502,7 @@ public:
 	virtual void begin_scene(RID p_viewport_data,RID p_env,VS::ScenarioDebugMode p_debug)=0;
 	virtual void begin_shadow_map( RID p_light_instance, int p_shadow_pass )=0;
 
-	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection)=0;
+	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection,bool p_ortho_hint)=0;
 	
 	virtual void add_light( RID p_light_instance )=0; ///< all "add_light" calls happen before add_geometry calls
 	
@@ -592,6 +592,7 @@ public:
 		RID shadow_buffer;
 		int shadow_buffer_size;
 		float shadow_esm_mult;
+		Color shadow_color;
 
 
 		void *texture_cache; // implementation dependent
@@ -610,6 +611,7 @@ public:
 		CanvasLight() {
 			enabled=true;			
 			color=Color(1,1,1);
+			shadow_color=Color(0,0,0,0);
 			height=0;
 			z_min=-1024;
 			z_max=1024;

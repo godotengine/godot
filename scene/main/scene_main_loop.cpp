@@ -1108,6 +1108,9 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
 	ADD_SIGNAL( MethodInfo("screen_resized") );
 
+	ADD_SIGNAL( MethodInfo("idle_frame"));
+	ADD_SIGNAL( MethodInfo("fixed_frame"));
+
 	BIND_CONSTANT( GROUP_CALL_DEFAULT );
 	BIND_CONSTANT( GROUP_CALL_REVERSE );
 	BIND_CONSTANT( GROUP_CALL_REALTIME );
@@ -1166,8 +1169,7 @@ SceneTree::SceneTree() {
 	edited_scene_root=NULL;
 #endif
 
-	ADD_SIGNAL( MethodInfo("idle_frame"));
-	ADD_SIGNAL( MethodInfo("fixed_frame"));
+
 
 }
 

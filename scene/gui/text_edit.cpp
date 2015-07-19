@@ -1842,6 +1842,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+					_cancel_completion();
+					completion_hint="";
 					
 				} break;
 				case KEY_END: {
@@ -1855,6 +1857,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
 					
 				} break;
 #endif
@@ -1867,6 +1872,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
+
 					
 				} break;
 				case KEY_PAGEDOWN: {
@@ -1878,6 +1887,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
+
 					
 				} break;
 				case KEY_A: {
@@ -1893,7 +1906,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					selection.from_line=0;
 					selection.from_column=0;
 					selection.to_line=text.size()-1;
-					selection.to_column=text[selection.to_line].size();
+					selection.to_column=text[selection.to_line].length();
 					selection.selecting_mode=Selection::MODE_NONE;
 					update();
 					
@@ -2064,6 +2077,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					const CharType chr[2] = {(CharType)k.unicode, 0};
 					
+					if (completion_hint!="" && k.unicode==')') {
+						completion_hint="";
+					}
 					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);
 					} else {
@@ -2778,6 +2794,11 @@ void TextEdit::copy() {
 	if (!selection.active)
 		return;
 	
+	print_line("from line: "+itos(selection.from_line));
+	print_line("from column: "+itos(selection.from_column));
+	print_line("to line: "+itos(selection.to_line));
+	print_line("to column: "+itos(selection.to_column));
+
 	String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 	OS::get_singleton()->set_clipboard(clipboard);
 	
@@ -2809,7 +2830,7 @@ void TextEdit::select_all() {
 	selection.from_line=0;
 	selection.from_column=0;
 	selection.to_line=text.size()-1;
-	selection.to_column=text[selection.to_line].size();
+	selection.to_column=text[selection.to_line].length();
 	selection.selecting_mode=Selection::MODE_NONE;
 	update();
 	
@@ -3318,9 +3339,32 @@ void TextEdit::_update_completion_candidates() {
 
 	//look for keywords first
 
-	bool pre_keyword=false;
+	bool inquote=false;
+	int first_quote=-1;
 
-	if (cofs>0 && l[cofs-1]==' ') {
+	int c=cofs-1;
+	while(c>=0) {
+		if (l[c]=='"' || l[c]=='\'') {
+			inquote=!inquote;
+			if (first_quote==-1)
+				first_quote=c;
+		}
+		c--;
+	}
+
+	bool pre_keyword=false;
+	bool cancel=false;
+
+	//print_line("inquote: "+itos(inquote)+"first quote "+itos(first_quote)+" cofs-1 "+itos(cofs-1));
+	if (!inquote && first_quote==cofs-1) {
+		//no completion here
+		//print_line("cancel!");
+		cancel=true;
+	} if (inquote && first_quote!=-1) {
+
+		s=l.substr(first_quote,cofs-first_quote);
+		//print_line("s: 1"+s);
+	} else if (cofs>0 && l[cofs-1]==' ') {
 		int kofs=cofs-1;
 		String kw;
 		while (kofs>=0 && l[kofs]==' ')
@@ -3332,7 +3376,7 @@ void TextEdit::_update_completion_candidates() {
 		}
 
 		pre_keyword=keywords.has(kw);
-		print_line("KW "+kw+"? "+itos(pre_keyword));
+		//print_line("KW "+kw+"? "+itos(pre_keyword));
 
 	} else {
 
@@ -3349,7 +3393,7 @@ void TextEdit::_update_completion_candidates() {
 	
 	update();
 	
-	if (!pre_keyword && s=="" && (cofs==0 || !completion_prefixes.has(String::chr(l[cofs-1])))) {
+	if (cancel || (!pre_keyword && s=="" && (cofs==0 || !completion_prefixes.has(String::chr(l[cofs-1]))))) {
 		//none to complete, cancel
 		_cancel_completion();
 		return;
@@ -3416,7 +3460,16 @@ void TextEdit::query_code_comple() {
 	String l = text[cursor.line];
 	int ofs = CLAMP(cursor.column,0,l.length());
 	
-	if (ofs>0 && (_is_completable(l[ofs-1]) || completion_prefixes.has(String::chr(l[ofs-1]))))
+	bool inquote=false;
+
+	int c=ofs-1;
+	while(c>=0) {
+		if (l[c]=='"' || l[c]=='\'')
+			inquote=!inquote;
+		c--;
+	}
+
+	if (ofs>0 && (inquote || _is_completable(l[ofs-1]) || completion_prefixes.has(String::chr(l[ofs-1]))))
 		emit_signal("request_completion");
 	
 }
@@ -3596,6 +3649,10 @@ TextEdit::TextEdit()  {
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
 	cache.size=Size2(1,1);
+	cache.row_height=1;
+	cache.line_spacing=1;
+	cache.line_number_w=1;
+
 	tab_size=4;
 	text.set_tab_size(tab_size);
 	text.clear();

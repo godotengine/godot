@@ -47,7 +47,7 @@ IP_Address::IP_Address(const String& p_string) {
 	}
 	for(int i=0;i<4;i++) {
 
-		field[i]=p_string.get_slice(".",i).to_int();
+		field[i]=p_string.get_slicec('.',i).to_int();
 	}
 }
 

@@ -34,7 +34,7 @@ bool SampleLibrary::_set(const StringName& p_name, const Variant& p_value) {
 
 	if (String(p_name).begins_with("samples/")) {
 
-		String name=String(p_name).get_slice("/",1);
+		String name=String(p_name).get_slicec('/',1);
 		if (p_value.get_type()==Variant::NIL)
 			sample_map.erase(name);
 		else {
@@ -66,7 +66,7 @@ bool SampleLibrary::_get(const StringName& p_name,Variant &r_ret) const {
 
 	if (String(p_name).begins_with("samples/")) {
 
-		String name=String(p_name).get_slice("/",1);
+		String name=String(p_name).get_slicec('/',1);
 		if(sample_map.has(name)) {
 			Dictionary d;
 			d["sample"]=sample_map[name].sample;

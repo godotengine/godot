@@ -42,7 +42,7 @@ class MeshLibraryEditor : public Control {
 	EditorNode *editor;
 	MenuButton *menu;
 	ConfirmationDialog *cd;
-	FileDialog *file;
+	EditorFileDialog *file;
 	int to_erase;
 
 	enum {

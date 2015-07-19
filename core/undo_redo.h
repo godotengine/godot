@@ -38,9 +38,12 @@
 class UndoRedo : public Object {
 
 	OBJ_TYPE(UndoRedo,Object);
+	OBJ_SAVE_TYPE( UndoRedo );
 public:
 
 	typedef void (*CommitNotifyCallback)(void *p_ud,const String& p_name);
+	Variant _add_do_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
+	Variant _add_undo_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 
 private:
 	struct Operation {
@@ -80,6 +83,10 @@ private:
 
 	CommitNotifyCallback callback;
 	void* callback_ud;
+
+
+protected:
+	static void _bind_methods();
 
 public:
 

@@ -311,11 +311,11 @@ bool BakedLight::_set(const StringName& p_name, const Variant& p_value) {
 	String n = p_name;
 	if (!n.begins_with("lightmap"))
 		return false;
-	int idx = n.get_slice("/",1).to_int();
+	int idx = n.get_slicec('/',1).to_int();
 	ERR_FAIL_COND_V(idx<0,false);
 	ERR_FAIL_COND_V(idx>lightmaps.size(),false);
 
-	String what = n.get_slice("/",2);
+	String what = n.get_slicec('/',2);
 	Ref<Texture> tex;
 	Size2 gens;
 
@@ -343,11 +343,11 @@ bool BakedLight::_get(const StringName& p_name,Variant &r_ret) const{
 	String n = p_name;
 	if (!n.begins_with("lightmap"))
 		return false;
-	int idx = n.get_slice("/",1).to_int();
+	int idx = n.get_slicec('/',1).to_int();
 	ERR_FAIL_COND_V(idx<0,false);
 	ERR_FAIL_COND_V(idx>lightmaps.size(),false);
 
-	String what = n.get_slice("/",2);
+	String what = n.get_slicec('/',2);
 
 	if (what=="texture") {
 		if (idx==lightmaps.size())

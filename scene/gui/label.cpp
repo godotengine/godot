@@ -378,7 +378,11 @@ void Label::regenerate_word_cache() {
 		if (uppercase)
 			current=String::char_uppercase(current);
 
-		bool not_latin = current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
+		// ranges taken from http://www.unicodemap.org/
+		// if your language is not well supported, consider helping improve
+		// the unicode support in Godot.
+		bool separatable = (current>=0x2E08 && current<=0xFAFF) || (current>=0xFE30 && current<=0xFE4F);
+				//current>=33 && (current < 65||current >90) && (current<97||current>122) && (current<48||current>57);
 		bool insert_newline=false;
 		int char_width;
 
@@ -433,8 +437,8 @@ void Label::regenerate_word_cache() {
 			
 		}
 
-		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || not_latin)) || insert_newline) {
-			if (not_latin) {
+		if ((autowrap && (line_width >= width) && ((last && last->char_pos >= 0) || separatable)) || insert_newline) {
+			if (separatable) {
 				if (current_word_size>0) {
 					WordCache *wc = memnew( WordCache );
 					if (word_cache) {
@@ -609,11 +613,11 @@ void Label::_bind_methods() {
 	BIND_CONSTANT( VALIGN_BOTTOM );
 	BIND_CONSTANT( VALIGN_FILL );
 
-	ADD_PROPERTY( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
-	ADD_PROPERTY( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::STRING, "text",PROPERTY_HINT_MULTILINE_TEXT,"",PROPERTY_USAGE_DEFAULT_INTL), _SCS("set_text"),_SCS("get_text") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "align", PROPERTY_HINT_ENUM,"Left,Center,Right,Fill" ),_SCS("set_align"),_SCS("get_align") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::INT, "valign", PROPERTY_HINT_ENUM,"Top,Center,Bottom,Fill" ),_SCS("set_valign"),_SCS("get_valign") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "autowrap"),_SCS("set_autowrap"),_SCS("has_autowrap") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "uppercase"),_SCS("set_uppercase"),_SCS("is_uppercase") );
 	ADD_PROPERTY( PropertyInfo( Variant::REAL, "percent_visible", PROPERTY_HINT_RANGE,"0,1,0.001"),_SCS("set_percent_visible"),_SCS("get_percent_visible") );
 
 }

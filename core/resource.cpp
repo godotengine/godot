@@ -195,6 +195,17 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
+void Resource::set_subindex(int p_sub_index) {
+
+	subindex=p_sub_index;
+}
+
+int Resource::get_subindex() const{
+
+	return subindex;
+}
+
+
 void Resource::set_name(const String& p_name) {
 
 	name=p_name;
@@ -326,6 +337,7 @@ Resource::Resource() {
 	last_modified_time=0;
 #endif
 
+	subindex=0;
 }
 
 

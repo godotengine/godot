@@ -96,16 +96,19 @@ void VisualServerWrapMT::thread_loop() {
 
 /* EVENT QUEUING */
 
-void VisualServerWrapMT::flush() {
+void VisualServerWrapMT::sync() {
 
 	if (create_thread) {
 
+		/* TODO: sync with the thread */
+
+		/*
 		ERR_FAIL_COND(!draw_mutex);
 		draw_mutex->lock();
 		draw_pending++; //cambiar por un saferefcount
 		draw_mutex->unlock();
-
-		command_queue.push( this, &VisualServerWrapMT::thread_flush);
+		*/
+		//command_queue.push( this, &VisualServerWrapMT::thread_flush);
 	} else {
 
 		command_queue.flush_all(); //flush all pending from other threads
@@ -118,15 +121,16 @@ void VisualServerWrapMT::draw() {
 
 	if (create_thread) {
 
+		/* TODO: Make it draw
 		ERR_FAIL_COND(!draw_mutex);
 		draw_mutex->lock();
 		draw_pending++; //cambiar por un saferefcount
 		draw_mutex->unlock();
 
 		command_queue.push( this, &VisualServerWrapMT::thread_draw);
+		*/
 	} else {
 
-		command_queue.flush_all(); //flush all pending from other threads
 		visual_server->draw();
 	}
 }
@@ -187,8 +191,8 @@ VisualServerWrapMT::VisualServerWrapMT(VisualServer* p_contained,bool p_create_t
 	draw_pending=0;
 	draw_thread_up=false;
 	alloc_mutex=Mutex::create();
-	texture_pool_max_size=GLOBAL_DEF("render/thread_textures_prealloc",20);
-	mesh_pool_max_size=GLOBAL_DEF("render/thread_meshes_prealloc",20);
+	texture_pool_max_size=GLOBAL_DEF("render/thread_textures_prealloc",5);
+	mesh_pool_max_size=GLOBAL_DEF("core/rid_pool_prealloc",20);
 	if (!p_create_thread) {
 		server_thread=Thread::get_caller_ID();
 	} else {
