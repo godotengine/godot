@@ -76,7 +76,6 @@ class BodyPair2DSW : public Constraint2DSW {
 	Contact contacts[MAX_CONTACTS];
 	int contact_count;
 	bool collided;
-	bool oneway_disabled;
 	int cc;
 
 

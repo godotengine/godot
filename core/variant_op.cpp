@@ -3388,15 +3388,7 @@ Variant Variant::iter_get(const Variant& r_iter,bool &r_valid) const {
 void Variant::interpolate(const Variant& a, const Variant& b, float c,Variant &r_dst) {
 
 	if (a.type!=b.type) {
-		if (a.is_num() && b.is_num()) {
-			//not as efficient but..
-			real_t va=a;
-			real_t vb=b;
-			r_dst=(1.0-c) * va + vb * c;
-
-		} else {
-			r_dst=a;
-		}
+		r_dst=a;
 		return;
 	}
 

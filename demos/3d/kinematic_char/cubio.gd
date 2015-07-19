@@ -46,8 +46,9 @@ func _fixed_process(delta):
 	
 	vel.x=hvel.x;
 	vel.z=hvel.z	
-
-	var motion = move(vel*delta)
+		
+	var motion = vel*delta
+	motion=move(vel*delta)
 
 	var on_floor = false
 	var original_vel = vel

@@ -234,17 +234,11 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 			ERR_FAIL_COND(!obj);
 
 		}
-
 		switch(op.type) {
 
 			case Operation::TYPE_METHOD: {
 
-				obj->call(op.name,VARIANT_ARGS_FROM_ARRAY(op.args));				
-#ifdef TOOLS_ENABLED
-				Resource* res = obj->cast_to<Resource>();
-				if (res)
-					res->set_edited(true);
-#endif
+				obj->call(op.name,VARIANT_ARGS_FROM_ARRAY(op.args));
 			} break;
 			case Operation::TYPE_PROPERTY: {
 

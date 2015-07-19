@@ -747,8 +747,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				//}
 			} break;
 			case MotionEvent.ACTION_POINTER_UP: {
-				final int indexPointUp = event.getAction() >> MotionEvent.ACTION_POINTER_INDEX_SHIFT;
-				final int pointer_idx = event.getPointerId(indexPointUp); 
+				int pointer_idx = event.getActionIndex();
 				GodotLib.touch(4,pointer_idx,evcount,arr);
 				//System.out.printf("%d - s.up at: %f,%f\n",pointer_idx, event.getX(pointer_idx),event.getY(pointer_idx));
 			} break;

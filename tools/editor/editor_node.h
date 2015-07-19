@@ -390,9 +390,8 @@ class EditorNode : public Node {
 
 	void _cleanup_scene();
 
-	bool _find_and_save_resource(RES p_res,Map<RES,bool>& processed,int32_t flags);
-	bool _find_and_save_edited_subresources(Object *obj,Map<RES,bool>& processed,int32_t flags);
-	void _save_edited_subresources(Node* scene,Map<RES,bool>& processed,int32_t flags);
+	bool _find_and_save_edited_subresources(Object *obj,Set<RES>& processed,int32_t flags);
+	void _save_edited_subresources(Node* scene,Set<RES>& processed,int32_t flags);
 
 
 	struct ExportDefer {

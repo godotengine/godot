@@ -265,7 +265,7 @@ bool BodyPair2DSW::setup(float p_step) {
 	} 
 	//faster to set than to check..
 
-	//bool prev_collided=collided;
+	bool prev_collided=collided;
 
 	collided = CollisionSolver2DSW::solve(shape_A_ptr,xform_A,motion_A,shape_B_ptr,xform_B,motion_B,_add_contact,this,&sep_axis);
 	if (!collided) {
@@ -282,18 +282,12 @@ bool BodyPair2DSW::setup(float p_step) {
 				collided=true;
 		}
 
-		if (!collided) {
-			oneway_disabled=false;
+		if (!collided)
 			return false;
-		}
 
 	}
 
-	if (oneway_disabled)
-		return false;
-
-	//if (!prev_collided) {
-	{
+	if (!prev_collided) {
 
 		if (A->is_using_one_way_collision()) {
 			Vector2 direction = A->get_one_way_collision_direction();
@@ -315,7 +309,6 @@ bool BodyPair2DSW::setup(float p_step) {
 
 			if (!valid) {
 				collided=false;
-				oneway_disabled=true;
 				return false;
 			}
 		}
@@ -340,7 +333,6 @@ bool BodyPair2DSW::setup(float p_step) {
 			}
 			if (!valid) {
 				collided=false;
-				oneway_disabled=true;
 				return false;
 			}
 		}
@@ -533,7 +525,6 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A,Body2DSW *p_B, int p_sha
 	B->add_constraint(this,1);
 	contact_count=0;
 	collided=false;
-	oneway_disabled=false;
 
 }
 
