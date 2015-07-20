@@ -2315,6 +2315,17 @@ void GDParser::_parse_class(ClassNode *p_class) {
 
 								case Variant::INT: {
 
+									if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier()=="FLAGS") {
+
+										current_export.hint=PROPERTY_HINT_ALL_FLAGS;
+										tokenizer->advance();
+										if (tokenizer->get_token()!=GDTokenizer::TK_PARENTHESIS_CLOSE) {
+											_set_error("Expected ')' in hint.");
+											return;
+										}
+										break;
+									}
+
 									if (tokenizer->get_token()==GDTokenizer::TK_CONSTANT && tokenizer->get_token_constant().get_type()==Variant::STRING) {
 										//enumeration
 										current_export.hint=PROPERTY_HINT_ENUM;
