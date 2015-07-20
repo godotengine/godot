@@ -5792,25 +5792,28 @@
 			<argument index="0" name="self_opacity" type="float">
 			</argument>
 			<description>
+			Set canvas item self-opacity. This does not affect the opacity of children items.
 			</description>
 		</method>
 		<method name="get_self_opacity" qualifiers="const" >
 			<return type="float">
 			</return>
 			<description>
-			Set canvas item self-opacity. This does not affect the opacity of children items.
+			Return the canvas item self-opacity.
 			</description>
 		</method>
 		<method name="set_draw_behind_parent"  >
 			<argument index="0" name="enabe" type="bool">
 			</argument>
 			<description>
+			Sets whether the canvas item is drawn behind its parent.
 			</description>
 		</method>
 		<method name="is_draw_behind_parent_enabled" qualifiers="const" >
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the item is drawn behind its parent.
 			</description>
 		</method>
 		<method name="draw_line"  >
@@ -5864,8 +5867,10 @@
 			</argument>
 			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
+			<argument index="4" name="transpose" type="bool" default="false">
+			</argument>
 			<description>
-			Draw a textured rectangle at a given position, optionally modulated by a color.
+			Draw a textured rectangle at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
 		<method name="draw_texture_rect_region"  >
@@ -5877,8 +5882,10 @@
 			</argument>
 			<argument index="3" name="modulate" type="Color" default="Color(1,1,1,1)">
 			</argument>
+			<argument index="4" name="transpose" type="bool" default="false">
+			</argument>
 			<description>
-			Draw a textured rectangle region at a given position, optionally modulated by a color.
+			Draw a textured rectangle region at a given position, optionally modulated by a color. Transpose swaps the x and y coordinates when reading the texture.
 			</description>
 		</method>
 		<method name="draw_style_box"  >
@@ -6029,7 +6036,7 @@
 		</signal>
 		<signal name="hide">
 			<description>
-			Emitten when becoming hidden.
+			Emitted when becoming hidden.
 			</description>
 		</signal>
 	</signals>
