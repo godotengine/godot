@@ -27819,6 +27819,13 @@
 			Return true if the strings begins with the given string.
 			</description>
 		</method>
+		<method name="bidi_visual_string"  >
+			<return type="String">
+			</return>
+			<description>
+			Return the string in bidirectional visual (shape arabic types).
+			</description>
+		</method>
 		<method name="capitalize"  >
 			<return type="String">
 			</return>

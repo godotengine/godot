@@ -110,6 +110,7 @@ public:
 	int length() const;
 
 	/* complex helpers */
+	String bidi_visual_string() const;
 	String substr(int p_from,int p_chars) const;
 	int find(String p_str,int p_from=0) const; ///< return <0 if failed
 	int find_last(String p_str) const; ///< return <0 if failed

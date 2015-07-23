@@ -1,0 +1,7 @@
+Import('env')
+
+env.add_source_files(env.core_sources,"*.c")
+
+Export('env')
+
+

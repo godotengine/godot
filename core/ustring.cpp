@@ -35,6 +35,7 @@
 #include "ucaps.h"
 #include "color.h"
 #include "variant.h"
+#include "fribidi/fribidi.h"
 #define MAX_DIGITS 6
 #define UPPERCASE(m_c) (((m_c)>='a' && (m_c)<='z')?((m_c)-('a'-'A')):(m_c))
 #define LOWERCASE(m_c) (((m_c)>='A' && (m_c)<='Z')?((m_c)+('a'-'A')):(m_c))
@@ -2400,6 +2401,54 @@ Vector<uint8_t> String::md5_buffer() const {
 	return ret;
 };
 
+
+String String::bidi_visual_string() const {
+
+	if(empty()) return *this;
+	Vector<String> lines=split("\n");
+	String *ret=new String();
+	for (int l = 0; l < lines.size(); l ++) {
+		if(lines[l].empty()) {
+			*ret+="\n";
+			continue;
+		}
+		int len=lines[l].length();
+		FriBidiChar *input_str=new FriBidiChar[len+1];
+		for (int i = 0; i < len; i ++) {
+			input_str[i] = lines[l].c_str()[i];
+		}
+		input_str[len]=0;
+		FriBidiParType base = FRIBIDI_PAR_ON;
+		FriBidiChar *output_str = new FriBidiChar[len+1];
+		fribidi_boolean result = fribidi_log2vis(
+				/* input */
+				input_str,
+				len,
+				&base,
+				/* output */
+				output_str,
+				NULL,
+				NULL,
+				NULL
+				);
+		delete input_str;
+		if (result) {
+		      CharType *line_str=new CharType[len+1];
+		      for (int k = 0; k < len; k ++) {
+			      line_str[k] = output_str[k];
+		      }
+		      line_str[len]=0;
+		      *ret+=(l>0?"\n":"")+String(const_cast<CharType *>(line_str));
+		      delete output_str;
+		      delete line_str;
+		}
+		else {
+		      delete output_str;
+		      *ret+=(l>0?"\n":"")+lines[l];
+		}
+	}
+	return *ret;
+}
 
 String String::insert(int p_at_pos,String p_string) const {
 

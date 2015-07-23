@@ -234,6 +234,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 	// built-in functions of localmem based types
 
+	VCALL_LOCALMEM0R(String,bidi_visual_string);
 	VCALL_LOCALMEM1R(String,casecmp_to);
 	VCALL_LOCALMEM1R(String,nocasecmp_to);
 	VCALL_LOCALMEM0R(String,length);
@@ -1232,6 +1233,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 
 	/* STRING */
+	ADDFUNC0(STRING,STRING,String,bidi_visual_string,varray());
 	ADDFUNC1(STRING,INT,String,casecmp_to,STRING,"to",varray());
 	ADDFUNC1(STRING,INT,String,nocasecmp_to,STRING,"to",varray());
 	ADDFUNC0(STRING,INT,String,length,varray());

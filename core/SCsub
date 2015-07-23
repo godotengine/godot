@@ -55,6 +55,7 @@ Export('env')
 import make_binders
 env.Command(['method_bind.inc','method_bind_ext.inc'], 'make_binders.py', make_binders.run)
 
+SConscript('fribidi/SCsub');
 SConscript('os/SCsub');
 SConscript('math/SCsub');
 SConscript('io/SCsub');
