@@ -82,9 +82,9 @@ Error RegEx::compile(const String& p_pattern) {
 
 int RegEx::find(const String& p_text, int p_start, int p_end) const {
 
-	ERR_FAIL_COND_V( !exp.valid(), false );
-	ERR_FAIL_COND_V( p_text.length() < p_start, false );
-	ERR_FAIL_COND_V( p_text.length() < p_end, false );
+	ERR_FAIL_COND_V( !exp.valid(), -1 );
+	ERR_FAIL_COND_V( p_text.length() < p_start, -1 );
+	ERR_FAIL_COND_V( p_text.length() < p_end, -1 );
 
 	bool res = exp.match(p_text.c_str(), &captures[0], p_start, p_end);
 
