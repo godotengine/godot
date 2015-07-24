@@ -48,7 +48,7 @@
 #endif
 
 
-#include "drivers/trex/regex.h"
+#include "drivers/nrex/regex.h"
 
 #ifdef MUSEPACK_ENABLED
 #include "mpc/audio_stream_mpc.h"
