@@ -181,7 +181,7 @@ struct nrex_node
         {
             if (next)
             {
-                delete next;
+                NREX_DELETE(next);
             }
         }
 
@@ -227,7 +227,7 @@ struct nrex_node_group : public nrex_node
         {
             for (unsigned int i = 0; i < childset.size(); ++i)
             {
-                delete childset[i];
+                NREX_DELETE(childset[i]);
             }
 
         }
@@ -471,7 +471,7 @@ struct nrex_node_quantifier : public nrex_node
         {
             if (child)
             {
-                delete child;
+                NREX_DELETE(child);
             }
         }
 
@@ -598,7 +598,7 @@ nrex::~nrex()
 {
     if (_root)
     {
-        delete _root;
+        NREX_DELETE(_root);
     }
 }
 
@@ -612,7 +612,7 @@ void nrex::reset()
     _capturing = 0;
     if (_root)
     {
-        delete _root;
+        NREX_DELETE(_root);
     }
     _root = NULL;
 }
