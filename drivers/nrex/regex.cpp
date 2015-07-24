@@ -16,13 +16,16 @@
 void RegEx::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("compile","pattern"),&RegEx::compile);
-	ObjectTypeDB::bind_method(_MD("match","text","start","end"),&RegEx::match, DEFVAL(0), DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("find","text","start","end"),&RegEx::find, DEFVAL(0), DEFVAL(-1));
+	ObjectTypeDB::bind_method(_MD("clear"),&RegEx::clear);
+	ObjectTypeDB::bind_method(_MD("is_valid"),&RegEx::is_valid);
+	ObjectTypeDB::bind_method(_MD("get_capture_count"),&RegEx::get_capture_count);
 	ObjectTypeDB::bind_method(_MD("get_capture","capture"),&RegEx::get_capture);
-	ObjectTypeDB::bind_method(_MD("get_capture_list"),&RegEx::_bind_get_capture_list);
+	ObjectTypeDB::bind_method(_MD("get_captures"),&RegEx::_bind_get_captures);
 
 };
 
-StringArray RegEx::_bind_get_capture_list() const {
+StringArray RegEx::_bind_get_captures() const {
 
 	StringArray ret;
 	int count = get_capture_count();
@@ -64,22 +67,21 @@ String RegEx::get_capture(int capture) const {
 }
 
 Error RegEx::compile(const String& p_pattern) {
-	
+
 	clear();
 
 	exp.compile(p_pattern.c_str());
 
 	ERR_FAIL_COND_V( !exp.valid(), FAILED );
-	
+
 	captures.resize(exp.capture_size());
 
 	return OK;
 
 };
 
-bool RegEx::match(const String& p_text, int p_start, int p_end) const {
+int RegEx::find(const String& p_text, int p_start, int p_end) const {
 
-	
 	ERR_FAIL_COND_V( !exp.valid(), false );
 	ERR_FAIL_COND_V( p_text.length() < p_start, false );
 	ERR_FAIL_COND_V( p_text.length() < p_end, false );
@@ -88,10 +90,10 @@ bool RegEx::match(const String& p_text, int p_start, int p_end) const {
 
 	if (res) {
 		text = p_text;
-		return true;
+		return captures[0].start;
 	}
 	text.clear();
-	return false;
+	return -1;
 
 };
 

@@ -28,7 +28,7 @@ class RegEx : public Reference {
 protected:
 
 	static void _bind_methods();
-	StringArray _bind_get_capture_list() const;
+	StringArray _bind_get_captures() const;
 
 public:
 
@@ -37,7 +37,7 @@ public:
 	int get_capture_count() const;
 	String get_capture(int capture) const;
 	Error compile(const String& p_pattern);
-	bool match(const String& p_text, int p_start = 0, int p_end = -1) const;
+	int find(const String& p_text, int p_start = 0, int p_end = -1) const;
 
 	RegEx();
 	RegEx(const String& p_pattern);

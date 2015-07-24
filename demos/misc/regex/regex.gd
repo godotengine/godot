@@ -8,11 +8,11 @@ func update_expression():
 
 func update_text():
 	var text = get_node("Text").get_text()
-	regex.match(text)
+	regex.find(text)
 	var list = get_node("List")
 	for child in list.get_children():
 		child.queue_free()
-	for res in regex.get_capture_list():
+	for res in regex.get_captures():
 		var label = Label.new()
 		label.set_text(res)
 		list.add_child(label)

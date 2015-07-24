@@ -464,8 +464,8 @@ bool test_26() {
 	OS::get_singleton()->print("\n\nTest 26: RegEx\n");
 	RegEx regexp("(.*):(.*)");
 
-	bool res = regexp.match("name:password");
-	printf("\tmatch: %s\n", res?"true":"false");
+	int res = regexp.find("name:password");
+	printf("\tmatch: %s\n", (res>=0)?"true":"false");
 
 	printf("\t%i captures:\n", regexp.get_capture_count());
 	for (int i = 0; i<regexp.get_capture_count(); i++)
