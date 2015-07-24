@@ -177,6 +177,7 @@ public:
 	int get_edited_scene_count() const;
 	String get_scene_title(int p_idx) const;
 	String get_scene_path(int p_idx) const;
+	String get_scene_type(int p_idx) const;
 	void set_edited_scene_version(uint64_t version);
 	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
