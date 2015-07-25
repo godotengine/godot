@@ -142,7 +142,7 @@ void Tabs::_notification(int p_what) {
 
 				Ref<Texture> icon;
 				if (tabs[i].icon.is_valid()) {
-					Ref<Texture> icon = tabs[i].icon;
+					icon = tabs[i].icon;
 					if (icon.is_valid()) {
 						lsize+=icon->get_width();
 						if (s!="")

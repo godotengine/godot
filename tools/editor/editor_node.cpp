@@ -110,9 +110,23 @@ void EditorNode::_update_scene_tabs() {
 
 	scene_tabs->clear_tabs();
 	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+
+		String type=editor_data.get_scene_type(i);
+		Ref<Texture> icon;
+		if (type!=String()) {
+
+			if (!gui_base->has_icon(type,"EditorIcons")) {
+				type="Node";
+			}
+
+			icon=gui_base->get_icon(type,"EditorIcons");
+
+		}
+
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i==current)?saved_version!=editor_data.get_undo_redo().get_version():editor_data.get_scene_version(i)!=0;
-		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""));
+		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""),icon);
+
 	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());

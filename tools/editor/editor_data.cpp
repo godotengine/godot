@@ -507,6 +507,14 @@ uint64_t EditorData::get_scene_version(int p_idx) const{
 	return edited_scene[p_idx].version;
 }
 
+String EditorData::get_scene_type(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
+	if (!edited_scene[p_idx].root)
+		return "";
+	return edited_scene[p_idx].root->get_type();
+
+}
 String EditorData::get_scene_title(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
 	if (!edited_scene[p_idx].root)
