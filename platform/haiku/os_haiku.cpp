@@ -11,7 +11,9 @@
 
 
 OS_Haiku::OS_Haiku() {
-	AudioDriverManagerSW::add_driver(&driver_dummy);
+#ifdef MEDIA_KIT_ENABLED
+	AudioDriverManagerSW::add_driver(&driver_media_kit);
+#endif
 };
 
 void OS_Haiku::run() {

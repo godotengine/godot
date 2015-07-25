@@ -12,6 +12,7 @@ SConscript('windows/SCsub');
 SConscript('gles2/SCsub');
 SConscript('gl_context/SCsub');
 SConscript('openssl/SCsub');
+SConscript('media_kit/SCsub');
 
 if (env["png"]=="yes"):
 	SConscript("png/SCsub");
