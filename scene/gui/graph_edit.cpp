@@ -169,7 +169,6 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 void GraphEdit::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_READY) {
-		Size2 size = top_layer->get_size();
 		Size2 hmin = h_scroll->get_combined_minimum_size();
 		Size2 vmin = v_scroll->get_combined_minimum_size();
 
@@ -488,7 +487,8 @@ void GraphEdit::_top_layer_draw() {
 		connections.erase(to_erase.front()->get());
 		to_erase.pop_front();
 	}
-	//draw connections
+	if (box_selecting)
+		top_layer->draw_rect(box_selecting_rect,Color(0.7,0.7,1.0,0.3));
 }
 
 void GraphEdit::_input_event(const InputEvent& p_ev) {
@@ -509,13 +509,51 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		}
 	}
 
+	if (p_ev.type==InputEvent::MOUSE_MOTION && box_selecting) {
+		box_selecting_to = get_local_mouse_pos();
+
+		box_selecting_rect = Rect2(MIN(box_selecting_from.x,box_selecting_to.x),
+								   MIN(box_selecting_from.y,box_selecting_to.y),
+								   ABS(box_selecting_from.x-box_selecting_to.x),
+								   ABS(box_selecting_from.y-box_selecting_to.y));
+
+		for(int i=get_child_count()-1;i>=0;i--) {
+
+			GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+			if (!gn)
+				continue;
+
+			bool in_box = gn->get_rect().intersects(box_selecting_rect);
+
+			if (in_box)
+				gn->set_selected(box_selection_mode_aditive);
+			else
+				gn->set_selected(previus_selected.find(gn)!=NULL);
+		}
+
+		top_layer->update();
+	}
+
 	if (p_ev.type== InputEvent::MOUSE_BUTTON) {
 
 		const InputEventMouseButton &b=p_ev.mouse_button;
 
 		if (b.button_index==BUTTON_RIGHT && b.pressed)
 		{
-			emit_signal("popup_request", Vector2(b.global_x, b.global_y));
+			if (box_selecting) {
+				box_selecting = false;
+				for(int i=get_child_count()-1;i>=0;i--) {
+
+					GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+					if (!gn)
+						continue;
+
+					gn->set_selected(previus_selected.find(gn)!=NULL);
+				}
+				top_layer->update();
+			} else {
+				emit_signal("popup_request", Vector2(b.global_x, b.global_y));
+			}
 		}
 
 		if (b.button_index==BUTTON_LEFT && !b.pressed && dragging) {
@@ -584,15 +622,49 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 				}
 
 			} else {
-				for(int i=get_child_count()-1;i>=0;i--) {
+				box_selecting = true;
+				box_selecting_from = get_local_mouse_pos();
+				if (b.mod.control) {
+					box_selection_mode_aditive = true;
+					previus_selected.clear();
+					for(int i=get_child_count()-1;i>=0;i--) {
 
-					GraphNode *gn=get_child(i)->cast_to<GraphNode>();
-					if (!gn)
-						continue;
+						GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+						if (!gn || !gn->is_selected())
+							continue;
 
-					gn->set_selected(false);
+						previus_selected.push_back(gn);
+					}
+				} else if (b.mod.shift) {
+					box_selection_mode_aditive = false;
+					previus_selected.clear();
+					for(int i=get_child_count()-1;i>=0;i--) {
+
+						GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+						if (!gn || !gn->is_selected())
+							continue;
+
+						previus_selected.push_back(gn);
+					}
+				} else {
+					box_selection_mode_aditive = true;
+					previus_selected.clear();
+					for(int i=get_child_count()-1;i>=0;i--) {
+
+						GraphNode *gn=get_child(i)->cast_to<GraphNode>();
+						if (!gn)
+							continue;
+
+						gn->set_selected(false);
+					}
 				}
 			}
+		}
+
+		if (b.button_index==BUTTON_LEFT && !b.pressed && box_selecting) {
+			box_selecting = false;
+			previus_selected.clear();
+			top_layer->update();
 		}
 	}
 }
@@ -677,6 +749,9 @@ GraphEdit::GraphEdit() {
 	updating=false;
 	connecting=false;
 	right_disconnects=false;
+
+	box_selecting = false;
+	dragging = false;
 
 	h_scroll->connect("value_changed", this,"_scroll_moved");
 	v_scroll->connect("value_changed", this,"_scroll_moved");

@@ -53,6 +53,13 @@ private:
 	bool just_selected;
 	Vector2 drag_accum;
 
+	bool box_selecting;
+	bool box_selection_mode_aditive;
+	Point2 box_selecting_from;
+	Point2 box_selecting_to;
+	Rect2 box_selecting_rect;
+	List<GraphNode*> previus_selected;
+
 	bool right_disconnects;
 	bool updating;
 	List<Connection> connections;
