@@ -525,15 +525,17 @@ Color GraphNode::get_connection_output_color(int p_idx) {
 
 void GraphNode::_input_event(const InputEvent& p_ev) {
 
-	if (p_ev.type==InputEvent::MOUSE_BUTTON && p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
+	if (p_ev.type==InputEvent::MOUSE_BUTTON) {
+		get_parent_control()->grab_focus();
+		if(p_ev.mouse_button.pressed && p_ev.mouse_button.button_index==BUTTON_LEFT) {
 
-		Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
-		if (close_rect.size!=Size2() && close_rect.has_point(mpos)) {
-			emit_signal("close_request");
-			return;
+			Vector2 mpos = Vector2(p_ev.mouse_button.x,p_ev.mouse_button.y);
+			if (close_rect.size!=Size2() && close_rect.has_point(mpos)) {
+				emit_signal("close_request");
+				return;
+			}
+			emit_signal("raise_request");
 		}
-		emit_signal("raise_request");
-
 	}
 
 }

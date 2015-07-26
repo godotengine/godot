@@ -216,6 +216,10 @@ public:
 	void texture_node_set_filter_strength(ShaderType p_which,float p_id,float p_strength);
 	float texture_node_get_filter_strength(ShaderType p_which,float p_id) const;
 
+	void duplicate_nodes(ShaderType p_which, List<int> &p_nodes);
+
+	List<int> generate_ids(ShaderType p_type, int count);
+
 	enum ScalarOp {
 		SCALAR_OP_ADD,
 		SCALAR_OP_SUB,

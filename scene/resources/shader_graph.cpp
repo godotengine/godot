@@ -824,6 +824,47 @@ float ShaderGraph::texture_node_get_filter_strength(ShaderType p_type,float p_id
 	return arr[1];
 }
 
+void ShaderGraph::duplicate_nodes(ShaderType p_which, List<int> &p_nodes)
+{
+	//Create new node IDs
+	Map<int,int> duplicates = Map<int,int>();
+	int i=1;
+	for(List<int>::Element *E=p_nodes.front();E; E=E->next()) {
+		while (shader[p_which].node_map.has(i))
+			i++;
+		duplicates.insert(E->get(), i);
+		i++;
+	}
+
+	for(List<int>::Element *E = p_nodes.front();E; E=E->next()) {
+
+		const Node &n=shader[p_which].node_map[E->get()];
+		Node nn=n;
+		nn.id=duplicates.find(n.id)->get();
+		nn.pos += Vector2(0,100);
+		for (Map<int,SourceSlot>::Element *C=nn.connections.front();C;C=C->next()) {
+			SourceSlot &c=C->get();
+			if (p_nodes.find(c.id))
+				c.id=duplicates.find(c.id)->get();
+		}
+		shader[p_which].node_map[nn.id]=nn;
+	}
+	_request_update();
+}
+
+List<int> ShaderGraph::generate_ids(ShaderType p_type, int count)
+{
+	List<int> ids = List<int>();
+	int i=1;
+	while (ids.size() < count) {
+		while (shader[p_type].node_map.has(i))
+			i++;
+		ids.push_back(i);
+		i++;
+	}
+	return ids;
+}
+
 
 void ShaderGraph::scalar_op_node_set_op(ShaderType p_type,float p_id,ScalarOp p_op){
 

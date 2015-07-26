@@ -534,7 +534,7 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		top_layer->update();
 	}
 
-	if (p_ev.type== InputEvent::MOUSE_BUTTON) {
+	if (p_ev.type==InputEvent::MOUSE_BUTTON) {
 
 		const InputEventMouseButton &b=p_ev.mouse_button;
 
@@ -667,6 +667,11 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 			top_layer->update();
 		}
 	}
+
+	if (p_ev.type==InputEvent::KEY && p_ev.key.scancode==KEY_D && p_ev.key.pressed && p_ev.key.mod.command) {
+		emit_signal("duplicate_nodes_request");
+		accept_event();
+	}
 }
 
 void GraphEdit::clear_connections() {
@@ -723,6 +728,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("connection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2,"p_position")));
+	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));
 }
@@ -730,6 +736,8 @@ void GraphEdit::_bind_methods() {
 
 
 GraphEdit::GraphEdit() {
+	set_focus_mode(FOCUS_ALL);
+
 	top_layer=NULL;
 	top_layer=memnew(GraphEditFilter(this));
 	add_child(top_layer);
