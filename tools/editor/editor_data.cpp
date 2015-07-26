@@ -507,6 +507,31 @@ uint64_t EditorData::get_scene_version(int p_idx) const{
 	return edited_scene[p_idx].version;
 }
 
+String EditorData::get_scene_type(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
+	if (!edited_scene[p_idx].root)
+		return "";
+	return edited_scene[p_idx].root->get_type();
+
+}
+
+Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),Ref<Script>());
+	if (!edited_scene[p_idx].root)
+		return Ref<Script>();
+	Ref<Script> s=edited_scene[p_idx].root->get_script();
+	if (!s.is_valid()) {
+		Node *n = edited_scene[p_idx].root->get_child(0);
+		while(!s.is_valid() && n && n->get_filename()==String()) {
+			s=n->get_script();
+			n=n->get_parent();
+		}
+	}
+	return s;
+}
+
 String EditorData::get_scene_title(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
 	if (!edited_scene[p_idx].root)

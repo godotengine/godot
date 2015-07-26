@@ -250,7 +250,6 @@ void make_default_theme() {
 	t->set_stylebox("hover","ToolButton", make_stylebox( button_normal_png,4,4,4,4) );
 	t->set_stylebox("disabled","ToolButton", make_empty_stylebox(4,4,4,4) );
 	t->set_stylebox("focus","ToolButton", focus );
-
 	t->set_font("font","ToolButton", default_font );
 
 	t->set_color("font_color","ToolButton", control_font_color );
@@ -676,6 +675,9 @@ void make_default_theme() {
 	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
 	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
 	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,4,4,4,4) );
+	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
+	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );
+
 
 	t->set_font("font","Tabs", default_font );
 
