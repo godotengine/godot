@@ -51,6 +51,8 @@ private:
 		Ref<Texture> icon;
 		int ofs_cache;
 		int size_cache;
+		Ref<Texture> right_button;
+		Rect2 rb_rect;
 	};
 
 	Vector<Tab> tabs;
@@ -58,6 +60,8 @@ private:
 	Control *_get_tab(int idx) const;
 	int _get_top_margin() const;
 	TabAlign tab_align;
+	int rb_hover;
+	bool rb_pressing;
 
 protected:
 
@@ -74,6 +78,9 @@ public:
 
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
+
+	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
+	Ref<Texture> get_tab_right_button(int p_tab) const;
 
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;

@@ -109,6 +109,7 @@ EditorNode *EditorNode::singleton=NULL;
 void EditorNode::_update_scene_tabs() {
 
 	scene_tabs->clear_tabs();
+	Ref<Texture> script_icon = gui_base->get_icon("Script","EditorIcons");
 	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
 
 		String type=editor_data.get_scene_type(i);
@@ -123,9 +124,15 @@ void EditorNode::_update_scene_tabs() {
 
 		}
 
+
+
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i==current)?saved_version!=editor_data.get_undo_redo().get_version():editor_data.get_scene_version(i)!=0;
 		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""),icon);
+
+		if (editor_data.get_scene_root_script(i).is_valid()) {
+			scene_tabs->set_tab_right_button(i,script_icon);
+		}
 
 	}
 
@@ -220,7 +227,7 @@ void EditorNode::_notification(int p_what) {
 				circle_step=0;
 
 			circle_step_msec=tick;
-			circle_step_frame=frame+1;
+		circle_step_frame=frame+1;
 
 			update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
 
@@ -3583,6 +3590,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
 	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
 	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
 	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
 
@@ -4027,6 +4035,13 @@ void EditorNode::_load_docks() {
 }
 
 
+void EditorNode::_scene_tab_script_edited(int p_tab) {
+
+	Ref<Script> script  = editor_data.get_scene_root_script(p_tab);
+	if (script.is_valid())
+		edit_resource(script);
+}
+
 void EditorNode::_scene_tab_changed(int p_tab) {
 
 
@@ -4181,6 +4196,7 @@ EditorNode::EditorNode() {
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
+	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );
