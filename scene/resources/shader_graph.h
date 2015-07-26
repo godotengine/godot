@@ -365,6 +365,8 @@ public:
 
 	GraphError get_graph_error(ShaderType p_type) const;
 
+	int node_count(ShaderType p_which, int p_type);
+
 	static int get_type_input_count(NodeType p_type);
 	static int get_type_output_count(NodeType p_type);
 	static SlotType get_type_input_type(NodeType p_type,int p_idx);

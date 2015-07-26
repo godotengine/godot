@@ -142,6 +142,15 @@ ShaderGraph::GraphError ShaderGraph::get_graph_error(ShaderType p_type) const {
 	return shader[p_type].error;
 }
 
+int ShaderGraph::node_count(ShaderType p_which, int p_type)
+{
+	int count=0;
+	for (Map<int,Node>::Element *E=shader[p_which].node_map.front();E;E=E->next())
+		if (E->get().type==p_type)
+			count++;
+	return count;
+}
+
 void ShaderGraph::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_update_shader"),&ShaderGraph::_update_shader);
