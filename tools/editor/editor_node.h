@@ -469,6 +469,7 @@ class EditorNode : public Node {
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
 	void _scene_tab_changed(int p_tab);
+	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state);

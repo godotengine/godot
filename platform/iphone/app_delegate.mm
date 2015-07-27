@@ -140,7 +140,7 @@ static int frame_count = 0;
 
 		// this might be necessary before here
 		for (NSString* key in [[NSBundle mainBundle] infoDictionary]) {
-			NSObject* value = [xyz objectForKey:key];
+			NSObject* value = [[[NSBundle mainBundle] infoDictionary] objectForKey:key];
 			String ukey = String::utf8([key UTF8String]);
 
 			// we need a NSObject to Variant conversor
