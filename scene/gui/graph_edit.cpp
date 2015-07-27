@@ -672,6 +672,12 @@ void GraphEdit::_input_event(const InputEvent& p_ev) {
 		emit_signal("duplicate_nodes_request");
 		accept_event();
 	}
+
+	if (p_ev.type==InputEvent::KEY && p_ev.key.scancode==KEY_DELETE && p_ev.key.pressed) {
+		emit_signal("delete_nodes_request");
+		accept_event();
+	}
+
 }
 
 void GraphEdit::clear_connections() {
@@ -729,6 +735,7 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("disconnection_request",PropertyInfo(Variant::STRING,"from"),PropertyInfo(Variant::INT,"from_slot"),PropertyInfo(Variant::STRING,"to"),PropertyInfo(Variant::INT,"to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2,"p_position")));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
+	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));
 }

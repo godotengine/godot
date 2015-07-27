@@ -1221,6 +1221,45 @@ void ShaderGraphView::_duplicate_nodes(Array &p_nodes)
 	call_deferred("_update_graph");
 }
 
+void ShaderGraphView::_delete_nodes_request()
+{
+	List<int> s_id=List<int>();
+
+	for(Map<int,GraphNode*>::Element *E=node_map.front();E;E=E->next()) {
+		ShaderGraph::NodeType t=graph->node_get_type(type, E->key());
+		if (t==ShaderGraph::NODE_OUTPUT)
+			continue;
+		GraphNode *gn = E->get();
+		if (gn && gn->is_selected())
+			s_id.push_back(E->key());
+	}
+
+	if (s_id.size()==0)
+		return;
+
+	UndoRedo *ur=EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action("Delete Shader Graph Node(s)");
+
+	for (List<int>::Element *N=s_id.front();N;N=N->next()) {
+		ur->add_do_method(graph.ptr(),"node_remove",type,N->get());
+		ur->add_undo_method(graph.ptr(),"node_add",type,graph->node_get_type(type,N->get()),N->get());
+		ur->add_undo_method(graph.ptr(),"node_set_state",type,N->get(),graph->node_get_state(type,N->get()));
+		List<ShaderGraph::Connection> conns;
+
+		graph->get_node_connections(type,&conns);
+		for(List<ShaderGraph::Connection>::Element *E=conns.front();E;E=E->next()) {
+
+			if (E->get().dst_id==N->get() || E->get().src_id==N->get()) {
+				ur->add_undo_method(graph.ptr(),"connect_node",type,E->get().src_id,E->get().src_slot,E->get().dst_id,E->get().dst_slot);
+			}
+		}
+	}
+	ur->add_do_method(this,"_update_graph");
+	ur->add_undo_method(this,"_update_graph");
+	ur->commit_action();
+
+}
+
 
 void ShaderGraphView::_create_node(int p_id) {
 
@@ -2215,6 +2254,7 @@ void ShaderGraphView::_bind_methods() {
 	ObjectTypeDB::bind_method("_disconnection_request",&ShaderGraphView::_disconnection_request);
 	ObjectTypeDB::bind_method("_duplicate_nodes_request", &ShaderGraphView::_duplicate_nodes_request);
 	ObjectTypeDB::bind_method("_duplicate_nodes", &ShaderGraphView::_duplicate_nodes);
+	ObjectTypeDB::bind_method("_delete_nodes_request", &ShaderGraphView::_delete_nodes_request);
 
 	ObjectTypeDB::bind_method("_scalar_const_changed",&ShaderGraphView::_scalar_const_changed);
 	ObjectTypeDB::bind_method("_vec_const_changed",&ShaderGraphView::_vec_const_changed);
@@ -2390,6 +2430,7 @@ ShaderGraphEditor::ShaderGraphEditor(bool p_2d) {
 		graph_edits[i]->get_graph_edit()->connect("disconnection_request",graph_edits[i],"_disconnection_request");
 		graph_edits[i]->get_graph_edit()->connect("duplicate_nodes_request", graph_edits[i], "_duplicate_nodes_request");
 		graph_edits[i]->get_graph_edit()->connect("popup_request",this,"_popup_requested");
+		graph_edits[i]->get_graph_edit()->connect("delete_nodes_request",graph_edits[i],"_delete_nodes_request");
 		graph_edits[i]->get_graph_edit()->set_right_disconnects(true);
 	}
 

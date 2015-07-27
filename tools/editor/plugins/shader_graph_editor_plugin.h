@@ -147,6 +147,7 @@ class ShaderGraphView : public Node {
 	void _move_node(int p_id,const Vector2& p_to);
 	void _duplicate_nodes_request();
 	void _duplicate_nodes(Array &p_nodes);
+	void _delete_nodes_request();
 
 	void _scalar_const_changed(double p_value,int p_id);
 	void _vec_const_changed(double p_value, int p_id, Array p_arr);
