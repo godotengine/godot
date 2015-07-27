@@ -353,8 +353,8 @@ void Node2D::look_at(const Vector2& p_pos) {
 }
 
 float Node2D::get_angle_to(const Vector2& p_pos) const {
-
-	return (get_global_transform().affine_inverse().xform(p_pos)).atan2();
+	Vector2 v = (get_global_transform().affine_inverse().xform(p_pos));
+	return Vector2(v.y,v.x).atan2();
 }
 
 void Node2D::_bind_methods() {
