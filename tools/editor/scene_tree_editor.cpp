@@ -143,7 +143,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 
 	} else if (p_id==BUTTON_LOCK) {
 
-		if (n->is_type("CanvasItem")) {
+		if (n->is_type("CanvasItem") || n->is_type("Spatial")) {
 			n->set_meta("_edit_lock_", Variant());
 			_update_tree();
 			emit_signal("node_changed");
@@ -240,11 +240,14 @@ void SceneTreeEditor::_add_nodes(Node *p_node,TreeItem *p_parent) {
 			item->add_button(0,get_icon("Script","EditorIcons"),BUTTON_SCRIPT);
 		}
 
-		if (p_node->is_type("CanvasItem")) {
+		if (p_node->is_type("CanvasItem")||p_node->is_type("Spatial")) {
 
-			bool is_locked = p_node->has_meta("_edit_lock_");//_edit_group_
+			bool is_locked = p_node->has_meta("_edit_lock_");
 			if (is_locked)
-				item->add_button(0,get_icon("Lock", "EditorIcons"), BUTTON_LOCK);
+			{
+				item->add_button(0, get_icon("Lock", "EditorIcons"), BUTTON_LOCK);
+				emit_signal("node_changed");
+			}
 
 			bool is_grouped = p_node->has_meta("_edit_group_");
 			if (is_grouped)

@@ -1612,7 +1612,6 @@ void SpatialEditorViewport::set_message(String p_message,float p_time) {
 
 void SpatialEditorViewport::_notification(int p_what) {
 
-
 	if (p_what==NOTIFICATION_VISIBILITY_CHANGED) {
 
 		bool visible=is_visible();
@@ -2194,6 +2193,7 @@ void SpatialEditorViewport::_bind_methods(){
 	ObjectTypeDB::bind_method(_MD("_toggle_camera_preview"),&SpatialEditorViewport::_toggle_camera_preview);
 	ObjectTypeDB::bind_method(_MD("_preview_exited_scene"),&SpatialEditorViewport::_preview_exited_scene);
 	ObjectTypeDB::bind_method(_MD("update_transform_gizmo_view"),&SpatialEditorViewport::update_transform_gizmo_view);
+	ObjectTypeDB::bind_method(_MD("update_transform_gizmo"), &SpatialEditor::update_transform_gizmo);
 
 	ADD_SIGNAL( MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")) );
 }
@@ -2340,12 +2340,16 @@ void SpatialEditor::update_transform_gizmo() {
 	Matrix3 gizmo_basis;
 	bool local_gizmo_coords = transform_menu->get_popup()->is_item_checked( transform_menu->get_popup()->get_item_index(MENU_TRANSFORM_LOCAL_COORDS) );
 
-
+	bool locked = false;
 	for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
 
 		Spatial *sp = E->get()->cast_to<Spatial>();
 		if (!sp)
 			continue;
+
+		bool is_locked = sp->has_meta("_edit_lock_");
+		if (is_locked)
+			locked = true;
 
 		SpatialEditorSelectedItem *se=editor_selection->get_node_editor_data<SpatialEditorSelectedItem>(sp);
 		if (!se)
@@ -2367,7 +2371,7 @@ void SpatialEditor::update_transform_gizmo() {
 	}
 
 	Vector3 pcenter = center.pos+center.size*0.5;
-	gizmo.visible=!first;
+	gizmo.visible=!first&&!locked;
 	gizmo.transform.origin=pcenter;
 	gizmo.transform.basis=gizmo_basis;
 
@@ -2977,6 +2981,44 @@ void SpatialEditor::_menu_item_pressed(int p_option) {
 
 			settings_dialog->popup_centered(settings_vbc->get_combined_minimum_size()+Size2(50,50));
 		} break;
+		case MENU_VIEW_LOCK_SELECTED: {
+			
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+			
+			for (List<Node*>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *sp = E->get()->cast_to<Spatial>();
+				if (!sp)
+					continue;
+				
+				//const CharType* name = String(sp->get_name()).c_str();
+
+				sp->set_meta("_edit_lock_", true);
+
+				emit_signal("item_lock_status_changed");
+			}
+
+		} break;
+		case MENU_VIEW_UNLOCK_SELECTED: {
+			
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+
+			for (List<Node*>::Element *E = selection.front(); E; E = E->next()) {
+
+				Spatial *sp = E->get()->cast_to<Spatial>();
+				if (!sp)
+					continue;
+
+				//const CharType* name = String(sp->get_name()).c_str();
+
+				sp->set_meta("_edit_lock_", Variant());
+
+				emit_signal("item_lock_status_changed");
+			}
+
+			update_transform_gizmo();
+
+		} break;
 
 	}
 }
@@ -3394,7 +3436,6 @@ void SpatialEditor::_notification(int p_what) {
 
 		get_tree()->connect("node_removed",this,"_node_removed");
 		VS::get_singleton()->scenario_set_fallback_environment(get_viewport()->find_world()->get_scenario(),viewport_environment->get_rid());
-
 	}
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
@@ -3402,6 +3443,8 @@ void SpatialEditor::_notification(int p_what) {
 		gizmos = memnew( SpatialEditorGizmos );
 		_init_indicators();
 		_update_default_light_angle();
+		lock_button->set_icon(get_icon("Lock", "EditorIcons"));
+		unlock_button->set_icon(get_icon("Unlock", "EditorIcons"));
 	}
 
 	if (p_what==NOTIFICATION_EXIT_TREE) {
@@ -3540,7 +3583,10 @@ void SpatialEditor::_bind_methods() {
 	ObjectTypeDB::bind_method("_update_ambient_light_color",&SpatialEditor::_update_ambient_light_color);
 	ObjectTypeDB::bind_method("_toggle_maximize_view",&SpatialEditor::_toggle_maximize_view);
 
+	ObjectTypeDB::bind_method(_MD("update_transform_gizmo"), &SpatialEditor::update_transform_gizmo);
+
 	ADD_SIGNAL( MethodInfo("transform_key_request") );
+	ADD_SIGNAL( MethodInfo("item_lock_status_changed") );
 
 
 }
@@ -3683,6 +3729,19 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	button_binds[0]=MENU_TOOL_SCALE;
 	tool_button[TOOL_MODE_SCALE]->connect("pressed", this,"_menu_item_pressed",button_binds);
 	tool_button[TOOL_MODE_SCALE]->set_tooltip("Scale Mode (R)");
+
+	hbc_menu->add_child(memnew(VSeparator));
+
+	lock_button = memnew(ToolButton);
+	hbc_menu->add_child(lock_button);
+
+	lock_button->connect("pressed", this, "_menu_item_pressed", varray(MENU_VIEW_LOCK_SELECTED));
+	lock_button->set_tooltip("Lock the selected object in-place (can't be moved).");
+
+	unlock_button = memnew(ToolButton);
+	hbc_menu->add_child(unlock_button);
+	unlock_button->connect("pressed", this, "_menu_item_pressed", varray(MENU_VIEW_UNLOCK_SELECTED));
+	unlock_button->set_tooltip("Unlock the selected object (can be moved).");
 
 	instance_button = memnew( Button );
 	hbc_menu->add_child( instance_button );

@@ -33,7 +33,7 @@
 #include "scene/resources/packed_scene.h"
 #include "editor_settings.h"
 #include "tools/editor/plugins/canvas_item_editor_plugin.h"
-
+#include "tools/editor/plugins/spatial_editor_plugin.h"
 
 void SceneTreeDock::_unhandled_key_input(InputEvent p_event) {
 
@@ -479,9 +479,15 @@ void SceneTreeDock::_notification(int p_what) {
 
 			CanvasItemEditorPlugin *canvas_item_plugin =  editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
 			if (canvas_item_plugin) {
-				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");				
 				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
 				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
+			}
+			SpatialEditorPlugin *spatial_item_plugin = editor_data->get_editor("3D")->cast_to<SpatialEditorPlugin>();
+			if (spatial_item_plugin)
+			{
+				spatial_item_plugin->get_spatial_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+				scene_tree->connect("node_changed", spatial_item_plugin->get_spatial_editor(), "update_transform_gizmo");
 			}
 			static const char* button_names[TOOL_BUTTON_MAX]={
 				"New",
