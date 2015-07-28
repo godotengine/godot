@@ -45,6 +45,7 @@ class EditorLog : public PanelContainer {
 	OBJ_TYPE( EditorLog, PanelContainer );
 
 	ToolButton *button;
+	Button *clearbutton;
 	Label *title;
 	RichTextLabel *log;
 	TextureButton *tb;
@@ -62,6 +63,7 @@ class EditorLog : public PanelContainer {
 //	void _dragged(const Point2& p_ofs);
 	void _close_request();
 	void _flip_request();
+	void _clear_request();
 	static void _undo_redo_cbk(void *p_self,const String& p_name);
 protected:
 
