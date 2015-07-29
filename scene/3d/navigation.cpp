@@ -30,6 +30,7 @@ void Navigation::_navmesh_link(int p_id) {
 		p.edges.resize(plen);
 
 		Vector3 center;
+		float sum=0;
 
 		for(int j=0;j<plen;j++) {
 
@@ -44,7 +45,18 @@ void Navigation::_navmesh_link(int p_id) {
 			center+=ep;
 			e.point=_get_point(ep);
 			p.edges[j]=e;
+
+			if (j>=2) {
+				Vector3 epa = nm.xform.xform(r[indices[j-2]]);
+				Vector3 epb = nm.xform.xform(r[indices[j-1]]);
+
+				sum+=up.dot((epb-epa).cross(ep-epa));
+
+			}
+
 		}
+
+		p.clockwise=sum>0;
 
 		if (!valid) {
 			nm.polygons.pop_back();
@@ -73,9 +85,14 @@ void Navigation::_navmesh_link(int p_id) {
 			} else {
 
 				if (C->get().B!=NULL) {
-					print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
+					ConnectionPending pending;
+					pending.polygon=&p;
+					pending.edge=j;
+					p.edges[j].P=C->get().pending.push_back(pending);
+					continue;
+					//print_line(String()+_get_vertex(ek.a)+" -> "+_get_vertex(ek.b));
 				}
-				ERR_CONTINUE(C->get().B!=NULL); //wut
+				//ERR_CONTINUE(C->get().B!=NULL); //wut
 
 				C->get().B=&p;
 				C->get().B_edge=j;
@@ -114,8 +131,13 @@ void Navigation::_navmesh_unlink(int p_id) {
 
 			EdgeKey ek(edges[i].point,edges[next].point);
 			Map<EdgeKey,Connection>::Element *C=connections.find(ek);
+
 			ERR_CONTINUE(!C);
-			if (C->get().B) {
+
+			if (edges[i].P) {
+				C->get().pending.erase(edges[i].P);
+				edges[i].P=NULL;
+			} else if (C->get().B) {
 				//disconnect
 
 				C->get().B->edges[C->get().B_edge].C=NULL;
@@ -130,6 +152,20 @@ void Navigation::_navmesh_unlink(int p_id) {
 				}
 				C->get().B=NULL;
 				C->get().B_edge=-1;
+
+				if (C->get().pending.size()) {
+					//reconnect if something is pending
+					ConnectionPending cp = C->get().pending.front()->get();
+					C->get().pending.pop_front();
+
+					C->get().B=cp.polygon;
+					C->get().B_edge=cp.edge;
+					C->get().A->edges[C->get().A_edge].C=cp.polygon;
+					C->get().A->edges[C->get().A_edge].C_edge=cp.edge;
+					cp.polygon->edges[cp.edge].C=C->get().A;
+					cp.polygon->edges[cp.edge].C_edge=C->get().A_edge;
+					cp.polygon->edges[cp.edge].P=NULL;
+				}
 
 			} else {
 				connections.erase(C);
@@ -399,7 +435,8 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3& p_start, const Vector
 					left = _get_vertex(p->edges[prev].point);
 					right = _get_vertex(p->edges[prev_n].point);
 
-					if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5).dot(up) < 0){
+					//if (CLOCK_TANGENT(apex_point,left,(left+right)*0.5).dot(up) < 0){
+					if (p->clockwise) {
 						SWAP(left,right);
 					}
 				}
@@ -614,6 +651,37 @@ Vector3 Navigation::get_closest_point_normal(const Vector3& p_point){
 }
 
 
+Object* Navigation::get_closest_point_owner(const Vector3& p_point){
+
+	Vector3 closest_point;
+	Object *owner=NULL;
+	float closest_point_d=1e20;
+
+	for (Map<int,NavMesh>::Element*E=navmesh_map.front();E;E=E->next()) {
+
+		if (!E->get().linked)
+			continue;
+		for(List<Polygon>::Element *F=E->get().polygons.front();F;F=F->next()) {
+
+			Polygon &p=F->get();
+			for(int i=2;i<p.edges.size();i++) {
+
+				Face3 f(_get_vertex(p.edges[0].point),_get_vertex(p.edges[i-1].point),_get_vertex(p.edges[i].point));
+				Vector3 inters = f.get_closest_point_to(p_point);
+				float d = inters.distance_to(p_point);
+				if (d<closest_point_d) {
+					closest_point=inters;
+					closest_point_d=d;
+					owner=E->get().owner;
+				}
+			}
+		}
+	}
+
+	return owner;
+
+}
+
 void Navigation::set_up_vector(const Vector3& p_up) {
 
 
@@ -633,9 +701,10 @@ void Navigation::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("navmesh_remove","id"),&Navigation::navmesh_remove);
 
 	ObjectTypeDB::bind_method(_MD("get_simple_path","start","end","optimize"),&Navigation::get_simple_path,DEFVAL(true));
-    ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_closest_point_to_segment","start","end","use_collision"),&Navigation::get_closest_point_to_segment,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_closest_point","to_point"),&Navigation::get_closest_point);
 	ObjectTypeDB::bind_method(_MD("get_closest_point_normal","to_point"),&Navigation::get_closest_point_normal);
+	ObjectTypeDB::bind_method(_MD("get_closest_point_owner","to_point"),&Navigation::get_closest_point_owner);
 
 	ObjectTypeDB::bind_method(_MD("set_up_vector","up"),&Navigation::set_up_vector);
 	ObjectTypeDB::bind_method(_MD("get_up_vector"),&Navigation::get_up_vector);

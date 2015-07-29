@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -115,19 +115,16 @@ void CollisionObject2D::_update_shapes() {
 bool CollisionObject2D::_set(const StringName& p_name, const Variant& p_value) {
 	String name=p_name;
 
-	if (name=="shape_count") {
+	if (name.begins_with("shapes/")) {
 
-		shapes.resize(p_value);
-		_update_shapes();
-		_change_notify();
-
-	} else if (name.begins_with("shapes/")) {
-
-		int idx=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
-		if (what=="shape")
-			set_shape(idx,RefPtr(p_value));
-		else if (what=="transform")
+		int idx=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
+		if (what=="shape") {
+			if (idx>=shapes.size())
+				add_shape(RefPtr(p_value));
+			else
+				set_shape(idx,RefPtr(p_value));
+		} else if (what=="transform")
 			set_shape_transform(idx,p_value);
 		else if (what=="trigger")
 			set_shape_as_trigger(idx,p_value);
@@ -143,12 +140,10 @@ bool CollisionObject2D::_get(const StringName& p_name,Variant &r_ret) const {
 
 	String name=p_name;
 
-	if (name=="shape_count") {
-		r_ret= shapes.size();
-	} else if (name.begins_with("shapes/")) {
+	if (name.begins_with("shapes/")) {
 
-		int idx=name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int idx=name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="shape")
 			r_ret= get_shape(idx);
 		else if (what=="transform")
@@ -163,7 +158,7 @@ bool CollisionObject2D::_get(const StringName& p_name,Variant &r_ret) const {
 
 void CollisionObject2D::_get_property_list( List<PropertyInfo> *p_list) const {
 
-	p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
+	//p_list->push_back( PropertyInfo(Variant::INT,"shape_count",PROPERTY_HINT_RANGE,"0,256,1",PROPERTY_USAGE_NOEDITOR|PROPERTY_USAGE_NO_INSTANCE_STATE) );
 
 	for(int i=0;i<shapes.size();i++) {
 		String path="shapes/"+itos(i)+"/";
@@ -254,12 +249,19 @@ void CollisionObject2D::_bind_methods() {
 
 void CollisionObject2D::add_shape(const Ref<Shape2D>& p_shape, const Matrix32& p_transform) {
 
+	ERR_FAIL_COND(p_shape.is_null());
+
 	ShapeData sdata;
 	sdata.shape=p_shape;
 	sdata.xform=p_transform;
 	sdata.trigger=false;
-	shapes.push_back(sdata);
-	_update_shapes();
+
+	if (area)
+		Physics2DServer::get_singleton()->area_add_shape(get_rid(),p_shape->get_rid(),p_transform);
+	else
+		Physics2DServer::get_singleton()->body_add_shape(get_rid(),p_shape->get_rid(),p_transform);
+
+	shapes.push_back(sdata);	
 
 }
 int CollisionObject2D::get_shape_count() const {
@@ -270,8 +272,15 @@ int CollisionObject2D::get_shape_count() const {
 void CollisionObject2D::set_shape(int p_shape_idx, const Ref<Shape2D>& p_shape) {
 
 	ERR_FAIL_INDEX(p_shape_idx,shapes.size());
+	ERR_FAIL_COND(p_shape.is_null());
+
 	shapes[p_shape_idx].shape=p_shape;
-	_update_shapes();
+	if (area)
+		Physics2DServer::get_singleton()->area_set_shape(get_rid(),p_shape_idx,p_shape->get_rid());
+	else
+		Physics2DServer::get_singleton()->body_set_shape(get_rid(),p_shape_idx,p_shape->get_rid());
+
+//	_update_shapes();
 }
 
 void CollisionObject2D::set_shape_transform(int p_shape_idx, const Matrix32& p_transform) {
@@ -279,7 +288,12 @@ void CollisionObject2D::set_shape_transform(int p_shape_idx, const Matrix32& p_t
 	ERR_FAIL_INDEX(p_shape_idx,shapes.size());
 	shapes[p_shape_idx].xform=p_transform;
 
-	_update_shapes();
+	if (area)
+		Physics2DServer::get_singleton()->area_set_shape_transform(get_rid(),p_shape_idx,p_transform);
+	else
+		Physics2DServer::get_singleton()->body_set_shape_transform(get_rid(),p_shape_idx,p_transform);
+
+//	_update_shapes();
 }
 
 Ref<Shape2D> CollisionObject2D::get_shape(int p_shape_idx) const {

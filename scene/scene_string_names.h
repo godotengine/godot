@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 #define SCENE_STRING_NAMES_H
 
 #include "string_db.h"
-
+#include "path_db.h"
 class SceneStringNames {
 
 friend void register_scene_types();
@@ -87,6 +87,8 @@ public:
 	StringName area_enter_shape;
 	StringName area_exit_shape;
 
+	StringName _body_inout;
+	StringName _area_inout;
 
 
 	StringName _get_gizmo_geometry;
@@ -169,6 +171,14 @@ public:
 	StringName _mouse_exit;
 
 	StringName frame_changed;
+
+	StringName playback_speed;
+	StringName playback_active;
+	StringName autoplay;
+	StringName blend_times;
+	StringName speed;
+
+	NodePath path_pp;
 
 
 };

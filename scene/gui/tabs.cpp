@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,7 +56,14 @@ Size2 Tabs::get_minimum_size() const {
 		else
 			ms.width+=tab_bg->get_minimum_size().width;
 
+		if (tabs[i].right_button.is_valid()) {
+			Ref<Texture> rb=tabs[i].right_button;
+			Size2 bms = rb->get_size()+get_stylebox("button")->get_minimum_size();
+			bms.width+=get_constant("hseparation");
 
+			ms.width+=bms.width;
+			ms.height=MAX(bms.height+tab_bg->get_minimum_size().height,ms.height);
+		}
 	}
 
 	return ms;
@@ -65,6 +72,39 @@ Size2 Tabs::get_minimum_size() const {
 
 
 void Tabs::_input_event(const InputEvent& p_event) {
+
+	if (p_event.type==InputEvent::MOUSE_MOTION) {
+
+		Point2 pos( p_event.mouse_motion.x, p_event.mouse_motion.y );
+
+		int hover=-1;
+		for(int i=0;i<tabs.size();i++) {
+
+			if (tabs[i].rb_rect.has_point(pos)) {
+				hover=i;
+				break;
+			}
+		}
+
+		if (hover!=rb_hover) {
+			rb_hover=hover;
+			update();
+		}
+		return;
+	}
+
+	if (rb_pressing && p_event.type==InputEvent::MOUSE_BUTTON &&
+	    !p_event.mouse_button.pressed &&
+	    p_event.mouse_button.button_index==BUTTON_LEFT) {
+
+		if (rb_hover!=-1) {
+			//pressed
+			emit_signal("right_button_pressed",rb_hover);
+		}
+
+		rb_pressing=false;
+		update();
+	}
 
 	if (p_event.type==InputEvent::MOUSE_BUTTON &&
 	    p_event.mouse_button.pressed &&
@@ -76,9 +116,15 @@ void Tabs::_input_event(const InputEvent& p_event) {
 		int found=-1;
 		for(int i=0;i<tabs.size();i++) {
 
-			int ofs=tabs[i].ofs_cache;
+			if (tabs[i].rb_rect.has_point(pos)) {
+				rb_pressing=true;
+				update();
+				return;
+			}
 
-			if (pos.x < ofs) {
+			int ofs=tabs[i].ofs_cache;
+			int size = tabs[i].ofs_cache;
+			if (pos.x >=tabs[i].ofs_cache && pos.x<tabs[i].ofs_cache+tabs[i].size_cache) {
 
 				found=i;
 				break;
@@ -89,6 +135,7 @@ void Tabs::_input_event(const InputEvent& p_event) {
 		if (found!=-1) {
 
 			set_current_tab(found);
+			emit_signal("tab_changed",found);
 		}
 	}
 
@@ -99,7 +146,10 @@ void Tabs::_notification(int p_what) {
 
 	switch(p_what) {
 
-
+		case NOTIFICATION_MOUSE_EXIT: {
+			rb_hover=-1;
+			update();
+		} break;
 		case NOTIFICATION_DRAW: {
 
 			RID ci = get_canvas_item();
@@ -117,8 +167,22 @@ void Tabs::_notification(int p_what) {
 
 			int w=0;
 
+			int mw = get_minimum_size().width;
+
+			if (tab_align==ALIGN_CENTER) {
+				w=(get_size().width-mw)/2;
+			} else if (tab_align==ALIGN_RIGHT) {
+				w=get_size().width-mw;
+
+			}
+
+			if (w<0) {
+				w=0;
+			}
+
 			for(int i=0;i<tabs.size();i++) {
 
+				tabs[i].ofs_cache=w;
 
 				String s = tabs[i].text;
 				int lsize=0;
@@ -127,7 +191,7 @@ void Tabs::_notification(int p_what) {
 
 				Ref<Texture> icon;
 				if (tabs[i].icon.is_valid()) {
-					Ref<Texture> icon = tabs[i].icon;
+					icon = tabs[i].icon;
 					if (icon.is_valid()) {
 						lsize+=icon->get_width();
 						if (s!="")
@@ -136,6 +200,16 @@ void Tabs::_notification(int p_what) {
 					}
 				}
 
+				if (tabs[i].right_button.is_valid()) {
+					Ref<StyleBox> style = get_stylebox("button");
+					Ref<Texture> rb=tabs[i].right_button;
+
+					lsize+=get_constant("hseparation");
+					lsize+=style->get_margin(MARGIN_LEFT);
+					lsize+=rb->get_width();
+					lsize+=style->get_margin(MARGIN_RIGHT);
+
+				}
 
 				Ref<StyleBox> sb;
 				int va;
@@ -169,9 +243,39 @@ void Tabs::_notification(int p_what) {
 
 				font->draw(ci, Point2i( w, sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-font->get_height())/2+font->get_ascent() ), s, col );
 
-				w+=slen+sb->get_margin(MARGIN_RIGHT);
+				w+=slen;
 
-				tabs[i].ofs_cache=w;
+				if (tabs[i].right_button.is_valid()) {
+					Ref<StyleBox> style = get_stylebox("button");
+					Ref<Texture> rb=tabs[i].right_button;
+
+					w+=get_constant("hseparation");
+
+					Rect2 rb_rect;
+					rb_rect.size=style->get_minimum_size()+rb->get_size();
+					rb_rect.pos.x=w;
+					rb_rect.pos.y=sb->get_margin(MARGIN_TOP)+((sb_rect.size.y-sb_ms.y)-(rb_rect.size.y))/2;
+
+					if (rb_hover==i) {
+						if (rb_pressing)
+							get_stylebox("button_pressed")->draw(ci,rb_rect);
+						else
+							style->draw(ci,rb_rect);
+					}
+
+					w+=style->get_margin(MARGIN_LEFT);
+
+					rb->draw(ci,Point2i( w,rb_rect.pos.y+style->get_margin(MARGIN_TOP) ));
+					w+=rb->get_width();
+					w+=style->get_margin(MARGIN_RIGHT);
+					tabs[i].rb_rect=rb_rect;
+
+
+				}
+
+				w+=sb->get_margin(MARGIN_RIGHT);
+
+				tabs[i].size_cache=w-tabs[i].ofs_cache;
 
 			}
 
@@ -195,7 +299,7 @@ void Tabs::set_current_tab(int p_current) {
 	current=p_current;	
 
 	_change_notify("current_tab");
-	emit_signal("tab_changed",current);
+	//emit_signal("tab_changed",current);
 	update();
 }
 
@@ -237,6 +341,23 @@ Ref<Texture> Tabs::get_tab_icon(int p_tab) const{
 
 }
 
+
+
+void Tabs::set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button){
+
+	ERR_FAIL_INDEX(p_tab,tabs.size());
+	tabs[p_tab].right_button=p_right_button;
+	update();
+	minimum_size_changed();
+
+}
+Ref<Texture> Tabs::get_tab_right_button(int p_tab) const{
+
+	ERR_FAIL_INDEX_V(p_tab,tabs.size(),Ref<Texture>());
+	return tabs[p_tab].right_button;
+
+}
+
 void Tabs::add_tab(const String& p_str,const Ref<Texture>& p_icon) {
 
 	Tab t;
@@ -247,6 +368,12 @@ void Tabs::add_tab(const String& p_str,const Ref<Texture>& p_icon) {
 	update();
 	minimum_size_changed();
 
+}
+
+void Tabs::clear_tabs() {
+	tabs.clear();
+	current=0;
+	update();
 }
 
 void Tabs::remove_tab(int p_idx) {
@@ -263,8 +390,19 @@ void Tabs::remove_tab(int p_idx) {
 	if (current>=tabs.size())
 		current=tabs.size()-1;
 
-	emit_signal("tab_changed",current);
+	//emit_signal("tab_changed",current);
 
+}
+
+void Tabs::set_tab_align(TabAlign p_align) {
+
+	tab_align=p_align;
+	update();
+}
+
+Tabs::TabAlign Tabs::get_tab_align() const {
+
+	return tab_align;
 }
 
 
@@ -280,15 +418,24 @@ void Tabs::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_tab_icon:Texture","tab_idx"),&Tabs::get_tab_icon);
 	ObjectTypeDB::bind_method(_MD("remove_tab","tab_idx"),&Tabs::remove_tab);
 	ObjectTypeDB::bind_method(_MD("add_tab","title","icon:Texture"),&Tabs::add_tab);
+	ObjectTypeDB::bind_method(_MD("set_tab_align","align"),&Tabs::set_tab_align);
+	ObjectTypeDB::bind_method(_MD("get_tab_align"),&Tabs::get_tab_align);
 
 	ADD_SIGNAL(MethodInfo("tab_changed",PropertyInfo(Variant::INT,"tab")));
+	ADD_SIGNAL(MethodInfo("right_button_pressed",PropertyInfo(Variant::INT,"tab")));
 
 	ADD_PROPERTY( PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE,"-1,4096,1",PROPERTY_USAGE_EDITOR), _SCS("set_current_tab"), _SCS("get_current_tab") );
 
+	BIND_CONSTANT( ALIGN_LEFT );
+	BIND_CONSTANT( ALIGN_CENTER );
+	BIND_CONSTANT( ALIGN_RIGHT );
 }
 
 Tabs::Tabs() {
 
 	current=0;
+	tab_align=ALIGN_CENTER;
+	rb_hover=-1;
+	rb_pressing=false;
 
 }

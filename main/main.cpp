@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -87,6 +87,9 @@ static MessageQueue *message_queue=NULL;
 static Performance *performance = NULL;
 static PathRemap *path_remap;
 static PackedData *packed_data=NULL;
+#ifdef MINIZIP_ENABLED
+static ZipArchive *zip_packed_data=NULL;
+#endif
 static FileAccessNetworkClient *file_access_network_client=NULL;
 static TranslationServer *translation_server = NULL;
 
@@ -94,6 +97,9 @@ static OS::VideoMode video_mode;
 static int video_driver_idx=-1;
 static int audio_driver_idx=-1;
 static String locale;
+
+static bool init_maximized=false;
+static int init_screen=-1;
 
 static String unescape_cmdline(const String& p_str) {
 
@@ -248,7 +254,15 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		packed_data = memnew(PackedData);
 
 #ifdef MINIZIP_ENABLED
-	packed_data->add_pack_source(ZipArchive::get_singleton());
+	
+	//XXX: always get_singleton() == 0x0
+	zip_packed_data = ZipArchive::get_singleton();
+	//TODO: remove this temporary fix
+	if (!zip_packed_data) {
+		zip_packed_data = memnew(ZipArchive);
+	}
+
+	packed_data->add_pack_source(zip_packed_data);
 #endif
 
 	bool editor=false;
@@ -373,7 +387,7 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		} else if (I->get()=="-e" || I->get()=="-editor") { // fonud editor
 
 			editor=true;
-
+			init_maximized=true;
 		} else if (I->get()=="-nowindow") { // fullscreen
 
 			OS::get_singleton()->set_no_window_mode(true);
@@ -510,8 +524,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		ScriptDebuggerRemote *sdr = memnew( ScriptDebuggerRemote );
 		uint16_t debug_port = GLOBAL_DEF("debug/remote_port",6007);
 		if (debug_host.find(":")!=-1) {
-		    debug_port=debug_host.get_slice(":",1).to_int();
-		    debug_host=debug_host.get_slice(":",0);
+		    debug_port=debug_host.get_slicec(':',1).to_int();
+		    debug_host=debug_host.get_slicec(':',0);
 		}
 		Error derr = sdr->connect_to_host(debug_host,debug_port);
 
@@ -532,8 +546,8 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		file_access_network_client=memnew(FileAccessNetworkClient);
 		int port;
 		if (remotefs.find(":")!=-1) {
-			port=remotefs.get_slice(":",1).to_int();
-			remotefs=remotefs.get_slice(":",0);
+			port=remotefs.get_slicec(':',1).to_int();
+			remotefs=remotefs.get_slicec(':',0);
 		} else {
 			port=6010;
 		}
@@ -591,6 +605,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	if (bool(Globals::get_singleton()->get("application/disable_stdout"))) {
 		quiet_stdout=true;
 	}
+	if (bool(Globals::get_singleton()->get("application/disable_stderr"))) {
+		_print_error_enabled = false;
+	};
 
 	if (quiet_stdout)
 		_print_line_enabled=false;
@@ -636,6 +653,9 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 	GLOBAL_DEF("display/test_height",0);
 	if (rtm==-1) {
 		rtm=GLOBAL_DEF("render/thread_model",OS::RENDER_THREAD_SAFE);
+		if (rtm>=1) //hack for now
+			rtm=1;
+
 	}
 
 	if (rtm>=0 && rtm<3)
@@ -740,6 +760,15 @@ Error Main::setup(const char *execpath,int argc, char *argv[],bool p_second_phas
 		memdelete(packed_data);
 	if (file_access_network_client)
 		memdelete(file_access_network_client);
+
+// Note 1: *zip_packed_data live into *packed_data
+// Note 2: PackedData::~PackedData destroy this.
+//#ifdef MINIZIP_ENABLED
+//	if (zip_packed_data)
+//		memdelete( zip_packed_data );
+//#endif
+
+
 	unregister_core_types();
 	
 	OS::get_singleton()->_cmdline.clear();
@@ -766,14 +795,31 @@ Error Main::setup2() {
 	show_logo=false;
 #endif
 
+	if (init_screen!=-1) {
+		OS::get_singleton()->set_current_screen(init_screen);
+	}
+	if (init_maximized) {
+		OS::get_singleton()->set_window_maximized(true);
+	}
+
 	if (show_logo) { //boot logo!
-		Image boot_logo=GLOBAL_DEF("application/boot_logo",Image());
+		String boot_logo_path=GLOBAL_DEF("application/boot_splash",String());
+		bool boot_logo_scale=GLOBAL_DEF("application/boot_splash_fullsize",true);
+		Globals::get_singleton()->set_custom_property_info("application/boot_splash",PropertyInfo(Variant::STRING,"application/boot_splash",PROPERTY_HINT_FILE,"*.png"));
+
+
+		Image boot_logo;
+
+		if (boot_logo_path.strip_edges()!="" && FileAccess::exists(boot_logo_path)) {
+			boot_logo.load(boot_logo_path);
+		}
 
 		if (!boot_logo.empty()) {
+			OS::get_singleton()->_msec_splash=OS::get_singleton()->get_ticks_msec();
 			Color clear = GLOBAL_DEF("render/default_clear_color",Color(0.3,0.3,0.3));
 			VisualServer::get_singleton()->set_default_clear_color(clear);
 			Color boot_bg = GLOBAL_DEF("application/boot_bg_color", clear);
-			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg);
+			VisualServer::get_singleton()->set_boot_image(boot_logo, boot_bg,boot_logo_scale);
 #ifndef TOOLS_ENABLED
 			//no tools, so free the boot logo (no longer needed)
 			Globals::get_singleton()->set("application/boot_logo",Image());
@@ -788,7 +834,7 @@ Error Main::setup2() {
 			MAIN_PRINT("Main: ClearColor");
 			VisualServer::get_singleton()->set_default_clear_color(boot_splash_bg_color);
 			MAIN_PRINT("Main: Image");
-			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color);
+			VisualServer::get_singleton()->set_boot_image(splash, boot_splash_bg_color,false);
 #endif
 			MAIN_PRINT("Main: DCC");
 			VisualServer::get_singleton()->set_default_clear_color(GLOBAL_DEF("render/default_clear_color",Color(0.3,0.3,0.3)));
@@ -1176,7 +1222,7 @@ bool Main::start() {
 						String s = E->get().name;
 						if (!s.begins_with("autoload/"))
 							continue;
-						String name = s.get_slice("/",1);
+						String name = s.get_slicec('/',1);
 						String path = Globals::get_singleton()->get(s);
 						RES res = ResourceLoader::load(path);
 						ERR_EXPLAIN("Can't autoload: "+path);
@@ -1215,7 +1261,8 @@ bool Main::start() {
 
 				ERR_EXPLAIN("Failed loading scene: "+local_game_path);
 				ERR_FAIL_COND_V(!scene,false)
-				sml->get_root()->add_child(scene);
+				//sml->get_root()->add_child(scene);
+				sml->add_current_scene(scene);
 
 				String iconpath = GLOBAL_DEF("application/icon","Variant()""");
 				if (iconpath!="") {
@@ -1283,12 +1330,15 @@ bool Main::iteration() {
 	uint64_t ticks=OS::get_singleton()->get_ticks_usec();
 	uint64_t ticks_elapsed=ticks-last_ticks;
 
+	double step=(double)ticks_elapsed / 1000000.0;
+	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
+
+//	if (time_accum+step < frame_slice)
+//		return false;
+
 	frame+=ticks_elapsed;
 
 	last_ticks=ticks;
-	double step=(double)ticks_elapsed / 1000000.0;
-
-	float frame_slice=1.0/OS::get_singleton()->get_iterations_per_second();
 
 	if (step>frame_slice*8)
 		step=frame_slice*8;
@@ -1298,7 +1348,6 @@ bool Main::iteration() {
 	float time_scale = OS::get_singleton()->get_time_scale();
 
 	bool exit=false;
-
 
 	int iters = 0;
 
@@ -1320,6 +1369,8 @@ bool Main::iteration() {
 		message_queue->flush();
 
 		PhysicsServer::get_singleton()->step(frame_slice*time_scale);
+
+		Physics2DServer::get_singleton()->end_sync();
 		Physics2DServer::get_singleton()->step(frame_slice*time_scale);
 
 		time_accum-=frame_slice;
@@ -1342,6 +1393,8 @@ bool Main::iteration() {
 		SpatialSound2DServer::get_singleton()->update( step*time_scale );
 
 
+	VisualServer::get_singleton()->sync(); //sync if still drawing from previous frames.
+
 	if (OS::get_singleton()->can_draw()) {
 
 		if ((!force_redraw_requested) && OS::get_singleton()->is_in_low_processor_usage_mode()) {
@@ -1354,8 +1407,6 @@ bool Main::iteration() {
 			OS::get_singleton()->frames_drawn++;
 			force_redraw_requested = false;
 		}
-	} else {
-		VisualServer::get_singleton()->flush(); // flush visual commands
 	}
 
 	if (AudioServer::get_singleton())

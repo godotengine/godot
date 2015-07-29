@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -424,8 +424,206 @@ void EditorData::remove_custom_type(const String& p_type){
 
 }
 
+int EditorData::add_edited_scene(int p_at_pos) {
+
+	if (p_at_pos<0)
+		p_at_pos=edited_scene.size();
+	EditedScene es;
+	es.root=NULL;
+	es.history_current=-1;
+	es.version=0;
+
+	if (p_at_pos==edited_scene.size())
+		edited_scene.push_back(es);
+	else
+		edited_scene.insert(p_at_pos,es);
+
+	if (current_edited_scene<0)
+		current_edited_scene=0;
+	return p_at_pos;
+}
+
+void EditorData::move_edited_scene_index(int p_idx,int p_to_idx){
+
+	ERR_FAIL_INDEX(p_idx,edited_scene.size());
+	ERR_FAIL_INDEX(p_to_idx,edited_scene.size());
+	SWAP(edited_scene[p_idx],edited_scene[p_to_idx]);
+}
+void EditorData::remove_scene(int p_idx){
+	ERR_FAIL_INDEX(p_idx,edited_scene.size());
+	if (edited_scene[p_idx].root)
+		memdelete(edited_scene[p_idx].root);
+
+	if (current_edited_scene>p_idx)
+		current_edited_scene--;
+	else if (current_edited_scene==p_idx && current_edited_scene>0) {
+		current_edited_scene--;
+	}
+
+	edited_scene.remove(p_idx);
+
+}
+int EditorData::get_edited_scene() const {
+
+	return current_edited_scene;
+}
+void EditorData::set_edited_scene(int p_idx){
+
+	ERR_FAIL_INDEX(p_idx,edited_scene.size());
+	current_edited_scene=p_idx;
+	//swap
+}
+Node* EditorData::get_edited_scene_root(){
+
+	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),NULL);
+
+	return edited_scene[current_edited_scene].root;
+}
+void EditorData::set_edited_scene_root(Node* p_root) {
+
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+	edited_scene[current_edited_scene].root=p_root;
+}
+
+int EditorData::get_edited_scene_count() const {
+
+	return edited_scene.size();
+}
+
+void EditorData::set_edited_scene_version(uint64_t version) {
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+	edited_scene[current_edited_scene].version=version;
+
+}
+
+uint64_t EditorData::get_edited_scene_version() const{
+
+	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),0);
+	return edited_scene[current_edited_scene].version;
+
+}
+uint64_t EditorData::get_scene_version(int p_idx) const{
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),false);
+	return edited_scene[p_idx].version;
+}
+
+String EditorData::get_scene_type(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
+	if (!edited_scene[p_idx].root)
+		return "";
+	return edited_scene[p_idx].root->get_type();
+
+}
+
+Ref<Script> EditorData::get_scene_root_script(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),Ref<Script>());
+	if (!edited_scene[p_idx].root)
+		return Ref<Script>();
+	Ref<Script> s=edited_scene[p_idx].root->get_script();
+	if (!s.is_valid()) {
+		Node *n = edited_scene[p_idx].root->get_child(0);
+		while(!s.is_valid() && n && n->get_filename()==String()) {
+			s=n->get_script();
+			n=n->get_parent();
+		}
+	}
+	return s;
+}
+
+String EditorData::get_scene_title(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
+	if (!edited_scene[p_idx].root)
+		return "[empty]";
+	if (edited_scene[p_idx].root->get_filename()=="")
+		return "[unsaved]";
+	return edited_scene[p_idx].root->get_filename().get_file();
+}
+
+
+String EditorData::get_scene_path(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx,edited_scene.size(),String());
+
+	if (!edited_scene[p_idx].root)
+		return "";
+	return edited_scene[p_idx].root->get_filename();
+
+}
+
+void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary& p_custom) {
+
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+
+	EditedScene &es=edited_scene[current_edited_scene];
+	es.selection = p_selection->get_selected_node_list();
+	es.history_current=p_history->current;
+	es.history_stored=p_history->history;
+	es.editor_states=get_editor_states();
+	es.custom_state=p_custom;
+
+}
+
+Dictionary EditorData::restore_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history) {
+	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),Dictionary());
+
+	EditedScene &es=edited_scene[current_edited_scene];
+
+	p_history->current=es.history_current;
+	p_history->history=es.history_stored;
+
+
+	p_selection->clear();
+	for(List<Node*>::Element *E=es.selection.front();E;E=E->next()) {
+		p_selection->add_node(E->get());
+	}
+	set_editor_states(es.editor_states);
+
+	return es.custom_state;
+}
+
+
+void EditorData::set_edited_scene_import_metadata(Ref<ResourceImportMetadata> p_mdata) {
+
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+	edited_scene[current_edited_scene].medatata=p_mdata;
+
+}
+
+Ref<ResourceImportMetadata> EditorData::get_edited_scene_import_metadata() const{
+
+	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),Ref<ResourceImportMetadata>());
+	return edited_scene[current_edited_scene].medatata;
+}
+
+void EditorData::clear_edited_scenes() {
+
+	for(int i=0;i<edited_scene.size();i++) {
+		if (edited_scene[i].root) {
+			memdelete( edited_scene[i].root );
+		}
+	}
+	edited_scene.clear();
+}
+
+
+
+void EditorData::set_plugin_window_layout(Ref<ConfigFile> p_layout) {
+	for(int i=0;i<editor_plugins.size();i++) {
+		editor_plugins[i]->set_window_layout(p_layout);
+	}
+}
+
+void EditorData::get_plugin_window_layout(Ref<ConfigFile> p_layout) {
+	for(int i=0;i<editor_plugins.size();i++) {
+		editor_plugins[i]->get_window_layout(p_layout);
+	}
+}
 
 EditorData::EditorData() {
+
+	current_edited_scene=-1;
 
 //	load_imported_scenes_from_globals();
 }

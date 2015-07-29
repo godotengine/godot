@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -125,6 +125,9 @@ public:
 
 	void update_tree() { _update_tree(); }
 
+
+	Tree* get_scene_tree() { return tree; }
+
 	SceneTreeEditor(bool p_label=true,bool p_can_rename=false, bool p_can_open_instance=false);
 	~SceneTreeEditor();
 
@@ -150,7 +153,7 @@ protected:
 	static void _bind_methods();
 public:
 
-	SceneTreeEditor *get_tree() { return tree; }
+	SceneTreeEditor *get_scene_tree() { return tree; }
 	SceneTreeDialog();
 	~SceneTreeDialog();
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -285,6 +285,36 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM1R(String,pad_decimals);
 	VCALL_LOCALMEM1R(String,pad_zeros);
 
+	static void _call_String_to_ascii(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+
+		String *s = reinterpret_cast<String*>(p_self._data._mem);
+		CharString charstr = s->ascii();
+
+		ByteArray retval;
+		size_t len = charstr.length();
+		retval.resize(len);
+		ByteArray::Write w = retval.write();
+		copymem(w.ptr(), charstr.ptr(), len);
+		w = DVector<uint8_t>::Write();
+
+		r_ret = retval;
+	}
+
+	static void _call_String_to_utf8(Variant& r_ret,Variant& p_self,const Variant** p_args) {
+
+		String *s = reinterpret_cast<String*>(p_self._data._mem);
+		CharString charstr = s->utf8();
+
+		ByteArray retval;
+		size_t len = charstr.length();
+		retval.resize(len);
+		ByteArray::Write w = retval.write();
+		copymem(w.ptr(), charstr.ptr(), len);
+		w = DVector<uint8_t>::Write();
+
+		r_ret = retval;
+	}
+
 
 	VCALL_LOCALMEM0R(Vector2,normalized);
 	VCALL_LOCALMEM0R(Vector2,length);
@@ -426,6 +456,7 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	VCALL_LOCALMEM0(Array,sort);
 	VCALL_LOCALMEM2(Array,sort_custom);
 	VCALL_LOCALMEM0(Array,invert);
+	VCALL_LOCALMEM0R(Array,is_shared);
 
 	static void _call_ByteArray_get_string_from_ascii(Variant& r_ret,Variant& p_self,const Variant** p_args) {
 
@@ -684,6 +715,8 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 
 	VCALL_PTR0R( InputEvent, is_pressed );
 	VCALL_PTR1R( InputEvent, is_action );
+	VCALL_PTR1R( InputEvent, is_action_pressed );
+	VCALL_PTR1R( InputEvent, is_action_released );
 	VCALL_PTR0R( InputEvent, is_echo );
     VCALL_PTR2( InputEvent, set_as_action );
 
@@ -717,6 +750,12 @@ static void _call_##m_type##_##m_method(Variant& r_ret,Variant& p_self,const Var
 	static void Rect2_init2(Variant& r_ret,const Variant** p_args) {
 
 		r_ret=Rect2(*p_args[0],*p_args[1],*p_args[2],*p_args[3]);
+	}
+
+	static void Matrix32_init2(Variant& r_ret,const Variant** p_args) {
+		
+		Matrix32 m(*p_args[0], *p_args[1]);
+		r_ret=m;
 	}
 
 	static void Matrix32_init3(Variant& r_ret,const Variant** p_args) {
@@ -1031,7 +1070,7 @@ Variant Variant::construct(const Variant::Type p_type,const Variant** p_args,int
 			case STRING_ARRAY: return (StringArray(*p_args[0]));
 			case VECTOR2_ARRAY: return (Vector2Array(*p_args[0])); 	// 25
 			case VECTOR3_ARRAY: return (Vector3Array(*p_args[0])); 	// 25
-			case COLOR_ARRAY: return (Color(*p_args[0]));
+			case COLOR_ARRAY: return (ColorArray(*p_args[0]));
 			default: return Variant();
 		}
 	}
@@ -1111,6 +1150,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		const _VariantCall::ConstructData &cd = E->get();
 		MethodInfo mi;
 		mi.name=Variant::get_type_name(p_type);
+		mi.return_val.type=p_type;
 		for(int i=0;i<cd.arg_count;i++) {
 
 			PropertyInfo pi;
@@ -1133,6 +1173,7 @@ void Variant::get_constructor_list(Variant::Type p_type, List<MethodInfo> *p_lis
 		pi.name="from";
 		pi.type=Variant::Type(i);
 		mi.arguments.push_back(pi);
+		mi.return_val.type=p_type;
 		p_list->push_back(mi);
 	}
 }
@@ -1212,9 +1253,10 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,STRING,String,capitalize,varray());
 	ADDFUNC2(STRING,STRING_ARRAY,String,split,STRING,"divisor",BOOL,"allow_empty",varray(true));
 	ADDFUNC2(STRING,REAL_ARRAY,String,split_floats,STRING,"divisor",BOOL,"allow_empty",varray(true));
-	ADDFUNC0(STRING,STRING,String,to_upper,varray());
 
+	ADDFUNC0(STRING,STRING,String,to_upper,varray());
 	ADDFUNC0(STRING,STRING,String,to_lower,varray());
+
 	ADDFUNC1(STRING,STRING,String,left,INT,"pos",varray());
 	ADDFUNC1(STRING,STRING,String,right,INT,"pos",varray());
 	ADDFUNC0(STRING,STRING,String,strip_edges,varray());
@@ -1245,6 +1287,10 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(STRING,INT,String,hex_to_int,varray());
 	ADDFUNC1(STRING,STRING,String,pad_decimals,INT,"digits",varray());
 	ADDFUNC1(STRING,STRING,String,pad_zeros,INT,"digits",varray());
+
+	ADDFUNC0(STRING,STRING,String,to_ascii,varray());
+	ADDFUNC0(STRING,STRING,String,to_utf8,varray());
+
 
 	ADDFUNC0(VECTOR2,VECTOR2,Vector2,normalized,varray());
 	ADDFUNC0(VECTOR2,REAL,Vector2,length,varray());
@@ -1378,6 +1424,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	ADDFUNC0(ARRAY,NIL,Array,sort,varray());
 	ADDFUNC2(ARRAY,NIL,Array,sort_custom,OBJECT,"obj",STRING,"func",varray());
 	ADDFUNC0(ARRAY,NIL,Array,invert,varray());
+	ADDFUNC0(ARRAY,BOOL,Array,is_shared,varray());
 
 	ADDFUNC0(RAW_ARRAY,INT,ByteArray,size,varray());
 	ADDFUNC2(RAW_ARRAY,NIL,ByteArray,set,INT,"idx",INT,"byte",varray());
@@ -1495,6 +1542,8 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_pressed,varray());
 	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action,STRING,"action",varray());
+	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_pressed,STRING,"is_action_pressed",varray());
+	ADDFUNC1(INPUT_EVENT,BOOL,InputEvent,is_action_released,STRING,"is_action_released",varray());
 	ADDFUNC0(INPUT_EVENT,BOOL,InputEvent,is_echo,varray());
     ADDFUNC2(INPUT_EVENT,NIL,InputEvent,set_as_action,STRING,"action",BOOL,"pressed",varray());
 
@@ -1505,6 +1554,7 @@ _VariantCall::addfunc(Variant::m_vtype,Variant::m_ret,_SCS(#m_method),VCALL(m_cl
 	_VariantCall::add_constructor(_VariantCall::Rect2_init1,Variant::RECT2,"pos",Variant::VECTOR2,"size",Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Rect2_init2,Variant::RECT2,"x",Variant::REAL,"y",Variant::REAL,"width",Variant::REAL,"height",Variant::REAL);
 
+	_VariantCall::add_constructor(_VariantCall::Matrix32_init2,Variant::MATRIX32,"rot",Variant::REAL,"pos",Variant::VECTOR2);
 	_VariantCall::add_constructor(_VariantCall::Matrix32_init3,Variant::MATRIX32,"x_axis",Variant::VECTOR2,"y_axis",Variant::VECTOR2,"origin",Variant::VECTOR2);
 
 	_VariantCall::add_constructor(_VariantCall::Vector3_init1,Variant::VECTOR3,"x",Variant::REAL,"y",Variant::REAL,"z",Variant::REAL);

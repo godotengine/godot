@@ -52,9 +52,6 @@ public:
 	void set_texture_scale(const Vector2& p_scale);
 	Vector2 get_texture_scale() const;
 
-	void set_texture_repeat(bool p_rot);
-	bool get_texture_repeat() const;
-
 	void set_invert(bool p_rot);
 	bool get_invert() const;
 

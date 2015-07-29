@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,12 +99,12 @@ void ScriptCreateDialog::ok_pressed() {
 	if (class_name->is_editable() && !_validate(class_name->get_text())) {
 
 		alert->set_text("Class Name is Invalid!");
-		alert->popup_centered(Size2(200,60));
+		alert->popup_centered_minsize();
 		return;
 	}
 	if (!_validate(parent_name->get_text())) {
 		alert->set_text("Parent Class Name is Invalid!");
-		alert->popup_centered(Size2(200,60));
+		alert->popup_centered_minsize();
 
 		return;
 
@@ -134,7 +134,7 @@ void ScriptCreateDialog::ok_pressed() {
 		if (!path_valid) {
 
 			alert->set_text("Path is Invalid!");
-			alert->popup_centered(Size2(200,60));
+			alert->popup_centered_minsize();
 			return;
 
 		}
@@ -142,7 +142,7 @@ void ScriptCreateDialog::ok_pressed() {
 		if (err!=OK) {
 
 			alert->set_text("Could not create script in filesystem: "+String(""));
-			alert->popup_centered(Size2(200,60));
+			alert->popup_centered_minsize();
 			return;
 		}
 		scr->set_path(lpath);
@@ -184,7 +184,7 @@ void ScriptCreateDialog::_built_in_pressed() {
 
 void ScriptCreateDialog::_browse_path() {
 
-	file_browse->set_mode(FileDialog::MODE_SAVE_FILE);
+	file_browse->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	file_browse->clear_filters();
 	List<String> extensions;
 
@@ -365,7 +365,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	set_hide_on_ok(false);
 	set_title("Create Script for Node..");;
 
-	file_browse = memnew( FileDialog );
+	file_browse = memnew( EditorFileDialog );
 	file_browse->connect("file_selected",this,"_file_selected");
 	add_child(file_browse);
 	get_ok()->set_text("Create");

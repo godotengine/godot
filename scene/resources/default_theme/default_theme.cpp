@@ -250,7 +250,6 @@ void make_default_theme() {
 	t->set_stylebox("hover","ToolButton", make_stylebox( button_normal_png,4,4,4,4) );
 	t->set_stylebox("disabled","ToolButton", make_empty_stylebox(4,4,4,4) );
 	t->set_stylebox("focus","ToolButton", focus );
-
 	t->set_font("font","ToolButton", default_font );
 
 	t->set_color("font_color","ToolButton", control_font_color );
@@ -574,7 +573,7 @@ void make_default_theme() {
 	// Tree
 
 	Ref<StyleBoxTexture> tree_selected = make_stylebox( selection_png,4,4,4,4,8,0,8,0);
-    Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
+	Ref<StyleBoxTexture> tree_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,0,8,0);
 
 	t->set_stylebox("bg","Tree", make_stylebox( tree_bg_png,4,4,4,5) );
 	t->set_stylebox("bg_focus","Tree", focus );
@@ -605,11 +604,30 @@ void make_default_theme() {
 	t->set_color("guide_color","Tree", Color(0,0,0,0.1) );
 
 	t->set_constant("hseparation","Tree",4);
-	t->set_constant("vseparation","Tree",2);
+	t->set_constant("vseparation","Tree",4);
 	t->set_constant("guide_width","Tree",2);
 	t->set_constant("item_margin","Tree",12);
 	t->set_constant("button_margin","Tree",4);
 
+
+	// ItemList
+	Ref<StyleBoxTexture> item_selected = make_stylebox( selection_png,4,4,4,4,8,2,8,2);
+	Ref<StyleBoxTexture> item_selected_oof = make_stylebox( selection_oof_png,4,4,4,4,8,2,8,2);
+
+	t->set_stylebox("bg","ItemList", make_stylebox( tree_bg_png,4,4,4,5) );
+	t->set_stylebox("bg_focus","ItemList", focus );
+	t->set_constant("hseparation","ItemList",4);
+	t->set_constant("vseparation","ItemList",2);
+	t->set_constant("icon_margin","ItemList",4);
+	t->set_constant("line_separation","ItemList",2);
+	t->set_font("font","ItemList", default_font );
+	t->set_color("font_color","ItemList", control_font_color_low );
+	t->set_color("font_color_selected","ItemList", control_font_color_pressed );
+	t->set_color("guide_color","ItemList", Color(0,0,0,0.1) );
+	t->set_stylebox("selected","ItemList", item_selected_oof );
+	t->set_stylebox("selected_focus","ItemList", item_selected );
+	t->set_stylebox("cursor","ItemList", focus );
+	t->set_stylebox("cursor_unfocused","ItemList", focus );
 
 
 	// TextEdit
@@ -636,6 +654,8 @@ void make_default_theme() {
 	t->set_icon("increment_hilite","TabContainer",make_icon( scroll_button_right_hl_png));
 	t->set_icon("decrement","TabContainer",make_icon( scroll_button_left_png));
 	t->set_icon("decrement_hilite","TabContainer",make_icon( scroll_button_left_hl_png));
+	t->set_icon("menu","TabContainer",make_icon( tab_menu_png));
+	t->set_icon("menu_hilite","TabContainer",make_icon( tab_menu_hl_png));
 
 	t->set_font("font","TabContainer", default_font );
 
@@ -655,6 +675,9 @@ void make_default_theme() {
 	t->set_stylebox("tab_fg","Tabs", make_stylebox( tab_current_png,4,4,4,4,16,4,16,4) );
 	t->set_stylebox("tab_bg","Tabs", make_stylebox( tab_behind_png,4,4,4,4,16,6,16,4) );
 	t->set_stylebox("panel","Tabs", make_stylebox( tab_container_bg_png,4,4,4,4) );
+	t->set_stylebox("button_pressed","Tabs", make_stylebox( button_pressed_png,4,4,4,4) );
+	t->set_stylebox("button","Tabs", make_stylebox( button_normal_png,4,4,4,4) );
+
 
 	t->set_font("font","Tabs", default_font );
 
@@ -692,7 +715,6 @@ void make_default_theme() {
 	// FileDialog
 	
 	t->set_icon("folder","FileDialog",make_icon(icon_folder_png));
-
 	t->set_color("files_disabled","FileDialog",Color(0,0,0,0.7));
 
 
@@ -729,7 +751,11 @@ void make_default_theme() {
 
 	t->set_stylebox("focus","RichTextLabel", focus );
 
-	t->set_font("default_font","RichTextLabel", default_font );
+	t->set_font("normal_font","RichTextLabel", default_font );
+	t->set_font("bold_font","RichTextLabel", default_font );
+	t->set_font("italics_font","RichTextLabel", default_font );
+	t->set_font("bold_italics_font","RichTextLabel", default_font );
+	t->set_font("mono_font","RichTextLabel", default_font );
 
 	t->set_color("default_color","RichTextLabel", control_font_color );
 	t->set_color("font_color_selected","RichTextLabel", font_color_selection );
@@ -750,7 +776,8 @@ void make_default_theme() {
 	t->set_constant("separation","HBoxContainer",4);
 	t->set_constant("separation","VBoxContainer",4);
 	t->set_constant("margin","MarginContainer",8);
-	t->set_constant("separation","GridContainer",4);
+	t->set_constant("hseparation","GridContainer",4);
+	t->set_constant("vseparation","GridContainer",4);
 	t->set_constant("separation","HSplitContainer",12);
 	t->set_constant("separation","VSplitContainer",12);
 	t->set_constant("autohide","HSplitContainer",1);

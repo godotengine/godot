@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -58,7 +58,7 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	if (!vi) {
 
 		err_dialog->set_text("Node does not contain geometry.");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -67,7 +67,7 @@ void ParticlesEditor::_node_selected(const NodePath& p_path){
 	if (geometry.size()==0) {
 
 		err_dialog->set_text("Node does not contain geometry (faces).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 
 	}
@@ -219,7 +219,7 @@ void ParticlesEditor::_generate_emission_points() {
 		if (!triangle_area_map.size() || area_accum==0) {
 
 			err_dialog->set_text("Faces contain no area!");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -249,7 +249,7 @@ void ParticlesEditor::_generate_emission_points() {
 		if (gcount==0) {
 
 			err_dialog->set_text("No Faces!");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -394,7 +394,7 @@ ParticlesEditor::ParticlesEditor() {
 	add_child(err_dialog);
 
 
-	emission_file_dialog = memnew( FileDialog );
+	emission_file_dialog = memnew( EditorFileDialog );
 	add_child(emission_file_dialog);
 	emission_file_dialog->connect("file_selected",this,"_resource_seleted");
 	emission_tree_dialog = memnew( SceneTreeDialog );
@@ -410,7 +410,7 @@ ParticlesEditor::ParticlesEditor() {
 		emission_file_dialog->add_filter("*."+extensions[i]+" ; "+extensions[i].to_upper());
 	}
 
-	emission_file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	emission_file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	//options->set_anchor(MARGIN_LEFT,Control::ANCHOR_END);
 	//options->set_anchor(MARGIN_RIGHT,Control::ANCHOR_END);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -230,12 +230,15 @@ public:
 	Physics2DShapeQueryResult();
 };
 
+class Physics2DTestMotionResult;
 
 class Physics2DServer : public Object {
 
 	OBJ_TYPE( Physics2DServer, Object );
 
 	static Physics2DServer * singleton;
+
+	virtual bool _body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.08,const Ref<Physics2DTestMotionResult>& p_result=Ref<Physics2DTestMotionResult>());
 
 protected:
 	static void _bind_methods();
@@ -303,6 +306,7 @@ public:
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
 		AREA_PARAM_GRAVITY_IS_POINT,
+		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
 		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
 		AREA_PARAM_LINEAR_DAMP,
 		AREA_PARAM_ANGULAR_DAMP,
@@ -343,6 +347,9 @@ public:
 
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const=0;
 	virtual Matrix32 area_get_transform(RID p_area) const=0;
+
+	virtual void area_set_collision_mask(RID p_area,uint32_t p_mask)=0;
+	virtual void area_set_layer_mask(RID p_area,uint32_t p_mask)=0;
 
 	virtual void area_set_monitorable(RID p_area,bool p_monitorable)=0;
 	virtual void area_set_pickable(RID p_area,bool p_pickable)=0;
@@ -399,10 +406,10 @@ public:
 	virtual CCDMode body_get_continuous_collision_detection_mode(RID p_body) const=0;
 
 	virtual void body_set_layer_mask(RID p_body, uint32_t p_mask)=0;
-	virtual uint32_t body_get_layer_mask(RID p_body, uint32_t p_mask) const=0;
+	virtual uint32_t body_get_layer_mask(RID p_body) const=0;
 
-	virtual void body_set_user_mask(RID p_body, uint32_t p_mask)=0;
-	virtual uint32_t body_get_user_mask(RID p_body, uint32_t p_mask) const=0;
+	virtual void body_set_collision_mask(RID p_body, uint32_t p_mask)=0;
+	virtual uint32_t body_get_collision_mask(RID p_body) const=0;
 
 	// common body variables
 	enum BodyParameter {
@@ -468,6 +475,22 @@ public:
 
 	virtual void body_set_pickable(RID p_body,bool p_pickable)=0;
 
+	struct MotionResult {
+
+		Vector2 motion;
+		Vector2 remainder;
+
+		Vector2 collision_point;
+		Vector2 collision_normal;
+		Vector2 collider_velocity;
+		ObjectID collider_id;
+		RID collider;
+		int collider_shape;
+		Variant collider_metadata;
+	};
+
+	virtual bool body_test_motion(RID p_body,const Vector2& p_motion,float p_margin=0.001,MotionResult *r_result=NULL)=0;
+
 	/* JOINT API */
 
 	enum JointType {
@@ -517,6 +540,7 @@ public:
 	virtual void step(float p_step)=0;
 	virtual void sync()=0;
 	virtual void flush_queries()=0;
+	virtual void end_sync()=0;
 	virtual void finish()=0;
 
 	enum ProcessInfo {
@@ -531,6 +555,37 @@ public:
 	Physics2DServer();
 	~Physics2DServer();
 };
+
+
+class Physics2DTestMotionResult : public Reference {
+
+	OBJ_TYPE( Physics2DTestMotionResult, Reference );
+
+	Physics2DServer::MotionResult result;
+	bool colliding;
+friend class Physics2DServer;
+
+protected:
+	static void _bind_methods();
+public:
+
+	Physics2DServer::MotionResult* get_result_ptr() const { return const_cast<Physics2DServer::MotionResult*>(&result); }
+
+	//bool is_colliding() const;
+	Vector2 get_motion() const;
+	Vector2 get_motion_remainder() const;
+
+	Vector2 get_collision_point() const;
+	Vector2 get_collision_normal() const;
+	Vector2 get_collider_velocity() const;
+	ObjectID get_collider_id() const;
+	RID get_collider_rid() const;
+	Object* get_collider() const;
+	int get_collider_shape() const;
+
+	Physics2DTestMotionResult();
+};
+
 
 VARIANT_ENUM_CAST( Physics2DServer::ShapeType );
 VARIANT_ENUM_CAST( Physics2DServer::SpaceParameter );

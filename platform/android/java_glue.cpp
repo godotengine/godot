@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -437,6 +437,7 @@ public:
 		}
 
 
+
 		int ac = E->get().argtypes.size();
 		if (ac<p_argcount) {
 
@@ -453,7 +454,6 @@ public:
 			r_error.argument=ac;
 			return Variant();
 		}
-
 
 
 		for(int i=0;i<p_argcount;i++) {
@@ -475,6 +475,10 @@ public:
 		}
 
 		JNIEnv *env = ThreadAndroid::get_env();
+
+		int res = env->PushLocalFrame(16);
+
+		ERR_FAIL_COND_V(res!=0,Variant());
 
 		//print_line("argcount "+String::num(p_argcount));
 		List<jobject> to_erase;
@@ -568,6 +572,7 @@ public:
 
 
 				print_line("failure..");
+				env->PopLocalFrame(NULL);
 				ERR_FAIL_V(Variant());
 			} break;
 		}
@@ -576,6 +581,8 @@ public:
 			env->DeleteLocalRef(to_erase.front()->get());
 			to_erase.pop_front();
 		}
+
+		env->PopLocalFrame(NULL);
 		//print_line("success");
 
 		return ret;
@@ -1613,10 +1620,14 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_method(JNIEnv * env, jobj
 
 JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_callobject(JNIEnv * env, jobject p_obj, jint ID, jstring method, jobjectArray params) {
 
-	String str_method = env->GetStringUTFChars( method, NULL );
-
 	Object* obj = ObjectDB::get_instance(ID);
 	ERR_FAIL_COND(!obj);
+
+	int res = env->PushLocalFrame(16);
+	ERR_FAIL_COND(res!=0);
+
+	String str_method = env->GetStringUTFChars( method, NULL );
+
 
 	int count = env->GetArrayLength(params);
 	Variant* vlist = (Variant*)alloca(sizeof(Variant) * count);
@@ -1637,14 +1648,21 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_callobject(JNIEnv * env, 
 	Variant::CallError err;
 	obj->call(str_method, (const Variant**)vptr, count, err);
 	// something
+
+	env->PopLocalFrame(NULL);
+
 };
 
 JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env, jobject p_obj, jint ID, jstring method, jobjectArray params) {
 
-	String str_method = env->GetStringUTFChars( method, NULL );
 
 	Object* obj = ObjectDB::get_instance(ID);
 	ERR_FAIL_COND(!obj);
+
+	int res = env->PushLocalFrame(16);
+	ERR_FAIL_COND(res!=0);
+
+	String str_method = env->GetStringUTFChars( method, NULL );
 
 	int count = env->GetArrayLength(params);
 	Variant args[VARIANT_ARG_MAX];
@@ -1666,6 +1684,8 @@ JNIEXPORT void JNICALL Java_com_android_godot_GodotLib_calldeferred(JNIEnv * env
 
 	obj->call_deferred(str_method, args[0],args[1],args[2],args[3],args[4]);
 	// something
+	env->PopLocalFrame(NULL);
+
 };
 
 //Main::cleanup();

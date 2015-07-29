@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -204,7 +204,7 @@ private:
 		return idxr;
 	}
 
-	bool _transform_track_optimize_key(const TKey<TransformKey> &t0,const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle);
+	bool _transform_track_optimize_key(const TKey<TransformKey> &t0,const TKey<TransformKey> &t1, const TKey<TransformKey> &t2, float p_alowed_linear_err,float p_alowed_angular_err,float p_max_optimizable_angle,const Vector3& p_norm);
 	void _transform_track_optimize(int p_idx, float p_allowed_err=0.05, float p_alowed_angular_err=0.01,float p_max_optimizable_angle=Math_PI*0.125);
 
 protected:	

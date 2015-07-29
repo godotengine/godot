@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -390,7 +390,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant& r_v)  {
 
 					if (path.find("://")==-1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path=Globals::get_singleton()->localize_path(res_path.get_base_dir()+"/"+path);
+						path=Globals::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 
 					}
 
@@ -663,14 +663,18 @@ Error ResourceInteractiveLoaderBinary::poll(){
 
 	//maybe it is loaded already
 	String path;
+	int subindex=0;
 
 
 
 	if (!main) {
 
 		path=internal_resources[s].path;
-		if (path.begins_with("local://"))
-			path=path.replace("local://",res_path+"::");
+		if (path.begins_with("local://")) {
+			path=path.replace_first("local://","");
+			subindex = path.to_int();
+			path=res_path+"::"+path;
+		}
 
 
 
@@ -709,6 +713,7 @@ Error ResourceInteractiveLoaderBinary::poll(){
 	RES res = RES( r );
 
 	r->set_path(path);
+	r->set_subindex(subindex);
 
 	int pc = f->get_32();
 
@@ -861,7 +866,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	print_bl("minor: "+itos(ver_minor));
 	print_bl("format: "+itos(ver_format));
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		ERR_EXPLAIN("File Format '"+itos(FORMAT_VERSION)+"."+itos(ver_major)+"."+itos(ver_minor)+"' is too new! Please upgrade to a a new engine version: "+local_path);
@@ -968,7 +973,7 @@ String ResourceInteractiveLoaderBinary::recognize(FileAccess *p_f) {
 	uint32_t ver_minor=f->get_32();
 	uint32_t ver_format=f->get_32();
 
-	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR || (ver_major==VERSION_MAJOR && ver_minor>VERSION_MINOR)) {
+	if (ver_format<FORMAT_VERSION ||  ver_major>VERSION_MAJOR) {
 
 		f->close();
 		return "";
@@ -1434,14 +1439,14 @@ void ResourceFormatSaverBinaryInstance::write_variant(const Variant& p_property,
 				save_unicode_string(path);
 			} else {
 
-				if (!resource_map.has(res)) {
+				if (!resource_set.has(res)) {
 					f->store_32(OBJECT_EMPTY);
 					ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
 					ERR_FAIL();
 				}
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
-				f->store_32(resource_map[res]);
+				f->store_32(res->get_subindex());
 				//internal resource
 			}
 
@@ -1598,7 +1603,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 			}
 
 
-			if (resource_map.has(res))
+			if (resource_set.has(res))
 				return;
 
 			List<PropertyInfo> property_list;
@@ -1613,7 +1618,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant& p_variant
 				}
 			}
 
-			resource_map[ res ] = saved_resources.size();
+			resource_set.insert(res);
 			saved_resources.push_back(res);
 
 		} break;
@@ -1814,7 +1819,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 					Property p;
 					p.name_idx=get_string_index(F->get().name);
 					p.value=E->get()->get(F->get().name);
-					if (F->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero())
+					if ((F->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && p.value.is_zero())||(F->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && p.value.is_one()) )
 						continue;
 					p.pi=F->get();										
 
@@ -1846,11 +1851,42 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path,const RES& p_
 	// save internal resource table
 	f->store_32(saved_resources.size()); //amount of internal resources
 	Vector<uint64_t> ofs_pos;
+	Set<int> used_indices;
+
 	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
 
 		RES r = E->get();
 		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
-			save_unicode_string("local://"+itos(ofs_pos.size()));
+
+			if (r->get_subindex()!=0) {
+				if (used_indices.has(r->get_subindex())) {
+					r->set_subindex(0); //repeated
+				} else {
+					used_indices.insert(r->get_subindex());
+				}
+			}
+		}
+
+	}
+
+
+	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
+
+
+		RES r = E->get();
+		if (r->get_path()=="" || r->get_path().find("::")!=-1) {
+			if (r->get_subindex()==0) {
+				int new_subindex=1;
+				if (used_indices.size()) {
+					new_subindex=used_indices.back()->get()+1;
+				}
+
+				r->set_subindex(new_subindex);
+				used_indices.insert(new_subindex);
+
+			}
+
+			save_unicode_string("local://"+itos(r->get_subindex()));
 			if (takeover_paths) {
 				r->set_path(p_path+"::"+itos(ofs_pos.size()),true);
 			}

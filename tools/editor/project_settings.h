@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,19 +67,19 @@ class ProjectSettings : public AcceptDialog {
 
 	InputEvent last_wait_for_key;
 
-	FileDialog *translation_file_open;
+	EditorFileDialog *translation_file_open;
 	Tree *translation_list;
 
 
 	Button *translation_res_option_add_button;
-	FileDialog *translation_res_file_open;
-	FileDialog *translation_res_option_file_open;
+	EditorFileDialog *translation_res_file_open;
+	EditorFileDialog *translation_res_option_file_open;
 	Tree *translation_remap;
 	Tree *translation_remap_options;
 
 
 	Tree *autoload_list;
-	FileDialog *autoload_file_open;
+	EditorFileDialog *autoload_file_open;
 	LineEdit *autoload_add_name;
 	LineEdit *autoload_add_path;
 

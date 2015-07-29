@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,6 +94,10 @@ public:
 
 	virtual ScriptLanguage *get_language() const=0;
 
+	virtual bool has_script_signal(const StringName& p_signal) const=0;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const=0;
+
+
 	virtual void update_exports() {} //editor tool
 
 	
@@ -120,6 +124,19 @@ public:
 
 	virtual ScriptLanguage *get_language()=0;
 	virtual ~ScriptInstance();
+};
+
+class ScriptCodeCompletionCache {
+
+	static ScriptCodeCompletionCache *singleton;
+public:
+
+	virtual RES get_cached_resource(const String& p_path)=0;
+
+	static ScriptCodeCompletionCache* get_sigleton() { return singleton; }
+
+	ScriptCodeCompletionCache();
+
 };
 
 class ScriptLanguage {

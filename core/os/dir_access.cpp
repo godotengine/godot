@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,17 @@ String DirAccess::_get_root_string() const {
 	return "";
 }
 
+int DirAccess::get_current_drive() {
+
+	String path = get_current_dir().to_lower();
+	for(int i=0;i<get_drive_count();i++) {
+		String d = get_drive(i).to_lower();
+		if (path.begins_with(d))
+			return i;
+	}
+
+	return 0;
+}
 
 static Error _erase_recursive(DirAccess *da) {
 
@@ -397,6 +408,15 @@ Error DirAccess::copy(String p_from,String p_to) {
 	memdelete(fdst);
 	
 	return err;
+}
+
+bool DirAccess::exists(String p_dir) {
+
+	DirAccess* da = DirAccess::create_for_path(p_dir);
+	bool valid = da->change_dir(p_dir)==OK;
+	memdelete(da);
+	return valid;
+
 }
 
 DirAccess::DirAccess(){

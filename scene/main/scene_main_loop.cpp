@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 #include "scene/scene_string_names.h"
 #include "io/resource_loader.h"
 #include "viewport.h"
-
+#include "scene/resources/packed_scene.h"
 
 void SceneTree::tree_changed() {
 
@@ -51,6 +51,9 @@ void SceneTree::tree_changed() {
 
 void SceneTree::node_removed(Node *p_node) {
 
+	if (current_scene==p_node) {
+		current_scene=NULL;
+	}
 	emit_signal(node_removed_name,p_node);
 	if (call_lock>0)
 		call_skip.insert(p_node);
@@ -850,6 +853,7 @@ void SceneTree::queue_delete(Object *p_object) {
 
 	_THREAD_SAFE_METHOD_
 	ERR_FAIL_NULL(p_object);
+	p_object->_is_queued_for_deletion = true;
 	delete_queue.push_back(p_object->get_instance_ID());
 }
 
@@ -983,6 +987,63 @@ Node *SceneTree::get_edited_scene_root() const {
 }
 #endif
 
+void SceneTree::set_current_scene(Node* p_scene) {
+
+	ERR_FAIL_COND(p_scene && p_scene->get_parent()!=root);
+	current_scene=p_scene;
+}
+
+Node* SceneTree::get_current_scene() const{
+
+	return current_scene;
+}
+
+void SceneTree::_change_scene(Node* p_to) {
+
+	if (current_scene) {
+		memdelete( current_scene );
+		current_scene=NULL;
+	}
+
+	if (p_to) {
+		current_scene=p_to;
+		root->add_child(p_to);
+	}
+}
+
+Error SceneTree::change_scene(const String& p_path){
+
+	Ref<PackedScene> new_scene = ResourceLoader::load(p_path);
+	if (new_scene.is_null())
+		return ERR_CANT_OPEN;
+
+	return change_scene_to(new_scene);
+
+}
+Error SceneTree::change_scene_to(const Ref<PackedScene>& p_scene){
+
+	Node *new_scene=NULL;
+	if (p_scene.is_valid()) {
+		new_scene = p_scene->instance();
+		ERR_FAIL_COND_V(!new_scene,ERR_CANT_CREATE);
+	}
+
+	call_deferred("_change_scene",new_scene);
+	return OK;
+
+}
+Error SceneTree::reload_current_scene() {
+
+	ERR_FAIL_COND_V(!current_scene,ERR_UNCONFIGURED);
+	String fname = current_scene->get_filename();
+	return change_scene(fname);
+}
+
+void SceneTree::add_current_scene(Node * p_current) {
+
+	current_scene=p_current;
+	root->add_child(p_current);
+}
 
 void SceneTree::_bind_methods() {
 
@@ -1015,8 +1076,9 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_screen_stretch","mode","aspect","minsize"),&SceneTree::set_screen_stretch);
 
-
 	ObjectTypeDB::bind_method(_MD("queue_delete","obj"),&SceneTree::queue_delete);
+
+
 
 
 	MethodInfo mi;
@@ -1032,9 +1094,22 @@ void SceneTree::_bind_methods() {
 
 	ObjectTypeDB::bind_native_method(METHOD_FLAGS_DEFAULT,"call_group",&SceneTree::_call_group,mi,defargs);
 
+	ObjectTypeDB::bind_method(_MD("set_current_scene","child_node:Node"),&SceneTree::set_current_scene);
+	ObjectTypeDB::bind_method(_MD("get_current_scene:Node"),&SceneTree::get_current_scene);
+
+	ObjectTypeDB::bind_method(_MD("change_scene","path"),&SceneTree::change_scene);
+	ObjectTypeDB::bind_method(_MD("change_scene_to","packed_scene:PackedScene"),&SceneTree::change_scene_to);
+
+	ObjectTypeDB::bind_method(_MD("reload_current_scene"),&SceneTree::reload_current_scene);
+
+	ObjectTypeDB::bind_method(_MD("_change_scene"),&SceneTree::_change_scene);
+
 	ADD_SIGNAL( MethodInfo("tree_changed") );
 	ADD_SIGNAL( MethodInfo("node_removed",PropertyInfo( Variant::OBJECT, "node") ) );
 	ADD_SIGNAL( MethodInfo("screen_resized") );
+
+	ADD_SIGNAL( MethodInfo("idle_frame"));
+	ADD_SIGNAL( MethodInfo("fixed_frame"));
 
 	BIND_CONSTANT( GROUP_CALL_DEFAULT );
 	BIND_CONSTANT( GROUP_CALL_REVERSE );
@@ -1076,6 +1151,7 @@ SceneTree::SceneTree() {
 	//root->set_world_2d( Ref<World2D>( memnew( World2D )));
 	root->set_as_audio_listener(true);
 	root->set_as_audio_listener_2d(true);
+	current_scene=NULL;
 
 	stretch_mode=STRETCH_MODE_DISABLED;
 	stretch_aspect=STRETCH_ASPECT_IGNORE;
@@ -1093,8 +1169,7 @@ SceneTree::SceneTree() {
 	edited_scene_root=NULL;
 #endif
 
-	ADD_SIGNAL( MethodInfo("idle_frame"));
-	ADD_SIGNAL( MethodInfo("fixed_frame"));
+
 
 }
 

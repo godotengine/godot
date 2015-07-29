@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,7 @@
 #include "multimesh_editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/3d/mesh_instance.h"
-
-
+#include "spatial_editor_plugin.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
 
@@ -57,13 +56,13 @@ void MultiMeshEditor::_populate() {
 		if (multimesh.is_null()) {
 
 			err_dialog->set_text("No mesh source specified (and no MultiMesh set in node).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 		if (multimesh->get_mesh().is_null()) {
 
 			err_dialog->set_text("No mesh source specified (and MultiMesh contains no Mesh).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -75,7 +74,7 @@ void MultiMeshEditor::_populate() {
 		if (!ms_node) {
 
 			err_dialog->set_text("Mesh source is invalid (Invalid Path).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -84,7 +83,7 @@ void MultiMeshEditor::_populate() {
 		if (!ms_instance) {
 
 			err_dialog->set_text("Mesh source is invalid (Not a MeshInstance).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -93,7 +92,7 @@ void MultiMeshEditor::_populate() {
 		if (mesh.is_null()) {
 
 			err_dialog->set_text("Mesh source is invalid (Contains no Mesh resource).");
-			err_dialog->popup_centered(Size2(300,100));
+			err_dialog->popup_centered_minsize();
 			return;
 		}
 
@@ -102,7 +101,7 @@ void MultiMeshEditor::_populate() {
 	if (surface_source->get_text()=="") {
 
 		err_dialog->set_text("No surface source specified.");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -111,7 +110,7 @@ void MultiMeshEditor::_populate() {
 	if (!ss_node) {
 
 		err_dialog->set_text("Surface source is invalid (Invalid Path).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -120,7 +119,7 @@ void MultiMeshEditor::_populate() {
 	if (!ss_instance) {
 
 		err_dialog->set_text("Surface source is invalid (Not Geometry).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -131,7 +130,7 @@ void MultiMeshEditor::_populate() {
 	if (geometry.size()==0) {
 
 		err_dialog->set_text("Surface source is invalid (No Faces).");
-		err_dialog->popup_centered(Size2(300,100));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -299,14 +298,14 @@ void MultiMeshEditor::_menu_option(int p_option) {
 
 void MultiMeshEditor::edit(MultiMeshInstance *p_multimesh) {
 
-	node=p_multimesh;	
+	node=p_multimesh;
 
 }
 
 void MultiMeshEditor::_browse(bool p_source) {
 
 	browsing_source=p_source;
-	std->get_tree()->set_marked(node,false);
+	std->get_scene_tree()->set_marked(node,false);
 	std->popup_centered_ratio();
 	if (p_source)
 		std->set_title("Select a Source Mesh:");
@@ -326,7 +325,8 @@ MultiMeshEditor::MultiMeshEditor() {
 
 
 	options = memnew( MenuButton );
-	add_child(options);
+	//add_child(options);
+	SpatialEditor::get_singleton()->add_control_to_menu_panel(options);
 	options->set_area_as_parent_rect();
 
 	options->set_text("MultiMesh");
@@ -340,7 +340,6 @@ MultiMeshEditor::MultiMeshEditor() {
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	populate_dialog->add_child(vbc);
 	populate_dialog->set_child_rect(vbc);
-
 
 	HBoxContainer *hbc = memnew( HBoxContainer );
 
@@ -435,10 +434,10 @@ bool MultiMeshEditorPlugin::handles(Object *p_object) const {
 void MultiMeshEditorPlugin::make_visible(bool p_visible) {
 
 	if (p_visible) {
-		multimesh_editor->show();
+		multimesh_editor->options->show();
 	} else {
 
-		multimesh_editor->hide();
+		multimesh_editor->options->hide();
 		multimesh_editor->edit(NULL);
 	}
 
@@ -457,9 +456,7 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin(EditorNode *p_node) {
 	multimesh_editor->set_margin(MARGIN_TOP,0);
 	multimesh_editor->set_margin(MARGIN_BOTTOM,10);
 
-
-
-	multimesh_editor->hide();
+	multimesh_editor->options->hide();
 }
 
 

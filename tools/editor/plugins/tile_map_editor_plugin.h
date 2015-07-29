@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,10 +55,18 @@ class TileMapEditor : public VBoxContainer {
 		TOOL_PICKING
 	};
 
+	enum DisplayMode {
+	    DISPLAY_THUMBNAIL,
+	    DISPLAY_LIST
+	};
+
 	Tool tool;
 	Control *canvas_item_editor;
 
-	Tree *palette;
+	int display_mode;
+	ItemList *palette;
+	ToolButton *button_thumbnail;
+	ToolButton *button_list;
 	EditorNode *editor;
 	Panel *panel;
 	TileMap *node;
@@ -95,6 +103,7 @@ class TileMapEditor : public VBoxContainer {
 	int get_selected_tile() const;
 	void set_selected_tile(int p_tile);
 
+	void _set_display_mode(int p_mode);
 	void _update_palette();
 	void _canvas_draw();
 	void _menu_option(int p_option);

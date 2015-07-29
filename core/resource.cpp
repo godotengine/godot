@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -195,6 +195,17 @@ String Resource::get_path() const {
 	return path_cache;
 }
 
+void Resource::set_subindex(int p_sub_index) {
+
+	subindex=p_sub_index;
+}
+
+int Resource::get_subindex() const{
+
+	return subindex;
+}
+
+
 void Resource::set_name(const String& p_name) {
 
 	name=p_name;
@@ -326,6 +337,7 @@ Resource::Resource() {
 	last_modified_time=0;
 #endif
 
+	subindex=0;
 }
 
 

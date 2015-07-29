@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -197,6 +197,13 @@ bool EditorPlugin::get_remove_list(List<Node*> *p_list) {
 void EditorPlugin::restore_global_state() {}
 void EditorPlugin::save_global_state() {}
 
+void EditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
+
+}
+
+void EditorPlugin::get_window_layout(Ref<ConfigFile> p_layout){
+
+}
 
 void EditorPlugin::_bind_methods() {
 

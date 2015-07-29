@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,7 @@
 #include "drivers/ao/audio_driver_ao.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -162,9 +163,10 @@ class OS_X11 : public OS_Unix {
 
 
 	int joystick_count;
+
 	Joystick joysticks[JOYSTICKS_MAX];
 
-
+	int audio_driver_index;
 	unsigned int capture_idle;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);

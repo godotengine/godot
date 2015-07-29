@@ -87,6 +87,15 @@ def numarr(a,mult=1.0):
 	s+=" "
 	return s
 
+def numarr_alpha(a,mult=1.0):
+	s=" "
+	for x in a:
+		s+=" "+str(x*mult)
+	if len(a) == 3:
+		s+=" 1.0"
+	s+=" "
+	return s
+
 def strarr(arr):
 	s=" "
 	for x in arr:
@@ -181,7 +190,7 @@ class DaeExporter:
 				
 				if (not os.path.isfile(dstfile)):
 					shutil.copy(imgpath,dstfile)
-					imgpath="images/"+os.path.basename(imgpath)
+				imgpath="images/"+os.path.basename(imgpath)
 			else:
 				### if file is not found save it as png file in the destination folder
 				img_tmp_path = image.filepath	
@@ -195,7 +204,7 @@ class DaeExporter:
 				if (not os.path.isfile(dstfile)):
 					
 					image.save()
-					imgpath="images/"+os.path.basename(image.filepath)
+				imgpath="images/"+os.path.basename(image.filepath)
 				image.filepath = img_tmp_path
 
 		else:
@@ -219,7 +228,7 @@ class DaeExporter:
 #				imgpath="images/"+image.name+".png"
 
 		self.writel(S_IMGS,1,'<image id="'+imgid+'" name="'+image.name+'">')
-		self.writel(S_IMGS,2,'<init_from>'+imgpath+'</init_from>"/>')
+		self.writel(S_IMGS,2,'<init_from>'+imgpath+'</init_from>')
 		self.writel(S_IMGS,1,'</image>')
 		self.image_cache[image]=imgid
 		return imgid
@@ -291,25 +300,25 @@ class DaeExporter:
 		if (emission_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+emission_tex+'" texcoord="CHANNEL1"/>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
+			self.writel(S_FX,6,'<color>'+numarr_alpha(material.diffuse_color,material.emit)+' </color>') # not totally right but good enough
 		self.writel(S_FX,5,'</emission>')
 
 		self.writel(S_FX,5,'<ambient>')
-		self.writel(S_FX,6,'<color>'+numarr(self.scene.world.ambient_color,material.ambient)+' </color>')
+		self.writel(S_FX,6,'<color>'+numarr_alpha(self.scene.world.ambient_color,material.ambient)+' </color>')
 		self.writel(S_FX,5,'</ambient>')
 
 		self.writel(S_FX,5,'<diffuse>')
 		if (diffuse_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+diffuse_tex+'" texcoord="CHANNEL1"/>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.diffuse_color,material.diffuse_intensity)+'</color>')
+			self.writel(S_FX,6,'<color>'+numarr_alpha(material.diffuse_color,material.diffuse_intensity)+'</color>')
 		self.writel(S_FX,5,'</diffuse>')
 
 		self.writel(S_FX,5,'<specular>')
 		if (specular_tex!=None):
 			self.writel(S_FX,6,'<texture texture="'+specular_tex+'" texcoord="CHANNEL1"/>')
 		else:
-			self.writel(S_FX,6,'<color>'+numarr(material.specular_color,material.specular_intensity)+'</color>')
+			self.writel(S_FX,6,'<color>'+numarr_alpha(material.specular_color,material.specular_intensity)+'</color>')
 		self.writel(S_FX,5,'</specular>')
 
 		self.writel(S_FX,5,'<shininess>')
@@ -317,7 +326,7 @@ class DaeExporter:
 		self.writel(S_FX,5,'</shininess>')
 
 		self.writel(S_FX,5,'<reflective>')
-		self.writel(S_FX,6,'<color>'+strarr(material.mirror_color)+'</color>')
+		self.writel(S_FX,6,'<color>'+numarr_alpha(material.mirror_color)+'</color>')
 		self.writel(S_FX,5,'</reflective>')
 
 		if (material.use_transparency):
@@ -325,10 +334,11 @@ class DaeExporter:
 			self.writel(S_FX,6,'<float>'+str(material.alpha)+'</float>')
 			self.writel(S_FX,5,'</transparency>')
 
-
+		self.writel(S_FX,5,'<index_of_refraction>')
+		self.writel(S_FX,6,'<float>'+str(material.specular_ior)+'</float>')
+		self.writel(S_FX,5,'</index_of_refraction>')
 
 		self.writel(S_FX,4,'</'+shtype+'>')
-		self.writel(S_FX,4,'<index_of_refraction>'+str(material.specular_ior)+'</index_of_refraction>')
 
 		self.writel(S_FX,4,'<extra>')
 		self.writel(S_FX,5,'<technique profile="FCOLLADA">')
@@ -481,6 +491,11 @@ class DaeExporter:
 			return meshdata
 
 		apply_modifiers = len(node.modifiers) and self.config["use_mesh_modifiers"]
+
+		name_to_use = mesh.name
+		#print("name to use: "+mesh.name)
+		if (custom_name!=None and custom_name!=""):
+			name_to_use=custom_name
 
 		mesh=node.to_mesh(self.scene,apply_modifiers,"RENDER") #is this allright?
 
@@ -635,10 +650,7 @@ class DaeExporter:
 
 
 		meshid = self.new_id("mesh")
-		if (custom_name!=None):
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+custom_name+'">')
-		else:
-			self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+mesh.name+'">')
+		self.writel(S_GEOM,1,'<geometry id="'+meshid+'" name="'+name_to_use+'">')
 
 		self.writel(S_GEOM,2,'<mesh>')
 
@@ -900,18 +912,22 @@ class DaeExporter:
 		if (node.data==None):
 			return
 		armature=None
+		armcount=0
+		for n in node.modifiers:
+			if (n.type=="ARMATURE"):
+				armcount+=1
 
 		if (node.parent!=None):
 			if (node.parent.type=="ARMATURE"):
 				armature=node.parent
-			armcount=0
-			for n in node.modifiers:
-				if (n.type=="ARMATURE"):
-					armcount+=1
-			if (armcount>1):
-				self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsopported.')
+				if (armcount>1):
+					self.operator.report({'WARNING'},'Object "'+node.name+'" refers to more than one armature! This is unsopported.')
+				if (armcount==0):
+					self.operator.report({'WARNING'},'Object "'+node.name+'" is child of an armature, but has no armature modifier.')
 
 
+		if (armcount>0 and not armature):
+			self.operator.report({'WARNING'},'Object "'+node.name+'" has armature modifier, but is not a child of an armature. This is unsupported.')
 
 
 		if (node.data.shape_keys!=None):

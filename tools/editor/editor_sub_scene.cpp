@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -215,7 +215,7 @@ EditorSubScene::EditorSubScene() {
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	vb->add_margin_child("Import From Node:",tree)->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	file_dialog = memnew( FileDialog );
+	file_dialog = memnew( EditorFileDialog );
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
 
@@ -224,7 +224,7 @@ EditorSubScene::EditorSubScene() {
 		file_dialog->add_filter("*."+E->get());
 	}
 
-	file_dialog->set_mode(FileDialog::MODE_OPEN_FILE);
+	file_dialog->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	add_child(file_dialog);
 	file_dialog->connect("file_selected",this,"_path_selected");
 

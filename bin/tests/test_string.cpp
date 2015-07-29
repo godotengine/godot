@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 //#include "math_funcs.h"
 #include <stdio.h>
 #include "os/os.h"
-#include "drivers/trex/regex.h"
+#include "drivers/nrex/regex.h"
 
 #include "test_string.h"
 
@@ -463,20 +463,16 @@ bool test_26() {
 
 	OS::get_singleton()->print("\n\nTest 26: RegEx\n");
 	RegEx regexp("(.*):(.*)");
-	List<String> captures;
 
-	bool match = regexp.match("name:password", &captures);
-	printf("\tmatch: %s\n", match?"true":"false");
+	int res = regexp.find("name:password");
+	printf("\tmatch: %s\n", (res>=0)?"true":"false");
 
-	printf("\t%i captures:\n", captures.size());
-	List<String>::Element *I = captures.front();
-	while (I) {
-
-		printf("%ls\n", I->get().c_str());
-
-		I = I->next();
-	};
-	return captures.size();
+	printf("\t%i captures:\n", regexp.get_capture_count());
+	for (int i = 0; i<regexp.get_capture_count(); i++)
+	{
+		printf("%ls\n", regexp.get_capture(i).c_str());
+	}
+	return res;
 };
 
 struct test_27_data {

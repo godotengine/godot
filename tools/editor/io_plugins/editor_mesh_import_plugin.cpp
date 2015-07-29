@@ -1,6 +1,6 @@
 #include "editor_mesh_import_plugin.h"
 
-#include "scene/gui/file_dialog.h"
+#include "tools/editor/editor_file_dialog.h"
 #include "tools/editor/editor_dir_dialog.h"
 #include "tools/editor/editor_node.h"
 #include "tools/editor/property_editor.h"
@@ -105,7 +105,7 @@ public:
 	_EditorMeshImportOptions() {
 
 		generate_tangents=true;
-		generate_normals=true;
+		generate_normals=false;
 		flip_faces=false;
 		smooth_shading=false;
 		weld_vertices=true;
@@ -126,7 +126,7 @@ class EditorMeshImportDialog : public ConfirmationDialog {
 
 	LineEdit *import_path;
 	LineEdit *save_path;
-	FileDialog *file_select;
+	EditorFileDialog *file_select;
 	EditorDirDialog *save_select;
 	ConfirmationDialog *error_dialog;
 	PropertyEditor *option_editor;
@@ -300,16 +300,16 @@ public:
 
 		save_choose->connect("pressed", this,"_browse_target");
 
-		file_select = memnew(FileDialog);
-		file_select->set_access(FileDialog::ACCESS_FILESYSTEM);
+		file_select = memnew(EditorFileDialog);
+		file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 		add_child(file_select);
-		file_select->set_mode(FileDialog::MODE_OPEN_FILES);
+		file_select->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 		file_select->connect("files_selected", this,"_choose_files");
 		file_select->add_filter("*.obj ; Wavefront OBJ");
 		save_select = memnew(	EditorDirDialog );
 		add_child(save_select);
 
-	//	save_select->set_mode(FileDialog::MODE_OPEN_DIR);
+	//	save_select->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 		save_select->connect("dir_selected", this,"_choose_save_dir");
 
 		get_ok()->connect("pressed", this,"_import");

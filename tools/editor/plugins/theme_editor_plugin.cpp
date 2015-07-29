@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -408,7 +408,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	if (p_option==POPUP_CREATE_TEMPLATE) {
 
-		file_dialog->set_mode(FileDialog::MODE_SAVE_FILE);
+		file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 		file_dialog->set_current_path("custom.theme");
 		file_dialog->popup_centered_ratio();
 		return;
@@ -734,7 +734,7 @@ ThemeEditor::ThemeEditor() {
 	fd_button->set_text("Open File Dialog");
 	panel->add_child(fd_button);
 
-	test_file_dialog = memnew( FileDialog );
+	test_file_dialog = memnew( EditorFileDialog );
 	panel->add_child(test_file_dialog);
 
 	fd_button->connect("pressed", this,"_open_file_dialog");
@@ -804,7 +804,7 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->get_ok()->connect("pressed", this,"_dialog_cbk");
 
 
-	file_dialog = memnew( FileDialog );
+	file_dialog = memnew( EditorFileDialog );
 	file_dialog->add_filter("*.theme ; Theme File");
 	add_child(file_dialog);
 	file_dialog->connect("file_selected",this,"_save_template_cbk");

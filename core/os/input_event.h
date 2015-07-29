@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -287,6 +287,8 @@ struct InputEvent {
 
 	bool is_pressed() const;
 	bool is_action(const String& p_action) const;
+	bool is_action_pressed(const String& p_action) const;
+	bool is_action_released(const String& p_action) const;
 	bool is_echo() const;
 	void set_as_action(const String& p_action, bool p_pressed);
 

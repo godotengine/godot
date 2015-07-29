@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -26,16 +26,6 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
-/*****f********************************************/
-/*  text_edit.cpp                                */
-/*************************************************/
-/*            This file is part of:              */
-/*                GODOT ENGINE                   */
-/*************************************************/
-/*       Source code within this file is:        */
-/*  (c) 2007-2010 Juan Linietsky, Ariel Manzur   */
-/*             All Rights Reserved.              */
-/*************************************************/
 
 #include "text_edit.h"
 #include "os/keyboard.h"
@@ -499,7 +489,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j++;
@@ -570,7 +560,7 @@ void TextEdit::_notification(int p_what) {
 								
 								CharType cc = text[i][j];
 								//ignore any brackets inside a string
-								if (cc== '"' | cc == '\'') {
+								if (cc== '"' || cc == '\'') {
 									CharType quotation = cc;
 									do {
 										j--;
@@ -1259,7 +1249,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					}
 					
 					
-					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600) {
+					if (!mb.doubleclick && (OS::get_singleton()->get_ticks_msec()-last_dblclk)<600 && cursor.line==prev_line) {
 						//tripleclick select line
 						select(cursor.line,0,cursor.line,text[cursor.line].length());
 						last_dblclk=0;
@@ -1450,7 +1440,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 							
 						} else {
 							//different char, go back
-							const CharType chr[2] = {k.unicode, 0};
+							const CharType chr[2] = {(CharType)k.unicode, 0};
 							if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 								_consume_pair_symbol(chr[0]);
 							} else {
@@ -1562,7 +1552,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					case KEY_HOME:
 					case KEY_END:
 						// ignore arrows if any modifiers are held (shift = selecting, others may be used for editor hotkeys)
-						if (k.mod.command || k.mod.shift || k.mod.alt || k.mod.command)
+						if (k.mod.command || k.mod.shift || k.mod.alt)
 							break;
 						unselect=true;
 						break;
@@ -1852,6 +1842,8 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+					_cancel_completion();
+					completion_hint="";
 					
 				} break;
 				case KEY_END: {
@@ -1865,6 +1857,9 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
 					
 				} break;
 #endif
@@ -1877,6 +1872,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
+
 					
 				} break;
 				case KEY_PAGEDOWN: {
@@ -1888,6 +1887,10 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					
 					if (k.mod.shift)
 						_post_shift_selection();
+
+					_cancel_completion();
+					completion_hint="";
+
 					
 				} break;
 				case KEY_A: {
@@ -1903,7 +1906,7 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					selection.from_line=0;
 					selection.from_column=0;
 					selection.to_line=text.size()-1;
-					selection.to_column=text[selection.to_line].size();
+					selection.to_column=text[selection.to_line].length();
 					selection.selecting_mode=Selection::MODE_NONE;
 					update();
 					
@@ -2072,8 +2075,11 @@ void TextEdit::_input_event(const InputEvent& p_input_event) {
 					if (readonly)
 						break;
 					
-					const CharType chr[2] = {k.unicode, 0};
+					const CharType chr[2] = {(CharType)k.unicode, 0};
 					
+					if (completion_hint!="" && k.unicode==')') {
+						completion_hint="";
+					}
 					if(auto_brace_completion_enabled && _is_pair_symbol(chr[0])) {
 						_consume_pair_symbol(chr[0]);
 					} else {
@@ -2596,9 +2602,9 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2& p_pos) const {
 void TextEdit::set_text(String p_text){
 	
 	setting_text=true;
-	_clear();
+	clear();
 	_insert_text_at_cursor(p_text);
-	
+	clear_undo_history();
 	cursor.column=0;
 	cursor.line=0;
 	cursor.x_ofs=0;
@@ -2788,6 +2794,11 @@ void TextEdit::copy() {
 	if (!selection.active)
 		return;
 	
+	print_line("from line: "+itos(selection.from_line));
+	print_line("from column: "+itos(selection.from_column));
+	print_line("to line: "+itos(selection.to_line));
+	print_line("to column: "+itos(selection.to_column));
+
 	String clipboard = _base_get_text(selection.from_line,selection.from_column,selection.to_line,selection.to_column);
 	OS::get_singleton()->set_clipboard(clipboard);
 	
@@ -2819,7 +2830,7 @@ void TextEdit::select_all() {
 	selection.from_line=0;
 	selection.from_column=0;
 	selection.to_line=text.size()-1;
-	selection.to_column=text[selection.to_line].size();
+	selection.to_column=text[selection.to_line].length();
 	selection.selecting_mode=Selection::MODE_NONE;
 	update();
 	
@@ -3328,9 +3339,32 @@ void TextEdit::_update_completion_candidates() {
 
 	//look for keywords first
 
-	bool pre_keyword=false;
+	bool inquote=false;
+	int first_quote=-1;
 
-	if (cofs>0 && l[cofs-1]==' ') {
+	int c=cofs-1;
+	while(c>=0) {
+		if (l[c]=='"' || l[c]=='\'') {
+			inquote=!inquote;
+			if (first_quote==-1)
+				first_quote=c;
+		}
+		c--;
+	}
+
+	bool pre_keyword=false;
+	bool cancel=false;
+
+	//print_line("inquote: "+itos(inquote)+"first quote "+itos(first_quote)+" cofs-1 "+itos(cofs-1));
+	if (!inquote && first_quote==cofs-1) {
+		//no completion here
+		//print_line("cancel!");
+		cancel=true;
+	} if (inquote && first_quote!=-1) {
+
+		s=l.substr(first_quote,cofs-first_quote);
+		//print_line("s: 1"+s);
+	} else if (cofs>0 && l[cofs-1]==' ') {
 		int kofs=cofs-1;
 		String kw;
 		while (kofs>=0 && l[kofs]==' ')
@@ -3342,7 +3376,7 @@ void TextEdit::_update_completion_candidates() {
 		}
 
 		pre_keyword=keywords.has(kw);
-		print_line("KW "+kw+"? "+itos(pre_keyword));
+		//print_line("KW "+kw+"? "+itos(pre_keyword));
 
 	} else {
 
@@ -3359,7 +3393,7 @@ void TextEdit::_update_completion_candidates() {
 	
 	update();
 	
-	if (!pre_keyword && s=="" && (cofs==0 || !completion_prefixes.has(String::chr(l[cofs-1])))) {
+	if (cancel || (!pre_keyword && s=="" && (cofs==0 || !completion_prefixes.has(String::chr(l[cofs-1]))))) {
 		//none to complete, cancel
 		_cancel_completion();
 		return;
@@ -3426,7 +3460,16 @@ void TextEdit::query_code_comple() {
 	String l = text[cursor.line];
 	int ofs = CLAMP(cursor.column,0,l.length());
 	
-	if (ofs>0 && (_is_completable(l[ofs-1]) || completion_prefixes.has(String::chr(l[ofs-1]))))
+	bool inquote=false;
+
+	int c=ofs-1;
+	while(c>=0) {
+		if (l[c]=='"' || l[c]=='\'')
+			inquote=!inquote;
+		c--;
+	}
+
+	if (ofs>0 && (inquote || _is_completable(l[ofs-1]) || completion_prefixes.has(String::chr(l[ofs-1]))))
 		emit_signal("request_completion");
 	
 }
@@ -3504,6 +3547,9 @@ void TextEdit::set_line(int line, String new_text)
 		return;
 	_remove_text(line, 0, line, text[line].length());
 	_insert_text(line, 0, new_text);
+	if (cursor.line==line) {
+		cursor.column=MIN(cursor.column,new_text.length());
+	}
 }
 
 void TextEdit::insert_at(const String &p_text, int at)
@@ -3603,6 +3649,10 @@ TextEdit::TextEdit()  {
 	set_focus_mode(FOCUS_ALL);
 	_update_caches();
 	cache.size=Size2(1,1);
+	cache.row_height=1;
+	cache.line_spacing=1;
+	cache.line_number_w=1;
+
 	tab_size=4;
 	text.set_tab_size(tab_size);
 	text.clear();

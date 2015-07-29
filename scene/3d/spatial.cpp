@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -626,10 +626,11 @@ void Spatial::rotate_z(float p_radians){
 void Spatial::translate(const Vector3& p_offset){
 
 	Transform t =get_transform();
-	t.origin+=p_offset;
+	t.translate(p_offset);
 	set_transform(t);
 
 }
+
 void Spatial::scale(const Vector3& p_ratio){
 
 	Transform t =get_transform();
@@ -757,7 +758,7 @@ void Spatial::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("_set_rotation_deg"), _SCS("_get_rotation_deg") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/rotation_rad",PROPERTY_HINT_NONE,"",0), _SCS("set_rotation"), _SCS("get_rotation") );
 	ADD_PROPERTY( PropertyInfo(Variant::VECTOR3,"transform/scale",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_EDITOR), _SCS("set_scale"), _SCS("get_scale") );
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"), _SCS("_is_visible_") );
 	//ADD_PROPERTY( PropertyInfo(Variant::TRANSFORM,"transform/local"), _SCS("set_transform"), _SCS("get_transform") );
 
 	ADD_SIGNAL( MethodInfo("visibility_changed" ) );

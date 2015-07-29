@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "servers/audio/audio_server_sw.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "servers/visual/rasterizer.h"
 
 

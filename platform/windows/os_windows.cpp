@@ -423,6 +423,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 		case WM_RBUTTONUP:
 		case WM_MOUSEWHEEL:
 		case WM_LBUTTONDBLCLK:
+		case WM_RBUTTONDBLCLK:
 		/*case WM_XBUTTONDOWN:
 		case WM_XBUTTONUP: */{
 
@@ -474,6 +475,12 @@ LRESULT OS_Windows::WndProc(HWND hWnd,UINT uMsg, WPARAM	wParam,	LPARAM	lParam) {
 
 					mb.pressed=true;
 					mb.button_index=1;
+					mb.doubleclick = true;
+				} break;
+				case WM_RBUTTONDBLCLK: {
+
+					mb.pressed=true;
+					mb.button_index=2;
 					mb.doubleclick = true;
 				} break;
 				case WM_MOUSEWHEEL: {
@@ -1170,7 +1177,7 @@ void OS_Windows::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
 
-	physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	if (!is_no_window_mode_enabled()) {
@@ -1367,6 +1374,9 @@ void OS_Windows::finalize() {
 
 	physics_2d_server->finish();
 	memdelete(physics_2d_server);
+
+	joystick_change_queue.clear();
+	monitor_info.clear();
 
 }
 void OS_Windows::finalize_core() {
@@ -1819,10 +1829,14 @@ String OS_Windows::get_name() {
 	return "Windows";
 }
 
-OS::Date OS_Windows::get_date() const {
+OS::Date OS_Windows::get_date(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetSystemTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
+
 	Date date;
 	date.day=systemtime.wDay;
 	date.month=Month(systemtime.wMonth);
@@ -1831,16 +1845,36 @@ OS::Date OS_Windows::get_date() const {
 	date.dst=false;
 	return date;
 }
-OS::Time OS_Windows::get_time() const {
+OS::Time OS_Windows::get_time(bool utc) const {
 
 	SYSTEMTIME systemtime;
-	GetLocalTime(&systemtime);
+	if (utc)
+		GetSystemTime(&systemtime);
+	else
+		GetLocalTime(&systemtime);
 
 	Time time;
 	time.hour=systemtime.wHour;
 	time.min=systemtime.wMinute;
 	time.sec=systemtime.wSecond;
 	return time;
+}
+
+OS::TimeZoneInfo OS_Windows::get_time_zone_info() const {
+	TIME_ZONE_INFORMATION info;
+	bool daylight = false;
+	if (GetTimeZoneInformation(&info) == TIME_ZONE_ID_DAYLIGHT)
+		daylight = true;
+
+	TimeZoneInfo ret;
+	if (daylight) {
+		ret.name = info.DaylightName;
+	} else {
+		ret.name = info.StandardName;
+	}
+
+	ret.bias = info.Bias;
+	return ret;
 }
 
 uint64_t OS_Windows::get_unix_time() const {
@@ -2045,7 +2079,7 @@ String OS_Windows::get_executable_path() const {
 	wchar_t bufname[4096];
 	GetModuleFileNameW(NULL,bufname,4096);
 	String s= bufname;
-	print_line("EXEC PATHPó: "+s);
+	print_line("EXEC PATHP??: "+s);
 	return s;
 }
 
@@ -2110,12 +2144,13 @@ bool OS_Windows::has_environment(const String& p_var) const {
 
 String OS_Windows::get_environment(const String& p_var) const {
 
-	char* val = getenv(p_var.utf8().get_data());
-	if (val)
-		return val;
-
+	wchar_t wval[0x7Fff]; // MSDN says 32767 char is the maximum
+	int wlen = GetEnvironmentVariableW(p_var.c_str(),wval,0x7Fff);
+	if ( wlen > 0 ) {
+		return wval;
+	}
 	return "";
-};
+}
 
 String OS_Windows::get_stdin_string(bool p_block) {
 

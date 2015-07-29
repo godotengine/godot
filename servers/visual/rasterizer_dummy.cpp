@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -1497,7 +1497,7 @@ void RasterizerDummy::begin_shadow_map( RID p_light_instance, int p_shadow_pass 
 
 }
 
-void RasterizerDummy::set_camera(const Transform& p_world,const CameraMatrix& p_projection) {
+void RasterizerDummy::set_camera(const Transform& p_world, const CameraMatrix& p_projection, bool p_ortho_hint) {
 
 
 }

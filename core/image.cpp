@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,6 +129,18 @@ void Image::get_mipmap_offset_and_size(int p_mipmap,int &r_ofs, int &r_size) con
 	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
 	int ofs2;
 	_get_mipmap_offset_and_size(p_mipmap+1,ofs2,w,h);
+	r_ofs=ofs;
+	r_size=ofs2-ofs;
+
+}
+
+void Image::get_mipmap_offset_size_and_dimensions(int p_mipmap,int &r_ofs, int &r_size,int &w, int& h) const {
+
+
+	int ofs;
+	_get_mipmap_offset_and_size(p_mipmap,ofs,w,h);
+	int ofs2,w2,h2;
+	_get_mipmap_offset_and_size(p_mipmap+1,ofs2,w2,h2);
 	r_ofs=ofs;
 	r_size=ofs2-ofs;
 
@@ -1004,10 +1016,10 @@ void Image::create( const char ** p_xpm ) {
 			String line_str=line_ptr;
 			line_str.replace("\t"," ");
 			
-			size_width=line_str.get_slice(" ",0).to_int();
-			size_height=line_str.get_slice(" ",1).to_int();
-			colormap_size=line_str.get_slice(" ",2).to_int();
-			pixelchars=line_str.get_slice(" ",3).to_int();
+			size_width=line_str.get_slicec(' ',0).to_int();
+			size_height=line_str.get_slicec(' ',1).to_int();
+			colormap_size=line_str.get_slicec(' ',2).to_int();
+			pixelchars=line_str.get_slicec(' ',3).to_int();
 			ERR_FAIL_COND(colormap_size > 32766);
 			ERR_FAIL_COND(pixelchars > 5);
 			ERR_FAIL_COND(size_width > 32767);
@@ -1112,6 +1124,7 @@ void Image::create( const char ** p_xpm ) {
 }
 #define DETECT_ALPHA_MAX_TRESHOLD 254
 #define DETECT_ALPHA_MIN_TRESHOLD 2
+
 #define DETECT_ALPHA( m_value )\
 { \
 	uint8_t value=m_value;\
@@ -1122,6 +1135,82 @@ void Image::create( const char ** p_xpm ) {
 		detected=true;\
 		break;\
 	}\
+}
+
+#define DETECT_NON_ALPHA( m_value )\
+{ \
+	uint8_t value=m_value;\
+	if (value>0) {\
+		\
+		detected=true;\
+		break;\
+	}\
+}
+
+
+bool Image::is_invisible() const {
+
+	if (format==FORMAT_GRAYSCALE ||
+	    format==FORMAT_RGB ||
+	    format==FORMAT_INDEXED)
+		return false;
+
+	int len = data.size();
+
+	if (len==0)
+		return true;
+
+	if (format >= FORMAT_YUV_422 && format <= FORMAT_YUV_444)
+		return false;
+
+	int w,h;
+	_get_mipmap_offset_and_size(1,len,w,h);
+
+	DVector<uint8_t>::Read r = data.read();
+	const unsigned char *data_ptr=r.ptr();
+
+	bool detected=false;
+
+	switch(format) {
+		case FORMAT_INTENSITY: {
+
+			for(int i=0;i<len;i++) {
+				DETECT_NON_ALPHA(data_ptr[i]);
+			}
+		} break;
+		case FORMAT_GRAYSCALE_ALPHA: {
+
+
+			for(int i=0;i<(len>>1);i++) {
+				DETECT_NON_ALPHA(data_ptr[(i<<1)+1]);
+			}
+
+		} break;
+		case FORMAT_RGBA: {
+
+			for(int i=0;i<(len>>2);i++) {
+				DETECT_NON_ALPHA(data_ptr[(i<<2)+3])
+			}
+
+		} break;
+		case FORMAT_INDEXED: {
+
+			return false;
+		} break;
+		case FORMAT_INDEXED_ALPHA: {
+
+			return false;
+		} break;
+		case FORMAT_PVRTC2_ALPHA:
+		case FORMAT_PVRTC4_ALPHA:
+		case FORMAT_BC2:
+		case FORMAT_BC3: {
+			detected=true;
+		} break;
+		default: {}
+	}
+
+	return !detected;
 }
 
 Image::AlphaMode Image::detect_alpha() const {
@@ -1734,6 +1823,10 @@ Error Image::_decompress_bc() {
 	return OK;
 }
 
+bool Image::is_compressed() const {
+	return format>=FORMAT_BC1;
+}
+
 
 Image Image::decompressed() const {
 
@@ -1986,7 +2079,7 @@ void Image::blit_rect(const Image& p_src, const Rect2& p_src_rect,const Point2& 
 }
 
 
-Image (*Image::_png_mem_loader_func)(const uint8_t*)=NULL;
+Image (*Image::_png_mem_loader_func)(const uint8_t*,int)=NULL;
 void (*Image::_image_compress_bc_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc2_func)(Image *)=NULL;
 void (*Image::_image_compress_pvrtc4_func)(Image *)=NULL;
@@ -2155,7 +2248,7 @@ void Image::fix_alpha_edges() {
 
 }
 
-Image::Image(const uint8_t* p_png) {
+Image::Image(const uint8_t* p_png,int p_len) {
 
 	width=0;
 	height=0;
@@ -2163,7 +2256,7 @@ Image::Image(const uint8_t* p_png) {
 	format=FORMAT_GRAYSCALE;
 
 	if (_png_mem_loader_func) {
-		*this = _png_mem_loader_func(p_png);
+		*this = _png_mem_loader_func(p_png,p_len);
 	}
 }
 

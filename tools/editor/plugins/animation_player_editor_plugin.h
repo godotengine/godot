@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,10 +49,19 @@ class AnimationPlayerEditor : public VBoxContainer {
 	EditorNode *editor;
 	AnimationPlayer *player;
 
+	enum {
+		TOOL_COPY_ANIM,
+		TOOL_PASTE_ANIM,
+		TOOL_EDIT_RESOURCE
+	};
 
 	OptionButton *animation;
 	Button *stop;
 	Button *play;
+	Button *play_from;
+	Button *play_bw;
+	Button *play_bw_from;
+
 //	Button *pause;
 	Button *add_anim;
 	Button *autoplay;
@@ -63,6 +72,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Button *load_anim;
 	Button *blend_anim;
 	Button *remove_anim;
+	MenuButton *tool_anim;
 	TextureButton *pin;
 	Label *nodename;
 	SpinBox *frame;
@@ -74,7 +84,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 	Ref<Texture> autoplay_icon;
 	bool last_active;
 
-	FileDialog *file;
+	EditorFileDialog *file;
 
 	struct BlendEditor {
 
@@ -95,6 +105,9 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _select_anim_by_name(const String& p_anim);
 	void _play_pressed();
+	void _play_from_pressed();
+	void _play_bw_pressed();
+	void _play_bw_from_pressed();
 	void _autoplay_pressed();
 	void _stop_pressed();
 	void _pause_pressed();
@@ -126,6 +139,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_key_editor_seek(float p_pos);
 	void _animation_key_editor_anim_len_changed(float p_new);
+	void _unhandled_key_input(const InputEvent& p_ev);
+	void _animation_tool_menu(int p_option);
 
 	AnimationPlayerEditor();
 protected:

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -179,6 +179,11 @@ RES ResourceFormatLoaderImage::load(const String &p_path,const String& p_origina
 		if (flags_found.has("tolinear")) {
 			if (flags_found["tolinear"])
 				flags|=Texture::FLAG_CONVERT_TO_LINEAR;
+		}
+		
+		if (flags_found.has("mirroredrepeat")) {
+			if (flags_found["mirroredrepeat"])
+				flags|=Texture::FLAG_MIRRORED_REPEAT;
 		}
 
 		if (debug_load_times)

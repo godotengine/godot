@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,15 +45,32 @@ void Timer::_notification(int p_what) {
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
-
+			if (timer_process_mode == TIMER_PROCESS_FIXED || !is_processing())
+				return;
 			time_left -= get_process_delta_time();
 
 			if (time_left<0) {
 				if (!one_shot)
-					time_left=wait_time+time_left;
+					//time_left=wait_time+time_left;
+					time_left = wait_time;
 				else
 					stop();
 
+				emit_signal("timeout");
+			}
+
+		} break;
+		case NOTIFICATION_FIXED_PROCESS: {
+			if (timer_process_mode == TIMER_PROCESS_IDLE || !is_fixed_processing())
+				return;
+			time_left -= get_fixed_process_delta_time();
+
+			if (time_left<0) {
+				if (!one_shot)
+					//time_left = wait_time + time_left;
+					time_left = wait_time;
+				else
+					stop();
 				emit_signal("timeout");
 			}
 
@@ -64,7 +81,6 @@ void Timer::_notification(int p_what) {
 
 
 void Timer::set_wait_time(float p_time) {
-
 	ERR_EXPLAIN("time should be greater than zero.");
 	ERR_FAIL_COND(p_time<=0);
 	wait_time=p_time;
@@ -94,14 +110,13 @@ bool Timer::has_autostart() const {
 }
 
 void Timer::start() {
-
 	time_left=wait_time;	
-	set_process(true);	
+	_set_process(true);
 }
 
 void Timer::stop() {
 	time_left=-1;
-	set_process(false);
+	_set_process(false);
 	autostart=false;
 }
 
@@ -110,6 +125,41 @@ float Timer::get_time_left() const {
 	return time_left >0 ? time_left : 0;
 }
 
+void Timer::set_timer_process_mode(TimerProcessMode p_mode) {
+
+	if (timer_process_mode == p_mode)
+		return;
+
+	switch (timer_process_mode) {
+		case TIMER_PROCESS_FIXED:
+			if (is_fixed_processing()) {
+				set_fixed_process(false);
+				set_process(true);
+			}
+		break;
+		case TIMER_PROCESS_IDLE:
+			if (is_processing()) {
+				set_process(false);
+				set_fixed_process(true);
+			}
+		break;
+	}
+	timer_process_mode = p_mode;
+}
+
+Timer::TimerProcessMode Timer::get_timer_process_mode() const{
+
+	return timer_process_mode;
+}
+
+
+void Timer::_set_process(bool p_process, bool p_force) 
+{
+	switch (timer_process_mode) {
+		case TIMER_PROCESS_FIXED: set_fixed_process(p_process); break;
+		case TIMER_PROCESS_IDLE: set_process(p_process); break;
+	}
+}
 
 void Timer::_bind_methods() {
 
@@ -127,8 +177,12 @@ void Timer::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_time_left"),&Timer::get_time_left);
 
+	ObjectTypeDB::bind_method(_MD("set_timer_process_mode", "mode"), &Timer::set_timer_process_mode);
+	ObjectTypeDB::bind_method(_MD("get_timer_process_mode"), &Timer::get_timer_process_mode);
+
 	ADD_SIGNAL( MethodInfo("timeout") );
 
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Fixed,Idle"), _SCS("set_timer_process_mode"), _SCS("get_timer_process_mode"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL, "wait_time", PROPERTY_HINT_EXP_RANGE, "0.01,4096,0.01" ), _SCS("set_wait_time"), _SCS("get_wait_time") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "one_shot" ), _SCS("set_one_shot"), _SCS("is_one_shot") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL, "autostart" ), _SCS("set_autostart"), _SCS("has_autostart") );
@@ -136,8 +190,7 @@ void Timer::_bind_methods() {
 }
 
 Timer::Timer() {
-
-
+	timer_process_mode = TIMER_PROCESS_IDLE;
 	autostart=false;
 	wait_time=1;
 	one_shot=false;

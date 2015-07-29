@@ -152,6 +152,7 @@ uniform vec4 modulate;
 
 uniform sampler2D light_texture;
 uniform vec4 light_color;
+uniform vec4 light_shadow_color;
 uniform float light_height;
 varying vec4 light_uv_interp;
 
@@ -207,7 +208,17 @@ void main() {
 
 
 {
+#if defined(USE_NORMALMAP)
+	vec3 normal_map=vec3(0.0,0.0,1.0);
+	float normal_depth=1.0;
+#endif
+
 FRAGMENT_SHADER_CODE
+
+#if defined(USE_NORMALMAP)
+	normal = mix(vec3(0.0,0.0,1.0), normal_map * vec3(2.0,-2.0,1.0) - vec3( 1.0, -1.0, 0.0 ), normal_depth );
+#endif
+
 }
 #ifdef DEBUG_ENCODED_32
 	highp float enc32 = dot( color,highp vec4(1.0 / (256.0 * 256.0 * 256.0),1.0 / (256.0 * 256.0),1.0 / 256.0,1)  );
@@ -296,7 +307,7 @@ LIGHT_SHADER_CODE
 		}
 
 
-		highp vec4 s = shadow_matrix * highp vec4(point,0.0,1.0);
+		highp vec4 s = shadow_matrix * vec4(point,0.0,1.0);
 		s.xyz/=s.w;
 		su=s.x*0.5+0.5;
 		sz=s.z*0.5+0.5;
@@ -369,7 +380,8 @@ LIGHT_SHADER_CODE
 #if defined(USE_LIGHT_SHADOW_COLOR)
 	color=mix(shadow_color,color,shadow_attenuation);
 #else
-	color*=shadow_attenuation;
+	//color*=shadow_attenuation;
+	color=mix(light_shadow_color,color,shadow_attenuation);
 #endif
 //use shadows
 #endif

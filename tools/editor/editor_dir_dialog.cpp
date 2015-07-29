@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,7 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 	da->list_dir_begin();
 	String p=da->get_next();
 
+	List<String> dirs;
 	bool ishidden;
 	bool show_hidden = EditorSettings::get_singleton()->get("file_dialog/show_hidden_files");
 
@@ -52,14 +53,20 @@ void EditorDirDialog::_update_dir(TreeItem* p_item) {
 
 		if (show_hidden || !ishidden) {
 			if (da->current_is_dir() && !p.begins_with(".")) {
-				TreeItem *ti = tree->create_item(p_item);
-				ti->set_text(0,p);
-				ti->set_icon(0,get_icon("Folder","EditorIcons"));
-				ti->set_collapsed(true);
+				dirs.push_back(p);
 			}
 		}
-
 		p=da->get_next();
+	}
+
+	dirs.sort();
+
+	for(List<String>::Element *E=dirs.front();E;E=E->next()) {
+		TreeItem *ti = tree->create_item(p_item);
+		ti->set_text(0,E->get());
+		ti->set_icon(0,get_icon("Folder","EditorIcons"));
+		ti->set_collapsed(true);
+
 	}
 
 	memdelete(da);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -406,7 +406,7 @@ void Viewport::_notification(int p_what) {
 						int rc = ss2d->intersect_point(point,res,64,Set<RID>(),0xFFFFFFFF,0xFFFFFFFF);
 						for(int i=0;i<rc;i++) {
 
-							if (res[i].collider) {
+							if (res[i].collider_id && res[i].collider) {
 								CollisionObject2D *co=res[i].collider->cast_to<CollisionObject2D>();
 								if (co) {
 
@@ -1177,6 +1177,11 @@ void Viewport::_vp_unhandled_input(const InputEvent& p_ev) {
 
 }
 
+Vector2 Viewport::get_mouse_pos() const {
+
+	return (get_final_transform().affine_inverse() * _get_input_pre_xform()).xform(Input::get_singleton()->get_mouse_pos());
+}
+
 void Viewport::warp_mouse(const Vector2& p_pos) {
 
 	Vector2 gpos = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse().xform(p_pos);
@@ -1377,6 +1382,7 @@ void Viewport::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_audio_listener_2d","enable"), &Viewport::is_audio_listener_2d);
 	ObjectTypeDB::bind_method(_MD("set_render_target_to_screen_rect"), &Viewport::set_render_target_to_screen_rect);
 
+	ObjectTypeDB::bind_method(_MD("get_mouse_pos"), &Viewport::get_mouse_pos);
 	ObjectTypeDB::bind_method(_MD("warp_mouse","to_pos"), &Viewport::warp_mouse);
 
 	ADD_PROPERTY( PropertyInfo(Variant::RECT2,"rect"), _SCS("set_rect"), _SCS("get_rect") );
@@ -1450,6 +1456,7 @@ Viewport::~Viewport() {
 
 	VisualServer::get_singleton()->free( viewport );
 	SpatialSoundServer::get_singleton()->free(listener);
+	SpatialSound2DServer::get_singleton()->free(listener_2d);
 	if (render_target_texture.is_valid())
 		render_target_texture->vp=NULL; //so if used, will crash
 }

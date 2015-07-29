@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -533,6 +533,7 @@ void CollisionPolygonEditor::_bind_methods() {
 CollisionPolygonEditor::CollisionPolygonEditor(EditorNode *p_editor) {
 
 
+	node=NULL;
 	editor=p_editor;
 	undo_redo = editor->get_undo_redo();
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,6 +114,7 @@ private:
 	Node *_get_node(const NodePath& p_path) const;
 
 
+
 	void _validate_child_name(Node *p_name);
 
 	void _propagate_reverse_notification(int p_notification);	
@@ -126,6 +127,7 @@ private:
 	void _propagate_pause_owner(Node*p_owner);
 	Array _get_node_and_resource(const NodePath& p_path);
 
+	void _duplicate_signals(const Node* p_original,Node* p_copy) const;
 	void _duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_reown_map) const;
 	Array _get_children() const;
 	Array _get_groups() const;
@@ -143,7 +145,7 @@ protected:
 	virtual void add_child_notify(Node *p_child);
 	virtual void remove_child_notify(Node *p_child);
 	virtual void move_child_notify(Node *p_child);
-	void remove_and_delete_child(Node *p_child);
+	//void remove_and_delete_child(Node *p_child);
 	
 	void _propagate_replace_owner(Node *p_owner,Node* p_by_owner); 
 	
@@ -170,6 +172,7 @@ public:
 		NOTIFICATION_PROCESS = 17,
 		NOTIFICATION_PARENTED=18,
 		NOTIFICATION_UNPARENTED=19,
+		NOTIFICATION_INSTANCED=20,
 	};
 			
 	/* NODE/TREE */			
@@ -184,6 +187,7 @@ public:
 	Node *get_child(int p_index) const;
 	bool has_node(const NodePath& p_path) const;
 	Node *get_node(const NodePath& p_path) const;
+	Node* find_node(const String& p_mask,bool p_recursive=true,bool p_owned=true) const;
 	bool has_node_and_resource(const NodePath& p_path) const;
 	Node *get_node_and_resource(const NodePath& p_path,RES& r_res) const;
 	
@@ -285,6 +289,8 @@ public:
 #endif
 
 	void get_argument_options(const StringName& p_function,int p_idx,List<String>*r_options) const;
+
+	void clear_internal_tree_resource_paths();
 
 	_FORCE_INLINE_ Viewport *get_viewport() const { return data.viewport; }
 

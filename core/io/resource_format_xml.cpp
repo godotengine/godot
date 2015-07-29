@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -309,6 +309,7 @@ Error ResourceInteractiveLoaderXML::_parse_array_element(Vector<char> &buff,bool
 
 				buff_max++;
 				buff.resize(buff_max);
+				buffptr=buff.ptr();
 
 			}
 
@@ -458,7 +459,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 				path=path.replace("local://",local_path+"::");
 			else if (path.find("://")==-1 && path.is_rel_path()) {
 				// path is relative to file being loaded, so convert to a resource path
-				path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+				path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 
 			}
 
@@ -1206,47 +1207,47 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 
 		r_v=Vector3(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double()
 			   );
 
 	} else if (type=="vector2") {
 
 
 		r_v=Vector2(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double()
 			   );
 
 	} else if (type=="plane") {
 
 		r_v=Plane(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double(),
-				data.get_slice(",",3).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double(),
+				data.get_slicec(',',3).to_double()
 			 );
 
 	} else if (type=="quaternion") {
 
 		r_v=Quat(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double(),
-				data.get_slice(",",3).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double(),
+				data.get_slicec(',',3).to_double()
 			 );
 
 	} else if (type=="rect2") {
 
 		r_v=Rect2(
 			Vector2(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double()
 			),
 			Vector2(
-				data.get_slice(",",2).to_double(),
-				data.get_slice(",",3).to_double()
+				data.get_slicec(',',2).to_double(),
+				data.get_slicec(',',3).to_double()
 			)
 		);
 
@@ -1255,14 +1256,14 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 
 		r_v=AABB(
 			Vector3(
-				data.get_slice(",",0).to_double(),
-				data.get_slice(",",1).to_double(),
-				data.get_slice(",",2).to_double()
+				data.get_slicec(',',0).to_double(),
+				data.get_slicec(',',1).to_double(),
+				data.get_slicec(',',2).to_double()
 			),
 			Vector3(
-				data.get_slice(",",3).to_double(),
-				data.get_slice(",",4).to_double(),
-				data.get_slice(",",5).to_double()
+				data.get_slicec(',',3).to_double(),
+				data.get_slicec(',',4).to_double(),
+				data.get_slicec(',',5).to_double()
 			)
 		);
 
@@ -1271,7 +1272,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Matrix32 m3;
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<2;j++) {
-				m3.elements[i][j]=data.get_slice(",",i*2+j).to_double();
+				m3.elements[i][j]=data.get_slicec(',',i*2+j).to_double();
 			}
 		}
 		r_v=m3;
@@ -1281,7 +1282,7 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Matrix3 m3;
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<3;j++) {
-				m3.elements[i][j]=data.get_slice(",",i*3+j).to_double();
+				m3.elements[i][j]=data.get_slicec(',',i*3+j).to_double();
 			}
 		}
 		r_v=m3;
@@ -1291,24 +1292,24 @@ Error ResourceInteractiveLoaderXML::parse_property(Variant& r_v, String &r_name)
 		Transform tr;
 		for (int i=0;i<3;i++) {
 			for (int j=0;j<3;j++) {
-				tr.basis.elements[i][j]=data.get_slice(",",i*3+j).to_double();
+				tr.basis.elements[i][j]=data.get_slicec(',',i*3+j).to_double();
 			}
 
 		}
 		tr.origin=Vector3(
-			     data.get_slice(",",9).to_double(),
-			     data.get_slice(",",10).to_double(),
-			     data.get_slice(",",11).to_double()
+			     data.get_slicec(',',9).to_double(),
+			     data.get_slicec(',',10).to_double(),
+			     data.get_slicec(',',11).to_double()
 			   );
 		r_v=tr;
 
 	} else if (type=="color") {
 
 		r_v=Color(
-			   data.get_slice(",",0).to_double(),
-			   data.get_slice(",",1).to_double(),
-			   data.get_slice(",",2).to_double(),
-			   data.get_slice(",",3).to_double()
+			   data.get_slicec(',',0).to_double(),
+			   data.get_slicec(',',1).to_double(),
+			   data.get_slicec(',',2).to_double(),
+			   data.get_slicec(',',3).to_double()
 			 );
 
 	} else if (type=="node_path") {
@@ -1373,7 +1374,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 		if (res.is_null()) {
 
 			if (ResourceLoader::get_abort_on_missing_resources()) {
-				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": editor exported unexisting resource at: "+path);
+				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": editor exported nonexistent resource at: "+path);
 				ERR_FAIL_V(error);
 			} else {
 				ResourceLoader::notify_load_error("Resource Not Found: "+path);
@@ -1423,7 +1424,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 
@@ -1432,7 +1433,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 		if (res.is_null()) {
 
 			if (ResourceLoader::get_abort_on_missing_resources()) {
-				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> referenced unexisting resource at: "+path);
+				ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <ext_resource> referenced nonexistent resource at: "+path);
 				ERR_FAIL_V(error);
 			} else {
 				ResourceLoader::notify_load_error("Resource Not Found: "+path);
@@ -1465,6 +1466,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 
 	String type;
 	String path;
+	int subres=0;
 
 	if (!main) {
 		//loading resource
@@ -1475,11 +1477,15 @@ Error ResourceInteractiveLoaderXML::poll() {
 		ERR_EXPLAIN(local_path+":"+itos(get_current_line())+": <resource> missing 'type' field.");
 		ERR_FAIL_COND_V(!tag->args.has("type"),ERR_FILE_CORRUPT);
 		path=tag->args["path"];
+
 		error=OK;
 
 		if (path.begins_with("local://")) {
 			//built-in resource (but really external)
-			path=path.replace("local://",local_path+"::");
+
+			path=path.replace("local://","");
+			subres=path.to_int();
+			path=local_path+"::"+path;
 		}
 
 
@@ -1518,6 +1524,7 @@ Error ResourceInteractiveLoaderXML::poll() {
 	res = RES( r );
 	if (path!="")
 		r->set_path(path);
+	r->set_subindex(subres);
 
 	//load properties
 
@@ -1601,7 +1608,7 @@ void ResourceInteractiveLoaderXML::get_dependencies(FileAccess *f,List<String> *
 
 		if (path.find("://")==-1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			path=Globals::get_singleton()->localize_path(local_path.get_base_dir()+"/"+path);
+			path=Globals::get_singleton()->localize_path(local_path.get_base_dir().plus_file(path));
 		}
 
 		if (path.ends_with("*")) {
@@ -1667,10 +1674,10 @@ void ResourceInteractiveLoaderXML::open(FileAccess *p_f) {
 		ERR_FAIL();
 	}
 
-	int major = version.get_slice(".",0).to_int();
-	int minor = version.get_slice(".",1).to_int();
+	int major = version.get_slicec('.',0).to_int();
+	int minor = version.get_slicec('.',1).to_int();
 
-	if (major>VERSION_MAJOR || (major==VERSION_MAJOR && minor>VERSION_MINOR)) {
+	if (major>VERSION_MAJOR) {
 
 		error=ERR_FILE_UNRECOGNIZED;
 		ResourceLoader::notify_load_error(local_path+": File Format '"+version+"' is too new. Please upgrade to a newer engine version.");
@@ -1849,7 +1856,7 @@ void ResourceFormatSaverXMLInstance::escape(String& p_str) {
 	p_str=p_str.replace(">","&lt;");
 	p_str=p_str.replace("'","&apos;");
 	p_str=p_str.replace("\"","&quot;");
-	for (int i=1;i<32;i++) {
+	for (char i=1;i<32;i++) {
 
 		char chr[2]={i,0};
 		const char hexn[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
@@ -2028,9 +2035,9 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 				//internal resource
 				ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
-				ERR_FAIL_COND(!resource_map.has(res));
+				ERR_FAIL_COND(!resource_set.has(res));
 
-				params+=" path=\"local://"+itos(resource_map[res])+"\"";
+				params+=" path=\"local://"+itos(res->get_subindex())+"\"";
 			}
 
 		} break;
@@ -2243,12 +2250,12 @@ void ResourceFormatSaverXMLInstance::write_property(const String& p_name,const V
 
 			List<Variant> keys;
 			dict.get_key_list(&keys);
+			keys.sort();
 
 			for(List<Variant>::Element *E=keys.front();E;E=E->next()) {
 
 				//if (!_check_type(dict[E->get()]))
 				//	continue;
-
 				bool ok;
 				write_property("",E->get(),&ok);
 				ERR_CONTINUE(!ok);
@@ -2438,16 +2445,17 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 				return;
 
 			if (!p_main && (!bundle_resources ) && res->get_path().length() && res->get_path().find("::") == -1 ) {
-				external_resources.insert(res);
+				external_resources.push_back(res);
 				return;
 			}
 
-			if (resource_map.has(res))
+			if (resource_set.has(res))
 				return;
 
 			List<PropertyInfo> property_list;
 
 			res->get_property_list( &property_list );
+			property_list.sort();
 
 			List<PropertyInfo>::Element *I=property_list.front();
 
@@ -2464,7 +2472,7 @@ void ResourceFormatSaverXMLInstance::_find_resources(const Variant& p_variant,bo
 				I=I->next();
 			}
 
-			resource_map[ res ] = resource_map.size(); //saved after, so the childs it needs are available when loaded
+			resource_set.insert( res ); //saved after, so the childs it needs are available when loaded
 			saved_resources.push_back(res);
 
 		} break;
@@ -2525,7 +2533,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 	enter_tag("resource_file","type=\""+p_resource->get_type()+"\" subresource_count=\""+itos(saved_resources.size()+external_resources.size())+"\" version=\""+itos(VERSION_MAJOR)+"."+itos(VERSION_MINOR)+"\" version_name=\""+VERSION_FULL_NAME+"\"");
 	write_string("\n",false);
 
-	for(Set<RES>::Element *E=external_resources.front();E;E=E->next()) {
+	for(List<RES>::Element *E=external_resources.front();E;E=E->next()) {
 
 		write_tabs();
 		String p = E->get()->get_path();
@@ -2535,12 +2543,27 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 		write_string("\n",false);
 	}
 
-
+	Set<int> used_indices;
 
 	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
 
 		RES res = E->get();
-		ERR_CONTINUE(!resource_map.has(res));
+		if (E->next() && (res->get_path()=="" || res->get_path().find("::") != -1 )) {
+
+			if (res->get_subindex()!=0) {
+				if (used_indices.has(res->get_subindex())) {
+					res->set_subindex(0); //repeated
+				} else {
+					used_indices.insert(res->get_subindex());
+				}
+			}
+		}
+	}
+
+	for(List<RES>::Element *E=saved_resources.front();E;E=E->next()) {
+
+		RES res = E->get();
+		ERR_CONTINUE(!resource_set.has(res));
 		bool main = (E->next()==NULL);
 
 		write_tabs();
@@ -2550,7 +2573,18 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 		else if (res->get_path().length() && res->get_path().find("::") == -1 )
 			enter_tag("resource","type=\""+res->get_type()+"\" path=\""+res->get_path()+"\""); //bundled
 		else {
-			int idx = resource_map[res];
+
+			if (res->get_subindex()==0) {
+				int new_subindex=1;
+				if (used_indices.size()) {
+					new_subindex=used_indices.back()->get()+1;
+				}
+
+				res->set_subindex(new_subindex);
+				used_indices.insert(new_subindex);
+			}
+
+			int idx = res->get_subindex();
 			enter_tag("resource","type=\""+res->get_type()+"\" path=\"local://"+itos(idx)+"\"");
 			if (takeover_paths) {
 				res->set_path(p_path+"::"+itos(idx),true);
@@ -2562,6 +2596,7 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 		List<PropertyInfo> property_list;
 		res->get_property_list(&property_list);
+//		property_list.sort();
 		for(List<PropertyInfo>::Element *PE = property_list.front();PE;PE=PE->next()) {
 
 
@@ -2572,8 +2607,11 @@ Error ResourceFormatSaverXMLInstance::save(const String &p_path,const RES& p_res
 
 				String name = PE->get().name;
 				Variant value = res->get(name);
-				if (PE->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())
+
+
+				if ((PE->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero())||(PE->get().usage&PROPERTY_USAGE_STORE_IF_NONONE && value.is_one()) )
 					continue;
+
 
 				write_property(name,value);
 			}

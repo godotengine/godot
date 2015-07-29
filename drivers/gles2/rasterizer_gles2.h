@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 #define RASTERIZER_GLES2_H
 
 #include "servers/visual/rasterizer.h"
+
+#define MAX_POLYGON_VERTICES 4096 //used for WebGL canvas_draw_polygon call.
 
 #ifdef GLES2_ENABLED
 
@@ -828,6 +830,7 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint base_framebuffer;
 
 	GLuint gui_quad_buffer;
+	GLuint indices_buffer;
 
 
 
@@ -1049,6 +1052,7 @@ class RasterizerGLES2 : public Rasterizer {
 	float camera_z_near;
 	float camera_z_far;
 	Size2 camera_vp_size;
+	bool camera_ortho;
 	Set<String> extensions;
 	bool texscreen_copied;
 	bool texscreen_used;
@@ -1270,6 +1274,7 @@ class RasterizerGLES2 : public Rasterizer {
 	Environment *current_env;
 	VS::ScenarioDebugMode current_debug;
 	RID overdraw_material;
+	float shader_time_rollback;
 
 
 	mutable MaterialShaderGLES2 material_shader;
@@ -1585,7 +1590,7 @@ public:
 
 	virtual void begin_shadow_map( RID p_light_instance, int p_shadow_pass );
 
-	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection);
+	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection,bool p_ortho_hint);
 
 	virtual void add_light( RID p_light_instance ); ///< all "add_light" calls happen before add_geometry calls
 

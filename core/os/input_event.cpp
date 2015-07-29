@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -171,6 +171,16 @@ bool InputEvent::is_echo() const {
 bool InputEvent::is_action(const String& p_action) const {
 
 	return InputMap::get_singleton()->event_is_action(*this,p_action);
+}
+
+bool InputEvent::is_action_pressed(const String& p_action) const {
+
+	return is_action(p_action) && is_pressed() && !is_echo();
+}
+
+bool InputEvent::is_action_released(const String& p_action) const {
+
+	return is_action(p_action) && !is_pressed();
 }
 
 uint32_t InputEventKey::get_scancode_with_modifiers() const {

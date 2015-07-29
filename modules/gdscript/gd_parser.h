@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,6 +76,7 @@ public:
 		StringName extends_file;
 		Vector<StringName> extends_class;
 
+
 		struct Member {
 			PropertyInfo _export;
 #ifdef TOOLS_ENABLED
@@ -92,11 +93,17 @@ public:
 			Node *expression;
 		};
 
+		struct Signal {
+			StringName name;
+			Vector<StringName> arguments;
+		};
+
 		Vector<ClassNode*> subclasses;
 		Vector<Member> variables;
 		Vector<Constant> constant_expressions;
 		Vector<FunctionNode*> functions;
 		Vector<FunctionNode*> static_functions;
+		Vector<Signal> _signals;
 		BlockNode *initializer;
 		ClassNode *owner;
 		//Vector<Node*> initializers;
@@ -380,6 +387,7 @@ private:
 	T* alloc_node();
 
 	bool validating;
+	bool for_completion;
 	int parenthesis;
 	bool error_set;
 	String error;
@@ -436,7 +444,7 @@ public:
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="");
+	Error parse(const String& p_code, const String& p_base_path="", bool p_just_validate=false,const String& p_self_path="",bool p_for_completion=false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode,const String& p_base_path="",const String& p_self_path="");
 
 	const Node *get_parse_tree() const;

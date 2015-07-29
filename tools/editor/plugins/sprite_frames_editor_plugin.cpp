@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,7 +76,7 @@ void SpriteFramesEditor::_file_load_request(const DVector<String>& p_path) {
 			dialog->set_title("Error!");
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text("Close");
-			dialog->popup_centered(Size2(300,60));
+			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
 
@@ -115,7 +115,7 @@ void SpriteFramesEditor::_load_pressed() {
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
 
-	file->set_mode(FileDialog::MODE_OPEN_FILES);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
 	file->popup_centered_ratio();
 
@@ -188,7 +188,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		dialog->set_title("Error!");
 		//dialog->get_cancel()->set_text("Close");
 		dialog->get_ok()->set_text("Close");
-		dialog->popup_centered(Size2(300,60));
+		dialog->popup_centered_minsize();
 		return; ///beh should show an error i guess
 	}
 
@@ -435,7 +435,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	_delete = memnew( Button );
 	hbc->add_child(_delete);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 
 

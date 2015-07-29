@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,6 +48,24 @@ public:
 	AreaPairSW(BodySW *p_body,int p_body_shape, AreaSW *p_area,int p_area_shape);
 	~AreaPairSW();
 };
+
+
+class Area2PairSW : public ConstraintSW {
+
+	AreaSW *area_a;
+	AreaSW *area_b;
+	int shape_a;
+	int shape_b;
+	bool colliding;
+public:
+
+	bool setup(float p_step);
+	void solve(float p_step);
+
+	Area2PairSW(AreaSW *p_area_a,int p_shape_a, AreaSW *p_area_b,int p_shape_b);
+	~Area2PairSW();
+};
+
 
 #endif // AREA_PAIR__SW_H
 

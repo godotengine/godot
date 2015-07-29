@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -135,6 +135,7 @@ void SampleManagerMallocSW::sample_set_data(RID p_sample, const DVector<uint8_t>
 
 
 	ERR_EXPLAIN("Sample buffer size does not match sample size.");
+	//print_line("len bytes: "+itos(s->length_bytes)+" bufsize: "+itos(buff_size));
 	ERR_FAIL_COND(s->length_bytes!=buff_size);
 	DVector<uint8_t>::Read buffer_r=p_buffer.read();
 	const uint8_t *src = buffer_r.ptr();

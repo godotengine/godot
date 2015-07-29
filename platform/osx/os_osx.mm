@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -966,8 +966,10 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	[NSApp activateIgnoringOtherApps:YES];
 
-	 [window_object makeKeyAndOrderFront:nil];
+	[window_object makeKeyAndOrderFront:nil];
 
+	if (p_desired.fullscreen)
+		zoomed = true;
 
 	/*** END OSX INITIALIZATION ***/
 	/*** END OSX INITIALIZATION ***/
@@ -1013,7 +1015,8 @@ void OS_OSX::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	//physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
@@ -1110,7 +1113,9 @@ void OS_OSX::warp_mouse_pos(const Point2& p_to) {
 	NSPoint localPoint = { p_to.x, p_to.y };
 
 	NSPoint pointInWindow = [window_view convertPoint:localPoint toView:nil];
-	NSPoint pointOnScreen = [[window_view window] convertRectToScreen:(NSRect){.origin=pointInWindow}].origin;
+	NSRect pointInWindowRect;
+	pointInWindowRect.origin = pointInWindow;
+	NSPoint pointOnScreen = [[window_view window] convertRectToScreen:pointInWindowRect].origin;
 
 	//point in scren coords
 	CGPoint lMouseWarpPos = { pointOnScreen.x, pointOnScreen.y};
@@ -1310,14 +1315,22 @@ void OS_OSX::set_window_size(const Size2 p_size) {
 
 void OS_OSX::set_window_fullscreen(bool p_enabled) {
 
-	[window_object performZoom:nil];
+	if (zoomed != p_enabled) {
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+		[window_object toggleFullScreen:nil];
+#else
+		[window_object performZoom:nil];
+#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
+	}
 	zoomed = p_enabled;
 };
 
 bool OS_OSX::is_window_fullscreen() const {
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
 	if ( [window_object respondsToSelector:@selector(isZoomed)] )
 		return [window_object isZoomed];
+#endif /*MAC_OS_X_VERSION_MAX_ALLOWED*/
 
 	return zoomed;
 };
@@ -1508,6 +1521,11 @@ void OS_OSX::run() {
 		return;
 
 	main_loop->init();
+
+	if (zoomed) {
+		zoomed = false;
+		set_window_fullscreen(true);
+	}
 
 //	uint64_t last_ticks=get_ticks_usec();
 

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,6 +71,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"randi",
 		"randf",
 		"rand_range",
+		"seed",
 		"rand_seed",
 		"deg2rad",
 		"rad2deg",
@@ -87,6 +88,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"str",
 		"print",
 		"printt",
+		"prints",
 		"printerr",
 		"printraw",
 		"var2str",
@@ -97,6 +99,7 @@ const char *GDFunctions::get_func_name(Function p_func) {
 		"dict2inst",
 		"hash",
 		"print_stack",
+		"instance_from_id",
 	};
 
 	return _names[p_func];
@@ -328,6 +331,13 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			VALIDATE_ARG_NUM(1);
 			r_ret=Math::random(*p_args[0],*p_args[1]);
 		} break;
+		case MATH_SEED: {
+			VALIDATE_ARG_COUNT(1);
+			VALIDATE_ARG_NUM(0);
+			uint32_t seed=*p_args[0];
+			Math::seed(seed);
+			r_ret=Variant();
+		} break;
 		case MATH_RANDSEED: {
 			VALIDATE_ARG_COUNT(1);
 			VALIDATE_ARG_NUM(0);
@@ -553,6 +563,22 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 
 
 		} break;
+		case TEXT_PRINT_SPACED: {
+
+			String str;
+			for(int i=0;i<p_arg_count;i++) {
+
+				if (i)
+					str+=" ";
+				str+=p_args[i]->operator String();
+			}
+
+			//str+="\n";
+			print_line(str);
+			r_ret=Variant();
+
+
+		} break;
 
 		case TEXT_PRINTERR: {
 
@@ -575,7 +601,7 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			}
 
 			//str+="\n";
-			OS::get_singleton()->print("%s\n",str.utf8().get_data());
+			OS::get_singleton()->print("%s",str.utf8().get_data());
 			r_ret=Variant();
 
 		} break;
@@ -895,6 +921,20 @@ void GDFunctions::call(Function p_func,const Variant **p_args,int p_arg_count,Va
 			};
 		} break;
 
+		case INSTANCE_FROM_ID: {
+
+			VALIDATE_ARG_COUNT(1);
+			if (p_args[0]->get_type()!=Variant::INT && p_args[0]->get_type()!=Variant::REAL) {
+				r_error.error=Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument=0;
+				r_ret=Variant();
+				break;
+			}
+
+			uint32_t id=*p_args[0];
+			r_ret=ObjectDB::get_instance(id);
+
+		} break;
 		case FUNC_MAX: {
 
 			ERR_FAIL_V();
@@ -1130,6 +1170,11 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			mi.return_val.type=Variant::REAL;
 			return mi;
 		} break;
+		case MATH_SEED: {
+			MethodInfo mi("seed",PropertyInfo(Variant::REAL,"seed"));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
 		case MATH_RANDSEED: {
 			MethodInfo mi("rand_seed",PropertyInfo(Variant::REAL,"seed"));
 			mi.return_val.type=Variant::ARRAY;
@@ -1224,6 +1269,13 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 			return mi;
 
 		} break;
+		case TEXT_PRINT_SPACED: {
+
+			MethodInfo mi("prints",PropertyInfo(Variant::NIL,"what"),PropertyInfo(Variant::NIL,"..."));
+			mi.return_val.type=Variant::NIL;
+			return mi;
+
+		} break;
 		case TEXT_PRINTERR: {
 
 			MethodInfo mi("printerr",PropertyInfo(Variant::NIL,"what"),PropertyInfo(Variant::NIL,"..."));
@@ -1285,6 +1337,12 @@ MethodInfo GDFunctions::get_info(Function p_func) {
 		case PRINT_STACK: {
 			MethodInfo mi("print_stack");
 			mi.return_val.type=Variant::NIL;
+			return mi;
+		} break;
+
+		case INSTANCE_FROM_ID: {
+			MethodInfo mi("instance_from_id",PropertyInfo(Variant::INT,"instance_id"));
+			mi.return_val.type=Variant::OBJECT;
 			return mi;
 		} break;
 

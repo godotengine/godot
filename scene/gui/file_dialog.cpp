@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,7 +92,6 @@ void FileDialog::_file_entered(const String& p_file) {
 }
 
 void FileDialog::_save_confirm_pressed() {
-	
 	String f=dir_access->get_current_dir().plus_file(file->get_text());
 	emit_signal("file_selected",f);
 	hide();		
@@ -609,18 +608,12 @@ void FileDialog::_update_drives() {
 		drives->clear();
 		drives->show();
 
-		int current=-1;
-		String abspath = dir_access->get_current_dir();
-
 		for(int i=0;i<dir_access->get_drive_count();i++) {
-			String d = dir_access->get_drive(i);
-			if (abspath.begins_with(d))
-				current=i;
+			String d = dir_access->get_drive(i);			
 			drives->add_item(dir_access->get_drive(i));
 		}
 
-		if (current!=-1)
-			drives->select(current);
+		drives->select(dir_access->get_current_drive());
 
 	}
 }
@@ -693,7 +686,7 @@ void FileDialog::set_default_show_hidden_files(bool p_show) {
 
 FileDialog::FileDialog() {
 
-	show_hidden_files=true;
+	show_hidden_files=default_show_hidden_files;
 
 	VBoxContainer *vbc = memnew( VBoxContainer );
 	add_child(vbc);

@@ -178,6 +178,11 @@ public:
 
 	String get_unique_ID() const;
 
+	String get_scancode_string(uint32_t p_code) const;
+	bool is_scancode_unicode(uint32_t p_unicode) const;
+	int find_scancode_from_string(const String& p_code) const;
+
+
 	/*
 	struct Date {
 
@@ -199,8 +204,9 @@ public:
 	void set_use_file_access_save_and_swap(bool p_enable);
 
 	void set_icon(const Image& p_icon);
-	Dictionary get_date() const;
-	Dictionary get_time() const;
+	Dictionary get_date(bool utc) const;
+	Dictionary get_time(bool utc) const;
+	Dictionary get_time_zone_info() const;
 	uint64_t get_unix_time() const;
 
 	int get_static_memory_usage() const;
@@ -210,6 +216,7 @@ public:
 	void delay_usec(uint32_t p_usec) const;
 	void delay_msec(uint32_t p_msec) const;
 	uint32_t get_ticks_msec() const;
+	uint32_t get_splash_tick_msec() const;
 
 	bool can_use_threads() const;
 
@@ -428,6 +435,12 @@ public:
 
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
+
+	String raw_to_base64(const DVector<uint8_t>& p_arr);
+	DVector<uint8_t> base64_to_raw(const String& p_str);
+
+	String utf8_to_base64(const String& p_str);
+	String base64_to_utf8(const String& p_str);
 
 	_Marshalls() {};
 };

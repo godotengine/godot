@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -162,8 +162,8 @@ class EditorSceneImportDialog : public ConfirmationDialog  {
 	LineEdit *save_path;
 	LineEdit *script_path;
 	Tree *import_options;
-	FileDialog *file_select;
-	FileDialog *script_select;
+	EditorFileDialog *file_select;
+	EditorFileDialog *script_select;
 	EditorDirDialog *save_select;
 	OptionButton *texture_action;
 
@@ -671,15 +671,28 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	wip_open=p_and_open;
 //'	ImportMonitorBlock imb;
 
-	if (import_path->get_text()=="") {
+
+	if (import_path->get_text().strip_edges()=="") {
 		error_dialog->set_text("Source path is empty.");
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered_minsize();
 		return;
 	}
 
-	if (save_path->get_text()=="") {
+	if (save_path->get_text().strip_edges()=="") {
 		error_dialog->set_text("Target path is empty.");
-		error_dialog->popup_centered(Size2(200,100));
+		error_dialog->popup_centered_minsize();
+		return;
+	}
+
+	if (!save_path->get_text().begins_with("res://")) {
+		error_dialog->set_text("Target path must be full resource path.");
+		error_dialog->popup_centered_minsize();
+		return;
+	}
+
+	if (!DirAccess::exists(save_path->get_text())) {
+		error_dialog->set_text("Target path must exist.");
+		error_dialog->popup_centered_minsize();
 		return;
 	}
 
@@ -701,7 +714,8 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	}
 
 
-	Ref<EditorScenePostImport> pi;
+
+
 
 	if (script_path->get_text()!="") {
 		Ref<Script> scr = ResourceLoader::load(script_path->get_text());
@@ -711,7 +725,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			return;
 		}
 
-		pi = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
+		Ref<EditorScenePostImport> pi = Ref<EditorScenePostImport>( memnew( EditorScenePostImport ) );
 		pi->set_script(scr.get_ref_ptr());
 		if (!pi->get_script_instance()) {
 
@@ -719,6 +733,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 			error_dialog->popup_centered(Size2(200,100));
 			return;
 		}
+
 	}
 
 
@@ -747,7 +762,7 @@ void EditorSceneImportDialog::_import(bool p_and_open) {
 	rim->set_option("animation_optimizer_max_angle",animation_options->get_optimize_max_angle());
 	rim->set_option("animation_filters",animation_options->get_filter());
 	rim->set_option("animation_clips",animation_options->get_clips());
-	rim->set_option("post_import_script",script_path->get_text()!=String()?EditorImportPlugin::validate_source_path(script_path->get_text()):String());
+	rim->set_option("post_import_script",script_path->get_text());
 	rim->set_option("import_this_time",this_import->get_selected());
 	rim->set_option("import_next_time",next_import->get_selected());
 	rim->set_option("reimport",true);
@@ -892,6 +907,7 @@ void EditorSceneImportDialog::popup_import(const String &p_from) {
 			animation_options->set_optimize_angular_error(rimd->get_option("animation_optimizer_angular_error"));
 		if (rimd->has_option("animation_optimizer_max_angle"))
 			animation_options->set_optimize_max_angle(rimd->get_option("animation_optimizer_max_angle"));
+
 
 		script_path->set_text(rimd->get_option("post_import_script"));
 		if (rimd->has_option("import_this_time"))
@@ -1063,19 +1079,19 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	vbc->set_v_size_flags(SIZE_EXPAND_FILL);
 	vbc->add_margin_child("Options:",import_options,true);
 
-	file_select = memnew(FileDialog);
-	file_select->set_access(FileDialog::ACCESS_FILESYSTEM);
+	file_select = memnew(EditorFileDialog);
+	file_select->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(file_select);
 
 
-	file_select->set_mode(FileDialog::MODE_OPEN_FILE);
+	file_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	file_select->connect("file_selected", this,"_choose_file");
 
 	save_select = memnew(EditorDirDialog);
 	add_child(save_select);
 
-	//save_select->set_mode(FileDialog::MODE_SAVE_FILE);
+	//save_select->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 	save_select->connect("dir_selected", this,"_choose_save_file");
 
 	get_ok()->connect("pressed", this,"_import");
@@ -1124,7 +1140,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 
 	script_choose->connect("pressed", this,"_browse_script");
 
-	script_select = memnew(FileDialog);
+	script_select = memnew(EditorFileDialog);
 	add_child(script_select);
 	for(int i=0;i<ScriptServer::get_language_count();i++) {
 
@@ -1136,7 +1152,7 @@ EditorSceneImportDialog::EditorSceneImportDialog(EditorNode *p_editor, EditorSce
 	}
 
 
-	script_select->set_mode(FileDialog::MODE_OPEN_FILE);
+	script_select->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 
 	script_select->connect("file_selected", this,"_choose_script");
 
@@ -2121,7 +2137,7 @@ void EditorSceneImportPlugin::_merge_existing_node(Node *p_node,Node *p_imported
 }
 
 
-void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Set<Node*> &checked_nodes) {
+void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node *p_imported_scene,Node *p_existing_scene,Set<Node*> &checked_nodes) {
 
 
 	for(int i=0;i<p_imported->get_child_count();i++) {
@@ -2129,12 +2145,15 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 
 		Node *imported_node = p_imported->get_child(i);
 
-		if (imported_node->get_owner()!=p_imported_scene)
+		if (imported_node->get_owner()!=p_imported_scene) {
+		//	print_line("skipping because not imported at "+String(imported_node->get_name()));
 			continue; //end of the road
+		}
 
 		Vector<StringName> nn;
 		nn.push_back(imported_node->get_name());
 		NodePath imported_path(nn,false);
+		//print_line("check for: "+String(imported_path));
 
 		if (!p_node->has_node(imported_path) && !checked_nodes.has(imported_node)) {
 			//not there, re-add it
@@ -2144,8 +2163,11 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 			if (o)
 				n=o->cast_to<Node>();
 
+			//print_line("creating node of same type..");
+
 			if (n) {
 
+				//print_line("copy props and add");
 				List<PropertyInfo> pl;
 				imported_node->get_property_list(&pl);
 				for(List<PropertyInfo>::Element *E=pl.front();E;E=E->next()) {
@@ -2155,8 +2177,11 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 				}
 
 				p_node->add_child(n);
+				n->set_owner(p_existing_scene);
 			}
 
+		} else {
+			//print_line("already exists");
 		}
 
 
@@ -2164,7 +2189,7 @@ void EditorSceneImportPlugin::_add_new_nodes(Node *p_node,Node *p_imported,Node 
 
 			Node *other_node = p_node->get_node(imported_path);
 
-			_add_new_nodes(other_node,imported_node,p_imported_scene,checked_nodes);
+			_add_new_nodes(other_node,imported_node,p_imported_scene,p_existing_scene,checked_nodes);
 
 		}
 
@@ -2177,7 +2202,7 @@ void EditorSceneImportPlugin::_merge_scenes(Node *p_node,Node *p_imported) {
 	Set<Ref<Resource> > checked_resources;
 	Set<Node*> checked_nodes;
 	_merge_existing_node(p_node,p_imported,checked_resources,checked_nodes);
-	_add_new_nodes(p_node,p_imported,p_imported,checked_nodes);
+	_add_new_nodes(p_node,p_imported,p_imported,p_node,checked_nodes);
 	//add existing.. ?
 }
 
@@ -2214,27 +2239,33 @@ void EditorSceneImportPlugin::_scan_materials(Node*p_base,Node *p_node,Map<Strin
 
 void EditorSceneImportPlugin::_apply_materials(Node*p_base,Node *p_node,Map<String,Ref<Material> > &mesh_materials,Map<String,Ref<Material> >& override_materials,Set<Ref<Mesh> >& meshes_processed) {
 
-	if (!p_base && p_node->get_owner()!=p_base)
+	if (p_node!=p_base && p_node->get_owner()!=p_base)
 		return;
 
 	MeshInstance *mi=p_node->cast_to<MeshInstance>();
 
 	if (mi) {
 
+		print_line("is mesh "+String(p_node->get_name()));
 		String path = p_base->get_path_to(p_node);
-		if (override_materials.has(path))
+		if (override_materials.has(path)) {
+			print_line("is in material overrides");
 			mi->set_material_override(override_materials[path]);
+		}
 
 		Ref<Mesh> mesh = mi->get_mesh();
 		if (mesh.is_valid() && !meshes_processed.has(mesh)) {
+			print_line("mesh was not processed");
 			meshes_processed.insert(mesh);
 			for(int i=0;i<mesh->get_surface_count();i++) {
 
 				String name = mesh->get_name()+":"+mesh->surface_get_name(i);
+				print_line("name for surface "+itos(i)+": "+name);
 				if (mesh_materials.has(name)) {
 
 					Ref<Material> mat = mesh_materials[name];
 					mesh->surface_set_material(i,mat);
+					print_line("overriding!");
 				}
 			}
 		}
@@ -2251,8 +2282,18 @@ void EditorSceneImportPlugin::_merge_materials(Node *p_node,Node *p_imported) {
 	Map<String,Ref<Material> > override_materials;
 
 	_scan_materials(p_node,p_node,mesh_materials,override_materials);
+
+	for (Map<String,Ref<Material> >::Element *E=mesh_materials.front();E;E=E->next()) {
+		print_line("Mats: "+String(E->key()));
+	}
+
+	for (Map<String,Ref<Material> >::Element *E=override_materials.front();E;E=E->next()) {
+		print_line("Overrides: "+String(E->key()));
+	}
+
 	Set<Ref<Mesh> > mp;
 	_apply_materials(p_imported,p_imported,mesh_materials,override_materials,mp);
+
 
 }
 
@@ -2597,8 +2638,11 @@ void EditorSceneImportPlugin::_filter_tracks(Node *scene, const String& p_text) 
 			for(Set<String>::Element *F=keep_local.front();F;F=F->next()) {
 				keep.insert(F->get());
 			}
-
+			print_line("FILTERING ANIM: "+String(E->get()));
 			_filter_anim_tracks(anim->get_animation(name),keep);
+		} else {
+			print_line("NOT FILTERING ANIM: "+String(E->get()));
+
 		}
 
 	}
@@ -2687,7 +2731,7 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 	Ref<EditorScenePostImport>  post_import_script;
 
 	if (post_import_script_path!="") {
-		post_import_script_path = EditorImportPlugin::expand_source_path(post_import_script_path);
+		post_import_script_path = post_import_script_path;
 		Ref<Script> scr = ResourceLoader::load(post_import_script_path);
 		if (!scr.is_valid()) {
 			EditorNode::add_io_error("Couldn't load post-import script: '"+post_import_script_path);
@@ -2709,7 +2753,10 @@ Error EditorSceneImportPlugin::import2(Node *scene, const String& p_dest_path, c
 			EditorNode::add_io_error("Error running Post-Import script: '"+post_import_script_path);
 			return err;
 		}
+
+
 	}
+
 
 	/// IMPORT IMAGES
 

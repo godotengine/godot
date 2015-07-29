@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,6 +28,81 @@
 /*************************************************************************/
 #include "tween.h"
 #include "method_bind_ext.inc"
+
+void Tween::_add_pending_command(StringName p_key
+	,const Variant& p_arg1 ,const Variant& p_arg2 ,const Variant& p_arg3 ,const Variant& p_arg4 ,const Variant& p_arg5
+	,const Variant& p_arg6 ,const Variant& p_arg7 ,const Variant& p_arg8 ,const Variant& p_arg9 ,const Variant& p_arg10
+) {
+
+	pending_commands.push_back(PendingCommand());
+	PendingCommand& cmd = pending_commands.back()->get();
+
+	cmd.key = p_key;
+	int& count = cmd.args;
+	if(p_arg10.get_type() != Variant::NIL)
+		count = 10;
+	else if(p_arg9.get_type() != Variant::NIL)
+		count = 9;
+	else if(p_arg8.get_type() != Variant::NIL)
+		count = 8;
+	else if(p_arg7.get_type() != Variant::NIL)
+		count = 7;
+	else if(p_arg6.get_type() != Variant::NIL)
+		count = 6;
+	else if(p_arg5.get_type() != Variant::NIL)
+		count = 5;
+	else if(p_arg4.get_type() != Variant::NIL)
+		count = 4;
+	else if(p_arg3.get_type() != Variant::NIL)
+		count = 3;
+	else if(p_arg2.get_type() != Variant::NIL)
+		count = 2;
+	else if(p_arg1.get_type() != Variant::NIL)
+		count = 1;
+	if(count > 0)
+		cmd.arg[0] = p_arg1;
+	if(count > 1)
+		cmd.arg[1] = p_arg2;
+	if(count > 2)
+		cmd.arg[2] = p_arg3;
+	if(count > 3)
+		cmd.arg[3] = p_arg4;
+	if(count > 4)
+		cmd.arg[4] = p_arg5;
+	if(count > 5)
+		cmd.arg[5] = p_arg6;
+	if(count > 6)
+		cmd.arg[6] = p_arg7;
+	if(count > 7)
+		cmd.arg[7] = p_arg8;
+	if(count > 8)
+		cmd.arg[8] = p_arg9;
+	if(count > 9)
+		cmd.arg[9] = p_arg10;
+}
+
+void Tween::_process_pending_commands() {
+
+	for(List<PendingCommand>::Element *E=pending_commands.front();E;E=E->next()) {
+
+		PendingCommand& cmd = E->get();
+		Variant::CallError err;
+		Variant *arg[10] = {
+			&cmd.arg[0],
+			&cmd.arg[1],
+			&cmd.arg[2],
+			&cmd.arg[3],
+			&cmd.arg[4],
+			&cmd.arg[5],
+			&cmd.arg[6],
+			&cmd.arg[7],
+			&cmd.arg[8],
+			&cmd.arg[9],
+		};
+		this->call(cmd.key, (const Variant **) arg, cmd.args, err);
+	}
+	pending_commands.clear();
+}
 
 bool Tween::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -269,7 +344,7 @@ Variant Tween::_run_equation(InterpolateData& p_data) {
 	{
 
 	case Variant::BOOL:
-		result = ((int) _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay, (int) initial_val, (int) delta_val, p_data.times_in_sec)) >= 0.5;
+		result = ( _run_equation(p_data.trans_type, p_data.ease_type, p_data.elapsed - p_data.delay,  initial_val,  delta_val, p_data.times_in_sec)) >= 0.5;
 		break;
 
 	case Variant::INT:
@@ -456,6 +531,8 @@ bool Tween::_apply_tween_value(InterpolateData& p_data, Variant& value) {
 
 void Tween::_tween_process(float p_delta) {
 
+	_process_pending_commands();
+
 	if (speed_scale == 0)
 		return;
 	p_delta *= speed_scale;
@@ -551,8 +628,12 @@ void Tween::_tween_process(float p_delta) {
 
 		_apply_tween_value(data, result);
 
-		if(data.finish)
+		if (data.finish) {
 			emit_signal("tween_complete",object,data.key);
+			// not repeat mode, remove completed action
+			if (!repeat)
+				call_deferred("remove", object, data.key);
+		}
 	}
 	pending_update --;
 }
@@ -734,7 +815,10 @@ bool Tween::resume_all() {
 
 bool Tween::remove(Object *p_object, String p_key) {
 
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		call_deferred("remove", p_object, p_key);
+		return true;
+	}
 	for(List<InterpolateData>::Element *E=interpolates.front();E;E=E->next()) {
 
 		InterpolateData& data = E->get();
@@ -751,7 +835,10 @@ bool Tween::remove(Object *p_object, String p_key) {
 
 bool Tween::remove_all() {
 
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		call_deferred("remove_all");
+		return true;
+	}
 	set_active(false);
 	_set_process(false);
 	interpolates.clear();
@@ -940,7 +1027,19 @@ bool Tween::interpolate_property(Object *p_object
 	, EaseType p_ease_type
 	, real_t p_delay
 ) {
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("interpolate_property"
+			, p_object
+			, p_property
+			, p_initial_val
+			, p_final_val
+			, p_times_in_sec
+			, p_trans_type
+			, p_ease_type
+			, p_delay
+		);
+		return true;
+	}
 	// convert INT to REAL is better for interpolaters
 	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
@@ -987,7 +1086,19 @@ bool Tween::interpolate_method(Object *p_object
 	, EaseType p_ease_type
 	, real_t p_delay
 ) {
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("interpolate_method"
+			, p_object
+			, p_method
+			, p_initial_val
+			, p_final_val
+			, p_times_in_sec
+			, p_trans_type
+			, p_ease_type
+			, p_delay
+		);
+		return true;
+	}
 	// convert INT to REAL is better for interpolaters
 	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
@@ -999,6 +1110,7 @@ bool Tween::interpolate_method(Object *p_object
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
+	ERR_EXPLAIN("Object has no method named: %s" + p_method);
 	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
 
 	InterpolateData data;
@@ -1029,10 +1141,23 @@ bool Tween::interpolate_callback(Object *p_object
 	, VARIANT_ARG_DECLARE
 ) {
 
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("interpolate_callback"
+			, p_object
+			, p_times_in_sec
+			, p_callback
+			, p_arg1
+			, p_arg2
+			, p_arg3
+			, p_arg4
+			, p_arg5
+		);
+		return true;
+	}
 	ERR_FAIL_COND_V(p_object == NULL, false);
 	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
 
+	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
 	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
 
 	InterpolateData data;
@@ -1080,10 +1205,23 @@ bool Tween::interpolate_deferred_callback(Object *p_object
 	, VARIANT_ARG_DECLARE
 ) {
 
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("interpolate_deferred_callback"
+			, p_object
+			, p_times_in_sec
+			, p_callback
+			, p_arg1
+			, p_arg2
+			, p_arg3
+			, p_arg4
+			, p_arg5
+		);
+		return true;
+	}
 	ERR_FAIL_COND_V(p_object == NULL, false);
 	ERR_FAIL_COND_V(p_times_in_sec < 0, false);
 
+	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
 	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
 
 	InterpolateData data;
@@ -1135,7 +1273,20 @@ bool Tween::follow_property(Object *p_object
 	, EaseType p_ease_type
 	, real_t p_delay
 ) {
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("follow_property"
+			, p_object
+			, p_property
+			, p_initial_val
+			, p_target
+			, p_target_property
+			, p_times_in_sec
+			, p_trans_type
+			, p_ease_type
+			, p_delay
+		);
+		return true;
+	}
 	// convert INT to REAL is better for interpolaters
 	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
@@ -1188,7 +1339,20 @@ bool Tween::follow_method(Object *p_object
 	, EaseType p_ease_type
 	, real_t p_delay
 ) {
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("follow_method"
+			, p_object
+			, p_method
+			, p_initial_val
+			, p_target
+			, p_target_method
+			, p_times_in_sec
+			, p_trans_type
+			, p_ease_type
+			, p_delay
+		);
+		return true;
+	}
 	// convert INT to REAL is better for interpolaters
 	if(p_initial_val.get_type() == Variant::INT) p_initial_val = p_initial_val.operator real_t();
 
@@ -1199,7 +1363,9 @@ bool Tween::follow_method(Object *p_object
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
+	ERR_EXPLAIN("Object has no method named: %s" + p_method);
 	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
+	ERR_EXPLAIN("Target has no method named: %s" + p_target_method);
 	ERR_FAIL_COND_V(!p_target->has_method(p_target_method), false);
 
 	Variant::CallError error;
@@ -1240,7 +1406,20 @@ bool Tween::targeting_property(Object *p_object
 	, EaseType p_ease_type
 	, real_t p_delay
 ) {
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("targeting_property"
+			, p_object
+			, p_property
+			, p_initial
+			, p_initial_property
+			, p_final_val
+			, p_times_in_sec
+			, p_trans_type
+			, p_ease_type
+			, p_delay
+		);
+		return true;
+	}
 	// convert INT to REAL is better for interpolaters
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
@@ -1298,7 +1477,20 @@ bool Tween::targeting_method(Object *p_object
 	, EaseType p_ease_type
 	, real_t p_delay
 ) {
-	ERR_FAIL_COND_V(pending_update != 0, false);
+	if(pending_update != 0) {
+		_add_pending_command("targeting_method"
+			, p_object
+			, p_method
+			, p_initial
+			, p_initial_method
+			, p_final_val
+			, p_times_in_sec
+			, p_trans_type
+			, p_ease_type
+			, p_delay
+		);
+		return true;
+	}
 	// convert INT to REAL is better for interpolaters
 	if(p_final_val.get_type() == Variant::INT) p_final_val = p_final_val.operator real_t();
 
@@ -1309,7 +1501,9 @@ bool Tween::targeting_method(Object *p_object
 	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false);
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
+	ERR_EXPLAIN("Object has no method named: %s" + p_method);
 	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
+	ERR_EXPLAIN("Initial Object has no method named: %s" + p_initial_method);
 	ERR_FAIL_COND_V(!p_initial->has_method(p_initial_method), false);
 
 	Variant::CallError error;

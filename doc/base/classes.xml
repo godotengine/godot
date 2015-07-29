@@ -5286,7 +5286,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
-			Return a normal vector in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera proyection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
+			Return a normal vector in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="project_local_ray_normal" qualifiers="const" >
@@ -5303,7 +5303,7 @@
 			<argument index="0" name="screen_point" type="Vector2">
 			</argument>
 			<description>
-			Return a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera proyection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
+			Return a 3D position in worldspace, that is the result of projecting a point on the [Viewport] rectangle by the camera projection. This is useful for casting rays in the form of (origin,normal) for object intersection or picking.
 			</description>
 		</method>
 		<method name="unproject_position" qualifiers="const" >
@@ -8783,7 +8783,7 @@
 			</description>
 		</method>
 		<method name="get_undo_redo"  >
-			<return type="Object">
+			<return type="UndoRedo">
 			</return>
 			<description>
 			</description>
@@ -9655,7 +9655,7 @@
 	</signals>
 	<constants>
 		<constant name="MODE_OPEN_FILE" value="0">
-			Editor will not allow to select unexisting files.
+			Editor will not allow to select nonexistent files.
 		</constant>
 		<constant name="MODE_OPEN_FILES" value="1">
 		</constant>
@@ -14120,14 +14120,14 @@
 			<argument index="1" name="phi" type="float">
 			</argument>
 			<description>
-			Create a matrix from 3 axis vectors.
+			Create a matrix from an axis vector and an angle.
 			</description>
 		</method>
 		<method name="Matrix3"  >
 			<argument index="0" name="from" type="Quat">
 			</argument>
 			<description>
-			Create a matrix from 3 axis vectors.
+			Create a matrix from a quaternion.
 			</description>
 		</method>
 	</methods>
@@ -19442,7 +19442,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="body_set_user_mask"  >
+		<method name="body_set_collision_mask"  >
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<argument index="1" name="mask" type="int">
@@ -19450,7 +19450,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="body_get_user_mask" qualifiers="const" >
+		<method name="body_get_collision_mask" qualifiers="const" >
 			<return type="int">
 			</return>
 			<argument index="0" name="body" type="RID">
@@ -21551,6 +21551,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
+			Returns the center of the plane.
 			</description>
 		</method>
 		<method name="distance_to"  >
@@ -21559,12 +21560,14 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
+			Returns the shortest distance from the plane to the position "point".
 			</description>
 		</method>
 		<method name="get_any_point"  >
 			<return type="Vector3">
 			</return>
 			<description>
+			Returns a point on the plane.
 			</description>
 		</method>
 		<method name="has_point"  >
@@ -21575,7 +21578,7 @@
 			<argument index="1" name="epsilon" type="float" default="0.00001">
 			</argument>
 			<description>
-			Returns true if "p" is inside the plane (by a very minimum treshold).
+			Returns true if "point" is inside the plane (by a very minimum treshold).
 			</description>
 		</method>
 		<method name="intersect_3"  >
@@ -21586,7 +21589,7 @@
 			<argument index="1" name="c" type="Plane">
 			</argument>
 			<description>
-			Returns true if this plane intersects with planes "a" and "b". The resulting intersectin is placed in "r".
+			Returns the intersection point of the three planes "b", "c" and this plane. If no intersection is found null is returned.
 			</description>
 		</method>
 		<method name="intersects_ray"  >
@@ -21597,7 +21600,7 @@
 			<argument index="1" name="dir" type="Vector3">
 			</argument>
 			<description>
-			Returns true if ray consiting of position "p" and direction normal "d" intersects this plane. If true, the result is placed in "r".
+			Returns the intersection point of a ray consisting of the position "from" and the direction normal "dir" with this plane. If no intersection is found null is returned.
 			</description>
 		</method>
 		<method name="intersects_segment"  >
@@ -21608,7 +21611,7 @@
 			<argument index="1" name="end" type="Vector3">
 			</argument>
 			<description>
-			Returns true if segment from position "sa" to position "sb" intersects this plane. If true, the result is placed in "r".
+			Returns the intersection point of a segment from position "begin" to position "end" with this plane. If no intersection is found null is returned.
 			</description>
 		</method>
 		<method name="is_point_over"  >
@@ -21617,7 +21620,7 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-			Returns true if "p" is located above the plane.
+			Returns true if "point" is located above the plane.
 			</description>
 		</method>
 		<method name="normalized"  >
@@ -21646,6 +21649,7 @@
 			<argument index="3" name="d" type="float">
 			</argument>
 			<description>
+			Creates a plane from the three parameters "a", "b", "c" and "d".
 			</description>
 		</method>
 		<method name="Plane"  >
@@ -21656,6 +21660,7 @@
 			<argument index="2" name="v3" type="Vector3">
 			</argument>
 			<description>
+			Creates a plane from three points.
 			</description>
 		</method>
 		<method name="Plane"  >
@@ -21664,6 +21669,7 @@
 			<argument index="1" name="d" type="float">
 			</argument>
 			<description>
+			Creates a plane from the normal and the plane's distance to the origin.
 			</description>
 		</method>
 	</methods>
@@ -23026,12 +23032,14 @@
 			<return type="bool">
 			</return>
 			<description>
+			Return whether the closest object the ray is pointing to is colliding with the vector, with the vector length considered.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const" >
 			<return type="Object">
 			</return>
 			<description>
+			Return the closest object the ray is pointing to. Note that this does not consider the length of the vector, so you must also use [is_colliding] to check if the object returned is actually colliding with the ray.
 			</description>
 		</method>
 		<method name="get_collider_shape" qualifiers="const" >

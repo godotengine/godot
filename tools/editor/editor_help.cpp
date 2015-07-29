@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ void EditorHelpSearch::_update_search() {
 	_parse_fs(EditorFileSystem::get_singleton()->get_filesystem());
 */
 
-	List<String> type_list;
+	List<StringName> type_list;
 	ObjectTypeDB::get_type_list(&type_list);
 
 	DocData *doc=EditorHelp::get_doc_data();
@@ -353,7 +353,7 @@ void EditorHelp::_search(const String&) {
 	String stext=search->get_text();
 	bool keep = prev_search==stext && class_list->get_selected() && prev_search_page==class_list->get_selected()->get_text(0);
 
-	class_desc->search(stext);
+	class_desc->search(stext, keep);
 
 	prev_search=stext;
 	if (class_list->get_selected())
@@ -1241,13 +1241,13 @@ void EditorHelp::_update_doc() {
 
 	class_list->clear();
 
-	List<String> type_list;
+	List<StringName> type_list;
 
 	tree_item_map.clear();
 
 	TreeItem *root = class_list->create_item();
 	class_list->set_hide_root(true);
-	List<String>::Element *I=type_list.front();
+	List<StringName>::Element *I=type_list.front();
 
 	for(Map<String,DocData::ClassDoc>::Element *E=doc->class_list.front();E;E=E->next()) {
 
@@ -1390,7 +1390,9 @@ EditorHelp::EditorHelp(EditorNode *p_editor) {
 
 	{
 		PanelContainer *pc = memnew( PanelContainer );
-		pc->add_style_override("panel",get_stylebox("normal","TextEdit"));
+		Ref<StyleBoxFlat> style( memnew( StyleBoxFlat ) );
+		style->set_bg_color( EditorSettings::get_singleton()->get("text_editor/background_color") );	
+		pc->add_style_override("panel", style); //get_stylebox("normal","TextEdit"));
 		h_split->add_child(pc);
 		class_desc = memnew( RichTextLabel );
 		pc->add_child(class_desc);

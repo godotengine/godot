@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 
 #include "print_string.h"
 #include "os/os.h"
+
+
 
 void ImageLoaderPNG::_read_png_data(png_structp png_ptr,png_bytep data, png_size_t p_length) {
 
@@ -253,6 +255,7 @@ void ImageLoaderPNG::get_recognized_extensions(List<String> *p_extensions) const
 struct PNGReadStatus {
 
 	int offset;
+	int size;
 	const unsigned char *image;
 };
 
@@ -261,17 +264,26 @@ static void user_read_data(png_structp png_ptr,png_bytep data, png_size_t p_leng
 	PNGReadStatus *rstatus;
 	rstatus=(PNGReadStatus*)png_get_io_ptr(png_ptr);
 
-	memcpy(data,&rstatus->image[rstatus->offset],p_length);
-	rstatus->offset+=p_length;
+	int to_read=p_length;
+	if (rstatus->size>=0) {
+		to_read = MIN( p_length, rstatus->size - rstatus->offset);
+	}
+	memcpy(data,&rstatus->image[rstatus->offset],to_read);
+	rstatus->offset+=to_read;
+
+	if (to_read<p_length) {
+		memset(&data[to_read],0,p_length-to_read);
+	}
 }
 
 
-static Image _load_mem_png(const uint8_t* p_png) {
+static Image _load_mem_png(const uint8_t* p_png,int p_size) {
 
 
 	PNGReadStatus prs;
 	prs.image=p_png;
 	prs.offset=0;
+	prs.size=p_size;
 
 	Image img;
 	Error err = ImageLoaderPNG::_load_image(&prs,user_read_data,&img);
@@ -283,9 +295,10 @@ static Image _load_mem_png(const uint8_t* p_png) {
 
 static Image _lossless_unpack_png(const DVector<uint8_t>& p_data) {
 
+	int len = p_data.size();
 	DVector<uint8_t>::Read r = p_data.read();
 	ERR_FAIL_COND_V(r[0]!='P' || r[1]!='N' || r[2]!='G' || r[3]!=' ',Image());
-	return _load_mem_png(&r[4]);
+	return _load_mem_png(&r[4],len-4);
 
 }
 
@@ -423,6 +436,7 @@ static DVector<uint8_t> _lossless_pack_png(const Image& p_image) {
 }
 
 ImageLoaderPNG::ImageLoaderPNG() {
+
 
 	Image::_png_mem_loader_func=_load_mem_png;
 	Image::lossless_unpacker=_lossless_unpack_png;

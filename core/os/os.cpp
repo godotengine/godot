@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,6 +43,9 @@ OS* OS::get_singleton() {
 uint32_t OS::get_ticks_msec() const
 { return get_ticks_usec()/1000; }
 
+uint64_t OS::get_splash_tick_msec() const {
+	return _msec_splash;
+}
 uint64_t OS::get_unix_time() const {
 
 	return 0;

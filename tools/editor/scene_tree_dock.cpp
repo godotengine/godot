@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,7 +61,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ok :( ");
 		accept->set_text("No parent to instance a child at.");
-		accept->popup_centered(Size2(300,70));
+		accept->popup_centered_minsize();
 		return NULL;
 	};
 
@@ -79,7 +79,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 		//accept->get_cancel()->hide();
 		accept->get_ok()->set_text("Ugh");
 		accept->set_text(String("Error loading scene from ")+p_file);
-		accept->popup_centered(Size2(300,70));
+		accept->popup_centered_minsize();
 		return NULL;
 	}
 
@@ -90,7 +90,7 @@ Node* SceneTreeDock::instance(const String& p_file) {
 
 			accept->get_ok()->set_text("Ok");
 			accept->set_text(String("Cannot instance the scene '")+p_file+String("' because the current scene exists within one of its' nodes."));
-			accept->popup_centered(Size2(300,90));
+			accept->popup_centered_minsize();
 			return NULL;
 		}
 	}
@@ -164,14 +164,14 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done without a tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
 			if (!_validate_no_foreign())
 				break;
 
-			file->set_mode(FileDialog::MODE_OPEN_FILE);
+			file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("PackedScene",&extensions);
 			file->clear_filters();
@@ -245,7 +245,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -313,7 +313,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//accept->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -420,7 +420,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				//confirmation->get_cancel()->hide();
 				accept->get_ok()->set_text("I see..");
 				accept->set_text("This operation can't be done on the tree root.");
-				accept->popup_centered(Size2(300,70));;
+				accept->popup_centered_minsize();
 				break;
 			}
 
@@ -456,7 +456,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			} else {
 				delete_dialog->set_text("Delete Node(s)?");
-				delete_dialog->popup_centered(Size2(200,80));
+				delete_dialog->popup_centered_minsize();
 			}
 
 
@@ -471,8 +471,18 @@ void SceneTreeDock::_notification(int p_what) {
 
 	switch(p_what) {
 
-		case NOTIFICATION_ENTER_TREE: {
+		case NOTIFICATION_READY: {
 
+			if (!first_enter)
+				break;
+			first_enter=false;
+
+			CanvasItemEditorPlugin *canvas_item_plugin =  editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
+			if (canvas_item_plugin) {
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
+				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
+				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
+			}
 			static const char* button_names[TOOL_BUTTON_MAX]={
 				"New",
 				"Add",
@@ -484,21 +494,14 @@ void SceneTreeDock::_notification(int p_what) {
 				"MoveDown",
 				"Duplicate",
 				"Reparent",
-				"Del",
+				"Remove",
 			};
+
+
 
 			for(int i=0;i<TOOL_BUTTON_MAX;i++)
 				tool_buttons[i]->set_icon(get_icon(button_names[i],"EditorIcons"));
 
-		} break;
-		case NOTIFICATION_READY: {
-
-			CanvasItemEditorPlugin *canvas_item_plugin =  editor_data->get_editor("2D")->cast_to<CanvasItemEditorPlugin>();
-			if (canvas_item_plugin) {
-				canvas_item_plugin->get_canvas_item_editor()->connect("item_lock_status_changed", scene_tree, "_update_tree");
-				canvas_item_plugin->get_canvas_item_editor()->connect("item_group_status_changed", scene_tree, "_update_tree");
-				scene_tree->connect("node_changed", canvas_item_plugin->get_canvas_item_editor()->get_viewport_control(), "update");
-			}
 		} break;
 	}
 }
@@ -838,7 +841,7 @@ bool SceneTreeDock::_validate_no_foreign() {
 
 			accept->get_ok()->set_text("Makes Sense!");
 			accept->set_text("Can't operate on nodes from a foreign scene!");
-			accept->popup_centered(Size2(300,70));;
+			accept->popup_centered_minsize();
 			return false;
 
 		}
@@ -1355,7 +1358,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	accept = memnew( AcceptDialog );
 	add_child(accept);
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 	file->connect("file_selected",this,"instance");
 	set_process_unhandled_key_input(true);
@@ -1367,7 +1370,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor,Node *p_scene_root,EditorSelec
 	add_child(import_subscene_dialog);
 	import_subscene_dialog->connect("subscene_selected",this,"_import_subscene");
 
-
+	first_enter=true;
 
 
 }

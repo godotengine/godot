@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,8 +130,8 @@ bool GridMap::_set(const StringName& p_name, const Variant& p_value) {
 
 
 	} else if (name.begins_with("areas/")) {
-		int which = name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int which = name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="bounds") {
 			ERR_FAIL_COND_V(area_map.has(which),false);
 			create_area(which,p_value);
@@ -215,8 +215,8 @@ bool GridMap::_get(const StringName& p_name,Variant &r_ret) const {
 
 		r_ret= d;
 	} else if (name.begins_with("areas/")) {
-		int which = name.get_slice("/",1).to_int();
-		String what=name.get_slice("/",2);
+		int which = name.get_slicec('/',1).to_int();
+		String what=name.get_slicec('/',2);
 		if (what=="bounds")
 			r_ret= area_get_bounds(which);
 		else if (what=="name")

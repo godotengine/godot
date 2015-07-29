@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -346,6 +346,17 @@ Matrix32 Node2D::get_relative_transform(const Node *p_parent) const {
 		return parent_2d->get_relative_transform(p_parent) * get_transform();
 }
 
+
+void Node2D::look_at(const Vector2& p_pos) {
+
+	rotate(get_angle_to(p_pos));
+}
+
+float Node2D::get_angle_to(const Vector2& p_pos) const {
+
+	return (get_global_transform().affine_inverse().xform(p_pos)).atan2();
+}
+
 void Node2D::_bind_methods() {
 
 
@@ -374,6 +385,9 @@ void Node2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_transform","xform"),&Node2D::set_transform);
 	ObjectTypeDB::bind_method(_MD("set_global_transform","xform"),&Node2D::set_global_transform);
 
+	ObjectTypeDB::bind_method(_MD("look_at","point"),&Node2D::look_at);
+	ObjectTypeDB::bind_method(_MD("get_angle_to","point"),&Node2D::get_angle_to);
+
 	ObjectTypeDB::bind_method(_MD("set_z","z"),&Node2D::set_z);
 	ObjectTypeDB::bind_method(_MD("get_z"),&Node2D::get_z);
 
@@ -384,11 +398,11 @@ void Node2D::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_relative_transform"),&Node2D::get_relative_transform);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
-	ADD_PROPERTY(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
-	ADD_PROPERTY(PropertyInfo(Variant::INT,"z/z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL,"z/relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2,"transform/pos"),_SCS("set_pos"),_SCS("get_pos"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::REAL,"transform/rot",PROPERTY_HINT_RANGE,"-1440,1440,0.1"),_SCS("_set_rotd"),_SCS("_get_rotd"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2,"transform/scale"),_SCS("set_scale"),_SCS("get_scale"));
+	ADD_PROPERTYNZ(PropertyInfo(Variant::INT,"z/z",PROPERTY_HINT_RANGE,itos(VS::CANVAS_ITEM_Z_MIN)+","+itos(VS::CANVAS_ITEM_Z_MAX)+",1"),_SCS("set_z"),_SCS("get_z"));
+	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL,"z/relative"),_SCS("set_z_as_relative"),_SCS("is_z_relative"));
 
 
 }

@@ -180,7 +180,7 @@ void BakedLightEditor::_bake_pressed() {
 	ERR_FAIL_COND(!node);
 	if (node->get_baked_light().is_null()) {
 		err_dialog->set_text("BakedLightInstance does not contain a BakedLight resource.");
-		err_dialog->popup_centered(Size2(350,70));
+		err_dialog->popup_centered_minsize();
 		button_bake->set_pressed(false);
 		return;
 	}
@@ -242,7 +242,7 @@ void BakedLightEditor::_bake_lightmaps() {
 	if (err) {
 
 		err_dialog->set_text("Error baking to lightmaps!\nMake sure that a bake has just\n happened and that lightmaps are\n configured. ");
-		err_dialog->popup_centered(Size2(350,70));
+		err_dialog->popup_centered_minsize();
 		return;
 	}
 

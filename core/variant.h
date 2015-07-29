@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -165,7 +165,8 @@ public:
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
 	static String get_type_name(Variant::Type p_type);
-	static bool can_convert(Type p_type_from,Type p_type_to);
+	static bool can_convert(Type p_type_from, Type p_type_to);
+	static bool can_convert_strict(Type p_type_from, Type p_type_to);
 
 
 
@@ -184,6 +185,7 @@ public:
 	_FORCE_INLINE_ bool is_array() const { return type>=ARRAY; };
 	bool is_shared() const;
 	bool is_zero() const;
+	bool is_one() const;
 
 	operator bool() const;
 	operator signed int() const;
@@ -408,7 +410,8 @@ public:
 
 	//argsVariant call()
 
-	bool operator==(const Variant& p_variant) const;	
+	bool operator==(const Variant& p_variant) const;
+	bool operator<(const Variant& p_variant) const;
 	uint32_t hash() const;
 
 	bool booleanize(bool &valid) const;

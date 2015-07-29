@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -4071,6 +4071,15 @@ void VisualServerRaster::canvas_light_set_shadow_esm_multiplier(RID p_light, flo
 
 }
 
+void VisualServerRaster::canvas_light_set_shadow_color(RID p_light, const Color& p_color) {
+
+	Rasterizer::CanvasLight *clight = canvas_light_owner.get(p_light);
+	ERR_FAIL_COND(!clight);
+	clight->shadow_color=p_color;
+
+}
+
+
 /****** CANVAS LIGHT OCCLUDER ******/
 
 RID VisualServerRaster::canvas_light_occluder_create() {
@@ -4393,7 +4402,7 @@ void VisualServerRaster::free( RID p_rid ) {
 
 	VS_CHANGED;
 
-	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) ||  rasterizer->is_shader(p_rid)) {
+	if (rasterizer->is_texture(p_rid) || rasterizer->is_material(p_rid) ||  rasterizer->is_shader(p_rid) || rasterizer->is_environment(p_rid)) {
 	
 		rasterizer->free(p_rid);
 	} else if (rasterizer->is_skeleton(p_rid)) {
@@ -4410,7 +4419,7 @@ void VisualServerRaster::free( RID p_rid ) {
 		}
 
 		rasterizer->free(p_rid);
-	} else if (rasterizer->is_mesh(p_rid) || rasterizer->is_multimesh(p_rid) || rasterizer->is_light(p_rid) || rasterizer->is_particles(p_rid) ) {
+	} else if (rasterizer->is_mesh(p_rid) || rasterizer->is_multimesh(p_rid) || rasterizer->is_light(p_rid) || rasterizer->is_particles(p_rid) || rasterizer->is_immediate(p_rid)) {
 		//delete the resource
 	
 		_free_attached_instances(p_rid);
@@ -6302,7 +6311,7 @@ void VisualServerRaster::_render_no_camera(Viewport *p_viewport,Camera *p_camera
 	else
 		environment=p_scenario->fallback_environment;
 
-	rasterizer->set_camera(Transform(),CameraMatrix());
+	rasterizer->set_camera(Transform(),CameraMatrix(),false);
 	rasterizer->begin_scene(p_viewport->viewport_data,environment,p_scenario->debug);
 	rasterizer->set_viewport(viewport_rect);
 	rasterizer->end_scene();
@@ -6318,7 +6327,8 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 
 	/* STEP 1 - SETUP CAMERA */
 	CameraMatrix camera_matrix;
-	
+	bool ortho=false;
+
 	switch(p_camera->type) {
 		case Camera::ORTHOGONAL: {
 		
@@ -6330,6 +6340,7 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 				p_camera->vaspect
 
 			);
+			ortho=true;
 		} break;
 		case Camera::PERSPECTIVE: {
 
@@ -6341,12 +6352,13 @@ void VisualServerRaster::_render_camera(Viewport *p_viewport,Camera *p_camera, S
 				p_camera->vaspect
 
 			);
+			ortho=false;
 				
 		} break;		
 	}
 
 
-	rasterizer->set_camera(p_camera->transform, camera_matrix);
+	rasterizer->set_camera(p_camera->transform, camera_matrix,ortho);
 	
 	Vector<Plane> planes = camera_matrix.get_projection_planes(p_camera->transform);
 
@@ -6839,6 +6851,7 @@ void VisualServerRaster::_render_canvas_item(CanvasItem *p_canvas_item,const Mat
 		ci->final_transform=xform;
 		ci->final_opacity=opacity * ci->self_opacity;
 		ci->global_rect_cache=global_rect;
+		ci->global_rect_cache.pos-=p_clip_rect.pos;
 
 		int zidx = p_z-CANVAS_ITEM_Z_MIN;
 
@@ -7046,17 +7059,20 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 
 			for(Set<Rasterizer::CanvasLight*>::Element *F=E->get().canvas->lights.front();F;F=F->next()) {
 
+
 				Rasterizer::CanvasLight* cl=F->get();
 				if (cl->enabled && cl->texture.is_valid()) {
 					//not super efficient..
 					Size2 tsize(rasterizer->texture_get_width(cl->texture),rasterizer->texture_get_height(cl->texture));
 					tsize*=cl->scale;
+
 					Vector2 offset=tsize/2.0;
 					cl->rect_cache=Rect2(-offset+cl->texture_offset,tsize);
 					cl->xform_cache=xf * cl->xform;
 
 
 					if (clip_rect.intersects_transformed(cl->xform_cache,cl->rect_cache)) {
+
 						cl->filter_next_ptr=lights;
 						lights=cl;
 						cl->texture_cache=NULL;
@@ -7066,6 +7082,7 @@ void VisualServerRaster::_draw_viewport(Viewport *p_viewport,int p_ofs_x, int p_
 						cl->light_shader_xform = (cl->xform_cache * scale).affine_inverse();
 						cl->light_shader_pos=cl->xform_cache[2];
 						if (cl->shadow_buffer.is_valid()) {
+
 							cl->shadows_next_ptr=lights_with_shadow;
 							if (lights_with_shadow==NULL) {
 								shadow_rect = cl->xform_cache.xform(cl->rect_cache);
@@ -7276,7 +7293,7 @@ void VisualServerRaster::_draw_viewports() {
 		if (r.size.width==0)
 			r.size.width=window_w;
 		if (r.size.height==0)
-			r.size.height=window_w;
+			r.size.height=window_h;
 
 
 		_draw_viewport(vp,r.pos.x,r.pos.y,r.size.width,r.size.height);
@@ -7353,7 +7370,7 @@ void VisualServerRaster::_draw_cursors_and_margins() {
 	rasterizer->canvas_end_rect();
 };
 
-void VisualServerRaster::flush() {
+void VisualServerRaster::sync() {
 	//do none
 }
 
@@ -7391,7 +7408,7 @@ void VisualServerRaster::set_default_clear_color(const Color& p_color) {
 	clear_color=p_color;
 }
 
-void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color) {
+void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_color,bool p_scale) {
 
 	if (p_image.empty())
 		return;
@@ -7413,9 +7430,27 @@ void VisualServerRaster::set_boot_image(const Image& p_image, const Color& p_col
 	texture_set_data(texture,p_image);
 	rasterizer->canvas_begin_rect(Matrix32());
 	Rect2 imgrect(0,0,p_image.get_width(),p_image.get_height());
-	Rect2 screenrect=imgrect;
-	screenrect.pos+=((Size2(vr.width,vr.height)-screenrect.size)/2.0).floor();
-	rasterizer->canvas_draw_rect(screenrect,0,imgrect,texture,Color(1,1,1,0));
+	Rect2 screenrect;
+	if (p_scale) {
+
+		if (window_w > window_h) {
+			//scale horizontally
+			screenrect.size.y = window_h;
+			screenrect.size.x = imgrect.size.x * window_h / imgrect.size.y;
+			screenrect.pos.x = (window_w - screenrect.size.x)/2;
+
+		} else {
+			//scale vertically
+			screenrect.size.x = window_w;
+			screenrect.size.y = imgrect.size.y * window_w / imgrect.size.x;
+			screenrect.pos.y = (window_h - screenrect.size.y)/2;
+		}
+	} else {
+
+		screenrect=imgrect;
+		screenrect.pos+=((Size2(vr.width,vr.height)-screenrect.size)/2.0).floor();
+
+	}
 	rasterizer->canvas_draw_rect(screenrect,0,imgrect,texture,Color(1,1,1,1));
 	rasterizer->canvas_end_rect();
 
@@ -7470,6 +7505,10 @@ void VisualServerRaster::finish() {
 
 
 	free(default_cursor_texture);
+	if (test_cube.is_valid())
+		free(test_cube);
+
+	_free_internal_rids();
 
 	_clean_up_owner( &room_owner,"Room" );
 	_clean_up_owner( &portal_owner,"Portal" );
@@ -7487,7 +7526,7 @@ void VisualServerRaster::finish() {
 	octree_allocator.clear();
 	
 	if (instance_dependency_map.size()) {
-		print_line("base resources missing "+itos(instance_dependency_map.size()));
+		print_line("Base resources missing amount: "+itos(instance_dependency_map.size()));
 	}
 	ERR_FAIL_COND( instance_dependency_map.size() );
 }

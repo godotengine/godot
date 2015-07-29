@@ -81,7 +81,7 @@ class ExportDAE(bpy.types.Operator, ExportHelper):
     use_mesh_modifiers = BoolProperty(
             name="Apply Modifiers",
             description="Apply modifiers to mesh objects (on a copy!).",
-            default=True,
+	    default=False,
             )
     use_tangent_arrays = BoolProperty(
 	    name="Tangent Arrays",

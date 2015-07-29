@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,8 +55,10 @@ class VisualServer : public Object {
 	void _canvas_item_add_style_box(RID p_item, const Rect2& p_rect, RID p_texture,const Vector<float>& p_margins, const Color& p_modulate=Color(1,1,1));
 protected:	
 	RID _make_test_cube();
+	void _free_internal_rids();
 	RID test_texture;
 	RID white_texture;
+	RID test_material;
 	RID material_2d[16];
 	
 	static VisualServer* (*create_func)();
@@ -102,6 +104,7 @@ public:
 		TEXTURE_FLAG_FILTER=4, /// Create texure with linear (or available) filter
 		TEXTURE_FLAG_ANISOTROPIC_FILTER=8,
 		TEXTURE_FLAG_CONVERT_TO_LINEAR=16,
+		TEXTURE_FLAG_MIRRORED_REPEAT=32, /// Repeat texture, with alternate sections mirrored
 		TEXTURE_FLAG_CUBEMAP=2048,
 		TEXTURE_FLAG_VIDEO_SURFACE=4096,
 		TEXTURE_FLAGS_DEFAULT=TEXTURE_FLAG_REPEAT|TEXTURE_FLAG_MIPMAPS|TEXTURE_FLAG_FILTER
@@ -1030,6 +1033,7 @@ public:
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled)=0;
 	virtual void canvas_light_set_shadow_buffer_size(RID p_light, int p_size)=0;
 	virtual void canvas_light_set_shadow_esm_multiplier(RID p_light, float p_multiplier)=0;
+	virtual void canvas_light_set_shadow_color(RID p_light, const Color& p_color)=0;
 
 
 
@@ -1095,7 +1099,7 @@ public:
 	/* EVENT QUEUING */
 
 	virtual void draw()=0;
-	virtual void flush()=0;
+	virtual void sync()=0;
 	virtual bool has_changed() const=0;
 	virtual void init()=0;
 	virtual void finish()=0;
@@ -1137,7 +1141,7 @@ public:
 	virtual void mesh_add_surface_from_mesh_data( RID p_mesh, const Geometry::MeshData& p_mesh_data);
 	virtual void mesh_add_surface_from_planes( RID p_mesh, const DVector<Plane>& p_planes);
 
-	virtual void set_boot_image(const Image& p_image, const Color& p_color)=0;
+	virtual void set_boot_image(const Image& p_image, const Color& p_color,bool p_scale)=0;
 	virtual void set_default_clear_color(const Color& p_color)=0;
 
 	enum Features {

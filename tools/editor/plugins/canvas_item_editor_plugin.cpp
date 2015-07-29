@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -150,8 +150,56 @@ void CanvasItemEditor::_unhandled_key_input(const InputEvent& p_ev) {
 		_tool_select(TOOL_MOVE);
 	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_E)
 		_tool_select(TOOL_ROTATE);
-	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_V && drag==DRAG_ALL && can_move_pivot)
-		drag=DRAG_PIVOT;
+	if (p_ev.key.pressed && !p_ev.key.echo && p_ev.key.scancode==KEY_V && drag==DRAG_NONE && can_move_pivot) {
+		if (p_ev.key.mod.shift) {
+			//move drag pivot
+			drag=DRAG_PIVOT;
+		} else if (!Input::get_singleton()->is_mouse_button_pressed(0)) {
+
+			List<Node*> &selection = editor_selection->get_selected_node_list();
+
+			Vector2 mouse_pos = viewport->get_local_mouse_pos();
+			if (selection.size() && viewport->get_rect().has_point(mouse_pos)) {
+				//just in case, make it work if over viewport
+				mouse_pos=transform.affine_inverse().xform(mouse_pos);
+				mouse_pos=snap_point(mouse_pos);
+
+				undo_redo->create_action("Move Pivot");
+
+				for(List<Node*>::Element *E=selection.front();E;E=E->next()) {
+
+					Node2D *n2d = E->get()->cast_to<Node2D>();
+
+					if (n2d && n2d->edit_has_pivot()) {
+
+						Vector2 offset = n2d->edit_get_pivot();
+						Vector2 gpos = n2d->get_global_pos();
+
+						Vector2 motion_ofs = gpos-mouse_pos;
+
+						undo_redo->add_do_method(n2d,"set_global_pos",mouse_pos);
+						undo_redo->add_do_method(n2d,"edit_set_pivot",offset+n2d->get_global_transform().affine_inverse().basis_xform(motion_ofs));
+						undo_redo->add_undo_method(n2d,"set_global_pos",gpos);
+						undo_redo->add_undo_method(n2d,"edit_set_pivot",offset);
+						for(int i=0;i<n2d->get_child_count();i++) {
+							Node2D *n2dc = n2d->get_child(i)->cast_to<Node2D>();
+							if (!n2dc)
+								continue;
+
+							undo_redo->add_do_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+							undo_redo->add_undo_method(n2dc,"set_global_pos",n2dc->get_global_pos());
+
+						}
+
+					}
+
+				}
+
+				undo_redo->commit_action();
+			}
+
+		}
+	}
 
 }
 
@@ -943,13 +991,13 @@ void CanvasItemEditor::_viewport_input_event(const InputEvent& p_event) {
 		}
 
 
-		List<BoneList>::Element *Cbone=NULL; //closest
+		Map<ObjectID,BoneList>::Element *Cbone=NULL; //closest
 
 		{
 			bone_ik_list.clear();
 			float closest_dist=1e20;
 			int bone_width = EditorSettings::get_singleton()->get("2d_editor/bone_width");
-			for(List<BoneList>::Element *E=bone_list.front();E;E=E->next()) {
+			for(Map<ObjectID,BoneList>::Element *E=bone_list.front();E;E=E->next()) {
 
 				if (E->get().from == E->get().to)
 					continue;
@@ -1685,7 +1733,7 @@ void CanvasItemEditor::_viewport_draw() {
 			viewport->draw_line(endpoints[i],endpoints[(i+1)%4],c,2);
 		}
 
-		if (single && (tool==TOOL_SELECT || tool == TOOL_MOVE)) { //kind of sucks
+		if (single && (tool==TOOL_SELECT || tool == TOOL_MOVE || tool == TOOL_ROTATE)) { //kind of sucks
 
 			if (canvas_item->cast_to<Node2D>()) {
 
@@ -1789,7 +1837,7 @@ void CanvasItemEditor::_viewport_draw() {
 	Color bone_ik_color = EditorSettings::get_singleton()->get("2d_editor/bone_ik_color");
 	Color bone_selected_color = EditorSettings::get_singleton()->get("2d_editor/bone_selected_color");
 
-	for(List<BoneList>::Element*E=bone_list.front();E;E=E->next()) {
+	for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
 
 		E->get().from=Vector2();
 		E->get().to=Vector2();
@@ -1884,10 +1932,12 @@ void CanvasItemEditor::_notification(int p_what) {
 
 		}
 
-		for(List<BoneList>::Element *E=bone_list.front();E;E=E->next()) {
+
+		for(Map<ObjectID,BoneList>::Element *E=bone_list.front();E;E=E->next()) {
 
 			Object *b = ObjectDB::get_instance(E->get().bone);
 			if (!b) {
+
 				viewport->update();
 				break;
 			}
@@ -1989,9 +2039,14 @@ void CanvasItemEditor::_find_canvas_items_span(Node *p_node, Rect2& r_rect, cons
 
 		if (c->has_meta("_edit_bone_")) {
 
-			BoneList bone;
-			bone.bone=c->get_instance_ID();
-			bone_list.push_back(bone);
+			ObjectID id = c->get_instance_ID();
+			if (!bone_list.has(id)) {
+				BoneList bone;
+				bone.bone=id;
+				bone_list[id]=bone;
+			}
+
+			bone_list[id].last_pass=bone_last_frame;
 		}
 
 		r_rect.expand_to( xform.xform(rect.pos) );
@@ -2026,11 +2081,26 @@ void CanvasItemEditor::_update_scrollbars() {
 	Rect2 canvas_item_rect=Rect2(Point2(),screen_rect);
 
 	lock_list.clear();;
-	bone_list.clear();;
+	bone_last_frame++;
+
+
 
 	if (editor->get_edited_scene())
 		_find_canvas_items_span(editor->get_edited_scene(),canvas_item_rect,Matrix32());
 
+	List<Map<ObjectID,BoneList>::Element*> bone_to_erase;
+
+	for(Map<ObjectID,BoneList>::Element*E=bone_list.front();E;E=E->next()) {
+
+		if (E->get().last_pass!=bone_last_frame) {
+			bone_to_erase.push_back(E);
+		}
+	}
+
+	while(bone_to_erase.size()) {
+		bone_list.erase(bone_to_erase.front()->get());
+		bone_to_erase.pop_front();
+	}
 
 	//expand area so it's easier to do animations and stuff at 0,0
 	canvas_item_rect.size+=screen_rect*2;
@@ -2832,7 +2902,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	hb->add_child(select_button);
 	select_button->connect("pressed",this,"_tool_select",make_binds(TOOL_SELECT));
 	select_button->set_pressed(true);
-	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Move Pivot (while moving)");
+	select_button->set_tooltip("Select Mode (Q)\n"+keycode_get_string(KEY_MASK_CMD)+"Drag: Rotate\nAlt+Drag: Move\nPress 'v' to Change Pivot, 'Shift+v' to Drag Pivot (while moving).");
 
 	move_button = memnew( ToolButton );
 	move_button->set_toggle_mode(true);
@@ -3024,6 +3094,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	set_process_unhandled_key_input(true);
 	can_move_pivot=false;
 	drag=DRAG_NONE;
+	bone_last_frame=0;
 }
 
 CanvasItemEditor *CanvasItemEditor::singleton=NULL;

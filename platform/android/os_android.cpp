@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -163,7 +163,8 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	//physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );

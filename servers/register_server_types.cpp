@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,6 +55,7 @@ void register_server_types() {
 	ObjectTypeDB::register_virtual_type<Physics2DDirectBodyState>();
 	ObjectTypeDB::register_virtual_type<Physics2DDirectSpaceState>();
 	ObjectTypeDB::register_virtual_type<Physics2DShapeQueryResult>();
+	ObjectTypeDB::register_type<Physics2DTestMotionResult>();
 	ObjectTypeDB::register_type<Physics2DShapeQueryParameters>();
 
 	ObjectTypeDB::register_type<PhysicsShapeQueryParameters>();

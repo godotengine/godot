@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,7 @@
 #include <string.h>
 #include "print_string.h"
 #include "servers/physics/physics_server_sw.h"
+
 
 #include "X11/Xutil.h"
 
@@ -259,9 +260,27 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 
 	AudioDriverManagerSW::get_driver(p_audio_driver)->set_singleton();
 
+	audio_driver_index=p_audio_driver;
 	if (AudioDriverManagerSW::get_driver(p_audio_driver)->init()!=OK) {
 
-		ERR_PRINT("Initializing audio failed.");
+		bool success=false;
+		audio_driver_index=-1;
+		for(int i=0;i<AudioDriverManagerSW::get_driver_count();i++) {
+			if (i==p_audio_driver)
+				continue;
+			AudioDriverManagerSW::get_driver(i)->set_singleton();
+			if (AudioDriverManagerSW::get_driver(i)->init()==OK) {
+				success=true;
+				print_line("Audio Driver Failed: "+String(AudioDriverManagerSW::get_driver(p_audio_driver)->get_name()));
+				print_line("Using alternate audio driver: "+String(AudioDriverManagerSW::get_driver(i)->get_name()));
+				audio_driver_index=i;
+				break;
+			}
+		}
+		if (!success) {
+			ERR_PRINT("Initializing audio failed.");
+		}
+
 	}
 
 	sample_manager = memnew( SampleManagerMallocSW );
@@ -301,8 +320,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	/* set the name and class hints for the window manager to use */
 	classHint = XAllocClassHint();
 	if (classHint) {
-		classHint->res_name = "Godot";
-		classHint->res_class = "Godot";
+		classHint->res_name = (char *)"Godot";
+		classHint->res_class = (char *)"Godot";
 	}
 	XSetClassHint(x11_display, x11_window, classHint);
 	XFree(classHint);
@@ -410,7 +429,8 @@ void OS_X11::initialize(const VideoMode& p_desired,int p_video_driver,int p_audi
 	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	//physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );

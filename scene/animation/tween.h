@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,6 +109,27 @@ private:
 	mutable int pending_update;
 
 	List<InterpolateData> interpolates;
+
+	struct PendingCommand {
+		StringName key;
+		int args;
+		Variant arg[10];
+	};
+	List<PendingCommand> pending_commands;
+
+	void _add_pending_command(StringName p_key
+		,const Variant& p_arg1=Variant()
+		,const Variant& p_arg2=Variant()
+		,const Variant& p_arg3=Variant()
+		,const Variant& p_arg4=Variant()
+		,const Variant& p_arg5=Variant()
+		,const Variant& p_arg6=Variant()
+		,const Variant& p_arg7=Variant()
+		,const Variant& p_arg8=Variant()
+		,const Variant& p_arg9=Variant()
+		,const Variant& p_arg10=Variant()
+	);
+	void _process_pending_commands();
 
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_COUNT][EASE_COUNT];

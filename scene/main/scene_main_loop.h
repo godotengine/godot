@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 
 
 class SceneTree;
-
+class PackedScene;
 class Node;
 class Viewport;
 
@@ -136,7 +136,9 @@ private:
 
 	Array _get_nodes_in_group(const StringName& p_group);
 
+	Node *current_scene;
 
+	void _change_scene(Node* p_to);
 	//void _call_group(uint32_t p_call_flags,const StringName& p_group,const StringName& p_function,const Variant& p_arg1,const Variant& p_arg2);
 
 friend class Node;
@@ -233,6 +235,17 @@ public:
 	void set_edited_scene_root(Node *p_node);
 	Node *get_edited_scene_root() const;
 #endif
+
+	void set_current_scene(Node* p_scene);
+	Node* get_current_scene() const;
+	Error change_scene(const String& p_path);
+	Error change_scene_to(const Ref<PackedScene>& p_scene);
+	Error reload_current_scene();
+
+	//used by Main::start, don't use otherwise
+	void add_current_scene(Node * p_current);
+
+
 
 	SceneTree();
 	~SceneTree();

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,9 +49,11 @@ private:
 	Vector3 gravity_vec;
 	real_t gravity;
 	bool gravity_is_point;
+	real_t gravity_distance_scale;
 	real_t density;
 	int priority;
 	bool monitoring;
+	bool monitorable;
 	bool locked;
 
 
@@ -83,6 +85,36 @@ private:
 	};
 
 	Map<ObjectID,BodyState> body_map;
+
+
+	void _area_inout(int p_status,const RID& p_area, int p_instance, int p_area_shape,int p_self_shape);
+
+	void _area_enter_tree(ObjectID p_id);
+	void _area_exit_tree(ObjectID p_id);
+
+	struct AreaShapePair {
+
+		int area_shape;
+		int self_shape;
+		bool operator<(const AreaShapePair& p_sp) const {
+			if (area_shape==p_sp.area_shape)
+				return self_shape < p_sp.self_shape;
+			else
+				return area_shape < p_sp.area_shape;
+		}
+
+		AreaShapePair() {}
+		AreaShapePair(int p_bs, int p_as) { area_shape=p_bs; self_shape=p_as; }
+	};
+
+	struct AreaState {
+
+		int rc;
+		bool in_tree;
+		VSet<AreaShapePair> shapes;
+	};
+
+	Map<ObjectID,AreaState> area_map;
 	void _clear_monitoring();
 
 
@@ -97,6 +129,9 @@ public:
 
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
+
+	void set_gravity_distance_scale(real_t p_scale);
+	real_t get_gravity_distance_scale() const;
 
 	void set_gravity_vector(const Vector3& p_vec);
 	Vector3 get_gravity_vector() const;
@@ -113,7 +148,14 @@ public:
 	void set_enable_monitoring(bool p_enable);
 	bool is_monitoring_enabled() const;
 
+	void set_monitorable(bool p_enable);
+	bool is_monitorable() const;
+
 	Array get_overlapping_bodies() const;
+	Array get_overlapping_areas() const; //function for script
+
+	bool overlaps_area(Node* p_area) const;
+	bool overlaps_body(Node* p_body) const;
 
 
 	Area();

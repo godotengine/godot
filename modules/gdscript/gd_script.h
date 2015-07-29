@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -260,6 +260,7 @@ friend class GDScriptLanguage;
 	Map<StringName,GDFunction> member_functions;
 	Map<StringName,MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName,Ref<GDScript> > subclasses;	
+	Map<StringName,Vector<StringName> > _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -318,6 +319,9 @@ public:
 	const Map<StringName,GDFunction>& get_member_functions() const { return member_functions; }
 	const Ref<GDNativeClass>& get_native() const { return native; }
 
+	virtual bool has_script_signal(const StringName& p_signal) const;
+	virtual void get_script_signal_list(List<MethodInfo> *r_signals) const;
+
 
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
@@ -344,6 +348,8 @@ public:
 	void set_script_path(const String& p_path) { path=p_path; } //because subclasses need a path too...
 	Error load_source_code(const String& p_path);
 	Error load_byte_code(const String& p_path);
+
+	Vector<uint8_t> get_as_byte_code() const;
 
 	virtual ScriptLanguage *get_language() const;
 

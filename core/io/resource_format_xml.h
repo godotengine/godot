@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -123,9 +123,9 @@ class ResourceFormatSaverXMLInstance  {
 	bool skip_editor;
 	FileAccess *f;
 	int depth;
-	Map<RES,int> resource_map;
+	Set<RES> resource_set;
 	List<RES> saved_resources;
-	Set<RES> external_resources;
+	List<RES> external_resources;
 
 	void enter_tag(const char* p_tag,const String& p_args=String());
 	void exit_tag(const char* p_tag);

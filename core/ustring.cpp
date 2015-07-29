@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,11 +67,14 @@ void String::copy_from(const char *p_cstr) {
 		return;
 	}
 	
+
 	resize(len+1); // include 0
 	
-	for(int i=0;i<len+1;i++) {
-	
-		set(i,p_cstr[i]);
+	CharType *dst = this->ptr();
+
+	for (int i=0;i<len+1;i++) {
+
+		dst[i]=p_cstr[i];
 	}
 
 }
@@ -486,7 +489,7 @@ String String::capitalize() const {
 	String cap;
 	for (int i=0;i<aux.get_slice_count(" ");i++) {
 		
-		String slice=aux.get_slice(" ",i);
+		String slice=aux.get_slicec(' ',i);
 		if (slice.length()>0) {
 		
 			slice[0]=_find_upper(slice[0]);
@@ -498,6 +501,27 @@ String String::capitalize() const {
 	
 	return cap;
 }
+
+String String::camelcase_to_underscore() const {
+	const CharType * cstr = c_str();
+	String newString;
+	const char A = 'A', Z = 'Z';
+	int startIndex = 0;
+
+	for ( int i = 1; i < this->size()-1; i++ ) {
+		bool isCapital = cstr[i] >= A && cstr[i] <= Z;
+
+		if ( isCapital ) {
+			newString += "_" + this->substr(startIndex, i-startIndex);
+			startIndex = i;
+		}
+	}
+
+	newString += "_" + this->substr(startIndex, this->size()-startIndex);
+
+	return newString;
+}
+
 int String::get_slice_count(String p_splitter) const{
 
 	if (empty())
@@ -553,6 +577,41 @@ String String::get_slice(String p_splitter, int p_slice) const {
 	}
 
 	return ""; //no find!
+
+}
+
+String String::get_slicec(CharType p_splitter, int p_slice) const {
+
+	if (empty())
+		return String();
+
+	if (p_slice<0)
+		return String();
+
+	const CharType *c=this->ptr();
+	int i=0;
+	int prev=0;
+	int count=0;
+	while(true) {
+
+
+		if (c[i]==0 || c[i]==p_splitter) {
+
+			if (p_slice==count) {
+
+				return substr(prev,i-prev);
+			} else {
+				count++;
+				prev=i+1;
+			}
+
+		}
+
+		i++;
+
+	}
+
+	return String(); //no find!
 
 }
 
@@ -3276,8 +3335,11 @@ String String::path_to_file(const String& p_path) const {
 
 	String src=this->replace("\\","/").get_base_dir();
 	String dst=p_path.replace("\\","/").get_base_dir();
-
-	return src.path_to(dst)+p_path.get_file();
+	String rel = src.path_to(dst);
+	if (rel==dst) // failed
+		return p_path;
+	else
+		return rel+p_path.get_file();
 }
 
 String String::path_to(const String& p_path) const {
@@ -3309,10 +3371,12 @@ String String::path_to(const String& p_path) const {
 		//nothing
 	} else {
 		//dos style
-		String src_begin=src.get_slice("/",0);
-		String dst_begin=dst.get_slice("/",0);
+		String src_begin=src.get_slicec('/',0);
+		String dst_begin=dst.get_slicec('/',0);
 
-		ERR_FAIL_COND_V(src_begin!=dst_begin,p_path); //return dst absolute path
+		if (src_begin!=dst_begin)
+			return p_path; //impossible to do this
+
 		base=src_begin;
 		src=src.substr(src_begin.length(),src.length());
 		dst=dst.substr(dst_begin.length(),dst.length());

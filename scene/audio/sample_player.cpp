@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,7 +102,7 @@ bool SamplePlayer::_get(const StringName& p_name,Variant &r_ret) const {
 		r_ret= get_sample_library();
 	} else if (name.begins_with("default/")) {
 
-			String what=name.get_slice("/",1);
+			String what=name.get_slicec('/',1);
 
 			if (what=="volume_db")
 				r_ret= get_default_volume_db();

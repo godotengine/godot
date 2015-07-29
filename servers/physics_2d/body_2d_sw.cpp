@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -275,10 +275,13 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 				Matrix32 t = p_variant;
 				t.orthonormalize();
 				new_transform=get_transform(); //used as old to compute motion
+				if (t==new_transform)
+					break;
 				_set_transform(t);
 				_set_inv_transform(get_transform().inverse());
 
 			}
+			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_LINEAR_VELOCITY: {
@@ -286,12 +289,14 @@ void Body2DSW::set_state(Physics2DServer::BodyState p_state, const Variant& p_va
 			//if (mode==Physics2DServer::BODY_MODE_STATIC)
 			//	break;
 			linear_velocity=p_variant;
+			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_ANGULAR_VELOCITY: {
 			//if (mode!=Physics2DServer::BODY_MODE_RIGID)
 			//	break;
 			angular_velocity=p_variant;
+			wakeup();
 
 		} break;
 		case Physics2DServer::BODY_STATE_SLEEPING: {
@@ -378,14 +383,16 @@ void Body2DSW::set_space(Space2DSW *p_space){
 void Body2DSW::_compute_area_gravity(const Area2DSW *p_area) {
 
 	if (p_area->is_gravity_point()) {
-
-		gravity = (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
-
+		if(p_area->get_gravity_distance_scale() > 0) {
+			Vector2 v = p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin();
+			gravity += v.normalized() * (p_area->get_gravity() / Math::pow(v.length() * p_area->get_gravity_distance_scale()+1, 2) );
+		} else {
+			gravity += (p_area->get_transform().xform(p_area->get_gravity_vector()) - get_transform().get_origin()).normalized() * p_area->get_gravity();
+		}
 	} else {
-		gravity = p_area->get_gravity_vector() * p_area->get_gravity();
+		gravity += p_area->get_gravity_vector() * p_area->get_gravity();
 	}
 
-	gravity*=gravity_scale;
 }
 
 void Body2DSW::integrate_forces(real_t p_step) {
@@ -393,32 +400,39 @@ void Body2DSW::integrate_forces(real_t p_step) {
 	if (mode==Physics2DServer::BODY_MODE_STATIC)
 		return;
 
-	Area2DSW *current_area = get_space()->get_default_area();
-	ERR_FAIL_COND(!current_area);
+	Area2DSW *def_area = get_space()->get_default_area();
+	Area2DSW *damp_area = def_area;
+	ERR_FAIL_COND(!def_area);
 
-	int prio = current_area->get_priority();
 	int ac = areas.size();
+	bool replace = false;
+	gravity=Vector2(0,0);
 	if (ac) {
+		areas.sort();
 		const AreaCMP *aa = &areas[0];
-		for(int i=0;i<ac;i++) {
-			if (aa[i].area->get_priority() > prio) {
-				current_area=aa[i].area;
-				prio=current_area->get_priority();
+		damp_area = aa[ac-1].area;
+		for(int i=ac-1;i>=0;i--) {
+			_compute_area_gravity(aa[i].area);
+			if (aa[i].area->get_space_override_mode() == Physics2DServer::AREA_SPACE_OVERRIDE_REPLACE) {
+				replace = true;
+				break;
 			}
 		}
 	}
-
-	_compute_area_gravity(current_area);
+	if( !replace ) {
+		_compute_area_gravity(def_area);
+	}
+	gravity*=gravity_scale;
 
 	if (angular_damp>=0)
 		area_angular_damp=angular_damp;
 	else
-		area_angular_damp=current_area->get_angular_damp();
+		area_angular_damp=damp_area->get_angular_damp();
 
 	if (linear_damp>=0)
 		area_linear_damp=linear_damp;
 	else
-		area_linear_damp=current_area->get_linear_damp();
+		area_linear_damp=damp_area->get_linear_damp();
 
 	Vector2 motion;
 	bool do_motion=false;
@@ -482,7 +496,8 @@ void Body2DSW::integrate_forces(real_t p_step) {
 		_update_shapes_with_motion(motion);
 	}
 
-	current_area=NULL; // clear the area, so it is set in the next frame
+	damp_area=NULL; // clear the area, so it is set in the next frame
+	def_area=NULL; // clear the area, so it is set in the next frame
 	contact_count=0;	
 
 }
@@ -647,6 +662,7 @@ Body2DSW::Body2DSW() : CollisionObject2DSW(TYPE_BODY), active_list(this), inerti
 	area_linear_damp=0;
 	contact_count=0;
 	gravity_scale=1.0;
+	using_one_way_cache=false;
 	one_way_collision_max_depth=0.1;
 
 	still_time=0;

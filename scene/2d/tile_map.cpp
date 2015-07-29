@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -348,8 +348,8 @@ void TileMap::_update_dirty_quadrants() {
 			rect.pos=offset.floor();
 			rect.size=s;
 
-			rect.size.x+=fp_adjust;
-			rect.size.y+=fp_adjust;
+		/*	rect.size.x+=fp_adjust;
+			rect.size.y+=fp_adjust;*/
 
 			if (c.flip_h)
 				rect.size.x=-rect.size.x;
@@ -406,17 +406,19 @@ void TileMap::_update_dirty_quadrants() {
 
 			if (navigation) {
 				Ref<NavigationPolygon> navpoly = tile_set->tile_get_navigation_polygon(c.id);
-				Vector2 npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.id);
-				Matrix32 xform;
-				xform.set_origin(offset.floor()+q.pos);
-				_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
+				if (navpoly.is_valid()) {
+					Vector2 npoly_ofs = tile_set->tile_get_navigation_polygon_offset(c.id);
+					Matrix32 xform;
+					xform.set_origin(offset.floor()+q.pos);
+					_fix_cell_transform(xform,c,npoly_ofs+center_ofs,s);
 
-				int pid = navigation->navpoly_create(navpoly,nav_rel * xform);
+					int pid = navigation->navpoly_create(navpoly,nav_rel * xform);
 
-				Quadrant::NavPoly np;
-				np.id=pid;
-				np.xform=xform;
-				q.navpoly_ids[E->key()]=np;
+					Quadrant::NavPoly np;
+					np.id=pid;
+					np.xform=xform;
+					q.navpoly_ids[E->key()]=np;
+				}
 			}
 
 
@@ -517,6 +519,7 @@ Map<TileMap::PosKey,TileMap::Quadrant>::Element *TileMap::_create_quadrant(const
 	q.body=Physics2DServer::get_singleton()->body_create(use_kinematic?Physics2DServer::BODY_MODE_KINEMATIC:Physics2DServer::BODY_MODE_STATIC);
 	Physics2DServer::get_singleton()->body_attach_object_instance_ID(q.body,get_instance_ID());
 	Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
+	Physics2DServer::get_singleton()->body_set_collision_mask(q.body,collision_mask);
 	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_FRICTION,friction);
 	Physics2DServer::get_singleton()->body_set_param(q.body,Physics2DServer::BODY_PARAM_BOUNCE,bounce);
 
@@ -788,13 +791,23 @@ Rect2 TileMap::get_item_rect() const {
 	return rect_cache;
 }
 
-void TileMap::set_collision_layer_mask(uint32_t p_layer) {
+void TileMap::set_collision_layer(uint32_t p_layer) {
 
 	collision_layer=p_layer;
 	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
 
 		Quadrant &q=E->get();
 		Physics2DServer::get_singleton()->body_set_layer_mask(q.body,collision_layer);
+	}
+}
+
+void TileMap::set_collision_mask(uint32_t p_mask) {
+
+	collision_mask=p_mask;
+	for (Map<PosKey,Quadrant>::Element *E=quadrant_map.front();E;E=E->next()) {
+
+		Quadrant &q=E->get();
+		Physics2DServer::get_singleton()->body_set_collision_mask(q.body,collision_mask);
 	}
 }
 
@@ -842,9 +855,14 @@ float TileMap::get_collision_bounce() const{
 }
 
 
-uint32_t TileMap::get_collision_layer_mask() const {
+uint32_t TileMap::get_collision_layer() const {
 
 	return collision_layer;
+}
+
+uint32_t TileMap::get_collision_mask() const {
+
+	return collision_mask;
 }
 
 void TileMap::set_mode(Mode p_mode) {
@@ -1022,6 +1040,19 @@ bool TileMap::is_y_sort_mode_enabled() const {
 	return y_sort_mode;
 }
 
+Array TileMap::get_used_cells() const {
+
+	Array a;
+	a.resize(tile_map.size());
+	int i=0;
+	for (Map<PosKey,Cell>::Element *E=tile_map.front();E;E=E->next()) {
+
+		Vector2 p (E->key().x,E->key().y);
+		a[i++]=p;
+	}
+
+	return a;
+}
 
 void TileMap::_bind_methods() {
 
@@ -1062,8 +1093,11 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_collision_use_kinematic","use_kinematic"),&TileMap::set_collision_use_kinematic);
 	ObjectTypeDB::bind_method(_MD("get_collision_use_kinematic"),&TileMap::get_collision_use_kinematic);
 
-	ObjectTypeDB::bind_method(_MD("set_collision_layer_mask","mask"),&TileMap::set_collision_layer_mask);
-	ObjectTypeDB::bind_method(_MD("get_collision_layer_mask"),&TileMap::get_collision_layer_mask);
+	ObjectTypeDB::bind_method(_MD("set_collision_layer","mask"),&TileMap::set_collision_layer);
+	ObjectTypeDB::bind_method(_MD("get_collision_layer"),&TileMap::get_collision_layer);
+
+	ObjectTypeDB::bind_method(_MD("set_collision_mask","mask"),&TileMap::set_collision_mask);
+	ObjectTypeDB::bind_method(_MD("get_collision_mask"),&TileMap::get_collision_mask);
 
 	ObjectTypeDB::bind_method(_MD("set_collision_friction","value"),&TileMap::set_collision_friction);
 	ObjectTypeDB::bind_method(_MD("get_collision_friction"),&TileMap::get_collision_friction);
@@ -1077,6 +1111,8 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);
 
 	ObjectTypeDB::bind_method(_MD("clear"),&TileMap::clear);
+
+	ObjectTypeDB::bind_method(_MD("get_used_cells"),&TileMap::get_used_cells);
 
 	ObjectTypeDB::bind_method(_MD("map_to_world","mappos","ignore_half_ofs"),&TileMap::map_to_world,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("world_to_map","worldpos"),&TileMap::world_to_map);
@@ -1100,7 +1136,9 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"collision/use_kinematic",PROPERTY_HINT_NONE,""),_SCS("set_collision_use_kinematic"),_SCS("get_collision_use_kinematic"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/friction",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_friction"),_SCS("get_collision_friction"));
 	ADD_PROPERTY( PropertyInfo(Variant::REAL,"collision/bounce",PROPERTY_HINT_RANGE,"0,1,0.01"),_SCS("set_collision_bounce"),_SCS("get_collision_bounce"));
-	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer_mask"),_SCS("get_collision_layer_mask"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/layers",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_layer"),_SCS("get_collision_layer"));
+	ADD_PROPERTY( PropertyInfo(Variant::INT,"collision/mask",PROPERTY_HINT_ALL_FLAGS),_SCS("set_collision_mask"),_SCS("get_collision_mask"));
+
 	ADD_PROPERTY( PropertyInfo(Variant::OBJECT,"tile_data",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_tile_data"),_SCS("_get_tile_data"));
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
@@ -1129,6 +1167,7 @@ TileMap::TileMap() {
 	center_x=false;
 	center_y=false;
 	collision_layer=1;
+	collision_mask=1;
 	friction=1;
 	bounce=0;
 	mode=MODE_SQUARE;
@@ -1137,8 +1176,7 @@ TileMap::TileMap() {
 	navigation=NULL;
 	y_sort_mode=false;
 
-	fp_adjust=0.01;
-	fp_adjust=0.01;
+	fp_adjust=0.00001;
 	tile_origin=TILE_ORIGIN_TOP_LEFT;
 }
 

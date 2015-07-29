@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "scene/resources/font.h"
 #include "scene/resources/texture.h"
 #include "scene/resources/style_box.h"
-
+#include "os/input.h"
 
 bool CanvasItemMaterial::_set(const StringName& p_name, const Variant& p_value) {
 
@@ -288,6 +288,7 @@ void CanvasItem::show() {
 	if (is_visible()) {
 		_propagate_visibility_changed(true);
 	}
+	_change_notify("visibility/visible");
 }
 
 
@@ -305,6 +306,7 @@ void CanvasItem::hide() {
 	if (propagate)
 		_propagate_visibility_changed(false);
 
+	_change_notify("visibility/visible");
 }
 
 
@@ -341,7 +343,6 @@ void CanvasItem::_update_callback() {
 		pending_update=false;
 		return;
 	}
-
 
 	VisualServer::get_singleton()->canvas_item_clear(get_canvas_item());
 	//todo updating = true - only allow drawing here
@@ -1011,6 +1012,16 @@ InputEvent CanvasItem::make_input_local(const InputEvent& p_event) const {
 }
 
 
+Vector2 CanvasItem::get_global_mouse_pos() const {
+
+	return get_viewport_transform().affine_inverse().xform(Input::get_singleton()->get_mouse_pos());
+}
+Vector2 CanvasItem::get_local_mouse_pos() const{
+
+	return (get_viewport_transform() * get_global_transform()).affine_inverse().xform(Input::get_singleton()->get_mouse_pos());
+}
+
+
 void CanvasItem::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_sort_children"),&CanvasItem::_sort_children);
@@ -1076,6 +1087,8 @@ void CanvasItem::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_viewport_transform"),&CanvasItem::get_viewport_transform);
 	ObjectTypeDB::bind_method(_MD("get_viewport_rect"),&CanvasItem::get_viewport_rect);
 	ObjectTypeDB::bind_method(_MD("get_canvas_transform"),&CanvasItem::get_canvas_transform);
+	ObjectTypeDB::bind_method(_MD("get_local_mouse_pos"),&CanvasItem::get_local_mouse_pos);
+	ObjectTypeDB::bind_method(_MD("get_global_mouse_pos"),&CanvasItem::get_global_mouse_pos);
 	ObjectTypeDB::bind_method(_MD("get_canvas"),&CanvasItem::get_canvas);
 	ObjectTypeDB::bind_method(_MD("get_world_2d"),&CanvasItem::get_world_2d);
 	//ObjectTypeDB::bind_method(_MD("get_viewport"),&CanvasItem::get_viewport);
@@ -1090,14 +1103,14 @@ void CanvasItem::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_draw"));
 
-	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
-	ADD_PROPERTY( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::BOOL,"visibility/visible"), _SCS("_set_visible_"),_SCS("_is_visible_") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_opacity"),_SCS("get_opacity") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::REAL,"visibility/self_opacity",PROPERTY_HINT_RANGE, "0,1,0.01"), _SCS("set_self_opacity"),_SCS("get_self_opacity") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"visibility/behind_parent"), _SCS("set_draw_behind_parent"),_SCS("is_draw_behind_parent_enabled") );
 	ADD_PROPERTY( PropertyInfo(Variant::BOOL,"visibility/on_top",PROPERTY_HINT_NONE,"",0), _SCS("_set_on_top"),_SCS("_is_on_top") ); //compatibility
 
 	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/blend_mode",PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul,PMAlpha"), _SCS("set_blend_mode"),_SCS("get_blend_mode") );
-	ADD_PROPERTYNZ( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
+	ADD_PROPERTYNO( PropertyInfo(Variant::INT,"visibility/light_mask",PROPERTY_HINT_ALL_FLAGS), _SCS("set_light_mask"),_SCS("get_light_mask") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::OBJECT,"material/material",PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial"), _SCS("set_material"),_SCS("get_material") );
 	ADD_PROPERTYNZ( PropertyInfo(Variant::BOOL,"material/use_parent"), _SCS("set_use_parent_material"),_SCS("get_use_parent_material") );
 	//exporting these two things doesn't really make much sense i think

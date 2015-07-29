@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/file_dialog.h"
+#include "tools/editor/editor_file_dialog.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/menu_button.h"
@@ -75,7 +75,7 @@ class CustomPropertyEditor : public Popup {
 
 	PopupMenu *menu;
 	SceneTreeDialog *scene_tree;
-	FileDialog *file;
+	EditorFileDialog *file;
 	ConfirmationDialog *error;
 	String name;
 	Variant::Type type;
@@ -187,6 +187,7 @@ class PropertyEditor : public Control {
 
 	Node *get_instanced_node();
 	void _refresh_item(TreeItem *p_item);
+	void _set_range_def(Object *p_item, String prop, float p_frame);
 
 	UndoRedo *undo_redo;
 protected:

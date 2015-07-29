@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@
 #include "servers/spatial_sound_2d/spatial_sound_2d_server_sw.h"
 #include "drivers/unix/ip_unix.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 
 
 #include <windows.h>
@@ -258,8 +259,9 @@ public:
 
 	virtual String get_name();
 	
-	virtual Date get_date() const;
-	virtual Time get_time() const;
+	virtual Date get_date(bool utc) const;
+	virtual Time get_time(bool utc) const;
+	virtual TimeZoneInfo get_time_zone_info() const;
 	virtual uint64_t get_unix_time() const;
 
 	virtual bool can_draw() const;
