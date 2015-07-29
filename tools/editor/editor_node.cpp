@@ -1645,7 +1645,6 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 	}
 
 	if (bool(EDITOR_DEF("run/always_clear_output_on_play", true))) {
-		print_line("Setting option was set to ON -> clearing");
 		log->clear();
 	}
 
