@@ -107,7 +107,11 @@ void EditorLog::_close_request() {
 void EditorLog::_clear_request() {
 
 	log->clear();
-	
+
+}
+
+void EditorLog::clear() {
+	_clear_request();
 }
 
 
@@ -175,10 +179,11 @@ void EditorLog::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_close_request"),&EditorLog::_close_request );
 	ObjectTypeDB::bind_method(_MD("_flip_request"),&EditorLog::_flip_request );
 	ObjectTypeDB::bind_method(_MD("_clear_request"),&EditorLog::_clear_request );
+
 	//ObjectTypeDB::bind_method(_MD("_dragged"),&EditorLog::_dragged );
 	ADD_SIGNAL( MethodInfo("close_request"));
 	ADD_SIGNAL( MethodInfo("show_request"));
-	ADD_SIGNAL( MethodInfo("clear_request"));	
+	ADD_SIGNAL( MethodInfo("clear_request"));
 }
 
 EditorLog::EditorLog() {
@@ -206,7 +211,7 @@ EditorLog::EditorLog() {
 	//hb->add_child(pd);
 	//pd->connect("dragged",this,"_dragged");
 	//pd->set_default_cursor_shape(Control::CURSOR_MOVE);
-	
+
 	clearbutton = memnew( Button );
 	hb->add_child(clearbutton);
 	clearbutton->set_text("Clear");
@@ -255,8 +260,8 @@ void EditorLog::deinit() {
 
 }
 
+
 EditorLog::~EditorLog() {
 
 
 }
-

@@ -1564,7 +1564,6 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (!scene) {
-
 			current_option=-1;
 			//accept->get_cancel()->hide();
 			accept->get_ok()->set_text("I see..");
@@ -1643,6 +1642,11 @@ void EditorNode::_run(bool p_current,const String& p_custom) {
 		}
 
 		editor_data.save_editor_external_data();
+	}
+
+	if (bool(EDITOR_DEF("run/always_clear_output_on_play", true))) {
+		print_line("Setting option was set to ON -> clearing");
+		log->clear();
 	}
 
 

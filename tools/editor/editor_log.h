@@ -33,6 +33,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
+#include "scene/gui/check_button.h"
 //#include "scene/gui/empty_control.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
@@ -59,11 +60,11 @@ class EditorLog : public PanelContainer {
 
 	Thread::ID current;
 
-
 //	void _dragged(const Point2& p_ofs);
 	void _close_request();
 	void _flip_request();
 	void _clear_request();
+	void _clearonplay_request();
 	static void _undo_redo_cbk(void *p_self,const String& p_name);
 protected:
 
@@ -75,6 +76,7 @@ public:
 	void deinit();
 
 	ToolButton *get_button();
+	void clear();
 	EditorLog();
 	~EditorLog();
 };
