@@ -63,7 +63,6 @@ class EditorLog : public PanelContainer {
 	void _close_request();
 	void _flip_request();
 	void _clear_request();
-	void _clearonplay_request();
 	static void _undo_redo_cbk(void *p_self,const String& p_name);
 protected:
 
