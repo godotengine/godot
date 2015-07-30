@@ -1678,11 +1678,88 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	return v;
 };
 
+String _Marshalls::raw_to_base64(const DVector<uint8_t> &p_arr) {
+
+	int len = p_arr.size();
+	DVector<uint8_t>::Read r = p_arr.read();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)(&r[0]), len);
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+DVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	int arr_len;
+	DVector<uint8_t> buf;
+	{
+		buf.resize(strlen / 4 * 3 + 1);
+		DVector<uint8_t>::Write w = buf.write();
+
+		arr_len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+	};
+	buf.resize(arr_len);
+
+	// conversion from DVector<uint8_t> to raw array?
+	return buf;
+};
+
+String _Marshalls::utf8_to_base64(const String& p_str) {
+
+	CharString cstr = p_str.utf8();
+	int len = cstr.length();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)cstr.get_data(), len);
+
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+String _Marshalls::base64_to_utf8(const String& p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	DVector<uint8_t> buf;
+	buf.resize(strlen / 4 * 3 + 1 + 1);
+	DVector<uint8_t>::Write w = buf.write();
+
+	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+
+	w[len] = 0;
+	String ret = String::utf8((char*)&w[0]);
+
+	return ret;
+};
+
 
 void _Marshalls::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
 	ObjectTypeDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
+
+	ObjectTypeDB::bind_method(_MD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
+
+	ObjectTypeDB::bind_method(_MD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
 
 };
 
