@@ -2542,16 +2542,23 @@ void GDParser::_parse_class(ClassNode *p_class) {
 					} else if (tokenizer->get_token()==GDTokenizer::TK_IDENTIFIER) {
 
 						String identifier = tokenizer->get_token_identifier();
-						if (!ObjectTypeDB::is_type(identifier,"Resource")) {
-
-							current_export=PropertyInfo();
-							_set_error("Export hint not a type or resource.");
+						if (identifier == "flag") {
+							current_export.type=Variant::INT;
+							current_export.hint=PROPERTY_HINT_ALL_FLAGS;
+						}else if (identifier == "multiline"){
+							current_export.type=Variant::STRING;
+							current_export.hint=PROPERTY_HINT_MULTILINE_TEXT;
+						} else {
+							if (!ObjectTypeDB::is_type(identifier,"Resource")) {
+	
+								current_export=PropertyInfo();
+								_set_error("Export hint not a type or resource.");
+							}
+	
+							current_export.type=Variant::OBJECT;
+							current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
+							current_export.hint_string=identifier;
 						}
-
-						current_export.type=Variant::OBJECT;
-						current_export.hint=PROPERTY_HINT_RESOURCE_TYPE;
-						current_export.hint_string=identifier;
-
 						tokenizer->advance();
 					}
 
