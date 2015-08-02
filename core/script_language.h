@@ -258,7 +258,7 @@ public:
 		void (*tree_remove_and_keep_node_func)(void*,const NodePath& p_at,ObjectID p_keep_id);
 		void (*tree_restore_node_func)(void*,ObjectID p_id,const NodePath& p_at,int p_at_pos);
 		void (*tree_duplicate_node_func)(void*,const NodePath& p_at,const String& p_new_name);
-		void (*tree_reparent_node_func)(void*,const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name);
+		void (*tree_reparent_node_func)(void*,const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos);
 
 	};
 

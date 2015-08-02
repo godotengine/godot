@@ -310,19 +310,19 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array& cmd) {
 		return false;
 
 
-	print_line(Variant(cmd).get_construct_string());
+	//print_line(Variant(cmd).get_construct_string());
 	if (cmdstr=="live_set_root") {
 
 		if (!live_edit_funcs->root_func)
 			return true;
-		print_line("root: "+Variant(cmd).get_construct_string());
+		//print_line("root: "+Variant(cmd).get_construct_string());
 		live_edit_funcs->root_func(live_edit_funcs->udata,cmd[1],cmd[2]);
 
 	} else if (cmdstr=="live_node_path") {
 
 		if (!live_edit_funcs->node_path_func)
 			return true;
-		print_line("path: "+Variant(cmd).get_construct_string());
+		//print_line("path: "+Variant(cmd).get_construct_string());
 
 		live_edit_funcs->node_path_func(live_edit_funcs->udata,cmd[1],cmd[2]);
 
@@ -392,7 +392,7 @@ bool ScriptDebuggerRemote::_parse_live_edit(const Array& cmd) {
 		live_edit_funcs->tree_duplicate_node_func(live_edit_funcs->udata,cmd[1],cmd[2]);
 	} else if (cmdstr=="live_reparent_node") {
 
-		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata,cmd[1],cmd[2],cmd[3]);
+		live_edit_funcs->tree_reparent_node_func(live_edit_funcs->udata,cmd[1],cmd[2],cmd[3],cmd[4]);
 
 	} else {
 

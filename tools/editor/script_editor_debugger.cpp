@@ -927,7 +927,7 @@ void ScriptEditorDebugger::update_live_edit_root() {
 
 void ScriptEditorDebugger::live_debug_create_node(const NodePath& p_parent,const String& p_type,const String& p_name) {
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
 		msg.push_back("live_create_node");
 		msg.push_back(p_parent);
@@ -939,7 +939,7 @@ void ScriptEditorDebugger::live_debug_create_node(const NodePath& p_parent,const
 
 void ScriptEditorDebugger::live_debug_instance_node(const NodePath& p_parent,const String& p_path,const String& p_name){
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
 		msg.push_back("live_instance_node");
 		msg.push_back(p_parent);
@@ -951,7 +951,7 @@ void ScriptEditorDebugger::live_debug_instance_node(const NodePath& p_parent,con
 }
 void ScriptEditorDebugger::live_debug_remove_node(const NodePath& p_at){
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
 		msg.push_back("live_remove_node");
 		msg.push_back(p_at);
@@ -961,9 +961,9 @@ void ScriptEditorDebugger::live_debug_remove_node(const NodePath& p_at){
 }
 void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath& p_at,ObjectID p_keep_id) {
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
-		msg.push_back("live_remove_and_keep_mode");
+		msg.push_back("live_remove_and_keep_node");
 		msg.push_back(p_at);
 		msg.push_back(p_keep_id);
 		ppeer->put_var(msg);
@@ -972,7 +972,7 @@ void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath& p_at,
 }
 void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath& p_at, int p_at_pos){
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
 		msg.push_back("live_restore_node");
 		msg.push_back(p_id);
@@ -984,7 +984,7 @@ void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath
 }
 void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath& p_at,const String& p_new_name){
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
 		msg.push_back("live_duplicate_node");
 		msg.push_back(p_at);
@@ -993,14 +993,15 @@ void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath& p_at,const 
 	}
 
 }
-void ScriptEditorDebugger::live_debug_reparent_node(const NodePath& p_at, const NodePath& p_new_place, const String &p_new_name){
+void ScriptEditorDebugger::live_debug_reparent_node(const NodePath& p_at, const NodePath& p_new_place, const String &p_new_name, int p_at_pos){
 
-	if (connection.is_valid()) {
+	if (live_debug && connection.is_valid()) {
 		Array msg;
 		msg.push_back("live_reparent_node");
 		msg.push_back(p_at);
 		msg.push_back(p_new_place);
 		msg.push_back(p_new_name);
+		msg.push_back(p_at_pos);
 		ppeer->put_var(msg);
 	}
 

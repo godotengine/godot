@@ -224,6 +224,15 @@ void Node::_propagate_exit_tree() {
 				data.tree->live_scene_edit_cache.erase(E);
 			}
 		}
+
+		Map<Node*,Map<ObjectID,Node*> >::Element *F=data.tree->live_edit_remove_list.find(this);
+		if (F) {
+			for (Map<ObjectID,Node*>::Element*G=F->get().front();G;G=G->next()) {
+
+				memdelete(G->get());
+			}
+			data.tree->live_edit_remove_list.erase(F);
+		}
 	}
 #endif
 	data.blocked++;
