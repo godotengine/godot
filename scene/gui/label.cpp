@@ -30,6 +30,7 @@
 #include "print_string.h"
 #include "globals.h"
 #include "translation.h"
+#include "core/bidi.h"
 
 
 void Label::set_autowrap(bool p_autowrap) {
@@ -223,7 +224,7 @@ void Label::_notification(int p_what) {
 				}
 				
 				
-				String bidi_text = text.bidi_visual_string();
+				String bidi_text = Bidi::bidi_visual_string(text);
 				if (font_color_shadow.a>0) {
 					
 					int chars_total_shadow = chars_total; //save chars drawn
@@ -310,7 +311,7 @@ int Label::get_longest_line_width() const {
 	int max_line_width=0;
 	int line_width=0;
 	
-	String bidi_text = text.bidi_visual_string();
+	String bidi_text = Bidi::bidi_visual_string(text);
 	
 	for (int i=0;i<text.size()+1;i++) {
 		
@@ -371,7 +372,7 @@ void Label::regenerate_word_cache() {
 	line_count=1;
 	total_char_cache=0;
 	
-	String bidi_text = text.bidi_visual_string();
+	String bidi_text = Bidi::bidi_visual_string(text);
 	
 	WordCache *last=NULL;
 	

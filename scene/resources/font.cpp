@@ -28,6 +28,7 @@
 /*************************************************************************/
 #include "font.h"
 
+#include "core/bidi.h"
 #include "core/os/file_access.h"
 #include "core/io/resource_loader.h"
 
@@ -466,7 +467,7 @@ void Font::draw(RID p_canvas_item, const Point2& p_pos, const String& p_text, co
 	float ofs=0;
 	VisualServer *vs = VisualServer::get_singleton();
 	
-	String bidi_text = p_text.bidi_visual_string();
+	String bidi_text = Bidi::bidi_visual_string(p_text);
 	
 	for (int i=0;i<bidi_text.length();i++) {
 

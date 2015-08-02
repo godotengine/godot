@@ -31,6 +31,7 @@
 #include "os/os.h"
 #include "print_string.h"
 #include "label.h"
+#include "core/bidi.h"
 
 void LineEdit::_input_event(InputEvent p_event) {
 
@@ -380,7 +381,7 @@ void LineEdit::_notification(int p_what) {
 			Color font_color_selected=get_color("font_color_selected");
 			Color cursor_color=get_color("cursor_color");
 			
-			String bidi_text = text.bidi_visual_string();
+			String bidi_text = Bidi::bidi_visual_string(text);
 			
 			while(true) {
 				
