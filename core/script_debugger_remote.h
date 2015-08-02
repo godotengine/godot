@@ -62,9 +62,12 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint32_t poll_every;
 
 
+	bool _parse_live_edit(const Array &p_command);
+
 	RequestSceneTreeMessageFunc request_scene_tree;
 	void *request_scene_tree_ud;
 
+	LiveEditFuncs *live_edit_funcs;
 
 public:
 
@@ -79,6 +82,7 @@ public:
 	virtual void send_message(const String& p_message, const Array& p_args);
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
+	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

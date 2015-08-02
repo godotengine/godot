@@ -196,6 +196,14 @@ void Node::_propagate_enter_tree() {
 	}	
 
 	data.blocked--;
+
+#ifdef DEBUG_ENABLED
+
+	if (ScriptDebugger::get_singleton() && data.filename!=String()) {
+		//used for live edit
+		data.tree->live_scene_edit_cache[data.filename].insert(this);
+	}
+#endif
 	// enter groups
 }
 
@@ -205,6 +213,19 @@ void Node::_propagate_exit_tree() {
 
 	//block while removing children
 
+#ifdef DEBUG_ENABLED
+
+	if (ScriptDebugger::get_singleton() && data.filename!=String()) {
+		//used for live edit
+		Map<String,Set<Node*> >::Element *E=data.tree->live_scene_edit_cache.find(data.filename);
+		if (E) {
+			E->get().erase(this);
+			if (E->get().size()==0) {
+				data.tree->live_scene_edit_cache.erase(E);
+			}
+		}
+	}
+#endif
 	data.blocked++;
 
 	for (int i=data.children.size()-1;i>=0;i--) {
@@ -551,6 +572,52 @@ void Node::set_human_readable_collision_renaming(bool p_enabled) {
 	node_hrcr=p_enabled;
 }
 
+
+
+String Node::validate_child_name(const String& p_name) const {
+
+	//this approach to autoset node names is human readable but very slow
+	//it's turned on while running in the editor
+
+	String basename = p_name;
+
+	if (basename==String()) {
+
+		return String();
+	}
+
+	int val=1;
+
+	for(;;) {
+
+		String attempted = val > 1 ? (basename + " " +itos(val) ) : basename;
+
+		bool found=false;
+
+		for (int i=0;i<data.children.size();i++) {
+
+			//if (data.children[i]==p_child)
+			//	continue;
+			if (data.children[i]->get_name() == attempted) {
+				found=true;
+				break;
+			}
+
+		}
+
+		if (found) {
+
+			val++;
+			continue;
+		}
+
+		return attempted;
+		break;
+	}
+
+	return basename;
+
+}
 
 void Node::_validate_child_name(Node *p_child) {
 
@@ -1323,18 +1390,31 @@ int Node::get_position_in_parent() const {
 
 
 
-Node *Node::duplicate() const {
+Node *Node::duplicate(bool p_use_instancing) const {
 
 
 	Node *node=NULL;
 
-	Object *obj = ObjectTypeDB::instance(get_type());
-	ERR_FAIL_COND_V(!obj,NULL);
-	node = obj->cast_to<Node>();
-	if (!node)
-		memdelete(obj);
-	ERR_FAIL_COND_V(!node,NULL);
+	bool instanced=false;
 
+	if (p_use_instancing && get_filename()!=String()) {
+
+		Ref<PackedScene> res = ResourceLoader::load(get_filename());
+		ERR_FAIL_COND_V(res.is_null(),NULL);
+		node=res->instance();
+		ERR_FAIL_COND_V(!node,NULL);
+
+		instanced=true;
+
+	} else {
+
+		Object *obj = ObjectTypeDB::instance(get_type());
+		ERR_FAIL_COND_V(!obj,NULL);
+		node = obj->cast_to<Node>();
+		if (!node)
+			memdelete(obj);
+		ERR_FAIL_COND_V(!node,NULL);
+	}
 
 
 	if (get_filename()!="") { //an instance
@@ -1360,7 +1440,10 @@ Node *Node::duplicate() const {
 
 		if (get_child(i)->data.parent_owned)
 			continue;
-		Node *dup = get_child(i)->duplicate();
+		if (instanced && get_child(i)->data.owner==this)
+			continue; //part of instance
+
+		Node *dup = get_child(i)->duplicate(p_use_instancing);
 		if (!dup) {
 
 			memdelete(node);
@@ -1882,7 +1965,7 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_tree:SceneTree"),&Node::get_tree);
 
-	ObjectTypeDB::bind_method(_MD("duplicate:Node"),&Node::duplicate);
+	ObjectTypeDB::bind_method(_MD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);

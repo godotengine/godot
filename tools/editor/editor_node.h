@@ -152,6 +152,7 @@ class EditorNode : public Node {
 		RUN_PROJECT_MANAGER,
 		RUN_FILE_SERVER,
 		RUN_DEPLOY_DUMB_CLIENTS,
+		RUN_LIVE_DEBUG,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_IMPORT,
@@ -239,6 +240,7 @@ class EditorNode : public Node {
 	ToolButton *animation_menu;
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
+	ToolButton *live_debug_button;
 	TextureProgress *audio_vu;
 	MenuButton *fileserver_menu;
 

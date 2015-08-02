@@ -129,6 +129,7 @@ private:
 		int history_current;
 		Dictionary custom_state;
 		uint64_t version;
+		NodePath live_edit_root;
 
 
 	};
@@ -183,6 +184,8 @@ public:
 	uint64_t get_edited_scene_version() const;
 	uint64_t get_scene_version(int p_idx) const;
 	void clear_edited_scenes();
+	void set_edited_scene_live_edit_root(const NodePath& p_root);
+	NodePath get_edited_scene_live_edit_root();
 
 
 	void set_plugin_window_layout(Ref<ConfigFile> p_layout);

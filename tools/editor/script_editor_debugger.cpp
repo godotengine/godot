@@ -241,6 +241,8 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 			lv[level]=it;
 		}
 
+		le_clear->set_disabled(false);
+		le_set->set_disabled(false);
 
 	} else if (p_msg=="stack_dump") {
 
@@ -443,6 +445,8 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			tb->set_hover_texture( get_icon("CloseHover","EditorIcons"));
 			tb->set_pressed_texture( get_icon("Close","EditorIcons"));
 			scene_tree_refresh->set_icon( get_icon("Reload","EditorIcons"));
+			le_set->connect("pressed",this,"_live_edit_set");
+			le_clear->connect("pressed",this,"_live_edit_clear");
 
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -468,6 +472,12 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					emit_signal("show_debugger",true);
 					reason->set_text("Child Process Connected");
 					reason->set_tooltip("Child Process Connected");
+					scene_tree->clear();
+					le_set->set_disabled(true);
+					le_clear->set_disabled(false);
+					//live_edit_root->set_text("/root");
+
+					update_live_edit_root();
 
 				} else {
 
@@ -613,6 +623,10 @@ void ScriptEditorDebugger::stop(){
 		log_forced_visible=false;
 	}
 
+	node_path_cache.clear();
+	res_path_cache.clear();
+	le_clear->set_disabled(false);
+	le_set->set_disabled(true);
 
 
 	hide();
@@ -664,6 +678,335 @@ String ScriptEditorDebugger::get_var_value(const String& p_var) const {
 	return variables->get_var_value(p_var);
 }
 
+int ScriptEditorDebugger::_get_node_path_cache(const NodePath& p_path) {
+
+	const int *r = node_path_cache.getptr(p_path);
+	if (r)
+		return *r;
+
+	last_path_id++;
+
+	node_path_cache[p_path]=last_path_id;
+	Array msg;
+	msg.push_back("live_node_path");
+	msg.push_back(p_path);
+	msg.push_back(last_path_id);
+	ppeer->put_var(msg);
+
+
+	return last_path_id;
+}
+
+int ScriptEditorDebugger::_get_res_path_cache(const String& p_path) {
+
+	Map<String,int>::Element *E=res_path_cache.find(p_path);
+
+	if (E)
+		return E->get();
+
+	last_path_id++;
+
+	res_path_cache[p_path]=last_path_id;
+	Array msg;
+	msg.push_back("live_res_path");
+	msg.push_back(p_path);
+	msg.push_back(last_path_id);
+	ppeer->put_var(msg);
+
+
+	return last_path_id;
+}
+
+void ScriptEditorDebugger::_method_changed(Object*p_base,const StringName& p_name,VARIANT_ARG_DECLARE) {
+
+	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
+		return;
+
+	Node *node = p_base->cast_to<Node>();
+
+	VARIANT_ARGPTRS
+
+	for(int i=0;i<VARIANT_ARG_MAX;i++) {
+		//no pointers, sorry
+		if (argptr[i] && (argptr[i]->get_type()==Variant::OBJECT || argptr[i]->get_type()==Variant::_RID))
+			return;
+	}
+
+	if (node) {
+
+		NodePath path = editor->get_edited_scene()->get_path_to(node);
+		int pathid = _get_node_path_cache(path);
+
+
+
+		Array msg;
+		msg.push_back("live_node_call");
+		msg.push_back(pathid);
+		msg.push_back(p_name);
+		for(int i=0;i<VARIANT_ARG_MAX;i++) {
+			//no pointers, sorry
+			msg.push_back(*argptr[i]);
+		}
+		ppeer->put_var(msg);
+
+		return;
+
+	}
+
+	Resource *res = p_base->cast_to<Resource>();
+
+	if (res && res->get_path()!=String()) {
+
+		String respath = res->get_path();
+		int pathid = _get_res_path_cache(respath);
+
+		Array msg;
+		msg.push_back("live_res_call");
+		msg.push_back(pathid);
+		msg.push_back(p_name);
+		for(int i=0;i<VARIANT_ARG_MAX;i++) {
+			//no pointers, sorry
+			msg.push_back(*argptr[i]);
+		}
+		ppeer->put_var(msg);
+
+		return;
+	}
+
+	//print_line("method");
+}
+
+void ScriptEditorDebugger::_property_changed(Object*p_base,const StringName& p_property,const Variant& p_value){
+
+	if (!p_base || !live_debug || !connection.is_valid() || !editor->get_edited_scene())
+		return;
+
+	Node *node = p_base->cast_to<Node>();
+
+	if (node) {
+
+		NodePath path = editor->get_edited_scene()->get_path_to(node);
+		int pathid = _get_node_path_cache(path);
+
+
+		if (p_value.is_ref()) {
+			Ref<Resource> res = p_value;
+			if (res.is_valid() && res->get_path()!=String()) {
+
+				Array msg;
+				msg.push_back("live_node_prop_res");
+				msg.push_back(pathid);
+				msg.push_back(p_property);
+				msg.push_back(res->get_path());
+				ppeer->put_var(msg);
+			}
+		} else {
+
+			Array msg;
+			msg.push_back("live_node_prop");
+			msg.push_back(pathid);
+			msg.push_back(p_property);
+			msg.push_back(p_value);
+			ppeer->put_var(msg);
+		}
+
+
+		return;
+
+	}
+
+	Resource *res = p_base->cast_to<Resource>();
+
+	if (res && res->get_path()!=String()) {
+
+		String respath = res->get_path();
+		int pathid = _get_res_path_cache(respath);
+
+
+		if (p_value.is_ref()) {
+			Ref<Resource> res = p_value;
+			if (res.is_valid() && res->get_path()!=String()) {
+
+				Array msg;
+				msg.push_back("live_res_prop_res");
+				msg.push_back(pathid);
+				msg.push_back(p_property);
+				msg.push_back(res->get_path());
+				ppeer->put_var(msg);
+			}
+		} else {
+
+			Array msg;
+			msg.push_back("live_res_prop");
+			msg.push_back(pathid);
+			msg.push_back(p_property);
+			msg.push_back(p_value);
+			ppeer->put_var(msg);
+		}
+
+
+		return;
+	}
+
+
+	//print_line("prop");
+}
+
+void ScriptEditorDebugger::_method_changeds(void *p_ud,Object*p_base,const StringName& p_name,VARIANT_ARG_DECLARE) {
+
+	ScriptEditorDebugger *sed = (ScriptEditorDebugger*)p_ud;
+	sed->_method_changed(p_base,p_name,VARIANT_ARG_PASS);
+
+
+}
+
+void ScriptEditorDebugger::_property_changeds(void *p_ud,Object*p_base,const StringName& p_property,const Variant& p_value){
+
+	ScriptEditorDebugger *sed = (ScriptEditorDebugger*)p_ud;
+	sed->_property_changed(p_base,p_property,p_value);
+
+}
+
+void ScriptEditorDebugger::set_live_debugging(bool p_enable) {
+
+	live_debug=p_enable;
+}
+
+void ScriptEditorDebugger::_live_edit_set() {
+
+	if (!connection.is_valid())
+		return;
+
+	TreeItem* ti = scene_tree->get_selected();
+	if (!ti)
+		return;
+	String path;
+
+	while(ti) {
+		String lp=ti->get_text(0);
+		path="/"+lp+path;
+		ti=ti->get_parent();
+
+	}
+
+	NodePath np = path;
+
+	editor->get_editor_data().set_edited_scene_live_edit_root(np);
+
+	update_live_edit_root();
+
+
+}
+
+void ScriptEditorDebugger::_live_edit_clear() {
+
+	NodePath np = NodePath("/root");
+	editor->get_editor_data().set_edited_scene_live_edit_root(np);
+
+	update_live_edit_root();
+
+}
+
+void ScriptEditorDebugger::update_live_edit_root() {
+
+	NodePath np = editor->get_editor_data().get_edited_scene_live_edit_root();
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_set_root");
+		msg.push_back(np);
+		if (editor->get_edited_scene())
+			msg.push_back(editor->get_edited_scene()->get_filename());
+		else
+			msg.push_back("");
+		ppeer->put_var(msg);
+	}
+	live_edit_root->set_text(np);
+
+}
+
+void ScriptEditorDebugger::live_debug_create_node(const NodePath& p_parent,const String& p_type,const String& p_name) {
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_create_node");
+		msg.push_back(p_parent);
+		msg.push_back(p_type);
+		msg.push_back(p_name);
+		ppeer->put_var(msg);
+	}
+}
+
+void ScriptEditorDebugger::live_debug_instance_node(const NodePath& p_parent,const String& p_path,const String& p_name){
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_instance_node");
+		msg.push_back(p_parent);
+		msg.push_back(p_path);
+		msg.push_back(p_name);
+		ppeer->put_var(msg);
+	}
+
+}
+void ScriptEditorDebugger::live_debug_remove_node(const NodePath& p_at){
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_remove_node");
+		msg.push_back(p_at);
+		ppeer->put_var(msg);
+	}
+
+}
+void ScriptEditorDebugger::live_debug_remove_and_keep_node(const NodePath& p_at,ObjectID p_keep_id) {
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_remove_and_keep_mode");
+		msg.push_back(p_at);
+		msg.push_back(p_keep_id);
+		ppeer->put_var(msg);
+	}
+
+}
+void ScriptEditorDebugger::live_debug_restore_node(ObjectID p_id, const NodePath& p_at, int p_at_pos){
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_restore_node");
+		msg.push_back(p_id);
+		msg.push_back(p_at);
+		msg.push_back(p_at_pos);
+		ppeer->put_var(msg);
+	}
+
+}
+void ScriptEditorDebugger::live_debug_duplicate_node(const NodePath& p_at,const String& p_new_name){
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_duplicate_node");
+		msg.push_back(p_at);
+		msg.push_back(p_new_name);
+		ppeer->put_var(msg);
+	}
+
+}
+void ScriptEditorDebugger::live_debug_reparent_node(const NodePath& p_at, const NodePath& p_new_place, const String &p_new_name){
+
+	if (connection.is_valid()) {
+		Array msg;
+		msg.push_back("live_reparent_node");
+		msg.push_back(p_at);
+		msg.push_back(p_new_place);
+		msg.push_back(p_new_name);
+		ppeer->put_var(msg);
+	}
+
+}
+
+
 void ScriptEditorDebugger::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("_stack_dump_frame_selected"),&ScriptEditorDebugger::_stack_dump_frame_selected);
@@ -676,6 +1019,16 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_performance_draw"),&ScriptEditorDebugger::_performance_draw);
 	ObjectTypeDB::bind_method(_MD("_performance_select"),&ScriptEditorDebugger::_performance_select);
 	ObjectTypeDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
+	ObjectTypeDB::bind_method(_MD("_live_edit_set"),&ScriptEditorDebugger::_live_edit_set);
+	ObjectTypeDB::bind_method(_MD("_live_edit_clear"),&ScriptEditorDebugger::_live_edit_clear);
+
+	ObjectTypeDB::bind_method(_MD("live_debug_create_node"),&ScriptEditorDebugger::live_debug_create_node);
+	ObjectTypeDB::bind_method(_MD("live_debug_instance_node"),&ScriptEditorDebugger::live_debug_instance_node);
+	ObjectTypeDB::bind_method(_MD("live_debug_remove_node"),&ScriptEditorDebugger::live_debug_remove_node);
+	ObjectTypeDB::bind_method(_MD("live_debug_remove_and_keep_node"),&ScriptEditorDebugger::live_debug_remove_and_keep_node);
+	ObjectTypeDB::bind_method(_MD("live_debug_restore_node"),&ScriptEditorDebugger::live_debug_restore_node);
+	ObjectTypeDB::bind_method(_MD("live_debug_duplicate_node"),&ScriptEditorDebugger::live_debug_duplicate_node);
+	ObjectTypeDB::bind_method(_MD("live_debug_reparent_node"),&ScriptEditorDebugger::live_debug_reparent_node);
 
 	ADD_SIGNAL(MethodInfo("goto_script_line"));
 	ADD_SIGNAL(MethodInfo("breaked",PropertyInfo(Variant::BOOL,"reallydid")));
@@ -843,6 +1196,26 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	info_left->add_margin_child("Clicked Control:",clicked_ctrl);
 	clicked_ctrl_type = memnew( LineEdit );
 	info_left->add_margin_child("Clicked Control Type:",clicked_ctrl_type);
+
+	live_edit_root = memnew( LineEdit );
+
+	{
+		HBoxContainer *lehb = memnew( HBoxContainer );
+		Label *l = memnew( Label("Live Edit Root:") );
+		lehb->add_child(l);
+		l->set_h_size_flags(SIZE_EXPAND_FILL);
+		le_set = memnew( Button("Set From Tree") );
+		lehb->add_child(le_set);
+		le_clear = memnew( Button("Clear") );
+		lehb->add_child(le_clear);
+		info_left->add_child(lehb);
+		MarginContainer *mc = memnew( MarginContainer );
+		mc->add_child(live_edit_root);
+		info_left->add_child(mc);
+		le_set->set_disabled(true);
+		le_clear->set_disabled(true);
+	}
+
 	VBoxContainer *info_right = memnew(VBoxContainer);
 	info_right->set_h_size_flags(SIZE_EXPAND_FILL);
 	info->add_child(info_right);
@@ -867,6 +1240,11 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 
 	hide();
 	log_forced_visible=false;
+
+	p_editor->get_undo_redo()->set_method_notify_callback(_method_changeds,this);
+	p_editor->get_undo_redo()->set_property_notify_callback(_property_changeds,this);
+	live_debug=false;
+	last_path_id=false;
 
 }
 

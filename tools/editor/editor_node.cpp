@@ -93,6 +93,7 @@
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
+
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -103,6 +104,7 @@
 
 #include "plugins/editor_preview_plugins.h"
 
+#include "script_editor_debugger.h"
 
 EditorNode *EditorNode::singleton=NULL;
 
@@ -2410,6 +2412,11 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_FILE_SERVER),!ischecked);
 
 		} break;
+		case RUN_LIVE_DEBUG: {
+
+			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(live_debug_button->is_pressed());
+		} break;
+
 		case RUN_DEPLOY_DUMB_CLIENTS: {
 
 			bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
@@ -3018,6 +3025,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	call_deferred("_set_main_scene_state",state); //do after everything else is done setting up
 	//print_line("set current 6 ");
 	changing_scene=false;
+	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
 
 
 }
@@ -3154,6 +3162,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	prev_scene->set_disabled(previous_scenes.size()==0);
 	opening_prev=false;
+
+	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
 
 	//top_pallete->set_current_tab(0); //always go to scene
 
@@ -4613,6 +4623,14 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 	play_custom_scene_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY_CUSTOM_SCENE));
 	play_custom_scene_button->set_tooltip("Play custom scene ("+keycode_get_string(KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F5)+").");
+
+	live_debug_button = memnew( ToolButton );
+	play_hb->add_child(live_debug_button);
+	live_debug_button->set_toggle_mode(true);
+	live_debug_button->set_focus_mode(Control::FOCUS_NONE);
+	live_debug_button->set_icon(gui_base->get_icon("LiveDebug","EditorIcons"));
+	live_debug_button->connect("pressed", this,"_menu_option",make_binds(RUN_LIVE_DEBUG));
+	live_debug_button->set_tooltip("Toggle Live Debugging On/Off");
 
 	fileserver_menu = memnew( MenuButton );
 	play_hb->add_child(fileserver_menu);
