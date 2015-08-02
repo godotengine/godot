@@ -28,12 +28,22 @@
 /*************************************************************************/
 
 /**
-	@author Masoud BaniHashemian <masoudbh3@gmail.com>
+ * This class derived from fribidi library code with some bug fixes.
+ * https://github.com/behdad/fribidi
+ * You can't compile this class statically in commerical games
+ * because fribidi licensed under LGPL . 
+ * https://github.com/behdad/fribidi/blob/master/COPYING
+ * this class for demo. soon we impelement bidi algorithm from 
+ * unicode site:  http://unicode.org/reports/tr9/ 
+ * and change this class from base. 
+ * this class is only a interface.
+ * 
+ * @author Masoud BaniHashemian <masoudbh3@gmail.com>
 */
 
 #include "bidi.h"
 
-enum BidiLinearEnum {
+enum BidiCharTypeLinearEnum {
   LTR,
   RTL,
   AL,
@@ -54,7 +64,7 @@ enum BidiLinearEnum {
   RLO,
   PDF,
 };
-enum BidiLinearARPEnum {
+enum BidiJoiningTypeLinearEnum {
   U,
   R,
   D,
@@ -122,6 +132,37 @@ enum BidiLinearARPEnum {
 	(x)->next = (list); (list)->prev = (x);
 #define move_run_before(x, list) if ((x)->prev) { delete_run(x); } insert_run_before((x), (list));
 
+static const BidiDefs::BidiCharType linear_enum_to_types_enum[] = {
+  BidiDefs::CHAR_TYPE_LTR,
+  BidiDefs::CHAR_TYPE_RTL,
+  BidiDefs::CHAR_TYPE_AL,
+  BidiDefs::CHAR_TYPE_EN,
+  BidiDefs::CHAR_TYPE_AN,
+  BidiDefs::CHAR_TYPE_ES,
+  BidiDefs::CHAR_TYPE_ET,
+  BidiDefs::CHAR_TYPE_CS,
+  BidiDefs::CHAR_TYPE_NSM,
+  BidiDefs::CHAR_TYPE_BN,
+  BidiDefs::CHAR_TYPE_BS,
+  BidiDefs::CHAR_TYPE_SS,
+  BidiDefs::CHAR_TYPE_WS,
+  BidiDefs::CHAR_TYPE_ON,
+  BidiDefs::CHAR_TYPE_LRE,
+  BidiDefs::CHAR_TYPE_RLE,
+  BidiDefs::CHAR_TYPE_LRO,
+  BidiDefs::CHAR_TYPE_RLO,
+  BidiDefs::CHAR_TYPE_PDF,
+};
+static const BidiDefs::BidiJoiningType linear_enum_to_join_enum[] = {
+  BidiDefs::ARABIC_JOIN_NUN,
+  BidiDefs::ARABIC_JOIN_RIGHT,
+  BidiDefs::ARABIC_JOIN_DUAL,
+  BidiDefs::ARABIC_JOIN_CAUSING,
+  BidiDefs::ARABIC_JOIN_TRANSPARENT,
+  BidiDefs::ARABIC_JOIN_LEFT,
+  BidiDefs::ARABIC_JOIN_IGNORED,
+};
+
 void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring) {
   m_max_level=0;
   m_base_level=0;
@@ -129,36 +170,6 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
   
   if (!str.empty())
   {
-    static const BidiDefs::BidiCharType linear_enum_to_types_enum[] = {
-      BidiDefs::CHAR_TYPE_LTR,
-      BidiDefs::CHAR_TYPE_RTL,
-      BidiDefs::CHAR_TYPE_AL,
-      BidiDefs::CHAR_TYPE_EN,
-      BidiDefs::CHAR_TYPE_AN,
-      BidiDefs::CHAR_TYPE_ES,
-      BidiDefs::CHAR_TYPE_ET,
-      BidiDefs::CHAR_TYPE_CS,
-      BidiDefs::CHAR_TYPE_NSM,
-      BidiDefs::CHAR_TYPE_BN,
-      BidiDefs::CHAR_TYPE_BS,
-      BidiDefs::CHAR_TYPE_SS,
-      BidiDefs::CHAR_TYPE_WS,
-      BidiDefs::CHAR_TYPE_ON,
-      BidiDefs::CHAR_TYPE_LRE,
-      BidiDefs::CHAR_TYPE_RLE,
-      BidiDefs::CHAR_TYPE_LRO,
-      BidiDefs::CHAR_TYPE_RLO,
-      BidiDefs::CHAR_TYPE_PDF,
-    };
-    static const BidiDefs::BidiJoiningType linear_enum_to_join_enum[] = {
-      BidiDefs::ARABIC_JOIN_NUN,
-      BidiDefs::ARABIC_JOIN_RIGHT,
-      BidiDefs::ARABIC_JOIN_DUAL,
-      BidiDefs::ARABIC_JOIN_CAUSING,
-      BidiDefs::ARABIC_JOIN_TRANSPARENT,
-      BidiDefs::ARABIC_JOIN_LEFT,
-      BidiDefs::ARABIC_JOIN_IGNORED,
-    };
     int i;
     BidiRunP *main_run_list = NULL, *explicits_list = NULL, *i_run;
     resize(str.length());
@@ -212,7 +223,7 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
       last_run->next = main_run_list;
     }
     
-    /* P2. P3. Search for first strong character and use its direction as base direction */
+    /* P2. Search for first strong character and use its direction as base direction */
     for_run_list(i_run,main_run_list)
     {
       if(BIDI_IS_LETTER(i_run->type))
@@ -338,7 +349,7 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
       it is L. */
     
     compact_run_list(main_run_list);
-    
+
     /* 4. Resolving weak types */
     {
       BidiDefs::BidiCharType last_strong, prev_type_orig;
@@ -365,12 +376,14 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
 	{
 	  if (i_run->prev->level == i_run->level)
 	    i_run = merge_run_with_prev (i_run);
-	  else
+	  else if ( !BIDI_IS_SENTINEL(prev_type) )
 	   i_run->type = prev_type;
+	  else if ( BIDI_IS_SENTINEL(prev_type) )
+	    i_run->type = next_type;
 	  if (prev_type == next_type && i_run->level == i_run->next->level)
-	    {
-	      i_run = merge_run_with_prev (i_run->next);
-	    }
+	  {
+	    i_run = merge_run_with_prev (i_run->next);
+	  }
 	  continue;
 	}
 
@@ -382,7 +395,6 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
 	    i_run->next->type = BidiDefs::CHAR_TYPE_AN;
 	}
       }
-
 
       last_strong = m_base_dir;
       w4 = true;
@@ -447,9 +459,9 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
 	  prev_type_orig = i_run->next->prev->type;
       }
     }
-    
+
     compact_run_list_neutrals(main_run_list);
-    
+
     /* 5. Resolving Neutral Types */
     {
       /* N1. and N2.*/
@@ -469,7 +481,7 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
     }
 
     compact_run_list (main_run_list);
-    
+
     /* 6. Resolving implicit levels */
     {
       m_max_level = m_base_level;
@@ -495,7 +507,7 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
     }
 
     compact_run_list (main_run_list);
-    
+
     /* Reinsert the explicit codes & BN's that are already removed, from the
       explicits_list to main_run_list. */
     if (explicits_list->next != explicits_list)
@@ -508,7 +520,7 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
       for_run_list (i_run, main_run_list) if (i_run->level == BIDI_SENTINEL)
 	i_run->level = i_run->prev->level;
     }
-    
+
     /* L1. Reset the embedding levels of some chars:
 	1. segment separators,
 	2. paragraph separators,
@@ -546,7 +558,7 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
       }
       shadow_run_list (main_run_list, list, false);
     }
-    
+
     /* Fill embedding level */
     {
       int pos = 0;
@@ -678,6 +690,8 @@ void Bidi::new_input(const String& str, bool shape_arabic, bool shape_mirroring)
 	    dst[i+1].visual_char = c;
 	  }
       }
+      
+      
     }
 
     /* Reorder each line */
@@ -870,24 +884,6 @@ void Bidi::reorder_line(int start, int length) {
     int level, i;
     /* Reorder both the outstring and the order array */
     {
-      if (BIDI_REORDER_NSM)
-      {
-	/* L3. Reorder NSMs. */
-	for (i = start + length - 1; i >= start; i--)
-	  if (BIDI_LEVEL_IS_RTL (dst[i].embedding_level)
-	      && dst[i].bidi_char_type == BidiDefs::CHAR_TYPE_NSM)
-	  {
-	    int seq_end = i;
-	    level = dst[i].embedding_level;
-
-	    for (i--; i >= start && BIDI_IS_EXPLICIT_OR_BN_OR_NSM (dst[i].bidi_char_type)
-		  && dst[i].embedding_level == level; i--)
-	      ;
-	    if (i < start || dst[i].embedding_level != level) i++;
-	    bidi_chars_reverse (i, seq_end - i + 1);
-	  }
-      }
-      
       /* Find max_level of the line.  */
       for (i = start + length - 1; i > start; i--)
 	if (dst[i].embedding_level > max_level)
@@ -936,6 +932,19 @@ String Bidi::get_visual_string() const {
 String Bidi::bidi_visual_string(const String& str) {
   Bidi *b = new Bidi(str);
   return b->get_visual_string();
+}
+
+BidiDefs::BidiCharType Bidi::get_string_base_dir(const String& str) {
+  BidiDefs::BidiCharType dir = BidiDefs::CHAR_TYPE_LTR;
+  for (int i=0 ; i<str.length() ; i++) {
+    BidiDefs::BidiCharType type = linear_enum_to_types_enum[BIDI_GET_CHAR_TYPE (str[i])];
+    if( BIDI_IS_LETTER(type) )
+    {
+      dir = BIDI_LEVEL_TO_DIR ( BIDI_DIR_TO_LEVEL (type) );
+      break;
+    }
+  }
+  return dir;
 }
 
 uint32_t Bidi::hash() const {

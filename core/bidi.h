@@ -31,12 +31,20 @@
 #define H
 
 /**
-	@author Masoud BaniHashemian <masoudbh3@gmail.com>
+ * This class derived from fribidi library code with some bug fixes.
+ * https://github.com/behdad/fribidi
+ * You can't compile this class statically in commerical games
+ * because fribidi licensed under LGPL . 
+ * https://github.com/behdad/fribidi/blob/master/COPYING
+ * this class for demo. soon we impelement bidi algorithm from 
+ * unicode site:  http://unicode.org/reports/tr9/ 
+ * and change this class from base. 
+ * this class is only a interface.
+ * 
+ * @author Masoud BaniHashemian <masoudbh3@gmail.com>
 */
 
 #include "ustring.h"
-
-#define BIDI_REORDER_NSM	1
 
 #define BIDI_MASK_RTL		0x00000001L	/* Is right to left */
 #define BIDI_MASK_ARABIC	0x00000002L	/* Is arabic */
@@ -208,6 +216,7 @@ public:
   String get_input_string() const;
   String get_visual_string() const;
   static String bidi_visual_string(const String& str);
+  static BidiDefs::BidiCharType get_string_base_dir(const String& str);
   
 };
 

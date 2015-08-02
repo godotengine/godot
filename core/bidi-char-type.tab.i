@@ -28,7 +28,17 @@
 /*************************************************************************/
 
 /**
-	@author Masoud BaniHashemian <masoud.bh@chmail.ir>
+ * This class derived from fribidi library code with some bug fixes.
+ * https://github.com/behdad/fribidi
+ * You can't compile this class statically in commerical games
+ * because fribidi licensed under LGPL . 
+ * https://github.com/behdad/fribidi/blob/master/COPYING
+ * this class for demo. soon we impelement bidi algorithm from 
+ * unicode site:  http://unicode.org/reports/tr9/ 
+ * and change this class from base. 
+ * this class is only a interface.
+ * 
+ * @author Masoud BaniHashemian <masoudbh3@gmail.com>
 */
 
 /*
