@@ -181,6 +181,7 @@ public:
 	void set_name(const String& p_name);
 	
 	void add_child(Node *p_child);
+	void set_child(String name, Node *p_child);
 	void remove_child(Node *p_child);
 	
 	int get_child_count() const;
