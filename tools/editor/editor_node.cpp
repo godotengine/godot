@@ -93,6 +93,7 @@
 #include "plugins/light_occluder_2d_editor_plugin.h"
 #include "plugins/color_ramp_editor_plugin.h"
 #include "plugins/collision_shape_2d_editor_plugin.h"
+
 // end
 #include "tools/editor/io_plugins/editor_texture_import_plugin.h"
 #include "tools/editor/io_plugins/editor_scene_import_plugin.h"
@@ -103,16 +104,38 @@
 
 #include "plugins/editor_preview_plugins.h"
 
+#include "script_editor_debugger.h"
 
 EditorNode *EditorNode::singleton=NULL;
 
 void EditorNode::_update_scene_tabs() {
 
 	scene_tabs->clear_tabs();
+	Ref<Texture> script_icon = gui_base->get_icon("Script","EditorIcons");
 	for(int i=0;i<editor_data.get_edited_scene_count();i++) {
+
+		String type=editor_data.get_scene_type(i);
+		Ref<Texture> icon;
+		if (type!=String()) {
+
+			if (!gui_base->has_icon(type,"EditorIcons")) {
+				type="Node";
+			}
+
+			icon=gui_base->get_icon(type,"EditorIcons");
+
+		}
+
+
+
 		int current = editor_data.get_edited_scene();
 		bool unsaved = (i==current)?saved_version!=editor_data.get_undo_redo().get_version():editor_data.get_scene_version(i)!=0;
-		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""));
+		scene_tabs->add_tab(editor_data.get_scene_title(i)+(unsaved?"(*)":""),icon);
+
+		if (editor_data.get_scene_root_script(i).is_valid()) {
+			scene_tabs->set_tab_right_button(i,script_icon);
+		}
+
 	}
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
@@ -206,7 +229,7 @@ void EditorNode::_notification(int p_what) {
 				circle_step=0;
 
 			circle_step_msec=tick;
-			circle_step_frame=frame+1;
+		circle_step_frame=frame+1;
 
 			update_menu->set_icon(gui_base->get_icon("Progress"+itos(circle_step+1),"EditorIcons"));
 
@@ -2389,6 +2412,11 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_FILE_SERVER),!ischecked);
 
 		} break;
+		case RUN_LIVE_DEBUG: {
+
+			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(live_debug_button->is_pressed());
+		} break;
+
 		case RUN_DEPLOY_DUMB_CLIENTS: {
 
 			bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
@@ -2997,6 +3025,7 @@ void EditorNode::set_current_scene(int p_idx) {
 	call_deferred("_set_main_scene_state",state); //do after everything else is done setting up
 	//print_line("set current 6 ");
 	changing_scene=false;
+	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
 
 
 }
@@ -3133,6 +3162,8 @@ Error EditorNode::load_scene(const String& p_scene) {
 
 	prev_scene->set_disabled(previous_scenes.size()==0);
 	opening_prev=false;
+
+	ScriptEditor::get_singleton()->get_debugger()->update_live_edit_root();
 
 	//top_pallete->set_current_tab(0); //always go to scene
 
@@ -3569,6 +3600,7 @@ void EditorNode::_bind_methods() {
 	ObjectTypeDB::bind_method("set_current_scene",&EditorNode::set_current_scene);
 	ObjectTypeDB::bind_method("set_current_version",&EditorNode::set_current_version);
 	ObjectTypeDB::bind_method("_scene_tab_changed",&EditorNode::_scene_tab_changed);
+	ObjectTypeDB::bind_method("_scene_tab_script_edited",&EditorNode::_scene_tab_script_edited);
 	ObjectTypeDB::bind_method("_set_main_scene_state",&EditorNode::_set_main_scene_state);
 	ObjectTypeDB::bind_method("_update_scene_tabs",&EditorNode::_update_scene_tabs);
 
@@ -4013,6 +4045,13 @@ void EditorNode::_load_docks() {
 }
 
 
+void EditorNode::_scene_tab_script_edited(int p_tab) {
+
+	Ref<Script> script  = editor_data.get_scene_root_script(p_tab);
+	if (script.is_valid())
+		edit_resource(script);
+}
+
 void EditorNode::_scene_tab_changed(int p_tab) {
 
 
@@ -4167,6 +4206,7 @@ EditorNode::EditorNode() {
 	scene_tabs->add_tab("unsaved");
 	scene_tabs->set_tab_align(Tabs::ALIGN_CENTER);
 	scene_tabs->connect("tab_changed",this,"_scene_tab_changed");
+	scene_tabs->connect("right_button_pressed",this,"_scene_tab_script_edited");
 	top_dark_vb->add_child(scene_tabs);
 	//left
 	left_l_hsplit = memnew( HSplitContainer );
@@ -4583,6 +4623,14 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom","EditorIcons"));
 	play_custom_scene_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY_CUSTOM_SCENE));
 	play_custom_scene_button->set_tooltip("Play custom scene ("+keycode_get_string(KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F5)+").");
+
+	live_debug_button = memnew( ToolButton );
+	play_hb->add_child(live_debug_button);
+	live_debug_button->set_toggle_mode(true);
+	live_debug_button->set_focus_mode(Control::FOCUS_NONE);
+	live_debug_button->set_icon(gui_base->get_icon("LiveDebug","EditorIcons"));
+	live_debug_button->connect("pressed", this,"_menu_option",make_binds(RUN_LIVE_DEBUG));
+	live_debug_button->set_tooltip("Toggle Live Debugging On/Off");
 
 	fileserver_menu = memnew( MenuButton );
 	play_hb->add_child(fileserver_menu);

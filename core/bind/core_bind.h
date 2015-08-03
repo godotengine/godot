@@ -436,6 +436,12 @@ public:
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
 
+	String raw_to_base64(const DVector<uint8_t>& p_arr);
+	DVector<uint8_t> base64_to_raw(const String& p_str);
+
+	String utf8_to_base64(const String& p_str);
+	String base64_to_utf8(const String& p_str);
+
 	_Marshalls() {};
 };
 

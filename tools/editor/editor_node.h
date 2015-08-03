@@ -152,6 +152,7 @@ class EditorNode : public Node {
 		RUN_PROJECT_MANAGER,
 		RUN_FILE_SERVER,
 		RUN_DEPLOY_DUMB_CLIENTS,
+		RUN_LIVE_DEBUG,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_IMPORT,
@@ -239,6 +240,7 @@ class EditorNode : public Node {
 	ToolButton *animation_menu;
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
+	ToolButton *live_debug_button;
 	TextureProgress *audio_vu;
 	MenuButton *fileserver_menu;
 
@@ -469,6 +471,7 @@ class EditorNode : public Node {
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
 	void _scene_tab_changed(int p_tab);
+	void _scene_tab_script_edited(int p_tab);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state);

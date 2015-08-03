@@ -190,7 +190,7 @@ class DaeExporter:
 				
 				if (not os.path.isfile(dstfile)):
 					shutil.copy(imgpath,dstfile)
-					imgpath="images/"+os.path.basename(imgpath)
+				imgpath="images/"+os.path.basename(imgpath)
 			else:
 				### if file is not found save it as png file in the destination folder
 				img_tmp_path = image.filepath	
@@ -204,7 +204,7 @@ class DaeExporter:
 				if (not os.path.isfile(dstfile)):
 					
 					image.save()
-					imgpath="images/"+os.path.basename(image.filepath)
+				imgpath="images/"+os.path.basename(image.filepath)
 				image.filepath = img_tmp_path
 
 		else:

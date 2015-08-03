@@ -2,8 +2,7 @@
 Import('env')
 
 sources = [
-
-	'trex.c',
+	'nrex.cpp',
 	'regex.cpp',
 ]
 env.add_source_files(env.drivers_sources, sources)

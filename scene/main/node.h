@@ -255,8 +255,9 @@ public:
 
 	int get_position_in_parent() const;
 
-	Node *duplicate() const;
+	Node *duplicate(bool p_use_instancing=false) const;
 	Node *duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const;
+
 	//Node *clone_tree() const;
 
 	// used by editors, to save what has changed only
@@ -274,6 +275,8 @@ public:
 	bool can_process() const;
 
 	static void print_stray_nodes();
+
+	String validate_child_name(const String& p_name) const;
 
 	void queue_delete();
 

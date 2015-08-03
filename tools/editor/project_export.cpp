@@ -1131,7 +1131,7 @@ ProjectExportDialog::ProjectExportDialog(EditorNode *p_editor) {
 	tree->set_column_min_width(1,90);
 
 	filters = memnew( LineEdit );
-	vb->add_margin_child("Filters for Non-Resources (Comma Separated):",filters);
+	vb->add_margin_child("Filters to export non-resource files (Comma Separated, ie: *.json, *.txt):",filters);
 	filters->connect("text_changed",this,"_filters_edited");
 
 
