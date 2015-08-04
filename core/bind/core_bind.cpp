@@ -694,6 +694,17 @@ bool _OS::is_debug_build() const {
 
 }
 
+void _OS::set_screen_orientation(ScreenOrientation p_orientation) {
+
+	OS::get_singleton()->set_screen_orientation(OS::ScreenOrientation(p_orientation));
+}
+
+_OS::ScreenOrientation _OS::get_screen_orientation() const {
+
+	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
+}
+
+
 String _OS::get_system_dir(SystemDir p_dir) const {
 
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
@@ -751,6 +762,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
 	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
 	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+
+	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
 
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
@@ -862,6 +876,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_OCTOBER );
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
+
+	BIND_CONSTANT( SCREEN_ORIENTATION_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR );
 
 	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
 	BIND_CONSTANT( SYSTEM_DIR_DCIM );
