@@ -243,6 +243,15 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 				if (request_scene_tree)
 					request_scene_tree(request_scene_tree_ud);
+
+			} else if (command=="breakpoint") {
+
+				bool set = cmd[3];
+				if (set)
+					insert_breakpoint(cmd[2],cmd[1]);
+				else
+					remove_breakpoint(cmd[2],cmd[1]);
+
 			} else {
 				_parse_live_edit(cmd);
 			}
@@ -518,6 +527,13 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			if (request_scene_tree)
 				request_scene_tree(request_scene_tree_ud);
+		} else if (command=="breakpoint") {
+
+			bool set = cmd[3];
+			if (set)
+				insert_breakpoint(cmd[2],cmd[1]);
+			else
+				remove_breakpoint(cmd[2],cmd[1]);
 		} else {
 			_parse_live_edit(cmd);
 		}

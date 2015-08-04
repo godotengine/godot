@@ -1078,6 +1078,19 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath& p_at, const 
 
 }
 
+void ScriptEditorDebugger::set_breakpoint(const String& p_path,int p_line,bool p_enabled) {
+
+	if (connection.is_valid()) {
+	       Array msg;
+	       msg.push_back("breakpoint");
+	       msg.push_back(p_path);
+	       msg.push_back(p_line);
+	       msg.push_back(p_enabled);
+	       ppeer->put_var(msg);
+       }
+}
+
+
 void ScriptEditorDebugger::_error_selected(int p_idx) {
 
 	error_stack->clear();

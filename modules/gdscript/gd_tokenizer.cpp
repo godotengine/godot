@@ -642,6 +642,11 @@ void GDTokenizerText::_advance() {
 						str+=res;
 
 					} else {
+						if (CharType(GETCHAR(i))=='\n') {
+							line++;
+							column=0;
+						}
+
 						str+=CharType(GETCHAR(i));
 					}
 					i++;

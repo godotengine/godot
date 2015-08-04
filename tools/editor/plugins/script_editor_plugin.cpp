@@ -1101,6 +1101,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			int line=current->get_text_edit()->cursor_get_line();
 			bool dobreak = !current->get_text_edit()->is_line_set_as_breakpoint(line);
 			current->get_text_edit()->set_line_as_breakpoint(line,dobreak);
+			get_debugger()->set_breakpoint(current->get_edited_script()->get_path(),line+1,dobreak);
 		} break;
 		case DEBUG_NEXT: {
 

@@ -173,6 +173,8 @@ public:
 	void live_debug_duplicate_node(const NodePath& p_at,const String& p_new_name);
 	void live_debug_reparent_node(const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos);
 
+	void set_breakpoint(const String& p_path,int p_line,bool p_enabled);
+
 	void update_live_edit_root();
 
 
