@@ -62,7 +62,7 @@ func _fixed_process(delta):
 		next_anim="idle"
 		next_mirror=false
 	elif (speed.length()>IDLE_SPEED*0.1):
-		var angle = atan2(abs(speed.x),speed.y)	
+		var angle = atan2(speed.y, abs(speed.x))	
 		
 		next_mirror = speed.x>0
 		if (angle<PI/8):
