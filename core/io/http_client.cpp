@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -325,7 +325,7 @@ Error HTTPClient::poll(){
 
 						if (i==0 && responses[i].begins_with("HTTP")) {
 
-							String num = responses[i].get_slice(" ",1);
+							String num = responses[i].get_slicec(' ',1);
 							response_num=num.to_int();
 						} else {
 

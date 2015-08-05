@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -196,6 +196,14 @@ void Node::_propagate_enter_tree() {
 	}	
 
 	data.blocked--;
+
+#ifdef DEBUG_ENABLED
+
+	if (ScriptDebugger::get_singleton() && data.filename!=String()) {
+		//used for live edit
+		data.tree->live_scene_edit_cache[data.filename].insert(this);
+	}
+#endif
 	// enter groups
 }
 
@@ -205,6 +213,28 @@ void Node::_propagate_exit_tree() {
 
 	//block while removing children
 
+#ifdef DEBUG_ENABLED
+
+	if (ScriptDebugger::get_singleton() && data.filename!=String()) {
+		//used for live edit
+		Map<String,Set<Node*> >::Element *E=data.tree->live_scene_edit_cache.find(data.filename);
+		if (E) {
+			E->get().erase(this);
+			if (E->get().size()==0) {
+				data.tree->live_scene_edit_cache.erase(E);
+			}
+		}
+
+		Map<Node*,Map<ObjectID,Node*> >::Element *F=data.tree->live_edit_remove_list.find(this);
+		if (F) {
+			for (Map<ObjectID,Node*>::Element*G=F->get().front();G;G=G->next()) {
+
+				memdelete(G->get());
+			}
+			data.tree->live_edit_remove_list.erase(F);
+		}
+	}
+#endif
 	data.blocked++;
 
 	for (int i=data.children.size()-1;i>=0;i--) {
@@ -295,7 +325,7 @@ void Node::add_child_notify(Node *p_child) {
 	// to be used when not wanted	
 }
 
-
+/*
 void Node::remove_and_delete_child(Node *p_child) {
 
 	ERR_FAIL_NULL( p_child );
@@ -305,6 +335,7 @@ void Node::remove_and_delete_child(Node *p_child) {
 	memdelete(p_child);
 
 }
+*/
 
 void Node::remove_child_notify(Node *p_child) {
 
@@ -551,6 +582,52 @@ void Node::set_human_readable_collision_renaming(bool p_enabled) {
 }
 
 
+
+String Node::validate_child_name(const String& p_name) const {
+
+	//this approach to autoset node names is human readable but very slow
+	//it's turned on while running in the editor
+
+	String basename = p_name;
+
+	if (basename==String()) {
+
+		return String();
+	}
+
+	int val=1;
+
+	for(;;) {
+
+		String attempted = val > 1 ? (basename + " " +itos(val) ) : basename;
+
+		bool found=false;
+
+		for (int i=0;i<data.children.size();i++) {
+
+			//if (data.children[i]==p_child)
+			//	continue;
+			if (data.children[i]->get_name() == attempted) {
+				found=true;
+				break;
+			}
+
+		}
+
+		if (found) {
+
+			val++;
+			continue;
+		}
+
+		return attempted;
+		break;
+	}
+
+	return basename;
+
+}
+
 void Node::_validate_child_name(Node *p_child) {
 
 	/* Make sure the name is unique */
@@ -640,6 +717,7 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 	p_child->data.pos=data.children.size();
 	data.children.push_back( p_child );
 	p_child->data.parent=this;
+	p_child->notification(NOTIFICATION_PARENTED);
 
 	if (data.tree) {
 		p_child->_set_tree(data.tree);
@@ -648,7 +726,6 @@ void Node::_add_child_nocheck(Node* p_child,const StringName& p_name) {
 	/* Notify */
 	//recognize childs created in this node constructor
 	p_child->data.parent_owned=data.in_constructor;
-	p_child->notification(NOTIFICATION_PARENTED);
 	add_child_notify(p_child);
 
 
@@ -837,6 +914,28 @@ Node *Node::get_node(const NodePath& p_path) const {
 bool Node::has_node(const NodePath& p_path) const {
 
 	return _get_node(p_path)!=NULL;
+}
+
+
+Node* Node::find_node(const String& p_mask,bool p_recursive,bool p_owned) const {
+
+	Node * const*cptr = data.children.ptr();
+	int ccount = data.children.size();
+	for(int i=0;i<ccount;i++) {
+		if (p_owned && !cptr[i]->data.owner)
+			continue;
+		if (cptr[i]->data.name.operator String().match(p_mask))
+			return cptr[i];
+
+		if (!p_recursive)
+			continue;
+
+		Node* ret = cptr[i]->find_node(p_mask,true,p_owned);
+		if (ret)
+			return ret;
+	}
+	return NULL;
+
 }
 
 Node *Node::get_parent() const {
@@ -1300,18 +1399,31 @@ int Node::get_position_in_parent() const {
 
 
 
-Node *Node::duplicate() const {
+Node *Node::duplicate(bool p_use_instancing) const {
 
 
 	Node *node=NULL;
 
-	Object *obj = ObjectTypeDB::instance(get_type());
-	ERR_FAIL_COND_V(!obj,NULL);
-	node = obj->cast_to<Node>();
-	if (!node)
-		memdelete(obj);
-	ERR_FAIL_COND_V(!node,NULL);
+	bool instanced=false;
 
+	if (p_use_instancing && get_filename()!=String()) {
+
+		Ref<PackedScene> res = ResourceLoader::load(get_filename());
+		ERR_FAIL_COND_V(res.is_null(),NULL);
+		node=res->instance();
+		ERR_FAIL_COND_V(!node,NULL);
+
+		instanced=true;
+
+	} else {
+
+		Object *obj = ObjectTypeDB::instance(get_type());
+		ERR_FAIL_COND_V(!obj,NULL);
+		node = obj->cast_to<Node>();
+		if (!node)
+			memdelete(obj);
+		ERR_FAIL_COND_V(!node,NULL);
+	}
 
 
 	if (get_filename()!="") { //an instance
@@ -1337,7 +1449,10 @@ Node *Node::duplicate() const {
 
 		if (get_child(i)->data.parent_owned)
 			continue;
-		Node *dup = get_child(i)->duplicate();
+		if (instanced && get_child(i)->data.owner==this)
+			continue; //part of instance
+
+		Node *dup = get_child(i)->duplicate(p_use_instancing);
 		if (!dup) {
 
 			memdelete(node);
@@ -1416,6 +1531,41 @@ void Node::_duplicate_and_reown(Node* p_new_parent, const Map<Node*,Node*>& p_re
 
 }
 
+
+void Node::_duplicate_signals(const Node* p_original,Node* p_copy) const {
+
+	if (this!=p_original && get_owner()!=p_original)
+		return;
+
+	List<Connection> conns;
+	get_all_signal_connections(&conns);
+
+	for (List<Connection>::Element *E=conns.front();E;E=E->next()) {
+
+		if (E->get().flags&CONNECT_PERSIST) {
+			//user connected
+			NodePath p = p_original->get_path_to(this);
+			Node *copy = p_copy->get_node(p);
+
+			Node *target = E->get().target->cast_to<Node>();
+			if (!target)
+				continue;
+			NodePath ptarget = p_original->get_path_to(target);
+			Node *copytarget = p_copy->get_node(ptarget);
+
+			if (copy && copytarget) {
+				copy->connect(E->get().signal,copytarget,E->get().method,E->get().binds,CONNECT_PERSIST);
+			}
+		}
+	}
+
+	for(int i=0;i<get_child_count();i++) {
+		get_child(i)->_duplicate_signals(p_original,p_copy);
+	}
+
+}
+
+
 Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 
 
@@ -1454,6 +1604,7 @@ Node *Node::duplicate_and_reown(const Map<Node*,Node*>& p_reown_map) const {
 		get_child(i)->_duplicate_and_reown(node,p_reown_map);
 	}
 
+	_duplicate_signals(this,node);
 	return node;
 
 }
@@ -1757,19 +1908,30 @@ void Node::get_argument_options(const StringName& p_function,int p_idx,List<Stri
 	Object::get_argument_options(p_function,p_idx,r_options);
 }
 
+
+void Node::clear_internal_tree_resource_paths() {
+
+	clear_internal_resource_paths();
+	for(int i=0;i<data.children.size();i++) {
+		data.children[i]->clear_internal_tree_resource_paths();
+	}
+
+}
+
 void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("set_name","name"),&Node::set_name);
 	ObjectTypeDB::bind_method(_MD("get_name"),&Node::get_name);
 	ObjectTypeDB::bind_method(_MD("add_child","node:Node"),&Node::add_child);
 	ObjectTypeDB::bind_method(_MD("remove_child","node:Node"),&Node::remove_child);
-	ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
+	//ObjectTypeDB::bind_method(_MD("remove_and_delete_child","node:Node"),&Node::remove_and_delete_child);
 	ObjectTypeDB::bind_method(_MD("get_child_count"),&Node::get_child_count);
 	ObjectTypeDB::bind_method(_MD("get_children"),&Node::_get_children);
 	ObjectTypeDB::bind_method(_MD("get_child:Node","idx"),&Node::get_child);
 	ObjectTypeDB::bind_method(_MD("has_node","path"),&Node::has_node);
 	ObjectTypeDB::bind_method(_MD("get_node:Node","path"),&Node::get_node);
 	ObjectTypeDB::bind_method(_MD("get_parent:Parent"),&Node::get_parent);
+	ObjectTypeDB::bind_method(_MD("find_node:Node","mask","recursive","owned"),&Node::get_node,DEFVAL(true),DEFVAL(true));
 	ObjectTypeDB::bind_method(_MD("has_node_and_resource","path"),&Node::has_node_and_resource);
 	ObjectTypeDB::bind_method(_MD("get_node_and_resource","path"),&Node::_get_node_and_resource);
 
@@ -1812,7 +1974,7 @@ void Node::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("get_tree:SceneTree"),&Node::get_tree);
 
-	ObjectTypeDB::bind_method(_MD("duplicate:Node"),&Node::duplicate);
+	ObjectTypeDB::bind_method(_MD("duplicate:Node","use_instancing"),&Node::duplicate,DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("replace_by","node:Node","keep_data"),&Node::replace_by,DEFVAL(false));
 
 	ObjectTypeDB::bind_method(_MD("get_viewport"),&Node::get_viewport);
@@ -1821,7 +1983,7 @@ void Node::_bind_methods() {
 #ifdef TOOLS_ENABLED
 	ObjectTypeDB::bind_method(_MD("_set_import_path","import_path"),&Node::set_import_path);
 	ObjectTypeDB::bind_method(_MD("_get_import_path"),&Node::get_import_path);
-	ADD_PROPERTY( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
+	ADD_PROPERTYNZ( PropertyInfo(Variant::NODE_PATH,"_import_path",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR),_SCS("_set_import_path"),_SCS("_get_import_path"));
 
 #endif
 

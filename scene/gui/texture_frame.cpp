@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,9 +77,9 @@ void TextureFrame::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("set_expand","enable"), & TextureFrame::set_expand );
 	ObjectTypeDB::bind_method(_MD("has_expand"), & TextureFrame::has_expand );
 
-	ADD_PROPERTY( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
-	ADD_PROPERTY( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
-	ADD_PROPERTY( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), _SCS("set_texture"),_SCS("get_texture") );
+	ADD_PROPERTYNO( PropertyInfo( Variant::COLOR, "modulate"), _SCS("set_modulate"),_SCS("get_modulate") );
+	ADD_PROPERTYNZ( PropertyInfo( Variant::BOOL, "expand" ), _SCS("set_expand"),_SCS("has_expand") );
 
 }
 
@@ -88,8 +88,8 @@ void TextureFrame::set_texture(const Ref<Texture>& p_tex) {
 
 	texture=p_tex;
 	update();
-	if (texture.is_valid())
-		texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
+	//if (texture.is_valid())
+	//	texture->set_flags(texture->get_flags()&(~Texture::FLAG_REPEAT)); //remove repeat from texture, it looks bad in sprites
 	minimum_size_changed();
 }
 

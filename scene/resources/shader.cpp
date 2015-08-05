@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 Shader::Mode Shader::get_mode() const {
 
-	return (Mode)VisualServer::get_singleton()->shader_get_mode(shader);
+	return mode;
 }
 
 void Shader::set_code( const String& p_vertex, const String& p_fragment, const String& p_light,int p_fragment_ofs,int p_light_ofs) {
@@ -136,8 +136,10 @@ void Shader::_set_code(const Dictionary& p_string) {
 	if (p_string.has("default_tex")) {
 		Array arr=p_string["default_tex"];
 		if ((arr.size()&1)==0) {
-			for(int i=0;i<arr.size();i+=2)
+			for(int i=0;i<arr.size();i+=2) {
+
 				set_default_texture_param(arr[i],arr[i+1]);
+			}
 		}
 	}
 }
@@ -201,6 +203,7 @@ void Shader::_bind_methods() {
 
 Shader::Shader(Mode p_mode) {
 
+	mode=p_mode;
 	shader = VisualServer::get_singleton()->shader_create(VS::ShaderMode(p_mode));
 	params_cache_dirty=true;
 }
@@ -338,7 +341,6 @@ RES ResourceFormatLoaderShader::load(const String &p_path,const String& p_origin
 				String type = right.substr(0,popenpos);
 				String param = right.substr(popenpos+1,pclosepos-popenpos-1).strip_edges();
 
-				print_line("type: "+type+" param: "+param);
 
 				if (type=="tex") {
 

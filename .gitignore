@@ -23,6 +23,9 @@ tools/editor/editor_icons.cpp
 make.bat
 log.txt
 
+# Javascript specific
+*.bc
+
 # Android specific
 platform/android/java/local.properties
 platform/android/java/project.properties
@@ -262,3 +265,21 @@ Desktop.ini
 $RECYCLE.BIN/
 logo.h
 *.autosave
+
+# https://github.com/github/gitignore/blob/master/Global/Tags.gitignore
+# Ignore tags created by etags, ctags, gtags (GNU global) and cscope
+TAGS
+!TAGS/
+tags
+!tags/
+gtags.files
+GTAGS
+GRTAGS
+GPATH
+cscope.files
+cscope.out
+cscope.in.out
+cscope.po.out
+godot.creator.*
+
+projects/

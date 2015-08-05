@@ -3140,7 +3140,7 @@
 		<constant name="MODE_OPEN_DIR" value="1">
 		</constant>
 		<constant name="MODE_OPEN_FILE" value="0">
-			Editor will not allow to select unexisting files.
+			Editor will not allow to select nonexistent files.
 		</constant>
 		<constant name="MODE_SAVE_FILE" value="2">
 			Editor will warn when a file exists.

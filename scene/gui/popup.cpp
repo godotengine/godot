@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,6 +80,48 @@ void Popup::_fix_size() {
 		set_global_pos(pos);
 
 #endif
+
+}
+
+
+void Popup::set_as_minsize() {
+
+	Size2 total_minsize;
+
+	for(int i=0;i<get_child_count();i++) {
+
+		Control *c=get_child(i)->cast_to<Control>();
+		if (!c)
+			continue;
+		if (c->is_hidden())
+			continue;
+
+		Size2 minsize = c->get_combined_minimum_size();
+
+		for(int j=0;j<2;j++) {
+
+			Margin m_beg = Margin(0+j);
+			Margin m_end = Margin(2+j);
+
+			float margin_begin = c->get_margin(m_beg);
+			float margin_end = c->get_margin(m_end);
+			AnchorType anchor_begin = c->get_anchor(m_beg);
+			AnchorType anchor_end = c->get_anchor(m_end);
+
+			if (anchor_begin == ANCHOR_BEGIN)
+				minsize[j]+=margin_begin;
+			if (anchor_end == ANCHOR_END)
+				minsize[j]+=margin_end;
+
+		}
+
+		print_line(String(c->get_type())+": "+minsize);
+
+		total_minsize.width = MAX( total_minsize.width, minsize.width );
+		total_minsize.height = MAX( total_minsize.height, minsize.height );
+	}
+
+	set_size(total_minsize);
 
 }
 

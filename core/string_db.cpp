@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,7 +28,7 @@
 /*************************************************************************/
 #include "string_db.h"
 #include "print_string.h"
-
+#include "os/os.h"
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs; scs.ptr=p_ptr; return scs;
 }
@@ -55,14 +55,28 @@ void StringName::setup() {
 void StringName::cleanup() {
 	
 	_global_lock();	
+	int lost_strings=0;
 	for(int i=0;i<STRING_TABLE_LEN;i++) {
 		
 		while(_table[i]) {
 			
 			_Data*d=_table[i];
-			_table[i]=_table[i]->next;
+			lost_strings++;
+			if (OS::get_singleton()->is_stdout_verbose()) {
+
+				if (d->cname) {
+					print_line("Orphan StringName: "+String(d->cname));
+				} else {
+					print_line("Orphan StringName: "+String(d->name));
+				}
+			}
+
+			_table[i]=_table[i]->next;			
 			memdelete(d);
 		}
+	}
+	if (OS::get_singleton()->is_stdout_verbose() && lost_strings) {
+		print_line("StringName: "+itos(lost_strings)+" unclaimed string names at exit.");
 	}
 	_global_unlock();	
 }
@@ -144,7 +158,7 @@ void StringName::operator=(const StringName& p_name) {
 		_data = p_name._data;		
 	}
 }
-
+/* was inlined
 StringName::operator String() const {
 	
 	if (_data)
@@ -152,7 +166,7 @@ StringName::operator String() const {
 	
 	return "";
 }
-
+*/
 StringName::StringName(const StringName& p_name) {
 	
 	ERR_FAIL_COND(!configured);

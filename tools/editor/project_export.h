@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 #include "scene/gui/control.h"
 #include "scene/gui/tree.h"
 #include "scene/gui/label.h"
-#include "scene/gui/file_dialog.h"
+#include "tools/editor/editor_file_dialog.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tab_container.h"
@@ -80,8 +80,8 @@ private:
 
 	Tree * tree;
 
-	FileDialog *pck_export;
-	FileDialog *file_export;
+	EditorFileDialog *pck_export;
+	EditorFileDialog *file_export;
 	CheckButton *file_export_check;
 	LineEdit *file_export_password;
 

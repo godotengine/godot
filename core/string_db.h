@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -114,7 +114,17 @@ public:
 	}
 	bool operator!=(const StringName& p_name) const;
 	
-	operator String() const;
+	_FORCE_INLINE_ operator String() const {
+
+		if (_data) {
+			if (_data->cname )
+				return String(_data->cname);
+			else
+				return _data->name;
+		}
+
+		return String();
+	}
 
 	static StringName search(const char *p_name);
 	static StringName search(const CharType *p_name);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 
 	if (!files) {
 		files = memnew((Map<String, Vector<uint8_t> >));
-	};
+	}
 
 	String name;
 	if (Globals::get_singleton())
@@ -49,7 +49,7 @@ void FileAccessMemory::register_file(String p_name, Vector<uint8_t> p_data) {
 	name = DirAccess::normalize_path(name);
 
 	(*files)[name] = p_data;
-};
+}
 
 void FileAccessMemory::cleanup() {
 
@@ -57,13 +57,13 @@ void FileAccessMemory::cleanup() {
 		return;
 
 	memdelete(files);
-};
+}
 
 
 FileAccess* FileAccessMemory::create() {
 
 	return memnew(FileAccessMemory);
-};
+}
 
 bool FileAccessMemory::file_exists(const String& p_name) {
 
@@ -71,8 +71,16 @@ bool FileAccessMemory::file_exists(const String& p_name) {
 	name = DirAccess::normalize_path(name);
 
 	return files && (files->find(name) != NULL);
-};
+}
 
+
+Error FileAccessMemory::open_custom(const uint8_t* p_data, int p_len) {
+
+	data=(uint8_t*)p_data;
+	length=p_len;
+	pos=0;
+	return OK;
+}
 
 Error FileAccessMemory::_open(const String& p_path, int p_mode_flags) {
 
@@ -89,57 +97,57 @@ Error FileAccessMemory::_open(const String& p_path, int p_mode_flags) {
 	pos = 0;
 
 	return OK;
-};
+}
 
 void FileAccessMemory::close() {
 
 	data = NULL;
-};
+}
 
 bool FileAccessMemory::is_open() const {
 
 	return data != NULL;
-};
+}
 
 void FileAccessMemory::seek(size_t p_position) {
 
 	ERR_FAIL_COND(!data);
 	pos = p_position;
-};
+}
 
 void FileAccessMemory::seek_end(int64_t p_position) {
 
 	ERR_FAIL_COND(!data);
 	pos = length + p_position;
-};
+}
 
 size_t FileAccessMemory::get_pos() const {
 
 	ERR_FAIL_COND_V(!data, 0);
 	return pos;
-};
+}
 
 size_t FileAccessMemory::get_len() const {
 
 	ERR_FAIL_COND_V(!data, 0);
 	return length;
-};
+}
 
 bool FileAccessMemory::eof_reached() const {
 
 	return pos >= length;
-};
+}
 
 uint8_t FileAccessMemory::get_8() const {
 
-	uint8_t ret;
+	uint8_t ret = 0;
 	if (pos < length) {
 		ret = data[pos];
-	};
+	}
 	++pos;
 
 	return ret;
-};
+}
 
 int FileAccessMemory::get_buffer(uint8_t *p_dst,int p_length) const {
 
@@ -156,19 +164,19 @@ int FileAccessMemory::get_buffer(uint8_t *p_dst,int p_length) const {
 	pos += p_length;
 
 	return read;
-};
+}
 
 Error FileAccessMemory::get_error() const {
 
 	return pos >= length ? ERR_FILE_EOF : OK;
-};
+}
 
 void FileAccessMemory::store_8(uint8_t p_byte) {
 
 	ERR_FAIL_COND(!data);
 	ERR_FAIL_COND(pos >= length);
 	data[pos++] = p_byte;
-};
+}
 
 void FileAccessMemory::store_buffer(const uint8_t *p_src,int p_length) {
 
@@ -176,11 +184,11 @@ void FileAccessMemory::store_buffer(const uint8_t *p_src,int p_length) {
 	int write = MIN(p_length, left);
 	if (write < p_length) {
 		WARN_PRINT("Writing less data than requested");
-	};
+	}
 
 	copymem(&data[pos], p_src, write);
 	pos += p_length;
-};
+}
 
 FileAccessMemory::FileAccessMemory() {
 

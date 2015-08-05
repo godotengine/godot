@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -679,7 +679,7 @@ public:
 	virtual void begin_scene(RID p_viewport_data,RID p_env,VS::ScenarioDebugMode p_debug);
 	virtual void begin_shadow_map( RID p_light_instance, int p_shadow_pass );
 
-	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection);
+	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection,bool p_ortho_hint);
 
 	virtual void add_light( RID p_light_instance ); ///< all "add_light" calls happen before add_geometry calls
 
@@ -696,6 +696,7 @@ public:
 
 	/* CANVAS API */
 
+	virtual void begin_canvas_bg();
 	virtual void canvas_begin();
 	virtual void canvas_disable_blending();
 	virtual void canvas_set_opacity(float p_opacity);
@@ -711,6 +712,14 @@ public:
 	virtual void canvas_set_transform(const Matrix32& p_transform);
 
 	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light);
+
+	virtual RID canvas_light_occluder_create();
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines);
+
+	virtual RID canvas_light_shadow_buffer_create(int p_width);
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache);
+
+	virtual void canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow);
 
 	/* ENVIRONMENT */
 
@@ -747,6 +756,7 @@ public:
 	virtual bool is_particles_instance(const RID& p_rid) const;
 	virtual bool is_skeleton(const RID& p_rid) const;
 	virtual bool is_environment(const RID& p_rid) const;
+	virtual bool is_canvas_light_occluder(const RID& p_rid) const;
 
 	virtual bool is_shader(const RID& p_rid) const;
 

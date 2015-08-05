@@ -56,7 +56,7 @@ func _integrate_forces(s):
 					state=STATE_DYING
 					#lv=s.get_contact_local_normal(i)*400
 					s.set_angular_velocity(sign(dp.x)*33.0)
-					set_friction(true)
+					set_friction(1)
 					cc.disable()
 					get_node("sound").play("hit")
 					

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -83,7 +83,7 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			switch(p_which) {
 				case OBJ_MENU_LOAD: {
 
-					file->set_mode(FileDialog::MODE_OPEN_FILE);
+					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 					List<String> extensions;
 					String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
 
@@ -614,9 +614,9 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 					Set<String> valid_inheritors;
 					valid_inheritors.insert(base);
-					List<String> inheritors;
+					List<StringName> inheritors;
 					ObjectTypeDB::get_inheriters_from(base.strip_edges(),&inheritors);
-					List<String>::Element *E=inheritors.front();
+					List<StringName>::Element *E=inheritors.front();
 					while(E) {
 						valid_inheritors.insert(E->get());
 						E=E->next();
@@ -651,6 +651,8 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 
 			if (!RES(v).is_null()) {
 
+
+
 				menu->add_icon_item(get_icon("EditResource","EditorIcons"),"Edit",OBJ_MENU_EDIT);
 				menu->add_icon_item(get_icon("Del","EditorIcons"),"Clear",OBJ_MENU_CLEAR);
 				menu->add_icon_item(get_icon("Duplicate","EditorIcons"),"Make Unique",OBJ_MENU_MAKE_UNIQUE);
@@ -659,6 +661,13 @@ bool CustomPropertyEditor::edit(Object* p_owner,const String& p_name,Variant::Ty
 					menu->add_separator();
 					menu->add_icon_item(get_icon("Reload","EditorIcons"),"Re-Import",OBJ_MENU_REIMPORT);
 				}
+				/*if (r.is_valid() && r->get_path().is_resource_file()) {
+					menu->set_item_tooltip(1,r->get_path());
+				} else if (r.is_valid()) {
+					menu->set_item_tooltip(1,r->get_name()+" ("+r->get_type()+")");
+				}*/
+			} else {
+
 			}
 
 
@@ -757,7 +766,7 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			RES res = ResourceLoader::load(p_file,type);
 			if (res.is_null()) {
 				error->set_text("Error loading file: Not a resource!");
-				error->popup_centered(Size2(300,80));
+				error->popup_centered_minsize();
 				break;
 			}
 			v=res.get_ref_ptr();
@@ -899,11 +908,11 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (p_which==0) {
 
 					if (hint==PROPERTY_HINT_FILE)
-						file->set_access(FileDialog::ACCESS_RESOURCES);
+						file->set_access(EditorFileDialog::ACCESS_RESOURCES);
 					else
-						file->set_access(FileDialog::ACCESS_FILESYSTEM);
+						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 
-					file->set_mode(FileDialog::MODE_OPEN_FILE);
+					file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 					file->clear_filters();
 
 					file->clear_filters();
@@ -937,10 +946,10 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				if (p_which==0) {
 
 					if (hint==PROPERTY_HINT_DIR)
-						file->set_access(FileDialog::ACCESS_RESOURCES);
+						file->set_access(EditorFileDialog::ACCESS_RESOURCES);
 					else
-						file->set_access(FileDialog::ACCESS_FILESYSTEM);
-					file->set_mode(FileDialog::MODE_OPEN_DIR);
+						file->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+					file->set_mode(EditorFileDialog::MODE_OPEN_DIR);
 					file->clear_filters();
 					file->popup_centered_ratio();
 				} else {
@@ -992,8 +1001,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 				}
 			} else if (p_which==1) {
 			
-				file->set_access(FileDialog::ACCESS_RESOURCES);
-				file->set_mode(FileDialog::MODE_OPEN_FILE);
+				file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+				file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 				List<String> extensions;
 				String type=(hint==PROPERTY_HINT_RESOURCE_TYPE)?hint_text:String();
 				
@@ -1072,8 +1081,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 			} else if (p_which==1) {
 
-				file->set_access(FileDialog::ACCESS_RESOURCES);
-				file->set_mode(FileDialog::MODE_OPEN_FILE);
+				file->set_access(EditorFileDialog::ACCESS_RESOURCES);
+				file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 				List<String> extensions;
 				ImageLoader::get_recognized_extensions(&extensions);
 
@@ -1603,7 +1612,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	color_picker->connect("color_changed",this,"_color_changed");
 
 	set_as_toplevel(true);
-	file = memnew ( FileDialog );
+	file = memnew ( EditorFileDialog );
 	add_child(file);
 	file->hide();
 	
@@ -1624,7 +1633,7 @@ CustomPropertyEditor::CustomPropertyEditor() {
 	scene_tree = memnew( SceneTreeDialog );
 	add_child(scene_tree);
 	scene_tree->connect("selected", this,"_node_path_selected");
-	scene_tree->get_tree()->set_show_enabled_subscene(true);
+	scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 
 	texture_preview = memnew( TextureFrame );
 	add_child( texture_preview);
@@ -1857,7 +1866,40 @@ void PropertyEditor::set_item_text(TreeItem *p_item, int p_type, const String& p
 				} else {
 					p_item->set_text(1,"<"+res->get_type()+">");
 				};
+
+
+				if (res.is_valid() && res->get_path().is_resource_file()) {
+					p_item->set_tooltip(1,res->get_path());
+				} else if (res.is_valid()) {
+					p_item->set_tooltip(1,res->get_name()+" ("+res->get_type()+")");
+				}
+
+
+				if (has_icon(res->get_type(),"EditorIcons")) {
+
+					p_item->set_icon(0,get_icon(res->get_type(),"EditorIcons"));
+				} else {
+
+					Dictionary d = p_item->get_metadata(0);
+					int hint=d.has("hint")?d["hint"].operator int():-1;
+					String hint_text=d.has("hint_text")?d["hint_text"]:"";
+					if (hint==PROPERTY_HINT_RESOURCE_TYPE) {
+
+						if (has_icon(hint_text,"EditorIcons")) {
+
+							p_item->set_icon(0,get_icon(hint_text,"EditorIcons"));
+
+						} else {
+							p_item->set_icon(0,get_icon("Object","EditorIcons"));
+
+						}
+					}
+				}
+
+
+
 			}
+
 
 		} break;
 		default: {};
@@ -1873,6 +1915,7 @@ void PropertyEditor::_notification(int p_what) {
 	}
 	if (p_what==NOTIFICATION_EXIT_TREE) {
 
+		get_tree()->disconnect("node_removed",this,"_node_removed");
 		edit(NULL);
 	}
 
@@ -2216,7 +2259,7 @@ void PropertyEditor::update_tree() {
 		}
 
 		if (capitalize_paths)
-			item->set_text( 0, name.capitalize() );
+			item->set_text( 0, name.camelcase_to_underscore().capitalize() );
 		else
 			item->set_text( 0, name );
 
@@ -2337,7 +2380,7 @@ void PropertyEditor::update_tree() {
 				} else {
 					if (p.type == Variant::REAL) {
 
-						item->set_range_config(1, -65536, 65535, 0.01);
+						item->set_range_config(1, -65536, 65535, 0.001);
 					} else {
 
 						item->set_range_config(1, -65536, 65535, 1);
@@ -2529,7 +2572,10 @@ void PropertyEditor::update_tree() {
 				item->set_editable( 1, !read_only );
 				item->add_button(1,get_icon("EditResource","EditorIcons"));
 				String type;
+				if (p.hint==PROPERTY_HINT_RESOURCE_TYPE)
+					type=p.hint_string;
 				bool notnil=false;
+
 				if (obj->get( p.name ).get_type() == Variant::NIL || obj->get( p.name ).operator RefPtr().is_null()) {
 					item->set_text(1,"<null>");
 
@@ -2553,12 +2599,25 @@ void PropertyEditor::update_tree() {
 					};
 					notnil=true;
 
+					if (has_icon(res->get_type(),"EditorIcons")) {
+						type=res->get_type();
+					}
+
+					if (res.is_valid() && res->get_path().is_resource_file()) {
+						item->set_tooltip(1,res->get_path());
+					} else if (res.is_valid()) {
+						item->set_tooltip(1,res->get_name()+" ("+res->get_type()+")");
+					}
+
 				}
 
-				if (p.hint==PROPERTY_HINT_RESOURCE_TYPE) {
+
+				if (type!=String()) {
+					if (type.find(",")!=-1)
+						type=type.get_slice(",",0);
 					//printf("prop %s , type %s\n",p.name.ascii().get_data(),p.hint_string.ascii().get_data());
-					if (has_icon(p.hint_string,"EditorIcons"))
-						item->set_icon( 0, get_icon(p.hint_string,"EditorIcons") );
+					if (has_icon(type,"EditorIcons"))
+						item->set_icon( 0, get_icon(type,"EditorIcons") );
 					else
 						item->set_icon( 0, get_icon("Object","EditorIcons") );
 				}
@@ -2571,7 +2630,12 @@ void PropertyEditor::update_tree() {
 
 		if (keying) {
 
-			item->add_button(1,get_icon("Key","EditorIcons"),2);
+			if (p.hint==PROPERTY_HINT_SPRITE_FRAME) {
+
+				item->add_button(1,get_icon("KeyNext","EditorIcons"),5);
+			} else {
+				item->add_button(1,get_icon("Key","EditorIcons"),2);
+			}
 		}
 
 		if (get_instanced_node()) {
@@ -2846,6 +2910,16 @@ void PropertyEditor::edit(Object* p_object) {
 	
 }
 
+void PropertyEditor::_set_range_def(Object *p_item, String prop,float p_frame) {
+
+	TreeItem *ti = p_item->cast_to<TreeItem>();
+	ERR_FAIL_COND(!ti);
+
+	ti->call_deferred("set_range",1, p_frame);
+	obj->call_deferred("set",prop,p_frame);
+
+}
+
 void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 	TreeItem *ti = p_item->cast_to<TreeItem>();
 	ERR_FAIL_COND(!ti);
@@ -2857,7 +2931,15 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 		if (!d.has("name"))
 			return;
 		String prop=d["name"];
-		emit_signal("property_keyed",prop,obj->get(prop));
+		emit_signal("property_keyed",prop,obj->get(prop),false);
+	} else if (p_button==5) {
+		print_line("PB5");
+		if (!d.has("name"))
+			return;
+		String prop=d["name"];
+		emit_signal("property_keyed",prop,obj->get(prop),true);
+		//set_range(p_column, ti->get_range(p_column)+1.0 );
+		call_deferred("_set_range_def",ti,prop,ti->get_range(p_column)+1.0);
 	} else if (p_button==3) {
 
 		if (!get_instanced_node())
@@ -2988,6 +3070,7 @@ void PropertyEditor::_bind_methods() {
 	ObjectTypeDB::bind_method( "_edit_button",&PropertyEditor::_edit_button);
 	ObjectTypeDB::bind_method( "_changed_callback",&PropertyEditor::_changed_callbacks);
 	ObjectTypeDB::bind_method( "_draw_flags",&PropertyEditor::_draw_flags);
+	ObjectTypeDB::bind_method( "_set_range_def",&PropertyEditor::_set_range_def);
 
 	ADD_SIGNAL( MethodInfo("property_toggled",PropertyInfo( Variant::STRING, "property"),PropertyInfo( Variant::BOOL, "value")));
 	ADD_SIGNAL( MethodInfo("resource_selected", PropertyInfo( Variant::OBJECT, "res"),PropertyInfo( Variant::STRING, "prop") ) );

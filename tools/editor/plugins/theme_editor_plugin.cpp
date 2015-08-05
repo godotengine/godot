@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -408,7 +408,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	if (p_option==POPUP_CREATE_TEMPLATE) {
 
-		file_dialog->set_mode(FileDialog::MODE_SAVE_FILE);
+		file_dialog->set_mode(EditorFileDialog::MODE_SAVE_FILE);
 		file_dialog->set_current_path("custom.theme");
 		file_dialog->popup_centered_ratio();
 		return;
@@ -568,6 +568,26 @@ ThemeEditor::ThemeEditor() {
 	CheckButton *cb = memnew( CheckButton );
 	cb->set_text("CheckButton");
 	first_vb->add_child(cb );
+    CheckBox *cbx = memnew( CheckBox );
+    cbx->set_text("CheckBox");
+    first_vb->add_child(cbx );
+
+    /* TODO: This is not working properly, controls are overlapping*/
+    /*
+    ButtonGroup *bg = memnew( ButtonGroup );
+    bg->set_v_size_flags(SIZE_EXPAND_FILL);
+    VBoxContainer *gbvb = memnew( VBoxContainer );
+    gbvb->set_v_size_flags(SIZE_EXPAND_FILL);
+    CheckBox *rbx1 = memnew( CheckBox );
+    rbx1->set_text("CheckBox Radio1");
+    rbx1->set_pressed(true);
+    gbvb->add_child(rbx1);
+    CheckBox *rbx2 = memnew( CheckBox );
+    rbx2->set_text("CheckBox Radio2");
+    gbvb->add_child(rbx2);
+    bg->add_child(gbvb);
+    first_vb->add_child(bg);
+    */
 
 	MenuButton* test_menu_button = memnew( MenuButton );
 	test_menu_button->set_text("MenuButton");
@@ -714,7 +734,7 @@ ThemeEditor::ThemeEditor() {
 	fd_button->set_text("Open File Dialog");
 	panel->add_child(fd_button);
 
-	test_file_dialog = memnew( FileDialog );
+	test_file_dialog = memnew( EditorFileDialog );
 	panel->add_child(test_file_dialog);
 
 	fd_button->connect("pressed", this,"_open_file_dialog");
@@ -784,7 +804,7 @@ ThemeEditor::ThemeEditor() {
 	add_del_dialog->get_ok()->connect("pressed", this,"_dialog_cbk");
 
 
-	file_dialog = memnew( FileDialog );
+	file_dialog = memnew( EditorFileDialog );
 	file_dialog->add_filter("*.theme ; Theme File");
 	add_child(file_dialog);
 	file_dialog->connect("file_selected",this,"_save_template_cbk");

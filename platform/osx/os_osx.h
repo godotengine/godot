@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -44,6 +44,7 @@
 #include "drivers/rtaudio/audio_driver_rtaudio.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 #include "platform/osx/audio_driver_osx.h"
 #include <ApplicationServices/ApplicationServices.h>
 
@@ -99,6 +100,13 @@ public:
 
 	CursorShape cursor_shape;
 	MouseMode mouse_mode;
+
+	bool minimized;
+	bool maximized;
+	bool zoomed;
+	Vector<Rect2> screens;
+	int current_screen;
+	Rect2 restore_rect;
 protected:
 
 	virtual int get_video_driver_count() const;
@@ -112,15 +120,12 @@ protected:
 	virtual void set_main_loop( MainLoop * p_main_loop );
 	virtual void delete_main_loop();
 
-
 public:
 
 
-
-
-
-
 	static OS_OSX* singleton;
+
+	void wm_minimized(bool p_minimized);
 
 	virtual String get_name();
 
@@ -133,6 +138,8 @@ public:
 	virtual Point2 get_mouse_pos() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String& p_title);
+	
+	virtual Size2 get_window_size() const;
 
 	virtual void set_icon(const Image& p_icon);
 
@@ -159,6 +166,24 @@ public:
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
 	virtual void move_window_to_foreground();
+
+	virtual int get_screen_count() const;
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0);
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
+	virtual void set_window_size(const Size2 p_size);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
+	Size2 get_screen_size(int p_screen);
+
 
 	void run();
 

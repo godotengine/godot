@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -502,7 +502,7 @@ public:
 	virtual void begin_scene(RID p_viewport_data,RID p_env,VS::ScenarioDebugMode p_debug)=0;
 	virtual void begin_shadow_map( RID p_light_instance, int p_shadow_pass )=0;
 
-	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection)=0;
+	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection,bool p_ortho_hint)=0;
 	
 	virtual void add_light( RID p_light_instance )=0; ///< all "add_light" calls happen before add_geometry calls
 	
@@ -572,49 +572,77 @@ public:
 	struct CanvasLight {
 
 
+
 		bool enabled;
-		bool shadow;
 		Color color;
 		Matrix32 xform;
 		float height;
+		float energy;
+		float scale;
 		int z_min;
 		int z_max;
 		int layer_min;
 		int layer_max;
 		int item_mask;
-		bool subtract;
+		int item_shadow_mask;
+		VS::CanvasLightMode mode;
 		RID texture;
 		Vector2 texture_offset;
 		RID canvas;
+		RID shadow_buffer;
+		int shadow_buffer_size;
+		float shadow_esm_mult;
+		Color shadow_color;
 
 
 		void *texture_cache; // implementation dependent
 		Rect2 rect_cache;
 		Matrix32 xform_cache;
+		float radius_cache; //used for shadow far plane
+		CameraMatrix shadow_matrix_cache;
 
 		Matrix32 light_shader_xform;
 		Vector2 light_shader_pos;
 
+		CanvasLight *shadows_next_ptr;
 		CanvasLight *filter_next_ptr;
 		CanvasLight *next_ptr;
 
 		CanvasLight() {
-			enabled=true;
-			shadow=false;
+			enabled=true;			
 			color=Color(1,1,1);
+			shadow_color=Color(0,0,0,0);
 			height=0;
 			z_min=-1024;
 			z_max=1024;
 			layer_min=0;
 			layer_max=0;
 			item_mask=1;
-			subtract=false;
+			scale=1.0;
+			energy=1.0;
+			item_shadow_mask=-1;
+			mode=VS::CANVAS_LIGHT_MODE_ADD;
 			texture_cache=NULL;
 			next_ptr=NULL;
 			filter_next_ptr=NULL;
+			shadow_buffer_size=2048;
+			shadow_esm_mult=80;
+
 		}
 	};
 
+	struct CanvasItem;
+
+	struct CanvasItemMaterial  {
+
+		RID shader;
+		Map<StringName,Variant> shader_param;
+		uint32_t shader_version;
+		Set<CanvasItem*> owners;
+		VS::CanvasItemShadingMode shading_mode;
+
+		CanvasItemMaterial() {shading_mode=VS::CANVAS_ITEM_SHADING_NORMAL; shader_version=0; }
+	};
 
 	struct CanvasItem {
 
@@ -635,6 +663,7 @@ public:
 			};
 
 			Type type;
+			virtual ~Command(){}
 		};
 
 		struct CommandLine : public Command {
@@ -744,17 +773,22 @@ public:
 		mutable bool rect_dirty;
 		mutable Rect2 rect;
 		CanvasItem*next;
-		RID shader;
-		Map<StringName,Variant> shader_param;
-		uint32_t shader_version;
+		CanvasItemMaterial* material;
+		struct CopyBackBuffer {
+			Rect2 rect;
+			Rect2 screen_rect;
+			bool full;
+		};
+		CopyBackBuffer *copy_back_buffer;
 
 
 		float final_opacity;
 		Matrix32 final_transform;
 		Rect2 final_clip_rect;
 		CanvasItem* final_clip_owner;
-		CanvasItem* shader_owner;
+		CanvasItem* material_owner;
 		ViewportRender *vp_render;
+		bool distance_field;
 
 		Rect2 global_rect_cache;
 
@@ -831,17 +865,17 @@ public:
 						if (polygon->indices != NULL) {
 
 							r.pos=polygon->points[polygon->indices[0]];
-							for (int i=1; i<polygon->count; i++) {
+							for (int i=1; i<l; i++) {
 
 								r.expand_to(polygon->points[polygon->indices[i]]);
-							};
+							}
 						} else {
 							r.pos=polygon->points[0];
-							for (int i=1; i<polygon->count; i++) {
+							for (int i=1; i<l; i++) {
 
 								r.expand_to(polygon->points[i]);
-							};
-						};
+							}
+						}
 					} break;
 					case CanvasItem::Command::TYPE_CIRCLE: {
 
@@ -881,15 +915,16 @@ public:
 			return rect;
 		}
 
-		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  shader_owner=NULL;}
-		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; shader_version=0; shader_owner=NULL;}
-		virtual ~CanvasItem() { clear(); }
+		void clear() { for (int i=0;i<commands.size();i++) memdelete( commands[i] ); commands.clear(); clip=false; rect_dirty=true; final_clip_owner=NULL;  material_owner=NULL;}
+		CanvasItem() { light_mask=1; vp_render=NULL; next=NULL; final_clip_owner=NULL; clip=false; final_opacity=1;  blend_mode=VS::MATERIAL_BLEND_MODE_MIX; visible=true; rect_dirty=true; custom_rect=false; ontop=true; material_owner=NULL; material=NULL; copy_back_buffer=NULL; distance_field=false; }
+		virtual ~CanvasItem() { clear(); if (copy_back_buffer) memdelete(copy_back_buffer); }
 	};
 
 
 	CanvasItemDrawViewportFunc draw_viewport_func;
 
 
+	virtual void begin_canvas_bg()=0;
 	virtual void canvas_begin()=0;
 	virtual void canvas_disable_blending()=0;
 	virtual void canvas_set_opacity(float p_opacity)=0;
@@ -905,7 +940,36 @@ public:
 	virtual void canvas_set_transform(const Matrix32& p_transform)=0;
 
 	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light)=0;
+	virtual void canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow)=0;
+	/* LIGHT SHADOW MAPPING */
 
+	virtual RID canvas_light_occluder_create()=0;
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines)=0;
+
+
+	virtual RID canvas_light_shadow_buffer_create(int p_width)=0;
+
+	struct CanvasLightOccluderInstance {
+
+
+		bool enabled;
+		RID canvas;
+		RID polygon;
+		RID polygon_buffer;
+		Rect2 aabb_cache;
+		Matrix32 xform;
+		Matrix32 xform_cache;
+		int light_mask;
+		VS::CanvasOccluderPolygonCullMode cull_cache;
+
+		CanvasLightOccluderInstance *next;
+
+		CanvasLightOccluderInstance() { enabled=true; next=NULL; light_mask=1; cull_cache=VS::CANVAS_OCCLUDER_POLYGON_CULL_DISABLED; }
+	};
+
+
+
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache)=0;
 
 	/* ENVIRONMENT */
 	
@@ -944,6 +1008,8 @@ public:
 	virtual bool is_skeleton(const RID& p_rid) const=0;
 	virtual bool is_environment(const RID& p_rid) const=0;
 	virtual bool is_shader(const RID& p_rid) const=0;
+
+	virtual bool is_canvas_light_occluder(const RID& p_rid) const=0;
 
 	virtual void free(const RID& p_rid)=0;
 

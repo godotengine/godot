@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 #include "undo_redo.h"
-
+#include "io/config_file.h"
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -90,6 +90,8 @@ public:
 	virtual void apply_changes() ; // if changes are pending in editor, apply them
 	virtual void get_breakpoints(List<String> *p_breakpoints);
 	virtual bool get_remove_list(List<Node*> *p_list);
+	virtual void set_window_layout(Ref<ConfigFile> p_layout);
+	virtual void get_window_layout(Ref<ConfigFile> p_layout);
 
 	virtual void restore_global_state();
 	virtual void save_global_state();

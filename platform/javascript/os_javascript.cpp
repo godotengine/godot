@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -230,6 +230,12 @@ OS::VideoMode OS_JavaScript::get_video_mode(int p_screen) const {
 
 	return default_videomode;
 }
+
+Size2 OS_JavaScript::get_window_size() const {
+
+	return Vector2(default_videomode.width,default_videomode.height);
+}
+
 void OS_JavaScript::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 	p_list->push_back(default_videomode);

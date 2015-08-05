@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -71,14 +71,16 @@ public class GodotView extends GLSurfaceView {
 	private static GodotIO io;
 	private static boolean firsttime=true;
 	private static boolean use_gl2=false;
+	private static boolean use_32=false;
 
 	private Godot activity;
 
-	public GodotView(Context context,GodotIO p_io,boolean p_use_gl2, Godot p_activity) {
+	public GodotView(Context context,GodotIO p_io,boolean p_use_gl2, boolean p_use_32_bits, Godot p_activity) {
 		super(context);
 		ctx=context;
 		io=p_io;
 		use_gl2=p_use_gl2;
+		use_32=p_use_32_bits;
 
 		activity = p_activity;
 
@@ -366,9 +368,17 @@ public class GodotView extends GLSurfaceView {
 		 * custom config chooser. See ConfigChooser class definition
 		 * below.
 		 */
-		setEGLConfigChooser( translucent ?
-					new ConfigChooser(8, 8, 8, 8, depth, stencil) :
-					new ConfigChooser(5, 6, 5, 0, depth, stencil) );
+
+		if (use_32) {
+			setEGLConfigChooser( translucent ?
+						new ConfigChooser(8, 8, 8, 8, 24, stencil) :
+						new ConfigChooser(8, 8, 8, 8, 24, stencil) );
+
+		} else {
+			setEGLConfigChooser( translucent ?
+						new ConfigChooser(8, 8, 8, 8, 16, stencil) :
+						new ConfigChooser(5, 6, 5, 0, 16, stencil) );
+		}
 
 		/* Set the renderer responsible for frame rendering */
 		setRenderer(new Renderer());

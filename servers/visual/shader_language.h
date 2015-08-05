@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -56,6 +56,7 @@ public:
 		TK_TYPE_VEC2,
 		TK_TYPE_VEC3,
 		TK_TYPE_VEC4,
+		TK_TYPE_MAT2,
 		TK_TYPE_MAT3,
 		TK_TYPE_MAT4,
 		TK_TYPE_TEXTURE,
@@ -118,6 +119,7 @@ public:
 		TYPE_VEC2,
 		TYPE_VEC3,
 		TYPE_VEC4,
+		TYPE_MAT2,
 		TYPE_MAT3,
 		TYPE_MAT4,
 		TYPE_TEXTURE,

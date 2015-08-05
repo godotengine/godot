@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,9 @@
 #include "scene/resources/convex_polygon_shape_2d.h"
 
 void CollisionPolygon2D::_add_to_collision_object(Object *p_obj) {
+
+	if (unparenting)
+		return;
 
 	CollisionObject2D *co = p_obj->cast_to<CollisionObject2D>();
 	ERR_FAIL_COND(!co);
@@ -96,6 +99,9 @@ void CollisionPolygon2D::_notification(int p_what) {
 
 
 	switch(p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			unparenting=false;
+		} break;
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
 
 			if (!is_inside_tree())
@@ -123,6 +129,11 @@ void CollisionPolygon2D::_notification(int p_what) {
 			}
 #endif
 		} break;
+		case NOTIFICATION_UNPARENTED: {
+			unparenting = true;
+			_update_parent();
+		} break;
+
 	}
 }
 
@@ -203,6 +214,7 @@ CollisionPolygon2D::CollisionPolygon2D() {
 	aabb=Rect2(-10,-10,20,20);
 	build_mode=BUILD_SOLIDS;
 	trigger=false;
+	unparenting=false;
 
 
 }

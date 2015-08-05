@@ -278,6 +278,7 @@ void EditorFileServer::_thread_start(void*s) {
 			self->to_wait.erase(w);
 			self->wait_mutex->unlock();
 			Thread::wait_to_finish(w);
+			memdelete(w);
 			self->wait_mutex->lock();
 		}
 		self->wait_mutex->unlock();
@@ -346,5 +347,6 @@ EditorFileServer::~EditorFileServer() {
 
 	quit=true;
 	Thread::wait_to_finish(thread);
+	memdelete(thread);
 	memdelete(wait_mutex);
 }

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -117,7 +117,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			Spatial *ci = n->cast_to<Spatial>();
 			if (!ci->is_visible() && ci->get_parent_spatial() && !ci->get_parent_spatial()->is_visible()) {
 				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
-				error->popup_centered_minsize(Size2(400,80));
+				error->popup_centered_minsize();
 				return;
 			}
 
@@ -131,7 +131,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item,int p_column,int p_id)
 			CanvasItem *ci = n->cast_to<CanvasItem>();
 			if (!ci->is_visible() && ci->get_parent_item() && !ci->get_parent_item()->is_visible()) {
 				error->set_text("This item cannot be made visible because the parent is hidden. Unhide the parent first.");
-				error->popup_centered_minsize(Size2(400,80));
+				error->popup_centered_minsize();
 				return;
 			}
 			bool v = !bool(n->call("is_hidden"));
@@ -498,6 +498,7 @@ void SceneTreeEditor::_notification(int p_what) {
 
 		get_tree()->disconnect("tree_changed",this,"_tree_changed");
 		get_tree()->disconnect("node_removed",this,"_node_removed");
+		tree->disconnect("item_collapsed",this,"_cell_collapsed");
 		_update_tree();
 	}
 
@@ -808,6 +809,11 @@ void SceneTreeDialog::_notification(int p_what) {
 
 	if (p_what==NOTIFICATION_ENTER_TREE) {
 		connect("confirmed", this,"_select");
+
+	}
+
+	if (p_what==NOTIFICATION_EXIT_TREE) {
+		disconnect("confirmed", this,"_select");
 
 	}
 	if (p_what==NOTIFICATION_DRAW) {

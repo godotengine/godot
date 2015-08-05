@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 
 #include "servers/visual/rasterizer.h"
 
+#define MAX_POLYGON_VERTICES 4096 //used for WebGL canvas_draw_polygon call.
+
 #ifdef GLES2_ENABLED
 
 #include "image.h"
@@ -51,6 +53,7 @@
 
 #include "drivers/gles2/shaders/material.glsl.h"
 #include "drivers/gles2/shaders/canvas.glsl.h"
+#include "drivers/gles2/shaders/canvas_shadow.glsl.h"
 #include "drivers/gles2/shaders/blur.glsl.h"
 #include "drivers/gles2/shaders/copy.glsl.h"
 #include "drivers/gles2/shader_compiler_gles2.h"
@@ -676,6 +679,7 @@ class RasterizerGLES2 : public Rasterizer {
 			bg_param[VS::ENV_BG_PARAM_ENERGY]=1.0;
 			bg_param[VS::ENV_BG_PARAM_SCALE]=1.0;
 			bg_param[VS::ENV_BG_PARAM_GLOW]=0.0;
+			bg_param[VS::ENV_BG_PARAM_CANVAS_MAX_LAYER]=0;
 
 			for(int i=0;i<VS::ENV_FX_MAX;i++)
 				fx_enabled[i]=false;
@@ -816,6 +820,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool current_depth_mask;
 	VS::MaterialBlendMode current_blend_mode;
 	bool use_fast_texture_filter;
+	int max_texture_size;
 
 	bool fragment_lighting;
 	RID shadow_material;
@@ -825,6 +830,7 @@ class RasterizerGLES2 : public Rasterizer {
 	GLuint base_framebuffer;
 
 	GLuint gui_quad_buffer;
+	GLuint indices_buffer;
 
 
 
@@ -1046,6 +1052,7 @@ class RasterizerGLES2 : public Rasterizer {
 	float camera_z_near;
 	float camera_z_far;
 	Size2 camera_vp_size;
+	bool camera_ortho;
 	Set<String> extensions;
 	bool texscreen_copied;
 	bool texscreen_used;
@@ -1160,6 +1167,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _process_glow_and_bloom();
 	//void _update_blur_buffer();
 
+
 	/*********/
 	/* FRAME */
 	/*********/
@@ -1178,6 +1186,45 @@ class RasterizerGLES2 : public Rasterizer {
 	} _rinfo;
 
 
+	/*******************/
+	/* CANVAS OCCLUDER */
+	/*******************/
+
+
+	struct CanvasOccluder {
+
+		GLuint vertex_id; // 0 means, unconfigured
+		GLuint index_id; // 0 means, unconfigured
+		DVector<Vector2> lines;
+		int len;
+	};
+
+	RID_Owner<CanvasOccluder> canvas_occluder_owner;
+
+	/***********************/
+	/* CANVAS LIGHT SHADOW */
+	/***********************/
+
+
+	struct CanvasLightShadow {
+
+		int size;
+		int height;
+		GLuint fbo;
+		GLuint rbo;
+		GLuint depth;
+		GLuint rgba; //for older devices
+
+		GLuint blur;
+
+	};
+
+	RID_Owner<CanvasLightShadow> canvas_light_shadow_owner;
+
+	RID canvas_shadow_blur;
+
+	/* ETC */
+
 	RenderTarget *current_rt;
 	bool current_rt_transparent;
 	bool current_rt_vflip;
@@ -1192,7 +1239,7 @@ class RasterizerGLES2 : public Rasterizer {
 	bool uses_texpixel_size;
 	bool rebind_texpixel_size;
 	Transform canvas_transform;
-	RID canvas_last_shader;
+	CanvasItemMaterial *canvas_last_material;
 	bool canvas_texscreen_used;
 	Vector2 normal_flip;
 	_FORCE_INLINE_ void _canvas_normal_set_flip(const Vector2& p_flip);
@@ -1216,6 +1263,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _process_hdr();
 	void _draw_tex_bg();
 
+	bool using_canvas_bg;
 	Size2 window_size;
 	VS::ViewportRect viewport;
 	double last_time;
@@ -1226,11 +1274,14 @@ class RasterizerGLES2 : public Rasterizer {
 	Environment *current_env;
 	VS::ScenarioDebugMode current_debug;
 	RID overdraw_material;
+	float shader_time_rollback;
+
 
 	mutable MaterialShaderGLES2 material_shader;
 	mutable CanvasShaderGLES2 canvas_shader;
 	BlurShaderGLES2 blur_shader;
 	CopyShaderGLES2 copy_shader;
+	mutable CanvasShadowShaderGLES2 canvas_shadow_shader;
 
 	mutable ShaderCompilerGLES2 shader_precompiler;
 
@@ -1242,6 +1293,7 @@ class RasterizerGLES2 : public Rasterizer {
 	void _copy_screen_quad();
 	void _copy_to_texscreen();
 
+	bool _test_depth_shadow_buffer();
 
 	Vector3 chunk_vertex;
 	Vector3 chunk_normal;
@@ -1254,8 +1306,8 @@ class RasterizerGLES2 : public Rasterizer {
 
 	template<bool use_normalmap>
 	_FORCE_INLINE_ void _canvas_item_render_commands(CanvasItem *p_item,CanvasItem *current_clip,bool &reclip);
-	_FORCE_INLINE_ void _canvas_item_setup_shader_params(CanvasItem *shader_owner,Shader* p_shader);
-	_FORCE_INLINE_ void _canvas_item_setup_shader_uniforms(CanvasItem *shader_owner,Shader* p_shader);
+	_FORCE_INLINE_ void _canvas_item_setup_shader_params(CanvasItemMaterial *material,Shader* p_shader);
+	_FORCE_INLINE_ void _canvas_item_setup_shader_uniforms(CanvasItemMaterial *material,Shader* p_shader);
 public:
 
 	/* TEXTURE API */
@@ -1538,7 +1590,7 @@ public:
 
 	virtual void begin_shadow_map( RID p_light_instance, int p_shadow_pass );
 
-	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection);
+	virtual void set_camera(const Transform& p_world,const CameraMatrix& p_projection,bool p_ortho_hint);
 
 	virtual void add_light( RID p_light_instance ); ///< all "add_light" calls happen before add_geometry calls
 
@@ -1556,6 +1608,8 @@ public:
 
 	/* CANVAS API */
 
+	virtual void begin_canvas_bg();
+
 	virtual void canvas_begin();
 	virtual void canvas_disable_blending();
 
@@ -1572,7 +1626,17 @@ public:
 	virtual void canvas_set_transform(const Matrix32& p_transform);
 
 	virtual void canvas_render_items(CanvasItem *p_item_list,int p_z,const Color& p_modulate,CanvasLight *p_light);
+	virtual void canvas_debug_viewport_shadows(CanvasLight* p_lights_with_shadow);
 
+	/* CANVAS LIGHT SHADOW */
+
+	//buffer
+	virtual RID canvas_light_shadow_buffer_create(int p_width);
+	virtual void canvas_light_shadow_buffer_update(RID p_buffer, const Matrix32& p_light_xform, int p_light_mask,float p_near, float p_far, CanvasLightOccluderInstance* p_occluders, CameraMatrix *p_xform_cache);
+
+	//occluder
+	virtual RID canvas_light_occluder_create();
+	virtual void canvas_light_occluder_set_polylines(RID p_occluder, const DVector<Vector2>& p_lines);
 
 	/* ENVIRONMENT */
 
@@ -1610,6 +1674,8 @@ public:
 	virtual bool is_skeleton(const RID& p_rid) const;
 	virtual bool is_environment(const RID& p_rid) const;
 	virtual bool is_shader(const RID& p_rid) const;
+
+	virtual bool is_canvas_light_occluder(const RID& p_rid) const;
 
 	virtual void free(const RID& p_rid);
 

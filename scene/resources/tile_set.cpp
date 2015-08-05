@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,6 +46,8 @@ bool TileSet::_set(const StringName& p_name, const Variant& p_value) {
 		tile_set_texture(id,p_value);
 	else if (what=="tex_offset")
 		tile_set_texture_offset(id,p_value);
+	else if (what=="material")
+		tile_set_material(id,p_value);
 	else if (what=="shape_offset")
 		tile_set_shape_offset(id,p_value);
 	else if (what=="region")
@@ -54,6 +56,14 @@ bool TileSet::_set(const StringName& p_name, const Variant& p_value) {
 		tile_set_shape(id,p_value);
 	else if (what=="shapes")
 		_tile_set_shapes(id,p_value);
+	else if (what=="occluder")
+		tile_set_light_occluder(id,p_value);
+	else if (what=="occluder_offset")
+		tile_set_occluder_offset(id,p_value);
+	else if (what=="navigation")
+		tile_set_navigation_polygon(id,p_value);
+	else if (what=="navigation_offset")
+		tile_set_navigation_polygon_offset(id,p_value);
 	else
 		return false;
 
@@ -79,6 +89,8 @@ bool TileSet::_get(const StringName& p_name,Variant &r_ret) const{
 		r_ret=tile_get_texture(id);
 	else if (what=="tex_offset")
 		r_ret=tile_get_texture_offset(id);
+	else if (what=="material")
+		r_ret=tile_get_material(id);
 	else if (what=="shape_offset")
 		r_ret=tile_get_shape_offset(id);
 	else if (what=="region")
@@ -87,6 +99,14 @@ bool TileSet::_get(const StringName& p_name,Variant &r_ret) const{
 		r_ret=tile_get_shape(id);
 	else if (what=="shapes")
 		r_ret=_tile_get_shapes(id);
+	else if (what=="occluder")
+		r_ret=tile_get_light_occluder(id);
+	else if (what=="occluder_offset")
+		r_ret=tile_get_occluder_offset(id);
+	else if (what=="navigation")
+		r_ret=tile_get_navigation_polygon(id);
+	else if (what=="navigation_offset")
+		r_ret=tile_get_navigation_polygon_offset(id);
 	else
 		return false;
 
@@ -103,8 +123,13 @@ void TileSet::_get_property_list( List<PropertyInfo> *p_list) const{
 		p_list->push_back(PropertyInfo(Variant::STRING,pre+"name"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"texture",PROPERTY_HINT_RESOURCE_TYPE,"Texture"));
 		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"tex_offset"));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"shape_offset"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"material",PROPERTY_HINT_RESOURCE_TYPE,"CanvasItemMaterial"));
 		p_list->push_back(PropertyInfo(Variant::RECT2,pre+"region"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"occluder_offset"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"occluder",PROPERTY_HINT_RESOURCE_TYPE,"OccluderPolygon2D"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"navigation_offset"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"navigation",PROPERTY_HINT_RESOURCE_TYPE,"NavigationPolygon"));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2,pre+"shape_offset"));
 		p_list->push_back(PropertyInfo(Variant::OBJECT,pre+"shape",PROPERTY_HINT_RESOURCE_TYPE,"Shape2D",PROPERTY_USAGE_EDITOR));
 		p_list->push_back(PropertyInfo(Variant::ARRAY,pre+"shapes",PROPERTY_HINT_NONE,"",PROPERTY_USAGE_NOEDITOR));
 	}
@@ -133,6 +158,22 @@ Ref<Texture> TileSet::tile_get_texture(int p_id) const {
 	return tile_map[p_id].texture;
 
 }
+
+
+void TileSet::tile_set_material(int p_id,const Ref<CanvasItemMaterial> &p_material) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].material=p_material;
+	emit_changed();
+
+}
+
+Ref<CanvasItemMaterial> TileSet::tile_get_material(int p_id) const{
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Ref<CanvasItemMaterial>());
+	return tile_map[p_id].material;
+}
+
 
 void TileSet::tile_set_texture_offset(int p_id,const Vector2 &p_offset) {
 
@@ -208,6 +249,58 @@ Ref<Shape2D> TileSet::tile_get_shape(int p_id) const {
 
 	return Ref<Shape2D>();
 
+}
+
+void TileSet::tile_set_light_occluder(int p_id,const Ref<OccluderPolygon2D> &p_light_occluder) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].occluder=p_light_occluder;
+
+}
+
+Ref<OccluderPolygon2D> TileSet::tile_get_light_occluder(int p_id) const{
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Ref<OccluderPolygon2D>());
+	return tile_map[p_id].occluder;
+
+}
+
+void TileSet::tile_set_navigation_polygon_offset(int p_id,const Vector2& p_offset) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].navigation_polygon_offset=p_offset;
+
+}
+
+Vector2 TileSet::tile_get_navigation_polygon_offset(int p_id) const{
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Vector2());
+	return tile_map[p_id].navigation_polygon_offset;
+}
+
+void TileSet::tile_set_navigation_polygon(int p_id,const Ref<NavigationPolygon> &p_navigation_polygon) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].navigation_polygon=p_navigation_polygon;
+
+}
+
+Ref<NavigationPolygon> TileSet::tile_get_navigation_polygon(int p_id) const {
+
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Ref<NavigationPolygon>());
+	return tile_map[p_id].navigation_polygon;
+
+}
+
+void TileSet::tile_set_occluder_offset(int p_id,const Vector2& p_offset) {
+
+	ERR_FAIL_COND(!tile_map.has(p_id));
+	tile_map[p_id].occluder_offset=p_offset;
+
+}
+
+Vector2 TileSet::tile_get_occluder_offset(int p_id) const{
+	ERR_FAIL_COND_V(!tile_map.has(p_id),Vector2());
+	return tile_map[p_id].occluder_offset;
 }
 
 void TileSet::tile_set_shapes(int p_id,const Vector<Ref<Shape2D> > &p_shapes) {
@@ -319,6 +412,8 @@ void TileSet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("tile_get_name","id"),&TileSet::tile_get_name);
 	ObjectTypeDB::bind_method(_MD("tile_set_texture","id","texture:Texture"),&TileSet::tile_set_texture);
 	ObjectTypeDB::bind_method(_MD("tile_get_texture:Texture","id"),&TileSet::tile_get_texture);
+	ObjectTypeDB::bind_method(_MD("tile_set_material","id","material:CanvasItemMaterial"),&TileSet::tile_set_material);
+	ObjectTypeDB::bind_method(_MD("tile_get_material:CanvasItemMaterial","id"),&TileSet::tile_get_material);
 	ObjectTypeDB::bind_method(_MD("tile_set_texture_offset","id","texture_offset"),&TileSet::tile_set_texture_offset);
 	ObjectTypeDB::bind_method(_MD("tile_get_texture_offset","id"),&TileSet::tile_get_texture_offset);
 	ObjectTypeDB::bind_method(_MD("tile_set_shape_offset","id","shape_offset"),&TileSet::tile_set_shape_offset);
@@ -329,6 +424,15 @@ void TileSet::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("tile_get_shape:Shape2D","id"),&TileSet::tile_get_shape);
 	ObjectTypeDB::bind_method(_MD("tile_set_shapes","id","shapes"),&TileSet::_tile_set_shapes);
 	ObjectTypeDB::bind_method(_MD("tile_get_shapes","id"),&TileSet::_tile_get_shapes);
+	ObjectTypeDB::bind_method(_MD("tile_set_navigation_polygon","id","navigation_polygon:NavigationPolygon"),&TileSet::tile_set_navigation_polygon);
+	ObjectTypeDB::bind_method(_MD("tile_get_navigation_polygon:NavigationPolygon","id"),&TileSet::tile_get_navigation_polygon);
+	ObjectTypeDB::bind_method(_MD("tile_set_navigation_polygon_offset","id","navigation_polygon_offset"),&TileSet::tile_set_navigation_polygon_offset);
+	ObjectTypeDB::bind_method(_MD("tile_get_navigation_polygon_offset","id"),&TileSet::tile_get_navigation_polygon_offset);
+	ObjectTypeDB::bind_method(_MD("tile_set_light_occluder","id","light_occluder:OccluderPolygon2D"),&TileSet::tile_set_light_occluder);
+	ObjectTypeDB::bind_method(_MD("tile_get_light_occluder:OccluderPolygon2D","id"),&TileSet::tile_get_light_occluder);
+	ObjectTypeDB::bind_method(_MD("tile_set_occluder_offset","id","occluder_offset"),&TileSet::tile_set_occluder_offset);
+	ObjectTypeDB::bind_method(_MD("tile_get_occluder_offset","id"),&TileSet::tile_get_occluder_offset);
+
 	ObjectTypeDB::bind_method(_MD("remove_tile","id"),&TileSet::remove_tile);
 	ObjectTypeDB::bind_method(_MD("clear"),&TileSet::clear);
 	ObjectTypeDB::bind_method(_MD("get_last_unused_tile_id"),&TileSet::get_last_unused_tile_id);

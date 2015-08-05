@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,6 +98,125 @@ void SampleEditor::generate_preview_texture(const Ref<Sample>& p_sample,Ref<Imag
 	if (p_sample->get_format()==Sample::FORMAT_IMA_ADPCM) {
 
 
+		struct IMA_ADPCM_State {
+
+			int16_t step_index;
+			int32_t predictor;
+			/* values at loop point */
+			int16_t loop_step_index;
+			int32_t loop_predictor;
+			int32_t last_nibble;
+			int32_t loop_pos;
+			int32_t window_ofs;
+			const uint8_t *ptr;
+		} ima_adpcm;
+
+		ima_adpcm.step_index=0;
+		ima_adpcm.predictor=0;
+		ima_adpcm.loop_step_index=0;
+		ima_adpcm.loop_predictor=0;
+		ima_adpcm.last_nibble=-1;
+		ima_adpcm.loop_pos=0x7FFFFFFF;
+		ima_adpcm.window_ofs=0;
+		ima_adpcm.ptr=NULL;
+
+
+		for(int i=0;i<w;i++) {
+
+			float max[2]={-1e10,-1e10};
+			float min[2]={1e10,1e10};
+			int from = i*len/w;
+			int to = (i+1)*len/w;
+			if (to>=len)
+				to=len-1;
+
+			for(int j=from;j<to;j++) {
+
+				while(j>ima_adpcm.last_nibble) {
+
+					static const int16_t _ima_adpcm_step_table[89] = {
+						7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
+						19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
+						50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
+						130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
+						337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
+						876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
+						2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
+						5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
+						15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
+					};
+
+					static const int8_t _ima_adpcm_index_table[16] = {
+						-1, -1, -1, -1, 2, 4, 6, 8,
+						-1, -1, -1, -1, 2, 4, 6, 8
+					};
+
+					int16_t nibble,signed_nibble,diff,step;
+
+					ima_adpcm.last_nibble++;
+					const uint8_t *src_ptr=sdata;
+
+					nibble = (ima_adpcm.last_nibble&1)?
+							(src_ptr[ima_adpcm.last_nibble>>1]>>4):(src_ptr[ima_adpcm.last_nibble>>1]&0xF);
+					step=_ima_adpcm_step_table[ima_adpcm.step_index];
+
+					ima_adpcm.step_index += _ima_adpcm_index_table[nibble];
+					if (ima_adpcm.step_index<0)
+						ima_adpcm.step_index=0;
+					if (ima_adpcm.step_index>88)
+						ima_adpcm.step_index=88;
+
+					/*
+					signed_nibble = (nibble&7) * ((nibble&8)?-1:1);
+					diff = (2 * signed_nibble + 1) * step / 4; */
+
+					diff = step >> 3 ;
+					if (nibble & 1)
+						diff += step >> 2 ;
+					if (nibble & 2)
+						diff += step >> 1 ;
+					if (nibble & 4)
+						diff += step ;
+					if (nibble & 8)
+						diff = -diff ;
+
+					ima_adpcm.predictor+=diff;
+					if (ima_adpcm.predictor<-0x8000)
+						ima_adpcm.predictor=-0x8000;
+					else if (ima_adpcm.predictor>0x7FFF)
+						ima_adpcm.predictor=0x7FFF;
+
+
+					/* store loop if there */
+					if (ima_adpcm.last_nibble==ima_adpcm.loop_pos) {
+
+						ima_adpcm.loop_step_index = ima_adpcm.step_index;
+						ima_adpcm.loop_predictor = ima_adpcm.predictor;
+					}
+
+				}
+
+				float v=ima_adpcm.predictor/32767.0;
+				if (v>max[0])
+					max[0]=v;
+				if (v<min[0])
+					min[0]=v;
+			}
+
+			for(int j=0;j<h;j++) {
+				float v = (j/(float)h) * 2.0 - 1.0;
+				uint8_t* imgofs = &imgw[(j*w+i)*3];
+				if (v>min[0] && v<max[0]) {
+					imgofs[0]=255;
+					imgofs[1]=150;
+					imgofs[2]=80;
+				} else {
+					imgofs[0]=0;
+					imgofs[1]=0;
+					imgofs[2]=0;
+				}
+			}
+		}
 	} else {
 		for(int i=0;i<w;i++) {
 			// i trust gcc will optimize this loop

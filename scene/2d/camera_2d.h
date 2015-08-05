@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,12 @@
 class Camera2D : public Node2D {
 
 	OBJ_TYPE( Camera2D, Node2D );
+public:
+
+	enum AnchorMode {
+		ANCHOR_MODE_FIXED_TOP_LEFT,
+		ANCHOR_MODE_DRAG_CENTER
+	};
 
 protected:
 	Point2 camera_pos;
@@ -49,7 +55,7 @@ protected:
 	RID canvas;
 	Vector2 offset;
 	Vector2 zoom;
-	bool centered;
+	AnchorMode anchor_mode;
 	bool rotating;
 	bool current;
 	float smoothing;
@@ -77,8 +83,8 @@ public:
 	void set_offset(const Vector2& p_offset);
 	Vector2 get_offset() const;
 
-	void set_centered(bool p_centered);
-	bool is_centered() const;
+	void set_anchor_mode(AnchorMode p_anchor_mode);
+	AnchorMode get_anchor_mode() const;
 
 	void set_rotating(bool p_rotating);
 	bool is_rotating() const;
@@ -106,6 +112,7 @@ public:
 	float get_follow_smoothing() const;
 
 	void make_current();
+	void clear_current();
 	bool is_current() const;
 
 	void set_zoom(const Vector2& p_zoom);
@@ -118,5 +125,7 @@ public:
 
 	Camera2D();
 };
+
+VARIANT_ENUM_CAST(Camera2D::AnchorMode);
 
 #endif // CAMERA_2D_H

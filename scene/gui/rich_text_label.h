@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -168,10 +168,12 @@ private:
 		Item *from;
 		Vector<int> offset_caches;
 		Vector<int> height_caches;
+		Vector<int> space_caches;
 		int height_cache;
 		int height_accum_cache;
+		int char_count;
 
-		Line() { from=NULL; }
+		Line() { from=NULL; char_count=0; }
 	};
 
 
@@ -222,10 +224,10 @@ private:
 	Selection selection;
 
 
+	int visible_characters;
 
 
-
-	void _process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos=Point2i(),Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL);
+	void _process_line(int &y, int p_width, int p_line, ProcessMode p_mode,const Ref<Font> &p_base_font,const Color &p_base_color,const Point2i& p_click_pos=Point2i(),Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL,int p_char_count=0);
 	void _find_click(const Point2i& p_click,Item **r_click_item=NULL,int *r_click_char=NULL,bool *r_outside=NULL);
 
 
@@ -241,6 +243,10 @@ private:
 
 	void _input_event(InputEvent p_event);
 	Item *_get_next_item(Item* p_item);
+
+	bool use_bbcode;
+	String bbcode;
+
 
 
 protected:
@@ -291,8 +297,19 @@ public:
 	bool is_selection_enabled() const;
 	void selection_copy();
 
+
 	Error parse_bbcode(const String& p_bbcode);
 	Error append_bbcode(const String& p_bbcode);
+
+	void set_use_bbcode(bool p_enable);
+	bool is_using_bbcode() const;
+
+	void set_bbcode(const String& p_bbcode);
+	String get_bbcode() const;
+
+	void set_visible_characters(int p_visible);
+	int get_visible_characters() const;
+	int get_total_character_count() const;
 
 	RichTextLabel();
 	~RichTextLabel();

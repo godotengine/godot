@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,8 @@ class InputMap : public Object {
 	mutable Map<int,StringName> input_id_map;
 
 	List<InputEvent>::Element *_find_event(List<InputEvent> &p_list,const InputEvent& p_event) const;
+
+	Array _get_action_list(const StringName& p_action);
 
 protected:
 

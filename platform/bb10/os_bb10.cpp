@@ -619,7 +619,7 @@ OSBB10::OSBB10() {
 	printf("godot bb10!\n");
 	getcwd(launch_dir, sizeof(launch_dir));
 	printf("launch dir %s\n", launch_dir);
-	chdir("app/native/assets");
+	chdir("app/native");
 	launch_dir_ptr = launch_dir;
 }
 

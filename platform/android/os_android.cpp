@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -151,7 +151,7 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	sample_manager = memnew( SampleManagerMallocSW );
 	audio_server = memnew( AudioServerSW(sample_manager) );
 
-	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,false);
+	audio_server->set_mixer_params(AudioMixerSW::INTERPOLATION_LINEAR,true);
 	audio_server->init();
 
 	spatial_sound_server = memnew( SpatialSoundServerSW );
@@ -163,7 +163,8 @@ void OS_Android::initialize(const VideoMode& p_desired,int p_video_driver,int p_
 	//
 	physics_server = memnew( PhysicsServerSW );
 	physics_server->init();
-	physics_2d_server = memnew( Physics2DServerSW );
+	//physics_2d_server = memnew( Physics2DServerSW );
+	physics_2d_server = Physics2DServerWrapMT::init_server<Physics2DServerSW>();
 	physics_2d_server->init();
 
 	input = memnew( InputDefault );
@@ -289,6 +290,11 @@ OS::VideoMode OS_Android::get_video_mode(int p_screen) const {
 void OS_Android::get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen) const {
 
 	p_list->push_back(default_videomode);
+}
+
+Size2 OS_Android::get_window_size() const {
+
+	return Vector2(default_videomode.width,default_videomode.height);
 }
 
 String OS_Android::get_name() {

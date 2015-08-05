@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -51,6 +51,7 @@ class OS {
 	String _local_clipboard;
 	uint64_t frames_drawn;
 	uint32_t _frame_delay;
+	uint64_t _msec_splash;
 	bool _no_window;
 	int _exit_code;
 	int _orientation;
@@ -73,7 +74,7 @@ public:
 		bool fullscreen;
 		bool resizable;
 		float get_aspect() const { return (float)width/(float)height; }
-		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) { width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
+		VideoMode(int p_width=640,int p_height=480,bool p_fullscreen=false, bool p_resizable = true) {width=p_width; height=p_height; fullscreen=p_fullscreen; resizable = p_resizable; }
 	};
 protected:
 friend class Main;
@@ -149,7 +150,27 @@ public:
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0)=0;
 	virtual VideoMode get_video_mode(int p_screen=0) const=0;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const=0;
-	
+
+
+	virtual int get_screen_count() const{ return 1; }
+	virtual int get_current_screen() const { return 0; }
+	virtual void set_current_screen(int p_screen) { }
+	virtual Point2 get_screen_position(int p_screen=0)  { return Point2(); }
+	virtual Size2 get_screen_size(int p_screen=0) const { return get_window_size(); }
+	virtual Point2 get_window_position() const { return Vector2(); }
+	virtual void set_window_position(const Point2& p_position) {}
+	virtual Size2 get_window_size() const=0;
+	virtual void set_window_size(const Size2 p_size){}
+	virtual void set_window_fullscreen(bool p_enabled) {}
+	virtual bool is_window_fullscreen() const { return true; }
+	virtual void set_window_resizable(bool p_enabled) {}
+	virtual bool is_window_resizable() const { return false; }
+	virtual void set_window_minimized(bool p_enabled) {}
+	virtual bool is_window_minimized() const { return false; }
+	virtual void set_window_maximized(bool p_enabled) {}
+	virtual bool is_window_maximized() const { return true; }
+
+
 	virtual void set_iterations_per_second(int p_ips);
 	virtual int get_iterations_per_second() const;
 
@@ -223,14 +244,21 @@ public:
 		int min;
 		int sec;
 	};
-	
-	virtual Date get_date() const=0;
-	virtual Time get_time() const=0;
+
+	struct TimeZoneInfo {
+		int bias;
+		String name;
+	};
+
+	virtual Date get_date(bool local=false) const=0;
+	virtual Time get_time(bool local=false) const=0;
+	virtual TimeZoneInfo get_time_zone_info() const=0;
 	virtual uint64_t get_unix_time() const;
 
 	virtual void delay_usec(uint32_t p_usec) const=0; 
 	virtual uint64_t get_ticks_usec() const=0;
 	uint32_t get_ticks_msec() const;
+	uint64_t get_splash_tick_msec() const;
 
 	void set_frame_delay(uint32_t p_msec);
 	uint32_t get_frame_delay() const;
@@ -363,6 +391,8 @@ public:
 
 	void set_time_scale(float p_scale);
 	float get_time_scale() const;
+
+
 
 	OS();	
 	virtual ~OS();

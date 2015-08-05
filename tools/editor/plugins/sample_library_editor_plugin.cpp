@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -93,7 +93,7 @@ void SampleLibraryEditor::_file_load_request(const DVector<String>& p_path) {
 			dialog->set_title("Error!");
 			//dialog->get_cancel()->set_text("Close");
 			dialog->get_ok()->set_text("Close");
-			dialog->popup_centered(Size2(300,60));
+			dialog->popup_centered_minsize();
 			return; ///beh should show an error i guess
 		}
 		String basename = path.get_file().basename();
@@ -235,6 +235,7 @@ void SampleLibraryEditor::_update_library() {
 
 	List<StringName> names;
 	sample_library->get_sample_list(&names);
+	names.sort_custom<StringName::AlphCompare>();
 
 	for(List<StringName>::Element *E=names.front();E;E=E->next()) {
 
@@ -331,7 +332,8 @@ SampleLibraryEditor::SampleLibraryEditor() {
 	play->set_pos(Point2( 5, 5 ));
 	play->set_size( Size2(1,1 ) );
 	play->set_toggle_mode(true);
-	//add_child(play);
+	add_child(play);
+	play->hide();
 
 	stop = memnew( Button );
 
@@ -348,13 +350,13 @@ SampleLibraryEditor::SampleLibraryEditor() {
 
 	_delete = memnew( Button );
 
-	file = memnew( FileDialog );
+	file = memnew( EditorFileDialog );
 	add_child(file);
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Sample",&extensions);
 	for(int i=0;i<extensions.size();i++)
 		file->add_filter("*."+extensions[i]);
-	file->set_mode(FileDialog::MODE_OPEN_FILES);
+	file->set_mode(EditorFileDialog::MODE_OPEN_FILES);
 
 	_delete->set_pos(Point2( 65, 5 ));
 	_delete->set_size( Size2(1,1 ) );

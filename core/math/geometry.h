@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -519,9 +519,9 @@ public:
 
 	    bool s_ab = (b.x-a.x)*as_y-(b.y-a.y)*as_x > 0;
 
-	    if((c.x-a.x)*as_y-(c.y-a.y)*as_x > 0 == s_ab) return false;
+	    if(((c.x-a.x)*as_y-(c.y-a.y)*as_x > 0) == s_ab) return false;
 
-	    if((c.x-b.x)*(s.y-b.y)-(c.y-b.y)*(s.x-b.x) > 0 != s_ab) return false;
+	    if(((c.x-b.x)*(s.y-b.y)-(c.y-b.y)*(s.x-b.x) > 0) != s_ab) return false;
 
 	    return true;
 	}

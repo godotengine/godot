@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,6 +45,7 @@
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "servers/physics_2d/physics_2d_server_sw.h"
+#include "servers/physics_2d/physics_2d_server_wrap_mt.h"
 
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
@@ -157,7 +158,14 @@ class OS_X11 : public OS_Unix {
 
 
 	int joystick_count;
+
 	Joystick joysticks[JOYSTICKS_MAX];
+
+	int audio_driver_index;
+	unsigned int capture_idle;
+	bool maximized;
+	//void set_wm_border(bool p_enabled);
+	void set_wm_fullscreen(bool p_enabled);
 
 
 protected:
@@ -166,8 +174,8 @@ protected:
 	virtual const char * get_video_driver_name(int p_driver) const;	
 	virtual VideoMode get_default_video_mode() const;
 
-    virtual int get_audio_driver_count() const;
-    virtual const char * get_audio_driver_name(int p_driver) const;
+	virtual int get_audio_driver_count() const;
+	virtual const char * get_audio_driver_name(int p_driver) const;
 
 	virtual void initialize(const VideoMode& p_desired,int p_video_driver,int p_audio_driver);	
 	virtual void finalize();
@@ -177,6 +185,7 @@ protected:
 	void probe_joystick(int p_id = -1);
 	void process_joysticks();
 	void close_joystick(int p_id = -1);
+
 
 public:
 
@@ -212,6 +221,25 @@ public:
 	virtual void set_video_mode(const VideoMode& p_video_mode,int p_screen=0);
 	virtual VideoMode get_video_mode(int p_screen=0) const;
 	virtual void get_fullscreen_mode_list(List<VideoMode> *p_list,int p_screen=0) const;
+
+
+	virtual int get_screen_count() const;
+	virtual int get_current_screen() const;
+	virtual void set_current_screen(int p_screen);
+	virtual Point2 get_screen_position(int p_screen=0) const;
+	virtual Size2 get_screen_size(int p_screen=0) const;
+	virtual Point2 get_window_position() const;
+	virtual void set_window_position(const Point2& p_position);
+	virtual Size2 get_window_size() const;
+	virtual void set_window_size(const Size2 p_size);
+	virtual void set_window_fullscreen(bool p_enabled);
+	virtual bool is_window_fullscreen() const;
+	virtual void set_window_resizable(bool p_enabled);
+	virtual bool is_window_resizable() const;
+	virtual void set_window_minimized(bool p_enabled);
+	virtual bool is_window_minimized() const;
+	virtual void set_window_maximized(bool p_enabled);
+	virtual bool is_window_maximized() const;
 
 	virtual void move_window_to_foreground();
 

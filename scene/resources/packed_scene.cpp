@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 	if (prop_count)
 		props=&variants[0];
 
-	Vector<Variant> properties;
+	//Vector<Variant> properties;
 
 	const NodeData *nd = &nodes[0];
 
@@ -182,6 +182,8 @@ Node *PackedScene::instance(bool p_gen_edit_state) const {
 
 	if (get_path()!="" && get_path().find("::")==-1)
 		s->set_filename(get_path());
+
+	s->notification(Node::NOTIFICATION_INSTANCED);
 	return ret_nodes[0];
 
 }
@@ -255,10 +257,13 @@ Error PackedScene::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<
 		String name = E->get().name;
 		Variant value = p_node->get( E->get().name );
 
-		if (E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO && value.is_zero()) {
+		if (nd.instance<0 && ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONZERO) && value.is_zero()) || ((E->get().usage & PROPERTY_USAGE_STORE_IF_NONONE) && value.is_one())) {
 			continue;
 		}
 
+		print_line("PASSED!");
+		print_line("at: "+String(p_node->get_name())+"::"+name+": -  nz: "+itos(E->get().usage&PROPERTY_USAGE_STORE_IF_NONZERO)+" no: "+itos(E->get().usage&PROPERTY_USAGE_STORE_IF_NONONE));
+		print_line("value: "+String(value)+" is zero: "+itos(value.is_zero())+" is one" +itos(value.is_one()));
 
 		if (nd.instance>=0) {
 			//only save changed properties in instance
@@ -276,7 +281,7 @@ Error PackedScene::_parse_node(Node *p_owner,Node *p_node,int p_parent_idx, Map<
 				continue;
 			}
 
-			if (instance_state[name]==value) {
+			if (instance_state.has(name) && instance_state[name]==value) {
 				continue;
 			}
 

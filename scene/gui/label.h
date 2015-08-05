@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -75,8 +75,9 @@ private:
 		int char_pos; // if -1, then newline
 		int word_len;
 		int pixel_width;
+		int space_count;
 		WordCache *next;
-		WordCache() { char_pos=0; word_len=0; pixel_width=0; next=0; }
+		WordCache() { char_pos=0; word_len=0; pixel_width=0; next=0; space_count=0;}
 	};	
 	
 	bool word_cache_dirty;

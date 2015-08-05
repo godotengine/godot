@@ -24,6 +24,9 @@
 namespace rg_etc1
 {
 
+   inline long labs(long val) {
+        return val < 0 ? -val : val;
+   }
 
    inline int intabs(int val) {
 
@@ -1913,7 +1916,7 @@ done:
                   for (uint packed_c = 0; packed_c < limit; packed_c++)
                   {
                      int v = etc1_decode_value(diff, inten, selector, packed_c);
-             uint err = intabs(v - color);
+                     uint err = labs(v - static_cast<int>(color));
 		     //printf("err: %d - %u = %u\n",v,color,err);
                      if (err < best_error)
                      {
@@ -2367,7 +2370,7 @@ found_perfect_match:
       int dr = best_results[1].m_block_color_unscaled.r - best_results[0].m_block_color_unscaled.r;
       int dg = best_results[1].m_block_color_unscaled.g - best_results[0].m_block_color_unscaled.g;
       int db = best_results[1].m_block_color_unscaled.b - best_results[0].m_block_color_unscaled.b;
-      RG_ETC1_ASSERT(best_use_color4 || (rg_etc1::minimum(dr, dg, db) >= cETC1ColorDeltaMin) && (rg_etc1::maximum(dr, dg, db) <= cETC1ColorDeltaMax));
+      RG_ETC1_ASSERT(best_use_color4 || ((rg_etc1::minimum(dr, dg, db) >= cETC1ColorDeltaMin) && (rg_etc1::maximum(dr, dg, db) <= cETC1ColorDeltaMax)));
            
       if (best_use_color4)
       {

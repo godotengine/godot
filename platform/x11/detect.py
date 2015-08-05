@@ -38,6 +38,11 @@ def can_build():
 	if (x11_error):
 		print("xcursor not found.. x11 disabled.")
 		return False
+	
+	x11_error=os.system("pkg-config xinerama --modversion > /dev/null ")
+	if (x11_error):
+		print("xinerama not found.. x11 disabled.")
+		return False
 
 	
 	return True # X11 enabled
@@ -47,7 +52,10 @@ def get_opts():
 	return [
 	('use_llvm','Use llvm compiler','no'),
 	('use_sanitizer','Use llvm compiler sanitize address','no'),
+	('use_leak_sanitizer','Use llvm compiler sanitize memory leaks','no'),
 	('pulseaudio','Detect & Use pulseaudio','yes'),
+	('new_wm_api', 'Use experimental window management API','no'),
+	('debug_release', 'Add debug symbols to release version','no'),
 	]
   
 def get_flags():
@@ -88,6 +96,12 @@ def configure(env):
 		env.Append(LINKFLAGS=['-fsanitize=address'])
 		env.extra_suffix+="s"
 
+	if (env["use_leak_sanitizer"]=="yes"):
+		env.Append(CXXFLAGS=['-fsanitize=address','-fno-omit-frame-pointer'])
+		env.Append(LINKFLAGS=['-fsanitize=address'])
+		env.extra_suffix+="s"
+
+
 	#if (env["tools"]=="no"):
 	#	#no tools suffix
 	#	env['OBJSUFFIX'] = ".nt"+env['OBJSUFFIX']
@@ -95,8 +109,11 @@ def configure(env):
 
 
 	if (env["target"]=="release"):
-		
-		env.Append(CCFLAGS=['-O2','-ffast-math','-fomit-frame-pointer'])
+
+		if (env["debug_release"]=="yes"):
+			env.Append(CCFLAGS=['-g2'])
+		else:
+			env.Append(CCFLAGS=['-O3','-ffast-math'])
 
 	elif (env["target"]=="release_debug"):
 
@@ -107,6 +124,7 @@ def configure(env):
 		env.Append(CCFLAGS=['-g2', '-Wall','-DDEBUG_ENABLED','-DDEBUG_MEMORY_ENABLED'])
 
 	env.ParseConfig('pkg-config x11 --cflags --libs')
+	env.ParseConfig('pkg-config xinerama --cflags --libs')
 	env.ParseConfig('pkg-config xcursor --cflags --libs')
 	env.ParseConfig('pkg-config openssl --cflags --libs')
 
@@ -146,4 +164,8 @@ def configure(env):
 	env.Append( BUILDERS = { 'GLSL' : env.Builder(action = methods.build_glsl_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	env.Append( BUILDERS = { 'GLSL120GLES' : env.Builder(action = methods.build_gles2_headers, suffix = 'glsl.h',src_suffix = '.glsl') } )
 	#env.Append( BUILDERS = { 'HLSL9' : env.Builder(action = methods.build_hlsl_dx9_headers, suffix = 'hlsl.h',src_suffix = '.hlsl') } )
+
+	if(env["new_wm_api"]=="yes"):
+		env.Append(CPPFLAGS=['-DNEW_WM_API'])
+		env.ParseConfig('pkg-config xinerama --cflags --libs')
 

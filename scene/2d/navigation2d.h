@@ -41,7 +41,13 @@ class Navigation2D : public Node2D {
 
 
 	struct NavMesh;
+	struct Polygon;
 
+	struct ConnectionPending {
+
+		Polygon *polygon;
+		int edge;
+	};
 
 	struct Polygon {
 
@@ -49,7 +55,8 @@ class Navigation2D : public Node2D {
 			Point point;
 			Polygon *C; //connection
 			int C_edge;
-			Edge() { C=NULL; C_edge=-1; }
+			List<ConnectionPending>::Element *P;
+			Edge() { C=NULL; C_edge=-1; P=NULL; }
 		};
 
 		Vector<Edge> edges;
@@ -59,6 +66,8 @@ class Navigation2D : public Node2D {
 
 		float distance;
 		int prev_edge;
+
+		bool clockwise;
 
 		NavMesh *owner;
 	};
@@ -70,6 +79,9 @@ class Navigation2D : public Node2D {
 		int A_edge;
 		Polygon *B;
 		int B_edge;
+
+		List<ConnectionPending> pending;
+
 		Connection() { A=NULL; B=NULL; A_edge=-1; B_edge=-1;}
 	};
 
@@ -130,6 +142,7 @@ public:
 
 	Vector<Vector2> get_simple_path(const Vector2& p_start, const Vector2& p_end,bool p_optimize=true);
 	Vector2 get_closest_point(const Vector2& p_point);
+	Object* get_closest_point_owner(const Vector2& p_point);
 
 	Navigation2D();
 };

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,6 +130,24 @@ RID VisualServer::get_test_texture() {
 	return test_texture;
 };
 
+void VisualServer::_free_internal_rids() {
+
+	if (test_texture.is_valid())
+		free(test_texture);
+	if (white_texture.is_valid())
+		free(white_texture);
+	if (test_material.is_valid())
+		free(test_material);
+
+	for(int i=0;i<16;i++) {
+		if (material_2d[i].is_valid())
+			free(material_2d[i]);
+	}
+
+
+
+}
+
 RID VisualServer::_make_test_cube() {
 
 	DVector<Vector3> vertices;
@@ -146,7 +164,6 @@ RID VisualServer::_make_test_cube() {
 	tangents.push_back( normal_points[m_idx][0] );\
 	tangents.push_back( 1.0 );\
 	uvs.push_back( Vector3(uv_points[m_idx*2+0],uv_points[m_idx*2+1],0) );\
-	print_line(itos( (face_points[m_idx][0]>0?1:0)|(face_points[m_idx][1]>0?2:0)|(face_points[m_idx][2]>0?4:0)));\
 	vtx_idx++;\
 
 	for (int i=0;i<6;i++) {
@@ -203,16 +220,17 @@ RID VisualServer::_make_test_cube() {
 	mesh_add_surface( test_cube, PRIMITIVE_TRIANGLES,d );
 	
 
-	RID material = fixed_material_create();
+
+	test_material = fixed_material_create();
 	//material_set_flag(material, MATERIAL_FLAG_BILLBOARD_TOGGLE,true);
-	fixed_material_set_texture( material, FIXED_MATERIAL_PARAM_DIFFUSE, get_test_texture() );
-	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_SPECULAR_EXP, 70 );
-	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_EMISSION, Vector3(0.2,0.2,0.2) );
+	fixed_material_set_texture( test_material, FIXED_MATERIAL_PARAM_DIFFUSE, get_test_texture() );
+	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_SPECULAR_EXP, 70 );
+	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_EMISSION, Color(0.2,0.2,0.2) );
 
-	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_DIFFUSE, Color(1, 1, 1) );
-	fixed_material_set_param( material, FIXED_MATERIAL_PARAM_SPECULAR, Color(1,1,1) );
+	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_DIFFUSE, Color(1, 1, 1) );
+	fixed_material_set_param( test_material, FIXED_MATERIAL_PARAM_SPECULAR, Color(1,1,1) );
 
-	mesh_surface_set_material(test_cube, 0, material );
+	mesh_surface_set_material(test_cube, 0, test_material );
 	
 	return test_cube;
 }
@@ -536,7 +554,7 @@ void VisualServer::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("mesh_add_surface_from_planes"),&VisualServer::mesh_add_surface_from_planes);
 
 	ObjectTypeDB::bind_method(_MD("draw"),&VisualServer::draw);
-	ObjectTypeDB::bind_method(_MD("flush"),&VisualServer::flush);
+	ObjectTypeDB::bind_method(_MD("sync"),&VisualServer::sync);
 	ObjectTypeDB::bind_method(_MD("free"),&VisualServer::free);
 
 	ObjectTypeDB::bind_method(_MD("set_default_clear_color"),&VisualServer::set_default_clear_color);

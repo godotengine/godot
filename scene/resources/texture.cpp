@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,6 +81,7 @@ void Texture::_bind_methods() {
 	BIND_CONSTANT( FLAGS_DEFAULT );
 	BIND_CONSTANT( FLAG_ANISOTROPIC_FILTER );
 	BIND_CONSTANT( FLAG_CONVERT_TO_LINEAR );
+	BIND_CONSTANT( FLAG_MIRRORED_REPEAT );
 
 }
 
@@ -181,7 +182,7 @@ void ImageTexture::_get_property_list( List<PropertyInfo> *p_list) const {
 
 
 
-	p_list->push_back( PropertyInfo( Variant::INT, "flags", PROPERTY_HINT_FLAGS,"Mipmaps,Repeat,Filter,Anisotropic,sRGB") );
+	p_list->push_back( PropertyInfo( Variant::INT, "flags", PROPERTY_HINT_FLAGS,"Mipmaps,Repeat,Filter,Anisotropic,sRGB,Mirrored Repeat") );
 	p_list->push_back( PropertyInfo( Variant::IMAGE, "image", img_hint,String::num(lossy_storage_quality)) );
 	p_list->push_back( PropertyInfo( Variant::VECTOR2, "size",PROPERTY_HINT_NONE, ""));
 	p_list->push_back( PropertyInfo( Variant::INT, "storage", PROPERTY_HINT_ENUM,"Uncompressed,Compress Lossy,Compress Lossless"));
@@ -321,6 +322,13 @@ void ImageTexture::premultiply_alpha() {
 	}
 }
 
+void ImageTexture::normal_to_xy() {
+
+	Image img = get_data();
+	img.normalmap_to_xy();
+	create_from_image(img,flags);
+}
+
 bool ImageTexture::has_alpha() const {
 
 	return ( format==Image::FORMAT_GRAYSCALE_ALPHA || format==Image::FORMAT_INDEXED_ALPHA || format==Image::FORMAT_RGBA );
@@ -405,9 +413,11 @@ void ImageTexture::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_lossy_storage_quality"),&ImageTexture::get_lossy_storage_quality);
 	ObjectTypeDB::bind_method(_MD("fix_alpha_edges"),&ImageTexture::fix_alpha_edges);
 	ObjectTypeDB::bind_method(_MD("premultiply_alpha"),&ImageTexture::premultiply_alpha);
+	ObjectTypeDB::bind_method(_MD("normal_to_xy"),&ImageTexture::normal_to_xy);
 	ObjectTypeDB::bind_method(_MD("set_size_override","size"),&ImageTexture::set_size_override);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("fix_alpha_edges"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("premultiply_alpha"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
+	ObjectTypeDB::set_method_flags(get_type_static(),_SCS("normal_to_xy"),METHOD_FLAGS_DEFAULT|METHOD_FLAG_EDITOR);
 	ObjectTypeDB::bind_method(_MD("_reload_hook","rid"),&ImageTexture::_reload_hook);
 
 

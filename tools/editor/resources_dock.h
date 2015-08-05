@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,7 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/file_dialog.h"
 #include "create_dialog.h"
+#include "editor_file_dialog.h"
 
 
 class EditorNode;
@@ -68,7 +69,7 @@ class ResourcesDock : public VBoxContainer {
 	CreateDialog *create_dialog;
 
 	AcceptDialog *accept;
-	FileDialog *file;
+	EditorFileDialog *file;
 	Tree *resources;
 	bool block_add;
 	int current_action;

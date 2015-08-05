@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -152,11 +152,11 @@ void Camera::_get_property_list( List<PropertyInfo> *p_list) const {
 	
 		case PROJECTION_PERSPECTIVE: {
 		
-			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_NOEDITOR) );
+			p_list->push_back( PropertyInfo( Variant::REAL, "fov" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_NOEDITOR) );
 			if (keep_aspect==KEEP_WIDTH)
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovx" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 			else
-				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,89,0.1",PROPERTY_USAGE_EDITOR) );
+				p_list->push_back( PropertyInfo( Variant::REAL, "fovy" , PROPERTY_HINT_RANGE, "1,179,0.1",PROPERTY_USAGE_EDITOR) );
 
 			
 		} break;
@@ -552,6 +552,13 @@ Vector3 Camera::project_ray_origin(const Point2& p_pos) const {
 	};
 };
 
+bool Camera::is_position_behind(const Vector3& p_pos) const {
+
+	Transform t = get_global_transform();
+	Vector3 eyedir = -get_global_transform().basis.get_axis(2).normalized();
+	return eyedir.dot(p_pos) < (eyedir.dot(t.origin)+near);
+}
+
 Point2 Camera::unproject_position(const Vector3& p_pos) const {
 
 	if (!is_inside_tree()) {
@@ -666,6 +673,7 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("project_local_ray_normal","screen_point"), &Camera::project_local_ray_normal);
 	ObjectTypeDB::bind_method( _MD("project_ray_origin","screen_point"), &Camera::project_ray_origin);
 	ObjectTypeDB::bind_method( _MD("unproject_position","world_point"), &Camera::unproject_position);
+	ObjectTypeDB::bind_method( _MD("is_position_behind","world_point"), &Camera::is_position_behind);
 	ObjectTypeDB::bind_method( _MD("project_position","screen_point"), &Camera::project_position);
 	ObjectTypeDB::bind_method( _MD("set_perspective","fov","z_near","z_far"),&Camera::set_perspective );
 	ObjectTypeDB::bind_method( _MD("set_orthogonal","size","z_near","z_far"),&Camera::set_orthogonal );
@@ -680,8 +688,6 @@ void Camera::_bind_methods() {
 	ObjectTypeDB::bind_method( _MD("get_projection"),&Camera::get_projection );
 	ObjectTypeDB::bind_method( _MD("set_visible_layers","mask"),&Camera::set_visible_layers );
 	ObjectTypeDB::bind_method( _MD("get_visible_layers"),&Camera::get_visible_layers );
-	ObjectTypeDB::bind_method( _MD("look_at","target","up"),&Camera::look_at );
-	ObjectTypeDB::bind_method( _MD("look_at_from_pos","pos","target","up"),&Camera::look_at_from_pos );
 	ObjectTypeDB::bind_method(_MD("set_environment","env:Environment"),&Camera::set_environment);
 	ObjectTypeDB::bind_method(_MD("get_environment:Environment"),&Camera::get_environment);
 	ObjectTypeDB::bind_method(_MD("set_keep_aspect_mode","mode"),&Camera::set_keep_aspect_mode);
@@ -752,22 +758,6 @@ Vector<Plane> Camera::get_frustum() const {
 
 
 
-void Camera::look_at(const Vector3& p_target, const Vector3& p_up_normal) {
-
-	Transform lookat;
-	lookat.origin=get_camera_transform().origin;
-	lookat=lookat.looking_at(p_target,p_up_normal);
-	set_global_transform(lookat);
-}
-
-void Camera::look_at_from_pos(const Vector3& p_pos,const Vector3& p_target, const Vector3& p_up_normal) {
-
-	Transform lookat;
-	lookat.origin=p_pos;
-	lookat=lookat.looking_at(p_target,p_up_normal);
-	set_global_transform(lookat);
-
-}
 
 void Camera::set_v_offset(float p_offset) {
 

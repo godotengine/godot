@@ -5,7 +5,7 @@
 #include "io/base64.h"
 #include "core/globals.h"
 #include "io/file_access_encrypted.h"
-
+#include "os/keyboard.h"
 _ResourceLoader *_ResourceLoader::singleton=NULL;
 
 Ref<ResourceInteractiveLoader> _ResourceLoader::load_interactive(const String& p_path,const String& p_type_hint) {
@@ -176,6 +176,76 @@ bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 }
 
+
+int _OS::get_screen_count() const {
+	return OS::get_singleton()->get_screen_count();
+}
+
+int _OS::get_current_screen() const {
+	return OS::get_singleton()->get_current_screen();
+}
+
+void _OS::set_current_screen(int p_screen) {
+	OS::get_singleton()->set_current_screen(p_screen);
+}
+
+Point2 _OS::get_screen_position(int p_screen) const {
+	return OS::get_singleton()->get_screen_position(p_screen);
+}
+
+Size2 _OS::get_screen_size(int p_screen) const {
+	return OS::get_singleton()->get_screen_size(p_screen);
+}
+
+Point2 _OS::get_window_position() const {
+	return OS::get_singleton()->get_window_position();
+}
+
+void _OS::set_window_position(const Point2& p_position) {
+	OS::get_singleton()->set_window_position(p_position);
+}
+
+Size2 _OS::get_window_size() const {
+	return OS::get_singleton()->get_window_size();
+}
+
+void _OS::set_window_size(const Size2& p_size) {
+	OS::get_singleton()->set_window_size(p_size);
+}
+
+void _OS::set_window_fullscreen(bool p_enabled) {
+	OS::get_singleton()->set_window_fullscreen(p_enabled);
+}
+
+bool _OS::is_window_fullscreen() const {
+	return OS::get_singleton()->is_window_fullscreen();
+}
+
+void _OS::set_window_resizable(bool p_enabled) {
+	OS::get_singleton()->set_window_resizable(p_enabled);
+}
+
+bool _OS::is_window_resizable() const {
+	return OS::get_singleton()->is_window_resizable();
+}
+
+void _OS::set_window_minimized(bool p_enabled) {
+	OS::get_singleton()->set_window_minimized(p_enabled);
+}
+
+bool _OS::is_window_minimized() const {
+	return OS::get_singleton()->is_window_minimized();
+}
+
+void _OS::set_window_maximized(bool p_enabled) {
+	OS::get_singleton()->set_window_maximized(p_enabled);
+}
+
+bool _OS::is_window_maximized() const {
+	return OS::get_singleton()->is_window_maximized();
+}
+
+
 void _OS::set_use_file_access_save_and_swap(bool p_enable) {
 
 	FileAccess::set_backup_save(p_enable);
@@ -186,7 +256,6 @@ bool _OS::is_video_mode_resizable(int p_screen) const {
 	OS::VideoMode vm;
 	vm = OS::get_singleton()->get_video_mode(p_screen);
 	return vm.resizable;
-
 }
 
 Array _OS::get_fullscreen_mode_list(int p_screen) const {
@@ -388,9 +457,9 @@ void _OS::set_icon(const Image& p_icon) {
 	OS::get_singleton()->set_icon(p_icon);
 }
 
-Dictionary _OS::get_date() const {
+Dictionary _OS::get_date(bool utc) const {
 
-	OS::Date date = OS::get_singleton()->get_date();
+	OS::Date date = OS::get_singleton()->get_date(utc);
 	Dictionary dated;
 	dated["year"]=date.year;
 	dated["month"]=date.month;
@@ -401,9 +470,9 @@ Dictionary _OS::get_date() const {
 
 
 }
-Dictionary _OS::get_time() const {
+Dictionary _OS::get_time(bool utc) const {
 
-	OS::Time time = OS::get_singleton()->get_time();
+	OS::Time time = OS::get_singleton()->get_time(utc);
 	Dictionary timed;
 	timed["hour"]=time.hour;
 	timed["minute"]=time.min;
@@ -411,6 +480,15 @@ Dictionary _OS::get_time() const {
 	return timed;
 
 }
+
+Dictionary _OS::get_time_zone_info() const {
+	OS::TimeZoneInfo info = OS::get_singleton()->get_time_zone_info();
+	Dictionary infod;
+	infod["bias"] = info.bias;
+	infod["name"] = info.name;
+	return infod;
+}
+
 uint64_t _OS::get_unix_time() const {
 
 	return OS::get_singleton()->get_unix_time();
@@ -431,6 +509,10 @@ uint32_t _OS::get_ticks_msec() const {
 	return OS::get_singleton()->get_ticks_msec();
 }
 
+uint32_t _OS::get_splash_tick_msec() const {
+
+	return OS::get_singleton()->get_splash_tick_msec();
+}
 
 bool _OS::can_use_threads() const {
 
@@ -612,6 +694,17 @@ bool _OS::is_debug_build() const {
 
 }
 
+void _OS::set_screen_orientation(ScreenOrientation p_orientation) {
+
+	OS::get_singleton()->set_screen_orientation(OS::ScreenOrientation(p_orientation));
+}
+
+_OS::ScreenOrientation _OS::get_screen_orientation() const {
+
+	return ScreenOrientation(OS::get_singleton()->get_screen_orientation());
+}
+
+
 String _OS::get_system_dir(SystemDir p_dir) const {
 
 	return OS::get_singleton()->get_system_dir(OS::SystemDir(p_dir));
@@ -621,6 +714,20 @@ String _OS::get_custom_level() const {
 
 	return OS::get_singleton()->get_custom_level();
 }
+
+String _OS::get_scancode_string(uint32_t p_code) const {
+
+	return keycode_get_string(p_code);
+}
+bool _OS::is_scancode_unicode(uint32_t p_unicode) const {
+
+	return keycode_has_unicode(p_unicode);
+}
+int _OS::find_scancode_from_string(const String& p_code) const {
+
+	return find_keycode(p_code);
+}
+
 _OS *_OS::singleton=NULL;
 
 void _OS::_bind_methods() {
@@ -636,6 +743,29 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	ObjectTypeDB::bind_method(_MD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+
+
+	ObjectTypeDB::bind_method(_MD("get_screen_count"),&_OS::get_screen_count);
+	ObjectTypeDB::bind_method(_MD("get_current_screen"),&_OS::get_current_screen);
+	ObjectTypeDB::bind_method(_MD("set_current_screen","screen"),&_OS::set_current_screen);
+	ObjectTypeDB::bind_method(_MD("get_screen_position","screen"),&_OS::get_screen_position,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_screen_size","screen"),&_OS::get_screen_size,DEFVAL(0));
+	ObjectTypeDB::bind_method(_MD("get_window_position"),&_OS::get_window_position);
+	ObjectTypeDB::bind_method(_MD("set_window_position","position"),&_OS::set_window_position);
+	ObjectTypeDB::bind_method(_MD("get_window_size"),&_OS::get_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_size","size"),&_OS::set_window_size);
+	ObjectTypeDB::bind_method(_MD("set_window_fullscreen","enabled"),&_OS::set_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("is_window_fullscreen"),&_OS::is_window_fullscreen);
+	ObjectTypeDB::bind_method(_MD("set_window_resizable","enabled"),&_OS::set_window_resizable);
+	ObjectTypeDB::bind_method(_MD("is_window_resizable"),&_OS::is_window_resizable);
+	ObjectTypeDB::bind_method(_MD("set_window_minimized", "enabled"),&_OS::set_window_minimized);
+	ObjectTypeDB::bind_method(_MD("is_window_minimized"),&_OS::is_window_minimized);
+	ObjectTypeDB::bind_method(_MD("set_window_maximized", "enabled"),&_OS::set_window_maximized);
+	ObjectTypeDB::bind_method(_MD("is_window_maximized"),&_OS::is_window_maximized);
+
+	ObjectTypeDB::bind_method(_MD("set_screen_orientation","orientation"),&_OS::set_screen_orientation);
+	ObjectTypeDB::bind_method(_MD("get_screen_orientation"),&_OS::get_screen_orientation);
+
 
 	ObjectTypeDB::bind_method(_MD("set_iterations_per_second","iterations_per_second"),&_OS::set_iterations_per_second);
 	ObjectTypeDB::bind_method(_MD("get_iterations_per_second"),&_OS::get_iterations_per_second);
@@ -667,8 +797,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_cmdline_args"),&_OS::get_cmdline_args);
 	ObjectTypeDB::bind_method(_MD("get_main_loop"),&_OS::get_main_loop);
 
-	ObjectTypeDB::bind_method(_MD("get_date"),&_OS::get_date);
-	ObjectTypeDB::bind_method(_MD("get_time"),&_OS::get_time);
+	ObjectTypeDB::bind_method(_MD("get_date","utc"),&_OS::get_date,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time","utc"),&_OS::get_time,DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("get_time_zone_info"),&_OS::get_time_zone_info);
 	ObjectTypeDB::bind_method(_MD("get_unix_time"),&_OS::get_unix_time);
 
 	ObjectTypeDB::bind_method(_MD("set_icon"),&_OS::set_icon);
@@ -676,6 +807,7 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("delay_usec","usec"),&_OS::delay_usec);
 	ObjectTypeDB::bind_method(_MD("delay_msec","msec"),&_OS::delay_msec);
 	ObjectTypeDB::bind_method(_MD("get_ticks_msec"),&_OS::get_ticks_msec);
+	ObjectTypeDB::bind_method(_MD("get_splash_tick_msec"),&_OS::get_splash_tick_msec);
 	ObjectTypeDB::bind_method(_MD("get_locale"),&_OS::get_locale);
 	ObjectTypeDB::bind_method(_MD("get_model_name"),&_OS::get_model_name);
 
@@ -716,6 +848,9 @@ void _OS::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("native_video_stop"),&_OS::native_video_stop);
 	ObjectTypeDB::bind_method(_MD("native_video_pause"),&_OS::native_video_pause);
 
+	ObjectTypeDB::bind_method(_MD("get_scancode_string","code"),&_OS::get_scancode_string);
+	ObjectTypeDB::bind_method(_MD("is_scancode_unicode","code"),&_OS::is_scancode_unicode);
+	ObjectTypeDB::bind_method(_MD("find_scancode_from_string","string"),&_OS::find_scancode_from_string);
 
 	ObjectTypeDB::bind_method(_MD("set_use_file_access_save_and_swap","enabled"),&_OS::set_use_file_access_save_and_swap);
 
@@ -741,6 +876,14 @@ void _OS::_bind_methods() {
 	BIND_CONSTANT( MONTH_OCTOBER );
 	BIND_CONSTANT( MONTH_NOVEMBER );
 	BIND_CONSTANT( MONTH_DECEMBER );
+
+	BIND_CONSTANT( SCREEN_ORIENTATION_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_REVERSE_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_LANDSCAPE );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR_PORTRAIT );
+	BIND_CONSTANT( SCREEN_ORIENTATION_SENSOR );
 
 	BIND_CONSTANT( SYSTEM_DIR_DESKTOP);
 	BIND_CONSTANT( SYSTEM_DIR_DCIM );
@@ -1557,11 +1700,88 @@ Variant _Marshalls::base64_to_variant(const String& p_str) {
 	return v;
 };
 
+String _Marshalls::raw_to_base64(const DVector<uint8_t> &p_arr) {
+
+	int len = p_arr.size();
+	DVector<uint8_t>::Read r = p_arr.read();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)(&r[0]), len);
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+DVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	int arr_len;
+	DVector<uint8_t> buf;
+	{
+		buf.resize(strlen / 4 * 3 + 1);
+		DVector<uint8_t>::Write w = buf.write();
+
+		arr_len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+	};
+	buf.resize(arr_len);
+
+	// conversion from DVector<uint8_t> to raw array?
+	return buf;
+};
+
+String _Marshalls::utf8_to_base64(const String& p_str) {
+
+	CharString cstr = p_str.utf8();
+	int len = cstr.length();
+
+	int b64len = len / 3 * 4 + 4 + 1;
+	DVector<uint8_t> b64buff;
+	b64buff.resize(b64len);
+	DVector<uint8_t>::Write w64 = b64buff.write();
+
+	int strlen = base64_encode((char*)(&w64[0]), (char*)cstr.get_data(), len);
+
+	w64[strlen] = 0;
+	String ret = (char*)&w64[0];
+
+	return ret;
+};
+
+String _Marshalls::base64_to_utf8(const String& p_str) {
+
+	int strlen = p_str.length();
+	CharString cstr = p_str.ascii();
+
+	DVector<uint8_t> buf;
+	buf.resize(strlen / 4 * 3 + 1 + 1);
+	DVector<uint8_t>::Write w = buf.write();
+
+	int len = base64_decode((char*)(&w[0]), (char*)cstr.get_data(), strlen);
+
+	w[len] = 0;
+	String ret = String::utf8((char*)&w[0]);
+
+	return ret;
+};
+
 
 void _Marshalls::_bind_methods() {
 
 	ObjectTypeDB::bind_method(_MD("variant_to_base64:String","variant"),&_Marshalls::variant_to_base64);
 	ObjectTypeDB::bind_method(_MD("base64_to_variant:Variant","base64_str"),&_Marshalls::base64_to_variant);
+
+	ObjectTypeDB::bind_method(_MD("raw_to_base64:String","array"),&_Marshalls::raw_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_raw:RawArray","base64_str"),&_Marshalls::base64_to_raw);
+
+	ObjectTypeDB::bind_method(_MD("utf8_to_base64:String","utf8_str"),&_Marshalls::utf8_to_base64);
+	ObjectTypeDB::bind_method(_MD("base64_to_utf8:String","base64_str"),&_Marshalls::base64_to_utf8);
 
 };
 
@@ -1646,9 +1866,12 @@ _Mutex::~_Mutex(){
 
 void _Thread::_start_func(void *ud) {
 
-	_Thread *t=(_Thread*)ud;
+	Ref<_Thread>* tud=(Ref<_Thread>*)ud;
+	Ref<_Thread> t=*tud;
+	memdelete(tud);
 	Variant::CallError ce;
 	const Variant* arg[1]={&t->userdata};
+
 	t->ret=t->target_instance->call(t->target_method,arg,1,ce);
 	if (ce.error!=Variant::CallError::CALL_OK) {
 
@@ -1673,6 +1896,7 @@ void _Thread::_start_func(void *ud) {
 			default: {}
 		}
 
+
 		ERR_EXPLAIN("Could not call function '"+t->target_method.operator String()+"'' starting thread ID: "+t->get_id()+" Reason: "+reason);
 		ERR_FAIL();
 	}
@@ -1693,9 +1917,11 @@ Error _Thread::start(Object *p_instance,const StringName& p_method,const Variant
 	userdata=p_userdata;
 	active=true;
 
+	Ref<_Thread> *ud = memnew( Ref<_Thread>(this) );
+
 	Thread::Settings s;
 	s.priority=(Thread::Priority)p_priority;
-	thread = Thread::create(_start_func,this,s);
+	thread = Thread::create(_start_func,ud,s);
 	if (!thread) {
 		active=false;
 		target_method=StringName();
@@ -1756,5 +1982,8 @@ _Thread::_Thread() {
 
 _Thread::~_Thread() {
 
+	if (active) {
+		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running..");
+	}
 	ERR_FAIL_COND(active==true);
 }

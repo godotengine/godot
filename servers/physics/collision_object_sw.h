@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,10 @@
 #include "self_list.h"
 #include "broad_phase_sw.h"
 
-#define MAX_OBJECT_DISTANCE 10000000
+#ifdef DEBUG_ENABLED
+#define MAX_OBJECT_DISTANCE 10000000.0
 #define MAX_OBJECT_DISTANCE_X2 (MAX_OBJECT_DISTANCE*MAX_OBJECT_DISTANCE)
+#endif
 
 class SpaceSW;
 

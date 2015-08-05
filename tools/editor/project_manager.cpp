@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -639,7 +639,7 @@ void ProjectManager::_open_project() {
 
 	if (selected_list.size()>1) {
 		multi_open_ask->set_text("Are you sure to open more than one projects?");
-		multi_open_ask->popup_centered(Size2(300,100));
+		multi_open_ask->popup_centered_minsize();
 	} else {
 		_open_project_confirm();
 	}
@@ -679,7 +679,7 @@ void ProjectManager::_run_project() {
 
 	if (selected_list.size()>1) {
 		multi_run_ask->set_text("Are you sure to run more than one projects?");
-		multi_run_ask->popup_centered(Size2(300,100));
+		multi_run_ask->popup_centered_minsize();
 	} else {
 		_run_project_confirm();
 	}
@@ -779,7 +779,7 @@ void ProjectManager::_erase_project()  {
 
 
 	erase_ask->set_text("Erase project from list?? (Folder contents will not be modified)");
-	erase_ask->popup_centered(Size2(300,100));
+	erase_ask->popup_centered_minsize();
 
 }
 
@@ -819,6 +819,7 @@ ProjectManager::ProjectManager() {
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
 
+	FileDialog::set_default_show_hidden_files(EditorSettings::get_singleton()->get("file_dialog/show_hidden_files"));
 
 	set_area_as_parent_rect();
 	Panel *panel = memnew( Panel );
@@ -940,7 +941,7 @@ ProjectManager::ProjectManager() {
 	String cp;
 	cp.push_back(0xA9);
 	cp.push_back(0);
-	l->set_text(cp+" 2008-2014 Juan Linietsky, Ariel Manzur.");
+	l->set_text(cp+" 2008-2015 Juan Linietsky, Ariel Manzur.");
 	l->set_align(Label::ALIGN_CENTER);
 	vb->add_child(l);
 

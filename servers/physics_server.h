@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,8 +131,8 @@ class PhysicsDirectSpaceState : public Object {
 
 	OBJ_TYPE( PhysicsDirectSpaceState, Object );
 
-//	Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
-//	Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_user_mask=0);
+//	Variant _intersect_ray(const Vector3& p_from, const Vector3& p_to,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
+//	Variant _intersect_shape(const RID& p_shape, const Transform& p_xform,int p_result_max=64,const Vector<RID>& p_exclude=Vector<RID>(),uint32_t p_collision_mask=0);
 public:
 
 	enum ObjectTypeMask {
@@ -298,6 +298,7 @@ public:
 		AREA_PARAM_GRAVITY,
 		AREA_PARAM_GRAVITY_VECTOR,
 		AREA_PARAM_GRAVITY_IS_POINT,
+		AREA_PARAM_GRAVITY_DISTANCE_SCALE,
 		AREA_PARAM_GRAVITY_POINT_ATTENUATION,
 		AREA_PARAM_DENSITY,
 		AREA_PARAM_PRIORITY
@@ -338,7 +339,10 @@ public:
 	virtual Variant area_get_param(RID p_parea,AreaParameter p_param) const=0;
 	virtual Transform area_get_transform(RID p_area) const=0;
 
+	virtual void area_set_monitorable(RID p_area,bool p_monitorable)=0;
+
 	virtual void area_set_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method)=0;
+	virtual void area_set_area_monitor_callback(RID p_area,Object *p_receiver,const StringName& p_method)=0;
 
 	virtual void area_set_ray_pickable(RID p_area,bool p_enable)=0;
 	virtual bool area_is_ray_pickable(RID p_area) const=0;

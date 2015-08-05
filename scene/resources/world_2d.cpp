@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -352,7 +352,16 @@ void World2D::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_canvas"),&World2D::get_canvas);
 	ObjectTypeDB::bind_method(_MD("get_space"),&World2D::get_space);
 	ObjectTypeDB::bind_method(_MD("get_sound_space"),&World2D::get_sound_space);
+
+	ObjectTypeDB::bind_method(_MD("get_direct_space_state:Physics2DDirectSpaceState"),&World2D::get_direct_space_state);
+
 }
+
+Physics2DDirectSpaceState *World2D::get_direct_space_state() {
+
+	return Physics2DServer::get_singleton()->space_get_direct_state(space);
+}
+
 
 World2D::World2D() {
 

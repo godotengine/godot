@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3& p_from, const Vecto
 		if (!_match_object_type_query(space->intersection_query_results[i],p_layer_mask,p_object_type_mask))
 			continue;
 
-		if (!(static_cast<AreaSW*>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (!(static_cast<CollisionObjectSW*>(space->intersection_query_results[i])->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has( space->intersection_query_results[i]->get_self()))
@@ -503,15 +503,18 @@ void* SpaceSW::_broadphase_pair(CollisionObjectSW *A,int p_subindex_A,CollisionO
 
 	if (type_A==CollisionObjectSW::TYPE_AREA) {
 
-
-		ERR_FAIL_COND_V(type_B!=CollisionObjectSW::TYPE_BODY,NULL);
 		AreaSW *area=static_cast<AreaSW*>(A);
-		BodySW *body=static_cast<BodySW*>(B);
+		if (type_B==CollisionObjectSW::TYPE_AREA) {
 
+			AreaSW *area_b=static_cast<AreaSW*>(B);
+			Area2PairSW *area2_pair = memnew(Area2PairSW(area_b,p_subindex_B,area,p_subindex_A) );
+			return area2_pair;
+		} else {
 
-		AreaPairSW *area_pair = memnew(AreaPairSW(body,p_subindex_B,area,p_subindex_A) );
-
-		return area_pair;
+			BodySW *body=static_cast<BodySW*>(B);
+			AreaPairSW *area_pair = memnew(AreaPairSW(body,p_subindex_B,area,p_subindex_A) );
+			return area_pair;
+		}
 	} else {
 
 

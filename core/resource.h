@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -99,6 +99,7 @@ friend class ResourceCache;
 	
 	String name;
 	String path_cache;
+	int subindex;
 
 	virtual bool _use_builtin_script() const { return true; }
 
@@ -131,6 +132,9 @@ public:
 
 	void set_path(const String& p_path,bool p_take_over=false);
 	String get_path() const;
+
+	void set_subindex(int p_sub_index);
+	int get_subindex() const;
 
 	Ref<Resource> duplicate(bool p_subresources=false);
 

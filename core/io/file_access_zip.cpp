@@ -31,6 +31,7 @@
 #include "file_access_zip.h"
 
 #include "core/os/file_access.h"
+#include "core/os/copymem.h"
 
 ZipArchive* ZipArchive::instance = NULL;
 
@@ -103,9 +104,17 @@ static int godot_testerror(voidpf opaque, voidpf stream) {
 	return f->get_error()!=OK?1:0;
 };
 
+static voidpf godot_alloc(voidpf opaque, uInt items, uInt size) {
 
+	return memalloc(items * size);
 };
 
+static void godot_free(voidpf opaque, voidpf address) {
+
+	memfree(address);
+};
+
+}; // extern "C"
 
 void ZipArchive::close_handle(unzFile p_file) const {
 
@@ -125,6 +134,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	ERR_FAIL_COND_V(!f, NULL);
 
 	zlib_filefunc_def io;
+	zeromem(&io, sizeof(io));
 
 	io.opaque = f;
 	io.zopen_file = godot_open;
@@ -136,9 +146,13 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 	io.zclose_file = godot_close;
 	io.zerror_file = godot_testerror;
 
+	io.alloc_mem = godot_alloc;
+	io.free_mem = godot_free;
+
 	unzFile pkg = unzOpen2(packages[file.package].filename.utf8().get_data(), &io);
 	ERR_FAIL_COND_V(!pkg, NULL);
-	unzGoToFilePos(pkg, &file.file_pos);
+	int unz_err = unzGoToFilePos(pkg, &file.file_pos);
+	ERR_FAIL_COND_V(unz_err != UNZ_OK, NULL);
 	if (unzOpenCurrentFile(pkg) != UNZ_OK) {
 
 		unzClose(pkg);
@@ -150,7 +164,7 @@ unzFile ZipArchive::get_file_handle(String p_file) const {
 
 bool ZipArchive::try_open_pack(const String& p_name) {
 
-	printf("opening pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
+	//printf("opening zip pack %ls, %i, %i\n", p_name.c_str(), p_name.extension().nocasecmp_to("zip"), p_name.extension().nocasecmp_to("pcz"));
 	if (p_name.extension().nocasecmp_to("zip") != 0 && p_name.extension().nocasecmp_to("pcz") != 0)
 		return false;
 
@@ -198,7 +212,8 @@ bool ZipArchive::try_open_pack(const String& p_name) {
 		files[fname] = f;
 
 		uint8_t md5[16]={0,0,0,0,0,0,0,0 , 0,0,0,0,0,0,0,0};
-		PackedData::get_singleton()->add_path(p_name, fname, 0, 0, md5, this);
+		PackedData::get_singleton()->add_path(p_name, fname, 1, 0, md5, this);
+		//printf("packed data add path %ls, %ls\n", p_name.c_str(), fname.c_str());
 
 		if ((i+1)<gi.number_entry) {
 			unzGoToNextFile(zfile);

@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2015 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,14 @@
 class Tabs : public Control {
 
 	OBJ_TYPE( Tabs, Control );
+public:
+
+	enum TabAlign {
+
+		ALIGN_LEFT,
+		ALIGN_CENTER,
+		ALIGN_RIGHT
+	};
 private:
 
 
@@ -42,12 +50,18 @@ private:
 		String text;
 		Ref<Texture> icon;
 		int ofs_cache;
+		int size_cache;
+		Ref<Texture> right_button;
+		Rect2 rb_rect;
 	};
 
 	Vector<Tab> tabs;
 	int current;
 	Control *_get_tab(int idx) const;
 	int _get_top_margin() const;
+	TabAlign tab_align;
+	int rb_hover;
+	bool rb_pressing;
 
 protected:
 
@@ -65,16 +79,25 @@ public:
 	void set_tab_icon(int p_tab,const Ref<Texture>& p_icon);
 	Ref<Texture> get_tab_icon(int p_tab) const;
 
+	void set_tab_right_button(int p_tab,const Ref<Texture>& p_right_button);
+	Ref<Texture> get_tab_right_button(int p_tab) const;
+
+	void set_tab_align(TabAlign p_align);
+	TabAlign get_tab_align() const;
+
 	int get_tab_count() const;
 	void set_current_tab(int p_current);
 	int get_current_tab() const;
 
 	void remove_tab(int p_idx);
 
+	void clear_tabs();
+
 	Size2 get_minimum_size() const;
 
 	Tabs();
 };
 
+VARIANT_ENUM_CAST(Tabs::TabAlign);
 
 #endif // TABS_H
