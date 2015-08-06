@@ -223,6 +223,13 @@ uint64_t OS_Unix::get_unix_time() const {
 	return time(NULL);
 };
 
+uint64_t OS_Unix::get_system_time_msec() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, null);
+	uint64_t msec = tv_now.tv_.sec / 1000;
+	return msec;
+}
+
 
 OS::Date OS_Unix::get_date(bool utc) const {
 
