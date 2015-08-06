@@ -344,6 +344,63 @@ void ScriptEditorDebugger::_parse_message(const String& p_msg,const Array& p_dat
 		perf_history.push_front(p);
 		perf_draw->update();
 
+	} else if (p_msg=="error") {
+
+		Array err = p_data[0];
+
+		Array vals;
+		vals.push_back(err[0]);
+		vals.push_back(err[1]);
+		vals.push_back(err[2]);
+		vals.push_back(err[3]);
+
+		bool warning = err[9];
+		bool e;
+		String time = String("%d:%02d:%02d:%04d").sprintf(vals,&e);
+		String txt=time+" - "+String(err[8]);
+
+		String tooltip="Type:"+String(warning?"Warning":"Error");
+		tooltip+="\nDescription: "+String(err[8]);
+		tooltip+="\nTime: "+time;
+		tooltip+="\nC Error: "+String(err[7]);
+		tooltip+="\nC Source: "+String(err[5])+":"+String(err[6]);
+		tooltip+="\nC Function: "+String(err[4]);
+
+
+
+		error_list->add_item(txt,EditorNode::get_singleton()->get_gui_base()->get_icon(warning?"Warning":"Error","EditorIcons"));
+		error_list->set_item_tooltip( error_list->get_item_count() -1,tooltip );
+
+		int scc = p_data[1];
+
+		Array stack;
+		stack.resize(scc);
+		for(int i=0;i<scc;i++) {
+			stack[i]=p_data[2+i];
+		}
+
+		error_list->set_item_metadata( error_list->get_item_count() -1,stack );
+
+		error_count++;
+		/*
+		int count = p_data[1];
+
+		Array cstack;
+
+		OutputError oe = errors.front()->get();
+
+		packet_peer_stream->put_var(oe.hr);
+		packet_peer_stream->put_var(oe.min);
+		packet_peer_stream->put_var(oe.sec);
+		packet_peer_stream->put_var(oe.msec);
+		packet_peer_stream->put_var(oe.source_func);
+		packet_peer_stream->put_var(oe.source_file);
+		packet_peer_stream->put_var(oe.source_line);
+		packet_peer_stream->put_var(oe.error);
+		packet_peer_stream->put_var(oe.error_descr);
+		packet_peer_stream->put_var(oe.warning);
+		packet_peer_stream->put_var(oe.callstack);
+		*/
 	} else if (p_msg=="kill_me") {
 
 		editor->call_deferred("stop_child_process");
@@ -447,10 +504,21 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			scene_tree_refresh->set_icon( get_icon("Reload","EditorIcons"));
 			le_set->connect("pressed",this,"_live_edit_set");
 			le_clear->connect("pressed",this,"_live_edit_clear");
+			error_list->connect("item_selected",this,"_error_selected");
+			error_stack->connect("item_selected",this,"_error_stack_selected");
 
 		} break;
 		case NOTIFICATION_PROCESS: {
 
+			if (error_count!=last_error_count) {
+
+				if (error_count==0) {
+					error_split->set_name("Errors");
+				} else {
+					error_split->set_name("Errors ("+itos(error_count)+")");
+				}
+				last_error_count=error_count;
+			}
 			if (connection.is_null()) {
 
 				if (server->is_connection_available()) {
@@ -475,6 +543,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					scene_tree->clear();
 					le_set->set_disabled(true);
 					le_clear->set_disabled(false);
+					error_list->clear();
+					error_stack->clear();
+					error_count=0;
 					//live_edit_root->set_text("/root");
 
 					update_live_edit_root();
@@ -1007,6 +1078,51 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath& p_at, const 
 
 }
 
+void ScriptEditorDebugger::set_breakpoint(const String& p_path,int p_line,bool p_enabled) {
+
+	if (connection.is_valid()) {
+	       Array msg;
+	       msg.push_back("breakpoint");
+	       msg.push_back(p_path);
+	       msg.push_back(p_line);
+	       msg.push_back(p_enabled);
+	       ppeer->put_var(msg);
+       }
+}
+
+
+void ScriptEditorDebugger::_error_selected(int p_idx) {
+
+	error_stack->clear();
+	Array st=error_list->get_item_metadata(p_idx);
+	for(int i=0;i<st.size();i+=2) {
+
+		String script=st[i];
+		int line=st[i+1];
+		Array md;
+		md.push_back(st[i]);
+		md.push_back(st[i+1]);
+
+		String str = script.get_file()+":"+itos(line);
+
+		error_stack->add_item(str);
+		error_stack->set_item_metadata(error_stack->get_item_count()-1,md);
+		error_stack->set_item_tooltip(error_stack->get_item_count()-1,"File: "+String(st[i])+"\nLine: "+itos(line));
+	}
+}
+
+void ScriptEditorDebugger:: _error_stack_selected(int p_idx){
+
+	Array arr = error_stack->get_item_metadata(p_idx);
+	if (arr.size()!=2)
+		return;
+
+
+	Ref<Script> s = ResourceLoader::load(arr[0]);
+	emit_signal("goto_script_line",s,int(arr[1])-1);
+
+}
+
 
 void ScriptEditorDebugger::_bind_methods() {
 
@@ -1022,6 +1138,9 @@ void ScriptEditorDebugger::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("_scene_tree_request"),&ScriptEditorDebugger::_scene_tree_request);
 	ObjectTypeDB::bind_method(_MD("_live_edit_set"),&ScriptEditorDebugger::_live_edit_set);
 	ObjectTypeDB::bind_method(_MD("_live_edit_clear"),&ScriptEditorDebugger::_live_edit_clear);
+
+	ObjectTypeDB::bind_method(_MD("_error_selected"),&ScriptEditorDebugger::_error_selected);
+	ObjectTypeDB::bind_method(_MD("_error_stack_selected"),&ScriptEditorDebugger::_error_stack_selected);
 
 	ObjectTypeDB::bind_method(_MD("live_debug_create_node"),&ScriptEditorDebugger::live_debug_create_node);
 	ObjectTypeDB::bind_method(_MD("live_debug_instance_node"),&ScriptEditorDebugger::live_debug_instance_node);
@@ -1143,6 +1262,23 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	vbc->add_child(hbc);
 
 
+	error_split = memnew( HSplitContainer );
+	VBoxContainer *errvb = memnew( VBoxContainer );
+	errvb->set_h_size_flags(SIZE_EXPAND_FILL);
+	error_list = memnew( ItemList );
+	errvb->add_margin_child("Errors:",error_list,true);
+	error_split->add_child(errvb);
+
+	errvb = memnew( VBoxContainer );
+	errvb->set_h_size_flags(SIZE_EXPAND_FILL);
+	error_stack = memnew( ItemList );
+	errvb->add_margin_child("Stack Trace (if applies):",error_stack,true);
+	error_split->add_child(errvb);
+
+	error_split->set_name("Errors");
+	tabs->add_child(error_split);
+
+
 	HSplitContainer *hsp = memnew( HSplitContainer );
 
 	perf_monitors = memnew(Tree);
@@ -1246,6 +1382,9 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor){
 	p_editor->get_undo_redo()->set_property_notify_callback(_property_changeds,this);
 	live_debug=false;
 	last_path_id=false;
+	error_count=0;
+	last_error_count=0;
+
 
 }
 

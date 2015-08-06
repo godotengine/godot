@@ -146,6 +146,7 @@ class EditorNode : public Node {
 		RUN_PAUSE,
 		RUN_STOP,
 		RUN_PLAY_SCENE,
+		RUN_PLAY_NATIVE,
 		RUN_PLAY_CUSTOM_SCENE,
 		RUN_SCENE_SETTINGS,
 		RUN_SETTINGS,
@@ -153,6 +154,7 @@ class EditorNode : public Node {
 		RUN_FILE_SERVER,
 		RUN_DEPLOY_DUMB_CLIENTS,
 		RUN_LIVE_DEBUG,
+		RUN_DEPLOY_REMOTE_DEBUG,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_IMPORT,
@@ -240,9 +242,9 @@ class EditorNode : public Node {
 	ToolButton *animation_menu;
 	ToolButton *play_scene_button;
 	ToolButton *play_custom_scene_button;
-	ToolButton *live_debug_button;
+	MenuButton *debug_button;
 	TextureProgress *audio_vu;
-	MenuButton *fileserver_menu;
+	//MenuButton *fileserver_menu;
 
 	TextEdit *load_errors;
 	AcceptDialog *load_error_dialog;

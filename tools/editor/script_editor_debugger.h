@@ -45,6 +45,7 @@ class TextureButton;
 class AcceptDialog;
 class TreeItem;
 class HSplitContainer;
+class ItemList;
 
 class ScriptEditorDebugger : public Control {
 
@@ -62,6 +63,14 @@ class ScriptEditorDebugger : public Control {
 	Button *scene_tree_refresh;
 	Button *le_set;
 	Button *le_clear;
+
+	HSplitContainer *error_split;
+	ItemList *error_list;
+	ItemList *error_stack;
+
+	int error_count;
+	int last_error_count;
+
 
 
 	TextureButton *tb;
@@ -132,6 +141,9 @@ class ScriptEditorDebugger : public Control {
 	static void _method_changeds(void *p_ud,Object*p_base,const StringName& p_name,VARIANT_ARG_DECLARE);
 	static void _property_changeds(void *p_ud,Object*p_base,const StringName& p_property,const Variant& p_value);
 
+	void _error_selected(int p_idx);
+	void _error_stack_selected(int p_idx);
+
 protected:
 
 	void _notification(int p_what);
@@ -160,6 +172,8 @@ public:
 	void live_debug_restore_node(ObjectID p_id,const NodePath& p_at,int p_at_pos);
 	void live_debug_duplicate_node(const NodePath& p_at,const String& p_new_name);
 	void live_debug_reparent_node(const NodePath& p_at,const NodePath& p_new_place,const String& p_new_name,int p_at_pos);
+
+	void set_breakpoint(const String& p_path,int p_line,bool p_enabled);
 
 	void update_live_edit_root();
 

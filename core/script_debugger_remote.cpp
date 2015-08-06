@@ -34,7 +34,11 @@
 Error ScriptDebuggerRemote::connect_to_host(const String& p_host,uint16_t p_port) {
 
 
-    IP_Address ip = IP::get_singleton()->resolve_hostname(p_host);
+    IP_Address ip;
+    if (p_host.is_valid_ip_address())
+	    ip=p_host;
+    else
+	    ip = IP::get_singleton()->resolve_hostname(p_host);
 
 
     int port = p_port;
@@ -243,6 +247,15 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script,bool p_can_continue) {
 
 				if (request_scene_tree)
 					request_scene_tree(request_scene_tree_ud);
+
+			} else if (command=="breakpoint") {
+
+				bool set = cmd[3];
+				if (set)
+					insert_breakpoint(cmd[2],cmd[1]);
+				else
+					remove_breakpoint(cmd[2],cmd[1]);
+
 			} else {
 				_parse_live_edit(cmd);
 			}
@@ -289,6 +302,37 @@ void ScriptDebuggerRemote::_get_output() {
 		messages.pop_front();
 		locking=false;
 	}
+
+	while (errors.size()) {
+		locking=true;
+		packet_peer_stream->put_var("error");
+		OutputError oe = errors.front()->get();
+
+		packet_peer_stream->put_var(oe.callstack.size()+2);
+
+		Array error_data;
+
+		error_data.push_back(oe.hr);
+		error_data.push_back(oe.min);
+		error_data.push_back(oe.sec);
+		error_data.push_back(oe.msec);
+		error_data.push_back(oe.source_func);
+		error_data.push_back(oe.source_file);
+		error_data.push_back(oe.source_line);
+		error_data.push_back(oe.error);
+		error_data.push_back(oe.error_descr);
+		error_data.push_back(oe.warning);
+		packet_peer_stream->put_var(error_data);
+		packet_peer_stream->put_var(oe.callstack.size());
+		for(int i=0;i<oe.callstack.size();i++) {
+			packet_peer_stream->put_var(oe.callstack[i]);
+
+		}
+
+		errors.pop_front();
+		locking=false;
+
+	}
 	mutex->unlock();
 }
 
@@ -300,6 +344,61 @@ void ScriptDebuggerRemote::line_poll() {
 		_poll_events();
 	poll_every++;
 
+}
+
+
+void ScriptDebuggerRemote::_err_handler(void* ud,const char* p_func,const char*p_file,int p_line,const char *p_err, const char * p_descr,ErrorHandlerType p_type) {
+
+	if (p_type==ERR_HANDLER_SCRIPT)
+		return; //ignore script errors, those go through debugger
+
+	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote*)ud;
+
+	OutputError oe;
+	oe.error=p_err;
+	oe.error_descr=p_descr;
+	oe.source_file=p_file;
+	oe.source_line=p_line;
+	oe.source_func=p_func;
+	oe.warning=p_type==ERR_HANDLER_WARNING;
+	uint64_t time = OS::get_singleton()->get_ticks_msec();
+	oe.hr=time/3600000;
+	oe.min=(time/60000)%60;
+	oe.sec=(time/1000)%60;
+	oe.msec=time%1000;
+	Array cstack;
+
+	Vector<ScriptLanguage::StackInfo> si;
+
+	for(int i=0;i<ScriptServer::get_language_count();i++) {
+		si=ScriptServer::get_language(i)->debug_get_current_stack_info();
+		if (si.size())
+			break;
+	}
+
+	cstack.resize(si.size()*2);
+	for(int i=0;i<si.size();i++) {
+		String path;
+		int line=0;
+		if (si[i].script.is_valid()) {
+			path=si[i].script->get_path();
+			line=si[i].line;
+		}
+		cstack[i*2+0]=path;
+		cstack[i*2+1]=line;
+	}
+
+	oe.callstack=cstack;
+
+
+	sdr->mutex->lock();
+
+	if (!sdr->locking && sdr->tcp_client->is_connected()) {
+
+		sdr->errors.push_back(oe);
+	}
+
+	sdr->mutex->unlock();
 }
 
 
@@ -432,6 +531,13 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			if (request_scene_tree)
 				request_scene_tree(request_scene_tree_ud);
+		} else if (command=="breakpoint") {
+
+			bool set = cmd[3];
+			if (set)
+				insert_breakpoint(cmd[2],cmd[1]);
+			else
+				remove_breakpoint(cmd[2],cmd[1]);
 		} else {
 			_parse_live_edit(cmd);
 		}
@@ -497,10 +603,35 @@ void ScriptDebuggerRemote::_print_handler(void *p_this,const String& p_string) {
 
 	ScriptDebuggerRemote *sdr = (ScriptDebuggerRemote*)p_this;
 
+	uint64_t ticks = OS::get_singleton()->get_ticks_usec()/1000;
+	sdr->msec_count+=ticks-sdr->last_msec;
+	sdr->last_msec=ticks;
+
+	if (sdr->msec_count>1000) {
+		sdr->char_count=0;
+		sdr->msec_count=0;
+	}
+
+	String s = p_string;
+	int allowed_chars = MIN(MAX(sdr->max_cps - sdr->char_count,0), s.length());
+
+	if (allowed_chars==0)
+		return;
+
+	if (allowed_chars<s.length()) {
+		s=s.substr(0,allowed_chars);
+	}
+
+	sdr->char_count+=allowed_chars;
+
+	if (sdr->char_count>=sdr->max_cps) {
+		s+="\n[output overflow, print less text!]\n";
+	}
+
 	sdr->mutex->lock();
 	if (!sdr->locking && sdr->tcp_client->is_connected()) {
 
-		sdr->output_strings .push_back(p_string);
+		sdr->output_strings.push_back(s);
 	}
 	sdr->mutex->unlock();
 }
@@ -538,13 +669,21 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() {
 	poll_every=0;
 	request_scene_tree=NULL;
 	live_edit_funcs=NULL;
+	max_cps = GLOBAL_DEF("debug/max_remote_stdout_chars_per_second",2048);
+	char_count=0;
+	msec_count=0;
+	last_msec=0;
+
+	eh.errfunc=_err_handler;
+	eh.userdata=this;
+	add_error_handler(&eh);
 
 }
 
 ScriptDebuggerRemote::~ScriptDebuggerRemote() {
 
 	remove_print_handler(&phl);
+	remove_error_handler(&eh);
 	memdelete(mutex);
-
 
 }
