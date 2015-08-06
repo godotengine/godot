@@ -34,7 +34,11 @@
 Error ScriptDebuggerRemote::connect_to_host(const String& p_host,uint16_t p_port) {
 
 
-    IP_Address ip = IP::get_singleton()->resolve_hostname(p_host);
+    IP_Address ip;
+    if (p_host.is_valid_ip_address())
+	    ip=p_host;
+    else
+	    ip = IP::get_singleton()->resolve_hostname(p_host);
 
 
     int port = p_port;

@@ -67,11 +67,11 @@ public:
 	virtual int get_device_count() const;
 	virtual String get_device_name(int p_device) const;
 	virtual String get_device_info(int p_device) const;
-	virtual Error run(int p_device,bool p_dumb=false);
+	virtual Error run(int p_device,bool p_dumb=false,bool p_remote_debug=false);
 
 	virtual bool requieres_password(bool p_debug) const { return !p_debug; }
 	virtual String get_binary_extension() const { return "bar"; }
-	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false);
+	virtual Error export_project(const String& p_path,bool p_debug,bool p_dumb=false,bool p_remote_debug=false);
 
 	virtual bool can_export(String *r_error=NULL) const;
 
@@ -270,7 +270,7 @@ void EditorExportPlatformBB10::_fix_descriptor(Vector<uint8_t>& p_descriptor) {
 
 
 
-Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformBB10::export_project(const String& p_path, bool p_debug, bool p_dumb, bool p_remote_debug) {
 
 
 	EditorProgress ep("export","Exporting for BlackBerry 10",104);
@@ -619,7 +619,7 @@ void EditorExportPlatformBB10::_device_poll_thread(void *ud) {
 
 }
 
-Error EditorExportPlatformBB10::run(int p_device, bool p_dumb) {
+Error EditorExportPlatformBB10::run(int p_device, bool p_dumb, bool p_remote_debug) {
 
 	ERR_FAIL_INDEX_V(p_device,devices.size(),ERR_INVALID_PARAMETER);
 

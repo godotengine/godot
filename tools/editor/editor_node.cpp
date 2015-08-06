@@ -2366,6 +2366,13 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 			_run(true);
 
 		} break;
+		case RUN_PLAY_NATIVE: {
+
+			emit_signal("play_pressed");
+			editor_run.run_native_notify();
+
+
+		} break;
 		case RUN_SCENE_SETTINGS: {
 
 			run_settings_dialog->popup_run_settings();
@@ -2397,31 +2404,41 @@ void EditorNode::_menu_option_confirm(int p_option,bool p_confirmed) {
 		case RUN_FILE_SERVER: {
 
 			//file_server
-			bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_FILE_SERVER));
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER));
 
 			if (ischecked) {
 				file_server->stop();
-				fileserver_menu->set_icon(gui_base->get_icon("FileServer","EditorIcons"));
-				fileserver_menu->get_popup()->set_item_text( fileserver_menu->get_popup()->get_item_index(RUN_FILE_SERVER),"Enable File Server");
+				//debug_button->set_icon(gui_base->get_icon("FileServer","EditorIcons"));
+				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),"Enable File Server");
 			} else {
 				file_server->start();
-				fileserver_menu->set_icon(gui_base->get_icon("FileServerActive","EditorIcons"));
-				fileserver_menu->get_popup()->set_item_text( fileserver_menu->get_popup()->get_item_index(RUN_FILE_SERVER),"Disable File Server");
+				//debug_button->set_icon(gui_base->get_icon("FileServerActive","EditorIcons"));
+				//debug_button->get_popup()->set_item_text( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),"Disable File Server");
 			}
 
-			fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_FILE_SERVER),!ischecked);
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_FILE_SERVER),!ischecked);
 
 		} break;
 		case RUN_LIVE_DEBUG: {
 
-			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(live_debug_button->is_pressed());
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_LIVE_DEBUG));
+
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_LIVE_DEBUG),!ischecked);
+			ScriptEditor::get_singleton()->get_debugger()->set_live_debugging(!ischecked);
 		} break;
 
 		case RUN_DEPLOY_DUMB_CLIENTS: {
 
-			bool ischecked = fileserver_menu->get_popup()->is_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
-			fileserver_menu->get_popup()->set_item_checked( fileserver_menu->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),!ischecked);
 			run_native->set_deploy_dumb(!ischecked);
+
+		} break;
+		case RUN_DEPLOY_REMOTE_DEBUG: {
+
+			bool ischecked = debug_button->get_popup()->is_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG));
+			debug_button->get_popup()->set_item_checked( debug_button->get_popup()->get_item_index(RUN_DEPLOY_REMOTE_DEBUG),!ischecked);
+			run_native->set_deploy_debug_remote(!ischecked);
 
 		} break;
 		case SETTINGS_UPDATE_ALWAYS: {
@@ -4604,6 +4621,7 @@ EditorNode::EditorNode() {
 	menu_hb->add_child(native_play_button);
 	native_play_button->hide();
 	native_play_button->get_popup()->connect("item_pressed",this,"_run_in_device");
+	run_native->connect("native_run",this,"_menu_option",varray(RUN_PLAY_NATIVE));
 
 //	VSeparator *s1 = memnew( VSeparator );
 //	play_hb->add_child(s1);
@@ -4624,29 +4642,21 @@ EditorNode::EditorNode() {
 	play_custom_scene_button->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY_CUSTOM_SCENE));
 	play_custom_scene_button->set_tooltip("Play custom scene ("+keycode_get_string(KEY_MASK_CMD|KEY_MASK_SHIFT|KEY_F5)+").");
 
-	live_debug_button = memnew( ToolButton );
-	play_hb->add_child(live_debug_button);
-	live_debug_button->set_toggle_mode(true);
-	live_debug_button->set_focus_mode(Control::FOCUS_NONE);
-	live_debug_button->set_icon(gui_base->get_icon("LiveDebug","EditorIcons"));
-	live_debug_button->connect("pressed", this,"_menu_option",make_binds(RUN_LIVE_DEBUG));
-	live_debug_button->set_tooltip("Toggle Live Debugging On/Off");
+	debug_button = memnew( MenuButton );
+	debug_button->set_flat(true);
+	play_hb->add_child(debug_button);
+	//debug_button->set_toggle_mode(true);
+	debug_button->set_focus_mode(Control::FOCUS_NONE);
+	debug_button->set_icon(gui_base->get_icon("Remote","EditorIcons"));
+	//debug_button->connect("pressed", this,"_menu_option",make_binds(RUN_LIVE_DEBUG));
+	debug_button->set_tooltip("Debug Options");
 
-	fileserver_menu = memnew( MenuButton );
-	play_hb->add_child(fileserver_menu);
-	fileserver_menu->set_flat(true);
-	fileserver_menu->set_focus_mode(Control::FOCUS_NONE);
-	fileserver_menu->set_icon(gui_base->get_icon("FileServer","EditorIcons"));
-	//fileserver_menu->connect("pressed", this,"_menu_option",make_binds(RUN_PLAY_CUSTOM_SCENE));
-	fileserver_menu->set_tooltip("Serve the project filesystem to remote clients.");
-
-	p=fileserver_menu->get_popup();
-	p->add_check_item("Enable File Server",RUN_FILE_SERVER);
-	p->set_item_tooltip(p->get_item_index(RUN_FILE_SERVER),"Enable/Disable the File Server.");
+	p=debug_button->get_popup();
+	p->add_check_item("Live Editing",RUN_LIVE_DEBUG);
+	p->add_check_item("File Server",RUN_FILE_SERVER);
 	p->add_separator();
-	p->add_check_item("Deploy Dumb Clients",RUN_DEPLOY_DUMB_CLIENTS);
-	//p->set_item_checked( p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),true );
-	p->set_item_tooltip(p->get_item_index(RUN_DEPLOY_DUMB_CLIENTS),"Deploy dumb clients when the File Server is active.");
+	p->add_check_item("Deploy Remote Debug",RUN_DEPLOY_REMOTE_DEBUG);
+	p->add_check_item("Deploy File Server Clients",RUN_DEPLOY_DUMB_CLIENTS);
 	p->connect("item_pressed",this,"_menu_option");
 
 	/*
