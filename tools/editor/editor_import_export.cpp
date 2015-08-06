@@ -40,6 +40,7 @@
 #include "io/resource_saver.h"
 #include "io/md5.h"
 #include "io_plugins/editor_texture_import_plugin.h"
+#include "tools/editor/plugins/script_editor_plugin.h"
 
 String EditorImportPlugin::validate_source_path(const String& p_path) {
 
@@ -916,6 +917,48 @@ static int _get_pad(int p_alignment, int p_n) {
 	return pad;
 };
 
+void EditorExportPlatform::gen_export_flags(Vector<String> &r_flags, bool p_dumb, bool p_remote_debug) {
+
+	String host = EditorSettings::get_singleton()->get("network/debug_host");
+
+	if (p_dumb) {
+		int port = EditorSettings::get_singleton()->get("file_server/port");
+		String passwd = EditorSettings::get_singleton()->get("file_server/password");
+		r_flags.push_back("-rfs");
+		r_flags.push_back(host+":"+itos(port));
+		if (passwd!="") {
+			r_flags.push_back("-rfs_pass");
+			r_flags.push_back(passwd);
+		}
+	}
+
+	if (p_remote_debug) {
+
+		r_flags.push_back("-rdebug");
+		r_flags.push_back(host+":"+String::num(GLOBAL_DEF("debug/debug_port", 6007)));
+
+		List<String> breakpoints;
+		ScriptEditor::get_singleton()->get_breakpoints(&breakpoints);
+
+
+		if (breakpoints.size()) {
+
+			r_flags.push_back("-bp");
+			String bpoints;
+			for(const List<String>::Element *E=breakpoints.front();E;E=E->next()) {
+
+				bpoints+=E->get().replace(" ","%20");
+				if (E->next())
+					bpoints+=",";
+			}
+
+			r_flags.push_back(bpoints);
+		}
+
+	}
+
+}
+
 Error EditorExportPlatform::save_pack_file(void *p_userdata,const String& p_path, const Vector<uint8_t>& p_data,int p_file,int p_total) {
 
 
@@ -1029,7 +1072,7 @@ Error EditorExportPlatform::save_pack(FileAccess *dst,bool p_make_bundles, int p
 	return OK;
 }
 
-Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, bool p_dumb) {
+Error EditorExportPlatformPC::export_project(const String& p_path, bool p_debug, bool p_dumb,bool p_remote_debug) {
 
 
 

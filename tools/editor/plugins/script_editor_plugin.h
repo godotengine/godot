@@ -250,6 +250,8 @@ public:
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
 
+	ScriptEditorDebugger *get_debugger() { return debugger; }
+
 	ScriptEditor(EditorNode *p_editor);
 	~ScriptEditor();
 };

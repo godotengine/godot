@@ -579,6 +579,10 @@ void TileMap::_make_quadrant_dirty(Map<PosKey,Quadrant>::Element *Q) {
 	call_deferred("_update_dirty_quadrants");
 }
 
+void TileMap::set_cellv(const Vector2& p_pos,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
+
+	set_cell(p_pos.x,p_pos.y,p_tile,p_flip_x,p_flip_y,p_transpose);
+}
 
 void TileMap::set_cell(int p_x,int p_y,int p_tile,bool p_flip_x,bool p_flip_y,bool p_transpose) {
 
@@ -1106,6 +1110,7 @@ void TileMap::_bind_methods() {
 	ObjectTypeDB::bind_method(_MD("get_collision_bounce"),&TileMap::get_collision_bounce);
 
 	ObjectTypeDB::bind_method(_MD("set_cell","x","y","tile","flip_x","flip_y","transpose"),&TileMap::set_cell,DEFVAL(false),DEFVAL(false),DEFVAL(false));
+	ObjectTypeDB::bind_method(_MD("set_cellv","pos","tile","flip_x","flip_y","transpose"),&TileMap::set_cellv,DEFVAL(false),DEFVAL(false),DEFVAL(false));
 	ObjectTypeDB::bind_method(_MD("get_cell","x","y"),&TileMap::get_cell);
 	ObjectTypeDB::bind_method(_MD("is_cell_x_flipped","x","y"),&TileMap::is_cell_x_flipped);
 	ObjectTypeDB::bind_method(_MD("is_cell_y_flipped","x","y"),&TileMap::is_cell_y_flipped);

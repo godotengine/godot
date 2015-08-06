@@ -432,6 +432,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 	es.root=NULL;
 	es.history_current=-1;
 	es.version=0;
+	es.live_edit_root=NodePath(String("/root"));
 
 	if (p_at_pos==edited_scene.size())
 		edited_scene.push_back(es);
@@ -551,6 +552,23 @@ String EditorData::get_scene_path(int p_idx) const {
 	return edited_scene[p_idx].root->get_filename();
 
 }
+
+void EditorData::set_edited_scene_live_edit_root(const NodePath& p_root) {
+	ERR_FAIL_INDEX(current_edited_scene,edited_scene.size());
+
+	edited_scene[current_edited_scene].live_edit_root=p_root;
+
+}
+NodePath EditorData::get_edited_scene_live_edit_root() {
+
+	ERR_FAIL_INDEX_V(current_edited_scene,edited_scene.size(),String());
+
+	return edited_scene[current_edited_scene].live_edit_root;
+
+
+
+}
+
 
 void EditorData::save_edited_scene_state(EditorSelection *p_selection, EditorHistory *p_history, const Dictionary& p_custom) {
 

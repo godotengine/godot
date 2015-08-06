@@ -49,8 +49,31 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	Object *performance;
 	bool requested_quit;
 	Mutex *mutex;
+
+	struct OutputError {
+
+		int hr;
+		int min;
+		int sec;
+		int msec;
+		String source_file;
+		String source_func;
+		int source_line;
+		String error;
+		String error_descr;
+		bool warning;
+		Array callstack;
+
+	};
+
 	List<String> output_strings;
 	List<Message> messages;
+	List<OutputError> errors;
+
+	int max_cps;
+	int char_count;
+	uint64_t last_msec;
+	uint64_t msec_count;
 
 	bool locking; //hack to avoid a deadloop
 	static void _print_handler(void *p_this,const String& p_string);
@@ -62,8 +85,15 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint32_t poll_every;
 
 
+	bool _parse_live_edit(const Array &p_command);
+
 	RequestSceneTreeMessageFunc request_scene_tree;
 	void *request_scene_tree_ud;
+
+	LiveEditFuncs *live_edit_funcs;
+
+	ErrorHandlerList eh;
+	static void _err_handler(void*,const char*,const char*,int p_line,const char *, const char *,ErrorHandlerType p_type);
 
 
 public:
@@ -79,6 +109,7 @@ public:
 	virtual void send_message(const String& p_message, const Array& p_args);
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata);
+	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

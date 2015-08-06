@@ -45,6 +45,9 @@ public:
 	Variant _add_do_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 	Variant _add_undo_method(const Variant** p_args, int p_argcount, Variant::CallError& r_error);
 
+	typedef void (*MethodNotifyCallback)(void *p_ud,Object*p_base,const StringName& p_name,VARIANT_ARG_DECLARE);
+	typedef void (*PropertyNotifyCallback)(void *p_ud,Object*p_base,const StringName& p_property,const Variant& p_value);
+
 private:
 	struct Operation {
 
@@ -83,6 +86,11 @@ private:
 
 	CommitNotifyCallback callback;
 	void* callback_ud;
+	void* method_callbck_ud;
+	void* prop_callback_ud;
+
+	MethodNotifyCallback method_callback;
+	PropertyNotifyCallback property_callback;
 
 
 protected:
@@ -112,6 +120,9 @@ public:
 	uint64_t get_version() const;
 
 	void set_commit_notify_callback(CommitNotifyCallback p_callback,void* p_ud);
+
+	void set_method_notify_callback(MethodNotifyCallback p_method_callback,void* p_ud);
+	void set_property_notify_callback(PropertyNotifyCallback p_property_callback,void* p_ud);
 
 	UndoRedo();
 	~UndoRedo();

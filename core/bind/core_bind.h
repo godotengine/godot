@@ -239,10 +239,24 @@ public:
 		SYSTEM_DIR_RINGTONES,
 	};
 
+	enum ScreenOrientation {
+
+		SCREEN_ORIENTATION_LANDSCAPE,
+		SCREEN_ORIENTATION_PORTRAIT,
+		SCREEN_ORIENTATION_REVERSE_LANDSCAPE,
+		SCREEN_ORIENTATION_REVERSE_PORTRAIT,
+		SCREEN_ORIENTATION_SENSOR_LANDSCAPE,
+		SCREEN_ORIENTATION_SENSOR_PORTRAIT,
+		SCREEN_ORIENTATION_SENSOR,
+	};
+
 	String get_system_dir(SystemDir p_dir) const;
 
 
 	String get_data_dir() const;
+
+	void set_screen_orientation(ScreenOrientation p_orientation);
+	ScreenOrientation get_screen_orientation() const;
 
 	void set_time_scale(float p_scale);
 	float get_time_scale();
@@ -255,6 +269,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(_OS::SystemDir);
+VARIANT_ENUM_CAST(_OS::ScreenOrientation);
 
 
 class _Geometry : public Object {
@@ -435,6 +450,12 @@ public:
 
 	String variant_to_base64(const Variant& p_var);
 	Variant base64_to_variant(const String& p_str);
+
+	String raw_to_base64(const DVector<uint8_t>& p_arr);
+	DVector<uint8_t> base64_to_raw(const String& p_str);
+
+	String utf8_to_base64(const String& p_str);
+	String base64_to_utf8(const String& p_str);
 
 	_Marshalls() {};
 };
