@@ -27,6 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 #include "output_strings.h"
+#include "core/bidi.h"
 
 
 
@@ -92,7 +93,7 @@ void OutputStrings::_notification(int p_what) {
 
 			while( E && ofs.y < (size_height-(int)margin.y) ) {
 
-				String str = E->get().text;
+				String str = Bidi::bidi_visual_string(E->get().text);
 				Point2 line_ofs=ofs;
 
 				switch(E->get().type) {

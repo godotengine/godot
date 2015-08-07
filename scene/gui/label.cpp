@@ -30,6 +30,7 @@
 #include "print_string.h"
 #include "globals.h"
 #include "translation.h"
+#include "core/bidi.h"
 
 
 void Label::set_autowrap(bool p_autowrap) {
@@ -223,7 +224,7 @@ void Label::_notification(int p_what) {
 				}
 				
 				
-				
+				String bidi_text = Bidi::bidi_visual_string(text);
 				if (font_color_shadow.a>0) {
 					
 					int chars_total_shadow = chars_total; //save chars drawn
@@ -231,8 +232,8 @@ void Label::_notification(int p_what) {
 					for (int i=0;i<from->word_len;i++) {
 						
 						if (visible_chars < 0 || chars_total_shadow<visible_chars) {
-							CharType c = text[i+pos];
-							CharType n = text[i+pos+1];
+							CharType c = bidi_text[i+pos];
+							CharType n = bidi_text[i+pos+1];
 							if (uppercase) {
 								c=String::char_uppercase(c);
 								n=String::char_uppercase(c);
@@ -254,8 +255,8 @@ void Label::_notification(int p_what) {
 				for (int i=0;i<from->word_len;i++) {
 
 					if (visible_chars < 0 || chars_total<visible_chars) {
-						CharType c = text[i+pos];
-						CharType n = text[i+pos+1];
+						CharType c = bidi_text[i+pos];
+						CharType n = bidi_text[i+pos+1];
 						if (uppercase) {
 							c=String::char_uppercase(c);
 							n=String::char_uppercase(c);
@@ -310,9 +311,11 @@ int Label::get_longest_line_width() const {
 	int max_line_width=0;
 	int line_width=0;
 	
+	String bidi_text = Bidi::bidi_visual_string(text);
+	
 	for (int i=0;i<text.size()+1;i++) {
 		
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+		CharType current=i<bidi_text.length()?bidi_text[i]:' '; //always a space at the end, so the algo works
 		if (uppercase)
 			current=String::char_uppercase(current);
 
@@ -369,11 +372,13 @@ void Label::regenerate_word_cache() {
 	line_count=1;
 	total_char_cache=0;
 	
+	String bidi_text = Bidi::bidi_visual_string(text);
+	
 	WordCache *last=NULL;
 	
-	for (int i=0;i<text.size()+1;i++) {
+	for (int i=0;i<bidi_text.size()+1;i++) {
 		
-		CharType current=i<text.length()?text[i]:' '; //always a space at the end, so the algo works
+		CharType current=i<bidi_text.length()?bidi_text[i]:' '; //always a space at the end, so the algo works
 
 		if (uppercase)
 			current=String::char_uppercase(current);
@@ -413,7 +418,7 @@ void Label::regenerate_word_cache() {
 				total_char_cache++;
 			}
 
-			if (i<text.length() && text[i] == ' ') {
+			if (i<bidi_text.length() && bidi_text[i] == ' ') {
 				total_char_cache--;  // do not count spaces
 				if (line_width > 0 || last==NULL || last->char_pos!=WordCache::CHAR_WRAPLINE) {
 					space_count++;
