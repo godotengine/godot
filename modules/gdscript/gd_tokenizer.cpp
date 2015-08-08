@@ -97,6 +97,7 @@ const char* GDTokenizer::token_names[TK_MAX]={
 "preload",
 "assert",
 "yield",
+"signal",
 "'['",
 "']'",
 "'{'",
