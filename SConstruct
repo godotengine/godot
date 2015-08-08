@@ -54,13 +54,16 @@ methods.save_active_platforms(active_platforms,active_platform_ids)
 
 custom_tools=['default']
 
+platform_arg = ARGUMENTS.get("platform", False)
+
 if (os.name=="posix"):
 	pass
 elif (os.name=="nt"):
-    if (os.getenv("VSINSTALLDIR")==None):
-	custom_tools=['mingw']
+    if (os.getenv("VSINSTALLDIR")==None or platform_arg=="android"):
+		custom_tools=['mingw']
 
 env_base=Environment(tools=custom_tools,ENV = {'PATH' : os.environ['PATH']});
+
 #env_base=Environment(tools=custom_tools);
 env_base.global_defaults=global_defaults
 env_base.android_source_modules=[]
@@ -363,8 +366,8 @@ if selected_platform in platform_list:
 		
 		#env['MSVS_VERSION']='9.0'
 		env['MSVSBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
-		env['MSVSCLEANCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
+		env['MSVSREBUILDCOM'] = "scons platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes vsproj=true"
+		env['MSVSCLEANCOM'] = "scons --clean platform=" + selected_platform + " target=" + env["target"] + " bits=" + env["bits"] + " tools=yes"
 			
 		debug_variants = ['Debug|Win32']+['Debug|x64']
 		release_variants = ['Release|Win32']+['Release|x64']
